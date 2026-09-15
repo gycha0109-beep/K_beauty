@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml"
       - "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+      - "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/**"
       - "evidence/catalog-taxonomy-v1/data-taxonomy13-catalog-only-candidate-approval-v1.json"
       - "scripts/product-evidence/verify-data-taxonomy13-catalog-only-candidate-approval-v1.mjs"
   pull_request:
@@ -13,6 +14,7 @@ on:
     paths:
       - ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml"
       - "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+      - "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/**"
       - "evidence/catalog-taxonomy-v1/data-taxonomy13-catalog-only-candidate-approval-v1.json"
       - "scripts/product-evidence/verify-data-taxonomy13-catalog-only-candidate-approval-v1.mjs"
 
@@ -21,20 +23,70 @@ permissions:
 
 env:
   DATA_TAXONOMY13_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+  SUPABASE_CLI_VERSION: 2.109.1
 
 jobs:
   approval-authority:
     name: Product-write-free catalog-only candidate approval authority
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout exact head
         uses: actions/checkout@v4
         with:
           ref: ${{ env.DATA_TAXONOMY13_CHECKOUT_SHA }}
           fetch-depth: 1
+
       - name: Verify exact head
         shell: bash
         run: test "$(git rev-parse HEAD)" = "$DATA_TAXONOMY13_CHECKOUT_SHA"
-      - name: Verify DATA-TAXONOMY13 approval authority
+
+      - name: Verify DATA-TAXONOMY13 static authority
         run: node scripts/product-evidence/verify-data-taxonomy13-catalog-only-candidate-approval-v1.mjs
+
+      - name: Prepare isolated Supabase runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_dir="${RUNNER_TEMP}/data-taxonomy13-runtime"
+          echo "DATA_TAXONOMY13_RUNTIME_DIR=${runtime_dir}" >>"${GITHUB_ENV}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init --workdir "${runtime_dir}" --force
+          migration_dir="${runtime_dir}/supabase/migrations"
+          mkdir -p "${migration_dir}"
+          cp tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/20260915110500_data_taxonomy13_catalog_only_candidate_approval_fixture.sql \
+            "${migration_dir}/"
+          cp supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql \
+            "${migration_dir}/"
+          cp tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/verify_data_taxonomy13_catalog_only_candidate_approval_runtime.sql \
+            "${migration_dir}/20260915111100_verify_data_taxonomy13_catalog_only_candidate_approval_runtime.sql"
+
+      - name: Start and verify isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_log="${RUNNER_TEMP}/data-taxonomy13-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "${DATA_TAXONOMY13_RUNTIME_DIR}" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${DATA_TAXONOMY13_RUNTIME_DIR}"
+
+      - name: Check exact-head diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_TAXONOMY13_CHECKOUT_SHA"
+          git diff --check HEAD^
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -n "${DATA_TAXONOMY13_RUNTIME_DIR:-}" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop --workdir "${DATA_TAXONOMY13_RUNTIME_DIR}" --no-backup || true
+          fi

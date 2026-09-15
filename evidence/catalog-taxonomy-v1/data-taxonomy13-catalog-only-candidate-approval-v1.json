@@ -134,6 +134,32 @@
     "offer_write_count": 0,
     "production_application": false
   },
+  "runtime_verification": {
+    "required": true,
+    "environment": "isolated_supabase",
+    "supabase_cli_version": "2.109.1",
+    "fixture_path": "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/20260915110500_data_taxonomy13_catalog_only_candidate_approval_fixture.sql",
+    "verification_path": "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/verify_data_taxonomy13_catalog_only_candidate_approval_runtime.sql",
+    "production_write": false,
+    "scenarios": [
+      "positive_confirm_without_product_or_taxonomy_assignment_write",
+      "exact_retry_idempotency",
+      "request_id_conflict_fail_closed",
+      "invalid_identity_evidence_fail_closed",
+      "legacy_projection_fail_closed",
+      "stale_classification_fail_closed",
+      "non_source_rule_classification_fail_closed",
+      "source_rule_drift_fail_closed",
+      "inactive_term_fail_closed",
+      "runtime_resolver_drift_fail_closed",
+      "normalized_product_identity_collision_fail_closed",
+      "exact_external_product_identity_collision_fail_closed",
+      "peer_candidate_identity_collision_fail_closed",
+      "peer_candidate_external_collision_fail_closed",
+      "stale_preflight_fail_closed",
+      "actor_capability_fail_closed"
+    ]
+  },
   "approval_semantics": {
     "candidate_review_status_after_confirm": "approved",
     "identity_resolution_state_after_confirm": "resolved",

@@ -3,8 +3,14 @@ import fs from "node:fs";
 
 const migrationPath = "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql";
 const evidencePath = "evidence/catalog-taxonomy-v1/data-taxonomy13-catalog-only-candidate-approval-v1.json";
+const fixturePath = "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/20260915110500_data_taxonomy13_catalog_only_candidate_approval_fixture.sql";
+const runtimePath = "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/verify_data_taxonomy13_catalog_only_candidate_approval_runtime.sql";
+const workflowPath = ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml";
 const migration = fs.readFileSync(migrationPath, "utf8");
 const evidence = JSON.parse(fs.readFileSync(evidencePath, "utf8"));
+const fixture = fs.readFileSync(fixturePath, "utf8");
+const runtime = fs.readFileSync(runtimePath, "utf8");
+const workflow = fs.readFileSync(workflowPath, "utf8");
 const executable = migration.replace(/--.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
 
 assert.equal(evidence.schema_version, "data-taxonomy13-catalog-only-candidate-approval-v1");
@@ -38,12 +44,20 @@ assert.equal(evidence.first_candidate.taxonomy.runtime_resolution_exact, true);
 assert.equal(evidence.first_candidate.collision_readback.raw_normalized_product_identity, 0);
 assert.equal(evidence.first_candidate.collision_readback.exact_external_product_identity, 0);
 assert.equal(evidence.first_candidate.identity_cross_check.convergence_dimensions.length, 3);
+
 assert.equal(evidence.repository_foundation.migration_path, migrationPath);
 assert.equal(evidence.repository_foundation.migration_rebased_after_current_main, true);
 assert.equal(evidence.repository_foundation.production_application, false);
 assert.equal(evidence.repository_foundation.product_write_count, 0);
 assert.equal(evidence.repository_foundation.taxonomy_assignment_write_count, 0);
 assert.equal(evidence.repository_foundation.recommendation_semantic_write_count, 0);
+assert.equal(evidence.runtime_verification.required, true);
+assert.equal(evidence.runtime_verification.environment, "isolated_supabase");
+assert.equal(evidence.runtime_verification.supabase_cli_version, "2.109.1");
+assert.equal(evidence.runtime_verification.fixture_path, fixturePath);
+assert.equal(evidence.runtime_verification.verification_path, runtimePath);
+assert.equal(evidence.runtime_verification.production_write, false);
+assert.ok(evidence.runtime_verification.scenarios.length >= 16);
 assert.equal(evidence.approval_semantics.candidate_review_status_after_confirm, "approved");
 assert.equal(evidence.approval_semantics.identity_resolution_state_after_confirm, "resolved");
 assert.equal(evidence.approval_semantics.review_queue_approved_product_id_after_confirm, null);
@@ -118,6 +132,29 @@ assert.match(executable, /revoke\s+all\s+on\s+function\s+public\.admin_confirm_p
 assert.match(executable, /grant\s+execute\s+on\s+function\s+public\.admin_preflight_product_candidate_catalog_only_approval_v1[\s\S]*to\s+service_role/i);
 assert.match(executable, /grant\s+execute\s+on\s+function\s+public\.admin_confirm_product_candidate_catalog_only_approval_v1[\s\S]*to\s+service_role/i);
 
+assert.match(fixture, /create\s+or\s+replace\s+function\s+public\.test_seed_data_taxonomy13/i);
+assert.match(fixture, /resolve_catalog_taxonomy_source_category_v1/i);
+assert.match(runtime, /positive preflight \+ confirm/i);
+assert.match(runtime, /identity_evidence_provider_count_insufficient/i);
+assert.match(runtime, /legacy_projection_fields_present/i);
+assert.match(runtime, /taxonomy_classification_snapshot_stale/i);
+assert.match(runtime, /taxonomy_classification_not_catalog_only_source_rule/i);
+assert.match(runtime, /taxonomy_source_rule_drifted/i);
+assert.match(runtime, /taxonomy_term_set_not_active/i);
+assert.match(runtime, /taxonomy_runtime_resolution_drifted/i);
+assert.match(runtime, /normalized_product_identity_collision/i);
+assert.match(runtime, /exact_external_product_identity_collision/i);
+assert.match(runtime, /candidate_identity_peer_collision/i);
+assert.match(runtime, /candidate_external_peer_collision/i);
+assert.match(runtime, /catalog_only_candidate_approval_stale_preflight/i);
+assert.match(runtime, /catalog_only_candidate_approval_request_id_conflict/i);
+assert.match(runtime, /exact retry was not idempotent/i);
+assert.match(workflow, /SUPABASE_CLI_VERSION:\s*2\.109\.1/);
+assert.match(workflow, /data-taxonomy13-catalog-only-candidate-approval\/20260915110500_data_taxonomy13_catalog_only_candidate_approval_fixture\.sql/);
+assert.match(workflow, /20260915111100_verify_data_taxonomy13_catalog_only_candidate_approval_runtime\.sql/);
+assert.match(workflow, /supabase@\$\{SUPABASE_CLI_VERSION\}[^\n]*start/);
+assert.match(workflow, /supabase@\$\{SUPABASE_CLI_VERSION\}[^\n]*db reset/);
+
 console.log(JSON.stringify({
   status: "PASS",
   issue: evidence.issue,
@@ -125,6 +162,8 @@ console.log(JSON.stringify({
   contract: evidence.schema_version,
   baselineMainSha: evidence.baseline_main_sha,
   productionObservedMainSha: evidence.production_baseline.observed_main_sha,
+  runtimeVerification: evidence.runtime_verification.required,
+  runtimeScenarioCount: evidence.runtime_verification.scenarios.length,
   productionApplication: evidence.repository_foundation.production_application,
   productWrites: evidence.repository_foundation.product_write_count,
   recommendationRuntimeCutover: evidence.production_baseline.recommendation_runtime_cutover
