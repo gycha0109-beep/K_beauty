@@ -27,13 +27,16 @@ const foundation = read(
 const hardening = read(
   "supabase/migrations/20260915094000_trust_phase1_intake_delivery_hardening_v1.sql"
 );
+const decoupling = read(
+  "supabase/migrations/20260915094500_trust_phase1_promotion_decoupling_v1.sql"
+);
 const runtime = read(
   "tests/fixtures/trust-intake-foundation/verify_trust_intake_foundation_runtime.sql"
 );
 const fixture = read(
   "tests/fixtures/trust-intake-foundation/20260915090000_trust_intake_foundation_fixture.sql"
 );
-const combined = `${foundation}\n${hardening}`;
+const combined = `${foundation}\n${hardening}\n${decoupling}`;
 
 [
   "create table if not exists public.catalog_trust_intake",
@@ -92,11 +95,15 @@ const combined = `${foundation}\n${hardening}`;
 ].forEach((value) => includes(hardening, value, "Current short-circuit/idempotency"));
 
 [
-  "v_result := public.promote_product_candidate_structural_v1",
-  "perform public.process_catalog_trust_product_v1(v_product_id)",
-  "exception when others then",
-  "Task processing is retryable and must never roll back catalog promotion"
-].forEach((value) => includes(hardening, value, "best-effort promotion processing"));
+  "return public.promote_product_candidate_structural_v1(p_candidate_id, p_actor)",
+  "Runs outside catalog promotion transaction",
+  "retryable from durable catalog_trust_intake state"
+].forEach((value) => includes(decoupling, value, "promotion/TRUST decoupling"));
+excludes(
+  decoupling,
+  "process_catalog_trust_product_v1(v_product_id)",
+  "final promotion wrapper"
+);
 
 assert(
   !/(insert\s+into|update|delete\s+from)\s+public\.(product_fact_instances|product_fact_current|product_fact_confirmations|product_evidence_records|product_fact_subjects)\b/i.test(
@@ -123,7 +130,10 @@ assert(
 
 [
   "trust_intake_migration_backfilled_existing_catalog",
+  "trust_task_migration_backfilled_existing_catalog",
   "promotion_did_not_create_exactly_one_intake",
+  "promotion_transaction_materialized_tasks",
+  "promotion_intake_not_pending_before_processor",
   "required_fact_policy_created_wrong_task_count",
   "existing_current_not_short_circuited",
   "identical_retry_not_idempotent",
