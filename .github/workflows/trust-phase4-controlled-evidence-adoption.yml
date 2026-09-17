@@ -88,6 +88,7 @@ jobs:
           cp supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-phase4-controlled-evidence-adoption/20260917194000_trust_phase4_fixture.sql "${migration_dir}/"
           cp supabase/migrations/20260917195000_trust_phase4_controlled_evidence_adoption_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260917195100_trust_phase4_controlled_evidence_adoption_fusion_hardening_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-phase4-controlled-evidence-adoption/verify_trust_phase4_runtime.sql \
             "${migration_dir}/20260917195900_verify_trust_phase4_runtime.sql"
 
