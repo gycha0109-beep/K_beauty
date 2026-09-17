@@ -17,6 +17,11 @@ const NAVIGATION = Object.freeze([
     exact: true
   },
   {
+    label: "TRUST queue",
+    href: "/admin/products/trust",
+    capability: ADMIN_CAPABILITIES.PRODUCTS_READ
+  },
+  {
     label: "Review import",
     href: "/admin/products/reviews/import",
     capability: ADMIN_CAPABILITIES.PRODUCTS_REVIEW

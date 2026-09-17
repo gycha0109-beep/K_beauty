@@ -1,0 +1,64 @@
+name: TRUST Phase 5 Admin Queue
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/admin/AdminNavigation.js"
+      - "app/admin/products/trust/**"
+      - "lib/admin/trust-queue.js"
+      - "scripts/verify-trust-phase5-admin-queue.mjs"
+      - ".github/workflows/trust-phase5-admin-queue.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/admin/AdminNavigation.js"
+      - "app/admin/products/trust/**"
+      - "lib/admin/trust-queue.js"
+      - "scripts/verify-trust-phase5-admin-queue.mjs"
+      - ".github/workflows/trust-phase5-admin-queue.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trust-phase5-admin-queue-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TRUST_PHASE5_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TRUST_PHASE5_CHECKOUT_SHA }}
+          fetch-depth: 1
+
+      - name: Verify exact checkout
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$TRUST_PHASE5_CHECKOUT_SHA"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify TRUST Phase 5 read-only Admin Queue contract
+        run: node scripts/verify-trust-phase5-admin-queue.mjs
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Build production app
+        run: npm run build
