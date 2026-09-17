@@ -109,7 +109,7 @@ jobs:
             -f tests/fixtures/trust-phase4-controlled-evidence-adoption/verify_trust_phase4_runtime.sql \
             | tee "${RUNNER_TEMP}/trust-phase4-runtime.log"
           grep -q '^TRUST_PHASE4_RUNTIME_JSON=' "${RUNNER_TEMP}/trust-phase4-runtime.log"
-          grep -q '"status":"PASS"' "${RUNNER_TEMP}/trust-phase4-runtime.log"
+          grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS"' "${RUNNER_TEMP}/trust-phase4-runtime.log"
 
       - name: Check runtime security surface
         shell: bash
