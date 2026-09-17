@@ -89,8 +89,6 @@ jobs:
           cp tests/fixtures/trust-phase4-controlled-evidence-adoption/20260917194000_trust_phase4_fixture.sql "${migration_dir}/"
           cp supabase/migrations/20260917195000_trust_phase4_controlled_evidence_adoption_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260917195100_trust_phase4_controlled_evidence_adoption_fusion_hardening_v1.sql "${migration_dir}/"
-          tail -n +2 tests/fixtures/trust-phase4-controlled-evidence-adoption/verify_trust_phase4_runtime.sql \
-            > "${migration_dir}/20260917195900_verify_trust_phase4_runtime.sql"
 
       - name: Start and verify isolated Supabase
         shell: bash
@@ -105,10 +103,13 @@ jobs:
             exit 1
           fi
           rm -f "${start_log}"
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${TRUST_RUNTIME_DIR}" \
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${TRUST_RUNTIME_DIR}"
+          DB='postgresql://postgres:postgres@127.0.0.1:57422/postgres'
+          psql "$DB" -qAt -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/trust-phase4-controlled-evidence-adoption/verify_trust_phase4_runtime.sql \
             | tee "${RUNNER_TEMP}/trust-phase4-runtime.log"
-          grep -q 'TRUST_PHASE4_RUNTIME_JSON=' "${RUNNER_TEMP}/trust-phase4-runtime.log"
-          grep -q '"status": "PASS"\|"status":"PASS"' "${RUNNER_TEMP}/trust-phase4-runtime.log"
+          grep -q '^TRUST_PHASE4_RUNTIME_JSON=' "${RUNNER_TEMP}/trust-phase4-runtime.log"
+          grep -q '"status":"PASS"' "${RUNNER_TEMP}/trust-phase4-runtime.log"
 
       - name: Check runtime security surface
         shell: bash
