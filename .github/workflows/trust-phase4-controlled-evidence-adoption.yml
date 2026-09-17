@@ -1,0 +1,138 @@
+name: TRUST Phase 4 Controlled Evidence Adoption
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/*trust_phase4_*.sql"
+      - "tests/fixtures/trust-phase4-controlled-evidence-adoption/**"
+      - "scripts/verify-trust-phase4-controlled-evidence-adoption.mjs"
+      - ".github/workflows/trust-phase4-controlled-evidence-adoption.yml"
+  push:
+    branches: [main, "feat/trust-phase4-controlled-evidence-adoption-fresh"]
+    paths:
+      - "supabase/migrations/*trust_phase4_*.sql"
+      - "tests/fixtures/trust-phase4-controlled-evidence-adoption/**"
+      - "scripts/verify-trust-phase4-controlled-evidence-adoption.mjs"
+      - ".github/workflows/trust-phase4-controlled-evidence-adoption.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_CLI_VERSION: 2.117.0
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify TRUST Phase 4 static contract
+        run: node scripts/verify-trust-phase4-controlled-evidence-adoption.mjs
+
+      - name: Verify Product Fact controlled-write authority
+        run: node scripts/verify-product-fact-controlled-write-v1.mjs
+
+      - name: Verify Product Fact Subject authority
+        run: node scripts/verify-product-fact-subject-registration-v1.mjs
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Materialize isolated Product Fact runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_dir="${GITHUB_WORKSPACE}/tmp/trust-phase4-runtime"
+          echo "TRUST_RUNTIME_DIR=${runtime_dir}" >>"${GITHUB_ENV}"
+          node scripts/materialize-product-fact-replay-baseline-v1.mjs --output="${runtime_dir}"
+          sed -i 's/major_version = 15/major_version = 17/' "${runtime_dir}/supabase/config.toml"
+          migration_dir="${runtime_dir}/supabase/migrations"
+          cp supabase/migrations/20260809115932_product_fact_storage_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-phase4-controlled-evidence-adoption/20260917194000_trust_phase4_fixture.sql "${migration_dir}/"
+          cp supabase/migrations/20260917195000_trust_phase4_controlled_evidence_adoption_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260917195100_trust_phase4_controlled_evidence_adoption_fusion_hardening_v1.sql "${migration_dir}/"
+
+      - name: Start and verify isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_log="${RUNNER_TEMP}/trust-phase4-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "${TRUST_RUNTIME_DIR}" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${TRUST_RUNTIME_DIR}"
+          DB='postgresql://postgres:postgres@127.0.0.1:57422/postgres'
+          psql "$DB" -qAt -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/trust-phase4-controlled-evidence-adoption/verify_trust_phase4_runtime.sql \
+            | tee "${RUNNER_TEMP}/trust-phase4-runtime.log"
+          grep -q '^TRUST_PHASE4_RUNTIME_JSON=' "${RUNNER_TEMP}/trust-phase4-runtime.log"
+          grep -Eq '"status"[[:space:]]*:[[:space:]]*"PASS"' "${RUNNER_TEMP}/trust-phase4-runtime.log"
+
+      - name: Check runtime security surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB='postgresql://postgres:postgres@127.0.0.1:57422/postgres'
+          test "$(psql "$DB" -Atqc "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('admin_preflight_trust_evidence_adoption_v1','admin_adopt_trust_evidence_candidate_v1') and p.prosecdef")" = "2"
+          test "$(psql "$DB" -Atqc "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('admin_preflight_trust_evidence_adoption_v1','admin_adopt_trust_evidence_candidate_v1') and p.proconfig @> ARRAY['search_path=public, extensions, pg_temp']::text[]")" = "2"
+          test "$(psql "$DB" -Atqc "select count(*) from public.product_fact_current")" = "1"
+
+      - name: Check exact-head diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          git diff --check "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}...${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" || git diff --check HEAD^
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -n "${TRUST_RUNTIME_DIR:-}" && -d "${TRUST_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop --workdir "${TRUST_RUNTIME_DIR}" --no-backup
+          fi
+          rm -rf -- "${TRUST_RUNTIME_DIR:-${GITHUB_WORKSPACE}/tmp/trust-phase4-runtime}"
