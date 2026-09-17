@@ -78,7 +78,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          runtime_dir="${RUNNER_TEMP}/trust-phase4-runtime"
+          runtime_dir="${GITHUB_WORKSPACE}/tmp/trust-phase4-runtime"
           echo "TRUST_RUNTIME_DIR=${runtime_dir}" >>"${GITHUB_ENV}"
           node scripts/materialize-product-fact-replay-baseline-v1.mjs --output="${runtime_dir}"
           sed -i 's/major_version = 15/major_version = 17/' "${runtime_dir}/supabase/config.toml"
@@ -134,4 +134,4 @@ jobs:
           if [[ -n "${TRUST_RUNTIME_DIR:-}" && -d "${TRUST_RUNTIME_DIR}/supabase" ]]; then
             npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop --workdir "${TRUST_RUNTIME_DIR}" --no-backup
           fi
-          rm -rf -- "${TRUST_RUNTIME_DIR:-${RUNNER_TEMP}/trust-phase4-runtime}"
+          rm -rf -- "${TRUST_RUNTIME_DIR:-${GITHUB_WORKSPACE}/tmp/trust-phase4-runtime}"
