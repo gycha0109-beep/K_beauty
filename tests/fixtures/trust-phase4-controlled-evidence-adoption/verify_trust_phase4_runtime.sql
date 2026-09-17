@@ -1,4 +1,3 @@
-\set ON_ERROR_STOP on
 
 create temporary table trust_p4_results (
   test_name text primary key,
