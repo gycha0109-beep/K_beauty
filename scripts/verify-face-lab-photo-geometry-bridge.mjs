@@ -16,6 +16,7 @@ function readJson(path) {
 const base = 'evidence/facelab/photo-geometry/v0';
 const manifest = readJson(base + '/mediapipe-face-geometry.manifest.json');
 const fixture = readJson(base + '/mediapipe-canonical-landmarks.fixture.json');
+const upstreamGeometryFixture = readJson(base + '/mediapipe-upstream-geometry-output.fixture.json');
 const diagnostic = readJson(base + '/mediapipe-vs-gnm-canonical-diagnostic.json');
 const gnmEvidence = readJson('evidence/facelab/face-space-3d/v0/gnm-v3-poc-evidence-summary.json');
 
@@ -126,6 +127,31 @@ assert.equal(
   'manifest must keep identity embeddings disabled'
 );
 
+const upstreamValidation = validatePhotoGeometryPacket(upstreamGeometryFixture, manifest);
+assert.equal(upstreamValidation.ok, true, upstreamValidation.errors.join(','));
+
+const upstreamMeasurement = measurePhotoGeometry(upstreamGeometryFixture, manifest);
+const upstreamById = new Map(upstreamMeasurement.dimensions.map((item) => [item.id, item.value]));
+const upstreamExpected = {
+  lower_face_width_ratio: 0.7607826208296034,
+  chin_height_ratio: 0.5287697340619997,
+  eye_spacing_ratio: 0.2227319468941475,
+  eye_width_ratio: 0.1857692571116944,
+  eye_tilt: 0.10998542128979372,
+  nose_width_ratio: 0.27223537915718676
+};
+for (const [id, value] of Object.entries(upstreamExpected)) {
+  assert.ok(
+    Math.abs(upstreamById.get(id) - value) < 1e-12,
+    id + ' upstream FaceGeometry fixture drift'
+  );
+}
+assert.notEqual(
+  upstreamMeasurement.measurementDigest,
+  measurement.measurementDigest,
+  'canonical model and upstream runtime geometry fixtures must remain distinct evidence'
+);
+
 assert.equal(diagnostic.status, 'semantic_alignment_hold');
 assert.equal(diagnostic.productionAuthority, false);
 assert.deepEqual(
@@ -152,6 +178,7 @@ console.log(JSON.stringify({
   providerVersion: manifest.providerVersion,
   coordinateSpace: manifest.coordinateSpace,
   dimensions: measurement.dimensions,
+  upstreamRuntimeFixtureDimensions: upstreamMeasurement.dimensions,
   invariants: {
     exactSingleFace: true,
     poseNormalizedMetric3DRequired: true,
