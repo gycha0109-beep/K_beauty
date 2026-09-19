@@ -5,6 +5,7 @@
 > 현재 구현 상태는 이 문서에 기록하지 않는다. `FACE_LAB_CURRENT_STATE.md`를 본다.
 > 평가 방법론은 이 문서와 분리한다. `FACE_LAB_EVALUATION_STRATEGY.md`를 본다.
 > Face Space와 Style Compatibility의 상세 목표 구조는 `face-lab-face-space-style-compatibility-architecture-v1.md`를 본다.
+> Controlled 3D backend 경계와 round-trip 기준은 `face-lab-face-space-3d-adapter-v0.md`를 본다.
 
 ## 1. 제품 정의
 
