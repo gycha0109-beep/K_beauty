@@ -4,6 +4,7 @@
 > 범위: synthetic evaluation, Human annotation, consensus, calibration, promotion, holdout, evidence interpretation
 > 제품 아키텍처는 `FACE_LAB_MASTER_SPEC.md`가 담당한다.
 > 현재 구현 상태는 `FACE_LAB_CURRENT_STATE.md`가 담당한다.
+> Face Space / Style Compatibility 목표 구조는 `face-lab-face-space-style-compatibility-architecture-v1.md`가 담당한다.
 
 ## 1. 핵심 원칙
 
@@ -21,6 +22,17 @@ Generation intent
 가장 중요한 불변식:
 
 > 프롬프트가 어떤 특징이나 대표 상을 만들라고 요청했다는 이유만으로 생성 결과를 정답 데이터로 취급하지 않는다.
+
+또한 다음 평가 질문을 하나의 "정확도"로 합치지 않는다.
+
+```text
+Archetype validity
+≠ Face Space validity
+≠ Style association
+≠ Style compatibility
+```
+
+웹에서 특정 얼굴과 스타일이 자주 같이 등장하는 것, AI가 그 스타일을 추천하는 것, controlled 3D pair에서 여러 judge가 한쪽을 선호하는 것은 서로 다른 evidence class다.
 
 ## 2. 평가 근거의 종류
 
@@ -70,6 +82,41 @@ Synthetic candidate는 현재 promotion contract 아래에서 특정 평가 목�
 - locked real holdout
 
 실제 사용자 얼굴에서 production Archetype 성능을 판단할 때는 이 근거가 더 높은 authority를 갖는다.
+
+### 2.4 Web-derived association evidence
+
+검색·웹 표본에서 다음을 탐색할 수 있다.
+
+- 특정 cultural Archetype label 아래 어떤 Face Representation이 반복되는가
+- 특정 얼굴 구조와 어떤 presentation/style 속성이 함께 나타나는가
+- source/query/surface에 따라 분포가 얼마나 달라지는가
+
+이 근거는 association과 sampled web distribution을 설명한다.
+
+단독으로 다음을 확정할 수 없다.
+
+- Archetype ground truth
+- Style causality
+- "가장 잘 어울리는" 스타일
+- 실제 사용자 preference
+- population prevalence
+
+### 2.5 Automated compatibility evidence
+
+Human 참여를 최소화하는 compatibility 연구에서는 다음을 서로 독립적으로 추적할 수 있다.
+
+- parametric/geometric relation
+- controlled synthetic counterfactual pair
+- multi-VLM blind pairwise preference
+- A/B order reversal consistency
+- nuisance variation stability
+- local face/style perturbation consistency
+- unseen Face Space / Style Space holdout
+
+이 근거는 자동화된 compatibility candidate를 만들 수 있지만, Human audit 없이 실제 사용자 집단의 선호 truth로 과장하지 않는다.
+
+AI hypothesis generator와 AI judge는 가능한 한 분리하고, judge는 target hypothesis, Archetype label, 검색 provenance, current recommendation과 다른 judge의 답을 보지 않는다.
+
 
 ## 3. Synthetic campaign 전체 흐름
 
@@ -386,3 +433,113 @@ Synthetic stress 작업과 Real-data 준비는 병행할 수 있다.
 - `bejewely-face-analyze-pipeline-07-30.txt`
 
 특히 07-30에서 정리한 generation / judgment / promotion 분리 구조는 현재도 핵심 원칙이다. 실제 세부 실행 의미는 current repository의 최신 synthetic contract와 코드가 담당한다.
+
+
+## 19. Face Space Evaluation
+
+Face Space 평가는 현재 7개 Archetype 분류 정확도와 분리한다.
+
+평가 질문:
+
+- 같은 구조적 얼굴이 허용 가능한 capture variation에서 가까운 representation을 유지하는가
+- presentation 변화가 구조 축을 과도하게 움직이지 않는가
+- missingness와 uncertainty가 representation에 보존되는가
+- 현재 7개 label 밖의 얼굴도 표현 가능한가
+- 특정 label search corpus에만 맞춘 축이 일반 얼굴 corpus에서 붕괴하지 않는가
+- version 변경 시 drift를 추적할 수 있는가
+
+Face Space가 유효하다는 것은 7개 Archetype이 모두 잘 분리된다는 뜻이 아니다.
+
+반대로 일부 Archetype 경계가 불안정하더라도 구조 representation 자체는 유효할 수 있다.
+
+## 20. Style Compatibility Evaluation
+
+Style compatibility는 Archetype lookup 정확도로 평가하지 않는다.
+
+목표 관계:
+
+```text
+Face Representation
+× Style Representation
+→ Compatibility Evidence
+```
+
+초기 평가 단위는 절대 aesthetic score 하나보다 controlled pairwise comparison을 우선할 수 있다.
+
+예:
+
+```text
+same face / same camera / same lighting
+A: forehead exposure 0.30
+B: forehead exposure 0.60
+```
+
+또는:
+
+```text
+same style
+A: face length 0.40
+B: face length 0.50
+```
+
+평가 축 예:
+
+- proportional harmony
+- silhouette balance
+- structural coherence
+- feature emphasis
+- over-emphasis / under-emphasis
+- requested direction fit
+
+정확한 aggregation algorithm과 activation threshold는 별도 contract가 담당한다.
+
+## 21. Automated Judge Self-Validation
+
+자동 judge는 자기 답을 그대로 truth로 승격하지 않는다.
+
+최소 진단 후보:
+
+1. 서로 다른 model family의 blind agreement
+2. A/B 순서 반전 시 결론 보존
+3. crop / lighting / camera perturbation stability
+4. 얼굴 변수의 작은 변화에 대한 국소적 연속성
+5. 스타일 변수의 작은 변화에 대한 국소적 연속성
+6. hypothesis generator와 judge의 역할 분리
+7. unseen Face Space holdout
+8. unseen Style combination holdout
+9. disagreement가 큰 경우 forced winner 대신 HOLD
+10. 추가 실험이 정보량을 늘리는지 확인
+
+다음 구조는 금지한다.
+
+```text
+Model A가 추천
+→ 동일 context를 본 Model A가 재채점
+→ PASS
+```
+
+권장 구조:
+
+```text
+hypothesis
+→ controlled generation
+→ blind independent judging
+→ reversal / perturbation / holdout
+→ bounded evidence
+```
+
+## 22. Human-Minimized Validation Policy
+
+목표는 Human을 대량 annotation 생산자로 사용하는 것이 아니다.
+
+자동화 연구가 충분히 안정화되면 Human은 다음과 같은 좁은 역할로 제한할 수 있다.
+
+- high-uncertainty boundary audit
+- high-impact recommendation audit
+- cultural wording / acceptability audit
+- automated judge bias audit
+- final benchmark sample
+
+Human review가 없는 연구 단계의 결과는 "다수 실제 사용자가 가장 선호하는 스타일"로 표현하지 않는다.
+
+Face Lab은 자동 근거가 수렴하지 않을 때 Human을 강제로 대체하는 대신 HOLD를 선택할 수 있어야 한다.
