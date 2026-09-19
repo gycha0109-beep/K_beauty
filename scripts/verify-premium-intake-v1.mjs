@@ -23,6 +23,10 @@ const selector = await readFile(
   new URL("../components/current-products/CurrentProductsSelector.jsx", import.meta.url),
   "utf8"
 );
+const currentProducts = await readFile(
+  new URL("../lib/current-products.js", import.meta.url),
+  "utf8"
+);
 
 assert.equal(PREMIUM_INTAKE_VERSION, "premium-intake-v1");
 
@@ -101,7 +105,18 @@ assert.match(
 );
 
 assert.match(selector, /existingUseTime/);
+assert.match(selector, /existingUseFrequency/);
 assert.match(selector, /existingSatisfaction/);
 assert.match(selector, /status === "not_in_db" && existingUseTime/);
+assert.match(selector, /status === "not_in_db" && existingUseFrequency/);
+
+assert.match(page, /useFrequencyLabel/);
+assert.match(page, /useFrequency/);
+assert.match(page, /few_times_week/);
+assert.match(currentProducts, /CURRENT_PRODUCT_USE_FREQUENCIES/);
+assert.match(
+  currentProducts,
+  /CURRENT_PRODUCT_USE_FREQUENCIES\.includes\(item\.useFrequency\)/
+);
 
 console.log("Premium intake v1: PASS");
