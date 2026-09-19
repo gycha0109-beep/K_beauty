@@ -1,6 +1,6 @@
-# Face Lab Reverse Archetype R-A2 Pilot v1
+# Face Lab Reverse Archetype / Face Space Seed R-A2 Pilot v1
 
-> Track: FACE LAB / Reverse Archetype Empirical Validation  
+> Track: FACE LAB / Reverse Archetype Empirical Seed / Face Space  
 > Status: Pilot foundation / metadata collection ready  
 > Baseline: main@cc029c0f1c6d36304049570641193f94335ed7a3  
 > Production impact: none
@@ -8,6 +8,18 @@
 ## 1. Purpose
 
 This slice establishes a bounded first empirical pilot without using the current Archetype scorer as evidence.
+
+The seven current Archetypes are search seeds and cultural-label hypotheses. They are not the internal shape of Face Lab and are not treated as natural ground-truth classes.
+
+The research target is:
+
+```text
+cultural label search context
+→ blind structural observation
+→ sealed FaceLabObservationAnalysis
+→ later Normalized Face Representation
+→ Face Space distribution analysis
+```
 
 The execution boundary is:
 
@@ -24,6 +36,12 @@ It must never become:
     -> current Archetype scorer
     -> score treated as evidence for the same label
 
+It also must never become:
+
+    web label
+    -> one average face
+    -> that face declared the archetype truth
+
 ## 2. Frozen pilot matrix
 
 Retrieval surfaces:
@@ -36,7 +54,7 @@ Collection mode is manual metadata capture only.
 
 The repository does not automate scraping of those surfaces.
 
-Archetype hypotheses:
+Archetype search-seed hypotheses:
 
 - wolf / 늑대상
 - cat / 고양이상
@@ -99,6 +117,8 @@ The query label means only:
 > this result surfaced under this sampled web context.
 
 It is not Human ground truth.
+
+It also does not mean that all included faces must form one compact cluster. Within-label variation, multimodality, overlap and boundary cases are expected research outputs.
 
 ## 4. Blind observation boundary
 
@@ -193,6 +213,8 @@ Extraction identity must include:
 
 Search provenance is rejoined only after the observation is sealed.
 
+The current sealed record stores the normalized `FaceLabObservationAnalysis`, not a final Face Space vector. Any later Face Representation transform must be separately versioned and reproducible from sealed evidence or explicitly record why it cannot be reproduced.
+
 ## 8. Duplicate boundary
 
 The first implementation supports exact byte/content digest grouping only.
@@ -220,6 +242,10 @@ It does not modify:
 - Supabase Production schema/data
 - Production Archetype activation
 - current rubric weights or thresholds
+- Production Face Representation
+- Production Face Space
+- Production Style Compatibility
+- Production style recommendation
 
 ## 10. Verification
 
@@ -260,6 +286,41 @@ Only candidates whose image handling is separately approved may receive an opaqu
 
 The web context stays sealed until observation completion.
 
+### R-A3 — Face Representation derivation
+
+After a sufficient sealed observation sample exists, define and freeze a versioned transform from supported structural observation axes into a reusable Normalized Face Representation.
+
+The transform must not consume the candidate's Archetype query label.
+
+### R-A4 — Face Space distribution analysis
+
+Rejoin the frozen search context only after the structural representation is sealed, then compare sampled distributions by label/query/surface.
+
+Primary outputs are not only centroids. Preserve:
+
+- medians / quantiles / spread
+- within-label variation
+- cross-label overlap
+- boundary cases
+- multimodality
+- missingness / uncertainty
+- retrieval-surface sensitivity
+- duplicate robustness
+
+### R-A5 — Parametric experiment handoff
+
+Only after stable structural axes are identified may selected Face Space points be translated into a controlled parametric 3D experiment.
+
+Candidate points can include:
+
+- label-region center candidates
+- high-density variants
+- cross-label boundary variants
+- overlap variants
+- out-of-distribution controls
+
+A rendered 3D head is an experimental representation of a Face Space coordinate, not the ground-truth face of an Archetype.
+
 ## 12. Completion boundary for this slice
 
 This slice is complete when:
@@ -270,3 +331,79 @@ This slice is complete when:
 - metadata collection can begin without changing code
 
 This slice does not claim that the current seven Archetypes are valid or invalid.
+
+
+## 13. Face Space seed interpretation
+
+The R-A2 corpus is the first labeled-context seed layer for a broader Face Space.
+
+It does not remove the need for a future archetype-independent general face corpus.
+
+Why:
+
+```text
+only archetype searches
+→ possible seven-label sampling bias
+→ Face Space may inherit taxonomy assumptions
+```
+
+Therefore later research should compare the seed corpus with a separately governed unlabeled/general face corpus.
+
+## 14. Presentation / style observation boundary
+
+A retrieved image can contain useful presentation evidence such as hair, makeup, eyewear, expression and capture conditions.
+
+Those attributes may later be observed in a separate versioned Style Observation contract.
+
+However:
+
+```text
+style observed in web result
+≠ style compatible with that face
+```
+
+Web co-occurrence can generate a style hypothesis only.
+
+It cannot directly produce a Production recommendation rule.
+
+## 15. Style compatibility handoff
+
+The long-term target is defined in:
+
+`face-lab-face-space-style-compatibility-architecture-v1.md`
+
+```text
+Face Representation
+× Style Representation
+× Compatibility Evidence
+→ bounded recommendation
+```
+
+Potential compatibility research after Face Space stabilization includes:
+
+- controlled parametric 3D face generation
+- controlled hair / eyewear / makeup parameter changes
+- counterfactual A/B renders
+- multi-model blind VLM judging
+- A/B order reversal checks
+- lighting / camera / crop stability checks
+- local face/style perturbation
+- holdout generalization
+- uncertainty-driven active experimentation
+
+These are future research tracks and are not implemented by this R-A2 foundation.
+
+## 16. No compatibility claim
+
+This pilot may establish sampled web distributions and structural hypotheses.
+
+It does not establish:
+
+- that one Archetype has one best hairstyle
+- that a frequently observed style is flattering
+- that a 3D prototype is the true average person of a label
+- that an AI judge preference equals Korean consumer preference
+- that current seven-label taxonomy is complete
+- that current seven-label taxonomy must survive unchanged
+
+Any of those claims require their own evidence and promotion gate.
