@@ -141,6 +141,40 @@ assertNotContains(".github/workflows/mobile-ci.yml", [
   "npm run mobile:prebuild:android",
   "npm run verify:mobile-native",
 ]);
+assertContains(".github/workflows/mobile-ci.yml", [
+  "node scripts/verify-mobile-camera-foundation.mjs",
+  "node scripts/verify-mobile-face-guidance.mjs",
+]);
+assertContains(".github/workflows/mobile-native-shell.yml", [
+  "npm run mobile:prebuild:android",
+  "npm run verify:mobile-native",
+]);
+for (const path of [
+  "scripts/verify-mobile-camera-foundation.mjs",
+  "scripts/verify-mobile-face-guidance.mjs",
+]) {
+  assertNotContains(path, [
+    "mobile-camera.yml",
+    "mobile-face-guidance.yml",
+  ]);
+}
+
+for (const path of [
+  ".github/workflows/mobile-20a-store-capture.yml",
+  ".github/workflows/mobile-20b-store-capture.yml",
+]) {
+  assertContains(path, [
+    "android-actions/setup-android@v4",
+    "packages: ''",
+  ]);
+}
+
+assertContains(".github/workflows/admin-product-current-main-integration.yml", [
+  "node-version: 22",
+]);
+assertNotContains(".github/workflows/admin-product-current-main-integration.yml", [
+  "node-version: 20",
+]);
 
 for (const path of [
   ".github/workflows/mobile-14-auth-app-links.yml",
@@ -249,5 +283,8 @@ console.log(JSON.stringify({
   superseded_pr_run_cancellation: true,
   routine_pr_heavy_release_gates: 0,
   native_shell_ui_surface_triggers: 0,
+  mobile_verifiers_follow_consolidated_topology: true,
+  android_store_capture_sdk_setup_current: true,
+  admin_integration_node22: true,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));
