@@ -27,7 +27,19 @@
     "expressionDim": 383,
     "numVertices": 17821,
     "numJoints": 4,
-    "landmarks": 68
+    "landmarks": 68,
+    "templateMetrics": {
+      "chin_height_ratio": 0.4240105122479956,
+      "eye_spacing_ratio": 0.24632135416567089,
+      "eye_tilt": -0.031156991874954132,
+      "eye_width_ratio": 0.17443319505408464,
+      "lower_face_width_ratio": 0.7606071378939454,
+      "nose_width_ratio": 0.22543766235214882
+    },
+    "templateMetricsSource": {
+      "workflowRunId": 35434015437,
+      "note": "Captured from the exact pinned GNM v3 zero-identity template probe."
+    }
   },
   "selftest": {
     "syntheticOnly": true,
