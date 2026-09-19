@@ -74,6 +74,16 @@ GNM semantic identity sampler의 demographic label을 Face Lab Face Space 생성
 
 Executable 승격 전 남은 핵심은 backend-independent Face Space measurement objective와 GNM fitting runner 구현이다.
 
+GNM v3는 공식적으로 barycentric `HEAD_SPARSE_68` landmark set을 제공한다. 2026-09-19 현재 official MediaPipe 468 ↔ GNM correspondence는 제공되지 않는 것으로 확인했다. 따라서 community mapping을 authority로 가져오지 않는다.
+
+초기 executable PoC는 다음 중 하나를 사용한다.
+
+1. GNM native sparse-68 / mesh-native structural measurement
+2. 별도로 검증한 backend-independent measurement anchors
+3. 향후 official correspondence가 생길 경우 versioned mapping
+
+MediaPipe 468 결과를 임의 index mapping으로 GNM에 직접 대응하지 않는다.
+
 현재 우선순위:
 
 ```text
