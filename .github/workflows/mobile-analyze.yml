@@ -16,9 +16,6 @@ on:
       - "scripts/verify-mobile-face-guidance.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-analyze.yml"
-      - ".github/workflows/mobile-camera.yml"
-      - ".github/workflows/mobile-face-guidance.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   push:
     branches: [main]
     paths:
@@ -34,9 +31,6 @@ on:
       - "scripts/verify-mobile-face-guidance.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-analyze.yml"
-      - ".github/workflows/mobile-camera.yml"
-      - ".github/workflows/mobile-face-guidance.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   workflow_dispatch:
 
 permissions:
