@@ -292,6 +292,7 @@ function Detail({ item, canReview }) {
 
       <TrustSubjectRegistrationAction
         taskId={item.task.id}
+        intakeMarket={item.intake?.market ?? null}
         eligible={
           item.task.state === "REVIEW_REQUIRED" &&
           item.task.blockerCode === "SUBJECT_CREATION_REQUIRED" &&
