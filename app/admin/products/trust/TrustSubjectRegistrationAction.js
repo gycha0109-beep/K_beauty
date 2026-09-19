@@ -20,6 +20,8 @@ const ERROR_MESSAGES = Object.freeze({
     "공식 출처를 포함한 identity evidence가 필요합니다.",
   trust_subject_registration_semantic_key_conflict:
     "동일 semantic key에 다른 Subject identity가 존재합니다.",
+  trust_subject_registration_competing_subject_detected:
+    "동일 product/market에 다른 current Subject가 존재합니다. Identity 상태를 다시 검토해 주세요.",
   trust_subject_registration_forbidden:
     "Subject 등록 권한이 없습니다.",
   trust_subject_registration_service_unavailable:
