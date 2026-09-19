@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import {
   buildReverseArchetypeCollectionPlan,
-  buildReverseArchetypeCollectionCoverage
+  buildReverseArchetypeCollectionCoverage,
+  validateReverseArchetypeCollectionLedger
 } from '../lib/face-lab-reverse-archetype-research.js';
 
 function readJson(path) {
@@ -34,10 +35,35 @@ if (!argument) {
 }
 
 const input = readJson(argument);
+
+if (input?.schemaVersion === 'face-lab-reverse-archetype-collection-ledger-v1') {
+  const validation = validateReverseArchetypeCollectionLedger(input, {
+    sourceManifest,
+    queryManifest
+  });
+
+  console.log(JSON.stringify({
+    valid: validation.ok,
+    errors: validation.errors,
+    ledger: {
+      runFamily: input.runFamily,
+      runId: input.runId,
+      status: input.status,
+      createdAt: input.createdAt
+    },
+    coverage: validation.coverage
+  }, null, 2));
+
+  if (!validation.ok) process.exitCode = 1;
+  process.exit();
+}
+
 const batches = Array.isArray(input) ? input : input?.batches;
 
 if (!Array.isArray(batches)) {
-  console.error('collection input must be an array or an object with a batches array');
+  console.error(
+    'collection input must be a collection ledger, an array, or an object with a batches array'
+  );
   process.exit(1);
 }
 
