@@ -5448,6 +5448,10 @@ function SkinMatchStepReport({
             currentProducts={report?.currentProducts}
             locale={locale}
           />
+          <PremiumIntakeSummaryCard
+            intake={report?.premiumIntake}
+            locale={locale}
+          />
         </div>
       )
     },
@@ -6651,6 +6655,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
   const [isReady, setIsReady] = useState(false);
   const [isReportOpened, setIsReportOpened] = useState(false);
   const [currentProducts, setCurrentProducts] = useState([]);
+  const [premiumIntake, setPremiumIntake] = useState(null);
   const [premiumEntrySubmitted, setPremiumEntrySubmitted] = useState(Boolean(savedReportId));
   const [hasPreviousReportOpen, setHasPreviousReportOpen] = useState(() => {
     if (typeof window === "undefined") {
@@ -6757,7 +6762,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
             topPick: parsedResult?.topPick || null,
-            currentProducts
+            currentProducts,
+            premiumIntake: premiumIntake || undefined
           })
         });
         const data = await response.json().catch(() => null);
@@ -6838,7 +6844,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
     }
 
     void loadFullReport();
-  }, [copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, savedReportId]);
+  }, [copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, premiumIntake, savedReportId]);
 
   const openFullReportContent = () => {
     if (typeof window !== "undefined") {
@@ -6909,12 +6915,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
         locale={locale}
         currentProducts={currentProducts}
         onCurrentProductsChange={setCurrentProducts}
-        onContinue={() => {
-          setIsReady(false);
-          setPremiumEntrySubmitted(true);
-        }}
-        onSkip={() => {
-          setCurrentProducts([]);
+        onContinue={(intake) => {
+          setPremiumIntake(intake);
           setIsReady(false);
           setPremiumEntrySubmitted(true);
         }}
