@@ -133,13 +133,19 @@ const PREMIUM_ENTRY_COPY = {
       }
     ],
     useTimeLabel: "사용 시간대",
+    useFrequencyLabel: "사용 빈도",
     satisfactionLabel: "최근 사용감",
     noUsageProducts: "사용 중인 제품이 없어 이 단계는 자동으로 건너뛸 수 있어요.",
     useTime: {
       morning: "아침",
       evening: "저녁",
-      both: "아침+저녁",
-      occasional: "가끔"
+      both: "아침+저녁"
+    },
+    useFrequency: {
+      daily: "매일",
+      few_times_week: "주 2~4회",
+      weekly_or_less: "주 1회 이하",
+      as_needed: "필요할 때만"
     },
     satisfaction: {
       good: "잘 맞음",
@@ -196,13 +202,19 @@ const PREMIUM_ENTRY_COPY = {
       }
     ],
     useTimeLabel: "When you use it",
+    useFrequencyLabel: "How often",
     satisfactionLabel: "How it feels",
     noUsageProducts: "There are no products currently in use, so this step can be skipped.",
     useTime: {
       morning: "Morning",
       evening: "Evening",
-      both: "AM + PM",
-      occasional: "Occasionally"
+      both: "AM + PM"
+    },
+    useFrequency: {
+      daily: "Daily",
+      few_times_week: "2–4 times / week",
+      weekly_or_less: "Weekly or less",
+      as_needed: "Only as needed"
     },
     satisfaction: {
       good: "Works well",
@@ -6332,7 +6344,7 @@ function PremiumEntryStep({ locale = "ko", currentProducts, onCurrentProductsCha
   );
   const usageReady =
     !usageProducts.length ||
-    usageProducts.every((item) => Boolean(item?.useTime));
+    usageProducts.every((item) => Boolean(item?.useTime) && Boolean(item?.useFrequency));
   const recentReady =
     Boolean(answers.recentlyChangedProduct) &&
     Boolean(answers.productReaction);
@@ -6508,6 +6520,18 @@ function PremiumEntryStep({ locale = "ko", currentProducts, onCurrentProductsCha
                         </PremiumEntryChoice>
                       ))}
                     </div>
+                    <p className="mt-3 text-[11px] font-semibold text-[#8a5260] dark:text-[#d9a7b5]">{copy.useFrequencyLabel}</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {Object.entries(copy.useFrequency).map(([value, labelText]) => (
+                        <PremiumEntryChoice
+                          key={value}
+                          active={item.useFrequency === value}
+                          onClick={() => updateProductMeta(index, "useFrequency", value)}
+                        >
+                          {labelText}
+                        </PremiumEntryChoice>
+                      ))}
+                    </div>
                     <p className="mt-3 text-[11px] font-semibold text-[#8a5260] dark:text-[#d9a7b5]">{copy.satisfactionLabel}</p>
                     <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                       {Object.entries(copy.satisfaction).map(([value, labelText]) => (
@@ -6566,7 +6590,7 @@ function PremiumEntryStep({ locale = "ko", currentProducts, onCurrentProductsCha
 
           {step.key === "usage" && !usageReady ? (
             <p className="mt-3 text-xs font-semibold text-amber-700 dark:text-amber-200">
-              {locale === "en" ? "Choose a usage time for each product before continuing." : "사용 중인 제품마다 사용 시간대를 선택해 주세요."}
+              {locale === "en" ? "Choose a usage time and frequency for each product before continuing." : "사용 중인 제품마다 사용 시간대와 빈도를 선택해 주세요."}
             </p>
           ) : null}
           {step.key === "recentContext" && !recentReady ? (
