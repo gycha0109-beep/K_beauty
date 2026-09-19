@@ -20,12 +20,22 @@ const fixture = readJson(base + '/mediapipe-canonical-landmarks.fixture.json');
 const upstreamGeometryFixture = readJson(base + '/mediapipe-upstream-geometry-output.fixture.json');
 const diagnostic = readJson(base + '/mediapipe-vs-gnm-canonical-diagnostic.json');
 const gnmEvidence = readJson('evidence/facelab/face-space-3d/v0/gnm-v3-poc-evidence-summary.json');
+const semantics = readJson('evidence/facelab/structural-measurement/v0/semantic-contract.json');
 
 assert.equal(manifest.schemaVersion, PHOTO_GEOMETRY_MANIFEST_SCHEMA_VERSION);
 assert.equal(fixture.schemaVersion, PHOTO_GEOMETRY_PACKET_SCHEMA_VERSION);
 
 const manifestValidation = validatePhotoGeometryManifest(manifest);
 assert.equal(manifestValidation.ok, true, manifestValidation.errors.join(','));
+
+assert.equal(semantics.schemaVersion, 'face-space-structural-measurement-semantics-v0');
+assert.equal(semantics.productionAuthority, false);
+assert.equal(manifest.semanticContractVersion, semantics.schemaVersion);
+assert.equal(semantics.dimensions.length, 6);
+assert.deepEqual(
+  semantics.dimensions.filter((item) => item.providerAnchorEquivalence === 'hold').map((item) => item.id),
+  ['chin_height_ratio', 'nose_width_ratio']
+);
 
 const fixtureValidation = validatePhotoGeometryPacket(fixture, manifest);
 assert.equal(fixtureValidation.ok, true, fixtureValidation.errors.join(','));
