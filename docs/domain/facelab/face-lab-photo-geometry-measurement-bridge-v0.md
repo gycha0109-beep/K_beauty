@@ -147,6 +147,8 @@ scripts/verify-face-lab-photo-geometry-bridge.mjs
 
 The canonical landmark fixture contains only selected public model vertices. It is not a person photo or evaluation subject.
 
+Runtime handoff helper `buildPhotoGeometryPacketFromMetricLandmarks` receives a 468-point pose-normalized metric geometry array and immediately projects it to only the required structural anchors. The downstream packet therefore does not need to retain the full face mesh.
+
 ## 7. Fail-closed rules
 
 The bridge rejects:
@@ -205,7 +207,30 @@ nose_width_ratio        0.183402
 
 These numbers validate deterministic measurement behavior only. They are not population means, ideal-face values, Archetype centers, or recommendation thresholds.
 
-## 9.1 Cross-backend canonical diagnostic
+## 9.1 Upstream FaceGeometry output fixture
+
+Canonical model만으로 verifier를 통과시키지 않는다.
+
+MediaPipe 자체의 `FaceGeometryFromLandmarksGraphTest`가 사용하는 expected output에서 필요한 XYZ vertex만 추출한 별도 fixture를 유지한다.
+
+```text
+source input:
+mediapipe/tasks/testdata/vision/face_blendshapes_in_landmarks.prototxt
+
+expected metric geometry:
+mediapipe/tasks/testdata/vision/face_geometry_expected_out.pbtxt
+
+upstream test:
+mediapipe/tasks/cc/vision/face_geometry/face_geometry_from_landmarks_graph_test.cc
+```
+
+Upstream test environment는 820×1024 image size, vertical FOV 63°, near plane 1 cm, far plane 10000 cm를 사용한다.
+
+Face Lab fixture는 image bytes나 전체 mesh를 복사하지 않고 현재 measurement에 필요한 12개 XYZ vertex만 보존한다.
+
+이 fixture는 v0 bridge가 **MediaPipe canonical template뿐 아니라 upstream geometry pipeline의 실제 expected metric output 형식도 소비할 수 있음**을 검증한다. 이것 역시 user-photo runtime validation은 아니다.
+
+## 9.2 Cross-backend canonical diagnostic
 
 MediaPipe canonical face와 GNM zero-identity template를 같은 사람이라고 간주하지 않는다. 두 canonical model의 수치를 비교한 결과는 **semantic mismatch detector**로만 사용한다.
 
