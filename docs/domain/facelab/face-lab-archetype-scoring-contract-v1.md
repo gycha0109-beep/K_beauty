@@ -328,8 +328,12 @@ Verifier는 다음을 검사한다.
 
 ```text
 FACE-ENGINE-1 Contract + Shadow Evaluator
-→ FACE-EVAL-1 Calibration Dataset and Thresholds
-→ FACE-EVAL-2 Bias / Regression Evaluation
-→ FACE-ACTIVATE-1 Production Activation
-→ FACE-ENGINE-2 Style Identity
+→ Reverse Archetype empirical seed research
+→ Normalized Face Representation contract
+→ Face Space validation
+→ Archetype Projection calibration
+→ separate Production activation review
+
+Style Identity / Style Compatibility는 이 activation의 단순 후속 lookup 단계가 아니다.
+동일 Face Representation을 사용할 수 있지만 별도 evidence와 activation contract를 가진다.
 ```
