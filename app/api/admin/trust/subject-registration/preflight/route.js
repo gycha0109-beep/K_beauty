@@ -10,7 +10,7 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const MAX_BODY_BYTES = 4096;
+const MAX_BODY_BYTES = 8192;
 
 function json(body, status = 200) {
   return NextResponse.json(body, {
@@ -73,10 +73,11 @@ export async function POST(request) {
 
   try {
     const body = await readBody(request);
-    const preflight = await runTrustSubjectRegistrationPreflight({
-      taskId: body.taskId
+    const preflightResult = await runTrustSubjectRegistrationPreflight({
+      taskId: body.taskId,
+      reviewedIdentity: body.reviewedIdentity
     });
-    return json({ ok: true, preflight });
+    return json({ ok: true, preflight: preflightResult });
   } catch (error) {
     if (error instanceof TrustSubjectRegistrationError) {
       return json({ ok: false, error: error.code }, error.status);
