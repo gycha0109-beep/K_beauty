@@ -205,6 +205,8 @@ both
 
 현재 MediaPipe bridge는 동일한 6개 measurement ID를 연구 채널로 출력하지만, anchor topology가 다르므로 **같은 ID라는 이유만으로 수치 동등성이나 calibration을 가정하지 않는다**.
 
+공통 의미 계약은 `face-space-structural-measurement-semantics-v0`이다. GNM과 MediaPipe manifest가 이 version을 명시적으로 참조한다.
+
 Raw screen-normalized MediaPipe XYZ는 bridge 입력으로 허용하지 않는다.
 
 ## 4. v0 vector contract
