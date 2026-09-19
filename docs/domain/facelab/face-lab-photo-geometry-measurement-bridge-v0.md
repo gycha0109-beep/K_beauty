@@ -205,6 +205,38 @@ nose_width_ratio        0.183402
 
 These numbers validate deterministic measurement behavior only. They are not population means, ideal-face values, Archetype centers, or recommendation thresholds.
 
+## 9.1 Cross-backend canonical diagnostic
+
+MediaPipe canonical face와 GNM zero-identity template를 같은 사람이라고 간주하지 않는다. 두 canonical model의 수치를 비교한 결과는 **semantic mismatch detector**로만 사용한다.
+
+현재 diagnostic:
+
+```text
+dimension                 | absolute difference
+--------------------------|--------------------
+lower_face_width_ratio    | 0.014495
+chin_height_ratio         | 0.037987
+eye_spacing_ratio         | 0.004100
+eye_width_ratio           | 0.001177
+eye_tilt                  | 0.031157°
+nose_width_ratio          | 0.042036
+```
+
+GNM fitting tolerance를 단지 reference band로 놓았을 때 `chin_height_ratio`와 `nose_width_ratio`가 그 band를 넘었다.
+
+결론:
+
+- 이 차이를 없애기 위해 MediaPipe anchor를 GNM canonical 값에 맞춰 튜닝하지 않는다.
+- 서로 다른 canonical head morphology를 calibration truth로 사용하지 않는다.
+- `chin_height_ratio`, `nose_width_ratio`는 same-subject 또는 controlled synthetic correspondence 실험 전까지 cross-backend semantic alignment **HOLD**다.
+- 나머지 4개 dimension도 현재 비교가 validity를 증명하는 것은 아니다.
+
+Frozen evidence:
+
+```text
+evidence/facelab/photo-geometry/v0/mediapipe-vs-gnm-canonical-diagnostic.json
+```
+
 ## 10. Next executable gate
 
 The next photo-side gate is not “feed raw 478 landmarks into GNM.”
