@@ -9,23 +9,34 @@ const ERROR_MESSAGES = Object.freeze({
   trust_subject_registration_stale_preflight:
     "검토 중 상태가 변경되었습니다. Preflight를 다시 실행해 주세요.",
   trust_subject_registration_stale_proposal:
-    "검토된 Subject identity proposal이 변경되었습니다. Preflight를 다시 실행해 주세요.",
+    "검토한 Subject identity 입력이 변경되었습니다. Preflight를 다시 실행해 주세요.",
   trust_subject_identity_catalog_authority_boundary_invalid:
-    "현재 identity evidence의 authority boundary를 검증할 수 없습니다.",
-  trust_subject_identity_catalog_review_not_resolved:
-    "Catalog identity review가 resolved 상태가 아닙니다.",
-  trust_subject_identity_converged_providers_required:
-    "Subject identity를 검토할 충분한 provider convergence가 없습니다.",
-  trust_subject_identity_official_provider_required:
-    "공식 출처를 포함한 identity evidence가 필요합니다.",
+    "Catalog identity evidence의 authority boundary를 검증할 수 없습니다.",
+  trust_subject_identity_market_mismatch:
+    "검토한 market이 현재 TRUST intake market과 일치하지 않습니다.",
+  trust_subject_identity_variant_review_required:
+    "variant_key를 입력하거나 product-scoped(null)로 검토했음을 명시해야 합니다.",
+  trust_subject_identity_reviewed_input_invalid:
+    "Subject identity 검토 입력값을 다시 확인해 주세요.",
   trust_subject_registration_semantic_key_conflict:
     "동일 semantic key에 다른 Subject identity가 존재합니다.",
   trust_subject_registration_competing_subject_detected:
-    "동일 product/market에 다른 current Subject가 존재합니다. Identity 상태를 다시 검토해 주세요.",
+    "동일 product/market에 다른 current Subject가 존재합니다.",
   trust_subject_registration_forbidden:
     "Subject 등록 권한이 없습니다.",
   trust_subject_registration_service_unavailable:
     "Subject 등록 서비스를 사용할 수 없습니다."
+});
+
+const EMPTY_FORM = Object.freeze({
+  variantKey: "",
+  variantKeyReviewedAsNull: false,
+  formulationRevisionKey: "",
+  formulationLabel: "",
+  marketApplicability: "",
+  regionApplicability: "",
+  validFrom: "",
+  validTo: ""
 });
 
 async function postJson(url, body) {
@@ -61,12 +72,44 @@ function errorMessage(error) {
   );
 }
 
+function toReviewedIdentity(form) {
+  return {
+    variantKey: form.variantKey.trim() || null,
+    variantKeyReviewedAsNull: form.variantKeyReviewedAsNull === true,
+    formulationRevisionKey: form.formulationRevisionKey.trim(),
+    formulationLabel: form.formulationLabel.trim() || null,
+    marketApplicability: form.marketApplicability.trim(),
+    regionApplicability: form.regionApplicability.trim() || null,
+    validFrom: form.validFrom || null,
+    validTo: form.validTo || null
+  };
+}
+
+function InputField({ label, value, onChange, placeholder, required = false, type = "text" }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-[#616976] dark:text-[#b4bbc5]">
+        {label}{required ? " *" : ""}
+      </span>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="mt-1.5 w-full rounded-xl border border-[#d8dde5] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#707985] dark:border-[#3a414c] dark:bg-[#111419]"
+      />
+    </label>
+  );
+}
+
 export default function TrustSubjectRegistrationAction({
   taskId,
+  intakeMarket,
   eligible,
   canReview
 }) {
   const router = useRouter();
+  const [form, setForm] = useState(EMPTY_FORM);
   const [preflight, setPreflight] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -88,7 +131,27 @@ export default function TrustSubjectRegistrationAction({
     );
   }
 
+  const reviewedIdentity = toReviewedIdentity(form);
+  const variantReviewed =
+    Boolean(reviewedIdentity.variantKey) ||
+    reviewedIdentity.variantKeyReviewedAsNull;
+  const formReady =
+    Boolean(reviewedIdentity.formulationRevisionKey) &&
+    Boolean(reviewedIdentity.marketApplicability) &&
+    variantReviewed;
+
+  function changeField(key, value) {
+    setForm((current) => ({ ...current, [key]: value }));
+    setPreflight(null);
+    setResult(null);
+    setError(null);
+  }
+
   async function handlePreflight() {
+    if (!formReady) {
+      return;
+    }
+
     setBusy(true);
     setError(null);
     setResult(null);
@@ -96,7 +159,7 @@ export default function TrustSubjectRegistrationAction({
     try {
       const data = await postJson(
         "/api/admin/trust/subject-registration/preflight",
-        { taskId }
+        { taskId, reviewedIdentity }
       );
       setPreflight(data.preflight);
     } catch (nextError) {
@@ -108,7 +171,7 @@ export default function TrustSubjectRegistrationAction({
   }
 
   async function handleConfirm() {
-    if (!preflight?.preflightHash) {
+    if (!preflight?.preflightHash || !preflight?.reviewedIdentity) {
       return;
     }
 
@@ -121,6 +184,7 @@ export default function TrustSubjectRegistrationAction({
         "/api/admin/trust/subject-registration/confirm",
         {
           taskId,
+          reviewedIdentity: preflight.reviewedIdentity,
           preflightHash: preflight.preflightHash,
           proposalDigest: preflight.proposalDigest,
           requestId
@@ -142,10 +206,9 @@ export default function TrustSubjectRegistrationAction({
         <div>
           <h3 className="text-sm font-bold">Controlled Subject registration</h3>
           <p className="mt-1 max-w-3xl text-xs leading-5 text-[#6f6652] dark:text-amber-200/80">
-            Catalog identity evidence는 Product Fact write authority가 아닙니다.
-            Preflight는 frozen evidence로 opaque Subject identity proposal만 만들며
-            쓰기를 수행하지 않습니다. 실제 등록은 아래 별도 확인 버튼을 눌렀을 때만
-            기존 governed Subject RPC를 호출합니다.
+            Catalog identity evidence는 Product Fact Subject identity authority가 아닙니다.
+            variant/formulation identity는 관리자 검토값을 직접 입력해야 하며,
+            catalog evidence에서 자동 생성하지 않습니다.
           </p>
         </div>
         <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-amber-800 shadow-sm dark:bg-amber-950 dark:text-amber-200">
@@ -153,16 +216,102 @@ export default function TrustSubjectRegistrationAction({
         </span>
       </div>
 
-      {!preflight && !result ? (
-        <button
-          type="button"
-          onClick={handlePreflight}
-          disabled={busy}
-          className="mt-4 rounded-xl bg-[#171a20] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#eef1f5] dark:text-[#171a20]"
-        >
-          {busy ? "검증 중…" : "Subject 등록 Preflight"}
-        </button>
-      ) : null}
+      <div className="mt-4 rounded-xl border border-amber-200 bg-white p-4 dark:border-amber-900/60 dark:bg-[#181c22]">
+        <p className="text-xs leading-5 text-[#6b7280] dark:text-[#aeb5bf]">
+          현재 TRUST intake market: <strong className="font-mono">{intakeMarket ?? "-"}</strong>.
+          market 값도 자동 채움하지 않습니다. 검토 후 동일 값을 직접 입력해야 합니다.
+        </p>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <InputField
+            label="Formulation revision key"
+            required
+            value={form.formulationRevisionKey}
+            onChange={(event) => changeField("formulationRevisionKey", event.target.value)}
+            placeholder="검토된 canonical formulation revision"
+          />
+          <InputField
+            label="Variant key"
+            value={form.variantKey}
+            onChange={(event) => {
+              changeField("variantKey", event.target.value);
+              if (event.target.value.trim()) {
+                setForm((current) => ({
+                  ...current,
+                  variantKey: event.target.value,
+                  variantKeyReviewedAsNull: false
+                }));
+              }
+            }}
+            placeholder="검토된 semantic variant (없으면 아래 체크)"
+          />
+          <InputField
+            label="Formulation label"
+            value={form.formulationLabel}
+            onChange={(event) => changeField("formulationLabel", event.target.value)}
+            placeholder="선택: 사람이 읽는 formulation label"
+          />
+          <InputField
+            label="Market applicability"
+            required
+            value={form.marketApplicability}
+            onChange={(event) => changeField("marketApplicability", event.target.value)}
+            placeholder={intakeMarket ? `예: ${intakeMarket}` : "예: KR"}
+          />
+          <InputField
+            label="Region applicability"
+            value={form.regionApplicability}
+            onChange={(event) => changeField("regionApplicability", event.target.value)}
+            placeholder="선택"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <InputField
+              label="Valid from"
+              type="date"
+              value={form.validFrom}
+              onChange={(event) => changeField("validFrom", event.target.value)}
+            />
+            <InputField
+              label="Valid to"
+              type="date"
+              value={form.validTo}
+              onChange={(event) => changeField("validTo", event.target.value)}
+            />
+          </div>
+        </div>
+
+        <label className="mt-3 flex items-start gap-2 rounded-lg bg-[#f7f8fa] p-3 text-xs dark:bg-[#20242b]">
+          <input
+            type="checkbox"
+            checked={form.variantKeyReviewedAsNull}
+            disabled={Boolean(form.variantKey.trim())}
+            onChange={(event) =>
+              changeField("variantKeyReviewedAsNull", event.target.checked)
+            }
+            className="mt-0.5"
+          />
+          <span>
+            별도 semantic variant가 없는 product-scoped Subject로 검토했습니다.
+            이 체크가 없으면 빈 variant_key로 Preflight할 수 없습니다.
+          </span>
+        </label>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handlePreflight}
+            disabled={busy || !formReady}
+            className="rounded-xl bg-[#171a20] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#eef1f5] dark:text-[#171a20]"
+          >
+            {busy ? "검증 중…" : "Subject 등록 Preflight"}
+          </button>
+          {!formReady ? (
+            <span className="self-center text-xs text-[#8a6b24] dark:text-amber-300">
+              formulation / market / variant 검토를 완료해야 합니다.
+            </span>
+          ) : null}
+        </div>
+      </div>
 
       {preflight ? (
         <div className="mt-4 rounded-xl border border-amber-200 bg-white p-4 dark:border-amber-900/60 dark:bg-[#181c22]">
@@ -176,7 +325,7 @@ export default function TrustSubjectRegistrationAction({
             <div>
               <p className="font-semibold text-[#707783]">Variant</p>
               <p className="mt-1 font-mono">
-                {preflight.proposal?.variant_key ?? "null"}
+                {preflight.proposal?.variant_key ?? "null (reviewed)"}
               </p>
             </div>
             <div>
@@ -192,22 +341,24 @@ export default function TrustSubjectRegistrationAction({
               </p>
             </div>
             <div>
-              <p className="font-semibold text-[#707783]">Evidence digest</p>
+              <p className="font-semibold text-[#707783]">Catalog PF authority</p>
               <p className="mt-1 font-mono">
-                {shortHash(preflight.evidenceDigest)}
+                {preflight.catalogContext?.treatedAsProductFactAuthority
+                  ? "INVALID"
+                  : "false"}
               </p>
             </div>
             <div>
-              <p className="font-semibold text-[#707783]">Existing Subject</p>
+              <p className="font-semibold text-[#707783]">Planned Subject writes</p>
               <p className="mt-1 font-mono">
-                {preflight.existingSubjectId ?? "none"}
+                {preflight.plannedWrites?.productFactSubjects ?? 0}
               </p>
             </div>
           </div>
 
           <p className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-            확인 시 <strong>Subject identity만</strong> 등록합니다. Evidence 채택,
-            Product Fact confirmation, Recommendation 변경은 자동으로 실행되지 않습니다.
+            확인 시 <strong>검토한 Subject identity만</strong> 기존 governed RPC로 등록합니다.
+            Evidence 채택, Product Fact confirmation, Recommendation 변경은 자동 실행되지 않습니다.
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
