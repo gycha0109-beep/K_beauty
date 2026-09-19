@@ -1,0 +1,132 @@
+name: TRUST Phase 5B Controlled Subject Registration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/admin/products/trust/**"
+      - "app/api/admin/trust/subject-registration/**"
+      - "lib/admin/trust-subject-identity.js"
+      - "lib/admin/trust-subject-registration.js"
+      - "scripts/verify-trust-phase5b-subject-registration.mjs"
+      - ".github/workflows/trust-phase5b-subject-registration.yml"
+  push:
+    branches: [main, "feat/trust-phase5b-subject-registration"]
+    paths:
+      - "app/admin/products/trust/**"
+      - "app/api/admin/trust/subject-registration/**"
+      - "lib/admin/trust-subject-identity.js"
+      - "lib/admin/trust-subject-registration.js"
+      - "scripts/verify-trust-phase5b-subject-registration.mjs"
+      - ".github/workflows/trust-phase5b-subject-registration.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_CLI_VERSION: 2.109.1
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify Phase 5B controlled Subject contract
+        run: node scripts/verify-trust-phase5b-subject-registration.mjs
+
+      - name: Verify existing governed Subject authority
+        run: node scripts/verify-product-fact-subject-registration-v1.mjs
+
+      - name: Verify canonical TRUST subject resolver
+        run: |
+          node scripts/verify-trust-subject-resolution.mjs
+          node scripts/verify-trust-subject-resolution-presentation-hardening.mjs
+
+      - name: Verify Phase 5A queue regression
+        run: node scripts/verify-trust-phase5-admin-queue.mjs
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Prepare isolated TRUST subject-resolution runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_dir="${RUNNER_TEMP}/trust-phase5b-runtime"
+          echo "TRUST_RUNTIME_DIR=${runtime_dir}" >>"${GITHUB_ENV}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init --workdir "${runtime_dir}" --force
+          migration_dir="${runtime_dir}/supabase/migrations"
+          mkdir -p "${migration_dir}"
+          cp tests/fixtures/trust-intake-foundation/20260915090000_trust_intake_foundation_fixture.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095306_trust_phase1_intake_foundation_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095333_trust_phase1_intake_delivery_hardening_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095347_trust_phase1_promotion_decoupling_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-subject-resolution/20260915100000_trust_subject_resolution_fixture_extension.sql "${migration_dir}/"
+          cp supabase/migrations/20260915112124_trust_phase2_subject_resolution_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_runtime.sql             "${migration_dir}/20260915112140_verify_trust_subject_resolution_runtime.sql"
+          cp supabase/migrations/20260915112151_trust_phase2_presentation_scope_hardening_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_presentation_hardening_runtime.sql             "${migration_dir}/20260915112200_verify_trust_subject_resolution_presentation_hardening_runtime.sql"
+
+      - name: Start and verify isolated TRUST runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_log="${RUNNER_TEMP}/trust-phase5b-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start             --workdir "${TRUST_RUNTIME_DIR}"             --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor             >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${TRUST_RUNTIME_DIR}"
+
+      - name: Check exact-head and diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          git diff --check "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}...${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" ||             git diff --check HEAD^
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -n "${TRUST_RUNTIME_DIR:-}" && -d "${TRUST_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop --workdir "${TRUST_RUNTIME_DIR}" --no-backup
+          fi
+          rm -rf -- "${TRUST_RUNTIME_DIR:-${RUNNER_TEMP}/trust-phase5b-runtime}"
