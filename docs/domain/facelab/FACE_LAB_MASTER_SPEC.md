@@ -6,6 +6,7 @@
 > 평가 방법론은 이 문서와 분리한다. `FACE_LAB_EVALUATION_STRATEGY.md`를 본다.
 > Face Space와 Style Compatibility의 상세 목표 구조는 `face-lab-face-space-style-compatibility-architecture-v1.md`를 본다.
 > Controlled 3D backend 경계와 round-trip 기준은 `face-lab-face-space-3d-adapter-v0.md`를 본다.
+> 사진측 metric geometry와 구조 측정 경계는 `face-lab-photo-geometry-measurement-bridge-v0.md`를 본다.
 > 외부 모델·도구의 research-only 도입 상태는 `face-lab-external-research-dependency-register-v1.md`를 본다.
 
 ## 1. 제품 정의
