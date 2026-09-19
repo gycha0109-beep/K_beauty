@@ -312,6 +312,7 @@ function fixture() {
     candidate: {
       id: ids.candidate,
       matched_product_id: ids.product,
+      review_status: "promoted",
       identity_resolution_state: "resolved",
       identity_resolution_version: "crawler-identity-resolution-v1",
       identity_resolution_evidence: {
