@@ -33,7 +33,7 @@ Makeup 최종 엔진                      ❌ 미구현
 Eyewear 최종 엔진                     ❌ 미구현
 Face Style 최종 엔진                  ❌ 미구현
 Look Composer                         ❌ 미구현
-FaceSpace3DAdapter contract           🟡 v0 contract/verifier 구현 / backend executable 미구현
+FaceSpace3DAdapter contract           🟡 v0 contract/verifier + GNM exact code/model pin / backend executable 미구현
 Parametric 3D experiment pipeline     ❌ 미구현
 Automated VLM judge program           ❌ 미구현
 최종 canonical Free/Premium 결과      ❌ 미완성
@@ -241,6 +241,7 @@ MediaPipe Face Geometry
 
 중요:
 
+- GNM v3 reviewed code revision과 official `gnm_head.npz` Git blob은 v0 manifest에 exact pin했다.
 - GNM identity component를 Face Space axis 자체로 정의하지 않는다.
 - GNM semantic demographic identity sampling은 Face Lab Face Space/user inference에 사용하지 않는다.
 - MPFB target/Shape Key를 Face Space axis 자체로 정의하지 않는다.
