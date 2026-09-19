@@ -171,7 +171,7 @@ check(
 );
 
 check(
-  !source.workbench.includes("\\\\nimport"),
+  !source.workbench.includes("\\nimport"),
   "workbench import section must not contain escaped newline literals"
 );
 check(
