@@ -1,3 +1,4 @@
+// Phase 6-A exact-head contract verifier
 import fs from "node:fs";
 import path from "node:path";
 
