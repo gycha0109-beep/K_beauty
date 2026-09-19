@@ -11,7 +11,6 @@ on:
       - 'scripts/build-face-lab-home-transfer-v1.mjs'
       - 'scripts/check-face-lab-home-transfer-v1.mjs'
       - 'docs/domain/facelab/face-lab-independent-human-cue-review-ui-ko-v1.md'
-      - 'package.json'
       - '.github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml'
   workflow_dispatch:
 
