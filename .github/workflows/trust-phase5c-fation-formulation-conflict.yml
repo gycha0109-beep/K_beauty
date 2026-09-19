@@ -1,0 +1,68 @@
+name: TRUST Phase 5C FATION Formulation Conflict
+
+on:
+  push:
+    branches:
+      - research/trust-phase5c-fation-formulation-conflict
+  pull_request:
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-phase5c-fation-formulation-conflict-v1.json"
+      - "docs/evidence/trust-phase5c-fation-formulation-conflict-v1.md"
+      - "scripts/product-evidence/verify-trust-phase5c-fation-formulation-conflict-v1.mjs"
+      - ".github/workflows/trust-phase5c-fation-formulation-conflict.yml"
+      - ".codex/AI_WORK_LOG.md"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED="${{ github.event.pull_request.head.sha || github.sha }}"
+          ACTUAL="$(git rev-parse HEAD)"
+          test "$ACTUAL" = "$EXPECTED"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify FATION formulation conflict HOLD
+        run: node scripts/product-evidence/verify-trust-phase5c-fation-formulation-conflict-v1.mjs
+
+      - name: Verify Phase 5B registration authority regression
+        run: node scripts/verify-trust-phase5b-subject-registration.mjs
+
+      - name: Check zero-write artifact for mutation code
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILES=(
+            "evidence/product-fact-subject-coverage-v1/trust-phase5c-fation-formulation-conflict-v1.json"
+            "docs/evidence/trust-phase5c-fation-formulation-conflict-v1.md"
+            "scripts/product-evidence/verify-trust-phase5c-fation-formulation-conflict-v1.mjs"
+          )
+          if grep -Eni '\b(insert|update|delete|upsert)\b[[:space:]]+(into|public\.|product_fact_|catalog_trust_|product_source_)' "${FILES[@]}"; then
+            echo "Mutation-shaped SQL/code detected in zero-write Phase 5C artifact."
+            exit 1
+          fi
+
+      - name: Check exact-head diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git status --short
