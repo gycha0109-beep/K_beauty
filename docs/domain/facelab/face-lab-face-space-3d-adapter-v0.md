@@ -51,8 +51,12 @@ Native parameter를 Face Space axis의 의미로 직접 승격하지 않는다.
 - 383 expression components
 - head / eyes / teeth / tongue geometry
 - NumPy / JAX / PyTorch / TensorFlow backend
-- fitting utilities와 landmark support
+- fitting utilities: regularized least squares / linear vertex-basis projection
+- built-in sparse 68 head landmark definition
 - official code/model release가 Apache 2.0으로 공개됨
+- reviewed code revision: `a424b5153eec9154f3dfa5ee7f214e5817918d54`
+- pinned model blob: `b49ac631e4d3388e42640555c0b25c4fd134b1b8` / 53,305,389 bytes
+- official package metadata: `gnm-shape` 3.0.0
 
 Face Lab에서는 identity coefficient 자체를 해석 가능한 Face Space axis로 사용하지 않는다.
 
@@ -65,6 +69,10 @@ Face Space structural target
 ```
 
 GNM semantic identity sampler의 demographic label을 Face Lab Face Space 생성 또는 사용자 얼굴 추론에 사용하지 않는다. 특히 얼굴 외형으로 성별·민족/인종 같은 민감 속성을 추론하거나 balancing truth로 만들지 않는다.
+
+공식 GNM code/model artifact는 v0 research manifest에서 exact Git revision/blob까지 pin했다. 다만 공식 package의 core dependency set에 TensorFlow가 포함되므로 웹 application runtime과 분리된 Python research environment에서 먼저 실행한다.
+
+Executable 승격 전 남은 핵심은 backend-independent Face Space measurement objective와 GNM fitting runner 구현이다.
 
 현재 우선순위:
 
