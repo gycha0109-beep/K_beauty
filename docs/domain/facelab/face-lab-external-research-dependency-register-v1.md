@@ -107,16 +107,22 @@ Role:
 
 Observed upstream characteristics:
 
+- reviewed repository revision: `20e8f2ae3365d46fa02037b54911b72e13494809`
 - canonical 468-landmark topology
 - Face Geometry metric 3D space
 - default canonical face unit = centimeter
+- canonical model blob: `0e666d1c4e75949d1639c2bcf347a38da4834164`
+- upstream geometry pipeline converts screen landmarks to metric 3D and inverse-pose-aligns runtime geometry to canonical metric space
 - Face Landmarker web result can expose facial transformation matrices
-- repository dependency already includes @mediapipe/tasks-vision
+- repository dependency already includes `@mediapipe/tasks-vision`
+- Face Lab v0 photo geometry bridge and canonical metric fixture are implemented on research branch
 
 Boundary:
 
 - normalized image landmarks are not automatically metric facial dimensions
+- raw screen-normalized XYZ is rejected by the v0 measurement bridge
 - camera/pose/perspective must be handled explicitly
+- MediaPipe topology IDs are not treated as an official GNM correspondence
 - MediaPipe observation does not become identity recognition
 
 Upstream:
