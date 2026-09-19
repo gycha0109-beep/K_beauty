@@ -1,4 +1,5 @@
-import Link from "next/link";\nimport TrustSubjectRegistrationAction from "@/app/admin/products/trust/TrustSubjectRegistrationAction";
+import Link from "next/link";
+import TrustSubjectRegistrationAction from "@/app/admin/products/trust/TrustSubjectRegistrationAction";
 
 const BLOCKER_LABELS = Object.freeze({
   SUBJECT_CREATION_REQUIRED: "Subject 생성 필요",
