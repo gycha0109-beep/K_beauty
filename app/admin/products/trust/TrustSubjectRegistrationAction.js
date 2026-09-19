@@ -8,6 +8,8 @@ const ERROR_MESSAGES = Object.freeze({
     "현재 항목은 더 이상 Subject 생성 검토 상태가 아닙니다.",
   trust_subject_registration_stale_preflight:
     "검토 중 상태가 변경되었습니다. Preflight를 다시 실행해 주세요.",
+  trust_subject_registration_stale_proposal:
+    "검토된 Subject identity proposal이 변경되었습니다. Preflight를 다시 실행해 주세요.",
   trust_subject_identity_catalog_authority_boundary_invalid:
     "현재 identity evidence의 authority boundary를 검증할 수 없습니다.",
   trust_subject_identity_catalog_review_not_resolved:
@@ -118,6 +120,7 @@ export default function TrustSubjectRegistrationAction({
         {
           taskId,
           preflightHash: preflight.preflightHash,
+          proposalDigest: preflight.proposalDigest,
           requestId
         }
       );
