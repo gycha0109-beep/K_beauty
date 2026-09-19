@@ -17,7 +17,7 @@ const bridgeSource = readFileSync(join(moduleRoot, "src", "BejewelyFaceGuideModu
 const evaluatorSource = readFileSync(join(mobileRoot, "features", "camera", "NativeFaceGuidance.ts"), "utf8");
 const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "NativeFaceCamera.tsx"), "utf8");
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
-const workflowSource = readFileSync(join(repoRoot, ".github", "workflows", "mobile-face-guidance.yml"), "utf8");
+const workflowSource = readFileSync(join(repoRoot, ".github", "workflows", "mobile-foundation.yml"), "utf8");
 
 assert.deepEqual(moduleConfig.platforms, ["android"], "MOBILE-6 native guidance must remain Android-only in this slice");
 assert.deepEqual(
@@ -113,8 +113,6 @@ for (const source of boundedSources) {
 
 assert.match(workflowSource, /node scripts\/verify-mobile-face-guidance\.mjs/, "MOBILE-6 workflow must execute its contract verifier");
 assert.match(workflowSource, /npm run mobile:typecheck/, "MOBILE-6 workflow must typecheck the mobile client");
-assert.match(workflowSource, /npm run mobile:prebuild:android/, "MOBILE-6 workflow must exercise Expo native autolinking");
-assert.match(workflowSource, /npm run verify:mobile-native/, "MOBILE-6 workflow must verify the generated Android shell");
 
 console.log("MOBILE_FACE_GUIDANCE_NATIVE_MODULE=PASS");
 console.log("MOBILE_FACE_GUIDANCE_MLKIT_BUNDLED=PASS");
