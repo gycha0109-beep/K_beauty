@@ -226,11 +226,14 @@ FaceLabObservationAnalysis
 ```text
 Face Space = internal authority
 
+Google GNM v3
+→ primary face-specific parametric backend candidate
+
 MPFB2 / MakeHuman
-→ offline controlled experiment backend candidate
+→ offline Blender/style controlled experiment backend candidate
 
 FLAME 2023 Open
-→ independent parametric face backend candidate
+→ independent comparison / fallback parametric face backend candidate
 
 MediaPipe Face Geometry
 → photo-side geometry / pose / measurement evidence candidate
@@ -238,9 +241,11 @@ MediaPipe Face Geometry
 
 중요:
 
+- GNM identity component를 Face Space axis 자체로 정의하지 않는다.
+- GNM semantic demographic identity sampling은 Face Lab Face Space/user inference에 사용하지 않는다.
 - MPFB target/Shape Key를 Face Space axis 자체로 정의하지 않는다.
 - FLAME shape beta를 해석 가능한 Face Space axis로 직접 해석하지 않는다.
-- 두 backend 모두 versioned adapter와 round-trip measurement를 통과해야 한다.
+- 모든 3D backend는 versioned adapter와 round-trip measurement를 통과해야 한다.
 - MICA / DECA / 3DDFA / FaceVerse 등은 별도 license·dataset provenance 검토 없이 Production dependency로 승격하지 않는다.
 - 3D renderer output은 compatibility truth가 아니라 controlled experiment evidence다.
 
