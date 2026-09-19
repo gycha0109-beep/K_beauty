@@ -195,7 +195,7 @@ const duplicateBatchIdCoverage = buildReverseArchetypeCollectionCoverage(
       batchId: collectionBatchFixture.batchId,
       records: secondTaskSameCandidateIds.records.map((record, index) => ({
         ...record,
-        candidateId: 'ra_cand_' + String(index + 6).repeat(24)
+        candidateId: 'ra_cand_' + ['6', '7', '8', '9', 'a'][index].repeat(24)
       }))
     }
   ],
