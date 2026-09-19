@@ -3,12 +3,16 @@ import { readFileSync } from 'node:fs';
 import {
   SOURCE_MANIFEST_SCHEMA_VERSION,
   RAW_CANDIDATE_SCHEMA_VERSION,
+  COLLECTION_BATCH_SCHEMA_VERSION,
   REVERSE_ARCHETYPE_ARCHETYPES,
   REVERSE_ARCHETYPE_QUERY_TEMPLATES,
   buildFrozenReverseArchetypeQueryManifest,
   validateReverseArchetypeSourceManifest,
   validateReverseArchetypeQueryManifest,
   validateReverseArchetypeRawCandidate,
+  buildReverseArchetypeCollectionPlan,
+  validateReverseArchetypeCollectionBatch,
+  buildReverseArchetypeCollectionCoverage,
   createReverseArchetypeBlindObservationPacket,
   validateReverseArchetypeBlindPacket,
   classifyReverseArchetypePrimaryEligibility,
@@ -23,6 +27,7 @@ function readJson(path) {
 
 const sourceManifest = readJson('evidence/facelab/reverse-archetype/pilot-v1/source-manifest.json');
 const queryManifest = readJson('evidence/facelab/reverse-archetype/pilot-v1/query-manifest.json');
+const collectionBatchFixture = readJson('evidence/facelab/reverse-archetype/pilot-v1/collection-batch.example.json');
 
 const sourceValidation = validateReverseArchetypeSourceManifest(sourceManifest);
 assert.equal(sourceValidation.ok, true, sourceValidation.errors.join(','));
@@ -43,6 +48,117 @@ const rebuiltQueries = buildFrozenReverseArchetypeQueryManifest({
   requestedDepth: queryManifest.requestedDepth
 });
 assert.deepEqual(rebuiltQueries.queries, queryManifest.queries, 'frozen query manifest drift');
+
+const collectionPlan = buildReverseArchetypeCollectionPlan({
+  sourceManifest,
+  queryManifest
+});
+assert.equal(collectionPlan.plannedBatchCount, 168);
+assert.equal(collectionPlan.plannedCandidateCount, 840);
+assert.equal(
+  collectionPlan.tasks.filter((task) => task.retrievalSurfaceId === 'google_images_ko_web').length,
+  56
+);
+assert.equal(
+  collectionPlan.tasks.filter((task) => task.archetypeQueryLabel === 'wolf').length,
+  24
+);
+
+assert.equal(collectionBatchFixture.schemaVersion, COLLECTION_BATCH_SCHEMA_VERSION);
+const collectionBatchValidation = validateReverseArchetypeCollectionBatch(
+  collectionBatchFixture,
+  { sourceManifest, queryManifest }
+);
+assert.equal(
+  collectionBatchValidation.ok,
+  true,
+  collectionBatchValidation.errors.join(',')
+);
+
+assert.equal(
+  validateReverseArchetypeCollectionBatch(
+    {
+      ...collectionBatchFixture,
+      records: collectionBatchFixture.records.slice(0, 4)
+    },
+    { sourceManifest, queryManifest }
+  ).ok,
+  false,
+  'complete batch must contain the frozen requested depth'
+);
+
+assert.equal(
+  validateReverseArchetypeCollectionBatch(
+    {
+      ...collectionBatchFixture,
+      records: collectionBatchFixture.records.map((record, index) =>
+        index === 4 ? { ...record, resultRank: 4 } : record
+      )
+    },
+    { sourceManifest, queryManifest }
+  ).ok,
+  false,
+  'rank duplication must fail closed'
+);
+
+const blockedBatch = {
+  schemaVersion: COLLECTION_BATCH_SCHEMA_VERSION,
+  runFamily: collectionBatchFixture.runFamily,
+  batchId: 'ra_batch_aaaaaaaaaaaaaaaaaaaaaaaa',
+  runId: collectionBatchFixture.runId,
+  retrievalSurfaceId: 'google_images_ko_web',
+  queryId: 'wolf:face',
+  status: 'blocked',
+  collectedAt: '2026-09-19T01:10:00.000Z',
+  collectionContext: {
+    ...collectionBatchFixture.collectionContext
+  },
+  blockedReason: 'manual_capture_unavailable',
+  records: []
+};
+
+const blockedBatchValidation = validateReverseArchetypeCollectionBatch(
+  blockedBatch,
+  { sourceManifest, queryManifest }
+);
+assert.equal(
+  blockedBatchValidation.ok,
+  true,
+  blockedBatchValidation.errors.join(',')
+);
+
+const collectionCoverage = buildReverseArchetypeCollectionCoverage(
+  [collectionBatchFixture, blockedBatch],
+  { sourceManifest, queryManifest }
+);
+assert.equal(collectionCoverage.valid, true, collectionCoverage.errors.join(','));
+assert.equal(collectionCoverage.plannedBatches, 168);
+assert.equal(collectionCoverage.completeBatches, 1);
+assert.equal(collectionCoverage.blockedBatches, 1);
+assert.equal(collectionCoverage.pendingBatches, 166);
+assert.equal(collectionCoverage.plannedCandidates, 840);
+assert.equal(collectionCoverage.capturedCandidates, 5);
+assert.equal(collectionCoverage.missingTasks.length, 166);
+
+const duplicateTaskCoverage = buildReverseArchetypeCollectionCoverage(
+  [
+    collectionBatchFixture,
+    {
+      ...collectionBatchFixture,
+      batchId: 'ra_batch_bbbbbbbbbbbbbbbbbbbbbbbb'
+    }
+  ],
+  { sourceManifest, queryManifest }
+);
+assert.equal(
+  duplicateTaskCoverage.valid,
+  false,
+  'one surface/query collection task must not be silently captured twice'
+);
+assert.equal(
+  duplicateTaskCoverage.errors.some((error) => error.includes('duplicate_collection_task')),
+  true
+);
 
 const candidate = {
   schemaVersion: RAW_CANDIDATE_SCHEMA_VERSION,
@@ -267,6 +383,9 @@ console.log(JSON.stringify({
   totalQueries: queryManifest.queries.length,
   requestedDepth: queryManifest.requestedDepth,
   plannedMaximumCandidates: queryManifest.plannedMaximumCandidates,
+  plannedCollectionBatches: collectionPlan.plannedBatchCount,
+  collectionBatchContract: true,
+  collectionCoverageContract: true,
   acquisitionMode: sourceManifest.collectionPolicy.acquisition,
   automatedScraping: sourceManifest.collectionPolicy.automatedScraping,
   rawImageRetention: sourceManifest.collectionPolicy.rawImageByteRetention,
