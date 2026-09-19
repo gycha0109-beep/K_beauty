@@ -201,12 +201,39 @@ def fit_metrics(model, target: dict[str, float], fit_components: int, ridge: flo
         regularization = sqrt_ridge * np.asarray(coefficients, dtype=np.float64)
         return np.concatenate([structural, regularization])
 
+    # GNM's NumPy model stores identity arrays as float32. SciPy's default
+    # numerical Jacobian step around an all-zero x0 can be smaller than a
+    # meaningful float32 perturbation, yielding a false zero-gradient optimum.
+    # Use an explicit absolute central-difference step instead.
+    jacobian_step = 1e-2
+
+    def jacobian(coefficients):
+        coefficients = np.asarray(coefficients, dtype=np.float64)
+        jac = np.zeros(
+            (len(SUPPORTED_METRICS) + fit_components, fit_components),
+            dtype=np.float64,
+        )
+        for index in range(fit_components):
+            plus = coefficients.copy()
+            minus = coefficients.copy()
+            plus[index] += jacobian_step
+            minus[index] -= jacobian_step
+            plus_structural = residual(plus)[: len(SUPPORTED_METRICS)]
+            minus_structural = residual(minus)[: len(SUPPORTED_METRICS)]
+            jac[: len(SUPPORTED_METRICS), index] = (
+                plus_structural - minus_structural
+            ) / (2.0 * jacobian_step)
+        jac[len(SUPPORTED_METRICS) :, :] = sqrt_ridge * np.eye(
+            fit_components, dtype=np.float64
+        )
+        return jac
+
     result = least_squares(
         residual,
         x0=np.zeros(fit_components, dtype=np.float64),
+        jac=jacobian,
         bounds=(-3.0, 3.0),
         max_nfev=120,
-        diff_step=1e-3,
         x_scale="jac",
         xtol=1e-9,
         ftol=1e-9,
