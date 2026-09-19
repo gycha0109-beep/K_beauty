@@ -5,6 +5,8 @@ on:
     paths:
       - "lib/face-lab-face-space-3d-research.js"
       - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
+      - "scripts/face-lab-gnm-v3-poc.py"
+      - ".github/workflows/face-lab-gnm-v3-poc.yml"
       - "evidence/facelab/face-space-3d/**"
       - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
       - "docs/domain/facelab/face-lab-external-research-dependency-register-v1.md"
@@ -26,6 +28,8 @@ on:
     paths:
       - "lib/face-lab-face-space-3d-research.js"
       - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
+      - "scripts/face-lab-gnm-v3-poc.py"
+      - ".github/workflows/face-lab-gnm-v3-poc.yml"
       - "evidence/facelab/face-space-3d/**"
       - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
       - "docs/domain/facelab/face-lab-external-research-dependency-register-v1.md"
@@ -76,3 +80,5 @@ jobs:
         run: node scripts/face-lab-reverse-archetype-collection.mjs --next evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
       - name: Verify FaceSpace3DAdapter v0 contract
         run: node scripts/verify-face-lab-face-space-3d-adapter.mjs
+      - name: Compile GNM v3 PoC runner
+        run: python -m py_compile scripts/face-lab-gnm-v3-poc.py
