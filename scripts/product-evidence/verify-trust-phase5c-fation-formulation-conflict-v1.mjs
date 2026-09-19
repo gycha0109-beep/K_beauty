@@ -150,6 +150,7 @@ assert.ok(current50);
 assert.equal(dutyFree.presentation, "30 ml / 1.01 fl. oz.");
 assert.equal(dutyFree.ingredient_order_class, "mugwort_first");
 assert.equal(dutyFree.authority, "context_only_not_first_party");
+assert.equal(current50.presentation, "50 ml refill promotional set");
 assert.equal(current50.ingredient_order_class, "water_first");
 assert.equal(
   current50.authority,
