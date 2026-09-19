@@ -2959,3 +2959,14 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Manual retry is non-destructive: identity conflicts stay review/blocked; only exact-Subject SOURCE_BLOCKED/EVIDENCE_INSUFFICIENT tasks may return to RESEARCH_PENDING.
 - Fresh Production ACL audit found Phase 5 Admin Queue operational TRUST tables lacked service_role SELECT; Phase 6-A restores SELECT only while keeping writes RPC-only and anon/authenticated grants at zero.
 - Product Fact authority, Current invalidation, Subject creation, confirmation, Recommendation mutation: zero by contract.
+
+## 2026-09-19 — Free survey decision intake refinement
+
+- Classification: Medium / Data N / Auth N / RLS N / Storage N / Provider N / Payment N / Secret N / Production N.
+- Changed: free survey now keeps explicit primary concern + recent skin change as the actionable free inputs; recent product-change intake is removed from the free UI and retained only in the shared contract for later Premium intake.
+- Analyze intake: an explicit primary concern is validated against selected concerns and moved to the front of the existing concern list so the current deterministic scoring actually uses the user's stated priority.
+- Free result: shows how the selected priority and recent skin-change answer affected the result, including an explicit distinction when user-requested concern and detected analysis priority differ.
+- Verification: added `scripts/verify-free-survey-decision-intake.mjs` and wired it into Current Main Health.
+- Deliberately unchanged: DB schema, persistence shape, API response field names, recommendation weights, auth/RLS, Provider calls, payment, Production data.
+- Remaining risk: exact rendered UX and the complete repository health/build still require PR CI/runtime review.
+
