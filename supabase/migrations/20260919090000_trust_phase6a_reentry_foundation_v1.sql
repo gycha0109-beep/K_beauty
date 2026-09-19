@@ -64,6 +64,18 @@ alter table public.trust_reentry_events enable row level security;
 revoke all on table public.trust_reentry_events
   from public, anon, authenticated, service_role;
 
+-- Phase 5 Admin Queue and Phase 6 server preflight use the server-only
+-- Supabase service role through the Data API. Production currently has these
+-- operational TRUST tables fully revoked from service_role, which makes the
+-- merged read-only Admin Queue fail before RLS is evaluated (42501).
+-- Restore SELECT only; all operational writes remain RPC-only.
+grant select on table
+  public.catalog_trust_intake,
+  public.product_fact_research_tasks,
+  public.trust_source_observations,
+  public.trust_evidence_candidates
+to service_role;
+
 create or replace function public.request_trust_reentry_v1(
   p_event_type text,
   p_product_id uuid,

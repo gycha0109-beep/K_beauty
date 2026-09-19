@@ -37,7 +37,12 @@ const requiredSql = [
   "grant execute on function public.process_trust_reentry_event_v1",
   "to service_role",
   "GOVERNED_OR_COVERED_STATE_PRESERVED",
-  "MANUAL_RETRY_ELIGIBLE_RESEARCH_BLOCKER"
+  "MANUAL_RETRY_ELIGIBLE_RESEARCH_BLOCKER",
+  "grant select on table",
+  "public.catalog_trust_intake",
+  "public.product_fact_research_tasks",
+  "public.trust_source_observations",
+  "public.trust_evidence_candidates"
 ];
 for (const needle of requiredSql) {
   if (!sql.includes(needle)) throw new Error(`migration contract missing: ${needle}`);
