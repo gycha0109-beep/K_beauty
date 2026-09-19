@@ -14,7 +14,6 @@ on:
       - "scripts/verify-mobile-native-shell.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-camera.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   push:
     branches: [main]
     paths:
@@ -28,7 +27,6 @@ on:
       - "scripts/verify-mobile-native-shell.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-camera.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   workflow_dispatch:
 
 permissions:
