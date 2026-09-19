@@ -64,7 +64,8 @@
         "하이드로제네이티드레시틴",
         "세라마이드엔피"
       ],
-      "ingredients_sha256": "6eeed9473eaaee36bd09a73fb7b9ac1ddd4b7761c9fe21ae57070c9bc0484334"
+      "ingredients_sha256": "6eeed9473eaaee36bd09a73fb7b9ac1ddd4b7761c9fe21ae57070c9bc0484334",
+      "functional_cosmetic_status": "official_page_states_review_or_notification_completed"
     },
     {
       "source_id": "fation_try_332",
@@ -101,7 +102,8 @@
         "하이드로제네이티드레시틴",
         "세라마이드엔피"
       ],
-      "ingredients_sha256": "6eeed9473eaaee36bd09a73fb7b9ac1ddd4b7761c9fe21ae57070c9bc0484334"
+      "ingredients_sha256": "6eeed9473eaaee36bd09a73fb7b9ac1ddd4b7761c9fe21ae57070c9bc0484334",
+      "functional_cosmetic_status": "N"
     },
     {
       "source_id": "fation_set_613",
@@ -138,7 +140,8 @@
         "세라마이드엔피",
         "잔탄검"
       ],
-      "ingredients_sha256": "2c0cd6fc3765c9b59baf72b6f34abd4ad905e94c07a49c3c7c5c4facbf977d20"
+      "ingredients_sha256": "2c0cd6fc3765c9b59baf72b6f34abd4ad905e94c07a49c3c7c5c4facbf977d20",
+      "functional_cosmetic_status": "N"
     },
     {
       "source_id": "donga_product_NNTS20",
@@ -175,7 +178,8 @@
         "세라마이드엔피",
         "잔탄검"
       ],
-      "ingredients_sha256": "2c0cd6fc3765c9b59baf72b6f34abd4ad905e94c07a49c3c7c5c4facbf977d20"
+      "ingredients_sha256": "2c0cd6fc3765c9b59baf72b6f34abd4ad905e94c07a49c3c7c5c4facbf977d20",
+      "functional_cosmetic_status": "not_used_for_resolution"
     }
   ],
   "current_retail_context": [
@@ -207,7 +211,9 @@
     "water_first_sha256": "6eeed9473eaaee36bd09a73fb7b9ac1ddd4b7761c9fe21ae57070c9bc0484334",
     "mugwort_first_sha256": "2c0cd6fc3765c9b59baf72b6f34abd4ad905e94c07a49c3c7c5c4facbf977d20",
     "resolution": "HOLD",
-    "reason": "Current first-party sources do not unambiguously identify which ingredient ordering is the current 30ml formulation. Product/presentation convergence is insufficient to freeze a Product Fact formulation revision."
+    "reason": "Current first-party sources do not unambiguously identify which ingredient ordering is the current 30ml formulation. Product/presentation convergence is insufficient to freeze a Product Fact formulation revision.",
+    "functional_cosmetic_status_conflict": true,
+    "additional_signal": "FATION product 329 states functional-cosmetic review/notification completed while TRY 332 and set 613 state N, reinforcing first-party metadata/formulation ambiguity."
   },
   "provisional_subject_identity": {
     "variant_key": "NOSCA9_TROUBLE_SERUM_KR_30ML",
