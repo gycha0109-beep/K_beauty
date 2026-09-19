@@ -72,6 +72,14 @@ evidence/facelab/reverse-archetype/pilot-v1/
 npm run plan:face-lab-reverse-archetype-collection
 ```
 
+현재 ledger에서 다음 pending task만 확인:
+
+```bash
+npm run next:face-lab-reverse-archetype-collection
+```
+
+초기 ledger에서는 첫 task가 `google_images_ko_web | wolf:general`이어야 한다.
+
 계획에는 각 task마다 다음이 포함된다.
 
 - retrieval surface
