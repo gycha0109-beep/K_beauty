@@ -29,6 +29,14 @@ assert.deepEqual(
   `historical TRUST-P workflows must stay retired: ${historicalTrustWorkflows.join(", ")}`,
 );
 
+const historicalDataOfferWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^data-offer\d/i.test(name) && /\.ya?ml$/i.test(name));
+assert.deepEqual(
+  historicalDataOfferWorkflows,
+  [],
+  `historical DATA-OFFER workflows must stay retired: ${historicalDataOfferWorkflows.join(", ")}`,
+);
+
 const rootPackageTriggers = [
   '- "package.json"',
   "- 'package.json'",
@@ -46,22 +54,6 @@ for (const path of [
 }
 
 for (const path of [
-  ".github/workflows/data-offer3-seller-listing-observation.yml",
-  ".github/workflows/data-offer4-seller-observation-persistence.yml",
-  ".github/workflows/data-offer5-seller-listing-capture-adapter.yml",
-  ".github/workflows/data-offer6-seller-listing-capture-evidence.yml",
-  ".github/workflows/data-offer7-evidence-first-capture-wiring.yml",
-  ".github/workflows/data-offer8-parser-fixture-admission.yml",
-  ".github/workflows/data-offer9-oliveyoung-public-capture.yml",
-  ".github/workflows/data-offer10-torriden-public-capture.yml",
-  ".github/workflows/data-offer11-torriden-parser.yml",
-  ".github/workflows/data-offer12-torriden-binding-decision.yml",
-  ".github/workflows/data-offer13-torriden-identity-convergence.yml",
-  ".github/workflows/data-offer14-manual-catalog-review-intake.yml",
-  ".github/workflows/data-offer15-catalog-source-offer-closure.yml",
-  ".github/workflows/data-offer16-offer-presentation-authority.yml",
-  ".github/workflows/data-offer17-offer-runtime-observability.yml",
-  ".github/workflows/data-offer17-controlled-offer-rpc-diagnostic.yml",
   ".github/workflows/data-taxonomy5-production-recommendation-parity.yml",
 ]) {
   assertNotContains(path, [
@@ -71,22 +63,6 @@ for (const path of [
 }
 
 for (const path of [
-  ".github/workflows/data-offer3-seller-listing-observation.yml",
-  ".github/workflows/data-offer4-seller-observation-persistence.yml",
-  ".github/workflows/data-offer5-seller-listing-capture-adapter.yml",
-  ".github/workflows/data-offer6-seller-listing-capture-evidence.yml",
-  ".github/workflows/data-offer7-evidence-first-capture-wiring.yml",
-  ".github/workflows/data-offer8-parser-fixture-admission.yml",
-  ".github/workflows/data-offer9-oliveyoung-public-capture.yml",
-  ".github/workflows/data-offer10-torriden-public-capture.yml",
-  ".github/workflows/data-offer11-torriden-parser.yml",
-  ".github/workflows/data-offer12-torriden-binding-decision.yml",
-  ".github/workflows/data-offer13-torriden-identity-convergence.yml",
-  ".github/workflows/data-offer14-manual-catalog-review-intake.yml",
-  ".github/workflows/data-offer15-catalog-source-offer-closure.yml",
-  ".github/workflows/data-offer16-offer-presentation-authority.yml",
-  ".github/workflows/data-offer17-offer-runtime-observability.yml",
-  ".github/workflows/data-offer17-controlled-offer-rpc-diagnostic.yml",
   ".github/workflows/data-taxonomy5-production-recommendation-parity.yml",
   ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
   ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
@@ -146,6 +122,7 @@ assert(
 console.log(JSON.stringify({
   status: "PASS",
   historical_trust_p_workflows: 0,
+  historical_data_offer_workflows: 0,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,

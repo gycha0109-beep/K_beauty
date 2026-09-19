@@ -50,6 +50,10 @@ run("G3 production candidate admission contract", node, ["scripts/verify-v21-adm
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
+run("Offer presentation read path", node, ["scripts/verify-product-offer-read-path-v1.mjs"]);
+run("Skin match decision wrapper syntax", node, ["--check", "lib/skin-match-decision-engine.js"]);
+run("Seller listing observation contract", node, ["scripts/verify-seller-listing-observation-v1.mjs"]);
+run("Seller listing observation contract syntax", node, ["--check", "lib/seller-listing-observation-v1.js"]);
 run("Seller listing observation persistence contract", node, ["scripts/verify-seller-listing-observation-persistence-v1.mjs"]);
 run("Seller listing capture adapter authority", node, ["scripts/verify-seller-listing-capture-adapter-v1.mjs"]);
 run("Seller listing capture evidence authority", node, ["scripts/verify-seller-listing-capture-evidence-v1.mjs"]);
