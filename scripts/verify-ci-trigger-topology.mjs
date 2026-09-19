@@ -37,6 +37,19 @@ assert.deepEqual(
   `historical DATA-OFFER workflows must stay retired: ${historicalDataOfferWorkflows.join(", ")}`,
 );
 
+const taxonomyWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^data-taxonomy/i.test(name) && /\.ya?ml$/i.test(name))
+  .sort();
+assert.deepEqual(
+  taxonomyWorkflows,
+  [
+    "data-taxonomy-ci.yml",
+    "data-taxonomy13-catalog-only-candidate-approval.yml",
+    "data-taxonomy15-catalog-only-trust-intake.yml",
+  ],
+  `DATA-TAXONOMY workflow topology drift: ${taxonomyWorkflows.join(", ")}`,
+);
+
 const rootPackageTriggers = [
   '- "package.json"',
   "- 'package.json'",
@@ -54,16 +67,7 @@ for (const path of [
 }
 
 for (const path of [
-  ".github/workflows/data-taxonomy5-production-recommendation-parity.yml",
-]) {
-  assertNotContains(path, [
-    '- "scripts/verify-current-main-health.mjs"',
-    "- 'scripts/verify-current-main-health.mjs'",
-  ]);
-}
-
-for (const path of [
-  ".github/workflows/data-taxonomy5-production-recommendation-parity.yml",
+  ".github/workflows/data-taxonomy-ci.yml",
   ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
   ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
 ]) {
@@ -123,6 +127,7 @@ console.log(JSON.stringify({
   status: "PASS",
   historical_trust_p_workflows: 0,
   historical_data_offer_workflows: 0,
+  data_taxonomy_workflows: 3,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
