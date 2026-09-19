@@ -6,7 +6,7 @@
 
 ## 1. Purpose
 
-Face Space를 특정 3D 모델의 native parameter에 종속시키지 않고 MPFB2/MakeHuman, FLAME 2023 Open 등 서로 다른 backend를 교체 가능한 adapter로 검증한다.
+Face Space를 특정 3D 모델의 native parameter에 종속시키지 않고 Google GNM v3, MPFB2/MakeHuman, FLAME 2023 Open 등 서로 다른 backend를 교체 가능한 adapter로 검증한다.
 
 ```text
 Normalized Face Representation
@@ -38,6 +38,46 @@ render / mesh
 Native parameter를 Face Space axis의 의미로 직접 승격하지 않는다.
 
 ## 3. Adapter candidates
+
+### Google GNM v3
+
+2026-09-19 조사에서 추가된 최우선 face-specific backend candidate다.
+
+특징:
+
+- Google 공식 parametric 3D head ecosystem
+- 2026 공개 GNM Head v3
+- 170 head identity components를 포함한 253 identity components
+- 383 expression components
+- head / eyes / teeth / tongue geometry
+- NumPy / JAX / PyTorch / TensorFlow backend
+- fitting utilities와 landmark support
+- official code/model release가 Apache 2.0으로 공개됨
+
+Face Lab에서는 identity coefficient 자체를 해석 가능한 Face Space axis로 사용하지 않는다.
+
+```text
+Face Space structural target
+→ optimize / fit GNM head identity coefficients
+→ generated mesh
+→ independent measurement
+→ round-trip error
+```
+
+GNM semantic identity sampler의 demographic label을 Face Lab Face Space 생성 또는 사용자 얼굴 추론에 사용하지 않는다. 특히 얼굴 외형으로 성별·민족/인종 같은 민감 속성을 추론하거나 balancing truth로 만들지 않는다.
+
+현재 우선순위:
+
+```text
+GNM v3
+→ primary face-specific adapter PoC candidate
+
+MPFB2
+→ Blender/style controlled experiment workbench candidate
+
+FLAME 2023 Open
+→ independent comparison / fallback face backend candidate
+```
 
 ### MPFB2
 
@@ -138,7 +178,7 @@ Executable PoC에서 다음을 추가한다.
 
 ## 8. Backend comparison
 
-동일 vector를 MPFB2와 FLAME 2023 Open에 입력한다.
+동일 vector를 GNM v3, MPFB2, FLAME 2023 Open에 입력한다.
 
 비교 대상:
 
