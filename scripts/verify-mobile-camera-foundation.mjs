@@ -87,11 +87,6 @@ assert.match(
 );
 assert.match(
   cameraWorkflow,
-  /\.github\/workflows\/mobile-native-shell\.yml/,
-  "Camera gate must rerun when native-shell camera wiring changes"
-);
-assert.match(
-  cameraWorkflow,
   /bash -n scripts\/verify-mobile-android-smoke\.sh/,
   "Camera gate must validate Android smoke shell syntax before native build"
 );

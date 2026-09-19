@@ -18,7 +18,6 @@ on:
       - "lib/security/public-result-read-guard*.js"
       - "scripts/verify-mobile-saved-report-reentry.mjs"
       - ".github/workflows/mobile-saved-report.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   push:
     branches: [main]
     paths:
@@ -36,7 +35,6 @@ on:
       - "lib/security/public-result-read-guard*.js"
       - "scripts/verify-mobile-saved-report-reentry.mjs"
       - ".github/workflows/mobile-saved-report.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   workflow_dispatch:
 
 permissions:

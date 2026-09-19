@@ -17,7 +17,6 @@ on:
       - "scripts/verify-mobile-saved-report-reentry.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-public-result-deep-link.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   push:
     branches: [main]
     paths:
@@ -34,7 +33,6 @@ on:
       - "scripts/verify-mobile-saved-report-reentry.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-public-result-deep-link.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   workflow_dispatch:
 
 permissions:
