@@ -95,5 +95,6 @@
     "syntheticRoundTrip": "pass",
     "localSensitivityEffectiveRank": 6,
     "supportedMeasurementCount": 6
-  }
+  },
+  "semanticContractVersion": "face-space-structural-measurement-semantics-v0"
 }
