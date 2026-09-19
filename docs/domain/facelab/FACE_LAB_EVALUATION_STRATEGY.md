@@ -145,9 +145,11 @@ MPFB2 target value 또는 FLAME beta coefficient를 그대로 성공 기준으�
 - backend/version drift
 - renderer nuisance independence
 
-MPFB2와 FLAME 2023 Open 같은 서로 다른 backend가 같은 Face Space coordinate를 재현할 때 결과가 다르면 Face Space definition을 특정 backend에 맞춰 바꾸지 않는다. Adapter mapping을 수정하거나 해당 dimension을 unsupported/hold로 처리한다.
+GNM v3, MPFB2, FLAME 2023 Open 같은 서로 다른 backend가 같은 Face Space coordinate를 재현할 때 결과가 다르면 Face Space definition을 특정 backend에 맞춰 바꾸지 않는다. Adapter mapping을 수정하거나 해당 dimension을 unsupported/hold로 처리한다.
 
 3D adapter PASS는 style compatibility PASS가 아니다. 이는 controlled experiment를 만들 수 있는 구조 재현 fidelity에 대한 평가다.
+
+GNM semantic identity sampler의 demographic conditioning은 이 평가의 Face Space target이나 user attribute truth로 사용하지 않는다.
 
 
 ## 3. Synthetic campaign 전체 흐름
