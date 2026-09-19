@@ -12,7 +12,7 @@ const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "Native
 const analyzeSource = readFileSync(join(mobileRoot, "app", "analyze.tsx"), "utf8");
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
 const nativeShellWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"), "utf8");
-const cameraWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-camera.yml"), "utf8");
+const mobileCiWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ci.yml"), "utf8");
 const androidSmokeSource = readFileSync(join(repoRoot, "scripts", "verify-mobile-android-smoke.sh"), "utf8");
 
 assert.equal(
@@ -81,14 +81,19 @@ assert.match(
   "Android native smoke must configure the AVD front camera in one pre-launch shell command"
 );
 assert.match(
-  cameraWorkflow,
-  /scripts\/verify-mobile-android-smoke\.sh/,
-  "Camera gate must rerun when the Android camera smoke changes"
+  mobileCiWorkflow,
+  /node scripts\/verify-mobile-camera-foundation\.mjs/,
+  "Consolidated Mobile CI must execute the camera contract verifier"
 );
 assert.match(
-  cameraWorkflow,
+  mobileCiWorkflow,
+  /scripts\/verify-mobile-android-smoke\.sh/,
+  "Consolidated Mobile CI must rerun when the Android camera smoke changes"
+);
+assert.match(
+  mobileCiWorkflow,
   /bash -n scripts\/verify-mobile-android-smoke\.sh/,
-  "Camera gate must validate Android smoke shell syntax before native build"
+  "Consolidated Mobile CI must validate Android smoke shell syntax"
 );
 assert.match(androidSmokeSource, /wait_for_text "SKIN ANALYSIS"/, "Android smoke must observe the rendered fullscreen Analyze title");
 assert.match(androidSmokeSource, /Camera ready/, "Android smoke must verify the ready state");
