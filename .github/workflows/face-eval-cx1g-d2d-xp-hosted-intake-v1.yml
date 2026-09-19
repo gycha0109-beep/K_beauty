@@ -20,7 +20,6 @@ on:
       - 'scripts/check-face-lab-independent-human-cue-hosted-ui-browser-v1.mjs'
       - 'supabase/migrations/20260815023734_face_lab_hosted_intake_v1.sql'
       - 'docs/domain/facelab/face-lab-independent-human-cue-hosted-intake*.md'
-      - 'package.json'
       - '.github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml'
   workflow_dispatch:
 
