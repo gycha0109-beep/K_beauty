@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "face-space-gnm-v3-poc-evidence-summary-v0",
+  "recordedAt": "2026-09-19",
+  "researchOnly": true,
+  "productionAuthority": false,
+  "workflow": {
+    "name": "Face Lab GNM v3 Executable PoC",
+    "runId": 35433869478,
+    "validatedBranchHead": "be3c54fd876334260ccb639ddfc80ab6c7f8765f",
+    "conclusion": "success",
+    "artifactId": 10581741971,
+    "artifactName": "face-lab-gnm-v3-poc-b8340627bac4ea6f6190f771f303bd8058356706",
+    "artifactExpiresAt": "2026-10-03T09:08:55Z"
+  },
+  "upstream": {
+    "repository": "google/GNM",
+    "codeRevision": "a424b5153eec9154f3dfa5ee7f214e5817918d54",
+    "modelPath": "gnm/shape/data/versions/v3_0/gnm_head.npz",
+    "modelGitBlobSha": "b49ac631e4d3388e42640555c0b25c4fd134b1b8",
+    "modelSizeBytes": 53305389
+  },
+  "probe": {
+    "version": "3.0",
+    "variant": "head",
+    "identityDim": 253,
+    "headIdentityComponentScope": 170,
+    "expressionDim": 383,
+    "numVertices": 17821,
+    "numJoints": 4,
+    "landmarks": 68
+  },
+  "selftest": {
+    "syntheticOnly": true,
+    "semanticDemographicSamplingAllowed": false,
+    "measurementVersion": "gnm-sparse68-structural-measurement-v0",
+    "fitComponents": 6,
+    "ridge": 0.01,
+    "nfev": 25,
+    "resultDigest": "f84b519cd8c04bdea975dd5e34b6e4a623a8ecba5280884ed7e6058718e801ed",
+    "status": "pass",
+    "dimensions": [
+      {
+        "id": "lower_face_width_ratio",
+        "absoluteError": 0.00002701496789403457,
+        "tolerance": 0.015,
+        "passed": true
+      },
+      {
+        "id": "chin_height_ratio",
+        "absoluteError": 0.00003393071520513269,
+        "tolerance": 0.015,
+        "passed": true
+      },
+      {
+        "id": "eye_spacing_ratio",
+        "absoluteError": 0.00011370471884275535,
+        "tolerance": 0.015,
+        "passed": true
+      },
+      {
+        "id": "eye_width_ratio",
+        "absoluteError": 0.00010944385812391988,
+        "tolerance": 0.015,
+        "passed": true
+      },
+      {
+        "id": "eye_tilt",
+        "absoluteError": 0.0008500423058381834,
+        "tolerance": 1,
+        "passed": true
+      },
+      {
+        "id": "nose_width_ratio",
+        "absoluteError": 0.00010101593909711548,
+        "tolerance": 0.015,
+        "passed": true
+      }
+    ]
+  },
+  "interpretation": [
+    "This proves the pinned GNM v3 backend can load and reproduce the current synthetic sparse-68 structural subset through the research fitting loop.",
+    "This does not validate user-photo reconstruction, Face Space completeness, Archetype validity, or Style Compatibility.",
+    "Unsupported sparse-68 dimensions remain fail-closed."
+  ]
+}
