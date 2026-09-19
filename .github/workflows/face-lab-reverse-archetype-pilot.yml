@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - "lib/face-lab-face-space-3d-research.js"
+      - "lib/face-lab-photo-geometry-research.js"
+      - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
+      - "evidence/facelab/photo-geometry/**"
+      - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
       - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
       - "scripts/face-lab-gnm-v3-poc.py"
       - ".github/workflows/face-lab-gnm-v3-poc.yml"
@@ -27,6 +31,10 @@ on:
       - main
     paths:
       - "lib/face-lab-face-space-3d-research.js"
+      - "lib/face-lab-photo-geometry-research.js"
+      - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
+      - "evidence/facelab/photo-geometry/**"
+      - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
       - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
       - "scripts/face-lab-gnm-v3-poc.py"
       - ".github/workflows/face-lab-gnm-v3-poc.yml"
@@ -80,5 +88,7 @@ jobs:
         run: node scripts/face-lab-reverse-archetype-collection.mjs --next evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
       - name: Verify FaceSpace3DAdapter v0 contract
         run: node scripts/verify-face-lab-face-space-3d-adapter.mjs
+      - name: Verify photo geometry measurement bridge
+        run: node scripts/verify-face-lab-photo-geometry-bridge.mjs
       - name: Compile GNM v3 PoC runner
         run: python -m py_compile scripts/face-lab-gnm-v3-poc.py
