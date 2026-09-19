@@ -249,6 +249,10 @@ MediaPipe Face Geometry
 - GNM executable PoC run `35433869478` PASS: exact code/model pin, model load, sparse-68 extraction, 6-dimension synthetic fitting/re-measurement이 성공했다.
 - validated branch head: `be3c54fd876334260ccb639ddfc80ab6c7f8765f`.
 - durable summary: `evidence/facelab/face-space-3d/v0/gnm-v3-poc-evidence-summary.json`.
+- follow-up executable run `35433957806` PASS: first 24 head identity components ±0.25 sensitivity sweep에서 현재 6개 sparse-68 measurement의 effective local rank = 6을 확인했다.
+- singular values: `[3.4926, 1.8268, 1.1615, 0.6993, 0.4301, 0.1104]`.
+- 개별 GNM latent component는 여러 구조 dimension에 동시에 영향을 주는 cross-dimension leakage를 보였다. 따라서 latent coefficient를 Face Space semantic axis로 직접 쓰지 않는 현재 adapter 설계가 유지된다.
+- current weak point: `eye_tilt`는 현재 normalization 기준 다른 5개 metric보다 local sensitivity가 낮다.
 - 이 PASS는 user-photo reconstruction, Face Space completeness, Archetype validity, Style Compatibility를 검증한 것이 아니다.
 - GNM identity component를 Face Space axis 자체로 정의하지 않는다.
 - GNM semantic demographic identity sampling은 Face Lab Face Space/user inference에 사용하지 않는다.
