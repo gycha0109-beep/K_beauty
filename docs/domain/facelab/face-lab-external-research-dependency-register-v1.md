@@ -50,6 +50,8 @@ Boundary:
 - semantic demographic identity sampling is disabled for Face Lab
 - no sensitive-attribute inference from appearance
 - exact model artifact must be pinned before executable adoption
+- GNM ships a native barycentric sparse-68 landmark set
+- no official MediaPipe 468 ↔ GNM correspondence is currently frozen; community mappings remain reference-only until independently validated
 
 Upstream:
 
