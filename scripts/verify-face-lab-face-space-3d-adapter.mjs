@@ -30,8 +30,11 @@ for (const manifest of [gnm, mpfb, flame]) {
   assert.equal(manifest.faceSpaceIsAuthority, true);
   assert.equal(manifest.nativeParametersAreAuthority, false);
   assert.equal(manifest.executionBoundary, 'offline_research');
-  assert.equal(manifest.implementationStatus, 'mapping_candidate');
 }
+
+assert.equal(gnm.implementationStatus, 'executable');
+assert.equal(mpfb.implementationStatus, 'mapping_candidate');
+assert.equal(flame.implementationStatus, 'mapping_candidate');
 
 const vectorValidation = validateFaceSpaceVector(vector);
 assert.equal(vectorValidation.ok, true, vectorValidation.errors.join(','));
