@@ -33,6 +33,7 @@ Makeup 최종 엔진                      ❌ 미구현
 Eyewear 최종 엔진                     ❌ 미구현
 Face Style 최종 엔진                  ❌ 미구현
 Look Composer                         ❌ 미구현
+FaceSpace3DAdapter contract           🟡 연구 명시 확정 / 구현 시작
 Parametric 3D experiment pipeline     ❌ 미구현
 Automated VLM judge program           ❌ 미구현
 최종 canonical Free/Premium 결과      ❌ 미완성
@@ -209,11 +210,41 @@ FaceLabObservationAnalysis
 - Archetype projection from Face Space
 - Style Representation schema
 - compatibility evidence store/model
+- FaceSpace3DAdapter 실행 구현
+- MPFB2 adapter mapping / round-trip validator
+- FLAME 2023 Open adapter fitting / round-trip validator
 - Blender 또는 동등한 parametric 3D 실험 pipeline
 - multi-VLM blind judge orchestration
 - active experimentation
 
 문서화된 목표 구조를 현재 Production capability로 오해하면 안 된다.
+
+### 5.2 3D backend research decision
+
+2026-09-19 조사 기준 연구 방향은 다음으로 고정한다.
+
+```text
+Face Space = internal authority
+
+MPFB2 / MakeHuman
+→ offline controlled experiment backend candidate
+
+FLAME 2023 Open
+→ independent parametric face backend candidate
+
+MediaPipe Face Geometry
+→ photo-side geometry / pose / measurement evidence candidate
+```
+
+중요:
+
+- MPFB target/Shape Key를 Face Space axis 자체로 정의하지 않는다.
+- FLAME shape beta를 해석 가능한 Face Space axis로 직접 해석하지 않는다.
+- 두 backend 모두 versioned adapter와 round-trip measurement를 통과해야 한다.
+- MICA / DECA / 3DDFA / FaceVerse 등은 별도 license·dataset provenance 검토 없이 Production dependency로 승격하지 않는다.
+- 3D renderer output은 compatibility truth가 아니라 controlled experiment evidence다.
+
+이 결정은 research architecture 명시이며 실제 adapter executable이 구현됐다는 뜻은 아니다.
 
 
 ## 6. Free / Premium 상태
