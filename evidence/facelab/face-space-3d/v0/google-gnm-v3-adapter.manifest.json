@@ -4,7 +4,7 @@
   "backend": "gnm_v3",
   "backendVersion": "google/GNM@a424b5153eec9154f3dfa5ee7f214e5817918d54",
   "mappingVersion": "gnm-face-space-fit-v0",
-  "implementationStatus": "mapping_candidate",
+  "implementationStatus": "executable",
   "executionBoundary": "offline_research",
   "faceSpaceIsAuthority": true,
   "nativeParametersAreAuthority": false,
@@ -87,5 +87,13 @@
     "pose": "zero",
     "translation": "zero",
     "solver": "scipy_least_squares_with_l2_regularization"
+  },
+  "executionEvidence": {
+    "workflow": "Face Lab GNM v3 Executable PoC",
+    "successfulRunId": 35433957806,
+    "validatedHead": "0acafe85134f136af9cbafefb28df871a2864322",
+    "syntheticRoundTrip": "pass",
+    "localSensitivityEffectiveRank": 6,
+    "supportedMeasurementCount": 6
   }
 }
