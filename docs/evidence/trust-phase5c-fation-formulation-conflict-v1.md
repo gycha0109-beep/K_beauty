@@ -73,7 +73,7 @@ There is a second first-party inconsistency: product page 329 states that functi
 Current retail context points in both directions:
 
 - a current 30 ml duty-free listing exposes the mugwort-first ordering and states stock manufactured on or after 2024-10-02;
-- a 2026-08-25 indexed 50 ml Olive Young planning exposes the water-first ordering.
+- a 2026-08-25 indexed 50 ml Olive Young promotional listing exposes the water-first ordering.
 
 These are useful conflict signals, but neither is sufficient first-party authority to decide which ordering represents the current target 30 ml formulation.
 
