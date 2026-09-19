@@ -46,5 +46,6 @@
     "Raw Face Landmarker screen-normalized XYZ is not accepted because upstream documents Z as relative under a weak-perspective camera model.",
     "Anchor IDs are versioned adapter choices over the official 468 topology; they are not claimed as an official MediaPipe-to-GNM correspondence.",
     "The bridge emits raw structural measurements only. It does not create a calibrated Face Space vector."
-  ]
+  ],
+  "semanticContractVersion": "face-space-structural-measurement-semantics-v0"
 }
