@@ -48,4 +48,6 @@ jobs:
         run: npm --prefix crawler ci
 
       - name: Run canonical current-main verification
+        env:
+          ARCHITECTURE_GUARD_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
         run: npm run verify:current

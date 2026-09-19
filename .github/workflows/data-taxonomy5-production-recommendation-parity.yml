@@ -17,7 +17,6 @@ on:
       - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
       - ".github/workflows/data-taxonomy5-production-recommendation-parity.yml"
       - ".github/workflows/v21-admission-g3a-pf-authority-read.yml"
-      - "scripts/verify-current-main-health.mjs"
       - "lib/product-source.js"
       - "lib/recommendation-scoring.ts"
   push:
@@ -36,10 +35,13 @@ on:
       - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
       - ".github/workflows/data-taxonomy5-production-recommendation-parity.yml"
       - ".github/workflows/v21-admission-g3a-pf-authority-read.yml"
-      - "scripts/verify-current-main-health.mjs"
       - "lib/product-source.js"
       - "lib/recommendation-scoring.ts"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

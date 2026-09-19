@@ -11,7 +11,6 @@ on:
       - "lib/product-purchase-link.js"
       - "scripts/verify-data-offer16-offer-presentation-authority-v1.mjs"
       - "scripts/verify-data-offer16-offer-presentation-authority-runtime-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer16-offer-presentation-authority.yml"
   push:
     branches: [main]
@@ -23,9 +22,12 @@ on:
       - "lib/product-purchase-link.js"
       - "scripts/verify-data-offer16-offer-presentation-authority-v1.mjs"
       - "scripts/verify-data-offer16-offer-presentation-authority-runtime-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer16-offer-presentation-authority.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

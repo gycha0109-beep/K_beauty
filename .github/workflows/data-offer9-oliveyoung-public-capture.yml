@@ -8,7 +8,6 @@ on:
       - "scripts/capture-oliveyoung-public-listing-v1.mjs"
       - "scripts/verify-oliveyoung-public-listing-capture-v1.mjs"
       - "scripts/verify-oliveyoung-public-capture-attempt-artifact-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer9-oliveyoung-public-capture.yml"
   push:
     branches: [main]
@@ -17,9 +16,12 @@ on:
       - "scripts/capture-oliveyoung-public-listing-v1.mjs"
       - "scripts/verify-oliveyoung-public-listing-capture-v1.mjs"
       - "scripts/verify-oliveyoung-public-capture-attempt-artifact-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer9-oliveyoung-public-capture.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

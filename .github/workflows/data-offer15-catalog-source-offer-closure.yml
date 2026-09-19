@@ -8,7 +8,6 @@ on:
       - "supabase/migrations/20260913035725_seller_listing_observations_append_only_v1.sql"
       - "evidence/data-offer15/**"
       - "scripts/verify-data-offer15-catalog-source-offer-closure-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer15-catalog-source-offer-closure.yml"
   push:
     branches: [main]
@@ -17,9 +16,12 @@ on:
       - "supabase/migrations/20260913035725_seller_listing_observations_append_only_v1.sql"
       - "evidence/data-offer15/**"
       - "scripts/verify-data-offer15-catalog-source-offer-closure-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer15-catalog-source-offer-closure.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

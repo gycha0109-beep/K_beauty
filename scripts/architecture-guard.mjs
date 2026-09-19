@@ -31,9 +31,15 @@ function normalizePath(filePath) {
 }
 
 function getChangedFiles({ staged }) {
-  const args = staged
-    ? ["diff", "--cached", "--name-only", "--diff-filter=ACMR"]
-    : ["diff", "--name-only", "--diff-filter=ACMR"];
+  let args;
+  if (staged) {
+    args = ["diff", "--cached", "--name-only", "--diff-filter=ACMR"];
+  } else {
+    const ciBase = String(process.env.ARCHITECTURE_GUARD_BASE_SHA || "").trim();
+    args = /^[0-9a-f]{40}$/i.test(ciBase)
+      ? ["diff", "--name-only", "--diff-filter=ACMR", `${ciBase}...HEAD`]
+      : ["diff", "--name-only", "--diff-filter=ACMR"];
+  }
 
   return runGit(args)
     .split(/\r?\n/)

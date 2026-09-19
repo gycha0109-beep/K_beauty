@@ -13,7 +13,6 @@ on:
       - "lib/server/product-offer-read-service.js"
       - "app/api/internal/product-offer-presentation-authority-controlled-probe/route.js"
       - "scripts/verify-data-offer17-controlled-offer-rpc-diagnostic-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
 
 permissions:
   contents: read
