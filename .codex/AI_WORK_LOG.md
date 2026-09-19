@@ -2951,3 +2951,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Decision: `FORMULATION_CONFLICT / HOLD`. The provisional variant label `NOSCA9_TROUBLE_SERUM_KR_30ML` is not authorized; no `formulation_revision_key` and no Subject semantic key are frozen.
 - Required next authority: current 30 ml package ingredient panel tied to lot/date, a FATION/Dong-A reformulation/current-formula statement, or equivalent first-party evidence.
 - Authorized Production delta: zero across Subject, Evidence, Confirmation, Recommendation, and Product source binding.
+
+
+## 2026-09-19 — TRUST Phase 6-A re-entry foundation
+- Issue #547 / PR #548.
+- Added append-only re-entry events for SOURCE/FORMULATION/POLICY/REGISTRY changes and controlled MANUAL_RETRY.
+- Manual retry is non-destructive: identity conflicts stay review/blocked; only exact-Subject SOURCE_BLOCKED/EVIDENCE_INSUFFICIENT tasks may return to RESEARCH_PENDING.
+- Fresh Production ACL audit found Phase 5 Admin Queue operational TRUST tables lacked service_role SELECT; Phase 6-A restores SELECT only while keeping writes RPC-only and anon/authenticated grants at zero.
+- Product Fact authority, Current invalidation, Subject creation, confirmation, Recommendation mutation: zero by contract.
