@@ -363,32 +363,144 @@ Blender 또는 동등한 3D 도구는 production Face Representation authority�
 
 목표는 7개의 고정 "동물상 얼굴"을 만드는 것이 아니다.
 
-하나의 versioned parametric head 또는 호환되는 head family에서 Face Space의 좌표를 재현한다.
+### 12.1 Face Space is the authority
+
+Face Space를 FLAME, MakeHuman/MPFB, Blender Shape Key 또는 특정 3D backend의 native parameter space로 정의하지 않는다.
+
+```text
+Normalized Face Representation
+→ Face Space
+→ versioned FaceSpace3DAdapter
+   ├─ MPFB2 backend
+   └─ FLAME 2023 Open backend
+→ controlled mesh / render
+```
+
+3D backend는 교체 가능한 연구 adapter다. Backend를 바꾸더라도 Face Representation schema와 Face Space semantics가 조용히 바뀌면 안 된다.
+
+### 12.2 Interpretable Face Space axes
+
+초기 Face Space는 사람이 해석하고 다시 측정할 수 있는 구조 축을 우선한다.
 
 예:
 
 ```text
-Base Head
-├─ face length
-├─ cheekbone width
-├─ jaw width
-├─ jaw angle
-├─ eye width
-├─ eye tilt
-├─ eye spacing
-├─ forehead ratio
-└─ ...
+face length
+face width
+cheekbone width / position
+lower-face width
+jaw relation
+chin height
+forehead relation
+eye width
+eye spacing
+eye tilt
+nose width / relation
 ```
 
-Archetype마다 다음과 같은 experiment points를 만들 수 있다.
+정확한 축, 단위, landmark 정의와 normalization은 별도 versioned contract에서 고정한다.
 
-- center prototype
+### 12.3 MPFB2 adapter role
+
+MPFB2 / MakeHuman의 target, Shape Key, phenotype/preset은 Face Space 자체가 아니다.
+
+MPFB2 adapter는 Face Space의 해석 가능한 구조 축을 기존 MPFB target 또는 BEJEWELY-owned custom target 조합으로 변환하는 offline controlled-render backend다.
+
+MPFB2의 hair/material/asset 기능을 사용할 경우에도 다음을 분리한다.
+
+```text
+Face Space coordinate
+≠ MPFB target value
+
+Style Space coordinate
+≠ MPFB hair property
+```
+
+Adapter mapping은 versioned되고 round-trip measurement로 검증해야 한다.
+
+### 12.4 FLAME 2023 Open adapter role
+
+FLAME identity shape coefficient는 face length, jaw width, cheek width 같은 해석 가능한 Face Space axis와 1:1 의미 대응한다고 가정하지 않는다.
+
+금지:
+
+```text
+FaceSpace.jawWidth = 0.6
+→ FLAME beta[k] = 0.6
+```
+
+허용되는 연구 방향:
+
+```text
+target Face Space measurements
+→ optimize / fit FLAME shape coefficients
+→ generated mesh
+→ measure the mesh again
+→ compare requested vs measured structure
+```
+
+FLAME adapter는 latent coefficient 자체가 아니라 재측정된 구조와 fitting provenance를 결과 authority로 남긴다.
+
+Production 또는 배포 가능성을 검토할 때는 반드시 정확한 model artifact와 license version을 고정한다. FLAME 2023 Open과 다른 FLAME release를 동일한 라이선스로 간주하지 않는다.
+
+### 12.5 Round-trip validation
+
+모든 3D adapter는 최소 다음 검증을 지원해야 한다.
+
+```text
+Face Space vector F
+→ adapter
+→ mesh M
+→ independent measurement
+→ reconstructed vector F'
+→ error(F, F')
+```
+
+검증 항목:
+
+- dimension별 absolute / normalized error
+- unsupported dimension
+- clipping / saturation
+- cross-dimension leakage
+- local monotonicity
+- repeated-run determinism
+- backend/version provenance
+
+한 backend가 시각적으로 그럴듯하다는 이유만으로 PASS하지 않는다.
+
+### 12.6 Backend comparison
+
+동일한 Face Space vector를 여러 backend에서 생성해 비교할 수 있다.
+
+```text
+             Face vector F
+              /          \
+             /            \
+      MPFB2 adapter    FLAME adapter
+           ↓                ↓
+         mesh A           mesh B
+           ↓                ↓
+       measure A        measure B
+             \            /
+              round-trip error
+```
+
+Backend별 오차가 다르면 Face Space definition을 backend에 맞춰 왜곡하지 않고 adapter mapping을 수정하거나 해당 dimension을 unsupported/hold로 둔다.
+
+### 12.7 Experiment points
+
+Face Space에서 다음과 같은 experiment points를 만들 수 있다.
+
+- generic coverage points
+- Archetype region center candidates
 - high-density variants
 - boundary variants
 - overlap variants
 - out-of-distribution controls
 
-각 3D 얼굴은 해당 Archetype의 "정답 얼굴"이 아니라 특정 Face Space 좌표의 시뮬레이션이다.
+각 3D 얼굴은 Archetype의 "정답 얼굴"이 아니라 특정 Face Space 좌표의 시뮬레이션이다.
+
+3D prototype이나 renderer output을 Human/웹 ground truth로 승격하지 않는다.
 
 ## 13. Counterfactual experiment
 
