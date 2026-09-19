@@ -55,7 +55,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout exact candidate SHA
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -70,7 +70,7 @@ jobs:
           printf 'MOBILE_15_SOURCE_SHA=%s\n' "$actual"
 
       - name: Setup Node 22
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22.23.1
           cache: npm
@@ -104,7 +104,7 @@ jobs:
       MOBILE_ANDROID_UPLOAD_CERT_SHA256: ${{ secrets.MOBILE_ANDROID_UPLOAD_CERT_SHA256 }}
     steps:
       - name: Checkout exact candidate SHA
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
@@ -117,13 +117,13 @@ jobs:
           printf 'MOBILE_15_ANDROID_SHA=%s\n' "$(git rev-parse HEAD)"
 
       - name: Setup Node 22
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22.23.1
           cache: npm
 
       - name: Setup Java 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
@@ -209,7 +209,7 @@ jobs:
           printf 'MOBILE_15_ANDROID_SIGNED_AAB=PASS\n'
 
       - name: Upload signed Android distribution artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bejewely-mobile15-android-${{ github.sha }}
           retention-days: 14
@@ -233,7 +233,7 @@ jobs:
       MOBILE_IOS_APPLE_TEAM_ID: ${{ secrets.MOBILE_IOS_APPLE_TEAM_ID }}
     steps:
       - name: Checkout exact candidate SHA
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
@@ -253,7 +253,7 @@ jobs:
           xcodebuild -version
 
       - name: Setup Node 22
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22.23.1
           cache: npm
@@ -404,7 +404,7 @@ jobs:
           printf 'MOBILE_15_IOS_SIGNED_IPA=PASS\n'
 
       - name: Upload signed iOS distribution artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bejewely-mobile15-ios-${{ github.sha }}
           retention-days: 14
