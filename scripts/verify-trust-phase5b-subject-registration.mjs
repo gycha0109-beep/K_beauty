@@ -83,7 +83,10 @@ for (const forbidden of [
   ".upsert(",
   "admin_adopt_trust_evidence_candidate_v1",
   "admin_confirm_product_fact_v1",
-  "recommendation"
+  "recommendation_logs",
+  "recommendation_results",
+  "admin_activate",
+  "recommendation_cutover"
 ]) {
   check(
     !source.orchestration.toLowerCase().includes(forbidden.toLowerCase()),
