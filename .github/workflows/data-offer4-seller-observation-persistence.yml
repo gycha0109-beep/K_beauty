@@ -7,7 +7,6 @@ on:
       - "lib/seller-listing-observation-v1.js"
       - "lib/server/seller-listing-observation-persistence-v1.js"
       - "scripts/verify-seller-listing-observation-persistence-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - "supabase/migrations/*_seller_listing_observations_*.sql"
       - "crawler/tests/verify-seller-listing-observation-persistence-local-runtime.ts"
       - "crawler/package.json"
@@ -18,12 +17,15 @@ on:
       - "lib/seller-listing-observation-v1.js"
       - "lib/server/seller-listing-observation-persistence-v1.js"
       - "scripts/verify-seller-listing-observation-persistence-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - "supabase/migrations/*_seller_listing_observations_*.sql"
       - "crawler/tests/verify-seller-listing-observation-persistence-local-runtime.ts"
       - "crawler/package.json"
       - ".github/workflows/data-offer4-seller-observation-persistence.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

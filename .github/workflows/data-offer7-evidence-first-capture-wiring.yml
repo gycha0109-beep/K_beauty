@@ -9,7 +9,6 @@ on:
       - "lib/server/seller-listing-capture-evidence-v1.js"
       - "lib/seller-listing-observation-v1.js"
       - "scripts/verify-seller-listing-capture-with-evidence-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer7-evidence-first-capture-wiring.yml"
   push:
     branches: [main]
@@ -19,9 +18,12 @@ on:
       - "lib/server/seller-listing-capture-evidence-v1.js"
       - "lib/seller-listing-observation-v1.js"
       - "scripts/verify-seller-listing-capture-with-evidence-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer7-evidence-first-capture-wiring.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

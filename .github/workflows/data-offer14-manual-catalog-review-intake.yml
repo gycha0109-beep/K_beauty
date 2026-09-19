@@ -9,7 +9,6 @@ on:
       - "tests/fixtures/data-offer14/**"
       - "scripts/verify-data-offer14-manual-catalog-review-intake-v1.mjs"
       - "scripts/verify-data-offer14-manual-catalog-review-intake-runtime-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer14-manual-catalog-review-intake.yml"
   push:
     branches: [main]
@@ -19,9 +18,12 @@ on:
       - "tests/fixtures/data-offer14/**"
       - "scripts/verify-data-offer14-manual-catalog-review-intake-v1.mjs"
       - "scripts/verify-data-offer14-manual-catalog-review-intake-runtime-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer14-manual-catalog-review-intake.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

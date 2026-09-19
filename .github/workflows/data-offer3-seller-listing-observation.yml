@@ -6,16 +6,18 @@ on:
     paths:
       - "lib/seller-listing-observation-v1.js"
       - "scripts/verify-seller-listing-observation-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer3-seller-listing-observation.yml"
   push:
     branches: [main]
     paths:
       - "lib/seller-listing-observation-v1.js"
       - "scripts/verify-seller-listing-observation-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer3-seller-listing-observation.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

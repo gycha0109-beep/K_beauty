@@ -12,8 +12,6 @@ on:
       - "scripts/verify-admin-access-foundation.mjs"
       - "scripts/verify-admin-access-runtime.sh"
       - "docs/architecture/admin-access-foundation-v1.md"
-      - "package.json"
-      - "package-lock.json"
       - ".github/workflows/admin-access-foundation.yml"
   workflow_dispatch:
 

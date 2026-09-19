@@ -6,16 +6,18 @@ on:
     paths:
       - "evidence/data-offer12/torriden-136-product-binding-decision-v1.json"
       - "scripts/verify-data-offer12-torriden-binding-decision-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer12-torriden-binding-decision.yml"
   push:
     branches: [main]
     paths:
       - "evidence/data-offer12/torriden-136-product-binding-decision-v1.json"
       - "scripts/verify-data-offer12-torriden-binding-decision-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer12-torriden-binding-decision.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

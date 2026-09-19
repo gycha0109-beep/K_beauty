@@ -20,9 +20,12 @@ on:
       - 'scripts/check-face-lab-independent-human-cue-hosted-ui-browser-v1.mjs'
       - 'supabase/migrations/20260815023734_face_lab_hosted_intake_v1.sql'
       - 'docs/domain/facelab/face-lab-independent-human-cue-hosted-intake*.md'
-      - 'package.json'
       - '.github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
