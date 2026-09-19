@@ -206,6 +206,8 @@ def fit_metrics(model, target: dict[str, float], fit_components: int, ridge: flo
         x0=np.zeros(fit_components, dtype=np.float64),
         bounds=(-3.0, 3.0),
         max_nfev=120,
+        diff_step=1e-3,
+        x_scale="jac",
         xtol=1e-9,
         ftol=1e-9,
         gtol=1e-9,
