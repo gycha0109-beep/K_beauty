@@ -23,6 +23,7 @@ GNM_CODE_REVISION = "a424b5153eec9154f3dfa5ee7f214e5817918d54"
 GNM_MODEL_BLOB_SHA = "b49ac631e4d3388e42640555c0b25c4fd134b1b8"
 GNM_MODEL_SIZE_BYTES = 53_305_389
 MEASUREMENT_VERSION = "gnm-sparse68-structural-measurement-v0"
+SEMANTICS_VERSION = "face-space-structural-measurement-semantics-v0"
 HEAD_IDENTITY_COMPONENTS = 170
 DEFAULT_FIT_COMPONENTS = 24
 
@@ -162,6 +163,7 @@ def _model_probe(model) -> dict[str, Any]:
         "gnmModelGitBlobSha": GNM_MODEL_BLOB_SHA,
         "gnmModelSizeBytes": GNM_MODEL_SIZE_BYTES,
         "measurementVersion": MEASUREMENT_VERSION,
+        "semanticsVersion": SEMANTICS_VERSION,
         "model": {
             "version": str(model.version),
             "variant": str(model.variant),
@@ -260,6 +262,7 @@ def fit_metrics(model, target: dict[str, float], fit_components: int, ridge: flo
     return {
         "schemaVersion": "face-space-gnm-v3-fit-result-v0",
         "measurementVersion": MEASUREMENT_VERSION,
+        "semanticsVersion": SEMANTICS_VERSION,
         "status": "pass" if passed else "hold",
         "ok": passed,
         "solver": {
@@ -380,6 +383,7 @@ def sensitivity_scan(model, components: int, amplitude: float):
         "gnmCodeRevision": GNM_CODE_REVISION,
         "gnmModelGitBlobSha": GNM_MODEL_BLOB_SHA,
         "measurementVersion": MEASUREMENT_VERSION,
+        "semanticsVersion": SEMANTICS_VERSION,
         "componentScope": {
             "start": 0,
             "count": components,
