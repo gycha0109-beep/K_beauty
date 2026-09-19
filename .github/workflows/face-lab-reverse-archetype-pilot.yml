@@ -3,6 +3,13 @@ name: Face Lab Reverse Archetype Pilot Guard
 on:
   pull_request:
     paths:
+      - "lib/face-lab-face-space-3d-research.js"
+      - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
+      - "evidence/facelab/face-space-3d/**"
+      - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
+      - "docs/domain/facelab/FACE_LAB_MASTER_SPEC.md"
+      - "docs/domain/facelab/FACE_LAB_CURRENT_STATE.md"
+      - "docs/domain/facelab/FACE_LAB_EVALUATION_STRATEGY.md"
       - "lib/face-lab-reverse-archetype-research.js"
       - "scripts/verify-face-lab-reverse-archetype-pilot.mjs"
       - "scripts/face-lab-reverse-archetype-collection.mjs"
@@ -16,6 +23,13 @@ on:
     branches:
       - main
     paths:
+      - "lib/face-lab-face-space-3d-research.js"
+      - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
+      - "evidence/facelab/face-space-3d/**"
+      - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
+      - "docs/domain/facelab/FACE_LAB_MASTER_SPEC.md"
+      - "docs/domain/facelab/FACE_LAB_CURRENT_STATE.md"
+      - "docs/domain/facelab/FACE_LAB_EVALUATION_STRATEGY.md"
       - "lib/face-lab-reverse-archetype-research.js"
       - "scripts/verify-face-lab-reverse-archetype-pilot.mjs"
       - "scripts/face-lab-reverse-archetype-collection.mjs"
@@ -48,3 +62,5 @@ jobs:
         run: node scripts/face-lab-reverse-archetype-collection.mjs evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
       - name: Verify R-A2A next-task CLI
         run: node scripts/face-lab-reverse-archetype-collection.mjs --next evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
+      - name: Verify FaceSpace3DAdapter v0 contract
+        run: node scripts/verify-face-lab-face-space-3d-adapter.mjs
