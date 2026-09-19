@@ -133,6 +133,16 @@ for (const path of [
 ]) {
   assertNotContains(path, rootPackageTriggers);
 }
+
+const g3aWorkflow = read(".github/workflows/v21-admission-g3a-pf-authority-read.yml");
+const g3aPushSection = g3aWorkflow.split("  pull_request:")[0];
+assert(
+  g3aPushSection.includes("    paths:"),
+  "G3A deployed runtime probe must not run on every main push",
+);
+assertContains(".github/workflows/v21-admission-g3a-pf-authority-read.yml", [
+  "cancel-in-progress: true",
+]);
 assertNotContains(".github/workflows/mobile-14-auth-app-links.yml", [
   '- "apps/mobile/**"',
   "source-and-web:",
@@ -216,6 +226,7 @@ console.log(JSON.stringify({
   retired_mobile_store_stage_workflows: 0,
   retired_mobile_app_stage_workflows: 0,
   heavy_mobile_root_package_triggers: 0,
+  g3a_unbounded_main_push: false,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
