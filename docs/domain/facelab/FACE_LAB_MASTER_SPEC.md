@@ -88,6 +88,8 @@ FaceLabObservationAnalysis
 
 Face Space는 특정 수의 대표 상을 전제로 하지 않는다. 현재 7개 대표 상이 바뀌거나 추가·병합·분할·폐기돼도 얼굴 구조 표현 계약 자체는 유지될 수 있어야 한다.
 
+Face Space는 특정 3D backend의 native parameter space도 아니다. FLAME coefficient, MPFB/MakeHuman target, Blender Shape Key는 Face Space를 재현하거나 검증하기 위한 adapter parameter일 수 있지만 내부 얼굴 표현 authority가 아니다. 3D backend mapping은 versioned adapter로 격리하고, 생성 mesh를 다시 구조 측정해 requested Face Space vector와 round-trip 검증한다.
+
 구조적 얼굴 축과 헤어·메이크업·표정·조명·카메라 같은 presentation 축은 가능한 한 분리해 보존한다. Presentation에서 반복되는 패턴을 얼굴 구조 truth로 조용히 승격하지 않는다.
 
 정확한 representation schema와 normalization은 별도 versioned contract가 담당한다.
