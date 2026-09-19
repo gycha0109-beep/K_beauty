@@ -1,0 +1,158 @@
+name: BEJEWELY Mobile Store Readiness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/account-deletion/**"
+      - "app/api/my/account/**"
+      - "app/en/account-deletion/**"
+      - "app/en/privacy/**"
+      - "app/en/support/**"
+      - "app/privacy/**"
+      - "app/support/**"
+      - "components/account/**"
+      - "components/legal/**"
+      - "components/support/**"
+      - "lib/auth/account-deletion.js"
+      - "lib/vision-observation-contract.js"
+      - "apps/mobile/app.json"
+      - "apps/mobile/package.json"
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/app/index.tsx"
+      - "apps/mobile/app/my.tsx"
+      - "apps/mobile/assets/icon/**"
+      - "apps/mobile/assets/store/bejewely-play-icon-512.png"
+      - "apps/mobile/google-play-data-safety.json"
+      - "apps/mobile/google-play-health-apps-declaration.json"
+      - "apps/mobile/lib/copy.ts"
+      - "apps/mobile/lib/env.ts"
+      - "apps/mobile/store-readiness.json"
+      - "docs/store/**"
+      - "public/images/brand/bejewely-icon-dark.png"
+      - "public/images/brand/bejewely-icon-light.png"
+      - "scripts/audit-mobile-16g-brand-icons.mjs"
+      - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - "scripts/verify-mobile-14-auth-app-links.mjs"
+      - "scripts/verify-mobile-16a-privacy-account-deletion.mjs"
+      - "scripts/verify-mobile-16c-google-data-safety.mjs"
+      - "scripts/verify-mobile-16d-google-play-health-declaration.mjs"
+      - "scripts/verify-mobile-16e-content-rating-readiness.mjs"
+      - "scripts/verify-mobile-16f-store-listing-claims.mjs"
+      - "scripts/verify-mobile-16h-production-icons.mjs"
+      - "scripts/verify-mobile-17-production-surface.mjs"
+      - "scripts/verify-mobile-18-store-listing.mjs"
+      - "scripts/verify-mobile-19a-public-support.mjs"
+      - ".github/workflows/mobile-store-readiness.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/account-deletion/**"
+      - "app/api/my/account/**"
+      - "app/en/account-deletion/**"
+      - "app/en/privacy/**"
+      - "app/en/support/**"
+      - "app/privacy/**"
+      - "app/support/**"
+      - "components/account/**"
+      - "components/legal/**"
+      - "components/support/**"
+      - "lib/auth/account-deletion.js"
+      - "lib/vision-observation-contract.js"
+      - "apps/mobile/app.json"
+      - "apps/mobile/package.json"
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/app/index.tsx"
+      - "apps/mobile/app/my.tsx"
+      - "apps/mobile/assets/icon/**"
+      - "apps/mobile/assets/store/bejewely-play-icon-512.png"
+      - "apps/mobile/google-play-data-safety.json"
+      - "apps/mobile/google-play-health-apps-declaration.json"
+      - "apps/mobile/lib/copy.ts"
+      - "apps/mobile/lib/env.ts"
+      - "apps/mobile/store-readiness.json"
+      - "docs/store/**"
+      - "public/images/brand/bejewely-icon-dark.png"
+      - "public/images/brand/bejewely-icon-light.png"
+      - "scripts/audit-mobile-16g-brand-icons.mjs"
+      - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - "scripts/verify-mobile-14-auth-app-links.mjs"
+      - "scripts/verify-mobile-16a-privacy-account-deletion.mjs"
+      - "scripts/verify-mobile-16c-google-data-safety.mjs"
+      - "scripts/verify-mobile-16d-google-play-health-declaration.mjs"
+      - "scripts/verify-mobile-16e-content-rating-readiness.mjs"
+      - "scripts/verify-mobile-16f-store-listing-claims.mjs"
+      - "scripts/verify-mobile-16h-production-icons.mjs"
+      - "scripts/verify-mobile-17-production-surface.mjs"
+      - "scripts/verify-mobile-18-store-listing.mjs"
+      - "scripts/verify-mobile-19a-public-support.mjs"
+      - ".github/workflows/mobile-store-readiness.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Mobile store and policy readiness
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Attest exact head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies once
+        run: npm ci
+
+      - name: Verify shared mobile baseline once
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run verify:mobile-foundation
+          npm run mobile:typecheck
+          npm run mobile:config
+
+      - name: Verify store readiness contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-14-auth-app-links.mjs
+          node --check scripts/verify-mobile-16a-privacy-account-deletion.mjs
+          node scripts/verify-mobile-16a-privacy-account-deletion.mjs
+          node scripts/verify-mobile-16c-google-data-safety.mjs
+          node scripts/verify-mobile-16d-google-play-health-declaration.mjs
+          node scripts/verify-mobile-16e-content-rating-readiness.mjs
+          node --check scripts/verify-mobile-16f-store-listing-claims.mjs
+          node scripts/verify-mobile-16f-store-listing-claims.mjs
+          node scripts/audit-mobile-16g-brand-icons.mjs
+          node scripts/verify-mobile-16h-production-icons.mjs
+          node scripts/verify-mobile-17-production-surface.mjs
+          node --check scripts/verify-mobile-18-store-listing.mjs
+          node scripts/verify-mobile-18-store-listing.mjs
+          node --check scripts/verify-mobile-19a-public-support.mjs
+          node scripts/verify-mobile-19a-public-support.mjs
+
+      - name: Verify Expo public config
+        run: npx expo config --type public --json > /tmp/mobile-store-readiness-expo-config.json
+
+      - name: Verify production build once
+        run: npm run build
