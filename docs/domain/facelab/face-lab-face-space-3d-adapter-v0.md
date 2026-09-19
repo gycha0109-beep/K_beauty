@@ -72,7 +72,7 @@ GNM semantic identity sampler의 demographic label을 Face Lab Face Space 생성
 
 공식 GNM code/model artifact는 v0 research manifest에서 exact Git revision/blob까지 pin했다. 다만 공식 package의 core dependency set에 TensorFlow가 포함되므로 웹 application runtime과 분리된 Python research environment에서 먼저 실행한다.
 
-Executable 승격 전 남은 핵심은 backend-independent Face Space measurement objective와 GNM fitting runner 구현이다.
+GNM runner와 현재 sparse-68 measurement subset은 executable PoC를 통과했다. 사진측 구조와의 공통 비교 경계는 `face-lab-photo-geometry-measurement-bridge-v0.md`에서 별도로 versioning한다.
 
 GNM v3는 공식적으로 barycentric `HEAD_SPARSE_68` landmark set을 제공한다. 2026-09-19 현재 official MediaPipe 468 ↔ GNM correspondence는 제공되지 않는 것으로 확인했다. 따라서 community mapping을 authority로 가져오지 않는다.
 
@@ -185,6 +185,27 @@ v0에서 sparse-68로 지원하는 구조 측정은 다음 subset이다.
 Fitting은 첫 170개 head identity component 범위 안에서만 수행하고 expression / pose / translation은 neutral로 고정한다. Semantic demographic sampler는 사용하지 않는다.
 
 CI selftest는 실제 사람 사진이 아니라 synthetic GNM identity perturbation으로 target measurement를 만든다. 성공 조건은 원래 latent coefficient 복원이 아니라 **관측 가능한 구조 measurement의 round-trip tolerance 충족**이다.
+
+## 3.2 Photo-side measurement bridge
+
+사진측 geometry를 GNM landmark index에 직접 대응시키지 않는다.
+
+```text
+MediaPipe pose-normalized metric geometry
+→ provider-specific semantic anchors
+→ raw structural measurements
+
+GNM sparse-68
+→ backend-specific semantic anchors
+→ raw structural measurements
+
+both
+→ versioned normalization / comparison layer
+```
+
+현재 MediaPipe bridge는 동일한 6개 measurement ID를 연구 채널로 출력하지만, anchor topology가 다르므로 **같은 ID라는 이유만으로 수치 동등성이나 calibration을 가정하지 않는다**.
+
+Raw screen-normalized MediaPipe XYZ는 bridge 입력으로 허용하지 않는다.
 
 ## 4. v0 vector contract
 
