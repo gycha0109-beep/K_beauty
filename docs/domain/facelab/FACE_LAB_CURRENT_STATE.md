@@ -33,7 +33,8 @@ Makeup 최종 엔진                      ❌ 미구현
 Eyewear 최종 엔진                     ❌ 미구현
 Face Style 최종 엔진                  ❌ 미구현
 Look Composer                         ❌ 미구현
-FaceSpace3DAdapter contract           🟡 v0 contract/verifier + GNM exact pin + executable synthetic round-trip PASS / photo-side 검증 전
+FaceSpace3DAdapter contract           🟡 GNM adapter executable / synthetic round-trip + controllability PASS
+Photo Geometry Measurement Bridge     🟡 MediaPipe metric-3D contract + canonical fixture PASS / real-image runtime 전
 Parametric 3D experiment pipeline     ❌ 미구현
 Automated VLM judge program           ❌ 미구현
 최종 canonical Free/Premium 결과      ❌ 미완성
@@ -253,6 +254,12 @@ MediaPipe Face Geometry
 - singular values: `[3.4926, 1.8268, 1.1615, 0.6993, 0.4301, 0.1104]`.
 - 개별 GNM latent component는 여러 구조 dimension에 동시에 영향을 주는 cross-dimension leakage를 보였다. 따라서 latent coefficient를 Face Space semantic axis로 직접 쓰지 않는 현재 adapter 설계가 유지된다.
 - current weak point: `eye_tilt`는 현재 normalization 기준 다른 5개 metric보다 local sensitivity가 낮다.
+- GNM adapter manifest status는 실제 실행 근거에 맞춰 `mapping_candidate → executable`로 승격했다. Production/validated 승격은 아니다.
+- 사진측에는 `face-lab-photo-geometry-measurement-bridge-v0.md`와 `lib/face-lab-photo-geometry-research.js`를 추가했다.
+- MediaPipe research pin: `google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809`, canonical OBJ blob `0e666d1c4e75949d1639c2bcf347a38da4834164`.
+- v0 bridge는 `pose_normalized_metric_3d`만 허용하며 raw screen-normalized landmark XYZ를 fail-closed한다.
+- MediaPipe canonical 468 fixture로 6개 raw structural measurement의 deterministic 계산과 uniform-scale/translation invariance를 검증한다.
+- 이 quantitative bridge는 현재 Vision enum observation을 덮어쓰지 않으며 numeric→enum boundary도 만들지 않는다.
 - 이 PASS는 user-photo reconstruction, Face Space completeness, Archetype validity, Style Compatibility를 검증한 것이 아니다.
 - GNM identity component를 Face Space axis 자체로 정의하지 않는다.
 - GNM semantic demographic identity sampling은 Face Lab Face Space/user inference에 사용하지 않는다.
