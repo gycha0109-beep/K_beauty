@@ -76,6 +76,8 @@ run("DATA-OFFER17 controlled Offer RPC diagnostic", node, ["scripts/verify-data-
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
+run("Face Lab Human evaluation contract", npm, ["run", "verify:face-lab-archetype-human-evaluation"]);
+run("Face Lab synthetic evaluation workspace", npm, ["run", "synthetic:verify"]);
 
 run(
   "Persona EVAL-R1 current grounding regression probes",

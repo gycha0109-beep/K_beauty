@@ -50,6 +50,18 @@ assert.deepEqual(
   `DATA-TAXONOMY workflow topology drift: ${taxonomyWorkflows.join(", ")}`,
 );
 
+const faceEvalWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^face-eval/i.test(name) && /\.ya?ml$/i.test(name))
+  .sort();
+assert.deepEqual(
+  faceEvalWorkflows,
+  [
+    "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
+    "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
+  ],
+  `FACE-EVAL workflow topology drift: ${faceEvalWorkflows.join(", ")}`,
+);
+
 const rootPackageTriggers = [
   '- "package.json"',
   "- 'package.json'",
@@ -128,6 +140,7 @@ console.log(JSON.stringify({
   historical_trust_p_workflows: 0,
   historical_data_offer_workflows: 0,
   data_taxonomy_workflows: 3,
+  face_eval_workflows: 2,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
