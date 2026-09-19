@@ -1,7 +1,7 @@
 # Face Lab Reverse Archetype / Face Space Seed R-A2 Pilot v1
 
 > Track: FACE LAB / Reverse Archetype Empirical Seed / Face Space  
-> Status: Pilot foundation / metadata collection ready  
+> Status: R-A2A collection tooling ready / ledger open  
 > Baseline: main@cc029c0f1c6d36304049570641193f94335ed7a3  
 > Production impact: none
 
@@ -81,10 +81,12 @@ Maximum planned metadata candidates:
 
     3 surfaces x 7 labels x 8 queries x 5 ranks = 840
 
-The frozen authority files are:
+The frozen / operational authority files are:
 
 - evidence/facelab/reverse-archetype/pilot-v1/source-manifest.json
 - evidence/facelab/reverse-archetype/pilot-v1/query-manifest.json
+- evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json
+- docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md
 
 Changing a retrieval surface, query string, query family, or requested depth creates a new pilot version.
 
@@ -258,8 +260,14 @@ The verifier checks at minimum:
 - 7 x 8 query freeze
 - three metadata-only retrieval surfaces
 - 840 maximum-candidate calculation
+- 168 surface/query collection-batch calculation
 - query-manifest deterministic regeneration
 - RAW provenance-only contract
+- collection batch top-5 completeness
+- blocked batch provenance
+- duplicate surface/query batch rejection
+- collection ledger run consistency
+- sealed ledger pending-task prohibition
 - ground-truth prohibition
 - blind context leakage prohibition
 - governance fail-closed
@@ -278,7 +286,48 @@ After this foundation is accepted, R-A2 execution proceeds in two separately aud
 
 Capture the frozen top-5 result metadata for the frozen source/query matrix and write provenance-only candidate records.
 
+Operational model:
+
+```text
+1 retrieval surface + 1 query = 1 collection batch
+168 planned batches
+5 ranked candidates per complete batch
+840 maximum planned candidates
+```
+
+The repository now provides:
+
+- deterministic 168-task collection plan generation
+- versioned collection-batch contract
+- complete / blocked status
+- rank 1~5 completeness validation
+- duplicate task rejection
+- collection coverage report by surface and Archetype search label
+- one-run collection ledger
+- pending-task prohibition before ledger seal
+
+Commands:
+
+```bash
+npm run plan:face-lab-reverse-archetype-collection
+
+npm run validate:face-lab-reverse-archetype-collection -- evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json
+```
+
+Current operational ledger:
+
+```text
+status = open
+planned batches = 168
+complete = 0
+blocked = 0
+pending = 168
+captured candidates = 0 / 840
+```
+
 No face observation is needed to complete R-A2A.
+
+Because the frozen source policy is manual metadata capture only, generic web-search APIs or a different search surface must not be substituted for Google Images / Naver Image Search / Bing Images ranked results.
 
 ### R-A2B — Governed blind observation
 
@@ -328,7 +377,7 @@ This slice is complete when:
 - frozen manifests validate
 - verifier passes
 - research module remains isolated from Production and Archetype scorer authority
-- metadata collection can begin without changing code
+- metadata collection can proceed through the versioned batch / ledger contract without changing code
 
 This slice does not claim that the current seven Archetypes are valid or invalid.
 
