@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "face-space-3d-adapter-manifest-v0",
+  "adapterId": "google-gnm-v3-research-adapter-v0",
+  "backend": "gnm_v3",
+  "backendVersion": "google/gnm-v3-artifact-pending-pin",
+  "mappingVersion": "gnm-face-space-fit-v0",
+  "implementationStatus": "mapping_candidate",
+  "executionBoundary": "offline_research",
+  "faceSpaceIsAuthority": true,
+  "nativeParametersAreAuthority": false,
+  "semanticDemographicSamplingAllowed": false,
+  "licenseReview": {
+    "status": "upstream_apache_2_reviewed_not_legal_approved",
+    "note": "Official Google GNM code and gnm-v3 model card state Apache-2.0; exact artifact digest and transitive runtime dependencies must be pinned before executable adoption."
+  },
+  "dimensionMappings": [
+    {
+      "dimensionId": "face_length_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "face_width_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "cheekbone_width_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "lower_face_width_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "chin_height_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "forehead_height_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "eye_spacing_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "eye_width_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "eye_tilt",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 2
+    },
+    {
+      "dimensionId": "nose_width_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "structural_measurement_fit_v0",
+      "absoluteTolerance": 0.04
+    }
+  ]
+}
