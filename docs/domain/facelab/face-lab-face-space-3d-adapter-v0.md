@@ -136,6 +136,56 @@ Face Space target measurements
 
 정확한 FLAME model artifact와 license version은 executable 단계에서 provenance로 고정해야 한다.
 
+## 3.1 GNM executable PoC
+
+Repository runner:
+
+```text
+scripts/face-lab-gnm-v3-poc.py
+```
+
+CI gate:
+
+```text
+.github/workflows/face-lab-gnm-v3-poc.yml
+```
+
+PoC execution:
+
+```text
+exact google/GNM commit
+→ exact gnm_head.npz blob verification
+→ GNM NumPy head load
+→ HEAD_SPARSE_68 extraction
+→ structural measurement
+→ synthetic target generation
+→ head identity coefficient fitting
+→ re-measure
+→ tolerance gate
+```
+
+v0에서 sparse-68로 지원하는 구조 측정은 다음 subset이다.
+
+- lower_face_width_ratio
+- chin_height_ratio
+- eye_spacing_ratio
+- eye_width_ratio
+- eye_tilt
+- nose_width_ratio
+
+다음은 sparse-68만으로 충분히 식별했다고 주장하지 않는다.
+
+- full face length
+- upper-face / forehead height
+- true cheekbone width
+- full 3D contour curvature
+
+따라서 해당 dimension은 GNM v0 manifest에서 `unsupported`로 남긴다.
+
+Fitting은 첫 170개 head identity component 범위 안에서만 수행하고 expression / pose / translation은 neutral로 고정한다. Semantic demographic sampler는 사용하지 않는다.
+
+CI selftest는 실제 사람 사진이 아니라 synthetic GNM identity perturbation으로 target measurement를 만든다. 성공 조건은 원래 latent coefficient 복원이 아니라 **관측 가능한 구조 measurement의 round-trip tolerance 충족**이다.
+
 ## 4. v0 vector contract
 
 v0는 Production Face Space schema를 확정하지 않는다.
