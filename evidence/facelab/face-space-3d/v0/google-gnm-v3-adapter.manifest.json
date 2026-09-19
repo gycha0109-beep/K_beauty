@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "face-space-3d-adapter-manifest-v0",
+  "adapterId": "google-gnm-v3-research-adapter-v0",
+  "backend": "gnm_v3",
+  "backendVersion": "google/GNM@a424b5153eec9154f3dfa5ee7f214e5817918d54",
+  "mappingVersion": "gnm-face-space-fit-v0",
+  "implementationStatus": "executable",
+  "executionBoundary": "offline_research",
+  "faceSpaceIsAuthority": true,
+  "nativeParametersAreAuthority": false,
+  "semanticDemographicSamplingAllowed": false,
+  "licenseReview": {
+    "status": "upstream_apache_2_reviewed_not_legal_approved",
+    "note": "Official Google GNM code and gnm-v3 model card state Apache-2.0; exact artifact digest and transitive runtime dependencies must be pinned before executable adoption."
+  },
+  "dimensionMappings": [
+    {
+      "dimensionId": "face_length_ratio",
+      "strategy": "unsupported",
+      "reason": "GNM sparse-68 v0 measurement contract does not identify this structural axis faithfully."
+    },
+    {
+      "dimensionId": "face_width_ratio",
+      "strategy": "unsupported",
+      "reason": "GNM sparse-68 v0 measurement contract does not identify this structural axis faithfully."
+    },
+    {
+      "dimensionId": "cheekbone_width_ratio",
+      "strategy": "unsupported",
+      "reason": "GNM sparse-68 v0 measurement contract does not identify this structural axis faithfully."
+    },
+    {
+      "dimensionId": "lower_face_width_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "gnm_sparse68_structural_measurement_fit_v0",
+      "absoluteTolerance": 0.015
+    },
+    {
+      "dimensionId": "chin_height_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "gnm_sparse68_structural_measurement_fit_v0",
+      "absoluteTolerance": 0.015
+    },
+    {
+      "dimensionId": "forehead_height_ratio",
+      "strategy": "unsupported",
+      "reason": "GNM sparse-68 v0 measurement contract does not identify this structural axis faithfully."
+    },
+    {
+      "dimensionId": "eye_spacing_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "gnm_sparse68_structural_measurement_fit_v0",
+      "absoluteTolerance": 0.015
+    },
+    {
+      "dimensionId": "eye_width_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "gnm_sparse68_structural_measurement_fit_v0",
+      "absoluteTolerance": 0.015
+    },
+    {
+      "dimensionId": "eye_tilt",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "gnm_sparse68_structural_measurement_fit_v0",
+      "absoluteTolerance": 1
+    },
+    {
+      "dimensionId": "nose_width_ratio",
+      "strategy": "optimization_fit",
+      "objectiveFamily": "gnm_sparse68_structural_measurement_fit_v0",
+      "absoluteTolerance": 0.015
+    }
+  ],
+  "modelArtifact": "google/GNM/gnm/shape/data/versions/v3_0/gnm_head.npz",
+  "modelArtifactRevision": "a424b5153eec9154f3dfa5ee7f214e5817918d54",
+  "reviewedAt": "2026-09-19",
+  "modelArtifactGitBlobSha": "b49ac631e4d3388e42640555c0b25c4fd134b1b8",
+  "modelArtifactSizeBytes": 53305389,
+  "runtimePackage": "gnm-shape",
+  "runtimePackageVersion": "3.0.0",
+  "runtimeNote": "Official pyproject core dependencies include TensorFlow even when the NumPy backend is used; keep this isolated from the web application runtime.",
+  "measurementContract": "gnm-sparse68-structural-measurement-v0",
+  "fitPolicy": {
+    "identityComponentScope": "head_only_first_170",
+    "semanticSamplerAllowed": false,
+    "expression": "zero",
+    "pose": "zero",
+    "translation": "zero",
+    "solver": "scipy_least_squares_with_l2_regularization"
+  },
+  "executionEvidence": {
+    "workflow": "Face Lab GNM v3 Executable PoC",
+    "successfulRunId": 35433957806,
+    "validatedHead": "0acafe85134f136af9cbafefb28df871a2864322",
+    "syntheticRoundTrip": "pass",
+    "localSensitivityEffectiveRank": 6,
+    "supportedMeasurementCount": 6
+  },
+  "semanticContractVersion": "face-space-structural-measurement-semantics-v0"
+}

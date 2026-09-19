@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "face-lab-reverse-archetype-source-manifest-v1",
+  "runFamily": "ra-web-pilot-v1",
+  "status": "frozen_metadata_only",
+  "frozenAt": "2026-09-18",
+  "designBaseline": "main@cc029c0f1c6d36304049570641193f94335ed7a3",
+  "collectionPolicy": {
+    "acquisition": "manual_metadata_capture_only",
+    "automatedScraping": false,
+    "rawImageByteRetention": "forbidden_until_governance_approved",
+    "personalization": "signed_out_or_fresh_profile_preferred_record_actual_state",
+    "safeSearch": "record_actual_state_per_collection_batch"
+  },
+  "retrievalSurfaces": [
+    {
+      "id": "google_images_ko_web",
+      "type": "image_search",
+      "name": "Google Images",
+      "countryOrLocale": "ko-KR",
+      "language": "ko",
+      "searchInterfaceOrSurface": "web_image_search",
+      "acquisitionMode": "manual_metadata_capture",
+      "rawImageByteRetention": "forbidden_until_governance_approved",
+      "automatedScrapingAllowed": false
+    },
+    {
+      "id": "naver_images_ko_web",
+      "type": "image_search",
+      "name": "Naver Image Search",
+      "countryOrLocale": "ko-KR",
+      "language": "ko",
+      "searchInterfaceOrSurface": "web_image_search",
+      "acquisitionMode": "manual_metadata_capture",
+      "rawImageByteRetention": "forbidden_until_governance_approved",
+      "automatedScrapingAllowed": false
+    },
+    {
+      "id": "bing_images_ko_web",
+      "type": "image_search",
+      "name": "Bing Images",
+      "countryOrLocale": "ko-KR",
+      "language": "ko",
+      "searchInterfaceOrSurface": "web_image_search",
+      "acquisitionMode": "manual_metadata_capture",
+      "rawImageByteRetention": "forbidden_until_governance_approved",
+      "automatedScrapingAllowed": false
+    }
+  ]
+}

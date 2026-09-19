@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "face-lab-photo-geometry-metric-landmarks-v0",
+  "sampleId": "mediapipe_canonical_face_model_fixture_v0",
+  "source": "mediapipe_face_geometry",
+  "sourceVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+  "coordinateSpace": "pose_normalized_metric_3d",
+  "landmarkTopology": 468,
+  "faceCount": 1,
+  "poseNormalized": true,
+  "metricGeometry": true,
+  "sourceImagePersisted": false,
+  "fixtureOnly": true,
+  "landmarks": {
+    "33": {
+      "x": -4.445859,
+      "y": 2.663991,
+      "z": 3.173422
+    },
+    "94": {
+      "x": 0,
+      "y": -3.706811,
+      "z": 5.864924
+    },
+    "98": {
+      "x": -1.405627,
+      "y": -1.714196,
+      "z": 5.241087
+    },
+    "133": {
+      "x": -1.856432,
+      "y": 2.585245,
+      "z": 3.757904
+    },
+    "152": {
+      "x": 0,
+      "y": -9.403378,
+      "z": 4.264492
+    },
+    "172": {
+      "x": -5.940524,
+      "y": -6.223629,
+      "z": -0.631468
+    },
+    "234": {
+      "x": -7.664182,
+      "y": 0.673132,
+      "z": -2.435867
+    },
+    "263": {
+      "x": 4.445859,
+      "y": 2.663991,
+      "z": 3.173422
+    },
+    "327": {
+      "x": 1.405627,
+      "y": -1.714196,
+      "z": 5.241087
+    },
+    "362": {
+      "x": 1.856432,
+      "y": 2.585245,
+      "z": 3.757904
+    },
+    "397": {
+      "x": 5.940524,
+      "y": -6.223629,
+      "z": -0.631468
+    },
+    "454": {
+      "x": 7.664182,
+      "y": 0.673132,
+      "z": -2.435867
+    }
+  },
+  "provenance": {
+    "repository": "google-ai-edge/mediapipe",
+    "revision": "20e8f2ae3365d46fa02037b54911b72e13494809",
+    "canonicalModelPath": "mediapipe/modules/face_geometry/data/canonical_face_model.obj",
+    "canonicalModelBlobSha": "0e666d1c4e75949d1639c2bcf347a38da4834164",
+    "note": "Selected vertices copied from the official canonical 468 face model solely as a deterministic geometry fixture."
+  }
+}

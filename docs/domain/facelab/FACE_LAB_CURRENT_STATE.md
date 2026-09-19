@@ -1,33 +1,46 @@
 # FACE LAB CURRENT STATE
 
-> 갱신일: 2026-08-12
-> 구현 기준 SHA: `9361fc100bd5770f4ccf95999b561f8738cbd3a2`
+> 갱신일: 2026-09-19
+> 구현 기준 SHA: `cc029c0f1c6d36304049570641193f94335ed7a3`
 > 이 문서를 추가·수정하는 문서 전용 commit 때문에 `main` SHA가 전진할 수 있다. 아래 구현 판정의 기준 코드는 위 SHA다.
 > 현재 코드와 최신 component contract가 과거 날짜형 진행상황 문서보다 우선한다.
 
 ## 1. 한눈에 보는 현재 상태
 
-Face Lab은 관찰 기반과 평가 기반은 상당히 구축됐고, 결정론적 Archetype shadow scorer도 현재 `main`에 복구됐다. 그러나 Archetype calibration과 이후 스타일링 계층이 아직 production authority가 아니므로 최종 Face Lab 엔진은 완성 상태가 아니다.
+Face Lab은 관찰 기반과 평가 기반은 상당히 구축됐고, 결정론적 Archetype shadow scorer도 현재 `main`에 존재한다. 그러나 Archetype calibration과 이후 스타일링 계층은 아직 production authority가 아니다.
+
+목표 아키텍처는 이제 Archetype 자체를 내부 핵심 표현으로 두지 않는다. `FaceLabObservationAnalysis → Normalized Face Representation → Face Space`를 재사용 가능한 내부 기반으로 두고, Archetype은 사용자 해석 projection, Style recommendation은 별도의 compatibility 계층으로 분리하는 방향이 문서 authority에 반영됐다. 이 목표 구조는 아직 Production 구현이 아니다.
 
 ```text
 Eligibility / quality                 ✅ 구현
 Unified Face Lab observations         ✅ 구현
 Canonical analysis container          ✅ 구현
+Normalized Face Representation        ❌ 목표 계약만 정의
+Face Space                            ❌ 미구현
 Archetype registry                    ✅ shadow / rubric_ready
 Deterministic archetype scoring       ✅ shadow
 Archetype decision / hold             ✅ shadow, production 차단
+Archetype Projection from Face Space  ❌ 미구현
 Archetype calibration                 ❌ not_ready
 Canonical archetype promotion         ❌ 미연결
+Style Representation / Style Space    ❌ 목표 계약만 정의
+Style Compatibility Engine            ❌ 미구현
 Style Identity                        ❌ 미구현
 Core / Alternative strategy           ❌ 미구현
 Color 최종 엔진                       ❌ 미구현
 Hair 최종 엔진                        ❌ 미구현
 Makeup 최종 엔진                      ❌ 미구현
+Eyewear 최종 엔진                     ❌ 미구현
 Face Style 최종 엔진                  ❌ 미구현
 Look Composer                         ❌ 미구현
+FaceSpace3DAdapter contract           🟡 GNM adapter executable / synthetic round-trip + controllability PASS
+Photo Geometry Measurement Bridge     🟡 MediaPipe metric-3D contract + canonical fixture PASS / real-image runtime 전
+Parametric 3D experiment pipeline     ❌ 미구현
+Automated VLM judge program           ❌ 미구현
 최종 canonical Free/Premium 결과      ❌ 미완성
 Synthetic evaluation infrastructure   ✅ 구현
 Controlled skin-cue pilot             ✅ 공식 alignment 완료 / closeout 대기
+Reverse Archetype seed pilot          ✅ #542 R-A2A tooling / ledger open, 0/168 batches / Production 미연결
 Real human archetype calibration set  ❌ 미구축
 ```
 
@@ -131,6 +144,11 @@ decision = null
 
 Taxonomy와 calibration readiness가 명시적으로 승격되기 전에는 사용자 판정으로 활성화하지 않는다.
 
+현재 shadow scorer는 Face Space 기반 projection 구현이 아니다. 기존 `FaceLabObservationAnalysis → Registry scoring` 경로를 그대로 검증하는 격리된 shadow contract다.
+
+향후 Face Space가 도입되더라도 현재 7개 label과 weight를 자동으로 새 내부 표현의 정답으로 승격하지 않는다.
+
+
 ### 4.3 아직 필요한 것
 
 - 검증된 Human evaluation data
@@ -147,11 +165,15 @@ Taxonomy와 calibration readiness가 명시적으로 승격되기 전에는 사�
 이 문서는 다음 제품 철학과 목표 데이터 경계를 정의한다.
 
 - 대표 상과 유사도 언어
+- Normalized Face Representation을 중심으로 한 스타일링 근거
 - Style Identity
 - Core / Alternative strategy
+- Style Representation
+- Style Compatibility
 - Color
 - Hair
 - Makeup
+- Eyewear
 - Face Style
 - Core / Alternative Look
 
@@ -169,6 +191,89 @@ Taxonomy와 calibration readiness가 명시적으로 승격되기 전에는 사�
 | Look Composer | 목표 경계 정의 | 미구현 |
 
 현재 transition projector가 출력하는 제한적인 얼굴형·컬러·헤어 문구를 위 최종 엔진으로 간주하면 안 된다.
+
+### 5.1 Face Space / Compatibility 목표 구조 상태
+
+`face-lab-face-space-style-compatibility-architecture-v1.md`는 다음 목표 관계를 정의한다.
+
+```text
+FaceLabObservationAnalysis
+→ Normalized Face Representation
+→ Face Space
+   ├─ Archetype Projection
+   └─ Style Compatibility
+```
+
+현재 구현되지 않은 항목:
+
+- 별도 Face Representation schema
+- Face Space transform/model
+- Archetype projection from Face Space
+- Style Representation schema
+- compatibility evidence store/model
+- FaceSpace3DAdapter 실행 구현
+- MPFB2 adapter mapping / round-trip validator
+- FLAME 2023 Open adapter fitting / round-trip validator
+- Blender 또는 동등한 parametric 3D 실험 pipeline
+- multi-VLM blind judge orchestration
+- active experimentation
+
+문서화된 목표 구조를 현재 Production capability로 오해하면 안 된다.
+
+### 5.2 3D backend research decision
+
+2026-09-19 조사 기준 연구 방향은 다음으로 고정한다.
+
+```text
+Face Space = internal authority
+
+Google GNM v3
+→ primary face-specific parametric backend candidate
+
+MPFB2 / MakeHuman
+→ offline Blender/style controlled experiment backend candidate
+
+FLAME 2023 Open
+→ independent comparison / fallback parametric face backend candidate
+
+MediaPipe Face Geometry
+→ photo-side geometry / pose / measurement evidence candidate
+```
+
+중요:
+
+- GNM v3 reviewed code revision과 official `gnm_head.npz` Git blob은 v0 manifest에 exact pin했다.
+- `scripts/face-lab-gnm-v3-poc.py`는 GNM NumPy head model을 실제 load하고 native sparse-68 구조 측정을 수행하는 offline runner다.
+- `.github/workflows/face-lab-gnm-v3-poc.yml`는 exact GNM commit/model blob을 재검증한 뒤 synthetic structural round-trip을 실행한다.
+- GNM v0에서 sparse-68로 정직하게 측정할 수 없는 full face length / forehead height / cheekbone width 등은 `unsupported`로 fail-closed 처리했다.
+- PoC는 GNM semantic demographic sampler를 import/use하지 않는다.
+- GNM executable PoC run `35433869478` PASS: exact code/model pin, model load, sparse-68 extraction, 6-dimension synthetic fitting/re-measurement이 성공했다.
+- validated branch head: `be3c54fd876334260ccb639ddfc80ab6c7f8765f`.
+- durable summary: `evidence/facelab/face-space-3d/v0/gnm-v3-poc-evidence-summary.json`.
+- follow-up executable run `35433957806` PASS: first 24 head identity components ±0.25 sensitivity sweep에서 현재 6개 sparse-68 measurement의 effective local rank = 6을 확인했다.
+- singular values: `[3.4926, 1.8268, 1.1615, 0.6993, 0.4301, 0.1104]`.
+- 개별 GNM latent component는 여러 구조 dimension에 동시에 영향을 주는 cross-dimension leakage를 보였다. 따라서 latent coefficient를 Face Space semantic axis로 직접 쓰지 않는 현재 adapter 설계가 유지된다.
+- current weak point: `eye_tilt`는 현재 normalization 기준 다른 5개 metric보다 local sensitivity가 낮다.
+- GNM adapter manifest status는 실제 실행 근거에 맞춰 `mapping_candidate → executable`로 승격했다. Production/validated 승격은 아니다.
+- 사진측에는 `face-lab-photo-geometry-measurement-bridge-v0.md`와 `lib/face-lab-photo-geometry-research.js`를 추가했다.
+- MediaPipe research pin: `google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809`, canonical OBJ blob `0e666d1c4e75949d1639c2bcf347a38da4834164`.
+- v0 bridge는 `pose_normalized_metric_3d`만 허용하며 raw screen-normalized landmark XYZ를 fail-closed한다.
+- MediaPipe canonical 468 fixture로 6개 raw structural measurement의 deterministic 계산과 uniform-scale/translation invariance를 검증한다.
+- 이 quantitative bridge는 현재 Vision enum observation을 덮어쓰지 않으며 numeric→enum boundary도 만들지 않는다.
+- MediaPipe canonical fixture와 GNM zero-identity template의 cross-backend diagnostic을 별도 freeze했다. 이 비교는 same-subject calibration이 아니다.
+- `lower_face_width_ratio / eye_spacing_ratio / eye_width_ratio / eye_tilt`는 GNM fit-tolerance reference band 안이었고, `chin_height_ratio / nose_width_ratio`는 밖이었다.
+- 따라서 `chin_height_ratio / nose_width_ratio` cross-backend semantic alignment는 controlled correspondence 실험 전까지 **HOLD**다. 값을 맞추기 위한 anchor 튜닝은 하지 않는다.
+- 이 PASS는 user-photo reconstruction, Face Space completeness, Archetype validity, Style Compatibility를 검증한 것이 아니다.
+- GNM identity component를 Face Space axis 자체로 정의하지 않는다.
+- GNM semantic demographic identity sampling은 Face Lab Face Space/user inference에 사용하지 않는다.
+- MPFB target/Shape Key를 Face Space axis 자체로 정의하지 않는다.
+- FLAME shape beta를 해석 가능한 Face Space axis로 직접 해석하지 않는다.
+- 모든 3D backend는 versioned adapter와 round-trip measurement를 통과해야 한다.
+- MICA / DECA / 3DDFA / FaceVerse 등은 별도 license·dataset provenance 검토 없이 Production dependency로 승격하지 않는다.
+- 3D renderer output은 compatibility truth가 아니라 controlled experiment evidence다.
+
+이 결정은 research architecture와 v0 adapter contract/verifier에 반영됐다. 실제 MPFB2/FLAME executable backend와 Blender render runner가 구현됐다는 뜻은 아니다.
+
 
 ## 6. Free / Premium 상태
 
@@ -298,52 +403,107 @@ D2D-XA는 재실행되지 않았고 `DEPLOYED_HOSTED_E2E_VERIFIED = NO`, `HOSTED
 
 반대로 0716의 제품 아키텍처와 07-30의 generation / judgment 분리 원칙은 여전히 유효해 새 MASTER와 EVALUATION 문서로 승계했다.
 
-## 10. Production Archetype 활성화 전 blocker
+## 10. Production 활성화 전 blocker
 
-다음 작업의 핵심은 archetype 종류를 더 늘리거나 합성 이미지를 대량 생성하는 것이 아니다.
+현재 blocker는 하나의 직렬 단계가 아니라 서로 다른 authority track으로 분리한다.
 
-현재 blocker:
+### 10.1 Archetype Projection
 
-1. 현재 rubric / observation contract에 맞는 Archetype calibration protocol 정의
-2. Synthetic stress evidence와 Real Human annotation authority 분리
-3. ambiguity를 보존하는 Human labeling / consensus 평가셋 구축
-4. Synthetic controlled set으로 rubric과 observation layer stress test
-5. weight와 hold/decision threshold calibration
-6. stability, coverage, bias 평가
-7. 그 후에만 production ArchetypeDecision 활성화 및 canonical bundle 연결
+1. Reverse empirical seed research로 현재 taxonomy 가설 검증
+2. Human / synthetic / web evidence class 분리
+3. taxonomy merge / split / add / retire 가능성 검토
+4. projection rubric / weight / hold threshold calibration
+5. stability, coverage, bias 평가
+6. 별도 activation review 후에만 사용자 Archetype 판정 연결
+
+### 10.2 Face Representation / Face Space
+
+1. Normalized Face Representation schema 확정
+2. 구조 축과 presentation 축 분리
+3. versioned normalization / transform 정의
+4. Archetype seed corpus 외 일반 face corpus로 coverage 검증
+5. capture variation stability와 representation drift 검증
+6. Production Face Space activation은 별도 gate
+
+### 10.3 Style Compatibility
+
+1. Style Representation schema 정의
+2. web association과 compatibility evidence 분리
+3. parametric / counterfactual experiment foundation
+4. multi-VLM blind judging 및 reversal/stability 검증
+5. unseen face/style holdout
+6. 불확실 영역 HOLD
+7. 필요한 최소 범위의 Human audit
+8. 별도 recommendation activation review
 
 ## 11. 다음 권장 순서
 
 ```text
-FACE-EVAL-A
-Archetype calibration protocol
+현재 #542
+Archetype Seed Metadata / Blind Observation Foundation
 
-→ FACE-EVAL-B
-Human labeling / consensus dataset contract
+→ Face Representation Contract
+→ Face Space Seed Analysis
+→ General Face Coverage Research
 
-→ FACE-EVAL-C
-Synthetic archetype stress campaign
+동시에 / 이후
 
-→ FACE-ENGINE-2
-Weight + threshold calibration
+→ Style Representation Contract
+→ Parametric Counterfactual Lab
+→ Automated Blind Judge Program
+→ Compatibility Modeling
 
-→ FACE-ENGINE-3
-Production-safe ArchetypeDecision
+병렬 track
 
-→ FACE-STYLE-1
-Style Identity
+→ Archetype Projection Calibration
+→ Production Activation Review
 
-→ FACE-STYLE-2
-Core / Alternative Strategy
+최종
 
-→ FACE-STYLE-3
-Color / Hair / Makeup / Face Style
-
-→ FACE-LOOK-1
-Look Composer
-
-→ FACE-PRODUCT-1
-Canonical Free / Premium integration
+→ Style Identity / Core·Alternative Strategy
+→ Hair / Makeup / Eyewear / Face Style
+→ Look Composer
+→ Canonical Free / Premium integration
 ```
 
-단계 이름은 바뀔 수 있다. 의존관계를 건너뛰려면 별도 contract 변경이 필요하다.
+Archetype projection과 Style Compatibility는 같은 Face Representation을 사용할 수 있지만 서로의 정답 authority가 아니다.
+
+## 12. Reverse Archetype / Face Space Seed Research
+
+PR #542의 연구 foundation은 기존 7개 cultural label을 검색 seed로 사용하되 current Archetype scorer를 검증 근거로 사용하지 않는다.
+
+현재 연구 경계:
+
+```text
+web query context
+→ provenance-only RAW candidate
+→ governed opaque asset
+→ blind structural observation
+→ sealed observation
+→ context rejoin
+```
+
+연구 목적은 "늑대상 정답 얼굴" 같은 단일 prototype을 확정하는 것이 아니다.
+
+목표는 label별 sampled distribution을 Face Space의 seed evidence로 사용하고 다음을 탐색하는 것이다.
+
+- label 내 구조 분포
+- label 간 overlap / boundary
+- 현재 7개 taxonomy의 분리 가능성
+- taxonomy 밖 일반 얼굴 공간의 필요성
+- 향후 parametric 3D prototype / boundary experiment에 사용할 구조 축
+
+현재 #542는 metadata / blind-observation foundation과 R-A2A collection tooling까지 구현했다. 실제 Face Space, 3D, compatibility engine은 구현하지 않는다.
+
+R-A2A operational state:
+
+```text
+collection ledger = open
+planned batches = 168
+complete = 0
+blocked = 0
+pending = 168
+captured candidates = 0 / 840
+```
+
+현재 frozen acquisition policy는 manual metadata capture only다. 따라서 generic web-search API나 다른 검색 surface 결과를 Google/Naver/Bing ranked result로 대체하지 않는다.

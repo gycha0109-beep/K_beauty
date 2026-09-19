@@ -1,0 +1,460 @@
+{
+  "schemaVersion": "face-lab-reverse-archetype-query-manifest-v1",
+  "runFamily": "ra-web-pilot-v1",
+  "status": "frozen",
+  "labelsAreHypotheses": true,
+  "requestedDepth": 5,
+  "frozenAt": "2026-09-18",
+  "designBaseline": "main@cc029c0f1c6d36304049570641193f94335ed7a3",
+  "plannedMaximumCandidates": 840,
+  "queries": [
+    {
+      "queryId": "wolf:general",
+      "archetypeQueryLabel": "wolf",
+      "labelKo": "늑대상",
+      "queryFamily": "general_label",
+      "queryString": "늑대상",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "wolf:face",
+      "archetypeQueryLabel": "wolf",
+      "labelKo": "늑대상",
+      "queryFamily": "face_label",
+      "queryString": "늑대상 얼굴",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "wolf:celebrity",
+      "archetypeQueryLabel": "wolf",
+      "labelKo": "늑대상",
+      "queryFamily": "celebrity_label",
+      "queryString": "늑대상 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "wolf:male",
+      "archetypeQueryLabel": "wolf",
+      "labelKo": "늑대상",
+      "queryFamily": "gendered_label",
+      "queryString": "늑대상 남자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "wolf:female",
+      "archetypeQueryLabel": "wolf",
+      "labelKo": "늑대상",
+      "queryFamily": "gendered_label",
+      "queryString": "늑대상 여자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "wolf:male_celebrity",
+      "archetypeQueryLabel": "wolf",
+      "labelKo": "늑대상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "늑대상 남자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "wolf:female_celebrity",
+      "archetypeQueryLabel": "wolf",
+      "labelKo": "늑대상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "늑대상 여자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "wolf:descriptor",
+      "archetypeQueryLabel": "wolf",
+      "labelKo": "늑대상",
+      "queryFamily": "descriptor_query",
+      "queryString": "늑대상 특징",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "cat:general",
+      "archetypeQueryLabel": "cat",
+      "labelKo": "고양이상",
+      "queryFamily": "general_label",
+      "queryString": "고양이상",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "cat:face",
+      "archetypeQueryLabel": "cat",
+      "labelKo": "고양이상",
+      "queryFamily": "face_label",
+      "queryString": "고양이상 얼굴",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "cat:celebrity",
+      "archetypeQueryLabel": "cat",
+      "labelKo": "고양이상",
+      "queryFamily": "celebrity_label",
+      "queryString": "고양이상 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "cat:male",
+      "archetypeQueryLabel": "cat",
+      "labelKo": "고양이상",
+      "queryFamily": "gendered_label",
+      "queryString": "고양이상 남자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "cat:female",
+      "archetypeQueryLabel": "cat",
+      "labelKo": "고양이상",
+      "queryFamily": "gendered_label",
+      "queryString": "고양이상 여자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "cat:male_celebrity",
+      "archetypeQueryLabel": "cat",
+      "labelKo": "고양이상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "고양이상 남자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "cat:female_celebrity",
+      "archetypeQueryLabel": "cat",
+      "labelKo": "고양이상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "고양이상 여자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "cat:descriptor",
+      "archetypeQueryLabel": "cat",
+      "labelKo": "고양이상",
+      "queryFamily": "descriptor_query",
+      "queryString": "고양이상 특징",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "puppy:general",
+      "archetypeQueryLabel": "puppy",
+      "labelKo": "강아지상",
+      "queryFamily": "general_label",
+      "queryString": "강아지상",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "puppy:face",
+      "archetypeQueryLabel": "puppy",
+      "labelKo": "강아지상",
+      "queryFamily": "face_label",
+      "queryString": "강아지상 얼굴",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "puppy:celebrity",
+      "archetypeQueryLabel": "puppy",
+      "labelKo": "강아지상",
+      "queryFamily": "celebrity_label",
+      "queryString": "강아지상 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "puppy:male",
+      "archetypeQueryLabel": "puppy",
+      "labelKo": "강아지상",
+      "queryFamily": "gendered_label",
+      "queryString": "강아지상 남자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "puppy:female",
+      "archetypeQueryLabel": "puppy",
+      "labelKo": "강아지상",
+      "queryFamily": "gendered_label",
+      "queryString": "강아지상 여자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "puppy:male_celebrity",
+      "archetypeQueryLabel": "puppy",
+      "labelKo": "강아지상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "강아지상 남자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "puppy:female_celebrity",
+      "archetypeQueryLabel": "puppy",
+      "labelKo": "강아지상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "강아지상 여자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "puppy:descriptor",
+      "archetypeQueryLabel": "puppy",
+      "labelKo": "강아지상",
+      "queryFamily": "descriptor_query",
+      "queryString": "강아지상 특징",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "deer:general",
+      "archetypeQueryLabel": "deer",
+      "labelKo": "사슴상",
+      "queryFamily": "general_label",
+      "queryString": "사슴상",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "deer:face",
+      "archetypeQueryLabel": "deer",
+      "labelKo": "사슴상",
+      "queryFamily": "face_label",
+      "queryString": "사슴상 얼굴",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "deer:celebrity",
+      "archetypeQueryLabel": "deer",
+      "labelKo": "사슴상",
+      "queryFamily": "celebrity_label",
+      "queryString": "사슴상 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "deer:male",
+      "archetypeQueryLabel": "deer",
+      "labelKo": "사슴상",
+      "queryFamily": "gendered_label",
+      "queryString": "사슴상 남자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "deer:female",
+      "archetypeQueryLabel": "deer",
+      "labelKo": "사슴상",
+      "queryFamily": "gendered_label",
+      "queryString": "사슴상 여자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "deer:male_celebrity",
+      "archetypeQueryLabel": "deer",
+      "labelKo": "사슴상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "사슴상 남자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "deer:female_celebrity",
+      "archetypeQueryLabel": "deer",
+      "labelKo": "사슴상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "사슴상 여자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "deer:descriptor",
+      "archetypeQueryLabel": "deer",
+      "labelKo": "사슴상",
+      "queryFamily": "descriptor_query",
+      "queryString": "사슴상 특징",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "tofu:general",
+      "archetypeQueryLabel": "tofu",
+      "labelKo": "두부상",
+      "queryFamily": "general_label",
+      "queryString": "두부상",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "tofu:face",
+      "archetypeQueryLabel": "tofu",
+      "labelKo": "두부상",
+      "queryFamily": "face_label",
+      "queryString": "두부상 얼굴",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "tofu:celebrity",
+      "archetypeQueryLabel": "tofu",
+      "labelKo": "두부상",
+      "queryFamily": "celebrity_label",
+      "queryString": "두부상 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "tofu:male",
+      "archetypeQueryLabel": "tofu",
+      "labelKo": "두부상",
+      "queryFamily": "gendered_label",
+      "queryString": "두부상 남자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "tofu:female",
+      "archetypeQueryLabel": "tofu",
+      "labelKo": "두부상",
+      "queryFamily": "gendered_label",
+      "queryString": "두부상 여자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "tofu:male_celebrity",
+      "archetypeQueryLabel": "tofu",
+      "labelKo": "두부상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "두부상 남자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "tofu:female_celebrity",
+      "archetypeQueryLabel": "tofu",
+      "labelKo": "두부상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "두부상 여자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "tofu:descriptor",
+      "archetypeQueryLabel": "tofu",
+      "labelKo": "두부상",
+      "queryFamily": "descriptor_query",
+      "queryString": "두부상 특징",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "potato:general",
+      "archetypeQueryLabel": "potato",
+      "labelKo": "감자상",
+      "queryFamily": "general_label",
+      "queryString": "감자상",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "potato:face",
+      "archetypeQueryLabel": "potato",
+      "labelKo": "감자상",
+      "queryFamily": "face_label",
+      "queryString": "감자상 얼굴",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "potato:celebrity",
+      "archetypeQueryLabel": "potato",
+      "labelKo": "감자상",
+      "queryFamily": "celebrity_label",
+      "queryString": "감자상 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "potato:male",
+      "archetypeQueryLabel": "potato",
+      "labelKo": "감자상",
+      "queryFamily": "gendered_label",
+      "queryString": "감자상 남자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "potato:female",
+      "archetypeQueryLabel": "potato",
+      "labelKo": "감자상",
+      "queryFamily": "gendered_label",
+      "queryString": "감자상 여자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "potato:male_celebrity",
+      "archetypeQueryLabel": "potato",
+      "labelKo": "감자상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "감자상 남자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "potato:female_celebrity",
+      "archetypeQueryLabel": "potato",
+      "labelKo": "감자상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "감자상 여자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "potato:descriptor",
+      "archetypeQueryLabel": "potato",
+      "labelKo": "감자상",
+      "queryFamily": "descriptor_query",
+      "queryString": "감자상 특징",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "dino:general",
+      "archetypeQueryLabel": "dino",
+      "labelKo": "공룡상",
+      "queryFamily": "general_label",
+      "queryString": "공룡상",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "dino:face",
+      "archetypeQueryLabel": "dino",
+      "labelKo": "공룡상",
+      "queryFamily": "face_label",
+      "queryString": "공룡상 얼굴",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "dino:celebrity",
+      "archetypeQueryLabel": "dino",
+      "labelKo": "공룡상",
+      "queryFamily": "celebrity_label",
+      "queryString": "공룡상 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "dino:male",
+      "archetypeQueryLabel": "dino",
+      "labelKo": "공룡상",
+      "queryFamily": "gendered_label",
+      "queryString": "공룡상 남자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "dino:female",
+      "archetypeQueryLabel": "dino",
+      "labelKo": "공룡상",
+      "queryFamily": "gendered_label",
+      "queryString": "공룡상 여자",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "dino:male_celebrity",
+      "archetypeQueryLabel": "dino",
+      "labelKo": "공룡상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "공룡상 남자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "dino:female_celebrity",
+      "archetypeQueryLabel": "dino",
+      "labelKo": "공룡상",
+      "queryFamily": "gendered_celebrity_label",
+      "queryString": "공룡상 여자 연예인",
+      "requestedDepth": 5
+    },
+    {
+      "queryId": "dino:descriptor",
+      "archetypeQueryLabel": "dino",
+      "labelKo": "공룡상",
+      "queryFamily": "descriptor_query",
+      "queryString": "공룡상 특징",
+      "requestedDepth": 5
+    }
+  ]
+}

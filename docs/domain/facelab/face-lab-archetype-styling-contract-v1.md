@@ -24,6 +24,8 @@
 
 이 계약은 실제 분석값과 fallback/default 값을 분리한 기존 전체 envelope 및 `mood/color/style` 항목별 상태 계약 위에 이어지는 후속 도메인 명세다. 기존 계약과 충돌하거나 추가 전환이 필요한 부분은 18장에서 별도로 기록한다.
 
+Face Space와 Style Compatibility의 상세 목표 구조는 `face-lab-face-space-style-compatibility-architecture-v1.md`를 따른다. 이 문서의 "대표 상 중심" 표현은 사용자 결과의 표현 중심을 의미하며, 내부 추천 계산의 단일 authority를 의미하지 않는다.
+
 ## 2. Face Lab 한 문장 정의
 
 **확정:** Face Lab은 얼굴의 구조적 특징을 직관적이고 재미있는 대표 상으로 번역하고, 그 인상을 살리거나 변주할 수 있는 컬러·헤어·메이크업·얼굴 주변 스타일링 방향을 제시하는 사진 기반 뷰티 스타일 가이드다.
@@ -39,7 +41,9 @@ Face Lab은 얼굴 특징 수치 자체를 전시하는 진단기, 외모 평가
 3. **활용:** 이 인상을 살리거나 다른 방향으로 변주하려면 어떻게 해야 하는가
 4. **실행:** 어떤 컬러, 헤어, 메이크업, 얼굴 주변 스타일을 선택해야 하는가
 
-대표 상은 재미를 위한 별도 장식이 아니라 이해와 스타일링 실행을 연결하는 사용자 언어다. 실제 추천은 대표 상 하나만으로 만들지 않고, 대표 상을 만든 세부 관찰값과 선택한 스타일링 전략을 함께 사용한다.
+대표 상은 재미를 위한 별도 장식이 아니라 이해와 스타일링 실행을 연결하는 사용자 언어다. 실제 추천은 대표 상 하나만으로 만들지 않는다.
+
+내부 추천의 기본 근거는 `Normalized Face Representation + Style Representation + Compatibility Evidence + 선택된 전략`이다. 대표 상은 같은 Face Space를 사용자 친화적으로 설명하는 projection으로 사용할 수 있다.
 
 ### 3.2 핵심 사용자 결과 플로우
 
@@ -89,11 +93,46 @@ Vision 관찰 단계는 가능한 경우 다음 값을 구조화한다.
 
 사용자 설명에는 실제 근거가 있는 특징만 짧게 포함할 수 있다. 내부 수치, 모델 원문, 원시 landmark, 디버그 evidence 경로는 기본 사용자 화면에 노출하지 않는다.
 
+### 4.3 내부 추천 표현
+
+스타일 추천을 위해 Face Lab은 장기적으로 다음 두 표현을 분리한다.
+
+```text
+Normalized Face Representation
+- 얼굴 비율
+- 윤곽·턱·광대 관계
+- 눈과 특징 배치
+- line / curve 구조
+- visual weight
+- confidence / evidence / missingness
+
+Style Representation
+- 헤어 실루엣·볼륨·커버·곡률
+- 안경 폭·높이·각진 정도·두께
+- 메이크업 방향·강도·배치
+- 얼굴 주변 넥라인·액세서리·소재·대비
+```
+
+실제 스타일명은 이 내부 표현에 매핑되는 사용자·카탈로그용 alias다.
+
+예를 들어 `애즈펌` 자체를 추천 rule의 입력으로 삼기보다 이마 노출, 가르마, 정수리/측면 볼륨, 곡률, 앞머리 무게 같은 속성으로 표현하고 마지막에 현실의 스타일명으로 번역한다.
+
+```text
+Face Representation
+× Style Representation
+× Compatibility Evidence
+→ compatible parameter region
+→ concrete style-name examples
+```
+
+
 ## 5. 대표 상과 유사도 계약
 
 ### 5.1 대표 상 중심 원칙
 
-**확정:** 결과의 중심에는 대표 상 하나만 둔다. 별도의 두 번째 상을 독립 결과 개념으로 만들지 않는다. 다른 유형은 지원 분류군 안에서 계산한 상위 유사도 분포로만 제공한다.
+**확정:** 사용자 결과의 Archetype 표현 중심에는 대표 상 하나만 둔다. 별도의 두 번째 상을 독립 결과 개념으로 만들지 않는다. 다른 유형은 지원 분류군 안에서 계산한 상위 유사도 분포로만 제공한다.
+
+이 규칙은 UI/설명 계약이다. 내부 Face Representation을 하나의 Archetype으로 압축하거나 Style Compatibility를 대표 상 lookup으로 대체하라는 뜻이 아니다.
 
 대표 상은 유효한 유형 중 가장 높은 원시 점수를 얻고, 최소 근거·점수·격차 조건을 모두 통과한 유형이다. 조건을 통과하지 못하면 임의의 대표 상을 만들지 않는다.
 
@@ -134,7 +173,9 @@ Vision 관찰 단계는 가능한 경우 다음 값을 구조화한다.
 
 ## 6. 대표 상 분류군 초안
 
-아래 7개 유형은 제품 요구를 구조화한 **v1 검토 초안**이다. 판별 지표는 구현 확정값이 아니라 검수해야 할 가설이다. 성별, 연령, 인종, 피부색, 화장 여부를 직접 점수 요인으로 사용하지 않는다.
+아래 7개 유형은 제품 요구를 구조화한 **v1 검토 초안**이자 Face Space 위에 투영할 cultural label hypothesis다. 판별 지표는 구현 확정값이 아니라 검수해야 할 가설이다. 성별, 연령, 인종, 피부색, 화장 여부를 직접 점수 요인으로 사용하지 않는다.
+
+이 taxonomy는 Face Space 자체가 아니다. 실제 데이터에서 분리가 약하면 유형을 병합·분할·추가·폐기할 수 있으며, 그 변화가 Normalized Face Representation의 기본 계약을 강제로 바꾸지 않아야 한다.
 
 | key | 표시명 | 핵심 인상 | 강한 판별 지표 후보 | 보조 판별 지표 후보 | 겹치는 특징 | 구별에 중요한 특징 | 대표 스타일 키워드 후보 | 단순 고정 매핑 금지 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -212,7 +253,7 @@ Vision 관찰 단계는 가능한 경우 다음 값을 구조화한다.
 }
 ```
 
-두 전략 모두 대표 상과 실제 관찰 evidence에 연결되어야 한다. evidence가 없는 고정 전략 문구는 허용하지 않는다.
+두 전략 모두 실제 관찰 evidence와 Face Representation에 연결되어야 한다. 대표 상은 설명 근거의 하나로 사용할 수 있지만 단독 authority가 아니다. compatibility evidence가 없는 고정 전략 문구는 허용하지 않는다.
 
 ## 9. 영역별 스타일링 계약
 
@@ -253,7 +294,9 @@ Face Lab 컬러는 사진에서 관찰 가능한 색 대비와 스타일 무드�
 - 피하거나 강도를 조절할 방향
 - 추천 이유
 
-헤어 추천 입력은 `대표 상 무드 + 얼굴형 + 세로·가로 비율 + 이마·광대·턱 관계 + 윤곽 선명도 + 직선·곡선감 + 전략`이다. 같은 대표 상이어도 얼굴 비율과 윤곽이 다르면 다른 헤어 결과가 나와야 한다.
+헤어 추천의 목표 입력은 `Normalized Face Representation + 선택된 전략 + Hair Style Representation + compatibility evidence`다. 대표 상 무드는 설명 또는 전략 해석에 보조적으로 사용할 수 있다.
+
+같은 대표 상이어도 얼굴 비율과 윤곽이 다르면 다른 헤어 결과가 나와야 한다. `애즈펌`, `리젠트컷`, `리프컷` 같은 스타일명은 직접 rule key가 아니라 검증된 헤어 파라미터 영역을 실제 스타일 예시로 번역할 때 사용한다.
 
 ### 9.3 메이크업
 
@@ -268,7 +311,7 @@ Face Lab 메이크업은 다음 범위만 다룬다.
 - 강조할 부위
 - 힘을 뺄 부위
 
-입력은 `대표 상 + 눈매와 얼굴 윤곽 + 이미 강한 특징 + 균형을 맞출 특징 + 컬러 방향 + 전략`이다. 성형적 평가, 결함 표현, 외모 우열 표현을 금지하며, 무엇을 고쳐야 하는지가 아니라 어떤 특징을 살리거나 균형 있게 표현할지에 집중한다.
+입력은 `Normalized Face Representation + 눈매와 얼굴 윤곽 + 이미 강한 특징 + 균형을 맞출 특징 + 컬러 방향 + Makeup Style Representation + 전략 + compatibility evidence`다. 대표 상은 사용자 설명을 위한 보조 projection이다. 성형적 평가, 결함 표현, 외모 우열 표현을 금지하며, 무엇을 고쳐야 하는지가 아니라 어떤 특징을 살리거나 균형 있게 표현할지에 집중한다.
 
 ### 9.4 얼굴 주변 스타일
 
@@ -309,7 +352,9 @@ Face Lab 메이크업은 다음 범위만 다룬다.
 }
 ```
 
-룩 조합기는 영역별 결과의 선·색·대비·질감 충돌을 확인한다. `Urban Sharp`, `Soft Chic` 같은 룩 이름을 모든 사용자에게 재사용하지 않는다. 이름과 설명은 실제 대표 상, 전략, available 영역을 기반으로 만들고 근거 없는 과장 표현을 사용하지 않는다.
+룩 조합기는 영역별 결과의 선·색·대비·질감 충돌을 확인한다. `Urban Sharp`, `Soft Chic` 같은 룩 이름을 모든 사용자에게 재사용하지 않는다. 이름과 설명은 실제 Face Representation, 선택된 전략, available 영역과 필요한 경우 Archetype projection을 기반으로 만들고 근거 없는 과장 표현을 사용하지 않는다.
+
+웹 이미지에서 자주 관찰된 스타일, AI가 제안한 스타일, 3D 실험에서 생성된 스타일은 각각 association / hypothesis / synthetic evidence다. 별도 compatibility validation 없이 바로 최종 추천 rule로 승격하지 않는다.
 
 ## 11. 무료 결과와 프리미엄 리포트 경계
 
@@ -498,14 +543,15 @@ function createStylingField(value) {
 
 ## 13. 생성·판정 책임 분리
 
-| 단계 | 입력 | 출력 | 결정론적 규칙 책임 | LLM 권장 책임 |
+| 단계 | 입력 | 출력 | 결정론적 규칙 책임 | LLM/VLM 권장 책임 |
 | --- | --- | --- | --- | --- |
 | A. Vision 관찰 | 사진, locale | quality, observations | 허용 범위·스키마 검증, 값 범위 정규화, 결측·품질 판정 | 보이는 얼굴 특징과 촬영 품질을 제한된 스키마로 추출. 대표 상·최종 스타일 문구·유사도 숫자는 생성하지 않음 |
-| B. Archetype 판정 | valid observations | 유형별 원시 점수, distribution, primary | 유형별 지표·가중치·결측 처리·정규화·임계값·근접 판정 전부 | 담당하지 않음 |
-| C. 설명 생성 | primary, distribution, evidence | 1~2문장 설명 | 허용 evidence 선택, 금지 표현 검사, 문장 길이 검증 | 선택된 evidence만 사용해 자연어 설명 |
-| D. 전략 판정 | archetype, observations | Core·Alternative 전략 | 가능한 전략 후보, 충돌 규칙, 대안 선택 기준 | 선택된 전략의 간결한 이름과 요약 표현 |
-| E. 영역별 스타일링 | 전략, observations, color quality | color, hair, makeup, faceStyle | 영역별 규칙, 금지 조합, 결측·품질 처리, available 판정 | 근거가 정해진 추천을 읽기 쉬운 문장으로 표현 |
-| F. 룩 조합 | available 영역 결과 | Core Look, Alternative Look | 선·색·질감·대비 충돌 검사, 누락 영역 처리 | 과장되지 않은 룩 이름, 요약, `whyItWorks` 문장 |
+| B. Face Representation | valid observations | normalized face representation | 구조 축·presentation 축 분리, normalization, versioning, missingness 보존 | 정의된 observation을 임의로 보강하거나 숨은 특성을 추정하지 않음 |
+| C. Archetype Projection | face representation + calibrated projection contract | distribution, primary 또는 hold | projection rubric/model, threshold, hold, provenance | 자연어 설명 외 판정 authority를 갖지 않음 |
+| D. Style Compatibility | face representation + style representation + compatibility evidence | compatible parameter regions / hold | evidence aggregation, uncertainty, conflict, threshold, hold | hypothesis generation 또는 blind judge 역할은 별도 sealed track에서만 수행 |
+| E. 전략 판정 | face representation, compatibility evidence, user goal | Core·Alternative 전략 | 가능한 전략 후보, 충돌 규칙, 대안 선택 기준 | 선택된 전략의 간결한 이름과 요약 표현 |
+| F. 영역별 스타일링 | 전략, compatible style parameter regions, quality | color, hair, makeup, eyewear, faceStyle | 영역별 규칙, 금지 조합, 결측·품질 처리, available 판정 | 검증된 파라미터 결과를 읽기 쉬운 현실 스타일명·문장으로 번역 |
+| G. 룩 조합 | available 영역 결과 | Core Look, Alternative Look | 선·색·질감·대비 충돌 검사, 누락 영역 처리 | 과장되지 않은 룩 이름, 요약, `whyItWorks` 문장 |
 
 LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임계값 통과 여부는 결정론적 판정 결과를 그대로 사용해야 한다.
 
@@ -539,20 +585,24 @@ LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임
 
 ## 16. 후속 구현 권장 순서
 
-1. Archetype 분류군과 판별 지표 검수
-2. Vision observations 계약 확정
-3. Archetype affinity 계산 규칙 구현
-4. 대표 상 설명 생성
-5. 살리기·변주 전략 엔진
-6. 컬러 엔진
-7. 헤어 엔진
-8. 메이크업 엔진
-9. 얼굴 주변 스타일 엔진
-10. 완성 룩 조합기
-11. Premium 리포트 연결
-12. 무료 결과 미리보기 연결
-13. 실제 사진 fixture와 평가 세트 검증
-14. fallback 및 구형 데이터 회귀 검증
+1. Vision observations 계약과 구조/presentation 경계 확정
+2. Normalized Face Representation schema와 normalization 정의
+3. Reverse Archetype seed research + 일반 Face coverage research
+4. Face Space validation과 Archetype Projection calibration
+5. Style Representation schema 정의
+6. parametric / counterfactual compatibility experiment
+7. multi-VLM blind judge + reversal / stability / holdout 검증
+8. compatibility evidence aggregation과 HOLD 정책
+9. 살리기·변주 전략 엔진
+10. 컬러 엔진
+11. 헤어 엔진
+12. 메이크업 엔진
+13. 안경·얼굴 주변 스타일 엔진
+14. 완성 룩 조합기
+15. Premium 리포트 연결
+16. 무료 결과 미리보기 연결
+17. 최소 Human audit와 bias/수용성 검증
+18. fallback 및 구형 데이터 회귀 검증
 
 각 단계는 이전 단계의 status/evidence 계약을 보존하고, fixture 검증 없이 다음 표시 단계로 넘기지 않는다.
 
@@ -568,8 +618,8 @@ LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임
 | 성별에 따른 체계 차이 | 기본안은 공통 체계다. 별도 체계가 정말 필요한지와 편향 위험을 검증 |
 | 컬러 분석 품질 기준 | 화이트밸런스, 조명 균일성, 필터, 노출, 피부 가림의 허용 하한 |
 | 변주 유형 수 | 사용자별 최적 대안 하나만 제공할지, 제한된 후보 중 선택하게 할지 결정 |
-| 평가 데이터 | 동의받은 실제 사진, 다양한 성별·연령·피부색·촬영환경, 다수 평가자의 기준 마련 |
-| 정답 기준 | 동물상에 객관적 정답이 없으므로 전문가 합의, 사용자 자기 인식, 판정 일관성을 어떻게 조합할지 결정 |
+| 평가 데이터 | web association, 일반 face coverage, controlled 3D/counterfactual, independent VLM judge, holdout을 우선 구축하고 실제 사람 데이터와 Human audit은 별도 동의·최소 수집 원칙으로 사용 |
+| 정답 기준 | Archetype cultural consensus, Face Space stability, Style Compatibility evidence를 분리한다. 하나의 단일 ground truth 체계로 합치지 않는다. |
 | 문화·성별 편향 검수 | 표시명 수용성, 유형별 성별 분포, 피부색·화장·촬영기기 영향, 모욕 가능성 검수 절차 |
 | 부분 결과의 전체 status | 일부 영역 available일 때 전체 status와 무료·프리미엄 표시 정책의 정확한 규칙 |
 | 룩 최소 구성요소 | 어떤 영역이 없으면 완성 룩을 만들지 않을지 결정 |
@@ -600,6 +650,11 @@ LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임
 
 - v1 분류군과 표시명의 사용자 수용성 검수
 - observations 스키마와 사진 품질 기준 확정
+- Normalized Face Representation schema와 구조/presentation 분리 검증
+- Face Space가 현재 7개 label 밖의 얼굴도 표현할 수 있는지 coverage 검증
+- Style Representation과 style-name translation 경계 확정
+- web association이 compatibility rule로 직접 승격되지 않는지 검증
+- counterfactual / multi-VLM judge / reversal / stability / holdout evidence 정책 확정
 - 유형별 판별 지표와 가중치의 리뷰 가능 문서화
 - 최소 점수·근접 격차·결측 처리 임계값 검증
 - 다양한 사진 fixture에서 동일인 촬영 조건 변화에 대한 안정성 확인

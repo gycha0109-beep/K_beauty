@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "face-space-gnm-v3-poc-evidence-summary-v0",
+  "recordedAt": "2026-09-19",
+  "researchOnly": true,
+  "productionAuthority": false,
+  "workflow": {
+    "name": "Face Lab GNM v3 Executable PoC",
+    "runId": 35433957806,
+    "validatedBranchHead": "0acafe85134f136af9cbafefb28df871a2864322",
+    "conclusion": "success",
+    "artifactId": 10582231491,
+    "artifactName": "face-lab-gnm-v3-poc-2130615917e81cf32f81af3555a50ba0b886a72d",
+    "artifactExpiresAt": "2026-10-03T09:10:48Z"
+  },
+  "upstream": {
+    "repository": "google/GNM",
+    "codeRevision": "a424b5153eec9154f3dfa5ee7f214e5817918d54",
+    "modelPath": "gnm/shape/data/versions/v3_0/gnm_head.npz",
+    "modelGitBlobSha": "b49ac631e4d3388e42640555c0b25c4fd134b1b8",
+    "modelSizeBytes": 53305389
+  },
+  "probe": {
+    "version": "3.0",
+    "variant": "head",
+    "identityDim": 253,
+    "headIdentityComponentScope": 170,
+    "expressionDim": 383,
+    "numVertices": 17821,
+    "numJoints": 4,
+    "landmarks": 68,
+    "templateMetrics": {
+      "chin_height_ratio": 0.4240105122479956,
+      "eye_spacing_ratio": 0.24632135416567089,
+      "eye_tilt": -0.031156991874954132,
+      "eye_width_ratio": 0.17443319505408464,
+      "lower_face_width_ratio": 0.7606071378939454,
+      "nose_width_ratio": 0.22543766235214882
+    },
+    "templateMetricsSource": {
+      "workflowRunId": 35434015437,
+      "note": "Captured from the exact pinned GNM v3 zero-identity template probe."
+    }
+  },
+  "selftest": {
+    "syntheticOnly": true,
+    "semanticDemographicSamplingAllowed": false,
+    "measurementVersion": "gnm-sparse68-structural-measurement-v0",
+    "fitComponents": 6,
+    "ridge": 0.01,
+    "nfev": 25,
+    "resultDigest": "f84b519cd8c04bdea975dd5e34b6e4a623a8ecba5280884ed7e6058718e801ed",
+    "status": "pass",
+    "dimensions": [
+      {
+        "id": "lower_face_width_ratio",
+        "absoluteError": 0.00002701496789403457,
+        "tolerance": 0.015,
+        "passed": true
+      },
+      {
+        "id": "chin_height_ratio",
+        "absoluteError": 0.00003393071520513269,
+        "tolerance": 0.015,
+        "passed": true
+      },
+      {
+        "id": "eye_spacing_ratio",
+        "absoluteError": 0.00011370471884275535,
+        "tolerance": 0.015,
+        "passed": true
+      },
+      {
+        "id": "eye_width_ratio",
+        "absoluteError": 0.00010944385812391988,
+        "tolerance": 0.015,
+        "passed": true
+      },
+      {
+        "id": "eye_tilt",
+        "absoluteError": 0.0008500423058381834,
+        "tolerance": 1,
+        "passed": true
+      },
+      {
+        "id": "nose_width_ratio",
+        "absoluteError": 0.00010101593909711548,
+        "tolerance": 0.015,
+        "passed": true
+      }
+    ]
+  },
+  "interpretation": [
+    "Pinned GNM v3 loads and closes the current synthetic sparse-68 structural round-trip.",
+    "A 24-component local sensitivity sweep spans all six supported measurement dimensions (effective rank 6).",
+    "Latent component cross-dimension leakage confirms that GNM coefficients are not interpretable Face Space axes.",
+    "This does not validate user-photo reconstruction, Face Space completeness, Archetype validity, or Style Compatibility.",
+    "Unsupported sparse-68 dimensions remain fail-closed."
+  ],
+  "sensitivity": {
+    "schemaVersion": "face-space-gnm-v3-sensitivity-v0",
+    "syntheticOnly": true,
+    "componentCount": 24,
+    "amplitude": 0.25,
+    "metricCount": 6,
+    "effectiveRank": 6,
+    "singularValues": [
+      3.4926489931674274,
+      1.826849614604601,
+      1.1614590168844892,
+      0.6993224890425004,
+      0.4300512726507266,
+      0.11040257729763478
+    ],
+    "maxNormalizedSensitivityByMetric": {
+      "lower_face_width_ratio": 2.52398311379262,
+      "chin_height_ratio": 0.9478732037123979,
+      "eye_spacing_ratio": 0.3616685792837434,
+      "eye_width_ratio": 0.34521202155483416,
+      "eye_tilt": 0.07665360068183213,
+      "nose_width_ratio": 0.9286841447697574
+    },
+    "interpretation": [
+      "The first 24 GNM head identity components have full local rank across the six currently supported sparse-68 structural measurements.",
+      "Individual latent components show cross-dimension leakage, so GNM identity coefficients must remain adapter-native latent controls rather than canonical Face Space axes.",
+      "Eye-tilt control is locally weaker than the other measured dimensions under the current tolerance normalization."
+    ]
+  }
+}

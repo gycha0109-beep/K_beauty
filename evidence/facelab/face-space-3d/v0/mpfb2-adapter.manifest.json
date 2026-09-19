@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "face-space-3d-adapter-manifest-v0",
+  "adapterId": "mpfb2-research-adapter-v0",
+  "backend": "mpfb2",
+  "backendVersion": "upstream-version-pending-pin",
+  "mappingVersion": "mpfb2-face-space-mapping-v0",
+  "implementationStatus": "mapping_candidate",
+  "executionBoundary": "offline_research",
+  "faceSpaceIsAuthority": true,
+  "nativeParametersAreAuthority": false,
+  "licenseReview": {
+    "status": "research_reviewed_not_legal_approved",
+    "note": "Exact upstream code/assets and redistribution boundary must be pinned before executable adoption."
+  },
+  "dimensionMappings": [
+    {
+      "dimensionId": "face_length_ratio",
+      "strategy": "composite_target",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "face_width_ratio",
+      "strategy": "composite_target",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "cheekbone_width_ratio",
+      "strategy": "composite_target",
+      "absoluteTolerance": 0.05
+    },
+    {
+      "dimensionId": "lower_face_width_ratio",
+      "strategy": "custom_target_required",
+      "absoluteTolerance": 0.05
+    },
+    {
+      "dimensionId": "chin_height_ratio",
+      "strategy": "composite_target",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "forehead_height_ratio",
+      "strategy": "composite_target",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "eye_spacing_ratio",
+      "strategy": "composite_target",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "eye_width_ratio",
+      "strategy": "composite_target",
+      "absoluteTolerance": 0.04
+    },
+    {
+      "dimensionId": "eye_tilt",
+      "strategy": "custom_target_required",
+      "absoluteTolerance": 2
+    },
+    {
+      "dimensionId": "nose_width_ratio",
+      "strategy": "composite_target",
+      "absoluteTolerance": 0.04
+    }
+  ]
+}

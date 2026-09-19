@@ -88,7 +88,14 @@
     "mobile:prebuild:android": "npm run prebuild:android --workspace @bejewely/mobile",
     "mobile:build:android:debug": "npm run build:android:debug --workspace @bejewely/mobile",
     "verify:mobile-foundation": "node scripts/verify-mobile-architecture-foundation.mjs",
-    "verify:mobile-native": "npm run verify:native --workspace @bejewely/mobile"
+    "verify:mobile-native": "npm run verify:native --workspace @bejewely/mobile",
+    "verify:face-lab-reverse-archetype-pilot": "node scripts/verify-face-lab-reverse-archetype-pilot.mjs",
+    "plan:face-lab-reverse-archetype-collection": "node scripts/face-lab-reverse-archetype-collection.mjs --plan",
+    "validate:face-lab-reverse-archetype-collection": "node scripts/face-lab-reverse-archetype-collection.mjs",
+    "next:face-lab-reverse-archetype-collection": "node scripts/face-lab-reverse-archetype-collection.mjs --next evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json",
+    "verify:face-lab-face-space-3d-adapter": "node scripts/verify-face-lab-face-space-3d-adapter.mjs",
+    "verify:face-lab-photo-geometry-bridge": "node scripts/verify-face-lab-photo-geometry-bridge.mjs",
+    "verify:face-lab-photo-geometry-runtime": "node scripts/verify-face-lab-photo-geometry-runtime.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",

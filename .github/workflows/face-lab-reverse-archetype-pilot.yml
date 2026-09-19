@@ -1,0 +1,102 @@
+name: Face Lab Reverse Archetype Pilot Guard
+
+on:
+  pull_request:
+    paths:
+      - "lib/face-lab-face-space-3d-research.js"
+      - "lib/face-lab-photo-geometry-research.js"
+      - "lib/face-lab-mediapipe-metric-geometry.js"
+      - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
+      - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
+      - "evidence/facelab/photo-geometry/**"
+      - "evidence/facelab/structural-measurement/**"
+      - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
+      - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
+      - "scripts/face-lab-gnm-v3-poc.py"
+      - ".github/workflows/face-lab-gnm-v3-poc.yml"
+      - "evidence/facelab/face-space-3d/**"
+      - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
+      - "docs/domain/facelab/face-lab-external-research-dependency-register-v1.md"
+      - "docs/domain/facelab/FACE_LAB_MASTER_SPEC.md"
+      - "docs/domain/facelab/FACE_LAB_CURRENT_STATE.md"
+      - "docs/domain/facelab/FACE_LAB_EVALUATION_STRATEGY.md"
+      - "lib/face-lab-reverse-archetype-research.js"
+      - "scripts/verify-face-lab-reverse-archetype-pilot.mjs"
+      - "scripts/face-lab-reverse-archetype-collection.mjs"
+      - "evidence/facelab/reverse-archetype/**"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2-pilot-v1.md"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md"
+      - "docs/domain/facelab/face-lab-face-space-style-compatibility-architecture-v1.md"
+      - "package.json"
+      - ".github/workflows/face-lab-reverse-archetype-pilot.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "lib/face-lab-face-space-3d-research.js"
+      - "lib/face-lab-photo-geometry-research.js"
+      - "lib/face-lab-mediapipe-metric-geometry.js"
+      - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
+      - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
+      - "evidence/facelab/photo-geometry/**"
+      - "evidence/facelab/structural-measurement/**"
+      - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
+      - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
+      - "scripts/face-lab-gnm-v3-poc.py"
+      - ".github/workflows/face-lab-gnm-v3-poc.yml"
+      - "evidence/facelab/face-space-3d/**"
+      - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
+      - "docs/domain/facelab/face-lab-external-research-dependency-register-v1.md"
+      - "docs/domain/facelab/FACE_LAB_MASTER_SPEC.md"
+      - "docs/domain/facelab/FACE_LAB_CURRENT_STATE.md"
+      - "docs/domain/facelab/FACE_LAB_EVALUATION_STRATEGY.md"
+      - "lib/face-lab-reverse-archetype-research.js"
+      - "scripts/verify-face-lab-reverse-archetype-pilot.mjs"
+      - "scripts/face-lab-reverse-archetype-collection.mjs"
+      - "evidence/facelab/reverse-archetype/**"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2-pilot-v1.md"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md"
+      - "docs/domain/facelab/face-lab-face-space-style-compatibility-architecture-v1.md"
+      - "package.json"
+      - ".github/workflows/face-lab-reverse-archetype-pilot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          ACTUAL="$(git rev-parse HEAD)"
+          test "$ACTUAL" = "$EXPECTED"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify reverse archetype pilot boundary
+        run: node scripts/verify-face-lab-reverse-archetype-pilot.mjs
+      - name: Verify R-A2A collection plan CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs --plan > /dev/null
+      - name: Verify R-A2A collection ledger CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
+      - name: Verify R-A2A next-task CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs --next evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
+      - name: Verify FaceSpace3DAdapter v0 contract
+        run: node scripts/verify-face-lab-face-space-3d-adapter.mjs
+      - name: Verify photo geometry measurement bridge
+        run: node scripts/verify-face-lab-photo-geometry-bridge.mjs
+      - name: Verify MediaPipe metric geometry runtime parity
+        run: node scripts/verify-face-lab-photo-geometry-runtime.mjs
+      - name: Compile GNM v3 PoC runner
+        run: python -m py_compile scripts/face-lab-gnm-v3-poc.py

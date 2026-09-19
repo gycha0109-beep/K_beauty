@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "face-lab-reverse-archetype-raw-candidate-v1",
+  "runId": "ra_run_0123456789abcdef",
+  "candidateId": "ra_cand_0123456789abcdef01234567",
+  "archetypeQueryLabel": "wolf",
+  "queryId": "wolf:general",
+  "queryString": "늑대상",
+  "queryFamily": "general_label",
+  "retrievalSurfaceId": "google_images_ko_web",
+  "originDomain": "example.com",
+  "originSourceFamilyOptional": null,
+  "resultRank": 1,
+  "resultPageOrCursor": "top",
+  "resultUrl": "https://search.example/result/1",
+  "landingUrl": "https://example.com/article",
+  "imageUrl": "https://cdn.example.com/image.jpg",
+  "retrievedAt": "2026-09-18T00:00:00.000Z",
+  "acquisitionMode": "manual_metadata_capture",
+  "rawImageBytesRetained": false
+}
