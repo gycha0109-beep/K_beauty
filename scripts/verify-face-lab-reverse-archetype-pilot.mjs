@@ -4,6 +4,7 @@ import {
   SOURCE_MANIFEST_SCHEMA_VERSION,
   RAW_CANDIDATE_SCHEMA_VERSION,
   COLLECTION_BATCH_SCHEMA_VERSION,
+  COLLECTION_LEDGER_SCHEMA_VERSION,
   REVERSE_ARCHETYPE_ARCHETYPES,
   REVERSE_ARCHETYPE_QUERY_TEMPLATES,
   buildFrozenReverseArchetypeQueryManifest,
@@ -13,6 +14,7 @@ import {
   buildReverseArchetypeCollectionPlan,
   validateReverseArchetypeCollectionBatch,
   buildReverseArchetypeCollectionCoverage,
+  validateReverseArchetypeCollectionLedger,
   createReverseArchetypeBlindObservationPacket,
   validateReverseArchetypeBlindPacket,
   classifyReverseArchetypePrimaryEligibility,
@@ -28,6 +30,7 @@ function readJson(path) {
 const sourceManifest = readJson('evidence/facelab/reverse-archetype/pilot-v1/source-manifest.json');
 const queryManifest = readJson('evidence/facelab/reverse-archetype/pilot-v1/query-manifest.json');
 const collectionBatchFixture = readJson('evidence/facelab/reverse-archetype/pilot-v1/collection-batch.example.json');
+const collectionLedger = readJson('evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json');
 
 const sourceValidation = validateReverseArchetypeSourceManifest(sourceManifest);
 assert.equal(sourceValidation.ok, true, sourceValidation.errors.join(','));
@@ -158,6 +161,46 @@ assert.equal(
 assert.equal(
   duplicateTaskCoverage.errors.some((error) => error.includes('duplicate_collection_task')),
   true
+);
+
+assert.equal(collectionLedger.schemaVersion, COLLECTION_LEDGER_SCHEMA_VERSION);
+const collectionLedgerValidation = validateReverseArchetypeCollectionLedger(
+  collectionLedger,
+  { sourceManifest, queryManifest }
+);
+assert.equal(
+  collectionLedgerValidation.ok,
+  true,
+  collectionLedgerValidation.errors.join(',')
+);
+assert.equal(collectionLedgerValidation.coverage.plannedBatches, 168);
+assert.equal(collectionLedgerValidation.coverage.pendingBatches, 168);
+assert.equal(collectionLedgerValidation.coverage.capturedCandidates, 0);
+
+assert.equal(
+  validateReverseArchetypeCollectionLedger(
+    { ...collectionLedger, status: 'sealed' },
+    { sourceManifest, queryManifest }
+  ).ok,
+  false,
+  'ledger cannot seal while collection tasks are pending'
+);
+
+assert.equal(
+  validateReverseArchetypeCollectionLedger(
+    {
+      ...collectionLedger,
+      batches: [
+        {
+          ...collectionBatchFixture,
+          runId: collectionBatchFixture.runId
+        }
+      ]
+    },
+    { sourceManifest, queryManifest }
+  ).ok,
+  false,
+  'ledger must reject batches from a different run'
 );
 
 const candidate = {
@@ -386,6 +429,7 @@ console.log(JSON.stringify({
   plannedCollectionBatches: collectionPlan.plannedBatchCount,
   collectionBatchContract: true,
   collectionCoverageContract: true,
+  collectionLedgerContract: true,
   acquisitionMode: sourceManifest.collectionPolicy.acquisition,
   automatedScraping: sourceManifest.collectionPolicy.automatedScraping,
   rawImageRetention: sourceManifest.collectionPolicy.rawImageByteRetention,
