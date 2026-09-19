@@ -2970,3 +2970,15 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, persistence shape, API response field names, recommendation weights, auth/RLS, Provider calls, payment, Production data.
 - Remaining risk: exact rendered UX and the complete repository health/build still require PR CI/runtime review.
 
+## 2026-09-19 — Premium Intake v1
+
+- Classification: Medium / Data N / Auth N / RLS N / Storage N / Provider N / Payment N / Secret N / Production N.
+- Added a four-step Premium intake before new Full Report creation: current products → actual usage → recent product/routine changes and reactions → requested decision focus.
+- Existing current-product states remain authoritative: selected / not_in_db / not_using. Usage metadata reuses existing useTime and satisfaction fields rather than creating a second product model.
+- Premium-only answers recentlyChangedProduct and productReaction are sanitized into premiumIntake and overlaid onto the existing survey context during Premium decision rebuild; the free-result form is not mutated.
+- Full Report decisions are rebuilt deterministically after Premium intake and current-product enrichment, so existing functional/condition/current-product policies consume the new signals.
+- Requested decisionFocus is persisted and displayed as user intent only; it does not override deterministic policy authority.
+- Added Premium Intake summary to the Full Report Today hub and a dedicated verifier wired into Current Main Health.
+- Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
+- Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
+
