@@ -653,6 +653,21 @@ Weight + Threshold Calibration
 
 Synthetic stress campaign과 Real dataset 준비는 병행할 수 있지만 authority와 dataset role은 합치지 않는다.
 
+이 Archetype calibration track은 Face Space / Style Compatibility research와 병렬로 진행할 수 있다.
+
+```text
+Archetype calibration track
+→ current shadow projection hypothesis 검증
+
+Face Space track
+→ reusable structural representation 검증
+
+Style Compatibility track
+→ Face × Style relation 검증
+```
+
+세 track은 evidence를 공유할 수 있어도 서로의 activation authority를 자동 대체하지 않는다.
+
 ## Appendix A. Current Rubric Baseline
 
 이 appendix는 `face-lab-archetype-rubric-20260727` registry source를 요약한다. 현재 weight와 indicator는 **current rubric hypothesis structure**다.
@@ -662,6 +677,8 @@ Current rubric baseline
 ≠ validated taxonomy
 ≠ Human truth
 ≠ production decision rule
+≠ Face Space axis definition
+≠ Style Compatibility rule
 ```
 
 아래 required는 `required: true`인 positive indicator, optional은 나머지 positive indicator, negative는 `polarity: -1` indicator다.
