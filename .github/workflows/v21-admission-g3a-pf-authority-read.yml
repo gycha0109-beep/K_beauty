@@ -4,6 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - ".github/workflows/v21-admission-g3a-pf-authority-read.yml"
+      - "lib/recommendation-admission-authority-controlled-probe-oidc.js"
+      - "lib/recommendation-admission-authority-reader.js"
+      - "app/api/internal/recommendation-admission-authority-controlled-probe/route.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"
+      - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
   pull_request:
     branches:
       - main
@@ -25,8 +36,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: data-offer17-g3a-runtime-probe-${{ github.ref }}
-  cancel-in-progress: false
+  group: g3a-runtime-probe-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   G3A_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
