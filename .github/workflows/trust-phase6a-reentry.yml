@@ -114,7 +114,9 @@ jobs:
           fi
           rm -f "${start_log}"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${TRUST_RUNTIME_DIR}"
-          DB='postgresql://postgres:postgres@127.0.0.1:57422/postgres'
+          DB_PORT="$(awk 'BEGIN{in_db=0} /^\\[db\\]/{in_db=1;next} /^\\[/{in_db=0} in_db && /^port =/{gsub(/[^0-9]/,"",$0);print $0;exit}' "${TRUST_RUNTIME_DIR}/supabase/config.toml")"
+          test -n "$DB_PORT"
+          DB="postgresql://postgres:postgres@127.0.0.1:${DB_PORT}/postgres"
           psql "$DB" -qAt -v ON_ERROR_STOP=1             -f tests/fixtures/trust-phase6a-reentry/verify_trust_phase6a_runtime.sql             | tee "${RUNNER_TEMP}/trust-phase6a-runtime.log"
           grep -q '^TRUST_PHASE6A_REENTRY_RUNTIME_VERIFIED$' "${RUNNER_TEMP}/trust-phase6a-runtime.log"
 
@@ -122,7 +124,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          DB='postgresql://postgres:postgres@127.0.0.1:57422/postgres'
+          DB_PORT="$(awk 'BEGIN{in_db=0} /^\\[db\\]/{in_db=1;next} /^\\[/{in_db=0} in_db && /^port =/{gsub(/[^0-9]/,"",$0);print $0;exit}' "${TRUST_RUNTIME_DIR}/supabase/config.toml")"
+          test -n "$DB_PORT"
+          DB="postgresql://postgres:postgres@127.0.0.1:${DB_PORT}/postgres"
           test "$(psql "$DB" -Atqc "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('request_trust_reentry_v1','process_trust_reentry_event_v1') and p.prosecdef")" = "2"
           test "$(psql "$DB" -Atqc "select count(*) from information_schema.role_table_grants where table_schema='public' and table_name='trust_reentry_events' and grantee in ('anon','authenticated','service_role')")" = "0"
           test "$(psql "$DB" -Atqc "select count(*) from information_schema.role_table_grants where table_schema='public' and table_name in ('catalog_trust_intake','product_fact_research_tasks','trust_source_observations','trust_evidence_candidates') and grantee='service_role' and privilege_type='SELECT'")" = "4"
