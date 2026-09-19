@@ -201,6 +201,15 @@ check(
   "confirm must fail closed when the identity proposal changes"
 );
 check(
+  source.orchestration.includes("loadCurrentMarketSubjects") &&
+    source.orchestration.includes("trust_subject_registration_competing_subject_detected"),
+  "preflight/confirm must fail closed on competing current Subject drift"
+);
+check(
+  source.orchestration.includes('code === "23505"'),
+  "database uniqueness races must map to a conflict instead of retryable outage"
+);
+check(
   source.confirmRoute.includes("proposalDigest: body.proposalDigest"),
   "confirm route must forward the stable proposal digest"
 );
