@@ -97,6 +97,19 @@ These IDs are a **Face Lab adapter choice over official topology**, not an offic
 
 Any change to the anchor map creates a new adapter/mapping version and must not rewrite prior evidence.
 
+## 4.1 Shared semantic authority
+
+Provider-specific anchor maps와 별도로 공통 measurement 의미를 다음 파일에 고정한다.
+
+```text
+evidence/facelab/structural-measurement/v0/semantic-contract.json
+schema = face-space-structural-measurement-semantics-v0
+```
+
+같은 dimension ID는 공통 structural intent를 가리키지만 provider anchor equivalence가 검증됐다는 뜻은 아니다.
+
+현재 `chin_height_ratio`, `nose_width_ratio`는 provider anchor equivalence가 `hold`이고 나머지 4개도 `unvalidated`다.
+
 ## 5. v0 structural measurements
 
 Normalizer:
