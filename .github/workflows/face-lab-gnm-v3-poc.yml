@@ -96,12 +96,14 @@ jobs:
             --output evidence/facelab/face-space-3d/v0/runtime/gnm-v3-selftest.json
 
       - name: Show PoC results
+        if: always()
         shell: bash
         run: |
           cat evidence/facelab/face-space-3d/v0/runtime/gnm-v3-probe.json
           cat evidence/facelab/face-space-3d/v0/runtime/gnm-v3-selftest.json
 
       - name: Upload research PoC evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: face-lab-gnm-v3-poc-${{ github.sha }}
