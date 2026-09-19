@@ -21,6 +21,13 @@ function assertContains(path, needles) {
   }
 }
 
+const rootPackageTriggers = [
+  '- "package.json"',
+  "- 'package.json'",
+  '- "package-lock.json"',
+  "- 'package-lock.json'",
+];
+
 const historicalTrustWorkflows = readdirSync(".github/workflows")
   .filter((name) => /^trust-p\d/i.test(name) && /\.ya?ml$/i.test(name));
 assert.deepEqual(
@@ -119,12 +126,20 @@ assertNotContains(".github/workflows/mobile-ci.yml", [
   "npm run verify:mobile-native",
 ]);
 
-const rootPackageTriggers = [
-  '- "package.json"',
-  "- 'package.json'",
-  '- "package-lock.json"',
-  "- 'package-lock.json'",
-];
+for (const path of [
+  ".github/workflows/mobile-14-auth-app-links.yml",
+  ".github/workflows/mobile-15-distribution-authority.yml",
+  ".github/workflows/mobile-20b-store-capture.yml",
+]) {
+  assertNotContains(path, rootPackageTriggers);
+}
+assertNotContains(".github/workflows/mobile-14-auth-app-links.yml", [
+  '- "apps/mobile/**"',
+  "source-and-web:",
+]);
+assertContains(".github/workflows/mobile-store-readiness.yml", [
+  '- "app/.well-known/**"',
+]);
 
 for (const path of [
   ".github/workflows/admin-access-foundation.yml",
@@ -200,6 +215,7 @@ console.log(JSON.stringify({
   face_eval_workflows: 2,
   retired_mobile_store_stage_workflows: 0,
   retired_mobile_app_stage_workflows: 0,
+  heavy_mobile_root_package_triggers: 0,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
