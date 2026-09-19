@@ -31,6 +31,8 @@ Role:
 Observed upstream characteristics:
 
 - Google official GNM ecosystem
+- reviewed code revision: `a424b5153eec9154f3dfa5ee7f214e5817918d54` (2026-09-18)
+- official Hugging Face artifact family: `google/gnm-v3`; exact model revision/digest still pending pin
 - GNM Head v3
 - 170 head identity components inside 253 identity components
 - 383 expression components
