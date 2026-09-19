@@ -1,33 +1,44 @@
 # FACE LAB CURRENT STATE
 
-> 갱신일: 2026-08-12
-> 구현 기준 SHA: `9361fc100bd5770f4ccf95999b561f8738cbd3a2`
+> 갱신일: 2026-09-19
+> 구현 기준 SHA: `cc029c0f1c6d36304049570641193f94335ed7a3`
 > 이 문서를 추가·수정하는 문서 전용 commit 때문에 `main` SHA가 전진할 수 있다. 아래 구현 판정의 기준 코드는 위 SHA다.
 > 현재 코드와 최신 component contract가 과거 날짜형 진행상황 문서보다 우선한다.
 
 ## 1. 한눈에 보는 현재 상태
 
-Face Lab은 관찰 기반과 평가 기반은 상당히 구축됐고, 결정론적 Archetype shadow scorer도 현재 `main`에 복구됐다. 그러나 Archetype calibration과 이후 스타일링 계층이 아직 production authority가 아니므로 최종 Face Lab 엔진은 완성 상태가 아니다.
+Face Lab은 관찰 기반과 평가 기반은 상당히 구축됐고, 결정론적 Archetype shadow scorer도 현재 `main`에 존재한다. 그러나 Archetype calibration과 이후 스타일링 계층은 아직 production authority가 아니다.
+
+목표 아키텍처는 이제 Archetype 자체를 내부 핵심 표현으로 두지 않는다. `FaceLabObservationAnalysis → Normalized Face Representation → Face Space`를 재사용 가능한 내부 기반으로 두고, Archetype은 사용자 해석 projection, Style recommendation은 별도의 compatibility 계층으로 분리하는 방향이 문서 authority에 반영됐다. 이 목표 구조는 아직 Production 구현이 아니다.
 
 ```text
 Eligibility / quality                 ✅ 구현
 Unified Face Lab observations         ✅ 구현
 Canonical analysis container          ✅ 구현
+Normalized Face Representation        ❌ 목표 계약만 정의
+Face Space                            ❌ 미구현
 Archetype registry                    ✅ shadow / rubric_ready
 Deterministic archetype scoring       ✅ shadow
 Archetype decision / hold             ✅ shadow, production 차단
+Archetype Projection from Face Space  ❌ 미구현
 Archetype calibration                 ❌ not_ready
 Canonical archetype promotion         ❌ 미연결
+Style Representation / Style Space    ❌ 목표 계약만 정의
+Style Compatibility Engine            ❌ 미구현
 Style Identity                        ❌ 미구현
 Core / Alternative strategy           ❌ 미구현
 Color 최종 엔진                       ❌ 미구현
 Hair 최종 엔진                        ❌ 미구현
 Makeup 최종 엔진                      ❌ 미구현
+Eyewear 최종 엔진                     ❌ 미구현
 Face Style 최종 엔진                  ❌ 미구현
 Look Composer                         ❌ 미구현
+Parametric 3D experiment pipeline     ❌ 미구현
+Automated VLM judge program           ❌ 미구현
 최종 canonical Free/Premium 결과      ❌ 미완성
 Synthetic evaluation infrastructure   ✅ 구현
 Controlled skin-cue pilot             ✅ 공식 alignment 완료 / closeout 대기
+Reverse Archetype seed pilot          ✅ #542 연구 foundation / Production 미연결
 Real human archetype calibration set  ❌ 미구축
 ```
 
@@ -131,6 +142,11 @@ decision = null
 
 Taxonomy와 calibration readiness가 명시적으로 승격되기 전에는 사용자 판정으로 활성화하지 않는다.
 
+현재 shadow scorer는 Face Space 기반 projection 구현이 아니다. 기존 `FaceLabObservationAnalysis → Registry scoring` 경로를 그대로 검증하는 격리된 shadow contract다.
+
+향후 Face Space가 도입되더라도 현재 7개 label과 weight를 자동으로 새 내부 표현의 정답으로 승격하지 않는다.
+
+
 ### 4.3 아직 필요한 것
 
 - 검증된 Human evaluation data
@@ -147,11 +163,15 @@ Taxonomy와 calibration readiness가 명시적으로 승격되기 전에는 사�
 이 문서는 다음 제품 철학과 목표 데이터 경계를 정의한다.
 
 - 대표 상과 유사도 언어
+- Normalized Face Representation을 중심으로 한 스타일링 근거
 - Style Identity
 - Core / Alternative strategy
+- Style Representation
+- Style Compatibility
 - Color
 - Hair
 - Makeup
+- Eyewear
 - Face Style
 - Core / Alternative Look
 
@@ -169,6 +189,32 @@ Taxonomy와 calibration readiness가 명시적으로 승격되기 전에는 사�
 | Look Composer | 목표 경계 정의 | 미구현 |
 
 현재 transition projector가 출력하는 제한적인 얼굴형·컬러·헤어 문구를 위 최종 엔진으로 간주하면 안 된다.
+
+### 5.1 Face Space / Compatibility 목표 구조 상태
+
+`face-lab-face-space-style-compatibility-architecture-v1.md`는 다음 목표 관계를 정의한다.
+
+```text
+FaceLabObservationAnalysis
+→ Normalized Face Representation
+→ Face Space
+   ├─ Archetype Projection
+   └─ Style Compatibility
+```
+
+현재 구현되지 않은 항목:
+
+- 별도 Face Representation schema
+- Face Space transform/model
+- Archetype projection from Face Space
+- Style Representation schema
+- compatibility evidence store/model
+- Blender 또는 동등한 parametric 3D 실험 pipeline
+- multi-VLM blind judge orchestration
+- active experimentation
+
+문서화된 목표 구조를 현재 Production capability로 오해하면 안 된다.
+
 
 ## 6. Free / Premium 상태
 
@@ -347,3 +393,31 @@ Canonical Free / Premium integration
 ```
 
 단계 이름은 바뀔 수 있다. 의존관계를 건너뛰려면 별도 contract 변경이 필요하다.
+
+
+## 9. Reverse Archetype / Face Space Seed Research
+
+PR #542의 연구 foundation은 기존 7개 cultural label을 검색 seed로 사용하되 current Archetype scorer를 검증 근거로 사용하지 않는다.
+
+현재 연구 경계:
+
+```text
+web query context
+→ provenance-only RAW candidate
+→ governed opaque asset
+→ blind structural observation
+→ sealed observation
+→ context rejoin
+```
+
+연구 목적은 "늑대상 정답 얼굴" 같은 단일 prototype을 확정하는 것이 아니다.
+
+목표는 label별 sampled distribution을 Face Space의 seed evidence로 사용하고 다음을 탐색하는 것이다.
+
+- label 내 구조 분포
+- label 간 overlap / boundary
+- 현재 7개 taxonomy의 분리 가능성
+- taxonomy 밖 일반 얼굴 공간의 필요성
+- 향후 parametric 3D prototype / boundary experiment에 사용할 구조 축
+
+현재 #542는 metadata / blind-observation foundation 단계이며 실제 Face Space, 3D, compatibility engine을 구현하지 않는다.
