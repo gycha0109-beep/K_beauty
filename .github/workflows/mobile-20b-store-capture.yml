@@ -18,6 +18,7 @@ on:
       - "scripts/verify-mobile-20b-store-capture.mjs"
       - ".github/workflows/mobile-20b-store-capture.yml"
   push:
+    branches: [main]
     paths:
       - "apps/mobile/app/_layout.tsx"
       - "apps/mobile/app/store-capture.tsx"
