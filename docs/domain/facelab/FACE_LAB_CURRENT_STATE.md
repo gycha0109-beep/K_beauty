@@ -38,7 +38,7 @@ Automated VLM judge program           ❌ 미구현
 최종 canonical Free/Premium 결과      ❌ 미완성
 Synthetic evaluation infrastructure   ✅ 구현
 Controlled skin-cue pilot             ✅ 공식 alignment 완료 / closeout 대기
-Reverse Archetype seed pilot          ✅ #542 연구 foundation / Production 미연결
+Reverse Archetype seed pilot          ✅ #542 R-A2A tooling / ledger open, 0/168 batches / Production 미연결
 Real human archetype calibration set  ❌ 미구축
 ```
 
@@ -434,4 +434,17 @@ web query context
 - taxonomy 밖 일반 얼굴 공간의 필요성
 - 향후 parametric 3D prototype / boundary experiment에 사용할 구조 축
 
-현재 #542는 metadata / blind-observation foundation 단계이며 실제 Face Space, 3D, compatibility engine을 구현하지 않는다.
+현재 #542는 metadata / blind-observation foundation과 R-A2A collection tooling까지 구현했다. 실제 Face Space, 3D, compatibility engine은 구현하지 않는다.
+
+R-A2A operational state:
+
+```text
+collection ledger = open
+planned batches = 168
+complete = 0
+blocked = 0
+pending = 168
+captured candidates = 0 / 840
+```
+
+현재 frozen acquisition policy는 manual metadata capture only다. 따라서 generic web-search API나 다른 검색 surface 결과를 Google/Naver/Bing ranked result로 대체하지 않는다.
