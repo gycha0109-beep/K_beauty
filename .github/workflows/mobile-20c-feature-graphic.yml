@@ -37,13 +37,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout exact candidate SHA
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Setup Node 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -89,7 +89,7 @@ jobs:
 
       - name: Upload MOBILE-20C feature graphic
         if: steps.authority.outputs.changed != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bejewely-mobile-20c-feature-graphic-${{ env.MOBILE_20C_EXPECTED_SHA }}
           path: .mobile-20c-feature-graphic-artifacts/
