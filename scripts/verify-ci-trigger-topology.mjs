@@ -62,6 +62,32 @@ assert.deepEqual(
   `FACE-EVAL workflow topology drift: ${faceEvalWorkflows.join(", ")}`,
 );
 
+const retiredMobileStoreStages = new Set([
+  "mobile-16a-privacy-account-deletion.yml",
+  "mobile-16c-google-data-safety.yml",
+  "mobile-16d-google-play-health-declaration.yml",
+  "mobile-16e-content-rating-readiness.yml",
+  "mobile-16f-store-listing-claims.yml",
+  "mobile-16g-production-icon-audit.yml",
+  "mobile-16h-production-icons.yml",
+  "mobile-17-production-surface.yml",
+  "mobile-18-store-listing.yml",
+  "mobile-19a-public-support.yml",
+]);
+const presentRetiredMobileStoreStages = readdirSync(".github/workflows")
+  .filter((name) => retiredMobileStoreStages.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredMobileStoreStages,
+  [],
+  `retired mobile store stage workflows must stay retired: ${presentRetiredMobileStoreStages.join(", ")}`,
+);
+assertContains(".github/workflows/mobile-store-readiness.yml", [
+  "concurrency:",
+  "cancel-in-progress:",
+]);
+assertNotContains(".github/workflows/mobile-store-readiness.yml", rootPackageTriggers);
+
 const rootPackageTriggers = [
   '- "package.json"',
   "- 'package.json'",
@@ -141,6 +167,7 @@ console.log(JSON.stringify({
   historical_data_offer_workflows: 0,
   data_taxonomy_workflows: 3,
   face_eval_workflows: 2,
+  retired_mobile_store_stage_workflows: 0,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
