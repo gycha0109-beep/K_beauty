@@ -1,44 +1,7 @@
 name: BEJEWELY Mobile 20D App Store Screenshots
 
+# App Store screenshot capture is a release/store asset operation, not a routine PR gate.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "apps/mobile/app/**"
-      - "apps/mobile/components/**"
-      - "apps/mobile/features/**"
-      - "apps/mobile/lib/**"
-      - "apps/mobile/app.json"
-      - "apps/mobile/package.json"
-      - "apps/mobile/store-readiness.json"
-      - "docs/store/mobile-store-listing-final.json"
-      - "docs/store/mobile-20d-app-store-screenshot-packaging.json"
-      - "package.json"
-      - "package-lock.json"
-      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
-      - "scripts/capture-mobile-20d-app-store-screenshots.sh"
-      - "scripts/verify-mobile-20d-app-store-screenshots.mjs"
-      - "scripts/verify-mobile-18-store-listing.mjs"
-      - ".github/workflows/mobile-20d-app-store-screenshots.yml"
-  push:
-    branches: [main]
-    paths:
-      - "apps/mobile/app/**"
-      - "apps/mobile/components/**"
-      - "apps/mobile/features/**"
-      - "apps/mobile/lib/**"
-      - "apps/mobile/app.json"
-      - "apps/mobile/package.json"
-      - "apps/mobile/store-readiness.json"
-      - "docs/store/mobile-store-listing-final.json"
-      - "docs/store/mobile-20d-app-store-screenshot-packaging.json"
-      - "package.json"
-      - "package-lock.json"
-      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
-      - "scripts/capture-mobile-20d-app-store-screenshots.sh"
-      - "scripts/verify-mobile-20d-app-store-screenshots.mjs"
-      - "scripts/verify-mobile-18-store-listing.mjs"
-      - ".github/workflows/mobile-20d-app-store-screenshots.yml"
   workflow_dispatch:
 
 permissions:
