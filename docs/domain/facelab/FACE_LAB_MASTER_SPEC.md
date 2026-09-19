@@ -4,6 +4,7 @@
 > 범위: Bejewely Face Lab
 > 현재 구현 상태는 이 문서에 기록하지 않는다. `FACE_LAB_CURRENT_STATE.md`를 본다.
 > 평가 방법론은 이 문서와 분리한다. `FACE_LAB_EVALUATION_STRATEGY.md`를 본다.
+> Face Space와 Style Compatibility의 상세 목표 구조는 `face-lab-face-space-style-compatibility-architecture-v1.md`를 본다.
 
 ## 1. 제품 정의
 
@@ -14,15 +15,18 @@ Face Lab은 사진에서 확인 가능한 얼굴 특징을 구조화한 뒤, 그
 사용자에게 제공하려는 흐름은 다음과 같다.
 
 1. 얼굴의 구조적 특징과 사진 품질을 관찰한다.
-2. 지원하는 특징 조합을 이해하기 쉬운 대표 상 언어로 번역한다.
-3. 사용자의 기본 Style Identity를 설명한다.
-4. 기본 인상을 살리는 Core 전략을 제시한다.
-5. 다른 분위기로 변주하는 Alternative 전략을 제시한다.
-6. 같은 근거에서 컬러·헤어·메이크업·얼굴 주변 스타일 방향을 만든다.
-7. 영역별 결과를 Core Look과 Alternative Look으로 조합한다.
-8. 하나의 canonical 결과를 Free와 Premium에서 깊이만 다르게 보여준다.
+2. 관찰 결과를 재사용 가능한 Normalized Face Representation으로 정리한다.
+3. Face Representation을 확장 가능한 Face Space에 배치한다.
+4. Face Space의 구조를 사용자가 이해하기 쉬운 대표 상 언어로 투영한다.
+5. 같은 Face Representation에서 사용자의 기본 Style Identity와 스타일 목표를 정한다.
+6. Face Representation과 Style Representation의 compatibility evidence를 이용해 Core / Alternative 전략을 만든다.
+7. 같은 근거에서 컬러·헤어·메이크업·안경·얼굴 주변 스타일 방향을 만든다.
+8. 영역별 결과를 Core Look과 Alternative Look으로 조합한다.
+9. 하나의 canonical 결과를 Free와 Premium에서 깊이만 다르게 보여준다.
 
 대표 상은 사용자가 결과를 이해하고 기억하기 위한 입구다. Face Lab의 최종 목적은 대표 상 자체가 아니라 스타일 발견과 실행이다.
+
+내부 authority는 대표 상 label이 아니라 구조화 관찰에서 파생된 Face Representation이다. 대표 상은 Face Space 위의 사용자 해석 projection이며, 스타일 추천 엔진의 직접 lookup key가 아니다.
 
 ## 2. 목표 아키텍처
 
@@ -30,11 +34,14 @@ Face Lab은 사진에서 확인 가능한 얼굴 특징을 구조화한 뒤, 그
 사진
 → Eligibility / Quality
 → FaceLabObservationAnalysis
-→ Archetype scoring / hold
-→ Style Identity
-→ Core / Alternative Strategy
-→ Color / Hair / Makeup / Face Style
-→ Look Composer
+→ Normalized Face Representation
+→ Face Space
+   ├─ Archetype Projection / hold
+   └─ Style Compatibility
+      → Style Identity
+      → Core / Alternative Strategy
+      → Color / Hair / Makeup / Eyewear / Face Style
+      → Look Composer
 → Canonical Face Lab Result
 → Free projection / Premium projection / Storage
 ```
@@ -66,7 +73,26 @@ Vision이 직접 생성하거나 확정하면 안 되는 값:
 - 최종 헤어·메이크업·컬러 팔레트·코디·완성 룩
 - 판단 엔진을 우회하는 임의의 사용자 스타일링 문장
 
-### 3.2 Archetype Engine
+### 3.2 Normalized Face Representation / Face Space
+
+FaceLabObservationAnalysis는 최종 분류값이 아니라 재사용 가능한 구조 표현의 근거다.
+
+목표 구조는 다음과 같다.
+
+```text
+FaceLabObservationAnalysis
+→ versioned normalization
+→ Normalized Face Representation
+→ Face Space
+```
+
+Face Space는 특정 수의 대표 상을 전제로 하지 않는다. 현재 7개 대표 상이 바뀌거나 추가·병합·분할·폐기돼도 얼굴 구조 표현 계약 자체는 유지될 수 있어야 한다.
+
+구조적 얼굴 축과 헤어·메이크업·표정·조명·카메라 같은 presentation 축은 가능한 한 분리해 보존한다. Presentation에서 반복되는 패턴을 얼굴 구조 truth로 조용히 승격하지 않는다.
+
+정확한 representation schema와 normalization은 별도 versioned contract가 담당한다.
+
+### 3.3 Archetype Projection Engine
 
 대표 상 판정은 결정론적이고 추적 가능해야 한다.
 
@@ -87,9 +113,20 @@ Taxonomy, 근거량, 점수, 1·2위 격차, 모순, calibration 조건을 만�
 
 대표 상 유사도는 지원하는 분류군 안에서 계산한 **특징 유사도**다. 확률, 생물학적 분류 확률, 외모 점수, 객관적 우열을 의미하지 않는다.
 
-### 3.3 Style Identity와 전략
+### 3.4 Style Identity와 전략
 
 대표 상 하나를 스타일 추천 lookup key로 사용하면 안 된다.
+
+Style Identity는 대표 상보다 우선해서 Normalized Face Representation, Face Space 위치, 실제 observation evidence와 사용자가 원하는 전략 방향을 사용한다. 대표 상은 설명과 해석을 돕는 projection으로 사용할 수 있다.
+
+장기 Style Compatibility의 목표 관계는 다음이다.
+
+```text
+Face Representation
+× Style Representation
+× Compatibility Evidence
+→ bounded style recommendation
+```
 
 Style Identity는 대표 상뿐 아니라 더 넓은 관찰 패턴과 근거를 사용한다.
 
@@ -100,7 +137,7 @@ Core와 Alternative는 서로 다른 전략 객체다.
 
 Alternative는 Core 문장을 조금 바꾼 수준이어서는 안 된다.
 
-### 3.4 영역별 스타일 엔진
+### 3.5 영역별 스타일 엔진
 
 Color, Hair, Makeup, Face Style은 각각 독립된 영역이다.
 
@@ -111,7 +148,9 @@ Color, Hair, Makeup, Face Style은 각각 독립된 영역이다.
 - confidence
 - 실패·보류 처리
 
-입력은 canonical observations와 선택된 전략이다. 대표 상 하나만 보고 고정 추천을 반환하면 안 된다.
+입력은 canonical observations, Normalized Face Representation, 선택된 전략과 해당 영역의 compatibility evidence다. 대표 상 하나만 보고 고정 추천을 반환하면 안 된다.
+
+헤어스타일명, 안경 형태명, 메이크업 룩명은 가능한 경우 내부 Style Representation을 사용자나 카탈로그 언어로 번역하는 마지막 단계에서 사용한다.
 
 금지 예시:
 
@@ -120,7 +159,7 @@ Color, Hair, Makeup, Face Style은 각각 독립된 영역이다.
 - 늑대상 → 항상 올백
 - 특정 상 → 항상 같은 넥라인·액세서리
 
-### 3.5 Look Composer
+### 3.6 Look Composer
 
 Look Composer는 영역별 결과를 Core Look과 Alternative Look으로 조합한다.
 
@@ -243,9 +282,22 @@ Taxonomy나 weight table이 `proposed`, `rubric_ready`, `pilot` 등 비활성 �
 
 Production ArchetypeDecision은 명시적인 calibration과 activation gate를 통과해야 한다.
 
+Archetype taxonomy는 Face Space 자체의 schema가 아니다. Taxonomy가 변경돼도 Normalized Face Representation과 Style Compatibility의 기초 표현은 가능하면 독립적으로 유지한다.
+
 ## 10. 평가와의 관계
 
 생성과 평가는 서로 다른 책임이다.
+
+또한 다음 네 질문을 같은 평가로 합치지 않는다.
+
+```text
+Archetype validity
+≠ Face Space validity
+≠ Style association
+≠ Style compatibility
+```
+
+웹에서 특정 얼굴 구조와 특정 스타일이 자주 함께 나타나는 것은 association evidence일 뿐, 그 스타일이 더 잘 어울린다는 compatibility truth가 아니다.
 
 Synthetic data는 다음 용도에 사용할 수 있다.
 
