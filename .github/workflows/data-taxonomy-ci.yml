@@ -1,0 +1,113 @@
+name: BEJEWELY Data Taxonomy CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/catalog-only-product-promotion-eligibility.mjs"
+      - "lib/catalog-product-legacy-projection-compatibility.mjs"
+      - "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"
+      - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
+      - "lib/product-category-normalizer.js"
+      - "lib/product-source.js"
+      - "lib/recommendation-scoring.ts"
+      - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
+      - "scripts/verify-data-taxonomy1-shadow-catalog-taxonomy-foundation-v1.mjs"
+      - "scripts/verify-data-taxonomy2-candidate-manual-classification-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy4-recommendation-shadow-parity-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy6-product-identity-decoupling-preflight-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy7-legacy-projection-compatibility-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy8-nullable-legacy-category-projection-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy10-catalog-only-product-promotion-eligibility-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy11-catalog-only-transactional-adoption-v1.mjs"
+      - "supabase/migrations/*data_taxonomy*.sql"
+      - "evidence/catalog-taxonomy-v1/**"
+      - "docs/evidence/data-taxonomy*.md"
+      - ".github/workflows/data-taxonomy-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/catalog-only-product-promotion-eligibility.mjs"
+      - "lib/catalog-product-legacy-projection-compatibility.mjs"
+      - "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"
+      - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
+      - "lib/product-category-normalizer.js"
+      - "lib/product-source.js"
+      - "lib/recommendation-scoring.ts"
+      - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
+      - "scripts/verify-data-taxonomy1-shadow-catalog-taxonomy-foundation-v1.mjs"
+      - "scripts/verify-data-taxonomy2-candidate-manual-classification-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy4-recommendation-shadow-parity-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy6-product-identity-decoupling-preflight-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy7-legacy-projection-compatibility-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy8-nullable-legacy-category-projection-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy10-catalog-only-product-promotion-eligibility-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy11-catalog-only-transactional-adoption-v1.mjs"
+      - "supabase/migrations/*data_taxonomy*.sql"
+      - "evidence/catalog-taxonomy-v1/**"
+      - "docs/evidence/data-taxonomy*.md"
+      - ".github/workflows/data-taxonomy-ci.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  static-contracts:
+    name: Current catalog taxonomy contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Attest exact head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify taxonomy contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-data-taxonomy1-shadow-catalog-taxonomy-foundation-v1.mjs
+          node scripts/verify-data-taxonomy2-candidate-manual-classification-v1.mjs
+          node --experimental-strip-types scripts/product-evidence/verify-data-taxonomy4-recommendation-shadow-parity-v1.mjs
+          node scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs
+          node scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs
+          node scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs
+          node scripts/product-evidence/verify-data-taxonomy6-product-identity-decoupling-preflight-v1.mjs
+          node scripts/product-evidence/verify-data-taxonomy7-legacy-projection-compatibility-v1.mjs
+          node scripts/product-evidence/verify-data-taxonomy8-nullable-legacy-category-projection-v1.mjs
+          node scripts/product-evidence/verify-data-taxonomy10-catalog-only-product-promotion-eligibility-v1.mjs
+          node scripts/product-evidence/verify-data-taxonomy11-catalog-only-transactional-adoption-v1.mjs
+
+      - name: Verify taxonomy runtime module syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check lib/catalog-taxonomy-recommendation-shadow-reader.js
+          node --check lib/catalog-taxonomy-recommendation-shadow-replay.js
+          node --check lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs
+          node --check app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js
