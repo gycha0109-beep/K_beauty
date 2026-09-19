@@ -90,7 +90,7 @@ run("Public result read boundary", node, ["scripts/verify-sec09-public-result-re
 run("Security headers and purchase-anchor boundary", node, ["scripts/verify-sec10-security-headers.mjs"]);
 run("Admin/security boundary", npm, ["run", "verify:admin-access-foundation"]);
 run("SEC-11 origin normalization", npm, ["run", "check:sec11-origin-normalization"]);
-run("Repository hygiene, secret and authority shortcut scan", npm, ["run", "verify:current-repository-hygiene"]);
+run("CI trigger topology", node, ["scripts/verify-ci-trigger-topology.mjs"]);\nrun("Repository hygiene, secret and authority shortcut scan", npm, ["run", "verify:current-repository-hygiene"]);
 run("Production build", npm, ["run", "build"]);
 
 console.log("\nBEJEWELY Current Main Health: PASS");
