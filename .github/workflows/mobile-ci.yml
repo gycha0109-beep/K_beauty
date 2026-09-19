@@ -1,0 +1,151 @@
+name: BEJEWELY Mobile CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "!apps/mobile/store-readiness.json"
+      - "!apps/mobile/google-play-data-safety.json"
+      - "!apps/mobile/google-play-health-apps-declaration.json"
+      - "packages/shared/**"
+      - "app/api/analyze/route.js"
+      - "app/api/current-products/products/route.js"
+      - "app/api/full-report/route.js"
+      - "app/api/my/check-in/route.js"
+      - "app/api/my/dashboard/route.js"
+      - "app/api/my/diary-day/route.js"
+      - "app/api/premium/access/route.js"
+      - "app/api/results/[shareId]/route.js"
+      - "app/api/results/route.js"
+      - "lib/analysis-result-access.js"
+      - "lib/analysis-results.js"
+      - "lib/current-products.js"
+      - "lib/my/dashboard.js"
+      - "lib/my/diary-day.js"
+      - "lib/my/routine-generator.js"
+      - "lib/premium-access.js"
+      - "lib/premium-current-products.js"
+      - "lib/premium-report-session.js"
+      - "lib/premium-route-context.js"
+      - "lib/security/analysis-request-guard*.js"
+      - "lib/security/public-result-read-guard*.js"
+      - "lib/supabase/server-client.js"
+      - "lib/supabase/server.js"
+      - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-auth-foundation.mjs"
+      - "scripts/verify-mobile-camera-foundation.mjs"
+      - "scripts/verify-mobile-face-guidance.mjs"
+      - "scripts/verify-mobile-analyze-integration.mjs"
+      - "scripts/verify-mobile-saved-report-reentry.mjs"
+      - "scripts/verify-mobile-public-share.mjs"
+      - "scripts/verify-mobile-public-result-deep-link.mjs"
+      - "scripts/verify-mobile-premium-entry.mjs"
+      - "scripts/verify-mobile-my-skin-diary.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
+      - ".github/workflows/mobile-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "!apps/mobile/store-readiness.json"
+      - "!apps/mobile/google-play-data-safety.json"
+      - "!apps/mobile/google-play-health-apps-declaration.json"
+      - "packages/shared/**"
+      - "app/api/analyze/route.js"
+      - "app/api/current-products/products/route.js"
+      - "app/api/full-report/route.js"
+      - "app/api/my/check-in/route.js"
+      - "app/api/my/dashboard/route.js"
+      - "app/api/my/diary-day/route.js"
+      - "app/api/premium/access/route.js"
+      - "app/api/results/[shareId]/route.js"
+      - "app/api/results/route.js"
+      - "lib/analysis-result-access.js"
+      - "lib/analysis-results.js"
+      - "lib/current-products.js"
+      - "lib/my/dashboard.js"
+      - "lib/my/diary-day.js"
+      - "lib/my/routine-generator.js"
+      - "lib/premium-access.js"
+      - "lib/premium-current-products.js"
+      - "lib/premium-report-session.js"
+      - "lib/premium-route-context.js"
+      - "lib/security/analysis-request-guard*.js"
+      - "lib/security/public-result-read-guard*.js"
+      - "lib/supabase/server-client.js"
+      - "lib/supabase/server.js"
+      - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-auth-foundation.mjs"
+      - "scripts/verify-mobile-camera-foundation.mjs"
+      - "scripts/verify-mobile-face-guidance.mjs"
+      - "scripts/verify-mobile-analyze-integration.mjs"
+      - "scripts/verify-mobile-saved-report-reentry.mjs"
+      - "scripts/verify-mobile-public-share.mjs"
+      - "scripts/verify-mobile-public-result-deep-link.mjs"
+      - "scripts/verify-mobile-premium-entry.mjs"
+      - "scripts/verify-mobile-my-skin-diary.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
+      - ".github/workflows/mobile-ci.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Mobile application contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Attest exact head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies once
+        run: npm ci
+
+      - name: Verify mobile baseline once
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run verify:mobile-foundation
+          npm run mobile:lint
+          npm run mobile:typecheck
+          npm run mobile:config
+          bash -n scripts/verify-mobile-android-smoke.sh
+
+      - name: Verify mobile feature contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-auth-foundation.mjs
+          node scripts/verify-mobile-camera-foundation.mjs
+          node scripts/verify-mobile-face-guidance.mjs
+          node scripts/verify-mobile-analyze-integration.mjs
+          node scripts/verify-mobile-saved-report-reentry.mjs
+          node scripts/verify-mobile-public-share.mjs
+          node scripts/verify-mobile-public-result-deep-link.mjs
+          node scripts/verify-mobile-premium-entry.mjs
+          node scripts/verify-mobile-my-skin-diary.mjs
+
+      - name: Verify Android JS bundle export
+        run: npm run mobile:export:android
