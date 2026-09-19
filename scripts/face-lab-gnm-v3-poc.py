@@ -278,8 +278,7 @@ def _write(payload: dict[str, Any], output: str | None):
         path = Path(output)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(encoded, encoding="utf-8")
-    else:
-        sys.stdout.write(encoded)
+    sys.stdout.write(encoded)
 
 
 def main() -> int:
