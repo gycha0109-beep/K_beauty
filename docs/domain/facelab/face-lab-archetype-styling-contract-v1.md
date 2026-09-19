@@ -543,14 +543,15 @@ function createStylingField(value) {
 
 ## 13. 생성·판정 책임 분리
 
-| 단계 | 입력 | 출력 | 결정론적 규칙 책임 | LLM 권장 책임 |
+| 단계 | 입력 | 출력 | 결정론적 규칙 책임 | LLM/VLM 권장 책임 |
 | --- | --- | --- | --- | --- |
 | A. Vision 관찰 | 사진, locale | quality, observations | 허용 범위·스키마 검증, 값 범위 정규화, 결측·품질 판정 | 보이는 얼굴 특징과 촬영 품질을 제한된 스키마로 추출. 대표 상·최종 스타일 문구·유사도 숫자는 생성하지 않음 |
-| B. Archetype 판정 | valid observations | 유형별 원시 점수, distribution, primary | 유형별 지표·가중치·결측 처리·정규화·임계값·근접 판정 전부 | 담당하지 않음 |
-| C. 설명 생성 | primary, distribution, evidence | 1~2문장 설명 | 허용 evidence 선택, 금지 표현 검사, 문장 길이 검증 | 선택된 evidence만 사용해 자연어 설명 |
-| D. 전략 판정 | archetype, observations | Core·Alternative 전략 | 가능한 전략 후보, 충돌 규칙, 대안 선택 기준 | 선택된 전략의 간결한 이름과 요약 표현 |
-| E. 영역별 스타일링 | 전략, observations, color quality | color, hair, makeup, faceStyle | 영역별 규칙, 금지 조합, 결측·품질 처리, available 판정 | 근거가 정해진 추천을 읽기 쉬운 문장으로 표현 |
-| F. 룩 조합 | available 영역 결과 | Core Look, Alternative Look | 선·색·질감·대비 충돌 검사, 누락 영역 처리 | 과장되지 않은 룩 이름, 요약, `whyItWorks` 문장 |
+| B. Face Representation | valid observations | normalized face representation | 구조 축·presentation 축 분리, normalization, versioning, missingness 보존 | 정의된 observation을 임의로 보강하거나 숨은 특성을 추정하지 않음 |
+| C. Archetype Projection | face representation + calibrated projection contract | distribution, primary 또는 hold | projection rubric/model, threshold, hold, provenance | 자연어 설명 외 판정 authority를 갖지 않음 |
+| D. Style Compatibility | face representation + style representation + compatibility evidence | compatible parameter regions / hold | evidence aggregation, uncertainty, conflict, threshold, hold | hypothesis generation 또는 blind judge 역할은 별도 sealed track에서만 수행 |
+| E. 전략 판정 | face representation, compatibility evidence, user goal | Core·Alternative 전략 | 가능한 전략 후보, 충돌 규칙, 대안 선택 기준 | 선택된 전략의 간결한 이름과 요약 표현 |
+| F. 영역별 스타일링 | 전략, compatible style parameter regions, quality | color, hair, makeup, eyewear, faceStyle | 영역별 규칙, 금지 조합, 결측·품질 처리, available 판정 | 검증된 파라미터 결과를 읽기 쉬운 현실 스타일명·문장으로 번역 |
+| G. 룩 조합 | available 영역 결과 | Core Look, Alternative Look | 선·색·질감·대비 충돌 검사, 누락 영역 처리 | 과장되지 않은 룩 이름, 요약, `whyItWorks` 문장 |
 
 LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임계값 통과 여부는 결정론적 판정 결과를 그대로 사용해야 한다.
 
@@ -584,20 +585,24 @@ LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임
 
 ## 16. 후속 구현 권장 순서
 
-1. Archetype 분류군과 판별 지표 검수
-2. Vision observations 계약 확정
-3. Archetype affinity 계산 규칙 구현
-4. 대표 상 설명 생성
-5. 살리기·변주 전략 엔진
-6. 컬러 엔진
-7. 헤어 엔진
-8. 메이크업 엔진
-9. 얼굴 주변 스타일 엔진
-10. 완성 룩 조합기
-11. Premium 리포트 연결
-12. 무료 결과 미리보기 연결
-13. 실제 사진 fixture와 평가 세트 검증
-14. fallback 및 구형 데이터 회귀 검증
+1. Vision observations 계약과 구조/presentation 경계 확정
+2. Normalized Face Representation schema와 normalization 정의
+3. Reverse Archetype seed research + 일반 Face coverage research
+4. Face Space validation과 Archetype Projection calibration
+5. Style Representation schema 정의
+6. parametric / counterfactual compatibility experiment
+7. multi-VLM blind judge + reversal / stability / holdout 검증
+8. compatibility evidence aggregation과 HOLD 정책
+9. 살리기·변주 전략 엔진
+10. 컬러 엔진
+11. 헤어 엔진
+12. 메이크업 엔진
+13. 안경·얼굴 주변 스타일 엔진
+14. 완성 룩 조합기
+15. Premium 리포트 연결
+16. 무료 결과 미리보기 연결
+17. 최소 Human audit와 bias/수용성 검증
+18. fallback 및 구형 데이터 회귀 검증
 
 각 단계는 이전 단계의 status/evidence 계약을 보존하고, fixture 검증 없이 다음 표시 단계로 넘기지 않는다.
 
@@ -613,8 +618,8 @@ LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임
 | 성별에 따른 체계 차이 | 기본안은 공통 체계다. 별도 체계가 정말 필요한지와 편향 위험을 검증 |
 | 컬러 분석 품질 기준 | 화이트밸런스, 조명 균일성, 필터, 노출, 피부 가림의 허용 하한 |
 | 변주 유형 수 | 사용자별 최적 대안 하나만 제공할지, 제한된 후보 중 선택하게 할지 결정 |
-| 평가 데이터 | 동의받은 실제 사진, 다양한 성별·연령·피부색·촬영환경, 다수 평가자의 기준 마련 |
-| 정답 기준 | 동물상에 객관적 정답이 없으므로 전문가 합의, 사용자 자기 인식, 판정 일관성을 어떻게 조합할지 결정 |
+| 평가 데이터 | web association, 일반 face coverage, controlled 3D/counterfactual, independent VLM judge, holdout을 우선 구축하고 실제 사람 데이터와 Human audit은 별도 동의·최소 수집 원칙으로 사용 |
+| 정답 기준 | Archetype cultural consensus, Face Space stability, Style Compatibility evidence를 분리한다. 하나의 단일 ground truth 체계로 합치지 않는다. |
 | 문화·성별 편향 검수 | 표시명 수용성, 유형별 성별 분포, 피부색·화장·촬영기기 영향, 모욕 가능성 검수 절차 |
 | 부분 결과의 전체 status | 일부 영역 available일 때 전체 status와 무료·프리미엄 표시 정책의 정확한 규칙 |
 | 룩 최소 구성요소 | 어떤 영역이 없으면 완성 룩을 만들지 않을지 결정 |
@@ -645,6 +650,11 @@ LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임
 
 - v1 분류군과 표시명의 사용자 수용성 검수
 - observations 스키마와 사진 품질 기준 확정
+- Normalized Face Representation schema와 구조/presentation 분리 검증
+- Face Space가 현재 7개 label 밖의 얼굴도 표현할 수 있는지 coverage 검증
+- Style Representation과 style-name translation 경계 확정
+- web association이 compatibility rule로 직접 승격되지 않는지 검증
+- counterfactual / multi-VLM judge / reversal / stability / holdout evidence 정책 확정
 - 유형별 판별 지표와 가중치의 리뷰 가능 문서화
 - 최소 점수·근접 격차·결측 처리 임계값 검증
 - 다양한 사진 fixture에서 동일인 촬영 조건 변화에 대한 안정성 확인
