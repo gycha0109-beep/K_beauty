@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "face-space-vector-research-v0",
+  "vectorId": "fs3d_fixture_neutral_001",
+  "normalizationVersion": "face-space-normalization-research-v0",
+  "dimensions": [
+    {
+      "id": "face_length_ratio",
+      "value": 0.55,
+      "unit": "normalized_ratio_v0"
+    },
+    {
+      "id": "face_width_ratio",
+      "value": 0.5,
+      "unit": "normalized_ratio_v0"
+    },
+    {
+      "id": "cheekbone_width_ratio",
+      "value": 0.57,
+      "unit": "normalized_ratio_v0"
+    },
+    {
+      "id": "lower_face_width_ratio",
+      "value": 0.46,
+      "unit": "normalized_ratio_v0"
+    },
+    {
+      "id": "chin_height_ratio",
+      "value": 0.52,
+      "unit": "normalized_ratio_v0"
+    },
+    {
+      "id": "forehead_height_ratio",
+      "value": 0.54,
+      "unit": "normalized_ratio_v0"
+    },
+    {
+      "id": "eye_spacing_ratio",
+      "value": 0.5,
+      "unit": "normalized_ratio_v0"
+    },
+    {
+      "id": "eye_width_ratio",
+      "value": 0.53,
+      "unit": "normalized_ratio_v0"
+    },
+    {
+      "id": "eye_tilt",
+      "value": 2,
+      "unit": "degree"
+    },
+    {
+      "id": "nose_width_ratio",
+      "value": 0.48,
+      "unit": "normalized_ratio_v0"
+    }
+  ]
+}
