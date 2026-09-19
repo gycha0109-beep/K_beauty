@@ -5,7 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const migrationPath = path.join(
   root,
-  "supabase/migrations/20260919090000_trust_phase6a_reentry_foundation_v1.sql"
+  "supabase/migrations/20260919194545_trust_phase6a_reentry_foundation_v1.sql"
 );
 const libPath = path.join(root, "lib/admin/trust-reentry.js");
 const preflightPath = path.join(root, "app/api/admin/trust/reentry/preflight/route.js");
