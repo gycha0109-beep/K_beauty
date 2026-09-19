@@ -10,7 +10,7 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const MAX_BODY_BYTES = 4096;
+const MAX_BODY_BYTES = 8192;
 
 function json(body, status = 200) {
   return NextResponse.json(body, {
@@ -76,6 +76,7 @@ export async function POST(request) {
     const result = await confirmTrustSubjectRegistration({
       actorUserId: access.userId,
       taskId: body.taskId,
+      reviewedIdentity: body.reviewedIdentity,
       preflightHash: body.preflightHash,
       proposalDigest: body.proposalDigest,
       requestId: body.requestId
