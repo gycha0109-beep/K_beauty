@@ -9,8 +9,6 @@ on:
       - "apps/mobile/package.json"
       - "apps/mobile/modules/**"
       - "apps/mobile/distribution-readiness.json"
-      - "package.json"
-      - "package-lock.json"
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/configure-mobile-15-android-release-signing.mjs"
       - "scripts/verify-mobile-13-store-release-preflight.mjs"
@@ -25,8 +23,6 @@ on:
       - "apps/mobile/package.json"
       - "apps/mobile/modules/**"
       - "apps/mobile/distribution-readiness.json"
-      - "package.json"
-      - "package-lock.json"
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/configure-mobile-15-android-release-signing.mjs"
       - "scripts/verify-mobile-13-store-release-preflight.mjs"
@@ -49,8 +45,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: mobile-15-distribution-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   source-contract:
