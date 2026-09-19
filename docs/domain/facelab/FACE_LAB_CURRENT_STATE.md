@@ -260,6 +260,9 @@ MediaPipe Face Geometry
 - v0 bridge는 `pose_normalized_metric_3d`만 허용하며 raw screen-normalized landmark XYZ를 fail-closed한다.
 - MediaPipe canonical 468 fixture로 6개 raw structural measurement의 deterministic 계산과 uniform-scale/translation invariance를 검증한다.
 - 이 quantitative bridge는 현재 Vision enum observation을 덮어쓰지 않으며 numeric→enum boundary도 만들지 않는다.
+- MediaPipe canonical fixture와 GNM zero-identity template의 cross-backend diagnostic을 별도 freeze했다. 이 비교는 same-subject calibration이 아니다.
+- `lower_face_width_ratio / eye_spacing_ratio / eye_width_ratio / eye_tilt`는 GNM fit-tolerance reference band 안이었고, `chin_height_ratio / nose_width_ratio`는 밖이었다.
+- 따라서 `chin_height_ratio / nose_width_ratio` cross-backend semantic alignment는 controlled correspondence 실험 전까지 **HOLD**다. 값을 맞추기 위한 anchor 튜닝은 하지 않는다.
 - 이 PASS는 user-photo reconstruction, Face Space completeness, Archetype validity, Style Compatibility를 검증한 것이 아니다.
 - GNM identity component를 Face Space axis 자체로 정의하지 않는다.
 - GNM semantic demographic identity sampling은 Face Lab Face Space/user inference에 사용하지 않는다.
