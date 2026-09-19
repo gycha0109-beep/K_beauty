@@ -301,6 +301,99 @@ def _selftest(model, fit_components: int, ridge: float):
     return payload
 
 
+def sensitivity_scan(model, components: int, amplitude: float):
+    np, _, gnm_numpy = _load_runtime()
+    if components < 1 or components > HEAD_IDENTITY_COMPONENTS:
+        raise ValueError(f"components must be 1..{HEAD_IDENTITY_COMPONENTS}")
+    if not math.isfinite(amplitude) or amplitude <= 0 or amplitude > 1.0:
+        raise ValueError("amplitude must be > 0 and <= 1.0")
+
+    jac = np.zeros((len(SUPPORTED_METRICS), components), dtype=np.float64)
+    component_rows = []
+    for index in range(components):
+        plus = np.zeros(model.identity_dim, dtype=np.float32)
+        minus = np.zeros(model.identity_dim, dtype=np.float32)
+        plus[index] = amplitude
+        minus[index] = -amplitude
+        plus_metrics = measure_sparse68(_landmarks_for_identity(model, gnm_numpy, plus))
+        minus_metrics = measure_sparse68(_landmarks_for_identity(model, gnm_numpy, minus))
+        derivative = np.asarray(
+            [
+                (plus_metrics[key] - minus_metrics[key]) / (2.0 * amplitude)
+                for key in SUPPORTED_METRICS
+            ],
+            dtype=np.float64,
+        )
+        jac[:, index] = derivative
+
+        normalized = np.abs(
+            derivative
+            / np.asarray([TOLERANCE[key] for key in SUPPORTED_METRICS], dtype=np.float64)
+        )
+        total = float(np.sum(normalized))
+        dominant_index = int(np.argmax(normalized))
+        component_rows.append(
+            {
+                "componentIndex": index,
+                "dominantMetric": SUPPORTED_METRICS[dominant_index],
+                "dominantNormalizedSensitivity": float(normalized[dominant_index]),
+                "crossDimensionLeakage": (
+                    0.0 if total <= 1e-12 else float(1.0 - normalized[dominant_index] / total)
+                ),
+                "derivative": {
+                    key: float(derivative[metric_index])
+                    for metric_index, key in enumerate(SUPPORTED_METRICS)
+                },
+            }
+        )
+
+    normalized_jac = jac / np.asarray(
+        [TOLERANCE[key] for key in SUPPORTED_METRICS], dtype=np.float64
+    )[:, None]
+    singular_values = np.linalg.svd(normalized_jac, compute_uv=False)
+    threshold = max(float(singular_values[0]) * 1e-4, 1e-8)
+    effective_rank = int(np.sum(singular_values > threshold))
+
+    metric_rows = []
+    for metric_index, key in enumerate(SUPPORTED_METRICS):
+        row = np.abs(normalized_jac[metric_index])
+        order = np.argsort(row)[::-1][: min(5, components)]
+        metric_rows.append(
+            {
+                "id": key,
+                "maxNormalizedSensitivity": float(row[order[0]]),
+                "topComponents": [
+                    {
+                        "componentIndex": int(index),
+                        "normalizedSensitivity": float(row[index]),
+                    }
+                    for index in order
+                ],
+            }
+        )
+
+    return {
+        "schemaVersion": "face-space-gnm-v3-sensitivity-v0",
+        "researchOnly": True,
+        "syntheticOnly": True,
+        "semanticDemographicSamplingAllowed": False,
+        "gnmCodeRevision": GNM_CODE_REVISION,
+        "gnmModelGitBlobSha": GNM_MODEL_BLOB_SHA,
+        "measurementVersion": MEASUREMENT_VERSION,
+        "componentScope": {
+            "start": 0,
+            "count": components,
+            "headIdentityComponentLimit": HEAD_IDENTITY_COMPONENTS,
+            "amplitude": amplitude,
+        },
+        "effectiveRank": effective_rank,
+        "metricCount": len(SUPPORTED_METRICS),
+        "singularValues": [float(value) for value in singular_values],
+        "metrics": metric_rows,
+        "components": component_rows,
+    }
+
+
 def _write(payload: dict[str, Any], output: str | None):
     encoded = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if output:
@@ -312,10 +405,12 @@ def _write(payload: dict[str, Any], output: str | None):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=("probe", "selftest"))
+    parser.add_argument("command", choices=("probe", "selftest", "sensitivity"))
     parser.add_argument("--output")
     parser.add_argument("--fit-components", type=int, default=DEFAULT_FIT_COMPONENTS)
     parser.add_argument("--ridge", type=float, default=0.03)
+    parser.add_argument("--components", type=int, default=24)
+    parser.add_argument("--amplitude", type=float, default=0.25)
     args = parser.parse_args()
 
     _, _, gnm_numpy = _load_runtime()
@@ -323,11 +418,20 @@ def main() -> int:
 
     if args.command == "probe":
         payload = _model_probe(model)
-    else:
+    elif args.command == "selftest":
         payload = _selftest(model, fit_components=args.fit_components, ridge=args.ridge)
         if payload["fit"]["status"] != "pass":
             _write(payload, args.output)
             return 2
+    else:
+        payload = sensitivity_scan(
+            model,
+            components=args.components,
+            amplitude=args.amplitude,
+        )
+        if payload["effectiveRank"] < 1:
+            _write(payload, args.output)
+            return 3
 
     _write(payload, args.output)
     return 0
