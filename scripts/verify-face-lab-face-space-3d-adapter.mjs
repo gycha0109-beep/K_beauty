@@ -117,6 +117,10 @@ assert.equal(
 assert.equal(gnm.modelArtifactSizeBytes, 53305389);
 assert.equal(gnm.runtimePackage, 'gnm-shape');
 assert.equal(gnm.runtimePackageVersion, '3.0.0');
+assert.equal(
+  gnm.semanticContractVersion,
+  'face-space-structural-measurement-semantics-v0'
+);
 
 const gnmRequest = buildFaceSpace3DRenderRequest(vector, gnm);
 const mpfbRequest = buildFaceSpace3DRenderRequest(vector, mpfb);
