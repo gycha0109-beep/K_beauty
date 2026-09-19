@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TrustSubjectRegistrationAction from "@/app/admin/products/trust/TrustSubjectRegistrationAction";
+import TrustReentryAction from "@/app/admin/products/trust/TrustReentryAction";
 
 const BLOCKER_LABELS = Object.freeze({
   SUBJECT_CREATION_REQUIRED: "Subject 생성 필요",
@@ -302,6 +303,7 @@ function Detail({ item, canReview }) {
         }
         canReview={canReview}
       />
+      <TrustReentryAction taskId={item.task.id} canReview={canReview} />
       <SourceSection item={item} />
       <EvidenceSection item={item} />
     </div>
@@ -316,7 +318,7 @@ export default function TrustQueueWorkbench({ queue, canReview = false }) {
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a828e]">TRUST / Product Fact Operations</p>
           <h1 className="mt-1 text-2xl font-bold">Admin Queue</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#68717d] dark:text-[#aeb5bf]">
-            사람이 판단해야 하는 identity/evidence/registry blocker만 표시합니다. SUBJECT_CREATION_REQUIRED 항목은 admin.products.review 권한에서만 controlled Subject 등록을 수행할 수 있으며 Evidence 채택, Product Fact confirmation, Recommendation 변경은 자동 실행하지 않습니다.
+            사람이 판단해야 하는 identity/evidence/registry blocker만 표시합니다. SUBJECT_CREATION_REQUIRED 항목은 admin.products.review 권한에서만 controlled Subject 등록을 수행할 수 있습니다. Phase 6 수동 재검사는 상태를 다시 검증할 뿐 Current/Subject/Evidence를 강제 초기화하지 않으며 Recommendation도 변경하지 않습니다.
           </p>
         </div>
         {canReview ? <Badge tone="amber">Controlled review</Badge> : <Badge tone="blue">Read only</Badge>}
