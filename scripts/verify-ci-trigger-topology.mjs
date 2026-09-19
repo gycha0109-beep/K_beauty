@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
 function read(path) {
   return readFileSync(path, "utf8");
@@ -20,6 +20,14 @@ function assertContains(path, needles) {
     assert(source.includes(needle), `${path} missing required trigger boundary: ${needle}`);
   }
 }
+
+const historicalTrustWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^trust-p\d/i.test(name) && /\.ya?ml$/i.test(name));
+assert.deepEqual(
+  historicalTrustWorkflows,
+  [],
+  `historical TRUST-P workflows must stay retired: ${historicalTrustWorkflows.join(", ")}`,
+);
 
 const rootPackageTriggers = [
   '- "package.json"',
@@ -137,6 +145,7 @@ assert(
 
 console.log(JSON.stringify({
   status: "PASS",
+  historical_trust_p_workflows: 0,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
