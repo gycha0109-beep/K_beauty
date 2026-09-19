@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "face-space-cross-backend-canonical-diagnostic-v0",
+  "status": "semantic_alignment_hold",
+  "researchOnly": true,
+  "productionAuthority": false,
+  "comparedModels": {
+    "mediapipe": {
+      "source": "google-ai-edge/mediapipe canonical_face_model.obj",
+      "revision": "20e8f2ae3365d46fa02037b54911b72e13494809",
+      "note": "selected 468-topology metric anchors"
+    },
+    "gnm": {
+      "source": "google/GNM gnm_head.npz zero-identity template",
+      "revision": "a424b5153eec9154f3dfa5ee7f214e5817918d54",
+      "note": "native HEAD_SPARSE_68 measurements"
+    }
+  },
+  "warning": "These are different canonical head models, not the same subject. Differences are diagnostic signals only and cannot establish calibration or population bias.",
+  "dimensions": [
+    {
+      "id": "lower_face_width_ratio",
+      "mediapipe": 0.7751021570208014,
+      "gnm": 0.7606071378939454,
+      "absoluteDifference": 0.014495019126856024,
+      "gnmFitToleranceReference": 0.015,
+      "withinReferenceBand": true
+    },
+    {
+      "id": "chin_height_ratio",
+      "mediapipe": 0.38602395513547744,
+      "gnm": 0.4240105122479956,
+      "absoluteDifference": 0.03798655711251814,
+      "gnmFitToleranceReference": 0.015,
+      "withinReferenceBand": false
+    },
+    {
+      "id": "eye_spacing_ratio",
+      "mediapipe": 0.24222180527550102,
+      "gnm": 0.24632135416567089,
+      "absoluteDifference": 0.004099548890169863,
+      "gnmFitToleranceReference": 0.015,
+      "withinReferenceBand": true
+    },
+    {
+      "id": "eye_width_ratio",
+      "mediapipe": 0.17325655282091248,
+      "gnm": 0.17443319505408464,
+      "absoluteDifference": 0.0011766422331721538,
+      "gnmFitToleranceReference": 0.015,
+      "withinReferenceBand": true
+    },
+    {
+      "id": "eye_tilt",
+      "mediapipe": 0,
+      "gnm": -0.031156991874954132,
+      "absoluteDifference": 0.031156991874954132,
+      "gnmFitToleranceReference": 1,
+      "withinReferenceBand": true
+    },
+    {
+      "id": "nose_width_ratio",
+      "mediapipe": 0.18340209039921024,
+      "gnm": 0.22543766235214882,
+      "absoluteDifference": 0.04203557195293858,
+      "gnmFitToleranceReference": 0.015,
+      "withinReferenceBand": false
+    }
+  ],
+  "interpretation": {
+    "closeUnderGnmFitReference": [
+      "lower_face_width_ratio",
+      "eye_spacing_ratio",
+      "eye_width_ratio",
+      "eye_tilt"
+    ],
+    "investigate": [
+      "chin_height_ratio",
+      "nose_width_ratio"
+    ],
+    "decision": "Do not tune MediaPipe anchors to force agreement with GNM canonical values. Freeze the mismatch and resolve semantics using same-subject/synthetic-correspondence experiments."
+  }
+}
