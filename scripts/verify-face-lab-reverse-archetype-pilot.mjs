@@ -163,6 +163,51 @@ assert.equal(
   true
 );
 
+const secondTaskSameCandidateIds = {
+  ...collectionBatchFixture,
+  batchId: 'ra_batch_cccccccccccccccccccccccc',
+  queryId: 'wolf:face',
+  records: collectionBatchFixture.records.map((record) => ({
+    ...record,
+    queryId: 'wolf:face',
+    queryString: '늑대상 얼굴',
+    queryFamily: 'face_label'
+  }))
+};
+const crossBatchCandidateCollision = buildReverseArchetypeCollectionCoverage(
+  [collectionBatchFixture, secondTaskSameCandidateIds],
+  { sourceManifest, queryManifest }
+);
+assert.equal(crossBatchCandidateCollision.valid, false);
+assert.equal(
+  crossBatchCandidateCollision.errors.some((error) =>
+    error.includes('duplicate_candidate_id_across_batches')
+  ),
+  true,
+  'candidate IDs must be unique across the full collection run'
+);
+
+const duplicateBatchIdCoverage = buildReverseArchetypeCollectionCoverage(
+  [
+    collectionBatchFixture,
+    {
+      ...secondTaskSameCandidateIds,
+      batchId: collectionBatchFixture.batchId,
+      records: secondTaskSameCandidateIds.records.map((record, index) => ({
+        ...record,
+        candidateId: 'ra_cand_' + String(index + 6).repeat(24)
+      }))
+    }
+  ],
+  { sourceManifest, queryManifest }
+);
+assert.equal(duplicateBatchIdCoverage.valid, false);
+assert.equal(
+  duplicateBatchIdCoverage.errors.some((error) => error.includes('duplicate_batch_id')),
+  true,
+  'batch IDs must be unique across the full collection run'
+);
+
 assert.equal(collectionLedger.schemaVersion, COLLECTION_LEDGER_SCHEMA_VERSION);
 const collectionLedgerValidation = validateReverseArchetypeCollectionLedger(
   collectionLedger,
