@@ -292,6 +292,24 @@ assert.equal(
   'raw candidate must not contain downstream observation'
 );
 
+assert.equal(
+  validateReverseArchetypeRawCandidate(
+    { ...candidate, resultUrl: 'not-a-url' },
+    { sourceManifest, queryManifest }
+  ).ok,
+  false,
+  'provenance URLs must be valid HTTP(S) URLs'
+);
+
+assert.equal(
+  validateReverseArchetypeRawCandidate(
+    { ...candidate, originDomain: 'wrong.example' },
+    { sourceManifest, queryManifest }
+  ).ok,
+  false,
+  'originDomain must match the landing URL hostname'
+);
+
 const approvedAsset = {
   governanceStatus: 'approved_for_research_observation',
   opaqueAssetRef: 'ra_asset_aaaaaaaaaaaaaaaaaaaaaaaa',
