@@ -23,6 +23,7 @@ run("Repository hygiene verifier syntax", node, ["--check", "scripts/verify-curr
 run("Document locale contract", node, ["--experimental-default-type=module", "scripts/verify-document-locale-contract.mjs"]);
 run("Shared survey input contract", node, ["--experimental-default-type=module", "scripts/verify-shared-survey-contract.mjs"]);
 run("Free survey decision intake", node, ["--experimental-default-type=module", "scripts/verify-free-survey-decision-intake.mjs"]);
+run("Premium intake v1", node, ["--experimental-default-type=module", "scripts/verify-premium-intake-v1.mjs"]);
 run("My monthly diary data contract", node, ["--experimental-default-type=module", "scripts/verify-my-monthly-diary.mjs"]);
 run("My diary day detail contract", node, ["--experimental-default-type=module", "scripts/verify-my-diary-day-detail.mjs"]);
 run("My saved report history contract", node, ["--experimental-default-type=module", "scripts/verify-my-saved-report-history.mjs"]);

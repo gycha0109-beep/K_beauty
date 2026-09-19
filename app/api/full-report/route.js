@@ -7,6 +7,7 @@ import {
   enrichPremiumReportWithCurrentProducts
 } from "@/lib/premium-current-products";
 import { buildPremiumFaceLabSummary, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
+import { enrichPremiumReportWithIntake } from "@/lib/premium-intake-report";
 import {
   canonicalizeOptionalImageDataUrl,
   validateFullReportImageAliases
@@ -367,6 +368,20 @@ async function persistPremiumSavedReport({
   };
 }
 
+function applyPremiumIntakeToReport({ report, body, locale }) {
+  if (!body?.premiumIntake || typeof body.premiumIntake !== "object" || Array.isArray(body.premiumIntake)) {
+    return {
+      premiumReport: report,
+      changed: false
+    };
+  }
+
+  return {
+    premiumReport: enrichPremiumReportWithIntake(report, body.premiumIntake, locale),
+    changed: true
+  };
+}
+
 async function applyCurrentProductsToReport({ report, body, locale }) {
   if (!Array.isArray(body?.currentProducts)) {
     return {
@@ -497,6 +512,12 @@ export async function POST(request) {
   let storedPremiumReport = sanitizePremiumReportForBoundary(
     premiumSession.payload.premiumReport
   );
+  const premiumIntakeResult = applyPremiumIntakeToReport({
+    report: storedPremiumReport,
+    body,
+    locale
+  });
+  storedPremiumReport = premiumIntakeResult.premiumReport;
   const currentProductsResult = await applyCurrentProductsToReport({
     report: storedPremiumReport,
     body,
@@ -540,6 +561,7 @@ export async function POST(request) {
   if (
     shouldPersist ||
     currentProductsResult.changed ||
+    premiumIntakeResult.changed ||
     storedPremiumReport.locale !== locale
   ) {
     const updateResult = await updatePremiumReportSession(premiumCookie, responsePremiumReport);
