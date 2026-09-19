@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ env.DATA_TAXONOMY13_CHECKOUT_SHA }}
           fetch-depth: 2
