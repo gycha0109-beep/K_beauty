@@ -77,6 +77,7 @@ export async function POST(request) {
       actorUserId: access.userId,
       taskId: body.taskId,
       preflightHash: body.preflightHash,
+      proposalDigest: body.proposalDigest,
       requestId: body.requestId
     });
     return json({ ok: true, result });
