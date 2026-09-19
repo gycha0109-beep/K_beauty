@@ -33,7 +33,7 @@ Makeup 최종 엔진                      ❌ 미구현
 Eyewear 최종 엔진                     ❌ 미구현
 Face Style 최종 엔진                  ❌ 미구현
 Look Composer                         ❌ 미구현
-FaceSpace3DAdapter contract           🟡 연구 명시 확정 / 구현 시작
+FaceSpace3DAdapter contract           🟡 v0 contract/verifier 구현 / backend executable 미구현
 Parametric 3D experiment pipeline     ❌ 미구현
 Automated VLM judge program           ❌ 미구현
 최종 canonical Free/Premium 결과      ❌ 미완성
@@ -244,7 +244,7 @@ MediaPipe Face Geometry
 - MICA / DECA / 3DDFA / FaceVerse 등은 별도 license·dataset provenance 검토 없이 Production dependency로 승격하지 않는다.
 - 3D renderer output은 compatibility truth가 아니라 controlled experiment evidence다.
 
-이 결정은 research architecture 명시이며 실제 adapter executable이 구현됐다는 뜻은 아니다.
+이 결정은 research architecture와 v0 adapter contract/verifier에 반영됐다. 실제 MPFB2/FLAME executable backend와 Blender render runner가 구현됐다는 뜻은 아니다.
 
 
 ## 6. Free / Premium 상태
