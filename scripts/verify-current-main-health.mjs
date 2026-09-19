@@ -28,6 +28,18 @@ run("My saved report history contract", node, ["--experimental-default-type=modu
 run("My skin profile baseline contract", node, ["--experimental-default-type=module", "scripts/verify-my-skin-profile-baseline.mjs"]);
 run("My account/session UX contract", node, ["--experimental-default-type=module", "scripts/verify-my-account-session-ux.mjs"]);
 run("My adversarial E2E harness contract", node, ["--experimental-default-type=module", "scripts/verify-my-adversarial-e2e-contract.mjs"]);
+
+run("Mobile architecture foundation", npm, ["run", "verify:mobile-foundation"]);
+run("Mobile auth contract", node, ["scripts/verify-mobile-auth-foundation.mjs"]);
+run("Mobile camera contract", node, ["scripts/verify-mobile-camera-foundation.mjs"]);
+run("Mobile face-guidance contract", node, ["scripts/verify-mobile-face-guidance.mjs"]);
+run("Mobile analyze contract", node, ["scripts/verify-mobile-analyze-integration.mjs"]);
+run("Mobile saved-report contract", node, ["scripts/verify-mobile-saved-report-reentry.mjs"]);
+run("Mobile public-share contract", node, ["scripts/verify-mobile-public-share.mjs"]);
+run("Mobile public-result deep-link contract", node, ["scripts/verify-mobile-public-result-deep-link.mjs"]);
+run("Mobile premium-entry contract", node, ["scripts/verify-mobile-premium-entry.mjs"]);
+run("Mobile My Skin Diary contract", node, ["scripts/verify-mobile-my-skin-diary.mjs"]);
+run("Admin Product current-main integration contract", npm, ["run", "verify:admin-product-current-main-integration"]);
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);

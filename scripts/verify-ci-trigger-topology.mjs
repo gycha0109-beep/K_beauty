@@ -142,6 +142,30 @@ assertNotContains(".github/workflows/mobile-ci.yml", [
   "npm run verify:mobile-native",
 ]);
 
+assertNotContains("scripts/verify-mobile-camera-foundation.mjs", [
+  "mobile-camera.yml",
+]);
+assertNotContains("scripts/verify-mobile-face-guidance.mjs", [
+  "mobile-face-guidance.yml",
+]);
+assertContains("scripts/verify-mobile-camera-foundation.mjs", [
+  "mobile-ci.yml",
+  "mobile-native-shell.yml",
+]);
+assertContains("scripts/verify-mobile-face-guidance.mjs", [
+  "mobile-ci.yml",
+  "mobile-native-shell.yml",
+]);
+for (const path of [
+  ".github/workflows/mobile-20a-store-capture.yml",
+  ".github/workflows/mobile-20b-store-capture.yml",
+]) {
+  assertContains(path, [
+    "uses: android-actions/setup-android@v3",
+    "packages: ''",
+  ]);
+}
+
 for (const path of [
   ".github/workflows/mobile-14-auth-app-links.yml",
   ".github/workflows/mobile-15-distribution-authority.yml",
@@ -175,6 +199,14 @@ for (const path of [
 ]) {
   assertNotContains(path, rootPackageTriggers);
 }
+
+assertContains(".github/workflows/admin-product-current-main-integration.yml", [
+  "node-version: 22",
+]);
+assertNotContains("scripts/verify-admin-product-current-main-integration.mjs", [
+  `'"package.json"',`,
+  `'"package-lock.json"',`,
+]);
 
 for (const path of [
   ".github/workflows/data-taxonomy-ci.yml",
@@ -233,6 +265,12 @@ assert(
   "current-main health must provide the PR/push base SHA to architecture guard",
 );
 
+assertContains("scripts/verify-current-main-health.mjs", [
+  "verify-mobile-camera-foundation.mjs",
+  "verify-mobile-face-guidance.mjs",
+  "verify:admin-product-current-main-integration",
+]);
+
 console.log(JSON.stringify({
   status: "PASS",
   historical_trust_p_workflows: 0,
@@ -250,4 +288,8 @@ console.log(JSON.stringify({
   routine_pr_heavy_release_gates: 0,
   native_shell_ui_surface_triggers: 0,
   ci_architecture_guard_diff_aware: true,
+  mobile_consolidation_dangling_workflow_refs: 0,
+  mobile_android_setup_legacy_tools_requests: 0,
+  admin_root_package_triggers: 0,
+  current_health_mobile_admin_static_coverage: true,
 }, null, 2));

@@ -148,13 +148,20 @@ const expectedPushPaths = [
   '"docs/architecture/*product-review*.md"',
   '"docs/reports/admin-product-current-main-integration.md"',
   '"next.config.js"',
-  '"package.json"',
   '"crawler/package.json"',
   '".github/workflows/admin-product-current-main-integration.yml"'
 ];
 for (const path of expectedPushPaths) {
   check(pushBlock.includes(`      - ${path}`), `main push path missing: ${path}`);
 }
+check(
+  !pushBlock.includes('      - "package.json"'),
+  "root package.json must stay excluded from Admin integration triggers"
+);
+check(
+  !pushBlock.includes('      - "package-lock.json"'),
+  "root package-lock.json must stay excluded from Admin integration triggers"
+);
 
 for (const token of [
   "Resolve Admin verifier base and head",
