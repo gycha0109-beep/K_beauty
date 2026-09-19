@@ -371,6 +371,7 @@ Face Space를 FLAME, MakeHuman/MPFB, Blender Shape Key 또는 특정 3D backend�
 Normalized Face Representation
 → Face Space
 → versioned FaceSpace3DAdapter
+   ├─ Google GNM v3 backend
    ├─ MPFB2 backend
    └─ FLAME 2023 Open backend
 → controlled mesh / render
@@ -418,7 +419,27 @@ Style Space coordinate
 
 Adapter mapping은 versioned되고 round-trip measurement로 검증해야 한다.
 
-### 12.4 FLAME 2023 Open adapter role
+### 12.4 Google GNM v3 adapter role
+
+GNM Head v3는 2026년 공개된 face-specific parametric head backend로, 현재 Face Lab R-3D의 우선 PoC candidate로 둔다.
+
+사용 원칙:
+
+```text
+Face Space target measurements
+→ fit GNM head identity coefficients
+→ generated mesh
+→ independent structural measurement
+→ round-trip error
+```
+
+GNM identity coefficient 역시 해석 가능한 Face Space axis와 1:1 의미 대응한다고 가정하지 않는다.
+
+GNM의 semantic identity sampler에 포함된 demographic conditioning은 Face Lab의 얼굴 구조 authority가 아니다. 사용자 얼굴에서 민감 속성을 추론하거나 Face Space truth/balancing label로 사용하지 않는다.
+
+공식 GNM code/model artifact와 transitive dependency를 exact version/digest로 pin한 뒤 executable candidate로 승격한다.
+
+### 12.5 FLAME 2023 Open adapter role
 
 FLAME identity shape coefficient는 face length, jaw width, cheek width 같은 해석 가능한 Face Space axis와 1:1 의미 대응한다고 가정하지 않는다.
 
@@ -443,7 +464,7 @@ FLAME adapter는 latent coefficient 자체가 아니라 재측정된 구조와 f
 
 Production 또는 배포 가능성을 검토할 때는 반드시 정확한 model artifact와 license version을 고정한다. FLAME 2023 Open과 다른 FLAME release를 동일한 라이선스로 간주하지 않는다.
 
-### 12.5 Round-trip validation
+### 12.6 Round-trip validation
 
 모든 3D adapter는 최소 다음 검증을 지원해야 한다.
 
@@ -468,7 +489,7 @@ Face Space vector F
 
 한 backend가 시각적으로 그럴듯하다는 이유만으로 PASS하지 않는다.
 
-### 12.6 Backend comparison
+### 12.7 Backend comparison
 
 동일한 Face Space vector를 여러 backend에서 생성해 비교할 수 있다.
 
@@ -476,18 +497,18 @@ Face Space vector F
              Face vector F
               /          \
              /            \
-      MPFB2 adapter    FLAME adapter
-           ↓                ↓
-         mesh A           mesh B
-           ↓                ↓
-       measure A        measure B
-             \            /
-              round-trip error
+       GNM adapter     MPFB2 adapter     FLAME adapter
+            ↓               ↓                 ↓
+          mesh A          mesh B            mesh C
+            ↓               ↓                 ↓
+        measure A       measure B         measure C
+             \             |               /
+              backend-specific round-trip error
 ```
 
 Backend별 오차가 다르면 Face Space definition을 backend에 맞춰 왜곡하지 않고 adapter mapping을 수정하거나 해당 dimension을 unsupported/hold로 둔다.
 
-### 12.7 Experiment points
+### 12.8 Experiment points
 
 Face Space에서 다음과 같은 experiment points를 만들 수 있다.
 
