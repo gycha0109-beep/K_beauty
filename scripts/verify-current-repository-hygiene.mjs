@@ -85,7 +85,7 @@ const canonicalWorkflowPath = path.join(ROOT, ".github/workflows/current-main-he
 assert(existsSync(canonicalWorkflowPath), "canonical current-main workflow must exist");
 const canonicalWorkflow = readFileSync(canonicalWorkflowPath, "utf8");
 assert(canonicalWorkflow.includes("name: BEJEWELY Current Main Health"), "canonical workflow name");
-assert(canonicalWorkflow.includes("actions/checkout@v4"), "canonical workflow exact checkout boundary");
+assert(canonicalWorkflow.includes("actions/checkout@v7"), "canonical workflow exact checkout boundary");
 assert(canonicalWorkflow.includes("npm run verify:current"), "canonical workflow root verification entrypoint");
 assert(!/\b[0-9a-f]{40}\b/i.test(canonicalWorkflow), "canonical workflow must not hard-code historical commit SHAs");
 

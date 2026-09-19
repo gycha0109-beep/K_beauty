@@ -30,6 +30,18 @@ run("My saved report history contract", node, ["--experimental-default-type=modu
 run("My skin profile baseline contract", node, ["--experimental-default-type=module", "scripts/verify-my-skin-profile-baseline.mjs"]);
 run("My account/session UX contract", node, ["--experimental-default-type=module", "scripts/verify-my-account-session-ux.mjs"]);
 run("My adversarial E2E harness contract", node, ["--experimental-default-type=module", "scripts/verify-my-adversarial-e2e-contract.mjs"]);
+run("TRUST Phase 1 intake contract", node, ["scripts/verify-trust-intake-foundation.mjs"]);
+run("TRUST Phase 2 subject resolution contract", node, ["scripts/verify-trust-subject-resolution.mjs"]);
+run("TRUST Phase 2 presentation hardening", node, ["scripts/verify-trust-subject-resolution-presentation-hardening.mjs"]);
+run("TRUST Phase 3 research worker contract", node, ["scripts/verify-trust-research-worker.mjs"]);
+run("TRUST Phase 4 controlled evidence adoption", node, ["scripts/verify-trust-phase4-controlled-evidence-adoption.mjs"]);
+run("Product Fact controlled-write authority", node, ["scripts/verify-product-fact-controlled-write-v1.mjs"]);
+run("Product Fact Subject authority", node, ["scripts/verify-product-fact-subject-registration-v1.mjs"]);
+run("TRUST Phase 5 admin queue contract", node, ["scripts/verify-trust-phase5-admin-queue.mjs"]);
+run("TRUST Phase 5B subject registration contract", node, ["scripts/verify-trust-phase5b-subject-registration.mjs"]);
+run("TRUST Phase 5C formulation conflict HOLD", node, ["scripts/product-evidence/verify-trust-phase5c-fation-formulation-conflict-v1.mjs"]);
+run("TRUST Phase 6A reentry contract", node, ["scripts/verify-trust-phase6a-reentry.mjs"]);
+
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);

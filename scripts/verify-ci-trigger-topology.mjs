@@ -172,6 +172,38 @@ for (const path of [
 assertContains(".github/workflows/admin-product-current-main-integration.yml", [
   "node-version: 22",
 ]);
+
+const trustPhaseWorkflows = [
+  ".github/workflows/trust-phase1-intake-foundation.yml",
+  ".github/workflows/trust-phase2-subject-resolution.yml",
+  ".github/workflows/trust-phase3-research-worker.yml",
+  ".github/workflows/trust-phase4-controlled-evidence-adoption.yml",
+  ".github/workflows/trust-phase5-admin-queue.yml",
+  ".github/workflows/trust-phase5b-subject-registration.yml",
+  ".github/workflows/trust-phase5c-fation-formulation-conflict.yml",
+  ".github/workflows/trust-phase6a-reentry.yml",
+];
+for (const path of trustPhaseWorkflows) {
+  assertContains(path, ["actions/checkout@v7", "actions/setup-node@v7", "node-version: 22"]);
+  assertNotContains(path, ["node-version: 20"]);
+}
+for (const path of trustPhaseWorkflows.filter((path) => !path.includes("phase5c-"))) {
+  assertNotContains(path, ["npm run architecture:guard", "npm run build"]);
+}
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("TRUST Phase 1 intake contract"',
+  'run("TRUST Phase 2 subject resolution contract"',
+  'run("TRUST Phase 3 research worker contract"',
+  'run("TRUST Phase 4 controlled evidence adoption"',
+  'run("TRUST Phase 5 admin queue contract"',
+  'run("TRUST Phase 5B subject registration contract"',
+  'run("TRUST Phase 5C formulation conflict HOLD"',
+  'run("TRUST Phase 6A reentry contract"',
+]);
+assertContains(".github/workflows/trust-phase5c-fation-formulation-conflict.yml", [
+  "concurrency:",
+  "cancel-in-progress: true",
+]);
 assertNotContains(".github/workflows/admin-product-current-main-integration.yml", [
   "node-version: 20",
 ]);
@@ -286,5 +318,6 @@ console.log(JSON.stringify({
   mobile_verifiers_follow_consolidated_topology: true,
   android_store_capture_sdk_setup_current: true,
   admin_integration_node22: true,
+  trust_static_baseline_canonicalized: true,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));
