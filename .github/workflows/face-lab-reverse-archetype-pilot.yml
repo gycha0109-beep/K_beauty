@@ -5,8 +5,11 @@ on:
     paths:
       - "lib/face-lab-reverse-archetype-research.js"
       - "scripts/verify-face-lab-reverse-archetype-pilot.mjs"
+      - "scripts/face-lab-reverse-archetype-collection.mjs"
       - "evidence/facelab/reverse-archetype/**"
       - "docs/domain/facelab/face-lab-reverse-archetype-r-a2-pilot-v1.md"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md"
+      - "docs/domain/facelab/face-lab-face-space-style-compatibility-architecture-v1.md"
       - "package.json"
       - ".github/workflows/face-lab-reverse-archetype-pilot.yml"
   push:
@@ -15,8 +18,11 @@ on:
     paths:
       - "lib/face-lab-reverse-archetype-research.js"
       - "scripts/verify-face-lab-reverse-archetype-pilot.mjs"
+      - "scripts/face-lab-reverse-archetype-collection.mjs"
       - "evidence/facelab/reverse-archetype/**"
       - "docs/domain/facelab/face-lab-reverse-archetype-r-a2-pilot-v1.md"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md"
+      - "docs/domain/facelab/face-lab-face-space-style-compatibility-architecture-v1.md"
       - "package.json"
       - ".github/workflows/face-lab-reverse-archetype-pilot.yml"
 
