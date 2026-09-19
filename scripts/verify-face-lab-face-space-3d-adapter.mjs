@@ -94,6 +94,18 @@ assert.equal(
   'GNM demographic semantic identity sampling must stay disabled'
 );
 
+assert.match(
+  gnm.backendVersion,
+  /^google\/GNM@[a-f0-9]{40}$/,
+  'GNM code candidate must pin an exact upstream commit'
+);
+assert.equal(gnm.modelArtifact, 'google/gnm-v3/gnm_head.npz');
+assert.equal(
+  gnm.modelArtifactRevision,
+  'pending_exact_huggingface_revision_and_digest',
+  'GNM model artifact must remain explicitly pending until exact HF revision/digest is frozen'
+);
+
 const gnmRequest = buildFaceSpace3DRenderRequest(vector, gnm);
 const mpfbRequest = buildFaceSpace3DRenderRequest(vector, mpfb);
 const flameRequest = buildFaceSpace3DRenderRequest(vector, flame);
