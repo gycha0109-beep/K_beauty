@@ -187,6 +187,22 @@ for (const path of trustPhaseWorkflows) {
   assertContains(path, ["actions/checkout@v7", "actions/setup-node@v7", "node-version: 22"]);
   assertNotContains(path, ["node-version: 20"]);
 }
+
+const modernizedNodeWorkflows = [
+  ".github/workflows/admin-access-foundation.yml",
+  ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
+  ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
+  ".github/workflows/face-lab-neutral-review-operator-v1.yml",
+  ".github/workflows/legacy-offer-classifier.yml",
+  ".github/workflows/product-identity-key-repair-confirm.yml",
+  ".github/workflows/product-identity-resolution.yml",
+  ".github/workflows/product-offers.yml",
+  ".github/workflows/product-source-bindings.yml",
+];
+for (const path of modernizedNodeWorkflows) {
+  assertContains(path, ["actions/checkout@v7", "actions/setup-node@v7", "node-version: 22"]);
+  assertNotContains(path, ["actions/checkout@v4", "actions/setup-node@v4", "node-version: 20"]);
+}
 for (const path of trustPhaseWorkflows.filter((path) => !path.includes("phase5c-"))) {
   assertNotContains(path, ["npm run architecture:guard", "npm run build"]);
 }
@@ -319,5 +335,6 @@ console.log(JSON.stringify({
   android_store_capture_sdk_setup_current: true,
   admin_integration_node22: true,
   trust_static_baseline_canonicalized: true,
+  legacy_node20_workflows: 0,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));
