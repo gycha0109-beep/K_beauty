@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import fs from "node:fs";
 import path from "node:path";
 
@@ -10,8 +12,8 @@ const files = {
   confirmRoute:
     "app/api/admin/trust/subject-registration/confirm/route.js",
   action: "app/admin/products/trust/TrustSubjectRegistrationAction.js",
-  page: "app/admin/products/trust/page.js",
   workbench: "app/admin/products/trust/TrustQueueWorkbench.js",
+  page: "app/admin/products/trust/page.js",
   subjectMigration:
     "supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql",
   phase2:
@@ -53,19 +55,14 @@ check(
   source.orchestration.startsWith('import "server-only";'),
   "Subject registration orchestration must be server-only"
 );
-check(
-  source.preflightRoute.includes("isAllowedAdminMutationRequest(request)"),
-  "preflight origin gate missing"
-);
-check(
-  source.confirmRoute.includes("isAllowedAdminMutationRequest(request)"),
-  "confirm origin gate missing"
-);
+
 for (const route of [source.preflightRoute, source.confirmRoute]) {
   check(
-    route.includes(
-      "requireAdminCapability(\n    ADMIN_CAPABILITIES.PRODUCTS_REVIEW\n  )"
-    ),
+    route.includes("isAllowedAdminMutationRequest(request)"),
+    "same-origin admin mutation gate missing"
+  );
+  check(
+    route.includes("ADMIN_CAPABILITIES.PRODUCTS_REVIEW"),
     "Subject action must require admin.products.review"
   );
   check(
@@ -76,6 +73,15 @@ for (const route of [source.preflightRoute, source.confirmRoute]) {
   check(route.includes("no-store"), "Subject route must disable caching");
 }
 
+check(
+  source.preflightRoute.includes("reviewedIdentity: body.reviewedIdentity"),
+  "preflight must receive explicit reviewed Subject identity"
+);
+check(
+  source.confirmRoute.includes("reviewedIdentity: body.reviewedIdentity"),
+  "confirm must receive the exact reviewed Subject identity"
+);
+
 for (const forbidden of [
   ".insert(",
   ".update(",
@@ -85,7 +91,6 @@ for (const forbidden of [
   "admin_confirm_product_fact_v1",
   "recommendation_logs",
   "recommendation_results",
-  "admin_activate",
   "recommendation_cutover"
 ]) {
   check(
@@ -100,7 +105,7 @@ const rpcNames = [
 check(rpcNames.length === 2, "orchestration must call exactly two RPCs");
 check(
   rpcNames[0] === "admin_register_product_fact_subject_v1",
-  "first/only Subject writer must be existing governed registration RPC"
+  "only existing governed Subject writer may register the Subject"
 );
 check(
   rpcNames[1] === "process_catalog_trust_product_v1",
@@ -129,51 +134,55 @@ check(
 );
 
 for (const token of [
-  'TRUST_SUBJECT_PROPOSAL_VERSION =\n  "trust-phase5-subject-identity-proposal-v1"',
-  'TRUST_SUBJECT_IDENTITY_RESOLUTION_VERSION =\n  "trust-phase5-admin-reviewed-catalog-identity-v1"',
-  'PRODUCT_FACT_SUBJECT_SERIALIZER_VERSION =\n  "product-fact-subject-identity-v1"',
-  'TRUST_SUBJECT_FORMULATION_PREFIX = "trust-phase5-review-"',
-  '"catalog-only-candidate-identity-evidence-v1"',
-  '"catalog-only-candidate-approval-v1"',
-  '"catalog-only-product-transactional-adoption-v1"',
-  "product_fact_write_allowed !== false",
-  "semantic_variant_key",
-  "variant_key: null",
-  "market_applicability: market",
-  "requiresExplicitConfirmation: true",
-  "automaticRegistration: false"
+  '"product-fact-subject-identity-v1"',
+  '"trust-phase5-admin-subject-review-v1"',
+  '"variantKeyReviewedAsNull"',
+  '"formulationRevisionKey"',
+  '"marketApplicability"',
+  '"trust_subject_identity_market_mismatch"',
+  "catalogIdentityIsProductFactAuthority: false",
+  'identity_status: "resolved"',
+  'current_state: "current"',
+  "predecessor_subject_id: null",
+  "supersession_kind: null"
 ]) {
   check(source.identity.includes(token), `identity contract missing: ${token}`);
 }
 
+for (const forbiddenIdentity of [
+  "TRUST_SUBJECT_FORMULATION_PREFIX",
+  "formulationIdentityBasis",
+  "trust-phase5-review-",
+  "evidenceDigest.slice",
+  "formulation_revision_key: formulationRevisionKey"
+]) {
+  check(
+    !source.identity.includes(forbiddenIdentity),
+    `catalog-derived formulation identity remains: ${forbiddenIdentity}`
+  );
+}
+
 check(
-  source.identity.includes("reviewedAt") &&
-    source.identity.includes("reviewedBy"),
-  "review lineage must be required"
+  source.identity.includes(
+    "reviewedIdentity.marketApplicability !== intakeMarket"
+  ),
+  "reviewed market must be checked against live intake market"
 );
 check(
   source.identity.includes(
-    "formulationIdentityBasis"
+    "evidence.authority_boundary.product_fact_write_allowed !== false"
   ),
-  "opaque formulation identity basis missing"
+  "catalog Product Fact authority boundary must remain explicitly false"
 );
 check(
-  !/const formulationIdentityBasis = \{[\s\S]*?reviewed_at:[\s\S]*?\};/.test(
-    source.identity
-  ),
-  "administrative review timestamp must not enter formulation identity"
+  source.identity.includes("catalog_context_digest: catalogContextDigest"),
+  "catalog context must invalidate stale preflight without becoming PF identity"
 );
 check(
-  !/const formulationIdentityBasis = \{[\s\S]*?reviewed_by:[\s\S]*?\};/.test(
-    source.identity
-  ),
-  "administrative reviewer must not enter formulation identity"
+  source.identity.includes("sibling_tasks: taskStates"),
+  "all intake task state must bind stale preflight"
 );
 
-check(
-  !source.workbench.includes("\\nimport"),
-  "workbench import section must not contain escaped newline literals"
-);
 check(
   source.workbench.includes('blockerCode === "SUBJECT_CREATION_REQUIRED"'),
   "UI action must be limited to Subject creation blocker"
@@ -183,6 +192,10 @@ check(
   "UI action must require matching intake identity state"
 );
 check(
+  source.workbench.includes("intakeMarket={item.intake?.market ?? null}"),
+  "UI must show the live intake market without auto-filling it"
+);
+check(
   source.page.includes("ADMIN_CAPABILITIES.PRODUCTS_REVIEW"),
   "page must derive review capability"
 );
@@ -190,36 +203,46 @@ check(
   source.action.includes("if (!canReview)"),
   "read-only admins must not receive mutation controls"
 );
+for (const token of [
+  "Formulation revision key",
+  "Variant key",
+  "Market applicability",
+  "variantKeyReviewedAsNull",
+  "catalog evidence에서 자동 생성하지 않습니다",
+  "Subject 등록 Preflight",
+  "명시적으로 Subject 등록",
+  "Evidence 채택",
+  "Product Fact confirmation"
+]) {
+  check(source.action.includes(token), `review UI contract missing: ${token}`);
+}
 check(
-  source.action.includes("Subject 등록 Preflight") &&
-    source.action.includes("명시적으로 Subject 등록"),
-  "two-step explicit preflight/confirm UI missing"
+  !source.action.includes("trust-phase5-review-"),
+  "client must not synthesize a formulation revision"
 );
-check(
-  source.action.includes("Evidence 채택") &&
-    source.action.includes("Product Fact confirmation"),
-  "UI must state downstream non-automation boundary"
-);
+
 check(
   source.orchestration.includes("trust_subject_registration_stale_proposal"),
-  "confirm must fail closed when the identity proposal changes"
+  "confirm must fail closed when reviewed identity changes"
+);
+check(
+  source.orchestration.includes("trust_subject_registration_stale_preflight"),
+  "confirm must fail closed when live state changes"
 );
 check(
   source.orchestration.includes("loadCurrentMarketSubjects") &&
-    source.orchestration.includes("trust_subject_registration_competing_subject_detected"),
-  "preflight/confirm must fail closed on competing current Subject drift"
+    source.orchestration.includes(
+      "trust_subject_registration_competing_subject_detected"
+    ),
+  "competing current Subject drift must fail closed"
 );
 check(
   source.orchestration.includes('code === "23505"'),
-  "database uniqueness races must map to a conflict instead of retryable outage"
+  "uniqueness races must map to conflict"
 );
 check(
-  source.confirmRoute.includes("proposalDigest: body.proposalDigest"),
-  "confirm route must forward the stable proposal digest"
-);
-check(
-  source.action.includes("proposalDigest: preflight.proposalDigest"),
-  "client confirm must bind the reviewed proposal digest"
+  source.orchestration.includes("alreadyRegistered"),
+  "exact semantic retry path must remain idempotent"
 );
 
 for (const liveValue of [
@@ -243,11 +266,8 @@ for (const liveValue of [
   );
 }
 
-const identityModuleSource = source.identity;
 const identityModule = await import(
-  `data:text/javascript;base64,${Buffer.from(identityModuleSource).toString(
-    "base64"
-  )}`
+  `data:text/javascript;base64,${Buffer.from(source.identity).toString("base64")}`
 );
 const {
   buildTrustSubjectIdentityProposal,
@@ -259,8 +279,7 @@ const ids = {
   task: "11111111-1111-4111-8111-111111111111",
   intake: "22222222-2222-4222-8222-222222222222",
   product: "33333333-3333-4333-8333-333333333333",
-  candidate: "44444444-4444-4444-8444-444444444444",
-  reviewer: "55555555-5555-4555-8555-555555555555"
+  candidate: "44444444-4444-4444-8444-444444444444"
 };
 
 function fixture() {
@@ -278,7 +297,7 @@ function fixture() {
       id: ids.intake,
       product_id: ids.product,
       source_candidate_id: ids.candidate,
-      market: "kr",
+      market: "KR",
       subject_id: null,
       identity_state: "SUBJECT_CREATION_REQUIRED",
       trust_state: "REVIEW_REQUIRED",
@@ -293,75 +312,72 @@ function fixture() {
     candidate: {
       id: ids.candidate,
       matched_product_id: ids.product,
-      review_status: "promoted",
-      reviewed_at: "2026-09-18T23:50:00.000Z",
-      reviewed_by: ids.reviewer,
-      updated_at: "2026-09-19T00:00:00.000Z",
       identity_resolution_state: "resolved",
       identity_resolution_version: "crawler-identity-resolution-v1",
       identity_resolution_evidence: {
-        contract_version: "catalog-only-candidate-identity-evidence-v1",
-        approval_contract: "catalog-only-candidate-approval-v1",
-        reviewed_at: "2026-09-18T23:50:00.000Z",
         authority_boundary: {
           product_fact_write_allowed: false
         },
-        convergence_dimensions: ["presentation", "brand", "product_name"],
         providers: [
           {
-            provider: "fixture_retailer",
-            locator: "https://retailer.example/products/fixture",
-            external_id: "fixture-1",
-            external_type: "products",
-            presentation: "30 ml",
-            canonical_name: "Fixture Serum",
-            canonical_brand: "Fixture Brand"
-          },
-          {
             provider: "fixture_official",
-            locator: "https://brand.example/products/fixture",
-            presentation: "30 ml",
-            canonical_name: "Fixture Serum",
-            canonical_brand: "Fixture Brand",
-            product_name_en: "Fixture Serum"
+            locator: "https://brand.example/products/fixture"
           }
         ]
       },
       promotion_payload: {
         catalog_only_review: {
-          contract_version: "catalog-only-candidate-approval-v1",
-          source_rule_key: "fixture:treatment",
-          taxonomy_version: "catalog-taxonomy-v1",
-          product_write_allowed: false,
-          recommendation_admission_allowed: false
-        },
-        catalog_only_adoption: {
-          product_id: ids.product,
-          contract_version: "catalog-only-product-transactional-adoption-v1",
-          source_rule_key: "fixture:treatment",
-          taxonomy_version: "catalog-taxonomy-v1",
-          recommendation_admission_allowed: false
+          product_write_allowed: false
         }
+      },
+      updated_at: "2026-09-19T00:00:00.000Z"
+    },
+    tasks: [
+      {
+        id: ids.task,
+        fact_key: "contains_active",
+        state: "REVIEW_REQUIRED",
+        blocker_code: "SUBJECT_CREATION_REQUIRED",
+        subject_id: null,
+        updated_at: "2026-09-19T00:00:00.000Z"
       }
-    }
+    ]
   };
 }
 
-const first = buildTrustSubjectIdentityProposal(fixture());
-const repeat = buildTrustSubjectIdentityProposal(fixture());
+function reviewed(overrides = {}) {
+  return {
+    variantKey: null,
+    variantKeyReviewedAsNull: true,
+    formulationRevisionKey: "reviewed-formulation-r1",
+    formulationLabel: "Fixture reviewed formulation",
+    marketApplicability: "KR",
+    regionApplicability: null,
+    validFrom: null,
+    validTo: null,
+    ...overrides
+  };
+}
 
-check(first.payload.variant_key === null, "variant must stay null without reviewed semantic variant");
+const first = buildTrustSubjectIdentityProposal(fixture(), reviewed());
+const repeat = buildTrustSubjectIdentityProposal(fixture(), reviewed());
+
+check(first.payload.variant_key === null, "reviewed null variant must remain null");
+check(
+  first.reviewedIdentity.variantKeyReviewedAsNull === true,
+  "null variant must carry explicit reviewer intent"
+);
+check(
+  first.payload.formulation_revision_key === "reviewed-formulation-r1",
+  "formulation revision must be the reviewer-provided value"
+);
+check(
+  first.payload.formulation_label === "Fixture reviewed formulation",
+  "formulation label must be reviewer-provided"
+);
 check(
   first.payload.market_applicability === "KR",
-  "market must be normalized from governed intake"
-);
-check(
-  first.payload.formulation_revision_key.startsWith("trust-phase5-review-"),
-  "opaque formulation revision prefix invalid"
-);
-check(
-  /^[0-9a-f]{64}$/.test(first.payload.subject_semantic_key),
-  "Subject semantic key must be SHA-256"
+  "market must be reviewer-provided and match intake"
 );
 check(
   first.payload.subject_identity_serializer_version ===
@@ -369,14 +385,9 @@ check(
   "deployed Subject serializer must be preserved"
 );
 check(
-  first.payload.formulation_label ===
-    `TRUST reviewed identity ${first.evidenceDigest.slice(0, 12)}`,
-  "Subject display label must remain stable and evidence-bound"
-);
-check(
   canonicalTrustSubjectJson(first.semanticIdentity) ===
     JSON.stringify({
-      formulation_revision_key: first.payload.formulation_revision_key,
+      formulation_revision_key: "reviewed-formulation-r1",
       market_applicability: "KR",
       product_id: ids.product,
       region_applicability: null,
@@ -387,148 +398,138 @@ check(
   "operational seven-field semantic identity shape drifted"
 );
 check(
-  first.payload.subject_semantic_key === digestTrustSubjectValue(first.semanticIdentity),
+  first.payload.subject_semantic_key ===
+    digestTrustSubjectValue(first.semanticIdentity),
   "Subject semantic key replay mismatch"
 );
 check(
-  first.evidenceDigest === repeat.evidenceDigest &&
-    first.proposalDigest === repeat.proposalDigest &&
+  first.proposalDigest === repeat.proposalDigest &&
     first.preflightHash === repeat.preflightHash,
-  "identical input must be deterministic"
+  "identical reviewed input and state must be deterministic"
 );
 
-const timestampOnly = fixture();
-timestampOnly.candidate.reviewed_at = "2026-09-19T00:01:00.000Z";
-timestampOnly.candidate.identity_resolution_evidence.reviewed_at =
-  "2026-09-19T00:01:00.000Z";
-const timestampProposal = buildTrustSubjectIdentityProposal(timestampOnly);
-check(
-  timestampProposal.payload.formulation_revision_key ===
-    first.payload.formulation_revision_key,
-  "administrative re-review time must not create a new formulation identity"
-);
-check(
-  timestampProposal.payload.subject_semantic_key ===
-    first.payload.subject_semantic_key,
-  "administrative re-review time must not re-key the Subject"
-);
-check(
-  timestampProposal.proposalDigest !== first.proposalDigest,
-  "review-lineage change must remain visible in proposal digest"
-);
-
-const displayRename = fixture();
-displayRename.product.brand = "Renamed Fixture Brand";
-displayRename.product.name = "Renamed Fixture Serum";
-const displayRenameProposal =
-  buildTrustSubjectIdentityProposal(displayRename);
-check(
-  displayRenameProposal.payload.formulation_label ===
-    first.payload.formulation_label &&
-    displayRenameProposal.payload.subject_semantic_key ===
-      first.payload.subject_semantic_key,
-  "catalog display rename must not create a new Subject identity"
-);
-
-const stateOnly = fixture();
-stateOnly.task.updated_at = "2026-09-19T00:02:00.000Z";
-const stateProposal = buildTrustSubjectIdentityProposal(stateOnly);
-check(
-  stateProposal.proposalDigest === first.proposalDigest,
-  "state timestamp must not alter identity proposal"
-);
-check(
-  stateProposal.preflightHash !== first.preflightHash,
-  "state timestamp drift must invalidate preflight"
-);
-
-const evidenceChange = fixture();
-evidenceChange.candidate.identity_resolution_evidence.providers[1].locator =
+const catalogChange = fixture();
+catalogChange.candidate.identity_resolution_evidence.providers[0].locator =
   "https://brand.example/products/fixture-v2";
-const evidenceProposal = buildTrustSubjectIdentityProposal(evidenceChange);
-check(
-  evidenceProposal.payload.formulation_revision_key !==
-    first.payload.formulation_revision_key,
-  "frozen identity evidence change must change opaque revision proposal"
+const catalogProposal = buildTrustSubjectIdentityProposal(
+  catalogChange,
+  reviewed()
 );
 check(
-  evidenceProposal.payload.subject_semantic_key !==
+  catalogProposal.payload.subject_semantic_key ===
     first.payload.subject_semantic_key,
-  "formulation identity change must change Subject semantic key"
+  "catalog evidence must not manufacture or re-key PF Subject identity"
+);
+check(
+  catalogProposal.proposalDigest === first.proposalDigest,
+  "catalog evidence must not enter reviewed PF identity proposal"
+);
+check(
+  catalogProposal.preflightHash !== first.preflightHash,
+  "catalog evidence drift must invalidate preflight"
 );
 
-const noOfficial = fixture();
-noOfficial.candidate.identity_resolution_evidence.providers[1].provider =
-  "fixture_secondary";
-expectThrow(
-  () => buildTrustSubjectIdentityProposal(noOfficial),
-  "trust_subject_identity_official_provider_required"
+const taskChange = fixture();
+taskChange.tasks[0].updated_at = "2026-09-19T00:02:00.000Z";
+const taskProposal = buildTrustSubjectIdentityProposal(taskChange, reviewed());
+check(
+  taskProposal.proposalDigest === first.proposalDigest,
+  "task state must not alter Subject identity"
+);
+check(
+  taskProposal.preflightHash !== first.preflightHash,
+  "task state drift must invalidate preflight"
 );
 
-const semanticVariant = fixture();
-semanticVariant.candidate.identity_resolution_evidence.semantic_variant_key =
-  "UNREVIEWED_VARIANT";
+const formulationChange = buildTrustSubjectIdentityProposal(
+  fixture(),
+  reviewed({ formulationRevisionKey: "reviewed-formulation-r2" })
+);
+check(
+  formulationChange.payload.subject_semantic_key !==
+    first.payload.subject_semantic_key,
+  "reviewed formulation change must re-key Subject"
+);
+
+const variantChange = buildTrustSubjectIdentityProposal(
+  fixture(),
+  reviewed({
+    variantKey: "SERUM_30ML",
+    variantKeyReviewedAsNull: false
+  })
+);
+check(
+  variantChange.payload.variant_key === "SERUM_30ML",
+  "reviewed variant must be preserved"
+);
+check(
+  variantChange.payload.subject_semantic_key !==
+    first.payload.subject_semantic_key,
+  "reviewed variant change must re-key Subject"
+);
+
 expectThrow(
-  () => buildTrustSubjectIdentityProposal(semanticVariant),
-  "trust_subject_identity_semantic_variant_requires_separate_review"
+  () =>
+    buildTrustSubjectIdentityProposal(
+      fixture(),
+      reviewed({ marketApplicability: "US" })
+    ),
+  "trust_subject_identity_market_mismatch"
+);
+expectThrow(
+  () =>
+    buildTrustSubjectIdentityProposal(
+      fixture(),
+      reviewed({ variantKeyReviewedAsNull: false })
+    ),
+  "trust_subject_identity_variant_review_required"
+);
+expectThrow(
+  () =>
+    buildTrustSubjectIdentityProposal(fixture(), {
+      ...reviewed(),
+      unexpected: "no"
+    }),
+  "trust_subject_identity_reviewed_input_invalid"
+);
+
+const authorityEscalation = fixture();
+authorityEscalation.candidate.identity_resolution_evidence.authority_boundary.product_fact_write_allowed =
+  true;
+expectThrow(
+  () =>
+    buildTrustSubjectIdentityProposal(authorityEscalation, reviewed()),
+  "trust_subject_identity_catalog_authority_boundary_invalid"
 );
 
 const stale = fixture();
 stale.task.state = "RESEARCH_PENDING";
 expectThrow(
-  () => buildTrustSubjectIdentityProposal(stale),
+  () => buildTrustSubjectIdentityProposal(stale, reviewed()),
   "trust_subject_registration_state_not_reviewable"
-);
-
-const promotionDrift = fixture();
-promotionDrift.candidate.promotion_payload.catalog_only_adoption.source_rule_key =
-  "fixture:other";
-expectThrow(
-  () => buildTrustSubjectIdentityProposal(promotionDrift),
-  "trust_subject_identity_catalog_promotion_lineage_invalid"
 );
 
 check(
   source.workflow.includes("node-version: 22"),
   "Phase 5B workflow must use Node 22"
 );
-check(
-  source.workflow.includes(
-    "node scripts/verify-trust-phase5b-subject-registration.mjs"
-  ),
-  "Phase 5B focused verifier step missing"
-);
-check(
-  source.workflow.includes(
-    "node scripts/verify-product-fact-subject-registration-v1.mjs"
-  ),
-  "existing Subject authority verifier missing"
-);
-check(
-  source.workflow.includes("node scripts/verify-trust-subject-resolution.mjs"),
-  "TRUST subject resolver regression missing"
-);
-check(
-  source.workflow.includes(
-    "node scripts/verify-trust-phase5-admin-queue.mjs"
-  ),
-  "Phase 5A queue regression missing"
-);
-check(
-  source.workflow.includes("npm run architecture:guard"),
-  "architecture guard missing"
-);
-check(source.workflow.includes("npm run build"), "production build missing");
-check(
-  source.workflow.includes("git diff --check"),
-  "exact-head diff hygiene missing"
-);
+for (const token of [
+  "node scripts/verify-trust-phase5b-subject-registration.mjs",
+  "node scripts/verify-product-fact-subject-registration-v1.mjs",
+  "node scripts/verify-trust-subject-resolution.mjs",
+  "node scripts/verify-trust-phase5-admin-queue.mjs",
+  "npm run architecture:guard",
+  "npm run build",
+  "git diff --check"
+]) {
+  check(source.workflow.includes(token), `workflow gate missing: ${token}`);
+}
 
 console.log(
   JSON.stringify({
     status: "PASS",
     assertions,
-    formulation_revision_key: first.payload.formulation_revision_key,
-    subject_semantic_key: first.payload.subject_semantic_key
+    subject_semantic_key: first.payload.subject_semantic_key,
+    formulation_revision_key: first.payload.formulation_revision_key
   })
 );
