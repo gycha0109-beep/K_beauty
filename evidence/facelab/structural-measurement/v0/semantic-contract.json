@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "face-space-structural-measurement-semantics-v0",
+  "status": "research_unvalidated",
+  "productionAuthority": false,
+  "identitySemanticsForbidden": true,
+  "normalizationReference": {
+    "id": "lateral_face_span",
+    "definition": "3D distance between provider-specific left/right lateral face anchors in pose-normalized neutral structural geometry.",
+    "populationNorm": false
+  },
+  "dimensions": [
+    {
+      "id": "lower_face_width_ratio",
+      "unit": "ratio",
+      "definition": "Lower lateral jaw/lower-face span divided by lateral face span.",
+      "structuralIntent": "relative lower-face width",
+      "providerAnchorEquivalence": "unvalidated"
+    },
+    {
+      "id": "chin_height_ratio",
+      "unit": "ratio",
+      "definition": "Nose-base center to chin structural distance divided by lateral face span.",
+      "structuralIntent": "relative lower central face/chin vertical extent",
+      "providerAnchorEquivalence": "hold",
+      "holdReason": "MediaPipe and GNM canonical diagnostic exceeds the current GNM fit-tolerance reference band; provider anchor semantics require controlled correspondence evidence."
+    },
+    {
+      "id": "eye_spacing_ratio",
+      "unit": "ratio",
+      "definition": "Inner-canthi distance divided by lateral face span.",
+      "structuralIntent": "relative inter-eye spacing",
+      "providerAnchorEquivalence": "unvalidated"
+    },
+    {
+      "id": "eye_width_ratio",
+      "unit": "ratio",
+      "definition": "Bilateral mean outer-to-inner eye-corner distance divided by lateral face span.",
+      "structuralIntent": "relative horizontal eye span",
+      "providerAnchorEquivalence": "unvalidated"
+    },
+    {
+      "id": "eye_tilt",
+      "unit": "degree",
+      "definition": "Bilateral mean outer-to-inner eye-corner angle in a pose-normalized frontal XY plane, canonicalized for left/right mirror orientation.",
+      "structuralIntent": "eye-corner direction",
+      "providerAnchorEquivalence": "unvalidated"
+    },
+    {
+      "id": "nose_width_ratio",
+      "unit": "ratio",
+      "definition": "Left-to-right alar/nasal-width span divided by lateral face span.",
+      "structuralIntent": "relative nose width",
+      "providerAnchorEquivalence": "hold",
+      "holdReason": "MediaPipe and GNM canonical diagnostic exceeds the current GNM fit-tolerance reference band; provider anchor semantics require controlled correspondence evidence."
+    }
+  ],
+  "rules": [
+    "Same dimension ID does not prove provider anchor equivalence.",
+    "Provider-native landmark IDs and latent coefficients are not semantic authority.",
+    "Raw screen-normalized coordinates are not metric structural measurements.",
+    "Numeric-to-enum observation boundaries require separate calibration.",
+    "Canonical model comparisons are diagnostics, not population norms or same-subject calibration."
+  ]
+}
