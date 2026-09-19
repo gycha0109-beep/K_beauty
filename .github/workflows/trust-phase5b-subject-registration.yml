@@ -42,7 +42,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -56,14 +56,10 @@ jobs:
           test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
       - name: Verify Phase 5B controlled Subject contract
         run: node scripts/verify-trust-phase5b-subject-registration.mjs
 
@@ -77,13 +73,6 @@ jobs:
 
       - name: Verify Phase 5A queue regression
         run: node scripts/verify-trust-phase5-admin-queue.mjs
-
-      - name: Verify architecture boundaries
-        run: npm run architecture:guard
-
-      - name: Build production application
-        run: npm run build
-
       - name: Prepare isolated TRUST subject-resolution runtime
         shell: bash
         run: |

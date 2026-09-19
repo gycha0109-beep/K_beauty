@@ -18,7 +18,8 @@ const files = {
     "supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql",
   phase2:
     "supabase/migrations/20260915112124_trust_phase2_subject_resolution_v1.sql",
-  workflow: ".github/workflows/trust-phase5b-subject-registration.yml"
+  workflow: ".github/workflows/trust-phase5b-subject-registration.yml",
+  currentHealth: "scripts/verify-current-main-health.mjs"
 };
 
 const source = Object.fromEntries(
@@ -519,12 +520,30 @@ for (const token of [
   "node scripts/verify-product-fact-subject-registration-v1.mjs",
   "node scripts/verify-trust-subject-resolution.mjs",
   "node scripts/verify-trust-phase5-admin-queue.mjs",
-  "npm run architecture:guard",
-  "npm run build",
   "git diff --check"
 ]) {
   check(source.workflow.includes(token), `workflow gate missing: ${token}`);
 }
+check(
+  !source.workflow.includes("npm run architecture:guard"),
+  "Phase 5B workflow must not duplicate canonical architecture guard"
+);
+check(
+  !source.workflow.includes("npm run build"),
+  "Phase 5B workflow must not duplicate canonical production build"
+);
+check(
+  source.currentHealth.includes('run("TRUST Phase 5B subject registration contract"'),
+  "Current Main Health must own Phase 5B static contract"
+);
+check(
+  source.currentHealth.includes('run("Architecture guard"'),
+  "Current Main Health must own architecture guard"
+);
+check(
+  source.currentHealth.includes('run("Production build"'),
+  "Current Main Health must own production build"
+);
 
 console.log(
   JSON.stringify({
