@@ -28,6 +28,14 @@ const rootPackageTriggers = [
   "- 'package-lock.json'",
 ];
 
+const workflowFiles = readdirSync(".github/workflows")
+  .filter((name) => /\.ya?ml$/i.test(name))
+  .sort();
+for (const name of workflowFiles) {
+  const path = `.github/workflows/${name}`;
+  assertNotContains(path, ["node-version: 20"]);
+}
+
 const historicalTrustWorkflows = readdirSync(".github/workflows")
   .filter((name) => /^trust-p\d/i.test(name) && /\.ya?ml$/i.test(name));
 assert.deepEqual(
@@ -318,6 +326,7 @@ console.log(JSON.stringify({
   mobile_verifiers_follow_consolidated_topology: true,
   android_store_capture_sdk_setup_current: true,
   admin_integration_node22: true,
+  legacy_node20_workflows: 0,
   trust_static_baseline_canonicalized: true,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));
