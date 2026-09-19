@@ -13,6 +13,10 @@
 
 이 계약은 `FaceLabObservationAnalysis`를 입력으로 대표 상 후보의 규칙 기반 원시 점수와 기여도 ledger를 계산하는 내부 계약이다. 현재 단계는 분류 기준과 계산 경계를 고정하는 단계이며, 대표 상을 사용자 결과로 확정하는 단계가 아니다.
 
+이 scorer는 현재 shadow implementation의 계약이며 Face Lab의 장기 내부 표현 전체를 정의하지 않는다. 목표 아키텍처에서는 `Normalized Face Representation / Face Space`가 재사용 가능한 기반이고, Archetype은 그 위의 사용자 해석 projection이다. 상세 목표 구조는 `face-lab-face-space-style-compatibility-architecture-v1.md`를 따른다.
+
+따라서 현재 7개 rubric과 weight가 존재한다는 이유로 Face Space의 축, cluster 수 또는 Style Compatibility rule을 고정하지 않는다.
+
 ## 1. 목적
 
 ```text
@@ -128,6 +132,8 @@ proposed
 - `dino`
 
 이 목록과 가중치는 calibration 전 가설이다. 사용자 노출 taxonomy로 확정된 것이 아니다.
+
+또한 이 목록은 Face Space 자체가 아니다. Reverse empirical research 결과에 따라 projection taxonomy는 추가·병합·분할·폐기될 수 있으며, 그 변경은 별도의 versioned calibration과 activation을 요구한다.
 
 ### 4.2 Indicator
 
