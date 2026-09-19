@@ -244,15 +244,23 @@ export default function CurrentProductsSelector({
         const existingCategory = existingProductId
           ? normalizeCurrentProductCategory(current[group.groupId]?.category)
           : "";
+        const existingUseTime = current[group.groupId]?.useTime;
+        const existingSatisfaction = current[group.groupId]?.satisfaction;
         next[group.groupId] = {
           category: existingCategory || group.categoryIntent,
           status: "selected",
-          productId: existingProductId
+          productId: existingProductId,
+          ...(existingUseTime ? { useTime: existingUseTime } : {}),
+          ...(existingSatisfaction ? { satisfaction: existingSatisfaction } : {})
         };
       } else {
+        const existingUseTime = current[group.groupId]?.useTime;
+        const existingSatisfaction = current[group.groupId]?.satisfaction;
         next[group.groupId] = {
           category: group.categoryIntent,
-          status
+          status,
+          ...(status === "not_in_db" && existingUseTime ? { useTime: existingUseTime } : {}),
+          ...(status === "not_in_db" && existingSatisfaction ? { satisfaction: existingSatisfaction } : {})
         };
       }
 
@@ -264,14 +272,21 @@ export default function CurrentProductsSelector({
     const product = products.find((item) => item.id === productId);
     const category = resolveCurrentProductSemantics(product)?.canonicalCategory || group.categoryIntent;
 
-    setSelectionMap((current) => ({
-      ...current,
-      [group.groupId]: {
-        category,
-        status: "selected",
-        productId
-      }
-    }));
+    setSelectionMap((current) => {
+      const existingUseTime = current[group.groupId]?.useTime;
+      const existingSatisfaction = current[group.groupId]?.satisfaction;
+
+      return {
+        ...current,
+        [group.groupId]: {
+          category,
+          status: "selected",
+          productId,
+          ...(existingUseTime ? { useTime: existingUseTime } : {}),
+          ...(existingSatisfaction ? { satisfaction: existingSatisfaction } : {})
+        }
+      };
+    });
   };
 
   return (
