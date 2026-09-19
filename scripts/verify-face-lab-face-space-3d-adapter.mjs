@@ -15,14 +15,16 @@ function readJson(path) {
 
 const base = 'evidence/facelab/face-space-3d/v0';
 const vector = readJson(base + '/face-vector.fixture.json');
+const gnm = readJson(base + '/google-gnm-v3-adapter.manifest.json');
 const mpfb = readJson(base + '/mpfb2-adapter.manifest.json');
 const flame = readJson(base + '/flame-2023-open-adapter.manifest.json');
 
 assert.equal(vector.schemaVersion, FACE_SPACE_VECTOR_SCHEMA_VERSION);
+assert.equal(gnm.schemaVersion, FACE_SPACE_3D_ADAPTER_SCHEMA_VERSION);
 assert.equal(mpfb.schemaVersion, FACE_SPACE_3D_ADAPTER_SCHEMA_VERSION);
 assert.equal(flame.schemaVersion, FACE_SPACE_3D_ADAPTER_SCHEMA_VERSION);
 
-for (const manifest of [mpfb, flame]) {
+for (const manifest of [gnm, mpfb, flame]) {
   const validation = validateFaceSpace3DAdapterManifest(manifest);
   assert.equal(validation.ok, true, validation.errors.join(','));
   assert.equal(manifest.faceSpaceIsAuthority, true);
@@ -69,12 +71,40 @@ assert.equal(
   'FLAME beta must not be mapped directly to an interpretable Face Space axis'
 );
 
+const invalidGnm = {
+  ...gnm,
+  dimensionMappings: gnm.dimensionMappings.map((mapping, index) =>
+    index === 0
+      ? { ...mapping, strategy: 'direct_target', nativeTarget: 'identity[0]' }
+      : mapping
+  )
+};
+assert.equal(
+  validateFaceSpace3DAdapterManifest(invalidGnm).ok,
+  false,
+  'GNM identity components must not be mapped directly to interpretable Face Space axes'
+);
+
+assert.equal(
+  validateFaceSpace3DAdapterManifest({
+    ...gnm,
+    semanticDemographicSamplingAllowed: true
+  }).ok,
+  false,
+  'GNM demographic semantic identity sampling must stay disabled'
+);
+
+const gnmRequest = buildFaceSpace3DRenderRequest(vector, gnm);
 const mpfbRequest = buildFaceSpace3DRenderRequest(vector, mpfb);
 const flameRequest = buildFaceSpace3DRenderRequest(vector, flame);
 
+assert.equal(gnmRequest.backend, 'gnm_v3');
 assert.equal(mpfbRequest.backend, 'mpfb2');
 assert.equal(flameRequest.backend, 'flame_2023_open');
+assert.notEqual(gnmRequest.requestDigest, mpfbRequest.requestDigest);
+assert.notEqual(gnmRequest.requestDigest, flameRequest.requestDigest);
 assert.notEqual(mpfbRequest.requestDigest, flameRequest.requestDigest);
+assert.equal(gnmRequest.mappedDimensions.length, vector.dimensions.length);
 assert.equal(mpfbRequest.mappedDimensions.length, vector.dimensions.length);
 assert.equal(flameRequest.mappedDimensions.length, vector.dimensions.length);
 
@@ -92,6 +122,14 @@ function makeSyntheticContractMeasurement(manifest, offset = 0) {
     }))
   };
 }
+
+const gnmContractRoundTrip = evaluateFaceSpace3DRoundTrip({
+  vector,
+  manifest: gnm,
+  measurement: makeSyntheticContractMeasurement(gnm)
+});
+assert.equal(gnmContractRoundTrip.ok, true);
+assert.equal(gnmContractRoundTrip.status, 'pass');
 
 const mpfbContractRoundTrip = evaluateFaceSpace3DRoundTrip({
   vector,
@@ -135,6 +173,11 @@ console.log(JSON.stringify({
   vectorDimensions: vector.dimensions.length,
   adapters: [
     {
+      adapterId: gnm.adapterId,
+      backend: gnm.backend,
+      implementationStatus: gnm.implementationStatus
+    },
+    {
       adapterId: mpfb.adapterId,
       backend: mpfb.backend,
       implementationStatus: mpfb.implementationStatus
@@ -150,6 +193,8 @@ console.log(JSON.stringify({
     archetypeLabelForbiddenInVector: true,
     identityEmbeddingForbidden: true,
     nativeParametersNotAuthority: true,
+    directGnmAxisMappingForbidden: true,
+    gnmDemographicSemanticSamplingDisabled: true,
     directFlameAxisMappingForbidden: true,
     roundTripFailClosed: true
   }
