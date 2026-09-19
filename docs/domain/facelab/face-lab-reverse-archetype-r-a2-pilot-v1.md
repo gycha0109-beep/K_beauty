@@ -360,6 +360,12 @@ Primary outputs are not only centroids. Preserve:
 
 Only after stable structural axes are identified may selected Face Space points be translated into a controlled parametric 3D experiment.
 
+The current research handoff contract is:
+
+`face-lab-face-space-3d-adapter-v0.md`
+
+The Face Space coordinate remains authority. MPFB2/MakeHuman targets and FLAME coefficients are backend-native adapter parameters and must pass independent round-trip measurement before a backend is considered structurally faithful.
+
 Candidate points can include:
 
 - label-region center candidates
