@@ -66,6 +66,8 @@ Frozen ordered-list SHA-256:
 
 The two lists contain the same frozen set of 26 ingredient names but materially different ordering.
 
+There is a second first-party inconsistency: product page 329 states that functional-cosmetic review/notification was completed, while TRY 332 and set 613 state `N`. This is not used as a Product Fact claim here; it is frozen only as another signal that the storefront metadata cannot safely identify one current formulation revision.
+
 ## Current retail context does not close the conflict
 
 Current retail context points in both directions:
