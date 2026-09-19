@@ -33,7 +33,7 @@ Makeup 최종 엔진                      ❌ 미구현
 Eyewear 최종 엔진                     ❌ 미구현
 Face Style 최종 엔진                  ❌ 미구현
 Look Composer                         ❌ 미구현
-FaceSpace3DAdapter contract           🟡 v0 contract/verifier + GNM exact code/model pin / backend executable 미구현
+FaceSpace3DAdapter contract           🟡 v0 contract/verifier + GNM exact pin + executable PoC CI 추가 / runtime PASS 대기
 Parametric 3D experiment pipeline     ❌ 미구현
 Automated VLM judge program           ❌ 미구현
 최종 canonical Free/Premium 결과      ❌ 미완성
@@ -242,6 +242,11 @@ MediaPipe Face Geometry
 중요:
 
 - GNM v3 reviewed code revision과 official `gnm_head.npz` Git blob은 v0 manifest에 exact pin했다.
+- `scripts/face-lab-gnm-v3-poc.py`는 GNM NumPy head model을 실제 load하고 native sparse-68 구조 측정을 수행하는 offline runner다.
+- `.github/workflows/face-lab-gnm-v3-poc.yml`는 exact GNM commit/model blob을 재검증한 뒤 synthetic structural round-trip을 실행한다.
+- GNM v0에서 sparse-68로 정직하게 측정할 수 없는 full face length / forehead height / cheekbone width 등은 `unsupported`로 fail-closed 처리했다.
+- PoC는 GNM semantic demographic sampler를 import/use하지 않는다.
+- CI runtime PASS 전에는 executable backend를 검증 완료로 표기하지 않는다.
 - GNM identity component를 Face Space axis 자체로 정의하지 않는다.
 - GNM semantic demographic identity sampling은 Face Lab Face Space/user inference에 사용하지 않는다.
 - MPFB target/Shape Key를 Face Space axis 자체로 정의하지 않는다.
