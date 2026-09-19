@@ -88,6 +88,37 @@ assertContains(".github/workflows/mobile-store-readiness.yml", [
 ]);
 assertNotContains(".github/workflows/mobile-store-readiness.yml", rootPackageTriggers);
 
+const retiredMobileAppStages = new Set([
+  "mobile-foundation.yml",
+  "mobile-camera.yml",
+  "mobile-analyze.yml",
+  "mobile-saved-report.yml",
+  "mobile-public-share.yml",
+  "mobile-public-result-deep-link.yml",
+  "mobile-premium-entry.yml",
+  "mobile-my-skin-diary.yml",
+  "mobile-auth.yml",
+  "mobile-face-guidance.yml",
+]);
+const presentRetiredMobileAppStages = readdirSync(".github/workflows")
+  .filter((name) => retiredMobileAppStages.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredMobileAppStages,
+  [],
+  `retired mobile app stage workflows must stay retired: ${presentRetiredMobileAppStages.join(", ")}`,
+);
+assertContains(".github/workflows/mobile-ci.yml", [
+  "concurrency:",
+  "cancel-in-progress:",
+  "npm run mobile:export:android",
+]);
+assertNotContains(".github/workflows/mobile-ci.yml", [
+  ...rootPackageTriggers,
+  "npm run mobile:prebuild:android",
+  "npm run verify:mobile-native",
+]);
+
 const rootPackageTriggers = [
   '- "package.json"',
   "- 'package.json'",
@@ -168,6 +199,7 @@ console.log(JSON.stringify({
   data_taxonomy_workflows: 3,
   face_eval_workflows: 2,
   retired_mobile_store_stage_workflows: 0,
+  retired_mobile_app_stage_workflows: 0,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
