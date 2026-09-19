@@ -4,6 +4,7 @@ import {
   PHOTO_GEOMETRY_MANIFEST_SCHEMA_VERSION,
   PHOTO_GEOMETRY_PACKET_SCHEMA_VERSION,
   STRUCTURAL_MEASUREMENT_SCHEMA_VERSION,
+  buildPhotoGeometryPacketFromMetricLandmarks,
   measurePhotoGeometry,
   validatePhotoGeometryManifest,
   validatePhotoGeometryPacket
@@ -127,6 +128,41 @@ assert.equal(
   'manifest must keep identity embeddings disabled'
 );
 
+const fullMetricLandmarks = Array.from(
+  { length: manifest.landmarkTopology },
+  () => ({ x: 0, y: 0, z: 0 })
+);
+for (const [id, value] of Object.entries(upstreamGeometryFixture.landmarks)) {
+  fullMetricLandmarks[Number(id)] = value;
+}
+const minimalPacket = buildPhotoGeometryPacketFromMetricLandmarks({
+  sampleId: 'minimal_packet_builder_fixture',
+  sourceVersion: manifest.providerVersion,
+  landmarks: fullMetricLandmarks,
+  faceCount: 1,
+  sourceImagePersisted: false
+}, manifest);
+assert.equal(
+  Object.keys(minimalPacket.landmarks).length,
+  Object.keys(manifest.anchorMap).length,
+  'runtime packet builder must retain only required structural anchors'
+);
+assert.equal(validatePhotoGeometryPacket(minimalPacket, manifest).ok, true);
+assert.deepEqual(
+  measurePhotoGeometry(minimalPacket, manifest).dimensions,
+  measurePhotoGeometry(upstreamGeometryFixture, manifest).dimensions,
+  'minimal selected-anchor packet must preserve structural measurements'
+);
+assert.throws(
+  () => buildPhotoGeometryPacketFromMetricLandmarks({
+    sampleId: 'bad_face_count',
+    sourceVersion: manifest.providerVersion,
+    landmarks: fullMetricLandmarks,
+    faceCount: 2
+  }, manifest),
+  /single_face_required/
+);
+
 const upstreamValidation = validatePhotoGeometryPacket(upstreamGeometryFixture, manifest);
 assert.equal(upstreamValidation.ok, true, upstreamValidation.errors.join(','));
 
@@ -186,6 +222,7 @@ console.log(JSON.stringify({
     uniformScaleInvariant: true,
     translationInvariant: true,
     sourceImagePersistenceForbidden: true,
-    identityEmbeddingForbidden: true
+    identityEmbeddingForbidden: true,
+    minimalAnchorProjection: true
   }
 }, null, 2));
