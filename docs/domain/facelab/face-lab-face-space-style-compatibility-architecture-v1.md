@@ -365,7 +365,7 @@ Blender 또는 동등한 3D 도구는 production Face Representation authority�
 
 ### 12.1 Face Space is the authority
 
-Face Space를 FLAME, MakeHuman/MPFB, Blender Shape Key 또는 특정 3D backend의 native parameter space로 정의하지 않는다.
+Face Space를 GNM, FLAME, MakeHuman/MPFB, Blender Shape Key 또는 특정 3D backend의 native parameter space로 정의하지 않는다.
 
 ```text
 Normalized Face Representation
@@ -494,9 +494,9 @@ Face Space vector F
 동일한 Face Space vector를 여러 backend에서 생성해 비교할 수 있다.
 
 ```text
-             Face vector F
-              /          \
-             /            \
+                    Face vector F
+                 /         |         \
+                /          |          \
        GNM adapter     MPFB2 adapter     FLAME adapter
             ↓               ↓                 ↓
           mesh A          mesh B            mesh C
