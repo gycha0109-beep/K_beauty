@@ -171,6 +171,10 @@ check(
 );
 
 check(
+  !source.workbench.includes("\\\\nimport"),
+  "workbench import section must not contain escaped newline literals"
+);
+check(
   source.workbench.includes('blockerCode === "SUBJECT_CREATION_REQUIRED"'),
   "UI action must be limited to Subject creation blocker"
 );
