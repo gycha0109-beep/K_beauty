@@ -33,6 +33,9 @@
 
 Calibration 실행 방법론
 → 이 문서
+
+Face Space / Style Compatibility 목표 구조
+→ face-lab-face-space-style-compatibility-architecture-v1.md
 ```
 
 ## 1. 목적
@@ -47,6 +50,14 @@ Calibration 실행 방법론
 - presentation 및 capture strata에서 observation, ranking, hold의 systematic failure가 나타나는가?
 
 이 단계에서는 PASS 수치, sample 수, reviewer 수, 최종 taxonomy, weight 또는 threshold를 결정하지 않는다. 이 문서는 그러한 값을 선택하고 검증하는 절차만 정의한다.
+
+이 protocol의 대상은 현재 Archetype projection/scorer 가설이다. 이 protocol을 통과했다고 해서 Face Space representation 자체 또는 Style Compatibility가 자동 검증되는 것은 아니다.
+
+```text
+Archetype calibration
+≠ Face Space validation
+≠ Style compatibility validation
+```
 
 ## 2. Evaluation Authority Hierarchy
 
