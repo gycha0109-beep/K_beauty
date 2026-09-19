@@ -4,19 +4,10 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "apps/mobile/app/**"
-      - "apps/mobile/components/**"
-      - "apps/mobile/features/**"
-      - "apps/mobile/lib/**"
       - "apps/mobile/modules/**"
-      - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
       - "apps/mobile/package.json"
       - "apps/mobile/tsconfig.json"
-      - "packages/shared/**"
-      - "package.json"
-      - "package-lock.json"
-      - "scripts/verify-mobile-architecture-foundation.mjs"
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
@@ -24,19 +15,10 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/mobile/app/**"
-      - "apps/mobile/components/**"
-      - "apps/mobile/features/**"
-      - "apps/mobile/lib/**"
       - "apps/mobile/modules/**"
-      - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
       - "apps/mobile/package.json"
       - "apps/mobile/tsconfig.json"
-      - "packages/shared/**"
-      - "package.json"
-      - "package-lock.json"
-      - "scripts/verify-mobile-architecture-foundation.mjs"
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
