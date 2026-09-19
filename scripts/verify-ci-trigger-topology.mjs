@@ -36,13 +36,29 @@ assert.deepEqual(
   `historical TRUST-P workflows must stay retired: ${historicalTrustWorkflows.join(", ")}`,
 );
 
-const historicalDataOfferWorkflows = readdirSync(".github/workflows")
-  .filter((name) => /^data-offer\d/i.test(name) && /\.ya?ml$/i.test(name));
+const dataOfferWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^data-offer\d/i.test(name) && /\.ya?ml$/i.test(name))
+  .sort();
 assert.deepEqual(
-  historicalDataOfferWorkflows,
-  [],
-  `historical DATA-OFFER workflows must stay retired: ${historicalDataOfferWorkflows.join(", ")}`,
+  dataOfferWorkflows,
+  [
+    "data-offer17-controlled-offer-rpc-diagnostic.yml",
+    "data-offer17-offer-runtime-observability.yml",
+  ],
+  `DATA-OFFER workflow topology drift: ${dataOfferWorkflows.join(", ")}`,
 );
+
+const controlledOfferWorkflow = read(
+  ".github/workflows/data-offer17-controlled-offer-rpc-diagnostic.yml",
+);
+const controlledOfferPushSection = controlledOfferWorkflow.split("  pull_request:")[0];
+assert(
+  controlledOfferPushSection.includes("    paths:"),
+  "DATA-OFFER17 deployed production diagnostic must not run on every main push",
+);
+assertContains(".github/workflows/data-offer17-controlled-offer-rpc-diagnostic.yml", [
+  "cancel-in-progress: true",
+]);
 
 const taxonomyWorkflows = readdirSync(".github/workflows")
   .filter((name) => /^data-taxonomy/i.test(name) && /\.ya?ml$/i.test(name))
@@ -221,6 +237,7 @@ console.log(JSON.stringify({
   status: "PASS",
   historical_trust_p_workflows: 0,
   historical_data_offer_workflows: 0,
+  operational_data_offer_workflows: 2,
   data_taxonomy_workflows: 3,
   face_eval_workflows: 2,
   retired_mobile_store_stage_workflows: 0,
