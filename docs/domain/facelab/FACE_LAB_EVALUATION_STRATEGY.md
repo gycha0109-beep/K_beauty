@@ -117,6 +117,38 @@ Human 참여를 최소화하는 compatibility 연구에서는 다음을 서로 �
 
 AI hypothesis generator와 AI judge는 가능한 한 분리하고, judge는 target hypothesis, Archetype label, 검색 provenance, current recommendation과 다른 judge의 답을 보지 않는다.
 
+### 2.6 Parametric 3D adapter evidence
+
+3D backend는 Face Space truth를 정의하지 않는다. Face Space vector를 mesh로 재현하는 adapter의 정확도는 독립적으로 평가한다.
+
+최소 round-trip:
+
+```text
+requested Face Space vector
+→ backend adapter
+→ mesh
+→ independent structural measurement
+→ reconstructed Face Space vector
+→ dimension-level error
+```
+
+MPFB2 target value 또는 FLAME beta coefficient를 그대로 성공 기준으로 사용하지 않는다.
+
+평가 항목:
+
+- dimension별 reconstruction error
+- unsupported dimension
+- local monotonicity
+- cross-dimension leakage
+- clipping / saturation
+- repeated-run determinism
+- backend/version drift
+- renderer nuisance independence
+
+MPFB2와 FLAME 2023 Open 같은 서로 다른 backend가 같은 Face Space coordinate를 재현할 때 결과가 다르면 Face Space definition을 특정 backend에 맞춰 바꾸지 않는다. Adapter mapping을 수정하거나 해당 dimension을 unsupported/hold로 처리한다.
+
+3D adapter PASS는 style compatibility PASS가 아니다. 이는 controlled experiment를 만들 수 있는 구조 재현 fidelity에 대한 평가다.
+
 
 ## 3. Synthetic campaign 전체 흐름
 
