@@ -344,58 +344,72 @@ D2D-XA는 재실행되지 않았고 `DEPLOYED_HOSTED_E2E_VERIFIED = NO`, `HOSTED
 
 반대로 0716의 제품 아키텍처와 07-30의 generation / judgment 분리 원칙은 여전히 유효해 새 MASTER와 EVALUATION 문서로 승계했다.
 
-## 10. Production Archetype 활성화 전 blocker
+## 10. Production 활성화 전 blocker
 
-다음 작업의 핵심은 archetype 종류를 더 늘리거나 합성 이미지를 대량 생성하는 것이 아니다.
+현재 blocker는 하나의 직렬 단계가 아니라 서로 다른 authority track으로 분리한다.
 
-현재 blocker:
+### 10.1 Archetype Projection
 
-1. 현재 rubric / observation contract에 맞는 Archetype calibration protocol 정의
-2. Synthetic stress evidence와 Real Human annotation authority 분리
-3. ambiguity를 보존하는 Human labeling / consensus 평가셋 구축
-4. Synthetic controlled set으로 rubric과 observation layer stress test
-5. weight와 hold/decision threshold calibration
-6. stability, coverage, bias 평가
-7. 그 후에만 production ArchetypeDecision 활성화 및 canonical bundle 연결
+1. Reverse empirical seed research로 현재 taxonomy 가설 검증
+2. Human / synthetic / web evidence class 분리
+3. taxonomy merge / split / add / retire 가능성 검토
+4. projection rubric / weight / hold threshold calibration
+5. stability, coverage, bias 평가
+6. 별도 activation review 후에만 사용자 Archetype 판정 연결
+
+### 10.2 Face Representation / Face Space
+
+1. Normalized Face Representation schema 확정
+2. 구조 축과 presentation 축 분리
+3. versioned normalization / transform 정의
+4. Archetype seed corpus 외 일반 face corpus로 coverage 검증
+5. capture variation stability와 representation drift 검증
+6. Production Face Space activation은 별도 gate
+
+### 10.3 Style Compatibility
+
+1. Style Representation schema 정의
+2. web association과 compatibility evidence 분리
+3. parametric / counterfactual experiment foundation
+4. multi-VLM blind judging 및 reversal/stability 검증
+5. unseen face/style holdout
+6. 불확실 영역 HOLD
+7. 필요한 최소 범위의 Human audit
+8. 별도 recommendation activation review
 
 ## 11. 다음 권장 순서
 
 ```text
-FACE-EVAL-A
-Archetype calibration protocol
+현재 #542
+Archetype Seed Metadata / Blind Observation Foundation
 
-→ FACE-EVAL-B
-Human labeling / consensus dataset contract
+→ Face Representation Contract
+→ Face Space Seed Analysis
+→ General Face Coverage Research
 
-→ FACE-EVAL-C
-Synthetic archetype stress campaign
+동시에 / 이후
 
-→ FACE-ENGINE-2
-Weight + threshold calibration
+→ Style Representation Contract
+→ Parametric Counterfactual Lab
+→ Automated Blind Judge Program
+→ Compatibility Modeling
 
-→ FACE-ENGINE-3
-Production-safe ArchetypeDecision
+병렬 track
 
-→ FACE-STYLE-1
-Style Identity
+→ Archetype Projection Calibration
+→ Production Activation Review
 
-→ FACE-STYLE-2
-Core / Alternative Strategy
+최종
 
-→ FACE-STYLE-3
-Color / Hair / Makeup / Face Style
-
-→ FACE-LOOK-1
-Look Composer
-
-→ FACE-PRODUCT-1
-Canonical Free / Premium integration
+→ Style Identity / Core·Alternative Strategy
+→ Hair / Makeup / Eyewear / Face Style
+→ Look Composer
+→ Canonical Free / Premium integration
 ```
 
-단계 이름은 바뀔 수 있다. 의존관계를 건너뛰려면 별도 contract 변경이 필요하다.
+Archetype projection과 Style Compatibility는 같은 Face Representation을 사용할 수 있지만 서로의 정답 authority가 아니다.
 
-
-## 9. Reverse Archetype / Face Space Seed Research
+## 12. Reverse Archetype / Face Space Seed Research
 
 PR #542의 연구 foundation은 기존 7개 cultural label을 검색 seed로 사용하되 current Archetype scorer를 검증 근거로 사용하지 않는다.
 
