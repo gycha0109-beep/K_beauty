@@ -196,6 +196,18 @@ check(
     source.action.includes("Product Fact confirmation"),
   "UI must state downstream non-automation boundary"
 );
+check(
+  source.orchestration.includes("trust_subject_registration_stale_proposal"),
+  "confirm must fail closed when the identity proposal changes"
+);
+check(
+  source.confirmRoute.includes("proposalDigest: body.proposalDigest"),
+  "confirm route must forward the stable proposal digest"
+);
+check(
+  source.action.includes("proposalDigest: preflight.proposalDigest"),
+  "client confirm must bind the reviewed proposal digest"
+);
 
 for (const liveValue of [
   "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
@@ -344,6 +356,11 @@ check(
   "deployed Subject serializer must be preserved"
 );
 check(
+  first.payload.formulation_label ===
+    `TRUST reviewed identity ${first.evidenceDigest.slice(0, 12)}`,
+  "Subject display label must remain stable and evidence-bound"
+);
+check(
   canonicalTrustSubjectJson(first.semanticIdentity) ===
     JSON.stringify({
       formulation_revision_key: first.payload.formulation_revision_key,
@@ -385,6 +402,19 @@ check(
 check(
   timestampProposal.proposalDigest !== first.proposalDigest,
   "review-lineage change must remain visible in proposal digest"
+);
+
+const displayRename = fixture();
+displayRename.product.brand = "Renamed Fixture Brand";
+displayRename.product.name = "Renamed Fixture Serum";
+const displayRenameProposal =
+  buildTrustSubjectIdentityProposal(displayRename);
+check(
+  displayRenameProposal.payload.formulation_label ===
+    first.payload.formulation_label &&
+    displayRenameProposal.payload.subject_semantic_key ===
+      first.payload.subject_semantic_key,
+  "catalog display rename must not create a new Subject identity"
 );
 
 const stateOnly = fixture();
