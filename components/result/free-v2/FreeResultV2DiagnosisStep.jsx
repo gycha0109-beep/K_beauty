@@ -801,6 +801,65 @@ function FreeResultV2SkinRadarCard({ data, locale = "ko" }) {
   );
 }
 
+function FreeResultV2SurveyContextCard({ surveyContext, locale = "ko" }) {
+  if (!surveyContext?.requestedConcern || !surveyContext?.recentSkinChange) {
+    return null;
+  }
+
+  const isEnglish = locale === "en";
+  const rows = [
+    {
+      key: "requested-concern",
+      label: surveyContext.requestedConcern.label,
+      value: surveyContext.requestedConcern.value,
+      body: surveyContext.requestedConcern.body,
+      tone: "goal"
+    },
+    {
+      key: "recent-skin-change",
+      label: surveyContext.recentSkinChange.label,
+      value: surveyContext.recentSkinChange.value,
+      body: surveyContext.recentSkinChange.body,
+      tone: "change"
+    }
+  ];
+
+  return (
+    <FreeResultV2Card className="p-4 sm:p-5">
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#a65d73] dark:text-[#d9a7b5]">
+          {isEnglish ? "YOUR ANSWERS" : "내 답변 반영"}
+        </p>
+        <h3 className="mt-1 text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
+          {isEnglish ? "How your survey shaped this result" : "설문 답변이 이렇게 반영됐어요"}
+        </h3>
+      </div>
+
+      <div className="mt-3 divide-y divide-[#f0dedb] overflow-hidden rounded-[1.05rem] border border-[#ead9d6] bg-white/48 dark:divide-[#5a3a48] dark:border-[#5a3a48] dark:bg-[#241720]/68">
+        {rows.map((row) => (
+          <div key={row.key} className="px-3.5 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-[#7a5360] dark:text-[#c8aeb8]">
+                {row.label}
+              </span>
+              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                row.tone === "goal"
+                  ? "bg-[#fff0f3] text-[#b43e62] dark:bg-[#5a2638]/55 dark:text-[#ffb6c8]"
+                  : "bg-[#f7f0ec] text-[#87586a] dark:bg-[#3c2933] dark:text-[#e3c0ca]"
+              }`}>
+                {row.value}
+              </span>
+            </div>
+            <p className="mt-1.5 break-keep text-xs leading-5 text-[#69424f] dark:text-[#c8aeb8]">
+              {row.body}
+            </p>
+          </div>
+        ))}
+      </div>
+    </FreeResultV2Card>
+  );
+}
+
 function FreeResultV2PriorityListCard({ priorities = [], locale = "ko" }) {
   const isEnglish = locale === "en";
   const displayPriorities = Array.isArray(priorities) ? priorities.slice(0, 3) : [];
@@ -907,6 +966,7 @@ export default function FreeResultV2DiagnosisStep({
         faceLabDisplayStatus={faceLabDisplayStatus}
         locale={locale}
       />
+      <FreeResultV2SurveyContextCard surveyContext={data?.surveyContext} locale={locale} />
       <FreeResultV2SkinRadarCard data={data} locale={locale} />
       <FreeResultV2PriorityListCard priorities={data.priorities} locale={locale} />
     </FreeResultV2StepFrame>
