@@ -85,10 +85,16 @@ assert.equal(product329.publisher, "FATION");
 assert.equal(product329.source_kind, "official_product_page");
 assert.equal(product329.presentation, "30 ml / 1.01 fl. oz.");
 assert.equal(product329.ingredient_order_class, "water_first");
+assert.equal(
+  product329.functional_cosmetic_status,
+  "official_page_states_review_or_notification_completed"
+);
 assert.equal(try332.ingredient_order_class, "water_first");
+assert.equal(try332.functional_cosmetic_status, "N");
 assert.equal(set613.publisher, "FATION");
 assert.equal(set613.presentation, "30 ml");
 assert.equal(set613.ingredient_order_class, "mugwort_first");
+assert.equal(set613.functional_cosmetic_status, "N");
 assert.equal(donga.publisher, "동아제약");
 assert.equal(donga.ingredient_order_class, "mugwort_first");
 
@@ -154,6 +160,7 @@ const conflict = evidence.conflict;
 assert.equal(conflict.state, "FORMULATION_CONFLICT");
 assert.equal(conflict.same_ingredient_set, true);
 assert.equal(conflict.same_ingredient_order, false);
+assert.equal(conflict.functional_cosmetic_status_conflict, true);
 assert.equal(conflict.resolution, "HOLD");
 assert.equal(
   conflict.water_first_sha256,
