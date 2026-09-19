@@ -2,7 +2,7 @@
   "schemaVersion": "face-space-3d-adapter-manifest-v0",
   "adapterId": "google-gnm-v3-research-adapter-v0",
   "backend": "gnm_v3",
-  "backendVersion": "google/gnm-v3-artifact-pending-pin",
+  "backendVersion": "google/GNM@a424b5153eec9154f3dfa5ee7f214e5817918d54",
   "mappingVersion": "gnm-face-space-fit-v0",
   "implementationStatus": "mapping_candidate",
   "executionBoundary": "offline_research",
@@ -74,5 +74,8 @@
       "objectiveFamily": "structural_measurement_fit_v0",
       "absoluteTolerance": 0.04
     }
-  ]
+  ],
+  "modelArtifact": "google/gnm-v3/gnm_head.npz",
+  "modelArtifactRevision": "pending_exact_huggingface_revision_and_digest",
+  "reviewedAt": "2026-09-19"
 }
