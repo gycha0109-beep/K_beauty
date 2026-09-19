@@ -42,3 +42,9 @@ jobs:
           node-version: "22"
       - name: Verify reverse archetype pilot boundary
         run: node scripts/verify-face-lab-reverse-archetype-pilot.mjs
+      - name: Verify R-A2A collection plan CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs --plan > /dev/null
+      - name: Verify R-A2A collection ledger CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
+      - name: Verify R-A2A next-task CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs --next evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
