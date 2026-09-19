@@ -166,6 +166,15 @@ for (const path of [
   ]);
 }
 
+const mobile20bWorkflow = read(".github/workflows/mobile-20b-store-capture.yml");
+const mobile20bPushSection = mobile20bWorkflow
+  .split("  workflow_dispatch:")[0]
+  .split("  push:")[1];
+assert(
+  mobile20bPushSection?.includes("    branches: [main]"),
+  "Mobile 20B heavy capture must not run on arbitrary branch pushes",
+);
+
 for (const path of [
   ".github/workflows/mobile-14-auth-app-links.yml",
   ".github/workflows/mobile-15-distribution-authority.yml",
@@ -290,6 +299,7 @@ console.log(JSON.stringify({
   ci_architecture_guard_diff_aware: true,
   mobile_consolidation_dangling_workflow_refs: 0,
   mobile_android_setup_legacy_tools_requests: 0,
+  mobile_20b_unbounded_branch_push: false,
   admin_root_package_triggers: 0,
   current_health_mobile_admin_static_coverage: true,
 }, null, 2));
