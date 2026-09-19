@@ -15,7 +15,6 @@ on:
       - "scripts/verify-mobile-public-share.mjs"
       - "scripts/verify-mobile-saved-report-reentry.mjs"
       - ".github/workflows/mobile-public-share.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   push:
     branches: [main]
     paths:
@@ -30,7 +29,6 @@ on:
       - "scripts/verify-mobile-public-share.mjs"
       - "scripts/verify-mobile-saved-report-reentry.mjs"
       - ".github/workflows/mobile-public-share.yml"
-      - ".github/workflows/mobile-native-shell.yml"
   workflow_dispatch:
 
 permissions:
