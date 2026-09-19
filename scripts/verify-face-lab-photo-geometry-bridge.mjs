@@ -16,6 +16,8 @@ function readJson(path) {
 const base = 'evidence/facelab/photo-geometry/v0';
 const manifest = readJson(base + '/mediapipe-face-geometry.manifest.json');
 const fixture = readJson(base + '/mediapipe-canonical-landmarks.fixture.json');
+const diagnostic = readJson(base + '/mediapipe-vs-gnm-canonical-diagnostic.json');
+const gnmEvidence = readJson('evidence/facelab/face-space-3d/v0/gnm-v3-poc-evidence-summary.json');
 
 assert.equal(manifest.schemaVersion, PHOTO_GEOMETRY_MANIFEST_SCHEMA_VERSION);
 assert.equal(fixture.schemaVersion, PHOTO_GEOMETRY_PACKET_SCHEMA_VERSION);
@@ -123,6 +125,25 @@ assert.equal(
   false,
   'manifest must keep identity embeddings disabled'
 );
+
+assert.equal(diagnostic.status, 'semantic_alignment_hold');
+assert.equal(diagnostic.productionAuthority, false);
+assert.deepEqual(
+  diagnostic.interpretation.investigate,
+  ['chin_height_ratio', 'nose_width_ratio'],
+  'cross-backend canonical mismatch must stay frozen for investigation'
+);
+
+const gnmTemplate = gnmEvidence.probe.templateMetrics;
+for (const item of diagnostic.dimensions) {
+  assert.ok(byId.has(item.id), 'diagnostic MediaPipe dimension missing: ' + item.id);
+  assert.equal(item.mediapipe, byId.get(item.id), 'diagnostic MediaPipe value drift: ' + item.id);
+  assert.equal(item.gnm, gnmTemplate[item.id], 'diagnostic GNM value drift: ' + item.id);
+  assert.ok(
+    Math.abs(item.absoluteDifference - Math.abs(item.mediapipe - item.gnm)) < 1e-12,
+    'diagnostic difference drift: ' + item.id
+  );
+}
 
 console.log(JSON.stringify({
   ok: true,
