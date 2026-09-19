@@ -1,4 +1,5 @@
 name: TRUST Phase 5B Controlled Subject Registration
+# Exact-head gate marker: reviewer-driven Product Fact Subject identity
 
 on:
   pull_request:
