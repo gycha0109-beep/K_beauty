@@ -99,12 +99,21 @@ assert.match(
   /^google\/GNM@[a-f0-9]{40}$/,
   'GNM code candidate must pin an exact upstream commit'
 );
-assert.equal(gnm.modelArtifact, 'google/gnm-v3/gnm_head.npz');
+assert.equal(
+  gnm.modelArtifact,
+  'google/GNM/gnm/shape/data/versions/v3_0/gnm_head.npz'
+);
 assert.equal(
   gnm.modelArtifactRevision,
-  'pending_exact_huggingface_revision_and_digest',
-  'GNM model artifact must remain explicitly pending until exact HF revision/digest is frozen'
+  'a424b5153eec9154f3dfa5ee7f214e5817918d54'
 );
+assert.equal(
+  gnm.modelArtifactGitBlobSha,
+  'b49ac631e4d3388e42640555c0b25c4fd134b1b8'
+);
+assert.equal(gnm.modelArtifactSizeBytes, 53305389);
+assert.equal(gnm.runtimePackage, 'gnm-shape');
+assert.equal(gnm.runtimePackageVersion, '3.0.0');
 
 const gnmRequest = buildFaceSpace3DRenderRequest(vector, gnm);
 const mpfbRequest = buildFaceSpace3DRenderRequest(vector, mpfb);
