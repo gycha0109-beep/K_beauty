@@ -245,21 +245,25 @@ export default function CurrentProductsSelector({
           ? normalizeCurrentProductCategory(current[group.groupId]?.category)
           : "";
         const existingUseTime = current[group.groupId]?.useTime;
+        const existingUseFrequency = current[group.groupId]?.useFrequency;
         const existingSatisfaction = current[group.groupId]?.satisfaction;
         next[group.groupId] = {
           category: existingCategory || group.categoryIntent,
           status: "selected",
           productId: existingProductId,
           ...(existingUseTime ? { useTime: existingUseTime } : {}),
+          ...(existingUseFrequency ? { useFrequency: existingUseFrequency } : {}),
           ...(existingSatisfaction ? { satisfaction: existingSatisfaction } : {})
         };
       } else {
         const existingUseTime = current[group.groupId]?.useTime;
+        const existingUseFrequency = current[group.groupId]?.useFrequency;
         const existingSatisfaction = current[group.groupId]?.satisfaction;
         next[group.groupId] = {
           category: group.categoryIntent,
           status,
           ...(status === "not_in_db" && existingUseTime ? { useTime: existingUseTime } : {}),
+          ...(status === "not_in_db" && existingUseFrequency ? { useFrequency: existingUseFrequency } : {}),
           ...(status === "not_in_db" && existingSatisfaction ? { satisfaction: existingSatisfaction } : {})
         };
       }
@@ -274,6 +278,7 @@ export default function CurrentProductsSelector({
 
     setSelectionMap((current) => {
       const existingUseTime = current[group.groupId]?.useTime;
+      const existingUseFrequency = current[group.groupId]?.useFrequency;
       const existingSatisfaction = current[group.groupId]?.satisfaction;
 
       return {
@@ -283,6 +288,7 @@ export default function CurrentProductsSelector({
           status: "selected",
           productId,
           ...(existingUseTime ? { useTime: existingUseTime } : {}),
+          ...(existingUseFrequency ? { useFrequency: existingUseFrequency } : {}),
           ...(existingSatisfaction ? { satisfaction: existingSatisfaction } : {})
         }
       };
