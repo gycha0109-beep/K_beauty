@@ -2940,3 +2940,14 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Fail-closed behavior: exact task/intake/candidate lineage, all intake task state, catalog authority-boundary drift, reviewed identity proposal digest, semantic-key replay, and competing current product/market Subject drift are checked. Exact retries are allowed only for the same registered semantic payload.
 - Boundary: no direct Product Fact DML, no Evidence adoption, no Product Fact confirmation, no Recommendation mutation, no catalog/Product write, and no Production Subject registration is executed by this implementation track.
 - Verification: corrected exact-head PR CI is the merge gate. Production registration remains a separate explicit operational gate after merge/deployment/fresh identity-authority review.
+
+
+## 2026-09-19 — TRUST Phase 5-C FATION formulation conflict HOLD
+
+- Type: zero-write Product Fact identity research for #544 after Phase 5-B controlled Subject registration merged.
+- Production target: 파티온 노스카나인 트러블 세럼, Product `da5df70c-8cdd-4eb2-93b6-ede46c2f171d`, KR. Fresh read-only state remains 0 Subjects and three `REVIEW_REQUIRED / SUBJECT_CREATION_REQUIRED` tasks.
+- Product identity/presentation converges on the same FATION serum and 30 ml presentation, but current first-party pages expose two distinct ingredient orderings: water-first on product 329 / TRY 332 and mugwort-first on FATION set 613 / Dong-A corporate product page.
+- The two frozen lists contain the same 26 ingredient names but have different ordered-list SHA-256 digests. Current retail context also points in both directions and is not promoted to first-party formulation authority.
+- Decision: `FORMULATION_CONFLICT / HOLD`. The provisional variant label `NOSCA9_TROUBLE_SERUM_KR_30ML` is not authorized; no `formulation_revision_key` and no Subject semantic key are frozen.
+- Required next authority: current 30 ml package ingredient panel tied to lot/date, a FATION/Dong-A reformulation/current-formula statement, or equivalent first-party evidence.
+- Authorized Production delta: zero across Subject, Evidence, Confirmation, Recommendation, and Product source binding.
