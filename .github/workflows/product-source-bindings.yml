@@ -22,6 +22,10 @@ on:
       - "crawler/package.json"
       - ".github/workflows/product-source-bindings.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

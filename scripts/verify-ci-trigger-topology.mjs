@@ -135,6 +135,8 @@ assertContains(".github/workflows/mobile-ci.yml", [
   "concurrency:",
   "cancel-in-progress:",
   "npm run mobile:export:android",
+  "scripts/verify-mobile-initial-entry-routing.mjs",
+  "npm run verify:mobile-entry-routing",
 ]);
 assertNotContains(".github/workflows/mobile-ci.yml", [
   ...rootPackageTriggers,
@@ -152,10 +154,12 @@ assertContains(".github/workflows/mobile-native-shell.yml", [
 for (const path of [
   "scripts/verify-mobile-camera-foundation.mjs",
   "scripts/verify-mobile-face-guidance.mjs",
+  "scripts/verify-mobile-initial-entry-routing.mjs",
 ]) {
   assertNotContains(path, [
     "mobile-camera.yml",
     "mobile-face-guidance.yml",
+    "mobile-foundation.yml",
   ]);
 }
 
@@ -338,6 +342,30 @@ for (const path of [
   ]);
 }
 
+const heavyRuntimeConcurrencyWorkflows = [
+  ".github/workflows/trust-phase7a-backfill.yml",
+  ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml",
+  ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml",
+  ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml",
+  ".github/workflows/facelab-neutral-stage-a-production-browser-smoke.yml",
+  ".github/workflows/legacy-offer-classifier.yml",
+  ".github/workflows/product-identity-key-repair-confirm.yml",
+  ".github/workflows/product-identity-resolution.yml",
+  ".github/workflows/product-offers.yml",
+  ".github/workflows/product-source-bindings.yml",
+];
+for (const path of heavyRuntimeConcurrencyWorkflows) {
+  assertContains(path, [
+    "concurrency:",
+    "cancel-in-progress: true",
+  ]);
+}
+
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Mobile initial-entry routing static contract"',
+  'run("TRUST Phase 7A legacy backfill preflight"',
+]);
+
 const workflowFiles = readdirSync(".github/workflows")
   .filter((name) => /\.ya?ml$/i.test(name))
   .sort();
@@ -397,5 +425,6 @@ console.log(JSON.stringify({
   trust_static_baseline_canonicalized: true,
   legacy_node20_workflows: 0,
   retired_first_party_action_runtimes: 0,
+  heavy_runtime_concurrency_guarded: true,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));

@@ -29,6 +29,10 @@ on:
       - ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml"
       - ".github/workflows/facelab-neutral-stage-a-production-browser-smoke.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
