@@ -15,6 +15,7 @@ function read(path) {
 const providerService = read("lib/server/product-query-provider-shadow-service.js");
 const dataAi1 = read("lib/server/product-query-intent-service.js");
 const dataAi3 = read("lib/server/product-query-shadow-service.js");
+const execution = read("lib/product-query-recommendation.js");
 const route = read("app/api/internal/product-query-provider-shadow/route.js");
 const oidc = read("lib/product-query-provider-shadow-oidc.js");
 const workflow = read(".github/workflows/data-ai4-provider-shadow.yml");
@@ -82,8 +83,8 @@ check(dataAi1.includes("Never choose products, product IDs, brands, scores, rank
   "DATA-AI1 system boundary must still prohibit provider product selection");
 check(dataAi3.includes("executeStructuredProductQuery"),
   "DATA-AI3 must still hand intent to deterministic execution");
-check(dataAi3.includes('rankingAuthority:') === false || true,
-  "DATA-AI3 source inspection completed");
+check(execution.includes('scorerAuthority: "existing_recommendation_scoring"'),
+  "DATA-AI2 must remain bound to the existing deterministic scorer");
 
 check(route.includes('ALLOWED_DEPLOYMENT_REFS = new Set(["main"])'),
   "deployed provider probe must authorize main only");
@@ -91,8 +92,8 @@ check(route.includes("verifyDataAi4GitHubActionsOidcToken"),
   "provider probe must require dedicated GitHub Actions OIDC");
 check(route.includes("ALLOWED_SCENARIO_IDS"),
   "provider probe must restrict caller input to frozen scenario IDs");
-check(route.includes("body?.scenarioId"),
-  "provider probe may accept only scenario selector input");
+check(route.includes('bodyKeys.length !== 1 || bodyKeys[0] !== "scenarioId"'),
+  "provider probe must accept exactly one scenarioId input field");
 check(!route.includes("body?.query"),
   "provider probe must not accept raw query text");
 check(route.includes('"Cache-Control": "no-store, max-age=0"'),
