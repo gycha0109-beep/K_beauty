@@ -107,6 +107,19 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
+      - name: Checkout exact runtime probe SHA
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ env.DATA_AI4_EXACT_HEAD }}
+
+      - name: Verify runtime probe checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI4_EXACT_HEAD"
+          test -f scripts/validate-data-ai4-provider-shadow-runtime-response.mjs
+
       - name: Resolve exact Vercel deployment URL
         id: deployment
         env:
