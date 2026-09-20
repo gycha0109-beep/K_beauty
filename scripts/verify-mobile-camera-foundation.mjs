@@ -40,6 +40,7 @@ assert.match(cameraSource, /testID="native-face-guide-oval"/, "MOBILE-5 static o
 assert.match(cameraSource, /aspectRatio:\s*3\s*\/\s*4/, "Native oval must preserve the reviewed 3:4 guide geometry");
 assert.match(cameraSource, /facing="front"/, "MOBILE-5 must default to the front camera");
 assert.match(cameraSource, /mode="picture"/, "MOBILE-5 must remain photo-only");
+assert.match(cameraSource, /animateShutter=\{false\}/, "MOBILE-5 guidance sampling must not animate the shutter");
 assert.match(cameraSource, /onCameraReady=/, "Capture must be gated on camera readiness");
 assert.match(cameraSource, /takePictureAsync\(/, "Native photo capture is missing");
 assert.match(cameraSource, /base64:\s*false/, "MOBILE-5 must not inflate the captured photo into base64");
