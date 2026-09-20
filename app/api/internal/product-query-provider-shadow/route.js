@@ -67,8 +67,21 @@ export async function POST(request) {
     }, 400);
   }
 
+  const bodyKeys =
+    body && typeof body === "object" && !Array.isArray(body)
+      ? Object.keys(body).sort()
+      : [];
+  if (bodyKeys.length !== 1 || bodyKeys[0] !== "scenarioId") {
+    return noStoreJson({
+      evidenceType: "data_ai4_provider_shadow_runtime_probe_v1",
+      result: "FAIL_CLOSED",
+      secretValueExposed: false,
+      queryTextExposed: false
+    }, 400);
+  }
+
   const scenarioId =
-    typeof body?.scenarioId === "string" ? body.scenarioId.trim() : "";
+    typeof body.scenarioId === "string" ? body.scenarioId.trim() : "";
   if (!ALLOWED_SCENARIO_IDS.has(scenarioId)) {
     return noStoreJson({
       evidenceType: "data_ai4_provider_shadow_runtime_probe_v1",
