@@ -72,6 +72,7 @@ const manifest = {
 };
 
 const summary = validateRealPhotoStabilityRunManifest(manifest);
+assert.match(summary.manifestDigest, /^sha256:[a-f0-9]{64}$/);
 assert.equal(summary.pairCount, 4);
 assert.equal(summary.opaqueSampleCount, 8);
 assert.equal(summary.completeNuisanceCoverage, true);
@@ -111,6 +112,24 @@ assert.throws(
   /pair_duplicate/
 );
 
+const pathOnlyChanged = structuredClone(manifest);
+pathOnlyChanged.pairs[0].reference.path =
+  "/different/local/path/reference_0.png";
+const pathOnlyChangedSummary =
+  validateRealPhotoStabilityRunManifest(pathOnlyChanged);
+assert.equal(
+  pathOnlyChangedSummary.manifestDigest,
+  summary.manifestDigest
+);
+
+const shaChanged = structuredClone(manifest);
+shaChanged.pairs[0].reference.sha256 = "f".repeat(64);
+const shaChangedSummary = validateRealPhotoStabilityRunManifest(shaChanged);
+assert.notEqual(
+  shaChangedSummary.manifestDigest,
+  summary.manifestDigest
+);
+
 const incomplete = structuredClone(manifest);
 incomplete.pairs = incomplete.pairs.filter(
   (item) => item.nuisance.class !== "expression"
@@ -133,6 +152,8 @@ console.log(JSON.stringify({
     identityEmbeddingForbidden: true,
     biometricIdentityMatchingForbidden: true,
     archetypeSeededSourceRejected: true,
-    actualRealPhotoEvidenceStillAbsent: true
+    actualRealPhotoEvidenceStillAbsent: true,
+    manifestDigestIgnoresLocalPaths: true,
+    manifestDigestBindsImageSha256: true
   }
 }, null, 2));
