@@ -17,13 +17,27 @@
     "biometricIdentityMatchingForbidden": true,
     "imageSha256Required": true,
     "sourceManifestDigestRequired": true,
-    "localImagePathExcludedFromDigest": true
+    "localImagePathExcludedFromDigest": true,
+    "generatedCorpusMustPassReferenceCorpusValidator": true,
+    "outputLocalImagePathForbidden": true,
+    "outputRawLandmarksForbidden": true,
+    "outputCarriesSourceManifestDigest": true,
+    "outputCarriesSourceImageSha256Receipts": true
   },
   "currentEvidence": {
     "realSourceManifestPresent": false,
     "actualRunnerExecuted": false,
     "generatedReferenceCorpusPresent": false,
     "referenceSampleCount": 0,
-    "holdoutSampleCount": 0
+    "holdoutSampleCount": 0,
+    "runnerImplemented": true
+  },
+  "runner": {
+    "runnerVersion": "face-space-reference-corpus-measurement-runner-v0",
+    "script": "scripts/run-face-lab-reference-corpus-measurement.mjs",
+    "sourceManifestVerifier": "scripts/verify-face-lab-reference-corpus-source-manifest.mjs",
+    "implemented": true,
+    "outputSchemaVersion": "face-space-reference-corpus-measurement-run-output-v0",
+    "generatedCorpusSchemaVersion": "face-space-reference-corpus-v0"
   }
 }
