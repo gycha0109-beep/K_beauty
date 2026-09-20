@@ -79,6 +79,16 @@ assert.throws(
     buildFaceSpaceNormalizationCandidate({
       readiness: currentReadiness,
       referenceStatistics: {
+        schemaVersion: "face-space-reference-statistics-v0",
+        methodDecisionVersion: "synthetic-verifier-only-method-v0",
+        sourceReferenceCorpusSummarySchemaVersion:
+          "face-space-reference-corpus-summary-v0",
+        referenceSplitOnly: true,
+        authority: {
+          productionAuthority: false,
+          normalizationAuthority: false,
+          thresholdAuthority: false
+        },
         version: "must_not_be_used",
         dimensions: [
           {
@@ -329,6 +339,16 @@ assert.throws(
     buildFaceSpaceNormalizationCandidate({
       readiness: sameProviderReady,
       referenceStatistics: {
+        schemaVersion: "face-space-reference-statistics-v0",
+        methodDecisionVersion: "synthetic-verifier-only-method-v0",
+        sourceReferenceCorpusSummarySchemaVersion:
+          "face-space-reference-corpus-summary-v0",
+        referenceSplitOnly: true,
+        authority: {
+          productionAuthority: false,
+          normalizationAuthority: false,
+          thresholdAuthority: false
+        },
         version: "stats-without-method-decision",
         dimensions: [
           {
@@ -347,6 +367,16 @@ const candidate = buildFaceSpaceNormalizationCandidate({
   readiness: sameProviderReady,
   methodDecision: selectedMethodDecision,
   referenceStatistics: {
+        schemaVersion: "face-space-reference-statistics-v0",
+        methodDecisionVersion: "synthetic-verifier-only-method-v0",
+        sourceReferenceCorpusSummarySchemaVersion:
+          "face-space-reference-corpus-summary-v0",
+        referenceSplitOnly: true,
+        authority: {
+          productionAuthority: false,
+          normalizationAuthority: false,
+          thresholdAuthority: false
+        },
     version: "synthetic-verifier-only-v0",
     dimensions: [
       {
@@ -374,6 +404,16 @@ assert.throws(
       readiness: sameProviderReady,
       methodDecision: selectedMethodDecision,
       referenceStatistics: {
+        schemaVersion: "face-space-reference-statistics-v0",
+        methodDecisionVersion: "synthetic-verifier-only-method-v0",
+        sourceReferenceCorpusSummarySchemaVersion:
+          "face-space-reference-corpus-summary-v0",
+        referenceSplitOnly: true,
+        authority: {
+          productionAuthority: false,
+          normalizationAuthority: false,
+          thresholdAuthority: false
+        },
         version: "bad-unit",
         dimensions: [
           {
@@ -394,6 +434,16 @@ assert.throws(
       readiness: sameProviderReady,
       methodDecision: selectedMethodDecision,
       referenceStatistics: {
+        schemaVersion: "face-space-reference-statistics-v0",
+        methodDecisionVersion: "synthetic-verifier-only-method-v0",
+        sourceReferenceCorpusSummarySchemaVersion:
+          "face-space-reference-corpus-summary-v0",
+        referenceSplitOnly: true,
+        authority: {
+          productionAuthority: false,
+          normalizationAuthority: false,
+          thresholdAuthority: false
+        },
         version: "duplicate-id",
         dimensions: [
           {
