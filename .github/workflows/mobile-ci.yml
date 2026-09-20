@@ -33,6 +33,7 @@ on:
       - "lib/supabase/server-client.js"
       - "lib/supabase/server.js"
       - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-initial-entry-routing.mjs"
       - "scripts/verify-mobile-auth-foundation.mjs"
       - "scripts/verify-mobile-camera-foundation.mjs"
       - "scripts/verify-mobile-face-guidance.mjs"
@@ -76,6 +77,7 @@ on:
       - "lib/supabase/server-client.js"
       - "lib/supabase/server.js"
       - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-initial-entry-routing.mjs"
       - "scripts/verify-mobile-auth-foundation.mjs"
       - "scripts/verify-mobile-camera-foundation.mjs"
       - "scripts/verify-mobile-face-guidance.mjs"
@@ -138,6 +140,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/verify-mobile-auth-foundation.mjs
+          npm run verify:mobile-entry-routing
           node scripts/verify-mobile-camera-foundation.mjs
           node scripts/verify-mobile-face-guidance.mjs
           node scripts/verify-mobile-analyze-integration.mjs

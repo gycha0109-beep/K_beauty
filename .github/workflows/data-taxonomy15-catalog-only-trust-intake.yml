@@ -16,6 +16,10 @@ on:
       - "scripts/product-evidence/verify-data-taxonomy15-catalog-only-trust-intake-v1.mjs"
       - ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
