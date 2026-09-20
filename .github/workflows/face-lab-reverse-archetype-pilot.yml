@@ -7,11 +7,13 @@ on:
       - "lib/face-lab-photo-geometry-research.js"
       - "lib/face-lab-mediapipe-metric-geometry.js"
       - "lib/face-lab-photo-geometry-stability.js"
+      - "lib/face-lab-real-photo-stability-evidence.js"
       - "lib/face-lab-face-space-normalization-research.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
       - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
       - "scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-evidence.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
@@ -46,11 +48,13 @@ on:
       - "lib/face-lab-photo-geometry-research.js"
       - "lib/face-lab-mediapipe-metric-geometry.js"
       - "lib/face-lab-photo-geometry-stability.js"
+      - "lib/face-lab-real-photo-stability-evidence.js"
       - "lib/face-lab-face-space-normalization-research.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
       - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
       - "scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-evidence.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
@@ -134,6 +138,8 @@ jobs:
         run: node scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs
       - name: Verify photo geometry stability contract
         run: node scripts/verify-face-lab-photo-geometry-stability-contract.mjs
+      - name: Verify real-photo same-subject evidence gate
+        run: node scripts/verify-face-lab-real-photo-stability-evidence.mjs
       - name: Verify actual-image nuisance stability harness
         run: node scripts/verify-face-lab-photo-geometry-stability.mjs
       - name: Verify Face Space normalization readiness
