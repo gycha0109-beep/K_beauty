@@ -328,7 +328,6 @@ assert.throws(
   () =>
     buildFaceSpaceNormalizationCandidate({
       readiness: sameProviderReady,
-      methodDecision: selectedMethodDecision,
       referenceStatistics: {
         version: "stats-without-method-decision",
         dimensions: [
