@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "face-space-reference-statistics-method-decision-v0",
+  "status": "not_selected",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "scope": "same_provider",
+  "decisionVersion": null,
+  "referenceCorpusSummarySchemaVersion": "face-space-reference-corpus-summary-v0",
+  "supportedResearchMethods": {
+    "center": [
+      "mean",
+      "median"
+    ],
+    "scale": [
+      "standard_deviation",
+      "mad_scaled_consistent"
+    ]
+  },
+  "selectedMethod": {
+    "centerMethod": null,
+    "scaleMethod": null,
+    "percentileMethod": null,
+    "thresholdMethod": null
+  },
+  "prerequisites": {
+    "structurallyValidReferenceCorpusRequired": true,
+    "lockedHoldoutRequired": true,
+    "realPhotoPoseExpressionStabilityRequiredForNormalizationReadiness": true,
+    "methodSelectionEvidenceRequired": true
+  },
+  "rules": [
+    "This contract defines the method-selection gate only; it does not select a method.",
+    "Reference statistics cannot create a normalization candidate without a versioned selected_for_research_candidate decision.",
+    "Supported method names are implementation-supported research families, not a conclusion that any method is empirically preferred.",
+    "Percentiles, thresholds, Archetype boundaries, and Production activation remain unauthorized.",
+    "The holdout split must remain excluded from method fitting and reference-statistics estimation."
+  ]
+}
