@@ -87,15 +87,15 @@ assert.throws(
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
-          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          syntheticReferenceFingerprint,
         methodComparisonVersion: "synthetic-verifier-comparison-v0",
         methodComparisonPacketFingerprint:
           "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceSamplingFrameProvenanceRef: syntheticReferenceProvenance,
         sourceProvider: {
-          source: "synthetic-verifier-provider",
-          sourceVersion: "synthetic-verifier-v0",
-          adapterId: "synthetic-verifier-adapter-v0"
+          source: syntheticReferenceProvider.source,
+          sourceVersion: syntheticReferenceProvider.sourceVersion,
+          adapterId: syntheticReferenceProvider.adapterId
         },
         referenceSplitOnly: true,
         authority: {
@@ -394,6 +394,12 @@ const sameProviderReady = evaluateFaceSpaceNormalizationReadiness({
   evidence: completeEvidence
 });
 assert.equal(sameProviderReady.status, "provisional_candidate_ready");
+const syntheticReferenceFingerprint =
+  sameProviderReady.evidenceState.referenceSplitFingerprint;
+const syntheticReferenceProvenance =
+  sameProviderReady.evidenceState.referenceCorpusSamplingFrameProvenanceRef;
+const syntheticReferenceProvider =
+  sameProviderReady.evidenceState.referenceCorpusProvider;
 assert.equal(
   sameProviderReady.evidenceState.referenceCorpusManifestPresent,
   true
@@ -486,7 +492,7 @@ const selectedMethodDecision =
     percentileMethod: null,
     thresholdMethod: null,
     sourceReferenceSplitFingerprint:
-      "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      syntheticReferenceFingerprint,
     comparisonPacketFingerprint:
       "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     comparisonVersion: "synthetic-verifier-comparison-v0",
@@ -534,15 +540,15 @@ assert.throws(
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
-          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          syntheticReferenceFingerprint,
         methodComparisonVersion: "synthetic-verifier-comparison-v0",
         methodComparisonPacketFingerprint:
           "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceSamplingFrameProvenanceRef: syntheticReferenceProvenance,
         sourceProvider: {
-          source: "synthetic-verifier-provider",
-          sourceVersion: "synthetic-verifier-v0",
-          adapterId: "synthetic-verifier-adapter-v0"
+          source: syntheticReferenceProvider.source,
+          sourceVersion: syntheticReferenceProvider.sourceVersion,
+          adapterId: syntheticReferenceProvider.adapterId
         },
         referenceSplitOnly: true,
         authority: {
@@ -573,15 +579,15 @@ const candidate = buildFaceSpaceNormalizationCandidate({
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
-          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          syntheticReferenceFingerprint,
         methodComparisonVersion: "synthetic-verifier-comparison-v0",
         methodComparisonPacketFingerprint:
           "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceSamplingFrameProvenanceRef: syntheticReferenceProvenance,
         sourceProvider: {
-          source: "synthetic-verifier-provider",
-          sourceVersion: "synthetic-verifier-v0",
-          adapterId: "synthetic-verifier-adapter-v0"
+          source: syntheticReferenceProvider.source,
+          sourceVersion: syntheticReferenceProvider.sourceVersion,
+          adapterId: syntheticReferenceProvider.adapterId
         },
         referenceSplitOnly: true,
         authority: {
@@ -621,15 +627,15 @@ assert.throws(
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
-          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          syntheticReferenceFingerprint,
         methodComparisonVersion: "synthetic-verifier-comparison-v0",
         methodComparisonPacketFingerprint:
           "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceSamplingFrameProvenanceRef: syntheticReferenceProvenance,
         sourceProvider: {
-          source: "synthetic-verifier-provider",
-          sourceVersion: "synthetic-verifier-v0",
-          adapterId: "synthetic-verifier-adapter-v0"
+          source: syntheticReferenceProvider.source,
+          sourceVersion: syntheticReferenceProvider.sourceVersion,
+          adapterId: syntheticReferenceProvider.adapterId
         },
         referenceSplitOnly: true,
         authority: {
@@ -662,15 +668,15 @@ assert.throws(
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
-          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          syntheticReferenceFingerprint,
         methodComparisonVersion: "synthetic-verifier-comparison-v0",
         methodComparisonPacketFingerprint:
           "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceSamplingFrameProvenanceRef: syntheticReferenceProvenance,
         sourceProvider: {
-          source: "synthetic-verifier-provider",
-          sourceVersion: "synthetic-verifier-v0",
-          adapterId: "synthetic-verifier-adapter-v0"
+          source: syntheticReferenceProvider.source,
+          sourceVersion: syntheticReferenceProvider.sourceVersion,
+          adapterId: syntheticReferenceProvider.adapterId
         },
         referenceSplitOnly: true,
         authority: {
@@ -763,6 +769,7 @@ console.log(JSON.stringify({
     referenceStatisticsMethodDecisionRequired: true,
     methodDecisionMustCarryComparisonEvidence: true,
     statisticsMustMatchDecisionComparisonLineage: true,
+    candidateStatisticsMustMatchReadinessCorpusLineage: true,
     currentMethodDecisionRemainsUnselected: true,
     referenceStatsMustBeExplicit: true,
     providerEquivalenceScopedToCrossProvider: true,
