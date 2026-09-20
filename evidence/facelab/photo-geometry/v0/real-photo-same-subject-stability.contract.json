@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "face-lab-real-photo-same-subject-stability-contract-v0",
+  "status": "collection_ready_evidence_absent",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "purpose": "Collect real-photo same-subject pose/expression stability evidence without biometric identity matching.",
+  "requiredNuisanceClasses": [
+    "head_yaw",
+    "head_pitch",
+    "head_roll",
+    "expression"
+  ],
+  "allowedSubjectLinkageMethods": [
+    "dataset_same_subject_provenance",
+    "manual_same_subject_pair"
+  ],
+  "pairRequirements": {
+    "opaquePairGroupIdRequired": true,
+    "provenanceEvidenceRefRequired": true,
+    "sameProviderRequired": true,
+    "sourceImagePersistenceForbidden": true,
+    "identityEmbeddingForbidden": true,
+    "biometricIdentityMatchingForbidden": true,
+    "rawLandmarkPersistenceForbidden": true,
+    "structuralMeasurementPacketOnly": true
+  },
+  "evidencePromotion": {
+    "controlled3dCanSatisfyRealPhotoGate": false,
+    "singlePairCanSatisfyGeneralCoverage": false,
+    "technicalPassCanDefineThresholds": false,
+    "realPhotoGateRequiresAllNuisanceClasses": true,
+    "populationNormalizationStillRequiresSeparateCoverageAndReferenceDistribution": true
+  },
+  "currentEvidence": {
+    "realPhotoPairCount": 0,
+    "coveredNuisanceClasses": [],
+    "readiness": "not_ready"
+  }
+}
