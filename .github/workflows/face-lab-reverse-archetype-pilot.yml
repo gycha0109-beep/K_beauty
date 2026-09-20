@@ -7,12 +7,15 @@ on:
       - "lib/face-lab-photo-geometry-research.js"
       - "lib/face-lab-mediapipe-metric-geometry.js"
       - "lib/face-lab-photo-geometry-stability.js"
+      - "lib/face-lab-face-space-normalization-research.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
       - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
+      - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
       - "evidence/facelab/photo-geometry/**"
+      - "evidence/facelab/face-space-normalization/**"
       - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
       - "public/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png"
       - "evidence/facelab/structural-measurement/**"
@@ -42,12 +45,15 @@ on:
       - "lib/face-lab-photo-geometry-research.js"
       - "lib/face-lab-mediapipe-metric-geometry.js"
       - "lib/face-lab-photo-geometry-stability.js"
+      - "lib/face-lab-face-space-normalization-research.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
       - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
+      - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
       - "evidence/facelab/photo-geometry/**"
+      - "evidence/facelab/face-space-normalization/**"
       - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
       - "public/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png"
       - "evidence/facelab/structural-measurement/**"
@@ -126,5 +132,7 @@ jobs:
         run: node scripts/verify-face-lab-photo-geometry-stability-contract.mjs
       - name: Verify actual-image nuisance stability harness
         run: node scripts/verify-face-lab-photo-geometry-stability.mjs
+      - name: Verify Face Space normalization readiness
+        run: node scripts/verify-face-lab-face-space-normalization-readiness.mjs
       - name: Compile GNM v3 PoC runner
         run: python -m py_compile scripts/face-lab-gnm-v3-poc.py
