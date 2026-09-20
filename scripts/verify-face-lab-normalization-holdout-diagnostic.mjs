@@ -126,6 +126,15 @@ assert.equal(
   candidate.sourceReferenceCorpusSummarySchemaVersion,
   "face-space-reference-corpus-summary-v0"
 );
+assert.match(
+  candidate.sourceReferenceSplitFingerprint,
+  /^sha256:[a-f0-9]{64}$/
+);
+assert.equal(
+  candidate.sourceSamplingFrameProvenanceRef,
+  manifest.samplingFrame.provenanceRef
+);
+assert.deepEqual(candidate.sourceProvider, manifest.provider);
 
 const diagnostic = buildFaceSpaceNormalizationHoldoutDiagnostic({
   manifest,
@@ -148,13 +157,13 @@ assert.equal("passed" in diagnostic, false);
 assert.equal("thresholds" in diagnostic, false);
 
 const changedReferenceOnly = makeManifest([100, 200, 300], 0.03);
-const diagnosticWithChangedReference = buildFaceSpaceNormalizationHoldoutDiagnostic({
-  manifest: changedReferenceOnly,
-  candidate
-});
-assert.deepEqual(
-  diagnosticWithChangedReference.dimensions,
-  diagnostic.dimensions
+assert.throws(
+  () =>
+    buildFaceSpaceNormalizationHoldoutDiagnostic({
+      manifest: changedReferenceOnly,
+      candidate
+    }),
+  /holdout_candidate_invalid/
 );
 
 const changedHoldout = makeManifest([0, 0.02, 0.04], 0.08);
@@ -189,6 +198,9 @@ console.log(JSON.stringify({
   referenceSplitExcludedFromDiagnostic: true,
   noPassFailDecision: true,
   noThresholds: true,
+  exactReferenceSplitFingerprintRequired: true,
+  alteredReferenceSplitRejected: true,
+  holdoutChangesDoNotInvalidateReferenceBinding: true,
   syntheticVerifierOnly: true,
   actualHoldoutDiagnosticPersisted: false
 }, null, 2));
