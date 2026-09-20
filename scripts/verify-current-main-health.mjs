@@ -69,6 +69,7 @@ run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/v
 run("Admin current-main integration static contract", node, ["scripts/verify-admin-product-current-main-integration.mjs"]);
 
 run("Mobile auth static contract", node, ["scripts/verify-mobile-auth-foundation.mjs"]);
+run("Mobile initial-entry routing contract", node, ["scripts/verify-mobile-initial-entry-routing.mjs"]);
 run("Mobile camera static contract", node, ["scripts/verify-mobile-camera-foundation.mjs"]);
 run("Mobile face-guidance static contract", node, ["scripts/verify-mobile-face-guidance.mjs"]);
 run("Mobile analyze static contract", node, ["scripts/verify-mobile-analyze-integration.mjs"]);

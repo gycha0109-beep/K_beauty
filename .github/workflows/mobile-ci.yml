@@ -43,6 +43,7 @@ on:
       - "scripts/verify-mobile-premium-entry.mjs"
       - "scripts/verify-mobile-my-skin-diary.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
+      - "scripts/verify-mobile-initial-entry-routing.mjs"
       - ".github/workflows/mobile-ci.yml"
   push:
     branches: [main]
@@ -86,6 +87,7 @@ on:
       - "scripts/verify-mobile-premium-entry.mjs"
       - "scripts/verify-mobile-my-skin-diary.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
+      - "scripts/verify-mobile-initial-entry-routing.mjs"
       - ".github/workflows/mobile-ci.yml"
   workflow_dispatch:
 
@@ -138,6 +140,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/verify-mobile-auth-foundation.mjs
+          node scripts/verify-mobile-initial-entry-routing.mjs
           node scripts/verify-mobile-camera-foundation.mjs
           node scripts/verify-mobile-face-guidance.mjs
           node scripts/verify-mobile-analyze-integration.mjs
