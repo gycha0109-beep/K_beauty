@@ -398,6 +398,197 @@ def sensitivity_scan(model, components: int, amplitude: float):
     }
 
 
+
+def _metric_differences(reference: dict[str, float], candidate: dict[str, float]):
+    return {
+        key: float(abs(candidate[key] - reference[key]))
+        for key in SUPPORTED_METRICS
+    }
+
+
+def _rigid_align_landmarks(np, candidate, reference):
+    candidate = np.asarray(candidate, dtype=np.float64)
+    reference = np.asarray(reference, dtype=np.float64)
+    if candidate.shape != reference.shape or candidate.shape != (68, 3):
+        raise ValueError("controlled stability alignment expects paired sparse-68 landmarks")
+
+    candidate_center = candidate.mean(axis=0)
+    reference_center = reference.mean(axis=0)
+    x = candidate - candidate_center
+    y = reference - reference_center
+    covariance = x.T @ y
+    u, _, vt = np.linalg.svd(covariance)
+    rotation = u @ vt
+    if np.linalg.det(rotation) < 0:
+        u[:, -1] *= -1
+        rotation = u @ vt
+
+    aligned = x @ rotation + reference_center
+    raw_rms = float(np.sqrt(np.mean(np.sum((candidate - reference) ** 2, axis=1))))
+    aligned_rms = float(np.sqrt(np.mean(np.sum((aligned - reference) ** 2, axis=1))))
+    return aligned, raw_rms, aligned_rms
+
+
+def controlled_stability(model):
+    """Controlled 3D same-identity stress evidence.
+
+    This is not photo-side validation and not population calibration. It keeps a
+    single synthetic GNM identity fixed, varies head pose or direct expression
+    basis coefficients, and records structural-measurement drift. No semantic
+    identity/expression sampler is used.
+    """
+    np, _, gnm_numpy = _load_runtime()
+
+    identity = np.zeros(model.identity_dim, dtype=np.float32)
+    identity_seed = np.asarray(
+        [0.35, -0.25, 0.20, -0.15, 0.12, -0.10], dtype=np.float32
+    )
+    identity[: len(identity_seed)] = identity_seed
+
+    zero_expression = np.zeros(model.expression_dim, dtype=np.float32)
+    zero_rotations = np.zeros((model.num_joints, 3), dtype=np.float32)
+    _, baseline_landmarks = model.vertices_and_landmarks(
+        gnm_numpy.GNMLandmarksType.HEAD_SPARSE_68,
+        identity=identity,
+        expression=zero_expression,
+        rotations=zero_rotations,
+    )
+    baseline_metrics = measure_sparse68(baseline_landmarks)
+
+    joint_names = [str(name) for name in model.joint_names]
+    if "head" not in joint_names:
+        raise ValueError("GNM head joint missing")
+    head_joint = joint_names.index("head")
+
+    # GNM uses axis-angle joint rotations. With its documented OpenGL-style
+    # world axes, X/Y/Z single-axis rotations correspond to pitch/yaw/roll.
+    pose_specs = (
+        ("head_pitch", 0, 10.0),
+        ("head_pitch", 0, -10.0),
+        ("head_yaw", 1, 10.0),
+        ("head_yaw", 1, -10.0),
+        ("head_roll", 2, 10.0),
+        ("head_roll", 2, -10.0),
+    )
+    pose_observations = []
+    for nuisance_class, axis, degrees in pose_specs:
+        rotations = zero_rotations.copy()
+        rotations[head_joint, axis] = math.radians(degrees)
+        _, posed_landmarks = model.vertices_and_landmarks(
+            gnm_numpy.GNMLandmarksType.HEAD_SPARSE_68,
+            identity=identity,
+            expression=zero_expression,
+            rotations=rotations,
+        )
+        aligned, raw_rms, aligned_rms = _rigid_align_landmarks(
+            np, posed_landmarks, baseline_landmarks
+        )
+        measured = measure_sparse68(aligned)
+        pose_observations.append(
+            {
+                "nuisanceClass": nuisance_class,
+                "degrees": degrees,
+                "subjectLinkage": "controlled_3d_same_identity",
+                "alignment": {
+                    "method": "rigid_kabsch_no_scale",
+                    "rawLandmarkRms": raw_rms,
+                    "alignedLandmarkRms": aligned_rms,
+                    "improved": bool(aligned_rms < raw_rms),
+                },
+                "absoluteMetricDifference": _metric_differences(
+                    baseline_metrics, measured
+                ),
+            }
+        )
+
+    expression_names = [str(name) for name in model.expression_names]
+    lower = [
+        index
+        for index, name in enumerate(expression_names)
+        if name.startswith("lower_face_region_")
+    ]
+    left_eye = [
+        index
+        for index, name in enumerate(expression_names)
+        if name.startswith("left_eye_region_")
+    ]
+    right_eye = [
+        index
+        for index, name in enumerate(expression_names)
+        if name.startswith("right_eye_region_")
+    ]
+    if len(lower) < 2 or not left_eye or not right_eye:
+        raise ValueError("GNM expression region basis missing")
+
+    expression_specs = (
+        ("lower_face_basis_positive", ((lower[0], 0.5),)),
+        ("lower_face_basis_negative", ((lower[1], -0.5),)),
+        (
+            "bilateral_eye_basis_positive",
+            ((left_eye[0], 0.5), (right_eye[0], 0.5)),
+        ),
+    )
+    expression_observations = []
+    for label, coefficients in expression_specs:
+        expression = zero_expression.copy()
+        for index, value in coefficients:
+            expression[index] = value
+        _, landmarks = model.vertices_and_landmarks(
+            gnm_numpy.GNMLandmarksType.HEAD_SPARSE_68,
+            identity=identity,
+            expression=expression,
+            rotations=zero_rotations,
+        )
+        measured = measure_sparse68(landmarks)
+        expression_observations.append(
+            {
+                "nuisanceClass": "expression",
+                "variant": label,
+                "subjectLinkage": "controlled_3d_same_identity",
+                "semanticExpressionSamplerUsed": False,
+                "basisCoefficients": [
+                    {
+                        "index": int(index),
+                        "name": expression_names[index],
+                        "value": float(value),
+                    }
+                    for index, value in coefficients
+                ],
+                "absoluteMetricDifference": _metric_differences(
+                    baseline_metrics, measured
+                ),
+            }
+        )
+
+    return {
+        "schemaVersion": "face-space-gnm-v3-controlled-stability-v0",
+        "researchOnly": True,
+        "syntheticOnly": True,
+        "photoSideValidation": False,
+        "populationCalibrationAuthority": False,
+        "normalizationAuthority": False,
+        "semanticDemographicSamplingAllowed": False,
+        "semanticExpressionSamplingUsed": False,
+        "gnmCodeRevision": GNM_CODE_REVISION,
+        "gnmModelGitBlobSha": GNM_MODEL_BLOB_SHA,
+        "measurementVersion": MEASUREMENT_VERSION,
+        "semanticsVersion": SEMANTICS_VERSION,
+        "subjectLinkage": "controlled_3d_same_identity",
+        "identitySeedKind": "fixed_synthetic_head_coefficients",
+        "baselineMetrics": baseline_metrics,
+        "poseObservations": pose_observations,
+        "expressionObservations": expression_observations,
+        "interpretation": {
+            "poseEvidenceKind": "controlled_3d_operator_stress_only",
+            "expressionEvidenceKind": "controlled_3d_operator_stress_only",
+            "realPhotoSameSubjectEvidenceEstablished": False,
+            "mediaPipePhotoPoseStabilityEstablished": False,
+            "mediaPipePhotoExpressionStabilityEstablished": False,
+            "thresholdsApplied": False,
+        },
+    }
+
+
 def _write(payload: dict[str, Any], output: str | None):
     encoded = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if output:
@@ -409,7 +600,7 @@ def _write(payload: dict[str, Any], output: str | None):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=("probe", "selftest", "sensitivity"))
+    parser.add_argument("command", choices=("probe", "selftest", "sensitivity", "stability"))
     parser.add_argument("--output")
     parser.add_argument("--fit-components", type=int, default=DEFAULT_FIT_COMPONENTS)
     parser.add_argument("--ridge", type=float, default=0.03)
@@ -427,7 +618,7 @@ def main() -> int:
         if payload["fit"]["status"] != "pass":
             _write(payload, args.output)
             return 2
-    else:
+    elif args.command == "sensitivity":
         payload = sensitivity_scan(
             model,
             components=args.components,
@@ -436,6 +627,13 @@ def main() -> int:
         if payload["effectiveRank"] < 1:
             _write(payload, args.output)
             return 3
+    else:
+        payload = controlled_stability(model)
+        if not all(
+            item["alignment"]["improved"] for item in payload["poseObservations"]
+        ):
+            _write(payload, args.output)
+            return 4
 
     _write(payload, args.output)
     return 0
