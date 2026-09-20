@@ -267,6 +267,19 @@ assertContains(".github/workflows/data-ai4-provider-shadow.yml", [
   "actions/setup-node@v7",
   "node-version: 22",
 ]);
+
+const dataAi5Workflow = read(".github/workflows/data-ai5-activation-readiness.yml");
+const dataAi5PushSection = dataAi5Workflow.split("  pull_request:")[0];
+assert(
+  dataAi5PushSection.includes("    paths:"),
+  "DATA-AI5 activation-readiness probe must not run on every main push",
+);
+assertContains(".github/workflows/data-ai5-activation-readiness.yml", [
+  "cancel-in-progress: true",
+  "actions/checkout@v7",
+  "actions/setup-node@v7",
+  "node-version: 22",
+]);
 assertNotContains(".github/workflows/mobile-14-auth-app-links.yml", [
   '- "apps/mobile/**"',
   "source-and-web:",
@@ -372,6 +385,7 @@ console.log(JSON.stringify({
   g3a_unbounded_main_push: false,
   data_ai3_unbounded_main_push: false,
   data_ai4_unbounded_main_push: false,
+  data_ai5_unbounded_main_push: false,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
