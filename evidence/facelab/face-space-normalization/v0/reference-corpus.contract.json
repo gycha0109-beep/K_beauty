@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "face-space-reference-corpus-contract-v0",
+  "status": "collection_contract_ready_data_absent",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "purpose": "Define a general-face reference corpus boundary for future same-provider Face Space normalization research.",
+  "sourceSeparation": {
+    "reverseArchetypeSeedCorpusMayServeAsReferenceCorpus": false,
+    "hostedArchetypeReviewSetMayServeAsReferenceCorpus": false,
+    "generalFaceSamplingFrameRequired": true,
+    "archetypeLabelsAsGroundTruthForbidden": true
+  },
+  "requiredSamplingFrameKinds": [
+    "consented_general_face_corpus",
+    "licensed_general_face_corpus"
+  ],
+  "splitPolicy": {
+    "requiredSplits": [
+      "reference",
+      "holdout"
+    ],
+    "subjectLevelSplitRequired": true,
+    "sameSubjectAcrossSplitsForbidden": true,
+    "nearDuplicateFamilyAcrossSplitsForbidden": true
+  },
+  "recordRequirements": {
+    "opaqueSampleIdRequired": true,
+    "opaqueSubjectGroupIdRequired": true,
+    "provenanceRefRequired": true,
+    "measurementPacketRequired": true,
+    "eligibilityQualityStatusRequired": true,
+    "providerAndVersionPinRequired": true,
+    "rawImageInPacketForbidden": true,
+    "identityEmbeddingForbidden": true,
+    "biometricIdentityMatchingForbidden": true
+  },
+  "statisticsPolicy": {
+    "statisticsGenerationAuthorizedNow": false,
+    "centerMethod": null,
+    "scaleMethod": null,
+    "percentileMethod": null,
+    "thresholdMethod": null,
+    "methodSelectionRequiresSeparateVersionedResearchDecision": true
+  },
+  "currentEvidence": {
+    "corpusManifestPresent": false,
+    "referenceSampleCount": 0,
+    "holdoutSampleCount": 0,
+    "distinctSubjectGroupCount": 0,
+    "generalFaceCoverageEstablished": false,
+    "referenceDistributionEstablished": false
+  }
+}
