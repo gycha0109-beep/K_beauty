@@ -188,38 +188,112 @@ const completeRealPhotoReports = realPhotoNuisanceFixtures.map(
     )
 );
 
-const futureReferenceCorpusSummary = {
-  schemaVersion: "face-space-reference-corpus-summary-v0",
-  status: "structurally_valid_research_corpus",
-  samplingFrameKind: "consented_general_face_corpus",
-  recordCount: 24,
-  distinctSubjectGroupCount: 12,
-  splitCounts: {
-    reference: 18,
-    holdout: 6
+function referenceCorpusMeasurement(sampleId, offset = 0) {
+  const values = {
+    lower_face_width_ratio: 0.74 + offset,
+    chin_height_ratio: 0.45 + offset,
+    eye_spacing_ratio: 0.20 + offset,
+    eye_width_ratio: 0.17 + offset,
+    eye_tilt: 0.2 + offset,
+    nose_width_ratio: 0.18 + offset
+  };
+  return {
+    schemaVersion: "face-space-structural-measurement-v0",
+    sampleId,
+    source: "mediapipe_face_geometry",
+    sourceVersion:
+      "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+    adapterId: "mediapipe-face-geometry-metric-v0",
+    dimensions: Object.entries(values).map(([id, value]) => ({
+      id,
+      value,
+      unit: id === "eye_tilt" ? "degree" : "ratio"
+    })),
+    privacy: {
+      sourceImagePersisted: false,
+      identityEmbeddingCreated: false
+    }
+  };
+}
+
+function referenceCorpusRecord(
+  sampleId,
+  subjectGroupId,
+  split,
+  offset,
+  familyId
+) {
+  return {
+    sampleId,
+    subjectGroupId,
+    split,
+    nearDuplicateFamilyId: familyId,
+    provenanceRef: "synthetic-verifier-corpus:" + sampleId,
+    archetypeGroundTruth: null,
+    identityEmbeddingCreated: false,
+    biometricIdentityMatchPerformed: false,
+    rawImagePersistedInPacket: false,
+    eligibilityQuality: {
+      eligible: true,
+      qualityStatus: "synthetic_verifier_only"
+    },
+    measurement: referenceCorpusMeasurement(sampleId, offset)
+  };
+}
+
+const futureReferenceCorpusManifest = {
+  schemaVersion: "face-space-reference-corpus-v0",
+  productionAuthority: false,
+  normalizationAuthority: false,
+  samplingFrame: {
+    kind: "consented_general_face_corpus",
+    provenanceRef: "synthetic-verifier-only",
+    archetypeSeeded: false,
+    generalFaceIntent: true
   },
-  dimensionIds: semanticContract.dimensions.map((dimension) => dimension.id),
-  evidenceState: {
-    multiSubjectCoverage: true,
-    generalFaceSamplingFrame: true,
-    referenceDistributionReadyForMethodSelection: true,
-    lockedHoldoutPresent: true
+  provider: {
+    source: "mediapipe_face_geometry",
+    sourceVersion:
+      "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+    adapterId: "mediapipe-face-geometry-metric-v0"
   },
-  authority: {
-    productionAuthority: false,
-    normalizationAuthority: false,
-    referenceStatisticsAuthority: false,
-    thresholdAuthority: false,
-    archetypeAuthority: false
-  }
+  records: [
+    referenceCorpusRecord(
+      "normalization_ref_a",
+      "normalization_subject_a",
+      "reference",
+      0,
+      "normalization_family_a"
+    ),
+    referenceCorpusRecord(
+      "normalization_ref_b",
+      "normalization_subject_b",
+      "reference",
+      0.01,
+      "normalization_family_b"
+    ),
+    referenceCorpusRecord(
+      "normalization_ref_c",
+      "normalization_subject_c",
+      "reference",
+      -0.01,
+      "normalization_family_c"
+    ),
+    referenceCorpusRecord(
+      "normalization_holdout_d",
+      "normalization_subject_d",
+      "holdout",
+      0.005,
+      "normalization_family_d"
+    )
+  ]
 };
 
 const corpusOnlyReadiness = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary: completeStabilitySummary,
   scope: "same_provider",
-  referenceCorpusSummary: futureReferenceCorpusSummary,
-  realPhotoStabilityReports: completeRealPhotoReports,
+  referenceCorpusManifest: futureReferenceCorpusManifest,
   evidence: {
     realPoseStability: false,
     realExpressionStability: false,
@@ -294,15 +368,11 @@ assert.throws(
       stabilitySummary: completeStabilitySummary,
       scope: "same_provider",
       referenceCorpusSummary: {
-        ...futureReferenceCorpusSummary,
-        authority: {
-          ...futureReferenceCorpusSummary.authority,
-          normalizationAuthority: true
-        }
+        schemaVersion: "face-space-reference-corpus-summary-v0"
       },
       evidence: {}
     }),
-  /reference_corpus_summary_invalid/
+  /reference_corpus_summary_input_forbidden/
 );
 
 const completeEvidence = {
@@ -319,11 +389,19 @@ const sameProviderReady = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary: completeStabilitySummary,
   scope: "same_provider",
-  referenceCorpusSummary: futureReferenceCorpusSummary,
+  referenceCorpusManifest: futureReferenceCorpusManifest,
   realPhotoStabilityReports: completeRealPhotoReports,
   evidence: completeEvidence
 });
 assert.equal(sameProviderReady.status, "provisional_candidate_ready");
+assert.equal(
+  sameProviderReady.evidenceState.referenceCorpusManifestPresent,
+  true
+);
+assert.match(
+  sameProviderReady.evidenceState.referenceSplitFingerprint,
+  /^sha256:[a-f0-9]{64}$/
+);
 assert.equal(sameProviderReady.evidenceState.realPhotoStabilityReportCount, 4);
 assert.equal(
   sameProviderReady.evidenceState.realPhotoStabilityCoverage,
@@ -345,7 +423,7 @@ const crossProviderHeld = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary: completeStabilitySummary,
   scope: "cross_provider",
-  referenceCorpusSummary: futureReferenceCorpusSummary,
+  referenceCorpusManifest: futureReferenceCorpusManifest,
   realPhotoStabilityReports: completeRealPhotoReports,
   evidence: completeEvidence
 });
@@ -382,7 +460,7 @@ const crossProviderReady = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary: completeStabilitySummary,
   scope: "cross_provider",
-  referenceCorpusSummary: futureReferenceCorpusSummary,
+  referenceCorpusManifest: futureReferenceCorpusManifest,
   realPhotoStabilityReports: completeRealPhotoReports,
   evidence: {
     ...completeEvidence,
@@ -678,9 +756,10 @@ console.log(JSON.stringify({
     controlled3dDoesNotSatisfyRealPhotoGate: true,
     callerBooleansCannotSatisfyRealPhotoGate: true,
     validatedRealPhotoReportsRequiredForPoseExpressionGate: true,
-    manualCoverageFlagsCannotBypassReferenceCorpusSummary: true,
-    validReferenceCorpusSummaryOnlySatisfiesCorpusCoverageGates: true,
-    referenceCorpusSummaryCannotAuthorizeStatistics: true,
+    manualCoverageFlagsCannotBypassReferenceCorpusManifest: true,
+    validatedReferenceCorpusManifestRequiredForCoverageGates: true,
+    callerSuppliedReferenceCorpusSummaryForbidden: true,
+    referenceCorpusManifestCannotAuthorizeStatistics: true,
     referenceStatisticsMethodDecisionRequired: true,
     methodDecisionMustCarryComparisonEvidence: true,
     statisticsMustMatchDecisionComparisonLineage: true,
