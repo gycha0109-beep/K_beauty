@@ -15,6 +15,7 @@ WORKSPACE="$IOS_ROOT/BEJEWELY.xcworkspace"
 SCHEME="BEJEWELY"
 START_MARKER="$ARTIFACT_DIR/smoke-start.marker"
 APP_PATH="$DERIVED_DATA/Build/Products/Release-iphonesimulator/BEJEWELY.app"
+OCR_SCRIPT="$WORK_ROOT/verify-screen-text.swift"
 
 rm -rf "$WORK_ROOT" "$FINAL_ARTIFACT_DIR"
 mkdir -p "$ARTIFACT_DIR"
@@ -94,6 +95,88 @@ PY
     "$approval_key")"
   test "$approval_value" = "$BUNDLE_ID"
   printf 'MOBILE_IOS_URL_SCHEME_PREAPPROVAL_RELOAD=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
+}
+
+
+write_ocr_script() {
+  cat > "$OCR_SCRIPT" <<'SWIFT'
+import Darwin
+import Foundation
+import ImageIO
+import Vision
+
+func fail(_ message: String) -> Never {
+  if let data = (message + "\n").data(using: .utf8) {
+    FileHandle.standardError.write(data)
+  }
+  exit(1)
+}
+
+let args = CommandLine.arguments
+guard args.count >= 4 else {
+  fail("usage: verify-screen-text.swift <image> <contains|excludes> <token>...")
+}
+
+let imagePath = args[1]
+let mode = args[2]
+let tokens = Array(args.dropFirst(3))
+let imageURL = URL(fileURLWithPath: imagePath) as CFURL
+guard
+  let source = CGImageSourceCreateWithURL(imageURL, nil),
+  let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
+else {
+  fail("unable to load screenshot: \(imagePath)")
+}
+
+let request = VNRecognizeTextRequest()
+request.recognitionLevel = .accurate
+request.usesLanguageCorrection = true
+request.recognitionLanguages = ["en-US"]
+let handler = VNImageRequestHandler(cgImage: image, options: [:])
+do {
+  try handler.perform([request])
+} catch {
+  fail("Vision OCR failed for \(imagePath): \(error)")
+}
+
+let recognized = (request.results ?? [])
+  .compactMap { $0.topCandidates(1).first?.string }
+  .joined(separator: "\n")
+
+func contains(_ token: String) -> Bool {
+  recognized.range(
+    of: token,
+    options: [.caseInsensitive, .diacriticInsensitive]
+  ) != nil
+}
+
+switch mode {
+case "contains":
+  for token in tokens where !contains(token) {
+    fail("missing OCR token \(token.debugDescription) in \(imagePath); recognized=\(recognized.debugDescription)")
+  }
+case "excludes":
+  for token in tokens where contains(token) {
+    fail("forbidden OCR token \(token.debugDescription) appeared in \(imagePath); recognized=\(recognized.debugDescription)")
+  }
+default:
+  fail("unknown OCR mode: \(mode)")
+}
+
+print("MOBILE_IOS_OCR=PASS file=\(imagePath) mode=\(mode)")
+SWIFT
+}
+
+assert_screenshot_contains() {
+  local image="$1"
+  shift
+  xcrun swift "$OCR_SCRIPT" "$image" contains "$@"
+}
+
+assert_screenshot_excludes() {
+  local image="$1"
+  shift
+  xcrun swift "$OCR_SCRIPT" "$image" excludes "$@"
 }
 
 {
@@ -191,13 +274,36 @@ printf '%s\n' "$LAUNCH_OUTPUT" | tee "$ARTIFACT_DIR/launch.txt"
 printf '%s\n' "$LAUNCH_OUTPUT" | grep -F "$BUNDLE_ID:" >/dev/null
 printf 'MOBILE_IOS_DIRECT_APP_LAUNCH=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
-sleep 8
-xcrun simctl io "$UDID" screenshot "$ARTIFACT_DIR/home-en.png" >/dev/null
-printf 'MOBILE_IOS_HOME_SCREENSHOT=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
+write_ocr_script
+FLASH_DIR="$ARTIFACT_DIR/initial-entry-frames"
+mkdir -p "$FLASH_DIR"
+
+for frame in $(seq -w 1 16); do
+  sleep 0.5
+  xcrun simctl io "$UDID" screenshot "$FLASH_DIR/frame-$frame.png" >/dev/null
+done
+
+INITIAL_SCREENSHOT="$ARTIFACT_DIR/initial-entry-camera-en.png"
+cp "$FLASH_DIR/frame-16.png" "$INITIAL_SCREENSHOT"
+assert_screenshot_contains "$INITIAL_SCREENSHOT" "SKIN ANALYSIS" "Camera ready"
+printf 'MOBILE_IOS_INITIAL_ENTRY_ANALYZE=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
+
+for frame in "$FLASH_DIR"/*.png; do
+  assert_screenshot_excludes "$frame" "Find what fits your skin today"
+done
+printf 'MOBILE_IOS_NO_HOME_FLASH=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
+
+xcrun simctl openurl "$UDID" "$URL_SCHEME:///"
+sleep 4
+HOME_SCREENSHOT="$ARTIFACT_DIR/home-same-runtime-en.png"
+xcrun simctl io "$UDID" screenshot "$HOME_SCREENSHOT" >/dev/null
+assert_screenshot_contains "$HOME_SCREENSHOT" "BEJEWELY" "Find what fits your skin today"
+printf 'MOBILE_IOS_SAME_RUNTIME_HOME_ACCESS=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
 xcrun simctl openurl "$UDID" "$URL_SCHEME://analyze"
 sleep 4
 xcrun simctl io "$UDID" screenshot "$ARTIFACT_DIR/analyze-en.png" >/dev/null
+assert_screenshot_contains "$ARTIFACT_DIR/analyze-en.png" "SKIN ANALYSIS" "Camera ready"
 printf 'MOBILE_IOS_ANALYZE_ROUTE_OPEN=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
 xcrun simctl openurl "$UDID" "$URL_SCHEME://my"

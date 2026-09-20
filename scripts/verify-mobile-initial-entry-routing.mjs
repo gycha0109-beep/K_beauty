@@ -7,6 +7,7 @@ const homePath = path.join(root, "apps/mobile/app/index.tsx");
 const cameraPath = path.join(root, "apps/mobile/features/camera/NativeFaceCamera.tsx");
 const myPath = path.join(root, "apps/mobile/lib/my.ts");
 const smokePath = path.join(root, "scripts/verify-mobile-android-smoke.sh");
+const iosSmokePath = path.join(root, "scripts/verify-mobile-ios-smoke.sh");
 
 function fail(message) {
   console.error(`MOBILE_INITIAL_ENTRY_ROUTING=FAIL ${message}`);
@@ -21,7 +22,7 @@ function forbidText(source, token, label) {
   if (source.includes(token)) fail(`${label}:forbidden:${token}`);
 }
 
-for (const file of [homePath, cameraPath, myPath, smokePath]) {
+for (const file of [homePath, cameraPath, myPath, smokePath, iosSmokePath]) {
   if (!fs.existsSync(file)) fail(`missing-file:${path.relative(root, file)}`);
 }
 
@@ -29,6 +30,7 @@ const home = fs.readFileSync(homePath, "utf8");
 const camera = fs.readFileSync(cameraPath, "utf8");
 const my = fs.readFileSync(myPath, "utf8");
 const smoke = fs.readFileSync(smokePath, "utf8");
+const iosSmoke = fs.readFileSync(iosSmokePath, "utf8");
 
 requireText(home, 'import { useIsFocused, useRouter } from "expo-router";', "focus-authority");
 requireText(home, 'import { getNativeSession } from "../lib/auth";', "session-authority");
@@ -84,5 +86,16 @@ requireText(smoke, 'wait_for_text "Camera ready"', "android-cold-start-camera");
 requireText(smoke, "MOBILE_ANDROID_INITIAL_ENTRY_ANALYZE=PASS", "android-cold-start-evidence");
 requireText(smoke, "MOBILE_ANDROID_SAME_RUNTIME_HOME_ACCESS=PASS", "android-home-reentry-evidence");
 forbidText(smoke, 'wait_for_text "Find what fits your skin today"\nadb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"\n\ntap_text "Analyze"', "stale-home-first-smoke");
+
+
+requireText(iosSmoke, 'assert_screenshot_contains "$INITIAL_SCREENSHOT" "SKIN ANALYSIS" "Camera ready"', "ios-cold-start-analyze-ocr");
+requireText(iosSmoke, "MOBILE_IOS_INITIAL_ENTRY_ANALYZE=PASS", "ios-cold-start-analyze-evidence");
+requireText(iosSmoke, 'assert_screenshot_excludes "$frame" "Find what fits your skin today"', "ios-no-home-flash-ocr");
+requireText(iosSmoke, "MOBILE_IOS_NO_HOME_FLASH=PASS", "ios-no-home-flash-evidence");
+requireText(iosSmoke, 'xcrun simctl openurl "$UDID" "$URL_SCHEME:///"', "ios-same-runtime-root-open");
+requireText(iosSmoke, 'assert_screenshot_contains "$HOME_SCREENSHOT" "BEJEWELY" "Find what fits your skin today"', "ios-same-runtime-home-ocr");
+requireText(iosSmoke, "MOBILE_IOS_SAME_RUNTIME_HOME_ACCESS=PASS", "ios-same-runtime-home-evidence");
+requireText(iosSmoke, "import Vision", "ios-runtime-ocr-authority");
+forbidText(iosSmoke, "home-en.png", "stale-ios-home-capture-name");
 
 console.log("MOBILE_INITIAL_ENTRY_ROUTING=PASS");
