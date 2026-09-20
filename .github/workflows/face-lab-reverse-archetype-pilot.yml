@@ -8,6 +8,7 @@ on:
       - "lib/face-lab-mediapipe-metric-geometry.js"
       - "lib/face-lab-photo-geometry-stability.js"
       - "lib/face-lab-real-photo-stability-evidence.js"
+      - "lib/face-lab-real-photo-stability-run-manifest.js"
       - "lib/face-lab-face-space-normalization-research.js"
       - "lib/face-lab-face-space-reference-corpus.js"
       - "lib/face-lab-reference-statistics-research.js"
@@ -19,6 +20,8 @@ on:
       - "scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
       - "scripts/verify-face-lab-real-photo-stability-evidence.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs"
+      - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
@@ -60,6 +63,7 @@ on:
       - "lib/face-lab-mediapipe-metric-geometry.js"
       - "lib/face-lab-photo-geometry-stability.js"
       - "lib/face-lab-real-photo-stability-evidence.js"
+      - "lib/face-lab-real-photo-stability-run-manifest.js"
       - "lib/face-lab-face-space-normalization-research.js"
       - "lib/face-lab-face-space-reference-corpus.js"
       - "lib/face-lab-reference-statistics-research.js"
@@ -71,6 +75,8 @@ on:
       - "scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
       - "scripts/verify-face-lab-real-photo-stability-evidence.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs"
+      - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
@@ -162,6 +168,10 @@ jobs:
         run: node scripts/verify-face-lab-photo-geometry-stability-contract.mjs
       - name: Verify real-photo same-subject evidence gate
         run: node scripts/verify-face-lab-real-photo-stability-evidence.mjs
+      - name: Verify real-photo stability run manifest boundary
+        run: node scripts/verify-face-lab-real-photo-stability-run-manifest.mjs
+      - name: Syntax check real-photo stability pair runner
+        run: node --check scripts/run-face-lab-real-photo-stability-pairs.mjs
       - name: Verify actual-image nuisance stability harness
         run: node scripts/verify-face-lab-photo-geometry-stability.mjs
       - name: Verify Face Space normalization readiness
