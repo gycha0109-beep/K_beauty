@@ -18,6 +18,7 @@ on:
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
+      - "scripts/verify-face-lab-reference-statistics-method.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
       - "evidence/facelab/photo-geometry/**"
       - "evidence/facelab/face-space-normalization/**"
@@ -61,6 +62,7 @@ on:
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
+      - "scripts/verify-face-lab-reference-statistics-method.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
       - "evidence/facelab/photo-geometry/**"
       - "evidence/facelab/face-space-normalization/**"
@@ -150,5 +152,7 @@ jobs:
         run: node scripts/verify-face-lab-face-space-normalization-readiness.mjs
       - name: Verify Face Space general-face reference corpus boundary
         run: node scripts/verify-face-lab-face-space-reference-corpus.mjs
+      - name: Verify Face Space reference statistics method boundary
+        run: node scripts/verify-face-lab-reference-statistics-method.mjs
       - name: Compile GNM v3 PoC runner
         run: python -m py_compile scripts/face-lab-gnm-v3-poc.py
