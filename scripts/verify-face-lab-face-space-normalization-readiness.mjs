@@ -19,6 +19,9 @@ const stabilitySummary = readJson(
 const readinessContract = readJson(
   "evidence/facelab/face-space-normalization/v0/readiness.contract.json"
 );
+const referenceCorpusContract = readJson(
+  "evidence/facelab/face-space-normalization/v0/reference-corpus.contract.json"
+);
 
 assert.equal(readinessContract.productionAuthority, false);
 assert.equal(readinessContract.status, "not_ready");
@@ -30,6 +33,9 @@ assert.equal(
   readinessContract.referenceStatistics.scaleValuesDefined,
   false
 );
+assert.equal(referenceCorpusContract.currentEvidence.corpusManifestPresent, false);
+assert.equal(referenceCorpusContract.currentEvidence.referenceSampleCount, 0);
+assert.equal(referenceCorpusContract.currentEvidence.holdoutSampleCount, 0);
 
 const currentReadiness = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
@@ -95,10 +101,106 @@ const completeStabilitySummary = {
   },
   unresolvedEvidence: []
 };
+const futureReferenceCorpusSummary = {
+  schemaVersion: "face-space-reference-corpus-summary-v0",
+  status: "structurally_valid_research_corpus",
+  samplingFrameKind: "consented_general_face_corpus",
+  recordCount: 24,
+  distinctSubjectGroupCount: 12,
+  splitCounts: {
+    reference: 18,
+    holdout: 6
+  },
+  dimensionIds: semanticContract.dimensions.map((dimension) => dimension.id),
+  evidenceState: {
+    multiSubjectCoverage: true,
+    generalFaceSamplingFrame: true,
+    referenceDistributionReadyForMethodSelection: true,
+    lockedHoldoutPresent: true
+  },
+  authority: {
+    productionAuthority: false,
+    normalizationAuthority: false,
+    referenceStatisticsAuthority: false,
+    thresholdAuthority: false,
+    archetypeAuthority: false
+  }
+};
+
+const corpusOnlyReadiness = evaluateFaceSpaceNormalizationReadiness({
+  semanticContract,
+  stabilitySummary: completeStabilitySummary,
+  scope: "same_provider",
+  referenceCorpusSummary: futureReferenceCorpusSummary,
+  evidence: {
+    realPoseStability: false,
+    realExpressionStability: false,
+    controlled3dPoseStress: true,
+    controlled3dExpressionStress: true,
+    providerCorrespondence: false
+  }
+});
+assert.equal(corpusOnlyReadiness.status, "not_ready");
+assert.equal(corpusOnlyReadiness.evidenceState.multiSubjectCoverage, true);
+assert.equal(corpusOnlyReadiness.evidenceState.generalFaceCoverage, true);
+assert.equal(corpusOnlyReadiness.evidenceState.referenceDistribution, true);
+assert.equal(
+  corpusOnlyReadiness.blockers.includes("multi_subject_coverage_missing"),
+  false
+);
+assert.equal(
+  corpusOnlyReadiness.blockers.includes("general_face_coverage_missing"),
+  false
+);
+assert.equal(
+  corpusOnlyReadiness.blockers.includes("reference_distribution_missing"),
+  false
+);
+assert.equal(corpusOnlyReadiness.blockers.includes("real_pose_stability_missing"), true);
+assert.equal(
+  corpusOnlyReadiness.blockers.includes("real_expression_stability_missing"),
+  true
+);
+
+const manualCoverageCannotBypassCorpusSummary = evaluateFaceSpaceNormalizationReadiness({
+  semanticContract,
+  stabilitySummary: completeStabilitySummary,
+  scope: "same_provider",
+  evidence: {
+    multiSubjectCoverage: true,
+    generalFaceCoverage: true,
+    referenceDistribution: true,
+    realPoseStability: true,
+    realExpressionStability: true,
+    realPoseEvidenceKind: "real_photo_same_subject",
+    realExpressionEvidenceKind: "real_photo_same_subject",
+    providerCorrespondence: false
+  }
+});
+assert.equal(manualCoverageCannotBypassCorpusSummary.status, "not_ready");
+assert.equal(manualCoverageCannotBypassCorpusSummary.evidenceState.multiSubjectCoverage, false);
+assert.equal(manualCoverageCannotBypassCorpusSummary.evidenceState.generalFaceCoverage, false);
+assert.equal(manualCoverageCannotBypassCorpusSummary.evidenceState.referenceDistribution, false);
+
+assert.throws(
+  () =>
+    evaluateFaceSpaceNormalizationReadiness({
+      semanticContract,
+      stabilitySummary: completeStabilitySummary,
+      scope: "same_provider",
+      referenceCorpusSummary: {
+        ...futureReferenceCorpusSummary,
+        authority: {
+          ...futureReferenceCorpusSummary.authority,
+          normalizationAuthority: true
+        }
+      },
+      evidence: {}
+    }),
+  /reference_corpus_summary_invalid/
+);
+
 const completeEvidence = {
-  multiSubjectCoverage: true,
-  generalFaceCoverage: true,
-  referenceDistribution: true,
   realPoseStability: true,
   realExpressionStability: true,
   realPoseEvidenceKind: "real_photo_same_subject",
@@ -112,6 +214,7 @@ const sameProviderReady = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary: completeStabilitySummary,
   scope: "same_provider",
+  referenceCorpusSummary: futureReferenceCorpusSummary,
   evidence: completeEvidence
 });
 assert.equal(sameProviderReady.status, "provisional_candidate_ready");
@@ -131,6 +234,7 @@ const crossProviderHeld = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary: completeStabilitySummary,
   scope: "cross_provider",
+  referenceCorpusSummary: futureReferenceCorpusSummary,
   evidence: completeEvidence
 });
 assert.equal(crossProviderHeld.status, "not_ready");
@@ -166,6 +270,7 @@ const crossProviderReady = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary: completeStabilitySummary,
   scope: "cross_provider",
+  referenceCorpusSummary: futureReferenceCorpusSummary,
   evidence: {
     ...completeEvidence,
     providerCorrespondence: true
@@ -301,6 +406,9 @@ console.log(JSON.stringify({
   invariants: {
     currentSingleFixtureCannotNormalize: true,
     controlled3dDoesNotSatisfyRealPhotoGate: true,
+    manualCoverageFlagsCannotBypassReferenceCorpusSummary: true,
+    validReferenceCorpusSummaryOnlySatisfiesCorpusCoverageGates: true,
+    referenceCorpusSummaryCannotAuthorizeStatistics: true,
     referenceStatsMustBeExplicit: true,
     providerEquivalenceScopedToCrossProvider: true,
     provisionalCandidateResearchOnly: true,
