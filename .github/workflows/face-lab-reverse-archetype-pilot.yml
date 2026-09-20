@@ -7,8 +7,11 @@ on:
       - "lib/face-lab-photo-geometry-research.js"
       - "lib/face-lab-mediapipe-metric-geometry.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
+      - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
       - "evidence/facelab/photo-geometry/**"
+      - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
+      - "public/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png"
       - "evidence/facelab/structural-measurement/**"
       - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
       - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
@@ -37,8 +40,11 @@ on:
       - "lib/face-lab-photo-geometry-research.js"
       - "lib/face-lab-mediapipe-metric-geometry.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
+      - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
       - "evidence/facelab/photo-geometry/**"
+      - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
+      - "public/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png"
       - "evidence/facelab/structural-measurement/**"
       - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
       - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
@@ -66,7 +72,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Checkout exact head
         uses: actions/checkout@v4
@@ -98,5 +104,15 @@ jobs:
         run: node scripts/verify-face-lab-photo-geometry-bridge.mjs
       - name: Verify MediaPipe metric geometry runtime parity
         run: node scripts/verify-face-lab-photo-geometry-runtime.mjs
+      - name: Install actual-image Face Landmarker E2E harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNTIME_ROOT="$RUNNER_TEMP/face-lab-image-e2e-runtime"
+          mkdir -p "$RUNTIME_ROOT"
+          npm install --prefix "$RUNTIME_ROOT" --ignore-scripts --no-audit --no-fund playwright-core@1.59.1
+          echo "FACE_LAB_IMAGE_E2E_RUNTIME_ROOT=$RUNTIME_ROOT" >> "$GITHUB_ENV"
+      - name: Verify actual-image Face Landmarker bridge
+        run: node scripts/verify-face-lab-photo-geometry-image-e2e.mjs
       - name: Compile GNM v3 PoC runner
         run: python -m py_compile scripts/face-lab-gnm-v3-poc.py
