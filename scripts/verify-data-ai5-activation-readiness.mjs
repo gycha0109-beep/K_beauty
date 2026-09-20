@@ -102,6 +102,9 @@ check(intentService.includes("store: false"),
   "DATA-AI1 provider request must remain non-persistent");
 check(intentService.includes("Never choose products, product IDs, brands, scores, rankings"),
   "DATA-AI1 must still prohibit provider product selection");
+check(intentService.includes("sensitivity describes general SKIN sensitivity only") &&
+    intentService.includes("maps to eye_sensitive and MUST NOT populate sensitivity"),
+  "DATA-AI1 must keep eye-area sensitivity separate from general skin sensitivity");
 check(execution.includes('scorerAuthority: "existing_recommendation_scoring"'),
   "DATA-AI2 existing deterministic scorer must remain authority");
 
