@@ -59,7 +59,12 @@ for (const requiredField of [
   assert(serverRoute.includes(requiredField), `server-required-field:${requiredField}`);
 }
 
-assert(client.includes('payload.append(\n    "image"'), "multipart-final-image");
+assert(client.includes('import { fetch as expoFetch } from "expo/fetch"'), "expo-native-fetch");
+assert(client.includes('import { File } from "expo-file-system"'), "expo-native-file");
+assert(client.includes("const imageFile = new File(photo.uri)"), "multipart-native-file");
+assert(client.includes('payload.append("image", imageFile as any, photo.name)'), "multipart-final-image");
+assert(client.includes('response = await expoFetch(`${getMobileApiBaseUrl()}/api/analyze`'), "expo-native-upload-request");
+assert(!client.includes("uri: photo.uri"), "legacy-react-native-uri-part-rejected");
 assert(client.includes("JSON.stringify(value)"), "multipart-array-json");
 assert(client.includes('return value ? "true" : "false"'), "multipart-boolean-string");
 assert(client.includes('payload.append("locale", locale)'), "multipart-locale");
