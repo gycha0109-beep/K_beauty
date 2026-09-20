@@ -34,6 +34,18 @@
     "Reference statistics cannot create a normalization candidate without a versioned selected_for_research_candidate decision.",
     "Supported method names are implementation-supported research families, not a conclusion that any method is empirically preferred.",
     "Percentiles, thresholds, Archetype boundaries, and Production activation remain unauthorized.",
-    "The holdout split must remain excluded from method fitting and reference-statistics estimation."
-  ]
+    "The holdout split must remain excluded from method fitting and reference-statistics estimation.",
+    "A selected_for_research_candidate decision must be linked to a descriptive comparison packet and exact reference-split fingerprint.",
+    "Method selection must be an explicit versioned research decision; the comparison packet cannot auto-select or rank a winner.",
+    "The locked holdout split must not be used to select the center/scale method."
+  ],
+  "selectionEvidence": {
+    "comparisonPacketRequired": true,
+    "comparisonPacketFingerprintRequired": true,
+    "exactReferenceSplitFingerprintRequired": true,
+    "evidenceRefRequired": true,
+    "selectionRationaleRequired": true,
+    "holdoutUsedForSelectionMustBeFalse": true,
+    "automaticWinnerSelectedMustBeFalse": true
+  }
 }
