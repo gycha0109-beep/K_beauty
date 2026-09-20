@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "face-space-reference-corpus-source-runner-contract-v0",
+  "status": "runner_boundary_ready_real_data_absent",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Define a consented/licensed general-face source manifest and local measurement runner boundary for future same-provider Face Space reference-corpus research.",
+  "sourceManifestSchemaVersion": "face-space-reference-corpus-source-manifest-v0",
+  "rules": {
+    "referenceAndHoldoutSplitsRequired": true,
+    "subjectLevelSplitRequired": true,
+    "nearDuplicateFamilySplitLeakageForbidden": true,
+    "duplicateImageBytesForbidden": true,
+    "archetypeGroundTruthForbidden": true,
+    "rawImagePersistenceForbidden": true,
+    "identityEmbeddingForbidden": true,
+    "biometricIdentityMatchingForbidden": true,
+    "imageSha256Required": true,
+    "sourceManifestDigestRequired": true,
+    "localImagePathExcludedFromDigest": true
+  },
+  "currentEvidence": {
+    "realSourceManifestPresent": false,
+    "actualRunnerExecuted": false,
+    "generatedReferenceCorpusPresent": false,
+    "referenceSampleCount": 0,
+    "holdoutSampleCount": 0
+  }
+}
