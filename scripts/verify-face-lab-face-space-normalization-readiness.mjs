@@ -41,6 +41,10 @@ const currentReadiness = evaluateFaceSpaceNormalizationReadiness({
     referenceDistribution: false,
     realPoseStability: false,
     realExpressionStability: false,
+    controlled3dPoseStress: true,
+    controlled3dExpressionStress: true,
+    realPoseEvidenceKind: "controlled_3d_same_identity",
+    realExpressionEvidenceKind: "controlled_3d_same_identity",
     providerCorrespondence: false
   }
 });
@@ -53,6 +57,10 @@ for (const blocker of readinessContract.currentBlockers) {
   );
 }
 assert.equal(currentReadiness.readyDimensionCount, 0);
+assert.equal(currentReadiness.evidenceState.controlled3dPoseStress, true);
+assert.equal(currentReadiness.evidenceState.controlled3dExpressionStress, true);
+assert.equal(currentReadiness.evidenceState.realPoseStability, false);
+assert.equal(currentReadiness.evidenceState.realExpressionStability, false);
 assert.equal(
   currentReadiness.dimensions.every(
     (dimension) => dimension.normalizationStatus === "not_ready"
@@ -93,6 +101,10 @@ const completeEvidence = {
   referenceDistribution: true,
   realPoseStability: true,
   realExpressionStability: true,
+  realPoseEvidenceKind: "real_photo_same_subject",
+  realExpressionEvidenceKind: "real_photo_same_subject",
+  controlled3dPoseStress: true,
+  controlled3dExpressionStress: true,
   providerCorrespondence: false
 };
 
@@ -288,6 +300,7 @@ console.log(JSON.stringify({
   },
   invariants: {
     currentSingleFixtureCannotNormalize: true,
+    controlled3dDoesNotSatisfyRealPhotoGate: true,
     referenceStatsMustBeExplicit: true,
     providerEquivalenceScopedToCrossProvider: true,
     provisionalCandidateResearchOnly: true,
