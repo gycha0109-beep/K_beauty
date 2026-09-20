@@ -38,6 +38,7 @@ for (const marker of [
 ]) {
   assert(camera.includes(marker), `mobile5-final-photo:${marker}`);
 }
+assert(camera.includes('animateShutter={false}'), "mobile5-guidance-shutter-animation-disabled");
 
 assert(client.includes('import { normalizeSurveyAnswers, type SurveyFormInput } from "../../lib/survey-contract"'), "shared-survey-bridge");
 assert(client.includes("normalizeSurveyAnswers(form)"), "shared-survey-normalization");
@@ -59,7 +60,11 @@ for (const requiredField of [
   assert(serverRoute.includes(requiredField), `server-required-field:${requiredField}`);
 }
 
-assert(client.includes('payload.append(\n    "image"'), "multipart-final-image");
+assert(client.includes('import { fetch as expoFetch } from "expo/fetch"'), "expo-fetch-transport");
+assert(client.includes('import { File } from "expo-file-system"'), "expo-file-upload-bridge");
+assert(client.includes("new File(photo.uri)"), "multipart-native-file");
+assert(client.includes('payload.append("image", imageFile)'), "multipart-final-image");
+assert(client.includes('response = await expoFetch(`${getMobileApiBaseUrl()}/api/analyze`'), "expo-fetch-api-call");
 assert(client.includes("JSON.stringify(value)"), "multipart-array-json");
 assert(client.includes('return value ? "true" : "false"'), "multipart-boolean-string");
 assert(client.includes('payload.append("locale", locale)'), "multipart-locale");
