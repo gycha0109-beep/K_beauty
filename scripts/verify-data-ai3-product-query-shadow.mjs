@@ -95,7 +95,7 @@ check(workflow.includes("if: github.event_name == 'push'"),
   "deployed real-corpus probe must not execute on PRs");
 check(workflow.includes("DATA_AI3_RUNTIME_PROBE_HTTP_STATUS"),
   "workflow must record deployed probe status");
-check(workflow.includes("payload.result !== 'PASS'"),
+check(workflow.includes('payload.result !== "PASS"'),
   "deployed probe must fail unless shadow evaluation passes");
 check(!workflow.includes("OPENAI_API_KEY"), "automatic deterministic gate must not require provider secret");
 
