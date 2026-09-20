@@ -12,6 +12,7 @@ on:
       - "lib/face-lab-face-space-normalization-research.js"
       - "lib/face-lab-face-space-reference-corpus.js"
       - "lib/face-lab-reference-corpus-source-manifest.js"
+      - "lib/face-lab-reference-corpus-run-output.js"
       - "lib/face-lab-reference-statistics-research.js"
       - "lib/face-lab-reference-method-comparison-research.js"
       - "lib/face-lab-reference-method-selection-research.js"
@@ -27,6 +28,7 @@ on:
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
       - "scripts/verify-face-lab-reference-corpus-source-manifest.mjs"
+      - "scripts/verify-face-lab-reference-corpus-run-output.mjs"
       - "scripts/run-face-lab-reference-corpus-measurement.mjs"
       - "scripts/verify-face-lab-reference-statistics-method.mjs"
       - "scripts/verify-face-lab-reference-statistics-estimator.mjs"
@@ -70,6 +72,7 @@ on:
       - "lib/face-lab-face-space-normalization-research.js"
       - "lib/face-lab-face-space-reference-corpus.js"
       - "lib/face-lab-reference-corpus-source-manifest.js"
+      - "lib/face-lab-reference-corpus-run-output.js"
       - "lib/face-lab-reference-statistics-research.js"
       - "lib/face-lab-reference-method-comparison-research.js"
       - "lib/face-lab-reference-method-selection-research.js"
@@ -85,6 +88,7 @@ on:
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
       - "scripts/verify-face-lab-reference-corpus-source-manifest.mjs"
+      - "scripts/verify-face-lab-reference-corpus-run-output.mjs"
       - "scripts/run-face-lab-reference-corpus-measurement.mjs"
       - "scripts/verify-face-lab-reference-statistics-method.mjs"
       - "scripts/verify-face-lab-reference-statistics-estimator.mjs"
@@ -186,6 +190,8 @@ jobs:
         run: node scripts/verify-face-lab-face-space-reference-corpus.mjs
       - name: Verify Face Space reference corpus source manifest
         run: node scripts/verify-face-lab-reference-corpus-source-manifest.mjs
+      - name: Verify Face Space reference corpus runner output
+        run: node scripts/verify-face-lab-reference-corpus-run-output.mjs
       - name: Syntax check Face Space reference corpus measurement runner
         run: node --check scripts/run-face-lab-reference-corpus-measurement.mjs
       - name: Verify Face Space reference statistics method boundary
