@@ -5,7 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const migrationPath = path.join(
   root,
-  "supabase/migrations/20260920100000_trust_phase6b_reentry_detectors_v1.sql",
+  "supabase/migrations/20260920200010_trust_phase6b_reentry_detectors_v1.sql",
 );
 
 if (!fs.existsSync(migrationPath)) {
