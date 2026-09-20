@@ -6,6 +6,9 @@ import {
   evaluateFaceSpaceNormalizationReadiness,
   validateFaceSpaceReferenceStatisticsMethodDecision
 } from "../lib/face-lab-face-space-normalization-research.js";
+import {
+  buildRealPhotoSameSubjectStabilityEvidence
+} from "../lib/face-lab-real-photo-stability-evidence.js";
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
@@ -123,6 +126,68 @@ const completeStabilitySummary = {
   },
   unresolvedEvidence: []
 };
+function realPhotoMeasurement(sampleId, delta = {}) {
+  const values = {
+    lower_face_width_ratio: 0.74,
+    chin_height_ratio: 0.45,
+    eye_spacing_ratio: 0.20,
+    eye_width_ratio: 0.17,
+    eye_tilt: 0.2,
+    nose_width_ratio: 0.18,
+    ...delta
+  };
+  return {
+    schemaVersion: "face-space-structural-measurement-v0",
+    measurementVersion: "face-space-structural-measurement-v0",
+    semanticsVersion: "face-space-structural-measurement-semantics-v0",
+    sampleId,
+    source: "mediapipe_face_geometry",
+    sourceVersion:
+      "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+    adapterId: "mediapipe-face-geometry-metric-v0",
+    coordinateSpace: "pose_normalized_metric_3d",
+    normalizationReference:
+      "face_left_lateral_to_face_right_lateral_3d_distance",
+    dimensions: Object.entries(values).map(([id, value]) => ({
+      id,
+      value,
+      unit: id === "eye_tilt" ? "degree" : "ratio"
+    })),
+    privacy: {
+      sourceImagePersisted: false,
+      identityEmbeddingCreated: false
+    }
+  };
+}
+
+const realPhotoBaseline = realPhotoMeasurement("normalization_reference");
+const realPhotoNuisanceFixtures = [
+  ["head_yaw", { lower_face_width_ratio: 0.741, eye_tilt: 0.24 }],
+  ["head_pitch", { chin_height_ratio: 0.451, eye_tilt: 0.19 }],
+  ["head_roll", { eye_width_ratio: 0.1705, eye_tilt: 0.22 }],
+  ["expression", { chin_height_ratio: 0.456, nose_width_ratio: 0.181 }]
+];
+const completeRealPhotoReports = realPhotoNuisanceFixtures.map(
+  ([nuisanceClass, delta], index) =>
+    buildRealPhotoSameSubjectStabilityEvidence(
+      {
+        pairGroupId: "normalization_real_photo_pair_" + index,
+        referenceMeasurement: realPhotoBaseline,
+        candidateMeasurement: realPhotoMeasurement(
+          "normalization_real_photo_candidate_" + index,
+          delta
+        ),
+        nuisance: { class: nuisanceClass },
+        subjectLinkage: {
+          method: "dataset_same_subject_provenance",
+          evidenceRef: "synthetic-verifier-provenance:" + index,
+          biometricIdentityMatchPerformed: false
+        }
+      },
+      semanticContract
+    )
+);
+
 const futureReferenceCorpusSummary = {
   schemaVersion: "face-space-reference-corpus-summary-v0",
   status: "structurally_valid_research_corpus",
@@ -154,6 +219,7 @@ const corpusOnlyReadiness = evaluateFaceSpaceNormalizationReadiness({
   stabilitySummary: completeStabilitySummary,
   scope: "same_provider",
   referenceCorpusSummary: futureReferenceCorpusSummary,
+  realPhotoStabilityReports: completeRealPhotoReports,
   evidence: {
     realPoseStability: false,
     realExpressionStability: false,
@@ -179,6 +245,7 @@ assert.equal(
   false
 );
 assert.equal(corpusOnlyReadiness.blockers.includes("real_pose_stability_missing"), true);
+assert.equal(corpusOnlyReadiness.evidenceState.realPhotoStabilityReportCount, 0);
 assert.equal(
   corpusOnlyReadiness.blockers.includes("real_expression_stability_missing"),
   true
@@ -203,6 +270,22 @@ assert.equal(manualCoverageCannotBypassCorpusSummary.status, "not_ready");
 assert.equal(manualCoverageCannotBypassCorpusSummary.evidenceState.multiSubjectCoverage, false);
 assert.equal(manualCoverageCannotBypassCorpusSummary.evidenceState.generalFaceCoverage, false);
 assert.equal(manualCoverageCannotBypassCorpusSummary.evidenceState.referenceDistribution, false);
+assert.equal(
+  manualCoverageCannotBypassCorpusSummary.evidenceState.claimedRealPoseStability,
+  true
+);
+assert.equal(
+  manualCoverageCannotBypassCorpusSummary.evidenceState.claimedRealExpressionStability,
+  true
+);
+assert.equal(
+  manualCoverageCannotBypassCorpusSummary.evidenceState.realPoseStability,
+  false
+);
+assert.equal(
+  manualCoverageCannotBypassCorpusSummary.evidenceState.realExpressionStability,
+  false
+);
 
 assert.throws(
   () =>
@@ -237,9 +320,15 @@ const sameProviderReady = evaluateFaceSpaceNormalizationReadiness({
   stabilitySummary: completeStabilitySummary,
   scope: "same_provider",
   referenceCorpusSummary: futureReferenceCorpusSummary,
+  realPhotoStabilityReports: completeRealPhotoReports,
   evidence: completeEvidence
 });
 assert.equal(sameProviderReady.status, "provisional_candidate_ready");
+assert.equal(sameProviderReady.evidenceState.realPhotoStabilityReportCount, 4);
+assert.equal(
+  sameProviderReady.evidenceState.realPhotoStabilityCoverage,
+  "covered_for_research"
+);
 assert.equal(
   sameProviderReady.readyDimensionCount,
   semanticContract.dimensions.length
@@ -257,6 +346,7 @@ const crossProviderHeld = evaluateFaceSpaceNormalizationReadiness({
   stabilitySummary: completeStabilitySummary,
   scope: "cross_provider",
   referenceCorpusSummary: futureReferenceCorpusSummary,
+  realPhotoStabilityReports: completeRealPhotoReports,
   evidence: completeEvidence
 });
 assert.equal(crossProviderHeld.status, "not_ready");
@@ -293,6 +383,7 @@ const crossProviderReady = evaluateFaceSpaceNormalizationReadiness({
   stabilitySummary: completeStabilitySummary,
   scope: "cross_provider",
   referenceCorpusSummary: futureReferenceCorpusSummary,
+  realPhotoStabilityReports: completeRealPhotoReports,
   evidence: {
     ...completeEvidence,
     providerCorrespondence: true
@@ -585,6 +676,8 @@ console.log(JSON.stringify({
   invariants: {
     currentSingleFixtureCannotNormalize: true,
     controlled3dDoesNotSatisfyRealPhotoGate: true,
+    callerBooleansCannotSatisfyRealPhotoGate: true,
+    validatedRealPhotoReportsRequiredForPoseExpressionGate: true,
     manualCoverageFlagsCannotBypassReferenceCorpusSummary: true,
     validReferenceCorpusSummaryOnlySatisfiesCorpusCoverageGates: true,
     referenceCorpusSummaryCannotAuthorizeStatistics: true,
