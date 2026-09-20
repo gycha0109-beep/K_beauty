@@ -6,7 +6,8 @@
   "currentScope": "same_provider",
   "sourceEvidence": {
     "semanticContractPath": "evidence/facelab/structural-measurement/v0/semantic-contract.json",
-    "stabilitySummaryPath": "evidence/facelab/photo-geometry/v0/photo-geometry-stability-evidence-summary.json"
+    "stabilitySummaryPath": "evidence/facelab/photo-geometry/v0/photo-geometry-stability-evidence-summary.json",
+    "controlled3dStabilityPath": "evidence/facelab/face-space-3d/v0/gnm-v3-controlled-stability-evidence.json"
   },
   "currentBlockers": [
     "single_fixture_only",
@@ -27,7 +28,8 @@
     "No center, scale, percentile, enum boundary, or production threshold may be invented from the current single-fixture evidence.",
     "Same-provider normalization readiness is independent from cross-provider anchor equivalence.",
     "Cross-provider normalization must additionally respect providerAnchorEquivalence from the semantic contract.",
-    "Head yaw, pitch, roll, and expression stability require real same-subject or controlled 3D same-identity evidence.",
-    "A provisional normalization candidate remains research-only and must not activate Archetype, Face Space production, or style recommendation."
+    "Controlled 3D same-identity stress is diagnostic operator evidence only; Face Space photo normalization readiness requires real-photo same-subject pose and expression evidence.",
+    "A provisional normalization candidate remains research-only and must not activate Archetype, Face Space production, or style recommendation.",
+    "No identity embedding or biometric identity matching may be used to establish same-subject linkage; linkage must come from dataset provenance or manual research metadata."
   ]
 }
