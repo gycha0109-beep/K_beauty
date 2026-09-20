@@ -72,6 +72,7 @@ run("DATA-AI6 controlled product-query preview contract", node, ["scripts/verify
 run("DATA-AI7 test/stage repeatability canary contract", node, ["scripts/verify-data-ai7-stage-canary.mjs"]);
 run("DATA-AI7 test/stage repeatability canary runtime", node, ["scripts/verify-data-ai7-stage-canary-runtime.mjs"]);
 run("DATA-AI7 Production fail-closed deployed probe contract", node, ["scripts/verify-data-ai7-production-fail-closed.mjs"]);
+run("DATA-AI8 release-readiness evidence boundary", node, ["scripts/verify-data-ai8-release-readiness.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
