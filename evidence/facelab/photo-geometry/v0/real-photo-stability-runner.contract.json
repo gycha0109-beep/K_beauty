@@ -19,7 +19,11 @@
     "identityEmbeddingForbidden": true,
     "biometricIdentityMatchingForbidden": true,
     "archetypeSeededSourceForbidden": true,
-    "stdoutStructuralEvidenceOnly": true
+    "stdoutStructuralEvidenceOnly": true,
+    "runManifestDigestRequired": true,
+    "reportMustCarryInputImageSha256": true,
+    "localPathExcludedFromRunManifestDigest": true,
+    "runnerVersionPinnedInEvidence": true
   },
   "currentEvidence": {
     "realPairManifestPresent": false,
