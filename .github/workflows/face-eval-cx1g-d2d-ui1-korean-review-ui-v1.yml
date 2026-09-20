@@ -11,9 +11,12 @@ on:
       - 'scripts/build-face-lab-home-transfer-v1.mjs'
       - 'scripts/check-face-lab-home-transfer-v1.mjs'
       - 'docs/domain/facelab/face-lab-independent-human-cue-review-ui-ko-v1.md'
-      - 'package.json'
       - '.github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -23,14 +26,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies

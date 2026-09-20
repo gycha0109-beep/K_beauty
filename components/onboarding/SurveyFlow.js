@@ -154,26 +154,14 @@ const QUESTION_SCREENS = {
         },
         {
           id: "recentSkinChange",
-          title: "최근 2주 사이 피부가 갑자기 예민해지거나 뒤집어진 적이 있나요?",
-          subtitle: "갑작스러운 변화는 추천 강도를 더 보수적으로 잡는 데 사용합니다.",
+          title: "최근 2주 사이 피부 상태가 평소와 달라졌나요?",
+          subtitle: "건조, 번들거림, 붉음, 따가움, 트러블처럼 평소와 다른 변화를 기준으로 골라주세요.",
           type: "single",
-          required: false,
+          required: true,
           options: [
-            { value: "yes", label: "예", description: "최근에 갑자기 불안정해졌어요" },
-            { value: "no", label: "아니오", description: "최근 변화는 크지 않아요" },
-            { value: "unknown", label: "잘 모르겠음", description: "판단하기 어려워요" }
-          ]
-        },
-        {
-          id: "recentlyChangedProduct",
-          title: "최근 2주 사이 새 화장품을 사용하거나 루틴을 바꿨나요?",
-          subtitle: "새 제품이나 루틴 변경은 민감 반응 가능성을 판단하는 보조 신호입니다.",
-          type: "single",
-          required: false,
-          options: [
-            { value: "yes", label: "예", description: "새 제품이나 순서 변경이 있었어요" },
-            { value: "no", label: "아니오", description: "최근 루틴은 그대로예요" },
-            { value: "unknown", label: "잘 모르겠음", description: "정확히 기억나지 않아요" }
+            { value: "yes", label: "예", description: "최근 평소와 다른 변화가 있었어요" },
+            { value: "no", label: "아니오", description: "최근에도 대체로 비슷해요" },
+            { value: "unknown", label: "잘 모르겠음", description: "변화 여부를 판단하기 어려워요" }
           ]
         }
       ]
@@ -385,26 +373,14 @@ const QUESTION_SCREENS = {
         },
         {
           id: "recentSkinChange",
-          title: "Has your skin suddenly become reactive or unstable in the last 2 weeks?",
-          subtitle: "Recent changes help us keep the routine more conservative.",
+          title: "Has your skin felt different from usual in the last 2 weeks?",
+          subtitle: "Think of unusual dryness, oiliness, redness, stinging, or breakouts.",
           type: "single",
-          required: false,
+          required: true,
           options: [
-            { value: "yes", label: "Yes", description: "It became unstable recently" },
-            { value: "no", label: "No", description: "No major recent change" },
-            { value: "unknown", label: "Not sure", description: "Hard to tell" }
-          ]
-        },
-        {
-          id: "recentlyChangedProduct",
-          title: "Did you start a new product or change your routine in the last 2 weeks?",
-          subtitle: "New products or routine changes can affect sensitivity risk.",
-          type: "single",
-          required: false,
-          options: [
-            { value: "yes", label: "Yes", description: "I changed product or routine" },
-            { value: "no", label: "No", description: "My routine stayed the same" },
-            { value: "unknown", label: "Not sure", description: "I do not remember clearly" }
+            { value: "yes", label: "Yes", description: "Something has felt different recently" },
+            { value: "no", label: "No", description: "It has stayed mostly similar" },
+            { value: "unknown", label: "Not sure", description: "It is hard to judge the change" }
           ]
         }
       ]

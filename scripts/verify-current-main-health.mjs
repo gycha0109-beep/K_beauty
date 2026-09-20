@@ -22,12 +22,29 @@ run("Current Recommendation verifier syntax", node, ["--check", "scripts/verify-
 run("Repository hygiene verifier syntax", node, ["--check", "scripts/verify-current-repository-hygiene.mjs"]);
 run("Document locale contract", node, ["--experimental-default-type=module", "scripts/verify-document-locale-contract.mjs"]);
 run("Shared survey input contract", node, ["--experimental-default-type=module", "scripts/verify-shared-survey-contract.mjs"]);
+run("Free survey decision intake", node, ["--experimental-default-type=module", "scripts/verify-free-survey-decision-intake.mjs"]);
+run("Premium intake v1", node, ["--experimental-default-type=module", "scripts/verify-premium-intake-v1.mjs"]);
 run("My monthly diary data contract", node, ["--experimental-default-type=module", "scripts/verify-my-monthly-diary.mjs"]);
 run("My diary day detail contract", node, ["--experimental-default-type=module", "scripts/verify-my-diary-day-detail.mjs"]);
 run("My saved report history contract", node, ["--experimental-default-type=module", "scripts/verify-my-saved-report-history.mjs"]);
 run("My skin profile baseline contract", node, ["--experimental-default-type=module", "scripts/verify-my-skin-profile-baseline.mjs"]);
 run("My account/session UX contract", node, ["--experimental-default-type=module", "scripts/verify-my-account-session-ux.mjs"]);
 run("My adversarial E2E harness contract", node, ["--experimental-default-type=module", "scripts/verify-my-adversarial-e2e-contract.mjs"]);
+run("TRUST Phase 1 intake contract", node, ["scripts/verify-trust-intake-foundation.mjs"]);
+run("TRUST Phase 2 subject resolution contract", node, ["scripts/verify-trust-subject-resolution.mjs"]);
+run("TRUST Phase 2 presentation hardening", node, ["scripts/verify-trust-subject-resolution-presentation-hardening.mjs"]);
+run("TRUST Phase 3 research worker contract", node, ["scripts/verify-trust-research-worker.mjs"]);
+run("TRUST Phase 4 controlled evidence adoption", node, ["scripts/verify-trust-phase4-controlled-evidence-adoption.mjs"]);
+run("Product Fact controlled-write authority", node, ["scripts/verify-product-fact-controlled-write-v1.mjs"]);
+run("Product Fact Subject authority", node, ["scripts/verify-product-fact-subject-registration-v1.mjs"]);
+run("TRUST Phase 5 admin queue contract", node, ["scripts/verify-trust-phase5-admin-queue.mjs"]);
+run("TRUST Phase 5B subject registration contract", node, ["scripts/verify-trust-phase5b-subject-registration.mjs"]);
+run("TRUST Phase 5C formulation conflict HOLD", node, ["scripts/product-evidence/verify-trust-phase5c-fation-formulation-conflict-v1.mjs"]);
+run("TRUST Phase 6A reentry contract", node, ["scripts/verify-trust-phase6a-reentry.mjs"]);
+run("TRUST Phase 6B reentry detector contract", node, ["scripts/verify-trust-phase6b-reentry-detectors.mjs"]);
+run("TRUST Phase 7A legacy backfill preflight", node, ["scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"]);
+run("TRUST Phase 7B legacy backfill materialization", node, ["scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"]);
+
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);
@@ -47,9 +64,33 @@ run(
 run("G2 initial admission grant contract", node, ["scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs"]);
 run("G3A Product Fact authority read contract", node, ["scripts/verify-v21-admission-g3a-pf-authority-reader-v1.mjs"]);
 run("G3 production candidate admission contract", node, ["scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs"]);
+run("DATA-AI3 product-query shadow contract", node, ["scripts/verify-data-ai3-product-query-shadow.mjs"]);
+run("DATA-AI4 provider-backed shadow contract", node, ["scripts/verify-data-ai4-provider-shadow.mjs"]);
+run("DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);
+run("DATA-AI6 controlled product-query preview contract", node, ["scripts/verify-data-ai6-product-query-preview.mjs"]);
+run("DATA-AI7 test/stage repeatability canary contract", node, ["scripts/verify-data-ai7-stage-canary.mjs"]);
+run("DATA-AI7 test/stage repeatability canary runtime", node, ["scripts/verify-data-ai7-stage-canary-runtime.mjs"]);
+run("DATA-AI7 Production fail-closed deployed probe contract", node, ["scripts/verify-data-ai7-production-fail-closed.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
+
+run("Admin current-main integration static contract", node, ["scripts/verify-admin-product-current-main-integration.mjs"]);
+
+run("Mobile auth static contract", node, ["scripts/verify-mobile-auth-foundation.mjs"]);
+run("Mobile initial-entry routing static contract", node, ["scripts/verify-mobile-initial-entry-routing.mjs"]);
+run("Mobile camera static contract", node, ["scripts/verify-mobile-camera-foundation.mjs"]);
+run("Mobile face-guidance static contract", node, ["scripts/verify-mobile-face-guidance.mjs"]);
+run("Mobile analyze static contract", node, ["scripts/verify-mobile-analyze-integration.mjs"]);
+run("Mobile saved-report static contract", node, ["scripts/verify-mobile-saved-report-reentry.mjs"]);
+run("Mobile public-share static contract", node, ["scripts/verify-mobile-public-share.mjs"]);
+run("Mobile public-result deep-link static contract", node, ["scripts/verify-mobile-public-result-deep-link.mjs"]);
+run("Mobile premium-entry static contract", node, ["scripts/verify-mobile-premium-entry.mjs"]);
+run("Mobile My Skin Diary static contract", node, ["scripts/verify-mobile-my-skin-diary.mjs"]);
+run("Offer presentation read path", node, ["scripts/verify-product-offer-read-path-v1.mjs"]);
+run("Skin match decision wrapper syntax", node, ["--check", "lib/skin-match-decision-engine.js"]);
+run("Seller listing observation contract", node, ["scripts/verify-seller-listing-observation-v1.mjs"]);
+run("Seller listing observation contract syntax", node, ["--check", "lib/seller-listing-observation-v1.js"]);
 run("Seller listing observation persistence contract", node, ["scripts/verify-seller-listing-observation-persistence-v1.mjs"]);
 run("Seller listing capture adapter authority", node, ["scripts/verify-seller-listing-capture-adapter-v1.mjs"]);
 run("Seller listing capture evidence authority", node, ["scripts/verify-seller-listing-capture-evidence-v1.mjs"]);
@@ -72,6 +113,8 @@ run("DATA-OFFER17 controlled Offer RPC diagnostic", node, ["scripts/verify-data-
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
+run("Face Lab Human evaluation contract", npm, ["run", "verify:face-lab-archetype-human-evaluation"]);
+run("Face Lab synthetic evaluation workspace", npm, ["run", "synthetic:verify"]);
 
 run(
   "Persona EVAL-R1 current grounding regression probes",
@@ -90,6 +133,7 @@ run("Public result read boundary", node, ["scripts/verify-sec09-public-result-re
 run("Security headers and purchase-anchor boundary", node, ["scripts/verify-sec10-security-headers.mjs"]);
 run("Admin/security boundary", npm, ["run", "verify:admin-access-foundation"]);
 run("SEC-11 origin normalization", npm, ["run", "check:sec11-origin-normalization"]);
+run("CI trigger topology", node, ["scripts/verify-ci-trigger-topology.mjs"]);
 run("Repository hygiene, secret and authority shortcut scan", npm, ["run", "verify:current-repository-hygiene"]);
 run("Production build", npm, ["run", "build"]);
 

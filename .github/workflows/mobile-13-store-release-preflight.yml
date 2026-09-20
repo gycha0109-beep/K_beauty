@@ -1,38 +1,7 @@
 name: BEJEWELY Mobile 13 Store Release Preflight
 
+# Heavy release archives are release-time evidence, not a routine PR gate.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "apps/mobile/app.json"
-      - "apps/mobile/package.json"
-      - "apps/mobile/modules/**"
-      - "apps/mobile/assets/**"
-      - "package.json"
-      - "package-lock.json"
-      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
-      - "scripts/verify-mobile-architecture-foundation.mjs"
-      - "scripts/verify-mobile-native-shell.mjs"
-      - "scripts/verify-mobile-ios-shell.mjs"
-      - "scripts/verify-mobile-13-store-release-preflight.mjs"
-      - "scripts/verify-mobile-16b-apple-privacy-export.mjs"
-      - ".github/workflows/mobile-13-store-release-preflight.yml"
-  push:
-    branches: [main]
-    paths:
-      - "apps/mobile/app.json"
-      - "apps/mobile/package.json"
-      - "apps/mobile/modules/**"
-      - "apps/mobile/assets/**"
-      - "package.json"
-      - "package-lock.json"
-      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
-      - "scripts/verify-mobile-architecture-foundation.mjs"
-      - "scripts/verify-mobile-native-shell.mjs"
-      - "scripts/verify-mobile-ios-shell.mjs"
-      - "scripts/verify-mobile-13-store-release-preflight.mjs"
-      - "scripts/verify-mobile-16b-apple-privacy-export.mjs"
-      - ".github/workflows/mobile-13-store-release-preflight.yml"
   workflow_dispatch:
 
 permissions:
@@ -189,7 +158,7 @@ jobs:
 
       - name: Upload Android release preflight artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bejewely-mobile-13-android-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: warn

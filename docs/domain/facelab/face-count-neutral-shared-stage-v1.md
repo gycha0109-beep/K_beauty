@@ -115,11 +115,9 @@ The existing explicit test-only hosted submission mode remains exempt so determi
 
 ## Production verification
 
-Changes to Stage A authority, assets, intake, review runtime, checker, or this documentation trigger the dedicated production-browser workflow. On merged `main`, that workflow waits for the canonical Vercel production deployment to report the exact merged Git SHA, then exercises the sanitized canonical Stage A HTML in Chromium through all eight items.
+The rollout-only production-browser probe for Stage A v2 was deliberately time-bounded and expired on 2026-09-15. After expiry, the probe returns 404 by contract, so its workflow, internal route, and Playwright runner are retired rather than left as a permanently failing main-branch gate.
 
-The smoke must reach `8 / 8`, verify the exact question and four response buttons, retain eight local responses, expose the final `1단계 제출` label, observe zero neutral-submit POST requests, and leave `finalSubmitActivated=false`.
-
-The secret-safe internal smoke probe is deliberately time-bounded and automatically becomes 404 after its expiry. It never returns the raw production review token.
+Ongoing repository verification remains in the shared Stage A workflow and deterministic checker, which bind the active authority, exact bytes, reviewer projection, final-submit-only persistence, receipt gate, architecture boundary, and existing hosted-evaluation authority. Any future production-browser probe must be introduced with a new explicit validity window and removed again when that window closes.
 
 ## Authority limits
 

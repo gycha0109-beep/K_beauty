@@ -261,14 +261,13 @@ adb reverse tcp:8081 tcp:8081 >/dev/null
 adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
 printf 'MOBILE_ANDROID_DIRECT_ACTIVITY_START=PASS\n'
 
-wait_for_text "BEJEWELY"
-wait_for_text "Find what fits your skin today"
-adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
-
-tap_text "Analyze"
+# A cleared app has no native session and no server-confirmed saved report.
+# The cold start must therefore land directly in the Analyze camera flow.
 wait_for_text "SKIN ANALYSIS"
 wait_for_text "Camera ready"
-adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-ready-en.png"
+adb exec-out screencap -p > "$ARTIFACT_DIR/initial-entry-camera-en.png"
+printf 'MOBILE_ANDROID_INITIAL_ENTRY_ANALYZE=PASS\n'
+
 tap_text "Take photo"
 wait_for_text "CAPTURED PHOTO"
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-captured-en.png"
@@ -297,8 +296,14 @@ adb exec-out screencap -p > "$ARTIFACT_DIR/saved-report-signed-out-en.png"
 printf 'MOBILE_ANDROID_SAVED_REPORT_ROUTE_SMOKE=PASS\n'
 tap_text "Back to My"
 wait_for_text "My · Skin Diary"
+
+# Initial routing is cold-start-only. Home remains directly accessible from
+# the tab bar later in the same runtime even when the user has no report yet.
 tap_text "Home"
 wait_for_text "BEJEWELY"
+wait_for_text "Find what fits your skin today"
+printf 'MOBILE_ANDROID_SAME_RUNTIME_HOME_ACCESS=PASS\n'
+adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
 
 adb shell am start -W -a android.intent.action.VIEW -d "bejewely://r/invalid" -p "$PACKAGE_ID" >/dev/null
 printf 'MOBILE_ANDROID_PUBLIC_RESULT_DEEP_LINK_START=PASS\n'

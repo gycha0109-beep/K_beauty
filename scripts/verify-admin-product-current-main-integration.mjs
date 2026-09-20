@@ -148,7 +148,6 @@ const expectedPushPaths = [
   '"docs/architecture/*product-review*.md"',
   '"docs/reports/admin-product-current-main-integration.md"',
   '"next.config.js"',
-  '"package.json"',
   '"crawler/package.json"',
   '".github/workflows/admin-product-current-main-integration.yml"'
 ];

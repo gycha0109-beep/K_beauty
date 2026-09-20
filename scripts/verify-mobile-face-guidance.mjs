@@ -17,7 +17,11 @@ const bridgeSource = readFileSync(join(moduleRoot, "src", "BejewelyFaceGuideModu
 const evaluatorSource = readFileSync(join(mobileRoot, "features", "camera", "NativeFaceGuidance.ts"), "utf8");
 const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "NativeFaceCamera.tsx"), "utf8");
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
-const workflowSource = readFileSync(join(repoRoot, ".github", "workflows", "mobile-face-guidance.yml"), "utf8");
+const mobileCiWorkflowSource = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ci.yml"), "utf8");
+const nativeShellWorkflowSource = readFileSync(
+  join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"),
+  "utf8"
+);
 
 assert.deepEqual(moduleConfig.platforms, ["android"], "MOBILE-6 native guidance must remain Android-only in this slice");
 assert.deepEqual(
@@ -111,10 +115,26 @@ for (const source of boundedSources) {
   }
 }
 
-assert.match(workflowSource, /node scripts\/verify-mobile-face-guidance\.mjs/, "MOBILE-6 workflow must execute its contract verifier");
-assert.match(workflowSource, /npm run mobile:typecheck/, "MOBILE-6 workflow must typecheck the mobile client");
-assert.match(workflowSource, /npm run mobile:prebuild:android/, "MOBILE-6 workflow must exercise Expo native autolinking");
-assert.match(workflowSource, /npm run verify:mobile-native/, "MOBILE-6 workflow must verify the generated Android shell");
+assert.match(
+  mobileCiWorkflowSource,
+  /node scripts\/verify-mobile-face-guidance\.mjs/,
+  "Consolidated Mobile CI must execute the MOBILE-6 contract verifier"
+);
+assert.match(
+  mobileCiWorkflowSource,
+  /npm run mobile:typecheck/,
+  "Consolidated Mobile CI must typecheck the mobile client"
+);
+assert.match(
+  nativeShellWorkflowSource,
+  /npm run mobile:prebuild:android/,
+  "Native Shell CI must exercise Expo native autolinking for MOBILE-6"
+);
+assert.match(
+  nativeShellWorkflowSource,
+  /npm run verify:mobile-native/,
+  "Native Shell CI must verify the generated Android shell for MOBILE-6"
+);
 
 console.log("MOBILE_FACE_GUIDANCE_NATIVE_MODULE=PASS");
 console.log("MOBILE_FACE_GUIDANCE_MLKIT_BUNDLED=PASS");

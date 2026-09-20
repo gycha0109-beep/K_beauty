@@ -14,6 +14,7 @@ import PremiumConditionResponseSection from "@/components/full-report/PremiumCon
 import PremiumFaceLabSection from "@/components/full-report/PremiumFaceLabSection";
 import CurrentProductsSelector from "@/components/current-products/CurrentProductsSelector";
 import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
+import PremiumIntakeSummaryCard from "@/components/result/premium/PremiumIntakeSummaryCard";
 import AuthNav from "@/components/auth/AuthNav";
 import LoginButtons from "@/components/auth/LoginButtons";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
@@ -26,6 +27,8 @@ import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { isFaceLabResultEnvelope } from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
+import { getCurrentProductCategoryLabel } from "@/lib/current-products";
+import { PREMIUM_INTAKE_VERSION } from "@/lib/premium-intake";
 import { resolveProductPurchaseLink } from "@/lib/product-purchase-link";
 import { writeSafeLog } from "@/lib/security/error-redaction";
 import {
@@ -99,24 +102,142 @@ const PREMIUM_REPORT_DISABLED_COPY = {
 
 const PREMIUM_ENTRY_COPY = {
   ko: {
-    kicker: "PREMIUM ROUTINE",
-    title: "현재 쓰는 제품을 알려주세요",
-    body: "선택한 값은 프리미엄 리포트 안에서 현재 루틴 판단에만 사용돼요.",
-    continue: "이 결과를 루틴으로 정리하기",
-    skip: "제품 선택 없이 계속하기",
+    kicker: "PREMIUM INTAKE",
+    title: "풀 리포트에 필요한 정보만 더 확인할게요",
+    body: "무료 분석 결과는 그대로 두고, 실제 루틴 판단에 필요한 정보만 4단계로 짧게 받습니다.",
+    next: "다음",
+    back: "이전",
+    skip: "이 단계 건너뛰기",
+    finish: "이 정보로 풀 리포트 만들기",
+    progress: (step) => `${step}/4`,
+    steps: [
+      {
+        key: "currentProducts",
+        title: "현재 쓰는 제품",
+        body: "쓰는 제품, DB에 없는 제품, 사용하지 않는 단계를 구분해 주세요."
+      },
+      {
+        key: "usage",
+        title: "실제로 어떻게 쓰고 있나요?",
+        body: "현재 제품별 사용 시간대와 사용감을 확인합니다."
+      },
+      {
+        key: "recentContext",
+        title: "최근 변화·반응",
+        body: "새 제품이나 루틴 변경, 사용 후 불편 반응이 있었는지 확인합니다."
+      },
+      {
+        key: "decisionFocus",
+        title: "이번에 무엇을 결정하고 싶나요?",
+        body: "풀 리포트에서 가장 먼저 확인하고 싶은 판단 하나를 골라주세요."
+      }
+    ],
+    useTimeLabel: "사용 시간대",
+    useFrequencyLabel: "사용 빈도",
+    satisfactionLabel: "최근 사용감",
+    noUsageProducts: "사용 중인 제품이 없어 이 단계는 자동으로 건너뛸 수 있어요.",
+    useTime: {
+      morning: "아침",
+      evening: "저녁",
+      both: "아침+저녁"
+    },
+    useFrequency: {
+      daily: "매일",
+      few_times_week: "주 2~4회",
+      weekly_or_less: "주 1회 이하",
+      as_needed: "필요할 때만"
+    },
+    satisfaction: {
+      good: "잘 맞음",
+      okay: "보통",
+      bad: "불편함",
+      unknown: "잘 모르겠음"
+    },
+    recentProductQuestion: "최근 2주 사이 새 제품을 쓰거나 루틴을 바꿨나요?",
+    reactionQuestion: "최근 제품 사용 후 따가움·붉음·트러블 같은 불편 반응이 있었나요?",
+    yesNoUnknown: {
+      yes: "예",
+      no: "아니오",
+      unknown: "잘 모르겠음"
+    },
+    decisionFocus: {
+      current_product_fit: "현재 제품을 유지·조정할지",
+      routine_order: "아침·저녁 사용 순서",
+      functional_addition: "기능성을 추가해도 되는지",
+      condition_response: "예민·트러블 때 무엇을 줄일지"
+    },
     officialTitle: "프리미엄 베타 체험은 종료되었습니다",
     officialBody: "정식 오픈 후 이용할 수 있습니다. 이미 저장한 프리미엄 리포트는 My에서 계속 다시 볼 수 있어요.",
-    back: "무료 결과로 돌아가기"
+    backResult: "무료 결과로 돌아가기"
   },
   en: {
-    kicker: "PREMIUM ROUTINE",
-    title: "Add your current products",
-    body: "These choices are used only for current-routine judgment inside the premium report.",
-    continue: "Turn this result into a routine",
-    skip: "Continue without products",
+    kicker: "PREMIUM INTAKE",
+    title: "A few details for your full report",
+    body: "Your free result stays unchanged. We only collect the context needed for routine decisions in four short steps.",
+    next: "Next",
+    back: "Back",
+    skip: "Skip this step",
+    finish: "Build my full report",
+    progress: (step) => `${step}/4`,
+    steps: [
+      {
+        key: "currentProducts",
+        title: "Current products",
+        body: "Mark what you use, what is not in the DB, and what you do not use."
+      },
+      {
+        key: "usage",
+        title: "How do you actually use them?",
+        body: "Add usage timing and how each current product has felt."
+      },
+      {
+        key: "recentContext",
+        title: "Recent changes and reactions",
+        body: "Tell us about recent product changes and any discomfort after use."
+      },
+      {
+        key: "decisionFocus",
+        title: "What do you want decided?",
+        body: "Choose the decision you want the full report to make clearest."
+      }
+    ],
+    useTimeLabel: "When you use it",
+    useFrequencyLabel: "How often",
+    satisfactionLabel: "How it feels",
+    noUsageProducts: "There are no products currently in use, so this step can be skipped.",
+    useTime: {
+      morning: "Morning",
+      evening: "Evening",
+      both: "AM + PM"
+    },
+    useFrequency: {
+      daily: "Daily",
+      few_times_week: "2–4 times / week",
+      weekly_or_less: "Weekly or less",
+      as_needed: "Only as needed"
+    },
+    satisfaction: {
+      good: "Works well",
+      okay: "Okay",
+      bad: "Uncomfortable",
+      unknown: "Not sure"
+    },
+    recentProductQuestion: "Did you start a new product or change your routine in the last 2 weeks?",
+    reactionQuestion: "Did you notice stinging, redness, breakouts, or other discomfort after using a product?",
+    yesNoUnknown: {
+      yes: "Yes",
+      no: "No",
+      unknown: "Not sure"
+    },
+    decisionFocus: {
+      current_product_fit: "Keep or adjust current products",
+      routine_order: "AM / PM usage order",
+      functional_addition: "Whether to add an active",
+      condition_response: "What to reduce when skin reacts"
+    },
     officialTitle: "Premium beta access has ended",
     officialBody: "New premium report creation will reopen at official launch. Your saved premium reports remain available in My.",
-    back: "Back to free result"
+    backResult: "Back to free result"
   }
 };
 
@@ -5339,6 +5460,10 @@ function SkinMatchStepReport({
             currentProducts={report?.currentProducts}
             locale={locale}
           />
+          <PremiumIntakeSummaryCard
+            intake={report?.premiumIntake}
+            locale={locale}
+          />
         </div>
       )
     },
@@ -6182,8 +6307,148 @@ function FaceLabSection({ report, photoUrl, locale = "ko" }) {
   );
 }
 
-function PremiumEntryStep({ locale = "ko", currentProducts, onCurrentProductsChange, onContinue, onSkip }) {
+function PremiumEntryChoice({ active, onClick, children, disabled = false }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`min-h-10 rounded-[0.85rem] border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45 ${
+        active
+          ? "ui-choice-active"
+          : "border-[#ead2ca]/75 bg-white/52 text-[#704653] hover:bg-white/78 dark:border-white/[0.09] dark:bg-white/[0.03] dark:text-[#d4b7c0]"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PremiumEntryStep({ locale = "ko", currentProducts, onCurrentProductsChange, onContinue }) {
   const copy = PREMIUM_ENTRY_COPY[locale] || PREMIUM_ENTRY_COPY.ko;
+  const [stepIndex, setStepIndex] = useState(0);
+  const [answers, setAnswers] = useState({
+    recentlyChangedProduct: "",
+    productReaction: ""
+  });
+  const [decisionFocus, setDecisionFocus] = useState("");
+  const [stepStates, setStepStates] = useState({
+    currentProducts: "unknown",
+    usage: "unknown",
+    recentContext: "unknown",
+    decisionFocus: "unknown"
+  });
+  const step = copy.steps[stepIndex];
+  const usageProducts = currentProducts.filter((item) =>
+    item?.status === "selected" || item?.status === "not_in_db"
+  );
+  const usageReady =
+    !usageProducts.length ||
+    usageProducts.every((item) => Boolean(item?.useTime) && Boolean(item?.useFrequency));
+  const recentReady =
+    Boolean(answers.recentlyChangedProduct) &&
+    Boolean(answers.productReaction);
+  const focusReady = Boolean(decisionFocus);
+
+  const updateStepState = (key, state) => {
+    setStepStates((current) => ({
+      ...current,
+      [key]: state
+    }));
+  };
+
+  const updateProductMeta = (index, key, value) => {
+    const next = currentProducts.map((item, itemIndex) =>
+      itemIndex === index
+        ? { ...item, [key]: value }
+        : item
+    );
+    onCurrentProductsChange(next);
+  };
+
+  const moveNext = () => {
+    if (step.key === "currentProducts") {
+      updateStepState("currentProducts", currentProducts.length ? "answered" : "skipped");
+    }
+
+    if (step.key === "usage") {
+      if (!usageReady) return;
+      const withExplicitSatisfaction = currentProducts.map((item) => {
+        if (item?.status !== "selected" && item?.status !== "not_in_db") {
+          return item;
+        }
+        return {
+          ...item,
+          satisfaction: item.satisfaction || "unknown"
+        };
+      });
+      onCurrentProductsChange(withExplicitSatisfaction);
+      updateStepState("usage", usageProducts.length ? "answered" : "skipped");
+    }
+
+    if (step.key === "recentContext") {
+      if (!recentReady) return;
+      updateStepState("recentContext", "answered");
+    }
+
+    if (step.key === "decisionFocus") {
+      if (!focusReady) return;
+      const nextStates = {
+        ...stepStates,
+        decisionFocus: "answered"
+      };
+      onContinue({
+        version: PREMIUM_INTAKE_VERSION,
+        stepStates: nextStates,
+        answers: {
+          recentlyChangedProduct: answers.recentlyChangedProduct || "unknown",
+          productReaction: answers.productReaction || "unknown"
+        },
+        decisionFocus
+      });
+      return;
+    }
+
+    setStepIndex((value) => Math.min(copy.steps.length - 1, value + 1));
+  };
+
+  const skipStep = () => {
+    if (step.key === "currentProducts") {
+      onCurrentProductsChange([]);
+      updateStepState("currentProducts", "skipped");
+    }
+
+    if (step.key === "usage") {
+      updateStepState("usage", "skipped");
+    }
+
+    if (step.key === "recentContext") {
+      setAnswers({
+        recentlyChangedProduct: "unknown",
+        productReaction: "unknown"
+      });
+      updateStepState("recentContext", "skipped");
+    }
+
+    if (step.key === "decisionFocus") {
+      const nextStates = {
+        ...stepStates,
+        decisionFocus: "skipped"
+      };
+      onContinue({
+        version: PREMIUM_INTAKE_VERSION,
+        stepStates: nextStates,
+        answers: {
+          recentlyChangedProduct: answers.recentlyChangedProduct || "unknown",
+          productReaction: answers.productReaction || "unknown"
+        },
+        decisionFocus: "unknown"
+      });
+      return;
+    }
+
+    setStepIndex((value) => Math.min(copy.steps.length - 1, value + 1));
+  };
 
   return (
     <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
@@ -6202,30 +6467,172 @@ function PremiumEntryStep({ locale = "ko", currentProducts, onCurrentProductsCha
         </div>
 
         <section className="mt-4 ui-card p-5">
-          <p className="ui-kicker">{copy.kicker}</p>
-          <h1 className="ui-title mt-2 text-2xl leading-tight">{copy.title}</h1>
-          <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.body}</p>
-          <CurrentProductsSelector
-            locale={locale}
-            value={currentProducts}
-            onChange={onCurrentProductsChange}
-          />
-          <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
+          <div className="flex items-center justify-between gap-3">
+            <p className="ui-kicker">{copy.kicker}</p>
+            <span className="ui-chip-compact">{copy.progress(stepIndex + 1)}</span>
+          </div>
+          <div className="mt-3 flex gap-1.5" aria-hidden="true">
+            {copy.steps.map((item, index) => (
+              <span
+                key={item.key}
+                className={`h-1.5 flex-1 rounded-full ${
+                  index <= stepIndex
+                    ? "bg-[#e76b91]"
+                    : "bg-[#ead8cf] dark:bg-white/10"
+                }`}
+              />
+            ))}
+          </div>
+
+          <h1 className="ui-title mt-4 text-2xl leading-tight">{step.title}</h1>
+          <p className="ui-text-secondary mt-2 text-sm leading-6">{step.body}</p>
+
+          {step.key === "currentProducts" ? (
+            <CurrentProductsSelector
+              locale={locale}
+              value={currentProducts}
+              onChange={onCurrentProductsChange}
+            />
+          ) : null}
+
+          {step.key === "usage" ? (
+            <div className="mt-4 grid gap-3">
+              {!usageProducts.length ? (
+                <div className="rounded-[1rem] border border-[#ead8cf] bg-white/50 px-4 py-4 text-sm leading-6 text-[#7a6268] dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400">
+                  {copy.noUsageProducts}
+                </div>
+              ) : null}
+              {currentProducts.map((item, index) => {
+                if (item?.status !== "selected" && item?.status !== "not_in_db") return null;
+                const label = getCurrentProductCategoryLabel(item.category, locale);
+                return (
+                  <div key={`${item.category}-${item.productId || item.status}`} className="rounded-[1rem] border border-[#ead8cf] bg-white/45 p-3.5 dark:border-white/10 dark:bg-white/[0.03]">
+                    <p className="text-sm font-semibold text-[#321724] dark:text-[#fff8f3]">{label}</p>
+                    <p className="mt-3 text-[11px] font-semibold text-[#8a5260] dark:text-[#d9a7b5]">{copy.useTimeLabel}</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {Object.entries(copy.useTime).map(([value, labelText]) => (
+                        <PremiumEntryChoice
+                          key={value}
+                          active={item.useTime === value}
+                          onClick={() => updateProductMeta(index, "useTime", value)}
+                        >
+                          {labelText}
+                        </PremiumEntryChoice>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-[11px] font-semibold text-[#8a5260] dark:text-[#d9a7b5]">{copy.useFrequencyLabel}</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {Object.entries(copy.useFrequency).map(([value, labelText]) => (
+                        <PremiumEntryChoice
+                          key={value}
+                          active={item.useFrequency === value}
+                          onClick={() => updateProductMeta(index, "useFrequency", value)}
+                        >
+                          {labelText}
+                        </PremiumEntryChoice>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-[11px] font-semibold text-[#8a5260] dark:text-[#d9a7b5]">{copy.satisfactionLabel}</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {Object.entries(copy.satisfaction).map(([value, labelText]) => (
+                        <PremiumEntryChoice
+                          key={value}
+                          active={item.satisfaction === value}
+                          onClick={() => updateProductMeta(index, "satisfaction", value)}
+                        >
+                          {labelText}
+                        </PremiumEntryChoice>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {step.key === "recentContext" ? (
+            <div className="mt-4 grid gap-4">
+              {[
+                ["recentlyChangedProduct", copy.recentProductQuestion],
+                ["productReaction", copy.reactionQuestion]
+              ].map(([key, question]) => (
+                <div key={key} className="rounded-[1rem] border border-[#ead8cf] bg-white/45 p-3.5 dark:border-white/10 dark:bg-white/[0.03]">
+                  <p className="text-sm font-semibold leading-6 text-[#321724] dark:text-[#fff8f3]">{question}</p>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {Object.entries(copy.yesNoUnknown).map(([value, labelText]) => (
+                      <PremiumEntryChoice
+                        key={value}
+                        active={answers[key] === value}
+                        onClick={() => setAnswers((current) => ({ ...current, [key]: value }))}
+                      >
+                        {labelText}
+                      </PremiumEntryChoice>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {step.key === "decisionFocus" ? (
+            <div className="mt-4 grid gap-2">
+              {Object.entries(copy.decisionFocus).map(([value, labelText]) => (
+                <PremiumEntryChoice
+                  key={value}
+                  active={decisionFocus === value}
+                  onClick={() => setDecisionFocus(value)}
+                >
+                  {labelText}
+                </PremiumEntryChoice>
+              ))}
+            </div>
+          ) : null}
+
+          {step.key === "usage" && !usageReady ? (
+            <p className="mt-3 text-xs font-semibold text-amber-700 dark:text-amber-200">
+              {locale === "en" ? "Choose a usage time and frequency for each product before continuing." : "사용 중인 제품마다 사용 시간대와 빈도를 선택해 주세요."}
+            </p>
+          ) : null}
+          {step.key === "recentContext" && !recentReady ? (
+            <p className="mt-3 text-xs font-semibold text-amber-700 dark:text-amber-200">
+              {locale === "en" ? "Answer both items, including Not sure if needed." : "두 항목 모두 선택해 주세요. 잘 모르겠음도 답변으로 처리됩니다."}
+            </p>
+          ) : null}
+          {step.key === "decisionFocus" && !focusReady ? (
+            <p className="mt-3 text-xs font-semibold text-amber-700 dark:text-amber-200">
+              {locale === "en" ? "Choose one decision focus or skip this step." : "가장 받고 싶은 판단 하나를 고르거나 이 단계를 건너뛰어 주세요."}
+            </p>
+          ) : null}
+
+          <div className="mt-5 grid grid-cols-[auto_1fr] gap-2">
             <button
               type="button"
-              onClick={onContinue}
-              className="ui-button-primary min-h-12 px-5 text-sm font-semibold"
+              onClick={() => setStepIndex((value) => Math.max(0, value - 1))}
+              disabled={stepIndex === 0}
+              className="ui-button-secondary min-h-12 px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {copy.continue}
+              {copy.back}
             </button>
             <button
               type="button"
-              onClick={onSkip}
-              className="ui-button-secondary min-h-12 px-5 text-sm font-semibold"
+              onClick={moveNext}
+              disabled={
+                (step.key === "usage" && !usageReady) ||
+                (step.key === "recentContext" && !recentReady) ||
+                (step.key === "decisionFocus" && !focusReady)
+              }
+              className="ui-button-primary min-h-12 px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {copy.skip}
+              {step.key === "decisionFocus" ? copy.finish : copy.next}
             </button>
           </div>
+          <button
+            type="button"
+            onClick={skipStep}
+            className="mt-2 w-full rounded-[0.85rem] px-4 py-2.5 text-xs font-semibold text-[#8a5260] transition hover:bg-white/45 dark:text-[#d9a7b5] dark:hover:bg-white/[0.04]"
+          >
+            {copy.skip}
+          </button>
         </section>
       </div>
     </main>
@@ -6272,6 +6679,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
   const [isReady, setIsReady] = useState(false);
   const [isReportOpened, setIsReportOpened] = useState(false);
   const [currentProducts, setCurrentProducts] = useState([]);
+  const [premiumIntake, setPremiumIntake] = useState(null);
   const [premiumEntrySubmitted, setPremiumEntrySubmitted] = useState(Boolean(savedReportId));
   const [hasPreviousReportOpen, setHasPreviousReportOpen] = useState(() => {
     if (typeof window === "undefined") {
@@ -6378,7 +6786,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
             topPick: parsedResult?.topPick || null,
-            currentProducts
+            currentProducts,
+            premiumIntake: premiumIntake || undefined
           })
         });
         const data = await response.json().catch(() => null);
@@ -6459,7 +6868,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
     }
 
     void loadFullReport();
-  }, [copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, savedReportId]);
+  }, [copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, premiumIntake, savedReportId]);
 
   const openFullReportContent = () => {
     if (typeof window !== "undefined") {
@@ -6530,12 +6939,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
         locale={locale}
         currentProducts={currentProducts}
         onCurrentProductsChange={setCurrentProducts}
-        onContinue={() => {
-          setIsReady(false);
-          setPremiumEntrySubmitted(true);
-        }}
-        onSkip={() => {
-          setCurrentProducts([]);
+        onContinue={(intake) => {
+          setPremiumIntake(intake);
           setIsReady(false);
           setPremiumEntrySubmitted(true);
         }}

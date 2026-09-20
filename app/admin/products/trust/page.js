@@ -47,7 +47,10 @@ export default async function TrustAdminQueuePage({ searchParams }) {
 
   try {
     const queue = await loadTrustAdminQueue({ filter, taskId, limit: 100 });
-    return <TrustQueueWorkbench queue={queue} />;
+    const canReview = access.capabilities.includes(
+      ADMIN_CAPABILITIES.PRODUCTS_REVIEW
+    );
+    return <TrustQueueWorkbench queue={queue} canReview={canReview} />;
   } catch (error) {
     if (error instanceof TrustQueueOperationError) {
       return <ErrorState code={error.code} />;

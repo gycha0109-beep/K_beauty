@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - ".github/workflows/data-offer17-controlled-offer-rpc-diagnostic.yml"
+      - "lib/product-offer-controlled-probe-oidc.js"
+      - "lib/server/product-offer-read-service.js"
+      - "app/api/internal/product-offer-presentation-authority-controlled-probe/route.js"
+      - "scripts/verify-data-offer17-controlled-offer-rpc-diagnostic-v1.mjs"
   pull_request:
     branches:
       - main
@@ -13,7 +19,6 @@ on:
       - "lib/server/product-offer-read-service.js"
       - "app/api/internal/product-offer-presentation-authority-controlled-probe/route.js"
       - "scripts/verify-data-offer17-controlled-offer-rpc-diagnostic-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
 
 permissions:
   contents: read
@@ -22,7 +27,7 @@ permissions:
 
 concurrency:
   group: data-offer17-controlled-offer-rpc-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   DATA_OFFER17_EXACT_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}

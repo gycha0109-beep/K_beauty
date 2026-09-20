@@ -7,7 +7,8 @@ const files = {
   page: "app/admin/products/trust/page.js",
   workbench: "app/admin/products/trust/TrustQueueWorkbench.js",
   loader: "lib/admin/trust-queue.js",
-  workflow: ".github/workflows/trust-phase5-admin-queue.yml"
+  workflow: ".github/workflows/trust-phase5-admin-queue.yml",
+  currentHealth: "scripts/verify-current-main-health.mjs"
 };
 
 const content = Object.fromEntries(
@@ -87,7 +88,10 @@ check(content.workbench.includes("Existing Current"), "Current summary surface m
 check(content.workbench.includes("Governed review"), "governed review summary missing");
 check(content.workflow.includes("node-version: 22"), "workflow must use Node 22");
 check(content.workflow.includes("node scripts/verify-trust-phase5-admin-queue.mjs"), "focused verifier step missing");
-check(content.workflow.includes("npm run architecture:guard"), "architecture guard missing");
-check(content.workflow.includes("npm run build"), "production build step missing");
+check(!content.workflow.includes("npm run architecture:guard"), "phase workflow must not duplicate canonical architecture guard");
+check(!content.workflow.includes("npm run build"), "phase workflow must not duplicate canonical production build");
+check(content.currentHealth.includes('run("TRUST Phase 5 admin queue contract"'), "Current Main Health must own Phase 5 static contract");
+check(content.currentHealth.includes('run("Architecture guard"'), "Current Main Health must own architecture guard");
+check(content.currentHealth.includes('run("Production build"'), "Current Main Health must own production build");
 
 console.log(JSON.stringify({ status: "PASS", assertions }));

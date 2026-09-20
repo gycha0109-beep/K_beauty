@@ -7,7 +7,6 @@ on:
       - "lib/product-offer-runtime-observability.js"
       - "lib/server/product-offer-read-service.js"
       - "scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer17-offer-runtime-observability.yml"
   push:
     branches: [main]
@@ -15,9 +14,12 @@ on:
       - "lib/product-offer-runtime-observability.js"
       - "lib/server/product-offer-read-service.js"
       - "scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/data-offer17-offer-runtime-observability.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -31,7 +33,7 @@ jobs:
       EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
@@ -45,7 +47,7 @@ jobs:
           printf 'DATA_OFFER17_EXACT_HEAD=%s\n' "$actual"
 
       - name: Setup Node 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "22"
 

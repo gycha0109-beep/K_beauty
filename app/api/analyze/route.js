@@ -1408,8 +1408,24 @@ export async function POST(request) {
     responseLocale = locale;
     const copy = getAnalyzeCopy(locale);
     const model = resolveAnalyzeModel(isPremium) || FREE_OPENAI_MODEL;
+    const normalizedPrimaryConcern =
+      typeof primaryConcern === "string" ? primaryConcern.trim() : "";
+    const resolvedPrimaryConcern =
+      normalizedPrimaryConcern &&
+      (!mainConcerns.length || mainConcerns.includes(normalizedPrimaryConcern))
+        ? normalizedPrimaryConcern
+        : "";
+    const prioritizedMainConcerns = resolvedPrimaryConcern
+      ? [
+          resolvedPrimaryConcern,
+          ...mainConcerns.filter((concern) => concern !== resolvedPrimaryConcern)
+        ]
+      : mainConcerns;
     const resolvedMainConcern =
-      (typeof mainConcern === "string" && mainConcern) || mainConcerns[0] || "";
+      resolvedPrimaryConcern ||
+      (typeof mainConcern === "string" && mainConcern) ||
+      prioritizedMainConcerns[0] ||
+      "";
     const imageValidation = validateImageUpload(image);
 
     if (
@@ -1442,8 +1458,8 @@ export async function POST(request) {
       skinType,
       sensitivity,
       mainConcern: resolvedMainConcern,
-      mainConcerns: mainConcerns.length ? mainConcerns : undefined,
-      primaryConcern,
+      mainConcerns: prioritizedMainConcerns.length ? prioritizedMainConcerns : undefined,
+      primaryConcern: resolvedPrimaryConcern || primaryConcern,
       recentSkinChange,
       recentlyChangedProduct,
       cleansingFrequency,

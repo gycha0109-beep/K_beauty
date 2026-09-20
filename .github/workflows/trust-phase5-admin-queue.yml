@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ env.TRUST_PHASE5_CHECKOUT_SHA }}
           fetch-depth: 1
@@ -46,19 +46,9 @@ jobs:
         run: test "$(git rev-parse HEAD)" = "$TRUST_PHASE5_CHECKOUT_SHA"
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Verify TRUST Phase 5 read-only Admin Queue contract
         run: node scripts/verify-trust-phase5-admin-queue.mjs
-
-      - name: Verify architecture boundaries
-        run: npm run architecture:guard
-
-      - name: Build production app
-        run: npm run build

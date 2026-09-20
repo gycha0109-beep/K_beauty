@@ -1,4 +1,6 @@
 import Link from "next/link";
+import TrustSubjectRegistrationAction from "@/app/admin/products/trust/TrustSubjectRegistrationAction";
+import TrustReentryAction from "@/app/admin/products/trust/TrustReentryAction";
 
 const BLOCKER_LABELS = Object.freeze({
   SUBJECT_CREATION_REQUIRED: "Subject 생성 필요",
@@ -243,7 +245,7 @@ function EvidenceSection({ item }) {
   );
 }
 
-function Detail({ item }) {
+function Detail({ item, canReview }) {
   if (!item) {
     return (
       <div className="rounded-2xl border border-dashed border-[#d8dde5] p-10 text-center text-sm text-[#7a828e] dark:border-[#353b45] dark:text-[#9ea6b1]">
@@ -289,13 +291,26 @@ function Detail({ item }) {
         </details>
       </section>
 
+      <TrustSubjectRegistrationAction
+        taskId={item.task.id}
+        intakeMarket={item.intake?.market ?? null}
+        eligible={
+          item.task.state === "REVIEW_REQUIRED" &&
+          item.task.blockerCode === "SUBJECT_CREATION_REQUIRED" &&
+          item.intake?.identityState === "SUBJECT_CREATION_REQUIRED" &&
+          !item.task.subjectId &&
+          !item.intake?.subjectId
+        }
+        canReview={canReview}
+      />
+      <TrustReentryAction taskId={item.task.id} canReview={canReview} />
       <SourceSection item={item} />
       <EvidenceSection item={item} />
     </div>
   );
 }
 
-export default function TrustQueueWorkbench({ queue }) {
+export default function TrustQueueWorkbench({ queue, canReview = false }) {
   return (
     <div className="mx-auto w-full max-w-7xl">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -303,10 +318,10 @@ export default function TrustQueueWorkbench({ queue }) {
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a828e]">TRUST / Product Fact Operations</p>
           <h1 className="mt-1 text-2xl font-bold">Admin Queue</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#68717d] dark:text-[#aeb5bf]">
-            사람이 판단해야 하는 identity/evidence/registry blocker만 표시합니다. 이 화면은 Phase 5-A 조회 전용이며 Subject 생성, Evidence 채택, Product Fact confirmation을 수행하지 않습니다.
+            사람이 판단해야 하는 identity/evidence/registry blocker만 표시합니다. SUBJECT_CREATION_REQUIRED 항목은 admin.products.review 권한에서만 controlled Subject 등록을 수행할 수 있습니다. Phase 6 수동 재검사는 상태를 다시 검증할 뿐 Current/Subject/Evidence를 강제 초기화하지 않으며 Recommendation도 변경하지 않습니다.
           </p>
         </div>
-        <Badge tone="blue">Read only</Badge>
+        {canReview ? <Badge tone="amber">Controlled review</Badge> : <Badge tone="blue">Read only</Badge>}
       </div>
 
       <div className="mb-5 flex flex-wrap gap-2">
@@ -332,7 +347,7 @@ export default function TrustQueueWorkbench({ queue }) {
           <QueueList queue={queue} />
         </aside>
         <main>
-          <Detail item={queue.selected} />
+          <Detail item={queue.selected} canReview={canReview} />
         </main>
       </div>
     </div>

@@ -1,0 +1,142 @@
+name: DATA-AI7 Production Fail-Closed
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/product-query-preview-policy.mjs"
+      - "lib/product-query-stage-canary-policy.mjs"
+      - "app/api/my/product-query-preview/route.js"
+      - "app/api/my/product-query-stage-canary/route.js"
+      - "scripts/verify-data-ai7-production-fail-closed.mjs"
+      - ".github/workflows/data-ai7-production-fail-closed.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/product-query-preview-policy.mjs"
+      - "lib/product-query-stage-canary-policy.mjs"
+      - "app/api/my/product-query-preview/route.js"
+      - "app/api/my/product-query-stage-canary/route.js"
+      - "scripts/verify-data-ai7-production-fail-closed.mjs"
+      - ".github/workflows/data-ai7-production-fail-closed.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: read
+  id-token: write
+
+concurrency:
+  group: data-ai7-production-fail-closed-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATA_AI7_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify:
+    name: DATA-AI7 production fail-closed contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ env.DATA_AI7_EXACT_HEAD }}
+
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI7_EXACT_HEAD"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Verify fail-closed contract
+        run: node scripts/verify-data-ai7-production-fail-closed.mjs
+
+  runtime-probe:
+    name: DATA-AI7 deployed Production fail-closed probe
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact runtime probe SHA
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ env.DATA_AI7_EXACT_HEAD }}
+
+      - name: Verify runtime probe checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI7_EXACT_HEAD"
+
+      - name: Resolve exact Vercel deployment URL
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=""
+          for attempt in $(seq 1 72); do
+            ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?per_page=100" --jq ".[] | select(.sha == \"$GITHUB_SHA\") | .id" || true)"
+            for id in $ids; do
+              candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100" --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
+              if [ -n "$candidate" ]; then
+                url="$candidate"
+                break
+              fi
+            done
+            if [ -n "$url" ]; then
+              break
+            fi
+            sleep 5
+          done
+          test -n "$url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain Vercel trusted OIDC token
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          trusted_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")"
+          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$trusted"
+          printf 'trusted=%s\n' "$trusted" >> "$GITHUB_OUTPUT"
+
+      - name: Assert DATA-AI6 and DATA-AI7 are unreachable in Production
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          query='지성인데 백탁 없고 안 끈적이는 선크림 찾아줘'
+          routes=(
+            /api/my/product-query-preview
+            /api/my/product-query-stage-canary
+          )
+
+          for route in "${routes[@]}"; do
+            response_file="$(mktemp)"
+            status="$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors               -o "$response_file"               -w '%{http_code}'               -X POST               -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"               -H 'Content-Type: application/json'               --data "{"query":"$query"}"               "$DEPLOYMENT_URL$route")"
+
+            echo "DATA_AI7_PRODUCTION_FAIL_CLOSED_HTTP_STATUS=${route}:${status}"
+            test "$status" = "404"
+
+            if grep -Fq "$query" "$response_file"; then
+              echo "raw query leaked in disabled-route response" >&2
+              exit 1
+            fi
+
+            rm -f "$response_file"
+          done

@@ -2931,3 +2931,54 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - UI: added a self-contained Korean `file://` reviewer UI builder over the sealed D2D-P packets. It preserves each reviewer slot, packet digest, opaque item order, definition projection, canonical response tokens, confidence constraints, and not-assessable reason codes; provides collapsed Korean operational definitions, localStorage recovery, structural next-page validation, and neutral JSON download.
 - Authority boundary: `cx1g-d2d-p` remains read-only. Generated R01-R03 HTML and byte-identical images live only under ignored `cx1g-d2d-ui1`. Export is explicitly `execution_candidate_response`, not submitted Human authority; D2D-X identity binding, validation, canonicalization, sealing, distribution, and aggregation remain unauthorized. `featureContrast` remains excluded and W2 remains locked.
 - Verification: focused static and local distribution checks cover Korean mappings, exact A/B axes and order, token preservation, packet and image binding, source non-mutation, leakage, zero-network runtime, localStorage isolation, response validation, and deterministic generation. The focused workflow also runs D2D-P, D2C-F, architecture, scorer, Human-evaluation, synthetic, and diff checks without private assets.
+## 2026-09-19 — TRUST Phase 5-B controlled Subject registration
+
+- Type: High-risk governed Admin/Product Fact identity action for #541. Base main at implementation start: `cc029c0f1c6d36304049570641193f94335ed7a3`.
+- Authority correction: the first branch draft derived an opaque formulation revision from catalog identity evidence. Fresh review rejected that design because the frozen catalog authority explicitly has `product_fact_write_allowed=false`; catalog Product identity/presentation convergence is not Product Fact formulation/variant authority. That derivation was removed before merge.
+- Current identity contract: preserve deployed `product-fact-subject-identity-v1`; require reviewer-entered `formulation_revision_key`; require reviewer-entered `variant_key` or an explicit product-scoped/null decision; require reviewer-entered market and verify it equals the live TRUST intake market. Catalog evidence is bound only to stale-preflight context and never manufactures Product Fact identity.
+- Mutation boundary: queue visibility remains `admin.products.read`; Subject action requires authenticated `admin.products.review`. The only Product Fact Subject mutation is delegated to existing service-role-only `admin_register_product_fact_subject_v1`, followed by existing canonical `process_catalog_trust_product_v1` reconciliation.
+- Fail-closed behavior: exact task/intake/candidate lineage, all intake task state, catalog authority-boundary drift, reviewed identity proposal digest, semantic-key replay, and competing current product/market Subject drift are checked. Exact retries are allowed only for the same registered semantic payload.
+- Boundary: no direct Product Fact DML, no Evidence adoption, no Product Fact confirmation, no Recommendation mutation, no catalog/Product write, and no Production Subject registration is executed by this implementation track.
+- Verification: corrected exact-head PR CI is the merge gate. Production registration remains a separate explicit operational gate after merge/deployment/fresh identity-authority review.
+
+
+## 2026-09-19 — TRUST Phase 5-C FATION formulation conflict HOLD
+
+- Type: zero-write Product Fact identity research for #544 after Phase 5-B controlled Subject registration merged.
+- Production target: 파티온 노스카나인 트러블 세럼, Product `da5df70c-8cdd-4eb2-93b6-ede46c2f171d`, KR. Fresh read-only state remains 0 Subjects and three `REVIEW_REQUIRED / SUBJECT_CREATION_REQUIRED` tasks.
+- Product identity/presentation converges on the same FATION serum and 30 ml presentation, but current first-party pages expose two distinct ingredient orderings: water-first on product 329 / TRY 332 and mugwort-first on FATION set 613 / Dong-A corporate product page.
+- The two frozen lists contain the same 26 ingredient names but have different ordered-list SHA-256 digests. First-party functional-cosmetic metadata also conflicts (product 329 says review/notification completed; TRY 332 and set 613 say N). Current retail context points in both directions and is not promoted to first-party formulation authority.
+- Decision: `FORMULATION_CONFLICT / HOLD`. The provisional variant label `NOSCA9_TROUBLE_SERUM_KR_30ML` is not authorized; no `formulation_revision_key` and no Subject semantic key are frozen.
+- Required next authority: current 30 ml package ingredient panel tied to lot/date, a FATION/Dong-A reformulation/current-formula statement, or equivalent first-party evidence.
+- Authorized Production delta: zero across Subject, Evidence, Confirmation, Recommendation, and Product source binding.
+
+
+## 2026-09-19 — TRUST Phase 6-A re-entry foundation
+- Issue #547 / PR #548.
+- Added append-only re-entry events for SOURCE/FORMULATION/POLICY/REGISTRY changes and controlled MANUAL_RETRY.
+- Manual retry is non-destructive: identity conflicts stay review/blocked; only exact-Subject SOURCE_BLOCKED/EVIDENCE_INSUFFICIENT tasks may return to RESEARCH_PENDING.
+- Fresh Production ACL audit found Phase 5 Admin Queue operational TRUST tables lacked service_role SELECT; Phase 6-A restores SELECT only while keeping writes RPC-only and anon/authenticated grants at zero.
+- Product Fact authority, Current invalidation, Subject creation, confirmation, Recommendation mutation: zero by contract.
+
+## 2026-09-19 — Free survey decision intake refinement
+
+- Classification: Medium / Data N / Auth N / RLS N / Storage N / Provider N / Payment N / Secret N / Production N.
+- Changed: free survey now keeps explicit primary concern + recent skin change as the actionable free inputs; recent product-change intake is removed from the free UI and retained only in the shared contract for later Premium intake.
+- Analyze intake: an explicit primary concern is validated against selected concerns and moved to the front of the existing concern list so the current deterministic scoring actually uses the user's stated priority.
+- Free result: shows how the selected priority and recent skin-change answer affected the result, including an explicit distinction when user-requested concern and detected analysis priority differ.
+- Verification: added `scripts/verify-free-survey-decision-intake.mjs` and wired it into Current Main Health.
+- Deliberately unchanged: DB schema, persistence shape, API response field names, recommendation weights, auth/RLS, Provider calls, payment, Production data.
+- Remaining risk: exact rendered UX and the complete repository health/build still require PR CI/runtime review.
+
+## 2026-09-19 — Premium Intake v1
+
+- Classification: Medium / Data N / Auth N / RLS N / Storage N / Provider N / Payment N / Secret N / Production N.
+- Added a four-step Premium intake before new Full Report creation: current products → actual usage → recent product/routine changes and reactions → requested decision focus.
+- Existing current-product states remain authoritative: selected / not_in_db / not_using. Usage metadata reuses existing useTime and satisfaction fields rather than creating a second product model.
+- Premium-only answers recentlyChangedProduct and productReaction are sanitized into premiumIntake and overlaid onto the existing survey context during Premium decision rebuild; the free-result form is not mutated.
+- Full Report decisions are rebuilt deterministically after Premium intake and current-product enrichment, so existing functional/condition/current-product policies consume the new signals.
+- Requested decisionFocus is persisted and displayed as user intent only; it does not override deterministic policy authority.
+- Added Premium Intake summary to the Full Report Today hub and a dedicated verifier wired into Current Main Health.
+- Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
+- Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
+

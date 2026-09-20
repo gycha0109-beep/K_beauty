@@ -1129,6 +1129,85 @@ function getPrimaryConcernKey(result = null, form = {}) {
   return result?.priority?.axis || form?.mainConcern || (Array.isArray(form?.mainConcerns) ? form.mainConcerns[0] : "") || "";
 }
 
+function getRequestedConcernKey(form = {}) {
+  const selectedConcerns = Array.isArray(form?.mainConcerns) ? form.mainConcerns : [];
+  const requested = typeof form?.primaryConcern === "string" ? form.primaryConcern.trim() : "";
+
+  if (requested && (!selectedConcerns.length || selectedConcerns.includes(requested))) {
+    return requested;
+  }
+
+  return form?.mainConcern || selectedConcerns[0] || "";
+}
+
+function buildFreeSurveyContext(form = {}, result = null, locale = "ko") {
+  const display = getDisplayMap(locale);
+  const requestedConcernKey = getRequestedConcernKey(form);
+  const detectedPriorityKey = result?.priority?.axis || "";
+  const requestedConcernLabel = display.mainConcern[requestedConcernKey] || "";
+  const detectedPriorityLabel = getPriorityDisplay(result, form, locale);
+  const recentSkinChange = ["yes", "no", "unknown"].includes(form?.recentSkinChange)
+    ? form.recentSkinChange
+    : "unknown";
+  const priorityDiffers = Boolean(
+    requestedConcernKey &&
+    detectedPriorityKey &&
+    requestedConcernKey !== detectedPriorityKey
+  );
+
+  const recentChangeCopy = locale === "en"
+    ? {
+        yes: {
+          label: "Recent change",
+          value: "Change noticed",
+          body: "Because your skin has felt different recently, this result keeps the next steps more conservative."
+        },
+        no: {
+          label: "Recent change",
+          value: "Mostly stable",
+          body: "No major recent change was reported, so the current skin pattern is used as the baseline."
+        },
+        unknown: {
+          label: "Recent change",
+          value: "Not sure",
+          body: "The recent change is uncertain, so the result avoids treating it as a confirmed signal."
+        }
+      }
+    : {
+        yes: {
+          label: "최근 피부 변화",
+          value: "변화 있음",
+          body: "최근 평소와 다른 변화가 있어, 자극을 늘리기보다 다음 단계를 조금 더 보수적으로 잡았습니다."
+        },
+        no: {
+          label: "최근 피부 변화",
+          value: "큰 변화 없음",
+          body: "최근 큰 변화가 없어, 현재 피부 흐름을 기준으로 방향을 잡았습니다."
+        },
+        unknown: {
+          label: "최근 피부 변화",
+          value: "잘 모르겠음",
+          body: "최근 변화 여부는 단정하지 않고, 현재 관찰과 다른 설문 답변을 중심으로 판단했습니다."
+        }
+      };
+
+  return {
+    requestedConcern: {
+      label: locale === "en" ? "What you want to improve first" : "먼저 해결하고 싶은 고민",
+      value: requestedConcernLabel || (locale === "en" ? "Not specified" : "선택 정보 없음"),
+      body: priorityDiffers
+        ? locale === "en"
+          ? `You chose ${requestedConcernLabel}, while the current analysis puts ${detectedPriorityLabel} first. Both are kept separate in the result.`
+          : `원하는 목표는 ${requestedConcernLabel}이지만, 현재 분석에서는 ${detectedPriorityLabel}을 먼저 보고 있습니다. 두 기준을 구분해 반영했습니다.`
+        : locale === "en"
+          ? "Your selected goal is reflected in the current priority."
+          : "선택한 고민을 현재 우선순위에 직접 반영했습니다."
+    },
+    recentSkinChange: recentChangeCopy[recentSkinChange],
+    priorityDiffers
+  };
+}
+
 function getFreeResultV2FullReportCtaLabel(locale = "ko") {
   return locale === "en"
     ? "Decide my routine plan"
@@ -1452,6 +1531,7 @@ function buildFreeResultV2Diagnosis(form = {}, result = null, matchSummary = nul
       { label: locale === "en" ? "Core concern" : "핵심 고민", value: priorities[0]?.title || priorityLabel || concernLabels.slice(0, 2).join(" · ") },
       { label: locale === "en" ? "Current priority" : "현재 우선순위", value: currentPriorityLabel }
     ],
+    surveyContext: buildFreeSurveyContext(form, result, locale),
     priorities,
     directionLine: getFreeResultV2DirectionLine(form, result, locale),
     directionTags: buildFreeResultV2DirectionTags(axis, form, locale)
