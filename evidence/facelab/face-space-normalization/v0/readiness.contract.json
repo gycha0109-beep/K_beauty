@@ -33,6 +33,8 @@
     "Cross-provider normalization must additionally respect providerAnchorEquivalence from the semantic contract.",
     "Controlled 3D same-identity stress is diagnostic operator evidence only; Face Space photo normalization readiness requires real-photo same-subject pose and expression evidence.",
     "A provisional normalization candidate remains research-only and must not activate Archetype, Face Space production, or style recommendation.",
-    "No identity embedding or biometric identity matching may be used to establish same-subject linkage; linkage must come from dataset provenance or manual research metadata."
+    "No identity embedding or biometric identity matching may be used to establish same-subject linkage; linkage must come from dataset provenance or manual research metadata.",
+    "Real-photo pose/expression readiness must be derived from validated real-photo stability reports; caller-supplied booleans or evidence-kind strings cannot satisfy the gate.",
+    "The readiness evaluator re-summarizes and validates the supplied real-photo report collection before using it."
   ]
 }
