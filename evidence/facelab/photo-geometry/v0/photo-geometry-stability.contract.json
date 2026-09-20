@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "face-lab-photo-geometry-stability-contract-v0",
+  "status": "research_observation_only",
+  "productionAuthority": false,
+  "thresholdAuthority": false,
+  "faceSpaceCalibrationAuthority": false,
+  "archetypeAuthority": false,
+  "styleRecommendationAuthority": false,
+  "semanticContractPath": "evidence/facelab/structural-measurement/v0/semantic-contract.json",
+  "nuisanceClasses": {
+    "sameSourceImageTransform": [
+      "repeated_run",
+      "resolution",
+      "compression",
+      "crop_translation",
+      "lighting_exposure",
+      "lighting_contrast",
+      "white_balance",
+      "image_rotation"
+    ],
+    "realSameSubjectPairRequired": [
+      "head_yaw",
+      "head_pitch",
+      "head_roll",
+      "expression"
+    ],
+    "conditionOrPairEvidence": [
+      "occlusion"
+    ],
+    "providerComparison": [
+      "provider_comparison"
+    ]
+  },
+  "currentExecutableCoverage": {
+    "repeated_run": "enabled",
+    "resolution": "enabled",
+    "compression": "enabled",
+    "crop_translation": "enabled",
+    "lighting_exposure": "enabled",
+    "lighting_contrast": "enabled",
+    "white_balance": "enabled",
+    "image_rotation": "deferred",
+    "head_yaw": "hold_real_pair_required",
+    "head_pitch": "hold_real_pair_required",
+    "head_roll": "hold_real_pair_required",
+    "expression": "hold_real_pair_required",
+    "occlusion": "deferred",
+    "provider_comparison": "semantic_contract_only"
+  },
+  "interpretationRules": [
+    "No drift threshold is a Production threshold in v0.",
+    "Same-source pixel transforms may evaluate image-condition sensitivity but do not substitute for real head-pose or expression pairs.",
+    "Head yaw, pitch, roll, and expression require a real same-subject pair or controlled 3D same-identity pair; 2D warps must not be labeled as those nuisances.",
+    "Same dimension IDs across providers do not establish provider-anchor equivalence.",
+    "chin_height_ratio and nose_width_ratio remain cross-provider HOLD under the current semantic contract.",
+    "Other cross-provider dimensions remain unvalidated unless the semantic contract is explicitly promoted by separate evidence.",
+    "Canonical model comparison is diagnostic only and is not same-subject evidence.",
+    "No biometric identity matching or identity embedding is permitted for pair linkage."
+  ],
+  "privacy": {
+    "sourceImagePersistenceAllowed": false,
+    "identityEmbeddingAllowed": false,
+    "biometricIdentityMatchingAllowed": false,
+    "opaqueResearchPairIdOnly": true
+  }
+}
