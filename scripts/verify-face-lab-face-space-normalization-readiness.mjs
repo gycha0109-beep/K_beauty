@@ -85,6 +85,9 @@ assert.throws(
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
           "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        methodComparisonVersion: "synthetic-verifier-comparison-v0",
+        methodComparisonPacketFingerprint:
+          "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
         sourceProvider: {
           source: "synthetic-verifier-provider",
@@ -313,6 +316,16 @@ const selectedMethodDecision =
     scaleMethod: "mad_scaled_consistent",
     percentileMethod: null,
     thresholdMethod: null,
+    sourceReferenceSplitFingerprint:
+      "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    comparisonPacketFingerprint:
+      "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    comparisonVersion: "synthetic-verifier-comparison-v0",
+    evidenceRef: "synthetic-verifier-only:method-selection",
+    selectionRationale:
+      "Synthetic verifier decision used only to exercise normalization lineage gates.",
+    holdoutUsedForSelection: false,
+    automaticWinnerSelected: false,
     productionAuthority: false,
     normalizationAuthority: false,
     thresholdAuthority: false
@@ -353,6 +366,9 @@ assert.throws(
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
           "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        methodComparisonVersion: "synthetic-verifier-comparison-v0",
+        methodComparisonPacketFingerprint:
+          "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
         sourceProvider: {
           source: "synthetic-verifier-provider",
@@ -389,6 +405,9 @@ const candidate = buildFaceSpaceNormalizationCandidate({
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
           "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        methodComparisonVersion: "synthetic-verifier-comparison-v0",
+        methodComparisonPacketFingerprint:
+          "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
         sourceProvider: {
           source: "synthetic-verifier-provider",
@@ -434,6 +453,9 @@ assert.throws(
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
           "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        methodComparisonVersion: "synthetic-verifier-comparison-v0",
+        methodComparisonPacketFingerprint:
+          "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
         sourceProvider: {
           source: "synthetic-verifier-provider",
@@ -472,6 +494,9 @@ assert.throws(
           "face-space-reference-corpus-summary-v0",
         sourceReferenceSplitFingerprint:
           "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        methodComparisonVersion: "synthetic-verifier-comparison-v0",
+        methodComparisonPacketFingerprint:
+          "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
         sourceProvider: {
           source: "synthetic-verifier-provider",
@@ -564,6 +589,8 @@ console.log(JSON.stringify({
     validReferenceCorpusSummaryOnlySatisfiesCorpusCoverageGates: true,
     referenceCorpusSummaryCannotAuthorizeStatistics: true,
     referenceStatisticsMethodDecisionRequired: true,
+    methodDecisionMustCarryComparisonEvidence: true,
+    statisticsMustMatchDecisionComparisonLineage: true,
     currentMethodDecisionRemainsUnselected: true,
     referenceStatsMustBeExplicit: true,
     providerEquivalenceScopedToCrossProvider: true,
