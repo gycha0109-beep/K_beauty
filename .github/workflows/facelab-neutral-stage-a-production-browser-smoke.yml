@@ -38,10 +38,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - run: node --check app/api/internal/facelab-review-self-smoke/route.js
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
       - name: Attest exact merged-main checkout
@@ -61,7 +61,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
           echo "FACE_LAB_PRODUCTION_BROWSER_SHA=${GITHUB_SHA}"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - run: npm ci
@@ -72,7 +72,7 @@ jobs:
         run: node scripts/run-face-lab-neutral-production-browser-smoke.mjs
       - name: Upload production browser evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: facelab-neutral-stage-a-production-browser-${{ github.sha }}
           path: artifacts/facelab-neutral-stage-a-production-browser.png
