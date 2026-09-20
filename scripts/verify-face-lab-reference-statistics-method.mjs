@@ -50,6 +50,16 @@ for (const centerMethod of contract.supportedResearchMethods.center) {
         scaleMethod,
         percentileMethod: null,
         thresholdMethod: null,
+        sourceReferenceSplitFingerprint:
+          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        comparisonPacketFingerprint:
+          "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        comparisonVersion: "synthetic-verifier-comparison-v0",
+        evidenceRef: "synthetic-verifier-only:method-selection",
+        selectionRationale:
+          "Synthetic verifier exercises supported method-decision shapes only.",
+        holdoutUsedForSelection: false,
+        automaticWinnerSelected: false,
         productionAuthority: false,
         normalizationAuthority: false,
         thresholdAuthority: false
@@ -69,5 +79,7 @@ console.log(JSON.stringify({
   normalizationAuthority: false,
   thresholdAuthority: false,
   supportedResearchMethodsAreNotSelectedMethods: true,
-  holdoutExcludedFromMethodFitting: true
+  holdoutExcludedFromMethodFitting: true,
+  comparisonEvidenceRequiredForSelection: true,
+  automaticWinnerSelectionForbidden: true
 }, null, 2));
