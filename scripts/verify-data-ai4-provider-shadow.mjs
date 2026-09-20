@@ -148,6 +148,12 @@ check(workflow.includes("ko_acne_treatment_pregnancy_unresolved"),
   "workflow must run frozen unresolved scenario");
 check(workflow.includes("validate-data-ai4-provider-shadow-runtime-response.mjs"),
   "deployed provider probe must invoke standalone runtime-response validator");
+check(workflow.includes("Checkout exact runtime probe SHA"),
+  "runtime probe job must checkout the exact main SHA");
+check(workflow.includes("Verify runtime probe checkout"),
+  "runtime probe job must attest checkout before invoking repository validator");
+check(workflow.includes("test -f scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"),
+  "runtime probe checkout must contain standalone validator");
 check(!workflow.includes("<<'NODE'"),
   "DATA-AI4 workflow must not use inline Node heredocs");
 check(runtimeValidator.includes('payload.result !== "PASS"'),
