@@ -83,6 +83,14 @@ assert.throws(
         methodDecisionVersion: "synthetic-verifier-only-method-v0",
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
+        sourceReferenceSplitFingerprint:
+          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceProvider: {
+          source: "synthetic-verifier-provider",
+          sourceVersion: "synthetic-verifier-v0",
+          adapterId: "synthetic-verifier-adapter-v0"
+        },
         referenceSplitOnly: true,
         authority: {
           productionAuthority: false,
@@ -343,6 +351,14 @@ assert.throws(
         methodDecisionVersion: "synthetic-verifier-only-method-v0",
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
+        sourceReferenceSplitFingerprint:
+          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceProvider: {
+          source: "synthetic-verifier-provider",
+          sourceVersion: "synthetic-verifier-v0",
+          adapterId: "synthetic-verifier-adapter-v0"
+        },
         referenceSplitOnly: true,
         authority: {
           productionAuthority: false,
@@ -371,6 +387,14 @@ const candidate = buildFaceSpaceNormalizationCandidate({
         methodDecisionVersion: "synthetic-verifier-only-method-v0",
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
+        sourceReferenceSplitFingerprint:
+          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceProvider: {
+          source: "synthetic-verifier-provider",
+          sourceVersion: "synthetic-verifier-v0",
+          adapterId: "synthetic-verifier-adapter-v0"
+        },
         referenceSplitOnly: true,
         authority: {
           productionAuthority: false,
@@ -408,6 +432,14 @@ assert.throws(
         methodDecisionVersion: "synthetic-verifier-only-method-v0",
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
+        sourceReferenceSplitFingerprint:
+          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceProvider: {
+          source: "synthetic-verifier-provider",
+          sourceVersion: "synthetic-verifier-v0",
+          adapterId: "synthetic-verifier-adapter-v0"
+        },
         referenceSplitOnly: true,
         authority: {
           productionAuthority: false,
@@ -438,6 +470,14 @@ assert.throws(
         methodDecisionVersion: "synthetic-verifier-only-method-v0",
         sourceReferenceCorpusSummarySchemaVersion:
           "face-space-reference-corpus-summary-v0",
+        sourceReferenceSplitFingerprint:
+          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        sourceSamplingFrameProvenanceRef: "synthetic-verifier-only",
+        sourceProvider: {
+          source: "synthetic-verifier-provider",
+          sourceVersion: "synthetic-verifier-v0",
+          adapterId: "synthetic-verifier-adapter-v0"
+        },
         referenceSplitOnly: true,
         authority: {
           productionAuthority: false,
