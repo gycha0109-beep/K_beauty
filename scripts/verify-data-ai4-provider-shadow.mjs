@@ -19,6 +19,7 @@ const execution = read("lib/product-query-recommendation.js");
 const route = read("app/api/internal/product-query-provider-shadow/route.js");
 const oidc = read("lib/product-query-provider-shadow-oidc.js");
 const workflow = read(".github/workflows/data-ai4-provider-shadow.yml");
+const runtimeValidator = read("scripts/validate-data-ai4-provider-shadow-runtime-response.mjs");
 
 check(providerService.includes('import "server-only"'),
   "provider shadow service must stay server-only");
@@ -145,8 +146,20 @@ check(workflow.includes("ko_category_only_cleanser"),
   "workflow must run frozen category-only scenario");
 check(workflow.includes("ko_acne_treatment_pregnancy_unresolved"),
   "workflow must run frozen unresolved scenario");
-check(workflow.includes('payload.result !== "PASS"'),
-  "deployed provider probe must fail unless scenario passes");
+check(workflow.includes("validate-data-ai4-provider-shadow-runtime-response.mjs"),
+  "deployed provider probe must invoke standalone runtime-response validator");
+check(!workflow.includes("<<'NODE'"),
+  "DATA-AI4 workflow must not use inline Node heredocs");
+check(runtimeValidator.includes('payload.result !== "PASS"'),
+  "runtime validator must fail unless provider scenario passes");
+check(runtimeValidator.includes('payload.deploymentRef !== "main"'),
+  "runtime validator must bind evidence to main deployment");
+check(runtimeValidator.includes('payload.persisted !== false'),
+  "runtime validator must require non-persistence");
+check(runtimeValidator.includes('payload.productionWrite !== false'),
+  "runtime validator must require zero Production write");
+check(runtimeValidator.includes('payload.publicActivation !== false'),
+  "runtime validator must require no public activation");
 check(!workflow.includes("OPENAI_API_KEY"),
   "GitHub workflow must not receive provider secret directly");
 check(!workflow.includes("PRODUCT_QUERY_INTENT_MODEL:"),
