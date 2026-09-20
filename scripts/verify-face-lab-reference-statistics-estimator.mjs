@@ -104,6 +104,12 @@ assert.equal(stats.referenceSplitOnly, true);
 assert.equal(stats.referenceSampleCount, 3);
 assert.equal(stats.holdoutSampleCountExcluded, 1);
 assert.equal(stats.methodDecisionVersion, decision.decisionVersion);
+assert.match(stats.sourceReferenceSplitFingerprint, /^sha256:[a-f0-9]{64}$/);
+assert.equal(
+  stats.sourceSamplingFrameProvenanceRef,
+  manifest.samplingFrame.provenanceRef
+);
+assert.deepEqual(stats.sourceProvider, manifest.provider);
 assert.equal(stats.authority.productionAuthority, false);
 assert.equal(stats.authority.normalizationAuthority, false);
 assert.equal(stats.authority.thresholdAuthority, false);
@@ -132,6 +138,10 @@ const statsWithChangedHoldout = estimateFaceSpaceReferenceStatistics({
   methodDecision: decision,
   version: "synthetic-verifier-statistics-holdout-change-v0"
 });
+assert.equal(
+  statsWithChangedHoldout.sourceReferenceSplitFingerprint,
+  stats.sourceReferenceSplitFingerprint
+);
 assert.deepEqual(
   statsWithChangedHoldout.dimensions.map(({ id, unit, center, scale }) => ({
     id,
@@ -175,5 +185,7 @@ console.log(JSON.stringify({
   referenceSplitOnly: true,
   holdoutExcludedFromEstimation: true,
   syntheticVerifierOnly: true,
-  actualReferenceStatisticsPersisted: false
+  actualReferenceStatisticsPersisted: false,
+  exactReferenceSplitFingerprintCarried: true,
+  holdoutDoesNotChangeReferenceFingerprint: true
 }, null, 2));
