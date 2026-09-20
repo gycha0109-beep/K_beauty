@@ -41,6 +41,15 @@ assert.equal(referenceCorpusContract.currentEvidence.corpusManifestPresent, fals
 assert.equal(referenceCorpusContract.currentEvidence.referenceSampleCount, 0);
 assert.equal(referenceCorpusContract.currentEvidence.holdoutSampleCount, 0);
 
+let syntheticReferenceFingerprint =
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+let syntheticReferenceProvenance = "synthetic-verifier-only";
+let syntheticReferenceProvider = {
+  source: "synthetic-verifier-provider",
+  sourceVersion: "synthetic-verifier-v0",
+  adapterId: "synthetic-verifier-adapter-v0"
+};
+
 const currentReadiness = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary,
@@ -406,11 +415,11 @@ const sameProviderReady = evaluateFaceSpaceNormalizationReadiness({
   evidence: completeEvidence
 });
 assert.equal(sameProviderReady.status, "provisional_candidate_ready");
-const syntheticReferenceFingerprint =
+syntheticReferenceFingerprint =
   sameProviderReady.evidenceState.referenceSplitFingerprint;
-const syntheticReferenceProvenance =
+syntheticReferenceProvenance =
   sameProviderReady.evidenceState.referenceCorpusSamplingFrameProvenanceRef;
-const syntheticReferenceProvider =
+syntheticReferenceProvider =
   sameProviderReady.evidenceState.referenceCorpusProvider;
 assert.equal(
   sameProviderReady.evidenceState.referenceCorpusManifestPresent,
