@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
+
+// DATA-AI7 deployed fail-closed contract verifier.
 import { readFileSync } from "node:fs";
 import {
   evaluateProductQueryPreviewPolicy
