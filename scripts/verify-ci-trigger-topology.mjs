@@ -241,6 +241,19 @@ assert(
 assertContains(".github/workflows/v21-admission-g3a-pf-authority-read.yml", [
   "cancel-in-progress: true",
 ]);
+
+const dataAi3Workflow = read(".github/workflows/data-ai3-product-query-shadow.yml");
+const dataAi3PushSection = dataAi3Workflow.split("  pull_request:")[0];
+assert(
+  dataAi3PushSection.includes("    paths:"),
+  "DATA-AI3 deployed shadow probe must not run on every main push",
+);
+assertContains(".github/workflows/data-ai3-product-query-shadow.yml", [
+  "cancel-in-progress: true",
+  "actions/checkout@v7",
+  "actions/setup-node@v7",
+  "node-version: 22",
+]);
 assertNotContains(".github/workflows/mobile-14-auth-app-links.yml", [
   '- "apps/mobile/**"',
   "source-and-web:",
@@ -326,6 +339,7 @@ console.log(JSON.stringify({
   retired_mobile_app_stage_workflows: 0,
   heavy_mobile_root_package_triggers: 0,
   g3a_unbounded_main_push: false,
+  data_ai3_unbounded_main_push: false,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
