@@ -22,7 +22,12 @@
     "identityEmbeddingForbidden": true,
     "biometricIdentityMatchingForbidden": true,
     "rawLandmarkPersistenceForbidden": true,
-    "structuralMeasurementPacketOnly": true
+    "structuralMeasurementPacketOnly": true,
+    "exactBaselineSampleReuseAllowed": true,
+    "conflictingSampleReuseForbidden": true,
+    "sameAssetUnderDifferentSampleIdsForbidden": true,
+    "runnerExecutionProvenanceRequired": true,
+    "inputImageSha256ReceiptRequired": true
   },
   "evidencePromotion": {
     "controlled3dCanSatisfyRealPhotoGate": false,
