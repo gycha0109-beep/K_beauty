@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "face-lab-real-photo-stability-runner-contract-v0",
+  "status": "runner_boundary_ready_real_data_absent",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Define a local real-photo same-subject pose/expression execution path that produces structural stability evidence without persisting raw photos or raw landmarks.",
+  "inputManifestSchemaVersion": "face-lab-real-photo-stability-run-manifest-v0",
+  "allowedSourceSetKinds": [
+    "consented_same_subject_photo_set",
+    "licensed_same_subject_photo_set",
+    "manual_research_capture"
+  ],
+  "executionRules": {
+    "exactImageSha256Required": true,
+    "sameProviderRuntimeRequired": true,
+    "rawImagePersistenceForbidden": true,
+    "rawLandmarkPersistenceForbidden": true,
+    "identityEmbeddingForbidden": true,
+    "biometricIdentityMatchingForbidden": true,
+    "archetypeSeededSourceForbidden": true,
+    "stdoutStructuralEvidenceOnly": true
+  },
+  "currentEvidence": {
+    "realPairManifestPresent": false,
+    "actualRunnerExecuted": false,
+    "realPhotoPairCount": 0,
+    "coveredNuisanceClasses": []
+  }
+}
