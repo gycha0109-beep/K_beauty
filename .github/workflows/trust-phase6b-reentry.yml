@@ -67,7 +67,7 @@ jobs:
           cp tests/fixtures/trust-research-worker/20260915122500_trust_research_worker_fixture.sql "${migration_dir}/"
           cp supabase/migrations/20260915131141_trust_phase3_research_worker_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260919194545_trust_phase6a_reentry_foundation_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260920100000_trust_phase6b_reentry_detectors_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260920200010_trust_phase6b_reentry_detectors_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and run Phase 6A + 6B runtime gates
         shell: bash
