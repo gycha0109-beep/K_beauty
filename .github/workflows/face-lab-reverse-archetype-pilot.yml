@@ -11,6 +11,7 @@ on:
       - "lib/face-lab-face-space-normalization-research.js"
       - "lib/face-lab-face-space-reference-corpus.js"
       - "lib/face-lab-reference-statistics-research.js"
+      - "lib/face-lab-reference-method-comparison-research.js"
       - "lib/face-lab-normalization-holdout-research.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
       - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
@@ -22,6 +23,7 @@ on:
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
       - "scripts/verify-face-lab-reference-statistics-method.mjs"
       - "scripts/verify-face-lab-reference-statistics-estimator.mjs"
+      - "scripts/verify-face-lab-reference-method-comparison.mjs"
       - "scripts/verify-face-lab-normalization-holdout-diagnostic.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
       - "evidence/facelab/photo-geometry/**"
@@ -59,6 +61,7 @@ on:
       - "lib/face-lab-face-space-normalization-research.js"
       - "lib/face-lab-face-space-reference-corpus.js"
       - "lib/face-lab-reference-statistics-research.js"
+      - "lib/face-lab-reference-method-comparison-research.js"
       - "lib/face-lab-normalization-holdout-research.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
       - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
@@ -70,6 +73,7 @@ on:
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
       - "scripts/verify-face-lab-reference-statistics-method.mjs"
       - "scripts/verify-face-lab-reference-statistics-estimator.mjs"
+      - "scripts/verify-face-lab-reference-method-comparison.mjs"
       - "scripts/verify-face-lab-normalization-holdout-diagnostic.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
       - "evidence/facelab/photo-geometry/**"
@@ -164,6 +168,8 @@ jobs:
         run: node scripts/verify-face-lab-reference-statistics-method.mjs
       - name: Verify Face Space reference statistics estimator
         run: node scripts/verify-face-lab-reference-statistics-estimator.mjs
+      - name: Verify Face Space reference method comparison
+        run: node scripts/verify-face-lab-reference-method-comparison.mjs
       - name: Verify Face Space normalization holdout diagnostic
         run: node scripts/verify-face-lab-normalization-holdout-diagnostic.mjs
       - name: Compile GNM v3 PoC runner
