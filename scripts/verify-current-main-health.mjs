@@ -44,6 +44,7 @@ run("TRUST Phase 6A reentry contract", node, ["scripts/verify-trust-phase6a-reen
 run("TRUST Phase 6B reentry detector contract", node, ["scripts/verify-trust-phase6b-reentry-detectors.mjs"]);
 run("TRUST Phase 7A legacy backfill preflight", node, ["scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"]);
 run("TRUST Phase 7B legacy backfill materialization", node, ["scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"]);
+run("TRUST Phase 7C legacy research readiness", node, ["scripts/verify-trust-phase7c-legacy-research-readiness.mjs"]);
 
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
