@@ -73,7 +73,7 @@ jobs:
           cp supabase/migrations/20260915112124_trust_phase2_subject_resolution_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260915112151_trust_phase2_presentation_scope_hardening_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260920233114_trust_phase7a_legacy_backfill_preflight_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260921004500_trust_phase7b_legacy_backfill_materialization_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260921005252_trust_phase7b_legacy_backfill_materialization_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and run Phase 7B runtime
         shell: bash
