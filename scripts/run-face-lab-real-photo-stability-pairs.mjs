@@ -396,7 +396,17 @@ async function main() {
             referenceMeasurement: measurements.reference,
             candidateMeasurement: measurements.candidate,
             nuisance: pair.nuisance,
-            subjectLinkage: pair.subjectLinkage
+            subjectLinkage: pair.subjectLinkage,
+            executionProvenance: {
+              kind: "real_photo_pair_runner",
+              runnerVersion:
+                "face-lab-real-photo-stability-pair-runner-v0",
+              runManifestDigest: manifestSummary.manifestDigest,
+              sourceSetProvenanceRef:
+                runManifest.sourceSet.provenanceRef,
+              referenceImageSha256: pair.reference.sha256,
+              candidateImageSha256: pair.candidate.sha256
+            }
           },
           semanticContract
         )
