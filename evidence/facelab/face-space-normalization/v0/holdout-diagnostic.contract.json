@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "face-space-normalization-holdout-diagnostic-contract-v0",
+  "status": "boundary_defined_data_absent",
+  "productionAuthority": false,
+  "normalizationActivationAuthority": false,
+  "acceptanceThresholdAuthority": false,
+  "purpose": "Define an independent holdout diagnostic boundary for a future provisional same-provider Face Space normalization candidate.",
+  "inputRules": {
+    "validatedReferenceCorpusRequired": true,
+    "provisionalResearchCandidateRequired": true,
+    "referenceSplitOnlyCandidateRequired": true,
+    "holdoutSplitOnlyDiagnosticInput": true,
+    "referenceRecordsExcludedFromDiagnostic": true
+  },
+  "outputRules": {
+    "descriptiveDiagnosticsOnly": true,
+    "passFailDecisionForbidden": true,
+    "acceptanceThresholdForbidden": true,
+    "percentileBoundaryForbidden": true,
+    "archetypeProjectionAuthority": false,
+    "styleRecommendationAuthority": false
+  },
+  "currentEvidence": {
+    "realReferenceCorpusPresent": false,
+    "realHoldoutDiagnosticPresent": false,
+    "productionNormalizationAuthorized": false
+  }
+}
