@@ -285,7 +285,7 @@ begin
   select
     coalesce(jsonb_agg(payload order by product_id),'[]'::jsonb),
     count(*)::integer,
-    max(product_id)
+    (array_agg(product_id order by product_id desc))[1]
   into v_rows,v_batch_count,v_last_product_id
   from rows;
 
