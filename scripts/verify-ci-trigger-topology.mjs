@@ -142,6 +142,7 @@ assertNotContains(".github/workflows/mobile-ci.yml", [
   "npm run verify:mobile-native",
 ]);
 assertContains(".github/workflows/mobile-ci.yml", [
+  "node scripts/verify-mobile-initial-entry-routing.mjs",
   "node scripts/verify-mobile-camera-foundation.mjs",
   "node scripts/verify-mobile-face-guidance.mjs",
 ]);
@@ -207,6 +208,7 @@ for (const path of trustPhaseWorkflows.filter((path) => !path.includes("phase5c-
   assertNotContains(path, ["npm run architecture:guard", "npm run build"]);
 }
 assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Mobile initial-entry routing contract"',
   'run("TRUST Phase 1 intake contract"',
   'run("TRUST Phase 2 subject resolution contract"',
   'run("TRUST Phase 3 research worker contract"',
