@@ -135,6 +135,31 @@ assert.equal(summary.evidenceState.lockedHoldoutPresent, true);
 assert.equal(summary.authority.productionAuthority, false);
 assert.equal(summary.authority.normalizationAuthority, false);
 assert.equal(summary.authority.referenceStatisticsAuthority, false);
+assert.match(summary.referenceSplitFingerprint, /^sha256:[a-f0-9]{64}$/);
+assert.equal(
+  summary.samplingFrameProvenanceRef,
+  manifest.samplingFrame.provenanceRef
+);
+assert.deepEqual(summary.provider, provider);
+
+const holdoutOnlyChanged = structuredClone(manifest);
+holdoutOnlyChanged.records[3].measurement = measurement("holdout_c_1", 10);
+const holdoutOnlyChangedSummary =
+  validateFaceSpaceReferenceCorpus(holdoutOnlyChanged);
+assert.equal(
+  holdoutOnlyChangedSummary.referenceSplitFingerprint,
+  summary.referenceSplitFingerprint
+);
+
+const referenceChanged = structuredClone(manifest);
+referenceChanged.records[0].measurement = measurement("ref_a_1", 0.05);
+const referenceChangedSummary =
+  validateFaceSpaceReferenceCorpus(referenceChanged);
+assert.notEqual(
+  referenceChangedSummary.referenceSplitFingerprint,
+  summary.referenceSplitFingerprint
+);
+
 assert.deepEqual(
   [...summary.dimensionIds].sort(),
   [...FACE_SPACE_REFERENCE_CORPUS_REQUIRED_DIMENSIONS].sort()
@@ -198,6 +223,8 @@ console.log(JSON.stringify({
     identityEmbeddingForbidden: true,
     biometricIdentityMatchingForbidden: true,
     rawImagePacketPersistenceForbidden: true,
-    referenceStatisticsMethodStillUnselected: true
+    referenceStatisticsMethodStillUnselected: true,
+    referenceSplitFingerprintStableAgainstHoldoutChanges: true,
+    referenceSplitFingerprintChangesWithReferenceData: true
   }
 }, null, 2));
