@@ -104,6 +104,13 @@ jobs:
             --amplitude 0.25 \
             --output evidence/facelab/face-space-3d/v0/runtime/gnm-v3-sensitivity.json
 
+      - name: Run controlled same-identity pose and expression stress
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.cache/google-gnm
+        run: |
+          python scripts/face-lab-gnm-v3-poc.py stability \
+            --output evidence/facelab/face-space-3d/v0/runtime/gnm-v3-controlled-stability.json
+
       - name: Show PoC results
         if: always()
         shell: bash
@@ -111,6 +118,7 @@ jobs:
           cat evidence/facelab/face-space-3d/v0/runtime/gnm-v3-probe.json
           cat evidence/facelab/face-space-3d/v0/runtime/gnm-v3-selftest.json
           test ! -f evidence/facelab/face-space-3d/v0/runtime/gnm-v3-sensitivity.json || cat evidence/facelab/face-space-3d/v0/runtime/gnm-v3-sensitivity.json
+          test ! -f evidence/facelab/face-space-3d/v0/runtime/gnm-v3-controlled-stability.json || cat evidence/facelab/face-space-3d/v0/runtime/gnm-v3-controlled-stability.json
 
       - name: Upload research PoC evidence
         if: always()
