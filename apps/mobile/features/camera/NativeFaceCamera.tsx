@@ -396,6 +396,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
             <CameraView
               ref={cameraRef}
               style={styles.fullscreenMedia}
+              animateShutter={false}
               facing="front"
               mode="picture"
               mirror
