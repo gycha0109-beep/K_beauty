@@ -113,6 +113,13 @@ const readiness = {
   schemaVersion: "face-space-normalization-readiness-v0",
   normalizationVersion: "face-space-normalization-research-v0",
   status: "provisional_candidate_ready",
+  evidenceState: {
+    referenceCorpusManifestPresent: true,
+    referenceSplitFingerprint: statistics.sourceReferenceSplitFingerprint,
+    referenceCorpusSamplingFrameProvenanceRef:
+      statistics.sourceSamplingFrameProvenanceRef,
+    referenceCorpusProvider: statistics.sourceProvider
+  },
   dimensions: dimensions.map(([id, unit]) => ({
     id,
     unit,
@@ -208,5 +215,6 @@ console.log(JSON.stringify({
   holdoutChangesDoNotInvalidateReferenceBinding: true,
   syntheticVerifierOnly: true,
   actualHoldoutDiagnosticPersisted: false,
-  methodSelectionBoundToComparisonEvidence: true
+  methodSelectionBoundToComparisonEvidence: true,
+  candidateBoundToReadinessCorpusLineage: true
 }, null, 2));
