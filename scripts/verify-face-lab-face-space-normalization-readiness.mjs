@@ -182,6 +182,18 @@ const completeRealPhotoReports = realPhotoNuisanceFixtures.map(
           method: "dataset_same_subject_provenance",
           evidenceRef: "synthetic-verifier-provenance:" + index,
           biometricIdentityMatchPerformed: false
+        },
+        executionProvenance: {
+          kind: "real_photo_pair_runner",
+          runnerVersion: "face-lab-real-photo-stability-pair-runner-v0",
+          runManifestDigest:
+            "sha256:" + String((index % 9) + 1).repeat(64),
+          sourceSetProvenanceRef:
+            "synthetic-verifier-normalization-source-set",
+          referenceImageSha256:
+            String((index % 9) + 1).repeat(64),
+          candidateImageSha256:
+            String(((index + 4) % 9) + 1).repeat(64)
         }
       },
       semanticContract
@@ -762,6 +774,7 @@ console.log(JSON.stringify({
     controlled3dDoesNotSatisfyRealPhotoGate: true,
     callerBooleansCannotSatisfyRealPhotoGate: true,
     validatedRealPhotoReportsRequiredForPoseExpressionGate: true,
+    realPhotoReportsRequireRunnerProvenance: true,
     manualCoverageFlagsCannotBypassReferenceCorpusManifest: true,
     validatedReferenceCorpusManifestRequiredForCoverageGates: true,
     callerSuppliedReferenceCorpusSummaryForbidden: true,
