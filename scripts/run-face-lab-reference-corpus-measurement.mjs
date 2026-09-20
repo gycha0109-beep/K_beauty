@@ -8,8 +8,8 @@ import {
   validateFaceSpaceReferenceCorpusSourceManifest
 } from "../lib/face-lab-reference-corpus-source-manifest.js";
 import {
-  validateFaceSpaceReferenceCorpus
-} from "../lib/face-lab-face-space-reference-corpus.js";
+  buildFaceSpaceReferenceCorpusRunOutput
+} from "../lib/face-lab-reference-corpus-run-output.js";
 import {
   buildPhotoGeometryMeasurementFromFaceLandmarkerResult
 } from "../lib/face-lab-mediapipe-metric-geometry.js";
@@ -167,17 +167,7 @@ async function main() {
     validateFaceSpaceReferenceCorpusSourceManifest(sourceManifest);
 
   if (validateOnly) {
-    console.log(JSON.stringify({
-      ok: true,
-      validateOnly: true,
-      runnerVersion: RUNNER_VERSION,
-      sourceSummary,
-      authority: {
-        productionAuthority: false,
-        normalizationAuthority: false,
-        thresholdAuthority: false
-      }
-    }, null, 2));
+    console.log(JSON.stringify(output, null, 2));
     return;
   }
 
@@ -300,7 +290,7 @@ async function main() {
       browserResults.map((result) => [result.sampleId, result])
     );
 
-    const records = sourceManifest.records.map((sourceRecord) => {
+    const measurements = sourceManifest.records.map((sourceRecord) => {
       const browserResult = resultBySampleId.get(sourceRecord.sampleId);
       assert.ok(
         browserResult,
@@ -347,58 +337,20 @@ async function main() {
 
       return {
         sampleId: sourceRecord.sampleId,
-        subjectGroupId: sourceRecord.subjectGroupId,
-        nearDuplicateFamilyId:
-          sourceRecord.nearDuplicateFamilyId || null,
-        provenanceRef: sourceRecord.provenanceRef,
-        split: sourceRecord.split,
-        archetypeGroundTruth: null,
-        identityEmbeddingCreated: false,
-        biometricIdentityMatchPerformed: false,
-        rawImagePersistedInPacket: false,
-        eligibilityQuality: {
-          eligible: true,
-          qualityStatus:
-            sourceRecord.eligibilityQuality.qualityStatus
-        },
-        sourceReceipt: {
-          runnerVersion: RUNNER_VERSION,
-          sourceManifestDigest: sourceSummary.sourceManifestDigest,
-          sourceImageSha256: sourceRecord.image.sha256
-        },
         measurement: bridged.measurement
       };
     });
 
-    const corpus = {
-      schemaVersion: "face-space-reference-corpus-v0",
-      productionAuthority: false,
-      normalizationAuthority: false,
-      samplingFrame: {
-        kind: sourceManifest.samplingFrame.kind,
-        provenanceRef:
-          sourceManifest.samplingFrame.provenanceRef,
-        archetypeSeeded: false,
-        generalFaceIntent: true
-      },
-      provider: {
+    const output = buildFaceSpaceReferenceCorpusRunOutput({
+      sourceManifest,
+      measurements,
+      runtimeProvider: {
         source: photoManifest.provider,
         sourceVersion: photoManifest.providerVersion,
         adapterId: photoManifest.adapterId
       },
-      sourceExecution: {
-        runnerVersion: RUNNER_VERSION,
-        sourceManifestDigest: sourceSummary.sourceManifestDigest,
-        rawImagePersisted: false,
-        rawLandmarksPersisted: false,
-        identityEmbeddingCreated: false,
-        biometricIdentityMatchPerformed: false
-      },
-      records
-    };
-
-    const corpusSummary =
-      validateFaceSpaceReferenceCorpus(corpus);
+      runnerVersion: RUNNER_VERSION
+    });
 
     const allowedExternalOrigins = new Set([
       new URL(imageRuntimeMetadata.tasksVision.moduleUrl).origin,
