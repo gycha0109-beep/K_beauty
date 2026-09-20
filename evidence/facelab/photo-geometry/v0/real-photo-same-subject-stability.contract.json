@@ -34,6 +34,16 @@
   "currentEvidence": {
     "realPhotoPairCount": 0,
     "coveredNuisanceClasses": [],
-    "readiness": "not_ready"
+    "readiness": "not_ready",
+    "runnerImplemented": true
+  },
+  "executionPath": {
+    "runManifestSchemaVersion": "face-lab-real-photo-stability-run-manifest-v0",
+    "runnerScript": "scripts/run-face-lab-real-photo-stability-pairs.mjs",
+    "validatorScript": "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs",
+    "runnerImplemented": true,
+    "actualRealPairExecutionRequiredForEvidence": true,
+    "ciMayUseSyntheticManifestOnly": true,
+    "ciSyntheticManifestMaySatisfyRealPhotoGate": false
   }
 }
