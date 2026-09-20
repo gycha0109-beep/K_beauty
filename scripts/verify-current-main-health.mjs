@@ -69,6 +69,7 @@ run("DATA-AI4 provider-backed shadow contract", node, ["scripts/verify-data-ai4-
 run("DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);
 run("DATA-AI6 controlled product-query preview contract", node, ["scripts/verify-data-ai6-product-query-preview.mjs"]);
 run("DATA-AI7 test/stage repeatability canary contract", node, ["scripts/verify-data-ai7-stage-canary.mjs"]);
+run("DATA-AI7 test/stage repeatability canary runtime", node, ["scripts/verify-data-ai7-stage-canary-runtime.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
