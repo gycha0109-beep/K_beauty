@@ -17,6 +17,7 @@ function read(path) {
 }
 
 const policy = read("lib/product-query-stage-canary-policy.mjs");
+const core = read("lib/product-query-stage-canary-core.mjs");
 const service = read("lib/server/product-query-stage-canary-service.js");
 const route = read("app/api/my/product-query-stage-canary/route.js");
 const previewService = read("lib/server/product-query-preview-service.js");
@@ -75,14 +76,21 @@ check(policy.includes('vercelEnv === "preview" || nodeEnv === "test"'),
 check(policy.includes('vercelEnv !== "production"'),
   "DATA-AI7 policy must explicitly exclude Vercel Production");
 
+check(core.includes('"product-query-stage-canary-v1"'),
+  "DATA-AI7 contract version must be frozen in the shared core");
+check((core.match(/await executePreview\(query\)/g) || []).length === 2,
+  "DATA-AI7 core must perform exactly two controlled repetitions");
+check(core.includes('evidenceRetention: "request_local_only"'),
+  "DATA-AI7 evidence must remain request-local");
+check(core.includes("persisted: false"),
+  "DATA-AI7 core must remain explicitly non-persistent");
+
 check(service.includes('import "server-only"'),
   "DATA-AI7 service must stay server-only");
-check(service.includes('"product-query-stage-canary-v1"'),
-  "DATA-AI7 contract version must be frozen");
-check((service.match(/await executeProductQueryPreview\(query\)/g) || []).length === 2,
-  "DATA-AI7 must perform exactly two controlled repetitions");
-check(service.includes('evidenceRetention: "request_local_only"'),
-  "DATA-AI7 evidence must remain request-local");
+check(service.includes("executeProductQueryStageCanaryCore"),
+  "DATA-AI7 server service must delegate to the shared tested core");
+check(service.includes("executePreview: executeProductQueryPreview"),
+  "DATA-AI7 server service must bind only the existing DATA-AI6 preview executor");
 check(service.includes("effectiveSampleBps: 0"),
   "DATA-AI7 service must freeze traffic sampling at zero");
 check(service.includes("profileRead: false") && service.includes("historyRead: false"),
