@@ -209,7 +209,7 @@ jobs:
           printf 'MOBILE_15_ANDROID_SIGNED_AAB=PASS\n'
 
       - name: Upload signed Android distribution artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bejewely-mobile15-android-${{ github.sha }}
           retention-days: 14
@@ -404,7 +404,7 @@ jobs:
           printf 'MOBILE_15_IOS_SIGNED_IPA=PASS\n'
 
       - name: Upload signed iOS distribution artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bejewely-mobile15-ios-${{ github.sha }}
           retention-days: 14

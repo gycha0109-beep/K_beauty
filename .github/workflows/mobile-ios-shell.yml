@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload iOS Simulator app and runtime evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bejewely-mobile-ios-shell-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: warn

@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload App Store screenshot package
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bejewely-mobile-20d-app-store-screenshots-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: error

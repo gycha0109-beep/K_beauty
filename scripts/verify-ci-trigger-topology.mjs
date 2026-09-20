@@ -312,6 +312,24 @@ for (const path of [
   ]);
 }
 
+const workflowFiles = readdirSync(".github/workflows")
+  .filter((name) => /\.ya?ml$/i.test(name))
+  .sort();
+const retiredFirstPartyActionMajors = [
+  "actions/checkout@v4",
+  "actions/setup-node@v4",
+  "actions/upload-artifact@v4",
+];
+for (const name of workflowFiles) {
+  const source = read(`.github/workflows/${name}`);
+  for (const action of retiredFirstPartyActionMajors) {
+    assert(
+      !source.includes(action),
+      `.github/workflows/${name} must not use retired first-party action runtime: ${action}`,
+    );
+  }
+}
+
 const architectureGuard = read("scripts/architecture-guard.mjs");
 assert(
   architectureGuard.includes("ARCHITECTURE_GUARD_BASE_SHA"),
@@ -350,5 +368,6 @@ console.log(JSON.stringify({
   admin_integration_node22: true,
   trust_static_baseline_canonicalized: true,
   legacy_node20_workflows: 0,
+  retired_first_party_action_runtimes: 0,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));

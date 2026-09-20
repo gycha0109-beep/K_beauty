@@ -51,7 +51,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.G3A_CHECKOUT_SHA }}
           fetch-depth: 1

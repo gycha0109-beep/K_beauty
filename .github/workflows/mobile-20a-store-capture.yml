@@ -135,7 +135,7 @@ jobs:
 
       - name: Upload store capture candidates
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bejewely-mobile-20a-store-capture-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: warn
