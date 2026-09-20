@@ -30,7 +30,6 @@ on:
       - "docs/domain/facelab/face-lab-reverse-archetype-r-a2-pilot-v1.md"
       - "docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md"
       - "docs/domain/facelab/face-lab-face-space-style-compatibility-architecture-v1.md"
-      - "package.json"
       - ".github/workflows/face-lab-reverse-archetype-pilot.yml"
   push:
     branches:
@@ -63,19 +62,22 @@ on:
       - "docs/domain/facelab/face-lab-reverse-archetype-r-a2-pilot-v1.md"
       - "docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md"
       - "docs/domain/facelab/face-lab-face-space-style-compatibility-architecture-v1.md"
-      - "package.json"
       - ".github/workflows/face-lab-reverse-archetype-pilot.yml"
 
 permissions:
   contents: read
 
+concurrency:
+  group: face-lab-reverse-archetype-pilot-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
@@ -87,7 +89,7 @@ jobs:
           ACTUAL="$(git rev-parse HEAD)"
           test "$ACTUAL" = "$EXPECTED"
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
       - name: Verify reverse archetype pilot boundary
