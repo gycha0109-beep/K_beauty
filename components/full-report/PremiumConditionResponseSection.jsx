@@ -1,171 +1,26 @@
 "use client";
-
-const STATUS_COPY = {
-  ko: {
-    maintain: {
-      label: "유지하기",
-      tone: "border-emerald-300/35 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200"
-    },
-    reduce: {
-      label: "강도 줄이기",
-      tone: "border-sky-300/35 bg-sky-500/12 text-sky-700 dark:text-sky-200"
-    },
-    avoid_for_now: {
-      label: "당분간 확장 보류",
-      tone: "border-amber-300/40 bg-amber-500/14 text-amber-700 dark:text-amber-200"
-    },
-    kicker: "CONDITION RESPONSE",
-    title: "컨디션 대응",
-    body: "피부가 흔들리는 날에는 루틴을 더하는 것보다 조정하는 편이 좋을 수 있어요.",
-    fallbackTitle: "컨디션 대응 데이터가 아직 없어요",
-    fallbackBody: "저장된 구형 리포트에는 컨디션 대응 데이터가 없어 루틴 상담과 기능성 판단을 기준으로 확인해 주세요.",
-    reasons: "근거",
-    action: "임시 조정",
-    cta: "Face Lab 보기"
-  },
-  en: {
-    maintain: {
-      label: "Keep",
-      tone: "border-emerald-300/35 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200"
-    },
-    reduce: {
-      label: "Reduce intensity",
-      tone: "border-sky-300/35 bg-sky-500/12 text-sky-700 dark:text-sky-200"
-    },
-    avoid_for_now: {
-      label: "Hold expansion",
-      tone: "border-amber-300/40 bg-amber-500/14 text-amber-700 dark:text-amber-200"
-    },
-    kicker: "CONDITION RESPONSE",
-    title: "Condition response",
-    body: "On unstable skin days, adjusting the routine can matter more than adding more.",
-    fallbackTitle: "Condition response is not available yet",
-    fallbackBody: "This saved report does not include condition response data, so use the routine consult and active goal check instead.",
-    reasons: "Why",
-    action: "Temporary adjustment",
-    cta: "Open Face Lab"
-  }
-};
-
-function getCopy(locale) {
-  return locale === "en" ? STATUS_COPY.en : STATUS_COPY.ko;
-}
-
-function statusRank(status) {
-  return { maintain: 0, reduce: 1, avoid_for_now: 2 }[status] ?? 1;
-}
-
-function sanitizeResponse(item) {
-  if (!item || typeof item !== "object") {
-    return null;
-  }
-
-  const responseKey = String(item.responseKey || "").trim();
-  const status = String(item.status || "").trim();
-  const title = typeof item.title === "string" ? item.title.trim() : "";
-  const summary = typeof item.summary === "string" ? item.summary.trim() : "";
-
-  if (!responseKey || !["maintain", "reduce", "avoid_for_now"].includes(status) || !title || !summary) {
-    return null;
-  }
-
-  return {
-    responseKey,
-    status,
-    title,
-    summary,
-    reasons: Array.isArray(item.reasons)
-      ? item.reasons
-          .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
-          .filter(Boolean)
-          .slice(0, 2)
-      : [],
-    action: typeof item.action === "string" && item.action.trim() ? item.action.trim() : null
-  };
-}
-
-export default function PremiumConditionResponseSection({ conditionPlan = null, responses = [], locale = "ko", onNavigate }) {
-  const copy = getCopy(locale);
+import { list } from "@/lib/full-report-presentation";
+import { Header, Hero, CTA, Heading, Disclosure, Evidence, Warning, Empty, Icon, styles } from "./ReportUI";
+const GROUPS = [["maintain", "keep", "유지", "Keep"], ["reduce", "adjust", "줄이기", "Reduce"], ["avoid_for_now", "hold", "잠시 보류", "Pause"]];
+export default function PremiumConditionResponseSection({ conditionPlan = null, responses = [], safety = [], locale = "ko", onNavigate, onComplete }) {
+  const en = locale === "en";
   const canonicalResponses = Array.isArray(conditionPlan?.responses) ? conditionPlan.responses : null;
-  const source = canonicalResponses ? "canonical" : "legacy_adapter";
-  const items = (canonicalResponses || (Array.isArray(responses) ? responses : []))
-    .map(sanitizeResponse)
-    .filter(Boolean)
-    .sort((left, right) => statusRank(left.status) - statusRank(right.status))
-    .slice(0, 5);
-
-  return (
-    <section className="ui-card p-5 sm:p-6" data-condition-source={source}>
-      <div className="min-w-0">
-        <p className="ui-kicker">{copy.kicker}</p>
-        <h3 className="ui-title mt-2 text-xl leading-tight">{copy.title}</h3>
-        <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.body}</p>
-      </div>
-
-      {items.length ? (
-        <div className="mt-5 grid gap-3">
-          {items.map((item) => {
-            const statusCopy = copy[item.status] || copy.reduce;
-
-            return (
-              <article
-                key={item.responseKey}
-                className="rounded-[1rem] border border-white/10 bg-white/5 px-4 py-4"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`max-w-full rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-5 ${statusCopy.tone}`}>
-                    {statusCopy.label}
-                  </span>
-                  <h4 className="min-w-0 flex-1 text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-100">
-                    {item.title}
-                  </h4>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                  {item.summary}
-                </p>
-                {item.reasons.length ? (
-                  <div className="mt-3 space-y-1.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-                      {copy.reasons}
-                    </p>
-                    {item.reasons.map((reason) => (
-                      <p key={reason} className="text-xs leading-5 text-zinc-600 dark:text-zinc-300">
-                        {reason}
-                      </p>
-                    ))}
-                  </div>
-                ) : null}
-                {item.action ? (
-                  <p className="mt-3 rounded-[0.85rem] border border-white/10 bg-white/5 px-3 py-2 text-xs leading-5 text-zinc-700 dark:text-zinc-300">
-                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">{copy.action} · </span>
-                    {item.action}
-                  </p>
-                ) : null}
-              </article>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="mt-5 rounded-[1rem] border border-white/10 bg-white/5 px-4 py-4">
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{copy.fallbackTitle}</p>
-          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{copy.fallbackBody}</p>
-        </div>
-      )}
-
-      {conditionPlan?.globalNotice ? (
-        <p className="mt-4 rounded-[0.85rem] border border-amber-300/20 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-700 dark:text-amber-200">
-          {conditionPlan.globalNotice}
-        </p>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={() => onNavigate?.("face-lab")}
-        className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] px-4 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(215,111,91,0.22)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2aa91]/70 sm:w-auto"
-      >
-        {copy.cta}
-        <span className="ml-2" aria-hidden="true">&rarr;</span>
-      </button>
-    </section>
-  );
+  const items = list(canonicalResponses || responses);
+  const source = canonicalResponses ? "canonical" : "legacy_snapshot";
+  const unknown = items.filter((item) => !GROUPS.some(([key]) => key === item.status));
+  return <section className={styles.page} data-report-section="condition" data-condition-source={source}>
+    <Header title={en ? "Situational care" : "상황별 대응"} body={en ? "Review temporary guidance for the situations recorded in this report." : "피부가 달라지는 상황에 맞춘 대응 방법을 확인해요."} locale={locale} onNavigate={onNavigate}/>
+    <Hero label={en ? "Situational skincare guide" : "상황별 스킨케어 가이드"} title={en ? "Adjust only when the situation applies." : "해당하는 상황에 맞춰 루틴을 조정하세요."} body={en ? "Not every listed situation is happening now. This is temporary guidance, not a new baseline." : "평소 루틴과 구분해서 확인하세요. 아래 상황이 모두 현재 발생했다는 뜻은 아니에요."} actions={<><CTA secondary onClick={() => onNavigate("product-plan")}>{en ? "Previous" : "이전"}</CTA><CTA onClick={onComplete}>{en ? "Finish / My reports" : "완료 / 보관함 보기"}</CTA></>}>
+      <div className={styles.compactCounts}>{GROUPS.map(([key, tone, ko, english]) => <div key={key} data-tone={tone}><Icon name={tone}/><div><strong>{en ? english : ko}</strong><p>{items.filter((item) => item.status === key).length}{en ? " items" : "건"}</p></div></div>)}</div>
+    </Hero>
+    {!items.length && <Empty>{en ? "No situational responses are saved." : "저장된 상황별 대응 데이터가 없어요."}</Empty>}
+    {GROUPS.map(([key, tone, ko, english]) => {
+      const group = items.filter((item) => item.status === key);
+      return group.length ? <section key={key} className={styles.conditionGroup} data-tone={tone}><div className={styles.groupLabel}><Icon name={tone}/><h2>{en ? english : ko}</h2><small>{group.length}{en ? " items" : "건"}</small></div><div>{group.map((item, i) => <article key={item.responseKey || i}><h3>{item.title}</h3><p>{item.summary}</p>{item.action && <p>{item.action}</p>}<Disclosure title={en ? "Decision evidence" : "판단 근거 보기"}><Evidence items={item.reasons}/>{list(item.returnCriteria).length > 0 && <><h4>{en ? "Return criteria" : "복귀 기준"}</h4><Evidence items={item.returnCriteria}/></>}{list(item.escalationCriteria).length > 0 && <><h4>{en ? "Escalation criteria" : "추가 상담 기준"}</h4><Evidence items={item.escalationCriteria}/></>}{item.triggerState && <p>{en ? "Recorded trigger state" : "저장된 상황 상태"}: {item.triggerState}</p>}</Disclosure></article>)}</div></section> : null;
+    })}
+    {unknown.map((item, i) => <article className={styles.card} key={i}><h3>{item.title}</h3><p>{item.summary}</p><p>{en ? "Status needs review" : "상태 확인 필요"}</p><Evidence items={item.reasons}/></article>)}
+    {items.some((item) => item.action) && <><Heading>{en ? "What to do" : "지금 할 일"}</Heading><ol className={styles.actionList}>{items.filter((item) => item.action).map((item, i) => <li key={i}><span>{i + 1}</span><div><strong>{item.title}</strong><p>{item.action}</p></div></li>)}</ol></>}
+    {list(safety).length > 0 && <><Heading>{en ? "Saved safety guide" : "공통 안전 가이드"}</Heading><div className={styles.card}><Evidence items={safety}/></div></>}
+    <Warning>{conditionPlan?.globalNotice}</Warning>
+  </section>;
 }

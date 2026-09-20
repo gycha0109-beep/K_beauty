@@ -82,7 +82,7 @@ for (const key of ["currentProducts", "usage", "recentContext", "decisionFocus"]
 
 assert.match(page, /premiumIntake:\s*premiumIntake \|\| undefined/);
 assert.match(page, /setPremiumIntake\(intake\)/);
-assert.match(page, /PremiumIntakeSummaryCard/);
+assert.match(page, /TodayStartPlanStep/); // Intake focus and response states are presented in the new report sectors.
 assert.match(page, /recentlyChangedProduct/);
 assert.match(page, /productReaction/);
 assert.match(page, /functional_addition/);
