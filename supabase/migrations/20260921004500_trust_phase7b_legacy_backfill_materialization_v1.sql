@@ -57,7 +57,7 @@ begin
       using errcode='22023';
   end if;
 
-  if p_cohort not in ('GOVERNED_SUBJECT','SUBJECT_REVIEW') then
+  if p_cohort is null or p_cohort not in ('GOVERNED_SUBJECT','SUBJECT_REVIEW') then
     raise exception 'trust_phase7b_cohort_invalid:%',coalesce(p_cohort,'<null>')
       using errcode='22023';
   end if;
@@ -156,6 +156,7 @@ begin
     select value from jsonb_array_elements(v_selected_rows)
   loop
     v_product_id := (v_row->>'product_id')::uuid;
+    perform pg_advisory_xact_lock(hashtextextended('trust-phase7b-product:' || v_product_id::text,0));
     v_category := v_row->>'category';
     v_market := v_row->'subject_projection'->>'market';
     v_projected_identity_state := v_row->'subject_projection'->>'projected_identity_state';
@@ -307,6 +308,7 @@ begin
 
       if v_inserted_intake_id is not null then
         if v_subject_id is not null then
+          v_existing_subject_task_id := null;
           select t.id into v_existing_subject_task_id
           from public.product_fact_research_tasks t
           where t.subject_id=v_subject_id
