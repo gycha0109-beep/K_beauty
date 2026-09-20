@@ -67,7 +67,7 @@ jobs:
           cp tests/fixtures/trust-subject-resolution/20260915100000_trust_subject_resolution_fixture_extension.sql "${migration_dir}/"
           cp supabase/migrations/20260915112124_trust_phase2_subject_resolution_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260915112151_trust_phase2_presentation_scope_hardening_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260920203000_trust_phase7a_legacy_backfill_preflight_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260920233114_trust_phase7a_legacy_backfill_preflight_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and run Phase 7A runtime
         shell: bash

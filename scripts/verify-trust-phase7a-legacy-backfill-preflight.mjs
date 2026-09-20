@@ -5,7 +5,7 @@ import path from "node:path";
 
 const migrationPath = path.join(
   process.cwd(),
-  "supabase/migrations/20260920203000_trust_phase7a_legacy_backfill_preflight_v1.sql",
+  "supabase/migrations/20260920233114_trust_phase7a_legacy_backfill_preflight_v1.sql",
 );
 
 if (!fs.existsSync(migrationPath)) throw new Error("missing Phase 7-A migration");
