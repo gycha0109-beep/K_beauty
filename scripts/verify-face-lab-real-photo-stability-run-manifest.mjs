@@ -130,6 +130,30 @@ assert.notEqual(
   summary.manifestDigest
 );
 
+const reusedBaseline = structuredClone(manifest);
+reusedBaseline.pairs[1].reference = structuredClone(
+  reusedBaseline.pairs[0].reference
+);
+const reusedBaselineSummary =
+  validateRealPhotoStabilityRunManifest(reusedBaseline);
+assert.equal(reusedBaselineSummary.pairCount, 4);
+assert.equal(reusedBaselineSummary.opaqueSampleCount, 7);
+
+const conflictingReuse = structuredClone(reusedBaseline);
+conflictingReuse.pairs[1].reference.sha256 = "e".repeat(64);
+assert.throws(
+  () => validateRealPhotoStabilityRunManifest(conflictingReuse),
+  /sample_conflict/
+);
+
+const assetAlias = structuredClone(manifest);
+assetAlias.pairs[1].reference.sha256 =
+  assetAlias.pairs[0].reference.sha256;
+assert.throws(
+  () => validateRealPhotoStabilityRunManifest(assetAlias),
+  /asset_alias/
+);
+
 const incomplete = structuredClone(manifest);
 incomplete.pairs = incomplete.pairs.filter(
   (item) => item.nuisance.class !== "expression"
@@ -154,6 +178,9 @@ console.log(JSON.stringify({
     archetypeSeededSourceRejected: true,
     actualRealPhotoEvidenceStillAbsent: true,
     manifestDigestIgnoresLocalPaths: true,
-    manifestDigestBindsImageSha256: true
+    manifestDigestBindsImageSha256: true,
+    exactBaselineSampleReuseAllowed: true,
+    conflictingSampleReuseRejected: true,
+    duplicateAssetAliasRejected: true
   }
 }, null, 2));
