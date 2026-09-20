@@ -98,7 +98,8 @@
     "verify:face-lab-photo-geometry-runtime": "node scripts/verify-face-lab-photo-geometry-runtime.mjs",
     "verify:face-lab-photo-geometry-image-e2e": "node scripts/verify-face-lab-photo-geometry-image-e2e.mjs",
     "verify:face-lab-photo-geometry-stability-contract": "node scripts/verify-face-lab-photo-geometry-stability-contract.mjs",
-    "verify:face-lab-photo-geometry-stability": "node scripts/verify-face-lab-photo-geometry-stability.mjs"
+    "verify:face-lab-photo-geometry-stability": "node scripts/verify-face-lab-photo-geometry-stability.mjs",
+    "verify:face-lab-face-space-normalization-readiness": "node scripts/verify-face-lab-face-space-normalization-readiness.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
