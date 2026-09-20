@@ -1,0 +1,123 @@
+name: TRUST Phase 7C Legacy Research Readiness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/*trust_phase7c_*.sql"
+      - "tests/fixtures/trust-phase7c-readiness/**"
+      - "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/trust-phase7c-readiness.yml"
+  push:
+    branches: [main, "feat/trust-phase7c-legacy-research-readiness"]
+    paths:
+      - "supabase/migrations/*trust_phase7c_*.sql"
+      - "tests/fixtures/trust-phase7c-readiness/**"
+      - "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/trust-phase7c-readiness.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_CLI_VERSION: 2.117.0
+
+jobs:
+  runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify TRUST static regressions
+        run: |
+          node scripts/verify-trust-research-worker.mjs
+          node scripts/verify-trust-phase6a-reentry.mjs
+          node scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs
+          node scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs
+          node scripts/verify-trust-phase7c-legacy-research-readiness.mjs
+
+      - name: Prepare isolated TRUST runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_dir="${RUNNER_TEMP}/trust-phase7c-runtime"
+          echo "TRUST_RUNTIME_DIR=${runtime_dir}" >>"${GITHUB_ENV}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init --workdir "${runtime_dir}" --force
+          migration_dir="${runtime_dir}/supabase/migrations"
+          mkdir -p "${migration_dir}"
+          cp supabase/migrations/20260730152900_admin_access_foundation.sql "${migration_dir}/"
+          cp tests/fixtures/trust-intake-foundation/20260915090000_trust_intake_foundation_fixture.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095306_trust_phase1_intake_foundation_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095333_trust_phase1_intake_delivery_hardening_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095347_trust_phase1_promotion_decoupling_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-subject-resolution/20260915100000_trust_subject_resolution_fixture_extension.sql "${migration_dir}/"
+          cp supabase/migrations/20260915112124_trust_phase2_subject_resolution_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915112151_trust_phase2_presentation_scope_hardening_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-research-worker/20260915122500_trust_research_worker_fixture.sql "${migration_dir}/"
+          cp supabase/migrations/20260915131141_trust_phase3_research_worker_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260919194545_trust_phase6a_reentry_foundation_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-phase7c-readiness/20260921185000_trust_phase7c_fixture.sql "${migration_dir}/"
+          cp supabase/migrations/20260921190000_trust_phase7c_legacy_research_readiness_v1.sql "${migration_dir}/"
+
+      - name: Start isolated Supabase and run Phase 7C runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_log="${RUNNER_TEMP}/trust-phase7c-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start             --workdir "${TRUST_RUNTIME_DIR}"             --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor             >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${TRUST_RUNTIME_DIR}"
+          DB_PORT="$(awk 'BEGIN{in_db=0} /^\[db\]/{in_db=1;next} /^\[/{in_db=0} in_db && /^port =/{gsub(/[^0-9]/,"",$0);print $0;exit}' "${TRUST_RUNTIME_DIR}/supabase/config.toml")"
+          test -n "$DB_PORT"
+          DB="postgresql://postgres:postgres@127.0.0.1:${DB_PORT}/postgres"
+          psql "$DB" -qAt -v ON_ERROR_STOP=1             -f tests/fixtures/trust-phase7c-readiness/verify_trust_phase7c_runtime.sql             | tee "${RUNNER_TEMP}/trust-phase7c-runtime.log"
+          grep -q '^TRUST_PHASE7C_LEGACY_RESEARCH_READINESS_RUNTIME_VERIFIED$' "${RUNNER_TEMP}/trust-phase7c-runtime.log"
+
+      - name: Check exact-head diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          git diff --check "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}...${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" || git diff --check HEAD^
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -n "${TRUST_RUNTIME_DIR:-}" && -d "${TRUST_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop --workdir "${TRUST_RUNTIME_DIR}" --no-backup
+          fi
+          rm -rf -- "${TRUST_RUNTIME_DIR:-${RUNNER_TEMP}/trust-phase7c-runtime}"
