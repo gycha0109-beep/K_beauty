@@ -35,6 +35,8 @@
     "A provisional normalization candidate remains research-only and must not activate Archetype, Face Space production, or style recommendation.",
     "No identity embedding or biometric identity matching may be used to establish same-subject linkage; linkage must come from dataset provenance or manual research metadata.",
     "Real-photo pose/expression readiness must be derived from validated real-photo stability reports; caller-supplied booleans or evidence-kind strings cannot satisfy the gate.",
-    "The readiness evaluator re-summarizes and validates the supplied real-photo report collection before using it."
+    "The readiness evaluator re-summarizes and validates the supplied real-photo report collection before using it.",
+    "Reference-corpus coverage readiness must be derived by validating a raw face-space-reference-corpus-v0 manifest inside the readiness evaluator.",
+    "Caller-supplied reference-corpus summary objects are forbidden as readiness inputs."
   ]
 }
