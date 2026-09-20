@@ -7,7 +7,8 @@
   "sourceEvidence": {
     "semanticContractPath": "evidence/facelab/structural-measurement/v0/semantic-contract.json",
     "stabilitySummaryPath": "evidence/facelab/photo-geometry/v0/photo-geometry-stability-evidence-summary.json",
-    "controlled3dStabilityPath": "evidence/facelab/face-space-3d/v0/gnm-v3-controlled-stability-evidence.json"
+    "controlled3dStabilityPath": "evidence/facelab/face-space-3d/v0/gnm-v3-controlled-stability-evidence.json",
+    "referenceCorpusContractPath": "evidence/facelab/face-space-normalization/v0/reference-corpus.contract.json"
   },
   "currentBlockers": [
     "single_fixture_only",
@@ -26,6 +27,8 @@
   "rules": [
     "Current face-space-normalization-research-v0 name is a research namespace, not calibrated normalization authority.",
     "No center, scale, percentile, enum boundary, or production threshold may be invented from the current single-fixture evidence.",
+    "Multi-subject coverage, general-face coverage, and reference-distribution readiness must come from a validated face-space-reference-corpus-summary-v0; caller-supplied booleans cannot satisfy those gates.",
+    "A structurally valid reference-corpus summary can establish corpus coverage readiness only. It does not authorize center/scale statistics, thresholds, normalization activation, or substitute for real-photo pose/expression stability.",
     "Same-provider normalization readiness is independent from cross-provider anchor equivalence.",
     "Cross-provider normalization must additionally respect providerAnchorEquivalence from the semantic contract.",
     "Controlled 3D same-identity stress is diagnostic operator evidence only; Face Space photo normalization readiness requires real-photo same-subject pose and expression evidence.",
