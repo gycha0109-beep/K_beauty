@@ -1,0 +1,222 @@
+name: DATA-AI4 Provider Shadow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/product-query-intent-contract.mjs"
+      - "lib/server/product-query-intent-service.js"
+      - "lib/product-query-execution-contract.mjs"
+      - "lib/product-query-recommendation.js"
+      - "lib/server/product-query-shadow-service.js"
+      - "lib/server/product-query-provider-shadow-service.js"
+      - "lib/product-query-provider-shadow-oidc.js"
+      - "app/api/internal/product-query-provider-shadow/route.js"
+      - "scripts/verify-data-ai4-provider-shadow.mjs"
+      - ".github/workflows/data-ai4-provider-shadow.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/product-query-intent-contract.mjs"
+      - "lib/server/product-query-intent-service.js"
+      - "lib/product-query-execution-contract.mjs"
+      - "lib/product-query-recommendation.js"
+      - "lib/server/product-query-shadow-service.js"
+      - "lib/server/product-query-provider-shadow-service.js"
+      - "lib/product-query-provider-shadow-oidc.js"
+      - "app/api/internal/product-query-provider-shadow/route.js"
+      - "scripts/verify-data-ai4-provider-shadow.mjs"
+      - ".github/workflows/data-ai4-provider-shadow.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: read
+  id-token: write
+
+concurrency:
+  group: data-ai4-provider-shadow-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATA_AI4_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+  DATA_AI4_OIDC_AUDIENCE: urn:bejewely:data-ai4:provider-shadow
+
+jobs:
+  verify:
+    name: DATA-AI4 static provider shadow contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ env.DATA_AI4_EXACT_HEAD }}
+
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI4_EXACT_HEAD"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify DATA-AI1 intent boundary
+        run: node scripts/verify-data-ai1-product-query-intent.mjs
+
+      - name: Verify DATA-AI2 deterministic execution
+        run: node scripts/verify-data-ai2-product-query-execution.mjs
+
+      - name: Verify DATA-AI3 real-corpus shadow boundary
+        run: node scripts/verify-data-ai3-product-query-shadow.mjs
+
+      - name: Verify DATA-AI4 provider-backed shadow boundary
+        run: node scripts/verify-data-ai4-provider-shadow.mjs
+
+      - name: Verify architecture boundaries
+        env:
+          ARCHITECTURE_GUARD_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Check exact-head and diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI4_EXACT_HEAD"
+          git diff --check "${{ github.event.pull_request.base.sha || github.event.before }}...$DATA_AI4_EXACT_HEAD" || git diff --check HEAD^
+
+  runtime-probe:
+    name: DATA-AI4 deployed provider-backed shadow probe
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Resolve exact Vercel deployment URL
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=""
+          for attempt in $(seq 1 72); do
+            ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?per_page=100" --jq ".[] | select(.sha == \"$GITHUB_SHA\") | .id" || true)"
+            for id in $ids; do
+              candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100" --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
+              if [ -n "$candidate" ]; then
+                url="$candidate"
+                break
+              fi
+            done
+            if [ -n "$url" ]; then
+              break
+            fi
+            sleep 5
+          done
+          test -n "$url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain short-lived GitHub OIDC tokens
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          custom_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${DATA_AI4_OIDC_AUDIENCE}")"
+          custom="$(printf '%s' "$custom_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          trusted_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")"
+          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$custom"
+          echo "::add-mask::$trusted"
+          printf 'custom=%s\ntrusted=%s\n' "$custom" "$trusted" >> "$GITHUB_OUTPUT"
+
+      - name: Probe deployed provider-backed scenarios
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.custom }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          scenarios=(
+            ko_oily_no_cast_nonsticky_sunscreen
+            ko_dry_high_sensitivity_barrier_cream
+            ko_category_only_cleanser
+            ko_acne_treatment_pregnancy_unresolved
+          )
+
+          for scenario in "${scenarios[@]}"; do
+            response_file="$(mktemp)"
+            status="$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors               -o "$response_file"               -w '%{http_code}'               -X POST               -H "Authorization: Bearer $OIDC_TOKEN"               -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"               -H 'Content-Type: application/json'               --data "{\"scenarioId\":\"${scenario}\"}"               "$DEPLOYMENT_URL/api/internal/product-query-provider-shadow")"
+            cat "$response_file"
+            echo
+            echo "DATA_AI4_RUNTIME_PROBE_HTTP_STATUS=${scenario}:${status}"
+
+            node - "$response_file" "$GITHUB_SHA" "$status" "$scenario" <<'NODE'
+            const fs = require("fs");
+            const [file, expectedSha, httpStatus, expectedScenario] = process.argv.slice(2);
+            const payload = JSON.parse(fs.readFileSync(file, "utf8"));
+            const safe = {
+              result: payload.result || null,
+              deploymentSha: payload.deploymentSha || null,
+              deploymentRef: payload.deploymentRef || null,
+              contractVersion: payload.contractVersion || null,
+              scenarioId: payload.scenarioId || null,
+              querySha256: payload.querySha256 || null,
+              provider: payload.provider || null,
+              model: payload.model || null,
+              intent: payload.intent || null,
+              execution: payload.execution || null,
+              scenarioPass: payload.scenarioPass ?? null,
+              failures: payload.failures || null,
+              persisted: payload.persisted ?? null,
+              secretValueExposed: payload.secretValueExposed ?? null,
+              queryTextExposed: payload.queryTextExposed ?? null,
+              productionWrite: payload.productionWrite ?? null,
+              recommendationLogWrite: payload.recommendationLogWrite ?? null,
+              publicActivation: payload.publicActivation ?? null
+            };
+            console.log(`DATA_AI4_RUNTIME_EVIDENCE=${JSON.stringify(safe)}`);
+
+            if (httpStatus !== "200") process.exit(1);
+            if (payload.deploymentSha !== expectedSha || payload.deploymentRef !== "main") process.exit(2);
+            if (payload.result !== "PASS" || payload.scenarioPass !== true) process.exit(3);
+            if (payload.contractVersion !== "product-query-provider-shadow-v1") process.exit(4);
+            if (payload.scenarioId !== expectedScenario) process.exit(5);
+            if (payload.provider !== "openai") process.exit(6);
+            if (typeof payload.model !== "string" || !payload.model) process.exit(7);
+            if (!/^[0-9a-f]{64}$/.test(String(payload.querySha256 || ""))) process.exit(8);
+            if (!payload.intent || typeof payload.intent !== "object") process.exit(9);
+            if (!payload.execution || typeof payload.execution !== "object") process.exit(10);
+            if (!Number.isInteger(payload.execution.candidateCount) || payload.execution.candidateCount < 1) process.exit(11);
+            if (payload.persisted !== false) process.exit(12);
+            if (payload.secretValueExposed !== false || payload.queryTextExposed !== false) process.exit(13);
+            if (payload.productionWrite !== false || payload.recommendationLogWrite !== false) process.exit(14);
+            if (payload.publicActivation !== false) process.exit(15);
+            if (!Array.isArray(payload.failures) || payload.failures.length !== 0) process.exit(16);
+
+            if (expectedScenario === "ko_category_only_cleanser") {
+              if (payload.execution.status !== "insufficient_supported_intent") process.exit(17);
+              if (payload.execution.resultCount !== 0) process.exit(18);
+            } else if (payload.execution.status !== "ranked" || payload.execution.resultCount < 1) {
+              process.exit(19);
+            }
+
+            if (expectedScenario === "ko_acne_treatment_pregnancy_unresolved") {
+              if (payload.execution.constraintStatus !== "partial") process.exit(20);
+              if (!Array.isArray(payload.execution.unresolvedTerms) || payload.execution.unresolvedTerms.length < 1) process.exit(21);
+            }
+            NODE
+            rm -f "$response_file"
+          done
