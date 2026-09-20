@@ -10,6 +10,7 @@ on:
       - "lib/face-lab-face-space-normalization-research.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
       - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
+      - "scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
@@ -17,7 +18,7 @@ on:
       - "evidence/facelab/photo-geometry/**"
       - "evidence/facelab/face-space-normalization/**"
       - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
-      - "public/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png"
+      - "public/facelab/hosted-review/v1/assets/**"
       - "evidence/facelab/structural-measurement/**"
       - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
       - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
@@ -48,6 +49,7 @@ on:
       - "lib/face-lab-face-space-normalization-research.js"
       - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
       - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
+      - "scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
@@ -55,7 +57,7 @@ on:
       - "evidence/facelab/photo-geometry/**"
       - "evidence/facelab/face-space-normalization/**"
       - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
-      - "public/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png"
+      - "public/facelab/hosted-review/v1/assets/**"
       - "evidence/facelab/structural-measurement/**"
       - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
       - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
@@ -128,6 +130,8 @@ jobs:
           echo "FACE_LAB_IMAGE_E2E_RUNTIME_ROOT=$RUNTIME_ROOT" >> "$GITHUB_ENV"
       - name: Verify actual-image Face Landmarker bridge
         run: node scripts/verify-face-lab-photo-geometry-image-e2e.mjs
+      - name: Verify 14-fixture photo geometry coverage
+        run: node scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs
       - name: Verify photo geometry stability contract
         run: node scripts/verify-face-lab-photo-geometry-stability-contract.mjs
       - name: Verify actual-image nuisance stability harness
