@@ -1,4 +1,6 @@
 import type { SupportedLocale } from "@bejewely/shared";
+import { fetch as expoFetch } from "expo/fetch";
+import { File } from "expo-file-system";
 
 import type { NativeCameraPhoto } from "../camera/NativeFaceCamera";
 import { getNativeSession } from "../../lib/auth";
@@ -114,14 +116,8 @@ export function buildNativeAnalyzeFormData(
   const normalized = normalizeSurveyAnswers(form);
   const payload = new FormData();
 
-  payload.append(
-    "image",
-    {
-      uri: photo.uri,
-      name: photo.name,
-      type: photo.type
-    } as any
-  );
+  const imageFile = new File(photo.uri);
+  payload.append("image", imageFile);
 
   Object.entries(normalized).forEach(([key, value]) => {
     payload.append(key, serializeMultipartValue(value));
@@ -178,7 +174,7 @@ export async function submitNativeAnalyze(input: {
   let response: Response;
 
   try {
-    response = await fetch(`${getMobileApiBaseUrl()}/api/analyze`, {
+    response = await expoFetch(`${getMobileApiBaseUrl()}/api/analyze`, {
       method: "POST",
       headers,
       body: payload,
