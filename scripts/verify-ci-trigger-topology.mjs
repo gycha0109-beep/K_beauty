@@ -254,6 +254,19 @@ assertContains(".github/workflows/data-ai3-product-query-shadow.yml", [
   "actions/setup-node@v7",
   "node-version: 22",
 ]);
+
+const dataAi4Workflow = read(".github/workflows/data-ai4-provider-shadow.yml");
+const dataAi4PushSection = dataAi4Workflow.split("  pull_request:")[0];
+assert(
+  dataAi4PushSection.includes("    paths:"),
+  "DATA-AI4 provider-backed shadow probe must not run on every main push",
+);
+assertContains(".github/workflows/data-ai4-provider-shadow.yml", [
+  "cancel-in-progress: true",
+  "actions/checkout@v7",
+  "actions/setup-node@v7",
+  "node-version: 22",
+]);
 assertNotContains(".github/workflows/mobile-14-auth-app-links.yml", [
   '- "apps/mobile/**"',
   "source-and-web:",
@@ -358,6 +371,7 @@ console.log(JSON.stringify({
   heavy_mobile_root_package_triggers: 0,
   g3a_unbounded_main_push: false,
   data_ai3_unbounded_main_push: false,
+  data_ai4_unbounded_main_push: false,
   cross_domain_root_package_triggers: 0,
   reverse_canonical_health_triggers: 0,
   superseded_pr_run_cancellation: true,
