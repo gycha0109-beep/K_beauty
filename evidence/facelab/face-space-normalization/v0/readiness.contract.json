@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "face-space-normalization-readiness-contract-v0",
+  "status": "not_ready",
+  "productionAuthority": false,
+  "normalizationVersion": "face-space-normalization-research-v0",
+  "currentScope": "same_provider",
+  "sourceEvidence": {
+    "semanticContractPath": "evidence/facelab/structural-measurement/v0/semantic-contract.json",
+    "stabilitySummaryPath": "evidence/facelab/photo-geometry/v0/photo-geometry-stability-evidence-summary.json"
+  },
+  "currentBlockers": [
+    "single_fixture_only",
+    "multi_subject_coverage_missing",
+    "general_face_coverage_missing",
+    "reference_distribution_missing",
+    "real_pose_stability_missing",
+    "real_expression_stability_missing"
+  ],
+  "referenceStatistics": {
+    "status": "absent",
+    "centerValuesDefined": false,
+    "scaleValuesDefined": false,
+    "percentileBoundariesDefined": false
+  },
+  "rules": [
+    "Current face-space-normalization-research-v0 name is a research namespace, not calibrated normalization authority.",
+    "No center, scale, percentile, enum boundary, or production threshold may be invented from the current single-fixture evidence.",
+    "Same-provider normalization readiness is independent from cross-provider anchor equivalence.",
+    "Cross-provider normalization must additionally respect providerAnchorEquivalence from the semantic contract.",
+    "Head yaw, pitch, roll, and expression stability require real same-subject or controlled 3D same-identity evidence.",
+    "A provisional normalization candidate remains research-only and must not activate Archetype, Face Space production, or style recommendation."
+  ]
+}
