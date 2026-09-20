@@ -41,6 +41,7 @@ run("TRUST Phase 5 admin queue contract", node, ["scripts/verify-trust-phase5-ad
 run("TRUST Phase 5B subject registration contract", node, ["scripts/verify-trust-phase5b-subject-registration.mjs"]);
 run("TRUST Phase 5C formulation conflict HOLD", node, ["scripts/product-evidence/verify-trust-phase5c-fation-formulation-conflict-v1.mjs"]);
 run("TRUST Phase 6A reentry contract", node, ["scripts/verify-trust-phase6a-reentry.mjs"]);
+run("TRUST Phase 6B reentry detector contract", node, ["scripts/verify-trust-phase6b-reentry-detectors.mjs"]);
 
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
