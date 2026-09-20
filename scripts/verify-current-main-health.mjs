@@ -65,7 +65,7 @@ run("G3A Product Fact authority read contract", node, ["scripts/verify-v21-admis
 run("G3 production candidate admission contract", node, ["scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs"]);
 run("DATA-AI3 product-query shadow contract", node, ["scripts/verify-data-ai3-product-query-shadow.mjs"]);
 run("DATA-AI4 provider-backed shadow contract", node, ["scripts/verify-data-ai4-provider-shadow.mjs"]);
-run("DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);
+run("DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);\nrun("DATA-AI6 controlled product-query preview contract", node, ["scripts/verify-data-ai6-product-query-preview.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
