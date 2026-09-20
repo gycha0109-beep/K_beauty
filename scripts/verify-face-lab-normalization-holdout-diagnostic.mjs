@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
 import {
-  buildFaceSpaceNormalizationCandidate,
-  validateFaceSpaceReferenceStatisticsMethodDecision
+  buildFaceSpaceNormalizationCandidate
 } from "../lib/face-lab-face-space-normalization-research.js";
+import {
+  buildFaceSpaceReferenceMethodComparison
+} from "../lib/face-lab-reference-method-comparison-research.js";
+import {
+  buildFaceSpaceReferenceMethodSelectionDecision
+} from "../lib/face-lab-reference-method-selection-research.js";
 import {
   estimateFaceSpaceReferenceStatistics
 } from "../lib/face-lab-reference-statistics-research.js";
@@ -83,24 +88,24 @@ function makeManifest(referenceOffsets = [0, 0.02, 0.04], holdoutOffset = 0.03) 
 }
 
 const manifest = makeManifest();
-const decision = validateFaceSpaceReferenceStatisticsMethodDecision({
-  schemaVersion: "face-space-reference-statistics-method-decision-v0",
-  status: "selected_for_research_candidate",
-  decisionVersion: "synthetic-verifier-holdout-method-v0",
-  scope: "same_provider",
-  referenceCorpusSummarySchemaVersion: "face-space-reference-corpus-summary-v0",
-  centerMethod: "mean",
-  scaleMethod: "standard_deviation",
-  percentileMethod: null,
-  thresholdMethod: null,
-  productionAuthority: false,
-  normalizationAuthority: false,
-  thresholdAuthority: false
+const comparison = buildFaceSpaceReferenceMethodComparison({
+  manifest,
+  comparisonVersion: "synthetic-verifier-holdout-comparison-v0"
 });
+const selection = buildFaceSpaceReferenceMethodSelectionDecision({
+  comparison,
+  selectedMethodId: "mean__standard_deviation",
+  decisionVersion: "synthetic-verifier-holdout-method-v0",
+  evidenceRef: "synthetic-verifier-only:holdout-method-selection",
+  selectionRationale:
+    "Synthetic verifier selects a supported method only to test holdout lineage."
+});
+const decision = selection.decision;
 
 const statistics = estimateFaceSpaceReferenceStatistics({
   manifest,
   methodDecision: decision,
+  methodComparison: comparison,
   version: "synthetic-verifier-holdout-stats-v0"
 });
 
@@ -202,5 +207,6 @@ console.log(JSON.stringify({
   alteredReferenceSplitRejected: true,
   holdoutChangesDoNotInvalidateReferenceBinding: true,
   syntheticVerifierOnly: true,
-  actualHoldoutDiagnosticPersisted: false
+  actualHoldoutDiagnosticPersisted: false,
+  methodSelectionBoundToComparisonEvidence: true
 }, null, 2));
