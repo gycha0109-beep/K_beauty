@@ -272,7 +272,7 @@ begin
       order by (value->>'priority')::integer,value->>'fact_key'
     loop
       if coalesce((v_fact->>'registry_supported')::boolean,false) is not true
-        or v_fact->>'registry_version' <> v_registry_version
+        or (v_fact->>'registry_version') is distinct from v_registry_version
       then
         raise exception 'trust_phase7b_required_fact_registry_invalid:%:%',v_product_id,v_fact->>'fact_key'
           using errcode='23514';
