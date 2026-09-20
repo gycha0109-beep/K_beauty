@@ -3,7 +3,12 @@
   "git": {
     "deploymentEnabled": {
       "**": false,
-      "main": true
+      "main": true,
+      "data-ai9-hosted-preview-runtime": true
     }
+  },
+  "env": {
+    "BEJEWELY_PRODUCT_QUERY_PREVIEW_ENABLED": "true",
+    "BEJEWELY_PRODUCT_QUERY_STAGE_CANARY_ENABLED": "true"
   }
 }
