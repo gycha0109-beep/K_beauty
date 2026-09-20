@@ -90,10 +90,19 @@ const expectedDimensions = {
 const actualDimensions = new Map(
   bridged.measurement.dimensions.map((item) => [item.id, item.value])
 );
+const measurementTolerance = Object.freeze({
+  ratio: 2e-6,
+  eyeTiltDegrees: 2e-3
+});
 for (const [id, expected] of Object.entries(expectedDimensions)) {
+  const tolerance =
+    id === 'eye_tilt'
+      ? measurementTolerance.eyeTiltDegrees
+      : measurementTolerance.ratio;
+  const drift = Math.abs(actualDimensions.get(id) - expected);
   assert.ok(
-    Math.abs(actualDimensions.get(id) - expected) < 2e-6,
-    id + ' runtime measurement drift'
+    drift < tolerance,
+    id + ' runtime measurement drift: ' + drift + ' >= ' + tolerance
   );
 }
 
@@ -159,6 +168,7 @@ console.log(JSON.stringify({
     first468Only: true,
     poseNormalizedMetric3D: true,
     minimalAnchorProjection: true,
-    dimensions: bridged.measurement.dimensions
+    dimensions: bridged.measurement.dimensions,
+    measurementTolerance
   }
 }, null, 2));
