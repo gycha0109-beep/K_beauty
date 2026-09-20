@@ -395,6 +395,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
           ) : (
             <CameraView
               ref={cameraRef}
+              animateShutter={false}
               style={styles.fullscreenMedia}
               facing="front"
               mode="picture"
