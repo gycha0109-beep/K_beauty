@@ -113,7 +113,8 @@
     "run:face-lab-real-photo-stability-pairs": "node scripts/run-face-lab-real-photo-stability-pairs.mjs",
     "verify:face-lab-reference-corpus-source-manifest": "node scripts/verify-face-lab-reference-corpus-source-manifest.mjs",
     "run:face-lab-reference-corpus-measurement": "node scripts/run-face-lab-reference-corpus-measurement.mjs",
-    "verify:face-lab-reference-corpus-run-output": "node scripts/verify-face-lab-reference-corpus-run-output.mjs"
+    "verify:face-lab-reference-corpus-run-output": "node scripts/verify-face-lab-reference-corpus-run-output.mjs",
+    "verify:face-lab-reference-corpus-adequacy": "node scripts/verify-face-lab-reference-corpus-adequacy.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
