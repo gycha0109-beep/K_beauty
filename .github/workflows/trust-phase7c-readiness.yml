@@ -86,7 +86,7 @@ jobs:
           cp supabase/migrations/20260915131141_trust_phase3_research_worker_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260919194545_trust_phase6a_reentry_foundation_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-phase7c-readiness/20260921185000_trust_phase7c_fixture.sql "${migration_dir}/"
-          cp supabase/migrations/20260921190000_trust_phase7c_legacy_research_readiness_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260921061719_trust_phase7c_legacy_research_readiness_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and run Phase 7C runtime
         shell: bash
