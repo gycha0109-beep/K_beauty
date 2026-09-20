@@ -68,6 +68,19 @@ function measurement(sampleId, delta = {}, source = "mediapipe_face_geometry") {
   };
 }
 
+function executionProvenance(index) {
+  const digit = String((index % 9) + 1);
+  const candidateDigit = String(((index + 4) % 9) + 1);
+  return {
+    kind: "real_photo_pair_runner",
+    runnerVersion: "face-lab-real-photo-stability-pair-runner-v0",
+    runManifestDigest: "sha256:" + digit.repeat(64),
+    sourceSetProvenanceRef: "synthetic-verifier-source-set",
+    referenceImageSha256: digit.repeat(64),
+    candidateImageSha256: candidateDigit.repeat(64)
+  };
+}
+
 const baseline = measurement("opaque_reference");
 const nuisanceFixtures = [
   ["head_yaw", { lower_face_width_ratio: 0.741, eye_tilt: 0.24 }],
@@ -90,7 +103,8 @@ const reports = nuisanceFixtures.map(([nuisanceClass, delta], index) =>
             : "manual_same_subject_pair",
         evidenceRef: "opaque-provenance-ref-" + index,
         biometricIdentityMatchPerformed: false
-      }
+      },
+      executionProvenance: executionProvenance(index)
     },
     semanticContract
   )
@@ -119,6 +133,8 @@ assert.equal(
   "real_photo_same_subject"
 );
 assert.equal(complete.authority.normalizationAuthority, false);
+assert.equal(complete.runManifestDigestCount, 4);
+assert.equal(complete.runManifestDigests.length, 4);
 
 const incomplete = summarizeRealPhotoStabilityCollection(
   reports.filter((report) => report.nuisance.class !== "expression")
@@ -139,7 +155,8 @@ assert.throws(
           method: "controlled_3d_same_identity",
           evidenceRef: "synthetic-only",
           biometricIdentityMatchPerformed: false
-        }
+        },
+        executionProvenance: executionProvenance(6)
       },
       semanticContract
     ),
@@ -158,7 +175,8 @@ assert.throws(
           method: "manual_same_subject_pair",
           evidenceRef: "manual-note",
           biometricIdentityMatchPerformed: true
-        }
+        },
+        executionProvenance: executionProvenance(7)
       },
       semanticContract
     ),
@@ -181,7 +199,8 @@ assert.throws(
           method: "dataset_same_subject_provenance",
           evidenceRef: "dataset-row-id",
           biometricIdentityMatchPerformed: false
-        }
+        },
+        executionProvenance: executionProvenance(8)
       },
       semanticContract
     ),
@@ -204,6 +223,8 @@ console.log(JSON.stringify({
     biometricIdentityMatchingForbidden: true,
     crossProviderPairRejected: true,
     rawLandmarkPersistenceForbidden: true,
-    technicalCoverageDoesNotCreateNormalizationAuthority: true
+    technicalCoverageDoesNotCreateNormalizationAuthority: true,
+    runnerProvenanceRequired: true,
+    runManifestDigestTracked: true
   }
 }, null, 2));
