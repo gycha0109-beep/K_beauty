@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "face-space-reference-corpus-adequacy-contract-v0",
+  "status": "not_evaluated_data_absent",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Require an explicit versioned research adequacy review before a structurally valid general-face corpus can satisfy Face Space normalization coverage gates.",
+  "rules": [
+    "Structural validity alone does not establish general-face or reference-distribution adequacy.",
+    "Adequacy must be linked to the exact reference-split fingerprint, provider pin, and sampling-frame provenance.",
+    "No numeric minimum sample threshold is invented by this contract.",
+    "Automatic adequacy inference from record count is forbidden.",
+    "Coverage limitations must be explicitly documented.",
+    "Adequacy grants provisional research gating only and no Production normalization authority."
+  ],
+  "currentEvidence": {
+    "realReferenceCorpusPresent": false,
+    "adequacyDecisionPresent": false,
+    "status": "not_ready"
+  }
+}
