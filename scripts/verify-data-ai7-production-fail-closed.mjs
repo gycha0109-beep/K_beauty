@@ -61,8 +61,13 @@ check(workflow.includes("/api/my/product-query-stage-canary"),
   "runtime probe must exercise the DATA-AI7 route");
 check((workflow.match(/test "\$status" = "404"/g) || []).length === 1,
   "runtime probe must require HTTP 404 for every guarded route");
-check(!workflow.includes("-H \"Authorization: Bearer"),
-  "runtime probe must not provide Supabase/application authorization");
+const applicationProbeSection =
+  workflow.split("- name: Assert DATA-AI6 and DATA-AI7 are unreachable in Production")[1] || "";
+
+check(applicationProbeSection.length > 0,
+  "runtime probe application request step must exist");
+check(!applicationProbeSection.includes("-H \"Authorization: Bearer"),
+  "runtime probe application requests must not provide Supabase/application authorization");
 check(!workflow.includes("SUPABASE_SERVICE_ROLE") &&
       !workflow.includes("SUPABASE_ACCESS_TOKEN") &&
       !workflow.includes("OPENAI_API_KEY"),
