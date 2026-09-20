@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 
-// DATA-AI7 deployed fail-closed contract verifier.
+// DATA-AI7 deployed fail-closed contract verifier; keep payload transport shell-safe.
 import { readFileSync } from "node:fs";
 import {
   evaluateProductQueryPreviewPolicy
