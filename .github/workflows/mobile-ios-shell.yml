@@ -8,6 +8,14 @@ on:
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
       - "apps/mobile/package.json"
+      - "apps/mobile/app/_layout.tsx"
+      - "apps/mobile/app/index.tsx"
+      - "apps/mobile/features/camera/NativeFaceCamera.tsx"
+      - "apps/mobile/lib/auth.ts"
+      - "apps/mobile/lib/env.ts"
+      - "apps/mobile/lib/my.ts"
+      - "apps/mobile/lib/supabase.ts"
+      - "scripts/verify-mobile-initial-entry-routing.mjs"
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
@@ -19,6 +27,14 @@ on:
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
       - "apps/mobile/package.json"
+      - "apps/mobile/app/_layout.tsx"
+      - "apps/mobile/app/index.tsx"
+      - "apps/mobile/features/camera/NativeFaceCamera.tsx"
+      - "apps/mobile/lib/auth.ts"
+      - "apps/mobile/lib/env.ts"
+      - "apps/mobile/lib/my.ts"
+      - "apps/mobile/lib/supabase.ts"
+      - "scripts/verify-mobile-initial-entry-routing.mjs"
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
@@ -82,6 +98,7 @@ jobs:
         run: |
           set -euo pipefail
           npm run verify:mobile-foundation
+          npm run verify:mobile-entry-routing
           npm run mobile:typecheck
           npm run mobile:config
 

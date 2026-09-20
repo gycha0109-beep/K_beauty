@@ -151,6 +151,18 @@ assertContains(".github/workflows/mobile-native-shell.yml", [
   "npm run mobile:prebuild:android",
   "npm run verify:mobile-native",
 ]);
+
+assertContains(".github/workflows/mobile-ios-shell.yml", [
+  '- "apps/mobile/app/_layout.tsx"',
+  '- "apps/mobile/app/index.tsx"',
+  '- "apps/mobile/features/camera/NativeFaceCamera.tsx"',
+  '- "apps/mobile/lib/auth.ts"',
+  '- "apps/mobile/lib/env.ts"',
+  '- "apps/mobile/lib/my.ts"',
+  '- "apps/mobile/lib/supabase.ts"',
+  '- "scripts/verify-mobile-initial-entry-routing.mjs"',
+  "npm run verify:mobile-entry-routing",
+]);
 for (const path of [
   "scripts/verify-mobile-camera-foundation.mjs",
   "scripts/verify-mobile-face-guidance.mjs",
