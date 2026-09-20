@@ -72,7 +72,7 @@ check(!workflow.includes("SUPABASE_SERVICE_ROLE") &&
       !workflow.includes("SUPABASE_ACCESS_TOKEN") &&
       !workflow.includes("OPENAI_API_KEY"),
   "runtime probe must not receive Supabase privileged credentials or provider keys");
-check(workflow.includes("payload='{\\\"query\\\":\\\"production-fail-closed-probe\\\"}'") &&
+check(workflow.includes("payload='{\\"query\\":\\"production-fail-closed-probe\\"}'") &&
       workflow.includes('--data "$payload"'),
   "runtime probe must transport a fixed shell-safe JSON payload");
 check(!workflow.includes('--data "{"query":"$query"}"'),
