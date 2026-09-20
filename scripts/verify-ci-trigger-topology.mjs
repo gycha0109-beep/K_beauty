@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 
 function read(path) {
   return readFileSync(path, "utf8");
@@ -342,12 +342,23 @@ for (const path of [
   ]);
 }
 
+const retiredExpiredFaceLabSmokePaths = [
+  ".github/workflows/facelab-neutral-stage-a-production-browser-smoke.yml",
+  "app/api/internal/facelab-review-self-smoke/route.js",
+  "scripts/run-face-lab-neutral-production-browser-smoke.mjs",
+];
+for (const path of retiredExpiredFaceLabSmokePaths) {
+  assert(
+    !existsSync(path),
+    `expired FaceLab production smoke path must stay retired: ${path}`,
+  );
+}
+
 const heavyRuntimeConcurrencyWorkflows = [
   ".github/workflows/trust-phase7a-backfill.yml",
   ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml",
   ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml",
   ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml",
-  ".github/workflows/facelab-neutral-stage-a-production-browser-smoke.yml",
   ".github/workflows/legacy-offer-classifier.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
   ".github/workflows/product-identity-resolution.yml",
@@ -425,6 +436,7 @@ console.log(JSON.stringify({
   trust_static_baseline_canonicalized: true,
   legacy_node20_workflows: 0,
   retired_first_party_action_runtimes: 0,
+  retired_expired_facelab_smoke_paths: 0,
   heavy_runtime_concurrency_guarded: true,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));
