@@ -1,0 +1,121 @@
+name: TRUST Phase 6B Re-entry Detectors
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/*trust_phase6b_*.sql"
+      - "tests/fixtures/trust-phase6b-reentry/**"
+      - "scripts/verify-trust-phase6b-reentry-detectors.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/trust-phase6b-reentry.yml"
+  push:
+    branches: [main, "feat/trust-phase6b-reentry-detectors"]
+    paths:
+      - "supabase/migrations/*trust_phase6b_*.sql"
+      - "tests/fixtures/trust-phase6b-reentry/**"
+      - "scripts/verify-trust-phase6b-reentry-detectors.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/trust-phase6b-reentry.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_CLI_VERSION: 2.117.0
+
+jobs:
+  runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Prepare isolated TRUST runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_dir="${RUNNER_TEMP}/trust-phase6b-runtime"
+          echo "TRUST_RUNTIME_DIR=${runtime_dir}" >>"${GITHUB_ENV}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init --workdir "${runtime_dir}" --force
+          migration_dir="${runtime_dir}/supabase/migrations"
+          mkdir -p "${migration_dir}"
+          cp tests/fixtures/trust-intake-foundation/20260915090000_trust_intake_foundation_fixture.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095306_trust_phase1_intake_foundation_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095333_trust_phase1_intake_delivery_hardening_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915095347_trust_phase1_promotion_decoupling_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-subject-resolution/20260915100000_trust_subject_resolution_fixture_extension.sql "${migration_dir}/"
+          cp supabase/migrations/20260915112124_trust_phase2_subject_resolution_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915112151_trust_phase2_presentation_scope_hardening_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-research-worker/20260915122500_trust_research_worker_fixture.sql "${migration_dir}/"
+          cp supabase/migrations/20260915131141_trust_phase3_research_worker_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260919194545_trust_phase6a_reentry_foundation_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260920100000_trust_phase6b_reentry_detectors_v1.sql "${migration_dir}/"
+
+      - name: Start isolated Supabase and run Phase 6A + 6B runtime gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_log="${RUNNER_TEMP}/trust-phase6b-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start             --workdir "${TRUST_RUNTIME_DIR}"             --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor             >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${TRUST_RUNTIME_DIR}"
+          DB_PORT="$(awk 'BEGIN{in_db=0} /^\[db\]/{in_db=1;next} /^\[/{in_db=0} in_db && /^port =/{gsub(/[^0-9]/,"",$0);print $0;exit}' "${TRUST_RUNTIME_DIR}/supabase/config.toml")"
+          test -n "$DB_PORT"
+          DB="postgresql://postgres:postgres@127.0.0.1:${DB_PORT}/postgres"
+
+          psql "$DB" -qAt -v ON_ERROR_STOP=1             -f tests/fixtures/trust-phase6a-reentry/verify_trust_phase6a_runtime.sql             | tee "${RUNNER_TEMP}/trust-phase6a-regression.log"
+          grep -q '^TRUST_PHASE6A_REENTRY_RUNTIME_VERIFIED$' "${RUNNER_TEMP}/trust-phase6a-regression.log"
+
+          psql "$DB" -qAt -v ON_ERROR_STOP=1             -f tests/fixtures/trust-phase6b-reentry/verify_trust_phase6b_runtime.sql             | tee "${RUNNER_TEMP}/trust-phase6b-runtime.log"
+          grep -q '^TRUST_PHASE6B_REENTRY_DETECTORS_RUNTIME_VERIFIED$' "${RUNNER_TEMP}/trust-phase6b-runtime.log"
+
+      - name: Check Phase 6B security surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB_PORT="$(awk 'BEGIN{in_db=0} /^\[db\]/{in_db=1;next} /^\[/{in_db=0} in_db && /^port =/{gsub(/[^0-9]/,"",$0);print $0;exit}' "${TRUST_RUNTIME_DIR}/supabase/config.toml")"
+          test -n "$DB_PORT"
+          DB="postgresql://postgres:postgres@127.0.0.1:${DB_PORT}/postgres"
+          test "$(psql "$DB" -Atqc "select count(*) from information_schema.role_table_grants where table_schema='public' and table_name='trust_reentry_detector_checkpoints' and grantee in ('anon','authenticated','service_role')")" = "0"
+          test "$(psql "$DB" -Atqc "select has_function_privilege('service_role','public.run_trust_reentry_detectors_v1(integer)','EXECUTE')")" = "t"
+          test "$(psql "$DB" -Atqc "select has_function_privilege('anon','public.run_trust_reentry_detectors_v1(integer)','EXECUTE')")" = "f"
+          test "$(psql "$DB" -Atqc "select has_function_privilege('authenticated','public.run_trust_reentry_detectors_v1(integer)','EXECUTE')")" = "f"
+          test "$(psql "$DB" -Atqc "select has_function_privilege('service_role','public.observe_trust_reentry_signal_v1(text,text,text,uuid,uuid,uuid,jsonb)','EXECUTE')")" = "f"
+
+      - name: Check exact-head diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          git diff --check "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}...${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" || git diff --check HEAD^
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -n "${TRUST_RUNTIME_DIR:-}" && -d "${TRUST_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop --workdir "${TRUST_RUNTIME_DIR}" --no-backup
+          fi
+          rm -rf -- "${TRUST_RUNTIME_DIR:-${RUNNER_TEMP}/trust-phase6b-runtime}"
