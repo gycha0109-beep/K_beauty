@@ -107,7 +107,8 @@
     "verify:face-lab-reference-statistics-method": "node scripts/verify-face-lab-reference-statistics-method.mjs",
     "verify:face-lab-reference-statistics-estimator": "node scripts/verify-face-lab-reference-statistics-estimator.mjs",
     "verify:face-lab-normalization-holdout-diagnostic": "node scripts/verify-face-lab-normalization-holdout-diagnostic.mjs",
-    "verify:face-lab-reference-method-comparison": "node scripts/verify-face-lab-reference-method-comparison.mjs"
+    "verify:face-lab-reference-method-comparison": "node scripts/verify-face-lab-reference-method-comparison.mjs",
+    "verify:face-lab-reference-method-selection": "node scripts/verify-face-lab-reference-method-selection.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
