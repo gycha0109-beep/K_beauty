@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import {
   applyFaceSpaceNormalizationCandidate,
   buildFaceSpaceNormalizationCandidate,
-  evaluateFaceSpaceNormalizationReadiness
+  evaluateFaceSpaceNormalizationReadiness,
+  validateFaceSpaceReferenceStatisticsMethodDecision
 } from "../lib/face-lab-face-space-normalization-research.js";
 
 function readJson(filePath) {
@@ -282,8 +283,70 @@ assert.equal(
   semanticContract.dimensions.length
 );
 
+const selectedMethodDecision =
+  validateFaceSpaceReferenceStatisticsMethodDecision({
+    schemaVersion: "face-space-reference-statistics-method-decision-v0",
+    status: "selected_for_research_candidate",
+    decisionVersion: "synthetic-verifier-only-method-v0",
+    scope: "same_provider",
+    referenceCorpusSummarySchemaVersion:
+      "face-space-reference-corpus-summary-v0",
+    centerMethod: "median",
+    scaleMethod: "mad_scaled_consistent",
+    percentileMethod: null,
+    thresholdMethod: null,
+    productionAuthority: false,
+    normalizationAuthority: false,
+    thresholdAuthority: false
+  });
+assert.equal(
+  selectedMethodDecision.authority.researchMethodSelectionOnly,
+  true
+);
+
+assert.throws(
+  () =>
+    validateFaceSpaceReferenceStatisticsMethodDecision({
+      schemaVersion: "face-space-reference-statistics-method-decision-v0",
+      status: "not_selected",
+      decisionVersion: "invalid",
+      scope: "same_provider",
+      referenceCorpusSummarySchemaVersion:
+        "face-space-reference-corpus-summary-v0",
+      centerMethod: null,
+      scaleMethod: null,
+      percentileMethod: null,
+      thresholdMethod: null,
+      productionAuthority: false,
+      normalizationAuthority: false,
+      thresholdAuthority: false
+    }),
+  /method_decision_invalid/
+);
+
+assert.throws(
+  () =>
+    buildFaceSpaceNormalizationCandidate({
+      readiness: sameProviderReady,
+      methodDecision: selectedMethodDecision,
+      referenceStatistics: {
+        version: "stats-without-method-decision",
+        dimensions: [
+          {
+            id: "lower_face_width_ratio",
+            unit: "ratio",
+            center: 0.75,
+            scale: 0.05
+          }
+        ]
+      }
+    }),
+  /method_decision_invalid/
+);
+
 const candidate = buildFaceSpaceNormalizationCandidate({
   readiness: sameProviderReady,
+  methodDecision: selectedMethodDecision,
   referenceStatistics: {
     version: "synthetic-verifier-only-v0",
     dimensions: [
@@ -310,6 +373,7 @@ assert.throws(
   () =>
     buildFaceSpaceNormalizationCandidate({
       readiness: sameProviderReady,
+      methodDecision: selectedMethodDecision,
       referenceStatistics: {
         version: "bad-unit",
         dimensions: [
@@ -329,6 +393,7 @@ assert.throws(
   () =>
     buildFaceSpaceNormalizationCandidate({
       readiness: sameProviderReady,
+      methodDecision: selectedMethodDecision,
       referenceStatistics: {
         version: "duplicate-id",
         dimensions: [
@@ -409,6 +474,8 @@ console.log(JSON.stringify({
     manualCoverageFlagsCannotBypassReferenceCorpusSummary: true,
     validReferenceCorpusSummaryOnlySatisfiesCorpusCoverageGates: true,
     referenceCorpusSummaryCannotAuthorizeStatistics: true,
+    referenceStatisticsMethodDecisionRequired: true,
+    currentMethodDecisionRemainsUnselected: true,
     referenceStatsMustBeExplicit: true,
     providerEquivalenceScopedToCrossProvider: true,
     provisionalCandidateResearchOnly: true,
