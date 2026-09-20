@@ -3,8 +3,11 @@ import {
   estimateFaceSpaceReferenceStatistics
 } from "../lib/face-lab-reference-statistics-research.js";
 import {
-  validateFaceSpaceReferenceStatisticsMethodDecision
-} from "../lib/face-lab-face-space-normalization-research.js";
+  buildFaceSpaceReferenceMethodComparison
+} from "../lib/face-lab-reference-method-comparison-research.js";
+import {
+  buildFaceSpaceReferenceMethodSelectionDecision
+} from "../lib/face-lab-reference-method-selection-research.js";
 
 const dimensionIds = [
   ["lower_face_width_ratio", "ratio"],
@@ -76,26 +79,24 @@ const manifest = {
   ]
 };
 
-const decision =
-  validateFaceSpaceReferenceStatisticsMethodDecision({
-    schemaVersion: "face-space-reference-statistics-method-decision-v0",
-    status: "selected_for_research_candidate",
-    decisionVersion: "synthetic-verifier-method-v0",
-    scope: "same_provider",
-    referenceCorpusSummarySchemaVersion:
-      "face-space-reference-corpus-summary-v0",
-    centerMethod: "mean",
-    scaleMethod: "standard_deviation",
-    percentileMethod: null,
-    thresholdMethod: null,
-    productionAuthority: false,
-    normalizationAuthority: false,
-    thresholdAuthority: false
-  });
+const comparison = buildFaceSpaceReferenceMethodComparison({
+  manifest,
+  comparisonVersion: "synthetic-verifier-method-comparison-v0"
+});
+const selection = buildFaceSpaceReferenceMethodSelectionDecision({
+  comparison,
+  selectedMethodId: "mean__standard_deviation",
+  decisionVersion: "synthetic-verifier-method-v0",
+  evidenceRef: "synthetic-verifier-only:method-selection",
+  selectionRationale:
+    "Synthetic verifier chooses one supported method only to exercise lineage gates."
+});
+const decision = selection.decision;
 
 const stats = estimateFaceSpaceReferenceStatistics({
   manifest,
   methodDecision: decision,
+  methodComparison: comparison,
   version: "synthetic-verifier-statistics-v0"
 });
 
@@ -136,6 +137,7 @@ const changedHoldout = {
 const statsWithChangedHoldout = estimateFaceSpaceReferenceStatistics({
   manifest: changedHoldout,
   methodDecision: decision,
+  methodComparison: comparison,
   version: "synthetic-verifier-statistics-holdout-change-v0"
 });
 assert.equal(
@@ -170,10 +172,9 @@ const degenerate = {
 };
 assert.throws(
   () =>
-    estimateFaceSpaceReferenceStatistics({
+    buildFaceSpaceReferenceMethodComparison({
       manifest: degenerate,
-      methodDecision: decision,
-      version: "degenerate"
+      comparisonVersion: "synthetic-degenerate-comparison"
     }),
   /degenerate_scale/
 );
@@ -187,5 +188,7 @@ console.log(JSON.stringify({
   syntheticVerifierOnly: true,
   actualReferenceStatisticsPersisted: false,
   exactReferenceSplitFingerprintCarried: true,
-  holdoutDoesNotChangeReferenceFingerprint: true
+  holdoutDoesNotChangeReferenceFingerprint: true,
+  statisticsRequireMatchingMethodComparison: true,
+  methodDecisionBuiltFromComparisonEvidence: true
 }, null, 2));
