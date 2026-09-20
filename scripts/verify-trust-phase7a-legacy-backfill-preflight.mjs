@@ -81,6 +81,10 @@ if (!sql.includes("from public.product_candidates pc")) {
 if (!sql.includes("extensions.digest(")) {
   throw new Error("catalog revision and batch fingerprint must be deterministic hashes");
 }
+if (lower.includes("max(product_id)")) {
+  throw new Error("Phase 7-A must not use unsupported max(uuid) aggregation");
+}
+
 if (!sql.includes("revoke all on function public.preflight_trust_legacy_catalog_backfill_v1")) {
   throw new Error("function ACL revoke missing");
 }
