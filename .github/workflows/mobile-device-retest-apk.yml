@@ -1,0 +1,133 @@
+name: BEJEWELY Mobile Device Retest APK
+
+on:
+  push:
+    branches:
+      - fix/mobile-device-runtime-20260921
+    paths:
+      - "apps/mobile/**"
+      - "scripts/verify-mobile-analyze-integration.mjs"
+      - "scripts/verify-mobile-standalone-release.sh"
+      - ".github/workflows/mobile-device-retest-apk.yml"
+      - "package-lock.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-device-retest-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-release-retest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      NODE_ENV: production
+      EXPO_PUBLIC_API_BASE_URL: https://k-beauty-two.vercel.app
+      EXPO_PUBLIC_SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_siC-o2dSDTKrcXS7lJAHRA_tdNfWCPF
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v6
+
+      - name: Attest SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'MOBILE_RETEST_SHA=%s\n' "$(git rev-parse HEAD)"
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+
+      - name: Install Android SDK toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify mobile contracts and types
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-analyze-integration.mjs
+          npm run verify:mobile-foundation
+          npm run mobile:typecheck
+          npm run mobile:config
+
+      - name: Verify production API route is reachable
+        shell: bash
+        run: |
+          set -euo pipefail
+          code="$(curl -sS -o /tmp/analyze-get.out -w '%{http_code}' --connect-timeout 15 --max-time 30 https://k-beauty-two.vercel.app/api/analyze)"
+          test "$code" != "000"
+          printf 'MOBILE_PRODUCTION_API_REACHABLE=PASS status=%s\n' "$code"
+
+      - name: Generate Android project
+        run: npm run mobile:prebuild:android
+
+      - name: Verify generated native project
+        run: npm run verify:mobile-native
+
+      - name: Build standalone release APK
+        working-directory: apps/mobile/android
+        run: ./gradlew :app:assembleRelease --no-daemon
+
+      - name: Verify release APK signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="apps/mobile/android/app/build/outputs/apk/release/app-release.apk"
+          test -f "$apk"
+          apksigner verify --verbose --print-certs "$apk"
+          sha256sum "$apk" | tee apps/mobile/android/app/build/outputs/apk/release/app-release.apk.sha256
+          printf 'MOBILE_STANDALONE_RELEASE_APK=PASS\n'
+
+      - name: Enable KVM permissions
+        shell: bash
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Boot emulator and launch release without Metro
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          avd-name: bejewely-release-retest-api35
+          force-avd-creation: true
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-front emulated -camera-back none
+          script: bash scripts/verify-mobile-standalone-release.sh
+
+      - name: Upload retest APK
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: bejewely-mobile-device-retest-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+            apps/mobile/android/app/build/outputs/apk/release/app-release.apk.sha256
+            apps/mobile/.mobile-release-smoke.xml
