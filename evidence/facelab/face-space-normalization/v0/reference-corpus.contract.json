@@ -21,7 +21,9 @@
     ],
     "subjectLevelSplitRequired": true,
     "sameSubjectAcrossSplitsForbidden": true,
-    "nearDuplicateFamilyAcrossSplitsForbidden": true
+    "nearDuplicateFamilyAcrossSplitsForbidden": true,
+    "referenceSplitFingerprintRequired": true,
+    "holdoutExcludedFromReferenceSplitFingerprint": true
   },
   "recordRequirements": {
     "opaqueSampleIdRequired": true,
@@ -32,7 +34,8 @@
     "providerAndVersionPinRequired": true,
     "rawImageInPacketForbidden": true,
     "identityEmbeddingForbidden": true,
-    "biometricIdentityMatchingForbidden": true
+    "biometricIdentityMatchingForbidden": true,
+    "providerProvenanceCarriedIntoStatisticsAndCandidate": true
   },
   "statisticsPolicy": {
     "statisticsGenerationAuthorizedNow": false,
@@ -40,7 +43,8 @@
     "scaleMethod": null,
     "percentileMethod": null,
     "thresholdMethod": null,
-    "methodSelectionRequiresSeparateVersionedResearchDecision": true
+    "methodSelectionRequiresSeparateVersionedResearchDecision": true,
+    "referenceSplitFingerprintRequiredForCandidate": true
   },
   "currentEvidence": {
     "corpusManifestPresent": false,
