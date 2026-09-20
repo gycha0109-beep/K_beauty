@@ -120,7 +120,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          query='지성인데 백탁 없고 안 끈적이는 선크림 찾아줘'
+          query='production-fail-closed-probe'
+          payload='{"query":"production-fail-closed-probe"}'
           routes=(
             /api/my/product-query-preview
             /api/my/product-query-stage-canary
@@ -128,7 +129,7 @@ jobs:
 
           for route in "${routes[@]}"; do
             response_file="$(mktemp)"
-            status="$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors               -o "$response_file"               -w '%{http_code}'               -X POST               -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"               -H 'Content-Type: application/json'               --data "{"query":"$query"}"               "$DEPLOYMENT_URL$route")"
+            status="$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors               -o "$response_file"               -w '%{http_code}'               -X POST               -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"               -H 'Content-Type: application/json'               --data "$payload"               "$DEPLOYMENT_URL$route")"
 
             echo "DATA_AI7_PRODUCTION_FAIL_CLOSED_HTTP_STATUS=${route}:${status}"
             test "$status" = "404"
