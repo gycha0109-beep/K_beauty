@@ -1,0 +1,153 @@
+name: BEJEWELY Mobile Standalone Test APK
+
+on:
+  push:
+    branches:
+      - "build/mobile-test-apk-20260921"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bejewely-mobile-standalone-test-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-standalone-test-apk:
+    name: Android Standalone Test APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      NODE_ENV: production
+      EXPO_PUBLIC_API_BASE_URL: https://k-beauty-two.vercel.app
+      EXPO_PUBLIC_SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_siC-o2dSDTKrcXS7lJAHRA_tdNfWCPF
+
+    steps:
+      - name: Checkout exact build SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Attest source main ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 12b833ff72d5f6c599cbc9f74734c275c654cc04 HEAD
+          printf 'MOBILE_TEST_APK_SHA=%s\n' "$(git rev-parse HEAD)"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+
+      - name: Install Android SDK 36 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify current mobile contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run verify:mobile-foundation
+          npm run verify:mobile-entry-routing
+          npm run mobile:typecheck
+          npm run mobile:config
+
+      - name: Generate Android native project
+        run: npm run mobile:prebuild:android
+
+      - name: Verify generated Android contract
+        run: npm run verify:mobile-native
+
+      - name: Build standalone release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd apps/mobile/android
+          ./gradlew :app:assembleRelease --no-daemon
+
+      - name: Verify APK artifact and signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="apps/mobile/android/app/build/outputs/apk/release/app-release.apk"
+          test -s "$apk"
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose "$apk"
+          sha256sum "$apk" | tee apps/mobile/android/app/build/outputs/apk/release/app-release.sha256
+          printf 'MOBILE_STANDALONE_RELEASE_APK=PASS\n'
+
+      - name: Enable KVM permissions
+        shell: bash
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Boot emulator and prove standalone launch without Metro
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          avd-name: bejewely-standalone-test
+          force-avd-creation: true
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-front emulated -camera-back none
+          script: |
+            set -euo pipefail
+            apk="apps/mobile/android/app/build/outputs/apk/release/app-release.apk"
+            artifact_dir="apps/mobile/.mobile-standalone-test-artifacts"
+            mkdir -p "$artifact_dir"
+            adb install -r "$apk"
+            adb shell pm clear com.bejewely.mobile
+            adb shell pm grant com.bejewely.mobile android.permission.CAMERA
+            adb shell am start -W -n com.bejewely.mobile/.MainActivity
+            found=0
+            for _ in $(seq 1 45); do
+              adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
+              adb pull /sdcard/window.xml "$artifact_dir/window.xml" >/dev/null 2>&1 || true
+              if grep -q 'Camera ready' "$artifact_dir/window.xml" 2>/dev/null; then
+                found=1
+                break
+              fi
+              sleep 2
+            done
+            if [ "$found" -ne 1 ]; then
+              adb logcat -d > "$artifact_dir/logcat.txt" 2>&1 || true
+              cat "$artifact_dir/window.xml" >&2 2>/dev/null || true
+              exit 1
+            fi
+            adb exec-out screencap -p > "$artifact_dir/standalone-launch.png"
+            adb logcat -d > "$artifact_dir/logcat.txt"
+            printf 'MOBILE_STANDALONE_NO_METRO_LAUNCH=PASS\n'
+
+      - name: Upload standalone test APK
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: bejewely-standalone-test-apk-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+            apps/mobile/android/app/build/outputs/apk/release/app-release.sha256
+            apps/mobile/.mobile-standalone-test-artifacts/**
