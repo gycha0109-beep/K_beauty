@@ -43,6 +43,9 @@ on:
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
       - "scripts/verify-face-lab-london-set-v5-intake.mjs"
       - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
+      - "scripts/verify-face-lab-london-set-v5-split-plan.mjs"
+      - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
+      - ".github/workflows/face-lab-london-measurement.yml"
       - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
       - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
       - ".github/workflows/face-lab-london-source-receipts.yml"
@@ -125,6 +128,9 @@ on:
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
       - "scripts/verify-face-lab-london-set-v5-intake.mjs"
       - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
+      - "scripts/verify-face-lab-london-set-v5-split-plan.mjs"
+      - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
+      - ".github/workflows/face-lab-london-measurement.yml"
       - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
       - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
       - ".github/workflows/face-lab-london-source-receipts.yml"
@@ -250,6 +256,10 @@ jobs:
         run: node scripts/verify-face-lab-london-set-v5-intake.mjs
       - name: Verify Face Lab London Set v5 upstream front inventory
         run: node scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs
+      - name: Verify Face Lab London Set v5 frozen split plan
+        run: node scripts/verify-face-lab-london-set-v5-split-plan.mjs
+      - name: Syntax check London measurement manifest builder
+        run: node --check scripts/build-face-lab-london-set-v5-measurement-manifests.mjs
       - name: Syntax check London source receipt builder
         run: node --check scripts/build-face-lab-london-set-v5-front-receipts.mjs
       - name: Syntax check London source receipt verifier

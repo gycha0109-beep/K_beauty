@@ -1,0 +1,434 @@
+{
+  "schemaVersion": "face-lab-london-set-v5-reference-holdout-split-plan-v0",
+  "status": "frozen_pre_measurement",
+  "sourceReceiptDigest": "sha256:b51a121c5639da4d090f0e43b4287d5cd5c306ba036efca3030516cf72a2025a",
+  "method": {
+    "kind": "deterministic_subject_order_position",
+    "subjectOrdering": "lexicographic_subject_id",
+    "holdoutRule": "every_5th_sorted_subject_position_through_position_100",
+    "measurementValuesUsed": false,
+    "sensitiveAttributesUsed": false,
+    "archetypeLabelsUsed": false,
+    "exactReferenceCount": 82,
+    "exactHoldoutCount": 20
+  },
+  "records": [
+    {
+      "subjectId": "001",
+      "split": "reference"
+    },
+    {
+      "subjectId": "002",
+      "split": "reference"
+    },
+    {
+      "subjectId": "003",
+      "split": "reference"
+    },
+    {
+      "subjectId": "004",
+      "split": "reference"
+    },
+    {
+      "subjectId": "005",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "006",
+      "split": "reference"
+    },
+    {
+      "subjectId": "007",
+      "split": "reference"
+    },
+    {
+      "subjectId": "008",
+      "split": "reference"
+    },
+    {
+      "subjectId": "009",
+      "split": "reference"
+    },
+    {
+      "subjectId": "010",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "011",
+      "split": "reference"
+    },
+    {
+      "subjectId": "012",
+      "split": "reference"
+    },
+    {
+      "subjectId": "013",
+      "split": "reference"
+    },
+    {
+      "subjectId": "014",
+      "split": "reference"
+    },
+    {
+      "subjectId": "016",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "017",
+      "split": "reference"
+    },
+    {
+      "subjectId": "018",
+      "split": "reference"
+    },
+    {
+      "subjectId": "019",
+      "split": "reference"
+    },
+    {
+      "subjectId": "020",
+      "split": "reference"
+    },
+    {
+      "subjectId": "021",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "022",
+      "split": "reference"
+    },
+    {
+      "subjectId": "024",
+      "split": "reference"
+    },
+    {
+      "subjectId": "025",
+      "split": "reference"
+    },
+    {
+      "subjectId": "026",
+      "split": "reference"
+    },
+    {
+      "subjectId": "027",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "029",
+      "split": "reference"
+    },
+    {
+      "subjectId": "030",
+      "split": "reference"
+    },
+    {
+      "subjectId": "031",
+      "split": "reference"
+    },
+    {
+      "subjectId": "032",
+      "split": "reference"
+    },
+    {
+      "subjectId": "033",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "034",
+      "split": "reference"
+    },
+    {
+      "subjectId": "036",
+      "split": "reference"
+    },
+    {
+      "subjectId": "037",
+      "split": "reference"
+    },
+    {
+      "subjectId": "038",
+      "split": "reference"
+    },
+    {
+      "subjectId": "039",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "041",
+      "split": "reference"
+    },
+    {
+      "subjectId": "042",
+      "split": "reference"
+    },
+    {
+      "subjectId": "043",
+      "split": "reference"
+    },
+    {
+      "subjectId": "044",
+      "split": "reference"
+    },
+    {
+      "subjectId": "045",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "061",
+      "split": "reference"
+    },
+    {
+      "subjectId": "062",
+      "split": "reference"
+    },
+    {
+      "subjectId": "063",
+      "split": "reference"
+    },
+    {
+      "subjectId": "064",
+      "split": "reference"
+    },
+    {
+      "subjectId": "066",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "067",
+      "split": "reference"
+    },
+    {
+      "subjectId": "068",
+      "split": "reference"
+    },
+    {
+      "subjectId": "069",
+      "split": "reference"
+    },
+    {
+      "subjectId": "070",
+      "split": "reference"
+    },
+    {
+      "subjectId": "081",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "082",
+      "split": "reference"
+    },
+    {
+      "subjectId": "083",
+      "split": "reference"
+    },
+    {
+      "subjectId": "086",
+      "split": "reference"
+    },
+    {
+      "subjectId": "087",
+      "split": "reference"
+    },
+    {
+      "subjectId": "090",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "091",
+      "split": "reference"
+    },
+    {
+      "subjectId": "092",
+      "split": "reference"
+    },
+    {
+      "subjectId": "094",
+      "split": "reference"
+    },
+    {
+      "subjectId": "096",
+      "split": "reference"
+    },
+    {
+      "subjectId": "097",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "099",
+      "split": "reference"
+    },
+    {
+      "subjectId": "100",
+      "split": "reference"
+    },
+    {
+      "subjectId": "101",
+      "split": "reference"
+    },
+    {
+      "subjectId": "102",
+      "split": "reference"
+    },
+    {
+      "subjectId": "103",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "104",
+      "split": "reference"
+    },
+    {
+      "subjectId": "105",
+      "split": "reference"
+    },
+    {
+      "subjectId": "107",
+      "split": "reference"
+    },
+    {
+      "subjectId": "108",
+      "split": "reference"
+    },
+    {
+      "subjectId": "112",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "113",
+      "split": "reference"
+    },
+    {
+      "subjectId": "114",
+      "split": "reference"
+    },
+    {
+      "subjectId": "115",
+      "split": "reference"
+    },
+    {
+      "subjectId": "117",
+      "split": "reference"
+    },
+    {
+      "subjectId": "118",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "119",
+      "split": "reference"
+    },
+    {
+      "subjectId": "120",
+      "split": "reference"
+    },
+    {
+      "subjectId": "121",
+      "split": "reference"
+    },
+    {
+      "subjectId": "122",
+      "split": "reference"
+    },
+    {
+      "subjectId": "123",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "124",
+      "split": "reference"
+    },
+    {
+      "subjectId": "125",
+      "split": "reference"
+    },
+    {
+      "subjectId": "126",
+      "split": "reference"
+    },
+    {
+      "subjectId": "127",
+      "split": "reference"
+    },
+    {
+      "subjectId": "128",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "129",
+      "split": "reference"
+    },
+    {
+      "subjectId": "130",
+      "split": "reference"
+    },
+    {
+      "subjectId": "131",
+      "split": "reference"
+    },
+    {
+      "subjectId": "132",
+      "split": "reference"
+    },
+    {
+      "subjectId": "134",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "135",
+      "split": "reference"
+    },
+    {
+      "subjectId": "136",
+      "split": "reference"
+    },
+    {
+      "subjectId": "137",
+      "split": "reference"
+    },
+    {
+      "subjectId": "138",
+      "split": "reference"
+    },
+    {
+      "subjectId": "139",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "140",
+      "split": "reference"
+    },
+    {
+      "subjectId": "141",
+      "split": "reference"
+    },
+    {
+      "subjectId": "142",
+      "split": "reference"
+    },
+    {
+      "subjectId": "143",
+      "split": "reference"
+    },
+    {
+      "subjectId": "144",
+      "split": "holdout"
+    },
+    {
+      "subjectId": "172",
+      "split": "reference"
+    },
+    {
+      "subjectId": "173",
+      "split": "reference"
+    }
+  ],
+  "boundaries": {
+    "subjectLevelSplit": true,
+    "subjectLeakageForbidden": true,
+    "nearDuplicateFamilyLeakageForbidden": true,
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false,
+    "adequacyDecisionAuthority": false
+  }
+}
