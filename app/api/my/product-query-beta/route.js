@@ -5,6 +5,10 @@ import {
   evaluateProductQueryAuthenticatedBetaRuntime,
   evaluateProductQueryAuthenticatedBetaStaticGate
 } from "@/lib/product-query-authenticated-beta-runtime.mjs";
+import {
+  DATA_AI20_BETA_RUNTIME_PHASE_AUTHORIZED,
+  evaluateProductQueryAuthenticatedBetaControlledActivation
+} from "@/lib/product-query-authenticated-beta-controlled-activation.mjs";
 import { executeProductQueryPreview } from "@/lib/server/product-query-preview-service";
 
 export const runtime = "nodejs";
@@ -54,7 +58,14 @@ function classifyError(error) {
 }
 
 export async function POST(request) {
-  const staticGate = evaluateProductQueryAuthenticatedBetaStaticGate(process.env);
+  const activationGate =
+    evaluateProductQueryAuthenticatedBetaControlledActivation(process.env);
+  if (!activationGate.allowed) return notFound();
+
+  const staticGate = evaluateProductQueryAuthenticatedBetaStaticGate(
+    process.env,
+    { phaseRuntimeAuthorized: DATA_AI20_BETA_RUNTIME_PHASE_AUTHORIZED }
+  );
   if (!staticGate.staticAllowed) return notFound();
 
   const authContext = await resolveRouteSupabaseAuth(request);
@@ -62,7 +73,8 @@ export async function POST(request) {
 
   const runtimePolicy = evaluateProductQueryAuthenticatedBetaRuntime({
     envLike: process.env,
-    subject: authContext.user.id
+    subject: authContext.user.id,
+    phaseRuntimeAuthorized: DATA_AI20_BETA_RUNTIME_PHASE_AUTHORIZED
   });
   if (!runtimePolicy.allowed) return notFound();
 
