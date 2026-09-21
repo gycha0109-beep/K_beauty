@@ -1,0 +1,86 @@
+name: DATA-AI20 Three-Account Cohort Preflight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-ai20-three-account-cohort-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-ai20-three-account-cohort-preflight-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cohort-preflight:
+    name: DATA-AI20 derive three approved account hashes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      TOKEN_1: ${{ secrets.DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN }}
+      TOKEN_2: ${{ secrets.DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN_2 }}
+      TOKEN_3: ${{ secrets.DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN_3 }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Validate freshness, distinct subjects, and derive hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$TOKEN_1"
+          test -n "$TOKEN_2"
+          test -n "$TOKEN_3"
+          echo "::add-mask::$TOKEN_1"
+          echo "::add-mask::$TOKEN_2"
+          echo "::add-mask::$TOKEN_3"
+
+          TOKEN_1="$TOKEN_1" TOKEN_2="$TOKEN_2" TOKEN_3="$TOKEN_3" node <<'NODE'
+          const crypto = require("node:crypto");
+
+          const tokens = [process.env.TOKEN_1, process.env.TOKEN_2, process.env.TOKEN_3];
+          const now = Math.floor(Date.now() / 1000);
+
+          function decode(token, index) {
+            const parts = String(token || "").split(".");
+            if (parts.length !== 3) throw new Error(`token ${index} is not a JWT`);
+            const payload = JSON.parse(
+              Buffer.from(
+                parts[1].replace(/-/g, "+").replace(/_/g, "/"),
+                "base64"
+              ).toString("utf8")
+            );
+            if (typeof payload.sub !== "string" || !payload.sub) {
+              throw new Error(`token ${index} subject missing`);
+            }
+            if (!Number.isFinite(payload.exp) || payload.exp <= now) {
+              throw new Error(`token ${index} expired`);
+            }
+            return payload;
+          }
+
+          const payloads = tokens.map((token, i) => decode(token, i + 1));
+          const subjects = payloads.map((p) => p.sub);
+          if (new Set(subjects).size !== 3) {
+            throw new Error("the three tokens must belong to three distinct account subjects");
+          }
+
+          const hashes = subjects.map((sub) =>
+            crypto.createHash("sha256").update(sub, "utf8").digest("hex")
+          );
+
+          for (const hash of hashes) {
+            if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error("invalid derived hash");
+          }
+
+          console.log("DATA_AI20_THREE_ACCOUNT_PREFLIGHT=PASS");
+          hashes.forEach((hash, i) => console.log(`ACCOUNT_${i + 1}_HASH=${hash}`));
+          console.log("RAW_SUB_RECORDED=false");
+          console.log("RAW_TOKEN_RECORDED=false");
+          NODE
