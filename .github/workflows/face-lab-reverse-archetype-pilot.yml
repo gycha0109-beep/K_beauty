@@ -18,6 +18,7 @@ on:
       - "lib/face-lab-reference-corpus-adequacy.js"
       - "lib/face-lab-reference-corpus-review-packet.js"
       - "lib/face-lab-source-manifest-scaffold.js"
+      - "lib/face-lab-normalization-review-packet-run-output.js"
       - "lib/face-lab-reference-statistics-research.js"
       - "lib/face-lab-reference-method-comparison-research.js"
       - "lib/face-lab-reference-method-selection-research.js"
@@ -40,6 +41,8 @@ on:
       - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
       - "scripts/verify-face-lab-runner-cli-contract.mjs"
+      - "scripts/build-face-lab-normalization-review-packet.mjs"
+      - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
       - "scripts/scaffold-face-lab-source-manifest.mjs"
       - "scripts/run-face-lab-reference-corpus-measurement.mjs"
       - "scripts/verify-face-lab-reference-statistics-method.mjs"
@@ -90,6 +93,7 @@ on:
       - "lib/face-lab-reference-corpus-adequacy.js"
       - "lib/face-lab-reference-corpus-review-packet.js"
       - "lib/face-lab-source-manifest-scaffold.js"
+      - "lib/face-lab-normalization-review-packet-run-output.js"
       - "lib/face-lab-reference-statistics-research.js"
       - "lib/face-lab-reference-method-comparison-research.js"
       - "lib/face-lab-reference-method-selection-research.js"
@@ -112,6 +116,8 @@ on:
       - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
       - "scripts/verify-face-lab-runner-cli-contract.mjs"
+      - "scripts/build-face-lab-normalization-review-packet.mjs"
+      - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
       - "scripts/scaffold-face-lab-source-manifest.mjs"
       - "scripts/run-face-lab-reference-corpus-measurement.mjs"
       - "scripts/verify-face-lab-reference-statistics-method.mjs"
@@ -230,6 +236,10 @@ jobs:
         run: node --check scripts/scaffold-face-lab-source-manifest.mjs
       - name: Smoke Face Lab research runner validate-only CLIs
         run: node scripts/verify-face-lab-runner-cli-contract.mjs
+      - name: Verify Face Lab run-output review packet bridge
+        run: node scripts/verify-face-lab-normalization-review-packet-run-output.mjs
+      - name: Syntax check Face Lab review packet builder CLI
+        run: node --check scripts/build-face-lab-normalization-review-packet.mjs
       - name: Syntax check Face Space reference corpus measurement runner
         run: node --check scripts/run-face-lab-reference-corpus-measurement.mjs
       - name: Verify Face Space reference statistics method boundary
