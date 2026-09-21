@@ -98,7 +98,14 @@ for (const [label, rows, expectedFileId, expectedName] of [
     assert.match(row.subjectId, /^\d{3}$/);
     assert.equal(row.upstreamArchiveFileId, expectedFileId);
     assert.equal(row.upstreamArchiveName, expectedName);
-    assert.match(row.upstreamMemberName, /^\d{3}_\d{2}\.jpe?g$/i);
+    const expectedDirectory = expectedName.replace(/\.zip$/i, "");
+    assert.match(
+      row.upstreamMemberName,
+      new RegExp(
+        "^" + expectedDirectory + "/\\d{3}_\\d{2}\\.jpe?g$",
+        "i"
+      )
+    );
     assert.match(row.sourceImageSha256, /^[a-f0-9]{64}$/);
     assert.ok(Number.isInteger(row.byteSize));
     assert.ok(row.byteSize > 0);
