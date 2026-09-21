@@ -181,7 +181,7 @@ Upstream:
 - https://doi.org/10.6084/m9.figshare.5047666.v5
 - https://debruine.github.io/reprostim/
 
-## 3. Reconstruction / validation references
+## 4. Reconstruction / validation references
 
 ### MICA — RESEARCH_ONLY
 
