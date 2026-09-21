@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const migrationPath = "supabase/migrations/20260922030633_trust_phase8f_changed_semantic_replacement_v1.sql";
+const migrationPath = "supabase/migrations/20260922064844_trust_phase8f_changed_semantic_replacement_v1.sql";
 const prepPath = "tests/fixtures/trust-phase8f-revalidation/prepare_trust_phase8f_changed_candidate.sql";
 const runtimePath = "tests/fixtures/trust-phase8f-revalidation/verify_trust_phase8f_changed_semantic_runtime.sql";
 

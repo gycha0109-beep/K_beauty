@@ -75,9 +75,9 @@ jobs:
           cp supabase/migrations/20260922011324_trust_phase8c_revalidation_transition_index_hardening_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260922012833_trust_phase8c_prestate_binding_hardening_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-phase8d-revalidation/20260922013450_trust_phase8d_fixture_adapter.sql "${migration_dir}/"
-          cp supabase/migrations/20260922013500_trust_phase8d_revalidation_research_bridge_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260922025843_trust_phase8e_revalidation_adjudication_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260922030633_trust_phase8f_changed_semantic_replacement_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260922064822_trust_phase8d_revalidation_research_bridge_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260922064829_trust_phase8e_revalidation_adjudication_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260922064844_trust_phase8f_changed_semantic_replacement_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and verify Phase 8F replacement
         shell: bash
