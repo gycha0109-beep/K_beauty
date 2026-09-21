@@ -9,7 +9,8 @@
     "stabilitySummaryPath": "evidence/facelab/photo-geometry/v0/photo-geometry-stability-evidence-summary.json",
     "controlled3dStabilityPath": "evidence/facelab/face-space-3d/v0/gnm-v3-controlled-stability-evidence.json",
     "referenceCorpusContractPath": "evidence/facelab/face-space-normalization/v0/reference-corpus.contract.json",
-    "referenceCorpusAdequacyContractPath": "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json"
+    "referenceCorpusAdequacyContractPath": "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json",
+    "realPhotoStabilityAdequacyContractPath": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
   },
   "currentBlockers": [
     "single_fixture_only",
@@ -40,6 +41,8 @@
     "Reference-corpus coverage readiness must be derived by validating a raw face-space-reference-corpus-v0 manifest inside the readiness evaluator.",
     "Caller-supplied reference-corpus summary objects are forbidden as readiness inputs.",
     "A structurally valid reference corpus cannot satisfy multi-subject, general-face, or reference-distribution readiness gates until a versioned adequacy review bound to the exact reference-split fingerprint is present.",
-    "Reference-corpus adequacy must not be inferred automatically from record count, and no numeric adequacy threshold is invented by this readiness contract."
+    "Reference-corpus adequacy must not be inferred automatically from record count, and no numeric adequacy threshold is invented by this readiness contract.",
+    "A complete real-photo head_yaw/head_pitch/head_roll/expression report collection is structural evidence only; it cannot satisfy pose/expression readiness until an explicit adequacy review bound to the exact collection fingerprint is present.",
+    "Real-photo stability adequacy must not be inferred automatically from report count or nuisance-class coverage, and no numeric adequacy threshold is invented by this readiness contract."
   ]
 }
