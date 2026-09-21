@@ -11,6 +11,9 @@ import {
   summarizeRealPhotoStabilityCollection
 } from "../lib/face-lab-real-photo-stability-evidence.js";
 import {
+  buildRealPhotoStabilityReviewPacket
+} from "../lib/face-lab-real-photo-stability-review-packet.js";
+import {
   validateFaceSpaceReferenceCorpus
 } from "../lib/face-lab-face-space-reference-corpus.js";
 
@@ -215,6 +218,11 @@ const completeRealPhotoReports = realPhotoNuisanceFixtures.map(
 
 const completeRealPhotoCollection =
   summarizeRealPhotoStabilityCollection(completeRealPhotoReports);
+const completeRealPhotoReviewPacket =
+  buildRealPhotoStabilityReviewPacket({
+    reports: completeRealPhotoReports,
+    packetVersion: "synthetic-verifier-real-photo-review-packet-v0"
+  });
 const futureRealPhotoStabilityAdequacyEvidence = {
   schemaVersion:
     "face-lab-real-photo-stability-adequacy-evidence-v0",
@@ -227,6 +235,12 @@ const futureRealPhotoStabilityAdequacyEvidence = {
     completeRealPhotoCollection.schemaVersion,
   sourceCollectionFingerprint:
     completeRealPhotoCollection.collectionFingerprint,
+  sourceReviewPacketSchemaVersion:
+    completeRealPhotoReviewPacket.schemaVersion,
+  sourceReviewPacketVersion:
+    completeRealPhotoReviewPacket.packetVersion,
+  sourceReviewPacketFingerprint:
+    completeRealPhotoReviewPacket.reviewPacketFingerprint,
   sourceReportCount:
     completeRealPhotoCollection.reportCount,
   sourceRunManifestDigests:
@@ -523,8 +537,8 @@ const structuralRealPhotoOnlyReadiness =
     referenceCorpusAdequacyEvidence:
       futureReferenceCorpusAdequacyEvidence,
     realPhotoStabilityReports: completeRealPhotoReports,
-  realPhotoStabilityAdequacyEvidence:
-    futureRealPhotoStabilityAdequacyEvidence,
+    realPhotoStabilityReviewPacket:
+      completeRealPhotoReviewPacket,
     evidence: {
       controlled3dPoseStress: true,
       controlled3dExpressionStress: true,
@@ -562,6 +576,23 @@ assert.equal(
   true
 );
 
+assert.throws(
+  () =>
+    evaluateFaceSpaceNormalizationReadiness({
+      semanticContract,
+      stabilitySummary: completeStabilitySummary,
+      scope: "same_provider",
+      referenceCorpusManifest: futureReferenceCorpusManifest,
+      referenceCorpusAdequacyEvidence:
+        futureReferenceCorpusAdequacyEvidence,
+      realPhotoStabilityReports: completeRealPhotoReports,
+      realPhotoStabilityAdequacyEvidence:
+        futureRealPhotoStabilityAdequacyEvidence,
+      evidence: {}
+    }),
+  /adequacy_review_packet_invalid/
+);
+
 const completeEvidence = {
   realPoseStability: true,
   realExpressionStability: true,
@@ -579,6 +610,8 @@ const sameProviderReady = evaluateFaceSpaceNormalizationReadiness({
   referenceCorpusManifest: futureReferenceCorpusManifest,
   referenceCorpusAdequacyEvidence: futureReferenceCorpusAdequacyEvidence,
   realPhotoStabilityReports: completeRealPhotoReports,
+  realPhotoStabilityReviewPacket:
+    completeRealPhotoReviewPacket,
   realPhotoStabilityAdequacyEvidence:
     futureRealPhotoStabilityAdequacyEvidence,
   evidence: completeEvidence
@@ -591,6 +624,10 @@ assert.equal(
 assert.equal(
   sameProviderReady.evidenceState.realPhotoStabilityAdequacyDecisionVersion,
   futureRealPhotoStabilityAdequacyEvidence.decisionVersion
+);
+assert.equal(
+  sameProviderReady.evidenceState.realPhotoStabilityReviewPacketFingerprint,
+  completeRealPhotoReviewPacket.reviewPacketFingerprint
 );
 syntheticReferenceFingerprint =
   sameProviderReady.evidenceState.referenceSplitFingerprint;
@@ -630,6 +667,8 @@ const crossProviderHeld = evaluateFaceSpaceNormalizationReadiness({
   referenceCorpusManifest: futureReferenceCorpusManifest,
   referenceCorpusAdequacyEvidence: futureReferenceCorpusAdequacyEvidence,
   realPhotoStabilityReports: completeRealPhotoReports,
+  realPhotoStabilityReviewPacket:
+    completeRealPhotoReviewPacket,
   realPhotoStabilityAdequacyEvidence:
     futureRealPhotoStabilityAdequacyEvidence,
   evidence: completeEvidence
@@ -670,6 +709,8 @@ const crossProviderReady = evaluateFaceSpaceNormalizationReadiness({
   referenceCorpusManifest: futureReferenceCorpusManifest,
   referenceCorpusAdequacyEvidence: futureReferenceCorpusAdequacyEvidence,
   realPhotoStabilityReports: completeRealPhotoReports,
+  realPhotoStabilityReviewPacket:
+    completeRealPhotoReviewPacket,
   realPhotoStabilityAdequacyEvidence:
     futureRealPhotoStabilityAdequacyEvidence,
   evidence: {
@@ -970,6 +1011,8 @@ console.log(JSON.stringify({
     explicitRealPhotoStabilityAdequacyReviewRequired: true,
     structuralRealPhotoCoverageAloneCannotSatisfyReadiness: true,
     realPhotoAdequacyBoundToExactCollectionFingerprint: true,
+    realPhotoAdequacyBoundToExactReviewPacketFingerprint: true,
+    reviewPacketAloneCannotSatisfyReadiness: true,
     realPhotoNumericAdequacyThresholdNotInvented: true,
     manualCoverageFlagsCannotBypassReferenceCorpusManifest: true,
     validatedReferenceCorpusManifestRequiredForCoverageGates: true,
