@@ -4,9 +4,11 @@ import fs from "node:fs";
 
 const migrationPath = "supabase/migrations/20260922011229_trust_phase8c_revalidation_transition_v1.sql";
 const hardeningPath = "supabase/migrations/20260922011324_trust_phase8c_revalidation_transition_index_hardening_v1.sql";
+const prestateHardeningPath = "supabase/migrations/20260922012833_trust_phase8c_prestate_binding_hardening_v1.sql";
 const runtimePath = "tests/fixtures/trust-phase8c-revalidation/verify_trust_phase8c_revalidation_runtime.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
+const prestateHardening = fs.readFileSync(prestateHardeningPath, "utf8");
 const runtime = fs.readFileSync(runtimePath, "utf8");
 
 for (const token of [
@@ -37,6 +39,18 @@ for (const token of [
   assert.ok(hardening.includes(token), `missing Phase 8C hardening token: ${token}`);
 }
 
+for (const token of [
+  "admin_preflight_product_fact_revalidation_v1",
+  "'source_id'",
+  "'prestate_digest'",
+  "'reason_code'",
+  "product_fact_revalidation_prestate_digest_stale",
+  "product_fact_revalidation_source_mismatch",
+  "product_fact_revalidation_reason_mismatch"
+]) {
+  assert.ok(prestateHardening.includes(token), `missing Phase 8C prestate hardening token: ${token}`);
+}
+
 for (const forbidden of [
   "update public.product_fact_current",
   "delete from public.product_fact_current",
@@ -52,6 +66,11 @@ for (const forbidden of [
 }
 
 for (const token of [
+  "phase8c_preflight_binding_incomplete",
+  "phase8c_stale_prestate_digest_not_rejected",
+  "phase8c_reason_mismatch_not_rejected",
+  "phase8c_source_mismatch_not_rejected",
+  "phase8c_transition_ledger_binding_missing",
   "phase8c_assignment_not_re_review_required",
   "phase8c_current_pointer_changed",
   "phase8c_semantic_authority_mutated",
