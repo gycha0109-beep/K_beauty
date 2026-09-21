@@ -140,8 +140,19 @@ begin
 
   if (select supersedes_fact_instance_id
       from public.product_fact_instances
-      where fact_instance_id = v_new_fact) <> v_ctx.old_fact_instance_id then
-    raise exception 'phase8f_fact_supersession_link_missing';
+      where fact_instance_id = v_new_fact) is not null
+    or not exists (
+      select 1
+      from public.product_fact_revalidation_resolutions
+      where transition_id = v_ctx.transition_id
+        and resolution_kind = 'SEMANTIC_CHANGE_REPLACEMENT'
+        and result ->> 'old_fact_instance_id' = v_ctx.old_fact_instance_id::text
+        and result ->> 'new_fact_instance_id' = v_new_fact::text
+        and result ->> 'old_proposition_key' = v_ctx.old_proposition_key
+        and result ->> 'new_proposition_key' = v_new_proposition
+        and coalesce((result ->> 'cross_proposition_replacement_lineage')::boolean, false)
+    ) then
+    raise exception 'phase8f_cross_proposition_replacement_lineage_missing';
   end if;
 
   if (select operational_state

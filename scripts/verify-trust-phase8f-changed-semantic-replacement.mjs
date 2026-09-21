@@ -17,7 +17,7 @@ for (const token of [
   "ready_for_explicit_replacement_confirmation",
   "admin_preflight_product_fact_confirmation_v1",
   "admin_confirm_product_fact_v1",
-  "supersedes_fact_instance_id",
+  "cross_proposition_replacement_lineage",
   "delete from public.product_fact_current",
   "revalidation_superseded",
   "automatic_confirmation"
@@ -36,7 +36,7 @@ for (const token of [
 for (const token of [
   "TRUST_PHASE8F_CHANGED_SEMANTIC_REPLACEMENT_RUNTIME_VERIFIED",
   "phase8f_current_pointer_not_replaced",
-  "phase8f_fact_supersession_link_missing",
+  "phase8f_cross_proposition_replacement_lineage_missing",
   "phase8f_replacement_replay_not_idempotent"
 ]) {
   assert.ok(runtime.includes(token), `missing Phase 8F runtime token: ${token}`);
@@ -44,7 +44,7 @@ for (const token of [
 
 assert.match(
   migration,
-  /v_confirmation := public\.admin_confirm_product_fact_v1\([\s\S]*update public\.product_fact_instances[\s\S]*delete from public\.product_fact_current[\s\S]*operational_state = 'superseded'/
+  /v_confirmation := public\.admin_confirm_product_fact_v1\([\s\S]*cross-proposition lineage[\s\S]*delete from public\.product_fact_current[\s\S]*operational_state = 'superseded'/
 );
 
 assert.match(

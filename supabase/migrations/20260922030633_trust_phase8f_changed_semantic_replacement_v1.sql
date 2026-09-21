@@ -484,6 +484,7 @@ begin
     'confirmation_payload_digest', v_preflight ->> 'payload_digest',
     'confirmation_prestate_digest', v_preflight ->> 'prestate_digest',
     'replacement_prestate_digest', v_replacement_prestate_digest,
+    'cross_proposition_replacement_lineage', true,
     'automatic_confirmation', false
   );
 end;
@@ -693,16 +694,10 @@ begin
   v_new_fact_instance_id := (v_confirmation ->> 'fact_instance_id')::uuid;
   v_new_confirmation_id := (v_confirmation ->> 'confirmation_id')::uuid;
 
-  update public.product_fact_instances
-  set supersedes_fact_instance_id = (v_plan ->> 'current_fact_instance_id')::uuid
-  where fact_instance_id = v_new_fact_instance_id
-    and supersedes_fact_instance_id is null;
-
-  get diagnostics v_updated_count = row_count;
-  if v_updated_count <> 1 then
-    raise exception 'product_fact_revalidation_replacement_supersession_link_failed'
-      using errcode = '40001';
-  end if;
+  -- product_fact_instances.supersedes_fact_instance_id is intentionally
+  -- proposition-local by storage FK. A changed-semantic replacement has a new
+  -- proposition_key, so its cross-proposition lineage is recorded immutably
+  -- by the revalidation resolution/event/audit instead of mutating the new Fact.
 
   delete from public.product_fact_current
   where proposition_key = v_plan ->> 'current_proposition_key'
