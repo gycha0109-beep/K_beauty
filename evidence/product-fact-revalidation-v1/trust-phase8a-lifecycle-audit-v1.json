@@ -1,0 +1,52 @@
+{
+  "schema_version": "trust-phase8a-lifecycle-audit-v1",
+  "phase": "TRUST_PHASE8A",
+  "status": "PASS",
+  "audit_kind": "read_only_production_snapshot",
+  "repository": "gycha0109-beep/K_beauty",
+  "base_main_sha": "0c405fe99a6732e938912a3492a8b1776aa59ba5",
+  "observed_on": "2026-09-22",
+  "production": {
+    "product_fact_current": 71,
+    "product_fact_instances": 71,
+    "product_fact_confirmations": 71,
+    "product_evidence_records": 71,
+    "product_evidence_sources": 38,
+    "product_fact_review_assignments": 71,
+    "product_fact_review_events": 309,
+    "assignment_states": {
+      "confirmed": 71
+    },
+    "current_supported": 71,
+    "current_superseding_fact_instances": 0,
+    "current_without_evidence_links": 0,
+    "current_without_assignment": 0,
+    "current_without_confirmed_assignment": 0,
+    "evidence_without_source": 0,
+    "evidence_without_binding": 0,
+    "linked_sources_without_observed_at": 26,
+    "current_facts_with_unobserved_source": 59,
+    "source_observation_window": {
+      "oldest_observed_at": "2026-09-14T15:35:36.986213+09:00",
+      "newest_observed_at": "2026-09-21T23:10:27.883494+09:00",
+      "oldest_accessed_at": "2026-08-08T00:00:00+09:00",
+      "newest_accessed_at": "2026-09-21T23:10:27.883494+09:00"
+    }
+  },
+  "lifecycle_gap": {
+    "source_verification_ledger_present": false,
+    "supersession_runtime_evidence_present": false,
+    "stale_assignment_count": 0,
+    "re_review_required_assignment_count": 0
+  },
+  "frozen_boundaries": {
+    "source_changed_is_fact_changed": false,
+    "source_unavailable_is_fact_false": false,
+    "new_evidence_auto_replaces_fact": false,
+    "stale_is_semantic_status": false,
+    "re_review_required_is_evidence_conflict": false,
+    "automatic_confirmation_allowed": false,
+    "recommendation_authority_cutover_allowed": false
+  },
+  "next": "TRUST_PHASE8B_SOURCE_VERIFICATION_LEDGER"
+}
