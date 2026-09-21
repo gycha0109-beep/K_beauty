@@ -42,6 +42,7 @@ on:
       - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
       - "scripts/verify-face-lab-london-set-v5-intake.mjs"
+      - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
       - "scripts/verify-face-lab-runner-cli-contract.mjs"
       - "scripts/build-face-lab-normalization-review-packet.mjs"
       - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
@@ -120,6 +121,7 @@ on:
       - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
       - "scripts/verify-face-lab-london-set-v5-intake.mjs"
+      - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
       - "scripts/verify-face-lab-runner-cli-contract.mjs"
       - "scripts/build-face-lab-normalization-review-packet.mjs"
       - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
@@ -240,6 +242,8 @@ jobs:
         run: node scripts/verify-face-lab-london-set-v5-source-intake.mjs
       - name: Verify Face Lab London Set v5 front intake planner
         run: node scripts/verify-face-lab-london-set-v5-intake.mjs
+      - name: Verify Face Lab London Set v5 upstream front inventory
+        run: node scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs
       - name: Verify Face Lab source manifest scaffold
         run: node scripts/verify-face-lab-source-manifest-scaffold.mjs
       - name: Syntax check Face Lab source manifest scaffold CLI
