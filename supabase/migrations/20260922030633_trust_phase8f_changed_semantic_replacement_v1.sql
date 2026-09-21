@@ -484,11 +484,10 @@ begin
     'confirmation_payload_digest', v_preflight ->> 'payload_digest',
     'confirmation_prestate_digest', v_preflight ->> 'prestate_digest',
     'replacement_prestate_digest', v_replacement_prestate_digest,
-    'cross_proposition_replacement_lineage', true,
     'automatic_confirmation', false
   );
 end;
-$$;
+$;
 
 create or replace function public.admin_confirm_product_fact_revalidation_replacement_v1(
   p_actor_user_id uuid,
@@ -773,6 +772,7 @@ begin
     'confirmation_payload_digest', v_expected_confirmation_payload_digest,
     'confirmation_prestate_digest', v_expected_confirmation_prestate_digest,
     'replacement_prestate_digest', v_replacement_prestate_digest,
+    'cross_proposition_replacement_lineage', true,
     'automatic_confirmation', false
   );
 

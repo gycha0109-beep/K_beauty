@@ -49,6 +49,11 @@ assert.match(
 
 assert.match(
   migration,
+  /v_result := jsonb_build_object\([\s\S]*'cross_proposition_replacement_lineage', true[\s\S]*insert into public\.product_fact_revalidation_resolutions/
+);
+
+assert.match(
+  migration,
   /grant execute on function public\.admin_prepare_product_fact_revalidation_replacement_v1\([\s\S]*to service_role;/
 );
 assert.match(
