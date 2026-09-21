@@ -212,6 +212,9 @@ declare
   v_plan jsonb;
   v_ingest jsonb;
   v_evidence_id uuid;
+  v_evidence public.product_evidence_records%rowtype;
+  v_is_explicit_negative boolean;
+  v_fusion_input_digest text;
   v_assignment public.product_fact_review_assignments%rowtype;
   v_assignment_count bigint;
   v_review jsonb;
@@ -253,6 +256,35 @@ begin
   v_evidence_id := nullif(v_ingest ->> 'evidence_id', '')::uuid;
   if v_evidence_id is null then
     raise exception 'product_fact_revalidation_replacement_evidence_id_missing'
+      using errcode = '55000';
+  end if;
+
+  select * into v_evidence
+  from public.product_evidence_records
+  where evidence_id = v_evidence_id;
+
+  if not found
+    or v_evidence.subject_id is distinct from (v_plan ->> 'subject_id')::uuid
+    or v_evidence.proposition_key is distinct from v_plan ->> 'candidate_proposition_key'
+    or v_evidence.canonical_evidence_digest is distinct from (
+      select canonical_evidence_digest
+      from public.trust_evidence_candidates
+      where candidate_id = p_candidate_id
+    ) then
+    raise exception 'product_fact_revalidation_replacement_evidence_mismatch'
+      using errcode = '55000';
+  end if;
+
+  v_is_explicit_negative :=
+    v_evidence.support_direction = 'opposes'
+    and v_evidence.negative_admissibility = 'explicit_negative';
+
+  if not v_is_explicit_negative
+    and not (
+      v_evidence.support_direction = 'supports'
+      and v_evidence.negative_admissibility = 'not_applicable'
+    ) then
+    raise exception 'product_fact_revalidation_replacement_evidence_role_invalid'
       using errcode = '55000';
   end if;
 
@@ -369,10 +401,43 @@ begin
       using errcode = '55000';
   end if;
 
+  if v_is_explicit_negative and (
+    v_plan #>> '{fact_payload_base,value_type}' <> 'boolean'
+    or coalesce((v_plan #>> '{fact_payload_base,value_boolean}')::boolean, true) <> false
+  ) then
+    raise exception 'product_fact_revalidation_replacement_explicit_negative_requires_false_boolean'
+      using errcode = '55000';
+  end if;
+
+  v_fusion_input_digest := public.product_fact_controlled_sha256_json_v1(
+    jsonb_build_object(
+      'registry_version', v_evidence.registry_version,
+      'subject_id', v_evidence.subject_id,
+      'fact_key', v_evidence.fact_key,
+      'proposition_key', v_evidence.proposition_key,
+      'fusion_policy_version', v_plan ->> 'fusion_policy_version',
+      'evidence', jsonb_build_array(
+        jsonb_build_object(
+          'evidence_id', v_evidence.evidence_id,
+          'role', case when v_is_explicit_negative then 'opposing' else 'supporting' end,
+          'canonical_evidence_digest', v_evidence.canonical_evidence_digest,
+          'evidence_authority', v_evidence.evidence_authority,
+          'confidence', v_evidence.confidence,
+          'support_direction', v_evidence.support_direction,
+          'negative_admissibility', v_evidence.negative_admissibility
+        )
+      )
+    )
+  );
+
   v_confirmation_payload := (v_plan -> 'fact_payload_base') || jsonb_build_object(
     'assignment_id', v_assignment.assignment_id,
-    'supporting_evidence_ids', jsonb_build_array(v_evidence_id),
-    'opposing_evidence_ids', '[]'::jsonb
+    'fusion_policy_version', v_plan ->> 'fusion_policy_version',
+    'fusion_input_digest', v_fusion_input_digest,
+    'supporting_evidence_ids',
+      case when v_is_explicit_negative then '[]'::jsonb else jsonb_build_array(v_evidence_id) end,
+    'opposing_evidence_ids',
+      case when v_is_explicit_negative then jsonb_build_array(v_evidence_id) else '[]'::jsonb end
   );
 
   v_confirmation_request_id := v_request_id || ':confirm';
@@ -458,6 +523,9 @@ declare
   v_new_fact_instance_id uuid;
   v_new_confirmation_id uuid;
   v_evidence_id uuid;
+  v_evidence public.product_evidence_records%rowtype;
+  v_supporting_count integer;
+  v_opposing_count integer;
   v_result jsonb;
   v_audit_id uuid;
   v_updated_count integer;
@@ -528,24 +596,48 @@ begin
       using errcode = '23514';
   end if;
 
+  v_supporting_count := jsonb_array_length(p_confirmation_payload -> 'supporting_evidence_ids');
+  v_opposing_count := jsonb_array_length(p_confirmation_payload -> 'opposing_evidence_ids');
+
   select value::uuid into v_evidence_id
-  from jsonb_array_elements_text(p_confirmation_payload -> 'supporting_evidence_ids')
-    as item(value)
+  from (
+    select value
+    from jsonb_array_elements_text(p_confirmation_payload -> 'supporting_evidence_ids')
+    union all
+    select value
+    from jsonb_array_elements_text(p_confirmation_payload -> 'opposing_evidence_ids')
+  ) as evidence_ids
   limit 1;
 
+  select * into v_evidence
+  from public.product_evidence_records
+  where evidence_id = v_evidence_id;
+
   if v_evidence_id is null
-    or jsonb_array_length(p_confirmation_payload -> 'supporting_evidence_ids') <> 1
-    or not exists (
-      select 1
-      from public.product_evidence_records e
-      where e.evidence_id = v_evidence_id
-        and e.subject_id = (v_plan ->> 'subject_id')::uuid
-        and e.proposition_key = v_plan ->> 'candidate_proposition_key'
-        and e.canonical_evidence_digest = (
-          select canonical_evidence_digest
-          from public.trust_evidence_candidates
-          where candidate_id = p_candidate_id
-        )
+    or v_supporting_count + v_opposing_count <> 1
+    or not found
+    or v_evidence.subject_id is distinct from (v_plan ->> 'subject_id')::uuid
+    or v_evidence.proposition_key is distinct from v_plan ->> 'candidate_proposition_key'
+    or v_evidence.canonical_evidence_digest is distinct from (
+      select canonical_evidence_digest
+      from public.trust_evidence_candidates
+      where candidate_id = p_candidate_id
+    )
+    or (
+      v_supporting_count = 1
+      and (
+        v_evidence.support_direction <> 'supports'
+        or v_evidence.negative_admissibility <> 'not_applicable'
+      )
+    )
+    or (
+      v_opposing_count = 1
+      and (
+        v_evidence.support_direction <> 'opposes'
+        or v_evidence.negative_admissibility <> 'explicit_negative'
+        or v_plan #>> '{fact_payload_base,value_type}' <> 'boolean'
+        or coalesce((v_plan #>> '{fact_payload_base,value_boolean}')::boolean, true) <> false
+      )
     ) then
     raise exception 'product_fact_revalidation_replacement_evidence_mismatch'
       using errcode = '23514';
@@ -772,3 +864,321 @@ comment on function public.admin_confirm_product_fact_revalidation_replacement_v
   'Explicit Admin Phase 8F changed-semantic replacement. Existing controlled confirmation creates the new Fact, then the same transaction links supersession, retires the old Current proposition, and supersedes the old assignment.';
 
 commit;
+
+
+-- trust_phase8f_explicit_negative_compat_v1
+-- Controlled Product Fact confirmation represents a supported boolean false
+-- with one opposing explicit-negative Evidence record. Preserve all Phase 8E
+-- lineage checks while admitting only that exact negative evidence shape.
+create or replace function public.trust_phase8e_build_revalidation_plan_v1(
+  p_actor_user_id uuid,
+  p_transition_id uuid,
+  p_candidate_id uuid
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions, pg_temp
+as $$
+declare
+  v_transition public.product_fact_revalidation_transitions%rowtype;
+  v_bridge public.product_fact_revalidation_research_bridges%rowtype;
+  v_assignment public.product_fact_review_assignments%rowtype;
+  v_current public.product_fact_current%rowtype;
+  v_current_fact public.product_fact_instances%rowtype;
+  v_task public.product_fact_research_tasks%rowtype;
+  v_candidate public.trust_evidence_candidates%rowtype;
+  v_observation public.trust_source_observations%rowtype;
+  v_intake public.catalog_trust_intake%rowtype;
+  v_subject public.product_fact_subjects%rowtype;
+  v_scope jsonb;
+  v_candidate_proposition_key text;
+  v_semantic_relation text;
+  v_prestate_digest text;
+  v_source_payload jsonb;
+  v_binding_payload jsonb;
+  v_evidence_payload jsonb;
+begin
+  perform public.admin_require_product_review_actor(
+    p_actor_user_id,
+    'admin.products.review'
+  );
+
+  if p_transition_id is null or p_candidate_id is null then
+    raise exception 'product_fact_revalidation_resolution_identity_required'
+      using errcode = '22023';
+  end if;
+
+  select * into v_transition
+  from public.product_fact_revalidation_transitions
+  where transition_id = p_transition_id;
+
+  if not found then
+    raise exception 'product_fact_revalidation_resolution_transition_not_found'
+      using errcode = 'P0002';
+  end if;
+
+  select * into v_bridge
+  from public.product_fact_revalidation_research_bridges
+  where transition_id = p_transition_id
+    and disposition = 'RESEARCH_REQUEUED';
+
+  if not found or v_bridge.research_task_id is null then
+    raise exception 'product_fact_revalidation_resolution_bridge_missing'
+      using errcode = '55000';
+  end if;
+
+  select * into v_assignment
+  from public.product_fact_review_assignments
+  where assignment_id = v_transition.assignment_id;
+
+  if not found
+    or v_assignment.assignment_id <> v_bridge.assignment_id
+    or v_assignment.operational_state <> 're_review_required'
+    or v_assignment.subject_id is null
+    or v_assignment.proposition_key is distinct from v_transition.proposition_key then
+    raise exception 'product_fact_revalidation_resolution_assignment_stale'
+      using errcode = '40001';
+  end if;
+
+  select * into v_current
+  from public.product_fact_current
+  where proposition_key = v_transition.proposition_key;
+
+  if not found
+    or v_current.fact_instance_id <> v_transition.fact_instance_id
+    or v_current.confirmation_id <> v_transition.confirmation_id
+    or v_current.subject_id is distinct from v_assignment.subject_id then
+    raise exception 'product_fact_revalidation_resolution_current_stale'
+      using errcode = '40001';
+  end if;
+
+  select * into v_current_fact
+  from public.product_fact_instances
+  where fact_instance_id = v_current.fact_instance_id;
+
+  if not found
+    or v_current_fact.proposition_key <> v_transition.proposition_key
+    or v_current_fact.subject_id is distinct from v_assignment.subject_id
+    or v_current_fact.registry_version is distinct from v_assignment.registry_version
+    or v_current_fact.fact_key is distinct from v_assignment.fact_key then
+    raise exception 'product_fact_revalidation_resolution_fact_stale'
+      using errcode = '40001';
+  end if;
+
+  select * into v_task
+  from public.product_fact_research_tasks
+  where id = v_bridge.research_task_id;
+
+  if not found
+    or v_task.state <> 'EVIDENCE_CANDIDATE'
+    or v_task.evidence_candidate_id is distinct from p_candidate_id
+    or v_task.subject_id is distinct from v_assignment.subject_id
+    or v_task.registry_version is distinct from v_assignment.registry_version
+    or v_task.fact_key is distinct from v_assignment.fact_key then
+    raise exception 'product_fact_revalidation_resolution_task_stale'
+      using errcode = '40001';
+  end if;
+
+  select * into v_candidate
+  from public.trust_evidence_candidates
+  where candidate_id = p_candidate_id;
+
+  if not found
+    or v_candidate.candidate_state <> 'READY'
+    or v_candidate.research_task_id <> v_task.id
+    or v_candidate.subject_id is distinct from v_assignment.subject_id
+    or v_candidate.registry_version is distinct from v_assignment.registry_version
+    or v_candidate.fact_key is distinct from v_assignment.fact_key
+    or v_candidate.evidence_authority <> 'product_specific_primary'
+    or not (
+      (
+        v_candidate.support_direction = 'supports'
+        and v_candidate.negative_admissibility = 'not_applicable'
+      )
+      or (
+        v_candidate.support_direction = 'opposes'
+        and v_candidate.negative_admissibility = 'explicit_negative'
+        and jsonb_typeof(v_candidate.normalized_value) = 'boolean'
+        and (v_candidate.normalized_value #>> '{}')::boolean = false
+      )
+    ) then
+    raise exception 'product_fact_revalidation_resolution_candidate_invalid'
+      using errcode = '55000';
+  end if;
+
+  select * into v_observation
+  from public.trust_source_observations
+  where observation_id = v_candidate.observation_id;
+
+  if not found
+    or v_observation.research_task_id <> v_task.id
+    or v_observation.product_id <> v_candidate.product_id
+    or v_observation.subject_id <> v_candidate.subject_id
+    or v_observation.source_content_digest is distinct from v_task.source_content_digest
+    or v_observation.canonical_locator is distinct from v_task.source_locator then
+    raise exception 'product_fact_revalidation_resolution_observation_invalid'
+      using errcode = '55000';
+  end if;
+
+  select * into v_intake
+  from public.catalog_trust_intake
+  where id = v_task.intake_id;
+
+  if not found
+    or v_intake.identity_state <> 'EXACT_SUBJECT_FOUND'
+    or v_intake.product_id <> v_candidate.product_id
+    or v_intake.subject_id is distinct from v_candidate.subject_id
+    or nullif(btrim(coalesce(v_intake.identity_resolution_version, '')), '') is null
+    or v_intake.market is distinct from v_candidate.market then
+    raise exception 'product_fact_revalidation_resolution_intake_invalid'
+      using errcode = '55000';
+  end if;
+
+  select * into v_subject
+  from public.product_fact_subjects
+  where subject_id = v_candidate.subject_id;
+
+  if not found
+    or v_subject.product_id <> v_candidate.product_id
+    or v_subject.identity_status <> 'resolved'
+    or v_subject.current_state <> 'current'
+    or v_subject.market_applicability is distinct from v_candidate.market then
+    raise exception 'product_fact_revalidation_resolution_subject_invalid'
+      using errcode = '55000';
+  end if;
+
+  if public.product_fact_controlled_latest_registry_v1()
+      is distinct from v_candidate.registry_version then
+    raise exception 'product_fact_revalidation_resolution_registry_stale'
+      using errcode = '40001';
+  end if;
+
+  v_scope := jsonb_strip_nulls(jsonb_build_object(
+    'market', v_candidate.market,
+    'variant', v_subject.variant_key
+  ));
+
+  v_candidate_proposition_key := public.product_fact_controlled_sha256_json_v1(
+    jsonb_build_object(
+      'serializer_version', 'product-fact-proposition-pilot-v1',
+      'subject_semantic_key', v_subject.subject_semantic_key,
+      'registry_version', v_candidate.registry_version,
+      'fact_key', v_candidate.fact_key,
+      'value_identity', v_candidate.normalized_value,
+      'scope', v_scope,
+      'qualifier', v_candidate.qualifier,
+      'parent_proposition_key', null
+    )
+  );
+
+  v_semantic_relation := case
+    when v_candidate_proposition_key = v_transition.proposition_key
+      then 'SAME_SEMANTIC'
+    else 'SEMANTIC_CHANGE'
+  end;
+
+  v_source_payload := jsonb_build_object(
+    'canonical_locator', v_observation.canonical_locator,
+    'publisher', v_observation.publisher,
+    'source_kind', v_observation.source_kind,
+    'source_metadata', jsonb_build_object('digest_basis', v_observation.digest_basis),
+    'content_digest', v_observation.source_content_digest,
+    'external_snapshot_reference', null,
+    'market', v_observation.market,
+    'region', v_observation.region,
+    'locale', v_observation.locale,
+    'published_at', null,
+    'accessed_at', coalesce(v_observation.fetched_at, v_observation.observed_at),
+    'observed_at', v_observation.observed_at
+  );
+
+  v_binding_payload := jsonb_build_object(
+    'product_id', v_candidate.product_id,
+    'subject_id', v_candidate.subject_id,
+    'binding_state', 'exact_subject_match',
+    'scope_relation', 'equivalent',
+    'presentation_metadata', jsonb_build_object(
+      'catalog_source_binding_id', v_observation.source_binding_id
+    ),
+    'identity_resolution_version', v_intake.identity_resolution_version,
+    'reviewed_at', v_candidate.created_at
+  );
+
+  v_evidence_payload := jsonb_build_object(
+    'registry_version', v_candidate.registry_version,
+    'fact_key', v_candidate.fact_key,
+    'proposition_key', v_candidate_proposition_key,
+    'proposition_serializer_version', 'product-fact-proposition-pilot-v1',
+    'proposition_value_identity', v_candidate.normalized_value,
+    'parent_proposition_key', null,
+    'evidence_class', v_candidate.evidence_class,
+    'evidence_authority', v_candidate.evidence_authority,
+    'confidence', v_candidate.confidence,
+    'support_direction', v_candidate.support_direction,
+    'negative_admissibility', v_candidate.negative_admissibility,
+    'market', v_candidate.market,
+    'region', v_candidate.region,
+    'locale', v_candidate.locale,
+    'valid_from', null,
+    'valid_to', null,
+    'qualifier', v_candidate.qualifier,
+    'canonical_evidence_digest', v_candidate.canonical_evidence_digest,
+    'supersedes_evidence_id', null
+  );
+
+  v_prestate_digest := public.product_fact_controlled_sha256_json_v1(
+    jsonb_build_object(
+      'transition', jsonb_build_object(
+        'transition_id', v_transition.transition_id,
+        'assignment_id', v_transition.assignment_id,
+        'proposition_key', v_transition.proposition_key,
+        'fact_instance_id', v_transition.fact_instance_id,
+        'confirmation_id', v_transition.confirmation_id
+      ),
+      'bridge', jsonb_build_object(
+        'bridge_id', v_bridge.bridge_id,
+        'research_task_id', v_bridge.research_task_id,
+        'disposition', v_bridge.disposition
+      ),
+      'assignment', jsonb_build_object(
+        'assignment_id', v_assignment.assignment_id,
+        'operational_state', v_assignment.operational_state,
+        'review_policy_version', v_assignment.review_policy_version,
+        'updated_at', v_assignment.updated_at
+      ),
+      'current', jsonb_build_object(
+        'proposition_key', v_current.proposition_key,
+        'fact_instance_id', v_current.fact_instance_id,
+        'confirmation_id', v_current.confirmation_id,
+        'updated_at', v_current.updated_at
+      ),
+      'research', jsonb_build_object(
+        'research_task_id', v_task.id,
+        'state', v_task.state,
+        'candidate_id', v_candidate.candidate_id,
+        'canonical_evidence_digest', v_candidate.canonical_evidence_digest,
+        'source_content_digest', v_observation.source_content_digest,
+        'task_updated_at', v_task.updated_at
+      )
+    )
+  );
+
+  return jsonb_build_object(
+    'transition_id', v_transition.transition_id,
+    'bridge_id', v_bridge.bridge_id,
+    'assignment_id', v_assignment.assignment_id,
+    'research_task_id', v_task.id,
+    'candidate_id', v_candidate.candidate_id,
+    'current_fact_instance_id', v_current.fact_instance_id,
+    'current_confirmation_id', v_current.confirmation_id,
+    'current_proposition_key', v_transition.proposition_key,
+    'candidate_proposition_key', v_candidate_proposition_key,
+    'semantic_relation', v_semantic_relation,
+    'prestate_digest', v_prestate_digest,
+    'source_payload', v_source_payload,
+    'binding_payload', v_binding_payload,
+    'evidence_payload', v_evidence_payload
+  );
+end;
+$$;
