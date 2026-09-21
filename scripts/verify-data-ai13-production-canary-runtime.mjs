@@ -159,14 +159,41 @@ check(route.includes("executeProductQueryPreview(body.query)") &&
     !route.includes("saved_profile"),
   "route must reuse the bounded preview executor without new authority/write paths");
 
-const vercelConfig = readFileSync("vercel.json", "utf8");
-for (const key of [
+const vercelConfig = JSON.parse(readFileSync("vercel.json", "utf8"));
+const activationEnv = vercelConfig?.env || {};
+const activationKeys = [
   "BEJEWELY_PRODUCT_QUERY_PRODUCTION_ACTIVATION_ENABLED",
   "BEJEWELY_PRODUCT_QUERY_PRODUCTION_RUNTIME_AUTHORIZED",
   "BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_ACCOUNT_HASHES"
-]) {
-  check(!vercelConfig.includes(key),
-    `runtime implementation PR must remain dormant before separate activation config: ${key}`);
+];
+const activationPresent = activationKeys.some((key) => Object.hasOwn(activationEnv, key));
+if (!activationPresent) {
+  check(activationKeys.every((key) => !Object.hasOwn(activationEnv, key)),
+    "dormant runtime must not contain partial activation keys");
+} else {
+  check(activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_ACTIVATION_ENABLED === "true" &&
+      activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_CANARY_MODE === "true" &&
+      activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_KILL_SWITCH === "false" &&
+      activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_COHORT === "authenticated_bounded" &&
+      activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_SAMPLE_BPS === "1" &&
+      activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_SAMPLE_BPS === "1" &&
+      activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_ENV_MUTATION_AUTHORIZED === "true" &&
+      activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_RUNTIME_AUTHORIZED === "true",
+    "active runtime manifest must preserve exact bounded activation controls");
+  check(/^[a-f0-9]{64}$/.test(
+      String(activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_ACCOUNT_HASHES || "")
+    ),
+    "active runtime manifest must contain exactly one lowercase SHA-256 subject hash");
+  const activationStart = Date.parse(
+    String(activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_START_UTC || "")
+  );
+  const activationEnd = Date.parse(
+    String(activationEnv.BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_END_UTC || "")
+  );
+  check(Number.isFinite(activationStart) &&
+      Number.isFinite(activationEnd) &&
+      activationEnd - activationStart === 6 * 60 * 60 * 1000,
+    "active runtime manifest must be exactly six hours");
 }
 
 console.log(`DATA-AI13 Production canary runtime verifier: PASS (${assertions} assertions)`);
