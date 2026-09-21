@@ -75,7 +75,7 @@ run("DATA-AI7 test/stage repeatability canary runtime", node, ["scripts/verify-d
 run("DATA-AI7 Production fail-closed deployed probe contract", node, ["scripts/verify-data-ai7-production-fail-closed.mjs"]);
 run("DATA-AI8 release-readiness evidence boundary", node, ["scripts/verify-data-ai8-release-readiness.mjs"]);
 run("DATA-AI9 hosted authenticated Preview acceptance harness", node, ["scripts/verify-data-ai9-hosted-preview-acceptance.mjs"]);
-run("DATA-AI10 hosted Preview evidence closure", node, ["scripts/verify-data-ai10-hosted-preview-evidence.mjs"]);
+run("DATA-AI10 hosted Preview evidence closure", node, ["scripts/verify-data-ai10-hosted-preview-evidence.mjs"]);\nrun("DATA-AI11 Production activation safety contract", node, ["scripts/verify-data-ai11-production-activation-safety.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
