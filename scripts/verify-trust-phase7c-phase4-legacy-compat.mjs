@@ -5,7 +5,7 @@ import path from "node:path";
 
 const migrationPath = path.join(
   process.cwd(),
-  "supabase/migrations/20260921073000_trust_phase7c_phase4_legacy_adoption_compat_v1.sql",
+  "supabase/migrations/20260921094643_trust_phase7c_phase4_legacy_adoption_compat_v1.sql",
 );
 if (!fs.existsSync(migrationPath)) throw new Error("missing Phase 7-C Phase 4 compatibility migration");
 
