@@ -1,0 +1,38 @@
+name: DATA-AI13 Derive Canary Subject Hash
+
+on:
+  push:
+    branches:
+      - ops/data-ai13-canary-subject-hash
+    paths:
+      - .github/workflows/data-ai13-derive-canary-subject-hash.yml
+
+permissions:
+  contents: read
+
+jobs:
+  derive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      ACCESS_TOKEN: ${{ secrets.DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN }}
+    steps:
+      - name: Derive bounded pseudonymous subject hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const crypto = require("node:crypto");
+          const token = process.env.ACCESS_TOKEN || "";
+          if (!token) throw new Error("DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN missing");
+          const parts = token.split(".");
+          if (parts.length !== 3) throw new Error("credential is not a JWT");
+          const payloadText = Buffer.from(parts[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
+          const payload = JSON.parse(payloadText);
+          if (typeof payload.sub !== "string" || !payload.sub) throw new Error("JWT sub missing");
+          const hash = crypto.createHash("sha256").update(payload.sub, "utf8").digest("hex");
+          console.log("CANARY_ACCOUNT_SHA256=" + hash);
+          console.log("TOKEN_EXP_PRESENT=" + String(Number.isFinite(payload.exp)));
+          console.log("RAW_SUB_RECORDED=false");
+          console.log("RAW_TOKEN_RECORDED=false");
+          NODE
