@@ -13,8 +13,15 @@ const contract = JSON.parse(
 
 assert.equal(contract.productionAuthority, false);
 assert.equal(contract.normalizationAuthority, false);
-assert.equal(contract.currentEvidence.realPairManifestPresent, false);
-assert.equal(contract.currentEvidence.actualRunnerExecuted, false);
+assert.equal(contract.currentEvidence.realPairManifestPresent, true);
+assert.equal(contract.currentEvidence.actualRunnerExecuted, true);
+assert.equal(contract.currentEvidence.realPhotoPairCount, 102);
+assert.deepEqual(contract.currentEvidence.coveredNuisanceClasses, ["expression"]);
+assert.deepEqual(
+  contract.currentEvidence.missingNuisanceClasses,
+  ["head_yaw", "head_pitch", "head_roll"]
+);
+assert.equal(contract.currentEvidence.completeNuisanceCoverage, false);
 
 function image(sampleId, path, char, mediaType = "image/png") {
   return {
@@ -166,7 +173,7 @@ console.log(JSON.stringify({
   ok: true,
   productionAuthority: false,
   normalizationAuthority: false,
-  actualRunnerExecuted: false,
+  actualRunnerExecuted: true,
   currentRealPairManifestPresent:
     contract.currentEvidence.realPairManifestPresent,
   syntheticManifestCoverageComplete: summary.completeNuisanceCoverage,
@@ -176,7 +183,8 @@ console.log(JSON.stringify({
     identityEmbeddingForbidden: true,
     biometricIdentityMatchingForbidden: true,
     archetypeSeededSourceRejected: true,
-    actualRealPhotoEvidenceStillAbsent: true,
+    actualExpressionEvidencePresent: true,
+    actualPoseEvidenceStillIncomplete: true,
     manifestDigestIgnoresLocalPaths: true,
     manifestDigestBindsImageSha256: true,
     exactBaselineSampleReuseAllowed: true,
