@@ -1,0 +1,79 @@
+name: Face Lab London Combined Stability Review
+
+on:
+  pull_request:
+    paths:
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json"
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-review-packet.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
+      - "scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs"
+      - "scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs"
+      - "lib/face-lab-real-photo-stability-evidence.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
+      - ".github/workflows/face-lab-london-combined-stability-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: face-lab-london-combined-stability-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  combine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Checkout exact Face Lab branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 2
+
+      - name: Verify exact event head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Build combined expression and yaw review evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json             evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json             "$RUNNER_TEMP/london-set-v5-expression-yaw-stability-review-packet.json"             "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
+
+      - name: Verify combined review evidence
+        run: |
+          node scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs             "$RUNNER_TEMP/london-set-v5-expression-yaw-stability-review-packet.json"             "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
+
+      - name: Freeze combined review evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$RUNNER_TEMP/london-set-v5-expression-yaw-stability-review-packet.json"             evidence/facelab/photo-geometry/v0/london-set-v5-expression-yaw-stability-review-packet.json
+          cp "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json
+          git status --short
+
+      - name: Commit combined review evidence
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             evidence/facelab/photo-geometry/v0/london-set-v5-expression-yaw-stability-review-packet.json             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json
+          if git diff --cached --quiet; then
+            echo "No combined evidence changes"
+            exit 0
+          fi
+          git commit -m "research(facelab): freeze London combined stability review"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"

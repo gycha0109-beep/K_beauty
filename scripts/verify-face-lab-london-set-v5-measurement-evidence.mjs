@@ -167,22 +167,62 @@ assert.equal(
   stabilityAdequacyContract.currentEvidence.realPhotoReportCollectionPresent,
   true
 );
-assert.deepEqual(
-  stabilityAdequacyContract.currentEvidence.missingNuisanceClasses,
-  ["head_pitch", "head_roll", "head_yaw"]
-);
 assert.equal(
   stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage,
   false
 );
 assert.equal(
-  stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint,
-  expressionReviewPacket.reviewPacketFingerprint
-);
-assert.equal(
   stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent,
   false
 );
+
+if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
+  assert.deepEqual(
+    stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses,
+    ["expression"]
+  );
+  assert.deepEqual(
+    stabilityAdequacyContract.currentEvidence.missingNuisanceClasses,
+    ["head_pitch", "head_roll", "head_yaw"]
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint,
+    expressionReviewPacket.reviewPacketFingerprint
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.status,
+    "review_ready_pose_incomplete"
+  );
+} else {
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.sourceReportCount,
+    306
+  );
+  assert.deepEqual(
+    stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses,
+    ["expression", "head_yaw"]
+  );
+  assert.deepEqual(
+    stabilityAdequacyContract.currentEvidence.missingNuisanceClasses,
+    ["head_pitch", "head_roll"]
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.reviewPacketRef,
+    "evidence/facelab/photo-geometry/v0/london-set-v5-expression-yaw-stability-review-packet.json"
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.status,
+    "review_ready_pitch_roll_incomplete"
+  );
+  assert.match(
+    stabilityAdequacyContract.currentEvidence.collectionFingerprint,
+    /^sha256:[a-f0-9]{64}$/
+  );
+  assert.match(
+    stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint,
+    /^sha256:[a-f0-9]{64}$/
+  );
+}
 
 const serialized = JSON.stringify({ reference, expression });
 assert.equal(serialized.includes(".research/london-source"), false);
