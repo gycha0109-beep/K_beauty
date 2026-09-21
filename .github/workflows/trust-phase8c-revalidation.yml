@@ -71,7 +71,7 @@ jobs:
           cp supabase/migrations/20260917195000_trust_phase4_controlled_evidence_adoption_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260917195100_trust_phase4_controlled_evidence_adoption_fusion_hardening_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260922010350_trust_phase8b_source_verification_ledger_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260922011000_trust_phase8c_revalidation_transition_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260922011229_trust_phase8c_revalidation_transition_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and verify revalidation transition
         shell: bash
