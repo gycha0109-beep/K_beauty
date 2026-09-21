@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-real-photo-stability-adequacy-contract-v0",
-  "status": "expression_yaw_pitch_review_packet_ready_roll_incomplete",
+  "status": "expression_yaw_pitch_roll_review_packet_ready_adequacy_pending",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -17,48 +17,51 @@
   ],
   "currentEvidence": {
     "realPhotoReportCollectionPresent": true,
-    "sourceReportCount": 486,
-    "collectionFingerprint": "sha256:d2be503fe2ec66ef35376a912c5a43802e1910b97a07a557268865da0690d691",
+    "sourceReportCount": 488,
+    "collectionFingerprint": "sha256:5344fc3b39c855ff8043039695947b2de78e4d425a042a52ecac6bd3df71ccce",
     "sourceRunManifestDigests": [
       "sha256:6263218d9c0b6d1882d041ec22efd429934fa0a190d939c3179fb322f91c6807",
       "sha256:743f0fc2eee3f4609a1e3f865a6a4d0e648bcecd80df68ca5a6a1fa714c60944",
-      "sha256:cf9bd3df8f5755e6b66645695d984e15e487c8f9c4b30353d10f4fb189eb342a"
+      "sha256:cf9bd3df8f5755e6b66645695d984e15e487c8f9c4b30353d10f4fb189eb342a",
+      "sha256:fecf15116e0c22d3998ec8a411302376181efe56a09f7b26739a5f2f5f6fad55"
     ],
     "coveredNuisanceClasses": [
       "expression",
       "head_pitch",
+      "head_roll",
       "head_yaw"
     ],
-    "missingNuisanceClasses": [
-      "head_roll"
-    ],
-    "completeNuisanceCoverage": false,
+    "missingNuisanceClasses": [],
+    "completeNuisanceCoverage": true,
     "descriptiveReviewPacketPresent": true,
-    "reviewPacketRef": "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json",
-    "reviewPacketVersion": "real-photo-expression-yaw-pitch-stability-review-v1",
-    "reviewPacketFingerprint": "sha256:a815c72120bd9ab5b8e7ab30ac83ae3396ddadeb295392a6918f29407d861ce2",
+    "reviewPacketRef": "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-roll-stability-review-packet.json",
+    "reviewPacketVersion": "real-photo-expression-yaw-pitch-roll-stability-review-v1",
+    "reviewPacketFingerprint": "sha256:1526676be96d65c210b331e85bd64595ffe86fdac3e282f3987a347baf1bfdf1",
     "componentEvidence": {
       "expression": {
         "runOutputRef": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json",
-        "reviewPacketRef": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json",
         "reportCount": 102,
         "collectionFingerprint": "sha256:915f3c17833e7072e5e3cd75d48b30a9efc7b3ef28c163f433ab9f457573a77a"
       },
       "headYaw": {
         "runOutputRef": "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json",
-        "reviewPacketRef": "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-review-packet.json",
         "reportCount": 204,
         "collectionFingerprint": "sha256:61624a0cbd29068b6a9ddb1c5be44f7b9b2ebd6fb7f122e0b5b8b91bb8207689"
       },
       "headPitch": {
         "runOutputRef": "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json",
-        "reviewPacketRef": "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-review-packet.json",
         "reportCount": 180,
         "collectionFingerprint": "sha256:c408b1173613b23a99a12f5bfe6b8ac562bbde78243959091ccb7f07acfd83a4"
+      },
+      "headRoll": {
+        "runOutputRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json",
+        "reviewPacketRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json",
+        "reportCount": 2,
+        "collectionFingerprint": "sha256:1630bf34b01c74691972526905645c5d36572f7fae693bccb90188fa0b9bba51"
       }
     },
     "adequacyDecisionPresent": false,
-    "status": "review_ready_roll_incomplete"
+    "status": "review_ready_adequacy_pending"
   },
   "reviewPacket": {
     "schemaVersion": "face-lab-real-photo-stability-review-packet-v0",
