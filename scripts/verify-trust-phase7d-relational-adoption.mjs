@@ -11,7 +11,7 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const includes = (text, value, label) => assert(text.includes(value), `${label} missing: ${value}`);
 const excludes = (text, value, label) => assert(!text.includes(value), `${label} unexpectedly contains: ${value}`);
 
-const migration = read("supabase/migrations/20260921120000_trust_phase7d_relational_fact_adoption_v1.sql");
+const migration = read("supabase/migrations/20260921211920_trust_phase7d_relational_fact_adoption_v1.sql");
 const worker = read("scripts/trust-research-worker.mjs");
 const fixture = read("tests/fixtures/trust-phase7d-relational/20260921115900_trust_phase7d_relational_fixture.sql");
 const runtime = read("tests/fixtures/trust-phase7d-relational/verify_trust_phase7d_relational_runtime.sql");
