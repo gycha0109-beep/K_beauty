@@ -72,11 +72,10 @@ const collection = summarizeRealPhotoStabilityCollection(runOutput.reports);
 assert.equal(collection.reportCount, 204);
 assert.equal(collection.opaquePairGroupCount, 204);
 assert.deepEqual(collection.coveredNuisanceClasses, ["head_yaw"]);
-assert.deepEqual(collection.missingNuisanceClasses, [
-  "expression",
-  "head_pitch",
-  "head_roll"
-]);
+assert.deepEqual(
+  [...collection.missingNuisanceClasses].sort(),
+  ["expression", "head_pitch", "head_roll"]
+);
 assert.equal(collection.realPhotoPoseAndExpressionCoverage, "incomplete");
 assert.equal(
   collection.readinessContribution.realPoseEvidenceKind,
