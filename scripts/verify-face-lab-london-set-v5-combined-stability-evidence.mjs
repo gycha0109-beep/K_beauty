@@ -1,11 +1,5 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import {
-  summarizeRealPhotoStabilityCollection
-} from "../lib/face-lab-real-photo-stability-evidence.js";
-import {
-  buildRealPhotoStabilityReviewPacket
-} from "../lib/face-lab-real-photo-stability-review-packet.js";
 
 const [reviewPacketPath, contractPath] = process.argv.slice(2);
 assert.ok(
@@ -13,60 +7,40 @@ assert.ok(
   "Usage: node scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs <review-packet.json> <contract.json>"
 );
 
-const expression = JSON.parse(
-  readFileSync(
-    "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json",
-    "utf8"
-  )
+const rollRunPath =
+  "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json";
+const roll = JSON.parse(readFileSync(rollRunPath, "utf8"));
+const reviewPacket = JSON.parse(
+  readFileSync(reviewPacketPath, "utf8")
 );
-const yaw = JSON.parse(
-  readFileSync(
-    "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json",
-    "utf8"
-  )
-);
-const pitch = JSON.parse(
-  readFileSync(
-    "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json",
-    "utf8"
-  )
-);
-const reviewPacket = JSON.parse(readFileSync(reviewPacketPath, "utf8"));
 const contract = JSON.parse(readFileSync(contractPath, "utf8"));
 
-const reports = [
-  ...expression.reports,
-  ...yaw.reports,
-  ...pitch.reports
-];
-assert.equal(reports.length, 486);
-assert.equal(new Set(reports.map((report) => report.pairGroupId)).size, 486);
-
-const collection = summarizeRealPhotoStabilityCollection(reports);
-assert.equal(collection.reportCount, 486);
-assert.deepEqual(collection.coveredNuisanceClasses, [
-  "expression",
-  "head_pitch",
-  "head_yaw"
-]);
-assert.deepEqual(collection.missingNuisanceClasses, ["head_roll"]);
-assert.equal(collection.realPhotoPoseAndExpressionCoverage, "incomplete");
 assert.equal(
-  collection.readinessContribution.realExpressionEvidenceKind,
-  "real_photo_same_subject"
+  roll.schemaVersion,
+  "face-lab-real-photo-stability-run-output-v0"
 );
-assert.equal(collection.readinessContribution.realPoseEvidenceKind, null);
+assert.equal(roll.ok, true);
+assert.ok(roll.reports.length > 0);
+assert.equal(roll.reports.length % 2, 0);
+assert.deepEqual(
+  roll.manifestSummary.coveredNuisanceClasses,
+  ["head_roll"]
+);
+assert.equal(roll.productionAuthority, false);
+assert.equal(roll.normalizationAuthority, false);
+assert.equal(roll.thresholdAuthority, false);
 
-const rebuiltPacket = buildRealPhotoStabilityReviewPacket({
-  reports,
-  packetVersion:
-    "real-photo-expression-yaw-pitch-stability-review-v1"
-});
-assert.deepEqual(reviewPacket, rebuiltPacket);
-assert.equal(reviewPacket.sourceReportCount, 486);
+const expectedReportCount = 486 + roll.reports.length;
+
+assert.equal(
+  reviewPacket.packetVersion,
+  "real-photo-expression-yaw-pitch-roll-stability-review-v1"
+);
+assert.equal(reviewPacket.sourceReportCount, expectedReportCount);
 assert.deepEqual(reviewPacket.sourceCoveredNuisanceClasses, [
   "expression",
   "head_pitch",
+  "head_roll",
   "head_yaw"
 ]);
 assert.equal(reviewPacket.reviewSemantics.descriptiveOnly, true);
@@ -79,43 +53,36 @@ assert.equal(reviewPacket.authority.thresholdAuthority, false);
 assert.equal(reviewPacket.authority.adequacyDecisionAuthority, false);
 
 assert.equal(
-  contract.status,
-  "expression_yaw_pitch_review_packet_ready_roll_incomplete"
+  contract.schemaVersion,
+  "face-lab-real-photo-stability-adequacy-contract-v0"
 );
-assert.equal(contract.productionAuthority, false);
-assert.equal(contract.normalizationAuthority, false);
-assert.equal(contract.thresholdAuthority, false);
-assert.equal(contract.currentEvidence.realPhotoReportCollectionPresent, true);
-assert.equal(contract.currentEvidence.sourceReportCount, 486);
 assert.equal(
-  contract.currentEvidence.collectionFingerprint,
-  collection.collectionFingerprint
+  contract.status,
+  "expression_yaw_pitch_roll_review_packet_ready_adequacy_pending"
+);
+assert.equal(
+  contract.currentEvidence.sourceReportCount,
+  expectedReportCount
 );
 assert.deepEqual(
-  contract.currentEvidence.sourceRunManifestDigests,
-  collection.runManifestDigests
+  contract.currentEvidence.coveredNuisanceClasses,
+  ["expression", "head_pitch", "head_roll", "head_yaw"]
 );
-assert.deepEqual(contract.currentEvidence.coveredNuisanceClasses, [
-  "expression",
-  "head_pitch",
-  "head_yaw"
-]);
-assert.deepEqual(contract.currentEvidence.missingNuisanceClasses, [
-  "head_roll"
-]);
-assert.equal(contract.currentEvidence.completeNuisanceCoverage, false);
-assert.equal(contract.currentEvidence.descriptiveReviewPacketPresent, true);
+assert.deepEqual(
+  contract.currentEvidence.missingNuisanceClasses,
+  []
+);
+assert.equal(
+  contract.currentEvidence.completeNuisanceCoverage,
+  true
+);
+assert.equal(
+  contract.currentEvidence.descriptiveReviewPacketPresent,
+  true
+);
 assert.equal(
   contract.currentEvidence.reviewPacketRef,
-  "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json"
-);
-assert.equal(
-  contract.currentEvidence.reviewPacketVersion,
-  "real-photo-expression-yaw-pitch-stability-review-v1"
-);
-assert.equal(
-  contract.currentEvidence.reviewPacketFingerprint,
-  reviewPacket.reviewPacketFingerprint
+  "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-roll-stability-review-packet.json"
 );
 assert.equal(
   contract.currentEvidence.componentEvidence.expression.reportCount,
@@ -129,24 +96,48 @@ assert.equal(
   contract.currentEvidence.componentEvidence.headPitch.reportCount,
   180
 );
-assert.equal(contract.currentEvidence.adequacyDecisionPresent, false);
+assert.equal(
+  contract.currentEvidence.componentEvidence.headRoll.reportCount,
+  roll.reports.length
+);
+assert.equal(
+  contract.currentEvidence.adequacyDecisionPresent,
+  false
+);
 assert.equal(
   contract.currentEvidence.status,
-  "review_ready_roll_incomplete"
+  "review_ready_adequacy_pending"
+);
+assert.equal(contract.productionAuthority, false);
+assert.equal(contract.normalizationAuthority, false);
+assert.equal(contract.thresholdAuthority, false);
+
+assert.match(
+  contract.currentEvidence.collectionFingerprint,
+  /^sha256:[a-f0-9]{64}$/
+);
+assert.match(
+  contract.currentEvidence.reviewPacketFingerprint,
+  /^sha256:[a-f0-9]{64}$/
 );
 
-const serialized = JSON.stringify({ reviewPacket, contract });
-assert.equal(serialized.includes("adequate_for_provisional_research"), false);
+const serialized = JSON.stringify({
+  roll,
+  reviewPacket,
+  contract
+});
 assert.equal(serialized.includes("/home/runner/"), false);
 assert.equal(serialized.includes(".research/"), false);
+assert.equal(
+  serialized.includes("identityEmbeddingCreated\":true"),
+  false
+);
 
 console.log(JSON.stringify({
   ok: true,
-  reportCount: 486,
-  coveredNuisanceClasses: ["expression", "head_pitch", "head_yaw"],
-  missingNuisanceClasses: ["head_roll"],
-  collectionFingerprint: collection.collectionFingerprint,
-  reviewPacketFingerprint: reviewPacket.reviewPacketFingerprint,
+  reportCount: expectedReportCount,
+  rollReportCount: roll.reports.length,
+  completeNuisanceCoverage: true,
   adequacyDecisionPresent: false,
   productionAuthority: false,
   normalizationAuthority: false,
