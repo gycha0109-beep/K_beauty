@@ -42,6 +42,13 @@ const reviewPacket = {
     holdoutMeasurementValuesIncluded: false,
     automaticPassFail: false,
     automaticRanking: false
+  },
+  privacy: {
+    sourceImagePersisted: false,
+    rawLandmarksPersisted: false,
+    identityEmbeddingCreated: false,
+    biometricIdentityMatchPerformed: false,
+    localImagePathsIncluded: false
   }
 };
 
@@ -124,6 +131,22 @@ assert.throws(
   /adequacy_evidence_invalid/
 );
 
+assert.throws(
+  () =>
+    validateFaceSpaceReferenceCorpusAdequacyEvidence(
+      evidence,
+      summary,
+      {
+        ...reviewPacket,
+        privacy: {
+          ...reviewPacket.privacy,
+          localImagePathsIncluded: true
+        }
+      }
+    ),
+  /adequacy_review_packet_invalid/
+);
+
 console.log(JSON.stringify({
   ok: true,
   productionAuthority: false,
@@ -134,5 +157,6 @@ console.log(JSON.stringify({
   exactReferenceFingerprintRequired: true,
   explicitCoverageLimitationsRequired: true,
   exactReviewPacketFingerprintRequired: true,
+  reviewPacketPrivacyBoundaryRequired: true,
   actualAdequacyDecisionPresent: false
 }, null, 2));
