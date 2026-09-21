@@ -22,6 +22,15 @@ alter table public.product_fact_research_tasks
   add column completed_at timestamptz,
   add column last_research_at timestamptz;
 
+alter table public.product_fact_research_tasks
+  alter column id set default gen_random_uuid();
+
+alter table public.trust_source_observations
+  alter column observation_id set default gen_random_uuid();
+
+alter table public.trust_evidence_candidates
+  alter column candidate_id set default gen_random_uuid();
+
 create unique index trust_phase8d_fixture_observation_identity
   on public.trust_source_observations(
     research_task_id, canonical_locator, observation_version, source_content_digest
