@@ -30,6 +30,10 @@ for (const token of [
 for (const token of [
   "research_policy_version",
   "trust_state",
+  "external_type",
+  "binding_method",
+  "product_scope_state",
+  "created_at",
   "trust_phase8d_fixture_observation_identity",
   "trust_phase8d_fixture_candidate_digest"
 ]) {
