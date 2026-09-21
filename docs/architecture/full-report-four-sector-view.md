@@ -2,7 +2,7 @@
 
 Baseline: fresh `origin/main` `5e607fb26afca3aee5a708e84929d82341dfd713`.
 
-Resumed remote check: `87dd552f8eb19a72f6924634afbfe7309e284e60`; no overlap in the UI, projection, direct authority or package/config files. The unpublished task commit is rebased onto that current main before PR publication.
+Resumed remote check: `87dd552f8eb19a72f6924634afbfe7309e284e60`; no overlap in the UI, projection, direct authority or package files. That main was merged into the task branch before PR publication, preserving both histories. Upstream deployment/migration additions are inherited from main, not part of this PR's diff or executed by this task.
 
 The user-supplied four-phone composition is the visual authority. Its example products, counts, dates and reactions are not data. Face Lab remains a separate, unchanged experience. The overview remains an entry point, followed by exactly four detail sectors:
 
