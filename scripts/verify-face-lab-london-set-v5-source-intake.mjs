@@ -39,9 +39,27 @@ assert.equal(contract.frontImageMirror.smilingFrontFilenamePattern, "<subject>_0
 assert.equal(contract.frontImageMirror.yawSourceProvided, false);
 assert.equal(contract.frontImageMirror.pitchSourceProvided, false);
 assert.equal(contract.frontImageMirror.rollSourceProvided, false);
+assert.equal(contract.frontImageMirror.exactFrontImageSha256ReceiptsFrozen, true);
+assert.equal(
+  contract.frontImageMirror.receiptEvidenceRef,
+  "evidence/facelab/source-intake/v0/london-set-v5-front-source-receipts.json"
+);
+assert.equal(
+  contract.frontImageMirror.receiptDigest,
+  "sha256:b51a121c5639da4d090f0e43b4287d5cd5c306ba036efca3030516cf72a2025a"
+);
+assert.equal(contract.frontImageMirror.receiptWorkflowRunId, 35608210749);
+assert.equal(
+  contract.frontImageMirror.receiptWorkflowHead,
+  "24e14d984f52e920993b20756834e56c6e3bb656"
+);
+assert.equal(
+  contract.frontImageMirror.transientRawSourceRemovedBeforeArtifactUpload,
+  true
+);
 assert.equal(
   contract.frontImageMirror.imageSha256ReceiptsStillRequiredBeforeExecution,
-  true
+  false
 );
 
 assert.equal(

@@ -72,6 +72,12 @@
     "yawSourceProvided": false,
     "pitchSourceProvided": false,
     "rollSourceProvided": false,
-    "imageSha256ReceiptsStillRequiredBeforeExecution": true
+    "imageSha256ReceiptsStillRequiredBeforeExecution": false,
+    "exactFrontImageSha256ReceiptsFrozen": true,
+    "receiptEvidenceRef": "evidence/facelab/source-intake/v0/london-set-v5-front-source-receipts.json",
+    "receiptDigest": "sha256:b51a121c5639da4d090f0e43b4287d5cd5c306ba036efca3030516cf72a2025a",
+    "receiptWorkflowRunId": 35608210749,
+    "receiptWorkflowHead": "24e14d984f52e920993b20756834e56c6e3bb656",
+    "transientRawSourceRemovedBeforeArtifactUpload": true
   }
 }
