@@ -74,6 +74,7 @@ jobs:
           cp supabase/migrations/20260922011229_trust_phase8c_revalidation_transition_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260922011324_trust_phase8c_revalidation_transition_index_hardening_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260922012833_trust_phase8c_prestate_binding_hardening_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-phase8d-revalidation/20260922013450_trust_phase8d_fixture_adapter.sql "${migration_dir}/"
           cp supabase/migrations/20260922013500_trust_phase8d_revalidation_research_bridge_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and verify Phase 8D research bridge
