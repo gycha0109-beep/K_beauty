@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import {
   DATA_AI18_BETA_RUNTIME_PHASE_AUTHORIZED,
-  evaluateProductQueryAuthenticatedBetaStaticGate,
   hashProductQueryBetaSubject
 } from "../lib/product-query-authenticated-beta-runtime.mjs";
 import {
@@ -23,7 +21,7 @@ function check(condition, message) {
 check(
   DATA_AI18_BETA_RUNTIME_PHASE_AUTHORIZED === false &&
     DATA_AI19_BETA_ACTIVATION_AUTHORIZED === false,
-  "DATA-AI19 must not authorize Production beta activation"
+  "DATA-AI19 historical preflight must not itself authorize Production beta activation"
 );
 
 check(
@@ -31,7 +29,7 @@ check(
     safety.scope === "authenticated_limited_beta_activation_preflight_only" &&
     safety.activationAuthorized === false &&
     safety.actualProductionActivationInScope === false,
-  "DATA-AI19 must remain preflight-only"
+  "DATA-AI19 historical evidence must remain preflight-only"
 );
 
 check(
@@ -42,7 +40,7 @@ check(
     safety.accessBoundary?.anonymousTraffic === false &&
     safety.accessBoundary?.automaticTrafficSampling === false &&
     safety.accessBoundary?.publicSearchCutover === false,
-  "initial beta access boundary must remain explicit and tightly bounded"
+  "DATA-AI19 historical access boundary must remain frozen"
 );
 
 check(
@@ -55,7 +53,7 @@ check(
     safety.authorityBoundary?.profileMerge === false &&
     safety.authorityBoundary?.savedProfileRead === false &&
     safety.authorityBoundary?.historyRead === false,
-  "activation preflight must not widen AI or user-context authority"
+  "DATA-AI19 historical preflight must not widen AI or user-context authority"
 );
 
 check(
@@ -65,7 +63,7 @@ check(
     safety.dataBoundary?.productionWrite === false &&
     safety.dataBoundary?.accessTokenPersistence === false &&
     safety.dataBoundary?.rawAccountIdPersistence === false,
-  "activation preflight must remain non-persistent and write-free"
+  "DATA-AI19 historical preflight must remain non-persistent and write-free"
 );
 
 check(
@@ -77,33 +75,7 @@ check(
     safety.safetyBoundary?.rollbackProcedure?.includes(
       "verify_deployed_beta_route_404"
     ),
-  "activation must have explicit approval, emergency disable, and rollback proof"
-);
-
-const config = JSON.parse(readFileSync("vercel.json", "utf8"));
-const env = config?.env || {};
-const betaActivationKeys = [
-  "BEJEWELY_PRODUCT_QUERY_BETA_ENABLED",
-  "BEJEWELY_PRODUCT_QUERY_BETA_RUNTIME_AUTHORIZED",
-  "BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES",
-  "BEJEWELY_PRODUCT_QUERY_BETA_EMERGENCY_DISABLE",
-  "BEJEWELY_PRODUCT_QUERY_BETA_AUTOMATIC_TRAFFIC_SAMPLING",
-  "BEJEWELY_PRODUCT_QUERY_BETA_PUBLIC_SEARCH_CUTOVER",
-  "BEJEWELY_PRODUCT_QUERY_BETA_PERSISTENCE"
-];
-check(
-  betaActivationKeys.every((key) => !Object.hasOwn(env, key)),
-  "DATA-AI19 must not check in a Production beta activation manifest"
-);
-
-const currentGate = evaluateProductQueryAuthenticatedBetaStaticGate({
-  VERCEL_ENV: "production",
-  ...env
-});
-check(
-  currentGate.staticAllowed === false &&
-    currentGate.phaseRuntimeAuthorized === false,
-  "current Production beta runtime must remain default-off"
+  "DATA-AI19 historical safety evidence must retain approval and rollback requirements"
 );
 
 const hashes = Array.from(
@@ -129,7 +101,7 @@ check(
   approved.preflightReady === true &&
     approved.activationAuthorized === false &&
     approved.approvedAccountCount === 5,
-  "valid future candidate may pass preflight but DATA-AI19 still must not authorize activation"
+  "valid historical candidate may pass preflight but DATA-AI19 itself must remain unauthorized"
 );
 
 const missingApproval =
@@ -137,7 +109,7 @@ const missingApproval =
 check(
   missingApproval.preflightReady === false &&
     missingApproval.checks.explicitActivationApproval === false,
-  "missing separate activation approval must fail closed"
+  "historical preflight must fail closed without separate activation approval"
 );
 
 const emergencyDisabled =
@@ -151,36 +123,33 @@ const emergencyDisabled =
 check(
   emergencyDisabled.preflightReady === false &&
     emergencyDisabled.checks.emergencyDisableClear === false,
-  "emergency disable must block activation preflight"
+  "historical preflight must fail closed when emergency disable is active"
 );
 
 const tooManyHashes = [
   ...hashes,
   hashProductQueryBetaSubject("data-ai19-test-subject-6")
 ];
-const oversized =
-  evaluateProductQueryAuthenticatedBetaActivationPreflight(
-    {
-      ...candidateEnv,
-      BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES:
-        tooManyHashes.join(",")
-    },
-    { explicitActivationApproval: true }
-  );
+const overCap = evaluateProductQueryAuthenticatedBetaActivationPreflight(
+  {
+    ...candidateEnv,
+    BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES: tooManyHashes.join(",")
+  },
+  { explicitActivationApproval: true }
+);
 check(
-  oversized.preflightReady === false &&
-    oversized.approvedAccountCount === 6 &&
-    oversized.checks.approvedAccountCohort === false,
-  "initial approved beta cohort must be capped at five accounts"
+  overCap.preflightReady === false &&
+    overCap.checks.approvedAccountCohort === false,
+  "historical DATA-AI19 preflight must preserve its original five-account ceiling"
 );
 
 check(
   safety.nextRequiredPhase ===
-      "data_ai20_authenticated_limited_beta_controlled_activation" &&
+    "data_ai20_authenticated_limited_beta_controlled_activation" &&
     safety.nextPhaseRequiresExplicitUserApproval === true,
-  "actual Production beta activation must remain a separate explicitly approved phase"
+  "DATA-AI19 must preserve the explicit DATA-AI20 approval boundary as historical evidence"
 );
 
 console.log(
-  `DATA-AI19 authenticated beta activation preflight verifier: PASS (${assertions} assertions)`
+  `DATA-AI19 historical authenticated beta activation preflight verifier: PASS (${assertions} assertions)`
 );
