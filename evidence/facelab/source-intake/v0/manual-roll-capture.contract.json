@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "face-lab-manual-roll-capture-contract-v0",
+  "status": "capture_protocol_ready_evidence_absent",
+  "nuisanceClass": "head_roll",
+  "captureProtocol": {
+    "subjectLinkageMethod": "manual_same_subject_pair",
+    "requiredViews": [
+      "neutral_front",
+      "roll_left",
+      "roll_right"
+    ],
+    "sameSessionRequired": true,
+    "fixedCameraRequested": true,
+    "neutralExpressionRequested": true,
+    "syntheticRotationAllowed": false,
+    "warpAugmentationAllowed": false,
+    "mirroredImageSubstitutionAllowed": false,
+    "rollAngleThresholdDegrees": null,
+    "targetRollDegrees": null,
+    "angleThresholdAuthority": false,
+    "instruction": "Capture a frontal neutral reference and natural left/right head-roll views by tilting the head toward each shoulder without turning or pitching the face."
+  },
+  "consent": {
+    "explicitConsentRequired": true,
+    "consentEvidenceRefRequired": true,
+    "usageScopeMustBeRecorded": true,
+    "commercialResearchUseMustBeExplicitIfApplicable": true,
+    "biometricIdentityMatchingAllowed": false,
+    "identityEmbeddingAllowed": false
+  },
+  "storage": {
+    "rawImagesPersistedInRepository": false,
+    "rawImagesPersistedInEvidencePackets": false,
+    "rawLandmarksPersisted": false,
+    "localImagePathsPersistedInEvidencePackets": false,
+    "sourceImageSha256ReceiptsAllowed": true,
+    "transientLocalPathsAllowedOnlyDuringMeasurement": true
+  },
+  "readiness": {
+    "captureDataPresent": false,
+    "rollEvidencePresent": false,
+    "descriptiveReviewPacketPresent": false,
+    "adequacyDecisionPresent": false
+  },
+  "authority": {
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false,
+    "adequacyDecisionAuthority": false,
+    "populationAuthority": false
+  }
+}
