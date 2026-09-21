@@ -13,9 +13,21 @@ const receipt = JSON.parse(
     "utf8"
   )
 );
+const runOutput = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json",
+    "utf8"
+  )
+);
+const reviewPacket = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json",
+    "utf8"
+  )
+);
 
 assert.equal(contract.schemaVersion, "face-lab-manual-roll-capture-contract-v0");
-assert.equal(contract.status, "capture_received_measurement_pending");
+assert.equal(contract.status, "capture_measured_review_packet_ready");
 assert.equal(contract.nuisanceClass, "head_roll");
 assert.equal(
   contract.captureReceiptRef,
@@ -49,12 +61,20 @@ assert.equal(contract.storage.sourceImageSha256ReceiptsAllowed, true);
 assert.equal(contract.storage.transientLocalPathsAllowedOnlyDuringMeasurement, true);
 
 assert.equal(contract.readiness.captureDataPresent, true);
-assert.equal(contract.readiness.rollEvidencePresent, false);
-assert.equal(contract.readiness.descriptiveReviewPacketPresent, false);
+assert.equal(contract.readiness.rollEvidencePresent, true);
+assert.equal(contract.readiness.descriptiveReviewPacketPresent, true);
 assert.equal(contract.readiness.adequacyDecisionPresent, false);
+assert.equal(
+  contract.measurementEvidenceRef,
+  "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json"
+);
+assert.equal(
+  contract.descriptiveReviewPacketRef,
+  "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json"
+);
 
 assert.equal(receipt.schemaVersion, "face-lab-manual-roll-capture-receipt-v0");
-assert.equal(receipt.status, "capture_received_measurement_pending");
+assert.equal(receipt.status, "capture_measured_review_packet_ready");
 assert.equal(receipt.nuisanceClass, "head_roll");
 assert.equal(receipt.commercialResearchUseAuthorized, true);
 assert.equal(receipt.subjectCount, 1);
@@ -63,7 +83,15 @@ assert.equal(receipt.captureValidation.requiredViewsPresent, true);
 assert.equal(receipt.captureValidation.sameSessionDeclared, true);
 assert.equal(receipt.captureValidation.headRollViewsSelectedWithoutYawSubstitution, true);
 assert.equal(receipt.captureValidation.numericRollThresholdApplied, false);
-assert.equal(receipt.captureValidation.measurementExecuted, false);
+assert.equal(receipt.captureValidation.measurementExecuted, true);
+assert.equal(
+  receipt.captureValidation.measurementEvidenceRef,
+  contract.measurementEvidenceRef
+);
+assert.equal(
+  receipt.captureValidation.descriptiveReviewPacketRef,
+  contract.descriptiveReviewPacketRef
+);
 
 for (const subject of receipt.subjects) {
   assert.match(subject.subjectId, /^[a-zA-Z0-9_-]+$/);
@@ -93,6 +121,46 @@ assert.equal(receipt.privacy.identityEmbeddingCreated, false);
 assert.equal(receipt.privacy.biometricIdentityMatchPerformed, false);
 assert.equal(receipt.privacy.sourceImageSha256ReceiptsOnly, true);
 
+assert.equal(runOutput.schemaVersion, "face-lab-real-photo-stability-run-output-v0");
+assert.equal(runOutput.ok, true);
+assert.equal(runOutput.reports.length, 2);
+assert.deepEqual(runOutput.manifestSummary.coveredNuisanceClasses, ["head_roll"]);
+assert.equal(
+  reviewPacket.sourceCollectionFingerprint,
+  runOutput.collectionSummary.collectionFingerprint
+);
+assert.equal(reviewPacket.sourceReportCount, runOutput.reports.length);
+assert.deepEqual(reviewPacket.sourceCoveredNuisanceClasses, ["head_roll"]);
+assert.equal(reviewPacket.reviewSemantics.descriptiveOnly, true);
+assert.equal(reviewPacket.reviewSemantics.thresholdsApplied, false);
+assert.equal(reviewPacket.reviewSemantics.automaticPassFail, false);
+assert.equal(reviewPacket.reviewSemantics.automaticRanking, false);
+
+const subject = receipt.subjects[0];
+const leftReport = runOutput.reports.find((report) =>
+  report.pairGroupId.endsWith("_left")
+);
+const rightReport = runOutput.reports.find((report) =>
+  report.pairGroupId.endsWith("_right")
+);
+assert.ok(leftReport && rightReport);
+assert.equal(
+  subject.views.neutralFront.sha256,
+  leftReport.executionProvenance.referenceImageSha256
+);
+assert.equal(
+  subject.views.neutralFront.sha256,
+  rightReport.executionProvenance.referenceImageSha256
+);
+assert.equal(
+  subject.views.rollLeft.sha256,
+  leftReport.executionProvenance.candidateImageSha256
+);
+assert.equal(
+  subject.views.rollRight.sha256,
+  rightReport.executionProvenance.candidateImageSha256
+);
+
 for (const authority of [contract.authority, receipt.authority]) {
   assert.equal(authority.productionAuthority, false);
   assert.equal(authority.normalizationAuthority, false);
@@ -101,7 +169,7 @@ for (const authority of [contract.authority, receipt.authority]) {
   assert.equal(authority.populationAuthority, false);
 }
 
-const serialized = JSON.stringify({ contract, receipt });
+const serialized = JSON.stringify({ contract, receipt, runOutput, reviewPacket });
 assert.equal(serialized.includes("/mnt/data/"), false);
 assert.equal(serialized.includes("\\mnt\\data\\"), false);
 assert.equal(serialized.includes('"path"'), false);
@@ -110,8 +178,9 @@ console.log(JSON.stringify({
   ok: true,
   nuisanceClass: "head_roll",
   captureDataPresent: true,
-  rollEvidencePresent: false,
-  measurementExecuted: false,
+  rollEvidencePresent: true,
+  descriptiveReviewPacketPresent: true,
+  measurementExecuted: true,
   angleThresholdAuthority: false,
   rawImagesPersistedInRepository: false,
   localImagePathsPersisted: false,
