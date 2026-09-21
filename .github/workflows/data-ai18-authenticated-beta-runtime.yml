@@ -1,0 +1,126 @@
+name: DATA-AI18 Authenticated Beta Runtime Default-Off
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "vercel.json"
+      - "app/api/my/product-query-beta/route.js"
+      - "lib/product-query-authenticated-beta-runtime.mjs"
+      - "lib/product-query-authenticated-limited-beta-design-contract.mjs"
+      - "lib/server/product-query-preview-service.js"
+      - "lib/server/product-query-shadow-service.js"
+      - "scripts/verify-data-ai17-authenticated-limited-beta-design.mjs"
+      - "scripts/verify-data-ai18-authenticated-beta-runtime.mjs"
+      - ".github/workflows/data-ai18-authenticated-beta-runtime.yml"
+  push:
+    branches: [main]
+    paths:
+      - "vercel.json"
+      - "app/api/my/product-query-beta/route.js"
+      - "lib/product-query-authenticated-beta-runtime.mjs"
+      - "lib/product-query-authenticated-limited-beta-design-contract.mjs"
+      - "lib/server/product-query-preview-service.js"
+      - "lib/server/product-query-shadow-service.js"
+      - "scripts/verify-data-ai17-authenticated-limited-beta-design.mjs"
+      - "scripts/verify-data-ai18-authenticated-beta-runtime.mjs"
+      - ".github/workflows/data-ai18-authenticated-beta-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: read
+  id-token: write
+
+concurrency:
+  group: data-ai18-authenticated-beta-runtime-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: DATA-AI18 authenticated beta runtime contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify DATA-AI18 runtime contract
+        run: node scripts/verify-data-ai18-authenticated-beta-runtime.mjs
+
+  runtime-probe:
+    name: DATA-AI18 deployed Production default-off probe
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact runtime SHA
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.sha }}
+
+      - name: Resolve exact successful Production deployment
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=""
+          for attempt in $(seq 1 48); do
+            ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?sha=$GITHUB_SHA&per_page=100" --jq '.[] | .id' || true)"
+            for id in $ids; do
+              deployment="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id")"
+              production="$(printf '%s' "$deployment" | jq -r '.production_environment // false')"
+              environment="$(printf '%s' "$deployment" | jq -r '.environment // ""' | tr '[:upper:]' '[:lower:]')"
+              if [ "$production" != "true" ] && [ "$environment" != "production" ]; then
+                continue
+              fi
+              candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100"                 --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
+              if [ -n "$candidate" ]; then
+                url="${candidate%/}"
+                break
+              fi
+            done
+            if [ -n "$url" ]; then break; fi
+            sleep 5
+          done
+          test -n "$url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain Vercel trusted OIDC token
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          trusted_json="$(curl --fail --silent --show-error             -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN"             "$ACTIONS_ID_TOKEN_REQUEST_URL")"
+          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$trusted"
+          printf 'trusted=%s\n' "$trusted" >> "$GITHUB_OUTPUT"
+
+      - name: Assert authenticated beta remains default-off
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          query='data-ai18-default-off-probe'
+          payload='{"query":"data-ai18-default-off-probe"}'
+          output="$(mktemp)"
+          trap 'rm -f "$output"' EXIT
+
+          status="$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors             -o "$output"             -w '%{http_code}'             -X POST             -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"             -H 'Content-Type: application/json'             --data "$payload"             "$DEPLOYMENT_URL/api/my/product-query-beta")"
+
+          test "$status" = "404"
+          if grep -Fq "$query" "$output"; then
+            echo "raw query leaked in default-off response" >&2
+            exit 1
+          fi
+
+          echo "DATA_AI18_AUTHENTICATED_BETA_DEFAULT_OFF=PASS"
