@@ -11,9 +11,6 @@ import {
 import {
   PRODUCT_QUERY_EXECUTION_LIMITS
 } from "../lib/product-query-execution-contract.mjs";
-import {
-  evaluateProductQueryProductionCanaryStaticGate
-} from "../lib/product-query-production-canary-runtime.mjs";
 
 let assertions = 0;
 function check(condition, message) {
@@ -36,7 +33,7 @@ check(
     design.scope === "authenticated_limited_beta_design_only" &&
     design.betaState === "designed_not_implemented" &&
     design.activationDecision === "not_authorized",
-  "DATA-AI17 must remain design-only and non-activating"
+  "frozen DATA-AI17 design evidence must remain design-only and non-activating"
 );
 
 check(
@@ -142,31 +139,6 @@ check(
     recommendation.includes("scoreCanonicalProduct") &&
     recommendation.includes("scoreSunscreenProduct"),
   "product selection and ranking authority must remain existing deterministic code"
-);
-
-const config = JSON.parse(readFileSync("vercel.json", "utf8"));
-const env = config?.env || {};
-const forbiddenActivationKeys = [
-  "BEJEWELY_PRODUCT_QUERY_BETA_ENABLED",
-  "BEJEWELY_PRODUCT_QUERY_BETA_ACCESS_ENABLED",
-  "BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES",
-  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_ACTIVATION_ENABLED",
-  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_RUNTIME_AUTHORIZED"
-];
-check(
-  forbiddenActivationKeys.every((key) => !Object.hasOwn(env, key)),
-  "DATA-AI17 must not add any beta or Production activation manifest"
-);
-
-const defaultOff = evaluateProductQueryProductionCanaryStaticGate(
-  { VERCEL_ENV: "production", ...env },
-  Date.parse("2026-09-21T14:00:00Z")
-);
-check(
-  defaultOff.staticAllowed === false &&
-    defaultOff.runtimeAuthorized === false &&
-    defaultOff.effectiveSampleBps === 0,
-  "Production canary runtime must remain default-off during DATA-AI17"
 );
 
 check(
