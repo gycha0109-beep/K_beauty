@@ -113,11 +113,12 @@ check(
 );
 
 check(
-  !route.includes("authContext.user.id,") &&
-    !route.includes("subjectHash") &&
+  !route.includes("userId:") &&
+    !route.includes("accountId:") &&
+    !route.includes("accountHash:") &&
     !route.includes("accessToken:") &&
-    !route.includes("query: testCase.query"),
-  "response construction must not return account identity, hash, token, or raw fixture query"
+    !route.includes("rawQuery:"),
+  "response construction must not return account identity, hash, token, or raw query"
 );
 
 check(
