@@ -11,11 +11,23 @@
     "Measurement drift, nuisance coverage, subject-linkage provenance, and capture limitations must be explicitly reviewed.",
     "No numeric stability threshold is invented by this contract.",
     "Automatic adequacy inference from report count or nuisance-class coverage is forbidden.",
-    "Adequacy grants provisional research gating only and no Production normalization authority."
+    "Adequacy grants provisional research gating only and no Production normalization authority.",
+    "The adequacy decision must be bound to a descriptive review packet generated from the exact stability collection.",
+    "The review packet must carry observed drift and provenance without thresholds, automatic pass/fail, or ranking."
   ],
   "currentEvidence": {
     "realPhotoReportCollectionPresent": false,
     "adequacyDecisionPresent": false,
     "status": "not_ready"
+  },
+  "reviewPacket": {
+    "schemaVersion": "face-lab-real-photo-stability-review-packet-v0",
+    "requiredForAdequacyDecision": true,
+    "exactCollectionFingerprintRequired": true,
+    "exactReviewPacketFingerprintRequired": true,
+    "descriptiveOnly": true,
+    "thresholdsApplied": false,
+    "automaticPassFail": false,
+    "automaticRanking": false
   }
 }
