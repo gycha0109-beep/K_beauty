@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - "evidence/facelab/source-intake/v0/manual-roll-capture.contract.json"
+      - "evidence/facelab/source-intake/v0/manual-roll-capture-receipt.json"
       - "docs/domain/facelab/face-lab-manual-roll-capture-protocol-v0.md"
       - "scripts/build-face-lab-manual-roll-measurement-manifest.mjs"
       - "scripts/run-face-lab-manual-roll-local.mjs"
