@@ -192,7 +192,7 @@ rollback;
 insert into trust_p4_results values ('serializer_identity_collision_fail_closed','PASS','{}'::jsonb);
 
 -- 7. Governed Evidence exact replay remains idempotent when proposition_value_identity is JSON null.
-do $
+do $$
 declare
   v_subject uuid;
   v_source_digest text;
@@ -243,7 +243,7 @@ begin
   perform pg_temp.assert_true((select count(*) from public.product_evidence_records where canonical_evidence_digest=repeat('d',64))=1,'trust_p4_null_replay_duplicate_row');
   insert into trust_p4_results values ('null_proposition_identity_replay_idempotent','PASS',jsonb_build_object('evidence_id',v_first->>'evidence_id'));
 end;
-$;
+$$;
 
 -- 8. Wrapper reaches governed confirmation preflight but does not create Current.
 create temporary table trust_p4_adoption as
