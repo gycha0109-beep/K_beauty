@@ -46,6 +46,7 @@ run("TRUST Phase 7A legacy backfill preflight", node, ["scripts/verify-trust-pha
 run("TRUST Phase 7B legacy backfill materialization", node, ["scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"]);
 run("TRUST Phase 7C legacy research readiness", node, ["scripts/verify-trust-phase7c-legacy-research-readiness.mjs"]);
 run("TRUST Phase 7C Phase4 legacy adoption compatibility", node, ["scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"]);
+run("TRUST Phase 7D relational fact adoption", node, ["scripts/verify-trust-phase7d-relational-adoption.mjs"]);
 
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);

@@ -155,7 +155,11 @@ function excerpt(text, index, length) {
   return text.slice(start, Math.min(text.length, index + length + 100));
 }
 
-export function extractStrictFactCandidate(factKey, text) {
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function extractStrictFactCandidate(factKey, text, parentPropositions = []) {
   if (factKey === "spf_value") {
     const match = /\bSPF\s*([1-9]\d{0,2}(?:\.\d+)?)\s*(\+)?(?=\s|$|[<,.;/])/i.exec(text);
     if (!match) return null;
@@ -193,10 +197,55 @@ export function extractStrictFactCandidate(factKey, text) {
       };
     }
   }
+  if (factKey === "active_concentration") {
+    const matches = [];
+    for (const parent of Array.isArray(parentPropositions) ? parentPropositions : []) {
+      const identifier = String(parent?.value_entity_identifier || "").trim().toLowerCase();
+      const propositionKey = String(parent?.proposition_key || "").trim().toLowerCase();
+      if (!identifier || !/^[0-9a-f]{64}$/.test(propositionKey)) continue;
+      const label = escapeRegex(identifier.replace(/_/g, " ").replace(/\s+/g, " ").trim());
+      if (!label) continue;
+      const patterns = [
+        { unit: "percent", regex: new RegExp(`\\b(\\d+(?:\\.\\d+)?)\\s*%\\s+${label}\\b`, "i") },
+        { unit: "percent", regex: new RegExp(`\\b${label}\\b[^%\\n]{0,24}?(\\d+(?:\\.\\d+)?)\\s*%`, "i") },
+        { unit: "ppm", regex: new RegExp(`\\b(\\d+(?:\\.\\d+)?)\\s*ppm\\s+${label}\\b`, "i") },
+        { unit: "ppm", regex: new RegExp(`\\b${label}\\b[^\\n]{0,24}?(\\d+(?:\\.\\d+)?)\\s*ppm\\b`, "i") },
+        { unit: "mg_per_g", regex: new RegExp(`\\b(\\d+(?:\\.\\d+)?)\\s*mg\\s*\\/\\s*g\\s+${label}\\b`, "i") },
+        { unit: "mg_per_g", regex: new RegExp(`\\b${label}\\b[^\\n]{0,24}?(\\d+(?:\\.\\d+)?)\\s*mg\\s*\\/\\s*g\\b`, "i") },
+      ];
+      for (const { unit, regex } of patterns) {
+        const match = regex.exec(text);
+        if (!match) continue;
+        matches.push({
+          normalizedValue: { amount: Number(match[1]), unit },
+          parentPropositionKey: propositionKey,
+          evidenceClass: "product_claim",
+          qualifier: {},
+          observedClaim: {
+            matched_text: match[0],
+            excerpt: excerpt(text, match.index, match[0].length),
+            extractor: "explicit-parent-bound-active-concentration-v1",
+            parent_value_entity_identifier: identifier,
+            parent_proposition_key: propositionKey,
+          },
+        });
+        break;
+      }
+    }
+    return matches.length === 1 ? matches[0] : null;
+  }
   return null;
 }
 
 function sourceKindForSeed(seed) {
+  const governedKinds = new Set([
+    "brand_official_product_page",
+    "brand_official_faq",
+    "brand_official_technical_document",
+    "manufacturer_official_document",
+    "official_market_sales_page",
+  ]);
+  if (governedKinds.has(seed.external_type)) return seed.external_type;
   return seed.external_type === "official_product" ? "brand_official_product_page" : "official_market_sales_page";
 }
 
@@ -240,7 +289,7 @@ export async function processClaimedTask(client, task, fetchImpl = fetch) {
     }
 
     const text = htmlToObservationText(fetched.bytes);
-    const extracted = extractStrictFactCandidate(task.fact_key, text);
+    const extracted = extractStrictFactCandidate(task.fact_key, text, task.parent_propositions);
     if (!extracted) continue;
 
     const observedAt = new Date().toISOString();
@@ -269,6 +318,7 @@ export async function processClaimedTask(client, task, fetchImpl = fetch) {
         },
         candidate: {
           normalized_value: extracted.normalizedValue,
+          ...(extracted.parentPropositionKey ? { parent_proposition_key: extracted.parentPropositionKey } : {}),
           evidence_class: extracted.evidenceClass,
           confidence: "high",
           support_direction: "supports",

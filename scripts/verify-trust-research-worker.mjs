@@ -52,7 +52,11 @@ const runtime = read("tests/fixtures/trust-research-worker/verify_trust_research
   "No exact-market resolved *_official HTTPS source binding is available.",
   "explicit-spf-label-v1",
   "explicit-pa-label-v1",
-  "explicit-filter-system-claim-v1"
+  "explicit-filter-system-claim-v1",
+  "explicit-parent-bound-active-concentration-v1",
+  "parent_proposition_key",
+  "brand_official_technical_document",
+  "governedKinds.has(seed.external_type)"
 ].forEach((value) => includes(worker, value, "Research worker"));
 
 excludes(worker, "google.com/search", "search-engine discovery");
@@ -101,6 +105,34 @@ assert(extractStrictFactCandidate("uva_label", "Broad Spectrum SPF 50") === null
   "Broad Spectrum must not infer a PA label");
 assert(extractStrictFactCandidate("barrier_support_claim", "supports skin barrier") === null,
   "unsupported marketing claim must not become a fact candidate");
+
+const haParent = {
+  proposition_key: "a".repeat(64),
+  value_entity_identifier: "hyaluronic_acid",
+};
+const pdrnParent = {
+  proposition_key: "b".repeat(64),
+  value_entity_identifier: "sodium_dna",
+};
+const concentration = extractStrictFactCandidate(
+  "active_concentration",
+  "PDRN Hyaluronic Acid Capsule 100 Serum combines PDRN, 3% hyaluronic acid, and hydrolyzed collagen.",
+  [pdrnParent, haParent]
+);
+assert(concentration?.normalizedValue?.amount === 3 && concentration?.normalizedValue?.unit === "percent",
+  "parent-bound active concentration extractor failed");
+assert(concentration?.parentPropositionKey === haParent.proposition_key,
+  "active concentration did not bind the explicit hyaluronic-acid parent");
+assert(extractStrictFactCandidate(
+  "active_concentration",
+  "Contains 3% hyaluronic acid and 2% sodium dna.",
+  [pdrnParent, haParent]
+) === null, "ambiguous multi-parent concentration must fail closed");
+assert(extractStrictFactCandidate(
+  "active_concentration",
+  "Contains 3% hyaluronic acid.",
+  []
+) === null, "active concentration without governed parent options must fail closed");
 
 for (const url of ["http://example.com", "https://127.0.0.1/test", "https://localhost/test"]) {
   let blocked = false;
