@@ -238,6 +238,14 @@ export function extractStrictFactCandidate(factKey, text, parentPropositions = [
 }
 
 function sourceKindForSeed(seed) {
+  const governedKinds = new Set([
+    "brand_official_product_page",
+    "brand_official_faq",
+    "brand_official_technical_document",
+    "manufacturer_official_document",
+    "official_market_sales_page",
+  ]);
+  if (governedKinds.has(seed.external_type)) return seed.external_type;
   return seed.external_type === "official_product" ? "brand_official_product_page" : "official_market_sales_page";
 }
 
