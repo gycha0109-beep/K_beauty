@@ -23,6 +23,7 @@ declare
   v_claim jsonb := '{"claim":"3% hyaluronic acid"}'::jsonb;
   v_identity jsonb;
   v_plan jsonb;
+  v_preflight jsonb;
   v_adopt jsonb;
   v_bad_prop text;
   v_bad_instance uuid;
@@ -194,16 +195,24 @@ begin
       evidence_candidate_id='84000000-0000-4000-8000-000000000003'
   where id='82000000-0000-4000-8000-000000000003';
 
-  v_plan := public.admin_preflight_trust_evidence_adoption_v1(
+  v_plan := public.trust_phase4_build_adoption_plan_v1(
     v_actor,'84000000-0000-4000-8000-000000000003'
   );
 
-  if v_plan->>'status' <> 'ready_for_explicit_confirmation'
-    or v_plan #>> '{confirmation_payload,parent_proposition_key}' <> v_parent_prop
-    or (v_plan #>> '{confirmation_payload,parent_fact_instance_id}')::uuid <> v_parent_instance
-    or v_plan #> '{confirmation_payload,value_number}' <> '3'::jsonb
-    or v_plan #>> '{confirmation_payload,value_unit}' <> 'percent' then
-    raise exception 'phase7d_relational_positive_preflight_failed:%',v_plan;
+  if v_plan #>> '{fact_payload_base,parent_proposition_key}' <> v_parent_prop
+    or (v_plan #>> '{fact_payload_base,parent_fact_instance_id}')::uuid <> v_parent_instance
+    or v_plan #> '{fact_payload_base,value_number}' <> '3'::jsonb
+    or v_plan #>> '{fact_payload_base,value_unit}' <> 'percent' then
+    raise exception 'phase7d_relational_plan_failed:%',v_plan;
+  end if;
+
+  v_preflight := public.admin_preflight_trust_evidence_adoption_v1(
+    v_actor,'84000000-0000-4000-8000-000000000003'
+  );
+
+  if v_preflight->>'status' <> 'ready'
+    or coalesce((v_preflight->>'automatic_confirmation')::boolean,true) then
+    raise exception 'phase7d_relational_positive_preflight_failed:%',v_preflight;
   end if;
 
   v_adopt := public.admin_adopt_trust_evidence_candidate_v1(
