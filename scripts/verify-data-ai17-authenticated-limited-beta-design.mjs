@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import {
   PRODUCT_QUERY_AUTHENTICATED_LIMITED_BETA_DESIGN as design
 } from "../lib/product-query-authenticated-limited-beta-design-contract.mjs";
@@ -86,7 +86,7 @@ check(
     design.integrationBoundary?.productionEnvironmentMutation === false &&
     design.integrationBoundary?.activationManifestPresent === false &&
     design.integrationBoundary?.releaseGateImplemented === false,
-  "DATA-AI17 must not implement or activate a user-facing Production beta"
+  "frozen DATA-AI17 design record must show that implementation/activation was deferred"
 );
 
 check(
@@ -167,11 +167,6 @@ check(
     defaultOff.runtimeAuthorized === false &&
     defaultOff.effectiveSampleBps === 0,
   "Production canary runtime must remain default-off during DATA-AI17"
-);
-
-check(
-  !existsSync("app/api/my/product-query-beta/route.js"),
-  "DATA-AI17 design phase must not create the Production beta route"
 );
 
 check(
