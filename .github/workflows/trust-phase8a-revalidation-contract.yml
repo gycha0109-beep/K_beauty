@@ -1,0 +1,58 @@
+name: TRUST Phase 8A Revalidation Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/evidence/trust-phase8a-product-fact-revalidation-contract-v1.md"
+      - "evidence/product-fact-revalidation-v1/**"
+      - "scripts/verify-trust-phase8a-revalidation-contract.mjs"
+      - ".github/workflows/trust-phase8a-revalidation-contract.yml"
+  push:
+    branches: [main, "feat/trust-phase8a-revalidation-contract"]
+    paths:
+      - "docs/evidence/trust-phase8a-product-fact-revalidation-contract-v1.md"
+      - "evidence/product-fact-revalidation-v1/**"
+      - "scripts/verify-trust-phase8a-revalidation-contract.mjs"
+      - ".github/workflows/trust-phase8a-revalidation-contract.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Verify Phase 8A contract
+        run: node scripts/verify-trust-phase8a-revalidation-contract.mjs
+
+      - name: Check exact-head diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check HEAD^
