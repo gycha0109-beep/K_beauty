@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "face-lab-real-photo-stability-adequacy-contract-v0",
+  "status": "not_evaluated_data_absent",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Require an explicit versioned adequacy review of exact real-photo same-subject pose/expression stability evidence before it can satisfy Face Space normalization readiness.",
+  "rules": [
+    "Structural coverage of head_yaw, head_pitch, head_roll, and expression is necessary but not sufficient for readiness.",
+    "Adequacy must be bound to the exact stability-collection fingerprint and source run-manifest digests.",
+    "Measurement drift, nuisance coverage, subject-linkage provenance, and capture limitations must be explicitly reviewed.",
+    "No numeric stability threshold is invented by this contract.",
+    "Automatic adequacy inference from report count or nuisance-class coverage is forbidden.",
+    "Adequacy grants provisional research gating only and no Production normalization authority."
+  ],
+  "currentEvidence": {
+    "realPhotoReportCollectionPresent": false,
+    "adequacyDecisionPresent": false,
+    "status": "not_ready"
+  }
+}
