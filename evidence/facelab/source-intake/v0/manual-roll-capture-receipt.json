@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "face-lab-manual-roll-capture-receipt-v0",
+  "status": "capture_received_measurement_pending",
+  "nuisanceClass": "head_roll",
+  "captureSetRef": "consent://bejewely-face-lab/manual-roll/session-20260922-001",
+  "usageScope": "BEJEWELY Face Lab commercial research validation only",
+  "commercialResearchUseAuthorized": true,
+  "subjectCount": 1,
+  "subjects": [
+    {
+      "subjectId": "manual_roll_subject_001",
+      "consentEvidenceRef": "consent://bejewely-face-lab/manual-roll/session-20260922-001",
+      "sessionRef": "session_20260922_001",
+      "sameSession": true,
+      "explicitConsent": true,
+      "biometricIdentityMatchPerformed": false,
+      "syntheticRotationApplied": false,
+      "warpAugmentationApplied": false,
+      "views": {
+        "neutralFront": {
+          "sampleId": "manual_roll_subject_001_neutral_front",
+          "sha256": "2292830a8e8723640531080048f1eaeb435f6f8fc02611e15ae25945207d2e82",
+          "mediaType": "image/jpeg",
+          "width": 1536,
+          "height": 2048
+        },
+        "rollLeft": {
+          "sampleId": "manual_roll_subject_001_roll_left",
+          "sha256": "d697fb191b61a9d15d17f9d4b755df59f078ccc6affebcb0bed43d4054c40efa",
+          "mediaType": "image/jpeg",
+          "width": 1536,
+          "height": 2048
+        },
+        "rollRight": {
+          "sampleId": "manual_roll_subject_001_roll_right",
+          "sha256": "e0869901c1682ee461225f8d3503a0969f33677ee6d1c5f74b2d5e6f3d3f7d34",
+          "mediaType": "image/jpeg",
+          "width": 1536,
+          "height": 2048
+        }
+      }
+    }
+  ],
+  "captureValidation": {
+    "requiredViewsPresent": true,
+    "sameSessionDeclared": true,
+    "headRollViewsSelectedWithoutYawSubstitution": true,
+    "numericRollThresholdApplied": false,
+    "measurementExecuted": false
+  },
+  "privacy": {
+    "rawImagesPersistedInRepository": false,
+    "rawImagesPersistedInEvidencePackets": false,
+    "rawLandmarksPersisted": false,
+    "localImagePathsPersisted": false,
+    "identityEmbeddingCreated": false,
+    "biometricIdentityMatchPerformed": false,
+    "sourceImageSha256ReceiptsOnly": true
+  },
+  "authority": {
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false,
+    "adequacyDecisionAuthority": false,
+    "populationAuthority": false
+  }
+}
