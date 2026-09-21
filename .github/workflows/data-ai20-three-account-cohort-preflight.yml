@@ -67,6 +67,9 @@ jobs:
 
           const payloads = tokens.map((token, i) => decode(token, i + 1));
           const subjects = payloads.map((p) => p.sub);
+          console.log(`ACCOUNT_1_EQUALS_2=${subjects[0] === subjects[1]}`);
+          console.log(`ACCOUNT_1_EQUALS_3=${subjects[0] === subjects[2]}`);
+          console.log(`ACCOUNT_2_EQUALS_3=${subjects[1] === subjects[2]}`);
           if (new Set(subjects).size !== 3) {
             throw new Error("the three tokens must belong to three distinct account subjects");
           }
