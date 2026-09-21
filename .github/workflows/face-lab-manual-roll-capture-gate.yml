@@ -1,5 +1,6 @@
 name: Face Lab Manual Roll Capture Gate
 # bridge-revision: consented-local-v1
+# complete-stability-bridge: v1
 
 on:
   pull_request:
