@@ -34,13 +34,21 @@
     "singlePairCanSatisfyGeneralCoverage": false,
     "technicalPassCanDefineThresholds": false,
     "realPhotoGateRequiresAllNuisanceClasses": true,
-    "populationNormalizationStillRequiresSeparateCoverageAndReferenceDistribution": true
+    "populationNormalizationStillRequiresSeparateCoverageAndReferenceDistribution": true,
+    "realPhotoCollectionFingerprintRequired": true,
+    "explicitAdequacyReviewRequired": true,
+    "structuralNuisanceCoverageAloneCanSatisfyReadiness": false,
+    "automaticAdequacyInferenceAllowed": false,
+    "numericAdequacyThresholdDefined": false,
+    "adequacyContractPath": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
   },
   "currentEvidence": {
     "realPhotoPairCount": 0,
     "coveredNuisanceClasses": [],
     "readiness": "not_ready",
-    "runnerImplemented": true
+    "runnerImplemented": true,
+    "adequacyDecisionPresent": false,
+    "normalizationReadinessContribution": false
   },
   "executionPath": {
     "runManifestSchemaVersion": "face-lab-real-photo-stability-run-manifest-v0",
