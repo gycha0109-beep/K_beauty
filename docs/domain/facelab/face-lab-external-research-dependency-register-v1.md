@@ -1,7 +1,7 @@
 # Face Lab External Research Dependency Register v1
 
 > Track: FACE LAB / Research Dependencies  
-> Reviewed: 2026-09-19  
+> Reviewed: 2026-09-22  
 > Status: research inventory / not a legal approval / not Production activation
 
 ## 1. Purpose
@@ -169,9 +169,16 @@ Hard boundary:
 
 Current state:
 
-- source selected as a candidate only
-- raw dataset not acquired or pinned in repository evidence
-- exact file inventory and SHA-256 receipts not yet frozen
+- front-image research scope acquired through pinned mirror `debruine/webmorphR.stim@fa8b78fda2d659bb74ce62fcd99c4407551d2a77`
+- exact SHA-256 receipts frozen for 204 front images: 102 neutral + 102 smiling
+- deterministic subject-level split frozen before measurement: 82 reference + 20 holdout
+- neutral-front structural measurement completed for all 102 subjects
+- same-subject neutral-front ↔ smiling-front expression stability completed for all 102 subjects
+- exact descriptive reference-corpus review packet frozen; adequacy authority remains absent
+- exact descriptive expression-stability review packet frozen; overall stability adequacy remains blocked because pose coverage is incomplete
+- current real-photo nuisance coverage: expression only
+- current missing nuisance classes: `head_yaw`, `head_pitch`, `head_roll`
+- the current pinned mirror exposes the governed front-image subset only; London multi-angle yaw images are not yet acquired, receipted, or measured in this track
 - reference-corpus adequacy decision absent
 - real-photo stability adequacy decision absent
 
@@ -180,6 +187,130 @@ Upstream:
 - https://figshare.com/articles/dataset/Face_Research_Lab_London_Set/5047666
 - https://doi.org/10.6084/m9.figshare.5047666.v5
 - https://debruine.github.io/reprostim/
+
+### London Set multi-angle extension — PRIMARY_NEXT_SOURCE_CANDIDATE
+
+Role:
+
+- preferred same-subject real-photo `head_yaw` extension because it preserves the already adopted London subject provenance, consent basis, sampling frame, provider path, and reference identities
+- candidate comparison: neutral front against genuine left/right three-quarter or profile captures from the same subject
+
+Verified source facts:
+
+- the upstream London Set documents five simultaneously captured camera angles for each neutral and smiling pose: left profile, left three-quarter, front, right three-quarter, right profile
+- the existing Face Lab measurement track has only pinned and receipted front images
+
+Required before adoption:
+
+- acquire the exact multi-angle upstream artifact under the same governed source scope
+- freeze exact file inventory and SHA-256 receipts
+- confirm deterministic same-subject / angle mapping from source provenance
+- run the existing actual-image stability runner without biometric identity matching
+- keep raw source images out of repository evidence packets
+
+Boundary:
+
+- this extension can address yaw only
+- it does not establish genuine head pitch or roll evidence
+- current stability authority remains expression-only until exact yaw evidence is frozen and verified
+
+Upstream:
+
+- https://doi.org/10.6084/m9.figshare.5047666.v5
+- https://debruine.github.io/reprostim/
+
+### Pointing'04 Head Pose Image Database — SECONDARY_RESEARCH_DATA_CANDIDATE
+
+Role:
+
+- independent same-subject real-photo yaw / pitch candidate
+- possible fallback or complementary source when London multi-angle acquisition is insufficient
+
+Verified source facts:
+
+- 15 subjects
+- 2 series of 93 images for each subject
+- pose is represented by horizontal and vertical angles spanning negative to positive head rotations
+- subject and pose are encoded by source-side acquisition structure, so biometric identity matching is unnecessary for linkage
+
+Boundary:
+
+- Pointing'04 supplies pan/yaw and tilt/pitch style variation, not an independent roll axis
+- the current official benchmark page does not by itself freeze a reusable commercial-license contract for this project
+- no image may enter Face Lab research evidence until the exact downloadable artifact, license/redistribution terms, and artifact digest are pinned
+- therefore this remains a source candidate, not an adopted dataset
+
+Upstream:
+
+- https://crowley-coutaz.fr/Pointing04/data-face.html
+- referenced dataset DOI: https://doi.org/10.6084/m9.figshare.5142466.v2
+
+### BIWI Kinect Head Pose — DEFER_LICENSE_RESTRICTED
+
+Role:
+
+- technically strong reference for real same-subject yaw / pitch / roll variation and pose ground truth
+
+Verified research facts:
+
+- approximately 15K images across 20 people
+- sequences contain head turning with head-pose rotation annotations
+- upstream dataset documentation states non-commercial use such as university research and education
+
+Decision:
+
+- do not adopt into the current BEJEWELY Face Lab evidence pipeline under the observed license
+- a technically useful dataset does not override the project license boundary
+- reconsider only if a separate permission/license basis is obtained and frozen
+
+Upstream:
+
+- https://vision.ee.ethz.ch/datasets/
+- https://huggingface.co/datasets/ETHZurich/biwi_kinect_head_pose
+
+### PANDORA — DEFER_LICENSE_RESTRICTED
+
+Role:
+
+- technically strong same-subject yaw / pitch / roll candidate with separately exercised head-pose axes
+
+Verified research facts:
+
+- more than 250k RGB/depth images with pose annotations
+- repeated sequences per subject
+- dataset documentation includes runs where head pitch, roll, and yaw are performed separately
+- official AImageLab legal notice prohibits commercial use and requires written permission for uses outside the stated scientific-use boundary
+
+Decision:
+
+- do not adopt into the current BEJEWELY Face Lab evidence pipeline under the observed terms
+- reconsider only after explicit written permission or another compatible license basis is frozen
+
+Upstream:
+
+- https://aimagelab-legacy.ing.unimore.it/imagelab/page.asp?IdPage=14
+- https://aimagelab.ing.unimore.it/pandora/readme/Pandora_GT_readme.pdf
+
+### Current pose-source decision
+
+```text
+expression
+→ London front neutral/smiling
+→ real evidence frozen
+
+head_yaw
+→ first choice: London genuine multi-angle extension
+→ fallback/complement: Pointing'04 after exact license/artifact pin
+
+head_pitch
+→ Pointing'04 candidate after exact license/artifact pin
+
+head_roll
+→ no permissive, adopted real same-subject source confirmed yet
+→ BIWI/PANDORA technically fit but are license-blocked
+```
+
+No pose-source candidate above changes current adequacy state. Until exact same-subject real-photo evidence is acquired, receipted, measured, and reviewed, missing nuisance classes remain missing.
 
 ## 4. Reconstruction / validation references
 
