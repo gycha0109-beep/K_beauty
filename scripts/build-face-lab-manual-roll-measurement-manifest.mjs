@@ -97,7 +97,7 @@ for (const subject of spec.subjects) {
 const scaffold = scaffoldRealPhotoStabilityRunManifest({
   schemaVersion: "face-lab-real-photo-stability-scaffold-spec-v0",
   sourceSet: {
-    kind: "consented_manual_same_subject_photo_set",
+    kind: "consented_same_subject_photo_set",
     provenanceRef: spec.captureSetRef
   },
   pairs
