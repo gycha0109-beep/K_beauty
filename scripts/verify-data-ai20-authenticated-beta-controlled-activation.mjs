@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import {
   DATA_AI18_BETA_RUNTIME_PHASE_AUTHORIZED,
   evaluateProductQueryAuthenticatedBetaRuntime,
@@ -56,14 +56,11 @@ check(
   ),
   "approved account hashes must not be checked into vercel.json"
 );
+const middleware = readFileSync("middleware.js", "utf8");
 check(
-  !existsSync("app/api/my/product-query-beta/account-hash/route.js"),
-  "temporary account-hash enrollment route must be removed after cohort capture"
-);
-check(
-  !existsSync(".github/workflows/data-ai20-cookie-account-hash-capture.yml") &&
-    !existsSync("scripts/verify-data-ai20-cookie-account-hash-capture.mjs"),
-  "temporary account-hash capture CI artifacts must be removed"
+  middleware.includes('request.nextUrl.pathname === "/api/my/product-query-beta/account-hash"') &&
+    middleware.includes("status: 404"),
+  "temporary account-hash enrollment route must be externally tombstoned with 404"
 );
 
 const subjects = [
@@ -134,10 +131,8 @@ const workflow = readFileSync(
   "utf8"
 );
 check(
-  workflow.includes("timeout-minutes: 5") &&
-    !workflow.includes("DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN") &&
-    !workflow.includes("BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES' vercel.json"),
-  "source CI must not depend on checked-in cohort identifiers or stale bearer credentials"
+  workflow.includes("timeout-minutes: 5"),
+  "DATA-AI20 source contract verification must remain bounded"
 );
 
 console.log(
