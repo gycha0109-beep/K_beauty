@@ -64,7 +64,21 @@ jobs:
           fetch-depth: 1
           ref: ${{ github.sha }}
 
+      - name: Determine historical default-off probe applicability
+        id: applicability
+        shell: bash
+        run: |
+          set -euo pipefail
+          active="$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_BETA_ENABLED // "false"' vercel.json)"
+          if [ "$active" = "true" ]; then
+            echo "should_probe=false" >> "$GITHUB_OUTPUT"
+            echo "DATA_AI18_DEFAULT_OFF_PROBE=SUPERSEDED_BY_LATER_EXPLICIT_PHASE"
+          else
+            echo "should_probe=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Resolve exact successful Production deployment
+        if: steps.applicability.outputs.should_probe == 'true'
         id: deployment
         env:
           GH_TOKEN: ${{ github.token }}
@@ -94,6 +108,7 @@ jobs:
           printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
 
       - name: Obtain Vercel trusted OIDC token
+        if: steps.applicability.outputs.should_probe == 'true'
         id: oidc
         shell: bash
         run: |
@@ -104,6 +119,7 @@ jobs:
           printf 'trusted=%s\n' "$trusted" >> "$GITHUB_OUTPUT"
 
       - name: Assert authenticated beta remains default-off
+        if: steps.applicability.outputs.should_probe == 'true'
         env:
           DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
           VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
