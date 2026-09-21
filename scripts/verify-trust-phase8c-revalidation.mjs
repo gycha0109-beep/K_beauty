@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const migrationPath = "supabase/migrations/20260922011229_trust_phase8c_revalidation_transition_v1.sql";
+const hardeningPath = "supabase/migrations/20260922011324_trust_phase8c_revalidation_transition_index_hardening_v1.sql";
 const runtimePath = "tests/fixtures/trust-phase8c-revalidation/verify_trust_phase8c_revalidation_runtime.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
+const hardening = fs.readFileSync(hardeningPath, "utf8");
 const runtime = fs.readFileSync(runtimePath, "utf8");
 
 for (const token of [
@@ -26,6 +28,13 @@ for (const token of [
   "grant execute on function public.admin_mark_product_fact_revalidation_v1"
 ]) {
   assert.ok(migration.includes(token), `missing Phase 8C migration token: ${token}`);
+}
+
+for (const token of [
+  "product_fact_revalidation_transitions_confirmation_idx",
+  "product_fact_revalidation_transitions_actor_created_idx"
+]) {
+  assert.ok(hardening.includes(token), `missing Phase 8C hardening token: ${token}`);
 }
 
 for (const forbidden of [
