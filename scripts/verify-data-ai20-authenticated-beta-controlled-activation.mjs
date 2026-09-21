@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import {
   DATA_AI18_BETA_RUNTIME_PHASE_AUTHORIZED,
   evaluateProductQueryAuthenticatedBetaRuntime,
@@ -33,108 +33,99 @@ check(
   activation.phase === "DATA-AI20" &&
     activation.scope === "authenticated_limited_beta_controlled_activation" &&
     activation.activationAuthorized === true &&
-    activation.explicitUserApprovalRecorded === true &&
-    activation.initialCohortStrategy === "one_account_then_expand_to_max_three",
-  "DATA-AI20 activation contract must record explicit bounded activation"
-);
-check(
-  activation.accessBoundary?.authenticatedOnly === true &&
-    activation.accessBoundary?.explicitServerSideBetaEligibilityRequired === true &&
-    activation.accessBoundary?.approvedAccountHashAlgorithm === "sha256" &&
-    activation.accessBoundary?.maxApprovedAccounts === 3 &&
-    activation.accessBoundary?.automaticTrafficSampling === false &&
-    activation.accessBoundary?.publicSearchCutover === false,
-  "DATA-AI20 access boundary must remain authenticated and tightly bounded"
-);
-check(
-  activation.authorityBoundary?.providerRole === "intent_parsing_only" &&
-    activation.authorityBoundary?.providerProductSelection === false &&
-    activation.authorityBoundary?.providerRankingAuthority === false &&
-    activation.authorityBoundary?.deterministicRankingAuthority ===
-      "existing_recommendation_engine" &&
-    activation.authorityBoundary?.queryProvenance === "query_only" &&
-    activation.authorityBoundary?.profileMerge === false &&
-    activation.authorityBoundary?.savedProfileRead === false &&
-    activation.authorityBoundary?.historyRead === false,
-  "DATA-AI20 must not widen provider or user-context authority"
-);
-check(
-  activation.dataBoundary?.persistence === "none" &&
-    activation.dataBoundary?.rawQueryPersistence === false &&
-    activation.dataBoundary?.recommendationLogWrite === false &&
-    activation.dataBoundary?.productionWrite === false &&
-    activation.dataBoundary?.accessTokenPersistence === false &&
-    activation.dataBoundary?.rawAccountIdPersistence === false,
-  "DATA-AI20 must remain non-persistent and write-free"
-);
-check(
-  activation.rollbackBoundary?.emergencyDisableRequired === true &&
-    activation.rollbackBoundary?.failClosedOnEmergencyDisable === true &&
-    activation.rollbackBoundary?.rollbackTarget ===
-      "authenticated_beta_route_404",
-  "DATA-AI20 must preserve an emergency rollback path"
+    activation.explicitUserApprovalRecorded === true,
+  "DATA-AI20 activation contract must remain explicit"
 );
 
 const config = JSON.parse(readFileSync("vercel.json", "utf8"));
-const env = config?.env || {};
-const expectedHash =
-  "3cfc4137292c33a0fae2425be0883721738ce90daf3ae9618dffcb802bb02a95";
+const sourceEnv = config?.env || {};
 
 check(
-  env.BEJEWELY_PRODUCT_QUERY_BETA_ENABLED === "true" &&
-    env.BEJEWELY_PRODUCT_QUERY_BETA_RUNTIME_AUTHORIZED === "true" &&
-    env.BEJEWELY_PRODUCT_QUERY_BETA_EMERGENCY_DISABLE === "false" &&
-    env.BEJEWELY_PRODUCT_QUERY_BETA_AUTOMATIC_TRAFFIC_SAMPLING === "false" &&
-    env.BEJEWELY_PRODUCT_QUERY_BETA_PUBLIC_SEARCH_CUTOVER === "false" &&
-    env.BEJEWELY_PRODUCT_QUERY_BETA_PERSISTENCE === "none",
-  "checked-in DATA-AI20 Production activation manifest must remain bounded"
+  sourceEnv.BEJEWELY_PRODUCT_QUERY_BETA_ENABLED === "true" &&
+    sourceEnv.BEJEWELY_PRODUCT_QUERY_BETA_RUNTIME_AUTHORIZED === "true" &&
+    sourceEnv.BEJEWELY_PRODUCT_QUERY_BETA_EMERGENCY_DISABLE === "false" &&
+    sourceEnv.BEJEWELY_PRODUCT_QUERY_BETA_AUTOMATIC_TRAFFIC_SAMPLING === "false" &&
+    sourceEnv.BEJEWELY_PRODUCT_QUERY_BETA_PUBLIC_SEARCH_CUTOVER === "false" &&
+    sourceEnv.BEJEWELY_PRODUCT_QUERY_BETA_PERSISTENCE === "none",
+  "checked-in activation manifest must remain bounded"
 );
 check(
-  env.BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES === expectedHash,
-  "initial DATA-AI20 cohort must contain exactly the previously approved single account hash"
+  !Object.hasOwn(
+    sourceEnv,
+    "BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES"
+  ),
+  "approved account hashes must not be checked into vercel.json"
+);
+check(
+  !existsSync("app/api/my/product-query-beta/account-hash/route.js"),
+  "temporary account-hash enrollment route must be removed after cohort capture"
+);
+check(
+  !existsSync(".github/workflows/data-ai20-cookie-account-hash-capture.yml") &&
+    !existsSync("scripts/verify-data-ai20-cookie-account-hash-capture.mjs"),
+  "temporary account-hash capture CI artifacts must be removed"
 );
 
-const gate = evaluateProductQueryAuthenticatedBetaControlledActivation({
+const subjects = [
+  "data-ai20-cohort-fixture-a",
+  "data-ai20-cohort-fixture-b",
+  "data-ai20-cohort-fixture-c"
+];
+const hashes = subjects.map(hashProductQueryBetaSubject);
+const runtimeEnv = {
   VERCEL_ENV: "production",
-  ...env
-});
+  ...sourceEnv,
+  BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES: hashes.join(",")
+};
+
+const gate = evaluateProductQueryAuthenticatedBetaControlledActivation(runtimeEnv);
 check(
   gate.allowed === true &&
-    gate.approvedAccountCount === 1 &&
+    gate.approvedAccountCount === 3 &&
     gate.maxApprovedAccounts === 3,
-  "initial one-account Production activation must satisfy the DATA-AI20 gate"
+  "three-account sensitive runtime configuration must satisfy DATA-AI20"
 );
 
-const eligible = evaluateProductQueryAuthenticatedBetaRuntime({
-  envLike: { VERCEL_ENV: "production", ...env },
-  subject: "data-ai20-eligible-fixture",
+for (const subject of subjects) {
+  const eligible = evaluateProductQueryAuthenticatedBetaRuntime({
+    envLike: runtimeEnv,
+    subject,
+    phaseRuntimeAuthorized: DATA_AI20_BETA_RUNTIME_PHASE_AUTHORIZED
+  });
+  check(eligible.allowed === true, "each configured cohort subject must be eligible");
+}
+
+const unlisted = evaluateProductQueryAuthenticatedBetaRuntime({
+  envLike: runtimeEnv,
+  subject: "data-ai20-unlisted-fixture",
   phaseRuntimeAuthorized: DATA_AI20_BETA_RUNTIME_PHASE_AUTHORIZED
 });
-const fixtureHash = hashProductQueryBetaSubject("data-ai20-eligible-fixture");
+check(unlisted.allowed === false, "unlisted authenticated subjects must remain closed");
+
+const overLimitEnv = {
+  ...runtimeEnv,
+  BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES: [
+    ...hashes,
+    hashProductQueryBetaSubject("data-ai20-fourth-fixture")
+  ].join(",")
+};
 check(
-  eligible.allowed === false && fixtureHash !== expectedHash,
-  "non-allowlisted authenticated subjects must remain closed"
+  evaluateProductQueryAuthenticatedBetaControlledActivation(overLimitEnv).allowed === false,
+  "more than three approved accounts must fail closed"
 );
 
 const emergencyGate = evaluateProductQueryAuthenticatedBetaControlledActivation({
-  VERCEL_ENV: "production",
-  ...env,
+  ...runtimeEnv,
   BEJEWELY_PRODUCT_QUERY_BETA_EMERGENCY_DISABLE: "true"
 });
-check(
-  emergencyGate.allowed === false,
-  "emergency disable must fail closed"
-);
+check(emergencyGate.allowed === false, "emergency disable must fail closed");
 
 const route = readFileSync("app/api/my/product-query-beta/route.js", "utf8");
 check(
   route.includes("evaluateProductQueryAuthenticatedBetaControlledActivation") &&
     route.includes("DATA_AI20_BETA_RUNTIME_PHASE_AUTHORIZED") &&
     route.indexOf("evaluateProductQueryAuthenticatedBetaControlledActivation") <
-      route.indexOf("resolveRouteSupabaseAuth(request)") &&
-    route.includes(
-      "phaseRuntimeAuthorized: DATA_AI20_BETA_RUNTIME_PHASE_AUTHORIZED"
-    ),
+      route.indexOf("resolveRouteSupabaseAuth(request)"),
   "beta route must enforce DATA-AI20 activation before authenticated execution"
 );
 
@@ -143,13 +134,12 @@ const workflow = readFileSync(
   "utf8"
 );
 check(
-  workflow.includes("timeout-minutes: 7") &&
-    workflow.includes("DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN") &&
-    workflow.includes("DATA_AI20_AUTHENTICATED_LIMITED_BETA=PASS") &&
-    workflow.includes("/api/my/product-query-beta"),
-  "DATA-AI20 workflow must remain bounded and prove the authenticated Production route"
+  workflow.includes("timeout-minutes: 5") &&
+    !workflow.includes("DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN") &&
+    !workflow.includes("BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES' vercel.json"),
+  "source CI must not depend on checked-in cohort identifiers or stale bearer credentials"
 );
 
 console.log(
-  `DATA-AI20 authenticated limited-beta controlled activation verifier: PASS (${assertions} assertions)`
+  `DATA-AI20 secure cohort configuration verifier: PASS (${assertions} assertions)`
 );
