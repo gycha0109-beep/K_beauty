@@ -1,30 +1,20 @@
-name: DATA-AI9 Hosted Authenticated Preview Acceptance
+name: DATA-AI9 Historical Hosted Preview Evidence
 
 on:
   workflow_dispatch:
-    inputs:
-      deployment_url:
-        description: Exact successful Vercel Preview deployment URL for the selected workflow ref
-        required: true
-        type: string
 
 permissions:
   contents: read
-  deployments: read
-  id-token: write
 
 concurrency:
-  group: data-ai9-hosted-preview-acceptance
-  cancel-in-progress: false
+  group: data-ai9-historical-hosted-preview
+  cancel-in-progress: true
 
 jobs:
-  hosted-preview-acceptance:
-    name: DATA-AI9 hosted authenticated Preview acceptance
+  historical-evidence:
+    name: DATA-AI9 historical hosted Preview evidence
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    env:
-      DEPLOYMENT_URL_INPUT: ${{ inputs.deployment_url }}
-      DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN: ${{ secrets.DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN }}
     steps:
       - name: Checkout exact selected ref
         uses: actions/checkout@v7
@@ -32,145 +22,8 @@ jobs:
           fetch-depth: 1
           ref: ${{ github.sha }}
 
-      - name: Attest exact checkout
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Verify frozen DATA-AI9 evidence contract
+        run: node scripts/verify-data-ai9-hosted-preview-acceptance.mjs
 
-      - name: Attest exact successful non-Production Vercel deployment
-        id: deployment
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          url="${DEPLOYMENT_URL_INPUT%/}"
-          case "$url" in
-            https://*.vercel.app) ;;
-            *)
-              echo "deployment_url must be an exact https://*.vercel.app deployment URL" >&2
-              exit 1
-              ;;
-          esac
-
-          matched=""
-          ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?sha=$GITHUB_SHA&per_page=100" --jq '.[] | .id' || true)"
-          for id in $ids; do
-            deployment="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id")"
-            production="$(printf '%s' "$deployment" | jq -r '.production_environment // false')"
-            environment="$(printf '%s' "$deployment" | jq -r '.environment // ""' | tr '[:upper:]' '[:lower:]')"
-
-            if [ "$production" = "true" ] || [ "$environment" = "production" ]; then
-              continue
-            fi
-
-            candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100" \
-              --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
-            candidate="${candidate%/}"
-
-            if [ "$candidate" = "$url" ]; then
-              matched="$url"
-              break
-            fi
-          done
-
-          test -n "$matched"
-          printf 'url=%s\n' "$matched" >> "$GITHUB_OUTPUT"
-
-      - name: Require existing authenticated Preview credential
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "$DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN"
-          echo "::add-mask::$DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN"
-
-      - name: Obtain Vercel trusted OIDC token
-        id: oidc
-        shell: bash
-        run: |
-          set -euo pipefail
-          trusted_json="$(curl --fail --silent --show-error \
-            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL")"
-          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
-          echo "::add-mask::$trusted"
-          printf 'trusted=%s\n' "$trusted" >> "$GITHUB_OUTPUT"
-
-      - name: Execute authenticated DATA-AI6 and DATA-AI7 Preview acceptance
-        env:
-          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
-          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          query='oily skin sunscreen no white cast non sticky'
-          payload='{"query":"oily skin sunscreen no white cast non sticky"}'
-
-          call_route() {
-            local route="$1"
-            local output="$2"
-            local status
-
-            status="$(curl --fail-with-body --silent --show-error \
-              -o "$output" \
-              -w '%{http_code}' \
-              -X POST \
-              -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
-              -H "Authorization: Bearer $DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN" \
-              -H 'Content-Type: application/json' \
-              --data "$payload" \
-              "$DEPLOYMENT_URL$route")"
-
-            test "$status" = "200"
-
-            if grep -Fq "$query" "$output"; then
-              echo "raw query leaked in hosted Preview response" >&2
-              exit 1
-            fi
-          }
-
-          preview_file="$(mktemp)"
-          canary_file="$(mktemp)"
-          trap 'rm -f "$preview_file" "$canary_file"' EXIT
-
-          call_route /api/my/product-query-preview "$preview_file"
-          node - "$preview_file" <<'NODE'
-          const fs = require("node:fs");
-          const body = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
-          if (body?.ok !== true) throw new Error("DATA-AI6 Preview did not return ok=true");
-          const preview = body.preview;
-          if (preview?.contractVersion !== "product-query-preview-v1") throw new Error("unexpected DATA-AI6 contract");
-          if (preview?.persisted !== false) throw new Error("DATA-AI6 must remain non-persistent");
-          if (!Array.isArray(preview?.results) || preview.results.length > 5) throw new Error("DATA-AI6 result bound violated");
-          const forbidden = new Set(["score", "matchedSignals", "provider", "model", "intent"]);
-          const visit = (value) => {
-            if (!value || typeof value !== "object") return;
-            for (const [key, child] of Object.entries(value)) {
-              if (forbidden.has(key)) throw new Error(`forbidden response key: ${key}`);
-              visit(child);
-            }
-          };
-          visit(body);
-          NODE
-
-          call_route /api/my/product-query-stage-canary "$canary_file"
-          node - "$canary_file" <<'NODE'
-          const fs = require("node:fs");
-          const body = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
-          if (body?.ok !== true) throw new Error("DATA-AI7 canary did not return ok=true");
-          const canary = body.canary;
-          if (canary?.contractVersion !== "product-query-stage-canary-v1") throw new Error("unexpected DATA-AI7 contract");
-          if (canary?.allParity !== true || canary?.repetitions !== 2) throw new Error("DATA-AI7 repeatability failed");
-          if (canary?.evidenceRetention !== "request_local_only" || canary?.persisted !== false) {
-            throw new Error("DATA-AI7 evidence boundary violated");
-          }
-          if (canary?.preview?.persisted !== false) throw new Error("nested DATA-AI6 preview must remain non-persistent");
-          if (!canary?.parity || Object.values(canary.parity).some((value) => value !== true)) {
-            throw new Error("DATA-AI7 parity dimensions must all pass");
-          }
-          NODE
-
-          echo "DATA_AI9_HOSTED_AUTHENTICATED_PREVIEW_ACCEPTANCE=PASS"
+      - name: Report supersession
+        run: echo "DATA_AI9_HOSTED_PREVIEW_ACCEPTANCE=HISTORICAL_EVIDENCE_FROZEN_BY_DATA_AI10"
