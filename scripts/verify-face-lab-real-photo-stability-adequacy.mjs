@@ -27,6 +27,40 @@ const collectionSummary = {
   }
 };
 
+const reviewPacket = {
+  schemaVersion: "face-lab-real-photo-stability-review-packet-v0",
+  packetVersion: "synthetic-verifier-review-packet-v0",
+  status: "manual_review_packet_ready",
+  sourceCollectionSchemaVersion: collectionSummary.schemaVersion,
+  sourceCollectionFingerprint: collectionSummary.collectionFingerprint,
+  sourceReportCount: collectionSummary.reportCount,
+  sourceRunManifestDigests: collectionSummary.runManifestDigests,
+  sourceCoveredNuisanceClasses:
+    collectionSummary.coveredNuisanceClasses,
+  reviewPacketFingerprint: "sha256:" + "c".repeat(64),
+  observations: [],
+  authority: {
+    productionAuthority: false,
+    normalizationAuthority: false,
+    thresholdAuthority: false,
+    adequacyDecisionAuthority: false,
+    rankingAuthority: false
+  },
+  reviewSemantics: {
+    descriptiveOnly: true,
+    thresholdsApplied: false,
+    automaticPassFail: false,
+    automaticRanking: false
+  },
+  privacy: {
+    sourceImagePersisted: false,
+    rawLandmarksPersisted: false,
+    identityEmbeddingCreated: false,
+    biometricIdentityMatchPerformed: false,
+    localImagePathsIncluded: false
+  }
+};
+
 const evidence = {
   schemaVersion:
     "face-lab-real-photo-stability-adequacy-evidence-v0",
@@ -36,6 +70,10 @@ const evidence = {
   sourceCollectionSchemaVersion: collectionSummary.schemaVersion,
   sourceCollectionFingerprint:
     collectionSummary.collectionFingerprint,
+  sourceReviewPacketSchemaVersion: reviewPacket.schemaVersion,
+  sourceReviewPacketVersion: reviewPacket.packetVersion,
+  sourceReviewPacketFingerprint:
+    reviewPacket.reviewPacketFingerprint,
   sourceReportCount: collectionSummary.reportCount,
   sourceRunManifestDigests:
     collectionSummary.runManifestDigests,
@@ -58,7 +96,8 @@ const evidence = {
 const validated =
   validateRealPhotoStabilityAdequacyEvidence(
     evidence,
-    collectionSummary
+    collectionSummary,
+    reviewPacket
   );
 assert.equal(validated.status, "adequate_for_provisional_research");
 assert.equal(validated.authority.productionAuthority, false);
@@ -74,7 +113,8 @@ assert.throws(
         ...evidence,
         sourceCollectionFingerprint: "sha256:" + "b".repeat(64)
       },
-      collectionSummary
+      collectionSummary,
+      reviewPacket
     ),
   /adequacy_evidence_invalid/
 );
@@ -88,7 +128,8 @@ assert.throws(
           "sha256:" + "9".repeat(64)
         ]
       },
-      collectionSummary
+      collectionSummary,
+      reviewPacket
     ),
   /adequacy_evidence_invalid/
 );
@@ -100,7 +141,8 @@ assert.throws(
         ...evidence,
         coverageLimitations: []
       },
-      collectionSummary
+      collectionSummary,
+      reviewPacket
     ),
   /adequacy_evidence_invalid/
 );
@@ -112,7 +154,8 @@ assert.throws(
         ...evidence,
         automaticAdequacyInferred: true
       },
-      collectionSummary
+      collectionSummary,
+      reviewPacket
     ),
   /adequacy_evidence_invalid/
 );
@@ -128,5 +171,6 @@ console.log(JSON.stringify({
   automaticAdequacyInferenceForbidden: true,
   numericThresholdInventionForbidden: true,
   explicitCoverageLimitationsRequired: true,
+  exactReviewPacketFingerprintRequired: true,
   actualAdequacyDecisionPresent: false
 }, null, 2));
