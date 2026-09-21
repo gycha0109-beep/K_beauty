@@ -135,6 +135,12 @@ function corpusRecord(sampleId, subjectGroupId, split, offset) {
       eligible: true,
       qualityStatus: "synthetic_verifier_only"
     },
+    sourceReceipt: {
+      runnerVersion:
+        "face-space-reference-corpus-measurement-runner-v0",
+      sourceManifestDigest: "sha256:" + "f".repeat(64),
+      sourceImageSha256: sampleId.repeat(64)
+    },
     measurement: measurement(sampleId, offset)
   };
 }
