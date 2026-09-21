@@ -32,7 +32,8 @@ jobs:
           if (typeof payload.sub !== "string" || !payload.sub) throw new Error("JWT sub missing");
           const hash = crypto.createHash("sha256").update(payload.sub, "utf8").digest("hex");
           console.log("CANARY_ACCOUNT_SHA256=" + hash);
-          console.log("TOKEN_EXP_PRESENT=" + String(Number.isFinite(payload.exp)));\n          console.log("TOKEN_CURRENTLY_UNEXPIRED=" + String(Number.isFinite(payload.exp) && payload.exp > Math.floor(Date.now() / 1000)));
+          console.log("TOKEN_EXP_PRESENT=" + String(Number.isFinite(payload.exp)));
+          console.log("TOKEN_CURRENTLY_UNEXPIRED=" + String(Number.isFinite(payload.exp) && payload.exp > Math.floor(Date.now() / 1000)));
           console.log("RAW_SUB_RECORDED=false");
           console.log("RAW_TOKEN_RECORDED=false");
           NODE
