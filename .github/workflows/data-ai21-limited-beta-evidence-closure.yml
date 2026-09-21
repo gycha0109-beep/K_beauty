@@ -1,22 +1,22 @@
-name: DATA-AI21 Limited Beta Evidence Capture
+name: DATA-AI21 Limited Beta Evidence Closure
 
 on:
   pull_request:
     branches: [main]
     paths:
-      - "lib/product-query-authenticated-beta-evidence-capture.mjs"
-      - "app/api/my/product-query-beta/evidence-receipt/route.js"
-      - "scripts/verify-data-ai21-limited-beta-evidence.mjs"
-      - ".github/workflows/data-ai21-limited-beta-evidence.yml"
+      - "lib/product-query-authenticated-beta-evidence-closure.mjs"
+      - "scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"
+      - ".github/workflows/data-ai21-limited-beta-evidence-closure.yml"
       - "scripts/verify-current-main-health.mjs"
+      - "app/api/my/product-query-beta/evidence-receipt/route.js"
   push:
     branches: [main]
     paths:
-      - "lib/product-query-authenticated-beta-evidence-capture.mjs"
-      - "app/api/my/product-query-beta/evidence-receipt/route.js"
-      - "scripts/verify-data-ai21-limited-beta-evidence.mjs"
-      - ".github/workflows/data-ai21-limited-beta-evidence.yml"
+      - "lib/product-query-authenticated-beta-evidence-closure.mjs"
+      - "scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"
+      - ".github/workflows/data-ai21-limited-beta-evidence-closure.yml"
       - "scripts/verify-current-main-health.mjs"
+      - "app/api/my/product-query-beta/evidence-receipt/route.js"
   workflow_dispatch:
 
 permissions:
@@ -25,12 +25,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: data-ai21-limited-beta-evidence-${{ github.event.pull_request.number || github.ref }}
+  group: data-ai21-limited-beta-evidence-closure-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   verify:
-    name: DATA-AI21 evidence capture contract
+    name: DATA-AI21 evidence closure contract
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -40,17 +40,17 @@ jobs:
           fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Verify DATA-AI21 evidence capture
-        run: node scripts/verify-data-ai21-limited-beta-evidence.mjs
+      - name: Verify DATA-AI21 evidence closure
+        run: node scripts/verify-data-ai21-limited-beta-evidence-closure.mjs
 
-  production-preflight:
-    name: DATA-AI21 exact-deployment Production preflight
+  production-closure:
+    name: DATA-AI21 exact-deployment Production closure
     if: github.event_name == 'push'
     needs: verify
     runs-on: ubuntu-24.04
     timeout-minutes: 7
     steps:
-      - name: Checkout exact activation SHA
+      - name: Checkout exact closure SHA
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
@@ -95,7 +95,19 @@ jobs:
           echo "::add-mask::$trusted"
           printf 'trusted=%s\n' "$trusted" >> "$GITHUB_OUTPUT"
 
-      - name: Assert anonymous evidence capture remains closed
+      - name: Assert temporary evidence receipt is retired
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error -o /dev/null -w '%{http_code}' \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            "$DEPLOYMENT_URL/api/my/product-query-beta/evidence-receipt")"
+          test "$status" = "404"
+
+      - name: Assert anonymous limited beta remains closed
         env:
           DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
           VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
@@ -104,9 +116,11 @@ jobs:
           set -euo pipefail
           output="$(mktemp)"
           trap 'rm -f "$output"' EXIT
-          status="$(curl --silent --show-error -o "$output" -w '%{http_code}' \
+          status="$(curl --silent --show-error -o "$output" -w '%{http_code}' -X POST \
             -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
-            "$DEPLOYMENT_URL/api/my/product-query-beta/evidence-receipt")"
+            -H 'Content-Type: application/json' \
+            --data '{"query":"data-ai21-anonymous-closure-probe"}' \
+            "$DEPLOYMENT_URL/api/my/product-query-beta")"
           test "$status" = "401"
           grep -Fq '"unauthorized"' "$output"
-          echo "DATA_AI21_PRODUCTION_PREFLIGHT=PASS"
+          echo "DATA_AI21_EVIDENCE_CLOSURE=PASS"
