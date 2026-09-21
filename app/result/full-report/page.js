@@ -11,10 +11,13 @@ import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
 import PremiumRoutineConsultSection from "@/components/full-report/PremiumRoutineConsultSection";
 import PremiumFunctionalDecisionSection from "@/components/full-report/PremiumFunctionalDecisionSection";
 import PremiumConditionResponseSection from "@/components/full-report/PremiumConditionResponseSection";
+import ProblemTrackingSection from "@/components/full-report/ProblemTrackingSection";
+import { FULL_REPORT_SECTIONS } from "@/lib/full-report-presentation";
+import reportStyles from "@/components/full-report/ReportUI.module.css";
+import { ReportBrand } from "@/components/full-report/ReportUI";
 import PremiumFaceLabSection from "@/components/full-report/PremiumFaceLabSection";
 import CurrentProductsSelector from "@/components/current-products/CurrentProductsSelector";
 import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
-import PremiumIntakeSummaryCard from "@/components/result/premium/PremiumIntakeSummaryCard";
 import AuthNav from "@/components/auth/AuthNav";
 import LoginButtons from "@/components/auth/LoginButtons";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
@@ -46,13 +49,7 @@ const LAST_REPORT_URL_KEY = "lastReportUrl";
 const LAST_VIEWED_AT_KEY = "lastViewedAt";
 const FULL_REPORT_OPENED_AT_KEY = "fullReportOpenedAt";
 const LAST_FULL_REPORT_TAB_KEY = "lastFullReportTab";
-const SKIN_MATCH_SECTION_ORDER = [
-  "today-start-hub",
-  "morning-routine",
-  "product-plan",
-  "adjustment-guide",
-  "avoid-list"
-];
+const SKIN_MATCH_SECTION_ORDER = FULL_REPORT_SECTIONS.map((section) => section.key);
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const PREMIUM_REPORT_ENABLED = true;
 const FULL_REPORT_AUTH_FAILURE_COPY = {
@@ -3544,7 +3541,8 @@ function copyTextWithLegacyFallback(text) {
   });
 }
 
-function FullReportSavedCard({ locale = "ko" }) {
+function FullReportSavedCard({ report = {}, locale = "ko", onOpenMy }) {
+  const saved = ["saved", "existing"].includes(report?.meta?.persistence?.status) && Boolean(report?.meta?.persistence?.savedReportId);
   const [status, setStatus] = useState("idle");
   const copy = locale === "en"
     ? {
@@ -3576,12 +3574,12 @@ function FullReportSavedCard({ locale = "ko" }) {
   };
 
   return (
-    <section className="ui-card p-5">
+    <section className={reportStyles.shell} data-report-completion>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="ui-kicker">{copy.kicker}</p>
-          <h3 className="ui-title mt-2 text-lg">{copy.title}</h3>
-          <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.body}</p>
+          <h3 className="ui-title mt-2 text-lg">{saved ? copy.title : (locale === "en" ? "Save status not confirmed" : "저장 상태 확인 필요")}</h3>
+          <p className="ui-text-secondary mt-2 text-sm leading-6">{saved ? (locale === "en" ? "Reopen this report from My reports." : "언제든지 보관함에서 다시 확인할 수 있어요.") : (locale === "en" ? "This report's saved status is not confirmed." : "이 리포트가 보관되었는지 아직 확인되지 않았어요.")}</p>
           {status !== "idle" ? (
             <p
               className={`mt-2 text-xs font-semibold ${status === "copied"
@@ -3600,6 +3598,7 @@ function FullReportSavedCard({ locale = "ko" }) {
         >
           {copy.button}
         </button>
+        {onOpenMy && <button type="button" className={reportStyles.primary} onClick={onOpenMy}>{locale === "en" ? "My / Saved reports" : "My / 보관함에서 보기"} →</button>}
       </div>
     </section>
   );
@@ -5384,270 +5383,31 @@ function FaceLabReadyCard({ copy, locale = "ko", onOpenFaceLab }) {
   );
 }
 
-function SkinMatchStepReport({
-  freeResult,
-  report,
-  copy,
-  locale,
-  alternativeItems = [],
-  morningSteps = [],
-  nightSteps = [],
-  displayRoutineVariants = [],
-  displayAvoidCombinations = [],
-  displayBudgetAlternatives = [],
-  budgetSectionTitle,
-  hubNavigationRequest = 0,
-  enableFunctionalPlanDevScenarios = false,
-  functionalPlanDevScenarios = [],
-  onOpenFaceLab
-}) {
+function SkinMatchStepReport({ freeResult, report, copy, locale, morningSteps = [], nightSteps = [], displayAvoidCombinations = [], hubNavigationRequest = 0, onOpenFaceLab }) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const hasMountedStepRef = useRef(false);
-  const skinMatchStepHeaderRef = useRef(null);
+  const topRef = useRef(null);
   const router = useRouter();
-  const labels = locale === "en"
-    ? {
-      hub: "Start Today",
-      morning: "Routine Consult",
-      evening: "Evening Routine",
-      avoid: "Caution",
-      adjustment: "Condition Response",
-      product: "Functional Plan",
-      summary: "Final Summary",
-      previous: "Previous",
-      next: "Next",
-      finalCta: "Save my routine"
-    }
-    : {
-      hub: "오늘 시작",
-      morning: "루틴 상담",
-      evening: "저녁 실행 루틴",
-      avoid: "주의",
-      adjustment: "컨디션 대응",
-      product: "기능성 플랜",
-      summary: "최종 요약",
-      previous: "이전",
-      next: "다음",
-      finalCta: "내 루틴 저장하기"
-    };
-  function moveToStepKey(stepKey) {
-    if (stepKey === "face-lab") {
-      onOpenFaceLab?.();
-      return;
-    }
-
-    const targetIndex = SKIN_MATCH_SECTION_ORDER.indexOf(stepKey);
-
-    if (targetIndex >= 0) {
-      moveToStep(targetIndex);
-    }
-  }
-
-  const stepMap = {
-    "today-start-hub": {
-      key: "today-start-hub",
-      label: labels.hub,
-      content: (
-        <div className="space-y-4">
-          <TodayStartPlanStep
-            baseline={getTodaySkinBaseline(freeResult, locale)}
-            actionItems={getPriorityActionItems(locale)}
-            hubActions={getSkinMatchHubActions(locale)}
-            locale={locale}
-            onNavigate={moveToStepKey}
-          />
-          <CurrentProductsSummaryCard
-            currentProducts={report?.currentProducts}
-            locale={locale}
-          />
-          <PremiumIntakeSummaryCard
-            intake={report?.premiumIntake}
-            locale={locale}
-          />
-        </div>
-      )
-    },
-    "morning-routine": {
-      key: "morning-routine",
-      label: labels.morning,
-      content: (
-        <PremiumRoutineConsultSection
-          freeResult={freeResult}
-          report={report}
-          morningSteps={morningSteps}
-          nightSteps={nightSteps}
-          copy={copy}
-          locale={locale}
-          onNavigate={moveToStepKey}
-          getMeta={getRoutineConsultMeta}
-          buildSteps={buildRoutineConsultSteps}
-        />
-      )
-    },
-    "avoid-list": {
-      key: "avoid-list",
-      label: labels.avoid,
-      content: (
-        <AvoidListStep
-          avoidItems={displayAvoidCombinations}
-          locale={locale}
-        />
-      )
-    },
-    "adjustment-guide": {
-      key: "adjustment-guide",
-      label: labels.adjustment,
-      content: (
-        <PremiumConditionResponseSection
-          conditionPlan={report?.conditionPlan || report?.decisionBundle?.conditionPlan}
-          responses={report?.conditionResponses}
-          locale={locale}
-          onNavigate={moveToStepKey}
-        />
-      )
-    },
-    "product-plan": {
-      key: "product-plan",
-      label: labels.product,
-      content: (
-        <PremiumFunctionalDecisionSection
-          decisions={report?.functionalDecisions}
-          freeResult={freeResult}
-          report={report}
-          locale={locale}
-          enableDevScenarios={enableFunctionalPlanDevScenarios}
-          devScenarios={functionalPlanDevScenarios}
-          onNavigate={moveToStepKey}
-        />
-      )
-    }
+  const en = locale === "en";
+  useEffect(() => { setActiveStepIndex(0); }, [hubNavigationRequest]);
+  const moveToStepKey = (key) => {
+    const index = SKIN_MATCH_SECTION_ORDER.indexOf(key);
+    if (index < 0) return;
+    setActiveStepIndex(index);
+    window.requestAnimationFrame(() => topRef.current?.scrollIntoView({ block: "start" }));
   };
-  const steps = SKIN_MATCH_SECTION_ORDER.map((key) => stepMap[key]).filter(Boolean);
-  const maxStepIndex = Math.max(steps.length - 1, 0);
-  const currentStepIndex = Math.min(activeStepIndex, maxStepIndex);
-  const activeStep = steps[currentStepIndex];
-  const nextStep = currentStepIndex < maxStepIndex ? steps[currentStepIndex + 1] : null;
-  const primaryLabel = nextStep ? buildStepAdvanceLabel(nextStep, locale) : labels.finalCta;
-  const isHubStep = activeStep?.key === "today-start-hub";
-  const isRoutineStep = activeStep?.key === "morning-routine";
-  const moveToStep = (nextIndex) => {
-    const boundedIndex = Math.max(0, Math.min(maxStepIndex, nextIndex));
-
-    if (boundedIndex === currentStepIndex) {
-      return;
-    }
-
-    setActiveStepIndex(boundedIndex);
-
-    if (typeof window !== "undefined") {
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => {
-          const target = skinMatchStepHeaderRef.current;
-
-          if (!target) {
-            return;
-          }
-
-          const rawTargetTop = target.getBoundingClientRect().top + window.scrollY - 8;
-          const maxScrollTop = Math.max(
-            0,
-            document.documentElement.scrollHeight - window.innerHeight
-          );
-          const targetTop = Math.min(Math.max(0, rawTargetTop), maxScrollTop);
-
-          window.scrollTo({
-            top: targetTop,
-            behavior: "smooth"
-          });
-        });
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (activeStepIndex > maxStepIndex) {
-      setActiveStepIndex(maxStepIndex);
-    }
-  }, [activeStepIndex, maxStepIndex]);
-
-  useEffect(() => {
-    hasMountedStepRef.current = true;
-  }, []);
-
-  useEffect(() => {
-    if (!hubNavigationRequest) {
-      return;
-    }
-
-    setActiveStepIndex(0);
-
-    if (typeof window !== "undefined") {
-      window.requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-    }
-  }, [hubNavigationRequest]);
-
-  if (!activeStep) {
-    return null;
-  }
-
-  return (
-    <section className="space-y-4">
-      <div ref={skinMatchStepHeaderRef} className="sr-only">
-        <span>{activeStep.label}</span>
-      </div>
-
-      <motion.div
-        key={activeStep.key}
-        initial={hasMountedStepRef.current ? { opacity: 0, y: 18 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.24, ease: "easeOut" }}
-      >
-        {activeStep.content}
-      </motion.div>
-
-      {currentStepIndex === maxStepIndex ? (
-        <>
-          {typeof onOpenFaceLab === "function" ? (
-            <FaceLabReadyCard
-              copy={copy}
-              locale={locale}
-              onOpenFaceLab={onOpenFaceLab}
-            />
-          ) : null}
-          <FullReportFeedbackCard
-            locale={locale}
-            productId={freeResult?.topPick?.id || null}
-          />
-          <FullReportSavedCard locale={locale} />
-        </>
-      ) : null}
-
-      {!isHubStep && !isRoutineStep ? (
-        <div className="full-report-step-cta">
-          <ResultBottomCTA
-            fixed={false}
-            label={primaryLabel}
-            onClick={() => {
-              if (currentStepIndex === maxStepIndex) {
-                router.push(getMyPath(locale));
-                return;
-              }
-
-              moveToStep(currentStepIndex + 1);
-            }}
-            previousLabel={currentStepIndex > 0 ? labels.previous : null}
-            onPrevious={
-              currentStepIndex > 0
-                ? () => moveToStep(currentStepIndex - 1)
-                : null
-            }
-          />
-        </div>
-      ) : null}
-    </section>
-  );
+  const key = SKIN_MATCH_SECTION_ORDER[activeStepIndex];
+  return <section ref={topRef} className={reportStyles.page}>
+    {key === "today-start-hub" && <TodayStartPlanStep report={report} locale={locale} onNavigate={moveToStepKey}/>}
+    {key === "morning-routine" && <PremiumRoutineConsultSection report={report} freeResult={freeResult} morningSteps={morningSteps} nightSteps={nightSteps} locale={locale} onNavigate={moveToStepKey} buildSteps={buildRoutineConsultSteps}/>}
+    {key === "problem-tracking" && <ProblemTrackingSection report={report} locale={locale} onNavigate={moveToStepKey}/>}
+    {key === "product-plan" && <PremiumFunctionalDecisionSection report={report} decisions={report?.functionalDecisions} locale={locale} onNavigate={moveToStepKey}/>}
+    {key === "adjustment-guide" && <>
+      <PremiumConditionResponseSection conditionPlan={report?.conditionPlan || report?.decisionBundle?.conditionPlan} responses={report?.conditionResponses} safety={displayAvoidCombinations} locale={locale} onNavigate={moveToStepKey} onComplete={() => router.push(getMyPath(locale))}/>
+      <FullReportSavedCard report={report} locale={locale} onOpenMy={() => router.push(getMyPath(locale))}/>
+      <details className={reportStyles.disclosure}><summary>{en ? "Leave report feedback" : "결과 피드백 남기기"} <span aria-hidden="true">⌄</span></summary><FullReportFeedbackCard locale={locale} productId={freeResult?.topPick?.id || null}/></details>
+      {typeof onOpenFaceLab === "function" && <FaceLabReadyCard copy={copy} locale={locale} onOpenFaceLab={onOpenFaceLab}/>}
+    </>}
+  </section>;
 }
 
 function normalizeRoutineDisplaySteps(stepItems = [], fallbackItems = [], locale = "ko") {
@@ -7005,14 +6765,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 md:max-w-[980px] xl:max-w-[1120px]">
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3 px-1">
-            <div className="min-w-0 text-left">
-              <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a5260] dark:text-[#c8aeb8]">
-                FULL REPORT
-              </span>
-              <span className="mt-0.5 block truncate text-sm font-semibold text-[#2b1f26] dark:text-[#fff8f3]">
-                {isEnglish ? "Full report" : "\ud480 \ub9ac\ud3ec\ud2b8"}
-              </span>
-            </div>
+            <ReportBrand />
 
             <div className="flex shrink-0 items-center gap-2">
               <AuthNav locale={locale} showSignOut={false} />
@@ -7039,26 +6792,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             </div>
           </div>
 
-          <header className="ui-card px-5 py-5 sm:p-6">
-            <div className="flex items-start">
-              <div className="min-w-0">
-                <p className="ui-kicker">FULL REPORT</p>
-                <h1 className="ui-title mt-2 text-[26px] leading-[1.18] sm:text-2xl sm:leading-tight">{copy.title}</h1>
-                <p className="ui-text-secondary mt-3 text-sm leading-6">{copy.body}</p>
-                {locale === "ko" ? (
-                  <p className="ui-text-secondary mt-1 text-xs font-medium leading-5">Full Report</p>
-                ) : null}
-              </div>
-            </div>
-          </header>
-
-          <button
-            type="button"
-            onClick={goToMainHub}
-            className="ui-button-secondary min-h-11 w-full justify-center px-4 py-3 text-sm font-semibold"
-          >
-            {copy.mainHubButton}
-          </button>
+          {activeTab !== "skin_match" && <button type="button" onClick={goToMainHub} className="ui-button-secondary min-h-11 w-full justify-center px-4 py-3 text-sm font-semibold">{copy.mainHubButton}</button>}
 
           {activeTab === "skin_match" ? (
             <SkinMatchStepReport
