@@ -487,7 +487,7 @@ begin
     'automatic_confirmation', false
   );
 end;
-$;
+$$;
 
 create or replace function public.admin_confirm_product_fact_revalidation_replacement_v1(
   p_actor_user_id uuid,
