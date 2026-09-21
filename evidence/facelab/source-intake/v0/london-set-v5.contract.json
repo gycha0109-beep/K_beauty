@@ -58,5 +58,20 @@
     "headRollRealPhotoSourceRequired": true,
     "referenceCorpusAdequacyDecisionPresent": false,
     "realPhotoStabilityAdequacyDecisionPresent": false
+  },
+  "frontImageMirror": {
+    "repository": "debruine/webmorphR.stim",
+    "pinnedCommit": "fa8b78fda2d659bb74ce62fcd99c4407551d2a77",
+    "neutralFrontDirectory": "inst/neutral_front",
+    "smilingFrontDirectory": "inst/smiling_front",
+    "neutralFrontJpegCountObserved": 102,
+    "smilingFrontJpegCountObserved": 102,
+    "neutralFrontFilenamePattern": "<subject>_03.jpg",
+    "smilingFrontFilenamePattern": "<subject>_08.jpg",
+    "scope": "front_neutral_and_smiling_only",
+    "yawSourceProvided": false,
+    "pitchSourceProvided": false,
+    "rollSourceProvided": false,
+    "imageSha256ReceiptsStillRequiredBeforeExecution": true
   }
 }
