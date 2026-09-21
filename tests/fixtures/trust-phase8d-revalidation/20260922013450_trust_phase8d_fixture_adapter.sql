@@ -1,3 +1,9 @@
+alter table public.product_source_bindings
+  add column external_type text not null default 'brand_official_product_page',
+  add column binding_method text not null default 'trust_official_source_review_v1',
+  add column product_scope_state text not null default 'product',
+  add column created_at timestamptz not null default now();
+
 alter table public.catalog_trust_intake
   add column trust_state text not null default 'COMPLETED',
   add column completed_at timestamptz,
