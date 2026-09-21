@@ -25,6 +25,7 @@ do $$
 declare
   v_ctx record;
   v_verification jsonb;
+  v_preflight jsonb;
   v_result jsonb;
   v_replay jsonb;
   v_fact_count bigint;
@@ -55,13 +56,73 @@ begin
     '{"fixture":"phase8c"}'::jsonb
   );
 
-  v_payload := jsonb_build_object(
-    'verification_id', (v_verification ->> 'verification_id')::uuid,
-    'assignment_id', v_ctx.assignment_id,
-    'proposition_key', v_ctx.proposition_key,
-    'fact_instance_id', v_ctx.fact_instance_id,
-    'confirmation_id', v_ctx.confirmation_id
+  v_preflight := public.admin_preflight_product_fact_revalidation_v1(
+    '92000000-0000-4000-8000-000000000001',
+    (v_verification ->> 'verification_id')::uuid,
+    v_ctx.assignment_id
   );
+
+  if v_preflight ->> 'status' <> 'ready_for_revalidation_transition'
+     or coalesce((v_preflight ->> 'current_pointer_changed')::boolean, true)
+     or coalesce((v_preflight ->> 'fact_instance_mutated')::boolean, true)
+     or coalesce((v_preflight ->> 'automatic_confirmation')::boolean, true) then
+    raise exception 'phase8c_preflight_result_invalid';
+  end if;
+
+  v_payload := v_preflight -> 'transition_payload';
+
+  if v_payload ->> 'source_id' <> v_ctx.source_id::text
+     or v_payload ->> 'verification_id' <> v_verification ->> 'verification_id'
+     or v_payload ->> 'proposition_key' <> v_ctx.proposition_key
+     or v_payload ->> 'fact_instance_id' <> v_ctx.fact_instance_id::text
+     or v_payload ->> 'confirmation_id' <> v_ctx.confirmation_id::text
+     or v_payload ->> 'assignment_id' <> v_ctx.assignment_id::text
+     or v_payload ->> 'prestate_digest' !~ '^[0-9a-f]{64}$'
+     or v_payload ->> 'reason_code' <> 'source_content_changed' then
+    raise exception 'phase8c_preflight_binding_incomplete';
+  end if;
+
+  begin
+    perform public.admin_mark_product_fact_revalidation_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8c-stale-digest-0001',
+      jsonb_set(v_payload, '{prestate_digest}', to_jsonb(repeat('0',64)))
+    );
+    raise exception 'phase8c_stale_prestate_digest_not_rejected';
+  exception
+    when serialization_failure then
+      if sqlerrm <> 'product_fact_revalidation_prestate_digest_stale' then
+        raise;
+      end if;
+  end;
+
+  begin
+    perform public.admin_mark_product_fact_revalidation_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8c-reason-mismatch-0001',
+      jsonb_set(v_payload, '{reason_code}', to_jsonb('source_unavailable'::text))
+    );
+    raise exception 'phase8c_reason_mismatch_not_rejected';
+  exception
+    when check_violation then
+      if sqlerrm <> 'product_fact_revalidation_reason_mismatch' then
+        raise;
+      end if;
+  end;
+
+  begin
+    perform public.admin_mark_product_fact_revalidation_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8c-source-mismatch-0001',
+      jsonb_set(v_payload, '{source_id}', to_jsonb('00000000-0000-4000-8000-000000000999'::text))
+    );
+    raise exception 'phase8c_source_mismatch_not_rejected';
+  exception
+    when check_violation then
+      if sqlerrm <> 'product_fact_revalidation_source_mismatch' then
+        raise;
+      end if;
+  end;
 
   v_result := public.admin_mark_product_fact_revalidation_v1(
     '92000000-0000-4000-8000-000000000001',
@@ -70,6 +131,8 @@ begin
   );
 
   if v_result ->> 'status' <> 're_review_required'
+     or v_result ->> 'prestate_digest' <> v_payload ->> 'prestate_digest'
+     or v_result ->> 'reason_code' <> v_payload ->> 'reason_code'
      or coalesce((v_result ->> 'current_pointer_changed')::boolean, true)
      or coalesce((v_result ->> 'fact_instance_mutated')::boolean, true)
      or coalesce((v_result ->> 'automatic_confirmation')::boolean, true) then
@@ -94,8 +157,12 @@ begin
     raise exception 'phase8c_semantic_authority_mutated';
   end if;
 
-  if (select count(*) from public.product_fact_revalidation_transitions where request_id='phase8c-revalidate-0001') <> 1 then
-    raise exception 'phase8c_transition_ledger_missing';
+  if (select count(*) from public.product_fact_revalidation_transitions
+      where request_id='phase8c-revalidate-0001'
+        and source_id=v_ctx.source_id
+        and prestate_digest=v_payload ->> 'prestate_digest'
+        and reason_code='source_content_changed') <> 1 then
+    raise exception 'phase8c_transition_ledger_binding_missing';
   end if;
 
   if (select count(*) from public.product_fact_review_events
@@ -170,11 +237,14 @@ begin
   );
 
   v_payload := jsonb_build_object(
+    'source_id', v_ctx.source_id,
     'verification_id', (v_unchanged ->> 'verification_id')::uuid,
     'assignment_id', v_ctx.assignment_id,
     'proposition_key', v_ctx.proposition_key,
     'fact_instance_id', v_ctx.fact_instance_id,
-    'confirmation_id', v_ctx.confirmation_id
+    'confirmation_id', v_ctx.confirmation_id,
+    'prestate_digest', repeat('0',64),
+    'reason_code', 'source_content_changed'
   );
 
   begin
@@ -216,6 +286,21 @@ begin
   end if;
 
   if has_function_privilege(
+       'anon',
+       'public.admin_preflight_product_fact_revalidation_v1(uuid,uuid,uuid)',
+       'EXECUTE'
+     )
+     or has_function_privilege(
+       'authenticated',
+       'public.admin_preflight_product_fact_revalidation_v1(uuid,uuid,uuid)',
+       'EXECUTE'
+     )
+     or not has_function_privilege(
+       'service_role',
+       'public.admin_preflight_product_fact_revalidation_v1(uuid,uuid,uuid)',
+       'EXECUTE'
+     )
+     or has_function_privilege(
        'anon',
        'public.admin_mark_product_fact_revalidation_v1(uuid,text,jsonb)',
        'EXECUTE'
