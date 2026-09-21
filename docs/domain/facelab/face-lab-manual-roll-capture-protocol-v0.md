@@ -77,6 +77,11 @@ Landmarker stability runner, builds a descriptive review packet, and verifies
 that raw images, raw landmarks, identity embeddings, biometric identity
 matching, and local image paths are absent from the evidence outputs.
 
+The command also composes the new roll evidence with the frozen expression,
+yaw, and pitch run outputs and emits a local four-axis review packet plus a
+local updated adequacy contract. Those two files are review candidates only;
+the command never writes them into the repository evidence directory.
+
 The output remains descriptive evidence only. Completing the roll capture
-closes a nuisance-coverage gap; it does not itself grant adequacy,
+closes structural nuisance coverage; it does not itself grant adequacy,
 normalization, threshold, or production authority.

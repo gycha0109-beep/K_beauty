@@ -33,6 +33,14 @@ const reviewPacketPath = path.join(
   resolvedOutputDir,
   "manual-roll-stability-review-packet.json"
 );
+const completeReviewPacketPath = path.join(
+  resolvedOutputDir,
+  "real-photo-expression-yaw-pitch-roll-stability-review-packet.json"
+);
+const completeAdequacyContractPath = path.join(
+  resolvedOutputDir,
+  "real-photo-stability-adequacy.contract.json"
+);
 
 function runNode(args, { captureStdout = false } = {}) {
   const result = spawnSync(process.execPath, args, {
@@ -91,6 +99,24 @@ runNode([
   reviewPacketPath
 ]);
 
+runNode([
+  "scripts/build-face-lab-complete-stability-evidence.mjs",
+  "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json",
+  "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json",
+  "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json",
+  runOutputPath,
+  "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json",
+  completeReviewPacketPath,
+  completeAdequacyContractPath
+]);
+
+runNode([
+  "scripts/verify-face-lab-complete-stability-evidence.mjs",
+  runOutputPath,
+  completeReviewPacketPath,
+  completeAdequacyContractPath
+]);
+
 console.log(JSON.stringify({
   ok: true,
   subjectCount: spec.subjects.length,
@@ -98,6 +124,10 @@ console.log(JSON.stringify({
   manifestPath,
   runOutputPath,
   reviewPacketPath,
+  completeReviewPacketPath,
+  completeAdequacyContractPath,
+  completeNuisanceCoverage: true,
+  adequacyDecisionPresent: false,
   rawImagesPersistedInEvidence: false,
   productionAuthority: false,
   normalizationAuthority: false,
