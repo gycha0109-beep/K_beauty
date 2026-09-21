@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-real-photo-stability-adequacy-contract-v0",
-  "status": "expression_review_packet_ready_pose_incomplete",
+  "status": "expression_yaw_review_packet_ready_pitch_roll_incomplete",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -17,23 +17,41 @@
   ],
   "currentEvidence": {
     "realPhotoReportCollectionPresent": true,
-    "sourceReportCount": 102,
-    "collectionFingerprint": "sha256:915f3c17833e7072e5e3cd75d48b30a9efc7b3ef28c163f433ab9f457573a77a",
+    "sourceReportCount": 306,
+    "collectionFingerprint": "sha256:c001c8975e33c78454dd7167663c53c056d662ec6424aa78656eea7d1e9f72a6",
+    "sourceRunManifestDigests": [
+      "sha256:6263218d9c0b6d1882d041ec22efd429934fa0a190d939c3179fb322f91c6807",
+      "sha256:cf9bd3df8f5755e6b66645695d984e15e487c8f9c4b30353d10f4fb189eb342a"
+    ],
     "coveredNuisanceClasses": [
-      "expression"
+      "expression",
+      "head_yaw"
     ],
     "missingNuisanceClasses": [
       "head_pitch",
-      "head_roll",
-      "head_yaw"
+      "head_roll"
     ],
     "completeNuisanceCoverage": false,
     "descriptiveReviewPacketPresent": true,
-    "reviewPacketRef": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json",
-    "reviewPacketVersion": "london-set-v5-expression-stability-review-v1",
-    "reviewPacketFingerprint": "sha256:4fc877daceae894623df826bca71380f76fb25a01d13d8877ffc5142c36bd2d2",
+    "reviewPacketRef": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-yaw-stability-review-packet.json",
+    "reviewPacketVersion": "london-set-v5-expression-yaw-stability-review-v1",
+    "reviewPacketFingerprint": "sha256:eb75c8b00f8a5703e2846ed0db284c96c0c04f7967b9fbef8b5c241b0de9f791",
+    "componentEvidence": {
+      "expression": {
+        "runOutputRef": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json",
+        "reviewPacketRef": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json",
+        "reportCount": 102,
+        "collectionFingerprint": "sha256:915f3c17833e7072e5e3cd75d48b30a9efc7b3ef28c163f433ab9f457573a77a"
+      },
+      "headYaw": {
+        "runOutputRef": "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json",
+        "reviewPacketRef": "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-review-packet.json",
+        "reportCount": 204,
+        "collectionFingerprint": "sha256:61624a0cbd29068b6a9ddb1c5be44f7b9b2ebd6fb7f122e0b5b8b91bb8207689"
+      }
+    },
     "adequacyDecisionPresent": false,
-    "status": "review_ready_pose_incomplete"
+    "status": "review_ready_pitch_roll_incomplete"
   },
   "reviewPacket": {
     "schemaVersion": "face-lab-real-photo-stability-review-packet-v0",
