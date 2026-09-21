@@ -77,6 +77,7 @@ run("DATA-AI8 release-readiness evidence boundary", node, ["scripts/verify-data-
 run("DATA-AI9 hosted authenticated Preview acceptance harness", node, ["scripts/verify-data-ai9-hosted-preview-acceptance.mjs"]);
 run("DATA-AI10 hosted Preview evidence closure", node, ["scripts/verify-data-ai10-hosted-preview-evidence.mjs"]);
 run("DATA-AI11 Production activation safety contract", node, ["scripts/verify-data-ai11-production-activation-safety.mjs"]);
+run("DATA-AI12 Production canary operational preflight", node, ["scripts/verify-data-ai12-production-canary-preflight.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
