@@ -98,7 +98,7 @@ for (const invalidWindow of [
   },
   {
     BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_START_UTC: "2026-09-21T03:00:00Z",
-    BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_END_UTC: "2026-09-21T04:00:01Z"
+    BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_END_UTC: "2026-09-21T09:00:01Z"
   }
 ]) {
   const result = evaluateProductQueryProductionCanaryPreflight({
@@ -135,7 +135,7 @@ check(limits.minimumApprovedSampleBps === 1 &&
 check(limits.accountHashFormat === "lowercase_sha256_hex" &&
     limits.rawAccountIdsProhibited === true &&
     limits.maximumActivationWindowMinutes === PRODUCT_QUERY_PRODUCTION_CANARY_MAX_WINDOW_MINUTES &&
-    PRODUCT_QUERY_PRODUCTION_CANARY_MAX_WINDOW_MINUTES === 60,
+    PRODUCT_QUERY_PRODUCTION_CANARY_MAX_WINDOW_MINUTES === 360,
   "cohort privacy and activation-window bounds must be explicit");
 check(limits.publicSearchCutover === false &&
     limits.automaticTrafficSampling === false &&
