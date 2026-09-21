@@ -1,14 +1,11 @@
 {
   "schemaVersion": "face-lab-manual-roll-capture-contract-v0",
-  "status": "capture_protocol_ready_evidence_absent",
+  "status": "capture_received_measurement_pending",
   "nuisanceClass": "head_roll",
+  "captureReceiptRef": "evidence/facelab/source-intake/v0/manual-roll-capture-receipt.json",
   "captureProtocol": {
     "subjectLinkageMethod": "manual_same_subject_pair",
-    "requiredViews": [
-      "neutral_front",
-      "roll_left",
-      "roll_right"
-    ],
+    "requiredViews": ["neutral_front", "roll_left", "roll_right"],
     "sameSessionRequired": true,
     "fixedCameraRequested": true,
     "neutralExpressionRequested": true,
@@ -37,7 +34,7 @@
     "transientLocalPathsAllowedOnlyDuringMeasurement": true
   },
   "readiness": {
-    "captureDataPresent": false,
+    "captureDataPresent": true,
     "rollEvidencePresent": false,
     "descriptiveReviewPacketPresent": false,
     "adequacyDecisionPresent": false
