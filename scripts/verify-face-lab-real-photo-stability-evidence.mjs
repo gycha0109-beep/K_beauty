@@ -133,8 +133,27 @@ assert.equal(
   "real_photo_same_subject"
 );
 assert.equal(complete.authority.normalizationAuthority, false);
+assert.match(complete.collectionFingerprint, /^sha256:[a-f0-9]{64}$/);
 assert.equal(complete.runManifestDigestCount, 4);
 assert.equal(complete.runManifestDigests.length, 4);
+
+const reordered = summarizeRealPhotoStabilityCollection(
+  [...reports].reverse()
+);
+assert.equal(
+  reordered.collectionFingerprint,
+  complete.collectionFingerprint
+);
+
+const provenanceChangedReports = structuredClone(reports);
+provenanceChangedReports[0].executionProvenance.referenceImageSha256 =
+  "f".repeat(64);
+const provenanceChanged =
+  summarizeRealPhotoStabilityCollection(provenanceChangedReports);
+assert.notEqual(
+  provenanceChanged.collectionFingerprint,
+  complete.collectionFingerprint
+);
 
 const incomplete = summarizeRealPhotoStabilityCollection(
   reports.filter((report) => report.nuisance.class !== "expression")
@@ -225,6 +244,9 @@ console.log(JSON.stringify({
     rawLandmarkPersistenceForbidden: true,
     technicalCoverageDoesNotCreateNormalizationAuthority: true,
     runnerProvenanceRequired: true,
-    runManifestDigestTracked: true
+    runManifestDigestTracked: true,
+    exactCollectionFingerprintCreated: true,
+    collectionFingerprintOrderInvariant: true,
+    provenanceChangeChangesCollectionFingerprint: true
   }
 }, null, 2));
