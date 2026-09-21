@@ -39,6 +39,7 @@ on:
       - "scripts/verify-face-lab-reference-corpus-adequacy.mjs"
       - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
+      - "scripts/verify-face-lab-runner-cli-contract.mjs"
       - "scripts/scaffold-face-lab-source-manifest.mjs"
       - "scripts/run-face-lab-reference-corpus-measurement.mjs"
       - "scripts/verify-face-lab-reference-statistics-method.mjs"
@@ -110,6 +111,7 @@ on:
       - "scripts/verify-face-lab-reference-corpus-adequacy.mjs"
       - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
+      - "scripts/verify-face-lab-runner-cli-contract.mjs"
       - "scripts/scaffold-face-lab-source-manifest.mjs"
       - "scripts/run-face-lab-reference-corpus-measurement.mjs"
       - "scripts/verify-face-lab-reference-statistics-method.mjs"
@@ -226,6 +228,8 @@ jobs:
         run: node scripts/verify-face-lab-source-manifest-scaffold.mjs
       - name: Syntax check Face Lab source manifest scaffold CLI
         run: node --check scripts/scaffold-face-lab-source-manifest.mjs
+      - name: Smoke Face Lab research runner validate-only CLIs
+        run: node scripts/verify-face-lab-runner-cli-contract.mjs
       - name: Syntax check Face Space reference corpus measurement runner
         run: node --check scripts/run-face-lab-reference-corpus-measurement.mjs
       - name: Verify Face Space reference statistics method boundary
