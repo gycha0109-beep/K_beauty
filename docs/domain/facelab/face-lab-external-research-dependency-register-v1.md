@@ -129,6 +129,58 @@ Upstream:
 
 - https://github.com/google-ai-edge/mediapipe
 
+## 3. Real-photo / reference-corpus source candidates
+
+### Face Research Lab London Set v5 — PRIMARY_RESEARCH_DATA_CANDIDATE
+
+Role:
+
+- same-subject real-photo yaw stability candidate
+- same-subject real-photo expression stability candidate
+- general-face same-provider reference-corpus candidate
+- subject-level reference/holdout split source candidate
+
+Verified source facts:
+
+- official Figshare dataset: `10.6084/m9.figshare.5047666.v5`
+- 102 adult subjects, full-colour 1350×1350 images
+- signed subject consent covers lab-based and web-based studies in original or altered forms and research illustration
+- Figshare lists the dataset under CC BY 4.0
+- each subject has neutral and smiling captures from five camera angles
+- naming evidence used by the source ecosystem identifies neutral front as `*_03.jpg` and smiling front as `*_08.jpg`
+
+Intended research mapping:
+
+- general reference corpus: neutral-front `*_03.jpg`, with subject-level reference/holdout split
+- head yaw: neutral front against genuine left/right three-quarter capture from the same subject
+- expression: neutral-front `*_03.jpg` against smiling-front `*_08.jpg`
+- dataset subject provenance supplies same-subject linkage; no biometric identity matching is permitted
+
+Hard boundary:
+
+- this source does **not** establish real head-pitch or head-roll evidence
+- 2D image rotation must not be used as a substitute for genuine head roll
+- pitch/roll therefore remain blocked until separately consented/licensed real same-subject captures exist
+- the 102-person London sampling frame is not treated as population-representative
+- ethnicity/age/gender metadata may describe coverage during manual adequacy review but must not become user-sensitive-attribute inference or Archetype ground truth
+- raw images must not be committed to the repository or persisted in evidence packets
+- derived packets may retain only governed structural measurements, source receipts/digests, and required attribution/provenance
+- CC BY 4.0 and the documented consent make this a research-data candidate; they do not authorize Face Lab Production activation or end-user face matching
+
+Current state:
+
+- source selected as a candidate only
+- raw dataset not acquired or pinned in repository evidence
+- exact file inventory and SHA-256 receipts not yet frozen
+- reference-corpus adequacy decision absent
+- real-photo stability adequacy decision absent
+
+Upstream:
+
+- https://figshare.com/articles/dataset/Face_Research_Lab_London_Set/5047666
+- https://doi.org/10.6084/m9.figshare.5047666.v5
+- https://debruine.github.io/reprostim/
+
 ## 3. Reconstruction / validation references
 
 ### MICA — RESEARCH_ONLY
@@ -163,7 +215,7 @@ Use:
 
 Dataset/model usage boundary requires separate review.
 
-## 4. Hair / makeup generation
+## 5. Hair / makeup generation
 
 ### HairFastGAN — RESEARCH_ONLY
 
@@ -198,7 +250,7 @@ Boundary:
 - base-model license chain prevents automatic Production promotion
 - output is experimental evidence only
 
-## 5. Style Space / apparel
+## 6. Style Space / apparel
 
 ### Marqo FashionSigLIP — SECONDARY_POC
 
@@ -219,7 +271,7 @@ Upstream:
 
 - https://huggingface.co/Marqo/marqo-fashionSigLIP
 
-## 6. Automated preference sanity checks
+## 7. Automated preference sanity checks
 
 ### HPSv3 — SECONDARY_POC
 
@@ -249,7 +301,7 @@ Boundary:
 
 - not face-style compatibility truth
 
-## 7. Current recommended stack
+## 8. Current recommended stack
 
 ```text
 Photo
@@ -278,7 +330,7 @@ Counterfactual renders
 → Compatibility Evidence
 ```
 
-## 8. Explicit exclusions
+## 9. Explicit exclusions
 
 Do not silently use:
 
@@ -289,7 +341,7 @@ Do not silently use:
 - generic aesthetic score as Face×Style compatibility truth
 - model repository license alone as proof that all pretrained weights/data are commercially reusable
 
-## 9. Next executable gate
+## 10. Next executable gate
 
 R-3D executable work proceeds in this order:
 
