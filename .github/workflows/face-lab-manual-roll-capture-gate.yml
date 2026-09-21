@@ -9,6 +9,8 @@ on:
       - "scripts/build-face-lab-manual-roll-measurement-manifest.mjs"
       - "scripts/run-face-lab-manual-roll-local.mjs"
       - "scripts/verify-face-lab-manual-roll-measurement-evidence.mjs"
+      - "scripts/build-face-lab-complete-stability-evidence.mjs"
+      - "scripts/verify-face-lab-complete-stability-evidence.mjs"
       - "scripts/verify-face-lab-manual-roll-capture-contract.mjs"
       - ".github/workflows/face-lab-manual-roll-capture-gate.yml"
   workflow_dispatch:
@@ -49,3 +51,5 @@ jobs:
           node --check scripts/build-face-lab-manual-roll-measurement-manifest.mjs
           node --check scripts/run-face-lab-manual-roll-local.mjs
           node --check scripts/verify-face-lab-manual-roll-measurement-evidence.mjs
+          node --check scripts/build-face-lab-complete-stability-evidence.mjs
+          node --check scripts/verify-face-lab-complete-stability-evidence.mjs
