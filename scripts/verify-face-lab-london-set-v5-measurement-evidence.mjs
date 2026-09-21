@@ -193,11 +193,9 @@ if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
     stabilityAdequacyContract.currentEvidence.status,
     "review_ready_pose_incomplete"
   );
-} else {
-  assert.equal(
-    stabilityAdequacyContract.currentEvidence.sourceReportCount,
-    306
-  );
+} else if (
+  stabilityAdequacyContract.currentEvidence.sourceReportCount === 306
+) {
   assert.deepEqual(
     stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses,
     ["expression", "head_yaw"]
@@ -213,6 +211,47 @@ if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
   assert.equal(
     stabilityAdequacyContract.currentEvidence.status,
     "review_ready_pitch_roll_incomplete"
+  );
+  assert.match(
+    stabilityAdequacyContract.currentEvidence.collectionFingerprint,
+    /^sha256:[a-f0-9]{64}$/
+  );
+  assert.match(
+    stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint,
+    /^sha256:[a-f0-9]{64}$/
+  );
+} else {
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.sourceReportCount,
+    486
+  );
+  assert.deepEqual(
+    stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses,
+    ["expression", "head_pitch", "head_yaw"]
+  );
+  assert.deepEqual(
+    stabilityAdequacyContract.currentEvidence.missingNuisanceClasses,
+    ["head_roll"]
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.reviewPacketRef,
+    "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json"
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.status,
+    "review_ready_roll_incomplete"
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.componentEvidence.expression.reportCount,
+    102
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.componentEvidence.headYaw.reportCount,
+    204
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.componentEvidence.headPitch.reportCount,
+    180
   );
   assert.match(
     stabilityAdequacyContract.currentEvidence.collectionFingerprint,
