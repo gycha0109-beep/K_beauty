@@ -45,6 +45,9 @@ on:
       - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
       - "scripts/verify-face-lab-london-set-v5-split-plan.mjs"
       - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
+      - "scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
       - ".github/workflows/face-lab-london-measurement.yml"
       - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
       - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
@@ -130,6 +133,9 @@ on:
       - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
       - "scripts/verify-face-lab-london-set-v5-split-plan.mjs"
       - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
+      - "scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
       - ".github/workflows/face-lab-london-measurement.yml"
       - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
       - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
@@ -260,6 +266,8 @@ jobs:
         run: node scripts/verify-face-lab-london-set-v5-split-plan.mjs
       - name: Syntax check London measurement manifest builder
         run: node --check scripts/build-face-lab-london-set-v5-measurement-manifests.mjs
+      - name: Verify London real measurement evidence
+        run: node scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs
       - name: Syntax check London source receipt builder
         run: node --check scripts/build-face-lab-london-set-v5-front-receipts.mjs
       - name: Syntax check London source receipt verifier

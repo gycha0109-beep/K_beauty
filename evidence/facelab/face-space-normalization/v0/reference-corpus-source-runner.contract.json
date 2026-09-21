@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-space-reference-corpus-source-runner-contract-v0",
-  "status": "runner_boundary_ready_real_data_absent",
+  "status": "runner_executed_real_reference_corpus_present_review_pending",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -25,12 +25,17 @@
     "outputCarriesSourceImageSha256Receipts": true
   },
   "currentEvidence": {
-    "realSourceManifestPresent": false,
-    "actualRunnerExecuted": false,
-    "generatedReferenceCorpusPresent": false,
-    "referenceSampleCount": 0,
-    "holdoutSampleCount": 0,
-    "runnerImplemented": true
+    "realSourceManifestPresent": true,
+    "actualRunnerExecuted": true,
+    "generatedReferenceCorpusPresent": true,
+    "referenceSampleCount": 82,
+    "holdoutSampleCount": 20,
+    "runnerImplemented": true,
+    "sourceManifestDigest": "sha256:663954cd1670ff1e70ee372397b357e4b5ef0936cd21307ea217667c458d0cd9",
+    "referenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "evidencePath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
+    "adequacyDecisionPresent": false,
+    "referenceStatisticsAuthority": false
   },
   "runner": {
     "runnerVersion": "face-space-reference-corpus-measurement-runner-v0",
