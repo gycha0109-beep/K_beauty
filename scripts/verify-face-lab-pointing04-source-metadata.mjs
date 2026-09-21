@@ -31,65 +31,79 @@ assert.equal(
   metadata.schemaVersion,
   "face-lab-pointing04-source-metadata-v0"
 );
-assert.equal(metadata.status, "metadata_only_exact_source_inventory");
-assert.equal(metadata.archiveCount, 30);
-assert.equal(metadata.archives.length, 30);
-assert.equal(metadata.source.structure.subjectCount, 15);
-assert.equal(metadata.source.structure.seriesPerSubject, 2);
-assert.equal(metadata.source.structure.imagesPerSeries, 93);
-assert.equal(metadata.source.structure.totalImages, 2790);
-assert.deepEqual(metadata.source.structure.poseAxes, ["tilt", "pan"]);
-assert.deepEqual(
-  metadata.source.structure.tiltDegrees,
-  [-90, -60, -30, -15, 0, 15, 30, 60, 90]
-);
-assert.deepEqual(
-  metadata.source.structure.panDegrees,
-  [-90, -75, -60, -45, -30, -15, 0, 15, 30, 45, 60, 75, 90]
-);
-
 assert.equal(
-  metadata.source.usageTerms.standardizedLicenseIdentifier,
-  null
+  metadata.status,
+  "figshare_metadata_only_exact_source_inventory"
+);
+assert.equal(metadata.source.articleId, 5142466);
+assert.equal(metadata.source.version, 2);
+assert.equal(
+  metadata.source.doi,
+  "10.6084/m9.figshare.5142466.v2"
+);
+assert.equal(metadata.source.title, "Pointing04 DB");
+assert.equal(metadata.source.citation.required, true);
+assert.equal(
+  metadata.source.citation.article,
+  "Estimating Face Orientation from Robust Detection of Salient Facial Features"
 );
 assert.equal(
-  metadata.source.usageTerms.explicitAnyPurposeUse,
+  metadata.source.usageSemantics.figshareLicenseIsCcBy,
   true
 );
-assert.equal(metadata.source.usageTerms.citationRequired, true);
 assert.equal(
-  metadata.source.usageTerms.redistributionAuthorityInferred,
-  false
+  metadata.source.usageSemantics.standardizedLicensePresent,
+  true
 );
-assert.equal(metadata.source.citation.required, true);
+assert.ok(metadata.source.license);
+assert.ok(
+  /CC BY/i.test(String(metadata.source.license.name || "")) ||
+    /creativecommons\.org\/licenses\/by\/4\.0/i.test(
+      String(metadata.source.license.url || "")
+    )
+);
 
-const keys = new Set();
-for (const archive of metadata.archives) {
-  assert.match(archive.subjectId, /^\d{2}$/);
-  assert.ok(archive.series === 1 || archive.series === 2);
-  assert.match(archive.label, /^Person\d{2}-[12]$/);
-  assert.match(archive.fileName, /^Person\d{2}-[12]\.tar\.gz$/i);
-  assert.match(archive.archiveUrl, /^https?:\/\//);
-  const key = archive.subjectId + "-" + archive.series;
-  assert.equal(keys.has(key), false);
-  keys.add(key);
+assert.ok(Number.isInteger(metadata.fileCount));
+assert.ok(metadata.fileCount > 0);
+assert.equal(metadata.files.length, metadata.fileCount);
+assert.ok(Number.isInteger(metadata.totalFileBytes));
+assert.ok(metadata.totalFileBytes > 0);
+
+const ids = new Set();
+for (const file of metadata.files) {
+  assert.ok(Number.isInteger(file.id));
+  assert.ok(file.id > 0);
+  assert.equal(ids.has(file.id), false);
+  ids.add(file.id);
+  assert.equal(typeof file.name, "string");
+  assert.ok(file.name.length > 0);
+  assert.ok(Number.isInteger(file.size));
+  assert.ok(file.size >= 0);
+  assert.equal(typeof file.downloadUrl, "string");
+  assert.ok(file.downloadUrl.startsWith("https://"));
+  if (file.suppliedMd5 !== null) {
+    assert.match(file.suppliedMd5, /^[a-f0-9]{32}$/i);
+  }
+  if (file.computedMd5 !== null) {
+    assert.match(file.computedMd5, /^[a-f0-9]{32}$/i);
+  }
 }
-assert.equal(keys.size, 30);
 
-const digestPayload = {
+const payload = {
   source: metadata.source,
-  archives: metadata.archives
+  files: metadata.files
 };
 assert.equal(
   metadata.sourceMetadataDigest,
   "sha256:" +
-    createHash("sha256").update(stableJson(digestPayload)).digest("hex")
+    createHash("sha256").update(stableJson(payload)).digest("hex")
 );
 
-assert.equal(metadata.acquisition.metadataPagesFetched, true);
+assert.equal(metadata.acquisition.metadataEndpointOnly, true);
 assert.equal(metadata.acquisition.archiveBytesDownloaded, false);
 assert.equal(metadata.acquisition.rawImageBytesDownloaded, false);
 assert.equal(metadata.acquisition.rawImageBytesPersisted, false);
+assert.equal(metadata.acquisition.fileContentInspected, false);
 assert.equal(metadata.privacy.rawImagesPersisted, false);
 assert.equal(metadata.privacy.rawLandmarksPersisted, false);
 assert.equal(metadata.privacy.identityEmbeddingCreated, false);
@@ -99,16 +113,17 @@ assert.equal(metadata.authority.productionAuthority, false);
 assert.equal(metadata.authority.normalizationAuthority, false);
 assert.equal(metadata.authority.thresholdAuthority, false);
 assert.equal(metadata.authority.adequacyDecisionAuthority, false);
-assert.equal(metadata.authority.redistributionAuthority, false);
 
 console.log(
   JSON.stringify(
     {
       ok: true,
-      archiveCount: metadata.archiveCount,
+      articleId: metadata.source.articleId,
+      version: metadata.source.version,
+      fileCount: metadata.fileCount,
+      totalFileBytes: metadata.totalFileBytes,
       sourceMetadataDigest: metadata.sourceMetadataDigest,
-      explicitAnyPurposeUse: true,
-      citationRequired: true,
+      licenseName: metadata.source.license.name,
       rawImageBytesDownloaded: false,
       productionAuthority: false
     },

@@ -8,14 +8,12 @@ assert.ok(
   "Usage: node scripts/build-face-lab-pointing04-source-metadata.mjs <output.json>"
 );
 
-const DATA_PAGE =
-  "https://crowley-coutaz.fr/Pointing04/data-face.html";
-const TERMS_PAGE =
-  "https://crowley-coutaz.fr/Head%20Pose%20Image%20Database.html";
-
-function sha256(value) {
-  return createHash("sha256").update(value).digest("hex");
-}
+const ARTICLE_ID = 5142466;
+const EXPECTED_VERSION = 2;
+const EXPECTED_DOI = "10.6084/m9.figshare.5142466.v2";
+const ENDPOINT = "https://api.figshare.com/v2/articles/" + ARTICLE_ID;
+const LEGACY_SOURCE_PAGE =
+  "http://www-prima.inrialpes.fr/Pointing04/data-face.html";
 
 function stableJson(value) {
   if (Array.isArray(value)) {
@@ -34,180 +32,160 @@ function stableJson(value) {
   return JSON.stringify(value);
 }
 
-function textOnly(html) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;|&#160;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-async function fetchText(url) {
-  const response = await fetch(url, {
-    headers: {
-      accept: "text/html,application/xhtml+xml",
-      "user-agent": "BEJEWELY-FaceLab-Research-Metadata/1.0"
-    },
-    redirect: "follow",
-    signal: AbortSignal.timeout(20_000)
-  });
-  assert.equal(
-    response.ok,
-    true,
-    "pointing04_page_fetch_failed:" + url + ":" + response.status
-  );
-  const html = await response.text();
-  assert.ok(html.length > 1000, "pointing04_page_too_small:" + url);
-  return {
-    requestedUrl: url,
-    finalUrl: response.url,
-    html
-  };
-}
-
-const [dataPage, termsPage] = await Promise.all([
-  fetchText(DATA_PAGE),
-  fetchText(TERMS_PAGE)
-]);
-
-const dataText = textOnly(dataPage.html);
-const termsText = textOnly(termsPage.html);
-
-assert.match(
-  dataText,
-  /head pose database consists of 15 sets of images/i
-);
-assert.match(
-  dataText,
-  /2 series of 93 images/i
-);
-assert.match(
-  dataText,
-  /VerticalAngle\s*=\s*\{-90,\s*-60,\s*-30,\s*-15,\s*0,\s*\+15,\s*\+30,\s*\+60,\s*\+90\}/i
-);
-assert.match(
-  dataText,
-  /HorizontalAngle\s*=\s*\{-90,\s*-75,\s*-60,\s*-45,\s*-30,\s*-15,\s*0,\s*\+15,\s*\+30,\s*\+45,\s*\+60,\s*\+75,\s*\+90\}/i
-);
-assert.match(
-  termsText,
-  /This database can be used for any purpose/i
-);
-assert.match(
-  termsText,
-  /provided that the following article is cited/i
-);
-
-const anchors = [];
-const anchorRegex =
-  /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-let match;
-while ((match = anchorRegex.exec(dataPage.html)) !== null) {
-  const href = match[1].trim();
-  const label = textOnly(match[2]);
-  const personMatch = /^Person(\d{2})-([12])$/i.exec(label);
-  if (!personMatch) continue;
-
-  const subject = personMatch[1];
-  const series = Number(personMatch[2]);
-  const archiveUrl = new URL(href, dataPage.finalUrl).toString();
-  const pathname = new URL(archiveUrl).pathname;
-  const fileName = decodeURIComponent(pathname.split("/").filter(Boolean).at(-1));
-
-  anchors.push({
-    subjectId: subject,
-    series,
-    label,
-    fileName,
-    archiveUrl
-  });
-}
-
-anchors.sort(
-  (a, b) =>
-    a.subjectId.localeCompare(b.subjectId) ||
-    a.series - b.series
-);
+const response = await fetch(ENDPOINT, {
+  headers: {
+    accept: "application/json",
+    "user-agent": "BEJEWELY-FaceLab-Research-Metadata/1.0"
+  },
+  signal: AbortSignal.timeout(20_000)
+});
 
 assert.equal(
-  anchors.length,
-  30,
-  "pointing04_person_archive_count_invalid:" + anchors.length
+  response.ok,
+  true,
+  "pointing04_figshare_metadata_fetch_failed:" + response.status
 );
 
-const expected = [];
-for (let subject = 1; subject <= 15; subject += 1) {
-  const subjectId = String(subject).padStart(2, "0");
-  for (const series of [1, 2]) {
-    expected.push(subjectId + "-" + series);
-  }
-}
-assert.deepEqual(
-  anchors.map((row) => row.subjectId + "-" + row.series),
-  expected
-);
-assert.equal(new Set(anchors.map((row) => row.archiveUrl)).size, 30);
+const article = await response.json();
 
-for (const archive of anchors) {
-  assert.match(archive.archiveUrl, /^https?:\/\//);
-  assert.match(
-    archive.fileName,
-    /^Person\d{2}-[12]\.tar\.gz$/i
+assert.equal(
+  article.id,
+  ARTICLE_ID,
+  "pointing04_figshare_article_id_mismatch"
+);
+assert.equal(
+  article.version,
+  EXPECTED_VERSION,
+  "pointing04_figshare_version_mismatch"
+);
+assert.equal(
+  String(article.doi || "").toLowerCase(),
+  EXPECTED_DOI,
+  "pointing04_figshare_doi_mismatch"
+);
+assert.equal(
+  article.title,
+  "Pointing04 DB",
+  "pointing04_figshare_title_mismatch"
+);
+assert.ok(
+  Array.isArray(article.files) && article.files.length > 0,
+  "pointing04_figshare_files_absent"
+);
+
+const description = String(article.description || "")
+  .replace(/<[^>]+>/g, " ")
+  .replace(/&nbsp;|&#160;/gi, " ")
+  .replace(/&amp;/gi, "&")
+  .replace(/\s+/g, " ")
+  .trim();
+
+assert.match(
+  description,
+  /Estimating Face Orientation from Robust Detection of Salient Facial Features/i,
+  "pointing04_required_citation_claim_missing"
+);
+
+const license = article.license
+  ? {
+      id: article.license.id ?? null,
+      name: article.license.name ?? null,
+      url: article.license.url ?? null
+    }
+  : null;
+
+assert.ok(license, "pointing04_license_missing");
+assert.ok(
+  /CC BY/i.test(String(license.name || "")) ||
+    /creativecommons\.org\/licenses\/by\/4\.0/i.test(
+      String(license.url || "")
+    ),
+  "pointing04_license_not_cc_by"
+);
+
+const files = article.files
+  .map((file) => ({
+    id: file.id,
+    name: file.name,
+    size: file.size,
+    isLinkOnly: file.is_link_only === true,
+    downloadUrl: file.download_url,
+    suppliedMd5: file.supplied_md5 ?? null,
+    computedMd5: file.computed_md5 ?? null
+  }))
+  .sort((a, b) => a.id - b.id);
+
+const seen = new Set();
+for (const file of files) {
+  assert.ok(
+    Number.isInteger(file.id) && file.id > 0,
+    "pointing04_figshare_file_id_invalid"
+  );
+  assert.equal(
+    seen.has(file.id),
+    false,
+    "pointing04_figshare_file_id_duplicate:" + file.id
+  );
+  seen.add(file.id);
+  assert.ok(
+    typeof file.name === "string" && file.name.length > 0,
+    "pointing04_figshare_file_name_invalid:" + file.id
+  );
+  assert.ok(
+    Number.isInteger(file.size) && file.size >= 0,
+    "pointing04_figshare_file_size_invalid:" + file.id
+  );
+  assert.ok(
+    typeof file.downloadUrl === "string" &&
+      file.downloadUrl.startsWith("https://"),
+    "pointing04_figshare_download_url_invalid:" + file.id
   );
 }
 
 const source = {
   datasetName: "Pointing'04 Head Pose Image Database",
-  dataPage: dataPage.finalUrl,
-  termsPage: termsPage.finalUrl,
-  dataPageSha256: "sha256:" + sha256(dataPage.html),
-  termsPageSha256: "sha256:" + sha256(termsPage.html),
+  articleId: ARTICLE_ID,
+  version: EXPECTED_VERSION,
+  doi: EXPECTED_DOI,
+  title: article.title,
+  publicUrl:
+    article.url_public_html ??
+    "https://figshare.com/articles/dataset/Pointing04_DB/5142466",
+  apiUrl: article.url_public_api ?? ENDPOINT,
+  legacySourcePage: LEGACY_SOURCE_PAGE,
+  license,
+  publishedDate: article.published_date ?? null,
+  modifiedDate: article.modified_date ?? null,
   citation: {
     required: true,
     article:
-      "Estimating Face Orientation from Robust Detection of Salient Facial Features",
-    venue:
-      "Pointing 2004, ICPR International Workshop on Visual Observation of Deictic Gestures"
+      "Estimating Face Orientation from Robust Detection of Salient Facial Features"
   },
-  usageTerms: {
-    standardizedLicenseIdentifier: null,
-    explicitAnyPurposeUse: true,
-    citationRequired: true,
-    redistributionAuthorityInferred: false
-  },
-  structure: {
-    subjectCount: 15,
-    seriesPerSubject: 2,
-    imagesPerSeries: 93,
-    totalImages: 2790,
-    poseAxes: ["tilt", "pan"],
-    tiltDegrees: [-90, -60, -30, -15, 0, 15, 30, 60, 90],
-    panDegrees: [-90, -75, -60, -45, -30, -15, 0, 15, 30, 45, 60, 75, 90]
+  usageSemantics: {
+    figshareLicenseIsCcBy: true,
+    standardizedLicensePresent: true,
+    legacyAnyPurposeClaimNotUsedAsTransportAuthority: true
   }
 };
 
-const digestPayload = {
-  source,
-  archives: anchors
-};
+const digestPayload = { source, files };
 
 const output = {
   schemaVersion: "face-lab-pointing04-source-metadata-v0",
-  status: "metadata_only_exact_source_inventory",
+  status: "figshare_metadata_only_exact_source_inventory",
   sourceMetadataDigest:
     "sha256:" +
     createHash("sha256").update(stableJson(digestPayload)).digest("hex"),
   source,
-  archiveCount: anchors.length,
-  archives: anchors,
+  fileCount: files.length,
+  totalFileBytes: files.reduce((sum, file) => sum + file.size, 0),
+  files,
   acquisition: {
-    metadataPagesFetched: true,
+    metadataEndpointOnly: true,
     archiveBytesDownloaded: false,
     rawImageBytesDownloaded: false,
-    rawImageBytesPersisted: false
+    rawImageBytesPersisted: false,
+    fileContentInspected: false
   },
   privacy: {
     rawImagesPersisted: false,
@@ -220,8 +198,7 @@ const output = {
     productionAuthority: false,
     normalizationAuthority: false,
     thresholdAuthority: false,
-    adequacyDecisionAuthority: false,
-    redistributionAuthority: false
+    adequacyDecisionAuthority: false
   }
 };
 
@@ -231,12 +208,12 @@ console.log(
   JSON.stringify(
     {
       ok: true,
-      archiveCount: output.archiveCount,
+      articleId: ARTICLE_ID,
+      version: EXPECTED_VERSION,
+      fileCount: output.fileCount,
+      totalFileBytes: output.totalFileBytes,
       sourceMetadataDigest: output.sourceMetadataDigest,
-      explicitAnyPurposeUse:
-        output.source.usageTerms.explicitAnyPurposeUse,
-      citationRequired:
-        output.source.usageTerms.citationRequired,
+      licenseName: license.name,
       rawImageBytesDownloaded: false,
       productionAuthority: false
     },
