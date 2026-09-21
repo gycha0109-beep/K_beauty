@@ -30,6 +30,10 @@ function getLocaleForwardedRequestHeaders(request) {
 }
 
 export async function middleware(request) {
+  if (request.nextUrl.pathname === "/api/my/product-query-beta/account-hash") {
+    return new NextResponse(null, { status: 404 });
+  }
+
   const localeRequestHeaders = getLocaleForwardedRequestHeaders(request);
 
   if (isDocumentRequest(request)) {
