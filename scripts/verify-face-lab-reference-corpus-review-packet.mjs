@@ -100,6 +100,11 @@ assert.equal(packet.authority.referenceStatisticsAuthority, false);
 assert.equal(packet.authority.methodSelectionAuthority, false);
 assert.equal(packet.authority.adequacyDecisionAuthority, false);
 assert.equal(packet.reviewSemantics.descriptiveOnly, true);
+assert.equal(packet.privacy.sourceImagePersisted, false);
+assert.equal(packet.privacy.rawLandmarksPersisted, false);
+assert.equal(packet.privacy.identityEmbeddingCreated, false);
+assert.equal(packet.privacy.biometricIdentityMatchPerformed, false);
+assert.equal(packet.privacy.localImagePathsIncluded, false);
 assert.equal(
   packet.reviewSemantics.centerScaleStatisticsIncluded,
   false
@@ -167,6 +172,8 @@ console.log(JSON.stringify({
   referenceStatisticsAuthority: false,
   methodSelectionAuthority: false,
   descriptiveOnly: true,
+  privacyBoundaryExplicit: true,
+  canonicalFingerprintSerialization: true,
   holdoutMeasurementValuesExcluded: true,
   centerScaleStatisticsExcluded: true,
   percentileStatisticsExcluded: true,
