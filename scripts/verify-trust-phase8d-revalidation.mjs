@@ -3,13 +3,16 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const migrationPath = "supabase/migrations/20260922013500_trust_phase8d_revalidation_research_bridge_v1.sql";
+const adapterPath = "tests/fixtures/trust-phase8d-revalidation/20260922013450_trust_phase8d_fixture_adapter.sql";
 const runtimePath = "tests/fixtures/trust-phase8d-revalidation/verify_trust_phase8d_revalidation_research_runtime.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
+const adapter = fs.readFileSync(adapterPath, "utf8");
 const runtime = fs.readFileSync(runtimePath, "utf8");
 
 for (const token of [
   "create table public.product_fact_revalidation_research_bridges",
   "admin_enqueue_product_fact_revalidation_research_v1",
+  "create or replace function public.claim_trust_research_tasks_v1",
   "REVALIDATION_INTAKE_MISSING",
   "REVALIDATION_INTAKE_AMBIGUOUS",
   "REVALIDATION_INTAKE_STALE",
@@ -22,6 +25,15 @@ for (const token of [
   "'automatic_confirmation', false"
 ]) {
   assert.ok(migration.includes(token), `missing Phase 8D migration token: ${token}`);
+}
+
+for (const token of [
+  "research_policy_version",
+  "trust_state",
+  "trust_phase8d_fixture_observation_identity",
+  "trust_phase8d_fixture_candidate_digest"
+]) {
+  assert.ok(adapter.includes(token), `missing Phase 8D fixture adapter token: ${token}`);
 }
 
 for (const forbidden of [
