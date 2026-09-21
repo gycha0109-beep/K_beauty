@@ -5,7 +5,7 @@ import fs from "node:fs";
 
 const basePath = "supabase/migrations/20260917195000_trust_phase4_controlled_evidence_adoption_v1.sql";
 const hardeningPath = "supabase/migrations/20260917195100_trust_phase4_controlled_evidence_adoption_fusion_hardening_v1.sql";
-const replayPatchPath = "supabase/migrations/20260921233000_trust_phase4_evidence_null_replay_idempotency_v1.sql";
+const replayPatchPath = "supabase/migrations/20260922000135_trust_phase4_evidence_null_replay_idempotency_v1.sql";
 const base = fs.readFileSync(basePath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
 const replayPatch = fs.readFileSync(replayPatchPath, "utf8");
