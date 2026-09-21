@@ -1,0 +1,38 @@
+name: DATA-AI20 Cookie Account Hash Capture
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/account-hash/route.js"
+      - "scripts/verify-data-ai20-cookie-account-hash-capture.mjs"
+      - ".github/workflows/data-ai20-cookie-account-hash-capture.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/account-hash/route.js"
+      - "scripts/verify-data-ai20-cookie-account-hash-capture.mjs"
+      - ".github/workflows/data-ai20-cookie-account-hash-capture.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-ai20-cookie-account-hash-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: DATA-AI20 cookie account-hash capture contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify cookie account-hash capture
+        run: node scripts/verify-data-ai20-cookie-account-hash-capture.mjs
