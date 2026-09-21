@@ -156,7 +156,7 @@ function excerpt(text, index, length) {
 }
 
 function escapeRegex(value) {
-  return String(value).replace(/[.*+?^\${}()|[\]\\]/g, "\\export function extractStrictFactCandidate(factKey, text) {");
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function extractStrictFactCandidate(factKey, text, parentPropositions = []) {
