@@ -6,6 +6,8 @@ on:
       - "evidence/facelab/source-intake/v0/manual-roll-capture.contract.json"
       - "docs/domain/facelab/face-lab-manual-roll-capture-protocol-v0.md"
       - "scripts/build-face-lab-manual-roll-measurement-manifest.mjs"
+      - "scripts/run-face-lab-manual-roll-local.mjs"
+      - "scripts/verify-face-lab-manual-roll-measurement-evidence.mjs"
       - "scripts/verify-face-lab-manual-roll-capture-contract.mjs"
       - ".github/workflows/face-lab-manual-roll-capture-gate.yml"
   workflow_dispatch:
@@ -44,3 +46,5 @@ jobs:
         run: |
           node scripts/verify-face-lab-manual-roll-capture-contract.mjs
           node --check scripts/build-face-lab-manual-roll-measurement-manifest.mjs
+          node --check scripts/run-face-lab-manual-roll-local.mjs
+          node --check scripts/verify-face-lab-manual-roll-measurement-evidence.mjs

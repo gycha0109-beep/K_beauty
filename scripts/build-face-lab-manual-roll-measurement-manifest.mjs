@@ -30,6 +30,15 @@ assert.ok(
   typeof spec.captureSetRef === "string" &&
     spec.captureSetRef.trim().length > 0
 );
+assert.ok(
+  typeof spec.usageScope === "string" &&
+    spec.usageScope.trim().length > 0
+);
+assert.equal(
+  spec.commercialResearchUseAuthorized,
+  true,
+  "manual_roll_commercial_research_use_must_be_explicit"
+);
 assert.ok(Array.isArray(spec.subjects) && spec.subjects.length > 0);
 
 const subjectIds = new Set();

@@ -30,6 +30,7 @@ The external capture spec records:
 - explicit consent flag;
 - consent evidence reference;
 - usage scope;
+- explicit authorization for commercial research use;
 - paths to the three transient local images.
 
 The local paths are execution inputs only. They must not be frozen into
@@ -53,3 +54,29 @@ manifest. The resulting pairs use `manual_same_subject_pair` linkage and
 
 Actual roll evidence remains absent until consented real photos are supplied
 and the existing actual-image Face Landmarker runner is executed.
+
+
+## Local execution bridge
+
+The repository includes a local-only orchestration command for the point at
+which consented photos are available:
+
+```bash
+node scripts/run-face-lab-manual-roll-local.mjs \
+  <capture-spec.json> \
+  <output-dir>
+```
+
+Start from
+`docs/domain/facelab/face-lab-manual-roll-capture-spec.example.json`.
+The capture spec must explicitly authorize commercial research use for the
+BEJEWELY Face Lab validation scope.
+
+The command creates a governed manifest, runs the existing actual-image Face
+Landmarker stability runner, builds a descriptive review packet, and verifies
+that raw images, raw landmarks, identity embeddings, biometric identity
+matching, and local image paths are absent from the evidence outputs.
+
+The output remains descriptive evidence only. Completing the roll capture
+closes a nuisance-coverage gap; it does not itself grant adequacy,
+normalization, threshold, or production authority.
