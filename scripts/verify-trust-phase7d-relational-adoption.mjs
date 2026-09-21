@@ -28,7 +28,7 @@ const runtime = read("tests/fixtures/trust-phase7d-relational/verify_trust_phase
   "trust_phase4_parent_scope_mismatch",
   "'parent_fact_instance_id', v_parent_fact_instance_id",
   "'parent_proposition_key', v_parent_proposition_key",
-  "jsonb_strip_nulls(jsonb_build_object(",
+  "when v_parent_proposition_key is null then '{}'::jsonb",
   "grant execute on function public.claim_trust_research_tasks_v1",
   "grant execute on function public.record_trust_research_result_v1",
   "grant execute on function public.process_trust_reentry_event_v1",
@@ -52,6 +52,10 @@ const runtime = read("tests/fixtures/trust-phase7d-relational/verify_trust_phase
 ].forEach((value) => includes(runtime, value, "Phase 7-D runtime"));
 
 includes(fixture, "trust_phase7c_has_controlled_official_source_v1", "Phase 7-D fixture");
+assert(
+  !migration.includes("jsonb_strip_nulls(jsonb_build_object(\n    'subject_id', v_task.subject_id"),
+  "non-relational candidate digest must retain the Phase 3 null-key basis"
+);
 
 excludes(migration, "admin_confirm_product_fact_v1(", "automatic Product Fact confirmation");
 assert(
