@@ -1,11 +1,15 @@
 {
   "schemaVersion": "face-lab-manual-roll-capture-contract-v0",
-  "status": "capture_received_measurement_pending",
+  "status": "capture_measured_review_packet_ready",
   "nuisanceClass": "head_roll",
   "captureReceiptRef": "evidence/facelab/source-intake/v0/manual-roll-capture-receipt.json",
   "captureProtocol": {
     "subjectLinkageMethod": "manual_same_subject_pair",
-    "requiredViews": ["neutral_front", "roll_left", "roll_right"],
+    "requiredViews": [
+      "neutral_front",
+      "roll_left",
+      "roll_right"
+    ],
     "sameSessionRequired": true,
     "fixedCameraRequested": true,
     "neutralExpressionRequested": true,
@@ -35,8 +39,8 @@
   },
   "readiness": {
     "captureDataPresent": true,
-    "rollEvidencePresent": false,
-    "descriptiveReviewPacketPresent": false,
+    "rollEvidencePresent": true,
+    "descriptiveReviewPacketPresent": true,
     "adequacyDecisionPresent": false
   },
   "authority": {
@@ -45,5 +49,7 @@
     "thresholdAuthority": false,
     "adequacyDecisionAuthority": false,
     "populationAuthority": false
-  }
+  },
+  "measurementEvidenceRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json",
+  "descriptiveReviewPacketRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json"
 }
