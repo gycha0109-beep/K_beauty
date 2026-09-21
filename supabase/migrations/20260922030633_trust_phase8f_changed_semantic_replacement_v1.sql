@@ -188,6 +188,7 @@ begin
   );
 
   return v_plan || jsonb_build_object(
+    'subject_id', v_candidate.subject_id,
     'fact_payload_base', v_fact_payload_base,
     'fusion_policy_version', v_fusion_policy,
     'fusion_input_digest', v_fusion_input_digest
