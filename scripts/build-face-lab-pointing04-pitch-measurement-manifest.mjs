@@ -116,8 +116,8 @@ assert.equal(scaffold.summary.opaqueSampleCount, 270);
 assert.deepEqual(scaffold.summary.coveredNuisanceClasses, ["head_pitch"]);
 assert.deepEqual(scaffold.summary.missingNuisanceClasses, [
   "expression",
-  "head_yaw",
-  "head_roll"
+  "head_roll",
+  "head_yaw"
 ]);
 assert.equal(scaffold.summary.completeNuisanceCoverage, false);
 
