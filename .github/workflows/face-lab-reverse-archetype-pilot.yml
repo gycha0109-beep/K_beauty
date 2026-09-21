@@ -51,6 +51,7 @@ on:
       - "scripts/verify-face-lab-reference-method-selection.mjs"
       - "scripts/verify-face-lab-normalization-holdout-diagnostic.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
+      - "evidence/facelab/source-intake/**"
       - "evidence/facelab/photo-geometry/**"
       - "evidence/facelab/face-space-normalization/**"
       - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
@@ -126,6 +127,7 @@ on:
       - "scripts/verify-face-lab-reference-method-selection.mjs"
       - "scripts/verify-face-lab-normalization-holdout-diagnostic.mjs"
       - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
+      - "evidence/facelab/source-intake/**"
       - "evidence/facelab/photo-geometry/**"
       - "evidence/facelab/face-space-normalization/**"
       - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
@@ -230,6 +232,8 @@ jobs:
         run: node scripts/verify-face-lab-reference-corpus-adequacy.mjs
       - name: Verify Face Space reference corpus review packet
         run: node scripts/verify-face-lab-reference-corpus-review-packet.mjs
+      - name: Verify Face Lab London Set v5 source intake boundary
+        run: node scripts/verify-face-lab-london-set-v5-source-intake.mjs
       - name: Verify Face Lab source manifest scaffold
         run: node scripts/verify-face-lab-source-manifest-scaffold.mjs
       - name: Syntax check Face Lab source manifest scaffold CLI

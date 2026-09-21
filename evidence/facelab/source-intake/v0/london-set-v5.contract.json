@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "face-lab-london-set-v5-source-intake-contract-v0",
+  "status": "source_candidate_selected_not_acquired",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "adequacyDecisionAuthority": false,
+  "source": {
+    "name": "Face Research Lab London Set",
+    "version": "v5",
+    "doi": "10.6084/m9.figshare.5047666.v5",
+    "provenanceRef": "https://doi.org/10.6084/m9.figshare.5047666.v5",
+    "license": "CC BY 4.0",
+    "subjectCountDocumented": 102,
+    "rawDatasetAcquired": false,
+    "exactFileInventoryFrozen": false,
+    "exactFileSha256ReceiptsFrozen": false
+  },
+  "allowedResearchRoles": {
+    "generalFaceReferenceCorpusCandidate": true,
+    "sameSubjectHeadYawCandidate": true,
+    "sameSubjectExpressionCandidate": true,
+    "sameSubjectHeadPitchCandidate": false,
+    "sameSubjectHeadRollCandidate": false
+  },
+  "plannedSourceMapping": {
+    "neutralFrontPattern": "*_03.jpg",
+    "smilingFrontPattern": "*_08.jpg",
+    "referenceCorpusInput": "neutral_front_only",
+    "referenceHoldoutSplit": "subject_level_only",
+    "yawComparison": "neutral_front_vs_same_subject_genuine_three_quarter_capture",
+    "expressionComparison": "neutral_front_vs_same_subject_smiling_front"
+  },
+  "hardBoundaries": {
+    "fake2DRotationAsHeadRollForbidden": true,
+    "inferredPitchFrom2DTransformForbidden": true,
+    "biometricIdentityMatchingForbidden": true,
+    "identityEmbeddingForbidden": true,
+    "rawImageRepositoryCommitForbidden": true,
+    "rawImageEvidencePacketPersistenceForbidden": true,
+    "rawLandmarkPersistenceForbidden": true,
+    "archetypeGroundTruthForbidden": true,
+    "populationRepresentativenessAssumed": false,
+    "sensitiveAttributeUserInferenceForbidden": true,
+    "productionActivationForbidden": true
+  },
+  "gatesBeforeExecution": {
+    "exactFileInventoryRequired": true,
+    "exactImageSha256ReceiptsRequired": true,
+    "sourceAttributionReceiptRequired": true,
+    "subjectLinkageFromDatasetProvenanceRequired": true,
+    "referenceAndHoldoutSubjectSplitRequired": true,
+    "noSubjectLeakageRequired": true,
+    "noNearDuplicateFamilyLeakageRequired": true
+  },
+  "unresolved": {
+    "headPitchRealPhotoSourceRequired": true,
+    "headRollRealPhotoSourceRequired": true,
+    "referenceCorpusAdequacyDecisionPresent": false,
+    "realPhotoStabilityAdequacyDecisionPresent": false
+  }
+}
