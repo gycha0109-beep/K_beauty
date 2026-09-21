@@ -13,8 +13,13 @@ const contract = JSON.parse(
 
 assert.equal(contract.productionAuthority, false);
 assert.equal(contract.normalizationAuthority, false);
-assert.equal(contract.currentEvidence.realSourceManifestPresent, false);
-assert.equal(contract.currentEvidence.actualRunnerExecuted, false);
+assert.equal(contract.currentEvidence.realSourceManifestPresent, true);
+assert.equal(contract.currentEvidence.actualRunnerExecuted, true);
+assert.equal(contract.currentEvidence.generatedReferenceCorpusPresent, true);
+assert.equal(contract.currentEvidence.referenceSampleCount, 82);
+assert.equal(contract.currentEvidence.holdoutSampleCount, 20);
+assert.equal(contract.currentEvidence.adequacyDecisionPresent, false);
+assert.equal(contract.currentEvidence.referenceStatisticsAuthority, false);
 
 function image(sampleId, digit) {
   return {
@@ -140,7 +145,7 @@ console.log(JSON.stringify({
   normalizationAuthority: false,
   currentRealSourceManifestPresent:
     contract.currentEvidence.realSourceManifestPresent,
-  actualRunnerExecuted: false,
+  actualRunnerExecuted: true,
   invariants: {
     sourceManifestDigestBindsImageSha256: true,
     localPathExcludedFromDigest: true,
