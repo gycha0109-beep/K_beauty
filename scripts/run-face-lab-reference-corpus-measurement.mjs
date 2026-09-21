@@ -167,7 +167,19 @@ async function main() {
     validateFaceSpaceReferenceCorpusSourceManifest(sourceManifest);
 
   if (validateOnly) {
-    console.log(JSON.stringify(output, null, 2));
+    console.log(JSON.stringify({
+      schemaVersion:
+        "face-space-reference-corpus-measurement-run-output-v0",
+      ok: true,
+      validateOnly: true,
+      runnerVersion: RUNNER_VERSION,
+      sourceSummary,
+      authority: {
+        productionAuthority: false,
+        normalizationAuthority: false,
+        thresholdAuthority: false
+      }
+    }, null, 2));
     return;
   }
 
@@ -373,27 +385,7 @@ async function main() {
     );
     assert.deepEqual(pageErrors, []);
 
-    console.log(JSON.stringify({
-      schemaVersion:
-        "face-space-reference-corpus-measurement-run-output-v0",
-      ok: true,
-      runnerVersion: RUNNER_VERSION,
-      sourceSummary,
-      corpus,
-      corpusSummary,
-      authority: {
-        productionAuthority: false,
-        normalizationAuthority: false,
-        thresholdAuthority: false
-      },
-      privacy: {
-        outputContainsLocalImagePaths: false,
-        sourceImagePersisted: false,
-        rawLandmarksPersisted: false,
-        identityEmbeddingCreated: false,
-        biometricIdentityMatchPerformed: false
-      }
-    }, null, 2));
+    console.log(JSON.stringify(output, null, 2));
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
