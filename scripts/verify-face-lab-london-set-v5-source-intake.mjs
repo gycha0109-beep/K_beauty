@@ -25,6 +25,26 @@ assert.equal(contract.source.exactFileInventoryFrozen, false);
 assert.equal(contract.source.exactFileSha256ReceiptsFrozen, false);
 
 assert.equal(
+  contract.frontImageMirror.repository,
+  "debruine/webmorphR.stim"
+);
+assert.equal(
+  contract.frontImageMirror.pinnedCommit,
+  "fa8b78fda2d659bb74ce62fcd99c4407551d2a77"
+);
+assert.equal(contract.frontImageMirror.neutralFrontJpegCountObserved, 102);
+assert.equal(contract.frontImageMirror.smilingFrontJpegCountObserved, 102);
+assert.equal(contract.frontImageMirror.neutralFrontFilenamePattern, "<subject>_03.jpg");
+assert.equal(contract.frontImageMirror.smilingFrontFilenamePattern, "<subject>_08.jpg");
+assert.equal(contract.frontImageMirror.yawSourceProvided, false);
+assert.equal(contract.frontImageMirror.pitchSourceProvided, false);
+assert.equal(contract.frontImageMirror.rollSourceProvided, false);
+assert.equal(
+  contract.frontImageMirror.imageSha256ReceiptsStillRequiredBeforeExecution,
+  true
+);
+
+assert.equal(
   contract.allowedResearchRoles.generalFaceReferenceCorpusCandidate,
   true
 );
