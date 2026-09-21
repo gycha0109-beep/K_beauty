@@ -162,14 +162,17 @@ begin
     'frozen-first-party-observation-v1-not-live-page-bytes',v_source_digest,now(),now()
   );
 
-  v_candidate_digest := encode(extensions.digest(convert_to(jsonb_strip_nulls(jsonb_build_object(
-    'subject_id',v_subject,'registry_version',v_registry,'fact_key',v_child_fact,
-    'normalized_value',jsonb_build_object('amount',3,'unit','percent'),
-    'parent_proposition_key',v_parent_prop,
-    'evidence_class','product_claim','support_direction','supports',
-    'negative_admissibility','not_applicable','market','KR','region',null,
-    'locale','ko-KR','qualifier','{}'::jsonb,'source_content_digest',v_source_digest
-  ))::text,'UTF8'),'sha256'),'hex');
+  v_candidate_digest := encode(extensions.digest(convert_to((
+    jsonb_build_object(
+      'subject_id',v_subject,'registry_version',v_registry,'fact_key',v_child_fact,
+      'normalized_value',jsonb_build_object('amount',3,'unit','percent'),
+      'evidence_class','product_claim','support_direction','supports',
+      'negative_admissibility','not_applicable','market','KR','region',null,
+      'locale','ko-KR','qualifier','{}'::jsonb,'source_content_digest',v_source_digest
+    )
+    || case when v_parent_prop is null then '{}'::jsonb
+            else jsonb_build_object('parent_proposition_key',v_parent_prop) end
+  )::text,'UTF8'),'sha256'),'hex');
 
   insert into public.trust_evidence_candidates(
     candidate_id,research_task_id,observation_id,product_id,subject_id,
@@ -226,14 +229,17 @@ begin
   -- Missing parent must fail closed.
   update public.trust_evidence_candidates
   set parent_proposition_key=null,
-      canonical_evidence_digest=encode(extensions.digest(convert_to(jsonb_strip_nulls(jsonb_build_object(
-        'subject_id',v_subject,'registry_version',v_registry,'fact_key',v_child_fact,
-        'normalized_value',jsonb_build_object('amount',3,'unit','percent'),
-        'parent_proposition_key',null,'evidence_class','product_claim',
-        'support_direction','supports','negative_admissibility','not_applicable',
-        'market','KR','region',null,'locale','ko-KR','qualifier','{}'::jsonb,
-        'source_content_digest',v_source_digest
-      ))::text,'UTF8'),'sha256'),'hex')
+      canonical_evidence_digest=encode(extensions.digest(convert_to((
+    jsonb_build_object(
+      'subject_id',v_subject,'registry_version',v_registry,'fact_key',v_child_fact,
+      'normalized_value',jsonb_build_object('amount',3,'unit','percent'),
+      'evidence_class','product_claim','support_direction','supports',
+      'negative_admissibility','not_applicable','market','KR','region',null,
+      'locale','ko-KR','qualifier','{}'::jsonb,'source_content_digest',v_source_digest
+    )
+    || case when null is null then '{}'::jsonb
+            else jsonb_build_object('parent_proposition_key',null) end
+  )::text,'UTF8'),'sha256'),'hex')
   where candidate_id='84000000-0000-4000-8000-000000000003';
 
   begin
@@ -287,14 +293,17 @@ begin
 
   update public.trust_evidence_candidates
   set parent_proposition_key=v_bad_prop,
-      canonical_evidence_digest=encode(extensions.digest(convert_to(jsonb_strip_nulls(jsonb_build_object(
-        'subject_id',v_subject,'registry_version',v_registry,'fact_key',v_child_fact,
-        'normalized_value',jsonb_build_object('amount',3,'unit','percent'),
-        'parent_proposition_key',v_bad_prop,'evidence_class','product_claim',
-        'support_direction','supports','negative_admissibility','not_applicable',
-        'market','KR','region',null,'locale','ko-KR','qualifier','{}'::jsonb,
-        'source_content_digest',v_source_digest
-      ))::text,'UTF8'),'sha256'),'hex')
+      canonical_evidence_digest=encode(extensions.digest(convert_to((
+    jsonb_build_object(
+      'subject_id',v_subject,'registry_version',v_registry,'fact_key',v_child_fact,
+      'normalized_value',jsonb_build_object('amount',3,'unit','percent'),
+      'evidence_class','product_claim','support_direction','supports',
+      'negative_admissibility','not_applicable','market','KR','region',null,
+      'locale','ko-KR','qualifier','{}'::jsonb,'source_content_digest',v_source_digest
+    )
+    || case when v_bad_prop is null then '{}'::jsonb
+            else jsonb_build_object('parent_proposition_key',v_bad_prop) end
+  )::text,'UTF8'),'sha256'),'hex')
   where candidate_id='84000000-0000-4000-8000-000000000003';
 
   begin
