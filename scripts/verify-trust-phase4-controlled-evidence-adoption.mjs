@@ -5,8 +5,10 @@ import fs from "node:fs";
 
 const basePath = "supabase/migrations/20260917195000_trust_phase4_controlled_evidence_adoption_v1.sql";
 const hardeningPath = "supabase/migrations/20260917195100_trust_phase4_controlled_evidence_adoption_fusion_hardening_v1.sql";
+const replayPatchPath = "supabase/migrations/20260922000135_trust_phase4_evidence_null_replay_idempotency_v1.sql";
 const base = fs.readFileSync(basePath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
+const replayPatch = fs.readFileSync(replayPatchPath, "utf8");
 const sql = `${base}\n${hardening}`;
 let assertions = 0;
 const check = (condition, message) => {
@@ -71,6 +73,10 @@ check(hardening.includes("'confidence', v_evidence.confidence"), "fusion confide
 check(hardening.includes("'support_direction', v_evidence.support_direction"), "fusion support direction missing");
 check(hardening.includes("'negative_admissibility', v_evidence.negative_admissibility"), "fusion negative admissibility missing");
 check(hardening.includes("v_preflight ->> 'fusion_input_digest' <> v_fusion_input_digest"), "governed fusion readback equality gate missing");
+check(replayPatch.includes("create or replace function public.admin_ingest_product_fact_evidence_v1"), "Evidence replay patch function replacement missing");
+check(replayPatch.includes("nullif(v_evidence -> 'proposition_value_identity', 'null'::jsonb)"), "JSON-null proposition identity normalization missing");
+check(replayPatch.includes("security definer"), "Evidence replay patch SECURITY DEFINER missing");
+check(replayPatch.includes("set search_path = public, extensions, pg_temp"), "Evidence replay patch fixed search_path missing");
 
 check(sql.includes("public.admin_ingest_product_fact_evidence_v1("), "governed Evidence ingest delegation missing");
 check(sql.includes("public.admin_prepare_product_fact_review_v1("), "governed review delegation missing");

@@ -46,6 +46,7 @@ run("TRUST Phase 7A legacy backfill preflight", node, ["scripts/verify-trust-pha
 run("TRUST Phase 7B legacy backfill materialization", node, ["scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"]);
 run("TRUST Phase 7C legacy research readiness", node, ["scripts/verify-trust-phase7c-legacy-research-readiness.mjs"]);
 run("TRUST Phase 7C Phase4 legacy adoption compatibility", node, ["scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"]);
+run("TRUST Phase 7D relational fact adoption", node, ["scripts/verify-trust-phase7d-relational-adoption.mjs"]);
 
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
@@ -80,6 +81,12 @@ run("DATA-AI11 Production activation safety contract", node, ["scripts/verify-da
 run("DATA-AI12 Production canary operational preflight", node, ["scripts/verify-data-ai12-production-canary-preflight.mjs"]);
 run("DATA-AI13 controlled Production canary runtime", node, ["scripts/verify-data-ai13-production-canary-runtime.mjs"]);
 run("DATA-AI14 Production canary execution harness", node, ["scripts/verify-data-ai14-production-canary-harness.mjs"]);
+run("DATA-AI15 six-hour Production canary activation", node, ["scripts/verify-data-ai15-production-canary-activation.mjs"]);
+run("DATA-AI16 Production canary closure", node, ["scripts/verify-data-ai16-production-canary-closure.mjs"]);
+run("DATA-AI17 authenticated limited-beta design", node, ["scripts/verify-data-ai17-authenticated-limited-beta-design.mjs"]);
+run("DATA-AI18 authenticated beta runtime default-off", node, ["scripts/verify-data-ai18-authenticated-beta-runtime.mjs"]);
+run("DATA-AI19 authenticated beta activation preflight", node, ["scripts/verify-data-ai19-authenticated-beta-activation-preflight.mjs"]);
+run("DATA-AI20 authenticated limited-beta controlled activation", node, ["scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);

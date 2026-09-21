@@ -191,7 +191,61 @@ $$;
 rollback;
 insert into trust_p4_results values ('serializer_identity_collision_fail_closed','PASS','{}'::jsonb);
 
--- 7. Wrapper reaches governed confirmation preflight but does not create Current.
+-- 7. Governed Evidence exact replay remains idempotent when proposition_value_identity is JSON null.
+do $$
+declare
+  v_subject uuid;
+  v_source_digest text;
+  v_first jsonb;
+  v_second jsonb;
+  v_payload jsonb;
+begin
+  select subject_id into v_subject
+  from public.trust_evidence_candidates
+  where candidate_id='84000000-0000-4000-8000-000000000001';
+  select source_content_digest into v_source_digest
+  from public.trust_source_observations
+  where observation_id='83000000-0000-4000-8000-000000000001';
+
+  v_payload := jsonb_build_object(
+    'source',jsonb_build_object(
+      'canonical_locator','https://official.example.test/trust-phase4-null-replay',
+      'publisher','fixture_null_replay_official',
+      'source_kind','brand_official_product_page',
+      'source_metadata',jsonb_build_object('digest_basis','frozen-first-party-observation-v1-not-live-page-bytes'),
+      'content_digest',v_source_digest,'external_snapshot_reference',null,
+      'market','KR','region',null,'locale','ko-KR',
+      'published_at',null,'accessed_at','2026-09-21T14:30:00Z','observed_at','2026-09-21T14:30:00Z'),
+    'binding',jsonb_build_object(
+      'product_id','00000000-0000-4000-8000-000000000301','subject_id',v_subject,
+      'binding_state','exact_subject_match','scope_relation','equivalent',
+      'presentation_metadata',jsonb_build_object('catalog_source_binding_id','85000000-0000-4000-8000-000000000001'),
+      'identity_resolution_version','trust-phase4-fixture-identity-v1','reviewed_at','2026-09-21T14:30:00Z'),
+    'evidence',jsonb_build_object(
+      'registry_version','trust-phase4-fixture-registry-v1','fact_key','phase4_fixture_claim',
+      'proposition_key',repeat('c',64),'proposition_serializer_version','product-fact-proposition-pilot-v1',
+      'proposition_value_identity',null,'parent_proposition_key',null,
+      'evidence_class','product_claim','evidence_authority','product_specific_primary',
+      'confidence','high','support_direction','supports','negative_admissibility','not_applicable',
+      'market','KR','region',null,'locale','ko-KR','valid_from',null,'valid_to',null,
+      'qualifier','{}'::jsonb,'canonical_evidence_digest',repeat('d',64),'supersedes_evidence_id',null)
+  );
+
+  v_first := public.admin_ingest_product_fact_evidence_v1(
+    '92000000-0000-4000-8000-000000000001','trust-p4-null-replay-0001',v_payload);
+  v_second := public.admin_ingest_product_fact_evidence_v1(
+    '92000000-0000-4000-8000-000000000001','trust-p4-null-replay-0002',v_payload);
+
+  perform pg_temp.assert_true(v_first ->> 'status'='evidence_recorded','trust_p4_null_replay_first_status');
+  perform pg_temp.assert_true(v_second ->> 'status'='evidence_recorded','trust_p4_null_replay_second_status');
+  perform pg_temp.assert_true(v_second ->> 'evidence_id'=v_first ->> 'evidence_id','trust_p4_null_replay_evidence_changed');
+  perform pg_temp.assert_true((v_second ->> 'evidence_inserted')::boolean=false,'trust_p4_null_replay_duplicate_insert');
+  perform pg_temp.assert_true((select count(*) from public.product_evidence_records where canonical_evidence_digest=repeat('d',64))=1,'trust_p4_null_replay_duplicate_row');
+  insert into trust_p4_results values ('null_proposition_identity_replay_idempotent','PASS',jsonb_build_object('evidence_id',v_first->>'evidence_id'));
+end;
+$$;
+
+-- 8. Wrapper reaches governed confirmation preflight but does not create Current.
 create temporary table trust_p4_adoption as
 select public.admin_adopt_trust_evidence_candidate_v1(
   '92000000-0000-4000-8000-000000000001','trust-p4-adopt-0001','84000000-0000-4000-8000-000000000001'
@@ -210,7 +264,7 @@ begin
 end;
 $$;
 
--- 8. Exact replay reuses governed Evidence and open assignment.
+-- 9. Exact replay reuses governed Evidence and open assignment.
 do $$
 declare
   v_first jsonb := (select result from trust_p4_adoption);
@@ -230,7 +284,7 @@ begin
 end;
 $$;
 
--- 9. Existing confirmation authority is invoked explicitly outside the wrapper.
+-- 10. Existing confirmation authority is invoked explicitly outside the wrapper.
 do $$
 declare
   v_result jsonb := (select result from trust_p4_adoption);
@@ -250,7 +304,7 @@ begin
 end;
 $$;
 
--- 10. A candidate whose proposition is already Current is not consumed again.
+-- 11. A candidate whose proposition is already Current is not consumed again.
 do $$
 declare v_message text;
 begin
@@ -267,7 +321,7 @@ begin
 end;
 $$;
 
--- 11. Runtime ACL/RLS boundary.
+-- 12. Runtime ACL/RLS boundary.
 do $$
 declare v_rel_count bigint;
 begin
@@ -288,7 +342,7 @@ begin
 end;
 $$;
 
-select pg_temp.assert_true((select count(*) from trust_p4_results where status='PASS')=11,'trust_p4_required_result_count');
+select pg_temp.assert_true((select count(*) from trust_p4_results where status='PASS')=12,'trust_p4_required_result_count');
 
 select 'TRUST_PHASE4_RUNTIME_JSON=' || jsonb_build_object(
   'status','PASS',
