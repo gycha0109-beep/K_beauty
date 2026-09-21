@@ -17,6 +17,37 @@ const summary = {
     "sha256:" + "a".repeat(64)
 };
 
+const reviewPacket = {
+  schemaVersion: "face-space-reference-corpus-review-packet-v0",
+  packetVersion: "synthetic-verifier-reference-review-v0",
+  status: "manual_review_packet_ready",
+  sourceReferenceCorpusSummarySchemaVersion: summary.schemaVersion,
+  sourceReferenceSplitFingerprint: summary.referenceSplitFingerprint,
+  sourceReviewPacketSchemaVersion: reviewPacket.schemaVersion,
+  sourceReviewPacketVersion: reviewPacket.packetVersion,
+  sourceReviewPacketFingerprint: reviewPacket.reviewPacketFingerprint,
+  sourceSamplingFrameProvenanceRef: summary.samplingFrameProvenanceRef,
+  sourceProvider: summary.provider,
+  reviewPacketFingerprint: "sha256:" + "c".repeat(64),
+  reviewSnapshot: {},
+  authority: {
+    productionAuthority: false,
+    normalizationAuthority: false,
+    thresholdAuthority: false,
+    referenceStatisticsAuthority: false,
+    methodSelectionAuthority: false,
+    adequacyDecisionAuthority: false
+  },
+  reviewSemantics: {
+    descriptiveOnly: true,
+    centerScaleStatisticsIncluded: false,
+    percentileStatisticsIncluded: false,
+    holdoutMeasurementValuesIncluded: false,
+    automaticPassFail: false,
+    automaticRanking: false
+  }
+};
+
 const evidence = {
   schemaVersion: "face-space-reference-corpus-adequacy-evidence-v0",
   status: "adequate_for_provisional_research",
@@ -41,7 +72,11 @@ const evidence = {
 };
 
 const validated =
-  validateFaceSpaceReferenceCorpusAdequacyEvidence(evidence, summary);
+  validateFaceSpaceReferenceCorpusAdequacyEvidence(
+    evidence,
+    summary,
+    reviewPacket
+  );
 assert.equal(validated.status, "adequate_for_provisional_research");
 assert.equal(validated.authority.productionAuthority, false);
 assert.equal(validated.authority.normalizationAuthority, false);
@@ -57,7 +92,8 @@ assert.throws(
         sourceReferenceSplitFingerprint:
           "sha256:" + "b".repeat(64)
       },
-      summary
+      summary,
+      reviewPacket
     ),
   /adequacy_evidence_invalid/
 );
@@ -69,7 +105,8 @@ assert.throws(
         ...evidence,
         coverageLimitations: []
       },
-      summary
+      summary,
+      reviewPacket
     ),
   /adequacy_evidence_invalid/
 );
@@ -81,7 +118,8 @@ assert.throws(
         ...evidence,
         automaticAdequacyInferred: true
       },
-      summary
+      summary,
+      reviewPacket
     ),
   /adequacy_evidence_invalid/
 );
@@ -95,5 +133,6 @@ console.log(JSON.stringify({
   numericThresholdInventionForbidden: true,
   exactReferenceFingerprintRequired: true,
   explicitCoverageLimitationsRequired: true,
+  exactReviewPacketFingerprintRequired: true,
   actualAdequacyDecisionPresent: false
 }, null, 2));
