@@ -80,6 +80,7 @@ run("DATA-AI11 Production activation safety contract", node, ["scripts/verify-da
 run("DATA-AI12 Production canary operational preflight", node, ["scripts/verify-data-ai12-production-canary-preflight.mjs"]);
 run("DATA-AI13 controlled Production canary runtime", node, ["scripts/verify-data-ai13-production-canary-runtime.mjs"]);
 run("DATA-AI14 Production canary execution harness", node, ["scripts/verify-data-ai14-production-canary-harness.mjs"]);
+run("DATA-AI15 six-hour Production canary activation", node, ["scripts/verify-data-ai15-production-canary-activation.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
