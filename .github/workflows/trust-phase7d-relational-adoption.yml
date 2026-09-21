@@ -87,7 +87,7 @@ jobs:
           cp tests/fixtures/trust-phase7c-phase4-compat/20260921072900_trust_phase7c_phase4_compat_fixture.sql "${migration_dir}/"
           cp supabase/migrations/20260921094643_trust_phase7c_phase4_legacy_adoption_compat_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-phase7d-relational/20260921115900_trust_phase7d_relational_fixture.sql "${migration_dir}/"
-          cp supabase/migrations/20260921120000_trust_phase7d_relational_fact_adoption_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260921211920_trust_phase7d_relational_fact_adoption_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and verify relational adoption
         shell: bash
