@@ -18,6 +18,7 @@ on:
       - "lib/face-lab-reference-corpus-adequacy.js"
       - "lib/face-lab-reference-corpus-review-packet.js"
       - "lib/face-lab-source-manifest-scaffold.js"
+      - "lib/face-lab-london-set-v5-intake.js"
       - "lib/face-lab-normalization-review-packet-run-output.js"
       - "lib/face-lab-reference-statistics-research.js"
       - "lib/face-lab-reference-method-comparison-research.js"
@@ -40,6 +41,7 @@ on:
       - "scripts/verify-face-lab-reference-corpus-adequacy.mjs"
       - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
+      - "scripts/verify-face-lab-london-set-v5-intake.mjs"
       - "scripts/verify-face-lab-runner-cli-contract.mjs"
       - "scripts/build-face-lab-normalization-review-packet.mjs"
       - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
@@ -94,6 +96,7 @@ on:
       - "lib/face-lab-reference-corpus-adequacy.js"
       - "lib/face-lab-reference-corpus-review-packet.js"
       - "lib/face-lab-source-manifest-scaffold.js"
+      - "lib/face-lab-london-set-v5-intake.js"
       - "lib/face-lab-normalization-review-packet-run-output.js"
       - "lib/face-lab-reference-statistics-research.js"
       - "lib/face-lab-reference-method-comparison-research.js"
@@ -116,6 +119,7 @@ on:
       - "scripts/verify-face-lab-reference-corpus-adequacy.mjs"
       - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
+      - "scripts/verify-face-lab-london-set-v5-intake.mjs"
       - "scripts/verify-face-lab-runner-cli-contract.mjs"
       - "scripts/build-face-lab-normalization-review-packet.mjs"
       - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
@@ -234,6 +238,8 @@ jobs:
         run: node scripts/verify-face-lab-reference-corpus-review-packet.mjs
       - name: Verify Face Lab London Set v5 source intake boundary
         run: node scripts/verify-face-lab-london-set-v5-source-intake.mjs
+      - name: Verify Face Lab London Set v5 front intake planner
+        run: node scripts/verify-face-lab-london-set-v5-intake.mjs
       - name: Verify Face Lab source manifest scaffold
         run: node scripts/verify-face-lab-source-manifest-scaffold.mjs
       - name: Syntax check Face Lab source manifest scaffold CLI
