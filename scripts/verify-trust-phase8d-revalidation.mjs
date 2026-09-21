@@ -34,6 +34,9 @@ for (const token of [
   "binding_method",
   "product_scope_state",
   "created_at",
+  "alter column id set default gen_random_uuid()",
+  "alter column observation_id set default gen_random_uuid()",
+  "alter column candidate_id set default gen_random_uuid()",
   "trust_phase8d_fixture_observation_identity",
   "trust_phase8d_fixture_candidate_digest"
 ]) {
