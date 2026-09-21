@@ -172,7 +172,7 @@ begin
        or btrim(p_adapter_version) <> 'v1'
        or coalesce(p_canonical_baseline ->> 'final_url', '') !~ '^https://'
        or coalesce(p_canonical_baseline ->> 'content_type', '') = ''
-       or jsonb_typeof(p_canonical_baseline -> 'byte_length') <> 'number'
+       or coalesce(jsonb_typeof(p_canonical_baseline -> 'byte_length'), '') <> 'number'
        or coalesce(p_canonical_baseline ->> 'fetched_at', '') = '' then
       raise exception 'product_evidence_source_verification_profile_fresh_recovery_invalid'
         using errcode = '23514';
