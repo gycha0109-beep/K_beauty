@@ -131,8 +131,15 @@ const workflow = readFileSync(
   "utf8"
 );
 check(
-  workflow.includes("timeout-minutes: 5"),
-  "DATA-AI20 source contract verification must remain bounded"
+  workflow.includes("timeout-minutes: 5") &&
+    workflow.includes("timeout-minutes: 7") &&
+    workflow.includes("DATA_AI20_RUNTIME_SENSITIVE_COHORT=PASS") &&
+    workflow.includes("/api/my/product-query-beta/account-hash") &&
+    workflow.includes('test "$status" = "404"') &&
+    workflow.includes('test "$status" = "401"') &&
+    !workflow.includes("DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN") &&
+    !workflow.includes("credential subject not approved"),
+  "DATA-AI20 CI must validate runtime-sensitive activation without persisted bearer credentials"
 );
 
 console.log(
