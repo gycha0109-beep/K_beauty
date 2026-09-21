@@ -10,6 +10,7 @@ import {
 const [
   expressionRunPath,
   yawRunPath,
+  pitchRunPath,
   contractInputPath,
   reviewPacketOutputPath,
   contractOutputPath
@@ -18,14 +19,16 @@ const [
 assert.ok(
   expressionRunPath &&
     yawRunPath &&
+    pitchRunPath &&
     contractInputPath &&
     reviewPacketOutputPath &&
     contractOutputPath,
-  "Usage: node scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs <expression-run.json> <yaw-run.json> <contract-input.json> <review-packet-output.json> <contract-output.json>"
+  "Usage: node scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs <expression-run.json> <yaw-run.json> <pitch-run.json> <contract-input.json> <review-packet-output.json> <contract-output.json>"
 );
 
 const expression = JSON.parse(readFileSync(expressionRunPath, "utf8"));
 const yaw = JSON.parse(readFileSync(yawRunPath, "utf8"));
+const pitch = JSON.parse(readFileSync(pitchRunPath, "utf8"));
 const contract = JSON.parse(readFileSync(contractInputPath, "utf8"));
 
 function validateRunOutput(runOutput, expectedClass, expectedCount) {
@@ -61,22 +64,25 @@ function validateRunOutput(runOutput, expectedClass, expectedCount) {
 
 validateRunOutput(expression, "expression", 102);
 validateRunOutput(yaw, "head_yaw", 204);
+validateRunOutput(pitch, "head_pitch", 180);
 
-const reports = [...expression.reports, ...yaw.reports];
-assert.equal(reports.length, 306);
-assert.equal(new Set(reports.map((report) => report.pairGroupId)).size, 306);
+const reports = [
+  ...expression.reports,
+  ...yaw.reports,
+  ...pitch.reports
+];
+assert.equal(reports.length, 486);
+assert.equal(new Set(reports.map((report) => report.pairGroupId)).size, 486);
 
 const collection = summarizeRealPhotoStabilityCollection(reports);
-assert.equal(collection.reportCount, 306);
-assert.equal(collection.opaquePairGroupCount, 306);
+assert.equal(collection.reportCount, 486);
+assert.equal(collection.opaquePairGroupCount, 486);
 assert.deepEqual(collection.coveredNuisanceClasses, [
   "expression",
+  "head_pitch",
   "head_yaw"
 ]);
-assert.deepEqual(collection.missingNuisanceClasses, [
-  "head_pitch",
-  "head_roll"
-]);
+assert.deepEqual(collection.missingNuisanceClasses, ["head_roll"]);
 assert.equal(collection.realPhotoPoseAndExpressionCoverage, "incomplete");
 assert.equal(
   collection.readinessContribution.realExpressionEvidenceKind,
@@ -85,15 +91,16 @@ assert.equal(
 assert.equal(collection.readinessContribution.realPoseEvidenceKind, null);
 
 const packetVersion =
-  "london-set-v5-expression-yaw-stability-review-v1";
+  "real-photo-expression-yaw-pitch-stability-review-v1";
 const reviewPacket = buildRealPhotoStabilityReviewPacket({
   reports,
   packetVersion
 });
 
-assert.equal(reviewPacket.sourceReportCount, 306);
+assert.equal(reviewPacket.sourceReportCount, 486);
 assert.deepEqual(reviewPacket.sourceCoveredNuisanceClasses, [
   "expression",
+  "head_pitch",
   "head_yaw"
 ]);
 assert.equal(reviewPacket.reviewSemantics.descriptiveOnly, true);
@@ -115,10 +122,10 @@ assert.equal(contract.thresholdAuthority, false);
 
 const nextContract = structuredClone(contract);
 nextContract.status =
-  "expression_yaw_review_packet_ready_pitch_roll_incomplete";
+  "expression_yaw_pitch_review_packet_ready_roll_incomplete";
 nextContract.currentEvidence = {
   realPhotoReportCollectionPresent: true,
-  sourceReportCount: 306,
+  sourceReportCount: 486,
   collectionFingerprint: collection.collectionFingerprint,
   sourceRunManifestDigests: collection.runManifestDigests,
   coveredNuisanceClasses: collection.coveredNuisanceClasses,
@@ -126,7 +133,7 @@ nextContract.currentEvidence = {
   completeNuisanceCoverage: false,
   descriptiveReviewPacketPresent: true,
   reviewPacketRef:
-    "evidence/facelab/photo-geometry/v0/london-set-v5-expression-yaw-stability-review-packet.json",
+    "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json",
   reviewPacketVersion: packetVersion,
   reviewPacketFingerprint: reviewPacket.reviewPacketFingerprint,
   componentEvidence: {
@@ -147,10 +154,19 @@ nextContract.currentEvidence = {
       reportCount: 204,
       collectionFingerprint:
         yaw.collectionSummary.collectionFingerprint
+    },
+    headPitch: {
+      runOutputRef:
+        "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json",
+      reviewPacketRef:
+        "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-review-packet.json",
+      reportCount: 180,
+      collectionFingerprint:
+        pitch.collectionSummary.collectionFingerprint
     }
   },
   adequacyDecisionPresent: false,
-  status: "review_ready_pitch_roll_incomplete"
+  status: "review_ready_roll_incomplete"
 };
 
 assert.equal(nextContract.currentEvidence.adequacyDecisionPresent, false);
@@ -169,21 +185,15 @@ writeFileSync(
   "utf8"
 );
 
-console.log(
-  JSON.stringify(
-    {
-      ok: true,
-      reportCount: 306,
-      coveredNuisanceClasses: collection.coveredNuisanceClasses,
-      missingNuisanceClasses: collection.missingNuisanceClasses,
-      collectionFingerprint: collection.collectionFingerprint,
-      reviewPacketFingerprint: reviewPacket.reviewPacketFingerprint,
-      adequacyDecisionPresent: false,
-      productionAuthority: false,
-      normalizationAuthority: false,
-      thresholdAuthority: false
-    },
-    null,
-    2
-  )
-);
+console.log(JSON.stringify({
+  ok: true,
+  reportCount: 486,
+  coveredNuisanceClasses: collection.coveredNuisanceClasses,
+  missingNuisanceClasses: collection.missingNuisanceClasses,
+  collectionFingerprint: collection.collectionFingerprint,
+  reviewPacketFingerprint: reviewPacket.reviewPacketFingerprint,
+  adequacyDecisionPresent: false,
+  productionAuthority: false,
+  normalizationAuthority: false,
+  thresholdAuthority: false
+}, null, 2));
