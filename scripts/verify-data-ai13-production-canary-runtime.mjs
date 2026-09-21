@@ -146,9 +146,9 @@ check(limits.fallbackMode === "existing_path" && limits.releaseGateImplemented =
   "canary failure must leave the existing path intact and must not create a release gate");
 
 const route = readFileSync("app/api/my/product-query-production-canary/route.js", "utf8");
-const staticGateIndex = route.indexOf("evaluateProductQueryProductionCanaryStaticGate");
+const staticGateIndex = route.indexOf("const staticGate = evaluateProductQueryProductionCanaryStaticGate");
 const authIndex = route.indexOf("resolveRouteSupabaseAuth(request)");
-const runtimeGateIndex = route.indexOf("evaluateProductQueryProductionCanaryRuntime");
+const runtimeGateIndex = route.indexOf("const runtimePolicy = evaluateProductQueryProductionCanaryRuntime");
 const bodyReadIndex = route.indexOf("request.text()");
 check(staticGateIndex >= 0 && authIndex > staticGateIndex &&
     runtimeGateIndex > authIndex && bodyReadIndex > runtimeGateIndex,
