@@ -175,10 +175,12 @@ Current state:
 - neutral-front structural measurement completed for all 102 subjects
 - same-subject neutral-front ↔ smiling-front expression stability completed for all 102 subjects
 - exact descriptive reference-corpus review packet frozen; adequacy authority remains absent
-- exact descriptive expression-stability review packet frozen; overall stability adequacy remains blocked because pose coverage is incomplete
-- current real-photo nuisance coverage: expression only
-- current missing nuisance classes: `head_yaw`, `head_pitch`, `head_roll`
-- the current pinned mirror exposes the governed front-image subset only; London multi-angle yaw images are not yet acquired, receipted, or measured in this track
+- official London v5 left/right three-quarter artifacts were pinned through Figshare metadata, receipted, and measured as 204 same-subject `head_yaw` reports
+- Pointing'04 v2 source metadata and CC BY 4.0 license were pinned; the governed pitch subset produced 180 same-subject `head_pitch` reports
+- combined descriptive stability review currently contains 486 reports: 102 expression + 204 yaw + 180 pitch
+- current real-photo nuisance coverage: `expression`, `head_yaw`, `head_pitch`
+- current missing nuisance class: `head_roll`
+- `head_roll` capture protocol and local measurement bridge are ready, but real consented roll evidence is still absent
 - reference-corpus adequacy decision absent
 - real-photo stability adequacy decision absent
 
@@ -188,7 +190,7 @@ Upstream:
 - https://doi.org/10.6084/m9.figshare.5047666.v5
 - https://debruine.github.io/reprostim/
 
-### London Set multi-angle extension — PRIMARY_NEXT_SOURCE_CANDIDATE
+### London Set multi-angle extension — ADOPTED_YAW_RESEARCH_SOURCE
 
 Role:
 
@@ -200,26 +202,27 @@ Verified source facts:
 - the upstream London Set documents five simultaneously captured camera angles for each neutral and smiling pose: left profile, left three-quarter, front, right three-quarter, right profile
 - the existing Face Lab measurement track has only pinned and receipted front images
 
-Required before adoption:
+Adopted evidence:
 
-- acquire the exact multi-angle upstream artifact under the same governed source scope
-- freeze exact file inventory and SHA-256 receipts
-- confirm deterministic same-subject / angle mapping from source provenance
-- run the existing actual-image stability runner without biometric identity matching
-- keep raw source images out of repository evidence packets
+- official Figshare v5 source metadata pinned before acquisition
+- genuine neutral left/right three-quarter artifacts acquired transiently under the governed source scope
+- exact source receipts frozen without committing raw source images
+- deterministic same-subject / angle mapping derived from source provenance; biometric identity matching not used
+- existing actual-image stability runner produced 204 `head_yaw` reports
+- exact descriptive yaw review packet frozen
 
 Boundary:
 
-- this extension can address yaw only
+- this extension establishes research evidence for yaw only
 - it does not establish genuine head pitch or roll evidence
-- current stability authority remains expression-only until exact yaw evidence is frozen and verified
+- the yaw review packet is descriptive and grants no adequacy, normalization, threshold, population, or production authority
 
 Upstream:
 
 - https://doi.org/10.6084/m9.figshare.5047666.v5
 - https://debruine.github.io/reprostim/
 
-### Pointing'04 Head Pose Image Database — SECONDARY_RESEARCH_DATA_CANDIDATE
+### Pointing'04 Head Pose Image Database — ADOPTED_PITCH_RESEARCH_SOURCE
 
 Role:
 
@@ -233,12 +236,21 @@ Verified source facts:
 - pose is represented by horizontal and vertical angles spanning negative to positive head rotations
 - subject and pose are encoded by source-side acquisition structure, so biometric identity matching is unnecessary for linkage
 
+Adopted evidence:
+
+- Figshare article `5142466`, version 2, DOI `10.6084/m9.figshare.5142466.v2` pinned
+- Figshare v2 metadata records CC BY 4.0 and required citation
+- exact source metadata digest and pitch-source SHA-256 receipts frozen
+- governed `pan_zero_only` subset selected before measurement
+- 270 source images selected across 30 source series
+- 180 same-subject `head_pitch` measurement reports frozen
+- exact descriptive pitch review packet frozen
+
 Boundary:
 
-- Pointing'04 supplies pan/yaw and tilt/pitch style variation, not an independent roll axis
-- the current official benchmark page does not by itself freeze a reusable commercial-license contract for this project
-- no image may enter Face Lab research evidence until the exact downloadable artifact, license/redistribution terms, and artifact digest are pinned
-- therefore this remains a source candidate, not an adopted dataset
+- Pointing'04 supplies pan/yaw and tilt/pitch variation, not an independent roll axis
+- current adoption is limited to the governed pitch subset
+- pitch evidence is descriptive research evidence only and grants no adequacy, normalization, threshold, population, or production authority
 
 Upstream:
 
@@ -296,21 +308,23 @@ Upstream:
 ```text
 expression
 → London front neutral/smiling
-→ real evidence frozen
+→ 102 real same-subject reports frozen
 
 head_yaw
-→ first choice: London genuine multi-angle extension
-→ fallback/complement: Pointing'04 after exact license/artifact pin
+→ London genuine left/right three-quarter extension
+→ 204 real same-subject reports frozen
 
 head_pitch
-→ Pointing'04 candidate after exact license/artifact pin
+→ Pointing'04 governed pan-zero subset
+→ 180 real same-subject reports frozen
 
 head_roll
-→ no permissive, adopted real same-subject source confirmed yet
-→ BIWI/PANDORA technically fit but are license-blocked
+→ selected path: direct same-session consented capture
+→ capture/measurement bridge ready; real evidence absent
+→ BIWI/PANDORA remain license-blocked for current commercial research use
 ```
 
-No pose-source candidate above changes current adequacy state. Until exact same-subject real-photo evidence is acquired, receipted, measured, and reviewed, missing nuisance classes remain missing.
+Current structural nuisance coverage is expression + yaw + pitch. Roll remains the only missing real-photo nuisance class. Completing roll evidence can close structural coverage, but it must not be interpreted as an automatic adequacy decision or as normalization, threshold, population, or production authority.
 
 ## 4. Reconstruction / validation references
 
