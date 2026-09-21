@@ -54,7 +54,9 @@ const runtime = read("tests/fixtures/trust-research-worker/verify_trust_research
   "explicit-pa-label-v1",
   "explicit-filter-system-claim-v1",
   "explicit-parent-bound-active-concentration-v1",
-  "parent_proposition_key"
+  "parent_proposition_key",
+  "brand_official_technical_document",
+  "governedKinds.has(seed.external_type)"
 ].forEach((value) => includes(worker, value, "Research worker"));
 
 excludes(worker, "google.com/search", "search-engine discovery");
