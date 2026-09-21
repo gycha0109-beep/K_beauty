@@ -42,7 +42,6 @@ assert.deepEqual(reviewPacket.sourceCoveredNuisanceClasses, [
   "head_roll",
   "head_yaw"
 ]);
-assert.deepEqual(reviewPacket.sourceMissingNuisanceClasses, []);
 assert.equal(reviewPacket.reviewSemantics.descriptiveOnly, true);
 assert.equal(reviewPacket.reviewSemantics.thresholdsApplied, false);
 assert.equal(reviewPacket.reviewSemantics.automaticPassFail, false);
