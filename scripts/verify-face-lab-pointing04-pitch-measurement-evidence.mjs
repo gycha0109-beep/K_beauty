@@ -21,23 +21,23 @@ assert.equal(runOutput.ok, true);
 assert.equal(runOutput.productionAuthority, false);
 assert.equal(runOutput.normalizationAuthority, false);
 assert.equal(runOutput.thresholdAuthority, false);
-assert.equal(runOutput.manifestSummary.pairCount, 240);
-assert.equal(runOutput.manifestSummary.opaqueSampleCount, 270);
+assert.equal(runOutput.manifestSummary.pairCount, 180);
+assert.equal(runOutput.manifestSummary.opaqueSampleCount, 210);
 assert.deepEqual(runOutput.manifestSummary.coveredNuisanceClasses, ["head_pitch"]);
 assert.deepEqual(runOutput.manifestSummary.missingNuisanceClasses, [
   "expression",
-  "head_yaw",
-  "head_roll"
+  "head_roll",
+  "head_yaw"
 ]);
 assert.equal(runOutput.manifestSummary.completeNuisanceCoverage, false);
-assert.equal(runOutput.reports.length, 240);
+assert.equal(runOutput.reports.length, 180);
 
 const pairIds = new Set();
 for (const report of runOutput.reports) {
   assert.equal(report.nuisance.class, "head_pitch");
   assert.match(
     report.pairGroupId,
-    /^pointing04_pitch_\d{2}_s[12]_(m|p)(15|30|60|90)$/
+    /^pointing04_pitch_\d{2}_s[12]_(m|p)(15|30|60)$/
   );
   assert.equal(pairIds.has(report.pairGroupId), false);
   pairIds.add(report.pairGroupId);
@@ -60,8 +60,8 @@ for (const report of runOutput.reports) {
 }
 
 const collection = summarizeRealPhotoStabilityCollection(runOutput.reports);
-assert.equal(collection.reportCount, 240);
-assert.equal(collection.opaquePairGroupCount, 240);
+assert.equal(collection.reportCount, 180);
+assert.equal(collection.opaquePairGroupCount, 180);
 assert.deepEqual(collection.coveredNuisanceClasses, ["head_pitch"]);
 assert.deepEqual(
   [...collection.missingNuisanceClasses].sort(),
@@ -82,7 +82,7 @@ const rebuiltReview =
     packetVersion: "pointing04-pitch-stability-review-v1"
   });
 assert.deepEqual(reviewPacket, rebuiltReview);
-assert.equal(reviewPacket.sourceReportCount, 240);
+assert.equal(reviewPacket.sourceReportCount, 180);
 assert.deepEqual(reviewPacket.sourceCoveredNuisanceClasses, ["head_pitch"]);
 assert.equal(reviewPacket.reviewSemantics.descriptiveOnly, true);
 assert.equal(reviewPacket.reviewSemantics.thresholdsApplied, false);
@@ -106,7 +106,7 @@ assert.equal(serialized.includes("identityEmbeddingCreated\":true"), false);
 
 console.log(JSON.stringify({
   ok: true,
-  pairCount: 240,
+  pairCount: 180,
   realPitchEvidenceKind: "real_photo_same_subject",
   coveredNuisanceClasses: ["head_pitch"],
   missingNuisanceClasses: ["expression", "head_yaw", "head_roll"],

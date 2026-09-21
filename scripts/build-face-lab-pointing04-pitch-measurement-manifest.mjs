@@ -51,7 +51,9 @@ for (const [key, rows] of [...bySeries.entries()].sort()) {
   );
 
   for (const candidateReceipt of rows
-    .filter((row) => row.pitchDegrees !== 0)
+    .filter((row) =>
+      [-60, -30, -15, 15, 30, 60].includes(row.pitchDegrees)
+    )
     .sort((a, b) => a.pitchDegrees - b.pitchDegrees)) {
     const pitchToken =
       candidateReceipt.pitchDegrees < 0
@@ -100,7 +102,7 @@ for (const [key, rows] of [...bySeries.entries()].sort()) {
   }
 }
 
-assert.equal(pairs.length, 240);
+assert.equal(pairs.length, 180);
 
 const scaffold = scaffoldRealPhotoStabilityRunManifest({
   schemaVersion: "face-lab-real-photo-stability-scaffold-spec-v0",
@@ -111,8 +113,8 @@ const scaffold = scaffoldRealPhotoStabilityRunManifest({
   pairs
 });
 
-assert.equal(scaffold.summary.pairCount, 240);
-assert.equal(scaffold.summary.opaqueSampleCount, 270);
+assert.equal(scaffold.summary.pairCount, 180);
+assert.equal(scaffold.summary.opaqueSampleCount, 210);
 assert.deepEqual(scaffold.summary.coveredNuisanceClasses, ["head_pitch"]);
 assert.deepEqual(scaffold.summary.missingNuisanceClasses, [
   "expression",

@@ -26,8 +26,21 @@
     "expectedSeriesCount": 30,
     "expectedSelectedImagesPerSeries": 9,
     "expectedSelectedImageCount": 270,
-    "expectedPitchPairsPerSeries": 8,
-    "expectedPitchPairCount": 240
+    "expectedPitchPairsPerSeries": 6,
+    "expectedPitchPairCount": 180,
+    "measurementEligiblePitchDegrees": [
+      -60,
+      -30,
+      -15,
+      15,
+      30,
+      60
+    ],
+    "excludedEndpointPitchDegrees": [
+      -90,
+      90
+    ],
+    "endpointExclusionReason": "current exact-one-face Face Landmarker runner cannot treat the symmetric vertical endpoints as eligible structural stability inputs; source receipts remain frozen and endpoints are not deleted"
   },
   "privacy": {
     "rawImagesPersisted": false,

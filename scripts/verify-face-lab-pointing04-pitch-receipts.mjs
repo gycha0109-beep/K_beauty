@@ -130,7 +130,7 @@ console.log(
       archiveCount: receipt.archives.length,
       selectedPitchAxisImageCount:
         receipt.selectedPitchAxisImages.length,
-      expectedPitchPairCount: 240,
+      expectedPitchPairCount: contract.intendedResearchUse.expectedPitchPairCount,
       receiptDigest: receipt.receiptDigest,
       rawImagesPersistedInReceipt: false,
       productionAuthority: false
