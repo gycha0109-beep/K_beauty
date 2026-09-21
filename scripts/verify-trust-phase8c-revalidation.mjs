@@ -4,7 +4,7 @@ import fs from "node:fs";
 
 const migrationPath = "supabase/migrations/20260922011229_trust_phase8c_revalidation_transition_v1.sql";
 const hardeningPath = "supabase/migrations/20260922011324_trust_phase8c_revalidation_transition_index_hardening_v1.sql";
-const prestateHardeningPath = "supabase/migrations/20260922012300_trust_phase8c_prestate_binding_hardening_v1.sql";
+const prestateHardeningPath = "supabase/migrations/20260922012833_trust_phase8c_prestate_binding_hardening_v1.sql";
 const runtimePath = "tests/fixtures/trust-phase8c-revalidation/verify_trust_phase8c_revalidation_runtime.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
