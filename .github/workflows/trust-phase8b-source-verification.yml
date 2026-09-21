@@ -64,7 +64,7 @@ jobs:
           sed -i 's/major_version = 15/major_version = 17/' "${runtime_dir}/supabase/config.toml"
           migration_dir="${runtime_dir}/supabase/migrations"
           cp supabase/migrations/20260809115932_product_fact_storage_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260922010000_trust_phase8b_source_verification_ledger_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260922010350_trust_phase8b_source_verification_ledger_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and verify source ledger
         shell: bash
