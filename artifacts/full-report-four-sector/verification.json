@@ -1,0 +1,40 @@
+{
+  "base": "http://localhost:3014",
+  "fixtureOnly": true,
+  "checks": [
+    "Four sectors, 390/430px, Light/Dark, screenshots, no document overflow",
+    "AM/PM and row evidence disclosure",
+    "Scenario selector uses payload and changes selected guidance",
+    "Saved-report URL reload requests the same id (intercepted API)",
+    "English section navigation",
+    "Legacy saved payload remains readable without invented routine diff",
+    "Unknown plan remains UNKNOWN; absent scenarios stay absent",
+    "START fixture preserves canonical mode",
+    "Final CTA requests My (unauthenticated redirect is retained)",
+    "Current-product inputs and usage metadata flow through Premium Intake into the report request; skipped answers stay unknown",
+    "Existing Face Lab entry opens the separate experience",
+    "No uncaught page errors"
+  ],
+  "captured": [
+    "390-light-1.png",
+    "390-light-2.png",
+    "390-light-3.png",
+    "390-light-4.png",
+    "390-dark-1.png",
+    "390-dark-2.png",
+    "390-dark-3.png",
+    "390-dark-4.png",
+    "430-light-1.png",
+    "430-light-2.png",
+    "430-light-3.png",
+    "430-light-4.png",
+    "430-dark-1.png",
+    "430-dark-2.png",
+    "430-dark-3.png",
+    "430-dark-4.png"
+  ],
+  "errors": [],
+  "knownConsoleIssues": [
+    "Existing root-layout CSP nonce hydration mismatch"
+  ]
+}

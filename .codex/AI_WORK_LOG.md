@@ -2982,3 +2982,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+### 2026-09-22 / Full Report four-sector presentation
+
+- Task: execution after bounded canonical-source diagnosis / Medium UI and additive projection. Initial fresh main: `5e607fb2`; resumed fresh main: `87dd552f`, with no overlapping target-source changes. Working branch: `codex/full-report-four-sector`; the pre-existing `codex/full-report-final-ia` commit was preserved.
+- Scope: four distinct detail interactions (routine list, investigation board, decision matrix plus conditional plan, scenario selector plus routine comparison), shared Light/Dark tokens, read-only saved-data joins, and lossless condition role/action projection. Canonical condition policy actually uses `reduceActions`; no reduceRoles alias or new decision logic was introduced. Face Lab implementation, auth, DB/RLS, report persistence, production, provider, payment, secrets and deployment are unchanged.
+- Authority/compatibility: no fake timelines or causal product attribution; product identity joins support current and legacy slot keys; START/HOLD/UNKNOWN, suppression, not_in_db/not_using/unanswered and explicit empty arrays are preserved. Removed the retired caution sector and directly orphaned routine/caution template helpers.
+- Evidence: focused view/projection verifier, integrated evaluation (462 assertions), snapshot/reentry verifier, production build, and 390/430px Light/Dark browser screenshots. Browser tests use local intercepted canonical/legacy fixtures, not hosted credentials or production writes. See `docs/verification/full-report-four-sector.md` and `artifacts/full-report-four-sector/verification.json` for exact checks and visual self-review.
+- Limitations/status: IMPLEMENTED_UNVERIFIED for the complete acceptance gate. Existing ESLint setup is absent; Next build completes with unrelated existing survey export warnings; unchanged root CSP nonce hydration warning remains; hosted authenticated persistence/My E2E is not claimed. These require separate follow-up and are disclosed in the PR.
+- Architecture: `docs/architecture/full-report-four-sector-view.md` records the display/projection boundary and updates the legacy condition-contract pointer. No AI_CONTEXT promotion is proposed.
