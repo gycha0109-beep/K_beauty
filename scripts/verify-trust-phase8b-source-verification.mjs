@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const migrationPath = "supabase/migrations/20260922010000_trust_phase8b_source_verification_ledger_v1.sql";
+const migrationPath = "supabase/migrations/20260922010350_trust_phase8b_source_verification_ledger_v1.sql";
 const runtimePath = "tests/fixtures/trust-phase8b-source-verification/verify_trust_phase8b_source_verification_runtime.sql";
 const contractPath = "docs/evidence/trust-phase8a-product-fact-revalidation-contract-v1.md";
 
