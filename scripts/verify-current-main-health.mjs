@@ -45,6 +45,7 @@ run("TRUST Phase 6B reentry detector contract", node, ["scripts/verify-trust-pha
 run("TRUST Phase 7A legacy backfill preflight", node, ["scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"]);
 run("TRUST Phase 7B legacy backfill materialization", node, ["scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"]);
 run("TRUST Phase 7C legacy research readiness", node, ["scripts/verify-trust-phase7c-legacy-research-readiness.mjs"]);
+run("TRUST Phase 7C Phase4 legacy adoption compatibility", node, ["scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"]);
 
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
@@ -74,6 +75,7 @@ run("DATA-AI7 test/stage repeatability canary runtime", node, ["scripts/verify-d
 run("DATA-AI7 Production fail-closed deployed probe contract", node, ["scripts/verify-data-ai7-production-fail-closed.mjs"]);
 run("DATA-AI8 release-readiness evidence boundary", node, ["scripts/verify-data-ai8-release-readiness.mjs"]);
 run("DATA-AI9 hosted authenticated Preview acceptance harness", node, ["scripts/verify-data-ai9-hosted-preview-acceptance.mjs"]);
+run("DATA-AI10 hosted Preview evidence closure", node, ["scripts/verify-data-ai10-hosted-preview-evidence.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
