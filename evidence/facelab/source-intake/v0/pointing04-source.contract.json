@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "face-lab-pointing04-source-contract-v0",
+  "status": "figshare_v2_cc_by_metadata_pinned",
+  "source": {
+    "datasetName": "Pointing'04 Head Pose Image Database",
+    "figshareArticleId": 5142466,
+    "figshareVersion": 2,
+    "doi": "10.6084/m9.figshare.5142466.v2",
+    "license": {
+      "name": "CC BY 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "citation": {
+      "required": true,
+      "article": "Estimating Face Orientation from Robust Detection of Salient Facial Features"
+    },
+    "sourceMetadataDigest": "sha256:a730139a8c1112e5e9708d53828e76244835777bba0369c08533fceac6f54db0",
+    "fileCount": 31,
+    "totalFileBytes": 28282725,
+    "personArchiveCount": 30,
+    "frontArchivePresent": true
+  },
+  "intendedResearchUse": {
+    "nuisanceClass": "head_pitch",
+    "selectedAxis": "pan_zero_only",
+    "expectedSeriesCount": 30,
+    "expectedSelectedImagesPerSeries": 9,
+    "expectedSelectedImageCount": 270,
+    "expectedPitchPairsPerSeries": 8,
+    "expectedPitchPairCount": 240
+  },
+  "privacy": {
+    "rawImagesPersisted": false,
+    "rawLandmarksPersisted": false,
+    "identityEmbeddingCreated": false,
+    "biometricIdentityMatchPerformed": false
+  },
+  "authority": {
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false,
+    "adequacyDecisionAuthority": false
+  }
+}

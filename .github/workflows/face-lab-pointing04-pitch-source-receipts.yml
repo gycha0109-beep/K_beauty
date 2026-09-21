@@ -1,0 +1,87 @@
+name: Face Lab Pointing04 Pitch Source Receipts
+
+on:
+  pull_request:
+    paths:
+      - "evidence/facelab/source-intake/v0/pointing04-source.contract.json"
+      - "scripts/build-face-lab-pointing04-source-metadata.mjs"
+      - "scripts/verify-face-lab-pointing04-source-metadata.mjs"
+      - "scripts/build-face-lab-pointing04-pitch-receipts.mjs"
+      - "scripts/verify-face-lab-pointing04-pitch-receipts.mjs"
+      - ".github/workflows/face-lab-pointing04-pitch-source-receipts.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: face-lab-pointing04-pitch-source-receipts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  receipts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - name: Checkout exact Face Lab branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 2
+
+      - name: Verify exact event head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Fetch exact Pointing04 Figshare metadata
+        run: |
+          node scripts/build-face-lab-pointing04-source-metadata.mjs             "$RUNNER_TEMP/pointing04-source-metadata.json"
+          node scripts/verify-face-lab-pointing04-source-metadata.mjs             "$RUNNER_TEMP/pointing04-source-metadata.json"
+
+      - name: Build exact pitch-axis source receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-face-lab-pointing04-pitch-receipts.mjs             "$RUNNER_TEMP/pointing04-source-metadata.json"             evidence/facelab/source-intake/v0/pointing04-source.contract.json             "$RUNNER_TEMP/pointing04-pitch-source"             "$RUNNER_TEMP/pointing04-pitch-source-receipts.json"
+
+      - name: Verify pitch-axis receipt packet
+        run: |
+          node scripts/verify-face-lab-pointing04-pitch-receipts.mjs             "$RUNNER_TEMP/pointing04-pitch-source-receipts.json"
+
+      - name: Freeze derived pitch receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/facelab/source-intake/v0
+          cp "$RUNNER_TEMP/pointing04-pitch-source-receipts.json"             evidence/facelab/source-intake/v0/pointing04-pitch-source-receipts.json
+          rm -rf "$RUNNER_TEMP/pointing04-pitch-source"
+          git status --short
+
+      - name: Commit derived pitch receipts
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add evidence/facelab/source-intake/v0/pointing04-pitch-source-receipts.json
+          if git diff --cached --quiet; then
+            echo "No derived pitch receipt changes"
+            exit 0
+          fi
+          git commit -m "research(facelab): freeze Pointing04 pitch source receipts"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+
+      - name: Remove transient raw source
+        if: always()
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/pointing04-pitch-source"
