@@ -1,4 +1,5 @@
 name: Face Lab Pointing04 Source Metadata
+# source-metadata-revision: figshare-v2
 
 on:
   pull_request:
