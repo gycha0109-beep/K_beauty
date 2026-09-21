@@ -1,7 +1,7 @@
 # Face Lab External Research Dependency Register v1
 
-> Track: FACE LAB / Research Dependencies  
-> Reviewed: 2026-09-22  
+> Track: FACE LAB / Research Dependencies
+> Reviewed: 2026-09-22
 > Status: research inventory / not a legal approval / not Production activation
 
 ## 1. Purpose
