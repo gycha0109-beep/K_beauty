@@ -43,6 +43,9 @@ on:
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
       - "scripts/verify-face-lab-london-set-v5-intake.mjs"
       - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
+      - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
+      - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
+      - ".github/workflows/face-lab-london-source-receipts.yml"
       - "scripts/verify-face-lab-runner-cli-contract.mjs"
       - "scripts/build-face-lab-normalization-review-packet.mjs"
       - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
@@ -122,6 +125,9 @@ on:
       - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
       - "scripts/verify-face-lab-london-set-v5-intake.mjs"
       - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
+      - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
+      - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
+      - ".github/workflows/face-lab-london-source-receipts.yml"
       - "scripts/verify-face-lab-runner-cli-contract.mjs"
       - "scripts/build-face-lab-normalization-review-packet.mjs"
       - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
@@ -244,6 +250,10 @@ jobs:
         run: node scripts/verify-face-lab-london-set-v5-intake.mjs
       - name: Verify Face Lab London Set v5 upstream front inventory
         run: node scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs
+      - name: Syntax check London source receipt builder
+        run: node --check scripts/build-face-lab-london-set-v5-front-receipts.mjs
+      - name: Syntax check London source receipt verifier
+        run: node --check scripts/verify-face-lab-london-set-v5-front-receipts.mjs
       - name: Verify Face Lab source manifest scaffold
         run: node scripts/verify-face-lab-source-manifest-scaffold.mjs
       - name: Syntax check Face Lab source manifest scaffold CLI
