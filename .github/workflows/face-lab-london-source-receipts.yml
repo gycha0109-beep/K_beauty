@@ -50,6 +50,13 @@ jobs:
         run: node scripts/build-face-lab-london-set-v5-front-receipts.mjs .research/london-source "$RUNNER_TEMP/london-set-v5-front-receipts.json"
       - name: Verify derived receipt packet
         run: node scripts/verify-face-lab-london-set-v5-front-receipts.mjs "$RUNNER_TEMP/london-set-v5-front-receipts.json"
+      - name: Emit derived receipt packet for durable freeze
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "FACE_LAB_LONDON_RECEIPT_PACKET_BEGIN"
+          cat "$RUNNER_TEMP/london-set-v5-front-receipts.json"
+          echo "FACE_LAB_LONDON_RECEIPT_PACKET_END"
       - name: Remove transient raw source images
         if: always()
         shell: bash
