@@ -9,6 +9,7 @@ on:
       - "lib/face-lab-photo-geometry-stability.js"
       - "lib/face-lab-real-photo-stability-evidence.js"
       - "lib/face-lab-real-photo-stability-adequacy.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
       - "lib/face-lab-real-photo-stability-run-manifest.js"
       - "lib/face-lab-face-space-normalization-research.js"
       - "lib/face-lab-face-space-reference-corpus.js"
@@ -25,6 +26,7 @@ on:
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
       - "scripts/verify-face-lab-real-photo-stability-evidence.mjs"
       - "scripts/verify-face-lab-real-photo-stability-adequacy.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-review-packet.mjs"
       - "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs"
       - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
@@ -73,6 +75,7 @@ on:
       - "lib/face-lab-photo-geometry-stability.js"
       - "lib/face-lab-real-photo-stability-evidence.js"
       - "lib/face-lab-real-photo-stability-adequacy.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
       - "lib/face-lab-real-photo-stability-run-manifest.js"
       - "lib/face-lab-face-space-normalization-research.js"
       - "lib/face-lab-face-space-reference-corpus.js"
@@ -89,6 +92,7 @@ on:
       - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
       - "scripts/verify-face-lab-real-photo-stability-evidence.mjs"
       - "scripts/verify-face-lab-real-photo-stability-adequacy.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-review-packet.mjs"
       - "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs"
       - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
@@ -188,6 +192,8 @@ jobs:
         run: node scripts/verify-face-lab-real-photo-stability-evidence.mjs
       - name: Verify real-photo stability adequacy boundary
         run: node scripts/verify-face-lab-real-photo-stability-adequacy.mjs
+      - name: Verify real-photo stability review packet
+        run: node scripts/verify-face-lab-real-photo-stability-review-packet.mjs
       - name: Verify real-photo stability run manifest boundary
         run: node scripts/verify-face-lab-real-photo-stability-run-manifest.mjs
       - name: Syntax check real-photo stability pair runner
