@@ -1,0 +1,47 @@
+name: DATA-AI22 Product Query Quality Evaluation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "fixtures/data-ai22/product-query-quality-cases.json"
+      - "lib/product-query-beta-quality-evaluation-contract.mjs"
+      - "scripts/run-data-ai22-product-query-quality-evaluation.mjs"
+      - "scripts/verify-data-ai22-product-query-quality.mjs"
+      - ".github/workflows/data-ai22-product-query-quality-evaluation.yml"
+      - "scripts/verify-current-main-health.mjs"
+  push:
+    branches: [main]
+    paths:
+      - "fixtures/data-ai22/product-query-quality-cases.json"
+      - "lib/product-query-beta-quality-evaluation-contract.mjs"
+      - "scripts/run-data-ai22-product-query-quality-evaluation.mjs"
+      - "scripts/verify-data-ai22-product-query-quality.mjs"
+      - ".github/workflows/data-ai22-product-query-quality-evaluation.yml"
+      - "scripts/verify-current-main-health.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-ai22-product-query-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: DATA-AI22 quality corpus and evaluator
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify DATA-AI22 quality corpus
+        run: node scripts/verify-data-ai22-product-query-quality.mjs
+
+      - name: Run canonical evaluator baseline
+        run: node scripts/run-data-ai22-product-query-quality-evaluation.mjs --expected-baseline
