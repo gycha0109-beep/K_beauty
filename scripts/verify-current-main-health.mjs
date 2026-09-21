@@ -79,6 +79,7 @@ run("DATA-AI10 hosted Preview evidence closure", node, ["scripts/verify-data-ai1
 run("DATA-AI11 Production activation safety contract", node, ["scripts/verify-data-ai11-production-activation-safety.mjs"]);
 run("DATA-AI12 Production canary operational preflight", node, ["scripts/verify-data-ai12-production-canary-preflight.mjs"]);
 run("DATA-AI13 controlled Production canary runtime", node, ["scripts/verify-data-ai13-production-canary-runtime.mjs"]);
+run("DATA-AI14 Production canary execution harness", node, ["scripts/verify-data-ai14-production-canary-harness.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);

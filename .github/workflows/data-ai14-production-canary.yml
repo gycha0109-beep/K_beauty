@@ -1,0 +1,206 @@
+name: DATA-AI14 Production Canary
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "vercel.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: read
+  id-token: write
+
+concurrency:
+  group: data-ai14-production-canary
+  cancel-in-progress: false
+
+jobs:
+  production-canary:
+    name: DATA-AI14 exact-deployment Production canary
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN: ${{ secrets.DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout exact activation SHA
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.sha }}
+
+      - name: Attest exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Read checked-in activation manifest
+        id: activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          active="$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_RUNTIME_AUTHORIZED // "false"' vercel.json)"
+          if [ "$active" != "true" ]; then
+            echo "active=false" >> "$GITHUB_OUTPUT"
+            echo "DATA_AI14_ACTIVATION_MANIFEST=INACTIVE"
+            exit 0
+          fi
+
+          test "$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_ACTIVATION_ENABLED' vercel.json)" = "true"
+          test "$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_CANARY_MODE' vercel.json)" = "true"
+          test "$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_KILL_SWITCH' vercel.json)" = "false"
+          test "$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_COHORT' vercel.json)" = "authenticated_bounded"
+          test "$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_SAMPLE_BPS' vercel.json)" = "1"
+          test "$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_SAMPLE_BPS' vercel.json)" = "1"
+          test "$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_ENV_MUTATION_AUTHORIZED' vercel.json)" = "true"
+
+          expected_hash="$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_ACCOUNT_HASHES' vercel.json)"
+          printf '%s' "$expected_hash" | grep -Eq '^[a-f0-9]{64}$'
+
+          start="$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_START_UTC' vercel.json)"
+          end="$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_END_UTC' vercel.json)"
+          node - "$start" "$end" <<'NODE'
+          const start = Date.parse(process.argv[2]);
+          const end = Date.parse(process.argv[3]);
+          if (!Number.isFinite(start) || !Number.isFinite(end)) process.exit(1);
+          const duration = end - start;
+          if (duration <= 0 || duration > 6 * 60 * 60 * 1000) process.exit(1);
+          NODE
+
+          echo "active=true" >> "$GITHUB_OUTPUT"
+          echo "DATA_AI14_ACTIVATION_MANIFEST=ACTIVE_BOUNDED"
+
+      - name: Require fresh matching authenticated credential
+        if: steps.activation.outputs.active == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN"
+          echo "::add-mask::$DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN"
+          expected_hash="$(jq -r '.env.BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_ACCOUNT_HASHES' vercel.json)"
+          ACCESS_TOKEN="$DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN" EXPECTED_HASH="$expected_hash" node <<'NODE'
+          const crypto = require("node:crypto");
+          const token = process.env.ACCESS_TOKEN || "";
+          const parts = token.split(".");
+          if (parts.length !== 3) throw new Error("credential is not a JWT");
+          const payload = JSON.parse(
+            Buffer.from(parts[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8")
+          );
+          if (typeof payload.sub !== "string" || !payload.sub) throw new Error("JWT sub missing");
+          if (!Number.isFinite(payload.exp) || payload.exp <= Math.floor(Date.now() / 1000)) {
+            throw new Error("authenticated credential expired");
+          }
+          const hash = crypto.createHash("sha256").update(payload.sub, "utf8").digest("hex");
+          if (hash !== process.env.EXPECTED_HASH) throw new Error("credential subject not approved");
+          console.log("DATA_AI14_CREDENTIAL_ATTESTATION=PASS");
+          console.log("RAW_SUB_RECORDED=false");
+          console.log("RAW_TOKEN_RECORDED=false");
+          NODE
+
+      - name: Resolve exact successful Production deployment
+        if: steps.activation.outputs.active == 'true'
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=""
+          for attempt in $(seq 1 72); do
+            ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?sha=$GITHUB_SHA&per_page=100" --jq '.[] | .id' || true)"
+            for id in $ids; do
+              deployment="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id")"
+              production="$(printf '%s' "$deployment" | jq -r '.production_environment // false')"
+              environment="$(printf '%s' "$deployment" | jq -r '.environment // ""' | tr '[:upper:]' '[:lower:]')"
+              if [ "$production" != "true" ] && [ "$environment" != "production" ]; then
+                continue
+              fi
+              candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100" \
+                --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
+              if [ -n "$candidate" ]; then
+                url="${candidate%/}"
+                break
+              fi
+            done
+            if [ -n "$url" ]; then break; fi
+            sleep 5
+          done
+          test -n "$url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain Vercel trusted OIDC token
+        if: steps.activation.outputs.active == 'true'
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          trusted_json="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL")"
+          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$trusted"
+          printf 'trusted=%s\n' "$trusted" >> "$GITHUB_OUTPUT"
+
+      - name: Execute bounded authenticated Production canary
+        if: steps.activation.outputs.active == 'true'
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          query='oily skin sunscreen no white cast non sticky'
+          payload='{"query":"oily skin sunscreen no white cast non sticky"}'
+          output="$(mktemp)"
+          trap 'rm -f "$output"' EXIT
+
+          status="$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors \
+            -o "$output" \
+            -w '%{http_code}' \
+            -X POST \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            -H "Authorization: Bearer $DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data "$payload" \
+            "$DEPLOYMENT_URL/api/my/product-query-production-canary")"
+
+          test "$status" = "200"
+          if grep -Fq "$query" "$output"; then
+            echo "raw query leaked in Production canary response" >&2
+            exit 1
+          fi
+
+          node - "$output" <<'NODE'
+          const fs = require("node:fs");
+          const body = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+          if (body?.ok !== true) throw new Error("Production canary did not return ok=true");
+          if (body?.contractVersion !== "product-query-production-canary-v1") {
+            throw new Error("unexpected Production canary contract");
+          }
+          if (body?.canary?.manualOnly !== true ||
+              body?.canary?.automaticTrafficSampling !== false ||
+              body?.canary?.effectiveSampleBps !== 1 ||
+              body?.canary?.persisted !== false) {
+            throw new Error("Production canary safety boundary violated");
+          }
+          const preview = body.preview;
+          if (preview?.contractVersion !== "product-query-preview-v1" || preview?.persisted !== false) {
+            throw new Error("nested preview contract violated");
+          }
+          if (!Array.isArray(preview?.results) || preview.results.length > 5) {
+            throw new Error("Production canary result bound violated");
+          }
+          const forbidden = new Set(["score", "matchedSignals", "provider", "model", "intent"]);
+          const visit = (value) => {
+            if (!value || typeof value !== "object") return;
+            for (const [key, child] of Object.entries(value)) {
+              if (forbidden.has(key)) throw new Error("forbidden response key: " + key);
+              visit(child);
+            }
+          };
+          visit(body);
+          NODE
+
+          echo "DATA_AI14_PRODUCTION_CANARY=PASS"
