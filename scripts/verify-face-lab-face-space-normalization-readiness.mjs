@@ -16,6 +16,9 @@ import {
 import {
   validateFaceSpaceReferenceCorpus
 } from "../lib/face-lab-face-space-reference-corpus.js";
+import {
+  buildFaceSpaceReferenceCorpusReviewPacket
+} from "../lib/face-lab-reference-corpus-review-packet.js";
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
@@ -364,6 +367,11 @@ const futureReferenceCorpusManifest = {
 
 const futureReferenceCorpusSummary =
   validateFaceSpaceReferenceCorpus(futureReferenceCorpusManifest);
+const futureReferenceCorpusReviewPacket =
+  buildFaceSpaceReferenceCorpusReviewPacket({
+    manifest: futureReferenceCorpusManifest,
+    packetVersion: "synthetic-verifier-reference-corpus-review-packet-v0"
+  });
 
 const futureReferenceCorpusAdequacyEvidence = {
   schemaVersion: "face-space-reference-corpus-adequacy-evidence-v0",
@@ -374,6 +382,12 @@ const futureReferenceCorpusAdequacyEvidence = {
     futureReferenceCorpusSummary.schemaVersion,
   sourceReferenceSplitFingerprint:
     futureReferenceCorpusSummary.referenceSplitFingerprint,
+  sourceReviewPacketSchemaVersion:
+    futureReferenceCorpusReviewPacket.schemaVersion,
+  sourceReviewPacketVersion:
+    futureReferenceCorpusReviewPacket.packetVersion,
+  sourceReviewPacketFingerprint:
+    futureReferenceCorpusReviewPacket.reviewPacketFingerprint,
   sourceSamplingFrameProvenanceRef:
     futureReferenceCorpusSummary.samplingFrameProvenanceRef,
   sourceProvider: futureReferenceCorpusSummary.provider,
@@ -396,6 +410,8 @@ const structuralOnlyReadiness = evaluateFaceSpaceNormalizationReadiness({
   stabilitySummary: completeStabilitySummary,
   scope: "same_provider",
   referenceCorpusManifest: futureReferenceCorpusManifest,
+  referenceCorpusReviewPacket:
+    futureReferenceCorpusReviewPacket,
   evidence: {
     controlled3dPoseStress: true,
     controlled3dExpressionStress: true,
@@ -433,11 +449,27 @@ assert.equal(
   true
 );
 
+assert.throws(
+  () =>
+    evaluateFaceSpaceNormalizationReadiness({
+      semanticContract,
+      stabilitySummary: completeStabilitySummary,
+      scope: "same_provider",
+      referenceCorpusManifest: futureReferenceCorpusManifest,
+      referenceCorpusAdequacyEvidence:
+        futureReferenceCorpusAdequacyEvidence,
+      evidence: {}
+    }),
+  /reference_corpus_adequacy_review_packet_invalid/
+);
+
 const corpusOnlyReadiness = evaluateFaceSpaceNormalizationReadiness({
   semanticContract,
   stabilitySummary: completeStabilitySummary,
   scope: "same_provider",
   referenceCorpusManifest: futureReferenceCorpusManifest,
+  referenceCorpusReviewPacket:
+    futureReferenceCorpusReviewPacket,
   referenceCorpusAdequacyEvidence: futureReferenceCorpusAdequacyEvidence,
   evidence: {
     realPoseStability: false,
@@ -455,6 +487,10 @@ assert.equal(
 assert.equal(
   corpusOnlyReadiness.evidenceState.referenceCorpusAdequacyDecisionVersion,
   futureReferenceCorpusAdequacyEvidence.decisionVersion
+);
+assert.equal(
+  corpusOnlyReadiness.evidenceState.referenceCorpusReviewPacketFingerprint,
+  futureReferenceCorpusReviewPacket.reviewPacketFingerprint
 );
 assert.equal(corpusOnlyReadiness.evidenceState.multiSubjectCoverage, true);
 assert.equal(corpusOnlyReadiness.evidenceState.generalFaceCoverage, true);
@@ -534,6 +570,8 @@ const structuralRealPhotoOnlyReadiness =
     stabilitySummary: completeStabilitySummary,
     scope: "same_provider",
     referenceCorpusManifest: futureReferenceCorpusManifest,
+  referenceCorpusReviewPacket:
+    futureReferenceCorpusReviewPacket,
     referenceCorpusAdequacyEvidence:
       futureReferenceCorpusAdequacyEvidence,
     realPhotoStabilityReports: completeRealPhotoReports,
@@ -583,6 +621,8 @@ assert.throws(
       stabilitySummary: completeStabilitySummary,
       scope: "same_provider",
       referenceCorpusManifest: futureReferenceCorpusManifest,
+  referenceCorpusReviewPacket:
+    futureReferenceCorpusReviewPacket,
       referenceCorpusAdequacyEvidence:
         futureReferenceCorpusAdequacyEvidence,
       realPhotoStabilityReports: completeRealPhotoReports,
@@ -608,6 +648,8 @@ const sameProviderReady = evaluateFaceSpaceNormalizationReadiness({
   stabilitySummary: completeStabilitySummary,
   scope: "same_provider",
   referenceCorpusManifest: futureReferenceCorpusManifest,
+  referenceCorpusReviewPacket:
+    futureReferenceCorpusReviewPacket,
   referenceCorpusAdequacyEvidence: futureReferenceCorpusAdequacyEvidence,
   realPhotoStabilityReports: completeRealPhotoReports,
   realPhotoStabilityReviewPacket:
@@ -665,6 +707,8 @@ const crossProviderHeld = evaluateFaceSpaceNormalizationReadiness({
   stabilitySummary: completeStabilitySummary,
   scope: "cross_provider",
   referenceCorpusManifest: futureReferenceCorpusManifest,
+  referenceCorpusReviewPacket:
+    futureReferenceCorpusReviewPacket,
   referenceCorpusAdequacyEvidence: futureReferenceCorpusAdequacyEvidence,
   realPhotoStabilityReports: completeRealPhotoReports,
   realPhotoStabilityReviewPacket:
@@ -707,6 +751,8 @@ const crossProviderReady = evaluateFaceSpaceNormalizationReadiness({
   stabilitySummary: completeStabilitySummary,
   scope: "cross_provider",
   referenceCorpusManifest: futureReferenceCorpusManifest,
+  referenceCorpusReviewPacket:
+    futureReferenceCorpusReviewPacket,
   referenceCorpusAdequacyEvidence: futureReferenceCorpusAdequacyEvidence,
   realPhotoStabilityReports: completeRealPhotoReports,
   realPhotoStabilityReviewPacket:
@@ -1017,6 +1063,8 @@ console.log(JSON.stringify({
     manualCoverageFlagsCannotBypassReferenceCorpusManifest: true,
     validatedReferenceCorpusManifestRequiredForCoverageGates: true,
     explicitReferenceCorpusAdequacyReviewRequired: true,
+    referenceCorpusAdequacyBoundToExactReviewPacketFingerprint: true,
+    referenceCorpusReviewPacketAloneCannotSatisfyReadiness: true,
     structuralValidityAloneCannotSatisfyCoverageGates: true,
     numericAdequacyThresholdNotInvented: true,
     callerSuppliedReferenceCorpusSummaryForbidden: true,
