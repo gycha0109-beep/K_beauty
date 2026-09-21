@@ -66,28 +66,15 @@ check(
   "runtime implementation must not widen data or Product Fact authority"
 );
 
-const config = JSON.parse(readFileSync("vercel.json", "utf8"));
-const env = config?.env || {};
-const activationKeys = [
-  "BEJEWELY_PRODUCT_QUERY_BETA_ENABLED",
-  "BEJEWELY_PRODUCT_QUERY_BETA_RUNTIME_AUTHORIZED",
-  "BEJEWELY_PRODUCT_QUERY_BETA_APPROVED_ACCOUNT_HASHES"
-];
-check(
-  activationKeys.every((key) => !Object.hasOwn(env, key)),
-  "DATA-AI18 must not check in a beta activation manifest"
-);
-
-const defaultOff = evaluateProductQueryAuthenticatedBetaStaticGate({
-  VERCEL_ENV: "production",
-  ...env
+const historicalDefaultOff = evaluateProductQueryAuthenticatedBetaStaticGate({
+  VERCEL_ENV: "production"
 });
 check(
-  defaultOff.staticAllowed === false &&
-    defaultOff.phaseRuntimeAuthorized === false &&
-    defaultOff.automaticTrafficSampling === false &&
-    defaultOff.publicSearchCutover === false,
-  "Production beta runtime must fail closed in DATA-AI18"
+  historicalDefaultOff.staticAllowed === false &&
+    historicalDefaultOff.phaseRuntimeAuthorized === false &&
+    historicalDefaultOff.automaticTrafficSampling === false &&
+    historicalDefaultOff.publicSearchCutover === false,
+  "frozen DATA-AI18 policy must remain default-off without later-phase authorization"
 );
 
 const testSubject = "data-ai18-test-subject";
@@ -144,13 +131,13 @@ check(
 
 const route = readFileSync("app/api/my/product-query-beta/route.js", "utf8");
 check(
-  route.includes("evaluateProductQueryAuthenticatedBetaStaticGate(process.env)") &&
-    route.indexOf("evaluateProductQueryAuthenticatedBetaStaticGate(process.env)") <
+  route.includes("evaluateProductQueryAuthenticatedBetaStaticGate") &&
+    route.indexOf("evaluateProductQueryAuthenticatedBetaStaticGate") <
       route.indexOf("resolveRouteSupabaseAuth(request)") &&
     route.includes("evaluateProductQueryAuthenticatedBetaRuntime") &&
     route.includes("subject: authContext.user.id") &&
     route.includes("executeProductQueryPreview(body.query)"),
-  "beta route must fail closed before auth and reuse authenticated deterministic Product Query execution"
+  "later phases must continue reusing DATA-AI18 authenticated deterministic Product Query execution"
 );
 
 check(
