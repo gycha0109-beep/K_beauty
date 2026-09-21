@@ -6,6 +6,13 @@ on:
       - "evidence/facelab/source-intake/v0/london-set-v5-front-source-receipts.json"
       - "evidence/facelab/source-intake/v0/london-set-v5-reference-holdout-split-plan.json"
       - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
+      - "scripts/build-face-lab-normalization-review-packet.mjs"
+      - "scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs"
+      - "lib/face-lab-normalization-review-packet-run-output.js"
+      - "lib/face-lab-reference-corpus-review-packet.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
+      - "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
       - "scripts/run-face-lab-reference-corpus-measurement.mjs"
       - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
       - ".github/workflows/face-lab-london-measurement.yml"
@@ -77,6 +84,19 @@ jobs:
           mkdir -p evidence/facelab/photo-geometry/v0
           cp "$RUNNER_TEMP/london-set-v5-reference-corpus-run-output.json"             evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json
           cp "$RUNNER_TEMP/london-set-v5-expression-stability-run-output.json"             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json
+          node scripts/build-face-lab-normalization-review-packet.mjs \
+            reference-corpus \
+            evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json \
+            london-set-v5-reference-corpus-review-v1 \
+            --packet-only \
+            > evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json
+          node scripts/build-face-lab-normalization-review-packet.mjs \
+            real-photo-stability \
+            evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json \
+            london-set-v5-expression-stability-review-v1 \
+            --packet-only \
+            > evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json
+          node scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs
           rm -rf .research/london-source
           git status --short
       - name: Commit derived structural evidence
@@ -86,10 +106,10 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json
+          git add             evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json             evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json
           if git diff --cached --quiet; then
             echo "No derived evidence changes"
             exit 0
           fi
-          git commit -m "research(facelab): freeze London structural measurements"
+          git commit -m "research(facelab): freeze London structural review evidence"
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-real-photo-stability-adequacy-contract-v0",
-  "status": "not_evaluated_data_absent",
+  "status": "expression_review_packet_ready_pose_incomplete",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -16,9 +16,24 @@
     "The review packet must carry observed drift and provenance without thresholds, automatic pass/fail, or ranking."
   ],
   "currentEvidence": {
-    "realPhotoReportCollectionPresent": false,
+    "realPhotoReportCollectionPresent": true,
+    "sourceReportCount": 102,
+    "collectionFingerprint": "sha256:915f3c17833e7072e5e3cd75d48b30a9efc7b3ef28c163f433ab9f457573a77a",
+    "coveredNuisanceClasses": [
+      "expression"
+    ],
+    "missingNuisanceClasses": [
+      "head_pitch",
+      "head_roll",
+      "head_yaw"
+    ],
+    "completeNuisanceCoverage": false,
+    "descriptiveReviewPacketPresent": true,
+    "reviewPacketRef": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json",
+    "reviewPacketVersion": "london-set-v5-expression-stability-review-v1",
+    "reviewPacketFingerprint": "sha256:4fc877daceae894623df826bca71380f76fb25a01d13d8877ffc5142c36bd2d2",
     "adequacyDecisionPresent": false,
-    "status": "not_ready"
+    "status": "review_ready_pose_incomplete"
   },
   "reviewPacket": {
     "schemaVersion": "face-lab-real-photo-stability-review-packet-v0",

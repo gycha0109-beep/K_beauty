@@ -6,6 +6,9 @@ import {
 import {
   summarizeRealPhotoStabilityCollection
 } from "../lib/face-lab-real-photo-stability-evidence.js";
+import {
+  buildFaceLabNormalizationReviewPacketFromRunOutput
+} from "../lib/face-lab-normalization-review-packet-run-output.js";
 
 const reference = JSON.parse(
   readFileSync(
@@ -16,6 +19,30 @@ const reference = JSON.parse(
 const expression = JSON.parse(
   readFileSync(
     "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json",
+    "utf8"
+  )
+);
+const referenceReviewPacket = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json",
+    "utf8"
+  )
+);
+const expressionReviewPacket = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json",
+    "utf8"
+  )
+);
+const referenceAdequacyContract = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json",
+    "utf8"
+  )
+);
+const stabilityAdequacyContract = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json",
     "utf8"
   )
 );
@@ -48,6 +75,38 @@ assert.equal(reference.privacy.sourceImagePersisted, false);
 assert.equal(reference.privacy.rawLandmarksPersisted, false);
 assert.equal(reference.privacy.identityEmbeddingCreated, false);
 assert.equal(reference.privacy.biometricIdentityMatchPerformed, false);
+const rebuiltReferenceReviewPacket =
+  buildFaceLabNormalizationReviewPacketFromRunOutput({
+    kind: "reference-corpus",
+    runOutput: reference,
+    packetVersion: "london-set-v5-reference-corpus-review-v1"
+  });
+assert.deepEqual(referenceReviewPacket, rebuiltReferenceReviewPacket);
+assert.equal(referenceReviewPacket.reviewSemantics.descriptiveOnly, true);
+assert.equal(
+  referenceReviewPacket.reviewSemantics.holdoutMeasurementValuesIncluded,
+  false
+);
+assert.equal(
+  referenceReviewPacket.authority.adequacyDecisionAuthority,
+  false
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.realReferenceCorpusPresent,
+  true
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.descriptiveReviewPacketPresent,
+  true
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.reviewPacketFingerprint,
+  referenceReviewPacket.reviewPacketFingerprint
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.adequacyDecisionPresent,
+  false
+);
 
 assert.equal(expression.ok, true);
 assert.equal(
@@ -87,6 +146,43 @@ assert.equal(expression.privacy.sourceImagePersisted, false);
 assert.equal(expression.privacy.rawLandmarksPersisted, false);
 assert.equal(expression.privacy.identityEmbeddingCreated, false);
 assert.equal(expression.privacy.biometricIdentityMatchPerformed, false);
+const rebuiltExpressionReviewPacket =
+  buildFaceLabNormalizationReviewPacketFromRunOutput({
+    kind: "real-photo-stability",
+    runOutput: expression,
+    packetVersion: "london-set-v5-expression-stability-review-v1"
+  });
+assert.deepEqual(expressionReviewPacket, rebuiltExpressionReviewPacket);
+assert.deepEqual(
+  expressionReviewPacket.sourceCoveredNuisanceClasses,
+  ["expression"]
+);
+assert.equal(expressionReviewPacket.reviewSemantics.descriptiveOnly, true);
+assert.equal(expressionReviewPacket.reviewSemantics.thresholdsApplied, false);
+assert.equal(
+  expressionReviewPacket.authority.adequacyDecisionAuthority,
+  false
+);
+assert.equal(
+  stabilityAdequacyContract.currentEvidence.realPhotoReportCollectionPresent,
+  true
+);
+assert.deepEqual(
+  stabilityAdequacyContract.currentEvidence.missingNuisanceClasses,
+  ["head_pitch", "head_roll", "head_yaw"]
+);
+assert.equal(
+  stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage,
+  false
+);
+assert.equal(
+  stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint,
+  expressionReviewPacket.reviewPacketFingerprint
+);
+assert.equal(
+  stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent,
+  false
+);
 
 const serialized = JSON.stringify({ reference, expression });
 assert.equal(serialized.includes(".research/london-source"), false);
@@ -101,6 +197,10 @@ console.log(JSON.stringify({
   realExpressionEvidenceKind: "real_photo_same_subject",
   realPoseEvidenceKind: null,
   missingNuisanceClasses: ["head_yaw", "head_pitch", "head_roll"],
+  referenceReviewPacketFingerprint: referenceReviewPacket.reviewPacketFingerprint,
+  expressionReviewPacketFingerprint: expressionReviewPacket.reviewPacketFingerprint,
+  descriptiveReviewPacketsFrozen: true,
+  adequacyDecisionPresent: false,
   productionAuthority: false,
   normalizationAuthority: false,
   thresholdAuthority: false

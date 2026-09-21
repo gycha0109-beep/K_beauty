@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-space-reference-corpus-adequacy-contract-v0",
-  "status": "not_evaluated_data_absent",
+  "status": "review_packet_ready_adequacy_pending",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -17,9 +17,14 @@
     "The review packet must preserve the research privacy boundary: no persisted source image, raw landmarks, identity embeddings, biometric matching, or local image paths."
   ],
   "currentEvidence": {
-    "realReferenceCorpusPresent": false,
+    "realReferenceCorpusPresent": true,
+    "referenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "descriptiveReviewPacketPresent": true,
+    "reviewPacketRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json",
+    "reviewPacketVersion": "london-set-v5-reference-corpus-review-v1",
+    "reviewPacketFingerprint": "sha256:49f76545486f50e88b68a23f68cc65605158dc402d78a4ce44d27940314de392",
     "adequacyDecisionPresent": false,
-    "status": "not_ready"
+    "status": "review_ready_adequacy_pending"
   },
   "reviewPacket": {
     "schemaVersion": "face-space-reference-corpus-review-packet-v0",
