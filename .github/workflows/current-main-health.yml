@@ -35,6 +35,12 @@ jobs:
           test "$actual" = "$expected"
           printf 'CURRENT_MAIN_HEALTH_SHA=%s\n' "$actual"
 
+      - name: Attest frozen Face Lab evaluation authorities
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: node scripts/verify-face-lab-frozen-evaluation-authorities.mjs
+
       - name: Check exact-head diff hygiene
         shell: bash
         env:

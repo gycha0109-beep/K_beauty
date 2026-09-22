@@ -164,6 +164,9 @@ run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archety
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
 run("Face Lab Human evaluation contract", npm, ["run", "verify:face-lab-archetype-human-evaluation"]);
+run("Face Lab Korean offline review UI", npm, ["run", "verify:face-lab-independent-human-cue-review-ui-ko"]);
+run("Face Lab home transfer builder syntax", node, ["--check", "scripts/build-face-lab-home-transfer-v1.mjs"]);
+run("Face Lab home transfer verifier syntax", node, ["--check", "scripts/check-face-lab-home-transfer-v1.mjs"]);
 run("Face Lab hosted set authority", npm, ["run", "verify:face-lab-independent-human-cue-hosted-set"]);
 run("Face Lab hosted response contract", npm, ["run", "verify:face-lab-independent-human-cue-hosted-response"]);
 run("Face Lab hosted UI security boundary", npm, ["run", "verify:face-lab-independent-human-cue-hosted-ui"]);
