@@ -1,4 +1,4 @@
-name: TRUST Phase 8D Revalidation Research Bridge
+name: TRUST Data Governance - Phase 8D Revalidation Research Bridge
 
 on:
   pull_request:
@@ -16,7 +16,11 @@ on:
       - "scripts/verify-trust-phase8d-revalidation.mjs"
       - ".github/workflows/trust-phase8d-revalidation.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

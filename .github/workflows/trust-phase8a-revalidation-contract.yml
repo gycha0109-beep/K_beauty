@@ -1,4 +1,4 @@
-name: TRUST Phase 8A Revalidation Contract
+name: TRUST Data Governance - Phase 8A Revalidation Contract
 
 on:
   pull_request:
@@ -16,7 +16,11 @@ on:
       - "scripts/verify-trust-phase8a-revalidation-contract.mjs"
       - ".github/workflows/trust-phase8a-revalidation-contract.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

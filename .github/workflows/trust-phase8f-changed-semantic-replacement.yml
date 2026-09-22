@@ -1,4 +1,4 @@
-name: TRUST Phase 8F Changed Semantic Replacement
+name: TRUST Data Governance - Phase 8F Changed Semantic Replacement
 
 on:
   pull_request:
@@ -16,7 +16,11 @@ on:
       - "scripts/verify-trust-phase8f-changed-semantic-replacement.mjs"
       - ".github/workflows/trust-phase8f-changed-semantic-replacement.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
