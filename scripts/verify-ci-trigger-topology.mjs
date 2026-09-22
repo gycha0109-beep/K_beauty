@@ -450,9 +450,7 @@ const heavyRuntimeConcurrencyWorkflows = [
   ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml",
   ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml",
   ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml",
-  ".github/workflows/legacy-offer-classifier.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
-  ".github/workflows/product-identity-resolution.yml",
   ".github/workflows/product-offers.yml",
   ".github/workflows/product-source-bindings.yml",
 ];
