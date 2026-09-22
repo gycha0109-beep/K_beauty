@@ -1,4 +1,4 @@
-name: DATA-AI16 Production Canary Closure
+name: Product Query AI - Production Canary Closure
 
 on:
   push:
@@ -18,7 +18,11 @@ on:
       - "scripts/verify-data-ai16-production-canary-closure.mjs"
       - ".github/workflows/data-ai16-production-canary-closure.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read
