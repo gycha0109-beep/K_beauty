@@ -164,6 +164,16 @@ run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archety
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
 run("Face Lab Human evaluation contract", npm, ["run", "verify:face-lab-archetype-human-evaluation"]);
+run("Face Lab hosted set authority", npm, ["run", "verify:face-lab-independent-human-cue-hosted-set"]);
+run("Face Lab hosted response contract", npm, ["run", "verify:face-lab-independent-human-cue-hosted-response"]);
+run("Face Lab hosted UI security boundary", npm, ["run", "verify:face-lab-independent-human-cue-hosted-ui"]);
+run("Face Lab neutral face-count shared stage", node, ["scripts/check-face-lab-neutral-face-count-stage-v1.mjs"]);
+run("Face Lab neutral face-count contract syntax", node, ["--check", "lib/face-lab-neutral-face-count-contract.mjs"]);
+run("Face Lab neutral face-count intake syntax", node, ["--check", "lib/face-lab-neutral-face-count-intake.js"]);
+run("Face Lab neutral face-count review HTML syntax", node, ["--check", "lib/face-lab-neutral-face-count-review-html.js"]);
+run("Face Lab neutral review submit route syntax", node, ["--check", "app/api/facelab/review/neutral/submit/route.js"]);
+run("Face Lab review submit route syntax", node, ["--check", "app/api/facelab/review/submit/route.js"]);
+run("Face Lab review route syntax", node, ["--check", "app/facelab/review/route.js"]);
 run("Face Lab synthetic evaluation workspace", npm, ["run", "synthetic:verify"]);
 run("Face Lab neutral review operator safety", node, ["scripts/check-face-lab-neutral-review-operator-v1.mjs"]);
 run("Face Lab neutral review operator syntax", node, ["--check", "scripts/face-lab-neutral-review-operator.mjs"]);
