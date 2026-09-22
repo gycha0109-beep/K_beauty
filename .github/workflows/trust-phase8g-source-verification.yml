@@ -1,4 +1,4 @@
-name: TRUST Phase 8G Source Verification Comparability
+name: TRUST Data Governance - Phase 8G Source Verification Comparability
 
 on:
   pull_request:
@@ -26,7 +26,11 @@ on:
       - "docs/evidence/trust-phase8a-product-fact-revalidation-contract-v1.md"
       - ".github/workflows/trust-phase8g-source-verification.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
