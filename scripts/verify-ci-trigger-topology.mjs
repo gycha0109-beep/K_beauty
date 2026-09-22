@@ -81,7 +81,6 @@ const taxonomyWorkflows = readdirSync(".github/workflows")
 assert.deepEqual(
   taxonomyWorkflows,
   [
-    "data-taxonomy-ci.yml",
     "data-taxonomy13-catalog-only-candidate-approval.yml",
     "data-taxonomy15-catalog-only-trust-intake.yml",
   ],
@@ -105,6 +104,35 @@ const retiredProductEvidenceWorkflows = new Set([
   "product-evidence-presentation-contract.yml",
   "product-evidence-presentation-provider.yml",
   "product-evidence-review-observation-readiness.yml",
+]);
+
+const retiredCatalogTaxonomyStaticWorkflows = new Set([
+  "data-taxonomy-ci.yml",
+]);
+const presentRetiredCatalogTaxonomyStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredCatalogTaxonomyStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredCatalogTaxonomyStaticWorkflows,
+  [],
+  `retired Catalog Taxonomy static workflows must stay retired: ${presentRetiredCatalogTaxonomyStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-TAXONOMY1 shadow catalog taxonomy foundation"',
+  'run("DATA-TAXONOMY2 candidate manual classification"',
+  'run("DATA-TAXONOMY4 recommendation shadow parity"',
+  'run("DATA-TAXONOMY5 production recommendation parity foundation"',
+  'run("DATA-TAXONOMY5 production recommendation parity runtime"',
+  'run("DATA-TAXONOMY15 recommendation parity catalog-only v2"',
+  'run("DATA-TAXONOMY6 product identity decoupling preflight"',
+  'run("DATA-TAXONOMY7 legacy projection compatibility"',
+  'run("DATA-TAXONOMY8 nullable legacy category projection"',
+  'run("DATA-TAXONOMY10 catalog-only product promotion eligibility"',
+  'run("DATA-TAXONOMY11 catalog-only transactional adoption"',
+  'run("Catalog taxonomy shadow reader syntax"',
+  'run("Catalog taxonomy shadow replay syntax"',
+  'run("Catalog taxonomy shadow cardinality syntax"',
+  'run("Catalog taxonomy replay route syntax"',
 ]);
 
 const retiredProductDataPipelineStaticWorkflows = new Set([
@@ -395,7 +423,6 @@ for (const path of [
 }
 
 for (const path of [
-  ".github/workflows/data-taxonomy-ci.yml",
   ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
   ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
 ]) {
@@ -620,7 +647,6 @@ const responsibilityNameGroups = [
   },
   {
     names: [
-      "data-taxonomy-ci.yml",
       "data-taxonomy13-catalog-only-candidate-approval.yml",
       "data-taxonomy15-catalog-only-trust-intake.yml",
     ],
