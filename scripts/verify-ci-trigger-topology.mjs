@@ -479,3 +479,24 @@ for (const relativePath of responsibilityScopedWorkflowPaths) {
     `${relativePath}: workflow_dispatch must expose optional watchtower_track`
   );
 }
+
+
+/* TRUST_RESPONSIBILITY_NAMING_GUARD */
+const trustResponsibilityWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^trust-phase/i.test(name) && /\.ya?ml$/i.test(name))
+  .sort();
+
+for (const name of trustResponsibilityWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: TRUST Data Governance - "),
+    `${relativePath}: TRUST workflow display name must expose TRUST Data Governance responsibility`
+  );
+  if (source.includes("  workflow_dispatch:")) {
+    assert.ok(
+      source.includes("watchtower_track:"),
+      `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+    );
+  }
+}
