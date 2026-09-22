@@ -1,4 +1,4 @@
-name: DATA-AI21 Limited Beta Evidence Closure
+name: Product Query AI - DATA-AI21 Evidence Closure
 
 on:
   pull_request:
@@ -7,7 +7,6 @@ on:
       - "lib/product-query-authenticated-beta-evidence-closure.mjs"
       - "scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"
       - ".github/workflows/data-ai21-limited-beta-evidence-closure.yml"
-      - "scripts/verify-current-main-health.mjs"
       - "app/api/my/product-query-beta/evidence-receipt/route.js"
   push:
     branches: [main]
@@ -15,10 +14,13 @@ on:
       - "lib/product-query-authenticated-beta-evidence-closure.mjs"
       - "scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"
       - ".github/workflows/data-ai21-limited-beta-evidence-closure.yml"
-      - "scripts/verify-current-main-health.mjs"
       - "app/api/my/product-query-beta/evidence-receipt/route.js"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read
