@@ -72,6 +72,22 @@ run(
 run("G2 initial admission grant contract", node, ["scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs"]);
 run("G3A Product Fact authority read contract", node, ["scripts/verify-v21-admission-g3a-pf-authority-reader-v1.mjs"]);
 run("G3 production candidate admission contract", node, ["scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs"]);
+run("DATA-TAXONOMY1 shadow catalog taxonomy foundation", node, ["scripts/verify-data-taxonomy1-shadow-catalog-taxonomy-foundation-v1.mjs"]);
+run("DATA-TAXONOMY2 candidate manual classification", node, ["scripts/verify-data-taxonomy2-candidate-manual-classification-v1.mjs"]);
+run("DATA-TAXONOMY4 recommendation shadow parity", node, ["--experimental-strip-types", "scripts/product-evidence/verify-data-taxonomy4-recommendation-shadow-parity-v1.mjs"]);
+run("DATA-TAXONOMY5 production recommendation parity foundation", node, ["scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"]);
+run("DATA-TAXONOMY5 production recommendation parity runtime", node, ["scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"]);
+run("DATA-TAXONOMY15 recommendation parity catalog-only v2", node, ["scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"]);
+run("DATA-TAXONOMY6 product identity decoupling preflight", node, ["scripts/product-evidence/verify-data-taxonomy6-product-identity-decoupling-preflight-v1.mjs"]);
+run("DATA-TAXONOMY7 legacy projection compatibility", node, ["scripts/product-evidence/verify-data-taxonomy7-legacy-projection-compatibility-v1.mjs"]);
+run("DATA-TAXONOMY8 nullable legacy category projection", node, ["scripts/product-evidence/verify-data-taxonomy8-nullable-legacy-category-projection-v1.mjs"]);
+run("DATA-TAXONOMY10 catalog-only product promotion eligibility", node, ["scripts/product-evidence/verify-data-taxonomy10-catalog-only-product-promotion-eligibility-v1.mjs"]);
+run("DATA-TAXONOMY11 catalog-only transactional adoption", node, ["scripts/product-evidence/verify-data-taxonomy11-catalog-only-transactional-adoption-v1.mjs"]);
+run("Catalog taxonomy shadow reader syntax", node, ["--check", "lib/catalog-taxonomy-recommendation-shadow-reader.js"]);
+run("Catalog taxonomy shadow replay syntax", node, ["--check", "lib/catalog-taxonomy-recommendation-shadow-replay.js"]);
+run("Catalog taxonomy shadow cardinality syntax", node, ["--check", "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"]);
+run("Catalog taxonomy replay route syntax", node, ["--check", "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"]);
+
 run("DATA-AI3 product-query shadow contract", node, ["scripts/verify-data-ai3-product-query-shadow.mjs"]);
 run("DATA-AI4 provider-backed shadow contract", node, ["scripts/verify-data-ai4-provider-shadow.mjs"]);
 run("DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);
