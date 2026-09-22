@@ -1,6 +1,6 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v1",
-  "generatedFromMainSha": "91e7f4f4472b5244be9a97bc9dc794a6c6eac09b",
+  "generatedFromMainSha": "fec8d2ab6042af6ed7197a4e1c952a65ec56a7f5",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
     "workflowResponsibility": "A workflow has one primary technical responsibility and may expose multiple capability tags.",
@@ -271,17 +271,6 @@
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml": {
-      "primaryResponsibility": "face-lab",
-      "capabilities": [
-        "ai",
-        "evaluation",
-        "review-ops"
-      ],
-      "watchtowerTrackBinding": "dynamic-by-run",
-      "lifecycleNameClass": "capability",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
-    "face-lab-neutral-face-count-shared-stage-v1.yml": {
       "primaryResponsibility": "face-lab",
       "capabilities": [
         "ai",

@@ -185,3 +185,17 @@ A workflow may be removed only when all of the following are true:
 - Verifier side effects: none; the observability verifier has no fetch, Supabase client, child process, filesystem write, environment-secret, or network dependency
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and all four checks to remain owned by Current Main Health
 - Equivalence result: DATA-OFFER17 observability contract coverage remains intact while the actual controlled deployed RPC diagnostic stays standalone.
+
+### Face Lab neutral face-count shared-stage static wrapper
+
+- Retired workflow: `.github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml`
+- Previous mode: path-scoped main PR/push plus manual, contents-read-only Node verification
+- Unique executable coverage: neutral face-count shared-stage verifier, six touched-runtime syntax checks, and three hosted-set/response/UI contract checks
+- Existing canonical overlap: target-axis, Human cue protocol, archetype scoring, Human evaluation, synthetic workspace, and architecture guard were already owned by Current Main Health
+- Canonical authority: all unique checks are now executed by `scripts/verify-current-main-health.mjs`; the overlapping checks remain canonical there
+- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and manual dispatch, a strict superset of the retired path-scoped trigger set
+- Exact-head and diff authority: Current Main Health retains exact candidate SHA checkout/attestation and exact-head diff hygiene
+- Runtime authority: none; the wrapper did not start Supabase, connect to a database, use credentials, execute browser automation, deploy, upload artifacts, or call an external provider
+- Verifier side effects: none; the neutral-stage verifier reads repository authority and fixtures only. Its `fetch(DATA.submitEndpoint` occurrence is a source-code needle, not a network call
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and the complete canonical coverage set to remain in Current Main Health
+- Equivalence result: Face Lab neutral face-count static coverage is preserved under the broader canonical health authority.

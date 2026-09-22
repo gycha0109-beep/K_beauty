@@ -105,6 +105,36 @@ const retiredProductEvidenceWorkflows = new Set([
   "product-evidence-review-observation-readiness.yml",
 ]);
 
+const retiredFaceLabNeutralStageStaticWorkflows = new Set([
+  "face-lab-neutral-face-count-shared-stage-v1.yml",
+]);
+const presentRetiredFaceLabNeutralStageStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredFaceLabNeutralStageStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredFaceLabNeutralStageStaticWorkflows,
+  [],
+  `retired Face Lab neutral-stage static workflows must stay retired: ${presentRetiredFaceLabNeutralStageStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Face Lab hosted set authority"',
+  'run("Face Lab hosted response contract"',
+  'run("Face Lab hosted UI security boundary"',
+  'run("Face Lab neutral face-count shared stage"',
+  'run("Face Lab neutral face-count contract syntax"',
+  'run("Face Lab neutral face-count intake syntax"',
+  'run("Face Lab neutral face-count review HTML syntax"',
+  'run("Face Lab neutral review submit route syntax"',
+  'run("Face Lab review submit route syntax"',
+  'run("Face Lab review route syntax"',
+  'run("Face Lab target-axis contract"',
+  'run("Face Lab independent Human cue protocol"',
+  'run("Face Lab archetype scoring contract"',
+  'run("Face Lab Human evaluation contract"',
+  'run("Face Lab synthetic evaluation workspace"',
+  'run("Architecture guard"',
+]);
+
 const retiredProductOfferObservabilityStaticWorkflows = new Set([
   "data-offer17-offer-runtime-observability.yml",
 ]);
@@ -514,7 +544,6 @@ const heavyRuntimeConcurrencyWorkflows = [
   ".github/workflows/trust-phase7a-backfill.yml",
   ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml",
   ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml",
-  ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
   ".github/workflows/product-offers.yml",
   ".github/workflows/product-source-bindings.yml",
@@ -719,7 +748,6 @@ for (const group of responsibilityNameGroups) {
 const faceLabResponsibilityWorkflows = [
   "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
   "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
-  "face-lab-neutral-face-count-shared-stage-v1.yml",
 ];
 
 for (const name of faceLabResponsibilityWorkflows) {
