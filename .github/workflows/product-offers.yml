@@ -1,4 +1,4 @@
-name: Product Offers
+name: Product Data Pipeline - Product Offers
 
 on:
   pull_request:
