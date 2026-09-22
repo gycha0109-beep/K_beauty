@@ -1,4 +1,4 @@
-name: DATA-AI7 Production Fail-Closed
+name: Product Query AI - Production Fail-Closed
 
 on:
   push:
@@ -20,7 +20,11 @@ on:
       - "scripts/verify-data-ai7-production-fail-closed.mjs"
       - ".github/workflows/data-ai7-production-fail-closed.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read
