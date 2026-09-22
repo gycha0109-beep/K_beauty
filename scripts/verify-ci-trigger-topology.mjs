@@ -598,3 +598,25 @@ for (const name of faceLabResponsibilityWorkflows) {
     `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
   );
 }
+
+
+/* PRODUCT_EVIDENCE_RESPONSIBILITY_NAMING_GUARD */
+const productEvidenceResponsibilityWorkflows = [
+  "free-result-v2-product-evidence-ui.yml",
+  "product-evidence-presentation-contract.yml",
+  "product-evidence-presentation-provider.yml",
+  "product-evidence-review-observation-readiness.yml",
+];
+
+for (const name of productEvidenceResponsibilityWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: Product Evidence - "),
+    `${relativePath}: workflow display name must expose Product Evidence responsibility`,
+  );
+  assert.ok(
+    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
+  );
+}
