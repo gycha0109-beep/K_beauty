@@ -267,6 +267,8 @@ assert.deepEqual(
 );
 
 const retiredProductQueryAIWorkflows = new Set([
+  "data-ai1-product-query-intent.yml",
+  "data-ai2-product-query-execution.yml",
   "data-ai9-hosted-preview-acceptance.yml",
   "data-ai14-production-canary.yml",
   "data-ai17-authenticated-limited-beta-design.yml",
@@ -285,6 +287,8 @@ assert.deepEqual(
 );
 
 assertContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-AI1 product-query intent boundary"',
+  'run("DATA-AI2 deterministic product-query execution"',
   'run("DATA-AI22 product-query quality evaluation"',
   'run("DATA-AI22 product-query quality canonical baseline"',
   '"scripts/run-data-ai22-product-query-quality-evaluation.mjs", "--expected-baseline"',
