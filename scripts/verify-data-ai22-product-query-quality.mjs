@@ -61,9 +61,9 @@ check(
   JSON.stringify(kindCounts) ===
     JSON.stringify({
       paraphrase: 15,
-      compound: 7,
+      compound: 8,
       ambiguous: 2,
-      conflict: 3,
+      conflict: 2,
       unsupported: 3
     }),
   "corpus must preserve the planned coverage mix"
@@ -82,6 +82,18 @@ for (const testCase of cases) {
       ),
     `${testCase.id} comparison fields must contain every critical intent field`
   );
+  if (testCase.expectedBehavior === "conflict") {
+    check(
+      Array.isArray(testCase.conflictFields) &&
+        testCase.conflictFields.length > 0 &&
+        testCase.conflictFields.every(
+          (field) =>
+            testCase.compareFields.includes(field) &&
+            testCase.expectedIntent[field] === null
+        ),
+      `${testCase.id} conflict fields must be explicit, compared, and neutralized`
+    );
+  }
 }
 
 const baseline = cases.map((testCase) =>
@@ -196,6 +208,36 @@ check(
   "contradiction suppression must be detected"
 );
 
+const conflictFieldLeak = evaluateProductQueryQualityObservation(
+  byId.get("DA22-CON-01"),
+  {
+    runtimeSucceeded: true,
+    intent: {
+      ...byId.get("DA22-CON-01").expectedIntent,
+      tone_up_wanted: false
+    }
+  }
+);
+check(
+  conflictFieldLeak.failures.includes("Q07_CONTRADICTION_IGNORED"),
+  "conflicted structured field must remain neutral even when unresolved evidence is preserved"
+);
+
+const ambiguityUnresolvedLeak = evaluateProductQueryQualityObservation(
+  byId.get("DA22-AMB-02"),
+  {
+    runtimeSucceeded: true,
+    intent: {
+      ...byId.get("DA22-AMB-02").expectedIntent,
+      unresolved_terms: ["generic personalized recommendation"]
+    }
+  }
+);
+check(
+  ambiguityUnresolvedLeak.failures.includes("Q08_AMBIGUITY_OVERINFERRED"),
+  "pure ambiguity must not be converted into an unresolved concept"
+);
+
 const runtimeFailure = evaluateProductQueryQualityObservation(
   byId.get("DA22-WC-01"),
   { runtimeSucceeded: false }
@@ -301,6 +343,15 @@ check(
     !provider.includes("@/lib/product-source") &&
     !provider.includes("@/lib/recommendation-scoring"),
   "provider must remain intent-only and non-persistent"
+);
+check(
+  provider.includes("Semantic ownership:") &&
+    provider.includes("Do NOT duplicate one phrase into multiple fields") &&
+    provider.includes('do NOT infer sensitivity="high" merely from skin_type=sensitive') &&
+    provider.includes("MUST NOT also populate texture") &&
+    provider.includes("Desired product properties are not user conditions") &&
+    provider.includes("do not choose a side"),
+  "provider instructions must preserve semantic ownership and fail-closed conflict handling"
 );
 
 console.log(
