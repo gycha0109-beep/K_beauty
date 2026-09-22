@@ -1,4 +1,4 @@
-name: Product Identity Key Repair Confirm
+name: Product Data Pipeline - Identity Key Repair Confirm
 
 on:
   pull_request:
