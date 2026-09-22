@@ -1,4 +1,5 @@
 name: Face Lab Neutral Face Count Shared Stage v2
+run-name: "[WT:face-research] ${{ github.workflow }}"
 
 on:
   pull_request:
@@ -28,7 +29,11 @@ on:
       - 'docs/domain/facelab/face-count-neutral-shared-stage-v1.md'
       - '.github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml'
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
