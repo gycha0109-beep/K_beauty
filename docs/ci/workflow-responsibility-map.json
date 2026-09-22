@@ -1,6 +1,6 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v1",
-  "generatedFromMainSha": "3798f30042069cc7bf0b3440d7282bc7287a50b6",
+  "generatedFromMainSha": "3e0971de1d4a1a1a06d8445fc12564d880820e9a",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
     "workflowResponsibility": "A workflow has one primary technical responsibility and may expose multiple capability tags.",
@@ -114,17 +114,6 @@
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
-    "data-ai17-authenticated-limited-beta-design.yml": {
-      "primaryResponsibility": "product-query-ai",
-      "capabilities": [
-        "ai",
-        "backend",
-        "recommendation"
-      ],
-      "watchtowerTrackBinding": "dynamic-by-run",
-      "lifecycleNameClass": "phase-coded",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
     "data-ai18-authenticated-beta-runtime.yml": {
       "primaryResponsibility": "product-query-ai",
       "capabilities": [
@@ -132,17 +121,6 @@
         "backend",
         "recommendation",
         "runtime-probe"
-      ],
-      "watchtowerTrackBinding": "dynamic-by-run",
-      "lifecycleNameClass": "phase-coded",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
-    "data-ai19-authenticated-beta-activation-preflight.yml": {
-      "primaryResponsibility": "product-query-ai",
-      "capabilities": [
-        "ai",
-        "backend",
-        "recommendation"
       ],
       "watchtowerTrackBinding": "dynamic-by-run",
       "lifecycleNameClass": "phase-coded",
