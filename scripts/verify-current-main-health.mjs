@@ -155,6 +155,9 @@ run("Manual catalog identity-review queue ingress", node, ["scripts/verify-data-
 run("DATA-OFFER15 catalog source/offer closure", node, ["scripts/verify-data-offer15-catalog-source-offer-closure-v1.mjs"]);
 run("DATA-OFFER16 governed Offer presentation authority", node, ["scripts/verify-data-offer16-offer-presentation-authority-v1.mjs"]);
 run("DATA-OFFER17 Offer runtime observability", node, ["scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"]);
+run("DATA-OFFER17 observability verifier syntax", node, ["--check", "scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"]);
+run("DATA-OFFER17 observability module syntax", node, ["--check", "lib/product-offer-runtime-observability.js"]);
+run("DATA-OFFER17 offer read service syntax", node, ["--check", "lib/server/product-offer-read-service.js"]);
 run("DATA-OFFER17 controlled Offer RPC diagnostic", node, ["scripts/verify-data-offer17-controlled-offer-rpc-diagnostic-v1.mjs"]);
 
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);

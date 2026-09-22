@@ -172,3 +172,16 @@ A workflow may be removed only when all of the following are true:
 - Vercel compatibility semantics: verifier execution is local and dependency-injected; Vercel CLI calls and deployment URLs are mocked test fixtures rather than live deployment authority
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires both wrappers to remain absent and all five canonical checks to remain owned by Current Main Health
 - Equivalence result: Face Lab operator safety and Vercel CLI compatibility coverage is preserved without standalone wrapper duplication.
+
+### Product Offer runtime observability static wrapper
+
+- Retired workflow: `.github/workflows/data-offer17-offer-runtime-observability.yml`
+- Previous mode: path-scoped main PR/push plus manual, contents-read-only deterministic Node verification
+- Unique executable coverage: offer-runtime observability contract plus syntax checks for the verifier, observability module, and offer read service
+- Canonical authority: the contract verifier was already owned by Current Main Health; all three syntax checks are now canonical there as well
+- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and manual dispatch, a strict superset of the retired wrapper
+- Exact-head and diff authority: Current Main Health retains exact candidate SHA checkout/attestation and exact-head diff hygiene
+- Runtime authority: none; despite the historical display name, this wrapper performed no deployed runtime probe, OIDC, credential use, Supabase runtime, browser automation, artifacts, or external provider calls
+- Verifier side effects: none; the observability verifier has no fetch, Supabase client, child process, filesystem write, environment-secret, or network dependency
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and all four checks to remain owned by Current Main Health
+- Equivalence result: DATA-OFFER17 observability contract coverage remains intact while the actual controlled deployed RPC diagnostic stays standalone.
