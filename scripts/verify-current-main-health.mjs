@@ -89,6 +89,7 @@ run("DATA-AI19 authenticated beta activation preflight", node, ["scripts/verify-
 run("DATA-AI20 authenticated limited-beta controlled activation", node, ["scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"]);
 run("DATA-AI21 three-account limited-beta evidence closure", node, ["scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"]);
 run("DATA-AI22 product-query quality evaluation", node, ["scripts/verify-data-ai22-product-query-quality.mjs"]);
+run("DATA-AI22 live provider acceptance boundary", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
 
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
