@@ -1,8 +1,12 @@
-name: DATA-AI9 Historical Hosted Preview Evidence
+name: Product Query AI - Historical Hosted Preview Evidence
 
 on:
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 

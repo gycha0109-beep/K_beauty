@@ -1,4 +1,4 @@
-name: DATA-AI14 Historical Production Canary Guard
+name: Product Query AI - Historical Production Canary Guard
 
 on:
   push:
@@ -14,7 +14,11 @@ on:
       - ".github/workflows/data-ai14-production-canary.yml"
       - "scripts/verify-data-ai14-production-canary-harness.mjs"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 

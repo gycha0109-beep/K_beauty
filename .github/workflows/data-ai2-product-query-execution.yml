@@ -1,4 +1,4 @@
-name: DATA-AI2 Product Query Execution
+name: Product Query AI - Execution Contract
 
 on:
   pull_request:
@@ -22,7 +22,11 @@ on:
       - "scripts/verify-data-ai2-product-query-execution.mjs"
       - ".github/workflows/data-ai2-product-query-execution.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

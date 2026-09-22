@@ -1,4 +1,4 @@
-name: DATA-AI18 Authenticated Beta Runtime Default-Off
+name: Product Query AI - Authenticated Beta Runtime Default-Off
 
 on:
   pull_request:
@@ -26,7 +26,11 @@ on:
       - "scripts/verify-data-ai18-authenticated-beta-runtime.mjs"
       - ".github/workflows/data-ai18-authenticated-beta-runtime.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read
