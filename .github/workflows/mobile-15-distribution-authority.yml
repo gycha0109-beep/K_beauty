@@ -31,6 +31,10 @@ on:
       - ".github/workflows/mobile-15-distribution-authority.yml"
   workflow_dispatch:
     inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
       platform:
         description: Signed distribution artifact to build
         required: true
