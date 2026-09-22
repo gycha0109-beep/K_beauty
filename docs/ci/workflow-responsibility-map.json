@@ -1,6 +1,6 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v1",
-  "generatedFromMainSha": "bae30b2cee0f92b88a9ad3731628c7a6b80e636a",
+  "generatedFromMainSha": "d54687d58afd48a416c3fc43b14d8e95a4e5471f",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
     "workflowResponsibility": "A workflow has one primary technical responsibility and may expose multiple capability tags.",
@@ -851,6 +851,18 @@
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "trust-phase8f-changed-semantic-replacement.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase8g-source-verification.yml": {
       "primaryResponsibility": "trust-data-governance",
       "capabilities": [
         "backend",

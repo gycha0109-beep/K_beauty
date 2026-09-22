@@ -452,3 +452,30 @@ console.log(JSON.stringify({
   heavy_runtime_concurrency_guarded: true,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));
+
+
+/* CI_RESPONSIBILITY_TRIGGER_GUARD */
+const responsibilityScopedWorkflowPaths = [
+  ".github/workflows/data-ai21-limited-beta-evidence-closure.yml",
+  ".github/workflows/data-ai22-live-provider-acceptance.yml",
+  ".github/workflows/data-ai22-product-query-quality-evaluation.yml",
+  ".github/workflows/trust-phase6b-reentry.yml",
+  ".github/workflows/trust-phase7a-backfill.yml",
+  ".github/workflows/trust-phase7b-backfill.yml",
+  ".github/workflows/trust-phase7c-phase4-compat.yml",
+  ".github/workflows/trust-phase7c-readiness.yml",
+  ".github/workflows/trust-phase7d-relational-adoption.yml",
+  ".github/workflows/trust-phase8g-source-verification.yml",
+];
+
+for (const relativePath of responsibilityScopedWorkflowPaths) {
+  const source = read(relativePath);
+  assert.ok(
+    !source.includes('      - "scripts/verify-current-main-health.mjs"'),
+    `${relativePath}: phase/runtime workflow must not trigger on canonical orchestrator changes`
+  );
+  assert.ok(
+    source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+  );
+}

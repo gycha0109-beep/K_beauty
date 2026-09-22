@@ -1,4 +1,4 @@
-name: DATA-AI22 Live Provider Acceptance
+name: Product Query AI - DATA-AI22 Live Provider Acceptance
 
 on:
   pull_request:
@@ -8,7 +8,6 @@ on:
       - "lib/server/product-query-beta-quality-live-service.js"
       - "scripts/verify-data-ai22-live-provider-acceptance.mjs"
       - ".github/workflows/data-ai22-live-provider-acceptance.yml"
-      - "scripts/verify-current-main-health.mjs"
   push:
     branches: [main]
     paths:
@@ -16,9 +15,12 @@ on:
       - "lib/server/product-query-beta-quality-live-service.js"
       - "scripts/verify-data-ai22-live-provider-acceptance.mjs"
       - ".github/workflows/data-ai22-live-provider-acceptance.yml"
-      - "scripts/verify-current-main-health.mjs"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read
