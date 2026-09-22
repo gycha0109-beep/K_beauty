@@ -57,6 +57,10 @@ run("Skin decision persistence and reentry", npm, ["run", "verify:skin-decision-
 run("Canonical 164x12 current Recommendation semantic health", node, ["scripts/verify-current-recommendation-health.mjs"]);
 
 run("CandidatePolicy current semantic invariant", npm, ["run", "verify:candidate-exposure-policy-shadow"]);
+run("Product Evidence presentation contract", node, ["scripts/verify-product-evidence-presentation-contract.mjs"]);
+run("Product Evidence presentation provider", node, ["scripts/verify-product-evidence-presentation-provider.mjs"]);
+run("Product Evidence Free Result V2 UI", node, ["scripts/verify-free-result-v2-product-evidence-ui.mjs"]);
+run("Product Evidence review observation readiness", node, ["scripts/verify-product-evidence-review-observation-readiness.mjs"]);
 run("Current Product Decision Axis contract", node, ["scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs"]);
 run("Current Production SHADOW wiring", node, ["--experimental-default-type=module", "scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs"]);
 run(
