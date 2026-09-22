@@ -575,3 +575,26 @@ for (const group of responsibilityNameGroups) {
     }
   }
 }
+
+
+/* FACE_LAB_RESPONSIBILITY_NAMING_GUARD */
+const faceLabResponsibilityWorkflows = [
+  "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
+  "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
+  "face-lab-neutral-face-count-shared-stage-v1.yml",
+  "face-lab-neutral-review-operator-v1.yml",
+  "face-lab-neutral-review-operator-vercel-cli-compat-v1.yml",
+];
+
+for (const name of faceLabResponsibilityWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: Face Lab - "),
+    `${relativePath}: workflow display name must expose Face Lab responsibility`,
+  );
+  assert.ok(
+    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
+  );
+}

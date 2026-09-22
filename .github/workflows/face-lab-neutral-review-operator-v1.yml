@@ -1,4 +1,4 @@
-name: Face Lab Neutral Review Operator v1
+name: Face Lab - Neutral Review Operator v1
 
 on:
   pull_request:
@@ -10,7 +10,11 @@ on:
       - '.gitignore'
       - '.github/workflows/face-lab-neutral-review-operator-v1.yml'
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 

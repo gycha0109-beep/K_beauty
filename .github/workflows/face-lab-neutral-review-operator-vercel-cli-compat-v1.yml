@@ -1,4 +1,4 @@
-name: Face Lab Neutral Review Vercel CLI Compat v1
+name: Face Lab - Neutral Review Operator Vercel CLI Compatibility v1
 
 on:
   pull_request:
@@ -11,7 +11,11 @@ on:
       - 'scripts/check-face-lab-neutral-review-operator-vercel-cli-compat-v1.mjs'
       - '.github/workflows/face-lab-neutral-review-operator-vercel-cli-compat-v1.yml'
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 
