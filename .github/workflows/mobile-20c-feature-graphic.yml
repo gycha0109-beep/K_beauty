@@ -1,4 +1,4 @@
-name: BEJEWELY Mobile 20C Feature Graphic
+name: Mobile - Stage 20C Feature Graphic
 
 on:
   push:
@@ -26,7 +26,11 @@ on:
       - 'docs/store/mobile-store-listing-final.json'
       - 'docs/store/mobile-20c-feature-graphic-verification.md'
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: write
 
