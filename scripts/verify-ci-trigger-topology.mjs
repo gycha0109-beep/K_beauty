@@ -465,6 +465,7 @@ const responsibilityScopedWorkflowPaths = [
   ".github/workflows/trust-phase7c-phase4-compat.yml",
   ".github/workflows/trust-phase7c-readiness.yml",
   ".github/workflows/trust-phase7d-relational-adoption.yml",
+  ".github/workflows/trust-phase8g-source-verification.yml",
 ];
 
 for (const relativePath of responsibilityScopedWorkflowPaths) {
