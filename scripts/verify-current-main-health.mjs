@@ -88,6 +88,8 @@ run("Catalog taxonomy shadow replay syntax", node, ["--check", "lib/catalog-taxo
 run("Catalog taxonomy shadow cardinality syntax", node, ["--check", "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"]);
 run("Catalog taxonomy replay route syntax", node, ["--check", "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"]);
 
+run("DATA-AI1 product-query intent boundary", node, ["scripts/verify-data-ai1-product-query-intent.mjs"]);
+run("DATA-AI2 deterministic product-query execution", node, ["scripts/verify-data-ai2-product-query-execution.mjs"]);
 run("DATA-AI3 product-query shadow contract", node, ["scripts/verify-data-ai3-product-query-shadow.mjs"]);
 run("DATA-AI4 provider-backed shadow contract", node, ["scripts/verify-data-ai4-provider-shadow.mjs"]);
 run("DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);
