@@ -39,11 +39,11 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `product-data-pipeline` | 6 |
 | `product-evidence` | 4 |
 | `product-offer-runtime` | 2 |
-| `product-query-ai` | 16 |
+| `product-query-ai` | 15 |
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 21 |
 
-Total: **73 workflows**.
+Total: **72 workflows**.
 
 The machine-readable authority is `docs/ci/workflow-responsibility-map.json`.
 
