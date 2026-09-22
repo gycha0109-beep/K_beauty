@@ -39,6 +39,7 @@ assert.deepEqual(
 const retiredTrustDataGovernanceWorkflows = new Set([
   "trust-phase5-admin-queue.yml",
   "trust-phase5c-fation-formulation-conflict.yml",
+  "trust-phase8a-revalidation-contract.yml",
 ]);
 
 const presentRetiredTrustDataGovernanceWorkflows = readdirSync(".github/workflows")
@@ -260,7 +261,13 @@ assertContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 5B subject registration contract"',
   'run("TRUST Phase 5C formulation conflict HOLD"',
   'run("TRUST Phase 6A reentry contract"',
+  'run("TRUST Phase 8A revalidation contract"',
 ]);
+assertContains(".github/workflows/current-main-health.yml", [
+  "Check exact-head diff hygiene",
+  'git diff --check "${BASE_SHA}...${HEAD_SHA}"',
+]);
+
 assertNotContains(".github/workflows/admin-product-current-main-integration.yml", [
   "node-version: 20",
 ]);
