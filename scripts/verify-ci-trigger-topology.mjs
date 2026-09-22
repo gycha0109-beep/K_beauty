@@ -106,6 +106,26 @@ const retiredProductEvidenceWorkflows = new Set([
   "product-evidence-presentation-provider.yml",
   "product-evidence-review-observation-readiness.yml",
 ]);
+
+const retiredProductDataPipelineStaticWorkflows = new Set([
+  "legacy-offer-classifier.yml",
+  "product-identity-resolution.yml",
+]);
+const presentRetiredProductDataPipelineStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredProductDataPipelineStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredProductDataPipelineStaticWorkflows,
+  [],
+  `retired Product Data Pipeline static workflows must stay retired: ${presentRetiredProductDataPipelineStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Legacy offer classifier"',
+  'run("Legacy offer migration manifest and dry-run"',
+  'run("Product identity resolver"',
+  'run("Product identity adoption plan"',
+  'run("Product identity key repair plan"',
+]);
 const presentRetiredProductEvidenceWorkflows = readdirSync(".github/workflows")
   .filter((name) => retiredProductEvidenceWorkflows.has(name))
   .sort();
@@ -261,9 +281,7 @@ const modernizedNodeWorkflows = [
   ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
   ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
   ".github/workflows/face-lab-neutral-review-operator-v1.yml",
-  ".github/workflows/legacy-offer-classifier.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
-  ".github/workflows/product-identity-resolution.yml",
   ".github/workflows/product-offers.yml",
   ".github/workflows/product-source-bindings.yml",
 ];
@@ -432,9 +450,7 @@ const heavyRuntimeConcurrencyWorkflows = [
   ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml",
   ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml",
   ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml",
-  ".github/workflows/legacy-offer-classifier.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
-  ".github/workflows/product-identity-resolution.yml",
   ".github/workflows/product-offers.yml",
   ".github/workflows/product-source-bindings.yml",
 ];
@@ -611,9 +627,7 @@ const responsibilityNameGroups = [
   {
     names: [
       "hwahae-review-capture-provenance.yml",
-      "legacy-offer-classifier.yml",
       "product-identity-key-repair-confirm.yml",
-      "product-identity-resolution.yml",
       "product-offers.yml",
       "product-source-bindings.yml",
     ],
