@@ -19,7 +19,11 @@ const requiredDoc = [
   "confirmed",
   "→ stale",
   "→ re_review_required",
-  "new_fact.supersedes_fact_instance_id = old_fact.fact_instance_id",
+  "same-proposition replacement:",
+  "new_fact.supersedes_fact_instance_id may reference old_fact",
+  "cross-proposition semantic replacement:",
+  "new_fact.supersedes_fact_instance_id = null",
+  "replacement lineage = revalidation resolution + review event + audit",
   "automatic confirmation = false",
   "TRUST_PHASE8B_SOURCE_VERIFICATION_LEDGER"
 ];

@@ -102,10 +102,18 @@ automatic confirmation = false
 After explicit confirmation only:
 
 ```text
-new_fact.supersedes_fact_instance_id = old_fact.fact_instance_id
+same-proposition replacement:
+  new_fact.supersedes_fact_instance_id may reference old_fact
+
+cross-proposition semantic replacement:
+  new_fact.supersedes_fact_instance_id = null
+  replacement lineage = revalidation resolution + review event + audit
+
 product_fact_current → new_fact
 old_fact remains historical
 ```
+
+Phase 8F established that the storage FK for `supersedes_fact_instance_id` is proposition-local. Cross-proposition semantic replacement therefore records old/new Fact and proposition lineage in the governed revalidation resolution/event/audit path instead of forcing an invalid direct Fact FK.
 
 ### Source unavailable
 
@@ -219,3 +227,10 @@ PRODUCTION_FACT_MUTATION = 0
 PRODUCTION_RECOMMENDATION_MUTATION = 0
 NEXT = TRUST_PHASE8B_SOURCE_VERIFICATION_LEDGER
 ```
+
+
+## Phase 8G comparability hardening
+
+Source verification is actionable for Phase 8C only when bound to a current immutable `COMPARABLE` verification profile. Historical source digests with unknown or unreplayable digest semantics must fail closed as `BASELINE_RECOVERY_REQUIRED` or `MANUAL_ONLY`; they must never be compared to live-page bytes by assumption.
+
+See `docs/evidence/trust-phase8g-source-verification-comparability-v1.md`.
