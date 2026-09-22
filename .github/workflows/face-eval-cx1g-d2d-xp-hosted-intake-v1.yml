@@ -1,4 +1,4 @@
-name: FACE-EVAL-CX1G D2D-XP Hosted Intake v1
+name: Face Lab - Hosted Experience Intake (CX1G-D2D-XP)
 
 on:
   pull_request:
@@ -22,7 +22,11 @@ on:
       - 'docs/domain/facelab/face-lab-independent-human-cue-hosted-intake*.md'
       - '.github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml'
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
