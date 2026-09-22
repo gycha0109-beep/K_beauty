@@ -120,4 +120,3 @@ A workflow may be removed only when all of the following are true:
 - Artifact/persistence authority: none; the baseline runner writes only when an explicit `--output` path is supplied, while the canonical `--expected-baseline` invocation emits deterministic stdout only
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and requires both quality commands to remain owned by Current Main Health
 - Equivalence result: the complete deterministic quality corpus verification and expected-baseline evaluation survive under broader canonical trigger coverage.
-
