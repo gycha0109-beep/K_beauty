@@ -100,6 +100,21 @@ assert.deepEqual(
   `FACE-EVAL workflow topology drift: ${faceEvalWorkflows.join(", ")}`,
 );
 
+const retiredProductEvidenceWorkflows = new Set([
+  "free-result-v2-product-evidence-ui.yml",
+  "product-evidence-presentation-contract.yml",
+  "product-evidence-presentation-provider.yml",
+  "product-evidence-review-observation-readiness.yml",
+]);
+const presentRetiredProductEvidenceWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredProductEvidenceWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredProductEvidenceWorkflows,
+  [],
+  `retired Product Evidence workflows must stay retired: ${presentRetiredProductEvidenceWorkflows.join(", ")}`,
+);
+
 const retiredProductQueryAIWorkflows = new Set([
   "data-ai9-hosted-preview-acceptance.yml",
   "data-ai14-production-canary.yml",
@@ -252,6 +267,13 @@ for (const path of modernizedNodeWorkflows) {
 for (const path of trustPhaseWorkflows) {
   assertNotContains(path, ["npm run architecture:guard", "npm run build"]);
 }
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Product Evidence presentation contract"',
+  'run("Product Evidence presentation provider"',
+  'run("Product Evidence Free Result V2 UI"',
+  'run("Product Evidence review observation readiness"',
+]);
+
 assertContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 1 intake contract"',
   'run("TRUST Phase 2 subject resolution contract"',
@@ -626,28 +648,6 @@ for (const name of faceLabResponsibilityWorkflows) {
   assert.ok(
     source.startsWith("name: Face Lab - "),
     `${relativePath}: workflow display name must expose Face Lab responsibility`,
-  );
-  assert.ok(
-    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
-    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
-  );
-}
-
-
-/* PRODUCT_EVIDENCE_RESPONSIBILITY_NAMING_GUARD */
-const productEvidenceResponsibilityWorkflows = [
-  "free-result-v2-product-evidence-ui.yml",
-  "product-evidence-presentation-contract.yml",
-  "product-evidence-presentation-provider.yml",
-  "product-evidence-review-observation-readiness.yml",
-];
-
-for (const name of productEvidenceResponsibilityWorkflows) {
-  const relativePath = `.github/workflows/${name}`;
-  const source = read(relativePath);
-  assert.ok(
-    source.startsWith("name: Product Evidence - "),
-    `${relativePath}: workflow display name must expose Product Evidence responsibility`,
   );
   assert.ok(
     source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
