@@ -1,4 +1,4 @@
-name: Product Evidence Review Observation Readiness
+name: Product Evidence - Review Observation Readiness
 
 on:
   pull_request:
@@ -18,7 +18,11 @@ on:
       - "data/hwahae-review-signals/categories/sunscreen/**"
       - ".github/workflows/product-evidence-review-observation-readiness.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 
