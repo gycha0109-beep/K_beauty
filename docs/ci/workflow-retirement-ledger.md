@@ -133,3 +133,16 @@ A workflow may be removed only when all of the following are true:
 - Side effects: none; both workflows only read repository state and run deterministic crawler tests/typechecks
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires both wrappers to remain absent and requires all five unique commands to remain owned by Current Main Health
 - Equivalence result: deterministic Product Data Pipeline validation is preserved while two redundant standalone wrappers are removed.
+
+### Hwahae review capture provenance wrapper
+
+- Retired workflow: `.github/workflows/hwahae-review-capture-provenance.yml`
+- Previous mode: path-scoped main PR/push plus manual, contents-read-only deterministic Node contract verification
+- Unique executable check: `node scripts/verify-hwahae-review-capture-provenance.mjs`
+- Canonical authority: the exact verifier is now executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and retains manual dispatch, a strict superset of the retired wrapper trigger set
+- Exact-head authority: Current Main Health checks out and attests the candidate SHA before canonical verification and retains exact-head diff hygiene
+- Runtime authority: none; no Supabase runtime, hosted deployment, Vercel/OIDC, credentials, browser automation, artifacts, release operations, or external provider calls existed
+- Side effects: none; the verifier exercises local provenance/readiness contracts and explicitly enforces zero database authority and zero recommendation-semantic integration
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and the exact verifier to remain owned by Current Main Health
+- Equivalence result: Hwahae capture-provenance semantics remain fully verified under broader canonical trigger coverage.
