@@ -51,3 +51,7 @@ Asset: `public/images/full-report/orb-materials.png`, generated with imagegen. P
 Fresh `origin/main` was queried as `00fb5c52` before this follow-up; its intervening changes do not overlap the hub implementation. No main branch mutation or protected-surface edit is part of the follow-up.
 
 Validation and limitations: [verification record](../verification/full-report-four-sector.md).
+
+### User-reviewed layout correction
+
+The earlier orbital/contour decoration is retired after visual feedback. The hub now uses a width-constrained sphere composition without decorative SVG paths or background contour lines. The main sector title is the localized HTML label; redundant English labels and detached arrows were removed. Changes are limited to hub rendering and layout verification, with no data contract or decision changes.

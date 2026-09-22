@@ -69,3 +69,11 @@ Visual self-review: compared the actual 390/430px Light/Dark hub renders with th
 | 430px | [Screenshot](../../artifacts/full-report-four-sector/hub-430-light.png) | [Screenshot](../../artifacts/full-report-four-sector/hub-430-dark.png) |
 
 Generated art and exact prompt: [asset record](full-report-orb-assets.md). Overall status remains IMPLEMENTED_UNVERIFIED for repository-wide lint and hosted authenticated persistence; the local UI checks are separately reported as passing.
+
+## Layout correction after user review — 2026-09-22
+
+The user rejected the previous visual result: small detached spheres, scattered labels, excessive orbital curves and bottom contour lines. Removed all decorative orbit/contour paths, redundant English labels, floating arrows and signoff ornament. Enlarged the Korean sector labels, gave the center sphere a restrained material texture, and tied the composition to its actual container width. Narrow screens have explicit label clearance; missing canonical text remains neutral rather than an invented diagnosis.
+
+Verified the actual user route `http://localhost:3001/test-full-report`, in addition to intercepted canonical fixtures. `node scripts/verify-full-report-hub-layout.mjs` checks 320/390/430px in both themes, visible control bounds (not merely document overflow), minimum label size, separated controls and clearance above the dock. Full-page captures: `artifacts/full-report-four-sector/actual-test-hub-{width}-{theme}.png`. Self-review caught and corrected the 320px aspect-ratio/min-height width expansion; controls now remain inside the visible frame.
+
+Production build and existing four-sector browser flows pass. Previously documented lint/CSP/hosted-auth limitations remain. No decision, persistence or Face Lab behavior was changed.

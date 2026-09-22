@@ -1,5 +1,5 @@
 {
-  "base": "http://localhost:3015",
+  "base": "http://localhost:3001",
   "fixtureOnly": true,
   "checks": [
     "Orb hub: 390/430px Light/Dark screenshots; four routes and dock actions; no Face Lab sector; canonical/unknown mode",

@@ -2999,3 +2999,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Asset: checked-in decorative imagegen atlas, no generated diagnosis or text. CSS/SVG renders the central sphere and orbital paths. Prompt and screenshots are documented under docs/verification.
 - Verification: focused view verifier, production build and architecture guard pass; browser covers hub routes/dock, 390/430px themes, and the existing sector/intake/reentry/locale/legacy/unknown paths. A stale-server timeout prompted a fresh local dev server. Existing lint setup absence, survey build warnings, root CSP nonce warning and hosted-auth E2E limitation remain; no unrelated fixes made.
 - Architecture: updated full-report-four-sector-view.md and verification record. No new persisted modes, normalization aliases or decision authority. No AI_CONTEXT promotion proposed.
+
+### 2026-09-22 / Hub visual correction from user screenshot
+
+- Scope: Medium presentation correction; all protected-surface impacts N. Removed orbit/contour lines, duplicate labels and floating arrows; resized and repositioned spheres relative to container width. Neutral missing-data headline remains non-diagnostic.
+- Verified actual localhost:3001/test-full-report at 320/390/430 Light/Dark, four-sector local browser flows, build and diff checks. Self-review fixed narrow-screen clipping caused by aspect-ratio plus min-height and added visible-frame assertions. Existing lint/CSP/hosted-auth limitations remain.
+- Evidence: docs/verification/full-report-four-sector.md and actual-test-hub captures. Canonical decisions, saved payloads and Face Lab implementation unchanged.
