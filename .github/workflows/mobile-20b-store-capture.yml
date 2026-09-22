@@ -33,6 +33,11 @@ on:
       - "scripts/verify-mobile-20b-store-capture.mjs"
       - ".github/workflows/mobile-20b-store-capture.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 permissions:
   contents: read
