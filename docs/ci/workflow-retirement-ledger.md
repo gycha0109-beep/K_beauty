@@ -107,3 +107,16 @@ A workflow may be removed only when all of the following are true:
 - Runtime authority: none of the four workflows used Supabase runtime, deployment, OIDC, credentials, browser automation, artifacts, or release jobs
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires all four wrapper files to remain absent and requires their four verifiers to remain in Current Main Health
 - Equivalence result: Product Evidence semantic checks are preserved exactly while four redundant workflow wrappers are removed.
+
+### DATA-AI22 product-query quality evaluation wrapper
+
+- Retired workflow: `.github/workflows/data-ai22-product-query-quality-evaluation.yml`
+- Previous mode: path-scoped PR/push plus manual, contents-read-only deterministic Node evaluation with exact-head checkout
+- Unique executable checks: `node scripts/verify-data-ai22-product-query-quality.mjs` and `node scripts/run-data-ai22-product-query-quality-evaluation.mjs --expected-baseline`
+- Canonical authority: both exact commands are executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: Current Main Health runs on every main PR and main push and retains manual dispatch, a strict superset of the retired workflow path filters
+- Exact-head authority: Current Main Health checks out and attests the candidate SHA before running the canonical suite
+- Runtime authority: none; no Supabase runtime, hosted deployment, Vercel/OIDC, credential, browser, release, or external provider probe existed
+- Artifact/persistence authority: none; the baseline runner writes only when an explicit `--output` path is supplied, while the canonical `--expected-baseline` invocation emits deterministic stdout only
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and requires both quality commands to remain owned by Current Main Health
+- Equivalence result: the complete deterministic quality corpus verification and expected-baseline evaluation survive under broader canonical trigger coverage.

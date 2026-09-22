@@ -120,6 +120,7 @@ const retiredProductQueryAIWorkflows = new Set([
   "data-ai14-production-canary.yml",
   "data-ai17-authenticated-limited-beta-design.yml",
   "data-ai19-authenticated-beta-activation-preflight.yml",
+  "data-ai22-product-query-quality-evaluation.yml",
 ]);
 
 const presentRetiredProductQueryAIWorkflows = readdirSync(".github/workflows")
@@ -131,6 +132,12 @@ assert.deepEqual(
   [],
   `retired Product Query AI workflows must stay retired: ${presentRetiredProductQueryAIWorkflows.join(", ")}`,
 );
+
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-AI22 product-query quality evaluation"',
+  'run("DATA-AI22 product-query quality canonical baseline"',
+  '"scripts/run-data-ai22-product-query-quality-evaluation.mjs", "--expected-baseline"',
+]);
 
 const retiredMobileStoreStages = new Set([
   "mobile-16a-privacy-account-deletion.yml",
@@ -514,7 +521,6 @@ console.log(JSON.stringify({
 const responsibilityScopedWorkflowPaths = [
   ".github/workflows/data-ai21-limited-beta-evidence-closure.yml",
   ".github/workflows/data-ai22-live-provider-acceptance.yml",
-  ".github/workflows/data-ai22-product-query-quality-evaluation.yml",
   ".github/workflows/trust-phase6b-reentry.yml",
   ".github/workflows/trust-phase7a-backfill.yml",
   ".github/workflows/trust-phase7b-backfill.yml",
