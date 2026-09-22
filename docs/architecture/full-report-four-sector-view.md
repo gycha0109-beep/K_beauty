@@ -38,6 +38,16 @@ The routine comparison puts stored AM/PM steps beside the canonical role/action 
 
 Both themes share one DOM, order and interactions. `ReportUI.module.css` defines the report palette under the existing `html.dark` theme switch. Product imagery uses the existing safe image component; absent imagery is a bottle placeholder, not a fabricated product photo.
 
-The existing overview, Face Lab entry, current-product intake and saved-report route remain. Section buttons, the routine CTA and previous/next actions traverse the four sectors. The last CTA opens My; its label now describes that existing navigation rather than claiming a new save.
+The overview uses four orbital entry points: routine (upper left), functional plan (upper right), condition response (lower left), and issue tracking (lower right). Face Lab is absent from the overview sectors; its separate implementation and existing end-of-report entry remain intact. Current-product intake and saved-report routes remain. Section buttons, the routine CTA and previous/next actions traverse the four sectors. The last CTA opens My; its label describes that existing navigation rather than claiming a new save.
+
+### Orbital overview follow-up (2026-09-22)
+
+The new attached water/cosmic reference supersedes the former petal hub only. `TodayStartPlanStep` reads saved `functionalPlan.primaryConcern`, `planSummary`, `direction`, and `planMode` through the existing read-only accessor. No synthetic baseline chips or generic pause recommendations remain in the hub. Absent plan text stays explicitly unavailable and absent mode stays UNKNOWN; the hub never rebuilds decisions for legacy reports.
+
+Light/Dark use the same markup, image atlas, positions, controls, and typography with scoped theme tokens. The four decorative spheres are not product photos, evidence or measured skin imagery. The central sphere and orbital paths are CSS/SVG. The dock opens the existing recorded-input summaries and investigation sector. It makes no unverified saved/private/date claim. Input summaries are disclosed in place, without altering intake or persistence.
+
+Asset: `public/images/full-report/orb-materials.png`, generated with imagegen. Prompt: a square 2×2 decorative atlas with four translucent glass planets, peach sunrise on water, sage crystal facets, blue water whirlpool, and violet branching light signals; realistic refraction, no text, labels, UI, or human face. The image is decorative; all labels and decisions are accessible HTML. The complete generation prompt is recorded in `docs/verification/full-report-orb-assets.md`.
+
+Fresh `origin/main` was queried as `00fb5c52` before this follow-up; its intervening changes do not overlap the hub implementation. No main branch mutation or protected-surface edit is part of the follow-up.
 
 Validation and limitations: [verification record](../verification/full-report-four-sector.md).

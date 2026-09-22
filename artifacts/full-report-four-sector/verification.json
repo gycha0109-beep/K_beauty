@@ -1,7 +1,8 @@
 {
-  "base": "http://localhost:3014",
+  "base": "http://localhost:3015",
   "fixtureOnly": true,
   "checks": [
+    "Orb hub: 390/430px Light/Dark screenshots; four routes and dock actions; no Face Lab sector; canonical/unknown mode",
     "Four sectors, 390/430px, Light/Dark, screenshots, no document overflow",
     "AM/PM and row evidence disclosure",
     "Scenario selector uses payload and changes selected guidance",
@@ -16,6 +17,10 @@
     "No uncaught page errors"
   ],
   "captured": [
+    "hub-390-light.png",
+    "hub-390-dark.png",
+    "hub-430-light.png",
+    "hub-430-dark.png",
     "390-light-1.png",
     "390-light-2.png",
     "390-light-3.png",

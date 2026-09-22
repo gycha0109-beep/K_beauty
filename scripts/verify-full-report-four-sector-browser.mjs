@@ -38,6 +38,7 @@ try {
   let calls = 0;
   let lastRequestedId;
   let lastRequestBody;
+  let hubCaptured = false;
   await context.route("**/*", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -67,6 +68,32 @@ try {
     for (let attempt = 0; attempt < 60 && !await hub.isVisible(); attempt++) {
       if (await opener.isVisible() && await opener.isEnabled()) { await opener.click(); break; }
       await page.waitForTimeout(500);
+    }
+    await hub.waitFor({ timeout: 30000 });
+    const overview = page.locator('[data-report-hub]');
+    assert.equal(await overview.locator('[data-orb]').count(), 4);
+    assert.equal(await overview.getByRole('button', { name: /Face Lab/ }).count(), 0);
+    assert.equal(await overview.getAttribute('data-plan-mode'), payload(locale, variant).functionalPlan?.planMode || 'UNKNOWN');
+    if (!hubCaptured) {
+      for (const width of [390, 430]) {
+        await page.setViewportSize({ width, height: 844 });
+        for (const theme of ['light', 'dark']) {
+          await page.evaluate(theme => document.documentElement.classList.toggle('dark', theme === 'dark'), theme);
+          await overview.screenshot({ path: `${output}/hub-${width}-${theme}.png`, animations: 'disabled', style: 'nextjs-portal { visibility: hidden }' });
+          captured.push(`hub-${width}-${theme}.png`);
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+        }
+      }
+      for (const orb of ['routine', 'functional', 'condition', 'tracking']) {
+        await overview.locator(`[data-orb="${orb}"]`).click();
+        await page.getByRole('button', { name: '리포트 전체 보기', exact: true }).click();
+      }
+      await overview.getByRole('link', { name: /입력 맥락/ }).click();
+      assert.equal(await overview.locator('details').first().getAttribute('open'), '');
+      await overview.getByRole('button', { name: /판단 근거/ }).click();
+      await page.getByRole('button', { name: '리포트 전체 보기', exact: true }).click();
+      hubCaptured = true;
+      checks.push('Orb hub: 390/430px Light/Dark screenshots; four routes and dock actions; no Face Lab sector; canonical/unknown mode');
     }
     await hub.click({ timeout: 30000 });
     await page.locator('[data-report-section="routine"]').waitFor();

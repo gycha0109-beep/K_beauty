@@ -52,3 +52,20 @@ The same directory contains 430px and full viewport captures plus `verification.
 4. **Hosted persistence/auth** — local snapshot contract and intercepted reentry pass; real authenticated Intake → saved report → My reentry needs a separately available authenticated environment. No hosted success is claimed.
 
 Self-review found no remaining Critical/High issue in the modified decision/display boundary. The complete acceptance gate remains open for the limitations above.
+
+## Orbital hub follow-up — 2026-09-22
+
+The latest reference replaces the petal overview with four glass/water planets and copper orbital paths. Routine and functional plan occupy the upper corners; condition response and investigation occupy the lower corners. The Face Lab implementation and separate end-of-report entry are preserved, but it is no longer a hub sector.
+
+The hub uses saved functional-plan text and mode. The fixture shown in the screenshots is START, so the reference image's HOLD/stabilization wording is deliberately not copied. No date, saved/privacy assertion, cause attribution or skin condition is invented. The reference landscape is interpreted with quiet contour lines; the dock contains two real actions rather than an unsupported save-status claim.
+
+Re-executed: focused four-sector verifier, production build, architecture guard, browser flows, and lint attempt. Lint still exits at the pre-existing ESLint setup prompt; existing build warnings and root nonce warning remain as documented above. A second browser run timed out on the existing port 3014 dev server before entering the report; a fresh dev server on 3015 was used for final verification, without changing application behavior or weakening assertions.
+
+Visual self-review: compared the actual 390/430px Light/Dark hub renders with the supplied reference, checked corner order, central summary hierarchy, thin orbits, serif labels, input dock, keyboard focus and touch targets. Removed neighboring-tile bleed at the decorative sphere edges. Both themes use the same layout and data. Four hub destinations and both dock actions are exercised by the browser verifier. All earlier detailed-sector interactions remain covered.
+
+| Hub | Light | Dark |
+| --- | --- | --- |
+| 390px | [Screenshot](../../artifacts/full-report-four-sector/hub-390-light.png) | [Screenshot](../../artifacts/full-report-four-sector/hub-390-dark.png) |
+| 430px | [Screenshot](../../artifacts/full-report-four-sector/hub-430-light.png) | [Screenshot](../../artifacts/full-report-four-sector/hub-430-dark.png) |
+
+Generated art and exact prompt: [asset record](full-report-orb-assets.md). Overall status remains IMPLEMENTED_UNVERIFIED for repository-wide lint and hosted authenticated persistence; the local UI checks are separately reported as passing.

@@ -3951,42 +3951,6 @@ function buildStepAdvanceLabel(step, locale = "ko") {
   return locale === "en" ? `See ${label}` : `${label} 보기`;
 }
 
-function getTodaySkinBaseline(result = {}, locale = "ko") {
-  const axis = getReportPriorityAxis(result);
-
-  if (locale === "en") {
-    const summary = ["oiliness", "pores"].includes(axis)
-      ? "Oil can rise through the T-zone, while the overall routine still needs steady, lightweight moisture."
-      : "Moisture retention looks lower, and the skin may react more easily when the routine gets crowded.";
-
-    return {
-      title: "Current skin baseline",
-      summary,
-      chips: ["Moisture gap", "Barrier stress", "Oil balance"],
-      cards: [
-        { title: "Moisture gap", body: "Moisture does not stay long enough." },
-        { title: "Barrier stress", body: "The skin may react to heavier routines." },
-        { title: "Oil balance", body: "Oil can rise while moisture is still low." }
-      ]
-    };
-  }
-
-  const summary = ["oiliness", "pores"].includes(axis)
-    ? "T존 유분은 올라오지만 전체적으로는 안정적인 보습 유지가 필요합니다."
-    : "수분 유지력이 낮고, 자극에 쉽게 반응할 수 있는 상태입니다.";
-
-  return {
-    title: "현재 피부 기준",
-    summary,
-    chips: ["수분 부족", "장벽 스트레스", "유분 밸런스"],
-    cards: [
-      { title: "수분 부족", body: "수분 유지력이 낮음" },
-      { title: "장벽 스트레스", body: "자극에 민감한 상태" },
-      { title: "유분 밸런스", body: "T존 유분은 있으나 전체적 수분 부족" }
-    ]
-  };
-}
-
 function getPlanAnchorReasons(product = {}, result = {}, locale = "ko") {
   const category = normalizeReportCategory(product);
   const axis = getReportPriorityAxis(result);
@@ -4026,58 +3990,6 @@ function getTodayAiJudgement(result = {}, locale = "ko") {
     body: `지금은 ${concern} 흐름을 기준으로, 기능성을 늘리기보다 자극을 줄이고 수분을 유지하는 쪽이 우선입니다.`,
     sub: "피부가 편안하게 반응하는지 확인하면서 루틴을 단순하게 가져갑니다."
   };
-}
-
-function getPriorityActionItems(locale = "ko") {
-  if (locale === "en") {
-    return [
-      {
-        key: "pause-actives",
-        badge: "Priority 1",
-        title: "Pause new active steps",
-        body: "Temporarily reduce retinol, exfoliation, vitamin C, and other steps that can add irritation.",
-        detail: "Why it matters"
-      },
-      {
-        key: "soft-cleanse",
-        badge: "Priority 2",
-        title: "Lower cleansing intensity",
-        body: "Use enough foam or slip, then cleanse gently with less rubbing.",
-        detail: "Details"
-      },
-      {
-        key: "simple-morning",
-        badge: "Priority 3",
-        title: "Connect tomorrow morning to sunscreen",
-        body: "Keep skincare minimal and finish the morning routine lightly with sunscreen.",
-        detail: "Details"
-      }
-    ];
-  }
-
-  return [
-    {
-      key: "pause-actives",
-      badge: "우선 1",
-      title: "기능성 추가 멈추기",
-      body: "레티놀, 각질제거, 비타민C 등 자극이 될 수 있는 기능성은 잠시 줄입니다.",
-      detail: "왜 중요한가요?"
-    },
-    {
-      key: "soft-cleanse",
-      badge: "우선 2",
-      title: "세안 강도 낮추기",
-      body: "거품은 충분히 내고, 마찰을 줄여 부드럽게 세안합니다.",
-      detail: "자세히"
-    },
-    {
-      key: "simple-morning",
-      badge: "우선 3",
-      title: "내일 아침, 선크림까지 단순 연결",
-      body: "스킨케어는 최소 단계로, 아침에는 선크림까지 가볍게 마무리합니다.",
-      detail: "자세히"
-    }
-  ];
 }
 
 function getTodayCheckPoints(locale = "ko") {
@@ -4157,10 +4069,10 @@ function getSkinMatchHubActions(locale = "ko") {
         icon: "!"
       },
       {
-        id: "face-lab",
-        title: "Face Lab",
-        description: "Style direction connected to skin",
-        target: "face-lab",
+        id: "tracking",
+        title: "Issue tracking",
+        description: "Review recorded change signals",
+        target: "problem-tracking",
         icon: "✧"
       }
     ];
@@ -4189,10 +4101,10 @@ function getSkinMatchHubActions(locale = "ko") {
       icon: "!"
     },
     {
-      id: "face-lab",
-      title: "Face Lab",
-      description: "피부와 이어지는 스타일 방향",
-      target: "face-lab",
+      id: "tracking",
+      title: "문제 추적",
+      description: "기록된 변화 신호 확인",
+      target: "problem-tracking",
       icon: "✧"
     }
   ];
@@ -5127,13 +5039,11 @@ function SkinMatchStepReport({
       content: (
         <div className="space-y-4">
           <TodayStartPlanStep
-            baseline={getTodaySkinBaseline(freeResult, locale)}
-            actionItems={getPriorityActionItems(locale)}
+            report={report}
             hubActions={getSkinMatchHubActions(locale)}
             locale={locale}
             onNavigate={moveToStepKey}
-          />
-          <button type="button" className="ui-button-secondary min-h-11 w-full justify-center" onClick={() => moveToStepKey("problem-tracking")}>{locale === "en" ? "Review recorded change signals" : "문제 추적 · 기록된 변화 신호 보기"}</button>
+          >
           <CurrentProductsSummaryCard
             currentProducts={report?.currentProducts}
             locale={locale}
@@ -5142,6 +5052,7 @@ function SkinMatchStepReport({
             intake={report?.premiumIntake}
             locale={locale}
           />
+          </TodayStartPlanStep>
         </div>
       )
     },
@@ -6696,7 +6607,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             </div>
           </div>
 
-          {activeTab === "skin_match" ? <header className="text-center py-1"><h1 className="font-serif text-2xl tracking-[0.2em]">BEJEWELY</h1><p className="mt-1 text-[10px] tracking-[0.25em] text-[var(--text-secondary)]">SKIN MATCH PREMIUM</p></header> : <header className="ui-card px-5 py-5 sm:p-6">
+          {activeTab === "skin_match" ? <h1 className="sr-only">BEJEWELY · Skin Match Premium</h1> : <header className="ui-card px-5 py-5 sm:p-6">
             <div className="flex items-start">
               <div className="min-w-0">
                 <p className="ui-kicker">FULL REPORT</p>
