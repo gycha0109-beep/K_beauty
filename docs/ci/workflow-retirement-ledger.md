@@ -213,3 +213,14 @@ A workflow may be removed only when all of the following are true:
 - Exact-head and diff authority: Current Main Health checks out and attests the exact candidate SHA with full history and retains exact-head diff hygiene
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires both wrappers to remain absent, both frozen authorities to remain attested, and the complete canonical coverage set to remain owned by Current Main Health
 - Equivalence result: all remaining Face Lab CI verification authority is preserved in the canonical health path; no standalone Face Lab workflow retains unique runtime authority.
+
+### DATA-AI1 / DATA-AI2 static contract wrappers
+
+- Retired workflows: `.github/workflows/data-ai1-product-query-intent.yml`, `.github/workflows/data-ai2-product-query-execution.yml`
+- Runtime authority: none; both wrappers use only deterministic repository verifiers plus canonical health, architecture guard, production build, exact-head and diff hygiene
+- Canonical coverage: Current Main Health now owns `scripts/verify-data-ai1-product-query-intent.mjs` and `scripts/verify-data-ai2-product-query-execution.mjs`; architecture guard and production build were already canonical
+- Historical feature-branch triggers: `feat/data-ai1-product-query-intent` and `feat/data-ai2-product-query-execution` are merged source branches for PR #551 and PR #555, respectively, not current release authorities
+- Branch audit at retirement: both branches are divergent and heavily behind main; their contract/verifier blobs are already present on main, while the DATA-AI1 service implementation on main has moved beyond the stale branch copy
+- Main trigger preservation: Current Main Health runs on every main pull request, every main push, and manual dispatch
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires both wrappers to remain absent and both DATA-AI1/2 verifier commands to remain canonical
+- Equivalence result: active mainline verification is preserved without retaining historical feature-branch-only workflow wrappers.
