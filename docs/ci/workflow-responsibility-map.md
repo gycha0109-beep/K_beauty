@@ -39,7 +39,8 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `product-data-pipeline` | 6 |
 | `product-evidence` | 4 |
 | `product-offer-runtime` | 2 |
-| `product-query-ai` | 17 |
+| `product-query-ai` | 16 |
+| `recommendation-admission` | 1 |
 | `trust-data-governance` | 21 |
 
 Total: **73 workflows**.
