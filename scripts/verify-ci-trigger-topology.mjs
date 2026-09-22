@@ -108,6 +108,7 @@ const retiredProductEvidenceWorkflows = new Set([
 ]);
 
 const retiredProductDataPipelineStaticWorkflows = new Set([
+  "hwahae-review-capture-provenance.yml",
   "legacy-offer-classifier.yml",
   "product-identity-resolution.yml",
 ]);
@@ -125,6 +126,7 @@ assertContains("scripts/verify-current-main-health.mjs", [
   'run("Product identity resolver"',
   'run("Product identity adoption plan"',
   'run("Product identity key repair plan"',
+  'run("Hwahae review capture provenance"',
 ]);
 const presentRetiredProductEvidenceWorkflows = readdirSync(".github/workflows")
   .filter((name) => retiredProductEvidenceWorkflows.has(name))
@@ -626,7 +628,6 @@ const responsibilityNameGroups = [
   },
   {
     names: [
-      "hwahae-review-capture-provenance.yml",
       "product-identity-key-repair-confirm.yml",
       "product-offers.yml",
       "product-source-bindings.yml",
