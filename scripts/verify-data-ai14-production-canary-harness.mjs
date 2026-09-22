@@ -12,7 +12,7 @@ function check(condition, message) {
 }
 
 check(
-  workflow.includes("DATA-AI14 Historical Production Canary Guard") &&
+  workflow.includes("Product Query AI - Historical Production Canary Guard") &&
     workflow.includes("pull_request:") &&
     workflow.includes('paths:\n      - "vercel.json"') &&
     workflow.includes("workflow_dispatch:"),
