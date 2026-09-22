@@ -58,7 +58,6 @@ assert.deepEqual(
   dataOfferWorkflows,
   [
     "data-offer17-controlled-offer-rpc-diagnostic.yml",
-    "data-offer17-offer-runtime-observability.yml",
   ],
   `DATA-OFFER workflow topology drift: ${dataOfferWorkflows.join(", ")}`,
 );
@@ -104,6 +103,24 @@ const retiredProductEvidenceWorkflows = new Set([
   "product-evidence-presentation-contract.yml",
   "product-evidence-presentation-provider.yml",
   "product-evidence-review-observation-readiness.yml",
+]);
+
+const retiredProductOfferObservabilityStaticWorkflows = new Set([
+  "data-offer17-offer-runtime-observability.yml",
+]);
+const presentRetiredProductOfferObservabilityStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredProductOfferObservabilityStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredProductOfferObservabilityStaticWorkflows,
+  [],
+  `retired Product Offer observability static workflows must stay retired: ${presentRetiredProductOfferObservabilityStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-OFFER17 Offer runtime observability"',
+  'run("DATA-OFFER17 observability verifier syntax"',
+  'run("DATA-OFFER17 observability module syntax"',
+  'run("DATA-OFFER17 offer read service syntax"',
 ]);
 
 const retiredFaceLabOperatorStaticWorkflows = new Set([
@@ -660,7 +677,6 @@ const responsibilityNameGroups = [
   {
     names: [
       "data-offer17-controlled-offer-rpc-diagnostic.yml",
-      "data-offer17-offer-runtime-observability.yml",
     ],
     prefix: "name: Product Offer Runtime - ",
   },
