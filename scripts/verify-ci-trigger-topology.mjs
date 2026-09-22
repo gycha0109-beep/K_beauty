@@ -575,3 +575,32 @@ for (const group of responsibilityNameGroups) {
     }
   }
 }
+
+
+/* MOBILE_RESPONSIBILITY_NAMING_GUARD */
+const mobileResponsibilityWorkflows = [
+  "mobile-13-store-release-preflight.yml",
+  "mobile-14-auth-app-links.yml",
+  "mobile-15-distribution-authority.yml",
+  "mobile-20a-store-capture.yml",
+  "mobile-20b-store-capture.yml",
+  "mobile-20c-feature-graphic.yml",
+  "mobile-20d-app-store-screenshots.yml",
+  "mobile-ci.yml",
+  "mobile-ios-shell.yml",
+  "mobile-native-shell.yml",
+  "mobile-store-readiness.yml",
+];
+
+for (const name of mobileResponsibilityWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: Mobile - "),
+    `${relativePath}: workflow display name must expose Mobile responsibility`
+  );
+  assert.ok(
+    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+  );
+}
