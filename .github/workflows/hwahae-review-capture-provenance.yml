@@ -1,4 +1,4 @@
-name: Hwahae Review Capture Provenance
+name: Product Data Pipeline - Hwahae Review Capture Provenance
 
 on:
   pull_request:
@@ -24,7 +24,11 @@ on:
       - "lib/recommendation-scoring.ts"
       - "lib/skin-match-decision-engine.js"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 

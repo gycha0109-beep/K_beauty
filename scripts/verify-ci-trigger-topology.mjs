@@ -527,3 +527,51 @@ assert.ok(
     .startsWith("name: Recommendation Admission - "),
   "v21-admission-g3a-pf-authority-read.yml must expose Recommendation Admission responsibility"
 );
+
+
+/* DATA_RESPONSIBILITY_NAMING_GUARD */
+const responsibilityNameGroups = [
+  {
+    names: [
+      "data-offer17-controlled-offer-rpc-diagnostic.yml",
+      "data-offer17-offer-runtime-observability.yml",
+    ],
+    prefix: "name: Product Offer Runtime - ",
+  },
+  {
+    names: [
+      "data-taxonomy-ci.yml",
+      "data-taxonomy13-catalog-only-candidate-approval.yml",
+      "data-taxonomy15-catalog-only-trust-intake.yml",
+    ],
+    prefix: "name: Catalog Taxonomy - ",
+  },
+  {
+    names: [
+      "hwahae-review-capture-provenance.yml",
+      "legacy-offer-classifier.yml",
+      "product-identity-key-repair-confirm.yml",
+      "product-identity-resolution.yml",
+      "product-offers.yml",
+      "product-source-bindings.yml",
+    ],
+    prefix: "name: Product Data Pipeline - ",
+  },
+];
+
+for (const group of responsibilityNameGroups) {
+  for (const name of group.names) {
+    const relativePath = `.github/workflows/${name}`;
+    const source = read(relativePath);
+    assert.ok(
+      source.startsWith(group.prefix),
+      `${relativePath}: workflow display name must expose its technical responsibility`
+    );
+    if (source.includes("  workflow_dispatch:")) {
+      assert.ok(
+        source.includes("watchtower_track:"),
+        `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+      );
+    }
+  }
+}

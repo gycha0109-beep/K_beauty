@@ -1,4 +1,4 @@
-name: Product Identity Resolution
+name: Product Data Pipeline - Identity Resolution
 
 on:
   pull_request:

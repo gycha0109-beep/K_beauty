@@ -1,4 +1,4 @@
-name: Legacy Offer Classifier
+name: Product Data Pipeline - Legacy Offer Classifier
 
 on:
   pull_request:
