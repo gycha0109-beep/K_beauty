@@ -224,7 +224,6 @@ const trustPhaseWorkflows = [
   ".github/workflows/trust-phase2-subject-resolution.yml",
   ".github/workflows/trust-phase3-research-worker.yml",
   ".github/workflows/trust-phase4-controlled-evidence-adoption.yml",
-  ".github/workflows/trust-phase5-admin-queue.yml",
   ".github/workflows/trust-phase5b-subject-registration.yml",
   ".github/workflows/trust-phase5c-fation-formulation-conflict.yml",
   ".github/workflows/trust-phase6a-reentry.yml",
