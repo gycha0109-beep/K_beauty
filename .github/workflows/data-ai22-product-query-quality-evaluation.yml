@@ -1,4 +1,4 @@
-name: DATA-AI22 Product Query Quality Evaluation
+name: Product Query AI - DATA-AI22 Quality Evaluation
 
 on:
   pull_request:
@@ -9,7 +9,6 @@ on:
       - "scripts/run-data-ai22-product-query-quality-evaluation.mjs"
       - "scripts/verify-data-ai22-product-query-quality.mjs"
       - ".github/workflows/data-ai22-product-query-quality-evaluation.yml"
-      - "scripts/verify-current-main-health.mjs"
   push:
     branches: [main]
     paths:
@@ -18,9 +17,12 @@ on:
       - "scripts/run-data-ai22-product-query-quality-evaluation.mjs"
       - "scripts/verify-data-ai22-product-query-quality.mjs"
       - ".github/workflows/data-ai22-product-query-quality-evaluation.yml"
-      - "scripts/verify-current-main-health.mjs"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 
