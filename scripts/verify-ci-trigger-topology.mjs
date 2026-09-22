@@ -36,6 +36,19 @@ assert.deepEqual(
   `historical TRUST-P workflows must stay retired: ${historicalTrustWorkflows.join(", ")}`,
 );
 
+const retiredTrustDataGovernanceWorkflows = new Set([
+  "trust-phase5-admin-queue.yml",
+]);
+
+const presentRetiredTrustDataGovernanceWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredTrustDataGovernanceWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredTrustDataGovernanceWorkflows,
+  [],
+  `retired TRUST Data Governance workflows must stay retired: ${presentRetiredTrustDataGovernanceWorkflows.join(", ")}`,
+);
+
 const dataOfferWorkflows = readdirSync(".github/workflows")
   .filter((name) => /^data-offer\d/i.test(name) && /\.ya?ml$/i.test(name))
   .sort();
@@ -443,6 +456,7 @@ assert(
 console.log(JSON.stringify({
   status: "PASS",
   historical_trust_p_workflows: 0,
+  retired_trust_data_governance_workflows: 0,
   historical_data_offer_workflows: 0,
   operational_data_offer_workflows: 2,
   data_taxonomy_workflows: 3,
