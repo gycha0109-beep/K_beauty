@@ -1,6 +1,7 @@
 import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { fetchOfficialBytes, sha256Hex } from "../lib/trust/official-source-fetch.mjs";
+export { assertSafeOfficialUrl } from "../lib/trust/official-source-fetch.mjs";
 
 const OBSERVATION_VERSION = "trust-research-observation-v1";
 
