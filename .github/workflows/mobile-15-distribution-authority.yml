@@ -1,4 +1,4 @@
-name: BEJEWELY Mobile 15 Distribution Authority
+name: Mobile - Stage 15 Distribution Authority
 
 on:
   pull_request:
@@ -30,6 +30,11 @@ on:
       - "scripts/verify-mobile-15-distribution-authority.mjs"
       - ".github/workflows/mobile-15-distribution-authority.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
     inputs:
       platform:
         description: Signed distribution artifact to build
