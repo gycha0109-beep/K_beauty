@@ -1,4 +1,4 @@
-name: TRUST Phase 5B Controlled Subject Registration
+name: TRUST Data Governance - Phase 5B Controlled Subject Registration
 # Exact-head gate marker: reviewer-driven Product Fact Subject identity
 
 on:
@@ -21,7 +21,11 @@ on:
       - "scripts/verify-trust-phase5b-subject-registration.mjs"
       - ".github/workflows/trust-phase5b-subject-registration.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
