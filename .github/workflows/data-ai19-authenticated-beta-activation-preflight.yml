@@ -1,4 +1,4 @@
-name: DATA-AI19 Authenticated Beta Activation Preflight
+name: Product Query AI - Authenticated Beta Activation Preflight
 
 on:
   pull_request:
@@ -18,7 +18,11 @@ on:
       - "scripts/verify-data-ai19-authenticated-beta-activation-preflight.mjs"
       - ".github/workflows/data-ai19-authenticated-beta-activation-preflight.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 
