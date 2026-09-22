@@ -91,10 +91,7 @@ const faceEvalWorkflows = readdirSync(".github/workflows")
   .sort();
 assert.deepEqual(
   faceEvalWorkflows,
-  [
-    "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-    "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
-  ],
+  [],
   `FACE-EVAL workflow topology drift: ${faceEvalWorkflows.join(", ")}`,
 );
 
@@ -103,6 +100,38 @@ const retiredProductEvidenceWorkflows = new Set([
   "product-evidence-presentation-contract.yml",
   "product-evidence-presentation-provider.yml",
   "product-evidence-review-observation-readiness.yml",
+]);
+
+const retiredFaceLabEvaluationStaticWorkflows = new Set([
+  "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
+  "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
+]);
+const presentRetiredFaceLabEvaluationStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredFaceLabEvaluationStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredFaceLabEvaluationStaticWorkflows,
+  [],
+  `retired Face Lab evaluation static workflows must stay retired: ${presentRetiredFaceLabEvaluationStaticWorkflows.join(", ")}`,
+);
+assertContains(".github/workflows/current-main-health.yml", [
+  "Attest frozen Face Lab evaluation authorities",
+  'korean_review_ui_authority="61d9d40db0f7fdac9aa2db1b68cad259f11e6ec0"',
+  'hosted_intake_authority="a865cebcb64cd9c0fcebae691ba4e406def62673"',
+]);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Face Lab Korean offline review UI"',
+  'run("Face Lab home transfer builder syntax"',
+  'run("Face Lab home transfer verifier syntax"',
+  'run("Face Lab hosted set authority"',
+  'run("Face Lab hosted response contract"',
+  'run("Face Lab hosted UI security boundary"',
+  'run("Face Lab target-axis contract"',
+  'run("Face Lab independent Human cue protocol"',
+  'run("Face Lab archetype scoring contract"',
+  'run("Face Lab Human evaluation contract"',
+  'run("Face Lab synthetic evaluation workspace"',
+  'run("Architecture guard"',
 ]);
 
 const retiredFaceLabNeutralStageStaticWorkflows = new Set([
@@ -375,8 +404,6 @@ for (const path of trustPhaseWorkflows) {
 
 const modernizedNodeWorkflows = [
   ".github/workflows/admin-access-foundation.yml",
-  ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-  ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
   ".github/workflows/product-offers.yml",
   ".github/workflows/product-source-bindings.yml",
@@ -482,20 +509,8 @@ assertContains(".github/workflows/mobile-store-readiness.yml", [
 for (const path of [
   ".github/workflows/admin-access-foundation.yml",
   ".github/workflows/admin-product-current-main-integration.yml",
-  ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-  ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
 ]) {
   assertNotContains(path, rootPackageTriggers);
-}
-
-for (const path of [
-  ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-  ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
-]) {
-  assertContains(path, [
-    "concurrency:",
-    "cancel-in-progress:",
-  ]);
 }
 
 for (const path of [
@@ -745,10 +760,7 @@ for (const group of responsibilityNameGroups) {
 
 
 /* FACE_LAB_RESPONSIBILITY_NAMING_GUARD */
-const faceLabResponsibilityWorkflows = [
-  "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-  "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
-];
+const faceLabResponsibilityWorkflows = [];
 
 for (const name of faceLabResponsibilityWorkflows) {
   const relativePath = `.github/workflows/${name}`;
