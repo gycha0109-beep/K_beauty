@@ -1,4 +1,4 @@
-name: DATA-AI17 Authenticated Limited Beta Design
+name: Product Query AI - Authenticated Limited Beta Design
 
 on:
   pull_request:
@@ -26,7 +26,11 @@ on:
       - "vercel.json"
       - ".github/workflows/data-ai17-authenticated-limited-beta-design.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
 
