@@ -39,11 +39,11 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `product-data-pipeline` | 3 |
 | `product-evidence` | 0 |
 | `product-offer-runtime` | 1 |
-| `product-query-ai` | 11 |
+| `product-query-ai` | 9 |
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 18 |
 
-Total: **51 workflows**.
+Total: **49 workflows**.
 
 The machine-readable authority is `docs/ci/workflow-responsibility-map.json`.
 
@@ -73,4 +73,3 @@ Database verification is also cross-cutting. Supabase migrations, isolated runti
 4. Keep shared workflows dynamically attributable to the current Watchtower Track Key.
 5. Reject workflow additions/deletions that do not update the responsibility map.
 6. Only after this map is stable, review phase-coded names and true duplicate workflows.
-
