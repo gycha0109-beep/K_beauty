@@ -3,6 +3,11 @@ name: BEJEWELY Mobile 20D App Store Screenshots
 # App Store screenshot capture is a release/store asset operation, not a routine PR gate.
 on:
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 permissions:
   contents: read

@@ -22,6 +22,11 @@ on:
       - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-native-shell.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 permissions:
   contents: read

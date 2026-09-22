@@ -28,6 +28,11 @@ on:
       - "scripts/verify-mobile-14-auth-app-links.mjs"
       - ".github/workflows/mobile-14-auth-app-links.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 permissions:
   contents: read

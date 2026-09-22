@@ -40,6 +40,11 @@ on:
       - "scripts/verify-mobile-ios-smoke.sh"
       - ".github/workflows/mobile-ios-shell.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 permissions:
   contents: read
