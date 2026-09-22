@@ -38,6 +38,7 @@ assert.deepEqual(
 
 const retiredTrustDataGovernanceWorkflows = new Set([
   "trust-phase5-admin-queue.yml",
+  "trust-phase5c-fation-formulation-conflict.yml",
 ]);
 
 const presentRetiredTrustDataGovernanceWorkflows = readdirSync(".github/workflows")
@@ -225,7 +226,6 @@ const trustPhaseWorkflows = [
   ".github/workflows/trust-phase3-research-worker.yml",
   ".github/workflows/trust-phase4-controlled-evidence-adoption.yml",
   ".github/workflows/trust-phase5b-subject-registration.yml",
-  ".github/workflows/trust-phase5c-fation-formulation-conflict.yml",
   ".github/workflows/trust-phase6a-reentry.yml",
 ];
 for (const path of trustPhaseWorkflows) {
@@ -248,7 +248,7 @@ for (const path of modernizedNodeWorkflows) {
   assertContains(path, ["actions/checkout@v7", "actions/setup-node@v7", "node-version: 22"]);
   assertNotContains(path, ["actions/checkout@v4", "actions/setup-node@v4", "node-version: 20"]);
 }
-for (const path of trustPhaseWorkflows.filter((path) => !path.includes("phase5c-"))) {
+for (const path of trustPhaseWorkflows) {
   assertNotContains(path, ["npm run architecture:guard", "npm run build"]);
 }
 assertContains("scripts/verify-current-main-health.mjs", [
@@ -260,10 +260,6 @@ assertContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 5B subject registration contract"',
   'run("TRUST Phase 5C formulation conflict HOLD"',
   'run("TRUST Phase 6A reentry contract"',
-]);
-assertContains(".github/workflows/trust-phase5c-fation-formulation-conflict.yml", [
-  "concurrency:",
-  "cancel-in-progress: true",
 ]);
 assertNotContains(".github/workflows/admin-product-current-main-integration.yml", [
   "node-version: 20",
