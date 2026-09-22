@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import {
   PRODUCT_QUERY_HOSTED_PREVIEW_ACCEPTANCE_EVIDENCE as evidence
 } from "../lib/product-query-hosted-preview-acceptance-evidence.mjs";
@@ -16,47 +16,9 @@ function check(condition, message) {
   assertions += 1;
 }
 
-const workflow = readFileSync(
-  ".github/workflows/data-ai9-hosted-preview-acceptance.yml",
-  "utf8"
-);
-
 check(
-  workflow.includes("workflow_dispatch:") &&
-    !workflow.includes("\n  push:") &&
-    !workflow.includes("\n  pull_request:") &&
-    !workflow.includes("\n  schedule:"),
-  "DATA-AI9 historical evidence workflow must remain manual-only"
-);
-
-check(
-  workflow.includes("permissions:\n  contents: read") &&
-    !workflow.includes("deployments: read") &&
-    !workflow.includes("id-token: write"),
-  "DATA-AI9 historical evidence workflow must require contents-read-only permission"
-);
-
-for (const forbidden of [
-  "DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN",
-  "Authorization: Bearer",
-  "ACTIONS_ID_TOKEN_REQUEST_TOKEN",
-  "x-vercel-trusted-oidc-idp-token",
-  "deployment_url",
-  "/api/my/product-query-preview",
-  "/api/my/product-query-stage-canary",
-  "VERCEL_TOKEN",
-  "SUPABASE_SERVICE_ROLE"
-]) {
-  check(!workflow.includes(forbidden), `historical DATA-AI9 must not retain live runtime capability: ${forbidden}`);
-}
-
-check(
-  workflow.includes("timeout-minutes: 5") &&
-    workflow.includes("verify-data-ai9-hosted-preview-acceptance.mjs") &&
-    workflow.includes(
-      "DATA_AI9_HOSTED_PREVIEW_ACCEPTANCE=HISTORICAL_EVIDENCE_FROZEN_BY_DATA_AI10"
-    ),
-  "DATA-AI9 workflow must verify and report frozen evidence only"
+  !existsSync(".github/workflows/data-ai9-hosted-preview-acceptance.yml"),
+  "retired DATA-AI9 historical evidence workflow must stay absent"
 );
 
 check(
@@ -77,4 +39,4 @@ check(
   "DATA-AI10 must remain the authority closing DATA-AI9 hosted Preview evidence"
 );
 
-console.log(`DATA-AI9 historical hosted Preview evidence verifier: PASS (${assertions} assertions)`);
+console.log(`DATA-AI9 historical hosted Preview evidence verifier: PASS (${assertions} assertions; workflow retired)`);
