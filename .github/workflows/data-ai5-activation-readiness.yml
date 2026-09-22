@@ -1,4 +1,4 @@
-name: DATA-AI5 Activation Readiness
+name: Product Query AI - Activation Readiness Runtime
 
 on:
   push:
@@ -30,7 +30,11 @@ on:
       - "scripts/validate-data-ai5-activation-readiness-runtime-response.mjs"
       - ".github/workflows/data-ai5-activation-readiness.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read
