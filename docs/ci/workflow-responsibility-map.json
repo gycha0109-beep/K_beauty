@@ -1,6 +1,6 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v1",
-  "generatedFromMainSha": "0401c3ebeaa0986c6298667c761157f020ecc05e",
+  "generatedFromMainSha": "42630465316794af066678f09fa3ab94f4a6857a",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
     "workflowResponsibility": "A workflow has one primary technical responsibility and may expose multiple capability tags.",
@@ -333,17 +333,6 @@
         "ai",
         "evaluation",
         "review-ops"
-      ],
-      "watchtowerTrackBinding": "dynamic-by-run",
-      "lifecycleNameClass": "capability",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
-    "hwahae-review-capture-provenance.yml": {
-      "primaryResponsibility": "product-data-pipeline",
-      "capabilities": [
-        "catalog",
-        "database",
-        "pipeline"
       ],
       "watchtowerTrackBinding": "dynamic-by-run",
       "lifecycleNameClass": "capability",

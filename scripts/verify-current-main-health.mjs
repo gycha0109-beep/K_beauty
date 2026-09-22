@@ -103,6 +103,7 @@ run("Product identity resolver", npm, ["--prefix", "crawler", "run", "verify:ide
 run("Product identity adoption plan", npm, ["--prefix", "crawler", "run", "verify:identity-adoption-plan"]);
 run("Product identity key repair plan", npm, ["--prefix", "crawler", "run", "verify:identity-key-repair-plan"]);
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
+run("Hwahae review capture provenance", node, ["scripts/verify-hwahae-review-capture-provenance.mjs"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
 
 run("Admin current-main integration static contract", node, ["scripts/verify-admin-product-current-main-integration.mjs"]);
