@@ -116,8 +116,13 @@ assert.deepEqual(
 );
 assertContains(".github/workflows/current-main-health.yml", [
   "Attest frozen Face Lab evaluation authorities",
-  'korean_review_ui_authority="61d9d40db0f7fdac9aa2db1b68cad259f11e6ec0"',
-  'hosted_intake_authority="a865cebcb64cd9c0fcebae691ba4e406def62673"',
+  "run: node scripts/verify-face-lab-frozen-evaluation-authorities.mjs",
+]);
+assertContains("scripts/verify-face-lab-frozen-evaluation-authorities.mjs", [
+  'contractVersion: "face-lab-frozen-evaluation-authorities-v1"',
+  "koreanReviewUi:",
+  "hostedIntake:",
+  '"merge-base", "--is-ancestor"',
 ]);
 assertContains("scripts/verify-current-main-health.mjs", [
   'run("Face Lab Korean offline review UI"',
