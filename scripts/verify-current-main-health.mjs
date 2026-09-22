@@ -162,6 +162,11 @@ run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-d
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
 run("Face Lab Human evaluation contract", npm, ["run", "verify:face-lab-archetype-human-evaluation"]);
 run("Face Lab synthetic evaluation workspace", npm, ["run", "synthetic:verify"]);
+run("Face Lab neutral review operator safety", node, ["scripts/check-face-lab-neutral-review-operator-v1.mjs"]);
+run("Face Lab neutral review operator syntax", node, ["--check", "scripts/face-lab-neutral-review-operator.mjs"]);
+run("Face Lab neutral review operator Vercel compatibility launcher syntax", node, ["--check", "scripts/face-lab-neutral-review-operator-vercel-cli-compat.mjs"]);
+run("Face Lab neutral review operator Vercel compatibility verifier syntax", node, ["--check", "scripts/check-face-lab-neutral-review-operator-vercel-cli-compat-v1.mjs"]);
+run("Face Lab neutral review operator Vercel CLI compatibility", node, ["scripts/check-face-lab-neutral-review-operator-vercel-cli-compat-v1.mjs"]);
 
 run(
   "Persona EVAL-R1 current grounding regression probes",

@@ -106,6 +106,26 @@ const retiredProductEvidenceWorkflows = new Set([
   "product-evidence-review-observation-readiness.yml",
 ]);
 
+const retiredFaceLabOperatorStaticWorkflows = new Set([
+  "face-lab-neutral-review-operator-v1.yml",
+  "face-lab-neutral-review-operator-vercel-cli-compat-v1.yml",
+]);
+const presentRetiredFaceLabOperatorStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredFaceLabOperatorStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredFaceLabOperatorStaticWorkflows,
+  [],
+  `retired Face Lab operator static workflows must stay retired: ${presentRetiredFaceLabOperatorStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Face Lab neutral review operator safety"',
+  'run("Face Lab neutral review operator syntax"',
+  'run("Face Lab neutral review operator Vercel compatibility launcher syntax"',
+  'run("Face Lab neutral review operator Vercel compatibility verifier syntax"',
+  'run("Face Lab neutral review operator Vercel CLI compatibility"',
+]);
+
 const retiredCatalogTaxonomyStaticWorkflows = new Set([
   "data-taxonomy-ci.yml",
 ]);
@@ -310,7 +330,6 @@ const modernizedNodeWorkflows = [
   ".github/workflows/admin-access-foundation.yml",
   ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
   ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
-  ".github/workflows/face-lab-neutral-review-operator-v1.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
   ".github/workflows/product-offers.yml",
   ".github/workflows/product-source-bindings.yml",
@@ -685,8 +704,6 @@ const faceLabResponsibilityWorkflows = [
   "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
   "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
   "face-lab-neutral-face-count-shared-stage-v1.yml",
-  "face-lab-neutral-review-operator-v1.yml",
-  "face-lab-neutral-review-operator-vercel-cli-compat-v1.yml",
 ];
 
 for (const name of faceLabResponsibilityWorkflows) {
