@@ -146,3 +146,16 @@ A workflow may be removed only when all of the following are true:
 - Side effects: none; the verifier exercises local provenance/readiness contracts and explicitly enforces zero database authority and zero recommendation-semantic integration
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and the exact verifier to remain owned by Current Main Health
 - Equivalence result: Hwahae capture-provenance semantics remain fully verified under broader canonical trigger coverage.
+
+### Catalog Taxonomy canonical static wrapper
+
+- Retired workflow: `.github/workflows/data-taxonomy-ci.yml`
+- Previous mode: path-scoped main PR/push plus manual, contents-read-only deterministic Node verification
+- Unique executable checks: eleven DATA-TAXONOMY contract verifiers plus four runtime-module syntax checks
+- Canonical authority: all fifteen exact commands are now executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and manual dispatch, a strict superset of the retired path-scoped trigger set
+- Exact-head authority: both paths attest the candidate SHA; Current Main Health additionally enforces exact-head diff hygiene
+- Runtime authority: none; the wrapper used no Supabase runtime, hosted deployment, Vercel/OIDC, credentials, browser automation, artifacts, release operations, or external provider calls
+- Verifier side effects: none; all eleven contract verifier scripts are deterministic local readers with no fetch, Supabase client, child process, filesystem write, environment-secret, or network dependency
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and all fifteen commands to remain owned by Current Main Health
+- Equivalence result: canonical catalog-taxonomy contract and syntax coverage is preserved under broader canonical trigger coverage.
