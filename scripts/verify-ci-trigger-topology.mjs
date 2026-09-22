@@ -620,3 +620,23 @@ for (const name of productEvidenceResponsibilityWorkflows) {
     `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
   );
 }
+
+
+/* ADMIN_RESPONSIBILITY_NAMING_GUARD */
+const adminResponsibilityWorkflows = [
+  "admin-access-foundation.yml",
+  "admin-product-current-main-integration.yml",
+];
+
+for (const name of adminResponsibilityWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: Admin - "),
+    `${relativePath}: workflow display name must expose Admin responsibility`,
+  );
+  assert.ok(
+    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
+  );
+}
