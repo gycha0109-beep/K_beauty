@@ -159,3 +159,16 @@ A workflow may be removed only when all of the following are true:
 - Verifier side effects: none; all eleven contract verifier scripts are deterministic local readers with no fetch, Supabase client, child process, filesystem write, environment-secret, or network dependency
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and all fifteen commands to remain owned by Current Main Health
 - Equivalence result: canonical catalog-taxonomy contract and syntax coverage is preserved under broader canonical trigger coverage.
+
+### Face Lab neutral review operator static wrappers
+
+- Retired workflows: `.github/workflows/face-lab-neutral-review-operator-v1.yml`, `.github/workflows/face-lab-neutral-review-operator-vercel-cli-compat-v1.yml`
+- Previous mode: path-scoped main PR plus manual, contents-read-only deterministic Node verification
+- Unique executable checks: neutral-review operator safety, three operator/compatibility syntax checks, and Vercel CLI compatibility contract verification
+- Canonical authority: all five exact checks are now executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and manual dispatch, a strict superset of both retired wrappers
+- Exact-head and diff authority: Current Main Health retains exact candidate SHA checkout/attestation and exact-head diff hygiene
+- Runtime authority: none; neither wrapper used deployment lookup, OIDC, credentials, browser automation, artifacts, release operations, Supabase runtime, or external provider calls
+- Vercel compatibility semantics: verifier execution is local and dependency-injected; Vercel CLI calls and deployment URLs are mocked test fixtures rather than live deployment authority
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires both wrappers to remain absent and all five canonical checks to remain owned by Current Main Health
+- Equivalence result: Face Lab operator safety and Vercel CLI compatibility coverage is preserved without standalone wrapper duplication.
