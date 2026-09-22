@@ -215,6 +215,28 @@ for (const forbidden of [
   );
 }
 
+const zeroWriteFiles = [
+  "evidence/product-fact-subject-coverage-v1/trust-phase5c-fation-formulation-conflict-v1.json",
+  "docs/evidence/trust-phase5c-fation-formulation-conflict-v1.md",
+  "scripts/product-evidence/verify-trust-phase5c-fation-formulation-conflict-v1.mjs"
+];
+const mutationPattern =
+  /\b(insert|update|delete|upsert)\b\s+(into|public\.|product_fact_|catalog_trust_|product_source_)/i;
+
+for (const zeroWritePath of zeroWriteFiles) {
+  assert.equal(
+    mutationPattern.test(fs.readFileSync(zeroWritePath, "utf8")),
+    false,
+    `zero-write Phase 5C artifact contains mutation-shaped SQL/code: ${zeroWritePath}`
+  );
+}
+
+assert.equal(
+  fs.existsSync(".github/workflows/trust-phase5c-fation-formulation-conflict.yml"),
+  false,
+  "retired TRUST Phase 5C workflow must stay absent"
+);
+
 console.log(
   JSON.stringify({
     status: "PASS",
