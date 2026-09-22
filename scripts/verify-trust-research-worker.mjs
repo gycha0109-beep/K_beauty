@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { assertSafeOfficialUrl, extractStrictFactCandidate } from "./trust-research-worker.mjs";
+import { extractStrictFactCandidate } from "./trust-research-worker.mjs";
+import { assertSafeOfficialUrl } from "../lib/trust/official-source-fetch.mjs";
 
 const root = process.cwd();
 const read = (path) => {
@@ -14,6 +15,7 @@ const excludes = (text, value, label) => assert(!text.includes(value), `${label}
 
 const migration = read("supabase/migrations/20260915131141_trust_phase3_research_worker_v1.sql");
 const worker = read("scripts/trust-research-worker.mjs");
+const transport = read("lib/trust/official-source-fetch.mjs");
 const fixture = read("tests/fixtures/trust-research-worker/20260915122500_trust_research_worker_fixture.sql");
 const runtime = read("tests/fixtures/trust-research-worker/verify_trust_research_worker_runtime.sql");
 
@@ -45,7 +47,10 @@ const runtime = read("tests/fixtures/trust-research-worker/verify_trust_research
   "MAX_REDIRECTS",
   "redirect: \"manual\"",
   "assertSafeOfficialUrl",
-  "private_dns_resolution",
+  "private_dns_resolution"
+].forEach((value) => includes(transport, value, "Official source transport"));
+
+[
   "source_content_digest: sha256Hex(fetched.bytes)",
   "digest_basis: \"live-page-bytes-v1\"",
   "Missing is not false",
