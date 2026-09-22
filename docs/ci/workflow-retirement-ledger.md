@@ -36,3 +36,25 @@ A workflow may be removed only when all of the following are true:
 - Manual equivalence: canonical Current Main Health retains `workflow_dispatch`
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs`
 - Equivalence result: safe to retire because the unique fail-closed invariant moved into the canonical verifier without removing the check; the retired workflow had no deployment/OIDC/credential/runtime authority.
+
+### DATA-AI17 authenticated limited-beta design contract
+
+- Retired workflow: `.github/workflows/data-ai17-authenticated-limited-beta-design.yml`
+- Previous mode: path-scoped PR/push plus manual contract verification; contents-read-only
+- Unique executable check: `node scripts/verify-data-ai17-authenticated-limited-beta-design.mjs`
+- Canonical authority: the same verifier is already executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: Current Main Health runs on every main PR and main push, a strict superset of the retired workflow path filters, and retains manual dispatch
+- Runtime authority: none; no deployment/OIDC/credential/runtime probe existed
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs`
+- Equivalence result: exact contract verifier preserved with broader canonical trigger coverage.
+
+### DATA-AI19 authenticated beta activation preflight contract
+
+- Retired workflow: `.github/workflows/data-ai19-authenticated-beta-activation-preflight.yml`
+- Previous mode: path-scoped PR/push plus manual contract verification; contents-read-only
+- Unique executable check: `node scripts/verify-data-ai19-authenticated-beta-activation-preflight.mjs`
+- Canonical authority: the same verifier is already executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: Current Main Health runs on every main PR and main push, a strict superset of the retired workflow path filters, and retains manual dispatch
+- Runtime authority: none; no deployment/OIDC/credential/runtime probe existed
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs`
+- Equivalence result: exact contract verifier preserved with broader canonical trigger coverage.
