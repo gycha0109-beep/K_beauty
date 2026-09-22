@@ -25,6 +25,14 @@ A workflow may be removed only when all of the following are true:
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs`
 - Equivalence result: safe to retire because the removed workflow had no live probe, deployment permission, OIDC permission, credential use, push trigger, pull-request trigger, or schedule. Its only executable verification is retained in canonical current-main health.
 
-## Not retired by this change
+### DATA-AI14 historical Production canary guard
 
-`data-ai14-production-canary.yml` remains active. Although historical, it still has a path-scoped PR/push guard over `vercel.json` that rejects reintroduction of superseded Production canary activation keys. It is not equivalent to a manual frozen-evidence workflow and requires a separate migration proof before removal.
+- Retired workflow: `.github/workflows/data-ai14-production-canary.yml`
+- Previous mode: path-scoped PR/push guard plus manual verification; contents-read-only
+- Live authority: none; Production canary execution was already superseded by DATA-AI16
+- Preserved invariant: all retired Production canary activation keys must remain absent from `vercel.json`
+- Canonical verifier: `scripts/verify-data-ai14-production-canary-harness.mjs`, executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: `current-main-health.yml` runs on every PR to `main` and every push to `main`, so the migrated invariant is checked on a strict superset of the old `vercel.json` path-scoped trigger
+- Manual equivalence: canonical Current Main Health retains `workflow_dispatch`
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs`
+- Equivalence result: safe to retire because the unique fail-closed invariant moved into the canonical verifier without removing the check; the retired workflow had no deployment/OIDC/credential/runtime authority.

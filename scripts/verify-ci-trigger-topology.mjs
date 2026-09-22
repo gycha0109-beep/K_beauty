@@ -87,6 +87,7 @@ assert.deepEqual(
 
 const retiredProductQueryAIWorkflows = new Set([
   "data-ai9-hosted-preview-acceptance.yml",
+  "data-ai14-production-canary.yml",
 ]);
 
 const presentRetiredProductQueryAIWorkflows = readdirSync(".github/workflows")
