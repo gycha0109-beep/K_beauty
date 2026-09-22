@@ -1,4 +1,4 @@
-name: TRUST Phase 7B Legacy Backfill Materialization
+name: TRUST Data Governance - Phase 7B Backfill Runtime
 
 on:
   pull_request:
@@ -7,7 +7,6 @@ on:
       - "supabase/migrations/*trust_phase7b_*.sql"
       - "tests/fixtures/trust-phase7b-backfill/**"
       - "scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7b-backfill.yml"
   push:
     branches: [main, "feat/trust-phase7b-legacy-backfill-materialization"]
@@ -15,10 +14,13 @@ on:
       - "supabase/migrations/*trust_phase7b_*.sql"
       - "tests/fixtures/trust-phase7b-backfill/**"
       - "scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7b-backfill.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
