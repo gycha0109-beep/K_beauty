@@ -1,4 +1,4 @@
-name: TRUST Phase 5 Admin Queue
+name: TRUST Data Governance - Phase 5 Admin Queue
 
 on:
   push:
