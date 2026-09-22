@@ -1,4 +1,4 @@
-name: TRUST Phase 6B Re-entry Detectors
+name: TRUST Data Governance - Phase 6B Re-entry Runtime
 
 on:
   pull_request:
@@ -7,7 +7,6 @@ on:
       - "supabase/migrations/*trust_phase6b_*.sql"
       - "tests/fixtures/trust-phase6b-reentry/**"
       - "scripts/verify-trust-phase6b-reentry-detectors.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase6b-reentry.yml"
   push:
     branches: [main, "feat/trust-phase6b-reentry-detectors"]
@@ -15,10 +14,13 @@ on:
       - "supabase/migrations/*trust_phase6b_*.sql"
       - "tests/fixtures/trust-phase6b-reentry/**"
       - "scripts/verify-trust-phase6b-reentry-detectors.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase6b-reentry.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
