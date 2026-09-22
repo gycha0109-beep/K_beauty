@@ -120,3 +120,17 @@ A workflow may be removed only when all of the following are true:
 - Artifact/persistence authority: none; the baseline runner writes only when an explicit `--output` path is supplied, while the canonical `--expected-baseline` invocation emits deterministic stdout only
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and requires both quality commands to remain owned by Current Main Health
 - Equivalence result: the complete deterministic quality corpus verification and expected-baseline evaluation survive under broader canonical trigger coverage.
+
+### Product Data Pipeline deterministic crawler wrappers
+
+- Retired workflows: `.github/workflows/legacy-offer-classifier.yml`, `.github/workflows/product-identity-resolution.yml`
+- Previous mode: path-scoped main PR/push, contents-read-only deterministic crawler verification
+- Unique executable checks: `verify:legacy-offer-classifier`, `verify:legacy-offer-migration`, `verify:identity-resolution`, `verify:identity-adoption-plan`, and `verify:identity-key-repair-plan`
+- Shared checks already canonical: crawler dependency installation, `crawler` TypeScript typecheck, exact candidate SHA checkout/attestation, and exact-head diff hygiene
+- Canonical authority: all five unique crawler verifier commands are now executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: both retired wrappers ran only on path-scoped PRs targeting `main` and path-scoped pushes to `main`; Current Main Health runs on every PR targeting `main` and every push to `main`, a strict trigger superset
+- Runtime authority: none; neither wrapper used Supabase runtime, hosted deployment, Vercel/OIDC, credentials, browser automation, artifacts, release operations, or external provider calls
+- Side effects: none; both workflows only read repository state and run deterministic crawler tests/typechecks
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires both wrappers to remain absent and requires all five unique commands to remain owned by Current Main Health
+- Equivalence result: deterministic Product Data Pipeline validation is preserved while two redundant standalone wrappers are removed.
+
