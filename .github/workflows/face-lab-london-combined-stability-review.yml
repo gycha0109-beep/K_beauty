@@ -6,16 +6,25 @@ on:
       - "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
       - "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json"
       - "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-review.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-evidence.json"
       - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
       - "scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs"
       - "scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs"
+      - "scripts/build-face-lab-real-photo-stability-adequacy-review.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-adequacy-review.mjs"
       - "lib/face-lab-real-photo-stability-evidence.js"
       - "lib/face-lab-real-photo-stability-review-packet.js"
+      - "lib/face-lab-real-photo-stability-adequacy.js"
+      - "lib/face-lab-real-photo-stability-adequacy-review.js"
       - ".github/workflows/face-lab-london-combined-stability-review.yml"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: face-lab-real-photo-combined-stability-review-${{ github.event.pull_request.number || github.ref }}
@@ -44,33 +53,40 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Build combined real-photo review packet
+      - name: Rebuild complete real-photo review packet
         run: |
-          node scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json             evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json             evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json             "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json"             "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
+          node scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs \
+            evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json \
+            evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json \
+            evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json \
+            evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json" \
+            "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
 
-      - name: Verify combined real-photo evidence
+      - name: Verify complete real-photo evidence
         run: |
-          node scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs             "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json"             "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
+          node scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json" \
+            "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
 
-      - name: Freeze combined review evidence
+      - name: Verify frozen combined packet is current
         shell: bash
         run: |
           set -euo pipefail
-          cp "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json"             evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json
-          cp "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json
-          git status --short
+          cmp \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json" \
+            evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json
 
-      - name: Commit combined review evidence
-        if: github.event_name == 'pull_request'
-        shell: bash
+      - name: Rebuild adequacy descriptive review
         run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json
-          if git diff --cached --quiet; then
-            echo "No combined review changes"
-            exit 0
-          fi
-          git commit -m "research(facelab): freeze combined pitch stability review"
-          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          node scripts/build-face-lab-real-photo-stability-adequacy-review.mjs \
+            evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json \
+            "$RUNNER_TEMP/real-photo-stability-adequacy-review.json"
+
+      - name: Publish adequacy descriptive review candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: face-lab-real-photo-stability-adequacy-review-candidate
+          path: ${{ runner.temp }}/real-photo-stability-adequacy-review.json
+          if-no-files-found: error
+          retention-days: 7
