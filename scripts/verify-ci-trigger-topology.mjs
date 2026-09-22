@@ -500,3 +500,30 @@ for (const name of trustResponsibilityWorkflows) {
     );
   }
 }
+
+
+/* PRODUCT_QUERY_AI_RESPONSIBILITY_NAMING_GUARD */
+const productQueryAIWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^data-ai\d/i.test(name) && /\.ya?ml$/i.test(name))
+  .sort();
+
+for (const name of productQueryAIWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: Product Query AI - "),
+    `${relativePath}: DATA-AI workflow display name must expose Product Query AI responsibility`
+  );
+  if (source.includes("  workflow_dispatch:")) {
+    assert.ok(
+      source.includes("watchtower_track:"),
+      `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+    );
+  }
+}
+
+assert.ok(
+  read(".github/workflows/v21-admission-g3a-pf-authority-read.yml")
+    .startsWith("name: Recommendation Admission - "),
+  "v21-admission-g3a-pf-authority-read.yml must expose Recommendation Admission responsibility"
+);
