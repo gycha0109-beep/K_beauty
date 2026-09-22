@@ -1,4 +1,4 @@
-name: TRUST Phase 7C Phase4 Legacy Adoption Compatibility
+name: TRUST Data Governance - Phase 7C Legacy Adoption Compatibility
 
 on:
   pull_request:
@@ -7,7 +7,6 @@ on:
       - "supabase/migrations/*trust_phase7c_phase4_*.sql"
       - "tests/fixtures/trust-phase7c-phase4-compat/**"
       - "scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7c-phase4-compat.yml"
   push:
     branches: [main, "feat/trust-phase7c-phase4-legacy-compat"]
@@ -15,10 +14,13 @@ on:
       - "supabase/migrations/*trust_phase7c_phase4_*.sql"
       - "tests/fixtures/trust-phase7c-phase4-compat/**"
       - "scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7c-phase4-compat.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
