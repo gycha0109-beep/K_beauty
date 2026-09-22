@@ -70,3 +70,15 @@ A workflow may be removed only when all of the following are true:
 - Runtime authority: none; no Supabase runtime, deployment, OIDC, credential, browser, artifact, or release job existed
 - Retirement guard: the Phase 5 verifier and `scripts/verify-ci-trigger-topology.mjs` both require the retired workflow to remain absent
 - Equivalence result: focused static contract coverage is preserved by the canonical health workflow with broader trigger coverage.
+
+### TRUST Phase 5C FATION formulation-conflict HOLD
+
+- Retired workflow: `.github/workflows/trust-phase5c-fation-formulation-conflict.yml`
+- Previous mode: path-scoped PR plus historical research-branch push, contents-read-only static evidence verification
+- Canonical authority: `scripts/product-evidence/verify-trust-phase5c-fation-formulation-conflict-v1.mjs`, already executed by `scripts/verify-current-main-health.mjs`
+- Preserved unique zero-write gate: the workflow's mutation-shaped SQL/code scan is now enforced inside the canonical Phase 5C verifier across the frozen evidence JSON, evidence note, and verifier source
+- Phase 5B regression authority: `scripts/verify-trust-phase5b-subject-registration.mjs` remains independently executed by Current Main Health
+- Exact-head authority: Current Main Health checks out and attests the candidate SHA before canonical verification
+- Runtime authority: none; no Supabase runtime, deployment, OIDC, credential, browser, artifact, or release job existed
+- Retirement guard: the Phase 5C verifier and `scripts/verify-ci-trigger-topology.mjs` both require the retired workflow to remain absent
+- Equivalence result: all semantic and zero-write checks survive under canonical Current Main Health; only the redundant standalone wrapper is removed.
