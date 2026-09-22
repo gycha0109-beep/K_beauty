@@ -97,6 +97,11 @@ run("DATA-AI22 product-query quality evaluation", node, ["scripts/verify-data-ai
 run("DATA-AI22 product-query quality canonical baseline", node, ["scripts/run-data-ai22-product-query-quality-evaluation.mjs", "--expected-baseline"]);
 run("DATA-AI22 live provider acceptance boundary", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
 
+run("Legacy offer classifier", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-classifier"]);
+run("Legacy offer migration manifest and dry-run", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-migration"]);
+run("Product identity resolver", npm, ["--prefix", "crawler", "run", "verify:identity-resolution"]);
+run("Product identity adoption plan", npm, ["--prefix", "crawler", "run", "verify:identity-adoption-plan"]);
+run("Product identity key repair plan", npm, ["--prefix", "crawler", "run", "verify:identity-key-repair-plan"]);
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
 
