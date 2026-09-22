@@ -58,3 +58,15 @@ A workflow may be removed only when all of the following are true:
 - Runtime authority: none; no deployment/OIDC/credential/runtime probe existed
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs`
 - Equivalence result: exact contract verifier preserved with broader canonical trigger coverage.
+
+### TRUST Phase 5 read-only Admin Queue contract
+
+- Retired workflow: `.github/workflows/trust-phase5-admin-queue.yml`
+- Previous mode: path-scoped PR/push contract verification; contents-read-only
+- Unique executable check: `node scripts/verify-trust-phase5-admin-queue.mjs`
+- Canonical authority: the same verifier is already executed by `scripts/verify-current-main-health.mjs`
+- Canonical companion gates: Current Main Health also owns the architecture guard and Production build that the retired phase workflow explicitly avoided duplicating
+- Trigger equivalence: Current Main Health runs on every main PR and main push, a strict superset of the retired workflow path filters
+- Runtime authority: none; no Supabase runtime, deployment, OIDC, credential, browser, artifact, or release job existed
+- Retirement guard: the Phase 5 verifier and `scripts/verify-ci-trigger-topology.mjs` both require the retired workflow to remain absent
+- Equivalence result: focused static contract coverage is preserved by the canonical health workflow with broader trigger coverage.
