@@ -95,3 +95,15 @@ A workflow may be removed only when all of the following are true:
 - Runtime authority: none; no Supabase runtime, deployment, OIDC, credential, browser, artifact, or release job existed
 - Retirement guard: the Phase 8A verifier and `scripts/verify-ci-trigger-topology.mjs` both require the retired workflow to remain absent
 - Equivalence result: static revalidation-contract coverage and diff hygiene are preserved under broader canonical coverage.
+
+### Product Evidence static wrapper set
+
+- Retired workflows: `.github/workflows/free-result-v2-product-evidence-ui.yml`, `.github/workflows/product-evidence-presentation-contract.yml`, `.github/workflows/product-evidence-presentation-provider.yml`, `.github/workflows/product-evidence-review-observation-readiness.yml`
+- Previous mode: path-scoped PR/push plus manual, contents-read-only Node verifier wrappers
+- Unique executable checks: `verify-free-result-v2-product-evidence-ui.mjs`, `verify-product-evidence-presentation-contract.mjs`, `verify-product-evidence-presentation-provider.mjs`, and `verify-product-evidence-review-observation-readiness.mjs`
+- Canonical authority: all four exact verifier scripts are now executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: Current Main Health runs on every main PR and main push and retains manual dispatch, a strict superset of all four retired path filters
+- Exact-head authority: Current Main Health checks out and attests the candidate SHA before running the canonical suite
+- Runtime authority: none of the four workflows used Supabase runtime, deployment, OIDC, credentials, browser automation, artifacts, or release jobs
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires all four wrapper files to remain absent and requires their four verifiers to remain in Current Main Health
+- Equivalence result: Product Evidence semantic checks are preserved exactly while four redundant workflow wrappers are removed.

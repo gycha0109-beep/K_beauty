@@ -172,11 +172,6 @@ const migrationSource = await readFile(
   ),
   "utf8"
 );
-const workflowSource = await readFile(
-  new URL("../.github/workflows/product-evidence-presentation-provider.yml", import.meta.url),
-  "utf8"
-);
-
 for (const requiredToken of [
   "product_fact_current",
   "product_fact_instances",
@@ -190,7 +185,6 @@ for (const requiredToken of [
   assert(migrationSource.includes(requiredToken), `missing canonical boundary token: ${requiredToken}`);
 }
 assert(migrationSource.includes("i.fact_key in ('eye_sting_observed', 'white_cast_observed')"));
-assert(workflowSource.includes("20260910124000_product_evidence_presentation_canonical_fact_keys_v1.sql"));
 
 for (const ownerHandoffToken of [
   "grant create on schema public to product_evidence_presentation_reader_owner",
