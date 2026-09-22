@@ -82,3 +82,16 @@ A workflow may be removed only when all of the following are true:
 - Runtime authority: none; no Supabase runtime, deployment, OIDC, credential, browser, artifact, or release job existed
 - Retirement guard: the Phase 5C verifier and `scripts/verify-ci-trigger-topology.mjs` both require the retired workflow to remain absent
 - Equivalence result: all semantic and zero-write checks survive under canonical Current Main Health; only the redundant standalone wrapper is removed.
+
+### TRUST Phase 8A revalidation contract
+
+- Retired workflow: `.github/workflows/trust-phase8a-revalidation-contract.yml`
+- Previous mode: path-scoped PR/push plus manual static contract verification; contents-read-only
+- Unique executable check: `node scripts/verify-trust-phase8a-revalidation-contract.mjs`
+- Canonical authority: the same verifier is now executed by `scripts/verify-current-main-health.mjs`
+- Trigger equivalence: Current Main Health runs on every main PR and main push and retains manual dispatch, a strict superset of the retired path filters
+- Exact-head authority: Current Main Health already checks out and attests the candidate SHA
+- Diff-hygiene preservation: the retired workflow's `git diff --check` gate is promoted into `current-main-health.yml` as a canonical exact-head diff-hygiene step
+- Runtime authority: none; no Supabase runtime, deployment, OIDC, credential, browser, artifact, or release job existed
+- Retirement guard: the Phase 8A verifier and `scripts/verify-ci-trigger-topology.mjs` both require the retired workflow to remain absent
+- Equivalence result: static revalidation-contract coverage and diff hygiene are preserved under broader canonical coverage.
