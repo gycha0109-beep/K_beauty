@@ -154,7 +154,7 @@ A workflow may be removed only when all of the following are true:
 - Previous mode: path-scoped main PR/push plus manual, contents-read-only deterministic Node verification
 - Unique executable checks: eleven DATA-TAXONOMY contract verifiers plus four runtime-module syntax checks
 - Canonical authority: all fifteen exact commands are now executed by `scripts/verify-current-main-health.mjs`
-- Trigger equivalence: Current Main Health retains manual dispatch and additionally runs on every PR targeting `main` and every push to `main`, a strict superset of the retired manual-only trigger set
+- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and manual dispatch, a strict superset of the retired path-scoped trigger set
 - Exact-head authority: both paths attest the candidate SHA; Current Main Health additionally enforces exact-head diff hygiene
 - Runtime authority: none; the wrapper used no Supabase runtime, hosted deployment, Vercel/OIDC, credentials, browser automation, artifacts, release operations, or external provider calls
 - Verifier side effects: none; all eleven contract verifier scripts are deterministic local readers with no fetch, Supabase client, child process, filesystem write, environment-secret, or network dependency
@@ -194,7 +194,7 @@ A workflow may be removed only when all of the following are true:
 - Unique executable coverage: neutral face-count shared-stage verifier, six touched-runtime syntax checks, and three hosted-set/response/UI contract checks
 - Existing canonical overlap: target-axis, Human cue protocol, archetype scoring, Human evaluation, synthetic workspace, and architecture guard were already owned by Current Main Health
 - Canonical authority: all unique checks are now executed by `scripts/verify-current-main-health.mjs`; the overlapping checks remain canonical there
-- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and manual dispatch, a strict superset of the retired path-scoped trigger set
+- Trigger equivalence: Current Main Health retains manual dispatch and additionally runs on every PR targeting `main` and every push to `main`, a strict superset of the retired manual-only trigger set
 - Exact-head and diff authority: Current Main Health retains exact candidate SHA checkout/attestation and exact-head diff hygiene
 - Runtime authority: none; the wrapper did not start Supabase, connect to a database, use credentials, execute browser automation, deploy, upload artifacts, or call an external provider
 - Verifier side effects: none; the neutral-stage verifier reads repository authority and fixtures only. Its `fetch(DATA.submitEndpoint` occurrence is a source-code needle, not a network call
