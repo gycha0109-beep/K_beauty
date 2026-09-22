@@ -1,4 +1,4 @@
-name: DATA-OFFER17 Offer Runtime Observability
+name: Product Offer Runtime - DATA-OFFER17 Observability
 
 on:
   pull_request:
@@ -16,7 +16,11 @@ on:
       - "scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"
       - ".github/workflows/data-offer17-offer-runtime-observability.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
