@@ -85,6 +85,20 @@ assert.deepEqual(
   `FACE-EVAL workflow topology drift: ${faceEvalWorkflows.join(", ")}`,
 );
 
+const retiredProductQueryAIWorkflows = new Set([
+  "data-ai9-hosted-preview-acceptance.yml",
+]);
+
+const presentRetiredProductQueryAIWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredProductQueryAIWorkflows.has(name))
+  .sort();
+
+assert.deepEqual(
+  presentRetiredProductQueryAIWorkflows,
+  [],
+  `retired Product Query AI workflows must stay retired: ${presentRetiredProductQueryAIWorkflows.join(", ")}`,
+);
+
 const retiredMobileStoreStages = new Set([
   "mobile-16a-privacy-account-deletion.yml",
   "mobile-16c-google-data-safety.yml",
@@ -430,6 +444,7 @@ console.log(JSON.stringify({
   operational_data_offer_workflows: 2,
   data_taxonomy_workflows: 3,
   face_eval_workflows: 2,
+  retired_product_query_ai_workflows: 0,
   retired_mobile_store_stage_workflows: 0,
   retired_mobile_app_stage_workflows: 0,
   heavy_mobile_root_package_triggers: 0,
