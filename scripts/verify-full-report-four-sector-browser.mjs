@@ -71,8 +71,8 @@ try {
     }
     await hub.waitFor({ timeout: 30000 });
     const overview = page.locator('[data-report-hub]');
-    assert.equal(await overview.locator('[data-orb]').count(), 4);
-    assert.equal(await overview.getByRole('button', { name: /Face Lab/ }).count(), 0);
+    assert.equal(await overview.locator('[data-hub-sector]').count(), 4);
+    assert.equal(await overview.locator('[data-hub-sector]').getByText('Face Lab').count(), 0);
     assert.equal(await overview.getAttribute('data-plan-mode'), payload(locale, variant).functionalPlan?.planMode || 'UNKNOWN');
     if (!hubCaptured) {
       for (const width of [390, 430]) {
@@ -85,7 +85,7 @@ try {
         }
       }
       for (const orb of ['routine', 'functional', 'condition', 'tracking']) {
-        await overview.locator(`[data-orb="${orb}"]`).click();
+        await overview.locator(`[data-hub-sector="${orb}"]`).click();
         await page.getByRole('button', { name: '리포트 전체 보기', exact: true }).click();
       }
       await overview.getByRole('link', { name: /입력 맥락/ }).click();
@@ -93,7 +93,7 @@ try {
       await overview.getByRole('button', { name: /판단 근거/ }).click();
       await page.getByRole('button', { name: '리포트 전체 보기', exact: true }).click();
       hubCaptured = true;
-      checks.push('Orb hub: 390/430px Light/Dark screenshots; four routes and dock actions; no Face Lab sector; canonical/unknown mode');
+      checks.push('Card hub: 390/430px Light/Dark screenshots; four routes and dock actions; no Face Lab sector; canonical/unknown mode');
     }
     await hub.click({ timeout: 30000 });
     await page.locator('[data-report-section="routine"]').waitFor();

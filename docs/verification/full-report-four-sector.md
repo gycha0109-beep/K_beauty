@@ -53,27 +53,14 @@ The same directory contains 430px and full viewport captures plus `verification.
 
 Self-review found no remaining Critical/High issue in the modified decision/display boundary. The complete acceptance gate remains open for the limitations above.
 
-## Orbital hub follow-up — 2026-09-22
+## Approved card overview — 2026-09-23
 
-The latest reference replaces the petal overview with four glass/water planets and copper orbital paths. Routine and functional plan occupy the upper corners; condition response and investigation occupy the lower corners. The Face Lab implementation and separate end-of-report entry are preserved, but it is no longer a hub sector.
+The latest supplied reference supersedes the sphere hub. The final overview has a centered brand, saved-data hero, 2×2 grid (routine/investigation/plan/conditions), report dock, and separate Face Lab banner. Shared light/dark layout uses muted sage, rose, blue and violet accents and decorative texture art. Counts, product previews, mode and scenario evidence are read from the actual saved report; unknowns do not borrow example values.
 
-The hub uses saved functional-plan text and mode. The fixture shown in the screenshots is START, so the reference image's HOLD/stabilization wording is deliberately not copied. No date, saved/privacy assertion, cause attribution or skin condition is invented. The reference landscape is interpreted with quiet contour lines; the dock contains two real actions rather than an unsupported save-status claim.
+Local checks: build passed after fixing a CSS-module pure-selector compilation error; focused authority verifier passed; four-sector browser flows passed. The actual user route localhost:3001/test-full-report was checked at 320/390/430/1024 in Light/Dark. The layout verifier asserts exact card order, aligned rows, non-overlap, visible bounds and dock clearance. Self-review corrected narrow-screen dock wrapping and removed the hero texture's hard rectangular edge.
 
-Re-executed: focused four-sector verifier, production build, architecture guard, browser flows, and lint attempt. Lint still exits at the pre-existing ESLint setup prompt; existing build warnings and root nonce warning remain as documented above. A second browser run timed out on the existing port 3014 dev server before entering the report; a fresh dev server on 3015 was used for final verification, without changing application behavior or weakening assertions.
+Screenshots in artifacts/full-report-four-sector: actual-test-hub-{width}-{theme}.png show the actual route; hub-{390|430}-{theme}.png show canonical fixture data. The four detailed-sector screenshot sets remain. Browser fixtures never write production data. Earlier lint/CSP/hosted-auth limitations remain; the overall full acceptance status is still IMPLEMENTED_UNVERIFIED, while the listed local UI checks pass.
 
-Visual self-review: compared the actual 390/430px Light/Dark hub renders with the supplied reference, checked corner order, central summary hierarchy, thin orbits, serif labels, input dock, keyboard focus and touch targets. Removed neighboring-tile bleed at the decorative sphere edges. Both themes use the same layout and data. Four hub destinations and both dock actions are exercised by the browser verifier. All earlier detailed-sector interactions remain covered.
+[1024px light](../../artifacts/full-report-four-sector/actual-test-hub-1024-light.png) · [390px light](../../artifacts/full-report-four-sector/actual-test-hub-390-light.png) · [390px dark](../../artifacts/full-report-four-sector/actual-test-hub-390-dark.png)
 
-| Hub | Light | Dark |
-| --- | --- | --- |
-| 390px | [Screenshot](../../artifacts/full-report-four-sector/hub-390-light.png) | [Screenshot](../../artifacts/full-report-four-sector/hub-390-dark.png) |
-| 430px | [Screenshot](../../artifacts/full-report-four-sector/hub-430-light.png) | [Screenshot](../../artifacts/full-report-four-sector/hub-430-dark.png) |
-
-Generated art and exact prompt: [asset record](full-report-orb-assets.md). Overall status remains IMPLEMENTED_UNVERIFIED for repository-wide lint and hosted authenticated persistence; the local UI checks are separately reported as passing.
-
-## Layout correction after user review — 2026-09-22
-
-The user rejected the previous visual result: small detached spheres, scattered labels, excessive orbital curves and bottom contour lines. Removed all decorative orbit/contour paths, redundant English labels, floating arrows and signoff ornament. Enlarged the Korean sector labels, gave the center sphere a restrained material texture, and tied the composition to its actual container width. Narrow screens have explicit label clearance; missing canonical text remains neutral rather than an invented diagnosis.
-
-Verified the actual user route `http://localhost:3001/test-full-report`, in addition to intercepted canonical fixtures. `node scripts/verify-full-report-hub-layout.mjs` checks 320/390/430px in both themes, visible control bounds (not merely document overflow), minimum label size, separated controls and clearance above the dock. Full-page captures: `artifacts/full-report-four-sector/actual-test-hub-{width}-{theme}.png`. Self-review caught and corrected the 320px aspect-ratio/min-height width expansion; controls now remain inside the visible frame.
-
-Production build and existing four-sector browser flows pass. Previously documented lint/CSP/hosted-auth limitations remain. No decision, persistence or Face Lab behavior was changed.
+[Generated texture and prompt](full-report-card-assets.md).

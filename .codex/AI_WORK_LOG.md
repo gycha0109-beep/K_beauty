@@ -3005,3 +3005,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Scope: Medium presentation correction; all protected-surface impacts N. Removed orbit/contour lines, duplicate labels and floating arrows; resized and repositioned spheres relative to container width. Neutral missing-data headline remains non-diagnostic.
 - Verified actual localhost:3001/test-full-report at 320/390/430 Light/Dark, four-sector local browser flows, build and diff checks. Self-review fixed narrow-screen clipping caused by aspect-ratio plus min-height and added visible-frame assertions. Existing lint/CSP/hosted-auth limitations remain.
 - Evidence: docs/verification/full-report-four-sector.md and actual-test-hub captures. Canonical decisions, saved payloads and Face Lab implementation unchanged.
+
+### 2026-09-23 / Approved Full Report card overview
+
+- Scope: Medium UI execution from the new attached design. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production N. Fresh origin/main c0018636; existing PR #663 remains open.
+- Replaced sphere hub with centered brand, saved-text hero, 2x2 routine/investigation/plan/condition cards, input/evidence dock, and separate Face Lab banner. Existing four detail interactions and Face Lab logic unchanged. Removed obsolete orb asset/styles and generated a decorative leaf/serum/cream/flower atlas.
+- Counts use saved verdict slots, answered intake signals, exposure-gated candidates and policy roles/actions. Missing data remains unrecorded; no sample diagnoses, products or skin-age claims added. No new persisted fields or decision logic.
+- Verification: actual localhost:3001/test-full-report at 320/390/430/1024 Light/Dark, exact card order/row alignment/visible bounds/dock clearance, focused authority verifier, four-sector browser flows and build. Fixed a CSS module selector error during implementation. Existing lint setup, CSP nonce and hosted-auth limitations remain documented.
+- Docs: current architecture/verification rewritten around the final card design; asset prompt saved. No AI_CONTEXT promotion proposed.
