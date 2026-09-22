@@ -133,4 +133,3 @@ A workflow may be removed only when all of the following are true:
 - Side effects: none; both workflows only read repository state and run deterministic crawler tests/typechecks
 - Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires both wrappers to remain absent and requires all five unique commands to remain owned by Current Main Health
 - Equivalence result: deterministic Product Data Pipeline validation is preserved while two redundant standalone wrappers are removed.
-
