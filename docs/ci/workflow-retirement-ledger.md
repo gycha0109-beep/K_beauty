@@ -204,7 +204,7 @@ A workflow may be removed only when all of the following are true:
 
 - Retired workflows: `.github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml`, `.github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml`
 - Previous mode: path-scoped main PR plus manual, contents-read-only Node verification
-- Frozen authority preservation: Current Main Health now attests both historical authority commits (`61d9d40db0f7fdac9aa2db1b68cad259f11e6ec0`, `a865cebcb64cd9c0fcebae691ba4e406def62673`) against the exact candidate and, for pull requests, the PR base
+- Frozen authority preservation: `scripts/verify-face-lab-frozen-evaluation-authorities.mjs`, invoked by Current Main Health, attests both historical authority commits (`61d9d40db0f7fdac9aa2db1b68cad259f11e6ec0`, `a865cebcb64cd9c0fcebae691ba4e406def62673`) against the exact candidate and, for pull requests, the PR base; the canonical workflow itself does not hard-code historical SHAs
 - Unique executable coverage: Korean offline review UI verifier and two home-transfer syntax checks are now canonical in Current Main Health
 - Existing canonical overlap: hosted set/response/UI, target-axis, Human cue protocol, archetype scoring, Human evaluation, synthetic workspace, and architecture guard are already owned by Current Main Health
 - Browser boundary: the retired workflows referenced browser-verifier source paths in trigger filters but did not execute browser/Playwright/Puppeteer automation
