@@ -468,7 +468,7 @@ const responsibilityScopedWorkflowPaths = [
 ];
 
 for (const relativePath of responsibilityScopedWorkflowPaths) {
-  const source = readFileSync(resolve(ROOT, relativePath), "utf8");
+  const source = read(relativePath);
   assert.ok(
     !source.includes('      - "scripts/verify-current-main-health.mjs"'),
     `${relativePath}: phase/runtime workflow must not trigger on canonical orchestrator changes`
