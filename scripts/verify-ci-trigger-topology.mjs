@@ -803,3 +803,27 @@ for (const name of adminResponsibilityWorkflows) {
     `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
   );
 }
+
+/* MOBILE_WATCHTOWER_TRACK_GUARD */
+const mobileWatchtowerTrackWorkflows = [
+  "mobile-13-store-release-preflight.yml",
+  "mobile-14-auth-app-links.yml",
+  "mobile-15-distribution-authority.yml",
+  "mobile-20a-store-capture.yml",
+  "mobile-20b-store-capture.yml",
+  "mobile-20c-feature-graphic.yml",
+  "mobile-20d-app-store-screenshots.yml",
+  "mobile-ci.yml",
+  "mobile-ios-shell.yml",
+  "mobile-native-shell.yml",
+  "mobile-store-readiness.yml",
+];
+
+for (const name of mobileWatchtowerTrackWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
+  );
+}
