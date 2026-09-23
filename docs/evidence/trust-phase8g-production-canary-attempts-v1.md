@@ -13,3 +13,14 @@
 - Authority mutation: `false`
 
 The exact live HTML byte representation changed across two fetches approximately 2.5 seconds apart while the byte length remained identical. No COMPARABLE profile was registered. This source is not eligible for a `live-page-bytes-v1` baseline from this attempt.
+
+## Attempt 2 — Dr.G Green Mild Up Sun+
+
+- Workflow run: `35906308635`
+- Source ID: `a2803387-44e3-40fa-87c9-a7aec7d745f3`
+- Adapter: `live-page-bytes / v1`
+- Result: `TRANSIENT_FAILURE:http_429`
+- Retry-after policy: `900 seconds`
+- Authority mutation: `false`
+
+The official source rate-limited the GitHub-hosted fetch before a baseline observation could be captured. No COMPARABLE profile was registered. Expected source-blocked or transient outcomes remain fail-closed but are represented as structured canary results rather than making the deterministic TRUST CI contract itself red.

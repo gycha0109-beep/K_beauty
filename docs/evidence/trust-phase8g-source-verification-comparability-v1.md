@@ -197,3 +197,5 @@ canonical_locator == reviewed source locator
 ```
 
 The captured baseline and verification observations are then written through the existing governed Phase 8G RPCs. A mismatched immediate digest is treated as an unstable adapter/source combination and is not promoted to a COMPARABLE baseline.
+
+Expected fetch outcomes such as `TRANSIENT_FAILURE:*` and `SOURCE_BLOCKED:*` are emitted as structured canary results with `stable=false` and `authority_mutation=false`. They block baseline registration but do not turn the deterministic TRUST contract red. Unexpected implementation/runtime failures still fail CI.
