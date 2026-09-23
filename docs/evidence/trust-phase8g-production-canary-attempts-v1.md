@@ -24,3 +24,17 @@ The exact live HTML byte representation changed across two fetches approximately
 - Authority mutation: `false`
 
 The official source rate-limited the GitHub-hosted fetch before a baseline observation could be captured. No COMPARABLE profile was registered. Expected source-blocked or transient outcomes remain fail-closed but are represented as structured canary results rather than making the deterministic TRUST CI contract itself red.
+
+## Attempt 3 — Torriden Dive-In Mild Sun Cream (raw bytes)
+
+- Workflow run: `35907173236`
+- Source ID: `2d154999-5dff-4496-9b1e-d8cf9c6f31f6`
+- Adapter: `live-page-bytes / v1`
+- Baseline digest: `eceb46911211f7c523ec90bf51679881aba64294232641ab6b23d2946728c9ca`
+- Verification digest: `eefea0e588198983bb5166aea5c1a7fee1a049b54f8c6e8054fc2acf96a1c861`
+- Baseline bytes: `176214`
+- Verification bytes: `176214`
+- Result: `stable=false`
+- Authority mutation: `false`
+
+A second independent commerce site also changed raw HTML bytes within approximately three seconds while preserving the exact response length. Together with Attempt 1, this rejects raw page bytes as the default fresh-recovery adapter for dynamic storefront HTML. The next canary keeps the same reviewed Torriden source but switches to `canonical-html-text / v1`.

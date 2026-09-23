@@ -10,6 +10,7 @@ on:
       - "scripts/verify-trust-phase8g-source-verification-comparability.mjs"
       - "scripts/trust-source-verification-worker.mjs"
       - "scripts/trust-source-verification-canary-capture.mjs"
+      - "scripts/verify-trust-source-canonicalization.mjs"
       - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
@@ -24,6 +25,7 @@ on:
       - "scripts/verify-trust-phase8g-source-verification-comparability.mjs"
       - "scripts/trust-source-verification-worker.mjs"
       - "scripts/trust-source-verification-canary-capture.mjs"
+      - "scripts/verify-trust-source-canonicalization.mjs"
       - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
@@ -76,6 +78,7 @@ jobs:
           node --check scripts/trust-research-worker.mjs
           node --check scripts/trust-source-verification-worker.mjs
           node --check scripts/trust-source-verification-canary-capture.mjs
+          node scripts/verify-trust-source-canonicalization.mjs
           node -e 'const fs=require("node:fs"); const x=JSON.parse(fs.readFileSync("docs/evidence/trust-phase8g-production-canary-target-v1.json","utf8")); if(!x.source_id || !String(x.canonical_locator || "").startsWith("https://")) process.exit(1)'
           node scripts/verify-trust-phase8g-source-verification-comparability.mjs
 
@@ -94,7 +97,7 @@ jobs:
             echo "changed=false" >>"${GITHUB_OUTPUT}"
           fi
 
-      - name: Capture Production canary live-byte pair
+      - name: Capture Production canary observation pair
         if: steps.canary_target.outputs.changed == 'true'
         run: node scripts/trust-source-verification-canary-capture.mjs
 
