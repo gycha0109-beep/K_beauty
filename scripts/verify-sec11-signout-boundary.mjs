@@ -232,7 +232,11 @@ async function runInstalledSdkSignOut({ withSession = true, responseStatus = 200
 
 const catalog = Object.freeze([
   { id: "E01_AUTHNAV_POST_FORM", async run() {
-    assert(/<form\s+method="post"\s+action="\/api\/auth\/signout">/.test(authNavSource), "AuthNav exact POST form missing");
+    assert(
+      authNavSource.includes('const signOutAction = isEnglish ? "/api/auth/signout?locale=en" : "/api/auth/signout?locale=ko";'),
+      "AuthNav bounded locale signout action missing"
+    );
+    assert(/<form\s+method="post"\s+action=\{signOutAction\}>/.test(authNavSource), "AuthNav locale-aware POST form missing");
     assert(/<button\s+type="submit"/.test(authNavSource), "AuthNav submit button missing");
   } },
   { id: "E02_SIGNOUT_GET_LINK_ABSENT", async run() {
@@ -419,7 +423,12 @@ const catalog = Object.freeze([
   } },
   { id: "R02_FIXED_ROOT_LOCATION", async run() {
     const { handlers } = createHarness();
-    assert((await handlers.POST(createRequest())).headers.get("location") === "/", "success Location must be fixed root");
+    assert((await handlers.POST(createRequest())).headers.get("location") === "/", "default success Location must be fixed root");
+    assert((await handlers.POST(createRequest({ url: `${VALID_URL}?locale=ko` }))).headers.get("location") === "/", "Korean success Location must be fixed root");
+    assert((await handlers.POST(createRequest({ url: `${VALID_URL}?locale=en` }))).headers.get("location") === "/en", "English success Location must be fixed /en");
+    assert((await handlers.POST(createRequest({ url: `${VALID_URL}?locale=ja` }))).headers.get("location") === "/", "unsupported locale must fail closed to root");
+    const contract = policy.getSignOutPolicyContract();
+    assert(JSON.stringify(contract.redirectLocations) === JSON.stringify(["/", "/en"]), "signout redirect allowlist drifted");
   } },
   { id: "R03_REDIRECT_PARAMS_IGNORED", async run() {
     const { handlers } = createHarness();
