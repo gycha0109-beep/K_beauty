@@ -1010,7 +1010,7 @@
         "skin_type": "combination",
         "concerns": [],
         "sensitivity": null,
-        "texture": "gel",
+        "texture": null,
         "disliked_feel": "sticky",
         "sunscreen_intent": null,
         "white_cast_hate": null,
@@ -1038,7 +1038,6 @@
       "criticalIntentFields": [
         "category",
         "skin_type",
-        "texture",
         "disliked_feel"
       ],
       "expectedBehavior": "supported",
@@ -1048,7 +1047,6 @@
         "rankingEligible": true,
         "rankableSignals": [
           "skin_type",
-          "texture",
           "disliked_feel"
         ]
       }
