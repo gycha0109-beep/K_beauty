@@ -1,10 +1,12 @@
 {
-  "schemaVersion": "bejewely-ci-workflow-responsibility-v1",
-  "generatedFromMainSha": "0a47fcb0d888ae5e60515ac42e9db58198765ba8",
+  "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
+  "producerContractVersion": "watchtower-v0.3.2",
+  "workflowInventoryDigest": "sha256:a15efe4a64e9cd884a31f009ec409183cfb3e3541d5c3e152d13c3950c44136a",
+  "lastAuditedAt": "2026-09-24",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
     "workflowResponsibility": "A workflow has one primary technical responsibility and may expose multiple capability tags.",
-    "watchtowerBinding": "CI Watchtower v0.3.1 uses three producer classes: project-wide workflows stay unassigned, dedicated workflows emit a canonical static [WT:<track>] run-name, and shared technical workflows resolve attribution dynamically from explicit PR/commit/dispatch evidence.",
+    "watchtowerBinding": "CI Watchtower v0.3.2 uses three producer classes: project-wide workflows stay unassigned, dedicated workflows emit a canonical static [WT:<track>] run-name, and shared technical workflows resolve attribution dynamically from explicit PR/commit/branch evidence or workflow_dispatch inputs surfaced through run-name.",
     "preservation": "Existing workflow triggers, jobs, scripts, runtime probes, database harnesses, release jobs, and production probes are preserved until equivalence is proven before consolidation."
   },
   "allowedPrimaryResponsibilities": [
