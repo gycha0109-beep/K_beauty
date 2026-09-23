@@ -9,8 +9,16 @@ on:
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
       - "apps/mobile/package.json"
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/features/analyze/**"
+      - "apps/mobile/features/camera/**"
+      - "apps/mobile/lib/env.ts"
+      - "apps/mobile/lib/auth.ts"
+      - "apps/mobile/lib/supabase.ts"
       - "scripts/verify-mobile-native-shell.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
+      - "scripts/mobile-analyze-e2e-server.mjs"
+      - "scripts/verify-mobile-camera-temporal-stability.mjs"
       - ".github/workflows/mobile-native-shell.yml"
   push:
     branches: [main]
@@ -19,8 +27,16 @@ on:
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
       - "apps/mobile/package.json"
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/features/analyze/**"
+      - "apps/mobile/features/camera/**"
+      - "apps/mobile/lib/env.ts"
+      - "apps/mobile/lib/auth.ts"
+      - "apps/mobile/lib/supabase.ts"
       - "scripts/verify-mobile-native-shell.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
+      - "scripts/mobile-analyze-e2e-server.mjs"
+      - "scripts/verify-mobile-camera-temporal-stability.mjs"
       - ".github/workflows/mobile-native-shell.yml"
   workflow_dispatch:
     inputs:

@@ -45,6 +45,9 @@ on:
       - "scripts/verify-mobile-premium-entry.mjs"
       - "scripts/verify-mobile-my-skin-diary.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
+      - "scripts/mobile-analyze-e2e-server.mjs"
+      - "scripts/verify-mobile-camera-temporal-stability.mjs"
+      - "scripts/verify-mobile-release-env-bundle.mjs"
       - ".github/workflows/mobile-ci.yml"
   push:
     branches: [main]
@@ -89,6 +92,9 @@ on:
       - "scripts/verify-mobile-premium-entry.mjs"
       - "scripts/verify-mobile-my-skin-diary.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
+      - "scripts/mobile-analyze-e2e-server.mjs"
+      - "scripts/verify-mobile-camera-temporal-stability.mjs"
+      - "scripts/verify-mobile-release-env-bundle.mjs"
       - ".github/workflows/mobile-ci.yml"
   workflow_dispatch:
     inputs:
@@ -140,6 +146,9 @@ jobs:
           npm run mobile:typecheck
           npm run mobile:config
           bash -n scripts/verify-mobile-android-smoke.sh
+          node --check scripts/mobile-analyze-e2e-server.mjs
+          node --check scripts/verify-mobile-camera-temporal-stability.mjs
+          node --check scripts/verify-mobile-release-env-bundle.mjs
 
       - name: Verify mobile feature contracts
         shell: bash
@@ -156,5 +165,11 @@ jobs:
           node scripts/verify-mobile-premium-entry.mjs
           node scripts/verify-mobile-my-skin-diary.mjs
 
-      - name: Verify Android JS bundle export
-        run: npm run mobile:export:android
+      - name: Verify Android JS bundle export and release env inlining
+        env:
+          EXPO_PUBLIC_API_BASE_URL: https://mobile-ci-api.example.invalid
+          EXPO_PUBLIC_SUPABASE_URL: https://mobile-ci.supabase.co
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: mobile-ci-public-anon-key
+        run: |
+          npm run mobile:export:android
+          node scripts/verify-mobile-release-env-bundle.mjs apps/mobile/.expo-ci-dist

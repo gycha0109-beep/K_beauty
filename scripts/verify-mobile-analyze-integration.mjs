@@ -29,6 +29,10 @@ const serverRoute = read("app/api/analyze/route.js");
 const analysisGuard = read("lib/security/analysis-request-guard.js");
 const analysisGuardCore = read("lib/security/analysis-request-guard-core.js");
 const androidSmoke = read("scripts/verify-mobile-android-smoke.sh");
+const analyzeE2EServer = read("scripts/mobile-analyze-e2e-server.mjs");
+const nativeShellWorkflow = read(".github/workflows/mobile-native-shell.yml");
+const mobileCiWorkflow = read(".github/workflows/mobile-ci.yml");
+const releaseEnvVerifier = read("scripts/verify-mobile-release-env-bundle.mjs");
 const env = read("apps/mobile/lib/env.ts");
 
 for (const marker of [
@@ -59,7 +63,11 @@ for (const requiredField of [
   assert(serverRoute.includes(requiredField), `server-required-field:${requiredField}`);
 }
 
+assert(client.includes('import { fetch } from "expo/fetch"'), "expo-fetch-transport");
+assert(client.includes('import { File } from "expo-file-system"'), "expo-file-transport");
+assert(client.includes("new File(photo.uri)"), "expo-file-photo-uri");
 assert(client.includes('payload.append(\n    "image"'), "multipart-final-image");
+assert(client.includes("imageFile"), "multipart-expo-file-body");
 assert(client.includes("JSON.stringify(value)"), "multipart-array-json");
 assert(client.includes('return value ? "true" : "false"'), "multipart-boolean-string");
 assert(client.includes('payload.append("locale", locale)'), "multipart-locale");
@@ -131,6 +139,14 @@ assert(androidSmoke.includes('tap_text "Use photo"'), "android-photo-accept-acti
 assert(androidSmoke.includes('wait_for_text_with_scroll "Skin survey before analysis"'), "android-survey-render-smoke");
 assert(androidSmoke.includes("MOBILE_ANDROID_ANALYZE_SURVEY_SMOKE=PASS"), "android-survey-smoke-marker");
 assert(androidSmoke.includes('analyze-survey-en.png'), "android-survey-screenshot-artifact");
+assert(androidSmoke.includes("MOBILE_ANDROID_ANALYZE_RUNTIME_E2E=PASS"), "android-runtime-e2e-marker");
+assert(androidSmoke.includes('wait_for_text "Mobile runtime transport verified."'), "android-runtime-result-render");
+assert(analyzeE2EServer.includes('request.url !== "/api/analyze"'), "runtime-fixture-api-route");
+assert(analyzeE2EServer.includes('name="${field}"'), "runtime-fixture-multipart-fields");
+assert(nativeShellWorkflow.includes('scripts/mobile-analyze-e2e-server.mjs'), "native-shell-runtime-fixture-trigger");
+assert(mobileCiWorkflow.includes("Verify Android JS bundle export and release env inlining"), "release-env-bundle-step");
+assert(mobileCiWorkflow.includes("https://mobile-ci-api.example.invalid"), "release-env-api-sentinel");
+assert(releaseEnvVerifier.includes("MOBILE_RELEASE_ENV_BUNDLE=PASS"), "release-env-bundle-verifier");
 
 const boundedMobileSources = [client, survey, result, screen, boundary].join("\n");
 for (const forbidden of [
@@ -149,9 +165,12 @@ for (const forbidden of [
 
 console.log("MOBILE_ANALYZE_SHARED_SURVEY=PASS");
 console.log("MOBILE_ANALYZE_MULTIPART_TRANSPORT=PASS");
+console.log("MOBILE_ANALYZE_EXPO_FILE_TRANSPORT=PASS");
 console.log("MOBILE_ANALYZE_IDEMPOTENCY_AUTH=PASS");
 console.log("MOBILE_ANALYZE_FREE_RESULT_BOUNDARY=PASS");
 console.log("MOBILE_ANALYZE_PHOTO_ACCEPT_HANDOFF=PASS");
 console.log("MOBILE_ANALYZE_ANDROID_SURVEY_RUNTIME=PASS");
+console.log("MOBILE_ANALYZE_ANDROID_TRANSPORT_E2E=PASS");
+console.log("MOBILE_ANALYZE_RELEASE_ENV_INLINING=PASS");
 console.log("MOBILE_ANALYZE_SERVER_AUTHORITY=PASS");
 console.log("MOBILE_7_ANALYZE_SERVER_INTEGRATION=PASS");
