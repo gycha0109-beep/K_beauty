@@ -9,7 +9,10 @@ import {
   evaluateParaphraseClusters,
   evaluateProductQueryQualityObservation
 } from "../lib/product-query-beta-quality-evaluation-contract.mjs";
-import {\n  PRODUCT_QUERY_INTENT_JSON_SCHEMA,\n  validateProductQueryIntent\n} from "../lib/product-query-intent-contract.mjs";
+import {
+  PRODUCT_QUERY_INTENT_JSON_SCHEMA,
+  validateProductQueryIntent
+} from "../lib/product-query-intent-contract.mjs";
 import { PRODUCT_QUERY_AUTHENTICATED_BETA_EVIDENCE_CLOSURE } from "../lib/product-query-authenticated-beta-evidence-closure.mjs";
 
 let assertions = 0;
