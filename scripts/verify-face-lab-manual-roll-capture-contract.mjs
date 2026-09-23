@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const contract = JSON.parse(
   readFileSync(
@@ -100,6 +103,30 @@ assert.equal(
 assert.equal(
   contract.expansionRequirement.reReviewRequiredAfterExpansion,
   true
+);
+assert.equal(
+  contract.expansionRequirement.multiSubjectToolingPreflight.verified,
+  true
+);
+assert.equal(
+  contract.expansionRequirement.multiSubjectToolingPreflight.syntheticSubjectCount,
+  2
+);
+assert.equal(
+  contract.expansionRequirement.multiSubjectToolingPreflight.expectedPairsPerSubject,
+  2
+);
+assert.equal(
+  contract.expansionRequirement.multiSubjectToolingPreflight.expectedViewsPerSubject,
+  3
+);
+assert.equal(
+  contract.expansionRequirement.multiSubjectToolingPreflight.adequacyThreshold,
+  false
+);
+assert.equal(
+  contract.expansionRequirement.multiSubjectToolingPreflight.empiricalEvidence,
+  false
 );
 assert.equal(
   contract.measurementEvidenceRef,
@@ -206,6 +233,160 @@ for (const authority of [contract.authority, receipt.authority]) {
   assert.equal(authority.populationAuthority, false);
 }
 
+const expansionTmp = mkdtempSync(
+  path.join(tmpdir(), "face-lab-roll-expansion-preflight-")
+);
+try {
+  const imagePath = (subjectId, view) =>
+    path.join(expansionTmp, subjectId + "-" + view + ".jpg");
+  const subjects = ["synthetic_subject_a", "synthetic_subject_b"].map(
+    (subjectId, index) => {
+      const neutralFrontPath = imagePath(subjectId, "neutral");
+      const rollLeftPath = imagePath(subjectId, "left");
+      const rollRightPath = imagePath(subjectId, "right");
+      writeFileSync(
+        neutralFrontPath,
+        Buffer.from("synthetic-verifier-only-neutral-" + index)
+      );
+      writeFileSync(
+        rollLeftPath,
+        Buffer.from("synthetic-verifier-only-left-" + index)
+      );
+      writeFileSync(
+        rollRightPath,
+        Buffer.from("synthetic-verifier-only-right-" + index)
+      );
+      return {
+        subjectId,
+        consentEvidenceRef:
+          "synthetic-verifier-only:consent-" + subjectId,
+        sessionRef: "synthetic-session-" + subjectId,
+        sameSession: true,
+        explicitConsent: true,
+        biometricIdentityMatchPerformed: false,
+        syntheticRotationApplied: false,
+        warpAugmentationApplied: false,
+        neutralFront: { path: neutralFrontPath },
+        rollLeft: { path: rollLeftPath },
+        rollRight: { path: rollRightPath }
+      };
+    }
+  );
+
+  const specPath = path.join(expansionTmp, "capture-spec.json");
+  const manifestPath = path.join(expansionTmp, "manifest.json");
+  writeFileSync(
+    specPath,
+    JSON.stringify(
+      {
+        schemaVersion: "face-lab-manual-roll-capture-spec-v0",
+        nuisanceClass: "head_roll",
+        captureSetRef:
+          "synthetic-verifier-only:multi-subject-roll-preflight",
+        usageScope:
+          "synthetic verifier only; not empirical stability evidence",
+        commercialResearchUseAuthorized: true,
+        subjects
+      },
+      null,
+      2
+    ) + "\n"
+  );
+
+  const build = spawnSync(
+    process.execPath,
+    [
+      "scripts/build-face-lab-manual-roll-measurement-manifest.mjs",
+      specPath,
+      manifestPath
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      maxBuffer: 8 * 1024 * 1024
+    }
+  );
+  assert.equal(
+    build.status,
+    0,
+    "multi-subject roll preflight failed: " +
+      String(build.stderr || build.stdout || "")
+  );
+  const buildSummary = JSON.parse(build.stdout);
+  const expansionManifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+
+  assert.equal(buildSummary.subjectCount, 2);
+  assert.equal(buildSummary.pairCount, 4);
+  assert.equal(expansionManifest.pairs.length, 4);
+  assert.equal(
+    new Set(
+      expansionManifest.pairs.map(
+        (pair) => pair.subjectLinkage.evidenceRef
+      )
+    ).size,
+    2
+  );
+  assert.deepEqual(
+    expansionManifest.pairs.map((pair) => pair.nuisance.class),
+    ["head_roll", "head_roll", "head_roll", "head_roll"]
+  );
+  assert.equal(
+    expansionManifest.pairs.every(
+      (pair) =>
+        pair.subjectLinkage.method === "manual_same_subject_pair" &&
+        pair.subjectLinkage.biometricIdentityMatchPerformed === false &&
+        pair.reference.rawImagePersistenceAllowed === false &&
+        pair.candidate.rawImagePersistenceAllowed === false
+    ),
+    true
+  );
+  assert.equal(
+    expansionManifest.sourceSet.rawImagePersistenceAllowed,
+    false
+  );
+
+  const duplicateSpecPath = path.join(
+    expansionTmp,
+    "capture-spec-duplicate-subject.json"
+  );
+  writeFileSync(
+    duplicateSpecPath,
+    JSON.stringify(
+      {
+        schemaVersion: "face-lab-manual-roll-capture-spec-v0",
+        nuisanceClass: "head_roll",
+        captureSetRef:
+          "synthetic-verifier-only:duplicate-subject-preflight",
+        usageScope: "synthetic verifier only",
+        commercialResearchUseAuthorized: true,
+        subjects: [subjects[0], { ...subjects[1], subjectId: subjects[0].subjectId }]
+      },
+      null,
+      2
+    ) + "\n"
+  );
+  const duplicateBuild = spawnSync(
+    process.execPath,
+    [
+      "scripts/build-face-lab-manual-roll-measurement-manifest.mjs",
+      duplicateSpecPath,
+      path.join(expansionTmp, "duplicate-manifest.json")
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      maxBuffer: 8 * 1024 * 1024
+    }
+  );
+  assert.notEqual(
+    duplicateBuild.status,
+    0,
+    "duplicate subject IDs must fail the roll expansion builder"
+  );
+} finally {
+  rmSync(expansionTmp, { recursive: true, force: true });
+}
+
 const serialized = JSON.stringify({ contract, receipt, runOutput, reviewPacket });
 assert.equal(serialized.includes("/mnt/data/"), false);
 assert.equal(serialized.includes("\\mnt\\data\\"), false);
@@ -219,6 +400,10 @@ console.log(JSON.stringify({
   descriptiveReviewPacketPresent: true,
   adequacyDecisionCode: "ADDITIONAL_EVIDENCE_REQUIRED",
   additionalEvidenceRequired: true,
+  multiSubjectExpansionPreflightVerified: true,
+  syntheticPreflightSubjectCount: 2,
+  preflightSubjectCountIsAdequacyThreshold: false,
+  empiricalEvidenceCreatedByPreflight: false,
   measurementExecuted: true,
   angleThresholdAuthority: false,
   rawImagesPersistedInRepository: false,

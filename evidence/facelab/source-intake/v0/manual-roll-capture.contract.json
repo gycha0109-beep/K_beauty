@@ -70,6 +70,15 @@
     "numericRollThresholdIntroduced": false,
     "syntheticSubstitutionAllowed": false,
     "reReviewRequiredAfterExpansion": true,
-    "instruction": "Collect additional consented subjects using the same neutral-front plus natural left/right roll capture unit. Increasing subject diversity is required before re-review, but no subject count automatically grants adequacy."
+    "instruction": "Collect additional consented subjects using the same neutral-front plus natural left/right roll capture unit. Increasing subject diversity is required before re-review, but no subject count automatically grants adequacy.",
+    "multiSubjectToolingPreflight": {
+      "verified": true,
+      "verifier": "scripts/verify-face-lab-manual-roll-capture-contract.mjs",
+      "syntheticSubjectCount": 2,
+      "expectedPairsPerSubject": 2,
+      "expectedViewsPerSubject": 3,
+      "adequacyThreshold": false,
+      "empiricalEvidence": false
+    }
   }
 }
