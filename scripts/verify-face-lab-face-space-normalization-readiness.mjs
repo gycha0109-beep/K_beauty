@@ -204,10 +204,17 @@ const currentReadiness = evaluateFaceSpaceNormalizationReadiness({
 });
 
 assert.equal(currentReadiness.status, "not_ready");
-for (const blocker of readinessContract.currentBlockers) {
+for (const blocker of [
+  "single_fixture_only",
+  "multi_subject_coverage_missing",
+  "general_face_coverage_missing",
+  "reference_distribution_missing",
+  "real_pose_stability_missing",
+  "real_expression_stability_missing"
+]) {
   assert.ok(
     currentReadiness.blockers.includes(blocker),
-    "missing readiness blocker: " + blocker
+    "missing legacy-baseline readiness blocker: " + blocker
   );
 }
 assert.equal(currentReadiness.readyDimensionCount, 0);
