@@ -1,4 +1,5 @@
 name: BEJEWELY Mobile CI
+run-name: "[WT:mobile] BEJEWELY Mobile CI"
 
 on:
   pull_request:
