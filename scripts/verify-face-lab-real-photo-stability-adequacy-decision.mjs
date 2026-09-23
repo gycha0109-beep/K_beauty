@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import {
   validateRealPhotoStabilityAdequacyDecision
@@ -26,6 +27,7 @@ const descriptiveReview = {
 
 const baseDecision = {
   schemaVersion: "face-lab-real-photo-stability-adequacy-decision-v1",
+  decisionCode: "ADDITIONAL_EVIDENCE_REQUIRED",
   decisionVersion: "synthetic-decision-v1",
   evidenceRef: "synthetic-verifier-only:decision",
   decisionMode: "explicit_manual_research_review",
@@ -72,6 +74,7 @@ const adequate = validateRealPhotoStabilityAdequacyDecision(
   {
     ...baseDecision,
     status: "adequate_for_provisional_research",
+    decisionCode: "PROVISIONAL_RESEARCH_ADEQUATE",
     provisionalResearchGateGranted: true,
     holdReasons: [],
     evidenceIntegrityBlockers: []
@@ -85,6 +88,7 @@ const blocked = validateRealPhotoStabilityAdequacyDecision(
   {
     ...baseDecision,
     status: "blocked_by_evidence_integrity",
+    decisionCode: "BLOCKED_BY_EVIDENCE_INTEGRITY",
     provisionalResearchGateGranted: false,
     holdReasons: [],
     evidenceIntegrityBlockers: [
@@ -117,6 +121,7 @@ assert.throws(
       {
         ...baseDecision,
         status: "adequate_for_provisional_research",
+        decisionCode: "PROVISIONAL_RESEARCH_ADEQUATE",
         provisionalResearchGateGranted: false,
         holdReasons: []
       },
@@ -173,3 +178,45 @@ console.log(JSON.stringify({
   normalizationAuthority: false,
   thresholdAuthority: false
 }, null, 2));
+
+const [actualReviewPath, actualDecisionPath] = process.argv.slice(2);
+if ((actualReviewPath && !actualDecisionPath) || (!actualReviewPath && actualDecisionPath)) {
+  throw new Error(
+    "Usage: node scripts/verify-face-lab-real-photo-stability-adequacy-decision.mjs [<descriptive-review.json> <decision.json>]"
+  );
+}
+if (actualReviewPath && actualDecisionPath) {
+  const actualReview = JSON.parse(readFileSync(actualReviewPath, "utf8"));
+  const actualDecision = JSON.parse(readFileSync(actualDecisionPath, "utf8"));
+  const validatedActual = validateRealPhotoStabilityAdequacyDecision(
+    actualDecision,
+    actualReview
+  );
+  assert.equal(validatedActual.status, "hold_for_more_evidence");
+  assert.equal(
+    validatedActual.decisionCode,
+    "ADDITIONAL_EVIDENCE_REQUIRED"
+  );
+  assert.equal(validatedActual.provisionalResearchGateGranted, false);
+  assert.deepEqual(validatedActual.evidenceIntegrityBlockers, []);
+  assert.ok(
+    validatedActual.holdReasons.includes(
+      "head_roll_subject_diversity_limited"
+    )
+  );
+  assert.ok(
+    validatedActual.holdReasons.includes(
+      "head_roll_distributional_evidence_limited"
+    )
+  );
+  console.log(JSON.stringify({
+    actualDecisionValidated: true,
+    status: validatedActual.status,
+    decisionCode: validatedActual.decisionCode,
+    provisionalResearchGateGranted:
+      validatedActual.provisionalResearchGateGranted,
+    productionAuthority: false,
+    normalizationAuthority: false,
+    thresholdAuthority: false
+  }, null, 2));
+}

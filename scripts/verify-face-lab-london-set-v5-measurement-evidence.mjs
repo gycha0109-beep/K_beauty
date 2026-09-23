@@ -203,11 +203,14 @@ if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression", "head_pitch", "head_roll", "head_yaw"]);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, []);
   assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketRef, "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-roll-stability-review-packet.json");
-  assert.equal(stabilityAdequacyContract.currentEvidence.status, "descriptive_review_reproducible_adequacy_pending");
+  assert.equal(stabilityAdequacyContract.currentEvidence.status, "additional_evidence_required");
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.expression.reportCount, 102);
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headYaw.reportCount, 204);
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headPitch.reportCount, 180);
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headRoll.reportCount, 2);
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, true);
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionCode, "ADDITIONAL_EVIDENCE_REQUIRED");
+  assert.equal(stabilityAdequacyContract.currentEvidence.provisionalResearchGateGranted, false);
   assert.match(stabilityAdequacyContract.currentEvidence.collectionFingerprint, /^sha256:[a-f0-9]{64}$/);
   assert.match(stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint, /^sha256:[a-f0-9]{64}$/);
 }

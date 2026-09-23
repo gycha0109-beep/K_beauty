@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-real-photo-stability-adequacy-contract-v0",
-  "status": "descriptive_adequacy_review_reproducible_decision_pending",
+  "status": "explicit_decision_additional_evidence_required",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -60,13 +60,17 @@
         "collectionFingerprint": "sha256:1630bf34b01c74691972526905645c5d36572f7fae693bccb90188fa0b9bba51"
       }
     },
-    "adequacyDecisionPresent": false,
-    "status": "descriptive_review_reproducible_adequacy_pending",
+    "adequacyDecisionPresent": true,
+    "status": "additional_evidence_required",
     "descriptiveAdequacyReviewPresent": true,
     "descriptiveAdequacyReviewSchemaVersion": "face-lab-real-photo-stability-adequacy-review-v1",
     "descriptiveAdequacyReviewVersion": "real-photo-stability-adequacy-review-v1",
     "descriptiveAdequacyReviewFingerprint": "sha256:b526a8228b849a1fbe29c58d091ab4d9970fb3f36b61317beb8f78b0cdd92213",
-    "descriptiveAdequacyReviewStatus": "descriptive_review_complete_decision_separate"
+    "descriptiveAdequacyReviewStatus": "descriptive_review_complete_decision_separate",
+    "adequacyDecisionRef": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
+    "adequacyDecisionVersion": "real-photo-stability-adequacy-decision-v1",
+    "adequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+    "provisionalResearchGateGranted": false
   },
   "reviewPacket": {
     "schemaVersion": "face-lab-real-photo-stability-review-packet-v0",
@@ -90,7 +94,7 @@
     "automaticAdequacyInferenceForbidden": true,
     "numericThresholdInventionForbidden": true,
     "holdDoesNotGrantProvisionalResearchGate": true,
-    "actualDecisionPresent": false,
+    "actualDecisionPresent": true,
     "integrityBlockedDoesNotGrantProvisionalResearchGate": true
   }
 }

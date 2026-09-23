@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "face-lab-real-photo-stability-adequacy-decision-v1",
+  "status": "hold_for_more_evidence",
+  "decisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+  "decisionVersion": "real-photo-stability-adequacy-decision-v1",
+  "evidenceRef": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
+  "decisionMode": "explicit_manual_research_review",
+  "sourceDescriptiveReviewSchemaVersion": "face-lab-real-photo-stability-adequacy-review-v1",
+  "sourceDescriptiveReviewVersion": "real-photo-stability-adequacy-review-v1",
+  "sourceDescriptiveReviewFingerprint": "sha256:b526a8228b849a1fbe29c58d091ab4d9970fb3f36b61317beb8f78b0cdd92213",
+  "sourceCollectionFingerprint": "sha256:5344fc3b39c855ff8043039695947b2de78e4d425a042a52ecac6bd3df71ccce",
+  "sourceReviewPacketFingerprint": "sha256:1526676be96d65c210b331e85bd64595ffe86fdac3e282f3987a347baf1bfdf1",
+  "sourceReportCount": 488,
+  "reviewedNuisanceClasses": [
+    "expression",
+    "head_pitch",
+    "head_roll",
+    "head_yaw"
+  ],
+  "decisionRationale": "The 488-report review has complete structural nuisance coverage and intact lineage, but head-roll evidence is limited to two same-session observations from one subject. That is sufficient to preserve descriptive technical measurability evidence, but not sufficient to grant the provisional research adequacy gate used by Face Space normalization readiness.",
+  "coverageLimitations": [
+    "Head roll evidence contains two same-session observations from one subject; it demonstrates technical measurability but does not establish population-level roll stability.",
+    "Observed drift is descriptive and uncalibrated; no numeric adequacy threshold is applied or implied.",
+    "Cross-provider semantic alignment is outside this adequacy review; existing semantic holds, including chin_height_ratio and nose_width_ratio, remain unresolved."
+  ],
+  "holdReasons": [
+    "head_roll_subject_diversity_limited",
+    "head_roll_distributional_evidence_limited"
+  ],
+  "evidenceIntegrityBlockers": [],
+  "provisionalResearchGateGranted": false,
+  "automaticAdequacyInferred": false,
+  "numericThresholdInvented": false,
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false
+}

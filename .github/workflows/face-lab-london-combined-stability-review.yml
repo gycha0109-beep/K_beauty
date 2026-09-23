@@ -13,6 +13,7 @@ on:
       - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-review.json"
       - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-evidence.json"
       - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json"
       - "scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs"
       - "scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs"
       - "scripts/build-face-lab-real-photo-stability-adequacy-review.mjs"
@@ -95,6 +96,12 @@ jobs:
             evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json \
             "$RUNNER_TEMP/real-photo-stability-adequacy-review.json" \
             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json
+
+      - name: Verify explicit adequacy decision
+        run: |
+          node scripts/verify-face-lab-real-photo-stability-adequacy-decision.mjs \
+            "$RUNNER_TEMP/real-photo-stability-adequacy-review.json" \
+            evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json
 
       - name: Publish adequacy descriptive review candidate
         uses: actions/upload-artifact@v7
