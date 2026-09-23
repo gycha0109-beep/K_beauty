@@ -28,9 +28,15 @@ const reviewPacket = JSON.parse(
     "utf8"
   )
 );
+const supplementalPosePrescreen = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/supplemental-roll-pose-prescreen.json",
+    "utf8"
+  )
+);
 
 assert.equal(contract.schemaVersion, "face-lab-manual-roll-capture-contract-v0");
-assert.equal(contract.status, "capture_measured_additional_evidence_required");
+assert.equal(contract.status, "capture_measured_supplemental_pose_prescreened_additional_evidence_required");
 assert.equal(contract.nuisanceClass, "head_roll");
 assert.equal(
   contract.captureReceiptRef,
@@ -75,6 +81,27 @@ assert.equal(contract.readiness.provisionalResearchGateGranted, false);
 assert.equal(contract.readiness.additionalEvidenceRequired, true);
 assert.equal(contract.readiness.currentSubjectCount, 1);
 assert.equal(contract.readiness.currentObservationCount, 2);
+assert.equal(contract.readiness.supplementalPosePrescreenPresent, true);
+assert.equal(contract.readiness.supplementalPosePrescreenSubjectSetCount, 2);
+assert.equal(contract.readiness.supplementalPosePrescreenImageCount, 6);
+assert.equal(
+  contract.readiness.supplementalFaceLabMetricMeasurementExecuted,
+  false
+);
+assert.equal(contract.readiness.measuredSubjectCount, 1);
+assert.equal(contract.readiness.measuredObservationCount, 2);
+assert.equal(
+  contract.supplementalPosePrescreen.evidenceRef,
+  "evidence/facelab/photo-geometry/v0/supplemental-roll-pose-prescreen.json"
+);
+assert.equal(
+  contract.supplementalPosePrescreen.faceLabMetricMeasurementExecuted,
+  false
+);
+assert.equal(
+  contract.supplementalPosePrescreen.structuralStabilityEvidenceAdded,
+  false
+);
 assert.deepEqual(contract.expansionRequirement.reasonCodes, [
   "head_roll_subject_diversity_limited",
   "head_roll_distributional_evidence_limited"
@@ -387,7 +414,93 @@ try {
   rmSync(expansionTmp, { recursive: true, force: true });
 }
 
-const serialized = JSON.stringify({ contract, receipt, runOutput, reviewPacket });
+assert.equal(
+  supplementalPosePrescreen.schemaVersion,
+  "face-lab-supplemental-roll-pose-prescreen-v0"
+);
+assert.equal(
+  supplementalPosePrescreen.status,
+  "supplemental_triplets_pose_prescreened_metric_measurement_pending"
+);
+assert.equal(
+  supplementalPosePrescreen.sourceContext.subjectGroupingBasis,
+  "user_grouped_triplets"
+);
+assert.equal(
+  supplementalPosePrescreen.sourceContext.biometricIdentityMatchingUsed,
+  false
+);
+assert.equal(
+  supplementalPosePrescreen.sourceContext.identityEmbeddingCreated,
+  false
+);
+assert.equal(
+  supplementalPosePrescreen.prescreenMethod.faceLabMetricGeometryEquivalent,
+  false
+);
+assert.equal(
+  supplementalPosePrescreen.prescreenMethod.adequacyThreshold,
+  false
+);
+assert.equal(
+  supplementalPosePrescreen.summary.supplementalSubjectSetCount,
+  2
+);
+assert.equal(supplementalPosePrescreen.summary.imageCount, 6);
+assert.equal(
+  supplementalPosePrescreen.summary.faceLabMetricMeasurementExecuted,
+  false
+);
+assert.equal(
+  supplementalPosePrescreen.summary.structuralStabilityEvidenceAdded,
+  false
+);
+assert.equal(supplementalPosePrescreen.subjects.length, 2);
+for (const supplementalSubject of supplementalPosePrescreen.subjects) {
+  assert.deepEqual(
+    supplementalSubject.views.map((view) => view.view),
+    ["neutral_front", "roll_left", "roll_right"]
+  );
+  assert.equal(supplementalSubject.views.length, 3);
+  for (const view of supplementalSubject.views) {
+    assert.match(view.sha256, /^[a-f0-9]{64}$/);
+    assert.ok(Number.isInteger(view.width) && view.width > 0);
+    assert.ok(Number.isInteger(view.height) && view.height > 0);
+    assert.ok(Number.isFinite(view.approxEyeLineRollDegrees));
+    assert.ok(Number.isInteger(view.faceDetectorCount) && view.faceDetectorCount >= 1);
+  }
+  const [neutral, left, right] = supplementalSubject.views;
+  assert.ok(Math.abs(neutral.approxEyeLineRollDegrees) < Math.abs(left.approxEyeLineRollDegrees));
+  assert.ok(Math.abs(neutral.approxEyeLineRollDegrees) < Math.abs(right.approxEyeLineRollDegrees));
+  assert.ok(left.approxEyeLineRollDegrees * right.approxEyeLineRollDegrees < 0);
+  assert.equal(
+    supplementalSubject.interpretation.eligibleForTransientMetricMeasurement,
+    true
+  );
+  assert.equal(
+    supplementalSubject.interpretation.adequacyDecisionImpact,
+    "none_until_face_lab_metric_measurement"
+  );
+}
+assert.equal(
+  supplementalPosePrescreen.privacy.rawImagesPersistedInRepository,
+  false
+);
+assert.equal(
+  supplementalPosePrescreen.privacy.localPathsPersisted,
+  false
+);
+for (const value of Object.values(supplementalPosePrescreen.authority)) {
+  assert.equal(value, false);
+}
+
+const serialized = JSON.stringify({
+  contract,
+  receipt,
+  runOutput,
+  reviewPacket,
+  supplementalPosePrescreen
+});
 assert.equal(serialized.includes("/mnt/data/"), false);
 assert.equal(serialized.includes("\\mnt\\data\\"), false);
 assert.equal(serialized.includes('"path"'), false);
@@ -400,6 +513,9 @@ console.log(JSON.stringify({
   descriptiveReviewPacketPresent: true,
   adequacyDecisionCode: "ADDITIONAL_EVIDENCE_REQUIRED",
   additionalEvidenceRequired: true,
+  supplementalPosePrescreenPresent: true,
+  supplementalPosePrescreenSubjectSetCount: 2,
+  supplementalFaceLabMetricMeasurementExecuted: false,
   multiSubjectExpansionPreflightVerified: true,
   syntheticPreflightSubjectCount: 2,
   preflightSubjectCountIsAdequacyThreshold: false,
