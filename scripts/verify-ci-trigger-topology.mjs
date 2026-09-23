@@ -906,6 +906,19 @@ for (const name of [...watchtowerProjectWideWorkflows, ...watchtowerSharedWorkfl
   );
 }
 
+
+for (const name of watchtowerSharedWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  if (source.includes("watchtower_track:")) {
+    assert.ok(
+      source.includes("inputs.watchtower_track") &&
+        source.includes("format('[WT:{0}] {1}', inputs.watchtower_track, github.workflow)"),
+      `${relativePath}: shared workflow_dispatch Watchtower input must be surfaced through dynamic run-name`,
+    );
+  }
+}
+
 const legacyWatchtowerTrackKey = "taxonomy" + "&AI";
 for (const name of readdirSync(".github/workflows").filter((entry) => /\.ya?ml$/i.test(entry))) {
   const relativePath = `.github/workflows/${name}`;
