@@ -22,7 +22,7 @@ function collect(directory) {
     const path = resolve(directory, entry.name);
     if (entry.isDirectory()) {
       files.push(...collect(path));
-    } else if (extname(entry.name) === ".js") {
+    } else if ([".js", ".hbc"].includes(extname(entry.name))) {
       files.push(path);
     }
   }
@@ -35,9 +35,9 @@ if (bundles.length === 0) {
   process.exit(1);
 }
 
-const bundleText = bundles.map((file) => readFileSync(file, "utf8")).join("\n");
+const bundleBytes = bundles.map((file) => readFileSync(file));
 const missing = Object.entries(expected)
-  .filter(([, value]) => !bundleText.includes(value))
+  .filter(([, value]) => !bundleBytes.some((buffer) => buffer.includes(Buffer.from(value))))
   .map(([key]) => key);
 
 if (missing.length > 0) {
@@ -45,7 +45,13 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-if (bundleText.includes("http://127.0.0.1") || bundleText.includes("http://localhost")) {
+if (
+  bundleBytes.some(
+    (buffer) =>
+      buffer.includes(Buffer.from("http://127.0.0.1")) ||
+      buffer.includes(Buffer.from("http://localhost"))
+  )
+) {
   console.error("MOBILE_RELEASE_ENV_BUNDLE=FAIL local_api_origin_embedded");
   process.exit(1);
 }
