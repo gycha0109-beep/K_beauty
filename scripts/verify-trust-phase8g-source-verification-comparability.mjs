@@ -110,7 +110,6 @@ for (const token of [
 for (const token of [
   "establishFreshBaseline",
   "verifySource",
-  "live-page-bytes-v1",
   "canonical-html-text",
   "record_product_evidence_source_verification_v2",
   "admin_register_product_evidence_source_verification_profile_v1"
