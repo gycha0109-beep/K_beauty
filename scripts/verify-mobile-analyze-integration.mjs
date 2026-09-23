@@ -59,7 +59,11 @@ for (const requiredField of [
   assert(serverRoute.includes(requiredField), `server-required-field:${requiredField}`);
 }
 
+assert(client.includes('import { fetch } from "expo/fetch"'), "expo-fetch-transport");
+assert(client.includes('import { File } from "expo-file-system"'), "expo-file-transport");
+assert(client.includes("new File(photo.uri)"), "expo-file-photo-uri");
 assert(client.includes('payload.append(\n    "image"'), "multipart-final-image");
+assert(client.includes("imageFile"), "multipart-expo-file-body");
 assert(client.includes("JSON.stringify(value)"), "multipart-array-json");
 assert(client.includes('return value ? "true" : "false"'), "multipart-boolean-string");
 assert(client.includes('payload.append("locale", locale)'), "multipart-locale");
@@ -149,6 +153,7 @@ for (const forbidden of [
 
 console.log("MOBILE_ANALYZE_SHARED_SURVEY=PASS");
 console.log("MOBILE_ANALYZE_MULTIPART_TRANSPORT=PASS");
+console.log("MOBILE_ANALYZE_EXPO_FILE_TRANSPORT=PASS");
 console.log("MOBILE_ANALYZE_IDEMPOTENCY_AUTH=PASS");
 console.log("MOBILE_ANALYZE_FREE_RESULT_BOUNDARY=PASS");
 console.log("MOBILE_ANALYZE_PHOTO_ACCEPT_HANDOFF=PASS");

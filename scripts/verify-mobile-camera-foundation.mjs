@@ -40,6 +40,7 @@ assert.match(cameraSource, /testID="native-face-guide-oval"/, "MOBILE-5 static o
 assert.match(cameraSource, /aspectRatio:\s*3\s*\/\s*4/, "Native oval must preserve the reviewed 3:4 guide geometry");
 assert.match(cameraSource, /facing="front"/, "MOBILE-5 must default to the front camera");
 assert.match(cameraSource, /mode="picture"/, "MOBILE-5 must remain photo-only");
+assert.match(cameraSource, /animateShutter=\{false\}/, "Background guidance captures must not flash the visible preview");
 assert.match(cameraSource, /onCameraReady=/, "Capture must be gated on camera readiness");
 assert.match(cameraSource, /takePictureAsync\(/, "Native photo capture is missing");
 assert.match(cameraSource, /base64:\s*false/, "MOBILE-5 must not inflate the captured photo into base64");
@@ -129,6 +130,7 @@ for (const pattern of forbiddenPatterns) {
 console.log("MOBILE_CAMERA_FULLSCREEN=PASS");
 console.log("MOBILE_CAMERA_OVAL_GUIDE=PASS");
 console.log("MOBILE_CAMERA_ORIENTATION=PASS");
+console.log("MOBILE_CAMERA_SHUTTER_FLASH_SUPPRESSION=PASS");
 console.log("MOBILE_CAMERA_JPEG_FILE_CONTRACT=PASS");
 console.log("MOBILE_CAMERA_UPLOAD_HANDOFF=PASS");
 console.log("MOBILE_CAMERA_FOUNDATION=PASS");

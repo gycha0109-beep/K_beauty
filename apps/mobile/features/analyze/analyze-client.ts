@@ -1,4 +1,6 @@
 import type { SupportedLocale } from "@bejewely/shared";
+import { fetch } from "expo/fetch";
+import { File } from "expo-file-system";
 
 import type { NativeCameraPhoto } from "../camera/NativeFaceCamera";
 import { getNativeSession } from "../../lib/auth";
@@ -114,13 +116,12 @@ export function buildNativeAnalyzeFormData(
   const normalized = normalizeSurveyAnswers(form);
   const payload = new FormData();
 
+  const imageFile = new File(photo.uri);
+
   payload.append(
     "image",
-    {
-      uri: photo.uri,
-      name: photo.name,
-      type: photo.type
-    } as any
+    imageFile,
+    photo.name
   );
 
   Object.entries(normalized).forEach(([key, value]) => {
