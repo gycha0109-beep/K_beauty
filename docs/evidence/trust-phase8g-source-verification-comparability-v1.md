@@ -213,4 +213,3 @@ The adapter remains fail-closed:
 - raw `live-page-bytes / v1` remains supported for already-profiled sources;
 - fresh baseline recovery defaults to `canonical-html-text / v1` only after a stable Production canary;
 - no adapter result can itself confirm a Product Fact or mutate Recommendation authority.
-
