@@ -2,8 +2,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const migrationPath = "supabase/migrations/20260922075500_trust_phase8g_source_verification_comparability_v1.sql";
-const hardeningPath = "supabase/migrations/20260922075600_trust_phase8g_profile_idempotency_hardening_v1.sql";
+const migrationPath = "supabase/migrations/20260924025307_trust_phase8g_source_verification_comparability_v1.sql";
+const hardeningPath = "supabase/migrations/20260924025341_trust_phase8g_profile_idempotency_hardening_v1.sql";
 const runtimePath = "tests/fixtures/trust-phase8g-source-verification/verify_trust_phase8g_source_verification_runtime.sql";
 const contractPath = "docs/evidence/trust-phase8g-source-verification-comparability-v1.md";
 const lifecyclePath = "docs/evidence/trust-phase8a-product-fact-revalidation-contract-v1.md";
