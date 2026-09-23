@@ -38,4 +38,3 @@ The official source rate-limited the GitHub-hosted fetch before a baseline obser
 - Authority mutation: `false`
 
 A second independent commerce site also changed raw HTML bytes within approximately three seconds while preserving the exact response length. Together with Attempt 1, this rejects raw page bytes as the default fresh-recovery adapter for dynamic storefront HTML. The next canary keeps the same reviewed Torriden source but switches to `canonical-html-text / v1`.
-
