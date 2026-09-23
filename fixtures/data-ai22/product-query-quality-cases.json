@@ -1179,7 +1179,7 @@
           "barrier"
         ],
         "sensitivity": "high",
-        "texture": "cream",
+        "texture": null,
         "disliked_feel": null,
         "sunscreen_intent": null,
         "white_cast_hate": null,
@@ -1207,8 +1207,7 @@
       "criticalIntentFields": [
         "category",
         "concerns",
-        "sensitivity",
-        "texture"
+        "sensitivity"
       ],
       "expectedBehavior": "supported",
       "expectedExecution": {
@@ -1217,7 +1216,6 @@
         "rankingEligible": true,
         "rankableSignals": [
           "concerns",
-          "texture",
           "sensitivity"
         ]
       }

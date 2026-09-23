@@ -128,6 +128,14 @@ check(
 
 const byId = new Map(cases.map((testCase) => [testCase.id, testCase]));
 
+const creamCategoryOwnership = byId.get("DA22-COM-07");
+check(
+  creamCategoryOwnership.expectedIntent.texture === null &&
+    !creamCategoryOwnership.criticalIntentFields.includes("texture") &&
+    !creamCategoryOwnership.expectedExecution.rankableSignals.includes("texture"),
+  "cream used only as the moisturizer category noun must not duplicate into texture"
+);
+
 const droppedWhiteCast = evaluateProductQueryQualityObservation(
   byId.get("DA22-WC-01"),
   {
