@@ -53,6 +53,23 @@ function loadChromium() {
 }
 
 async function fetchPinnedModel(model) {
+  const localModelPath = String(
+    process.env.FACE_LAB_FACE_LANDMARKER_MODEL_PATH || ""
+  ).trim();
+  if (localModelPath) {
+    assert.ok(
+      existsSync(localModelPath),
+      "Local Face Landmarker model missing: " + localModelPath
+    );
+    const buffer = readFileSync(localModelPath);
+    assert.equal(
+      sha256(buffer),
+      model.sha256,
+      "Local Face Landmarker model sha256 mismatch"
+    );
+    return buffer;
+  }
+
   const response = await fetch(model.url, {
     signal: AbortSignal.timeout(120_000)
   });
@@ -111,9 +128,36 @@ function resolveInputImages(manifestPath, manifest) {
 function startRunnerServer({
   routeEntries,
   modelBuffer,
-  runtimeMetadata
+  runtimeMetadata,
+  offlineRuntimeRoot = null
 }) {
   const byRoute = new Map(routeEntries.map((entry) => [entry.route, entry]));
+  const offlinePackageRoot = offlineRuntimeRoot
+    ? path.join(
+        offlineRuntimeRoot,
+        "node_modules",
+        "@mediapipe",
+        "tasks-vision"
+      )
+    : null;
+
+  if (offlinePackageRoot) {
+    assert.ok(
+      existsSync(path.join(offlinePackageRoot, "vision_bundle.mjs")),
+      "Offline tasks-vision bundle missing"
+    );
+    assert.ok(
+      existsSync(path.join(offlinePackageRoot, "wasm")),
+      "Offline tasks-vision wasm directory missing"
+    );
+  }
+
+  const tasksVisionModuleUrl = offlinePackageRoot
+    ? "/runtime/vision_bundle.mjs"
+    : runtimeMetadata.tasksVision.moduleUrl;
+  const tasksVisionWasmRoot = offlinePackageRoot
+    ? "/runtime/wasm"
+    : runtimeMetadata.tasksVision.wasmRoot;
 
   const html = `<!doctype html>
 <html>
@@ -124,14 +168,14 @@ function startRunnerServer({
       import {
         FaceLandmarker,
         FilesetResolver
-      } from ${JSON.stringify(runtimeMetadata.tasksVision.moduleUrl)};
+      } from ${JSON.stringify(tasksVisionModuleUrl)};
 
       window.__faceLabReady = false;
       window.__faceLabError = null;
 
       try {
         const vision = await FilesetResolver.forVisionTasks(
-          ${JSON.stringify(runtimeMetadata.tasksVision.wasmRoot)}
+          ${JSON.stringify(tasksVisionWasmRoot)}
         );
         const faceLandmarker = await FaceLandmarker.createFromOptions(
           vision,
@@ -205,6 +249,43 @@ function startRunnerServer({
       });
       response.end(modelBuffer);
       return;
+    }
+
+    if (
+      offlinePackageRoot &&
+      requestUrl.pathname.startsWith("/runtime/")
+    ) {
+      const relativePath = requestUrl.pathname.slice("/runtime/".length);
+      assert.ok(
+        relativePath &&
+          !relativePath.includes("..") &&
+          !path.isAbsolute(relativePath),
+        "offline runtime path invalid"
+      );
+      const runtimePath = path.resolve(
+        offlinePackageRoot,
+        relativePath
+      );
+      const packageRoot = path.resolve(offlinePackageRoot);
+      assert.ok(
+        runtimePath.startsWith(packageRoot + path.sep),
+        "offline runtime path escaped package root"
+      );
+      if (existsSync(runtimePath)) {
+        const buffer = readFileSync(runtimePath);
+        const contentType = runtimePath.endsWith(".wasm")
+          ? "application/wasm"
+          : runtimePath.endsWith(".mjs") ||
+              runtimePath.endsWith(".js")
+            ? "text/javascript; charset=utf-8"
+            : "application/octet-stream";
+        response.writeHead(200, {
+          "Content-Type": contentType,
+          "Content-Length": buffer.length
+        });
+        response.end(buffer);
+        return;
+      }
     }
 
     const input = byRoute.get(requestUrl.pathname);
@@ -281,11 +362,15 @@ async function main() {
   const { routeEntries, pairRoutes } =
     resolveInputImages(manifestPath, runManifest);
 
+  const offlineRuntimeRoot = String(
+    process.env.FACE_LAB_OFFLINE_RUNTIME_ROOT || ""
+  ).trim() || null;
   const modelBuffer = await fetchPinnedModel(imageRuntimeMetadata.model);
   const { server, origin } = await startRunnerServer({
     routeEntries,
     modelBuffer,
-    runtimeMetadata: imageRuntimeMetadata
+    runtimeMetadata: imageRuntimeMetadata,
+    offlineRuntimeRoot
   });
 
   const chromium = loadChromium();
@@ -416,10 +501,12 @@ async function main() {
     const collectionSummary =
       summarizeRealPhotoStabilityCollection(reports);
 
-    const allowedExternalOrigins = new Set([
-      new URL(imageRuntimeMetadata.tasksVision.moduleUrl).origin,
-      new URL(imageRuntimeMetadata.tasksVision.wasmRoot).origin
-    ]);
+    const allowedExternalOrigins = offlineRuntimeRoot
+      ? new Set()
+      : new Set([
+          new URL(imageRuntimeMetadata.tasksVision.moduleUrl).origin,
+          new URL(imageRuntimeMetadata.tasksVision.wasmRoot).origin
+        ]);
     const unexpectedOrigins = [
       ...new Set(
         httpOrigins.filter(

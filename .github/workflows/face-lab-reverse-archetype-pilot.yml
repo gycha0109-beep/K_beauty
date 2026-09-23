@@ -40,6 +40,7 @@ on:
       - "scripts/verify-face-lab-real-photo-stability-review-packet.mjs"
       - "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs"
       - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
+      - "evidence/facelab/runtime/offline-runtime-export.request"
       - "scripts/verify-face-lab-photo-geometry-stability.mjs"
       - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
       - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
@@ -243,6 +244,37 @@ jobs:
           mkdir -p "$RUNTIME_ROOT"
           npm install --prefix "$RUNTIME_ROOT" --ignore-scripts --no-audit --no-fund playwright-core@1.59.1
           echo "FACE_LAB_IMAGE_E2E_RUNTIME_ROOT=$RUNTIME_ROOT" >> "$GITHUB_ENV"
+      - name: Prepare transient offline Face Lab runtime export
+        if: ${{ hashFiles('evidence/facelab/runtime/offline-runtime-export.request') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNTIME_ROOT="$RUNNER_TEMP/face-lab-image-e2e-runtime"
+          EXPORT_ROOT="$RUNNER_TEMP/face-lab-offline-runtime-export"
+          npm install --prefix "$RUNTIME_ROOT" --ignore-scripts --no-audit --no-fund @mediapipe/tasks-vision@0.10.35
+          curl --fail --location --retry 3 \
+            "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task" \
+            --output "$RUNTIME_ROOT/face_landmarker.task"
+          echo "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff  $RUNTIME_ROOT/face_landmarker.task" | sha256sum --check -
+          mkdir -p "$EXPORT_ROOT/runtime" "$EXPORT_ROOT/repo/scripts" "$EXPORT_ROOT/repo/lib"
+          cp -a "$RUNTIME_ROOT/." "$EXPORT_ROOT/runtime/"
+          cp scripts/run-face-lab-real-photo-stability-pairs.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp scripts/build-face-lab-normalization-review-packet.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp scripts/build-face-lab-complete-stability-evidence.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp scripts/verify-face-lab-complete-stability-evidence.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp scripts/build-face-lab-real-photo-stability-adequacy-review.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp lib/face-lab-*.js "$EXPORT_ROOT/repo/lib/"
+          mkdir -p "$EXPORT_ROOT/repo/evidence"
+          cp -a evidence/facelab "$EXPORT_ROOT/repo/evidence/"
+          cp package.json "$EXPORT_ROOT/repo/"
+      - name: Upload transient offline Face Lab runtime export
+        if: ${{ hashFiles('evidence/facelab/runtime/offline-runtime-export.request') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: face-lab-offline-runtime-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/face-lab-offline-runtime-export
+          retention-days: 1
+          if-no-files-found: error
       - name: Verify actual-image Face Landmarker bridge
         run: node scripts/verify-face-lab-photo-geometry-image-e2e.mjs
       - name: Verify 14-fixture photo geometry coverage
