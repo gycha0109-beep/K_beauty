@@ -166,9 +166,9 @@ const sourcePaths = Object.freeze({
 
 const HTTP_METHOD_NAMES = Object.freeze(["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]);
 const HTTP_METHOD_NAME_SET = new Set(HTTP_METHOD_NAMES);
-const EXPECTED_SENSITIVE_ROUTE_COUNT = 11;
-const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 12;
-const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 125;
+const EXPECTED_SENSITIVE_ROUTE_COUNT = 19;
+const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 20;
+const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 188;
 const FULL_REPORT_POST_TERMINAL_SIGNATURES = Object.freeze([
   "call:buildSavedPremiumReportResponse",
   "call:getPremiumPersistenceFailedResponse(\"premium_session_update_failed\")",
@@ -214,9 +214,17 @@ const SENSITIVE_ROUTE_HANDLER_BINDINGS = Object.freeze([
     expectedTerminalPaths: 8,
     expectedTerminalSignatures: FULL_REPORT_SESSION_POST_TERMINAL_SIGNATURES
   }),
+  Object.freeze({ id: "app/api/my/account/route.js::DELETE", path: "app/api/my/account/route.js", method: "DELETE", expectedTerminalPaths: 10 }),
   Object.freeze({ id: "app/api/my/check-in/route.js::POST", path: "app/api/my/check-in/route.js", method: "POST", expectedTerminalPaths: 6 }),
   Object.freeze({ id: "app/api/my/dashboard/route.js::GET", path: "app/api/my/dashboard/route.js", method: "GET", expectedTerminalPaths: 4 }),
+  Object.freeze({ id: "app/api/my/diary-day/route.js::GET", path: "app/api/my/diary-day/route.js", method: "GET", expectedTerminalPaths: 4 }),
+  Object.freeze({ id: "app/api/my/product-query-beta/quality-evaluation/route.js::GET", path: "app/api/my/product-query-beta/quality-evaluation/route.js", method: "GET", expectedTerminalPaths: 8 }),
+  Object.freeze({ id: "app/api/my/product-query-beta/route.js::POST", path: "app/api/my/product-query-beta/route.js", method: "POST", expectedTerminalPaths: 11 }),
+  Object.freeze({ id: "app/api/my/product-query-preview/route.js::POST", path: "app/api/my/product-query-preview/route.js", method: "POST", expectedTerminalPaths: 9 }),
+  Object.freeze({ id: "app/api/my/product-query-production-canary/route.js::POST", path: "app/api/my/product-query-production-canary/route.js", method: "POST", expectedTerminalPaths: 10 }),
+  Object.freeze({ id: "app/api/my/product-query-stage-canary/route.js::POST", path: "app/api/my/product-query-stage-canary/route.js", method: "POST", expectedTerminalPaths: 9 }),
   Object.freeze({ id: "app/api/my/save-report/route.js::POST", path: "app/api/my/save-report/route.js", method: "POST", expectedTerminalPaths: 11 }),
+  Object.freeze({ id: "app/api/my/saved-reports/route.js::GET", path: "app/api/my/saved-reports/route.js", method: "GET", expectedTerminalPaths: 2 }),
   Object.freeze({ id: "app/api/premium/access/route.js::GET", path: "app/api/premium/access/route.js", method: "GET", expectedTerminalPaths: 1 }),
   Object.freeze({ id: "app/api/results/route.js::POST", path: "app/api/results/route.js", method: "POST", expectedTerminalPaths: 25 }),
   Object.freeze({ id: "app/api/track/route.js::POST", path: "app/api/track/route.js", method: "POST", expectedTerminalPaths: 23 }),
@@ -1495,9 +1503,9 @@ register("I09_CLIENT_CONSOLE_BOUNDARY", async () => {
 });
 register("I10_SENSITIVE_ROUTE_NO_STORE", async () => {
   const result = await assertSensitiveRouteIntegrationExactSet();
-  assert.deepEqual(result.routes, { expected: 11, discovered: 11, verified: 11 });
-  assert.deepEqual(result.handlerBindings, { expected: 12, discovered: 12, verified: 12 });
-  assert.deepEqual(result.terminalResponsePaths, { expected: 125, discovered: 125, verified: 125 });
+  assert.deepEqual(result.routes, { expected: 19, discovered: 19, verified: 19 });
+  assert.deepEqual(result.handlerBindings, { expected: 20, discovered: 20, verified: 20 });
+  assert.deepEqual(result.terminalResponsePaths, { expected: 188, discovered: 188, verified: 188 });
   assert.deepEqual(result.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(result.deadHelperCalls, 0);
   assert.equal(result.unsafeResponsePaths, 0);
