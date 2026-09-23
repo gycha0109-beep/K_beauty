@@ -140,7 +140,7 @@ assert(androidSmoke.includes('analyze-survey-en.png'), "android-survey-screensho
 assert(androidSmoke.includes("MOBILE_ANDROID_ANALYZE_RUNTIME_E2E=PASS"), "android-runtime-e2e-marker");
 assert(androidSmoke.includes('wait_for_text "Mobile runtime transport verified."'), "android-runtime-result-render");
 assert(analyzeE2EServer.includes('request.url !== "/api/analyze"'), "runtime-fixture-api-route");
-assert(analyzeE2EServer.includes('name="\\${field}"'), "runtime-fixture-multipart-fields");
+assert(analyzeE2EServer.includes('name="${field}"'), "runtime-fixture-multipart-fields");
 assert(nativeShellWorkflow.includes('scripts/mobile-analyze-e2e-server.mjs'), "native-shell-runtime-fixture-trigger");
 
 const boundedMobileSources = [client, survey, result, screen, boundary].join("\n");

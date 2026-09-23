@@ -326,22 +326,6 @@ wait_for_text_with_scroll "Skin survey before analysis" "up" 5
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-survey-en.png"
 printf 'MOBILE_ANDROID_ANALYZE_SURVEY_SMOKE=PASS\n'
 
-for option in "Oily" "Low" "Oiliness" "Once" "Gel" "Tight" "More oily" "Sticky"; do
-  wait_for_text_with_scroll "$option" "up" 8
-  tap_text "$option"
-done
-wait_for_text_with_scroll "Run skin analysis" "up" 8
-tap_text "Run skin analysis"
-wait_for_text "Skin analysis result"
-wait_for_text "Mobile runtime transport verified."
-adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-runtime-result-en.png"
-test -s "$ARTIFACT_DIR/analyze-runtime-request.json"
-printf 'MOBILE_ANDROID_ANALYZE_RUNTIME_E2E=PASS\n'
-
-tap_text "Start over"
-wait_for_text "Camera ready"
-tap_text "Close camera"
-wait_for_text "Open camera"
 wait_for_text_with_scroll "Open camera" "down" 5
 tap_text "Open camera"
 wait_for_text "CAPTURED PHOTO"
@@ -352,6 +336,26 @@ tap_text "Close camera"
 wait_for_text "Open camera"
 printf 'MOBILE_ANDROID_CAMERA_CAPTURE_SMOKE=PASS\n'
 printf 'MOBILE_ANDROID_CAMERA_FULLSCREEN_EXIT=PASS\n'
+
+tap_text "Open camera"
+wait_for_text "Camera ready"
+tap_text "Take photo"
+wait_for_text "CAPTURED PHOTO"
+wait_for_text "Use photo"
+tap_text "Use photo"
+wait_for_text_with_scroll "Skin survey before analysis" "up" 5
+
+for option in "Oily" "Low" "Oiliness" "Once" "Gel" "Tight" "More oily" "Sticky"; do
+  wait_for_text_with_scroll "$option" "up" 8
+  tap_text "$option"
+done
+wait_for_text_with_scroll "Run skin analysis" "up" 8
+tap_text "Run skin analysis"
+wait_for_text "PERSONALIZED RESULT"
+wait_for_text "Mobile runtime transport verified."
+adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-runtime-result-en.png"
+test -s "$ARTIFACT_DIR/analyze-runtime-request.json"
+printf 'MOBILE_ANDROID_ANALYZE_RUNTIME_E2E=PASS\n'
 
 tap_text "My"
 wait_for_text "My · Skin Diary"
