@@ -99,7 +99,10 @@ for (const token of [
   "MAX_REDIRECTS = 3",
   "SOURCE_BLOCKED:private_dns_resolution",
   "export async function fetchOfficialBytes",
-  "export function sha256Hex"
+  "export function sha256Hex",
+  "export function canonicalizeOfficialHtmlTextV1",
+  "export function digestOfficialContent",
+  "canonical-html-text-v1"
 ]) {
   assert.ok(transport.includes(token), `missing shared transport token: ${token}`);
 }
@@ -107,7 +110,7 @@ for (const token of [
 for (const token of [
   "establishFreshBaseline",
   "verifySource",
-  "live-page-bytes-v1",
+  "canonical-html-text",
   "record_product_evidence_source_verification_v2",
   "admin_register_product_evidence_source_verification_profile_v1"
 ]) {
