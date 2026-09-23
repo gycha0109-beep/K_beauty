@@ -46,7 +46,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | --- | ---: |
 | `admin` | 2 |
 | `catalog-taxonomy` | 2 |
-| `face-lab` | 0 |
+| `face-lab` | 12 |
 | `global-governance` | 2 |
 | `mobile` | 11 |
 | `product-data-pipeline` | 4 |
@@ -56,7 +56,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 18 |
 
-Total: **50 workflows**.
+Total: **62 workflows**.
 
 ## Watchtower producer classification
 
@@ -65,10 +65,11 @@ Total: **50 workflows**.
 | Project-wide | 2 | no Track tag |
 | Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
 | Dedicated `trust` | 18 | static `[WT:trust]` |
+| Dedicated `face-research` | 12 | static `[WT:face-research]` |
 | Dedicated `mobile` | 11 | static `[WT:mobile]` |
 | Shared technical | 8 | PR/commit/dispatch evidence |
 
-There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
+There are currently 12 standalone Face Lab workflows dedicated to `face-research`. There are no standalone workflows dedicated to `ops` or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
 
 The machine-readable authority is `docs/ci/workflow-responsibility-map.json`.
 

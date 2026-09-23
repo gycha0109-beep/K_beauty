@@ -1,4 +1,5 @@
-name: Face Lab London Measurement
+name: Face Lab - London Measurement
+run-name: "[WT:face-research] Face Lab - London Measurement"
 
 on:
   pull_request:
@@ -17,6 +18,11 @@ on:
       - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
       - ".github/workflows/face-lab-london-measurement.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
 
 permissions:
   contents: write

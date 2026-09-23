@@ -1,4 +1,5 @@
-name: Face Lab Pointing04 Pitch Measurement
+name: Face Lab - Pointing04 Pitch Measurement
+run-name: "[WT:face-research] Face Lab - Pointing04 Pitch Measurement"
 
 on:
   pull_request:
@@ -13,6 +14,11 @@ on:
       - "scripts/verify-face-lab-pointing04-pitch-measurement-evidence.mjs"
       - ".github/workflows/face-lab-pointing04-pitch-measurement.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
 
 permissions:
   contents: write

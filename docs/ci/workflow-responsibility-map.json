@@ -237,6 +237,138 @@
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
+    "face-lab-gnm-v3-poc.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-london-combined-stability-review.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-london-figshare-metadata.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-london-measurement.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-london-source-receipts.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-london-yaw-measurement.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-london-yaw-source-receipts.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-manual-roll-capture-gate.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-pointing04-pitch-measurement.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-pointing04-pitch-source-receipts.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-pointing04-source-metadata.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-reverse-archetype-pilot.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "ai",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
     "hwahae-review-capture-provenance-non-main-pr.yml": {
       "primaryResponsibility": "product-data-pipeline",
       "capabilities": [

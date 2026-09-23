@@ -1,4 +1,5 @@
-name: Face Lab Manual Roll Capture Gate
+name: Face Lab - Manual Roll Capture Gate
+run-name: "[WT:face-research] Face Lab - Manual Roll Capture Gate"
 # bridge-revision: consented-local-v1
 # complete-stability-bridge: v1
 
@@ -16,6 +17,11 @@ on:
       - "scripts/verify-face-lab-manual-roll-capture-contract.mjs"
       - ".github/workflows/face-lab-manual-roll-capture-gate.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
 
 permissions:
   contents: read

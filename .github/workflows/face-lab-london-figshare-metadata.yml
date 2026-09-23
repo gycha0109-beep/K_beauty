@@ -1,4 +1,5 @@
-name: Face Lab London Figshare Metadata
+name: Face Lab - London Figshare Metadata
+run-name: "[WT:face-research] Face Lab - London Figshare Metadata"
 
 on:
   pull_request:
@@ -7,6 +8,11 @@ on:
       - "scripts/verify-face-lab-london-set-v5-figshare-metadata.mjs"
       - ".github/workflows/face-lab-london-figshare-metadata.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
 
 permissions:
   contents: read

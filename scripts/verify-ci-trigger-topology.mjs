@@ -781,7 +781,20 @@ assert.ok(
 
 
 /* FACE_LAB_RESPONSIBILITY_NAMING_GUARD */
-const faceLabResponsibilityWorkflows = [];
+const faceLabResponsibilityWorkflows = [
+  "face-lab-gnm-v3-poc.yml",
+  "face-lab-london-combined-stability-review.yml",
+  "face-lab-london-figshare-metadata.yml",
+  "face-lab-london-measurement.yml",
+  "face-lab-london-source-receipts.yml",
+  "face-lab-london-yaw-measurement.yml",
+  "face-lab-london-yaw-source-receipts.yml",
+  "face-lab-manual-roll-capture-gate.yml",
+  "face-lab-pointing04-pitch-measurement.yml",
+  "face-lab-pointing04-pitch-source-receipts.yml",
+  "face-lab-pointing04-source-metadata.yml",
+  "face-lab-reverse-archetype-pilot.yml",
+];
 
 for (const name of faceLabResponsibilityWorkflows) {
   const relativePath = `.github/workflows/${name}`;
@@ -790,10 +803,12 @@ for (const name of faceLabResponsibilityWorkflows) {
     source.startsWith("name: Face Lab - "),
     `${relativePath}: workflow display name must expose Face Lab responsibility`,
   );
-  assert.ok(
-    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
-    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
-  );
+  if (source.includes("  workflow_dispatch:")) {
+    assert.ok(
+      source.includes("watchtower_track:"),
+      `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
+    );
+  }
 }
 
 
@@ -861,6 +876,10 @@ const watchtowerStaticTrackGroups = [
   {
     track: "trust",
     names: trustResponsibilityWorkflows,
+  },
+  {
+    track: "face-research",
+    names: faceLabResponsibilityWorkflows,
   },
   {
     track: "mobile",

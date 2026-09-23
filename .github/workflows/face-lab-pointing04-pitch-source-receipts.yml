@@ -1,4 +1,5 @@
-name: Face Lab Pointing04 Pitch Source Receipts
+name: Face Lab - Pointing04 Pitch Source Receipts
+run-name: "[WT:face-research] Face Lab - Pointing04 Pitch Source Receipts"
 
 on:
   pull_request:
@@ -10,6 +11,11 @@ on:
       - "scripts/verify-face-lab-pointing04-pitch-receipts.mjs"
       - ".github/workflows/face-lab-pointing04-pitch-source-receipts.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
 
 permissions:
   contents: write

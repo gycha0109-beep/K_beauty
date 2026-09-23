@@ -1,4 +1,5 @@
-name: Face Lab GNM v3 Executable PoC
+name: Face Lab - GNM v3 Executable PoC
+run-name: "[WT:face-research] Face Lab - GNM v3 Executable PoC"
 
 on:
   pull_request:
@@ -8,6 +9,11 @@ on:
       - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
       - ".github/workflows/face-lab-gnm-v3-poc.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
 
 permissions:
   contents: read
