@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import {
   estimateFaceSpaceReferenceStatistics
@@ -179,6 +180,51 @@ assert.throws(
   /degenerate_scale/
 );
 
+const actualRunOutput = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
+    "utf8"
+  )
+);
+const actualComparison = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-comparison.json",
+    "utf8"
+  )
+);
+const actualSelection = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json",
+    "utf8"
+  )
+);
+const actualStatistics = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
+    "utf8"
+  )
+);
+const rebuiltActualStatistics = estimateFaceSpaceReferenceStatistics({
+  manifest: actualRunOutput.corpus,
+  methodDecision: actualSelection.decision,
+  methodComparison: actualComparison,
+  version: "london-set-v5-reference-statistics-v1"
+});
+assert.deepEqual(actualStatistics, rebuiltActualStatistics);
+assert.equal(actualStatistics.referenceSplitOnly, true);
+assert.equal(actualStatistics.referenceSampleCount, 82);
+assert.equal(actualStatistics.holdoutSampleCountExcluded, 20);
+assert.equal(actualStatistics.centerMethod, "median");
+assert.equal(
+  actualStatistics.scaleMethod,
+  "mad_scaled_consistent"
+);
+assert.equal(actualStatistics.authority.productionAuthority, false);
+assert.equal(actualStatistics.authority.normalizationAuthority, false);
+assert.equal(actualStatistics.authority.thresholdAuthority, false);
+assert.equal("percentiles" in actualStatistics, false);
+assert.equal("thresholds" in actualStatistics, false);
+
 console.log(JSON.stringify({
   ok: true,
   productionAuthority: false,
@@ -186,7 +232,11 @@ console.log(JSON.stringify({
   referenceSplitOnly: true,
   holdoutExcludedFromEstimation: true,
   syntheticVerifierOnly: true,
-  actualReferenceStatisticsPersisted: false,
+  actualReferenceStatisticsPersisted: true,
+  actualReferenceStatisticsVersion: actualStatistics.version,
+  actualReferenceSampleCount: actualStatistics.referenceSampleCount,
+  actualHoldoutSampleCountExcluded:
+    actualStatistics.holdoutSampleCountExcluded,
   exactReferenceSplitFingerprintCarried: true,
   holdoutDoesNotChangeReferenceFingerprint: true,
   statisticsRequireMatchingMethodComparison: true,

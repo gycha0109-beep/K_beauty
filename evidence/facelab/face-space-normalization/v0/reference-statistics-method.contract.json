@@ -30,7 +30,7 @@
     "methodSelectionEvidenceRequired": true
   },
   "rules": [
-    "This contract defines the method-selection gate only; it does not select a method.",
+    "This contract records the explicit same-provider research method selection; it does not grant Production, normalization, threshold, Archetype, or style authority.",
     "Reference statistics cannot create a normalization candidate without a versioned selected_for_research_candidate decision.",
     "Supported method names are implementation-supported research families, not a conclusion that any method is empirically preferred.",
     "Percentiles, thresholds, Archetype boundaries, and Production activation remain unauthorized.",
@@ -51,5 +51,19 @@
     "comparisonPacketFingerprint": "sha256:89c299c496c0e60a369a51b2a7b64ccd4c39fd4de943cbc20991d933180b88fc",
     "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
     "decisionRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json"
+  },
+  "currentStatistics": {
+    "referenceStatisticsPresent": true,
+    "version": "london-set-v5-reference-statistics-v1",
+    "statisticsRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
+    "referenceSplitOnly": true,
+    "referenceSampleCount": 82,
+    "holdoutSampleCountExcluded": 20,
+    "centerMethod": "median",
+    "scaleMethod": "mad_scaled_consistent",
+    "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false
   }
 }

@@ -10,30 +10,58 @@ const contract = JSON.parse(
     "utf8"
   )
 );
+const selection = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json",
+    "utf8"
+  )
+);
 
 assert.equal(
   contract.schemaVersion,
   "face-space-reference-statistics-method-decision-v0"
 );
-assert.equal(contract.status, "not_selected");
+assert.equal(contract.status, "selected_for_research_candidate");
 assert.equal(contract.productionAuthority, false);
 assert.equal(contract.normalizationAuthority, false);
 assert.equal(contract.thresholdAuthority, false);
-assert.equal(contract.decisionVersion, null);
-assert.equal(contract.selectedMethod.centerMethod, null);
-assert.equal(contract.selectedMethod.scaleMethod, null);
+assert.equal(
+  contract.decisionVersion,
+  "london-set-v5-reference-method-selection-v1"
+);
+assert.equal(contract.selectedMethod.centerMethod, "median");
+assert.equal(
+  contract.selectedMethod.scaleMethod,
+  "mad_scaled_consistent"
+);
 assert.equal(contract.selectedMethod.percentileMethod, null);
 assert.equal(contract.selectedMethod.thresholdMethod, null);
+assert.equal(
+  contract.selectionEvidence.comparisonPacketFingerprint,
+  "sha256:89c299c496c0e60a369a51b2a7b64ccd4c39fd4de943cbc20991d933180b88fc"
+);
+assert.equal(
+  contract.selectionEvidence.sourceReferenceSplitFingerprint,
+  "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf"
+);
+const validatedCurrentDecision =
+  validateFaceSpaceReferenceStatisticsMethodDecision(selection.decision);
+assert.equal(validatedCurrentDecision.centerMethod, "median");
+assert.equal(
+  validatedCurrentDecision.scaleMethod,
+  "mad_scaled_consistent"
+);
+assert.equal(validatedCurrentDecision.holdoutUsedForSelection, false);
+assert.equal(validatedCurrentDecision.automaticWinnerSelected, false);
+assert.equal(
+  validatedCurrentDecision.authority.researchMethodSelectionOnly,
+  true
+);
 assert.equal(
   contract.prerequisites.structurallyValidReferenceCorpusRequired,
   true
 );
 assert.equal(contract.prerequisites.lockedHoldoutRequired, true);
-
-assert.throws(
-  () => validateFaceSpaceReferenceStatisticsMethodDecision(contract),
-  /method_decision_invalid/
-);
 
 for (const centerMethod of contract.supportedResearchMethods.center) {
   for (const scaleMethod of contract.supportedResearchMethods.scale) {
@@ -78,7 +106,8 @@ console.log(JSON.stringify({
   productionAuthority: false,
   normalizationAuthority: false,
   thresholdAuthority: false,
-  supportedResearchMethodsAreNotSelectedMethods: true,
+  selectedMethodId: "median__mad_scaled_consistent",
+  explicitResearchSelectionPresent: true,
   holdoutExcludedFromMethodFitting: true,
   comparisonEvidenceRequiredForSelection: true,
   automaticWinnerSelectionForbidden: true
