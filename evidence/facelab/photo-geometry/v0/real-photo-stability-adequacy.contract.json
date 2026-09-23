@@ -77,5 +77,18 @@
     "thresholdsApplied": false,
     "automaticPassFail": false,
     "automaticRanking": false
+  },
+  "decisionContract": {
+    "schemaVersion": "face-lab-real-photo-stability-adequacy-decision-v1",
+    "allowedStatuses": [
+      "adequate_for_provisional_research",
+      "hold_for_more_evidence"
+    ],
+    "decisionMode": "explicit_manual_research_review",
+    "exactDescriptiveReviewFingerprintRequired": true,
+    "automaticAdequacyInferenceForbidden": true,
+    "numericThresholdInventionForbidden": true,
+    "holdDoesNotGrantProvisionalResearchGate": true,
+    "actualDecisionPresent": false
   }
 }
