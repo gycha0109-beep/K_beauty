@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
-import { fetchOfficialBytes, sha256Hex } from "../lib/trust/official-source-fetch.mjs";
+import { digestOfficialContent, fetchOfficialBytes } from "../lib/trust/official-source-fetch.mjs";
 
 const WORKER_VERSION = "trust-source-verification-worker-v1";
 
@@ -32,13 +32,16 @@ export async function establishFreshBaseline(client, {
   sourceId,
   actorUserId,
   requestId,
+  adapterKey = "canonical-html-text",
+  adapterVersion = "v1",
   fetchImpl = fetch,
 } = {}) {
   if (!sourceId || !actorUserId || !requestId) throw new Error("sourceId, actorUserId and requestId are required");
   const target = await loadTarget(client, sourceId);
   const fetched = await fetchOfficialBytes(target.canonical_locator, fetchImpl);
   const fetchedAt = new Date().toISOString();
-  const digest = sha256Hex(fetched.bytes);
+  const adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion);
+  const digest = adapted.digest;
   const currentProfile = target.verification_profile || null;
 
   return rpcOrThrow(client, "admin_register_product_evidence_source_verification_profile_v1", {
@@ -47,14 +50,15 @@ export async function establishFreshBaseline(client, {
     p_source_id: sourceId,
     p_supersedes_profile_id: currentProfile?.profile_id || null,
     p_baseline_content_digest: digest,
-    p_digest_basis: "live-page-bytes-v1",
-    p_adapter_key: "live-page-bytes",
-    p_adapter_version: "v1",
+    p_digest_basis: adapted.digestBasis,
+    p_adapter_key: adapted.adapterKey,
+    p_adapter_version: adapted.adapterVersion,
     p_baseline_kind: "fresh_recovery",
     p_canonical_baseline: {
       final_url: fetched.finalUrl,
       content_type: fetched.contentType,
       byte_length: fetched.bytes.byteLength,
+      canonical_length: adapted.canonicalLength,
       fetched_at: fetchedAt,
     },
     p_profile_metadata: {
@@ -77,12 +81,6 @@ export async function verifySource(client, {
   if (!profile || profile.comparability_state !== "COMPARABLE") {
     throw new Error("SOURCE_VERIFICATION_PROFILE_NOT_COMPARABLE");
   }
-  if (profile.digest_basis !== "live-page-bytes-v1" ||
-      profile.adapter_key !== "live-page-bytes" ||
-      profile.adapter_version !== "v1") {
-    throw new Error("SOURCE_VERIFICATION_PROFILE_ADAPTER_UNSUPPORTED");
-  }
-
   const checkedAt = new Date().toISOString();
   let observedDigest = null;
   let verificationResult;
@@ -90,13 +88,18 @@ export async function verifySource(client, {
 
   try {
     const fetched = await fetchOfficialBytes(target.canonical_locator, fetchImpl);
-    observedDigest = sha256Hex(fetched.bytes);
+    const adapted = digestOfficialContent(fetched.bytes, profile.adapter_key, profile.adapter_version);
+    if (adapted.digestBasis !== profile.digest_basis) {
+      throw new Error("SOURCE_VERIFICATION_PROFILE_DIGEST_BASIS_MISMATCH");
+    }
+    observedDigest = adapted.digest;
     verificationResult = observedDigest === profile.baseline_content_digest ? "unchanged" : "changed";
     metadata = {
       worker_version: WORKER_VERSION,
       final_url: fetched.finalUrl,
       content_type: fetched.contentType,
       byte_length: fetched.bytes.byteLength,
+      canonical_length: adapted.canonicalLength,
     };
   } catch (error) {
     const classified = classifyFetchFailure(error);
@@ -124,6 +127,8 @@ export async function runSourceVerificationWorker({
   actorUserId,
   requestId,
   triggerKind = "manual",
+  adapterKey = "canonical-html-text",
+  adapterVersion = "v1",
   fetchImpl = fetch,
 } = {}) {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -132,7 +137,7 @@ export async function runSourceVerificationWorker({
   const client = createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
   if (mode === "baseline") {
-    return establishFreshBaseline(client, { sourceId, actorUserId, requestId, fetchImpl });
+    return establishFreshBaseline(client, { sourceId, actorUserId, requestId, adapterKey, adapterVersion, fetchImpl });
   }
   if (mode === "verify") {
     return verifySource(client, { sourceId, requestId, triggerKind, fetchImpl });
@@ -147,6 +152,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     actorUserId: argValue("actor-user-id"),
     requestId: argValue("request-id"),
     triggerKind: argValue("trigger-kind") || "manual",
+    adapterKey: argValue("adapter-key") || "canonical-html-text",
+    adapterVersion: argValue("adapter-version") || "v1",
   });
   console.log(JSON.stringify({
     status: "OK",
