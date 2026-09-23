@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -7,7 +8,8 @@ const WORKFLOW_DIR = path.join(ROOT, ".github", "workflows");
 const MAP_PATH = path.join(ROOT, "docs", "ci", "workflow-responsibility-map.json");
 
 const map = JSON.parse(fs.readFileSync(MAP_PATH, "utf8"));
-assert.equal(map.schemaVersion, "bejewely-ci-workflow-responsibility-v1");
+assert.equal(map.schemaVersion, "bejewely-ci-workflow-responsibility-v2");
+assert.equal(map.producerContractVersion, "watchtower-v0.3.2");
 
 assert.deepEqual(map.watchtowerProject, {
   name: "비주얼리",
@@ -22,11 +24,24 @@ const actual = fs.readdirSync(WORKFLOW_DIR)
   .filter((name) => /\.ya?ml$/i.test(name))
   .sort();
 const declared = Object.keys(map.workflows || {}).sort();
+const workflowInventoryDigest = crypto
+  .createHash("sha256")
+  .update(`${actual.join("\\n")}\\n`)
+  .digest("hex");
 
 assert.deepEqual(
   declared,
   actual,
   "CI workflow responsibility map must exactly match .github/workflows"
+);
+assert.equal(
+  map.workflowInventoryDigest,
+  `sha256:${workflowInventoryDigest}`,
+  "workflowInventoryDigest must match the exact sorted workflow inventory",
+);
+assert.ok(
+  !Object.hasOwn(map, "generatedFromMainSha"),
+  "commit-derived responsibility-map provenance must stay retired",
 );
 
 const allowed = new Set(map.allowedPrimaryResponsibilities || []);

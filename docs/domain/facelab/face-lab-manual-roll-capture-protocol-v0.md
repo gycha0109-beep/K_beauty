@@ -108,4 +108,3 @@ same descriptive drift, provenance, privacy, and no-threshold rules.
 
 Synthetic rotation, warping, mirroring, identity matching, and repository
 persistence of raw photos or landmarks remain prohibited.
-

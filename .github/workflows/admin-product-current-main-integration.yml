@@ -1,4 +1,5 @@
 name: Admin - Product Current Main Integration
+run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.watchtower_track != '' && format('[WT:{0}] {1}', inputs.watchtower_track, github.workflow) || github.workflow }}
 
 on:
   pull_request:

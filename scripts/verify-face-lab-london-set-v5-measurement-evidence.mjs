@@ -167,18 +167,15 @@ assert.equal(
   stabilityAdequacyContract.currentEvidence.realPhotoReportCollectionPresent,
   true
 );
-assert.equal(
-  stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent,
-  false
-);
-
 if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, false);
   assert.equal(stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage, false);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression"]);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, ["head_pitch", "head_roll", "head_yaw"]);
   assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint, expressionReviewPacket.reviewPacketFingerprint);
   assert.equal(stabilityAdequacyContract.currentEvidence.status, "review_ready_pose_incomplete");
 } else if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 306) {
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, false);
   assert.equal(stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage, false);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression", "head_yaw"]);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, ["head_pitch", "head_roll"]);
@@ -187,6 +184,7 @@ if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
   assert.match(stabilityAdequacyContract.currentEvidence.collectionFingerprint, /^sha256:[a-f0-9]{64}$/);
   assert.match(stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint, /^sha256:[a-f0-9]{64}$/);
 } else if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 486) {
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, false);
   assert.equal(stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage, false);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression", "head_pitch", "head_yaw"]);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, ["head_roll"]);
