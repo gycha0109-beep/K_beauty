@@ -199,3 +199,18 @@ canonical_locator == reviewed source locator
 The captured baseline and verification observations are then written through the existing governed Phase 8G RPCs. A mismatched immediate digest is treated as an unstable adapter/source combination and is not promoted to a COMPARABLE baseline.
 
 Expected fetch outcomes such as `TRANSIENT_FAILURE:*` and `SOURCE_BLOCKED:*` are emitted as structured canary results with `stable=false` and `authority_mutation=false`. They block baseline registration but do not turn the deterministic TRUST contract red. Unexpected implementation/runtime failures still fail CI.
+
+### Canonical HTML text adapter
+
+Dynamic storefronts can emit request-specific HTML while presenting unchanged product text. Production canary attempts on independent storefronts demonstrated that equal-length responses can still have different raw SHA256 digests seconds apart.
+
+`canonical-html-text / v1` therefore provides a second explicit adapter. It removes comments and non-content script/style/noscript/template/svg blocks, removes tag attributes/markup, normalizes a small stable entity set, applies Unicode NFKC normalization, and collapses whitespace before hashing.
+
+The adapter remains fail-closed:
+
+- a visible canonical text change changes the digest;
+- an unsupported adapter or digest-basis mismatch is an implementation error, not an ambiguous source result;
+- raw `live-page-bytes / v1` remains supported for already-profiled sources;
+- fresh baseline recovery defaults to `canonical-html-text / v1` only after a stable Production canary;
+- no adapter result can itself confirm a Product Fact or mutate Recommendation authority.
+
