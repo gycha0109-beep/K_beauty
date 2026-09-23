@@ -197,4 +197,3 @@ canonical_locator == reviewed source locator
 ```
 
 The captured baseline and verification observations are then written through the existing governed Phase 8G RPCs. A mismatched immediate digest is treated as an unstable adapter/source combination and is not promoted to a COMPARABLE baseline.
-
