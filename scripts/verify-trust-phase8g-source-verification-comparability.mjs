@@ -112,7 +112,6 @@ for (const token of [
   "verifySource",
   "live-page-bytes-v1",
   "canonical-html-text",
-  "canonical-html-text-v1",
   "record_product_evidence_source_verification_v2",
   "admin_register_product_evidence_source_verification_profile_v1"
 ]) {
