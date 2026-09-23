@@ -27,7 +27,7 @@ const reviewPacket = JSON.parse(
 );
 
 assert.equal(contract.schemaVersion, "face-lab-manual-roll-capture-contract-v0");
-assert.equal(contract.status, "capture_measured_review_packet_ready");
+assert.equal(contract.status, "capture_measured_additional_evidence_required");
 assert.equal(contract.nuisanceClass, "head_roll");
 assert.equal(
   contract.captureReceiptRef,
@@ -63,7 +63,44 @@ assert.equal(contract.storage.transientLocalPathsAllowedOnlyDuringMeasurement, t
 assert.equal(contract.readiness.captureDataPresent, true);
 assert.equal(contract.readiness.rollEvidencePresent, true);
 assert.equal(contract.readiness.descriptiveReviewPacketPresent, true);
-assert.equal(contract.readiness.adequacyDecisionPresent, false);
+assert.equal(contract.readiness.adequacyDecisionPresent, true);
+assert.equal(
+  contract.readiness.adequacyDecisionCode,
+  "ADDITIONAL_EVIDENCE_REQUIRED"
+);
+assert.equal(contract.readiness.provisionalResearchGateGranted, false);
+assert.equal(contract.readiness.additionalEvidenceRequired, true);
+assert.equal(contract.readiness.currentSubjectCount, 1);
+assert.equal(contract.readiness.currentObservationCount, 2);
+assert.deepEqual(contract.expansionRequirement.reasonCodes, [
+  "head_roll_subject_diversity_limited",
+  "head_roll_distributional_evidence_limited"
+]);
+assert.equal(
+  contract.expansionRequirement.additionalSubjectDiversityRequired,
+  true
+);
+assert.equal(contract.expansionRequirement.exactMinimumSubjectCount, null);
+assert.equal(
+  contract.expansionRequirement.automaticAdequacyAtSubjectCount,
+  false
+);
+assert.equal(
+  contract.expansionRequirement.sameSessionCaptureUnitRetained,
+  true
+);
+assert.equal(
+  contract.expansionRequirement.numericRollThresholdIntroduced,
+  false
+);
+assert.equal(
+  contract.expansionRequirement.syntheticSubstitutionAllowed,
+  false
+);
+assert.equal(
+  contract.expansionRequirement.reReviewRequiredAfterExpansion,
+  true
+);
 assert.equal(
   contract.measurementEvidenceRef,
   "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json"
@@ -180,6 +217,8 @@ console.log(JSON.stringify({
   captureDataPresent: true,
   rollEvidencePresent: true,
   descriptiveReviewPacketPresent: true,
+  adequacyDecisionCode: "ADDITIONAL_EVIDENCE_REQUIRED",
+  additionalEvidenceRequired: true,
   measurementExecuted: true,
   angleThresholdAuthority: false,
   rawImagesPersistedInRepository: false,

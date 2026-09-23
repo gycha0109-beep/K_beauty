@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-manual-roll-capture-contract-v0",
-  "status": "capture_measured_review_packet_ready",
+  "status": "capture_measured_additional_evidence_required",
   "nuisanceClass": "head_roll",
   "captureReceiptRef": "evidence/facelab/source-intake/v0/manual-roll-capture-receipt.json",
   "captureProtocol": {
@@ -41,7 +41,12 @@
     "captureDataPresent": true,
     "rollEvidencePresent": true,
     "descriptiveReviewPacketPresent": true,
-    "adequacyDecisionPresent": false
+    "adequacyDecisionPresent": true,
+    "adequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+    "provisionalResearchGateGranted": false,
+    "additionalEvidenceRequired": true,
+    "currentSubjectCount": 1,
+    "currentObservationCount": 2
   },
   "authority": {
     "productionAuthority": false,
@@ -51,5 +56,20 @@
     "populationAuthority": false
   },
   "measurementEvidenceRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json",
-  "descriptiveReviewPacketRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json"
+  "descriptiveReviewPacketRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json",
+  "expansionRequirement": {
+    "reasonCodes": [
+      "head_roll_subject_diversity_limited",
+      "head_roll_distributional_evidence_limited"
+    ],
+    "additionalSubjectDiversityRequired": true,
+    "exactMinimumSubjectCount": null,
+    "automaticAdequacyAtSubjectCount": false,
+    "sameSessionCaptureUnitRetained": true,
+    "naturalLeftRightRollRequired": true,
+    "numericRollThresholdIntroduced": false,
+    "syntheticSubstitutionAllowed": false,
+    "reReviewRequiredAfterExpansion": true,
+    "instruction": "Collect additional consented subjects using the same neutral-front plus natural left/right roll capture unit. Increasing subject diversity is required before re-review, but no subject count automatically grants adequacy."
+  }
 }

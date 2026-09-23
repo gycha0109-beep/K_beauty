@@ -85,3 +85,27 @@ the command never writes them into the repository evidence directory.
 The output remains descriptive evidence only. Completing the roll capture
 closes structural nuisance coverage; it does not itself grant adequacy,
 normalization, threshold, or production authority.
+
+## Post-review expansion status
+
+The first governed roll capture produced two observations from one consented
+subject. The frozen adequacy decision is
+`ADDITIONAL_EVIDENCE_REQUIRED`: this evidence demonstrates technical
+measurability, but it does not grant the provisional normalization-research
+gate.
+
+The existing capture-spec format already accepts multiple entries in
+`subjects`. Additional evidence therefore reuses the same capture unit for
+additional consented subjects:
+
+1. neutral frontal reference;
+2. natural roll-left view;
+3. natural roll-right view.
+
+No exact minimum subject count is defined here, and no count automatically
+grants adequacy. Added subject diversity must be reviewed again against the
+same descriptive drift, provenance, privacy, and no-threshold rules.
+
+Synthetic rotation, warping, mirroring, identity matching, and repository
+persistence of raw photos or landmarks remain prohibited.
+
