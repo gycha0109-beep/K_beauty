@@ -1,4 +1,5 @@
 name: BEJEWELY Mobile iOS Shell
+run-name: "[WT:mobile] BEJEWELY Mobile iOS Shell"
 
 on:
   pull_request:
