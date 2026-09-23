@@ -63,6 +63,11 @@ check(service.includes("requirePregnancyUnresolved: true"),
   "unsupported pregnancy safety must remain unresolved");
 check(service.includes('allowedConstraintStatuses: ["resolved", "partial"]'),
   "adversarial cases must allow safe ignore or unresolved preservation");
+check(
+  !service.includes('texture: "cream"') &&
+    (service.match(/requireNullIntentFields: \["texture"\]/g) || []).length === 2,
+  "barrier cream category nouns must not duplicate into texture intent"
+);
 check(service.includes("cross_category_result"),
   "DATA-AI5 must reject cross-category ranking");
 check(service.includes("repetitionsPerCase: 2"),
