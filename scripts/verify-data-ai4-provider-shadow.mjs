@@ -37,6 +37,14 @@ check(providerService.includes('"ko_acne_treatment_pregnancy_unresolved"'),
   "unresolved pregnancy provider scenario must exist");
 check(providerService.includes('query: "지성인데 백탁 없고 끈적이지 않는 선크림 찾아줘."'),
   "provider scenario queries must be frozen in code");
+check(
+  providerService.includes('query: "건성이고 피부 민감도가 높은 편이야. 장벽이 신경 쓰여서 크림 보습제 찾아줘."') &&
+    !providerService.includes('texture: "cream"') &&
+    providerService.includes('requireNullIntentFields: Object.freeze(["texture"])'),
+  "barrier cream provider scenario must keep the product-family noun out of texture"
+);
+check(providerService.includes("intent_${field}_must_be_null"),
+  "provider scenario evaluation must enforce explicit null semantic boundaries");
 check(providerService.includes('query: "클렌저 찾아줘."'),
   "category-only query must be frozen in code");
 check(providerService.includes("requireSparseIntent: true"),
