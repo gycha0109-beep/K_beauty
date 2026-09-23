@@ -8,9 +8,9 @@ CI Watchtower v0.3.1 separates workflow responsibility from run attribution.
 
 - **Project-wide CI** is unassigned by design and must not emit a static `[WT:*]` prefix.
 - **Dedicated Track CI** emits a static canonical `run-name: "[WT:<track-key>] <display name>"`.
-- **Shared technical CI** is not permanently assigned to one Track Key; its run attribution follows explicit producer evidence.
+- **Shared technical CI** is not permanently assigned to one Track Key; its run attribution follows explicit producer evidence. For manual dispatch, `watchtower_track` must be surfaced through the run name as `[WT:<track-key>]` rather than remaining an event input that Watchtower cannot observe.
 
-Dynamic attribution precedence is explicit run/dispatch marker, PR `Watchtower-Track`, commit footer `Watchtower-Track`, branch Track Key, GitHub PR/SHA/run relationship, then workflow/path heuristics.
+Dynamic attribution precedence is Project-wide rule, run-name `[WT:<track-key>]`, PR `Watchtower-Track`, commit footer `Watchtower-Track`, branch Track Key, then learned workflow fingerprint. A `workflow_dispatch.watchtower_track` value becomes explicit evidence only when the producer surfaces it through run-name.
 
 Canonical Track Keys are exactly:
 
@@ -70,7 +70,7 @@ Total: **50 workflows**.
 
 There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
 
-The machine-readable authority is `docs/ci/workflow-responsibility-map.json`.
+The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. Its provenance is bound to the exact sorted workflow inventory by `workflowInventoryDigest`; commit-SHA provenance is intentionally not used because a PR cannot know its future merge SHA.
 
 ## Cross-cutting responsibilities that are easy to miss
 
