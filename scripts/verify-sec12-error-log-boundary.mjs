@@ -1122,15 +1122,22 @@ async function assertSensitiveRouteIntegrationExactSet() {
   let unsafeResponsePaths = 0;
   let unresolvedResponsePaths = 0;
   let deadHelperCalls = 0;
+  const terminalPathCountMismatches = [];
 
   for (const descriptor of SENSITIVE_ROUTE_HANDLER_BINDINGS) {
     const model = modelByPath.get(descriptor.path);
     assert.ok(model, `missing route model: ${descriptor.path}`);
     const result = analyzeHandlerNode(model.exportedHttpHandlers.get(descriptor.method), model, externalHelpers);
     if (result.terminalPaths !== descriptor.expectedTerminalPaths) {
-      console.error(`${descriptor.id} terminal response paths: ${result.terminalPathLocations.join(", ")}`);
+      const mismatch = {
+        id: descriptor.id,
+        expected: descriptor.expectedTerminalPaths,
+        actual: result.terminalPaths,
+        locations: result.terminalPathLocations
+      };
+      terminalPathCountMismatches.push(mismatch);
+      console.error(`SEC12_TERMINAL_PATH_COUNT_MISMATCH=${JSON.stringify(mismatch)}`);
     }
-    assert.equal(result.terminalPaths, descriptor.expectedTerminalPaths, `${descriptor.id} terminal response path count mismatch`);
     if (descriptor.expectedTerminalSignatures) {
       assert.deepEqual(
         result.terminalPathSignatures,
@@ -1165,6 +1172,12 @@ async function assertSensitiveRouteIntegrationExactSet() {
   assert.equal(unresolvedResponsePaths, 0);
   assert.equal(deadHelperCalls, 0);
   assertProductionNoStoreContract();
+  assert.deepEqual(
+    terminalPathCountMismatches,
+    [],
+    "sensitive route terminal response path count mismatch"
+  );
+
   const pureMatrix = assertI10PureNegativeMatrix();
 
   return Object.freeze({
