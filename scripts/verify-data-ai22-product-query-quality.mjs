@@ -14,6 +14,7 @@ import {
   validateProductQueryIntent
 } from "../lib/product-query-intent-contract.mjs";
 import { PRODUCT_QUERY_AUTHENTICATED_BETA_EVIDENCE_CLOSURE } from "../lib/product-query-authenticated-beta-evidence-closure.mjs";
+import { canonicalizeProductQuerySemanticOwnership } from "../lib/product-query-intent-semantic-ownership.mjs";
 
 let assertions = 0;
 function check(condition, message) {
@@ -180,10 +181,56 @@ check(
 const intentSchemaProperties = PRODUCT_QUERY_INTENT_JSON_SCHEMA.properties;
 check(
   intentSchemaProperties.skin_type.description.includes("degree-bearing") &&
+    intentSchemaProperties.concerns.description.includes("plain skin-type claim") &&
     intentSchemaProperties.sensitivity.description.includes("general skin reactivity") &&
     intentSchemaProperties.texture.description.includes("product-family noun") &&
+    intentSchemaProperties.tone_up_wanted.description.includes("incompatible positive and negative evidence") &&
     intentSchemaProperties.unresolved_terms.description.includes("Pure ambiguity"),
   "structured-output schema must carry the semantic ownership boundaries"
+);
+
+const oilyOwnershipRecovered = canonicalizeProductQuerySemanticOwnership(
+  byId.get("DA22-OILY-02").query,
+  {
+    ...byId.get("DA22-OILY-02").expectedIntent,
+    skin_type: null,
+    concerns: ["oiliness"]
+  }
+);
+check(
+  oilyOwnershipRecovered.skin_type === "oily" &&
+    oilyOwnershipRecovered.concerns.length === 0,
+  "explicit oily skin type must deterministically own skin_type instead of leaking into oiliness concern"
+);
+
+const oilyTypeWithSeparateConcern = canonicalizeProductQuerySemanticOwnership(
+  "지성 피부인데 유분이 고민이라 선크림을 찾고 있어",
+  {
+    ...byId.get("DA22-OILY-02").expectedIntent,
+    skin_type: null,
+    concerns: ["oiliness"]
+  }
+);
+check(
+  oilyTypeWithSeparateConcern.skin_type === "oily" &&
+    oilyTypeWithSeparateConcern.concerns.includes("oiliness"),
+  "separately stated oiliness concern must survive alongside explicit oily skin type"
+);
+
+const toneUpConflictRecovered = canonicalizeProductQuerySemanticOwnership(
+  byId.get("DA22-CON-01").query,
+  {
+    ...byId.get("DA22-CON-01").expectedIntent,
+    tone_up_wanted: false,
+    unresolved_terms: ["얼굴 밝아짐 선호"],
+    confidence: "low"
+  }
+);
+check(
+  toneUpConflictRecovered.tone_up_wanted === null &&
+    toneUpConflictRecovered.unresolved_terms.includes("tone-up preference conflict") &&
+    toneUpConflictRecovered.confidence === "low",
+  "same-dimension tone-up conflict must deterministically neutralize the structured preference"
 );
 
 const droppedWhiteCast = evaluateProductQueryQualityObservation(
@@ -413,7 +460,9 @@ check(
     provider.includes('"많이 민감한 피부"') &&
     provider.includes('"젤 타입 보습제"') &&
     provider.includes("Explicit unsupported concepts are not ambiguity") &&
-    provider.includes("do not choose a side"),
+    provider.includes("do not choose a side") &&
+    provider.includes("tone_up_wanted MUST be null") &&
+    provider.includes("canonicalizeProductQuerySemanticOwnership(normalizedQuery, candidate)"),
   "provider instructions must preserve semantic ownership and fail-closed conflict handling"
 );
 
