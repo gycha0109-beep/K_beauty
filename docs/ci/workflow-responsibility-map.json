@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
   "producerContractVersion": "watchtower-v0.3.2",
-  "workflowInventoryDigest": "sha256:8395c4dc84416ed6dbd501ecdab70ae72acd22ed5ee8140f40bccc562f93e313",
+  "workflowInventoryDigest": "sha256:f06d268c4b75296b72e57661006b956eaac90d19bfabbbea8c145b9afd5cf3fe",
   "lastAuditedAt": "2026-09-24",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
@@ -11,6 +11,7 @@
   },
   "allowedPrimaryResponsibilities": [
     "global-governance",
+    "security-boundary",
     "admin",
     "product-query-ai",
     "recommendation-admission",
@@ -24,15 +25,24 @@
   ],
   "embeddedResponsibilities": {
     "security": {
-      "hostWorkflow": "current-main-health.yml",
-      "mode": "canonical-static-contract-suite",
+      "hostWorkflow": "security-boundary.yml",
+      "mode": "dedicated-shared-technical-contract-suite; current-main overlap preserved until equivalence is proven",
       "scripts": [
+        "scripts/run-security-boundary-verifier-suite.mjs",
         "scripts/verify-analysis-rls-contract.mjs",
         "scripts/verify-anonymous-write-grant-v2.mjs",
+        "scripts/verify-sec06-saved-report-boundary.mjs",
+        "scripts/verify-sec07-product-link-boundary.mjs",
         "scripts/verify-sec08-image-upload-boundary.mjs",
         "scripts/verify-sec09-public-result-read-boundary.mjs",
+        "scripts/verify-sec10-image-origin-contract.mjs",
         "scripts/verify-sec10-security-headers.mjs",
-        "scripts/check-sec11-site-origin-normalization.mjs"
+        "scripts/verify-sec11-signout-boundary.mjs",
+        "scripts/check-sec11-site-origin-normalization.mjs",
+        "scripts/verify-sec12-error-log-boundary.mjs",
+        "scripts/verify-sec12-mutations.mjs",
+        "scripts/verify-provider-runtime-log-sanitization.mjs",
+        "scripts/verify-current-repository-hygiene.mjs"
       ]
     },
     "siteE2E": {
@@ -401,6 +411,19 @@
       ],
       "watchtowerTrackBinding": "dynamic-by-run",
       "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "security-boundary.yml": {
+      "primaryResponsibility": "security-boundary",
+      "capabilities": [
+        "backend",
+        "database",
+        "provider-safety",
+        "repository-hygiene",
+        "security"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "trust-phase1-intake-foundation.yml": {

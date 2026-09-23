@@ -4,7 +4,7 @@ This document separates **workflow technical responsibility** from **CI Watchtow
 
 ## Non-negotiable rule
 
-CI Watchtower v0.3.1 separates workflow responsibility from run attribution.
+CI Watchtower v0.3.2 separates workflow responsibility from run attribution.
 
 - **Project-wide CI** is unassigned by design and must not emit a static `[WT:*]` prefix.
 - **Dedicated Track CI** emits a static canonical `run-name: "[WT:<track-key>] <display name>"`.
@@ -48,6 +48,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `catalog-taxonomy` | 2 |
 | `face-lab` | 0 |
 | `global-governance` | 2 |
+| `security-boundary` | 1 |
 | `mobile` | 11 |
 | `product-data-pipeline` | 4 |
 | `product-evidence` | 0 |
@@ -56,7 +57,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 18 |
 
-Total: **50 workflows**.
+Total: **51 workflows**.
 
 ## Watchtower producer classification
 
@@ -66,7 +67,7 @@ Total: **50 workflows**.
 | Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
 | Dedicated `trust` | 18 | static `[WT:trust]` |
 | Dedicated `mobile` | 11 | static `[WT:mobile]` |
-| Shared technical | 8 | PR/commit/dispatch evidence |
+| Shared technical | 9 | PR/commit/dispatch evidence |
 
 There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
 
@@ -76,7 +77,7 @@ The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. It
 
 ### Security
 
-Security is intentionally not represented by one historical phase workflow. Canonical main health directly checks RLS, anonymous-write grants, image-upload boundaries, public-result reads, security headers/purchase anchors, admin/security boundaries and origin normalization. Additional isolated security harnesses remain under `security-tests/`.
+`security-boundary.yml` is the canonical shared technical owner for application security contracts. It runs the complete static boundary suite for analysis RLS, anonymous-write grants, SEC-06 through SEC-12 coverage, provider-runtime log sanitization, admin access and repository secret/authority hygiene, plus the SEC-12 mutation-resistance harness. `current-main-health` keeps its existing overlapping checks until equivalence is proven; removal from global health is a later consolidation step. Isolated runtime security harnesses remain under `security-tests/`.
 
 ### Site E2E
 
