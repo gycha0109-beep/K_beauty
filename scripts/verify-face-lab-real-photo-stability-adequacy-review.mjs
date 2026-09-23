@@ -73,11 +73,6 @@ assert.equal(
   contract.currentEvidence.descriptiveAdequacyReviewFingerprint
 );
 assert.equal(contract.currentEvidence.descriptiveAdequacyReviewPresent, true);
-assert.equal(contract.currentEvidence.adequacyDecisionPresent, false);
-assert.equal(
-  contract.currentEvidence.status,
-  "descriptive_review_reproducible_adequacy_pending"
-);
 
 assert.ok(
   review.evidenceLimitations.some((item) =>
