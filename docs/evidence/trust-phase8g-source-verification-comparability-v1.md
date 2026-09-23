@@ -174,3 +174,27 @@ Recommendation = 0
 ```
 
 No synthetic `changed` result may be inserted merely to exercise the Production transition path.
+
+## Production canary capture
+
+The initial Production canary uses a repository-pinned target manifest and the same bounded `fetchOfficialBytes` transport as the verification worker.
+
+On the main-branch push that changes the target manifest, the Phase 8G workflow performs two live fetches and emits:
+
+```text
+TRUST_PHASE8G_CANARY_CAPTURE_JSON={...}
+```
+
+The capture contains the exact live-byte digest, final URL, content type, byte length, fetch time, and immediate second-fetch digest. It performs no database or authority mutation.
+
+A Production baseline profile may be registered only when:
+
+```text
+stable = true
+baseline.digest == verification.digest
+source_id == reviewed canary source
+canonical_locator == reviewed source locator
+```
+
+The captured baseline and verification observations are then written through the existing governed Phase 8G RPCs. A mismatched immediate digest is treated as an unstable adapter/source combination and is not promoted to a COMPARABLE baseline.
+
