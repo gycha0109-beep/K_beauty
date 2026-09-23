@@ -76,6 +76,7 @@ jobs:
           node --check scripts/trust-research-worker.mjs
           node --check scripts/trust-source-verification-worker.mjs
           node --check scripts/trust-source-verification-canary-capture.mjs
+          node -e 'const fs=require("node:fs"); const x=JSON.parse(fs.readFileSync("docs/evidence/trust-phase8g-production-canary-target-v1.json","utf8")); if(!x.source_id || !/^https:\\/\\//.test(x.canonical_locator)) process.exit(1)'
           node scripts/verify-trust-phase8g-source-verification-comparability.mjs
 
       - name: Detect Production canary target change
