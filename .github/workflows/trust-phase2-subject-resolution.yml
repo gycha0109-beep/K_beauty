@@ -1,4 +1,5 @@
-name: TRUST Phase 2 Subject Resolution
+name: TRUST Data Governance - Phase 2 Subject Resolution
+run-name: "[WT:trust] TRUST Data Governance - Phase 2 Subject Resolution"
 
 on:
   pull_request:
@@ -18,7 +19,11 @@ on:
       - "scripts/verify-trust-subject-resolution-presentation-hardening.mjs"
       - ".github/workflows/trust-phase2-subject-resolution.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

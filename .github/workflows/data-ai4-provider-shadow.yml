@@ -1,4 +1,5 @@
-name: DATA-AI4 Provider Shadow
+name: Product Query AI - Provider Shadow Runtime
+run-name: "[WT:taxonomy-ai] Product Query AI - Provider Shadow Runtime"
 
 on:
   push:
@@ -30,7 +31,11 @@ on:
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
       - ".github/workflows/data-ai4-provider-shadow.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read

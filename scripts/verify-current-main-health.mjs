@@ -47,6 +47,7 @@ run("TRUST Phase 7B legacy backfill materialization", node, ["scripts/verify-tru
 run("TRUST Phase 7C legacy research readiness", node, ["scripts/verify-trust-phase7c-legacy-research-readiness.mjs"]);
 run("TRUST Phase 7C Phase4 legacy adoption compatibility", node, ["scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"]);
 run("TRUST Phase 7D relational fact adoption", node, ["scripts/verify-trust-phase7d-relational-adoption.mjs"]);
+run("TRUST Phase 8A revalidation contract", node, ["scripts/verify-trust-phase8a-revalidation-contract.mjs"]);
 
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
@@ -56,6 +57,10 @@ run("Skin decision persistence and reentry", npm, ["run", "verify:skin-decision-
 run("Canonical 164x12 current Recommendation semantic health", node, ["scripts/verify-current-recommendation-health.mjs"]);
 
 run("CandidatePolicy current semantic invariant", npm, ["run", "verify:candidate-exposure-policy-shadow"]);
+run("Product Evidence presentation contract", node, ["scripts/verify-product-evidence-presentation-contract.mjs"]);
+run("Product Evidence presentation provider", node, ["scripts/verify-product-evidence-presentation-provider.mjs"]);
+run("Product Evidence Free Result V2 UI", node, ["scripts/verify-free-result-v2-product-evidence-ui.mjs"]);
+run("Product Evidence review observation readiness", node, ["scripts/verify-product-evidence-review-observation-readiness.mjs"]);
 run("Current Product Decision Axis contract", node, ["scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs"]);
 run("Current Production SHADOW wiring", node, ["--experimental-default-type=module", "scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs"]);
 run(
@@ -67,6 +72,24 @@ run(
 run("G2 initial admission grant contract", node, ["scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs"]);
 run("G3A Product Fact authority read contract", node, ["scripts/verify-v21-admission-g3a-pf-authority-reader-v1.mjs"]);
 run("G3 production candidate admission contract", node, ["scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs"]);
+run("DATA-TAXONOMY1 shadow catalog taxonomy foundation", node, ["scripts/verify-data-taxonomy1-shadow-catalog-taxonomy-foundation-v1.mjs"]);
+run("DATA-TAXONOMY2 candidate manual classification", node, ["scripts/verify-data-taxonomy2-candidate-manual-classification-v1.mjs"]);
+run("DATA-TAXONOMY4 recommendation shadow parity", node, ["--experimental-strip-types", "scripts/product-evidence/verify-data-taxonomy4-recommendation-shadow-parity-v1.mjs"]);
+run("DATA-TAXONOMY5 production recommendation parity foundation", node, ["scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"]);
+run("DATA-TAXONOMY5 production recommendation parity runtime", node, ["scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"]);
+run("DATA-TAXONOMY15 recommendation parity catalog-only v2", node, ["scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"]);
+run("DATA-TAXONOMY6 product identity decoupling preflight", node, ["scripts/product-evidence/verify-data-taxonomy6-product-identity-decoupling-preflight-v1.mjs"]);
+run("DATA-TAXONOMY7 legacy projection compatibility", node, ["scripts/product-evidence/verify-data-taxonomy7-legacy-projection-compatibility-v1.mjs"]);
+run("DATA-TAXONOMY8 nullable legacy category projection", node, ["scripts/product-evidence/verify-data-taxonomy8-nullable-legacy-category-projection-v1.mjs"]);
+run("DATA-TAXONOMY10 catalog-only product promotion eligibility", node, ["scripts/product-evidence/verify-data-taxonomy10-catalog-only-product-promotion-eligibility-v1.mjs"]);
+run("DATA-TAXONOMY11 catalog-only transactional adoption", node, ["scripts/product-evidence/verify-data-taxonomy11-catalog-only-transactional-adoption-v1.mjs"]);
+run("Catalog taxonomy shadow reader syntax", node, ["--check", "lib/catalog-taxonomy-recommendation-shadow-reader.js"]);
+run("Catalog taxonomy shadow replay syntax", node, ["--check", "lib/catalog-taxonomy-recommendation-shadow-replay.js"]);
+run("Catalog taxonomy shadow cardinality syntax", node, ["--check", "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"]);
+run("Catalog taxonomy replay route syntax", node, ["--check", "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"]);
+
+run("DATA-AI1 product-query intent boundary", node, ["scripts/verify-data-ai1-product-query-intent.mjs"]);
+run("DATA-AI2 deterministic product-query execution", node, ["scripts/verify-data-ai2-product-query-execution.mjs"]);
 run("DATA-AI3 product-query shadow contract", node, ["scripts/verify-data-ai3-product-query-shadow.mjs"]);
 run("DATA-AI4 provider-backed shadow contract", node, ["scripts/verify-data-ai4-provider-shadow.mjs"]);
 run("DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);
@@ -89,9 +112,16 @@ run("DATA-AI19 authenticated beta activation preflight", node, ["scripts/verify-
 run("DATA-AI20 authenticated limited-beta controlled activation", node, ["scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"]);
 run("DATA-AI21 three-account limited-beta evidence closure", node, ["scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"]);
 run("DATA-AI22 product-query quality evaluation", node, ["scripts/verify-data-ai22-product-query-quality.mjs"]);
+run("DATA-AI22 product-query quality canonical baseline", node, ["scripts/run-data-ai22-product-query-quality-evaluation.mjs", "--expected-baseline"]);
 run("DATA-AI22 live provider acceptance boundary", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
 
+run("Legacy offer classifier", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-classifier"]);
+run("Legacy offer migration manifest and dry-run", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-migration"]);
+run("Product identity resolver", npm, ["--prefix", "crawler", "run", "verify:identity-resolution"]);
+run("Product identity adoption plan", npm, ["--prefix", "crawler", "run", "verify:identity-adoption-plan"]);
+run("Product identity key repair plan", npm, ["--prefix", "crawler", "run", "verify:identity-key-repair-plan"]);
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
+run("Hwahae review capture provenance", node, ["scripts/verify-hwahae-review-capture-provenance.mjs"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
 
 run("Admin current-main integration static contract", node, ["scripts/verify-admin-product-current-main-integration.mjs"]);
@@ -127,13 +157,34 @@ run("Manual catalog identity-review queue ingress", node, ["scripts/verify-data-
 run("DATA-OFFER15 catalog source/offer closure", node, ["scripts/verify-data-offer15-catalog-source-offer-closure-v1.mjs"]);
 run("DATA-OFFER16 governed Offer presentation authority", node, ["scripts/verify-data-offer16-offer-presentation-authority-v1.mjs"]);
 run("DATA-OFFER17 Offer runtime observability", node, ["scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"]);
+run("DATA-OFFER17 observability verifier syntax", node, ["--check", "scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"]);
+run("DATA-OFFER17 observability module syntax", node, ["--check", "lib/product-offer-runtime-observability.js"]);
+run("DATA-OFFER17 offer read service syntax", node, ["--check", "lib/server/product-offer-read-service.js"]);
 run("DATA-OFFER17 controlled Offer RPC diagnostic", node, ["scripts/verify-data-offer17-controlled-offer-rpc-diagnostic-v1.mjs"]);
 
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
 run("Face Lab Human evaluation contract", npm, ["run", "verify:face-lab-archetype-human-evaluation"]);
+run("Face Lab Korean offline review UI", npm, ["run", "verify:face-lab-independent-human-cue-review-ui-ko"]);
+run("Face Lab home transfer builder syntax", node, ["--check", "scripts/build-face-lab-home-transfer-v1.mjs"]);
+run("Face Lab home transfer verifier syntax", node, ["--check", "scripts/check-face-lab-home-transfer-v1.mjs"]);
+run("Face Lab hosted set authority", npm, ["run", "verify:face-lab-independent-human-cue-hosted-set"]);
+run("Face Lab hosted response contract", npm, ["run", "verify:face-lab-independent-human-cue-hosted-response"]);
+run("Face Lab hosted UI security boundary", npm, ["run", "verify:face-lab-independent-human-cue-hosted-ui"]);
+run("Face Lab neutral face-count shared stage", node, ["scripts/check-face-lab-neutral-face-count-stage-v1.mjs"]);
+run("Face Lab neutral face-count contract syntax", node, ["--check", "lib/face-lab-neutral-face-count-contract.mjs"]);
+run("Face Lab neutral face-count intake syntax", node, ["--check", "lib/face-lab-neutral-face-count-intake.js"]);
+run("Face Lab neutral face-count review HTML syntax", node, ["--check", "lib/face-lab-neutral-face-count-review-html.js"]);
+run("Face Lab neutral review submit route syntax", node, ["--check", "app/api/facelab/review/neutral/submit/route.js"]);
+run("Face Lab review submit route syntax", node, ["--check", "app/api/facelab/review/submit/route.js"]);
+run("Face Lab review route syntax", node, ["--check", "app/facelab/review/route.js"]);
 run("Face Lab synthetic evaluation workspace", npm, ["run", "synthetic:verify"]);
+run("Face Lab neutral review operator safety", node, ["scripts/check-face-lab-neutral-review-operator-v1.mjs"]);
+run("Face Lab neutral review operator syntax", node, ["--check", "scripts/face-lab-neutral-review-operator.mjs"]);
+run("Face Lab neutral review operator Vercel compatibility launcher syntax", node, ["--check", "scripts/face-lab-neutral-review-operator-vercel-cli-compat.mjs"]);
+run("Face Lab neutral review operator Vercel compatibility verifier syntax", node, ["--check", "scripts/check-face-lab-neutral-review-operator-vercel-cli-compat-v1.mjs"]);
+run("Face Lab neutral review operator Vercel CLI compatibility", node, ["scripts/check-face-lab-neutral-review-operator-vercel-cli-compat-v1.mjs"]);
 
 run(
   "Persona EVAL-R1 current grounding regression probes",

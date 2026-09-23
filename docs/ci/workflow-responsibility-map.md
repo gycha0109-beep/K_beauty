@@ -4,11 +4,24 @@ This document separates **workflow technical responsibility** from **CI Watchtow
 
 ## Non-negotiable rule
 
-A shared GitHub Actions workflow is **not** permanently assigned to one development Track Key.
+CI Watchtower v0.3.1 separates workflow responsibility from run attribution.
 
-Run attribution follows CI Watchtower evidence: explicit `workflow_dispatch.watchtower_track`, PR `Watchtower-Track`, branch Track Key, commit footer, GitHub PR/SHA/run relationship, then workflow/path heuristics.
+- **Project-wide CI** is unassigned by design and must not emit a static `[WT:*]` prefix.
+- **Dedicated Track CI** emits a static canonical `run-name: "[WT:<track-key>] <display name>"`.
+- **Shared technical CI** is not permanently assigned to one Track Key; its run attribution follows explicit producer evidence.
 
-The responsibility map therefore answers **what the workflow verifies**, not **which active development track owns every future run**.
+Dynamic attribution precedence is explicit run/dispatch marker, PR `Watchtower-Track`, commit footer `Watchtower-Track`, branch Track Key, GitHub PR/SHA/run relationship, then workflow/path heuristics.
+
+Canonical Track Keys are exactly:
+
+- `ops`
+- `taxonomy-ai`
+- `trust`
+- `face-research`
+- `full-report`
+- `mobile`
+
+The responsibility map therefore answers both **what the workflow verifies** and whether its Watchtower producer mode is project-wide, dedicated-static, or shared-dynamic.
 
 ## Safety boundary
 
@@ -32,17 +45,30 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | Responsibility | Workflow count |
 | --- | ---: |
 | `admin` | 2 |
-| `catalog-taxonomy` | 3 |
-| `face-lab` | 5 |
+| `catalog-taxonomy` | 2 |
+| `face-lab` | 0 |
 | `global-governance` | 2 |
 | `mobile` | 11 |
-| `product-data-pipeline` | 6 |
-| `product-evidence` | 4 |
-| `product-offer-runtime` | 2 |
-| `product-query-ai` | 17 |
-| `trust-data-governance` | 21 |
+| `product-data-pipeline` | 4 |
+| `product-evidence` | 0 |
+| `product-offer-runtime` | 1 |
+| `product-query-ai` | 9 |
+| `recommendation-admission` | 1 |
+| `trust-data-governance` | 18 |
 
-Total: **73 workflows**.
+Total: **50 workflows**.
+
+## Watchtower producer classification
+
+| Producer class | Workflow count | Attribution |
+| --- | ---: | --- |
+| Project-wide | 2 | no Track tag |
+| Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
+| Dedicated `trust` | 18 | static `[WT:trust]` |
+| Dedicated `mobile` | 11 | static `[WT:mobile]` |
+| Shared technical | 8 | PR/commit/dispatch evidence |
+
+There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
 
 The machine-readable authority is `docs/ci/workflow-responsibility-map.json`.
 
@@ -69,7 +95,7 @@ Database verification is also cross-cutting. Supabase migrations, isolated runti
 1. Preserve all existing verification behavior.
 2. Make every workflow belong to exactly one primary technical responsibility.
 3. Keep global governance workflows unassigned by design.
-4. Keep shared workflows dynamically attributable to the current Watchtower Track Key.
-5. Reject workflow additions/deletions that do not update the responsibility map.
-6. Only after this map is stable, review phase-coded names and true duplicate workflows.
-
+4. Keep dedicated Track workflows statically tagged with their canonical Watchtower Track Key.
+5. Keep shared workflows dynamically attributable to explicit producer evidence.
+6. Reject workflow additions/deletions or producer-class drift that do not update the responsibility map.
+7. Only after this map is stable, review phase-coded names and true duplicate workflows.

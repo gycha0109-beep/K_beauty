@@ -1,4 +1,5 @@
-name: DATA-AI20 Authenticated Limited Beta Controlled Activation
+name: Product Query AI - Authenticated Limited Beta Controlled Activation
+run-name: "[WT:taxonomy-ai] Product Query AI - Authenticated Limited Beta Controlled Activation"
 
 on:
   pull_request:
@@ -22,7 +23,11 @@ on:
       - "scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"
       - ".github/workflows/data-ai20-authenticated-beta-controlled-activation.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read

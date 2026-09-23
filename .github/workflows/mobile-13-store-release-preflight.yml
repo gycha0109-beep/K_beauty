@@ -1,8 +1,14 @@
 name: BEJEWELY Mobile 13 Store Release Preflight
+run-name: "[WT:mobile] BEJEWELY Mobile 13 Store Release Preflight"
 
 # Heavy release archives are release-time evidence, not a routine PR gate.
 on:
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 permissions:
   contents: read

@@ -1,18 +1,8 @@
-name: Hwahae Review Capture Provenance
+name: Product Data Pipeline - Hwahae Provenance Non-Main PR Guard
 
 on:
   pull_request:
-    paths:
-      - "lib/hwahae-review-capture-provenance.js"
-      - "lib/product-evidence-review-observation-readiness.js"
-      - "scripts/build-hwahae-review-capture-envelope.mjs"
-      - "scripts/verify-hwahae-review-capture-provenance.mjs"
-      - "data/hwahae-review-signals/categories/sunscreen/hwahae-sunscreen-review-signals.batch.json"
-      - ".github/workflows/hwahae-review-capture-provenance.yml"
-      - "lib/recommendation-scoring.ts"
-      - "lib/skin-match-decision-engine.js"
-  push:
-    branches:
+    branches-ignore:
       - main
     paths:
       - "lib/hwahae-review-capture-provenance.js"
@@ -20,10 +10,9 @@ on:
       - "scripts/build-hwahae-review-capture-envelope.mjs"
       - "scripts/verify-hwahae-review-capture-provenance.mjs"
       - "data/hwahae-review-signals/categories/sunscreen/hwahae-sunscreen-review-signals.batch.json"
-      - ".github/workflows/hwahae-review-capture-provenance.yml"
+      - ".github/workflows/hwahae-review-capture-provenance-non-main-pr.yml"
       - "lib/recommendation-scoring.ts"
       - "lib/skin-match-decision-engine.js"
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,12 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - name: Checkout exact head
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 1
 
       - name: Attest exact head

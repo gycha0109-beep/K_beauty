@@ -1,4 +1,5 @@
-name: DATA-TAXONOMY15 Catalog-only TRUST Intake Bridge
+name: Catalog Taxonomy - DATA-TAXONOMY15 TRUST Intake Bridge
+run-name: "[WT:taxonomy-ai] Catalog Taxonomy - DATA-TAXONOMY15 TRUST Intake Bridge"
 
 on:
   pull_request:

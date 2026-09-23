@@ -7,7 +7,6 @@ const files = {
   page: "app/admin/products/trust/page.js",
   workbench: "app/admin/products/trust/TrustQueueWorkbench.js",
   loader: "lib/admin/trust-queue.js",
-  workflow: ".github/workflows/trust-phase5-admin-queue.yml",
   currentHealth: "scripts/verify-current-main-health.mjs"
 };
 
@@ -86,10 +85,10 @@ check(content.workbench.includes("Read only"), "read-only boundary must be visib
 check(content.workbench.includes("Evidence candidate"), "Evidence detail surface missing");
 check(content.workbench.includes("Existing Current"), "Current summary surface missing");
 check(content.workbench.includes("Governed review"), "governed review summary missing");
-check(content.workflow.includes("node-version: 22"), "workflow must use Node 22");
-check(content.workflow.includes("node scripts/verify-trust-phase5-admin-queue.mjs"), "focused verifier step missing");
-check(!content.workflow.includes("npm run architecture:guard"), "phase workflow must not duplicate canonical architecture guard");
-check(!content.workflow.includes("npm run build"), "phase workflow must not duplicate canonical production build");
+check(
+  !fs.existsSync(path.join(root, ".github/workflows/trust-phase5-admin-queue.yml")),
+  "retired TRUST Phase 5 Admin Queue workflow must stay absent"
+);
 check(content.currentHealth.includes('run("TRUST Phase 5 admin queue contract"'), "Current Main Health must own Phase 5 static contract");
 check(content.currentHealth.includes('run("Architecture guard"'), "Current Main Health must own architecture guard");
 check(content.currentHealth.includes('run("Production build"'), "Current Main Health must own production build");

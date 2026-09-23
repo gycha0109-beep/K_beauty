@@ -1,4 +1,4 @@
-name: Product Source Bindings
+name: Product Data Pipeline - Source Bindings
 
 on:
   pull_request:
