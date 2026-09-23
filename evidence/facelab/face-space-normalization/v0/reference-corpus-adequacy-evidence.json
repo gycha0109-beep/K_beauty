@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "face-space-reference-corpus-adequacy-evidence-v0",
+  "status": "adequate_for_provisional_research",
+  "decisionVersion": "london-set-v5-reference-corpus-adequacy-v1",
+  "evidenceRef": "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json",
+  "sourceReferenceCorpusSummarySchemaVersion": "face-space-reference-corpus-summary-v0",
+  "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+  "sourceReviewPacketSchemaVersion": "face-space-reference-corpus-review-packet-v0",
+  "sourceReviewPacketVersion": "london-set-v5-reference-corpus-review-v1",
+  "sourceReviewPacketFingerprint": "sha256:49f76545486f50e88b68a23f68cc65605158dc402d78a4ce44d27940314de392",
+  "sourceSamplingFrameProvenanceRef": "https://doi.org/10.6084/m9.figshare.5047666.v5",
+  "sourceProvider": {
+    "source": "mediapipe_face_geometry",
+    "sourceVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+    "adapterId": "mediapipe-face-geometry-metric-v0"
+  },
+  "samplingFrameReviewed": true,
+  "splitIntegrityReviewed": true,
+  "measurementCoverageReviewed": true,
+  "holdoutIntegrityReviewed": true,
+  "coverageLimitations": [
+    "This decision is scoped to one licensed London Set v5 general-face sampling frame and does not establish population representativeness beyond this research corpus.",
+    "This decision is same-provider MediaPipe research evidence only and does not establish cross-provider semantic equivalence.",
+    "Corpus adequacy does not authorize center/scale statistics, percentile boundaries, thresholds, Production normalization, Archetype activation, or style recommendation."
+  ],
+  "automaticAdequacyInferred": false,
+  "numericThresholdInvented": false,
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false
+}

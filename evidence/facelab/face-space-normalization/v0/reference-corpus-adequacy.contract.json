@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-space-reference-corpus-adequacy-contract-v0",
-  "status": "review_packet_ready_adequacy_pending",
+  "status": "adequate_for_provisional_research",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -23,8 +23,10 @@
     "reviewPacketRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json",
     "reviewPacketVersion": "london-set-v5-reference-corpus-review-v1",
     "reviewPacketFingerprint": "sha256:49f76545486f50e88b68a23f68cc65605158dc402d78a4ce44d27940314de392",
-    "adequacyDecisionPresent": false,
-    "status": "review_ready_adequacy_pending"
+    "adequacyDecisionPresent": true,
+    "status": "adequate_for_provisional_research",
+    "adequacyDecisionVersion": "london-set-v5-reference-corpus-adequacy-v1",
+    "adequacyEvidenceRef": "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json"
   },
   "reviewPacket": {
     "schemaVersion": "face-space-reference-corpus-review-packet-v0",

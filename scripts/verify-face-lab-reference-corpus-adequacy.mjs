@@ -1,7 +1,11 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import {
   validateFaceSpaceReferenceCorpusAdequacyEvidence
 } from "../lib/face-lab-reference-corpus-adequacy.js";
+import {
+  validateFaceSpaceReferenceCorpus
+} from "../lib/face-lab-face-space-reference-corpus.js";
 
 const summary = {
   schemaVersion: "face-space-reference-corpus-summary-v0",
@@ -147,6 +151,70 @@ assert.throws(
   /adequacy_review_packet_invalid/
 );
 
+const actualRunOutput = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
+    "utf8"
+  )
+);
+const actualReviewPacket = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json",
+    "utf8"
+  )
+);
+const actualEvidence = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json",
+    "utf8"
+  )
+);
+const actualContract = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json",
+    "utf8"
+  )
+);
+const actualSummary = validateFaceSpaceReferenceCorpus(
+  actualRunOutput.corpus
+);
+const actualValidated = validateFaceSpaceReferenceCorpusAdequacyEvidence(
+  actualEvidence,
+  actualSummary,
+  actualReviewPacket
+);
+
+assert.equal(actualSummary.recordCount, 102);
+assert.equal(actualSummary.distinctSubjectGroupCount, 102);
+assert.deepEqual(actualSummary.splitCounts, {
+  reference: 82,
+  holdout: 20
+});
+assert.equal(
+  actualValidated.status,
+  "adequate_for_provisional_research"
+);
+assert.equal(
+  actualValidated.sourceReferenceSplitFingerprint,
+  "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf"
+);
+assert.equal(
+  actualValidated.sourceReviewPacketFingerprint,
+  "sha256:49f76545486f50e88b68a23f68cc65605158dc402d78a4ce44d27940314de392"
+);
+assert.equal(actualValidated.authority.productionAuthority, false);
+assert.equal(actualValidated.authority.normalizationAuthority, false);
+assert.equal(actualValidated.authority.thresholdAuthority, false);
+assert.equal(actualContract.currentEvidence.adequacyDecisionPresent, true);
+assert.equal(
+  actualContract.currentEvidence.adequacyDecisionVersion,
+  "london-set-v5-reference-corpus-adequacy-v1"
+);
+assert.equal(
+  actualContract.currentEvidence.adequacyEvidenceRef,
+  "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json"
+);
+
 console.log(JSON.stringify({
   ok: true,
   productionAuthority: false,
@@ -158,5 +226,8 @@ console.log(JSON.stringify({
   explicitCoverageLimitationsRequired: true,
   exactReviewPacketFingerprintRequired: true,
   reviewPacketPrivacyBoundaryRequired: true,
-  actualAdequacyDecisionPresent: false
+  actualAdequacyDecisionPresent: true,
+  actualRecordCount: actualSummary.recordCount,
+  actualDistinctSubjectGroupCount: actualSummary.distinctSubjectGroupCount,
+  actualDecisionVersion: actualValidated.decisionVersion
 }, null, 2));
