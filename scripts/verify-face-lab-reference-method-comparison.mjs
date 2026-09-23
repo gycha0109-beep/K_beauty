@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import {
   buildFaceSpaceReferenceMethodComparison,
@@ -129,6 +130,33 @@ assert.notEqual(
   comparison.sourceReferenceSplitFingerprint
 );
 
+const actualRunOutput = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
+    "utf8"
+  )
+);
+const actualComparison = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-comparison.json",
+    "utf8"
+  )
+);
+const rebuiltActualComparison = buildFaceSpaceReferenceMethodComparison({
+  manifest: actualRunOutput.corpus,
+  comparisonVersion: "london-set-v5-reference-method-comparison-v1"
+});
+assert.deepEqual(actualComparison, rebuiltActualComparison);
+assert.equal(actualComparison.referenceSampleCount, 82);
+assert.equal(actualComparison.holdoutSampleCountExcluded, 20);
+assert.equal(
+  actualComparison.packetFingerprint,
+  "sha256:89c299c496c0e60a369a51b2a7b64ccd4c39fd4de943cbc20991d933180b88fc"
+);
+assert.equal("winner" in actualComparison, false);
+assert.equal("selectedMethod" in actualComparison, false);
+assert.equal("ranking" in actualComparison, false);
+
 console.log(JSON.stringify({
   ok: true,
   status: comparison.status,
@@ -140,5 +168,7 @@ console.log(JSON.stringify({
   referenceSplitOnly: true,
   holdoutExcludedFromComparison: true,
   comparisonDoesNotSelectWinner: true,
-  actualCorpusComparisonPersisted: false
+  actualCorpusComparisonPersisted: true,
+  actualComparisonVersion: actualComparison.comparisonVersion,
+  actualComparisonPacketFingerprint: actualComparison.packetFingerprint
 }, null, 2));

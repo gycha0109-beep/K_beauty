@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-space-reference-method-comparison-contract-v0",
-  "status": "comparison_boundary_defined_data_absent",
+  "status": "descriptive_comparison_frozen",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "methodSelectionAuthority": false,
@@ -33,8 +33,11 @@
     "The comparison packet must carry the exact reference-split fingerprint and provider provenance."
   ],
   "currentEvidence": {
-    "realReferenceCorpusPresent": false,
-    "realMethodComparisonPresent": false,
+    "realReferenceCorpusPresent": true,
+    "realMethodComparisonPresent": true,
+    "comparisonVersion": "london-set-v5-reference-method-comparison-v1",
+    "comparisonPacketFingerprint": "sha256:89c299c496c0e60a369a51b2a7b64ccd4c39fd4de943cbc20991d933180b88fc",
+    "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
     "selectedMethodPresent": false
   }
 }
