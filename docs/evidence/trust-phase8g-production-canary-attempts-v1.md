@@ -24,4 +24,3 @@ The exact live HTML byte representation changed across two fetches approximately
 - Authority mutation: `false`
 
 The official source rate-limited the GitHub-hosted fetch before a baseline observation could be captured. No COMPARABLE profile was registered. Expected source-blocked or transient outcomes remain fail-closed but are represented as structured canary results rather than making the deterministic TRUST CI contract itself red.
-
