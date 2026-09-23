@@ -1,7 +1,7 @@
 # Face Lab FaceSpace3DAdapter v0 Research Contract
 
-> Track: FACE LAB / R-3D Parametric Counterfactual Lab  
-> Status: research contract / no Production authority  
+> Track: FACE LAB / R-3D Parametric Counterfactual Lab
+> Status: research contract / no Production authority
 > Scope: Face Space → replaceable 3D backend → independent measurement → round-trip validation
 
 ## 1. Purpose

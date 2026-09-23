@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-real-photo-stability-adequacy-contract-v0",
-  "status": "expression_yaw_pitch_roll_review_packet_ready_adequacy_pending",
+  "status": "descriptive_adequacy_review_reproducible_decision_pending",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -61,7 +61,12 @@
       }
     },
     "adequacyDecisionPresent": false,
-    "status": "review_ready_adequacy_pending"
+    "status": "descriptive_review_reproducible_adequacy_pending",
+    "descriptiveAdequacyReviewPresent": true,
+    "descriptiveAdequacyReviewSchemaVersion": "face-lab-real-photo-stability-adequacy-review-v1",
+    "descriptiveAdequacyReviewVersion": "real-photo-stability-adequacy-review-v1",
+    "descriptiveAdequacyReviewFingerprint": "sha256:b526a8228b849a1fbe29c58d091ab4d9970fb3f36b61317beb8f78b0cdd92213",
+    "descriptiveAdequacyReviewStatus": "descriptive_review_complete_decision_separate"
   },
   "reviewPacket": {
     "schemaVersion": "face-lab-real-photo-stability-review-packet-v0",

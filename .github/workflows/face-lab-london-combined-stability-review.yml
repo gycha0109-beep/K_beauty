@@ -89,6 +89,13 @@ jobs:
             evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json \
             "$RUNNER_TEMP/real-photo-stability-adequacy-review.json"
 
+      - name: Verify adequacy descriptive review candidate
+        run: |
+          node scripts/verify-face-lab-real-photo-stability-adequacy-review.mjs \
+            evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-roll-stability-review-packet.json \
+            "$RUNNER_TEMP/real-photo-stability-adequacy-review.json" \
+            evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json
+
       - name: Publish adequacy descriptive review candidate
         uses: actions/upload-artifact@v7
         with:

@@ -1,7 +1,7 @@
 # Face Lab Photo Geometry Measurement Bridge v0
 
-> Track: FACE LAB / R-F Face Representation + R-3D Parametric Lab  
-> Status: research contract / no Production authority  
+> Track: FACE LAB / R-F Face Representation + R-3D Parametric Lab
+> Status: research contract / no Production authority
 > Scope: photo-side metric landmarks → backend-independent structural measurement
 
 ## 1. Purpose

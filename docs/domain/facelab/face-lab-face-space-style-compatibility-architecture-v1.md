@@ -1,8 +1,8 @@
 # Face Lab Face Space & Style Compatibility Architecture v1
 
-> Track: FACE LAB / Core Architecture  
-> Status: Architecture authority candidate  
-> Scope: normalized face representation, Face Space, Archetype projection, Style Space, compatibility research, controlled 3D experimentation  
+> Track: FACE LAB / Core Architecture
+> Status: Architecture authority candidate
+> Scope: normalized face representation, Face Space, Archetype projection, Style Space, compatibility research, controlled 3D experimentation
 > Production impact: none until separate implementation and activation contracts are approved
 
 ## 1. Purpose

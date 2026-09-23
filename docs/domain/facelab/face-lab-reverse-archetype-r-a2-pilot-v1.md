@@ -1,8 +1,8 @@
 # Face Lab Reverse Archetype / Face Space Seed R-A2 Pilot v1
 
-> Track: FACE LAB / Reverse Archetype Empirical Seed / Face Space  
-> Status: R-A2A collection tooling ready / ledger open  
-> Baseline: main@cc029c0f1c6d36304049570641193f94335ed7a3  
+> Track: FACE LAB / Reverse Archetype Empirical Seed / Face Space
+> Status: R-A2A collection tooling ready / ledger open
+> Baseline: main@cc029c0f1c6d36304049570641193f94335ed7a3
 > Production impact: none
 
 ## 1. Purpose

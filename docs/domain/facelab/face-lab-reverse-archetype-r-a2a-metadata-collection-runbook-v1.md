@@ -1,8 +1,8 @@
 # Face Lab R-A2A Metadata Collection Runbook v1
 
-> Track: FACE LAB / Reverse Archetype / Face Space Seed  
-> Stage: R-A2A — Metadata collection  
-> Production impact: none  
+> Track: FACE LAB / Reverse Archetype / Face Space Seed
+> Stage: R-A2A — Metadata collection
+> Production impact: none
 > Acquisition mode: manual metadata capture only
 
 ## 1. 목적
