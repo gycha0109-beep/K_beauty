@@ -68,6 +68,11 @@ check(
     (service.match(/requireNullIntentFields: \["texture"\]/g) || []).length === 2,
   "barrier cream category nouns must not duplicate into texture intent"
 );
+check(
+  service.includes('query: "피부는 건성이고 민감도가 높은 편이야. 장벽 고민이 있어서 크림 보습제를 원해."') &&
+    service.includes('query: "건성 피부고 자극에 아주 민감해. 피부 장벽 때문에 보습 크림을 찾는 중이야."'),
+  "barrier cream probes must avoid ambiguous category-versus-texture wording"
+);
 check(service.includes("cross_category_result"),
   "DATA-AI5 must reject cross-category ranking");
 check(service.includes("repetitionsPerCase: 2"),
