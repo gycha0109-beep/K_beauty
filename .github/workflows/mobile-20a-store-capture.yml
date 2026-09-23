@@ -1,4 +1,5 @@
 name: BEJEWELY Mobile 20A Store Capture
+run-name: "[WT:mobile] BEJEWELY Mobile 20A Store Capture"
 
 on:
   pull_request:
