@@ -81,6 +81,10 @@ export async function verifySource(client, {
   if (!profile || profile.comparability_state !== "COMPARABLE") {
     throw new Error("SOURCE_VERIFICATION_PROFILE_NOT_COMPARABLE");
   }
+  const adapterProbe = digestOfficialContent(Buffer.alloc(0), profile.adapter_key, profile.adapter_version);
+  if (adapterProbe.digestBasis !== profile.digest_basis) {
+    throw new Error("SOURCE_VERIFICATION_PROFILE_DIGEST_BASIS_MISMATCH");
+  }
   const checkedAt = new Date().toISOString();
   let observedDigest = null;
   let verificationResult;
