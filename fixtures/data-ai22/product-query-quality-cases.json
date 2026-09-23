@@ -1,5 +1,5 @@
 {
-  "corpusVersion": "data-ai22-product-query-quality-corpus-v1",
+  "corpusVersion": "data-ai22-product-query-quality-corpus-v2",
   "phase": "DATA-AI22",
   "provenance": "synthetic_fixed_fixtures",
   "containsUserData": false,
@@ -957,7 +957,7 @@
         "skin_type": "dry",
         "concerns": [],
         "sensitivity": null,
-        "texture": "cream",
+        "texture": null,
         "disliked_feel": "heavy",
         "sunscreen_intent": null,
         "white_cast_hate": null,
@@ -985,7 +985,6 @@
       "criticalIntentFields": [
         "category",
         "skin_type",
-        "texture",
         "disliked_feel"
       ],
       "expectedBehavior": "supported",
@@ -995,7 +994,6 @@
         "rankingEligible": true,
         "rankableSignals": [
           "skin_type",
-          "texture",
           "disliked_feel"
         ]
       }
@@ -1365,11 +1363,14 @@
         "constraintStatus": "partial",
         "rankingEligible": false,
         "rankableSignals": []
-      }
+      },
+      "conflictFields": [
+        "tone_up_wanted"
+      ]
     },
     {
       "id": "DA22-CON-02",
-      "kind": "conflict",
+      "kind": "compound",
       "paraphraseCluster": null,
       "clusterFields": [],
       "query": "매트한데 아주 촉촉한 크림이 좋아",
@@ -1379,7 +1380,7 @@
         "skin_type": null,
         "concerns": [],
         "sensitivity": null,
-        "texture": "cream",
+        "texture": null,
         "disliked_feel": null,
         "sunscreen_intent": null,
         "white_cast_hate": null,
@@ -1388,9 +1389,10 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [
-          "matte and very moisturizing finish conflict"
+          "matte finish",
+          "very moisturizing finish"
         ],
-        "confidence": "low"
+        "confidence": "medium"
       },
       "compareFields": [
         "category",
@@ -1407,18 +1409,16 @@
         "outdoor_exposure"
       ],
       "criticalIntentFields": [
-        "category",
-        "texture"
+        "category"
       ],
-      "expectedBehavior": "conflict",
+      "expectedBehavior": "supported",
       "expectedExecution": {
         "effectiveCategory": "moisturizer_cream",
         "constraintStatus": "partial",
-        "rankingEligible": true,
-        "rankableSignals": [
-          "texture"
-        ]
-      }
+        "rankingEligible": false,
+        "rankableSignals": []
+      },
+      "requiresUnresolvedTerms": true
     },
     {
       "id": "DA22-CON-03",
@@ -1466,7 +1466,10 @@
         "constraintStatus": "partial",
         "rankingEligible": false,
         "rankableSignals": []
-      }
+      },
+      "conflictFields": [
+        "disliked_feel"
+      ]
     },
     {
       "id": "DA22-UNS-01",
