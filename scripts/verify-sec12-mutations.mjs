@@ -444,6 +444,10 @@ function passedCaseIds(stdout) {
 }
 
 function assertBaseline(result) {
+  if (result.status !== 0 || result.signal || result.error) {
+    if (result.stdout) console.error(`--- SEC-12 baseline stdout ---\n${result.stdout}`);
+    if (result.stderr) console.error(`--- SEC-12 baseline stderr ---\n${result.stderr}`);
+  }
   assert.equal(result.error, undefined, "SEC-12 baseline verifier could not start");
   assert.equal(result.signal, null, "SEC-12 baseline verifier was terminated");
   assert.equal(result.status, 0, "SEC-12 baseline verifier must pass");
