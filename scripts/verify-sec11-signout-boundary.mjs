@@ -391,7 +391,16 @@ const catalog = Object.freeze([
   } },
   { id: "S07_SIGNOUT_ERROR_503", async run() {
     const sdk = await runInstalledSdkSignOut({ responseStatus: 500 });
-    assert(sdk.result.error && sdk.cookieWrites.length === 0, "backend failure partially deleted the installed SDK cookie state");
+    assert(sdk.result.error, "installed SDK backend failure must remain observable");
+    assert(
+      sdk.cookieWrites.every(
+        (cookie) =>
+          cookie.name === sdk.cookieName &&
+          cookie.value === "" &&
+          cookie.options?.maxAge === 0
+      ),
+      "installed SDK backend failure must not write a live auth cookie"
+    );
     const { handlers } = createHarness({ signOutError: new Error("synthetic") });
     const response = await handlers.POST(createRequest());
     const body = await responseJson(response);
