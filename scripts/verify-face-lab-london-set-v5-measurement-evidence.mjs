@@ -105,7 +105,19 @@ assert.equal(
 );
 assert.equal(
   referenceAdequacyContract.currentEvidence.adequacyDecisionPresent,
-  false
+  true
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.adequacyDecisionVersion,
+  "london-set-v5-reference-corpus-adequacy-v1"
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.adequacyEvidenceRef,
+  "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json"
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.status,
+  "adequate_for_provisional_research"
 );
 
 assert.equal(expression.ok, true);
@@ -229,7 +241,14 @@ console.log(JSON.stringify({
   referenceReviewPacketFingerprint: referenceReviewPacket.reviewPacketFingerprint,
   expressionReviewPacketFingerprint: expressionReviewPacket.reviewPacketFingerprint,
   descriptiveReviewPacketsFrozen: true,
-  adequacyDecisionPresent: false,
+  referenceCorpusAdequacyDecisionPresent: true,
+  referenceCorpusAdequacyStatus: "adequate_for_provisional_research",
+  realPhotoAdequacyDecisionPresent:
+    stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent,
+  realPhotoAdequacyDecisionCode:
+    stabilityAdequacyContract.currentEvidence.adequacyDecisionCode,
+  provisionalResearchGateGranted:
+    stabilityAdequacyContract.currentEvidence.provisionalResearchGateGranted,
   productionAuthority: false,
   normalizationAuthority: false,
   thresholdAuthority: false
