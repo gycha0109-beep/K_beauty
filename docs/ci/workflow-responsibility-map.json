@@ -1,10 +1,10 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v1",
-  "generatedFromMainSha": "19321df05beb92107fdc88581b0598f19920fcc3",
+  "generatedFromMainSha": "0a47fcb0d888ae5e60515ac42e9db58198765ba8",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
     "workflowResponsibility": "A workflow has one primary technical responsibility and may expose multiple capability tags.",
-    "watchtowerBinding": "Shared workflows are not statically pinned to a development track. Run attribution is resolved from dispatch input, PR metadata, branch, commit footer, and GitHub run relationships.",
+    "watchtowerBinding": "CI Watchtower v0.3.1 uses three producer classes: project-wide workflows stay unassigned, dedicated workflows emit a canonical static [WT:<track>] run-name, and shared technical workflows resolve attribution dynamically from explicit PR/commit/dispatch evidence.",
     "preservation": "Existing workflow triggers, jobs, scripts, runtime probes, database harnesses, release jobs, and production probes are preserved until equivalence is proven before consolidation."
   },
   "allowedPrimaryResponsibilities": [
@@ -99,7 +99,7 @@
         "recommendation",
         "runtime-probe"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -111,7 +111,7 @@
         "recommendation",
         "runtime-probe"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -124,7 +124,7 @@
         "recommendation",
         "runtime-probe"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -135,7 +135,7 @@
         "backend",
         "recommendation"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -148,7 +148,7 @@
         "recommendation",
         "runtime-probe"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -160,7 +160,7 @@
         "recommendation",
         "runtime-probe"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -172,7 +172,7 @@
         "recommendation",
         "runtime-probe"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -184,7 +184,7 @@
         "recommendation",
         "runtime-probe"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -197,7 +197,7 @@
         "recommendation",
         "runtime-probe"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -221,7 +221,7 @@
         "recommendation",
         "taxonomy"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -233,7 +233,7 @@
         "recommendation",
         "taxonomy"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -253,7 +253,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -264,7 +264,7 @@
         "deep-link",
         "mobile"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -274,7 +274,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -284,7 +284,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -294,7 +294,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -304,7 +304,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -314,7 +314,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -323,7 +323,7 @@
       "capabilities": [
         "mobile"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -333,7 +333,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -343,7 +343,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -353,7 +353,7 @@
         "mobile",
         "release-or-native"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -409,7 +409,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -421,7 +421,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -433,7 +433,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -445,7 +445,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -457,7 +457,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -469,7 +469,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -481,7 +481,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -493,7 +493,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -505,7 +505,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -517,7 +517,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -529,7 +529,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -541,7 +541,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -553,7 +553,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -565,7 +565,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -577,7 +577,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -589,7 +589,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -601,7 +601,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -613,7 +613,7 @@
         "evidence-governance",
         "pipeline"
       ],
-      "watchtowerTrackBinding": "dynamic-by-run",
+      "watchtowerTrackBinding": "static:trust",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
@@ -630,5 +630,23 @@
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     }
+  },
+  "watchtowerProject": {
+    "name": "비주얼리",
+    "key": "visualy",
+    "repository": "gycha0109-beep/K_beauty",
+    "canonicalTrackKeys": [
+      "ops",
+      "taxonomy-ai",
+      "trust",
+      "face-research",
+      "full-report",
+      "mobile"
+    ],
+    "projectWideWorkflows": [
+      "current-main-health.yml",
+      "pie-prospective.yml"
+    ],
+    "producerContract": "dedicated-static-run-name; shared-dynamic-marker; project-wide-unassigned"
   }
 }
