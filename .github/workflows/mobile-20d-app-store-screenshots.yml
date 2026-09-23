@@ -1,4 +1,5 @@
 name: BEJEWELY Mobile 20D App Store Screenshots
+run-name: "[WT:mobile] BEJEWELY Mobile 20D App Store Screenshots"
 
 # App Store screenshot capture is a release/store asset operation, not a routine PR gate.
 on:

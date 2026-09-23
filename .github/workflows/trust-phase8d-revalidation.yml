@@ -1,4 +1,5 @@
 name: TRUST Data Governance - Phase 8D Revalidation Research Bridge
+run-name: "[WT:trust] TRUST Data Governance - Phase 8D Revalidation Research Bridge"
 
 on:
   pull_request:

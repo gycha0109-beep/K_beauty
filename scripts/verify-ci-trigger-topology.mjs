@@ -839,3 +839,78 @@ for (const name of mobileWatchtowerTrackWorkflows) {
     `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
   );
 }
+
+/* WATCHTOWER_V031_PRODUCER_CONTRACT_GUARD */
+const watchtowerStaticTrackGroups = [
+  {
+    track: "taxonomy-ai",
+    names: [
+      "data-ai3-product-query-shadow.yml",
+      "data-ai4-provider-shadow.yml",
+      "data-ai5-activation-readiness.yml",
+      "data-ai7-production-fail-closed.yml",
+      "data-ai16-production-canary-closure.yml",
+      "data-ai18-authenticated-beta-runtime.yml",
+      "data-ai20-authenticated-beta-controlled-activation.yml",
+      "data-ai21-limited-beta-evidence-closure.yml",
+      "data-ai22-live-provider-acceptance.yml",
+      "data-taxonomy13-catalog-only-candidate-approval.yml",
+      "data-taxonomy15-catalog-only-trust-intake.yml",
+    ],
+  },
+  {
+    track: "trust",
+    names: trustResponsibilityWorkflows,
+  },
+  {
+    track: "mobile",
+    names: mobileWatchtowerTrackWorkflows,
+  },
+];
+
+for (const group of watchtowerStaticTrackGroups) {
+  for (const name of group.names) {
+    const relativePath = `.github/workflows/${name}`;
+    const source = read(relativePath);
+    const displayName = source.match(/^name:\s*(.+)$/m)?.[1]?.replace(/^["']|["']$/g, "");
+    assert.ok(displayName, `${relativePath}: workflow display name is required`);
+    assert.ok(
+      source.includes(`run-name: "[WT:${group.track}] ${displayName}"`),
+      `${relativePath}: dedicated workflow must expose canonical [WT:${group.track}] run-name`,
+    );
+  }
+}
+
+const watchtowerProjectWideWorkflows = [
+  "current-main-health.yml",
+  "pie-prospective.yml",
+];
+
+const watchtowerSharedWorkflows = [
+  "admin-access-foundation.yml",
+  "admin-product-current-main-integration.yml",
+  "data-offer17-controlled-offer-rpc-diagnostic.yml",
+  "hwahae-review-capture-provenance-non-main-pr.yml",
+  "product-identity-key-repair-confirm.yml",
+  "product-offers.yml",
+  "product-source-bindings.yml",
+  "v21-admission-g3a-pf-authority-read.yml",
+];
+
+for (const name of [...watchtowerProjectWideWorkflows, ...watchtowerSharedWorkflows]) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    !/^run-name:\s*["']?\[WT:/m.test(source),
+    `${relativePath}: project-wide/shared workflow must not be statically pinned to a Watchtower track`,
+  );
+}
+
+const legacyWatchtowerTrackKey = "taxonomy" + "&AI";
+for (const name of readdirSync(".github/workflows").filter((entry) => /\.ya?ml$/i.test(entry))) {
+  const relativePath = `.github/workflows/${name}`;
+  assert.ok(
+    !read(relativePath).includes(legacyWatchtowerTrackKey),
+    `${relativePath}: legacy taxonomy Track Key must not appear in live workflow producer config`,
+  );
+}

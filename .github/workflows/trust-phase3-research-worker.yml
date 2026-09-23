@@ -1,4 +1,5 @@
 name: TRUST Data Governance - Phase 3 Research Worker
+run-name: "[WT:trust] TRUST Data Governance - Phase 3 Research Worker"
 
 on:
   pull_request:
