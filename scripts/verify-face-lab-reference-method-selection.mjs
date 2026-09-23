@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import {
   buildFaceSpaceReferenceMethodComparison
@@ -146,6 +147,35 @@ assert.throws(
   /method_selection_comparison_invalid/
 );
 
+const actualComparison = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-comparison.json",
+    "utf8"
+  )
+);
+const actualSelection = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json",
+    "utf8"
+  )
+);
+const rebuiltActualSelection = buildFaceSpaceReferenceMethodSelectionDecision({
+  comparison: actualComparison,
+  selectedMethodId: "median__mad_scaled_consistent",
+  decisionVersion: "london-set-v5-reference-method-selection-v1",
+  evidenceRef:
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json",
+  selectionRationale:
+    "Select median center with MAD scaled-consistent scale for the same-provider research candidate because both estimators are robust to isolated distribution tails and outliers in the bounded reference split. The descriptive comparison only establishes that all four supported profiles are finite and non-degenerate; this is an explicit methodological choice, not an automatic winner. The locked holdout is excluded from selection and remains reserved for later diagnostics."
+});
+assert.deepEqual(actualSelection, rebuiltActualSelection);
+assert.equal(actualSelection.decision.centerMethod, "median");
+assert.equal(actualSelection.decision.scaleMethod, "mad_scaled_consistent");
+assert.equal(actualSelection.decision.holdoutUsedForSelection, false);
+assert.equal(actualSelection.decision.automaticWinnerSelected, false);
+assert.equal(actualSelection.authority.productionAuthority, false);
+assert.equal(actualSelection.authority.normalizationAuthority, false);
+
 console.log(JSON.stringify({
   ok: true,
   productionAuthority: false,
@@ -155,5 +185,7 @@ console.log(JSON.stringify({
   selectionRequiresComparisonPacket: true,
   selectionRequiresExactReferenceFingerprint: true,
   noAutomaticWinner: true,
-  actualMethodSelected: false
+  actualMethodSelected: true,
+  actualSelectedMethodId: actualSelection.selectedMethodId,
+  actualDecisionVersion: actualSelection.decision.decisionVersion
 }, null, 2));

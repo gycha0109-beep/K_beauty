@@ -50,6 +50,8 @@ on:
       - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
       - "scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs"
       - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json"
+      - "evidence/facelab/face-space-normalization/v0/reference-statistics-method.contract.json"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json"
       - "evidence/facelab/face-space-normalization/v0/reference-method-comparison.contract.json"
       - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-comparison.json"
       - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json"
