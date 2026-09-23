@@ -116,7 +116,11 @@ for (const step of SECURITY_BOUNDARY_STEPS) {
   results.push(result);
   const passed = result.status === 0 && !result.signal && !result.error;
   console.log(`${passed ? "PASS" : "FAIL"} ${step.name}`);
-  if (!passed) break;
+  if (!passed) {
+    if (result.stdoutTail) console.error(`--- ${step.name} stdout tail ---\n${result.stdoutTail}`);
+    if (result.stderrTail) console.error(`--- ${step.name} stderr tail ---\n${result.stderrTail}`);
+    break;
+  }
 }
 
 const failures = results.filter((result) => result.status !== 0 || result.signal || result.error);
