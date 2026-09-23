@@ -10,6 +10,9 @@ UI_DUMP="$ARTIFACT_DIR/window.xml"
 METRO_LOG="$ARTIFACT_DIR/metro.log"
 METRO_PID=""
 METRO_READY=0
+ANALYZE_E2E_PID=""
+ANALYZE_E2E_PORT=8765
+ANALYZE_E2E_LOG="$ARTIFACT_DIR/analyze-e2e-server.log"
 METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
 QUICKSTEP_RECOVERY_COUNT=0
 QUICKSTEP_RECOVERY_LIMIT=2
@@ -29,6 +32,9 @@ cleanup() {
   fi
   if [[ -n "$METRO_PID" ]] && kill -0 "$METRO_PID" 2>/dev/null; then
     kill "$METRO_PID" 2>/dev/null || true
+  fi
+  if [[ -n "$ANALYZE_E2E_PID" ]] && kill -0 "$ANALYZE_E2E_PID" 2>/dev/null; then
+    kill "$ANALYZE_E2E_PID" 2>/dev/null || true
   fi
   trap - EXIT
   exit "$status"
@@ -218,6 +224,35 @@ PY
 
 adb shell cmd uimode night no >/dev/null
 adb reverse tcp:8081 tcp:8081 >/dev/null
+adb reverse tcp:$ANALYZE_E2E_PORT tcp:$ANALYZE_E2E_PORT >/dev/null
+
+MOBILE_ANALYZE_E2E_PORT="$ANALYZE_E2E_PORT" \
+MOBILE_ANALYZE_E2E_ARTIFACT_DIR="$ARTIFACT_DIR" \
+node "$REPO_ROOT/scripts/mobile-analyze-e2e-server.mjs" > "$ANALYZE_E2E_LOG" 2>&1 &
+ANALYZE_E2E_PID=$!
+
+for _ in $(seq 1 30); do
+  if python - "$ANALYZE_E2E_PORT" <<'PY'
+import socket
+import sys
+port = int(sys.argv[1])
+try:
+    with socket.create_connection(("127.0.0.1", port), timeout=1):
+        pass
+except OSError:
+    raise SystemExit(1)
+PY
+  then
+    printf 'MOBILE_ANALYZE_E2E_SERVER_READY=PASS\n'
+    break
+  fi
+  if ! kill -0 "$ANALYZE_E2E_PID" 2>/dev/null; then
+    echo "Analyze E2E fixture server exited before readiness" >&2
+    cat "$ANALYZE_E2E_LOG" >&2 || true
+    exit 1
+  fi
+  sleep 1
+done
 
 (
   cd "$MOBILE_ROOT"
@@ -226,6 +261,7 @@ adb reverse tcp:8081 tcp:8081 >/dev/null
   EXPO_OFFLINE=1 \
   EXPO_UNSTABLE_HEADLESS=1 \
   NODE_PATH="$METRO_NODE_PATH" \
+  EXPO_PUBLIC_API_BASE_URL="http://127.0.0.1:$ANALYZE_E2E_PORT" \
   "$EXPO_BIN" start --localhost --port 8081
 ) > "$METRO_LOG" 2>&1 &
 METRO_PID=$!
@@ -258,6 +294,7 @@ printf 'MOBILE_ANDROID_CAMERA_PERMISSION_GRANT=PASS\n'
 adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
 adb reverse tcp:8081 tcp:8081 >/dev/null
+adb reverse tcp:$ANALYZE_E2E_PORT tcp:$ANALYZE_E2E_PORT >/dev/null
 adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
 printf 'MOBILE_ANDROID_DIRECT_ACTIVITY_START=PASS\n'
 
@@ -268,6 +305,18 @@ wait_for_text "Camera ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/initial-entry-camera-en.png"
 printf 'MOBILE_ANDROID_INITIAL_ENTRY_ANALYZE=PASS\n'
 
+CAMERA_STABILITY_DIR="$ARTIFACT_DIR/camera-temporal-frames"
+rm -rf "$CAMERA_STABILITY_DIR"
+mkdir -p "$CAMERA_STABILITY_DIR"
+for frame in $(seq -w 1 48); do
+  adb exec-out screencap -p > "$CAMERA_STABILITY_DIR/frame-$frame.png"
+  sleep 0.25
+done
+node "$REPO_ROOT/scripts/verify-mobile-camera-temporal-stability.mjs" \
+  "$CAMERA_STABILITY_DIR" \
+  "$ARTIFACT_DIR/camera-temporal-stability.json"
+printf 'MOBILE_ANDROID_CAMERA_TEMPORAL_STABILITY=PASS\n'
+
 tap_text "Take photo"
 wait_for_text "CAPTURED PHOTO"
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-captured-en.png"
@@ -276,6 +325,23 @@ tap_text "Use photo"
 wait_for_text_with_scroll "Skin survey before analysis" "up" 5
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-survey-en.png"
 printf 'MOBILE_ANDROID_ANALYZE_SURVEY_SMOKE=PASS\n'
+
+for option in "Oily" "Low" "Oiliness" "Once" "Gel" "Tight" "More oily" "Sticky"; do
+  wait_for_text_with_scroll "$option" "up" 8
+  tap_text "$option"
+done
+wait_for_text_with_scroll "Run skin analysis" "up" 8
+tap_text "Run skin analysis"
+wait_for_text "Skin analysis result"
+wait_for_text "Mobile runtime transport verified."
+adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-runtime-result-en.png"
+test -s "$ARTIFACT_DIR/analyze-runtime-request.json"
+printf 'MOBILE_ANDROID_ANALYZE_RUNTIME_E2E=PASS\n'
+
+tap_text "Start over"
+wait_for_text "Camera ready"
+tap_text "Close camera"
+wait_for_text "Open camera"
 wait_for_text_with_scroll "Open camera" "down" 5
 tap_text "Open camera"
 wait_for_text "CAPTURED PHOTO"

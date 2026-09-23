@@ -45,6 +45,8 @@ on:
       - "scripts/verify-mobile-premium-entry.mjs"
       - "scripts/verify-mobile-my-skin-diary.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
+      - "scripts/mobile-analyze-e2e-server.mjs"
+      - "scripts/verify-mobile-camera-temporal-stability.mjs"
       - ".github/workflows/mobile-ci.yml"
   push:
     branches: [main]
@@ -89,6 +91,8 @@ on:
       - "scripts/verify-mobile-premium-entry.mjs"
       - "scripts/verify-mobile-my-skin-diary.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
+      - "scripts/mobile-analyze-e2e-server.mjs"
+      - "scripts/verify-mobile-camera-temporal-stability.mjs"
       - ".github/workflows/mobile-ci.yml"
   workflow_dispatch:
     inputs:
@@ -140,6 +144,8 @@ jobs:
           npm run mobile:typecheck
           npm run mobile:config
           bash -n scripts/verify-mobile-android-smoke.sh
+          node --check scripts/mobile-analyze-e2e-server.mjs
+          node --check scripts/verify-mobile-camera-temporal-stability.mjs
 
       - name: Verify mobile feature contracts
         shell: bash

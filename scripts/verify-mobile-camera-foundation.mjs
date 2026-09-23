@@ -14,6 +14,7 @@ const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
 const nativeShellWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"), "utf8");
 const mobileCiWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ci.yml"), "utf8");
 const androidSmokeSource = readFileSync(join(repoRoot, "scripts", "verify-mobile-android-smoke.sh"), "utf8");
+const temporalVerifierSource = readFileSync(join(repoRoot, "scripts", "verify-mobile-camera-temporal-stability.mjs"), "utf8");
 
 assert.equal(
   mobilePackage.dependencies?.["expo-camera"],
@@ -99,6 +100,10 @@ assert.match(
 assert.match(androidSmokeSource, /wait_for_text "SKIN ANALYSIS"/, "Android smoke must observe the rendered fullscreen Analyze title");
 assert.match(androidSmokeSource, /Camera ready/, "Android smoke must verify the ready state");
 assert.match(androidSmokeSource, /CAPTURED PHOTO/, "Android smoke must verify the fullscreen captured state");
+assert.match(androidSmokeSource, /MOBILE_ANDROID_CAMERA_TEMPORAL_STABILITY=PASS/, "Android smoke must enforce temporal preview stability");
+assert.match(androidSmokeSource, /verify-mobile-camera-temporal-stability\.mjs/, "Android smoke must run the temporal frame verifier");
+assert.match(temporalVerifierSource, /whiteRatio/, "Temporal verifier must measure white-frame coverage");
+assert.match(temporalVerifierSource, /meanLuma/, "Temporal verifier must measure frame luminance");
 assert.match(androidSmokeSource, /tap_text "Retake"/, "Android smoke must exercise the retake control");
 
 const forbiddenPatterns = [
