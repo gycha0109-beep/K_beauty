@@ -97,7 +97,7 @@ jobs:
             echo "changed=false" >>"${GITHUB_OUTPUT}"
           fi
 
-      - name: Capture Production canary live-byte pair
+      - name: Capture Production canary observation pair
         if: steps.canary_target.outputs.changed == 'true'
         run: node scripts/trust-source-verification-canary-capture.mjs
 
