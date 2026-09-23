@@ -41,15 +41,140 @@ assert.equal(readinessContract.productionAuthority, false);
 assert.equal(readinessContract.status, "not_ready");
 assert.equal(
   readinessContract.referenceStatistics.centerValuesDefined,
-  false
+  true
 );
 assert.equal(
   readinessContract.referenceStatistics.scaleValuesDefined,
-  false
+  true
+);
+assert.equal(
+  readinessContract.referenceStatistics.status,
+  "research_candidate_frozen"
 );
 assert.equal(referenceCorpusContract.currentEvidence.corpusManifestPresent, false);
 assert.equal(referenceCorpusContract.currentEvidence.referenceSampleCount, 0);
 assert.equal(referenceCorpusContract.currentEvidence.holdoutSampleCount, 0);
+
+const actualReferenceRunOutput = readJson(
+  "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json"
+);
+const actualReferenceReviewPacket = readJson(
+  "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json"
+);
+const actualReferenceAdequacyEvidence = readJson(
+  "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json"
+);
+const actualRealPhotoReviewPacket = readJson(
+  "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json"
+);
+const actualRealPhotoAdequacyDecision = readJson(
+  "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json"
+);
+const actualReferenceStatistics = readJson(
+  "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json"
+);
+const actualMethodSelection = readJson(
+  "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json"
+);
+const actualRealPhotoReports = [
+  ...readJson(
+    "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
+  ).reports,
+  ...readJson(
+    "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json"
+  ).reports,
+  ...readJson(
+    "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json"
+  ).reports,
+  ...readJson(
+    "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json"
+  ).reports
+];
+
+const actualCurrentReadiness =
+  evaluateFaceSpaceNormalizationReadiness({
+    semanticContract,
+    stabilitySummary,
+    scope: "same_provider",
+    referenceCorpusManifest: actualReferenceRunOutput.corpus,
+    referenceCorpusReviewPacket: actualReferenceReviewPacket,
+    referenceCorpusAdequacyEvidence:
+      actualReferenceAdequacyEvidence,
+    realPhotoStabilityReports: actualRealPhotoReports,
+    realPhotoStabilityReviewPacket: actualRealPhotoReviewPacket,
+    realPhotoStabilityAdequacyDecision:
+      actualRealPhotoAdequacyDecision,
+    evidence: {
+      controlled3dPoseStress: true,
+      controlled3dExpressionStress: true,
+      providerCorrespondence: false
+    }
+  });
+
+assert.equal(actualCurrentReadiness.status, "not_ready");
+assert.equal(
+  actualCurrentReadiness.evidenceState.referenceCorpusAdequacyPresent,
+  true
+);
+assert.equal(actualCurrentReadiness.evidenceState.multiSubjectCoverage, true);
+assert.equal(actualCurrentReadiness.evidenceState.generalFaceCoverage, true);
+assert.equal(actualCurrentReadiness.evidenceState.referenceDistribution, true);
+assert.equal(
+  actualCurrentReadiness.evidenceState.realPhotoStabilityReportCount,
+  488
+);
+assert.equal(
+  actualCurrentReadiness.evidenceState.realPhotoStabilityAdequacyPresent,
+  false
+);
+assert.equal(
+  actualCurrentReadiness.evidenceState
+    .realPhotoStabilityAdequacyDecisionStatus,
+  "hold_for_more_evidence"
+);
+assert.equal(
+  actualCurrentReadiness.evidenceState
+    .realPhotoStabilityAdequacyDecisionCode,
+  "ADDITIONAL_EVIDENCE_REQUIRED"
+);
+assert.equal(
+  actualCurrentReadiness.evidenceState
+    .realPhotoStabilityProvisionalResearchGateGranted,
+  false
+);
+assert.deepEqual(
+  [...actualCurrentReadiness.blockers].sort(),
+  [...readinessContract.currentBlockers].sort()
+);
+for (const retiredBlocker of [
+  "single_fixture_only",
+  "multi_subject_coverage_missing",
+  "general_face_coverage_missing",
+  "reference_distribution_missing",
+  "unresolved:head_yaw_real_same_subject_pair",
+  "unresolved:head_pitch_real_same_subject_pair",
+  "unresolved:head_roll_real_same_subject_pair",
+  "unresolved:expression_real_same_subject_pair",
+  "unresolved:general_face_coverage",
+  "unresolved:population_or_reference_distribution"
+]) {
+  assert.equal(
+    actualCurrentReadiness.blockers.includes(retiredBlocker),
+    false,
+    "governed replacement should supersede historical blocker: " +
+      retiredBlocker
+  );
+}
+assert.equal(actualCurrentReadiness.readyDimensionCount, 0);
+assert.throws(
+  () =>
+    buildFaceSpaceNormalizationCandidate({
+      readiness: actualCurrentReadiness,
+      referenceStatistics: actualReferenceStatistics,
+      methodDecision: actualMethodSelection.decision
+    }),
+  /normalization_not_ready/
+);
 
 let syntheticReferenceFingerprint =
   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -1050,6 +1175,9 @@ console.log(JSON.stringify({
   },
   invariants: {
     currentSingleFixtureCannotNormalize: true,
+    actualGovernedCorpusCoverageSupersedesHistoricalCoverageBlockers: true,
+    actualRealPhotoHoldBlocksProvisionalCandidate: true,
+    actualReferenceStatisticsRemainResearchOnly: true,
     controlled3dDoesNotSatisfyRealPhotoGate: true,
     callerBooleansCannotSatisfyRealPhotoGate: true,
     validatedRealPhotoReportsRequiredForPoseExpressionGate: true,
@@ -1073,7 +1201,7 @@ console.log(JSON.stringify({
     methodDecisionMustCarryComparisonEvidence: true,
     statisticsMustMatchDecisionComparisonLineage: true,
     candidateStatisticsMustMatchReadinessCorpusLineage: true,
-    currentMethodDecisionRemainsUnselected: true,
+    currentMethodDecisionIsExplicitResearchSelection: true,
     referenceStatsMustBeExplicit: true,
     providerEquivalenceScopedToCrossProvider: true,
     provisionalCandidateResearchOnly: true,

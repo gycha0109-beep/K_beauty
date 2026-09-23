@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-space-normalization-holdout-diagnostic-contract-v0",
-  "status": "boundary_defined_data_absent",
+  "status": "blocked_pending_real_photo_stability_adequacy",
   "productionAuthority": false,
   "normalizationActivationAuthority": false,
   "acceptanceThresholdAuthority": false,
@@ -21,8 +21,19 @@
     "styleRecommendationAuthority": false
   },
   "currentEvidence": {
-    "realReferenceCorpusPresent": false,
+    "realReferenceCorpusPresent": true,
+    "referenceCorpusAdequacyStatus": "adequate_for_provisional_research",
+    "referenceStatisticsPresent": true,
+    "referenceStatisticsVersion": "london-set-v5-reference-statistics-v1",
+    "referenceStatisticsRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
+    "realPhotoStabilityAdequacyStatus": "hold_for_more_evidence",
+    "realPhotoStabilityAdequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+    "provisionalResearchCandidatePresent": false,
     "realHoldoutDiagnosticPresent": false,
+    "blockers": [
+      "head_roll_subject_diversity_limited",
+      "head_roll_distributional_evidence_limited"
+    ],
     "productionNormalizationAuthorized": false
   }
 }

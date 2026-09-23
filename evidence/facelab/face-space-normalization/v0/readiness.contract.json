@@ -10,25 +10,37 @@
     "controlled3dStabilityPath": "evidence/facelab/face-space-3d/v0/gnm-v3-controlled-stability-evidence.json",
     "referenceCorpusContractPath": "evidence/facelab/face-space-normalization/v0/reference-corpus.contract.json",
     "referenceCorpusAdequacyContractPath": "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json",
-    "realPhotoStabilityAdequacyContractPath": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
+    "realPhotoStabilityAdequacyContractPath": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json",
+    "referenceCorpusRunOutputPath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
+    "referenceCorpusReviewPacketPath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json",
+    "referenceCorpusAdequacyEvidencePath": "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json",
+    "realPhotoStabilityReviewPacketPath": "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json",
+    "realPhotoStabilityAdequacyDecisionPath": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
+    "referenceStatisticsPath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json"
   },
   "currentBlockers": [
-    "single_fixture_only",
-    "multi_subject_coverage_missing",
-    "general_face_coverage_missing",
-    "reference_distribution_missing",
+    "real_photo_stability_additional_evidence_required",
+    "real_photo_stability_hold:head_roll_subject_diversity_limited",
+    "real_photo_stability_hold:head_roll_distributional_evidence_limited",
     "real_pose_stability_missing",
     "real_expression_stability_missing"
   ],
   "referenceStatistics": {
-    "status": "absent",
-    "centerValuesDefined": false,
-    "scaleValuesDefined": false,
-    "percentileBoundariesDefined": false
+    "status": "research_candidate_frozen",
+    "centerValuesDefined": true,
+    "scaleValuesDefined": true,
+    "percentileBoundariesDefined": false,
+    "thresholdValuesDefined": false,
+    "version": "london-set-v5-reference-statistics-v1",
+    "methodDecisionVersion": "london-set-v5-reference-method-selection-v1",
+    "centerMethod": "median",
+    "scaleMethod": "mad_scaled_consistent",
+    "referenceSplitOnly": true,
+    "normalizationAuthority": false
   },
   "rules": [
     "Current face-space-normalization-research-v0 name is a research namespace, not calibrated normalization authority.",
-    "No center, scale, percentile, enum boundary, or production threshold may be invented from the current single-fixture evidence.",
+    "Governed reference-only center/scale research statistics may be frozen only from an explicit method decision and exact reference-split lineage; percentile boundaries, enum boundaries, Production thresholds, and normalization activation remain unauthorized.",
     "Multi-subject coverage, general-face coverage, and reference-distribution readiness must come from a validated face-space-reference-corpus-summary-v0; caller-supplied booleans cannot satisfy those gates.",
     "A structurally valid reference-corpus summary can establish corpus coverage readiness only. It does not authorize center/scale statistics, thresholds, normalization activation, or substitute for real-photo pose/expression stability.",
     "Same-provider normalization readiness is independent from cross-provider anchor equivalence.",
@@ -43,6 +55,19 @@
     "A structurally valid reference corpus cannot satisfy multi-subject, general-face, or reference-distribution readiness gates until a versioned adequacy review bound to the exact reference-split fingerprint is present.",
     "Reference-corpus adequacy must not be inferred automatically from record count, and no numeric adequacy threshold is invented by this readiness contract.",
     "A complete real-photo head_yaw/head_pitch/head_roll/expression report collection is structural evidence only; it cannot satisfy pose/expression readiness until an explicit adequacy review bound to the exact collection fingerprint is present.",
-    "Real-photo stability adequacy must not be inferred automatically from report count or nuisance-class coverage, and no numeric adequacy threshold is invented by this readiness contract."
-  ]
+    "Real-photo stability adequacy must not be inferred automatically from report count or nuisance-class coverage, and no numeric adequacy threshold is invented by this readiness contract.",
+    "An explicit real-photo hold_for_more_evidence decision must remain a readiness blocker even when nuisance-class coverage is structurally complete.",
+    "Historical single-fixture unresolved markers are superseded only when their exact requirement is replaced by governed reference-corpus or real-photo structural evidence; adequacy gates remain independent."
+  ],
+  "currentEvidence": {
+    "referenceCorpusAdequacyStatus": "adequate_for_provisional_research",
+    "referenceCorpusAdequacyDecisionVersion": "london-set-v5-reference-corpus-adequacy-v1",
+    "realPhotoStabilityReportCount": 488,
+    "realPhotoStabilityCoverage": "covered_for_research",
+    "realPhotoStabilityAdequacyStatus": "hold_for_more_evidence",
+    "realPhotoStabilityAdequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+    "provisionalResearchGateGranted": false,
+    "normalizationCandidatePresent": false,
+    "productionNormalizationAuthorized": false
+  }
 }

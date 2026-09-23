@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import {
   buildFaceSpaceNormalizationCandidate
@@ -200,6 +201,44 @@ assert.throws(
   /holdout_candidate_invalid/
 );
 
+const actualHoldoutContract = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/holdout-diagnostic.contract.json",
+    "utf8"
+  )
+);
+assert.equal(
+  actualHoldoutContract.status,
+  "blocked_pending_real_photo_stability_adequacy"
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence.realReferenceCorpusPresent,
+  true
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence.referenceStatisticsPresent,
+  true
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence
+    .realPhotoStabilityAdequacyDecisionCode,
+  "ADDITIONAL_EVIDENCE_REQUIRED"
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence
+    .provisionalResearchCandidatePresent,
+  false
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence.realHoldoutDiagnosticPresent,
+  false
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence
+    .productionNormalizationAuthorized,
+  false
+);
+
 console.log(JSON.stringify({
   ok: true,
   status: diagnostic.status,
@@ -215,6 +254,7 @@ console.log(JSON.stringify({
   holdoutChangesDoNotInvalidateReferenceBinding: true,
   syntheticVerifierOnly: true,
   actualHoldoutDiagnosticPersisted: false,
+  actualHoldoutDiagnosticBlockedByRealPhotoAdequacy: true,
   methodSelectionBoundToComparisonEvidence: true,
   candidateBoundToReadinessCorpusLineage: true
 }, null, 2));
