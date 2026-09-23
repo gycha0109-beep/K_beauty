@@ -19,7 +19,11 @@ const requiredDoc = [
   "confirmed",
   "→ stale",
   "→ re_review_required",
-  "new_fact.supersedes_fact_instance_id = old_fact.fact_instance_id",
+  "same-proposition replacement:",
+  "new_fact.supersedes_fact_instance_id may reference old_fact",
+  "cross-proposition semantic replacement:",
+  "new_fact.supersedes_fact_instance_id = null",
+  "replacement lineage = revalidation resolution + review event + audit",
   "automatic confirmation = false",
   "TRUST_PHASE8B_SOURCE_VERIFICATION_LEDGER"
 ];
@@ -63,6 +67,12 @@ for (const [key, value] of Object.entries(evidence.frozen_boundaries)) {
 
 assert.ok(!/admin_confirm_product_fact_v1\s*\(/i.test(doc), "Phase 8A contract must not invoke final confirmation");
 assert.ok(!/(insert\s+into|update|delete\s+from)\s+public\.(product_fact|product_evidence|recommendation)/i.test(doc), "Phase 8A contract must not contain governed Production DML");
+
+assert.equal(
+  fs.existsSync(".github/workflows/trust-phase8a-revalidation-contract.yml"),
+  false,
+  "retired TRUST Phase 8A workflow must stay absent"
+);
 
 console.log(JSON.stringify({
   status: "PASS",

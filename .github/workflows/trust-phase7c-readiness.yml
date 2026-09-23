@@ -1,4 +1,5 @@
-name: TRUST Phase 7C Legacy Research Readiness
+name: TRUST Data Governance - Phase 7C Research Readiness
+run-name: "[WT:trust] TRUST Data Governance - Phase 7C Research Readiness"
 
 on:
   pull_request:
@@ -7,7 +8,6 @@ on:
       - "supabase/migrations/*trust_phase7c_*.sql"
       - "tests/fixtures/trust-phase7c-readiness/**"
       - "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7c-readiness.yml"
   push:
     branches: [main, "feat/trust-phase7c-legacy-research-readiness"]
@@ -15,10 +15,13 @@ on:
       - "supabase/migrations/*trust_phase7c_*.sql"
       - "tests/fixtures/trust-phase7c-readiness/**"
       - "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7c-readiness.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

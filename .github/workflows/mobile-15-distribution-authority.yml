@@ -1,4 +1,5 @@
 name: BEJEWELY Mobile 15 Distribution Authority
+run-name: "[WT:mobile] BEJEWELY Mobile 15 Distribution Authority"
 
 on:
   pull_request:
@@ -31,6 +32,10 @@ on:
       - ".github/workflows/mobile-15-distribution-authority.yml"
   workflow_dispatch:
     inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
       platform:
         description: Signed distribution artifact to build
         required: true

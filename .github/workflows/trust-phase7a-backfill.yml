@@ -1,4 +1,5 @@
-name: TRUST Phase 7A Legacy Backfill Preflight
+name: TRUST Data Governance - Phase 7A Backfill Preflight
+run-name: "[WT:trust] TRUST Data Governance - Phase 7A Backfill Preflight"
 
 on:
   pull_request:
@@ -7,7 +8,6 @@ on:
       - "supabase/migrations/*trust_phase7a_*.sql"
       - "tests/fixtures/trust-phase7a-backfill/**"
       - "scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7a-backfill.yml"
   push:
     branches: [main, "feat/trust-phase7a-legacy-backfill-preflight"]
@@ -15,10 +15,13 @@ on:
       - "supabase/migrations/*trust_phase7a_*.sql"
       - "tests/fixtures/trust-phase7a-backfill/**"
       - "scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7a-backfill.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

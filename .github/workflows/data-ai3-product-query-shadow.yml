@@ -1,4 +1,5 @@
-name: DATA-AI3 Product Query Shadow
+name: Product Query AI - Shadow Runtime
+run-name: "[WT:taxonomy-ai] Product Query AI - Shadow Runtime"
 
 on:
   push:
@@ -36,7 +37,11 @@ on:
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - ".github/workflows/data-ai3-product-query-shadow.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 permissions:
   contents: read
   deployments: read

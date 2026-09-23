@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const migrationPath = "supabase/migrations/20260922025843_trust_phase8e_revalidation_adjudication_v1.sql";
+const migrationPath = "supabase/migrations/20260922064829_trust_phase8e_revalidation_adjudication_v1.sql";
 const runtimePath = "tests/fixtures/trust-phase8e-revalidation/verify_trust_phase8e_revalidation_adjudication_runtime.sql";
 
 const migration = fs.readFileSync(migrationPath, "utf8");

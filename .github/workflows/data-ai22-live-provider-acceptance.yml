@@ -1,0 +1,115 @@
+name: Product Query AI - DATA-AI22 Live Provider Acceptance
+run-name: "[WT:taxonomy-ai] Product Query AI - DATA-AI22 Live Provider Acceptance"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/quality-evaluation/route.js"
+      - "lib/server/product-query-beta-quality-live-service.js"
+      - "scripts/verify-data-ai22-live-provider-acceptance.mjs"
+      - ".github/workflows/data-ai22-live-provider-acceptance.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/quality-evaluation/route.js"
+      - "lib/server/product-query-beta-quality-live-service.js"
+      - "scripts/verify-data-ai22-live-provider-acceptance.mjs"
+      - ".github/workflows/data-ai22-live-provider-acceptance.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+permissions:
+  contents: read
+  deployments: read
+  id-token: write
+
+concurrency:
+  group: data-ai22-live-provider-acceptance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: DATA-AI22 live provider acceptance contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify DATA-AI22 live acceptance boundary
+        run: node scripts/verify-data-ai22-live-provider-acceptance.mjs
+
+  production-preflight:
+    name: DATA-AI22 exact-deployment Production preflight
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - name: Checkout exact live-acceptance SHA
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.sha }}
+
+      - name: Resolve exact successful Production deployment
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=""
+          for attempt in $(seq 1 48); do
+            ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?sha=$GITHUB_SHA&per_page=100" --jq '.[] | .id' || true)"
+            for id in $ids; do
+              deployment="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id")"
+              production="$(printf '%s' "$deployment" | jq -r '.production_environment // false')"
+              environment="$(printf '%s' "$deployment" | jq -r '.environment // ""' | tr '[:upper:]' '[:lower:]')"
+              if [ "$production" != "true" ] && [ "$environment" != "production" ]; then
+                continue
+              fi
+              candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100" --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
+              if [ -n "$candidate" ]; then
+                url="${candidate%/}"
+                break
+              fi
+            done
+            if [ -n "$url" ]; then break; fi
+            sleep 5
+          done
+          test -n "$url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain Vercel trusted OIDC token
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          trusted_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")"
+          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$trusted"
+          printf 'trusted=%s\n' "$trusted" >> "$GITHUB_OUTPUT"
+
+      - name: Assert anonymous live-quality access remains closed
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(mktemp)"
+          trap 'rm -f "$output"' EXIT
+          status="$(curl --silent --show-error -o "$output" -w '%{http_code}' \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            "$DEPLOYMENT_URL/api/my/product-query-beta/quality-evaluation?batch=1")"
+          test "$status" = "401"
+          grep -Fq '"unauthorized"' "$output"
+          echo "DATA_AI22_LIVE_PRODUCTION_PREFLIGHT=PASS"

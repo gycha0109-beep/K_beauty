@@ -14,15 +14,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const servicePath = path.join(root, "lib/server/product-offer-read-service.js");
 const helperPath = path.join(root, "lib/product-offer-runtime-observability.js");
 const healthPath = path.join(root, "scripts/verify-current-main-health.mjs");
-const workflowPath = path.join(
-  root,
-  ".github/workflows/data-offer17-offer-runtime-observability.yml",
-);
-
 const serviceSource = fs.readFileSync(servicePath, "utf8");
 const helperSource = fs.readFileSync(helperPath, "utf8");
 const healthSource = fs.readFileSync(healthPath, "utf8");
-const workflowSource = fs.readFileSync(workflowPath, "utf8");
 
 assert.equal(
   PRODUCT_OFFER_RUNTIME_TELEMETRY_SCHEMA_VERSION,
@@ -123,13 +117,6 @@ assert.match(
   healthSource,
   /verify-data-offer17-offer-runtime-observability-v1\.mjs/,
 );
-assert.match(workflowSource, /Checkout exact head/);
-assert.match(workflowSource, /DATA_OFFER17_EXACT_HEAD/);
-assert.match(
-  workflowSource,
-  /node scripts\/verify-data-offer17-offer-runtime-observability-v1\.mjs/,
-);
-
 console.log(JSON.stringify({
   stage: "DATA-OFFER17",
   telemetrySchemaVersion: PRODUCT_OFFER_RUNTIME_TELEMETRY_SCHEMA_VERSION,

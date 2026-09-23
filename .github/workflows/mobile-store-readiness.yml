@@ -1,4 +1,5 @@
 name: BEJEWELY Mobile Store Readiness
+run-name: "[WT:mobile] BEJEWELY Mobile Store Readiness"
 
 on:
   pull_request:
@@ -90,6 +91,11 @@ on:
       - "scripts/verify-mobile-19a-public-support.mjs"
       - ".github/workflows/mobile-store-readiness.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}

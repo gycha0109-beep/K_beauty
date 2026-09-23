@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
-const workflow = readFileSync(".github/workflows/data-ai14-production-canary.yml", "utf8");
+const vercel = JSON.parse(readFileSync("vercel.json", "utf8"));
+const env = vercel.env && typeof vercel.env === "object" ? vercel.env : {};
 let assertions = 0;
 
 function check(condition, message) {
@@ -12,44 +13,29 @@ function check(condition, message) {
 }
 
 check(
-  workflow.includes("DATA-AI14 Historical Production Canary Guard") &&
-    workflow.includes("pull_request:") &&
-    workflow.includes('paths:\n      - "vercel.json"') &&
-    workflow.includes("workflow_dispatch:"),
-  "historical DATA-AI14 guard must protect activation-config changes and manual verification"
+  !existsSync(".github/workflows/data-ai14-production-canary.yml"),
+  "retired DATA-AI14 historical Production canary workflow must stay absent"
 );
 
-check(
-  workflow.includes("permissions:\n  contents: read") &&
-    !workflow.includes("deployments: read") &&
-    !workflow.includes("id-token: write"),
-  "historical guard must use contents-read-only permissions"
-);
+const retiredActivationKeys = [
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_ACTIVATION_ENABLED",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_CANARY_MODE",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_KILL_SWITCH",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_COHORT",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_SAMPLE_BPS",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_SAMPLE_BPS",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_ACCOUNT_HASHES",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_START_UTC",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_WINDOW_END_UTC",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_ENV_MUTATION_AUTHORIZED",
+  "BEJEWELY_PRODUCT_QUERY_PRODUCTION_RUNTIME_AUTHORIZED"
+];
 
-for (const forbidden of [
-  "DATA_AI_HOSTED_PREVIEW_ACCESS_TOKEN",
-  "Authorization: Bearer",
-  "ACTIONS_ID_TOKEN_REQUEST_TOKEN",
-  "x-vercel-trusted-oidc-idp-token",
-  "/api/my/product-query-production-canary",
-  "VERCEL_TOKEN",
-  "SUPABASE_SERVICE_ROLE",
-  "service_role"
-]) {
-  check(!workflow.includes(forbidden), `retired DATA-AI14 must not retain live credential/runtime capability: ${forbidden}`);
+for (const key of retiredActivationKeys) {
+  check(
+    !Object.prototype.hasOwnProperty.call(env, key),
+    `retired DATA-AI14 Production canary activation key must stay absent from vercel.json: ${key}`
+  );
 }
 
-check(
-  workflow.includes("BEJEWELY_PRODUCT_QUERY_PRODUCTION_APPROVED_ACCOUNT_HASHES") &&
-    workflow.includes("BEJEWELY_PRODUCT_QUERY_PRODUCTION_RUNTIME_AUTHORIZED") &&
-    workflow.includes("has($key)") &&
-    workflow.includes("DATA_AI14_HISTORICAL_CANARY=SUPERSEDED_BY_DATA_AI16"),
-  "historical guard must fail if any superseded canary activation key reappears"
-);
-
-check(
-  workflow.includes("timeout-minutes: 5"),
-  "historical guard must remain bounded below the long-CI threshold"
-);
-
-console.log(`DATA-AI14 historical Production canary guard verifier: PASS (${assertions} assertions)`);
+console.log(`DATA-AI14 historical Production canary retirement guard: PASS (${assertions} assertions; canonical current-main authority)`);

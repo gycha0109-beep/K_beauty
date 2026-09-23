@@ -245,7 +245,7 @@ includes(
 ].forEach((value) => includes(runtimeSql, value, "isolated SQL runtime verifier"));
 
 [
-  "Admin Product Current Main Integration",
+  "Admin - Product Current Main Integration",
   "npm run verify:admin-product-candidate-reviews",
   "REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-current-main-runtime",
   "--workdir \"${REVIEW_IMPORT_RUNTIME_DIR}\"",

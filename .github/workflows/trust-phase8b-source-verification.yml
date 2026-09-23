@@ -1,4 +1,5 @@
-name: TRUST Phase 8B Source Verification Ledger
+name: TRUST Data Governance - Phase 8B Source Verification Ledger
+run-name: "[WT:trust] TRUST Data Governance - Phase 8B Source Verification Ledger"
 
 on:
   pull_request:
@@ -16,7 +17,11 @@ on:
       - "scripts/verify-trust-phase8b-source-verification.mjs"
       - ".github/workflows/trust-phase8b-source-verification.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

@@ -1,4 +1,5 @@
 name: BEJEWELY Mobile 14 Auth and App Links
+run-name: "[WT:mobile] BEJEWELY Mobile 14 Auth and App Links"
 
 on:
   pull_request:
@@ -28,6 +29,11 @@ on:
       - "scripts/verify-mobile-14-auth-app-links.mjs"
       - ".github/workflows/mobile-14-auth-app-links.yml"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 permissions:
   contents: read

@@ -1,4 +1,5 @@
-name: TRUST Phase 7D Relational Fact Adoption
+name: TRUST Data Governance - Phase 7D Relational Adoption
+run-name: "[WT:trust] TRUST Data Governance - Phase 7D Relational Adoption"
 
 on:
   pull_request:
@@ -9,7 +10,6 @@ on:
       - "scripts/trust-research-worker.mjs"
       - "scripts/verify-trust-research-worker.mjs"
       - "scripts/verify-trust-phase7d-relational-adoption.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7d-relational-adoption.yml"
   push:
     branches: [main, "feat/trust-phase7d-relational-facts"]
@@ -19,10 +19,13 @@ on:
       - "scripts/trust-research-worker.mjs"
       - "scripts/verify-trust-research-worker.mjs"
       - "scripts/verify-trust-phase7d-relational-adoption.mjs"
-      - "scripts/verify-current-main-health.mjs"
       - ".github/workflows/trust-phase7d-relational-adoption.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

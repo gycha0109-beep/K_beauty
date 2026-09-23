@@ -1,0 +1,652 @@
+{
+  "schemaVersion": "bejewely-ci-workflow-responsibility-v1",
+  "generatedFromMainSha": "0a47fcb0d888ae5e60515ac42e9db58198765ba8",
+  "policy": {
+    "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
+    "workflowResponsibility": "A workflow has one primary technical responsibility and may expose multiple capability tags.",
+    "watchtowerBinding": "CI Watchtower v0.3.1 uses three producer classes: project-wide workflows stay unassigned, dedicated workflows emit a canonical static [WT:<track>] run-name, and shared technical workflows resolve attribution dynamically from explicit PR/commit/dispatch evidence.",
+    "preservation": "Existing workflow triggers, jobs, scripts, runtime probes, database harnesses, release jobs, and production probes are preserved until equivalence is proven before consolidation."
+  },
+  "allowedPrimaryResponsibilities": [
+    "global-governance",
+    "admin",
+    "product-query-ai",
+    "recommendation-admission",
+    "product-offer-runtime",
+    "catalog-taxonomy",
+    "face-lab",
+    "mobile",
+    "trust-data-governance",
+    "product-evidence",
+    "product-data-pipeline"
+  ],
+  "embeddedResponsibilities": {
+    "security": {
+      "hostWorkflow": "current-main-health.yml",
+      "mode": "canonical-static-contract-suite",
+      "scripts": [
+        "scripts/verify-analysis-rls-contract.mjs",
+        "scripts/verify-anonymous-write-grant-v2.mjs",
+        "scripts/verify-sec08-image-upload-boundary.mjs",
+        "scripts/verify-sec09-public-result-read-boundary.mjs",
+        "scripts/verify-sec10-security-headers.mjs",
+        "scripts/check-sec11-site-origin-normalization.mjs"
+      ]
+    },
+    "siteE2E": {
+      "hostWorkflow": "current-main-health.yml",
+      "mode": "contract-in-canonical-ci; hosted runtime harness preserved separately",
+      "scripts": [
+        "scripts/verify-my-adversarial-e2e-contract.mjs",
+        "scripts/run-my-adversarial-e2e.mjs",
+        "scripts/run-premium-browser-journey.mjs",
+        "playwright.config.ts"
+      ]
+    },
+    "backend": {
+      "hostWorkflow": "distributed",
+      "mode": "cross-cutting responsibility across admin, product-query, trust, offer and current-main health"
+    },
+    "database": {
+      "hostWorkflow": "distributed",
+      "mode": "Supabase/RLS/migration/runtime checks remain distributed across trust, taxonomy, product-data and security responsibilities"
+    }
+  },
+  "workflows": {
+    "admin-access-foundation.yml": {
+      "primaryResponsibility": "admin",
+      "capabilities": [
+        "backend",
+        "integration",
+        "security"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "admin-product-current-main-integration.yml": {
+      "primaryResponsibility": "admin",
+      "capabilities": [
+        "backend",
+        "integration",
+        "security"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "current-main-health.yml": {
+      "primaryResponsibility": "global-governance",
+      "capabilities": [
+        "ai",
+        "backend",
+        "database",
+        "e2e-contract",
+        "global",
+        "repository-hygiene",
+        "security"
+      ],
+      "watchtowerTrackBinding": "unassigned-by-design",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai16-production-canary-closure.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "production-safety",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai18-authenticated-beta-runtime.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai20-authenticated-beta-controlled-activation.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "production-safety",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai21-limited-beta-evidence-closure.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "recommendation"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai22-live-provider-acceptance.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "production-safety",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai3-product-query-shadow.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai4-provider-shadow.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai5-activation-readiness.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai7-production-fail-closed.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "production-safety",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-offer17-controlled-offer-rpc-diagnostic.yml": {
+      "primaryResponsibility": "product-offer-runtime",
+      "capabilities": [
+        "backend",
+        "commerce-data",
+        "database",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-taxonomy13-catalog-only-candidate-approval.yml": {
+      "primaryResponsibility": "catalog-taxonomy",
+      "capabilities": [
+        "database",
+        "pipeline",
+        "recommendation",
+        "taxonomy"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-taxonomy15-catalog-only-trust-intake.yml": {
+      "primaryResponsibility": "catalog-taxonomy",
+      "capabilities": [
+        "database",
+        "pipeline",
+        "recommendation",
+        "taxonomy"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "hwahae-review-capture-provenance-non-main-pr.yml": {
+      "primaryResponsibility": "product-data-pipeline",
+      "capabilities": [
+        "catalog",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-13-store-release-preflight.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-14-auth-app-links.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "auth",
+        "deep-link",
+        "mobile"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-15-distribution-authority.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-20a-store-capture.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-20b-store-capture.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-20c-feature-graphic.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-20d-app-store-screenshots.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-ci.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-ios-shell.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-native-shell.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-store-readiness.yml": {
+      "primaryResponsibility": "mobile",
+      "capabilities": [
+        "mobile",
+        "release-or-native"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "pie-prospective.yml": {
+      "primaryResponsibility": "global-governance",
+      "capabilities": [
+        "global",
+        "policy",
+        "prospective-shadow"
+      ],
+      "watchtowerTrackBinding": "unassigned-by-design",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "product-identity-key-repair-confirm.yml": {
+      "primaryResponsibility": "product-data-pipeline",
+      "capabilities": [
+        "catalog",
+        "database",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "product-offers.yml": {
+      "primaryResponsibility": "product-data-pipeline",
+      "capabilities": [
+        "catalog",
+        "database",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "product-source-bindings.yml": {
+      "primaryResponsibility": "product-data-pipeline",
+      "capabilities": [
+        "catalog",
+        "database",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase1-intake-foundation.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase2-subject-resolution.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase3-research-worker.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase4-controlled-evidence-adoption.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase5b-subject-registration.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase6a-reentry.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase6b-reentry.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase7a-backfill.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase7b-backfill.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase7c-phase4-compat.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase7c-readiness.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase7d-relational-adoption.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase8b-source-verification.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase8c-revalidation.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase8d-revalidation.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase8e-revalidation-adjudication.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase8f-changed-semantic-replacement.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "trust-phase8g-source-verification.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "backend",
+        "database",
+        "evidence-governance",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "v21-admission-g3a-pf-authority-read.yml": {
+      "primaryResponsibility": "recommendation-admission",
+      "capabilities": [
+        "backend",
+        "catalog-taxonomy",
+        "product-fact-authority",
+        "recommendation",
+        "runtime-probe"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    }
+  },
+  "watchtowerProject": {
+    "name": "비주얼리",
+    "key": "visualy",
+    "repository": "gycha0109-beep/K_beauty",
+    "canonicalTrackKeys": [
+      "ops",
+      "taxonomy-ai",
+      "trust",
+      "face-research",
+      "full-report",
+      "mobile"
+    ],
+    "projectWideWorkflows": [
+      "current-main-health.yml",
+      "pie-prospective.yml"
+    ],
+    "producerContract": "dedicated-static-run-name; shared-dynamic-marker; project-wide-unassigned"
+  }
+}

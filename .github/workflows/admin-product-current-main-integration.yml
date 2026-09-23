@@ -1,4 +1,4 @@
-name: Admin Product Current Main Integration
+name: Admin - Product Current Main Integration
 
 on:
   pull_request:
@@ -40,7 +40,11 @@ on:
       - "crawler/package.json"
       - ".github/workflows/admin-product-current-main-integration.yml"
   workflow_dispatch:
-
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true

@@ -36,6 +36,21 @@ assert.deepEqual(
   `historical TRUST-P workflows must stay retired: ${historicalTrustWorkflows.join(", ")}`,
 );
 
+const retiredTrustDataGovernanceWorkflows = new Set([
+  "trust-phase5-admin-queue.yml",
+  "trust-phase5c-fation-formulation-conflict.yml",
+  "trust-phase8a-revalidation-contract.yml",
+]);
+
+const presentRetiredTrustDataGovernanceWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredTrustDataGovernanceWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredTrustDataGovernanceWorkflows,
+  [],
+  `retired TRUST Data Governance workflows must stay retired: ${presentRetiredTrustDataGovernanceWorkflows.join(", ")}`,
+);
+
 const dataOfferWorkflows = readdirSync(".github/workflows")
   .filter((name) => /^data-offer\d/i.test(name) && /\.ya?ml$/i.test(name))
   .sort();
@@ -43,7 +58,6 @@ assert.deepEqual(
   dataOfferWorkflows,
   [
     "data-offer17-controlled-offer-rpc-diagnostic.yml",
-    "data-offer17-offer-runtime-observability.yml",
   ],
   `DATA-OFFER workflow topology drift: ${dataOfferWorkflows.join(", ")}`,
 );
@@ -66,7 +80,6 @@ const taxonomyWorkflows = readdirSync(".github/workflows")
 assert.deepEqual(
   taxonomyWorkflows,
   [
-    "data-taxonomy-ci.yml",
     "data-taxonomy13-catalog-only-candidate-approval.yml",
     "data-taxonomy15-catalog-only-trust-intake.yml",
   ],
@@ -78,12 +91,208 @@ const faceEvalWorkflows = readdirSync(".github/workflows")
   .sort();
 assert.deepEqual(
   faceEvalWorkflows,
-  [
-    "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-    "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
-  ],
+  [],
   `FACE-EVAL workflow topology drift: ${faceEvalWorkflows.join(", ")}`,
 );
+
+const retiredProductEvidenceWorkflows = new Set([
+  "free-result-v2-product-evidence-ui.yml",
+  "product-evidence-presentation-contract.yml",
+  "product-evidence-presentation-provider.yml",
+  "product-evidence-review-observation-readiness.yml",
+]);
+
+const retiredFaceLabEvaluationStaticWorkflows = new Set([
+  "face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
+  "face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
+]);
+const presentRetiredFaceLabEvaluationStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredFaceLabEvaluationStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredFaceLabEvaluationStaticWorkflows,
+  [],
+  `retired Face Lab evaluation static workflows must stay retired: ${presentRetiredFaceLabEvaluationStaticWorkflows.join(", ")}`,
+);
+assertContains(".github/workflows/current-main-health.yml", [
+  "Attest frozen Face Lab evaluation authorities",
+  "run: node scripts/verify-face-lab-frozen-evaluation-authorities.mjs",
+]);
+assertContains("scripts/verify-face-lab-frozen-evaluation-authorities.mjs", [
+  'contractVersion: "face-lab-frozen-evaluation-authorities-v1"',
+  "koreanReviewUi:",
+  "hostedIntake:",
+  '"merge-base", "--is-ancestor"',
+]);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Face Lab Korean offline review UI"',
+  'run("Face Lab home transfer builder syntax"',
+  'run("Face Lab home transfer verifier syntax"',
+  'run("Face Lab hosted set authority"',
+  'run("Face Lab hosted response contract"',
+  'run("Face Lab hosted UI security boundary"',
+  'run("Face Lab target-axis contract"',
+  'run("Face Lab independent Human cue protocol"',
+  'run("Face Lab archetype scoring contract"',
+  'run("Face Lab Human evaluation contract"',
+  'run("Face Lab synthetic evaluation workspace"',
+  'run("Architecture guard"',
+]);
+
+const retiredFaceLabNeutralStageStaticWorkflows = new Set([
+  "face-lab-neutral-face-count-shared-stage-v1.yml",
+]);
+const presentRetiredFaceLabNeutralStageStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredFaceLabNeutralStageStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredFaceLabNeutralStageStaticWorkflows,
+  [],
+  `retired Face Lab neutral-stage static workflows must stay retired: ${presentRetiredFaceLabNeutralStageStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Face Lab hosted set authority"',
+  'run("Face Lab hosted response contract"',
+  'run("Face Lab hosted UI security boundary"',
+  'run("Face Lab neutral face-count shared stage"',
+  'run("Face Lab neutral face-count contract syntax"',
+  'run("Face Lab neutral face-count intake syntax"',
+  'run("Face Lab neutral face-count review HTML syntax"',
+  'run("Face Lab neutral review submit route syntax"',
+  'run("Face Lab review submit route syntax"',
+  'run("Face Lab review route syntax"',
+  'run("Face Lab target-axis contract"',
+  'run("Face Lab independent Human cue protocol"',
+  'run("Face Lab archetype scoring contract"',
+  'run("Face Lab Human evaluation contract"',
+  'run("Face Lab synthetic evaluation workspace"',
+  'run("Architecture guard"',
+]);
+
+const retiredProductOfferObservabilityStaticWorkflows = new Set([
+  "data-offer17-offer-runtime-observability.yml",
+]);
+const presentRetiredProductOfferObservabilityStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredProductOfferObservabilityStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredProductOfferObservabilityStaticWorkflows,
+  [],
+  `retired Product Offer observability static workflows must stay retired: ${presentRetiredProductOfferObservabilityStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-OFFER17 Offer runtime observability"',
+  'run("DATA-OFFER17 observability verifier syntax"',
+  'run("DATA-OFFER17 observability module syntax"',
+  'run("DATA-OFFER17 offer read service syntax"',
+]);
+
+const retiredFaceLabOperatorStaticWorkflows = new Set([
+  "face-lab-neutral-review-operator-v1.yml",
+  "face-lab-neutral-review-operator-vercel-cli-compat-v1.yml",
+]);
+const presentRetiredFaceLabOperatorStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredFaceLabOperatorStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredFaceLabOperatorStaticWorkflows,
+  [],
+  `retired Face Lab operator static workflows must stay retired: ${presentRetiredFaceLabOperatorStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Face Lab neutral review operator safety"',
+  'run("Face Lab neutral review operator syntax"',
+  'run("Face Lab neutral review operator Vercel compatibility launcher syntax"',
+  'run("Face Lab neutral review operator Vercel compatibility verifier syntax"',
+  'run("Face Lab neutral review operator Vercel CLI compatibility"',
+]);
+
+const retiredCatalogTaxonomyStaticWorkflows = new Set([
+  "data-taxonomy-ci.yml",
+]);
+const presentRetiredCatalogTaxonomyStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredCatalogTaxonomyStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredCatalogTaxonomyStaticWorkflows,
+  [],
+  `retired Catalog Taxonomy static workflows must stay retired: ${presentRetiredCatalogTaxonomyStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-TAXONOMY1 shadow catalog taxonomy foundation"',
+  'run("DATA-TAXONOMY2 candidate manual classification"',
+  'run("DATA-TAXONOMY4 recommendation shadow parity"',
+  'run("DATA-TAXONOMY5 production recommendation parity foundation"',
+  'run("DATA-TAXONOMY5 production recommendation parity runtime"',
+  'run("DATA-TAXONOMY15 recommendation parity catalog-only v2"',
+  'run("DATA-TAXONOMY6 product identity decoupling preflight"',
+  'run("DATA-TAXONOMY7 legacy projection compatibility"',
+  'run("DATA-TAXONOMY8 nullable legacy category projection"',
+  'run("DATA-TAXONOMY10 catalog-only product promotion eligibility"',
+  'run("DATA-TAXONOMY11 catalog-only transactional adoption"',
+  'run("Catalog taxonomy shadow reader syntax"',
+  'run("Catalog taxonomy shadow replay syntax"',
+  'run("Catalog taxonomy shadow cardinality syntax"',
+  'run("Catalog taxonomy replay route syntax"',
+]);
+
+const retiredProductDataPipelineStaticWorkflows = new Set([
+  "hwahae-review-capture-provenance.yml",
+  "legacy-offer-classifier.yml",
+  "product-identity-resolution.yml",
+]);
+const presentRetiredProductDataPipelineStaticWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredProductDataPipelineStaticWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredProductDataPipelineStaticWorkflows,
+  [],
+  `retired Product Data Pipeline static workflows must stay retired: ${presentRetiredProductDataPipelineStaticWorkflows.join(", ")}`,
+);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Legacy offer classifier"',
+  'run("Legacy offer migration manifest and dry-run"',
+  'run("Product identity resolver"',
+  'run("Product identity adoption plan"',
+  'run("Product identity key repair plan"',
+  'run("Hwahae review capture provenance"',
+]);
+const presentRetiredProductEvidenceWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredProductEvidenceWorkflows.has(name))
+  .sort();
+assert.deepEqual(
+  presentRetiredProductEvidenceWorkflows,
+  [],
+  `retired Product Evidence workflows must stay retired: ${presentRetiredProductEvidenceWorkflows.join(", ")}`,
+);
+
+const retiredProductQueryAIWorkflows = new Set([
+  "data-ai1-product-query-intent.yml",
+  "data-ai2-product-query-execution.yml",
+  "data-ai9-hosted-preview-acceptance.yml",
+  "data-ai14-production-canary.yml",
+  "data-ai17-authenticated-limited-beta-design.yml",
+  "data-ai19-authenticated-beta-activation-preflight.yml",
+  "data-ai22-product-query-quality-evaluation.yml",
+]);
+
+const presentRetiredProductQueryAIWorkflows = readdirSync(".github/workflows")
+  .filter((name) => retiredProductQueryAIWorkflows.has(name))
+  .sort();
+
+assert.deepEqual(
+  presentRetiredProductQueryAIWorkflows,
+  [],
+  `retired Product Query AI workflows must stay retired: ${presentRetiredProductQueryAIWorkflows.join(", ")}`,
+);
+
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-AI1 product-query intent boundary"',
+  'run("DATA-AI2 deterministic product-query execution"',
+  'run("DATA-AI22 product-query quality evaluation"',
+  'run("DATA-AI22 product-query quality canonical baseline"',
+  '"scripts/run-data-ai22-product-query-quality-evaluation.mjs", "--expected-baseline"',
+]);
 
 const retiredMobileStoreStages = new Set([
   "mobile-16a-privacy-account-deletion.yml",
@@ -194,9 +403,7 @@ const trustPhaseWorkflows = [
   ".github/workflows/trust-phase2-subject-resolution.yml",
   ".github/workflows/trust-phase3-research-worker.yml",
   ".github/workflows/trust-phase4-controlled-evidence-adoption.yml",
-  ".github/workflows/trust-phase5-admin-queue.yml",
   ".github/workflows/trust-phase5b-subject-registration.yml",
-  ".github/workflows/trust-phase5c-fation-formulation-conflict.yml",
   ".github/workflows/trust-phase6a-reentry.yml",
 ];
 for (const path of trustPhaseWorkflows) {
@@ -206,12 +413,7 @@ for (const path of trustPhaseWorkflows) {
 
 const modernizedNodeWorkflows = [
   ".github/workflows/admin-access-foundation.yml",
-  ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-  ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
-  ".github/workflows/face-lab-neutral-review-operator-v1.yml",
-  ".github/workflows/legacy-offer-classifier.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
-  ".github/workflows/product-identity-resolution.yml",
   ".github/workflows/product-offers.yml",
   ".github/workflows/product-source-bindings.yml",
 ];
@@ -219,9 +421,16 @@ for (const path of modernizedNodeWorkflows) {
   assertContains(path, ["actions/checkout@v7", "actions/setup-node@v7", "node-version: 22"]);
   assertNotContains(path, ["actions/checkout@v4", "actions/setup-node@v4", "node-version: 20"]);
 }
-for (const path of trustPhaseWorkflows.filter((path) => !path.includes("phase5c-"))) {
+for (const path of trustPhaseWorkflows) {
   assertNotContains(path, ["npm run architecture:guard", "npm run build"]);
 }
+assertContains("scripts/verify-current-main-health.mjs", [
+  'run("Product Evidence presentation contract"',
+  'run("Product Evidence presentation provider"',
+  'run("Product Evidence Free Result V2 UI"',
+  'run("Product Evidence review observation readiness"',
+]);
+
 assertContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 1 intake contract"',
   'run("TRUST Phase 2 subject resolution contract"',
@@ -231,11 +440,13 @@ assertContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 5B subject registration contract"',
   'run("TRUST Phase 5C formulation conflict HOLD"',
   'run("TRUST Phase 6A reentry contract"',
+  'run("TRUST Phase 8A revalidation contract"',
 ]);
-assertContains(".github/workflows/trust-phase5c-fation-formulation-conflict.yml", [
-  "concurrency:",
-  "cancel-in-progress: true",
+assertContains(".github/workflows/current-main-health.yml", [
+  "Check exact-head diff hygiene",
+  'git diff --check "${BASE_SHA}...${HEAD_SHA}"',
 ]);
+
 assertNotContains(".github/workflows/admin-product-current-main-integration.yml", [
   "node-version: 20",
 ]);
@@ -307,21 +518,8 @@ assertContains(".github/workflows/mobile-store-readiness.yml", [
 for (const path of [
   ".github/workflows/admin-access-foundation.yml",
   ".github/workflows/admin-product-current-main-integration.yml",
-  ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-  ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
 ]) {
   assertNotContains(path, rootPackageTriggers);
-}
-
-for (const path of [
-  ".github/workflows/data-taxonomy-ci.yml",
-  ".github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml",
-  ".github/workflows/face-eval-cx1g-d2d-xp-hosted-intake-v1.yml",
-]) {
-  assertContains(path, [
-    "concurrency:",
-    "cancel-in-progress:",
-  ]);
 }
 
 for (const path of [
@@ -370,10 +568,7 @@ const heavyRuntimeConcurrencyWorkflows = [
   ".github/workflows/trust-phase7a-backfill.yml",
   ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml",
   ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml",
-  ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml",
-  ".github/workflows/legacy-offer-classifier.yml",
   ".github/workflows/product-identity-key-repair-confirm.yml",
-  ".github/workflows/product-identity-resolution.yml",
   ".github/workflows/product-offers.yml",
   ".github/workflows/product-source-bindings.yml",
 ];
@@ -426,10 +621,12 @@ assert(
 console.log(JSON.stringify({
   status: "PASS",
   historical_trust_p_workflows: 0,
+  retired_trust_data_governance_workflows: 0,
   historical_data_offer_workflows: 0,
   operational_data_offer_workflows: 2,
   data_taxonomy_workflows: 3,
   face_eval_workflows: 2,
+  retired_product_query_ai_workflows: 0,
   retired_mobile_store_stage_workflows: 0,
   retired_mobile_app_stage_workflows: 0,
   heavy_mobile_root_package_triggers: 0,
@@ -452,3 +649,268 @@ console.log(JSON.stringify({
   heavy_runtime_concurrency_guarded: true,
   ci_architecture_guard_diff_aware: true,
 }, null, 2));
+
+
+/* CI_RESPONSIBILITY_TRIGGER_GUARD */
+const responsibilityScopedWorkflowPaths = [
+  ".github/workflows/data-ai21-limited-beta-evidence-closure.yml",
+  ".github/workflows/data-ai22-live-provider-acceptance.yml",
+  ".github/workflows/trust-phase6b-reentry.yml",
+  ".github/workflows/trust-phase7a-backfill.yml",
+  ".github/workflows/trust-phase7b-backfill.yml",
+  ".github/workflows/trust-phase7c-phase4-compat.yml",
+  ".github/workflows/trust-phase7c-readiness.yml",
+  ".github/workflows/trust-phase7d-relational-adoption.yml",
+  ".github/workflows/trust-phase8g-source-verification.yml",
+];
+
+for (const relativePath of responsibilityScopedWorkflowPaths) {
+  const source = read(relativePath);
+  assert.ok(
+    !source.includes('      - "scripts/verify-current-main-health.mjs"'),
+    `${relativePath}: phase/runtime workflow must not trigger on canonical orchestrator changes`
+  );
+  assert.ok(
+    source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+  );
+}
+
+
+/* TRUST_RESPONSIBILITY_NAMING_GUARD */
+const trustResponsibilityWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^trust-phase/i.test(name) && /\.ya?ml$/i.test(name))
+  .sort();
+
+for (const name of trustResponsibilityWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: TRUST Data Governance - "),
+    `${relativePath}: TRUST workflow display name must expose TRUST Data Governance responsibility`
+  );
+  if (source.includes("  workflow_dispatch:")) {
+    assert.ok(
+      source.includes("watchtower_track:"),
+      `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+    );
+  }
+}
+
+
+/* PRODUCT_QUERY_AI_RESPONSIBILITY_NAMING_GUARD */
+const productQueryAIWorkflows = readdirSync(".github/workflows")
+  .filter((name) => /^data-ai\d/i.test(name) && /\.ya?ml$/i.test(name))
+  .sort();
+
+for (const name of productQueryAIWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: Product Query AI - "),
+    `${relativePath}: DATA-AI workflow display name must expose Product Query AI responsibility`
+  );
+  if (source.includes("  workflow_dispatch:")) {
+    assert.ok(
+      source.includes("watchtower_track:"),
+      `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+    );
+  }
+}
+
+assert.ok(
+  read(".github/workflows/v21-admission-g3a-pf-authority-read.yml")
+    .startsWith("name: Recommendation Admission - "),
+  "v21-admission-g3a-pf-authority-read.yml must expose Recommendation Admission responsibility"
+);
+
+
+/* DATA_RESPONSIBILITY_NAMING_GUARD */
+const responsibilityNameGroups = [
+  {
+    names: [
+      "data-offer17-controlled-offer-rpc-diagnostic.yml",
+    ],
+    prefix: "name: Product Offer Runtime - ",
+  },
+  {
+    names: [
+      "data-taxonomy13-catalog-only-candidate-approval.yml",
+      "data-taxonomy15-catalog-only-trust-intake.yml",
+    ],
+    prefix: "name: Catalog Taxonomy - ",
+  },
+  {
+    names: [
+      "hwahae-review-capture-provenance-non-main-pr.yml",
+      "product-identity-key-repair-confirm.yml",
+      "product-offers.yml",
+      "product-source-bindings.yml",
+    ],
+    prefix: "name: Product Data Pipeline - ",
+  },
+];
+
+for (const group of responsibilityNameGroups) {
+  for (const name of group.names) {
+    const relativePath = `.github/workflows/${name}`;
+    const source = read(relativePath);
+    assert.ok(
+      source.startsWith(group.prefix),
+      `${relativePath}: workflow display name must expose its technical responsibility`
+    );
+    if (source.includes("  workflow_dispatch:")) {
+      assert.ok(
+        source.includes("watchtower_track:"),
+        `${relativePath}: workflow_dispatch must expose optional watchtower_track`
+      );
+    }
+  }
+}
+
+
+/* HWAHAE_NON_MAIN_PR_COVERAGE_GUARD */
+const hwahaeNonMainPrGuard = read(".github/workflows/hwahae-review-capture-provenance-non-main-pr.yml");
+assert.ok(
+  hwahaeNonMainPrGuard.includes("  pull_request:") &&
+    hwahaeNonMainPrGuard.includes("    branches-ignore:") &&
+    hwahaeNonMainPrGuard.includes("      - main") &&
+    hwahaeNonMainPrGuard.includes("node scripts/verify-hwahae-review-capture-provenance.mjs"),
+  "Hwahae provenance must retain exact verifier coverage for non-main pull requests"
+);
+
+
+/* FACE_LAB_RESPONSIBILITY_NAMING_GUARD */
+const faceLabResponsibilityWorkflows = [];
+
+for (const name of faceLabResponsibilityWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: Face Lab - "),
+    `${relativePath}: workflow display name must expose Face Lab responsibility`,
+  );
+  assert.ok(
+    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
+  );
+}
+
+
+/* ADMIN_RESPONSIBILITY_NAMING_GUARD */
+const adminResponsibilityWorkflows = [
+  "admin-access-foundation.yml",
+  "admin-product-current-main-integration.yml",
+];
+
+for (const name of adminResponsibilityWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.startsWith("name: Admin - "),
+    `${relativePath}: workflow display name must expose Admin responsibility`,
+  );
+  assert.ok(
+    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
+  );
+}
+
+/* MOBILE_WATCHTOWER_TRACK_GUARD */
+const mobileWatchtowerTrackWorkflows = [
+  "mobile-13-store-release-preflight.yml",
+  "mobile-14-auth-app-links.yml",
+  "mobile-15-distribution-authority.yml",
+  "mobile-20a-store-capture.yml",
+  "mobile-20b-store-capture.yml",
+  "mobile-20c-feature-graphic.yml",
+  "mobile-20d-app-store-screenshots.yml",
+  "mobile-ci.yml",
+  "mobile-ios-shell.yml",
+  "mobile-native-shell.yml",
+  "mobile-store-readiness.yml",
+];
+
+for (const name of mobileWatchtowerTrackWorkflows) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    source.includes("  workflow_dispatch:") && source.includes("watchtower_track:"),
+    `${relativePath}: workflow_dispatch must expose optional watchtower_track`,
+  );
+}
+
+/* WATCHTOWER_V031_PRODUCER_CONTRACT_GUARD */
+const watchtowerStaticTrackGroups = [
+  {
+    track: "taxonomy-ai",
+    names: [
+      "data-ai3-product-query-shadow.yml",
+      "data-ai4-provider-shadow.yml",
+      "data-ai5-activation-readiness.yml",
+      "data-ai7-production-fail-closed.yml",
+      "data-ai16-production-canary-closure.yml",
+      "data-ai18-authenticated-beta-runtime.yml",
+      "data-ai20-authenticated-beta-controlled-activation.yml",
+      "data-ai21-limited-beta-evidence-closure.yml",
+      "data-ai22-live-provider-acceptance.yml",
+      "data-taxonomy13-catalog-only-candidate-approval.yml",
+      "data-taxonomy15-catalog-only-trust-intake.yml",
+    ],
+  },
+  {
+    track: "trust",
+    names: trustResponsibilityWorkflows,
+  },
+  {
+    track: "mobile",
+    names: mobileWatchtowerTrackWorkflows,
+  },
+];
+
+for (const group of watchtowerStaticTrackGroups) {
+  for (const name of group.names) {
+    const relativePath = `.github/workflows/${name}`;
+    const source = read(relativePath);
+    const displayName = source.match(/^name:\s*(.+)$/m)?.[1]?.replace(/^["']|["']$/g, "");
+    assert.ok(displayName, `${relativePath}: workflow display name is required`);
+    assert.ok(
+      source.includes(`run-name: "[WT:${group.track}] ${displayName}"`),
+      `${relativePath}: dedicated workflow must expose canonical [WT:${group.track}] run-name`,
+    );
+  }
+}
+
+const watchtowerProjectWideWorkflows = [
+  "current-main-health.yml",
+  "pie-prospective.yml",
+];
+
+const watchtowerSharedWorkflows = [
+  "admin-access-foundation.yml",
+  "admin-product-current-main-integration.yml",
+  "data-offer17-controlled-offer-rpc-diagnostic.yml",
+  "hwahae-review-capture-provenance-non-main-pr.yml",
+  "product-identity-key-repair-confirm.yml",
+  "product-offers.yml",
+  "product-source-bindings.yml",
+  "v21-admission-g3a-pf-authority-read.yml",
+];
+
+for (const name of [...watchtowerProjectWideWorkflows, ...watchtowerSharedWorkflows]) {
+  const relativePath = `.github/workflows/${name}`;
+  const source = read(relativePath);
+  assert.ok(
+    !/^run-name:\s*["']?\[WT:/m.test(source),
+    `${relativePath}: project-wide/shared workflow must not be statically pinned to a Watchtower track`,
+  );
+}
+
+const legacyWatchtowerTrackKey = "taxonomy" + "&AI";
+for (const name of readdirSync(".github/workflows").filter((entry) => /\.ya?ml$/i.test(entry))) {
+  const relativePath = `.github/workflows/${name}`;
+  assert.ok(
+    !read(relativePath).includes(legacyWatchtowerTrackKey),
+    `${relativePath}: legacy taxonomy Track Key must not appear in live workflow producer config`,
+  );
+}

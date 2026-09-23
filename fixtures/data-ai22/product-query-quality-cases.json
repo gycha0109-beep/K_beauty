@@ -1,0 +1,1616 @@
+{
+  "corpusVersion": "data-ai22-product-query-quality-corpus-v1",
+  "phase": "DATA-AI22",
+  "provenance": "synthetic_fixed_fixtures",
+  "containsUserData": false,
+  "containsAccountData": false,
+  "intendedUse": "provider intent evaluation and downstream deterministic contract evaluation",
+  "cases": [
+    {
+      "id": "DA22-WC-01",
+      "kind": "paraphrase",
+      "paraphraseCluster": "WC01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "white_cast_hate"
+      ],
+      "query": "백탁 없는 선크림 추천해줘",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": true,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "sunscreen_intent",
+        "white_cast_hate"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "white_cast_hate"
+        ]
+      }
+    },
+    {
+      "id": "DA22-WC-02",
+      "kind": "paraphrase",
+      "paraphraseCluster": "WC01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "white_cast_hate"
+      ],
+      "query": "얼굴이 하얗게 뜨지 않는 자외선차단제",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": true,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "sunscreen_intent",
+        "white_cast_hate"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "white_cast_hate"
+        ]
+      }
+    },
+    {
+      "id": "DA22-WC-03",
+      "kind": "paraphrase",
+      "paraphraseCluster": "WC01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "white_cast_hate"
+      ],
+      "query": "white cast 없는 sunscreen",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": true,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "sunscreen_intent",
+        "white_cast_hate"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "white_cast_hate"
+        ]
+      }
+    },
+    {
+      "id": "DA22-EYE-01",
+      "kind": "paraphrase",
+      "paraphraseCluster": "EYE01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "eye_sensitive"
+      ],
+      "query": "눈시림 적은 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": true,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "eye_sensitive"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "eye_sensitive"
+        ]
+      }
+    },
+    {
+      "id": "DA22-EYE-02",
+      "kind": "paraphrase",
+      "paraphraseCluster": "EYE01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "eye_sensitive"
+      ],
+      "query": "눈이 예민해서 눈 따갑지 않은 자외선차단제 찾고 있어",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": true,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "eye_sensitive"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "eye_sensitive"
+        ]
+      }
+    },
+    {
+      "id": "DA22-EYE-03",
+      "kind": "paraphrase",
+      "paraphraseCluster": "EYE01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "eye_sensitive"
+      ],
+      "query": "sunscreen for sensitive eyes",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": true,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "eye_sensitive"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "eye_sensitive"
+        ]
+      }
+    },
+    {
+      "id": "DA22-MAKEUP-01",
+      "kind": "paraphrase",
+      "paraphraseCluster": "MAKEUP01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "makeup_use"
+      ],
+      "query": "화장 전에 쓰기 좋은 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": true,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "makeup_use"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "makeup_use"
+        ]
+      }
+    },
+    {
+      "id": "DA22-MAKEUP-02",
+      "kind": "paraphrase",
+      "paraphraseCluster": "MAKEUP01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "makeup_use"
+      ],
+      "query": "메이크업 밑에 바를 자외선차단제",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": true,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "makeup_use"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "makeup_use"
+        ]
+      }
+    },
+    {
+      "id": "DA22-MAKEUP-03",
+      "kind": "paraphrase",
+      "paraphraseCluster": "MAKEUP01",
+      "clusterFields": [
+        "category",
+        "sunscreen_intent",
+        "makeup_use"
+      ],
+      "query": "sunscreen to wear under makeup",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": true,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "makeup_use"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "makeup_use"
+        ]
+      }
+    },
+    {
+      "id": "DA22-OILY-01",
+      "kind": "paraphrase",
+      "paraphraseCluster": "OILY01",
+      "clusterFields": [
+        "category",
+        "skin_type",
+        "sunscreen_intent"
+      ],
+      "query": "지성 피부용 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "oily",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type"
+        ]
+      }
+    },
+    {
+      "id": "DA22-OILY-02",
+      "kind": "paraphrase",
+      "paraphraseCluster": "OILY01",
+      "clusterFields": [
+        "category",
+        "skin_type",
+        "sunscreen_intent"
+      ],
+      "query": "기름지는 피부에 맞는 자외선차단제",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "oily",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type"
+        ]
+      }
+    },
+    {
+      "id": "DA22-OILY-03",
+      "kind": "paraphrase",
+      "paraphraseCluster": "OILY01",
+      "clusterFields": [
+        "category",
+        "skin_type",
+        "sunscreen_intent"
+      ],
+      "query": "sunscreen for oily skin",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "oily",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type"
+        ]
+      }
+    },
+    {
+      "id": "DA22-SENS-01",
+      "kind": "paraphrase",
+      "paraphraseCluster": "SENSITIVE01",
+      "clusterFields": [
+        "category",
+        "skin_type",
+        "sunscreen_intent"
+      ],
+      "query": "민감 피부용 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "sensitive",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type"
+        ]
+      }
+    },
+    {
+      "id": "DA22-SENS-02",
+      "kind": "paraphrase",
+      "paraphraseCluster": "SENSITIVE01",
+      "clusterFields": [
+        "category",
+        "skin_type",
+        "sunscreen_intent"
+      ],
+      "query": "피부가 민감한 편인데 쓸 자외선차단제",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "sensitive",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type"
+        ]
+      }
+    },
+    {
+      "id": "DA22-SENS-03",
+      "kind": "paraphrase",
+      "paraphraseCluster": "SENSITIVE01",
+      "clusterFields": [
+        "category",
+        "skin_type",
+        "sunscreen_intent"
+      ],
+      "query": "sunscreen for sensitive skin",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "sensitive",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type"
+        ]
+      }
+    },
+    {
+      "id": "DA22-COM-01",
+      "kind": "compound",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "지성인데 백탁 없고 끈적임 적은 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "oily",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": "sticky",
+        "sunscreen_intent": true,
+        "white_cast_hate": true,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type",
+        "disliked_feel",
+        "white_cast_hate"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type",
+          "disliked_feel",
+          "white_cast_hate"
+        ]
+      }
+    },
+    {
+      "id": "DA22-COM-02",
+      "kind": "compound",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "민감 피부인데 화장 전에 쓰고 밀림 적은 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "sensitive",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": true,
+        "outdoor_exposure": null,
+        "unresolved_terms": [
+          "low pilling"
+        ],
+        "confidence": "medium"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type",
+        "makeup_use"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "partial",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type",
+          "makeup_use"
+        ]
+      },
+      "requiresUnresolvedTerms": true
+    },
+    {
+      "id": "DA22-COM-03",
+      "kind": "compound",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "건성용 크림인데 너무 무거운 느낌은 싫어",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "moisturizer_cream",
+        "skin_type": "dry",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": "cream",
+        "disliked_feel": "heavy",
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type",
+        "texture",
+        "disliked_feel"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "moisturizer_cream",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type",
+          "texture",
+          "disliked_feel"
+        ]
+      }
+    },
+    {
+      "id": "DA22-COM-04",
+      "kind": "compound",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "복합성 피부에 젤 타입이고 끈적이지 않는 보습제",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "moisturizer_gel",
+        "skin_type": "combination",
+        "concerns": [],
+        "sensitivity": null,
+        "texture": "gel",
+        "disliked_feel": "sticky",
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type",
+        "texture",
+        "disliked_feel"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "moisturizer_gel",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type",
+          "texture",
+          "disliked_feel"
+        ]
+      }
+    },
+    {
+      "id": "DA22-COM-05",
+      "kind": "compound",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "톤업은 필요 없고 눈이 예민한 사람용 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": false,
+        "eye_sensitive": true,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "tone_up_wanted",
+        "eye_sensitive"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "tone_up_wanted",
+          "eye_sensitive"
+        ]
+      }
+    },
+    {
+      "id": "DA22-COM-06",
+      "kind": "compound",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "지성이고 유분이 고민이라 야외에서 쓸 건데 번들거리는 건 싫은 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": "oily",
+        "concerns": [
+          "oiliness"
+        ],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": "greasy",
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": true,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "disliked_feel",
+        "outdoor_exposure"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "skin_type",
+          "concerns",
+          "disliked_feel"
+        ]
+      }
+    },
+    {
+      "id": "DA22-COM-07",
+      "kind": "compound",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "붉은기랑 장벽이 고민이고 많이 민감한 피부에 쓸 크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "moisturizer_cream",
+        "skin_type": null,
+        "concerns": [
+          "redness",
+          "barrier"
+        ],
+        "sensitivity": "high",
+        "texture": "cream",
+        "disliked_feel": null,
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "high"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "concerns",
+        "sensitivity",
+        "texture"
+      ],
+      "expectedBehavior": "supported",
+      "expectedExecution": {
+        "effectiveCategory": "moisturizer_cream",
+        "constraintStatus": "resolved",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "concerns",
+          "texture",
+          "sensitivity"
+        ]
+      }
+    },
+    {
+      "id": "DA22-AMB-01",
+      "kind": "ambiguous",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "좋은 거 추천해줘",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": null,
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "low"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [],
+      "expectedBehavior": "ambiguous",
+      "expectedExecution": {
+        "effectiveCategory": null,
+        "constraintStatus": "resolved",
+        "rankingEligible": false,
+        "rankableSignals": []
+      }
+    },
+    {
+      "id": "DA22-AMB-02",
+      "kind": "ambiguous",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "나한테 맞는 거 뭐가 좋아?",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": null,
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [],
+        "confidence": "low"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [],
+      "expectedBehavior": "ambiguous",
+      "expectedExecution": {
+        "effectiveCategory": null,
+        "constraintStatus": "resolved",
+        "rankingEligible": false,
+        "rankableSignals": []
+      }
+    },
+    {
+      "id": "DA22-CON-01",
+      "kind": "conflict",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "톤업은 싫은데 얼굴은 밝아졌으면 좋겠는 선크림",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "sunscreen",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": true,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [
+          "tone-up preference conflict"
+        ],
+        "confidence": "low"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "sunscreen_intent"
+      ],
+      "expectedBehavior": "conflict",
+      "expectedExecution": {
+        "effectiveCategory": "sunscreen",
+        "constraintStatus": "partial",
+        "rankingEligible": false,
+        "rankableSignals": []
+      }
+    },
+    {
+      "id": "DA22-CON-02",
+      "kind": "conflict",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "매트한데 아주 촉촉한 크림이 좋아",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": "moisturizer_cream",
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": "cream",
+        "disliked_feel": null,
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [
+          "matte and very moisturizing finish conflict"
+        ],
+        "confidence": "low"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [
+        "category",
+        "texture"
+      ],
+      "expectedBehavior": "conflict",
+      "expectedExecution": {
+        "effectiveCategory": "moisturizer_cream",
+        "constraintStatus": "partial",
+        "rankingEligible": true,
+        "rankableSignals": [
+          "texture"
+        ]
+      }
+    },
+    {
+      "id": "DA22-CON-03",
+      "kind": "conflict",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "끈적한 건 싫은데 끈적한 마무리였으면 좋겠어",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": null,
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [
+          "sticky feel preference conflict"
+        ],
+        "confidence": "low"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [],
+      "expectedBehavior": "conflict",
+      "expectedExecution": {
+        "effectiveCategory": null,
+        "constraintStatus": "partial",
+        "rankingEligible": false,
+        "rankableSignals": []
+      }
+    },
+    {
+      "id": "DA22-UNS-01",
+      "kind": "unsupported",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "탈모약 추천해줘",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": null,
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [
+          "hair loss medicine"
+        ],
+        "confidence": "low"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [],
+      "expectedBehavior": "unsupported",
+      "expectedExecution": {
+        "effectiveCategory": null,
+        "constraintStatus": "partial",
+        "rankingEligible": false,
+        "rankableSignals": []
+      }
+    },
+    {
+      "id": "DA22-UNS-02",
+      "kind": "unsupported",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "두통에 좋은 약 알려줘",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": null,
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [
+          "headache medicine"
+        ],
+        "confidence": "low"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [],
+      "expectedBehavior": "unsupported",
+      "expectedExecution": {
+        "effectiveCategory": null,
+        "constraintStatus": "partial",
+        "rankingEligible": false,
+        "rankableSignals": []
+      }
+    },
+    {
+      "id": "DA22-UNS-03",
+      "kind": "unsupported",
+      "paraphraseCluster": null,
+      "clusterFields": [],
+      "query": "아이폰 추천해줘",
+      "expectedIntent": {
+        "schema_version": "product-query-intent-v1",
+        "category": null,
+        "skin_type": null,
+        "concerns": [],
+        "sensitivity": null,
+        "texture": null,
+        "disliked_feel": null,
+        "sunscreen_intent": null,
+        "white_cast_hate": null,
+        "tone_up_wanted": null,
+        "eye_sensitive": null,
+        "makeup_use": null,
+        "outdoor_exposure": null,
+        "unresolved_terms": [
+          "iphone"
+        ],
+        "confidence": "low"
+      },
+      "compareFields": [
+        "category",
+        "skin_type",
+        "concerns",
+        "sensitivity",
+        "texture",
+        "disliked_feel",
+        "sunscreen_intent",
+        "white_cast_hate",
+        "tone_up_wanted",
+        "eye_sensitive",
+        "makeup_use",
+        "outdoor_exposure"
+      ],
+      "criticalIntentFields": [],
+      "expectedBehavior": "unsupported",
+      "expectedExecution": {
+        "effectiveCategory": null,
+        "constraintStatus": "partial",
+        "rankingEligible": false,
+        "rankableSignals": []
+      }
+    }
+  ]
+}

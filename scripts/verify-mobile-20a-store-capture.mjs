@@ -55,6 +55,7 @@ for (const marker of [
   "Quickstep isn't responding",
   "MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS",
   "MOBILE_STORE_DIRECT_ACTIVITY_RESTART=PASS",
+  "EXPO_PUBLIC_STORE_CAPTURE_MODE=1",
   "UI_DUMP_RETRY_LIMIT=4",
   'for attempt in $(seq 1 "$UI_DUMP_RETRY_LIMIT"); do',
   'rm -f "$UI_DUMP"',
