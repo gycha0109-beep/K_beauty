@@ -9,6 +9,10 @@ on:
       - "tests/fixtures/trust-phase8g-source-verification/**"
       - "scripts/verify-trust-phase8g-source-verification-comparability.mjs"
       - "scripts/trust-source-verification-worker.mjs"
+      - "scripts/trust-source-verification-canary-capture.mjs"
+      - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
+      - "scripts/trust-source-verification-canary-capture.mjs"
+      - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
       - "docs/evidence/trust-phase8g-source-verification-comparability-v1.md"
@@ -71,7 +75,27 @@ jobs:
           node --check lib/trust/official-source-fetch.mjs
           node --check scripts/trust-research-worker.mjs
           node --check scripts/trust-source-verification-worker.mjs
+          node --check scripts/trust-source-verification-canary-capture.mjs
           node scripts/verify-trust-phase8g-source-verification-comparability.mjs
+
+      - name: Detect Production canary target change
+        id: canary_target
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if git diff --name-only "${BASE_SHA}...${HEAD_SHA}" | grep -Fxq "docs/evidence/trust-phase8g-production-canary-target-v1.json"; then
+            echo "changed=true" >>"${GITHUB_OUTPUT}"
+          else
+            echo "changed=false" >>"${GITHUB_OUTPUT}"
+          fi
+
+      - name: Capture Production canary live-byte pair
+        if: steps.canary_target.outputs.changed == 'true'
+        run: node scripts/trust-source-verification-canary-capture.mjs
 
       - name: Materialize isolated Product Fact runtime
         shell: bash
