@@ -38,7 +38,7 @@ assert.equal(contract.selectedMethod.percentileMethod, null);
 assert.equal(contract.selectedMethod.thresholdMethod, null);
 assert.equal(
   contract.selectionEvidence.comparisonPacketFingerprint,
-  "sha256:89c299c496c0e60a369a51b2a7b64ccd4c39fd4de943cbc20991d933180b88fc"
+  "sha256:76f346b6b284b32af63db3171f654e12cf70d91470b18e34502a199d2d5a3726"
 );
 assert.equal(
   contract.selectionEvidence.sourceReferenceSplitFingerprint,

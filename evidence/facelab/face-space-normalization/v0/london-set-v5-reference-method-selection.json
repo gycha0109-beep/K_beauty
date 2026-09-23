@@ -13,7 +13,7 @@
     "percentileMethod": null,
     "thresholdMethod": null,
     "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
-    "comparisonPacketFingerprint": "sha256:89c299c496c0e60a369a51b2a7b64ccd4c39fd4de943cbc20991d933180b88fc",
+    "comparisonPacketFingerprint": "sha256:76f346b6b284b32af63db3171f654e12cf70d91470b18e34502a199d2d5a3726",
     "comparisonVersion": "london-set-v5-reference-method-comparison-v1",
     "evidenceRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json",
     "selectionRationale": "Select median center with MAD scaled-consistent scale for the same-provider research candidate because both estimators are robust to isolated distribution tails and outliers in the bounded reference split. The descriptive comparison only establishes that all four supported profiles are finite and non-degenerate; this is an explicit methodological choice, not an automatic winner. The locked holdout is excluded from selection and remains reserved for later diagnostics.",

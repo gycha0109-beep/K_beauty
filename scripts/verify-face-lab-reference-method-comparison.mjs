@@ -151,7 +151,7 @@ assert.equal(actualComparison.referenceSampleCount, 82);
 assert.equal(actualComparison.holdoutSampleCountExcluded, 20);
 assert.equal(
   actualComparison.packetFingerprint,
-  "sha256:89c299c496c0e60a369a51b2a7b64ccd4c39fd4de943cbc20991d933180b88fc"
+  "sha256:76f346b6b284b32af63db3171f654e12cf70d91470b18e34502a199d2d5a3726"
 );
 assert.equal("winner" in actualComparison, false);
 assert.equal("selectedMethod" in actualComparison, false);

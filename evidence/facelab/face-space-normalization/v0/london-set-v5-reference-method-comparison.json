@@ -20,6 +20,13 @@
       "scaleMethod": "standard_deviation",
       "dimensions": [
         {
+          "id": "lower_face_width_ratio",
+          "unit": "ratio",
+          "center": 0.7570133868990667,
+          "scale": 0.018156063526422905,
+          "referenceSampleCount": 82
+        },
+        {
           "id": "chin_height_ratio",
           "unit": "ratio",
           "center": 0.45795659767511393,
@@ -34,13 +41,6 @@
           "referenceSampleCount": 82
         },
         {
-          "id": "eye_tilt",
-          "unit": "degree",
-          "center": 0.09073009858682834,
-          "scale": 0.40456388117891484,
-          "referenceSampleCount": 82
-        },
-        {
           "id": "eye_width_ratio",
           "unit": "ratio",
           "center": 0.17712227117002682,
@@ -48,10 +48,10 @@
           "referenceSampleCount": 82
         },
         {
-          "id": "lower_face_width_ratio",
-          "unit": "ratio",
-          "center": 0.7570133868990667,
-          "scale": 0.018156063526422905,
+          "id": "eye_tilt",
+          "unit": "degree",
+          "center": 0.09073009858682834,
+          "scale": 0.40456388117891484,
           "referenceSampleCount": 82
         },
         {
@@ -69,6 +69,13 @@
       "scaleMethod": "mad_scaled_consistent",
       "dimensions": [
         {
+          "id": "lower_face_width_ratio",
+          "unit": "ratio",
+          "center": 0.7570133868990667,
+          "scale": 0.01980414020375758,
+          "referenceSampleCount": 82
+        },
+        {
           "id": "chin_height_ratio",
           "unit": "ratio",
           "center": 0.45795659767511393,
@@ -83,13 +90,6 @@
           "referenceSampleCount": 82
         },
         {
-          "id": "eye_tilt",
-          "unit": "degree",
-          "center": 0.09073009858682834,
-          "scale": 0.44156742577119706,
-          "referenceSampleCount": 82
-        },
-        {
           "id": "eye_width_ratio",
           "unit": "ratio",
           "center": 0.17712227117002682,
@@ -97,10 +97,10 @@
           "referenceSampleCount": 82
         },
         {
-          "id": "lower_face_width_ratio",
-          "unit": "ratio",
-          "center": 0.7570133868990667,
-          "scale": 0.01980414020375758,
+          "id": "eye_tilt",
+          "unit": "degree",
+          "center": 0.09073009858682834,
+          "scale": 0.44156742577119706,
           "referenceSampleCount": 82
         },
         {
@@ -118,6 +118,13 @@
       "scaleMethod": "standard_deviation",
       "dimensions": [
         {
+          "id": "lower_face_width_ratio",
+          "unit": "ratio",
+          "center": 0.7540540316592534,
+          "scale": 0.018156063526422905,
+          "referenceSampleCount": 82
+        },
+        {
           "id": "chin_height_ratio",
           "unit": "ratio",
           "center": 0.46051099872636003,
@@ -132,13 +139,6 @@
           "referenceSampleCount": 82
         },
         {
-          "id": "eye_tilt",
-          "unit": "degree",
-          "center": 0.07300959842772414,
-          "scale": 0.40456388117891484,
-          "referenceSampleCount": 82
-        },
-        {
           "id": "eye_width_ratio",
           "unit": "ratio",
           "center": 0.1774343797607808,
@@ -146,10 +146,10 @@
           "referenceSampleCount": 82
         },
         {
-          "id": "lower_face_width_ratio",
-          "unit": "ratio",
-          "center": 0.7540540316592534,
-          "scale": 0.018156063526422905,
+          "id": "eye_tilt",
+          "unit": "degree",
+          "center": 0.07300959842772414,
+          "scale": 0.40456388117891484,
           "referenceSampleCount": 82
         },
         {
@@ -167,6 +167,13 @@
       "scaleMethod": "mad_scaled_consistent",
       "dimensions": [
         {
+          "id": "lower_face_width_ratio",
+          "unit": "ratio",
+          "center": 0.7540540316592534,
+          "scale": 0.018177862668873182,
+          "referenceSampleCount": 82
+        },
+        {
           "id": "chin_height_ratio",
           "unit": "ratio",
           "center": 0.46051099872636003,
@@ -181,13 +188,6 @@
           "referenceSampleCount": 82
         },
         {
-          "id": "eye_tilt",
-          "unit": "degree",
-          "center": 0.07300959842772414,
-          "scale": 0.43861287640204766,
-          "referenceSampleCount": 82
-        },
-        {
           "id": "eye_width_ratio",
           "unit": "ratio",
           "center": 0.1774343797607808,
@@ -195,10 +195,10 @@
           "referenceSampleCount": 82
         },
         {
-          "id": "lower_face_width_ratio",
-          "unit": "ratio",
-          "center": 0.7540540316592534,
-          "scale": 0.018177862668873182,
+          "id": "eye_tilt",
+          "unit": "degree",
+          "center": 0.07300959842772414,
+          "scale": 0.43861287640204766,
           "referenceSampleCount": 82
         },
         {
@@ -211,7 +211,7 @@
       ]
     }
   ],
-  "packetFingerprint": "sha256:89c299c496c0e60a369a51b2a7b64ccd4c39fd4de943cbc20991d933180b88fc",
+  "packetFingerprint": "sha256:76f346b6b284b32af63db3171f654e12cf70d91470b18e34502a199d2d5a3726",
   "authority": {
     "productionAuthority": false,
     "normalizationAuthority": false,
