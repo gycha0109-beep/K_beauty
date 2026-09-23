@@ -742,6 +742,7 @@ const responsibilityNameGroups = [
   },
   {
     names: [
+      "hwahae-review-capture-provenance-non-main-pr.yml",
       "product-identity-key-repair-confirm.yml",
       "product-offers.yml",
       "product-source-bindings.yml",
@@ -766,6 +767,17 @@ for (const group of responsibilityNameGroups) {
     }
   }
 }
+
+
+/* HWAHAE_NON_MAIN_PR_COVERAGE_GUARD */
+const hwahaeNonMainPrGuard = read(".github/workflows/hwahae-review-capture-provenance-non-main-pr.yml");
+assert.ok(
+  hwahaeNonMainPrGuard.includes("  pull_request:") &&
+    hwahaeNonMainPrGuard.includes("    branches-ignore:") &&
+    hwahaeNonMainPrGuard.includes("      - main") &&
+    hwahaeNonMainPrGuard.includes("node scripts/verify-hwahae-review-capture-provenance.mjs"),
+  "Hwahae provenance must retain exact verifier coverage for non-main pull requests"
+);
 
 
 /* FACE_LAB_RESPONSIBILITY_NAMING_GUARD */

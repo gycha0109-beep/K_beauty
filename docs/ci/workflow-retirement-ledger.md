@@ -137,15 +137,16 @@ A workflow may be removed only when all of the following are true:
 ### Hwahae review capture provenance wrapper
 
 - Retired workflow: `.github/workflows/hwahae-review-capture-provenance.yml`
-- Previous mode: path-scoped main PR/push plus manual, contents-read-only deterministic Node contract verification
+- Previous mode: path-scoped pull requests regardless of base branch, path-scoped pushes to `main`, plus manual dispatch; contents-read-only deterministic Node contract verification
 - Unique executable check: `node scripts/verify-hwahae-review-capture-provenance.mjs`
-- Canonical authority: the exact verifier is now executed by `scripts/verify-current-main-health.mjs`
-- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and retains manual dispatch, a strict superset of the retired wrapper trigger set
+- Canonical mainline authority: the exact verifier is executed by `scripts/verify-current-main-health.mjs` for pull requests targeting `main`, pushes to `main`, and manual dispatch
+- Residual non-main PR authority: `.github/workflows/hwahae-review-capture-provenance-non-main-pr.yml` runs the same exact verifier for path-scoped pull requests whose base branch is not `main`
+- Trigger equivalence: Current Main Health plus the residual non-main PR guard reproduces the retired wrapper's full PR/main-push/manual trigger coverage
 - Exact-head authority: Current Main Health checks out and attests the candidate SHA before canonical verification and retains exact-head diff hygiene
 - Runtime authority: none; no Supabase runtime, hosted deployment, Vercel/OIDC, credentials, browser automation, artifacts, release operations, or external provider calls existed
 - Side effects: none; the verifier exercises local provenance/readiness contracts and explicitly enforces zero database authority and zero recommendation-semantic integration
-- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the wrapper to remain absent and the exact verifier to remain owned by Current Main Health
-- Equivalence result: Hwahae capture-provenance semantics remain fully verified under broader canonical trigger coverage.
+- Retirement guard: `scripts/verify-ci-trigger-topology.mjs` requires the retired wrapper to remain absent, the exact verifier to remain owned by Current Main Health, and the residual non-main PR guard to retain `branches-ignore: main` plus the exact verifier
+- Equivalence result: Hwahae capture-provenance semantics retain the original trigger surface while mainline verification remains consolidated in Current Main Health.
 
 ### Catalog Taxonomy canonical static wrapper
 
@@ -189,11 +190,11 @@ A workflow may be removed only when all of the following are true:
 ### Face Lab neutral face-count shared-stage static wrapper
 
 - Retired workflow: `.github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml`
-- Previous mode: path-scoped main PR/push plus manual, contents-read-only Node verification
+- Previous mode: manual dispatch only, contents-read-only Node verification
 - Unique executable coverage: neutral face-count shared-stage verifier, six touched-runtime syntax checks, and three hosted-set/response/UI contract checks
 - Existing canonical overlap: target-axis, Human cue protocol, archetype scoring, Human evaluation, synthetic workspace, and architecture guard were already owned by Current Main Health
 - Canonical authority: all unique checks are now executed by `scripts/verify-current-main-health.mjs`; the overlapping checks remain canonical there
-- Trigger equivalence: Current Main Health runs on every PR targeting `main`, every push to `main`, and manual dispatch, a strict superset of the retired path-scoped trigger set
+- Trigger equivalence: Current Main Health retains manual dispatch and additionally runs on every PR targeting `main` and every push to `main`, a strict superset of the retired manual-only trigger set
 - Exact-head and diff authority: Current Main Health retains exact candidate SHA checkout/attestation and exact-head diff hygiene
 - Runtime authority: none; the wrapper did not start Supabase, connect to a database, use credentials, execute browser automation, deploy, upload artifacts, or call an external provider
 - Verifier side effects: none; the neutral-stage verifier reads repository authority and fixtures only. Its `fetch(DATA.submitEndpoint` occurrence is a source-code needle, not a network call
