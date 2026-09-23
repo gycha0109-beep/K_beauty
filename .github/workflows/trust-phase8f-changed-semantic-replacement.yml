@@ -1,4 +1,5 @@
 name: TRUST Data Governance - Phase 8F Changed Semantic Replacement
+run-name: "[WT:trust] TRUST Data Governance - Phase 8F Changed Semantic Replacement"
 
 on:
   pull_request:
