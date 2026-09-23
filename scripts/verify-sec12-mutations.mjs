@@ -457,9 +457,9 @@ function assertBaseline(result) {
   const i10Line = String(result.stdout).split(/\r?\n/).find((line) => line.startsWith('{"sec12I10":'));
   assert.ok(i10Line, "SEC-12 baseline I10 summary missing");
   const { sec12I10 } = JSON.parse(i10Line);
-  assert.deepEqual(sec12I10.routes, { discovered: 11, expected: 11, verified: 11 });
-  assert.deepEqual(sec12I10.handlerBindings, { discovered: 12, expected: 12, verified: 12 });
-  assert.deepEqual(sec12I10.terminalResponsePaths, { discovered: 125, expected: 125, verified: 125 });
+  assert.deepEqual(sec12I10.routes, { discovered: 19, expected: 19, verified: 19 });
+  assert.deepEqual(sec12I10.handlerBindings, { discovered: 20, expected: 20, verified: 20 });
+  assert.deepEqual(sec12I10.terminalResponsePaths, { discovered: 188, expected: 188, verified: 188 });
   assert.deepEqual(sec12I10.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(sec12I10.deadHelperCalls, 0);
   assert.equal(sec12I10.unsafeResponsePaths, 0);
