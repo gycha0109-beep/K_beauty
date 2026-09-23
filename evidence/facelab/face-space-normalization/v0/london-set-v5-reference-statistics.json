@@ -20,6 +20,13 @@
   "scaleMethod": "mad_scaled_consistent",
   "dimensions": [
     {
+      "id": "lower_face_width_ratio",
+      "unit": "ratio",
+      "center": 0.7540540316592534,
+      "scale": 0.018177862668873182,
+      "referenceSampleCount": 82
+    },
+    {
       "id": "chin_height_ratio",
       "unit": "ratio",
       "center": 0.46051099872636003,
@@ -34,13 +41,6 @@
       "referenceSampleCount": 82
     },
     {
-      "id": "eye_tilt",
-      "unit": "degree",
-      "center": 0.07300959842772414,
-      "scale": 0.43861287640204766,
-      "referenceSampleCount": 82
-    },
-    {
       "id": "eye_width_ratio",
       "unit": "ratio",
       "center": 0.1774343797607808,
@@ -48,10 +48,10 @@
       "referenceSampleCount": 82
     },
     {
-      "id": "lower_face_width_ratio",
-      "unit": "ratio",
-      "center": 0.7540540316592534,
-      "scale": 0.018177862668873182,
+      "id": "eye_tilt",
+      "unit": "degree",
+      "center": 0.07300959842772414,
+      "scale": 0.43861287640204766,
       "referenceSampleCount": 82
     },
     {
