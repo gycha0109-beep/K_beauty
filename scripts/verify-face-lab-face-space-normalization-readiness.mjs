@@ -176,6 +176,82 @@ assert.throws(
   /normalization_not_ready/
 );
 
+const counterfactualAdequacyDecision = {
+  ...actualRealPhotoAdequacyDecision,
+  status: "adequate_for_provisional_research",
+  decisionCode: "PROVISIONAL_RESEARCH_ADEQUATE",
+  decisionVersion:
+    "counterfactual-verifier-only-real-photo-adequacy-v1",
+  evidenceRef:
+    "synthetic-verifier-only:counterfactual-real-photo-adequacy",
+  decisionRationale:
+    "Counterfactual verifier only: prove that no code or lineage blocker remains after a future legitimate real-photo adequacy promotion. This is not empirical evidence and is never persisted as an adequacy decision.",
+  holdReasons: [],
+  evidenceIntegrityBlockers: [],
+  provisionalResearchGateGranted: true
+};
+
+const counterfactualReady =
+  evaluateFaceSpaceNormalizationReadiness({
+    semanticContract,
+    stabilitySummary,
+    scope: "same_provider",
+    referenceCorpusManifest: actualReferenceRunOutput.corpus,
+    referenceCorpusReviewPacket: actualReferenceReviewPacket,
+    referenceCorpusAdequacyEvidence:
+      actualReferenceAdequacyEvidence,
+    realPhotoStabilityReports: actualRealPhotoReports,
+    realPhotoStabilityReviewPacket: actualRealPhotoReviewPacket,
+    realPhotoStabilityAdequacyDecision:
+      counterfactualAdequacyDecision,
+    evidence: {
+      controlled3dPoseStress: true,
+      controlled3dExpressionStress: true,
+      providerCorrespondence: false
+    }
+  });
+
+assert.equal(
+  counterfactualReady.status,
+  "provisional_candidate_ready"
+);
+assert.deepEqual(counterfactualReady.blockers, []);
+assert.equal(
+  counterfactualReady.readyDimensionCount,
+  semanticContract.dimensions.length
+);
+const counterfactualCandidate = buildFaceSpaceNormalizationCandidate({
+  readiness: counterfactualReady,
+  referenceStatistics: actualReferenceStatistics,
+  methodDecision: actualMethodSelection.decision
+});
+assert.equal(
+  counterfactualCandidate.referenceStatisticsVersion,
+  "london-set-v5-reference-statistics-v1"
+);
+assert.equal(
+  counterfactualCandidate.methodDecisionVersion,
+  "london-set-v5-reference-method-selection-v1"
+);
+assert.equal(
+  counterfactualCandidate.sourceReferenceSplitFingerprint,
+  "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf"
+);
+assert.equal(counterfactualCandidate.centerMethod, "median");
+assert.equal(
+  counterfactualCandidate.scaleMethod,
+  "mad_scaled_consistent"
+);
+assert.equal(counterfactualCandidate.dimensions.length, 6);
+assert.equal(
+  counterfactualCandidate.authority.productionAuthority,
+  false
+);
+assert.equal(
+  counterfactualCandidate.authority.provisionalResearchOnly,
+  true
+);
+
 let syntheticReferenceFingerprint =
   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 let syntheticReferenceProvenance = "synthetic-verifier-only";
@@ -1185,6 +1261,8 @@ console.log(JSON.stringify({
     actualGovernedCorpusCoverageSupersedesHistoricalCoverageBlockers: true,
     actualRealPhotoHoldBlocksProvisionalCandidate: true,
     actualReferenceStatisticsRemainResearchOnly: true,
+    counterfactualCandidatePathUsesActualReferenceLineage: true,
+    counterfactualPromotionIsVerifierOnlyAndNotEvidence: true,
     controlled3dDoesNotSatisfyRealPhotoGate: true,
     callerBooleansCannotSatisfyRealPhotoGate: true,
     validatedRealPhotoReportsRequiredForPoseExpressionGate: true,

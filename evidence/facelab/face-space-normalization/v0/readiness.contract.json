@@ -69,5 +69,20 @@
     "provisionalResearchGateGranted": false,
     "normalizationCandidatePresent": false,
     "productionNormalizationAuthorized": false
+  },
+  "counterfactualPreflight": {
+    "status": "candidate_construction_path_verified_but_not_authorized",
+    "purpose": "Prove that the selected method and reference statistics can construct a same-provider provisional research candidate after a future legitimate real-photo adequacy promotion, without treating the hypothetical promotion as evidence.",
+    "usesActualReferenceCorpusLineage": true,
+    "usesActualReferenceStatistics": true,
+    "usesHypotheticalRealPhotoAdequacyDecision": true,
+    "holdoutUsedForMethodSelection": false,
+    "holdoutUsedForReferenceStatistics": false,
+    "holdoutDiagnosticExecuted": false,
+    "actualRealPhotoAdequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+    "actualProvisionalResearchGateGranted": false,
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false
   }
 }
