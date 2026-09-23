@@ -50,8 +50,33 @@ export async function captureProductionCanaryPair({
   };
 }
 
+export async function captureProductionCanaryOutcome(options = {}) {
+  try {
+    return await captureProductionCanaryPair(options);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.startsWith("TRANSIENT_FAILURE:") && !message.startsWith("SOURCE_BLOCKED:")) {
+      throw error;
+    }
+    const targetPath = options.targetPath || DEFAULT_TARGET;
+    const target = JSON.parse(await readFile(targetPath, "utf8"));
+    return {
+      contract: "trust-phase8g-production-canary-capture-v1",
+      source_id: target.source_id,
+      publisher: target.publisher || null,
+      canonical_locator: target.canonical_locator,
+      baseline: null,
+      verification: null,
+      stable: false,
+      capture_status: message,
+      retry_after_seconds: Number.isFinite(error?.retryAfterSeconds) ? error.retryAfterSeconds : null,
+      authority_mutation: false,
+    };
+  }
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const result = await captureProductionCanaryPair({
+  const result = await captureProductionCanaryOutcome({
     targetPath: argValue("target") || DEFAULT_TARGET,
   });
   console.log(`TRUST_PHASE8G_CANARY_CAPTURE_JSON=${JSON.stringify(result)}`);
