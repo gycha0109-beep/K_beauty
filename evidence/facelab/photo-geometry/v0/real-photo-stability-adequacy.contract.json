@@ -82,13 +82,15 @@
     "schemaVersion": "face-lab-real-photo-stability-adequacy-decision-v1",
     "allowedStatuses": [
       "adequate_for_provisional_research",
-      "hold_for_more_evidence"
+      "hold_for_more_evidence",
+      "blocked_by_evidence_integrity"
     ],
     "decisionMode": "explicit_manual_research_review",
     "exactDescriptiveReviewFingerprintRequired": true,
     "automaticAdequacyInferenceForbidden": true,
     "numericThresholdInventionForbidden": true,
     "holdDoesNotGrantProvisionalResearchGate": true,
-    "actualDecisionPresent": false
+    "actualDecisionPresent": false,
+    "integrityBlockedDoesNotGrantProvisionalResearchGate": true
   }
 }

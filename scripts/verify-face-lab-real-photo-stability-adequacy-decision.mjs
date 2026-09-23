@@ -60,7 +60,8 @@ const hold = validateRealPhotoStabilityAdequacyDecision(
     ...baseDecision,
     status: "hold_for_more_evidence",
     provisionalResearchGateGranted: false,
-    holdReasons: ["synthetic_verifier_requires_more_evidence"]
+    holdReasons: ["synthetic_verifier_requires_more_evidence"],
+    evidenceIntegrityBlockers: []
   },
   descriptiveReview
 );
@@ -72,12 +73,28 @@ const adequate = validateRealPhotoStabilityAdequacyDecision(
     ...baseDecision,
     status: "adequate_for_provisional_research",
     provisionalResearchGateGranted: true,
-    holdReasons: []
+    holdReasons: [],
+    evidenceIntegrityBlockers: []
   },
   descriptiveReview
 );
 assert.equal(adequate.status, "adequate_for_provisional_research");
 assert.equal(adequate.provisionalResearchGateGranted, true);
+
+const blocked = validateRealPhotoStabilityAdequacyDecision(
+  {
+    ...baseDecision,
+    status: "blocked_by_evidence_integrity",
+    provisionalResearchGateGranted: false,
+    holdReasons: [],
+    evidenceIntegrityBlockers: [
+      "synthetic_verifier_integrity_block"
+    ]
+  },
+  descriptiveReview
+);
+assert.equal(blocked.status, "blocked_by_evidence_integrity");
+assert.equal(blocked.provisionalResearchGateGranted, false);
 
 assert.throws(
   () =>
@@ -86,7 +103,8 @@ assert.throws(
         ...baseDecision,
         status: "hold_for_more_evidence",
         provisionalResearchGateGranted: false,
-        holdReasons: []
+        holdReasons: [],
+        evidenceIntegrityBlockers: []
       },
       descriptiveReview
     ),
@@ -115,6 +133,7 @@ assert.throws(
         status: "hold_for_more_evidence",
         provisionalResearchGateGranted: false,
         holdReasons: ["synthetic"],
+        evidenceIntegrityBlockers: [],
         automaticAdequacyInferred: true
       },
       descriptiveReview
@@ -130,6 +149,7 @@ assert.throws(
         status: "hold_for_more_evidence",
         provisionalResearchGateGranted: false,
         holdReasons: ["synthetic"],
+        evidenceIntegrityBlockers: [],
         sourceDescriptiveReviewFingerprint: "sha256:" + "d".repeat(64)
       },
       descriptiveReview
@@ -141,7 +161,8 @@ console.log(JSON.stringify({
   ok: true,
   allowedStatuses: [
     "adequate_for_provisional_research",
-    "hold_for_more_evidence"
+    "hold_for_more_evidence",
+    "blocked_by_evidence_integrity"
   ],
   explicitManualDecisionRequired: true,
   automaticAdequacyInferenceForbidden: true,

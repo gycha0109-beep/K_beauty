@@ -203,7 +203,7 @@ if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression", "head_pitch", "head_roll", "head_yaw"]);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, []);
   assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketRef, "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-roll-stability-review-packet.json");
-  assert.equal(stabilityAdequacyContract.currentEvidence.status, "review_ready_adequacy_pending");
+  assert.equal(stabilityAdequacyContract.currentEvidence.status, "descriptive_review_reproducible_adequacy_pending");
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.expression.reportCount, 102);
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headYaw.reportCount, 204);
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headPitch.reportCount, 180);
