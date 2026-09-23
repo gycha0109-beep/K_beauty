@@ -1,8 +1,8 @@
 {
   "contract": "trust-phase8g-production-canary-target-v1",
-  "source_id": "7abf5c75-a442-4c55-853b-58685bc99a23",
-  "publisher": "roundlab_official",
-  "canonical_locator": "https://roundlab.com/products/birch-moisturizing-soothing-gel",
-  "selection_reason": "Current official product page, one Current Fact exposure, no existing verification profile, public HTTPS page currently reachable, and historical digest explicitly uses a non-live-byte basis.",
+  "source_id": "a2803387-44e3-40fa-87c9-a7aec7d745f3",
+  "publisher": "Dr.G / 고운세상코스메틱",
+  "canonical_locator": "https://www.dr-g.co.kr/item/9637",
+  "selection_reason": "Second fresh-recovery canary after Round Lab live-page-bytes proved unstable. Official HTTPS product page, one Current Fact exposure, no existing verification profile, and an independently frozen historical observation is available for lineage context.",
   "expected_authority_mutation": false
 }
