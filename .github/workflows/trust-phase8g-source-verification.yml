@@ -11,6 +11,8 @@ on:
       - "scripts/trust-source-verification-worker.mjs"
       - "scripts/trust-source-verification-canary-capture.mjs"
       - "scripts/verify-trust-source-canonicalization.mjs"
+      - "scripts/trust-source-verification-diff-probe.mjs"
+      - "scripts/trust-source-verification-diff-probe.mjs"
       - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
@@ -78,6 +80,7 @@ jobs:
           node --check scripts/trust-research-worker.mjs
           node --check scripts/trust-source-verification-worker.mjs
           node --check scripts/trust-source-verification-canary-capture.mjs
+          node --check scripts/trust-source-verification-diff-probe.mjs
           node scripts/verify-trust-source-canonicalization.mjs
           node -e 'const fs=require("node:fs"); const x=JSON.parse(fs.readFileSync("docs/evidence/trust-phase8g-production-canary-target-v1.json","utf8")); if(!x.source_id || !String(x.canonical_locator || "").startsWith("https://")) process.exit(1)'
           node scripts/verify-trust-phase8g-source-verification-comparability.mjs
@@ -100,6 +103,10 @@ jobs:
       - name: Capture Production canary observation pair
         if: steps.canary_target.outputs.changed == 'true'
         run: node scripts/trust-source-verification-canary-capture.mjs
+
+      - name: Probe semantic variability for adapter work
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-semantic-adapter')
+        run: node scripts/trust-source-verification-diff-probe.mjs
 
       - name: Materialize isolated Product Fact runtime
         shell: bash
