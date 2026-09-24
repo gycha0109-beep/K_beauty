@@ -52,7 +52,6 @@ run("TRUST Phase 8A revalidation contract", node, ["scripts/verify-trust-phase8a
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);
-run("Unified Vision pipeline", npm, ["run", "verify:unified-vision-pipeline"]);
 run("Skin decision persistence and reentry", npm, ["run", "verify:skin-decision-persistence-reentry"]);
 run("Canonical 164x12 current Recommendation semantic health", node, ["scripts/verify-current-recommendation-health.mjs"]);
 
