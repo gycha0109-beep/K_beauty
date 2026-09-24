@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "face-space-provisional-normalization-candidate-v0",
+  "version": "london-set-v5-provisional-normalization-candidate-v1",
+  "status": "provisional_research_candidate",
+  "scope": "same_provider",
+  "sourceRealPhotoAdequacyDecision": {
+    "ref": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
+    "decisionVersion": "real-photo-stability-adequacy-decision-v3",
+    "decisionCode": "PROVISIONAL_RESEARCH_ADEQUATE",
+    "sourceReportCount": 492,
+    "collectionFingerprint": "sha256:aca9b072b8af2104a8c1b220f92ddc5ce5c28dfbe11e68dc6b102ad17db6f33c"
+  },
+  "sourceReferenceStatistics": {
+    "ref": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
+    "version": "london-set-v5-reference-statistics-v1",
+    "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "referenceSampleCount": 82,
+    "holdoutSampleCountExcluded": 20,
+    "centerMethod": "median",
+    "scaleMethod": "mad_scaled_consistent"
+  },
+  "transform": {
+    "definition": "z_research_v0=(x-center)/scale",
+    "dimensions": [
+      {
+        "id": "lower_face_width_ratio",
+        "inputUnit": "ratio",
+        "center": 0.7540540316592534,
+        "scale": 0.018177862668873182,
+        "outputUnit": "standardized_research_v0"
+      },
+      {
+        "id": "chin_height_ratio",
+        "inputUnit": "ratio",
+        "center": 0.46051099872636003,
+        "scale": 0.027062455055776407,
+        "outputUnit": "standardized_research_v0"
+      },
+      {
+        "id": "eye_spacing_ratio",
+        "inputUnit": "ratio",
+        "center": 0.20312624772564591,
+        "scale": 0.012715607188238772,
+        "outputUnit": "standardized_research_v0"
+      },
+      {
+        "id": "eye_width_ratio",
+        "inputUnit": "ratio",
+        "center": 0.1774343797607808,
+        "scale": 0.010330514297612912,
+        "outputUnit": "standardized_research_v0"
+      },
+      {
+        "id": "eye_tilt",
+        "inputUnit": "degree",
+        "center": 0.07300959842772414,
+        "scale": 0.43861287640204766,
+        "outputUnit": "standardized_research_v0"
+      },
+      {
+        "id": "nose_width_ratio",
+        "inputUnit": "ratio",
+        "center": 0.18185148477053575,
+        "scale": 0.013709913117718119,
+        "outputUnit": "standardized_research_v0"
+      }
+    ]
+  },
+  "safeguards": {
+    "referenceSplitOnly": true,
+    "holdoutUsedForMethodSelection": false,
+    "holdoutUsedForReferenceStatistics": false,
+    "percentileBoundariesDefined": false,
+    "acceptanceThresholdDefined": false,
+    "productionActivation": false
+  },
+  "authority": {
+    "productionAuthority": false,
+    "normalizationActivationAuthority": false,
+    "thresholdAuthority": false,
+    "archetypeAuthority": false,
+    "styleRecommendationAuthority": false,
+    "researchCandidateOnly": true
+  }
+}
