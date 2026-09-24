@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { buildUnavailablePremiumFaceLab, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import { buildFaceLabV2Canonical } from "@/lib/face-lab-v2/canonical-composer";
-import { isFaceLabV2CanonicalResult } from "@/lib/face-lab-v2/result-contract";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { getTargetStyleLabel } from "@/lib/face-lab-v2/target-style-registry";
 import {
@@ -729,16 +728,14 @@ export default function PremiumFaceLabSection({
     const restoreState = (stored) => {
       if (!active || !stored?.surveyAnswers) return false;
 
-      const restored = isFaceLabV2CanonicalResult(stored.canonicalV2)
-        ? stored.canonicalV2
-        : buildFaceLabV2Canonical({
-            analysis: faceLabAnalysis,
-            surveyAnswers: stored.surveyAnswers,
-            targetFinderResult: stored.targetFinderResult || null,
-            selectedRouteId: stored.selectedRouteId || null,
-            locale,
-            resultId: resultKey
-          });
+      const restored = buildFaceLabV2Canonical({
+        analysis: faceLabAnalysis,
+        surveyAnswers: stored.surveyAnswers,
+        targetFinderResult: stored.targetFinderResult || null,
+        selectedRouteId: stored.selectedRouteId || null,
+        locale,
+        resultId: resultKey
+      });
 
       if (restored?.targetStyle?.status !== "available") return false;
 
@@ -799,7 +796,7 @@ export default function PremiumFaceLabSection({
     return <LegacyFaceLab faceLabSummary={faceLabSummary} photoUrl={photoUrl} locale={locale} />;
   }
 
-  const persistServer = async (surveyAnswers, approvedFinder, routeId, canonicalV2) => {
+  const persistServer = async (surveyAnswers, approvedFinder, routeId) => {
     if (!savedReportId) return;
 
     try {
@@ -816,8 +813,7 @@ export default function PremiumFaceLabSection({
           savedReportId,
           surveyAnswers,
           targetFinderResult: approvedFinder,
-          selectedRouteId: routeId,
-          canonicalV2
+          selectedRouteId: routeId
         })
       });
     } catch {}
@@ -883,8 +879,7 @@ export default function PremiumFaceLabSection({
     void persistServer(
       surveyAnswers,
       approvedFinder,
-      result.routes?.selectedRouteId || null,
-      result
+      result.routes?.selectedRouteId || null
     );
   };
 
@@ -914,7 +909,7 @@ export default function PremiumFaceLabSection({
       }));
     }
 
-    void persistServer(surveyAnswers, approvedFinder, routeId, result);
+    void persistServer(surveyAnswers, approvedFinder, routeId);
   };
 
   const choosePresentation = (value) => {
