@@ -78,6 +78,11 @@ on:
       - "docs/ci/workflow-responsibility-map.json"
       - "docs/ci/workflow-responsibility-map.md"
   workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
 
 concurrency:
   group: mobile-api-integration-${{ github.event.pull_request.number || github.ref }}
