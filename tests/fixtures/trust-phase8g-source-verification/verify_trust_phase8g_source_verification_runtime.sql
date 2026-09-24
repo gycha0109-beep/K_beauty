@@ -88,20 +88,48 @@ begin
       end if;
   end;
 
+  begin
+    perform public.admin_register_product_evidence_source_verification_profile_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8g-profile-semantic-invalid-0001',
+      v_ctx.source_id,
+      (v_unresolved ->> 'profile_id')::uuid,
+      repeat('a', 64),
+      'canonical-official-product-semantics-v1',
+      'official-product-semantic',
+      'v1',
+      'fresh_recovery',
+      jsonb_build_object(
+        'final_url', 'https://example.com/product',
+        'content_type', 'text/html; charset=utf-8',
+        'byte_length', 1234,
+        'fetched_at', '2026-09-22T07:57:30Z'
+      ),
+      '{"fixture":"phase8g-semantic-invalid"}'::jsonb
+    );
+    raise exception 'phase8g_semantic_profile_missing_canonical_length_not_rejected';
+  exception
+    when check_violation then
+      if sqlerrm <> 'product_evidence_source_verification_profile_fresh_recovery_invalid' then
+        raise;
+      end if;
+  end;
+
   v_fresh := public.admin_register_product_evidence_source_verification_profile_v1(
     '92000000-0000-4000-8000-000000000001',
     'phase8g-profile-fresh-0001',
     v_ctx.source_id,
     (v_unresolved ->> 'profile_id')::uuid,
     repeat('a', 64),
-    'live-page-bytes-v1',
-    'live-page-bytes',
+    'canonical-official-product-semantics-v1',
+    'official-product-semantic',
     'v1',
     'fresh_recovery',
     jsonb_build_object(
       'final_url', 'https://example.com/product',
       'content_type', 'text/html; charset=utf-8',
       'byte_length', 1234,
+      'canonical_length', 465,
       'fetched_at', '2026-09-22T07:58:00Z'
     ),
     '{"fixture":"phase8g-fresh"}'::jsonb
@@ -120,14 +148,15 @@ begin
     v_ctx.source_id,
     (v_unresolved ->> 'profile_id')::uuid,
     repeat('a', 64),
-    'live-page-bytes-v1',
-    'live-page-bytes',
+    'canonical-official-product-semantics-v1',
+    'official-product-semantic',
     'v1',
     'fresh_recovery',
     jsonb_build_object(
       'final_url', 'https://example.com/product',
       'content_type', 'text/html; charset=utf-8',
       'byte_length', 1234,
+      'canonical_length', 465,
       'fetched_at', '2026-09-22T07:58:00Z'
     ),
     '{"fixture":"phase8g-fresh"}'::jsonb
@@ -145,14 +174,15 @@ begin
       v_ctx.source_id,
       (v_unresolved ->> 'profile_id')::uuid,
       repeat('b', 64),
-      'live-page-bytes-v1',
-      'live-page-bytes',
+      'canonical-official-product-semantics-v1',
+      'official-product-semantic',
       'v1',
       'fresh_recovery',
       jsonb_build_object(
         'final_url', 'https://example.com/product',
         'content_type', 'text/html; charset=utf-8',
         'byte_length', 1234,
+        'canonical_length', 465,
         'fetched_at', '2026-09-22T07:58:00Z'
       ),
       '{"fixture":"phase8g-fresh"}'::jsonb

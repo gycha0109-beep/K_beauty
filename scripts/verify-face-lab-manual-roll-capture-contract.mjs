@@ -496,7 +496,7 @@ for (const supplementalSubject of supplementalPosePrescreen.subjects) {
   );
   assert.equal(
     supplementalSubject.interpretation.adequacyDecisionImpact,
-    "none_until_face_lab_metric_measurement"
+    "descriptive_evidence_added_explicit_adequacy_review_required"
   );
 }
 assert.equal(

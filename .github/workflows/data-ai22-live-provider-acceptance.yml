@@ -1,10 +1,11 @@
-name: Product Query AI - DATA-AI22 Live Provider Acceptance
-run-name: "[WT:taxonomy-ai] Product Query AI - DATA-AI22 Live Provider Acceptance"
+name: Product Query AI - DATA-AI22 Quality Closure
+run-name: "[WT:taxonomy-ai] Product Query AI - DATA-AI22 Quality Closure"
 
 on:
   pull_request:
     branches: [main]
     paths:
+      - "lib/product-query-beta-quality-acceptance-evidence.mjs"
       - "app/api/my/product-query-beta/quality-evaluation/route.js"
       - "lib/server/product-query-beta-quality-live-service.js"
       - "scripts/verify-data-ai22-live-provider-acceptance.mjs"
@@ -12,6 +13,7 @@ on:
   push:
     branches: [main]
     paths:
+      - "lib/product-query-beta-quality-acceptance-evidence.mjs"
       - "app/api/my/product-query-beta/quality-evaluation/route.js"
       - "lib/server/product-query-beta-quality-live-service.js"
       - "scripts/verify-data-ai22-live-provider-acceptance.mjs"
@@ -22,18 +24,19 @@ on:
         description: CI Watchtower Track Key
         required: false
         type: string
+
 permissions:
   contents: read
   deployments: read
   id-token: write
 
 concurrency:
-  group: data-ai22-live-provider-acceptance-${{ github.event.pull_request.number || github.ref }}
+  group: data-ai22-quality-closure-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   verify:
-    name: DATA-AI22 live provider acceptance contract
+    name: DATA-AI22 quality closure contract
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -43,17 +46,17 @@ jobs:
           fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Verify DATA-AI22 live acceptance boundary
+      - name: Verify DATA-AI22 quality closure
         run: node scripts/verify-data-ai22-live-provider-acceptance.mjs
 
-  production-preflight:
-    name: DATA-AI22 exact-deployment Production preflight
+  production-closure:
+    name: DATA-AI22 exact-deployment Production closure
     if: github.event_name == 'push'
     needs: verify
     runs-on: ubuntu-24.04
     timeout-minutes: 7
     steps:
-      - name: Checkout exact live-acceptance SHA
+      - name: Checkout exact closure SHA
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
@@ -98,7 +101,19 @@ jobs:
           echo "::add-mask::$trusted"
           printf 'trusted=%s\n' "$trusted" >> "$GITHUB_OUTPUT"
 
-      - name: Assert anonymous live-quality access remains closed
+      - name: Assert temporary DATA-AI22 quality route is retired
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error -o /dev/null -w '%{http_code}' \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            "$DEPLOYMENT_URL/api/my/product-query-beta/quality-evaluation?batch=1")"
+          test "$status" = "404"
+
+      - name: Assert anonymous limited beta remains closed
         env:
           DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
           VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
@@ -107,9 +122,11 @@ jobs:
           set -euo pipefail
           output="$(mktemp)"
           trap 'rm -f "$output"' EXIT
-          status="$(curl --silent --show-error -o "$output" -w '%{http_code}' \
+          status="$(curl --silent --show-error -o "$output" -w '%{http_code}' -X POST \
             -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
-            "$DEPLOYMENT_URL/api/my/product-query-beta/quality-evaluation?batch=1")"
+            -H 'Content-Type: application/json' \
+            --data '{"query":"data-ai22-anonymous-closure-probe"}' \
+            "$DEPLOYMENT_URL/api/my/product-query-beta")"
           test "$status" = "401"
           grep -Fq '"unauthorized"' "$output"
-          echo "DATA_AI22_LIVE_PRODUCTION_PREFLIGHT=PASS"
+          echo "DATA_AI22_QUALITY_CLOSURE=PASS"
