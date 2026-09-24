@@ -129,7 +129,7 @@ jobs:
           } >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -215,7 +215,7 @@ jobs:
         run: echo "REVIEW_IMPORT_RUNTIME_DIR=${REVIEW_IMPORT_RUNTIME_DIR}" >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -326,7 +326,7 @@ jobs:
         run: echo "REVIEW_V2_RUNTIME_DIR=${RUNNER_TEMP}/admin-product-v2-runtime" >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
