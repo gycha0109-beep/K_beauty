@@ -213,8 +213,18 @@ The adapter remains fail-closed:
 - a visible canonical text change changes the digest;
 - an unsupported adapter or digest-basis mismatch is an implementation error, not an ambiguous source result;
 - raw `live-page-bytes / v1` remains supported for already-profiled sources;
-- fresh baseline recovery defaults to `canonical-html-text / v1` only after a stable Production canary;
+- `canonical-html-text / v1` remains an explicit compatibility adapter; new Product Fact fresh-recovery baselines default to `official-product-semantic / v1` only after a stable semantic Production canary;
 - no adapter result can itself confirm a Product Fact or mutate Recommendation authority.
+
+### Production semantic profile contract provenance
+
+The Production migration ledger version for the semantic fresh-recovery contract is:
+
+```text
+20260924104150_trust_phase8g_semantic_profile_contract_v1.sql
+```
+
+The repository migration filename must use that exact Production version. The SQL body is the exact statement already recorded in Production migration history; this is provenance alignment, not a second schema application.
 
 ### Product Fact semantic adapter
 

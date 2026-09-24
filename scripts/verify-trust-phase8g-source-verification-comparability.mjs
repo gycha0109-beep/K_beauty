@@ -12,7 +12,7 @@ const workerPath = "scripts/trust-source-verification-worker.mjs";
 const researchWorkerPath = "scripts/trust-research-worker.mjs";
 const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
 const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
-const semanticProfileMigrationPath = "supabase/migrations/20260924030000_trust_phase8g_semantic_profile_contract_v1.sql";
+const semanticProfileMigrationPath = "supabase/migrations/20260924104150_trust_phase8g_semantic_profile_contract_v1.sql";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
@@ -74,6 +74,11 @@ for (const forbidden of [
 for (const token of [
   "phase8g_unresolved_profile_verification_not_rejected",
   "phase8g_profile_exact_replay_not_idempotent",
+  "phase8g_raw_compat_profile_invalid",
+  "phase8g_semantic_profile_missing_canonical_length_not_rejected",
+  "phase8g_semantic_basis_key_mismatch_not_rejected",
+  "phase8g_semantic_version_mismatch_not_rejected",
+  "phase8g_unknown_adapter_not_rejected",
   "phase8g_profile_request_conflict_not_rejected",
   "phase8g_verification_request_conflict_not_rejected",
   "phase8g_unprofiled_revalidation_not_rejected",
@@ -120,9 +125,26 @@ for (const token of [
   "official-product-semantic",
   "canonical_length",
   "live-page-bytes-v1",
-  "product_evidence_source_verification_profile_fresh_recovery_invalid"
+  "product_evidence_source_verification_profile_fresh_recovery_invalid",
+  "btrim(p_digest_basis) = 'canonical-official-product-semantics-v1'",
+  "btrim(p_adapter_key) = 'official-product-semantic'",
+  "btrim(p_adapter_version) = 'v1'",
+  "btrim(p_digest_basis) = 'live-page-bytes-v1'",
+  "btrim(p_adapter_key) = 'live-page-bytes'"
 ]) {
   assert.ok(semanticProfileMigration.includes(token), `missing semantic profile migration token: ${token}`);
+}
+
+for (const forbidden of [
+  "update public.product_fact_current",
+  "delete from public.product_fact_current",
+  "insert into public.product_fact_instances",
+  "update public.product_fact_instances",
+  "insert into public.product_fact_confirmations",
+  "insert into public.recommendation",
+  "update public.recommendation"
+]) {
+  assert.ok(!semanticProfileMigration.toLowerCase().includes(forbidden.toLowerCase()), `forbidden semantic profile authority: ${forbidden}`);
 }
 
 for (const token of [
