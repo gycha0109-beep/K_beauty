@@ -44,13 +44,15 @@ May become `COMPARABLE` only when the historical digest is explicitly replay-pro
 
 Creates a new comparison baseline without rewriting historical Evidence Source rows.
 
-Phase 8G v1 uses:
+Phase 8G preserves explicit adapter provenance. Historical profiles keep their original adapter contract. New fresh-recovery profiles use a semantic adapter only after a no-mutation live canary proves repeatability:
 
 ```text
-digest_basis = live-page-bytes-v1
-adapter_key = live-page-bytes
+digest_basis = canonical-official-product-semantics-v1
+adapter_key = official-product-semantic
 adapter_version = v1
 ```
+
+`live-page-bytes / v1` and `canonical-html-text / v1` remain compatibility adapters; neither is silently substituted when semantic parsing fails.
 
 Fresh baseline capture is operational metadata only:
 
@@ -126,9 +128,9 @@ baseline
 verify
 ```
 
-`baseline` captures a fresh live-page-byte baseline through the shared bounded official-source fetch transport.
+`baseline` captures a fresh observation through the shared bounded official-source fetch transport and the explicitly selected profile adapter.
 
-`verify` compares current live-page bytes only against a compatible `live-page-bytes-v1` profile and records the observation. It does not automatically call Phase 8C.
+`verify` uses the exact adapter key/version and digest basis frozen by the current COMPARABLE profile. Adapter mismatch, unsupported semantic extraction, or a missing required evidence anchor fails closed; there is no raw-byte fallback. It does not automatically call Phase 8C.
 
 Network transport is shared with the existing research worker and preserves:
 
@@ -213,3 +215,27 @@ The adapter remains fail-closed:
 - raw `live-page-bytes / v1` remains supported for already-profiled sources;
 - fresh baseline recovery defaults to `canonical-html-text / v1` only after a stable Production canary;
 - no adapter result can itself confirm a Product Fact or mutate Recommendation authority.
+
+### Product Fact semantic adapter
+
+`official-product-semantic / v1` is the fresh-recovery adapter for Product Fact source verification. It does not hash the whole storefront or treat commerce telemetry as Product Fact authority.
+
+The canonical observation is limited to:
+
+- reviewed evidence claim anchors carried by immutable source metadata (`observed_claim`, `current_direct_claim`, `direct_claim`);
+- current product identity metadata when present;
+- stable document title/description;
+- structured `Product` JSON-LD projected to Product Fact-relevant fields.
+
+Commerce/runtime fields such as offers, prices, aggregate ratings, reviews, request scripts, and storefront counters do not own the semantic digest.
+
+Fail-closed rules:
+
+```text
+required reviewed claim missing -> AMBIGUOUS / no silent fallback
+no reviewed claim and no sufficiently descriptive Product JSON-LD -> UNSUPPORTED
+adapter key/version mismatch -> reject
+semantic extraction failure -> never fall back to raw SHA
+```
+
+The initial five-observation Torriden diagnostic isolated the visible-text instability to the product view counter while title and description remained stable. That diagnostic is evidence for excluding storefront telemetry, not a site-specific string rewrite rule.
