@@ -25,6 +25,7 @@ do $$
 declare
   v_ctx record;
   v_unresolved jsonb;
+  v_raw jsonb;
   v_fresh jsonb;
   v_fresh_replay jsonb;
   v_unchanged jsonb;
@@ -115,11 +116,121 @@ begin
       end if;
   end;
 
+  v_raw := public.admin_register_product_evidence_source_verification_profile_v1(
+    '92000000-0000-4000-8000-000000000001',
+    'phase8g-profile-raw-compat-0001',
+    v_ctx.source_id,
+    (v_unresolved ->> 'profile_id')::uuid,
+    repeat('9', 64),
+    'live-page-bytes-v1',
+    'live-page-bytes',
+    'v1',
+    'fresh_recovery',
+    jsonb_build_object(
+      'final_url', 'https://example.com/product',
+      'content_type', 'text/html; charset=utf-8',
+      'byte_length', 1234,
+      'fetched_at', '2026-09-22T07:57:40Z'
+    ),
+    '{"fixture":"phase8g-raw-compat"}'::jsonb
+  );
+
+  if v_raw ->> 'comparability_state' <> 'COMPARABLE'
+     or v_raw ->> 'digest_basis' <> 'live-page-bytes-v1'
+     or v_raw ->> 'adapter_key' <> 'live-page-bytes'
+     or v_raw ->> 'adapter_version' <> 'v1' then
+    raise exception 'phase8g_raw_compat_profile_invalid';
+  end if;
+
+  begin
+    perform public.admin_register_product_evidence_source_verification_profile_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8g-profile-semantic-basis-key-mismatch-0001',
+      v_ctx.source_id,
+      (v_raw ->> 'profile_id')::uuid,
+      repeat('a', 64),
+      'live-page-bytes-v1',
+      'official-product-semantic',
+      'v1',
+      'fresh_recovery',
+      jsonb_build_object(
+        'final_url', 'https://example.com/product',
+        'content_type', 'text/html; charset=utf-8',
+        'byte_length', 1234,
+        'canonical_length', 465,
+        'fetched_at', '2026-09-22T07:57:45Z'
+      ),
+      '{"fixture":"phase8g-semantic-basis-key-mismatch"}'::jsonb
+    );
+    raise exception 'phase8g_semantic_basis_key_mismatch_not_rejected';
+  exception
+    when check_violation then
+      if sqlerrm <> 'product_evidence_source_verification_profile_fresh_recovery_invalid' then
+        raise;
+      end if;
+  end;
+
+  begin
+    perform public.admin_register_product_evidence_source_verification_profile_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8g-profile-semantic-version-mismatch-0001',
+      v_ctx.source_id,
+      (v_raw ->> 'profile_id')::uuid,
+      repeat('a', 64),
+      'canonical-official-product-semantics-v1',
+      'official-product-semantic',
+      'v2',
+      'fresh_recovery',
+      jsonb_build_object(
+        'final_url', 'https://example.com/product',
+        'content_type', 'text/html; charset=utf-8',
+        'byte_length', 1234,
+        'canonical_length', 465,
+        'fetched_at', '2026-09-22T07:57:50Z'
+      ),
+      '{"fixture":"phase8g-semantic-version-mismatch"}'::jsonb
+    );
+    raise exception 'phase8g_semantic_version_mismatch_not_rejected';
+  exception
+    when check_violation then
+      if sqlerrm <> 'product_evidence_source_verification_profile_fresh_recovery_invalid' then
+        raise;
+      end if;
+  end;
+
+  begin
+    perform public.admin_register_product_evidence_source_verification_profile_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8g-profile-unknown-adapter-0001',
+      v_ctx.source_id,
+      (v_raw ->> 'profile_id')::uuid,
+      repeat('a', 64),
+      'canonical-official-product-semantics-v1',
+      'unknown-semantic-adapter',
+      'v1',
+      'fresh_recovery',
+      jsonb_build_object(
+        'final_url', 'https://example.com/product',
+        'content_type', 'text/html; charset=utf-8',
+        'byte_length', 1234,
+        'canonical_length', 465,
+        'fetched_at', '2026-09-22T07:57:55Z'
+      ),
+      '{"fixture":"phase8g-unknown-adapter"}'::jsonb
+    );
+    raise exception 'phase8g_unknown_adapter_not_rejected';
+  exception
+    when check_violation then
+      if sqlerrm <> 'product_evidence_source_verification_profile_fresh_recovery_invalid' then
+        raise;
+      end if;
+  end;
+
   v_fresh := public.admin_register_product_evidence_source_verification_profile_v1(
     '92000000-0000-4000-8000-000000000001',
     'phase8g-profile-fresh-0001',
     v_ctx.source_id,
-    (v_unresolved ->> 'profile_id')::uuid,
+    (v_raw ->> 'profile_id')::uuid,
     repeat('a', 64),
     'canonical-official-product-semantics-v1',
     'official-product-semantic',
@@ -146,7 +257,7 @@ begin
     '92000000-0000-4000-8000-000000000001',
     'phase8g-profile-fresh-0001',
     v_ctx.source_id,
-    (v_unresolved ->> 'profile_id')::uuid,
+    (v_raw ->> 'profile_id')::uuid,
     repeat('a', 64),
     'canonical-official-product-semantics-v1',
     'official-product-semantic',
