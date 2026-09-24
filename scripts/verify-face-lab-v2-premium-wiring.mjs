@@ -79,8 +79,10 @@ assert.ok(
   faceLabApi.includes("buildFaceLabV2Canonical"),
   "server persistence must recompute canonical V2 output"
 );
+const persistedBlock = faceLabApi.match(/const persisted = \{([\s\S]*?)\n  \};/);
+assert.ok(persistedBlock, "Face Lab V2 persisted state block must exist");
 assert.equal(
-  /const persisted = \{[\s\S]*?canonicalV2[\s\S]*?updatedAt/.test(faceLabApi),
+  persistedBlock[1].includes("canonicalV2"),
   false,
   "saved_reports.face_lab must persist user state, not a stale canonical result"
 );
