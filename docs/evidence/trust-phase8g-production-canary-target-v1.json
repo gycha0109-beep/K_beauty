@@ -3,8 +3,13 @@
   "source_id": "2d154999-5dff-4496-9b1e-d8cf9c6f31f6",
   "publisher": "Torriden / (주)토리든",
   "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
-  "selection_reason": "Canonical-adapter canary after raw live bytes proved unstable on Round Lab and Torriden, while Dr.G rate-limited the hosted fetch. Reuse the reviewed Torriden official source to test whether visible HTML text is stable while raw markup varies.",
+  "selection_reason": "Semantic-adapter canary after five live observations proved the only visible-text delta was the non-authoritative product view counter. Bind comparison to the reviewed first-party observed claim instead of storefront telemetry.",
   "expected_authority_mutation": false,
-  "adapter_key": "canonical-html-text",
-  "adapter_version": "v1"
+  "adapter_key": "official-product-semantic",
+  "adapter_version": "v1",
+  "source_metadata": {
+    "authority": "product_specific_primary",
+    "digest_basis": "trust-p29-torriden-mild-kr-mineral-source-observation-v1",
+    "observed_claim": "다이브인 무기자차 마일드 선크림 60ml"
+  }
 }

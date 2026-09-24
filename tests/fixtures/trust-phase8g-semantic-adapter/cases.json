@@ -1,0 +1,9 @@
+{
+  "noise_a": "<!doctype html><html><head><title>Torriden Mild Sun</title><meta name=\"description\" content=\"Mineral sunscreen\"></head><body><h1>다이브인 무기자차 마일드 선크림 60ml</h1><p>상품조회수 47241 건</p><script nonce=\"a\">window.x=1</script></body></html>",
+  "noise_b": "<!doctype html><html><head><title>Torriden Mild Sun</title><meta name=\"description\" content=\"Mineral sunscreen\"></head><body><h1>다이브인 무기자차 마일드 선크림 60ml</h1><p>상품조회수 47299 건</p><script nonce=\"b\">window.x=2</script></body></html>",
+  "structured_a": "<!doctype html><html><head><title>Sun</title><script type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"Product\",\"name\":\"Sun Cream\",\"description\":\"Mineral SPF50+ PA++++\",\"offers\":{\"price\":\"10.00\"},\"aggregateRating\":{\"ratingValue\":\"4.9\",\"reviewCount\":\"10\"}}</script></head><body><p>Sun Cream</p></body></html>",
+  "structured_offer_noise": "<!doctype html><html><head><title>Sun</title><script type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"Product\",\"name\":\"Sun Cream\",\"description\":\"Mineral SPF50+ PA++++\",\"offers\":{\"price\":\"12.00\"},\"aggregateRating\":{\"ratingValue\":\"4.8\",\"reviewCount\":\"11\"}}</script></head><body><p>Sun Cream</p></body></html>",
+  "structured_semantic_change": "<!doctype html><html><head><title>Sun</title><script type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"Product\",\"name\":\"Sun Cream\",\"description\":\"Chemical SPF50+ PA++++\",\"offers\":{\"price\":\"12.00\"}}</script></head><body><p>Sun Cream</p></body></html>",
+  "missing_anchor": "<!doctype html><html><head><title>Torriden Mild Sun</title></head><body><h1>다이브인 유기자차 선크림 60ml</h1></body></html>",
+  "unsupported": "<!doctype html><html><head><title>Generic Store</title></head><body><p>Welcome</p></body></html>"
+}

@@ -32,7 +32,7 @@ export async function establishFreshBaseline(client, {
   sourceId,
   actorUserId,
   requestId,
-  adapterKey = "canonical-html-text",
+  adapterKey = "official-product-semantic",
   adapterVersion = "v1",
   fetchImpl = fetch,
 } = {}) {
@@ -40,7 +40,10 @@ export async function establishFreshBaseline(client, {
   const target = await loadTarget(client, sourceId);
   const fetched = await fetchOfficialBytes(target.canonical_locator, fetchImpl);
   const fetchedAt = new Date().toISOString();
-  const adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion);
+  const adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion, {
+    sourceMetadata: target.source_metadata || {},
+    canonicalLocator: target.canonical_locator,
+  });
   const digest = adapted.digest;
   const currentProfile = target.verification_profile || null;
 
@@ -81,8 +84,15 @@ export async function verifySource(client, {
   if (!profile || profile.comparability_state !== "COMPARABLE") {
     throw new Error("SOURCE_VERIFICATION_PROFILE_NOT_COMPARABLE");
   }
-  const adapterProbe = digestOfficialContent(Buffer.alloc(0), profile.adapter_key, profile.adapter_version);
-  if (adapterProbe.digestBasis !== profile.digest_basis) {
+  const expectedDigestBasis = profile.adapter_key === "official-product-semantic" && profile.adapter_version === "v1"
+    ? "canonical-official-product-semantics-v1"
+    : profile.adapter_key === "canonical-html-text" && profile.adapter_version === "v1"
+      ? "canonical-html-text-v1"
+      : profile.adapter_key === "live-page-bytes" && profile.adapter_version === "v1"
+        ? "live-page-bytes-v1"
+        : null;
+  if (!expectedDigestBasis) throw new Error("SOURCE_VERIFICATION_PROFILE_ADAPTER_UNSUPPORTED");
+  if (expectedDigestBasis !== profile.digest_basis) {
     throw new Error("SOURCE_VERIFICATION_PROFILE_DIGEST_BASIS_MISMATCH");
   }
   const checkedAt = new Date().toISOString();
@@ -92,7 +102,10 @@ export async function verifySource(client, {
 
   try {
     const fetched = await fetchOfficialBytes(target.canonical_locator, fetchImpl);
-    const adapted = digestOfficialContent(fetched.bytes, profile.adapter_key, profile.adapter_version);
+    const adapted = digestOfficialContent(fetched.bytes, profile.adapter_key, profile.adapter_version, {
+      sourceMetadata: target.source_metadata || {},
+      canonicalLocator: target.canonical_locator,
+    });
     if (adapted.digestBasis !== profile.digest_basis) {
       throw new Error("SOURCE_VERIFICATION_PROFILE_DIGEST_BASIS_MISMATCH");
     }
@@ -131,7 +144,7 @@ export async function runSourceVerificationWorker({
   actorUserId,
   requestId,
   triggerKind = "manual",
-  adapterKey = "canonical-html-text",
+  adapterKey = "official-product-semantic",
   adapterVersion = "v1",
   fetchImpl = fetch,
 } = {}) {
@@ -156,7 +169,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     actorUserId: argValue("actor-user-id"),
     requestId: argValue("request-id"),
     triggerKind: argValue("trigger-kind") || "manual",
-    adapterKey: argValue("adapter-key") || "canonical-html-text",
+    adapterKey: argValue("adapter-key") || "official-product-semantic",
     adapterVersion: argValue("adapter-version") || "v1",
   });
   console.log(JSON.stringify({

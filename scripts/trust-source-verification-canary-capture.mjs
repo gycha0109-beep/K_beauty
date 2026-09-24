@@ -12,9 +12,12 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function capture(url, label, adapterKey, adapterVersion, fetchImpl = fetch) {
+async function capture(url, label, adapterKey, adapterVersion, sourceMetadata, fetchImpl = fetch) {
   const fetched = await fetchOfficialBytes(url, fetchImpl);
-  const adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion);
+  const adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion, {
+    sourceMetadata: sourceMetadata || {},
+    canonicalLocator: url,
+  });
   return {
     label,
     fetched_at: new Date().toISOString(),
@@ -42,9 +45,9 @@ export async function captureProductionCanaryPair({
 
   const adapterKey = target.adapter_key || "live-page-bytes";
   const adapterVersion = target.adapter_version || "v1";
-  const baseline = await capture(target.canonical_locator, "baseline", adapterKey, adapterVersion, fetchImpl);
+  const baseline = await capture(target.canonical_locator, "baseline", adapterKey, adapterVersion, target.source_metadata, fetchImpl);
   await sleep(delayMs);
-  const verification = await capture(target.canonical_locator, "verification", adapterKey, adapterVersion, fetchImpl);
+  const verification = await capture(target.canonical_locator, "verification", adapterKey, adapterVersion, target.source_metadata, fetchImpl);
 
   return {
     contract: "trust-phase8g-production-canary-capture-v1",
