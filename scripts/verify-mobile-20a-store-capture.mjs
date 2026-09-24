@@ -61,6 +61,9 @@ for (const marker of [
   'rm -f "$UI_DUMP"',
   "MOBILE_STORE_UI_DUMP_RECOVERY=PASS",
   "UI dump failed after %s attempts",
+  "foreground_ui_owned_by_app()",
+  'adb shell uiautomator dump /sdcard/bejewely-foreground-window.xml',
+  "MOBILE_STORE_APP_FOREGROUND_UI_FALLBACK=PASS",
   "tap_text_from_current_ui()",
   'tap_text_from_current_ui "Take photo"',
   'tap_text_from_current_ui "사진 촬영"',
@@ -126,6 +129,9 @@ assert(capture.split('adb shell input swipe 540 "$STORE_SCROLL_UP_START_Y" 540 "
 assert(!capture.includes("adb shell input swipe 540 1580 540 680 350"), "no-scroll-gesture-from-below-content-viewport");
 assert(capture.split('adb shell pm clear "$PACKAGE_ID"').length - 1 === 2, "two-clean-localized-capture-sessions");
 assert(capture.split("MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko").length - 1 === 1, "one-locale-session-reset");
+assert(capture.includes("top_activity=") && capture.includes("focused_display="), "multi-signal-foreground-detector");
+assert(capture.includes('[[ "$hierarchy" == *"package=\\\"$PACKAGE_ID\\\""* ]]'), "foreground-ui-package-owner-fallback");
+assert(!capture.includes("return 0\n}\n\nwait_for_app_foreground()"), "foreground-detector-not-unconditional");
 
 const screenshotTransportAttempt = capture.indexOf('if adb exec-out screencap -p > "$output"; then');
 const screenshotDimensionValidation = capture.indexOf("if (width, height) != (1080, 1920)", screenshotTransportAttempt);
@@ -189,6 +195,7 @@ console.log("MOBILE_20A_CAPTURE_DIMENSIONS=PASS");
 console.log("MOBILE_20A_SCREENSHOT_TRANSPORT_RECOVERY=PASS");
 console.log("MOBILE_20A_QUICKSTEP_RECOVERY=PASS");
 console.log("MOBILE_20A_UI_DUMP_RETRY_GUARD=PASS");
+console.log("MOBILE_20A_APP_FOREGROUND_MULTI_SIGNAL=PASS");
 console.log("MOBILE_20A_CURRENT_UI_CAMERA_TAP=PASS");
 console.log("MOBILE_20A_CAMERA_ENTRY_RACE_GUARD=PASS");
 console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
