@@ -598,6 +598,18 @@ function FaceLabV2Result({ result, locale, onSelectRoute, onEditTarget }) {
               <p className="text-sm font-semibold">{route.title}</p>
               <p className="mt-1 text-xs opacity-80">{formatMeta(route)}</p>
               <p className="mt-2 text-sm leading-6 opacity-90">{route.whyThisRoute}</p>
+              {route.actions?.length ? (
+                <div className="mt-3 grid gap-1.5">
+                  {route.actions.slice(0, 2).map((action) => (
+                    <p
+                      key={`${action.domain}-${action.parameter}`}
+                      className="text-xs leading-5 opacity-80"
+                    >
+                      · {action.explanation}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
             </button>
           ))}
         </div>
