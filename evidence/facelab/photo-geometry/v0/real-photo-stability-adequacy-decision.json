@@ -1,8 +1,8 @@
 {
   "schemaVersion": "face-lab-real-photo-stability-adequacy-decision-v1",
-  "status": "hold_for_more_evidence",
-  "decisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
-  "decisionVersion": "real-photo-stability-adequacy-decision-v2",
+  "status": "adequate_for_provisional_research",
+  "decisionCode": "PROVISIONAL_RESEARCH_ADEQUATE",
+  "decisionVersion": "real-photo-stability-adequacy-decision-v3",
   "evidenceRef": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
   "decisionMode": "explicit_manual_research_review",
   "sourceDescriptiveReviewSchemaVersion": "face-lab-real-photo-stability-adequacy-review-v1",
@@ -17,19 +17,16 @@
     "head_roll",
     "head_yaw"
   ],
-  "decisionRationale": "The 492-report review expands head-roll evidence from two observations in one linkage group to six observations across three linkage groups, with canonical metric geometry successfully measured for the four supplemental pairs. The supplemental groups broaden descriptive technical evidence, but their same-session capture provenance and research-use authorization are not verified. The provisional normalization-research gate therefore remains on hold.",
+  "decisionRationale": "The exact 492-report collection covers expression, head_pitch, head_roll, and head_yaw. Head-roll evidence now includes six canonical metric-geometry reports across three manual subject-linkage groups, including four supplemental reports from the user-supplied triplets. For this internal research track, source authorization and same-session provenance are recorded as limitations but are explicitly not used as adequacy blockers. The evidence is therefore accepted as adequate for a provisional same-provider research normalization candidate only; no Production, threshold, Archetype, or style authority is granted.",
   "coverageLimitations": [
-    "Head roll now spans six observations across three linkage groups; four supplemental observations come from user-supplied triplets without verified same-session capture provenance.",
-    "Research-use authorization is not verified for the supplemental imagery, so those observations remain descriptive technical evidence only.",
+    "Four supplemental head-roll observations come from user-supplied internet imagery; same-session capture provenance is unverified and retained as a documented limitation rather than a research gate.",
+    "Research-use authorization for the supplemental imagery is unverified and retained as a documented limitation rather than a research gate.",
     "Observed drift is descriptive and uncalibrated; no numeric adequacy threshold is applied or implied.",
     "Cross-provider semantic alignment is outside this adequacy review; existing semantic holds, including chin_height_ratio and nose_width_ratio, remain unresolved."
   ],
-  "holdReasons": [
-    "head_roll_same_session_capture_provenance_unverified",
-    "head_roll_research_use_authorization_unverified"
-  ],
+  "holdReasons": [],
   "evidenceIntegrityBlockers": [],
-  "provisionalResearchGateGranted": false,
+  "provisionalResearchGateGranted": true,
   "automaticAdequacyInferred": false,
   "numericThresholdInvented": false,
   "productionAuthority": false,
