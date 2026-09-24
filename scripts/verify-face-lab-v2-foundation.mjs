@@ -346,6 +346,32 @@ assert.deepEqual(normalizedPersistence.surveyAnswers.stylingScope, ["hair", "mak
 assert.deepEqual(normalizedPersistence.surveyAnswers.constraints.hardExclusions, ["hair_dye"]);
 assert.equal(normalizedPersistence.selectedRouteId, "balanced");
 
+const normalizedFinderPersistence = normalizeFaceLabV2PersistencePayload({
+  surveyAnswers: survey,
+  targetFinderResult: {
+    ...finderResult,
+    estimatedVector: {
+      softSharp: 0,
+      naturalPolished: 0,
+      playfulMature: 0,
+      minimalStatement: 0,
+      warmCool: 0,
+      classicTrendy: 0
+    },
+    userApproved: true
+  }
+});
+
+assert.deepEqual(
+  normalizedFinderPersistence.targetFinderResult.estimatedVector,
+  finderResult.estimatedVector,
+  "persisted finder vector must be recomputed from recorded round choices"
+);
+assert.equal(
+  normalizedFinderPersistence.targetFinderResult.candidateSetVersion,
+  "target-finder-cards-v1"
+);
+
 const editedTarget = buildFaceLabV2Canonical({
   analysis,
   surveyAnswers: {
