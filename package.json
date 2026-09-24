@@ -98,11 +98,11 @@
     "dotenv": "^17.4.2",
     "framer-motion": "^12.38.0",
     "html-to-image": "^1.11.13",
-    "next": "15.5.22",
+    "next": "15.5.26",
     "postgres": "3.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sharp": "0.35.3"
+    "sharp": "0.35.4"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
@@ -113,7 +113,7 @@
   "overrides": {
     "next": {
       "postcss": "8.5.25",
-      "sharp": "0.35.3"
+      "sharp": "0.35.4"
     }
   }
 }
