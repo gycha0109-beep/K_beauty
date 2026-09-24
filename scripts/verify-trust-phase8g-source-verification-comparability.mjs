@@ -13,6 +13,7 @@ const researchWorkerPath = "scripts/trust-research-worker.mjs";
 const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
 const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
 const semanticProfileMigrationPath = "supabase/migrations/20260924104150_trust_phase8g_semantic_profile_contract_v1.sql";
+const claimAssetProfileMigrationPath = "supabase/migrations/20260924165109_trust_phase8g_claim_asset_profile_contract_v1.sql";
 const controlledBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-batch-v1.json";
 const controlledProbePath = "scripts/trust-source-semantic-controlled-batch-probe.mjs";
 const controlledAssetBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-asset-batch-v1.json";
@@ -29,6 +30,7 @@ const researchWorker = fs.readFileSync(researchWorkerPath, "utf8");
 const semanticAdapter = fs.readFileSync(semanticAdapterPath, "utf8");
 const semanticVerifier = fs.readFileSync(semanticVerifierPath, "utf8");
 const semanticProfileMigration = fs.readFileSync(semanticProfileMigrationPath, "utf8");
+const claimAssetProfileMigration = fs.readFileSync(claimAssetProfileMigrationPath, "utf8");
 const controlledBatch = JSON.parse(fs.readFileSync(controlledBatchPath, "utf8"));
 const controlledProbe = fs.readFileSync(controlledProbePath, "utf8");
 const controlledAssetBatch = JSON.parse(fs.readFileSync(controlledAssetBatchPath, "utf8"));
@@ -63,6 +65,35 @@ for (const token of [
   assert.ok(hardening.includes(token), `missing Phase 8G hardening token: ${token}`);
 }
 
+for (const token of [
+  "official-claim-asset-bytes-v1",
+  "official-claim-asset",
+  "direct_claim_asset_url",
+  "current_direct_claim",
+  "page_asset_binding_present",
+  "claim_asset_url",
+  "asset_final_url",
+  "asset_content_type",
+  "asset_byte_length",
+  "qualification_observations",
+  "qualification_asset_digest",
+  "product_evidence_source_verification_profile_fresh_recovery_invalid"
+]) {
+  assert.ok(claimAssetProfileMigration.includes(token), `missing claim asset profile migration token: ${token}`);
+}
+
+for (const forbidden of [
+  "update public.product_fact_current",
+  "delete from public.product_fact_current",
+  "insert into public.product_fact_instances",
+  "update public.product_fact_instances",
+  "insert into public.product_fact_confirmations",
+  "insert into public.recommendation",
+  "update public.recommendation"
+]) {
+  assert.ok(!claimAssetProfileMigration.toLowerCase().includes(forbidden.toLowerCase()), `forbidden claim asset profile authority: ${forbidden}`);
+}
+
 for (const forbidden of [
   "update public.product_fact_current",
   "delete from public.product_fact_current",
@@ -91,6 +122,9 @@ for (const token of [
   "phase8g_verification_request_conflict_not_rejected",
   "phase8g_unprofiled_revalidation_not_rejected",
   "phase8g_profiled_revalidation_preflight_invalid",
+  "phase8g_asset_profile_missing_reviewed_metadata_not_rejected",
+  "phase8g_asset_profile_invalid",
+  "phase8g_asset_verification_invalid",
   "phase8g_authority_state_mutated",
   "phase8g_profile_acl_mismatch",
   "phase8g_function_acl_mismatch",
@@ -161,7 +195,12 @@ for (const token of [
   "official-product-semantic",
   "canonical-official-product-semantics-v1",
   "record_product_evidence_source_verification_v2",
-  "admin_register_product_evidence_source_verification_profile_v1"
+  "admin_register_product_evidence_source_verification_profile_v1",
+  "official-claim-asset",
+  "official-claim-asset-bytes-v1",
+  "qualifyOfficialClaimAssetTriplet",
+  "captureOfficialClaimAsset",
+  "SOURCE_CLAIM_ASSET_BASELINE_DRIFT_AFTER_QUALIFICATION"
 ]) {
   assert.ok(worker.includes(token), `missing Phase 8G worker token: ${token}`);
 }
