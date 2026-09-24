@@ -246,6 +246,37 @@ product_evidence_source_verifications
 
 It must not change Facts, Current, Confirmations, Assignments, Revalidation Transitions, Research Bridges, Resolutions, or Recommendation authority.
 
+## Reviewed claim asset comparability
+
+Some official product pages render reviewed claims only inside first-party or page-linked product imagery. Those sources must not be forced through OCR or silently downgraded to raw-page hashing.
+
+For a source whose immutable evidence metadata contains `direct_claim_asset_url`, Phase 8G may use:
+
+```text
+digest_basis    = official-claim-asset-bytes-v1
+adapter_key     = official-claim-asset
+adapter_version = v1
+baseline_kind   = fresh_recovery
+```
+
+The claim asset contract is fail-closed:
+
+```text
+canonical source page = HTTPS
+final product path = reviewed product path
+exact reviewed direct_claim_asset_url = still bound by the product page
+asset URL = HTTPS
+asset final host/path = reviewed asset host/path
+asset content type = image/*
+three qualification asset digests = identical
+fresh profile baseline = new asset fetch after qualification
+verification = another independent asset fetch
+```
+
+The adapter does not OCR or reinterpret the image. The reviewed evidence metadata is the semantic binding; the asset byte digest only answers whether that exact reviewed claim artifact remained unchanged. If the page stops binding the reviewed asset, the asset moves, or the bytes change, the result is fail-closed for review.
+
+A claim-asset profile may change only source verification profile/history rows. It must not mutate Facts, Current, Confirmations, Assignments, Revalidation Transitions, Research Bridges, Resolutions, or Recommendation authority.
+
 ### Canonical HTML text adapter
 
 Dynamic storefronts can emit request-specific HTML while presenting unchanged product text. Production canary attempts on independent storefronts demonstrated that equal-length responses can still have different raw SHA256 digests seconds apart.
