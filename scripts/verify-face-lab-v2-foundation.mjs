@@ -15,6 +15,11 @@ import {
 import {
   normalizeFaceLabV2PersistencePayload
 } from "../lib/face-lab-v2/survey-contract.js";
+import {
+  TARGET_FINDER_ROUNDS,
+  buildTargetFinderResult,
+  getTargetFinderRound
+} from "../lib/face-lab-v2/target-finder.js";
 
 function buildRawObservation() {
   const observations = {};
@@ -160,6 +165,44 @@ assert.equal(unconfirmed.routes, null);
 assert.equal(unconfirmed.hair, null);
 assert.equal(unconfirmed.makeup, null);
 assert.equal(isFaceLabV2CanonicalResult(unconfirmed), true);
+
+assert.equal(TARGET_FINDER_ROUNDS.length, 5);
+const firstFinderRound = getTargetFinderRound(0);
+assert.equal(firstFinderRound.roundId, "natural-vs-sophisticated");
+assert.ok(firstFinderRound.candidateA.referenceAssetKey);
+assert.ok(firstFinderRound.candidateB.referenceAssetKey);
+
+const finderResult = buildTargetFinderResult([
+  { roundId: "natural-vs-sophisticated", choice: "b" },
+  { roundId: "soft-vs-defined", choice: "b" },
+  { roundId: "playful-vs-mature", choice: "b" },
+  { roundId: "minimal-vs-statement", choice: "a" },
+  { roundId: "classic-vs-trendy", choice: "both" }
+]);
+
+assert.equal(finderResult.candidateSetVersion, "target-finder-cards-v1");
+assert.equal(finderResult.userApproved, false);
+assert.ok(finderResult.candidateLabels.length >= 1);
+assert.ok(typeof finderResult.estimatedVector.softSharp === "number");
+
+const finderCanonical = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    entryMode: "unknown",
+    targetSelections: [],
+    approvedAt: null
+  },
+  targetFinderResult: {
+    ...finderResult,
+    userApproved: true
+  },
+  resultId: "fixture-face-lab-v2-finder"
+});
+
+assert.equal(finderCanonical.targetStyle.status, "available");
+assert.equal(finderCanonical.targetStyle.source, "target_finder");
+assert.ok(finderCanonical.routes.routes.length >= 1);
 
 const partialClarified = buildFaceLabV2Canonical({
   analysis,
