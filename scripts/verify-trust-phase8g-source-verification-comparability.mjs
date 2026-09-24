@@ -10,6 +10,8 @@ const lifecyclePath = "docs/evidence/trust-phase8a-product-fact-revalidation-con
 const transportPath = "lib/trust/official-source-fetch.mjs";
 const workerPath = "scripts/trust-source-verification-worker.mjs";
 const researchWorkerPath = "scripts/trust-research-worker.mjs";
+const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
+const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
@@ -19,6 +21,8 @@ const lifecycle = fs.readFileSync(lifecyclePath, "utf8");
 const transport = fs.readFileSync(transportPath, "utf8");
 const worker = fs.readFileSync(workerPath, "utf8");
 const researchWorker = fs.readFileSync(researchWorkerPath, "utf8");
+const semanticAdapter = fs.readFileSync(semanticAdapterPath, "utf8");
+const semanticVerifier = fs.readFileSync(semanticVerifierPath, "utf8");
 
 for (const token of [
   "create table public.product_evidence_source_verification_profiles",
@@ -102,7 +106,9 @@ for (const token of [
   "export function sha256Hex",
   "export function canonicalizeOfficialHtmlTextV1",
   "export function digestOfficialContent",
-  "canonical-html-text-v1"
+  "canonical-html-text-v1",
+  "official-product-semantic",
+  "canonical-official-product-semantics-v1"
 ]) {
   assert.ok(transport.includes(token), `missing shared transport token: ${token}`);
 }
@@ -110,12 +116,37 @@ for (const token of [
 for (const token of [
   "establishFreshBaseline",
   "verifySource",
-  "canonical-html-text",
+  "official-product-semantic",
+  "canonical-official-product-semantics-v1",
   "record_product_evidence_source_verification_v2",
   "admin_register_product_evidence_source_verification_profile_v1"
 ]) {
   assert.ok(worker.includes(token), `missing Phase 8G worker token: ${token}`);
 }
+
+
+for (const token of [
+  "SOURCE_SEMANTIC_ADAPTER_REQUIRED_ANCHOR_MISSING",
+  "SOURCE_SEMANTIC_ADAPTER_UNSUPPORTED",
+  "observed_claim",
+  "current_direct_claim",
+  "direct_claim",
+  "structured_products"
+]) {
+  assert.ok(semanticAdapter.includes(token), `missing semantic adapter fail-closed token: ${token}`);
+}
+
+for (const token of [
+  "storefront telemetry and runtime script noise must not alter semantic digest",
+  "structured Product semantic change must alter digest",
+  "SOURCE_SEMANTIC_ADAPTER_REQUIRED_ANCHOR_MISSING",
+  "SOURCE_SEMANTIC_ADAPTER_UNSUPPORTED"
+]) {
+  assert.ok(semanticVerifier.includes(token), `missing semantic adapter verification token: ${token}`);
+}
+
+assert.ok(!worker.includes("semantic parse failed"));
+assert.ok(!worker.includes("fallback raw"));
 
 assert.ok(researchWorker.includes('from "../lib/trust/official-source-fetch.mjs"'));
 assert.ok(!researchWorker.includes('from "node:dns/promises"'));
