@@ -11,6 +11,8 @@ METRO_PID=""
 MOBILE_NODE_PATH="$MOBILE_ROOT/node_modules${NODE_PATH:+:$NODE_PATH}"
 QUICKSTEP_RECOVERY_COUNT=0
 QUICKSTEP_RECOVERY_LIMIT=2
+SCENARIO_PROCESS_RECOVERY_LIMIT=2
+SCENARIO_PROCESS_LOSS_GRACE=3
 
 mkdir -p "$ARTIFACT_DIR"
 rm -f "$ARTIFACT_DIR"/*.png "$ARTIFACT_DIR"/*.xml "$ARTIFACT_DIR"/capture-manifest.json
@@ -92,6 +94,96 @@ PY
 launch_scenario() {
   local scenario="$1"
   adb shell am start -W -a android.intent.action.VIEW -d "bejewely://store-capture?scenario=$scenario" "$PACKAGE_ID" >/dev/null
+}
+
+scenario_process_running() {
+  adb shell pidof "$PACKAGE_ID" 2>/dev/null | tr -d '\r' | grep -Eq '^[0-9]+( [0-9]+)*
+  local scenario="$1" expected="$2" png="$3" xml="$4"
+  local xml_path="$ARTIFACT_DIR/$xml"
+  adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
+  adb shell pm clear "$PACKAGE_ID" >/dev/null
+  adb reverse tcp:8081 tcp:8081 >/dev/null
+  launch_scenario "$scenario"
+  local found=0
+  local process_recovery_count=0
+  local process_loss_streak=0
+  local attempt
+  for attempt in $(seq 1 45); do
+    adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
+    adb pull /sdcard/window.xml "$xml_path" >/dev/null 2>&1 || true
+    if [[ -s "$xml_path" ]] && grep -Fq "$expected" "$xml_path"; then found=1; break; fi
+    if [[ -s "$xml_path" ]] && grep -Fq "Quickstep isn't responding" "$xml_path"; then
+      if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
+        echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
+        exit 1
+      fi
+      if ! tap_text_from_dump "$xml_path" "Close app"; then
+        echo "Quickstep ANR detected but its Close app action was unavailable" >&2
+        exit 1
+      fi
+      QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
+      printf 'MOBILE_20B_QUICKSTEP_ANR_RECOVERY=PASS scenario=%s count=%d\n' "$scenario" "$QUICKSTEP_RECOVERY_COUNT"
+      sleep 2
+      adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
+      adb reverse tcp:8081 tcp:8081 >/dev/null
+      launch_scenario "$scenario"
+      printf 'MOBILE_20B_SCENARIO_RESTART=PASS scenario=%s\n' "$scenario"
+      process_loss_streak=0
+      sleep 2
+      continue
+    fi
+    if launcher_owns_ui "$xml_path" && ! scenario_process_running; then
+      process_loss_streak=$((process_loss_streak + 1))
+      if (( process_loss_streak >= SCENARIO_PROCESS_LOSS_GRACE )); then
+        if (( process_recovery_count >= SCENARIO_PROCESS_RECOVERY_LIMIT )); then
+          echo "BEJEWELY process repeatedly died during scenario: $scenario" >&2
+          exit 1
+        fi
+        process_recovery_count=$((process_recovery_count + 1))
+        printf 'MOBILE_20B_PROCESS_RECOVERY=PASS scenario=%s count=%d attempt=%s\n' "$scenario" "$process_recovery_count" "$attempt"
+        restart_scenario_after_process_loss "$scenario"
+        process_loss_streak=0
+        sleep 2
+        continue
+      fi
+    else
+      process_loss_streak=0
+    fi
+    sleep 2
+  done
+  [[ "$found" -eq 1 ]] || { echo "Required marker not visible for $scenario: $expected" >&2; cat "$xml_path" >&2 || true; exit 1; }
+  adb exec-out screencap -p > "$ARTIFACT_DIR/$png"
+  python - "$ARTIFACT_DIR/$png" <<'PY'
+import struct, sys
+with open(sys.argv[1], "rb") as f: h=f.read(24)
+assert h[:8] == b"\x89PNG\r\n\x1a\n"
+assert struct.unpack(">II", h[16:24]) == (1080, 1920)
+PY
+}
+
+capture "results-en" "Your skin routine, made clear" "03-results-en-1080x1920.png" "03-results-en-window.xml"
+capture "diary-en" "Latest saved report" "04-diary-en-1080x1920.png" "04-diary-en-window.xml"
+capture "results-ko" "내 피부에 맞는 루틴을 한눈에" "03-results-ko-1080x1920.png" "03-results-ko-window.xml"
+capture "diary-ko" "최근 저장 리포트" "04-diary-ko-1080x1920.png" "04-diary-ko-window.xml"
+
+node scripts/verify-mobile-20b-store-capture.mjs artifact "$ARTIFACT_DIR"
+printf 'MOBILE_20B_STORE_CAPTURE=PASS\n'
+
+}
+
+launcher_owns_ui() {
+  local xml_path="$1"
+  [[ -s "$xml_path" ]] &&
+    grep -Fq 'package="com.android.launcher3"' "$xml_path" &&
+    ! grep -Fq "package=\"$PACKAGE_ID\"" "$xml_path"
+}
+
+restart_scenario_after_process_loss() {
+  local scenario="$1"
+  adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
+  adb shell pm clear "$PACKAGE_ID" >/dev/null
+  adb reverse tcp:8081 tcp:8081 >/dev/null
+  launch_scenario "$scenario"
 }
 
 capture() {

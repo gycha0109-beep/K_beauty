@@ -58,6 +58,12 @@ function verifySource() {
   requireText(captureScript, 'tap_text_from_dump "$xml_path" "Close app"', "Quickstep scoped close action");
   requireText(captureScript, "MOBILE_20B_QUICKSTEP_ANR_RECOVERY=PASS", "Quickstep recovery evidence");
   requireText(captureScript, 'launch_scenario "$scenario"', "scenario-preserving recovery restart");
+  requireText(captureScript, "SCENARIO_PROCESS_RECOVERY_LIMIT=2", "bounded process recovery");
+  requireText(captureScript, "SCENARIO_PROCESS_LOSS_GRACE=3", "process loss grace");
+  requireText(captureScript, 'adb shell pidof "$PACKAGE_ID"', "process liveness probe");
+  requireText(captureScript, 'package="com.android.launcher3"', "launcher ownership probe");
+  requireText(captureScript, "MOBILE_20B_PROCESS_RECOVERY=PASS", "process recovery evidence");
+  requireText(captureScript, "BEJEWELY process repeatedly died during scenario", "process recovery fail closed");
   requireText(captureScript, "start --clear --localhost --port 8081", "fresh Metro transform cache");
   requireText(workflow, 'ref: ${{ github.event.pull_request.head.sha || github.sha }}', "exact-head checkout");
   requireText(workflow, 'MOBILE_20B_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}', "exact-head verifier binding");
