@@ -39,6 +39,8 @@ declare
   v_assignment_count bigint;
   v_transition_count bigint;
   v_changed_digest text;
+  v_asset_source record;
+  v_asset_profile jsonb;
 begin
   select * into v_ctx from trust_phase8g_context;
   if not found then
@@ -219,6 +221,80 @@ begin
       '{"fixture":"phase8g-unknown-adapter"}'::jsonb
     );
     raise exception 'phase8g_unknown_adapter_not_rejected';
+  exception
+    when check_violation then
+      if sqlerrm <> 'product_evidence_source_verification_profile_fresh_recovery_invalid' then
+        raise;
+      end if;
+  end;
+
+  select source_id, source_metadata
+    into v_asset_source
+    from public.product_evidence_sources
+   where coalesce(source_metadata ->> 'direct_claim_asset_url', '') ~ '^https://'
+   order by created_at, source_id
+   limit 1;
+
+  if not found then
+    raise exception 'phase8g_asset_source_fixture_missing';
+  end if;
+
+  v_asset_profile := public.admin_register_product_evidence_source_verification_profile_v1(
+    '92000000-0000-4000-8000-000000000001',
+    'phase8g-profile-asset-0001',
+    v_asset_source.source_id,
+    null,
+    repeat('c', 64),
+    'official-claim-asset-bytes-v1',
+    'official-claim-asset',
+    'v1',
+    'fresh_recovery',
+    jsonb_build_object(
+      'final_url', 'https://example.com/product',
+      'content_type', 'text/html; charset=utf-8',
+      'byte_length', 1234,
+      'canonical_length', 4321,
+      'asset_url', v_asset_source.source_metadata ->> 'direct_claim_asset_url',
+      'asset_final_url', v_asset_source.source_metadata ->> 'direct_claim_asset_url',
+      'asset_content_type', 'image/jpeg',
+      'asset_byte_length', 4321,
+      'fetched_at', '2026-09-24T15:00:00+09:00'
+    ),
+    '{"fixture":"phase8g-asset"}'::jsonb
+  );
+
+  if v_asset_profile ->> 'comparability_state' <> 'COMPARABLE'
+     or v_asset_profile ->> 'digest_basis' <> 'official-claim-asset-bytes-v1'
+     or v_asset_profile ->> 'adapter_key' <> 'official-claim-asset'
+     or v_asset_profile ->> 'adapter_version' <> 'v1' then
+    raise exception 'phase8g_asset_profile_invalid';
+  end if;
+
+  begin
+    perform public.admin_register_product_evidence_source_verification_profile_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8g-profile-asset-binding-mismatch-0001',
+      v_asset_source.source_id,
+      (v_asset_profile ->> 'profile_id')::uuid,
+      repeat('d', 64),
+      'official-claim-asset-bytes-v1',
+      'official-claim-asset',
+      'v1',
+      'fresh_recovery',
+      jsonb_build_object(
+        'final_url', 'https://example.com/product',
+        'content_type', 'text/html; charset=utf-8',
+        'byte_length', 1234,
+        'canonical_length', 4321,
+        'asset_url', 'https://example.com/not-reviewed.jpg',
+        'asset_final_url', 'https://example.com/not-reviewed.jpg',
+        'asset_content_type', 'image/jpeg',
+        'asset_byte_length', 4321,
+        'fetched_at', '2026-09-24T15:00:30+09:00'
+      ),
+      '{"fixture":"phase8g-asset-binding-mismatch"}'::jsonb
+    );
+    raise exception 'phase8g_asset_binding_mismatch_not_rejected';
   exception
     when check_violation then
       if sqlerrm <> 'product_evidence_source_verification_profile_fresh_recovery_invalid' then
