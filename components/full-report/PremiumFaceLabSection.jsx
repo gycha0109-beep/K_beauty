@@ -730,6 +730,7 @@ export default function PremiumFaceLabSection({
   const [finderResult, setFinderResult] = useState(null);
   const [presentationPreference, setPresentationPreference] = useState("neutral_examples");
   const [stylingScope, setStylingScope] = useState([]);
+  const [scopeTouched, setScopeTouched] = useState(false);
   const [changeTolerance, setChangeTolerance] = useState("light");
   const [contexts, setContexts] = useState(["daily"]);
   const [hairLengthChange, setHairLengthChange] = useState("small");
@@ -770,6 +771,7 @@ export default function PremiumFaceLabSection({
       setNaturalPolishedClarifier(stored.surveyAnswers.clarifiers?.naturalPolished || null);
       setPresentationPreference(stored.surveyAnswers.presentationPreference || "neutral_examples");
       setStylingScope(stored.surveyAnswers.stylingScope || []);
+      setScopeTouched(Boolean(stored.surveyAnswers.stylingScope?.length));
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
       setContexts(stored.surveyAnswers.contexts || ["daily"]);
       setFinderResult(stored.targetFinderResult || null);
@@ -933,12 +935,13 @@ export default function PremiumFaceLabSection({
 
   const choosePresentation = (value) => {
     setPresentationPreference(value);
-    if (!stylingScope.length) {
+    if (!scopeTouched) {
       setStylingScope(defaultScopes(value));
     }
   };
 
   const toggleScope = (key) => {
+    setScopeTouched(true);
     setStylingScope((current) =>
       current.includes(key)
         ? current.filter((item) => item !== key)
@@ -999,6 +1002,9 @@ export default function PremiumFaceLabSection({
                 setEntryMode(value);
                 setFinderResult(null);
                 setTargets([]);
+                setStylingScope([]);
+                setScopeTouched(false);
+                setPresentationPreference("neutral_examples");
                 setSoftSharpClarifier(null);
                 setNaturalPolishedClarifier(null);
                 setStage(value === "unknown" ? "finder" : "target");
