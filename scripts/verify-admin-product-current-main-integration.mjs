@@ -47,10 +47,10 @@ const pkg = JSON.parse(read("package.json"));
 check(Array.isArray(pkg.workspaces), "current-main workspace contract missing");
 check(pkg.workspaces.includes("packages/*"), "packages workspace lost");
 check(pkg.workspaces.includes("tools/*"), "tools workspace lost");
-check(pkg.dependencies?.next === "15.5.22", "current-main Next.js version drift");
-check(pkg.dependencies?.sharp === "0.35.3", "current-main sharp version drift");
+check(pkg.dependencies?.next === "15.5.26", "current-main Next.js version drift");
+check(pkg.dependencies?.sharp === "0.35.4", "current-main sharp version drift");
 check(pkg.overrides?.next?.postcss === "8.5.25", "current-main postcss override drift");
-check(pkg.overrides?.next?.sharp === "0.35.3", "current-main sharp override drift");
+check(pkg.overrides?.next?.sharp === "0.35.4", "current-main sharp override drift");
 for (const name of [
   "verify:admin-product-candidate-reviews",
   "verify:admin-product-review-import-confirm",
