@@ -1,0 +1,206 @@
+import assert from "node:assert/strict";
+import {
+  FACE_LAB_OBSERVATION_DEFINITIONS,
+  buildFaceLabObservationAnalysis
+} from "../lib/face-lab-observation-contract.js";
+import {
+  buildCurrentFaceProfile
+} from "../lib/face-lab-v2/current-face-profile.js";
+import {
+  buildFaceLabV2Canonical
+} from "../lib/face-lab-v2/canonical-composer.js";
+import {
+  isFaceLabV2CanonicalResult
+} from "../lib/face-lab-v2/result-contract.js";
+
+function buildRawObservation() {
+  const observations = {};
+
+  for (const [group, fields] of Object.entries(FACE_LAB_OBSERVATION_DEFINITIONS)) {
+    observations[group] = {};
+
+    for (const [key, values] of Object.entries(fields)) {
+      const isArray = group === "featureLayout" && key === "focalFeatures";
+      observations[group][key] = {
+        value: isArray ? [values[0]] : values[0],
+        visibility: "clear",
+        evidence: [`fixture:${group}.${key}`],
+        unavailableReason: null
+      };
+    }
+  }
+
+  // Exercise over-amplification guards with a strongly defined observation.
+  observations.eyes.eyeDirection.value = "upturned";
+  observations.visualLanguage.contourDefinition.value = "defined";
+  observations.visualLanguage.featureContrast.value = "high";
+  observations.visualLanguage.straightCurveBalance.value = "straight";
+
+  return {
+    quality: {
+      faceVisibility: "clear",
+      faceScale: "adequate",
+      pose: {
+        yaw: "frontal",
+        pitch: "level",
+        roll: "level"
+      },
+      occlusion: {
+        forehead: "none",
+        brows: "none",
+        eyes: "none",
+        cheeks: "none",
+        jawline: "none"
+      },
+      sharpness: "clear",
+      exposure: "balanced",
+      lightingUniformity: "even",
+      whiteBalance: "stable",
+      filterOrEditing: "none_detected",
+      makeupCoverage: "none_or_light",
+      structureSuitability: "suitable",
+      colorSuitability: "suitable",
+      evidence: ["fixture:quality"]
+    },
+    observations
+  };
+}
+
+const analysis = buildFaceLabObservationAnalysis(buildRawObservation(), {
+  eligibility: {
+    faceLabEligible: true
+  },
+  provider: "fixture",
+  model: "fixture-v1"
+});
+
+assert.equal(analysis.status, "available");
+
+const currentProfile = buildCurrentFaceProfile(analysis, { locale: "ko" });
+assert.equal(currentProfile.status, "available");
+assert.ok(currentProfile.keyFeatures.length >= 3);
+assert.equal(currentProfile.structuralProfile, null);
+assert.equal(currentProfile.presentationObservations, null);
+assert.ok(!JSON.stringify(currentProfile).includes("hairDirections"));
+assert.ok(!JSON.stringify(currentProfile).includes("makeupDirections"));
+
+const survey = {
+  schemaVersion: "face-lab-target-style-survey-v1",
+  entryMode: "known",
+  targetSelections: ["sophisticated", "chic"],
+  presentationPreference: "feminine_examples",
+  stylingScope: ["hair", "brow_grooming", "makeup"],
+  changeTolerance: "moderate",
+  contexts: ["daily", "work_school"],
+  constraints: {
+    makeup: {
+      intensity: "light"
+    },
+    hardExclusions: []
+  },
+  approvedAt: "2026-09-25T00:00:00.000Z"
+};
+
+const canonical = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: survey,
+  resultId: "fixture-face-lab-v2"
+});
+
+assert.equal(isFaceLabV2CanonicalResult(canonical), true);
+assert.equal(canonical.targetStyle.status, "available");
+assert.equal(canonical.targetStyle.approvedByUser, true);
+assert.equal(canonical.styleDelta.status, "available");
+assert.ok(canonical.styleDelta.priorities.length > 0);
+assert.ok(canonical.routes.routes.length >= 2);
+assert.ok(canonical.routes.routes.length <= 3);
+assert.ok(canonical.routes.selectedRouteId);
+assert.ok(["available", "not_applicable"].includes(canonical.hair.status));
+assert.ok(["available", "not_applicable"].includes(canonical.makeup.status));
+assert.ok(["available", "not_applicable"].includes(canonical.grooming.status));
+assert.ok(["partial", "not_requested"].includes(canonical.productHandoff.status));
+
+const eyePriority = canonical.styleDelta.priorities.find(
+  (item) => item.domain === "makeup" && item.reason === "face_modifier_eye_direction_already_upturned"
+);
+assert.ok(eyePriority, "existing upturned eye direction must activate the over-amplification guard");
+assert.equal(eyePriority.parameter, "eyeDefinition");
+
+const noMakeup = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    targetSelections: ["mature_calm", "minimal"],
+    stylingScope: ["hair", "brow_grooming"]
+  },
+  resultId: "fixture-face-lab-v2-no-makeup"
+});
+
+assert.equal(noMakeup.makeup.status, "not_requested");
+assert.equal(noMakeup.productHandoff.status, "not_requested");
+assert.ok(noMakeup.routes.routes.every((route) => !route.domains.includes("makeup")));
+
+const unconfirmed = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    approvedAt: null
+  },
+  resultId: "fixture-face-lab-v2-unconfirmed"
+});
+
+assert.equal(unconfirmed.targetStyle.status, "needs_confirmation");
+assert.equal(unconfirmed.styleDelta, null);
+assert.equal(unconfirmed.routes, null);
+assert.equal(unconfirmed.hair, null);
+assert.equal(unconfirmed.makeup, null);
+assert.equal(isFaceLabV2CanonicalResult(unconfirmed), true);
+
+const hairBlocked = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "makeup"],
+    constraints: {
+      makeup: { intensity: "light" },
+      hardExclusions: ["hair_disabled"]
+    }
+  },
+  resultId: "fixture-face-lab-v2-hair-blocked"
+});
+
+assert.ok(
+  hairBlocked.styleDelta.priorities
+    .filter((item) => item.domain === "hair")
+    .every((item) => item.constraintState === "blocked")
+);
+assert.ok(hairBlocked.routes.routes.every((route) => !route.domains.includes("hair")));
+
+const editedTarget = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    targetSelections: ["natural", "soft"]
+  },
+  resultId: "fixture-face-lab-v2-edited"
+});
+
+assert.notDeepEqual(
+  editedTarget.targetStyle.vector,
+  canonical.targetStyle.vector,
+  "target edits must recompute downstream target state from the same photo analysis"
+);
+assert.equal(
+  editedTarget.currentFaceProfile.profileVersion,
+  canonical.currentFaceProfile.profileVersion,
+  "target edits must not require a different face analysis/profile version"
+);
+
+console.log(JSON.stringify({
+  ok: true,
+  schemaVersion: canonical.schemaVersion,
+  currentFaceProfile: currentProfile.status,
+  routeCount: canonical.routes.routes.length,
+  selectedRouteId: canonical.routes.selectedRouteId,
+  makeupProductSpecCount: canonical.productHandoff.specifications.length
+}, null, 2));
