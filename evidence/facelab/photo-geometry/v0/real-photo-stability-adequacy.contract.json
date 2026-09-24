@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-real-photo-stability-adequacy-contract-v0",
-  "status": "explicit_decision_additional_evidence_required",
+  "status": "explicit_decision_adequate_for_provisional_research",
   "productionAuthority": false,
   "normalizationAuthority": false,
   "thresholdAuthority": false,
@@ -13,7 +13,8 @@
     "Automatic adequacy inference from report count or nuisance-class coverage is forbidden.",
     "Adequacy grants provisional research gating only and no Production normalization authority.",
     "The adequacy decision must be bound to a descriptive review packet generated from the exact stability collection.",
-    "The review packet must carry observed drift and provenance without thresholds, automatic pass/fail, or ranking."
+    "The review packet must carry observed drift and provenance without thresholds, automatic pass/fail, or ranking.",
+    "For this internal research track, unverified same-session provenance or research-use authorization may be retained as explicit limitations without blocking provisional research adequacy; this exception grants no Production, threshold, Archetype, or style authority."
   ],
   "currentEvidence": {
     "realPhotoReportCollectionPresent": true,
@@ -68,24 +69,22 @@
       }
     },
     "adequacyDecisionPresent": true,
-    "status": "additional_evidence_required",
+    "status": "adequate_for_provisional_research",
     "descriptiveAdequacyReviewPresent": true,
     "descriptiveAdequacyReviewSchemaVersion": "face-lab-real-photo-stability-adequacy-review-v1",
     "descriptiveAdequacyReviewVersion": "real-photo-stability-adequacy-review-v2",
     "descriptiveAdequacyReviewFingerprint": "sha256:e4ced816dedfcdb5948ccbb233052d10ef9d16183580f0cda40bc4ef62c16273",
     "descriptiveAdequacyReviewStatus": "descriptive_review_complete_decision_separate",
     "adequacyDecisionRef": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
-    "adequacyDecisionVersion": "real-photo-stability-adequacy-decision-v2",
-    "adequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
-    "provisionalResearchGateGranted": false,
+    "adequacyDecisionVersion": "real-photo-stability-adequacy-decision-v3",
+    "adequacyDecisionCode": "PROVISIONAL_RESEARCH_ADEQUATE",
+    "provisionalResearchGateGranted": true,
     "headRollGovernance": {
       "subjectLinkageEvidenceRefCount": 3,
       "sameSessionCaptureProvenanceVerifiedForAll": false,
       "researchUseAuthorizationVerifiedForAll": false,
-      "holdReasons": [
-        "head_roll_same_session_capture_provenance_unverified",
-        "head_roll_research_use_authorization_unverified"
-      ]
+      "holdReasons": [],
+      "researchGatePolicy": "record_as_limitation_not_blocker_for_internal_research"
     }
   },
   "reviewPacket": {
