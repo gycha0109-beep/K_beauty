@@ -12,6 +12,7 @@ const workerPath = "scripts/trust-source-verification-worker.mjs";
 const researchWorkerPath = "scripts/trust-research-worker.mjs";
 const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
 const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
+const semanticProfileMigrationPath = "supabase/migrations/20260924013200_trust_phase8g_semantic_profile_contract_v1.sql";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
@@ -23,6 +24,7 @@ const worker = fs.readFileSync(workerPath, "utf8");
 const researchWorker = fs.readFileSync(researchWorkerPath, "utf8");
 const semanticAdapter = fs.readFileSync(semanticAdapterPath, "utf8");
 const semanticVerifier = fs.readFileSync(semanticVerifierPath, "utf8");
+const semanticProfileMigration = fs.readFileSync(semanticProfileMigrationPath, "utf8");
 
 for (const token of [
   "create table public.product_evidence_source_verification_profiles",
@@ -108,10 +110,19 @@ for (const token of [
   "export function digestOfficialContent",
   "canonical-html-text-v1",
   "official-product-semantic",
-  "canonical-official-product-semantics-v1",
-  "20260924013200_trust_phase8g_semantic_profile_contract_v1.sql"
+  "canonical-official-product-semantics-v1"
 ]) {
   assert.ok(transport.includes(token), `missing shared transport token: ${token}`);
+}
+
+for (const token of [
+  "canonical-official-product-semantics-v1",
+  "official-product-semantic",
+  "canonical_length",
+  "live-page-bytes-v1",
+  "product_evidence_source_verification_profile_fresh_recovery_invalid"
+]) {
+  assert.ok(semanticProfileMigration.includes(token), `missing semantic profile migration token: ${token}`);
 }
 
 for (const token of [
