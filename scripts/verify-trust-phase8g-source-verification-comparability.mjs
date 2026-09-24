@@ -12,7 +12,7 @@ const workerPath = "scripts/trust-source-verification-worker.mjs";
 const researchWorkerPath = "scripts/trust-research-worker.mjs";
 const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
 const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
-const semanticProfileMigrationPath = "supabase/migrations/20260924030000_trust_phase8g_semantic_profile_contract_v1.sql";
+const semanticProfileMigrationPath = "supabase/migrations/20260924104150_trust_phase8g_semantic_profile_contract_v1.sql";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
@@ -120,9 +120,26 @@ for (const token of [
   "official-product-semantic",
   "canonical_length",
   "live-page-bytes-v1",
-  "product_evidence_source_verification_profile_fresh_recovery_invalid"
+  "product_evidence_source_verification_profile_fresh_recovery_invalid",
+  "btrim(p_digest_basis) = 'canonical-official-product-semantics-v1'",
+  "btrim(p_adapter_key) = 'official-product-semantic'",
+  "btrim(p_adapter_version) = 'v1'",
+  "btrim(p_digest_basis) = 'live-page-bytes-v1'",
+  "btrim(p_adapter_key) = 'live-page-bytes'"
 ]) {
   assert.ok(semanticProfileMigration.includes(token), `missing semantic profile migration token: ${token}`);
+}
+
+for (const forbidden of [
+  "update public.product_fact_current",
+  "delete from public.product_fact_current",
+  "insert into public.product_fact_instances",
+  "update public.product_fact_instances",
+  "insert into public.product_fact_confirmations",
+  "insert into public.recommendation",
+  "update public.recommendation"
+]) {
+  assert.ok(!semanticProfileMigration.toLowerCase().includes(forbidden.toLowerCase()), `forbidden semantic profile authority: ${forbidden}`);
 }
 
 for (const token of [
