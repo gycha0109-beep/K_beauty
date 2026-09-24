@@ -7,7 +7,8 @@ import {
   enrichPremiumReportWithCurrentProducts
 } from "@/lib/premium-current-products";
 import { buildPremiumFaceLabSummary, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
-import { getFaceLabObservationAnalysis } from "@/lib/face-lab-result-envelope";
+import { getFaceLabObservationAnalysis as getEnvelopeFaceLabObservationAnalysis } from "@/lib/face-lab-result-envelope";
+import { getFaceLabObservationAnalysis as getCanonicalFaceLabObservationAnalysis } from "@/lib/face-lab-analysis-bundle";
 import { enrichPremiumReportWithIntake } from "@/lib/premium-intake-report";
 import {
   canonicalizeOptionalImageDataUrl,
@@ -151,7 +152,7 @@ function getStorageUnavailableResponse() {
 }
 
 function resolveFaceLabAnalysis({ storedPremiumReport, body }) {
-  const storedAnalysis = getFaceLabObservationAnalysis(storedPremiumReport?.faceLabAnalysis);
+  const storedAnalysis = getCanonicalFaceLabObservationAnalysis(storedPremiumReport?.faceLabAnalysis);
 
   if (storedAnalysis) {
     return {
@@ -160,7 +161,7 @@ function resolveFaceLabAnalysis({ storedPremiumReport, body }) {
     };
   }
 
-  const requestAnalysis = getFaceLabObservationAnalysis(body?.faceLab);
+  const requestAnalysis = getEnvelopeFaceLabObservationAnalysis(body?.faceLab);
 
   return {
     faceLabAnalysis: requestAnalysis,
