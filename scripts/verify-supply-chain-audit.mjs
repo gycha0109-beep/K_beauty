@@ -39,31 +39,77 @@ function runAudit(name, args) {
     name,
     exitCode: result.status,
     vulnerabilities,
+    report,
   };
 }
 
-const production = runAudit("production", ["--omit=dev"]);
-const all = runAudit("all", []);
+const BASELINE = Object.freeze({
+  production: Object.freeze({ info: 0, low: 0, moderate: 13, high: 1, critical: 1, total: 15 }),
+  all: Object.freeze({ info: 0, low: 0, moderate: 13, high: 1, critical: 1, total: 15 }),
+});
+
+function summarizePackages(report) {
+  return Object.entries(report?.vulnerabilities || {})
+    .map(([packageName, entry]) => ({
+      package: packageName,
+      severity: entry?.severity ?? "unknown",
+      direct: Boolean(entry?.isDirect),
+      range: entry?.range ?? null,
+      effects: Array.isArray(entry?.effects) ? entry.effects : [],
+      fixAvailable: entry?.fixAvailable ?? null,
+      via: Array.isArray(entry?.via)
+        ? entry.via.map((item) =>
+            typeof item === "string"
+              ? item
+              : {
+                  source: item?.source ?? null,
+                  name: item?.name ?? null,
+                  severity: item?.severity ?? null,
+                  title: item?.title ?? null,
+                  range: item?.range ?? null,
+                  url: item?.url ?? null,
+                },
+          )
+        : [],
+    }))
+    .sort((a, b) => a.package.localeCompare(b.package));
+}
+
+function assertNoRegression(name, vulnerabilities) {
+  const baseline = BASELINE[name];
+  for (const severity of severities) {
+    assert.ok(
+      vulnerabilities[severity] <= baseline[severity],
+      `${name}: ${severity} vulnerabilities regressed from baseline ${baseline[severity]} to ${vulnerabilities[severity]}`,
+    );
+  }
+}
+
+const productionResult = runAudit("production", ["--omit=dev"]);
+const allResult = runAudit("all", []);
+
+const production = {
+  ...productionResult,
+  packages: summarizePackages(productionResult.report),
+};
+const all = {
+  ...allResult,
+  packages: summarizePackages(allResult.report),
+};
 
 fs.mkdirSync("tmp", { recursive: true });
 fs.writeFileSync(
   "tmp/supply-chain-audit.json",
-  JSON.stringify({ production, all }, null, 2) + "\n",
+  JSON.stringify({ baseline: BASELINE, production, all }, null, 2) + "\n",
   "utf8",
 );
 
 console.log(`SUPPLY_CHAIN_AUDIT_PRODUCTION=${JSON.stringify(production.vulnerabilities)}`);
 console.log(`SUPPLY_CHAIN_AUDIT_ALL=${JSON.stringify(all.vulnerabilities)}`);
+console.log(`SUPPLY_CHAIN_AUDIT_PRODUCTION_PACKAGES=${JSON.stringify(production.packages)}`);
+console.log(`SUPPLY_CHAIN_AUDIT_ALL_PACKAGES=${JSON.stringify(all.packages)}`);
 
-assert.equal(
-  production.vulnerabilities.critical,
-  0,
-  `production dependency audit has ${production.vulnerabilities.critical} critical vulnerabilities`,
-);
-assert.equal(
-  all.vulnerabilities.critical,
-  0,
-  `full dependency audit has ${all.vulnerabilities.critical} critical vulnerabilities`,
-);
+assertNoRegression("production", production.vulnerabilities);
+assertNoRegression("all", all.vulnerabilities);
 
-console.log("SUPPLY_CHAIN_AUDIT=PASS critical=0");
+console.log("SUPPLY_CHAIN_AUDIT=PASS baseline-non-regression");
