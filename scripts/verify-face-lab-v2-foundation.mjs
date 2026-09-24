@@ -194,6 +194,9 @@ const firstFinderRound = getTargetFinderRound(0);
 assert.equal(firstFinderRound.roundId, "natural-vs-sophisticated");
 assert.ok(firstFinderRound.candidateA.referenceAssetKey);
 assert.ok(firstFinderRound.candidateB.referenceAssetKey);
+assert.equal(firstFinderRound.candidateA.reference.purpose, "style_preference_reference");
+assert.ok(firstFinderRound.candidateA.reference.assetSlot.endsWith("/natural.webp"));
+assert.ok(firstFinderRound.candidateA.reference.cues.length >= 3);
 
 const finderResult = buildTargetFinderResult([
   { roundId: "natural-vs-sophisticated", choice: "b" },
@@ -203,7 +206,7 @@ const finderResult = buildTargetFinderResult([
   { roundId: "classic-vs-trendy", choice: "both" }
 ]);
 
-assert.equal(finderResult.candidateSetVersion, "target-finder-cards-v1");
+assert.equal(finderResult.candidateSetVersion, "target-finder-cards-v2");
 assert.equal(finderResult.userApproved, false);
 assert.ok(finderResult.candidateLabels.length >= 1);
 assert.ok(typeof finderResult.estimatedVector.softSharp === "number");

@@ -384,7 +384,7 @@ function TargetFinder({ locale, onComplete, onBack }) {
   const copy = getCopy(locale);
   const [roundIndex, setRoundIndex] = useState(0);
   const [choices, setChoices] = useState([]);
-  const round = getTargetFinderRound(roundIndex);
+  const round = getTargetFinderRound(roundIndex, locale);
 
   if (!round) {
     return null;
@@ -424,11 +424,22 @@ function TargetFinder({ locale, onComplete, onBack }) {
             className="ui-card-subtle min-h-40 p-4 text-left transition hover:-translate-y-0.5"
             data-reference-asset-key={candidate.referenceAssetKey}
           >
-            <div className={`h-20 rounded-xl ${
+            <div className={`min-h-28 rounded-xl p-3 ${
               index === 0
                 ? "bg-gradient-to-br from-zinc-100 to-rose-100 dark:from-zinc-800 dark:to-rose-950"
                 : "bg-gradient-to-br from-zinc-100 to-violet-100 dark:from-zinc-800 dark:to-violet-950"
-            }`} />
+            }`}>
+              <div className="flex h-full flex-col justify-end gap-1.5">
+                {(candidate.reference?.cues || []).map((cue) => (
+                  <span
+                    key={cue}
+                    className="w-fit rounded-full bg-white/75 px-2 py-1 text-[10px] font-semibold text-zinc-700 shadow-sm dark:bg-zinc-950/55 dark:text-zinc-200"
+                  >
+                    {cue}
+                  </span>
+                ))}
+              </div>
+            </div>
             <p className="mt-3 text-sm font-semibold">
               {getTargetStyleLabel(candidate.targetKey, locale)}
             </p>
