@@ -52,7 +52,12 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `global-governance` | 2 |
 | `security-boundary` | 1 |
 | `supply-chain-security` | 1 |
-| `mobile` | 11 |
+| `mobile-client` | 1 |
+| `mobile-api-integration` | 1 |
+| `mobile-native` | 1 |
+| `mobile-build` | 1 |
+| `mobile-e2e` | 2 |
+| `mobile-release-store` | 6 |
 | `product-data-pipeline` | 4 |
 | `product-evidence` | 0 |
 | `product-offer-runtime` | 1 |
@@ -60,7 +65,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 18 |
 
-Total: **54 workflows**.
+Total: **55 workflows**.
 
 ## Watchtower producer classification
 
@@ -69,7 +74,7 @@ Total: **54 workflows**.
 | Project-wide | 2 | no Track tag |
 | Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
 | Dedicated `trust` | 18 | static `[WT:trust]` |
-| Dedicated `mobile` | 11 | static `[WT:mobile]` |
+| Dedicated `mobile` | 12 | static `[WT:mobile]` |
 | Shared technical | 12 | PR/commit/dispatch evidence |
 
 There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
@@ -89,6 +94,19 @@ The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. It
 ### AI provider runtime
 
 `ai-provider-runtime.yml` is the canonical shared technical owner for the server-side OpenAI transport used by the core Analyze path. The Vision observation service and product-explanation path share one bounded single-attempt runtime with timeout signaling, manual redirect rejection, response-size enforcement, safe failure telemetry and JSON parsing. PR/push runs execute the provider transport hermetically against injected responses, alongside the Unified Vision and provider-log contracts. An explicit `workflow_dispatch` live smoke can call OpenAI with a fixed non-user store graphic, run the canonical Vision prompt and normalizer, and assert non-persistent privacy flags when the repository `OPENAI_API_KEY` secret is available. Product Query DATA-AI22 remains a separate `taxonomy-ai` responsibility and is not absorbed by this workflow. Green equivalence was proven with the dedicated AI Provider Runtime workflow and `current-main-health` on the same PR head, after which the duplicate Unified Vision execution was removed from `current-main-health`.
+
+### Mobile
+
+Mobile CI is now represented as six technical responsibilities while preserving the single canonical Watchtower Track Key `mobile`:
+
+- `mobile-client`: source architecture, routing, auth/client, camera and UI-facing contracts in `mobile-ci.yml`.
+- `mobile-api-integration`: Analyze, saved-report, public-share/result, Premium and My client↔server contracts in `mobile-api-integration.yml`.
+- `mobile-native`: generated-platform auth, App Links and Universal Links in `mobile-14-auth-app-links.yml`.
+- `mobile-build`: release-build and platform packaging preflight in `mobile-13-store-release-preflight.yml`.
+- `mobile-e2e`: Android/iOS install-and-runtime shell verification in `mobile-native-shell.yml` and `mobile-ios-shell.yml`.
+- `mobile-release-store`: policy, signing/distribution and store capture/assets in the Store Readiness, MOBILE-15 and MOBILE-20 workflows.
+
+Phase 1 intentionally keeps the API-integration verifiers duplicated inside `mobile-ci.yml` until the dedicated API Integration workflow proves green equivalence. Android debug APK generation also remains duplicated across Native Shell, MOBILE-20A and MOBILE-20B in this phase; the next consolidation target is one build artifact consumed by E2E and store-capture jobs rather than three independent builds.
 
 ### Site E2E
 
