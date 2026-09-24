@@ -207,7 +207,6 @@ export async function POST(request) {
     surveyAnswers: normalized.surveyAnswers,
     targetFinderResult: normalized.targetFinderResult,
     selectedRouteId: canonicalV2.routes?.selectedRouteId || normalized.selectedRouteId || null,
-    canonicalV2,
     updatedAt: new Date().toISOString()
   };
 
@@ -237,7 +236,7 @@ export async function POST(request) {
       surveyAnswers: persisted.surveyAnswers,
       targetFinderResult: persisted.targetFinderResult,
       selectedRouteId: persisted.selectedRouteId,
-      canonicalV2: persisted.canonicalV2,
+      canonicalV2,
       updatedAt: persisted.updatedAt
     }
   });

@@ -932,8 +932,7 @@ export default function PremiumFaceLabSection({
       localStorage.setItem(storageKey, JSON.stringify({
         surveyAnswers,
         targetFinderResult: approvedFinder,
-        selectedRouteId: result.routes?.selectedRouteId || null,
-        canonicalV2: result
+        selectedRouteId: result.routes?.selectedRouteId || null
       }));
     }
 
@@ -965,8 +964,7 @@ export default function PremiumFaceLabSection({
       localStorage.setItem(storageKey, JSON.stringify({
         surveyAnswers,
         targetFinderResult: approvedFinder,
-        selectedRouteId: routeId,
-        canonicalV2: result
+        selectedRouteId: routeId
       }));
     }
 

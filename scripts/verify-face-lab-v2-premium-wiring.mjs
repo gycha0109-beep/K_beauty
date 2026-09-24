@@ -49,9 +49,14 @@ assert.equal(
   "restored state must be recomputed instead of trusting cached canonical output"
 );
 assert.equal(
+  premiumFaceLab.includes("canonicalV2: result"),
+  false,
+  "local client persistence must not cache canonical output"
+);
+assert.equal(
   premiumFaceLab.includes("canonicalV2\n        })"),
   false,
-  "client persistence payload must not submit canonical output as authority"
+  "client server-persistence payload must not submit canonical output as authority"
 );
 
 assert.ok(
@@ -73,6 +78,11 @@ assert.ok(
 assert.ok(
   faceLabApi.includes("buildFaceLabV2Canonical"),
   "server persistence must recompute canonical V2 output"
+);
+assert.equal(
+  /const persisted = \{[\s\S]*?canonicalV2[\s\S]*?updatedAt/.test(faceLabApi),
+  false,
+  "saved_reports.face_lab must persist user state, not a stale canonical result"
 );
 
 assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
