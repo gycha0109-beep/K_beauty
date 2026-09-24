@@ -1,0 +1,173 @@
+{
+  "contractVersion": "database-integration-authority-v1",
+  "observedAtUtc": "2026-09-24T04:25:59.623Z",
+  "scope": "repository-migration-authority-and-nonproduction-safety",
+  "productionObservation": {
+    "writeOperationsPerformed": false,
+    "productionMigrationCount": 120,
+    "repositoryMigrationCountAtAudit": 92,
+    "directSemanticNameMatches": 89,
+    "publicTableCount": 73,
+    "rlsEnabledPublicTableCount": 73,
+    "rlsDisabledPublicTables": [],
+    "fullRepositoryReplayReady": false
+  },
+  "replayBoundary": {
+    "rootSupabaseConfigTracked": false,
+    "rootSeedTracked": false,
+    "canonicalDisposableLocalFixture": "supabase/local-shadow-test",
+    "blankReplayClaimAllowed": false,
+    "reason": "The repository does not yet own a complete root Supabase baseline; several current migrations require predecessor schema or role authority."
+  },
+  "canonicalRepositoryOnly": [
+    {
+      "semanticName": "repair_review_queue_distinct_observed_dates",
+      "reason": "Production history recorded the same migration name with an extra timestamp prefix; repository keeps the normalized semantic name."
+    },
+    {
+      "semanticName": "backfill_product_english_display_names",
+      "reason": "Presentation-only localization backfill retained in repository source; not present as a distinct production migration ledger name."
+    },
+    {
+      "semanticName": "data_taxonomy2_candidate_manual_classification_v1",
+      "reason": "Repository canonical replay migration represents the DATA-TAXONOMY2 candidate-classification foundation; Production rollout used granular intermediate migrations plus a reconciliation migration."
+    }
+  ],
+  "sameSemanticNameDifferentTimestamp": [
+    [
+      "v21_9l_organic_shadow_evidence_daily_v1",
+      "20260820093000",
+      "20260820183130"
+    ],
+    [
+      "v21_9m_shadow_evidence_readback_v1",
+      "20260820094500",
+      "20260820190246"
+    ],
+    [
+      "v21_admission_g3a_pf_authority_read_v1",
+      "20260822083000",
+      "20260822082619"
+    ],
+    [
+      "add_product_localized_names",
+      "20260824",
+      "20260824123819"
+    ],
+    [
+      "admin_product_identity_key_repair_v1",
+      "20260910093000",
+      "20260910093012"
+    ],
+    [
+      "product_source_bindings_v1",
+      "20260910102000",
+      "20260910101029"
+    ],
+    [
+      "product_offers_shadow_v1",
+      "20260910103000",
+      "20260910104729"
+    ],
+    [
+      "product_evidence_presentation_authority_read_v1",
+      "20260910103500",
+      "20260910125119"
+    ],
+    [
+      "product_evidence_presentation_canonical_fact_keys_v1",
+      "20260910124000",
+      "20260910125840"
+    ],
+    [
+      "data_taxonomy5_recommendation_shadow_replay_v1",
+      "20260913152500",
+      "20260914004655"
+    ],
+    [
+      "data_taxonomy2_production_adoption_reconcile_v1",
+      "20260913210000",
+      "20260913210822"
+    ],
+    [
+      "data_taxonomy3_product_exact_equivalence_v1",
+      "20260913232300",
+      "20260913233044"
+    ],
+    [
+      "data_taxonomy8_nullable_legacy_category_projection_v1",
+      "20260914030000",
+      "20260914153348"
+    ],
+    [
+      "data_taxonomy11_catalog_only_transactional_adoption_v1",
+      "20260914072000",
+      "20260914173147"
+    ],
+    [
+      "data_taxonomy13_catalog_only_candidate_approval_v1",
+      "20260915120000",
+      "20260915142243"
+    ]
+  ],
+  "productionHistoricalOnly": {
+    "nonCanonicalExceptions": [
+      "20260622093000_repair_review_queue_distinct_observed_dates",
+      "v21_admission_g3a_emergency_revoke_exposed_runtime_password"
+    ],
+    "dataTaxonomy2GranularRollout": [
+      "data_taxonomy2_candidate_resolution_table_v1",
+      "data_taxonomy2_candidate_resolution_request_ledger_v1",
+      "data_taxonomy2_candidate_resolution_request_security_v1",
+      "data_taxonomy2_resolution_category_fk_v1",
+      "data_taxonomy2_family_domain_seed_v1",
+      "data_taxonomy2_resolution_shape_check_v1",
+      "data_taxonomy2_resolution_projection_fk_v1",
+      "data_taxonomy2_resolution_form_fk_v1",
+      "data_taxonomy2_resolution_domain_fk_v1",
+      "data_taxonomy2_resolution_family_fk_v1",
+      "data_taxonomy2_resolution_entity_kind_fk_v1",
+      "data_taxonomy2_resolution_link_unique_v1",
+      "data_taxonomy2_existing_promoted_resolution_backfill_v1",
+      "data_taxonomy2_candidate_admission_link_columns_v1",
+      "data_taxonomy2_existing_promoted_admission_link_v1",
+      "data_taxonomy2_candidate_admission_link_fk_v1",
+      "data_taxonomy2_candidate_admission_state_guard_v1",
+      "data_taxonomy2_server_admin_write_boundary_v1",
+      "data_taxonomy2_scope_recovery_drop_candidate_gate_v1",
+      "data_taxonomy2_scope_recovery_drop_candidate_link_columns_v1",
+      "data_taxonomy2_scope_recovery_drop_transient_resolution_tables_v1",
+      "data_taxonomy2_scope_recovery_remove_transient_relation_v1",
+      "data_taxonomy2_shadow_term_state_function_v1",
+      "data_taxonomy2_candidate_projection_bridge_v1",
+      "data_taxonomy2_candidate_source_rules_v1",
+      "data_taxonomy2_candidate_shadow_classifications_v1",
+      "data_taxonomy2_candidate_source_rules_seed_v1",
+      "data_taxonomy2_candidate_shadow_backfill_v1",
+      "data_taxonomy2_candidate_freshness_gate_v1"
+    ]
+  },
+  "preservedDistributedRuntimeOwners": [
+    "admin-product-current-main-integration.yml",
+    "data-taxonomy13-catalog-only-candidate-approval.yml",
+    "data-taxonomy15-catalog-only-trust-intake.yml",
+    "data-offer17-controlled-offer-rpc-diagnostic.yml",
+    "trust-phase1-intake-foundation.yml",
+    "trust-phase2-subject-resolution.yml",
+    "trust-phase3-research-worker.yml",
+    "trust-phase4-controlled-evidence-adoption.yml",
+    "trust-phase6a-reentry.yml",
+    "trust-phase6b-reentry.yml",
+    "trust-phase7a-backfill.yml",
+    "trust-phase7b-backfill.yml",
+    "trust-phase7c-phase4-compat.yml",
+    "trust-phase7c-readiness.yml",
+    "trust-phase7d-relational-adoption.yml",
+    "trust-phase8b-source-verification.yml",
+    "trust-phase8c-revalidation.yml",
+    "trust-phase8d-revalidation.yml",
+    "trust-phase8e-revalidation-adjudication.yml",
+    "trust-phase8f-changed-semantic-replacement.yml",
+    "trust-phase8g-source-verification.yml"
+  ]
+}
