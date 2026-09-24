@@ -11,6 +11,8 @@ LOGCAT_PATH="$ARTIFACT_DIR/store-scenarios-logcat.txt"
 METRO_PID=""
 METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
 UI_DUMP_RETRY_LIMIT=4
+ADB_READY_RETRY_LIMIT=45
+APP_FOREGROUND_RETRY_LIMIT=15
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -41,10 +43,64 @@ if [[ ! -x "$EXPO_BIN" ]]; then
   exit 1
 fi
 
+adb_diagnostics() {
+  echo "--- ADB diagnostics ---" >&2
+  adb devices -l >&2 || true
+  printf 'adb_state=%s\n' "$(adb get-state 2>/dev/null || true)" >&2
+  printf 'sys.boot_completed=%s\n' "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)" >&2
+  adb shell dumpsys activity activities 2>/dev/null | grep -m1 'mResumedActivity' >&2 || true
+  adb shell dumpsys window windows 2>/dev/null | grep -m1 'mCurrentFocus' >&2 || true
+}
+
+wait_for_adb_ready() {
+  local attempt state boot_completed
+  for attempt in $(seq 1 "$ADB_READY_RETRY_LIMIT"); do
+    state="$(adb get-state 2>/dev/null || true)"
+    boot_completed="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+    if [[ "$state" == "device" && "$boot_completed" == "1" ]]; then
+      printf 'MOBILE_STORE_SCENARIO_ADB_READY=PASS attempt=%s\n' "$attempt"
+      return 0
+    fi
+    if [[ "$state" == "offline" ]]; then
+      adb reconnect offline >/dev/null 2>&1 || true
+    fi
+    sleep 2
+  done
+  echo "Store scenario ADB device did not become ready within bounded retry window" >&2
+  adb_diagnostics
+  return 1
+}
+
+app_is_foreground() {
+  local resumed focus
+  resumed="$(adb shell dumpsys activity activities 2>/dev/null | grep -m1 'mResumedActivity' || true)"
+  focus="$(adb shell dumpsys window windows 2>/dev/null | grep -m1 'mCurrentFocus' || true)"
+  [[ "$resumed" == *"$PACKAGE_ID"* || "$focus" == *"$PACKAGE_ID"* ]]
+}
+
+wait_for_app_foreground() {
+  local attempt
+  for attempt in $(seq 1 "$APP_FOREGROUND_RETRY_LIMIT"); do
+    if app_is_foreground; then
+      printf 'MOBILE_STORE_SCENARIO_APP_FOREGROUND=PASS attempt=%s\n' "$attempt"
+      return 0
+    fi
+    sleep 2
+  done
+  echo "BEJEWELY store scenario did not become foreground within bounded retry window" >&2
+  adb_diagnostics
+  return 1
+}
+
 dump_ui() {
   local attempt
   for attempt in $(seq 1 "$UI_DUMP_RETRY_LIMIT"); do
     rm -f "$UI_DUMP"
+    if [[ "$(adb get-state 2>/dev/null || true)" != "device" ]]; then
+      adb reconnect offline >/dev/null 2>&1 || true
+      sleep 2
+      continue
+    fi
     if adb shell uiautomator dump /sdcard/bejewely-store-scenario-window.xml >/dev/null 2>&1 && \
        adb pull /sdcard/bejewely-store-scenario-window.xml "$UI_DUMP" >/dev/null 2>&1; then
       return 0
@@ -121,6 +177,7 @@ open_store_scenario() {
   local filename="$3"
   local uri="bejewely://store-capture?scenario=$scenario"
 
+  wait_for_adb_ready
   adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
   adb reverse tcp:8081 tcp:8081 >/dev/null
   adb shell am start -W \
@@ -128,6 +185,7 @@ open_store_scenario() {
     -a android.intent.action.VIEW \
     -d "$uri" >/dev/null
 
+  wait_for_app_foreground
   wait_for_text "$expected"
   sleep 1
   capture_png "$filename"
@@ -171,6 +229,7 @@ if ! metro_port_ready; then
   exit 1
 fi
 
+wait_for_adb_ready
 adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
 

@@ -13,6 +13,9 @@ METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
 QUICKSTEP_RECOVERY_COUNT=0
 QUICKSTEP_RECOVERY_LIMIT=2
 UI_DUMP_RETRY_LIMIT=4
+ADB_READY_RETRY_LIMIT=45
+APP_FOREGROUND_RETRY_LIMIT=15
+APP_LAUNCH_RETRY_LIMIT=3
 STORE_SCROLL_UP_START_Y=1420
 STORE_SCROLL_UP_END_Y=680
 EN_FRAME_POSITION_LIMIT=6
@@ -60,10 +63,86 @@ if [[ ! -x "$EXPO_BIN" ]]; then
   exit 1
 fi
 
+adb_diagnostics() {
+  echo "--- ADB diagnostics ---" >&2
+  adb devices -l >&2 || true
+  printf 'adb_state=%s\n' "$(adb get-state 2>/dev/null || true)" >&2
+  printf 'sys.boot_completed=%s\n' "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)" >&2
+  adb shell dumpsys activity activities 2>/dev/null | grep -m1 'mResumedActivity' >&2 || true
+  adb shell dumpsys window windows 2>/dev/null | grep -m1 'mCurrentFocus' >&2 || true
+}
+
+wait_for_adb_ready() {
+  local attempt state boot_completed
+  for attempt in $(seq 1 "$ADB_READY_RETRY_LIMIT"); do
+    state="$(adb get-state 2>/dev/null || true)"
+    boot_completed="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+    if [[ "$state" == "device" && "$boot_completed" == "1" ]]; then
+      printf 'MOBILE_STORE_ADB_READY=PASS attempt=%s\n' "$attempt"
+      return 0
+    fi
+    if [[ "$state" == "offline" ]]; then
+      adb reconnect offline >/dev/null 2>&1 || true
+    fi
+    sleep 2
+  done
+  echo "ADB device did not become ready within bounded retry window" >&2
+  adb_diagnostics
+  return 1
+}
+
+app_is_foreground() {
+  local resumed focus
+  resumed="$(adb shell dumpsys activity activities 2>/dev/null | grep -m1 'mResumedActivity' || true)"
+  focus="$(adb shell dumpsys window windows 2>/dev/null | grep -m1 'mCurrentFocus' || true)"
+  [[ "$resumed" == *"$PACKAGE_ID"* || "$focus" == *"$PACKAGE_ID"* ]]
+}
+
+wait_for_app_foreground() {
+  local attempt
+  for attempt in $(seq 1 "$APP_FOREGROUND_RETRY_LIMIT"); do
+    if app_is_foreground; then
+      printf 'MOBILE_STORE_APP_FOREGROUND=PASS attempt=%s\n' "$attempt"
+      return 0
+    fi
+    sleep 2
+  done
+  echo "BEJEWELY app did not become foreground within bounded retry window" >&2
+  adb_diagnostics
+  return 1
+}
+
+launch_app_and_wait() {
+  local attempt package_path
+  package_path="$(adb shell pm path "$PACKAGE_ID" 2>/dev/null | tr -d '\r' || true)"
+  if [[ "$package_path" != package:* ]]; then
+    echo "BEJEWELY package is not installed: $PACKAGE_ID" >&2
+    adb_diagnostics
+    return 1
+  fi
+  for attempt in $(seq 1 "$APP_LAUNCH_RETRY_LIMIT"); do
+    adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+    adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
+    if adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null 2>&1 && wait_for_app_foreground; then
+      printf 'MOBILE_STORE_APP_LAUNCH=PASS attempt=%s\n' "$attempt"
+      return 0
+    fi
+    sleep 2
+  done
+  echo "BEJEWELY app launch failed after bounded retries" >&2
+  adb_diagnostics
+  return 1
+}
+
 dump_ui() {
   local attempt
   for attempt in $(seq 1 "$UI_DUMP_RETRY_LIMIT"); do
     rm -f "$UI_DUMP"
+    if [[ "$(adb get-state 2>/dev/null || true)" != "device" ]]; then
+      adb reconnect offline >/dev/null 2>&1 || true
+      sleep 2
+      continue
+    fi
     if adb shell uiautomator dump /sdcard/bejewely-store-window.xml >/dev/null 2>&1 && \
        adb pull /sdcard/bejewely-store-window.xml "$UI_DUMP" >/dev/null 2>&1; then
       if (( attempt > 1 )); then
@@ -102,7 +181,7 @@ tap_text_from_current_ui() {
     return 1
   fi
   local coords
-  coords="$(python - "$UI_DUMP" "$target" <<'PY'
+  if ! coords="$(python - "$UI_DUMP" "$target" <<'PY'
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -123,17 +202,24 @@ matches.sort(reverse=True)
 _, x, y = matches[0]
 print(x, y)
 PY
-)"
+)"; then
+    echo "Failed to resolve current UI tap coordinates: $target" >&2
+    return 1
+  fi
   read -r x y <<< "$coords"
+  if [[ ! "$x" =~ ^[0-9]+$ || ! "$y" =~ ^[0-9]+$ ]]; then
+    echo "Invalid current UI tap coordinates: target=$target coords=${coords:-missing}" >&2
+    return 1
+  fi
   adb shell input tap "$x" "$y"
-  printf 'MOBILE_STORE_CURRENT_UI_TAP=PASS target=%s\n' "$target"
+  printf 'MOBILE_STORE_CURRENT_UI_TAP=PASS target=%s x=%s y=%s\n' "$target" "$x" "$y"
 }
 
 tap_text() {
   local target="$1"
   dump_ui
   local coords
-  coords="$(python - "$UI_DUMP" "$target" <<'PY'
+  if ! coords="$(python - "$UI_DUMP" "$target" <<'PY'
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -154,8 +240,15 @@ matches.sort(reverse=True)
 _, x, y = matches[0]
 print(x, y)
 PY
-)"
+)"; then
+    echo "Failed to resolve tap coordinates: $target" >&2
+    return 1
+  fi
   read -r x y <<< "$coords"
+  if [[ ! "$x" =~ ^[0-9]+$ || ! "$y" =~ ^[0-9]+$ ]]; then
+    echo "Invalid tap coordinates: target=$target coords=${coords:-missing}" >&2
+    return 1
+  fi
   adb shell input tap "$x" "$y"
 }
 
@@ -218,9 +311,11 @@ recover_quickstep_if_needed() {
   QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
   printf 'MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS count=%d\n' "$QUICKSTEP_RECOVERY_COUNT"
   sleep 2
-  adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+  if ! launch_app_and_wait; then
+    echo "Quickstep recovery could not restore BEJEWELY foreground state" >&2
+    return 2
+  fi
   printf 'MOBILE_STORE_DIRECT_ACTIVITY_RESTART=PASS\n'
-  sleep 2
   return 0
 }
 
@@ -407,11 +502,12 @@ PY
 }
 
 reset_store_capture_session() {
+  wait_for_adb_ready
   adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
   adb shell pm clear "$PACKAGE_ID" >/dev/null
   adb shell pm grant "$PACKAGE_ID" android.permission.CAMERA >/dev/null
   adb reverse tcp:8081 tcp:8081 >/dev/null
-  adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+  launch_app_and_wait
   printf 'MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko\n'
 }
 
@@ -450,13 +546,14 @@ if ! metro_port_ready; then
   exit 1
 fi
 
+wait_for_adb_ready
 adb install -r "$APK_PATH" >/dev/null
 adb shell pm clear "$PACKAGE_ID" >/dev/null
 adb shell pm grant "$PACKAGE_ID" android.permission.CAMERA >/dev/null
 adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
 adb reverse tcp:8081 tcp:8081 >/dev/null
-adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+launch_app_and_wait
 
 wait_for_text "BEJEWELY"
 wait_for_text "Find what fits your skin today"
