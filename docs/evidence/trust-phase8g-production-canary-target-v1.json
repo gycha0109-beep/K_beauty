@@ -3,7 +3,7 @@
   "source_id": "2d154999-5dff-4496-9b1e-d8cf9c6f31f6",
   "publisher": "Torriden / (주)토리든",
   "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
-  "selection_reason": "Semantic-adapter canary after five live observations proved the only visible-text delta was the non-authoritative product view counter. Bind comparison to the reviewed first-party observed claim instead of storefront telemetry.",
+  "selection_reason": "Production activation canary for official-product-semantic/v1. Require three fresh live captures with the reviewed Torriden observed_claim present and identical semantic digests before any COMPARABLE profile registration.",
   "expected_authority_mutation": false,
   "adapter_key": "official-product-semantic",
   "adapter_version": "v1",
