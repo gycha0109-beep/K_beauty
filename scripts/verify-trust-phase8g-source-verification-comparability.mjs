@@ -108,7 +108,8 @@ for (const token of [
   "export function digestOfficialContent",
   "canonical-html-text-v1",
   "official-product-semantic",
-  "canonical-official-product-semantics-v1"
+  "canonical-official-product-semantics-v1",
+  "20260924013200_trust_phase8g_semantic_profile_contract_v1.sql"
 ]) {
   assert.ok(transport.includes(token), `missing shared transport token: ${token}`);
 }
