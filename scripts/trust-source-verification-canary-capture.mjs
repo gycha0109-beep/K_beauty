@@ -33,7 +33,7 @@ async function capture(url, label, adapterKey, adapterVersion, sourceMetadata, f
   };
 }
 
-export async function captureProductionCanaryPair({
+export async function captureProductionCanarySet({
   targetPath = DEFAULT_TARGET,
   fetchImpl = fetch,
   delayMs = 2000,
@@ -48,22 +48,31 @@ export async function captureProductionCanaryPair({
   const baseline = await capture(target.canonical_locator, "baseline", adapterKey, adapterVersion, target.source_metadata, fetchImpl);
   await sleep(delayMs);
   const verification = await capture(target.canonical_locator, "verification", adapterKey, adapterVersion, target.source_metadata, fetchImpl);
+  await sleep(delayMs);
+  const confirmation = await capture(target.canonical_locator, "confirmation", adapterKey, adapterVersion, target.source_metadata, fetchImpl);
 
   return {
-    contract: "trust-phase8g-production-canary-capture-v1",
+    contract: "trust-phase8g-production-canary-capture-v2",
     source_id: target.source_id,
     publisher: target.publisher || null,
     canonical_locator: target.canonical_locator,
     baseline,
     verification,
-    stable: baseline.digest === verification.digest,
+    confirmation,
+    stable:
+      baseline.digest === verification.digest
+      && baseline.digest === confirmation.digest,
     authority_mutation: false,
   };
 }
 
+export async function captureProductionCanaryPair(options = {}) {
+  return captureProductionCanarySet(options);
+}
+
 export async function captureProductionCanaryOutcome(options = {}) {
   try {
-    return await captureProductionCanaryPair(options);
+    return await captureProductionCanarySet(options);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (!message.startsWith("TRANSIENT_FAILURE:") && !message.startsWith("SOURCE_BLOCKED:")) {
@@ -72,12 +81,13 @@ export async function captureProductionCanaryOutcome(options = {}) {
     const targetPath = options.targetPath || DEFAULT_TARGET;
     const target = JSON.parse(await readFile(targetPath, "utf8"));
     return {
-      contract: "trust-phase8g-production-canary-capture-v1",
+      contract: "trust-phase8g-production-canary-capture-v2",
       source_id: target.source_id,
       publisher: target.publisher || null,
       canonical_locator: target.canonical_locator,
       baseline: null,
       verification: null,
+      confirmation: null,
       stable: false,
       capture_status: message,
       retry_after_seconds: Number.isFinite(error?.retryAfterSeconds) ? error.retryAfterSeconds : null,
