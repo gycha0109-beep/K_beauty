@@ -144,7 +144,7 @@ export async function runSourceVerificationWorker({
   actorUserId,
   requestId,
   triggerKind = "manual",
-  adapterKey = "canonical-html-text",
+  adapterKey = "official-product-semantic",
   adapterVersion = "v1",
   fetchImpl = fetch,
 } = {}) {
