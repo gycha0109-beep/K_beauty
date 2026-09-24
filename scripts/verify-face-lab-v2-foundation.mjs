@@ -12,6 +12,9 @@ import {
 import {
   isFaceLabV2CanonicalResult
 } from "../lib/face-lab-v2/result-contract.js";
+import {
+  normalizeFaceLabV2PersistencePayload
+} from "../lib/face-lab-v2/survey-contract.js";
 
 function buildRawObservation() {
   const observations = {};
@@ -119,6 +122,8 @@ assert.ok(["available", "not_applicable"].includes(canonical.hair.status));
 assert.ok(["available", "not_applicable"].includes(canonical.makeup.status));
 assert.ok(["available", "not_applicable"].includes(canonical.grooming.status));
 assert.ok(["partial", "not_requested"].includes(canonical.productHandoff.status));
+assert.equal(canonical.looks.status, "available");
+assert.equal(canonical.looks.looks.length, 1);
 
 const eyePriority = canonical.styleDelta.priorities.find(
   (item) => item.domain === "makeup" && item.reason === "face_modifier_eye_direction_already_upturned"
@@ -176,6 +181,24 @@ assert.ok(
 );
 assert.ok(hairBlocked.routes.routes.every((route) => !route.domains.includes("hair")));
 
+const normalizedPersistence = normalizeFaceLabV2PersistencePayload({
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "makeup", "invalid_domain"],
+    constraints: {
+      hair: { lengthChange: "large", dye: "yes" },
+      makeup: { intensity: "medium" },
+      lifestyle: { dailyMinutes: 30 },
+      hardExclusions: ["hair_dye", "unknown_exclusion"]
+    }
+  },
+  selectedRouteId: "balanced"
+});
+
+assert.deepEqual(normalizedPersistence.surveyAnswers.stylingScope, ["hair", "makeup"]);
+assert.deepEqual(normalizedPersistence.surveyAnswers.constraints.hardExclusions, ["hair_dye"]);
+assert.equal(normalizedPersistence.selectedRouteId, "balanced");
+
 const editedTarget = buildFaceLabV2Canonical({
   analysis,
   surveyAnswers: {
@@ -202,5 +225,6 @@ console.log(JSON.stringify({
   currentFaceProfile: currentProfile.status,
   routeCount: canonical.routes.routes.length,
   selectedRouteId: canonical.routes.selectedRouteId,
-  makeupProductSpecCount: canonical.productHandoff.specifications.length
+  makeupProductSpecCount: canonical.productHandoff.specifications.length,
+  lookCount: canonical.looks.looks.length
 }, null, 2));
