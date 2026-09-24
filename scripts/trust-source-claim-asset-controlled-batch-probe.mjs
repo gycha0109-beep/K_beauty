@@ -41,7 +41,7 @@ function classifyExpectedFailure(error) {
   return null;
 }
 
-async function captureSource(source, label, fetchImpl = fetch) {
+export async function captureClaimAssetSource(source, label, fetchImpl = fetch) {
   const page = await fetchOfficialBytes(source.canonical_locator, fetchImpl);
   if (!sameReviewedResource(source.canonical_locator, page.finalUrl)) {
     const error = new Error("SOURCE_LOCATOR_DRIFT:final_path_changed");
@@ -117,7 +117,7 @@ export async function qualifyControlledAssetBatch({
       const captures = [];
       for (let index = 0; index < manifest.required_observations; index += 1) {
         if (index > 0) await sleep(delayMs);
-        captures.push(await captureSource(source, `capture_${index + 1}`, fetchImpl));
+        captures.push(await captureClaimAssetSource(source, `capture_${index + 1}`, fetchImpl));
       }
 
       const assetDigests = new Set(captures.map((item) => item.asset_digest));
