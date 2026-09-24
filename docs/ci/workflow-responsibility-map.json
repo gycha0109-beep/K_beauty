@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
   "producerContractVersion": "watchtower-v0.3.2",
-  "workflowInventoryDigest": "sha256:915600499d3a26aa59620df6024c7ef17bdbf58471384b1c84877b01a1b18dd2",
+  "workflowInventoryDigest": "sha256:184aa020a41afd9abf8ca92bfea23c08800bd173c6e1a64c990fd089390eb17f",
   "lastAuditedAt": "2026-09-24",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
@@ -21,7 +21,12 @@
     "product-offer-runtime",
     "catalog-taxonomy",
     "face-lab",
-    "mobile",
+    "mobile-client",
+    "mobile-api-integration",
+    "mobile-native",
+    "mobile-build",
+    "mobile-e2e",
+    "mobile-release-store",
     "trust-data-governance",
     "product-evidence",
     "product-data-pipeline"
@@ -86,6 +91,58 @@
         "scripts/verify-unified-vision-pipeline.mjs",
         "scripts/verify-provider-runtime-log-sanitization.mjs"
       ]
+    },
+    "mobileArchitecture": {
+      "hostWorkflow": "distributed",
+      "mode": "six-lane mobile responsibility split after same-head green equivalence; API Integration owns Analyze/report/share/Premium/My contracts, mobile-client owns client-only contracts, and duplicate mobile static executions were removed from current-main-health; native/build/e2e/release workflows remain preserved before artifact reuse consolidation",
+      "lanes": {
+        "client": [
+          "mobile-ci.yml"
+        ],
+        "apiIntegration": [
+          "mobile-api-integration.yml"
+        ],
+        "native": [
+          "mobile-14-auth-app-links.yml"
+        ],
+        "build": [
+          "mobile-13-store-release-preflight.yml"
+        ],
+        "e2e": [
+          "mobile-native-shell.yml",
+          "mobile-ios-shell.yml"
+        ],
+        "releaseStore": [
+          "mobile-store-readiness.yml",
+          "mobile-15-distribution-authority.yml",
+          "mobile-20a-store-capture.yml",
+          "mobile-20b-store-capture.yml",
+          "mobile-20c-feature-graphic.yml",
+          "mobile-20d-app-store-screenshots.yml"
+        ]
+      },
+      "cutover": {
+        "apiIntegration": {
+          "canonicalOwner": "mobile-api-integration.yml",
+          "duplicateOwnerRemoved": "mobile-ci.yml",
+          "equivalenceEvidence": "PR #746 same-head Mobile API integration contracts + Mobile application contracts + Current Main Health GREEN"
+        },
+        "currentMain": {
+          "duplicateStaticMobileChecksRemoved": [
+            "auth",
+            "initial-entry-routing",
+            "camera",
+            "face-guidance",
+            "analyze",
+            "saved-report",
+            "public-share",
+            "public-result-deep-link",
+            "premium-entry",
+            "my-skin-diary"
+          ],
+          "equivalenceEvidence": "PR #746 same-head dedicated Mobile owners + Current Main Health GREEN"
+        }
+      }
     }
   },
   "workflows": {
@@ -283,79 +340,89 @@
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-13-store-release-preflight.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-build",
       "capabilities": [
+        "build",
         "mobile",
-        "release-or-native"
+        "release-artifact"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-14-auth-app-links.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-native",
       "capabilities": [
         "auth",
         "deep-link",
-        "mobile"
+        "mobile",
+        "native"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-15-distribution-authority.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-release-store",
       "capabilities": [
+        "distribution",
         "mobile",
-        "release-or-native"
+        "release-store",
+        "signing"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-20a-store-capture.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-release-store",
       "capabilities": [
         "mobile",
-        "release-or-native"
+        "release-store",
+        "store-capture"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-20b-store-capture.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-release-store",
       "capabilities": [
         "mobile",
-        "release-or-native"
+        "release-store",
+        "store-capture"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-20c-feature-graphic.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-release-store",
       "capabilities": [
         "mobile",
-        "release-or-native"
+        "release-store",
+        "store-asset"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-20d-app-store-screenshots.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-release-store",
       "capabilities": [
         "mobile",
-        "release-or-native"
+        "release-store",
+        "store-capture"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-ci.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-client",
       "capabilities": [
+        "client",
+        "contract",
         "mobile"
       ],
       "watchtowerTrackBinding": "static:mobile",
@@ -363,30 +430,37 @@
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-ios-shell.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-e2e",
       "capabilities": [
+        "e2e",
+        "ios",
         "mobile",
-        "release-or-native"
+        "native",
+        "runtime-probe"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-native-shell.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-e2e",
       "capabilities": [
+        "android",
+        "e2e",
         "mobile",
-        "release-or-native"
+        "native",
+        "runtime-probe"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-store-readiness.yml": {
-      "primaryResponsibility": "mobile",
+      "primaryResponsibility": "mobile-release-store",
       "capabilities": [
         "mobile",
-        "release-or-native"
+        "policy",
+        "release-store"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
@@ -712,6 +786,17 @@
         "supabase"
       ],
       "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-api-integration.yml": {
+      "primaryResponsibility": "mobile-api-integration",
+      "capabilities": [
+        "api-integration",
+        "backend-contract",
+        "mobile"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     }

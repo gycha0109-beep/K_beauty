@@ -125,16 +125,6 @@ run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/v
 
 run("Admin current-main integration static contract", node, ["scripts/verify-admin-product-current-main-integration.mjs"]);
 
-run("Mobile auth static contract", node, ["scripts/verify-mobile-auth-foundation.mjs"]);
-run("Mobile initial-entry routing static contract", node, ["scripts/verify-mobile-initial-entry-routing.mjs"]);
-run("Mobile camera static contract", node, ["scripts/verify-mobile-camera-foundation.mjs"]);
-run("Mobile face-guidance static contract", node, ["scripts/verify-mobile-face-guidance.mjs"]);
-run("Mobile analyze static contract", node, ["scripts/verify-mobile-analyze-integration.mjs"]);
-run("Mobile saved-report static contract", node, ["scripts/verify-mobile-saved-report-reentry.mjs"]);
-run("Mobile public-share static contract", node, ["scripts/verify-mobile-public-share.mjs"]);
-run("Mobile public-result deep-link static contract", node, ["scripts/verify-mobile-public-result-deep-link.mjs"]);
-run("Mobile premium-entry static contract", node, ["scripts/verify-mobile-premium-entry.mjs"]);
-run("Mobile My Skin Diary static contract", node, ["scripts/verify-mobile-my-skin-diary.mjs"]);
 run("Offer presentation read path", node, ["scripts/verify-product-offer-read-path-v1.mjs"]);
 run("Skin match decision wrapper syntax", node, ["--check", "lib/skin-match-decision-engine.js"]);
 run("Seller listing observation contract", node, ["scripts/verify-seller-listing-observation-v1.mjs"]);

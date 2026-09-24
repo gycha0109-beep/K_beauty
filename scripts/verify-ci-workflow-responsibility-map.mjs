@@ -58,7 +58,12 @@ for (const name of actual) {
     "product-query-ai": "taxonomy-ai",
     "catalog-taxonomy": "taxonomy-ai",
     "trust-data-governance": "trust",
-    mobile: "mobile",
+    "mobile-client": "mobile",
+    "mobile-api-integration": "mobile",
+    "mobile-native": "mobile",
+    "mobile-build": "mobile",
+    "mobile-e2e": "mobile",
+    "mobile-release-store": "mobile",
   };
 
   if (entry.primaryResponsibility === "global-governance") {
