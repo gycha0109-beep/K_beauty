@@ -12,6 +12,9 @@ on:
       - "crawler/test-legacy-offer-import.ts"
       - "crawler/tests/verify-legacy-offer-import-local-runtime.ts"
       - "crawler/tests/verify-product-offers-local-runtime.ts"
+      - "crawler/product-integrity-audit.ts"
+      - "crawler/lib/product-integrity-audit.ts"
+      - "crawler/test-product-integrity-audit.ts"
       - "crawler/package.json"
       - ".github/workflows/product-offers.yml"
   push:
@@ -25,6 +28,9 @@ on:
       - "crawler/test-legacy-offer-import.ts"
       - "crawler/tests/verify-legacy-offer-import-local-runtime.ts"
       - "crawler/tests/verify-product-offers-local-runtime.ts"
+      - "crawler/product-integrity-audit.ts"
+      - "crawler/lib/product-integrity-audit.ts"
+      - "crawler/test-product-integrity-audit.ts"
       - "crawler/package.json"
       - ".github/workflows/product-offers.yml"
 
@@ -71,6 +77,10 @@ jobs:
       - name: Typecheck crawler
         working-directory: crawler
         run: npm run typecheck
+
+      - name: Verify product integrity audit contract
+        working-directory: crawler
+        run: npm run verify:product-integrity-audit
 
       - name: Verify guarded legacy offer import contract
         working-directory: crawler
