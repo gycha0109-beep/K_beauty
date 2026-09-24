@@ -49,7 +49,9 @@
     "verify:product-review-intake-confirm": "tsx test-product-review-intake-confirm.ts",
     "verify:product-review-intake-confirm:local-runtime": "tsx tests/verify-reviewed-intake-confirm-local-runtime.ts",
     "verify:product-review-cleanser-metadata-v2": "tsx tests/verify-cleanser-metadata-v2-contract.ts",
-    "verify:product-review-cleanser-metadata-v2:local-runtime": "tsx tests/verify-cleanser-metadata-v2-local-runtime.ts"
+    "verify:product-review-cleanser-metadata-v2:local-runtime": "tsx tests/verify-cleanser-metadata-v2-local-runtime.ts",
+    "audit:product-integrity": "tsx product-integrity-audit.ts",
+    "verify:product-integrity-audit": "tsx test-product-integrity-audit.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",
