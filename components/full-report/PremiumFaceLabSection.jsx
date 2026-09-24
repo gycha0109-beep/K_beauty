@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { buildUnavailablePremiumFaceLab, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import { buildFaceLabV2Canonical } from "@/lib/face-lab-v2/canonical-composer";
+import { isFaceLabV2CanonicalResult } from "@/lib/face-lab-v2/result-contract";
+import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import {
   getTargetStyleLabel,
   getTargetStylePrototype
@@ -627,7 +629,8 @@ export default function PremiumFaceLabSection({
   faceLabAnalysis = null,
   photoUrl = "",
   locale = "ko",
-  resultKey = "current"
+  resultKey = "current",
+  savedReportId = null
 }) {
   const copy = getCopy(locale);
   const storageKey = useMemo(() => `bejewely:face-lab-v2:${resultKey}`, [resultKey]);
@@ -649,41 +652,102 @@ export default function PremiumFaceLabSection({
   useEffect(() => {
     if (!faceLabAnalysis || typeof window === "undefined") return;
 
-    try {
-      const stored = JSON.parse(localStorage.getItem(storageKey) || "null");
-      if (!stored?.surveyAnswers) return;
+    let active = true;
 
-      const restored = buildFaceLabV2Canonical({
-        analysis: faceLabAnalysis,
-        surveyAnswers: stored.surveyAnswers,
-        targetFinderResult: stored.targetFinderResult || null,
-        selectedRouteId: stored.selectedRouteId || null,
-        locale,
-        resultId: resultKey
-      });
+    const restoreState = (stored) => {
+      if (!active || !stored?.surveyAnswers) return false;
 
-      if (restored?.targetStyle?.status === "available") {
-        setCanonical(restored);
-        setSelectedRouteId(restored.routes?.selectedRouteId || null);
-        setEntryMode(stored.surveyAnswers.entryMode || "known");
-        setTargets(
-          stored.surveyAnswers.targetSelections?.length
-            ? stored.surveyAnswers.targetSelections
-            : stored.targetFinderResult?.candidateLabels || []
-        );
-        setPresentationPreference(stored.surveyAnswers.presentationPreference || "neutral_examples");
-        setStylingScope(stored.surveyAnswers.stylingScope || []);
-        setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
-        setContexts(stored.surveyAnswers.contexts || ["daily"]);
-        setFinderResult(stored.targetFinderResult || null);
-        setStage("result");
+      const restored = isFaceLabV2CanonicalResult(stored.canonicalV2)
+        ? stored.canonicalV2
+        : buildFaceLabV2Canonical({
+            analysis: faceLabAnalysis,
+            surveyAnswers: stored.surveyAnswers,
+            targetFinderResult: stored.targetFinderResult || null,
+            selectedRouteId: stored.selectedRouteId || null,
+            locale,
+            resultId: resultKey
+          });
+
+      if (restored?.targetStyle?.status !== "available") return false;
+
+      setCanonical(restored);
+      setSelectedRouteId(restored.routes?.selectedRouteId || stored.selectedRouteId || null);
+      setEntryMode(stored.surveyAnswers.entryMode || "known");
+      setTargets(
+        stored.surveyAnswers.targetSelections?.length
+          ? stored.surveyAnswers.targetSelections
+          : stored.targetFinderResult?.candidateLabels || []
+      );
+      setPresentationPreference(stored.surveyAnswers.presentationPreference || "neutral_examples");
+      setStylingScope(stored.surveyAnswers.stylingScope || []);
+      setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
+      setContexts(stored.surveyAnswers.contexts || ["daily"]);
+      setFinderResult(stored.targetFinderResult || null);
+      setHairLengthChange(stored.surveyAnswers.constraints?.hair?.lengthChange || "small");
+      setDyeAllowed(stored.surveyAnswers.constraints?.hair?.dye === "yes");
+      setMakeupIntensity(stored.surveyAnswers.constraints?.makeup?.intensity || "light");
+      setDailyMinutes(stored.surveyAnswers.constraints?.lifestyle?.dailyMinutes || 15);
+      setStage("result");
+      return true;
+    };
+
+    const load = async () => {
+      if (savedReportId) {
+        try {
+          const accessToken = await getBrowserSupabaseAccessToken();
+          const response = await fetch(
+            `/api/premium/face-lab-v2?savedReportId=${encodeURIComponent(savedReportId)}`,
+            {
+              headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+            }
+          );
+          const data = await response.json().catch(() => null);
+          if (response.ok && restoreState(data?.faceLabV2)) {
+            return;
+          }
+        } catch {}
       }
-    } catch {}
-  }, [faceLabAnalysis, locale, resultKey, storageKey]);
+
+      try {
+        const stored = JSON.parse(localStorage.getItem(storageKey) || "null");
+        restoreState(stored);
+      } catch {}
+    };
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, [faceLabAnalysis, locale, resultKey, savedReportId, storageKey]);
 
   if (!faceLabAnalysis) {
     return <LegacyFaceLab faceLabSummary={faceLabSummary} photoUrl={photoUrl} locale={locale} />;
   }
+
+  const persistServer = async (surveyAnswers, approvedFinder, routeId, canonicalV2) => {
+    if (!savedReportId) return;
+
+    try {
+      const accessToken = await getBrowserSupabaseAccessToken();
+      if (!accessToken) return;
+
+      await fetch("/api/premium/face-lab-v2", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          savedReportId,
+          surveyAnswers,
+          targetFinderResult: approvedFinder,
+          selectedRouteId: routeId,
+          canonicalV2
+        })
+      });
+    } catch {}
+  };
 
   const buildSurveyAnswers = () => ({
     schemaVersion: "face-lab-target-style-survey-v1",
@@ -733,9 +797,17 @@ export default function PremiumFaceLabSection({
       localStorage.setItem(storageKey, JSON.stringify({
         surveyAnswers,
         targetFinderResult: approvedFinder,
-        selectedRouteId: result.routes?.selectedRouteId || null
+        selectedRouteId: result.routes?.selectedRouteId || null,
+        canonicalV2: result
       }));
     }
+
+    void persistServer(
+      surveyAnswers,
+      approvedFinder,
+      result.routes?.selectedRouteId || null,
+      result
+    );
   };
 
   const selectRoute = (routeId) => {
@@ -759,9 +831,12 @@ export default function PremiumFaceLabSection({
       localStorage.setItem(storageKey, JSON.stringify({
         surveyAnswers,
         targetFinderResult: approvedFinder,
-        selectedRouteId: routeId
+        selectedRouteId: routeId,
+        canonicalV2: result
       }));
     }
+
+    void persistServer(surveyAnswers, approvedFinder, routeId, result);
   };
 
   const choosePresentation = (value) => {
