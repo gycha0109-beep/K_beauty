@@ -50,6 +50,12 @@ const COPY = {
     unknown: "잘 모르겠어요",
     targetTitle: "어떤 분위기에 가장 끌리시나요?",
     targetBody: "최대 2개까지 고르세요.",
+    partialClarifierTitle: "조금 더 가까운 쪽을 알려주세요",
+    softSide: "부드러운 쪽",
+    sharpSide: "또렷한 쪽",
+    naturalSide: "힘 뺀 쪽",
+    polishedSide: "정돈된 쪽",
+    middleSide: "중간 / 상관없음",
     finderTitle: "내 추구미 찾아보기",
     finderBody: "두 방향 중 더 끌리는 쪽을 골라주세요.",
     both: "둘 다 좋아요",
@@ -146,6 +152,12 @@ const COPY = {
     unknown: "Not yet",
     targetTitle: "Which directions appeal to you most?",
     targetBody: "Choose up to two.",
+    partialClarifierTitle: "Which side feels a little closer?",
+    softSide: "Softer",
+    sharpSide: "Sharper",
+    naturalSide: "More natural",
+    polishedSide: "More polished",
+    middleSide: "Middle / no preference",
     finderTitle: "Find my target look",
     finderBody: "Choose the direction you prefer in each pair.",
     both: "Both",
@@ -712,6 +724,8 @@ export default function PremiumFaceLabSection({
   const [stage, setStage] = useState("mode");
   const [entryMode, setEntryMode] = useState(null);
   const [targets, setTargets] = useState([]);
+  const [softSharpClarifier, setSoftSharpClarifier] = useState(null);
+  const [naturalPolishedClarifier, setNaturalPolishedClarifier] = useState(null);
   const [finderResult, setFinderResult] = useState(null);
   const [presentationPreference, setPresentationPreference] = useState("neutral_examples");
   const [stylingScope, setStylingScope] = useState([]);
@@ -753,6 +767,8 @@ export default function PremiumFaceLabSection({
           ? stored.surveyAnswers.targetSelections
           : stored.targetFinderResult?.candidateLabels || []
       );
+      setSoftSharpClarifier(stored.surveyAnswers.clarifiers?.softSharp || null);
+      setNaturalPolishedClarifier(stored.surveyAnswers.clarifiers?.naturalPolished || null);
       setPresentationPreference(stored.surveyAnswers.presentationPreference || "neutral_examples");
       setStylingScope(stored.surveyAnswers.stylingScope || []);
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
@@ -828,6 +844,10 @@ export default function PremiumFaceLabSection({
     schemaVersion: "face-lab-target-style-survey-v1",
     entryMode: entryMode || "known",
     targetSelections: entryMode === "unknown" ? [] : targets,
+    clarifiers: {
+      softSharp: entryMode === "partial" ? softSharpClarifier : null,
+      naturalPolished: entryMode === "partial" ? naturalPolishedClarifier : null
+    },
     presentationPreference,
     stylingScope,
     changeTolerance,
@@ -982,6 +1002,8 @@ export default function PremiumFaceLabSection({
                 setEntryMode(value);
                 setFinderResult(null);
                 setTargets([]);
+                setSoftSharpClarifier(null);
+                setNaturalPolishedClarifier(null);
                 setStage(value === "unknown" ? "finder" : "target");
               }}
             >
@@ -1000,6 +1022,55 @@ export default function PremiumFaceLabSection({
         <h3 className="ui-title mt-2 text-xl">{copy.targetTitle}</h3>
         <p className="ui-text-secondary mt-2 text-sm">{copy.targetBody}</p>
         <TargetSelection locale={locale} selected={targets} onChange={setTargets} />
+
+        {entryMode === "partial" ? (
+          <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-800 dark:bg-zinc-950/30">
+            <p className="text-sm font-semibold">{copy.partialClarifierTitle}</p>
+
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <ChoiceButton
+                active={softSharpClarifier === "soft"}
+                onClick={() => setSoftSharpClarifier("soft")}
+              >
+                {copy.softSide}
+              </ChoiceButton>
+              <ChoiceButton
+                active={softSharpClarifier === "neutral"}
+                onClick={() => setSoftSharpClarifier("neutral")}
+              >
+                {copy.middleSide}
+              </ChoiceButton>
+              <ChoiceButton
+                active={softSharpClarifier === "sharp"}
+                onClick={() => setSoftSharpClarifier("sharp")}
+              >
+                {copy.sharpSide}
+              </ChoiceButton>
+            </div>
+
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <ChoiceButton
+                active={naturalPolishedClarifier === "natural"}
+                onClick={() => setNaturalPolishedClarifier("natural")}
+              >
+                {copy.naturalSide}
+              </ChoiceButton>
+              <ChoiceButton
+                active={naturalPolishedClarifier === "neutral"}
+                onClick={() => setNaturalPolishedClarifier("neutral")}
+              >
+                {copy.middleSide}
+              </ChoiceButton>
+              <ChoiceButton
+                active={naturalPolishedClarifier === "polished"}
+                onClick={() => setNaturalPolishedClarifier("polished")}
+              >
+                {copy.polishedSide}
+              </ChoiceButton>
+            </div>
+          </div>
+        ) : null}
+
         <div className="mt-5 flex gap-2">
           <button type="button" onClick={() => setStage("mode")} className="ui-button-secondary min-h-11 flex-1 px-4 text-sm font-semibold">
             {copy.back}
@@ -1007,7 +1078,11 @@ export default function PremiumFaceLabSection({
           <button
             type="button"
             onClick={() => setStage("setup")}
-            disabled={!targets.length}
+            disabled={
+              !targets.length ||
+              (entryMode === "partial" &&
+                (!softSharpClarifier || !naturalPolishedClarifier))
+            }
             className="ui-button-primary min-h-11 flex-1 px-4 text-sm font-semibold disabled:opacity-40"
           >
             {copy.next}
