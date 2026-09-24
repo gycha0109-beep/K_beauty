@@ -331,4 +331,3 @@ Confirmation delta = 0
 Assignment delta = 0
 Recommendation authority delta = 0
 ```
-
