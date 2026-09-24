@@ -61,9 +61,37 @@ export async function captureProductionCanaryPair({
   };
 }
 
+export async function captureProductionCanaryTriplet({
+  targetPath = DEFAULT_TARGET,
+  fetchImpl = fetch,
+  delayMs = 2000,
+} = {}) {
+  const pair = await captureProductionCanaryPair({ targetPath, fetchImpl, delayMs });
+  const target = JSON.parse(await readFile(targetPath, "utf8"));
+  const adapterKey = target.adapter_key || "live-page-bytes";
+  const adapterVersion = target.adapter_version || "v1";
+  await sleep(delayMs);
+  const confirmation = await capture(
+    target.canonical_locator,
+    "confirmation",
+    adapterKey,
+    adapterVersion,
+    target.source_metadata,
+    fetchImpl
+  );
+  return {
+    ...pair,
+    contract: "trust-phase8g-production-canary-capture-v2",
+    confirmation,
+    stable:
+      pair.baseline.digest === pair.verification.digest &&
+      pair.baseline.digest === confirmation.digest,
+  };
+}
+
 export async function captureProductionCanaryOutcome(options = {}) {
   try {
-    return await captureProductionCanaryPair(options);
+    return await captureProductionCanaryTriplet(options);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (!message.startsWith("TRANSIENT_FAILURE:") && !message.startsWith("SOURCE_BLOCKED:")) {
@@ -72,12 +100,13 @@ export async function captureProductionCanaryOutcome(options = {}) {
     const targetPath = options.targetPath || DEFAULT_TARGET;
     const target = JSON.parse(await readFile(targetPath, "utf8"));
     return {
-      contract: "trust-phase8g-production-canary-capture-v1",
+      contract: "trust-phase8g-production-canary-capture-v2",
       source_id: target.source_id,
       publisher: target.publisher || null,
       canonical_locator: target.canonical_locator,
       baseline: null,
       verification: null,
+      confirmation: null,
       stable: false,
       capture_status: message,
       retry_after_seconds: Number.isFinite(error?.retryAfterSeconds) ? error.retryAfterSeconds : null,
