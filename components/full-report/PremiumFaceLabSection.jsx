@@ -103,6 +103,8 @@ const COPY = {
     colorTitle: "Color",
     eyewearTitle: "Eyewear",
     accessoriesTitle: "Accessories",
+    lookTitle: "완성 조합",
+    conflictTitle: "서로 부딪힐 수 있는 포인트",
     productSpecTitle: "필요한 색조 제품 속성",
     noDomain: "이 경로에서는 별도 변화가 없습니다.",
     restart: "처음부터 다시",
@@ -197,6 +199,8 @@ const COPY = {
     colorTitle: "Color",
     eyewearTitle: "Eyewear",
     accessoriesTitle: "Accessories",
+    lookTitle: "Complete look",
+    conflictTitle: "Potential conflicts",
     productSpecTitle: "Makeup product attributes",
     noDomain: "No separate change in this route.",
     restart: "Start over",
@@ -647,6 +651,31 @@ function FaceLabV2Result({ result, locale, onSelectRoute, onEditTarget }) {
           </div>
         </div>
       </section>
+
+      {result.looks?.looks?.length ? (
+        <section className="ui-card-subtle p-5 sm:p-6">
+          <p className="ui-kicker">{copy.lookTitle}</p>
+          {result.looks.looks.map((look) => (
+            <div key={look.lookId} className="mt-3 rounded-xl border border-zinc-200 bg-white/60 p-4 dark:border-zinc-800 dark:bg-zinc-950/30">
+              <h4 className="text-sm font-semibold">{look.title}</h4>
+              <p className="ui-text-secondary mt-2 text-sm leading-6">{look.summary}</p>
+              <p className="ui-text-secondary mt-2 text-xs leading-5">{look.whyItWorks}</p>
+            </div>
+          ))}
+          {result.looks.visualConflicts?.length ? (
+            <div className="mt-4">
+              <p className="text-xs font-semibold text-zinc-500">{copy.conflictTitle}</p>
+              <ResultList
+                items={result.looks.visualConflicts.map((item) =>
+                  item.resolution
+                    ? `${item.description} → ${item.resolution}`
+                    : item.description
+                )}
+              />
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       {result.productHandoff?.specifications?.length ? (
         <section className="ui-card-subtle p-5 sm:p-6">
