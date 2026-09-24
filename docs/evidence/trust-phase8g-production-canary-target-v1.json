@@ -11,5 +11,7 @@
     "authority": "product_specific_primary",
     "digest_basis": "trust-p29-torriden-mild-kr-mineral-source-observation-v1",
     "observed_claim": "다이브인 무기자차 마일드 선크림 60ml"
-  }
+  },
+  "activation_round": "semantic-profile-production-activation-v1",
+  "required_observations": 3
 }
