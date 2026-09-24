@@ -7,7 +7,7 @@
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
     "workflowResponsibility": "A workflow has one primary technical responsibility and may expose multiple capability tags.",
     "watchtowerBinding": "CI Watchtower v0.3.2 uses three producer classes: project-wide workflows stay unassigned, dedicated workflows emit a canonical static [WT:<track>] run-name, and shared technical workflows resolve attribution dynamically from explicit PR/commit/branch evidence or workflow_dispatch inputs surfaced through run-name.",
-    "preservation": "Existing workflow triggers, jobs, scripts, runtime probes, database harnesses, release jobs, and production probes are preserved until equivalence is proven before consolidation."
+    "preservation": "Existing workflow triggers, jobs, scripts, runtime probes, database harnesses, release jobs, and production probes are preserved until equivalence is proven before consolidation; proven duplicate verifier executions may then move to their canonical owner without deleting unique coverage."
   },
   "allowedPrimaryResponsibilities": [
     "global-governance",
@@ -26,7 +26,7 @@
   "embeddedResponsibilities": {
     "security": {
       "hostWorkflow": "security-boundary.yml",
-      "mode": "dedicated-shared-technical-contract-suite; current-main overlap preserved until equivalence is proven",
+      "mode": "dedicated-shared-technical-contract-suite; canonical owner after green equivalence proof; duplicate current-main executions removed",
       "scripts": [
         "scripts/run-security-boundary-verifier-suite.mjs",
         "scripts/verify-analysis-rls-contract.mjs",
