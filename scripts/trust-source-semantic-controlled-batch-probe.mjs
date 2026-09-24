@@ -8,6 +8,7 @@ import {
 } from "../lib/trust/official-source-fetch.mjs";
 import {
   buildOfficialProductSemanticObservationV1,
+  inspectOfficialProductSemanticSurfacesV1,
   normalizeSemanticTextV1,
 } from "../lib/trust/official-source-semantic-adapter.mjs";
 
@@ -45,14 +46,29 @@ function reviewedAnchorPresent(observation, reviewedAnchor) {
 
 async function captureSource(source, label, adapterKey, adapterVersion, fetchImpl = fetch) {
   const fetched = await fetchOfficialBytes(source.canonical_locator, fetchImpl);
-  const adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion, {
+  const diagnostics = inspectOfficialProductSemanticSurfacesV1(fetched.bytes, {
     sourceMetadata: source.source_metadata || {},
-    canonicalLocator: source.canonical_locator,
   });
-  const observation = buildOfficialProductSemanticObservationV1(fetched.bytes, {
-    sourceMetadata: source.source_metadata || {},
-    canonicalLocator: source.canonical_locator,
-  });
+  let adapted;
+  let observation;
+  try {
+    adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion, {
+      sourceMetadata: source.source_metadata || {},
+      canonicalLocator: source.canonical_locator,
+    });
+    observation = buildOfficialProductSemanticObservationV1(fetched.bytes, {
+      sourceMetadata: source.source_metadata || {},
+      canonicalLocator: source.canonical_locator,
+    });
+  } catch (error) {
+    error.semanticDiagnostics = diagnostics;
+    error.fetchDiagnostics = {
+      final_url: fetched.finalUrl,
+      content_type: fetched.contentType,
+      byte_length: fetched.bytes.byteLength,
+    };
+    throw error;
+  }
 
   const canonicalUrl = new URL(source.canonical_locator);
   const finalUrl = new URL(fetched.finalUrl);
@@ -144,6 +160,8 @@ export async function qualifyControlledExpansionBatch({
         stable: false,
         captures: [],
         detail: String(error?.message || error),
+        fetch_diagnostics: error?.fetchDiagnostics || null,
+        semantic_diagnostics: error?.semanticDiagnostics || null,
       });
     }
   }
