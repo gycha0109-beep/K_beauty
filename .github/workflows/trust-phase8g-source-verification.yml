@@ -17,7 +17,6 @@ on:
       - "scripts/verify-trust-official-product-semantic-adapter.mjs"
       - "lib/trust/official-source-semantic-adapter.mjs"
       - "tests/fixtures/trust-phase8g-semantic-adapter/**"
-      - "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-batch-v1.json"
       - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
@@ -38,7 +37,6 @@ on:
       - "scripts/verify-trust-official-product-semantic-adapter.mjs"
       - "lib/trust/official-source-semantic-adapter.mjs"
       - "tests/fixtures/trust-phase8g-semantic-adapter/**"
-      - "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-batch-v1.json"
       - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
@@ -205,7 +203,6 @@ jobs:
       - name: Qualify controlled 3-source semantic batch
         if: steps.controlled_batch.outputs.changed == 'true'
         run: node scripts/trust-source-semantic-controlled-batch-probe.mjs
-
       - name: Materialize isolated Product Fact runtime
         shell: bash
         run: |
