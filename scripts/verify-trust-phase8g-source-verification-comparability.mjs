@@ -18,6 +18,7 @@ const controlledBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/contr
 const controlledProbePath = "scripts/trust-source-semantic-controlled-batch-probe.mjs";
 const controlledAssetBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-asset-batch-v1.json";
 const controlledAssetProbePath = "scripts/trust-source-claim-asset-controlled-batch-probe.mjs";
+const independentAssetVerificationPath = "scripts/trust-source-claim-asset-independent-verification-capture.mjs";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
@@ -35,6 +36,7 @@ const controlledBatch = JSON.parse(fs.readFileSync(controlledBatchPath, "utf8"))
 const controlledProbe = fs.readFileSync(controlledProbePath, "utf8");
 const controlledAssetBatch = JSON.parse(fs.readFileSync(controlledAssetBatchPath, "utf8"));
 const controlledAssetProbe = fs.readFileSync(controlledAssetProbePath, "utf8");
+const independentAssetVerification = fs.readFileSync(independentAssetVerificationPath, "utf8");
 
 for (const token of [
   "create table public.product_evidence_source_verification_profiles",
@@ -302,6 +304,28 @@ for (const forbidden of [
   "record_product_evidence_source_verification_v2"
 ]) {
   assert.ok(!controlledAssetProbe.includes(forbidden), `controlled asset probe must remain DB-write-free: ${forbidden}`);
+}
+
+for (const token of [
+  "trust-phase8g-independent-claim-asset-verification-capture-v1",
+  "independent_verification_capture: true",
+  "authority_mutation: false",
+  "page_asset_binding_present: true",
+  "observed_content_digest",
+  "digestOfficialClaimAsset",
+  "fetchOfficialAssetBytes",
+  "fetchOfficialBytes"
+]) {
+  assert.ok(independentAssetVerification.includes(token), `missing independent claim asset verification token: ${token}`);
+}
+
+for (const forbidden of [
+  "@supabase/supabase-js",
+  "createClient(",
+  "admin_register_product_evidence_source_verification_profile_v1",
+  "record_product_evidence_source_verification_v2"
+]) {
+  assert.ok(!independentAssetVerification.includes(forbidden), `independent claim asset verification must remain DB-write-free: ${forbidden}`);
 }
 
 console.log(JSON.stringify({
