@@ -126,7 +126,7 @@ jobs:
         run: node scripts/trust-source-semantic-cross-brand-probe.mjs
 
       - name: Qualify controlled 3-source semantic batch
-        if: (github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-controlled-expansion')) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        if: (github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-')) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: node scripts/trust-source-semantic-controlled-batch-probe.mjs
       - name: Materialize isolated Product Fact runtime
         shell: bash
