@@ -15,6 +15,7 @@ on:
       - "scripts/trust-source-semantic-cross-brand-probe.mjs"
       - "scripts/trust-source-semantic-controlled-batch-probe.mjs"
       - "scripts/trust-source-claim-asset-controlled-batch-probe.mjs"
+      - "scripts/trust-source-claim-asset-independent-verification-capture.mjs"
       - "scripts/verify-trust-official-product-semantic-adapter.mjs"
       - "lib/trust/official-source-semantic-adapter.mjs"
       - "tests/fixtures/trust-phase8g-semantic-adapter/**"
@@ -36,6 +37,7 @@ on:
       - "scripts/trust-source-semantic-cross-brand-probe.mjs"
       - "scripts/trust-source-semantic-controlled-batch-probe.mjs"
       - "scripts/trust-source-claim-asset-controlled-batch-probe.mjs"
+      - "scripts/trust-source-claim-asset-independent-verification-capture.mjs"
       - "scripts/verify-trust-official-product-semantic-adapter.mjs"
       - "lib/trust/official-source-semantic-adapter.mjs"
       - "tests/fixtures/trust-phase8g-semantic-adapter/**"
@@ -95,6 +97,7 @@ jobs:
           node --check scripts/trust-source-semantic-cross-brand-probe.mjs
           node --check scripts/trust-source-semantic-controlled-batch-probe.mjs
           node --check scripts/trust-source-claim-asset-controlled-batch-probe.mjs
+          node --check scripts/trust-source-claim-asset-independent-verification-capture.mjs
           node --check lib/trust/official-source-semantic-adapter.mjs
           node scripts/verify-trust-source-canonicalization.mjs
           node scripts/verify-trust-official-product-semantic-adapter.mjs
@@ -134,6 +137,10 @@ jobs:
       - name: Qualify controlled claim asset batch
         if: (github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-')) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: node scripts/trust-source-claim-asset-controlled-batch-probe.mjs
+
+      - name: Capture independent Torriden claim asset verification observation
+        if: (github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-')) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: node scripts/trust-source-claim-asset-independent-verification-capture.mjs --source-id=f493aa44-75dc-40b8-a179-b7d748bc7989
 
       - name: Materialize isolated Product Fact runtime
         shell: bash

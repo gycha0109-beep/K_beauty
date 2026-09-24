@@ -174,6 +174,10 @@ assert(koAnalyzeCapture > koFramePosition, "ko-analyze-capture-after-bounded-fra
 assert(capture.includes("title_y >= 300 && title_y <= 600 && sensitivity_y >= 900 && sensitivity_y <= 1450"), "ko-frame-physical-viewport-ranges");
 assert(capture.includes("(( title_y > 600 || sensitivity_y > 1450 ))"), "ko-frame-corrects-content-up-when-bottom-overflows");
 assert(capture.includes("(( title_y < 300 || sensitivity_y < 900 ))"), "ko-frame-corrects-content-down-when-top-overflows");
+assert(capture.includes('[[ ! "$title_y" =~ ^[0-9]+$ ]] && [[ "$sensitivity_y" =~ ^[0-9]+$ ]]'), "ko-frame-recovers-when-title-scrolls-out");
+assert(capture.includes("reason=title-missing"), "ko-frame-title-missing-recovery-evidence");
+assert(capture.includes('[[ "$title_y" =~ ^[0-9]+$ ]] && [[ ! "$sensitivity_y" =~ ^[0-9]+$ ]]'), "ko-frame-recovers-when-sensitivity-scrolls-out");
+assert(capture.includes("reason=sensitivity-missing"), "ko-frame-sensitivity-missing-recovery-evidence");
 assert(!capture.includes("KO_FRAME_NUDGE_START_Y") && !capture.includes("KO_FRAME_NUDGE_END_Y"), "no-asymmetric-ko-frame-nudge");
 assert(!capture.includes('scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8\nadb shell input swipe 540 760 540 940 250'), "no-one-shot-ko-frame-nudge");
 assert(!capture.includes('capture_png "02-analyze-en-1080x1920.png"\n\ntap_text "Home"'), "no-stateful-en-to-ko-tab-transition");
