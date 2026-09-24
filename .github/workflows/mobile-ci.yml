@@ -46,6 +46,8 @@ on:
       - "scripts/verify-mobile-my-skin-diary.mjs"
       - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-ci.yml"
+      - ".github/workflows/mobile-api-integration.yml"
+      - ".github/workflows/mobile-api-integration.yml"
   push:
     branches: [main]
     paths:
