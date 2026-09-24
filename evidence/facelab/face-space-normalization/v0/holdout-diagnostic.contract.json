@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-space-normalization-holdout-diagnostic-contract-v0",
-  "status": "blocked_pending_real_photo_stability_adequacy",
+  "status": "real_holdout_diagnostic_complete_research_only",
   "productionAuthority": false,
   "normalizationActivationAuthority": false,
   "acceptanceThresholdAuthority": false,
@@ -30,16 +30,13 @@
     "referenceStatisticsPresent": true,
     "referenceStatisticsVersion": "london-set-v5-reference-statistics-v1",
     "referenceStatisticsRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
-    "realPhotoStabilityAdequacyStatus": "hold_for_more_evidence",
-    "realPhotoStabilityAdequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
-    "provisionalResearchCandidatePresent": false,
-    "realHoldoutDiagnosticPresent": false,
-    "blockers": [
-      "head_roll_same_session_capture_provenance_unverified",
-      "head_roll_research_use_authorization_unverified"
-    ],
+    "realPhotoStabilityAdequacyStatus": "adequate_for_provisional_research",
+    "realPhotoStabilityAdequacyDecisionCode": "PROVISIONAL_RESEARCH_ADEQUATE",
+    "provisionalResearchCandidatePresent": true,
+    "realHoldoutDiagnosticPresent": true,
+    "blockers": [],
     "productionNormalizationAuthorized": false,
-    "realPhotoStabilityAdequacyDecisionVersion": "real-photo-stability-adequacy-decision-v2",
+    "realPhotoStabilityAdequacyDecisionVersion": "real-photo-stability-adequacy-decision-v3",
     "realPhotoStabilityReportCount": 492,
     "headRollReportCount": 6,
     "headRollSubjectLinkageEvidenceRefCount": 3,
@@ -50,6 +47,9 @@
     "counterfactualShadowReferenceSampleCountExcluded": 82,
     "counterfactualShadowChangesMethodSelection": false,
     "counterfactualShadowChangesReferenceStatistics": false,
-    "counterfactualShadowGrantsAdequacy": false
+    "counterfactualShadowGrantsAdequacy": false,
+    "provisionalResearchCandidateRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-provisional-normalization-candidate.json",
+    "realHoldoutDiagnosticRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-holdout-diagnostic.json",
+    "realHoldoutDiagnosticStatus": "research_diagnostic_only"
   }
 }
