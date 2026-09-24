@@ -1,0 +1,25 @@
+{
+  "contract": "trust-phase8g-controlled-expansion-asset-batch-v1",
+  "authority_mutation": false,
+  "required_observations": 3,
+  "adapter_key": "official-claim-asset",
+  "adapter_version": "v1",
+  "sources": [
+    {
+      "source_id": "f493aa44-75dc-40b8-a179-b7d748bc7989",
+      "publisher": "Torriden / (주)토리든",
+      "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "reviewed_anchor": "SPF50+ PA++++",
+      "claim_asset_url": "https://ai.esmplus.com/torriden/product/dive-in/SUN/MildSunCream/01.jpg",
+      "binding_basis": "product_evidence_sources.source_metadata.direct_claim_asset_url"
+    },
+    {
+      "source_id": "2e75ba01-7ecb-4824-b712-d7e5d707782d",
+      "publisher": "(주)이즈앤트리",
+      "canonical_locator": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "reviewed_anchor": "SPF50+ PA++++",
+      "claim_asset_url": "https://isntree01.openhost.cafe24.com/product/hyaluronic_acid_sun_gel/hyaluronic_acid_sun_gel_4.jpg",
+      "binding_basis": "product_evidence_sources.source_metadata.direct_claim_asset_url"
+    }
+  ]
+}
