@@ -381,6 +381,33 @@ assertContains(".github/workflows/mobile-native-shell.yml", [
   "npm run verify:mobile-native",
 ]);
 
+const mobileAndroidRuntime = read(".github/workflows/mobile-android-runtime.yml");
+assertContains(".github/workflows/mobile-android-runtime.yml", [
+  "android-debug-apk:",
+  "needs: android-debug-apk",
+  "actions/upload-artifact@v6",
+  "actions/download-artifact@v7",
+  "native-shell-smoke:",
+  "store-capture-20a:",
+  "store-capture-20b:",
+]);
+assert.equal(
+  mobileAndroidRuntime.split("npm run mobile:build:android:debug").length - 1,
+  1,
+  "mobile-android-runtime.yml must build the debug APK exactly once",
+);
+for (const legacyPath of [
+  ".github/workflows/mobile-native-shell.yml",
+  ".github/workflows/mobile-20a-store-capture.yml",
+  ".github/workflows/mobile-20b-store-capture.yml",
+]) {
+  assertContains(legacyPath, ['.github/workflows/mobile-android-runtime.yml']);
+}
+assertContains(".github/workflows/mobile-20b-store-capture.yml", [
+  "  push:",
+  "    branches: [main]",
+]);
+
 assertContains(".github/workflows/mobile-ios-shell.yml", [
   '- "apps/mobile/app/_layout.tsx"',
   '- "apps/mobile/app/index.tsx"',
@@ -856,6 +883,7 @@ const mobileWatchtowerTrackWorkflows = [
   "mobile-20b-store-capture.yml",
   "mobile-20c-feature-graphic.yml",
   "mobile-20d-app-store-screenshots.yml",
+  "mobile-android-runtime.yml",
   "mobile-api-integration.yml",
   "mobile-ci.yml",
   "mobile-ios-shell.yml",
