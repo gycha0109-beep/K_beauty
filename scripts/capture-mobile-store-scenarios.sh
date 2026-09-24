@@ -49,7 +49,9 @@ adb_diagnostics() {
   printf 'adb_state=%s\n' "$(adb get-state 2>/dev/null || true)" >&2
   printf 'sys.boot_completed=%s\n' "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)" >&2
   adb shell dumpsys activity activities 2>/dev/null | grep -m1 'mResumedActivity' >&2 || true
+  adb shell dumpsys activity top 2>/dev/null | grep -m1 'ACTIVITY' >&2 || true
   adb shell dumpsys window windows 2>/dev/null | grep -m1 'mCurrentFocus' >&2 || true
+  adb shell dumpsys window displays 2>/dev/null | grep -Em1 'mCurrentFocus|mFocusedApp' >&2 || true
 }
 
 wait_for_adb_ready() {
@@ -71,11 +73,26 @@ wait_for_adb_ready() {
   return 1
 }
 
+foreground_ui_owned_by_app() {
+  local hierarchy=""
+  hierarchy="$(adb shell uiautomator dump /sdcard/bejewely-scenario-foreground-window.xml >/dev/null 2>&1 && adb exec-out cat /sdcard/bejewely-scenario-foreground-window.xml 2>/dev/null || true)"
+  [[ "$hierarchy" == *"package=\"$PACKAGE_ID\""* ]]
+}
+
 app_is_foreground() {
-  local resumed focus
+  local resumed focus top_activity focused_display
   resumed="$(adb shell dumpsys activity activities 2>/dev/null | grep -m1 'mResumedActivity' || true)"
   focus="$(adb shell dumpsys window windows 2>/dev/null | grep -m1 'mCurrentFocus' || true)"
-  [[ "$resumed" == *"$PACKAGE_ID"* || "$focus" == *"$PACKAGE_ID"* ]]
+  top_activity="$(adb shell dumpsys activity top 2>/dev/null | grep -m1 'ACTIVITY' || true)"
+  focused_display="$(adb shell dumpsys window displays 2>/dev/null | grep -Em1 'mCurrentFocus|mFocusedApp' || true)"
+  if [[ "$resumed" == *"$PACKAGE_ID"* || "$focus" == *"$PACKAGE_ID"* || "$top_activity" == *"$PACKAGE_ID"* || "$focused_display" == *"$PACKAGE_ID"* ]]; then
+    return 0
+  fi
+  if foreground_ui_owned_by_app; then
+    printf 'MOBILE_STORE_SCENARIO_APP_FOREGROUND_UI_FALLBACK=PASS\n'
+    return 0
+  fi
+  return 1
 }
 
 wait_for_app_foreground() {
