@@ -181,7 +181,7 @@ No synthetic `changed` result may be inserted merely to exercise the Production 
 
 The initial Production canary uses a repository-pinned target manifest and the same bounded `fetchOfficialBytes` transport as the verification worker.
 
-On the main-branch push that changes the target manifest, the Phase 8G workflow performs two live fetches and emits:
+On the main-branch push that changes the target manifest, the Phase 8G workflow performs three independent semantic live fetches and emits:
 
 ```text
 TRUST_PHASE8G_CANARY_CAPTURE_JSON={...}
@@ -194,11 +194,12 @@ A Production baseline profile may be registered only when:
 ```text
 stable = true
 baseline.digest == verification.digest
+baseline.digest == confirmation.digest
 source_id == reviewed canary source
 canonical_locator == reviewed source locator
 ```
 
-The captured baseline and verification observations are then written through the existing governed Phase 8G RPCs. A mismatched immediate digest is treated as an unstable adapter/source combination and is not promoted to a COMPARABLE baseline.
+The three captures are a no-database activation gate. Only after all three semantic digests match may a fresh baseline be registered through the governed Phase 8G RPC; the later verification must use a new HTTP fetch rather than reusing any canary capture. A mismatched immediate digest is treated as an unstable adapter/source combination and is not promoted to a COMPARABLE baseline.
 
 Expected fetch outcomes such as `TRANSIENT_FAILURE:*` and `SOURCE_BLOCKED:*` are emitted as structured canary results with `stable=false` and `authority_mutation=false`. They block baseline registration but do not turn the deterministic TRUST contract red. Unexpected implementation/runtime failures still fail CI.
 
