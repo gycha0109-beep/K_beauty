@@ -25,7 +25,7 @@ function sleep(ms) {
 
 function classifyExpectedFailure(error) {
   const status = String(error?.semanticStatus || "");
-  if (status === "AMBIGUOUS" || status === "UNSUPPORTED") return status;
+  if (status === "AMBIGUOUS" || status === "UNSUPPORTED" || status === "LOCATOR_DRIFT") return status;
 
   const message = String(error?.message || error);
   if (message.startsWith("TRANSIENT_FAILURE:")) return "TRANSIENT_FAILURE";
@@ -49,6 +49,20 @@ async function captureSource(source, label, adapterKey, adapterVersion, fetchImp
   const diagnostics = inspectOfficialProductSemanticSurfacesV1(fetched.bytes, {
     sourceMetadata: source.source_metadata || {},
   });
+  const canonicalUrl = new URL(source.canonical_locator);
+  const finalUrl = new URL(fetched.finalUrl);
+  const normalizePath = (value) => value.length > 1 ? value.replace(/\/+$/, "") : value;
+  if (normalizePath(finalUrl.pathname) !== normalizePath(canonicalUrl.pathname)) {
+    const error = new Error("SOURCE_LOCATOR_DRIFT:final_path_changed");
+    error.semanticStatus = "LOCATOR_DRIFT";
+    error.semanticDiagnostics = diagnostics;
+    error.fetchDiagnostics = {
+      final_url: fetched.finalUrl,
+      content_type: fetched.contentType,
+      byte_length: fetched.bytes.byteLength,
+    };
+    throw error;
+  }
   let adapted;
   let observation;
   try {
@@ -69,9 +83,6 @@ async function captureSource(source, label, adapterKey, adapterVersion, fetchImp
     };
     throw error;
   }
-
-  const canonicalUrl = new URL(source.canonical_locator);
-  const finalUrl = new URL(fetched.finalUrl);
 
   return {
     label,
