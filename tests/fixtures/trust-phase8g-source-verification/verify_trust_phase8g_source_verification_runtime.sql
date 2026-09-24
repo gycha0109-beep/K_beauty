@@ -155,6 +155,7 @@ begin
         'final_url', 'https://example.com/product',
         'content_type', 'text/html; charset=utf-8',
         'byte_length', 1234,
+        'canonical_length', 465,
         'fetched_at', '2026-09-22T07:58:00Z'
       ),
       '{"fixture":"phase8g-fresh"}'::jsonb
