@@ -393,7 +393,7 @@ assert.deepEqual(
 );
 assert.equal(
   normalizedFinderPersistence.targetFinderResult.candidateSetVersion,
-  "target-finder-cards-v1"
+  "target-finder-cards-v2"
 );
 
 const editedTarget = buildFaceLabV2Canonical({
