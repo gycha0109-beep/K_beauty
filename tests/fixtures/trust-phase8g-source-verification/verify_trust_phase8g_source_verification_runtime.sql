@@ -94,14 +94,15 @@ begin
     v_ctx.source_id,
     (v_unresolved ->> 'profile_id')::uuid,
     repeat('a', 64),
-    'live-page-bytes-v1',
-    'live-page-bytes',
+    'canonical-official-product-semantics-v1',
+    'official-product-semantic',
     'v1',
     'fresh_recovery',
     jsonb_build_object(
       'final_url', 'https://example.com/product',
       'content_type', 'text/html; charset=utf-8',
       'byte_length', 1234,
+      'canonical_length', 465,
       'fetched_at', '2026-09-22T07:58:00Z'
     ),
     '{"fixture":"phase8g-fresh"}'::jsonb
@@ -120,14 +121,15 @@ begin
     v_ctx.source_id,
     (v_unresolved ->> 'profile_id')::uuid,
     repeat('a', 64),
-    'live-page-bytes-v1',
-    'live-page-bytes',
+    'canonical-official-product-semantics-v1',
+    'official-product-semantic',
     'v1',
     'fresh_recovery',
     jsonb_build_object(
       'final_url', 'https://example.com/product',
       'content_type', 'text/html; charset=utf-8',
       'byte_length', 1234,
+      'canonical_length', 465,
       'fetched_at', '2026-09-22T07:58:00Z'
     ),
     '{"fixture":"phase8g-fresh"}'::jsonb
@@ -145,8 +147,8 @@ begin
       v_ctx.source_id,
       (v_unresolved ->> 'profile_id')::uuid,
       repeat('b', 64),
-      'live-page-bytes-v1',
-      'live-page-bytes',
+      'canonical-official-product-semantics-v1',
+      'official-product-semantic',
       'v1',
       'fresh_recovery',
       jsonb_build_object(
