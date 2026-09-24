@@ -3,7 +3,7 @@
   "source_id": "2d154999-5dff-4496-9b1e-d8cf9c6f31f6",
   "publisher": "Torriden / (주)토리든",
   "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
-  "selection_reason": "Production activation canary for official-product-semantic/v1. Require three fresh live captures with the reviewed Torriden observed_claim present and identical semantic digests before any COMPARABLE profile registration.",
+  "selection_reason": "Independent post-registration verification probe for COMPARABLE profile 7b866a1b-ebf2-468a-af49-9c4de7b35db1. Fetch fresh live observations after profile creation; only an identical official-product-semantic/v1 digest may be recorded as unchanged.",
   "expected_authority_mutation": false,
   "adapter_key": "official-product-semantic",
   "adapter_version": "v1",
