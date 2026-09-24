@@ -666,7 +666,11 @@ export default function PremiumFaceLabSection({
         setCanonical(restored);
         setSelectedRouteId(restored.routes?.selectedRouteId || null);
         setEntryMode(stored.surveyAnswers.entryMode || "known");
-        setTargets(stored.surveyAnswers.targetSelections || []);
+        setTargets(
+          stored.surveyAnswers.targetSelections?.length
+            ? stored.surveyAnswers.targetSelections
+            : stored.targetFinderResult?.candidateLabels || []
+        );
         setPresentationPreference(stored.surveyAnswers.presentationPreference || "neutral_examples");
         setStylingScope(stored.surveyAnswers.stylingScope || []);
         setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
@@ -789,7 +793,7 @@ export default function PremiumFaceLabSection({
         result={canonical}
         locale={locale}
         onSelectRoute={selectRoute}
-        onEditTarget={() => setStage("target")}
+        onEditTarget={() => setStage(entryMode === "unknown" ? "finder" : "target")}
       />
     );
   }
