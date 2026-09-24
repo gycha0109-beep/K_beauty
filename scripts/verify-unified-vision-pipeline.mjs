@@ -56,12 +56,12 @@ assert.deepEqual(
   "only the canonical service may create an image-bearing provider request"
 );
 assert.ok(service.includes("executeOpenAiChatJson"), "canonical Vision service must delegate provider transport to shared runtime");
-assert.equal(service.includes("https://api.openai.com/v1/chat/completions"), false, "Vision service must not own the provider endpoint");
-assert.equal(analyzeRoute.includes("https://api.openai.com/v1/chat/completions"), false, "analyze route must not own the provider endpoint");
+assert.doesNotMatch(service, /api\.openai\.com\/v1\/chat\/completions/, "Vision service must not own the provider endpoint");
+assert.doesNotMatch(analyzeRoute, /api\.openai\.com\/v1\/chat\/completions/, "analyze route must not own the provider endpoint");
 assert.equal(
-  count(providerRuntime, "https://api.openai.com/v1/chat/completions"),
+  [...providerRuntime.matchAll(/^export const OPENAI_CHAT_COMPLETIONS_URL = "https:\/\/api\.openai\.com\/v1\/chat\/completions";$/gm)].length,
   1,
-  "shared provider runtime must own exactly one Analyze OpenAI endpoint"
+  "shared provider runtime must own exactly one Analyze OpenAI endpoint declaration"
 );
 assert.equal(/maxRetries|retryAfter|retryCount|attempt\s*[+]=|attempt\s*=\s*attempt\s*\+/i.test(providerRuntime), false, "shared provider runtime must not retry requests");
 assert.ok(providerRuntime.includes('redirect: "manual"'), "provider redirects must be rejected");
