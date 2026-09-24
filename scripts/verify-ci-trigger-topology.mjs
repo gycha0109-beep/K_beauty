@@ -353,8 +353,28 @@ assertNotContains(".github/workflows/mobile-ci.yml", [
   "npm run verify:mobile-native",
 ]);
 assertContains(".github/workflows/mobile-ci.yml", [
+  "node scripts/verify-mobile-auth-foundation.mjs",
+  "npm run verify:mobile-entry-routing",
   "node scripts/verify-mobile-camera-foundation.mjs",
   "node scripts/verify-mobile-face-guidance.mjs",
+]);
+assertNotContains(".github/workflows/mobile-ci.yml", [
+  "node scripts/verify-mobile-analyze-integration.mjs",
+  "node scripts/verify-mobile-saved-report-reentry.mjs",
+  "node scripts/verify-mobile-public-share.mjs",
+  "node scripts/verify-mobile-public-result-deep-link.mjs",
+  "node scripts/verify-mobile-premium-entry.mjs",
+  "node scripts/verify-mobile-my-skin-diary.mjs",
+]);
+assertContains(".github/workflows/mobile-api-integration.yml", [
+  "node scripts/verify-mobile-analyze-integration.mjs",
+  "node scripts/verify-mobile-saved-report-reentry.mjs",
+  "node scripts/verify-mobile-public-share.mjs",
+  "node scripts/verify-mobile-public-result-deep-link.mjs",
+  "node scripts/verify-mobile-premium-entry.mjs",
+  "node scripts/verify-mobile-my-skin-diary.mjs",
+  "concurrency:",
+  "cancel-in-progress: true",
 ]);
 assertContains(".github/workflows/mobile-native-shell.yml", [
   "npm run mobile:prebuild:android",
@@ -579,8 +599,19 @@ for (const path of heavyRuntimeConcurrencyWorkflows) {
   ]);
 }
 
-assertContains("scripts/verify-current-main-health.mjs", [
+assertNotContains("scripts/verify-current-main-health.mjs", [
+  'run("Mobile auth static contract"',
   'run("Mobile initial-entry routing static contract"',
+  'run("Mobile camera static contract"',
+  'run("Mobile face-guidance static contract"',
+  'run("Mobile analyze static contract"',
+  'run("Mobile saved-report static contract"',
+  'run("Mobile public-share static contract"',
+  'run("Mobile public-result deep-link static contract"',
+  'run("Mobile premium-entry static contract"',
+  'run("Mobile My Skin Diary static contract"',
+]);
+assertContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 7A legacy backfill preflight"',
 ]);
 
@@ -825,6 +856,7 @@ const mobileWatchtowerTrackWorkflows = [
   "mobile-20b-store-capture.yml",
   "mobile-20c-feature-graphic.yml",
   "mobile-20d-app-store-screenshots.yml",
+  "mobile-api-integration.yml",
   "mobile-ci.yml",
   "mobile-ios-shell.yml",
   "mobile-native-shell.yml",
