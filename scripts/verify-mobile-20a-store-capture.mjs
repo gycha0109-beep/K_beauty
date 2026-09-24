@@ -135,7 +135,12 @@ assert(capture.split('adb shell pm clear "$PACKAGE_ID"').length - 1 === 2, "two-
 assert(capture.split("MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko").length - 1 === 1, "one-locale-session-reset");
 assert(capture.includes("top_activity=") && capture.includes("focused_display="), "multi-signal-foreground-detector");
 assert(capture.includes('[[ "$hierarchy" == *"package=\\\"$PACKAGE_ID\\\""* ]]'), "foreground-ui-package-owner-fallback");
-assert(!capture.includes("return 0\n}\n\nwait_for_app_foreground()"), "foreground-detector-not-unconditional");
+const foregroundDetectorStart = capture.indexOf("app_is_foreground() {");
+const foregroundDetectorEnd = capture.indexOf("\n}\n\n", foregroundDetectorStart);
+assert(foregroundDetectorStart >= 0 && foregroundDetectorEnd > foregroundDetectorStart, "foreground-detector-body-present");
+const foregroundDetector = capture.slice(foregroundDetectorStart, foregroundDetectorEnd);
+assert(foregroundDetector.includes("return 1"), "foreground-detector-fail-closed");
+assert(foregroundDetector.includes("foreground_ui_owned_by_app"), "foreground-detector-ui-owner-fallback");
 
 const screenshotTransportAttempt = capture.indexOf('if adb exec-out screencap -p > "$output"; then');
 const screenshotDimensionValidation = capture.indexOf("if (width, height) != (1080, 1920)", screenshotTransportAttempt);
