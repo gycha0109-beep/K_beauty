@@ -24,7 +24,10 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
-import { isFaceLabResultEnvelope } from "@/lib/face-lab-result-envelope";
+import {
+  getFaceLabObservationAnalysis,
+  isFaceLabResultEnvelope
+} from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { getCurrentProductCategoryLabel } from "@/lib/current-products";
@@ -5842,6 +5845,7 @@ function buildDevelopmentReport(result, faceLabResult, locale = "ko") {
           ? result.budgetAlternatives.slice(0, 3)
           : []) || [],
     faceLabSummary,
+    faceLabAnalysis: getFaceLabObservationAnalysis(faceLabResult || result?.faceLab || null),
     topPickFitGauges: buildProductFitGauges(result?.topPick || null, { locale }),
     routineStructure: premiumReport.routineStructure || result?.routineStructure || null,
     currentProducts: premiumReport.currentProducts || null,
