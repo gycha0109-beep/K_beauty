@@ -1,0 +1,37 @@
+{
+  "contract": "trust-phase8g-controlled-expansion-batch-v1",
+  "authority_mutation": false,
+  "required_observations": 3,
+  "adapter_key": "official-product-semantic",
+  "adapter_version": "v1",
+  "sources": [
+    {
+      "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+      "publisher": "Beauty of Joseon",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "reviewed_anchor": "PA++++",
+      "source_metadata": {
+        "current_name": "Relief Sun : Rice + Niacinamide",
+        "direct_claim": "PA++++"
+      }
+    },
+    {
+      "source_id": "ceb9056a-b36b-48f9-9558-e5c5ed325e88",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "canonical_locator": "https://www.dr-g.co.kr/item/4415",
+      "reviewed_anchor": "SPF50+ PA++++",
+      "source_metadata": {
+        "direct_claim": "SPF50+ PA++++"
+      }
+    },
+    {
+      "source_id": "0faa9a86-8d74-495f-8fcb-ac47cb0529d6",
+      "publisher": "Torriden / (주)토리든",
+      "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+      "reviewed_anchor": "SPF50+ PA++++",
+      "source_metadata": {
+        "current_direct_claim": "SPF50+ PA++++"
+      }
+    }
+  ]
+}
