@@ -13,6 +13,7 @@ on:
       - "scripts/verify-trust-source-canonicalization.mjs"
       - "scripts/trust-source-verification-diff-probe.mjs"
       - "scripts/trust-source-semantic-cross-brand-probe.mjs"
+      - "scripts/trust-source-semantic-controlled-batch-probe.mjs"
       - "scripts/verify-trust-official-product-semantic-adapter.mjs"
       - "lib/trust/official-source-semantic-adapter.mjs"
       - "tests/fixtures/trust-phase8g-semantic-adapter/**"
@@ -32,6 +33,7 @@ on:
       - "scripts/trust-source-verification-canary-capture.mjs"
       - "scripts/verify-trust-source-canonicalization.mjs"
       - "scripts/trust-source-semantic-cross-brand-probe.mjs"
+      - "scripts/trust-source-semantic-controlled-batch-probe.mjs"
       - "scripts/verify-trust-official-product-semantic-adapter.mjs"
       - "lib/trust/official-source-semantic-adapter.mjs"
       - "tests/fixtures/trust-phase8g-semantic-adapter/**"
@@ -89,6 +91,7 @@ jobs:
           node --check scripts/trust-source-verification-canary-capture.mjs
           node --check scripts/trust-source-verification-diff-probe.mjs
           node --check scripts/trust-source-semantic-cross-brand-probe.mjs
+          node --check scripts/trust-source-semantic-controlled-batch-probe.mjs
           node --check lib/trust/official-source-semantic-adapter.mjs
           node scripts/verify-trust-source-canonicalization.mjs
           node scripts/verify-trust-official-product-semantic-adapter.mjs
@@ -122,6 +125,9 @@ jobs:
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-semantic-adapter')
         run: node scripts/trust-source-semantic-cross-brand-probe.mjs
 
+      - name: Qualify controlled 3-source semantic batch
+        if: (github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-controlled-expansion')) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: node scripts/trust-source-semantic-controlled-batch-probe.mjs
       - name: Materialize isolated Product Fact runtime
         shell: bash
         run: |
