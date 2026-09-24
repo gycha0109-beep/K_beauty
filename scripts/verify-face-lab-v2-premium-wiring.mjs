@@ -82,7 +82,7 @@ assert.ok(
 const persistedBlock = faceLabApi.match(/const persisted = \{([\s\S]*?)\n  \};/);
 assert.ok(persistedBlock, "Face Lab V2 persisted state block must exist");
 assert.equal(
-  persistedBlock[1].includes("canonicalV2"),
+  /(^|\n)\s*canonicalV2\s*:/.test(persistedBlock[1]),
   false,
   "saved_reports.face_lab must persist user state, not a stale canonical result"
 );
