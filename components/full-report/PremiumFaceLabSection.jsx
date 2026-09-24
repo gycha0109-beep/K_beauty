@@ -106,6 +106,7 @@ const COPY = {
     lookTitle: "완성 조합",
     conflictTitle: "서로 부딪힐 수 있는 포인트",
     productSpecTitle: "필요한 색조 제품 속성",
+    archetypeFunTitle: "재미로 보는 아키타입 믹스",
     noDomain: "이 경로에서는 별도 변화가 없습니다.",
     restart: "처음부터 다시",
     targetFinderResult: "선택을 기준으로 추린 추구미",
@@ -208,6 +209,7 @@ const COPY = {
     lookTitle: "Complete look",
     conflictTitle: "Potential conflicts",
     productSpecTitle: "Makeup product attributes",
+    archetypeFunTitle: "Archetype mix for fun",
     noDomain: "No separate change in this route.",
     restart: "Start over",
     targetFinderResult: "Target directions from your choices",
@@ -688,6 +690,22 @@ function FaceLabV2Result({ result, locale, onSelectRoute, onEditTarget }) {
               </div>
             ))}
           </div>
+        </section>
+      ) : null}
+
+      {result.archetypeFun?.status === "available" ? (
+        <section className="ui-card-subtle p-5 sm:p-6">
+          <p className="ui-kicker">{copy.archetypeFunTitle}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {result.archetypeFun.mix.map((item) => (
+              <span key={item.key} className="ui-chip-compact px-3 py-1.5">
+                {item.label} · {Math.round((item.relativeShare || 0) * 100)}%
+              </span>
+            ))}
+          </div>
+          <p className="ui-text-secondary mt-3 text-xs leading-5">
+            {result.archetypeFun.disclaimer}
+          </p>
         </section>
       ) : null}
     </section>
