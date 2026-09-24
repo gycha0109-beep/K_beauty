@@ -131,7 +131,8 @@
     "verify:face-lab-london-set-v5-split-plan": "node scripts/verify-face-lab-london-set-v5-split-plan.mjs",
     "build:face-lab-london-set-v5-measurement-manifests": "node scripts/build-face-lab-london-set-v5-measurement-manifests.mjs",
     "verify:face-lab-london-set-v5-measurement-evidence": "node scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs",
-    "verify:face-lab-v2-foundation": "node scripts/verify-face-lab-v2-foundation.mjs"
+    "verify:face-lab-v2-foundation": "node scripts/verify-face-lab-v2-foundation.mjs",
+    "verify:face-lab-v2-premium-wiring": "node scripts/verify-face-lab-v2-premium-wiring.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
