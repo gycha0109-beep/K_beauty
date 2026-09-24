@@ -68,6 +68,7 @@ export async function captureClaimAssetSource(source, label, fetchImpl = fetch) 
     label,
     fetched_at: new Date().toISOString(),
     page_final_url: page.finalUrl,
+    page_content_type: page.contentType,
     page_raw_digest: sha256Hex(page.bytes),
     page_byte_length: page.bytes.byteLength,
     claim_asset_url: source.claim_asset_url,
