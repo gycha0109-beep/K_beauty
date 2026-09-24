@@ -94,7 +94,7 @@
     },
     "mobileArchitecture": {
       "hostWorkflow": "distributed",
-      "mode": "six-lane mobile responsibility split; API Integration dedicated owner added with temporary overlap in mobile-ci until green equivalence; native/build/e2e/release workflows preserved before artifact reuse consolidation",
+      "mode": "six-lane mobile responsibility split after same-head green equivalence; API Integration owns Analyze/report/share/Premium/My contracts, mobile-client owns client-only contracts, and duplicate mobile static executions were removed from current-main-health; native/build/e2e/release workflows remain preserved before artifact reuse consolidation",
       "lanes": {
         "client": [
           "mobile-ci.yml"
@@ -120,6 +120,28 @@
           "mobile-20c-feature-graphic.yml",
           "mobile-20d-app-store-screenshots.yml"
         ]
+      },
+      "cutover": {
+        "apiIntegration": {
+          "canonicalOwner": "mobile-api-integration.yml",
+          "duplicateOwnerRemoved": "mobile-ci.yml",
+          "equivalenceEvidence": "PR #746 same-head Mobile API integration contracts + Mobile application contracts + Current Main Health GREEN"
+        },
+        "currentMain": {
+          "duplicateStaticMobileChecksRemoved": [
+            "auth",
+            "initial-entry-routing",
+            "camera",
+            "face-guidance",
+            "analyze",
+            "saved-report",
+            "public-share",
+            "public-result-deep-link",
+            "premium-entry",
+            "my-skin-diary"
+          ],
+          "equivalenceEvidence": "PR #746 same-head dedicated Mobile owners + Current Main Health GREEN"
+        }
       }
     }
   },
