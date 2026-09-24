@@ -139,6 +139,9 @@ assert.ok(["available", "not_applicable"].includes(canonical.grooming.status));
 assert.ok(["partial", "not_requested"].includes(canonical.productHandoff.status));
 assert.equal(canonical.looks.status, "available");
 assert.equal(canonical.looks.looks.length, 1);
+assert.ok(["available", "insufficient_evidence"].includes(canonical.archetypeFun.status));
+assert.equal(canonical.archetypeFun.funOnly, true);
+assert.equal(canonical.archetypeFun.styleAuthority, false);
 
 const eyePriority = canonical.styleDelta.priorities.find(
   (item) => item.domain === "makeup" && item.reason === "face_modifier_eye_direction_already_upturned"
@@ -370,5 +373,6 @@ console.log(JSON.stringify({
   routeCount: canonical.routes.routes.length,
   selectedRouteId: canonical.routes.selectedRouteId,
   makeupProductSpecCount: canonical.productHandoff.specifications.length,
-  lookCount: canonical.looks.looks.length
+  lookCount: canonical.looks.looks.length,
+  archetypeFunStatus: canonical.archetypeFun.status
 }, null, 2));
