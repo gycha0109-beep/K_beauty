@@ -8,9 +8,11 @@ on:
       - "lib/face-lab-v2/**"
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
+      - "scripts/verify-face-lab-v2-presentation.mjs"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "components/full-report/PremiumFaceLabSection.jsx"
+      - "components/full-report/face-lab/**"
       - "app/result/full-report/page.js"
       - "package.json"
       - ".github/workflows/face-lab-v2-foundation.yml"
@@ -21,9 +23,11 @@ on:
       - "lib/face-lab-v2/**"
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
+      - "scripts/verify-face-lab-v2-presentation.mjs"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "components/full-report/PremiumFaceLabSection.jsx"
+      - "components/full-report/face-lab/**"
       - "app/result/full-report/page.js"
       - "package.json"
       - ".github/workflows/face-lab-v2-foundation.yml"
@@ -41,3 +45,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-foundation.mjs
       - name: Verify Face Lab V2 premium wiring
         run: node scripts/verify-face-lab-v2-premium-wiring.mjs
+      - name: Verify Face Lab V2 result presentation
+        run: node scripts/verify-face-lab-v2-presentation.mjs
