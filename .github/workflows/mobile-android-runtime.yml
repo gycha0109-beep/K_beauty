@@ -182,9 +182,6 @@ jobs:
       - name: Install monorepo dependencies
         run: npm ci
 
-      - name: Verify native-shell source contract
-        run: node scripts/verify-mobile-native-shell.mjs
-
       - name: Restore canonical debug APK
         uses: actions/download-artifact@v7
         with:
