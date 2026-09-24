@@ -4,7 +4,7 @@
 > Status: V1 product-model authority candidate  
 > Scope: Target Style Profile, 추구미 탐색, preference capture, Style Delta input, route generation boundary  
 > Production impact: none until implementation contracts and UI wiring are completed  
-> Related: `FACE_LAB_MASTER_SPEC.md`, `FACE_LAB_TARGET_STYLE_SURVEY_V1.md`, `face-lab-face-space-style-compatibility-architecture-v1.md`, `face-lab-archetype-styling-contract-v1.md`
+> Related: `FACE_LAB_MASTER_SPEC.md`, `FACE_LAB_TARGET_STYLE_SURVEY_V1.md`, `FACE_LAB_V2_CANONICAL_RESULT_CONTRACT.md`, `face-lab-face-space-style-compatibility-architecture-v1.md`, `face-lab-archetype-styling-contract-v1.md`
 
 ## 1. 목적
 
