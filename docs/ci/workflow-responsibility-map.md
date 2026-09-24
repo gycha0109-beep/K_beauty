@@ -49,6 +49,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `face-lab` | 0 |
 | `global-governance` | 2 |
 | `security-boundary` | 1 |
+| `supply-chain-security` | 1 |
 | `mobile` | 11 |
 | `product-data-pipeline` | 4 |
 | `product-evidence` | 0 |
@@ -57,7 +58,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 18 |
 
-Total: **51 workflows**.
+Total: **52 workflows**.
 
 ## Watchtower producer classification
 
@@ -67,7 +68,7 @@ Total: **51 workflows**.
 | Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
 | Dedicated `trust` | 18 | static `[WT:trust]` |
 | Dedicated `mobile` | 11 | static `[WT:mobile]` |
-| Shared technical | 9 | PR/commit/dispatch evidence |
+| Shared technical | 10 | PR/commit/dispatch evidence |
 
 There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
 
@@ -78,6 +79,10 @@ The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. It
 ### Security
 
 `security-boundary.yml` is the canonical shared technical owner for application security contracts. It runs the complete static boundary suite for analysis RLS, anonymous-write grants, SEC-06 through SEC-12 coverage, provider-runtime log sanitization, admin access and repository secret/authority hygiene, plus the SEC-12 mutation-resistance harness. Equivalence was proven on the dedicated workflow before the duplicate analysis-RLS, anonymous-write, SEC-08, SEC-09, SEC-10 headers, admin-access, SEC-11 origin-normalization and repository-hygiene executions were removed from `current-main-health`; global health retains only non-duplicated cross-domain contracts. Isolated runtime security harnesses remain under `security-tests/`.
+
+### Supply chain
+
+`supply-chain-security.yml` is the canonical shared technical owner for dependency and source supply-chain checks. It proves the npm lockfile can install with lifecycle scripts disabled, records production and full dependency-audit severity counts, blocks critical vulnerabilities, reviews dependency changes introduced by pull requests, and runs CodeQL for JavaScript/TypeScript. Dependabot maintains npm and GitHub Actions update proposals. The first audit gate intentionally blocks only critical findings so pre-existing debt is measured rather than silently grandfathered; once the observed baseline is known, the gate is ratcheted to prevent any increase in high/moderate findings. GitGuardian remains the existing secret-scanning layer and is not duplicated here.
 
 ### Site E2E
 
