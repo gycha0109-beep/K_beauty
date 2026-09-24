@@ -293,3 +293,42 @@ semantic extraction failure -> never fall back to raw SHA
 ```
 
 The initial five-observation Torriden diagnostic isolated the visible-text instability to the product view counter while title and description remained stable. That diagnostic is evidence for excluding storefront telemetry, not a site-specific string rewrite rule.
+
+## Official claim asset comparable profile
+
+An already-reviewed official claim may be hosted in an image asset rather than stable HTML text. Phase 8G treats that case as a separate adapter contract instead of widening `official-product-semantic/v1`.
+
+```text
+adapter_key = official-claim-asset
+adapter_version = v1
+digest_basis = official-claim-asset-bytes-v1
+```
+
+This adapter does not perform OCR and does not infer a new claim from image pixels. It only verifies continued identity of an already-reviewed claim asset when the evidence source metadata contains both a reviewed direct claim and `direct_claim_asset_url`.
+
+Fresh recovery requires:
+
+```text
+reviewed official product page
+→ current page still resolves to the reviewed resource
+→ current page still binds direct_claim_asset_url
+→ claim asset resolves to the reviewed asset resource
+→ three independent qualification fetches have one asset digest
+→ a fourth independent baseline fetch has the same digest
+→ governed profile registration
+```
+
+The canonical baseline binds the product page, claim asset URL, asset content type/length, page-to-asset binding, qualification observation count, and qualification digest. A stale standalone image URL is insufficient: if the current official product page no longer references the asset, qualification fails closed.
+
+After registration, verification must perform another independent page and asset fetch. Qualification captures and the baseline fetch are never reused as verification evidence.
+
+The adapter remains authority-neutral:
+
+```text
+Product Fact delta = 0
+Product Fact Current delta = 0
+Confirmation delta = 0
+Assignment delta = 0
+Recommendation authority delta = 0
+```
+
