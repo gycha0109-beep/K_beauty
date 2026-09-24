@@ -192,6 +192,7 @@ open_store_scenario() {
   printf 'MOBILE_STORE_SCENARIO_CAPTURE=PASS scenario=%s file=%s\n' "$scenario" "$filename"
 }
 
+wait_for_adb_ready
 adb shell cmd uimode night no >/dev/null
 adb shell wm size 1080x1920 >/dev/null
 adb shell wm density 420 >/dev/null 2>&1 || true

@@ -511,6 +511,7 @@ reset_store_capture_session() {
   printf 'MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko\n'
 }
 
+wait_for_adb_ready
 adb shell cmd uimode night no >/dev/null
 adb shell wm size 1080x1920 >/dev/null
 adb shell wm density 420 >/dev/null 2>&1 || true
