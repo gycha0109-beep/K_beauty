@@ -74,6 +74,11 @@ for (const forbidden of [
 for (const token of [
   "phase8g_unresolved_profile_verification_not_rejected",
   "phase8g_profile_exact_replay_not_idempotent",
+  "phase8g_raw_compat_profile_invalid",
+  "phase8g_semantic_profile_missing_canonical_length_not_rejected",
+  "phase8g_semantic_basis_key_mismatch_not_rejected",
+  "phase8g_semantic_version_mismatch_not_rejected",
+  "phase8g_unknown_adapter_not_rejected",
   "phase8g_profile_request_conflict_not_rejected",
   "phase8g_verification_request_conflict_not_rejected",
   "phase8g_unprofiled_revalidation_not_rejected",
