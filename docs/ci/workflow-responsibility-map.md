@@ -47,6 +47,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `admin` | 2 |
 | `ai-provider-runtime` | 1 |
 | `catalog-taxonomy` | 2 |
+| `database-integration` | 1 |
 | `face-lab` | 0 |
 | `global-governance` | 2 |
 | `security-boundary` | 1 |
@@ -59,7 +60,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 18 |
 
-Total: **53 workflows**.
+Total: **54 workflows**.
 
 ## Watchtower producer classification
 
@@ -69,7 +70,7 @@ Total: **53 workflows**.
 | Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
 | Dedicated `trust` | 18 | static `[WT:trust]` |
 | Dedicated `mobile` | 11 | static `[WT:mobile]` |
-| Shared technical | 11 | PR/commit/dispatch evidence |
+| Shared technical | 12 | PR/commit/dispatch evidence |
 
 There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
 
@@ -99,7 +100,11 @@ Backend responsibility is cross-cutting: Admin APIs, product-query runtime probe
 
 ### Database
 
-Database verification is also cross-cutting. Supabase migrations, isolated runtime projects, RLS, RPC, TRUST persistence, identity repair, taxonomy and offer data checks remain under their owning technical responsibilities.
+`database-integration.yml` is the canonical shared technical owner for repository-level database integration authority. Phase 1 verifies migration filename/version/semantic-name integrity, freezes the currently observed repository-vs-Production migration-history divergence classes, proves the disposable local Supabase target guard remains fail-closed, and documents that the repository does **not yet** own a complete root `supabase/config.toml` + predecessor baseline that can honestly support a full blank-database replay claim. A read-only Production audit on 2026-09-24 observed 120 migration-ledger entries and 73 public tables, with RLS enabled on all 73 observed public tables; this observation is evidence, not a write-capable CI dependency.
+
+The current repository has 92 migration files and 89 direct semantic-name matches against the observed Production ledger. Timestamp rewrites, the split DATA-TAXONOMY2 Production rollout, one Production-only emergency credential-revocation migration, and repository-only canonical replay/data migrations are recorded explicitly in `docs/ci/database-integration-authority.json` rather than being misclassified as generic drift. Supabase's documented `db reset` reproducibility model assumes a complete local project baseline; BEJEWELY does not claim that state yet.
+
+Admin review, TRUST, taxonomy, offer and other domain-specific isolated Supabase runtime jobs remain with their owning workflows. They are not absorbed or deleted by Database Integration Authority until a canonical cross-domain predecessor baseline is built and equivalence is proven.
 
 ## Current normalization target
 
