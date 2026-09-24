@@ -12,6 +12,10 @@ on:
       - "scripts/trust-source-verification-canary-capture.mjs"
       - "scripts/verify-trust-source-canonicalization.mjs"
       - "scripts/trust-source-verification-diff-probe.mjs"
+      - "scripts/trust-source-semantic-cross-brand-probe.mjs"
+      - "scripts/verify-trust-official-product-semantic-adapter.mjs"
+      - "lib/trust/official-source-semantic-adapter.mjs"
+      - "tests/fixtures/trust-phase8g-semantic-adapter/**"
       - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
@@ -27,6 +31,10 @@ on:
       - "scripts/trust-source-verification-worker.mjs"
       - "scripts/trust-source-verification-canary-capture.mjs"
       - "scripts/verify-trust-source-canonicalization.mjs"
+      - "scripts/trust-source-semantic-cross-brand-probe.mjs"
+      - "scripts/verify-trust-official-product-semantic-adapter.mjs"
+      - "lib/trust/official-source-semantic-adapter.mjs"
+      - "tests/fixtures/trust-phase8g-semantic-adapter/**"
       - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
@@ -80,7 +88,10 @@ jobs:
           node --check scripts/trust-source-verification-worker.mjs
           node --check scripts/trust-source-verification-canary-capture.mjs
           node --check scripts/trust-source-verification-diff-probe.mjs
+          node --check scripts/trust-source-semantic-cross-brand-probe.mjs
+          node --check lib/trust/official-source-semantic-adapter.mjs
           node scripts/verify-trust-source-canonicalization.mjs
+          node scripts/verify-trust-official-product-semantic-adapter.mjs
           node -e 'const fs=require("node:fs"); const x=JSON.parse(fs.readFileSync("docs/evidence/trust-phase8g-production-canary-target-v1.json","utf8")); if(!x.source_id || !String(x.canonical_locator || "").startsWith("https://")) process.exit(1)'
           node scripts/verify-trust-phase8g-source-verification-comparability.mjs
 
@@ -106,6 +117,10 @@ jobs:
       - name: Probe semantic variability for adapter work
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-semantic-adapter')
         run: node scripts/trust-source-verification-diff-probe.mjs
+
+      - name: Probe semantic adapter across reviewed brands
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'feat/trust-phase8g-semantic-adapter')
+        run: node scripts/trust-source-semantic-cross-brand-probe.mjs
 
       - name: Materialize isolated Product Fact runtime
         shell: bash
