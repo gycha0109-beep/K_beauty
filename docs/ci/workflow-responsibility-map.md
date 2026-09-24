@@ -46,8 +46,9 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | --- | ---: |
 | `admin` | 2 |
 | `catalog-taxonomy` | 2 |
-| `face-lab` | 12 |
+| `face-lab` | 0 |
 | `global-governance` | 2 |
+| `security-boundary` | 1 |
 | `mobile` | 11 |
 | `product-data-pipeline` | 4 |
 | `product-evidence` | 0 |
@@ -56,7 +57,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 18 |
 
-Total: **62 workflows**.
+Total: **51 workflows**.
 
 ## Watchtower producer classification
 
@@ -65,11 +66,10 @@ Total: **62 workflows**.
 | Project-wide | 2 | no Track tag |
 | Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
 | Dedicated `trust` | 18 | static `[WT:trust]` |
-| Dedicated `face-research` | 12 | static `[WT:face-research]` |
 | Dedicated `mobile` | 11 | static `[WT:mobile]` |
-| Shared technical | 8 | PR/commit/dispatch evidence |
+| Shared technical | 9 | PR/commit/dispatch evidence |
 
-There are currently 12 standalone Face Lab workflows dedicated to `face-research`. There are no standalone workflows dedicated to `ops` or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
+There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
 
 The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. Its provenance is bound to the exact sorted workflow inventory by `workflowInventoryDigest`; commit-SHA provenance is intentionally not used because a PR cannot know its future merge SHA.
 
@@ -77,7 +77,7 @@ The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. It
 
 ### Security
 
-Security is intentionally not represented by one historical phase workflow. Canonical main health directly checks RLS, anonymous-write grants, image-upload boundaries, public-result reads, security headers/purchase anchors, admin/security boundaries and origin normalization. Additional isolated security harnesses remain under `security-tests/`.
+`security-boundary.yml` is the canonical shared technical owner for application security contracts. It runs the complete static boundary suite for analysis RLS, anonymous-write grants, SEC-06 through SEC-12 coverage, provider-runtime log sanitization, admin access and repository secret/authority hygiene, plus the SEC-12 mutation-resistance harness. Equivalence was proven on the dedicated workflow before the duplicate analysis-RLS, anonymous-write, SEC-08, SEC-09, SEC-10 headers, admin-access, SEC-11 origin-normalization and repository-hygiene executions were removed from `current-main-health`; global health retains only non-duplicated cross-domain contracts. Isolated runtime security harnesses remain under `security-tests/`.
 
 ### Site E2E
 

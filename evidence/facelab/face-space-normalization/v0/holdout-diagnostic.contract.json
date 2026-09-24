@@ -18,7 +18,11 @@
     "acceptanceThresholdForbidden": true,
     "percentileBoundaryForbidden": true,
     "archetypeProjectionAuthority": false,
-    "styleRecommendationAuthority": false
+    "styleRecommendationAuthority": false,
+    "counterfactualShadowDiagnosticAllowed": true,
+    "counterfactualShadowCannotGrantAdequacy": true,
+    "counterfactualShadowCannotChangeMethodSelection": true,
+    "counterfactualShadowCannotChangeReferenceStatistics": true
   },
   "currentEvidence": {
     "realReferenceCorpusPresent": true,
@@ -38,6 +42,14 @@
     "realPhotoStabilityAdequacyDecisionVersion": "real-photo-stability-adequacy-decision-v2",
     "realPhotoStabilityReportCount": 492,
     "headRollReportCount": 6,
-    "headRollSubjectLinkageEvidenceRefCount": 3
+    "headRollSubjectLinkageEvidenceRefCount": 3,
+    "counterfactualShadowDiagnosticPresent": true,
+    "counterfactualShadowDiagnosticRef": "evidence/facelab/face-space-normalization/v0/counterfactual-shadow-holdout-diagnostic.json",
+    "counterfactualShadowDiagnosticStatus": "counterfactual_research_diagnostic_only",
+    "counterfactualShadowHoldoutSampleCount": 20,
+    "counterfactualShadowReferenceSampleCountExcluded": 82,
+    "counterfactualShadowChangesMethodSelection": false,
+    "counterfactualShadowChangesReferenceStatistics": false,
+    "counterfactualShadowGrantsAdequacy": false
   }
 }

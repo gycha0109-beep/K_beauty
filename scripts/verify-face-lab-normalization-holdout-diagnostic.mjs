@@ -239,6 +239,130 @@ assert.equal(
   false
 );
 
+const actualReferenceCorpusRunOutput = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
+    "utf8"
+  )
+);
+const actualReferenceStatistics = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
+    "utf8"
+  )
+);
+const actualMethodSelection = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json",
+    "utf8"
+  )
+);
+const actualShadowHoldout = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/counterfactual-shadow-holdout-diagnostic.json",
+    "utf8"
+  )
+);
+
+const actualCounterfactualReadiness = {
+  schemaVersion: "face-space-normalization-readiness-v0",
+  normalizationVersion: "face-space-normalization-research-v0",
+  status: "provisional_candidate_ready",
+  evidenceState: {
+    referenceCorpusManifestPresent: true,
+    referenceSplitFingerprint:
+      actualReferenceStatistics.sourceReferenceSplitFingerprint,
+    referenceCorpusSamplingFrameProvenanceRef:
+      actualReferenceStatistics.sourceSamplingFrameProvenanceRef,
+    referenceCorpusProvider: actualReferenceStatistics.sourceProvider
+  },
+  dimensions: actualReferenceStatistics.dimensions.map(
+    ({ id, unit }) => ({
+      id,
+      unit,
+      normalizationStatus: "ready_for_provisional_candidate"
+    })
+  )
+};
+
+const actualCounterfactualCandidate =
+  buildFaceSpaceNormalizationCandidate({
+    readiness: actualCounterfactualReadiness,
+    referenceStatistics: actualReferenceStatistics,
+    methodDecision: actualMethodSelection.decision
+  });
+const recomputedShadowDiagnostic =
+  buildFaceSpaceNormalizationHoldoutDiagnostic({
+    manifest: actualReferenceCorpusRunOutput.corpus,
+    candidate: actualCounterfactualCandidate
+  });
+
+assert.deepEqual(
+  recomputedShadowDiagnostic,
+  actualShadowHoldout.diagnostic
+);
+assert.equal(
+  actualShadowHoldout.status,
+  "counterfactual_research_diagnostic_only"
+);
+assert.equal(
+  actualShadowHoldout.actualGate.realPhotoStabilityAdequacyDecisionCode,
+  "ADDITIONAL_EVIDENCE_REQUIRED"
+);
+assert.equal(
+  actualShadowHoldout.actualGate.provisionalResearchGateGranted,
+  false
+);
+assert.equal(
+  actualShadowHoldout.safeguards.holdoutUsedForMethodSelection,
+  false
+);
+assert.equal(
+  actualShadowHoldout.safeguards.holdoutUsedForReferenceStatistics,
+  false
+);
+assert.equal(
+  actualShadowHoldout.safeguards.holdoutUsedForRealPhotoAdequacyDecision,
+  false
+);
+assert.equal(
+  actualShadowHoldout.safeguards.acceptanceThresholdApplied,
+  false
+);
+assert.equal(
+  actualShadowHoldout.safeguards.passFailDecisionApplied,
+  false
+);
+assert.equal(recomputedShadowDiagnostic.holdoutSampleCount, 20);
+assert.equal(
+  recomputedShadowDiagnostic.referenceSampleCountExcluded,
+  82
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence.realHoldoutDiagnosticPresent,
+  false
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence
+    .counterfactualShadowDiagnosticPresent,
+  true
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence
+    .counterfactualShadowGrantsAdequacy,
+  false
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence
+    .counterfactualShadowChangesMethodSelection,
+  false
+);
+assert.equal(
+  actualHoldoutContract.currentEvidence
+    .counterfactualShadowChangesReferenceStatistics,
+  false
+);
+
 console.log(JSON.stringify({
   ok: true,
   status: diagnostic.status,
@@ -255,6 +379,12 @@ console.log(JSON.stringify({
   syntheticVerifierOnly: true,
   actualHoldoutDiagnosticPersisted: false,
   actualHoldoutDiagnosticBlockedByRealPhotoAdequacy: true,
+  actualLockedHoldoutShadowDiagnosticRecomputed: true,
+  shadowHoldoutSampleCount: 20,
+  shadowReferenceSampleCountExcluded: 82,
+  shadowDoesNotGrantAdequacy: true,
+  shadowDoesNotChangeMethodSelection: true,
+  shadowDoesNotChangeReferenceStatistics: true,
   methodSelectionBoundToComparisonEvidence: true,
   candidateBoundToReadinessCorpusLineage: true
 }, null, 2));

@@ -1,0 +1,30 @@
+{
+  "contract": "trust-phase8g-semantic-cross-brand-probe-v1",
+  "sources": [
+    {
+      "source_id": "2d154999-5dff-4496-9b1e-d8cf9c6f31f6",
+      "publisher": "Torriden / (주)토리든",
+      "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "source_metadata": {
+        "observed_claim": "다이브인 무기자차 마일드 선크림 60ml"
+      }
+    },
+    {
+      "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+      "publisher": "Beauty of Joseon",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "source_metadata": {
+        "current_name": "Relief Sun : Rice + Niacinamide",
+        "direct_claim": "PA++++"
+      }
+    },
+    {
+      "source_id": "2e75ba01-7ecb-4824-b712-d7e5d707782d",
+      "publisher": "(주)이즈앤트리",
+      "canonical_locator": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "source_metadata": {
+        "current_direct_claim": "SPF50+ PA++++"
+      }
+    }
+  ]
+}

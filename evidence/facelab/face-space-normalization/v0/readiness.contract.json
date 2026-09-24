@@ -83,11 +83,19 @@
     "usesHypotheticalRealPhotoAdequacyDecision": true,
     "holdoutUsedForMethodSelection": false,
     "holdoutUsedForReferenceStatistics": false,
-    "holdoutDiagnosticExecuted": false,
+    "holdoutDiagnosticExecuted": true,
     "actualRealPhotoAdequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
     "actualProvisionalResearchGateGranted": false,
     "productionAuthority": false,
     "normalizationAuthority": false,
-    "thresholdAuthority": false
+    "thresholdAuthority": false,
+    "holdoutDiagnosticRef": "evidence/facelab/face-space-normalization/v0/counterfactual-shadow-holdout-diagnostic.json",
+    "holdoutSampleCount": 20,
+    "referenceSampleCountExcluded": 82,
+    "holdoutUsedForRealPhotoAdequacyDecision": false,
+    "methodSelectionChangedByHoldout": false,
+    "referenceStatisticsChangedByHoldout": false,
+    "actualNormalizationCandidatePersisted": false,
+    "actualRealHoldoutDiagnosticPersisted": false
   }
 }

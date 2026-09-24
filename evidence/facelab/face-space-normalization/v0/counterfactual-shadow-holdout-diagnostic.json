@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "face-space-normalization-shadow-holdout-preflight-v0",
+  "status": "counterfactual_research_diagnostic_only",
+  "purpose": "Exercise the already-selected reference-only normalization candidate against the locked holdout before empirical real-photo adequacy promotion, without converting the hypothetical gate into evidence or authority.",
+  "actualGate": {
+    "realPhotoStabilityAdequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+    "provisionalResearchGateGranted": false,
+    "hypotheticalAdequacyPromotionUsedForCandidateConstruction": true
+  },
+  "safeguards": {
+    "holdoutUsedForMethodSelection": false,
+    "holdoutUsedForReferenceStatistics": false,
+    "holdoutUsedForRealPhotoAdequacyDecision": false,
+    "methodSelectionChanged": false,
+    "referenceStatisticsChanged": false,
+    "acceptanceThresholdApplied": false,
+    "passFailDecisionApplied": false,
+    "productionNormalizationActivated": false
+  },
+  "diagnostic": {
+    "schemaVersion": "face-space-normalization-holdout-diagnostic-v0",
+    "status": "research_diagnostic_only",
+    "normalizationVersion": "face-space-normalization-research-v0",
+    "referenceStatisticsVersion": "london-set-v5-reference-statistics-v1",
+    "methodDecisionVersion": "london-set-v5-reference-method-selection-v1",
+    "sourceReferenceCorpusSummarySchemaVersion": "face-space-reference-corpus-summary-v0",
+    "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "sourceSamplingFrameProvenanceRef": "https://doi.org/10.6084/m9.figshare.5047666.v5",
+    "sourceProvider": {
+      "source": "mediapipe_face_geometry",
+      "sourceVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+      "adapterId": "mediapipe-face-geometry-metric-v0"
+    },
+    "holdoutSplitOnly": true,
+    "holdoutSampleCount": 20,
+    "referenceSampleCountExcluded": 82,
+    "dimensions": [
+      {
+        "id": "lower_face_width_ratio",
+        "unit": "standardized_research_v0",
+        "count": 20,
+        "min": -1.614390505388372,
+        "max": 0.13560111192815685,
+        "mean": -0.5756332612442765,
+        "meanAbsolute": 0.6132157688859293
+      },
+      {
+        "id": "chin_height_ratio",
+        "unit": "standardized_research_v0",
+        "count": 20,
+        "min": -2.7429048660718256,
+        "max": 1.4249728265468142,
+        "mean": -0.5391730749122692,
+        "meanAbsolute": 0.919753509289621
+      },
+      {
+        "id": "eye_spacing_ratio",
+        "unit": "standardized_research_v0",
+        "count": 20,
+        "min": -1.553859398339591,
+        "max": 1.7851716479784692,
+        "mean": -0.258262994644657,
+        "meanAbsolute": 0.7320888568893997
+      },
+      {
+        "id": "eye_width_ratio",
+        "unit": "standardized_research_v0",
+        "count": 20,
+        "min": -2.6593863669680955,
+        "max": 1.4442016997764495,
+        "mean": -0.3355182170771995,
+        "meanAbsolute": 0.7777183563873179
+      },
+      {
+        "id": "eye_tilt",
+        "unit": "standardized_research_v0",
+        "count": 20,
+        "min": -2.3559528485165524,
+        "max": 1.9131139081269204,
+        "mean": -0.10819728252342883,
+        "meanAbsolute": 0.7725192717770559
+      },
+      {
+        "id": "nose_width_ratio",
+        "unit": "standardized_research_v0",
+        "count": 20,
+        "min": -1.7733613187197663,
+        "max": 1.168128998011283,
+        "mean": -0.510736634764297,
+        "meanAbsolute": 0.7520829318055677
+      }
+    ],
+    "authority": {
+      "productionAuthority": false,
+      "normalizationActivationAuthority": false,
+      "acceptanceThresholdAuthority": false,
+      "archetypeAuthority": false,
+      "styleRecommendationAuthority": false,
+      "researchDiagnosticOnly": true
+    }
+  },
+  "authority": {
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false,
+    "adequacyDecisionAuthority": false,
+    "archetypeAuthority": false,
+    "styleRecommendationAuthority": false
+  }
+}
