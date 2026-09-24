@@ -12,7 +12,7 @@ const workerPath = "scripts/trust-source-verification-worker.mjs";
 const researchWorkerPath = "scripts/trust-research-worker.mjs";
 const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
 const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
-const semanticProfileMigrationPath = "supabase/migrations/20260924013200_trust_phase8g_semantic_profile_contract_v1.sql";
+const semanticProfileMigrationPath = "supabase/migrations/20260924030000_trust_phase8g_semantic_profile_contract_v1.sql";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
