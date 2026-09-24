@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Verify Face Lab V2 foundation
         run: node scripts/verify-face-lab-v2-foundation.mjs
       - name: Verify Face Lab V2 premium wiring
