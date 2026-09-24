@@ -1,0 +1,8 @@
+{
+  "contract": "trust-phase8g-production-asset-baseline-target-v1",
+  "authority_mutation": false,
+  "source_id": "f493aa44-75dc-40b8-a179-b7d748bc7989",
+  "adapter_key": "official-claim-asset",
+  "adapter_version": "v1",
+  "qualification_contract": "trust-phase8g-controlled-expansion-asset-qualification-v1"
+}

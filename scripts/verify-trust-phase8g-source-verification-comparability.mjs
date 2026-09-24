@@ -13,6 +13,7 @@ const researchWorkerPath = "scripts/trust-research-worker.mjs";
 const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
 const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
 const semanticProfileMigrationPath = "supabase/migrations/20260924104150_trust_phase8g_semantic_profile_contract_v1.sql";
+const assetProfileMigrationPath = "supabase/migrations/20260924150000_trust_phase8g_claim_asset_profile_contract_v1.sql";
 const controlledBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-batch-v1.json";
 const controlledProbePath = "scripts/trust-source-semantic-controlled-batch-probe.mjs";
 const controlledAssetBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-asset-batch-v1.json";
@@ -29,6 +30,7 @@ const researchWorker = fs.readFileSync(researchWorkerPath, "utf8");
 const semanticAdapter = fs.readFileSync(semanticAdapterPath, "utf8");
 const semanticVerifier = fs.readFileSync(semanticVerifierPath, "utf8");
 const semanticProfileMigration = fs.readFileSync(semanticProfileMigrationPath, "utf8");
+const assetProfileMigration = fs.readFileSync(assetProfileMigrationPath, "utf8");
 const controlledBatch = JSON.parse(fs.readFileSync(controlledBatchPath, "utf8"));
 const controlledProbe = fs.readFileSync(controlledProbePath, "utf8");
 const controlledAssetBatch = JSON.parse(fs.readFileSync(controlledAssetBatchPath, "utf8"));
@@ -87,6 +89,8 @@ for (const token of [
   "phase8g_semantic_basis_key_mismatch_not_rejected",
   "phase8g_semantic_version_mismatch_not_rejected",
   "phase8g_unknown_adapter_not_rejected",
+  "phase8g_asset_profile_invalid",
+  "phase8g_asset_binding_mismatch_not_rejected",
   "phase8g_profile_request_conflict_not_rejected",
   "phase8g_verification_request_conflict_not_rejected",
   "phase8g_unprofiled_revalidation_not_rejected",
@@ -123,7 +127,11 @@ for (const token of [
   "export function digestOfficialContent",
   "canonical-html-text-v1",
   "official-product-semantic",
-  "canonical-official-product-semantics-v1"
+  "canonical-official-product-semantics-v1",
+  "MAX_ASSET_BYTES = 8 * 1024 * 1024",
+  "export async function fetchOfficialAssetBytes",
+  "export function digestOfficialClaimAsset",
+  "official-claim-asset-bytes-v1"
 ]) {
   assert.ok(transport.includes(token), `missing shared transport token: ${token}`);
 }
@@ -156,10 +164,38 @@ for (const forbidden of [
 }
 
 for (const token of [
+  "official-claim-asset-bytes-v1",
+  "official-claim-asset",
+  "direct_claim_asset_url",
+  "asset_url",
+  "asset_final_url",
+  "asset_content_type",
+  "asset_byte_length",
+  "product_evidence_source_verification_profile_fresh_recovery_invalid"
+]) {
+  assert.ok(assetProfileMigration.includes(token), `missing asset profile migration token: ${token}`);
+}
+
+for (const forbidden of [
+  "update public.product_fact_current",
+  "delete from public.product_fact_current",
+  "insert into public.product_fact_instances",
+  "update public.product_fact_instances",
+  "insert into public.product_fact_confirmations",
+  "insert into public.recommendation",
+  "update public.recommendation"
+]) {
+  assert.ok(!assetProfileMigration.toLowerCase().includes(forbidden.toLowerCase()), `forbidden asset profile authority: ${forbidden}`);
+}
+
+for (const token of [
   "establishFreshBaseline",
   "verifySource",
   "official-product-semantic",
   "canonical-official-product-semantics-v1",
+  "official-claim-asset",
+  "official-claim-asset-bytes-v1",
+  "fetchBoundClaimAsset",
   "record_product_evidence_source_verification_v2",
   "admin_register_product_evidence_source_verification_profile_v1"
 ]) {
