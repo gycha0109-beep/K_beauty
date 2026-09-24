@@ -352,6 +352,25 @@ jobs:
           name: bejewely-mobile-android-debug-${{ github.event.pull_request.head.sha || github.sha }}
           path: apps/mobile/android/app/build/outputs/apk/debug
 
+      - name: Preinstall Android 35 emulator image with bounded retry
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          package='system-images;android-35;default;x86_64'
+          for attempt in 1 2 3; do
+            if sdkmanager --install "$package" --channel=0; then
+              test -f "$sdk_root/system-images/android-35/default/x86_64/package.xml"
+              printf 'MOBILE_ANDROID_SYSTEM_IMAGE_READY=PASS attempt=%s\n' "$attempt"
+              exit 0
+            fi
+            printf 'MOBILE_ANDROID_SYSTEM_IMAGE_RETRY=attempt=%s\n' "$attempt" >&2
+            rm -rf "$sdk_root/system-images/android-35/default/x86_64"
+            sleep $((attempt * 5))
+          done
+          printf 'MOBILE_ANDROID_SYSTEM_IMAGE_READY=FAIL attempts=3\n' >&2
+          exit 1
+
       - name: Enable KVM permissions
         shell: bash
         run: |
