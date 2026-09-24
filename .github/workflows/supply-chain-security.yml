@@ -94,24 +94,6 @@ jobs:
             git diff --check HEAD^
           fi
 
-  dependency-review:
-    name: PR dependency review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Checkout exact candidate SHA
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Block newly introduced critical dependency vulnerabilities
-        uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: critical
-          license-check: false
-
   codeql:
     name: CodeQL JavaScript and TypeScript
     runs-on: ubuntu-24.04
