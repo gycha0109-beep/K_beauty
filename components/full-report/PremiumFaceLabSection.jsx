@@ -100,6 +100,9 @@ const COPY = {
     hairTitle: "Hair",
     groomingTitle: "Grooming",
     makeupTitle: "Makeup",
+    colorTitle: "Color",
+    eyewearTitle: "Eyewear",
+    accessoriesTitle: "Accessories",
     productSpecTitle: "필요한 색조 제품 속성",
     noDomain: "이 경로에서는 별도 변화가 없습니다.",
     restart: "처음부터 다시",
@@ -191,6 +194,9 @@ const COPY = {
     hairTitle: "Hair",
     groomingTitle: "Grooming",
     makeupTitle: "Makeup",
+    colorTitle: "Color",
+    eyewearTitle: "Eyewear",
+    accessoriesTitle: "Accessories",
     productSpecTitle: "Makeup product attributes",
     noDomain: "No separate change in this route.",
     restart: "Start over",
@@ -509,6 +515,34 @@ function FaceLabV2Result({ result, locale, onSelectRoute, onEditTarget }) {
       ]
     : [];
 
+  const colorLines = result.color?.value
+    ? [
+        ...(result.color.value.applicationNotes || []),
+        result.color.value.temperatureDirection
+          ? `temperature: ${result.color.value.temperatureDirection}`
+          : null,
+        result.color.value.chromaDirection
+          ? `chroma: ${result.color.value.chromaDirection}`
+          : null
+      ].filter(Boolean)
+    : [];
+
+  const eyewearLines = result.eyewear?.value
+    ? [
+        ...(result.eyewear.value.angularity || []),
+        ...(result.eyewear.value.curvature || []),
+        ...(result.eyewear.value.rimThickness || []),
+        ...(result.eyewear.value.visualWeight || [])
+      ]
+    : [];
+
+  const accessoryLines = result.accessories?.value
+    ? [
+        ...(result.accessories.value.visualWeight || []),
+        ...(result.accessories.value.examples || []).map((item) => item.direction)
+      ]
+    : [];
+
   return (
     <section className="space-y-4">
       <section className="ui-card p-5 sm:p-6">
@@ -598,6 +632,18 @@ function FaceLabV2Result({ result, locale, onSelectRoute, onEditTarget }) {
           <div>
             <h4 className="text-sm font-semibold">{copy.makeupTitle}</h4>
             {makeupLines.length ? <ResultList items={makeupLines} /> : <p className="ui-text-secondary mt-2 text-sm">{copy.noDomain}</p>}
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold">{copy.colorTitle}</h4>
+            {colorLines.length ? <ResultList items={colorLines} /> : <p className="ui-text-secondary mt-2 text-sm">{copy.noDomain}</p>}
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold">{copy.eyewearTitle}</h4>
+            {eyewearLines.length ? <ResultList items={eyewearLines} /> : <p className="ui-text-secondary mt-2 text-sm">{copy.noDomain}</p>}
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold">{copy.accessoriesTitle}</h4>
+            {accessoryLines.length ? <ResultList items={accessoryLines} /> : <p className="ui-text-secondary mt-2 text-sm">{copy.noDomain}</p>}
           </div>
         </div>
       </section>
