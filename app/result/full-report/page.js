@@ -6297,9 +6297,10 @@ function FaceLabSectionPanel({ section, locale = "ko" }) {
 
 function FaceLabSection({ report, photoUrl, locale = "ko" }) {
   const faceLabSummary = report?.faceLabSummary || buildUnavailablePremiumFaceLab(photoUrl);
+  const persistedReportId = report?.meta?.persistence?.savedReportId || null;
   const resultKey =
     report?.meta?.snapshot?.fingerprint ||
-    report?.meta?.persistence?.savedReportId ||
+    persistedReportId ||
     "current";
 
   return (
@@ -6309,6 +6310,7 @@ function FaceLabSection({ report, photoUrl, locale = "ko" }) {
       photoUrl={photoUrl}
       locale={locale}
       resultKey={resultKey}
+      savedReportId={persistedReportId}
     />
   );
 }
