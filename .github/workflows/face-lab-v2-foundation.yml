@@ -20,7 +20,9 @@ on:
     paths:
       - "lib/face-lab-v2/**"
       - "scripts/verify-face-lab-v2-foundation.mjs"
+      - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "app/api/full-report/route.js"
+      - "app/api/premium/face-lab-v2/route.js"
       - "components/full-report/PremiumFaceLabSection.jsx"
       - "app/result/full-report/page.js"
       - "package.json"
