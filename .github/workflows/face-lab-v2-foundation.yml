@@ -7,6 +7,8 @@ on:
     paths:
       - "lib/face-lab-v2/**"
       - "scripts/verify-face-lab-v2-foundation.mjs"
+      - "scripts/verify-face-lab-v2-premium-wiring.mjs"
+      - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "app/api/full-report/route.js"
       - "components/full-report/PremiumFaceLabSection.jsx"
       - "app/result/full-report/page.js"
@@ -35,3 +37,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify Face Lab V2 foundation
         run: node scripts/verify-face-lab-v2-foundation.mjs
+      - name: Verify Face Lab V2 premium wiring
+        run: node scripts/verify-face-lab-v2-premium-wiring.mjs
