@@ -12,7 +12,6 @@ on:
       - "scripts/trust-source-verification-canary-capture.mjs"
       - "scripts/verify-trust-source-canonicalization.mjs"
       - "scripts/trust-source-verification-diff-probe.mjs"
-      - "scripts/trust-source-verification-diff-probe.mjs"
       - "docs/evidence/trust-phase8g-production-canary-target-v1.json"
       - "scripts/trust-research-worker.mjs"
       - "lib/trust/official-source-fetch.mjs"
