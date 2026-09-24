@@ -144,7 +144,7 @@ jobs:
           cp supabase/migrations/20260922012833_trust_phase8c_prestate_binding_hardening_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260924025307_trust_phase8g_source_verification_comparability_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260924025341_trust_phase8g_profile_idempotency_hardening_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260924030000_trust_phase8g_semantic_profile_contract_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260924104150_trust_phase8g_semantic_profile_contract_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and verify comparability gate
         shell: bash
