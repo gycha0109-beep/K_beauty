@@ -12,6 +12,8 @@ const workerPath = "scripts/trust-source-verification-worker.mjs";
 const researchWorkerPath = "scripts/trust-research-worker.mjs";
 const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
 const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
+const canaryCapturePath = "scripts/trust-source-verification-canary-capture.mjs";
+const canaryTargetPath = "docs/evidence/trust-phase8g-production-canary-target-v1.json";
 const semanticProfileMigrationPath = "supabase/migrations/20260924104150_trust_phase8g_semantic_profile_contract_v1.sql";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
@@ -24,6 +26,8 @@ const worker = fs.readFileSync(workerPath, "utf8");
 const researchWorker = fs.readFileSync(researchWorkerPath, "utf8");
 const semanticAdapter = fs.readFileSync(semanticAdapterPath, "utf8");
 const semanticVerifier = fs.readFileSync(semanticVerifierPath, "utf8");
+const canaryCapture = fs.readFileSync(canaryCapturePath, "utf8");
+const canaryTarget = JSON.parse(fs.readFileSync(canaryTargetPath, "utf8"));
 const semanticProfileMigration = fs.readFileSync(semanticProfileMigrationPath, "utf8");
 
 for (const token of [
@@ -181,6 +185,20 @@ for (const token of [
 
 assert.ok(!worker.includes("semantic parse failed"));
 assert.ok(!worker.includes("fallback raw"));
+
+for (const token of [
+  "trust-phase8g-production-canary-capture-v2",
+  "captureProductionCanarySet",
+  "confirmation",
+  "required_observations !== 3",
+  "official-product-semantic"
+]) {
+  assert.ok(canaryCapture.includes(token), `missing Production semantic canary token: ${token}`);
+}
+assert.equal(canaryTarget.required_observations, 3);
+assert.equal(canaryTarget.adapter_key, "official-product-semantic");
+assert.equal(canaryTarget.adapter_version, "v1");
+assert.equal(canaryTarget.expected_authority_mutation, false);
 
 assert.ok(researchWorker.includes('from "../lib/trust/official-source-fetch.mjs"'));
 assert.ok(!researchWorker.includes('from "node:dns/promises"'));
