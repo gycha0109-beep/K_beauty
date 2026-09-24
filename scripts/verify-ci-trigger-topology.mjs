@@ -403,6 +403,10 @@ for (const legacyPath of [
 ]) {
   assertContains(legacyPath, ['.github/workflows/mobile-android-runtime.yml']);
 }
+assertContains(".github/workflows/mobile-20b-store-capture.yml", [
+  "  push:",
+  "    branches: [main]",
+]);
 
 assertContains(".github/workflows/mobile-ios-shell.yml", [
   '- "apps/mobile/app/_layout.tsx"',
