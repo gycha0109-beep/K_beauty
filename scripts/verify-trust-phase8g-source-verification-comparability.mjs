@@ -206,6 +206,7 @@ for (const source of controlledBatch.sources) {
 for (const token of [
   "trust-phase8g-controlled-expansion-qualification-v1",
   "SUPPORTED_STABLE",
+  "LOCATOR_DRIFT",
   "TRANSIENT_FAILURE",
   "SOURCE_BLOCKED",
   "required_observations",
