@@ -106,7 +106,7 @@ Mobile CI is now represented as six technical responsibilities while preserving 
 - `mobile-e2e`: Android/iOS install-and-runtime shell verification in `mobile-native-shell.yml` and `mobile-ios-shell.yml`.
 - `mobile-release-store`: policy, signing/distribution and store capture/assets in the Store Readiness, MOBILE-15 and MOBILE-20 workflows.
 
-Phase 1 intentionally keeps the API-integration verifiers duplicated inside `mobile-ci.yml` until the dedicated API Integration workflow proves green equivalence. Android debug APK generation also remains duplicated across Native Shell, MOBILE-20A and MOBILE-20B in this phase; the next consolidation target is one build artifact consumed by E2E and store-capture jobs rather than three independent builds.
+PR #746 proved same-head green equivalence for `mobile-api-integration.yml`, `mobile-ci.yml` and `current-main-health`. The six API-integration verifiers were therefore removed from `mobile-ci.yml`, and the ten duplicated mobile static checks were removed from `current-main-health`; Mobile Client and Mobile API Integration are now the canonical owners for those contracts. Android debug APK generation still remains duplicated across Native Shell, MOBILE-20A and MOBILE-20B; the next consolidation target is one build artifact consumed by E2E and store-capture jobs rather than three independent builds.
 
 ### Site E2E
 
