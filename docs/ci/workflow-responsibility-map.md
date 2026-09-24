@@ -82,7 +82,7 @@ The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. It
 
 ### Supply chain
 
-`supply-chain-security.yml` is the canonical shared technical owner for dependency and source supply-chain checks. It proves the npm lockfile can install with lifecycle scripts disabled, records production and full dependency-audit severity counts, blocks critical vulnerabilities, reviews dependency changes introduced by pull requests, and runs CodeQL for JavaScript/TypeScript. Dependabot maintains npm and GitHub Actions update proposals. The first audit gate intentionally blocks only critical findings so pre-existing debt is measured rather than silently grandfathered; once the observed baseline is known, the gate is ratcheted to prevent any increase in high/moderate findings. GitGuardian remains the existing secret-scanning layer and is not duplicated here.
+`supply-chain-security.yml` is the canonical shared technical owner for dependency and source supply-chain checks. It proves the npm lockfile can install with lifecycle scripts disabled, records production and full dependency-audit severity counts, enforces a non-regression baseline, and runs CodeQL for JavaScript/TypeScript. The observed starting audit baseline is 1 critical, 1 high, 13 moderate and 0 low findings for both production and full dependency graphs; any increase fails closed while remediation can ratchet the baseline downward. Dependabot maintains npm and GitHub Actions update proposals. GitHub Dependency Review was tested but is not supported until this repository's Dependency Graph is enabled, so it is not treated as active coverage. GitGuardian remains the existing secret-scanning layer and is not duplicated here.
 
 ### Site E2E
 
