@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
   "producerContractVersion": "watchtower-v0.3.2",
-  "workflowInventoryDigest": "sha256:55fc8484ae2bc7b7ee0bbf57c01dd57a8032c03239fa507f20335420fdee97ba",
+  "workflowInventoryDigest": "sha256:fe64a7395784de1c9870468fcc2ebdfe995d81dd3fe71e728dd49daf5778aa1a",
   "lastAuditedAt": "2026-09-24",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
@@ -66,7 +66,7 @@
     },
     "supplyChain": {
       "hostWorkflow": "supply-chain-security.yml",
-      "mode": "canonical shared technical owner; critical dependency gate plus PR dependency review and CodeQL; audit severity baseline ratchets after observed repository debt",
+      "mode": "canonical shared technical owner; lockfile integrity, npm audit non-regression gate and CodeQL; GitHub Dependency Review pending repository Dependency Graph enablement",
       "scripts": [
         "scripts/verify-supply-chain-audit.mjs"
       ]
