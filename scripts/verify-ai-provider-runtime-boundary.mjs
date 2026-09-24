@@ -142,13 +142,15 @@ const runtimeSource = await readFile(new URL("../lib/server/openai-chat-runtime.
 const visionSource = await readFile(new URL("../lib/server/vision-observation-service.js", import.meta.url), "utf8");
 const analyzeSource = await readFile(new URL("../app/api/analyze/route.js", import.meta.url), "utf8");
 
+const openAiEndpointDeclaration =
+  /^export const OPENAI_CHAT_COMPLETIONS_URL = "https:\/\/api\.openai\.com\/v1\/chat\/completions";$/gm;
 assert.equal(
-  runtimeSource.split("https://api.openai.com/v1/chat/completions").length - 1,
+  [...runtimeSource.matchAll(openAiEndpointDeclaration)].length,
   1,
-  "shared runtime must be the only canonical Analyze OpenAI endpoint owner"
+  "shared runtime must own exactly one canonical Analyze OpenAI endpoint declaration"
 );
-assert.equal(visionSource.includes("https://api.openai.com/v1/chat/completions"), false);
-assert.equal(analyzeSource.includes("https://api.openai.com/v1/chat/completions"), false);
+assert.doesNotMatch(visionSource, /api\.openai\.com\/v1\/chat\/completions/);
+assert.doesNotMatch(analyzeSource, /api\.openai\.com\/v1\/chat\/completions/);
 assert.match(visionSource, /executeOpenAiChatJson\(/);
 assert.match(analyzeSource, /executeOpenAiChatJson\(/);
 assert.match(runtimeSource, /new AbortController\(\)/);
