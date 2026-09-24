@@ -87,6 +87,14 @@ const COPY = {
     minutes5: "5분 내",
     minutes15: "15분 내",
     minutes30: "30분 이상도 가능",
+    budgetTitle: "스타일링 예산",
+    budgetLow: "최소 비용",
+    budgetStandard: "보통",
+    budgetFlexible: "필요하면 투자",
+    maintenanceTitle: "유지 관리 부담",
+    maintenanceLow: "최소화",
+    maintenanceMedium: "보통",
+    maintenanceHigh: "관리 가능",
     reviewTitle: "이 방향으로 Face Lab을 만들까요?",
     confirm: "이대로 결과 보기",
     edit: "추구미 수정",
@@ -191,6 +199,14 @@ const COPY = {
     minutes5: "Up to 5 min",
     minutes15: "Up to 15 min",
     minutes30: "30+ min is okay",
+    budgetTitle: "Styling budget",
+    budgetLow: "Keep cost low",
+    budgetStandard: "Standard",
+    budgetFlexible: "Flexible",
+    maintenanceTitle: "Maintenance tolerance",
+    maintenanceLow: "Keep it low",
+    maintenanceMedium: "Medium",
+    maintenanceHigh: "High is okay",
     reviewTitle: "Build Face Lab with this target?",
     confirm: "View my result",
     edit: "Edit target",
@@ -742,6 +758,8 @@ export default function PremiumFaceLabSection({
   const [dyeAllowed, setDyeAllowed] = useState(false);
   const [makeupIntensity, setMakeupIntensity] = useState("light");
   const [dailyMinutes, setDailyMinutes] = useState(15);
+  const [budgetBand, setBudgetBand] = useState("standard");
+  const [maintenanceTolerance, setMaintenanceTolerance] = useState("medium");
   const [canonical, setCanonical] = useState(null);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
 
@@ -784,6 +802,10 @@ export default function PremiumFaceLabSection({
       setDyeAllowed(stored.surveyAnswers.constraints?.hair?.dye === "yes");
       setMakeupIntensity(stored.surveyAnswers.constraints?.makeup?.intensity || "light");
       setDailyMinutes(stored.surveyAnswers.constraints?.lifestyle?.dailyMinutes || 15);
+      setBudgetBand(stored.surveyAnswers.constraints?.lifestyle?.budgetBand || "standard");
+      setMaintenanceTolerance(
+        stored.surveyAnswers.constraints?.lifestyle?.maintenanceTolerance || "medium"
+      );
       setStage("result");
       return true;
     };
@@ -866,7 +888,9 @@ export default function PremiumFaceLabSection({
         intensity: makeupIntensity
       },
       lifestyle: {
-        dailyMinutes
+        dailyMinutes,
+        budgetBand,
+        maintenanceTolerance
       },
       hardExclusions: [
         ...(!dyeAllowed ? ["hair_dye"] : [])
@@ -1200,6 +1224,24 @@ export default function PremiumFaceLabSection({
             <ChoiceButton active={dailyMinutes === 5} onClick={() => setDailyMinutes(5)}>{copy.minutes5}</ChoiceButton>
             <ChoiceButton active={dailyMinutes === 15} onClick={() => setDailyMinutes(15)}>{copy.minutes15}</ChoiceButton>
             <ChoiceButton active={dailyMinutes === 30} onClick={() => setDailyMinutes(30)}>{copy.minutes30}</ChoiceButton>
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <p className="text-xs font-semibold text-zinc-500">{copy.budgetTitle}</p>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            <ChoiceButton active={budgetBand === "low"} onClick={() => setBudgetBand("low")}>{copy.budgetLow}</ChoiceButton>
+            <ChoiceButton active={budgetBand === "standard"} onClick={() => setBudgetBand("standard")}>{copy.budgetStandard}</ChoiceButton>
+            <ChoiceButton active={budgetBand === "flexible"} onClick={() => setBudgetBand("flexible")}>{copy.budgetFlexible}</ChoiceButton>
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <p className="text-xs font-semibold text-zinc-500">{copy.maintenanceTitle}</p>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            <ChoiceButton active={maintenanceTolerance === "low"} onClick={() => setMaintenanceTolerance("low")}>{copy.maintenanceLow}</ChoiceButton>
+            <ChoiceButton active={maintenanceTolerance === "medium"} onClick={() => setMaintenanceTolerance("medium")}>{copy.maintenanceMedium}</ChoiceButton>
+            <ChoiceButton active={maintenanceTolerance === "high"} onClick={() => setMaintenanceTolerance("high")}>{copy.maintenanceHigh}</ChoiceButton>
           </div>
         </div>
       </div>

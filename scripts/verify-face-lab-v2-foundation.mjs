@@ -127,6 +127,16 @@ assert.ok(canonical.styleDelta.priorities.length > 0);
 assert.ok(canonical.routes.routes.length >= 2);
 assert.ok(canonical.routes.routes.length <= 3);
 assert.ok(canonical.routes.selectedRouteId);
+const englishCanonical = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: survey,
+  locale: "en",
+  resultId: "fixture-face-lab-v2-en"
+});
+assert.ok(
+  englishCanonical.routes.routes.every((route) => !/[가-힣]/.test(route.whyThisRoute)),
+  "English route rationale must not leak Korean copy"
+);
 assert.ok(["available", "not_applicable"].includes(canonical.hair.status));
 if (canonical.hair.status === "available") {
   assert.ok(
@@ -270,7 +280,11 @@ const lowEffort = buildFaceLabV2Canonical({
     constraints: {
       hair: { lengthChange: "small", dye: "no" },
       makeup: { intensity: "light" },
-      lifestyle: { dailyMinutes: 5 },
+      lifestyle: {
+        dailyMinutes: 5,
+        budgetBand: "low",
+        maintenanceTolerance: "low"
+      },
       hardExclusions: []
     }
   },
@@ -279,6 +293,7 @@ const lowEffort = buildFaceLabV2Canonical({
 
 assert.ok(lowEffort.routes.routes.some((route) => route.strategy === "low_effort"));
 assert.equal(lowEffort.routes.defaultRouteId, "low_effort");
+assert.ok(lowEffort.routes.routes[0].constraintFit.score > 0);
 assert.equal(lowEffort.makeup.status, "not_requested");
 assert.ok(["available", "not_applicable"].includes(lowEffort.eyewear.status));
 
@@ -335,7 +350,11 @@ const normalizedPersistence = normalizeFaceLabV2PersistencePayload({
     constraints: {
       hair: { lengthChange: "large", dye: "yes" },
       makeup: { intensity: "medium" },
-      lifestyle: { dailyMinutes: 30 },
+      lifestyle: {
+        dailyMinutes: 30,
+        budgetBand: "low",
+        maintenanceTolerance: "low"
+      },
       hardExclusions: ["hair_dye", "unknown_exclusion"]
     }
   },
@@ -344,6 +363,8 @@ const normalizedPersistence = normalizeFaceLabV2PersistencePayload({
 
 assert.deepEqual(normalizedPersistence.surveyAnswers.stylingScope, ["hair", "makeup"]);
 assert.deepEqual(normalizedPersistence.surveyAnswers.constraints.hardExclusions, ["hair_dye"]);
+assert.equal(normalizedPersistence.surveyAnswers.constraints.lifestyle.budgetBand, "low");
+assert.equal(normalizedPersistence.surveyAnswers.constraints.lifestyle.maintenanceTolerance, "low");
 assert.equal(normalizedPersistence.selectedRouteId, "balanced");
 
 const normalizedFinderPersistence = normalizeFaceLabV2PersistencePayload({
