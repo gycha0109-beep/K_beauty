@@ -39,7 +39,13 @@ export async function captureProductionCanarySet({
   delayMs = 2000,
 } = {}) {
   const target = JSON.parse(await readFile(targetPath, "utf8"));
-  if (!target?.source_id || !target?.canonical_locator) {
+  if (
+    !target?.source_id
+    || !target?.canonical_locator
+    || target?.required_observations !== 3
+    || target?.adapter_key !== "official-product-semantic"
+    || target?.adapter_version !== "v1"
+  ) {
     throw new Error("CANARY_TARGET_INVALID");
   }
 
