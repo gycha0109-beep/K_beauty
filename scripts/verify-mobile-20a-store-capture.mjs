@@ -51,8 +51,11 @@ for (const marker of [
   "MOBILE_STORE_SCREENSHOT_TRANSPORT_RECOVERY=PASS",
   "QUICKSTEP_RECOVERY_COUNT=0",
   "QUICKSTEP_RECOVERY_LIMIT=2",
+  "dismiss_quickstep_anr_if_needed()",
   "recover_quickstep_if_needed()",
   "Quickstep isn't responding",
+  "MOBILE_STORE_APP_FOREGROUND_QUICKSTEP_RECOVERY=PASS",
+  "MOBILE_STORE_APP_LAUNCH_RETRY_AFTER_QUICKSTEP=PASS",
   "MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS",
   "MOBILE_STORE_DIRECT_ACTIVITY_RESTART=PASS",
   "EXPO_PUBLIC_STORE_CAPTURE_MODE=1",
@@ -119,6 +122,7 @@ for (const marker of [
 
 assert(capture.split("if recover_quickstep_if_needed; then").length - 1 === 2, "bounded-recovery-in-both-waits");
 assert(capture.includes("if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then"), "bounded-recovery-limit-enforced");
+assert(capture.includes("return 3") && capture.includes('[[ "$foreground_status" -eq 3 ]]'), "launch-retry-after-quickstep-anr");
 assert(!capture.includes("wait_for_text_with_scroll"), "no-hierarchy-only-survey-visibility");
 assert(!capture.includes("dump_ui() {\n  adb shell uiautomator dump"), "no-one-shot-ui-dump");
 assert(!capture.includes('wait_for_text "Camera ready"\ntap_text "Take photo"'), "no-camera-preview-redump-en");

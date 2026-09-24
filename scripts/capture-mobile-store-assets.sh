@@ -115,12 +115,40 @@ app_is_foreground() {
   return 1
 }
 
+dismiss_quickstep_anr_if_needed() {
+  dump_ui || true
+  if [[ ! -s "$UI_DUMP" ]] || ! ui_has_text "Quickstep isn't responding"; then
+    return 1
+  fi
+  if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
+    echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
+    return 2
+  fi
+  if ! tap_text "Close app"; then
+    echo "Quickstep ANR detected but its Close app action was unavailable" >&2
+    return 2
+  fi
+  QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
+  printf 'MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS count=%d\n' "$QUICKSTEP_RECOVERY_COUNT"
+  sleep 2
+  return 0
+}
+
 wait_for_app_foreground() {
-  local attempt
+  local attempt recovery_status
   for attempt in $(seq 1 "$APP_FOREGROUND_RETRY_LIMIT"); do
     if app_is_foreground; then
       printf 'MOBILE_STORE_APP_FOREGROUND=PASS attempt=%s\n' "$attempt"
       return 0
+    fi
+    if dismiss_quickstep_anr_if_needed; then
+      printf 'MOBILE_STORE_APP_FOREGROUND_QUICKSTEP_RECOVERY=PASS attempt=%s\n' "$attempt"
+      return 3
+    else
+      recovery_status=$?
+      if [[ "$recovery_status" -eq 2 ]]; then
+        return 2
+      fi
     fi
     sleep 2
   done
@@ -138,11 +166,22 @@ launch_app_and_wait() {
     return 1
   fi
   for attempt in $(seq 1 "$APP_LAUNCH_RETRY_LIMIT"); do
+    local foreground_status=0
     adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
     adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
-    if adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null 2>&1 && wait_for_app_foreground; then
-      printf 'MOBILE_STORE_APP_LAUNCH=PASS attempt=%s\n' "$attempt"
-      return 0
+    if adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null 2>&1; then
+      if wait_for_app_foreground; then
+        printf 'MOBILE_STORE_APP_LAUNCH=PASS attempt=%s\n' "$attempt"
+        return 0
+      else
+        foreground_status=$?
+        if [[ "$foreground_status" -eq 2 ]]; then
+          return 1
+        fi
+        if [[ "$foreground_status" -eq 3 ]]; then
+          printf 'MOBILE_STORE_APP_LAUNCH_RETRY_AFTER_QUICKSTEP=PASS attempt=%s\n' "$attempt"
+        fi
+      fi
     fi
     sleep 2
   done
@@ -314,20 +353,13 @@ PY
 }
 
 recover_quickstep_if_needed() {
-  if [[ ! -f "$UI_DUMP" ]] || ! ui_has_text "Quickstep isn't responding"; then
-    return 1
+  local recovery_status=0
+  if dismiss_quickstep_anr_if_needed; then
+    :
+  else
+    recovery_status=$?
+    return "$recovery_status"
   fi
-  if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
-    echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
-    return 2
-  fi
-  if ! tap_text "Close app"; then
-    echo "Quickstep ANR detected but its Close app action was unavailable" >&2
-    return 2
-  fi
-  QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
-  printf 'MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS count=%d\n' "$QUICKSTEP_RECOVERY_COUNT"
-  sleep 2
   if ! launch_app_and_wait; then
     echo "Quickstep recovery could not restore BEJEWELY foreground state" >&2
     return 2

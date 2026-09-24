@@ -38,6 +38,11 @@ assert(capture.includes("foreground_ui_owned_by_app()"), "foreground-ui-owner-fa
 assert(capture.includes("adb shell uiautomator dump /sdcard/bejewely-scenario-foreground-window.xml"), "foreground-ui-dump");
 assert(capture.includes("MOBILE_STORE_SCENARIO_APP_FOREGROUND_UI_FALLBACK=PASS"), "foreground-ui-fallback-marker");
 assert(capture.includes("top_activity=") && capture.includes("focused_display="), "multi-signal-foreground-detector");
+assert(capture.includes("SCENARIO_LAUNCH_RETRY_LIMIT=3"), "bounded-scenario-launch-retry");
+assert(capture.includes("QUICKSTEP_RECOVERY_LIMIT=2"), "bounded-scenario-quickstep-recovery");
+assert(capture.includes("dismiss_quickstep_anr_if_needed()"), "scenario-quickstep-recovery-helper");
+assert(capture.includes("MOBILE_STORE_SCENARIO_QUICKSTEP_ANR_RECOVERY=PASS"), "scenario-quickstep-recovery-marker");
+assert(capture.includes("MOBILE_STORE_SCENARIO_LAUNCH_RETRY_AFTER_QUICKSTEP=PASS"), "scenario-relaunch-after-quickstep");
 assert(!capture.includes("EXPO_PUBLIC_API_BASE_URL"), "no-api-base-injection");
 assert(!capture.includes("curl "), "no-curl-network-call");
 assert(!capture.includes("wget "), "no-wget-network-call");
@@ -62,5 +67,6 @@ console.log("MOBILE_20B_DEV_ONLY_ROUTE=PASS");
 console.log("MOBILE_20B_REAL_RUNTIME_COMPONENTS=PASS");
 console.log("MOBILE_20B_DETERMINISTIC_FIXTURES=PASS");
 console.log("MOBILE_20B_SCENARIO_FOREGROUND_MULTI_SIGNAL=PASS");
+console.log("MOBILE_20B_SCENARIO_QUICKSTEP_RECOVERY=PASS");
 console.log("MOBILE_20B_RESULTS_DIARY_CAPTURE=PASS");
 console.log("MOBILE_20B_STORE_SCENARIOS=PASS");
