@@ -161,6 +161,44 @@ assert.equal(unconfirmed.hair, null);
 assert.equal(unconfirmed.makeup, null);
 assert.equal(isFaceLabV2CanonicalResult(unconfirmed), true);
 
+const partialClarified = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    entryMode: "partial",
+    targetSelections: ["sophisticated"],
+    clarifiers: {
+      softSharp: "soft",
+      naturalPolished: "polished"
+    }
+  },
+  resultId: "fixture-face-lab-v2-partial"
+});
+
+assert.equal(partialClarified.targetStyle.status, "available");
+assert.ok(
+  partialClarified.targetStyle.preferenceEvidence.includes("clarifier:softSharp=soft")
+);
+assert.ok(
+  partialClarified.targetStyle.preferenceEvidence.includes("clarifier:naturalPolished=polished")
+);
+
+const sophisticatedOnly = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    entryMode: "known",
+    targetSelections: ["sophisticated"]
+  },
+  resultId: "fixture-face-lab-v2-sophisticated-only"
+});
+
+assert.notEqual(
+  partialClarified.targetStyle.vector.softSharp,
+  sophisticatedOnly.targetStyle.vector.softSharp,
+  "partial clarifier must alter the target vector"
+);
+
 const lowEffort = buildFaceLabV2Canonical({
   analysis,
   surveyAnswers: {
