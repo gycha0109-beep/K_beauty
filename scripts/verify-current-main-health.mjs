@@ -113,7 +113,7 @@ run("DATA-AI20 authenticated limited-beta controlled activation", node, ["script
 run("DATA-AI21 three-account limited-beta evidence closure", node, ["scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"]);
 run("DATA-AI22 product-query quality evaluation", node, ["scripts/verify-data-ai22-product-query-quality.mjs"]);
 run("DATA-AI22 product-query quality canonical baseline", node, ["scripts/run-data-ai22-product-query-quality-evaluation.mjs", "--expected-baseline"]);
-run("DATA-AI22 live provider acceptance boundary", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
+run("DATA-AI22 Production quality closure", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
 
 run("Legacy offer classifier", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-classifier"]);
 run("Legacy offer migration manifest and dry-run", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-migration"]);
