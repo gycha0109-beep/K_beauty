@@ -184,6 +184,11 @@ assert.equal(finderResult.candidateSetVersion, "target-finder-cards-v1");
 assert.equal(finderResult.userApproved, false);
 assert.ok(finderResult.candidateLabels.length >= 1);
 assert.ok(typeof finderResult.estimatedVector.softSharp === "number");
+assert.ok(typeof finderResult.estimatedVector.naturalPolished === "number");
+assert.ok(typeof finderResult.estimatedVector.playfulMature === "number");
+assert.ok(typeof finderResult.estimatedVector.minimalStatement === "number");
+assert.ok(typeof finderResult.estimatedVector.classicTrendy === "number");
+assert.equal(finderResult.estimatedVector.warmCool, 0.5);
 
 const finderCanonical = buildFaceLabV2Canonical({
   analysis,
