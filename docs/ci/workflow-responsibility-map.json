@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
   "producerContractVersion": "watchtower-v0.3.2",
-  "workflowInventoryDigest": "sha256:c7fec8524fd697262d5f60e2c54541ea209c954f9092e8fb96fd2fa6b3a0520f",
+  "workflowInventoryDigest": "sha256:915600499d3a26aa59620df6024c7ef17bdbf58471384b1c84877b01a1b18dd2",
   "lastAuditedAt": "2026-09-24",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
@@ -14,6 +14,7 @@
     "security-boundary",
     "supply-chain-security",
     "ai-provider-runtime",
+    "database-integration",
     "admin",
     "product-query-ai",
     "recommendation-admission",
@@ -62,8 +63,12 @@
       "mode": "cross-cutting responsibility across admin, product-query, trust, offer and current-main health"
     },
     "database": {
-      "hostWorkflow": "distributed",
-      "mode": "Supabase/RLS/migration/runtime checks remain distributed across trust, taxonomy, product-data and security responsibilities"
+      "hostWorkflow": "database-integration.yml",
+      "mode": "canonical shared technical authority for migration inventory, historical-equivalence documentation and non-production target safety; full repository replay is not yet claimed; domain-specific Supabase runtime remains distributed",
+      "scripts": [
+        "scripts/verify-database-integration-authority.mjs",
+        "scripts/assert-non-production-supabase-target.mjs"
+      ]
     },
     "supplyChain": {
       "hostWorkflow": "supply-chain-security.yml",
@@ -693,6 +698,18 @@
         "provider-runtime",
         "runtime-probe",
         "security"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "database-integration.yml": {
+      "primaryResponsibility": "database-integration",
+      "capabilities": [
+        "database",
+        "migration-authority",
+        "nonproduction-safety",
+        "supabase"
       ],
       "watchtowerTrackBinding": "dynamic-by-run",
       "lifecycleNameClass": "canonical",
