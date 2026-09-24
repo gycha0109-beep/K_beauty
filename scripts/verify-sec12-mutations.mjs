@@ -444,6 +444,10 @@ function passedCaseIds(stdout) {
 }
 
 function assertBaseline(result) {
+  if (result.status !== 0 || result.signal || result.error) {
+    if (result.stdout) console.error(`--- SEC-12 baseline stdout ---\n${result.stdout}`);
+    if (result.stderr) console.error(`--- SEC-12 baseline stderr ---\n${result.stderr}`);
+  }
   assert.equal(result.error, undefined, "SEC-12 baseline verifier could not start");
   assert.equal(result.signal, null, "SEC-12 baseline verifier was terminated");
   assert.equal(result.status, 0, "SEC-12 baseline verifier must pass");
@@ -453,9 +457,9 @@ function assertBaseline(result) {
   const i10Line = String(result.stdout).split(/\r?\n/).find((line) => line.startsWith('{"sec12I10":'));
   assert.ok(i10Line, "SEC-12 baseline I10 summary missing");
   const { sec12I10 } = JSON.parse(i10Line);
-  assert.deepEqual(sec12I10.routes, { discovered: 11, expected: 11, verified: 11 });
-  assert.deepEqual(sec12I10.handlerBindings, { discovered: 12, expected: 12, verified: 12 });
-  assert.deepEqual(sec12I10.terminalResponsePaths, { discovered: 125, expected: 125, verified: 125 });
+  assert.deepEqual(sec12I10.routes, { discovered: 19, expected: 19, verified: 19 });
+  assert.deepEqual(sec12I10.handlerBindings, { discovered: 20, expected: 20, verified: 20 });
+  assert.deepEqual(sec12I10.terminalResponsePaths, { discovered: 181, expected: 181, verified: 181 });
   assert.deepEqual(sec12I10.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(sec12I10.deadHelperCalls, 0);
   assert.equal(sec12I10.unsafeResponsePaths, 0);
