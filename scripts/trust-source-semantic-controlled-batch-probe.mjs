@@ -8,6 +8,7 @@ import {
 } from "../lib/trust/official-source-fetch.mjs";
 import {
   buildOfficialProductSemanticObservationV1,
+  inspectOfficialProductSemanticSurfacesV1,
   normalizeSemanticTextV1,
 } from "../lib/trust/official-source-semantic-adapter.mjs";
 
@@ -24,7 +25,7 @@ function sleep(ms) {
 
 function classifyExpectedFailure(error) {
   const status = String(error?.semanticStatus || "");
-  if (status === "AMBIGUOUS" || status === "UNSUPPORTED") return status;
+  if (status === "AMBIGUOUS" || status === "UNSUPPORTED" || status === "LOCATOR_DRIFT") return status;
 
   const message = String(error?.message || error);
   if (message.startsWith("TRANSIENT_FAILURE:")) return "TRANSIENT_FAILURE";
@@ -45,17 +46,43 @@ function reviewedAnchorPresent(observation, reviewedAnchor) {
 
 async function captureSource(source, label, adapterKey, adapterVersion, fetchImpl = fetch) {
   const fetched = await fetchOfficialBytes(source.canonical_locator, fetchImpl);
-  const adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion, {
+  const diagnostics = inspectOfficialProductSemanticSurfacesV1(fetched.bytes, {
     sourceMetadata: source.source_metadata || {},
-    canonicalLocator: source.canonical_locator,
   });
-  const observation = buildOfficialProductSemanticObservationV1(fetched.bytes, {
-    sourceMetadata: source.source_metadata || {},
-    canonicalLocator: source.canonical_locator,
-  });
-
   const canonicalUrl = new URL(source.canonical_locator);
   const finalUrl = new URL(fetched.finalUrl);
+  const normalizePath = (value) => value.length > 1 ? value.replace(/\/+$/, "") : value;
+  if (normalizePath(finalUrl.pathname) !== normalizePath(canonicalUrl.pathname)) {
+    const error = new Error("SOURCE_LOCATOR_DRIFT:final_path_changed");
+    error.semanticStatus = "LOCATOR_DRIFT";
+    error.semanticDiagnostics = diagnostics;
+    error.fetchDiagnostics = {
+      final_url: fetched.finalUrl,
+      content_type: fetched.contentType,
+      byte_length: fetched.bytes.byteLength,
+    };
+    throw error;
+  }
+  let adapted;
+  let observation;
+  try {
+    adapted = digestOfficialContent(fetched.bytes, adapterKey, adapterVersion, {
+      sourceMetadata: source.source_metadata || {},
+      canonicalLocator: source.canonical_locator,
+    });
+    observation = buildOfficialProductSemanticObservationV1(fetched.bytes, {
+      sourceMetadata: source.source_metadata || {},
+      canonicalLocator: source.canonical_locator,
+    });
+  } catch (error) {
+    error.semanticDiagnostics = diagnostics;
+    error.fetchDiagnostics = {
+      final_url: fetched.finalUrl,
+      content_type: fetched.contentType,
+      byte_length: fetched.bytes.byteLength,
+    };
+    throw error;
+  }
 
   return {
     label,
@@ -144,6 +171,8 @@ export async function qualifyControlledExpansionBatch({
         stable: false,
         captures: [],
         detail: String(error?.message || error),
+        fetch_diagnostics: error?.fetchDiagnostics || null,
+        semantic_diagnostics: error?.semanticDiagnostics || null,
       });
     }
   }

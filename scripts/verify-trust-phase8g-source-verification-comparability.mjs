@@ -15,6 +15,8 @@ const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-ada
 const semanticProfileMigrationPath = "supabase/migrations/20260924104150_trust_phase8g_semantic_profile_contract_v1.sql";
 const controlledBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-batch-v1.json";
 const controlledProbePath = "scripts/trust-source-semantic-controlled-batch-probe.mjs";
+const controlledAssetBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-asset-batch-v1.json";
+const controlledAssetProbePath = "scripts/trust-source-claim-asset-controlled-batch-probe.mjs";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
@@ -29,6 +31,8 @@ const semanticVerifier = fs.readFileSync(semanticVerifierPath, "utf8");
 const semanticProfileMigration = fs.readFileSync(semanticProfileMigrationPath, "utf8");
 const controlledBatch = JSON.parse(fs.readFileSync(controlledBatchPath, "utf8"));
 const controlledProbe = fs.readFileSync(controlledProbePath, "utf8");
+const controlledAssetBatch = JSON.parse(fs.readFileSync(controlledAssetBatchPath, "utf8"));
+const controlledAssetProbe = fs.readFileSync(controlledAssetProbePath, "utf8");
 
 for (const token of [
   "create table public.product_evidence_source_verification_profiles",
@@ -206,6 +210,7 @@ for (const source of controlledBatch.sources) {
 for (const token of [
   "trust-phase8g-controlled-expansion-qualification-v1",
   "SUPPORTED_STABLE",
+  "LOCATOR_DRIFT",
   "TRANSIENT_FAILURE",
   "SOURCE_BLOCKED",
   "required_observations",
@@ -223,6 +228,41 @@ for (const forbidden of [
   "record_product_evidence_source_verification_v2"
 ]) {
   assert.ok(!controlledProbe.includes(forbidden), `controlled batch probe must remain DB-write-free: ${forbidden}`);
+}
+
+
+assert.equal(controlledAssetBatch.contract, "trust-phase8g-controlled-expansion-asset-batch-v1");
+assert.equal(controlledAssetBatch.authority_mutation, false);
+assert.equal(controlledAssetBatch.required_observations, 3);
+assert.equal(controlledAssetBatch.adapter_key, "official-claim-asset");
+assert.equal(controlledAssetBatch.adapter_version, "v1");
+assert.ok(controlledAssetBatch.sources.length >= 1 && controlledAssetBatch.sources.length <= 3);
+assert.equal(new Set(controlledAssetBatch.sources.map((source) => source.source_id)).size, controlledAssetBatch.sources.length);
+for (const source of controlledAssetBatch.sources) {
+  assert.ok(String(source.canonical_locator || "").startsWith("https://"));
+  assert.ok(String(source.claim_asset_url || "").startsWith("https://"));
+  assert.ok(String(source.reviewed_anchor || "").trim().length > 0);
+  assert.equal(source.binding_basis, "product_evidence_sources.source_metadata.direct_claim_asset_url");
+}
+
+for (const token of [
+  "trust-phase8g-controlled-expansion-asset-qualification-v1",
+  "SUPPORTED_STABLE_ASSET",
+  "ASSET_BINDING_MISSING",
+  "LOCATOR_DRIFT",
+  "official-claim-asset-bytes-v1",
+  "authority_mutation: false"
+]) {
+  assert.ok(controlledAssetProbe.includes(token), `missing controlled asset probe token: ${token}`);
+}
+
+for (const forbidden of [
+  "@supabase/supabase-js",
+  "createClient(",
+  "admin_register_product_evidence_source_verification_profile_v1",
+  "record_product_evidence_source_verification_v2"
+]) {
+  assert.ok(!controlledAssetProbe.includes(forbidden), `controlled asset probe must remain DB-write-free: ${forbidden}`);
 }
 
 console.log(JSON.stringify({
