@@ -38,7 +38,6 @@ on:
       - "scripts/verify-mobile-my-skin-diary.mjs"
       - ".github/workflows/mobile-api-integration.yml"
       - ".github/workflows/mobile-ci.yml"
-      - ".github/workflows/mobile-ci.yml"
       - "docs/ci/workflow-responsibility-map.json"
       - "docs/ci/workflow-responsibility-map.md"
   push:
