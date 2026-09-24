@@ -13,6 +13,8 @@ const researchWorkerPath = "scripts/trust-research-worker.mjs";
 const semanticAdapterPath = "lib/trust/official-source-semantic-adapter.mjs";
 const semanticVerifierPath = "scripts/verify-trust-official-product-semantic-adapter.mjs";
 const semanticProfileMigrationPath = "supabase/migrations/20260924104150_trust_phase8g_semantic_profile_contract_v1.sql";
+const controlledBatchPath = "tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-batch-v1.json";
+const controlledProbePath = "scripts/trust-source-semantic-controlled-batch-probe.mjs";
 
 const migration = fs.readFileSync(migrationPath, "utf8");
 const hardening = fs.readFileSync(hardeningPath, "utf8");
@@ -25,6 +27,8 @@ const researchWorker = fs.readFileSync(researchWorkerPath, "utf8");
 const semanticAdapter = fs.readFileSync(semanticAdapterPath, "utf8");
 const semanticVerifier = fs.readFileSync(semanticVerifierPath, "utf8");
 const semanticProfileMigration = fs.readFileSync(semanticProfileMigrationPath, "utf8");
+const controlledBatch = JSON.parse(fs.readFileSync(controlledBatchPath, "utf8"));
+const controlledProbe = fs.readFileSync(controlledProbePath, "utf8");
 
 for (const token of [
   "create table public.product_evidence_source_verification_profiles",
@@ -185,6 +189,41 @@ assert.ok(!worker.includes("fallback raw"));
 assert.ok(researchWorker.includes('from "../lib/trust/official-source-fetch.mjs"'));
 assert.ok(!researchWorker.includes('from "node:dns/promises"'));
 assert.ok(!researchWorker.includes("const MAX_RESPONSE_BYTES"));
+
+assert.equal(controlledBatch.contract, "trust-phase8g-controlled-expansion-batch-v1");
+assert.equal(controlledBatch.authority_mutation, false);
+assert.equal(controlledBatch.required_observations, 3);
+assert.equal(controlledBatch.adapter_key, "official-product-semantic");
+assert.equal(controlledBatch.adapter_version, "v1");
+assert.equal(controlledBatch.sources.length, 3);
+assert.equal(new Set(controlledBatch.sources.map((source) => source.source_id)).size, 3);
+for (const source of controlledBatch.sources) {
+  assert.ok(String(source.canonical_locator || "").startsWith("https://"));
+  assert.ok(String(source.reviewed_anchor || "").trim().length > 0);
+  assert.ok(source.source_metadata && typeof source.source_metadata === "object");
+}
+
+for (const token of [
+  "trust-phase8g-controlled-expansion-qualification-v1",
+  "SUPPORTED_STABLE",
+  "TRANSIENT_FAILURE",
+  "SOURCE_BLOCKED",
+  "required_observations",
+  "reviewed_anchor_present",
+  "same_final_hostname",
+  "authority_mutation: false"
+]) {
+  assert.ok(controlledProbe.includes(token), `missing controlled batch probe token: ${token}`);
+}
+
+for (const forbidden of [
+  "@supabase/supabase-js",
+  "createClient(",
+  "admin_register_product_evidence_source_verification_profile_v1",
+  "record_product_evidence_source_verification_v2"
+]) {
+  assert.ok(!controlledProbe.includes(forbidden), `controlled batch probe must remain DB-write-free: ${forbidden}`);
+}
 
 console.log(JSON.stringify({
   status: "PASS",
