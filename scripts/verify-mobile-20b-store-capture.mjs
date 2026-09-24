@@ -31,7 +31,7 @@ function verifySource() {
   const resultView = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
   const diaryView = read("apps/mobile/features/my/NativeMyDiaryView.tsx");
   const captureScript = read("scripts/capture-mobile-20b-store-assets.sh");
-  const workflow = read(".github/workflows/mobile-20b-store-capture.yml");
+  const workflow = read(".github/workflows/mobile-android-runtime.yml");
   const verifier = read("scripts/verify-mobile-20b-store-capture.mjs");
   const appJson = read("apps/mobile/app.json");
   requireText(route, "__DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === \"1\"", "route guard");

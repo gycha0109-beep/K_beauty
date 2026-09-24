@@ -20,7 +20,7 @@ function assert(condition, label) {
 const listing = JSON.parse(read("docs/store/mobile-store-listing-final.json"));
 const result = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
 const capture = read("scripts/capture-mobile-store-assets.sh");
-const workflow = read(".github/workflows/mobile-20a-store-capture.yml");
+const workflow = read(".github/workflows/mobile-android-runtime.yml");
 
 assert(listing.screenshotPlan?.sourceOfTruth === "production mobile runtime after MOBILE-17A", "production-runtime-source");
 assert(listing.googlePlay?.phoneScreenshots?.targetPortraitSize === "1080x1920", "google-play-target-size");

@@ -47,12 +47,24 @@ assert.ok(
 const allowed = new Set(map.allowedPrimaryResponsibilities || []);
 assert.ok(allowed.size > 0, "allowedPrimaryResponsibilities must not be empty");
 
+const requiredCheckCompatibilityShims = new Set([
+  "mobile-native-shell.yml",
+  "mobile-20a-store-capture.yml",
+  "mobile-20b-store-capture.yml",
+]);
+
 for (const name of actual) {
   const entry = map.workflows[name];
   assert.ok(entry && typeof entry === "object", `${name}: responsibility entry missing`);
   assert.ok(allowed.has(entry.primaryResponsibility), `${name}: invalid primaryResponsibility`);
   assert.ok(Array.isArray(entry.capabilities) && entry.capabilities.length > 0, `${name}: capabilities required`);
-  assert.equal(entry.preservationPolicy, "preserve-until-equivalence-proven", `${name}: preservation policy drift`);
+  const expectedPreservationPolicy =
+    name === "mobile-android-runtime.yml"
+      ? "canonical-owner"
+      : requiredCheckCompatibilityShims.has(name)
+        ? "preserve-as-required-check-compatibility-shim-until-classic-protection-audited"
+        : "preserve-until-equivalence-proven";
+  assert.equal(entry.preservationPolicy, expectedPreservationPolicy, `${name}: preservation policy drift`);
 
   const staticTrackByResponsibility = {
     "product-query-ai": "taxonomy-ai",
