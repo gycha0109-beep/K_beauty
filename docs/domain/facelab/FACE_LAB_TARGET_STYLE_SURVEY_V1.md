@@ -4,7 +4,7 @@
 > Status: V1 survey authority candidate  
 > Scope: Premium Face Lab 최초 진입 설문, Target Finder 진입, Styling Scope, constraints, 저장 payload, 수정/재진입  
 > Production impact: none until implementation and canonical result wiring are completed  
-> Related: `FACE_LAB_TARGET_STYLE_MODEL_V1.md`, `FACE_LAB_MASTER_SPEC.md`, `face-lab-face-space-style-compatibility-architecture-v1.md`
+> Related: `FACE_LAB_TARGET_STYLE_MODEL_V1.md`, `FACE_LAB_V2_CANONICAL_RESULT_CONTRACT.md`, `FACE_LAB_MASTER_SPEC.md`, `face-lab-face-space-style-compatibility-architecture-v1.md`
 
 ---
 
