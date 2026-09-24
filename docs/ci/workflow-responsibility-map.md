@@ -38,7 +38,7 @@ Before consolidation, the replacement must prove equivalence for all unique beha
 - store/release jobs
 - artifacts and operational diagnostics
 
-All current workflows remain `preserve-until-equivalence-proven`.
+Workflows remain `preserve-until-equivalence-proven` until same-head equivalence is established. After equivalence, duplicate heavy execution may be retired while required-check compatibility names remain as fail-closed gates when branch-protection requirements cannot be audited safely.
 
 ## Primary responsibility inventory
 
@@ -106,7 +106,7 @@ Mobile CI is now represented as six technical responsibilities while preserving 
 - `mobile-e2e`: Android/iOS install-and-runtime shell verification in `mobile-native-shell.yml` and `mobile-ios-shell.yml`.
 - `mobile-release-store`: policy, signing/distribution and store capture/assets in the Store Readiness, MOBILE-15 and MOBILE-20 workflows.
 
-PR #746 proved same-head green equivalence for `mobile-api-integration.yml`, `mobile-ci.yml` and `current-main-health`. The six API-integration verifiers were therefore removed from `mobile-ci.yml`, and the ten duplicated mobile static checks were removed from `current-main-health`; Mobile Client and Mobile API Integration are now the canonical owners for those contracts. Phase 2 adds `mobile-android-runtime.yml` as a dual-run consolidation candidate. Its `android-debug-apk` job builds one canonical debug APK artifact, and three dependent jobs restore that exact artifact for Native Shell smoke, MOBILE-20A capture and MOBILE-20B capture. The legacy `mobile-native-shell.yml`, `mobile-20a-store-capture.yml` and `mobile-20b-store-capture.yml` remain active in this proof phase; they are retired only after same-head runtime and store-capture equivalence is green.
+PR #746 proved same-head green equivalence for `mobile-api-integration.yml`, `mobile-ci.yml` and `current-main-health`. The six API-integration verifiers were therefore removed from `mobile-ci.yml`, and the ten duplicated mobile static checks were removed from `current-main-health`; Mobile Client and Mobile API Integration are now the canonical owners for those contracts. PR #749 then proved Android runtime consolidation on head `bb3cc23c6d03b25fcc0a781b15a2ba9f1ea0b96f`: the canonical `mobile-android-runtime.yml` APK producer, its Native Shell/MOBILE-20A/MOBILE-20B consumers, all three legacy Android workflows, and Current Main Health were green on the same head. `mobile-android-runtime.yml` is therefore the canonical Android debug-APK/runtime/store-capture owner and builds the APK exactly once for its three consumers. Because repository rulesets are empty but classic branch-protection requirements are unreadable to the current integration (403), `mobile-native-shell.yml`, `mobile-20a-store-capture.yml` and `mobile-20b-store-capture.yml` are retained only as lightweight required-check compatibility gates: they preserve the existing job names, wait for the same-head canonical Android Runtime run through the Actions read API, and fail closed unless that canonical run succeeds. They no longer build APKs or boot emulators.
 
 ### Site E2E
 

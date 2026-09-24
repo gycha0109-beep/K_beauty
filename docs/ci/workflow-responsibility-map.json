@@ -94,7 +94,7 @@
     },
     "mobileArchitecture": {
       "hostWorkflow": "distributed",
-      "mode": "six-lane mobile responsibility split after same-head green equivalence; API Integration owns Analyze/report/share/Premium/My contracts, mobile-client owns client-only contracts, and duplicate mobile static executions were removed from current-main-health; native/build/e2e/release workflows remain preserved before artifact reuse consolidation",
+      "mode": "six-lane mobile responsibility split with canonical Android Runtime artifact reuse active; legacy Android Native Shell / MOBILE-20A / MOBILE-20B workflow names are lightweight required-check compatibility gates because classic branch-protection requirements are not readable by the current integration",
       "lanes": {
         "client": [
           "mobile-ci.yml"
@@ -110,12 +110,14 @@
           "mobile-android-runtime.yml"
         ],
         "e2e": [
-          "mobile-native-shell.yml",
-          "mobile-ios-shell.yml"
+          "mobile-android-runtime.yml",
+          "mobile-ios-shell.yml",
+          "mobile-native-shell.yml"
         ],
         "releaseStore": [
           "mobile-store-readiness.yml",
           "mobile-15-distribution-authority.yml",
+          "mobile-android-runtime.yml",
           "mobile-20a-store-capture.yml",
           "mobile-20b-store-capture.yml",
           "mobile-20c-feature-graphic.yml",
@@ -142,11 +144,20 @@
             "my-skin-diary"
           ],
           "equivalenceEvidence": "PR #746 same-head dedicated Mobile owners + Current Main Health GREEN"
+        },
+        "androidRuntime": {
+          "canonicalOwner": "mobile-android-runtime.yml",
+          "compatibilityShims": [
+            "mobile-native-shell.yml",
+            "mobile-20a-store-capture.yml",
+            "mobile-20b-store-capture.yml"
+          ],
+          "equivalenceEvidence": "PR #749 head bb3cc23c6d03b25fcc0a781b15a2ba9f1ea0b96f: canonical APK producer + Native Shell + MOBILE-20A + MOBILE-20B + all three legacy Android workflows + Current Main Health GREEN on the same head"
         }
       },
       "androidRuntimeConsolidation": {
-        "candidateWorkflow": "mobile-android-runtime.yml",
-        "state": "dual-run-equivalence-pending",
+        "canonicalWorkflow": "mobile-android-runtime.yml",
+        "state": "canonical-runtime-active-with-required-check-compatibility-shims",
         "buildArtifact": "bejewely-mobile-android-debug-<candidate-sha>",
         "producerJob": "android-debug-apk",
         "consumers": [
@@ -154,12 +165,17 @@
           "store-capture-20a",
           "store-capture-20b"
         ],
-        "legacyWorkflowsPreserved": [
+        "requiredCheckCompatibilityShims": [
           "mobile-native-shell.yml",
           "mobile-20a-store-capture.yml",
           "mobile-20b-store-capture.yml"
         ],
-        "cutoverRule": "retire legacy workflows only after same-head candidate and legacy jobs prove equivalent green runtime/store evidence"
+        "compatibilityGate": "legacy job names wait for the same-head canonical mobile-android-runtime.yml run and fail closed unless it completes successfully",
+        "branchProtectionVisibility": {
+          "repositoryRulesets": "none-observed",
+          "classicBranchProtection": "unreadable-by-current-integration-403"
+        },
+        "cutoverRule": "duplicate Android builds/emulators are retired after same-head equivalence; compatibility shims remain until classic required-check configuration can be audited safely"
       }
     }
   },
@@ -396,23 +412,23 @@
       "primaryResponsibility": "mobile-release-store",
       "capabilities": [
         "mobile",
-        "release-store",
-        "store-capture"
+        "required-check-compatibility",
+        "runtime-gate"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
-      "preservationPolicy": "preserve-until-equivalence-proven"
+      "preservationPolicy": "preserve-as-required-check-compatibility-shim-until-classic-protection-audited"
     },
     "mobile-20b-store-capture.yml": {
       "primaryResponsibility": "mobile-release-store",
       "capabilities": [
         "mobile",
-        "release-store",
-        "store-capture"
+        "required-check-compatibility",
+        "runtime-gate"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
-      "preservationPolicy": "preserve-until-equivalence-proven"
+      "preservationPolicy": "preserve-as-required-check-compatibility-shim-until-classic-protection-audited"
     },
     "mobile-20c-feature-graphic.yml": {
       "primaryResponsibility": "mobile-release-store",
@@ -463,15 +479,13 @@
     "mobile-native-shell.yml": {
       "primaryResponsibility": "mobile-e2e",
       "capabilities": [
-        "android",
-        "e2e",
         "mobile",
-        "native",
-        "runtime-probe"
+        "required-check-compatibility",
+        "runtime-gate"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
-      "preservationPolicy": "preserve-until-equivalence-proven"
+      "preservationPolicy": "preserve-as-required-check-compatibility-shim-until-classic-protection-audited"
     },
     "mobile-store-readiness.yml": {
       "primaryResponsibility": "mobile-release-store",
@@ -830,7 +844,7 @@
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
-      "preservationPolicy": "preserve-until-equivalence-proven"
+      "preservationPolicy": "canonical-owner"
     }
   },
   "watchtowerProject": {

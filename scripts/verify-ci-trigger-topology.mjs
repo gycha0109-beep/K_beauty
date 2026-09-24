@@ -377,8 +377,9 @@ assertContains(".github/workflows/mobile-api-integration.yml", [
   "cancel-in-progress: true",
 ]);
 assertContains(".github/workflows/mobile-native-shell.yml", [
-  "npm run mobile:prebuild:android",
-  "npm run verify:mobile-native",
+  "actions: read",
+  "Gate compatibility check on canonical Android Runtime",
+  "node scripts/await-mobile-android-runtime.mjs",
 ]);
 
 const mobileAndroidRuntime = read(".github/workflows/mobile-android-runtime.yml");
@@ -390,6 +391,7 @@ assertContains(".github/workflows/mobile-android-runtime.yml", [
   "native-shell-smoke:",
   "store-capture-20a:",
   "store-capture-20b:",
+  'scripts/await-mobile-android-runtime.mjs',
 ]);
 assert.equal(
   mobileAndroidRuntime.split("npm run mobile:build:android:debug").length - 1,
@@ -401,7 +403,18 @@ for (const legacyPath of [
   ".github/workflows/mobile-20a-store-capture.yml",
   ".github/workflows/mobile-20b-store-capture.yml",
 ]) {
-  assertContains(legacyPath, ['.github/workflows/mobile-android-runtime.yml']);
+  assertContains(legacyPath, [
+    '.github/workflows/mobile-android-runtime.yml',
+    'scripts/await-mobile-android-runtime.mjs',
+    "actions: read",
+    "Gate compatibility check on canonical Android Runtime",
+  ]);
+  assertNotContains(legacyPath, [
+    "npm run mobile:build:android:debug",
+    "ReactiveCircus/android-emulator-runner",
+    "sdkmanager ",
+    "npm ci",
+  ]);
 }
 assertContains(".github/workflows/mobile-20b-store-capture.yml", [
   "  push:",
@@ -436,7 +449,10 @@ for (const path of [
   ".github/workflows/mobile-20b-store-capture.yml",
 ]) {
   assertContains(path, [
-    "android-actions/setup-android@v4",
+    "node scripts/await-mobile-android-runtime.mjs",
+  ]);
+  assertNotContains(path, [
+    "android-actions/setup-android",
     "packages: ''",
   ]);
 }
