@@ -1,0 +1,83 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const root = resolve(process.cwd());
+const read = (path) => readFileSync(resolve(root, path), "utf8");
+
+const fullReportApi = read("app/api/full-report/route.js");
+const faceLabApi = read("app/api/premium/face-lab-v2/route.js");
+const fullReportPage = read("app/result/full-report/page.js");
+const premiumFaceLab = read("components/full-report/PremiumFaceLabSection.jsx");
+const composer = read("lib/face-lab-v2/canonical-composer.js");
+const styleDelta = read("lib/face-lab-v2/style-delta.js");
+
+assert.ok(fullReportApi.includes("faceLabAnalysis"), "full report must persist validated Face Lab analysis");
+assert.ok(
+  fullReportApi.includes("getCanonicalFaceLabObservationAnalysis"),
+  "stored premium Face Lab analysis must be revalidated"
+);
+assert.ok(
+  fullReportPage.includes("faceLabAnalysis={report?.faceLabAnalysis || null}"),
+  "premium page must pass persisted analysis into Face Lab V2"
+);
+assert.ok(
+  fullReportPage.includes("savedReportId={persistedReportId}"),
+  "premium page must pass saved report id for mutable Face Lab V2 state"
+);
+
+assert.ok(
+  premiumFaceLab.includes('fetch("/api/premium/face-lab-v2"'),
+  "Face Lab V2 target and route selections must persist through the dedicated endpoint"
+);
+assert.ok(
+  premiumFaceLab.includes("/api/premium/face-lab-v2?savedReportId="),
+  "Face Lab V2 must restore saved target state"
+);
+assert.equal(
+  premiumFaceLab.includes("/api/analyze"),
+  false,
+  "target edits must not re-run photo analysis"
+);
+assert.ok(
+  premiumFaceLab.includes("buildFaceLabV2Canonical"),
+  "premium Face Lab must use the canonical V2 composer"
+);
+
+assert.ok(
+  faceLabApi.includes('.update({ face_lab: persisted })'),
+  "Face Lab V2 must persist in the mutable saved_reports.face_lab field"
+);
+assert.ok(
+  faceLabApi.includes("data.premium_report?.faceLabAnalysis"),
+  "Face Lab V2 must recompute from persisted observation analysis"
+);
+assert.ok(
+  faceLabApi.includes("normalizeFaceLabV2PersistencePayload"),
+  "Face Lab V2 persistence must normalize survey input"
+);
+
+assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
+assert.ok(composer.includes("buildStyleRoutes"), "canonical V2 must include comparable routes");
+assert.ok(composer.includes("buildHairExecution"), "canonical V2 must include Hair execution");
+assert.ok(composer.includes("buildMakeupExecution"), "canonical V2 must include Makeup execution");
+assert.ok(composer.includes("buildGroomingExecution"), "canonical V2 must include Grooming execution");
+assert.ok(composer.includes("buildLookComposer"), "canonical V2 must include Look Composer");
+
+assert.equal(
+  /archetype/i.test(styleDelta),
+  false,
+  "Archetype must not drive the Style Delta engine"
+);
+
+console.log(JSON.stringify({
+  ok: true,
+  checks: [
+    "premium_analysis_persistence",
+    "target_without_reanalysis",
+    "saved_target_restore",
+    "mutable_face_lab_v2_persistence",
+    "canonical_execution_chain",
+    "archetype_decoupled"
+  ]
+}, null, 2));
