@@ -181,26 +181,70 @@ No synthetic `changed` result may be inserted merely to exercise the Production 
 
 The initial Production canary uses a repository-pinned target manifest and the same bounded `fetchOfficialBytes` transport as the verification worker.
 
-On the main-branch push that changes the target manifest, the Phase 8G workflow performs two live fetches and emits:
+On the main-branch push that changes the target manifest, the Phase 8G workflow performs three independent live fetches and emits:
 
 ```text
 TRUST_PHASE8G_CANARY_CAPTURE_JSON={...}
 ```
 
-The capture contains the exact live-byte digest, final URL, content type, byte length, fetch time, and immediate second-fetch digest. It performs no database or authority mutation.
+The capture contains the raw digest, semantic digest, final URL, content type, byte length, canonical length, and fetch time for baseline, verification, and confirmation observations. It performs no database or authority mutation.
 
 A Production baseline profile may be registered only when:
 
 ```text
 stable = true
 baseline.digest == verification.digest
+baseline.digest == confirmation.digest
 source_id == reviewed canary source
 canonical_locator == reviewed source locator
 ```
 
-The captured baseline and verification observations are then written through the existing governed Phase 8G RPCs. A mismatched immediate digest is treated as an unstable adapter/source combination and is not promoted to a COMPARABLE baseline.
+The canary triplet is a no-database qualification gate. None of those three captures is reused as the Production profile baseline. After a stable triplet, `establishFreshBaseline` performs a new HTTP fetch and writes only through the governed Phase 8G profile RPC. A mismatched triplet is treated as an unstable adapter/source combination and is not promoted to a COMPARABLE baseline.
 
 Expected fetch outcomes such as `TRANSIENT_FAILURE:*` and `SOURCE_BLOCKED:*` are emitted as structured canary results with `stable=false` and `authority_mutation=false`. They block baseline registration but do not turn the deterministic TRUST contract red. Unexpected implementation/runtime failures still fail CI.
+
+## Controlled expansion qualification
+
+After the initial Production canary is stable, Phase 8G expands comparability in bounded source batches rather than bulk-promoting all official sources.
+
+The first expansion batch is frozen in:
+
+```text
+tests/fixtures/trust-phase8g-semantic-adapter/controlled-expansion-batch-v1.json
+```
+
+Each source is evaluated independently with three fresh HTTP captures:
+
+```text
+capture #1
+→ capture #2
+→ capture #3
+```
+
+A source is eligible for Production profile registration only when all of the following hold:
+
+```text
+semantic adapter = SUPPORTED
+reviewed evidence anchor = present
+semantic digest #1 = #2 = #3
+digest basis = canonical-official-product-semantics-v1
+adapter key/version = official-product-semantic / v1
+final URL = HTTPS and same reviewed hostname
+canonical metadata = valid
+```
+
+Expected source failures remain fail-closed and are classified as `AMBIGUOUS`, `UNSUPPORTED`, `TRANSIENT_FAILURE`, or `SOURCE_BLOCKED`. One failed source does not rewrite or invalidate evidence from another source.
+
+The controlled-batch probe must not import Supabase, call profile/verification RPCs, or mutate Product Fact authority. A `SUPPORTED_STABLE` qualification only allows a later governed Production baseline fetch. The profile baseline uses a fresh fourth HTTP request, and the subsequent verification uses another independent HTTP request.
+
+Normal unchanged expansion may change only:
+
+```text
+product_evidence_source_verification_profiles
+product_evidence_source_verifications
+```
+
+It must not change Facts, Current, Confirmations, Assignments, Revalidation Transitions, Research Bridges, Resolutions, or Recommendation authority.
 
 ### Canonical HTML text adapter
 
