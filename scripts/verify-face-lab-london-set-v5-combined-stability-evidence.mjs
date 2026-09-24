@@ -9,7 +9,10 @@ assert.ok(
 
 const rollRunPath =
   "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json";
+const supplementalRollRunPath =
+  "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json";
 const roll = JSON.parse(readFileSync(rollRunPath, "utf8"));
+const supplementalRoll = JSON.parse(readFileSync(supplementalRollRunPath, "utf8"));
 const reviewPacket = JSON.parse(
   readFileSync(reviewPacketPath, "utf8")
 );
@@ -20,8 +23,12 @@ assert.equal(
   "face-lab-real-photo-stability-run-output-v0"
 );
 assert.equal(roll.ok, true);
-assert.ok(roll.reports.length > 0);
-assert.equal(roll.reports.length % 2, 0);
+assert.equal(roll.reports.length, 2);
+assert.equal(supplementalRoll.reports.length, 4);
+assert.deepEqual(supplementalRoll.manifestSummary.coveredNuisanceClasses, ["head_roll"]);
+const rollReports = [...roll.reports, ...supplementalRoll.reports];
+assert.equal(rollReports.length, 6);
+assert.equal(new Set(rollReports.map((report) => report.subjectLinkage.evidenceRef)).size, 3);
 assert.deepEqual(
   roll.manifestSummary.coveredNuisanceClasses,
   ["head_roll"]
@@ -30,11 +37,11 @@ assert.equal(roll.productionAuthority, false);
 assert.equal(roll.normalizationAuthority, false);
 assert.equal(roll.thresholdAuthority, false);
 
-const expectedReportCount = 486 + roll.reports.length;
+const expectedReportCount = 492;
 
 assert.equal(
   reviewPacket.packetVersion,
-  "real-photo-expression-yaw-pitch-roll-stability-review-v1"
+  "real-photo-expression-yaw-pitch-roll-stability-review-v2"
 );
 assert.equal(reviewPacket.sourceReportCount, expectedReportCount);
 assert.deepEqual(reviewPacket.sourceCoveredNuisanceClasses, [
@@ -82,7 +89,7 @@ assert.equal(
 );
 assert.equal(
   contract.currentEvidence.reviewPacketRef,
-  "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-roll-stability-review-packet.json"
+  "generated://face-lab/real-photo-expression-yaw-pitch-roll-stability-review-v2"
 );
 assert.equal(
   contract.currentEvidence.componentEvidence.expression.reportCount,
@@ -98,7 +105,15 @@ assert.equal(
 );
 assert.equal(
   contract.currentEvidence.componentEvidence.headRoll.reportCount,
-  roll.reports.length
+  6
+);
+assert.equal(
+  contract.currentEvidence.componentEvidence.headRoll.subjectLinkageEvidenceRefCount,
+  3
+);
+assert.equal(
+  contract.currentEvidence.componentEvidence.headRoll.collectionFingerprint,
+  "sha256:872b8dcafa9d20ac93139e199e9b4e42a8c5120b0df835a2fe3b08cf71e73a54"
 );
 assert.equal(
   contract.currentEvidence.adequacyDecisionPresent,
@@ -123,6 +138,7 @@ assert.match(
 
 const serialized = JSON.stringify({
   roll,
+  supplementalRoll,
   reviewPacket,
   contract
 });
@@ -136,7 +152,8 @@ assert.equal(
 console.log(JSON.stringify({
   ok: true,
   reportCount: expectedReportCount,
-  rollReportCount: roll.reports.length,
+  rollReportCount: 6,
+  rollSubjectLinkageEvidenceRefCount: 3,
   completeNuisanceCoverage: true,
   adequacyDecisionPresent: false,
   productionAuthority: false,

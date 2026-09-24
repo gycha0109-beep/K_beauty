@@ -9,6 +9,7 @@ on:
       - "evidence/facelab/source-intake/v0/manual-roll-capture.contract.json"
       - "evidence/facelab/source-intake/v0/manual-roll-capture-receipt.json"
       - "evidence/facelab/photo-geometry/v0/supplemental-roll-pose-prescreen.json"
+      - "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
       - "docs/domain/facelab/face-lab-manual-roll-capture-protocol-v0.md"
       - "scripts/build-face-lab-manual-roll-measurement-manifest.mjs"
       - "scripts/run-face-lab-manual-roll-local.mjs"

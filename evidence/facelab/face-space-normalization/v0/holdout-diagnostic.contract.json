@@ -31,9 +31,13 @@
     "provisionalResearchCandidatePresent": false,
     "realHoldoutDiagnosticPresent": false,
     "blockers": [
-      "head_roll_subject_diversity_limited",
-      "head_roll_distributional_evidence_limited"
+      "head_roll_same_session_capture_provenance_unverified",
+      "head_roll_research_use_authorization_unverified"
     ],
-    "productionNormalizationAuthorized": false
+    "productionNormalizationAuthorized": false,
+    "realPhotoStabilityAdequacyDecisionVersion": "real-photo-stability-adequacy-decision-v2",
+    "realPhotoStabilityReportCount": 492,
+    "headRollReportCount": 6,
+    "headRollSubjectLinkageEvidenceRefCount": 3
   }
 }

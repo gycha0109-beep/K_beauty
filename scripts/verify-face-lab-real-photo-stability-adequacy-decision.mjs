@@ -198,15 +198,20 @@ if (actualReviewPath && actualDecisionPath) {
     "ADDITIONAL_EVIDENCE_REQUIRED"
   );
   assert.equal(validatedActual.provisionalResearchGateGranted, false);
+  assert.equal(
+    validatedActual.decisionVersion,
+    "real-photo-stability-adequacy-decision-v2"
+  );
+  assert.equal(validatedActual.sourceReportCount, 492);
   assert.deepEqual(validatedActual.evidenceIntegrityBlockers, []);
   assert.ok(
     validatedActual.holdReasons.includes(
-      "head_roll_subject_diversity_limited"
+      "head_roll_same_session_capture_provenance_unverified"
     )
   );
   assert.ok(
     validatedActual.holdReasons.includes(
-      "head_roll_distributional_evidence_limited"
+      "head_roll_research_use_authorization_unverified"
     )
   );
   console.log(JSON.stringify({

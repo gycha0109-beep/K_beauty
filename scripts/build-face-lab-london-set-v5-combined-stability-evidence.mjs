@@ -28,10 +28,13 @@ assert.ok(
 
 const rollRunPath =
   "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json";
+const supplementalRollRunPath =
+  "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json";
 const expression = JSON.parse(readFileSync(expressionRunPath, "utf8"));
 const yaw = JSON.parse(readFileSync(yawRunPath, "utf8"));
 const pitch = JSON.parse(readFileSync(pitchRunPath, "utf8"));
 const roll = JSON.parse(readFileSync(rollRunPath, "utf8"));
+const supplementalRoll = JSON.parse(readFileSync(supplementalRollRunPath, "utf8"));
 const contract = JSON.parse(readFileSync(contractInputPath, "utf8"));
 
 function validateRunOutput(
@@ -85,16 +88,21 @@ function validateRunOutput(
 validateRunOutput(expression, "expression", 102);
 validateRunOutput(yaw, "head_yaw", 204);
 validateRunOutput(pitch, "head_pitch", 180);
-validateRunOutput(roll, "head_roll");
-assert.equal(roll.reports.length % 2, 0);
+validateRunOutput(roll, "head_roll", 2);
+validateRunOutput(supplementalRoll, "head_roll", 4);
+const rollReports = [...roll.reports, ...supplementalRoll.reports];
+const rollCollection = summarizeRealPhotoStabilityCollection(rollReports);
+assert.equal(rollReports.length, 6);
+assert.equal(new Set(rollReports.map((report) => report.subjectLinkage.evidenceRef)).size, 3);
+assert.equal(rollCollection.collectionFingerprint, "sha256:872b8dcafa9d20ac93139e199e9b4e42a8c5120b0df835a2fe3b08cf71e73a54");
 
 const reports = [
   ...expression.reports,
   ...yaw.reports,
   ...pitch.reports,
-  ...roll.reports
+  ...rollReports
 ];
-const expectedReportCount = 486 + roll.reports.length;
+const expectedReportCount = 492;
 assert.equal(reports.length, expectedReportCount);
 assert.equal(
   new Set(reports.map((report) => report.pairGroupId)).size,
@@ -125,7 +133,7 @@ assert.equal(
 );
 
 const packetVersion =
-  "real-photo-expression-yaw-pitch-roll-stability-review-v1";
+  "real-photo-expression-yaw-pitch-roll-stability-review-v2";
 const reviewPacket = buildRealPhotoStabilityReviewPacket({
   reports,
   packetVersion
@@ -168,7 +176,7 @@ nextContract.currentEvidence = {
   completeNuisanceCoverage: true,
   descriptiveReviewPacketPresent: true,
   reviewPacketRef:
-    "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-roll-stability-review-packet.json",
+    "generated://face-lab/real-photo-expression-yaw-pitch-roll-stability-review-v2",
   reviewPacketVersion: packetVersion,
   reviewPacketFingerprint: reviewPacket.reviewPacketFingerprint,
   componentEvidence: {
@@ -194,13 +202,17 @@ nextContract.currentEvidence = {
         pitch.collectionSummary.collectionFingerprint
     },
     headRoll: {
-      runOutputRef:
+      runOutputRefs: [
         "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json",
-      reviewPacketRef:
+        "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
+      ],
+      historicalReviewPacketRef:
         "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json",
-      reportCount: roll.reports.length,
-      collectionFingerprint:
-        roll.collectionSummary.collectionFingerprint
+      reportCount: 6,
+      governedCaptureReportCount: 2,
+      supplementalReportCount: 4,
+      subjectLinkageEvidenceRefCount: 3,
+      collectionFingerprint: rollCollection.collectionFingerprint
     }
   },
   adequacyDecisionPresent: false,
@@ -227,7 +239,8 @@ writeFileSync(
 console.log(JSON.stringify({
   ok: true,
   reportCount: expectedReportCount,
-  rollReportCount: roll.reports.length,
+  rollReportCount: rollReports.length,
+  rollSubjectLinkageEvidenceRefCount: 3,
   coveredNuisanceClasses: collection.coveredNuisanceClasses,
   missingNuisanceClasses: collection.missingNuisanceClasses,
   completeNuisanceCoverage: true,

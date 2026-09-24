@@ -208,16 +208,24 @@ if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
   assert.match(stabilityAdequacyContract.currentEvidence.collectionFingerprint, /^sha256:[a-f0-9]{64}$/);
   assert.match(stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint, /^sha256:[a-f0-9]{64}$/);
 } else {
-  assert.equal(stabilityAdequacyContract.currentEvidence.sourceReportCount, 488);
+  assert.equal(stabilityAdequacyContract.currentEvidence.sourceReportCount, 492);
   assert.equal(stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage, true);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression", "head_pitch", "head_roll", "head_yaw"]);
   assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, []);
-  assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketRef, "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-roll-stability-review-packet.json");
+  assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketRef, "generated://face-lab/real-photo-expression-yaw-pitch-roll-stability-review-v2");
   assert.equal(stabilityAdequacyContract.currentEvidence.status, "additional_evidence_required");
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.expression.reportCount, 102);
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headYaw.reportCount, 204);
   assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headPitch.reportCount, 180);
-  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headRoll.reportCount, 2);
+  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headRoll.reportCount, 6);
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.componentEvidence.headRoll.subjectLinkageEvidenceRefCount,
+    3
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.componentEvidence.headRoll.collectionFingerprint,
+    "sha256:872b8dcafa9d20ac93139e199e9b4e42a8c5120b0df835a2fe3b08cf71e73a54"
+  );
   assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, true);
   assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionCode, "ADDITIONAL_EVIDENCE_REQUIRED");
   assert.equal(stabilityAdequacyContract.currentEvidence.provisionalResearchGateGranted, false);

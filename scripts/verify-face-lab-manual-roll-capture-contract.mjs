@@ -34,9 +34,15 @@ const supplementalPosePrescreen = JSON.parse(
     "utf8"
   )
 );
+const supplementalRunOutput = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json",
+    "utf8"
+  )
+);
 
 assert.equal(contract.schemaVersion, "face-lab-manual-roll-capture-contract-v0");
-assert.equal(contract.status, "capture_measured_supplemental_pose_prescreened_additional_evidence_required");
+assert.equal(contract.status, "capture_measured_supplemental_metric_evidence_added_additional_evidence_required");
 assert.equal(contract.nuisanceClass, "head_roll");
 assert.equal(
   contract.captureReceiptRef,
@@ -79,36 +85,43 @@ assert.equal(
 );
 assert.equal(contract.readiness.provisionalResearchGateGranted, false);
 assert.equal(contract.readiness.additionalEvidenceRequired, true);
-assert.equal(contract.readiness.currentSubjectCount, 1);
-assert.equal(contract.readiness.currentObservationCount, 2);
+assert.equal(contract.readiness.currentSubjectCount, 3);
+assert.equal(contract.readiness.currentObservationCount, 6);
 assert.equal(contract.readiness.supplementalPosePrescreenPresent, true);
 assert.equal(contract.readiness.supplementalPosePrescreenSubjectSetCount, 2);
 assert.equal(contract.readiness.supplementalPosePrescreenImageCount, 6);
 assert.equal(
   contract.readiness.supplementalFaceLabMetricMeasurementExecuted,
-  false
+  true
 );
-assert.equal(contract.readiness.measuredSubjectCount, 1);
-assert.equal(contract.readiness.measuredObservationCount, 2);
+assert.equal(contract.readiness.measuredSubjectCount, 3);
+assert.equal(contract.readiness.measuredObservationCount, 6);
+assert.equal(contract.readiness.governedCaptureSubjectCount, 1);
+assert.equal(contract.readiness.governedCaptureObservationCount, 2);
 assert.equal(
   contract.supplementalPosePrescreen.evidenceRef,
   "evidence/facelab/photo-geometry/v0/supplemental-roll-pose-prescreen.json"
 );
 assert.equal(
   contract.supplementalPosePrescreen.faceLabMetricMeasurementExecuted,
-  false
+  true
 );
 assert.equal(
   contract.supplementalPosePrescreen.structuralStabilityEvidenceAdded,
-  false
+  true
 );
+assert.equal(contract.supplementalPosePrescreen.metricEvidenceRef, "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json");
+assert.equal(contract.supplementalPosePrescreen.metricReportCount, 4);
+assert.equal(contract.supplementalPosePrescreen.metricSubjectLinkageEvidenceRefCount, 2);
+assert.equal(contract.supplementalPosePrescreen.metricRunManifestDigest, "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2");
+assert.equal(contract.supplementalPosePrescreen.metricCollectionFingerprint, "sha256:df8378fe087e17f277cd33d1f9bc97ed973c8911621b831fc5a6b76af0f7460a");
 assert.deepEqual(contract.expansionRequirement.reasonCodes, [
-  "head_roll_subject_diversity_limited",
-  "head_roll_distributional_evidence_limited"
+  "head_roll_same_session_capture_provenance_unverified",
+  "head_roll_research_use_authorization_unverified"
 ]);
 assert.equal(
   contract.expansionRequirement.additionalSubjectDiversityRequired,
-  true
+  false
 );
 assert.equal(contract.expansionRequirement.exactMinimumSubjectCount, null);
 assert.equal(
@@ -420,7 +433,7 @@ assert.equal(
 );
 assert.equal(
   supplementalPosePrescreen.status,
-  "supplemental_triplets_pose_prescreened_metric_measurement_pending"
+  "supplemental_triplets_canonical_metric_measured"
 );
 assert.equal(
   supplementalPosePrescreen.sourceContext.subjectGroupingBasis,
@@ -449,12 +462,16 @@ assert.equal(
 assert.equal(supplementalPosePrescreen.summary.imageCount, 6);
 assert.equal(
   supplementalPosePrescreen.summary.faceLabMetricMeasurementExecuted,
-  false
+  true
 );
 assert.equal(
   supplementalPosePrescreen.summary.structuralStabilityEvidenceAdded,
-  false
+  true
 );
+assert.equal(supplementalPosePrescreen.summary.canonicalMetricReportCount, 4);
+assert.equal(supplementalPosePrescreen.summary.canonicalMetricSubjectLinkageEvidenceRefCount, 2);
+assert.equal(supplementalPosePrescreen.summary.canonicalMetricRunManifestDigest, "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2");
+assert.equal(supplementalPosePrescreen.summary.canonicalMetricCollectionFingerprint, "sha256:df8378fe087e17f277cd33d1f9bc97ed973c8911621b831fc5a6b76af0f7460a");
 assert.equal(supplementalPosePrescreen.subjects.length, 2);
 for (const supplementalSubject of supplementalPosePrescreen.subjects) {
   assert.deepEqual(
@@ -494,12 +511,35 @@ for (const value of Object.values(supplementalPosePrescreen.authority)) {
   assert.equal(value, false);
 }
 
+assert.equal(supplementalRunOutput.schemaVersion, "face-lab-real-photo-stability-run-output-v0");
+assert.equal(supplementalRunOutput.ok, true);
+assert.equal(supplementalRunOutput.reports.length, 4);
+assert.equal(supplementalRunOutput.manifestSummary.pairCount, 4);
+assert.equal(supplementalRunOutput.manifestSummary.manifestDigest, "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2");
+assert.equal(supplementalRunOutput.collectionSummary.collectionFingerprint, "sha256:df8378fe087e17f277cd33d1f9bc97ed973c8911621b831fc5a6b76af0f7460a");
+assert.deepEqual(supplementalRunOutput.manifestSummary.coveredNuisanceClasses, ["head_roll"]);
+assert.equal(new Set(supplementalRunOutput.reports.map((report) => report.subjectLinkage.evidenceRef)).size, 2);
+for (const report of supplementalRunOutput.reports) {
+  assert.equal(report.nuisance.class, "head_roll");
+  assert.equal(report.authority.productionAuthority, false);
+  assert.equal(report.authority.normalizationAuthority, false);
+  assert.equal(report.authority.thresholdAuthority, false);
+  assert.equal(report.privacy.sourceImagePersisted, false);
+  assert.equal(report.privacy.rawLandmarksPersisted, false);
+  assert.equal(report.privacy.identityEmbeddingCreated, false);
+  assert.equal(report.privacy.biometricIdentityMatchPerformed, false);
+}
+const allMeasuredRollReports = [...runOutput.reports, ...supplementalRunOutput.reports];
+assert.equal(allMeasuredRollReports.length, 6);
+assert.equal(new Set(allMeasuredRollReports.map((report) => report.subjectLinkage.evidenceRef)).size, 3);
+
 const serialized = JSON.stringify({
   contract,
   receipt,
   runOutput,
   reviewPacket,
-  supplementalPosePrescreen
+  supplementalPosePrescreen,
+  supplementalRunOutput
 });
 assert.equal(serialized.includes("/mnt/data/"), false);
 assert.equal(serialized.includes("\\mnt\\data\\"), false);
@@ -515,7 +555,9 @@ console.log(JSON.stringify({
   additionalEvidenceRequired: true,
   supplementalPosePrescreenPresent: true,
   supplementalPosePrescreenSubjectSetCount: 2,
-  supplementalFaceLabMetricMeasurementExecuted: false,
+  supplementalFaceLabMetricMeasurementExecuted: true,
+  measuredSubjectLinkageEvidenceRefCount: 3,
+  measuredRollObservationCount: 6,
   multiSubjectExpansionPreflightVerified: true,
   syntheticPreflightSubjectCount: 2,
   preflightSubjectCountIsAdequacyThreshold: false,

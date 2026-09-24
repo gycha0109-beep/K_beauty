@@ -1,8 +1,10 @@
 {
   "contract": "trust-phase8g-production-canary-target-v1",
-  "source_id": "a2803387-44e3-40fa-87c9-a7aec7d745f3",
-  "publisher": "Dr.G / 고운세상코스메틱",
-  "canonical_locator": "https://www.dr-g.co.kr/item/9637",
-  "selection_reason": "Second fresh-recovery canary after Round Lab live-page-bytes proved unstable. Official HTTPS product page, one Current Fact exposure, no existing verification profile, and an independently frozen historical observation is available for lineage context.",
-  "expected_authority_mutation": false
+  "source_id": "2d154999-5dff-4496-9b1e-d8cf9c6f31f6",
+  "publisher": "Torriden / (주)토리든",
+  "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+  "selection_reason": "Canonical-adapter canary after raw live bytes proved unstable on Round Lab and Torriden, while Dr.G rate-limited the hosted fetch. Reuse the reviewed Torriden official source to test whether visible HTML text is stable while raw markup varies.",
+  "expected_authority_mutation": false,
+  "adapter_key": "canonical-html-text",
+  "adapter_version": "v1"
 }

@@ -19,9 +19,9 @@ const rebuilt = buildRealPhotoStabilityAdequacyReview(reviewPacket);
 assert.deepEqual(review, rebuilt);
 
 assert.equal(review.schemaVersion, "face-lab-real-photo-stability-adequacy-review-v1");
-assert.equal(review.reviewVersion, "real-photo-stability-adequacy-review-v1");
+assert.equal(review.reviewVersion, "real-photo-stability-adequacy-review-v2");
 assert.equal(review.status, "descriptive_review_complete_decision_separate");
-assert.equal(review.boundEvidence.sourceReportCount, 488);
+assert.equal(review.boundEvidence.sourceReportCount, 492);
 assert.equal(review.coverage.completeNuisanceCoverage, true);
 assert.deepEqual(review.coverage.coveredNuisanceClasses, [
   "expression",
@@ -33,7 +33,7 @@ assert.deepEqual(review.coverage.missingNuisanceClasses, []);
 assert.deepEqual(review.coverage.reportCountByNuisance, {
   expression: 102,
   head_pitch: 180,
-  head_roll: 2,
+  head_roll: 6,
   head_yaw: 204
 });
 
@@ -41,11 +41,11 @@ const roll = review.driftAnalysis.nuisanceClasses.find(
   (item) => item.nuisanceClass === "head_roll"
 );
 assert.ok(roll);
-assert.equal(roll.reportCount, 2);
-assert.equal(roll.subjectLinkageEvidenceRefCount, 1);
+assert.equal(roll.reportCount, 6);
+assert.equal(roll.subjectLinkageEvidenceRefCount, 3);
 assert.equal(
   roll.distributionalInterpretation,
-  "limited_single_subject_two_observations"
+  "multi_subject_descriptive_only"
 );
 
 assert.equal(review.reviewSemantics.descriptiveOnly, true);
@@ -76,7 +76,7 @@ assert.equal(contract.currentEvidence.descriptiveAdequacyReviewPresent, true);
 
 assert.ok(
   review.evidenceLimitations.some((item) =>
-    item.includes("two same-session observations from one subject")
+    item.includes("6 observations across 3 linkage groups")
   )
 );
 assert.ok(

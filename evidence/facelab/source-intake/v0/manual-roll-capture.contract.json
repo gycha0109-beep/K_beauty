@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-manual-roll-capture-contract-v0",
-  "status": "capture_measured_supplemental_pose_prescreened_additional_evidence_required",
+  "status": "capture_measured_supplemental_metric_evidence_added_additional_evidence_required",
   "nuisanceClass": "head_roll",
   "captureReceiptRef": "evidence/facelab/source-intake/v0/manual-roll-capture-receipt.json",
   "captureProtocol": {
@@ -45,14 +45,16 @@
     "adequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
     "provisionalResearchGateGranted": false,
     "additionalEvidenceRequired": true,
-    "currentSubjectCount": 1,
-    "currentObservationCount": 2,
+    "currentSubjectCount": 3,
+    "currentObservationCount": 6,
     "supplementalPosePrescreenPresent": true,
     "supplementalPosePrescreenSubjectSetCount": 2,
     "supplementalPosePrescreenImageCount": 6,
-    "supplementalFaceLabMetricMeasurementExecuted": false,
-    "measuredSubjectCount": 1,
-    "measuredObservationCount": 2
+    "supplementalFaceLabMetricMeasurementExecuted": true,
+    "measuredSubjectCount": 3,
+    "measuredObservationCount": 6,
+    "governedCaptureSubjectCount": 1,
+    "governedCaptureObservationCount": 2
   },
   "authority": {
     "productionAuthority": false,
@@ -65,10 +67,10 @@
   "descriptiveReviewPacketRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json",
   "expansionRequirement": {
     "reasonCodes": [
-      "head_roll_subject_diversity_limited",
-      "head_roll_distributional_evidence_limited"
+      "head_roll_same_session_capture_provenance_unverified",
+      "head_roll_research_use_authorization_unverified"
     ],
-    "additionalSubjectDiversityRequired": true,
+    "additionalSubjectDiversityRequired": false,
     "exactMinimumSubjectCount": null,
     "automaticAdequacyAtSubjectCount": false,
     "sameSessionCaptureUnitRetained": true,
@@ -86,7 +88,7 @@
       "adequacyThreshold": false,
       "empiricalEvidence": false
     },
-    "currentNextAction": "Run the two prescreened supplemental subject triplets through the transient Face Lab metric geometry pipeline; do not treat pose prescreen output as structural stability evidence."
+    "currentNextAction": "Resolve same-session capture provenance and research-use authorization for supplemental roll evidence, or collect governed replacement triplets, then rerun explicit adequacy review; do not infer adequacy from subject count."
   },
   "supplementalPosePrescreen": {
     "evidenceRef": "evidence/facelab/photo-geometry/v0/supplemental-roll-pose-prescreen.json",
@@ -96,8 +98,13 @@
     "subjectGroupingBasis": "user_grouped_triplets",
     "biometricIdentityMatchingUsed": false,
     "rawImagesPersisted": false,
-    "faceLabMetricMeasurementExecuted": false,
-    "structuralStabilityEvidenceAdded": false,
-    "adequacyDecisionImpact": "none_until_face_lab_metric_measurement"
+    "faceLabMetricMeasurementExecuted": true,
+    "structuralStabilityEvidenceAdded": true,
+    "adequacyDecisionImpact": "descriptive_evidence_expanded_gate_still_requires_explicit_review",
+    "metricEvidenceRef": "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json",
+    "metricReportCount": 4,
+    "metricSubjectLinkageEvidenceRefCount": 2,
+    "metricRunManifestDigest": "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2",
+    "metricCollectionFingerprint": "sha256:df8378fe087e17f277cd33d1f9bc97ed973c8911621b831fc5a6b76af0f7460a"
   }
 }

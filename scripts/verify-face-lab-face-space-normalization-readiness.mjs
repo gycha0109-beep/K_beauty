@@ -64,8 +64,8 @@ const actualReferenceReviewPacket = readJson(
 const actualReferenceAdequacyEvidence = readJson(
   "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json"
 );
-const actualRealPhotoReviewPacket = readJson(
-  "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json"
+const actualSupplementalRollRunOutput = readJson(
+  "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
 );
 const actualRealPhotoAdequacyDecision = readJson(
   "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json"
@@ -88,8 +88,22 @@ const actualRealPhotoReports = [
   ).reports,
   ...readJson(
     "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json"
-  ).reports
+  ).reports,
+  ...actualSupplementalRollRunOutput.reports
 ];
+const actualRealPhotoReviewPacket =
+  buildRealPhotoStabilityReviewPacket({
+    reports: actualRealPhotoReports,
+    packetVersion: "real-photo-expression-yaw-pitch-roll-stability-review-v2"
+  });
+assert.equal(
+  actualRealPhotoReviewPacket.sourceCollectionFingerprint,
+  "sha256:aca9b072b8af2104a8c1b220f92ddc5ce5c28dfbe11e68dc6b102ad17db6f33c"
+);
+assert.equal(
+  actualRealPhotoReviewPacket.reviewPacketFingerprint,
+  "sha256:4250f183e5f25a9c863fe8d5592f6da60a837d9a7f3009d4e33b9a9f54eb8233"
+);
 
 const actualCurrentReadiness =
   evaluateFaceSpaceNormalizationReadiness({
@@ -121,7 +135,7 @@ assert.equal(actualCurrentReadiness.evidenceState.generalFaceCoverage, true);
 assert.equal(actualCurrentReadiness.evidenceState.referenceDistribution, true);
 assert.equal(
   actualCurrentReadiness.evidenceState.realPhotoStabilityReportCount,
-  488
+  492
 );
 assert.equal(
   actualCurrentReadiness.evidenceState.realPhotoStabilityAdequacyPresent,
@@ -141,6 +155,14 @@ assert.equal(
   actualCurrentReadiness.evidenceState
     .realPhotoStabilityProvisionalResearchGateGranted,
   false
+);
+assert.deepEqual(
+  actualCurrentReadiness.evidenceState
+    .realPhotoStabilityAdequacyHoldReasons,
+  [
+  "head_roll_same_session_capture_provenance_unverified",
+  "head_roll_research_use_authorization_unverified"
+]
 );
 assert.deepEqual(
   [...actualCurrentReadiness.blockers].sort(),

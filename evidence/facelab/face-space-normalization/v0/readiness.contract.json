@@ -14,14 +14,15 @@
     "referenceCorpusRunOutputPath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
     "referenceCorpusReviewPacketPath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json",
     "referenceCorpusAdequacyEvidencePath": "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json",
-    "realPhotoStabilityReviewPacketPath": "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json",
     "realPhotoStabilityAdequacyDecisionPath": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
-    "referenceStatisticsPath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json"
+    "referenceStatisticsPath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
+    "realPhotoStabilityReviewPacketRef": "generated://face-lab/real-photo-expression-yaw-pitch-roll-stability-review-v2",
+    "supplementalRollRunOutputPath": "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
   },
   "currentBlockers": [
     "real_photo_stability_additional_evidence_required",
-    "real_photo_stability_hold:head_roll_subject_diversity_limited",
-    "real_photo_stability_hold:head_roll_distributional_evidence_limited",
+    "real_photo_stability_hold:head_roll_same_session_capture_provenance_unverified",
+    "real_photo_stability_hold:head_roll_research_use_authorization_unverified",
     "real_pose_stability_missing",
     "real_expression_stability_missing"
   ],
@@ -57,18 +58,22 @@
     "A complete real-photo head_yaw/head_pitch/head_roll/expression report collection is structural evidence only; it cannot satisfy pose/expression readiness until an explicit adequacy review bound to the exact collection fingerprint is present.",
     "Real-photo stability adequacy must not be inferred automatically from report count or nuisance-class coverage, and no numeric adequacy threshold is invented by this readiness contract.",
     "An explicit real-photo hold_for_more_evidence decision must remain a readiness blocker even when nuisance-class coverage is structurally complete.",
-    "Historical single-fixture unresolved markers are superseded only when their exact requirement is replaced by governed reference-corpus or real-photo structural evidence; adequacy gates remain independent."
+    "Historical single-fixture unresolved markers are superseded only when their exact requirement is replaced by governed reference-corpus or real-photo structural evidence; adequacy gates remain independent.",
+    "Supplemental real-photo evidence with unverified same-session provenance or research-use authorization may expand descriptive evidence but cannot by itself satisfy the provisional normalization-research adequacy gate."
   ],
   "currentEvidence": {
     "referenceCorpusAdequacyStatus": "adequate_for_provisional_research",
     "referenceCorpusAdequacyDecisionVersion": "london-set-v5-reference-corpus-adequacy-v1",
-    "realPhotoStabilityReportCount": 488,
+    "realPhotoStabilityReportCount": 492,
     "realPhotoStabilityCoverage": "covered_for_research",
     "realPhotoStabilityAdequacyStatus": "hold_for_more_evidence",
     "realPhotoStabilityAdequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
     "provisionalResearchGateGranted": false,
     "normalizationCandidatePresent": false,
-    "productionNormalizationAuthorized": false
+    "productionNormalizationAuthorized": false,
+    "realPhotoStabilityAdequacyDecisionVersion": "real-photo-stability-adequacy-decision-v2",
+    "headRollReportCount": 6,
+    "headRollSubjectLinkageEvidenceRefCount": 3
   },
   "counterfactualPreflight": {
     "status": "candidate_construction_path_verified_but_not_authorized",

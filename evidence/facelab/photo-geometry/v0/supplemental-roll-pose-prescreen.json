@@ -1,6 +1,6 @@
 {
   "schemaVersion": "face-lab-supplemental-roll-pose-prescreen-v0",
-  "status": "supplemental_triplets_pose_prescreened_metric_measurement_pending",
+  "status": "supplemental_triplets_canonical_metric_measured",
   "evidenceClass": "supplemental_pose_prescreen_only",
   "sourceContext": {
     "sourceKind": "user_supplied_chat_images",
@@ -26,8 +26,13 @@
     "allTripletsContainNeutralLeftRight": true,
     "allTripletsShowOppositeSignedLeftRightRoll": true,
     "neutralViewClosestToZeroWithinEachTriplet": true,
-    "faceLabMetricMeasurementExecuted": false,
-    "structuralStabilityEvidenceAdded": false
+    "faceLabMetricMeasurementExecuted": true,
+    "structuralStabilityEvidenceAdded": true,
+    "canonicalMetricReportCount": 4,
+    "canonicalMetricSubjectLinkageEvidenceRefCount": 2,
+    "canonicalMetricRunManifestDigest": "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2",
+    "canonicalMetricCollectionFingerprint": "sha256:df8378fe087e17f277cd33d1f9bc97ed973c8911621b831fc5a6b76af0f7460a",
+    "metricEvidenceRef": "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
   },
   "subjects": [
     {
@@ -61,7 +66,7 @@
       "interpretation": {
         "posePattern": "neutral_near_zero_with_opposite_signed_left_right_roll",
         "eligibleForTransientMetricMeasurement": true,
-        "adequacyDecisionImpact": "none_until_face_lab_metric_measurement"
+        "adequacyDecisionImpact": "descriptive_evidence_added_explicit_adequacy_review_required"
       }
     },
     {
@@ -95,7 +100,7 @@
       "interpretation": {
         "posePattern": "neutral_near_zero_with_opposite_signed_left_right_roll",
         "eligibleForTransientMetricMeasurement": true,
-        "adequacyDecisionImpact": "none_until_face_lab_metric_measurement"
+        "adequacyDecisionImpact": "descriptive_evidence_added_explicit_adequacy_review_required"
       }
     }
   ],
@@ -111,5 +116,18 @@
     "thresholdAuthority": false,
     "adequacyDecisionAuthority": false,
     "populationAuthority": false
+  },
+  "metricMeasurement": {
+    "evidenceRef": "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json",
+    "provider": "mediapipe_face_geometry",
+    "providerVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+    "adapterId": "mediapipe-face-geometry-metric-v0",
+    "coordinateSpace": "pose_normalized_metric_3d",
+    "reportCount": 4,
+    "subjectLinkageEvidenceRefCount": 2,
+    "runManifestDigest": "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2",
+    "collectionFingerprint": "sha256:df8378fe087e17f277cd33d1f9bc97ed973c8911621b831fc5a6b76af0f7460a",
+    "rawImagesPersisted": false,
+    "rawLandmarksPersisted": false
   }
 }

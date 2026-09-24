@@ -8,6 +8,7 @@ on:
       - "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json"
       - "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json"
       - "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
       - "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json"
       - "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json"
       - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-review.json"
@@ -67,33 +68,25 @@ jobs:
             evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json \
             evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json \
             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json \
-            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json" \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-roll-stability-review-v2.json" \
             "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
 
       - name: Verify complete real-photo evidence
         run: |
           node scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs \
-            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json" \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-roll-stability-review-v2.json" \
             "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
-
-      - name: Verify frozen combined packet is current
-        shell: bash
-        run: |
-          set -euo pipefail
-          cmp \
-            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-stability-review-packet.json" \
-            evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json
 
       - name: Rebuild adequacy descriptive review
         run: |
           node scripts/build-face-lab-real-photo-stability-adequacy-review.mjs \
-            evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-roll-stability-review-v2.json" \
             "$RUNNER_TEMP/real-photo-stability-adequacy-review.json"
 
       - name: Verify adequacy descriptive review candidate
         run: |
           node scripts/verify-face-lab-real-photo-stability-adequacy-review.mjs \
-            evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-roll-stability-review-v2.json" \
             "$RUNNER_TEMP/real-photo-stability-adequacy-review.json" \
             evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json
 
@@ -107,6 +100,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: face-lab-real-photo-stability-adequacy-review-candidate
-          path: ${{ runner.temp }}/real-photo-stability-adequacy-review.json
+          path: |
+            ${{ runner.temp }}/real-photo-stability-adequacy-review.json
+            ${{ runner.temp }}/real-photo-expression-yaw-pitch-roll-stability-review-v2.json
           if-no-files-found: error
           retention-days: 7
