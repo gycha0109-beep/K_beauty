@@ -43,6 +43,16 @@ assert.ok(
   premiumFaceLab.includes("buildFaceLabV2Canonical"),
   "premium Face Lab must use the canonical V2 composer"
 );
+assert.equal(
+  premiumFaceLab.includes("isFaceLabV2CanonicalResult(stored.canonicalV2)"),
+  false,
+  "restored state must be recomputed instead of trusting cached canonical output"
+);
+assert.equal(
+  premiumFaceLab.includes("canonicalV2\n        })"),
+  false,
+  "client persistence payload must not submit canonical output as authority"
+);
 
 assert.ok(
   faceLabApi.includes('.update({ face_lab: persisted })'),
@@ -55,6 +65,14 @@ assert.ok(
 assert.ok(
   faceLabApi.includes("normalizeFaceLabV2PersistencePayload"),
   "Face Lab V2 persistence must normalize survey input"
+);
+assert.ok(
+  faceLabApi.includes("rehydrateSavedV2(data)"),
+  "saved Face Lab V2 state must be rehydrated from persisted analysis on load"
+);
+assert.ok(
+  faceLabApi.includes("buildFaceLabV2Canonical"),
+  "server persistence must recompute canonical V2 output"
 );
 
 assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
@@ -76,6 +94,8 @@ console.log(JSON.stringify({
     "premium_analysis_persistence",
     "target_without_reanalysis",
     "saved_target_restore",
+    "server_rehydration",
+    "cached_canonical_not_trusted",
     "mutable_face_lab_v2_persistence",
     "canonical_execution_chain",
     "archetype_decoupled"
