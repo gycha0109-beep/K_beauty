@@ -77,7 +77,7 @@ jobs:
           mkdir -p "${migration_dir}"
           cp tests/fixtures/product-source-bindings/20260910101500_product_source_binding_runtime_seed.sql "${migration_dir}/"
           cp supabase/migrations/20260910102000_product_source_bindings_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260924234818_product_source_bindings_projection_integrity_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260925085338_product_source_bindings_projection_integrity_v1.sql "${migration_dir}/"
 
       - name: Start and reset isolated Supabase
         shell: bash
