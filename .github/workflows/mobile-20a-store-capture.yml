@@ -16,6 +16,7 @@ on:
       - "scripts/verify-mobile-20a-store-capture.mjs"
       - "scripts/verify-mobile-20b-store-scenarios.mjs"
       - ".github/workflows/mobile-20a-store-capture.yml"
+      - ".github/workflows/mobile-android-runtime.yml"
   push:
     branches: [main]
     paths:
@@ -30,6 +31,7 @@ on:
       - "scripts/verify-mobile-20a-store-capture.mjs"
       - "scripts/verify-mobile-20b-store-scenarios.mjs"
       - ".github/workflows/mobile-20a-store-capture.yml"
+      - ".github/workflows/mobile-android-runtime.yml"
   workflow_dispatch:
     inputs:
       watchtower_track:

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
   "producerContractVersion": "watchtower-v0.3.2",
-  "workflowInventoryDigest": "sha256:184aa020a41afd9abf8ca92bfea23c08800bd173c6e1a64c990fd089390eb17f",
+  "workflowInventoryDigest": "sha256:657d3700202f9c35a06f1da9c9e4c6dbd76637883658e7538bef028a0b5d5bf8",
   "lastAuditedAt": "2026-09-24",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
@@ -106,7 +106,8 @@
           "mobile-14-auth-app-links.yml"
         ],
         "build": [
-          "mobile-13-store-release-preflight.yml"
+          "mobile-13-store-release-preflight.yml",
+          "mobile-android-runtime.yml"
         ],
         "e2e": [
           "mobile-native-shell.yml",
@@ -142,6 +143,23 @@
           ],
           "equivalenceEvidence": "PR #746 same-head dedicated Mobile owners + Current Main Health GREEN"
         }
+      },
+      "androidRuntimeConsolidation": {
+        "candidateWorkflow": "mobile-android-runtime.yml",
+        "state": "dual-run-equivalence-pending",
+        "buildArtifact": "bejewely-mobile-android-debug-<candidate-sha>",
+        "producerJob": "android-debug-apk",
+        "consumers": [
+          "native-shell-smoke",
+          "store-capture-20a",
+          "store-capture-20b"
+        ],
+        "legacyWorkflowsPreserved": [
+          "mobile-native-shell.yml",
+          "mobile-20a-store-capture.yml",
+          "mobile-20b-store-capture.yml"
+        ],
+        "cutoverRule": "retire legacy workflows only after same-head candidate and legacy jobs prove equivalent green runtime/store evidence"
       }
     }
   },
@@ -795,6 +813,20 @@
         "api-integration",
         "backend-contract",
         "mobile"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-android-runtime.yml": {
+      "primaryResponsibility": "mobile-build",
+      "capabilities": [
+        "android",
+        "artifact-producer",
+        "build",
+        "e2e",
+        "mobile",
+        "store-capture"
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "canonical",
