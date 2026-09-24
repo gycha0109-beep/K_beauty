@@ -17,7 +17,13 @@
     "rootSeedTracked": false,
     "canonicalDisposableLocalFixture": "supabase/local-shadow-test",
     "blankReplayClaimAllowed": false,
-    "reason": "The repository does not yet own a complete root Supabase baseline; several current migrations require predecessor schema or role authority."
+    "reason": "The repository does not yet own a complete root Supabase baseline; several current migrations require predecessor schema or role authority, and the historical repository still contains an audited duplicate migration version at 20260824.",
+    "knownRepositoryVersionCollisions": {
+      "20260824": [
+        "20260824_add_product_localized_names.sql",
+        "20260824_backfill_product_english_display_names.sql"
+      ]
+    }
   },
   "canonicalRepositoryOnly": [
     {
