@@ -33,6 +33,8 @@ declare
   v_changed jsonb;
   v_unprofiled jsonb;
   v_preflight jsonb;
+  v_asset jsonb;
+  v_asset_verification jsonb;
   v_fact_count bigint;
   v_current_count bigint;
   v_confirmation_count bigint;
@@ -400,6 +402,98 @@ begin
      or coalesce((v_preflight ->> 'fact_instance_mutated')::boolean, true)
      or coalesce((v_preflight ->> 'automatic_confirmation')::boolean, true) then
     raise exception 'phase8g_profiled_revalidation_preflight_invalid';
+  end if;
+
+  begin
+    perform public.admin_register_product_evidence_source_verification_profile_v1(
+      '92000000-0000-4000-8000-000000000001',
+      'phase8g-profile-asset-metadata-missing-0001',
+      v_ctx.source_id,
+      (v_fresh ->> 'profile_id')::uuid,
+      repeat('c', 64),
+      'official-claim-asset-bytes-v1',
+      'official-claim-asset',
+      'v1',
+      'fresh_recovery',
+      jsonb_build_object(
+        'final_url', 'https://assets.example.com/claim.jpg',
+        'content_type', 'image/jpeg',
+        'byte_length', 593899,
+        'fetched_at', '2026-09-24T07:00:00Z',
+        'page_final_url', 'https://example.com/product',
+        'claim_asset_url', 'https://assets.example.com/claim.jpg',
+        'asset_final_url', 'https://assets.example.com/claim.jpg',
+        'asset_content_type', 'image/jpeg',
+        'asset_byte_length', 593899,
+        'page_asset_binding_present', true,
+        'qualification_observations', 3,
+        'qualification_asset_digest', repeat('c', 64)
+      ),
+      '{"fixture":"phase8g-asset-metadata-missing"}'::jsonb
+    );
+    raise exception 'phase8g_asset_profile_missing_reviewed_metadata_not_rejected';
+  exception
+    when check_violation then
+      if sqlerrm <> 'product_evidence_source_verification_profile_fresh_recovery_invalid' then
+        raise;
+      end if;
+  end;
+
+  update public.product_evidence_sources
+     set source_metadata = coalesce(source_metadata, '{}'::jsonb)
+       || jsonb_build_object(
+            'current_direct_claim', 'SPF50+ PA++++',
+            'direct_claim_asset_url', 'https://assets.example.com/claim.jpg'
+          )
+   where source_id = v_ctx.source_id;
+
+  v_asset := public.admin_register_product_evidence_source_verification_profile_v1(
+    '92000000-0000-4000-8000-000000000001',
+    'phase8g-profile-asset-0001',
+    v_ctx.source_id,
+    (v_fresh ->> 'profile_id')::uuid,
+    repeat('c', 64),
+    'official-claim-asset-bytes-v1',
+    'official-claim-asset',
+    'v1',
+    'fresh_recovery',
+    jsonb_build_object(
+      'final_url', 'https://assets.example.com/claim.jpg',
+      'content_type', 'image/jpeg',
+      'byte_length', 593899,
+      'fetched_at', '2026-09-24T07:01:00Z',
+      'page_final_url', 'https://example.com/product',
+      'claim_asset_url', 'https://assets.example.com/claim.jpg',
+      'asset_final_url', 'https://assets.example.com/claim.jpg',
+      'asset_content_type', 'image/jpeg',
+      'asset_byte_length', 593899,
+      'page_asset_binding_present', true,
+      'qualification_observations', 3,
+      'qualification_asset_digest', repeat('c', 64)
+    ),
+    '{"fixture":"phase8g-asset"}'::jsonb
+  );
+
+  if v_asset ->> 'comparability_state' <> 'COMPARABLE'
+     or v_asset ->> 'digest_basis' <> 'official-claim-asset-bytes-v1'
+     or v_asset ->> 'adapter_key' <> 'official-claim-asset'
+     or v_asset ->> 'adapter_version' <> 'v1' then
+    raise exception 'phase8g_asset_profile_invalid';
+  end if;
+
+  v_asset_verification := public.record_product_evidence_source_verification_v2(
+    'phase8g-asset-unchanged-verification-0001',
+    (v_asset ->> 'profile_id')::uuid,
+    repeat('c',64),
+    'unchanged',
+    'manual',
+    '2026-09-24T07:02:00Z'::timestamptz,
+    '{"fixture":"phase8g-asset-unchanged"}'::jsonb
+  );
+
+  if v_asset_verification ->> 'verification_result' <> 'unchanged'
+     or v_asset_verification ->> 'baseline_content_digest' <> repeat('c',64) then
+    raise exception 'phase8g_asset_verification_invalid';
   end if;
 
   if (select count(*) from public.product_fact_instances) <> v_fact_count
