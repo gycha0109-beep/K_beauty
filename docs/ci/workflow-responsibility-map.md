@@ -45,6 +45,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | Responsibility | Workflow count |
 | --- | ---: |
 | `admin` | 2 |
+| `ai-provider-runtime` | 1 |
 | `catalog-taxonomy` | 2 |
 | `face-lab` | 0 |
 | `global-governance` | 2 |
@@ -58,7 +59,7 @@ All current workflows remain `preserve-until-equivalence-proven`.
 | `recommendation-admission` | 1 |
 | `trust-data-governance` | 18 |
 
-Total: **52 workflows**.
+Total: **53 workflows**.
 
 ## Watchtower producer classification
 
@@ -68,7 +69,7 @@ Total: **52 workflows**.
 | Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
 | Dedicated `trust` | 18 | static `[WT:trust]` |
 | Dedicated `mobile` | 11 | static `[WT:mobile]` |
-| Shared technical | 10 | PR/commit/dispatch evidence |
+| Shared technical | 11 | PR/commit/dispatch evidence |
 
 There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
 
@@ -83,6 +84,10 @@ The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. It
 ### Supply chain
 
 `supply-chain-security.yml` is the canonical shared technical owner for dependency and source supply-chain checks. It proves the npm lockfile can install with lifecycle scripts disabled, records production and full dependency-audit severity counts, enforces a non-regression baseline, and runs CodeQL for JavaScript/TypeScript. The initial audit found 1 critical and 1 high direct-dependency finding; patching Next.js 15.5.22 → 15.5.26 and sharp 0.35.3 → 0.35.4 reduced the enforced baseline to 0 critical, 0 high, 13 moderate and 0 low findings for both production and full dependency graphs. Any increase fails closed while further remediation can ratchet the baseline downward. Dependabot is intentionally bounded to one weekly grouped npm minor/patch version-update PR; automatic npm major and GitHub Actions version-update PRs are disabled because workflow-file fanout caused repository-wide CI storms. GitHub Dependency Review was tested but is not supported until this repository's Dependency Graph is enabled, so it is not treated as active coverage. GitGuardian remains the existing secret-scanning layer and is not duplicated here.
+
+### AI provider runtime
+
+`ai-provider-runtime.yml` is the canonical shared technical owner for the server-side OpenAI transport used by the core Analyze path. The Vision observation service and product-explanation path share one bounded single-attempt runtime with timeout signaling, manual redirect rejection, response-size enforcement, safe failure telemetry and JSON parsing. PR/push runs execute the provider transport hermetically against injected responses, alongside the Unified Vision and provider-log contracts. An explicit `workflow_dispatch` live smoke can call OpenAI with a fixed non-user store graphic, run the canonical Vision prompt and normalizer, and assert non-persistent privacy flags when the repository `OPENAI_API_KEY` secret is available. Product Query DATA-AI22 remains a separate `taxonomy-ai` responsibility and is not absorbed by this workflow. The Unified Vision check remains duplicated in `current-main-health` until this dedicated owner proves green equivalence.
 
 ### Site E2E
 

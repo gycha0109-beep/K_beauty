@@ -13,6 +13,7 @@ const client = read("app/page.js");
 const analyzeRoute = read("app/api/analyze/route.js");
 const faceRoute = read("app/api/face-reading/route.js");
 const service = read("lib/server/vision-observation-service.js");
+const providerRuntime = read("lib/server/openai-chat-runtime.js");
 const contract = read("lib/vision-observation-contract.js");
 const normalizer = read("lib/vision-observation-normalizer.js");
 const skinProjector = read("lib/skin-observation-projector.js");
@@ -54,11 +55,19 @@ assert.deepEqual(
   ["lib/server/vision-observation-service.js"],
   "only the canonical service may create an image-bearing provider request"
 );
-assert.equal(count(service, "fetch(OPENAI_URL"), 1, "canonical service must contain one provider execution site");
-assert.equal(/maxRetries|retryAfter|retryCount|attempt\s*[+]=|attempt\s*=\s*attempt\s*\+/i.test(service), false, "canonical service must not retry image requests");
-assert.ok(service.includes("redirect: \"manual\""), "provider redirects must be rejected");
-assert.ok(service.includes("response.body.getReader"), "provider response size must be enforced while streaming");
-assert.ok(service.includes("totalBytes > MAX_RESPONSE_BYTES"), "provider stream must stop at the byte cap");
+assert.ok(service.includes("executeOpenAiChatJson"), "canonical Vision service must delegate provider transport to shared runtime");
+assert.doesNotMatch(service, /api\.openai\.com\/v1\/chat\/completions/, "Vision service must not own the provider endpoint");
+assert.doesNotMatch(analyzeRoute, /api\.openai\.com\/v1\/chat\/completions/, "analyze route must not own the provider endpoint");
+assert.equal(
+  [...providerRuntime.matchAll(/^export const OPENAI_CHAT_COMPLETIONS_URL = "https:\/\/api\.openai\.com\/v1\/chat\/completions";$/gm)].length,
+  1,
+  "shared provider runtime must own exactly one Analyze OpenAI endpoint declaration"
+);
+assert.equal(/maxRetries|retryAfter|retryCount|attempt\s*[+]=|attempt\s*=\s*attempt\s*\+/i.test(providerRuntime), false, "shared provider runtime must not retry requests");
+assert.ok(providerRuntime.includes('redirect: "manual"'), "provider redirects must be rejected");
+assert.ok(providerRuntime.includes("response.body.getReader"), "provider response size must be enforced while streaming");
+assert.ok(providerRuntime.includes("totalBytes > maxResponseBytes"), "provider stream must stop at the byte cap");
+assert.ok(providerRuntime.includes("new AbortController()"), "provider runtime must enforce a timeout signal");
 assert.ok(service.includes("imageProviderAttemptCount: 1"), "provider telemetry must record one image attempt");
 
 assert.ok(contract.includes('VISION_OBSERVATION_SCHEMA_VERSION = "vision-observation-v1"'));

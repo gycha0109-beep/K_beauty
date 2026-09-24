@@ -74,13 +74,13 @@ import {
   sanitizePremiumReportPurchaseLinks
 } from "@/lib/product-purchase-link";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
+import { executeOpenAiChatJson } from "@/lib/server/openai-chat-runtime";
 import {
   createAnalyzeLogEvent,
   createNoStoreHeaders,
   writeSafeLog
 } from "@/lib/security/error-redaction";
 
-const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
 const PREMIUM_OPENAI_MODEL = "gpt-4o";
 const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
@@ -363,31 +363,6 @@ function resolveAnalyzeModel(isPremium = false) {
   return isPremium ? PREMIUM_OPENAI_MODEL : FREE_OPENAI_MODEL;
 }
 
-function extractTextContent(content) {
-  if (typeof content === "string") {
-    return content;
-  }
-
-  if (Array.isArray(content)) {
-    return content
-      .map((item) => {
-        if (typeof item === "string") {
-          return item;
-        }
-
-        if (item?.type === "text") {
-          return item.text || "";
-        }
-
-        return "";
-      })
-      .join("\n")
-      .trim();
-  }
-
-  return "";
-}
-
 function safeParse(content) {
   try {
     return JSON.parse(content);
@@ -397,35 +372,6 @@ function safeParse(content) {
       throw new Error("Did not receive JSON.");
     }
     return JSON.parse(matched[0]);
-  }
-}
-
-async function readOpenAiResponse(response) {
-  const rawText = await response.text();
-
-  if (!rawText) {
-    return {
-      ok: response.ok,
-      status: response.status,
-      data: null,
-      rawText: ""
-    };
-  }
-
-  try {
-    return {
-      ok: response.ok,
-      status: response.status,
-      data: JSON.parse(rawText),
-      rawText
-    };
-  } catch {
-    return {
-      ok: response.ok,
-      status: response.status,
-      data: null,
-      rawText
-    };
   }
 }
 
@@ -1191,84 +1137,23 @@ function buildFreeDecisionPayload(decision) {
 }
 
 async function fetchOpenAiJson({ apiKey, body, stage }) {
-  const startedAt = Date.now();
-  let response;
+  const runtime = await executeOpenAiChatJson({
+    apiKey,
+    body,
+    stage,
+    parseContent: safeParse
+  });
 
-  try {
-    response = await fetch(OPENAI_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-  } catch {
-    logProviderRuntimeEvent({
-      stage,
-      status: null,
-      ok: false,
-      provider: "openai",
-      model: body?.model,
-      durationMs: Date.now() - startedAt,
-      errorCategory: "request_failed"
-    });
-    throw new Error("Provider request failed.");
-  }
+  logProviderRuntimeEvent({
+    stage,
+    status: runtime.status,
+    ok: true,
+    provider: "openai",
+    model: body?.model,
+    durationMs: runtime.durationMs
+  });
 
-  const payload = await readOpenAiResponse(response);
-
-  if (!payload.ok) {
-    logProviderRuntimeEvent({
-      stage,
-      status: payload.status,
-      ok: false,
-      provider: "openai",
-      model: body?.model,
-      durationMs: Date.now() - startedAt,
-      errorCategory: "http_error"
-    });
-    throw new Error(`Provider request failed (${payload.status}).`);
-  }
-
-  const content = extractTextContent(payload.data?.choices?.[0]?.message?.content);
-
-  if (!content) {
-    logProviderRuntimeEvent({
-      stage,
-      status: payload.status,
-      ok: false,
-      provider: "openai",
-      model: body?.model,
-      durationMs: Date.now() - startedAt,
-      errorCategory: "empty_response"
-    });
-    throw new Error("OpenAI returned empty content.");
-  }
-
-  try {
-    const parsed = safeParse(content);
-    logProviderRuntimeEvent({
-      stage,
-      status: payload.status,
-      ok: true,
-      provider: "openai",
-      model: body?.model,
-      durationMs: Date.now() - startedAt
-    });
-    return parsed;
-  } catch {
-    logProviderRuntimeEvent({
-      stage,
-      status: payload.status,
-      ok: false,
-      provider: "openai",
-      model: body?.model,
-      durationMs: Date.now() - startedAt,
-      errorCategory: "invalid_response"
-    });
-    throw new Error("Provider returned invalid response.");
-  }
+  return runtime.parsed;
 }
 
 async function generateProductExplanations({ apiKey, locale, decision, formInput, model }) {
