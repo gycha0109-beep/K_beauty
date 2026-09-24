@@ -128,6 +128,12 @@ assert.ok(canonical.routes.routes.length >= 2);
 assert.ok(canonical.routes.routes.length <= 3);
 assert.ok(canonical.routes.selectedRouteId);
 assert.ok(["available", "not_applicable"].includes(canonical.hair.status));
+if (canonical.hair.status === "available") {
+  assert.ok(
+    canonical.hair.value.avoidOrModerate.length >= 1,
+    "hair execution must carry structural moderation when observed structure warrants it"
+  );
+}
 assert.ok(["available", "not_applicable"].includes(canonical.makeup.status));
 assert.ok(["available", "not_applicable"].includes(canonical.grooming.status));
 assert.ok(["partial", "not_requested"].includes(canonical.productHandoff.status));
