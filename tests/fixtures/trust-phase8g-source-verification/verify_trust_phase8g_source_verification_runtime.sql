@@ -232,6 +232,7 @@ begin
     into v_asset_source
     from public.product_evidence_sources
    where coalesce(source_metadata ->> 'direct_claim_asset_url', '') ~ '^https://'
+     and source_id <> v_ctx.source_id
    order by created_at, source_id
    limit 1;
 
