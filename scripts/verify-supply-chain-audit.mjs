@@ -44,8 +44,8 @@ function runAudit(name, args) {
 }
 
 const BASELINE = Object.freeze({
-  production: Object.freeze({ info: 0, low: 0, moderate: 13, high: 1, critical: 1, total: 15 }),
-  all: Object.freeze({ info: 0, low: 0, moderate: 13, high: 1, critical: 1, total: 15 }),
+  production: Object.freeze({ info: 0, low: 0, moderate: 13, high: 0, critical: 0, total: 13 }),
+  all: Object.freeze({ info: 0, low: 0, moderate: 13, high: 0, critical: 0, total: 13 }),
 });
 
 function summarizePackages(report) {
