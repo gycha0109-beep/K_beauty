@@ -60,7 +60,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout exact candidate SHA
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -109,7 +109,7 @@ jobs:
       MOBILE_ANDROID_UPLOAD_CERT_SHA256: ${{ secrets.MOBILE_ANDROID_UPLOAD_CERT_SHA256 }}
     steps:
       - name: Checkout exact candidate SHA
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
@@ -238,7 +238,7 @@ jobs:
       MOBILE_IOS_APPLE_TEAM_ID: ${{ secrets.MOBILE_IOS_APPLE_TEAM_ID }}
     steps:
       - name: Checkout exact candidate SHA
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
