@@ -9,6 +9,7 @@
 > 사진측 metric geometry와 구조 측정 경계는 `face-lab-photo-geometry-measurement-bridge-v0.md`를 본다.
 > 외부 모델·도구의 research-only 도입 상태는 `face-lab-external-research-dependency-register-v1.md`를 본다.
 > 추구미 / Target Style Profile / Target Finder / Style Delta 입력 경계는 `FACE_LAB_TARGET_STYLE_MODEL_V1.md`를 본다.
+> Face Lab V2의 최종 canonical result와 projection / recompute 경계는 `FACE_LAB_V2_CANONICAL_RESULT_CONTRACT.md`를 본다.
 
 ## 1. 제품 정의
 
