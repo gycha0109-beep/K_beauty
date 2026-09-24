@@ -77,7 +77,7 @@ The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. It
 
 ### Security
 
-`security-boundary.yml` is the canonical shared technical owner for application security contracts. It runs the complete static boundary suite for analysis RLS, anonymous-write grants, SEC-06 through SEC-12 coverage, provider-runtime log sanitization, admin access and repository secret/authority hygiene, plus the SEC-12 mutation-resistance harness. `current-main-health` keeps its existing overlapping checks until equivalence is proven; removal from global health is a later consolidation step. Isolated runtime security harnesses remain under `security-tests/`.
+`security-boundary.yml` is the canonical shared technical owner for application security contracts. It runs the complete static boundary suite for analysis RLS, anonymous-write grants, SEC-06 through SEC-12 coverage, provider-runtime log sanitization, admin access and repository secret/authority hygiene, plus the SEC-12 mutation-resistance harness. Equivalence was proven on the dedicated workflow before the duplicate analysis-RLS, anonymous-write, SEC-08, SEC-09, SEC-10 headers, admin-access, SEC-11 origin-normalization and repository-hygiene executions were removed from `current-main-health`; global health retains only non-duplicated cross-domain contracts. Isolated runtime security harnesses remain under `security-tests/`.
 
 ### Site E2E
 
