@@ -39,7 +39,7 @@ export async function captureProductionAssetBaseline({ fetchImpl = fetch } = {})
     baseline_content_digest: capture.asset_digest,
     canonical_baseline: {
       final_url: capture.page_final_url,
-      content_type: "text/html",
+      content_type: capture.page_content_type,
       byte_length: capture.page_byte_length,
       canonical_length: capture.asset_byte_length,
       asset_url: capture.claim_asset_url,
