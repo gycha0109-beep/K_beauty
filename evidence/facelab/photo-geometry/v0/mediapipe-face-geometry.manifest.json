@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "face-lab-photo-geometry-manifest-v0",
+  "adapterId": "mediapipe-face-geometry-metric-v0",
+  "provider": "mediapipe_face_geometry",
+  "providerVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+  "implementationStatus": "contract_fixture_validated",
+  "executionBoundary": "offline_research",
+  "coordinateSpace": "pose_normalized_metric_3d",
+  "landmarkTopology": 468,
+  "rawScreenLandmarksAccepted": false,
+  "identityEmbeddingAllowed": false,
+  "productionAuthority": false,
+  "anchorMap": {
+    "face_left_lateral": 234,
+    "face_right_lateral": 454,
+    "lower_face_left": 172,
+    "lower_face_right": 397,
+    "chin": 152,
+    "nose_base_center": 94,
+    "right_eye_outer": 33,
+    "right_eye_inner": 133,
+    "left_eye_inner": 362,
+    "left_eye_outer": 263,
+    "nose_left_alar": 98,
+    "nose_right_alar": 327
+  },
+  "measurementSemantics": {
+    "normalizer": "3d distance between lateral face anchors 234 and 454",
+    "lower_face_width_ratio": "3d distance 172-397 / normalizer",
+    "chin_height_ratio": "3d distance 94-152 / normalizer",
+    "eye_spacing_ratio": "3d distance 133-362 / normalizer",
+    "eye_width_ratio": "mean(3d distance 33-133, 362-263) / normalizer",
+    "eye_tilt": "mean canonicalized XY angle of outer-to-inner eye vectors in pose-normalized metric space",
+    "nose_width_ratio": "3d distance 98-327 / normalizer"
+  },
+  "upstreamEvidence": {
+    "faceGeometryProto": "mediapipe/modules/face_geometry/protos/face_geometry.proto",
+    "geometryPipeline": "mediapipe/modules/face_geometry/libs/geometry_pipeline.cc",
+    "faceMeshConnections": "mediapipe/python/solutions/face_mesh_connections.py",
+    "canonicalModel": "mediapipe/modules/face_geometry/data/canonical_face_model.obj",
+    "canonicalModelBlobSha": "0e666d1c4e75949d1639c2bcf347a38da4834164",
+    "reviewedAt": "2026-09-19"
+  },
+  "notes": [
+    "MediaPipe Face Geometry metric landmarks are pose-normalized by the upstream geometry pipeline before this bridge consumes them.",
+    "Raw Face Landmarker screen-normalized XYZ is not accepted because upstream documents Z as relative under a weak-perspective camera model.",
+    "Anchor IDs are versioned adapter choices over the official 468 topology; they are not claimed as an official MediaPipe-to-GNM correspondence.",
+    "The bridge emits raw structural measurements only. It does not create a calibrated Face Space vector."
+  ],
+  "semanticContractVersion": "face-space-structural-measurement-semantics-v0"
+}

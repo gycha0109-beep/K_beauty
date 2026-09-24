@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "face-space-reference-corpus-source-runner-contract-v0",
+  "status": "runner_executed_real_reference_corpus_present_review_pending",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Define a consented/licensed general-face source manifest and local measurement runner boundary for future same-provider Face Space reference-corpus research.",
+  "sourceManifestSchemaVersion": "face-space-reference-corpus-source-manifest-v0",
+  "rules": {
+    "referenceAndHoldoutSplitsRequired": true,
+    "subjectLevelSplitRequired": true,
+    "nearDuplicateFamilySplitLeakageForbidden": true,
+    "duplicateImageBytesForbidden": true,
+    "archetypeGroundTruthForbidden": true,
+    "rawImagePersistenceForbidden": true,
+    "identityEmbeddingForbidden": true,
+    "biometricIdentityMatchingForbidden": true,
+    "imageSha256Required": true,
+    "sourceManifestDigestRequired": true,
+    "localImagePathExcludedFromDigest": true,
+    "generatedCorpusMustPassReferenceCorpusValidator": true,
+    "outputLocalImagePathForbidden": true,
+    "outputRawLandmarksForbidden": true,
+    "outputCarriesSourceManifestDigest": true,
+    "outputCarriesSourceImageSha256Receipts": true
+  },
+  "currentEvidence": {
+    "realSourceManifestPresent": true,
+    "actualRunnerExecuted": true,
+    "generatedReferenceCorpusPresent": true,
+    "referenceSampleCount": 82,
+    "holdoutSampleCount": 20,
+    "runnerImplemented": true,
+    "sourceManifestDigest": "sha256:663954cd1670ff1e70ee372397b357e4b5ef0936cd21307ea217667c458d0cd9",
+    "referenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "evidencePath": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
+    "adequacyDecisionPresent": false,
+    "referenceStatisticsAuthority": false
+  },
+  "runner": {
+    "runnerVersion": "face-space-reference-corpus-measurement-runner-v0",
+    "script": "scripts/run-face-lab-reference-corpus-measurement.mjs",
+    "sourceManifestVerifier": "scripts/verify-face-lab-reference-corpus-source-manifest.mjs",
+    "implemented": true,
+    "outputSchemaVersion": "face-space-reference-corpus-measurement-run-output-v0",
+    "generatedCorpusSchemaVersion": "face-space-reference-corpus-v0"
+  }
+}

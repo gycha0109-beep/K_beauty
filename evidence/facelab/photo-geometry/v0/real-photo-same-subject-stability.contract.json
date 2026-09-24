@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "face-lab-real-photo-same-subject-stability-contract-v0",
+  "status": "collection_ready_evidence_absent",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "purpose": "Collect real-photo same-subject pose/expression stability evidence without biometric identity matching.",
+  "requiredNuisanceClasses": [
+    "head_yaw",
+    "head_pitch",
+    "head_roll",
+    "expression"
+  ],
+  "allowedSubjectLinkageMethods": [
+    "dataset_same_subject_provenance",
+    "manual_same_subject_pair"
+  ],
+  "pairRequirements": {
+    "opaquePairGroupIdRequired": true,
+    "provenanceEvidenceRefRequired": true,
+    "sameProviderRequired": true,
+    "sourceImagePersistenceForbidden": true,
+    "identityEmbeddingForbidden": true,
+    "biometricIdentityMatchingForbidden": true,
+    "rawLandmarkPersistenceForbidden": true,
+    "structuralMeasurementPacketOnly": true,
+    "exactBaselineSampleReuseAllowed": true,
+    "conflictingSampleReuseForbidden": true,
+    "sameAssetUnderDifferentSampleIdsForbidden": true,
+    "runnerExecutionProvenanceRequired": true,
+    "inputImageSha256ReceiptRequired": true
+  },
+  "evidencePromotion": {
+    "controlled3dCanSatisfyRealPhotoGate": false,
+    "singlePairCanSatisfyGeneralCoverage": false,
+    "technicalPassCanDefineThresholds": false,
+    "realPhotoGateRequiresAllNuisanceClasses": true,
+    "populationNormalizationStillRequiresSeparateCoverageAndReferenceDistribution": true,
+    "realPhotoCollectionFingerprintRequired": true,
+    "explicitAdequacyReviewRequired": true,
+    "structuralNuisanceCoverageAloneCanSatisfyReadiness": false,
+    "automaticAdequacyInferenceAllowed": false,
+    "numericAdequacyThresholdDefined": false,
+    "adequacyContractPath": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
+  },
+  "currentEvidence": {
+    "realPhotoPairCount": 0,
+    "coveredNuisanceClasses": [],
+    "readiness": "not_ready",
+    "runnerImplemented": true,
+    "adequacyDecisionPresent": false,
+    "normalizationReadinessContribution": false
+  },
+  "executionPath": {
+    "runManifestSchemaVersion": "face-lab-real-photo-stability-run-manifest-v0",
+    "runnerScript": "scripts/run-face-lab-real-photo-stability-pairs.mjs",
+    "validatorScript": "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs",
+    "runnerImplemented": true,
+    "actualRealPairExecutionRequiredForEvidence": true,
+    "ciMayUseSyntheticManifestOnly": true,
+    "ciSyntheticManifestMaySatisfyRealPhotoGate": false
+  }
+}

@@ -1,0 +1,107 @@
+name: Face Lab - Real Photo Combined Stability Review
+run-name: "[WT:face-research] Face Lab - Real Photo Combined Stability Review"
+
+on:
+  pull_request:
+    paths:
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-review.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-evidence.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json"
+      - "scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs"
+      - "scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs"
+      - "scripts/build-face-lab-real-photo-stability-adequacy-review.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-adequacy-review.mjs"
+      - "lib/face-lab-real-photo-stability-evidence.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
+      - "lib/face-lab-real-photo-stability-adequacy.js"
+      - "lib/face-lab-real-photo-stability-adequacy-review.js"
+      - ".github/workflows/face-lab-london-combined-stability-review.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: face-lab-real-photo-combined-stability-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Checkout exact Face Lab branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 2
+
+      - name: Verify exact event head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Rebuild complete real-photo review packet
+        run: |
+          node scripts/build-face-lab-london-set-v5-combined-stability-evidence.mjs \
+            evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json \
+            evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json \
+            evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json \
+            evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-roll-stability-review-v2.json" \
+            "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
+
+      - name: Verify complete real-photo evidence
+        run: |
+          node scripts/verify-face-lab-london-set-v5-combined-stability-evidence.mjs \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-roll-stability-review-v2.json" \
+            "$RUNNER_TEMP/real-photo-stability-adequacy.contract.json"
+
+      - name: Rebuild adequacy descriptive review
+        run: |
+          node scripts/build-face-lab-real-photo-stability-adequacy-review.mjs \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-roll-stability-review-v2.json" \
+            "$RUNNER_TEMP/real-photo-stability-adequacy-review.json"
+
+      - name: Verify adequacy descriptive review candidate
+        run: |
+          node scripts/verify-face-lab-real-photo-stability-adequacy-review.mjs \
+            "$RUNNER_TEMP/real-photo-expression-yaw-pitch-roll-stability-review-v2.json" \
+            "$RUNNER_TEMP/real-photo-stability-adequacy-review.json" \
+            evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json
+
+      - name: Verify explicit adequacy decision
+        run: |
+          node scripts/verify-face-lab-real-photo-stability-adequacy-decision.mjs \
+            "$RUNNER_TEMP/real-photo-stability-adequacy-review.json" \
+            evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json
+
+      - name: Publish adequacy descriptive review candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: face-lab-real-photo-stability-adequacy-review-candidate
+          path: |
+            ${{ runner.temp }}/real-photo-stability-adequacy-review.json
+            ${{ runner.temp }}/real-photo-expression-yaw-pitch-roll-stability-review-v2.json
+          if-no-files-found: error
+          retention-days: 7

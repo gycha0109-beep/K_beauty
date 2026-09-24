@@ -1,0 +1,141 @@
+name: Face Lab - London Yaw Measurement
+run-name: "[WT:face-research] Face Lab - London Yaw Measurement"
+
+on:
+  pull_request:
+    paths:
+      - "evidence/facelab/source-intake/v0/london-set-v5-yaw-source-receipts.json"
+      - "scripts/build-face-lab-london-set-v5-figshare-metadata.mjs"
+      - "scripts/build-face-lab-london-set-v5-yaw-receipts.mjs"
+      - "scripts/build-face-lab-london-set-v5-yaw-measurement-manifest.mjs"
+      - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
+      - "scripts/build-face-lab-normalization-review-packet.mjs"
+      - "scripts/verify-face-lab-london-set-v5-yaw-measurement-evidence.mjs"
+      - "lib/face-lab-normalization-review-packet-run-output.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
+      - ".github/workflows/face-lab-london-yaw-measurement.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: face-lab-london-yaw-measurement-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - name: Checkout exact Face Lab branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 2
+
+      - name: Verify exact event head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Install actual-image Face Landmarker runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNTIME_ROOT="$RUNNER_TEMP/face-lab-image-e2e-runtime"
+          mkdir -p "$RUNTIME_ROOT"
+          npm install --prefix "$RUNTIME_ROOT" --ignore-scripts --no-audit --no-fund playwright-core@1.59.1
+          echo "FACE_LAB_IMAGE_E2E_RUNTIME_ROOT=$RUNTIME_ROOT" >> "$GITHUB_ENV"
+
+      - name: Checkout pinned London front-image mirror
+        uses: actions/checkout@v7
+        with:
+          repository: debruine/webmorphR.stim
+          ref: fa8b78fda2d659bb74ce62fcd99c4407551d2a77
+          path: .research/london-source
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            inst/neutral_front
+
+      - name: Fetch exact Figshare metadata
+        run: |
+          node scripts/build-face-lab-london-set-v5-figshare-metadata.mjs             "$RUNNER_TEMP/london-set-v5-figshare-source-metadata.json"
+
+      - name: Acquire transient yaw source and verify frozen receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-face-lab-london-set-v5-yaw-receipts.mjs             "$RUNNER_TEMP/london-set-v5-figshare-source-metadata.json"             evidence/facelab/source-intake/v0/london-set-v5-front-source-receipts.json             "$RUNNER_TEMP/london-yaw-source"             "$RUNNER_TEMP/london-set-v5-yaw-source-receipts.json"
+          node scripts/verify-face-lab-london-set-v5-yaw-receipts.mjs             "$RUNNER_TEMP/london-set-v5-yaw-source-receipts.json"
+          node --input-type=module -e '
+            import assert from "node:assert/strict";
+            import { readFileSync } from "node:fs";
+            const actual = JSON.parse(readFileSync(process.argv[1], "utf8"));
+            const frozen = JSON.parse(readFileSync(process.argv[2], "utf8"));
+            assert.deepEqual(actual, frozen);
+          '             "$RUNNER_TEMP/london-set-v5-yaw-source-receipts.json"             evidence/facelab/source-intake/v0/london-set-v5-yaw-source-receipts.json
+
+      - name: Build governed yaw measurement manifest
+        run: |
+          node scripts/build-face-lab-london-set-v5-yaw-measurement-manifest.mjs             .research/london-source             "$RUNNER_TEMP/london-yaw-source"             "$RUNNER_TEMP/london-set-v5-yaw-stability-run-manifest.json"
+
+      - name: Run London same-subject yaw measurement
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-face-lab-real-photo-stability-pairs.mjs             "$RUNNER_TEMP/london-set-v5-yaw-stability-run-manifest.json"             > "$RUNNER_TEMP/london-set-v5-yaw-stability-run-output.json"
+
+      - name: Build descriptive yaw review packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-face-lab-normalization-review-packet.mjs             real-photo-stability             "$RUNNER_TEMP/london-set-v5-yaw-stability-run-output.json"             london-set-v5-yaw-stability-review-v1             --packet-only             > "$RUNNER_TEMP/london-set-v5-yaw-stability-review-packet.json"
+
+      - name: Verify exact yaw evidence
+        run: |
+          node scripts/verify-face-lab-london-set-v5-yaw-measurement-evidence.mjs             "$RUNNER_TEMP/london-set-v5-yaw-stability-run-output.json"             "$RUNNER_TEMP/london-set-v5-yaw-stability-review-packet.json"
+
+      - name: Freeze derived yaw structural evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/facelab/photo-geometry/v0
+          cp "$RUNNER_TEMP/london-set-v5-yaw-stability-run-output.json"             evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json
+          cp "$RUNNER_TEMP/london-set-v5-yaw-stability-review-packet.json"             evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-review-packet.json
+          rm -rf .research/london-source "$RUNNER_TEMP/london-yaw-source"
+          git status --short
+
+      - name: Commit derived yaw structural evidence
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json             evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-review-packet.json
+          if git diff --cached --quiet; then
+            echo "No derived yaw evidence changes"
+            exit 0
+          fi
+          git commit -m "research(facelab): freeze London yaw measurements"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+
+      - name: Remove transient raw source
+        if: always()
+        shell: bash
+        run: |
+          rm -rf .research/london-source "$RUNNER_TEMP/london-yaw-source"

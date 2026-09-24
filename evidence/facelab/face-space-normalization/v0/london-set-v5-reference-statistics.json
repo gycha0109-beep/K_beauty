@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "face-space-reference-statistics-v0",
+  "version": "london-set-v5-reference-statistics-v1",
+  "methodDecisionVersion": "london-set-v5-reference-method-selection-v1",
+  "methodComparisonVersion": "london-set-v5-reference-method-comparison-v1",
+  "methodComparisonPacketFingerprint": "sha256:76f346b6b284b32af63db3171f654e12cf70d91470b18e34502a199d2d5a3726",
+  "sourceReferenceCorpusSummarySchemaVersion": "face-space-reference-corpus-summary-v0",
+  "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+  "sourceSamplingFrameProvenanceRef": "https://doi.org/10.6084/m9.figshare.5047666.v5",
+  "sourceProvider": {
+    "source": "mediapipe_face_geometry",
+    "sourceVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+    "adapterId": "mediapipe-face-geometry-metric-v0"
+  },
+  "samplingFrameKind": "licensed_general_face_corpus",
+  "referenceSplitOnly": true,
+  "referenceSampleCount": 82,
+  "holdoutSampleCountExcluded": 20,
+  "centerMethod": "median",
+  "scaleMethod": "mad_scaled_consistent",
+  "dimensions": [
+    {
+      "id": "lower_face_width_ratio",
+      "unit": "ratio",
+      "center": 0.7540540316592534,
+      "scale": 0.018177862668873182,
+      "referenceSampleCount": 82
+    },
+    {
+      "id": "chin_height_ratio",
+      "unit": "ratio",
+      "center": 0.46051099872636003,
+      "scale": 0.027062455055776407,
+      "referenceSampleCount": 82
+    },
+    {
+      "id": "eye_spacing_ratio",
+      "unit": "ratio",
+      "center": 0.20312624772564591,
+      "scale": 0.012715607188238772,
+      "referenceSampleCount": 82
+    },
+    {
+      "id": "eye_width_ratio",
+      "unit": "ratio",
+      "center": 0.1774343797607808,
+      "scale": 0.010330514297612912,
+      "referenceSampleCount": 82
+    },
+    {
+      "id": "eye_tilt",
+      "unit": "degree",
+      "center": 0.07300959842772414,
+      "scale": 0.43861287640204766,
+      "referenceSampleCount": 82
+    },
+    {
+      "id": "nose_width_ratio",
+      "unit": "ratio",
+      "center": 0.18185148477053575,
+      "scale": 0.013709913117718119,
+      "referenceSampleCount": 82
+    }
+  ],
+  "authority": {
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false,
+    "referenceStatisticsResearchOnly": true
+  }
+}

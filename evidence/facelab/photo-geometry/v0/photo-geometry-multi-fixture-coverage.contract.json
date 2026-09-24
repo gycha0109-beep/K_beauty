@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "face-lab-photo-geometry-multi-fixture-coverage-v0",
+  "status": "research_technical_coverage_only",
+  "productionAuthority": false,
+  "sourceAuthorityPath": "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json",
+  "expectedFixtureCount": 14,
+  "fixtureIdentitySemantics": {
+    "opaqueReviewItems": true,
+    "distinctSubjectsEstablished": false,
+    "sameIdentityRelationshipsEstablished": false,
+    "biometricIdentityMatchingAllowed": false
+  },
+  "coverageClaims": {
+    "faceLandmarkerExecutionCoverage": true,
+    "metricGeometryBridgeCoverage": true,
+    "structuralMeasurementCoverage": true,
+    "multiSubjectCoverage": false,
+    "generalFaceCoverage": false,
+    "populationReferenceCoverage": false,
+    "normalizationReferenceCoverage": false
+  },
+  "measurementDiagnostics": {
+    "observedMinMaxAllowed": true,
+    "centerOrScaleEstimationAllowed": false,
+    "percentileEstimationAllowed": false,
+    "thresholdCalibrationAllowed": false
+  },
+  "privacy": {
+    "sourceImagePersistedByHarness": false,
+    "identityEmbeddingCreated": false,
+    "biometricIdentityMatchPerformed": false
+  },
+  "rules": [
+    "All 14 opaque review fixtures must pass the same pinned Face Landmarker and metric geometry bridge.",
+    "Review item count must not be relabeled as distinct subject count.",
+    "Observed measurement ranges are technical diagnostics only, not population ranges or normalization statistics.",
+    "No center, scale, percentile, enum boundary, Archetype threshold, or style threshold may be derived from this harness.",
+    "No raw Face Landmarker result, full 478-point mesh, source image copy, identity embedding, or identity match result is persisted."
+  ]
+}

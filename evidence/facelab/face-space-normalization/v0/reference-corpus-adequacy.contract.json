@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "face-space-reference-corpus-adequacy-contract-v0",
+  "status": "adequate_for_provisional_research",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Require an explicit versioned research adequacy review before a structurally valid general-face corpus can satisfy Face Space normalization coverage gates.",
+  "rules": [
+    "Structural validity alone does not establish general-face or reference-distribution adequacy.",
+    "Adequacy must be linked to the exact reference-split fingerprint, provider pin, and sampling-frame provenance.",
+    "No numeric minimum sample threshold is invented by this contract.",
+    "Automatic adequacy inference from record count is forbidden.",
+    "Coverage limitations must be explicitly documented.",
+    "Adequacy grants provisional research gating only and no Production normalization authority.",
+    "The adequacy decision must be bound to a descriptive reference-corpus review packet generated from the exact corpus.",
+    "The review packet must exclude center/scale statistics, percentiles, and holdout measurement values so it cannot become a method-selection or calibration artifact.",
+    "The review packet must preserve the research privacy boundary: no persisted source image, raw landmarks, identity embeddings, biometric matching, or local image paths."
+  ],
+  "currentEvidence": {
+    "realReferenceCorpusPresent": true,
+    "referenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "descriptiveReviewPacketPresent": true,
+    "reviewPacketRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json",
+    "reviewPacketVersion": "london-set-v5-reference-corpus-review-v1",
+    "reviewPacketFingerprint": "sha256:49f76545486f50e88b68a23f68cc65605158dc402d78a4ce44d27940314de392",
+    "adequacyDecisionPresent": true,
+    "status": "adequate_for_provisional_research",
+    "adequacyDecisionVersion": "london-set-v5-reference-corpus-adequacy-v1",
+    "adequacyEvidenceRef": "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json"
+  },
+  "reviewPacket": {
+    "schemaVersion": "face-space-reference-corpus-review-packet-v0",
+    "requiredForAdequacyDecision": true,
+    "exactReferenceSplitFingerprintRequired": true,
+    "exactReviewPacketFingerprintRequired": true,
+    "descriptiveOnly": true,
+    "centerScaleStatisticsIncluded": false,
+    "percentileStatisticsIncluded": false,
+    "holdoutMeasurementValuesIncluded": false,
+    "automaticPassFail": false,
+    "automaticRanking": false,
+    "privacy": {
+      "sourceImagePersisted": false,
+      "rawLandmarksPersisted": false,
+      "identityEmbeddingCreated": false,
+      "biometricIdentityMatchPerformed": false,
+      "localImagePathsIncluded": false
+    }
+  }
+}

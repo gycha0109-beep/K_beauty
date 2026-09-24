@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "face-lab-offline-runtime-export-request-v0",
+  "purpose": "transient local execution of user-supplied supplemental roll triplets",
+  "requestedAt": "2026-09-24",
+  "rawUserImagesIncluded": false,
+  "retainInRepository": false
+}

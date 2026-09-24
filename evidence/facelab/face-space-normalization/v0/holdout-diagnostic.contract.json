@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "face-space-normalization-holdout-diagnostic-contract-v0",
+  "status": "blocked_pending_real_photo_stability_adequacy",
+  "productionAuthority": false,
+  "normalizationActivationAuthority": false,
+  "acceptanceThresholdAuthority": false,
+  "purpose": "Define an independent holdout diagnostic boundary for a future provisional same-provider Face Space normalization candidate.",
+  "inputRules": {
+    "validatedReferenceCorpusRequired": true,
+    "provisionalResearchCandidateRequired": true,
+    "referenceSplitOnlyCandidateRequired": true,
+    "holdoutSplitOnlyDiagnosticInput": true,
+    "referenceRecordsExcludedFromDiagnostic": true
+  },
+  "outputRules": {
+    "descriptiveDiagnosticsOnly": true,
+    "passFailDecisionForbidden": true,
+    "acceptanceThresholdForbidden": true,
+    "percentileBoundaryForbidden": true,
+    "archetypeProjectionAuthority": false,
+    "styleRecommendationAuthority": false,
+    "counterfactualShadowDiagnosticAllowed": true,
+    "counterfactualShadowCannotGrantAdequacy": true,
+    "counterfactualShadowCannotChangeMethodSelection": true,
+    "counterfactualShadowCannotChangeReferenceStatistics": true
+  },
+  "currentEvidence": {
+    "realReferenceCorpusPresent": true,
+    "referenceCorpusAdequacyStatus": "adequate_for_provisional_research",
+    "referenceStatisticsPresent": true,
+    "referenceStatisticsVersion": "london-set-v5-reference-statistics-v1",
+    "referenceStatisticsRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
+    "realPhotoStabilityAdequacyStatus": "hold_for_more_evidence",
+    "realPhotoStabilityAdequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+    "provisionalResearchCandidatePresent": false,
+    "realHoldoutDiagnosticPresent": false,
+    "blockers": [
+      "head_roll_same_session_capture_provenance_unverified",
+      "head_roll_research_use_authorization_unverified"
+    ],
+    "productionNormalizationAuthorized": false,
+    "realPhotoStabilityAdequacyDecisionVersion": "real-photo-stability-adequacy-decision-v2",
+    "realPhotoStabilityReportCount": 492,
+    "headRollReportCount": 6,
+    "headRollSubjectLinkageEvidenceRefCount": 3,
+    "counterfactualShadowDiagnosticPresent": true,
+    "counterfactualShadowDiagnosticRef": "evidence/facelab/face-space-normalization/v0/counterfactual-shadow-holdout-diagnostic.json",
+    "counterfactualShadowDiagnosticStatus": "counterfactual_research_diagnostic_only",
+    "counterfactualShadowHoldoutSampleCount": 20,
+    "counterfactualShadowReferenceSampleCountExcluded": 82,
+    "counterfactualShadowChangesMethodSelection": false,
+    "counterfactualShadowChangesReferenceStatistics": false,
+    "counterfactualShadowGrantsAdequacy": false
+  }
+}

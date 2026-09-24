@@ -1,0 +1,121 @@
+name: Face Lab - London Measurement
+run-name: "[WT:face-research] Face Lab - London Measurement"
+
+on:
+  pull_request:
+    paths:
+      - "evidence/facelab/source-intake/v0/london-set-v5-front-source-receipts.json"
+      - "evidence/facelab/source-intake/v0/london-set-v5-reference-holdout-split-plan.json"
+      - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
+      - "scripts/build-face-lab-normalization-review-packet.mjs"
+      - "scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs"
+      - "lib/face-lab-normalization-review-packet-run-output.js"
+      - "lib/face-lab-reference-corpus-review-packet.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
+      - "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json"
+      - "scripts/run-face-lab-reference-corpus-measurement.mjs"
+      - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
+      - ".github/workflows/face-lab-london-measurement.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: face-lab-london-measurement-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact Face Lab branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 2
+      - name: Verify exact event head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Install actual-image Face Landmarker runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNTIME_ROOT="$RUNNER_TEMP/face-lab-image-e2e-runtime"
+          mkdir -p "$RUNTIME_ROOT"
+          npm install --prefix "$RUNTIME_ROOT" --ignore-scripts --no-audit --no-fund playwright-core@1.59.1
+          echo "FACE_LAB_IMAGE_E2E_RUNTIME_ROOT=$RUNTIME_ROOT" >> "$GITHUB_ENV"
+      - name: Checkout pinned London front-image mirror
+        uses: actions/checkout@v7
+        with:
+          repository: debruine/webmorphR.stim
+          ref: fa8b78fda2d659bb74ce62fcd99c4407551d2a77
+          path: .research/london-source
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            inst/neutral_front
+            inst/smiling_front
+      - name: Build governed measurement manifests
+        run: node scripts/build-face-lab-london-set-v5-measurement-manifests.mjs .research/london-source "$RUNNER_TEMP/london-manifests"
+      - name: Run London neutral reference-corpus measurement
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-face-lab-reference-corpus-measurement.mjs             "$RUNNER_TEMP/london-manifests/london-set-v5-reference-corpus-source-manifest.json"             > "$RUNNER_TEMP/london-set-v5-reference-corpus-run-output.json"
+      - name: Run London same-subject expression stability measurement
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-face-lab-real-photo-stability-pairs.mjs             "$RUNNER_TEMP/london-manifests/london-set-v5-expression-stability-run-manifest.json"             > "$RUNNER_TEMP/london-set-v5-expression-stability-run-output.json"
+      - name: Freeze derived structural evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/facelab/face-space-normalization/v0
+          mkdir -p evidence/facelab/photo-geometry/v0
+          cp "$RUNNER_TEMP/london-set-v5-reference-corpus-run-output.json"             evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json
+          cp "$RUNNER_TEMP/london-set-v5-expression-stability-run-output.json"             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json
+          node scripts/build-face-lab-normalization-review-packet.mjs \
+            reference-corpus \
+            evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json \
+            london-set-v5-reference-corpus-review-v1 \
+            --packet-only \
+            > evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json
+          node scripts/build-face-lab-normalization-review-packet.mjs \
+            real-photo-stability \
+            evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json \
+            london-set-v5-expression-stability-review-v1 \
+            --packet-only \
+            > evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json
+          node scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs
+          rm -rf .research/london-source
+          git status --short
+      - name: Commit derived structural evidence
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json             evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json             evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json
+          if git diff --cached --quiet; then
+            echo "No derived evidence changes"
+            exit 0
+          fi
+          git commit -m "research(facelab): freeze London structural review evidence"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "face-lab-photo-geometry-stability-evidence-v0",
+  "sourceHeadSha": "02ba17df1d0b6556e8e524b27f0165d432bb0b30",
+  "workflow": {
+    "name": "Face Lab Reverse Archetype Pilot Guard",
+    "runId": 35506603826,
+    "runNumber": 131,
+    "jobId": 106067382262,
+    "conclusion": "success"
+  },
+  "provider": {
+    "id": "mediapipe_face_geometry",
+    "tasksVisionVersion": "0.10.35",
+    "providerVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809"
+  },
+  "fixture": {
+    "sampleId": "hci_7712309789633997afb295f5",
+    "distinctSubjectCount": 1,
+    "sameSourceImageTransformOnly": true
+  },
+  "observations": [
+    {
+      "nuisance": {
+        "class": "repeated_run",
+        "runOrdinal": 2
+      },
+      "maxAbsoluteRatioDifference": 0,
+      "maxAbsoluteDegreeDifference": 0
+    },
+    {
+      "nuisance": {
+        "class": "resolution",
+        "width": 768,
+        "height": 768
+      },
+      "maxAbsoluteRatioDifference": 0.003444378157987149,
+      "maxAbsoluteDegreeDifference": 0.0032418887773553173
+    },
+    {
+      "nuisance": {
+        "class": "compression",
+        "format": "jpeg",
+        "quality": 0.85
+      },
+      "maxAbsoluteRatioDifference": 0.0017434458381143103,
+      "maxAbsoluteDegreeDifference": 0.007162576561756229
+    },
+    {
+      "nuisance": {
+        "class": "crop_translation",
+        "cropFraction": 0.03,
+        "xOffsetFraction": 0.015,
+        "yOffsetFraction": 0.01
+      },
+      "maxAbsoluteRatioDifference": 0.002736510035212192,
+      "maxAbsoluteDegreeDifference": 0.0018307469940079812
+    },
+    {
+      "nuisance": {
+        "class": "lighting_exposure",
+        "brightnessPercent": 108
+      },
+      "maxAbsoluteRatioDifference": 0.0005537830977032088,
+      "maxAbsoluteDegreeDifference": 0.01859341910430956
+    },
+    {
+      "nuisance": {
+        "class": "lighting_contrast",
+        "contrastPercent": 110
+      },
+      "maxAbsoluteRatioDifference": 0.0011133473693856755,
+      "maxAbsoluteDegreeDifference": 0.03692634347647328
+    },
+    {
+      "nuisance": {
+        "class": "white_balance",
+        "redMultiplier": 1.03,
+        "blueMultiplier": 0.97
+      },
+      "maxAbsoluteRatioDifference": 0.0006520346606903038,
+      "maxAbsoluteDegreeDifference": 0.035123924704833165
+    }
+  ],
+  "unresolvedEvidence": [
+    "head_yaw_real_same_subject_pair",
+    "head_pitch_real_same_subject_pair",
+    "head_roll_real_same_subject_pair",
+    "expression_real_same_subject_pair",
+    "general_face_coverage",
+    "population_or_reference_distribution"
+  ],
+  "interpretation": {
+    "repeatedRunDeterministic": true,
+    "nuisanceThresholdsApplied": false,
+    "calibrationStatus": "not_calibrated",
+    "populationNormalizationAuthorized": false,
+    "faceSpaceNormalizationAuthorized": false,
+    "productionAuthority": false
+  },
+  "privacy": {
+    "sourceImagePersisted": false,
+    "identityEmbeddingCreated": false,
+    "biometricIdentityMatchPerformed": false
+  }
+}

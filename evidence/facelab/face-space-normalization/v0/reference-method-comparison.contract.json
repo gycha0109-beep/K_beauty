@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "face-space-reference-method-comparison-contract-v0",
+  "status": "descriptive_comparison_frozen",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "methodSelectionAuthority": false,
+  "rankingAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Describe supported center/scale method outputs on the reference split without selecting or ranking a normalization method.",
+  "methods": [
+    {
+      "centerMethod": "mean",
+      "scaleMethod": "standard_deviation"
+    },
+    {
+      "centerMethod": "mean",
+      "scaleMethod": "mad_scaled_consistent"
+    },
+    {
+      "centerMethod": "median",
+      "scaleMethod": "standard_deviation"
+    },
+    {
+      "centerMethod": "median",
+      "scaleMethod": "mad_scaled_consistent"
+    }
+  ],
+  "rules": [
+    "Only the reference split may be used for method comparison.",
+    "The locked holdout split must remain excluded from method comparison and method selection.",
+    "Comparison output is descriptive only and must not emit a winner, ranking, acceptance threshold, or Production activation.",
+    "A separate versioned method-selection decision remains required before generating governed reference statistics.",
+    "The comparison packet must carry the exact reference-split fingerprint and provider provenance."
+  ],
+  "currentEvidence": {
+    "realReferenceCorpusPresent": true,
+    "realMethodComparisonPresent": true,
+    "comparisonVersion": "london-set-v5-reference-method-comparison-v1",
+    "comparisonPacketFingerprint": "sha256:76f346b6b284b32af63db3171f654e12cf70d91470b18e34502a199d2d5a3726",
+    "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "selectedMethodPresent": true,
+    "selectedMethodId": "median__mad_scaled_consistent",
+    "selectionDecisionVersion": "london-set-v5-reference-method-selection-v1",
+    "selectionDecisionRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json"
+  }
+}

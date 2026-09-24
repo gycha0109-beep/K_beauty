@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "face-lab-photo-geometry-multi-fixture-coverage-evidence-v0",
+  "sourceHeadSha": "d0002bf6e478d0f0c40638e0df34a1743b7ea13c",
+  "workflow": {
+    "name": "Face Lab Reverse Archetype Pilot Guard",
+    "runId": 35507469252,
+    "runNumber": 143,
+    "jobId": 106069609068,
+    "conclusion": "success"
+  },
+  "coverageKind": "multi_fixture_technical_only",
+  "opaqueReviewItemCount": 14,
+  "distinctSubjectsEstablished": false,
+  "generalFaceCoverageEstablished": false,
+  "populationReferenceEstablished": false,
+  "normalizationReferenceEstablished": false,
+  "allFixturesYieldedExactlyOneFace": true,
+  "allFixturesYieldedAtLeast468Landmarks": true,
+  "observedRangeDiagnostics": [
+    {
+      "id": "lower_face_width_ratio",
+      "unit": "ratio",
+      "count": 14,
+      "min": 0.7223356555513112,
+      "max": 0.758352507302805
+    },
+    {
+      "id": "chin_height_ratio",
+      "unit": "ratio",
+      "count": 14,
+      "min": 0.4246936045893659,
+      "max": 0.46865265228778136
+    },
+    {
+      "id": "eye_spacing_ratio",
+      "unit": "ratio",
+      "count": 14,
+      "min": 0.1916168167601801,
+      "max": 0.2120746733535283
+    },
+    {
+      "id": "eye_width_ratio",
+      "unit": "ratio",
+      "count": 14,
+      "min": 0.1537212695694788,
+      "max": 0.18181568796376116
+    },
+    {
+      "id": "eye_tilt",
+      "unit": "degree",
+      "count": 14,
+      "min": -0.35706040067099165,
+      "max": 0.7207834780807985
+    },
+    {
+      "id": "nose_width_ratio",
+      "unit": "ratio",
+      "count": 14,
+      "min": 0.16605495464366943,
+      "max": 0.19193418932634018
+    }
+  ],
+  "interpretation": {
+    "diagnosticRangesOnly": true,
+    "centerScaleEstimationAuthorized": false,
+    "percentileEstimationAuthorized": false,
+    "thresholdCalibrationAuthorized": false,
+    "productionAuthority": false
+  },
+  "privacy": {
+    "sourceImagePersistedByHarness": false,
+    "identityEmbeddingCreated": false,
+    "biometricIdentityMatchPerformed": false
+  }
+}

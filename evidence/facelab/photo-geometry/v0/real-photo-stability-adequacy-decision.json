@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "face-lab-real-photo-stability-adequacy-decision-v1",
+  "status": "hold_for_more_evidence",
+  "decisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+  "decisionVersion": "real-photo-stability-adequacy-decision-v2",
+  "evidenceRef": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
+  "decisionMode": "explicit_manual_research_review",
+  "sourceDescriptiveReviewSchemaVersion": "face-lab-real-photo-stability-adequacy-review-v1",
+  "sourceDescriptiveReviewVersion": "real-photo-stability-adequacy-review-v2",
+  "sourceDescriptiveReviewFingerprint": "sha256:e4ced816dedfcdb5948ccbb233052d10ef9d16183580f0cda40bc4ef62c16273",
+  "sourceCollectionFingerprint": "sha256:aca9b072b8af2104a8c1b220f92ddc5ce5c28dfbe11e68dc6b102ad17db6f33c",
+  "sourceReviewPacketFingerprint": "sha256:4250f183e5f25a9c863fe8d5592f6da60a837d9a7f3009d4e33b9a9f54eb8233",
+  "sourceReportCount": 492,
+  "reviewedNuisanceClasses": [
+    "expression",
+    "head_pitch",
+    "head_roll",
+    "head_yaw"
+  ],
+  "decisionRationale": "The 492-report review expands head-roll evidence from two observations in one linkage group to six observations across three linkage groups, with canonical metric geometry successfully measured for the four supplemental pairs. The supplemental groups broaden descriptive technical evidence, but their same-session capture provenance and research-use authorization are not verified. The provisional normalization-research gate therefore remains on hold.",
+  "coverageLimitations": [
+    "Head roll now spans six observations across three linkage groups; four supplemental observations come from user-supplied triplets without verified same-session capture provenance.",
+    "Research-use authorization is not verified for the supplemental imagery, so those observations remain descriptive technical evidence only.",
+    "Observed drift is descriptive and uncalibrated; no numeric adequacy threshold is applied or implied.",
+    "Cross-provider semantic alignment is outside this adequacy review; existing semantic holds, including chin_height_ratio and nose_width_ratio, remain unresolved."
+  ],
+  "holdReasons": [
+    "head_roll_same_session_capture_provenance_unverified",
+    "head_roll_research_use_authorization_unverified"
+  ],
+  "evidenceIntegrityBlockers": [],
+  "provisionalResearchGateGranted": false,
+  "automaticAdequacyInferred": false,
+  "numericThresholdInvented": false,
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false
+}

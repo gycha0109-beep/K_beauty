@@ -1,0 +1,263 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import {
+  validateFaceSpaceReferenceCorpus
+} from "../lib/face-lab-face-space-reference-corpus.js";
+import {
+  summarizeRealPhotoStabilityCollection
+} from "../lib/face-lab-real-photo-stability-evidence.js";
+import {
+  buildFaceLabNormalizationReviewPacketFromRunOutput
+} from "../lib/face-lab-normalization-review-packet-run-output.js";
+
+const reference = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json",
+    "utf8"
+  )
+);
+const expression = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json",
+    "utf8"
+  )
+);
+const referenceReviewPacket = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json",
+    "utf8"
+  )
+);
+const expressionReviewPacket = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-review-packet.json",
+    "utf8"
+  )
+);
+const referenceAdequacyContract = JSON.parse(
+  readFileSync(
+    "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json",
+    "utf8"
+  )
+);
+const stabilityAdequacyContract = JSON.parse(
+  readFileSync(
+    "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy.contract.json",
+    "utf8"
+  )
+);
+
+assert.equal(reference.ok, true);
+assert.equal(
+  reference.schemaVersion,
+  "face-space-reference-corpus-measurement-run-output-v0"
+);
+assert.equal(reference.sourceSummary.recordCount, 102);
+assert.deepEqual(reference.sourceSummary.splitCounts, {
+  reference: 82,
+  holdout: 20
+});
+assert.equal(
+  reference.sourceSummary.sourceManifestDigest,
+  "sha256:663954cd1670ff1e70ee372397b357e4b5ef0936cd21307ea217667c458d0cd9"
+);
+const referenceSummary = validateFaceSpaceReferenceCorpus(reference.corpus);
+assert.equal(referenceSummary.recordCount, 102);
+assert.equal(
+  referenceSummary.referenceSplitFingerprint,
+  "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf"
+);
+assert.equal(reference.authority.productionAuthority, false);
+assert.equal(reference.authority.normalizationAuthority, false);
+assert.equal(reference.authority.thresholdAuthority, false);
+assert.equal(reference.privacy.outputContainsLocalImagePaths, false);
+assert.equal(reference.privacy.sourceImagePersisted, false);
+assert.equal(reference.privacy.rawLandmarksPersisted, false);
+assert.equal(reference.privacy.identityEmbeddingCreated, false);
+assert.equal(reference.privacy.biometricIdentityMatchPerformed, false);
+const rebuiltReferenceReviewPacket =
+  buildFaceLabNormalizationReviewPacketFromRunOutput({
+    kind: "reference-corpus",
+    runOutput: reference,
+    packetVersion: "london-set-v5-reference-corpus-review-v1"
+  });
+assert.deepEqual(referenceReviewPacket, rebuiltReferenceReviewPacket);
+assert.equal(referenceReviewPacket.reviewSemantics.descriptiveOnly, true);
+assert.equal(
+  referenceReviewPacket.reviewSemantics.holdoutMeasurementValuesIncluded,
+  false
+);
+assert.equal(
+  referenceReviewPacket.authority.adequacyDecisionAuthority,
+  false
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.realReferenceCorpusPresent,
+  true
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.descriptiveReviewPacketPresent,
+  true
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.reviewPacketFingerprint,
+  referenceReviewPacket.reviewPacketFingerprint
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.adequacyDecisionPresent,
+  true
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.adequacyDecisionVersion,
+  "london-set-v5-reference-corpus-adequacy-v1"
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.adequacyEvidenceRef,
+  "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json"
+);
+assert.equal(
+  referenceAdequacyContract.currentEvidence.status,
+  "adequate_for_provisional_research"
+);
+
+assert.equal(expression.ok, true);
+assert.equal(
+  expression.schemaVersion,
+  "face-lab-real-photo-stability-run-output-v0"
+);
+assert.equal(expression.manifestSummary.pairCount, 102);
+assert.deepEqual(expression.manifestSummary.coveredNuisanceClasses, [
+  "expression"
+]);
+assert.deepEqual(expression.manifestSummary.missingNuisanceClasses, [
+  "head_pitch",
+  "head_roll",
+  "head_yaw"
+]);
+assert.equal(expression.manifestSummary.completeNuisanceCoverage, false);
+const expressionSummary = summarizeRealPhotoStabilityCollection(
+  expression.reports
+);
+assert.equal(
+  expressionSummary.collectionFingerprint,
+  "sha256:915f3c17833e7072e5e3cd75d48b30a9efc7b3ef28c163f433ab9f457573a77a"
+);
+assert.equal(expressionSummary.reportCount, 102);
+assert.equal(
+  expressionSummary.readinessContribution.realExpressionEvidenceKind,
+  "real_photo_same_subject"
+);
+assert.equal(
+  expressionSummary.readinessContribution.realPoseEvidenceKind,
+  null
+);
+assert.equal(expression.productionAuthority, false);
+assert.equal(expression.normalizationAuthority, false);
+assert.equal(expression.thresholdAuthority, false);
+assert.equal(expression.privacy.sourceImagePersisted, false);
+assert.equal(expression.privacy.rawLandmarksPersisted, false);
+assert.equal(expression.privacy.identityEmbeddingCreated, false);
+assert.equal(expression.privacy.biometricIdentityMatchPerformed, false);
+const rebuiltExpressionReviewPacket =
+  buildFaceLabNormalizationReviewPacketFromRunOutput({
+    kind: "real-photo-stability",
+    runOutput: expression,
+    packetVersion: "london-set-v5-expression-stability-review-v1"
+  });
+assert.deepEqual(expressionReviewPacket, rebuiltExpressionReviewPacket);
+assert.deepEqual(
+  expressionReviewPacket.sourceCoveredNuisanceClasses,
+  ["expression"]
+);
+assert.equal(expressionReviewPacket.reviewSemantics.descriptiveOnly, true);
+assert.equal(expressionReviewPacket.reviewSemantics.thresholdsApplied, false);
+assert.equal(
+  expressionReviewPacket.authority.adequacyDecisionAuthority,
+  false
+);
+assert.equal(
+  stabilityAdequacyContract.currentEvidence.realPhotoReportCollectionPresent,
+  true
+);
+if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 102) {
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, false);
+  assert.equal(stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage, false);
+  assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression"]);
+  assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, ["head_pitch", "head_roll", "head_yaw"]);
+  assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint, expressionReviewPacket.reviewPacketFingerprint);
+  assert.equal(stabilityAdequacyContract.currentEvidence.status, "review_ready_pose_incomplete");
+} else if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 306) {
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, false);
+  assert.equal(stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage, false);
+  assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression", "head_yaw"]);
+  assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, ["head_pitch", "head_roll"]);
+  assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketRef, "evidence/facelab/photo-geometry/v0/london-set-v5-expression-yaw-stability-review-packet.json");
+  assert.equal(stabilityAdequacyContract.currentEvidence.status, "review_ready_pitch_roll_incomplete");
+  assert.match(stabilityAdequacyContract.currentEvidence.collectionFingerprint, /^sha256:[a-f0-9]{64}$/);
+  assert.match(stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint, /^sha256:[a-f0-9]{64}$/);
+} else if (stabilityAdequacyContract.currentEvidence.sourceReportCount === 486) {
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, false);
+  assert.equal(stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage, false);
+  assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression", "head_pitch", "head_yaw"]);
+  assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, ["head_roll"]);
+  assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketRef, "evidence/facelab/photo-geometry/v0/real-photo-expression-yaw-pitch-stability-review-packet.json");
+  assert.equal(stabilityAdequacyContract.currentEvidence.status, "review_ready_roll_incomplete");
+  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.expression.reportCount, 102);
+  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headYaw.reportCount, 204);
+  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headPitch.reportCount, 180);
+  assert.match(stabilityAdequacyContract.currentEvidence.collectionFingerprint, /^sha256:[a-f0-9]{64}$/);
+  assert.match(stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint, /^sha256:[a-f0-9]{64}$/);
+} else {
+  assert.equal(stabilityAdequacyContract.currentEvidence.sourceReportCount, 492);
+  assert.equal(stabilityAdequacyContract.currentEvidence.completeNuisanceCoverage, true);
+  assert.deepEqual(stabilityAdequacyContract.currentEvidence.coveredNuisanceClasses, ["expression", "head_pitch", "head_roll", "head_yaw"]);
+  assert.deepEqual(stabilityAdequacyContract.currentEvidence.missingNuisanceClasses, []);
+  assert.equal(stabilityAdequacyContract.currentEvidence.reviewPacketRef, "generated://face-lab/real-photo-expression-yaw-pitch-roll-stability-review-v2");
+  assert.equal(stabilityAdequacyContract.currentEvidence.status, "additional_evidence_required");
+  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.expression.reportCount, 102);
+  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headYaw.reportCount, 204);
+  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headPitch.reportCount, 180);
+  assert.equal(stabilityAdequacyContract.currentEvidence.componentEvidence.headRoll.reportCount, 6);
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.componentEvidence.headRoll.subjectLinkageEvidenceRefCount,
+    3
+  );
+  assert.equal(
+    stabilityAdequacyContract.currentEvidence.componentEvidence.headRoll.collectionFingerprint,
+    "sha256:872b8dcafa9d20ac93139e199e9b4e42a8c5120b0df835a2fe3b08cf71e73a54"
+  );
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent, true);
+  assert.equal(stabilityAdequacyContract.currentEvidence.adequacyDecisionCode, "ADDITIONAL_EVIDENCE_REQUIRED");
+  assert.equal(stabilityAdequacyContract.currentEvidence.provisionalResearchGateGranted, false);
+  assert.match(stabilityAdequacyContract.currentEvidence.collectionFingerprint, /^sha256:[a-f0-9]{64}$/);
+  assert.match(stabilityAdequacyContract.currentEvidence.reviewPacketFingerprint, /^sha256:[a-f0-9]{64}$/);
+}
+
+const serialized = JSON.stringify({ reference, expression });
+assert.equal(serialized.includes(".research/london-source"), false);
+assert.equal(serialized.includes("identityEmbedding"), true);
+
+console.log(JSON.stringify({
+  ok: true,
+  referenceCorpusRecords: 102,
+  referenceSamples: 82,
+  holdoutSamples: 20,
+  expressionPairs: 102,
+  realExpressionEvidenceKind: "real_photo_same_subject",
+  realPoseEvidenceKind: null,
+  missingNuisanceClasses: ["head_yaw", "head_pitch", "head_roll"],
+  referenceReviewPacketFingerprint: referenceReviewPacket.reviewPacketFingerprint,
+  expressionReviewPacketFingerprint: expressionReviewPacket.reviewPacketFingerprint,
+  descriptiveReviewPacketsFrozen: true,
+  referenceCorpusAdequacyDecisionPresent: true,
+  referenceCorpusAdequacyStatus: "adequate_for_provisional_research",
+  realPhotoAdequacyDecisionPresent:
+    stabilityAdequacyContract.currentEvidence.adequacyDecisionPresent,
+  realPhotoAdequacyDecisionCode:
+    stabilityAdequacyContract.currentEvidence.adequacyDecisionCode,
+  provisionalResearchGateGranted:
+    stabilityAdequacyContract.currentEvidence.provisionalResearchGateGranted,
+  productionAuthority: false,
+  normalizationAuthority: false,
+  thresholdAuthority: false
+}, null, 2));

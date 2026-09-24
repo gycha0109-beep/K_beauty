@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "face-space-reference-corpus-review-packet-v0",
+  "packetVersion": "london-set-v5-reference-corpus-review-v1",
+  "status": "manual_review_packet_ready",
+  "sourceReferenceCorpusSummarySchemaVersion": "face-space-reference-corpus-summary-v0",
+  "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+  "sourceSamplingFrameProvenanceRef": "https://doi.org/10.6084/m9.figshare.5047666.v5",
+  "sourceProvider": {
+    "source": "mediapipe_face_geometry",
+    "sourceVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+    "adapterId": "mediapipe-face-geometry-metric-v0"
+  },
+  "reviewPacketFingerprint": "sha256:49f76545486f50e88b68a23f68cc65605158dc402d78a4ce44d27940314de392",
+  "reviewSnapshot": {
+    "samplingFrame": {
+      "kind": "licensed_general_face_corpus",
+      "provenanceRef": "https://doi.org/10.6084/m9.figshare.5047666.v5"
+    },
+    "provider": {
+      "source": "mediapipe_face_geometry",
+      "sourceVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+      "adapterId": "mediapipe-face-geometry-metric-v0"
+    },
+    "referenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "sourceExecution": {
+      "runnerVersion": "face-space-reference-corpus-measurement-runner-v0",
+      "sourceManifestDigest": "sha256:663954cd1670ff1e70ee372397b357e4b5ef0936cd21307ea217667c458d0cd9"
+    },
+    "recordCount": 102,
+    "distinctSubjectGroupCount": 102,
+    "splitCounts": {
+      "reference": 82,
+      "holdout": 20
+    },
+    "splitDistinctSubjectGroupCounts": {
+      "reference": 82,
+      "holdout": 20
+    },
+    "splitNearDuplicateFamilyCounts": {
+      "reference": 82,
+      "holdout": 20
+    },
+    "qualityStatusCounts": {
+      "reference": {
+        "source_receipt_verified_pending_measurement_review": 82
+      },
+      "holdout": {
+        "source_receipt_verified_pending_measurement_review": 20
+      }
+    },
+    "dimensionIds": [
+      "chin_height_ratio",
+      "eye_spacing_ratio",
+      "eye_tilt",
+      "eye_width_ratio",
+      "lower_face_width_ratio",
+      "nose_width_ratio"
+    ]
+  },
+  "authority": {
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false,
+    "referenceStatisticsAuthority": false,
+    "methodSelectionAuthority": false,
+    "adequacyDecisionAuthority": false
+  },
+  "reviewSemantics": {
+    "descriptiveOnly": true,
+    "centerScaleStatisticsIncluded": false,
+    "percentileStatisticsIncluded": false,
+    "holdoutMeasurementValuesIncluded": false,
+    "automaticPassFail": false,
+    "automaticRanking": false
+  },
+  "privacy": {
+    "sourceImagePersisted": false,
+    "rawLandmarksPersisted": false,
+    "identityEmbeddingCreated": false,
+    "biometricIdentityMatchPerformed": false,
+    "localImagePathsIncluded": false
+  }
+}

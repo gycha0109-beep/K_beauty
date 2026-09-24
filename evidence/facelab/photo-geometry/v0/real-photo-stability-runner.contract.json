@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "face-lab-real-photo-stability-runner-contract-v0",
+  "status": "runner_executed_expression_real_data_pose_incomplete",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Define a local real-photo same-subject pose/expression execution path that produces structural stability evidence without persisting raw photos or raw landmarks.",
+  "inputManifestSchemaVersion": "face-lab-real-photo-stability-run-manifest-v0",
+  "allowedSourceSetKinds": [
+    "consented_same_subject_photo_set",
+    "licensed_same_subject_photo_set",
+    "manual_research_capture"
+  ],
+  "executionRules": {
+    "exactImageSha256Required": true,
+    "sameProviderRuntimeRequired": true,
+    "rawImagePersistenceForbidden": true,
+    "rawLandmarkPersistenceForbidden": true,
+    "identityEmbeddingForbidden": true,
+    "biometricIdentityMatchingForbidden": true,
+    "archetypeSeededSourceForbidden": true,
+    "stdoutStructuralEvidenceOnly": true,
+    "runManifestDigestRequired": true,
+    "reportMustCarryInputImageSha256": true,
+    "localPathExcludedFromRunManifestDigest": true,
+    "runnerVersionPinnedInEvidence": true
+  },
+  "currentEvidence": {
+    "realPairManifestPresent": true,
+    "actualRunnerExecuted": true,
+    "realPhotoPairCount": 102,
+    "coveredNuisanceClasses": [
+      "expression"
+    ],
+    "missingNuisanceClasses": [
+      "head_yaw",
+      "head_pitch",
+      "head_roll"
+    ],
+    "completeNuisanceCoverage": false,
+    "runManifestDigest": "sha256:cf9bd3df8f5755e6b66645695d984e15e487c8f9c4b30353d10f4fb189eb342a",
+    "collectionFingerprint": "sha256:915f3c17833e7072e5e3cd75d48b30a9efc7b3ef28c163f433ab9f457573a77a",
+    "evidencePath": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
+  }
+}

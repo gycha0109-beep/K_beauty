@@ -1,0 +1,121 @@
+name: Face Lab - Pointing04 Pitch Measurement
+run-name: "[WT:face-research] Face Lab - Pointing04 Pitch Measurement"
+
+on:
+  pull_request:
+    paths:
+      - "evidence/facelab/source-intake/v0/pointing04-source.contract.json"
+      - "evidence/facelab/source-intake/v0/pointing04-pitch-source-receipts.json"
+      - "scripts/build-face-lab-pointing04-source-metadata.mjs"
+      - "scripts/materialize-face-lab-pointing04-pitch-source.mjs"
+      - "scripts/build-face-lab-pointing04-pitch-measurement-manifest.mjs"
+      - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
+      - "scripts/build-face-lab-normalization-review-packet.mjs"
+      - "scripts/verify-face-lab-pointing04-pitch-measurement-evidence.mjs"
+      - ".github/workflows/face-lab-pointing04-pitch-measurement.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: face-lab-pointing04-pitch-measurement-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - name: Checkout exact Face Lab branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 2
+
+      - name: Verify exact event head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Install actual-image Face Landmarker runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNTIME_ROOT="$RUNNER_TEMP/face-lab-image-e2e-runtime"
+          mkdir -p "$RUNTIME_ROOT"
+          npm install --prefix "$RUNTIME_ROOT" --ignore-scripts --no-audit --no-fund playwright-core@1.59.1
+          echo "FACE_LAB_IMAGE_E2E_RUNTIME_ROOT=$RUNTIME_ROOT" >> "$GITHUB_ENV"
+
+      - name: Fetch exact Pointing04 Figshare metadata
+        run: |
+          node scripts/build-face-lab-pointing04-source-metadata.mjs             "$RUNNER_TEMP/pointing04-source-metadata.json"
+
+      - name: Materialize verified transient pitch source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/materialize-face-lab-pointing04-pitch-source.mjs             "$RUNNER_TEMP/pointing04-source-metadata.json"             evidence/facelab/source-intake/v0/pointing04-pitch-source-receipts.json             "$RUNNER_TEMP/pointing04-pitch-source"
+
+      - name: Build governed pitch measurement manifest
+        run: |
+          node scripts/build-face-lab-pointing04-pitch-measurement-manifest.mjs             "$RUNNER_TEMP/pointing04-pitch-source"             "$RUNNER_TEMP/pointing04-pitch-stability-run-manifest.json"
+
+      - name: Run Pointing04 same-subject pitch measurement
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-face-lab-real-photo-stability-pairs.mjs             "$RUNNER_TEMP/pointing04-pitch-stability-run-manifest.json"             > "$RUNNER_TEMP/pointing04-pitch-stability-run-output.json"
+
+      - name: Build descriptive pitch review packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-face-lab-normalization-review-packet.mjs             real-photo-stability             "$RUNNER_TEMP/pointing04-pitch-stability-run-output.json"             pointing04-pitch-stability-review-v1             --packet-only             > "$RUNNER_TEMP/pointing04-pitch-stability-review-packet.json"
+
+      - name: Verify exact pitch evidence
+        run: |
+          node scripts/verify-face-lab-pointing04-pitch-measurement-evidence.mjs             "$RUNNER_TEMP/pointing04-pitch-stability-run-output.json"             "$RUNNER_TEMP/pointing04-pitch-stability-review-packet.json"
+
+      - name: Freeze derived pitch structural evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/facelab/photo-geometry/v0
+          cp "$RUNNER_TEMP/pointing04-pitch-stability-run-output.json"             evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json
+          cp "$RUNNER_TEMP/pointing04-pitch-stability-review-packet.json"             evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-review-packet.json
+          rm -rf "$RUNNER_TEMP/pointing04-pitch-source"
+          git status --short
+
+      - name: Commit derived pitch structural evidence
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json             evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-review-packet.json
+          if git diff --cached --quiet; then
+            echo "No derived pitch evidence changes"
+            exit 0
+          fi
+          git commit -m "research(facelab): freeze Pointing04 pitch measurements"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+
+      - name: Remove transient raw source
+        if: always()
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/pointing04-pitch-source"

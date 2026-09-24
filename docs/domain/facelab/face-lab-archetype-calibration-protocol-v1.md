@@ -33,6 +33,9 @@
 
 Calibration 실행 방법론
 → 이 문서
+
+Face Space / Style Compatibility 목표 구조
+→ face-lab-face-space-style-compatibility-architecture-v1.md
 ```
 
 ## 1. 목적
@@ -47,6 +50,14 @@ Calibration 실행 방법론
 - presentation 및 capture strata에서 observation, ranking, hold의 systematic failure가 나타나는가?
 
 이 단계에서는 PASS 수치, sample 수, reviewer 수, 최종 taxonomy, weight 또는 threshold를 결정하지 않는다. 이 문서는 그러한 값을 선택하고 검증하는 절차만 정의한다.
+
+이 protocol의 대상은 현재 Archetype projection/scorer 가설이다. 이 protocol을 통과했다고 해서 Face Space representation 자체 또는 Style Compatibility가 자동 검증되는 것은 아니다.
+
+```text
+Archetype calibration
+≠ Face Space validation
+≠ Style compatibility validation
+```
 
 ## 2. Evaluation Authority Hierarchy
 
@@ -642,6 +653,21 @@ Weight + Threshold Calibration
 
 Synthetic stress campaign과 Real dataset 준비는 병행할 수 있지만 authority와 dataset role은 합치지 않는다.
 
+이 Archetype calibration track은 Face Space / Style Compatibility research와 병렬로 진행할 수 있다.
+
+```text
+Archetype calibration track
+→ current shadow projection hypothesis 검증
+
+Face Space track
+→ reusable structural representation 검증
+
+Style Compatibility track
+→ Face × Style relation 검증
+```
+
+세 track은 evidence를 공유할 수 있어도 서로의 activation authority를 자동 대체하지 않는다.
+
 ## Appendix A. Current Rubric Baseline
 
 이 appendix는 `face-lab-archetype-rubric-20260727` registry source를 요약한다. 현재 weight와 indicator는 **current rubric hypothesis structure**다.
@@ -651,6 +677,8 @@ Current rubric baseline
 ≠ validated taxonomy
 ≠ Human truth
 ≠ production decision rule
+≠ Face Space axis definition
+≠ Style Compatibility rule
 ```
 
 아래 required는 `required: true`인 positive indicator, optional은 나머지 positive indicator, negative는 `polarity: -1` indicator다.

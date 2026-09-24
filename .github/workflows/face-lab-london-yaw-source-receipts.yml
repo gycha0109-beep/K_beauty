@@ -1,0 +1,90 @@
+name: Face Lab - London Yaw Source Receipts
+run-name: "[WT:face-research] Face Lab - London Yaw Source Receipts"
+
+on:
+  pull_request:
+    paths:
+      - "scripts/build-face-lab-london-set-v5-figshare-metadata.mjs"
+      - "scripts/build-face-lab-london-set-v5-yaw-receipts.mjs"
+      - "scripts/verify-face-lab-london-set-v5-yaw-receipts.mjs"
+      - ".github/workflows/face-lab-london-yaw-source-receipts.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: face-lab-london-yaw-source-receipts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  receipts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - name: Checkout exact Face Lab branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 2
+
+      - name: Verify exact event head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Fetch exact Figshare v5 metadata only
+        run: |
+          node scripts/build-face-lab-london-set-v5-figshare-metadata.mjs             "$RUNNER_TEMP/london-set-v5-figshare-source-metadata.json"
+
+      - name: Download transient yaw archives and build exact receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-face-lab-london-set-v5-yaw-receipts.mjs             "$RUNNER_TEMP/london-set-v5-figshare-source-metadata.json"             evidence/facelab/source-intake/v0/london-set-v5-front-source-receipts.json             "$RUNNER_TEMP/london-yaw-source"             "$RUNNER_TEMP/london-set-v5-yaw-source-receipts.json"
+
+      - name: Verify derived yaw receipt packet
+        run: |
+          node scripts/verify-face-lab-london-set-v5-yaw-receipts.mjs             "$RUNNER_TEMP/london-set-v5-yaw-source-receipts.json"
+
+      - name: Freeze derived yaw receipt packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/facelab/source-intake/v0
+          cp "$RUNNER_TEMP/london-set-v5-yaw-source-receipts.json"             evidence/facelab/source-intake/v0/london-set-v5-yaw-source-receipts.json
+          rm -rf "$RUNNER_TEMP/london-yaw-source"
+          git status --short
+
+      - name: Commit derived yaw receipts
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add evidence/facelab/source-intake/v0/london-set-v5-yaw-source-receipts.json
+          if git diff --cached --quiet; then
+            echo "No derived yaw receipt changes"
+            exit 0
+          fi
+          git commit -m "research(facelab): freeze London yaw source receipts"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+
+      - name: Remove transient raw source
+        if: always()
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/london-yaw-source"

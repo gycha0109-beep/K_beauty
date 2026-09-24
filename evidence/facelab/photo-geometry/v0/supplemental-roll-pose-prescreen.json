@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "face-lab-supplemental-roll-pose-prescreen-v0",
+  "status": "supplemental_triplets_canonical_metric_measured",
+  "evidenceClass": "supplemental_pose_prescreen_only",
+  "sourceContext": {
+    "sourceKind": "user_supplied_chat_images",
+    "subjectGroupingBasis": "user_grouped_triplets",
+    "depictedSubjectConsentVerified": false,
+    "commercialResearchUseAuthorized": false,
+    "biometricIdentityMatchingUsed": false,
+    "identityEmbeddingCreated": false
+  },
+  "prescreenMethod": {
+    "id": "opencv-haar-eye-line-roll-prescreen-v0",
+    "purpose": "descriptive pose-orientation prescreen only",
+    "faceSelection": "largest detected face region",
+    "rollEstimate": "angle of selected eye-center line in image coordinates",
+    "faceLabMetricGeometryEquivalent": false,
+    "adequacyThreshold": false,
+    "productionAuthority": false
+  },
+  "summary": {
+    "supplementalSubjectSetCount": 2,
+    "imageCount": 6,
+    "expectedViewsPerSubject": 3,
+    "allTripletsContainNeutralLeftRight": true,
+    "allTripletsShowOppositeSignedLeftRightRoll": true,
+    "neutralViewClosestToZeroWithinEachTriplet": true,
+    "faceLabMetricMeasurementExecuted": true,
+    "structuralStabilityEvidenceAdded": true,
+    "canonicalMetricReportCount": 4,
+    "canonicalMetricSubjectLinkageEvidenceRefCount": 2,
+    "canonicalMetricRunManifestDigest": "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2",
+    "canonicalMetricCollectionFingerprint": "sha256:df8378fe087e17f277cd33d1f9bc97ed973c8911621b831fc5a6b76af0f7460a",
+    "metricEvidenceRef": "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
+  },
+  "subjects": [
+    {
+      "subjectId": "supplemental_subject_002",
+      "views": [
+        {
+          "view": "neutral_front",
+          "sha256": "7d91936bdd617a68e564d6eb9cabfe2a72a56b3045e072009477539ee63b287b",
+          "width": 860,
+          "height": 1076,
+          "faceDetectorCount": 1,
+          "approxEyeLineRollDegrees": -1.097
+        },
+        {
+          "view": "roll_left",
+          "sha256": "47b0ed66ce9aa364094c4137c16f46493b2f49340c463c8c8412ea82a2260483",
+          "width": 819,
+          "height": 1024,
+          "faceDetectorCount": 1,
+          "approxEyeLineRollDegrees": -16.677
+        },
+        {
+          "view": "roll_right",
+          "sha256": "9a025d5c5a8912ffa73cb8adf7c2dbb82c7170332718ae876fb0cfd3a26d3c24",
+          "width": 1122,
+          "height": 1402,
+          "faceDetectorCount": 1,
+          "approxEyeLineRollDegrees": 22.761
+        }
+      ],
+      "interpretation": {
+        "posePattern": "neutral_near_zero_with_opposite_signed_left_right_roll",
+        "eligibleForTransientMetricMeasurement": true,
+        "adequacyDecisionImpact": "descriptive_evidence_added_explicit_adequacy_review_required"
+      }
+    },
+    {
+      "subjectId": "supplemental_subject_003",
+      "views": [
+        {
+          "view": "neutral_front",
+          "sha256": "38ca1ba63f85dff71fc2e61c18f7b2ec04d2eaa2a8cdddda2e4801a3ba5c60ee",
+          "width": 500,
+          "height": 500,
+          "faceDetectorCount": 1,
+          "approxEyeLineRollDegrees": 0.929
+        },
+        {
+          "view": "roll_left",
+          "sha256": "4e6e37e39ee054d63d9b43933f6bd7e6149ff1e5350c9f578bb0d3ddb54203ed",
+          "width": 1254,
+          "height": 1254,
+          "faceDetectorCount": 2,
+          "approxEyeLineRollDegrees": -19.859
+        },
+        {
+          "view": "roll_right",
+          "sha256": "110f441ee7c181e8877f15a8fb9bbe6cecafff5fdebf312b39c7e66a1312dde0",
+          "width": 1254,
+          "height": 1254,
+          "faceDetectorCount": 1,
+          "approxEyeLineRollDegrees": 20.363
+        }
+      ],
+      "interpretation": {
+        "posePattern": "neutral_near_zero_with_opposite_signed_left_right_roll",
+        "eligibleForTransientMetricMeasurement": true,
+        "adequacyDecisionImpact": "descriptive_evidence_added_explicit_adequacy_review_required"
+      }
+    }
+  ],
+  "privacy": {
+    "rawImagesPersistedInRepository": false,
+    "rawImagesPersistedInEvidencePacket": false,
+    "localPathsPersisted": false,
+    "sourceImageSha256ReceiptsOnly": true
+  },
+  "authority": {
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false,
+    "adequacyDecisionAuthority": false,
+    "populationAuthority": false
+  },
+  "metricMeasurement": {
+    "evidenceRef": "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json",
+    "provider": "mediapipe_face_geometry",
+    "providerVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+    "adapterId": "mediapipe-face-geometry-metric-v0",
+    "coordinateSpace": "pose_normalized_metric_3d",
+    "reportCount": 4,
+    "subjectLinkageEvidenceRefCount": 2,
+    "runManifestDigest": "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2",
+    "collectionFingerprint": "sha256:df8378fe087e17f277cd33d1f9bc97ed973c8911621b831fc5a6b76af0f7460a",
+    "rawImagesPersisted": false,
+    "rawLandmarksPersisted": false
+  }
+}

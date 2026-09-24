@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "face-space-gnm-v3-controlled-stability-evidence-v0",
+  "sourceHeadSha": "b4edcce049bfa9ee746e7c98b90aba0d7e955c81",
+  "workflow": {
+    "name": "Face Lab GNM v3 Executable PoC",
+    "runId": 35508138607,
+    "runNumber": 78,
+    "jobId": 106071291718,
+    "conclusion": "success"
+  },
+  "gnmCodeRevision": "a424b5153eec9154f3dfa5ee7f214e5817918d54",
+  "gnmModelGitBlobSha": "b49ac631e4d3388e42640555c0b25c4fd134b1b8",
+  "subjectLinkage": "controlled_3d_same_identity",
+  "syntheticOnly": true,
+  "photoSideValidation": false,
+  "normalizationAuthority": false,
+  "populationCalibrationAuthority": false,
+  "pose": {
+    "degrees": [
+      -10,
+      10
+    ],
+    "classes": [
+      "head_pitch",
+      "head_yaw",
+      "head_roll"
+    ],
+    "alignment": "rigid_kabsch_no_scale",
+    "maxObservedAbsoluteDifference": {
+      "lower_face_width_ratio": 0.003076427412261773,
+      "chin_height_ratio": 0.0009345927358013761,
+      "eye_spacing_ratio": 3.951691796011403e-8,
+      "eye_width_ratio": 0.000050803644682267945,
+      "eye_tilt": 0.08039396272257937,
+      "nose_width_ratio": 2.760938261348045e-8
+    },
+    "allAlignmentsImproved": true
+  },
+  "expression": {
+    "directBasisOnly": true,
+    "semanticExpressionSamplerUsed": false,
+    "variants": [
+      "lower_face_basis_positive",
+      "lower_face_basis_negative",
+      "bilateral_eye_basis_positive"
+    ],
+    "maxObservedAbsoluteDifference": {
+      "lower_face_width_ratio": 0.003098873413465486,
+      "chin_height_ratio": 0.02221899859321852,
+      "eye_spacing_ratio": 0.0006313509053411659,
+      "eye_width_ratio": 0.002462134516060227,
+      "eye_tilt": 0.0008107720750456515,
+      "nose_width_ratio": 0.0032596456926984874
+    }
+  },
+  "interpretation": {
+    "controlledOperatorStressEstablished": true,
+    "realPhotoSameSubjectEvidenceEstablished": false,
+    "mediaPipePhotoPoseStabilityEstablished": false,
+    "mediaPipePhotoExpressionStabilityEstablished": false,
+    "thresholdsApplied": false,
+    "productionAuthority": false
+  }
+}

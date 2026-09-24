@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "face-space-reference-statistics-method-decision-v0",
+  "status": "selected_for_research_candidate",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "scope": "same_provider",
+  "decisionVersion": "london-set-v5-reference-method-selection-v1",
+  "referenceCorpusSummarySchemaVersion": "face-space-reference-corpus-summary-v0",
+  "supportedResearchMethods": {
+    "center": [
+      "mean",
+      "median"
+    ],
+    "scale": [
+      "standard_deviation",
+      "mad_scaled_consistent"
+    ]
+  },
+  "selectedMethod": {
+    "centerMethod": "median",
+    "scaleMethod": "mad_scaled_consistent",
+    "percentileMethod": null,
+    "thresholdMethod": null
+  },
+  "prerequisites": {
+    "structurallyValidReferenceCorpusRequired": true,
+    "lockedHoldoutRequired": true,
+    "realPhotoPoseExpressionStabilityRequiredForNormalizationReadiness": true,
+    "methodSelectionEvidenceRequired": true
+  },
+  "rules": [
+    "This contract records the explicit same-provider research method selection; it does not grant Production, normalization, threshold, Archetype, or style authority.",
+    "Reference statistics cannot create a normalization candidate without a versioned selected_for_research_candidate decision.",
+    "Supported method names are implementation-supported research families, not a conclusion that any method is empirically preferred.",
+    "Percentiles, thresholds, Archetype boundaries, and Production activation remain unauthorized.",
+    "The holdout split must remain excluded from method fitting and reference-statistics estimation.",
+    "A selected_for_research_candidate decision must be linked to a descriptive comparison packet and exact reference-split fingerprint.",
+    "Method selection must be an explicit versioned research decision; the comparison packet cannot auto-select or rank a winner.",
+    "The locked holdout split must not be used to select the center/scale method."
+  ],
+  "selectionEvidence": {
+    "comparisonPacketRequired": true,
+    "comparisonPacketFingerprintRequired": true,
+    "exactReferenceSplitFingerprintRequired": true,
+    "evidenceRefRequired": true,
+    "selectionRationaleRequired": true,
+    "holdoutUsedForSelectionMustBeFalse": true,
+    "automaticWinnerSelectedMustBeFalse": true,
+    "comparisonVersion": "london-set-v5-reference-method-comparison-v1",
+    "comparisonPacketFingerprint": "sha256:76f346b6b284b32af63db3171f654e12cf70d91470b18e34502a199d2d5a3726",
+    "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "decisionRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json"
+  },
+  "currentStatistics": {
+    "referenceStatisticsPresent": true,
+    "version": "london-set-v5-reference-statistics-v1",
+    "statisticsRef": "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json",
+    "referenceSplitOnly": true,
+    "referenceSampleCount": 82,
+    "holdoutSampleCountExcluded": 20,
+    "centerMethod": "median",
+    "scaleMethod": "mad_scaled_consistent",
+    "sourceReferenceSplitFingerprint": "sha256:6f9a051dd204db73e35a2866aebdeb49f83a8e0ad557d97c3036427af5d44ccf",
+    "productionAuthority": false,
+    "normalizationAuthority": false,
+    "thresholdAuthority": false
+  }
+}

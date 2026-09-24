@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "face-lab-manual-roll-capture-spec-v0",
+  "nuisanceClass": "head_roll",
+  "captureSetRef": "consent://bejewely-face-lab/manual-roll/session-001",
+  "usageScope": "BEJEWELY Face Lab commercial research validation only",
+  "commercialResearchUseAuthorized": true,
+  "subjects": [
+    {
+      "subjectId": "subject_001",
+      "consentEvidenceRef": "consent://bejewely-face-lab/subject-001",
+      "sessionRef": "session_001",
+      "sameSession": true,
+      "explicitConsent": true,
+      "biometricIdentityMatchPerformed": false,
+      "syntheticRotationApplied": false,
+      "warpAugmentationApplied": false,
+      "neutralFront": {
+        "path": "C:/replace-with-transient-path/subject_001/front.jpg"
+      },
+      "rollLeft": {
+        "path": "C:/replace-with-transient-path/subject_001/roll-left.jpg"
+      },
+      "rollRight": {
+        "path": "C:/replace-with-transient-path/subject_001/roll-right.jpg"
+      }
+    }
+  ]
+}

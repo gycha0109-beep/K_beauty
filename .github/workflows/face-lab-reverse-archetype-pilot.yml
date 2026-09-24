@@ -1,0 +1,351 @@
+name: Face Lab - Reverse Archetype Pilot Guard
+run-name: "[WT:face-research] Face Lab - Reverse Archetype Pilot Guard"
+
+on:
+  pull_request:
+    paths:
+      - "lib/face-lab-face-space-3d-research.js"
+      - "lib/face-lab-photo-geometry-research.js"
+      - "lib/face-lab-mediapipe-metric-geometry.js"
+      - "lib/face-lab-photo-geometry-stability.js"
+      - "lib/face-lab-real-photo-stability-evidence.js"
+      - "lib/face-lab-real-photo-stability-adequacy.js"
+      - "lib/face-lab-real-photo-stability-adequacy-decision.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
+      - "lib/face-lab-real-photo-stability-run-manifest.js"
+      - "lib/face-lab-face-space-normalization-research.js"
+      - "lib/face-lab-real-photo-stability-adequacy-review.js"
+      - "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json"
+      - "evidence/facelab/face-space-normalization/v0/holdout-diagnostic.contract.json"
+      - "evidence/facelab/face-space-normalization/v0/readiness.contract.json"
+      - "lib/face-lab-face-space-reference-corpus.js"
+      - "lib/face-lab-reference-corpus-source-manifest.js"
+      - "lib/face-lab-reference-corpus-run-output.js"
+      - "lib/face-lab-reference-corpus-adequacy.js"
+      - "lib/face-lab-reference-corpus-review-packet.js"
+      - "lib/face-lab-source-manifest-scaffold.js"
+      - "lib/face-lab-london-set-v5-intake.js"
+      - "lib/face-lab-normalization-review-packet-run-output.js"
+      - "lib/face-lab-reference-statistics-research.js"
+      - "lib/face-lab-reference-method-comparison-research.js"
+      - "lib/face-lab-reference-method-selection-research.js"
+      - "lib/face-lab-normalization-holdout-research.js"
+      - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
+      - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
+      - "scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs"
+      - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-evidence.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-adequacy.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-adequacy-decision.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-review-packet.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs"
+      - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
+      - "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
+      - "evidence/facelab/runtime/offline-runtime-export.request"
+      - "scripts/verify-face-lab-photo-geometry-stability.mjs"
+      - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
+      - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
+      - "scripts/verify-face-lab-reference-corpus-source-manifest.mjs"
+      - "scripts/verify-face-lab-reference-corpus-run-output.mjs"
+      - "scripts/verify-face-lab-reference-corpus-adequacy.mjs"
+      - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
+      - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
+      - "scripts/verify-face-lab-london-set-v5-intake.mjs"
+      - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
+      - "scripts/verify-face-lab-london-set-v5-split-plan.mjs"
+      - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
+      - "scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-statistics.json"
+      - "evidence/facelab/face-space-normalization/v0/reference-statistics-method.contract.json"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-selection.json"
+      - "evidence/facelab/face-space-normalization/v0/reference-method-comparison.contract.json"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-method-comparison.json"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-review-packet.json"
+      - "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy-evidence.json"
+      - "evidence/facelab/face-space-normalization/v0/reference-corpus-adequacy.contract.json"
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
+      - ".github/workflows/face-lab-london-measurement.yml"
+      - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
+      - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
+      - ".github/workflows/face-lab-london-source-receipts.yml"
+      - "scripts/verify-face-lab-runner-cli-contract.mjs"
+      - "scripts/build-face-lab-normalization-review-packet.mjs"
+      - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
+      - "scripts/scaffold-face-lab-source-manifest.mjs"
+      - "scripts/run-face-lab-reference-corpus-measurement.mjs"
+      - "scripts/verify-face-lab-reference-statistics-method.mjs"
+      - "scripts/verify-face-lab-reference-statistics-estimator.mjs"
+      - "scripts/verify-face-lab-reference-method-comparison.mjs"
+      - "scripts/verify-face-lab-reference-method-selection.mjs"
+      - "scripts/verify-face-lab-normalization-holdout-diagnostic.mjs"
+      - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
+      - "evidence/facelab/source-intake/**"
+      - "evidence/facelab/photo-geometry/**"
+      - "evidence/facelab/face-space-normalization/**"
+      - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
+      - "public/facelab/hosted-review/v1/assets/**"
+      - "evidence/facelab/structural-measurement/**"
+      - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
+      - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
+      - "scripts/face-lab-gnm-v3-poc.py"
+      - ".github/workflows/face-lab-gnm-v3-poc.yml"
+      - "evidence/facelab/face-space-3d/**"
+      - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
+      - "docs/domain/facelab/face-lab-external-research-dependency-register-v1.md"
+      - "docs/domain/facelab/FACE_LAB_MASTER_SPEC.md"
+      - "docs/domain/facelab/FACE_LAB_CURRENT_STATE.md"
+      - "docs/domain/facelab/FACE_LAB_EVALUATION_STRATEGY.md"
+      - "lib/face-lab-reverse-archetype-research.js"
+      - "scripts/verify-face-lab-reverse-archetype-pilot.mjs"
+      - "scripts/face-lab-reverse-archetype-collection.mjs"
+      - "evidence/facelab/reverse-archetype/**"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2-pilot-v1.md"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md"
+      - "docs/domain/facelab/face-lab-face-space-style-compatibility-architecture-v1.md"
+      - ".github/workflows/face-lab-reverse-archetype-pilot.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "lib/face-lab-face-space-3d-research.js"
+      - "lib/face-lab-photo-geometry-research.js"
+      - "lib/face-lab-mediapipe-metric-geometry.js"
+      - "lib/face-lab-photo-geometry-stability.js"
+      - "lib/face-lab-real-photo-stability-evidence.js"
+      - "lib/face-lab-real-photo-stability-adequacy.js"
+      - "lib/face-lab-real-photo-stability-adequacy-decision.js"
+      - "lib/face-lab-real-photo-stability-review-packet.js"
+      - "lib/face-lab-real-photo-stability-run-manifest.js"
+      - "lib/face-lab-face-space-normalization-research.js"
+      - "lib/face-lab-face-space-reference-corpus.js"
+      - "lib/face-lab-reference-corpus-source-manifest.js"
+      - "lib/face-lab-reference-corpus-run-output.js"
+      - "lib/face-lab-reference-corpus-adequacy.js"
+      - "lib/face-lab-reference-corpus-review-packet.js"
+      - "lib/face-lab-source-manifest-scaffold.js"
+      - "lib/face-lab-london-set-v5-intake.js"
+      - "lib/face-lab-normalization-review-packet-run-output.js"
+      - "lib/face-lab-reference-statistics-research.js"
+      - "lib/face-lab-reference-method-comparison-research.js"
+      - "lib/face-lab-reference-method-selection-research.js"
+      - "lib/face-lab-normalization-holdout-research.js"
+      - "scripts/verify-face-lab-photo-geometry-runtime.mjs"
+      - "scripts/verify-face-lab-photo-geometry-image-e2e.mjs"
+      - "scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs"
+      - "scripts/verify-face-lab-photo-geometry-stability-contract.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-evidence.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-adequacy.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-adequacy-decision.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-review-packet.mjs"
+      - "scripts/verify-face-lab-real-photo-stability-run-manifest.mjs"
+      - "scripts/run-face-lab-real-photo-stability-pairs.mjs"
+      - "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
+      - "scripts/verify-face-lab-photo-geometry-stability.mjs"
+      - "scripts/verify-face-lab-face-space-normalization-readiness.mjs"
+      - "scripts/verify-face-lab-face-space-reference-corpus.mjs"
+      - "scripts/verify-face-lab-reference-corpus-source-manifest.mjs"
+      - "scripts/verify-face-lab-reference-corpus-run-output.mjs"
+      - "scripts/verify-face-lab-reference-corpus-adequacy.mjs"
+      - "scripts/verify-face-lab-reference-corpus-review-packet.mjs"
+      - "scripts/verify-face-lab-source-manifest-scaffold.mjs"
+      - "scripts/verify-face-lab-london-set-v5-intake.mjs"
+      - "scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs"
+      - "scripts/verify-face-lab-london-set-v5-split-plan.mjs"
+      - "scripts/build-face-lab-london-set-v5-measurement-manifests.mjs"
+      - "scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs"
+      - "evidence/facelab/face-space-normalization/v0/london-set-v5-reference-corpus-run-output.json"
+      - "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json"
+      - ".github/workflows/face-lab-london-measurement.yml"
+      - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
+      - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
+      - ".github/workflows/face-lab-london-source-receipts.yml"
+      - "scripts/verify-face-lab-runner-cli-contract.mjs"
+      - "scripts/build-face-lab-normalization-review-packet.mjs"
+      - "scripts/verify-face-lab-normalization-review-packet-run-output.mjs"
+      - "scripts/scaffold-face-lab-source-manifest.mjs"
+      - "scripts/run-face-lab-reference-corpus-measurement.mjs"
+      - "scripts/verify-face-lab-reference-statistics-method.mjs"
+      - "scripts/verify-face-lab-reference-statistics-estimator.mjs"
+      - "scripts/verify-face-lab-reference-method-comparison.mjs"
+      - "scripts/verify-face-lab-reference-method-selection.mjs"
+      - "scripts/verify-face-lab-normalization-holdout-diagnostic.mjs"
+      - "scripts/verify-face-lab-photo-geometry-bridge.mjs"
+      - "evidence/facelab/source-intake/**"
+      - "evidence/facelab/photo-geometry/**"
+      - "evidence/facelab/face-space-normalization/**"
+      - "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
+      - "public/facelab/hosted-review/v1/assets/**"
+      - "evidence/facelab/structural-measurement/**"
+      - "docs/domain/facelab/face-lab-photo-geometry-measurement-bridge-v0.md"
+      - "scripts/verify-face-lab-face-space-3d-adapter.mjs"
+      - "scripts/face-lab-gnm-v3-poc.py"
+      - ".github/workflows/face-lab-gnm-v3-poc.yml"
+      - "evidence/facelab/face-space-3d/**"
+      - "docs/domain/facelab/face-lab-face-space-3d-adapter-v0.md"
+      - "docs/domain/facelab/face-lab-external-research-dependency-register-v1.md"
+      - "docs/domain/facelab/FACE_LAB_MASTER_SPEC.md"
+      - "docs/domain/facelab/FACE_LAB_CURRENT_STATE.md"
+      - "docs/domain/facelab/FACE_LAB_EVALUATION_STRATEGY.md"
+      - "lib/face-lab-reverse-archetype-research.js"
+      - "scripts/verify-face-lab-reverse-archetype-pilot.mjs"
+      - "scripts/face-lab-reverse-archetype-collection.mjs"
+      - "evidence/facelab/reverse-archetype/**"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2-pilot-v1.md"
+      - "docs/domain/facelab/face-lab-reverse-archetype-r-a2a-metadata-collection-runbook-v1.md"
+      - "docs/domain/facelab/face-lab-face-space-style-compatibility-architecture-v1.md"
+      - ".github/workflows/face-lab-reverse-archetype-pilot.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: face-lab-reverse-archetype-pilot-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          ACTUAL="$(git rev-parse HEAD)"
+          test "$ACTUAL" = "$EXPECTED"
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Verify reverse archetype pilot boundary
+        run: node scripts/verify-face-lab-reverse-archetype-pilot.mjs
+      - name: Verify R-A2A collection plan CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs --plan > /dev/null
+      - name: Verify R-A2A collection ledger CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
+      - name: Verify R-A2A next-task CLI
+        run: node scripts/face-lab-reverse-archetype-collection.mjs --next evidence/facelab/reverse-archetype/pilot-v1/collection-ledger.json > /dev/null
+      - name: Verify FaceSpace3DAdapter v0 contract
+        run: node scripts/verify-face-lab-face-space-3d-adapter.mjs
+      - name: Verify photo geometry measurement bridge
+        run: node scripts/verify-face-lab-photo-geometry-bridge.mjs
+      - name: Verify MediaPipe metric geometry runtime parity
+        run: node scripts/verify-face-lab-photo-geometry-runtime.mjs
+      - name: Install actual-image Face Landmarker E2E harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNTIME_ROOT="$RUNNER_TEMP/face-lab-image-e2e-runtime"
+          mkdir -p "$RUNTIME_ROOT"
+          npm install --prefix "$RUNTIME_ROOT" --ignore-scripts --no-audit --no-fund playwright-core@1.59.1
+          echo "FACE_LAB_IMAGE_E2E_RUNTIME_ROOT=$RUNTIME_ROOT" >> "$GITHUB_ENV"
+      - name: Prepare transient offline Face Lab runtime export
+        if: ${{ hashFiles('evidence/facelab/runtime/offline-runtime-export.request') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNTIME_ROOT="$RUNNER_TEMP/face-lab-image-e2e-runtime"
+          EXPORT_ROOT="$RUNNER_TEMP/face-lab-offline-runtime-export"
+          npm install --prefix "$RUNTIME_ROOT" --ignore-scripts --no-audit --no-fund @mediapipe/tasks-vision@0.10.35
+          curl --fail --location --retry 3 \
+            "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task" \
+            --output "$RUNTIME_ROOT/face_landmarker.task"
+          echo "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff  $RUNTIME_ROOT/face_landmarker.task" | sha256sum --check -
+          mkdir -p "$EXPORT_ROOT/runtime" "$EXPORT_ROOT/repo/scripts" "$EXPORT_ROOT/repo/lib"
+          cp -a "$RUNTIME_ROOT/." "$EXPORT_ROOT/runtime/"
+          cp scripts/run-face-lab-real-photo-stability-pairs.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp scripts/build-face-lab-normalization-review-packet.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp scripts/build-face-lab-complete-stability-evidence.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp scripts/verify-face-lab-complete-stability-evidence.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp scripts/build-face-lab-real-photo-stability-adequacy-review.mjs "$EXPORT_ROOT/repo/scripts/"
+          cp lib/face-lab-*.js "$EXPORT_ROOT/repo/lib/"
+          mkdir -p "$EXPORT_ROOT/repo/evidence"
+          cp -a evidence/facelab "$EXPORT_ROOT/repo/evidence/"
+          cp package.json "$EXPORT_ROOT/repo/"
+      - name: Upload transient offline Face Lab runtime export
+        if: ${{ hashFiles('evidence/facelab/runtime/offline-runtime-export.request') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: face-lab-offline-runtime-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/face-lab-offline-runtime-export
+          retention-days: 1
+          if-no-files-found: error
+      - name: Verify actual-image Face Landmarker bridge
+        run: node scripts/verify-face-lab-photo-geometry-image-e2e.mjs
+      - name: Verify 14-fixture photo geometry coverage
+        run: node scripts/verify-face-lab-photo-geometry-multi-fixture-coverage.mjs
+      - name: Verify photo geometry stability contract
+        run: node scripts/verify-face-lab-photo-geometry-stability-contract.mjs
+      - name: Verify real-photo same-subject evidence gate
+        run: node scripts/verify-face-lab-real-photo-stability-evidence.mjs
+      - name: Verify real-photo stability adequacy boundary
+        run: node scripts/verify-face-lab-real-photo-stability-adequacy.mjs
+      - name: Verify real-photo stability adequacy decision boundary
+        run: node scripts/verify-face-lab-real-photo-stability-adequacy-decision.mjs
+      - name: Verify real-photo stability review packet
+        run: node scripts/verify-face-lab-real-photo-stability-review-packet.mjs
+      - name: Verify real-photo stability run manifest boundary
+        run: node scripts/verify-face-lab-real-photo-stability-run-manifest.mjs
+      - name: Syntax check real-photo stability pair runner
+        run: node --check scripts/run-face-lab-real-photo-stability-pairs.mjs
+      - name: Verify actual-image nuisance stability harness
+        run: node scripts/verify-face-lab-photo-geometry-stability.mjs
+      - name: Verify Face Space normalization readiness
+        run: node scripts/verify-face-lab-face-space-normalization-readiness.mjs
+      - name: Verify Face Space general-face reference corpus boundary
+        run: node scripts/verify-face-lab-face-space-reference-corpus.mjs
+      - name: Verify Face Space reference corpus source manifest
+        run: node scripts/verify-face-lab-reference-corpus-source-manifest.mjs
+      - name: Verify Face Space reference corpus runner output
+        run: node scripts/verify-face-lab-reference-corpus-run-output.mjs
+      - name: Verify Face Space reference corpus adequacy boundary
+        run: node scripts/verify-face-lab-reference-corpus-adequacy.mjs
+      - name: Verify Face Space reference corpus review packet
+        run: node scripts/verify-face-lab-reference-corpus-review-packet.mjs
+      - name: Verify Face Lab London Set v5 source intake boundary
+        run: node scripts/verify-face-lab-london-set-v5-source-intake.mjs
+      - name: Verify Face Lab London Set v5 front intake planner
+        run: node scripts/verify-face-lab-london-set-v5-intake.mjs
+      - name: Verify Face Lab London Set v5 upstream front inventory
+        run: node scripts/verify-face-lab-london-set-v5-upstream-inventory.mjs
+      - name: Verify Face Lab London Set v5 frozen split plan
+        run: node scripts/verify-face-lab-london-set-v5-split-plan.mjs
+      - name: Syntax check London measurement manifest builder
+        run: node --check scripts/build-face-lab-london-set-v5-measurement-manifests.mjs
+      - name: Verify London real measurement evidence
+        run: node scripts/verify-face-lab-london-set-v5-measurement-evidence.mjs
+      - name: Syntax check London source receipt builder
+        run: node --check scripts/build-face-lab-london-set-v5-front-receipts.mjs
+      - name: Syntax check London source receipt verifier
+        run: node --check scripts/verify-face-lab-london-set-v5-front-receipts.mjs
+      - name: Verify Face Lab source manifest scaffold
+        run: node scripts/verify-face-lab-source-manifest-scaffold.mjs
+      - name: Syntax check Face Lab source manifest scaffold CLI
+        run: node --check scripts/scaffold-face-lab-source-manifest.mjs
+      - name: Smoke Face Lab research runner validate-only CLIs
+        run: node scripts/verify-face-lab-runner-cli-contract.mjs
+      - name: Verify Face Lab run-output review packet bridge
+        run: node scripts/verify-face-lab-normalization-review-packet-run-output.mjs
+      - name: Syntax check Face Lab review packet builder CLI
+        run: node --check scripts/build-face-lab-normalization-review-packet.mjs
+      - name: Syntax check Face Space reference corpus measurement runner
+        run: node --check scripts/run-face-lab-reference-corpus-measurement.mjs
+      - name: Verify Face Space reference statistics method boundary
+        run: node scripts/verify-face-lab-reference-statistics-method.mjs
+      - name: Verify Face Space reference statistics estimator
+        run: node scripts/verify-face-lab-reference-statistics-estimator.mjs
+      - name: Verify Face Space reference method comparison
+        run: node scripts/verify-face-lab-reference-method-comparison.mjs
+      - name: Verify Face Space reference method selection boundary
+        run: node scripts/verify-face-lab-reference-method-selection.mjs
+      - name: Verify Face Space normalization holdout diagnostic
+        run: node scripts/verify-face-lab-normalization-holdout-diagnostic.mjs
+      - name: Compile GNM v3 PoC runner
+        run: python -m py_compile scripts/face-lab-gnm-v3-poc.py

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "face-lab-photo-geometry-image-e2e-v0",
+  "productionAuthority": false,
+  "executionBoundary": "offline_research_ci",
+  "tasksVision": {
+    "package": "@mediapipe/tasks-vision",
+    "version": "0.10.35",
+    "moduleUrl": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs",
+    "wasmRoot": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm"
+  },
+  "model": {
+    "url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+    "sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff"
+  },
+  "fixture": {
+    "sampleId": "hci_7712309789633997afb295f5",
+    "path": "public/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png",
+    "sha256": "0b081b7ba155245a6f7391058392e1824dcc94c8a6b9e9ffd157f8ac72605be5",
+    "width": 1254,
+    "height": 1254,
+    "authorityPath": "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
+  },
+  "runtime": {
+    "playwrightCoreVersion": "1.59.1",
+    "browser": "system_google_chrome",
+    "runningMode": "IMAGE",
+    "numFaces": 1,
+    "expectedMinimumLandmarks": 468
+  },
+  "privacy": {
+    "sourceImageCopied": false,
+    "sourceImagePersistedByHarness": false,
+    "identityEmbeddingCreated": false,
+    "resultPersistence": false
+  }
+}

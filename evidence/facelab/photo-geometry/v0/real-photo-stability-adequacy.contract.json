@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "face-lab-real-photo-stability-adequacy-contract-v0",
+  "status": "explicit_decision_additional_evidence_required",
+  "productionAuthority": false,
+  "normalizationAuthority": false,
+  "thresholdAuthority": false,
+  "purpose": "Require an explicit versioned adequacy review of exact real-photo same-subject pose/expression stability evidence before it can satisfy Face Space normalization readiness.",
+  "rules": [
+    "Structural coverage of head_yaw, head_pitch, head_roll, and expression is necessary but not sufficient for readiness.",
+    "Adequacy must be bound to the exact stability-collection fingerprint and source run-manifest digests.",
+    "Measurement drift, nuisance coverage, subject-linkage provenance, and capture limitations must be explicitly reviewed.",
+    "No numeric stability threshold is invented by this contract.",
+    "Automatic adequacy inference from report count or nuisance-class coverage is forbidden.",
+    "Adequacy grants provisional research gating only and no Production normalization authority.",
+    "The adequacy decision must be bound to a descriptive review packet generated from the exact stability collection.",
+    "The review packet must carry observed drift and provenance without thresholds, automatic pass/fail, or ranking."
+  ],
+  "currentEvidence": {
+    "realPhotoReportCollectionPresent": true,
+    "sourceReportCount": 492,
+    "collectionFingerprint": "sha256:aca9b072b8af2104a8c1b220f92ddc5ce5c28dfbe11e68dc6b102ad17db6f33c",
+    "sourceRunManifestDigests": [
+      "sha256:0c147ca490b44f66a898984163b64eab4b81451b36c92d2ad680f1dc939091b2",
+      "sha256:6263218d9c0b6d1882d041ec22efd429934fa0a190d939c3179fb322f91c6807",
+      "sha256:743f0fc2eee3f4609a1e3f865a6a4d0e648bcecd80df68ca5a6a1fa714c60944",
+      "sha256:cf9bd3df8f5755e6b66645695d984e15e487c8f9c4b30353d10f4fb189eb342a",
+      "sha256:fecf15116e0c22d3998ec8a411302376181efe56a09f7b26739a5f2f5f6fad55"
+    ],
+    "coveredNuisanceClasses": [
+      "expression",
+      "head_pitch",
+      "head_roll",
+      "head_yaw"
+    ],
+    "missingNuisanceClasses": [],
+    "completeNuisanceCoverage": true,
+    "descriptiveReviewPacketPresent": true,
+    "reviewPacketRef": "generated://face-lab/real-photo-expression-yaw-pitch-roll-stability-review-v2",
+    "reviewPacketVersion": "real-photo-expression-yaw-pitch-roll-stability-review-v2",
+    "reviewPacketFingerprint": "sha256:4250f183e5f25a9c863fe8d5592f6da60a837d9a7f3009d4e33b9a9f54eb8233",
+    "componentEvidence": {
+      "expression": {
+        "runOutputRef": "evidence/facelab/photo-geometry/v0/london-set-v5-expression-stability-run-output.json",
+        "reportCount": 102,
+        "collectionFingerprint": "sha256:915f3c17833e7072e5e3cd75d48b30a9efc7b3ef28c163f433ab9f457573a77a"
+      },
+      "headYaw": {
+        "runOutputRef": "evidence/facelab/photo-geometry/v0/london-set-v5-yaw-stability-run-output.json",
+        "reportCount": 204,
+        "collectionFingerprint": "sha256:61624a0cbd29068b6a9ddb1c5be44f7b9b2ebd6fb7f122e0b5b8b91bb8207689"
+      },
+      "headPitch": {
+        "runOutputRef": "evidence/facelab/photo-geometry/v0/pointing04-pitch-stability-run-output.json",
+        "reportCount": 180,
+        "collectionFingerprint": "sha256:c408b1173613b23a99a12f5bfe6b8ac562bbde78243959091ccb7f07acfd83a4"
+      },
+      "headRoll": {
+        "runOutputRefs": [
+          "evidence/facelab/photo-geometry/v0/manual-roll-stability-run-output.json",
+          "evidence/facelab/photo-geometry/v0/supplemental-roll-stability-run-output.json"
+        ],
+        "historicalReviewPacketRef": "evidence/facelab/photo-geometry/v0/manual-roll-stability-review-packet.json",
+        "reportCount": 6,
+        "governedCaptureReportCount": 2,
+        "supplementalReportCount": 4,
+        "subjectLinkageEvidenceRefCount": 3,
+        "collectionFingerprint": "sha256:872b8dcafa9d20ac93139e199e9b4e42a8c5120b0df835a2fe3b08cf71e73a54"
+      }
+    },
+    "adequacyDecisionPresent": true,
+    "status": "additional_evidence_required",
+    "descriptiveAdequacyReviewPresent": true,
+    "descriptiveAdequacyReviewSchemaVersion": "face-lab-real-photo-stability-adequacy-review-v1",
+    "descriptiveAdequacyReviewVersion": "real-photo-stability-adequacy-review-v2",
+    "descriptiveAdequacyReviewFingerprint": "sha256:e4ced816dedfcdb5948ccbb233052d10ef9d16183580f0cda40bc4ef62c16273",
+    "descriptiveAdequacyReviewStatus": "descriptive_review_complete_decision_separate",
+    "adequacyDecisionRef": "evidence/facelab/photo-geometry/v0/real-photo-stability-adequacy-decision.json",
+    "adequacyDecisionVersion": "real-photo-stability-adequacy-decision-v2",
+    "adequacyDecisionCode": "ADDITIONAL_EVIDENCE_REQUIRED",
+    "provisionalResearchGateGranted": false,
+    "headRollGovernance": {
+      "subjectLinkageEvidenceRefCount": 3,
+      "sameSessionCaptureProvenanceVerifiedForAll": false,
+      "researchUseAuthorizationVerifiedForAll": false,
+      "holdReasons": [
+        "head_roll_same_session_capture_provenance_unverified",
+        "head_roll_research_use_authorization_unverified"
+      ]
+    }
+  },
+  "reviewPacket": {
+    "schemaVersion": "face-lab-real-photo-stability-review-packet-v0",
+    "requiredForAdequacyDecision": true,
+    "exactCollectionFingerprintRequired": true,
+    "exactReviewPacketFingerprintRequired": true,
+    "descriptiveOnly": true,
+    "thresholdsApplied": false,
+    "automaticPassFail": false,
+    "automaticRanking": false
+  },
+  "decisionContract": {
+    "schemaVersion": "face-lab-real-photo-stability-adequacy-decision-v1",
+    "allowedStatuses": [
+      "adequate_for_provisional_research",
+      "hold_for_more_evidence",
+      "blocked_by_evidence_integrity"
+    ],
+    "decisionMode": "explicit_manual_research_review",
+    "exactDescriptiveReviewFingerprintRequired": true,
+    "automaticAdequacyInferenceForbidden": true,
+    "numericThresholdInventionForbidden": true,
+    "holdDoesNotGrantProvisionalResearchGate": true,
+    "actualDecisionPresent": true,
+    "integrityBlockedDoesNotGrantProvisionalResearchGate": true
+  }
+}

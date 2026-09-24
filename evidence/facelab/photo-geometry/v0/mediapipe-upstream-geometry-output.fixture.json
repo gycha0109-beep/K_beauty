@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "face-lab-photo-geometry-metric-landmarks-v0",
+  "sampleId": "mediapipe_upstream_face_geometry_expected_out_v0",
+  "source": "mediapipe_face_geometry",
+  "sourceVersion": "google-ai-edge/mediapipe@20e8f2ae3365d46fa02037b54911b72e13494809",
+  "coordinateSpace": "pose_normalized_metric_3d",
+  "landmarkTopology": 468,
+  "faceCount": 1,
+  "poseNormalized": true,
+  "metricGeometry": true,
+  "sourceImagePersisted": false,
+  "fixtureOnly": true,
+  "landmarks": {
+    "33": {
+      "x": -4.429368,
+      "y": 2.779272,
+      "z": 2.6971092
+    },
+    "94": {
+      "x": -0.07802707,
+      "y": -2.6862755,
+      "z": 6.828205
+    },
+    "98": {
+      "x": -2.1424758,
+      "y": -1.9390469,
+      "z": 5.461006
+    },
+    "133": {
+      "x": -1.6283238,
+      "y": 2.5257816,
+      "z": 3.2109756
+    },
+    "152": {
+      "x": -0.13197199,
+      "y": -10.44121,
+      "z": 4.5053177
+    },
+    "172": {
+      "x": -5.81496,
+      "y": -5.1643467,
+      "z": 0.16641235
+    },
+    "234": {
+      "x": -7.68095,
+      "y": 2.35149,
+      "z": -2.5189285
+    },
+    "263": {
+      "x": 4.5487647,
+      "y": 2.8514538,
+      "z": 2.6669998
+    },
+    "327": {
+      "x": 2.0251384,
+      "y": -1.8861618,
+      "z": 5.4707336
+    },
+    "362": {
+      "x": 1.7810742,
+      "y": 2.5902653,
+      "z": 3.1926994
+    },
+    "397": {
+      "x": 5.8325844,
+      "y": -5.1295977,
+      "z": 0.12055206
+    },
+    "454": {
+      "x": 7.6290493,
+      "y": 2.3723392,
+      "z": -2.5805435
+    }
+  },
+  "provenance": {
+    "repository": "google-ai-edge/mediapipe",
+    "revision": "20e8f2ae3365d46fa02037b54911b72e13494809",
+    "sourcePath": "mediapipe/tasks/testdata/vision/face_geometry_expected_out.pbtxt",
+    "sourceInputPath": "mediapipe/tasks/testdata/vision/face_blendshapes_in_landmarks.prototxt",
+    "upstreamTestPath": "mediapipe/tasks/cc/vision/face_geometry/face_geometry_from_landmarks_graph_test.cc",
+    "upstreamImageSize": {
+      "width": 820,
+      "height": 1024
+    },
+    "upstreamEnvironment": {
+      "origin": "TOP_LEFT_CORNER",
+      "verticalFovDegrees": 63,
+      "nearPlaneCm": 1,
+      "farPlaneCm": 10000
+    },
+    "note": "Selected XYZ vertices from MediaPipe's own expected FaceGeometry graph output. UV values, image bytes, identity data, and unused vertices are not copied."
+  }
+}

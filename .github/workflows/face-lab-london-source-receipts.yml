@@ -1,0 +1,76 @@
+name: Face Lab - London Source Receipts
+run-name: "[WT:face-research] Face Lab - London Source Receipts"
+
+on:
+  pull_request:
+    paths:
+      - "evidence/facelab/source-intake/v0/london-set-v5-front-upstream-inventory.json"
+      - "scripts/build-face-lab-london-set-v5-front-receipts.mjs"
+      - "scripts/verify-face-lab-london-set-v5-front-receipts.mjs"
+      - ".github/workflows/face-lab-london-source-receipts.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "Optional CI Watchtower Track Key"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: face-lab-london-source-receipts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  receipts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact Face Lab head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Checkout pinned London front-image mirror
+        uses: actions/checkout@v7
+        with:
+          repository: debruine/webmorphR.stim
+          ref: fa8b78fda2d659bb74ce62fcd99c4407551d2a77
+          path: .research/london-source
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            inst/neutral_front
+            inst/smiling_front
+      - name: Verify pinned source checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C .research/london-source rev-parse HEAD)" = "fa8b78fda2d659bb74ce62fcd99c4407551d2a77"
+      - name: Build exact image SHA-256 receipts
+        run: node scripts/build-face-lab-london-set-v5-front-receipts.mjs .research/london-source "$RUNNER_TEMP/london-set-v5-front-receipts.json"
+      - name: Verify derived receipt packet
+        run: node scripts/verify-face-lab-london-set-v5-front-receipts.mjs "$RUNNER_TEMP/london-set-v5-front-receipts.json"
+      - name: Emit derived receipt packet for durable freeze
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "FACE_LAB_LONDON_RECEIPT_PACKET_BEGIN"
+          cat "$RUNNER_TEMP/london-set-v5-front-receipts.json"
+          echo "FACE_LAB_LONDON_RECEIPT_PACKET_END"
+      - name: Remove transient raw source images
+        if: always()
+        shell: bash
+        run: rm -rf .research/london-source
+      - name: Upload derived receipt packet only
+        uses: actions/upload-artifact@v7
+        with:
+          name: face-lab-london-set-v5-front-receipts-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/london-set-v5-front-receipts.json
+          if-no-files-found: error
+          retention-days: 7
