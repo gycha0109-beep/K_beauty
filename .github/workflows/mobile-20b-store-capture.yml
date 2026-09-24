@@ -20,6 +20,7 @@ on:
       - ".github/workflows/mobile-20b-store-capture.yml"
       - ".github/workflows/mobile-android-runtime.yml"
   push:
+    branches: [main]
     paths:
       - "apps/mobile/app/_layout.tsx"
       - "apps/mobile/app/store-capture.tsx"
