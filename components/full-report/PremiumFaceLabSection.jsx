@@ -489,7 +489,8 @@ function FaceLabV2Result({ result, locale, onSelectRoute, onEditTarget }) {
         ...(result.hair.value.layerDirection || []),
         ...(result.hair.value.curvature || []),
         ...(result.hair.value.texture || []),
-        ...(result.hair.value.silhouette || [])
+        ...(result.hair.value.silhouette || []),
+        ...(result.hair.value.avoidOrModerate || [])
       ]
     : [];
 
