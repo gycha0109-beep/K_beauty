@@ -11,6 +11,7 @@ const routePaths = [
   new URL("../app/api/face-reading/route.js", import.meta.url)
 ];
 const visionServicePath = new URL("../lib/server/vision-observation-service.js", import.meta.url);
+const providerRuntimePath = new URL("../lib/server/openai-chat-runtime.js", import.meta.url);
 const forbiddenLogFields = ["preview", "contentPreview", "rawText", "rawContent", "responseBody", "prompt", "imageDataUrl", "token", "apiKey"];
 
 const event = buildProviderRuntimeLogEvent({
@@ -119,6 +120,20 @@ for (const routePath of routePaths) {
     for (const call of providerLogCalls) {
       assert.doesNotMatch(call, fieldPattern, `${routePath.pathname} must not pass ${field} to provider logs.`);
     }
+  }
+}
+
+const providerRuntimeSource = await readFile(providerRuntimePath, "utf8");
+assert.match(
+  providerRuntimeSource,
+  /logProviderRuntimeEvent/,
+  "shared provider runtime must route failure telemetry through the provider log allowlist."
+);
+for (const field of forbiddenLogFields) {
+  const fieldPattern = new RegExp(`\\b${field}\\s*:`, "i");
+  const failureCalls = providerRuntimeSource.match(/emitFailure\(\{[\s\S]*?\n\s*\}\);/g) || [];
+  for (const call of failureCalls) {
+    assert.doesNotMatch(call, fieldPattern, `shared provider runtime must not pass ${field} to provider logs.`);
   }
 }
 
