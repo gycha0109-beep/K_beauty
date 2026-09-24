@@ -5,10 +5,12 @@ import { buildUnavailablePremiumFaceLab, sanitizePremiumFaceLabSummary } from "@
 import { buildFaceLabV2Canonical } from "@/lib/face-lab-v2/canonical-composer";
 import { isFaceLabV2CanonicalResult } from "@/lib/face-lab-v2/result-contract";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
+import { getTargetStyleLabel } from "@/lib/face-lab-v2/target-style-registry";
 import {
-  getTargetStyleLabel,
-  getTargetStylePrototype
-} from "@/lib/face-lab-v2/target-style-registry";
+  TARGET_FINDER_ROUNDS,
+  buildTargetFinderResult,
+  getTargetFinderRound
+} from "@/lib/face-lab-v2/target-finder";
 
 const TARGET_KEYS = [
   "natural",
@@ -25,13 +27,6 @@ const TARGET_KEYS = [
   "trendy"
 ];
 
-const TARGET_FINDER_PAIRS = [
-  ["natural", "sophisticated"],
-  ["soft", "defined"],
-  ["cute_playful", "mature_calm"],
-  ["minimal", "statement_glam"],
-  ["classic", "trendy"]
-];
 
 const COPY = {
   ko: {
@@ -60,7 +55,7 @@ const COPY = {
     finderBody: "두 방향 중 더 끌리는 쪽을 골라주세요.",
     both: "둘 다 좋아요",
     neither: "둘 다 별로예요",
-    finderProgress: (index) => `${index + 1}/${TARGET_FINDER_PAIRS.length}`,
+    finderProgress: (index) => `${index + 1}/${TARGET_FINDER_ROUNDS.length}`,
     setupTitle: "어디까지 바꿔보고 싶으세요?",
     presentationTitle: "어떤 스타일 예시가 더 편한가요?",
     masculine: "남성 스타일 중심",
@@ -162,7 +157,7 @@ const COPY = {
     finderBody: "Choose the direction you prefer in each pair.",
     both: "Both",
     neither: "Neither",
-    finderProgress: (index) => `${index + 1}/${TARGET_FINDER_PAIRS.length}`,
+    finderProgress: (index) => `${index + 1}/${TARGET_FINDER_ROUNDS.length}`,
     setupTitle: "What are you willing to change?",
     presentationTitle: "Which examples feel more relevant?",
     masculine: "Masculine examples",
@@ -242,19 +237,6 @@ const COPY = {
 
 function getCopy(locale) {
   return locale === "en" ? COPY.en : COPY.ko;
-}
-
-function averageVectors(keys) {
-  const vectors = keys.map(getTargetStylePrototype).filter(Boolean);
-  if (!vectors.length) return null;
-
-  const axes = Object.keys(vectors[0]);
-  return Object.fromEntries(
-    axes.map((axis) => [
-      axis,
-      Number((vectors.reduce((sum, vector) => sum + (vector[axis] || 0), 0) / vectors.length).toFixed(3))
-    ])
-  );
 }
 
 function defaultScopes(presentationPreference) {
@@ -378,67 +360,56 @@ function LegacyFaceLab({ faceLabSummary, photoUrl, locale }) {
 
 function TargetFinder({ locale, onComplete, onBack }) {
   const copy = getCopy(locale);
-  const [round, setRound] = useState(0);
-  const [scores, setScores] = useState({});
+  const [roundIndex, setRoundIndex] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const round = getTargetFinderRound(roundIndex);
 
-  const pair = TARGET_FINDER_PAIRS[round];
+  if (!round) {
+    return null;
+  }
 
   const choose = (choice) => {
-    const nextScores = { ...scores };
-    const [a, b] = pair;
+    const nextChoices = [
+      ...choices,
+      {
+        roundId: round.roundId,
+        choice
+      }
+    ];
 
-    if (choice === "a") nextScores[a] = (nextScores[a] || 0) + 2;
-    if (choice === "b") nextScores[b] = (nextScores[b] || 0) + 2;
-    if (choice === "both") {
-      nextScores[a] = (nextScores[a] || 0) + 1;
-      nextScores[b] = (nextScores[b] || 0) + 1;
-    }
-    if (choice === "neither") {
-      nextScores[a] = (nextScores[a] || 0) - 1;
-      nextScores[b] = (nextScores[b] || 0) - 1;
-    }
-
-    setScores(nextScores);
-
-    if (round + 1 < TARGET_FINDER_PAIRS.length) {
-      setRound((value) => value + 1);
+    if (roundIndex + 1 < TARGET_FINDER_ROUNDS.length) {
+      setChoices(nextChoices);
+      setRoundIndex((value) => value + 1);
       return;
     }
 
-    const ranked = Object.entries(nextScores)
-      .sort((left, right) => right[1] - left[1])
-      .map(([key]) => key)
-      .filter((key) => TARGET_KEYS.includes(key))
-      .slice(0, 2);
-
-    const fallbackKeys = ranked.length ? ranked : ["natural", "sophisticated"];
-    onComplete({
-      candidateSetVersion: "target-finder-cards-v1",
-      candidateLabels: fallbackKeys,
-      estimatedVector: averageVectors(fallbackKeys),
-      userApproved: false
-    });
+    onComplete(buildTargetFinderResult(nextChoices));
   };
+
+  const candidates = [round.candidateA, round.candidateB];
 
   return (
     <section className="ui-card p-5 sm:p-6">
-      <p className="ui-kicker">{copy.finderProgress(round)}</p>
+      <p className="ui-kicker">{copy.finderProgress(roundIndex)}</p>
       <h3 className="ui-title mt-2 text-xl">{copy.finderTitle}</h3>
       <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.finderBody}</p>
       <div className="mt-5 grid grid-cols-2 gap-3">
-        {pair.map((key, index) => (
+        {candidates.map((candidate, index) => (
           <button
-            key={key}
+            key={candidate.candidateId}
             type="button"
             onClick={() => choose(index === 0 ? "a" : "b")}
             className="ui-card-subtle min-h-40 p-4 text-left transition hover:-translate-y-0.5"
+            data-reference-asset-key={candidate.referenceAssetKey}
           >
             <div className={`h-20 rounded-xl ${
               index === 0
                 ? "bg-gradient-to-br from-zinc-100 to-rose-100 dark:from-zinc-800 dark:to-rose-950"
                 : "bg-gradient-to-br from-zinc-100 to-violet-100 dark:from-zinc-800 dark:to-violet-950"
             }`} />
-            <p className="mt-3 text-sm font-semibold">{getTargetStyleLabel(key, locale)}</p>
+            <p className="mt-3 text-sm font-semibold">
+              {getTargetStyleLabel(candidate.targetKey, locale)}
+            </p>
           </button>
         ))}
       </div>
