@@ -1,0 +1,43 @@
+name: Face Lab - V2 Foundation
+
+run-name: "[WT:face-research] Face Lab - V2 Foundation"
+
+on:
+  pull_request:
+    paths:
+      - "lib/face-lab-v2/**"
+      - "scripts/verify-face-lab-v2-foundation.mjs"
+      - "scripts/verify-face-lab-v2-premium-wiring.mjs"
+      - "app/api/full-report/route.js"
+      - "app/api/premium/face-lab-v2/route.js"
+      - "components/full-report/PremiumFaceLabSection.jsx"
+      - "app/result/full-report/page.js"
+      - "package.json"
+      - ".github/workflows/face-lab-v2-foundation.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "lib/face-lab-v2/**"
+      - "scripts/verify-face-lab-v2-foundation.mjs"
+      - "scripts/verify-face-lab-v2-premium-wiring.mjs"
+      - "app/api/full-report/route.js"
+      - "app/api/premium/face-lab-v2/route.js"
+      - "components/full-report/PremiumFaceLabSection.jsx"
+      - "app/result/full-report/page.js"
+      - "package.json"
+      - ".github/workflows/face-lab-v2-foundation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Face Lab V2 foundation
+        run: node scripts/verify-face-lab-v2-foundation.mjs
+      - name: Verify Face Lab V2 premium wiring
+        run: node scripts/verify-face-lab-v2-premium-wiring.mjs
