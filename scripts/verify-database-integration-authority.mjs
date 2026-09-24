@@ -34,8 +34,25 @@ assert.deepEqual(contract.productionObservation?.rlsDisabledPublicTables, []);
 assert.equal(contract.productionObservation?.fullRepositoryReplayReady, false);
 
 assert.equal(new Set(migrations.map((item) => item.file)).size, migrations.length, "migration filenames must be unique");
-assert.equal(new Set(migrations.map((item) => item.version)).size, migrations.length, "migration versions must be unique");
 assert.equal(new Set(migrations.map((item) => item.semanticName)).size, migrations.length, "migration semantic names must be unique");
+
+const filesByVersion = new Map();
+for (const migration of migrations) {
+  const files = filesByVersion.get(migration.version) || [];
+  files.push(migration.file);
+  filesByVersion.set(migration.version, files);
+}
+const actualVersionCollisions = Object.fromEntries(
+  [...filesByVersion.entries()]
+    .filter(([, files]) => files.length > 1)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([version, files]) => [version, files.sort()])
+);
+assert.deepEqual(
+  actualVersionCollisions,
+  contract.replayBoundary?.knownRepositoryVersionCollisions || {},
+  "migration version collisions changed; update replay authority explicitly rather than silently accepting ambiguous history"
+);
 assert.ok(migrations.length >= contract.productionObservation.repositoryMigrationCountAtAudit, "repository migration inventory must not shrink below audited baseline");
 
 const repoBySemanticName = new Map(migrations.map((item) => [item.semanticName, item]));
