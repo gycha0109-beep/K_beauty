@@ -74,7 +74,7 @@
     },
     "aiProviderRuntime": {
       "hostWorkflow": "ai-provider-runtime.yml",
-      "mode": "canonical shared technical owner; hermetic provider transport runtime on PR/push plus explicit non-persistent live OpenAI smoke on workflow_dispatch",
+      "mode": "canonical shared technical owner after green equivalence proof; hermetic provider transport runtime on PR/push plus explicit non-persistent live OpenAI smoke on workflow_dispatch; duplicate current-main Unified Vision execution removed",
       "scripts": [
         "scripts/verify-ai-provider-runtime-boundary.mjs",
         "scripts/run-ai-provider-live-smoke.mjs",
