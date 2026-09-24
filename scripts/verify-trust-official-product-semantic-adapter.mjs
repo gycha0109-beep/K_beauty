@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { digestOfficialContent } from "../lib/trust/official-source-fetch.mjs";
+import { inspectOfficialProductSemanticSurfacesV1 } from "../lib/trust/official-source-semantic-adapter.mjs";
 
 const cases = JSON.parse(fs.readFileSync("tests/fixtures/trust-phase8g-semantic-adapter/cases.json", "utf8"));
 const torridenContext = {
@@ -27,6 +28,17 @@ assert.throws(
 assert.throws(
   () => digestOfficialContent(Buffer.from(cases.unsupported), "official-product-semantic", "v1", {}),
   /SOURCE_SEMANTIC_ADAPTER_UNSUPPORTED/
+);
+
+
+const metaOnly = Buffer.from('<html><head><meta property="og:title" content="Example Sun SPF50+ PA++++"></head><body>Example Sun</body></html>');
+const metaOnlyContext = { sourceMetadata: { direct_claim: "SPF50+ PA++++" } };
+const metaOnlyDiagnostics = inspectOfficialProductSemanticSurfacesV1(metaOnly, metaOnlyContext);
+assert.deepEqual(metaOnlyDiagnostics.anchor_probes.claims[0].surfaces, ["og_title"]);
+assert.throws(
+  () => digestOfficialContent(metaOnly, "official-product-semantic", "v1", metaOnlyContext),
+  /SOURCE_SEMANTIC_ADAPTER_REQUIRED_ANCHOR_MISSING/,
+  "diagnostic surfaces must not silently widen the immutable v1 digest contract"
 );
 
 console.log("TRUST_PHASE8G_OFFICIAL_PRODUCT_SEMANTIC_ADAPTER_VERIFIED");
