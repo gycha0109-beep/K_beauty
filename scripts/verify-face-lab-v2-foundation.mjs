@@ -161,6 +161,54 @@ assert.equal(unconfirmed.hair, null);
 assert.equal(unconfirmed.makeup, null);
 assert.equal(isFaceLabV2CanonicalResult(unconfirmed), true);
 
+const lowEffort = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    targetSelections: ["sophisticated", "chic"],
+    stylingScope: ["hair", "brow_grooming", "eyewear"],
+    changeTolerance: "minimal",
+    constraints: {
+      hair: { lengthChange: "small", dye: "no" },
+      makeup: { intensity: "light" },
+      lifestyle: { dailyMinutes: 5 },
+      hardExclusions: []
+    }
+  },
+  resultId: "fixture-face-lab-v2-low-effort"
+});
+
+assert.ok(lowEffort.routes.routes.some((route) => route.strategy === "low_effort"));
+assert.equal(lowEffort.routes.defaultRouteId, "low_effort");
+assert.equal(lowEffort.makeup.status, "not_requested");
+assert.ok(["available", "not_applicable"].includes(lowEffort.eyewear.status));
+
+const masculine = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    presentationPreference: "masculine_examples",
+    targetSelections: ["mature_calm", "minimal"],
+    stylingScope: ["hair", "brow_grooming", "eyewear", "facial_hair"],
+    constraints: {
+      hair: { lengthChange: "small", dye: "no" },
+      makeup: { intensity: "none" },
+      lifestyle: { dailyMinutes: 15 },
+      hardExclusions: []
+    }
+  },
+  resultId: "fixture-face-lab-v2-masculine"
+});
+
+assert.equal(masculine.makeup.status, "not_requested");
+assert.ok(masculine.routes.routes.length >= 2);
+assert.ok(
+  masculine.styleDelta.priorities.some(
+    (item) => item.domain === "eyewear" && item.constraintState === "allowed"
+  ),
+  "masculine/non-makeup scope must retain actionable eyewear guidance"
+);
+
 const hairBlocked = buildFaceLabV2Canonical({
   analysis,
   surveyAnswers: {
