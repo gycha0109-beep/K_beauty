@@ -54,6 +54,39 @@ function readSavedV2(faceLab) {
   };
 }
 
+function rehydrateSavedV2(data) {
+  const saved = readSavedV2(data?.face_lab);
+  if (!saved) return null;
+
+  const analysis = getFaceLabObservationAnalysis(data?.premium_report?.faceLabAnalysis);
+  if (!analysis) {
+    return {
+      ...saved,
+      canonicalV2: null
+    };
+  }
+
+  const normalized = normalizeFaceLabV2PersistencePayload(saved);
+  const canonicalV2 = buildFaceLabV2Canonical({
+    analysis,
+    surveyAnswers: normalized.surveyAnswers,
+    targetFinderResult: normalized.targetFinderResult,
+    selectedRouteId: normalized.selectedRouteId,
+    locale: data?.premium_report?.locale === "en" ? "en" : "ko",
+    resultId: data?.id || null,
+    analyzedAt: data?.premium_report?.faceLabSummary?.analyzedAt || null
+  });
+
+  return {
+    schemaVersion: SAVED_FACE_LAB_V2_VERSION,
+    surveyAnswers: normalized.surveyAnswers,
+    targetFinderResult: normalized.targetFinderResult,
+    selectedRouteId: canonicalV2.routes?.selectedRouteId || normalized.selectedRouteId || null,
+    canonicalV2,
+    updatedAt: saved.updatedAt || null
+  };
+}
+
 export async function GET(request) {
   const context = await resolvePremiumRouteContext(request);
   const { user, supabase } = context;
@@ -91,7 +124,7 @@ export async function GET(request) {
   return json({
     success: true,
     savedReportId: data.id,
-    faceLabV2: readSavedV2(data.face_lab)
+    faceLabV2: rehydrateSavedV2(data)
   });
 }
 
