@@ -8,3 +8,5 @@ begin
   end if;
 end
 $$;
+
+grant recommendation_admission_runtime to postgres;
