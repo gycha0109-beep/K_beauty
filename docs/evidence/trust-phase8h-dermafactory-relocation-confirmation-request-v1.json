@@ -1,0 +1,42 @@
+{
+  "contract": "trust-phase8h-governed-relocation-confirmation-request-v1",
+  "request_id": "phase8h-dermafactory-relocation-confirmation-v1",
+  "payload": {
+    "contract": "trust-phase8h-governed-relocation-confirmation-request-v1",
+    "expected_prestate_digest": "70aae88369b09d87e9a9a7153ad04af662f7fc069445204f2eafee0b6d5a745b",
+    "relocation_plan_digest": "9cc3c864fdeea7dde6545b607f33a30654284e6d9fef86b958e07eb012805567",
+    "qualification_contract": "trust-phase8h-source-identity-qualification-v1",
+    "qualification_digest": "0a34c3413b7431bc7ecdf8f623eef5d0d49c7afcf370e2b5025ad78cc143627f",
+    "historical_source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+    "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+    "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+    "old_binding_id": "fd3ddecc-c09a-4b12-bc96-6e6ef2b2e97c",
+    "old_review_id": "7b32a844-6e51-4476-9370-05d1859f7f5f",
+    "old_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "replacement": {
+      "source_name": "dermafactory_official",
+      "external_type": "brand_official_product_page",
+      "external_id": "official-url-sha256:fd53d973c3e55d592b6244c2770c715196991b3105d1bfd1d88c656eab6b29d9",
+      "source_url": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "market_code": "KR_US",
+      "locale": "en"
+    },
+    "authority": "ADMIN_CONFIRMATION_REQUEST_REQUIRES_DATABASE_PRESTATE_REVALIDATION",
+    "mutation_scope": [
+      "CREATE_OR_REUSE_REPLACEMENT_PRODUCT_SOURCE_BINDING",
+      "CREATE_OR_REUSE_REPLACEMENT_OFFICIAL_SOURCE_REVIEW",
+      "RETIRE_OLD_REVIEWED_BINDING_IN_SAME_TRANSACTION",
+      "APPEND_IMMUTABLE_RELOCATION_LEDGER"
+    ],
+    "forbidden_mutations": [
+      "PRODUCT_EVIDENCE_SOURCE_CANONICAL_LOCATOR",
+      "PRODUCT_EVIDENCE_SOURCE_CONTENT_DIGEST",
+      "PRODUCT_EVIDENCE_SOURCE_SUBJECT_BINDING",
+      "PRODUCT_FACT",
+      "PRODUCT_FACT_CURRENT",
+      "PRODUCT_FACT_CONFIRMATION",
+      "RECOMMENDATION_AUTHORITY",
+      "RECOMMENDATION_LOG"
+    ]
+  }
+}
