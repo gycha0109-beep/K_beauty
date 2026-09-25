@@ -28,3 +28,16 @@ The checked-in baseline records the audit authority SHA, hard safety rules, prio
 - `REVIEW`: evidence exists but no consolidation decision is authorized.
 
 `RETIRE` is intentionally not emitted in Phase A.
+
+
+## Phase B inventory policy
+
+Phase B may change workflow inventory only through `phase-b-policy.json`. The Phase A baseline remains frozen at its original 63-workflow authority snapshot.
+
+The first approved cluster is `taxonomy-ai-data-ai3-5`:
+
+- `data-ai-product-query-static.yml` owns automatic DATA-AI1-5 static verification, architecture guard, dependency installation, and production build.
+- `data-ai3-product-query-shadow.yml`, `data-ai4-provider-shadow.yml`, and `data-ai5-activation-readiness.yml` preserve their existing workflow/job names and push-only deployed runtime probes.
+- Automatic PR/push checks gate on the same-head canonical static workflow through `scripts/await-ci-workflow.mjs`.
+- Manual `workflow_dispatch` retains the prior standalone static verification path so operator-triggered checks do not depend on a separately dispatched canonical run.
+- A missing, failed, cancelled, or timed-out canonical same-head run fails closed.

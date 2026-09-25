@@ -8,6 +8,7 @@ const ROOT = process.cwd();
 const WORKFLOW_DIR = path.join(ROOT, ".github", "workflows");
 const REGISTRY_DIR = path.join(ROOT, "docs", "ci", "workflow-responsibilities");
 const BASELINE_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "phase-a-baseline.json");
+const PHASE_B_POLICY_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "phase-b-policy.json");
 const PACKAGE_PATH = path.join(ROOT, "package.json");
 const args = new Set(process.argv.slice(2));
 
@@ -142,8 +143,25 @@ function registryEntry(workflow) {
 const packageJson = JSON.parse(fs.readFileSync(PACKAGE_PATH, "utf8"));
 const packageScripts = packageJson.scripts || {};
 const baseline = JSON.parse(fs.readFileSync(BASELINE_PATH, "utf8"));
+const phaseBPolicy = fs.existsSync(PHASE_B_POLICY_PATH)
+  ? JSON.parse(fs.readFileSync(PHASE_B_POLICY_PATH, "utf8"))
+  : null;
+const approvedAddedWorkflows = phaseBPolicy?.approvedAddedWorkflows || [];
+const approvedRetiredWorkflows = phaseBPolicy?.approvedRetiredWorkflows || [];
+if (phaseBPolicy) {
+  assert.equal(phaseBPolicy.baselineWorkflowCount, baseline.expectedWorkflowCount, "Phase B baseline workflow count drift");
+  assert.equal(new Set(approvedAddedWorkflows).size, approvedAddedWorkflows.length, "Phase B added workflow list contains duplicates");
+  assert.equal(new Set(approvedRetiredWorkflows).size, approvedRetiredWorkflows.length, "Phase B retired workflow list contains duplicates");
+}
 const actual = fs.readdirSync(WORKFLOW_DIR).filter((name) => /\.ya?ml$/i.test(name)).sort();
-assert.equal(actual.length, baseline.expectedWorkflowCount, "Phase A workflow count drift requires baseline review");
+const expectedWorkflowCount = baseline.expectedWorkflowCount + approvedAddedWorkflows.length - approvedRetiredWorkflows.length;
+assert.equal(actual.length, expectedWorkflowCount, "workflow count drift requires explicit Phase B policy review");
+for (const workflow of approvedAddedWorkflows) {
+  assert.ok(actual.includes(workflow), `${workflow}: approved Phase B workflow missing`);
+}
+for (const workflow of approvedRetiredWorkflows) {
+  assert.ok(!actual.includes(workflow), `${workflow}: retired Phase B workflow still present`);
+}
 
 const graph = actual.map((workflow) => {
   const yaml = fs.readFileSync(path.join(WORKFLOW_DIR, workflow), "utf8");
@@ -254,6 +272,10 @@ const report = {
   authoritySha: baseline.authoritySha,
   generatedFromWorkingTree: true,
   workflowCount: graph.length,
+  baselineWorkflowCount: baseline.expectedWorkflowCount,
+  phaseBPolicyActive: Boolean(phaseBPolicy),
+  approvedAddedWorkflows: [...approvedAddedWorkflows].sort(),
+  approvedRetiredWorkflows: [...approvedRetiredWorkflows].sort(),
   protectedCompatibilityShims: [...protectedShims].sort(),
   graph,
   overlaps,
@@ -271,5 +293,5 @@ if (args.has("--json")) {
 }
 
 if (args.has("--check")) {
-  console.log(`CI_WORKFLOW_OVERLAP_AUDIT=PASS workflows=${graph.length} protected_shims=${protectedShims.size}`);
+  console.log(`CI_WORKFLOW_OVERLAP_AUDIT=PASS workflows=${graph.length} baseline=${baseline.expectedWorkflowCount} phase_b=${Boolean(phaseBPolicy)} protected_shims=${protectedShims.size}`);
 }

@@ -1,0 +1,14 @@
+{
+  "workflow": "data-ai-product-query-static.yml",
+  "primaryResponsibility": "product-query-ai",
+  "capabilities": [
+    "ai",
+    "backend",
+    "recommendation",
+    "static-contract",
+    "production-build"
+  ],
+  "watchtowerTrackBinding": "static:taxonomy-ai",
+  "lifecycleNameClass": "semantic",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}
