@@ -12,6 +12,9 @@ on:
       - "crawler/test-legacy-offer-import.ts"
       - "crawler/tests/verify-legacy-offer-import-local-runtime.ts"
       - "crawler/tests/verify-product-offers-local-runtime.ts"
+      - "lib/product-offer-read-path.js"
+      - "lib/product-purchase-link.js"
+      - "scripts/verify-commerce-oliveyoung-migration-presentation-contract.mjs"
       - "crawler/lib/product-integrity-audit.ts"
       - "crawler/test-product-integrity-audit.ts"
       - "crawler/package.json"
@@ -27,6 +30,9 @@ on:
       - "crawler/test-legacy-offer-import.ts"
       - "crawler/tests/verify-legacy-offer-import-local-runtime.ts"
       - "crawler/tests/verify-product-offers-local-runtime.ts"
+      - "lib/product-offer-read-path.js"
+      - "lib/product-purchase-link.js"
+      - "scripts/verify-commerce-oliveyoung-migration-presentation-contract.mjs"
       - "crawler/lib/product-integrity-audit.ts"
       - "crawler/test-product-integrity-audit.ts"
       - "crawler/package.json"
@@ -83,6 +89,9 @@ jobs:
       - name: Verify guarded legacy offer import contract
         working-directory: crawler
         run: npm run verify:legacy-offer-import
+
+      - name: Verify Offer presentation authority compatibility
+        run: node scripts/verify-commerce-oliveyoung-migration-presentation-contract.mjs
 
       - name: Prepare isolated Supabase
         shell: bash

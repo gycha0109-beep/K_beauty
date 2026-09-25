@@ -113,6 +113,7 @@ async function main(): Promise<void> {
       "--manifest",
       manifestPath,
       "--limit=1",
+      "--seller-key=oliveyoung",
       `--confirm=${LEGACY_OFFER_IMPORT_CONFIRM_TOKEN}`,
       `--expected-manifest-digest=${"0".repeat(64)}`,
     ]);
@@ -125,9 +126,15 @@ async function main(): Promise<void> {
     }
     assert.equal(afterWrongDigest.data.length, 0);
 
-    const dryRun = runApply(["--manifest", manifestPath, "--limit=1"]);
+    const dryRun = runApply([
+      "--manifest",
+      manifestPath,
+      "--limit=1",
+      "--seller-key=oliveyoung",
+    ]);
     assert.equal(dryRun.status, 0, dryRun.stderr || dryRun.stdout);
     assert.match(dryRun.stdout, /Legacy offer guarded import DRY-RUN/);
+    assert.match(dryRun.stdout, /seller_scope: oliveyoung/);
     assert.match(dryRun.stdout, /selected_rows: 1/);
     assert.match(dryRun.stdout, /database_writes: 0/);
 
@@ -139,6 +146,7 @@ async function main(): Promise<void> {
       "--manifest",
       manifestPath,
       "--limit=1",
+      "--seller-key=oliveyoung",
       `--confirm=${LEGACY_OFFER_IMPORT_CONFIRM_TOKEN}`,
       `--expected-manifest-digest=${manifest.manifestDigest}`,
     ];
@@ -185,7 +193,7 @@ async function main(): Promise<void> {
   }
 
   process.stdout.write(
-    "verify:legacy-offer-import:local-runtime PASS (wrong digest zero writes, dry-run zero writes, exact confirm one insert, null price, unknown availability, exact readback, repeat idempotent)\n",
+    "verify:legacy-offer-import:local-runtime PASS (wrong digest zero writes, seller-scoped dry-run zero writes, presentation parity, exact confirm one insert, null price, unknown availability, exact readback, repeat idempotent)\n",
   );
 }
 
