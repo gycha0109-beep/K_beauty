@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { buildUnavailablePremiumFaceLab, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import { buildFaceLabV2Canonical } from "@/lib/face-lab-v2/canonical-composer";
 import FaceLabV2Result from "@/components/full-report/face-lab/FaceLabV2Result";
@@ -505,6 +505,58 @@ export default function PremiumFaceLabSection({
   const persistQueueRef = useRef(Promise.resolve());
   const restoreInteractionRef = useRef(0);
 
+  const persistServer = useCallback((surveyAnswers, approvedFinder, routeId) => {
+    if (!savedReportId) return Promise.resolve();
+
+    const write = async () => {
+      try {
+        const accessToken = await getBrowserSupabaseAccessToken();
+        if (!accessToken) return;
+
+        const requestState = {
+          surveyAnswers,
+          targetFinderResult: approvedFinder,
+          selectedRouteId: routeId
+        };
+        const response = await fetch("/api/premium/face-lab-v2", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            savedReportId,
+            ...requestState
+          })
+        });
+        const data = await response.json().catch(() => null);
+        const serverStored = data?.faceLabV2 || null;
+
+        if (!response.ok || !serverStored?.surveyAnswers) return;
+
+        try {
+          const currentStored = JSON.parse(localStorage.getItem(storageKey) || "null");
+          if (
+            persistenceFingerprint(currentStored) !==
+            persistenceFingerprint(requestState)
+          ) {
+            return;
+          }
+
+          localStorage.setItem(storageKey, JSON.stringify({
+            surveyAnswers: serverStored.surveyAnswers,
+            targetFinderResult: serverStored.targetFinderResult || null,
+            selectedRouteId: serverStored.selectedRouteId || null,
+            updatedAt: serverStored.updatedAt || null
+          }));
+        } catch {}
+      } catch {}
+    };
+
+    persistQueueRef.current = persistQueueRef.current.then(write, write);
+    return persistQueueRef.current;
+  }, [savedReportId, storageKey]);
+
   useEffect(() => {
     if (!faceLabAnalysis || typeof window === "undefined") return;
 
@@ -600,11 +652,25 @@ export default function PremiumFaceLabSection({
               updatedAtMs(localStored) > updatedAtMs(serverStored) &&
               restoreState(localStored)
             ) {
+              void persistServer(
+                localStored.surveyAnswers,
+                localStored.targetFinderResult || null,
+                localStored.selectedRouteId || null
+              );
               return;
             }
 
             if (restoreState(serverStored)) {
               cacheServerStateLocally(serverStored);
+              return;
+            }
+
+            if (restoreState(localStored)) {
+              void persistServer(
+                localStored.surveyAnswers,
+                localStored.targetFinderResult || null,
+                localStored.selectedRouteId || null
+              );
               return;
             }
           }
@@ -619,7 +685,7 @@ export default function PremiumFaceLabSection({
     return () => {
       active = false;
     };
-  }, [faceLabAnalysis, locale, resultKey, savedReportId, storageKey]);
+  }, [faceLabAnalysis, locale, resultKey, savedReportId, storageKey, persistServer]);
 
   if (!faceLabAnalysis) {
     return <LegacyFaceLab faceLabSummary={faceLabSummary} photoUrl={photoUrl} locale={locale} />;
@@ -637,58 +703,6 @@ export default function PremiumFaceLabSection({
     } catch {
       return false;
     }
-  };
-
-  const persistServer = (surveyAnswers, approvedFinder, routeId) => {
-    if (!savedReportId) return Promise.resolve();
-
-    const write = async () => {
-      try {
-        const accessToken = await getBrowserSupabaseAccessToken();
-        if (!accessToken) return;
-
-        const requestState = {
-          surveyAnswers,
-          targetFinderResult: approvedFinder,
-          selectedRouteId: routeId
-        };
-        const response = await fetch("/api/premium/face-lab-v2", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({
-            savedReportId,
-            ...requestState
-          })
-        });
-        const data = await response.json().catch(() => null);
-        const serverStored = data?.faceLabV2 || null;
-
-        if (!response.ok || !serverStored?.surveyAnswers) return;
-
-        try {
-          const currentStored = JSON.parse(localStorage.getItem(storageKey) || "null");
-          if (
-            persistenceFingerprint(currentStored) !==
-            persistenceFingerprint(requestState)
-          ) {
-            return;
-          }
-
-          localStorage.setItem(storageKey, JSON.stringify({
-            surveyAnswers: serverStored.surveyAnswers,
-            targetFinderResult: serverStored.targetFinderResult || null,
-            selectedRouteId: serverStored.selectedRouteId || null,
-            updatedAt: serverStored.updatedAt || null
-          }));
-        } catch {}
-      } catch {}
-    };
-
-    persistQueueRef.current = persistQueueRef.current.then(write, write);
-    return persistQueueRef.current;
   };
 
   const buildSurveyAnswers = () => ({
