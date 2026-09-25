@@ -1,0 +1,93 @@
+{
+  "contract": "trust-phase8h-source-frontier-audit-live-summary-v1",
+  "audit_contract": "trust-phase8h-source-frontier-audit-v1",
+  "inventory_contract": "trust-phase8h-source-frontier-inventory-v1",
+  "observed_at": "2026-09-25T04:00:23.398Z",
+  "source_count": 36,
+  "counts": {
+    "HEALTHY_SAME_LOCATOR": 28,
+    "REDIRECTED": 5,
+    "TERMINAL_MISSING": 0,
+    "TRANSIENT_FAILURE": 3,
+    "SOURCE_BLOCKED": 0
+  },
+  "mutation_policy": "READ_ONLY_NO_PRODUCTION_WRITE",
+  "authority": "TRANSPORT_FRONTIER_ONLY_NOT_RELOCATION_AUTHORITY",
+  "github_evidence": {
+    "workflow_run_id": 36092602436,
+    "head_sha": "66d0fd89e24fb5c8f58fca1bc052639226e95699",
+    "artifact_id": 10845744770,
+    "artifact_digest": "sha256:0cb4d953e6a8a743f43b71881ea9c2ec34d09959d5d427a91c995de3c756318b"
+  },
+  "non_healthy_sources": [
+    {
+      "source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "publisher": "Beauty of Joseon",
+      "state": "REDIRECTED",
+      "reason": "official_fetch_final_url_changed",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "final_url": "https://beautyofjoseon.com/"
+    },
+    {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "publisher": "Derma Factory",
+      "state": "REDIRECTED",
+      "reason": "official_fetch_final_url_changed",
+      "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "final_url": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933"
+    },
+    {
+      "source_id": "dec7f5e7-eda9-4cef-8edd-69ec6591d2ff",
+      "publisher": "Dr.G",
+      "state": "TRANSIENT_FAILURE",
+      "reason": "TRANSIENT_FAILURE:http_429",
+      "canonical_locator": "https://www.dr-g.co.kr/item/9987",
+      "final_url": null
+    },
+    {
+      "source_id": "5752312a-3109-4da7-a796-9b3de1765112",
+      "publisher": "Beauty of Joseon",
+      "state": "REDIRECTED",
+      "reason": "official_fetch_final_url_changed",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+      "final_url": "https://beautyofjoseon.com/"
+    },
+    {
+      "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+      "publisher": "Beauty of Joseon",
+      "state": "REDIRECTED",
+      "reason": "official_fetch_final_url_changed",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "final_url": "https://beautyofjoseon.com/"
+    },
+    {
+      "source_id": "ceb9056a-b36b-48f9-9558-e5c5ed325e88",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "state": "TRANSIENT_FAILURE",
+      "reason": "TRANSIENT_FAILURE:http_429",
+      "canonical_locator": "https://www.dr-g.co.kr/item/4415",
+      "final_url": null
+    },
+    {
+      "source_id": "a2803387-44e3-40fa-87c9-a7aec7d745f3",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "state": "TRANSIENT_FAILURE",
+      "reason": "TRANSIENT_FAILURE:http_429",
+      "canonical_locator": "https://www.dr-g.co.kr/item/9637",
+      "final_url": null
+    },
+    {
+      "source_id": "f55720c7-0252-49b8-967c-8d77f4dfe6d6",
+      "publisher": "beautyofjoseon_official",
+      "state": "REDIRECTED",
+      "reason": "official_fetch_final_url_changed",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "final_url": "https://beautyofjoseon.com/"
+    }
+  ],
+  "next_qualification_frontier": {
+    "redirected_source_count": 5,
+    "transient_hold_source_count": 3,
+    "note": "Redirected sources require exact Product/Subject/market/variant/formulation qualification. Dr.G 429 sources remain retry-only and cannot authorize relocation."
+  }
+}
