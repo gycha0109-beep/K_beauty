@@ -7,6 +7,8 @@ import {
   enrichPremiumReportWithCurrentProducts
 } from "@/lib/premium-current-products";
 import { buildPremiumFaceLabSummary, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
+import { getFaceLabObservationAnalysis as getEnvelopeFaceLabObservationAnalysis } from "@/lib/face-lab-result-envelope";
+import { getFaceLabObservationAnalysis as getCanonicalFaceLabObservationAnalysis } from "@/lib/face-lab-analysis-bundle";
 import { enrichPremiumReportWithIntake } from "@/lib/premium-intake-report";
 import {
   canonicalizeOptionalImageDataUrl,
@@ -147,6 +149,24 @@ function getStorageUnavailableResponse() {
     { success: false, error: "premium_save_unavailable" },
     { status: 503 }
   );
+}
+
+function resolveFaceLabAnalysis({ storedPremiumReport, body }) {
+  const storedAnalysis = getCanonicalFaceLabObservationAnalysis(storedPremiumReport?.faceLabAnalysis);
+
+  if (storedAnalysis) {
+    return {
+      faceLabAnalysis: storedAnalysis,
+      shouldPersist: false
+    };
+  }
+
+  const requestAnalysis = getEnvelopeFaceLabObservationAnalysis(body?.faceLab);
+
+  return {
+    faceLabAnalysis: requestAnalysis,
+    shouldPersist: Boolean(requestAnalysis)
+  };
 }
 
 function resolveFaceLabSummary({ storedPremiumReport, body, locale, canonicalImageUrl }) {
@@ -531,9 +551,17 @@ export async function POST(request) {
     locale,
     canonicalImageUrl
   });
+  const {
+    faceLabAnalysis,
+    shouldPersist: shouldPersistFaceLabAnalysis
+  } = resolveFaceLabAnalysis({
+    storedPremiumReport,
+    body
+  });
   const responsePremiumReport = sanitizePremiumReportForBoundary({
     ...storedPremiumReport,
     faceLabSummary,
+    ...(faceLabAnalysis ? { faceLabAnalysis } : {}),
     locale
   });
 
@@ -548,7 +576,8 @@ export async function POST(request) {
       body,
       locale,
       currentProductsChanged: currentProductsResult.changed,
-      faceLabPersistenceDecision: shouldPersist ? "persist" : "preserve",
+      faceLabPersistenceDecision:
+        shouldPersist || shouldPersistFaceLabAnalysis ? "persist" : "preserve",
       sourceStage: "finalized_replay"
     });
     return replay.status === "existing"
@@ -560,6 +589,7 @@ export async function POST(request) {
 
   if (
     shouldPersist ||
+    shouldPersistFaceLabAnalysis ||
     currentProductsResult.changed ||
     premiumIntakeResult.changed ||
     storedPremiumReport.locale !== locale
