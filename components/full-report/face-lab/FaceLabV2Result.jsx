@@ -147,6 +147,10 @@ export default function FaceLabV2Result({
                 </div>
               ) : null}
 
+              {route.targetFit ? (
+                <p className="mt-3 text-xs font-medium leading-5 opacity-65">{route.targetFit}</p>
+              ) : null}
+
               {route.tradeoffs.length ? (
                 <div className="mt-3 rounded-lg bg-amber-500/10 px-3 py-2">
                   {route.tradeoffs.map((item) => (
@@ -200,6 +204,11 @@ export default function FaceLabV2Result({
           <h3 className="ui-title mt-2 text-lg">{view.look.routeTitle}</h3>
           {view.look.summary ? (
             <p className="ui-text-secondary mt-2 text-sm leading-6">{view.look.summary}</p>
+          ) : null}
+          {view.look.why ? (
+            <p className="mt-3 rounded-xl border border-zinc-200 bg-white/60 px-3 py-2.5 text-sm leading-6 dark:border-zinc-800 dark:bg-zinc-950/30">
+              {view.look.why}
+            </p>
           ) : null}
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {view.look.pieces.map((piece) => (

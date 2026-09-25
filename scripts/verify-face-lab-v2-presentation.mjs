@@ -207,6 +207,14 @@ assert.ok(
   resultUi.includes("view.execution.domains.map"),
   "result UI must render only presentation-approved execution domains"
 );
+assert.ok(
+  resultUi.includes("route.targetFit"),
+  "route cards must explain how broadly each route covers the active target"
+);
+assert.ok(
+  resultUi.includes("view.look.why"),
+  "composed look must expose the canonical rationale instead of showing only a summary"
+);
 
 console.log(JSON.stringify({
   ok: true,
@@ -216,8 +224,10 @@ console.log(JSON.stringify({
   checks: [
     "canonical_immutability",
     "conditional_execution_domains",
+    "route_target_fit_explanation",
     "canonical_execution_details",
     "canonical_look_composer_output",
+    "composed_look_rationale",
     "route_scoped_conflicts",
     "human_product_guidance",
     "raw_spec_hidden",
