@@ -10,6 +10,12 @@ import {
   evaluateProductQueryAuthenticatedBetaControlledActivation
 } from "@/lib/product-query-authenticated-beta-controlled-activation.mjs";
 import { executeProductQueryPreview } from "@/lib/server/product-query-preview-service";
+import {
+  bucketProductQueryCount,
+  bucketProductQueryLatency,
+  classifyProductQueryOperationalOutcome,
+  writeProductQueryOperationalObservation
+} from "@/lib/product-query-operational-observability.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,8 +84,45 @@ export async function POST(request) {
   });
   if (!runtimePolicy.allowed) return notFound();
 
+  const observationStartedAt = Date.now();
+  let runtimeObservation = null;
+  let observationWritten = false;
+
+  function observe(overrides = {}) {
+    if (observationWritten) return;
+    observationWritten = true;
+
+    writeProductQueryOperationalObservation({
+      outcome: overrides.outcome || "runtime_error",
+      confidence: overrides.confidence || runtimeObservation?.confidence || "unknown",
+      constraintStatus:
+        overrides.constraintStatus ||
+        runtimeObservation?.constraintStatus ||
+        "unknown",
+      latencyBucket: bucketProductQueryLatency(Date.now() - observationStartedAt),
+      providerLatencyBucket: bucketProductQueryLatency(
+        runtimeObservation?.providerLatencyMs
+      ),
+      recommendationLatencyBucket: bucketProductQueryLatency(
+        runtimeObservation?.recommendationLatencyMs
+      ),
+      resultCountBucket: bucketProductQueryCount(
+        overrides.resultCount ?? runtimeObservation?.resultCount
+      ),
+      unresolvedCountBucket: bucketProductQueryCount(
+        overrides.unresolvedCount ?? runtimeObservation?.unresolvedCount
+      ),
+      provider: runtimeObservation?.provider || "unknown",
+      model: runtimeObservation?.model || "unknown",
+      providerSucceeded: overrides.providerSucceeded ?? Boolean(runtimeObservation),
+      fallbackUsed: false,
+      deploymentSha: process.env.VERCEL_GIT_COMMIT_SHA
+    });
+  }
+
   const contentLength = Number(request.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+    observe({ outcome: "invalid_request", providerSucceeded: false });
     return json({ ok: false, error: "invalid_request" }, 413);
   }
 
@@ -87,9 +130,11 @@ export async function POST(request) {
   try {
     raw = await request.text();
   } catch {
+    observe({ outcome: "invalid_request", providerSucceeded: false });
     return json({ ok: false, error: "invalid_request" }, 400);
   }
   if (Buffer.byteLength(raw, "utf8") > MAX_BODY_BYTES) {
+    observe({ outcome: "invalid_request", providerSucceeded: false });
     return json({ ok: false, error: "invalid_request" }, 413);
   }
 
@@ -97,6 +142,7 @@ export async function POST(request) {
   try {
     body = JSON.parse(raw || "{}");
   } catch {
+    observe({ outcome: "invalid_request", providerSucceeded: false });
     return json({ ok: false, error: "invalid_request" }, 400);
   }
 
@@ -104,11 +150,24 @@ export async function POST(request) {
     ? Object.keys(body).sort()
     : [];
   if (keys.length !== 1 || keys[0] !== "query" || typeof body.query !== "string") {
+    observe({ outcome: "invalid_request", providerSucceeded: false });
     return json({ ok: false, error: "invalid_request" }, 400);
   }
 
   try {
-    const result = await executeProductQueryPreview(body.query);
+    const result = await executeProductQueryPreview(body.query, {
+      onOperationalObservation(observation) {
+        runtimeObservation = observation;
+      }
+    });
+    observe({
+      outcome: classifyProductQueryOperationalOutcome({
+        status: result.status,
+        constraintStatus: result.constraintStatus,
+        resultCount: Array.isArray(result.results) ? result.results.length : 0
+      }),
+      providerSucceeded: true
+    });
     return json({
       ok: true,
       contractVersion: CONTRACT_VERSION,
@@ -123,6 +182,15 @@ export async function POST(request) {
     });
   } catch (error) {
     const classified = classifyError(error);
+    const code = typeof error?.code === "string" ? error.code : "";
+    observe({
+      outcome: code.startsWith("PRODUCT_QUERY_AI_")
+        ? "provider_error"
+        : code === "PRODUCT_QUERY_PREVIEW_INPUT_INVALID"
+          ? "invalid_request"
+          : "runtime_error",
+      providerSucceeded: false
+    });
     return json({ ok: false, error: classified.error }, classified.status);
   }
 }

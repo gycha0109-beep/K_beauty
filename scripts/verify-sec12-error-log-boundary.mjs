@@ -1348,7 +1348,7 @@ register("L12_SINK_FAILURE_ISOLATED", () => assert.doesNotThrow(() => writeSafeL
 
 register("M01_STRUCTURED_LOG_MODEL_CREDENTIAL_REJECTED", () => {
   assert.equal(Object.isFrozen(SAFE_PROVIDER_MODELS), true);
-  assert.deepEqual([...SAFE_PROVIDER_MODELS].sort(), ["gpt-4o", "gpt-4o-mini"]);
+  assert.deepEqual([...SAFE_PROVIDER_MODELS].sort(), ["gpt-4o", "gpt-4o-mini", "gpt-5.6-luna"]);
 
   for (const model of SAFE_PROVIDER_MODELS) {
     assert.equal(createSafeLogEvent({ event: "provider_runtime", model }).model, model);

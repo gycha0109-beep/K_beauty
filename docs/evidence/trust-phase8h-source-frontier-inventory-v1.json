@@ -1,0 +1,297 @@
+{
+  "contract": "trust-phase8h-source-frontier-inventory-v1",
+  "scope": "production-unprofiled-product-evidence-sources",
+  "snapshot_at": "2026-09-25T12:43:19.141738+09:00",
+  "profile_filter": "no product_evidence_source_verification_profiles row",
+  "source_count": 36,
+  "sources": [
+    {
+      "source_id": "a2cae919-69de-4bf0-82e8-3d13996943d2",
+      "publisher": "The Ordinary / DECIEM",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://theordinary.com/en-kr/mandelic-acid-10-ha-exfoliator-100429.html",
+      "market": "KR",
+      "locale": null
+    },
+    {
+      "source_id": "fb9e9588-ec67-4cf5-be16-8a8fa61ee430",
+      "publisher": "Medicube",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://m.themedicube.co.kr/product/%EC%A0%9C%EB%A1%9C%EB%AA%A8%EA%B3%B5%ED%8C%A8%EB%93%9C-20-%EB%A7%88%EC%9D%BC%EB%93%9C/102",
+      "market": "KR",
+      "locale": null
+    },
+    {
+      "source_id": "ca57cb69-f973-4088-ad31-ffd280b2c40a",
+      "publisher": "Shiseido / ANESSA",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://www.shiseido.co.jp/anessa/products/suncare/perfect_uv_sm/?an_campaign=an24ss_an_HDY&an_content=tu_add_0522_1&an_medium=display&an_source=attocosme",
+      "market": "JP",
+      "locale": null
+    },
+    {
+      "source_id": "0cb7a8eb-7514-45eb-a6a5-761cd49e6cd9",
+      "publisher": "La Roche-Posay",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://africa.laroche-posay.com/en-za/cicaplast/cicaplast-baume-b5-plus",
+      "market": "ZA",
+      "locale": null
+    },
+    {
+      "source_id": "d2f59350-eb66-4447-b7ca-771381daf8ca",
+      "publisher": "Anua",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://anua.com/products/pdrn-hyaluronic-acid-capsule-100-serum",
+      "market": "US",
+      "locale": null
+    },
+    {
+      "source_id": "3fa2f78b-d7c4-4355-bbda-79e747a3ea99",
+      "publisher": "ROUND LAB",
+      "source_kind": "official_brand_page",
+      "canonical_locator": "https://roundlab.co.kr/article/press/8/3087",
+      "market": "KR",
+      "locale": null
+    },
+    {
+      "source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "publisher": "Beauty of Joseon",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "market": "GLOBAL",
+      "locale": null
+    },
+    {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "publisher": "Derma Factory",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "market": "KR_US",
+      "locale": null
+    },
+    {
+      "source_id": "288007ce-9002-4740-9d67-daad8c2bb5ce",
+      "publisher": "Amorepacific",
+      "source_kind": "official_manufacturer_product_news",
+      "canonical_locator": "https://www.apgroup.com/int/ko/news/2026-03-27-2.html",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "3e768f5c-1309-4132-ba41-2fad4c1b9add",
+      "publisher": "ROUND LAB",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://roundlab.com/products/birch-moisturizing-soothing-gel",
+      "market": "GLOBAL",
+      "locale": "en"
+    },
+    {
+      "source_id": "5c3eb4a1-20a4-426a-bc78-f2c5a371acd4",
+      "publisher": "MEDIHEAL",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://medihealshop.com/product/%EB%8D%94%EB%A7%88-%ED%81%AC%EB%A6%BC-%ED%8C%A9-%ED%81%B4%EB%A0%8C%EC%A0%80%EB%A7%88%EB%8D%B0%EC%B9%B4%EC%86%8C%EC%82%AC%EC%9D%B4%EB%93%9C-%EC%A7%84%EC%A0%95-%EC%9E%A5%EB%B2%BD/1659/",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "e76b4943-d2dd-4558-9578-461ddcac015a",
+      "publisher": "ROUND LAB",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://roundlab.com/products/pine-calming-cica-lotion",
+      "market": "GLOBAL",
+      "locale": "en"
+    },
+    {
+      "source_id": "4f1f2b5f-9847-4449-aeb9-817c648106e5",
+      "publisher": "Laboreve",
+      "source_kind": "official_brand_product_page",
+      "canonical_locator": "https://laboreve.kr/",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "e90bf5e2-748b-4f91-a14e-12be60e0f495",
+      "publisher": "YBK",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://ybk-cosmetics.com/product/%EB%A6%B4%EB%A6%AC%ED%94%84-%ED%95%98%EC%9D%B4%EB%93%9C%EB%A0%88%EC%9D%B4%EC%85%98-%EB%9D%BC%EC%9D%B4%ED%8A%B8-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml/18/",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "dec7f5e7-eda9-4cef-8edd-69ec6591d2ff",
+      "publisher": "Dr.G",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://www.dr-g.co.kr/item/9987",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "7512da4b-8e5b-4bfb-8944-016bdb2325a4",
+      "publisher": "CLIO / goodal",
+      "source_kind": "official_brand_owner_product_page",
+      "canonical_locator": "https://clubclio.co.kr/shop/goodsView/0000005157",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "5752312a-3109-4da7-a796-9b3de1765112",
+      "publisher": "Beauty of Joseon",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+      "market": null,
+      "locale": null
+    },
+    {
+      "source_id": "332de57a-104b-4429-883f-ad05754553cb",
+      "publisher": "AESTURA",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen",
+      "market": null,
+      "locale": null
+    },
+    {
+      "source_id": "cdfc7792-cf0b-402e-a407-50a0bd9ba71b",
+      "publisher": "AESTURA",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen",
+      "market": null,
+      "locale": null
+    },
+    {
+      "source_id": "5cd09ce3-bd09-474a-bd8e-f2253a455116",
+      "publisher": "La Roche-Posay Slovenia",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://www.laroche-posay.si/anthelios/anthelios-nevidni-fluid-spf50-brez-vonja",
+      "market": "SI",
+      "locale": null
+    },
+    {
+      "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+      "publisher": "Beauty of Joseon",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "market": "GLOBAL",
+      "locale": "en"
+    },
+    {
+      "source_id": "ceb9056a-b36b-48f9-9558-e5c5ed325e88",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://www.dr-g.co.kr/item/4415",
+      "market": "KR",
+      "locale": "ko"
+    },
+    {
+      "source_id": "f72a2781-2d6a-45f1-82a6-c33674088523",
+      "publisher": "SKIN1004",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+      "market": "US",
+      "locale": "en"
+    },
+    {
+      "source_id": "0faa9a86-8d74-495f-8fcb-ac47cb0529d6",
+      "publisher": "Torriden / (주)토리든",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+      "market": "KR",
+      "locale": "ko"
+    },
+    {
+      "source_id": "2e75ba01-7ecb-4824-b712-d7e5d707782d",
+      "publisher": "(주)이즈앤트리",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "market": "KR",
+      "locale": "ko"
+    },
+    {
+      "source_id": "a9d3f7fa-a44d-4e43-ba64-9c68acf6628e",
+      "publisher": "Beauty of Joseon",
+      "source_kind": "first_party_html",
+      "canonical_locator": "https://beautyofjoseon.com/blogs/news/mastering-relief-sun-and-aqua-fresh",
+      "market": "GLOBAL",
+      "locale": "en"
+    },
+    {
+      "source_id": "a2803387-44e3-40fa-87c9-a7aec7d745f3",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "source_kind": "official_product_page",
+      "canonical_locator": "https://www.dr-g.co.kr/item/9637",
+      "market": "KR",
+      "locale": "ko"
+    },
+    {
+      "source_id": "041e11d3-c0de-40a1-9c90-487c4437e96f",
+      "publisher": "aestura_official",
+      "source_kind": "brand_official_product_page",
+      "canonical_locator": "https://www.aestura.com/web/product/view.do?prdSeq=1108",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "012811d1-f3e4-414b-8429-8f98bbad0797",
+      "publisher": "isntree_official",
+      "source_kind": "brand_official_product_page",
+      "canonical_locator": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "7abf5c75-a442-4c55-853b-58685bc99a23",
+      "publisher": "roundlab_official",
+      "source_kind": "brand_official_product_page",
+      "canonical_locator": "https://roundlab.com/products/birch-moisturizing-soothing-gel",
+      "market": "GLOBAL",
+      "locale": "en"
+    },
+    {
+      "source_id": "0c5baf54-855a-40d6-bb6b-44d8bcb3e846",
+      "publisher": "roundlab_official",
+      "source_kind": "brand_official_product_page",
+      "canonical_locator": "https://roundlab.com/products/pine-calming-cica-lotion",
+      "market": "GLOBAL",
+      "locale": "en"
+    },
+    {
+      "source_id": "f09dedcf-93ce-41bd-b67d-3a290e705a33",
+      "publisher": "anessa_official",
+      "source_kind": "brand_official_product_page",
+      "canonical_locator": "https://www.shiseido.co.jp/anessa/products/suncare/perfect_uv_sm/?an_campaign=an24ss_an_HDY&an_content=tu_add_0522_1&an_medium=display&an_source=attocosme",
+      "market": "JP",
+      "locale": "ja-JP"
+    },
+    {
+      "source_id": "f55720c7-0252-49b8-967c-8d77f4dfe6d6",
+      "publisher": "beautyofjoseon_official",
+      "source_kind": "brand_official_product_page",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "market": "GLOBAL",
+      "locale": "en"
+    },
+    {
+      "source_id": "233e228b-0a19-40e9-883b-f060c84ec866",
+      "publisher": "skin1004_official",
+      "source_kind": "brand_official_product_page",
+      "canonical_locator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+      "market": "US",
+      "locale": "en-US"
+    },
+    {
+      "source_id": "59488aa6-26a1-4ec7-981a-6445e76fd799",
+      "publisher": "larocheposay_official",
+      "source_kind": "official_market_sales_page",
+      "canonical_locator": "https://www.larocheposay.co.kr/product/view/4833.do",
+      "market": "KR",
+      "locale": "ko-KR"
+    },
+    {
+      "source_id": "5a939a48-bd2c-45bc-8806-9d3bf87c1d0e",
+      "publisher": "anua_serum_guide_official",
+      "source_kind": "brand_official_technical_document",
+      "canonical_locator": "https://pages.anua.com/guide/which-anua-serum-should-you-use",
+      "market": "US",
+      "locale": "en-US"
+    }
+  ]
+}

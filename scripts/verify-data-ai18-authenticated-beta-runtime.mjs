@@ -136,7 +136,7 @@ check(
       route.indexOf("resolveRouteSupabaseAuth(request)") &&
     route.includes("evaluateProductQueryAuthenticatedBetaRuntime") &&
     route.includes("subject: authContext.user.id") &&
-    route.includes("executeProductQueryPreview(body.query)"),
+    route.includes("executeProductQueryPreview(body.query, {"),
   "later phases must continue reusing DATA-AI18 authenticated deterministic Product Query execution"
 );
 

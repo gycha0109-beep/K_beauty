@@ -119,6 +119,15 @@ assert.equal(
   "selected route must have one authority: canonical.routes.selectedRouteId"
 );
 
+assert.ok(
+  premiumFaceLab.includes("const persistQueueRef = useRef(Promise.resolve())"),
+  "Face Lab V2 server writes must have a stable serialization queue"
+);
+assert.ok(
+  premiumFaceLab.includes("persistQueueRef.current = persistQueueRef.current.then(write, write)"),
+  "rapid target or route changes must persist to the server in user-action order"
+);
+
 assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
 assert.ok(composer.includes("buildStyleRoutes"), "canonical V2 must include comparable routes");
 assert.ok(composer.includes("buildHairExecution"), "canonical V2 must include Hair execution");
