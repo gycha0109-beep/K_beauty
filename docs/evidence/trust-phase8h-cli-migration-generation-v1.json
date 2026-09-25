@@ -1,0 +1,11 @@
+{
+  "contract": "trust-phase8h-cli-migration-generation-v1",
+  "supabase_cli_version": "2.117.0",
+  "workflow_run_id": 36195379182,
+  "workflow_head_sha": "33354bfe07393d41b005f7e62df27001618d8edf",
+  "generated_migration_filename": "20260925221042_trust_phase8h_governed_official_source_relocation_v1.sql",
+  "artifact_id": 10889886425,
+  "artifact_digest": "sha256:9d177207f3b5cdf18dc7483f94d13514b0117f3bc6eb232379b09eaf4c828e47",
+  "generation_authority": "SUPABASE_CLI_MIGRATION_NEW",
+  "production_mutation": "NONE"
+}
