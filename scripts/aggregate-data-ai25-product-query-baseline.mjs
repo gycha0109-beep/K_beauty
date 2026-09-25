@@ -12,5 +12,8 @@ if (!raw.trim()) {
 }
 
 const events = JSON.parse(raw);
-const baseline = aggregateProductQueryOperationalBaseline(events);
+const baseline = aggregateProductQueryOperationalBaseline(events, {
+  operationalBaselineStartAt:
+    process.env.BEJEWELY_PRODUCT_QUERY_OPERATIONAL_BASELINE_START_AT
+});
 process.stdout.write(`${JSON.stringify(baseline, null, 2)}\n`);

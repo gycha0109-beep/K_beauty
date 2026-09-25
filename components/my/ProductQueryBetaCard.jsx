@@ -59,7 +59,7 @@ export default function ProductQueryBetaCard({ copy }) {
     : [];
 
   return (
-    <section className="rounded-[1.5rem] border border-[#e8c9d3] bg-[linear-gradient(145deg,rgba(255,250,247,0.96),rgba(255,238,244,0.92))] p-5 shadow-[0_18px_45px_rgba(120,65,82,0.08)] dark:border-[#51323f] dark:bg-[linear-gradient(145deg,rgba(47,31,40,0.98),rgba(58,34,45,0.96))] sm:p-6">
+    <section data-testid="product-query-beta-card" className="rounded-[1.5rem] border border-[#e8c9d3] bg-[linear-gradient(145deg,rgba(255,250,247,0.96),rgba(255,238,244,0.92))] p-5 shadow-[0_18px_45px_rgba(120,65,82,0.08)] dark:border-[#51323f] dark:bg-[linear-gradient(145deg,rgba(47,31,40,0.98),rgba(58,34,45,0.96))] sm:p-6">
       <div className="max-w-2xl">
         <div className="flex flex-wrap items-center gap-2">
           <p className="ui-kicker">{copy.kicker}</p>
@@ -77,6 +77,7 @@ export default function ProductQueryBetaCard({ copy }) {
         </label>
         <textarea
           id="product-query-beta-input"
+          data-testid="product-query-beta-input"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           maxLength={500}
@@ -88,6 +89,7 @@ export default function ProductQueryBetaCard({ copy }) {
           <p className="ui-text-faint text-xs">{copy.privacy}</p>
           <button
             type="submit"
+            data-testid="product-query-beta-submit"
             disabled={submitting || !query.trim()}
             className="ui-button-primary min-h-11 w-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
@@ -97,13 +99,13 @@ export default function ProductQueryBetaCard({ copy }) {
       </form>
 
       {error ? (
-        <div role="alert" className="mt-4 rounded-[1rem] border border-[#efc6c6] bg-[#fff4f4] px-4 py-3 text-sm text-[#8d3d45] dark:border-[#6a3d43] dark:bg-[#3b2328] dark:text-[#ffc8cf]">
+        <div role="alert" data-testid="product-query-beta-error" className="mt-4 rounded-[1rem] border border-[#efc6c6] bg-[#fff4f4] px-4 py-3 text-sm text-[#8d3d45] dark:border-[#6a3d43] dark:bg-[#3b2328] dark:text-[#ffc8cf]">
           {error}
         </div>
       ) : null}
 
       {result ? (
-        <div className="mt-5 space-y-3">
+        <div data-testid="product-query-beta-result" className="mt-5 space-y-3">
           {unresolvedTerms.length > 0 ? (
             <div className="rounded-[1rem] border border-[#ead8b7] bg-[#fff9e9] px-4 py-3 text-sm text-[#745a27] dark:border-[#665536] dark:bg-[#332d20] dark:text-[#f2dda8]">
               <p className="font-semibold">{copy.partialTitle}</p>
@@ -119,7 +121,7 @@ export default function ProductQueryBetaCard({ copy }) {
               </div>
               <div className="grid gap-3">
                 {products.map((product) => (
-                  <article key={product.id || `${product.brand}-${product.name}`} className="rounded-[1.1rem] border border-[#ead2ca] bg-white/80 p-4 dark:border-[#4a303c] dark:bg-[#2b1c26]">
+                  <article data-testid="product-query-beta-product" key={product.id || `${product.brand}-${product.name}`} className="rounded-[1.1rem] border border-[#ead2ca] bg-white/80 p-4 dark:border-[#4a303c] dark:bg-[#2b1c26]">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#9a6c7a] dark:text-[#cfa9b5]">
                       {product.brand || copy.unknownBrand}
                     </p>

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
   "producerContractVersion": "watchtower-v0.3.2",
-  "workflowInventoryDigest": "sha256:3b21ff1d4c0384cb7e38e984185c7cbbb494d88514b6cd364c062d24901278fb",
+  "workflowInventoryDigest": "sha256:e2e12d6ce31edc048a63f748a7a4ccc122a432153634d843718504fe24b53c21",
   "lastAuditedAt": "2026-09-25",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
@@ -868,6 +868,20 @@
         "ai",
         "backend",
         "observability",
+        "production-safety",
+        "recommendation"
+      ],
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "data-ai-prelaunch-01-product-query-e2e.yml": {
+      "primaryResponsibility": "product-query-ai",
+      "capabilities": [
+        "ai",
+        "backend",
+        "e2e-contract",
+        "frontend",
         "production-safety",
         "recommendation"
       ],
