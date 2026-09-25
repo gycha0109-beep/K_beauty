@@ -1,0 +1,37 @@
+{
+  "contract": "commerce-link-health-live-canary-v1",
+  "authority_mutation": false,
+  "seller_key": "oliveyoung",
+  "offers": [
+    {
+      "offer_id": "6e134b3e-8c1c-4f3b-b3d9-529d2df323a5",
+      "product_id": "02142b67-a50e-41b9-862c-b5a68203daf7",
+      "listing_id": "A000000189181",
+      "listing_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000189181"
+    },
+    {
+      "offer_id": "9c8cbf05-42f1-4ffd-b44c-f3bb048d8f54",
+      "product_id": "03f5a72b-6c9a-4487-a3a9-39d1e6afa7bb",
+      "listing_id": "A000000255444",
+      "listing_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000255444"
+    },
+    {
+      "offer_id": "c5130963-1ed1-42d0-b13d-bbd476cdf63f",
+      "product_id": "07257728-9e64-48aa-9dbd-f1239bd98d87",
+      "listing_id": "A000000224086",
+      "listing_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000224086"
+    },
+    {
+      "offer_id": "9dc5ef44-f88c-436a-a5b5-d473d5a9dfcb",
+      "product_id": "0781dcb5-d377-44b5-aa14-01ab2c04f0b2",
+      "listing_id": "A000000213171",
+      "listing_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000213171"
+    },
+    {
+      "offer_id": "e6786ecb-8379-485b-9001-3068fa9a1383",
+      "product_id": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+      "listing_id": "A000000141306",
+      "listing_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000141306"
+    }
+  ]
+}

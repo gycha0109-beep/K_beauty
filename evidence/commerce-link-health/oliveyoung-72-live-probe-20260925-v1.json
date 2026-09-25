@@ -1,0 +1,25 @@
+{
+  "contract": "commerce-link-health-oliveyoung-live-snapshot-evidence-v1",
+  "observed_at": "2026-09-25T01:22:17.418Z",
+  "github_run_id": 36081684583,
+  "github_job_id": 107904833634,
+  "exact_head_sha": "42119de6c0c2127a5601b07df612108734e86a74",
+  "manifest_contract": "commerce-link-health-live-snapshot-v1",
+  "seller_key": "oliveyoung",
+  "offer_count": 72,
+  "result_counts": {
+    "forbidden": 72
+  },
+  "health_state_counts": {
+    "unknown": 72
+  },
+  "common_http_status": 403,
+  "conclusion": "GITHUB_RUNNER_CANNOT_ESTABLISH_OLIVEYOUNG_LIVENESS_V1",
+  "authority_mutation": false,
+  "production_write": false,
+  "implications": [
+    "HTTP 403 is classified as unknown, never broken.",
+    "Purchase presentation must not suppress a link solely because the checker is forbidden.",
+    "The observation layer can persist unknown checks without changing Product Fact, recommendation, price, inventory, or Product identity authority."
+  ]
+}

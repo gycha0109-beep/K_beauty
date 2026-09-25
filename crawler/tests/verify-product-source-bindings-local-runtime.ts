@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const PRODUCT_1 = "92000000-0000-4000-8000-000000000001";
 const PRODUCT_2 = "92000000-0000-4000-8000-000000000002";
+const PRODUCT_4 = "92000000-0000-4000-8000-000000000004";
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -103,6 +104,83 @@ async function main(): Promise<void> {
   assert.equal(protectedProduct.data.external_type, null);
   assert.equal(protectedProduct.data.external_id, null);
 
+  const projectedInsert = await service
+    .from("products")
+    .insert({
+      id: PRODUCT_4,
+      brand: "Projection Brand",
+      name: "Projection Product",
+      external_source: "brandmall",
+      external_type: "official_product",
+      external_id: "projection-4",
+      source_url: "https://brand.example/products/projection-4",
+    });
+  if (projectedInsert.error) {
+    throw new Error(`product_source_binding_projected_insert_failed:${projectedInsert.error.message}`);
+  }
+
+  const insertedProjection = await service
+    .from("product_source_bindings")
+    .select("product_id, binding_method, product_scope_state")
+    .eq("source_name", "brandmall")
+    .eq("external_type", "official_product")
+    .eq("external_id", "projection-4")
+    .single();
+  if (insertedProjection.error) {
+    throw new Error(`product_source_binding_projected_insert_readback_failed:${insertedProjection.error.message}`);
+  }
+  assert.equal(insertedProjection.data.product_id, PRODUCT_4);
+  assert.equal(insertedProjection.data.binding_method, "legacy_product_projection_sync_v1");
+  assert.equal(insertedProjection.data.product_scope_state, "product_subject_unresolved");
+
+  const incompleteToComplete = await service
+    .from("products")
+    .update({
+      external_source: "brandmall",
+      external_type: "official_product",
+      external_id: "projection-2",
+      source_url: "https://brand.example/products/projection-2",
+    })
+    .eq("id", PRODUCT_2);
+  if (incompleteToComplete.error) {
+    throw new Error(`product_source_binding_projected_update_failed:${incompleteToComplete.error.message}`);
+  }
+
+  const updatedProjection = await service
+    .from("product_source_bindings")
+    .select("product_id, binding_method")
+    .eq("source_name", "brandmall")
+    .eq("external_type", "official_product")
+    .eq("external_id", "projection-2")
+    .single();
+  if (updatedProjection.error) {
+    throw new Error(`product_source_binding_projected_update_readback_failed:${updatedProjection.error.message}`);
+  }
+  assert.equal(updatedProjection.data.product_id, PRODUCT_2);
+  assert.equal(updatedProjection.data.binding_method, "legacy_product_projection_sync_v1");
+
+  const ungovernedIdentityReplacement = await service
+    .from("products")
+    .update({
+      external_source: "brandmall",
+      external_type: "official_product",
+      external_id: "projection-2-replacement",
+    })
+    .eq("id", PRODUCT_2);
+  assert.ok(ungovernedIdentityReplacement.error, "complete legacy identity replacement must fail closed");
+  assert.equal(ungovernedIdentityReplacement.error.code, "23514");
+
+  const collisionReplacement = await service
+    .from("products")
+    .update({
+      external_source: "hwahae",
+      external_type: "products",
+      external_id: "1001",
+    })
+    .eq("id", PRODUCT_2);
+  assert.ok(collisionReplacement.error, "legacy projection must not claim another Product source identity");
+  assert.equal(collisionReplacement.error.code, "23505");
+
   const deleteAttempt = await service
     .from("product_source_bindings")
     .delete()
@@ -115,8 +193,9 @@ async function main(): Promise<void> {
     .order("source_name", { ascending: true });
   if (final.error) throw new Error(`product_source_binding_final_load_failed:${final.error.message}`);
 
-  assert.equal(final.data.length, 4);
-  assert.equal(final.data.filter((row) => row.product_id === PRODUCT_2).length, 2);
+  assert.equal(final.data.length, 6);
+  assert.equal(final.data.filter((row) => row.product_id === PRODUCT_2).length, 3);
+  assert.equal(final.data.filter((row) => row.product_id === PRODUCT_4).length, 1);
 
   process.stdout.write(
     "verify:product-source-bindings:local-runtime PASS (backfill, private access, multi-source, collision, immutable legacy product fields, no delete)\n",
