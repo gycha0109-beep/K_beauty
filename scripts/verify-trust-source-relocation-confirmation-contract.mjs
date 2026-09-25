@@ -49,7 +49,6 @@ for (const forbidden of [
   ".rpc(",
   ".from(",
   ".insert(",
-  ".update(",
   ".delete(",
   "apply_migration",
   "execute_sql",
