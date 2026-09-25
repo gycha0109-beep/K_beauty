@@ -34,7 +34,7 @@ on:
       - "docs/evidence/trust-phase8h-source-identity-qualification-contract-v1.md"
       - ".github/workflows/trust-phase8h-source-frontier-audit.yml"
   push:
-    branches: [main, "feat/trust-phase8h-source-frontier-audit", "feat/trust-phase8h-source-identity-qualification", "feat/trust-phase8h-boj-bounded-rediscovery", "feat/trust-phase8h-governed-relocation-confirmation-contract"]
+    branches: [main, "feat/trust-phase8h-source-frontier-audit", "feat/trust-phase8h-source-identity-qualification", "feat/trust-phase8h-boj-bounded-rediscovery", "feat/trust-phase8h-governed-relocation-confirmation-contract", "feat/trust-phase8h-governed-relocation-db-draft"]
     paths:
       - "scripts/trust-source-frontier-audit.mjs"
       - "scripts/verify-trust-source-frontier-audit.mjs"
@@ -143,6 +143,11 @@ jobs:
           node --check lib/trust/official-source-relocation-confirmation-request.mjs
           node --check scripts/verify-trust-source-relocation-confirmation-contract.mjs
           node scripts/verify-trust-source-relocation-confirmation-contract.mjs
+
+      - name: Verify Phase 8H-2B DB migration readiness gate
+        run: |
+          node --check scripts/verify-trust-source-relocation-db-readiness.mjs
+          node scripts/verify-trust-source-relocation-db-readiness.mjs
 
       - name: Run optional live read-only frontier audit
         if: github.event_name == 'workflow_dispatch' && inputs.live_audit == true
