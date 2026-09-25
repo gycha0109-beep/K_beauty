@@ -191,6 +191,7 @@ run(
 
 run("CI trigger topology", node, ["scripts/verify-ci-trigger-topology.mjs"]);
 run("CI workflow responsibility map", node, ["scripts/verify-ci-workflow-responsibility-map.mjs"]);
+run("CI workflow overlap audit", node, ["scripts/audit-ci-workflow-overlap.mjs", "--check"]);
 run("Production build", npm, ["run", "build"]);
 
 console.log("\nBEJEWELY Current Main Health: PASS");
