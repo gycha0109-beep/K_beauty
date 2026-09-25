@@ -16,6 +16,7 @@ on:
       - "lib/product-query-operational-observability.mjs"
       - "lib/product-query-authenticated-beta-controlled-activation.mjs"
       - "scripts/run-product-query-prelaunch-e2e.mjs"
+      - "scripts/bootstrap-product-query-prelaunch-auth.mjs"
       - "scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"
       - "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
       - ".github/workflows/data-ai-prelaunch-01-product-query-e2e.yml"
@@ -34,6 +35,7 @@ on:
       - "lib/product-query-operational-observability.mjs"
       - "lib/product-query-authenticated-beta-controlled-activation.mjs"
       - "scripts/run-product-query-prelaunch-e2e.mjs"
+      - "scripts/bootstrap-product-query-prelaunch-auth.mjs"
       - "scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"
       - "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
       - ".github/workflows/data-ai-prelaunch-01-product-query-e2e.yml"
@@ -71,4 +73,6 @@ jobs:
         run: node scripts/verify-data-ai25-product-query-operational-readiness.mjs
 
       - name: Verify hosted runner syntax
-        run: node --check scripts/run-product-query-prelaunch-e2e.mjs
+        run: |
+          node --check scripts/bootstrap-product-query-prelaunch-auth.mjs
+          node --check scripts/run-product-query-prelaunch-e2e.mjs

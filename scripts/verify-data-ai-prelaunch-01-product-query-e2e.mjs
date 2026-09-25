@@ -193,6 +193,10 @@ const runnerSource = readFileSync(
   "scripts/run-product-query-prelaunch-e2e.mjs",
   "utf8"
 );
+const bootstrapSource = readFileSync(
+  "scripts/bootstrap-product-query-prelaunch-auth.mjs",
+  "utf8"
+);
 
 for (const selector of [
   'data-testid="product-query-beta-card"',
@@ -241,6 +245,32 @@ for (const requiredRunnerToken of [
     `manual hosted runner missing boundary: ${requiredRunnerToken}`
   );
 }
+
+for (const requiredBootstrapToken of [
+  "openManualSystemChromeSession",
+  "captureAccountSessionResilient",
+  "assertAccountPair",
+  "probeEligibility",
+  "exactly one QA account must be in the approved Product Query cohort",
+  "PQ_PRELAUNCH_ELIGIBLE_STORAGE_STATE",
+  "PQ_PRELAUNCH_INELIGIBLE_STORAGE_STATE",
+  "PQ_PRELAUNCH_ELIGIBLE_ACCESS_TOKEN",
+  "PQ_PRELAUNCH_INELIGIBLE_ACCESS_TOKEN",
+  "I_UNDERSTAND_THIS_RUNS_AGAINST_PRODUCTION"
+]) {
+  check(
+    bootstrapSource.includes(requiredBootstrapToken),
+    `Production bootstrap missing boundary: ${requiredBootstrapToken}`
+  );
+}
+
+check(
+  !bootstrapSource.includes("console.log(accountA") &&
+    !bootstrapSource.includes("console.log(accountB") &&
+    !bootstrapSource.includes("accountAHash") &&
+    !bootstrapSource.includes("accountBHash"),
+  "Production bootstrap must not print account identity or account hashes"
+);
 
 check(
   runnerSource.includes('viewport: { width: 1440, height: 1080 }') &&
