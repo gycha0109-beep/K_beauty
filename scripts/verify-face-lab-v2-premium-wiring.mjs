@@ -141,6 +141,18 @@ assert.ok(
   premiumFaceLab.includes("copy.finderInconclusive"),
   "the direct-selection fallback must explain why Finder could not resolve a target"
 );
+
+assert.ok(
+  premiumFaceLab.includes('if (entryMode === "unknown") {') &&
+    premiumFaceLab.includes('setEntryMode("known")') &&
+    premiumFaceLab.includes("setFinderResult(null)"),
+  "editing a Finder-derived target must hand authority to explicit target selection instead of re-running or retaining Finder inference"
+);
+assert.equal(
+  premiumFaceLab.includes('onEditTarget={() => setStage(entryMode === "unknown" ? "finder" : "target")}'),
+  false,
+  "a confirmed Finder target must remain directly editable without forcing the user back through Finder"
+);
 assert.ok(
   premiumFaceLab.includes("restoreInteractionRef.current !== restoreInteractionRevision"),
   "late server or local restore must not overwrite an in-progress user setup"
