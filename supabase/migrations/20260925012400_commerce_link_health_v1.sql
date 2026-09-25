@@ -365,9 +365,11 @@ revoke all on function private.record_product_offer_link_check_v1(
 ) from public, anon, authenticated, service_role;
 
 grant create on schema private to product_offer_link_health_recorder_owner;
+grant product_offer_link_health_recorder_owner to postgres;
 alter function private.record_product_offer_link_check_v1(
   uuid, text, timestamptz, text, text, integer, text, integer, text, text, integer, text
 ) owner to product_offer_link_health_recorder_owner;
+revoke product_offer_link_health_recorder_owner from postgres;
 revoke create on schema private from product_offer_link_health_recorder_owner;
 
 grant usage on schema private to service_role;
