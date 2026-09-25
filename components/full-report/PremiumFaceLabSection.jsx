@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { buildUnavailablePremiumFaceLab, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import { buildFaceLabV2Canonical } from "@/lib/face-lab-v2/canonical-composer";
 import FaceLabV2Result from "@/components/full-report/face-lab/FaceLabV2Result";
@@ -489,6 +489,7 @@ export default function PremiumFaceLabSection({
   const [budgetBand, setBudgetBand] = useState("standard");
   const [maintenanceTolerance, setMaintenanceTolerance] = useState("medium");
   const [canonical, setCanonical] = useState(null);
+  const persistQueueRef = useRef(Promise.resolve());
 
   useEffect(() => {
     if (!faceLabAnalysis || typeof window === "undefined") return;
@@ -578,27 +579,32 @@ export default function PremiumFaceLabSection({
     }
   };
 
-  const persistServer = async (surveyAnswers, approvedFinder, routeId) => {
-    if (!savedReportId) return;
+  const persistServer = (surveyAnswers, approvedFinder, routeId) => {
+    if (!savedReportId) return Promise.resolve();
 
-    try {
-      const accessToken = await getBrowserSupabaseAccessToken();
-      if (!accessToken) return;
+    const write = async () => {
+      try {
+        const accessToken = await getBrowserSupabaseAccessToken();
+        if (!accessToken) return;
 
-      await fetch("/api/premium/face-lab-v2", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          savedReportId,
-          surveyAnswers,
-          targetFinderResult: approvedFinder,
-          selectedRouteId: routeId
-        })
-      });
-    } catch {}
+        await fetch("/api/premium/face-lab-v2", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            savedReportId,
+            surveyAnswers,
+            targetFinderResult: approvedFinder,
+            selectedRouteId: routeId
+          })
+        });
+      } catch {}
+    };
+
+    persistQueueRef.current = persistQueueRef.current.then(write, write);
+    return persistQueueRef.current;
   };
 
   const buildSurveyAnswers = () => ({
