@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "bejewely-ci-consolidation-audit-baseline-v1",
+  "authoritySha": "62a36f93e2a8e2316593f35cce8619991868a169",
+  "capturedAt": "2026-09-26",
+  "mode": "audit-only-no-workflow-mutation",
+  "expectedWorkflowCount": 63,
+  "protectedCompatibilityShims": [
+    "mobile-native-shell.yml",
+    "mobile-20a-store-capture.yml",
+    "mobile-20b-store-capture.yml"
+  ],
+  "hardRules": [
+    "Do not delete, rename, merge, or rewrite workflow files during Phase A.",
+    "Do not infer RETIRE from script overlap alone.",
+    "Production/runtime/database/artifact/secret behavior is unique coverage unless same-head equivalence proves otherwise.",
+    "Classic branch-protection requirements remain unreadable; protected mobile compatibility shims stay intact."
+  ],
+  "actionRunSample": {
+    "sampledRecentRuns": 500,
+    "note": "Repository-wide recent Actions sample captured through GitHub API; averages are wall-clock run duration, not billed runner minutes. Cancelled/skipped conclusions may be present in run counts.",
+    "selected": [
+      {
+        "workflow": "mobile-android-runtime.yml",
+        "runs": 6,
+        "avgMinutes": 21.16,
+        "p50Minutes": 21.22,
+        "p90Minutes": 27.47
+      },
+      {
+        "workflow": "mobile-20a-store-capture.yml",
+        "runs": 5,
+        "avgMinutes": 20.15,
+        "p50Minutes": 21.62,
+        "p90Minutes": 26.1,
+        "note": "compatibility wait gate; long wall-clock does not imply duplicate emulator/build compute"
+      },
+      {
+        "workflow": "mobile-native-shell.yml",
+        "runs": 5,
+        "avgMinutes": 20.09,
+        "p50Minutes": 21.62,
+        "p90Minutes": 26.18,
+        "note": "compatibility wait gate; long wall-clock does not imply duplicate emulator/build compute"
+      },
+      {
+        "workflow": "mobile-20b-store-capture.yml",
+        "runs": 5,
+        "avgMinutes": 19.99,
+        "p50Minutes": 21.33,
+        "p90Minutes": 26.17,
+        "note": "compatibility wait gate; long wall-clock does not imply duplicate emulator/build compute"
+      },
+      {
+        "workflow": "supply-chain-security.yml",
+        "runs": 79,
+        "avgMinutes": 1.92,
+        "p50Minutes": 1.73,
+        "p90Minutes": 4.02
+      },
+      {
+        "workflow": "data-ai3-product-query-shadow.yml",
+        "runs": 1,
+        "avgMinutes": 1.7
+      },
+      {
+        "workflow": "data-ai4-provider-shadow.yml",
+        "runs": 1,
+        "avgMinutes": 1.58
+      },
+      {
+        "workflow": "current-main-health.yml",
+        "runs": 81,
+        "avgMinutes": 1.27,
+        "p50Minutes": 1.53,
+        "p90Minutes": 1.98
+      }
+    ]
+  },
+  "priorityClusters": [
+    {
+      "id": "taxonomy-ai-data-ai3-5",
+      "workflows": [
+        "data-ai3-product-query-shadow.yml",
+        "data-ai4-provider-shadow.yml",
+        "data-ai5-activation-readiness.yml"
+      ],
+      "reason": "Later phase workflows repeat earlier DATA-AI verifier scripts plus npm ci, architecture:guard and production build while adding phase-specific runtime semantics.",
+      "nextDecision": "prove which runtime probes are unique before any ABSORB/RETIRE decision"
+    },
+    {
+      "id": "taxonomy-ai-prelaunch",
+      "workflows": [
+        "data-ai25-operational-readiness.yml",
+        "data-ai-prelaunch-01-product-query-e2e.yml"
+      ],
+      "reason": "PRELAUNCH-01 directly re-executes the DATA-AI25 operational-readiness verifier.",
+      "nextDecision": "separate prerequisite contract from prelaunch acceptance coverage"
+    },
+    {
+      "id": "mobile-release-13-15",
+      "workflows": [
+        "mobile-13-store-release-preflight.yml",
+        "mobile-14-auth-app-links.yml",
+        "mobile-15-distribution-authority.yml"
+      ],
+      "reason": "Repeated native prebuild/release preflight and earlier verifier execution; MOBILE-15 additionally owns signing secrets and signed distribution artifacts.",
+      "nextDecision": "preserve signing/artifact authority while measuring reusable preflight coverage"
+    },
+    {
+      "id": "trust-5b-7d",
+      "workflows": [
+        "trust-phase5b-subject-registration.yml",
+        "trust-phase6a-reentry.yml",
+        "trust-phase7c-phase4-compat.yml",
+        "trust-phase7c-readiness.yml",
+        "trust-phase7d-relational-adoption.yml"
+      ],
+      "reason": "Later TRUST workflows repeatedly invoke subject-resolution, research-worker, Phase4 adoption, backfill and replay-baseline contracts.",
+      "nextDecision": "build exact unique-runtime matrix before consolidation"
+    },
+    {
+      "id": "trust-8b-8g-replay",
+      "workflows": [
+        "trust-phase8b-source-verification.yml",
+        "trust-phase8c-revalidation.yml",
+        "trust-phase8d-revalidation.yml",
+        "trust-phase8e-revalidation-adjudication.yml",
+        "trust-phase8f-changed-semantic-replacement.yml",
+        "trust-phase8g-source-verification.yml"
+      ],
+      "reason": "Each phase owns a distinct verifier but repeatedly materializes the same Product Fact replay baseline.",
+      "nextDecision": "consider shared setup/cache only; do not collapse semantic phase verifiers"
+    },
+    {
+      "id": "current-main-cross-cutting",
+      "workflows": [
+        "current-main-health.yml"
+      ],
+      "reason": "verify:current transitively executes broad TRUST and DATA-AI phase verifier chains that also have dedicated workflows, making project-wide health a major overlap source.",
+      "nextDecision": "measure transitive duplicate coverage and preserve global-health semantics until same-head equivalence is proven"
+    }
+  ]
+}
