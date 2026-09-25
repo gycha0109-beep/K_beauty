@@ -11,6 +11,8 @@ METRO_PID=""
 MOBILE_NODE_PATH="$MOBILE_ROOT/node_modules${NODE_PATH:+:$NODE_PATH}"
 QUICKSTEP_RECOVERY_COUNT=0
 QUICKSTEP_RECOVERY_LIMIT=2
+SCENARIO_PROCESS_RECOVERY_LIMIT=2
+SCENARIO_PROCESS_LOSS_GRACE=3
 
 mkdir -p "$ARTIFACT_DIR"
 rm -f "$ARTIFACT_DIR"/*.png "$ARTIFACT_DIR"/*.xml "$ARTIFACT_DIR"/capture-manifest.json
@@ -94,6 +96,27 @@ launch_scenario() {
   adb shell am start -W -a android.intent.action.VIEW -d "bejewely://store-capture?scenario=$scenario" "$PACKAGE_ID" >/dev/null
 }
 
+scenario_process_running() {
+  local pid
+  pid="$(adb shell pidof "$PACKAGE_ID" 2>/dev/null | tr -d '\r' || true)"
+  [[ "$pid" =~ ^[0-9]+([[:space:]][0-9]+)*$ ]]
+}
+
+launcher_owns_ui() {
+  local xml_path="$1"
+  [[ -s "$xml_path" ]] &&
+    grep -Fq 'package="com.android.launcher3"' "$xml_path" &&
+    ! grep -Fq "package=\"$PACKAGE_ID\"" "$xml_path"
+}
+
+restart_scenario_after_process_loss() {
+  local scenario="$1"
+  adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
+  adb shell pm clear "$PACKAGE_ID" >/dev/null
+  adb reverse tcp:8081 tcp:8081 >/dev/null
+  launch_scenario "$scenario"
+}
+
 capture() {
   local scenario="$1" expected="$2" png="$3" xml="$4"
   local xml_path="$ARTIFACT_DIR/$xml"
@@ -102,10 +125,16 @@ capture() {
   adb reverse tcp:8081 tcp:8081 >/dev/null
   launch_scenario "$scenario"
   local found=0
-  for _ in $(seq 1 45); do
+  local process_recovery_count=0
+  local process_loss_streak=0
+  local attempt
+  for attempt in $(seq 1 45); do
     adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
     adb pull /sdcard/window.xml "$xml_path" >/dev/null 2>&1 || true
-    if [[ -s "$xml_path" ]] && grep -Fq "$expected" "$xml_path"; then found=1; break; fi
+    if [[ -s "$xml_path" ]] && grep -Fq "$expected" "$xml_path"; then
+      found=1
+      break
+    fi
     if [[ -s "$xml_path" ]] && grep -Fq "Quickstep isn't responding" "$xml_path"; then
       if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
         echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
@@ -122,8 +151,26 @@ capture() {
       adb reverse tcp:8081 tcp:8081 >/dev/null
       launch_scenario "$scenario"
       printf 'MOBILE_20B_SCENARIO_RESTART=PASS scenario=%s\n' "$scenario"
+      process_loss_streak=0
       sleep 2
       continue
+    fi
+    if launcher_owns_ui "$xml_path" && ! scenario_process_running; then
+      process_loss_streak=$((process_loss_streak + 1))
+      if (( process_loss_streak >= SCENARIO_PROCESS_LOSS_GRACE )); then
+        if (( process_recovery_count >= SCENARIO_PROCESS_RECOVERY_LIMIT )); then
+          echo "BEJEWELY process repeatedly died during scenario: $scenario" >&2
+          exit 1
+        fi
+        process_recovery_count=$((process_recovery_count + 1))
+        printf 'MOBILE_20B_PROCESS_RECOVERY=PASS scenario=%s count=%d attempt=%s\n' "$scenario" "$process_recovery_count" "$attempt"
+        restart_scenario_after_process_loss "$scenario"
+        process_loss_streak=0
+        sleep 2
+        continue
+      fi
+    else
+      process_loss_streak=0
     fi
     sleep 2
   done

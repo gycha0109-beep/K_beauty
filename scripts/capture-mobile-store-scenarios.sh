@@ -11,6 +11,11 @@ LOGCAT_PATH="$ARTIFACT_DIR/store-scenarios-logcat.txt"
 METRO_PID=""
 METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
 UI_DUMP_RETRY_LIMIT=4
+ADB_READY_RETRY_LIMIT=45
+APP_FOREGROUND_RETRY_LIMIT=15
+SCENARIO_LAUNCH_RETRY_LIMIT=3
+QUICKSTEP_RECOVERY_COUNT=0
+QUICKSTEP_RECOVERY_LIMIT=2
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -41,10 +46,150 @@ if [[ ! -x "$EXPO_BIN" ]]; then
   exit 1
 fi
 
+adb_diagnostics() {
+  echo "--- ADB diagnostics ---" >&2
+  adb devices -l >&2 || true
+  printf 'adb_state=%s\n' "$(adb get-state 2>/dev/null || true)" >&2
+  printf 'sys.boot_completed=%s\n' "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)" >&2
+  adb shell dumpsys activity activities 2>/dev/null | grep -m1 'mResumedActivity' >&2 || true
+  adb shell dumpsys activity top 2>/dev/null | grep -m1 'ACTIVITY' >&2 || true
+  adb shell dumpsys window windows 2>/dev/null | grep -m1 'mCurrentFocus' >&2 || true
+  adb shell dumpsys window displays 2>/dev/null | grep -Em1 'mCurrentFocus|mFocusedApp' >&2 || true
+}
+
+wait_for_adb_ready() {
+  local attempt state boot_completed
+  for attempt in $(seq 1 "$ADB_READY_RETRY_LIMIT"); do
+    state="$(adb get-state 2>/dev/null || true)"
+    boot_completed="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+    if [[ "$state" == "device" && "$boot_completed" == "1" ]]; then
+      printf 'MOBILE_STORE_SCENARIO_ADB_READY=PASS attempt=%s\n' "$attempt"
+      return 0
+    fi
+    if [[ "$state" == "offline" ]]; then
+      adb reconnect offline >/dev/null 2>&1 || true
+    fi
+    sleep 2
+  done
+  echo "Store scenario ADB device did not become ready within bounded retry window" >&2
+  adb_diagnostics
+  return 1
+}
+
+foreground_ui_owned_by_app() {
+  local hierarchy=""
+  hierarchy="$(adb shell uiautomator dump /sdcard/bejewely-scenario-foreground-window.xml >/dev/null 2>&1 && adb exec-out cat /sdcard/bejewely-scenario-foreground-window.xml 2>/dev/null || true)"
+  [[ "$hierarchy" == *"package=\"$PACKAGE_ID\""* ]]
+}
+
+app_is_foreground() {
+  local resumed focus top_activity focused_display
+  resumed="$(adb shell dumpsys activity activities 2>/dev/null | grep -m1 'mResumedActivity' || true)"
+  focus="$(adb shell dumpsys window windows 2>/dev/null | grep -m1 'mCurrentFocus' || true)"
+  top_activity="$(adb shell dumpsys activity top 2>/dev/null | grep -m1 'ACTIVITY' || true)"
+  focused_display="$(adb shell dumpsys window displays 2>/dev/null | grep -Em1 'mCurrentFocus|mFocusedApp' || true)"
+  if [[ "$resumed" == *"$PACKAGE_ID"* || "$focus" == *"$PACKAGE_ID"* || "$top_activity" == *"$PACKAGE_ID"* || "$focused_display" == *"$PACKAGE_ID"* ]]; then
+    return 0
+  fi
+  if foreground_ui_owned_by_app; then
+    printf 'MOBILE_STORE_SCENARIO_APP_FOREGROUND_UI_FALLBACK=PASS\n'
+    return 0
+  fi
+  return 1
+}
+
+tap_text_from_current_ui() {
+  local target="$1"
+  if [[ ! -s "$UI_DUMP" ]]; then
+    echo "Store scenario UI hierarchy missing for tap target: $target" >&2
+    return 1
+  fi
+  local coords
+  if ! coords="$(python - "$UI_DUMP" "$target" <<'PY'
+import re
+import sys
+import xml.etree.ElementTree as ET
+path, target = sys.argv[1], sys.argv[2]
+root = ET.parse(path).getroot()
+matches = []
+for node in root.iter("node"):
+    if node.attrib.get("text") != target and node.attrib.get("content-desc") != target:
+        continue
+    match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
+    if not match:
+        continue
+    x1, y1, x2, y2 = map(int, match.groups())
+    matches.append((node.attrib.get("clickable") == "true", (x1 + x2) // 2, (y1 + y2) // 2))
+if not matches:
+    raise SystemExit(f"store scenario tap target not found: {target}")
+matches.sort(reverse=True)
+_, x, y = matches[0]
+print(x, y)
+PY
+)"; then
+    echo "Store scenario failed to resolve tap coordinates: $target" >&2
+    return 1
+  fi
+  read -r x y <<< "$coords"
+  if [[ ! "$x" =~ ^[0-9]+$ || ! "$y" =~ ^[0-9]+$ ]]; then
+    echo "Store scenario invalid tap coordinates: target=$target coords=${coords:-missing}" >&2
+    return 1
+  fi
+  adb shell input tap "$x" "$y"
+  printf 'MOBILE_STORE_SCENARIO_CURRENT_UI_TAP=PASS target=%s x=%s y=%s\n' "$target" "$x" "$y"
+}
+
+dismiss_quickstep_anr_if_needed() {
+  dump_ui || true
+  if [[ ! -s "$UI_DUMP" ]] || ! ui_has_text "Quickstep isn't responding"; then
+    return 1
+  fi
+  if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
+    echo "Store scenario Quickstep ANR persisted beyond scoped recovery limit" >&2
+    return 2
+  fi
+  if ! tap_text_from_current_ui "Close app"; then
+    echo "Store scenario Quickstep ANR close action was unavailable" >&2
+    return 2
+  fi
+  QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
+  printf 'MOBILE_STORE_SCENARIO_QUICKSTEP_ANR_RECOVERY=PASS count=%d\n' "$QUICKSTEP_RECOVERY_COUNT"
+  sleep 2
+  return 0
+}
+
+wait_for_app_foreground() {
+  local attempt recovery_status
+  for attempt in $(seq 1 "$APP_FOREGROUND_RETRY_LIMIT"); do
+    if app_is_foreground; then
+      printf 'MOBILE_STORE_SCENARIO_APP_FOREGROUND=PASS attempt=%s\n' "$attempt"
+      return 0
+    fi
+    if dismiss_quickstep_anr_if_needed; then
+      printf 'MOBILE_STORE_SCENARIO_APP_FOREGROUND_QUICKSTEP_RECOVERY=PASS attempt=%s\n' "$attempt"
+      return 3
+    else
+      recovery_status=$?
+      if [[ "$recovery_status" -eq 2 ]]; then
+        return 2
+      fi
+    fi
+    sleep 2
+  done
+  echo "BEJEWELY store scenario did not become foreground within bounded retry window" >&2
+  adb_diagnostics
+  return 1
+}
+
 dump_ui() {
   local attempt
   for attempt in $(seq 1 "$UI_DUMP_RETRY_LIMIT"); do
     rm -f "$UI_DUMP"
+    if [[ "$(adb get-state 2>/dev/null || true)" != "device" ]]; then
+      adb reconnect offline >/dev/null 2>&1 || true
+      sleep 2
+      continue
+    fi
     if adb shell uiautomator dump /sdcard/bejewely-store-scenario-window.xml >/dev/null 2>&1 && \
        adb pull /sdcard/bejewely-store-scenario-window.xml "$UI_DUMP" >/dev/null 2>&1; then
       return 0
@@ -121,12 +266,39 @@ open_store_scenario() {
   local filename="$3"
   local uri="bejewely://store-capture?scenario=$scenario"
 
+  wait_for_adb_ready
   adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
   adb reverse tcp:8081 tcp:8081 >/dev/null
-  adb shell am start -W \
-    -n "$PACKAGE_ID/.MainActivity" \
-    -a android.intent.action.VIEW \
-    -d "$uri" >/dev/null
+
+  local attempt foreground_status
+  for attempt in $(seq 1 "$SCENARIO_LAUNCH_RETRY_LIMIT"); do
+    foreground_status=0
+    adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+    adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
+    if adb shell am start -W \
+      -n "$PACKAGE_ID/.MainActivity" \
+      -a android.intent.action.VIEW \
+      -d "$uri" >/dev/null 2>&1; then
+      if wait_for_app_foreground; then
+        printf 'MOBILE_STORE_SCENARIO_APP_LAUNCH=PASS scenario=%s attempt=%s\n' "$scenario" "$attempt"
+        break
+      else
+        foreground_status=$?
+        if [[ "$foreground_status" -eq 2 ]]; then
+          return 1
+        fi
+        if [[ "$foreground_status" -eq 3 ]]; then
+          printf 'MOBILE_STORE_SCENARIO_LAUNCH_RETRY_AFTER_QUICKSTEP=PASS scenario=%s attempt=%s\n' "$scenario" "$attempt"
+        fi
+      fi
+    fi
+    if (( attempt == SCENARIO_LAUNCH_RETRY_LIMIT )); then
+      echo "Store scenario launch failed after bounded retries: $scenario" >&2
+      adb_diagnostics
+      return 1
+    fi
+    sleep 2
+  done
 
   wait_for_text "$expected"
   sleep 1
@@ -134,6 +306,7 @@ open_store_scenario() {
   printf 'MOBILE_STORE_SCENARIO_CAPTURE=PASS scenario=%s file=%s\n' "$scenario" "$filename"
 }
 
+wait_for_adb_ready
 adb shell cmd uimode night no >/dev/null
 adb shell wm size 1080x1920 >/dev/null
 adb shell wm density 420 >/dev/null 2>&1 || true
@@ -171,6 +344,7 @@ if ! metro_port_ready; then
   exit 1
 fi
 
+wait_for_adb_ready
 adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
 

@@ -20,7 +20,11 @@ function assert(condition, label) {
 const listing = JSON.parse(read("docs/store/mobile-store-listing-final.json"));
 const result = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
 const capture = read("scripts/capture-mobile-store-assets.sh");
-const workflow = read(".github/workflows/mobile-20a-store-capture.yml");
+const runtimeWorkflow = read(".github/workflows/mobile-android-runtime.yml");
+const workflowStart = runtimeWorkflow.indexOf("\n  store-capture-20a:");
+const workflowEnd = runtimeWorkflow.indexOf("\n  store-capture-20b:", workflowStart + 1);
+assert(workflowStart >= 0 && workflowEnd > workflowStart, "canonical-20a-job-block-present");
+const workflow = runtimeWorkflow.slice(workflowStart, workflowEnd);
 
 assert(listing.screenshotPlan?.sourceOfTruth === "production mobile runtime after MOBILE-17A", "production-runtime-source");
 assert(listing.googlePlay?.phoneScreenshots?.targetPortraitSize === "1080x1920", "google-play-target-size");
@@ -51,8 +55,11 @@ for (const marker of [
   "MOBILE_STORE_SCREENSHOT_TRANSPORT_RECOVERY=PASS",
   "QUICKSTEP_RECOVERY_COUNT=0",
   "QUICKSTEP_RECOVERY_LIMIT=2",
+  "dismiss_quickstep_anr_if_needed()",
   "recover_quickstep_if_needed()",
   "Quickstep isn't responding",
+  "MOBILE_STORE_APP_FOREGROUND_QUICKSTEP_RECOVERY=PASS",
+  "MOBILE_STORE_APP_LAUNCH_RETRY_AFTER_QUICKSTEP=PASS",
   "MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS",
   "MOBILE_STORE_DIRECT_ACTIVITY_RESTART=PASS",
   "EXPO_PUBLIC_STORE_CAPTURE_MODE=1",
@@ -61,6 +68,9 @@ for (const marker of [
   'rm -f "$UI_DUMP"',
   "MOBILE_STORE_UI_DUMP_RECOVERY=PASS",
   "UI dump failed after %s attempts",
+  "foreground_ui_owned_by_app()",
+  'adb shell uiautomator dump /sdcard/bejewely-foreground-window.xml',
+  "MOBILE_STORE_APP_FOREGROUND_UI_FALLBACK=PASS",
   "tap_text_from_current_ui()",
   'tap_text_from_current_ui "Take photo"',
   'tap_text_from_current_ui "사진 촬영"',
@@ -116,6 +126,7 @@ for (const marker of [
 
 assert(capture.split("if recover_quickstep_if_needed; then").length - 1 === 2, "bounded-recovery-in-both-waits");
 assert(capture.includes("if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then"), "bounded-recovery-limit-enforced");
+assert(capture.includes("return 3") && capture.includes('[[ "$foreground_status" -eq 3 ]]'), "launch-retry-after-quickstep-anr");
 assert(!capture.includes("wait_for_text_with_scroll"), "no-hierarchy-only-survey-visibility");
 assert(!capture.includes("dump_ui() {\n  adb shell uiautomator dump"), "no-one-shot-ui-dump");
 assert(!capture.includes('wait_for_text "Camera ready"\ntap_text "Take photo"'), "no-camera-preview-redump-en");
@@ -126,6 +137,14 @@ assert(capture.split('adb shell input swipe 540 "$STORE_SCROLL_UP_START_Y" 540 "
 assert(!capture.includes("adb shell input swipe 540 1580 540 680 350"), "no-scroll-gesture-from-below-content-viewport");
 assert(capture.split('adb shell pm clear "$PACKAGE_ID"').length - 1 === 2, "two-clean-localized-capture-sessions");
 assert(capture.split("MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko").length - 1 === 1, "one-locale-session-reset");
+assert(capture.includes("top_activity=") && capture.includes("focused_display="), "multi-signal-foreground-detector");
+assert(capture.includes('[[ "$hierarchy" == *"package=\\\"$PACKAGE_ID\\\""* ]]'), "foreground-ui-package-owner-fallback");
+const foregroundDetectorStart = capture.indexOf("app_is_foreground() {");
+const foregroundDetectorEnd = capture.indexOf("\n}\n\n", foregroundDetectorStart);
+assert(foregroundDetectorStart >= 0 && foregroundDetectorEnd > foregroundDetectorStart, "foreground-detector-body-present");
+const foregroundDetector = capture.slice(foregroundDetectorStart, foregroundDetectorEnd);
+assert(foregroundDetector.includes("return 1"), "foreground-detector-fail-closed");
+assert(foregroundDetector.includes("foreground_ui_owned_by_app"), "foreground-detector-ui-owner-fallback");
 
 const screenshotTransportAttempt = capture.indexOf('if adb exec-out screencap -p > "$output"; then');
 const screenshotDimensionValidation = capture.indexOf("if (width, height) != (1080, 1920)", screenshotTransportAttempt);
@@ -159,6 +178,10 @@ assert(koAnalyzeCapture > koFramePosition, "ko-analyze-capture-after-bounded-fra
 assert(capture.includes("title_y >= 300 && title_y <= 600 && sensitivity_y >= 900 && sensitivity_y <= 1450"), "ko-frame-physical-viewport-ranges");
 assert(capture.includes("(( title_y > 600 || sensitivity_y > 1450 ))"), "ko-frame-corrects-content-up-when-bottom-overflows");
 assert(capture.includes("(( title_y < 300 || sensitivity_y < 900 ))"), "ko-frame-corrects-content-down-when-top-overflows");
+assert(capture.includes('[[ ! "$title_y" =~ ^[0-9]+$ ]] && [[ "$sensitivity_y" =~ ^[0-9]+$ ]]'), "ko-frame-recovers-when-title-scrolls-out");
+assert(capture.includes("reason=title-missing"), "ko-frame-title-missing-recovery-evidence");
+assert(capture.includes('[[ "$title_y" =~ ^[0-9]+$ ]] && [[ ! "$sensitivity_y" =~ ^[0-9]+$ ]]'), "ko-frame-recovers-when-sensitivity-scrolls-out");
+assert(capture.includes("reason=sensitivity-missing"), "ko-frame-sensitivity-missing-recovery-evidence");
 assert(!capture.includes("KO_FRAME_NUDGE_START_Y") && !capture.includes("KO_FRAME_NUDGE_END_Y"), "no-asymmetric-ko-frame-nudge");
 assert(!capture.includes('scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8\nadb shell input swipe 540 760 540 940 250'), "no-one-shot-ko-frame-nudge");
 assert(!capture.includes('capture_png "02-analyze-en-1080x1920.png"\n\ntap_text "Home"'), "no-stateful-en-to-ko-tab-transition");
@@ -189,6 +212,7 @@ console.log("MOBILE_20A_CAPTURE_DIMENSIONS=PASS");
 console.log("MOBILE_20A_SCREENSHOT_TRANSPORT_RECOVERY=PASS");
 console.log("MOBILE_20A_QUICKSTEP_RECOVERY=PASS");
 console.log("MOBILE_20A_UI_DUMP_RETRY_GUARD=PASS");
+console.log("MOBILE_20A_APP_FOREGROUND_MULTI_SIGNAL=PASS");
 console.log("MOBILE_20A_CURRENT_UI_CAMERA_TAP=PASS");
 console.log("MOBILE_20A_CAMERA_ENTRY_RACE_GUARD=PASS");
 console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
