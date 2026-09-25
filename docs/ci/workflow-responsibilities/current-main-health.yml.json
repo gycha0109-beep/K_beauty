@@ -1,0 +1,15 @@
+{
+  "workflow": "current-main-health.yml",
+  "primaryResponsibility": "global-governance",
+  "capabilities": [
+    "ai",
+    "backend",
+    "database",
+    "e2e-contract",
+    "global",
+    "security"
+  ],
+  "watchtowerTrackBinding": "unassigned-by-design",
+  "lifecycleNameClass": "canonical",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

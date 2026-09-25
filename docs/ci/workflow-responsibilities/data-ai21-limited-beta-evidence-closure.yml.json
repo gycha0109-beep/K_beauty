@@ -1,0 +1,12 @@
+{
+  "workflow": "data-ai21-limited-beta-evidence-closure.yml",
+  "primaryResponsibility": "product-query-ai",
+  "capabilities": [
+    "ai",
+    "backend",
+    "recommendation"
+  ],
+  "watchtowerTrackBinding": "static:taxonomy-ai",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

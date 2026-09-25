@@ -1,0 +1,15 @@
+{
+  "workflow": "data-ai-prelaunch-01-product-query-e2e.yml",
+  "primaryResponsibility": "product-query-ai",
+  "capabilities": [
+    "ai",
+    "backend",
+    "e2e-contract",
+    "frontend",
+    "production-safety",
+    "recommendation"
+  ],
+  "watchtowerTrackBinding": "static:taxonomy-ai",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

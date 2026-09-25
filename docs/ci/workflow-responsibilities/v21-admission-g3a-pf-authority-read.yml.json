@@ -1,0 +1,14 @@
+{
+  "workflow": "v21-admission-g3a-pf-authority-read.yml",
+  "primaryResponsibility": "recommendation-admission",
+  "capabilities": [
+    "backend",
+    "catalog-taxonomy",
+    "product-fact-authority",
+    "recommendation",
+    "runtime-probe"
+  ],
+  "watchtowerTrackBinding": "dynamic-by-run",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

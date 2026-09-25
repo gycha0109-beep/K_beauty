@@ -1,0 +1,12 @@
+{
+  "workflow": "mobile-store-readiness.yml",
+  "primaryResponsibility": "mobile-release-store",
+  "capabilities": [
+    "mobile",
+    "policy",
+    "release-store"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "canonical",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

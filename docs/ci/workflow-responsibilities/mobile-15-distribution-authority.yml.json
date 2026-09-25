@@ -1,0 +1,13 @@
+{
+  "workflow": "mobile-15-distribution-authority.yml",
+  "primaryResponsibility": "mobile-release-store",
+  "capabilities": [
+    "distribution",
+    "mobile",
+    "release-store",
+    "signing"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

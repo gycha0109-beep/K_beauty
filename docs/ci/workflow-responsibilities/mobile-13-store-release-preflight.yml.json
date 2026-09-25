@@ -1,0 +1,12 @@
+{
+  "workflow": "mobile-13-store-release-preflight.yml",
+  "primaryResponsibility": "mobile-build",
+  "capabilities": [
+    "build",
+    "mobile",
+    "release-artifact"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

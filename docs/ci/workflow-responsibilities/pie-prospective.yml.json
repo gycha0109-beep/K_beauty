@@ -1,0 +1,12 @@
+{
+  "workflow": "pie-prospective.yml",
+  "primaryResponsibility": "global-governance",
+  "capabilities": [
+    "global",
+    "policy",
+    "prospective-shadow"
+  ],
+  "watchtowerTrackBinding": "unassigned-by-design",
+  "lifecycleNameClass": "canonical",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

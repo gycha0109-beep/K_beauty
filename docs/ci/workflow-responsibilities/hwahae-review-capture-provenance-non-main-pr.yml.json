@@ -1,0 +1,11 @@
+{
+  "workflow": "hwahae-review-capture-provenance-non-main-pr.yml",
+  "primaryResponsibility": "product-data-pipeline",
+  "capabilities": [
+    "catalog",
+    "pipeline"
+  ],
+  "watchtowerTrackBinding": "dynamic-by-run",
+  "lifecycleNameClass": "capability",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

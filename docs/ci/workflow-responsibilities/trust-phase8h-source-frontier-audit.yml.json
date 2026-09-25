@@ -1,0 +1,13 @@
+{
+  "workflow": "trust-phase8h-source-frontier-audit.yml",
+  "primaryResponsibility": "trust-data-governance",
+  "capabilities": [
+    "evidence-governance",
+    "official-source",
+    "pipeline",
+    "read-only-audit"
+  ],
+  "watchtowerTrackBinding": "static:trust",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

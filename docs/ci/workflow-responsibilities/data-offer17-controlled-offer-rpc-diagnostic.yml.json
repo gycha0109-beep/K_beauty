@@ -1,0 +1,13 @@
+{
+  "workflow": "data-offer17-controlled-offer-rpc-diagnostic.yml",
+  "primaryResponsibility": "product-offer-runtime",
+  "capabilities": [
+    "backend",
+    "commerce-data",
+    "database",
+    "runtime-probe"
+  ],
+  "watchtowerTrackBinding": "dynamic-by-run",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

@@ -1,0 +1,15 @@
+{
+  "workflow": "mobile-android-runtime.yml",
+  "primaryResponsibility": "mobile-build",
+  "capabilities": [
+    "android",
+    "artifact-producer",
+    "build",
+    "e2e",
+    "mobile",
+    "store-capture"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "canonical",
+  "preservationPolicy": "canonical-owner"
+}

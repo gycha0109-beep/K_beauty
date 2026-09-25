@@ -1,0 +1,12 @@
+{
+  "workflow": "admin-access-foundation.yml",
+  "primaryResponsibility": "admin",
+  "capabilities": [
+    "backend",
+    "integration",
+    "security"
+  ],
+  "watchtowerTrackBinding": "dynamic-by-run",
+  "lifecycleNameClass": "capability",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

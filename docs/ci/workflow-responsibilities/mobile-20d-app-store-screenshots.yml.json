@@ -1,0 +1,12 @@
+{
+  "workflow": "mobile-20d-app-store-screenshots.yml",
+  "primaryResponsibility": "mobile-release-store",
+  "capabilities": [
+    "mobile",
+    "release-store",
+    "store-capture"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

@@ -1,0 +1,14 @@
+{
+  "workflow": "mobile-ios-shell.yml",
+  "primaryResponsibility": "mobile-e2e",
+  "capabilities": [
+    "e2e",
+    "ios",
+    "mobile",
+    "native",
+    "runtime-probe"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "canonical",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

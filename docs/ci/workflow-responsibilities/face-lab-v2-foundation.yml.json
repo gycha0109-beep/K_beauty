@@ -1,0 +1,13 @@
+{
+  "workflow": "face-lab-v2-foundation.yml",
+  "primaryResponsibility": "face-lab",
+  "capabilities": [
+    "face-lab",
+    "backend",
+    "premium-result",
+    "contract-verification"
+  ],
+  "watchtowerTrackBinding": "static:face-research",
+  "lifecycleNameClass": "capability",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}
