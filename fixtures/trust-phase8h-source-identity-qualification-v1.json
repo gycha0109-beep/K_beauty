@@ -1,0 +1,150 @@
+{
+  "contract": "trust-phase8h-source-identity-qualification-fixtures-v1",
+  "base": {
+    "contract": "trust-phase8h-source-identity-qualification-v1",
+    "case_id": "dermafactory_exact",
+    "historical_source": {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "publisher": "Derma Factory",
+      "source_kind": "official_product_page",
+      "market": "KR_US"
+    },
+    "governed_subject": {
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+      "variant_key": null,
+      "formulation_revision_key": "pilot-freeze-3637fac10fd819b43eeb697447a4ef9b",
+      "market": "KR_US"
+    },
+    "candidate": {
+      "candidate_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "discovery_method": "official_http_redirect",
+      "publisher": "Derma Factory",
+      "market": "KR_US",
+      "source_kind": "official_product_page"
+    },
+    "reviewed_binding": {
+      "binding_id": "fd3ddecc-c09a-4b12-bc96-6e6ef2b2e97c",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+      "binding_state": "resolved",
+      "source_url": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "source_market": "KR_US",
+      "variant_key": null,
+      "formulation_revision_key": "pilot-freeze-3637fac10fd819b43eeb697447a4ef9b",
+      "review_version": "trust-official-source-review-v1"
+    },
+    "requirements": {
+      "allowed_hosts": ["dermafactory.net"],
+      "product_anchors_all": ["Niacinamide 20% Serum"],
+      "market_anchors_all": ["Available in Korea & U.S."],
+      "variant_anchors_all": [],
+      "formulation_anchors_all": ["Niacinamide 20% Serum"],
+      "claim_anchors_all": ["Niacinamide", "20%"]
+    },
+    "observation": {
+      "ok": true,
+      "final_url": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "title": "Niacinamide 20% Serum 30ml – Derma Factory",
+      "text": "Niacinamide 20% Serum 30ml Available in Korea & U.S. Ingredients Rosa Damascena Flower Water, Niacinamide, Glycerin. Texture Serum."
+    }
+  },
+  "cases": [
+    {
+      "case_id": "qualified_exact",
+      "expected": "QUALIFIED_EXACT",
+      "patch": {}
+    },
+    {
+      "case_id": "redirected_homepage_ambiguous",
+      "expected": "AMBIGUOUS_IDENTITY",
+      "patch": {
+        "observation": {
+          "ok": true,
+          "final_url": "https://dermafactory.net/",
+          "title": "Derma Factory",
+          "text": "Official skincare store"
+        }
+      }
+    },
+    {
+      "case_id": "wrong_product",
+      "expected": "WRONG_PRODUCT",
+      "patch": {
+        "observation": {
+          "ok": true,
+          "final_url": "https://dermafactory.net/products/other-serum",
+          "title": "Retinal Serum",
+          "text": "Available in Korea & U.S. Retinal Serum"
+        }
+      }
+    },
+    {
+      "case_id": "wrong_market",
+      "expected": "WRONG_MARKET",
+      "patch": {
+        "candidate": {
+          "market": "US"
+        }
+      }
+    },
+    {
+      "case_id": "wrong_variant",
+      "expected": "WRONG_VARIANT",
+      "patch": {
+        "governed_subject": {
+          "variant_key": "CURRENT_VARIANT"
+        },
+        "reviewed_binding": {
+          "variant_key": "OTHER_VARIANT"
+        }
+      }
+    },
+    {
+      "case_id": "wrong_formulation",
+      "expected": "WRONG_FORMULATION",
+      "patch": {
+        "reviewed_binding": {
+          "formulation_revision_key": "different-formulation"
+        }
+      }
+    },
+    {
+      "case_id": "anchor_missing",
+      "expected": "ANCHOR_MISSING",
+      "patch": {
+        "requirements": {
+          "claim_anchors_all": ["Niacinamide", "ceramide"]
+        }
+      }
+    },
+    {
+      "case_id": "unsupported_semantics",
+      "expected": "UNSUPPORTED_SEMANTICS",
+      "patch": {
+        "reviewed_binding": null
+      }
+    },
+    {
+      "case_id": "transient_failure",
+      "expected": "TRANSIENT_FAILURE",
+      "patch": {
+        "observation": {
+          "ok": false,
+          "error": "TRANSIENT_FAILURE:http_429"
+        }
+      }
+    },
+    {
+      "case_id": "source_blocked",
+      "expected": "SOURCE_BLOCKED",
+      "patch": {
+        "observation": {
+          "ok": false,
+          "error": "SOURCE_BLOCKED:https_only"
+        }
+      }
+    }
+  ]
+}

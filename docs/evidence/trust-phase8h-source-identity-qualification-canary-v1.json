@@ -1,0 +1,225 @@
+{
+  "contract": "trust-phase8h-source-identity-qualification-batch-v1",
+  "snapshot_at": "2026-09-25T04:00:23.398Z",
+  "case_count": 5,
+  "cases": [
+    {
+      "contract": "trust-phase8h-source-identity-qualification-v1",
+      "case_id": "dermafactory-f5eb21f8-redirect-canary",
+      "historical_source": {
+        "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+        "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+        "publisher": "Derma Factory",
+        "source_kind": "official_product_page",
+        "market": "KR_US"
+      },
+      "governed_subject": {
+        "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+        "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-3637fac10fd819b43eeb697447a4ef9b",
+        "market": "KR_US"
+      },
+      "candidate": {
+        "candidate_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+        "discovery_method": "official_http_redirect",
+        "publisher": "Derma Factory",
+        "market": "KR_US",
+        "source_kind": "official_product_page"
+      },
+      "reviewed_binding": {
+        "binding_id": "fd3ddecc-c09a-4b12-bc96-6e6ef2b2e97c",
+        "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+        "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+        "binding_state": "resolved",
+        "source_url": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+        "source_market": "KR_US",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-3637fac10fd819b43eeb697447a4ef9b",
+        "review_version": "trust-official-source-review-v1"
+      },
+      "requirements": {
+        "allowed_hosts": ["dermafactory.net"],
+        "product_anchors_all": ["Niacinamide 20% Serum"],
+        "market_anchors_all": ["Available in Korea & U.S."],
+        "variant_anchors_all": [],
+        "formulation_anchors_all": ["Niacinamide 20% Serum"],
+        "claim_anchors_all": ["Niacinamide", "20%"]
+      },
+      "observation": {}
+    },
+    {
+      "contract": "trust-phase8h-source-identity-qualification-v1",
+      "case_id": "boj-4f74de41-direct-redirect",
+      "historical_source": {
+        "source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+        "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "publisher": "Beauty of Joseon",
+        "source_kind": "official_product_page",
+        "market": "GLOBAL"
+      },
+      "governed_subject": {
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+        "variant_key": "Relief_Sun_Rice_Probiotics",
+        "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+        "market": "GLOBAL"
+      },
+      "candidate": {
+        "candidate_locator": "https://beautyofjoseon.com/",
+        "discovery_method": "official_http_redirect",
+        "publisher": "Beauty of Joseon",
+        "market": "GLOBAL",
+        "source_kind": "official_homepage"
+      },
+      "reviewed_binding": {
+        "binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+        "binding_state": "resolved",
+        "source_url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "source_market": "GLOBAL",
+        "variant_key": "Relief_Sun_Rice_Probiotics",
+        "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+        "review_version": "trust-official-source-review-v1"
+      },
+      "requirements": {
+        "allowed_hosts": ["beautyofjoseon.com"],
+        "product_anchors_all": ["Relief Sun"],
+        "product_anchors_any": ["Rice + Probiotics", "Rice + Niacinamide"],
+        "market_anchors_all": [],
+        "variant_anchors_all": [],
+        "formulation_anchors_all": [],
+        "claim_anchors_all": ["SPF50+"]
+      },
+      "observation": {}
+    },
+    {
+      "contract": "trust-phase8h-source-identity-qualification-v1",
+      "case_id": "boj-5752312a-direct-redirect",
+      "historical_source": {
+        "source_id": "5752312a-3109-4da7-a796-9b3de1765112",
+        "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+        "publisher": "Beauty of Joseon",
+        "source_kind": "official_product_page",
+        "market": null
+      },
+      "governed_subject": {
+        "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+        "subject_id": "1b735d5e-bc57-4808-9f48-b4bb82f3e8fa",
+        "variant_key": "Relief_Sun_Aqua_Fresh_Rice_B5_50ML",
+        "formulation_revision_key": "trust-p7-boj-relief-sun-aqua-fresh-current",
+        "market": null
+      },
+      "candidate": {
+        "candidate_locator": "https://beautyofjoseon.com/",
+        "discovery_method": "official_http_redirect",
+        "publisher": "Beauty of Joseon",
+        "market": null,
+        "source_kind": "official_homepage"
+      },
+      "reviewed_binding": null,
+      "requirements": {
+        "allowed_hosts": ["beautyofjoseon.com"],
+        "product_anchors_all": ["Relief Sun Aqua-Fresh", "Rice + B5"],
+        "market_anchors_all": [],
+        "variant_anchors_all": ["50 mL"],
+        "formulation_anchors_all": ["rice seed water", "panthenol"],
+        "claim_anchors_all": ["SPF50+"]
+      },
+      "observation": {}
+    },
+    {
+      "contract": "trust-phase8h-source-identity-qualification-v1",
+      "case_id": "boj-60a55f19-direct-redirect",
+      "historical_source": {
+        "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+        "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "publisher": "Beauty of Joseon",
+        "source_kind": "official_product_page",
+        "market": "GLOBAL"
+      },
+      "governed_subject": {
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+        "variant_key": "Relief_Sun_Rice_Probiotics",
+        "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+        "market": "GLOBAL"
+      },
+      "candidate": {
+        "candidate_locator": "https://beautyofjoseon.com/",
+        "discovery_method": "official_http_redirect",
+        "publisher": "Beauty of Joseon",
+        "market": "GLOBAL",
+        "source_kind": "official_homepage"
+      },
+      "reviewed_binding": {
+        "binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+        "binding_state": "resolved",
+        "source_url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "source_market": "GLOBAL",
+        "variant_key": "Relief_Sun_Rice_Probiotics",
+        "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+        "review_version": "trust-official-source-review-v1"
+      },
+      "requirements": {
+        "allowed_hosts": ["beautyofjoseon.com"],
+        "product_anchors_all": ["Relief Sun"],
+        "product_anchors_any": ["Rice + Probiotics", "Rice + Niacinamide"],
+        "market_anchors_all": [],
+        "variant_anchors_all": [],
+        "formulation_anchors_all": [],
+        "claim_anchors_all": ["SPF50+"]
+      },
+      "observation": {}
+    },
+    {
+      "contract": "trust-phase8h-source-identity-qualification-v1",
+      "case_id": "boj-f55720c7-direct-redirect",
+      "historical_source": {
+        "source_id": "f55720c7-0252-49b8-967c-8d77f4dfe6d6",
+        "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "publisher": "beautyofjoseon_official",
+        "source_kind": "brand_official_product_page",
+        "market": "GLOBAL"
+      },
+      "governed_subject": {
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+        "variant_key": "Relief_Sun_Rice_Probiotics",
+        "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+        "market": "GLOBAL"
+      },
+      "candidate": {
+        "candidate_locator": "https://beautyofjoseon.com/",
+        "discovery_method": "official_http_redirect",
+        "publisher": "beautyofjoseon_official",
+        "market": "GLOBAL",
+        "source_kind": "official_homepage"
+      },
+      "reviewed_binding": {
+        "binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+        "binding_state": "resolved",
+        "source_url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "source_market": "GLOBAL",
+        "variant_key": "Relief_Sun_Rice_Probiotics",
+        "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+        "review_version": "trust-official-source-review-v1"
+      },
+      "requirements": {
+        "allowed_hosts": ["beautyofjoseon.com"],
+        "product_anchors_all": ["Relief Sun"],
+        "product_anchors_any": ["Rice + Probiotics", "Rice + Niacinamide"],
+        "market_anchors_all": [],
+        "variant_anchors_all": [],
+        "formulation_anchors_all": [],
+        "claim_anchors_all": ["SPF50+"]
+      },
+      "observation": {}
+    }
+  ]
+}
