@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
   "producerContractVersion": "watchtower-v0.3.2",
-  "workflowInventoryDigest": "sha256:c5838031774bb53cfd35ca738d23e527e5fdabcdd365871b5d5e7d9aa6fe49d7",
+  "workflowInventoryDigest": "sha256:89d059d0cc3807084e04d16bbcfefa7052c791156aec55cdebc5616e22a0dd06",
   "lastAuditedAt": "2026-09-24",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
@@ -202,6 +202,30 @@
       "lifecycleNameClass": "capability",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
+    "ai-provider-runtime.yml": {
+      "primaryResponsibility": "ai-provider-runtime",
+      "capabilities": [
+        "ai",
+        "provider-runtime",
+        "runtime-probe",
+        "security"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "commerce-link-health-v1.yml": {
+      "primaryResponsibility": "trust-data-governance",
+      "capabilities": [
+        "commerce",
+        "database",
+        "link-health",
+        "pipeline"
+      ],
+      "watchtowerTrackBinding": "static:trust",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
     "current-main-health.yml": {
       "primaryResponsibility": "global-governance",
       "capabilities": [
@@ -363,6 +387,30 @@
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
+    "database-integration.yml": {
+      "primaryResponsibility": "database-integration",
+      "capabilities": [
+        "database",
+        "migration-authority",
+        "nonproduction-safety",
+        "supabase"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "face-lab-v2-foundation.yml": {
+      "primaryResponsibility": "face-lab",
+      "capabilities": [
+        "face-lab",
+        "backend",
+        "premium-result",
+        "contract-verification"
+      ],
+      "watchtowerTrackBinding": "static:face-research",
+      "lifecycleNameClass": "capability",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
     "hwahae-review-capture-provenance-non-main-pr.yml": {
       "primaryResponsibility": "product-data-pipeline",
       "capabilities": [
@@ -450,6 +498,17 @@
       ],
       "watchtowerTrackBinding": "static:mobile",
       "lifecycleNameClass": "phase-coded",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "mobile-api-integration.yml": {
+      "primaryResponsibility": "mobile-api-integration",
+      "capabilities": [
+        "api-integration",
+        "backend-contract",
+        "mobile"
+      ],
+      "watchtowerTrackBinding": "static:mobile",
+      "lifecycleNameClass": "canonical",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-ci.yml": {
@@ -550,6 +609,19 @@
         "provider-safety",
         "repository-hygiene",
         "security"
+      ],
+      "watchtowerTrackBinding": "dynamic-by-run",
+      "lifecycleNameClass": "canonical",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
+    "supply-chain-security.yml": {
+      "primaryResponsibility": "supply-chain-security",
+      "capabilities": [
+        "dependency-security",
+        "lockfile-integrity",
+        "sast",
+        "security",
+        "supply-chain"
       ],
       "watchtowerTrackBinding": "dynamic-by-run",
       "lifecycleNameClass": "canonical",
@@ -784,76 +856,17 @@
       "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
-    "supply-chain-security.yml": {
-      "primaryResponsibility": "supply-chain-security",
-      "capabilities": [
-        "dependency-security",
-        "lockfile-integrity",
-        "sast",
-        "security",
-        "supply-chain"
-      ],
-      "watchtowerTrackBinding": "dynamic-by-run",
-      "lifecycleNameClass": "canonical",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
-    "ai-provider-runtime.yml": {
-      "primaryResponsibility": "ai-provider-runtime",
+    "data-ai23-authenticated-beta-ux.yml": {
+      "primaryResponsibility": "product-query-ai",
       "capabilities": [
         "ai",
-        "provider-runtime",
-        "runtime-probe",
-        "security"
-      ],
-      "watchtowerTrackBinding": "dynamic-by-run",
-      "lifecycleNameClass": "canonical",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
-    "database-integration.yml": {
-      "primaryResponsibility": "database-integration",
-      "capabilities": [
-        "database",
-        "migration-authority",
-        "nonproduction-safety",
-        "supabase"
-      ],
-      "watchtowerTrackBinding": "dynamic-by-run",
-      "lifecycleNameClass": "canonical",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
-    "mobile-api-integration.yml": {
-      "primaryResponsibility": "mobile-api-integration",
-      "capabilities": [
-        "api-integration",
-        "backend-contract",
-        "mobile"
-      ],
-      "watchtowerTrackBinding": "static:mobile",
-      "lifecycleNameClass": "canonical",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
-    "commerce-link-health-v1.yml": {
-      "primaryResponsibility": "trust-data-governance",
-      "capabilities": [
-        "commerce",
-        "database",
-        "link-health",
-        "pipeline"
-      ],
-      "watchtowerTrackBinding": "static:trust",
-      "lifecycleNameClass": "capability",
-      "preservationPolicy": "preserve-until-equivalence-proven"
-    },
-    "face-lab-v2-foundation.yml": {
-      "primaryResponsibility": "face-lab",
-      "capabilities": [
-        "face-lab",
         "backend",
-        "premium-result",
-        "contract-verification"
+        "frontend",
+        "production-safety",
+        "recommendation"
       ],
-      "watchtowerTrackBinding": "static:face-research",
-      "lifecycleNameClass": "capability",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "lifecycleNameClass": "phase-coded",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "mobile-android-runtime.yml": {

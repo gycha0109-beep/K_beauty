@@ -1,0 +1,54 @@
+name: Product Query AI - Authenticated Beta UX
+run-name: "[WT:taxonomy-ai] Product Query AI - DATA-AI23 Authenticated Beta UX"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/route.js"
+      - "components/my/MyDashboard.jsx"
+      - "components/my/ProductQueryBetaCard.jsx"
+      - "lib/my/dashboard.js"
+      - "lib/my/i18n.js"
+      - "lib/product-query-authenticated-beta-ux-contract.mjs"
+      - "scripts/verify-data-ai23-authenticated-beta-ux.mjs"
+      - ".github/workflows/data-ai23-authenticated-beta-ux.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/route.js"
+      - "components/my/MyDashboard.jsx"
+      - "components/my/ProductQueryBetaCard.jsx"
+      - "lib/my/dashboard.js"
+      - "lib/my/i18n.js"
+      - "lib/product-query-authenticated-beta-ux-contract.mjs"
+      - "scripts/verify-data-ai23-authenticated-beta-ux.mjs"
+      - ".github/workflows/data-ai23-authenticated-beta-ux.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-ai23-authenticated-beta-ux-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: DATA-AI23 authenticated beta UX contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify DATA-AI23 authenticated beta UX
+        run: node scripts/verify-data-ai23-authenticated-beta-ux.mjs

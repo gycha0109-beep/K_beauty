@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import MyDashboardMenu from "@/components/my/MyDashboardMenu";
+import ProductQueryBetaCard from "@/components/my/ProductQueryBetaCard";
 import SavedReportHistory from "@/components/my/SavedReportHistory";
 import SkinDiaryCalendar from "@/components/my/SkinDiaryCalendar";
 import SkinProfileSummaryCard from "@/components/my/SkinProfileSummaryCard";
@@ -366,6 +367,7 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
     currentDiaryMonth,
     todayRoutine,
     latestSharePath,
+    productQueryBetaAvailable,
     hasProfile,
     needsCheckIn
   } = activeDashboard;
@@ -393,7 +395,11 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
           </div>
         </header>
 
-        <div className="mt-6 sm:mt-8">
+        <div className="mt-6 space-y-4 sm:mt-8 sm:space-y-5">
+          {productQueryBetaAvailable ? (
+            <ProductQueryBetaCard copy={copy.productQueryBeta} />
+          ) : null}
+
           {!hasProfile ? (
             <div className="space-y-4 sm:space-y-5">
               <EmptyProfileState copy={copy} />
