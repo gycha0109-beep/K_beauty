@@ -21,8 +21,10 @@ import {
 } from "./lib/offers/legacy-offer-migration.js";
 import {
   LEGACY_OFFER_IMPORT_MAX_BATCH,
+  assertLegacyOfferPresentationParity,
   assertProductOfferReadback,
   buildProductOfferInsertPayload,
+  normalizeLegacyOfferImportSellerKey,
   resolveLegacyOfferImportConfirm,
   selectLegacyOfferImportRows,
   type ProductOfferReadback,
@@ -52,6 +54,7 @@ type Options = {
   productId: string | null;
   confirmValue: string | null;
   expectedManifestDigest: string | null;
+  sellerKey: string | null;
 };
 
 function loadEnvironment(): string {
@@ -111,6 +114,7 @@ function parseArgs(argv: string[]): Options {
     expectedManifestDigest: values.has("expected-manifest-digest")
       ? values.get("expected-manifest-digest")!
       : null,
+    sellerKey: normalizeLegacyOfferImportSellerKey(values.get("seller-key") ?? null),
   };
 }
 
@@ -154,7 +158,12 @@ function toExistingOffer(row: OfferRow): ExistingOfferIdentity {
   };
 }
 
-function assertCurrentClassification(row: LegacyOfferManifestRow, current: LegacyOfferClassification): void {
+function assertCurrentClassification(
+  row: LegacyOfferManifestRow,
+  current: LegacyOfferClassification,
+  currentBuyLink: string | null,
+  sellerKey: string | null,
+): void {
   const expected = row.proposedOffer;
   if (
     current.migrationDecision !== "LINK_ONLY_READY" ||
@@ -165,6 +174,13 @@ function assertCurrentClassification(row: LegacyOfferManifestRow, current: Legac
   ) {
     throw new Error(`legacy_offer_import_current_product_changed:${row.productId}`);
   }
+
+  assertLegacyOfferPresentationParity({
+    row,
+    currentClassification: current,
+    currentBuyLink,
+    sellerKey,
+  });
 }
 
 async function loadIdentityOffers(
@@ -201,6 +217,7 @@ async function assertSingleRowPreflight(
   client: ReturnType<typeof createServiceRoleClient>,
   row: LegacyOfferManifestRow,
   rules: OfferSourceRules,
+  sellerKey: string | null,
 ): Promise<"insert" | "already_present"> {
   const product = await client
     .from("products")
@@ -210,7 +227,13 @@ async function assertSingleRowPreflight(
   if (product.error) {
     throw new Error(`legacy_offer_import_product_reread_failed:${row.productId}:${product.error.message}`);
   }
-  assertCurrentClassification(row, classifyProduct(product.data as ProductRow, rules));
+  const currentProduct = product.data as ProductRow;
+  assertCurrentClassification(
+    row,
+    classifyProduct(currentProduct, rules),
+    currentProduct.buy_link,
+    sellerKey,
+  );
 
   const identityOffers = await loadIdentityOffers(client, row);
   const conflicting = identityOffers.find((offer) => offer.product_id !== row.productId);
@@ -224,8 +247,9 @@ async function confirmRow(
   client: ReturnType<typeof createServiceRoleClient>,
   row: LegacyOfferManifestRow,
   rules: OfferSourceRules,
+  sellerKey: string | null,
 ): Promise<"inserted" | "already_present"> {
-  const preflight = await assertSingleRowPreflight(client, row, rules);
+  const preflight = await assertSingleRowPreflight(client, row, rules, sellerKey);
   if (preflight === "already_present") return "already_present";
 
   const payload = buildProductOfferInsertPayload(row);
@@ -325,6 +349,7 @@ async function main(): Promise<void> {
   console.log(`- identity_conflict: ${counts.identity_conflict}`);
   console.log(`- max_batch_size: ${LEGACY_OFFER_IMPORT_MAX_BATCH}`);
   console.log(`- requested_limit: ${options.limit}`);
+  console.log(`- seller_scope: ${options.sellerKey ?? "all"}`);
   console.log("- price_amount_policy: null_only");
   console.log("- availability_policy: unknown_only");
 
@@ -333,6 +358,7 @@ async function main(): Promise<void> {
     dryRunRows,
     limit: options.limit,
     productId: options.productId,
+    sellerKey: options.sellerKey,
   });
   console.log(`- selected_rows: ${selected.length}`);
   for (const row of selected) {
@@ -349,7 +375,7 @@ async function main(): Promise<void> {
   let inserted = 0;
   let alreadyPresent = 0;
   for (const row of selected) {
-    const result = await confirmRow(client, row, rules);
+    const result = await confirmRow(client, row, rules, options.sellerKey);
     if (result === "inserted") inserted += 1;
     else alreadyPresent += 1;
   }
