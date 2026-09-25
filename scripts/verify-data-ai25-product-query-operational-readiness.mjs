@@ -42,7 +42,7 @@ const fixture = JSON.parse(
 
 check(
   PRODUCT_QUERY_BETA_OPERATIONAL_READINESS_CONTRACT_VERSION ===
-    "product-query-beta-operational-readiness-v1" &&
+    "product-query-beta-operational-readiness-v2" &&
     PRODUCT_QUERY_BETA_OPERATIONAL_READINESS.phase === "DATA-AI25",
   "DATA-AI25 readiness contract must be frozen"
 );
@@ -61,6 +61,12 @@ check(
       .syntheticFixturesMaySatisfyProductionEvidence === false &&
     PRODUCT_QUERY_BETA_OPERATIONAL_READINESS.observabilityAuthority
       .productionEvidenceRequiresRealObservations === true &&
+    PRODUCT_QUERY_BETA_OPERATIONAL_READINESS.observabilityAuthority
+      .postLaunchOnly === true &&
+    PRODUCT_QUERY_BETA_OPERATIONAL_READINESS.observabilityAuthority
+      .operationalBaselineStartAtRequired === true &&
+    PRODUCT_QUERY_BETA_OPERATIONAL_READINESS.observabilityAuthority
+      .prelaunchQaExcluded === true &&
     PRODUCT_QUERY_BETA_OPERATIONAL_READINESS.semanticAuthority
       .inferSemanticAccuracyFromProductionTraffic === false,
   "synthetic and operational evidence authorities must remain separated"
@@ -158,8 +164,50 @@ const controls = Object.freeze({
   currentMaxApprovedAccounts: DATA_AI20_MAX_APPROVED_ACCOUNTS
 });
 
+const FIXTURE_BASELINE_START_AT = "2026-09-24T00:00:00.000Z";
+
+function aggregateFixtureBaseline(events) {
+  return aggregateProductQueryOperationalBaseline(events, {
+    operationalBaselineStartAt: FIXTURE_BASELINE_START_AT
+  });
+}
+
+const noLaunchBoundaryBaseline = aggregateProductQueryOperationalBaseline([
+  event()
+]);
+const noLaunchBoundaryReadiness = evaluateProductQueryOperationalReadiness(
+  noLaunchBoundaryBaseline,
+  controls
+);
+check(
+  noLaunchBoundaryBaseline.launchBoundaryEstablished === false &&
+    noLaunchBoundaryBaseline.validRuntimeObservationCount === 0 &&
+    noLaunchBoundaryBaseline.unscopedObservationCount === 1 &&
+    noLaunchBoundaryReadiness.state === "insufficient_evidence" &&
+    noLaunchBoundaryReadiness.reasons.includes(
+      "operational_baseline_not_started"
+    ),
+  "DATA-AI25 must remain insufficient until a real launch boundary exists"
+);
+
+const cutoffBaseline = aggregateProductQueryOperationalBaseline(
+  [
+    event({ timestamp: "2026-09-23T23:59:59.000Z" }),
+    event({ timestamp: "2026-09-24T00:00:00.000Z" }),
+    event({ timestamp: "2026-09-25T00:00:00.000Z" })
+  ],
+  { operationalBaselineStartAt: FIXTURE_BASELINE_START_AT }
+);
+check(
+  cutoffBaseline.launchBoundaryEstablished === true &&
+    cutoffBaseline.preBaselineObservationCount === 1 &&
+    cutoffBaseline.validObservationCount === 2 &&
+    cutoffBaseline.validRuntimeObservationCount === 2,
+  "pre-launch QA observations must be excluded from DATA-AI25 evidence"
+);
+
 for (const testCase of fixture.cases) {
-  const baseline = aggregateProductQueryOperationalBaseline(
+  const baseline = aggregateFixtureBaseline(
     eventsForCase(testCase)
   );
   const readiness = evaluateProductQueryOperationalReadiness(
@@ -189,7 +237,7 @@ for (const testCase of fixture.cases) {
 const readyCase = fixture.cases.find(
   (testCase) => testCase.id === "DA25-READY-01"
 );
-const readyBaseline = aggregateProductQueryOperationalBaseline(
+const readyBaseline = aggregateFixtureBaseline(
   eventsForCase(readyCase)
 );
 check(
@@ -199,7 +247,7 @@ check(
   "ready fixture must exercise the exact 98% runtime / 2% fallback boundary"
 );
 
-const invalidRequestBaseline = aggregateProductQueryOperationalBaseline([
+const invalidRequestBaseline = aggregateFixtureBaseline([
   event({
     outcome: "invalid_request",
     provider: "provider",
@@ -221,7 +269,7 @@ check(
 
 const driftEvents = Array.from({ length: 30 }, () => event());
 driftEvents[0] = event({ model: "unexpected-model" });
-const driftBaseline = aggregateProductQueryOperationalBaseline(driftEvents);
+const driftBaseline = aggregateFixtureBaseline(driftEvents);
 const driftReadiness = evaluateProductQueryOperationalReadiness(
   driftBaseline,
   controls
@@ -237,7 +285,7 @@ const maliciousEvent = {
   ...event(),
   ...fixture.privacyAdversarialFields
 };
-const maliciousBaseline = aggregateProductQueryOperationalBaseline([
+const maliciousBaseline = aggregateFixtureBaseline([
   maliciousEvent
 ]);
 const maliciousSerialized = JSON.stringify(maliciousBaseline);
@@ -268,7 +316,7 @@ for (const forbidden of [
   );
 }
 
-const unrelatedBaseline = aggregateProductQueryOperationalBaseline([
+const unrelatedBaseline = aggregateFixtureBaseline([
   { operation: "face_lab", rawQuery: "must be ignored" },
   event()
 ]);

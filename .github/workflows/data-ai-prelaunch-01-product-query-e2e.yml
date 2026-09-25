@@ -1,0 +1,74 @@
+name: Product Query AI - Pre-launch Acceptance
+run-name: "[WT:taxonomy-ai] Product Query AI - PRELAUNCH-01 Acceptance"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/route.js"
+      - "components/my/ProductQueryBetaCard.jsx"
+      - "components/my/MyDashboard.jsx"
+      - "lib/product-query-prelaunch-acceptance-contract.mjs"
+      - "lib/product-query-beta-operational-readiness-contract.mjs"
+      - "lib/product-query-beta-operational-baseline.mjs"
+      - "lib/product-query-beta-operational-readiness-evaluator.mjs"
+      - "lib/product-query-beta-quality-acceptance-evidence.mjs"
+      - "lib/product-query-operational-observability.mjs"
+      - "lib/product-query-authenticated-beta-controlled-activation.mjs"
+      - "scripts/run-product-query-prelaunch-e2e.mjs"
+      - "scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"
+      - "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
+      - ".github/workflows/data-ai-prelaunch-01-product-query-e2e.yml"
+      - "docs/ci/workflow-responsibility-map.json"
+  push:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/route.js"
+      - "components/my/ProductQueryBetaCard.jsx"
+      - "components/my/MyDashboard.jsx"
+      - "lib/product-query-prelaunch-acceptance-contract.mjs"
+      - "lib/product-query-beta-operational-readiness-contract.mjs"
+      - "lib/product-query-beta-operational-baseline.mjs"
+      - "lib/product-query-beta-operational-readiness-evaluator.mjs"
+      - "lib/product-query-beta-quality-acceptance-evidence.mjs"
+      - "lib/product-query-operational-observability.mjs"
+      - "lib/product-query-authenticated-beta-controlled-activation.mjs"
+      - "scripts/run-product-query-prelaunch-e2e.mjs"
+      - "scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"
+      - "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
+      - ".github/workflows/data-ai-prelaunch-01-product-query-e2e.yml"
+      - "docs/ci/workflow-responsibility-map.json"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-ai-prelaunch-01-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Product Query pre-launch acceptance contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify pre-launch acceptance contract
+        run: node scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs
+
+      - name: Verify DATA-AI25 remains post-launch only
+        run: node scripts/verify-data-ai25-product-query-operational-readiness.mjs
+
+      - name: Verify hosted runner syntax
+        run: node --check scripts/run-product-query-prelaunch-e2e.mjs
