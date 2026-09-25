@@ -163,6 +163,23 @@ check(
   "only observations at or after the real launch boundary may enter DATA-AI25"
 );
 
+const prelaunchMalformedBaseline = aggregateProductQueryOperationalBaseline(
+  [
+    {
+      ...observation("2026-09-25T09:59:59.000Z"),
+      rawQuery: "prelaunch QA must never contaminate readiness"
+    },
+    observation("2026-09-25T10:00:00.000Z")
+  ],
+  { operationalBaselineStartAt: "2026-09-25T10:00:00.000Z" }
+);
+check(
+  prelaunchMalformedBaseline.preBaselineObservationCount === 1 &&
+    prelaunchMalformedBaseline.telemetryContractViolationCount === 0 &&
+    prelaunchMalformedBaseline.validRuntimeObservationCount === 1,
+  "pre-launch QA must be excluded before DATA-AI25 contract scoring"
+);
+
 const cardSource = readFileSync(
   "components/my/ProductQueryBetaCard.jsx",
   "utf8"
