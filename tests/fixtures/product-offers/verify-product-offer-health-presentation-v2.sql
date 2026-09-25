@@ -48,7 +48,9 @@ select private.record_product_offer_link_check_v1(
   'commerce-link-health-checker-v1'
 );
 
-do $$
+set local role recommendation_admission_runtime;
+
+do $
 declare
   v_payload jsonb;
   v_offer jsonb;
@@ -77,7 +79,9 @@ begin
     raise exception 'COMMERCE_HEALTH_PRESENTATION_V2_HEALTH_FIELDS_FAILED';
   end if;
 end
-$$;
+$;
+
+reset role;
 
 rollback;
 
