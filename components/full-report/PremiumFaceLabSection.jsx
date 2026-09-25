@@ -54,6 +54,7 @@ const COPY = {
     middleSide: "중간 / 상관없음",
     finderTitle: "내 추구미 찾아보기",
     finderBody: "두 방향 중 더 끌리는 쪽을 골라주세요.",
+    finderInconclusive: "선택만으로 한 방향을 정하기 어려웠습니다. 아래 목록에서 지금 가장 끌리는 분위기를 직접 골라주세요.",
     both: "둘 다 좋아요",
     neither: "둘 다 별로예요",
     finderProgress: (index) => `${index + 1}/${TARGET_FINDER_ROUNDS.length}`,
@@ -155,6 +156,7 @@ const COPY = {
     middleSide: "Middle / no preference",
     finderTitle: "Find my target look",
     finderBody: "Choose the direction you prefer in each pair.",
+    finderInconclusive: "Your choices did not resolve to a clear direction. Pick the style that feels closest from the list below.",
     both: "Both",
     neither: "Neither",
     finderProgress: (index) => `${index + 1}/${TARGET_FINDER_ROUNDS.length}`,
@@ -490,6 +492,7 @@ export default function PremiumFaceLabSection({
   const [softSharpClarifier, setSoftSharpClarifier] = useState(null);
   const [naturalPolishedClarifier, setNaturalPolishedClarifier] = useState(null);
   const [finderResult, setFinderResult] = useState(null);
+  const [finderInconclusive, setFinderInconclusive] = useState(false);
   const [presentationPreference, setPresentationPreference] = useState("neutral_examples");
   const [stylingScope, setStylingScope] = useState([]);
   const [scopeTouched, setScopeTouched] = useState(false);
@@ -803,8 +806,20 @@ export default function PremiumFaceLabSection({
         locale={locale}
         onBack={() => setStage("mode")}
         onComplete={(value) => {
+          const candidateLabels = value.candidateLabels || [];
+
+          if (!candidateLabels.length) {
+            setFinderResult(null);
+            setFinderInconclusive(true);
+            setTargets([]);
+            setEntryMode("known");
+            setStage("target");
+            return;
+          }
+
           setFinderResult(value);
-          setTargets(value.candidateLabels || []);
+          setFinderInconclusive(false);
+          setTargets(candidateLabels);
           setStage("setup");
         }}
       />
@@ -831,6 +846,7 @@ export default function PremiumFaceLabSection({
                 restoreInteractionRef.current += 1;
                 setEntryMode(value);
                 setFinderResult(null);
+                setFinderInconclusive(false);
                 setTargets([]);
                 setStylingScope([]);
                 setScopeTouched(false);
@@ -854,6 +870,11 @@ export default function PremiumFaceLabSection({
         <p className="ui-kicker">TARGET STYLE</p>
         <h3 className="ui-title mt-2 text-xl">{copy.targetTitle}</h3>
         <p className="ui-text-secondary mt-2 text-sm">{copy.targetBody}</p>
+        {finderInconclusive ? (
+          <p className="mt-3 rounded-xl border border-amber-300/60 bg-amber-50/60 px-3 py-2.5 text-sm leading-6 dark:border-amber-900/60 dark:bg-amber-950/15">
+            {copy.finderInconclusive}
+          </p>
+        ) : null}
         <TargetSelection locale={locale} selected={targets} onChange={setTargets} />
 
         {entryMode === "partial" ? (

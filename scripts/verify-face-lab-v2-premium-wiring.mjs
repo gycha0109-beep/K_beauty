@@ -132,6 +132,15 @@ assert.ok(
   premiumFaceLab.includes("const restoreInteractionRef = useRef(0)"),
   "Face Lab V2 restore must track whether the user has started a fresh interaction"
 );
+
+assert.ok(
+  premiumFaceLab.includes("if (!candidateLabels.length)"),
+  "an inconclusive Target Finder result must not advance with manufactured labels"
+);
+assert.ok(
+  premiumFaceLab.includes("copy.finderInconclusive"),
+  "the direct-selection fallback must explain why Finder could not resolve a target"
+);
 assert.ok(
   premiumFaceLab.includes("restoreInteractionRef.current !== restoreInteractionRevision"),
   "late server or local restore must not overwrite an in-progress user setup"
