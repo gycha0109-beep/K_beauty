@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-ci-workflow-responsibility-v2",
   "producerContractVersion": "watchtower-v0.3.2",
-  "workflowInventoryDigest": "sha256:d985bc204f65953a6e4f1e24df28781dfeed77353d65a071040f69342e13acfe",
+  "workflowInventoryDigest": "sha256:163ebc776cf80bbc8074a7bd5666c8e7199450fe2820507fb37c887b04e273f7",
   "lastAuditedAt": "2026-09-24",
   "policy": {
     "purpose": "Separate workflow responsibility from CI Watchtower run-to-track attribution without changing verification behavior.",
