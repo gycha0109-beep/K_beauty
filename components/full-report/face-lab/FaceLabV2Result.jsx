@@ -45,7 +45,15 @@ export default function FaceLabV2Result({
     [result, locale]
   );
 
-  if (view.status === "unavailable") return null;
+  if (view.status === "unavailable") {
+    return (
+      <section className="ui-card p-5 sm:p-6">
+        <p className="ui-kicker">FACE LAB V2</p>
+        <h2 className="ui-title mt-2 text-xl">{view.notice?.title}</h2>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">{view.notice?.body}</p>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-4">
@@ -91,6 +99,13 @@ export default function FaceLabV2Result({
         <p className="ui-text-secondary mt-3 text-sm leading-6">{view.target.summary}</p>
       </section>
 
+      {view.notice ? (
+        <section className="rounded-2xl border border-amber-300/60 bg-amber-50/60 p-5 dark:border-amber-900/60 dark:bg-amber-950/15 sm:p-6">
+          <p className="text-sm font-semibold">{view.notice.title}</p>
+          <p className="ui-text-secondary mt-2 text-sm leading-6">{view.notice.body}</p>
+        </section>
+      ) : null}
+
       {view.changes.length ? (
         <section className="ui-card-subtle p-5 sm:p-6">
           <p className="ui-kicker">{view.changesTitle}</p>
@@ -111,7 +126,8 @@ export default function FaceLabV2Result({
         </section>
       ) : null}
 
-      <section className="ui-card-subtle p-5 sm:p-6">
+      {view.routes.cards.length ? (
+        <section className="ui-card-subtle p-5 sm:p-6">
         <p className="ui-kicker">{view.routes.title}</p>
         <div className="mt-3 grid gap-3">
           {view.routes.cards.map((route) => (
@@ -161,9 +177,11 @@ export default function FaceLabV2Result({
             </button>
           ))}
         </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="ui-card p-5 sm:p-6">
+      {view.execution.domains.length ? (
+        <section className="ui-card p-5 sm:p-6">
         <p className="ui-kicker">{view.execution.title}</p>
         {view.execution.routeTitle ? (
           <h3 className="ui-title mt-2 text-lg">{view.execution.routeTitle}</h3>
@@ -180,7 +198,8 @@ export default function FaceLabV2Result({
             </div>
           ))}
         </div>
-      </section>
+        </section>
+      ) : null}
 
       {view.conflicts.items.length ? (
         <section className="rounded-2xl border border-amber-300/60 bg-amber-50/60 p-5 dark:border-amber-900/60 dark:bg-amber-950/15 sm:p-6">
