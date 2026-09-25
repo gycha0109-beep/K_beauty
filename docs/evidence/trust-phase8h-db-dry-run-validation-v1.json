@@ -41,5 +41,6 @@
     "replacement_resolved_count": 0,
     "old_binding_state": "resolved",
     "result": "PASS"
-  }
+  },
+  "deployed_migration": "20260926074409_trust_phase8h_governed_official_source_relocation_v1.sql"
 }

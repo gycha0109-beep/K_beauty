@@ -7,5 +7,9 @@
   "artifact_id": 10889886425,
   "artifact_digest": "sha256:9d177207f3b5cdf18dc7483f94d13514b0117f3bc6eb232379b09eaf4c828e47",
   "generation_authority": "SUPABASE_CLI_MIGRATION_NEW",
-  "production_mutation": "NONE"
+  "production_mutation": "NONE",
+  "production_migration_version": "20260926074409",
+  "production_migration_filename": "20260926074409_trust_phase8h_governed_official_source_relocation_v1.sql",
+  "production_apply_authority": "SUPABASE_MCP_APPLY_MIGRATION",
+  "production_apply_result": "SUCCESS"
 }

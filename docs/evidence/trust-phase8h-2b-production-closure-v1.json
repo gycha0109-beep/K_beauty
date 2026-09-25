@@ -1,0 +1,84 @@
+{
+  "contract": "trust-phase8h-2b-production-closure-v1",
+  "merged_main_sha": "add63520d59353adba8a51e5626fa49ef46a7d30",
+  "production_migration": {
+    "version": "20260926074409",
+    "name": "trust_phase8h_governed_official_source_relocation_v1",
+    "filename": "20260926074409_trust_phase8h_governed_official_source_relocation_v1.sql",
+    "source_cli_generated_filename": "20260925221042_trust_phase8h_governed_official_source_relocation_v1.sql",
+    "apply_authority": "SUPABASE_MCP_APPLY_MIGRATION",
+    "result": "SUCCESS"
+  },
+  "security_readback": {
+    "ledger_exists": true,
+    "rpc_exists": true,
+    "canonical_helper_exists": true,
+    "immutable_trigger": true,
+    "rls_enabled": true,
+    "service_role_select": true,
+    "service_role_insert": false,
+    "service_role_update": false,
+    "service_role_delete": false,
+    "anon_select": false,
+    "authenticated_select": false,
+    "service_role_rpc_execute": true,
+    "anon_rpc_execute": false,
+    "authenticated_rpc_execute": false,
+    "public_rpc_execute": false,
+    "rpc_security_definer": true,
+    "rpc_search_path": ""
+  },
+  "dermafactory_relocation": {
+    "status": "confirmed",
+    "relocation_id": "463e6a5a-781d-4e8c-be36-918b01e423fc",
+    "request_id": "phase8h-dermafactory-relocation-confirmation-v1",
+    "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+    "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+    "historical_source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+    "old_binding_id": "fd3ddecc-c09a-4b12-bc96-6e6ef2b2e97c",
+    "old_review_id": "7b32a844-6e51-4476-9370-05d1859f7f5f",
+    "replacement_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+    "replacement_review_id": "b60f2b1b-2be4-46db-8a24-b734a16b087d",
+    "old_binding_state": "retired",
+    "replacement_binding_state": "resolved",
+    "ledger_count": 1,
+    "replacement_binding_count": 1,
+    "replacement_review_count": 1,
+    "audit_count": 1,
+    "idempotent_replay": true,
+    "immutable_update_rejected": true
+  },
+  "semantic_immutability": {
+    "historical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "historical_content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+    "historical_subject_binding_count": 1,
+    "product_fact_instances_before": 2,
+    "product_fact_instances_after": 2,
+    "product_fact_current_before": 2,
+    "product_fact_current_after": 2,
+    "current_confirmations_before": 2,
+    "current_confirmations_after": 2,
+    "revalidation_transitions_before": 0,
+    "revalidation_transitions_after": 0,
+    "revalidation_bridges_before": 0,
+    "revalidation_bridges_after": 0,
+    "recommendation_logs_before": 1300,
+    "recommendation_logs_after": 1300
+  },
+  "digests": {
+    "qualification": "0a34c3413b7431bc7ecdf8f623eef5d0d49c7afcf370e2b5025ad78cc143627f",
+    "prestate": "70aae88369b09d87e9a9a7153ad04af662f7fc069445204f2eafee0b6d5a745b",
+    "relocation_plan": "9cc3c864fdeea7dde6545b607f33a30654284e6d9fef86b958e07eb012805567"
+  },
+  "advisors": {
+    "security_blocker_for_phase8h_objects": false,
+    "expected_security_info": [
+      "rls_enabled_no_policy"
+    ],
+    "performance_info_only": [
+      "unindexed_foreign_keys",
+      "unused_index"
+    ]
+  },
+  "next_authority": "PHASE_8H_3_REVALIDATION_REQUIRED"
+}
