@@ -56,6 +56,17 @@ const styleDelta = {
       reason: "target_warmCool_cool",
       evidence: ["target_axis:warmCool"]
     }
+,
+    {
+      constraintState: "allowed",
+      domain: "face_adjacent_style",
+      parameter: "trendSignal",
+      direction: "increase",
+      strength: "light",
+      expectedEffect: "Trend signal action without a V2 execution engine",
+      reason: "target_classicTrendy_high",
+      evidence: ["target_axis:classicTrendy"]
+    }
   ]
 };
 
@@ -75,6 +86,14 @@ const result = buildStyleRoutes(styleDelta, { locale: "en", targetStyle });
 assert.equal(result.status, "available");
 assert.equal(result.version, "face-lab-style-route-v2");
 assert.ok(result.routes.length >= 2);
+assert.ok(
+  result.routes.every((route) => !route.domains.includes("face_adjacent_style")),
+  "routes must not advertise a domain that has no V2 execution engine"
+);
+assert.ok(
+  result.routes.every((route) => !route.targetFit.totalDimensions.includes("classicTrendy")),
+  "target-fit denominator must only include target axes that current route engines can execute"
+);
 
 const balanced = result.routes.find((route) => route.strategy === "balanced");
 assert.ok(balanced, "balanced route must remain available when several styling domains are actionable");

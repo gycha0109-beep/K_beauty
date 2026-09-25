@@ -74,7 +74,10 @@ const fixture = {
     status: "available",
     value: {
       eyes: {
-        direction: ["눈매의 상승 각도보다 선명도와 길이를 조절합니다."]
+        placement: ["실행 엔진 상세: 속눈썹 라인과 바깥쪽 길이 중심"],
+        direction: ["실행 엔진 상세: 추가 상승각보다 선명도와 길이를 조절"],
+        finish: [],
+        colorDirection: []
       }
     }
   },
@@ -123,6 +126,15 @@ assert.equal(JSON.stringify(fixture), before, "presentation adapter must not mut
 assert.equal(ko.status, "available");
 assert.equal(ko.execution.domains.length, 1);
 assert.equal(ko.execution.domains[0].domain, "makeup");
+assert.ok(
+  ko.execution.domains[0].actions.some((item) => item.includes("실행 엔진 상세")),
+  "Korean execution UI must render the selected route's canonical domain execution, not just generic route actions"
+);
+assert.equal(
+  ko.execution.domains[0].actions.includes("눈매의 상승 각도보다 선명도와 길이를 조절합니다."),
+  false,
+  "generic route copy must not replace more specific canonical execution details"
+);
 assert.equal(ko.productGuides.length, 1);
 assert.ok(ko.productGuides[0].recommended.some((item) => item.includes("농도")));
 assert.ok(ko.productGuides[0].avoid.some((item) => item.includes("각도")));
@@ -178,6 +190,7 @@ console.log(JSON.stringify({
   checks: [
     "canonical_immutability",
     "conditional_execution_domains",
+    "canonical_execution_details",
     "human_product_guidance",
     "raw_spec_hidden",
     "english_locale_isolation",
