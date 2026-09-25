@@ -593,11 +593,24 @@ export default function PremiumFaceLabSection({
       setSoftSharpClarifier(stored.surveyAnswers.clarifiers?.softSharp || null);
       setNaturalPolishedClarifier(stored.surveyAnswers.clarifiers?.naturalPolished || null);
       setPresentationPreference(stored.surveyAnswers.presentationPreference || "neutral_examples");
-      setStylingScope(stored.surveyAnswers.stylingScope || []);
-      setScopeTouched(Boolean(stored.surveyAnswers.stylingScope?.length));
+      const restoredMakeupIntensity =
+        stored.surveyAnswers.constraints?.makeup?.intensity || "light";
+      const legacyMakeupExcluded = ["grooming_only", "none"].includes(restoredMakeupIntensity);
+      const restoredStylingScope = Array.isArray(stored.surveyAnswers.stylingScope)
+        ? stored.surveyAnswers.stylingScope
+        : [];
+      const editableStylingScope = legacyMakeupExcluded
+        ? restoredStylingScope.filter((domain) => domain !== "makeup")
+        : restoredStylingScope;
+      setStylingScope(editableStylingScope);
+      setScopeTouched(Boolean(editableStylingScope.length));
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
       setFinderResult(stored.targetFinderResult || null);
-      setMakeupIntensity(stored.surveyAnswers.constraints?.makeup?.intensity || "light");
+      setMakeupIntensity(
+        ["light", "medium", "expressive"].includes(restoredMakeupIntensity)
+          ? restoredMakeupIntensity
+          : "light"
+      );
       setDailyMinutes(stored.surveyAnswers.constraints?.lifestyle?.dailyMinutes || 15);
       setBudgetBand(stored.surveyAnswers.constraints?.lifestyle?.budgetBand || "standard");
       setMaintenanceTolerance(

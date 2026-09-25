@@ -190,6 +190,20 @@ assert.ok(
 );
 
 assert.ok(
+  premiumFaceLab.includes('const legacyMakeupExcluded = ["grooming_only", "none"].includes(restoredMakeupIntensity)'),
+  "legacy no-makeup persistence must be recognized before rebuilding editable UI state"
+);
+assert.ok(
+  premiumFaceLab.includes('restoredStylingScope.filter((domain) => domain !== "makeup")'),
+  "legacy no-makeup restore must not show makeup as an active editable styling scope"
+);
+assert.ok(
+  premiumFaceLab.includes('["light", "medium", "expressive"].includes(restoredMakeupIntensity)') &&
+    premiumFaceLab.includes('? restoredMakeupIntensity\n          : "light"'),
+  "legacy hidden makeup intensities must normalize to a current visible control value for future edits"
+);
+
+assert.ok(
   premiumFaceLab.includes("const data = await response.json().catch(() => null)"),
   "Face Lab V2 persistence must consume the server acknowledgement"
 );
