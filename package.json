@@ -91,7 +91,9 @@
     "verify:mobile-entry-routing": "node scripts/verify-mobile-initial-entry-routing.mjs",
     "verify:mobile-native": "npm run verify:native --workspace @bejewely/mobile",
     "verify:face-lab-v2-foundation": "node scripts/verify-face-lab-v2-foundation.mjs",
-    "verify:face-lab-v2-premium-wiring": "node scripts/verify-face-lab-v2-premium-wiring.mjs"
+    "verify:face-lab-v2-premium-wiring": "node scripts/verify-face-lab-v2-premium-wiring.mjs",
+    "e2e:product-query:prelaunch:login": "node scripts/bootstrap-product-query-prelaunch-auth.mjs",
+    "e2e:product-query:prelaunch": "node scripts/run-product-query-prelaunch-e2e.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
