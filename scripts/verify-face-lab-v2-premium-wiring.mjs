@@ -153,6 +153,19 @@ assert.ok(
   premiumFaceLab.includes("cacheServerStateLocally(serverStored)"),
   "a successful server restore must refresh the local fallback state"
 );
+
+assert.ok(
+  premiumFaceLab.includes("const data = await response.json().catch(() => null)"),
+  "Face Lab V2 persistence must consume the server acknowledgement"
+);
+assert.ok(
+  premiumFaceLab.includes("persistenceFingerprint(currentStored) !=="),
+  "an older queued server acknowledgement must not overwrite newer local user state"
+);
+assert.ok(
+  premiumFaceLab.includes("updatedAt: serverStored.updatedAt || null"),
+  "a successful final server write must align local freshness metadata to the server clock"
+);
 assert.equal(
   premiumFaceLab.includes("canonicalV2: stored.canonicalV2"),
   false,
