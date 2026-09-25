@@ -53,6 +53,11 @@ function offer(overrides = {}) {
     locale: "ko-KR",
     offer_state: "current",
     product_scope_state: "product_subject_unresolved",
+    link_health_state: "unknown",
+    link_health_checked_at: "2026-09-25T01:52:05.555Z",
+    link_health_failure_streak: 0,
+    link_health_reason: "HTTP_403",
+    link_health_last_check_id: "check-a",
     first_observed_at: null,
     last_observed_at: null,
     created_at: "2026-09-10T08:00:00.000Z",
@@ -124,6 +129,27 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v2");
 
   assert.equal(projected.buy_link, "");
   assertNaverFallback(projected);
+}
+
+{
+  for (const linkHealthState of ["unchecked", "suspect", "broken"]) {
+    const projected = projectProductWithOfferAuthority(product(), [
+      offer({ link_health_state: linkHealthState })
+    ]);
+
+    assert.equal(projected.buy_link, "");
+    assertNaverFallback(projected);
+  }
+}
+
+{
+  for (const linkHealthState of ["unknown", "healthy"]) {
+    const projected = projectProductWithOfferAuthority(product(), [
+      offer({ link_health_state: linkHealthState })
+    ]);
+
+    assert.equal(projected.buy_link, OFFER_LINK_A);
+  }
 }
 
 {
