@@ -52,6 +52,10 @@ Minimum columns:
 
 Required invariants:
 
+- a BEFORE UPDATE OR DELETE trigger rejects mutation even for privileged callers
+- RLS is enabled on the ledger
+- revoke all table privileges from `PUBLIC`, `anon`, `authenticated`, and `service_role`
+- grant `SELECT` only to `service_role`; inserts occur only inside the privileged Admin confirmation function
 - `relocation_version='trust-official-source-relocation-v1'`
 - `result='confirmed'`
 - qualification/prestate/plan digests are lowercase SHA-256
