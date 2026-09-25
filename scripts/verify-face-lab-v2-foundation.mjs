@@ -479,6 +479,27 @@ assert.deepEqual(
   "revisit must reproduce the same product specification handoff"
 );
 
+const staleRoutePersistence = normalizeFaceLabV2PersistencePayload({
+  surveyAnswers: survey,
+  selectedRouteId: "retired-route-v1"
+});
+const staleRouteRevisit = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: staleRoutePersistence.surveyAnswers,
+  selectedRouteId: staleRoutePersistence.selectedRouteId,
+  resultId: "fixture-face-lab-v2-stale-route"
+});
+assert.notEqual(
+  staleRouteRevisit.routes.selectedRouteId,
+  "retired-route-v1",
+  "a route removed by a newer engine version must never survive rehydration as selected"
+);
+assert.equal(
+  staleRouteRevisit.routes.selectedRouteId,
+  staleRouteRevisit.routes.defaultRouteId,
+  "stale route ids must fall back to the current canonical default route"
+);
+
 const normalizedFinderPersistence = normalizeFaceLabV2PersistencePayload({
   surveyAnswers: survey,
   targetFinderResult: {
