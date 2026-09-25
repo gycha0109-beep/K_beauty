@@ -57,6 +57,7 @@ for (const name of actual) {
   const staticTrackByResponsibility = {
     "product-query-ai": "taxonomy-ai",
     "catalog-taxonomy": "taxonomy-ai",
+    "face-lab": "face-research",
     "trust-data-governance": "trust",
     "mobile-client": "mobile",
     "mobile-api-integration": "mobile",
