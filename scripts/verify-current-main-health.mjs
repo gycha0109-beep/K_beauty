@@ -115,6 +115,7 @@ run("DATA-AI22 product-query quality canonical baseline", node, ["scripts/run-da
 run("DATA-AI22 Production quality closure", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
 run("DATA-AI23 authenticated beta UX", node, ["scripts/verify-data-ai23-authenticated-beta-ux.mjs"]);
 run("DATA-AI24 privacy-safe operational observability", node, ["scripts/verify-data-ai24-operational-observability.mjs"]);
+run("DATA-AI25 operational baseline and readiness", node, ["scripts/verify-data-ai25-product-query-operational-readiness.mjs"]);
 
 run("Legacy offer classifier", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-classifier"]);
 run("Legacy offer migration manifest and dry-run", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-migration"]);

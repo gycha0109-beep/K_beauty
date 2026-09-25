@@ -1,0 +1,62 @@
+name: Product Query AI - Operational Readiness
+run-name: "[WT:taxonomy-ai] Product Query AI - DATA-AI25 Operational Readiness"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "fixtures/data-ai25/**"
+      - "lib/product-query-beta-operational-readiness-contract.mjs"
+      - "lib/product-query-beta-operational-baseline.mjs"
+      - "lib/product-query-beta-operational-readiness-evaluator.mjs"
+      - "lib/product-query-beta-quality-acceptance-evidence.mjs"
+      - "lib/product-query-operational-observability.mjs"
+      - "lib/product-query-authenticated-beta-controlled-activation.mjs"
+      - "scripts/aggregate-data-ai25-product-query-baseline.mjs"
+      - "scripts/evaluate-data-ai25-product-query-readiness.mjs"
+      - "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
+      - ".github/workflows/data-ai25-operational-readiness.yml"
+      - "docs/ci/workflow-responsibility-map.json"
+  push:
+    branches: [main]
+    paths:
+      - "fixtures/data-ai25/**"
+      - "lib/product-query-beta-operational-readiness-contract.mjs"
+      - "lib/product-query-beta-operational-baseline.mjs"
+      - "lib/product-query-beta-operational-readiness-evaluator.mjs"
+      - "lib/product-query-beta-quality-acceptance-evidence.mjs"
+      - "lib/product-query-operational-observability.mjs"
+      - "lib/product-query-authenticated-beta-controlled-activation.mjs"
+      - "scripts/aggregate-data-ai25-product-query-baseline.mjs"
+      - "scripts/evaluate-data-ai25-product-query-readiness.mjs"
+      - "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
+      - ".github/workflows/data-ai25-operational-readiness.yml"
+      - "docs/ci/workflow-responsibility-map.json"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-ai25-operational-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: DATA-AI25 operational baseline and readiness contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify DATA-AI25 operational readiness
+        run: node scripts/verify-data-ai25-product-query-operational-readiness.mjs
