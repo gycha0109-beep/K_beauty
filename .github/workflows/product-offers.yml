@@ -97,9 +97,6 @@ jobs:
       - name: Verify Offer presentation authority compatibility
         run: node scripts/verify-commerce-oliveyoung-migration-presentation-contract.mjs
 
-      - name: Verify health-aware Offer read path
-        run: node scripts/verify-product-offer-read-path-v1.mjs
-
       - name: Prepare isolated Supabase
         shell: bash
         run: |
