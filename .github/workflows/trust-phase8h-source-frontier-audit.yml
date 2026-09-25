@@ -13,7 +13,7 @@ on:
       - "lib/trust/official-source-fetch.mjs"
       - ".github/workflows/trust-phase8h-source-frontier-audit.yml"
   push:
-    branches: [main, "feat/trust-phase8h-source-frontier-audit"]
+    branches: [main, "feat/trust-phase8h-source-frontier-audit", "audit/trust-phase8h-live-*"]
     paths:
       - "scripts/trust-source-frontier-audit.mjs"
       - "scripts/verify-trust-source-frontier-audit.mjs"
@@ -72,13 +72,13 @@ jobs:
           node scripts/verify-trust-source-frontier-audit.mjs
 
       - name: Run optional live read-only frontier audit
-        if: github.event_name == 'workflow_dispatch' && inputs.live_audit == true
+        if: (github.event_name == 'workflow_dispatch' && inputs.live_audit == true) || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/audit/trust-phase8h-live-'))
         run: |
           mkdir -p tmp/trust-phase8h
           node scripts/trust-source-frontier-audit.mjs             --input=docs/evidence/trust-phase8h-source-frontier-inventory-v1.json             --output=tmp/trust-phase8h/source-frontier-audit.json             --concurrency=4
 
       - name: Upload optional live audit artifact
-        if: github.event_name == 'workflow_dispatch' && inputs.live_audit == true
+        if: (github.event_name == 'workflow_dispatch' && inputs.live_audit == true) || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/audit/trust-phase8h-live-'))
         uses: actions/upload-artifact@v7
         with:
           name: trust-phase8h-source-frontier-audit
