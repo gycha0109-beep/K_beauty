@@ -128,6 +128,19 @@ assert.ok(
   "rapid target or route changes must persist to the server in user-action order"
 );
 
+assert.ok(
+  premiumFaceLab.includes("const restoreInteractionRef = useRef(0)"),
+  "Face Lab V2 restore must track whether the user has started a fresh interaction"
+);
+assert.ok(
+  premiumFaceLab.includes("restoreInteractionRef.current !== restoreInteractionRevision"),
+  "late server or local restore must not overwrite an in-progress user setup"
+);
+assert.ok(
+  premiumFaceLab.includes("restoreInteractionRef.current += 1"),
+  "starting a new target flow must invalidate any in-flight restore"
+);
+
 assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
 assert.ok(composer.includes("buildStyleRoutes"), "canonical V2 must include comparable routes");
 assert.ok(composer.includes("buildHairExecution"), "canonical V2 must include Hair execution");
