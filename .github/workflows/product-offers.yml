@@ -14,7 +14,7 @@ on:
       - "crawler/tests/verify-product-offers-local-runtime.ts"
       - "lib/product-offer-read-path.js"
       - "lib/product-purchase-link.js"
-      - "scripts/verify-data-offer16-offer-presentation-authority-v1.mjs"
+      - "scripts/verify-commerce-oliveyoung-migration-presentation-contract.mjs"
       - "crawler/lib/product-integrity-audit.ts"
       - "crawler/test-product-integrity-audit.ts"
       - "crawler/package.json"
@@ -32,7 +32,7 @@ on:
       - "crawler/tests/verify-product-offers-local-runtime.ts"
       - "lib/product-offer-read-path.js"
       - "lib/product-purchase-link.js"
-      - "scripts/verify-data-offer16-offer-presentation-authority-v1.mjs"
+      - "scripts/verify-commerce-oliveyoung-migration-presentation-contract.mjs"
       - "crawler/lib/product-integrity-audit.ts"
       - "crawler/test-product-integrity-audit.ts"
       - "crawler/package.json"
@@ -91,7 +91,7 @@ jobs:
         run: npm run verify:legacy-offer-import
 
       - name: Verify Offer presentation authority compatibility
-        run: node scripts/verify-data-offer16-offer-presentation-authority-v1.mjs
+        run: node scripts/verify-commerce-oliveyoung-migration-presentation-contract.mjs
 
       - name: Prepare isolated Supabase
         shell: bash
