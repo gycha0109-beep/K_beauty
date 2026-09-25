@@ -203,6 +203,28 @@ assert.equal(
 assert.ok(en.execution.domains[0].actions[0].includes("definition"));
 assert.ok(en.productGuides[0].recommended.some((item) => item.includes("Buildable")));
 
+const unavailable = buildFaceLabV2ResultPresentation({
+  status: "unavailable",
+  currentFaceProfile: { status: "unavailable" }
+}, { locale: "ko" });
+assert.equal(unavailable.status, "unavailable");
+assert.equal(unavailable.notice.kind, "unavailable");
+assert.ok(unavailable.notice.title.includes("스타일 경로"));
+
+const boundedFixture = JSON.parse(JSON.stringify(fixture));
+boundedFixture.status = "partial";
+boundedFixture.styleDelta.priorities = [];
+boundedFixture.routes = {
+  status: "insufficient_evidence",
+  selectedRouteId: null,
+  routes: []
+};
+boundedFixture.looks = { status: "insufficient_evidence", visualConflicts: [], looks: [] };
+const bounded = buildFaceLabV2ResultPresentation(boundedFixture, { locale: "ko" });
+assert.equal(bounded.status, "partial");
+assert.equal(bounded.routes.cards.length, 0);
+assert.equal(bounded.notice.kind, "bounded");
+
 const root = resolve(process.cwd());
 const premium = readFileSync(resolve(root, "components/full-report/PremiumFaceLabSection.jsx"), "utf8");
 const resultUi = readFileSync(resolve(root, "components/full-report/face-lab/FaceLabV2Result.jsx"), "utf8");
@@ -234,6 +256,20 @@ assert.ok(
   "composed look must expose the canonical rationale instead of showing only a summary"
 );
 
+assert.equal(
+  resultUi.includes('if (view.status === "unavailable") return null'),
+  false,
+  "unavailable Face Lab V2 must render a bounded explanation instead of disappearing"
+);
+assert.ok(
+  resultUi.includes("view.notice"),
+  "partial results without an actionable route must explain the bounded state"
+);
+assert.ok(
+  resultUi.includes("view.routes.cards.length"),
+  "empty route collections must not render an unexplained blank route card"
+);
+
 console.log(JSON.stringify({
   ok: true,
   version: ko.version,
@@ -250,6 +286,8 @@ console.log(JSON.stringify({
     "human_product_guidance",
     "raw_spec_hidden",
     "english_locale_isolation",
-    "result_component_boundary"
+    "result_component_boundary",
+    "bounded_unavailable_explanation",
+    "empty_route_explanation"
   ]
 }, null, 2));
