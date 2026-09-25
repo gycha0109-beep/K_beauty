@@ -18,13 +18,20 @@ function sleep(ms) {
 }
 
 function validateManifest(manifest) {
+  const allowedContracts = new Set([
+    "commerce-link-health-live-canary-v1",
+    "commerce-link-health-live-snapshot-v1",
+  ]);
+
   if (
-    manifest?.contract !== "commerce-link-health-live-canary-v1" ||
+    !allowedContracts.has(manifest?.contract) ||
     manifest?.authority_mutation !== false ||
     manifest?.seller_key !== "oliveyoung" ||
     !Array.isArray(manifest?.offers) ||
     manifest.offers.length < 1 ||
-    manifest.offers.length > 72
+    manifest.offers.length > 72 ||
+    (manifest?.contract === "commerce-link-health-live-snapshot-v1" &&
+      manifest?.production_offer_count !== manifest.offers.length)
   ) {
     throw new Error("COMMERCE_LINK_HEALTH_MANIFEST_INVALID");
   }
