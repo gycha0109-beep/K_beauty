@@ -45,7 +45,8 @@ assert.match(serviceSource, /import\s+"server-only"/);
 assert.match(serviceSource, /import postgres from "postgres"/);
 assert.match(serviceSource, /RECOMMENDATION_ADMISSION_DATABASE_URL/);
 assert.match(serviceSource, /recommendation_admission_runtime/);
-assert.match(serviceSource, /read_product_offer_presentation_authority_v1/);
+assert.match(serviceSource, /read_product_offer_presentation_authority_v2/);
+assert.match(serviceSource, /product-offer-presentation-authority-read-v2/);
 assert.match(serviceSource, /\.pooler\.supabase\.com/);
 assert.match(serviceSource, /parsed\.port === "6543"/);
 assert.match(serviceSource, /prepare:\s*false/);
@@ -199,6 +200,7 @@ for (const invalidOffer of [
     price_amount: null,
     availability_state: "unknown",
     product_scope_state: "product_subject_unresolved",
+    link_health_state: "unknown",
   };
   const projected = projectProductWithOfferAuthority(legacyProduct, [legacyOffer]);
   assert.equal(projected.buy_link, LEGACY_URL);
@@ -207,7 +209,7 @@ for (const invalidOffer of [
 
 console.log(JSON.stringify({
   stage: "DATA-OFFER16",
-  readContract: "product-offer-presentation-authority-read-v1",
+  readContract: "product-offer-presentation-authority-read-v2",
   runtimeRole: "recommendation_admission_runtime",
   rawOfferSelect: "DENIED_BY_CONTRACT",
   trustedTorridenDirectLink: true,
