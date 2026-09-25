@@ -1,0 +1,45 @@
+{
+  "contract": "trust-phase8h-db-dry-run-validation-v1",
+  "migration": "20260925221042_trust_phase8h_governed_official_source_relocation_v1.sql",
+  "validation_mode": "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK",
+  "migration_ddl_compile": "PASS",
+  "dependency_resolution": "PASS",
+  "canonical_digest_canary": {
+    "prestate_digest": "70aae88369b09d87e9a9a7153ad04af662f7fc069445204f2eafee0b6d5a745b",
+    "relocation_plan_digest": "9cc3c864fdeea7dde6545b607f33a30654284e6d9fef86b958e07eb012805567",
+    "result": "PASS"
+  },
+  "rollback_readback": {
+    "relocation_ledger_exists": false,
+    "admin_confirmation_rpc_exists": false,
+    "canonical_helper_exists": false,
+    "replacement_resolved_count": 0,
+    "old_binding_state": "resolved"
+  },
+  "production_mutation": "NONE",
+  "admin_confirmation_canary": {
+    "first_confirmation": {
+      "status": "confirmed",
+      "idempotent": false
+    },
+    "replay_confirmation": {
+      "status": "confirmed",
+      "idempotent": true
+    },
+    "in_transaction_sequential_readback": {
+      "ledger_count": 1,
+      "replacement_resolved_count": 1,
+      "old_binding_state": "retired",
+      "historical_locator_unchanged": true
+    },
+    "note": "The state readback was performed in a separate SQL statement after confirmation. Same-statement subqueries are not used as the mutation-state oracle."
+  },
+  "fail_closed_canary": {
+    "case": "BAD_EXPECTED_PRESTATE_DIGEST",
+    "expected_sqlstate": "40001",
+    "ledger_count": 0,
+    "replacement_resolved_count": 0,
+    "old_binding_state": "resolved",
+    "result": "PASS"
+  }
+}
