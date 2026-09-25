@@ -489,7 +489,6 @@ export default function PremiumFaceLabSection({
   const [budgetBand, setBudgetBand] = useState("standard");
   const [maintenanceTolerance, setMaintenanceTolerance] = useState("medium");
   const [canonical, setCanonical] = useState(null);
-  const [selectedRouteId, setSelectedRouteId] = useState(null);
 
   useEffect(() => {
     if (!faceLabAnalysis || typeof window === "undefined") return;
@@ -511,7 +510,6 @@ export default function PremiumFaceLabSection({
       if (restored?.targetStyle?.status !== "available") return false;
 
       setCanonical(restored);
-      setSelectedRouteId(restored.routes?.selectedRouteId || stored.selectedRouteId || null);
       setEntryMode(stored.surveyAnswers.entryMode || "known");
       setTargets(
         stored.surveyAnswers.targetSelections?.length
@@ -568,6 +566,17 @@ export default function PremiumFaceLabSection({
   if (!faceLabAnalysis) {
     return <LegacyFaceLab faceLabSummary={faceLabSummary} photoUrl={photoUrl} locale={locale} />;
   }
+
+  const persistLocal = (value) => {
+    if (typeof window === "undefined") return false;
+
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(value));
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   const persistServer = async (surveyAnswers, approvedFinder, routeId) => {
     if (!savedReportId) return;
@@ -632,16 +641,13 @@ export default function PremiumFaceLabSection({
     });
 
     setCanonical(result);
-    setSelectedRouteId(result.routes?.selectedRouteId || null);
     setStage("result");
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem(storageKey, JSON.stringify({
-        surveyAnswers,
-        targetFinderResult: approvedFinder,
-        selectedRouteId: result.routes?.selectedRouteId || null
-      }));
-    }
+    persistLocal({
+      surveyAnswers,
+      targetFinderResult: approvedFinder,
+      selectedRouteId: result.routes?.selectedRouteId || null
+    });
 
     void persistServer(
       surveyAnswers,
@@ -667,15 +673,12 @@ export default function PremiumFaceLabSection({
     const resolvedRouteId = result.routes?.selectedRouteId || null;
 
     setCanonical(result);
-    setSelectedRouteId(resolvedRouteId);
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem(storageKey, JSON.stringify({
-        surveyAnswers,
-        targetFinderResult: approvedFinder,
-        selectedRouteId: resolvedRouteId
-      }));
-    }
+    persistLocal({
+      surveyAnswers,
+      targetFinderResult: approvedFinder,
+      selectedRouteId: resolvedRouteId
+    });
 
     void persistServer(surveyAnswers, approvedFinder, resolvedRouteId);
   };

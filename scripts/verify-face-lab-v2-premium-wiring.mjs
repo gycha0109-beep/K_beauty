@@ -105,6 +105,19 @@ assert.ok(
   premiumFaceLab.includes("persistServer(surveyAnswers, approvedFinder, resolvedRouteId)"),
   "server revisit state must persist the resolved route id"
 );
+assert.ok(
+  premiumFaceLab.includes("const persistLocal = (value) =>"),
+  "Face Lab V2 must isolate local persistence behind a failure-safe boundary"
+);
+assert.ok(
+  premiumFaceLab.includes("try {\n      localStorage.setItem(storageKey"),
+  "local persistence failure must not prevent server persistence"
+);
+assert.equal(
+  premiumFaceLab.includes("setSelectedRouteId("),
+  false,
+  "selected route must have one authority: canonical.routes.selectedRouteId"
+);
 
 assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
 assert.ok(composer.includes("buildStyleRoutes"), "canonical V2 must include comparable routes");
@@ -128,6 +141,8 @@ console.log(JSON.stringify({
     "server_rehydration",
     "cached_canonical_not_trusted",
     "resolved_route_persistence",
+    "failure_safe_local_persistence",
+    "single_selected_route_authority",
     "mutable_face_lab_v2_persistence",
     "canonical_execution_chain",
     "archetype_decoupled"
