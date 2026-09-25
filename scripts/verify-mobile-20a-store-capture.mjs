@@ -20,7 +20,11 @@ function assert(condition, label) {
 const listing = JSON.parse(read("docs/store/mobile-store-listing-final.json"));
 const result = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
 const capture = read("scripts/capture-mobile-store-assets.sh");
-const workflow = read(".github/workflows/mobile-android-runtime.yml");
+const runtimeWorkflow = read(".github/workflows/mobile-android-runtime.yml");
+const workflowStart = runtimeWorkflow.indexOf("\n  store-capture-20a:");
+const workflowEnd = runtimeWorkflow.indexOf("\n  store-capture-20b:", workflowStart + 1);
+assert(workflowStart >= 0 && workflowEnd > workflowStart, "canonical-20a-job-block-present");
+const workflow = runtimeWorkflow.slice(workflowStart, workflowEnd);
 
 assert(listing.screenshotPlan?.sourceOfTruth === "production mobile runtime after MOBILE-17A", "production-runtime-source");
 assert(listing.googlePlay?.phoneScreenshots?.targetPortraitSize === "1080x1920", "google-play-target-size");
