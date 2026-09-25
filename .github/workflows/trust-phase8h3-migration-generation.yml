@@ -1,0 +1,51 @@
+name: TRUST Phase 8H-3 migration generation
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/trust-phase8h3-migration-generation.yml"
+      - "docs/evidence/trust-phase8h3-relocation-revalidation-contract-v1.md"
+      - "scripts/trust-research-worker.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Verify exact checkout
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Generate migration identity through Supabase CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes supabase@2.117.0 migration new trust_phase8h3_relocation_revalidation_v1
+          generated="$(find supabase/migrations -maxdepth 1 -type f -name '*_trust_phase8h3_relocation_revalidation_v1.sql' -print -quit)"
+          test -n "$generated"
+          mkdir -p tmp/trust-phase8h3-migration
+          cp "$generated" tmp/trust-phase8h3-migration/
+          printf '%s\n' "$(basename "$generated")" > tmp/trust-phase8h3-migration/filename.txt
+
+      - name: Upload generated migration identity
+        uses: actions/upload-artifact@v7
+        with:
+          name: trust-phase8h3-migration-generation
+          path: tmp/trust-phase8h3-migration
+          if-no-files-found: error
+          retention-days: 7
