@@ -9,6 +9,10 @@ const dryRun = JSON.parse(await readFile(
   new URL("../docs/evidence/trust-phase8h-db-dry-run-validation-v1.json", import.meta.url),
   "utf8",
 ));
+const productionClosure = JSON.parse(await readFile(
+  new URL("../docs/evidence/trust-phase8h-2b-production-closure-v1.json", import.meta.url),
+  "utf8",
+));
 
 assert.equal(provenance.contract, "trust-phase8h-cli-migration-generation-v1");
 assert.equal(provenance.supabase_cli_version, "2.117.0");
@@ -16,6 +20,31 @@ assert.equal(provenance.generation_authority, "SUPABASE_CLI_MIGRATION_NEW");
 assert.equal(provenance.production_mutation, "NONE");
 assert.equal(dryRun.contract, "trust-phase8h-db-dry-run-validation-v1");
 assert.equal(dryRun.migration, provenance.generated_migration_filename);
+assert.equal(dryRun.deployed_migration, provenance.production_migration_filename);
+assert.equal(provenance.production_migration_version, "20260926074409");
+assert.equal(provenance.production_apply_authority, "SUPABASE_MCP_APPLY_MIGRATION");
+assert.equal(provenance.production_apply_result, "SUCCESS");
+assert.equal(productionClosure.contract, "trust-phase8h-2b-production-closure-v1");
+assert.equal(productionClosure.production_migration.version, provenance.production_migration_version);
+assert.equal(productionClosure.production_migration.filename, provenance.production_migration_filename);
+assert.equal(productionClosure.production_migration.source_cli_generated_filename, provenance.generated_migration_filename);
+assert.equal(productionClosure.production_migration.result, "SUCCESS");
+assert.equal(productionClosure.dermafactory_relocation.status, "confirmed");
+assert.equal(productionClosure.dermafactory_relocation.old_binding_state, "retired");
+assert.equal(productionClosure.dermafactory_relocation.replacement_binding_state, "resolved");
+assert.equal(productionClosure.dermafactory_relocation.ledger_count, 1);
+assert.equal(productionClosure.dermafactory_relocation.replacement_binding_count, 1);
+assert.equal(productionClosure.dermafactory_relocation.replacement_review_count, 1);
+assert.equal(productionClosure.dermafactory_relocation.audit_count, 1);
+assert.equal(productionClosure.dermafactory_relocation.idempotent_replay, true);
+assert.equal(productionClosure.dermafactory_relocation.immutable_update_rejected, true);
+assert.equal(productionClosure.semantic_immutability.product_fact_instances_before, productionClosure.semantic_immutability.product_fact_instances_after);
+assert.equal(productionClosure.semantic_immutability.product_fact_current_before, productionClosure.semantic_immutability.product_fact_current_after);
+assert.equal(productionClosure.semantic_immutability.current_confirmations_before, productionClosure.semantic_immutability.current_confirmations_after);
+assert.equal(productionClosure.semantic_immutability.revalidation_transitions_before, productionClosure.semantic_immutability.revalidation_transitions_after);
+assert.equal(productionClosure.semantic_immutability.revalidation_bridges_before, productionClosure.semantic_immutability.revalidation_bridges_after);
+assert.equal(productionClosure.semantic_immutability.recommendation_logs_before, productionClosure.semantic_immutability.recommendation_logs_after);
+assert.equal(productionClosure.next_authority, "PHASE_8H_3_REVALIDATION_REQUIRED");
 assert.equal(dryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
 assert.equal(dryRun.migration_ddl_compile, "PASS");
 assert.equal(dryRun.dependency_resolution, "PASS");
@@ -69,7 +98,7 @@ for (const name of migrationFiles) {
 }
 
 assert.equal(relocationMigrations.length, 1, "expected exactly one Phase 8H-2B deployable migration");
-assert.equal(relocationMigrations[0].name, provenance.generated_migration_filename);
+assert.equal(relocationMigrations[0].name, provenance.production_migration_filename);
 const sql = relocationMigrations[0].sql;
 const lower = sql.toLowerCase();
 
@@ -168,8 +197,8 @@ for (const forbidden of [
 }
 
 console.log(JSON.stringify({
-  status: "READY_FOR_DATABASE_VALIDATION",
-  migration: provenance.generated_migration_filename,
+  status: "PHASE_8H_2B_PRODUCTION_CONFIRMED",
+  migration: provenance.production_migration_filename,
   supabaseCliVersion: provenance.supabase_cli_version,
   workflowRunId: provenance.workflow_run_id,
   dryRunValidation: dryRun.validation_mode,
