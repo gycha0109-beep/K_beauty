@@ -58,6 +58,9 @@ jobs:
       - name: Run Olive Young DB-write-free canary
         run: node scripts/commerce-link-health-live-probe.mjs --delay-ms=750
 
+      - name: Run 72-offer DB-write-free snapshot
+        run: node scripts/commerce-link-health-live-probe.mjs --manifest=tests/fixtures/commerce-link-health/oliveyoung-production-snapshot-v1.json --delay-ms=250
+
       - name: Diff hygiene
         shell: bash
         env:
