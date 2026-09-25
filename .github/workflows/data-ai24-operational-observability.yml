@@ -1,0 +1,54 @@
+name: Product Query AI - Operational Observability
+run-name: "[WT:taxonomy-ai] Product Query AI - DATA-AI24 Operational Observability"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/route.js"
+      - "lib/product-query-operational-observability.mjs"
+      - "lib/security/error-redaction.js"
+      - "lib/server/product-query-preview-service.js"
+      - "lib/server/product-query-shadow-service.js"
+      - "scripts/verify-data-ai24-operational-observability.mjs"
+      - ".github/workflows/data-ai24-operational-observability.yml"
+      - "docs/ci/workflow-responsibility-map.json"
+  push:
+    branches: [main]
+    paths:
+      - "app/api/my/product-query-beta/route.js"
+      - "lib/product-query-operational-observability.mjs"
+      - "lib/security/error-redaction.js"
+      - "lib/server/product-query-preview-service.js"
+      - "lib/server/product-query-shadow-service.js"
+      - "scripts/verify-data-ai24-operational-observability.mjs"
+      - ".github/workflows/data-ai24-operational-observability.yml"
+      - "docs/ci/workflow-responsibility-map.json"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-ai24-operational-observability-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: DATA-AI24 privacy-safe operational observability
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify DATA-AI24 privacy-safe operational observability
+        run: node scripts/verify-data-ai24-operational-observability.mjs

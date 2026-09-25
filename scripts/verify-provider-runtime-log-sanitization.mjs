@@ -34,7 +34,7 @@ assert.deepEqual(event, {
   model: "gpt-4o-mini",
   durationMs: 13
 });
-assert.deepEqual([...SAFE_PROVIDER_MODELS].sort(), ["gpt-4o", "gpt-4o-mini"]);
+assert.deepEqual([...SAFE_PROVIDER_MODELS].sort(), ["gpt-4o", "gpt-4o-mini", "gpt-5.6-luna"]);
 
 for (const model of [
   "unknown-model",
