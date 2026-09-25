@@ -224,6 +224,28 @@ assert.equal(noMakeup.makeup.status, "not_requested");
 assert.equal(noMakeup.productHandoff.status, "not_requested");
 assert.ok(noMakeup.routes.routes.every((route) => !route.domains.includes("makeup")));
 
+const futureOnlyScope = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    targetSelections: ["trendy"],
+    stylingScope: ["face_adjacent_style"]
+  },
+  resultId: "fixture-face-lab-v2-future-only-scope"
+});
+
+assert.equal(
+  futureOnlyScope.styleDelta.priorities.some((item) => item.domain === "face_adjacent_style"),
+  false,
+  "Style Delta must not expose a domain until a V2 execution engine can fulfill it"
+);
+assert.equal(
+  futureOnlyScope.routes.status,
+  "insufficient_evidence",
+  "future-only styling scope must not fabricate an executable route"
+);
+assert.equal(futureOnlyScope.faceAdjacentStyle, null);
+
 const unconfirmed = buildFaceLabV2Canonical({
   analysis,
   surveyAnswers: {
