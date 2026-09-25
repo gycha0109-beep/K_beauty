@@ -443,6 +443,42 @@ assert.equal(normalizedPersistence.surveyAnswers.constraints.lifestyle.budgetBan
 assert.equal(normalizedPersistence.surveyAnswers.constraints.lifestyle.maintenanceTolerance, "low");
 assert.equal(normalizedPersistence.selectedRouteId, "balanced");
 
+const persistedRoundTrip = normalizeFaceLabV2PersistencePayload({
+  surveyAnswers: survey,
+  targetFinderResult: null,
+  selectedRouteId: canonical.routes.selectedRouteId
+});
+const revisitedCanonical = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: persistedRoundTrip.surveyAnswers,
+  targetFinderResult: persistedRoundTrip.targetFinderResult,
+  selectedRouteId: persistedRoundTrip.selectedRouteId,
+  resultId: "fixture-face-lab-v2-revisit"
+});
+
+assert.equal(
+  revisitedCanonical.routes.selectedRouteId,
+  canonical.routes.selectedRouteId,
+  "saved route selection must survive normalized revisit rehydration"
+);
+for (const domain of ["hair", "grooming", "makeup", "color", "eyewear", "accessories"]) {
+  assert.deepEqual(
+    revisitedCanonical[domain]?.value ?? null,
+    canonical[domain]?.value ?? null,
+    `revisit must reproduce selected-route execution for ${domain}`
+  );
+}
+assert.deepEqual(
+  revisitedCanonical.looks.looks[0]?.pieces || [],
+  canonical.looks.looks[0]?.pieces || [],
+  "revisit must reproduce the same composed look pieces"
+);
+assert.deepEqual(
+  revisitedCanonical.productHandoff.specifications,
+  canonical.productHandoff.specifications,
+  "revisit must reproduce the same product specification handoff"
+);
+
 const normalizedFinderPersistence = normalizeFaceLabV2PersistencePayload({
   surveyAnswers: survey,
   targetFinderResult: {

@@ -664,18 +664,20 @@ export default function PremiumFaceLabSection({
       resultId: resultKey
     });
 
+    const resolvedRouteId = result.routes?.selectedRouteId || null;
+
     setCanonical(result);
-    setSelectedRouteId(routeId);
+    setSelectedRouteId(resolvedRouteId);
 
     if (typeof window !== "undefined") {
       localStorage.setItem(storageKey, JSON.stringify({
         surveyAnswers,
         targetFinderResult: approvedFinder,
-        selectedRouteId: routeId
+        selectedRouteId: resolvedRouteId
       }));
     }
 
-    void persistServer(surveyAnswers, approvedFinder, routeId);
+    void persistServer(surveyAnswers, approvedFinder, resolvedRouteId);
   };
 
   const choosePresentation = (value) => {

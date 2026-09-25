@@ -49,7 +49,6 @@ function readSavedV2(faceLab) {
     surveyAnswers: faceLab.surveyAnswers || null,
     targetFinderResult: faceLab.targetFinderResult || null,
     selectedRouteId: faceLab.selectedRouteId || null,
-    canonicalV2: faceLab.canonicalV2 || null,
     updatedAt: faceLab.updatedAt || null
   };
 }

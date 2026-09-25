@@ -86,6 +86,25 @@ assert.equal(
   false,
   "saved_reports.face_lab must persist user state, not a stale canonical result"
 );
+const readSavedBlock = faceLabApi.match(/function readSavedV2\(faceLab\) \{([\s\S]*?)\n\}/);
+assert.ok(readSavedBlock, "Face Lab V2 saved-state reader must exist");
+assert.equal(
+  readSavedBlock[1].includes("faceLab.canonicalV2"),
+  false,
+  "saved-state reader must never restore a previously persisted canonical cache"
+);
+assert.ok(
+  premiumFaceLab.includes("const resolvedRouteId = result.routes?.selectedRouteId || null"),
+  "route persistence must use the canonical composer-resolved route id"
+);
+assert.ok(
+  premiumFaceLab.includes("selectedRouteId: resolvedRouteId"),
+  "local revisit state must persist the resolved route id"
+);
+assert.ok(
+  premiumFaceLab.includes("persistServer(surveyAnswers, approvedFinder, resolvedRouteId)"),
+  "server revisit state must persist the resolved route id"
+);
 
 assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
 assert.ok(composer.includes("buildStyleRoutes"), "canonical V2 must include comparable routes");
@@ -108,6 +127,7 @@ console.log(JSON.stringify({
     "saved_target_restore",
     "server_rehydration",
     "cached_canonical_not_trusted",
+    "resolved_route_persistence",
     "mutable_face_lab_v2_persistence",
     "canonical_execution_chain",
     "archetype_decoupled"
