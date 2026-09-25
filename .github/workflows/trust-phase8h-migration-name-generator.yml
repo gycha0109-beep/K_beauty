@@ -1,0 +1,38 @@
+name: TRUST Phase 8H Migration Name Generator
+
+on:
+  push:
+    branches:
+      - "feat/trust-phase8h-governed-relocation-confirmation-db"
+    paths:
+      - ".github/workflows/trust-phase8h-migration-name-generator.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Generate migration through Supabase CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes supabase@latest migration new trust_phase8h_governed_relocation_confirmation_v1
+          file="$(find supabase/migrations -maxdepth 1 -type f -name '*_trust_phase8h_governed_relocation_confirmation_v1.sql' -printf '%f\n' | sort | tail -n 1)"
+          test -n "$file"
+          printf '%s\n' "$file" | tee migration-filename.txt
+
+      - name: Upload generated migration filename
+        uses: actions/upload-artifact@v7
+        with:
+          name: trust-phase8h-migration-filename
+          path: migration-filename.txt
+          if-no-files-found: error
+          retention-days: 1
