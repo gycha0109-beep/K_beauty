@@ -542,7 +542,34 @@ export default function PremiumFaceLabSection({
       return true;
     };
 
+    const readLocalState = () => {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey) || "null");
+      } catch {
+        return null;
+      }
+    };
+
+    const updatedAtMs = (stored) => {
+      const value = Date.parse(stored?.updatedAt || "");
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const cacheServerStateLocally = (stored) => {
+      if (!stored?.surveyAnswers) return;
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({
+          surveyAnswers: stored.surveyAnswers,
+          targetFinderResult: stored.targetFinderResult || null,
+          selectedRouteId: stored.selectedRouteId || null,
+          updatedAt: stored.updatedAt || null
+        }));
+      } catch {}
+    };
+
     const load = async () => {
+      const localStored = readLocalState();
+
       if (savedReportId) {
         try {
           const accessToken = await getBrowserSupabaseAccessToken();
@@ -553,16 +580,25 @@ export default function PremiumFaceLabSection({
             }
           );
           const data = await response.json().catch(() => null);
-          if (response.ok && restoreState(data?.faceLabV2)) {
-            return;
+          const serverStored = data?.faceLabV2 || null;
+
+          if (response.ok) {
+            if (
+              updatedAtMs(localStored) > updatedAtMs(serverStored) &&
+              restoreState(localStored)
+            ) {
+              return;
+            }
+
+            if (restoreState(serverStored)) {
+              cacheServerStateLocally(serverStored);
+              return;
+            }
           }
         } catch {}
       }
 
-      try {
-        const stored = JSON.parse(localStorage.getItem(storageKey) || "null");
-        restoreState(stored);
-      } catch {}
+      restoreState(localStored);
     };
 
     void load();
@@ -580,7 +616,10 @@ export default function PremiumFaceLabSection({
     if (typeof window === "undefined") return false;
 
     try {
-      localStorage.setItem(storageKey, JSON.stringify(value));
+      localStorage.setItem(storageKey, JSON.stringify({
+        ...value,
+        updatedAt: new Date().toISOString()
+      }));
       return true;
     } catch {
       return false;
