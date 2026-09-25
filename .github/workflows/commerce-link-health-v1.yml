@@ -9,6 +9,7 @@ on:
       - "scripts/verify-commerce-link-health-v1.mjs"
       - "scripts/commerce-link-health-live-probe.mjs"
       - "tests/fixtures/commerce-link-health/**"
+      - "supabase/migrations/20260925012400_commerce_link_health_v1.sql"
       - ".github/workflows/commerce-link-health-v1.yml"
   push:
     branches:
@@ -18,6 +19,7 @@ on:
       - "scripts/verify-commerce-link-health-v1.mjs"
       - "scripts/commerce-link-health-live-probe.mjs"
       - "tests/fixtures/commerce-link-health/**"
+      - "supabase/migrations/20260925012400_commerce_link_health_v1.sql"
       - ".github/workflows/commerce-link-health-v1.yml"
   workflow_dispatch:
 
