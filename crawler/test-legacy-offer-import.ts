@@ -12,8 +12,10 @@ import {
   LEGACY_OFFER_IMPORT_CONFIRM_TOKEN,
   LEGACY_OFFER_IMPORT_MAX_BATCH,
   assertLegacyOfferImportLimit,
+  assertLegacyOfferPresentationParity,
   assertProductOfferReadback,
   buildProductOfferInsertPayload,
+  normalizeLegacyOfferImportSellerKey,
   resolveLegacyOfferImportConfirm,
   selectLegacyOfferImportRows,
   type ProductOfferReadback,
@@ -47,6 +49,17 @@ function classification(index: number): LegacyOfferClassification {
 
 const rows = Array.from({ length: 6 }, (_, offset) => {
   const current = classification(offset + 1);
+  if (offset === 5) {
+    const otherSeller = {
+      ...current,
+      host: "roundlab.com",
+      sellerKey: "roundlab_official",
+      normalizedUrl: "https://roundlab.com/products/test-product-6",
+      canonicalListingUrl: "https://roundlab.com/products/test-product-6",
+      listingId: "test-product-6",
+    };
+    return buildManifestRow(otherSeller, otherSeller.normalizedUrl, "1.0");
+  }
   return buildManifestRow(current, current.normalizedUrl, "1.0");
 });
 
@@ -120,6 +133,8 @@ assert.equal(
 assert.equal(LEGACY_OFFER_IMPORT_MAX_BATCH, 5);
 assert.doesNotThrow(() => assertLegacyOfferImportLimit(5));
 assert.throws(() => assertLegacyOfferImportLimit(6), /limit_must_be_1_to_5/);
+assert.equal(normalizeLegacyOfferImportSellerKey(" OliveYoung "), "oliveyoung");
+assert.throws(() => normalizeLegacyOfferImportSellerKey("olive young"), /seller_key_invalid/);
 
 const selected = selectLegacyOfferImportRows({
   manifest,
@@ -141,6 +156,36 @@ const single = selectLegacyOfferImportRows({
 assert.equal(single.length, 1);
 assert.equal(single[0]!.productId, manifest.rows[4]!.productId);
 
+const oliveYoungScoped = selectLegacyOfferImportRows({
+  manifest,
+  dryRunRows,
+  limit: 5,
+  sellerKey: "oliveyoung",
+});
+assert.equal(oliveYoungScoped.length, 5);
+assert.ok(oliveYoungScoped.every((row) => row.proposedOffer.sellerKey === "oliveyoung"));
+
+const otherSellerScoped = selectLegacyOfferImportRows({
+  manifest,
+  dryRunRows,
+  limit: 5,
+  sellerKey: "roundlab_official",
+});
+assert.equal(otherSellerScoped.length, 1);
+assert.equal(otherSellerScoped[0]!.productId, manifest.rows[5]!.productId);
+
+assert.throws(
+  () =>
+    selectLegacyOfferImportRows({
+      manifest,
+      dryRunRows,
+      limit: 5,
+      productId: manifest.rows[5]!.productId,
+      sellerKey: "oliveyoung",
+    }),
+  /product_not_in_seller_scope/,
+);
+
 const blocked = structuredClone(dryRunRows);
 blocked[5]!.status = "identity_conflict";
 blocked[5]!.reason = "listing_id_already_bound_to_different_product";
@@ -148,11 +193,51 @@ assert.throws(
   () => selectLegacyOfferImportRows({ manifest, dryRunRows: blocked, limit: 1 }),
   /legacy_offer_import_blocked:stale=0:identity_conflict=1/,
 );
+assert.doesNotThrow(() =>
+  selectLegacyOfferImportRows({
+    manifest,
+    dryRunRows: blocked,
+    limit: 1,
+    sellerKey: "oliveyoung",
+  }),
+);
 
 const incomplete = dryRunRows.slice(0, 5);
 assert.throws(
   () => selectLegacyOfferImportRows({ manifest, dryRunRows: incomplete, limit: 1 }),
   /dry_run_coverage_mismatch/,
+);
+
+const parityRow = manifest.rows[0]!;
+assert.doesNotThrow(() =>
+  assertLegacyOfferPresentationParity({
+    row: parityRow,
+    currentClassification: classification(1),
+    currentBuyLink:
+      `${parityRow.proposedOffer.listingUrl}&trackingCd=Result_1&t_page=test`,
+    sellerKey: "oliveyoung",
+  }),
+);
+assert.throws(
+  () =>
+    assertLegacyOfferPresentationParity({
+      row: parityRow,
+      currentClassification: classification(1),
+      currentBuyLink:
+        "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000999999",
+      sellerKey: "oliveyoung",
+    }),
+  /presentation_current_url_mismatch/,
+);
+assert.throws(
+  () =>
+    assertLegacyOfferPresentationParity({
+      row: parityRow,
+      currentClassification: classification(1),
+      currentBuyLink: parityRow.proposedOffer.listingUrl,
+      sellerKey: "roundlab_official",
+    }),
+  /presentation_seller_not_admitted/,
 );
 
 const payload = buildProductOfferInsertPayload(manifest.rows[0]!);
@@ -177,6 +262,8 @@ console.log("- exact_manifest_digest: PASS");
 console.log("- max_batch_size_5: PASS");
 console.log("- global_stale_conflict_block: PASS");
 console.log("- deterministic_selection: PASS");
+console.log("- seller_scoped_selection: PASS");
+console.log("- oliveyoung_presentation_parity: PASS");
 console.log("- null_price_unknown_availability: PASS");
 console.log("- exact_readback_contract: PASS");
 console.log("- updates: 0");
