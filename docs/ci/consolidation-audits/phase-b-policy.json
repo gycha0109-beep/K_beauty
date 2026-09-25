@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "bejewely-ci-consolidation-phase-b-policy-v1",
+  "baselineWorkflowCount": 63,
+  "approvedAddedWorkflows": [
+    "data-ai-product-query-static.yml"
+  ],
+  "approvedRetiredWorkflows": [],
+  "clusters": {
+    "taxonomy-ai-data-ai3-5": {
+      "canonicalStaticOwner": "data-ai-product-query-static.yml",
+      "compatibilityAndRuntimeOwners": [
+        "data-ai3-product-query-shadow.yml",
+        "data-ai4-provider-shadow.yml",
+        "data-ai5-activation-readiness.yml"
+      ],
+      "rule": "Canonical static owner executes DATA-AI1-5 verifier chain, architecture guard, dependency install, and production build once per relevant SHA. Existing phase workflows preserve their workflow/job names, manual fallback verification, and push-only deployed runtime probes."
+    }
+  }
+}
