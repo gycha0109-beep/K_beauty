@@ -385,6 +385,35 @@ assert.ok(lowEffort.routes.routes[0].constraintFit.score > 0);
 assert.equal(lowEffort.makeup.status, "not_requested");
 assert.ok(["available", "not_applicable"].includes(lowEffort.eyewear.status));
 
+const legacyNoMakeup = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "brow_grooming", "makeup"],
+    constraints: {
+      ...survey.constraints,
+      makeup: { intensity: "none" }
+    }
+  },
+  resultId: "fixture-face-lab-v2-legacy-no-makeup"
+});
+
+assert.ok(
+  legacyNoMakeup.styleDelta.priorities
+    .filter((item) => item.domain === "makeup")
+    .every(
+      (item) =>
+        item.constraintState === "blocked" &&
+        item.blockedBy === "makeup_intensity_exclusion"
+    ),
+  "legacy none makeup preference must remain an explicit execution exclusion after restore"
+);
+assert.ok(
+  legacyNoMakeup.routes.routes.every((route) => !route.domains.includes("makeup")),
+  "legacy none makeup preference must not leak into canonical routes"
+);
+assert.equal(legacyNoMakeup.makeup.status, "not_requested");
+
 const masculine = buildFaceLabV2Canonical({
   analysis,
   surveyAnswers: {
