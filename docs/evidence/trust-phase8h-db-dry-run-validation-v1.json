@@ -12,7 +12,34 @@
   "rollback_readback": {
     "relocation_ledger_exists": false,
     "admin_confirmation_rpc_exists": false,
-    "canonical_helper_exists": false
+    "canonical_helper_exists": false,
+    "replacement_resolved_count": 0,
+    "old_binding_state": "resolved"
   },
-  "production_mutation": "NONE"
+  "production_mutation": "NONE",
+  "admin_confirmation_canary": {
+    "first_confirmation": {
+      "status": "confirmed",
+      "idempotent": false
+    },
+    "replay_confirmation": {
+      "status": "confirmed",
+      "idempotent": true
+    },
+    "in_transaction_sequential_readback": {
+      "ledger_count": 1,
+      "replacement_resolved_count": 1,
+      "old_binding_state": "retired",
+      "historical_locator_unchanged": true
+    },
+    "note": "The state readback was performed in a separate SQL statement after confirmation. Same-statement subqueries are not used as the mutation-state oracle."
+  },
+  "fail_closed_canary": {
+    "case": "BAD_EXPECTED_PRESTATE_DIGEST",
+    "expected_sqlstate": "40001",
+    "ledger_count": 0,
+    "replacement_resolved_count": 0,
+    "old_binding_state": "resolved",
+    "result": "PASS"
+  }
 }
