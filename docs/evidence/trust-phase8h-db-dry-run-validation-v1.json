@@ -1,0 +1,18 @@
+{
+  "contract": "trust-phase8h-db-dry-run-validation-v1",
+  "migration": "20260925221042_trust_phase8h_governed_official_source_relocation_v1.sql",
+  "validation_mode": "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK",
+  "migration_ddl_compile": "PASS",
+  "dependency_resolution": "PASS",
+  "canonical_digest_canary": {
+    "prestate_digest": "70aae88369b09d87e9a9a7153ad04af662f7fc069445204f2eafee0b6d5a745b",
+    "relocation_plan_digest": "9cc3c864fdeea7dde6545b607f33a30654284e6d9fef86b958e07eb012805567",
+    "result": "PASS"
+  },
+  "rollback_readback": {
+    "relocation_ledger_exists": false,
+    "admin_confirmation_rpc_exists": false,
+    "canonical_helper_exists": false
+  },
+  "production_mutation": "NONE"
+}
