@@ -174,7 +174,9 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_offer public.product_offers%rowtype;
+  v_listing_url text;
+  v_prior_state text;
+  v_prior_streak integer;
   v_existing public.product_offer_link_checks%rowtype;
   v_check_id uuid;
   v_observed_health_state text;
@@ -265,8 +267,8 @@ begin
       raise exception 'COMMERCE_LINK_HEALTH_REQUEST_ID_CONFLICT';
     end if;
 
-    select *
-      into v_offer
+    select link_health_state, link_health_failure_streak
+      into v_prior_state, v_prior_streak
     from public.product_offers
     where offer_id = p_offer_id;
 
@@ -275,13 +277,13 @@ begin
       'inserted', false,
       'check_id', v_existing.check_id,
       'offer_id', p_offer_id,
-      'link_health_state', v_offer.link_health_state,
-      'link_health_failure_streak', v_offer.link_health_failure_streak
+      'link_health_state', v_prior_state,
+      'link_health_failure_streak', v_prior_streak
     );
   end if;
 
-  select *
-    into v_offer
+  select listing_url, link_health_state, link_health_failure_streak
+    into v_listing_url, v_prior_state, v_prior_streak
   from public.product_offers
   where offer_id = p_offer_id
   for update;
@@ -290,7 +292,7 @@ begin
     raise exception 'COMMERCE_LINK_HEALTH_OFFER_NOT_FOUND';
   end if;
 
-  if v_offer.listing_url <> btrim(p_requested_url) then
+  if v_listing_url <> btrim(p_requested_url) then
     raise exception 'COMMERCE_LINK_HEALTH_STALE_CHECK';
   end if;
 
@@ -298,12 +300,12 @@ begin
     v_next_state := 'healthy';
     v_next_streak := 0;
   elsif v_hard_failure then
-    v_next_streak := v_offer.link_health_failure_streak + 1;
+    v_next_streak := v_prior_streak + 1;
     v_next_state := case when v_next_streak >= 2 then 'broken' else 'suspect' end;
   else
-    v_next_streak := v_offer.link_health_failure_streak;
+    v_next_streak := v_prior_streak;
     v_next_state := case
-      when v_offer.link_health_state in ('suspect', 'broken') then v_offer.link_health_state
+      when v_prior_state in ('suspect', 'broken') then v_prior_state
       else 'unknown'
     end;
   end if;
