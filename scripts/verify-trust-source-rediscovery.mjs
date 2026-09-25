@@ -256,6 +256,8 @@ assert.equal(liveSummary.case_count, 2);
 assert.equal(liveSummary.counts.NO_SAFE_OFFICIAL_CANDIDATE, 2);
 assert.equal(liveSummary.mutation_policy, "READ_ONLY_NO_PRODUCTION_WRITE");
 assert.equal(liveSummary.relocation_authority_created, false);
+assert.ok(Number.isInteger(liveSummary.github_evidence.workflow_run_id) && liveSummary.github_evidence.workflow_run_id > 0);
+assert.ok(Number.isInteger(liveSummary.github_evidence.artifact_id) && liveSummary.github_evidence.artifact_id > 0);
 assert.match(liveSummary.github_evidence.head_sha, /^[a-f0-9]{40}$/);
 assert.match(liveSummary.github_evidence.artifact_digest, /^sha256:[a-f0-9]{64}$/);
 assert.equal(liveSummary.cases.length, 2);
@@ -263,5 +265,6 @@ assert.ok(liveSummary.cases.every((row) => row.official_candidate_count === 0));
 assert.ok(liveSummary.cases.every((row) => row.rediscovery_disposition === "EXTERNAL_SEEDS_ONLY"));
 assert.ok(liveSummary.cases.every((row) => row.case_disposition === "NO_SAFE_OFFICIAL_CANDIDATE"));
 assert.ok(liveSummary.cases.every((row) => row.external_seed_qualification === "AMBIGUOUS_IDENTITY"));
+assert.ok(liveSummary.cases.every((row) => /^[a-f0-9]{64}$/.test(row.external_seed_qualification_digest)));
 
 console.log("TRUST_PHASE8H_OFFICIAL_SOURCE_REDISCOVERY_VERIFIED");
