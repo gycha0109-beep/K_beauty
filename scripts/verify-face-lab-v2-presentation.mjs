@@ -55,7 +55,13 @@ const fixture = {
         maintenance: "low",
         costBand: "standard",
         reversibility: "easy",
-        targetFit: { status: "supported" },
+        targetFit: {
+          status: "supported",
+          coverage: 0.67,
+          coveredDimensions: ["softSharp", "naturalPolished"],
+          totalDimensions: ["softSharp", "naturalPolished", "minimalStatement"],
+          explanation: "활성 목표 방향 3개 중 2개를 이 경로에서 함께 다룹니다."
+        },
         constraintFit: { score: 1, softTradeoffs: [] },
         actions: [
           {
@@ -148,6 +154,11 @@ const ko = buildFaceLabV2ResultPresentation(fixture, { locale: "ko" });
 assert.equal(JSON.stringify(fixture), before, "presentation adapter must not mutate canonical input");
 assert.equal(ko.status, "available");
 assert.equal(ko.execution.domains.length, 1);
+assert.equal(
+  ko.routes.items[0].targetFit,
+  "활성 목표 방향 3개 중 2개를 이 경로에서 함께 다룹니다.",
+  "route card must preserve the canonical localized target-coverage explanation"
+);
 assert.equal(ko.execution.domains[0].domain, "makeup");
 assert.ok(
   ko.execution.domains[0].actions.some((item) => item.includes("실행 엔진 상세")),
@@ -176,7 +187,14 @@ assert.equal(
   "raw product attribute rendering must not leak into presentation"
 );
 
-const en = buildFaceLabV2ResultPresentation(fixture, { locale: "en" });
+const enFixture = JSON.parse(JSON.stringify(fixture));
+enFixture.routes.routes[0].targetFit.explanation = "This route covers 2 of 3 active target directions together.";
+const en = buildFaceLabV2ResultPresentation(enFixture, { locale: "en" });
+assert.equal(
+  en.routes.items[0].targetFit,
+  "This route covers 2 of 3 active target directions together.",
+  "English route card must preserve the canonical target-coverage explanation"
+);
 assert.equal(
   /[가-힣]/.test(JSON.stringify(en)),
   false,

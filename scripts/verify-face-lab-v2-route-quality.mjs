@@ -172,6 +172,26 @@ assert.ok(
   "minimal change tolerance must keep comparison metadata aligned with bounded execution"
 );
 
+const lightMakeupTargetStyle = {
+  ...targetStyle,
+  constraints: {
+    ...targetStyle.constraints,
+    makeup: { intensity: "light" }
+  }
+};
+const lightMakeupResult = buildStyleRoutes(styleDelta, {
+  locale: "en",
+  targetStyle: lightMakeupTargetStyle
+});
+const lightMakeupActions = lightMakeupResult.routes
+  .flatMap((route) => route.actions)
+  .filter((action) => action.domain === "makeup");
+assert.ok(lightMakeupActions.length > 0, "light makeup fixture must retain an executable makeup action");
+assert.ok(
+  lightMakeupActions.every((action) => !["moderate", "strong"].includes(action.strength)),
+  "light makeup intensity must cap actual makeup execution strength at light"
+);
+
 const constrainedTargetStyle = {
   ...targetStyle,
   constraints: {
