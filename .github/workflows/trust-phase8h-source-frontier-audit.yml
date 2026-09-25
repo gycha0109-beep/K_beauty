@@ -24,6 +24,10 @@ on:
       - ".github/workflows/trust-phase8h-source-frontier-audit.yml"
   workflow_dispatch:
     inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
       live_audit:
         description: Run bounded live official-source frontier probes
         required: false
