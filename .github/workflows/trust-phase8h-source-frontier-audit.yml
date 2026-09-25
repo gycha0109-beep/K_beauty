@@ -29,8 +29,8 @@ on:
       - "scripts/verify-trust-source-relocation-db-readiness.mjs"
       - "docs/evidence/trust-phase8h-governed-relocation-db-implementation-blueprint-v1.md"
       - "docs/evidence/trust-phase8h-cli-migration-generation-v1.json"
-      - "docs/evidence/trust-phase8h-db-dry-run-validation-v1.json"
-      - "supabase/migrations/20260925221042_trust_phase8h_governed_official_source_relocation_v1.sql"
+      - "docs/evidence/trust-phase8h-db-dry-run-validation-v1.json"\n      - "docs/evidence/trust-phase8h-2b-production-closure-v1.json"
+      - "supabase/migrations/20260926074409_trust_phase8h_governed_official_source_relocation_v1.sql"
       - "scripts/trust-source-identity-qualification.mjs"
       - "scripts/verify-trust-source-identity-qualification.mjs"
       - "fixtures/trust-phase8h-source-identity-qualification-v1.json"
@@ -39,7 +39,7 @@ on:
       - "docs/evidence/trust-phase8h-source-identity-qualification-contract-v1.md"
       - ".github/workflows/trust-phase8h-source-frontier-audit.yml"
   push:
-    branches: [main, "feat/trust-phase8h-source-frontier-audit", "feat/trust-phase8h-source-identity-qualification", "feat/trust-phase8h-boj-bounded-rediscovery", "feat/trust-phase8h-governed-relocation-confirmation-contract", "feat/trust-phase8h-governed-relocation-db-draft", "feat/trust-phase8h-governed-relocation-db-implementation"]
+    branches: [main, "feat/trust-phase8h-source-frontier-audit", "feat/trust-phase8h-source-identity-qualification", "feat/trust-phase8h-boj-bounded-rediscovery", "feat/trust-phase8h-governed-relocation-confirmation-contract", "feat/trust-phase8h-governed-relocation-db-draft", "feat/trust-phase8h-governed-relocation-db-implementation", "trust/phase8h-2b-production-closure"]
     paths:
       - "scripts/trust-source-frontier-audit.mjs"
       - "scripts/verify-trust-source-frontier-audit.mjs"
@@ -65,8 +65,8 @@ on:
       - "scripts/verify-trust-source-relocation-db-readiness.mjs"
       - "docs/evidence/trust-phase8h-governed-relocation-db-implementation-blueprint-v1.md"
       - "docs/evidence/trust-phase8h-cli-migration-generation-v1.json"
-      - "docs/evidence/trust-phase8h-db-dry-run-validation-v1.json"
-      - "supabase/migrations/20260925221042_trust_phase8h_governed_official_source_relocation_v1.sql"
+      - "docs/evidence/trust-phase8h-db-dry-run-validation-v1.json"\n      - "docs/evidence/trust-phase8h-2b-production-closure-v1.json"
+      - "supabase/migrations/20260926074409_trust_phase8h_governed_official_source_relocation_v1.sql"
       - "scripts/trust-source-identity-qualification.mjs"
       - "scripts/verify-trust-source-identity-qualification.mjs"
       - "fixtures/trust-phase8h-source-identity-qualification-v1.json"
