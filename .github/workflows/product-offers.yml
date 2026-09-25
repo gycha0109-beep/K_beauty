@@ -111,7 +111,7 @@ jobs:
           cp tests/fixtures/product-offers/20260913050000_product_offer_read_runtime_role_seed.sql "${migration_dir}/"
           cp supabase/migrations/20260913052338_data_offer16_offer_presentation_authority_read_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260925012400_commerce_link_health_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260925110500_product_offers_health_presentation_read_v2.sql "${migration_dir}/"
+          cp supabase/migrations/20260925020000_product_offers_health_presentation_read_v2.sql "${migration_dir}/"
 
       - name: Start and reset isolated Supabase
         shell: bash
