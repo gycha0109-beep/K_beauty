@@ -289,6 +289,18 @@ assert.ok(typeof finderResult.estimatedVector.minimalStatement === "number");
 assert.ok(typeof finderResult.estimatedVector.classicTrendy === "number");
 assert.equal(finderResult.estimatedVector.warmCool, 0.5);
 
+const inconclusiveFinderResult = buildTargetFinderResult(
+  TARGET_FINDER_ROUNDS.map((round) => ({
+    roundId: round.roundId,
+    choice: "neither"
+  }))
+);
+assert.deepEqual(
+  inconclusiveFinderResult.candidateLabels,
+  [],
+  "rejecting both options in every Finder round must not manufacture arbitrary target labels"
+);
+
 const finderCanonical = buildFaceLabV2Canonical({
   analysis,
   surveyAnswers: {
