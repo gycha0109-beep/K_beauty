@@ -490,14 +490,22 @@ export default function PremiumFaceLabSection({
   const [maintenanceTolerance, setMaintenanceTolerance] = useState("medium");
   const [canonical, setCanonical] = useState(null);
   const persistQueueRef = useRef(Promise.resolve());
+  const restoreInteractionRef = useRef(0);
 
   useEffect(() => {
     if (!faceLabAnalysis || typeof window === "undefined") return;
 
     let active = true;
+    const restoreInteractionRevision = restoreInteractionRef.current;
 
     const restoreState = (stored) => {
-      if (!active || !stored?.surveyAnswers) return false;
+      if (
+        !active ||
+        restoreInteractionRef.current !== restoreInteractionRevision ||
+        !stored?.surveyAnswers
+      ) {
+        return false;
+      }
 
       const restored = buildFaceLabV2Canonical({
         analysis: faceLabAnalysis,
@@ -747,6 +755,7 @@ export default function PremiumFaceLabSection({
               key={value}
               active={entryMode === value}
               onClick={() => {
+                restoreInteractionRef.current += 1;
                 setEntryMode(value);
                 setFinderResult(null);
                 setTargets([]);
