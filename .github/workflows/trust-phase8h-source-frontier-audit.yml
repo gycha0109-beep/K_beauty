@@ -18,6 +18,10 @@ on:
       - "docs/evidence/trust-phase8h-boj-rediscovery-canary-v1.json"
       - "docs/evidence/trust-phase8h-boj-rediscovery-live-summary-v1.json"
       - "docs/evidence/trust-phase8h-boj-bounded-rediscovery-contract-v1.md"
+      - "lib/trust/official-source-relocation-preflight.mjs"
+      - "scripts/verify-trust-source-relocation-preflight.mjs"
+      - "docs/evidence/trust-phase8h-dermafactory-relocation-preflight-v1.json"
+      - "docs/evidence/trust-phase8h-governed-relocation-preflight-contract-v1.md"
       - "scripts/trust-source-identity-qualification.mjs"
       - "scripts/verify-trust-source-identity-qualification.mjs"
       - "fixtures/trust-phase8h-source-identity-qualification-v1.json"
@@ -41,6 +45,10 @@ on:
       - "docs/evidence/trust-phase8h-boj-rediscovery-canary-v1.json"
       - "docs/evidence/trust-phase8h-boj-rediscovery-live-summary-v1.json"
       - "docs/evidence/trust-phase8h-boj-bounded-rediscovery-contract-v1.md"
+      - "lib/trust/official-source-relocation-preflight.mjs"
+      - "scripts/verify-trust-source-relocation-preflight.mjs"
+      - "docs/evidence/trust-phase8h-dermafactory-relocation-preflight-v1.json"
+      - "docs/evidence/trust-phase8h-governed-relocation-preflight-contract-v1.md"
       - "scripts/trust-source-identity-qualification.mjs"
       - "scripts/verify-trust-source-identity-qualification.mjs"
       - "fixtures/trust-phase8h-source-identity-qualification-v1.json"
@@ -115,6 +123,12 @@ jobs:
           node --check scripts/trust-source-rediscovery.mjs
           node --check scripts/verify-trust-source-rediscovery.mjs
           node scripts/verify-trust-source-rediscovery.mjs
+
+      - name: Verify Phase 8H-2A governed relocation preflight
+        run: |
+          node --check lib/trust/official-source-relocation-preflight.mjs
+          node --check scripts/verify-trust-source-relocation-preflight.mjs
+          node scripts/verify-trust-source-relocation-preflight.mjs
 
       - name: Run optional live read-only frontier audit
         if: github.event_name == 'workflow_dispatch' && inputs.live_audit == true

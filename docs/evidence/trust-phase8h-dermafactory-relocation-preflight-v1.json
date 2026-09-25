@@ -1,0 +1,70 @@
+{
+  "contract": "trust-phase8h-governed-relocation-preflight-v1",
+  "qualification": {
+    "contract": "trust-phase8h-source-identity-qualification-v1",
+    "disposition": "QUALIFIED_EXACT",
+    "authority": "QUALIFICATION_EVIDENCE_ONLY_REQUIRES_GOVERNED_RELOCATION",
+    "qualification_digest": "0a34c3413b7431bc7ecdf8f623eef5d0d49c7afcf370e2b5025ad78cc143627f",
+    "historical_source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+    "historical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+    "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+    "candidate_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "candidate_source_kind": "brand_official_product_page",
+    "discovery_method": "official_http_redirect"
+  },
+  "historical_source": {
+    "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+    "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "publisher": "Derma Factory",
+    "source_kind": "official_product_page",
+    "market": "KR_US",
+    "locale": null,
+    "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291"
+  },
+  "historical_subject_binding": {
+    "binding_id": "c674e798-f8bd-40f6-9add-ec5b64a4525f",
+    "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+    "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+    "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+    "binding_state": "exact_subject_match",
+    "scope_relation": "equivalent"
+  },
+  "governed_subject": {
+    "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+    "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+    "market_applicability": null,
+    "variant_key": null,
+    "formulation_revision_key": "pilot-freeze-3637fac10fd819b43eeb697447a4ef9b",
+    "identity_status": "resolved",
+    "current_state": "current"
+  },
+  "current_reviewed_binding": {
+    "binding_id": "fd3ddecc-c09a-4b12-bc96-6e6ef2b2e97c",
+    "review_id": "7b32a844-6e51-4476-9370-05d1859f7f5f",
+    "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+    "source_name": "dermafactory_official",
+    "external_type": "brand_official_product_page",
+    "source_url": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "market_code": "KR_US",
+    "locale": "en",
+    "binding_state": "resolved",
+    "binding_method": "trust_official_source_review_v1",
+    "product_scope_state": "product",
+    "review_subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+    "review_subject_market": null,
+    "review_source_market": "KR_US",
+    "review_scope_relation": "equivalent",
+    "review_variant_key": null,
+    "review_formulation_revision_key": "pilot-freeze-3637fac10fd819b43eeb697447a4ef9b",
+    "review_source_kind": "brand_official_product_page",
+    "review_version": "trust-official-source-review-v1"
+  },
+  "replacement": {
+    "source_name": "dermafactory_official",
+    "external_type": "brand_official_product_page",
+    "source_url": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "market_code": "KR_US",
+    "locale": "en"
+  }
+}
