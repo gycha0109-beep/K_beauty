@@ -149,6 +149,63 @@ const signatures = result.routes.map((route) =>
 );
 assert.equal(new Set(signatures).size, signatures.length, "route action sets must remain meaningfully distinct");
 
+const minimalTargetStyle = {
+  ...targetStyle,
+  changeTolerance: "minimal"
+};
+const minimalResult = buildStyleRoutes(styleDelta, {
+  locale: "en",
+  targetStyle: minimalTargetStyle
+});
+assert.ok(
+  minimalResult.routes.every((route) => route.actions.length <= 2),
+  "minimal change tolerance must reduce actual route action count, not only route metadata"
+);
+assert.ok(
+  minimalResult.routes.every((route) =>
+    route.actions.every((action) => !["moderate", "strong"].includes(action.strength))
+  ),
+  "minimal change tolerance must bound actual action strength"
+);
+assert.ok(
+  minimalResult.routes.every((route) => route.changeMagnitude === "low"),
+  "minimal change tolerance must keep comparison metadata aligned with bounded execution"
+);
+
+const constrainedTargetStyle = {
+  ...targetStyle,
+  constraints: {
+    ...targetStyle.constraints,
+    lifestyle: {
+      dailyMinutes: 5,
+      budgetBand: "low",
+      maintenanceTolerance: "low"
+    }
+  }
+};
+const constrainedResult = buildStyleRoutes(styleDelta, {
+  locale: "en",
+  targetStyle: constrainedTargetStyle
+});
+assert.equal(
+  constrainedResult.defaultRouteId,
+  "low_effort",
+  "tight daily-time, budget, and maintenance constraints must change the default execution route"
+);
+const constrainedDefault = constrainedResult.routes.find(
+  (route) => route.routeId === constrainedResult.defaultRouteId
+);
+assert.ok(constrainedDefault, "constrained default route must be present in the returned route set");
+assert.ok(
+  constrainedDefault.actions.length <= 2,
+  "constrained default execution must remain materially lighter than multi-action alternatives"
+);
+assert.deepEqual(
+  constrainedDefault.constraintFit.softTradeoffs,
+  [],
+  "the default constrained route must not claim a fit while carrying known lifestyle tradeoffs"
+);
+
 console.log(JSON.stringify({
   ok: true,
   version: result.version,
