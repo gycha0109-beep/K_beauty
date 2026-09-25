@@ -58,14 +58,49 @@ jobs:
       - name: Run Olive Young DB-write-free canary
         run: node scripts/commerce-link-health-live-probe.mjs --delay-ms=750
 
-      - name: Generate migration filename with Supabase CLI
+      - name: Prepare isolated Supabase
         shell: bash
         run: |
           set -euo pipefail
-          before="$(find supabase/migrations -maxdepth 1 -type f -printf '%f\n' | sort)"
-          npx --yes supabase@2.109.1 migration new commerce_link_health_v1
-          after="$(find supabase/migrations -maxdepth 1 -type f -printf '%f\n' | sort)"
-          comm -13 <(printf '%s\n' "${before}") <(printf '%s\n' "${after}") | sed 's/^/COMMERCE_LINK_HEALTH_MIGRATION_FILE=/'
+          runtime_dir="${RUNNER_TEMP}/commerce-link-health-runtime"
+          echo "COMMERCE_LINK_HEALTH_RUNTIME_DIR=${runtime_dir}" >>"${GITHUB_ENV}"
+          npx --yes supabase@2.109.1 init --workdir "${runtime_dir}" --force
+          migration_dir="${runtime_dir}/supabase/migrations"
+          mkdir -p "${migration_dir}"
+          cp tests/fixtures/product-offers/20260910102500_product_offers_runtime_seed.sql "${migration_dir}/"
+          cp supabase/migrations/20260910103000_product_offers_shadow_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260925012400_commerce_link_health_v1.sql "${migration_dir}/"
+
+      - name: Start and reset isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes supabase@2.109.1 start \
+            --workdir "${COMMERCE_LINK_HEALTH_RUNTIME_DIR}" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+          npx --yes supabase@2.109.1 db reset --workdir "${COMMERCE_LINK_HEALTH_RUNTIME_DIR}"
+
+      - name: Verify governed DB runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file="${RUNNER_TEMP}/commerce-link-health.env"
+          npx --yes supabase@2.109.1 status --workdir "${COMMERCE_LINK_HEALTH_RUNTIME_DIR}" -o env >"${env_file}"
+          set -a
+          source "${env_file}"
+          set +a
+          rm -f "${env_file}"
+          psql "${DB_URL}" -v ON_ERROR_STOP=1 -f tests/fixtures/commerce-link-health/verify-commerce-link-health-db-runtime.sql
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -d "${COMMERCE_LINK_HEALTH_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes supabase@2.109.1 stop --workdir "${COMMERCE_LINK_HEALTH_RUNTIME_DIR}" --no-backup
+          fi
+          rm -rf -- "${COMMERCE_LINK_HEALTH_RUNTIME_DIR}"
 
       - name: Diff hygiene
         shell: bash
