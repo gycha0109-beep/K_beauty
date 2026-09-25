@@ -464,6 +464,16 @@ function TargetSelection({ locale, selected, onChange }) {
   );
 }
 
+function persistenceFingerprint(value) {
+  if (!value?.surveyAnswers) return null;
+
+  return JSON.stringify({
+    surveyAnswers: value.surveyAnswers,
+    targetFinderResult: value.targetFinderResult || null,
+    selectedRouteId: value.selectedRouteId || null
+  });
+}
+
 export default function PremiumFaceLabSection({
   faceLabSummary,
   faceLabAnalysis = null,
@@ -634,7 +644,12 @@ export default function PremiumFaceLabSection({
         const accessToken = await getBrowserSupabaseAccessToken();
         if (!accessToken) return;
 
-        await fetch("/api/premium/face-lab-v2", {
+        const requestState = {
+          surveyAnswers,
+          targetFinderResult: approvedFinder,
+          selectedRouteId: routeId
+        };
+        const response = await fetch("/api/premium/face-lab-v2", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -642,11 +657,30 @@ export default function PremiumFaceLabSection({
           },
           body: JSON.stringify({
             savedReportId,
-            surveyAnswers,
-            targetFinderResult: approvedFinder,
-            selectedRouteId: routeId
+            ...requestState
           })
         });
+        const data = await response.json().catch(() => null);
+        const serverStored = data?.faceLabV2 || null;
+
+        if (!response.ok || !serverStored?.surveyAnswers) return;
+
+        try {
+          const currentStored = JSON.parse(localStorage.getItem(storageKey) || "null");
+          if (
+            persistenceFingerprint(currentStored) !==
+            persistenceFingerprint(requestState)
+          ) {
+            return;
+          }
+
+          localStorage.setItem(storageKey, JSON.stringify({
+            surveyAnswers: serverStored.surveyAnswers,
+            targetFinderResult: serverStored.targetFinderResult || null,
+            selectedRouteId: serverStored.selectedRouteId || null,
+            updatedAt: serverStored.updatedAt || null
+          }));
+        } catch {}
       } catch {}
     };
 
