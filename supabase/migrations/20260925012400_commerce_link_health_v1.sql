@@ -374,13 +374,13 @@ grant product_offer_link_health_recorder_owner to postgres;
 alter function private.record_product_offer_link_check_v1(
   uuid, text, timestamptz, text, text, integer, text, integer, text, text, integer, text
 ) owner to product_offer_link_health_recorder_owner;
-revoke product_offer_link_health_recorder_owner from postgres;
 revoke create on schema private from product_offer_link_health_recorder_owner;
 
 grant usage on schema private to service_role;
 grant execute on function private.record_product_offer_link_check_v1(
   uuid, text, timestamptz, text, text, integer, text, integer, text, text, integer, text
 ) to service_role;
+revoke product_offer_link_health_recorder_owner from postgres;
 
 comment on table public.product_offer_link_checks is
   'Append-only controlled observations of seller listing URL health. These observations do not establish Product Fact, recommendation, price, inventory, or Product identity authority.';
