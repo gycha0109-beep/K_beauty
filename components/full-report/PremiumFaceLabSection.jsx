@@ -809,7 +809,14 @@ export default function PremiumFaceLabSection({
         result={canonical}
         locale={locale}
         onSelectRoute={selectRoute}
-        onEditTarget={() => setStage(entryMode === "unknown" ? "finder" : "target")}
+        onEditTarget={() => {
+          if (entryMode === "unknown") {
+            setEntryMode("known");
+            setFinderResult(null);
+            setFinderInconclusive(false);
+          }
+          setStage("target");
+        }}
       />
     );
   }
