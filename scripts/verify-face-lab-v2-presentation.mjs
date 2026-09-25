@@ -34,6 +34,7 @@ const fixture = {
     conflicts: [
       {
         type: "over_amplification_guard",
+        domains: ["makeup"],
         description: "이미 상향 흐름이 보이는 눈매에 추가 상승 방향을 중첩하지 않습니다.",
         resolution: "상승 각도 대신 눈의 선명도와 길이 쪽으로 이동합니다."
       }
@@ -86,7 +87,29 @@ const fixture = {
   accessories: { status: "not_requested", value: null },
   looks: {
     status: "available",
-    visualConflicts: []
+    visualConflicts: [
+      {
+        conflictId: "style-delta-conflict-1",
+        domains: ["makeup"],
+        description: "이미 상향 흐름이 보이는 눈매에 추가 상승 방향을 중첩하지 않습니다.",
+        impact: "over_amplification_guard",
+        resolution: "상승 각도 대신 눈의 선명도와 길이 쪽으로 이동합니다."
+      }
+    ],
+    looks: [
+      {
+        routeId: "makeup_led",
+        title: "메이크업 중심",
+        summary: "LOOK COMPOSER: 속눈썹 라인과 바깥쪽 길이 중심",
+        whyItWorks: "LOOK COMPOSER: 선택한 메이크업 경로를 조합했습니다.",
+        pieces: [
+          {
+            domain: "makeup",
+            summary: "LOOK PIECE: 눈매의 선명도와 길이를 조절"
+          }
+        ]
+      }
+    ]
   },
   productHandoff: {
     status: "partial",
@@ -135,6 +158,9 @@ assert.equal(
   false,
   "generic route copy must not replace more specific canonical execution details"
 );
+assert.equal(ko.look.summary, "LOOK COMPOSER: 속눈썹 라인과 바깥쪽 길이 중심");
+assert.equal(ko.look.pieces[0].summary, "LOOK PIECE: 눈매의 선명도와 길이를 조절");
+assert.equal(ko.conflicts.items.length, 1);
 assert.equal(ko.productGuides.length, 1);
 assert.ok(ko.productGuides[0].recommended.some((item) => item.includes("농도")));
 assert.ok(ko.productGuides[0].avoid.some((item) => item.includes("각도")));
@@ -191,6 +217,8 @@ console.log(JSON.stringify({
     "canonical_immutability",
     "conditional_execution_domains",
     "canonical_execution_details",
+    "canonical_look_composer_output",
+    "route_scoped_conflicts",
     "human_product_guidance",
     "raw_spec_hidden",
     "english_locale_isolation",

@@ -149,6 +149,57 @@ assert.ok(["available", "not_applicable"].includes(canonical.grooming.status));
 assert.ok(["partial", "not_requested"].includes(canonical.productHandoff.status));
 assert.equal(canonical.looks.status, "available");
 assert.equal(canonical.looks.looks.length, 1);
+assert.equal(canonical.looks.looks[0].routeId, canonical.routes.selectedRouteId);
+assert.ok(canonical.looks.looks[0].pieces.length >= 1);
+const expectedLookDomains = ["hair", "grooming", "makeup", "color", "eyewear", "accessories"]
+  .filter((domain) => canonical[domain]?.status === "available");
+assert.deepEqual(
+  canonical.looks.looks[0].pieces.map((item) => item.domain),
+  expectedLookDomains,
+  "Look Composer must expose the execution domains it actually composed"
+);
+
+const hairRoute = canonical.routes.routes.find((route) => route.strategy === "hair_led");
+assert.ok(hairRoute, "fixture must expose a hair-led route for route-selection E2E verification");
+const hairRouteCanonical = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: survey,
+  selectedRouteId: hairRoute.routeId,
+  resultId: "fixture-face-lab-v2-hair-route"
+});
+assert.equal(hairRouteCanonical.routes.selectedRouteId, hairRoute.routeId);
+assert.equal(hairRouteCanonical.looks.looks[0].routeId, hairRoute.routeId);
+assert.notDeepEqual(
+  {
+    hair: canonical.hair?.value,
+    grooming: canonical.grooming?.value,
+    makeup: canonical.makeup?.value,
+    color: canonical.color?.value,
+    eyewear: canonical.eyewear?.value,
+    accessories: canonical.accessories?.value
+  },
+  {
+    hair: hairRouteCanonical.hair?.value,
+    grooming: hairRouteCanonical.grooming?.value,
+    makeup: hairRouteCanonical.makeup?.value,
+    color: hairRouteCanonical.color?.value,
+    eyewear: hairRouteCanonical.eyewear?.value,
+    accessories: hairRouteCanonical.accessories?.value
+  },
+  "changing the selected route must recompute domain execution payloads"
+);
+assert.notDeepEqual(
+  canonical.looks.looks[0].pieces,
+  hairRouteCanonical.looks.looks[0].pieces,
+  "changing the selected route must recompute the composed look"
+);
+assert.equal(
+  hairRouteCanonical.looks.visualConflicts.some(
+    (item) => item.impact === "over_amplification_guard"
+  ),
+  false,
+  "a hair-only route must not surface a makeup-only over-amplification warning"
+);
 assert.ok(["available", "insufficient_evidence"].includes(canonical.archetypeFun.status));
 assert.equal(canonical.archetypeFun.funOnly, true);
 assert.equal(canonical.archetypeFun.styleAuthority, false);
