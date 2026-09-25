@@ -46,10 +46,11 @@ expectHold((x) => { x.qualification.candidate_locator = "https://example.com/oth
 for (const forbidden of [
   "createClient(",
   ".rpc(",
+  ".from(",
   ".insert(",
-  ".update(",
   ".delete(",
   "apply_migration",
+  "execute_sql",
 ]) {
   assert.equal(engineSource.includes(forbidden), false, `preflight engine must stay read-only: ${forbidden}`);
 }
