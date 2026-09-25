@@ -84,7 +84,7 @@ const targetStyle = {
 
 const result = buildStyleRoutes(styleDelta, { locale: "en", targetStyle });
 assert.equal(result.status, "available");
-assert.equal(result.version, "face-lab-style-route-v2");
+assert.equal(result.version, "face-lab-style-route-v3");
 assert.ok(result.routes.length >= 2);
 assert.ok(
   result.routes.every((route) => !route.domains.includes("face_adjacent_style")),
@@ -190,6 +190,98 @@ assert.ok(lightMakeupActions.length > 0, "light makeup fixture must retain an ex
 assert.ok(
   lightMakeupActions.every((action) => !["moderate", "strong"].includes(action.strength)),
   "light makeup intensity must cap actual makeup execution strength at light"
+);
+
+const strongMakeupDelta = {
+  ...styleDelta,
+  priorities: styleDelta.priorities.map((item) =>
+    item.domain === "makeup"
+      ? { ...item, strength: "strong" }
+      : item
+  )
+};
+const mediumMakeupTargetStyle = {
+  ...targetStyle,
+  constraints: {
+    ...targetStyle.constraints,
+    makeup: { intensity: "medium" }
+  }
+};
+const mediumMakeupResult = buildStyleRoutes(strongMakeupDelta, {
+  locale: "en",
+  targetStyle: mediumMakeupTargetStyle
+});
+const mediumMakeupActions = mediumMakeupResult.routes
+  .flatMap((route) => route.actions)
+  .filter((action) => action.domain === "makeup");
+assert.ok(mediumMakeupActions.length > 0, "medium makeup fixture must retain an executable makeup action");
+assert.ok(
+  mediumMakeupActions.every((action) => action.strength !== "strong"),
+  "medium makeup intensity must cap strong makeup execution at moderate"
+);
+assert.ok(
+  mediumMakeupActions.some((action) => action.strength === "moderate"),
+  "medium makeup intensity must remain distinct from the light cap"
+);
+
+const expressiveMakeupTargetStyle = {
+  ...targetStyle,
+  constraints: {
+    ...targetStyle.constraints,
+    makeup: { intensity: "expressive" }
+  }
+};
+const expressiveMakeupResult = buildStyleRoutes(strongMakeupDelta, {
+  locale: "en",
+  targetStyle: expressiveMakeupTargetStyle
+});
+assert.ok(
+  expressiveMakeupResult.routes
+    .flatMap((route) => route.actions)
+    .some((action) => action.domain === "makeup" && action.strength === "strong"),
+  "expressive makeup intensity must preserve strong execution when Style Delta supports it"
+);
+
+const strongToleranceDelta = {
+  ...styleDelta,
+  priorities: styleDelta.priorities.map((item) =>
+    ["hair", "makeup"].includes(item.domain)
+      ? { ...item, strength: "strong" }
+      : item
+  )
+};
+const lightToleranceTargetStyle = {
+  ...targetStyle,
+  changeTolerance: "light",
+  constraints: {
+    ...targetStyle.constraints,
+    makeup: { intensity: "expressive" }
+  }
+};
+const lightToleranceResult = buildStyleRoutes(strongToleranceDelta, {
+  locale: "en",
+  targetStyle: lightToleranceTargetStyle
+});
+assert.ok(
+  lightToleranceResult.routes
+    .flatMap((route) => route.actions)
+    .every((action) => action.strength !== "strong"),
+  "light change tolerance must cap strong execution at moderate across styling domains"
+);
+
+const moderateToleranceTargetStyle = {
+  ...lightToleranceTargetStyle,
+  changeTolerance: "moderate"
+};
+const moderateToleranceResult = buildStyleRoutes(strongToleranceDelta, {
+  locale: "en",
+  targetStyle: moderateToleranceTargetStyle
+});
+assert.ok(
+  moderateToleranceResult.routes
+    .flatMap((route) => route.actions)
+    .some((action) => action.strength === "strong"),
+  "moderate change tolerance must preserve supported strong actions and remain distinct from light"
 );
 
 const constrainedTargetStyle = {
