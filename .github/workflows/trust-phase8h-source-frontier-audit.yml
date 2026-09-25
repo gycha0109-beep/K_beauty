@@ -12,6 +12,12 @@ on:
       - "docs/evidence/trust-phase8h-source-rediscovery-contract-v1.md"
       - "lib/trust/official-source-fetch.mjs"
       - "lib/trust/official-source-identity-qualification.mjs"
+      - "lib/trust/official-source-rediscovery.mjs"
+      - "scripts/trust-source-rediscovery.mjs"
+      - "scripts/verify-trust-source-rediscovery.mjs"
+      - "docs/evidence/trust-phase8h-boj-rediscovery-canary-v1.json"
+      - "docs/evidence/trust-phase8h-boj-rediscovery-live-summary-v1.json"
+      - "docs/evidence/trust-phase8h-boj-bounded-rediscovery-contract-v1.md"
       - "scripts/trust-source-identity-qualification.mjs"
       - "scripts/verify-trust-source-identity-qualification.mjs"
       - "fixtures/trust-phase8h-source-identity-qualification-v1.json"
@@ -20,7 +26,7 @@ on:
       - "docs/evidence/trust-phase8h-source-identity-qualification-contract-v1.md"
       - ".github/workflows/trust-phase8h-source-frontier-audit.yml"
   push:
-    branches: [main, "feat/trust-phase8h-source-frontier-audit", "feat/trust-phase8h-source-identity-qualification"]
+    branches: [main, "feat/trust-phase8h-source-frontier-audit", "feat/trust-phase8h-source-identity-qualification", "feat/trust-phase8h-boj-bounded-rediscovery"]
     paths:
       - "scripts/trust-source-frontier-audit.mjs"
       - "scripts/verify-trust-source-frontier-audit.mjs"
@@ -29,6 +35,12 @@ on:
       - "docs/evidence/trust-phase8h-source-rediscovery-contract-v1.md"
       - "lib/trust/official-source-fetch.mjs"
       - "lib/trust/official-source-identity-qualification.mjs"
+      - "lib/trust/official-source-rediscovery.mjs"
+      - "scripts/trust-source-rediscovery.mjs"
+      - "scripts/verify-trust-source-rediscovery.mjs"
+      - "docs/evidence/trust-phase8h-boj-rediscovery-canary-v1.json"
+      - "docs/evidence/trust-phase8h-boj-rediscovery-live-summary-v1.json"
+      - "docs/evidence/trust-phase8h-boj-bounded-rediscovery-contract-v1.md"
       - "scripts/trust-source-identity-qualification.mjs"
       - "scripts/verify-trust-source-identity-qualification.mjs"
       - "fixtures/trust-phase8h-source-identity-qualification-v1.json"
@@ -96,6 +108,13 @@ jobs:
           node --check scripts/trust-source-identity-qualification.mjs
           node --check scripts/verify-trust-source-identity-qualification.mjs
           node scripts/verify-trust-source-identity-qualification.mjs
+
+      - name: Verify Phase 8H-1B bounded official-source rediscovery
+        run: |
+          node --check lib/trust/official-source-rediscovery.mjs
+          node --check scripts/trust-source-rediscovery.mjs
+          node --check scripts/verify-trust-source-rediscovery.mjs
+          node scripts/verify-trust-source-rediscovery.mjs
 
       - name: Run optional live read-only frontier audit
         if: github.event_name == 'workflow_dispatch' && inputs.live_audit == true
@@ -179,5 +198,46 @@ jobs:
         with:
           name: trust-phase8h-source-identity-qualification
           path: tmp/trust-phase8h/source-identity-qualification.json
+          if-no-files-found: error
+          retention-days: 14
+
+
+  rediscovery-canary:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Run bounded BOJ rediscovery and qualification
+        run: |
+          mkdir -p tmp/trust-phase8h
+          node scripts/trust-source-rediscovery.mjs \
+            --input=docs/evidence/trust-phase8h-boj-rediscovery-canary-v1.json \
+            --output=tmp/trust-phase8h/boj-rediscovery-qualification.json
+          cat tmp/trust-phase8h/boj-rediscovery-qualification.json
+
+      - name: Upload BOJ rediscovery artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: trust-phase8h-boj-rediscovery-qualification
+          path: tmp/trust-phase8h/boj-rediscovery-qualification.json
           if-no-files-found: error
           retention-days: 14

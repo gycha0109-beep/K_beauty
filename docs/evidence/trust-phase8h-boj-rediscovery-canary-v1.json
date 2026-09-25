@@ -1,0 +1,154 @@
+{
+  "contract": "trust-phase8h-official-source-rediscovery-batch-v1",
+  "case_count": 2,
+  "cases": [
+    {
+      "contract": "trust-phase8h-official-source-rediscovery-v1",
+      "case_id": "boj-relief-sun-rice-probiotics-global",
+      "historical_source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "historical_source_ids": [
+        "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+        "60a55f19-a71d-4063-9ea5-13775193c940",
+        "f55720c7-0252-49b8-967c-8d77f4dfe6d6"
+      ],
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "allowed_hosts": ["beautyofjoseon.com"],
+      "product_path_prefixes": ["/products/"],
+      "exclude_path_substrings": ["-uk", "-eu", "duo"],
+      "query_terms": ["relief sun", "rice probiotics", "rice niacinamide"],
+      "max_sitemaps": 5,
+      "candidate_limit": 6,
+      "qualification_candidate_limit": 4,
+      "discovery_surfaces": [
+        {
+          "kind": "sitemap",
+          "url": "https://beautyofjoseon.com/sitemap.xml"
+        },
+        {
+          "kind": "html_index",
+          "url": "https://beautyofjoseon.com/products"
+        },
+        {
+          "kind": "html_index",
+          "url": "https://beautyofjoseon.com/search?q=relief%20sun&type=product"
+        }
+      ],
+      "external_search_seeds": [
+        "https://beautyofjoseon.com/products/relief-sun-rice-probiotics"
+      ],
+      "qualification_template": {
+        "contract": "trust-phase8h-source-identity-qualification-v1",
+        "historical_source": {
+          "source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+          "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+          "publisher": "Beauty of Joseon",
+          "source_kind": "official_product_page",
+          "market": "GLOBAL"
+        },
+        "governed_subject": {
+          "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+          "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+          "variant_key": "Relief_Sun_Rice_Probiotics",
+          "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+          "market": "GLOBAL"
+        },
+        "candidate_defaults": {
+          "publisher": "Beauty of Joseon",
+          "market": "GLOBAL",
+          "source_kind": "official_product_page"
+        },
+        "reviewed_binding": {
+          "binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
+          "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+          "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+          "binding_state": "resolved",
+          "source_url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+          "source_market": "GLOBAL",
+          "variant_key": "Relief_Sun_Rice_Probiotics",
+          "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+          "review_version": "trust-official-source-review-v1"
+        },
+        "requirements": {
+          "allowed_hosts": ["beautyofjoseon.com"],
+          "product_anchors_all": ["Relief Sun"],
+          "product_anchors_any": ["Rice + Probiotics", "Rice + Niacinamide"],
+          "market_anchors_all": [],
+          "variant_anchors_all": [],
+          "formulation_anchors_all": ["same formula", "Rice + Probiotics", "Rice + Niacinamide"],
+          "claim_anchors_all": ["SPF50+"],
+          "allow_anchor_only_formulation_proof": true
+        },
+        "observation": {}
+      }
+    },
+    {
+      "contract": "trust-phase8h-official-source-rediscovery-v1",
+      "case_id": "boj-relief-sun-aqua-fresh",
+      "historical_source_id": "5752312a-3109-4da7-a796-9b3de1765112",
+      "historical_source_ids": [
+        "5752312a-3109-4da7-a796-9b3de1765112"
+      ],
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "subject_id": "1b735d5e-bc57-4808-9f48-b4bb82f3e8fa",
+      "allowed_hosts": ["beautyofjoseon.com"],
+      "product_path_prefixes": ["/products/"],
+      "exclude_path_substrings": ["-uk", "-eu", "duo"],
+      "query_terms": ["relief sun aqua fresh", "rice b5"],
+      "max_sitemaps": 5,
+      "candidate_limit": 6,
+      "qualification_candidate_limit": 4,
+      "discovery_surfaces": [
+        {
+          "kind": "sitemap",
+          "url": "https://beautyofjoseon.com/sitemap.xml"
+        },
+        {
+          "kind": "html_index",
+          "url": "https://beautyofjoseon.com/products"
+        },
+        {
+          "kind": "html_index",
+          "url": "https://beautyofjoseon.com/search?q=relief%20sun%20aqua%20fresh&type=product"
+        }
+      ],
+      "external_search_seeds": [
+        "https://beautyofjoseon.com/products/relief-sun-aqua-fresh"
+      ],
+      "qualification_template": {
+        "contract": "trust-phase8h-source-identity-qualification-v1",
+        "historical_source": {
+          "source_id": "5752312a-3109-4da7-a796-9b3de1765112",
+          "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+          "publisher": "Beauty of Joseon",
+          "source_kind": "official_product_page",
+          "market": null
+        },
+        "governed_subject": {
+          "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+          "subject_id": "1b735d5e-bc57-4808-9f48-b4bb82f3e8fa",
+          "variant_key": "Relief_Sun_Aqua_Fresh_Rice_B5_50ML",
+          "formulation_revision_key": "trust-p7-boj-relief-sun-aqua-fresh-current",
+          "market": null
+        },
+        "candidate_defaults": {
+          "publisher": "Beauty of Joseon",
+          "market": null,
+          "source_kind": "official_product_page"
+        },
+        "reviewed_binding": null,
+        "requirements": {
+          "allowed_hosts": ["beautyofjoseon.com"],
+          "product_anchors_all": ["Relief Sun Aqua-Fresh", "Rice + B5"],
+          "market_anchors_all": [],
+          "variant_anchors_all": ["50 mL"],
+          "formulation_anchors_all": ["rice seed water", "panthenol"],
+          "claim_anchors_all": ["SPF50+"],
+          "allow_anchor_only_subject_proof": false,
+          "allow_anchor_only_formulation_proof": false
+        },
+        "observation": {}
+      }
+    }
+  ]
+}

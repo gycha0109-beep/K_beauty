@@ -1,0 +1,59 @@
+{
+  "contract": "trust-phase8h-boj-rediscovery-live-summary-v1",
+  "rediscovery_contract": "trust-phase8h-official-source-rediscovery-v1",
+  "qualification_contract": "trust-phase8h-source-identity-qualification-v1",
+  "observed_at": "2026-09-25T21:07:49.623Z",
+  "case_count": 2,
+  "counts": {
+    "NO_SAFE_OFFICIAL_CANDIDATE": 2
+  },
+  "mutation_policy": "READ_ONLY_NO_PRODUCTION_WRITE",
+  "authority": "DISCOVERY_AND_QUALIFICATION_EVIDENCE_ONLY_NOT_RELOCATION_AUTHORITY",
+  "github_evidence": {
+    "workflow_run_id": 36189679426,
+    "head_sha": "872c109e012cb38aa9bdc7bc4dabb9a2931a775c",
+    "artifact_id": 10887477814,
+    "artifact_digest": "sha256:3f162f1bae4c7400418d32ef8975c11cfb1424aecfdb837186e15f31d6c89a41"
+  },
+  "cases": [
+    {
+      "case_id": "boj-relief-sun-rice-probiotics-global",
+      "historical_source_ids": [
+        "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+        "60a55f19-a71d-4063-9ea5-13775193c940",
+        "f55720c7-0252-49b8-967c-8d77f4dfe6d6"
+      ],
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "rediscovery_disposition": "EXTERNAL_SEEDS_ONLY",
+      "official_candidate_count": 0,
+      "external_seed_count": 1,
+      "external_seed_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "external_seed_qualification": "AMBIGUOUS_IDENTITY",
+      "external_seed_qualification_digest": "61771ca948b9fe4db46fd3fd67fa2400e17721f808e967678c4809e4c95e18fd",
+      "case_disposition": "NO_SAFE_OFFICIAL_CANDIDATE",
+      "next_action": "HOLD_UNTIL_NEW_OFFICIAL_PRODUCT_SPECIFIC_CANDIDATE_OR_ADMIN_SUPPLIED_CANDIDATE"
+    },
+    {
+      "case_id": "boj-relief-sun-aqua-fresh",
+      "historical_source_ids": [
+        "5752312a-3109-4da7-a796-9b3de1765112"
+      ],
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "subject_id": "1b735d5e-bc57-4808-9f48-b4bb82f3e8fa",
+      "rediscovery_disposition": "EXTERNAL_SEEDS_ONLY",
+      "official_candidate_count": 0,
+      "external_seed_count": 1,
+      "external_seed_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+      "external_seed_qualification": "AMBIGUOUS_IDENTITY",
+      "external_seed_qualification_digest": "aa81d4fce77781397711a25d218b9c68653c408dab067d4424c16c1ad6c56c8b",
+      "case_disposition": "NO_SAFE_OFFICIAL_CANDIDATE",
+      "next_action": "HOLD_UNTIL_REVIEWED_OFFICIAL_BINDING_AND_NEW_PRODUCT_SPECIFIC_CANDIDATE"
+    }
+  ],
+  "drg_hold_unchanged": {
+    "source_count": 3,
+    "reason": "HTTP 429 remains retry-only."
+  },
+  "relocation_authority_created": false
+}
