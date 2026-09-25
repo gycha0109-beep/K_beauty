@@ -84,7 +84,7 @@ const targetStyle = {
 
 const result = buildStyleRoutes(styleDelta, { locale: "en", targetStyle });
 assert.equal(result.status, "available");
-assert.equal(result.version, "face-lab-style-route-v3");
+assert.equal(result.version, "face-lab-style-route-v4");
 assert.ok(result.routes.length >= 2);
 assert.ok(
   result.routes.every((route) => !route.domains.includes("face_adjacent_style")),
@@ -283,6 +283,30 @@ assert.ok(
     .some((action) => action.strength === "strong"),
   "moderate change tolerance must preserve supported strong actions and remain distinct from light"
 );
+
+for (const legacyMakeupIntensity of ["grooming_only", "none"]) {
+  const legacyMakeupResult = buildStyleRoutes(styleDelta, {
+    locale: "en",
+    targetStyle: {
+      ...targetStyle,
+      constraints: {
+        ...targetStyle.constraints,
+        makeup: { intensity: legacyMakeupIntensity }
+      }
+    }
+  });
+
+  assert.ok(
+    legacyMakeupResult.routes.every((route) => !route.domains.includes("makeup")),
+    `legacy ${legacyMakeupIntensity} preference must not reintroduce makeup execution after restore`
+  );
+  assert.ok(
+    legacyMakeupResult.routes
+      .flatMap((route) => route.actions)
+      .every((action) => action.domain !== "makeup"),
+    `legacy ${legacyMakeupIntensity} preference must remove makeup actions from mixed routes`
+  );
+}
 
 const constrainedTargetStyle = {
   ...targetStyle,
