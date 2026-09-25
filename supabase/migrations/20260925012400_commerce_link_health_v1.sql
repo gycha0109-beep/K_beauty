@@ -364,6 +364,11 @@ revoke all on function private.record_product_offer_link_check_v1(
   uuid, text, timestamptz, text, text, integer, text, integer, text, text, integer, text
 ) from public, anon, authenticated, service_role;
 
+comment on function private.record_product_offer_link_check_v1(
+  uuid, text, timestamptz, text, text, integer, text, integer, text, text, integer, text
+) is
+  'Records one idempotent commerce link observation and updates only the current link-health projection. It rejects stale listing URLs and does not mutate Product Fact or recommendation authority.';
+
 grant create on schema private to product_offer_link_health_recorder_owner;
 grant product_offer_link_health_recorder_owner to postgres;
 alter function private.record_product_offer_link_check_v1(
@@ -381,9 +386,4 @@ comment on table public.product_offer_link_checks is
   'Append-only controlled observations of seller listing URL health. These observations do not establish Product Fact, recommendation, price, inventory, or Product identity authority.';
 comment on column public.product_offers.link_health_state is
   'Current commerce-link presentation health projection. unknown is not broken; broken requires repeated hard failure.';
-comment on function private.record_product_offer_link_check_v1(
-  uuid, text, timestamptz, text, text, integer, text, integer, text, text, integer, text
-) is
-  'Records one idempotent commerce link observation and updates only the current link-health projection. It rejects stale listing URLs and does not mutate Product Fact or recommendation authority.';
-
 commit;
