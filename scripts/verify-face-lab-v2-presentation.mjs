@@ -225,6 +225,14 @@ assert.equal(bounded.status, "partial");
 assert.equal(bounded.routes.cards.length, 0);
 assert.equal(bounded.notice.kind, "bounded");
 
+const limitedEvidenceFixture = JSON.parse(JSON.stringify(fixture));
+limitedEvidenceFixture.status = "partial";
+limitedEvidenceFixture.currentFaceProfile.status = "partial";
+const limitedEvidence = buildFaceLabV2ResultPresentation(limitedEvidenceFixture, { locale: "ko" });
+assert.equal(limitedEvidence.routes.cards.length, 1);
+assert.equal(limitedEvidence.notice.kind, "limited_evidence");
+assert.ok(limitedEvidence.notice.body.includes("근거가 부족한 특징은 추천에 사용하지 않았"));
+
 const root = resolve(process.cwd());
 const premium = readFileSync(resolve(root, "components/full-report/PremiumFaceLabSection.jsx"), "utf8");
 const resultUi = readFileSync(resolve(root, "components/full-report/face-lab/FaceLabV2Result.jsx"), "utf8");
@@ -288,6 +296,7 @@ console.log(JSON.stringify({
     "english_locale_isolation",
     "result_component_boundary",
     "bounded_unavailable_explanation",
-    "empty_route_explanation"
+    "empty_route_explanation",
+    "partial_evidence_explanation"
   ]
 }, null, 2));
