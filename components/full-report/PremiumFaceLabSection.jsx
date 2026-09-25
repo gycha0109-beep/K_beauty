@@ -68,18 +68,7 @@ const COPY = {
     light: "조금 바꾸기",
     moderate: "꽤 바꾸기",
     high: "새로운 느낌도 가능",
-    contextTitle: "주로 언제 쓰고 싶나요?",
-    daily: "데일리",
-    work_school: "출근 / 학교",
-    date: "데이트",
-    photo_social: "사진 / SNS",
     constraintsTitle: "현실적인 조건",
-    hairChange: "헤어 길이 변화",
-    hairSmall: "큰 변화는 싫어요",
-    hairLarge: "큰 변화도 가능",
-    dyeTitle: "염색",
-    dyeNo: "현재 색 유지",
-    dyeYes: "염색 가능",
     makeupIntensity: "메이크업 강도",
     makeupLight: "가볍게",
     makeupMedium: "보통",
@@ -180,18 +169,7 @@ const COPY = {
     light: "Small change",
     moderate: "Noticeable change",
     high: "Open to a new direction",
-    contextTitle: "Main context",
-    daily: "Daily",
-    work_school: "Work / school",
-    date: "Date",
-    photo_social: "Photo / social",
     constraintsTitle: "Practical limits",
-    hairChange: "Hair length change",
-    hairSmall: "Keep length close",
-    hairLarge: "Large change is okay",
-    dyeTitle: "Hair color",
-    dyeNo: "Keep current color",
-    dyeYes: "Color change is okay",
     makeupIntensity: "Makeup intensity",
     makeupLight: "Light",
     makeupMedium: "Medium",
@@ -506,9 +484,6 @@ export default function PremiumFaceLabSection({
   const [stylingScope, setStylingScope] = useState([]);
   const [scopeTouched, setScopeTouched] = useState(false);
   const [changeTolerance, setChangeTolerance] = useState("light");
-  const [contexts, setContexts] = useState(["daily"]);
-  const [hairLengthChange, setHairLengthChange] = useState("small");
-  const [dyeAllowed, setDyeAllowed] = useState(false);
   const [makeupIntensity, setMakeupIntensity] = useState("light");
   const [dailyMinutes, setDailyMinutes] = useState(15);
   const [budgetBand, setBudgetBand] = useState("standard");
@@ -549,10 +524,7 @@ export default function PremiumFaceLabSection({
       setStylingScope(stored.surveyAnswers.stylingScope || []);
       setScopeTouched(Boolean(stored.surveyAnswers.stylingScope?.length));
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
-      setContexts(stored.surveyAnswers.contexts || ["daily"]);
       setFinderResult(stored.targetFinderResult || null);
-      setHairLengthChange(stored.surveyAnswers.constraints?.hair?.lengthChange || "small");
-      setDyeAllowed(stored.surveyAnswers.constraints?.hair?.dye === "yes");
       setMakeupIntensity(stored.surveyAnswers.constraints?.makeup?.intensity || "light");
       setDailyMinutes(stored.surveyAnswers.constraints?.lifestyle?.dailyMinutes || 15);
       setBudgetBand(stored.surveyAnswers.constraints?.lifestyle?.budgetBand || "standard");
@@ -631,12 +603,7 @@ export default function PremiumFaceLabSection({
     presentationPreference,
     stylingScope,
     changeTolerance,
-    contexts,
     constraints: {
-      hair: {
-        lengthChange: hairLengthChange,
-        dye: dyeAllowed ? "yes" : "no"
-      },
       makeup: {
         intensity: makeupIntensity
       },
@@ -645,9 +612,7 @@ export default function PremiumFaceLabSection({
         budgetBand,
         maintenanceTolerance
       },
-      hardExclusions: [
-        ...(!dyeAllowed ? ["hair_dye"] : [])
-      ]
+      hardExclusions: []
     },
     approvedAt: new Date().toISOString()
   });
@@ -723,14 +688,6 @@ export default function PremiumFaceLabSection({
   const toggleScope = (key) => {
     setScopeTouched(true);
     setStylingScope((current) =>
-      current.includes(key)
-        ? current.filter((item) => item !== key)
-        : [...current, key]
-    );
-  };
-
-  const toggleContext = (key) => {
-    setContexts((current) =>
       current.includes(key)
         ? current.filter((item) => item !== key)
         : [...current, key]
@@ -931,33 +888,7 @@ export default function PremiumFaceLabSection({
       </div>
 
       <div className="mt-5">
-        <p className="text-sm font-semibold">{copy.contextTitle}</p>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          {["daily", "work_school", "date", "photo_social"].map((key) => (
-            <ChoiceButton key={key} active={contexts.includes(key)} onClick={() => toggleContext(key)}>
-              {copy[key]}
-            </ChoiceButton>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-5">
         <p className="text-sm font-semibold">{copy.constraintsTitle}</p>
-        {stylingScope.includes("hair") ? (
-          <div className="mt-3">
-            <p className="text-xs font-semibold text-zinc-500">{copy.hairChange}</p>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <ChoiceButton active={hairLengthChange === "small"} onClick={() => setHairLengthChange("small")}>{copy.hairSmall}</ChoiceButton>
-              <ChoiceButton active={hairLengthChange === "large"} onClick={() => setHairLengthChange("large")}>{copy.hairLarge}</ChoiceButton>
-            </div>
-            <p className="mt-3 text-xs font-semibold text-zinc-500">{copy.dyeTitle}</p>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <ChoiceButton active={!dyeAllowed} onClick={() => setDyeAllowed(false)}>{copy.dyeNo}</ChoiceButton>
-              <ChoiceButton active={dyeAllowed} onClick={() => setDyeAllowed(true)}>{copy.dyeYes}</ChoiceButton>
-            </div>
-          </div>
-        ) : null}
-
         {stylingScope.includes("makeup") ? (
           <div className="mt-3">
             <p className="text-xs font-semibold text-zinc-500">{copy.makeupIntensity}</p>

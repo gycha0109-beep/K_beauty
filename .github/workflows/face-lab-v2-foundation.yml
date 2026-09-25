@@ -9,6 +9,7 @@ on:
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "scripts/verify-face-lab-v2-presentation.mjs"
+      - "scripts/verify-face-lab-v2-survey-consumption.mjs"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "components/full-report/PremiumFaceLabSection.jsx"
@@ -24,6 +25,7 @@ on:
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "scripts/verify-face-lab-v2-presentation.mjs"
+      - "scripts/verify-face-lab-v2-survey-consumption.mjs"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "components/full-report/PremiumFaceLabSection.jsx"
@@ -47,3 +49,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-premium-wiring.mjs
       - name: Verify Face Lab V2 result presentation
         run: node scripts/verify-face-lab-v2-presentation.mjs
+      - name: Verify Face Lab V2 survey consumption
+        run: node scripts/verify-face-lab-v2-survey-consumption.mjs
