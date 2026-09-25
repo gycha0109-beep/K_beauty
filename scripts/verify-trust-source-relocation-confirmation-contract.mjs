@@ -18,6 +18,10 @@ const implementationSource = await readFile(
   new URL("../lib/trust/official-source-relocation-confirmation-request.mjs", import.meta.url),
   "utf8",
 );
+const contractSource = await readFile(
+  new URL("../docs/evidence/trust-phase8h-governed-relocation-confirmation-contract-v1.md", import.meta.url),
+  "utf8",
+);
 
 const preflight = preflightOfficialSourceRelocation(source);
 assert.equal(preflight.status, "READY_FOR_ADMIN_RELOCATION_CONFIRMATION");
@@ -31,6 +35,18 @@ assert.equal(request.relocation_plan_digest, "9cc3c864fdeea7dde6545b607f33a30654
 assert.equal(request.forbidden_mutations.includes("PRODUCT_EVIDENCE_SOURCE_CANONICAL_LOCATOR"), true);
 assert.equal(request.forbidden_mutations.includes("PRODUCT_FACT_CURRENT"), true);
 assert.equal(request.mutation_scope.includes("RETIRE_OLD_REVIEWED_BINDING_IN_SAME_TRANSACTION"), true);
+
+for (const required of [
+  "BEFORE UPDATE OR DELETE trigger rejects mutation",
+  "RLS is enabled on the ledger",
+  "grant `SELECT` only to `service_role`",
+  "SECURITY DEFINER",
+  "admin.products.review",
+  "Retire the old binding only after the replacement review exists.",
+  "Do not invent or hand-author a migration timestamp.",
+]) {
+  assert.equal(contractSource.includes(required), true, `missing confirmation contract invariant: ${required}`);
+}
 
 assert.throws(
   () => buildOfficialSourceRelocationConfirmationRequest({ ...preflight, status: "HOLD" }, source),
