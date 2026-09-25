@@ -5,11 +5,35 @@ const provenance = JSON.parse(await readFile(
   new URL("../docs/evidence/trust-phase8h-cli-migration-generation-v1.json", import.meta.url),
   "utf8",
 ));
+const dryRun = JSON.parse(await readFile(
+  new URL("../docs/evidence/trust-phase8h-db-dry-run-validation-v1.json", import.meta.url),
+  "utf8",
+));
 
 assert.equal(provenance.contract, "trust-phase8h-cli-migration-generation-v1");
 assert.equal(provenance.supabase_cli_version, "2.117.0");
 assert.equal(provenance.generation_authority, "SUPABASE_CLI_MIGRATION_NEW");
 assert.equal(provenance.production_mutation, "NONE");
+assert.equal(dryRun.contract, "trust-phase8h-db-dry-run-validation-v1");
+assert.equal(dryRun.migration, provenance.generated_migration_filename);
+assert.equal(dryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
+assert.equal(dryRun.migration_ddl_compile, "PASS");
+assert.equal(dryRun.dependency_resolution, "PASS");
+assert.equal(
+  dryRun.canonical_digest_canary.prestate_digest,
+  "70aae88369b09d87e9a9a7153ad04af662f7fc069445204f2eafee0b6d5a745b",
+);
+assert.equal(
+  dryRun.canonical_digest_canary.relocation_plan_digest,
+  "9cc3c864fdeea7dde6545b607f33a30654284e6d9fef86b958e07eb012805567",
+);
+assert.equal(dryRun.canonical_digest_canary.result, "PASS");
+assert.deepEqual(dryRun.rollback_readback, {
+  relocation_ledger_exists: false,
+  admin_confirmation_rpc_exists: false,
+  canonical_helper_exists: false,
+});
+assert.equal(dryRun.production_mutation, "NONE");
 assert.match(
   provenance.generated_migration_filename,
   /^\d{14}_trust_phase8h_governed_official_source_relocation_v1\.sql$/,
@@ -132,5 +156,6 @@ console.log(JSON.stringify({
   migration: provenance.generated_migration_filename,
   supabaseCliVersion: provenance.supabase_cli_version,
   workflowRunId: provenance.workflow_run_id,
+  dryRunValidation: dryRun.validation_mode,
   mutationOrder,
 }, null, 2));
