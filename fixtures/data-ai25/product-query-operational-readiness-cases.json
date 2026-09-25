@@ -1,0 +1,53 @@
+{
+  "fixtureVersion": "data-ai25-operational-readiness-cases-v1",
+  "cases": [
+    {
+      "id": "DA25-INSUFFICIENT-01",
+      "description": "Twelve healthy observations are not enough to authorize review.",
+      "counts": {
+        "success": 12
+      },
+      "fallbackCount": 0,
+      "expectedState": "insufficient_evidence"
+    },
+    {
+      "id": "DA25-HOLD-01",
+      "description": "Fifty observations with ten percent runtime failure must hold.",
+      "counts": {
+        "success": 45,
+        "runtime_error": 5
+      },
+      "fallbackCount": 0,
+      "expectedState": "hold",
+      "expectedReason": "runtime_success_below_gate"
+    },
+    {
+      "id": "DA25-READY-01",
+      "description": "Fifty observations with ninety-eight percent runtime success and two percent fallback are eligible only for manual expansion review.",
+      "counts": {
+        "success": 48,
+        "no_result": 1,
+        "provider_error": 1
+      },
+      "fallbackCount": 1,
+      "expectedState": "ready_for_manual_expansion_review"
+    }
+  ],
+  "privacyAdversarialFields": {
+    "rawQuery": "test@example.com Bearer secret sk-secret",
+    "normalizedQuery": "oily sensitive sunscreen",
+    "userId": "user-123",
+    "accountHash": "deadbeef",
+    "email": "test@example.com",
+    "ip": "127.0.0.1",
+    "userAgent": "secret-agent",
+    "productId": "product-1",
+    "productName": "secret-product",
+    "providerResponse": {
+      "output_text": "secret-response"
+    },
+    "profile": {
+      "skinType": "oily"
+    }
+  }
+}

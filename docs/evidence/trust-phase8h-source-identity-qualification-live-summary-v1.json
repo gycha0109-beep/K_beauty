@@ -1,0 +1,69 @@
+{
+  "contract": "trust-phase8h-source-identity-qualification-live-summary-v1",
+  "qualification_contract": "trust-phase8h-source-identity-qualification-v1",
+  "batch_contract": "trust-phase8h-source-identity-qualification-batch-v1",
+  "observed_at": "2026-09-25T04:33:05.148Z",
+  "case_count": 5,
+  "counts": {
+    "QUALIFIED_EXACT": 1,
+    "AMBIGUOUS_IDENTITY": 4
+  },
+  "mutation_policy": "READ_ONLY_NO_PRODUCTION_WRITE",
+  "authority": "QUALIFICATION_EVIDENCE_ONLY_NOT_RELOCATION_AUTHORITY",
+  "github_evidence": {
+    "workflow_run_id": 36094876141,
+    "head_sha": "ef889c6b3ed8867e46777ab33ebbd7437c793454",
+    "artifact_id": 10847516318,
+    "artifact_digest": "sha256:0cdbfdd0252c1b00e501aa68247e86e6db4d44364e4384bcb43d7348cbc13839"
+  },
+  "qualified_exact": [
+    {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "publisher": "Derma Factory",
+      "historical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "candidate_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "canonical_url": "https://dermafactory.net/products/niacinamide-20-serum-30ml",
+      "content_digest": "2d45ccd01b29938bf3982d8d03eae23db726fd26fdc029f5c31856b598faf3b6",
+      "qualification_digest": "0a34c3413b7431bc7ecdf8f623eef5d0d49c7afcf370e2b5025ad78cc143627f",
+      "discovery_method": "official_http_redirect",
+      "disposition": "QUALIFIED_EXACT",
+      "next_action": "ELIGIBLE_FOR_FUTURE_ADMIN_RELOCATION_PREFLIGHT_ONLY"
+    }
+  ],
+  "held_redirects": [
+    {
+      "source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "publisher": "Beauty of Joseon",
+      "candidate_locator": "https://beautyofjoseon.com/",
+      "disposition": "AMBIGUOUS_IDENTITY",
+      "reason": "product_specific_source_collapsed_to_site_root"
+    },
+    {
+      "source_id": "5752312a-3109-4da7-a796-9b3de1765112",
+      "publisher": "Beauty of Joseon",
+      "candidate_locator": "https://beautyofjoseon.com/",
+      "disposition": "AMBIGUOUS_IDENTITY",
+      "reason": "product_specific_source_collapsed_to_site_root"
+    },
+    {
+      "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+      "publisher": "Beauty of Joseon",
+      "candidate_locator": "https://beautyofjoseon.com/",
+      "disposition": "AMBIGUOUS_IDENTITY",
+      "reason": "product_specific_source_collapsed_to_site_root"
+    },
+    {
+      "source_id": "f55720c7-0252-49b8-967c-8d77f4dfe6d6",
+      "publisher": "beautyofjoseon_official",
+      "candidate_locator": "https://beautyofjoseon.com/",
+      "disposition": "AMBIGUOUS_IDENTITY",
+      "reason": "product_specific_source_collapsed_to_site_root"
+    }
+  ],
+  "transient_hold_unchanged": {
+    "publisher": "Dr.G",
+    "source_count": 3,
+    "reason": "Phase 8H-0 HTTP 429 remains retry-only; no relocation qualification attempted."
+  },
+  "next_frontier": "BOUNDED_OFFICIAL_DOMAIN_REDISCOVERY_FOR_BEAUTY_OF_JOSEON"
+}

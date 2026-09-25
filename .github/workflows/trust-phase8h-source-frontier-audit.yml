@@ -11,9 +11,16 @@ on:
       - "docs/evidence/trust-phase8h-source-frontier-audit-v1.md"
       - "docs/evidence/trust-phase8h-source-rediscovery-contract-v1.md"
       - "lib/trust/official-source-fetch.mjs"
+      - "lib/trust/official-source-identity-qualification.mjs"
+      - "scripts/trust-source-identity-qualification.mjs"
+      - "scripts/verify-trust-source-identity-qualification.mjs"
+      - "fixtures/trust-phase8h-source-identity-qualification-v1.json"
+      - "docs/evidence/trust-phase8h-source-identity-qualification-canary-v1.json"
+      - "docs/evidence/trust-phase8h-source-identity-qualification-live-summary-v1.json"
+      - "docs/evidence/trust-phase8h-source-identity-qualification-contract-v1.md"
       - ".github/workflows/trust-phase8h-source-frontier-audit.yml"
   push:
-    branches: [main, "feat/trust-phase8h-source-frontier-audit"]
+    branches: [main, "feat/trust-phase8h-source-frontier-audit", "feat/trust-phase8h-source-identity-qualification"]
     paths:
       - "scripts/trust-source-frontier-audit.mjs"
       - "scripts/verify-trust-source-frontier-audit.mjs"
@@ -21,6 +28,13 @@ on:
       - "docs/evidence/trust-phase8h-source-frontier-audit-v1.md"
       - "docs/evidence/trust-phase8h-source-rediscovery-contract-v1.md"
       - "lib/trust/official-source-fetch.mjs"
+      - "lib/trust/official-source-identity-qualification.mjs"
+      - "scripts/trust-source-identity-qualification.mjs"
+      - "scripts/verify-trust-source-identity-qualification.mjs"
+      - "fixtures/trust-phase8h-source-identity-qualification-v1.json"
+      - "docs/evidence/trust-phase8h-source-identity-qualification-canary-v1.json"
+      - "docs/evidence/trust-phase8h-source-identity-qualification-live-summary-v1.json"
+      - "docs/evidence/trust-phase8h-source-identity-qualification-contract-v1.md"
       - ".github/workflows/trust-phase8h-source-frontier-audit.yml"
   workflow_dispatch:
     inputs:
@@ -30,6 +44,11 @@ on:
         type: string
       live_audit:
         description: Run bounded live official-source frontier probes
+        required: false
+        default: false
+        type: boolean
+      live_qualification:
+        description: Run bounded live exact-identity qualification canary
         required: false
         default: false
         type: boolean
@@ -71,6 +90,13 @@ jobs:
           node --check scripts/verify-trust-source-frontier-audit.mjs
           node scripts/verify-trust-source-frontier-audit.mjs
 
+      - name: Verify Phase 8H-1 exact identity qualification
+        run: |
+          node --check lib/trust/official-source-identity-qualification.mjs
+          node --check scripts/trust-source-identity-qualification.mjs
+          node --check scripts/verify-trust-source-identity-qualification.mjs
+          node scripts/verify-trust-source-identity-qualification.mjs
+
       - name: Run optional live read-only frontier audit
         if: github.event_name == 'workflow_dispatch' && inputs.live_audit == true
         run: |
@@ -86,6 +112,25 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Run optional live read-only identity qualification
+        if: github.event_name == 'workflow_dispatch' && inputs.live_qualification == true
+        run: |
+          mkdir -p tmp/trust-phase8h
+          node scripts/trust-source-identity-qualification.mjs \
+            --input=docs/evidence/trust-phase8h-source-identity-qualification-canary-v1.json \
+            --output=tmp/trust-phase8h/source-identity-qualification.json \
+            --concurrency=3
+          cat tmp/trust-phase8h/source-identity-qualification.json
+
+      - name: Upload optional live qualification artifact
+        if: github.event_name == 'workflow_dispatch' && inputs.live_qualification == true
+        uses: actions/upload-artifact@v7
+        with:
+          name: trust-phase8h-source-identity-qualification
+          path: tmp/trust-phase8h/source-identity-qualification.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Check exact-head diff hygiene
         shell: bash
         env:
@@ -94,3 +139,45 @@ jobs:
         run: |
           set -euo pipefail
           git diff --check "${BASE_SHA}...${HEAD_SHA}"
+
+
+  qualification-canary:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Run live read-only qualification canary
+        run: |
+          mkdir -p tmp/trust-phase8h
+          node scripts/trust-source-identity-qualification.mjs \
+            --input=docs/evidence/trust-phase8h-source-identity-qualification-canary-v1.json \
+            --output=tmp/trust-phase8h/source-identity-qualification.json \
+            --concurrency=3
+          cat tmp/trust-phase8h/source-identity-qualification.json
+
+      - name: Upload live qualification artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: trust-phase8h-source-identity-qualification
+          path: tmp/trust-phase8h/source-identity-qualification.json
+          if-no-files-found: error
+          retention-days: 14
