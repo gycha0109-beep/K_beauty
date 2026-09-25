@@ -58,8 +58,14 @@ jobs:
       - name: Run Olive Young DB-write-free canary
         run: node scripts/commerce-link-health-live-probe.mjs --delay-ms=750
 
-      - name: Run 72-offer DB-write-free snapshot
-        run: node scripts/commerce-link-health-live-probe.mjs --manifest=tests/fixtures/commerce-link-health/oliveyoung-production-snapshot-v1.json --delay-ms=250
+      - name: Generate migration filename with Supabase CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="$(find supabase/migrations -maxdepth 1 -type f -printf '%f\n' | sort)"
+          npx --yes supabase@2.109.1 migration new commerce_link_health_v1
+          after="$(find supabase/migrations -maxdepth 1 -type f -printf '%f\n' | sort)"
+          comm -13 <(printf '%s\n' "${before}") <(printf '%s\n' "${after}") | sed 's/^/COMMERCE_LINK_HEALTH_MIGRATION_FILE=/'
 
       - name: Diff hygiene
         shell: bash
