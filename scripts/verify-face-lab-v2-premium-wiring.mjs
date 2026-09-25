@@ -158,6 +158,20 @@ assert.ok(
   premiumFaceLab.includes("updatedAtMs(localStored) > updatedAtMs(serverStored)"),
   "a newer local fallback must not be replaced by older server state after a failed save"
 );
+
+assert.ok(
+  premiumFaceLab.includes("const persistServer = useCallback("),
+  "Face Lab V2 persistence must expose a stable queue writer to restore reconciliation"
+);
+assert.ok(
+  premiumFaceLab.includes("localStored.targetFinderResult || null") &&
+    premiumFaceLab.includes("localStored.selectedRouteId || null"),
+  "a valid local fallback must be eligible for server reconciliation"
+);
+assert.ok(
+  premiumFaceLab.match(/restoreState\(localStored\)[\s\S]{0,260}void persistServer\(/),
+  "a newer or recovery local fallback must be reconciled back to the server"
+);
 assert.ok(
   premiumFaceLab.includes("cacheServerStateLocally(serverStored)"),
   "a successful server restore must refresh the local fallback state"
