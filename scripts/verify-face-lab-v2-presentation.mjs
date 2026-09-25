@@ -155,7 +155,7 @@ assert.equal(JSON.stringify(fixture), before, "presentation adapter must not mut
 assert.equal(ko.status, "available");
 assert.equal(ko.execution.domains.length, 1);
 assert.equal(
-  ko.routes.items[0].targetFit,
+  ko.routes.cards[0].targetFit,
   "활성 목표 방향 3개 중 2개를 이 경로에서 함께 다룹니다.",
   "route card must preserve the canonical localized target-coverage explanation"
 );
@@ -191,7 +191,7 @@ const enFixture = JSON.parse(JSON.stringify(fixture));
 enFixture.routes.routes[0].targetFit.explanation = "This route covers 2 of 3 active target directions together.";
 const en = buildFaceLabV2ResultPresentation(enFixture, { locale: "en" });
 assert.equal(
-  en.routes.items[0].targetFit,
+  en.routes.cards[0].targetFit,
   "This route covers 2 of 3 active target directions together.",
   "English route card must preserve the canonical target-coverage explanation"
 );
