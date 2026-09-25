@@ -413,6 +413,28 @@ assert.ok(
   "legacy none makeup preference must not leak into canonical routes"
 );
 assert.equal(legacyNoMakeup.makeup.status, "not_requested");
+assert.equal(legacyNoMakeup.makeup.value, null);
+assert.deepEqual(legacyNoMakeup.makeup.productSpecificationRefs, []);
+assert.equal(legacyNoMakeup.productHandoff.status, "not_requested");
+
+const legacyGroomingOnly = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "brow_grooming", "makeup"],
+    constraints: {
+      ...survey.constraints,
+      makeup: { intensity: "grooming_only" }
+    }
+  },
+  resultId: "fixture-face-lab-v2-legacy-grooming-only"
+});
+
+assert.equal(legacyGroomingOnly.makeup.status, "not_requested");
+assert.ok(
+  legacyGroomingOnly.routes.routes.every((route) => !route.domains.includes("makeup")),
+  "legacy grooming-only preference must keep makeup out while preserving non-makeup grooming routes"
+);
 
 const masculine = buildFaceLabV2Canonical({
   analysis,
