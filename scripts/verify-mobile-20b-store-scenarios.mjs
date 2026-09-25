@@ -14,7 +14,11 @@ const assert = (condition, label) => {
 const route = read("apps/mobile/app/store-capture.tsx");
 const fixtures = read("apps/mobile/features/store-capture/store-capture-fixtures.ts");
 const capture = read("scripts/capture-mobile-store-scenarios.sh");
-const workflow = read(".github/workflows/mobile-20a-store-capture.yml");
+const runtimeWorkflow = read(".github/workflows/mobile-android-runtime.yml");
+const workflowStart = runtimeWorkflow.indexOf("\n  store-capture-20a:");
+const workflowEnd = runtimeWorkflow.indexOf("\n  store-capture-20b:", workflowStart + 1);
+assert(workflowStart >= 0 && workflowEnd > workflowStart, "canonical-20a-job-block-present");
+const workflow = runtimeWorkflow.slice(workflowStart, workflowEnd);
 
 assert(route.includes('process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === "1"'), "dev-switch-present");
 assert(route.includes("__DEV__ === true"), "dev-build-only");
