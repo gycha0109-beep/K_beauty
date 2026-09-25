@@ -28,11 +28,27 @@ assert.equal(
   "9cc3c864fdeea7dde6545b607f33a30654284e6d9fef86b958e07eb012805567",
 );
 assert.equal(dryRun.canonical_digest_canary.result, "PASS");
-assert.deepEqual(dryRun.rollback_readback, {
-  relocation_ledger_exists: false,
-  admin_confirmation_rpc_exists: false,
-  canonical_helper_exists: false,
+assert.equal(dryRun.admin_confirmation_canary.first_confirmation.status, "confirmed");
+assert.equal(dryRun.admin_confirmation_canary.first_confirmation.idempotent, false);
+assert.equal(dryRun.admin_confirmation_canary.replay_confirmation.status, "confirmed");
+assert.equal(dryRun.admin_confirmation_canary.replay_confirmation.idempotent, true);
+assert.deepEqual(dryRun.admin_confirmation_canary.in_transaction_sequential_readback, {
+  ledger_count: 1,
+  replacement_resolved_count: 1,
+  old_binding_state: "retired",
+  historical_locator_unchanged: true,
 });
+assert.equal(dryRun.fail_closed_canary.case, "BAD_EXPECTED_PRESTATE_DIGEST");
+assert.equal(dryRun.fail_closed_canary.expected_sqlstate, "40001");
+assert.equal(dryRun.fail_closed_canary.ledger_count, 0);
+assert.equal(dryRun.fail_closed_canary.replacement_resolved_count, 0);
+assert.equal(dryRun.fail_closed_canary.old_binding_state, "resolved");
+assert.equal(dryRun.fail_closed_canary.result, "PASS");
+assert.equal(dryRun.rollback_readback.relocation_ledger_exists, false);
+assert.equal(dryRun.rollback_readback.admin_confirmation_rpc_exists, false);
+assert.equal(dryRun.rollback_readback.canonical_helper_exists, false);
+assert.equal(dryRun.rollback_readback.replacement_resolved_count, 0);
+assert.equal(dryRun.rollback_readback.old_binding_state, "resolved");
 assert.equal(dryRun.production_mutation, "NONE");
 assert.match(
   provenance.generated_migration_filename,
