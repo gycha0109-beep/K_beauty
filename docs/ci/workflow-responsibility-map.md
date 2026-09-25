@@ -40,46 +40,17 @@ Before consolidation, the replacement must prove equivalence for all unique beha
 
 Workflows remain `preserve-until-equivalence-proven` until same-head equivalence is established. After equivalence, duplicate heavy execution may be retired while required-check compatibility names remain as fail-closed gates when branch-protection requirements cannot be audited safely.
 
-## Primary responsibility inventory
+## Conflict-resistant workflow registry
 
-| Responsibility | Workflow count |
-| --- | ---: |
-| `admin` | 2 |
-| `ai-provider-runtime` | 1 |
-| `catalog-taxonomy` | 2 |
-| `database-integration` | 1 |
-| `face-lab` | 0 |
-| `global-governance` | 2 |
-| `security-boundary` | 1 |
-| `supply-chain-security` | 1 |
-| `mobile-client` | 1 |
-| `mobile-api-integration` | 1 |
-| `mobile-native` | 1 |
-| `mobile-build` | 2 |
-| `mobile-e2e` | 2 |
-| `mobile-release-store` | 6 |
-| `product-data-pipeline` | 4 |
-| `product-evidence` | 0 |
-| `product-offer-runtime` | 1 |
-| `product-query-ai` | 9 |
-| `recommendation-admission` | 1 |
-| `trust-data-governance` | 18 |
+Workflow inventory is no longer stored as one monolithic `workflows` object and no committed inventory digest is maintained.
 
-Total: **56 workflows**.
+- Shared policy and cross-cutting architecture remain in `docs/ci/workflow-responsibility-map.json`.
+- Each GitHub Actions workflow owns exactly one fragment at `docs/ci/workflow-responsibilities/<workflow-file-name>.json`.
+- Adding, renaming, or deleting a workflow changes only that workflow's fragment instead of rewriting a shared inventory object.
+- `scripts/verify-ci-workflow-responsibility-map.mjs` reconstructs the registry at runtime and fails closed unless fragment names exactly match `.github/workflows`.
+- Inventory counts and digests are derived during verification rather than committed, removing the main source of unrelated cross-track merge conflicts.
 
-## Watchtower producer classification
-
-| Producer class | Workflow count | Attribution |
-| --- | ---: | --- |
-| Project-wide | 2 | no Track tag |
-| Dedicated `taxonomy-ai` | 11 | static `[WT:taxonomy-ai]` |
-| Dedicated `trust` | 18 | static `[WT:trust]` |
-| Dedicated `mobile` | 13 | static `[WT:mobile]` |
-| Shared technical | 12 | PR/commit/dispatch evidence |
-
-There are currently no standalone workflows dedicated to `ops`, `face-research`, or `full-report`; those Tracks remain valid producer identities through PR/commit markers.
-
-The machine-readable authority is `docs/ci/workflow-responsibility-map.json`. Its provenance is bound to the exact sorted workflow inventory by `workflowInventoryDigest`; commit-SHA provenance is intentionally not used because a PR cannot know its future merge SHA.
+This keeps responsibility-map governance strict while allowing Mobile, Trust, Face Lab, Taxonomy AI, and other tracks to evolve in parallel without repeatedly colliding on one JSON digest or one giant workflow map.
 
 ## Cross-cutting responsibilities that are easy to miss
 
@@ -131,5 +102,5 @@ Admin review, TRUST, taxonomy, offer and other domain-specific isolated Supabase
 3. Keep global governance workflows unassigned by design.
 4. Keep dedicated Track workflows statically tagged with their canonical Watchtower Track Key.
 5. Keep shared workflows dynamically attributable to explicit producer evidence.
-6. Reject workflow additions/deletions or producer-class drift that do not update the responsibility map.
+6. Reject workflow additions/deletions or producer-class drift that do not add, rename, or remove the matching per-workflow responsibility fragment.
 7. Only after this map is stable, review phase-coded names and true duplicate workflows.

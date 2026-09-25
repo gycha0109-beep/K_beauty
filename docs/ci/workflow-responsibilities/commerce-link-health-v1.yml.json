@@ -1,0 +1,13 @@
+{
+  "workflow": "commerce-link-health-v1.yml",
+  "primaryResponsibility": "trust-data-governance",
+  "capabilities": [
+    "commerce",
+    "database",
+    "link-health",
+    "pipeline"
+  ],
+  "watchtowerTrackBinding": "static:trust",
+  "lifecycleNameClass": "capability",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

@@ -1,0 +1,12 @@
+{
+  "workflow": "mobile-20b-store-capture.yml",
+  "primaryResponsibility": "mobile-release-store",
+  "capabilities": [
+    "mobile",
+    "required-check-compatibility",
+    "runtime-gate"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-as-required-check-compatibility-shim-until-classic-protection-audited"
+}

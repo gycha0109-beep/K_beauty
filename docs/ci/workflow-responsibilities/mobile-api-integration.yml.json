@@ -1,0 +1,12 @@
+{
+  "workflow": "mobile-api-integration.yml",
+  "primaryResponsibility": "mobile-api-integration",
+  "capabilities": [
+    "api-integration",
+    "backend-contract",
+    "mobile"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "canonical",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

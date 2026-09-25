@@ -1,0 +1,12 @@
+{
+  "workflow": "product-source-bindings.yml",
+  "primaryResponsibility": "product-data-pipeline",
+  "capabilities": [
+    "catalog",
+    "database",
+    "pipeline"
+  ],
+  "watchtowerTrackBinding": "dynamic-by-run",
+  "lifecycleNameClass": "capability",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

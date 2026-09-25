@@ -1,0 +1,12 @@
+{
+  "workflow": "mobile-20c-feature-graphic.yml",
+  "primaryResponsibility": "mobile-release-store",
+  "capabilities": [
+    "mobile",
+    "release-store",
+    "store-asset"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

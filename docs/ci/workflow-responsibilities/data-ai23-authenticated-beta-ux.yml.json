@@ -1,0 +1,14 @@
+{
+  "workflow": "data-ai23-authenticated-beta-ux.yml",
+  "primaryResponsibility": "product-query-ai",
+  "capabilities": [
+    "ai",
+    "backend",
+    "frontend",
+    "production-safety",
+    "recommendation"
+  ],
+  "watchtowerTrackBinding": "static:taxonomy-ai",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

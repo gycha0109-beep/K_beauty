@@ -1,0 +1,14 @@
+{
+  "workflow": "security-boundary.yml",
+  "primaryResponsibility": "security-boundary",
+  "capabilities": [
+    "backend",
+    "database",
+    "provider-safety",
+    "repository-hygiene",
+    "security"
+  ],
+  "watchtowerTrackBinding": "dynamic-by-run",
+  "lifecycleNameClass": "canonical",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

@@ -1,0 +1,12 @@
+{
+  "workflow": "mobile-ci.yml",
+  "primaryResponsibility": "mobile-client",
+  "capabilities": [
+    "client",
+    "contract",
+    "mobile"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "canonical",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

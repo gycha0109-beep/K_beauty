@@ -1,0 +1,14 @@
+{
+  "workflow": "data-ai16-production-canary-closure.yml",
+  "primaryResponsibility": "product-query-ai",
+  "capabilities": [
+    "ai",
+    "backend",
+    "production-safety",
+    "recommendation",
+    "runtime-probe"
+  ],
+  "watchtowerTrackBinding": "static:taxonomy-ai",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

@@ -1,0 +1,13 @@
+{
+  "workflow": "trust-phase6b-reentry.yml",
+  "primaryResponsibility": "trust-data-governance",
+  "capabilities": [
+    "backend",
+    "database",
+    "evidence-governance",
+    "pipeline"
+  ],
+  "watchtowerTrackBinding": "static:trust",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

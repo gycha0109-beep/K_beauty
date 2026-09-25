@@ -1,0 +1,13 @@
+{
+  "workflow": "data-taxonomy13-catalog-only-candidate-approval.yml",
+  "primaryResponsibility": "catalog-taxonomy",
+  "capabilities": [
+    "database",
+    "pipeline",
+    "recommendation",
+    "taxonomy"
+  ],
+  "watchtowerTrackBinding": "static:taxonomy-ai",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

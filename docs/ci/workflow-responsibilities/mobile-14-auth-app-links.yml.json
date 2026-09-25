@@ -1,0 +1,13 @@
+{
+  "workflow": "mobile-14-auth-app-links.yml",
+  "primaryResponsibility": "mobile-native",
+  "capabilities": [
+    "auth",
+    "deep-link",
+    "mobile",
+    "native"
+  ],
+  "watchtowerTrackBinding": "static:mobile",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}
