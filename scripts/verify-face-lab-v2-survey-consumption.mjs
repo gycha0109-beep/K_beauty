@@ -75,6 +75,17 @@ assert.ok(
   "legacy flexible-budget and high-maintenance persistence values must remain readable"
 );
 
+assert.ok(
+  premium.includes("EDITABLE_SCOPE_DOMAINS") &&
+    premium.includes("editableScopeFromStoredSurvey"),
+  "legacy scope compatibility must be normalized into the current visible survey surface"
+);
+assert.equal(
+  premium.includes('setStylingScope(["auto_scope"])'),
+  false,
+  "new editable UI must not manufacture an invisible auto_scope selection"
+);
+
 assert.ok(survey.includes("contexts:"), "legacy stored contexts must remain readable");
 assert.ok(survey.includes("lengthChange:"), "legacy stored hair length change must remain readable");
 assert.ok(survey.includes("dye:"), "legacy stored dye preference must remain readable");
