@@ -239,6 +239,25 @@ function getCopy(locale) {
   return locale === "en" ? COPY.en : COPY.ko;
 }
 
+const EDITABLE_SCOPE_DOMAINS = [
+  "hair",
+  "brow_grooming",
+  "makeup",
+  "color",
+  "eyewear",
+  "accessories",
+  "facial_hair"
+];
+
+const HARD_EXCLUSION_SCOPE_MAP = {
+  hair_disabled: "hair",
+  makeup_disabled: "makeup",
+  brow_grooming_disabled: "brow_grooming",
+  eyewear_disabled: "eyewear",
+  accessories_disabled: "accessories",
+  facial_hair_disabled: "facial_hair"
+};
+
 function defaultScopes(presentationPreference) {
   if (presentationPreference === "masculine_examples") {
     return ["hair", "brow_grooming", "eyewear"];
@@ -247,6 +266,29 @@ function defaultScopes(presentationPreference) {
     return ["hair", "brow_grooming", "makeup", "color"];
   }
   return [];
+}
+
+function editableScopeFromStoredSurvey(surveyAnswers, { makeupExcluded = false } = {}) {
+  const storedScope = Array.isArray(surveyAnswers?.stylingScope)
+    ? surveyAnswers.stylingScope
+    : [];
+  const hardExclusions = new Set(
+    Array.isArray(surveyAnswers?.constraints?.hardExclusions)
+      ? surveyAnswers.constraints.hardExclusions
+      : []
+  );
+  const baseScope = storedScope.includes("auto_scope")
+    ? EDITABLE_SCOPE_DOMAINS
+    : storedScope.filter((domain) => EDITABLE_SCOPE_DOMAINS.includes(domain));
+  const disabledDomains = new Set(
+    [...hardExclusions]
+      .map((key) => HARD_EXCLUSION_SCOPE_MAP[key])
+      .filter(Boolean)
+  );
+
+  if (makeupExcluded) disabledDomains.add("makeup");
+
+  return baseScope.filter((domain) => !disabledDomains.has(domain));
 }
 
 function FaceLabImage({ src, alt, locale = "ko" }) {
@@ -596,12 +638,10 @@ export default function PremiumFaceLabSection({
       const restoredMakeupIntensity =
         stored.surveyAnswers.constraints?.makeup?.intensity || "light";
       const legacyMakeupExcluded = ["grooming_only", "none"].includes(restoredMakeupIntensity);
-      const restoredStylingScope = Array.isArray(stored.surveyAnswers.stylingScope)
-        ? stored.surveyAnswers.stylingScope
-        : [];
-      const editableStylingScope = legacyMakeupExcluded
-        ? restoredStylingScope.filter((domain) => domain !== "makeup")
-        : restoredStylingScope;
+      const editableStylingScope = editableScopeFromStoredSurvey(
+        stored.surveyAnswers,
+        { makeupExcluded: legacyMakeupExcluded }
+      );
       setStylingScope(editableStylingScope);
       setScopeTouched(Boolean(editableStylingScope.length));
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
