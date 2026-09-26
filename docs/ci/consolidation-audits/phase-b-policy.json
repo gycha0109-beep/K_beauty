@@ -14,6 +14,11 @@
         "data-ai5-activation-readiness.yml"
       ],
       "rule": "Canonical static owner executes DATA-AI1-5 verifier chain, architecture guard, dependency install, and production build once per relevant SHA. Existing phase workflows preserve their workflow/job names, manual fallback verification, and push-only deployed runtime probes."
+    },
+    "taxonomy-ai-prelaunch": {
+      "operationalReadinessOwner": "data-ai25-operational-readiness.yml",
+      "prelaunchAcceptanceOwner": "data-ai-prelaunch-01-product-query-e2e.yml",
+      "rule": "DATA-AI25 exclusively owns its full operational-readiness verifier. PRELAUNCH-01 owns pre-launch acceptance and hosted-runner syntax only; it preserves the post-launch evidence boundary through its own acceptance contract without directly re-executing the DATA-AI25 verifier."
     }
   }
 }
