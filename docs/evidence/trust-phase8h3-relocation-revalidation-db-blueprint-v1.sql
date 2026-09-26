@@ -1000,7 +1000,7 @@ begin
     'evidence_payload', v_evidence_payload
   );
 end;
-$function$
+$function$;
 
 
 revoke all on function public.trust_phase8e_build_revalidation_plan_legacy_v1(
@@ -1342,7 +1342,7 @@ begin
     'fusion_input_digest', v_fusion_input_digest
   );
 end;
-$function$
+$function$;
 
 
 revoke all on function public.trust_phase8f_build_replacement_fact_payload_legacy_v1(
@@ -1766,7 +1766,7 @@ begin
     'automatic_confirmation', false
   );
 end;
-$function$
+$function$;
 
 
 revoke all on function public.admin_prepare_product_fact_revalidation_replacement_legacy_v1(
@@ -2417,7 +2417,7 @@ begin
 
   return v_result || jsonb_build_object('audit_id', v_audit_id);
 end;
-$function$
+$function$;
 
 
 revoke all on function public.admin_confirm_product_fact_revalidation_replacement_legacy_v1(
