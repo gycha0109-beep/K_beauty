@@ -2,7 +2,7 @@ import fs from "node:fs";
 import assert from "node:assert/strict";
 import { extractStrictFactCandidate } from "./trust-research-worker.mjs";
 
-const migrationPath = "supabase/migrations/20260925235651_trust_phase8h3_relocation_revalidation_v1.sql";
+const migrationPath = "docs/evidence/trust-phase8h3-relocation-revalidation-db-blueprint-v1.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
 const worker = fs.readFileSync("scripts/trust-research-worker.mjs", "utf8");
 const contract = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-revalidation-contract-v1.md", "utf8");
