@@ -1,0 +1,13 @@
+{
+  "workflow": "trust-phase8h3-relocation-revalidation.yml",
+  "primaryResponsibility": "trust-data-governance",
+  "capabilities": [
+    "database",
+    "evidence-governance",
+    "official-source",
+    "pipeline"
+  ],
+  "watchtowerTrackBinding": "static:trust",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}
