@@ -1,0 +1,152 @@
+name: Product Query AI - Canonical Static Contract
+run-name: "[WT:taxonomy-ai] Product Query AI - Canonical Static Contract"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/product-query-intent-contract.mjs"
+      - "lib/server/product-query-intent-service.js"
+      - "lib/product-query-execution-contract.mjs"
+      - "lib/product-query-recommendation.js"
+      - "lib/recommendation-scoring.ts"
+      - "lib/product-source.js"
+      - "lib/recommendation-candidate-admission.js"
+      - "lib/recommendation-candidate-admission-core.mjs"
+      - "lib/server/recommendation-candidate-admission-runtime.js"
+      - "lib/server/product-query-shadow-service.js"
+      - "lib/product-query-shadow-probe-oidc.js"
+      - "app/api/internal/product-query-shadow/route.js"
+      - "lib/server/product-query-provider-shadow-service.js"
+      - "lib/product-query-provider-shadow-oidc.js"
+      - "app/api/internal/product-query-provider-shadow/route.js"
+      - "lib/server/product-query-activation-readiness-service.js"
+      - "lib/product-query-activation-readiness-oidc.js"
+      - "app/api/internal/product-query-activation-readiness/route.js"
+      - "scripts/verify-data-ai1-product-query-intent.mjs"
+      - "scripts/verify-data-ai2-product-query-execution.mjs"
+      - "scripts/verify-data-ai3-product-query-shadow.mjs"
+      - "scripts/verify-data-ai4-provider-shadow.mjs"
+      - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
+      - "scripts/verify-data-ai5-activation-readiness.mjs"
+      - "scripts/validate-data-ai5-activation-readiness-runtime-response.mjs"
+      - "scripts/await-ci-workflow.mjs"
+      - "scripts/verify-data-ai3-5-ci-consolidation.mjs"
+      - ".github/workflows/data-ai-product-query-static.yml"
+      - ".github/workflows/data-ai3-product-query-shadow.yml"
+      - ".github/workflows/data-ai4-provider-shadow.yml"
+      - ".github/workflows/data-ai5-activation-readiness.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/product-query-intent-contract.mjs"
+      - "lib/server/product-query-intent-service.js"
+      - "lib/product-query-execution-contract.mjs"
+      - "lib/product-query-recommendation.js"
+      - "lib/recommendation-scoring.ts"
+      - "lib/product-source.js"
+      - "lib/recommendation-candidate-admission.js"
+      - "lib/recommendation-candidate-admission-core.mjs"
+      - "lib/server/recommendation-candidate-admission-runtime.js"
+      - "lib/server/product-query-shadow-service.js"
+      - "lib/product-query-shadow-probe-oidc.js"
+      - "app/api/internal/product-query-shadow/route.js"
+      - "lib/server/product-query-provider-shadow-service.js"
+      - "lib/product-query-provider-shadow-oidc.js"
+      - "app/api/internal/product-query-provider-shadow/route.js"
+      - "lib/server/product-query-activation-readiness-service.js"
+      - "lib/product-query-activation-readiness-oidc.js"
+      - "app/api/internal/product-query-activation-readiness/route.js"
+      - "scripts/verify-data-ai1-product-query-intent.mjs"
+      - "scripts/verify-data-ai2-product-query-execution.mjs"
+      - "scripts/verify-data-ai3-product-query-shadow.mjs"
+      - "scripts/verify-data-ai4-provider-shadow.mjs"
+      - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
+      - "scripts/verify-data-ai5-activation-readiness.mjs"
+      - "scripts/validate-data-ai5-activation-readiness-runtime-response.mjs"
+      - "scripts/await-ci-workflow.mjs"
+      - "scripts/verify-data-ai3-5-ci-consolidation.mjs"
+      - ".github/workflows/data-ai-product-query-static.yml"
+      - ".github/workflows/data-ai3-product-query-shadow.yml"
+      - ".github/workflows/data-ai4-provider-shadow.yml"
+      - ".github/workflows/data-ai5-activation-readiness.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-ai-product-query-static-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATA_AI_STATIC_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify:
+    name: DATA-AI1-5 canonical static contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ env.DATA_AI_STATIC_EXACT_HEAD }}
+
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI_STATIC_EXACT_HEAD"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify CI consolidation structure
+        run: node scripts/verify-data-ai3-5-ci-consolidation.mjs
+
+      - name: Install dependencies once
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify DATA-AI1 intent boundary
+        run: node scripts/verify-data-ai1-product-query-intent.mjs
+
+      - name: Verify DATA-AI2 deterministic execution
+        run: node scripts/verify-data-ai2-product-query-execution.mjs
+
+      - name: Verify DATA-AI3 real-corpus shadow boundary
+        run: node scripts/verify-data-ai3-product-query-shadow.mjs
+
+      - name: Verify DATA-AI4 provider-backed shadow boundary
+        run: |
+          node --check scripts/validate-data-ai4-provider-shadow-runtime-response.mjs
+          node scripts/verify-data-ai4-provider-shadow.mjs
+
+      - name: Verify DATA-AI5 activation-readiness boundary
+        run: |
+          node --check scripts/validate-data-ai5-activation-readiness-runtime-response.mjs
+          node scripts/verify-data-ai5-activation-readiness.mjs
+
+      - name: Verify architecture boundaries
+        env:
+          ARCHITECTURE_GUARD_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+        run: npm run architecture:guard
+
+      - name: Build production application once
+        run: npm run build
+
+      - name: Check exact-head and diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI_STATIC_EXACT_HEAD"
+          git diff --check "${{ github.event.pull_request.base.sha || github.event.before }}...$DATA_AI_STATIC_EXACT_HEAD" || git diff --check HEAD^

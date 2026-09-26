@@ -16,6 +16,8 @@ on:
       - "scripts/verify-data-ai5-activation-readiness.mjs"
       - "scripts/validate-data-ai5-activation-readiness-runtime-response.mjs"
       - ".github/workflows/data-ai5-activation-readiness.yml"
+      - "scripts/await-ci-workflow.mjs"
+      - ".github/workflows/data-ai-product-query-static.yml"
   pull_request:
     branches: [main]
     paths:
@@ -30,6 +32,8 @@ on:
       - "scripts/verify-data-ai5-activation-readiness.mjs"
       - "scripts/validate-data-ai5-activation-readiness-runtime-response.mjs"
       - ".github/workflows/data-ai5-activation-readiness.yml"
+      - "scripts/await-ci-workflow.mjs"
+      - ".github/workflows/data-ai-product-query-static.yml"
   workflow_dispatch:
     inputs:
       watchtower_track:
@@ -37,6 +41,7 @@ on:
         required: false
         type: string
 permissions:
+  actions: read
   contents: read
   deployments: read
   id-token: write
@@ -71,42 +76,60 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
+          package-manager-cache: false
 
-      - name: Install dependencies
+      - name: Gate automatic check on canonical DATA-AI static contract
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ env.DATA_AI5_EXACT_HEAD }}
+          EXPECTED_EVENT: ${{ github.event_name }}
+          CANONICAL_WORKFLOW_PATH: .github/workflows/data-ai-product-query-static.yml
+        run: node scripts/await-ci-workflow.mjs
+
+      - name: Install dependencies for manual fallback
+        if: github.event_name == 'workflow_dispatch'
         run: npm ci --no-audit --no-fund
 
-      - name: Verify DATA-AI1 intent boundary
+      - name: Verify DATA-AI1 intent boundary manually
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-data-ai1-product-query-intent.mjs
 
-      - name: Verify DATA-AI2 deterministic execution
+      - name: Verify DATA-AI2 deterministic execution manually
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-data-ai2-product-query-execution.mjs
 
-      - name: Verify DATA-AI3 real-corpus shadow boundary
+      - name: Verify DATA-AI3 real-corpus shadow boundary manually
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-data-ai3-product-query-shadow.mjs
 
-      - name: Verify DATA-AI4 provider-backed shadow boundary
+      - name: Verify DATA-AI4 provider-backed shadow boundary manually
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-data-ai4-provider-shadow.mjs
 
-      - name: Verify DATA-AI5 activation-readiness boundary
+      - name: Verify DATA-AI5 activation-readiness boundary manually
+        if: github.event_name == 'workflow_dispatch'
         run: |
           node --check scripts/validate-data-ai5-activation-readiness-runtime-response.mjs
           node scripts/verify-data-ai5-activation-readiness.mjs
 
-      - name: Verify architecture boundaries
+      - name: Verify architecture boundaries manually
+        if: github.event_name == 'workflow_dispatch'
         env:
           ARCHITECTURE_GUARD_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
         run: npm run architecture:guard
 
-      - name: Build production application
+      - name: Build production application manually
+        if: github.event_name == 'workflow_dispatch'
         run: npm run build
 
-      - name: Check exact-head and diff hygiene
+      - name: Check manual exact-head and diff hygiene
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$DATA_AI5_EXACT_HEAD"
-          git diff --check "${{ github.event.pull_request.base.sha || github.event.before }}...$DATA_AI5_EXACT_HEAD" || git diff --check HEAD^
+          git diff --check HEAD^
 
   runtime-probe:
     name: DATA-AI5 deployed activation-readiness probe

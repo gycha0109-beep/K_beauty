@@ -84,7 +84,7 @@ const targetStyle = {
 
 const result = buildStyleRoutes(styleDelta, { locale: "en", targetStyle });
 assert.equal(result.status, "available");
-assert.equal(result.version, "face-lab-style-route-v4");
+assert.equal(result.version, "face-lab-style-route-v5");
 assert.ok(result.routes.length >= 2);
 assert.ok(
   result.routes.every((route) => !route.domains.includes("face_adjacent_style")),
@@ -307,6 +307,33 @@ for (const legacyMakeupIntensity of ["grooming_only", "none"]) {
     `legacy ${legacyMakeupIntensity} preference must remove makeup actions from mixed routes`
   );
 }
+
+const fifteenMinuteResult = buildStyleRoutes(styleDelta, {
+  locale: "en",
+  targetStyle
+});
+assert.ok(
+  fifteenMinuteResult.routes.every((route) => route.dailyEffort !== "high"),
+  "a 15-minute daily limit must deprioritize high-effort routes from the bounded comparison set"
+);
+
+const thirtyMinuteResult = buildStyleRoutes(styleDelta, {
+  locale: "en",
+  targetStyle: {
+    ...targetStyle,
+    constraints: {
+      ...targetStyle.constraints,
+      lifestyle: {
+        ...targetStyle.constraints.lifestyle,
+        dailyMinutes: 30
+      }
+    }
+  }
+});
+assert.ok(
+  thirtyMinuteResult.routes.some((route) => route.dailyEffort === "high"),
+  "a 30-minute allowance must remain materially distinct by permitting a supported high-effort route"
+);
 
 const constrainedTargetStyle = {
   ...targetStyle,

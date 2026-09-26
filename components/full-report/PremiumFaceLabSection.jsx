@@ -612,9 +612,15 @@ export default function PremiumFaceLabSection({
           : "light"
       );
       setDailyMinutes(stored.surveyAnswers.constraints?.lifestyle?.dailyMinutes || 15);
-      setBudgetBand(stored.surveyAnswers.constraints?.lifestyle?.budgetBand || "standard");
+      setBudgetBand(
+        stored.surveyAnswers.constraints?.lifestyle?.budgetBand === "low"
+          ? "low"
+          : "standard"
+      );
       setMaintenanceTolerance(
-        stored.surveyAnswers.constraints?.lifestyle?.maintenanceTolerance || "medium"
+        stored.surveyAnswers.constraints?.lifestyle?.maintenanceTolerance === "low"
+          ? "low"
+          : "medium"
       );
       setStage("result");
       return true;
@@ -1059,19 +1065,17 @@ export default function PremiumFaceLabSection({
 
         <div className="mt-3">
           <p className="text-xs font-semibold text-zinc-500">{copy.budgetTitle}</p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
+          <div className="mt-2 grid grid-cols-2 gap-2">
             <ChoiceButton active={budgetBand === "low"} onClick={() => setBudgetBand("low")}>{copy.budgetLow}</ChoiceButton>
             <ChoiceButton active={budgetBand === "standard"} onClick={() => setBudgetBand("standard")}>{copy.budgetStandard}</ChoiceButton>
-            <ChoiceButton active={budgetBand === "flexible"} onClick={() => setBudgetBand("flexible")}>{copy.budgetFlexible}</ChoiceButton>
           </div>
         </div>
 
         <div className="mt-3">
           <p className="text-xs font-semibold text-zinc-500">{copy.maintenanceTitle}</p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
+          <div className="mt-2 grid grid-cols-2 gap-2">
             <ChoiceButton active={maintenanceTolerance === "low"} onClick={() => setMaintenanceTolerance("low")}>{copy.maintenanceLow}</ChoiceButton>
             <ChoiceButton active={maintenanceTolerance === "medium"} onClick={() => setMaintenanceTolerance("medium")}>{copy.maintenanceMedium}</ChoiceButton>
-            <ChoiceButton active={maintenanceTolerance === "high"} onClick={() => setMaintenanceTolerance("high")}>{copy.maintenanceHigh}</ChoiceButton>
           </div>
         </div>
       </div>
