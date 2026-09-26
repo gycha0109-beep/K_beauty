@@ -204,6 +204,15 @@ assert.ok(
 );
 
 assert.ok(
+  premiumFaceLab.includes('budgetBand === "low"\n          ? "low"\n          : "standard"'),
+  "legacy flexible budget persistence must normalize to a currently supported editable budget value"
+);
+assert.ok(
+  premiumFaceLab.includes('maintenanceTolerance === "low"\n          ? "low"\n          : "medium"'),
+  "legacy high-maintenance persistence must normalize to a currently supported editable maintenance value"
+);
+
+assert.ok(
   premiumFaceLab.includes("const data = await response.json().catch(() => null)"),
   "Face Lab V2 persistence must consume the server acknowledgement"
 );

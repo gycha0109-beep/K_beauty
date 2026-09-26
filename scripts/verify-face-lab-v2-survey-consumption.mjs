@@ -60,6 +60,21 @@ assert.ok(
   "presentation preference must stay bounded to example/default-scope behavior"
 );
 
+assert.equal(
+  premium.includes('setBudgetBand("flexible")'),
+  false,
+  "new survey UI must not expose a flexible-budget option until a higher-cost route can use it"
+);
+assert.equal(
+  premium.includes('setMaintenanceTolerance("high")'),
+  false,
+  "new survey UI must not expose a high-maintenance option until a higher-maintenance route can use it"
+);
+assert.ok(
+  survey.includes('"flexible"') && survey.includes('"high"'),
+  "legacy flexible-budget and high-maintenance persistence values must remain readable"
+);
+
 assert.ok(survey.includes("contexts:"), "legacy stored contexts must remain readable");
 assert.ok(survey.includes("lengthChange:"), "legacy stored hair length change must remain readable");
 assert.ok(survey.includes("dye:"), "legacy stored dye preference must remain readable");
