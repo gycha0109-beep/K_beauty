@@ -1,221 +1,79 @@
 "use client";
-
-function getSkinMatchHubCardLayout(id) {
-  const layouts = {
-    routine: {
-      card: "left-0 top-0 rounded-tl-[1.65rem] rounded-tr-[4.6rem] rounded-bl-[4.6rem] rounded-br-[1.5rem] pr-[3.2rem] pb-[2.9rem] pt-4 pl-4 sm:pr-[5.2rem] sm:pb-[4.2rem] sm:pt-5 sm:pl-5",
-      content: "items-start text-left",
-      icon: "sun"
-    },
-    functional: {
-      card: "right-0 top-0 rounded-tr-[1.65rem] rounded-tl-[4.6rem] rounded-br-[4.6rem] rounded-bl-[1.5rem] pl-[3.2rem] pb-[2.9rem] pt-4 pr-4 sm:pl-[5.2rem] sm:pb-[4.2rem] sm:pt-5 sm:pr-5",
-      content: "items-end text-right",
-      icon: "sliders",
-      arrow: "end"
-    },
-    condition: {
-      card: "left-0 bottom-0 rounded-bl-[1.65rem] rounded-tl-[4.6rem] rounded-br-[4.6rem] rounded-tr-[1.5rem] pr-[3.2rem] pt-[3.4rem] pb-4 pl-4 sm:pr-[5.2rem] sm:pt-[4.8rem] sm:pb-5 sm:pl-5",
-      content: "items-start text-left",
-      icon: "alert"
-    },
-    "face-lab": {
-      card: "right-0 bottom-0 rounded-br-[1.65rem] rounded-tr-[4.6rem] rounded-bl-[4.6rem] rounded-tl-[1.5rem] pl-[3.2rem] pt-[3.4rem] pb-4 pr-4 sm:pl-[5.2rem] sm:pt-[4.8rem] sm:pb-5 sm:pr-5",
-      content: "items-end text-right",
-      icon: "sparkle",
-      arrow: "end"
-    }
+import { saved, words, list, verdicts, reviewItems, selectionForVerdict, productName, snapshot, intakeSignal, functionalMatrix, conditionItems } from "@/lib/full-report-view";
+import SafeProductImage from "@/components/common/SafeProductImage";
+import { Icon } from "./ReportUI";
+import styles from "./TodayStartPlanStep.module.css";
+const ORDER = ["routine", "tracking", "functional", "condition"];
+const ICONS = { routine: "sun", tracking: "search", functional: "bottle", condition: "moon" };
+function ProductPreview({ product, title, subtitle }) {
+  return <span className={styles.product}><span className={styles.productImage}><SafeProductImage product={product} fallback={<Icon name="bottle"/>}/></span><span><strong>{title}</strong><small>{subtitle}</small></span><Icon name="arrow"/></span>;
+}
+export default function TodayStartPlanStep({ report = {}, hubActions = [], locale = "ko", onNavigate, children }) {
+  const en = locale === "en";
+  const plan = saved(report, "functionalPlan");
+  const mode = ["START", "HOLD"].includes(plan?.planMode) ? plan.planMode : "UNKNOWN";
+  const items = verdicts(report);
+  const review = reviewItems(report);
+  const lead = review[0];
+  const selection = lead ? selectionForVerdict(report, lead) : null;
+  const matrix = functionalMatrix(report, plan);
+  const candidate = matrix.next[0]?.product || matrix.next[0];
+  const signals = ["recentlyChangedProduct", "productReaction"].map(key => intakeSignal(report, key));
+  const knownSignals = signals.every(value => ["yes", "no"].includes(value));
+  const scenarios = conditionItems(saved(report, "conditionPlan"), saved(report, "conditionResponses"));
+  const scenario = scenarios[0];
+  const unknown = en ? "Not recorded" : "미기록";
+  const descriptions = en ? {
+    routine: "Review the routine you use and each product's saved assessment.", tracking: "Explore recorded changes and what to check first.", functional: "See what to try next and what to hold for now.", condition: "Review situational guidance and routine adjustments."
+  } : {
+    routine: "내가 사용 중인 루틴을 확인하고, 제품별 상태를 점검해보세요.", tracking: "최근 나타난 변화 신호와 먼저 확인할 항목을 살펴보세요.", functional: "어떤 제품을 시도하고, 어떤 것은 보류할지 확인해보세요.", condition: "특정 상황에 맞춘 대응법과 루틴 변경안을 확인해보세요."
   };
-
-  return layouts[id] || layouts.routine;
-}
-
-function SkinMatchHubIcon({ type, className = "" }) {
-  const baseClass = `h-6 w-6 ${className}`;
-
-  if (type === "bottle") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 3h4" />
-        <path d="M10.7 3v3.1l-2.2 2.3A3.7 3.7 0 0 0 7.5 11v7.2A2.8 2.8 0 0 0 10.3 21h3.4a2.8 2.8 0 0 0 2.8-2.8V11a3.7 3.7 0 0 0-1-2.6l-2.2-2.3V3" />
-        <path d="M10 14h4" />
-      </svg>
-    );
-  }
-
-  if (type === "alert") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 8v5" />
-        <path d="M12 17h.01" />
-        <circle cx="12" cy="12" r="8.5" />
-      </svg>
-    );
-  }
-
-  if (type === "sliders") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 7h14" />
-        <path d="M5 17h14" />
-        <circle cx="9" cy="7" r="2" />
-        <circle cx="15" cy="17" r="2" />
-      </svg>
-    );
-  }
-
-  if (type === "sparkle") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 3.5 14.2 9 20 11.2 14.2 13.4 12 19 9.8 13.4 4 11.2 9.8 9 12 3.5Z" />
-        <path d="M18 4.5v3" />
-        <path d="M19.5 6h-3" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2.8v2.4" />
-      <path d="M12 18.8v2.4" />
-      <path d="m4.9 4.9 1.7 1.7" />
-      <path d="m17.4 17.4 1.7 1.7" />
-      <path d="M2.8 12h2.4" />
-      <path d="M18.8 12h2.4" />
-      <path d="m4.9 19.1 1.7-1.7" />
-      <path d="m17.4 6.6 1.7-1.7" />
-    </svg>
-  );
-}
-
-export function SkinMatchHubQuickCard({ action, onNavigate, locale = "ko" }) {
-  const layout = getSkinMatchHubCardLayout(action.id);
-  const label = locale === "en" ? `Open ${action.title}` : `${action.title} 섹션으로 이동`;
-
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={() => onNavigate?.(action.target)}
-      className={`group absolute z-10 flex h-[13.1rem] w-[49%] flex-col justify-between overflow-hidden border border-[#ecd1c4]/48 bg-[linear-gradient(145deg,rgba(255,254,251,0.92),rgba(255,246,240,0.76))] text-[#3d2422] shadow-[0_18px_46px_rgba(130,82,64,0.075),inset_0_1px_0_rgba(255,255,255,0.76)] outline-none transition duration-200 hover:-translate-y-0.5 hover:border-[#e6ad9c]/68 hover:shadow-[0_22px_50px_rgba(165,90,72,0.11)] focus-visible:ring-2 focus-visible:ring-[#e87662]/55 dark:border-[#6d3f3a]/54 dark:bg-[linear-gradient(145deg,rgba(45,24,28,0.8),rgba(25,13,17,0.88))] dark:text-[#fff4ee] dark:shadow-[0_18px_48px_rgba(10,3,6,0.34),inset_0_1px_0_rgba(255,226,215,0.07)] dark:hover:border-[#c98577]/56 sm:h-[13.25rem] lg:h-[13rem] ${layout.card}`}
-    >
-      <span className={`flex h-full flex-col ${layout.content}`}>
-        <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#edb29f]/48 bg-[#fff6f1]/82 text-[#cc7668] shadow-[0_10px_24px_rgba(190,112,94,0.08)] dark:border-[#8b514b]/56 dark:bg-[#352026] dark:text-[#efb1a3]">
-          <SkinMatchHubIcon type={layout.icon} />
-        </span>
-        <span className="mt-3 block text-[1.08rem] font-semibold leading-tight text-[#351f1f] dark:text-[#fff4ef] sm:text-[1.2rem]">
-          {action.title}
-        </span>
-        <span className="mt-1.5 block text-[0.76rem] leading-4 text-[#785c54] dark:text-[#cfb4ac] sm:text-[0.82rem] sm:leading-5">
-          {action.description}
-        </span>
-      </span>
-    </button>
-  );
-}
-
-export default function TodayStartPlanStep({ baseline, actionItems, hubActions, locale = "ko", onNavigate }) {
-  const isEnglish = locale === "en";
-  const signalChips = (baseline.chips || []).slice(0, 2);
-  const primaryAction = actionItems[0] || {};
-
-  return (
-    <section className="relative overflow-hidden rounded-[1.6rem] border border-[#efe1d9] bg-[#fffaf5] p-4 shadow-[0_24px_62px_rgba(105,66,48,0.065)] dark:border-[#4a3033] dark:bg-[#170d12] dark:shadow-[0_28px_80px_rgba(9,3,6,0.38)] sm:p-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_58%,rgba(238,143,119,0.14),transparent_31%),radial-gradient(circle_at_50%_82%,rgba(246,187,164,0.18),transparent_35%),linear-gradient(180deg,rgba(255,251,248,0.74),rgba(255,242,235,0.54))] dark:bg-[radial-gradient(circle_at_50%_58%,rgba(213,124,105,0.13),transparent_33%),radial-gradient(circle_at_50%_82%,rgba(116,54,53,0.28),transparent_38%),linear-gradient(180deg,rgba(32,17,22,0.94),rgba(20,10,14,0.98))]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-[-8rem] h-80 bg-[radial-gradient(ellipse_at_50%_0%,rgba(237,151,128,0.18),transparent_62%)] dark:bg-[radial-gradient(ellipse_at_50%_0%,rgba(182,92,78,0.18),transparent_64%)]" />
-
-      <div className="relative">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-serif text-[1.55rem] leading-none tracking-[0.04em] text-[#402930] dark:text-[#f4d8cc]">
-              Be Jewely
-            </p>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9b746c] dark:text-[#b99791]">
-              Premium Report
-            </p>
-          </div>
-          <span className="rounded-full border border-[#dfb8ad] bg-[#fff4ee] px-3 py-1 text-[11px] font-semibold text-[#9a594f] dark:border-[#70413f] dark:bg-[#2b171d] dark:text-[#f0b7a7]">
-            Skin Match AI
+  return <section className={styles.hub} data-report-hub data-plan-mode={mode}>
+    <header className={styles.brand}><p>BEJEWELY</p><span>SKIN MATCH PREMIUM</span></header>
+    <div className={styles.intro}>
+      <span className={styles.heroArt} aria-hidden="true"/>
+      <p className={styles.eyebrow}>YOUR SKIN TODAY</p>
+      <h2>{words(plan?.planSummary) || (en ? "Your skin. Your next step." : <>나의 피부를 위한<br/>다음 한 걸음.</>)}</h2>
+      <p className={styles.summary}>{words(plan?.direction) || (en ? "Explore the information saved in each section. A current decision has not been recorded." : "각 섹터에서 저장된 정보를 확인하세요. 현재 판단 정보는 기록되어 있지 않아요.")}</p>
+      <span className={styles.edition}>SKIN MATCH<br/>PERSONAL GUIDE</span>
+    </div>
+    <div className={styles.grid}>
+      {ORDER.map((id, index) => {
+        const action = hubActions.find(item => item.id === id);
+        if (!action) return null;
+        return <button key={id} type="button" className={styles.card} data-hub-sector={id}
+          aria-label={en ? `Open ${action.title}` : `${action.title} 섹션으로 이동`} onClick={() => onNavigate?.(action.target)}>
+          <span className={styles.cardArt} aria-hidden="true"/>
+          <span className={styles.cardTop}><span className={styles.icon}><Icon name={ICONS[id]}/></span><span>{String(index + 1).padStart(2, "0")}</span></span>
+          <span className={styles.cardHeading}>{action.title}</span>
+          <span className={styles.cardDescription}>{descriptions[id]}</span><span className={styles.open}><Icon name="arrow"/></span>
+          <span className={styles.cardDetails}>
+            {id === "routine" && <>
+              <span className={styles.chips}>{[["keep", en ? "Keep" : "유지"], ["adjust", en ? "Adjust" : "조정"], ["check_needed", en ? "Check" : "확인 필요"], ["hold", en ? "Hold" : "보류"]].map(([status,label]) => <span key={status} data-tone={status}>{label} <b>{items.length ? items.filter(item => item.status === status).length : "—"}</b></span>)}</span>
+              <small className={styles.meta}>{items.length ? (en ? "AM/PM verdict slots" : "AM/PM 판단 슬롯 기준") : unknown}</small>
+              {lead ? <ProductPreview product={snapshot(selection)} title={selection ? productName(selection, locale) : lead.title} subtitle={lead.title || lead.status}/> : <span className={styles.empty}>{en ? "No saved product checks" : "저장된 제품별 확인 항목이 없어요."}</span>}
+            </>}
+            {id === "tracking" && <>
+              <span className={styles.stats}><span><Icon name="search"/>{en ? "Changes" : "변화 신호"}<b>{knownSignals ? signals.filter(value => value === "yes").length : "—"}</b></span><span><Icon name="info"/>{en ? "Checks" : "확인 슬롯"}<b>{items.length ? review.length : "—"}</b></span></span>
+              <span className={styles.notice}><Icon name="info"/>{en ? "These records cannot establish that a particular product caused a reaction." : "현재 정보만으로 특정 제품을 직접적인 원인이라고 단정할 수 없어요."}</span>
+            </>}
+            {id === "functional" && <>
+              <span className={styles.planStats}><span data-tone={mode === "START" ? "keep" : mode === "HOLD" ? "hold" : "unknown"}><b>● {mode}</b><span>{en ? "Visible next candidates" : "다음으로 시도할 후보"}</span><strong>{plan ? `${matrix.next.length}${en ? "" : "개"}` : unknown}</strong></span><span data-tone="hold"><b>{en ? "CURRENT HOLD" : "현재 제품 보류"}</b><span>{en ? "Saved verdict slots" : "저장된 판단 슬롯"}</span><strong>{items.length ? `${matrix.hold.length}${en ? "" : "개"}` : unknown}</strong></span></span>
+              {candidate ? <ProductPreview product={candidate} title={candidate.name || candidate.productName} subtitle={en ? "Candidate to review next" : "다음으로 검토할 후보"}/> : <span className={styles.empty}>{plan?.candidateExposureSuppressed ? (en ? "Candidate display withheld" : "현재 후보 노출이 보류되어 있어요.") : (en ? "No saved candidates to display" : "표시할 저장 후보가 없어요.")}</span>}
+            </>}
+            {id === "condition" && <>
+              <span className={styles.scenario}>{scenario?.title || (en ? "No stored scenarios" : "저장된 상황 없음")}<small>{scenario ? (en ? "Saved scenario" : "저장된 상황") : unknown}</small></span>
+              <span className={styles.roles}>{[[en ? "Maintain" : "유지", scenario?.maintainRoles], [en ? "Reduce" : "줄이기", scenario && (Array.isArray(scenario.reduceRoles) || Array.isArray(scenario.reduceActions)) ? [...list(scenario.reduceRoles), ...list(scenario.reduceActions)] : null], [en ? "Pause" : "보류", scenario?.pauseRoles]].map(([label,roles]) => <span key={label}><strong>{label}</strong><small>{Array.isArray(roles) ? `${roles.length}${en ? " items" : "개 항목"}` : unknown}</small></span>)}</span>
+            </>}
           </span>
-        </div>
-
-        <div className="mt-8 text-center">
-          <p className="text-[0.78rem] font-semibold tracking-[0.02em] text-[#7c4a42] dark:text-[#ddb7aa]">
-            {isEnglish ? "Skin Match Plan" : "Skin Match 플랜"}
-          </p>
-          <h3 className="mt-2.5 font-serif text-[2.05rem] font-medium leading-tight text-[#44251f] dark:text-[#ffe2d7] sm:text-[2.45rem]">
-            {isEnglish ? "Personal Skin Map" : "퍼스널 피부 상담 맵"}
-          </h3>
-          <p className="mx-auto mt-3 max-w-[28rem] text-sm leading-6 text-[#654b45] dark:text-[#f1d7ce]">
-            {isEnglish
-              ? "Based on your skin right now, this organizes what to keep and what to reduce today."
-              : "지금 피부 기준으로, 오늘 유지할 것과 줄일 것을 먼저 정리했어요."}
-          </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {signalChips.map((chip) => (
-              <span key={chip} className="rounded-full border border-[#e6c8bd]/54 bg-[#fff8f3]/88 px-3 py-1.5 text-xs font-semibold text-[#b96054] dark:border-[#70413f]/64 dark:bg-[#311b21] dark:text-[#f0b7a7]">
-                {chip}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative mx-auto mt-7 min-h-[31rem] max-w-[28rem] sm:min-h-[34rem] sm:max-w-[34rem] lg:min-h-[33rem] lg:max-w-[46rem]">
-          <div className="pointer-events-none absolute left-1/2 top-[47%] h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#f0b7a7]/18 dark:border-[#7d4b47]/25" />
-          <div className="pointer-events-none absolute left-1/2 top-[47%] h-[16.5rem] w-[16.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#edc8bb]/28 dark:border-[#6e3e3c]/34" />
-          <div className="pointer-events-none absolute left-1/2 top-[47%] h-[11.4rem] w-[11.4rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,241,234,0.58),rgba(255,226,212,0.14),transparent_72%)] dark:bg-[radial-gradient(circle,rgba(151,74,65,0.24),rgba(66,30,33,0.16),transparent_72%)]" />
-
-          {hubActions.map((action) => (
-            <SkinMatchHubQuickCard
-              key={action.id}
-              action={action}
-              locale={locale}
-              onNavigate={onNavigate}
-            />
-          ))}
-
-          <div className="absolute left-1/2 top-[47%] z-20 flex h-[11.75rem] w-[11.75rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-[#f3c1ae]/64 bg-[radial-gradient(circle_at_50%_20%,rgba(255,253,250,0.98),rgba(255,236,225,0.9)_68%,rgba(255,223,209,0.78))] px-4 text-center shadow-[0_0_0_7px_rgba(241,173,151,0.09),0_20px_50px_rgba(185,93,74,0.16),inset_0_1px_0_rgba(255,255,255,0.82)] dark:border-[#d28a78]/58 dark:bg-[radial-gradient(circle_at_50%_18%,rgba(70,35,39,0.96),rgba(38,19,24,0.92)_70%,rgba(27,13,18,0.98))] dark:shadow-[0_0_0_7px_rgba(176,83,74,0.09),0_24px_62px_rgba(8,2,5,0.45),inset_0_1px_0_rgba(255,226,215,0.1)] sm:h-[13.75rem] sm:w-[13.75rem] sm:px-5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#efb09f]/56 bg-[#fff6f0] text-[#d06f60] dark:border-[#8d514b]/72 dark:bg-[#3b2026] dark:text-[#f0b7a7]">
-              ✧
-            </span>
-            <h4 className="mt-2 font-serif text-[1.65rem] font-semibold leading-tight text-[#4b2822] dark:text-[#ffe2d7] sm:text-[1.95rem]">
-              {isEnglish ? "Start Today" : "오늘 시작"}
-            </h4>
-            <p className="mt-1.5 text-[0.74rem] leading-5 text-[#755650] dark:text-[#ead0c7] sm:mt-2 sm:text-[0.82rem]">
-              {isEnglish ? "First priority:" : "오늘 우선 실행:"}<br />
-              <strong className="font-semibold text-[#3d2422] dark:text-[#fff4ef]">
-                {primaryAction.title || (isEnglish ? "Pause new active steps" : "기능성 추가 멈추기")}
-              </strong>
-            </p>
-            <button
-              type="button"
-              onClick={() => onNavigate?.("morning-routine")}
-              className="mt-2.5 inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] px-4 text-[0.72rem] font-semibold text-white shadow-[0_12px_26px_rgba(215,111,91,0.24)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2aa91]/70 sm:mt-3 sm:min-h-10 sm:px-4 sm:text-xs"
-            >
-              {isEnglish ? "Open routine consult" : "루틴 상담 보기"}
-              <span className="ml-2">&rarr;</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-4 flex w-full items-center justify-between gap-3 rounded-[1.1rem] border border-[#e1c8bd] bg-[#fff7f1]/82 px-4 py-3 text-left shadow-[0_12px_28px_rgba(105,66,48,0.06)] dark:border-[#52363a] dark:bg-[#21151b]/78 dark:shadow-none">
-          <span className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#dca396]/55 bg-[#fff1ea] text-[#b76356] dark:border-[#8a514c] dark:bg-[#321b21] dark:text-[#f0b7a7]">
-              <SkinMatchHubIcon type="alert" className="h-5 w-5" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold text-[#4c3335] dark:text-[#fff4ef]">
-                {isEnglish ? "Your skin data is protected" : "내 피부 데이터는 안전하게 보호돼요"}
-              </span>
-              <span className="mt-0.5 block truncate text-xs text-[#8b6c64] dark:text-[#bfa59f]">
-                {isEnglish ? "You can reopen this premium report during access." : "구독 기간 동안 리포트를 다시 확인할 수 있어요."}
-              </span>
-            </span>
-          </span>
-          <span className="shrink-0 text-xl text-[#9f5b50] dark:text-[#f0b7a7]">&rsaquo;</span>
-        </div>
-      </div>
-    </section>
-  );
+        </button>;
+      })}
+    </div>
+    <div className={styles.dock}>
+      <span className={styles.bannerIcon}><Icon name="bottle"/></span><div><small>REPORT DOCK</small><h3>{en ? "Input context · Decision evidence" : "입력 맥락 · 판단 근거"}</h3><p>{en ? "Review recorded inputs and supporting signals." : "지금까지의 입력 정보와 주요 판단 근거를 확인할 수 있어요."}</p></div>
+      <a href="#skin-match-input-context" onClick={() => { const node = document.getElementById("skin-match-input-context"); if (node) node.open = true; }}>{en ? "View input context" : "입력 맥락 자세히 보기"}<Icon name="arrow"/></a>
+    </div>
+    <details id="skin-match-input-context" className={styles.context}><summary>{en ? "Products and evidence details" : "현재 제품 · 입력 정보 · 판단 근거 상세"}</summary>{children}<button type="button" onClick={() => onNavigate?.("problem-tracking")}>{en ? "Decision evidence" : "판단 근거 보기"}<Icon name="arrow"/></button></details>
+    <button type="button" className={styles.faceBanner} onClick={() => onNavigate?.("face-lab")}><span className={styles.bannerIcon}>✿</span><span><small>FACE LAB</small><strong>{en ? "Explore your Face Lab report" : "Face Lab에서 더 자세히"}</strong><span>{en ? "Open the separate Face Lab experience." : "Face Lab 리포트도 함께 확인해보세요."}</span></span><span className={styles.faceCta}>{en ? "View report" : "리포트 보기"}<Icon name="arrow"/></span></button>
+  </section>;
 }
-

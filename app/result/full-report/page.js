@@ -11,6 +11,8 @@ import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
 import PremiumRoutineConsultSection from "@/components/full-report/PremiumRoutineConsultSection";
 import PremiumFunctionalDecisionSection from "@/components/full-report/PremiumFunctionalDecisionSection";
 import PremiumConditionResponseSection from "@/components/full-report/PremiumConditionResponseSection";
+import ProblemTrackingSection from "@/components/full-report/ProblemTrackingSection";
+import { Next as ReportNext, styles as reportStyles } from "@/components/full-report/ReportUI";
 import PremiumFaceLabSection from "@/components/full-report/PremiumFaceLabSection";
 import CurrentProductsSelector from "@/components/current-products/CurrentProductsSelector";
 import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
@@ -52,9 +54,9 @@ const LAST_FULL_REPORT_TAB_KEY = "lastFullReportTab";
 const SKIN_MATCH_SECTION_ORDER = [
   "today-start-hub",
   "morning-routine",
+  "problem-tracking",
   "product-plan",
-  "adjustment-guide",
-  "avoid-list"
+  "adjustment-guide"
 ];
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const PREMIUM_REPORT_ENABLED = true;
@@ -3952,42 +3954,6 @@ function buildStepAdvanceLabel(step, locale = "ko") {
   return locale === "en" ? `See ${label}` : `${label} 보기`;
 }
 
-function getTodaySkinBaseline(result = {}, locale = "ko") {
-  const axis = getReportPriorityAxis(result);
-
-  if (locale === "en") {
-    const summary = ["oiliness", "pores"].includes(axis)
-      ? "Oil can rise through the T-zone, while the overall routine still needs steady, lightweight moisture."
-      : "Moisture retention looks lower, and the skin may react more easily when the routine gets crowded.";
-
-    return {
-      title: "Current skin baseline",
-      summary,
-      chips: ["Moisture gap", "Barrier stress", "Oil balance"],
-      cards: [
-        { title: "Moisture gap", body: "Moisture does not stay long enough." },
-        { title: "Barrier stress", body: "The skin may react to heavier routines." },
-        { title: "Oil balance", body: "Oil can rise while moisture is still low." }
-      ]
-    };
-  }
-
-  const summary = ["oiliness", "pores"].includes(axis)
-    ? "T존 유분은 올라오지만 전체적으로는 안정적인 보습 유지가 필요합니다."
-    : "수분 유지력이 낮고, 자극에 쉽게 반응할 수 있는 상태입니다.";
-
-  return {
-    title: "현재 피부 기준",
-    summary,
-    chips: ["수분 부족", "장벽 스트레스", "유분 밸런스"],
-    cards: [
-      { title: "수분 부족", body: "수분 유지력이 낮음" },
-      { title: "장벽 스트레스", body: "자극에 민감한 상태" },
-      { title: "유분 밸런스", body: "T존 유분은 있으나 전체적 수분 부족" }
-    ]
-  };
-}
-
 function getPlanAnchorReasons(product = {}, result = {}, locale = "ko") {
   const category = normalizeReportCategory(product);
   const axis = getReportPriorityAxis(result);
@@ -4027,58 +3993,6 @@ function getTodayAiJudgement(result = {}, locale = "ko") {
     body: `지금은 ${concern} 흐름을 기준으로, 기능성을 늘리기보다 자극을 줄이고 수분을 유지하는 쪽이 우선입니다.`,
     sub: "피부가 편안하게 반응하는지 확인하면서 루틴을 단순하게 가져갑니다."
   };
-}
-
-function getPriorityActionItems(locale = "ko") {
-  if (locale === "en") {
-    return [
-      {
-        key: "pause-actives",
-        badge: "Priority 1",
-        title: "Pause new active steps",
-        body: "Temporarily reduce retinol, exfoliation, vitamin C, and other steps that can add irritation.",
-        detail: "Why it matters"
-      },
-      {
-        key: "soft-cleanse",
-        badge: "Priority 2",
-        title: "Lower cleansing intensity",
-        body: "Use enough foam or slip, then cleanse gently with less rubbing.",
-        detail: "Details"
-      },
-      {
-        key: "simple-morning",
-        badge: "Priority 3",
-        title: "Connect tomorrow morning to sunscreen",
-        body: "Keep skincare minimal and finish the morning routine lightly with sunscreen.",
-        detail: "Details"
-      }
-    ];
-  }
-
-  return [
-    {
-      key: "pause-actives",
-      badge: "우선 1",
-      title: "기능성 추가 멈추기",
-      body: "레티놀, 각질제거, 비타민C 등 자극이 될 수 있는 기능성은 잠시 줄입니다.",
-      detail: "왜 중요한가요?"
-    },
-    {
-      key: "soft-cleanse",
-      badge: "우선 2",
-      title: "세안 강도 낮추기",
-      body: "거품은 충분히 내고, 마찰을 줄여 부드럽게 세안합니다.",
-      detail: "자세히"
-    },
-    {
-      key: "simple-morning",
-      badge: "우선 3",
-      title: "내일 아침, 선크림까지 단순 연결",
-      body: "스킨케어는 최소 단계로, 아침에는 선크림까지 가볍게 마무리합니다.",
-      detail: "자세히"
-    }
-  ];
 }
 
 function getTodayCheckPoints(locale = "ko") {
@@ -4138,30 +4052,30 @@ function getSkinMatchHubActions(locale = "ko") {
     return [
       {
         id: "routine",
-        title: "Routine Consult",
+        title: "Current routine review",
         description: "AM and PM basic order",
         target: "morning-routine",
         icon: "☼"
       },
       {
         id: "functional",
-        title: "Functional Plan",
+        title: "Next change plan",
         description: "What to add or wait on",
         target: "product-plan",
         icon: "⌁"
       },
       {
         id: "condition",
-        title: "Condition Response",
+        title: "Situational care",
         description: "Rules for unstable days",
         target: "adjustment-guide",
         icon: "!"
       },
       {
-        id: "face-lab",
-        title: "Face Lab",
-        description: "Style direction connected to skin",
-        target: "face-lab",
+        id: "tracking",
+        title: "Issue tracking",
+        description: "Review recorded change signals",
+        target: "problem-tracking",
         icon: "✧"
       }
     ];
@@ -4170,30 +4084,30 @@ function getSkinMatchHubActions(locale = "ko") {
   return [
     {
       id: "routine",
-      title: "루틴 상담",
+      title: "현재 루틴 점검",
       description: "아침·저녁 기본 순서",
       target: "morning-routine",
       icon: "☼"
     },
     {
       id: "functional",
-      title: "기능성 플랜",
+      title: "다음 변화 플랜",
       description: "더할 것과 미룰 것",
       target: "product-plan",
       icon: "⌁"
     },
     {
       id: "condition",
-      title: "컨디션 대응",
+      title: "상황별 대응",
       description: "흔들릴 때 바꾸는 기준",
       target: "adjustment-guide",
       icon: "!"
     },
     {
-      id: "face-lab",
-      title: "Face Lab",
-      description: "피부와 이어지는 스타일 방향",
-      target: "face-lab",
+      id: "tracking",
+      title: "문제 추적",
+      description: "기록된 변화 신호 확인",
+      target: "problem-tracking",
       icon: "✧"
     }
   ];
@@ -4781,333 +4695,6 @@ function buildRoutineFallbackSteps(mode = "morning", freeResult = {}, locale = "
   ];
 }
 
-function getRoutineConsultMeta(mode = "morning", locale = "ko") {
-  const isMorning = mode === "morning";
-
-  if (locale === "en") {
-    return {
-      title: isMorning
-        ? "Keep the morning thin and connect it to sunscreen."
-        : "Evening is for lowering burden, not adding more.",
-      body: isMorning
-        ? "Instead of adding many layers, keep the order thin enough that it does not pill and can reach the protection step."
-        : "After cleansing, keep the order simple enough for the skin to feel comfortable, and do not stack several active steps at once.",
-      chips: isMorning
-        ? ["Thin layers", "Sunscreen fixed", "Adjust moisture"]
-        : ["Gentle cleanse", "No active stacking", "Moisture finish"]
-    };
-  }
-
-  return {
-    title: isMorning
-      ? "아침은 얇게, 선크림까지 이어지게 씁니다."
-      : "저녁은 더 넣는 시간이 아니라, 부담을 줄이는 시간입니다.",
-    body: isMorning
-      ? "제품을 많이 바르기보다, 밀리지 않게 얇게 정리하고 보호 단계까지 연결합니다."
-      : "세안 후 피부가 편하게 받아들이는 순서로 단순하게 정리하고, 기능성은 한 번에 여러 개 겹치지 않습니다.",
-    chips: isMorning
-      ? ["얇게 쌓기", "선크림 고정", "보습량 조절"]
-      : ["부드러운 세안", "기능성 중복 금지", "보습 마무리"]
-  };
-}
-
-function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
-  const isMorning = mode === "morning";
-
-  if (locale === "en") {
-    return isMorning
-      ? [
-        {
-          order: 1,
-          slot: "prep",
-          title: "Light reset",
-          status: "Keep",
-          action: "Keep hydration from breaking by resetting lightly.",
-          adjustment: "If it feels tight, press it in instead of wiping.",
-          roles: ["toner_essence", "serum_ampoule"]
-        },
-        {
-          order: 2,
-          slot: "hydrate",
-          title: "Moisture support",
-          status: "As needed",
-          action: "Keep this layer thin so the next step does not pill.",
-          adjustment: "If makeup pills, reduce this amount first.",
-          roles: ["serum_ampoule", "moisturizer"]
-        },
-        {
-          order: 3,
-          slot: "protect",
-          title: "Protection finish",
-          status: "Fixed",
-          action: "Finish the morning with sunscreen.",
-          adjustment: "Let the previous step settle, then spread it thinly.",
-          roles: ["sunscreen"]
-        }
-      ]
-      : [
-        {
-          order: 1,
-          slot: "cleanse",
-          title: "Cleanse",
-          status: "Keep",
-          action: "Gently remove residue instead of chasing a stripped finish.",
-          adjustment: "If tightness is strong, lower cleansing intensity.",
-          roles: ["cleanser"]
-        },
-        {
-          order: 2,
-          slot: "prep",
-          title: "Texture reset",
-          status: "Skippable",
-          action: "Lightly reset after cleansing so moisture can follow.",
-          adjustment: "If it stings or feels tight, skip this step.",
-          roles: ["toner_essence", "serum_ampoule"]
-        },
-        {
-          order: 3,
-          slot: "moisturize",
-          title: "Moisture finish",
-          status: "Fixed",
-          action: "If it stings or feels tight, leave only comfortable moisture.",
-          adjustment: "On dry days, reinforce only this step with a small amount.",
-          roles: ["moisturizer"]
-        }
-      ];
-  }
-
-  return isMorning
-    ? [
-      {
-        order: 1,
-        slot: "prep",
-        title: "가벼운 정리",
-        status: "유지",
-        action: "수분감이 끊기지 않게 가볍게 정리합니다.",
-        adjustment: "당김이 있으면 닦아내기보다 흡수시키는 방식으로 씁니다.",
-        roles: ["toner_essence", "serum_ampoule"]
-      },
-      {
-        order: 2,
-        slot: "hydrate",
-        title: "수분 보완",
-        status: "필요 시",
-        action: "다음 단계가 밀리지 않게 얇게 둡니다.",
-        adjustment: "화장이 밀리면 이 단계의 양을 먼저 줄입니다.",
-        roles: ["serum_ampoule", "moisturizer"]
-      },
-      {
-        order: 3,
-        slot: "protect",
-        title: "보호 마무리",
-        status: "고정",
-        action: "아침 마지막은 선크림으로 마무리합니다.",
-        adjustment: "직전 단계가 충분히 흡수된 뒤 얇게 펴 바릅니다.",
-        roles: ["sunscreen"]
-      }
-    ]
-    : [
-      {
-        order: 1,
-        slot: "cleanse",
-        title: "세안",
-        status: "유지",
-        action: "뽀득하게 벗기기보다 잔여감만 부드럽게 정리합니다.",
-        adjustment: "당김이 심하면 세안 강도를 낮추는 쪽으로 봅니다.",
-        roles: ["cleanser"]
-      },
-      {
-        order: 2,
-        slot: "prep",
-        title: "결 정리",
-        status: "생략 가능",
-        action: "세안 후 보습이 이어지도록 가볍게 정돈합니다.",
-        adjustment: "따가움이나 당김이 있으면 이 단계는 쉬어갑니다.",
-        roles: ["toner_essence", "serum_ampoule"]
-      },
-      {
-        order: 3,
-        slot: "moisturize",
-        title: "보습 마무리",
-        status: "고정",
-        action: "따가움이나 당김이 있으면 편한 보습만 남깁니다.",
-        adjustment: "건조한 날은 이 단계만 소량 보강합니다.",
-        roles: ["moisturizer"]
-      }
-    ];
-}
-
-function getRoutineProductKey(product) {
-  return product?.id || `${product?.brand || ""}-${product?.name || ""}`;
-}
-
-function collectRoutineConsultProducts({ freeResult, report, morningSteps = [], nightSteps = [] }) {
-  const seen = new Set();
-  const sourceItems = [
-    ...morningSteps.map((step) => step?.product || null),
-    ...nightSteps.map((step) => step?.product || null),
-    freeResult?.topPick || null,
-    ...(Array.isArray(report?.supportingProducts) ? report.supportingProducts : []),
-    freeResult?.alternative || null,
-    ...(Array.isArray(freeResult?.altPicks) ? freeResult.altPicks : [])
-  ];
-
-  return sourceItems
-    .map(unwrapSupportingProductItem)
-    .filter(Boolean)
-    .filter((product) => {
-      const key = getRoutineProductKey(product);
-
-      if (!key || seen.has(key)) {
-        return false;
-      }
-
-      seen.add(key);
-      return true;
-    });
-}
-
-function pickRoutineConsultProduct(candidates, roles = [], fallbackProduct = null, usedKeys = new Set()) {
-  const matchesRole = (product) => roles.includes(normalizeReportCategory(product));
-  const matched = candidates.find((product) => {
-    const key = getRoutineProductKey(product);
-    return key && !usedKeys.has(key) && matchesRole(product);
-  });
-  const fallbackKey = getRoutineProductKey(fallbackProduct);
-  const fallback = fallbackKey && !usedKeys.has(fallbackKey) && matchesRole(fallbackProduct) ? fallbackProduct : null;
-  const product = matched || fallback;
-  const key = getRoutineProductKey(product);
-
-  if (key) {
-    usedKeys.add(key);
-  }
-
-  return product;
-}
-
-function buildRoutineConsultSteps({
-  mode = "morning",
-  freeResult,
-  report,
-  morningSteps = [],
-  nightSteps = [],
-  locale = "ko",
-  currentProductSlots = null
-}) {
-  const sourceSteps = mode === "morning"
-    ? (morningSteps.length ? morningSteps : buildRoutineFallbackSteps("morning", freeResult, locale))
-    : (nightSteps.length ? nightSteps : buildRoutineFallbackSteps("night", freeResult, locale));
-  const candidates = collectRoutineConsultProducts({ freeResult, report, morningSteps, nightSteps });
-  const usedKeys = new Set();
-  const slotMode = mode === "morning" ? "am" : "pm";
-
-  return getRoutineConsultTemplates(mode, locale).map((template, index) => ({
-    ...template,
-    product: pickRoutineConsultProduct(candidates, template.roles, sourceSteps[index]?.product || null, usedKeys),
-    currentProducts: Array.isArray(currentProductSlots?.[slotMode]?.[template.slot])
-      ? currentProductSlots[slotMode][template.slot]
-      : []
-  }));
-}
-
-function getAvoidPlanCards(avoidItems = [], locale = "ko") {
-  const avoid = uniqueDisplayTexts(avoidItems);
-
-  if (locale === "en") {
-    return [
-      {
-        label: "Avoid this first",
-        body: "Do not add two or more new products at the same time.",
-        items: ["Add one product at a time", "Watch the skin before adding another step"],
-        priority: true
-      },
-      {
-        label: "Wasteful combination",
-        body: "Buying several new active products at once makes it harder to know what is helping.",
-        items: ["Add only one new product at a time", "Do not duplicate products with the same role"]
-      },
-      {
-        label: "Can make skin more reactive",
-        body: avoid[0] || "Strong cleansing, high-friction pads, and active serum in one routine can push the skin too far.",
-        items: ["Reduce friction first", "Pause strong exfoliating steps on reactive days"]
-      },
-      {
-        label: "Reduce today",
-        body: "Start by reducing cleansing time, extra functional steps, and heavy finish layers.",
-        items: ["Cleansing intensity", "Extra actives", "Thick finish"]
-      }
-    ];
-  }
-
-  return [
-    {
-      label: "가장 먼저 피할 것",
-      body: "새 제품을 한 번에 2개 이상 추가하지 마세요.",
-      items: ["하나씩 추가하기", "피부 반응 보고 다음 단계로 가기"],
-      priority: true
-    },
-    {
-      label: "돈 버리는 조합",
-      body: "새 기능성 제품을 한꺼번에 늘리면 무엇이 맞는지 알기 어렵고, 결국 루틴만 복잡해집니다.",
-      items: ["새 제품은 한 번에 하나만", "같은 역할 제품 중복 구매 줄이기"]
-    },
-    {
-      label: "피부를 더 예민하게 만들 수 있는 조합",
-      body: avoid[0] || "강한 세안, 마찰 큰 패드, 고기능 세럼을 한 루틴에 겹치면 피부가 버거울 수 있습니다.",
-      items: ["마찰 먼저 줄이기", "예민한 날 강한 각질 단계 쉬기"]
-    },
-    {
-      label: "오늘 줄일 것",
-      body: "세안 시간, 기능성 추가 단계, 무거운 마감 제품부터 줄입니다.",
-      items: ["세안 강도", "추가 기능성", "두꺼운 마무리"]
-    }
-  ];
-}
-
-function AvoidListStep({ avoidItems = [], locale = "ko" }) {
-  const cards = getAvoidPlanCards(avoidItems, locale);
-
-  return (
-    <section className="ui-card p-5 sm:p-6">
-      <p className="ui-kicker">{locale === "en" ? "AVOID FIRST" : "먼저 피할 것"}</p>
-      <h3 className="ui-title mt-2 text-xl leading-tight">
-        {locale === "en" ? "Reduce trial-and-error before adding more products." : "더 사기 전에, 먼저 겹치지 않게 줄입니다."}
-      </h3>
-      <p className="ui-text-secondary mt-2 text-sm leading-6">
-        {locale === "en"
-          ? "This is a practical guardrail, not a scare list. It keeps the routine easier to read."
-          : "공포 마케팅이 아니라 시행착오와 낭비를 줄이는 실전 회피 가이드입니다."}
-      </p>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {cards.map((card) => (
-          <div
-            key={card.label}
-            className={`rounded-[1rem] border px-3 py-3 ${card.priority
-              ? "border-amber-300/40 bg-amber-500/15 sm:col-span-2"
-              : "border-amber-300/20 bg-amber-500/10"
-              }`}
-          >
-            <p className={`${card.priority ? "text-[12px]" : "text-[11px]"} font-semibold text-amber-700 dark:text-amber-200`}>
-              {card.label}
-            </p>
-            <p className={`${card.priority ? "mt-2 text-[15px] font-semibold" : "mt-2 text-sm"} leading-6 text-zinc-700 dark:text-zinc-300`}>
-              {card.body}
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {card.items.map((item) => (
-                <span key={item} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs leading-5 text-zinc-700 dark:text-zinc-300">
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function getAdjustmentSymptomPlans(locale = "ko") {
   if (locale === "en") {
     return [
@@ -5411,27 +4998,29 @@ function SkinMatchStepReport({
   const labels = locale === "en"
     ? {
       hub: "Start Today",
-      morning: "Routine Consult",
+      morning: "Current routine review",
+      tracking: "Issue tracking",
       evening: "Evening Routine",
       avoid: "Caution",
-      adjustment: "Condition Response",
-      product: "Functional Plan",
+      adjustment: "Situational care",
+      product: "Next change plan",
       summary: "Final Summary",
       previous: "Previous",
       next: "Next",
-      finalCta: "Save my routine"
+      finalCta: "View saved reports"
     }
     : {
       hub: "오늘 시작",
-      morning: "루틴 상담",
+      morning: "현재 루틴 점검",
+      tracking: "문제 추적",
       evening: "저녁 실행 루틴",
       avoid: "주의",
-      adjustment: "컨디션 대응",
-      product: "기능성 플랜",
+      adjustment: "상황별 대응",
+      product: "다음 변화 플랜",
       summary: "최종 요약",
       previous: "이전",
       next: "다음",
-      finalCta: "내 루틴 저장하기"
+      finalCta: "저장된 리포트 보기"
     };
   function moveToStepKey(stepKey) {
     if (stepKey === "face-lab") {
@@ -5453,12 +5042,11 @@ function SkinMatchStepReport({
       content: (
         <div className="space-y-4">
           <TodayStartPlanStep
-            baseline={getTodaySkinBaseline(freeResult, locale)}
-            actionItems={getPriorityActionItems(locale)}
+            report={report}
             hubActions={getSkinMatchHubActions(locale)}
             locale={locale}
             onNavigate={moveToStepKey}
-          />
+          >
           <CurrentProductsSummaryCard
             currentProducts={report?.currentProducts}
             locale={locale}
@@ -5467,6 +5055,7 @@ function SkinMatchStepReport({
             intake={report?.premiumIntake}
             locale={locale}
           />
+          </TodayStartPlanStep>
         </div>
       )
     },
@@ -5482,26 +5071,20 @@ function SkinMatchStepReport({
           copy={copy}
           locale={locale}
           onNavigate={moveToStepKey}
-          getMeta={getRoutineConsultMeta}
-          buildSteps={buildRoutineConsultSteps}
         />
       )
     },
-    "avoid-list": {
-      key: "avoid-list",
-      label: labels.avoid,
-      content: (
-        <AvoidListStep
-          avoidItems={displayAvoidCombinations}
-          locale={locale}
-        />
-      )
+    "problem-tracking": {
+      key: "problem-tracking",
+      label: labels.tracking,
+      content: <ProblemTrackingSection report={report} locale={locale} onNavigate={moveToStepKey}/>
     },
     "adjustment-guide": {
       key: "adjustment-guide",
       label: labels.adjustment,
       content: (
         <PremiumConditionResponseSection
+          report={report}
           conditionPlan={report?.conditionPlan || report?.decisionBundle?.conditionPlan}
           responses={report?.conditionResponses}
           locale={locale}
@@ -5601,6 +5184,8 @@ function SkinMatchStepReport({
         <span>{activeStep.label}</span>
       </div>
 
+      {!isHubStep && <nav className={reportStyles.sectorNav} aria-label={locale === "en" ? "Full Report sections" : "Full Report 상세 섹터"}>{steps.slice(1).map((step, index) => <button type="button" key={step.key} aria-current={activeStep.key === step.key ? "step" : undefined} onClick={() => moveToStepKey(step.key)}>{String(index + 1).padStart(2, "0")} {step.label}</button>)}</nav>}
+
       <motion.div
         key={activeStep.key}
         initial={hasMountedStepRef.current ? { opacity: 0, y: 18 } : false}
@@ -5609,6 +5194,11 @@ function SkinMatchStepReport({
       >
         {activeStep.content}
       </motion.div>
+
+      {!isHubStep && !isRoutineStep && <div className={`${reportStyles.page} ${reportStyles.footer}`}>
+        <button type="button" onClick={() => moveToStep(currentStepIndex - 1)}>{labels.previous}</button>
+        <ReportNext onClick={() => currentStepIndex === maxStepIndex ? router.push(getMyPath(locale)) : moveToStep(currentStepIndex + 1)}>{primaryLabel}</ReportNext>
+      </div>}
 
       {currentStepIndex === maxStepIndex ? (
         <>
@@ -5627,28 +5217,6 @@ function SkinMatchStepReport({
         </>
       ) : null}
 
-      {!isHubStep && !isRoutineStep ? (
-        <div className="full-report-step-cta">
-          <ResultBottomCTA
-            fixed={false}
-            label={primaryLabel}
-            onClick={() => {
-              if (currentStepIndex === maxStepIndex) {
-                router.push(getMyPath(locale));
-                return;
-              }
-
-              moveToStep(currentStepIndex + 1);
-            }}
-            previousLabel={currentStepIndex > 0 ? labels.previous : null}
-            onPrevious={
-              currentStepIndex > 0
-                ? () => moveToStep(currentStepIndex - 1)
-                : null
-            }
-          />
-        </div>
-      ) : null}
     </section>
   );
 }
@@ -7051,7 +6619,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             </div>
           </div>
 
-          <header className="ui-card px-5 py-5 sm:p-6">
+          {activeTab === "skin_match" ? <h1 className="sr-only">BEJEWELY · Skin Match Premium</h1> : <header className="ui-card px-5 py-5 sm:p-6">
             <div className="flex items-start">
               <div className="min-w-0">
                 <p className="ui-kicker">FULL REPORT</p>
@@ -7062,15 +6630,15 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
                 ) : null}
               </div>
             </div>
-          </header>
+          </header>}
 
-          <button
+          {activeTab !== "skin_match" && <button
             type="button"
             onClick={goToMainHub}
             className="ui-button-secondary min-h-11 w-full justify-center px-4 py-3 text-sm font-semibold"
           >
             {copy.mainHubButton}
-          </button>
+          </button>}
 
           {activeTab === "skin_match" ? (
             <SkinMatchStepReport

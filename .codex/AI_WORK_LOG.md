@@ -2982,3 +2982,34 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+### 2026-09-22 / Full Report four-sector presentation
+
+- Task: execution after bounded canonical-source diagnosis / Medium UI and additive projection. Initial fresh main: `5e607fb2`; resumed fresh main: `87dd552f`, with no overlapping target-source changes. Working branch: `codex/full-report-four-sector`; the pre-existing `codex/full-report-final-ia` commit was preserved.
+- Scope: four distinct detail interactions (routine list, investigation board, decision matrix plus conditional plan, scenario selector plus routine comparison), shared Light/Dark tokens, read-only saved-data joins, and lossless condition role/action projection. Canonical condition policy actually uses `reduceActions`; no reduceRoles alias or new decision logic was introduced. Face Lab implementation, auth, DB/RLS, report persistence, production, provider, payment, secrets and deployment are unchanged.
+- Authority/compatibility: no fake timelines or causal product attribution; product identity joins support current and legacy slot keys; START/HOLD/UNKNOWN, suppression, not_in_db/not_using/unanswered and explicit empty arrays are preserved. Removed the retired caution sector and directly orphaned routine/caution template helpers.
+- Evidence: focused view/projection verifier, integrated evaluation (462 assertions), snapshot/reentry verifier, production build, and 390/430px Light/Dark browser screenshots. Browser tests use local intercepted canonical/legacy fixtures, not hosted credentials or production writes. See `docs/verification/full-report-four-sector.md` and `artifacts/full-report-four-sector/verification.json` for exact checks and visual self-review.
+- Limitations/status: IMPLEMENTED_UNVERIFIED for the complete acceptance gate. Existing ESLint setup is absent; Next build completes with unrelated existing survey export warnings; unchanged root CSP nonce hydration warning remains; hosted authenticated persistence/My E2E is not claimed. These require separate follow-up and are disclosed in the PR.
+- Architecture: `docs/architecture/full-report-four-sector-view.md` records the display/projection boundary and updates the legacy condition-contract pointer. No AI_CONTEXT promotion is proposed.
+
+### 2026-09-22 / Full Report orbital overview follow-up
+
+- Task: execution / Medium, UI-only. Fresh origin/main `00fb5c52`; PR #663 remains open on `codex/full-report-four-sector`, synchronized before edits. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production impact: N; no protected contracts or runtime policies changed.
+- Change: replace petal cards with theme-aware water/glass orbital hub. Four destinations are routine, functional, condition, investigation; the lower-right Face Lab sector is removed. Separate Face Lab experience remains functional. Central text/mode reads the saved functional projection; removed the now-orphaned generic baseline and pause-action helpers. Recorded input summaries move into the hub disclosure, linked by a working dock action.
+- Asset: checked-in decorative imagegen atlas, no generated diagnosis or text. CSS/SVG renders the central sphere and orbital paths. Prompt and screenshots are documented under docs/verification.
+- Verification: focused view verifier, production build and architecture guard pass; browser covers hub routes/dock, 390/430px themes, and the existing sector/intake/reentry/locale/legacy/unknown paths. A stale-server timeout prompted a fresh local dev server. Existing lint setup absence, survey build warnings, root CSP nonce warning and hosted-auth E2E limitation remain; no unrelated fixes made.
+- Architecture: updated full-report-four-sector-view.md and verification record. No new persisted modes, normalization aliases or decision authority. No AI_CONTEXT promotion proposed.
+
+### 2026-09-22 / Hub visual correction from user screenshot
+
+- Scope: Medium presentation correction; all protected-surface impacts N. Removed orbit/contour lines, duplicate labels and floating arrows; resized and repositioned spheres relative to container width. Neutral missing-data headline remains non-diagnostic.
+- Verified actual localhost:3001/test-full-report at 320/390/430 Light/Dark, four-sector local browser flows, build and diff checks. Self-review fixed narrow-screen clipping caused by aspect-ratio plus min-height and added visible-frame assertions. Existing lint/CSP/hosted-auth limitations remain.
+- Evidence: docs/verification/full-report-four-sector.md and actual-test-hub captures. Canonical decisions, saved payloads and Face Lab implementation unchanged.
+
+### 2026-09-23 / Approved Full Report card overview
+
+- Scope: Medium UI execution from the new attached design. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production N. Fresh origin/main c0018636; existing PR #663 remains open.
+- Replaced sphere hub with centered brand, saved-text hero, 2x2 routine/investigation/plan/condition cards, input/evidence dock, and separate Face Lab banner. Existing four detail interactions and Face Lab logic unchanged. Removed obsolete orb asset/styles and generated a decorative leaf/serum/cream/flower atlas.
+- Counts use saved verdict slots, answered intake signals, exposure-gated candidates and policy roles/actions. Missing data remains unrecorded; no sample diagnoses, products or skin-age claims added. No new persisted fields or decision logic.
+- Verification: actual localhost:3001/test-full-report at 320/390/430/1024 Light/Dark, exact card order/row alignment/visible bounds/dock clearance, focused authority verifier, four-sector browser flows and build. Fixed a CSS module selector error during implementation. Existing lint setup, CSP nonce and hosted-auth limitations remain documented.
+- Docs: current architecture/verification rewritten around the final card design; asset prompt saved. No AI_CONTEXT promotion proposed.
