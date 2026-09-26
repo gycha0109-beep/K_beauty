@@ -10,6 +10,7 @@ on:
       - "scripts/verify-trust-phase8h3-relocation-revalidation.mjs"
       - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
       - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
   push:
     branches: [main, "pipeline-reliability/trust-phase8h3-relocation-revalidation"]
     paths:
@@ -18,6 +19,7 @@ on:
       - "scripts/verify-trust-phase8h3-relocation-revalidation.mjs"
       - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
       - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
   workflow_dispatch:
     inputs:
       watchtower_track:
