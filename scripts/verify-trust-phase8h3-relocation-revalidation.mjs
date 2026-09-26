@@ -6,6 +6,8 @@ const migrationPath = "docs/evidence/trust-phase8h3-relocation-revalidation-db-b
 const migration = fs.readFileSync(migrationPath, "utf8");
 const worker = fs.readFileSync("scripts/trust-research-worker.mjs", "utf8");
 const contract = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-revalidation-contract-v1.md", "utf8");
+const provenance = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-cli-migration-generation-v1.json", "utf8"));
+const dryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-db-dry-run-validation-v1.json", "utf8"));
 
 for (const needle of [
   "add column relocation_id uuid",
@@ -30,6 +32,30 @@ assert.ok(!/update\s+public\.product_evidence_records/i.test(migration), "histor
 assert.ok(!/update\s+public\.product_fact_current/i.test(migration), "Phase 8H-3 must use controlled confirmation for Current writes");
 assert.ok(!/replay_verified\s*=\s*true/i.test(migration), "synthetic replay verification is forbidden");
 assert.ok(!/verification_result\s*=\s*'changed'.*source_relocated/is.test(migration), "relocation must not synthesize changed verification");
+assert.ok(!/^\s*begin\s*;/i.test(migration), "deployable blueprint must not open an outer transaction");
+assert.ok(!/\n\s*commit\s*;\s*$/i.test(migration), "deployable blueprint must not commit its caller transaction");
+
+assert.equal(provenance.contract, "trust-phase8h3-cli-migration-generation-v1");
+assert.equal(provenance.generation_authority, "SUPABASE_CLI_MIGRATION_NEW");
+assert.equal(provenance.production_mutation, "NONE");
+assert.equal(provenance.repository_materialization, "DB_BLUEPRINT_PENDING_PRODUCTION_VERSION_READBACK");
+assert.equal(dryRun.contract, "trust-phase8h3-db-dry-run-validation-v1");
+assert.equal(dryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
+assert.equal(dryRun.migration_ddl_compile, "PASS");
+assert.equal(dryRun.dependency_resolution, "PASS");
+assert.equal(dryRun.production_mutation, "NONE");
+assert.deepEqual(dryRun.in_transaction_readback, {
+  preflight_exists: true,
+  mark_exists: true,
+  relocation_column_exists: true,
+  service_role_execute: true,
+  authenticated_execute: false,
+});
+assert.deepEqual(dryRun.rollback_readback, {
+  preflight_rolled_back: true,
+  mark_rolled_back: true,
+  relocation_column_rolled_back: true,
+});
 
 for (const needle of [
   "source relocated",
