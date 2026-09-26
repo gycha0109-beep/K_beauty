@@ -84,7 +84,7 @@ const targetStyle = {
 
 const result = buildStyleRoutes(styleDelta, { locale: "en", targetStyle });
 assert.equal(result.status, "available");
-assert.equal(result.version, "face-lab-style-route-v5");
+assert.equal(result.version, "face-lab-style-route-v6");
 assert.ok(result.routes.length >= 2);
 assert.ok(
   result.routes.every((route) => !route.domains.includes("face_adjacent_style")),
@@ -315,6 +315,38 @@ const fifteenMinuteResult = buildStyleRoutes(styleDelta, {
 assert.ok(
   fifteenMinuteResult.routes.every((route) => route.dailyEffort !== "high"),
   "a 15-minute daily limit must deprioritize high-effort routes from the bounded comparison set"
+);
+
+const makeupOnlyDelta = {
+  ...styleDelta,
+  priorities: styleDelta.priorities.filter((item) => item.domain === "makeup")
+};
+const fifteenMinuteMakeupOnly = buildStyleRoutes(makeupOnlyDelta, {
+  locale: "en",
+  targetStyle
+});
+assert.deepEqual(
+  fifteenMinuteMakeupOnly.routes[0].constraintFit.softTradeoffs,
+  ["daily_time_constraint_15"],
+  "a high-effort route under a 15-minute limit must retain the exact 15-minute tradeoff identity"
+);
+const fiveMinuteMakeupOnly = buildStyleRoutes(makeupOnlyDelta, {
+  locale: "en",
+  targetStyle: {
+    ...targetStyle,
+    constraints: {
+      ...targetStyle.constraints,
+      lifestyle: {
+        ...targetStyle.constraints.lifestyle,
+        dailyMinutes: 5
+      }
+    }
+  }
+});
+assert.deepEqual(
+  fiveMinuteMakeupOnly.routes[0].constraintFit.softTradeoffs,
+  ["daily_time_constraint_5"],
+  "a high-effort route under a 5-minute limit must retain the exact 5-minute tradeoff identity"
 );
 
 const thirtyMinuteResult = buildStyleRoutes(styleDelta, {
