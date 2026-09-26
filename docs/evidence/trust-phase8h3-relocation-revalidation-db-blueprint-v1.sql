@@ -1,5 +1,3 @@
-begin;
-
 alter table public.product_fact_revalidation_transitions
   add column relocation_id uuid
     references public.trust_official_source_relocations(relocation_id) on delete restrict;
@@ -2771,5 +2769,3 @@ revoke all on function public.admin_confirm_product_fact_revalidation_replacemen
 grant execute on function public.admin_confirm_product_fact_revalidation_replacement_v1(
   uuid, text, uuid, uuid, uuid, jsonb, text, text, text
 ) to service_role;
-
-commit;
