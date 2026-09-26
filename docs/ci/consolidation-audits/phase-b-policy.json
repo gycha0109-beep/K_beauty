@@ -19,6 +19,15 @@
       "operationalReadinessOwner": "data-ai25-operational-readiness.yml",
       "prelaunchAcceptanceOwner": "data-ai-prelaunch-01-product-query-e2e.yml",
       "rule": "DATA-AI25 exclusively owns its full operational-readiness verifier. PRELAUNCH-01 owns pre-launch acceptance and hosted-runner syntax only; it preserves the post-launch evidence boundary through its own acceptance contract without directly re-executing the DATA-AI25 verifier."
+    },
+    "current-main-cross-cutting": {
+      "delegationPolicy": "docs/ci/consolidation-audits/current-main-delegation-policy.json",
+      "delegatedCanonicalOwners": [
+        "data-ai-product-query-static.yml",
+        "data-ai25-operational-readiness.yml",
+        "data-ai-prelaunch-01-product-query-e2e.yml"
+      ],
+      "rule": "Current Main remains the project-wide final gate. For proven canonical DATA-AI1-5, DATA-AI25, and PRELAUNCH-01 contracts it reuses exact-head, exact-event successful canonical workflow results; if no matching canonical run exists or Actions lookup is unavailable, it executes the original verifier locally. A discovered canonical non-success fails closed."
     }
   }
 }
