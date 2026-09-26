@@ -194,8 +194,26 @@ assert.ok(
   "legacy no-makeup persistence must be recognized before rebuilding editable UI state"
 );
 assert.ok(
-  premiumFaceLab.includes('restoredStylingScope.filter((domain) => domain !== "makeup")'),
-  "legacy no-makeup restore must not show makeup as an active editable styling scope"
+  premiumFaceLab.includes("function editableScopeFromStoredSurvey("),
+  "legacy scope persistence must be translated into explicit editable UI state"
+);
+assert.ok(
+  premiumFaceLab.includes('storedScope.includes("auto_scope")') &&
+    premiumFaceLab.includes("EDITABLE_SCOPE_DOMAINS"),
+  "legacy auto_scope must expand into currently visible executable styling domains"
+);
+assert.ok(
+  premiumFaceLab.includes("HARD_EXCLUSION_SCOPE_MAP") &&
+    premiumFaceLab.includes("disabledDomains.has(domain)"),
+  "legacy domain hard exclusions must become visible scope-off state before future edits"
+);
+assert.ok(
+  premiumFaceLab.includes('storedScope.filter((domain) => EDITABLE_SCOPE_DOMAINS.includes(domain))'),
+  "hidden legacy or future-only scope values must not survive as invisible editable selections"
+);
+assert.ok(
+  premiumFaceLab.includes('{ makeupExcluded: legacyMakeupExcluded }'),
+  "legacy no-makeup restore must reuse the same editable-scope normalization path"
 );
 assert.ok(
   premiumFaceLab.includes('["light", "medium", "expressive"].includes(restoredMakeupIntensity)') &&
