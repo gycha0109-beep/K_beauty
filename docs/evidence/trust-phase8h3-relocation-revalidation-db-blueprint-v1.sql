@@ -1085,6 +1085,16 @@ begin
       using errcode = '55000';
   end if;
 
+  if v_candidate.market is distinct from v_current_fact.market
+     or v_candidate.region is distinct from v_current_fact.region
+     or v_candidate.locale is distinct from v_current_fact.locale
+     or v_candidate.qualifier is distinct from v_current_fact.qualifier
+     or v_current_fact.valid_from is not null
+     or v_current_fact.valid_to is not null then
+    raise exception 'product_fact_revalidation_relationship_scope_mismatch'
+      using errcode = '55000';
+  end if;
+
   if jsonb_typeof(v_candidate.normalized_value) <> 'object'
      or not (v_candidate.normalized_value ?& array['amount','unit'])
      or (select count(*) from jsonb_object_keys(v_candidate.normalized_value)) <> 2
