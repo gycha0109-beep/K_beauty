@@ -9,6 +9,7 @@ const WORKFLOW_DIR = path.join(ROOT, ".github", "workflows");
 const REGISTRY_DIR = path.join(ROOT, "docs", "ci", "workflow-responsibilities");
 const BASELINE_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "phase-a-baseline.json");
 const PHASE_B_POLICY_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "phase-b-policy.json");
+const CURRENT_MAIN_DELEGATION_POLICY_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "current-main-delegation-policy.json");
 const PACKAGE_PATH = path.join(ROOT, "package.json");
 const args = new Set(process.argv.slice(2));
 
@@ -148,6 +149,12 @@ const phaseBPolicy = fs.existsSync(PHASE_B_POLICY_PATH)
   : null;
 const approvedAddedWorkflows = phaseBPolicy?.approvedAddedWorkflows || [];
 const approvedRetiredWorkflows = phaseBPolicy?.approvedRetiredWorkflows || [];
+const currentMainDelegationPolicy = fs.existsSync(CURRENT_MAIN_DELEGATION_POLICY_PATH)
+  ? JSON.parse(fs.readFileSync(CURRENT_MAIN_DELEGATION_POLICY_PATH, "utf8"))
+  : null;
+const delegatedCurrentMainScripts = new Set(
+  (currentMainDelegationPolicy?.owners || []).flatMap((owner) => owner.contracts || []).map((contract) => `script:${contract.script}`),
+);
 if (phaseBPolicy) {
   assert.equal(phaseBPolicy.baselineWorkflowCount, baseline.expectedWorkflowCount, "Phase B baseline workflow count drift");
   assert.equal(new Set(approvedAddedWorkflows).size, approvedAddedWorkflows.length, "Phase B added workflow list contains duplicates");
@@ -285,7 +292,11 @@ if (args.has("--json")) {
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 } else {
   const duplicateUnits = [...unitOwners.entries()].filter(([, owners]) => owners.length > 1);
-  console.log(`CI_WORKFLOW_OVERLAP_AUDIT workflows=${graph.length} duplicate_units=${duplicateUnits.length} overlap_pairs=${overlaps.length}`);
+  const executionDuplicateUnits = [...unitOwners.entries()].filter(([unit, owners]) => {
+    const executionOwners = owners.filter((owner) => !(owner === "current-main-health.yml" && delegatedCurrentMainScripts.has(unit)));
+    return executionOwners.length > 1;
+  });
+  console.log(`CI_WORKFLOW_OVERLAP_AUDIT workflows=${graph.length} duplicate_units=${duplicateUnits.length} execution_duplicate_units=${executionDuplicateUnits.length} overlap_pairs=${overlaps.length}`);
   console.log("Top overlap pairs (evidence only; no automatic retirement):");
   for (const pair of overlaps.slice(0, 20)) {
     console.log(`- ${pair.left} <> ${pair.right}: containment=${pair.containment} shared=${pair.sharedUnits} projectWide=${pair.projectWidePair}`);

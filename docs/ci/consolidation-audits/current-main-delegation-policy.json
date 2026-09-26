@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "bejewely-current-main-delegation-v1",
+  "projectWideWorkflow": "current-main-health.yml",
+  "resolution": {
+    "exactHeadRequired": true,
+    "exactEventRequired": true,
+    "lookupFailureMode": "local-fallback",
+    "canonicalFailureMode": "fail-closed",
+    "visibilityAttempts": 4,
+    "visibilityIntervalMs": 2500,
+    "completionAttempts": 80,
+    "completionIntervalMs": 10000
+  },
+  "owners": [
+    {
+      "id": "taxonomy-ai-data-ai1-5",
+      "workflowPath": ".github/workflows/data-ai-product-query-static.yml",
+      "contracts": [
+        {
+          "id": "data-ai1",
+          "script": "scripts/verify-data-ai1-product-query-intent.mjs"
+        },
+        {
+          "id": "data-ai2",
+          "script": "scripts/verify-data-ai2-product-query-execution.mjs"
+        },
+        {
+          "id": "data-ai3",
+          "script": "scripts/verify-data-ai3-product-query-shadow.mjs"
+        },
+        {
+          "id": "data-ai4",
+          "script": "scripts/verify-data-ai4-provider-shadow.mjs"
+        },
+        {
+          "id": "data-ai5",
+          "script": "scripts/verify-data-ai5-activation-readiness.mjs"
+        }
+      ]
+    },
+    {
+      "id": "taxonomy-ai-data-ai25",
+      "workflowPath": ".github/workflows/data-ai25-operational-readiness.yml",
+      "contracts": [
+        {
+          "id": "data-ai25",
+          "script": "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
+        }
+      ]
+    },
+    {
+      "id": "taxonomy-ai-prelaunch-01",
+      "workflowPath": ".github/workflows/data-ai-prelaunch-01-product-query-e2e.yml",
+      "contracts": [
+        {
+          "id": "data-ai-prelaunch-01",
+          "script": "scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"
+        }
+      ]
+    }
+  ]
+}
