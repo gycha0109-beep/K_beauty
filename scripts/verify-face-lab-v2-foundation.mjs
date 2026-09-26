@@ -481,6 +481,90 @@ assert.ok(
     .every((item) => item.constraintState === "blocked")
 );
 assert.ok(hairBlocked.routes.routes.every((route) => !route.domains.includes("hair")));
+assert.equal(
+  hairBlocked.hair.status,
+  "not_requested",
+  "a hard-disabled hair domain must remain not requested instead of looking route-inapplicable"
+);
+
+const makeupBlocked = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "makeup"],
+    constraints: {
+      ...survey.constraints,
+      hardExclusions: ["makeup_disabled"]
+    }
+  },
+  resultId: "fixture-face-lab-v2-makeup-blocked"
+});
+assert.equal(makeupBlocked.makeup.status, "not_requested");
+assert.equal(makeupBlocked.productHandoff.status, "not_requested");
+
+const eyewearBlocked = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "eyewear"],
+    constraints: {
+      ...survey.constraints,
+      hardExclusions: ["eyewear_disabled"]
+    }
+  },
+  resultId: "fixture-face-lab-v2-eyewear-blocked"
+});
+assert.equal(eyewearBlocked.eyewear.status, "not_requested");
+
+const accessoriesBlocked = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "accessories"],
+    constraints: {
+      ...survey.constraints,
+      hardExclusions: ["accessories_disabled"]
+    }
+  },
+  resultId: "fixture-face-lab-v2-accessories-blocked"
+});
+assert.equal(accessoriesBlocked.accessories.status, "not_requested");
+
+const groomingBlocked = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "brow_grooming", "facial_hair"],
+    constraints: {
+      ...survey.constraints,
+      hardExclusions: ["brow_grooming_disabled", "facial_hair_disabled"]
+    }
+  },
+  resultId: "fixture-face-lab-v2-grooming-blocked"
+});
+assert.equal(
+  groomingBlocked.grooming.status,
+  "not_requested",
+  "grooming must be not requested when every requested grooming subdomain is hard-disabled"
+);
+
+const groomingPartialExclusion = buildFaceLabV2Canonical({
+  analysis,
+  surveyAnswers: {
+    ...survey,
+    stylingScope: ["hair", "brow_grooming", "facial_hair"],
+    constraints: {
+      ...survey.constraints,
+      hardExclusions: ["brow_grooming_disabled"]
+    }
+  },
+  resultId: "fixture-face-lab-v2-grooming-partial-exclusion"
+});
+assert.notEqual(
+  groomingPartialExclusion.grooming.status,
+  "not_requested",
+  "disabling brows must not erase a still-requested facial-hair grooming domain"
+);
 
 const normalizedPersistence = normalizeFaceLabV2PersistencePayload({
   surveyAnswers: {
