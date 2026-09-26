@@ -62,7 +62,7 @@ const fixture = {
           totalDimensions: ["softSharp", "naturalPolished", "minimalStatement"],
           explanation: "활성 목표 방향 3개 중 2개를 이 경로에서 함께 다룹니다."
         },
-        constraintFit: { score: 1, softTradeoffs: [] },
+        constraintFit: { score: 1, softTradeoffs: ["daily_time_constraint_15"] },
         actions: [
           {
             domain: "makeup",
@@ -159,6 +159,11 @@ assert.equal(
   "활성 목표 방향 3개 중 2개를 이 경로에서 함께 다룹니다.",
   "route card must preserve the canonical localized target-coverage explanation"
 );
+assert.deepEqual(
+  ko.routes.cards[0].tradeoffs,
+  ["하루 15분 안에서는 이 경로가 손이 조금 더 갑니다."],
+  "Korean route tradeoff copy must preserve the user's actual 15-minute constraint"
+);
 assert.equal(ko.execution.domains[0].domain, "makeup");
 assert.ok(
   ko.execution.domains[0].actions.some((item) => item.includes("실행 엔진 상세")),
@@ -194,6 +199,11 @@ assert.equal(
   en.routes.cards[0].targetFit,
   "This route covers 2 of 3 active target directions together.",
   "English route card must preserve the canonical target-coverage explanation"
+);
+assert.deepEqual(
+  en.routes.cards[0].tradeoffs,
+  ["This route may take a little more effort within a 15-minute daily routine."],
+  "English route tradeoff copy must preserve the user's actual 15-minute constraint"
 );
 assert.equal(
   /[가-힣]/.test(JSON.stringify(en)),
