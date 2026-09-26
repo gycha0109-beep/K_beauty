@@ -58,7 +58,7 @@ assert.deepEqual(dryRun.rollback_readback, {
 });
 
 for (const needle of [
-  "source relocated",
+  "source_relocated",
   "fresh-recovery",
   "Missing claims",
   "same-proposition",
