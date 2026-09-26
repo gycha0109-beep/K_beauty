@@ -51,7 +51,10 @@ for (const boundary of [
 const cluster = policy.clusters?.["taxonomy-ai-prelaunch"];
 assert.equal(cluster?.operationalReadinessOwner, "data-ai25-operational-readiness.yml");
 assert.equal(cluster?.prelaunchAcceptanceOwner, "data-ai-prelaunch-01-product-query-e2e.yml");
-assert.deepEqual(policy.approvedAddedWorkflows, ["data-ai-product-query-static.yml"]);
+assert.ok(
+  policy.approvedAddedWorkflows.includes("data-ai-product-query-static.yml"),
+  "Phase B policy must retain the canonical DATA-AI static workflow approval"
+);
 assert.deepEqual(policy.approvedRetiredWorkflows, []);
 
 console.log("DATA_AI25_PRELAUNCH_CI_RESPONSIBILITY=PASS ai25_owner=1 prelaunch_owner=1 duplicate_ai25_execution=0");

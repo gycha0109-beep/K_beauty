@@ -2,7 +2,8 @@
   "schemaVersion": "bejewely-ci-consolidation-phase-b-policy-v1",
   "baselineWorkflowCount": 63,
   "approvedAddedWorkflows": [
-    "data-ai-product-query-static.yml"
+    "data-ai-product-query-static.yml",
+    "trust-phase8h3-relocation-revalidation.yml"
   ],
   "approvedRetiredWorkflows": [],
   "clusters": {

@@ -1,0 +1,90 @@
+name: TRUST Data Governance - Phase 8H-3 Relocation Revalidation
+run-name: "[WT:trust] TRUST Data Governance - Phase 8H-3 Relocation Revalidation"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/evidence/trust-phase8h3-*"
+      - "scripts/trust-research-worker.mjs"
+      - "scripts/verify-trust-phase8h3-relocation-revalidation.mjs"
+      - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
+      - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/audit-ci-workflow-overlap.mjs"
+      - "scripts/verify-ci-workflow-responsibility-map.mjs"
+  push:
+    branches: [main, "pipeline-reliability/trust-phase8h3-relocation-revalidation"]
+    paths:
+      - "docs/evidence/trust-phase8h3-*"
+      - "scripts/trust-research-worker.mjs"
+      - "scripts/verify-trust-phase8h3-relocation-revalidation.mjs"
+      - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
+      - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/audit-ci-workflow-overlap.mjs"
+      - "scripts/verify-ci-workflow-responsibility-map.mjs"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify research worker syntax and regression contract
+        run: |
+          node --check scripts/trust-research-worker.mjs
+          node scripts/verify-trust-research-worker.mjs
+
+      - name: Verify Phase 8E and 8F unchanged contracts
+        run: |
+          node scripts/verify-trust-phase8e-revalidation-adjudication.mjs
+          node scripts/verify-trust-phase8f-changed-semantic-replacement.mjs
+
+      - name: Verify Phase 8H-3 contract and rollback evidence
+        run: node scripts/verify-trust-phase8h3-relocation-revalidation.mjs
+
+      - name: Verify CI workflow governance
+        run: |
+          node scripts/verify-ci-workflow-responsibility-map.mjs
+          node scripts/audit-ci-workflow-overlap.mjs --check
+
+      - name: Check exact-head diff hygiene
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          git diff --check "$BASE_SHA...$HEAD_SHA"

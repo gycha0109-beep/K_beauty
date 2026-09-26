@@ -1,6 +1,7 @@
 import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { fetchOfficialBytes, sha256Hex } from "../lib/trust/official-source-fetch.mjs";
+import { inspectOfficialProductSemanticSurfacesV1, normalizeSemanticTextV1 } from "../lib/trust/official-source-semantic-adapter.mjs";
 export { assertSafeOfficialUrl } from "../lib/trust/official-source-fetch.mjs";
 
 const OBSERVATION_VERSION = "trust-research-observation-v1";
@@ -27,7 +28,48 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function extractStrictFactCandidate(factKey, text, parentPropositions = []) {
+function containsExpectedEntity(value, expected) {
+  const haystack = normalizeSemanticTextV1(value || "").toLowerCase();
+  const needle = normalizeSemanticTextV1(expected || "").toLowerCase().replace(/_/g, " ");
+  if (!needle) return false;
+  const pattern = new RegExp(`(^|[^a-z0-9])${escapeRegex(needle)}(?=$|[^a-z0-9])`, "i");
+  return pattern.test(haystack);
+}
+
+function extractExpectedContainsActive(currentFactContext, semanticSurfaces) {
+  const identifier = String(currentFactContext?.value_entity_identifier || "").trim().toLowerCase();
+  const propositionKey = String(currentFactContext?.proposition_key || "").trim().toLowerCase();
+  if (!identifier || !/^[0-9a-f]{64}$/.test(propositionKey)) return null;
+
+  const candidates = [
+    ["document.title", semanticSurfaces?.document?.title],
+    ["document.meta_title", semanticSurfaces?.document?.meta_title],
+    ["document.og_title", semanticSurfaces?.document?.og_title],
+    ...((semanticSurfaces?.structured_product_names || []).map((value, index) => [`structured_product_names.${index}`, value])),
+  ].filter(([, value]) => typeof value === "string" && value.trim());
+
+  const matches = candidates.filter(([, value]) => containsExpectedEntity(value, identifier));
+  if (!matches.length) return null;
+
+  const [surface, value] = matches[0];
+  return {
+    normalizedValue: identifier,
+    evidenceClass: "composition_identity",
+    qualifier: {},
+    observedClaim: {
+      matched_text: identifier,
+      excerpt: normalizeSemanticTextV1(value),
+      extractor: "expected-entity-product-identity-v1",
+      identity_surface: surface,
+      current_proposition_key: propositionKey,
+    },
+  };
+}
+
+export function extractStrictFactCandidate(factKey, text, parentPropositions = [], context = {}) {
+  if (factKey === "contains_active") {
+    return extractExpectedContainsActive(context.currentFactContext, context.semanticSurfaces);
+  }
   if (factKey === "spf_value") {
     const match = /\bSPF\s*([1-9]\d{0,2}(?:\.\d+)?)\s*(\+)?(?=\s|$|[<,.;/])/i.exec(text);
     if (!match) return null;
@@ -157,7 +199,13 @@ export async function processClaimedTask(client, task, fetchImpl = fetch) {
     }
 
     const text = htmlToObservationText(fetched.bytes);
-    const extracted = extractStrictFactCandidate(task.fact_key, text, task.parent_propositions);
+    const semanticSurfaces = inspectOfficialProductSemanticSurfacesV1(fetched.bytes);
+    const extracted = extractStrictFactCandidate(
+      task.fact_key,
+      text,
+      task.parent_propositions,
+      { currentFactContext: task.current_fact_context, semanticSurfaces },
+    );
     if (!extracted) continue;
 
     const observedAt = new Date().toISOString();
