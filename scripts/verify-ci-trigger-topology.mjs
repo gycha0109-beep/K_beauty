@@ -287,12 +287,50 @@ assert.deepEqual(
 );
 
 assertContains("scripts/verify-current-main-health.mjs", [
-  'run("DATA-AI1 product-query intent boundary"',
-  'run("DATA-AI2 deterministic product-query execution"',
+  'runDelegated("data-ai1", "DATA-AI1 product-query intent boundary"',
+  'runDelegated("data-ai2", "DATA-AI2 deterministic product-query execution"',
+  'runDelegated("data-ai3", "DATA-AI3 product-query shadow contract"',
+  'runDelegated("data-ai4", "DATA-AI4 provider-backed shadow contract"',
+  'runDelegated("data-ai5", "DATA-AI5 activation-readiness shadow contract"',
+  'runDelegated("data-ai25", "DATA-AI25 operational baseline and readiness"',
+  'runDelegated("data-ai-prelaunch-01", "DATA-AI PRELAUNCH-01 Product Query E2E acceptance"',
   'run("DATA-AI22 product-query quality evaluation"',
   'run("DATA-AI22 product-query quality canonical baseline"',
   '"scripts/run-data-ai22-product-query-quality-evaluation.mjs", "--expected-baseline"',
 ]);
+assertNotContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-AI1 product-query intent boundary"',
+  'run("DATA-AI2 deterministic product-query execution"',
+  'run("DATA-AI3 product-query shadow contract"',
+  'run("DATA-AI4 provider-backed shadow contract"',
+  'run("DATA-AI5 activation-readiness shadow contract"',
+  'run("DATA-AI25 operational baseline and readiness"',
+  'run("DATA-AI PRELAUNCH-01 Product Query E2E acceptance"',
+]);
+assertContains(".github/workflows/current-main-health.yml", [
+  "actions: read",
+  "Resolve same-head canonical delegation",
+  "run: node scripts/resolve-current-main-delegations.mjs",
+  "GITHUB_TOKEN: ${{ github.token }}",
+  "EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}",
+  "EXPECTED_EVENT: ${{ github.event_name }}",
+  "CURRENT_MAIN_DELEGATION_RESULT_PATH: ${{ runner.temp }}/current-main-delegation.json",
+]);
+const currentMainWorkflowForDelegation = read(".github/workflows/current-main-health.yml");
+assert(
+  currentMainWorkflowForDelegation.indexOf("Resolve same-head canonical delegation") <
+    currentMainWorkflowForDelegation.indexOf("Run canonical current-main verification"),
+  "Current Main canonical delegation must resolve before verify:current executes",
+);
+const currentMainDelegationPolicy = JSON.parse(
+  read("docs/ci/consolidation-audits/current-main-delegation-policy.json"),
+);
+assert.equal(currentMainDelegationPolicy.owners.length, 3, "Current Main delegation canonical owner count drift");
+assert.equal(
+  currentMainDelegationPolicy.owners.flatMap((owner) => owner.contracts || []).length,
+  7,
+  "Current Main delegated contract count drift",
+);
 
 const retiredMobileStoreStages = new Set([
   "mobile-16a-privacy-account-deletion.yml",
