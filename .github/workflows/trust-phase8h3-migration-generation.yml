@@ -35,7 +35,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes supabase@2.117.0 migration new trust_phase8h3_relocation_revalidation_v1
+          TZ=Asia/Seoul npx --yes supabase@2.117.0 migration new trust_phase8h3_relocation_revalidation_v1
           generated="$(find supabase/migrations -maxdepth 1 -type f -name '*_trust_phase8h3_relocation_revalidation_v1.sql' -print -quit)"
           test -n "$generated"
           mkdir -p tmp/trust-phase8h3-migration
