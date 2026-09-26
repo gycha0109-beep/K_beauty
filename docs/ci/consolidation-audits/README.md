@@ -41,3 +41,13 @@ The first approved cluster is `taxonomy-ai-data-ai3-5`:
 - Automatic PR/push checks gate on the same-head canonical static workflow through `scripts/await-ci-workflow.mjs`.
 - Manual `workflow_dispatch` retains the prior standalone static verification path so operator-triggered checks do not depend on a separately dispatched canonical run.
 - A missing, failed, cancelled, or timed-out canonical same-head run fails closed.
+
+## Phase B-2 DATA-AI25 / PRELAUNCH-01 responsibility split
+
+The `taxonomy-ai-prelaunch` cluster keeps both existing workflow and job identities while removing one direct duplicate verifier execution.
+
+- `data-ai25-operational-readiness.yml` is the sole dedicated workflow owner of the full DATA-AI25 operational-readiness verifier.
+- `data-ai-prelaunch-01-product-query-e2e.yml` owns the pre-launch acceptance verifier and hosted-runner syntax checks.
+- PRELAUNCH-01 no longer directly executes or path-triggers on `scripts/verify-data-ai25-product-query-operational-readiness.mjs`.
+- The PRELAUNCH acceptance verifier still freezes the post-launch evidence boundary through its own contract assertions.
+- No workflow is added or retired for this cluster.
