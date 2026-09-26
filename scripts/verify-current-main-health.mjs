@@ -1,9 +1,30 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 const node = process.execPath;
+const delegationResultPath = process.env.CURRENT_MAIN_DELEGATION_RESULT_PATH || "";
+let delegatedContracts = new Set();
+if (delegationResultPath && fs.existsSync(delegationResultPath)) {
+  const delegation = JSON.parse(fs.readFileSync(delegationResultPath, "utf8"));
+  delegatedContracts = new Set(
+    Object.entries(delegation.contracts || {})
+      .filter(([, value]) => value?.mode === "delegated")
+      .map(([contractId]) => contractId),
+  );
+}
+
+
+function runDelegated(contractId, label, command, args, env = {}) {
+  if (delegatedContracts.has(contractId)) {
+    console.log(`\n=== ${label} ===`);
+    console.log(`CURRENT_MAIN_DELEGATION=SKIP contract=${contractId} reason=same-head-canonical-success`);
+    return;
+  }
+  run(label, command, args, env);
+}
 
 function run(label, command, args, env = {}) {
   console.log(`\n=== ${label} ===`);
@@ -87,11 +108,11 @@ run("Catalog taxonomy shadow replay syntax", node, ["--check", "lib/catalog-taxo
 run("Catalog taxonomy shadow cardinality syntax", node, ["--check", "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"]);
 run("Catalog taxonomy replay route syntax", node, ["--check", "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"]);
 
-run("DATA-AI1 product-query intent boundary", node, ["scripts/verify-data-ai1-product-query-intent.mjs"]);
-run("DATA-AI2 deterministic product-query execution", node, ["scripts/verify-data-ai2-product-query-execution.mjs"]);
-run("DATA-AI3 product-query shadow contract", node, ["scripts/verify-data-ai3-product-query-shadow.mjs"]);
-run("DATA-AI4 provider-backed shadow contract", node, ["scripts/verify-data-ai4-provider-shadow.mjs"]);
-run("DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);
+runDelegated("data-ai1", "DATA-AI1 product-query intent boundary", node, ["scripts/verify-data-ai1-product-query-intent.mjs"]);
+runDelegated("data-ai2", "DATA-AI2 deterministic product-query execution", node, ["scripts/verify-data-ai2-product-query-execution.mjs"]);
+runDelegated("data-ai3", "DATA-AI3 product-query shadow contract", node, ["scripts/verify-data-ai3-product-query-shadow.mjs"]);
+runDelegated("data-ai4", "DATA-AI4 provider-backed shadow contract", node, ["scripts/verify-data-ai4-provider-shadow.mjs"]);
+runDelegated("data-ai5", "DATA-AI5 activation-readiness shadow contract", node, ["scripts/verify-data-ai5-activation-readiness.mjs"]);
 run("DATA-AI6 controlled product-query preview contract", node, ["scripts/verify-data-ai6-product-query-preview.mjs"]);
 run("DATA-AI7 test/stage repeatability canary contract", node, ["scripts/verify-data-ai7-stage-canary.mjs"]);
 run("DATA-AI7 test/stage repeatability canary runtime", node, ["scripts/verify-data-ai7-stage-canary-runtime.mjs"]);
@@ -115,8 +136,8 @@ run("DATA-AI22 product-query quality canonical baseline", node, ["scripts/run-da
 run("DATA-AI22 Production quality closure", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
 run("DATA-AI23 authenticated beta UX", node, ["scripts/verify-data-ai23-authenticated-beta-ux.mjs"]);
 run("DATA-AI24 privacy-safe operational observability", node, ["scripts/verify-data-ai24-operational-observability.mjs"]);
-run("DATA-AI25 operational baseline and readiness", node, ["scripts/verify-data-ai25-product-query-operational-readiness.mjs"]);
-run("DATA-AI PRELAUNCH-01 Product Query E2E acceptance", node, ["scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"]);
+runDelegated("data-ai25", "DATA-AI25 operational baseline and readiness", node, ["scripts/verify-data-ai25-product-query-operational-readiness.mjs"]);
+runDelegated("data-ai-prelaunch-01", "DATA-AI PRELAUNCH-01 Product Query E2E acceptance", node, ["scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"]);
 
 run("Legacy offer classifier", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-classifier"]);
 run("Legacy offer migration manifest and dry-run", npm, ["--prefix", "crawler", "run", "verify:legacy-offer-migration"]);
@@ -193,6 +214,7 @@ run("CI trigger topology", node, ["scripts/verify-ci-trigger-topology.mjs"]);
 run("CI workflow responsibility map", node, ["scripts/verify-ci-workflow-responsibility-map.mjs"]);
 run("DATA-AI3-5 CI consolidation contract", node, ["scripts/verify-data-ai3-5-ci-consolidation.mjs"]);
 run("DATA-AI25 / PRELAUNCH CI responsibility split", node, ["scripts/verify-data-ai25-prelaunch-ci-responsibility.mjs"]);
+run("Current Main canonical delegation contract", node, ["scripts/verify-current-main-delegation.mjs"]);
 run("CI workflow overlap audit", node, ["scripts/audit-ci-workflow-overlap.mjs", "--check"]);
 run("Production build", npm, ["run", "build"]);
 
