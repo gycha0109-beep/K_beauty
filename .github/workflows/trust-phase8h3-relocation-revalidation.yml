@@ -11,6 +11,8 @@ on:
       - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
       - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
       - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/audit-ci-workflow-overlap.mjs"
+      - "scripts/verify-ci-workflow-responsibility-map.mjs"
   push:
     branches: [main, "pipeline-reliability/trust-phase8h3-relocation-revalidation"]
     paths:
@@ -20,6 +22,8 @@ on:
       - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
       - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
       - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/audit-ci-workflow-overlap.mjs"
+      - "scripts/verify-ci-workflow-responsibility-map.mjs"
   workflow_dispatch:
     inputs:
       watchtower_track:
@@ -71,6 +75,11 @@ jobs:
 
       - name: Verify Phase 8H-3 contract and rollback evidence
         run: node scripts/verify-trust-phase8h3-relocation-revalidation.mjs
+
+      - name: Verify CI workflow governance
+        run: |
+          node scripts/verify-ci-workflow-responsibility-map.mjs
+          node scripts/audit-ci-workflow-overlap.mjs --check
 
       - name: Check exact-head diff hygiene
         env:
