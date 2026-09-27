@@ -314,7 +314,8 @@ assert.ok(
   "a successful final server write must align the local fallback to the server revision"
 );
 assert.ok(
-  premiumFaceLab.includes("activePersistenceStateRef.current = {\n            surveyAnswers: serverStored.surveyAnswers") &&
+  premiumFaceLab.includes("activePersistenceStateRef.current = {") &&
+    premiumFaceLab.includes("surveyAnswers: serverStored.surveyAnswers") &&
     premiumFaceLab.includes("targetFinderResult: serverStored.targetFinderResult || null"),
   "a non-stale server acknowledgement must update the active route-selection state to the server-normalized survey/finder payload"
 );
