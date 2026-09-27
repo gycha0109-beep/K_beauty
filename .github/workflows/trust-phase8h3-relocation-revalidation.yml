@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "docs/evidence/trust-phase8h3-*"
+      - "supabase/migrations/*_trust_phase8h3_relocation_revalidation_v1.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
       - "scripts/verify-trust-phase8h3-relocation-aware-verification.mjs"
@@ -19,6 +20,7 @@ on:
     branches: [main, "pipeline-reliability/trust-phase8h3-relocation-revalidation"]
     paths:
       - "docs/evidence/trust-phase8h3-*"
+      - "supabase/migrations/*_trust_phase8h3_relocation_revalidation_v1.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
       - "scripts/verify-trust-phase8h3-relocation-aware-verification.mjs"
