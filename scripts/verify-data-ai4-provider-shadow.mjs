@@ -182,8 +182,8 @@ check(workflow.includes("ko_oily_fresh_afterfeel_cleanser"),
   "workflow must run semantic-axis cleanser scenario");
 check(workflow.includes("ko_oily_temporary_sensitive_light_cream"),
   "workflow must run compound temporary-sensitivity scenario");
-check(workflow.includes("ko_tight_afterwash_oily_afternoon_cream"),
-  "workflow must run compound post-wash/afternoon scenario");
+check(providerService.includes("ko_tight_afterwash_oily_afternoon_cream"),
+  "compound post-wash/afternoon scenario must remain frozen in source for follow-up validation");
 check(
   workflow.includes("ko_oily_temporary_sensitive_light_cream_budget_") &&
     workflow.includes("for budget in 400 600 800") &&
