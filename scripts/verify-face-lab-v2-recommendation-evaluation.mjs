@@ -9,6 +9,13 @@ import {
   FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  FACE_LAB_V2_PROPERTY_FUZZ_CASES_PER_SEED,
+  FACE_LAB_V2_PROPERTY_FUZZ_SEEDS,
+  FACE_LAB_V2_PROPERTY_FUZZ_VERSION,
+  minimizeFaceLabV2FuzzFailure,
+  runFaceLabV2PropertyFuzzEvaluation
+} from "../lib/face-lab-v2/evaluation/property-fuzz.js";
+import {
   FACE_LAB_V2_CONSTRAINT_RESPONSIVENESS_VERSION,
   runFaceLabV2ConstraintResponsivenessEvaluation
 } from "../lib/face-lab-v2/evaluation/constraint-responsiveness.js";
@@ -34,6 +41,7 @@ import {
   buildFaceLabV2AdversarialCohort,
   buildFaceLabV2CoverageCohort,
   buildFaceLabV2EvaluationCohort,
+  evaluateFaceLabV2RecommendationCase,
   runFaceLabV2AdversarialEvaluation,
   runFaceLabV2CoverageEvaluation,
   runFaceLabV2EvaluationSuite,
@@ -187,6 +195,68 @@ assert.equal(targetSweepCohort.faceCount, 8);
 assert.equal(targetSweepCohort.targetCount, 12);
 assert.equal(targetSweepCohort.caseCount, 96);
 
+const propertyFuzz = runFaceLabV2PropertyFuzzEvaluation();
+assert.equal(
+  propertyFuzz.evaluatorVersion,
+  FACE_LAB_V2_PROPERTY_FUZZ_VERSION
+);
+assert.equal(
+  propertyFuzz.summary.seedCount,
+  FACE_LAB_V2_PROPERTY_FUZZ_SEEDS.length
+);
+assert.equal(
+  propertyFuzz.summary.totalCaseCount,
+  FACE_LAB_V2_PROPERTY_FUZZ_SEEDS.length *
+    FACE_LAB_V2_PROPERTY_FUZZ_CASES_PER_SEED
+);
+assert.equal(
+  propertyFuzz.summary.hardFailureCount,
+  0,
+  JSON.stringify(propertyFuzz.counterexamples.slice(0, 12), null, 2)
+);
+assert.equal(propertyFuzz.summary.minimizedCounterexampleCount, 0);
+
+for (const seedReport of propertyFuzz.seedReports) {
+  const replay = buildFaceLabV2EvaluationCohort({
+    seed: seedReport.seed,
+    caseCount: FACE_LAB_V2_PROPERTY_FUZZ_CASES_PER_SEED
+  });
+  assert.equal(
+    seedReport.cohortHash,
+    replay.cohortHash,
+    `property fuzz seed must replay exactly: ${seedReport.seed}`
+  );
+}
+
+const shrinkProbe = structuredClone(coverageCohort.cases[0]);
+shrinkProbe.caseId = "FL-FUZZ-SHRINK-PROBE";
+shrinkProbe.surveyAnswers.targetSelections = [];
+const shrinkProbeEvaluated =
+  evaluateFaceLabV2RecommendationCase(shrinkProbe);
+const shrinkProbeFailure = shrinkProbeEvaluated.failures.find(
+  (item) => item.evaluatorId === "E1-target-authority"
+);
+assert.ok(
+  shrinkProbeFailure,
+  "shrink probe must create a deterministic target-authority failure"
+);
+const shrinkProbeMinimized = minimizeFaceLabV2FuzzFailure(
+  shrinkProbe,
+  shrinkProbeFailure
+);
+assert.equal(
+  shrinkProbeMinimized.failureIdentity,
+  "E1-target-authority|"
+);
+assert.equal(
+  shrinkProbeMinimized.minimizedFailure.evaluatorId,
+  "E1-target-authority"
+);
+assert.ok(
+  shrinkProbeMinimized.steps.length > 0,
+  "fuzz failure reducer must simplify at least one survey dimension while preserving failure identity"
+);
+
 const constraintResponsiveness =
   runFaceLabV2ConstraintResponsivenessEvaluation(targetSweepCohort.cases);
 assert.equal(
@@ -305,7 +375,8 @@ console.log(JSON.stringify({
     axisConsumption: axisConsumption.summary,
     lineage: lineage.summary,
     parameterTranslation: parameterTranslation.summary,
-    constraintResponsiveness: constraintResponsiveness.summary
+    constraintResponsiveness: constraintResponsiveness.summary,
+    propertyFuzz: propertyFuzz.summary
   },
   targetSweep: {
     cohort: targetResponsiveness.cohort,
