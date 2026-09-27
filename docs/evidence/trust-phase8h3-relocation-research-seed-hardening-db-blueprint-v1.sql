@@ -580,7 +580,7 @@ begin
     'canonical_evidence_digest', v_evidence_digest
   );
 end;
-$function$
+$function$;
 
 revoke all on function public.record_trust_research_result_v1(uuid, jsonb)
   from public, anon, authenticated;
