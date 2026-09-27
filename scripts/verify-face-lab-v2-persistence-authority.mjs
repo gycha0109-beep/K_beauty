@@ -132,6 +132,17 @@ assert.ok(component.includes("resolveFaceLabRestore({"));
 assert.ok(component.includes("expectedRevision,"));
 assert.ok(component.includes('syncStatus: "conflict"'));
 assert.ok(component.includes('syncStatus: "auth_required"'));
+assert.ok(
+  component.includes("const conflictEpochRef = useRef(0)") &&
+    component.includes("const requestConflictEpoch = conflictEpochRef.current") &&
+    component.includes("requestConflictEpoch !== conflictEpochRef.current"),
+  "queued requests created before a 409 conflict must be invalidated"
+);
+assert.ok(
+  component.includes("const isLatestRequest = () =>") &&
+    component.includes("if (isLatestRequest())"),
+  "older queued failures must not overwrite the newest local recovery draft"
+);
 assert.equal(component.includes("updatedAtMs("), false, "client clock must not decide restore authority");
 assert.equal(
   component.includes("Date.parse(stored?.updatedAt"),
@@ -149,6 +160,8 @@ console.log(JSON.stringify({
     "cas_conflict",
     "pending_retry",
     "auth_retry",
+    "queued_failure_latest_draft_protection",
+    "conflict_epoch_invalidation",
     "client_clock_ignored",
     "legacy_revision_zero_boundary",
     "route_revision_contract",
