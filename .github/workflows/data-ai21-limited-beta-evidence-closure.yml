@@ -7,6 +7,11 @@ on:
     paths:
       - "lib/product-query-authenticated-beta-evidence-closure.mjs"
       - "scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai21-limited-beta-evidence-closure.yml"
       - "app/api/my/product-query-beta/evidence-receipt/route.js"
   push:
@@ -14,6 +19,11 @@ on:
     paths:
       - "lib/product-query-authenticated-beta-evidence-closure.mjs"
       - "scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai21-limited-beta-evidence-closure.yml"
       - "app/api/my/product-query-beta/evidence-receipt/route.js"
   workflow_dispatch:
