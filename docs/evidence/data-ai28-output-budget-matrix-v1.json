@@ -1,0 +1,49 @@
+{
+  "evidenceVersion": "data-ai28-output-budget-matrix-v1",
+  "phase": "DATA-AI28",
+  "source": "github_actions_exact_deployed_main",
+  "workflowRunId": "36350911719",
+  "deploymentSha": "ed319cf21c02afaee642e583b08815535ae83530",
+  "scenario": "ko_oily_temporary_sensitive_light_cream",
+  "matrix": [
+    {
+      "budget": 400,
+      "attempts": 10,
+      "completed": 6,
+      "incomplete": 4,
+      "schemaRejected": 0,
+      "invalidOutput": 0,
+      "refusal": 0,
+      "otherFailure": 0
+    },
+    {
+      "budget": 600,
+      "attempts": 10,
+      "completed": 10,
+      "incomplete": 0,
+      "schemaRejected": 0,
+      "invalidOutput": 0,
+      "refusal": 0,
+      "otherFailure": 0
+    },
+    {
+      "budget": 800,
+      "attempts": 10,
+      "completed": 10,
+      "incomplete": 0,
+      "schemaRejected": 0,
+      "invalidOutput": 0,
+      "refusal": 0,
+      "otherFailure": 0
+    }
+  ],
+  "selectedBudget": 600,
+  "selectionRule": "smallest_tested_budget_with_10_of_10_completion_and_zero_protocol_failures",
+  "retryRequired": false,
+  "rankingAuthorityChanged": false,
+  "providerOrModelChanged": false,
+  "persistenceChanged": false,
+  "cohortExpansion": false,
+  "publicCutover": false,
+  "operationalBaselineStarted": false
+}

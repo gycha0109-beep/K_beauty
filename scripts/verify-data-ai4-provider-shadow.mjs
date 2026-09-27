@@ -20,6 +20,7 @@ const route = read("app/api/internal/product-query-provider-shadow/route.js");
 const oidc = read("lib/product-query-provider-shadow-oidc.js");
 const workflow = read(".github/workflows/data-ai4-provider-shadow.yml");
 const runtimeValidator = read("scripts/validate-data-ai4-provider-shadow-runtime-response.mjs");
+const dataAi28Classifier = read("scripts/classify-data-ai28-output-budget-probe.mjs");
 
 check(providerService.includes('import "server-only"'),
   "provider shadow service must stay server-only");
@@ -185,13 +186,19 @@ check(workflow.includes("ko_oily_temporary_sensitive_light_cream"),
 check(providerService.includes("ko_tight_afterwash_oily_afternoon_cream"),
   "compound post-wash/afternoon scenario must remain frozen in source for follow-up validation");
 check(
-  workflow.includes("ko_oily_temporary_sensitive_light_cream_budget_") &&
-    workflow.includes("for budget in 400 600 800") &&
-    workflow.includes("for attempt in $(seq 1 10)") &&
-    workflow.includes("DATA_AI28_BUDGET_SUMMARY") &&
-    workflow.includes("DATA_AI28_SELECTED_BUDGET") &&
-    workflow.includes("classify-data-ai28-output-budget-probe.mjs"),
-  "DATA-AI28 must run the fixed 400/600/800 ten-attempt budget matrix without changing the user-path default"
+  dataAi1.includes("const DEFAULT_MAX_OUTPUT_TOKENS = 600;") &&
+    workflow.includes('scenario="ko_oily_temporary_sensitive_light_cream"') &&
+    workflow.includes("for attempt in $(seq 1 20)") &&
+    workflow.includes('"default"') &&
+    workflow.includes("DATA_AI28_PHASE_B_SUMMARY") &&
+    workflow.includes('test "$completed" -eq 20') &&
+    workflow.includes('test "$incomplete" -eq 0'),
+  "DATA-AI28 Phase B must validate the selected default 600 budget across 20 exact deployed-main attempts"
+);
+check(
+  dataAi28Classifier.includes('expectedBudget === "default"') &&
+    dataAi28Classifier.includes("payload.outputBudget !== null"),
+  "DATA-AI28 classifier must distinguish the real default path from explicit budget overrides"
 );
 check(workflow.includes("validate-data-ai4-provider-shadow-runtime-response.mjs"),
   "deployed provider probe must invoke standalone runtime-response validator");
