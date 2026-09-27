@@ -87,3 +87,49 @@ B-5A is audit-only. It freezes the current execution authority of the five TRUST
 - Repeated static verifier execution is recorded as a later B-5B consolidation candidate only; this phase does not remove or delegate any verifier.
 - Supabase init/reset/stop repetition is recorded as an implementation-sharing candidate only; runtime authority remains phase-local.
 - No workflow is added, retired, renamed, or trigger-modified by B-5A.
+
+## Phase B-5B TRUST 5B-7D canonical static prerequisites
+
+`trust-phase5b-7d-static.yml` is the canonical automatic owner of the repeated static prerequisite verifier set across TRUST 5B, 6A, 7C compatibility, 7C readiness, and 7D.
+
+- PR/push phase workflows wait fail-closed on the same-head, same-event canonical static run.
+- Manual `workflow_dispatch` keeps each phase's previous local static chain as a standalone fallback.
+- All five phase workflows continue to own their Supabase DB runtime and phase-specific SQL/runtime evidence.
+- Phase 7C compatibility and Phase 7D retain their local replay-baseline materialization because those artifacts are runtime evidence, not static-equivalent coverage.
+- No phase workflow is retired or renamed.
+- Current Main TRUST delegation is intentionally deferred; this phase canonicalizes the dedicated TRUST workflows first.
+
+## Phase B-5C Current Main TRUST canonical delegation
+
+Current Main now reuses the exact-head, exact-event successful `trust-phase5b-7d-static.yml` result for the 14 TRUST static contracts that the canonical workflow owns.
+
+- The 14 matching Current Main verifier calls use delegated-or-local execution.
+- If the TRUST canonical workflow did not trigger for the candidate SHA, Current Main executes all 14 verifiers locally.
+- If Actions lookup is unavailable, Current Main preserves local fallback coverage.
+- A discovered TRUST canonical non-success fails Current Main closed.
+- TRUST Phase 1, Phase 5C, Phase 6B, Phase 8A, and other noncanonical TRUST contracts remain direct Current Main checks.
+- Dedicated TRUST phase DB/runtime and replay-baseline responsibilities remain unchanged.
+
+## Phase B-6A TRUST 8B-8G replay runtime audit
+
+B-6A is audit-only and freezes the execution boundary before any replay-baseline setup sharing.
+
+- All six workflows independently materialize the same governed Product Fact replay baseline exactly once.
+- The materializer is repository-local and deterministic: it reads a governed fixture manifest, a fixed Git migration tree, compatibility bridges, and sentinels; it does not own Supabase startup, DB verification, or remote commands.
+- Each phase then appends its own migration/fixture tail and remains the owner of its own Supabase runtime and SQL evidence.
+- TRUST 8G keeps its production canary capture, semantic probes, controlled batch probes, and claim-asset verification operations.
+- Shared artifact/cache/helper work may target only the common replay-baseline materialization boundary unless later equivalence evidence proves more.
+- No workflow execution, trigger, retirement, rename, or runtime delegation is changed by B-6A.
+
+## Phase B-6B TRUST 8B-8G replay consolidation decision
+
+The replay-baseline review is closed with **local materialization preserved**.
+
+A successful Phase 8G reference run (`36287673316`) showed the common replay materializer completing in about 0.22 seconds, while the following isolated Supabase runtime occupied about 97 seconds. This is a cost signal, not a universal benchmark, but it is sufficient to reject additional cross-workflow orchestration at the current scale.
+
+- The existing Node materializer is already the shared implementation.
+- Each workflow materializes locally immediately before appending phase-specific migrations and starting its isolated database.
+- No canonical replay-artifact workflow is added.
+- No upload/download cache layer, Actions run-id coupling, extra permissions, or artifact-expiry dependency is introduced.
+- All six replay calls, six Supabase runtime authorities, six phase semantic verifiers, and TRUST 8G operational probes remain intentionally local.
+- Reconsider this decision only if future measurements show replay materialization becoming materially expensive or shared artifacts become independently necessary for correctness.

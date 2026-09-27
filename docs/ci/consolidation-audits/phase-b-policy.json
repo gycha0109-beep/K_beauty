@@ -3,7 +3,8 @@
   "baselineWorkflowCount": 63,
   "approvedAddedWorkflows": [
     "data-ai-product-query-static.yml",
-    "trust-phase8h3-relocation-revalidation.yml"
+    "trust-phase8h3-relocation-revalidation.yml",
+    "trust-phase5b-7d-static.yml"
   ],
   "approvedRetiredWorkflows": [],
   "clusters": {
@@ -26,9 +27,10 @@
       "delegatedCanonicalOwners": [
         "data-ai-product-query-static.yml",
         "data-ai25-operational-readiness.yml",
-        "data-ai-prelaunch-01-product-query-e2e.yml"
+        "data-ai-prelaunch-01-product-query-e2e.yml",
+        "trust-phase5b-7d-static.yml"
       ],
-      "rule": "Current Main remains the project-wide final gate. For proven canonical DATA-AI1-5, DATA-AI25, and PRELAUNCH-01 contracts it reuses exact-head, exact-event successful canonical workflow results; if no matching canonical run exists or Actions lookup is unavailable, it executes the original verifier locally. A discovered canonical non-success fails closed."
+      "rule": "Current Main remains the project-wide final gate. For proven canonical DATA-AI1-5, DATA-AI25, PRELAUNCH-01, and TRUST 5B-7D static contracts it reuses exact-head, exact-event successful canonical workflow results; if no matching canonical run exists or Actions lookup is unavailable, it executes the original verifier locally. A discovered canonical non-success fails closed."
     },
     "mobile-release-13-15": {
       "runtimeMatrix": "docs/ci/consolidation-audits/mobile-13-15-runtime-matrix.json",
@@ -38,8 +40,9 @@
       "rule": "MOBILE-13 remains manual unsigned release evidence; MOBILE-14 owns routine generated-native auth/link contracts; MOBILE-15 routine source validation no longer re-executes MOBILE-14 or auto-triggers on MOBILE-13/MOBILE-14/Expo-compat prerequisites, while manual signed Android/iOS jobs retain MOBILE-13/14 platform verification inside the signing boundary."
     },
     "trust-5b-7d": {
-      "mode": "audit-only",
+      "mode": "canonical-static-delegation",
       "runtimeMatrix": "docs/ci/consolidation-audits/trust-5b-7d-runtime-matrix.json",
+      "canonicalStaticOwner": "trust-phase5b-7d-static.yml",
       "workflows": [
         "trust-phase5b-subject-registration.yml",
         "trust-phase6a-reentry.yml",
@@ -47,7 +50,22 @@
         "trust-phase7c-readiness.yml",
         "trust-phase7d-relational-adoption.yml"
       ],
-      "rule": "B-5A freezes current TRUST 5B-7D static prerequisites, Supabase runtime ownership, phase-specific runtime evidence, and replay-baseline ownership before any consolidation. No workflow execution, trigger, rename, retirement, DB authority, or replay authority changes are authorized in this audit-only subphase."
+      "rule": "Automatic PR/push execution delegates the repeated TRUST 5B-7D static prerequisite set to one exact-head canonical workflow. The five phase workflows retain their existing names, triggers, Supabase DB/runtime authority, phase-specific runtime evidence, and replay-baseline ownership. Manual workflow_dispatch retains each phase's prior static verifier chain as a local fallback."
+    },
+    "trust-8b-8g-replay": {
+      "mode": "preserve-local-replay-materialization",
+      "runtimeMatrix": "docs/ci/consolidation-audits/trust-8b-8g-replay-matrix.json",
+      "workflows": [
+        "trust-phase8b-source-verification.yml",
+        "trust-phase8c-revalidation.yml",
+        "trust-phase8d-revalidation.yml",
+        "trust-phase8e-revalidation-adjudication.yml",
+        "trust-phase8f-changed-semantic-replacement.yml",
+        "trust-phase8g-source-verification.yml"
+      ],
+      "sharedReplayMaterializer": "scripts/materialize-product-fact-replay-baseline-v1.mjs",
+      "rule": "B-6 closes the replay duplication review by preserving six local replay materializations. The shared materializer is already deterministic and repository-local; a measured successful Phase 8G reference run materialized in about 0.22 seconds while the subsequent isolated Supabase runtime window was about 97 seconds. Cross-workflow artifact/cache orchestration is therefore rejected as added complexity without meaningful savings. Each phase retains its own migration append, Supabase runtime, SQL evidence, semantic verifier, and TRUST 8G operational probes.",
+      "decisionRecord": "docs/ci/consolidation-audits/trust-8b-8g-replay-decision.json"
     }
   }
 }

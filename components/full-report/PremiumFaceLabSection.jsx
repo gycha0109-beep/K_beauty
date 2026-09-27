@@ -291,6 +291,20 @@ function editableScopeFromStoredSurvey(surveyAnswers, { makeupExcluded = false }
   return baseScope.filter((domain) => !disabledDomains.has(domain));
 }
 
+function hasStoredScopeIntent(surveyAnswers, { makeupExcluded = false } = {}) {
+  const storedScope = Array.isArray(surveyAnswers?.stylingScope)
+    ? surveyAnswers.stylingScope
+    : [];
+  const hardExclusions = Array.isArray(surveyAnswers?.constraints?.hardExclusions)
+    ? surveyAnswers.constraints.hardExclusions
+    : [];
+  const hasDomainExclusion = hardExclusions.some((key) =>
+    Boolean(HARD_EXCLUSION_SCOPE_MAP[key])
+  );
+
+  return Boolean(storedScope.length || hasDomainExclusion || makeupExcluded);
+}
+
 function FaceLabImage({ src, alt, locale = "ko" }) {
   const copy = getCopy(locale);
   const [failed, setFailed] = useState(false);
@@ -546,6 +560,7 @@ export default function PremiumFaceLabSection({
   const [canonical, setCanonical] = useState(null);
   const persistQueueRef = useRef(Promise.resolve());
   const restoreInteractionRef = useRef(0);
+  const activePersistenceStateRef = useRef(null);
 
   const persistServer = useCallback((surveyAnswers, approvedFinder, routeId) => {
     if (!savedReportId) return Promise.resolve();
@@ -625,6 +640,10 @@ export default function PremiumFaceLabSection({
 
       if (restored?.targetStyle?.status !== "available") return false;
 
+      activePersistenceStateRef.current = {
+        surveyAnswers: stored.surveyAnswers,
+        targetFinderResult: stored.targetFinderResult || null
+      };
       setCanonical(restored);
       setEntryMode(stored.surveyAnswers.entryMode || "known");
       setTargets(
@@ -646,7 +665,11 @@ export default function PremiumFaceLabSection({
         { makeupExcluded: legacyMakeupExcluded }
       );
       setStylingScope(editableStylingScope);
-      setScopeTouched(Boolean(restoredStylingScope.length));
+      setScopeTouched(
+        hasStoredScopeIntent(stored.surveyAnswers, {
+          makeupExcluded: legacyMakeupExcluded
+        })
+      );
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
       setFinderResult(stored.targetFinderResult || null);
       setMakeupIntensity(
@@ -806,6 +829,10 @@ export default function PremiumFaceLabSection({
       resultId: resultKey
     });
 
+    activePersistenceStateRef.current = {
+      surveyAnswers,
+      targetFinderResult: approvedFinder
+    };
     setCanonical(result);
     setStage("result");
 
@@ -823,10 +850,13 @@ export default function PremiumFaceLabSection({
   };
 
   const selectRoute = (routeId) => {
-    const surveyAnswers = buildSurveyAnswers();
-    const approvedFinder = finderResult
-      ? { ...finderResult, userApproved: true }
-      : null;
+    const activeState = activePersistenceStateRef.current;
+    const surveyAnswers = activeState?.surveyAnswers || buildSurveyAnswers();
+    const approvedFinder = activeState
+      ? activeState.targetFinderResult
+      : finderResult
+        ? { ...finderResult, userApproved: true }
+        : null;
     const result = buildFaceLabV2Canonical({
       analysis: faceLabAnalysis,
       surveyAnswers,
@@ -838,6 +868,10 @@ export default function PremiumFaceLabSection({
 
     const resolvedRouteId = result.routes?.selectedRouteId || null;
 
+    activePersistenceStateRef.current = {
+      surveyAnswers,
+      targetFinderResult: approvedFinder
+    };
     setCanonical(result);
 
     persistLocal({

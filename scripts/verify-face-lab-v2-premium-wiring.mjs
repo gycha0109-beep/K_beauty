@@ -25,6 +25,11 @@ assert.ok(
   fullReportPage.includes("savedReportId={persistedReportId}"),
   "premium page must pass saved report id for mutable Face Lab V2 state"
 );
+assert.ok(
+  fullReportPage.includes("key={resultKey}") &&
+    fullReportPage.includes("resultKey={resultKey}"),
+  "Face Lab must remount when report identity changes so state from one saved report cannot leak into another"
+);
 
 assert.ok(
   premiumFaceLab.includes('fetch("/api/premium/face-lab-v2"'),
@@ -104,6 +109,24 @@ assert.ok(
 assert.ok(
   premiumFaceLab.includes("persistServer(surveyAnswers, approvedFinder, resolvedRouteId)"),
   "server revisit state must persist the resolved route id"
+);
+assert.ok(
+  premiumFaceLab.includes("const activePersistenceStateRef = useRef(null)"),
+  "Face Lab must retain the exact survey/finder state that produced the active result"
+);
+assert.ok(
+  premiumFaceLab.includes("activePersistenceStateRef.current = {\n        surveyAnswers: stored.surveyAnswers") &&
+    premiumFaceLab.includes("targetFinderResult: stored.targetFinderResult || null"),
+  "restore must retain the exact persisted survey/finder state for route-only mutations"
+);
+assert.ok(
+  premiumFaceLab.includes("const activeState = activePersistenceStateRef.current") &&
+    premiumFaceLab.includes("const surveyAnswers = activeState?.surveyAnswers || buildSurveyAnswers()"),
+  "route selection must reuse the active persisted survey instead of silently rebuilding it"
+);
+assert.ok(
+  premiumFaceLab.includes("activeState\n      ? activeState.targetFinderResult"),
+  "route selection must preserve the active persisted Finder payload when only the route changes"
 );
 assert.ok(
   premiumFaceLab.includes("const persistLocal = (value) =>"),
@@ -217,14 +240,24 @@ assert.ok(
 );
 
 assert.ok(
-  premiumFaceLab.includes("const restoredStylingScope = Array.isArray(stored.surveyAnswers.stylingScope)") &&
-    premiumFaceLab.includes("setScopeTouched(Boolean(restoredStylingScope.length))"),
-  "restored scope intent must survive even when normalization leaves the visible editable scope empty"
+  premiumFaceLab.includes("function hasStoredScopeIntent(") &&
+    premiumFaceLab.includes("storedScope.length || hasDomainExclusion || makeupExcluded"),
+  "restored scope intent must include stored scope selections, domain hard exclusions, and legacy no-makeup intent"
+);
+assert.ok(
+  premiumFaceLab.includes("setScopeTouched(") &&
+    premiumFaceLab.includes("hasStoredScopeIntent(stored.surveyAnswers"),
+  "restore must derive scopeTouched from persisted user intent instead of normalized visible scope length"
 );
 assert.equal(
-  premiumFaceLab.includes("setScopeTouched(Boolean(editableStylingScope.length))"),
+  premiumFaceLab.includes("setScopeTouched(Boolean(editableStylingScope.length))") ||
+    premiumFaceLab.includes("setScopeTouched(Boolean(restoredStylingScope.length))"),
   false,
-  "an all-disabled restored scope must not become untouched and allow presentation defaults to reactivate domains"
+  "restored scope intent must not collapse to array length checks that lose exclusion-only legacy choices"
+);
+assert.ok(
+  premiumFaceLab.includes("Boolean(HARD_EXCLUSION_SCOPE_MAP[key])"),
+  "parameter-level exclusions such as hair_dye must not be mistaken for whole-domain scope intent"
 );
 assert.ok(
   premiumFaceLab.includes('["light", "medium", "expressive"].includes(restoredMakeupIntensity)') &&

@@ -15,6 +15,10 @@ on:
       - "scripts/aggregate-data-ai25-product-query-baseline.mjs"
       - "scripts/evaluate-data-ai25-product-query-readiness.mjs"
       - "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
+      - "scripts/freeze-data-ai25-operational-baseline-start.mjs"
+      - "scripts/run-data-ai25-post-launch-evaluation.mjs"
+      - "scripts/verify-data-ai25-launch-ops.mjs"
+      - "docs/product-query-data-ai25-post-launch-runbook.md"
       - ".github/workflows/data-ai25-operational-readiness.yml"
       - "docs/ci/workflow-responsibility-map.json"
   push:
@@ -30,6 +34,10 @@ on:
       - "scripts/aggregate-data-ai25-product-query-baseline.mjs"
       - "scripts/evaluate-data-ai25-product-query-readiness.mjs"
       - "scripts/verify-data-ai25-product-query-operational-readiness.mjs"
+      - "scripts/freeze-data-ai25-operational-baseline-start.mjs"
+      - "scripts/run-data-ai25-post-launch-evaluation.mjs"
+      - "scripts/verify-data-ai25-launch-ops.mjs"
+      - "docs/product-query-data-ai25-post-launch-runbook.md"
       - ".github/workflows/data-ai25-operational-readiness.yml"
       - "docs/ci/workflow-responsibility-map.json"
   workflow_dispatch:
@@ -60,3 +68,6 @@ jobs:
 
       - name: Verify DATA-AI25 operational readiness
         run: node scripts/verify-data-ai25-product-query-operational-readiness.mjs
+
+      - name: Verify DATA-AI25 launch operations
+        run: node scripts/verify-data-ai25-launch-ops.mjs

@@ -89,7 +89,7 @@ check(
   !fs.existsSync(path.join(root, ".github/workflows/trust-phase5-admin-queue.yml")),
   "retired TRUST Phase 5 Admin Queue workflow must stay absent"
 );
-check(content.currentHealth.includes('run("TRUST Phase 5 admin queue contract"'), "Current Main Health must own Phase 5 static contract");
+check(content.currentHealth.includes('runDelegated("trust-phase5-admin-queue", "TRUST Phase 5 admin queue contract"'), "Current Main Health must own Phase 5 static contract");
 check(content.currentHealth.includes('run("Architecture guard"'), "Current Main Health must own architecture guard");
 check(content.currentHealth.includes('run("Production build"'), "Current Main Health must own production build");
 
