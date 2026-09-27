@@ -10,6 +10,10 @@
   "generation_authority": "SUPABASE_CLI_MIGRATION_NEW",
   "repository_ordering_state": "GENERATED_VERSION_PRECEDES_ALIGNED_PHASE8H_VERSION",
   "aligned_phase8h_version": "20260926074409",
-  "repository_materialization": "DB_BLUEPRINT_PENDING_PRODUCTION_VERSION_READBACK",
-  "production_mutation": "NONE"
+  "repository_materialization": "PRODUCTION_VERSION_MATERIALIZED",
+  "production_mutation": "APPLIED",
+  "production_migration_version": "20260927094055",
+  "production_migration_filename": "20260927094055_trust_phase8h3_relocation_revalidation_v1.sql",
+  "production_apply_authority": "SUPABASE_MCP_APPLY_MIGRATION",
+  "production_apply_result": "SUCCESS"
 }

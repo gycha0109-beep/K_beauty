@@ -4,10 +4,13 @@ import { extractStrictFactCandidate } from "./trust-research-worker.mjs";
 
 const migrationPath = "docs/evidence/trust-phase8h3-relocation-revalidation-db-blueprint-v1.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
+const materializedMigrationPath = "supabase/migrations/20260927094055_trust_phase8h3_relocation_revalidation_v1.sql";
+const materializedMigration = fs.readFileSync(materializedMigrationPath, "utf8");
 const worker = fs.readFileSync("scripts/trust-research-worker.mjs", "utf8");
 const contract = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-revalidation-contract-v1.md", "utf8");
 const provenance = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-cli-migration-generation-v1.json", "utf8"));
 const dryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-db-dry-run-validation-v1.json", "utf8"));
+const closure = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-production-closure-v1.json", "utf8"));
 
 for (const needle of [
   "add column relocation_id uuid",
@@ -37,13 +40,45 @@ assert.ok(!/\n\s*commit\s*;\s*$/i.test(migration), "deployable blueprint must no
 
 assert.equal(provenance.contract, "trust-phase8h3-cli-migration-generation-v1");
 assert.equal(provenance.generation_authority, "SUPABASE_CLI_MIGRATION_NEW");
-assert.equal(provenance.production_mutation, "NONE");
-assert.equal(provenance.repository_materialization, "DB_BLUEPRINT_PENDING_PRODUCTION_VERSION_READBACK");
+assert.equal(provenance.production_mutation, "APPLIED");
+assert.equal(provenance.repository_materialization, "PRODUCTION_VERSION_MATERIALIZED");
+assert.equal(provenance.production_migration_version, "20260927094055");
+assert.equal(provenance.production_migration_filename, "20260927094055_trust_phase8h3_relocation_revalidation_v1.sql");
+assert.equal(provenance.production_apply_authority, "SUPABASE_MCP_APPLY_MIGRATION");
+assert.equal(provenance.production_apply_result, "SUCCESS");
 assert.equal(dryRun.contract, "trust-phase8h3-db-dry-run-validation-v1");
 assert.equal(dryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
 assert.equal(dryRun.migration_ddl_compile, "PASS");
 assert.equal(dryRun.dependency_resolution, "PASS");
 assert.equal(dryRun.production_mutation, "NONE");
+assert.equal(dryRun.deployed_migration, "20260927094055_trust_phase8h3_relocation_revalidation_v1.sql");
+assert.equal(materializedMigration, migration, "materialized Production migration must equal the reviewed DB blueprint");
+
+assert.equal(closure.contract, "trust-phase8h3-production-closure-v1");
+assert.equal(closure.merged_main_sha, "062f2d20eb5fd62e7affa98215f6582db0c037b5");
+assert.deepEqual(closure.production_migration, {
+  version: "20260927094055",
+  name: "trust_phase8h3_relocation_revalidation_v1",
+  filename: "20260927094055_trust_phase8h3_relocation_revalidation_v1.sql",
+  source_blueprint: migrationPath,
+  source_blueprint_content_sha: "ff457e2041c6eb4f863ea80311590621a9943cae",
+  apply_authority: "SUPABASE_MCP_APPLY_MIGRATION",
+  result: "SUCCESS",
+});
+assert.deepEqual(closure.security_readback, {
+  preflight_rpc_exists: true,
+  mark_rpc_exists: true,
+  relocation_column_exists: true,
+  service_role_preflight_execute: true,
+  authenticated_preflight_execute: false,
+  service_role_mark_execute: true,
+  authenticated_mark_execute: false,
+});
+assert.equal(closure.dermafactory_semantic_immutability?.revalidation_transition_count, 0);
+assert.equal(closure.dermafactory_semantic_immutability?.contains_active?.operational_state, "confirmed");
+assert.equal(closure.dermafactory_semantic_immutability?.active_concentration?.operational_state, "confirmed");
+assert.equal(closure.advisors?.security_blocker_for_phase8h3_objects, false);
+assert.equal(closure.next_authority, "PHASE_8H_3_RELOCATION_AWARE_VERIFICATION_REQUIRED");
 assert.deepEqual(dryRun.in_transaction_readback, {
   preflight_exists: true,
   mark_exists: true,
