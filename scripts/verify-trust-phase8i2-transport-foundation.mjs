@@ -3,9 +3,17 @@ import fs from "node:fs";
 import { probeOfficialTransport } from "../lib/trust/official-source-transport-fetch.mjs";
 import { runOfficialSourceTransportWorker } from "./trust-official-source-transport-worker.mjs";
 
-const blueprint = fs.readFileSync(
-  "docs/evidence/trust-phase8i2-transport-foundation-db-blueprint-v1.sql",
-  "utf8",
+const blueprintPath =
+  "docs/evidence/trust-phase8i2-transport-foundation-db-blueprint-v1.sql";
+const migrationPath =
+  "supabase/migrations/20260928081244_trust_phase8i2_transport_foundation_v1.sql";
+const blueprint = fs.readFileSync(blueprintPath, "utf8");
+const migration = fs.readFileSync(migrationPath, "utf8");
+const productionClosure = JSON.parse(
+  fs.readFileSync(
+    "docs/evidence/trust-phase8i2-transport-foundation-production-closure-v1.json",
+    "utf8",
+  ),
 );
 const dryRun = JSON.parse(
   fs.readFileSync(
@@ -225,6 +233,104 @@ async function verifyWorkerDedupeFanout() {
   assert.ok(!recordCalls.some((call) => call.p_source_id === "blocked-1"));
 }
 
+function verifyProductionClosure() {
+  assert.equal(
+    migration,
+    blueprint,
+    "materialized Production migration must exactly match reviewed blueprint",
+  );
+
+  assert.equal(
+    productionClosure.contract,
+    "trust-phase8i2-transport-foundation-production-closure-v1",
+  );
+  assert.equal(productionClosure.result, "PASS");
+  assert.equal(productionClosure.production_migration.version, "20260928081244");
+  assert.equal(
+    productionClosure.production_migration.name,
+    "trust_phase8i2_transport_foundation_v1",
+  );
+  assert.equal(productionClosure.production_migration.result, "SUCCESS");
+
+  assert.deepEqual(
+    {
+      source_count: productionClosure.resolver.source_count,
+      ready_source_count: productionClosure.resolver.ready_source_count,
+      blocked_source_count: productionClosure.resolver.blocked_source_count,
+      unique_ready_target_count: productionClosure.resolver.unique_ready_target_count,
+    },
+    {
+      source_count: 35,
+      ready_source_count: 35,
+      blocked_source_count: 0,
+      unique_ready_target_count: 25,
+    },
+  );
+  assert.equal(productionClosure.resolver.torriden_zero_intake_source_count, 2);
+  assert.equal(
+    productionClosure.resolver.drg_equivalent_presentation_source_present,
+    true,
+  );
+  assert.notEqual(
+    productionClosure.resolver.derma.historical_locator,
+    productionClosure.resolver.derma.effective_locator,
+  );
+  assert.equal(productionClosure.resolver.derma.target_status, "READY");
+
+  assert.equal(productionClosure.production_runtime.live_external_network_runs, 0);
+  assert.equal(productionClosure.production_runtime.observation_count, 0);
+  assert.equal(productionClosure.production_runtime.incident_count, 0);
+
+  assert.equal(productionClosure.security.direct_observation_incident_role_grants, 0);
+  assert.deepEqual(productionClosure.security.resolver_execute, {
+    service_role: true,
+    authenticated: false,
+    anon: false,
+    public: false,
+  });
+  assert.deepEqual(productionClosure.security.recorder_execute, {
+    service_role: true,
+    authenticated: false,
+    anon: false,
+    public: false,
+  });
+  assert.deepEqual(productionClosure.security.internal_resolver_execute, {
+    service_role: false,
+    authenticated: false,
+    anon: false,
+    public: false,
+  });
+  assert.equal(productionClosure.security.security_definer_search_path_empty, true);
+  assert.equal(
+    productionClosure.security.advisor_post.authenticated_security_definer_function_executable,
+    productionClosure.security.advisor_baseline.authenticated_security_definer_function_executable,
+  );
+  assert.equal(productionClosure.security.phase8i2_new_warn_findings, 0);
+  assert.equal(productionClosure.security.intentional_new_info_findings.length, 2);
+  assert.equal(productionClosure.security.result, "PASS");
+
+  const authority = productionClosure.authority_invariants;
+  assert.equal(authority.product_fact_current_rows_before, authority.product_fact_current_rows_after);
+  assert.equal(authority.product_evidence_source_rows_before, authority.product_evidence_source_rows_after);
+  assert.equal(authority.confirmed_relocations_before, authority.confirmed_relocations_after);
+  assert.equal(authority.reentry_events_before, authority.reentry_events_after);
+  assert.equal(authority.reentry_checkpoints_before, authority.reentry_checkpoints_after);
+  assert.equal(authority.historical_evidence_source_mutation, false);
+  assert.equal(authority.product_fact_current_mutation, false);
+  assert.equal(authority.relocation_confirmation, false);
+
+  assert.equal(
+    productionClosure.rollout_boundary.external_network_enabled_in_required_pr_ci,
+    false,
+  );
+  assert.equal(productionClosure.rollout_boundary.scheduled_live_monitoring_created, false);
+  assert.equal(productionClosure.rollout_boundary.live_canary_executed, false);
+  assert.equal(
+    productionClosure.rollout_boundary.next_authority,
+    "PHASE_8I_2B_FLEET_ROLLOUT_REQUIRED",
+  );
+}
+
 function verifySqlContract() {
   assert.ok(blueprint.includes("create table public.trust_official_source_transport_observations"));
   assert.ok(blueprint.includes("create table public.trust_official_source_transport_incidents"));
@@ -317,6 +423,7 @@ function verifyDryRunEvidence() {
 
 await verifyProbeClassification();
 await verifyWorkerDedupeFanout();
+verifyProductionClosure();
 verifySqlContract();
 verifyDryRunEvidence();
 
