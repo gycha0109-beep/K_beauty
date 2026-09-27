@@ -20,7 +20,13 @@ create table public.trust_reentry_detector_runtime_state (
   updated_at timestamptz not null default now(),
   check ((cursor_created_at is null) = (cursor_intake_id is null)),
   check ((cycle_upper_created_at is null) = (cycle_upper_intake_id is null)),
-  check ((cycle_upper_created_at is null) = (active_cycle_started_at is null))
+  check ((cycle_upper_created_at is null) = (active_cycle_started_at is null)),
+  check (cursor_created_at is null or cycle_upper_created_at is not null),
+  check (
+    cursor_created_at is null
+    or (cursor_created_at,cursor_intake_id) <=
+       (cycle_upper_created_at,cycle_upper_intake_id)
+  )
 );
 
 alter table public.trust_reentry_detector_runtime_state enable row level security;
