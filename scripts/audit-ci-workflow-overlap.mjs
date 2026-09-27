@@ -163,14 +163,28 @@ function isWorkflowDispatchOnly(condition) {
   return /^github\.event_name\s*==\s*['"]workflow_dispatch['"](?:\s*&&|\s*$)/.test(normalized);
 }
 
+
+function isPureScriptAlias(name, packageScripts) {
+  const command = packageScripts[name]?.trim();
+  if (!command) return false;
+  if (/&&|\|\||;|\n/.test(command)) return false;
+  const invocations = scriptInvocations(command);
+  const count = invocations.scripts.length + invocations.syntaxScripts.length;
+  if (count !== 1) return false;
+  return /^(?:node(?:\s+--check)?|bash|sh|python3?|python)\s+/.test(command);
+}
+
 function unitsForText(text, packageScripts) {
   const direct = directCoverage(text, packageScripts);
   const expandedScripts = expandDriverScripts(direct.scripts);
   const caps = capabilities(text, direct.commands);
+  const npmUnits = direct.npmScripts
+    .filter((name) => !isPureScriptAlias(name, packageScripts))
+    .map((value) => "npm:" + value);
   return [...new Set([
     ...expandedScripts.map((value) => "script:" + value),
     ...direct.syntaxScripts.map((value) => "syntax:" + value),
-    ...direct.npmScripts.map((value) => "npm:" + value),
+    ...npmUnits,
     ...caps.map((value) => "capability:" + value),
   ])].sort();
 }
