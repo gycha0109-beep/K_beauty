@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "bejewely-mobile-13-15-runtime-matrix-v1",
+  "cluster": "mobile-release-13-15",
+  "workflows": {
+    "mobile-13-store-release-preflight.yml": {
+      "execution": "manual-only",
+      "responsibility": "unsigned-store-release-preflight",
+      "preservedUniqueCoverage": [
+        "android-release-aab-build",
+        "android-target-api-36-resolution",
+        "android-16kb-page-alignment",
+        "android-release-artifact-upload",
+        "ios-xcode-26.6-toolchain",
+        "ios-unsigned-release-archive"
+      ]
+    },
+    "mobile-14-auth-app-links.yml": {
+      "execution": "pr-push-manual",
+      "responsibility": "generated-native-auth-and-link-contracts",
+      "preservedUniqueCoverage": [
+        "android-prebuild",
+        "android-verified-app-links",
+        "ios-prebuild",
+        "ios-apple-auth",
+        "ios-universal-links"
+      ],
+      "inheritedGeneratedContract": "mobile-13-store-release-preflight"
+    },
+    "mobile-15-distribution-authority.yml": {
+      "execution": "pr-push-source-contract-plus-manual-signed-artifacts",
+      "responsibility": "distribution-signing-authority",
+      "routineSourceContract": {
+        "owns": [
+          "mobile-foundation",
+          "mobile-typecheck",
+          "mobile-config",
+          "mobile-15-distribution-authority-source"
+        ],
+        "noLongerOwns": [
+          "mobile-14-auth-app-links-source"
+        ]
+      },
+      "manualSignedJobs": {
+        "preserveInheritedPlatformVerification": [
+          "mobile-13-store-release-preflight",
+          "mobile-14-auth-app-links",
+          "mobile-15-distribution-authority"
+        ],
+        "preserveUniqueCoverage": [
+          "android-upload-keystore-authority",
+          "android-signed-aab",
+          "android-upload-certificate-verification",
+          "ios-distribution-certificate-and-profile-authority",
+          "ios-signed-archive",
+          "ios-signed-ipa",
+          "ephemeral-signing-material-cleanup"
+        ]
+      }
+    }
+  },
+  "automaticTriggerRetirements": {
+    "mobile-15-distribution-authority.yml": [
+      "scripts/apply-expo-modules-jsi-xcode26-compat.mjs",
+      "scripts/verify-mobile-13-store-release-preflight.mjs",
+      "scripts/verify-mobile-14-auth-app-links.mjs"
+    ]
+  }
+}
