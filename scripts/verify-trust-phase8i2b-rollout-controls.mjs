@@ -9,6 +9,14 @@ const workerSource = fs.readFileSync(
   "scripts/trust-official-source-transport-worker.mjs",
   "utf8",
 );
+const workflowSource = fs.readFileSync(
+  ".github/workflows/trust-phase8h3-relocation-revalidation.yml",
+  "utf8",
+);
+const liveResultVerifierSource = fs.readFileSync(
+  "scripts/verify-trust-phase8i2b-live-result.mjs",
+  "utf8",
+);
 const manifest = JSON.parse(
   fs.readFileSync(
     "docs/evidence/trust-phase8i2-live-canary-targets-v1.json",
@@ -314,10 +322,44 @@ function verifyCliSafetyContract() {
   assert.ok(workerSource.includes("perHostDelayMs = 1_000"));
 }
 
+function verifyWorkflowBoundary() {
+  assert.ok(workflowSource.includes("transport_mode:"));
+  assert.ok(workflowSource.includes("transport_expected_fleet_digest:"));
+  assert.ok(
+    workflowSource.includes(
+      "if: github.event_name == 'workflow_dispatch' && inputs.transport_mode != 'none'",
+    ),
+  );
+  assert.equal(
+    (
+      workflowSource.match(
+        /if: github\.event_name == 'workflow_dispatch' && inputs\.transport_mode == 'none'/g,
+      ) || []
+    ).length,
+    2,
+  );
+  assert.ok(workflowSource.includes('test "$GITHUB_REF" = "refs/heads/main"'));
+  assert.ok(workflowSource.includes('"--record=true"'));
+  assert.ok(workflowSource.includes('"--per-host-delay-ms=1000"'));
+  assert.ok(workflowSource.includes('"--expected-source-count=10"'));
+  assert.ok(workflowSource.includes('"--expected-target-count=5"'));
+  assert.ok(workflowSource.includes('"--expected-source-count=35"'));
+  assert.ok(workflowSource.includes('"--expected-target-count=25"'));
+  assert.ok(workflowSource.includes("--expected-fleet-digest="));
+  assert.ok(workflowSource.includes("actions/upload-artifact@v7"));
+  assert.ok(!workflowSource.includes("\n  schedule:"));
+
+  assert.ok(liveResultVerifierSource.includes("degraded target threshold"));
+  assert.ok(liveResultVerifierSource.includes("unsafe/hard transport blocks detected"));
+  assert.ok(liveResultVerifierSource.includes("selectedTargetCount: 5"));
+  assert.ok(liveResultVerifierSource.includes("selectedTargetCount: 25"));
+}
+
 verifyCheckedInManifest();
 verifyDigestDeterminism();
 await verifyFailClosedPreflight();
 await verifySelectedCanaryAndRecordFalse();
 verifyCliSafetyContract();
+verifyWorkflowBoundary();
 
 console.log("TRUST_PHASE8I2B_ROLLOUT_CONTROLS_VERIFIED");
