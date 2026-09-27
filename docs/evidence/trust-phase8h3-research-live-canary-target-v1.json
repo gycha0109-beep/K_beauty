@@ -1,0 +1,80 @@
+{
+  "contract": "trust-phase8h3-research-live-canary-target-v1",
+  "purpose": "Read-only live execution of the governed Phase 3 research worker extraction for the Derma Phase 8H-3 relocated official source. The fake RPC client captures the exact p_result payload without mutating Production.",
+  "tasks": [
+    {
+      "task_id": "0254ccda-7f1e-44c6-998b-84dc2e728f08",
+      "fact_key": "active_concentration",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+      "attempt_count": 3,
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "parent_propositions": [
+        {
+          "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+          "fact_instance_id": "532138b9-fd99-49a3-b5ae-9ad677162055",
+          "value_entity_identifier": "niacinamide"
+        }
+      ],
+      "current_fact_context": {
+        "fact_key": "active_concentration",
+        "value_type": "number_unit",
+        "value_unit": "percent",
+        "value_number": 20,
+        "relocation_id": "463e6a5a-781d-4e8c-be36-918b01e423fc",
+        "transition_id": "f5d1b195-a48d-4184-95d0-3bf2b22638d6",
+        "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+        "fact_instance_id": "f1b5f4c9-d099-4594-9b3c-73b13bd3ce00",
+        "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+        "parent_fact_instance_id": "532138b9-fd99-49a3-b5ae-9ad677162055",
+        "value_entity_identifier": null
+      },
+      "official_source_seeds": [
+        {
+          "locale": "en",
+          "market": "KR_US",
+          "source_name": "dermafactory_official",
+          "external_type": "brand_official_product_page",
+          "binding_method": "trust_official_source_review_v1",
+          "canonical_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+          "source_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+          "product_scope_state": "product"
+        }
+      ]
+    },
+    {
+      "task_id": "6ecf45fe-a07b-4ca9-a3df-2db09fb8e89d",
+      "fact_key": "contains_active",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+      "attempt_count": 3,
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "parent_propositions": [],
+      "current_fact_context": {
+        "fact_key": "contains_active",
+        "value_type": "entity_identifier",
+        "relocation_id": "463e6a5a-781d-4e8c-be36-918b01e423fc",
+        "transition_id": "4938081f-1b88-419a-be36-7765ef9a4a4e",
+        "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+        "fact_instance_id": "532138b9-fd99-49a3-b5ae-9ad677162055",
+        "parent_proposition_key": null,
+        "parent_fact_instance_id": null,
+        "value_entity_identifier": "niacinamide"
+      },
+      "official_source_seeds": [
+        {
+          "locale": "en",
+          "market": "KR_US",
+          "source_name": "dermafactory_official",
+          "external_type": "brand_official_product_page",
+          "binding_method": "trust_official_source_review_v1",
+          "canonical_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+          "source_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+          "product_scope_state": "product"
+        }
+      ]
+    }
+  ]
+}
