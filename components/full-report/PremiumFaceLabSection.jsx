@@ -561,20 +561,23 @@ export default function PremiumFaceLabSection({
   const persistQueueRef = useRef(Promise.resolve());
   const restoreInteractionRef = useRef(0);
   const activePersistenceStateRef = useRef(null);
+  const latestPersistRequestFingerprintRef = useRef(null);
 
   const persistServer = useCallback((surveyAnswers, approvedFinder, routeId) => {
     if (!savedReportId) return Promise.resolve();
+
+    const requestState = {
+      surveyAnswers,
+      targetFinderResult: approvedFinder,
+      selectedRouteId: routeId
+    };
+    const requestFingerprint = persistenceFingerprint(requestState);
+    latestPersistRequestFingerprintRef.current = requestFingerprint;
 
     const write = async () => {
       try {
         const accessToken = await getBrowserSupabaseAccessToken();
         if (!accessToken) return;
-
-        const requestState = {
-          surveyAnswers,
-          targetFinderResult: approvedFinder,
-          selectedRouteId: routeId
-        };
         const response = await fetch("/api/premium/face-lab-v2", {
           method: "POST",
           headers: {
@@ -591,19 +594,16 @@ export default function PremiumFaceLabSection({
 
         if (!response.ok || !serverStored?.surveyAnswers) return;
 
-        try {
-          const currentStored = JSON.parse(localStorage.getItem(storageKey) || "null");
-          if (
-            persistenceFingerprint(currentStored) !==
-            persistenceFingerprint(requestState)
-          ) {
-            return;
-          }
+        if (latestPersistRequestFingerprintRef.current !== requestFingerprint) {
+          return;
+        }
 
-          activePersistenceStateRef.current = {
-            surveyAnswers: serverStored.surveyAnswers,
-            targetFinderResult: serverStored.targetFinderResult || null
-          };
+        activePersistenceStateRef.current = {
+          surveyAnswers: serverStored.surveyAnswers,
+          targetFinderResult: serverStored.targetFinderResult || null
+        };
+
+        try {
           localStorage.setItem(storageKey, JSON.stringify({
             surveyAnswers: serverStored.surveyAnswers,
             targetFinderResult: serverStored.targetFinderResult || null,
