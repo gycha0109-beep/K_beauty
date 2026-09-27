@@ -6915,7 +6915,12 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
     setIsReportOpened(true);
   };
 
-  if (!isReady) {
+  const loadedSavedReportId = report?.meta?.persistence?.savedReportId || null;
+  const savedReportIdentityMismatch = Boolean(
+    savedReportId && loadedSavedReportId !== savedReportId
+  );
+
+  if (!isReady || savedReportIdentityMismatch) {
     return (
       <FullReportLoadingBridge
         locale={locale}
