@@ -577,6 +577,7 @@ export default function PremiumFaceLabSection({
   const activePersistenceStateRef = useRef(null);
   const latestPersistRequestFingerprintRef = useRef(null);
   const serverRevisionRef = useRef(0);
+  const conflictEpochRef = useRef(0);
 
   const writeLocalState = useCallback((value, metadata) => {
     if (typeof window === "undefined") return false;
@@ -599,6 +600,7 @@ export default function PremiumFaceLabSection({
       selectedRouteId: routeId
     };
     const requestFingerprint = persistenceFingerprint(requestState);
+    const requestConflictEpoch = conflictEpochRef.current;
     latestPersistRequestFingerprintRef.current = requestFingerprint;
 
     writeLocalState(requestState, {
@@ -615,17 +617,25 @@ export default function PremiumFaceLabSection({
     setPersistenceStatus("saving");
 
     const write = async () => {
+      if (requestConflictEpoch !== conflictEpochRef.current) {
+        return;
+      }
+
       const expectedRevision = serverRevisionRef.current;
+      const isLatestRequest = () =>
+        latestPersistRequestFingerprintRef.current === requestFingerprint;
 
       try {
         const accessToken = await getBrowserSupabaseAccessToken();
         if (!accessToken) {
-          writeLocalState(requestState, {
-            syncStatus: "auth_required",
-            baseServerRevision: expectedRevision,
-            acknowledgedRevision: serverRevisionRef.current
-          });
-          setPersistenceStatus("auth_required");
+          if (isLatestRequest()) {
+            writeLocalState(requestState, {
+              syncStatus: "auth_required",
+              baseServerRevision: expectedRevision,
+              acknowledgedRevision: serverRevisionRef.current
+            });
+            setPersistenceStatus("auth_required");
+          }
           return;
         }
 
@@ -645,31 +655,50 @@ export default function PremiumFaceLabSection({
         const serverStored = data?.faceLabV2 || null;
 
         if (response.status === 409 && data?.error === "face_lab_state_conflict") {
-          serverRevisionRef.current = normalizeFaceLabRevision(data.currentRevision);
-          writeLocalState(requestState, {
-            syncStatus: "conflict",
-            baseServerRevision: expectedRevision,
-            acknowledgedRevision: serverRevisionRef.current
-          });
+          const currentRevision = normalizeFaceLabRevision(data.currentRevision);
+          serverRevisionRef.current = currentRevision;
+          conflictEpochRef.current += 1;
+
+          if (isLatestRequest()) {
+            writeLocalState(requestState, {
+              syncStatus: "conflict",
+              baseServerRevision: expectedRevision,
+              acknowledgedRevision: currentRevision
+            });
+          } else {
+            try {
+              const latestLocal = JSON.parse(localStorage.getItem(storageKey) || "null");
+              if (latestLocal?.surveyAnswers) {
+                localStorage.setItem(storageKey, JSON.stringify({
+                  ...latestLocal,
+                  syncStatus: "conflict",
+                  acknowledgedRevision: currentRevision
+                }));
+              }
+            } catch {}
+          }
+
           setPersistenceStatus("conflict");
           return;
         }
 
         if (!response.ok || !serverStored?.surveyAnswers) {
-          const nextStatus = response.status === 401 ? "auth_required" : "pending";
-          writeLocalState(requestState, {
-            syncStatus: nextStatus,
-            baseServerRevision: expectedRevision,
-            acknowledgedRevision: serverRevisionRef.current
-          });
-          setPersistenceStatus(nextStatus);
+          if (isLatestRequest()) {
+            const nextStatus = response.status === 401 ? "auth_required" : "pending";
+            writeLocalState(requestState, {
+              syncStatus: nextStatus,
+              baseServerRevision: expectedRevision,
+              acknowledgedRevision: serverRevisionRef.current
+            });
+            setPersistenceStatus(nextStatus);
+          }
           return;
         }
 
         const acknowledgedRevision = normalizeFaceLabRevision(data.revision);
         serverRevisionRef.current = acknowledgedRevision;
 
-        if (latestPersistRequestFingerprintRef.current !== requestFingerprint) {
+        if (!isLatestRequest()) {
           try {
             const pending = JSON.parse(localStorage.getItem(storageKey) || "null");
             if (
@@ -698,12 +727,14 @@ export default function PremiumFaceLabSection({
         });
         setPersistenceStatus("synced");
       } catch {
-        writeLocalState(requestState, {
-          syncStatus: "pending",
-          baseServerRevision: expectedRevision,
-          acknowledgedRevision: serverRevisionRef.current
-        });
-        setPersistenceStatus("pending");
+        if (isLatestRequest()) {
+          writeLocalState(requestState, {
+            syncStatus: "pending",
+            baseServerRevision: expectedRevision,
+            acknowledgedRevision: serverRevisionRef.current
+          });
+          setPersistenceStatus("pending");
+        }
       }
     };
 
