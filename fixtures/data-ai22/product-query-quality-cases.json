@@ -17,7 +17,7 @@
       ],
       "query": "백탁 없는 선크림 추천해줘",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -31,7 +31,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -73,7 +77,7 @@
       ],
       "query": "얼굴이 하얗게 뜨지 않는 자외선차단제",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -87,7 +91,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -129,7 +137,7 @@
       ],
       "query": "white cast 없는 sunscreen",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -143,7 +151,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -185,7 +197,7 @@
       ],
       "query": "눈시림 적은 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -199,7 +211,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -240,7 +256,7 @@
       ],
       "query": "눈이 예민해서 눈 따갑지 않은 자외선차단제 찾고 있어",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -254,7 +270,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -295,7 +315,7 @@
       ],
       "query": "sunscreen for sensitive eyes",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -309,7 +329,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -350,7 +374,7 @@
       ],
       "query": "화장 전에 쓰기 좋은 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -364,7 +388,11 @@
         "makeup_use": true,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -405,7 +433,7 @@
       ],
       "query": "메이크업 밑에 바를 자외선차단제",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -419,7 +447,11 @@
         "makeup_use": true,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -460,7 +492,7 @@
       ],
       "query": "sunscreen to wear under makeup",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -474,7 +506,11 @@
         "makeup_use": true,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -515,7 +551,7 @@
       ],
       "query": "지성 피부용 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "oily",
         "concerns": [],
@@ -529,7 +565,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -570,7 +610,7 @@
       ],
       "query": "기름지는 피부에 맞는 자외선차단제",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "oily",
         "concerns": [],
@@ -584,7 +624,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -625,7 +669,7 @@
       ],
       "query": "sunscreen for oily skin",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "oily",
         "concerns": [],
@@ -639,7 +683,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -680,7 +728,7 @@
       ],
       "query": "민감 피부용 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "sensitive",
         "concerns": [],
@@ -694,7 +742,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -735,7 +787,7 @@
       ],
       "query": "피부가 민감한 편인데 쓸 자외선차단제",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "sensitive",
         "concerns": [],
@@ -749,7 +801,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -790,7 +846,7 @@
       ],
       "query": "sunscreen for sensitive skin",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "sensitive",
         "concerns": [],
@@ -804,7 +860,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -841,7 +901,7 @@
       "clusterFields": [],
       "query": "지성인데 백탁 없고 끈적임 적은 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "oily",
         "concerns": [],
@@ -855,7 +915,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -896,7 +960,7 @@
       "clusterFields": [],
       "query": "민감 피부인데 화장 전에 쓰고 밀림 적은 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "sensitive",
         "concerns": [],
@@ -912,7 +976,11 @@
         "unresolved_terms": [
           "low pilling"
         ],
-        "confidence": "medium"
+        "confidence": "medium",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -952,7 +1020,7 @@
       "clusterFields": [],
       "query": "건성용 크림인데 너무 무거운 느낌은 싫어",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "moisturizer_cream",
         "skin_type": "dry",
         "concerns": [],
@@ -966,7 +1034,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1005,7 +1077,7 @@
       "clusterFields": [],
       "query": "복합성 피부에 젤 타입이고 끈적이지 않는 보습제",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "moisturizer_gel",
         "skin_type": "combination",
         "concerns": [],
@@ -1019,7 +1091,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1058,7 +1134,7 @@
       "clusterFields": [],
       "query": "톤업은 필요 없고 눈이 예민한 사람용 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -1072,7 +1148,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1111,7 +1191,7 @@
       "clusterFields": [],
       "query": "지성이고 유분이 고민이라 야외에서 쓸 건데 번들거리는 건 싫은 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": "oily",
         "concerns": [
@@ -1127,7 +1207,11 @@
         "makeup_use": null,
         "outdoor_exposure": true,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1169,7 +1253,7 @@
       "clusterFields": [],
       "query": "붉은기랑 장벽이 고민이고 많이 민감한 피부에 쓸 크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "moisturizer_cream",
         "skin_type": null,
         "concerns": [
@@ -1186,7 +1270,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "high"
+        "confidence": "high",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1225,7 +1313,7 @@
       "clusterFields": [],
       "query": "좋은 거 추천해줘",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": null,
         "skin_type": null,
         "concerns": [],
@@ -1239,7 +1327,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "low"
+        "confidence": "low",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1271,7 +1363,7 @@
       "clusterFields": [],
       "query": "나한테 맞는 거 뭐가 좋아?",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": null,
         "skin_type": null,
         "concerns": [],
@@ -1285,7 +1377,11 @@
         "makeup_use": null,
         "outdoor_exposure": null,
         "unresolved_terms": [],
-        "confidence": "low"
+        "confidence": "low",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1317,7 +1413,7 @@
       "clusterFields": [],
       "query": "톤업은 싫은데 얼굴은 밝아졌으면 좋겠는 선크림",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "sunscreen",
         "skin_type": null,
         "concerns": [],
@@ -1333,7 +1429,11 @@
         "unresolved_terms": [
           "tone-up preference conflict"
         ],
-        "confidence": "low"
+        "confidence": "low",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1371,7 +1471,7 @@
       "clusterFields": [],
       "query": "매트한데 아주 촉촉한 크림이 좋아",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": "moisturizer_cream",
         "skin_type": null,
         "concerns": [],
@@ -1388,7 +1488,11 @@
           "matte finish",
           "very moisturizing finish"
         ],
-        "confidence": "medium"
+        "confidence": "medium",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1423,7 +1527,7 @@
       "clusterFields": [],
       "query": "끈적한 건 싫은데 끈적한 마무리였으면 좋겠어",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": null,
         "skin_type": null,
         "concerns": [],
@@ -1439,7 +1543,11 @@
         "unresolved_terms": [
           "sticky feel preference conflict"
         ],
-        "confidence": "low"
+        "confidence": "low",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1474,7 +1582,7 @@
       "clusterFields": [],
       "query": "탈모약 추천해줘",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": null,
         "skin_type": null,
         "concerns": [],
@@ -1490,7 +1598,11 @@
         "unresolved_terms": [
           "hair loss medicine"
         ],
-        "confidence": "low"
+        "confidence": "low",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1522,7 +1634,7 @@
       "clusterFields": [],
       "query": "두통에 좋은 약 알려줘",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": null,
         "skin_type": null,
         "concerns": [],
@@ -1538,7 +1650,11 @@
         "unresolved_terms": [
           "headache medicine"
         ],
-        "confidence": "low"
+        "confidence": "low",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",
@@ -1570,7 +1686,7 @@
       "clusterFields": [],
       "query": "아이폰 추천해줘",
       "expectedIntent": {
-        "schema_version": "product-query-intent-v1",
+        "schema_version": "product-query-intent-v2",
         "category": null,
         "skin_type": null,
         "concerns": [],
@@ -1586,7 +1702,11 @@
         "unresolved_terms": [
           "iphone"
         ],
-        "confidence": "low"
+        "confidence": "low",
+        "preferred_finish": null,
+        "post_wash_feeling": null,
+        "afternoon_skin_change": null,
+        "very_sensitive_period": null
       },
       "compareFields": [
         "category",

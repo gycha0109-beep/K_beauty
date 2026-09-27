@@ -22,6 +22,10 @@ function validIntent(overrides = {}) {
     sensitivity: null,
     texture: null,
     disliked_feel: null,
+    preferred_finish: null,
+    post_wash_feeling: null,
+    afternoon_skin_change: null,
+    very_sensitive_period: null,
     sunscreen_intent: null,
     white_cast_hate: null,
     tone_up_wanted: null,
@@ -62,6 +66,26 @@ check(koreanAdapter.recommendationAnswers.explicitCategoryIntent === "sunscreen"
 check(koreanAdapter.recommendationAnswers.sunscreenIntent === true, "sunscreen intent must be explicit");
 check(koreanAdapter.recommendationAnswers.whiteCastHate === true, "white cast preference must map");
 check(koreanAdapter.recommendationAnswers.genderPreference === "unspecified", "query adapter must not infer gender");
+
+const semanticAxisIntent = validIntent({
+  category: "cleanser",
+  skin_type: "oily",
+  preferred_finish: "fresh",
+  post_wash_feeling: "still_oily",
+  afternoon_skin_change: "more_oily",
+  very_sensitive_period: true
+});
+const semanticAxisValidation = validateProductQueryIntent(semanticAxisIntent);
+check(semanticAxisValidation.ok, "semantic-axis intent must validate");
+const semanticAxisAdapter = buildRecommendationAnswersFromProductQueryIntent(semanticAxisIntent);
+check(semanticAxisAdapter.recommendationAnswers.preferredFinish === "fresh",
+  "desired finish must map to canonical scorer preference");
+check(semanticAxisAdapter.recommendationAnswers.postWashFeeling === "still_oily",
+  "observed post-wash state must map separately from desired finish");
+check(semanticAxisAdapter.recommendationAnswers.afternoonSkinChange === "more_oily",
+  "afternoon skin state must map into the existing scorer axis");
+check(semanticAxisAdapter.recommendationAnswers.verySensitivePeriod === true,
+  "temporary sensitivity must map into the existing scorer axis");
 
 const english = validIntent({
   category: "moisturizer_cream",

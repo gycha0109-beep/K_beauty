@@ -97,8 +97,10 @@ check(
     card.includes("maxLength={500}") &&
     card.includes("payload.result") &&
     card.includes("product.whyPicked") &&
-    card.includes("product.cautionNote"),
-  "beta card must reuse the existing bounded POST contract"
+    card.includes("product.cautionNote") &&
+    card.includes("unresolvedTerms.join") &&
+    card.includes("copy.partialTermsLabel"),
+  "beta card must reuse the existing bounded POST contract and expose unresolved conditions without query persistence"
 );
 
 for (const forbidden of [
@@ -141,8 +143,10 @@ const copy = readFileSync("lib/my/i18n.js", "utf8");
 check(
   (copy.match(/productQueryBeta:/g) || []).length === 2 &&
     copy.includes("입력 내용과 추천 결과를 저장하지 않습니다.") &&
-    copy.includes("Your query and recommendation results are not persisted."),
-  "beta UX must provide Korean and English non-persistence copy"
+    copy.includes("Your query and recommendation results are not persisted.") &&
+    copy.includes('partialTermsLabel: "반영되지 않은 조건"') &&
+    copy.includes('partialTermsLabel: "Not used for ranking"'),
+  "beta UX must provide Korean/English non-persistence and explicit unresolved-condition copy"
 );
 
 check(

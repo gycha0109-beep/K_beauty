@@ -35,6 +35,8 @@ check(providerService.includes('"ko_category_only_cleanser"'),
   "category-only provider scenario must exist");
 check(providerService.includes('"ko_acne_treatment_pregnancy_unresolved"'),
   "unresolved pregnancy provider scenario must exist");
+check(providerService.includes('"ko_oily_fresh_afterfeel_cleanser"'),
+  "semantic-axis cleanser provider scenario must exist");
 check(providerService.includes('query: "지성인데 백탁 없고 끈적이지 않는 선크림 찾아줘."'),
   "provider scenario queries must be frozen in code");
 check(
@@ -47,6 +49,12 @@ check(providerService.includes("intent_${field}_must_be_null"),
   "provider scenario evaluation must enforce explicit null semantic boundaries");
 check(providerService.includes('query: "클렌저 찾아줘."'),
   "category-only query must be frozen in code");
+check(
+  providerService.includes('query: "지성피부인데 말끔한 세안감으로 세수하고 싶은데 폼클렌징 추천해줘라"') &&
+    providerService.includes('preferred_finish: "fresh"') &&
+    providerService.includes('requireNullIntentFields: Object.freeze(["post_wash_feeling"])'),
+  "desired cleanser after-feel must map to finish preference without hallucinating current post-wash state"
+);
 check(providerService.includes("requireSparseIntent: true"),
   "category-only scenario must reject hallucinated user state");
 check(providerService.includes("requirePregnancyUnresolved: true"),
@@ -154,6 +162,8 @@ check(workflow.includes("ko_category_only_cleanser"),
   "workflow must run frozen category-only scenario");
 check(workflow.includes("ko_acne_treatment_pregnancy_unresolved"),
   "workflow must run frozen unresolved scenario");
+check(workflow.includes("ko_oily_fresh_afterfeel_cleanser"),
+  "workflow must run semantic-axis cleanser scenario");
 check(workflow.includes("validate-data-ai4-provider-shadow-runtime-response.mjs"),
   "deployed provider probe must invoke standalone runtime-response validator");
 check(workflow.includes("Checkout exact runtime probe SHA"),

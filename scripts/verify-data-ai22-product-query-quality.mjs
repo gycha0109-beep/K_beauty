@@ -184,6 +184,10 @@ check(
     intentSchemaProperties.concerns.description.includes("plain skin-type claim") &&
     intentSchemaProperties.sensitivity.description.includes("general skin reactivity") &&
     intentSchemaProperties.texture.description.includes("product-family noun") &&
+    intentSchemaProperties.preferred_finish.description.includes("desired end-feel") &&
+    intentSchemaProperties.post_wash_feeling.description.includes("current observed skin state") &&
+    intentSchemaProperties.afternoon_skin_change.description.includes("current pattern") &&
+    intentSchemaProperties.very_sensitive_period.description.includes("temporary unusually sensitive") &&
     intentSchemaProperties.tone_up_wanted.description.includes("incompatible positive and negative evidence") &&
     intentSchemaProperties.unresolved_terms.description.includes("Pure ambiguity"),
   "structured-output schema must carry the semantic ownership boundaries"
