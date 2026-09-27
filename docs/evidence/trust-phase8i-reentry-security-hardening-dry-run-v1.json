@@ -1,0 +1,124 @@
+{
+  "contract": "trust-phase8i-reentry-security-hardening-dry-run-v1",
+  "captured_at": "2026-09-28T06:03:00+09:00",
+  "watchtower_track": "pipeline-reliability",
+  "production_mutation_persisted": false,
+  "prestate": [
+    {
+      "function_identity": "hash_trust_reentry_signal_v1(jsonb)",
+      "security_definer": false,
+      "proconfig": [
+        "search_path=public, extensions, pg_temp"
+      ],
+      "service_role_execute": false,
+      "authenticated_execute": false,
+      "anon_execute": false,
+      "public_execute": false
+    },
+    {
+      "function_identity": "observe_trust_reentry_signal_v1(text,text,text,uuid,uuid,uuid,jsonb)",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, extensions, pg_temp"
+      ],
+      "service_role_execute": false,
+      "authenticated_execute": false,
+      "anon_execute": false,
+      "public_execute": false
+    },
+    {
+      "function_identity": "process_trust_reentry_event_v1(uuid)",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "service_role_execute": true,
+      "authenticated_execute": false,
+      "anon_execute": false,
+      "public_execute": false
+    },
+    {
+      "function_identity": "request_trust_reentry_v1(text,uuid,uuid,uuid,text,uuid,text,jsonb)",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, extensions, pg_temp"
+      ],
+      "service_role_execute": true,
+      "authenticated_execute": false,
+      "anon_execute": false,
+      "public_execute": false
+    },
+    {
+      "function_identity": "run_trust_reentry_detectors_v1(integer)",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "service_role_execute": true,
+      "authenticated_execute": false,
+      "anon_execute": false,
+      "public_execute": false
+    }
+  ],
+  "transaction_test": {
+    "search_path_target": "",
+    "request": {
+      "event_type": "SOURCE_CHANGED",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "result_status": "queued"
+    },
+    "process": {
+      "disposition": "REVIEW_REQUIRED",
+      "reason_code": "SOURCE_CHANGED_REVIEW_REQUIRED",
+      "authority_mutation": false,
+      "current_invalidated": false
+    },
+    "detector": {
+      "limit": 1,
+      "status": "completed",
+      "intakes_scanned": 1,
+      "tasks_scanned": 3,
+      "events_emitted": 0,
+      "signals_baselined": 0,
+      "signals_unchanged": 4
+    },
+    "acl_expected": {
+      "hash_trust_reentry_signal_v1": {
+        "service_role": false,
+        "authenticated": false,
+        "anon": false,
+        "public": false
+      },
+      "observe_trust_reentry_signal_v1": {
+        "service_role": false,
+        "authenticated": false,
+        "anon": false,
+        "public": false
+      },
+      "process_trust_reentry_event_v1": {
+        "service_role": true,
+        "authenticated": false,
+        "anon": false,
+        "public": false
+      },
+      "request_trust_reentry_v1": {
+        "service_role": true,
+        "authenticated": false,
+        "anon": false,
+        "public": false
+      },
+      "run_trust_reentry_detectors_v1": {
+        "service_role": true,
+        "authenticated": false,
+        "anon": false,
+        "public": false
+      }
+    },
+    "result": "PASS"
+  },
+  "rollback_readback": {
+    "synthetic_event_persisted": false,
+    "original_search_path_restored": true
+  },
+  "result": "PASS"
+}

@@ -1,0 +1,99 @@
+{
+  "contract": "trust-phase8i-reentry-security-hardening-production-closure-v1",
+  "captured_at": "2026-09-28",
+  "watchtower_track": "pipeline-reliability",
+  "production_migration": {
+    "version": "20260928060828",
+    "name": "trust_phase8i_reentry_runtime_security_hardening_v1",
+    "materialized_file": "supabase/migrations/20260928060828_trust_phase8i_reentry_runtime_security_hardening_v1.sql",
+    "blueprint_file": "docs/evidence/trust-phase8i-reentry-security-hardening-db-blueprint-v1.sql"
+  },
+  "production_readback": {
+    "functions": [
+      {
+        "identity": "hash_trust_reentry_signal_v1(jsonb)",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": false,
+        "service_role_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "identity": "observe_trust_reentry_signal_v1(text,text,text,uuid,uuid,uuid,jsonb)",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": true,
+        "service_role_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "identity": "process_trust_reentry_event_v1(uuid)",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": true,
+        "service_role_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "identity": "request_trust_reentry_v1(text,uuid,uuid,uuid,text,uuid,text,jsonb)",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": true,
+        "service_role_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "identity": "run_trust_reentry_detectors_v1(integer)",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": true,
+        "service_role_execute": true,
+        "authenticated_execute": false
+      }
+    ],
+    "checkpoint_count": 669,
+    "reentry_event_count": 2,
+    "derma_source_unchanged": true,
+    "derma_current_unchanged": true
+  },
+  "security_advisors": {
+    "phase8i_function_findings": 0,
+    "pre_existing_findings": [
+      "rls_enabled_no_policy",
+      "authenticated_security_definer_function_executable:admin_has_capability",
+      "authenticated_security_definer_function_executable:get_current_admin_role",
+      "auth_allow_anonymous_sign_ins",
+      "auth_leaked_password_protection"
+    ],
+    "result": "PASS"
+  },
+  "data_mutation_boundary": {
+    "reentry_event_count_before": 2,
+    "reentry_event_count_after": 2,
+    "checkpoint_count_before": 669,
+    "checkpoint_count_after": 669,
+    "derma_historical_source_unchanged": true,
+    "derma_current_unchanged": true
+  },
+  "scanner_starvation_gap": {
+    "status": "KNOWN_GAP_LOCKED",
+    "fixed_in_this_slice": false,
+    "required_next_slice": "Phase 8I fair detector runtime v2"
+  },
+  "result": "PASS"
+}

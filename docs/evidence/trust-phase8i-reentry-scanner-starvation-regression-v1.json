@@ -1,0 +1,28 @@
+{
+  "contract": "trust-phase8i-reentry-scanner-starvation-regression-v1",
+  "captured_at": "2026-09-28T06:03:00+09:00",
+  "phase6b_function": "run_trust_reentry_detectors_v1(integer)",
+  "production_observation": {
+    "intake_checkpoint_count": 165,
+    "default_limit": 100,
+    "ordering": [
+      "created_at",
+      "id"
+    ],
+    "cursor_present": false,
+    "offset_present": false
+  },
+  "risk": {
+    "starvation_possible": true,
+    "explanation": "Repeated default executions can repeatedly scan the earliest 100 intakes while later intakes remain outside the batch."
+  },
+  "required_v2_contract": {
+    "stable_keyset_cursor": true,
+    "eventual_full_coverage": true,
+    "no_duplicate_authority_events": true,
+    "wrap_or_persisted_cursor_required": true,
+    "batch_size_independent_of_correctness": true
+  },
+  "status": "KNOWN_GAP_LOCKED",
+  "mutation_policy": "NO_PRODUCTION_CHANGE_IN_8I_0"
+}

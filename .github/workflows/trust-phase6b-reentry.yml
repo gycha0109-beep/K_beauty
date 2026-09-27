@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - "supabase/migrations/*trust_phase6b_*.sql"
+      - "supabase/migrations/*trust_phase8i_*.sql"
+      - "docs/evidence/trust-phase8i-*"
+      - "scripts/verify-trust-phase8i-fleet-security-hardening.mjs"
       - "tests/fixtures/trust-phase6b-reentry/**"
       - "scripts/verify-trust-phase6b-reentry-detectors.mjs"
       - ".github/workflows/trust-phase6b-reentry.yml"
@@ -13,6 +16,9 @@ on:
     branches: [main, "feat/trust-phase6b-reentry-detectors"]
     paths:
       - "supabase/migrations/*trust_phase6b_*.sql"
+      - "supabase/migrations/*trust_phase8i_*.sql"
+      - "docs/evidence/trust-phase8i-*"
+      - "scripts/verify-trust-phase8i-fleet-security-hardening.mjs"
       - "tests/fixtures/trust-phase6b-reentry/**"
       - "scripts/verify-trust-phase6b-reentry-detectors.mjs"
       - ".github/workflows/trust-phase6b-reentry.yml"
@@ -71,6 +77,7 @@ jobs:
           cp supabase/migrations/20260915131141_trust_phase3_research_worker_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260919194545_trust_phase6a_reentry_foundation_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260920200010_trust_phase6b_reentry_detectors_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260928060828_trust_phase8i_reentry_runtime_security_hardening_v1.sql "${migration_dir}/"
 
       - name: Start isolated Supabase and run Phase 6A + 6B runtime gates
         shell: bash
@@ -92,6 +99,9 @@ jobs:
 
           psql "$DB" -qAt -v ON_ERROR_STOP=1             -f tests/fixtures/trust-phase6b-reentry/verify_trust_phase6b_runtime.sql             | tee "${RUNNER_TEMP}/trust-phase6b-runtime.log"
           grep -q '^TRUST_PHASE6B_REENTRY_DETECTORS_RUNTIME_VERIFIED$' "${RUNNER_TEMP}/trust-phase6b-runtime.log"
+
+      - name: Verify Phase 8I-0 fleet and security hardening
+        run: node scripts/verify-trust-phase8i-fleet-security-hardening.mjs
 
       - name: Check Phase 6B security surface
         shell: bash
