@@ -104,8 +104,9 @@ assert.ok(
   "route persistence must use the canonical composer-resolved route id"
 );
 assert.ok(
-  premiumFaceLab.includes("selectedRouteId: resolvedRouteId"),
-  "local revisit state must persist the resolved route id"
+  premiumFaceLab.includes("selectedRouteId: routeId") &&
+    premiumFaceLab.includes("writeLocalState(requestState"),
+  "local revisit state must persist the route carried by the queued request state"
 );
 assert.ok(
   premiumFaceLab.includes("persistServer(surveyAnswers, approvedFinder, resolvedRouteId)"),
