@@ -9,6 +9,10 @@ import {
   FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  FACE_LAB_V2_PARAMETER_TRANSLATION_EVALUATOR_VERSION,
+  runFaceLabV2ParameterTranslationEvaluation
+} from "../lib/face-lab-v2/evaluation/parameter-translation.js";
+import {
   FACE_LAB_V2_LINEAGE_EVALUATOR_VERSION,
   runFaceLabV2RecommendationLineageEvaluation
 } from "../lib/face-lab-v2/evaluation/lineage.js";
@@ -203,6 +207,21 @@ assert.ok(
   "target sweep must demonstrate recommendation sensitivity beyond one signature"
 );
 
+const parameterTranslation = runFaceLabV2ParameterTranslationEvaluation();
+assert.equal(
+  parameterTranslation.evaluatorVersion,
+  FACE_LAB_V2_PARAMETER_TRANSLATION_EVALUATOR_VERSION
+);
+assert.ok(
+  parameterTranslation.summary.uniqueParameterCount >= 20,
+  "parameter translation evaluator must exercise the current Style Delta parameter surface"
+);
+assert.equal(
+  parameterTranslation.summary.hardFailureCount,
+  0,
+  JSON.stringify(parameterTranslation.failures, null, 2)
+);
+
 const lineage = runFaceLabV2RecommendationLineageEvaluation(
   coverageCohort.cases
 );
@@ -264,7 +283,8 @@ console.log(JSON.stringify({
     adversarial: adversarial.summary,
     targetResponsiveness: targetResponsiveness.summary,
     axisConsumption: axisConsumption.summary,
-    lineage: lineage.summary
+    lineage: lineage.summary,
+    parameterTranslation: parameterTranslation.summary
   },
   targetSweep: {
     cohort: targetResponsiveness.cohort,
