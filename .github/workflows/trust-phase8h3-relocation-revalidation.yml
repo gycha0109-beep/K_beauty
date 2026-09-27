@@ -8,7 +8,7 @@ on:
       - "docs/evidence/trust-phase8h3-*"
       - "docs/evidence/trust-phase8i2-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
-      - "lib/trust/official-source-fetch.mjs"
+      - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -28,7 +28,7 @@ on:
       - "docs/evidence/trust-phase8h3-*"
       - "docs/evidence/trust-phase8i2-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
-      - "lib/trust/official-source-fetch.mjs"
+      - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -88,7 +88,7 @@ jobs:
 
       - name: Verify Phase 8I-2 transport foundation
         run: |
-          node --check lib/trust/official-source-fetch.mjs
+          node --check lib/trust/official-source-transport-fetch.mjs
           node --check scripts/trust-official-source-transport-worker.mjs
           node scripts/verify-trust-phase8i2-transport-foundation.mjs
 
