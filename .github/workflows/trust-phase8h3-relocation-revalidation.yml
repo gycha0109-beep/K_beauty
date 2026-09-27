@@ -11,6 +11,7 @@ on:
       - "scripts/trust-source-verification-worker.mjs"
       - "scripts/verify-trust-phase8h3-relocation-aware-verification.mjs"
       - "scripts/verify-trust-phase8h3-relocation-revalidation.mjs"
+      - "scripts/verify-trust-phase8h3-production-closure.mjs"
       - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
       - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
       - "docs/ci/consolidation-audits/phase-b-policy.json"
@@ -25,6 +26,7 @@ on:
       - "scripts/trust-source-verification-worker.mjs"
       - "scripts/verify-trust-phase8h3-relocation-aware-verification.mjs"
       - "scripts/verify-trust-phase8h3-relocation-revalidation.mjs"
+      - "scripts/verify-trust-phase8h3-production-closure.mjs"
       - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
       - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
       - "docs/ci/consolidation-audits/phase-b-policy.json"
@@ -83,6 +85,7 @@ jobs:
         run: |
           node scripts/verify-trust-phase8h3-relocation-revalidation.mjs
           node scripts/verify-trust-phase8h3-relocation-aware-verification.mjs
+          node scripts/verify-trust-phase8h3-production-closure.mjs
 
       - name: Detect Phase 8H-3 relocation canary target change
         id: relocation_canary
