@@ -16,6 +16,7 @@ const closure = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-product
 const relocationAwareDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-aware-verification-dry-run-v1.json", "utf8"));
 const relocationSeedHardening = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-research-seed-hardening-db-blueprint-v1.sql", "utf8");
 const relocationResearchSecurityHardening = fs.readFileSync("docs/evidence/trust-phase8h3-research-result-security-hardening-db-blueprint-v1.sql", "utf8");
+const relocationResearchSecurityDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-research-result-security-hardening-dry-run-v1.json", "utf8"));
 const relocationSeedDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-research-seed-hardening-dry-run-v1.json", "utf8"));
 
 for (const needle of [
@@ -310,5 +311,18 @@ const concentration = extractStrictFactCandidate(
 );
 assert.deepEqual(concentration?.normalizedValue, { amount: 20, unit: "percent" });
 assert.equal(concentration?.parentPropositionKey, parent.proposition_key);
+
+
+assert.equal(relocationResearchSecurityDryRun.contract, "trust-phase8h3-research-result-security-hardening-dry-run-v1");
+assert.equal(relocationResearchSecurityDryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
+assert.equal(relocationResearchSecurityDryRun.production_mutation, "NONE");
+assert.equal(relocationResearchSecurityDryRun.dry_run_readback.security_definer, true);
+assert.equal(relocationResearchSecurityDryRun.dry_run_readback.search_path, "");
+assert.equal(relocationResearchSecurityDryRun.dry_run_readback.service_role_execute, true);
+assert.equal(relocationResearchSecurityDryRun.dry_run_readback.authenticated_execute, false);
+assert.equal(relocationResearchSecurityDryRun.dry_run_readback.anon_execute, false);
+assert.equal(relocationResearchSecurityDryRun.dry_run_readback.public_execute, false);
+assert.equal(relocationResearchSecurityDryRun.rollback, true);
+assert.equal(relocationResearchSecurityDryRun.result, "PASS");
 
 console.log("TRUST_PHASE8H3_RELOCATION_REVALIDATION_STATIC_VERIFIED");
