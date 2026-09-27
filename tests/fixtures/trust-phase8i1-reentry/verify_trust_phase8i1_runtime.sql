@@ -133,6 +133,11 @@ create temporary table trust_phase8i1_scanned (
   intake_id uuid not null
 );
 
+create temporary table trust_phase8i1_late_ids (
+  id uuid primary key,
+  kind text not null
+);
+
 -- Start a controlled active cycle immediately after the pre-existing fixture
 -- rows and cap it at the max of the 205 generated rows.
 do $$
@@ -227,7 +232,6 @@ begin
     t.identity_resolution_version,t.identity_resolution_detail
   );
 
-  create temporary table trust_phase8i1_late_ids(id uuid primary key,kind text not null) on commit drop;
   insert into trust_phase8i1_late_ids values (v_future,'future'),(v_backfill,'backfill');
 
   r3 := public.run_trust_reentry_detectors_v2(100);
