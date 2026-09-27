@@ -10,6 +10,7 @@ const blueprintPath = "docs/evidence/trust-phase8h3-relocation-aware-verificatio
 const workerPath = "scripts/trust-source-verification-worker.mjs";
 const blueprint = fs.readFileSync(blueprintPath, "utf8");
 const worker = fs.readFileSync(workerPath, "utf8");
+const canaryTarget = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-canary-target-v1.json", "utf8"));
 
 for (const token of [
   "get_official_source_relocation_verification_target_v1",
@@ -54,6 +55,15 @@ assert.ok(
   worker.includes("fetchOfficialBytes(target.canonical_locator, fetchImpl)"),
   "generic source verification must continue to fetch the historical target canonical locator",
 );
+
+assert.equal(canaryTarget.contract, "trust-phase8h3-relocation-canary-target-v1");
+assert.equal(canaryTarget.relocation_id, "463e6a5a-781d-4e8c-be36-918b01e423fc");
+assert.equal(canaryTarget.source_id, "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b");
+assert.equal(canaryTarget.canonical_locator, "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933");
+assert.equal(canaryTarget.historical_canonical_locator, "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933");
+assert.equal(canaryTarget.adapter_key, "official-product-semantic");
+assert.equal(canaryTarget.adapter_version, "v1");
+assert.equal(canaryTarget.expected_authority_mutation, false);
 
 const replacementLocator = "https://example.com/products/niacinamide-serum?variant=1";
 const historicalSourceId = "11111111-1111-4111-8111-111111111111";
