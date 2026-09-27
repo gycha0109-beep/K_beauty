@@ -27,6 +27,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
+  actions: read
   contents: read
 
 env:
@@ -60,7 +61,17 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Wait for canonical TRUST 5B-7D static contract
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EXPECTED_EVENT: ${{ github.event_name }}
+          CANONICAL_WORKFLOW_PATH: .github/workflows/trust-phase5b-7d-static.yml
+        run: node scripts/await-ci-workflow.mjs
+
       - name: Verify static contracts
+        if: github.event_name == 'workflow_dispatch'
         run: |
           node scripts/verify-trust-phase4-controlled-evidence-adoption.mjs
           node scripts/verify-trust-phase7c-legacy-research-readiness.mjs
