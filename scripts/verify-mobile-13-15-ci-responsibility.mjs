@@ -83,7 +83,22 @@ for (const token of [
 
 const cluster = phaseB.clusters?.["mobile-release-13-15"];
 assert.equal(cluster?.runtimeMatrix, "docs/ci/consolidation-audits/mobile-13-15-runtime-matrix.json");
-assert.deepEqual(phaseB.approvedAddedWorkflows, ["data-ai-product-query-static.yml"]);
-assert.deepEqual(phaseB.approvedRetiredWorkflows, []);
+assert.equal(cluster?.manualReleasePreflightOwner, "mobile-13-store-release-preflight.yml");
+assert.equal(cluster?.nativeAuthLinkOwner, "mobile-14-auth-app-links.yml");
+assert.equal(cluster?.distributionSigningOwner, "mobile-15-distribution-authority.yml");
+for (const workflow of [
+  "mobile-13-store-release-preflight.yml",
+  "mobile-14-auth-app-links.yml",
+  "mobile-15-distribution-authority.yml",
+]) {
+  assert.ok(
+    !(phaseB.approvedRetiredWorkflows || []).includes(workflow),
+    `Mobile 13-15 workflow must not be retired by another Phase B cluster: ${workflow}`,
+  );
+}
+const expectedWorkflowCount =
+  phaseB.baselineWorkflowCount +
+  (phaseB.approvedAddedWorkflows || []).length -
+  (phaseB.approvedRetiredWorkflows || []).length;
 
-console.log("MOBILE_13_15_CI_RESPONSIBILITY=PASS mobile13_manual=1 mobile14_native_owner=1 mobile15_source_duplicate_mobile14=0 mobile15_signed_platform_rechecks=2 signing_authority_preserved=1 workflow_inventory=64");
+console.log(`MOBILE_13_15_CI_RESPONSIBILITY=PASS mobile13_manual=1 mobile14_native_owner=1 mobile15_source_duplicate_mobile14=0 mobile15_signed_platform_rechecks=2 signing_authority_preserved=1 workflow_inventory=${expectedWorkflowCount}`);
