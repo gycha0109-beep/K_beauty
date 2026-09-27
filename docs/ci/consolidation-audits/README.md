@@ -148,3 +148,4 @@ The overlap auditor now distinguishes static coverage from runtime execution sem
 - `automatic_verification_duplicate_units` narrows automatic overlap to verifier/check/audit/validate/guard contracts and excludes generic runtime capabilities and setup helpers.
 - Transitive script expansion now requires actual `child_process`/`spawnSync` execution evidence, preventing structural source assertions such as quoted `run(...)` examples from being counted as child execution.
 - Execution metrics collapse pure one-script npm aliases into their resolved script unit, avoiding double-counting `npm:verify:*` and the same underlying verifier; compound or nested npm tasks remain distinct.
+- Executable driver scripts now contribute their statically declared npm child calls as execution units; `--prefix` package calls are namespaced so crawler/root tasks with the same script name are not conflated.
