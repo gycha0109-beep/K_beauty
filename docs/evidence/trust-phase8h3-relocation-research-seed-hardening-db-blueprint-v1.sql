@@ -178,15 +178,12 @@ revoke all on function public.claim_trust_research_tasks_v1(integer, integer)
 grant execute on function public.claim_trust_research_tasks_v1(integer, integer)
   to service_role;
 
-create or replace function public.record_trust_research_result_v1(
-  p_task_id uuid,
-  p_result jsonb
-)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public, pg_temp
-as $$
+CREATE OR REPLACE FUNCTION public.record_trust_research_result_v1(p_task_id uuid, p_result jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
 declare
   v_task public.product_fact_research_tasks%rowtype;
   v_intake public.catalog_trust_intake%rowtype;
@@ -296,7 +293,29 @@ begin
           and fi.fact_key = v_task.fact_key
       )
   ) into v_existing_current;
-  if v_existing_current then
+  if v_existing_current and not exists (
+    select 1
+    from public.product_fact_revalidation_research_bridges rb
+    join public.product_fact_revalidation_transitions tr
+      on tr.transition_id = rb.transition_id
+    join public.product_fact_review_assignments ra
+      on ra.assignment_id = rb.assignment_id
+    where rb.research_task_id = v_task.id
+      and rb.disposition = 'RESEARCH_REQUEUED'
+      and tr.assignment_id = ra.assignment_id
+      and tr.fact_instance_id = (
+        select c.fact_instance_id
+        from public.product_fact_current c
+        join public.product_fact_instances fi
+          on fi.fact_instance_id = c.fact_instance_id
+        where c.subject_id = v_task.subject_id
+          and fi.registry_version = v_task.registry_version
+          and fi.fact_key = v_task.fact_key
+        order by c.updated_at desc
+        limit 1
+      )
+      and ra.operational_state = 're_review_required'
+  ) then
     update public.product_fact_research_tasks
     set state = 'ALREADY_COVERED', blocker_code = null, blocker_detail = null,
         next_retry_at = null, last_research_at = now(), updated_at = now()
@@ -561,7 +580,7 @@ begin
     'canonical_evidence_digest', v_evidence_digest
   );
 end;
-$$;
+$function$
 
 revoke all on function public.record_trust_research_result_v1(uuid, jsonb)
   from public, anon, authenticated;
