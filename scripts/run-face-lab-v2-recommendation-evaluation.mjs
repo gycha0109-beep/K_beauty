@@ -5,6 +5,9 @@ import {
   FACE_LAB_V2_LOCKED_COHORT_SIZE
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  runFaceLabV2TargetResponsivenessEvaluation
+} from "../lib/face-lab-v2/evaluation/target-responsiveness.js";
+import {
   runFaceLabV2AdversarialEvaluation,
   runFaceLabV2CoverageEvaluation,
   runFaceLabV2EvaluationSuite,
@@ -41,11 +44,13 @@ if (cohort === "locked") {
       FACE_LAB_V2_ADVERSARIAL_COHORT_SIZE
     )
   });
+} else if (cohort === "target-sweep") {
+  report = runFaceLabV2TargetResponsivenessEvaluation();
 } else if (cohort === "all") {
   report = runFaceLabV2EvaluationSuite();
 } else {
   throw new Error(
-    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, or all"
+    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, or all"
   );
 }
 
