@@ -6734,6 +6734,16 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       return;
     }
 
+    let cancelled = false;
+    const requestController = new AbortController();
+
+    setIsReady(false);
+    setError("");
+    setAuthorizationFailure("");
+    setAccessBlocked(
+      accessReason === "payment_required" || accessReason === "premium_unavailable"
+    );
+
     const storedResult = sessionStorage.getItem("skinTestResult");
     const storedSubmission = sessionStorage.getItem("skinTestSubmission");
     let parsedSubmission = null;
@@ -6786,6 +6796,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
 
       try {
         const supabaseAccessToken = await getFullReportAccessToken();
+        if (cancelled) return;
+
         const response = await fetch("/api/full-report", {
           method: "POST",
           headers: {
@@ -6801,9 +6813,11 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             topPick: parsedResult?.topPick || null,
             currentProducts,
             premiumIntake: premiumIntake || undefined
-          })
+          }),
+          signal: requestController.signal
         });
         const data = await response.json().catch(() => null);
+        if (cancelled) return;
 
         if (response.status === 401) {
           if (developmentFallbackReport) {
@@ -6855,6 +6869,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           }
         });
       } catch {
+        if (cancelled) return;
+
         if (process.env.NODE_ENV !== "production") {
           writeSafeLog("warn", {
             event: "client_operation_failed",
@@ -6876,12 +6892,19 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           setError(copy.errorBody);
         }
       } finally {
-        setIsReady(true);
+        if (!cancelled) {
+          setIsReady(true);
+        }
       }
     }
 
     void loadFullReport();
-  }, [copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, premiumIntake, savedReportId]);
+
+    return () => {
+      cancelled = true;
+      requestController.abort();
+    };
+  }, [accessReason, copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, premiumIntake, savedReportId]);
 
   const openFullReportContent = () => {
     if (typeof window !== "undefined") {
