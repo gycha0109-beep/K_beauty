@@ -1,0 +1,157 @@
+{
+  "contract": "trust-phase8i1-fair-detector-runtime-production-closure-v1",
+  "captured_at": "2026-09-28",
+  "watchtower_track": "pipeline-reliability",
+  "production_migration": {
+    "version": "20260928072013",
+    "name": "trust_phase8i1_fair_detector_runtime_v1",
+    "blueprint_file": "docs/evidence/trust-phase8i1-fair-detector-runtime-db-blueprint-v1.sql",
+    "materialized_file": "supabase/migrations/20260928072013_trust_phase8i1_fair_detector_runtime_v1.sql",
+    "blueprint_blob_sha": "4a7ab64053a267d3dce1aea5e779ee0eb948da6a"
+  },
+  "production_prestate": {
+    "intake_count": 165,
+    "checkpoint_count": 669,
+    "event_count": 2,
+    "product_fact_current_count": 71,
+    "evidence_source_count": 40,
+    "derma_historical_source_unchanged": true,
+    "derma_contains_current_unchanged": true,
+    "derma_concentration_current_unchanged": true
+  },
+  "cycle_1": {
+    "batch_runs": [
+      {
+        "limit": 5,
+        "intakes_scanned": 5,
+        "remaining_in_cycle": 160,
+        "events_emitted": 0,
+        "signals_baselined": 0,
+        "signals_unchanged": 20,
+        "cycle_started": true,
+        "cycle_completed": false
+      },
+      {
+        "limit": 5,
+        "intakes_scanned": 5,
+        "remaining_in_cycle": 155,
+        "events_emitted": 0,
+        "signals_baselined": 0,
+        "signals_unchanged": 22,
+        "cycle_started": false,
+        "cycle_completed": false
+      },
+      {
+        "limit": 100,
+        "intakes_scanned": 100,
+        "remaining_in_cycle": 55,
+        "events_emitted": 1,
+        "signals_baselined": 2,
+        "signals_unchanged": 406,
+        "cycle_started": false,
+        "cycle_completed": false
+      },
+      {
+        "limit": 100,
+        "intakes_scanned": 55,
+        "remaining_in_cycle": 0,
+        "events_emitted": 0,
+        "signals_baselined": 0,
+        "signals_unchanged": 220,
+        "cycle_started": false,
+        "cycle_completed": true
+      }
+    ],
+    "cycle_upper_bound": {
+      "created_at": "2026-09-21T00:54:06.84201+09:00",
+      "intake_id": "f84ddeb1-5b23-4975-bd97-7ac5b6c1b925"
+    },
+    "coverage": {
+      "scanned_count": 165,
+      "distinct_scanned": 165,
+      "expected_count": 165,
+      "missing_count": 0,
+      "unexpected_count": 0
+    },
+    "catch_up_drift": {
+      "event_id": "fad169e8-d462-4c74-8ffe-6bcc46ddfb15",
+      "event_type": "SOURCE_CHANGED",
+      "detector_key": "OFFICIAL_SOURCE_SET",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "intake_id": "9e986210-4e46-4bbe-8bd0-b537f106652b",
+      "previous_binding_id": "fd3ddecc-c09a-4b12-bc96-6e6ef2b2e97c",
+      "current_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+      "previous_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "current_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "disposition": "REVIEW_REQUIRED",
+      "reason_code": "SOURCE_CHANGED_REVIEW_REQUIRED",
+      "authority_mutation": false,
+      "current_invalidated": false,
+      "interpretation": "EXPECTED_CATCH_UP_AFTER_GOVERNED_8H3_RELOCATION"
+    },
+    "new_source_observation_digest_baselines": [
+      {
+        "checkpoint_id": "08b5a2f8-4b29-44b0-902e-e56db079909f",
+        "research_task_id": "0254ccda-7f1e-44c6-998b-84dc2e728f08",
+        "source_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+        "source_content_digest": "d38434c91442e7bc890c72535d9e8bcc4b6c840c90851b16edd4ad07b4c35f82"
+      },
+      {
+        "checkpoint_id": "2dd1e694-d15f-4870-9883-3d0eb4586da9",
+        "research_task_id": "6ecf45fe-a07b-4ca9-a3df-2db09fb8e89d",
+        "source_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+        "source_content_digest": "b962af86a35e4682214681433578fb693c4dc431dc4a6f750917ae3d414930c0"
+      }
+    ],
+    "final_counts": {
+      "event_count": 3,
+      "checkpoint_count": 671
+    },
+    "runtime_state_reset": true
+  },
+  "cycle_2_idempotency": {
+    "cycle_number": 2,
+    "intakes_scanned": 165,
+    "remaining_in_cycle": 0,
+    "cycle_started": true,
+    "cycle_completed": true,
+    "events_emitted": 0,
+    "signals_baselined": 0,
+    "signals_unchanged": 671,
+    "event_count_before": 3,
+    "event_count_after": 3,
+    "checkpoint_count_before": 671,
+    "checkpoint_count_after": 671,
+    "runtime_state_reset": true
+  },
+  "final_authority_invariants": {
+    "intake_count": 165,
+    "product_fact_current_count": 71,
+    "evidence_source_count": 40,
+    "derma_historical_source_unchanged": true,
+    "derma_contains_current_unchanged": true,
+    "derma_concentration_current_unchanged": true,
+    "automatic_relocation_confirmation": false,
+    "automatic_product_fact_mutation": false
+  },
+  "security": {
+    "v1_runner_preserved": true,
+    "v2_search_path": "",
+    "v2_execute": {
+      "service_role": true,
+      "authenticated": false,
+      "anon": false,
+      "public": false
+    },
+    "runtime_state_direct_role_grants": 0,
+    "runtime_state_rls_enabled": true,
+    "new_authenticated_security_definer_findings": 0,
+    "advisor_info": "runtime-state RLS enabled with no policy is intentional because the table has no direct anon/authenticated/service_role grants"
+  },
+  "out_of_scope_known_gap": {
+    "phase8i0_uncovered_official_sources": 2,
+    "reason": "Their Torriden product has zero catalog_trust_intake rows; fair intake traversal cannot create source-level coverage.",
+    "next_phase": "8I-2 external official-source fleet monitoring"
+  },
+  "result": "PASS"
+}

@@ -7,9 +7,13 @@ on:
     paths:
       - "supabase/migrations/*trust_phase6b_*.sql"
       - "supabase/migrations/*trust_phase8i_*.sql"
+      - "supabase/migrations/*trust_phase8i1_*.sql"
       - "docs/evidence/trust-phase8i-*"
+      - "docs/evidence/trust-phase8i1-*"
       - "scripts/verify-trust-phase8i-fleet-security-hardening.mjs"
       - "tests/fixtures/trust-phase6b-reentry/**"
+      - "tests/fixtures/trust-phase8i1-reentry/**"
+      - "scripts/verify-trust-phase8i1-fair-detector-runtime.mjs"
       - "scripts/verify-trust-phase6b-reentry-detectors.mjs"
       - ".github/workflows/trust-phase6b-reentry.yml"
   push:
@@ -17,9 +21,13 @@ on:
     paths:
       - "supabase/migrations/*trust_phase6b_*.sql"
       - "supabase/migrations/*trust_phase8i_*.sql"
+      - "supabase/migrations/*trust_phase8i1_*.sql"
       - "docs/evidence/trust-phase8i-*"
+      - "docs/evidence/trust-phase8i1-*"
       - "scripts/verify-trust-phase8i-fleet-security-hardening.mjs"
       - "tests/fixtures/trust-phase6b-reentry/**"
+      - "tests/fixtures/trust-phase8i1-reentry/**"
+      - "scripts/verify-trust-phase8i1-fair-detector-runtime.mjs"
       - "scripts/verify-trust-phase6b-reentry-detectors.mjs"
       - ".github/workflows/trust-phase6b-reentry.yml"
   workflow_dispatch:
@@ -94,11 +102,41 @@ jobs:
           test -n "$DB_PORT"
           DB="postgresql://postgres:postgres@127.0.0.1:${DB_PORT}/postgres"
 
+          psql "$DB" -qAt -v ON_ERROR_STOP=1 -f docs/evidence/trust-phase8i1-fair-detector-runtime-db-blueprint-v1.sql
+
           psql "$DB" -qAt -v ON_ERROR_STOP=1             -f tests/fixtures/trust-phase6a-reentry/verify_trust_phase6a_runtime.sql             | tee "${RUNNER_TEMP}/trust-phase6a-regression.log"
           grep -q '^TRUST_PHASE6A_REENTRY_RUNTIME_VERIFIED$' "${RUNNER_TEMP}/trust-phase6a-regression.log"
 
           psql "$DB" -qAt -v ON_ERROR_STOP=1             -f tests/fixtures/trust-phase6b-reentry/verify_trust_phase6b_runtime.sql             | tee "${RUNNER_TEMP}/trust-phase6b-runtime.log"
           grep -q '^TRUST_PHASE6B_REENTRY_DETECTORS_RUNTIME_VERIFIED$' "${RUNNER_TEMP}/trust-phase6b-runtime.log"
+
+          psql "$DB" -qAt -v ON_ERROR_STOP=1 -f tests/fixtures/trust-phase8i1-reentry/verify_trust_phase8i1_runtime.sql | tee "${RUNNER_TEMP}/trust-phase8i1-runtime.log"
+          grep -q '^TRUST_PHASE8I1_FAIR_DETECTOR_RUNTIME_VERIFIED$' "${RUNNER_TEMP}/trust-phase8i1-runtime.log"
+
+      - name: Verify Phase 8I-1 fair detector runtime
+        run: node scripts/verify-trust-phase8i1-fair-detector-runtime.mjs
+
+      - name: Prove Phase 8I-1 concurrent calls serialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB_PORT="$(awk 'BEGIN{in_db=0} /^\[db\]/{in_db=1;next} /^\[/{in_db=0} in_db && /^port =/{gsub(/[^0-9]/,"",$0);print $0;exit}' "${TRUST_RUNTIME_DIR}/supabase/config.toml")"
+          test -n "$DB_PORT"
+          DB="postgresql://postgres:postgres@127.0.0.1:${DB_PORT}/postgres"
+          psql "$DB" -v ON_ERROR_STOP=1 -qAtc "update public.trust_reentry_detector_runtime_state set cursor_created_at=null,cursor_intake_id=null,cycle_upper_created_at=null,cycle_upper_intake_id=null,active_cycle_started_at=null,updated_at=now() where scanner_key='PHASE6B_INTAKE_FLEET'"
+          a="${RUNNER_TEMP}/phase8i1-concurrent-a.json"
+          b="${RUNNER_TEMP}/phase8i1-concurrent-b.json"
+          psql "$DB" -v ON_ERROR_STOP=1 -qAtc "select public.run_trust_reentry_detectors_v2(1)::text" >"$a" &
+          p1=$!
+          psql "$DB" -v ON_ERROR_STOP=1 -qAtc "select public.run_trust_reentry_detectors_v2(1)::text" >"$b" &
+          p2=$!
+          wait "$p1"
+          wait "$p2"
+          id_a="$(jq -r '.scanned_intake_ids[0]' "$a")"
+          id_b="$(jq -r '.scanned_intake_ids[0]' "$b")"
+          test -n "$id_a"
+          test -n "$id_b"
+          test "$id_a" != "$id_b"
 
       - name: Verify Phase 8I-0 fleet and security hardening
         run: node scripts/verify-trust-phase8i-fleet-security-hardening.mjs
