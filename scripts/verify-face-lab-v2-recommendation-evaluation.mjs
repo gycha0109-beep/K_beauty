@@ -5,7 +5,8 @@ import {
   FACE_LAB_V2_LOCKED_COHORT_HASH,
   FACE_LAB_V2_LOCKED_COHORT_SEED,
   FACE_LAB_V2_LOCKED_COHORT_SIZE,
-  FACE_LAB_V2_METAMORPHIC_RELATIONS
+  FACE_LAB_V2_METAMORPHIC_RELATIONS,
+  FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
   FACE_LAB_V2_TARGET_RESPONSIVENESS_VERSION,
@@ -160,6 +161,11 @@ assert.equal(
   targetSweepCohort.cohortHash,
   targetSweepReplay.cohortHash,
   "target-sweep cohort must replay deterministically"
+);
+assert.equal(
+  targetSweepCohort.cohortHash,
+  FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH,
+  "target-sweep v1 cohort changed; create a new cohort version instead of mutating it in place"
 );
 assert.equal(targetSweepCohort.faceCount, 8);
 assert.equal(targetSweepCohort.targetCount, 12);
