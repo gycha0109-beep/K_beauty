@@ -202,15 +202,19 @@ for (const forbidden of [
 
 
 const protocolCases = [
-  ["PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE", "incomplete", "not_applicable"],
-  ["PRODUCT_QUERY_AI_RESPONSE_INVALID", "invalid_output", "not_applicable"],
-  ["PRODUCT_QUERY_AI_REFUSED", "refusal", "not_applicable"],
-  ["PRODUCT_QUERY_AI_SCHEMA_REJECTED", "schema_rejected", "invalid_dimension"]
+  ["PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE", "incomplete", "not_applicable", "max_output_tokens"],
+  ["PRODUCT_QUERY_AI_RESPONSE_INVALID", "invalid_output", "not_applicable", "not_applicable"],
+  ["PRODUCT_QUERY_AI_REFUSED", "refusal", "not_applicable", "not_applicable"],
+  ["PRODUCT_QUERY_AI_SCHEMA_REJECTED", "schema_rejected", "invalid_dimension", "not_applicable"]
 ];
 
-for (const [code, expectedKind, expectedReason] of protocolCases) {
+for (const [code, expectedKind, expectedReason, expectedIncompleteReason] of protocolCases) {
   const error = {
     code,
+    incompleteReason:
+      code === "PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE"
+        ? "max_output_tokens"
+        : undefined,
     details:
       code === "PRODUCT_QUERY_AI_SCHEMA_REJECTED"
         ? ["preferred_finish_invalid"]
@@ -219,7 +223,8 @@ for (const [code, expectedKind, expectedReason] of protocolCases) {
   const classified = classifyProductQueryProviderProtocolFailure(error);
   check(
     classified?.protocolFailureKind === expectedKind &&
-      classified?.schemaFailureReason === expectedReason,
+      classified?.schemaFailureReason === expectedReason &&
+      classified?.incompleteReason === expectedIncompleteReason,
     `protocol failure classification must stay bounded: ${code}`
   );
 }
@@ -255,7 +260,8 @@ check(
     protocolDiagnostic.dependency === "provider" &&
     protocolDiagnostic.status === 502 &&
     protocolDiagnostic.protocolFailureKind === "schema_rejected" &&
-    protocolDiagnostic.schemaFailureReason === "keys_mismatch",
+    protocolDiagnostic.schemaFailureReason === "keys_mismatch" &&
+    protocolDiagnostic.incompleteReason === "not_applicable",
   "protocol diagnostic must emit only the bounded provider failure classification"
 );
 
@@ -281,6 +287,21 @@ check(
     protocolSink
   ) === null,
   "non-protocol failures must not emit the protocol diagnostic event"
+);
+
+const incompleteDiagnostic = writeProductQueryProviderProtocolDiagnostic(
+  {
+    code: "PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE",
+    incompleteReason: "max_output_tokens",
+    providerResponse: "must not leak"
+  },
+  protocolSink
+);
+check(
+  incompleteDiagnostic.protocolFailureKind === "incomplete" &&
+    incompleteDiagnostic.incompleteReason === "max_output_tokens" &&
+    !JSON.stringify(incompleteDiagnostic).includes("must not leak"),
+  "incomplete provider diagnostics must expose only the bounded incomplete reason"
 );
 
 const route = readFileSync("app/api/my/product-query-beta/route.js", "utf8");
@@ -323,7 +344,8 @@ check(
     redaction.includes("PRODUCT_QUERY_LATENCY_BUCKET_SET") &&
     redaction.includes("PRODUCT_QUERY_COUNT_BUCKET_SET") &&
     redaction.includes("PRODUCT_QUERY_PROTOCOL_FAILURE_KIND_SET") &&
-    redaction.includes("PRODUCT_QUERY_SCHEMA_FAILURE_REASON_SET"),
+    redaction.includes("PRODUCT_QUERY_SCHEMA_FAILURE_REASON_SET") &&
+    redaction.includes("PRODUCT_QUERY_INCOMPLETE_REASON_SET"),
   "central safe logger must explicitly allowlist DATA-AI24 dimensions and protocol diagnostic enums"
 );
 
