@@ -10,6 +10,7 @@ const worker = fs.readFileSync("scripts/trust-research-worker.mjs", "utf8");
 const contract = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-revalidation-contract-v1.md", "utf8");
 const provenance = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-cli-migration-generation-v1.json", "utf8"));
 const dryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-db-dry-run-validation-v1.json", "utf8"));
+const relocationAwareDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-aware-verification-dry-run-v1.json", "utf8"));
 
 for (const needle of [
   "add column relocation_id uuid",
@@ -79,6 +80,26 @@ assert.deepEqual(dryRun.rollback_readback, {
   mark_rolled_back: true,
   relocation_column_rolled_back: true,
 });
+assert.equal(relocationAwareDryRun.contract, "trust-phase8h3-relocation-aware-verification-dry-run-v1");
+assert.equal(relocationAwareDryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
+assert.equal(relocationAwareDryRun.production_mutation, "NONE");
+assert.equal(relocationAwareDryRun.result, "PASS");
+assert.deepEqual(relocationAwareDryRun.rollback_readback, {
+  rpc_rolled_back: true,
+  derma_profile_count: 0,
+  derma_transition_count: 0,
+});
+assert.equal(relocationAwareDryRun.dry_run_readback.historical_source_id, "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b");
+assert.equal(
+  relocationAwareDryRun.dry_run_readback.historical_canonical_locator,
+  "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933"
+);
+assert.equal(
+  relocationAwareDryRun.dry_run_readback.replacement_locator,
+  "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933"
+);
+assert.equal(relocationAwareDryRun.dry_run_readback.service_role_execute, true);
+assert.equal(relocationAwareDryRun.dry_run_readback.authenticated_execute, false);
 
 for (const needle of [
   "source_relocated",
