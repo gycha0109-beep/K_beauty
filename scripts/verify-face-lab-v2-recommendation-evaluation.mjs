@@ -5,8 +5,14 @@ import {
   FACE_LAB_V2_LOCKED_COHORT_HASH,
   FACE_LAB_V2_LOCKED_COHORT_SEED,
   FACE_LAB_V2_LOCKED_COHORT_SIZE,
-  FACE_LAB_V2_METAMORPHIC_RELATIONS
+  FACE_LAB_V2_METAMORPHIC_RELATIONS,
+  FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
+import {
+  FACE_LAB_V2_TARGET_RESPONSIVENESS_VERSION,
+  buildFaceLabV2TargetSweepCohort,
+  runFaceLabV2TargetResponsivenessEvaluation
+} from "../lib/face-lab-v2/evaluation/target-responsiveness.js";
 import {
   FACE_LAB_V2_EVALUATION_HARNESS_VERSION,
   buildFaceLabV2AdversarialCohort,
@@ -149,15 +155,57 @@ assert.ok(
   "adversarial cohort must prove expected constraint-bounded abstention"
 );
 
+const targetSweepCohort = buildFaceLabV2TargetSweepCohort();
+const targetSweepReplay = buildFaceLabV2TargetSweepCohort();
+assert.equal(
+  targetSweepCohort.cohortHash,
+  targetSweepReplay.cohortHash,
+  "target-sweep cohort must replay deterministically"
+);
+assert.equal(
+  targetSweepCohort.cohortHash,
+  FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH,
+  "target-sweep v1 cohort changed; create a new cohort version instead of mutating it in place"
+);
+assert.equal(targetSweepCohort.faceCount, 8);
+assert.equal(targetSweepCohort.targetCount, 12);
+assert.equal(targetSweepCohort.caseCount, 96);
+
+const targetResponsiveness = runFaceLabV2TargetResponsivenessEvaluation();
+assert.equal(
+  targetResponsiveness.evaluatorVersion,
+  FACE_LAB_V2_TARGET_RESPONSIVENESS_VERSION
+);
+assert.equal(
+  targetResponsiveness.summary.hardFailureCount,
+  0,
+  JSON.stringify(targetResponsiveness.failures.slice(0, 20), null, 2)
+);
+assert.equal(
+  targetResponsiveness.summary.collapsedFaceCount,
+  0,
+  "no structured face may collapse all confirmed targets into one style-delta signature"
+);
+assert.equal(
+  targetResponsiveness.summary.contrastPairComparisonCount,
+  targetSweepCohort.faceCount * 6
+);
+assert.ok(
+  targetResponsiveness.summary.averageUniqueStyleDeltaSignatures > 1,
+  "target sweep must demonstrate recommendation sensitivity beyond one signature"
+);
+
 const suite = runFaceLabV2EvaluationSuite();
 assert.equal(
   suite.summary.caseCount,
   FACE_LAB_V2_LOCKED_COHORT_SIZE +
     FACE_LAB_V2_COVERAGE_COHORT_SIZE +
-    FACE_LAB_V2_ADVERSARIAL_COHORT_SIZE
+    FACE_LAB_V2_ADVERSARIAL_COHORT_SIZE +
+    targetResponsiveness.cohort.caseCount
 );
 assert.equal(suite.summary.hardFailureCount, 0);
 assert.equal(suite.summary.unexpectedNoRouteCount, 0);
+assert.equal(suite.summary.targetCollapsedFaceCount, 0);
 
 console.log(JSON.stringify({
   ok: true,
@@ -168,6 +216,11 @@ console.log(JSON.stringify({
   cohorts: {
     locked: locked.summary,
     coverage: coverage.summary,
-    adversarial: adversarial.summary
+    adversarial: adversarial.summary,
+    targetResponsiveness: targetResponsiveness.summary
+  },
+  targetSweep: {
+    cohort: targetResponsiveness.cohort,
+    faceDiagnostics: targetResponsiveness.faceDiagnostics
   }
 }, null, 2));
