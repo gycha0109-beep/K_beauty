@@ -15,6 +15,7 @@ const dryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-db-dry-r
 const closure = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-production-closure-v1.json", "utf8"));
 const relocationAwareDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-aware-verification-dry-run-v1.json", "utf8"));
 const relocationSeedHardening = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-research-seed-hardening-db-blueprint-v1.sql", "utf8");
+const relocationResearchSecurityHardening = fs.readFileSync("docs/evidence/trust-phase8h3-research-result-security-hardening-db-blueprint-v1.sql", "utf8");
 const relocationSeedDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-research-seed-hardening-dry-run-v1.json", "utf8"));
 
 for (const needle of [
@@ -190,6 +191,51 @@ for (const task of relocationSeedDryRun.record_result_hardening.dry_run_readback
   assert.equal(task.source_locator, "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933");
   assert.equal(task.source_digest, "3bb471669b9bc1426edfb472827a37e7cf6d1382a3072a7d33bfdf5eeea87809");
 }
+
+
+assert.ok(
+  relocationResearchSecurityHardening.includes("CREATE OR REPLACE FUNCTION public.record_trust_research_result_v1"),
+  "research result security hardening must replace the governed result recorder",
+);
+assert.match(
+  relocationResearchSecurityHardening,
+  /SECURITY DEFINER\s+SET search_path = ''/i,
+  "research result recorder must pin SECURITY DEFINER search_path to empty",
+);
+assert.ok(
+  !relocationResearchSecurityHardening.includes("SET search_path TO 'public', 'pg_temp'"),
+  "unsafe public/pg_temp search_path must not remain",
+);
+for (const needle of [
+  "public.product_fact_research_tasks",
+  "public.catalog_trust_intake",
+  "public.product_fact_subjects",
+  "public.product_fact_definition_snapshots",
+  "public.product_fact_current",
+  "public.product_fact_instances",
+  "public.product_fact_revalidation_research_bridges",
+  "public.product_fact_revalidation_transitions",
+  "public.product_source_bindings",
+  "public.trust_official_source_relocations",
+  "public.trust_official_source_binding_reviews",
+  "public.trust_source_observations",
+  "public.trust_evidence_candidates",
+  "extensions.digest",
+  "revoke all on function public.record_trust_research_result_v1(uuid, jsonb)",
+  "from public, anon, authenticated",
+  "grant execute on function public.record_trust_research_result_v1(uuid, jsonb)",
+  "to service_role",
+]) {
+  assert.ok(relocationResearchSecurityHardening.includes(needle), `research result security hardening missing token: ${needle}`);
+}
+assert.ok(
+  !/update\s+public\.product_evidence_sources/i.test(relocationResearchSecurityHardening),
+  "research result security hardening must not mutate historical Evidence Source",
+);
+assert.ok(
+  !/update\s+public\.product_fact_current/i.test(relocationResearchSecurityHardening),
+  "research result security hardening must not directly mutate Current",
+);
 
 for (const needle of [
   "source_relocated",
