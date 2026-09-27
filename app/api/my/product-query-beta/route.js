@@ -14,7 +14,8 @@ import {
   bucketProductQueryCount,
   bucketProductQueryLatency,
   classifyProductQueryOperationalOutcome,
-  writeProductQueryOperationalObservation
+  writeProductQueryOperationalObservation,
+  writeProductQueryProviderProtocolDiagnostic
 } from "@/lib/product-query-operational-observability.mjs";
 
 export const runtime = "nodejs";
@@ -183,6 +184,7 @@ export async function POST(request) {
   } catch (error) {
     const classified = classifyError(error);
     const code = typeof error?.code === "string" ? error.code : "";
+    writeProductQueryProviderProtocolDiagnostic(error);
     observe({
       outcome: code.startsWith("PRODUCT_QUERY_AI_")
         ? "provider_error"

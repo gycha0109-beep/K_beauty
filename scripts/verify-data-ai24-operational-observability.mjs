@@ -8,8 +8,10 @@ import {
   bucketProductQueryCount,
   bucketProductQueryLatency,
   classifyProductQueryOperationalOutcome,
+  classifyProductQueryProviderProtocolFailure,
   createProductQueryOperationalObservation,
-  writeProductQueryOperationalObservation
+  writeProductQueryOperationalObservation,
+  writeProductQueryProviderProtocolDiagnostic
 } from "../lib/product-query-operational-observability.mjs";
 
 let assertions = 0;
@@ -198,6 +200,89 @@ for (const forbidden of [
   check(!serialized.includes(forbidden), `safe event leaked forbidden material: ${forbidden}`);
 }
 
+
+const protocolCases = [
+  ["PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE", "incomplete", "not_applicable"],
+  ["PRODUCT_QUERY_AI_RESPONSE_INVALID", "invalid_output", "not_applicable"],
+  ["PRODUCT_QUERY_AI_REFUSED", "refusal", "not_applicable"],
+  ["PRODUCT_QUERY_AI_SCHEMA_REJECTED", "schema_rejected", "invalid_dimension"]
+];
+
+for (const [code, expectedKind, expectedReason] of protocolCases) {
+  const error = {
+    code,
+    details:
+      code === "PRODUCT_QUERY_AI_SCHEMA_REJECTED"
+        ? ["preferred_finish_invalid"]
+        : ["raw schema details must never be logged"]
+  };
+  const classified = classifyProductQueryProviderProtocolFailure(error);
+  check(
+    classified?.protocolFailureKind === expectedKind &&
+      classified?.schemaFailureReason === expectedReason,
+    `protocol failure classification must stay bounded: ${code}`
+  );
+}
+
+check(
+  classifyProductQueryProviderProtocolFailure({
+    code: "PRODUCT_QUERY_AI_REQUEST_FAILED"
+  }) === null,
+  "transport/provider availability failures must not be mislabeled as protocol failures"
+);
+
+const protocolSinkEvents = [];
+const protocolSink = {
+  info(prefix, payload) {
+    protocolSinkEvents.push({ prefix, payload });
+  }
+};
+const protocolDiagnostic = writeProductQueryProviderProtocolDiagnostic(
+  {
+    code: "PRODUCT_QUERY_AI_SCHEMA_REJECTED",
+    details: ["intent_keys_mismatch"],
+    rawQuery: "private user query",
+    providerResponse: "private provider payload",
+    userId: "private-user"
+  },
+  protocolSink
+);
+check(
+  protocolSinkEvents.length === 1 &&
+    protocolDiagnostic.event === "product_query_provider_protocol_failed" &&
+    protocolDiagnostic.category === "response_shape_invalid" &&
+    protocolDiagnostic.operation === "product_query_beta" &&
+    protocolDiagnostic.dependency === "provider" &&
+    protocolDiagnostic.status === 502 &&
+    protocolDiagnostic.protocolFailureKind === "schema_rejected" &&
+    protocolDiagnostic.schemaFailureReason === "keys_mismatch",
+  "protocol diagnostic must emit only the bounded provider failure classification"
+);
+
+const protocolSerialized = JSON.stringify(protocolDiagnostic);
+for (const forbidden of [
+  "private user query",
+  "private provider payload",
+  "private-user",
+  "rawQuery",
+  "providerResponse",
+  "userId",
+  "intent_keys_mismatch"
+]) {
+  check(
+    !protocolSerialized.includes(forbidden),
+    `protocol diagnostic leaked forbidden material: ${forbidden}`
+  );
+}
+
+check(
+  writeProductQueryProviderProtocolDiagnostic(
+    { code: "PRODUCT_QUERY_AI_REQUEST_FAILED" },
+    protocolSink
+  ) === null,
+  "non-protocol failures must not emit the protocol diagnostic event"
+);
+
 const route = readFileSync("app/api/my/product-query-beta/route.js", "utf8");
 check(
   route.includes("let observationWritten = false") &&
@@ -215,8 +300,9 @@ check(
   route.includes("onOperationalObservation(observation)") &&
     route.includes("classifyProductQueryOperationalOutcome") &&
     route.includes('outcome: "invalid_request"') &&
-    route.includes('"provider_error"'),
-  "route must classify success, invalid request and provider failure paths"
+    route.includes('"provider_error"') &&
+    route.includes("writeProductQueryProviderProtocolDiagnostic(error)"),
+  "route must classify success/invalid/provider failure paths and emit bounded protocol diagnostics"
 );
 
 const shadow = readFileSync("lib/server/product-query-shadow-service.js", "utf8");
@@ -235,8 +321,10 @@ check(
     redaction.includes("PRODUCT_QUERY_OBSERVABILITY_VERSION") &&
     redaction.includes("PRODUCT_QUERY_OUTCOME_SET") &&
     redaction.includes("PRODUCT_QUERY_LATENCY_BUCKET_SET") &&
-    redaction.includes("PRODUCT_QUERY_COUNT_BUCKET_SET"),
-  "central safe logger must explicitly allowlist DATA-AI24 dimensions"
+    redaction.includes("PRODUCT_QUERY_COUNT_BUCKET_SET") &&
+    redaction.includes("PRODUCT_QUERY_PROTOCOL_FAILURE_KIND_SET") &&
+    redaction.includes("PRODUCT_QUERY_SCHEMA_FAILURE_REASON_SET"),
+  "central safe logger must explicitly allowlist DATA-AI24 dimensions and protocol diagnostic enums"
 );
 
 for (const forbiddenSource of [

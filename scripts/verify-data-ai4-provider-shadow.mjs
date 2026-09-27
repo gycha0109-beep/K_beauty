@@ -37,6 +37,10 @@ check(providerService.includes('"ko_acne_treatment_pregnancy_unresolved"'),
   "unresolved pregnancy provider scenario must exist");
 check(providerService.includes('"ko_oily_fresh_afterfeel_cleanser"'),
   "semantic-axis cleanser provider scenario must exist");
+check(providerService.includes('"ko_oily_temporary_sensitive_light_cream"'),
+  "compound temporary-sensitivity provider scenario must exist");
+check(providerService.includes('"ko_tight_afterwash_oily_afternoon_cream"'),
+  "compound post-wash/afternoon provider scenario must exist");
 check(providerService.includes('query: "지성인데 백탁 없고 끈적이지 않는 선크림 찾아줘."'),
   "provider scenario queries must be frozen in code");
 check(
@@ -54,6 +58,18 @@ check(
     providerService.includes('preferred_finish: "fresh"') &&
     providerService.includes('requireNullIntentFields: Object.freeze(["post_wash_feeling"])'),
   "desired cleanser after-feel must map to finish preference without hallucinating current post-wash state"
+);
+check(
+  providerService.includes('query: "요즘 피부가 갑자기 엄청 예민한데 평소엔 지성이야. 가벼운 크림 추천해줘"') &&
+    providerService.includes('sensitivity: "high"') &&
+    providerService.includes('very_sensitive_period: true'),
+  "compound temporary sensitivity scenario must preserve stable type and temporary high sensitivity"
+);
+check(
+  providerService.includes('query: "세안 후엔 당기는데 오후엔 기름져. 자극 적고 가벼운 크림 찾아줘"') &&
+    providerService.includes('post_wash_feeling: "tight"') &&
+    providerService.includes('afternoon_skin_change: "more_oily"'),
+  "compound current-state scenario must preserve post-wash and afternoon axes"
 );
 check(providerService.includes("requireSparseIntent: true"),
   "category-only scenario must reject hallucinated user state");
@@ -164,6 +180,15 @@ check(workflow.includes("ko_acne_treatment_pregnancy_unresolved"),
   "workflow must run frozen unresolved scenario");
 check(workflow.includes("ko_oily_fresh_afterfeel_cleanser"),
   "workflow must run semantic-axis cleanser scenario");
+check(workflow.includes("ko_oily_temporary_sensitive_light_cream"),
+  "workflow must run compound temporary-sensitivity scenario");
+check(workflow.includes("ko_tight_afterwash_oily_afternoon_cream"),
+  "workflow must run compound post-wash/afternoon scenario");
+check(
+  workflow.includes('repetitions=6') &&
+    workflow.includes('if [ "$scenario" = "ko_oily_temporary_sensitive_light_cream" ]'),
+  "primary compound scenario must repeat six times on deployed main to detect intermittent protocol failures"
+);
 check(workflow.includes("validate-data-ai4-provider-shadow-runtime-response.mjs"),
   "deployed provider probe must invoke standalone runtime-response validator");
 check(workflow.includes("Checkout exact runtime probe SHA"),
