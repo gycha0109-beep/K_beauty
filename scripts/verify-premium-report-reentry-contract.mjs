@@ -136,6 +136,12 @@ assert.ok(
   fullReportPage.includes("if (!cancelled) {\n          setIsReady(true);"),
   "an aborted older request must not mark the newer report load ready"
 );
+assert.ok(
+  fullReportPage.includes("const loadedSavedReportId = report?.meta?.persistence?.savedReportId || null") &&
+    fullReportPage.includes("savedReportId && loadedSavedReportId !== savedReportId") &&
+    fullReportPage.includes("if (!isReady || savedReportIdentityMismatch)"),
+  "a URL/report identity mismatch must be blocked synchronously before the replacement request effect runs"
+);
 
 for (const requiredCookieOption of [
   "httpOnly: true",
