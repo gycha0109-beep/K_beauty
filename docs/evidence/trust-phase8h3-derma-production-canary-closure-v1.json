@@ -10,7 +10,8 @@
     "research_seed_hardening_merge_sha": "5167b4ca02c5157949079cc9b1cf05791b52da93",
     "recorder_security_merge_sha": "8c05c73f0b8b1d231c569c8c902ea493419494ed",
     "research_live_canary_merge_sha": "9d6c83c631097a4b278ed3a52e7cda9a91ac754e",
-    "relational_closeout_merge_sha": "32334c515865382daedbd04eb2a5f3ea75df164f"
+    "relational_closeout_merge_sha": "32334c515865382daedbd04eb2a5f3ea75df164f",
+    "production_canary_closure_merge_sha": "219909a4fa54d8e88478cff4e556b68e7022cfb1"
   },
   "production_migrations": [
     {
@@ -185,5 +186,7 @@
     "mutation_required": false
   },
   "production_mutation_after_reaffirmation": "NONE",
-  "result": "PASS"
+  "result": "PASS",
+  "phase_state": "CLOSED",
+  "post_closure_canary_policy": "MANUAL_WORKFLOW_DISPATCH_ONLY"
 }

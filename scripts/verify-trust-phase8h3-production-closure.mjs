@@ -38,6 +38,67 @@ const closure = JSON.parse(
 assert.equal(closure.contract, "trust-phase8h3-derma-production-canary-closure-v1");
 assert.equal(closure.watchtower_track, "pipeline-reliability");
 assert.equal(closure.result, "PASS");
+assert.equal(closure.phase_state, "CLOSED");
+assert.equal(
+  closure.repository_history?.production_canary_closure_merge_sha,
+  "219909a4fa54d8e88478cff4e556b68e7022cfb1",
+);
+assert.equal(
+  closure.post_closure_canary_policy,
+  "MANUAL_WORKFLOW_DISPATCH_ONLY",
+);
+
+const fixtures = JSON.parse(
+  fs.readFileSync(
+    "docs/evidence/trust-phase8h3-regression-fixtures-v1.json",
+    "utf8",
+  ),
+);
+assert.equal(fixtures.contract, "trust-phase8h3-regression-fixtures-v1");
+assert.equal(fixtures.authority_merge_sha, "219909a4fa54d8e88478cff4e556b68e7022cfb1");
+assert.equal(fixtures.result, "PASS");
+assert.equal(fixtures.fixtures.length, 3);
+
+const byId = Object.fromEntries(fixtures.fixtures.map((fixture) => [fixture.id, fixture]));
+const parentFixture = byId["relational-parent-persistence"];
+assert.equal(
+  parentFixture?.expected?.candidate_parent_proposition_key,
+  "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+);
+assert.equal(
+  parentFixture?.expected?.canonical_evidence_digest,
+  "8936d01a7778cfa399602186bb3993d4b0005f0bea6af5dcc1e8266d63194e14",
+);
+assert.equal(parentFixture?.expected?.result, "PASS");
+
+const localeFixture = byId["evidence-locale-is-not-fact-applicability"];
+assert.equal(localeFixture?.input?.source_locale, "en");
+assert.equal(localeFixture?.input?.current_fact_locale, null);
+assert.equal(localeFixture?.expected?.locale_alone_forces_changed, false);
+assert.equal(localeFixture?.expected?.locale_alone_forces_hold, false);
+assert.equal(localeFixture?.expected?.semantic_relation, "SAME_SEMANTIC");
+assert.equal(localeFixture?.expected?.result, "PASS");
+
+const repairFixture = byId["append-only-relational-candidate-repair"];
+assert.equal(repairFixture?.expected?.malformed_candidate_preserved, true);
+assert.equal(repairFixture?.expected?.malformed_candidate_resolution_refs, 0);
+assert.equal(repairFixture?.expected?.corrected_candidate_resolution_refs, 1);
+assert.equal(repairFixture?.expected?.research_task_points_to_corrected_candidate, true);
+assert.equal(repairFixture?.expected?.result, "PASS");
+
+const workflow = fs.readFileSync(
+  ".github/workflows/trust-phase8h3-relocation-revalidation.yml",
+  "utf8",
+);
+assert.ok(!workflow.includes("Detect Phase 8H-3 relocation canary target change"));
+assert.ok(!workflow.includes("Detect Phase 8H-3 research live canary target change"));
+assert.ok(workflow.includes("Manual Phase 8H-3 Derma relocation observation triplet"));
+assert.ok(workflow.includes("Manual Phase 8H-3 research live candidate payload"));
+assert.equal(
+  (workflow.match(/if: github\.event_name == 'workflow_dispatch'/g) ?? []).length,
+  2,
+  "both external live canaries must be workflow_dispatch-only after closure",
+);
 
 const historical = closure.derma?.historical_source;
 assert.equal(historical?.source_id, "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b");
