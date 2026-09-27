@@ -39,7 +39,7 @@ const identityOnlyDigest = digestOfficialContent(identityOnly, "official-product
 assert.equal(identityOnlyDigest.digestBasis, "canonical-official-product-semantics-v1");
 const identityOnlyDiagnostics = inspectOfficialProductSemanticSurfacesV1(identityOnly, identityOnlyContext);
 assert.equal(identityOnlyDiagnostics.anchor_probes.identities[0].present, true);
-assert.deepEqual(identityOnlyDiagnostics.anchor_probes.identities[0].surfaces, ["title"]);
+assert.deepEqual(identityOnlyDiagnostics.anchor_probes.identities[0].surfaces, ["visible_text", "title"]);
 
 assert.throws(
   () => digestOfficialContent(
