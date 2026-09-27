@@ -165,6 +165,31 @@ for (const task of relocationSeedDryRun.dry_run.claimed_tasks) {
   assert.equal(task.canonical_locator, "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933");
   assert.equal(task.source_market, "KR_US");
 }
+for (const needle of [
+  "select b.* into v_binding",
+  "b.market_code is not distinct from v_intake.market",
+  "r0.replacement_binding_id = b.binding_id",
+  "rv0.binding_id = b.binding_id",
+  "rv0.scope_relation = 'equivalent'",
+  "and rb.disposition = 'RESEARCH_REQUEUED'",
+]) {
+  assert.ok(relocationSeedHardening.includes(needle), `relocation research result hardening missing token: ${needle}`);
+}
+assert.equal(relocationSeedDryRun.record_result_hardening.generic_exact_market_behavior, "UNCHANGED");
+assert.equal(
+  relocationSeedDryRun.record_result_hardening.relocation_candidate_source_authority,
+  "CONFIRMED_REPLACEMENT_BINDING_WITH_EQUIVALENT_REVIEW"
+);
+assert.equal(
+  relocationSeedDryRun.record_result_hardening.production_definition_preserved,
+  "PHASE_8D_REVALIDATION_EXCEPTION_PRESENT"
+);
+assert.equal(relocationSeedDryRun.record_result_hardening.dry_run_readback.candidates_ready, 2);
+for (const task of relocationSeedDryRun.record_result_hardening.dry_run_readback.tasks) {
+  assert.equal(task.state, "EVIDENCE_CANDIDATE");
+  assert.equal(task.source_locator, "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933");
+  assert.equal(task.source_digest, "3bb471669b9bc1426edfb472827a37e7cf6d1382a3072a7d33bfdf5eeea87809");
+}
 
 for (const needle of [
   "source_relocated",
