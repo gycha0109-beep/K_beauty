@@ -13,6 +13,12 @@ on:
       - "scripts/verify-face-lab-v2-presentation.mjs"
       - "scripts/verify-face-lab-v2-survey-consumption.mjs"
       - "scripts/verify-face-lab-v2-route-quality.mjs"
+      - "scripts/verify-face-lab-v2-recommendation-evaluation.mjs"
+      - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
+      - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
+      - "scripts/verify-face-lab-v2-recommendation-evaluation.mjs"
+      - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
+      - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
@@ -65,3 +71,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-survey-consumption.mjs
       - name: Verify Face Lab V2 route quality
         run: node scripts/verify-face-lab-v2-route-quality.mjs
+      - name: Verify Face Lab V2 recommendation evaluation
+        run: node scripts/verify-face-lab-v2-recommendation-evaluation.mjs
