@@ -5,6 +5,9 @@ import {
   FACE_LAB_V2_LOCKED_COHORT_SIZE
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  runFaceLabV2ParameterTranslationEvaluation
+} from "../lib/face-lab-v2/evaluation/parameter-translation.js";
+import {
   runFaceLabV2RecommendationLineageEvaluation
 } from "../lib/face-lab-v2/evaluation/lineage.js";
 import {
@@ -59,31 +62,43 @@ if (cohort === "locked") {
   report = runFaceLabV2RecommendationLineageEvaluation(
     buildFaceLabV2CoverageCohort().cases
   );
+} else if (cohort === "parameter-translation") {
+  report = runFaceLabV2ParameterTranslationEvaluation();
 } else if (cohort === "all") {
   const core = runFaceLabV2EvaluationSuite();
   const lineage = runFaceLabV2RecommendationLineageEvaluation(
     buildFaceLabV2CoverageCohort().cases
   );
+  const parameterTranslation = runFaceLabV2ParameterTranslationEvaluation();
   report = {
-    suiteVersion: "face-lab-v2-recommendation-evaluation-cli-suite-v1",
+    suiteVersion: "face-lab-v2-recommendation-evaluation-cli-suite-v2",
     harnessVersion: core.harnessVersion,
     contractVersion: core.contractVersion,
     reports: {
       ...core.reports,
-      lineage
+      lineage,
+      parameterTranslation
     },
     summary: {
       ...core.summary,
       hardFailureCount:
-        core.summary.hardFailureCount + lineage.summary.hardFailureCount,
+        core.summary.hardFailureCount +
+        lineage.summary.hardFailureCount +
+        parameterTranslation.summary.hardFailureCount,
       lineageFailureCount: lineage.summary.hardFailureCount,
       lineageActionableCaseCount: lineage.summary.actionableCaseCount,
-      lineageSelectedRouteActionCount: lineage.summary.selectedRouteActionCount
+      lineageSelectedRouteActionCount: lineage.summary.selectedRouteActionCount,
+      parameterTranslationFailureCount:
+        parameterTranslation.summary.hardFailureCount,
+      parameterTranslationUniqueParameterCount:
+        parameterTranslation.summary.uniqueParameterCount,
+      parameterTranslationActionVariantCount:
+        parameterTranslation.summary.actionVariantCount
     }
   };
 } else {
   throw new Error(
-    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, lineage, or all"
+    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, lineage, parameter-translation, or all"
   );
 }
 
