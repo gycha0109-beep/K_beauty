@@ -1,6 +1,6 @@
 {
   "schemaVersion": "bejewely-ci-execution-overlap-semantics-v1",
-  "phase": "C-1",
+  "phase": "C-3",
   "automaticEvents": [
     "pull_request",
     "push"
@@ -53,5 +53,15 @@
       "verify:mobile-foundation -> node scripts/verify-mobile-architecture-foundation.mjs collapses to script:scripts/verify-mobile-architecture-foundation.mjs for execution metrics.",
       "architecture:guard -> node scripts/architecture-guard.mjs collapses to script:scripts/architecture-guard.mjs for execution metrics."
     ]
+  },
+  "transitiveNpmExpansion": {
+    "rule": "Executable driver scripts with child_process/spawnSync evidence contribute statically declared npm child calls found in run(..., npm, [...]) invocations.",
+    "supportedForms": [
+      "npm, [\"run\", \"<root-script>\"]",
+      "npm, [\"--prefix\", \"<package-dir>\", \"run\", \"<script>\"]"
+    ],
+    "packageScopeIdentity": "Prefixed package npm units are namespaced as npm:<package-dir>:<script>; root units remain npm:<script>.",
+    "aliasNormalization": "A transitive npm child that is itself a pure one-script alias resolves to the underlying scoped script unit instead of adding a duplicate npm alias.",
+    "safety": "Only executable drivers already proven by child_process/spawnSync evidence are parsed; structural source assertions remain excluded."
   }
 }
