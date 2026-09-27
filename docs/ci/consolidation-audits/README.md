@@ -87,3 +87,14 @@ B-5A is audit-only. It freezes the current execution authority of the five TRUST
 - Repeated static verifier execution is recorded as a later B-5B consolidation candidate only; this phase does not remove or delegate any verifier.
 - Supabase init/reset/stop repetition is recorded as an implementation-sharing candidate only; runtime authority remains phase-local.
 - No workflow is added, retired, renamed, or trigger-modified by B-5A.
+
+## Phase B-5B TRUST 5B-7D canonical static prerequisites
+
+`trust-phase5b-7d-static.yml` is the canonical automatic owner of the repeated static prerequisite verifier set across TRUST 5B, 6A, 7C compatibility, 7C readiness, and 7D.
+
+- PR/push phase workflows wait fail-closed on the same-head, same-event canonical static run.
+- Manual `workflow_dispatch` keeps each phase's previous local static chain as a standalone fallback.
+- All five phase workflows continue to own their Supabase DB runtime and phase-specific SQL/runtime evidence.
+- Phase 7C compatibility and Phase 7D retain their local replay-baseline materialization because those artifacts are runtime evidence, not static-equivalent coverage.
+- No phase workflow is retired or renamed.
+- Current Main TRUST delegation is intentionally deferred; this phase canonicalizes the dedicated TRUST workflows first.

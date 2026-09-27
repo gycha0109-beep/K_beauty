@@ -1,0 +1,13 @@
+{
+  "workflow": "trust-phase5b-7d-static.yml",
+  "primaryResponsibility": "trust-data-governance",
+  "capabilities": [
+    "backend",
+    "evidence-governance",
+    "pipeline",
+    "static-contract"
+  ],
+  "watchtowerTrackBinding": "static:trust",
+  "lifecycleNameClass": "semantic",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

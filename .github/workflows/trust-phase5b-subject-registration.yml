@@ -32,6 +32,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
+  actions: read
   contents: read
 
 env:
@@ -65,18 +66,31 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Wait for canonical TRUST 5B-7D static contract
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EXPECTED_EVENT: ${{ github.event_name }}
+          CANONICAL_WORKFLOW_PATH: .github/workflows/trust-phase5b-7d-static.yml
+        run: node scripts/await-ci-workflow.mjs
+
       - name: Verify Phase 5B controlled Subject contract
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-trust-phase5b-subject-registration.mjs
 
       - name: Verify existing governed Subject authority
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-product-fact-subject-registration-v1.mjs
 
       - name: Verify canonical TRUST subject resolver
+        if: github.event_name == 'workflow_dispatch'
         run: |
           node scripts/verify-trust-subject-resolution.mjs
           node scripts/verify-trust-subject-resolution-presentation-hardening.mjs
 
       - name: Verify Phase 5A queue regression
+        if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-trust-phase5-admin-queue.mjs
       - name: Prepare isolated TRUST subject-resolution runtime
         shell: bash

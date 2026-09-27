@@ -1,0 +1,162 @@
+name: TRUST Data Governance - Phase 5B-7D Canonical Static
+run-name: "[WT:trust] TRUST Data Governance - Phase 5B-7D Canonical Static"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/admin/products/trust/**"
+      - "app/api/admin/trust/subject-registration/**"
+      - "lib/admin/trust-subject-identity.js"
+      - "lib/admin/trust-subject-registration.js"
+      - "supabase/migrations/*trust_phase6a_*.sql"
+      - "tests/fixtures/trust-phase6a-reentry/**"
+      - "lib/admin/trust-reentry.js"
+      - "app/api/admin/trust/reentry/**"
+      - "app/admin/products/trust/TrustReentryAction.js"
+      - "app/admin/products/trust/TrustQueueWorkbench.js"
+      - "supabase/migrations/*trust_phase7c_phase4_*.sql"
+      - "tests/fixtures/trust-phase7c-phase4-compat/**"
+      - "supabase/migrations/*trust_phase7c_*.sql"
+      - "tests/fixtures/trust-phase7c-readiness/**"
+      - "supabase/migrations/*trust_phase7d_*.sql"
+      - "tests/fixtures/trust-phase7d-relational/**"
+      - "scripts/trust-research-worker.mjs"
+      - "scripts/verify-trust-phase5b-subject-registration.mjs"
+      - "scripts/verify-product-fact-subject-registration-v1.mjs"
+      - "scripts/verify-trust-subject-resolution.mjs"
+      - "scripts/verify-trust-subject-resolution-presentation-hardening.mjs"
+      - "scripts/verify-trust-phase5-admin-queue.mjs"
+      - "scripts/verify-trust-phase6a-reentry.mjs"
+      - "scripts/verify-trust-research-worker.mjs"
+      - "scripts/verify-trust-phase4-controlled-evidence-adoption.mjs"
+      - "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"
+      - "scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"
+      - "scripts/verify-product-fact-controlled-write-v1.mjs"
+      - "scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"
+      - "scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"
+      - "scripts/verify-trust-phase7d-relational-adoption.mjs"
+      - "scripts/await-ci-workflow.mjs"
+      - "scripts/verify-trust-5b-7d-ci-responsibility.mjs"
+      - "docs/ci/consolidation-audits/trust-5b-7d-runtime-matrix.json"
+      - ".github/workflows/trust-phase5b-subject-registration.yml"
+      - ".github/workflows/trust-phase6a-reentry.yml"
+      - ".github/workflows/trust-phase7c-phase4-compat.yml"
+      - ".github/workflows/trust-phase7c-readiness.yml"
+      - ".github/workflows/trust-phase7d-relational-adoption.yml"
+      - ".github/workflows/trust-phase5b-7d-static.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/admin/products/trust/**"
+      - "app/api/admin/trust/subject-registration/**"
+      - "lib/admin/trust-subject-identity.js"
+      - "lib/admin/trust-subject-registration.js"
+      - "supabase/migrations/*trust_phase6a_*.sql"
+      - "tests/fixtures/trust-phase6a-reentry/**"
+      - "lib/admin/trust-reentry.js"
+      - "app/api/admin/trust/reentry/**"
+      - "app/admin/products/trust/TrustReentryAction.js"
+      - "app/admin/products/trust/TrustQueueWorkbench.js"
+      - "supabase/migrations/*trust_phase7c_phase4_*.sql"
+      - "tests/fixtures/trust-phase7c-phase4-compat/**"
+      - "supabase/migrations/*trust_phase7c_*.sql"
+      - "tests/fixtures/trust-phase7c-readiness/**"
+      - "supabase/migrations/*trust_phase7d_*.sql"
+      - "tests/fixtures/trust-phase7d-relational/**"
+      - "scripts/trust-research-worker.mjs"
+      - "scripts/verify-trust-phase5b-subject-registration.mjs"
+      - "scripts/verify-product-fact-subject-registration-v1.mjs"
+      - "scripts/verify-trust-subject-resolution.mjs"
+      - "scripts/verify-trust-subject-resolution-presentation-hardening.mjs"
+      - "scripts/verify-trust-phase5-admin-queue.mjs"
+      - "scripts/verify-trust-phase6a-reentry.mjs"
+      - "scripts/verify-trust-research-worker.mjs"
+      - "scripts/verify-trust-phase4-controlled-evidence-adoption.mjs"
+      - "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"
+      - "scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"
+      - "scripts/verify-product-fact-controlled-write-v1.mjs"
+      - "scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"
+      - "scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"
+      - "scripts/verify-trust-phase7d-relational-adoption.mjs"
+      - "scripts/await-ci-workflow.mjs"
+      - "scripts/verify-trust-5b-7d-ci-responsibility.mjs"
+      - "docs/ci/consolidation-audits/trust-5b-7d-runtime-matrix.json"
+      - ".github/workflows/trust-phase5b-subject-registration.yml"
+      - ".github/workflows/trust-phase6a-reentry.yml"
+      - ".github/workflows/trust-phase7c-phase4-compat.yml"
+      - ".github/workflows/trust-phase7c-readiness.yml"
+      - ".github/workflows/trust-phase7d-relational-adoption.yml"
+      - ".github/workflows/trust-phase5b-7d-static.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trust-phase5b-7d-static-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TRUST_STATIC_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify:
+    name: TRUST 5B-7D canonical static prerequisites
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ env.TRUST_STATIC_EXACT_HEAD }}
+
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TRUST_STATIC_EXACT_HEAD"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify TRUST CI consolidation structure
+        run: node scripts/verify-trust-5b-7d-ci-responsibility.mjs
+
+      - name: Install dependencies once
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify TRUST 5B-7D static prerequisites once
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-trust-phase5b-subject-registration.mjs
+          node scripts/verify-product-fact-subject-registration-v1.mjs
+          node scripts/verify-trust-subject-resolution.mjs
+          node scripts/verify-trust-subject-resolution-presentation-hardening.mjs
+          node scripts/verify-trust-phase5-admin-queue.mjs
+          node scripts/verify-trust-phase6a-reentry.mjs
+          node scripts/verify-trust-research-worker.mjs
+          node scripts/verify-trust-phase4-controlled-evidence-adoption.mjs
+          node scripts/verify-trust-phase7c-legacy-research-readiness.mjs
+          node scripts/verify-trust-phase7c-phase4-legacy-compat.mjs
+          node scripts/verify-product-fact-controlled-write-v1.mjs
+          node scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs
+          node scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs
+          node scripts/verify-trust-phase7d-relational-adoption.mjs
+
+      - name: Check exact-head and diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TRUST_STATIC_EXACT_HEAD"
+          git diff --check "${{ github.event.pull_request.base.sha || github.event.before }}...$TRUST_STATIC_EXACT_HEAD" || git diff --check HEAD^

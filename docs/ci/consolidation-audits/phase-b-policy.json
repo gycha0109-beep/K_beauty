@@ -3,7 +3,8 @@
   "baselineWorkflowCount": 63,
   "approvedAddedWorkflows": [
     "data-ai-product-query-static.yml",
-    "trust-phase8h3-relocation-revalidation.yml"
+    "trust-phase8h3-relocation-revalidation.yml",
+    "trust-phase5b-7d-static.yml"
   ],
   "approvedRetiredWorkflows": [],
   "clusters": {
@@ -38,8 +39,9 @@
       "rule": "MOBILE-13 remains manual unsigned release evidence; MOBILE-14 owns routine generated-native auth/link contracts; MOBILE-15 routine source validation no longer re-executes MOBILE-14 or auto-triggers on MOBILE-13/MOBILE-14/Expo-compat prerequisites, while manual signed Android/iOS jobs retain MOBILE-13/14 platform verification inside the signing boundary."
     },
     "trust-5b-7d": {
-      "mode": "audit-only",
+      "mode": "canonical-static-delegation",
       "runtimeMatrix": "docs/ci/consolidation-audits/trust-5b-7d-runtime-matrix.json",
+      "canonicalStaticOwner": "trust-phase5b-7d-static.yml",
       "workflows": [
         "trust-phase5b-subject-registration.yml",
         "trust-phase6a-reentry.yml",
@@ -47,7 +49,7 @@
         "trust-phase7c-readiness.yml",
         "trust-phase7d-relational-adoption.yml"
       ],
-      "rule": "B-5A freezes current TRUST 5B-7D static prerequisites, Supabase runtime ownership, phase-specific runtime evidence, and replay-baseline ownership before any consolidation. No workflow execution, trigger, rename, retirement, DB authority, or replay authority changes are authorized in this audit-only subphase."
+      "rule": "Automatic PR/push execution delegates the repeated TRUST 5B-7D static prerequisite set to one exact-head canonical workflow. The five phase workflows retain their existing names, triggers, Supabase DB/runtime authority, phase-specific runtime evidence, and replay-baseline ownership. Manual workflow_dispatch retains each phase's prior static verifier chain as a local fallback."
     }
   }
 }
