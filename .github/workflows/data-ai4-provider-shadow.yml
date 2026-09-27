@@ -215,44 +215,38 @@ jobs:
             rm -f "$response_file"
           done
 
-          selected_budget=""
-          for budget in 400 600 800; do
-            completed=0
-            incomplete=0
-            schema_rejected=0
-            invalid_output=0
-            refusal=0
-            other_failure=0
-            scenario="ko_oily_temporary_sensitive_light_cream_budget_${budget}"
+          completed=0
+          incomplete=0
+          schema_rejected=0
+          invalid_output=0
+          refusal=0
+          other_failure=0
+          scenario="ko_oily_temporary_sensitive_light_cream"
 
-            for attempt in $(seq 1 10); do
-              response_file="$(mktemp)"
-              status="$(curl --silent --show-error                 -o "$response_file"                 -w '%{http_code}'                 -X POST                 -H "Authorization: Bearer $OIDC_TOKEN"                 -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"                 -H 'Content-Type: application/json'                 --data "{\"scenarioId\":\"${scenario}\"}"                 "$DEPLOYMENT_URL/api/internal/product-query-provider-shadow")"
+          for attempt in $(seq 1 20); do
+            response_file="$(mktemp)"
+            status="$(curl --silent --show-error               -o "$response_file"               -w '%{http_code}'               -X POST               -H "Authorization: Bearer $OIDC_TOKEN"               -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"               -H 'Content-Type: application/json'               --data "{\"scenarioId\":\"${scenario}\"}"               "$DEPLOYMENT_URL/api/internal/product-query-provider-shadow")"
 
-              classification="$(node scripts/classify-data-ai28-output-budget-probe.mjs \
-                "$response_file" "$GITHUB_SHA" "$status" "$scenario" "$budget")"
-              echo "DATA_AI28_BUDGET_PROBE=${budget}:${attempt}/10:${status}:${classification}"
-              rm -f "$response_file"
+            classification="$(node scripts/classify-data-ai28-output-budget-probe.mjs \
+              "$response_file" "$GITHUB_SHA" "$status" "$scenario" "default")"
+            echo "DATA_AI28_PHASE_B_PROBE=${attempt}/20:${status}:${classification}"
+            rm -f "$response_file"
 
-              case "$classification" in
-                completed) completed=$((completed + 1)) ;;
-                incomplete) incomplete=$((incomplete + 1)) ;;
-                schema_rejected) schema_rejected=$((schema_rejected + 1)) ;;
-                invalid_output) invalid_output=$((invalid_output + 1)) ;;
-                refusal) refusal=$((refusal + 1)) ;;
-                *) other_failure=$((other_failure + 1)) ;;
-              esac
-            done
-
-            echo "DATA_AI28_BUDGET_SUMMARY={\"budget\":${budget},\"attempts\":10,\"completed\":${completed},\"incomplete\":${incomplete},\"schemaRejected\":${schema_rejected},\"invalidOutput\":${invalid_output},\"refusal\":${refusal},\"otherFailure\":${other_failure}}"
-
-            if [ -z "$selected_budget" ] && [ "$completed" -eq 10 ] && [ "$incomplete" -eq 0 ] && [ "$schema_rejected" -eq 0 ] && [ "$invalid_output" -eq 0 ] && [ "$refusal" -eq 0 ] && [ "$other_failure" -eq 0 ]; then
-              selected_budget="$budget"
-            fi
+            case "$classification" in
+              completed) completed=$((completed + 1)) ;;
+              incomplete) incomplete=$((incomplete + 1)) ;;
+              schema_rejected) schema_rejected=$((schema_rejected + 1)) ;;
+              invalid_output) invalid_output=$((invalid_output + 1)) ;;
+              refusal) refusal=$((refusal + 1)) ;;
+              *) other_failure=$((other_failure + 1)) ;;
+            esac
           done
 
-          if [ -n "$selected_budget" ]; then
-            echo "DATA_AI28_SELECTED_BUDGET=${selected_budget}"
-          else
-            echo "DATA_AI28_SELECTED_BUDGET=none"
-          fi
+          echo "DATA_AI28_PHASE_B_SUMMARY={\"defaultBudget\":600,\"attempts\":20,\"completed\":${completed},\"incomplete\":${incomplete},\"schemaRejected\":${schema_rejected},\"invalidOutput\":${invalid_output},\"refusal\":${refusal},\"otherFailure\":${other_failure}}"
+
+          test "$completed" -eq 20
+          test "$incomplete" -eq 0
+          test "$schema_rejected" -eq 0
+          test "$invalid_output" -eq 0
+          test "$refusal" -eq 0
+          test "$other_failure" -eq 0
