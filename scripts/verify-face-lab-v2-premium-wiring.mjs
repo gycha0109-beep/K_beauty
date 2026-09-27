@@ -279,8 +279,17 @@ assert.ok(
   "Face Lab V2 persistence must consume the server acknowledgement"
 );
 assert.ok(
-  premiumFaceLab.includes("persistenceFingerprint(currentStored) !=="),
-  "an older queued server acknowledgement must not overwrite newer local user state"
+  premiumFaceLab.includes("const latestPersistRequestFingerprintRef = useRef(null)"),
+  "Face Lab V2 persistence must track the newest server request independently of localStorage"
+);
+assert.ok(
+  premiumFaceLab.includes("const requestFingerprint = persistenceFingerprint(requestState)") &&
+    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current = requestFingerprint"),
+  "each server persistence request must claim latest-request authority before entering the serialized queue"
+);
+assert.ok(
+  premiumFaceLab.includes("latestPersistRequestFingerprintRef.current !== requestFingerprint"),
+  "an older server acknowledgement must not overwrite newer in-memory user state even when local persistence failed"
 );
 assert.ok(
   premiumFaceLab.includes("updatedAt: serverStored.updatedAt || null"),
@@ -292,8 +301,13 @@ assert.ok(
   "a non-stale server acknowledgement must update the active route-selection state to the server-normalized survey/finder payload"
 );
 assert.ok(
-  premiumFaceLab.match(/persistenceFingerprint\(currentStored\)[\s\S]{0,420}activePersistenceStateRef\.current = \{/),
-  "server acknowledgement must only replace active persistence state after the existing stale-ack fingerprint guard passes"
+  premiumFaceLab.match(/latestPersistRequestFingerprintRef\.current !== requestFingerprint[\s\S]{0,260}activePersistenceStateRef\.current = \{/),
+  "server acknowledgement must only replace active persistence state after the latest-request fingerprint guard passes"
+);
+assert.equal(
+  premiumFaceLab.includes("persistenceFingerprint(currentStored) !=="),
+  false,
+  "server acknowledgement freshness must not depend on localStorage succeeding"
 );
 assert.equal(
   premiumFaceLab.includes("canonicalV2: stored.canonicalV2"),
