@@ -1,0 +1,44 @@
+{
+  "contract": "trust-phase8h3-research-result-security-hardening-dry-run-v1",
+  "captured_at": "2026-09-28T03:58:03+09:00",
+  "validation_mode": "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK",
+  "source_blueprint": "docs/evidence/trust-phase8h3-research-result-security-hardening-db-blueprint-v1.sql",
+  "production_project_ref": "bygrczggxfuisupcevaz",
+  "production_mutation": "NONE",
+  "dry_run_readback": {
+    "function": "public.record_trust_research_result_v1(uuid,jsonb)",
+    "security_definer": true,
+    "search_path": "",
+    "service_role_execute": true,
+    "authenticated_execute": false,
+    "anon_execute": false,
+    "public_execute": false,
+    "derma_task_states": [
+      {
+        "fact_key": "active_concentration",
+        "state": "RESEARCHING",
+        "attempt_count": 2
+      },
+      {
+        "fact_key": "contains_active",
+        "state": "RESEARCHING",
+        "attempt_count": 2
+      }
+    ],
+    "historical_source": {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+      "mutated": false
+    }
+  },
+  "rollback_readback": {
+    "search_path": "public, pg_temp",
+    "service_role_execute": true,
+    "authenticated_execute": false,
+    "anon_execute": false,
+    "public_execute": false
+  },
+  "rollback": true,
+  "result": "PASS"
+}
