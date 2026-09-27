@@ -99,11 +99,6 @@ export async function GET(request) {
     return json({ success: false, error: "saved_report_id_required" }, { status: 400 });
   }
 
-  const expectedRevision = body?.expectedRevision;
-  if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0) {
-    return json({ success: false, error: "expected_revision_required" }, { status: 400 });
-  }
-
   const { data, error } = await resolveOwnedSavedReport({
     supabase,
     userId: user.id,
@@ -155,6 +150,11 @@ export async function POST(request) {
 
   if (!savedReportId) {
     return json({ success: false, error: "saved_report_id_required" }, { status: 400 });
+  }
+
+  const expectedRevision = body?.expectedRevision;
+  if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0) {
+    return json({ success: false, error: "expected_revision_required" }, { status: 400 });
   }
 
   const { data, error } = await resolveOwnedSavedReport({
