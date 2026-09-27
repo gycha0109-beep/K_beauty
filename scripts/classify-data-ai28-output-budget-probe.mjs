@@ -10,8 +10,9 @@ if (!file || !expectedSha || !httpStatus || !expectedScenario || !expectedBudget
   process.exit(64);
 }
 
-const budget = Number(expectedBudget);
-if (![400, 600, 800].includes(budget)) {
+const isDefaultBudget = expectedBudget === "default";
+const budget = isDefaultBudget ? null : Number(expectedBudget);
+if (!isDefaultBudget && ![400, 600, 800].includes(budget)) {
   console.error("DATA_AI28_BUDGET_PROBE_BUDGET_INVALID");
   process.exit(65);
 }
@@ -28,7 +29,9 @@ if (
   payload.deploymentSha !== expectedSha ||
   payload.deploymentRef !== "main" ||
   payload.scenarioId !== expectedScenario ||
-  payload.outputBudget !== budget
+  (isDefaultBudget
+    ? payload.outputBudget !== null
+    : payload.outputBudget !== budget)
 ) {
   console.error("DATA_AI28_BUDGET_PROBE_SCOPE_MISMATCH");
   process.exit(67);
