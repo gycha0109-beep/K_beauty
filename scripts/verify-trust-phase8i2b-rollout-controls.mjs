@@ -312,7 +312,8 @@ async function verifySelectedCanaryAndRecordFalse() {
 
 function verifyCliSafetyContract() {
   assert.ok(workerSource.includes("--scope=canary|full is required"));
-  assert.ok(workerSource.includes("--record=true|false is required"));
+  assert.ok(workerSource.includes('parseRequiredBooleanArg("record")'));
+  assert.ok(workerSource.includes("=true|false is required"));
   assert.ok(workerSource.includes("--manifest=<path> is required for canary scope"));
   assert.ok(workerSource.includes("--expected-source-count=<positive integer> is required"));
   assert.ok(workerSource.includes("--expected-target-count=<positive integer> is required"));
