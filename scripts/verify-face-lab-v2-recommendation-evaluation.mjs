@@ -9,6 +9,10 @@ import {
   FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  FACE_LAB_V2_LINEAGE_EVALUATOR_VERSION,
+  runFaceLabV2RecommendationLineageEvaluation
+} from "../lib/face-lab-v2/evaluation/lineage.js";
+import {
   FACE_LAB_V2_AXIS_CONSUMPTION_EVALUATOR_VERSION,
   runFaceLabV2AxisConsumptionEvaluation
 } from "../lib/face-lab-v2/evaluation/axis-consumption.js";
@@ -199,6 +203,27 @@ assert.ok(
   "target sweep must demonstrate recommendation sensitivity beyond one signature"
 );
 
+const lineage = runFaceLabV2RecommendationLineageEvaluation(
+  coverageCohort.cases
+);
+assert.equal(
+  lineage.evaluatorVersion,
+  FACE_LAB_V2_LINEAGE_EVALUATOR_VERSION
+);
+assert.ok(
+  lineage.summary.actionableCaseCount > 0,
+  "lineage evaluation must exercise actionable recommendations"
+);
+assert.ok(
+  Object.keys(lineage.summary.executionDomainCounts).length >= 5,
+  "lineage evaluation must exercise most execution domains"
+);
+assert.equal(
+  lineage.summary.hardFailureCount,
+  0,
+  JSON.stringify(lineage.failures.slice(0, 30), null, 2)
+);
+
 const axisConsumption = runFaceLabV2AxisConsumptionEvaluation();
 assert.equal(
   axisConsumption.evaluatorVersion,
@@ -238,7 +263,8 @@ console.log(JSON.stringify({
     coverage: coverage.summary,
     adversarial: adversarial.summary,
     targetResponsiveness: targetResponsiveness.summary,
-    axisConsumption: axisConsumption.summary
+    axisConsumption: axisConsumption.summary,
+    lineage: lineage.summary
   },
   targetSweep: {
     cohort: targetResponsiveness.cohort,

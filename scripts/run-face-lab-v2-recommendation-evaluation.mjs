@@ -5,12 +5,16 @@ import {
   FACE_LAB_V2_LOCKED_COHORT_SIZE
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  runFaceLabV2RecommendationLineageEvaluation
+} from "../lib/face-lab-v2/evaluation/lineage.js";
+import {
   runFaceLabV2AxisConsumptionEvaluation
 } from "../lib/face-lab-v2/evaluation/axis-consumption.js";
 import {
   runFaceLabV2TargetResponsivenessEvaluation
 } from "../lib/face-lab-v2/evaluation/target-responsiveness.js";
 import {
+  buildFaceLabV2CoverageCohort,
   runFaceLabV2AdversarialEvaluation,
   runFaceLabV2CoverageEvaluation,
   runFaceLabV2EvaluationSuite,
@@ -51,11 +55,35 @@ if (cohort === "locked") {
   report = runFaceLabV2TargetResponsivenessEvaluation();
 } else if (cohort === "axis-consumption") {
   report = runFaceLabV2AxisConsumptionEvaluation();
+} else if (cohort === "lineage") {
+  report = runFaceLabV2RecommendationLineageEvaluation(
+    buildFaceLabV2CoverageCohort().cases
+  );
 } else if (cohort === "all") {
-  report = runFaceLabV2EvaluationSuite();
+  const core = runFaceLabV2EvaluationSuite();
+  const lineage = runFaceLabV2RecommendationLineageEvaluation(
+    buildFaceLabV2CoverageCohort().cases
+  );
+  report = {
+    suiteVersion: "face-lab-v2-recommendation-evaluation-cli-suite-v1",
+    harnessVersion: core.harnessVersion,
+    contractVersion: core.contractVersion,
+    reports: {
+      ...core.reports,
+      lineage
+    },
+    summary: {
+      ...core.summary,
+      hardFailureCount:
+        core.summary.hardFailureCount + lineage.summary.hardFailureCount,
+      lineageFailureCount: lineage.summary.hardFailureCount,
+      lineageActionableCaseCount: lineage.summary.actionableCaseCount,
+      lineageSelectedRouteActionCount: lineage.summary.selectedRouteActionCount
+    }
+  };
 } else {
   throw new Error(
-    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, or all"
+    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, lineage, or all"
   );
 }
 
