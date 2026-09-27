@@ -5,6 +5,9 @@ import {
   FACE_LAB_V2_LOCKED_COHORT_SIZE
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  runFaceLabV2ConstraintResponsivenessEvaluation
+} from "../lib/face-lab-v2/evaluation/constraint-responsiveness.js";
+import {
   runFaceLabV2ParameterTranslationEvaluation
 } from "../lib/face-lab-v2/evaluation/parameter-translation.js";
 import {
@@ -14,6 +17,7 @@ import {
   runFaceLabV2AxisConsumptionEvaluation
 } from "../lib/face-lab-v2/evaluation/axis-consumption.js";
 import {
+  buildFaceLabV2TargetSweepCohort,
   runFaceLabV2TargetResponsivenessEvaluation
 } from "../lib/face-lab-v2/evaluation/target-responsiveness.js";
 import {
@@ -64,27 +68,37 @@ if (cohort === "locked") {
   );
 } else if (cohort === "parameter-translation") {
   report = runFaceLabV2ParameterTranslationEvaluation();
+} else if (cohort === "constraint-responsiveness") {
+  report = runFaceLabV2ConstraintResponsivenessEvaluation(
+    buildFaceLabV2TargetSweepCohort().cases
+  );
 } else if (cohort === "all") {
   const core = runFaceLabV2EvaluationSuite();
   const lineage = runFaceLabV2RecommendationLineageEvaluation(
     buildFaceLabV2CoverageCohort().cases
   );
   const parameterTranslation = runFaceLabV2ParameterTranslationEvaluation();
+  const constraintResponsiveness =
+    runFaceLabV2ConstraintResponsivenessEvaluation(
+      buildFaceLabV2TargetSweepCohort().cases
+    );
   report = {
-    suiteVersion: "face-lab-v2-recommendation-evaluation-cli-suite-v2",
+    suiteVersion: "face-lab-v2-recommendation-evaluation-cli-suite-v3",
     harnessVersion: core.harnessVersion,
     contractVersion: core.contractVersion,
     reports: {
       ...core.reports,
       lineage,
-      parameterTranslation
+      parameterTranslation,
+      constraintResponsiveness
     },
     summary: {
       ...core.summary,
       hardFailureCount:
         core.summary.hardFailureCount +
         lineage.summary.hardFailureCount +
-        parameterTranslation.summary.hardFailureCount,
+        parameterTranslation.summary.hardFailureCount +
+        constraintResponsiveness.summary.hardFailureCount,
       lineageFailureCount: lineage.summary.hardFailureCount,
       lineageActionableCaseCount: lineage.summary.actionableCaseCount,
       lineageSelectedRouteActionCount: lineage.summary.selectedRouteActionCount,
@@ -93,12 +107,16 @@ if (cohort === "locked") {
       parameterTranslationUniqueParameterCount:
         parameterTranslation.summary.uniqueParameterCount,
       parameterTranslationActionVariantCount:
-        parameterTranslation.summary.actionVariantCount
+        parameterTranslation.summary.actionVariantCount,
+      constraintResponsivenessFailureCount:
+        constraintResponsiveness.summary.hardFailureCount,
+      constraintResponsivenessPairCount:
+        constraintResponsiveness.summary.pairedComparisonCount
     }
   };
 } else {
   throw new Error(
-    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, lineage, parameter-translation, or all"
+    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, lineage, parameter-translation, constraint-responsiveness, or all"
   );
 }
 

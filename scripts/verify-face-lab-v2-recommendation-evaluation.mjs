@@ -9,6 +9,10 @@ import {
   FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  FACE_LAB_V2_CONSTRAINT_RESPONSIVENESS_VERSION,
+  runFaceLabV2ConstraintResponsivenessEvaluation
+} from "../lib/face-lab-v2/evaluation/constraint-responsiveness.js";
+import {
   FACE_LAB_V2_PARAMETER_TRANSLATION_EVALUATOR_VERSION,
   runFaceLabV2ParameterTranslationEvaluation
 } from "../lib/face-lab-v2/evaluation/parameter-translation.js";
@@ -183,6 +187,22 @@ assert.equal(targetSweepCohort.faceCount, 8);
 assert.equal(targetSweepCohort.targetCount, 12);
 assert.equal(targetSweepCohort.caseCount, 96);
 
+const constraintResponsiveness =
+  runFaceLabV2ConstraintResponsivenessEvaluation(targetSweepCohort.cases);
+assert.equal(
+  constraintResponsiveness.evaluatorVersion,
+  FACE_LAB_V2_CONSTRAINT_RESPONSIVENESS_VERSION
+);
+assert.equal(
+  constraintResponsiveness.summary.pairedComparisonCount,
+  targetSweepCohort.caseCount * 4
+);
+assert.equal(
+  constraintResponsiveness.summary.hardFailureCount,
+  0,
+  JSON.stringify(constraintResponsiveness.failures.slice(0, 30), null, 2)
+);
+
 const targetResponsiveness = runFaceLabV2TargetResponsivenessEvaluation();
 assert.equal(
   targetResponsiveness.evaluatorVersion,
@@ -284,7 +304,8 @@ console.log(JSON.stringify({
     targetResponsiveness: targetResponsiveness.summary,
     axisConsumption: axisConsumption.summary,
     lineage: lineage.summary,
-    parameterTranslation: parameterTranslation.summary
+    parameterTranslation: parameterTranslation.summary,
+    constraintResponsiveness: constraintResponsiveness.summary
   },
   targetSweep: {
     cohort: targetResponsiveness.cohort,
