@@ -6,6 +6,11 @@ on:
     branches: [main]
     paths:
       - "docs/evidence/trust-phase8h3-*"
+      - "docs/evidence/trust-phase8i2-*"
+      - "supabase/migrations/*_trust_phase8i2_*.sql"
+      - "lib/trust/official-source-transport-fetch.mjs"
+      - "scripts/trust-official-source-transport-worker.mjs"
+      - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -21,6 +26,11 @@ on:
     branches: [main, "pipeline-reliability/trust-phase8h3-relocation-revalidation"]
     paths:
       - "docs/evidence/trust-phase8h3-*"
+      - "docs/evidence/trust-phase8i2-*"
+      - "supabase/migrations/*_trust_phase8i2_*.sql"
+      - "lib/trust/official-source-transport-fetch.mjs"
+      - "scripts/trust-official-source-transport-worker.mjs"
+      - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -75,6 +85,12 @@ jobs:
         run: |
           node --check scripts/trust-research-worker.mjs
           node scripts/verify-trust-research-worker.mjs
+
+      - name: Verify Phase 8I-2 transport foundation
+        run: |
+          node --check lib/trust/official-source-transport-fetch.mjs
+          node --check scripts/trust-official-source-transport-worker.mjs
+          node scripts/verify-trust-phase8i2-transport-foundation.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |

@@ -1,0 +1,94 @@
+{
+  "contract": "trust-phase8i2-transport-foundation-production-closure-v1",
+  "captured_at": "2026-09-28",
+  "watchtower_track": "pipeline-reliability",
+  "production_migration": {
+    "version": "20260928081244",
+    "name": "trust_phase8i2_transport_foundation_v1",
+    "result": "SUCCESS",
+    "blueprint_file": "docs/evidence/trust-phase8i2-transport-foundation-db-blueprint-v1.sql",
+    "materialized_file": "supabase/migrations/20260928081244_trust_phase8i2_transport_foundation_v1.sql",
+    "blueprint_blob_sha": "a3a8c6cea427cee5d0fcbad4b13205be7af53ec5"
+  },
+  "resolver": {
+    "contract": "trust-official-source-transport-targets-v1",
+    "source_count": 35,
+    "ready_source_count": 35,
+    "blocked_source_count": 0,
+    "unique_ready_target_count": 25,
+    "torriden_zero_intake_source_count": 2,
+    "drg_equivalent_presentation_source_present": true,
+    "derma": {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "historical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "effective_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "relocation_id": "463e6a5a-781d-4e8c-be36-918b01e423fc",
+      "replacement_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+      "target_status": "READY"
+    }
+  },
+  "production_runtime": {
+    "live_external_network_runs": 0,
+    "observation_count": 0,
+    "incident_count": 0,
+    "authority": "FOUNDATION_ONLY_NO_LIVE_TRANSPORT_PROBE"
+  },
+  "security": {
+    "direct_observation_incident_role_grants": 0,
+    "resolver_execute": {
+      "service_role": true,
+      "authenticated": false,
+      "anon": false,
+      "public": false
+    },
+    "recorder_execute": {
+      "service_role": true,
+      "authenticated": false,
+      "anon": false,
+      "public": false
+    },
+    "internal_resolver_execute": {
+      "service_role": false,
+      "authenticated": false,
+      "anon": false,
+      "public": false
+    },
+    "security_definer_search_path_empty": true,
+    "advisor_baseline": {
+      "rls_enabled_no_policy": 59,
+      "authenticated_security_definer_function_executable": 2
+    },
+    "advisor_post": {
+      "rls_enabled_no_policy": 61,
+      "authenticated_security_definer_function_executable": 2
+    },
+    "phase8i2_new_warn_findings": 0,
+    "intentional_new_info_findings": [
+      "public.trust_official_source_transport_observations: RLS enabled, no policy, no direct anon/authenticated/service_role grants",
+      "public.trust_official_source_transport_incidents: RLS enabled, no policy, no direct anon/authenticated/service_role grants"
+    ],
+    "result": "PASS"
+  },
+  "authority_invariants": {
+    "product_fact_current_rows_before": 71,
+    "product_fact_current_rows_after": 71,
+    "product_evidence_source_rows_before": 40,
+    "product_evidence_source_rows_after": 40,
+    "confirmed_relocations_before": 1,
+    "confirmed_relocations_after": 1,
+    "reentry_events_before": 3,
+    "reentry_events_after": 3,
+    "reentry_checkpoints_before": 671,
+    "reentry_checkpoints_after": 671,
+    "historical_evidence_source_mutation": false,
+    "product_fact_current_mutation": false,
+    "relocation_confirmation": false
+  },
+  "rollout_boundary": {
+    "external_network_enabled_in_required_pr_ci": false,
+    "scheduled_live_monitoring_created": false,
+    "live_canary_executed": false,
+    "next_authority": "PHASE_8I_2B_FLEET_ROLLOUT_REQUIRED"
+  },
+  "result": "PASS"
+}

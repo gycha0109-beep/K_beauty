@@ -1,0 +1,93 @@
+{
+  "contract": "trust-phase8i2-transport-foundation-dry-run-v1",
+  "captured_at": "2026-09-28T08:02:00+09:00",
+  "watchtower_track": "pipeline-reliability",
+  "production_transaction_rolled_back": true,
+  "resolver": {
+    "contract": "trust-official-source-transport-targets-v1",
+    "source_count": 35,
+    "ready_source_count": 35,
+    "blocked_source_count": 0,
+    "unique_ready_target_count": 25,
+    "derma": {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "historical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "effective_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "relocation_id": "463e6a5a-781d-4e8c-be36-918b01e423fc",
+      "target_status": "READY"
+    },
+    "torriden_intake_zero_sources_present": 2,
+    "drg_equivalent_presentation_source_present": true
+  },
+  "observation_incident_runtime": {
+    "observations_recorded": 11,
+    "incidents_recorded": 3,
+    "redirect_episode_1": {
+      "observations_minutes": [
+        0,
+        10,
+        31,
+        60
+      ],
+      "incident_count": 1,
+      "confirmed_at_minute": 31
+    },
+    "healthy_break_then_redirect_episode_2": {
+      "healthy_break_minute": 70,
+      "redirect_observations_minutes": [
+        80,
+        111
+      ],
+      "incident_count": 1
+    },
+    "missing_episode": {
+      "statuses": [
+        404,
+        410
+      ],
+      "interval_minutes": 31,
+      "incident_count": 1
+    },
+    "transient_episode": {
+      "statuses": [
+        503,
+        503
+      ],
+      "interval_minutes": 31,
+      "incident_count": 0
+    }
+  },
+  "authority_invariants": {
+    "product_fact_current_rows": 71,
+    "product_evidence_source_rows": 40,
+    "confirmed_relocations": 1,
+    "historical_source_mutation": false,
+    "product_fact_current_mutation": false,
+    "relocation_confirmation": false
+  },
+  "security": {
+    "direct_observation_incident_role_grants": 0,
+    "resolver_execute": {
+      "service_role": true,
+      "authenticated": false,
+      "anon": false,
+      "public": false
+    },
+    "recorder_execute": {
+      "service_role": true,
+      "authenticated": false,
+      "anon": false,
+      "public": false
+    }
+  },
+  "rollback_readback": {
+    "observation_table_persisted": false,
+    "incident_table_persisted": false,
+    "resolver_persisted": false,
+    "recorder_persisted": false,
+    "product_fact_current_rows": 71,
+    "product_evidence_source_rows": 40,
+    "confirmed_relocations": 1
+  },
+  "result": "PASS"
+}
