@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -66,7 +67,16 @@ jobs:
       - name: Install crawler dependencies
         run: npm --prefix crawler ci
 
+      - name: Resolve same-head canonical delegation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EXPECTED_EVENT: ${{ github.event_name }}
+          CURRENT_MAIN_DELEGATION_RESULT_PATH: ${{ runner.temp }}/current-main-delegation.json
+        run: node scripts/resolve-current-main-delegations.mjs
+
       - name: Run canonical current-main verification
         env:
           ARCHITECTURE_GUARD_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+          CURRENT_MAIN_DELEGATION_RESULT_PATH: ${{ runner.temp }}/current-main-delegation.json
         run: npm run verify:current

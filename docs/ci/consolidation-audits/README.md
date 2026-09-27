@@ -51,3 +51,17 @@ The `taxonomy-ai-prelaunch` cluster keeps both existing workflow and job identit
 - PRELAUNCH-01 no longer directly executes or path-triggers on `scripts/verify-data-ai25-product-query-operational-readiness.mjs`.
 - The PRELAUNCH acceptance verifier still freezes the post-launch evidence boundary through its own contract assertions.
 - No workflow is added or retired for this cluster.
+
+## Phase B-3 Current Main canonical delegation
+
+`current-main-health.yml` remains the project-wide final gate, but proven canonical verifier execution is no longer repeated blindly.
+
+- DATA-AI1-5 delegate to `data-ai-product-query-static.yml`.
+- DATA-AI25 delegates to `data-ai25-operational-readiness.yml`.
+- PRELAUNCH-01 delegates to `data-ai-prelaunch-01-product-query-e2e.yml`.
+- Delegation requires the same candidate SHA, the same GitHub event, and a successful canonical conclusion.
+- A discovered canonical failure, cancellation, skip, timeout, or other non-success fails Current Main closed.
+- If no matching canonical run exists because its path filter did not trigger, or Actions lookup is unavailable, Current Main executes the original verifier locally.
+- Local `npm run verify:current` therefore retains full fallback coverage without requiring GitHub API access.
+- The overlap audit reports both static coverage overlap and execution duplicate units after accounting for delegated Current Main contracts.
+- Workflow inventory remains 64 and the Current Main workflow/job names and triggers are unchanged.
