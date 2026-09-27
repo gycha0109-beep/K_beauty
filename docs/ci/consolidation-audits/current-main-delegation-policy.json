@@ -119,6 +119,76 @@
           "script": "scripts/verify-trust-phase7d-relational-adoption.mjs"
         }
       ]
+    },
+    {
+      "id": "taxonomy-ai-data-ai16",
+      "workflowPath": ".github/workflows/data-ai16-production-canary-closure.yml",
+      "contracts": [
+        {
+          "id": "data-ai16",
+          "script": "scripts/verify-data-ai16-production-canary-closure.mjs"
+        }
+      ]
+    },
+    {
+      "id": "taxonomy-ai-data-ai18",
+      "workflowPath": ".github/workflows/data-ai18-authenticated-beta-runtime.yml",
+      "contracts": [
+        {
+          "id": "data-ai18",
+          "script": "scripts/verify-data-ai18-authenticated-beta-runtime.mjs"
+        }
+      ]
+    },
+    {
+      "id": "taxonomy-ai-data-ai20",
+      "workflowPath": ".github/workflows/data-ai20-authenticated-beta-controlled-activation.yml",
+      "contracts": [
+        {
+          "id": "data-ai20",
+          "script": "scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"
+        }
+      ]
+    },
+    {
+      "id": "taxonomy-ai-data-ai21",
+      "workflowPath": ".github/workflows/data-ai21-limited-beta-evidence-closure.yml",
+      "contracts": [
+        {
+          "id": "data-ai21",
+          "script": "scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"
+        }
+      ]
+    },
+    {
+      "id": "taxonomy-ai-data-ai22-live",
+      "workflowPath": ".github/workflows/data-ai22-live-provider-acceptance.yml",
+      "contracts": [
+        {
+          "id": "data-ai22-live-provider-acceptance",
+          "script": "scripts/verify-data-ai22-live-provider-acceptance.mjs"
+        }
+      ]
+    },
+    {
+      "id": "taxonomy-ai-data-ai23",
+      "workflowPath": ".github/workflows/data-ai23-authenticated-beta-ux.yml",
+      "contracts": [
+        {
+          "id": "data-ai23",
+          "script": "scripts/verify-data-ai23-authenticated-beta-ux.mjs"
+        }
+      ]
+    },
+    {
+      "id": "taxonomy-ai-data-ai24",
+      "workflowPath": ".github/workflows/data-ai24-operational-observability.yml",
+      "contracts": [
+        {
+          "id": "data-ai24",
+          "script": "scripts/verify-data-ai24-operational-observability.mjs"
+        }
+      ]
     }
   ]
 }
