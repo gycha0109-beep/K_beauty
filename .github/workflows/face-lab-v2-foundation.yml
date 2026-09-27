@@ -8,6 +8,7 @@ on:
       - "lib/face-lab-v2/**"
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
+      - "scripts/verify-premium-report-reentry-contract.mjs"
       - "scripts/verify-face-lab-v2-persistence-authority.mjs"
       - "scripts/verify-face-lab-v2-presentation.mjs"
       - "scripts/verify-face-lab-v2-survey-consumption.mjs"
@@ -27,6 +28,7 @@ on:
       - "lib/face-lab-v2/**"
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
+      - "scripts/verify-premium-report-reentry-contract.mjs"
       - "scripts/verify-face-lab-v2-persistence-authority.mjs"
       - "scripts/verify-face-lab-v2-presentation.mjs"
       - "scripts/verify-face-lab-v2-survey-consumption.mjs"
@@ -55,6 +57,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-premium-wiring.mjs
       - name: Verify Face Lab V2 persistence authority
         run: node scripts/verify-face-lab-v2-persistence-authority.mjs
+      - name: Verify premium report re-entry race
+        run: node scripts/verify-premium-report-reentry-contract.mjs
       - name: Verify Face Lab V2 result presentation
         run: node scripts/verify-face-lab-v2-presentation.mjs
       - name: Verify Face Lab V2 survey consumption

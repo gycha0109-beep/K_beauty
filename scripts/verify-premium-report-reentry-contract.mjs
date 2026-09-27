@@ -11,6 +11,7 @@ const reentryModule = await import(
 );
 const sessionRoute = read("app/api/full-report/session/route.js");
 const resultPage = read("app/result/page.js");
+const fullReportPage = read("app/result/full-report/page.js");
 const previewStep = read("components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx");
 const fullReportRoute = read("app/api/full-report/route.js");
 const premiumSession = read("lib/premium-report-session.js");
@@ -111,6 +112,64 @@ assertBefore(
 );
 assert.ok(!fullReportRoute.includes("body?.topPick || savedFreeResult?.topPick"), "saved report reentry must ignore request topPick");
 assert.ok(fullReportRoute.includes("savedFreeResult?.topPick || null"), "saved report gauges must derive from the stored snapshot");
+
+for (const requiredFragment of [
+  "let cancelled = false;",
+  "const requestController = new AbortController();",
+  "setIsReady(false);",
+  "signal: requestController.signal",
+  "if (cancelled) return;",
+  "cancelled = true;",
+  "requestController.abort();"
+]) {
+  assert.ok(
+    fullReportPage.includes(requiredFragment),
+    `full-report reentry must guard stale async loads: ${requiredFragment}`
+  );
+}
+
+assert.ok(
+  fullReportPage.includes('accessReason === "payment_required" || accessReason === "premium_unavailable"'),
+  "a new full-report load must recompute access-blocked state from the current URL"
+);
+assert.ok(
+  fullReportPage.includes("if (!cancelled) {\n          setIsReady(true);"),
+  "an aborted older request must not mark the newer report load ready"
+);
+assert.ok(
+  fullReportPage.includes("const loadedSavedReportId = report?.meta?.persistence?.savedReportId || null") &&
+    fullReportPage.includes("savedReportId && loadedSavedReportId !== savedReportId") &&
+    fullReportPage.includes("if (!isReady || savedReportIdentityMismatch)"),
+  "a URL/report identity mismatch must be blocked synchronously before the replacement request effect runs"
+);
+
+assert.ok(
+  fullReportPage.includes("const responseFreeResult =") &&
+    fullReportPage.includes("const baseResult = savedReportId") &&
+    fullReportPage.includes("? responseFreeResult") &&
+    fullReportPage.includes(": parsedResult || responseFreeResult"),
+  "saved-report reentry must prefer the stored server snapshot over unrelated sessionStorage free state"
+);
+
+assert.ok(
+  fullReportPage.includes('setSubmissionImageUrl(\n        savedReportId ? "" : parsedSubmission?.imagePreviewDataUrl || ""') &&
+    fullReportPage.includes("!savedReportId && isFaceLabResultEnvelope(parsedFaceLab)") &&
+    fullReportPage.includes("faceLab: savedReportId ? null : parsedFaceLabEnvelope") &&
+    fullReportPage.includes('imageUrl: savedReportId ? "" : parsedSubmission?.imagePreviewDataUrl || ""') &&
+    fullReportPage.includes("topPick: savedReportId ? null : parsedResult?.topPick || null"),
+  "saved-report reentry must not mix current-session face media or recommendation inputs into the stored snapshot"
+);
+
+const faceLabSectionBlock = fullReportPage.slice(
+  fullReportPage.indexOf("function FaceLabSection"),
+  fullReportPage.indexOf("function PremiumEntryChoice")
+);
+assert.ok(
+  faceLabSectionBlock.indexOf("persistedReportId ||") >= 0 &&
+    faceLabSectionBlock.indexOf("persistedReportId ||") <
+      faceLabSectionBlock.indexOf("report?.meta?.snapshot?.fingerprint ||"),
+  "saved Face Lab local state must be scoped by savedReportId before content fingerprint"
+);
 
 for (const requiredCookieOption of [
   "httpOnly: true",

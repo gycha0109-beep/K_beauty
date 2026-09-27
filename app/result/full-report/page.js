@@ -6303,8 +6303,8 @@ function FaceLabSection({ report, photoUrl, locale = "ko" }) {
   const faceLabSummary = report?.faceLabSummary || buildUnavailablePremiumFaceLab(photoUrl);
   const persistedReportId = report?.meta?.persistence?.savedReportId || null;
   const resultKey =
-    report?.meta?.snapshot?.fingerprint ||
     persistedReportId ||
+    report?.meta?.snapshot?.fingerprint ||
     "current";
 
   return (
@@ -6734,13 +6734,25 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       return;
     }
 
+    let cancelled = false;
+    const requestController = new AbortController();
+
+    setIsReady(false);
+    setError("");
+    setAuthorizationFailure("");
+    setAccessBlocked(
+      accessReason === "payment_required" || accessReason === "premium_unavailable"
+    );
+
     const storedResult = sessionStorage.getItem("skinTestResult");
     const storedSubmission = sessionStorage.getItem("skinTestSubmission");
     let parsedSubmission = null;
 
     try {
       parsedSubmission = storedSubmission ? JSON.parse(storedSubmission) : null;
-      setSubmissionImageUrl(parsedSubmission?.imagePreviewDataUrl || "");
+      setSubmissionImageUrl(
+        savedReportId ? "" : parsedSubmission?.imagePreviewDataUrl || ""
+      );
     } catch {
       parsedSubmission = null;
       setSubmissionImageUrl("");
@@ -6768,9 +6780,10 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       } catch {
         parsedFaceLab = null;
       }
-      const parsedFaceLabEnvelope = isFaceLabResultEnvelope(parsedFaceLab)
-        ? parsedFaceLab
-        : null;
+      const parsedFaceLabEnvelope =
+        !savedReportId && isFaceLabResultEnvelope(parsedFaceLab)
+          ? parsedFaceLab
+          : null;
       const developmentFallbackReport =
         process.env.NODE_ENV !== "production"
           ? buildDevelopmentReport(parsedResult, parsedFaceLabEnvelope, locale)
@@ -6786,6 +6799,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
 
       try {
         const supabaseAccessToken = await getFullReportAccessToken();
+        if (cancelled) return;
+
         const response = await fetch("/api/full-report", {
           method: "POST",
           headers: {
@@ -6795,15 +6810,17 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           body: JSON.stringify({
             savedReportId: savedReportId || undefined,
             locale,
-            faceLab: parsedFaceLabEnvelope,
-            imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
+            faceLab: savedReportId ? null : parsedFaceLabEnvelope,
+            imageUrl: savedReportId ? "" : parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
-            topPick: parsedResult?.topPick || null,
+            topPick: savedReportId ? null : parsedResult?.topPick || null,
             currentProducts,
             premiumIntake: premiumIntake || undefined
-          })
+          }),
+          signal: requestController.signal
         });
         const data = await response.json().catch(() => null);
+        if (cancelled) return;
 
         if (response.status === 401) {
           if (developmentFallbackReport) {
@@ -6831,9 +6848,13 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           throw new Error(copy.errorBody);
         }
 
-        const baseResult =
-          parsedResult ||
-          (data?.freeResult && typeof data.freeResult === "object" ? data.freeResult : null);
+        const responseFreeResult =
+          data?.freeResult && typeof data.freeResult === "object"
+            ? data.freeResult
+            : null;
+        const baseResult = savedReportId
+          ? responseFreeResult
+          : parsedResult || responseFreeResult;
 
         if (!baseResult) {
           throw new Error(copy.errorBody);
@@ -6855,6 +6876,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           }
         });
       } catch {
+        if (cancelled) return;
+
         if (process.env.NODE_ENV !== "production") {
           writeSafeLog("warn", {
             event: "client_operation_failed",
@@ -6876,12 +6899,19 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           setError(copy.errorBody);
         }
       } finally {
-        setIsReady(true);
+        if (!cancelled) {
+          setIsReady(true);
+        }
       }
     }
 
     void loadFullReport();
-  }, [copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, premiumIntake, savedReportId]);
+
+    return () => {
+      cancelled = true;
+      requestController.abort();
+    };
+  }, [accessReason, copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, premiumIntake, savedReportId]);
 
   const openFullReportContent = () => {
     if (typeof window !== "undefined") {
@@ -6892,7 +6922,12 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
     setIsReportOpened(true);
   };
 
-  if (!isReady) {
+  const loadedSavedReportId = report?.meta?.persistence?.savedReportId || null;
+  const savedReportIdentityMismatch = Boolean(
+    savedReportId && loadedSavedReportId !== savedReportId
+  );
+
+  if (!isReady || savedReportIdentityMismatch) {
     return (
       <FullReportLoadingBridge
         locale={locale}
