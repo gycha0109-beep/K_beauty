@@ -1,0 +1,50 @@
+{
+  "contract": "trust-phase8h3-production-closure-v1",
+  "merged_main_sha": "062f2d20eb5fd62e7affa98215f6582db0c037b5",
+  "production_migration": {
+    "version": "20260927094055",
+    "name": "trust_phase8h3_relocation_revalidation_v1",
+    "filename": "20260927094055_trust_phase8h3_relocation_revalidation_v1.sql",
+    "source_blueprint": "docs/evidence/trust-phase8h3-relocation-revalidation-db-blueprint-v1.sql",
+    "source_blueprint_content_sha": "ff457e2041c6eb4f863ea80311590621a9943cae",
+    "apply_authority": "SUPABASE_MCP_APPLY_MIGRATION",
+    "result": "SUCCESS"
+  },
+  "security_readback": {
+    "preflight_rpc_exists": true,
+    "mark_rpc_exists": true,
+    "relocation_column_exists": true,
+    "service_role_preflight_execute": true,
+    "authenticated_preflight_execute": false,
+    "service_role_mark_execute": true,
+    "authenticated_mark_execute": false
+  },
+  "dermafactory_semantic_immutability": {
+    "historical_source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+    "historical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "historical_content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+    "contains_active": {
+      "assignment_id": "01e02370-cda2-46b9-985d-694f64101d5f",
+      "operational_state": "confirmed",
+      "fact_instance_id": "532138b9-fd99-49a3-b5ae-9ad677162055",
+      "value_entity_identifier": "niacinamide"
+    },
+    "active_concentration": {
+      "assignment_id": "6ff6d718-458e-4445-b93a-a5166258e3c7",
+      "operational_state": "confirmed",
+      "fact_instance_id": "f1b5f4c9-d099-4594-9b3c-73b13bd3ce00",
+      "value_number": 20,
+      "value_unit": "percent",
+      "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55"
+    },
+    "revalidation_transition_count": 0
+  },
+  "advisors": {
+    "security_blocker_for_phase8h3_objects": false,
+    "phase8h3_security_findings": [],
+    "performance_info_only": [
+      "product_fact_revalidation_transitions_relocation_created_idx:unused_index"
+    ]
+  },
+  "next_authority": "PHASE_8H_3_RELOCATION_AWARE_VERIFICATION_REQUIRED"
+}

@@ -19,5 +19,6 @@
     "relocation_column_rolled_back": true
   },
   "production_mutation": "NONE",
-  "result": "PASS"
+  "result": "PASS",
+  "deployed_migration": "20260927094055_trust_phase8h3_relocation_revalidation_v1.sql"
 }

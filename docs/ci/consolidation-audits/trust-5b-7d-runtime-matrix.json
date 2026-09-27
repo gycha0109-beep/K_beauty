@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "bejewely-trust-5b-7d-runtime-matrix-v1",
+  "cluster": "trust-5b-7d",
+  "mode": "audit-only",
+  "workflows": {
+    "trust-phase5b-subject-registration.yml": {
+      "authority": "phase5b-controlled-subject-registration",
+      "staticPrerequisites": [
+        "scripts/verify-trust-phase5b-subject-registration.mjs",
+        "scripts/verify-product-fact-subject-registration-v1.mjs",
+        "scripts/verify-trust-subject-resolution.mjs",
+        "scripts/verify-trust-subject-resolution-presentation-hardening.mjs",
+        "scripts/verify-trust-phase5-admin-queue.mjs"
+      ],
+      "runtimeSetup": [
+        "supabase-init",
+        "supabase-db-reset",
+        "supabase-stop"
+      ],
+      "replayBaselineMaterialization": false,
+      "phaseSpecificRuntime": [
+        "tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_runtime.sql",
+        "tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_presentation_hardening_runtime.sql"
+      ],
+      "preservation": "keep-runtime-authority"
+    },
+    "trust-phase6a-reentry.yml": {
+      "authority": "phase6a-reentry-foundation",
+      "staticPrerequisites": [
+        "scripts/verify-trust-phase6a-reentry.mjs",
+        "scripts/verify-trust-research-worker.mjs",
+        "scripts/verify-trust-subject-resolution.mjs",
+        "scripts/verify-trust-subject-resolution-presentation-hardening.mjs",
+        "scripts/verify-trust-phase5-admin-queue.mjs"
+      ],
+      "runtimeSetup": [
+        "supabase-init",
+        "supabase-db-reset",
+        "supabase-stop"
+      ],
+      "replayBaselineMaterialization": false,
+      "phaseSpecificRuntime": [
+        "tests/fixtures/trust-phase6a-reentry/verify_trust_phase6a_runtime.sql"
+      ],
+      "preservation": "keep-runtime-authority"
+    },
+    "trust-phase7c-phase4-compat.yml": {
+      "authority": "phase7c-legacy-phase4-adoption-compatibility",
+      "staticPrerequisites": [
+        "scripts/verify-trust-phase4-controlled-evidence-adoption.mjs",
+        "scripts/verify-trust-phase7c-legacy-research-readiness.mjs",
+        "scripts/verify-trust-phase7c-phase4-legacy-compat.mjs",
+        "scripts/verify-product-fact-controlled-write-v1.mjs",
+        "scripts/verify-product-fact-subject-registration-v1.mjs"
+      ],
+      "runtimeSetup": [
+        "supabase-db-reset",
+        "supabase-stop"
+      ],
+      "replayBaselineMaterialization": true,
+      "replayScript": "scripts/materialize-product-fact-replay-baseline-v1.mjs",
+      "phaseSpecificRuntime": [
+        "tests/fixtures/trust-phase7c-phase4-compat/20260921072900_trust_phase7c_phase4_compat_fixture.sql"
+      ],
+      "preservation": "keep-runtime-and-replay-authority"
+    },
+    "trust-phase7c-readiness.yml": {
+      "authority": "phase7c-legacy-research-readiness",
+      "staticPrerequisites": [
+        "scripts/verify-trust-research-worker.mjs",
+        "scripts/verify-trust-phase6a-reentry.mjs",
+        "scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs",
+        "scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs",
+        "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"
+      ],
+      "runtimeSetup": [
+        "supabase-init",
+        "supabase-db-reset",
+        "supabase-stop"
+      ],
+      "replayBaselineMaterialization": false,
+      "phaseSpecificRuntime": [
+        "tests/fixtures/trust-phase7c-readiness/verify_trust_phase7c_runtime.sql"
+      ],
+      "preservation": "keep-runtime-authority"
+    },
+    "trust-phase7d-relational-adoption.yml": {
+      "authority": "phase7d-relational-fact-adoption",
+      "staticPrerequisites": [
+        "scripts/verify-trust-research-worker.mjs",
+        "scripts/verify-trust-phase4-controlled-evidence-adoption.mjs",
+        "scripts/verify-trust-phase7c-phase4-legacy-compat.mjs",
+        "scripts/verify-trust-phase7d-relational-adoption.mjs",
+        "scripts/verify-product-fact-controlled-write-v1.mjs"
+      ],
+      "runtimeSetup": [
+        "supabase-db-reset",
+        "supabase-stop"
+      ],
+      "replayBaselineMaterialization": true,
+      "replayScript": "scripts/materialize-product-fact-replay-baseline-v1.mjs",
+      "phaseSpecificRuntime": [
+        "tests/fixtures/trust-phase7d-relational/20260921115900_trust_phase7d_relational_fixture.sql"
+      ],
+      "preservation": "keep-runtime-and-replay-authority"
+    }
+  },
+  "classification": {
+    "staticPrerequisite": "eligible-for-dedup-only-after-canonical-owner-proven",
+    "runtimeSetup": "implementation-sharing-candidate-only",
+    "phaseSpecificRuntime": "must-remain-phase-owned",
+    "replayBaselineMaterialization": "shared-script-but-runtime-evidence-not-yet-equivalent"
+  },
+  "invariants": {
+    "workflowCount": 5,
+    "supabaseRuntimeOwners": 5,
+    "replayRuntimeOwners": 2,
+    "workflowRetirementsAllowed": 0,
+    "workflowRenamesAllowed": 0
+  }
+}

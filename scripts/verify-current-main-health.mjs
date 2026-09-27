@@ -216,6 +216,7 @@ run("DATA-AI3-5 CI consolidation contract", node, ["scripts/verify-data-ai3-5-ci
 run("DATA-AI25 / PRELAUNCH CI responsibility split", node, ["scripts/verify-data-ai25-prelaunch-ci-responsibility.mjs"]);
 run("Current Main canonical delegation contract", node, ["scripts/verify-current-main-delegation.mjs"]);
 run("Mobile 13-15 CI responsibility split", node, ["scripts/verify-mobile-13-15-ci-responsibility.mjs"]);
+run("TRUST 5B-7D CI responsibility audit", node, ["scripts/verify-trust-5b-7d-ci-responsibility.mjs"]);
 run("CI workflow overlap audit", node, ["scripts/audit-ci-workflow-overlap.mjs", "--check"]);
 run("Production build", npm, ["run", "build"]);
 
