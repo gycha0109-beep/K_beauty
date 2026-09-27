@@ -9,6 +9,11 @@ on:
       - "app/api/my/product-query-production-canary/route.js"
       - "lib/product-query-production-canary-runtime.mjs"
       - "scripts/verify-data-ai16-production-canary-closure.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai16-production-canary-closure.yml"
   pull_request:
     branches: [main]
@@ -17,6 +22,11 @@ on:
       - "app/api/my/product-query-production-canary/route.js"
       - "lib/product-query-production-canary-runtime.mjs"
       - "scripts/verify-data-ai16-production-canary-closure.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai16-production-canary-closure.yml"
   workflow_dispatch:
     inputs:
