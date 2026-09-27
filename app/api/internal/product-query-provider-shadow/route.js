@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import {
   getProductQueryProviderShadowScenarioIds,
+  getProductQueryProviderShadowScenarioMetadata,
   runProductQueryProviderShadowScenario
 } from "@/lib/server/product-query-provider-shadow-service";
+import {
+  classifyProductQueryProviderProtocolFailure
+} from "@/lib/product-query-operational-observability.mjs";
 import {
   getDataAi4BearerTokenFromRequest,
   verifyDataAi4GitHubActionsOidcToken
@@ -91,18 +95,27 @@ export async function POST(request) {
     }, 400);
   }
 
+  const scenarioMetadata =
+    getProductQueryProviderShadowScenarioMetadata(scenarioId);
+
   let evaluation;
   try {
     evaluation = await runProductQueryProviderShadowScenario(scenarioId);
   } catch (error) {
+    const protocolFailure =
+      classifyProductQueryProviderProtocolFailure(error);
     return noStoreJson({
       evidenceType: "data_ai4_provider_shadow_runtime_probe_v1",
       workflowRunId: authorization.claims.runId,
       deploymentSha,
       deploymentRef,
       scenarioId,
+      outputBudget: scenarioMetadata?.outputBudget ?? null,
       providerResultClass:
         typeof error?.code === "string" ? error.code : "PROVIDER_SHADOW_FAILED",
+      protocolFailureKind: protocolFailure?.protocolFailureKind || null,
+      schemaFailureReason: protocolFailure?.schemaFailureReason || null,
+      incompleteReason: protocolFailure?.incompleteReason || null,
       result: "FAIL_CLOSED",
       secretValueExposed: false,
       queryTextExposed: false,
@@ -119,6 +132,7 @@ export async function POST(request) {
     deploymentRef,
     contractVersion: evaluation.contractVersion,
     scenarioId: evaluation.scenarioId,
+    outputBudget: evaluation.outputBudget,
     querySha256: evaluation.querySha256,
     provider: evaluation.provider,
     model: evaluation.model,

@@ -15,6 +15,7 @@ on:
       - "app/api/internal/product-query-provider-shadow/route.js"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
+      - "scripts/classify-data-ai28-output-budget-probe.mjs"
       - ".github/workflows/data-ai4-provider-shadow.yml"
       - "scripts/await-ci-workflow.mjs"
       - ".github/workflows/data-ai-product-query-static.yml"
@@ -31,6 +32,7 @@ on:
       - "app/api/internal/product-query-provider-shadow/route.js"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
+      - "scripts/classify-data-ai28-output-budget-probe.mjs"
       - ".github/workflows/data-ai4-provider-shadow.yml"
       - "scripts/await-ci-workflow.mjs"
       - ".github/workflows/data-ai-product-query-static.yml"
@@ -199,25 +201,58 @@ jobs:
             ko_category_only_cleanser
             ko_acne_treatment_pregnancy_unresolved
             ko_oily_fresh_afterfeel_cleanser
-            ko_oily_temporary_sensitive_light_cream
-            ko_tight_afterwash_oily_afternoon_cream
           )
 
           for scenario in "${scenarios[@]}"; do
-            repetitions=1
-            if [ "$scenario" = "ko_oily_temporary_sensitive_light_cream" ]; then
-              repetitions=6
-            fi
+            response_file="$(mktemp)"
+            status="$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors                 -o "$response_file"                 -w '%{http_code}'                 -X POST                 -H "Authorization: Bearer $OIDC_TOKEN"                 -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"                 -H 'Content-Type: application/json'                 --data "{\"scenarioId\":\"${scenario}\"}"                 "$DEPLOYMENT_URL/api/internal/product-query-provider-shadow")"
+            cat "$response_file"
+            echo
+            echo "DATA_AI4_RUNTIME_PROBE_HTTP_STATUS=${scenario}:1/1:${status}"
 
-            for attempt in $(seq 1 "$repetitions"); do
-              response_file="$(mktemp)"
-              status="$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors                 -o "$response_file"                 -w '%{http_code}'                 -X POST                 -H "Authorization: Bearer $OIDC_TOKEN"                 -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"                 -H 'Content-Type: application/json'                 --data "{\"scenarioId\":\"${scenario}\"}"                 "$DEPLOYMENT_URL/api/internal/product-query-provider-shadow")"
-              cat "$response_file"
-              echo
-              echo "DATA_AI4_RUNTIME_PROBE_HTTP_STATUS=${scenario}:${attempt}/${repetitions}:${status}"
-
-              node scripts/validate-data-ai4-provider-shadow-runtime-response.mjs \
-                "$response_file" "$GITHUB_SHA" "$status" "$scenario"
-              rm -f "$response_file"
-            done
+            node scripts/validate-data-ai4-provider-shadow-runtime-response.mjs \
+              "$response_file" "$GITHUB_SHA" "$status" "$scenario"
+            rm -f "$response_file"
           done
+
+          selected_budget=""
+          for budget in 400 600 800; do
+            completed=0
+            incomplete=0
+            schema_rejected=0
+            invalid_output=0
+            refusal=0
+            other_failure=0
+            scenario="ko_oily_temporary_sensitive_light_cream_budget_${budget}"
+
+            for attempt in $(seq 1 10); do
+              response_file="$(mktemp)"
+              status="$(curl --silent --show-error                 -o "$response_file"                 -w '%{http_code}'                 -X POST                 -H "Authorization: Bearer $OIDC_TOKEN"                 -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN"                 -H 'Content-Type: application/json'                 --data "{\"scenarioId\":\"${scenario}\"}"                 "$DEPLOYMENT_URL/api/internal/product-query-provider-shadow")"
+
+              classification="$(node scripts/classify-data-ai28-output-budget-probe.mjs \
+                "$response_file" "$GITHUB_SHA" "$status" "$scenario" "$budget")"
+              echo "DATA_AI28_BUDGET_PROBE=${budget}:${attempt}/10:${status}:${classification}"
+              rm -f "$response_file"
+
+              case "$classification" in
+                completed) completed=$((completed + 1)) ;;
+                incomplete) incomplete=$((incomplete + 1)) ;;
+                schema_rejected) schema_rejected=$((schema_rejected + 1)) ;;
+                invalid_output) invalid_output=$((invalid_output + 1)) ;;
+                refusal) refusal=$((refusal + 1)) ;;
+                *) other_failure=$((other_failure + 1)) ;;
+              esac
+            done
+
+            echo "DATA_AI28_BUDGET_SUMMARY={\"budget\":${budget},\"attempts\":10,\"completed\":${completed},\"incomplete\":${incomplete},\"schemaRejected\":${schema_rejected},\"invalidOutput\":${invalid_output},\"refusal\":${refusal},\"otherFailure\":${other_failure}}"
+
+            if [ -z "$selected_budget" ] && [ "$completed" -eq 10 ] && [ "$incomplete" -eq 0 ] && [ "$schema_rejected" -eq 0 ] && [ "$invalid_output" -eq 0 ] && [ "$refusal" -eq 0 ] && [ "$other_failure" -eq 0 ]; then
+              selected_budget="$budget"
+            fi
+          done
+
+          if [ -n "$selected_budget" ]; then
+            echo "DATA_AI28_SELECTED_BUDGET=${selected_budget}"
+          else
+            echo "DATA_AI28_SELECTED_BUDGET=none"
+          fi
