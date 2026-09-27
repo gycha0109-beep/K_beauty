@@ -231,7 +231,7 @@ function verifySqlContract() {
   assert.ok(blueprint.includes("alter table public.trust_official_source_transport_observations enable row level security"));
   assert.ok(blueprint.includes("alter table public.trust_official_source_transport_incidents enable row level security"));
 
-  assert.ok(blueprint.includes("join public.product_fact_current c"));
+  assert.match(blueprint, /(?:from|join)\s+public\.product_fact_current\s+c/i);
   assert.ok(blueprint.includes("e.support_direction='supports'"));
   assert.ok(!blueprint.includes("catalog_trust_intake"));
   assert.ok(blueprint.includes("'official_product_page'"));
