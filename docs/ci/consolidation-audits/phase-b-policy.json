@@ -29,6 +29,25 @@
         "data-ai-prelaunch-01-product-query-e2e.yml"
       ],
       "rule": "Current Main remains the project-wide final gate. For proven canonical DATA-AI1-5, DATA-AI25, and PRELAUNCH-01 contracts it reuses exact-head, exact-event successful canonical workflow results; if no matching canonical run exists or Actions lookup is unavailable, it executes the original verifier locally. A discovered canonical non-success fails closed."
+    },
+    "mobile-release-13-15": {
+      "runtimeMatrix": "docs/ci/consolidation-audits/mobile-13-15-runtime-matrix.json",
+      "manualReleasePreflightOwner": "mobile-13-store-release-preflight.yml",
+      "nativeAuthLinkOwner": "mobile-14-auth-app-links.yml",
+      "distributionSigningOwner": "mobile-15-distribution-authority.yml",
+      "rule": "MOBILE-13 remains manual unsigned release evidence; MOBILE-14 owns routine generated-native auth/link contracts; MOBILE-15 routine source validation no longer re-executes MOBILE-14 or auto-triggers on MOBILE-13/MOBILE-14/Expo-compat prerequisites, while manual signed Android/iOS jobs retain MOBILE-13/14 platform verification inside the signing boundary."
+    },
+    "trust-5b-7d": {
+      "mode": "audit-only",
+      "runtimeMatrix": "docs/ci/consolidation-audits/trust-5b-7d-runtime-matrix.json",
+      "workflows": [
+        "trust-phase5b-subject-registration.yml",
+        "trust-phase6a-reentry.yml",
+        "trust-phase7c-phase4-compat.yml",
+        "trust-phase7c-readiness.yml",
+        "trust-phase7d-relational-adoption.yml"
+      ],
+      "rule": "B-5A freezes current TRUST 5B-7D static prerequisites, Supabase runtime ownership, phase-specific runtime evidence, and replay-baseline ownership before any consolidation. No workflow execution, trigger, rename, retirement, DB authority, or replay authority changes are authorized in this audit-only subphase."
     }
   }
 }

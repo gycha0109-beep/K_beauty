@@ -65,3 +65,25 @@ The `taxonomy-ai-prelaunch` cluster keeps both existing workflow and job identit
 - Local `npm run verify:current` therefore retains full fallback coverage without requiring GitHub API access.
 - The overlap audit reports both static coverage overlap and execution duplicate units after accounting for delegated Current Main contracts.
 - Workflow inventory remains 64 and the Current Main workflow/job names and triggers are unchanged.
+
+## Phase B-4 Mobile 13 / 14 / 15 responsibility split
+
+The `mobile-release-13-15` cluster separates routine source validation from release-time artifact and signing authority.
+
+- `mobile-13-store-release-preflight.yml` remains manual-only and owns unsigned Android/iOS release evidence.
+- `mobile-14-auth-app-links.yml` remains the routine PR/push owner for generated native App Links, Universal Links, and Apple Auth contracts, including inherited MOBILE-13 generated-native checks.
+- `mobile-15-distribution-authority.yml` keeps routine source validation for MOBILE-15 but no longer re-executes the MOBILE-14 source verifier.
+- MOBILE-15 PR/push no longer trigger solely for the Expo JSI compatibility helper or MOBILE-13/MOBILE-14 verifier changes, because those automatic paths have dedicated owners.
+- MOBILE-15 manual signed Android/iOS jobs still prebuild and re-run MOBILE-13/14 platform checks before signing. These checks validate the exact generated native state entering the signing boundary and are not classified as routine duplicate execution.
+- Android keystore, Apple certificate/profile, signed AAB/IPA, signature verification, artifact upload, and ephemeral signing-material cleanup remain exclusively under MOBILE-15.
+- No workflow is added, retired, or renamed.
+
+## Phase B-5A TRUST 5B-7D runtime audit
+
+B-5A is audit-only. It freezes the current execution authority of the five TRUST workflows before any static prerequisite consolidation.
+
+- All five workflows remain Supabase runtime owners and retain their phase-specific DB/runtime evidence.
+- Phase 7C compatibility and Phase 7D relational adoption remain the two replay-baseline materialization owners.
+- Repeated static verifier execution is recorded as a later B-5B consolidation candidate only; this phase does not remove or delegate any verifier.
+- Supabase init/reset/stop repetition is recorded as an implementation-sharing candidate only; runtime authority remains phase-local.
+- No workflow is added, retired, renamed, or trigger-modified by B-5A.
