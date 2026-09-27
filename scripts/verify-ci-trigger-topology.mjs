@@ -325,10 +325,10 @@ assert(
 const currentMainDelegationPolicy = JSON.parse(
   read("docs/ci/consolidation-audits/current-main-delegation-policy.json"),
 );
-assert.equal(currentMainDelegationPolicy.owners.length, 4, "Current Main delegation canonical owner count drift");
+assert.equal(currentMainDelegationPolicy.owners.length, 11, "Current Main delegation canonical owner count drift");
 assert.equal(
   currentMainDelegationPolicy.owners.flatMap((owner) => owner.contracts || []).length,
-  21,
+  28,
   "Current Main delegated contract count drift",
 );
 
@@ -567,6 +567,26 @@ assertNotContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 7C Phase4 legacy adoption compatibility"',
   'run("TRUST Phase 7D relational fact adoption"',
 ]);
+assertContains("scripts/verify-current-main-health.mjs", [
+  'runDelegated("data-ai16", "DATA-AI16 Production canary closure"',
+  'runDelegated("data-ai18", "DATA-AI18 authenticated beta runtime default-off"',
+  'runDelegated("data-ai20", "DATA-AI20 authenticated limited-beta controlled activation"',
+  'runDelegated("data-ai21", "DATA-AI21 three-account limited-beta evidence closure"',
+  'runDelegated("data-ai22-live-provider-acceptance", "DATA-AI22 Production quality closure"',
+  'runDelegated("data-ai23", "DATA-AI23 authenticated beta UX"',
+  'runDelegated("data-ai24", "DATA-AI24 privacy-safe operational observability"',
+  'run("DATA-AI22 product-query quality evaluation"',
+  'run("DATA-AI22 product-query quality canonical baseline"',
+]);
+assertNotContains("scripts/verify-current-main-health.mjs", [
+  'run("DATA-AI16 Production canary closure"',
+  'run("DATA-AI18 authenticated beta runtime default-off"',
+  'run("DATA-AI20 authenticated limited-beta controlled activation"',
+  'run("DATA-AI21 three-account limited-beta evidence closure"',
+  'run("DATA-AI22 Production quality closure"',
+  'run("DATA-AI23 authenticated beta UX"',
+  'run("DATA-AI24 privacy-safe operational observability"',
+]);
 assertContains(".github/workflows/current-main-health.yml", [
   "Check exact-head diff hygiene",
   'git diff --check "${BASE_SHA}...${HEAD_SHA}"',
@@ -800,12 +820,25 @@ const responsibilityScopedWorkflowPaths = [
   ".github/workflows/trust-phase8g-source-verification.yml",
 ];
 
+const currentMainDelegationTriggerExceptions = new Set([
+  ".github/workflows/data-ai21-limited-beta-evidence-closure.yml",
+  ".github/workflows/data-ai22-live-provider-acceptance.yml",
+]);
+
 for (const relativePath of responsibilityScopedWorkflowPaths) {
   const source = read(relativePath);
-  assert.ok(
-    !source.includes('      - "scripts/verify-current-main-health.mjs"'),
-    `${relativePath}: phase/runtime workflow must not trigger on canonical orchestrator changes`
-  );
+  if (currentMainDelegationTriggerExceptions.has(relativePath)) {
+    assert.ok(
+      source.includes('      - "scripts/verify-current-main-health.mjs"') &&
+        source.includes('      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"'),
+      `${relativePath}: delegated owner must trigger on Current Main delegation wiring changes`
+    );
+  } else {
+    assert.ok(
+      !source.includes('      - "scripts/verify-current-main-health.mjs"'),
+      `${relativePath}: phase/runtime workflow must not trigger on canonical orchestrator changes`
+    );
+  }
   assert.ok(
     source.includes("watchtower_track:"),
     `${relativePath}: workflow_dispatch must expose optional watchtower_track`

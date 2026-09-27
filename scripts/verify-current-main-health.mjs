@@ -125,17 +125,17 @@ run("DATA-AI12 Production canary operational preflight", node, ["scripts/verify-
 run("DATA-AI13 controlled Production canary runtime", node, ["scripts/verify-data-ai13-production-canary-runtime.mjs"]);
 run("DATA-AI14 Production canary execution harness", node, ["scripts/verify-data-ai14-production-canary-harness.mjs"]);
 run("DATA-AI15 six-hour Production canary activation", node, ["scripts/verify-data-ai15-production-canary-activation.mjs"]);
-run("DATA-AI16 Production canary closure", node, ["scripts/verify-data-ai16-production-canary-closure.mjs"]);
+runDelegated("data-ai16", "DATA-AI16 Production canary closure", node, ["scripts/verify-data-ai16-production-canary-closure.mjs"]);
 run("DATA-AI17 authenticated limited-beta design", node, ["scripts/verify-data-ai17-authenticated-limited-beta-design.mjs"]);
-run("DATA-AI18 authenticated beta runtime default-off", node, ["scripts/verify-data-ai18-authenticated-beta-runtime.mjs"]);
+runDelegated("data-ai18", "DATA-AI18 authenticated beta runtime default-off", node, ["scripts/verify-data-ai18-authenticated-beta-runtime.mjs"]);
 run("DATA-AI19 authenticated beta activation preflight", node, ["scripts/verify-data-ai19-authenticated-beta-activation-preflight.mjs"]);
-run("DATA-AI20 authenticated limited-beta controlled activation", node, ["scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"]);
-run("DATA-AI21 three-account limited-beta evidence closure", node, ["scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"]);
+runDelegated("data-ai20", "DATA-AI20 authenticated limited-beta controlled activation", node, ["scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"]);
+runDelegated("data-ai21", "DATA-AI21 three-account limited-beta evidence closure", node, ["scripts/verify-data-ai21-limited-beta-evidence-closure.mjs"]);
 run("DATA-AI22 product-query quality evaluation", node, ["scripts/verify-data-ai22-product-query-quality.mjs"]);
 run("DATA-AI22 product-query quality canonical baseline", node, ["scripts/run-data-ai22-product-query-quality-evaluation.mjs", "--expected-baseline"]);
-run("DATA-AI22 Production quality closure", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
-run("DATA-AI23 authenticated beta UX", node, ["scripts/verify-data-ai23-authenticated-beta-ux.mjs"]);
-run("DATA-AI24 privacy-safe operational observability", node, ["scripts/verify-data-ai24-operational-observability.mjs"]);
+runDelegated("data-ai22-live-provider-acceptance", "DATA-AI22 Production quality closure", node, ["scripts/verify-data-ai22-live-provider-acceptance.mjs"]);
+runDelegated("data-ai23", "DATA-AI23 authenticated beta UX", node, ["scripts/verify-data-ai23-authenticated-beta-ux.mjs"]);
+runDelegated("data-ai24", "DATA-AI24 privacy-safe operational observability", node, ["scripts/verify-data-ai24-operational-observability.mjs"]);
 runDelegated("data-ai25", "DATA-AI25 operational baseline and readiness", node, ["scripts/verify-data-ai25-product-query-operational-readiness.mjs"]);
 runDelegated("data-ai-prelaunch-01", "DATA-AI PRELAUNCH-01 Product Query E2E acceptance", node, ["scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"]);
 

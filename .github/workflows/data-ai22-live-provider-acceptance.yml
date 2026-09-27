@@ -9,6 +9,11 @@ on:
       - "app/api/my/product-query-beta/quality-evaluation/route.js"
       - "lib/server/product-query-beta-quality-live-service.js"
       - "scripts/verify-data-ai22-live-provider-acceptance.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai22-live-provider-acceptance.yml"
   push:
     branches: [main]
@@ -17,6 +22,11 @@ on:
       - "app/api/my/product-query-beta/quality-evaluation/route.js"
       - "lib/server/product-query-beta-quality-live-service.js"
       - "scripts/verify-data-ai22-live-provider-acceptance.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai22-live-provider-acceptance.yml"
   workflow_dispatch:
     inputs:

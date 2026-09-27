@@ -11,6 +11,11 @@ on:
       - "lib/product-query-authenticated-beta-runtime.mjs"
       - "lib/product-query-authenticated-beta-controlled-activation.mjs"
       - "scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai20-authenticated-beta-controlled-activation.yml"
   push:
     branches: [main]
@@ -21,6 +26,11 @@ on:
       - "lib/product-query-authenticated-beta-runtime.mjs"
       - "lib/product-query-authenticated-beta-controlled-activation.mjs"
       - "scripts/verify-data-ai20-authenticated-beta-controlled-activation.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai20-authenticated-beta-controlled-activation.yml"
   workflow_dispatch:
     inputs:
