@@ -24,6 +24,10 @@ Initial contract:
 - face groups: 8
 - target keys per face: 12
 - total cases: 96
+- frozen SHA-256 hash:
+  `02747b9fa85f1086b0de1503297b5f4cb9c693074e2f03e6c40e789aa3bb5236`
+
+The v1 target-sweep cohort must not mutate in place. A generator change requires a new cohort version.
 
 All non-target conditions are held fixed:
 
