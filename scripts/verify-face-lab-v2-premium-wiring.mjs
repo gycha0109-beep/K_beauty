@@ -315,7 +315,9 @@ assert.ok(
   "each server persistence request must claim latest-request authority before entering the serialized queue"
 );
 assert.ok(
-  premiumFaceLab.includes("const isLatestRequest = () =>") &&\n    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&\n    premiumFaceLab.includes("if (!isLatestRequest())"),
+  premiumFaceLab.includes("const isLatestRequest = () =>") &&
+    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&
+    premiumFaceLab.includes("if (!isLatestRequest())"),
   "an older server acknowledgement must not overwrite newer in-memory user state even when local persistence failed"
 );
 assert.ok(
@@ -330,7 +332,9 @@ assert.ok(
   "a non-stale server acknowledgement must update the active route-selection state to the server-normalized survey/finder payload"
 );
 assert.ok(
-  premiumFaceLab.includes("const isLatestRequest = () =>") &&\n    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&\n    premiumFaceLab.includes("if (!isLatestRequest())") &&
+  premiumFaceLab.includes("const isLatestRequest = () =>") &&
+    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&
+    premiumFaceLab.includes("if (!isLatestRequest())") &&
     premiumFaceLab.includes("activePersistenceStateRef.current = {"),
   "server acknowledgement must only replace active persistence state after the latest-request fingerprint guard passes"
 );
