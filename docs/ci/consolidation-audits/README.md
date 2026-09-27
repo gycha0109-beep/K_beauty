@@ -98,3 +98,14 @@ B-5A is audit-only. It freezes the current execution authority of the five TRUST
 - Phase 7C compatibility and Phase 7D retain their local replay-baseline materialization because those artifacts are runtime evidence, not static-equivalent coverage.
 - No phase workflow is retired or renamed.
 - Current Main TRUST delegation is intentionally deferred; this phase canonicalizes the dedicated TRUST workflows first.
+
+## Phase B-5C Current Main TRUST canonical delegation
+
+Current Main now reuses the exact-head, exact-event successful `trust-phase5b-7d-static.yml` result for the 14 TRUST static contracts that the canonical workflow owns.
+
+- The 14 matching Current Main verifier calls use delegated-or-local execution.
+- If the TRUST canonical workflow did not trigger for the candidate SHA, Current Main executes all 14 verifiers locally.
+- If Actions lookup is unavailable, Current Main preserves local fallback coverage.
+- A discovered TRUST canonical non-success fails Current Main closed.
+- TRUST Phase 1, Phase 5C, Phase 6B, Phase 8A, and other noncanonical TRUST contracts remain direct Current Main checks.
+- Dedicated TRUST phase DB/runtime and replay-baseline responsibilities remain unchanged.

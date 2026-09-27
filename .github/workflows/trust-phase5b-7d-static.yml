@@ -44,6 +44,11 @@ on:
       - ".github/workflows/trust-phase7c-phase4-compat.yml"
       - ".github/workflows/trust-phase7c-readiness.yml"
       - ".github/workflows/trust-phase7d-relational-adoption.yml"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/trust-phase5b-7d-static.yml"
   push:
     branches: [main]
@@ -87,6 +92,11 @@ on:
       - ".github/workflows/trust-phase7c-phase4-compat.yml"
       - ".github/workflows/trust-phase7c-readiness.yml"
       - ".github/workflows/trust-phase7d-relational-adoption.yml"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/trust-phase5b-7d-static.yml"
   workflow_dispatch:
     inputs:

@@ -533,7 +533,7 @@ check(
   "Phase 5B workflow must not duplicate canonical production build"
 );
 check(
-  source.currentHealth.includes('run("TRUST Phase 5B subject registration contract"'),
+  source.currentHealth.includes('runDelegated("trust-phase5b-subject-registration", "TRUST Phase 5B subject registration contract"'),
   "Current Main Health must own Phase 5B static contract"
 );
 check(
