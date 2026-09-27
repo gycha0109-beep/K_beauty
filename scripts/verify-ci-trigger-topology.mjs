@@ -820,12 +820,25 @@ const responsibilityScopedWorkflowPaths = [
   ".github/workflows/trust-phase8g-source-verification.yml",
 ];
 
+const currentMainDelegationTriggerExceptions = new Set([
+  ".github/workflows/data-ai21-limited-beta-evidence-closure.yml",
+  ".github/workflows/data-ai22-live-provider-acceptance.yml",
+]);
+
 for (const relativePath of responsibilityScopedWorkflowPaths) {
   const source = read(relativePath);
-  assert.ok(
-    !source.includes('      - "scripts/verify-current-main-health.mjs"'),
-    `${relativePath}: phase/runtime workflow must not trigger on canonical orchestrator changes`
-  );
+  if (currentMainDelegationTriggerExceptions.has(relativePath)) {
+    assert.ok(
+      source.includes('      - "scripts/verify-current-main-health.mjs"') &&
+        source.includes('      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"'),
+      `${relativePath}: delegated owner must trigger on Current Main delegation wiring changes`
+    );
+  } else {
+    assert.ok(
+      !source.includes('      - "scripts/verify-current-main-health.mjs"'),
+      `${relativePath}: phase/runtime workflow must not trigger on canonical orchestrator changes`
+    );
+  }
   assert.ok(
     source.includes("watchtower_track:"),
     `${relativePath}: workflow_dispatch must expose optional watchtower_track`
