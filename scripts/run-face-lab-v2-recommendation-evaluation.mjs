@@ -5,6 +5,9 @@ import {
   FACE_LAB_V2_LOCKED_COHORT_SIZE
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  runFaceLabV2AxisConsumptionEvaluation
+} from "../lib/face-lab-v2/evaluation/axis-consumption.js";
+import {
   runFaceLabV2TargetResponsivenessEvaluation
 } from "../lib/face-lab-v2/evaluation/target-responsiveness.js";
 import {
@@ -46,11 +49,13 @@ if (cohort === "locked") {
   });
 } else if (cohort === "target-sweep") {
   report = runFaceLabV2TargetResponsivenessEvaluation();
+} else if (cohort === "axis-consumption") {
+  report = runFaceLabV2AxisConsumptionEvaluation();
 } else if (cohort === "all") {
   report = runFaceLabV2EvaluationSuite();
 } else {
   throw new Error(
-    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, or all"
+    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, or all"
   );
 }
 
