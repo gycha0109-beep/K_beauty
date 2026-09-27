@@ -27,9 +27,10 @@
       "delegatedCanonicalOwners": [
         "data-ai-product-query-static.yml",
         "data-ai25-operational-readiness.yml",
-        "data-ai-prelaunch-01-product-query-e2e.yml"
+        "data-ai-prelaunch-01-product-query-e2e.yml",
+        "trust-phase5b-7d-static.yml"
       ],
-      "rule": "Current Main remains the project-wide final gate. For proven canonical DATA-AI1-5, DATA-AI25, and PRELAUNCH-01 contracts it reuses exact-head, exact-event successful canonical workflow results; if no matching canonical run exists or Actions lookup is unavailable, it executes the original verifier locally. A discovered canonical non-success fails closed."
+      "rule": "Current Main remains the project-wide final gate. For proven canonical DATA-AI1-5, DATA-AI25, PRELAUNCH-01, and TRUST 5B-7D static contracts it reuses exact-head, exact-event successful canonical workflow results; if no matching canonical run exists or Actions lookup is unavailable, it executes the original verifier locally. A discovered canonical non-success fails closed."
     },
     "mobile-release-13-15": {
       "runtimeMatrix": "docs/ci/consolidation-audits/mobile-13-15-runtime-matrix.json",

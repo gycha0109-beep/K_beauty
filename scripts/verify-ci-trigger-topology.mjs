@@ -325,10 +325,10 @@ assert(
 const currentMainDelegationPolicy = JSON.parse(
   read("docs/ci/consolidation-audits/current-main-delegation-policy.json"),
 );
-assert.equal(currentMainDelegationPolicy.owners.length, 3, "Current Main delegation canonical owner count drift");
+assert.equal(currentMainDelegationPolicy.owners.length, 4, "Current Main delegation canonical owner count drift");
 assert.equal(
   currentMainDelegationPolicy.owners.flatMap((owner) => owner.contracts || []).length,
-  7,
+  21,
   "Current Main delegated contract count drift",
 );
 
@@ -534,14 +534,38 @@ assertContains("scripts/verify-current-main-health.mjs", [
 
 assertContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 1 intake contract"',
+  'run("TRUST Phase 5C formulation conflict HOLD"',
+  'run("TRUST Phase 8A revalidation contract"',
+  'runDelegated("trust-phase2-subject-resolution", "TRUST Phase 2 subject resolution contract"',
+  'runDelegated("trust-phase2-presentation-hardening", "TRUST Phase 2 presentation hardening"',
+  'runDelegated("trust-phase3-research-worker", "TRUST Phase 3 research worker contract"',
+  'runDelegated("trust-phase4-controlled-adoption", "TRUST Phase 4 controlled evidence adoption"',
+  'runDelegated("product-fact-controlled-write", "Product Fact controlled-write authority"',
+  'runDelegated("product-fact-subject-registration", "Product Fact Subject authority"',
+  'runDelegated("trust-phase5-admin-queue", "TRUST Phase 5 admin queue contract"',
+  'runDelegated("trust-phase5b-subject-registration", "TRUST Phase 5B subject registration contract"',
+  'runDelegated("trust-phase6a-reentry", "TRUST Phase 6A reentry contract"',
+  'runDelegated("trust-phase7a-backfill-preflight", "TRUST Phase 7A legacy backfill preflight"',
+  'runDelegated("trust-phase7b-backfill-materialization", "TRUST Phase 7B legacy backfill materialization"',
+  'runDelegated("trust-phase7c-research-readiness", "TRUST Phase 7C legacy research readiness"',
+  'runDelegated("trust-phase7c-phase4-compat", "TRUST Phase 7C Phase4 legacy adoption compatibility"',
+  'runDelegated("trust-phase7d-relational-adoption", "TRUST Phase 7D relational fact adoption"',
+]);
+assertNotContains("scripts/verify-current-main-health.mjs", [
   'run("TRUST Phase 2 subject resolution contract"',
+  'run("TRUST Phase 2 presentation hardening"',
   'run("TRUST Phase 3 research worker contract"',
   'run("TRUST Phase 4 controlled evidence adoption"',
+  'run("Product Fact controlled-write authority"',
+  'run("Product Fact Subject authority"',
   'run("TRUST Phase 5 admin queue contract"',
   'run("TRUST Phase 5B subject registration contract"',
-  'run("TRUST Phase 5C formulation conflict HOLD"',
   'run("TRUST Phase 6A reentry contract"',
-  'run("TRUST Phase 8A revalidation contract"',
+  'run("TRUST Phase 7A legacy backfill preflight"',
+  'run("TRUST Phase 7B legacy backfill materialization"',
+  'run("TRUST Phase 7C legacy research readiness"',
+  'run("TRUST Phase 7C Phase4 legacy adoption compatibility"',
+  'run("TRUST Phase 7D relational fact adoption"',
 ]);
 assertContains(".github/workflows/current-main-health.yml", [
   "Check exact-head diff hygiene",
@@ -693,7 +717,7 @@ assertNotContains("scripts/verify-current-main-health.mjs", [
   'run("Mobile My Skin Diary static contract"',
 ]);
 assertContains("scripts/verify-current-main-health.mjs", [
-  'run("TRUST Phase 7A legacy backfill preflight"',
+  'runDelegated("trust-phase7a-backfill-preflight", "TRUST Phase 7A legacy backfill preflight"',
 ]);
 
 const workflowFiles = readdirSync(".github/workflows")

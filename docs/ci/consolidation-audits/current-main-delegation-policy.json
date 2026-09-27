@@ -57,6 +57,68 @@
           "script": "scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"
         }
       ]
+    },
+    {
+      "id": "trust-5b-7d-static",
+      "workflowPath": ".github/workflows/trust-phase5b-7d-static.yml",
+      "contracts": [
+        {
+          "id": "trust-phase2-subject-resolution",
+          "script": "scripts/verify-trust-subject-resolution.mjs"
+        },
+        {
+          "id": "trust-phase2-presentation-hardening",
+          "script": "scripts/verify-trust-subject-resolution-presentation-hardening.mjs"
+        },
+        {
+          "id": "trust-phase3-research-worker",
+          "script": "scripts/verify-trust-research-worker.mjs"
+        },
+        {
+          "id": "trust-phase4-controlled-adoption",
+          "script": "scripts/verify-trust-phase4-controlled-evidence-adoption.mjs"
+        },
+        {
+          "id": "product-fact-controlled-write",
+          "script": "scripts/verify-product-fact-controlled-write-v1.mjs"
+        },
+        {
+          "id": "product-fact-subject-registration",
+          "script": "scripts/verify-product-fact-subject-registration-v1.mjs"
+        },
+        {
+          "id": "trust-phase5-admin-queue",
+          "script": "scripts/verify-trust-phase5-admin-queue.mjs"
+        },
+        {
+          "id": "trust-phase5b-subject-registration",
+          "script": "scripts/verify-trust-phase5b-subject-registration.mjs"
+        },
+        {
+          "id": "trust-phase6a-reentry",
+          "script": "scripts/verify-trust-phase6a-reentry.mjs"
+        },
+        {
+          "id": "trust-phase7a-backfill-preflight",
+          "script": "scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"
+        },
+        {
+          "id": "trust-phase7b-backfill-materialization",
+          "script": "scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"
+        },
+        {
+          "id": "trust-phase7c-research-readiness",
+          "script": "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"
+        },
+        {
+          "id": "trust-phase7c-phase4-compat",
+          "script": "scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"
+        },
+        {
+          "id": "trust-phase7d-relational-adoption",
+          "script": "scripts/verify-trust-phase7d-relational-adoption.mjs"
+        }
+      ]
     }
   ]
 }

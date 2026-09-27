@@ -27,11 +27,25 @@ const expected = [
   ["data-ai5", "scripts/verify-data-ai5-activation-readiness.mjs"],
   ["data-ai25", "scripts/verify-data-ai25-product-query-operational-readiness.mjs"],
   ["data-ai-prelaunch-01", "scripts/verify-data-ai-prelaunch-01-product-query-e2e.mjs"],
+  ["trust-phase2-subject-resolution", "scripts/verify-trust-subject-resolution.mjs"],
+  ["trust-phase2-presentation-hardening", "scripts/verify-trust-subject-resolution-presentation-hardening.mjs"],
+  ["trust-phase3-research-worker", "scripts/verify-trust-research-worker.mjs"],
+  ["trust-phase4-controlled-adoption", "scripts/verify-trust-phase4-controlled-evidence-adoption.mjs"],
+  ["product-fact-controlled-write", "scripts/verify-product-fact-controlled-write-v1.mjs"],
+  ["product-fact-subject-registration", "scripts/verify-product-fact-subject-registration-v1.mjs"],
+  ["trust-phase5-admin-queue", "scripts/verify-trust-phase5-admin-queue.mjs"],
+  ["trust-phase5b-subject-registration", "scripts/verify-trust-phase5b-subject-registration.mjs"],
+  ["trust-phase6a-reentry", "scripts/verify-trust-phase6a-reentry.mjs"],
+  ["trust-phase7a-backfill-preflight", "scripts/verify-trust-phase7a-legacy-backfill-preflight.mjs"],
+  ["trust-phase7b-backfill-materialization", "scripts/verify-trust-phase7b-legacy-backfill-materialization.mjs"],
+  ["trust-phase7c-research-readiness", "scripts/verify-trust-phase7c-legacy-research-readiness.mjs"],
+  ["trust-phase7c-phase4-compat", "scripts/verify-trust-phase7c-phase4-legacy-compat.mjs"],
+  ["trust-phase7d-relational-adoption", "scripts/verify-trust-phase7d-relational-adoption.mjs"],
 ];
 
 const contracts = policy.owners.flatMap((owner) => owner.contracts);
-assert.equal(policy.owners.length, 3);
-assert.equal(contracts.length, 7);
+assert.equal(policy.owners.length, 4);
+assert.equal(contracts.length, expected.length);
 for (const [id, script] of expected) {
   const contract = contracts.find((item) => item.id === id);
   assert.equal(contract?.script, script, `${id}: delegation policy drift`);
@@ -51,8 +65,16 @@ assert.ok(
   phaseB.approvedAddedWorkflows.includes("data-ai-product-query-static.yml"),
   "Current Main delegation requires the canonical DATA-AI static workflow approval"
 );
+assert.ok(
+  phaseB.approvedAddedWorkflows.includes("trust-phase5b-7d-static.yml"),
+  "Current Main delegation requires the canonical TRUST 5B-7D static workflow approval"
+);
+assert.ok(
+  cluster?.delegatedCanonicalOwners?.includes("trust-phase5b-7d-static.yml"),
+  "Current Main delegation policy must expose TRUST 5B-7D canonical owner"
+);
 assert.deepEqual(phaseB.approvedRetiredWorkflows, []);
 const expectedWorkflowCount =
   phaseB.baselineWorkflowCount + phaseB.approvedAddedWorkflows.length - phaseB.approvedRetiredWorkflows.length;
 
-console.log(`CURRENT_MAIN_DELEGATION=PASS delegated_contracts=7 canonical_groups=3 direct_duplicate_execution=0 fallback_coverage=7 workflow_inventory=${expectedWorkflowCount}`);
+console.log(`CURRENT_MAIN_DELEGATION=PASS delegated_contracts=${expected.length} canonical_groups=${policy.owners.length} direct_duplicate_execution=0 fallback_coverage=${expected.length} workflow_inventory=${expectedWorkflowCount}`);
