@@ -153,6 +153,11 @@ const before = JSON.stringify(fixture);
 const ko = buildFaceLabV2ResultPresentation(fixture, { locale: "ko" });
 assert.equal(JSON.stringify(fixture), before, "presentation adapter must not mutate canonical input");
 assert.equal(ko.status, "available");
+assert.equal(
+  ko.version,
+  "face-lab-result-presentation-v7",
+  "bounded omitted-domain presentation is a versioned presentation-contract change"
+);
 assert.equal(ko.execution.domains.length, 1);
 assert.equal(
   ko.routes.cards[0].targetFit,
