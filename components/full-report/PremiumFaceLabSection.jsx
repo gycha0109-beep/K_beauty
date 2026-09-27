@@ -560,6 +560,7 @@ export default function PremiumFaceLabSection({
   const [canonical, setCanonical] = useState(null);
   const persistQueueRef = useRef(Promise.resolve());
   const restoreInteractionRef = useRef(0);
+  const activePersistenceStateRef = useRef(null);
 
   const persistServer = useCallback((surveyAnswers, approvedFinder, routeId) => {
     if (!savedReportId) return Promise.resolve();
@@ -639,6 +640,10 @@ export default function PremiumFaceLabSection({
 
       if (restored?.targetStyle?.status !== "available") return false;
 
+      activePersistenceStateRef.current = {
+        surveyAnswers: stored.surveyAnswers,
+        targetFinderResult: stored.targetFinderResult || null
+      };
       setCanonical(restored);
       setEntryMode(stored.surveyAnswers.entryMode || "known");
       setTargets(
@@ -824,6 +829,10 @@ export default function PremiumFaceLabSection({
       resultId: resultKey
     });
 
+    activePersistenceStateRef.current = {
+      surveyAnswers,
+      targetFinderResult: approvedFinder
+    };
     setCanonical(result);
     setStage("result");
 
@@ -841,10 +850,13 @@ export default function PremiumFaceLabSection({
   };
 
   const selectRoute = (routeId) => {
-    const surveyAnswers = buildSurveyAnswers();
-    const approvedFinder = finderResult
-      ? { ...finderResult, userApproved: true }
-      : null;
+    const activeState = activePersistenceStateRef.current;
+    const surveyAnswers = activeState?.surveyAnswers || buildSurveyAnswers();
+    const approvedFinder = activeState
+      ? activeState.targetFinderResult
+      : finderResult
+        ? { ...finderResult, userApproved: true }
+        : null;
     const result = buildFaceLabV2Canonical({
       analysis: faceLabAnalysis,
       surveyAnswers,
@@ -856,6 +868,10 @@ export default function PremiumFaceLabSection({
 
     const resolvedRouteId = result.routes?.selectedRouteId || null;
 
+    activePersistenceStateRef.current = {
+      surveyAnswers,
+      targetFinderResult: approvedFinder
+    };
     setCanonical(result);
 
     persistLocal({
