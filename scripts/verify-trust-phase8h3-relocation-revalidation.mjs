@@ -4,6 +4,8 @@ import { extractStrictFactCandidate } from "./trust-research-worker.mjs";
 
 const migrationPath = "docs/evidence/trust-phase8h3-relocation-revalidation-db-blueprint-v1.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
+const relocationResolver = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-aware-verification-db-blueprint-v1.sql", "utf8");
+const sourceVerificationWorker = fs.readFileSync("scripts/trust-source-verification-worker.mjs", "utf8");
 const materializedMigrationPath = "supabase/migrations/20260927094055_trust_phase8h3_relocation_revalidation_v1.sql";
 const materializedMigration = fs.readFileSync(materializedMigrationPath, "utf8");
 const worker = fs.readFileSync("scripts/trust-research-worker.mjs", "utf8");
@@ -11,6 +13,7 @@ const contract = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-revali
 const provenance = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-cli-migration-generation-v1.json", "utf8"));
 const dryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-db-dry-run-validation-v1.json", "utf8"));
 const closure = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-production-closure-v1.json", "utf8"));
+const relocationAwareDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-aware-verification-dry-run-v1.json", "utf8"));
 
 for (const needle of [
   "add column relocation_id uuid",
@@ -37,6 +40,27 @@ assert.ok(!/replay_verified\s*=\s*true/i.test(migration), "synthetic replay veri
 assert.ok(!/verification_result\s*=\s*'changed'.*source_relocated/is.test(migration), "relocation must not synthesize changed verification");
 assert.ok(!/^\s*begin\s*;/i.test(migration), "deployable blueprint must not open an outer transaction");
 assert.ok(!/\n\s*commit\s*;\s*$/i.test(migration), "deployable blueprint must not commit its caller transaction");
+
+for (const needle of [
+  "get_official_source_relocation_verification_target_v1",
+  "v_old_binding.binding_state <> 'retired'",
+  "v_replacement_binding.binding_state <> 'resolved'",
+  "v_replacement_review.scope_relation <> 'equivalent'",
+  "'canonical_baseline', v_profile.canonical_baseline",
+]) {
+  assert.ok(relocationResolver.includes(needle), `relocation resolver missing contract token: ${needle}`);
+}
+assert.ok(!/update\s+public\.product_evidence_sources/i.test(relocationResolver), "relocation resolver must not mutate historical source");
+for (const needle of [
+  "establishRelocationFreshBaseline",
+  "verifyRelocatedSource",
+  "SOURCE_RELOCATION_TARGET_DRIFT",
+  "SOURCE_RELOCATION_PROFILE_TARGET_MISMATCH",
+  'mode === "relocation-baseline"',
+  'mode === "relocation-verify"',
+]) {
+  assert.ok(sourceVerificationWorker.includes(needle), `source verification worker missing relocation token: ${needle}`);
+}
 
 assert.equal(provenance.contract, "trust-phase8h3-cli-migration-generation-v1");
 assert.equal(provenance.generation_authority, "SUPABASE_CLI_MIGRATION_NEW");
@@ -91,6 +115,26 @@ assert.deepEqual(dryRun.rollback_readback, {
   mark_rolled_back: true,
   relocation_column_rolled_back: true,
 });
+assert.equal(relocationAwareDryRun.contract, "trust-phase8h3-relocation-aware-verification-dry-run-v1");
+assert.equal(relocationAwareDryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
+assert.equal(relocationAwareDryRun.production_mutation, "NONE");
+assert.equal(relocationAwareDryRun.result, "PASS");
+assert.deepEqual(relocationAwareDryRun.rollback_readback, {
+  rpc_rolled_back: true,
+  derma_profile_count: 0,
+  derma_transition_count: 0,
+});
+assert.equal(relocationAwareDryRun.dry_run_readback.historical_source_id, "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b");
+assert.equal(
+  relocationAwareDryRun.dry_run_readback.historical_canonical_locator,
+  "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933"
+);
+assert.equal(
+  relocationAwareDryRun.dry_run_readback.replacement_locator,
+  "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933"
+);
+assert.equal(relocationAwareDryRun.dry_run_readback.service_role_execute, true);
+assert.equal(relocationAwareDryRun.dry_run_readback.authenticated_execute, false);
 
 for (const needle of [
   "source_relocated",

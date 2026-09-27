@@ -1,0 +1,26 @@
+{
+  "contract": "trust-phase8h3-relocation-aware-verification-dry-run-v1",
+  "project_ref": "bygrczggxfuisupcevaz",
+  "validation_mode": "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK",
+  "blueprint": "docs/evidence/trust-phase8h3-relocation-aware-verification-db-blueprint-v1.sql",
+  "relocation_id": "463e6a5a-781d-4e8c-be36-918b01e423fc",
+  "dry_run_readback": {
+    "rpc_exists": true,
+    "service_role_execute": true,
+    "authenticated_execute": false,
+    "historical_source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+    "historical_canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "historical_content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+    "replacement_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+    "replacement_review_id": "b60f2b1b-2be4-46db-8a24-b734a16b087d",
+    "replacement_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+    "verification_profile": null
+  },
+  "rollback_readback": {
+    "rpc_rolled_back": true,
+    "derma_profile_count": 0,
+    "derma_transition_count": 0
+  },
+  "production_mutation": "NONE",
+  "result": "PASS"
+}

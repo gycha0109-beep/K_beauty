@@ -7,7 +7,7 @@ import {
   fetchOfficialBytes,
 } from "../lib/trust/official-source-fetch.mjs";
 
-const WORKER_VERSION = "trust-source-verification-worker-v2";
+const WORKER_VERSION = "trust-source-verification-worker-v3";
 
 function argValue(name) {
   return process.argv.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3) || null;
@@ -107,6 +107,56 @@ async function loadTarget(client, sourceId) {
   });
 }
 
+async function loadRelocationTarget(client, relocationId) {
+  return rpcOrThrow(client, "get_official_source_relocation_verification_target_v1", {
+    p_relocation_id: relocationId,
+  });
+}
+
+async function captureRelocatedSemanticPage(target, fetchImpl = fetch) {
+  const locator = String(target?.replacement_locator || "");
+  if (!locator.startsWith("https://")) throw new Error("SOURCE_RELOCATION_TARGET_INVALID");
+  const fetched = await fetchOfficialBytes(locator, fetchImpl);
+  if (!sameReviewedResource(locator, fetched.finalUrl)) {
+    throw new Error("SOURCE_RELOCATION_TARGET_DRIFT");
+  }
+  const adapted = digestOfficialContent(fetched.bytes, "official-product-semantic", "v1", {
+    sourceMetadata: target.source_metadata || {},
+    canonicalLocator: locator,
+  });
+  return {
+    digest: adapted.digest,
+    digestBasis: adapted.digestBasis,
+    adapterKey: adapted.adapterKey,
+    adapterVersion: adapted.adapterVersion,
+    canonicalLength: adapted.canonicalLength,
+    fetchedAt: new Date().toISOString(),
+    approvedLocator: locator,
+    observedFinalUrl: fetched.finalUrl,
+    contentType: fetched.contentType,
+    byteLength: fetched.bytes.byteLength,
+  };
+}
+
+function assertRelocationProfile(target) {
+  const profile = target?.verification_profile;
+  if (!profile || profile.comparability_state !== "COMPARABLE") {
+    throw new Error("SOURCE_VERIFICATION_PROFILE_NOT_COMPARABLE");
+  }
+  if (
+    profile.baseline_kind !== "fresh_recovery"
+    || profile.digest_basis !== "canonical-official-product-semantics-v1"
+    || profile.adapter_key !== "official-product-semantic"
+    || profile.adapter_version !== "v1"
+  ) {
+    throw new Error("SOURCE_RELOCATION_VERIFICATION_PROFILE_INVALID");
+  }
+  if (String(profile?.canonical_baseline?.final_url || "") !== String(target.replacement_locator || "")) {
+    throw new Error("SOURCE_RELOCATION_PROFILE_TARGET_MISMATCH");
+  }
+  return profile;
+}
+
 export async function establishFreshBaseline(client, {
   sourceId,
   actorUserId,
@@ -189,6 +239,108 @@ export async function establishFreshBaseline(client, {
       worker_version: WORKER_VERSION,
       recovery_reason: currentProfile ? "supersede_previous_profile" : "establish_first_comparable_profile",
     },
+  });
+}
+
+export async function establishRelocationFreshBaseline(client, {
+  relocationId,
+  actorUserId,
+  requestId,
+  fetchImpl = fetch,
+} = {}) {
+  if (!relocationId || !actorUserId || !requestId) {
+    throw new Error("relocationId, actorUserId and requestId are required");
+  }
+  const target = await loadRelocationTarget(client, relocationId);
+  const currentProfile = target.verification_profile || null;
+  const baseline = await captureRelocatedSemanticPage(target, fetchImpl);
+
+  return rpcOrThrow(client, "admin_register_product_evidence_source_verification_profile_v1", {
+    p_actor_user_id: actorUserId,
+    p_request_id: requestId,
+    p_source_id: target.historical_source_id,
+    p_supersedes_profile_id: currentProfile?.profile_id || null,
+    p_baseline_content_digest: baseline.digest,
+    p_digest_basis: baseline.digestBasis,
+    p_adapter_key: baseline.adapterKey,
+    p_adapter_version: baseline.adapterVersion,
+    p_baseline_kind: "fresh_recovery",
+    p_canonical_baseline: {
+      final_url: target.replacement_locator,
+      observed_final_url: baseline.observedFinalUrl,
+      content_type: baseline.contentType,
+      byte_length: baseline.byteLength,
+      canonical_length: baseline.canonicalLength,
+      fetched_at: baseline.fetchedAt,
+      relocation_id: target.relocation_id,
+      replacement_binding_id: target.replacement_binding_id,
+      replacement_review_id: target.replacement_review_id,
+    },
+    p_profile_metadata: {
+      worker_version: WORKER_VERSION,
+      observation_mode: "confirmed-official-source-relocation",
+      relocation_id: target.relocation_id,
+      replacement_binding_id: target.replacement_binding_id,
+      replacement_review_id: target.replacement_review_id,
+      recovery_reason: currentProfile ? "supersede_previous_profile" : "establish_first_comparable_profile",
+    },
+  });
+}
+
+export async function verifyRelocatedSource(client, {
+  relocationId,
+  requestId,
+  triggerKind = "manual",
+  fetchImpl = fetch,
+} = {}) {
+  if (!relocationId || !requestId) throw new Error("relocationId and requestId are required");
+  const target = await loadRelocationTarget(client, relocationId);
+  const profile = assertRelocationProfile(target);
+  const checkedAt = new Date().toISOString();
+  let observedDigest = null;
+  let verificationResult;
+  let metadata;
+
+  try {
+    const observed = await captureRelocatedSemanticPage(target, fetchImpl);
+    if (observed.digestBasis !== profile.digest_basis) {
+      throw new Error("SOURCE_VERIFICATION_PROFILE_DIGEST_BASIS_MISMATCH");
+    }
+    observedDigest = observed.digest;
+    verificationResult = observedDigest === profile.baseline_content_digest ? "unchanged" : "changed";
+    metadata = {
+      worker_version: WORKER_VERSION,
+      observation_mode: "confirmed-official-source-relocation",
+      relocation_id: target.relocation_id,
+      replacement_binding_id: target.replacement_binding_id,
+      replacement_review_id: target.replacement_review_id,
+      final_url: target.replacement_locator,
+      observed_final_url: observed.observedFinalUrl,
+      content_type: observed.contentType,
+      byte_length: observed.byteLength,
+      canonical_length: observed.canonicalLength,
+    };
+  } catch (error) {
+    const classified = classifyFetchFailure(error);
+    verificationResult = classified.verificationResult;
+    metadata = {
+      worker_version: WORKER_VERSION,
+      observation_mode: "confirmed-official-source-relocation",
+      relocation_id: target.relocation_id,
+      replacement_binding_id: target.replacement_binding_id,
+      replacement_review_id: target.replacement_review_id,
+      fetch_outcome: classified.detail,
+    };
+  }
+
+  return rpcOrThrow(client, "record_product_evidence_source_verification_v2", {
+    p_request_id: requestId,
+    p_verification_profile_id: profile.profile_id,
+    p_observed_content_digest: observedDigest,
+    p_verification_result: verificationResult,
+    p_trigger_kind: triggerKind,
+    p_checked_at: checkedAt,
+    p_verification_metadata: metadata,
   });
 }
 
@@ -282,6 +434,7 @@ export async function verifySource(client, {
 export async function runSourceVerificationWorker({
   mode,
   sourceId,
+  relocationId,
   actorUserId,
   requestId,
   triggerKind = "manual",
@@ -300,13 +453,20 @@ export async function runSourceVerificationWorker({
   if (mode === "verify") {
     return verifySource(client, { sourceId, requestId, triggerKind, fetchImpl });
   }
-  throw new Error("mode must be baseline or verify");
+  if (mode === "relocation-baseline") {
+    return establishRelocationFreshBaseline(client, { relocationId, actorUserId, requestId, fetchImpl });
+  }
+  if (mode === "relocation-verify") {
+    return verifyRelocatedSource(client, { relocationId, requestId, triggerKind, fetchImpl });
+  }
+  throw new Error("mode must be baseline, verify, relocation-baseline or relocation-verify");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const result = await runSourceVerificationWorker({
     mode: argValue("mode"),
     sourceId: argValue("source-id"),
+    relocationId: argValue("relocation-id"),
     actorUserId: argValue("actor-user-id"),
     requestId: argValue("request-id"),
     triggerKind: argValue("trigger-kind") || "manual",
@@ -317,6 +477,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     status: "OK",
     mode: argValue("mode"),
     source_id: argValue("source-id"),
+    relocation_id: argValue("relocation-id"),
     result,
   }));
 }
