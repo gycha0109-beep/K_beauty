@@ -109,3 +109,27 @@ Current Main now reuses the exact-head, exact-event successful `trust-phase5b-7d
 - A discovered TRUST canonical non-success fails Current Main closed.
 - TRUST Phase 1, Phase 5C, Phase 6B, Phase 8A, and other noncanonical TRUST contracts remain direct Current Main checks.
 - Dedicated TRUST phase DB/runtime and replay-baseline responsibilities remain unchanged.
+
+## Phase B-6A TRUST 8B-8G replay runtime audit
+
+B-6A is audit-only and freezes the execution boundary before any replay-baseline setup sharing.
+
+- All six workflows independently materialize the same governed Product Fact replay baseline exactly once.
+- The materializer is repository-local and deterministic: it reads a governed fixture manifest, a fixed Git migration tree, compatibility bridges, and sentinels; it does not own Supabase startup, DB verification, or remote commands.
+- Each phase then appends its own migration/fixture tail and remains the owner of its own Supabase runtime and SQL evidence.
+- TRUST 8G keeps its production canary capture, semantic probes, controlled batch probes, and claim-asset verification operations.
+- Shared artifact/cache/helper work may target only the common replay-baseline materialization boundary unless later equivalence evidence proves more.
+- No workflow execution, trigger, retirement, rename, or runtime delegation is changed by B-6A.
+
+## Phase B-6B TRUST 8B-8G replay consolidation decision
+
+The replay-baseline review is closed with **local materialization preserved**.
+
+A successful Phase 8G reference run (`36287673316`) showed the common replay materializer completing in about 0.22 seconds, while the following isolated Supabase runtime occupied about 97 seconds. This is a cost signal, not a universal benchmark, but it is sufficient to reject additional cross-workflow orchestration at the current scale.
+
+- The existing Node materializer is already the shared implementation.
+- Each workflow materializes locally immediately before appending phase-specific migrations and starting its isolated database.
+- No canonical replay-artifact workflow is added.
+- No upload/download cache layer, Actions run-id coupling, extra permissions, or artifact-expiry dependency is introduced.
+- All six replay calls, six Supabase runtime authorities, six phase semantic verifiers, and TRUST 8G operational probes remain intentionally local.
+- Reconsider this decision only if future measurements show replay materialization becoming materially expensive or shared artifacts become independently necessary for correctness.

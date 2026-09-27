@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "bejewely-trust-8b-8g-replay-decision-v1",
+  "cluster": "trust-8b-8g-replay",
+  "decision": "preserve-local-replay-materialization",
+  "rationale": [
+    "The common replay materializer is already a single shared implementation and is repository-local/deterministic.",
+    "Each phase requires its own local workspace immediately before appending phase-specific migrations and starting isolated Supabase.",
+    "Cross-workflow artifact/cache sharing would add producer workflow, artifact upload/download, Actions run coupling, permissions, expiry, and failure modes.",
+    "Observed materialization cost is negligible relative to isolated Supabase runtime, so added orchestration would increase CI complexity without meaningful runtime savings."
+  ],
+  "observedReference": {
+    "workflow": "trust-phase8g-source-verification.yml",
+    "runId": 36287673316,
+    "headSha": "d67a645838801ad707c50c472db4c17ca6dca37f",
+    "event": "pull_request",
+    "conclusion": "success",
+    "materializationStart": "2026-09-27T02:09:25.6015765Z",
+    "materializationPass": "2026-09-27T02:09:25.8239403Z",
+    "materializationDurationMs": 222,
+    "supabaseRuntimeWindowStart": "2026-09-27T02:09:25.8553513Z",
+    "nextStepStart": "2026-09-27T02:11:03.2581306Z",
+    "supabaseRuntimeWindowMs": 97403,
+    "note": "Single successful Phase 8G reference run; used as an order-of-magnitude CI cost check, not a universal benchmark."
+  },
+  "allowedFutureChange": "Re-evaluate only if measured replay materialization becomes materially expensive or a shared artifact is independently required for correctness.",
+  "prohibitedByCurrentDecision": [
+    "new canonical replay artifact workflow",
+    "cross-workflow replay artifact upload/download",
+    "delegating phase-specific Supabase runtime",
+    "collapsing distinct Phase 8B-8G semantic verifiers"
+  ]
+}
