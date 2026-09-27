@@ -27,7 +27,7 @@ async function resolveOwnedSavedReport({ supabase, userId, savedReportId }) {
 
   return supabase
     .from("saved_reports")
-    .select("id, premium_report, face_lab")
+    .select("id, premium_report, face_lab, face_lab_revision")
     .eq("id", savedReportId)
     .eq("user_id", userId)
     .eq("report_type", "premium")
@@ -99,6 +99,11 @@ export async function GET(request) {
     return json({ success: false, error: "saved_report_id_required" }, { status: 400 });
   }
 
+  const expectedRevision = body?.expectedRevision;
+  if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0) {
+    return json({ success: false, error: "expected_revision_required" }, { status: 400 });
+  }
+
   const { data, error } = await resolveOwnedSavedReport({
     supabase,
     userId: user.id,
@@ -123,6 +128,7 @@ export async function GET(request) {
   return json({
     success: true,
     savedReportId: data.id,
+    revision: Number.isSafeInteger(data.face_lab_revision) ? data.face_lab_revision : 0,
     faceLabV2: rehydrateSavedV2(data)
   });
 }
@@ -209,12 +215,19 @@ export async function POST(request) {
     updatedAt: new Date().toISOString()
   };
 
-  const { error: updateError } = await supabase
+  const nextRevision = expectedRevision + 1;
+  const { data: updated, error: updateError } = await supabase
     .from("saved_reports")
-    .update({ face_lab: persisted })
+    .update({
+      face_lab: persisted,
+      face_lab_revision: nextRevision
+    })
     .eq("id", savedReportId)
     .eq("user_id", user.id)
-    .eq("report_type", "premium");
+    .eq("report_type", "premium")
+    .eq("face_lab_revision", expectedRevision)
+    .select("id, face_lab, face_lab_revision")
+    .maybeSingle();
 
   if (updateError) {
     writeSafeLog("warn", {
@@ -227,9 +240,35 @@ export async function POST(request) {
     return json({ success: false, error: "face_lab_v2_save_failed" }, { status: 503 });
   }
 
+  if (!updated) {
+    const { data: current, error: currentError } = await resolveOwnedSavedReport({
+      supabase,
+      userId: user.id,
+      savedReportId
+    });
+
+    if (currentError) {
+      return json({ success: false, error: "face_lab_v2_load_failed" }, { status: 503 });
+    }
+
+    if (!current) {
+      return json({ success: false, error: "saved_report_not_found" }, { status: 404 });
+    }
+
+    return json({
+      success: false,
+      error: "face_lab_state_conflict",
+      currentRevision: Number.isSafeInteger(current.face_lab_revision)
+        ? current.face_lab_revision
+        : 0,
+      faceLabV2: rehydrateSavedV2(current)
+    }, { status: 409 });
+  }
+
   return json({
     success: true,
     savedReportId,
+    revision: updated.face_lab_revision,
     faceLabV2: {
       schemaVersion: SAVED_FACE_LAB_V2_VERSION,
       surveyAnswers: persisted.surveyAnswers,
