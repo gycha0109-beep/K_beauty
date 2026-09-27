@@ -51,6 +51,21 @@
         "trust-phase7d-relational-adoption.yml"
       ],
       "rule": "Automatic PR/push execution delegates the repeated TRUST 5B-7D static prerequisite set to one exact-head canonical workflow. The five phase workflows retain their existing names, triggers, Supabase DB/runtime authority, phase-specific runtime evidence, and replay-baseline ownership. Manual workflow_dispatch retains each phase's prior static verifier chain as a local fallback."
+    },
+    "trust-8b-8g-replay": {
+      "mode": "preserve-local-replay-materialization",
+      "runtimeMatrix": "docs/ci/consolidation-audits/trust-8b-8g-replay-matrix.json",
+      "workflows": [
+        "trust-phase8b-source-verification.yml",
+        "trust-phase8c-revalidation.yml",
+        "trust-phase8d-revalidation.yml",
+        "trust-phase8e-revalidation-adjudication.yml",
+        "trust-phase8f-changed-semantic-replacement.yml",
+        "trust-phase8g-source-verification.yml"
+      ],
+      "sharedReplayMaterializer": "scripts/materialize-product-fact-replay-baseline-v1.mjs",
+      "rule": "B-6 closes the replay duplication review by preserving six local replay materializations. The shared materializer is already deterministic and repository-local; a measured successful Phase 8G reference run materialized in about 0.22 seconds while the subsequent isolated Supabase runtime window was about 97 seconds. Cross-workflow artifact/cache orchestration is therefore rejected as added complexity without meaningful savings. Each phase retains its own migration append, Supabase runtime, SQL evidence, semantic verifier, and TRUST 8G operational probes.",
+      "decisionRecord": "docs/ci/consolidation-audits/trust-8b-8g-replay-decision.json"
     }
   }
 }
