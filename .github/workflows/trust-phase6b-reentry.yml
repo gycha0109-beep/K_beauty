@@ -7,7 +7,9 @@ on:
     paths:
       - "supabase/migrations/*trust_phase6b_*.sql"
       - "supabase/migrations/*trust_phase8i_*.sql"
+      - "supabase/migrations/*trust_phase8i1_*.sql"
       - "docs/evidence/trust-phase8i-*"
+      - "docs/evidence/trust-phase8i1-*"
       - "scripts/verify-trust-phase8i-fleet-security-hardening.mjs"
       - "tests/fixtures/trust-phase6b-reentry/**"
       - "tests/fixtures/trust-phase8i1-reentry/**"
@@ -19,7 +21,9 @@ on:
     paths:
       - "supabase/migrations/*trust_phase6b_*.sql"
       - "supabase/migrations/*trust_phase8i_*.sql"
+      - "supabase/migrations/*trust_phase8i1_*.sql"
       - "docs/evidence/trust-phase8i-*"
+      - "docs/evidence/trust-phase8i1-*"
       - "scripts/verify-trust-phase8i-fleet-security-hardening.mjs"
       - "tests/fixtures/trust-phase6b-reentry/**"
       - "tests/fixtures/trust-phase8i1-reentry/**"
