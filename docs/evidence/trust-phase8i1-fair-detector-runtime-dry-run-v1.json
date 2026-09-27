@@ -1,0 +1,37 @@
+{
+  "contract": "trust-phase8i1-fair-detector-runtime-dry-run-v1",
+  "captured_at": "2026-09-28T07:09:38+09:00",
+  "watchtower_track": "pipeline-reliability",
+  "production_transaction_rolled_back": true,
+  "blueprint": "docs/evidence/trust-phase8i1-fair-detector-runtime-db-blueprint-v1.sql",
+  "observed": {
+    "phase": "8I-1",
+    "runtime": "reentry-detector-v2",
+    "batch_limit": 1,
+    "cycle_number": 1,
+    "cycle_started": true,
+    "cycle_completed": false,
+    "intakes_scanned": 1,
+    "tasks_scanned": 3,
+    "events_emitted": 0,
+    "signals_baselined": 0,
+    "signals_unchanged": 4,
+    "remaining_in_cycle": 164,
+    "first_scanned_intake_id": "15566618-d039-44c5-ad45-6413ee399db3",
+    "cycle_upper_intake_id": "f84ddeb1-5b23-4975-bd97-7ac5b6c1b925",
+    "v1_runner_preserved": true,
+    "v2_acl": {
+      "service_role": true,
+      "authenticated": false,
+      "anon": false,
+      "public": false
+    }
+  },
+  "rollback_readback": {
+    "runtime_table_persisted": false,
+    "v2_function_persisted": false,
+    "checkpoint_count": 669,
+    "event_count": 2
+  },
+  "result": "PASS"
+}
