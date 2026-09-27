@@ -13,6 +13,11 @@ on:
       - "lib/server/product-query-shadow-service.js"
       - "scripts/verify-data-ai17-authenticated-limited-beta-design.mjs"
       - "scripts/verify-data-ai18-authenticated-beta-runtime.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai18-authenticated-beta-runtime.yml"
   push:
     branches: [main]
@@ -25,6 +30,11 @@ on:
       - "lib/server/product-query-shadow-service.js"
       - "scripts/verify-data-ai17-authenticated-limited-beta-design.mjs"
       - "scripts/verify-data-ai18-authenticated-beta-runtime.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai18-authenticated-beta-runtime.yml"
   workflow_dispatch:
     inputs:
