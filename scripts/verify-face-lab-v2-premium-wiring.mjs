@@ -106,6 +106,24 @@ assert.ok(
   "server revisit state must persist the resolved route id"
 );
 assert.ok(
+  premiumFaceLab.includes("const activePersistenceStateRef = useRef(null)"),
+  "Face Lab must retain the exact survey/finder state that produced the active result"
+);
+assert.ok(
+  premiumFaceLab.includes("activePersistenceStateRef.current = {\n        surveyAnswers: stored.surveyAnswers") &&
+    premiumFaceLab.includes("targetFinderResult: stored.targetFinderResult || null"),
+  "restore must retain the exact persisted survey/finder state for route-only mutations"
+);
+assert.ok(
+  premiumFaceLab.includes("const activeState = activePersistenceStateRef.current") &&
+    premiumFaceLab.includes("const surveyAnswers = activeState?.surveyAnswers || buildSurveyAnswers()"),
+  "route selection must reuse the active persisted survey instead of silently rebuilding it"
+);
+assert.ok(
+  premiumFaceLab.includes("activeState\n      ? activeState.targetFinderResult"),
+  "route selection must preserve the active persisted Finder payload when only the route changes"
+);
+assert.ok(
   premiumFaceLab.includes("const persistLocal = (value) =>"),
   "Face Lab V2 must isolate local persistence behind a failure-safe boundary"
 );
