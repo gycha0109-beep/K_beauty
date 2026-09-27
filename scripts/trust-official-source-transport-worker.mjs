@@ -285,6 +285,7 @@ export async function runOfficialSourceTransportWorker({
   manifest = null,
   expectedSourceCount,
   expectedTargetCount,
+  expectedFleetDigest = null,
   perHostDelayMs = 1_000,
 } = {}) {
   if (!client) throw new Error("client is required");
@@ -315,6 +316,17 @@ export async function runOfficialSourceTransportWorker({
 
   const allReadyGroups = groupReadyTargets(targets);
   const fleetSnapshotDigest = computeTransportFleetSnapshotDigest(targets);
+
+  if (expectedFleetDigest !== null) {
+    if (!/^[0-9a-f]{64}$/.test(String(expectedFleetDigest))) {
+      throw new Error("expectedFleetDigest must be a lowercase SHA-256 hex digest");
+    }
+    if (fleetSnapshotDigest !== expectedFleetDigest) {
+      throw new Error(
+        `TRANSPORT_FLEET_CHANGED_DURING_ROLLOUT:expected=${expectedFleetDigest}:actual=${fleetSnapshotDigest}`,
+      );
+    }
+  }
 
   let selectedGroups;
   let selectedSourceCount;
@@ -450,6 +462,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
     manifest,
     expectedSourceCount,
     expectedTargetCount,
+    expectedFleetDigest: argValue("expected-fleet-digest"),
     perHostDelayMs: parseOptionalNonNegativeIntArg("per-host-delay-ms", 1_000),
   });
 
