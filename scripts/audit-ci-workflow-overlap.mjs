@@ -174,6 +174,79 @@ function isPureScriptAlias(name, packageScripts) {
   return /^(?:node(?:\s+--check)?|bash|sh|python3?|python)\s+/.test(command);
 }
 
+function normalizedPackagePrefix(prefix) {
+  if (!prefix) return "";
+  return prefix.replace(/^\.\//, "").replace(/\/$/, "");
+}
+
+function packageScriptsForPrefix(prefix) {
+  const normalized = normalizedPackagePrefix(prefix);
+  const packagePath = normalized ? path.join(ROOT, normalized, "package.json") : PACKAGE_PATH;
+  if (!fs.existsSync(packagePath)) return {};
+  return JSON.parse(fs.readFileSync(packagePath, "utf8")).scripts || {};
+}
+
+function scopedScriptPath(prefix, script) {
+  const normalized = normalizedPackagePrefix(prefix);
+  if (!normalized) return script;
+  if (script.startsWith(normalized + "/")) return script;
+  return path.posix.join(normalized, script);
+}
+
+function npmExecutionUnit(name, prefix) {
+  const normalized = normalizedPackagePrefix(prefix);
+  return normalized ? "npm:" + normalized + ":" + name : "npm:" + name;
+}
+
+function driverNpmInvocations(content) {
+  const out = [];
+  for (const match of content.matchAll(/\bnpm\s*,\s*\[\s*["']--prefix["']\s*,\s*["']([^"']+)["']\s*,\s*["']run["']\s*,\s*["']([A-Za-z0-9:_-]+)["']/g)) {
+    out.push({ prefix: normalizedPackagePrefix(match[1]), name: match[2] });
+  }
+  for (const match of content.matchAll(/\bnpm\s*,\s*\[\s*["']run["']\s*,\s*["']([A-Za-z0-9:_-]+)["']/g)) {
+    out.push({ prefix: "", name: match[1] });
+  }
+  const seen = new Set();
+  return out.filter((item) => {
+    const key = item.prefix + "::" + item.name;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function packageInvocationExecutionUnits(invocation) {
+  const scripts = packageScriptsForPrefix(invocation.prefix);
+  const command = scripts[invocation.name]?.trim();
+  if (!command || !isPureScriptAlias(invocation.name, scripts)) {
+    return [npmExecutionUnit(invocation.name, invocation.prefix)];
+  }
+  const resolved = scriptInvocations(command);
+  const units = [];
+  for (const script of resolved.scripts) {
+    const scoped = scopedScriptPath(invocation.prefix, script);
+    for (const expanded of expandDriverScripts([scoped])) units.push("script:" + expanded);
+  }
+  for (const script of resolved.syntaxScripts) {
+    units.push("syntax:" + scopedScriptPath(invocation.prefix, script));
+  }
+  return [...new Set(units)].sort();
+}
+
+function expandDriverNpmUnits(initialScripts) {
+  const units = new Set();
+  for (const script of expandDriverScripts(initialScripts)) {
+    const absolute = path.join(ROOT, script);
+    if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
+    const content = fs.readFileSync(absolute, "utf8");
+    if (!/(?:node:child_process|child_process)/.test(content) || !/spawnSync\s*\(/.test(content)) continue;
+    for (const invocation of driverNpmInvocations(content)) {
+      for (const unit of packageInvocationExecutionUnits(invocation)) units.add(unit);
+    }
+  }
+  return [...units].sort();
+}
+
 function unitsForText(text, packageScripts) {
   const direct = directCoverage(text, packageScripts);
   const expandedScripts = expandDriverScripts(direct.scripts);
@@ -181,10 +254,12 @@ function unitsForText(text, packageScripts) {
   const npmUnits = direct.npmScripts
     .filter((name) => !isPureScriptAlias(name, packageScripts))
     .map((value) => "npm:" + value);
+  const driverNpmUnits = expandDriverNpmUnits(direct.scripts);
   return [...new Set([
     ...expandedScripts.map((value) => "script:" + value),
     ...direct.syntaxScripts.map((value) => "syntax:" + value),
     ...npmUnits,
+    ...driverNpmUnits,
     ...caps.map((value) => "capability:" + value),
   ])].sort();
 }
