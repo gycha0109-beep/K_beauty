@@ -1,0 +1,189 @@
+{
+  "contract": "trust-phase8h3-derma-production-canary-closure-v1",
+  "captured_at": "2026-09-28",
+  "watchtower_track": "pipeline-reliability",
+  "closure_base_main_sha": "3d020282b31090f504a10d98a0f22b8b67f1148a",
+  "repository_history": {
+    "core_merge_sha": "062f2d20eb5fd62e7affa98215f6582db0c037b5",
+    "initial_production_closure_merge_sha": "f25cccba526bfab1366ef999430d2203b0e1f574",
+    "relocation_canary_merge_sha": "99147f9a5880330220ef58fc30c5e03d5a0dc03d",
+    "research_seed_hardening_merge_sha": "5167b4ca02c5157949079cc9b1cf05791b52da93",
+    "recorder_security_merge_sha": "8c05c73f0b8b1d231c569c8c902ea493419494ed",
+    "research_live_canary_merge_sha": "9d6c83c631097a4b278ed3a52e7cda9a91ac754e",
+    "relational_closeout_merge_sha": "32334c515865382daedbd04eb2a5f3ea75df164f"
+  },
+  "production_migrations": [
+    {
+      "version": "20260927124840",
+      "name": "trust_phase8h3_relocation_verification_identity_context_v1"
+    },
+    {
+      "version": "20260927131237",
+      "name": "trust_phase8h3_relocation_research_seed_hardening_v1"
+    },
+    {
+      "version": "20260928040319",
+      "name": "trust_phase8h3_research_result_security_hardening_v1",
+      "materialized_file": "supabase/migrations/20260928040319_trust_phase8h3_research_result_security_hardening_v1.sql"
+    },
+    {
+      "version": "20260928042607",
+      "name": "trust_phase8h3_relational_candidate_persistence_hardening_v1",
+      "materialized_file": "supabase/migrations/20260928042607_trust_phase8h3_relational_candidate_persistence_hardening_v1.sql"
+    },
+    {
+      "version": "20260928042612",
+      "name": "trust_phase8h3_8e_relationship_scope_hardening_v1",
+      "materialized_file": "supabase/migrations/20260928042612_trust_phase8h3_8e_relationship_scope_hardening_v1.sql"
+    },
+    {
+      "version": "20260928042618",
+      "name": "trust_phase8h3_8e_security_hardening_v1",
+      "materialized_file": "supabase/migrations/20260928042618_trust_phase8h3_8e_security_hardening_v1.sql"
+    }
+  ],
+  "derma": {
+    "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+    "subject_id": "5a9ff33e-68c3-4ad7-ad60-7931c3478ca1",
+    "historical_source": {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+      "source_metadata": {
+        "source_notes": "Exact product.",
+        "source_language": "en",
+        "frozen_source_id": "s06",
+        "exact_product_match": "yes",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s06",
+        "source_authority_candidate": "product_specific_primary"
+      },
+      "mutated": false
+    },
+    "relocation": {
+      "relocation_id": "463e6a5a-781d-4e8c-be36-918b01e423fc",
+      "result": "confirmed",
+      "old_binding_id": "fd3ddecc-c09a-4b12-bc96-6e6ef2b2e97c",
+      "old_binding_state": "retired",
+      "replacement_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+      "replacement_binding_state": "resolved",
+      "replacement_review_id": "b60f2b1b-2be4-46db-8a24-b734a16b087d",
+      "replacement_scope_relation": "equivalent",
+      "replacement_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933"
+    },
+    "verification": {
+      "profile_id": "b7e48de5-b13d-4e45-b1c7-af80db33fe1f",
+      "baseline_kind": "fresh_recovery",
+      "comparability_state": "COMPARABLE",
+      "adapter_key": "official-product-semantic",
+      "adapter_version": "v1",
+      "digest_basis": "canonical-official-product-semantics-v1",
+      "semantic_digest": "4db8cee5affc402eefd5022c88d40d6007c7e33796f91cbc5e34112a643dd1db",
+      "verification_id": "9a3fa513-6dfa-488d-8cda-bd0a1a4bca97",
+      "verification_result": "unchanged"
+    },
+    "contains_active": {
+      "assignment_id": "01e02370-cda2-46b9-985d-694f64101d5f",
+      "transition_id": "4938081f-1b88-419a-be36-7765ef9a4a4e",
+      "research_task_id": "6ecf45fe-a07b-4ca9-a3df-2db09fb8e89d",
+      "observation_id": "64362240-9d60-447d-9f0f-523bbc5572a9",
+      "candidate_id": "d57c36be-2f21-408d-9513-da9e6edb277a",
+      "resolution_id": "4f723b33-b4b3-4b42-8775-60205937455a",
+      "evidence_id": "7e93f77e-9e7f-4941-9a1b-fb932ba088e5",
+      "audit_id": "e26362e8-700f-4e7b-b42e-eeb6390905ef",
+      "resolution_kind": "SAME_SEMANTIC_REAFFIRMATION",
+      "operational_state": "confirmed",
+      "current_before": {
+        "fact_instance_id": "532138b9-fd99-49a3-b5ae-9ad677162055",
+        "confirmation_id": "5030d053-6783-499e-b714-613cdcacc7f3"
+      },
+      "current_after": {
+        "fact_instance_id": "532138b9-fd99-49a3-b5ae-9ad677162055",
+        "confirmation_id": "5030d053-6783-499e-b714-613cdcacc7f3"
+      },
+      "current_pointer_changed": false,
+      "fact_instance_mutated": false,
+      "confirmation_created": false,
+      "automatic_confirmation": false
+    },
+    "active_concentration": {
+      "assignment_id": "6ff6d718-458e-4445-b93a-a5166258e3c7",
+      "transition_id": "f5d1b195-a48d-4184-95d0-3bf2b22638d6",
+      "research_task_id": "0254ccda-7f1e-44c6-998b-84dc2e728f08",
+      "observation_id": "cc170976-a792-4b9e-9605-7956550bb30c",
+      "malformed_candidate": {
+        "candidate_id": "2d98d183-cc0e-4f4d-82b7-9a2a255dd3b2",
+        "parent_proposition_key": null,
+        "canonical_evidence_digest": "1168264cc1b358bcc4c7ab96837dd09cb1d129d973dab16bffcd5af63801ceca",
+        "preserved": true,
+        "resolution_refs": 0
+      },
+      "corrected_candidate": {
+        "candidate_id": "ac2313b4-b01b-41f4-b9d0-b34cb2abcad5",
+        "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+        "canonical_evidence_digest": "8936d01a7778cfa399602186bb3993d4b0005f0bea6af5dcc1e8266d63194e14",
+        "resolution_refs": 1
+      },
+      "resolution_id": "6824fed2-ae00-42e9-b87b-2eef037ed099",
+      "evidence_id": "3e3932b8-38c9-468d-8216-38613d922f31",
+      "audit_id": "181445ee-6257-4ef9-bdd0-6061201eec73",
+      "resolution_kind": "SAME_SEMANTIC_REAFFIRMATION",
+      "operational_state": "confirmed",
+      "current_before": {
+        "fact_instance_id": "f1b5f4c9-d099-4594-9b3c-73b13bd3ce00",
+        "confirmation_id": "56798708-0b7d-42b5-a2ae-2be2ed0e2c5a"
+      },
+      "current_after": {
+        "fact_instance_id": "f1b5f4c9-d099-4594-9b3c-73b13bd3ce00",
+        "confirmation_id": "56798708-0b7d-42b5-a2ae-2be2ed0e2c5a"
+      },
+      "current_pointer_changed": false,
+      "fact_instance_mutated": false,
+      "confirmation_created": false,
+      "automatic_confirmation": false
+    }
+  },
+  "security": {
+    "phase8h3_functions_checked": 6,
+    "expected_contract": {
+      "security_definer": true,
+      "search_path": "",
+      "service_role_execute": true,
+      "authenticated_execute": false,
+      "anon_execute": false,
+      "public_execute": false
+    },
+    "readback": "PASS",
+    "new_phase8h3_advisor_blocker": false,
+    "pre_existing_advisor_findings": [
+      "rls_enabled_no_policy",
+      "authenticated_security_definer_function_executable:admin_has_capability",
+      "authenticated_security_definer_function_executable:get_current_admin_role",
+      "auth_allow_anonymous_sign_ins",
+      "auth_leaked_password_protection"
+    ]
+  },
+  "blast_radius": {
+    "scope": "all products whose brand is 뷰티오브조선, 닥터지, or 토리든",
+    "product_count": 16,
+    "assignment_count": 18,
+    "current_count": 18,
+    "research_task_count": 39,
+    "assignment_updated_since_phase8h3": 0,
+    "current_updated_since_phase8h3": 0,
+    "relocations_created_since_phase8h3": 0,
+    "transitions_created_since_phase8h3": 0,
+    "research_bridges_created_since_phase8h3": 0,
+    "research_tasks_created_since_phase8h3": 0,
+    "research_tasks_updated_since_phase8h3": 0,
+    "resolutions_created_since_phase8h3": 0,
+    "phase8h3_request_rows_on_unrelated_scope": 0,
+    "result": "PASS"
+  },
+  "research_task_terminal_contract": {
+    "observed_state": "EVIDENCE_CANDIDATE",
+    "interpretation": "candidate ledger state is preserved after 8E resolution; review assignment and revalidation resolution carry closure authority",
+    "mutation_required": false
+  },
+  "production_mutation_after_reaffirmation": "NONE",
+  "result": "PASS"
+}
