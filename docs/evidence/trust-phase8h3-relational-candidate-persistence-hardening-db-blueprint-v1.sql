@@ -84,10 +84,6 @@ begin
       );
     end if;
 
-    -- A relationship-aware worker payload can repair a pre-adjudication
-    -- candidate created by the 8H-3 recorder regression that dropped
-    -- parent_proposition_key. The malformed candidate is preserved; a new
-    -- parent-aware candidate is appended and the research task pointer moves.
     v_relational_repair := true;
   end if;
 
@@ -336,7 +332,38 @@ begin
 
   if coalesce((v_definition #>> '{relationship_schema,subject_ref_required}')::boolean, false) then
     if v_parent_proposition_key is null
-      or v_parent_proposition_key !~ '^[0-9a-f]{64}
+      or v_parent_proposition_key !~ '^[0-9a-f]{64}$'
+      or v_parent_fact_key is null then
+      raise exception 'trust_research_parent_proposition_required'
+        using errcode = '23514';
+    end if;
+
+    select pfi.* into v_parent_fact
+    from public.product_fact_current pc
+    join public.product_fact_instances pfi on pfi.fact_instance_id = pc.fact_instance_id
+    where pc.proposition_key = v_parent_proposition_key
+      and pc.subject_id = v_task.subject_id
+      and pfi.subject_id = v_task.subject_id
+      and pfi.registry_version = v_task.registry_version
+      and pfi.fact_key = v_parent_fact_key
+      and pfi.semantic_status = 'supported';
+
+    if not found then
+      raise exception 'trust_research_parent_proposition_invalid'
+        using errcode = '23514';
+    end if;
+
+    if (v_parent_fact.market is not null and v_parent_fact.market is distinct from v_intake.market)
+      or (v_parent_fact.region is not null and v_parent_fact.region is distinct from nullif(v_candidate ->> 'region','')) then
+      raise exception 'trust_research_parent_scope_mismatch'
+        using errcode = '23514';
+    end if;
+  elsif v_parent_proposition_key is not null then
+    raise exception 'trust_research_parent_proposition_unexpected'
+      using errcode = '23514';
+  end if;
+
+  v_support_direction := coalesce(v_candidate ->> 'support_direction','supports');
   v_negative_admissibility := coalesce(v_candidate ->> 'negative_admissibility','not_applicable');
   if v_support_direction not in ('supports','opposes') then
     raise exception 'trust_research_support_direction_invalid';
@@ -444,146 +471,6 @@ begin
     'evidence_candidate_id', v_candidate_id,
     'canonical_evidence_digest', v_evidence_digest,
     'relational_repair', v_relational_repair
-  );
-end;
-$function$;
-
-revoke all on function public.record_trust_research_result_v1(uuid, jsonb)
-  from public, anon, authenticated;
-grant execute on function public.record_trust_research_result_v1(uuid, jsonb)
-  to service_role;
-
-      or v_parent_fact_key is null then
-      raise exception 'trust_research_parent_proposition_required'
-        using errcode = '23514';
-    end if;
-
-    select pfi.* into v_parent_fact
-    from public.product_fact_current pc
-    join public.product_fact_instances pfi on pfi.fact_instance_id = pc.fact_instance_id
-    where pc.proposition_key = v_parent_proposition_key
-      and pc.subject_id = v_task.subject_id
-      and pfi.subject_id = v_task.subject_id
-      and pfi.registry_version = v_task.registry_version
-      and pfi.fact_key = v_parent_fact_key
-      and pfi.semantic_status = 'supported';
-
-    if not found then
-      raise exception 'trust_research_parent_proposition_invalid'
-        using errcode = '23514';
-    end if;
-
-    if (v_parent_fact.market is not null and v_parent_fact.market is distinct from v_intake.market)
-      or (v_parent_fact.region is not null and v_parent_fact.region is distinct from nullif(v_candidate ->> 'region','')) then
-      raise exception 'trust_research_parent_scope_mismatch'
-        using errcode = '23514';
-    end if;
-  elsif v_parent_proposition_key is not null then
-    raise exception 'trust_research_parent_proposition_unexpected'
-      using errcode = '23514';
-  end if;
-
-  v_support_direction := coalesce(v_candidate ->> 'support_direction','supports');
-  v_negative_admissibility := coalesce(v_candidate ->> 'negative_admissibility','not_applicable');
-  if v_support_direction not in ('supports','opposes') then
-    raise exception 'trust_research_support_direction_invalid';
-  end if;
-  if v_support_direction = 'opposes'
-    and v_negative_admissibility not in ('explicit_negative','conflict_opposition') then
-    raise exception 'trust_research_negative_semantics_invalid';
-  end if;
-  if v_support_direction = 'supports' and v_negative_admissibility <> 'not_applicable' then
-    raise exception 'trust_research_positive_negative_semantics_invalid';
-  end if;
-
-  v_confidence := coalesce(v_candidate ->> 'confidence','high');
-  if v_confidence not in ('high','medium','low') then
-    raise exception 'trust_research_confidence_invalid';
-  end if;
-
-  insert into public.trust_source_observations (
-    research_task_id, product_id, subject_id, source_binding_id,
-    canonical_locator, publisher, source_kind, market, region, locale,
-    observed_claim, product_identity_observation, observation_version,
-    digest_basis, source_content_digest, observed_at, fetched_at
-  ) values (
-    v_task.id, v_task.product_id, v_task.subject_id, v_binding.binding_id,
-    v_binding.source_url, v_binding.source_name, v_source ->> 'source_kind',
-    v_binding.market_code, nullif(v_source ->> 'region',''), v_binding.locale,
-    v_source -> 'observed_claim', v_source -> 'product_identity_observation',
-    v_source ->> 'observation_version', v_digest_basis, v_page_digest,
-    coalesce(nullif(v_source ->> 'observed_at','')::timestamptz, now()),
-    nullif(v_source ->> 'fetched_at','')::timestamptz
-  )
-  on conflict (research_task_id, canonical_locator, observation_version, source_content_digest)
-  do nothing
-  returning observation_id into v_observation_id;
-
-  if v_observation_id is null then
-    select observation_id into v_observation_id
-    from public.trust_source_observations
-    where research_task_id = v_task.id
-      and canonical_locator = v_binding.source_url
-      and observation_version = v_source ->> 'observation_version'
-      and source_content_digest = v_page_digest;
-  end if;
-
-  v_evidence_digest := encode(extensions.digest(convert_to(jsonb_build_object(
-    'subject_id', v_task.subject_id,
-    'registry_version', v_task.registry_version,
-    'fact_key', v_task.fact_key,
-    'normalized_value', v_normalized_value,
-    'evidence_class', v_evidence_class,
-    'support_direction', v_support_direction,
-    'negative_admissibility', v_negative_admissibility,
-    'market', v_intake.market,
-    'region', nullif(v_candidate ->> 'region',''),
-    'locale', v_binding.locale,
-    'qualifier', coalesce(v_candidate -> 'qualifier','{}'::jsonb),
-    'source_content_digest', v_page_digest
-  )::text,'UTF8'),'sha256'),'hex');
-
-  insert into public.trust_evidence_candidates (
-    research_task_id, observation_id, product_id, subject_id,
-    registry_version, fact_key, normalized_value, evidence_class,
-    evidence_authority, confidence, support_direction, negative_admissibility,
-    market, region, locale, qualifier, candidate_state, canonical_evidence_digest
-  ) values (
-    v_task.id, v_observation_id, v_task.product_id, v_task.subject_id,
-    v_task.registry_version, v_task.fact_key, v_normalized_value, v_evidence_class,
-    'product_specific_primary', v_confidence, v_support_direction, v_negative_admissibility,
-    v_intake.market, nullif(v_candidate ->> 'region',''), v_binding.locale,
-    coalesce(v_candidate -> 'qualifier','{}'::jsonb), 'READY', v_evidence_digest
-  )
-  on conflict (canonical_evidence_digest)
-  do nothing
-  returning candidate_id into v_candidate_id;
-
-  if v_candidate_id is null then
-    select candidate_id into v_candidate_id
-    from public.trust_evidence_candidates
-    where canonical_evidence_digest = v_evidence_digest;
-  end if;
-
-  update public.product_fact_research_tasks
-  set state = 'EVIDENCE_CANDIDATE',
-      source_locator = v_binding.source_url,
-      source_content_digest = v_page_digest,
-      source_observation_id = v_observation_id,
-      evidence_candidate_id = v_candidate_id,
-      blocker_code = null,
-      blocker_detail = null,
-      next_retry_at = null,
-      last_research_at = now(),
-      updated_at = now()
-  where id = p_task_id;
-
-  return jsonb_build_object(
-    'task_id', p_task_id,
-    'outcome', 'EVIDENCE_CANDIDATE',
-    'source_observation_id', v_observation_id,
-    'evidence_candidate_id', v_candidate_id,
-    'canonical_evidence_digest', v_evidence_digest
   );
 end;
 $function$;
