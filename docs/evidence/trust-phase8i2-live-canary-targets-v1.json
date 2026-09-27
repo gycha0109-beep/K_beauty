@@ -1,0 +1,67 @@
+{
+  "contract": "trust-phase8i2-live-canary-targets-v1",
+  "captured_at": "2026-09-28",
+  "watchtower_track": "pipeline-reliability",
+  "authority_basis": {
+    "resolver": "public.get_trust_official_source_transport_targets_v1()",
+    "source_count": 35,
+    "ready_source_count": 35,
+    "blocked_source_count": 0,
+    "unique_ready_target_count": 25,
+    "foundation_merge_sha": "2c918e95f76c1b334b9d2b573b0f64186707a343"
+  },
+  "expected_target_count": 5,
+  "expected_source_count": 10,
+  "targets": [
+    {
+      "target_key": "official-transport-url-sha256:fd53d973c3e55d592b6244c2770c715196991b3105d1bfd1d88c656eab6b29d9",
+      "expected_effective_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "expected_source_count": 3,
+      "expected_source_ids": [
+        "54f69834-0db4-4dc2-9e1e-c8243789c57d",
+        "9ac70d83-7176-4cd1-b886-083d5ddaaadf",
+        "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b"
+      ],
+      "purpose": "confirmed relocation: historical/effective locator separation + 3-source fan-out"
+    },
+    {
+      "target_key": "official-transport-url-sha256:76fab84182f159357f5965a01ca9e51fe82bfb7140ee27512b952da3a921f2e1",
+      "expected_effective_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "expected_source_count": 2,
+      "expected_source_ids": [
+        "2d154999-5dff-4496-9b1e-d8cf9c6f31f6",
+        "f493aa44-75dc-40b8-a179-b7d748bc7989"
+      ],
+      "purpose": "zero-intake official sources + duplicate source identities sharing one target"
+    },
+    {
+      "target_key": "official-transport-url-sha256:1d399d803aee71761004ed719f0eb66d4935ff46852de04637135bb8250b8ab1",
+      "expected_effective_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "expected_source_count": 3,
+      "expected_source_ids": [
+        "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+        "60a55f19-a71d-4063-9ea5-13775193c940",
+        "f55720c7-0252-49b8-967c-8d77f4dfe6d6"
+      ],
+      "purpose": "three source identities deduped to one network request"
+    },
+    {
+      "target_key": "official-transport-url-sha256:c316675db2dadd2c27ceb1649c071495216471f15620a765159a95d6911981c2",
+      "expected_effective_locator": "https://www.dr-g.co.kr/item/4415",
+      "expected_source_count": 1,
+      "expected_source_ids": [
+        "ceb9056a-b36b-48f9-9558-e5c5ed325e88"
+      ],
+      "purpose": "Current-dependent equivalent-presentation source remains monitored"
+    },
+    {
+      "target_key": "official-transport-url-sha256:cbc11adb615fb2040e65f668119235c72e9015623afcf948a5fced785fe395a5",
+      "expected_effective_locator": "https://pages.anua.com/guide/which-anua-serum-should-you-use",
+      "expected_source_count": 1,
+      "expected_source_ids": [
+        "5a939a48-bd2c-45bc-8806-9d3bf87c1d0e"
+      ],
+      "purpose": "brand official technical document transport path"
+    }
+  ]
+}
