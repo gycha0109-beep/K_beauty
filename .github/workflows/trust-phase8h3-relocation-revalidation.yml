@@ -102,6 +102,24 @@ jobs:
         if: steps.relocation_canary.outputs.changed == 'true'
         run: node scripts/trust-source-verification-canary-capture.mjs --target=docs/evidence/trust-phase8h3-relocation-canary-target-v1.json
 
+      - name: Detect Phase 8H-3 research live canary target change
+        id: research_canary
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if git diff --name-only "${BASE_SHA}...${HEAD_SHA}" | grep -Fxq "docs/evidence/trust-phase8h3-research-live-canary-target-v1.json"; then
+            echo "changed=true" >>"${GITHUB_OUTPUT}"
+          else
+            echo "changed=false" >>"${GITHUB_OUTPUT}"
+          fi
+
+      - name: Capture Phase 8H-3 research live candidate payload
+        if: steps.research_canary.outputs.changed == 'true'
+        run: node scripts/trust-phase8h3-research-live-canary-capture.mjs --target=docs/evidence/trust-phase8h3-research-live-canary-target-v1.json
+
       - name: Verify CI workflow governance
         run: |
           node scripts/verify-ci-workflow-responsibility-map.mjs
