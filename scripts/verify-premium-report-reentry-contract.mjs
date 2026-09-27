@@ -143,6 +143,14 @@ assert.ok(
   "a URL/report identity mismatch must be blocked synchronously before the replacement request effect runs"
 );
 
+assert.ok(
+  fullReportPage.includes("const responseFreeResult =") &&
+    fullReportPage.includes("const baseResult = savedReportId") &&
+    fullReportPage.includes("? responseFreeResult") &&
+    fullReportPage.includes(": parsedResult || responseFreeResult"),
+  "saved-report reentry must prefer the stored server snapshot over unrelated sessionStorage free state"
+);
+
 for (const requiredCookieOption of [
   "httpOnly: true",
   'sameSite: "lax"',
