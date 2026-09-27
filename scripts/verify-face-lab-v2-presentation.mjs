@@ -243,6 +243,157 @@ assert.equal(limitedEvidence.routes.cards.length, 1);
 assert.equal(limitedEvidence.notice.kind, "limited_evidence");
 assert.ok(limitedEvidence.notice.body.includes("근거가 부족한 특징은 추천에 사용하지 않았"));
 
+const notApplicableFixture = JSON.parse(JSON.stringify(fixture));
+notApplicableFixture.routes.routes[0].domains = ["makeup", "eyewear"];
+notApplicableFixture.routes.routes[0].actions.push({
+  domain: "eyewear",
+  parameter: "angularity",
+  direction: "increase",
+  strength: "light",
+  explanation: "안경테 각도를 조금 더 또렷하게 조정합니다."
+});
+notApplicableFixture.eyewear = {
+  status: "not_applicable",
+  value: null
+};
+const notApplicableView = buildFaceLabV2ResultPresentation(
+  notApplicableFixture,
+  { locale: "ko" }
+);
+assert.deepEqual(
+  notApplicableView.execution.domains.map((item) => item.domain),
+  ["makeup"],
+  "a requested domain that is not applicable to the selected route must stay out of normal execution UI"
+);
+
+const notRequestedFixture = JSON.parse(JSON.stringify(fixture));
+notRequestedFixture.makeup = { status: "not_requested", value: null };
+notRequestedFixture.looks.looks[0].pieces.push({
+  domain: "hair",
+  summary: "STALE LOOK PIECE: should remain hidden"
+});
+notRequestedFixture.productHandoff.specifications = [
+  ...notRequestedFixture.productHandoff.specifications
+];
+const notRequestedView = buildFaceLabV2ResultPresentation(
+  notRequestedFixture,
+  { locale: "ko" }
+);
+assert.equal(
+  notRequestedView.execution.domains.length,
+  0,
+  "a not-requested selected-route domain must stay out of normal execution UI"
+);
+assert.equal(
+  notRequestedView.productGuides.length,
+  0,
+  "makeup product guidance must not render when makeup execution is not requested"
+);
+assert.equal(
+  notRequestedView.look.pieces.some((item) => item.domain === "hair"),
+  false,
+  "a stale canonical look piece must not surface for a non-executable domain"
+);
+
+const partialGroomingFixture = JSON.parse(JSON.stringify(fixture));
+partialGroomingFixture.routes.selectedRouteId = "grooming_led";
+partialGroomingFixture.routes.routes = [
+  {
+    ...partialGroomingFixture.routes.routes[0],
+    routeId: "grooming_led",
+    title: "그루밍 중심",
+    whyThisRoute: "그루밍만 사용해 목표 방향을 조정합니다.",
+    summary: "수염 정돈을 중심으로 조정합니다.",
+    domains: ["brow_grooming", "facial_hair"],
+    actions: [
+      {
+        domain: "brow_grooming",
+        parameter: "definition",
+        direction: "increase",
+        strength: "light",
+        explanation: "눈썹 경계를 더 또렷하게 정리합니다."
+      },
+      {
+        domain: "facial_hair",
+        parameter: "edgeDefinition",
+        direction: "increase",
+        strength: "light",
+        explanation: "수염 외곽을 가볍게 정리합니다."
+      }
+    ]
+  }
+];
+partialGroomingFixture.makeup = { status: "not_requested", value: null };
+partialGroomingFixture.grooming = {
+  status: "available",
+  value: {
+    brows: [],
+    facialHair: ["수염 외곽과 길이를 가볍게 정리해 구조감을 높임"],
+    sideburns: [],
+    hairline: [],
+    maintenancePlan: ["수염을 유지한다면 길이와 외곽 상태만 주기적으로 정리"]
+  }
+};
+partialGroomingFixture.productHandoff = {
+  status: "not_requested",
+  matches: [],
+  specifications: [],
+  catalogVersion: null
+};
+partialGroomingFixture.looks = {
+  status: "available",
+  visualConflicts: [],
+  looks: [
+    {
+      routeId: "grooming_led",
+      title: "그루밍 중심",
+      summary: "수염 외곽을 가볍게 정리",
+      whyItWorks: "수염 정돈만으로 구조감을 조절합니다.",
+      pieces: [
+        {
+          domain: "grooming",
+          summary: "수염 외곽과 길이를 가볍게 정리"
+        }
+      ]
+    }
+  ]
+};
+const partialGroomingKo = buildFaceLabV2ResultPresentation(
+  partialGroomingFixture,
+  { locale: "ko" }
+);
+assert.deepEqual(
+  partialGroomingKo.execution.domains.map((item) => item.domain),
+  ["grooming"]
+);
+assert.ok(
+  partialGroomingKo.execution.domains[0].actions.some((item) => item.includes("수염"))
+);
+assert.equal(
+  partialGroomingKo.execution.domains[0].actions.some((item) => item.includes("눈썹")),
+  false,
+  "a disabled brow subdomain must not leak into Korean grooming execution presentation"
+);
+assert.equal(partialGroomingKo.look.pieces[0].domain, "grooming");
+assert.ok(partialGroomingKo.look.pieces[0].summary.includes("수염"));
+
+const partialGroomingEn = buildFaceLabV2ResultPresentation(
+  partialGroomingFixture,
+  { locale: "en" }
+);
+assert.deepEqual(
+  partialGroomingEn.execution.domains.map((item) => item.domain),
+  ["grooming"]
+);
+assert.equal(
+  partialGroomingEn.execution.domains[0].actions.length,
+  1,
+  "English fallback route copy must include only the grooming subdomain that canonical execution actually produced"
+);
+assert.ok(
+  partialGroomingEn.execution.domains[0].actions[0].includes("edge definition")
+);
+
 const root = resolve(process.cwd());
 const premium = readFileSync(resolve(root, "components/full-report/PremiumFaceLabSection.jsx"), "utf8");
 const resultUi = readFileSync(resolve(root, "components/full-report/face-lab/FaceLabV2Result.jsx"), "utf8");
@@ -307,6 +458,10 @@ console.log(JSON.stringify({
     "result_component_boundary",
     "bounded_unavailable_explanation",
     "empty_route_explanation",
-    "partial_evidence_explanation"
+    "partial_evidence_explanation",
+    "not_applicable_domain_hidden",
+    "not_requested_domain_hidden",
+    "stale_look_domain_hidden",
+    "partial_grooming_subdomain_isolation"
   ]
 }, null, 2));
