@@ -14,6 +14,8 @@ const provenance = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-cli-
 const dryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-db-dry-run-validation-v1.json", "utf8"));
 const closure = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-production-closure-v1.json", "utf8"));
 const relocationAwareDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-aware-verification-dry-run-v1.json", "utf8"));
+const relocationSeedHardening = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-research-seed-hardening-db-blueprint-v1.sql", "utf8");
+const relocationSeedDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-research-seed-hardening-dry-run-v1.json", "utf8"));
 
 for (const needle of [
   "add column relocation_id uuid",
@@ -135,6 +137,34 @@ assert.equal(
 );
 assert.equal(relocationAwareDryRun.dry_run_readback.service_role_execute, true);
 assert.equal(relocationAwareDryRun.dry_run_readback.authenticated_execute, false);
+
+for (const needle of [
+  "not exists (",
+  "and psb.market_code is not distinct from i2.market",
+  "r0.result = 'confirmed'",
+  "r0.replacement_binding_id = psb.binding_id",
+  "rv0.binding_id = psb.binding_id",
+  "rv0.scope_relation = 'equivalent'",
+]) {
+  assert.ok(relocationSeedHardening.includes(needle), `relocation research seed hardening missing token: ${needle}`);
+}
+assert.ok(
+  relocationSeedHardening.indexOf("and psb.market_code is not distinct from i2.market")
+    < relocationSeedHardening.indexOf("or exists ("),
+  "generic exact-market predicate must remain inside the non-relocation branch",
+);
+assert.equal(relocationSeedDryRun.contract, "trust-phase8h3-relocation-research-seed-hardening-dry-run-v1");
+assert.equal(relocationSeedDryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
+assert.equal(relocationSeedDryRun.expected_generic_behavior, "UNCHANGED_EXACT_MARKET_REQUIRED");
+assert.equal(relocationSeedDryRun.production_mutation, "NONE");
+assert.equal(relocationSeedDryRun.rollback, true);
+assert.equal(relocationSeedDryRun.result, "PASS");
+assert.equal(relocationSeedDryRun.dry_run.claimed_tasks.length, 2);
+for (const task of relocationSeedDryRun.dry_run.claimed_tasks) {
+  assert.equal(task.source_binding_id, "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f");
+  assert.equal(task.canonical_locator, "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933");
+  assert.equal(task.source_market, "KR_US");
+}
 
 for (const needle of [
   "source_relocated",
