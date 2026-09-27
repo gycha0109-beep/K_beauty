@@ -41,5 +41,17 @@
     "rationale": "Structural verifiers may contain run(...) examples or quoted script paths for source assertions; those strings are coverage evidence, not executed children."
   },
   "currentMainDelegationSemantics": "Delegating a canonical contract suppresses both the top-level verifier script and its executable child-process transitive script closure from Current Main automatic execution ownership.",
-  "invocationSemantics": "A `node --check path/to/script.mjs` occurrence contributes `syntax:<script>`, not `script:<script>`. Actual execution and syntax validation are distinct coverage units."
+  "invocationSemantics": "A `node --check path/to/script.mjs` occurrence contributes `syntax:<script>`, not `script:<script>`. Actual execution and syntax validation are distinct coverage units.",
+  "packageScriptAliasNormalization": {
+    "rule": "For automatic/manual execution metrics only, omit an npm:<name> unit when package.json resolves that npm script to exactly one direct script invocation and the command has no shell chaining operators.",
+    "preservedCases": [
+      "Nested npm tasks such as mobile:typecheck -> npm run typecheck --workspace remain npm execution units.",
+      "Compound package scripts using &&, ||, semicolons, or multiple script invocations remain npm execution units.",
+      "Static coverageUnits continue to retain both npm alias and resolved script evidence."
+    ],
+    "examples": [
+      "verify:mobile-foundation -> node scripts/verify-mobile-architecture-foundation.mjs collapses to script:scripts/verify-mobile-architecture-foundation.mjs for execution metrics.",
+      "architecture:guard -> node scripts/architecture-guard.mjs collapses to script:scripts/architecture-guard.mjs for execution metrics."
+    ]
+  }
 }
