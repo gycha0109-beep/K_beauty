@@ -10,6 +10,10 @@ import {
   buildFaceLabV2Canonical
 } from "../lib/face-lab-v2/canonical-composer.js";
 import {
+  buildGroomingExecution,
+  GROOMING_ENGINE_VERSION
+} from "../lib/face-lab-v2/domain/grooming.js";
+import {
   isFaceLabV2CanonicalResult
 } from "../lib/face-lab-v2/result-contract.js";
 import {
@@ -564,6 +568,139 @@ assert.notEqual(
   groomingPartialExclusion.grooming.status,
   "not_requested",
   "disabling brows must not erase a still-requested facial-hair grooming domain"
+);
+
+assert.equal(
+  GROOMING_ENGINE_VERSION,
+  "face-lab-grooming-engine-v3",
+  "partial grooming isolation is a versioned execution-contract change"
+);
+
+const syntheticGroomingRoute = {
+  routeId: "synthetic-grooming",
+  actions: [
+    {
+      domain: "brow_grooming",
+      parameter: "definition",
+      direction: "increase",
+      strength: "light",
+      explanation: "synthetic brow action"
+    },
+    {
+      domain: "facial_hair",
+      parameter: "edgeDefinition",
+      direction: "increase",
+      strength: "light",
+      explanation: "synthetic facial-hair action"
+    }
+  ]
+};
+const syntheticGroomingTarget = {
+  profileVersion: "fixture-target-v1",
+  stylingScope: ["brow_grooming", "facial_hair"],
+  constraints: { hardExclusions: [] }
+};
+
+const browExcludedExecution = buildGroomingExecution({
+  route: syntheticGroomingRoute,
+  targetStyle: {
+    ...syntheticGroomingTarget,
+    constraints: { hardExclusions: ["brow_grooming_disabled"] }
+  }
+});
+assert.equal(browExcludedExecution.status, "available");
+assert.deepEqual(
+  browExcludedExecution.value.brows,
+  [],
+  "a hard-disabled brow subdomain must not leak brow output from a mixed route"
+);
+assert.ok(
+  browExcludedExecution.value.facialHair.length > 0,
+  "a still-requested facial-hair subdomain must remain executable when brows are disabled"
+);
+assert.deepEqual(
+  browExcludedExecution.evidence,
+  ["style_delta:edgeDefinition"],
+  "excluded brow route actions must not survive in grooming execution evidence"
+);
+
+const facialHairExcludedExecution = buildGroomingExecution({
+  route: syntheticGroomingRoute,
+  targetStyle: {
+    ...syntheticGroomingTarget,
+    constraints: { hardExclusions: ["facial_hair_disabled"] }
+  }
+});
+assert.equal(facialHairExcludedExecution.status, "available");
+assert.ok(facialHairExcludedExecution.value.brows.length > 0);
+assert.deepEqual(
+  facialHairExcludedExecution.value.facialHair,
+  [],
+  "a hard-disabled facial-hair subdomain must not leak facial-hair output from a mixed route"
+);
+assert.deepEqual(
+  facialHairExcludedExecution.evidence,
+  ["style_delta:definition"],
+  "excluded facial-hair route actions must not survive in grooming execution evidence"
+);
+
+const allGroomingExcludedExecution = buildGroomingExecution({
+  route: syntheticGroomingRoute,
+  targetStyle: {
+    ...syntheticGroomingTarget,
+    constraints: {
+      hardExclusions: ["brow_grooming_disabled", "facial_hair_disabled"]
+    }
+  }
+});
+assert.equal(allGroomingExcludedExecution.status, "not_requested");
+assert.equal(allGroomingExcludedExecution.value, null);
+
+const autoScopePartialGrooming = buildGroomingExecution({
+  route: syntheticGroomingRoute,
+  targetStyle: {
+    ...syntheticGroomingTarget,
+    stylingScope: ["auto_scope"],
+    constraints: { hardExclusions: ["brow_grooming_disabled"] }
+  }
+});
+assert.equal(autoScopePartialGrooming.status, "available");
+assert.deepEqual(autoScopePartialGrooming.value.brows, []);
+assert.ok(
+  autoScopePartialGrooming.value.facialHair.length > 0,
+  "legacy auto_scope must still honor a partial grooming hard exclusion"
+);
+
+const facialHairRequestedButRouteOmitted = buildGroomingExecution({
+  route: {
+    routeId: "synthetic-brow-only",
+    actions: [syntheticGroomingRoute.actions[0]]
+  },
+  targetStyle: {
+    ...syntheticGroomingTarget,
+    stylingScope: ["facial_hair"]
+  }
+});
+assert.equal(
+  facialHairRequestedButRouteOmitted.status,
+  "not_applicable",
+  "a requested grooming subdomain omitted by the selected route is not_applicable, not not_requested"
+);
+
+const browRequestedButRouteOmitted = buildGroomingExecution({
+  route: {
+    routeId: "synthetic-facial-only",
+    actions: [syntheticGroomingRoute.actions[1]]
+  },
+  targetStyle: {
+    ...syntheticGroomingTarget,
+    stylingScope: ["brow_grooming"]
+  }
+});
+assert.equal(
+  browRequestedButRouteOmitted.status,
+  "not_applicable",
+  "a requested brow subdomain omitted by the selected route is not_applicable, not not_requested"
 );
 
 const normalizedPersistence = normalizeFaceLabV2PersistencePayload({

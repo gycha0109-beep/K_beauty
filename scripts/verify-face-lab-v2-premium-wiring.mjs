@@ -210,6 +210,80 @@ assert.equal(
   false,
   "a confirmed Finder target must remain directly editable without forcing the user back through Finder"
 );
+
+const resultStageBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf('if (stage === "result" && canonical)'),
+  premiumFaceLab.indexOf('if (stage === "finder")')
+);
+const editTargetBlock = resultStageBlock.slice(
+  resultStageBlock.indexOf("onEditTarget={() => {"),
+  resultStageBlock.indexOf("        />")
+);
+assert.ok(
+  editTargetBlock.includes('setStage("target")'),
+  "editing a confirmed result must enter direct target editing"
+);
+assert.equal(
+  editTargetBlock.includes("persistServer(") ||
+    editTargetBlock.includes("writeLocalState("),
+  false,
+  "entering target edit mode must not mutate persisted authority before confirmation"
+);
+for (const forbiddenSetter of [
+  "setStylingScope(",
+  "setScopeTouched(",
+  "setChangeTolerance(",
+  "setMakeupIntensity(",
+  "setDailyMinutes(",
+  "setBudgetBand(",
+  "setMaintenanceTolerance(",
+  "setPresentationPreference("
+]) {
+  assert.equal(
+    editTargetBlock.includes(forbiddenSetter),
+    false,
+    `target-only edit must preserve existing setup state: ${forbiddenSetter}`
+  );
+}
+
+const buildSurveyBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf("const buildSurveyAnswers = () =>"),
+  premiumFaceLab.indexOf("const confirm = () =>")
+);
+for (const currentSetupToken of [
+  "presentationPreference",
+  "stylingScope",
+  "changeTolerance",
+  "intensity: makeupIntensity",
+  "dailyMinutes",
+  "budgetBand",
+  "maintenanceTolerance"
+]) {
+  assert.ok(
+    buildSurveyBlock.includes(currentSetupToken),
+    `confirmed target edits must rebuild from current visible setup state: ${currentSetupToken}`
+  );
+}
+assert.ok(
+  buildSurveyBlock.includes("hardExclusions: []"),
+  "current Edit+Confirm must not silently manufacture hidden legacy exclusions"
+);
+
+const confirmBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf("const confirm = () =>"),
+  premiumFaceLab.indexOf("const selectRoute = (routeId) =>")
+);
+assert.ok(
+  confirmBlock.includes("activePersistenceStateRef.current = {") &&
+    confirmBlock.includes("surveyAnswers,") &&
+    confirmBlock.includes("targetFinderResult: approvedFinder"),
+  "confirming an edited target must replace route-selection authority with the newly confirmed survey"
+);
+assert.ok(
+  confirmBlock.indexOf("activePersistenceStateRef.current = {") <
+    confirmBlock.indexOf("void persistServer("),
+  "newly confirmed survey authority must be installed before its persistence request is queued"
+);
 assert.ok(
   premiumFaceLab.includes("restoreInteractionRef.current !== restoreInteractionRevision"),
   "late server or local restore must not overwrite an in-progress user setup"
@@ -387,6 +461,10 @@ console.log(JSON.stringify({
     "single_selected_route_authority",
     "mutable_face_lab_v2_persistence",
     "canonical_execution_chain",
+    "target_edit_preserves_setup",
+    "finder_edit_hands_off_authority",
+    "edit_requires_confirm_before_persistence",
+    "confirmed_edit_replaces_route_authority",
     "archetype_decoupled"
   ]
 }, null, 2));
