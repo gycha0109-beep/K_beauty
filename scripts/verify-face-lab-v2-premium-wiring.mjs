@@ -25,6 +25,11 @@ assert.ok(
   fullReportPage.includes("savedReportId={persistedReportId}"),
   "premium page must pass saved report id for mutable Face Lab V2 state"
 );
+assert.ok(
+  fullReportPage.includes("key={resultKey}") &&
+    fullReportPage.includes("resultKey={resultKey}"),
+  "Face Lab must remount when report identity changes so state from one saved report cannot leak into another"
+);
 
 assert.ok(
   premiumFaceLab.includes('fetch("/api/premium/face-lab-v2"'),
