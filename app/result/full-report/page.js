@@ -6845,9 +6845,13 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           throw new Error(copy.errorBody);
         }
 
-        const baseResult =
-          parsedResult ||
-          (data?.freeResult && typeof data.freeResult === "object" ? data.freeResult : null);
+        const responseFreeResult =
+          data?.freeResult && typeof data.freeResult === "object"
+            ? data.freeResult
+            : null;
+        const baseResult = savedReportId
+          ? responseFreeResult
+          : parsedResult || responseFreeResult;
 
         if (!baseResult) {
           throw new Error(copy.errorBody);
