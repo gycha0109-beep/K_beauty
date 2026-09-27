@@ -30,6 +30,27 @@ assert.throws(
   /SOURCE_SEMANTIC_ADAPTER_UNSUPPORTED/
 );
 
+const identityOnly = Buffer.from('<html><head><title>Niacinamide 20% Serum 30ml</title></head><body>Official product page</body></html>');
+const identityOnlyContext = {
+  canonicalLocator: "https://example.com/products/niacinamide-20-serum",
+  sourceMetadata: { current_name: "Niacinamide 20% Serum" },
+};
+const identityOnlyDigest = digestOfficialContent(identityOnly, "official-product-semantic", "v1", identityOnlyContext);
+assert.equal(identityOnlyDigest.digestBasis, "canonical-official-product-semantics-v1");
+const identityOnlyDiagnostics = inspectOfficialProductSemanticSurfacesV1(identityOnly, identityOnlyContext);
+assert.equal(identityOnlyDiagnostics.anchor_probes.identities[0].present, true);
+assert.deepEqual(identityOnlyDiagnostics.anchor_probes.identities[0].surfaces, ["title"]);
+
+assert.throws(
+  () => digestOfficialContent(
+    Buffer.from('<html><head><title>Different Product</title></head><body>Official product page</body></html>'),
+    "official-product-semantic",
+    "v1",
+    identityOnlyContext,
+  ),
+  /SOURCE_SEMANTIC_ADAPTER_UNSUPPORTED/,
+  "missing optional identity anchor alone must not fabricate support"
+);
 
 const metaOnly = Buffer.from('<html><head><meta property="og:title" content="Example Sun SPF50+ PA++++"></head><body>Example Sun</body></html>');
 const metaOnlyContext = { sourceMetadata: { direct_claim: "SPF50+ PA++++" } };
