@@ -149,3 +149,18 @@ The overlap auditor now distinguishes static coverage from runtime execution sem
 - Transitive script expansion now requires actual `child_process`/`spawnSync` execution evidence, preventing structural source assertions such as quoted `run(...)` examples from being counted as child execution.
 - Execution metrics collapse pure one-script npm aliases into their resolved script unit, avoiding double-counting `npm:verify:*` and the same underlying verifier; compound or nested npm tasks remain distinct.
 - Executable driver scripts now contribute their statically declared npm child calls as execution units; `--prefix` package calls are namespaced so crawler/root tasks with the same script name are not conflated.
+
+## Phase C-4 Current Main DATA-AI16/18/20-24 delegation
+
+Current Main now reuses exact-head, exact-event successful dedicated workflow results for seven additional DATA-AI verifier contracts.
+
+- DATA-AI16 delegates to `data-ai16-production-canary-closure.yml`.
+- DATA-AI18 delegates to `data-ai18-authenticated-beta-runtime.yml`.
+- DATA-AI20 delegates to `data-ai20-authenticated-beta-controlled-activation.yml`.
+- DATA-AI21 delegates to `data-ai21-limited-beta-evidence-closure.yml`.
+- DATA-AI22 live-provider acceptance delegates to `data-ai22-live-provider-acceptance.yml`.
+- DATA-AI23 delegates to `data-ai23-authenticated-beta-ux.yml`.
+- DATA-AI24 delegates to `data-ai24-operational-observability.yml`.
+- DATA-AI22 product-query quality evaluation and its expected-baseline runner remain direct Current Main checks.
+- Same-head owner success skips the duplicate Current Main verifier; missing owner runs or Actions lookup failures preserve local fallback; discovered owner failures fail closed.
+- Dedicated push-only Production probe jobs remain owned by their existing workflows and are not moved into Current Main.
