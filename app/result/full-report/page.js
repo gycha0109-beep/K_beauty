@@ -6309,6 +6309,7 @@ function FaceLabSection({ report, photoUrl, locale = "ko" }) {
 
   return (
     <PremiumFaceLabSection
+      key={resultKey}
       faceLabSummary={faceLabSummary}
       faceLabAnalysis={report?.faceLabAnalysis || null}
       photoUrl={photoUrl}
