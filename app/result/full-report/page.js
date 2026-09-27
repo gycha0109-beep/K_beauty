@@ -6303,8 +6303,8 @@ function FaceLabSection({ report, photoUrl, locale = "ko" }) {
   const faceLabSummary = report?.faceLabSummary || buildUnavailablePremiumFaceLab(photoUrl);
   const persistedReportId = report?.meta?.persistence?.savedReportId || null;
   const resultKey =
-    report?.meta?.snapshot?.fingerprint ||
     persistedReportId ||
+    report?.meta?.snapshot?.fingerprint ||
     "current";
 
   return (
