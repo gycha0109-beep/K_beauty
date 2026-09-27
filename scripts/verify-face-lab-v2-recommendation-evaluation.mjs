@@ -9,6 +9,10 @@ import {
   FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  FACE_LAB_V2_AXIS_CONSUMPTION_EVALUATOR_VERSION,
+  runFaceLabV2AxisConsumptionEvaluation
+} from "../lib/face-lab-v2/evaluation/axis-consumption.js";
+import {
   FACE_LAB_V2_TARGET_RESPONSIVENESS_VERSION,
   buildFaceLabV2TargetSweepCohort,
   runFaceLabV2TargetResponsivenessEvaluation
@@ -195,6 +199,22 @@ assert.ok(
   "target sweep must demonstrate recommendation sensitivity beyond one signature"
 );
 
+const axisConsumption = runFaceLabV2AxisConsumptionEvaluation();
+assert.equal(
+  axisConsumption.evaluatorVersion,
+  FACE_LAB_V2_AXIS_CONSUMPTION_EVALUATOR_VERSION
+);
+assert.equal(
+  axisConsumption.summary.hardFailureCount,
+  0,
+  JSON.stringify(axisConsumption.failures, null, 2)
+);
+assert.equal(
+  axisConsumption.summary.fullyConsumedAxisCount,
+  axisConsumption.summary.axisCount,
+  "every advertised style axis must produce executable low/high priorities when isolated"
+);
+
 const suite = runFaceLabV2EvaluationSuite();
 assert.equal(
   suite.summary.caseCount,
@@ -217,7 +237,8 @@ console.log(JSON.stringify({
     locked: locked.summary,
     coverage: coverage.summary,
     adversarial: adversarial.summary,
-    targetResponsiveness: targetResponsiveness.summary
+    targetResponsiveness: targetResponsiveness.summary,
+    axisConsumption: axisConsumption.summary
   },
   targetSweep: {
     cohort: targetResponsiveness.cohort,
