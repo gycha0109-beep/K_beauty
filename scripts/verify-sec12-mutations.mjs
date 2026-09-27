@@ -459,7 +459,7 @@ function assertBaseline(result) {
   const { sec12I10 } = JSON.parse(i10Line);
   assert.deepEqual(sec12I10.routes, { discovered: 19, expected: 19, verified: 19 });
   assert.deepEqual(sec12I10.handlerBindings, { discovered: 21, expected: 21, verified: 21 });
-  assert.deepEqual(sec12I10.terminalResponsePaths, { discovered: 187, expected: 187, verified: 187 });
+  assert.deepEqual(sec12I10.terminalResponsePaths, { discovered: 191, expected: 191, verified: 191 });
   assert.deepEqual(sec12I10.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(sec12I10.deadHelperCalls, 0);
   assert.equal(sec12I10.unsafeResponsePaths, 0);

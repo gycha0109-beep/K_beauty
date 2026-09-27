@@ -65,8 +65,9 @@ assert.equal(
 );
 
 assert.ok(
-  faceLabApi.includes('.update({ face_lab: persisted })'),
-  "Face Lab V2 must persist in the mutable saved_reports.face_lab field"
+  faceLabApi.includes("face_lab: persisted") &&
+    faceLabApi.includes("face_lab_revision: nextRevision"),
+  "Face Lab V2 must persist mutable state together with its monotonic revision"
 );
 assert.ok(
   faceLabApi.includes("data.premium_report?.faceLabAnalysis"),
@@ -103,8 +104,9 @@ assert.ok(
   "route persistence must use the canonical composer-resolved route id"
 );
 assert.ok(
-  premiumFaceLab.includes("selectedRouteId: resolvedRouteId"),
-  "local revisit state must persist the resolved route id"
+  premiumFaceLab.includes("selectedRouteId: routeId") &&
+    premiumFaceLab.includes("writeLocalState(requestState"),
+  "local revisit state must persist the route carried by the queued request state"
 );
 assert.ok(
   premiumFaceLab.includes("persistServer(surveyAnswers, approvedFinder, resolvedRouteId)"),
@@ -129,12 +131,12 @@ assert.ok(
   "route selection must preserve the active persisted Finder payload when only the route changes"
 );
 assert.ok(
-  premiumFaceLab.includes("const persistLocal = (value) =>"),
+  premiumFaceLab.includes("const writeLocalState = useCallback("),
   "Face Lab V2 must isolate local persistence behind a failure-safe boundary"
 );
 assert.ok(
-  premiumFaceLab.includes("try {\n      localStorage.setItem(storageKey"),
-  "local persistence failure must not prevent server persistence"
+  premiumFaceLab.includes("buildFaceLabLocalState(value, metadata)"),
+  "local fallback must carry explicit sync and revision metadata"
 );
 assert.equal(
   premiumFaceLab.includes("setSelectedRouteId("),
@@ -149,6 +151,26 @@ assert.ok(
 assert.ok(
   premiumFaceLab.includes("persistQueueRef.current = persistQueueRef.current.then(write, write)"),
   "rapid target or route changes must persist to the server in user-action order"
+);
+assert.ok(
+  premiumFaceLab.includes("const expectedRevision = serverRevisionRef.current") &&
+    premiumFaceLab.includes("expectedRevision,"),
+  "queued writes must claim the current server revision only when the network write executes"
+);
+assert.ok(
+  faceLabApi.includes('.eq("face_lab_revision", expectedRevision)') &&
+    faceLabApi.includes('error: "face_lab_state_conflict"'),
+  "server persistence must reject stale writes with a revision conflict"
+);
+assert.ok(
+  premiumFaceLab.includes("const conflictEpochRef = useRef(0)") &&
+    premiumFaceLab.includes("const requestConflictEpoch = conflictEpochRef.current") &&
+    premiumFaceLab.includes("requestConflictEpoch !== conflictEpochRef.current"),
+  "a server conflict must invalidate requests that were queued against the stale server base"
+);
+assert.ok(
+  premiumFaceLab.includes("conflictEpochRef.current += 1"),
+  "a 409 conflict must advance the local conflict epoch before later queued writes execute"
 );
 
 assert.ok(
@@ -186,12 +208,17 @@ assert.ok(
 );
 
 assert.ok(
-  premiumFaceLab.includes("updatedAt: new Date().toISOString()"),
-  "local Face Lab V2 state must carry freshness metadata"
+  premiumFaceLab.includes("const serverRevisionRef = useRef(0)"),
+  "Face Lab V2 restore must use a monotonic server revision"
 );
 assert.ok(
+  premiumFaceLab.includes("resolveFaceLabRestore({"),
+  "server/local reconciliation must use the shared revision contract"
+);
+assert.equal(
   premiumFaceLab.includes("updatedAtMs(localStored) > updatedAtMs(serverStored)"),
-  "a newer local fallback must not be replaced by older server state after a failed save"
+  false,
+  "client wall-clock timestamps must not decide persistence authority"
 );
 
 assert.ok(
@@ -208,8 +235,8 @@ assert.ok(
   "a newer or recovery local fallback must be reconciled back to the server"
 );
 assert.ok(
-  premiumFaceLab.includes("cacheServerStateLocally(serverStored)"),
-  "a successful server restore must refresh the local fallback state"
+  premiumFaceLab.includes("cacheServerStateLocally(serverStored, serverRevision)"),
+  "a successful server restore must refresh the local fallback with the acknowledged revision"
 );
 
 assert.ok(
@@ -288,20 +315,27 @@ assert.ok(
   "each server persistence request must claim latest-request authority before entering the serialized queue"
 );
 assert.ok(
-  premiumFaceLab.includes("latestPersistRequestFingerprintRef.current !== requestFingerprint"),
+  premiumFaceLab.includes("const isLatestRequest = () =>") &&
+    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&
+    premiumFaceLab.includes("if (!isLatestRequest())"),
   "an older server acknowledgement must not overwrite newer in-memory user state even when local persistence failed"
 );
 assert.ok(
-  premiumFaceLab.includes("updatedAt: serverStored.updatedAt || null"),
-  "a successful final server write must align local freshness metadata to the server clock"
+  premiumFaceLab.includes('syncStatus: "synced"') &&
+    premiumFaceLab.includes("acknowledgedRevision"),
+  "a successful final server write must align the local fallback to the server revision"
 );
 assert.ok(
-  premiumFaceLab.includes("activePersistenceStateRef.current = {\n            surveyAnswers: serverStored.surveyAnswers") &&
+  premiumFaceLab.includes("activePersistenceStateRef.current = {") &&
+    premiumFaceLab.includes("surveyAnswers: serverStored.surveyAnswers") &&
     premiumFaceLab.includes("targetFinderResult: serverStored.targetFinderResult || null"),
   "a non-stale server acknowledgement must update the active route-selection state to the server-normalized survey/finder payload"
 );
 assert.ok(
-  premiumFaceLab.match(/latestPersistRequestFingerprintRef\.current !== requestFingerprint[\s\S]{0,260}activePersistenceStateRef\.current = \{/),
+  premiumFaceLab.includes("const isLatestRequest = () =>") &&
+    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&
+    premiumFaceLab.includes("if (!isLatestRequest())") &&
+    premiumFaceLab.includes("activePersistenceStateRef.current = {"),
   "server acknowledgement must only replace active persistence state after the latest-request fingerprint guard passes"
 );
 assert.equal(

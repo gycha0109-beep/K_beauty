@@ -168,7 +168,7 @@ const HTTP_METHOD_NAMES = Object.freeze(["DELETE", "GET", "HEAD", "OPTIONS", "PA
 const HTTP_METHOD_NAME_SET = new Set(HTTP_METHOD_NAMES);
 const EXPECTED_SENSITIVE_ROUTE_COUNT = 19;
 const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 21;
-const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 187;
+const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 191;
 const FULL_REPORT_POST_TERMINAL_SIGNATURES = Object.freeze([
   "call:buildSavedPremiumReportResponse",
   "call:getPremiumPersistenceFailedResponse(\"premium_session_update_failed\")",
@@ -226,7 +226,7 @@ const SENSITIVE_ROUTE_HANDLER_BINDINGS = Object.freeze([
   Object.freeze({ id: "app/api/my/saved-reports/route.js::GET", path: "app/api/my/saved-reports/route.js", method: "GET", expectedTerminalPaths: 2 }),
   Object.freeze({ id: "app/api/premium/access/route.js::GET", path: "app/api/premium/access/route.js", method: "GET", expectedTerminalPaths: 1 }),
   Object.freeze({ id: "app/api/premium/face-lab-v2/route.js::GET", path: "app/api/premium/face-lab-v2/route.js", method: "GET", expectedTerminalPaths: 5 }),
-  Object.freeze({ id: "app/api/premium/face-lab-v2/route.js::POST", path: "app/api/premium/face-lab-v2/route.js", method: "POST", expectedTerminalPaths: 9 }),
+  Object.freeze({ id: "app/api/premium/face-lab-v2/route.js::POST", path: "app/api/premium/face-lab-v2/route.js", method: "POST", expectedTerminalPaths: 13 }),
   Object.freeze({ id: "app/api/results/route.js::POST", path: "app/api/results/route.js", method: "POST", expectedTerminalPaths: 25 }),
   Object.freeze({ id: "app/api/track/route.js::POST", path: "app/api/track/route.js", method: "POST", expectedTerminalPaths: 23 }),
   Object.freeze({ id: "app/auth/callback/route.js::GET", path: "app/auth/callback/route.js", method: "GET", expectedTerminalPaths: 6 })
@@ -1519,7 +1519,7 @@ register("I10_SENSITIVE_ROUTE_NO_STORE", async () => {
   const result = await assertSensitiveRouteIntegrationExactSet();
   assert.deepEqual(result.routes, { expected: 19, discovered: 19, verified: 19 });
   assert.deepEqual(result.handlerBindings, { expected: 21, discovered: 21, verified: 21 });
-  assert.deepEqual(result.terminalResponsePaths, { expected: 187, discovered: 187, verified: 187 });
+  assert.deepEqual(result.terminalResponsePaths, { expected: 191, discovered: 191, verified: 191 });
   assert.deepEqual(result.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(result.deadHelperCalls, 0);
   assert.equal(result.unsafeResponsePaths, 0);
