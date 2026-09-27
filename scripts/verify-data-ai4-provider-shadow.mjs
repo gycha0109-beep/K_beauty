@@ -185,12 +185,21 @@ check(workflow.includes("ko_oily_temporary_sensitive_light_cream"),
 check(workflow.includes("ko_tight_afterwash_oily_afternoon_cream"),
   "workflow must run compound post-wash/afternoon scenario");
 check(
-  workflow.includes('repetitions=6') &&
-    workflow.includes('if [ "$scenario" = "ko_oily_temporary_sensitive_light_cream" ]'),
-  "primary compound scenario must repeat six times on deployed main to detect intermittent protocol failures"
+  workflow.includes("ko_oily_temporary_sensitive_light_cream_budget_") &&
+    workflow.includes("for budget in 400 600 800") &&
+    workflow.includes("for attempt in $(seq 1 10)") &&
+    workflow.includes("DATA_AI28_BUDGET_SUMMARY") &&
+    workflow.includes("DATA_AI28_SELECTED_BUDGET") &&
+    workflow.includes("classify-data-ai28-output-budget-probe.mjs"),
+  "DATA-AI28 must run the fixed 400/600/800 ten-attempt budget matrix without changing the user-path default"
 );
 check(workflow.includes("validate-data-ai4-provider-shadow-runtime-response.mjs"),
   "deployed provider probe must invoke standalone runtime-response validator");
+check(
+  providerService.includes("outputBudget") &&
+    providerService.includes("ko_oily_temporary_sensitive_light_cream_budget_"),
+  "provider shadow must expose only fixed source-controlled budget variants"
+);
 check(workflow.includes("Checkout exact runtime probe SHA"),
   "runtime probe job must checkout the exact main SHA");
 check(workflow.includes("Verify runtime probe checkout"),
