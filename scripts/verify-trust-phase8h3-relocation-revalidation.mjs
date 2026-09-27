@@ -272,10 +272,14 @@ for (const needle of [
   "v_candidate.qualifier is distinct from v_current_fact.qualifier",
   "v_current_fact.valid_from is not null",
   "v_current_fact.valid_to is not null",
-  "SET search_path = ''",
 ]) {
   assert.ok(relationshipScopeHardening.includes(needle), `relationship scope hardening missing token: ${needle}`);
 }
+assert.match(
+  relationshipScopeHardening,
+  /set search_path = ''/i,
+  "relationship scope hardening must pin SECURITY DEFINER search_path to empty",
+);
 assert.ok(
   !relationshipScopeHardening.includes("v_candidate.locale is distinct from v_current_fact.locale"),
   "source/evidence locale must not be treated as relational Product Fact applicability",
