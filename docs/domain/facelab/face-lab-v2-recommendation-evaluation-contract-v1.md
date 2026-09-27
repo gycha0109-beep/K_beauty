@@ -1,7 +1,7 @@
 # Face Lab V2 Recommendation Evaluation Contract v1
 
-> Track: Face Lab 16 / Recommendation Evaluation System  
-> Status: Initial deterministic harness contract  
+> Track: Face Lab 16 / Recommendation Evaluation System
+> Status: Initial deterministic harness contract
 > Authority ceiling: synthetic structured-face evaluation only; not real-user truth or production calibration authority
 
 ## 1. Purpose
