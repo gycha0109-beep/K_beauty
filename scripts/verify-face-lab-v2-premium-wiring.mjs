@@ -286,6 +286,15 @@ assert.ok(
   premiumFaceLab.includes("updatedAt: serverStored.updatedAt || null"),
   "a successful final server write must align local freshness metadata to the server clock"
 );
+assert.ok(
+  premiumFaceLab.includes("activePersistenceStateRef.current = {\n            surveyAnswers: serverStored.surveyAnswers") &&
+    premiumFaceLab.includes("targetFinderResult: serverStored.targetFinderResult || null"),
+  "a non-stale server acknowledgement must update the active route-selection state to the server-normalized survey/finder payload"
+);
+assert.ok(
+  premiumFaceLab.match(/persistenceFingerprint\(currentStored\)[\s\S]{0,420}activePersistenceStateRef\.current = \{/),
+  "server acknowledgement must only replace active persistence state after the existing stale-ack fingerprint guard passes"
+);
 assert.equal(
   premiumFaceLab.includes("canonicalV2: stored.canonicalV2"),
   false,

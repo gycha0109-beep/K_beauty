@@ -600,6 +600,10 @@ export default function PremiumFaceLabSection({
             return;
           }
 
+          activePersistenceStateRef.current = {
+            surveyAnswers: serverStored.surveyAnswers,
+            targetFinderResult: serverStored.targetFinderResult || null
+          };
           localStorage.setItem(storageKey, JSON.stringify({
             surveyAnswers: serverStored.surveyAnswers,
             targetFinderResult: serverStored.targetFinderResult || null,
