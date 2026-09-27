@@ -1,0 +1,15 @@
+{
+  "contract": "trust-phase8h3-cli-migration-generation-v1",
+  "supabase_cli_version": "2.117.0",
+  "workflow_run_id": 36203567343,
+  "workflow_job_id": 108295171190,
+  "workflow_head_sha": "85d55f4dfe659c4850534f80eba7a2cc115e0efa",
+  "generated_migration_filename": "20260926000641_trust_phase8h3_relocation_revalidation_v1.sql",
+  "artifact_id": 10892617095,
+  "artifact_digest": "sha256:18c1d0fdb4e9f2b4853f1b9a21a1ac1738dcfa5ca0283ee3e8444b2a80441f5d",
+  "generation_authority": "SUPABASE_CLI_MIGRATION_NEW",
+  "repository_ordering_state": "GENERATED_VERSION_PRECEDES_ALIGNED_PHASE8H_VERSION",
+  "aligned_phase8h_version": "20260926074409",
+  "repository_materialization": "DB_BLUEPRINT_PENDING_PRODUCTION_VERSION_READBACK",
+  "production_mutation": "NONE"
+}

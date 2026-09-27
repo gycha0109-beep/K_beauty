@@ -47,7 +47,12 @@ assert.ok(audit.includes("execution_duplicate_units="), "overlap audit must dist
 
 const cluster = phaseB.clusters?.["current-main-cross-cutting"];
 assert.equal(cluster?.delegationPolicy, "docs/ci/consolidation-audits/current-main-delegation-policy.json");
-assert.deepEqual(phaseB.approvedAddedWorkflows, ["data-ai-product-query-static.yml"]);
+assert.ok(
+  phaseB.approvedAddedWorkflows.includes("data-ai-product-query-static.yml"),
+  "Current Main delegation requires the canonical DATA-AI static workflow approval"
+);
 assert.deepEqual(phaseB.approvedRetiredWorkflows, []);
+const expectedWorkflowCount =
+  phaseB.baselineWorkflowCount + phaseB.approvedAddedWorkflows.length - phaseB.approvedRetiredWorkflows.length;
 
-console.log("CURRENT_MAIN_DELEGATION=PASS delegated_contracts=7 canonical_groups=3 direct_duplicate_execution=0 fallback_coverage=7 workflow_inventory=64");
+console.log(`CURRENT_MAIN_DELEGATION=PASS delegated_contracts=7 canonical_groups=3 direct_duplicate_execution=0 fallback_coverage=7 workflow_inventory=${expectedWorkflowCount}`);

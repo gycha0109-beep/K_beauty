@@ -1,0 +1,23 @@
+{
+  "contract": "trust-phase8h3-db-dry-run-validation-v1",
+  "validation_mode": "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK",
+  "project_ref": "bygrczggxfuisupcevaz",
+  "blueprint": "docs/evidence/trust-phase8h3-relocation-revalidation-db-blueprint-v1.sql",
+  "blueprint_content_sha": "ff457e2041c6eb4f863ea80311590621a9943cae",
+  "migration_ddl_compile": "PASS",
+  "dependency_resolution": "PASS",
+  "in_transaction_readback": {
+    "preflight_exists": true,
+    "mark_exists": true,
+    "relocation_column_exists": true,
+    "service_role_execute": true,
+    "authenticated_execute": false
+  },
+  "rollback_readback": {
+    "preflight_rolled_back": true,
+    "mark_rolled_back": true,
+    "relocation_column_rolled_back": true
+  },
+  "production_mutation": "NONE",
+  "result": "PASS"
+}
