@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAccountUser } from "@/lib/premium-access";
 import { resolvePremiumRouteContext } from "@/lib/premium-route-context";
 import { getFaceLabObservationAnalysis } from "@/lib/face-lab-analysis-bundle";
+import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import { buildFaceLabV2Canonical } from "@/lib/face-lab-v2/canonical-composer";
 import {
   normalizeFaceLabV2PersistencePayload
@@ -32,6 +33,14 @@ async function resolveOwnedSavedReport({ supabase, userId, savedReportId }) {
     .eq("user_id", userId)
     .eq("report_type", "premium")
     .maybeSingle();
+}
+
+function sanitizeLegacySummary(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return sanitizePremiumFaceLabSummary(value);
 }
 
 function readSavedV2(faceLab) {
@@ -202,9 +211,11 @@ export async function POST(request) {
   }
 
   const previousV2 = readSavedV2(data.face_lab);
-  const legacySummary = previousV2
-    ? data.face_lab?.legacySummary || null
-    : data.face_lab || null;
+  const legacySummary = sanitizeLegacySummary(
+    previousV2
+      ? data.face_lab?.legacySummary || null
+      : data.face_lab || null
+  );
 
   const persisted = {
     schemaVersion: SAVED_FACE_LAB_V2_VERSION,
