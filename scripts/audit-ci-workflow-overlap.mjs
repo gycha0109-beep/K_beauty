@@ -10,6 +10,7 @@ const REGISTRY_DIR = path.join(ROOT, "docs", "ci", "workflow-responsibilities");
 const BASELINE_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "phase-a-baseline.json");
 const PHASE_B_POLICY_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "phase-b-policy.json");
 const CURRENT_MAIN_DELEGATION_POLICY_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "current-main-delegation-policy.json");
+const PHASE_C_EXECUTION_SEMANTICS_PATH = path.join(ROOT, "docs", "ci", "consolidation-audits", "phase-c-execution-semantics.json");
 const PACKAGE_PATH = path.join(ROOT, "package.json");
 const args = new Set(process.argv.slice(2));
 
@@ -72,20 +73,159 @@ function matches(text, regex, group = 1) {
   return [...new Set([...text.matchAll(regex)].map((match) => match[group]))].sort();
 }
 
+function scriptInvocations(commands) {
+  const syntaxScripts = matches(
+    commands,
+    /node\s+--check\s+["']?((?:scripts|crawler\/scripts)\/[A-Za-z0-9_./-]+\.(?:mjs|js))["']?/g,
+  );
+  const withoutSyntax = commands.replace(
+    /node\s+--check\s+["']?(?:scripts|crawler\/scripts)\/[A-Za-z0-9_./-]+\.(?:mjs|js)["']?/g,
+    "",
+  );
+  const scripts = matches(
+    withoutSyntax,
+    /(?:^|[\s"'(])((?:scripts|crawler\/scripts)\/[A-Za-z0-9_./-]+\.(?:mjs|js|sh|py))/gm,
+  );
+  return { scripts, syntaxScripts };
+}
+
 function directCoverage(yaml, packageScripts) {
   const commands = runBlocks(yaml).join("\n");
-  const scripts = matches(commands, /(?:^|[\s"'(])((?:scripts|crawler\/scripts)\/[A-Za-z0-9_./-]+\.(?:mjs|js|sh|py))/gm);
+  const directInvocations = scriptInvocations(commands);
   const npmScripts = matches(commands, /npm\s+(?:--prefix\s+[^\s]+\s+)?run\s+([A-Za-z0-9:_-]+)/g);
   const resolvedPackageScripts = [];
+  const resolvedPackageSyntaxScripts = [];
   for (const name of npmScripts) {
     const command = packageScripts[name];
     if (!command) continue;
-    resolvedPackageScripts.push(...matches(command, /((?:scripts|crawler\/scripts)\/[A-Za-z0-9_./-]+\.(?:mjs|js|sh|py))/g));
+    const resolved = scriptInvocations(command);
+    resolvedPackageScripts.push(...resolved.scripts);
+    resolvedPackageSyntaxScripts.push(...resolved.syntaxScripts);
   }
   return {
     commands,
-    scripts: [...new Set([...scripts, ...resolvedPackageScripts])].sort(),
+    scripts: [...new Set([...directInvocations.scripts, ...resolvedPackageScripts])].sort(),
+    syntaxScripts: [...new Set([...directInvocations.syntaxScripts, ...resolvedPackageSyntaxScripts])].sort(),
     npmScripts,
+  };
+}
+
+
+function jobBlocks(yaml) {
+  const lines = yaml.split(/\r?\n/);
+  const jobsIndex = lines.findIndex((line) => /^jobs:\s*$/.test(line));
+  if (jobsIndex < 0) return [];
+  const starts = [];
+  let jobsEnd = lines.length;
+  for (let i = jobsIndex + 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (line.trim() && indentOf(line) === 0) {
+      jobsEnd = i;
+      break;
+    }
+    const match = line.match(/^  ([A-Za-z0-9_-]+):\s*$/);
+    if (match) starts.push({ index: i, name: match[1] });
+  }
+  return starts.map((start, index) => {
+    const end = index + 1 < starts.length ? starts[index + 1].index : jobsEnd;
+    return { name: start.name, text: lines.slice(start.index, end).join("\n") };
+  });
+}
+
+function stepBlocks(jobText) {
+  const lines = jobText.split(/\r?\n/);
+  const stepsIndex = lines.findIndex((line) => /^    steps:\s*$/.test(line));
+  if (stepsIndex < 0) return [];
+  const starts = [];
+  for (let i = stepsIndex + 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (line.trim() && indentOf(line) <= 4) break;
+    if (/^      -\s+/.test(line)) starts.push(i);
+  }
+  return starts.map((start, index) => {
+    const end = index + 1 < starts.length ? starts[index + 1] : lines.length;
+    return lines.slice(start, end).join("\n");
+  });
+}
+
+function conditionOf(text, indent) {
+  const prefix = " ".repeat(indent) + "if:";
+  const line = text.split(/\r?\n/).find((candidate) => candidate.startsWith(prefix));
+  return line ? line.slice(prefix.length).trim() : "";
+}
+
+function isWorkflowDispatchOnly(condition) {
+  if (!condition) return false;
+  const normalized = condition
+    .replace(/^\s*\$\{\{\s*/, "")
+    .replace(/\s*\}\}\s*$/, "")
+    .trim();
+  return /^github\.event_name\s*==\s*['"]workflow_dispatch['"](?:\s*&&|\s*$)/.test(normalized);
+}
+
+function unitsForText(text, packageScripts) {
+  const direct = directCoverage(text, packageScripts);
+  const expandedScripts = expandDriverScripts(direct.scripts);
+  const caps = capabilities(text, direct.commands);
+  return [...new Set([
+    ...expandedScripts.map((value) => "script:" + value),
+    ...direct.syntaxScripts.map((value) => "syntax:" + value),
+    ...direct.npmScripts.map((value) => "npm:" + value),
+    ...caps.map((value) => "capability:" + value),
+  ])].sort();
+}
+
+function unitClass(unit) {
+  if (unit.startsWith("syntax:")) return "syntax-verification";
+  if (unit.startsWith("capability:")) return "infrastructure";
+  if (unit.startsWith("script:")) {
+    const script = unit.slice("script:".length);
+    const base = path.posix.basename(script);
+    if (/^(verify|check|audit|validate)-/.test(base) || /(?:^|-)guard(?:\.|-)/.test(base)) return "verification";
+    if (/^(await|materialize|capture|configure|apply)-/.test(base)) return "execution-helper";
+    return "execution-helper";
+  }
+  if (unit.startsWith("npm:")) {
+    const name = unit.slice("npm:".length);
+    if (/verify|check|lint|typecheck|guard/.test(name)) return "verification";
+    if (/build|prebuild|export|config/.test(name)) return "build-tooling";
+    return "execution-helper";
+  }
+  return "execution-helper";
+}
+
+function executionCoverage(yaml, packageScripts) {
+  const events = topLevelOnEvents(yaml);
+  const automaticEvents = new Set(["pull_request", "push"]);
+  const hasAutomaticEvent = events.some((event) => automaticEvents.has(event));
+  const hasDispatch = events.includes("workflow_dispatch");
+  const automatic = new Set();
+  const manualFallback = new Set();
+  const manualOnly = new Set();
+
+  for (const job of jobBlocks(yaml)) {
+    const jobCondition = conditionOf(job.text, 4);
+    for (const step of stepBlocks(job.text)) {
+      const stepCondition = conditionOf(step, 8);
+      const combinedCondition = [jobCondition, stepCondition].filter(Boolean).join(" && ");
+      const units = unitsForText(step, packageScripts);
+      if (isWorkflowDispatchOnly(combinedCondition)) {
+        const target = hasAutomaticEvent && hasDispatch ? manualFallback : manualOnly;
+        for (const unit of units) target.add(unit);
+        continue;
+      }
+      if (hasAutomaticEvent) {
+        for (const unit of units) automatic.add(unit);
+      } else if (hasDispatch) {
+        for (const unit of units) manualOnly.add(unit);
+      }
+    }
+  }
+
+  return {
+    automaticExecutionUnits: [...automatic].sort(),
+    manualFallbackUnits: [...manualFallback].sort(),
+    manualOnlyExecutionUnits: [...manualOnly].sort(),
   };
 }
 
@@ -98,7 +238,7 @@ function expandDriverScripts(initialScripts) {
     const absolute = path.join(ROOT, script);
     if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
     const content = fs.readFileSync(absolute, "utf8");
-    if (!/spawnSync|\brun\s*\(/.test(content)) continue;
+    if (!/(?:node:child_process|child_process)/.test(content) || !/spawnSync\s*\(/.test(content)) continue;
     for (const child of matches(content, /["']((?:scripts|crawler\/scripts)\/[A-Za-z0-9_./-]+\.(?:mjs|js|sh|py))["']/g)) {
       if (!expanded.has(child)) {
         expanded.add(child);
@@ -152,8 +292,14 @@ const approvedRetiredWorkflows = phaseBPolicy?.approvedRetiredWorkflows || [];
 const currentMainDelegationPolicy = fs.existsSync(CURRENT_MAIN_DELEGATION_POLICY_PATH)
   ? JSON.parse(fs.readFileSync(CURRENT_MAIN_DELEGATION_POLICY_PATH, "utf8"))
   : null;
+const phaseCExecutionSemantics = fs.existsSync(PHASE_C_EXECUTION_SEMANTICS_PATH)
+  ? JSON.parse(fs.readFileSync(PHASE_C_EXECUTION_SEMANTICS_PATH, "utf8"))
+  : null;
 const delegatedCurrentMainScripts = new Set(
-  (currentMainDelegationPolicy?.owners || []).flatMap((owner) => owner.contracts || []).map((contract) => `script:${contract.script}`),
+  (currentMainDelegationPolicy?.owners || [])
+    .flatMap((owner) => owner.contracts || [])
+    .flatMap((contract) => expandDriverScripts([contract.script]))
+    .map((script) => `script:${script}`),
 );
 if (phaseBPolicy) {
   assert.equal(phaseBPolicy.baselineWorkflowCount, baseline.expectedWorkflowCount, "Phase B baseline workflow count drift");
@@ -180,9 +326,16 @@ const graph = actual.map((workflow) => {
   const caps = capabilities(yaml, direct.commands);
   const units = [
     ...expandedScripts.map((value) => `script:${value}`),
+    ...direct.syntaxScripts.map((value) => `syntax:${value}`),
     ...direct.npmScripts.map((value) => `npm:${value}`),
     ...caps.map((value) => `capability:${value}`),
   ].sort();
+  const execution = executionCoverage(yaml, packageScripts);
+  if (workflow === "current-main-health.yml") {
+    execution.automaticExecutionUnits = execution.automaticExecutionUnits.filter(
+      (unit) => !delegatedCurrentMainScripts.has(unit),
+    );
+  }
   return {
     workflow,
     primaryResponsibility: entry.primaryResponsibility,
@@ -192,12 +345,16 @@ const graph = actual.map((workflow) => {
     events: topLevelOnEvents(yaml),
     jobs: jobNames(yaml),
     directScripts: direct.scripts,
+    syntaxScripts: direct.syntaxScripts,
     expandedScripts,
     npmScripts: direct.npmScripts,
     actions,
     secrets,
     capabilities: caps,
     coverageUnits: [...new Set(units)],
+    automaticExecutionUnits: execution.automaticExecutionUnits,
+    manualFallbackUnits: execution.manualFallbackUnits,
+    manualOnlyExecutionUnits: execution.manualOnlyExecutionUnits,
   };
 });
 
@@ -207,15 +364,34 @@ const registryNames = fs.readdirSync(REGISTRY_DIR)
   .sort();
 assert.deepEqual(registryNames, actual, "workflow responsibility registry must match workflow inventory");
 
-const unitOwners = new Map();
-for (const node of graph) {
-  for (const unit of node.coverageUnits) {
-    if (!unitOwners.has(unit)) unitOwners.set(unit, []);
-    unitOwners.get(unit).push(node.workflow);
+function ownersFor(unitKey) {
+  const owners = new Map();
+  for (const node of graph) {
+    for (const unit of node[unitKey]) {
+      if (!owners.has(unit)) owners.set(unit, []);
+      owners.get(unit).push(node.workflow);
+    }
   }
+  return owners;
 }
+
+const unitOwners = ownersFor("coverageUnits");
+const automaticUnitOwners = ownersFor("automaticExecutionUnits");
+const manualFallbackUnitOwners = ownersFor("manualFallbackUnits");
+const manualOnlyUnitOwners = ownersFor("manualOnlyExecutionUnits");
+
 for (const node of graph) {
   node.uniqueCoverageUnits = node.coverageUnits.filter((unit) => unitOwners.get(unit)?.length === 1);
+}
+
+if (phaseCExecutionSemantics) {
+  assert.equal(phaseCExecutionSemantics.schemaVersion, "bejewely-ci-execution-overlap-semantics-v1");
+  assert.deepEqual(phaseCExecutionSemantics.automaticEvents, ["pull_request", "push"]);
+  for (const workflow of phaseCExecutionSemantics.expectedManualFallbackWorkflows || []) {
+    const node = graph.find((item) => item.workflow === workflow);
+    assert.ok(node, workflow + ": Phase C manual-fallback workflow missing");
+    assert.ok(node.manualFallbackUnits.length > 0, workflow + ": expected manual fallback coverage missing");
+  }
 }
 
 const projectWide = new Set(["current-main-health.yml", "pie-prospective.yml"]);
@@ -281,25 +457,76 @@ const report = {
   workflowCount: graph.length,
   baselineWorkflowCount: baseline.expectedWorkflowCount,
   phaseBPolicyActive: Boolean(phaseBPolicy),
+  executionSemanticsVersion: phaseCExecutionSemantics?.schemaVersion || null,
   approvedAddedWorkflows: [...approvedAddedWorkflows].sort(),
   approvedRetiredWorkflows: [...approvedRetiredWorkflows].sort(),
   protectedCompatibilityShims: [...protectedShims].sort(),
   graph,
   overlaps,
+  automaticOverlaps: (() => {
+    const pairs = [];
+    for (let i = 0; i < graph.length; i += 1) {
+      for (let j = i + 1; j < graph.length; j += 1) {
+        const left = graph[i];
+        const right = graph[j];
+        const a = new Set(left.automaticExecutionUnits);
+        const b = new Set(right.automaticExecutionUnits);
+        const shared = [...a].filter((unit) => b.has(unit));
+        if (!shared.length) continue;
+        const union = new Set([...a, ...b]);
+        const smaller = Math.max(1, Math.min(a.size, b.size));
+        pairs.push({
+          left: left.workflow,
+          right: right.workflow,
+          sharedUnits: shared.length,
+          containment: Number((shared.length / smaller).toFixed(4)),
+          jaccard: Number((shared.length / Math.max(1, union.size)).toFixed(4)),
+          shared,
+          projectWidePair: projectWide.has(left.workflow) || projectWide.has(right.workflow),
+        });
+      }
+    }
+    return pairs.sort((a, b) => b.containment - a.containment || b.sharedUnits - a.sharedUnits || b.jaccard - a.jaccard);
+  })(),
+  automaticDuplicateUnits: [...automaticUnitOwners.entries()]
+    .filter(([, owners]) => owners.length > 1)
+    .map(([unit, owners]) => ({ unit, class: unitClass(unit), owners: [...owners].sort() }))
+    .sort((a, b) => b.owners.length - a.owners.length || a.unit.localeCompare(b.unit)),
+  automaticVerificationDuplicateUnits: [...automaticUnitOwners.entries()]
+    .filter(([unit, owners]) => owners.length > 1 && unitClass(unit) === "verification")
+    .map(([unit, owners]) => ({ unit, owners: [...owners].sort() }))
+    .sort((a, b) => b.owners.length - a.owners.length || a.unit.localeCompare(b.unit)),
+  manualFallbackDuplicateUnits: [...manualFallbackUnitOwners.entries()]
+    .filter(([, owners]) => owners.length > 1)
+    .map(([unit, owners]) => ({ unit, owners: [...owners].sort() }))
+    .sort((a, b) => b.owners.length - a.owners.length || a.unit.localeCompare(b.unit)),
 };
 
 if (args.has("--json")) {
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 } else {
   const duplicateUnits = [...unitOwners.entries()].filter(([, owners]) => owners.length > 1);
-  const executionDuplicateUnits = [...unitOwners.entries()].filter(([unit, owners]) => {
-    const executionOwners = owners.filter((owner) => !(owner === "current-main-health.yml" && delegatedCurrentMainScripts.has(unit)));
-    return executionOwners.length > 1;
-  });
-  console.log(`CI_WORKFLOW_OVERLAP_AUDIT workflows=${graph.length} duplicate_units=${duplicateUnits.length} execution_duplicate_units=${executionDuplicateUnits.length} overlap_pairs=${overlaps.length}`);
-  console.log("Top overlap pairs (evidence only; no automatic retirement):");
+  const automaticExecutionDuplicateUnits = [...automaticUnitOwners.entries()].filter(([, owners]) => owners.length > 1);
+  const manualFallbackDuplicateUnits = [...manualFallbackUnitOwners.entries()].filter(([, owners]) => owners.length > 1);
+  const automaticOverlaps = report.automaticOverlaps;
+  console.log(
+    `CI_WORKFLOW_OVERLAP_AUDIT workflows=${graph.length} duplicate_units=${duplicateUnits.length} execution_duplicate_units=${automaticExecutionDuplicateUnits.length} automatic_execution_duplicate_units=${automaticExecutionDuplicateUnits.length} automatic_verification_duplicate_units=${report.automaticVerificationDuplicateUnits.length} manual_fallback_units=${manualFallbackUnitOwners.size} manual_fallback_duplicate_units=${manualFallbackDuplicateUnits.length} manual_only_units=${manualOnlyUnitOwners.size} overlap_pairs=${overlaps.length} automatic_overlap_pairs=${automaticOverlaps.length}`,
+  );
+  console.log("Top coverage overlap pairs (evidence only; no automatic retirement):");
   for (const pair of overlaps.slice(0, 20)) {
     console.log(`- ${pair.left} <> ${pair.right}: containment=${pair.containment} shared=${pair.sharedUnits} projectWide=${pair.projectWidePair}`);
+  }
+  console.log("Top automatic execution overlap pairs:");
+  for (const pair of automaticOverlaps.slice(0, 20)) {
+    console.log(`- ${pair.left} <> ${pair.right}: containment=${pair.containment} shared=${pair.sharedUnits} projectWide=${pair.projectWidePair}`);
+  }
+  console.log("Top automatic duplicate units:");
+  for (const item of report.automaticDuplicateUnits.slice(0, 20)) {
+    console.log(`- ${item.unit}: class=${item.class} owners=${item.owners.length} [${item.owners.join(",")}]`);
+  }
+  console.log("Top automatic verification duplicate units:");
+  for (const item of report.automaticVerificationDuplicateUnits.slice(0, 20)) {
+    console.log(`- ${item.unit}: owners=${item.owners.length} [${item.owners.join(",")}]`);
   }
 }
 

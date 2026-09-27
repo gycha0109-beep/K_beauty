@@ -133,3 +133,17 @@ A successful Phase 8G reference run (`36287673316`) showed the common replay mat
 - No upload/download cache layer, Actions run-id coupling, extra permissions, or artifact-expiry dependency is introduced.
 - All six replay calls, six Supabase runtime authorities, six phase semantic verifiers, and TRUST 8G operational probes remain intentionally local.
 - Reconsider this decision only if future measurements show replay materialization becoming materially expensive or shared artifacts become independently necessary for correctness.
+
+## Phase C-1 execution-aware overlap semantics
+
+The overlap auditor now distinguishes static coverage from runtime execution semantics.
+
+- `duplicate_units` remains the broad static coverage-overlap metric.
+- `automatic_execution_duplicate_units` counts only units that can actually execute on `pull_request` or `push`, after evaluating job/step `if:` conditions and Current Main canonical delegation.
+- `execution_duplicate_units` is retained as a compatibility alias of `automatic_execution_duplicate_units`.
+- `manual_fallback_units` records explicit `workflow_dispatch` fallback coverage inside workflows that also have automatic triggers.
+- `manual_only_units` records workflow-dispatch-only execution coverage.
+- DATA-AI3/4/5 and TRUST 5B-7D local fallback verifier chains therefore remain visible as coverage but are no longer counted as automatic duplicate execution.
+- The metric is evidence only; it does not authorize workflow retirement.
+- `automatic_verification_duplicate_units` narrows automatic overlap to verifier/check/audit/validate/guard contracts and excludes generic runtime capabilities and setup helpers.
+- Transitive script expansion now requires actual `child_process`/`spawnSync` execution evidence, preventing structural source assertions such as quoted `run(...)` examples from being counted as child execution.
