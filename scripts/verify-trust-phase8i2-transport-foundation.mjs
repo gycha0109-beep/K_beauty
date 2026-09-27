@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { probeOfficialTransport } from "../lib/trust/official-source-fetch.mjs";
+import { probeOfficialTransport } from "../lib/trust/official-source-transport-fetch.mjs";
 import { runOfficialSourceTransportWorker } from "./trust-official-source-transport-worker.mjs";
 
 const blueprint = fs.readFileSync(
