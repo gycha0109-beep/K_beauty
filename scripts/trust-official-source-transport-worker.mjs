@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
-import { probeOfficialTransport } from "../lib/trust/official-source-fetch.mjs";
+import { probeOfficialTransport } from "../lib/trust/official-source-transport-fetch.mjs";
 
 const WORKER_VERSION = "trust-official-source-transport-worker-v1";
 
