@@ -5,6 +5,9 @@ import {
   FACE_LAB_V2_LOCKED_COHORT_SIZE
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  runFaceLabV2PropertyFuzzEvaluation
+} from "../lib/face-lab-v2/evaluation/property-fuzz.js";
+import {
   runFaceLabV2ConstraintResponsivenessEvaluation
 } from "../lib/face-lab-v2/evaluation/constraint-responsiveness.js";
 import {
@@ -72,6 +75,8 @@ if (cohort === "locked") {
   report = runFaceLabV2ConstraintResponsivenessEvaluation(
     buildFaceLabV2TargetSweepCohort().cases
   );
+} else if (cohort === "property-fuzz") {
+  report = runFaceLabV2PropertyFuzzEvaluation();
 } else if (cohort === "all") {
   const core = runFaceLabV2EvaluationSuite();
   const lineage = runFaceLabV2RecommendationLineageEvaluation(
@@ -82,15 +87,17 @@ if (cohort === "locked") {
     runFaceLabV2ConstraintResponsivenessEvaluation(
       buildFaceLabV2TargetSweepCohort().cases
     );
+  const propertyFuzz = runFaceLabV2PropertyFuzzEvaluation();
   report = {
-    suiteVersion: "face-lab-v2-recommendation-evaluation-cli-suite-v3",
+    suiteVersion: "face-lab-v2-recommendation-evaluation-cli-suite-v4",
     harnessVersion: core.harnessVersion,
     contractVersion: core.contractVersion,
     reports: {
       ...core.reports,
       lineage,
       parameterTranslation,
-      constraintResponsiveness
+      constraintResponsiveness,
+      propertyFuzz
     },
     summary: {
       ...core.summary,
@@ -98,7 +105,8 @@ if (cohort === "locked") {
         core.summary.hardFailureCount +
         lineage.summary.hardFailureCount +
         parameterTranslation.summary.hardFailureCount +
-        constraintResponsiveness.summary.hardFailureCount,
+        constraintResponsiveness.summary.hardFailureCount +
+        propertyFuzz.summary.hardFailureCount,
       lineageFailureCount: lineage.summary.hardFailureCount,
       lineageActionableCaseCount: lineage.summary.actionableCaseCount,
       lineageSelectedRouteActionCount: lineage.summary.selectedRouteActionCount,
@@ -111,12 +119,14 @@ if (cohort === "locked") {
       constraintResponsivenessFailureCount:
         constraintResponsiveness.summary.hardFailureCount,
       constraintResponsivenessPairCount:
-        constraintResponsiveness.summary.pairedComparisonCount
+        constraintResponsiveness.summary.pairedComparisonCount,
+      propertyFuzzFailureCount: propertyFuzz.summary.hardFailureCount,
+      propertyFuzzCaseCount: propertyFuzz.summary.totalCaseCount
     }
   };
 } else {
   throw new Error(
-    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, lineage, parameter-translation, constraint-responsiveness, or all"
+    "FACE_LAB_EVAL_COHORT must be locked, coverage, adversarial, target-sweep, axis-consumption, lineage, parameter-translation, constraint-responsiveness, property-fuzz, or all"
   );
 }
 
