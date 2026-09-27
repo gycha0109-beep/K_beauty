@@ -12,6 +12,11 @@ on:
       - "lib/my/i18n.js"
       - "lib/product-query-authenticated-beta-ux-contract.mjs"
       - "scripts/verify-data-ai23-authenticated-beta-ux.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai23-authenticated-beta-ux.yml"
   push:
     branches: [main]
@@ -23,6 +28,11 @@ on:
       - "lib/my/i18n.js"
       - "lib/product-query-authenticated-beta-ux-contract.mjs"
       - "scripts/verify-data-ai23-authenticated-beta-ux.mjs"
+      - "docs/ci/consolidation-audits/current-main-delegation-policy.json"
+      - "docs/ci/consolidation-audits/phase-b-policy.json"
+      - "scripts/verify-current-main-delegation.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - "scripts/verify-ci-trigger-topology.mjs"
       - ".github/workflows/data-ai23-authenticated-beta-ux.yml"
   workflow_dispatch:
     inputs:
