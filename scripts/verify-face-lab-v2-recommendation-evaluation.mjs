@@ -9,6 +9,14 @@ import {
   FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  FACE_LAB_V2_CONSTRAINT_RESPONSIVENESS_VERSION,
+  runFaceLabV2ConstraintResponsivenessEvaluation
+} from "../lib/face-lab-v2/evaluation/constraint-responsiveness.js";
+import {
+  FACE_LAB_V2_PARAMETER_TRANSLATION_EVALUATOR_VERSION,
+  runFaceLabV2ParameterTranslationEvaluation
+} from "../lib/face-lab-v2/evaluation/parameter-translation.js";
+import {
   FACE_LAB_V2_LINEAGE_EVALUATOR_VERSION,
   runFaceLabV2RecommendationLineageEvaluation
 } from "../lib/face-lab-v2/evaluation/lineage.js";
@@ -179,6 +187,22 @@ assert.equal(targetSweepCohort.faceCount, 8);
 assert.equal(targetSweepCohort.targetCount, 12);
 assert.equal(targetSweepCohort.caseCount, 96);
 
+const constraintResponsiveness =
+  runFaceLabV2ConstraintResponsivenessEvaluation(targetSweepCohort.cases);
+assert.equal(
+  constraintResponsiveness.evaluatorVersion,
+  FACE_LAB_V2_CONSTRAINT_RESPONSIVENESS_VERSION
+);
+assert.equal(
+  constraintResponsiveness.summary.pairedComparisonCount,
+  targetSweepCohort.caseCount * 4
+);
+assert.equal(
+  constraintResponsiveness.summary.hardFailureCount,
+  0,
+  JSON.stringify(constraintResponsiveness.failures.slice(0, 30), null, 2)
+);
+
 const targetResponsiveness = runFaceLabV2TargetResponsivenessEvaluation();
 assert.equal(
   targetResponsiveness.evaluatorVersion,
@@ -201,6 +225,21 @@ assert.equal(
 assert.ok(
   targetResponsiveness.summary.averageUniqueStyleDeltaSignatures > 1,
   "target sweep must demonstrate recommendation sensitivity beyond one signature"
+);
+
+const parameterTranslation = runFaceLabV2ParameterTranslationEvaluation();
+assert.equal(
+  parameterTranslation.evaluatorVersion,
+  FACE_LAB_V2_PARAMETER_TRANSLATION_EVALUATOR_VERSION
+);
+assert.ok(
+  parameterTranslation.summary.uniqueParameterCount >= 20,
+  "parameter translation evaluator must exercise the current Style Delta parameter surface"
+);
+assert.equal(
+  parameterTranslation.summary.hardFailureCount,
+  0,
+  JSON.stringify(parameterTranslation.failures, null, 2)
 );
 
 const lineage = runFaceLabV2RecommendationLineageEvaluation(
@@ -264,7 +303,9 @@ console.log(JSON.stringify({
     adversarial: adversarial.summary,
     targetResponsiveness: targetResponsiveness.summary,
     axisConsumption: axisConsumption.summary,
-    lineage: lineage.summary
+    lineage: lineage.summary,
+    parameterTranslation: parameterTranslation.summary,
+    constraintResponsiveness: constraintResponsiveness.summary
   },
   targetSweep: {
     cohort: targetResponsiveness.cohort,
