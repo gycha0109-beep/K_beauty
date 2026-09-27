@@ -23,6 +23,10 @@ function intent(overrides = {}) {
     sensitivity: null,
     texture: null,
     disliked_feel: null,
+    preferred_finish: null,
+    post_wash_feeling: null,
+    afternoon_skin_change: null,
+    very_sensitive_period: null,
     sunscreen_intent: null,
     white_cast_hate: null,
     tone_up_wanted: null,
@@ -59,6 +63,39 @@ const sunscreenPlan = buildProductQueryExecutionPlan(intent({
 check(sunscreenPlan.effectiveCategory === "sunscreen", "explicit sunscreen intent must resolve sunscreen category");
 check(sunscreenPlan.rankingEligible, "white-cast constraint must make sunscreen query rankable");
 check(filterProductQueryCandidates(products, sunscreenPlan).length === 1, "sunscreen intent must filter exact sunscreen corpus");
+
+const semanticAxisPlan = buildProductQueryExecutionPlan(intent({
+  category: "cleanser",
+  skin_type: "oily",
+  preferred_finish: "fresh",
+  post_wash_feeling: "still_oily",
+  afternoon_skin_change: "more_oily",
+  very_sensitive_period: true
+}));
+check(semanticAxisPlan.rankingEligible, "semantic-axis query must be rankable");
+check(
+  JSON.stringify(semanticAxisPlan.rankableSignals) ===
+    JSON.stringify(["skin_type", "preferred_finish", "post_wash_feeling", "afternoon_skin_change", "very_sensitive_period"]),
+  "semantic-axis signals must reach deterministic planning without lexical rules"
+);
+const semanticProduct = projectProductForQueryScoring(
+  {
+    id: "4",
+    brand: "D",
+    name: "Fresh Cleanser",
+    category: "cleanser",
+    finish: "fresh",
+    irritation_risk: "low",
+    sensitivity_safe: true,
+    concerns: ["oiliness"],
+    skin_types: ["oily"]
+  },
+  semanticAxisPlan
+);
+check(semanticProduct.finish === "fresh",
+  "explicit desired finish must preserve product finish metadata for scoring");
+check(semanticProduct.irritation_risk === "low" && semanticProduct.sensitivity_safe === true,
+  "temporary sensitivity must preserve safety metadata for scoring");
 
 const categoryOnly = buildProductQueryExecutionPlan(intent({ category: "cleanser" }));
 check(!categoryOnly.rankingEligible, "category-only query must not invent ranking evidence");
@@ -121,6 +158,15 @@ check(!runtime.includes("skin_profile"), "DATA-AI2 runtime must not merge saved 
 check(!runtime.includes("analysis_results"), "DATA-AI2 runtime must not merge analysis history");
 check(!runtime.includes("OpenAI"), "deterministic execution runtime must not call AI");
 check(runtime.includes('status: "insufficient_supported_intent"'), "insufficient sparse intent must fail closed without arbitrary ranking");
+
+const scorer = fs.readFileSync("lib/recommendation-scoring.ts", "utf8");
+check(
+  scorer.includes("preferredFinish?: string | null") &&
+    scorer.includes("preferredFinish: normalizeString(answers.preferredFinish)") &&
+    scorer.includes("if (answers.preferredFinish)") &&
+    scorer.includes("요청한 마무리감과 직접 맞습니다."),
+  "canonical scorer must consume explicit desired finish without Product Query-specific ranking weights"
+);
 
 const source = fs.readFileSync("lib/product-source.js", "utf8");
 check(source.includes("enumerateRecommendationProductsDeterministically"), "existing corpus must remain deterministic enumeration");

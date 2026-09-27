@@ -150,6 +150,7 @@ export type RecommendationAnswers = {
   concerns?: string[] | null;
   preferredTexture?: string | null;
   texturePreference?: string | null;
+  preferredFinish?: string | null;
   postWashFeeling?: string | null;
   postCleanseFeel?: string | null;
   afternoonSkinChange?: string | null;
@@ -175,6 +176,7 @@ export type NormalizedRecommendationAnswers = {
   mainConcern: string | null;
   mainConcerns: string[];
   preferredTexture: string | null;
+  preferredFinish: string | null;
   postWashFeeling: string | null;
   afternoonSkinChange: string | null;
   mostDislikedFeel: string | null;
@@ -389,6 +391,7 @@ export function normalizeRecommendationAnswers(
     mainConcerns,
     preferredTexture:
       normalizeString(answers.texturePreference || answers.preferredTexture),
+    preferredFinish: normalizeString(answers.preferredFinish),
     postWashFeeling:
       normalizeString(answers.postCleanseFeel || answers.postWashFeeling),
     afternoonSkinChange:
@@ -497,6 +500,11 @@ export function matchesRecommendationCategorySlot(
 
 function getPreferredFinishes(answers: NormalizedRecommendationAnswers): string[] {
   const finishes = new Set<string>();
+  const explicitPreferredFinish = normalizeString(answers.preferredFinish);
+  if (explicitPreferredFinish) {
+    return [normalizeCanonicalFinish(explicitPreferredFinish)];
+  }
+
   const preferredTexture = answers.preferredTexture
     ? normalizeCanonicalTexture(answers.preferredTexture)
     : null;
@@ -893,7 +901,11 @@ function buildWhyPicked(
   }
 
   if (signals.finish_match) {
-    reasons.push(`${getFinishLabel(product.finish as string)}이 지금 피부 리듬과 크게 부딪히지 않습니다.`);
+    if (answers.preferredFinish) {
+      reasons.push(`${getFinishLabel(product.finish as string)}이 요청한 마무리감과 직접 맞습니다.`);
+    } else {
+      reasons.push(`${getFinishLabel(product.finish as string)}이 지금 피부 리듬과 크게 부딪히지 않습니다.`);
+    }
   }
 
   return reasons.slice(0, 4);
@@ -1124,9 +1136,17 @@ function isSensitiveSunscreenUser(answers: NormalizedRecommendationAnswers): boo
 
 function getExpectedSunscreenFinish(
   answers: NormalizedRecommendationAnswers,
-): "fresh" | "dewy" | "natural" | null {
+): "fresh" | "dewy" | "natural" | "soft_matte" | null {
   const primaryConcern = getPrimaryConcern(answers);
   const preferredFinishes = getPreferredFinishes(answers);
+
+  if (answers.preferredFinish) {
+    return normalizeCanonicalFinish(answers.preferredFinish) as
+      | "fresh"
+      | "dewy"
+      | "natural"
+      | "soft_matte";
+  }
 
   if (answers.skinType === "oily" && primaryConcern !== "dehydration") {
     return "fresh";

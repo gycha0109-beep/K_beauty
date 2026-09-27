@@ -110,6 +110,9 @@ export default function ProductQueryBetaCard({ copy }) {
             <div className="rounded-[1rem] border border-[#ead8b7] bg-[#fff9e9] px-4 py-3 text-sm text-[#745a27] dark:border-[#665536] dark:bg-[#332d20] dark:text-[#f2dda8]">
               <p className="font-semibold">{copy.partialTitle}</p>
               <p className="mt-1 leading-6">{copy.partialBody}</p>
+              <p className="mt-2 text-xs font-semibold leading-5">
+                {copy.partialTermsLabel}: {unresolvedTerms.join(", ")}
+              </p>
             </div>
           ) : null}
 

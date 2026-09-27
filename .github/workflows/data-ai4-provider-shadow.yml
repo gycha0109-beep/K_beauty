@@ -198,6 +198,7 @@ jobs:
             ko_dry_high_sensitivity_barrier_cream
             ko_category_only_cleanser
             ko_acne_treatment_pregnancy_unresolved
+            ko_oily_fresh_afterfeel_cleanser
           )
 
           for scenario in "${scenarios[@]}"; do

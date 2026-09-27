@@ -1,0 +1,102 @@
+{
+  "evidenceVersion": "data-ai26-product-query-semantic-axis-preflight-v1",
+  "phase": "DATA-AI26",
+  "capturedAt": "2026-09-27T04:00:00Z",
+  "source": "production_supabase_read_only",
+  "authority": {
+    "providerRole": "intent_parsing_only",
+    "rankingAuthority": "existing_recommendation_engine",
+    "lexicalPhraseDictionary": false,
+    "profileMerge": false,
+    "historyRead": false,
+    "persistence": "none",
+    "publicCutover": false,
+    "cohortExpansion": false
+  },
+  "axes": {
+    "preferred_finish": [
+      "fresh",
+      "natural",
+      "dewy",
+      "soft_matte"
+    ],
+    "post_wash_feeling": [
+      "tight",
+      "comfortable",
+      "still_oily"
+    ],
+    "afternoon_skin_change": [
+      "more_oily",
+      "more_dry",
+      "red_or_irritated",
+      "mostly_same"
+    ],
+    "very_sensitive_period": "boolean"
+  },
+  "metadataCoverage": {
+    "cleanser": {
+      "total": 26,
+      "finishMissing": 0,
+      "textureMissing": 0,
+      "concernsMissing": 0,
+      "finishDistribution": {
+        "fresh": 13,
+        "natural": 8,
+        "dewy": 5
+      }
+    },
+    "toner_essence": {
+      "total": 24,
+      "finishMissing": 0,
+      "textureMissing": 0,
+      "concernsMissing": 0
+    },
+    "toner_pad": {
+      "total": 24,
+      "finishMissing": 0,
+      "textureMissing": 0,
+      "concernsMissing": 0
+    },
+    "treatment": {
+      "total": 18,
+      "finishMissing": 0,
+      "textureMissing": 0,
+      "concernsMissing": 0
+    },
+    "moisturizer_lotion_emulsion": {
+      "total": 21,
+      "finishMissing": 0,
+      "textureMissing": 0,
+      "concernsMissing": 0
+    },
+    "moisturizer_gel": {
+      "total": 10,
+      "finishMissing": 0,
+      "textureMissing": 0,
+      "concernsMissing": 0
+    },
+    "moisturizer_cream": {
+      "total": 10,
+      "finishMissing": 0,
+      "textureMissing": 0,
+      "concernsMissing": 0
+    },
+    "moisturizer_balm": {
+      "total": 20,
+      "finishMissing": 0,
+      "textureMissing": 0,
+      "concernsMissing": 0
+    },
+    "sunscreen": {
+      "total": 12,
+      "finishMissing": 1,
+      "textureMissing": 1,
+      "concernsMissing": 1
+    }
+  },
+  "activationDecision": {
+    "explicitFinishPreference": "supported",
+    "reason": "cleanser and core recommendation categories have sufficient canonical finish metadata; sunscreen retains one missing row handled by existing product-source normalization",
+    "latencyOptimization": "deferred"
+  }
+}
