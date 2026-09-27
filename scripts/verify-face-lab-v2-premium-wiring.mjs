@@ -82,6 +82,18 @@ assert.ok(
   "saved Face Lab V2 state must be rehydrated from persisted analysis on load"
 );
 assert.ok(
+  faceLabApi.includes('import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab"') &&
+    faceLabApi.includes("function sanitizeLegacySummary(value)") &&
+    faceLabApi.includes("return sanitizePremiumFaceLabSummary(value);"),
+  "legacy Face Lab summaries must pass through the privacy-safe summary sanitizer before V2 re-persistence"
+);
+assert.ok(
+  faceLabApi.includes("const legacySummary = sanitizeLegacySummary(") &&
+    faceLabApi.includes("data.face_lab?.legacySummary || null") &&
+    faceLabApi.includes("data.face_lab || null"),
+  "both first-time legacy adoption and existing V2 legacy carry-forward must be sanitized"
+);
+assert.ok(
   faceLabApi.includes("buildFaceLabV2Canonical"),
   "server persistence must recompute canonical V2 output"
 );
