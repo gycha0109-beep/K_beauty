@@ -215,6 +215,17 @@ assert.ok(
   premiumFaceLab.includes('{ makeupExcluded: legacyMakeupExcluded }'),
   "legacy no-makeup restore must reuse the same editable-scope normalization path"
 );
+
+assert.ok(
+  premiumFaceLab.includes("const restoredStylingScope = Array.isArray(stored.surveyAnswers.stylingScope)") &&
+    premiumFaceLab.includes("setScopeTouched(Boolean(restoredStylingScope.length))"),
+  "restored scope intent must survive even when normalization leaves the visible editable scope empty"
+);
+assert.equal(
+  premiumFaceLab.includes("setScopeTouched(Boolean(editableStylingScope.length))"),
+  false,
+  "an all-disabled restored scope must not become untouched and allow presentation defaults to reactivate domains"
+);
 assert.ok(
   premiumFaceLab.includes('["light", "medium", "expressive"].includes(restoredMakeupIntensity)') &&
     premiumFaceLab.includes('? restoredMakeupIntensity\n          : "light"'),

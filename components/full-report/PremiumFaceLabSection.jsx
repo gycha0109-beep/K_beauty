@@ -638,12 +638,15 @@ export default function PremiumFaceLabSection({
       const restoredMakeupIntensity =
         stored.surveyAnswers.constraints?.makeup?.intensity || "light";
       const legacyMakeupExcluded = ["grooming_only", "none"].includes(restoredMakeupIntensity);
+      const restoredStylingScope = Array.isArray(stored.surveyAnswers.stylingScope)
+        ? stored.surveyAnswers.stylingScope
+        : [];
       const editableStylingScope = editableScopeFromStoredSurvey(
         stored.surveyAnswers,
         { makeupExcluded: legacyMakeupExcluded }
       );
       setStylingScope(editableStylingScope);
-      setScopeTouched(Boolean(editableStylingScope.length));
+      setScopeTouched(Boolean(restoredStylingScope.length));
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
       setFinderResult(stored.targetFinderResult || null);
       setMakeupIntensity(
