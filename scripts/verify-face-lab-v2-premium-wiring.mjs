@@ -162,6 +162,16 @@ assert.ok(
     faceLabApi.includes('error: "face_lab_state_conflict"'),
   "server persistence must reject stale writes with a revision conflict"
 );
+assert.ok(
+  premiumFaceLab.includes("const conflictEpochRef = useRef(0)") &&
+    premiumFaceLab.includes("const requestConflictEpoch = conflictEpochRef.current") &&
+    premiumFaceLab.includes("requestConflictEpoch !== conflictEpochRef.current"),
+  "a server conflict must invalidate requests that were queued against the stale server base"
+);
+assert.ok(
+  premiumFaceLab.includes("conflictEpochRef.current += 1"),
+  "a 409 conflict must advance the local conflict epoch before later queued writes execute"
+);
 
 assert.ok(
   premiumFaceLab.includes("const restoreInteractionRef = useRef(0)"),
@@ -305,7 +315,7 @@ assert.ok(
   "each server persistence request must claim latest-request authority before entering the serialized queue"
 );
 assert.ok(
-  premiumFaceLab.includes("latestPersistRequestFingerprintRef.current !== requestFingerprint"),
+  premiumFaceLab.includes("const isLatestRequest = () =>") &&\n    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&\n    premiumFaceLab.includes("if (!isLatestRequest())"),
   "an older server acknowledgement must not overwrite newer in-memory user state even when local persistence failed"
 );
 assert.ok(
@@ -320,7 +330,7 @@ assert.ok(
   "a non-stale server acknowledgement must update the active route-selection state to the server-normalized survey/finder payload"
 );
 assert.ok(
-  premiumFaceLab.includes("latestPersistRequestFingerprintRef.current !== requestFingerprint") &&
+  premiumFaceLab.includes("const isLatestRequest = () =>") &&\n    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&\n    premiumFaceLab.includes("if (!isLatestRequest())") &&
     premiumFaceLab.includes("activePersistenceStateRef.current = {"),
   "server acknowledgement must only replace active persistence state after the latest-request fingerprint guard passes"
 );
