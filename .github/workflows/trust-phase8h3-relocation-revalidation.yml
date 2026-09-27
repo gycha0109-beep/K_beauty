@@ -11,6 +11,8 @@ on:
       - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
+      - "scripts/verify-trust-phase8i2b-rollout-controls.mjs"
+      - "scripts/verify-trust-phase8i2b-live-result.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -31,6 +33,8 @@ on:
       - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
+      - "scripts/verify-trust-phase8i2b-rollout-controls.mjs"
+      - "scripts/verify-trust-phase8i2b-live-result.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -47,6 +51,20 @@ on:
       watchtower_track:
         description: CI Watchtower Track Key
         required: false
+        type: string
+      transport_mode:
+        description: Phase 8I-2B live transport rollout mode
+        required: false
+        default: none
+        type: choice
+        options:
+          - none
+          - canary
+          - full
+      transport_expected_fleet_digest:
+        description: Optional full-pass fleet SHA-256 from the prior independent observation
+        required: false
+        default: ""
         type: string
 
 concurrency:
@@ -86,11 +104,13 @@ jobs:
           node --check scripts/trust-research-worker.mjs
           node scripts/verify-trust-research-worker.mjs
 
-      - name: Verify Phase 8I-2 transport foundation
+      - name: Verify Phase 8I-2 transport foundation and rollout controls
         run: |
           node --check lib/trust/official-source-transport-fetch.mjs
           node --check scripts/trust-official-source-transport-worker.mjs
+          node --check scripts/verify-trust-phase8i2b-live-result.mjs
           node scripts/verify-trust-phase8i2-transport-foundation.mjs
+          node scripts/verify-trust-phase8i2b-rollout-controls.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
@@ -104,11 +124,11 @@ jobs:
           node scripts/verify-trust-phase8h3-production-closure.mjs
 
       - name: Manual Phase 8H-3 Derma relocation observation triplet
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.transport_mode == 'none'
         run: node scripts/trust-source-verification-canary-capture.mjs --target=docs/evidence/trust-phase8h3-relocation-canary-target-v1.json
 
       - name: Manual Phase 8H-3 research live candidate payload
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.transport_mode == 'none'
         run: node scripts/trust-phase8h3-research-live-canary-capture.mjs --target=docs/evidence/trust-phase8h3-research-live-canary-target-v1.json
 
       - name: Verify CI workflow governance
@@ -123,3 +143,100 @@ jobs:
         run: |
           set -euo pipefail
           git diff --check "$BASE_SHA...$HEAD_SHA"
+
+  transport_live:
+    name: Phase 8I-2B live transport rollout
+    if: github.event_name == 'workflow_dispatch' && inputs.transport_mode != 'none'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout exact main head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Verify live rollout authority
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Execute governed live transport pass
+        env:
+          TRANSPORT_MODE: ${{ inputs.transport_mode }}
+          EXPECTED_FLEET_DIGEST: ${{ inputs.transport_expected_fleet_digest }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/trust-phase8i2b"
+          result="${RUNNER_TEMP}/trust-phase8i2b/result.json"
+          run_id="phase8i2b-${TRANSPORT_MODE}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          args=(
+            "--scope=${TRANSPORT_MODE}"
+            "--record=true"
+            "--concurrency=3"
+            "--per-host-delay-ms=1000"
+            "--run-id=${run_id}"
+          )
+
+          if [ "${TRANSPORT_MODE}" = "canary" ]; then
+            test -z "${EXPECTED_FLEET_DIGEST}"
+            args+=(
+              "--manifest=docs/evidence/trust-phase8i2-live-canary-targets-v1.json"
+              "--expected-source-count=10"
+              "--expected-target-count=5"
+            )
+          elif [ "${TRANSPORT_MODE}" = "full" ]; then
+            args+=(
+              "--expected-source-count=35"
+              "--expected-target-count=25"
+            )
+            if [ -n "${EXPECTED_FLEET_DIGEST}" ]; then
+              args+=("--expected-fleet-digest=${EXPECTED_FLEET_DIGEST}")
+            fi
+          else
+            echo "unsupported transport mode: ${TRANSPORT_MODE}" >&2
+            exit 2
+          fi
+
+          node scripts/trust-official-source-transport-worker.mjs "${args[@]}" >"${result}"
+          cat "${result}"
+
+      - name: Verify governed live transport result
+        env:
+          TRANSPORT_MODE: ${{ inputs.transport_mode }}
+        run: |
+          set -euo pipefail
+          result="${RUNNER_TEMP}/trust-phase8i2b/result.json"
+          summary="${RUNNER_TEMP}/trust-phase8i2b/verification.json"
+          node scripts/verify-trust-phase8i2b-live-result.mjs \
+            "--result=${result}" \
+            "--mode=${TRANSPORT_MODE}" | tee "${summary}"
+          echo "### Phase 8I-2B live transport" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          cat "${summary}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload live rollout evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: trust-phase8i2b-${{ inputs.transport_mode }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/trust-phase8i2b/
+          if-no-files-found: warn
+          retention-days: 30
