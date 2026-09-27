@@ -1,0 +1,23 @@
+{
+  "contract": "trust-phase8h3-relocation-canary-target-v1",
+  "relocation_id": "463e6a5a-781d-4e8c-be36-918b01e423fc",
+  "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+  "publisher": "Derma Factory",
+  "canonical_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+  "historical_canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+  "replacement_binding_id": "3d74a7bf-3a8d-407f-89c6-e2c398ddfc7f",
+  "replacement_review_id": "b60f2b1b-2be4-46db-8a24-b734a16b087d",
+  "selection_reason": "Phase 8H-3 live observation target for confirmed official source relocation. Capture only; no database or fact authority mutation.",
+  "expected_authority_mutation": false,
+  "adapter_key": "official-product-semantic",
+  "adapter_version": "v1",
+  "source_metadata": {
+    "source_notes": "Exact product.",
+    "source_language": "en",
+    "frozen_source_id": "s06",
+    "exact_product_match": "yes",
+    "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s06",
+    "source_authority_candidate": "product_specific_primary",
+    "current_name": "Niacinamide 20% Serum"
+  }
+}

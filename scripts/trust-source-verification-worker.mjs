@@ -121,7 +121,7 @@ async function captureRelocatedSemanticPage(target, fetchImpl = fetch) {
     throw new Error("SOURCE_RELOCATION_TARGET_DRIFT");
   }
   const adapted = digestOfficialContent(fetched.bytes, "official-product-semantic", "v1", {
-    sourceMetadata: target.source_metadata || {},
+    sourceMetadata: target.observation_source_metadata || target.source_metadata || {},
     canonicalLocator: locator,
   });
   return {

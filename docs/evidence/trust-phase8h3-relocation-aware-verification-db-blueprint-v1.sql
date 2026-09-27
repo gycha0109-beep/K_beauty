@@ -13,6 +13,7 @@ declare
   v_replacement_binding public.product_source_bindings%rowtype;
   v_replacement_review public.trust_official_source_binding_reviews%rowtype;
   v_subject public.product_fact_subjects%rowtype;
+  v_product public.products%rowtype;
   v_profile public.product_evidence_source_verification_profiles%rowtype;
 begin
   if p_relocation_id is null then
@@ -55,6 +56,11 @@ begin
     from public.product_fact_subjects
    where subject_id = v_relocation.subject_id;
 
+  select *
+    into v_product
+    from public.products
+   where id = v_relocation.product_id;
+
   if v_historical_source.source_id is null
      or v_historical_source.canonical_locator is distinct from v_relocation.old_locator
      or v_historical_source.source_kind <> 'official_product_page'
@@ -78,6 +84,8 @@ begin
      or v_replacement_review.review_version <> 'trust-official-source-review-v1'
      or v_replacement_review.scope_relation <> 'equivalent'
      or v_subject.subject_id is null
+     or v_product.id is null
+     or coalesce(nullif(btrim(v_product.name_en), ''), nullif(btrim(v_product.name), '')) is null
      or v_subject.product_id <> v_relocation.product_id
      or v_subject.identity_status <> 'resolved'
      or v_subject.current_state <> 'current'
@@ -118,6 +126,11 @@ begin
     'historical_content_digest', v_historical_source.content_digest,
     'source_kind', v_historical_source.source_kind,
     'source_metadata', v_historical_source.source_metadata,
+    'observation_source_metadata',
+      coalesce(v_historical_source.source_metadata, '{}'::jsonb) || jsonb_build_object(
+        'current_name',
+        coalesce(nullif(btrim(v_product.name_en), ''), nullif(btrim(v_product.name), ''))
+      ),
     'old_binding_id', v_relocation.old_binding_id,
     'replacement_binding_id', v_relocation.replacement_binding_id,
     'replacement_review_id', v_relocation.replacement_review_id,
