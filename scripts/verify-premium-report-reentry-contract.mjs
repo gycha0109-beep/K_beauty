@@ -160,6 +160,17 @@ assert.ok(
   "saved-report reentry must not mix current-session face media or recommendation inputs into the stored snapshot"
 );
 
+const faceLabSectionBlock = fullReportPage.slice(
+  fullReportPage.indexOf("function FaceLabSection"),
+  fullReportPage.indexOf("function PremiumEntryChoice")
+);
+assert.ok(
+  faceLabSectionBlock.indexOf("persistedReportId ||") >= 0 &&
+    faceLabSectionBlock.indexOf("persistedReportId ||") <
+      faceLabSectionBlock.indexOf("report?.meta?.snapshot?.fingerprint ||"),
+  "saved Face Lab local state must be scoped by savedReportId before content fingerprint"
+);
+
 for (const requiredCookieOption of [
   "httpOnly: true",
   'sameSite: "lax"',
