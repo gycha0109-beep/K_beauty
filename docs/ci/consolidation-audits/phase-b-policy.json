@@ -28,9 +28,16 @@
         "data-ai-product-query-static.yml",
         "data-ai25-operational-readiness.yml",
         "data-ai-prelaunch-01-product-query-e2e.yml",
-        "trust-phase5b-7d-static.yml"
+        "trust-phase5b-7d-static.yml",
+        "data-ai16-production-canary-closure.yml",
+        "data-ai18-authenticated-beta-runtime.yml",
+        "data-ai20-authenticated-beta-controlled-activation.yml",
+        "data-ai21-limited-beta-evidence-closure.yml",
+        "data-ai22-live-provider-acceptance.yml",
+        "data-ai23-authenticated-beta-ux.yml",
+        "data-ai24-operational-observability.yml"
       ],
-      "rule": "Current Main remains the project-wide final gate. For proven canonical DATA-AI1-5, DATA-AI25, PRELAUNCH-01, and TRUST 5B-7D static contracts it reuses exact-head, exact-event successful canonical workflow results; if no matching canonical run exists or Actions lookup is unavailable, it executes the original verifier locally. A discovered canonical non-success fails closed."
+      "rule": "Current Main remains the project-wide final gate. For proven canonical DATA-AI1-5, DATA-AI16, DATA-AI18, DATA-AI20-24 dedicated contracts, DATA-AI25, PRELAUNCH-01, and TRUST 5B-7D static contracts it reuses exact-head, exact-event successful owner workflow results; if no matching owner run exists or Actions lookup is unavailable, it executes the original verifier locally. A discovered owner non-success fails closed. DATA-AI22 quality evaluation and canonical baseline remain direct Current Main checks because no dedicated owner workflow covers them."
     },
     "mobile-release-13-15": {
       "runtimeMatrix": "docs/ci/consolidation-audits/mobile-13-15-runtime-matrix.json",
