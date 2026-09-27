@@ -11,6 +11,11 @@ import {
   buildTargetFinderResult,
   getTargetFinderRound
 } from "@/lib/face-lab-v2/target-finder";
+import {
+  buildFaceLabLocalState,
+  normalizeFaceLabRevision,
+  resolveFaceLabRestore
+} from "@/lib/face-lab-v2/persistence-state";
 
 const TARGET_KEYS = [
   "natural",
@@ -38,6 +43,10 @@ const COPY = {
     keywords: "키워드",
     directions: "표현 방향",
     companion: "피부 관리 방향과 함께 참고할 수 있는 표현 언어예요.",
+    saveSaving: "변경사항을 저장하고 있어요.",
+    savePending: "변경사항이 이 기기에 임시 저장되었습니다.",
+    saveAuthRequired: "로그인이 필요해 서버에 저장하지 못했습니다.",
+    saveConflict: "다른 곳에서 변경된 결과가 있어 이 변경은 저장되지 않았습니다.",
     introTitle: "추구미부터 정해볼까요?",
     introBody: "현재 얼굴을 다시 분석하지 않고, 원하는 분위기와 바꿀 수 있는 범위를 더하면 여러 스타일 경로를 비교할 수 있습니다.",
     modeTitle: "원하는 스타일이 이미 있으신가요?",
@@ -140,6 +149,10 @@ const COPY = {
     keywords: "Keywords",
     directions: "Style directions",
     companion: "Use this as expression language alongside the skin-care direction.",
+    saveSaving: "Saving changes.",
+    savePending: "Changes are temporarily saved on this device.",
+    saveAuthRequired: "Sign in is required to save these changes to the server.",
+    saveConflict: "This change was not saved because the report changed elsewhere.",
     introTitle: "Set your target look",
     introBody: "Keep the existing face analysis and add your preferred direction and practical constraints to compare styling routes.",
     modeTitle: "Do you already know the look you want?",
@@ -558,14 +571,28 @@ export default function PremiumFaceLabSection({
   const [budgetBand, setBudgetBand] = useState("standard");
   const [maintenanceTolerance, setMaintenanceTolerance] = useState("medium");
   const [canonical, setCanonical] = useState(null);
+  const [persistenceStatus, setPersistenceStatus] = useState("synced");
   const persistQueueRef = useRef(Promise.resolve());
   const restoreInteractionRef = useRef(0);
   const activePersistenceStateRef = useRef(null);
   const latestPersistRequestFingerprintRef = useRef(null);
+  const serverRevisionRef = useRef(0);
+
+  const writeLocalState = useCallback((value, metadata) => {
+    if (typeof window === "undefined") return false;
+
+    try {
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify(buildFaceLabLocalState(value, metadata))
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  }, [storageKey]);
 
   const persistServer = useCallback((surveyAnswers, approvedFinder, routeId) => {
-    if (!savedReportId) return Promise.resolve();
-
     const requestState = {
       surveyAnswers,
       targetFinderResult: approvedFinder,
@@ -574,10 +601,34 @@ export default function PremiumFaceLabSection({
     const requestFingerprint = persistenceFingerprint(requestState);
     latestPersistRequestFingerprintRef.current = requestFingerprint;
 
+    writeLocalState(requestState, {
+      syncStatus: "pending",
+      baseServerRevision: serverRevisionRef.current,
+      acknowledgedRevision: serverRevisionRef.current
+    });
+
+    if (!savedReportId) {
+      setPersistenceStatus("pending");
+      return Promise.resolve();
+    }
+
+    setPersistenceStatus("saving");
+
     const write = async () => {
+      const expectedRevision = serverRevisionRef.current;
+
       try {
         const accessToken = await getBrowserSupabaseAccessToken();
-        if (!accessToken) return;
+        if (!accessToken) {
+          writeLocalState(requestState, {
+            syncStatus: "auth_required",
+            baseServerRevision: expectedRevision,
+            acknowledgedRevision: serverRevisionRef.current
+          });
+          setPersistenceStatus("auth_required");
+          return;
+        }
+
         const response = await fetch("/api/premium/face-lab-v2", {
           method: "POST",
           headers: {
@@ -586,15 +637,52 @@ export default function PremiumFaceLabSection({
           },
           body: JSON.stringify({
             savedReportId,
+            expectedRevision,
             ...requestState
           })
         });
         const data = await response.json().catch(() => null);
         const serverStored = data?.faceLabV2 || null;
 
-        if (!response.ok || !serverStored?.surveyAnswers) return;
+        if (response.status === 409 && data?.error === "face_lab_state_conflict") {
+          serverRevisionRef.current = normalizeFaceLabRevision(data.currentRevision);
+          writeLocalState(requestState, {
+            syncStatus: "conflict",
+            baseServerRevision: expectedRevision,
+            acknowledgedRevision: serverRevisionRef.current
+          });
+          setPersistenceStatus("conflict");
+          return;
+        }
+
+        if (!response.ok || !serverStored?.surveyAnswers) {
+          const nextStatus = response.status === 401 ? "auth_required" : "pending";
+          writeLocalState(requestState, {
+            syncStatus: nextStatus,
+            baseServerRevision: expectedRevision,
+            acknowledgedRevision: serverRevisionRef.current
+          });
+          setPersistenceStatus(nextStatus);
+          return;
+        }
+
+        const acknowledgedRevision = normalizeFaceLabRevision(data.revision);
+        serverRevisionRef.current = acknowledgedRevision;
 
         if (latestPersistRequestFingerprintRef.current !== requestFingerprint) {
+          try {
+            const pending = JSON.parse(localStorage.getItem(storageKey) || "null");
+            if (
+              pending?.syncStatus === "pending" &&
+              normalizeFaceLabRevision(pending.baseServerRevision) === expectedRevision
+            ) {
+              localStorage.setItem(storageKey, JSON.stringify({
+                ...pending,
+                baseServerRevision: acknowledgedRevision,
+                acknowledgedRevision
+              }));
+            }
+          } catch {}
           return;
         }
 
@@ -603,20 +691,25 @@ export default function PremiumFaceLabSection({
           targetFinderResult: serverStored.targetFinderResult || null
         };
 
-        try {
-          localStorage.setItem(storageKey, JSON.stringify({
-            surveyAnswers: serverStored.surveyAnswers,
-            targetFinderResult: serverStored.targetFinderResult || null,
-            selectedRouteId: serverStored.selectedRouteId || null,
-            updatedAt: serverStored.updatedAt || null
-          }));
-        } catch {}
-      } catch {}
+        writeLocalState(serverStored, {
+          syncStatus: "synced",
+          baseServerRevision: acknowledgedRevision,
+          acknowledgedRevision
+        });
+        setPersistenceStatus("synced");
+      } catch {
+        writeLocalState(requestState, {
+          syncStatus: "pending",
+          baseServerRevision: expectedRevision,
+          acknowledgedRevision: serverRevisionRef.current
+        });
+        setPersistenceStatus("pending");
+      }
     };
 
     persistQueueRef.current = persistQueueRef.current.then(write, write);
     return persistQueueRef.current;
-  }, [savedReportId, storageKey]);
+  }, [savedReportId, storageKey, writeLocalState]);
 
   useEffect(() => {
     if (!faceLabAnalysis || typeof window === "undefined") return;
@@ -704,21 +797,13 @@ export default function PremiumFaceLabSection({
       }
     };
 
-    const updatedAtMs = (stored) => {
-      const value = Date.parse(stored?.updatedAt || "");
-      return Number.isFinite(value) ? value : 0;
-    };
-
-    const cacheServerStateLocally = (stored) => {
+    const cacheServerStateLocally = (stored, revision) => {
       if (!stored?.surveyAnswers) return;
-      try {
-        localStorage.setItem(storageKey, JSON.stringify({
-          surveyAnswers: stored.surveyAnswers,
-          targetFinderResult: stored.targetFinderResult || null,
-          selectedRouteId: stored.selectedRouteId || null,
-          updatedAt: stored.updatedAt || null
-        }));
-      } catch {}
+      writeLocalState(stored, {
+        syncStatus: "synced",
+        baseServerRevision: revision,
+        acknowledgedRevision: revision
+      });
     };
 
     const load = async () => {
@@ -727,43 +812,73 @@ export default function PremiumFaceLabSection({
       if (savedReportId) {
         try {
           const accessToken = await getBrowserSupabaseAccessToken();
+          if (!accessToken) {
+            setPersistenceStatus("auth_required");
+            restoreState(localStored);
+            return;
+          }
+
           const response = await fetch(
             `/api/premium/face-lab-v2?savedReportId=${encodeURIComponent(savedReportId)}`,
             {
-              headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+              headers: { Authorization: `Bearer ${accessToken}` }
             }
           );
           const data = await response.json().catch(() => null);
           const serverStored = data?.faceLabV2 || null;
 
+          if (response.status === 401) {
+            setPersistenceStatus("auth_required");
+            restoreState(localStored);
+            return;
+          }
+
           if (response.ok) {
+            const serverRevision = normalizeFaceLabRevision(data?.revision);
+            serverRevisionRef.current = serverRevision;
+            const restoreDecision = resolveFaceLabRestore({
+              serverState: serverStored,
+              serverRevision,
+              localState: localStored
+            });
+
             if (
-              updatedAtMs(localStored) > updatedAtMs(serverStored) &&
+              restoreDecision.source === "local" &&
               restoreState(localStored)
             ) {
-              void persistServer(
-                localStored.surveyAnswers,
-                localStored.targetFinderResult || null,
-                localStored.selectedRouteId || null
+              setPersistenceStatus(
+                localStored?.syncStatus === "auth_required" ? "auth_required" : "pending"
               );
+              if (restoreDecision.shouldRetryPersist) {
+                void persistServer(
+                  localStored.surveyAnswers,
+                  localStored.targetFinderResult || null,
+                  localStored.selectedRouteId || null
+                );
+              }
               return;
             }
 
-            if (restoreState(serverStored)) {
-              cacheServerStateLocally(serverStored);
+            if (restoreDecision.source === "server" && restoreState(serverStored)) {
+              cacheServerStateLocally(serverStored, serverRevision);
+              setPersistenceStatus(restoreDecision.conflict ? "conflict" : "synced");
               return;
             }
 
-            if (restoreState(localStored)) {
-              void persistServer(
-                localStored.surveyAnswers,
-                localStored.targetFinderResult || null,
-                localStored.selectedRouteId || null
-              );
-              return;
+            if (restoreDecision.conflict) {
+              setPersistenceStatus("conflict");
             }
+            return;
           }
-        } catch {}
+
+          setPersistenceStatus("pending");
+          restoreState(localStored);
+          return;
+        } catch {
+          setPersistenceStatus("pending");
+          restoreState(localStored);
+          return;
+        }
       }
 
       restoreState(localStored);
@@ -774,25 +889,11 @@ export default function PremiumFaceLabSection({
     return () => {
       active = false;
     };
-  }, [faceLabAnalysis, locale, resultKey, savedReportId, storageKey, persistServer]);
+  }, [faceLabAnalysis, locale, resultKey, savedReportId, storageKey, persistServer, writeLocalState]);
 
   if (!faceLabAnalysis) {
     return <LegacyFaceLab faceLabSummary={faceLabSummary} photoUrl={photoUrl} locale={locale} />;
   }
-
-  const persistLocal = (value) => {
-    if (typeof window === "undefined") return false;
-
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({
-        ...value,
-        updatedAt: new Date().toISOString()
-      }));
-      return true;
-    } catch {
-      return false;
-    }
-  };
 
   const buildSurveyAnswers = () => ({
     schemaVersion: "face-lab-target-style-survey-v1",
@@ -840,12 +941,6 @@ export default function PremiumFaceLabSection({
     setCanonical(result);
     setStage("result");
 
-    persistLocal({
-      surveyAnswers,
-      targetFinderResult: approvedFinder,
-      selectedRouteId: result.routes?.selectedRouteId || null
-    });
-
     void persistServer(
       surveyAnswers,
       approvedFinder,
@@ -878,12 +973,6 @@ export default function PremiumFaceLabSection({
     };
     setCanonical(result);
 
-    persistLocal({
-      surveyAnswers,
-      targetFinderResult: approvedFinder,
-      selectedRouteId: resolvedRouteId
-    });
-
     void persistServer(surveyAnswers, approvedFinder, resolvedRouteId);
   };
 
@@ -904,20 +993,41 @@ export default function PremiumFaceLabSection({
   };
 
   if (stage === "result" && canonical) {
+    const persistenceMessage =
+      persistenceStatus === "saving"
+        ? copy.saveSaving
+        : persistenceStatus === "pending"
+          ? copy.savePending
+          : persistenceStatus === "auth_required"
+            ? copy.saveAuthRequired
+            : persistenceStatus === "conflict"
+              ? copy.saveConflict
+              : null;
+
     return (
-      <FaceLabV2Result
-        result={canonical}
-        locale={locale}
-        onSelectRoute={selectRoute}
-        onEditTarget={() => {
-          if (entryMode === "unknown") {
-            setEntryMode("known");
-            setFinderResult(null);
-            setFinderInconclusive(false);
-          }
-          setStage("target");
-        }}
-      />
+      <div className="space-y-3">
+        <FaceLabV2Result
+          result={canonical}
+          locale={locale}
+          onSelectRoute={selectRoute}
+          onEditTarget={() => {
+            if (entryMode === "unknown") {
+              setEntryMode("known");
+              setFinderResult(null);
+              setFinderInconclusive(false);
+            }
+            setStage("target");
+          }}
+        />
+        {persistenceMessage ? (
+          <p
+            className="ui-card-subtle px-4 py-3 text-xs leading-5 text-zinc-600 dark:text-zinc-300"
+            data-face-lab-persistence-status={persistenceStatus}
+          >
+            {persistenceMessage}
+          </p>
+        ) : null}
+      </div>
     );
   }
 
