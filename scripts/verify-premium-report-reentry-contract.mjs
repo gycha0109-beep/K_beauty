@@ -151,6 +151,15 @@ assert.ok(
   "saved-report reentry must prefer the stored server snapshot over unrelated sessionStorage free state"
 );
 
+assert.ok(
+  fullReportPage.includes('setSubmissionImageUrl(\n        savedReportId ? "" : parsedSubmission?.imagePreviewDataUrl || ""') &&
+    fullReportPage.includes("!savedReportId && isFaceLabResultEnvelope(parsedFaceLab)") &&
+    fullReportPage.includes("faceLab: savedReportId ? null : parsedFaceLabEnvelope") &&
+    fullReportPage.includes('imageUrl: savedReportId ? "" : parsedSubmission?.imagePreviewDataUrl || ""') &&
+    fullReportPage.includes("topPick: savedReportId ? null : parsedResult?.topPick || null"),
+  "saved-report reentry must not mix current-session face media or recommendation inputs into the stored snapshot"
+);
+
 for (const requiredCookieOption of [
   "httpOnly: true",
   'sameSite: "lax"',
