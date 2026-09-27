@@ -217,14 +217,24 @@ assert.ok(
 );
 
 assert.ok(
-  premiumFaceLab.includes("const restoredStylingScope = Array.isArray(stored.surveyAnswers.stylingScope)") &&
-    premiumFaceLab.includes("setScopeTouched(Boolean(restoredStylingScope.length))"),
-  "restored scope intent must survive even when normalization leaves the visible editable scope empty"
+  premiumFaceLab.includes("function hasStoredScopeIntent(") &&
+    premiumFaceLab.includes("storedScope.length || hasDomainExclusion || makeupExcluded"),
+  "restored scope intent must include stored scope selections, domain hard exclusions, and legacy no-makeup intent"
+);
+assert.ok(
+  premiumFaceLab.includes("setScopeTouched(") &&
+    premiumFaceLab.includes("hasStoredScopeIntent(stored.surveyAnswers"),
+  "restore must derive scopeTouched from persisted user intent instead of normalized visible scope length"
 );
 assert.equal(
-  premiumFaceLab.includes("setScopeTouched(Boolean(editableStylingScope.length))"),
+  premiumFaceLab.includes("setScopeTouched(Boolean(editableStylingScope.length))") ||
+    premiumFaceLab.includes("setScopeTouched(Boolean(restoredStylingScope.length))"),
   false,
-  "an all-disabled restored scope must not become untouched and allow presentation defaults to reactivate domains"
+  "restored scope intent must not collapse to array length checks that lose exclusion-only legacy choices"
+);
+assert.ok(
+  premiumFaceLab.includes("Boolean(HARD_EXCLUSION_SCOPE_MAP[key])"),
+  "parameter-level exclusions such as hair_dye must not be mistaken for whole-domain scope intent"
 );
 assert.ok(
   premiumFaceLab.includes('["light", "medium", "expressive"].includes(restoredMakeupIntensity)') &&

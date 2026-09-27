@@ -291,6 +291,20 @@ function editableScopeFromStoredSurvey(surveyAnswers, { makeupExcluded = false }
   return baseScope.filter((domain) => !disabledDomains.has(domain));
 }
 
+function hasStoredScopeIntent(surveyAnswers, { makeupExcluded = false } = {}) {
+  const storedScope = Array.isArray(surveyAnswers?.stylingScope)
+    ? surveyAnswers.stylingScope
+    : [];
+  const hardExclusions = Array.isArray(surveyAnswers?.constraints?.hardExclusions)
+    ? surveyAnswers.constraints.hardExclusions
+    : [];
+  const hasDomainExclusion = hardExclusions.some((key) =>
+    Boolean(HARD_EXCLUSION_SCOPE_MAP[key])
+  );
+
+  return Boolean(storedScope.length || hasDomainExclusion || makeupExcluded);
+}
+
 function FaceLabImage({ src, alt, locale = "ko" }) {
   const copy = getCopy(locale);
   const [failed, setFailed] = useState(false);
@@ -646,7 +660,11 @@ export default function PremiumFaceLabSection({
         { makeupExcluded: legacyMakeupExcluded }
       );
       setStylingScope(editableStylingScope);
-      setScopeTouched(Boolean(restoredStylingScope.length));
+      setScopeTouched(
+        hasStoredScopeIntent(stored.surveyAnswers, {
+          makeupExcluded: legacyMakeupExcluded
+        })
+      );
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
       setFinderResult(stored.targetFinderResult || null);
       setMakeupIntensity(
