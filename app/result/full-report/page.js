@@ -6750,7 +6750,9 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
 
     try {
       parsedSubmission = storedSubmission ? JSON.parse(storedSubmission) : null;
-      setSubmissionImageUrl(parsedSubmission?.imagePreviewDataUrl || "");
+      setSubmissionImageUrl(
+        savedReportId ? "" : parsedSubmission?.imagePreviewDataUrl || ""
+      );
     } catch {
       parsedSubmission = null;
       setSubmissionImageUrl("");
@@ -6778,9 +6780,10 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       } catch {
         parsedFaceLab = null;
       }
-      const parsedFaceLabEnvelope = isFaceLabResultEnvelope(parsedFaceLab)
-        ? parsedFaceLab
-        : null;
+      const parsedFaceLabEnvelope =
+        !savedReportId && isFaceLabResultEnvelope(parsedFaceLab)
+          ? parsedFaceLab
+          : null;
       const developmentFallbackReport =
         process.env.NODE_ENV !== "production"
           ? buildDevelopmentReport(parsedResult, parsedFaceLabEnvelope, locale)
@@ -6807,10 +6810,10 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           body: JSON.stringify({
             savedReportId: savedReportId || undefined,
             locale,
-            faceLab: parsedFaceLabEnvelope,
-            imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
+            faceLab: savedReportId ? null : parsedFaceLabEnvelope,
+            imageUrl: savedReportId ? "" : parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
-            topPick: parsedResult?.topPick || null,
+            topPick: savedReportId ? null : parsedResult?.topPick || null,
             currentProducts,
             premiumIntake: premiumIntake || undefined
           }),
