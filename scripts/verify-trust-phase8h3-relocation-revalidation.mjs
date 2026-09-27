@@ -17,6 +17,10 @@ const relocationAwareDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-ph
 const relocationSeedHardening = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-research-seed-hardening-db-blueprint-v1.sql", "utf8");
 const relocationResearchSecurityHardening = fs.readFileSync("docs/evidence/trust-phase8h3-research-result-security-hardening-db-blueprint-v1.sql", "utf8");
 const relocationResearchSecurityDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-research-result-security-hardening-dry-run-v1.json", "utf8"));
+const relationalCandidateHardening = fs.readFileSync("docs/evidence/trust-phase8h3-relational-candidate-persistence-hardening-db-blueprint-v1.sql", "utf8");
+const relationshipScopeHardening = fs.readFileSync("docs/evidence/trust-phase8h3-8e-relationship-scope-hardening-db-blueprint-v1.sql", "utf8");
+const phase8eSecurityHardening = fs.readFileSync("docs/evidence/trust-phase8h3-8e-security-hardening-db-blueprint-v1.sql", "utf8");
+const relationalFullPathDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relational-phase8e-fullpath-dry-run-v1.json", "utf8"));
 const relocationSeedDryRun = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-relocation-research-seed-hardening-dry-run-v1.json", "utf8"));
 
 for (const needle of [
@@ -237,6 +241,85 @@ assert.ok(
   !/update\s+public\.product_fact_current/i.test(relocationResearchSecurityHardening),
   "research result security hardening must not directly mutate Current",
 );
+
+
+for (const needle of [
+  "v_parent_proposition_key text;",
+  "trust_research_parent_proposition_required",
+  "trust_research_parent_proposition_invalid",
+  "trust_research_parent_scope_mismatch",
+  "'parent_proposition_key', v_parent_proposition_key",
+  "normalized_value, parent_proposition_key, evidence_class",
+  "'relational_repair', v_relational_repair",
+  "r0.replacement_binding_id = b.binding_id",
+  "rv0.scope_relation = 'equivalent'",
+  "SET search_path = ''",
+]) {
+  assert.ok(relationalCandidateHardening.includes(needle), `relational candidate hardening missing token: ${needle}`);
+}
+assert.ok(
+  !/update\s+public\.product_evidence_sources/i.test(relationalCandidateHardening),
+  "relational candidate hardening must not mutate historical Evidence Source",
+);
+assert.ok(
+  !/update\s+public\.product_fact_current/i.test(relationalCandidateHardening),
+  "relational candidate hardening must not directly mutate Current",
+);
+
+for (const needle of [
+  "v_candidate.market is distinct from v_current_fact.market",
+  "v_candidate.region is distinct from v_current_fact.region",
+  "v_candidate.qualifier is distinct from v_current_fact.qualifier",
+  "v_current_fact.valid_from is not null",
+  "v_current_fact.valid_to is not null",
+]) {
+  assert.ok(relationshipScopeHardening.includes(needle), `relationship scope hardening missing token: ${needle}`);
+}
+assert.match(
+  relationshipScopeHardening,
+  /set search_path = ''/i,
+  "relationship scope hardening must pin SECURITY DEFINER search_path to empty",
+);
+assert.ok(
+  !relationshipScopeHardening.includes("v_candidate.locale is distinct from v_current_fact.locale"),
+  "source/evidence locale must not be treated as relational Product Fact applicability",
+);
+assert.ok(
+  !/update\s+public\.product_fact_current/i.test(relationshipScopeHardening),
+  "relationship scope hardening must not directly mutate Current",
+);
+
+for (const fn of [
+  "admin_preflight_product_fact_revalidation_resolution_v1",
+  "admin_reaffirm_product_fact_revalidation_v1",
+]) {
+  assert.ok(phase8eSecurityHardening.includes(`alter function public.${fn}`), `Phase 8E security hardening missing ${fn}`);
+}
+assert.match(phase8eSecurityHardening, /set search_path = ''/i);
+assert.ok(phase8eSecurityHardening.includes("from public, anon, authenticated, service_role"));
+assert.ok(phase8eSecurityHardening.includes("to service_role"));
+
+assert.equal(relationalFullPathDryRun.contract, "trust-phase8h3-relational-phase8e-fullpath-dry-run-v1");
+assert.equal(relationalFullPathDryRun.validation_mode, "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK");
+assert.equal(relationalFullPathDryRun.production_mutation, "NONE");
+assert.equal(relationalFullPathDryRun.dry_run.contains_active.semantic_relation, "SAME_SEMANTIC");
+assert.equal(relationalFullPathDryRun.dry_run.contains_active.reaffirmation, "PASS");
+assert.equal(relationalFullPathDryRun.dry_run.active_concentration.semantic_relation, "SAME_SEMANTIC");
+assert.equal(relationalFullPathDryRun.dry_run.active_concentration.reaffirmation, "PASS");
+assert.equal(
+  relationalFullPathDryRun.dry_run.active_concentration.parent_proposition_key,
+  "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+);
+assert.equal(
+  relationalFullPathDryRun.dry_run.active_concentration.corrected_candidate_digest,
+  "8936d01a7778cfa399602186bb3993d4b0005f0bea6af5dcc1e8266d63194e14",
+);
+assert.equal(relationalFullPathDryRun.dry_run.current_pointer_mutation, false);
+assert.equal(relationalFullPathDryRun.dry_run.historical_source.mutated, false);
+assert.equal(relationalFullPathDryRun.rollback_readback.resolution_count, 0);
+assert.equal(relationalFullPathDryRun.rollback_readback.corrected_digest_persisted, false);
+assert.equal(relationalFullPathDryRun.rollback, true);
+assert.equal(relationalFullPathDryRun.result, "PASS");
 
 for (const needle of [
   "source_relocated",
