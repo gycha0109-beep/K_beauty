@@ -7,6 +7,8 @@ on:
     paths:
       - "docs/evidence/trust-phase8h3-*"
       - "scripts/trust-research-worker.mjs"
+      - "scripts/trust-source-verification-worker.mjs"
+      - "scripts/verify-trust-phase8h3-relocation-aware-verification.mjs"
       - "scripts/verify-trust-phase8h3-relocation-revalidation.mjs"
       - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
       - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
@@ -18,6 +20,8 @@ on:
     paths:
       - "docs/evidence/trust-phase8h3-*"
       - "scripts/trust-research-worker.mjs"
+      - "scripts/trust-source-verification-worker.mjs"
+      - "scripts/verify-trust-phase8h3-relocation-aware-verification.mjs"
       - "scripts/verify-trust-phase8h3-relocation-revalidation.mjs"
       - ".github/workflows/trust-phase8h3-relocation-revalidation.yml"
       - "docs/ci/workflow-responsibilities/trust-phase8h3-relocation-revalidation.yml.json"
@@ -74,7 +78,9 @@ jobs:
           node scripts/verify-trust-phase8f-changed-semantic-replacement.mjs
 
       - name: Verify Phase 8H-3 contract and rollback evidence
-        run: node scripts/verify-trust-phase8h3-relocation-revalidation.mjs
+        run: |
+          node scripts/verify-trust-phase8h3-relocation-revalidation.mjs
+          node scripts/verify-trust-phase8h3-relocation-aware-verification.mjs
 
       - name: Verify CI workflow governance
         run: |
