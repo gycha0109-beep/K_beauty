@@ -92,6 +92,8 @@
     "verify:mobile-native": "npm run verify:native --workspace @bejewely/mobile",
     "verify:face-lab-v2-foundation": "node scripts/verify-face-lab-v2-foundation.mjs",
     "verify:face-lab-v2-premium-wiring": "node scripts/verify-face-lab-v2-premium-wiring.mjs",
+    "verify:face-lab-v2-recommendation-evaluation": "node scripts/verify-face-lab-v2-recommendation-evaluation.mjs",
+    "eval:face-lab-v2": "node scripts/run-face-lab-v2-recommendation-evaluation.mjs",
     "e2e:product-query:prelaunch:login": "node scripts/bootstrap-product-query-prelaunch-auth.mjs",
     "e2e:product-query:prelaunch": "node scripts/run-product-query-prelaunch-e2e.mjs",
     "data-ai25:launch:freeze": "node scripts/freeze-data-ai25-operational-baseline-start.mjs",
