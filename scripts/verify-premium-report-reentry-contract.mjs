@@ -11,6 +11,7 @@ const reentryModule = await import(
 );
 const sessionRoute = read("app/api/full-report/session/route.js");
 const resultPage = read("app/result/page.js");
+const fullReportPage = read("app/result/full-report/page.js");
 const previewStep = read("components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx");
 const fullReportRoute = read("app/api/full-report/route.js");
 const premiumSession = read("lib/premium-report-session.js");
@@ -111,6 +112,30 @@ assertBefore(
 );
 assert.ok(!fullReportRoute.includes("body?.topPick || savedFreeResult?.topPick"), "saved report reentry must ignore request topPick");
 assert.ok(fullReportRoute.includes("savedFreeResult?.topPick || null"), "saved report gauges must derive from the stored snapshot");
+
+for (const requiredFragment of [
+  "let cancelled = false;",
+  "const requestController = new AbortController();",
+  "setIsReady(false);",
+  "signal: requestController.signal",
+  "if (cancelled) return;",
+  "cancelled = true;",
+  "requestController.abort();"
+]) {
+  assert.ok(
+    fullReportPage.includes(requiredFragment),
+    `full-report reentry must guard stale async loads: ${requiredFragment}`
+  );
+}
+
+assert.ok(
+  fullReportPage.includes('accessReason === "payment_required" || accessReason === "premium_unavailable"'),
+  "a new full-report load must recompute access-blocked state from the current URL"
+);
+assert.ok(
+  fullReportPage.includes("if (!cancelled) {\n          setIsReady(true);"),
+  "an aborted older request must not mark the newer report load ready"
+);
 
 for (const requiredCookieOption of [
   "httpOnly: true",
