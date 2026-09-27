@@ -4,6 +4,8 @@ import { extractStrictFactCandidate } from "./trust-research-worker.mjs";
 
 const migrationPath = "docs/evidence/trust-phase8h3-relocation-revalidation-db-blueprint-v1.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
+const relocationResolver = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-aware-verification-db-blueprint-v1.sql", "utf8");
+const sourceVerificationWorker = fs.readFileSync("scripts/trust-source-verification-worker.mjs", "utf8");
 const worker = fs.readFileSync("scripts/trust-research-worker.mjs", "utf8");
 const contract = fs.readFileSync("docs/evidence/trust-phase8h3-relocation-revalidation-contract-v1.md", "utf8");
 const provenance = JSON.parse(fs.readFileSync("docs/evidence/trust-phase8h3-cli-migration-generation-v1.json", "utf8"));
@@ -34,6 +36,27 @@ assert.ok(!/replay_verified\s*=\s*true/i.test(migration), "synthetic replay veri
 assert.ok(!/verification_result\s*=\s*'changed'.*source_relocated/is.test(migration), "relocation must not synthesize changed verification");
 assert.ok(!/^\s*begin\s*;/i.test(migration), "deployable blueprint must not open an outer transaction");
 assert.ok(!/\n\s*commit\s*;\s*$/i.test(migration), "deployable blueprint must not commit its caller transaction");
+
+for (const needle of [
+  "get_official_source_relocation_verification_target_v1",
+  "v_old_binding.binding_state <> 'retired'",
+  "v_replacement_binding.binding_state <> 'resolved'",
+  "v_replacement_review.scope_relation <> 'equivalent'",
+  "'canonical_baseline', v_profile.canonical_baseline",
+]) {
+  assert.ok(relocationResolver.includes(needle), `relocation resolver missing contract token: ${needle}`);
+}
+assert.ok(!/update\s+public\.product_evidence_sources/i.test(relocationResolver), "relocation resolver must not mutate historical source");
+for (const needle of [
+  "establishRelocationFreshBaseline",
+  "verifyRelocatedSource",
+  "SOURCE_RELOCATION_TARGET_DRIFT",
+  "SOURCE_RELOCATION_PROFILE_TARGET_MISMATCH",
+  'mode === "relocation-baseline"',
+  'mode === "relocation-verify"',
+]) {
+  assert.ok(sourceVerificationWorker.includes(needle), `source verification worker missing relocation token: ${needle}`);
+}
 
 assert.equal(provenance.contract, "trust-phase8h3-cli-migration-generation-v1");
 assert.equal(provenance.generation_authority, "SUPABASE_CLI_MIGRATION_NEW");
