@@ -77,3 +77,13 @@ The `mobile-release-13-15` cluster separates routine source validation from rele
 - MOBILE-15 manual signed Android/iOS jobs still prebuild and re-run MOBILE-13/14 platform checks before signing. These checks validate the exact generated native state entering the signing boundary and are not classified as routine duplicate execution.
 - Android keystore, Apple certificate/profile, signed AAB/IPA, signature verification, artifact upload, and ephemeral signing-material cleanup remain exclusively under MOBILE-15.
 - No workflow is added, retired, or renamed.
+
+## Phase B-5A TRUST 5B-7D runtime audit
+
+B-5A is audit-only. It freezes the current execution authority of the five TRUST workflows before any static prerequisite consolidation.
+
+- All five workflows remain Supabase runtime owners and retain their phase-specific DB/runtime evidence.
+- Phase 7C compatibility and Phase 7D relational adoption remain the two replay-baseline materialization owners.
+- Repeated static verifier execution is recorded as a later B-5B consolidation candidate only; this phase does not remove or delegate any verifier.
+- Supabase init/reset/stop repetition is recorded as an implementation-sharing candidate only; runtime authority remains phase-local.
+- No workflow is added, retired, renamed, or trigger-modified by B-5A.
