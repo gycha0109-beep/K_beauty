@@ -41,5 +41,36 @@
   },
   "production_mutation": "NONE",
   "rollback": true,
-  "result": "PASS"
+  "result": "PASS",
+  "record_result_hardening": {
+    "generic_exact_market_behavior": "UNCHANGED",
+    "relocation_candidate_source_authority": "CONFIRMED_REPLACEMENT_BINDING_WITH_EQUIVALENT_REVIEW",
+    "production_definition_preserved": "PHASE_8D_REVALIDATION_EXCEPTION_PRESENT",
+    "dry_run_readback": {
+      "tasks": [
+        {
+          "task_id": "0254ccda-7f1e-44c6-998b-84dc2e728f08",
+          "fact_key": "active_concentration",
+          "state": "EVIDENCE_CANDIDATE",
+          "source_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+          "source_digest": "3bb471669b9bc1426edfb472827a37e7cf6d1382a3072a7d33bfdf5eeea87809",
+          "candidate_normalized_value": {
+            "amount": 20,
+            "unit": "percent"
+          },
+          "evidence_class": "product_claim"
+        },
+        {
+          "task_id": "6ecf45fe-a07b-4ca9-a3df-2db09fb8e89d",
+          "fact_key": "contains_active",
+          "state": "EVIDENCE_CANDIDATE",
+          "source_locator": "https://dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+          "source_digest": "3bb471669b9bc1426edfb472827a37e7cf6d1382a3072a7d33bfdf5eeea87809",
+          "candidate_normalized_value": "niacinamide",
+          "evidence_class": "composition_identity"
+        }
+      ],
+      "candidates_ready": 2
+    }
+  }
 }
