@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "bejewely-ci-execution-overlap-semantics-v1",
+  "phase": "C-1",
+  "automaticEvents": [
+    "pull_request",
+    "push"
+  ],
+  "manualFallbackDefinition": "A step or job explicitly constrained to github.event_name == 'workflow_dispatch' inside a workflow that also has pull_request or push triggers.",
+  "manualOnlyDefinition": "Coverage in a workflow with workflow_dispatch but no pull_request/push trigger, or an explicitly workflow_dispatch-only job/step in such a workflow.",
+  "currentMainDelegationPolicy": "docs/ci/consolidation-audits/current-main-delegation-policy.json",
+  "expectedManualFallbackWorkflows": [
+    "data-ai3-product-query-shadow.yml",
+    "data-ai4-provider-shadow.yml",
+    "data-ai5-activation-readiness.yml",
+    "trust-phase5b-subject-registration.yml",
+    "trust-phase6a-reentry.yml",
+    "trust-phase7c-phase4-compat.yml",
+    "trust-phase7c-readiness.yml",
+    "trust-phase7d-relational-adoption.yml"
+  ],
+  "metricDefinitions": {
+    "duplicate_units": "Static coverage units owned by more than one workflow regardless of event/if conditions.",
+    "automatic_execution_duplicate_units": "Coverage units with more than one owner that can execute on pull_request or push after event/if classification and Current Main canonical delegation.",
+    "manual_fallback_units": "Distinct units that exist only in explicit workflow_dispatch fallback steps within otherwise automatic workflows.",
+    "manual_fallback_duplicate_units": "Manual fallback units present in more than one workflow.",
+    "manual_only_units": "Distinct units belonging only to workflow_dispatch-only execution paths.",
+    "automatic_verification_duplicate_units": "Automatic duplicate units classified as verifier/check/audit/validate/guard scripts or verification-oriented npm scripts; infrastructure capabilities and setup/gate/materialization helpers are excluded."
+  },
+  "compatibility": {
+    "execution_duplicate_units": "Alias of automatic_execution_duplicate_units for existing log consumers."
+  },
+  "unitClasses": {
+    "verification": "Verifier/check/audit/validate/guard scripts and verification-oriented npm tasks.",
+    "infrastructure": "Capability-level runtime/build/provider classifications.",
+    "build_tooling": "Build/prebuild/export/config npm tasks.",
+    "execution_helper": "Await/materialize/capture/configure/apply and other execution helper scripts.",
+    "syntax-verification": "Node --check validation of a script file; tracked separately from executing that script."
+  },
+  "transitiveExpansion": {
+    "rule": "Expand quoted child script paths only from scripts with executable child-process evidence: child_process import/reference plus spawnSync call.",
+    "rationale": "Structural verifiers may contain run(...) examples or quoted script paths for source assertions; those strings are coverage evidence, not executed children."
+  },
+  "currentMainDelegationSemantics": "Delegating a canonical contract suppresses both the top-level verifier script and its executable child-process transitive script closure from Current Main automatic execution ownership.",
+  "invocationSemantics": "A `node --check path/to/script.mjs` occurrence contributes `syntax:<script>`, not `script:<script>`. Actual execution and syntax validation are distinct coverage units."
+}
