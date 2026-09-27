@@ -1,0 +1,82 @@
+{
+  "contract": "trust-phase8h3-relational-phase8e-fullpath-dry-run-v1",
+  "validation_mode": "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK",
+  "production_project_ref": "bygrczggxfuisupcevaz",
+  "production_mutation": "NONE",
+  "discovered_regressions": [
+    {
+      "code": "RELATIONAL_CANDIDATE_PARENT_LINEAGE_DROPPED",
+      "fact_key": "active_concentration",
+      "symptom": "product_fact_revalidation_parent_proposition_mismatch",
+      "root_cause": "Phase 8H-3 relocation recorder replacement regressed the Phase 7D parent-aware candidate persistence contract.",
+      "repair": "append corrected parent-aware candidate on governed idempotent replay; preserve malformed candidate"
+    },
+    {
+      "code": "SOURCE_LOCALE_CONFUSED_WITH_FACT_SCOPE",
+      "fact_key": "active_concentration",
+      "symptom": "product_fact_revalidation_relationship_scope_mismatch",
+      "root_cause": "candidate.locale inherited replacement source locale=en while Current Product Fact semantic locale is null.",
+      "repair": "preserve evidence/source locale as provenance but exclude it from relational Fact SAME/CHANGED scope comparator"
+    }
+  ],
+  "blueprints": [
+    "docs/evidence/trust-phase8h3-relational-candidate-persistence-hardening-db-blueprint-v1.sql",
+    "docs/evidence/trust-phase8h3-8e-relationship-scope-hardening-db-blueprint-v1.sql",
+    "docs/evidence/trust-phase8h3-8e-security-hardening-db-blueprint-v1.sql"
+  ],
+  "dry_run": {
+    "contains_active": {
+      "existing_candidate_id": "d57c36be-2f21-408d-9513-da9e6edb277a",
+      "replay": "IDEMPOTENT",
+      "semantic_relation": "SAME_SEMANTIC",
+      "reaffirmation": "PASS",
+      "current_fact_instance_id": "532138b9-fd99-49a3-b5ae-9ad677162055",
+      "current_confirmation_id": "5030d053-6783-499e-b714-613cdcacc7f3",
+      "current_pointer_changed": false,
+      "fact_instance_mutated": false,
+      "confirmation_created": false,
+      "automatic_confirmation": false
+    },
+    "active_concentration": {
+      "malformed_candidate_id": "2d98d183-cc0e-4f4d-82b7-9a2a255dd3b2",
+      "dry_run_corrected_candidate_id": "8b6e4f76-b832-4917-8dd5-96aa068dab9f",
+      "corrected_candidate_digest": "8936d01a7778cfa399602186bb3993d4b0005f0bea6af5dcc1e8266d63194e14",
+      "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "repair_mode": "APPEND_AND_REPOINT_TASK_POINTER",
+      "malformed_candidate_preserved": true,
+      "semantic_relation": "SAME_SEMANTIC",
+      "reaffirmation": "PASS",
+      "current_fact_instance_id": "f1b5f4c9-d099-4594-9b3c-73b13bd3ce00",
+      "current_confirmation_id": "56798708-0b7d-42b5-a2ae-2be2ed0e2c5a",
+      "current_pointer_changed": false,
+      "fact_instance_mutated": false,
+      "confirmation_created": false,
+      "automatic_confirmation": false
+    },
+    "function_security": {
+      "record_trust_research_result_v1": "SEARCH_PATH_EMPTY_SERVICE_ROLE_ONLY",
+      "trust_phase8e_build_revalidation_plan_v1": "SEARCH_PATH_EMPTY_SERVICE_ROLE_ONLY",
+      "admin_preflight_product_fact_revalidation_resolution_v1": "SEARCH_PATH_EMPTY_SERVICE_ROLE_ONLY",
+      "admin_reaffirm_product_fact_revalidation_v1": "SEARCH_PATH_EMPTY_SERVICE_ROLE_ONLY"
+    },
+    "historical_source": {
+      "source_id": "f5eb21f8-4829-4c9b-b927-ccdfb43cdd1b",
+      "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+      "mutated": false
+    },
+    "current_pointer_mutation": false
+  },
+  "statement_snapshot_note": "The single SELECT used to display the dry-run result retained its statement snapshot for direct table subqueries; authoritative mutation success in that statement is represented by the governed RPC return payloads. Separate rollback readback was used to verify no writes persisted.",
+  "rollback_readback": {
+    "assignments": "BOTH_RE_REVIEW_REQUIRED",
+    "resolution_count": 0,
+    "concentration_task_candidate_id": "2d98d183-cc0e-4f4d-82b7-9a2a255dd3b2",
+    "malformed_candidate_parent_proposition_key": null,
+    "corrected_digest_persisted": false,
+    "phase8e_wrapper_hardening_persisted": false,
+    "historical_source_mutated": false
+  },
+  "rollback": true,
+  "result": "PASS"
+}
