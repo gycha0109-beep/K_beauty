@@ -1,7 +1,7 @@
 {
   "schemaVersion": "bejewely-trust-5b-7d-runtime-matrix-v1",
   "cluster": "trust-5b-7d",
-  "mode": "audit-only",
+  "mode": "canonical-static-delegation",
   "workflows": {
     "trust-phase5b-subject-registration.yml": {
       "authority": "phase5b-controlled-subject-registration",
@@ -22,7 +22,9 @@
         "tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_runtime.sql",
         "tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_presentation_hardening_runtime.sql"
       ],
-      "preservation": "keep-runtime-authority"
+      "preservation": "keep-runtime-authority",
+      "automaticStaticExecution": "delegated-to-canonical",
+      "manualStaticFallback": true
     },
     "trust-phase6a-reentry.yml": {
       "authority": "phase6a-reentry-foundation",
@@ -42,7 +44,9 @@
       "phaseSpecificRuntime": [
         "tests/fixtures/trust-phase6a-reentry/verify_trust_phase6a_runtime.sql"
       ],
-      "preservation": "keep-runtime-authority"
+      "preservation": "keep-runtime-authority",
+      "automaticStaticExecution": "delegated-to-canonical",
+      "manualStaticFallback": true
     },
     "trust-phase7c-phase4-compat.yml": {
       "authority": "phase7c-legacy-phase4-adoption-compatibility",
@@ -62,7 +66,9 @@
       "phaseSpecificRuntime": [
         "tests/fixtures/trust-phase7c-phase4-compat/20260921072900_trust_phase7c_phase4_compat_fixture.sql"
       ],
-      "preservation": "keep-runtime-and-replay-authority"
+      "preservation": "keep-runtime-and-replay-authority",
+      "automaticStaticExecution": "delegated-to-canonical",
+      "manualStaticFallback": true
     },
     "trust-phase7c-readiness.yml": {
       "authority": "phase7c-legacy-research-readiness",
@@ -82,7 +88,9 @@
       "phaseSpecificRuntime": [
         "tests/fixtures/trust-phase7c-readiness/verify_trust_phase7c_runtime.sql"
       ],
-      "preservation": "keep-runtime-authority"
+      "preservation": "keep-runtime-authority",
+      "automaticStaticExecution": "delegated-to-canonical",
+      "manualStaticFallback": true
     },
     "trust-phase7d-relational-adoption.yml": {
       "authority": "phase7d-relational-fact-adoption",
@@ -102,11 +110,13 @@
       "phaseSpecificRuntime": [
         "tests/fixtures/trust-phase7d-relational/20260921115900_trust_phase7d_relational_fixture.sql"
       ],
-      "preservation": "keep-runtime-and-replay-authority"
+      "preservation": "keep-runtime-and-replay-authority",
+      "automaticStaticExecution": "delegated-to-canonical",
+      "manualStaticFallback": true
     }
   },
   "classification": {
-    "staticPrerequisite": "eligible-for-dedup-only-after-canonical-owner-proven",
+    "staticPrerequisite": "canonicalized-on-automatic-pr-push-with-manual-local-fallback",
     "runtimeSetup": "implementation-sharing-candidate-only",
     "phaseSpecificRuntime": "must-remain-phase-owned",
     "replayBaselineMaterialization": "shared-script-but-runtime-evidence-not-yet-equivalent"
@@ -116,6 +126,10 @@
     "supabaseRuntimeOwners": 5,
     "replayRuntimeOwners": 2,
     "workflowRetirementsAllowed": 0,
-    "workflowRenamesAllowed": 0
-  }
+    "workflowRenamesAllowed": 0,
+    "canonicalStaticOwners": 1,
+    "automaticStaticDuplicateExecutions": 0,
+    "manualStaticFallbackOwners": 5
+  },
+  "canonicalStaticOwner": "trust-phase5b-7d-static.yml"
 }
