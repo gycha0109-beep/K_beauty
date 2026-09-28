@@ -18,6 +18,8 @@ on:
       - "scripts/verify-face-lab-v2-candidate-foundation.mjs"
       - "scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
+      - "scripts/verify-face-lab-v2-human-pairwise-builder.mjs"
+      - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v2.md"
@@ -30,6 +32,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v9.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v10.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-human-pairwise-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-human-pairwise-review-builder-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
@@ -57,6 +60,8 @@ on:
       - "scripts/verify-face-lab-v2-candidate-foundation.mjs"
       - "scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
+      - "scripts/verify-face-lab-v2-human-pairwise-builder.mjs"
+      - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v2.md"
@@ -69,6 +74,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v9.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v10.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-human-pairwise-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-human-pairwise-review-builder-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
@@ -113,3 +119,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs
       - name: Verify Face Lab V2 human pairwise calibration contract
         run: node scripts/verify-face-lab-v2-human-pairwise-contract.mjs
+      - name: Verify Face Lab V2 human pairwise review builder
+        run: node scripts/verify-face-lab-v2-human-pairwise-builder.mjs
