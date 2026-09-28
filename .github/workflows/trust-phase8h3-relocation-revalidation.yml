@@ -13,6 +13,7 @@ on:
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
       - "scripts/verify-trust-phase8i2b-rollout-controls.mjs"
       - "scripts/verify-trust-phase8i2b-live-result.mjs"
+      - "scripts/verify-trust-phase8i2-production-closure.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -35,6 +36,7 @@ on:
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
       - "scripts/verify-trust-phase8i2b-rollout-controls.mjs"
       - "scripts/verify-trust-phase8i2b-live-result.mjs"
+      - "scripts/verify-trust-phase8i2-production-closure.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -113,6 +115,7 @@ jobs:
           node --check scripts/verify-trust-phase8i2b-live-result.mjs
           node scripts/verify-trust-phase8i2-transport-foundation.mjs
           node scripts/verify-trust-phase8i2b-rollout-controls.mjs
+          node scripts/verify-trust-phase8i2-production-closure.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
