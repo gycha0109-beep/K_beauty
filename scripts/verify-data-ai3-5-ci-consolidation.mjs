@@ -18,6 +18,8 @@ for (const script of [
   "scripts/verify-data-ai2-product-query-execution.mjs",
   "scripts/verify-data-ai29a-product-query-quality.mjs",
   "scripts/verify-data-ai29b-product-query-ranking.mjs",
+  "scripts/verify-data-ai29c-a-protection-authority.mjs",
+  "scripts/verify-data-ai29c-a-protection-audit.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",
