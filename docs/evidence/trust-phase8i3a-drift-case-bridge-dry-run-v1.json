@@ -1,0 +1,108 @@
+{
+  "contract": "trust-phase8i3a-drift-case-bridge-dry-run-v1",
+  "validation_mode": "PRODUCTION_SCHEMA_TRANSACTIONAL_DRY_RUN_ROLLED_BACK",
+  "source_blueprint": "docs/evidence/trust-phase8i3a-drift-case-bridge-db-blueprint-v1.sql",
+  "production_mutation": "NONE",
+  "result": "PASS",
+  "prestate": {
+    "transport_incidents": 4,
+    "reentry_events": 3,
+    "source_transport_drift_events": 0,
+    "product_fact_current": 71,
+    "evidence_sources": 40,
+    "confirmed_relocations": 1
+  },
+  "builder_readback": {
+    "candidate_count": 2,
+    "cases": [
+      {
+        "case_key": "f8963413daf67fce51fbe191cded8facd7e9a3bd46567c1b7249ba1acb07c9f2",
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+        "incident_kind": "CONFIRMED_REDIRECT",
+        "route_hint": "REDIRECT_QUALIFICATION",
+        "incident_count": 3,
+        "source_ids": [
+          "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+          "60a55f19-a71d-4063-9ea5-13775193c940",
+          "f55720c7-0252-49b8-967c-8d77f4dfe6d6"
+        ],
+        "effective_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "confirmed_final_locator": "https://beautyofjoseon.com/",
+        "episode_anchor_probe_group_id": "phase8i2b-canary-36363586674-1:official-transport-url-sha256:1d399d803aee71761004ed719f0eb66d4935ff46852de04637135bb8250b8ab1"
+      },
+      {
+        "case_key": "a7c27d8ae68b1a6757a0cc5c2590f38ac64dbb76c9b85d3dcc935dac721781e9",
+        "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+        "subject_id": "1b735d5e-bc57-4808-9f48-b4bb82f3e8fa",
+        "incident_kind": "CONFIRMED_REDIRECT",
+        "route_hint": "REDIRECT_QUALIFICATION",
+        "incident_count": 1,
+        "source_ids": [
+          "5752312a-3109-4da7-a796-9b3de1765112"
+        ],
+        "effective_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+        "confirmed_final_locator": "https://beautyofjoseon.com/",
+        "episode_anchor_probe_group_id": "phase8i2b-full-36366544747-1:official-transport-url-sha256:87929acf393a0d8cd56d58bee7c139bac87e169e4a6573e86f9fbfff48d3120c"
+      }
+    ]
+  },
+  "first_enqueue": {
+    "candidate_count": 2,
+    "new_case_count": 2,
+    "existing_case_count": 0,
+    "new_link_count": 4,
+    "new_reentry_event_count": 2,
+    "blocked_count": 0,
+    "authority_mutation": false,
+    "current_invalidated": false
+  },
+  "first_enqueue_readback": {
+    "case_count": 2,
+    "link_count": 4,
+    "source_transport_drift_event_count": 2,
+    "source_transport_drift_review_required_count": 2,
+    "event_disposition": "REVIEW_REQUIRED",
+    "reason_code": "SOURCE_TRANSPORT_DRIFT_REVIEW_REQUIRED",
+    "phase": "8I-3",
+    "transport_signal_only": true,
+    "product_fact_current": 71,
+    "evidence_sources": 40,
+    "confirmed_relocations": 1
+  },
+  "second_enqueue": {
+    "candidate_count": 0,
+    "new_case_count": 0,
+    "existing_case_count": 0,
+    "new_link_count": 0,
+    "new_reentry_event_count": 0,
+    "blocked_count": 0,
+    "authority_mutation": false,
+    "current_invalidated": false
+  },
+  "evaluation_idempotency": {
+    "first": {
+      "status": "recorded",
+      "idempotent": false,
+      "result_kind": "HOLD",
+      "authority_mutation": false
+    },
+    "second": {
+      "status": "recorded",
+      "idempotent": true,
+      "result_kind": "HOLD",
+      "authority_mutation": false
+    },
+    "evaluation_count": 1
+  },
+  "rollback_readback": {
+    "phase8i3_tables_absent": true,
+    "transport_incidents": 4,
+    "reentry_events": 3,
+    "source_transport_drift_events": 0,
+    "product_fact_current": 71,
+    "evidence_sources": 40,
+    "confirmed_relocations": 1,
+    "event_constraint_restored_without_source_transport_drift": true
+  }
+}
