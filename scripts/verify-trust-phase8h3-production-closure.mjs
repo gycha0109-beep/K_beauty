@@ -92,12 +92,19 @@ const workflow = fs.readFileSync(
 );
 assert.ok(!workflow.includes("Detect Phase 8H-3 relocation canary target change"));
 assert.ok(!workflow.includes("Detect Phase 8H-3 research live canary target change"));
-assert.ok(workflow.includes("Manual Phase 8H-3 Derma relocation observation triplet"));
-assert.ok(workflow.includes("Manual Phase 8H-3 research live candidate payload"));
-assert.equal(
-  (workflow.match(/if: github\.event_name == 'workflow_dispatch'/g) ?? []).length,
-  2,
-  "both external live canaries must be workflow_dispatch-only after closure",
+assert.ok(
+  workflow.includes(
+    "      - name: Manual Phase 8H-3 Derma relocation observation triplet\n" +
+      "        if: github.event_name == 'workflow_dispatch' && inputs.transport_mode == 'none'",
+  ),
+  "Phase 8H-3 relocation canary must remain workflow_dispatch-only after closure",
+);
+assert.ok(
+  workflow.includes(
+    "      - name: Manual Phase 8H-3 research live candidate payload\n" +
+      "        if: github.event_name == 'workflow_dispatch' && inputs.transport_mode == 'none'",
+  ),
+  "Phase 8H-3 research canary must remain workflow_dispatch-only after closure",
 );
 
 const historical = closure.derma?.historical_source;
