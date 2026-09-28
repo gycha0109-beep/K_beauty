@@ -7,13 +7,16 @@ on:
     paths:
       - "docs/evidence/trust-phase8h3-*"
       - "docs/evidence/trust-phase8i2-*"
+      - "docs/evidence/trust-phase8i3-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
+      - "supabase/migrations/*_trust_phase8i3_*.sql"
       - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
       - "scripts/verify-trust-phase8i2b-rollout-controls.mjs"
       - "scripts/verify-trust-phase8i2b-live-result.mjs"
       - "scripts/verify-trust-phase8i2-production-closure.mjs"
+      - "scripts/verify-trust-phase8i3a-drift-case-bridge.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -30,13 +33,16 @@ on:
     paths:
       - "docs/evidence/trust-phase8h3-*"
       - "docs/evidence/trust-phase8i2-*"
+      - "docs/evidence/trust-phase8i3-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
+      - "supabase/migrations/*_trust_phase8i3_*.sql"
       - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
       - "scripts/verify-trust-phase8i2b-rollout-controls.mjs"
       - "scripts/verify-trust-phase8i2b-live-result.mjs"
       - "scripts/verify-trust-phase8i2-production-closure.mjs"
+      - "scripts/verify-trust-phase8i3a-drift-case-bridge.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -116,6 +122,9 @@ jobs:
           node scripts/verify-trust-phase8i2-transport-foundation.mjs
           node scripts/verify-trust-phase8i2b-rollout-controls.mjs
           node scripts/verify-trust-phase8i2-production-closure.mjs
+
+      - name: Verify Phase 8I-3A transport drift case bridge
+        run: node scripts/verify-trust-phase8i3a-drift-case-bridge.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
