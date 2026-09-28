@@ -7,6 +7,7 @@ import {
 } from "../lib/product-query-intent-semantic-ownership.mjs";
 import {
   PRODUCT_QUERY_EXPLANATION_CONTRACT_VERSION,
+  buildProductQueryExplanationCandidates,
   buildProductQueryExplanationRefs,
   validateProductQueryExplanationRef
 } from "../lib/product-query-explanation-contract.mjs";
@@ -122,24 +123,41 @@ const product = {
   },
   score_breakdown: {
     post_cleanse_adjustment: 0,
-    afternoon_state_adjustment: 0
+    afternoon_state_adjustment: 0,
+    finish_match: 8,
+    skin_type_match: 4
+  },
+  sunscreen_score_breakdown: {
+    skin_type_match: 24,
+    primary_concern_match: 0,
+    secondary_concern_match: 0,
+    finish_match: 12,
+    filter_type_match: 0,
+    sensitivity_safe_adjustment: 0,
+    tone_up_adjustment: 10,
+    white_cast_adjustment: 10,
+    eye_sting_adjustment: 8,
+    pilling_adjustment: 8,
+    strong_penalty_adjustment: 0,
+    total: 72
   }
 };
 
+const candidates = buildProductQueryExplanationCandidates(product, plan);
+const candidateCodes = candidates.map((item) => item.ref.code);
 const refs = buildProductQueryExplanationRefs(product, plan);
-const codes = refs.map((item) => item.code);
-check(refs.length === 4,
+check(candidates.length >= 4,
   "multi-condition sunscreen reasons must remain independently representable");
-check(codes.includes("sunscreen_white_cast_fit"),
+check(candidateCodes.includes("sunscreen_white_cast_fit"),
   "white-cast match must produce its own reason");
-check(codes.includes("sunscreen_eye_sting_fit"),
+check(candidateCodes.includes("sunscreen_eye_sting_fit"),
   "eye-sting match must produce its own reason");
-check(codes.includes("sunscreen_pilling_fit"),
+check(candidateCodes.includes("sunscreen_pilling_fit"),
   "pilling match must produce its own reason");
-check(codes.includes("sunscreen_tone_up_fit"),
+check(candidateCodes.includes("sunscreen_tone_up_fit"),
   "tone-up match must produce its own reason");
-check(refs.every(validateProductQueryExplanationRef),
-  "all projected reason refs must satisfy the bounded explanation schema");
+check(refs.length === 4 && refs.every(validateProductQueryExplanationRef),
+  "bounded projected reason refs must satisfy the explanation schema");
 check(!JSON.stringify(refs).includes("백탁") && !JSON.stringify(refs).includes("White cast"),
   "structured explanation refs must be language-neutral");
 
@@ -156,8 +174,8 @@ check(!component.includes("product.whyPicked.slice"),
 check(copy.includes('sunscreen_white_cast_fit: "백탁이 적은 편이라') &&
       copy.includes('sunscreen_white_cast_fit: "Lower white-cast risk'),
   "KO and EN explanation copies must both exist");
-check(recommendation.includes("buildProductQueryExplanationRefs"),
-  "deterministic recommendation runtime must project explanation refs");
+check(recommendation.includes("selectProductQueryExplanationRefsForRankedProducts"),
+  "deterministic recommendation runtime must project score-grounded explanation refs");
 check(preview.includes("explanationRefs"),
   "authenticated preview must preserve structured explanation refs");
 check(service.includes("White-cast avoidance and tone-up preference are independent dimensions."),

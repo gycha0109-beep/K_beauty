@@ -63,7 +63,7 @@ export const TOP_PICK_SCORING_WEIGHTS = {
   exactTextureMatch: 10,
   nearTextureMatch: 5,
   oppositeTexturePenalty: -6,
-  finishMatch: 1,
+  finishMatch: 8,
   dislikedFeelStrongPenalty: -8,
   dislikedFeelMediumPenalty: -6,
   postCleanseAdjustment: 5,
@@ -279,6 +279,21 @@ export type SunscreenExplanationContext = {
   strongPenaltyReasons: string[];
 };
 
+export type SunscreenScoreBreakdown = {
+  skin_type_match: number;
+  primary_concern_match: number;
+  secondary_concern_match: number;
+  finish_match: number;
+  filter_type_match: number;
+  sensitivity_safe_adjustment: number;
+  tone_up_adjustment: number;
+  white_cast_adjustment: number;
+  eye_sting_adjustment: number;
+  pilling_adjustment: number;
+  strong_penalty_adjustment: number;
+  total: number;
+};
+
 export type SunscreenSelectionMeta = {
   fallbackMode: "strict" | "penalty_only" | "general";
   altPickSummary: {
@@ -291,6 +306,7 @@ export type SunscreenSelectionMeta = {
 };
 
 export type SunscreenRankedProduct = RankedRecommendationProduct & {
+  sunscreen_score_breakdown?: SunscreenScoreBreakdown;
   sunscreen_debug?: {
     hardRejectReasons: string[];
     strongPenaltyReasons: string[];
@@ -1530,34 +1546,59 @@ export function scoreSunscreenProduct(
     (product as SunscreenRankedProduct).sunscreen_debug?.strongPenaltyReasons ??
     context.strongPenaltyReasons;
 
-  const sunscreenScore =
-    (includesValue(product.skin_types, answers.skinType) ? 24 : 0) +
-    (primaryConcern && productConcerns.includes(primaryConcern) ? 20 : 0) +
-    (secondaryConcern && productConcerns.includes(secondaryConcern) ? 10 : 0) +
-    (preferredFinish && normalizeCanonicalFinish(product.finish as string) === preferredFinish ? 12 : 0) +
-    (preferredFilterType && product.uv_filter_type === preferredFilterType ? 12 : 0) +
-    (isSensitiveUser
+  const sunscreenBreakdown: SunscreenScoreBreakdown = {
+    skin_type_match: includesValue(product.skin_types, answers.skinType) ? 24 : 0,
+    primary_concern_match:
+      primaryConcern && productConcerns.includes(primaryConcern) ? 20 : 0,
+    secondary_concern_match:
+      secondaryConcern && productConcerns.includes(secondaryConcern) ? 10 : 0,
+    finish_match:
+      preferredFinish &&
+      normalizeCanonicalFinish(product.finish as string) === preferredFinish
+        ? 12
+        : 0,
+    filter_type_match:
+      preferredFilterType && product.uv_filter_type === preferredFilterType
+        ? 12
+        : 0,
+    sensitivity_safe_adjustment: isSensitiveUser
       ? product.sensitivity_safe === true
         ? 16
         : product.sensitivity_safe === false
           ? -16
           : 0
-      : 0) +
-    (answers.toneUpWanted
+      : 0,
+    tone_up_adjustment: answers.toneUpWanted
       ? product.tone_up === true
         ? 10
         : 0
       : product.tone_up === true
         ? -8
-        : 0) +
-    getSunscreenWhiteCastScore(product, answers) +
-    getSunscreenEyeStingScore(product, answers) +
-    getSunscreenPillingScore(product, answers) +
-    getSunscreenStrongPenaltyScore(strongPenaltyReasons);
+        : 0,
+    white_cast_adjustment: getSunscreenWhiteCastScore(product, answers),
+    eye_sting_adjustment: getSunscreenEyeStingScore(product, answers),
+    pilling_adjustment: getSunscreenPillingScore(product, answers),
+    strong_penalty_adjustment: getSunscreenStrongPenaltyScore(strongPenaltyReasons),
+    total: 0,
+  };
+
+  sunscreenBreakdown.total =
+    sunscreenBreakdown.skin_type_match +
+    sunscreenBreakdown.primary_concern_match +
+    sunscreenBreakdown.secondary_concern_match +
+    sunscreenBreakdown.finish_match +
+    sunscreenBreakdown.filter_type_match +
+    sunscreenBreakdown.sensitivity_safe_adjustment +
+    sunscreenBreakdown.tone_up_adjustment +
+    sunscreenBreakdown.white_cast_adjustment +
+    sunscreenBreakdown.eye_sting_adjustment +
+    sunscreenBreakdown.pilling_adjustment +
+    sunscreenBreakdown.strong_penalty_adjustment;
 
   return {
     ...baseRanked,
-    score: sunscreenScore,
+    score: sunscreenBreakdown.total,
+    sunscreen_score_breakdown: sunscreenBreakdown,
     why_picked: buildSunscreenWhyPicked(product, answers, context),
     sunscreen_debug: (product as SunscreenRankedProduct).sunscreen_debug ?? {
       hardRejectReasons: context.hardRejectReasons,
