@@ -16,6 +16,7 @@ on:
       - "scripts/verify-face-lab-v2-recommendation-evaluation.mjs"
       - "scripts/verify-face-lab-v2-style-delta-refactor-equivalence.mjs"
       - "scripts/verify-face-lab-v2-candidate-foundation.mjs"
+      - "scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
@@ -30,6 +31,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v10.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-human-pairwise-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
@@ -53,6 +55,7 @@ on:
       - "scripts/verify-face-lab-v2-recommendation-evaluation.mjs"
       - "scripts/verify-face-lab-v2-style-delta-refactor-equivalence.mjs"
       - "scripts/verify-face-lab-v2-candidate-foundation.mjs"
+      - "scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
@@ -67,6 +70,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v10.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-human-pairwise-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
@@ -105,5 +109,7 @@ jobs:
         run: node scripts/verify-face-lab-v2-style-delta-refactor-equivalence.mjs
       - name: Verify Face Lab V2 candidate foundation
         run: node scripts/verify-face-lab-v2-candidate-foundation.mjs
+      - name: Verify Face Lab V2 candidate personalization evaluation
+        run: node scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs
       - name: Verify Face Lab V2 human pairwise calibration contract
         run: node scripts/verify-face-lab-v2-human-pairwise-contract.mjs
