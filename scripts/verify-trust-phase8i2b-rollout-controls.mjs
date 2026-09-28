@@ -329,7 +329,7 @@ function verifyWorkflowBoundary() {
   assert.ok(workflowSource.includes("transport_expected_fleet_digest:"));
   assert.ok(
     workflowSource.includes(
-      "if: github.event_name == 'workflow_dispatch' && inputs.transport_mode != 'none'",
+      "if: inputs.transport_mode == 'canary' || inputs.transport_mode == 'full'",
     ),
   );
   assert.equal(
