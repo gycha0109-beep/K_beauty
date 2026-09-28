@@ -19,6 +19,11 @@ on:
       - "lib/recommendation-sunscreen-protection-authority-contract.mjs"
       - "lib/recommendation-sunscreen-protection-authority-reader.js"
       - "lib/sunscreen-protection-corpus-audit.mjs"
+      - "lib/sunscreen-protection-projection.mjs"
+      - "lib/sunscreen-protection-shadow-scoring.mjs"
+      - "lib/server/product-query-protection-shadow-service.js"
+      - "lib/product-query-protection-shadow-oidc.js"
+      - "app/api/internal/product-query-protection-shadow/route.js"
       - "supabase/migrations/20260929083000_data_ai29c_sunscreen_protection_authority_v1.sql"
       - "lib/product-source.js"
       - "lib/recommendation-candidate-admission.js"
@@ -39,6 +44,7 @@ on:
       - "scripts/verify-data-ai29b-product-query-ranking.mjs"
       - "scripts/verify-data-ai29c-a-protection-authority.mjs"
       - "scripts/verify-data-ai29c-a-protection-audit.mjs"
+      - "scripts/verify-data-ai29c-b-protection-shadow.mjs"
       - "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
@@ -51,6 +57,7 @@ on:
       - ".github/workflows/data-ai3-product-query-shadow.yml"
       - ".github/workflows/data-ai4-provider-shadow.yml"
       - ".github/workflows/data-ai5-activation-readiness.yml"
+      - ".github/workflows/data-ai29c-protection-shadow.yml"
   pull_request:
     branches: [main]
     paths:
@@ -68,6 +75,11 @@ on:
       - "lib/recommendation-sunscreen-protection-authority-contract.mjs"
       - "lib/recommendation-sunscreen-protection-authority-reader.js"
       - "lib/sunscreen-protection-corpus-audit.mjs"
+      - "lib/sunscreen-protection-projection.mjs"
+      - "lib/sunscreen-protection-shadow-scoring.mjs"
+      - "lib/server/product-query-protection-shadow-service.js"
+      - "lib/product-query-protection-shadow-oidc.js"
+      - "app/api/internal/product-query-protection-shadow/route.js"
       - "supabase/migrations/20260929083000_data_ai29c_sunscreen_protection_authority_v1.sql"
       - "lib/product-source.js"
       - "lib/recommendation-candidate-admission.js"
@@ -88,6 +100,7 @@ on:
       - "scripts/verify-data-ai29b-product-query-ranking.mjs"
       - "scripts/verify-data-ai29c-a-protection-authority.mjs"
       - "scripts/verify-data-ai29c-a-protection-audit.mjs"
+      - "scripts/verify-data-ai29c-b-protection-shadow.mjs"
       - "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
@@ -100,6 +113,7 @@ on:
       - ".github/workflows/data-ai3-product-query-shadow.yml"
       - ".github/workflows/data-ai4-provider-shadow.yml"
       - ".github/workflows/data-ai5-activation-readiness.yml"
+      - ".github/workflows/data-ai29c-protection-shadow.yml"
   workflow_dispatch:
     inputs:
       watchtower_track:
@@ -164,6 +178,9 @@ jobs:
 
       - name: Verify DATA-AI29C-A sunscreen protection corpus audit
         run: node scripts/verify-data-ai29c-a-protection-audit.mjs
+
+      - name: Verify DATA-AI29C-B protection-aware shadow boundary
+        run: node scripts/verify-data-ai29c-b-protection-shadow.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
