@@ -46,6 +46,8 @@ on:
       - "docs/ci/consolidation-audits/phase-b-policy.json"
       - "scripts/audit-ci-workflow-overlap.mjs"
       - "scripts/verify-ci-workflow-responsibility-map.mjs"
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
     inputs:
       watchtower_track:
@@ -137,6 +139,7 @@ jobs:
           node scripts/audit-ci-workflow-overlap.mjs --check
 
       - name: Check exact-head diff hygiene
+        if: github.event_name != 'schedule'
         env:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -146,7 +149,7 @@ jobs:
 
   transport_live:
     name: Phase 8I-2B live transport rollout
-    if: inputs.transport_mode == 'canary' || inputs.transport_mode == 'full'
+    if: github.event_name == 'schedule' || inputs.transport_mode == 'canary' || inputs.transport_mode == 'full'
     needs: verify
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -179,8 +182,9 @@ jobs:
 
       - name: Execute governed live transport pass
         env:
-          TRANSPORT_MODE: ${{ inputs.transport_mode }}
-          EXPECTED_FLEET_DIGEST: ${{ inputs.transport_expected_fleet_digest }}
+          TRANSPORT_MODE: ${{ github.event_name == 'schedule' && 'full' || inputs.transport_mode }}
+          EXPECTED_FLEET_DIGEST: ${{ github.event_name == 'schedule' && '' || inputs.transport_expected_fleet_digest }}
+          SCHEDULED_RUN: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
         run: |
           set -euo pipefail
           mkdir -p "${RUNNER_TEMP}/trust-phase8i2b"
@@ -203,12 +207,16 @@ jobs:
               "--expected-target-count=5"
             )
           elif [ "${TRANSPORT_MODE}" = "full" ]; then
-            args+=(
-              "--expected-source-count=35"
-              "--expected-target-count=25"
-            )
-            if [ -n "${EXPECTED_FLEET_DIGEST}" ]; then
-              args+=("--expected-fleet-digest=${EXPECTED_FLEET_DIGEST}")
+            if [ "${SCHEDULED_RUN}" = "true" ]; then
+              args+=("--dynamic-fleet=true")
+            else
+              args+=(
+                "--expected-source-count=35"
+                "--expected-target-count=25"
+              )
+              if [ -n "${EXPECTED_FLEET_DIGEST}" ]; then
+                args+=("--expected-fleet-digest=${EXPECTED_FLEET_DIGEST}")
+              fi
             fi
           else
             echo "unsupported transport mode: ${TRANSPORT_MODE}" >&2
@@ -220,14 +228,16 @@ jobs:
 
       - name: Verify governed live transport result
         env:
-          TRANSPORT_MODE: ${{ inputs.transport_mode }}
+          TRANSPORT_MODE: ${{ github.event_name == 'schedule' && 'full' || inputs.transport_mode }}
+          SCHEDULED_RUN: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
         run: |
           set -euo pipefail
           result="${RUNNER_TEMP}/trust-phase8i2b/result.json"
           summary="${RUNNER_TEMP}/trust-phase8i2b/verification.json"
           node scripts/verify-trust-phase8i2b-live-result.mjs \
             "--result=${result}" \
-            "--mode=${TRANSPORT_MODE}" | tee "${summary}"
+            "--mode=${TRANSPORT_MODE}" \
+            "--dynamic-full=${SCHEDULED_RUN}" | tee "${summary}"
           echo "### Phase 8I-2B live transport" >> "$GITHUB_STEP_SUMMARY"
           echo >> "$GITHUB_STEP_SUMMARY"
           cat "${summary}" >> "$GITHUB_STEP_SUMMARY"
@@ -236,7 +246,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: trust-phase8i2b-${{ inputs.transport_mode }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: trust-phase8i2b-${{ github.event_name == 'schedule' && 'full' || inputs.transport_mode }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/trust-phase8i2b/
           if-no-files-found: warn
           retention-days: 30
