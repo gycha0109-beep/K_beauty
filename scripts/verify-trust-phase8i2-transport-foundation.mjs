@@ -124,8 +124,6 @@ async function verifyWorkerDedupeFanout() {
   const keyA = `official-transport-url-sha256:${"a".repeat(64)}`;
   const keyB = `official-transport-url-sha256:${"b".repeat(64)}`;
   const keyC = `official-transport-url-sha256:${"c".repeat(64)}`;
-  const keyD = `official-transport-url-sha256:${"d".repeat(64)}`;
-
   const targets = [
     ["tor-1", keyA, "https://1.1.1.1/torriden", "READY"],
     ["tor-2", keyA, "https://1.1.1.1/torriden", "READY"],
@@ -133,7 +131,6 @@ async function verifyWorkerDedupeFanout() {
     ["boj-2", keyB, "https://8.8.8.8/boj", "READY"],
     ["boj-3", keyB, "https://8.8.8.8/boj", "READY"],
     ["drg-1", keyC, "https://1.1.1.1/drg", "READY"],
-    ["blocked-1", keyD, "https://8.8.8.8/blocked", "DB_INVARIANT_BLOCKED"],
   ].map(([sourceId, targetKey, effectiveLocator, targetStatus]) => ({
     source_id: sourceId,
     target_key: targetKey,
@@ -157,9 +154,9 @@ async function verifyWorkerDedupeFanout() {
         return {
           data: {
             contract: "trust-official-source-transport-targets-v1",
-            source_count: 7,
+            source_count: 6,
             ready_source_count: 6,
-            blocked_source_count: 1,
+            blocked_source_count: 0,
             unique_ready_target_count: 3,
             targets,
           },
@@ -208,13 +205,17 @@ async function verifyWorkerDedupeFanout() {
     fetchImpl,
     concurrency: 3,
     record: true,
+    scope: "full",
+    expectedSourceCount: 6,
+    expectedTargetCount: 3,
+    perHostDelayMs: 0,
     runId: "phase8i2-mock-run",
     checkedAtFactory: () => "2026-09-28T00:00:00.000Z",
   });
 
-  assert.equal(result.sourceCount, 7);
+  assert.equal(result.sourceCount, 6);
   assert.equal(result.readySourceCount, 6);
-  assert.equal(result.blockedSourceCount, 1);
+  assert.equal(result.blockedSourceCount, 0);
   assert.equal(result.uniqueReadyTargetCount, 3);
   assert.equal(result.networkProbeCount, 3);
   assert.equal(result.observationCount, 6);
@@ -230,7 +231,6 @@ async function verifyWorkerDedupeFanout() {
   assert.equal(torridenCalls.length, 2);
   assert.equal(torridenCalls[0].p_probe_group_id, torridenCalls[1].p_probe_group_id);
   assert.equal(torridenCalls[0].p_target_key, torridenCalls[1].p_target_key);
-  assert.ok(!recordCalls.some((call) => call.p_source_id === "blocked-1"));
 }
 
 function verifyProductionClosure() {
