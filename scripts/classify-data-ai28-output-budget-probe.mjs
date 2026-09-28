@@ -42,7 +42,11 @@ if (
   payload.queryTextExposed !== false ||
   payload.productionWrite !== false ||
   payload.recommendationLogWrite !== false ||
-  payload.publicActivation !== false
+  payload.publicActivation !== false ||
+  !Number.isInteger(payload.providerAttempts) ||
+  payload.providerAttempts < 1 ||
+  payload.providerAttempts > 2 ||
+  payload.providerRetryUsed !== (payload.providerAttempts > 1)
 ) {
   console.error("DATA_AI28_BUDGET_PROBE_SAFETY_BOUNDARY_FAILED");
   process.exit(68);
@@ -60,7 +64,9 @@ if (httpStatus === "200") {
     process.exit(69);
   }
 
-  process.stdout.write("completed");
+  process.stdout.write(
+    payload.providerRetryUsed ? "completed_retried" : "completed"
+  );
   process.exit(0);
 }
 
