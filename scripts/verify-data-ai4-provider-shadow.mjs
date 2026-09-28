@@ -247,6 +247,11 @@ check(!workflow.includes("<<'NODE'"),
   "DATA-AI4 workflow must not use inline Node heredocs");
 check(runtimeValidator.includes('payload.result !== "PASS"'),
   "runtime validator must fail unless provider scenario passes");
+check(
+  runtimeValidator.includes('"ko_toneup_same_axis_conflict_sunscreen"') &&
+    runtimeValidator.includes("insufficientSupportedIntentScenarios"),
+  "runtime validator must accept the frozen fail-closed tone-up conflict scenario"
+);
 check(runtimeValidator.includes('payload.deploymentRef !== "main"'),
   "runtime validator must bind evidence to main deployment");
 check(runtimeValidator.includes('payload.persisted !== false'),

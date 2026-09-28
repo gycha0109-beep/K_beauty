@@ -58,7 +58,12 @@ if (payload.productionWrite !== false || payload.recommendationLogWrite !== fals
 if (payload.publicActivation !== false) process.exit(15);
 if (!Array.isArray(payload.failures) || payload.failures.length !== 0) process.exit(16);
 
-if (expectedScenario === "ko_category_only_cleanser") {
+const insufficientSupportedIntentScenarios = new Set([
+  "ko_category_only_cleanser",
+  "ko_toneup_same_axis_conflict_sunscreen"
+]);
+
+if (insufficientSupportedIntentScenarios.has(expectedScenario)) {
   if (payload.execution.status !== "insufficient_supported_intent") process.exit(17);
   if (payload.execution.resultCount !== 0) process.exit(18);
 } else if (payload.execution.status !== "ranked" || payload.execution.resultCount < 1) {
@@ -72,6 +77,16 @@ if (expectedScenario === "ko_acne_treatment_pregnancy_unresolved") {
     payload.execution.unresolvedTerms.length < 1
   ) {
     process.exit(21);
+  }
+}
+
+if (expectedScenario === "ko_toneup_same_axis_conflict_sunscreen") {
+  if (payload.execution.constraintStatus !== "partial") process.exit(22);
+  if (
+    !Array.isArray(payload.execution.unresolvedTerms) ||
+    !payload.execution.unresolvedTerms.includes("tone-up preference conflict")
+  ) {
+    process.exit(23);
   }
 }
 
