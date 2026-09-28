@@ -440,5 +440,10 @@ console.log(JSON.stringify({
   targetSweep: {
     cohort: targetResponsiveness.cohort,
     faceDiagnostics: targetResponsiveness.faceDiagnostics
+  },
+  specificityDistributionDetail: {
+    targetDiagnostics: specificityDistribution.targetDiagnostics,
+    faceDiagnostics: specificityDistribution.faceDiagnostics,
+    signatureReach: specificityDistribution.signatureReach.slice(0, 12)
   }
 }, null, 2));
