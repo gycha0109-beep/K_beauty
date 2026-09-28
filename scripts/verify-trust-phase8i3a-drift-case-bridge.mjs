@@ -3,8 +3,14 @@ import fs from "node:fs";
 
 const blueprintPath = "docs/evidence/trust-phase8i3a-drift-case-bridge-db-blueprint-v1.sql";
 const dryRunPath = "docs/evidence/trust-phase8i3a-drift-case-bridge-dry-run-v1.json";
+const productionApplyPath = "docs/evidence/trust-phase8i3a-production-schema-apply-v1.json";
+const migrationPath = "supabase/migrations/20260929045848_trust_phase8i3a_drift_case_bridge_v1.sql";
 const blueprint = fs.readFileSync(blueprintPath, "utf8");
+const migration = fs.readFileSync(migrationPath, "utf8");
 const dryRun = JSON.parse(fs.readFileSync(dryRunPath, "utf8"));
+const productionApply = JSON.parse(fs.readFileSync(productionApplyPath, "utf8"));
+
+assert.equal(migration, blueprint, "Production migration must exactly materialize reviewed Phase 8I-3A blueprint");
 
 for (const token of [
   "trust_official_source_transport_drift_cases",
@@ -190,5 +196,82 @@ assert.deepEqual(dryRun.rollback_readback, {
   confirmed_relocations: 1,
   event_constraint_restored_without_source_transport_drift: true,
 });
+
+assert.equal(productionApply.contract, "trust-phase8i3a-production-schema-apply-v1");
+assert.equal(productionApply.phase, "PHASE_8I_3A");
+assert.equal(productionApply.result, "PASS");
+assert.deepEqual(productionApply.production_migration, {
+  version: "20260929045848",
+  name: "trust_phase8i3a_drift_case_bridge_v1",
+  filename: "20260929045848_trust_phase8i3a_drift_case_bridge_v1.sql",
+  source_blueprint: blueprintPath,
+  source_blueprint_content_sha: productionApply.production_migration.source_blueprint_content_sha,
+  apply_authority: "SUPABASE_MCP_APPLY_MIGRATION",
+  result: "SUCCESS",
+});
+assert.match(productionApply.production_migration.source_blueprint_content_sha, /^[0-9a-f]{40}$/);
+assert.equal(productionApply.migration_scope, "SCHEMA_AND_RPC_ONLY_NO_INCIDENT_BACKFILL");
+
+assert.deepEqual(productionApply.production_readback.counts, {
+  cases: 0,
+  links: 0,
+  evaluations: 0,
+  transport_incidents: 4,
+  reentry_events: 3,
+  source_transport_drift_events: 0,
+  product_fact_current: 71,
+  evidence_sources: 40,
+  confirmed_relocations: 1,
+});
+assert.equal(productionApply.production_readback.builder_candidate_count, 2);
+assert.equal(
+  productionApply.production_readback.event_type_constraint_contains_source_transport_drift,
+  true,
+);
+
+assert.equal(productionApply.security_readback.all_phase8i3_tables_rls_enabled, true);
+assert.deepEqual(productionApply.security_readback.direct_table_grants, {
+  service_role_select: false,
+  service_role_insert: false,
+  authenticated_select: false,
+  anon_select: false,
+});
+for (const allowed of Object.values(productionApply.security_readback.service_role_rpc_execute)) {
+  assert.equal(allowed, true);
+}
+assert.equal(
+  productionApply.security_readback.internal_candidate_resolver_service_role_execute,
+  false,
+);
+assert.equal(productionApply.security_readback.authenticated_phase8i3_rpc_execute, false);
+assert.equal(productionApply.security_readback.anon_phase8i3_rpc_execute, false);
+assert.equal(productionApply.security_readback.public_phase8i3_rpc_execute, false);
+assert.equal(productionApply.security_readback.security_definer_search_path_empty, true);
+assert.equal(productionApply.security_readback.immutable_trigger_count, 3);
+
+assert.equal(productionApply.advisors.relevant_finding_count, 3);
+assert.equal(
+  productionApply.advisors.accepted_reason,
+  "RPC_ONLY_TABLES_WITH_RLS_ENABLED_AND_ZERO_DIRECT_TABLE_GRANTS",
+);
+assert.equal(productionApply.advisors.security_blocker_for_phase8i3a_objects, false);
+assert.ok(
+  productionApply.advisors.findings.every(
+    (finding) => finding.name === "rls_enabled_no_policy" && finding.level === "INFO",
+  ),
+);
+
+assert.deepEqual(productionApply.authority_invariants, {
+  incident_backfill_executed: false,
+  historical_evidence_source_mutation: false,
+  product_fact_current_mutation: false,
+  relocation_confirmation: false,
+  recommendation_mutation: false,
+  semantic_verdict_created: false,
+});
+assert.equal(
+  productionApply.next_step,
+  "PHASE_8I_3C_BACKFILL_ONLY_AFTER_REPOSITORY_MERGE_AND_EXACT_MAIN_VERIFICATION",
+);
 
 console.log("TRUST_PHASE8I3A_DRIFT_CASE_BRIDGE_VERIFIED");
