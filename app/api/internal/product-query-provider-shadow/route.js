@@ -116,6 +116,10 @@ export async function POST(request) {
       protocolFailureKind: protocolFailure?.protocolFailureKind || null,
       schemaFailureReason: protocolFailure?.schemaFailureReason || null,
       incompleteReason: protocolFailure?.incompleteReason || null,
+      providerAttempts:
+        Number.isInteger(error?.providerAttempts) ? error.providerAttempts : 1,
+      providerRetryUsed:
+        Number.isInteger(error?.providerAttempts) && error.providerAttempts > 1,
       result: "FAIL_CLOSED",
       secretValueExposed: false,
       queryTextExposed: false,
@@ -136,6 +140,8 @@ export async function POST(request) {
     querySha256: evaluation.querySha256,
     provider: evaluation.provider,
     model: evaluation.model,
+    providerAttempts: evaluation.providerAttempts,
+    providerRetryUsed: evaluation.providerRetryUsed,
     intent: evaluation.intent,
     execution: evaluation.execution,
     scenarioPass: evaluation.pass,
