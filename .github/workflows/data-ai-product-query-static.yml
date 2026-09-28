@@ -31,6 +31,7 @@ on:
       - "scripts/verify-data-ai1-product-query-intent.mjs"
       - "scripts/verify-data-ai2-product-query-execution.mjs"
       - "scripts/verify-data-ai29a-product-query-quality.mjs"
+      - "scripts/verify-data-ai29b-product-query-ranking.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
@@ -71,6 +72,7 @@ on:
       - "scripts/verify-data-ai1-product-query-intent.mjs"
       - "scripts/verify-data-ai2-product-query-execution.mjs"
       - "scripts/verify-data-ai29a-product-query-quality.mjs"
+      - "scripts/verify-data-ai29b-product-query-ranking.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
@@ -137,6 +139,9 @@ jobs:
 
       - name: Verify DATA-AI29A semantic and explanation quality
         run: node scripts/verify-data-ai29a-product-query-quality.mjs
+
+      - name: Verify DATA-AI29B ranking calibration and score-grounded reasons
+        run: node scripts/verify-data-ai29b-product-query-ranking.mjs
 
       - name: Verify DATA-AI3 real-corpus shadow boundary
         run: node scripts/verify-data-ai3-product-query-shadow.mjs
