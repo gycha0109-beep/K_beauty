@@ -97,5 +97,7 @@ jobs:
         run: node scripts/verify-face-lab-v2-route-quality.mjs
       - name: Verify Face Lab V2 recommendation evaluation
         run: node scripts/verify-face-lab-v2-recommendation-evaluation.mjs
+      - name: Verify Face Lab V2 style delta refactor equivalence
+        run: node scripts/verify-face-lab-v2-style-delta-refactor-equivalence.mjs
       - name: Verify Face Lab V2 human pairwise calibration contract
         run: node scripts/verify-face-lab-v2-human-pairwise-contract.mjs
