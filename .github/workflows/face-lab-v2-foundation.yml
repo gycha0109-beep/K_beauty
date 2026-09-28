@@ -14,6 +14,7 @@ on:
       - "scripts/verify-face-lab-v2-survey-consumption.mjs"
       - "scripts/verify-face-lab-v2-route-quality.mjs"
       - "scripts/verify-face-lab-v2-recommendation-evaluation.mjs"
+      - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v2.md"
@@ -25,6 +26,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v8.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v9.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v10.md"
+      - "docs/domain/facelab/face-lab-v2-recommendation-human-pairwise-contract-v1.md"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
@@ -46,6 +48,7 @@ on:
       - "scripts/verify-face-lab-v2-survey-consumption.mjs"
       - "scripts/verify-face-lab-v2-route-quality.mjs"
       - "scripts/verify-face-lab-v2-recommendation-evaluation.mjs"
+      - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v2.md"
@@ -57,6 +60,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v8.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v9.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v10.md"
+      - "docs/domain/facelab/face-lab-v2-recommendation-human-pairwise-contract-v1.md"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
@@ -91,3 +95,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-route-quality.mjs
       - name: Verify Face Lab V2 recommendation evaluation
         run: node scripts/verify-face-lab-v2-recommendation-evaluation.mjs
+      - name: Verify Face Lab V2 human pairwise calibration contract
+        run: node scripts/verify-face-lab-v2-human-pairwise-contract.mjs
