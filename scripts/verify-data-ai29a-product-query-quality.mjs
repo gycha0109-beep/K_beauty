@@ -122,7 +122,23 @@ const product = {
   },
   score_breakdown: {
     post_cleanse_adjustment: 0,
-    afternoon_state_adjustment: 0
+    afternoon_state_adjustment: 0,
+    finish_match: 8,
+    skin_type_match: 4
+  },
+  sunscreen_score_breakdown: {
+    skin_type_match: 24,
+    primary_concern_match: 0,
+    secondary_concern_match: 0,
+    finish_match: 12,
+    filter_type_match: 0,
+    sensitivity_safe_adjustment: 0,
+    tone_up_adjustment: 10,
+    white_cast_adjustment: 10,
+    eye_sting_adjustment: 8,
+    pilling_adjustment: 8,
+    strong_penalty_adjustment: 0,
+    total: 72
   }
 };
 
@@ -156,8 +172,8 @@ check(!component.includes("product.whyPicked.slice"),
 check(copy.includes('sunscreen_white_cast_fit: "백탁이 적은 편이라') &&
       copy.includes('sunscreen_white_cast_fit: "Lower white-cast risk'),
   "KO and EN explanation copies must both exist");
-check(recommendation.includes("buildProductQueryExplanationRefs"),
-  "deterministic recommendation runtime must project explanation refs");
+check(recommendation.includes("selectProductQueryExplanationRefsForRankedProducts"),
+  "deterministic recommendation runtime must project score-grounded explanation refs");
 check(preview.includes("explanationRefs"),
   "authenticated preview must preserve structured explanation refs");
 check(service.includes("White-cast avoidance and tone-up preference are independent dimensions."),
