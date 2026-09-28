@@ -17,6 +17,8 @@ on:
       - "scripts/verify-trust-phase8i2b-live-result.mjs"
       - "scripts/verify-trust-phase8i2-production-closure.mjs"
       - "scripts/verify-trust-phase8i3a-drift-case-bridge.mjs"
+      - "scripts/trust-transport-drift-handoff-worker.mjs"
+      - "scripts/verify-trust-phase8i3b-evaluation-worker.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -43,6 +45,8 @@ on:
       - "scripts/verify-trust-phase8i2b-live-result.mjs"
       - "scripts/verify-trust-phase8i2-production-closure.mjs"
       - "scripts/verify-trust-phase8i3a-drift-case-bridge.mjs"
+      - "scripts/trust-transport-drift-handoff-worker.mjs"
+      - "scripts/verify-trust-phase8i3b-evaluation-worker.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -125,6 +129,11 @@ jobs:
 
       - name: Verify Phase 8I-3A transport drift case bridge
         run: node scripts/verify-trust-phase8i3a-drift-case-bridge.mjs
+
+      - name: Verify Phase 8I-3B drift evaluation worker
+        run: |
+          node --check scripts/trust-transport-drift-handoff-worker.mjs
+          node scripts/verify-trust-phase8i3b-evaluation-worker.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
