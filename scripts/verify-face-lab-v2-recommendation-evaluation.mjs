@@ -9,6 +9,10 @@ import {
   FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  FACE_LAB_V2_FACE_RESPONSIVENESS_VERSION,
+  runFaceLabV2FaceResponsivenessEvaluation
+} from "../lib/face-lab-v2/evaluation/face-responsiveness.js";
+import {
   FACE_LAB_V2_PROPERTY_FUZZ_CASES_PER_SEED,
   FACE_LAB_V2_PROPERTY_FUZZ_SEEDS,
   FACE_LAB_V2_PROPERTY_FUZZ_VERSION,
@@ -195,6 +199,32 @@ assert.equal(targetSweepCohort.faceCount, 8);
 assert.equal(targetSweepCohort.targetCount, 12);
 assert.equal(targetSweepCohort.caseCount, 96);
 
+const faceResponsiveness = runFaceLabV2FaceResponsivenessEvaluation();
+assert.equal(
+  faceResponsiveness.evaluatorVersion,
+  FACE_LAB_V2_FACE_RESPONSIVENESS_VERSION
+);
+assert.equal(faceResponsiveness.summary.pairedComparisonCount, 22);
+assert.equal(faceResponsiveness.summary.recommendationModifierPairCount, 4);
+assert.equal(faceResponsiveness.summary.nonAuthorityPairCount, 18);
+assert.equal(faceResponsiveness.summary.profileOnlyPairCount, 15);
+assert.equal(faceResponsiveness.summary.observedNotProfilePairCount, 3);
+assert.equal(
+  faceResponsiveness.summary.styleDeltaChangedPairCount,
+  faceResponsiveness.summary.recommendationModifierPairCount,
+  "only current modifier-backed observations may change Style Delta action semantics"
+);
+assert.equal(
+  faceResponsiveness.summary.selectedRouteChangedPairCount,
+  faceResponsiveness.summary.recommendationModifierPairCount,
+  "all current modifier-backed observations must propagate to selected route actions"
+);
+assert.equal(
+  faceResponsiveness.summary.hardFailureCount,
+  0,
+  JSON.stringify(faceResponsiveness.failures.slice(0, 30), null, 2)
+);
+
 const propertyFuzz = runFaceLabV2PropertyFuzzEvaluation();
 assert.equal(
   propertyFuzz.evaluatorVersion,
@@ -376,7 +406,8 @@ console.log(JSON.stringify({
     lineage: lineage.summary,
     parameterTranslation: parameterTranslation.summary,
     constraintResponsiveness: constraintResponsiveness.summary,
-    propertyFuzz: propertyFuzz.summary
+    propertyFuzz: propertyFuzz.summary,
+    faceResponsiveness: faceResponsiveness.summary
   },
   targetSweep: {
     cohort: targetResponsiveness.cohort,
