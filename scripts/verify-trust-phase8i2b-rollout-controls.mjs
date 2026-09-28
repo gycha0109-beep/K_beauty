@@ -341,6 +341,17 @@ function verifyWorkflowBoundary() {
     2,
   );
   assert.ok(workflowSource.includes('test "$GITHUB_REF" = "refs/heads/main"'));
+  assert.ok(
+    workflowSource.includes(
+      "SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co",
+    ),
+  );
+  assert.ok(
+    workflowSource.includes(
+      'test "$SUPABASE_URL" = "https://bygrczggxfuisupcevaz.supabase.co"',
+    ),
+  );
+  assert.ok(!workflowSource.includes("secrets.SUPABASE_URL"));
   assert.ok(workflowSource.includes('"--record=true"'));
   assert.ok(workflowSource.includes('"--per-host-delay-ms=1000"'));
   assert.ok(workflowSource.includes('"--expected-source-count=10"'));
