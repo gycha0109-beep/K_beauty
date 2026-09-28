@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
@@ -246,15 +247,48 @@ function buildModifierFixturePayload() {
   });
 }
 
+const EXPECTED_HASHES = Object.freeze({
+  lockedStyleDeltaHash:
+    "e580f798a2d4d4e2d642b73a954f49221d60788f9b8141d059e2a07947884cad",
+  coverageStyleDeltaHash:
+    "ee77c22a7d296c5c179261af6c68da7f87cb161bb1e1acd70f6d76787a5f7ae4",
+  adversarialStyleDeltaHash:
+    "dd3add9a93c8049504056c9384b3419276d7016290241f7388b8cc946acf312c",
+  targetSweepStyleDeltaHash:
+    "6da929c4db6cc7bccf141ea7c8a3ff4d2dcb9777b48da7ba9a93f8a3c79ac783",
+  modifierFixtureHash:
+    "8ace048db7dfcba6d106faa9d9566eb65633ad74eb96e8158246f8c17696e0c5"
+});
+
 const locked = buildFaceLabV2EvaluationCohort();
 const coverage = buildFaceLabV2CoverageCohort();
 const adversarial = buildFaceLabV2AdversarialCohort();
 const targetSweep = buildFaceLabV2TargetSweepCohort();
 const modifierPayload = buildModifierFixturePayload();
 
+const hashes = {
+  lockedStyleDeltaHash: hashCohort(locked),
+  coverageStyleDeltaHash: hashCohort(coverage),
+  adversarialStyleDeltaHash: hashCohort(adversarial),
+  targetSweepStyleDeltaHash: hashCohort(targetSweep),
+  modifierFixtureHash: sha256(stableStringify(modifierPayload))
+};
+
+assert.deepEqual(
+  hashes,
+  EXPECTED_HASHES,
+  "Style Delta semantic witnesses changed from the pre-refactor main baseline"
+);
+
+assert.equal(locked.caseCount, 96);
+assert.equal(coverage.caseCount, 96);
+assert.equal(adversarial.caseCount, 32);
+assert.equal(targetSweep.caseCount, 96);
+assert.equal(modifierPayload.length, 4);
+
 console.log(JSON.stringify({
   ok: true,
-  mode: "pre_refactor_probe",
+  mode: "frozen_pre_refactor_equivalence",
   cohortCounts: {
     locked: locked.caseCount,
     coverage: coverage.caseCount,
@@ -262,11 +296,5 @@ console.log(JSON.stringify({
     targetSweep: targetSweep.caseCount,
     modifierPairs: modifierPayload.length
   },
-  hashes: {
-    lockedStyleDeltaHash: hashCohort(locked),
-    coverageStyleDeltaHash: hashCohort(coverage),
-    adversarialStyleDeltaHash: hashCohort(adversarial),
-    targetSweepStyleDeltaHash: hashCohort(targetSweep),
-    modifierFixtureHash: sha256(stableStringify(modifierPayload))
-  }
+  hashes
 }, null, 2));
