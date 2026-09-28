@@ -13,7 +13,7 @@ const registryVersion = "product-fact-registry-cross-category-v1";
 const registryChecksum = "d".repeat(64);
 
 function uuid(index, lane = 8) {
-  return \`00000000-0000-4000-\${lane}000-\${String(index).padStart(12, "0")}\`;
+  return `00000000-0000-4000-${lane}000-${String(index).padStart(12, "0")}`;
 }
 
 function proposition(index) {
