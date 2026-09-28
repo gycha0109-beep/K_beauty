@@ -315,8 +315,9 @@ function verifyCliSafetyContract() {
   assert.ok(workerSource.includes('parseRequiredBooleanArg("record")'));
   assert.ok(workerSource.includes("=true|false is required"));
   assert.ok(workerSource.includes("--manifest=<path> is required for canary scope"));
-  assert.ok(workerSource.includes("--expected-source-count=<positive integer> is required"));
-  assert.ok(workerSource.includes("--expected-target-count=<positive integer> is required"));
+  assert.ok(workerSource.includes('parseRequiredPositiveIntArg("expected-source-count")'));
+  assert.ok(workerSource.includes('parseRequiredPositiveIntArg("expected-target-count")'));
+  assert.ok(workerSource.includes("=<positive integer> is required"));
   assert.ok(workerSource.includes("TRANSPORT_FLEET_CHANGED_DURING_ROLLOUT"));
   assert.ok(workerSource.includes("TRANSPORT_CANARY_MANIFEST_STALE"));
   assert.ok(workerSource.includes("TRANSPORT_FLEET_DB_INVARIANT_BLOCKED"));
