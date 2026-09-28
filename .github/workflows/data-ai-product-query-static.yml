@@ -6,6 +6,11 @@ on:
     branches: [main]
     paths:
       - "lib/product-query-intent-contract.mjs"
+      - "lib/product-query-intent-semantic-ownership.mjs"
+      - "lib/product-query-explanation-contract.mjs"
+      - "lib/server/product-query-preview-service.js"
+      - "components/my/ProductQueryBetaCard.jsx"
+      - "lib/my/i18n.js"
       - "lib/server/product-query-intent-service.js"
       - "lib/product-query-execution-contract.mjs"
       - "lib/product-query-recommendation.js"
@@ -25,6 +30,7 @@ on:
       - "app/api/internal/product-query-activation-readiness/route.js"
       - "scripts/verify-data-ai1-product-query-intent.mjs"
       - "scripts/verify-data-ai2-product-query-execution.mjs"
+      - "scripts/verify-data-ai29a-product-query-quality.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
@@ -40,6 +46,11 @@ on:
     branches: [main]
     paths:
       - "lib/product-query-intent-contract.mjs"
+      - "lib/product-query-intent-semantic-ownership.mjs"
+      - "lib/product-query-explanation-contract.mjs"
+      - "lib/server/product-query-preview-service.js"
+      - "components/my/ProductQueryBetaCard.jsx"
+      - "lib/my/i18n.js"
       - "lib/server/product-query-intent-service.js"
       - "lib/product-query-execution-contract.mjs"
       - "lib/product-query-recommendation.js"
@@ -59,6 +70,7 @@ on:
       - "app/api/internal/product-query-activation-readiness/route.js"
       - "scripts/verify-data-ai1-product-query-intent.mjs"
       - "scripts/verify-data-ai2-product-query-execution.mjs"
+      - "scripts/verify-data-ai29a-product-query-quality.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
@@ -122,6 +134,9 @@ jobs:
 
       - name: Verify DATA-AI2 deterministic execution
         run: node scripts/verify-data-ai2-product-query-execution.mjs
+
+      - name: Verify DATA-AI29A semantic and explanation quality
+        run: node scripts/verify-data-ai29a-product-query-quality.mjs
 
       - name: Verify DATA-AI3 real-corpus shadow boundary
         run: node scripts/verify-data-ai3-product-query-shadow.mjs

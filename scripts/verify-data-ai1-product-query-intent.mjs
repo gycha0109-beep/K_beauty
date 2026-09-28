@@ -6,6 +6,9 @@ import {
   buildRecommendationAnswersFromProductQueryIntent,
   validateProductQueryIntent
 } from "../lib/product-query-intent-contract.mjs";
+import {
+  canonicalizeProductQuerySemanticOwnership
+} from "../lib/product-query-intent-semantic-ownership.mjs";
 
 let assertions = 0;
 function check(condition, message) {
@@ -103,6 +106,56 @@ check(englishAdapter.recommendationAnswers.mainConcern === "dehydration", "prima
 check(JSON.stringify(englishAdapter.recommendationAnswers.mainConcerns) === JSON.stringify(["dehydration", "barrier"]), "two concerns must map without expansion");
 check(englishAdapter.recommendationAnswers.sensitivityLevel === "high", "explicit sensitivity must map");
 check(!("sunscreenIntent" in englishAdapter.recommendationAnswers), "non-sunscreen query must not invent sunscreen intent");
+
+const noCastBright = canonicalizeProductQuerySemanticOwnership(
+  "백탁은 싫은데 얼굴은 밝아 보였으면 좋겠어. 선크림 추천해줘",
+  validIntent({
+    category: "sunscreen",
+    sunscreen_intent: true,
+    white_cast_hate: false,
+    tone_up_wanted: false,
+    unresolved_terms: ["톤업 선호 충돌"],
+    confidence: "low"
+  })
+);
+check(noCastBright.white_cast_hate === true,
+  "explicit white-cast avoidance must own white_cast_hate");
+check(noCastBright.tone_up_wanted === true,
+  "desired brighter-looking complexion must own positive tone-up independently");
+check(
+  noCastBright.unresolved_terms.every((term) => !String(term).includes("충돌")),
+  "white-cast avoidance plus positive tone-up must not preserve a fake tone-up conflict"
+);
+
+const noCastOnly = canonicalizeProductQuerySemanticOwnership(
+  "백탁 없는 선크림 추천해줘",
+  validIntent({
+    category: "sunscreen",
+    sunscreen_intent: true,
+    white_cast_hate: false,
+    tone_up_wanted: false
+  })
+);
+check(noCastOnly.white_cast_hate === true,
+  "white-cast avoidance must be deterministic even if provider misses it");
+check(noCastOnly.tone_up_wanted === null,
+  "white-cast avoidance alone must not imply a negative tone-up preference");
+
+const realToneConflict = canonicalizeProductQuerySemanticOwnership(
+  "톤업은 싫은데 확실하게 톤업되는 선크림 찾아줘",
+  validIntent({
+    category: "sunscreen",
+    sunscreen_intent: true,
+    tone_up_wanted: true,
+    unresolved_terms: []
+  })
+);
+check(realToneConflict.tone_up_wanted === null,
+  "same-dimension positive and negative tone-up evidence must neutralize the field");
+check(realToneConflict.unresolved_terms.includes("tone-up preference conflict"),
+  "real tone-up conflict must remain explicit and unresolved");
+check(realToneConflict.confidence === "low",
+  "real tone-up conflict must lower confidence");
 
 const unresolved = validIntent({
   category: "treatment",
