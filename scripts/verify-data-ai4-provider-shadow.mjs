@@ -240,6 +240,14 @@ check(
   "DATA-AI28 classifier must distinguish the real default path and enforce bounded retry evidence"
 );
 check(
+  dataAi28Classifier.includes("SAFE_NONPROTOCOL_FAILURE_CLASSES") &&
+    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_TIMEOUT", "timeout"') &&
+    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_REQUEST_FAILED", "request_failed"') &&
+    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_UNAVAILABLE", "unavailable"') &&
+    dataAi28Classifier.includes("DATA_AI28E_SAFE_NONPROTOCOL_FAILURE="),
+  "DATA-AI28E QA classifier must expose only bounded non-protocol failure classes"
+);
+check(
   dataAi28eVerifier.includes("PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE") &&
     dataAi28eVerifier.includes("content_filter") &&
     dataAi28eVerifier.includes("PRODUCT_QUERY_AI_RESPONSE_INVALID") &&

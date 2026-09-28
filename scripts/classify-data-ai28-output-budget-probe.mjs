@@ -2,6 +2,12 @@
 
 import fs from "node:fs";
 
+const SAFE_NONPROTOCOL_FAILURE_CLASSES = new Map([
+  ["PRODUCT_QUERY_AI_TIMEOUT", "timeout"],
+  ["PRODUCT_QUERY_AI_REQUEST_FAILED", "request_failed"],
+  ["PRODUCT_QUERY_AI_UNAVAILABLE", "unavailable"]
+]);
+
 const [file, expectedSha, httpStatus, expectedScenario, expectedBudget] =
   process.argv.slice(2);
 
@@ -115,4 +121,10 @@ if (
   process.exit(0);
 }
 
+const nonProtocolClass = SAFE_NONPROTOCOL_FAILURE_CLASSES.get(failureClass);
+if (nonProtocolClass) {
+  console.error(
+    `DATA_AI28E_SAFE_NONPROTOCOL_FAILURE=${nonProtocolClass}:providerAttempts=${payload.providerAttempts}`
+  );
+}
 process.stdout.write("other_failure");
