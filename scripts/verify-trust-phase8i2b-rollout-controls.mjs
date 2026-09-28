@@ -310,6 +310,58 @@ async function verifySelectedCanaryAndRecordFalse() {
   assert.match(result.scopeSnapshotDigest, /^[0-9a-f]{64}$/);
 }
 
+async function verifyDynamicFullFleet() {
+  const keyA = `official-transport-url-sha256:${"a".repeat(64)}`;
+  const keyB = `official-transport-url-sha256:${"b".repeat(64)}`;
+  const keyC = `official-transport-url-sha256:${"c".repeat(64)}`;
+  const targets = [
+    target("a1", keyA, "https://1.1.1.1/a"),
+    target("a2", keyA, "https://1.1.1.1/a"),
+    target("b1", keyB, "https://8.8.8.8/b"),
+    target("c1", keyC, "https://9.9.9.9/c"),
+  ];
+  const fetchCounter = { count: 0 };
+  const result = await runOfficialSourceTransportWorker({
+    client: makeClient(targets),
+    fetchImpl: okFetchCounter(fetchCounter),
+    scope: "full",
+    record: false,
+    dynamicFleet: true,
+    perHostDelayMs: 0,
+    runId: "phase8i2-dynamic-fixture",
+    checkedAtFactory: () => "2026-09-28T00:00:00.000Z",
+  });
+
+  assert.equal(result.dynamicFleet, true);
+  assert.equal(result.selectedSourceCount, 4);
+  assert.equal(result.selectedTargetCount, 3);
+  assert.equal(result.networkProbeCount, 3);
+  assert.equal(fetchCounter.count, 3);
+
+  await expectRejectWithoutFetch(
+    (counter) => runOfficialSourceTransportWorker({
+      client: makeClient(targets),
+      fetchImpl: okFetchCounter(counter),
+      scope: "canary",
+      record: false,
+      dynamicFleet: true,
+      manifest: {
+        contract: "trust-phase8i2-live-canary-targets-v1",
+        expected_target_count: 1,
+        expected_source_count: 2,
+        targets: [{
+          target_key: keyA,
+          expected_effective_locator: "https://1.1.1.1/a",
+          expected_source_count: 2,
+          expected_source_ids: ["a1", "a2"],
+        }],
+      },
+      perHostDelayMs: 0,
+    }),
+    /dynamicFleet is only valid for full scope/,
+  );
+}
+
 function verifyCliSafetyContract() {
   assert.ok(workerSource.includes("--scope=canary|full is required"));
   assert.ok(workerSource.includes('parseRequiredBooleanArg("record")'));
@@ -321,6 +373,8 @@ function verifyCliSafetyContract() {
   assert.ok(workerSource.includes("TRANSPORT_FLEET_CHANGED_DURING_ROLLOUT"));
   assert.ok(workerSource.includes("TRANSPORT_CANARY_MANIFEST_STALE"));
   assert.ok(workerSource.includes("TRANSPORT_FLEET_DB_INVARIANT_BLOCKED"));
+  assert.ok(workerSource.includes("TRANSPORT_DYNAMIC_FLEET_EMPTY"));
+  assert.ok(workerSource.includes('parseOptionalBooleanArg("dynamic-fleet", false)'));
   assert.ok(workerSource.includes("perHostDelayMs = 1_000"));
 }
 
@@ -329,7 +383,7 @@ function verifyWorkflowBoundary() {
   assert.ok(workflowSource.includes("transport_expected_fleet_digest:"));
   assert.ok(
     workflowSource.includes(
-      "if: inputs.transport_mode == 'canary' || inputs.transport_mode == 'full'",
+      "if: github.event_name == 'schedule' || inputs.transport_mode == 'canary' || inputs.transport_mode == 'full'",
     ),
   );
   assert.equal(
@@ -360,18 +414,24 @@ function verifyWorkflowBoundary() {
   assert.ok(workflowSource.includes('"--expected-target-count=25"'));
   assert.ok(workflowSource.includes("--expected-fleet-digest="));
   assert.ok(workflowSource.includes("actions/upload-artifact@v7"));
-  assert.ok(!workflowSource.includes("\n  schedule:"));
+  assert.ok(workflowSource.includes('cron: "17 */6 * * *"'));
+  assert.ok(workflowSource.includes('"--dynamic-fleet=true"'));
+  assert.ok(workflowSource.includes("if: github.event_name != 'schedule'"));
+  assert.ok(workflowSource.includes('"--dynamic-full=' + '${SCHEDULED_RUN}"'));
 
   assert.ok(liveResultVerifierSource.includes("degraded target threshold"));
   assert.ok(liveResultVerifierSource.includes("unsafe/hard transport blocks detected"));
   assert.ok(liveResultVerifierSource.includes("selectedTargetCount: 5"));
   assert.ok(liveResultVerifierSource.includes("selectedTargetCount: 25"));
+  assert.ok(liveResultVerifierSource.includes('const dynamicFull = argValue("dynamic-full") === "true"'));
+  assert.ok(liveResultVerifierSource.includes("result.uniqueReadyTargetCount"));
 }
 
 verifyCheckedInManifest();
 verifyDigestDeterminism();
 await verifyFailClosedPreflight();
 await verifySelectedCanaryAndRecordFalse();
+await verifyDynamicFullFleet();
 verifyCliSafetyContract();
 verifyWorkflowBoundary();
 
