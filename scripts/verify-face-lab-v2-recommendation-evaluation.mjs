@@ -9,6 +9,10 @@ import {
   FACE_LAB_V2_TARGET_SWEEP_COHORT_HASH
 } from "../lib/face-lab-v2/evaluation/contracts.js";
 import {
+  FACE_LAB_V2_SPECIFICITY_DISTRIBUTION_VERSION,
+  runFaceLabV2SpecificityDistributionEvaluation
+} from "../lib/face-lab-v2/evaluation/specificity-distribution.js";
+import {
   FACE_LAB_V2_FACE_RESPONSIVENESS_VERSION,
   runFaceLabV2FaceResponsivenessEvaluation
 } from "../lib/face-lab-v2/evaluation/face-responsiveness.js";
@@ -225,6 +229,29 @@ assert.equal(
   JSON.stringify(faceResponsiveness.failures.slice(0, 30), null, 2)
 );
 
+const specificityDistribution =
+  runFaceLabV2SpecificityDistributionEvaluation();
+assert.equal(
+  specificityDistribution.evaluatorVersion,
+  FACE_LAB_V2_SPECIFICITY_DISTRIBUTION_VERSION
+);
+assert.equal(specificityDistribution.summary.caseCount, 96);
+assert.equal(specificityDistribution.cohort.faceCount, 8);
+assert.equal(specificityDistribution.cohort.targetCount, 12);
+assert.equal(
+  specificityDistribution.summary.hardFailureCount,
+  0,
+  JSON.stringify(specificityDistribution.failures, null, 2)
+);
+assert.equal(
+  specificityDistribution.targetDiagnostics.length,
+  specificityDistribution.cohort.targetCount
+);
+assert.equal(
+  specificityDistribution.faceDiagnostics.length,
+  specificityDistribution.cohort.faceCount
+);
+
 const propertyFuzz = runFaceLabV2PropertyFuzzEvaluation();
 assert.equal(
   propertyFuzz.evaluatorVersion,
@@ -407,7 +434,8 @@ console.log(JSON.stringify({
     parameterTranslation: parameterTranslation.summary,
     constraintResponsiveness: constraintResponsiveness.summary,
     propertyFuzz: propertyFuzz.summary,
-    faceResponsiveness: faceResponsiveness.summary
+    faceResponsiveness: faceResponsiveness.summary,
+    specificityDistribution: specificityDistribution.summary
   },
   targetSweep: {
     cohort: targetResponsiveness.cohort,
