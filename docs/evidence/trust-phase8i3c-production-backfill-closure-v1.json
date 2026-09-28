@@ -1,0 +1,110 @@
+{
+  "contract": "trust-phase8i3c-production-backfill-closure-v1",
+  "phase": "PHASE_8I_3C",
+  "result": "PASS",
+  "executed_at": "2026-09-29T05:14:42.795534+09:00",
+  "source_incident_count": 4,
+  "first_enqueue": {
+    "contract": "trust-phase8i3-drift-case-enqueue-result-v1",
+    "candidate_count": 2,
+    "new_case_count": 2,
+    "existing_case_count": 0,
+    "new_link_count": 4,
+    "new_reentry_event_count": 2,
+    "blocked_count": 0,
+    "authority_mutation": false,
+    "current_invalidated": false
+  },
+  "idempotent_replay": {
+    "contract": "trust-phase8i3-drift-case-enqueue-result-v1",
+    "candidate_count": 0,
+    "new_case_count": 0,
+    "existing_case_count": 0,
+    "new_link_count": 0,
+    "new_reentry_event_count": 0,
+    "blocked_count": 0,
+    "authority_mutation": false,
+    "current_invalidated": false
+  },
+  "cases": [
+    {
+      "case_id": "8d366508-075a-4791-8fe3-bc0271f176a8",
+      "case_key": "a7c27d8ae68b1a6757a0cc5c2590f38ac64dbb76c9b85d3dcc935dac721781e9",
+      "event_id": "81f41625-d188-4fe9-98d7-3828d350943f",
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "subject_id": "1b735d5e-bc57-4808-9f48-b4bb82f3e8fa",
+      "incident_kind": "CONFIRMED_REDIRECT",
+      "route_hint": "REDIRECT_QUALIFICATION",
+      "effective_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+      "confirmed_final_locator": "https://beautyofjoseon.com/",
+      "incident_ids": [
+        "766e838a-5b44-4904-b57a-023a73f9c648"
+      ],
+      "source_ids": [
+        "5752312a-3109-4da7-a796-9b3de1765112"
+      ],
+      "event": {
+        "event_type": "SOURCE_TRANSPORT_DRIFT",
+        "disposition": "REVIEW_REQUIRED",
+        "trigger_fingerprint": "a7c27d8ae68b1a6757a0cc5c2590f38ac64dbb76c9b85d3dcc935dac721781e9",
+        "reason_code": "SOURCE_TRANSPORT_DRIFT_REVIEW_REQUIRED",
+        "phase": "8I-3",
+        "transport_signal_only": true,
+        "authority_mutation": false,
+        "current_invalidated": false
+      }
+    },
+    {
+      "case_id": "ed15edcf-505c-423f-a2d6-cc347625a042",
+      "case_key": "f8963413daf67fce51fbe191cded8facd7e9a3bd46567c1b7249ba1acb07c9f2",
+      "event_id": "8acb61dd-ee44-42c2-9358-48d979982bc7",
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "incident_kind": "CONFIRMED_REDIRECT",
+      "route_hint": "REDIRECT_QUALIFICATION",
+      "effective_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "confirmed_final_locator": "https://beautyofjoseon.com/",
+      "incident_ids": [
+        "3911e772-c6c0-4697-af42-e5615faad49a",
+        "9dffee1d-0937-4988-a1c5-0253c7db5686",
+        "e00f274f-1d01-44ce-86a9-80249214b332"
+      ],
+      "source_ids": [
+        "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+        "60a55f19-a71d-4063-9ea5-13775193c940",
+        "f55720c7-0252-49b8-967c-8d77f4dfe6d6"
+      ],
+      "event": {
+        "event_type": "SOURCE_TRANSPORT_DRIFT",
+        "disposition": "REVIEW_REQUIRED",
+        "trigger_fingerprint": "f8963413daf67fce51fbe191cded8facd7e9a3bd46567c1b7249ba1acb07c9f2",
+        "reason_code": "SOURCE_TRANSPORT_DRIFT_REVIEW_REQUIRED",
+        "phase": "8I-3",
+        "transport_signal_only": true,
+        "authority_mutation": false,
+        "current_invalidated": false
+      }
+    }
+  ],
+  "production_readback": {
+    "cases": 2,
+    "links": 4,
+    "evaluations": 0,
+    "transport_incidents": 4,
+    "reentry_events": 5,
+    "source_transport_drift_events": 2,
+    "source_transport_drift_review_required": 2,
+    "builder_candidate_count": 0,
+    "product_fact_current": 71,
+    "evidence_sources": 40,
+    "confirmed_relocations": 1
+  },
+  "authority_invariants": {
+    "historical_evidence_source_mutation": false,
+    "product_fact_current_mutation": false,
+    "relocation_confirmation": false,
+    "recommendation_mutation": false,
+    "semantic_verdict_created": false
+  },
+  "next_step": "PHASE_8I_3D_MANUAL_LIVE_EVALUATION"
+}

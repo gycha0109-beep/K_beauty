@@ -94,10 +94,12 @@ assert.ok(!workflow.includes("Detect Phase 8H-3 relocation canary target change"
 assert.ok(!workflow.includes("Detect Phase 8H-3 research live canary target change"));
 assert.ok(workflow.includes("Manual Phase 8H-3 Derma relocation observation triplet"));
 assert.ok(workflow.includes("Manual Phase 8H-3 research live candidate payload"));
+const legacyManualCondition =
+  "if: github.event_name == 'workflow_dispatch' && inputs.transport_mode == 'none' && inputs.transport_handoff_mode == 'none'";
 assert.equal(
-  (workflow.match(/if: github\.event_name == 'workflow_dispatch'/g) ?? []).length,
+  workflow.split(legacyManualCondition).length - 1,
   2,
-  "both external live canaries must be workflow_dispatch-only after closure",
+  "both Phase 8H-3 external live canaries must remain manual-only after closure",
 );
 
 const historical = closure.derma?.historical_source;

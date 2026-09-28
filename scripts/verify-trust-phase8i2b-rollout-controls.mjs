@@ -381,6 +381,7 @@ function verifyCliSafetyContract() {
 function verifyWorkflowBoundary() {
   assert.ok(workflowSource.includes("transport_mode:"));
   assert.ok(workflowSource.includes("transport_expected_fleet_digest:"));
+  assert.ok(workflowSource.includes("transport_handoff_mode:"));
   assert.ok(
     workflowSource.includes(
       "if: github.event_name == 'schedule' || inputs.transport_mode == 'canary' || inputs.transport_mode == 'full'",
@@ -389,7 +390,7 @@ function verifyWorkflowBoundary() {
   assert.equal(
     (
       workflowSource.match(
-        /if: github\.event_name == 'workflow_dispatch' && inputs\.transport_mode == 'none'/g,
+        /if: github\.event_name == 'workflow_dispatch' && inputs\.transport_mode == 'none' && inputs\.transport_handoff_mode == 'none'/g,
       ) || []
     ).length,
     2,
