@@ -60,9 +60,11 @@ for (const fn of [
   "public.request_trust_reentry_v1",
   "public.process_trust_reentry_event_v1",
 ]) {
-  const pos = blueprint.indexOf("create or replace function " + fn);
+  const lowerBlueprint = blueprint.toLowerCase();
+  const needle = ("create or replace function " + fn).toLowerCase();
+  const pos = lowerBlueprint.indexOf(needle);
   assert.ok(pos >= 0, `function missing: ${fn}`);
-  const next = blueprint.indexOf("create or replace function ", pos + 1);
+  const next = lowerBlueprint.indexOf("create or replace function ", pos + 1);
   const segment = blueprint.slice(pos, next < 0 ? blueprint.length : next);
   assert.match(segment, /security definer/i, `SECURITY DEFINER missing: ${fn}`);
   assert.match(segment, /set search_path (?:=|TO) ''/i, `empty search_path missing: ${fn}`);
