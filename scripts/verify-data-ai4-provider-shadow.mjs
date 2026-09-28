@@ -42,6 +42,14 @@ check(providerService.includes('"ko_oily_temporary_sensitive_light_cream"'),
   "compound temporary-sensitivity provider scenario must exist");
 check(providerService.includes('"ko_tight_afterwash_oily_afternoon_cream"'),
   "compound post-wash/afternoon provider scenario must exist");
+check(providerService.includes('"ko_no_cast_bright_toneup_sunscreen"'),
+  "independent white-cast/tone-up provider scenario must exist");
+check(providerService.includes('"ko_toneup_same_axis_conflict_sunscreen"'),
+  "same-axis tone-up conflict provider scenario must exist");
+check(providerService.includes('"ko_eye_sensitive_no_cast_sunscreen"'),
+  "eye-sensitive white-cast provider scenario must exist");
+check(providerService.includes('"ko_makeup_no_pilling_eye_sunscreen"'),
+  "makeup/eye provider scenario must exist");
 check(providerService.includes('query: "지성인데 백탁 없고 끈적이지 않는 선크림 찾아줘."'),
   "provider scenario queries must be frozen in code");
 check(
@@ -71,6 +79,18 @@ check(
     providerService.includes('post_wash_feeling: "tight"') &&
     providerService.includes('afternoon_skin_change: "more_oily"'),
   "compound current-state scenario must preserve post-wash and afternoon axes"
+);
+check(
+  providerService.includes('query: "백탁은 싫은데 얼굴은 밝아 보였으면 좋겠어. 선크림 추천해줘"') &&
+    providerService.includes('white_cast_hate: true') &&
+    providerService.includes('tone_up_wanted: true') &&
+    providerService.includes("requireNoToneUpConflictUnresolved: true"),
+  "white-cast avoidance and desired tone-up must remain independent"
+);
+check(
+  providerService.includes('query: "톤업은 싫은데 확실하게 톤업되는 선크림 찾아줘"') &&
+    providerService.includes("requireToneUpConflictUnresolved: true"),
+  "same-axis tone-up conflict must remain explicit"
 );
 check(providerService.includes("requireSparseIntent: true"),
   "category-only scenario must reject hallucinated user state");
@@ -183,6 +203,16 @@ check(workflow.includes("ko_oily_fresh_afterfeel_cleanser"),
   "workflow must run semantic-axis cleanser scenario");
 check(workflow.includes("ko_oily_temporary_sensitive_light_cream"),
   "workflow must run compound temporary-sensitivity scenario");
+check(workflow.includes("ko_no_cast_bright_toneup_sunscreen"),
+  "workflow must run independent white-cast/tone-up scenario");
+check(workflow.includes("ko_toneup_same_axis_conflict_sunscreen"),
+  "workflow must run same-axis tone-up conflict scenario");
+check(workflow.includes("ko_eye_sensitive_no_cast_sunscreen"),
+  "workflow must run eye-sensitive white-cast scenario");
+check(workflow.includes("ko_makeup_no_pilling_eye_sunscreen"),
+  "workflow must run makeup/eye scenario");
+check(workflow.includes("verify-data-ai29a-product-query-quality.mjs"),
+  "provider-shadow manual fallback must include DATA-AI29A verifier");
 check(providerService.includes("ko_tight_afterwash_oily_afternoon_cream"),
   "compound post-wash/afternoon scenario must remain frozen in source for follow-up validation");
 check(

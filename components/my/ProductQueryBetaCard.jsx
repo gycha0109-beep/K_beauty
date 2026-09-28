@@ -10,6 +10,37 @@ function getErrorMessage(status, copy) {
   return copy.errors.generic;
 }
 
+function getReasonLabel(copy, group, value) {
+  if (typeof value !== "string") return "";
+  return copy.reasonLabels?.[group]?.[value] || "";
+}
+
+function formatExplanationRef(reason, copy) {
+  const code = typeof reason?.code === "string" ? reason.code : "";
+  const template = copy.reasonTemplates?.[code];
+  if (!template) return null;
+
+  const params = reason?.params && typeof reason.params === "object"
+    ? reason.params
+    : {};
+  const replacements = {
+    finish: getReasonLabel(copy, "finishes", params.finish),
+    texture: getReasonLabel(copy, "textures", params.texture),
+    skinType: getReasonLabel(copy, "skinTypes", params.skinType),
+    concern: getReasonLabel(copy, "concerns", params.concern)
+  };
+
+  let output = template;
+  for (const [key, value] of Object.entries(replacements)) {
+    if (output.includes(`{${key}}`)) {
+      if (!value) return null;
+      output = output.replaceAll(`{${key}}`, value);
+    }
+  }
+
+  return output.includes("{") ? null : output;
+}
+
 export default function ProductQueryBetaCard({ copy }) {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState(null);
@@ -131,13 +162,20 @@ export default function ProductQueryBetaCard({ copy }) {
                     <h4 className="mt-1 text-base font-bold text-[#3d2b32] dark:text-[#f8edf1]">
                       {product.name || copy.unknownProduct}
                     </h4>
-                    {Array.isArray(product.whyPicked) && product.whyPicked.length > 0 ? (
-                      <ul className="mt-3 space-y-1.5 text-sm leading-6 text-[#6f4d58] dark:text-[#e8d5dc]">
-                        {product.whyPicked.slice(0, 3).map((reason) => (
-                          <li key={reason}>• {reason}</li>
-                        ))}
-                      </ul>
-                    ) : null}
+                    {Array.isArray(product.explanationRefs) ? (() => {
+                      const reasons = product.explanationRefs
+                        .map((reason) => formatExplanationRef(reason, copy))
+                        .filter(Boolean)
+                        .slice(0, 3);
+
+                      return reasons.length > 0 ? (
+                        <ul className="mt-3 space-y-1.5 text-sm leading-6 text-[#6f4d58] dark:text-[#e8d5dc]">
+                          {reasons.map((reason) => (
+                            <li key={reason}>• {reason}</li>
+                          ))}
+                        </ul>
+                      ) : null;
+                    })() : null}
                     {product.cautionNote ? (
                       <p className="mt-3 rounded-lg bg-[#fff4ef] px-3 py-2 text-xs leading-5 text-[#855342] dark:bg-[#3b2825] dark:text-[#efc3b4]">
                         {copy.caution}: {product.cautionNote}

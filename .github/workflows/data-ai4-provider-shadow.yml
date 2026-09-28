@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "lib/product-query-intent-contract.mjs"
+      - "lib/product-query-intent-semantic-ownership.mjs"
       - "lib/server/product-query-intent-service.js"
       - "lib/product-query-execution-contract.mjs"
       - "lib/product-query-recommendation.js"
@@ -14,6 +15,7 @@ on:
       - "lib/product-query-provider-shadow-oidc.js"
       - "app/api/internal/product-query-provider-shadow/route.js"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
+      - "scripts/verify-data-ai29a-product-query-quality.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
       - "scripts/classify-data-ai28-output-budget-probe.mjs"
       - ".github/workflows/data-ai4-provider-shadow.yml"
@@ -23,6 +25,7 @@ on:
     branches: [main]
     paths:
       - "lib/product-query-intent-contract.mjs"
+      - "lib/product-query-intent-semantic-ownership.mjs"
       - "lib/server/product-query-intent-service.js"
       - "lib/product-query-execution-contract.mjs"
       - "lib/product-query-recommendation.js"
@@ -31,6 +34,7 @@ on:
       - "lib/product-query-provider-shadow-oidc.js"
       - "app/api/internal/product-query-provider-shadow/route.js"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
+      - "scripts/verify-data-ai29a-product-query-quality.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
       - "scripts/classify-data-ai28-output-budget-probe.mjs"
       - ".github/workflows/data-ai4-provider-shadow.yml"
@@ -100,6 +104,10 @@ jobs:
       - name: Verify DATA-AI2 deterministic execution manually
         if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-data-ai2-product-query-execution.mjs
+
+      - name: Verify DATA-AI29A semantic and explanation quality manually
+        if: github.event_name == 'workflow_dispatch'
+        run: node scripts/verify-data-ai29a-product-query-quality.mjs
 
       - name: Verify DATA-AI3 real-corpus shadow boundary manually
         if: github.event_name == 'workflow_dispatch'
@@ -201,6 +209,10 @@ jobs:
             ko_category_only_cleanser
             ko_acne_treatment_pregnancy_unresolved
             ko_oily_fresh_afterfeel_cleanser
+            ko_no_cast_bright_toneup_sunscreen
+            ko_toneup_same_axis_conflict_sunscreen
+            ko_eye_sensitive_no_cast_sunscreen
+            ko_makeup_no_pilling_eye_sunscreen
           )
 
           for scenario in "${scenarios[@]}"; do

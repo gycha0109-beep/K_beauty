@@ -96,11 +96,12 @@ check(
     card.includes("JSON.stringify({ query: normalizedQuery })") &&
     card.includes("maxLength={500}") &&
     card.includes("payload.result") &&
-    card.includes("product.whyPicked") &&
+    card.includes("product.explanationRefs") &&
+    card.includes("formatExplanationRef") &&
     card.includes("product.cautionNote") &&
     card.includes("unresolvedTerms.join") &&
     card.includes("copy.partialTermsLabel"),
-  "beta card must reuse the existing bounded POST contract and expose unresolved conditions without query persistence"
+  "beta card must reuse the existing bounded POST contract, render locale-safe explanation refs, and expose unresolved conditions without query persistence"
 );
 
 for (const forbidden of [
