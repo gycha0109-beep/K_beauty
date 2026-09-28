@@ -7,8 +7,10 @@ function argValue(name) {
 
 const resultPath = argValue("result");
 const mode = argValue("mode");
+const dynamicFull = argValue("dynamic-full") === "true";
 if (!resultPath) throw new Error("--result=<path> is required");
 if (!["canary", "full"].includes(mode)) throw new Error("--mode=canary|full is required");
+if (dynamicFull && mode !== "full") throw new Error("--dynamic-full=true is only valid for full mode");
 
 const result = JSON.parse(fs.readFileSync(resultPath, "utf8"));
 assert.equal(result.contract, "trust-official-source-transport-worker-result-v1");
@@ -23,8 +25,16 @@ assert.equal(result.observationCount, result.selectedSourceCount);
 
 const expected = mode === "canary"
   ? { selectedTargetCount: 5, selectedSourceCount: 10 }
-  : { selectedTargetCount: 25, selectedSourceCount: 35 };
+  : dynamicFull
+    ? {
+        selectedTargetCount: result.uniqueReadyTargetCount,
+        selectedSourceCount: result.readySourceCount,
+      }
+    : { selectedTargetCount: 25, selectedSourceCount: 35 };
 
+assert.equal(result.dynamicFleet, dynamicFull);
+assert.ok(expected.selectedTargetCount > 0);
+assert.ok(expected.selectedSourceCount > 0);
 assert.equal(result.selectedTargetCount, expected.selectedTargetCount);
 assert.equal(result.selectedSourceCount, expected.selectedSourceCount);
 
@@ -73,13 +83,14 @@ if (mode === "canary") {
 } else {
   assert.ok(
     degradedCount * 5 < expected.selectedTargetCount,
-    `full fleet degraded target threshold reached 20%: ${degradedCount}/25`,
+    `full fleet degraded target threshold reached 20%: ${degradedCount}/${expected.selectedTargetCount}`,
   );
 }
 
 const summary = {
   contract: "trust-phase8i2b-live-result-verification-v1",
   mode,
+  dynamicFull,
   runId: result.runId,
   fleetSnapshotDigest: result.fleetSnapshotDigest,
   scopeSnapshotDigest: result.scopeSnapshotDigest,

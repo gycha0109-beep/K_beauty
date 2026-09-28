@@ -1,0 +1,172 @@
+{
+  "contract": "trust-phase8i2-production-closure-v1",
+  "phase": "PHASE_8I_2",
+  "result": "PASS",
+  "watchtower_track": "pipeline-reliability",
+  "evidence_captured_date": "2026-09-29",
+  "rollout_fleet_snapshot_digest": "4575d20e983fafe3a882ad26aa362be4ceeec9f286a3d739e4fd92ed2ca98660",
+  "foundation": {
+    "merge_sha": "2c918e95f76c1b334b9d2b573b0f64186707a343",
+    "production_migration": "20260928081244_trust_phase8i2_transport_foundation_v1",
+    "source_count": 35,
+    "ready_source_count": 35,
+    "blocked_source_count": 0,
+    "unique_ready_target_count": 25
+  },
+  "rollout": [
+    {
+      "stage": "CANARY",
+      "run_id": 36363586674,
+      "qualified": true,
+      "observation_window": {
+        "min_checked_at": "2026-09-28T09:50:06.819+09:00",
+        "max_checked_at": "2026-09-28T09:50:10.985+09:00"
+      },
+      "network_probe_count": 5,
+      "source_observation_count": 10,
+      "target_result_counts": {
+        "HEALTHY": 3,
+        "REDIRECTED": 1,
+        "TRANSIENT": 1
+      },
+      "degraded_target_count": 1,
+      "hard_blocked_target_count": 0,
+      "incidents_created": 0,
+      "artifact": {
+        "id": 10946786215,
+        "sha256": "afbc95a3ed70f7dc3a69c1f6e90495fd8d6465521c4c2720476f948ca484bb69"
+      }
+    },
+    {
+      "stage": "FULL_PASS_1",
+      "run_id": 36366544747,
+      "qualified": true,
+      "observation_window": {
+        "min_checked_at": "2026-09-28T10:36:30.600+09:00",
+        "max_checked_at": "2026-09-28T10:36:45.228+09:00"
+      },
+      "network_probe_count": 25,
+      "source_observation_count": 35,
+      "target_result_counts": {
+        "HEALTHY": 20,
+        "REDIRECTED": 2,
+        "TRANSIENT": 3
+      },
+      "degraded_target_count": 3,
+      "hard_blocked_target_count": 0,
+      "incidents_created": 3,
+      "artifact": {
+        "id": 10946983792,
+        "sha256": "b49eeeba0074737e02f0698b519d43b8d8e1b210423ba74b5272adaf0cec6a39"
+      }
+    },
+    {
+      "stage": "EARLY_FULL_RECHECK_EXCLUDED",
+      "run_id": 36366943620,
+      "qualified": false,
+      "exclusion_reason": "independent_observation_gap_below_30_minutes",
+      "gap_from_full_pass_1_seconds": 363.307,
+      "network_probe_count": 25,
+      "source_observation_count": 35,
+      "incidents_created": 0
+    },
+    {
+      "stage": "FULL_PASS_2",
+      "run_id": 36370639405,
+      "qualified": true,
+      "observation_window": {
+        "min_checked_at": "2026-09-28T11:40:26.557+09:00",
+        "max_checked_at": "2026-09-28T11:40:40.242+09:00"
+      },
+      "gap_from_full_pass_1_seconds": 3821.329,
+      "network_probe_count": 25,
+      "source_observation_count": 35,
+      "target_result_counts": {
+        "HEALTHY": 19,
+        "REDIRECTED": 2,
+        "TRANSIENT": 4
+      },
+      "degraded_target_count": 4,
+      "hard_blocked_target_count": 0,
+      "incidents_created": 1,
+      "artifact": {
+        "id": 10948158965,
+        "sha256": "ecf60dac14114871a97698b956fcacc9eb97052d8c16c4d473a2c489c92e30a0"
+      }
+    }
+  ],
+  "confirmed_transport_incidents": {
+    "total": 4,
+    "by_kind": {
+      "CONFIRMED_REDIRECT": 4
+    },
+    "incidents": [
+      {
+        "incident_id": "3911e772-c6c0-4697-af42-e5615faad49a",
+        "source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+        "target_key": "official-transport-url-sha256:1d399d803aee71761004ed719f0eb66d4935ff46852de04637135bb8250b8ab1",
+        "effective_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "confirmed_final_locator": "https://beautyofjoseon.com/",
+        "episode_started_at": "2026-09-28T09:50:06.820+09:00",
+        "confirmed_at": "2026-09-28T10:36:35.548+09:00"
+      },
+      {
+        "incident_id": "9dffee1d-0937-4988-a1c5-0253c7db5686",
+        "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+        "target_key": "official-transport-url-sha256:1d399d803aee71761004ed719f0eb66d4935ff46852de04637135bb8250b8ab1",
+        "effective_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "confirmed_final_locator": "https://beautyofjoseon.com/",
+        "episode_started_at": "2026-09-28T09:50:06.820+09:00",
+        "confirmed_at": "2026-09-28T10:36:35.548+09:00"
+      },
+      {
+        "incident_id": "e00f274f-1d01-44ce-86a9-80249214b332",
+        "source_id": "f55720c7-0252-49b8-967c-8d77f4dfe6d6",
+        "target_key": "official-transport-url-sha256:1d399d803aee71761004ed719f0eb66d4935ff46852de04637135bb8250b8ab1",
+        "effective_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "confirmed_final_locator": "https://beautyofjoseon.com/",
+        "episode_started_at": "2026-09-28T09:50:06.820+09:00",
+        "confirmed_at": "2026-09-28T10:36:35.548+09:00"
+      },
+      {
+        "incident_id": "766e838a-5b44-4904-b57a-023a73f9c648",
+        "source_id": "5752312a-3109-4da7-a796-9b3de1765112",
+        "target_key": "official-transport-url-sha256:87929acf393a0d8cd56d58bee7c139bac87e169e4a6573e86f9fbfff48d3120c",
+        "effective_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+        "confirmed_final_locator": "https://beautyofjoseon.com/",
+        "episode_started_at": "2026-09-28T10:36:40.010+09:00",
+        "confirmed_at": "2026-09-28T11:40:34.543+09:00"
+      }
+    ]
+  },
+  "production_readback": {
+    "transport_observations": 115,
+    "transport_incidents": 4,
+    "product_fact_current_rows": 71,
+    "evidence_source_rows": 40,
+    "confirmed_relocations": 1,
+    "reentry_events": 3,
+    "reentry_checkpoints": 671
+  },
+  "authority_invariants": {
+    "historical_evidence_source_mutations": 0,
+    "automatic_product_fact_current_mutations": 0,
+    "automatic_relocation_confirmations": 0,
+    "transient_failure_promotions": 0,
+    "transport_to_reentry_bridge_enabled": false,
+    "semantic_same_inference_from_transport": false
+  },
+  "scheduled_monitor": {
+    "enabled_by_closure_pr": true,
+    "cron_utc": "17 */6 * * *",
+    "cadence_hours": 6,
+    "scope": "full",
+    "fleet_mode": "dynamic_ready_fleet",
+    "same_host_delay_ms": 1000,
+    "host_group_concurrency": 3,
+    "internal_http_retry": false,
+    "authority_mutation": false
+  },
+  "closure_authority": "PHASE_8I_2_CLOSED",
+  "next_authority": "PHASE_8I_3_CONFIRMED_TRANSPORT_INCIDENT_HANDOFF"
+}

@@ -27,6 +27,14 @@ function parseRequiredPositiveIntArg(name) {
   return value;
 }
 
+function parseOptionalBooleanArg(name, fallback = false) {
+  const raw = argValue(name);
+  if (raw === null) return fallback;
+  if (raw === "true") return true;
+  if (raw === "false") return false;
+  throw new Error(`--${name}=true|false when provided`);
+}
+
 function parseOptionalNonNegativeIntArg(name, fallback) {
   const raw = argValue(name);
   if (raw === null) return fallback;
@@ -286,6 +294,7 @@ export async function runOfficialSourceTransportWorker({
   expectedSourceCount,
   expectedTargetCount,
   expectedFleetDigest = null,
+  dynamicFleet = false,
   perHostDelayMs = 1_000,
 } = {}) {
   if (!client) throw new Error("client is required");
@@ -294,6 +303,12 @@ export async function runOfficialSourceTransportWorker({
   }
   if (typeof record !== "boolean") {
     throw new Error("record must be explicitly set to true or false");
+  }
+  if (typeof dynamicFleet !== "boolean") {
+    throw new Error("dynamicFleet must be boolean");
+  }
+  if (scope === "canary" && dynamicFleet) {
+    throw new Error("dynamicFleet is only valid for full scope");
   }
   if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 8) {
     throw new Error("concurrency must be an integer between 1 and 8");
@@ -349,12 +364,18 @@ export async function runOfficialSourceTransportWorker({
       );
     }
   } else {
-    assertExpectedFleetCounts({
-      targets,
-      readyGroups: allReadyGroups,
-      expectedSourceCount,
-      expectedTargetCount,
-    });
+    if (dynamicFleet) {
+      if (targets.length < 1 || allReadyGroups.length < 1) {
+        throw new Error("TRANSPORT_DYNAMIC_FLEET_EMPTY");
+      }
+    } else {
+      assertExpectedFleetCounts({
+        targets,
+        readyGroups: allReadyGroups,
+        expectedSourceCount,
+        expectedTargetCount,
+      });
+    }
     selectedGroups = allReadyGroups;
     selectedSourceCount = targets.length;
   }
@@ -408,6 +429,7 @@ export async function runOfficialSourceTransportWorker({
     runId,
     scope,
     record,
+    dynamicFleet,
     fleetSnapshotDigest,
     scopeSnapshotDigest,
     sourceCount: Number(resolver?.source_count || targets.length),
@@ -437,12 +459,18 @@ if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
     throw new Error("--scope=canary|full is required");
   }
   const record = parseRequiredBooleanArg("record");
-  const expectedSourceCount = parseRequiredPositiveIntArg("expected-source-count");
-  const expectedTargetCount = parseRequiredPositiveIntArg("expected-target-count");
+  const dynamicFleet = parseOptionalBooleanArg("dynamic-fleet", false);
+  const expectedSourceCount = dynamicFleet
+    ? null
+    : parseRequiredPositiveIntArg("expected-source-count");
+  const expectedTargetCount = dynamicFleet
+    ? null
+    : parseRequiredPositiveIntArg("expected-target-count");
   const manifestPath = argValue("manifest");
   let manifest = null;
 
   if (scope === "canary") {
+    if (dynamicFleet) throw new Error("--dynamic-fleet=true is only valid for full scope");
     if (!manifestPath) throw new Error("--manifest=<path> is required for canary scope");
     manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   } else if (manifestPath) {
@@ -463,6 +491,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
     expectedSourceCount,
     expectedTargetCount,
     expectedFleetDigest: argValue("expected-fleet-digest"),
+    dynamicFleet,
     perHostDelayMs: parseOptionalNonNegativeIntArg("per-host-delay-ms", 1_000),
   });
 
