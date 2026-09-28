@@ -21,6 +21,8 @@ const oidc = read("lib/product-query-provider-shadow-oidc.js");
 const workflow = read(".github/workflows/data-ai4-provider-shadow.yml");
 const runtimeValidator = read("scripts/validate-data-ai4-provider-shadow-runtime-response.mjs");
 const dataAi28Classifier = read("scripts/classify-data-ai28-output-budget-probe.mjs");
+const dataAi28eRetry = read("lib/product-query-provider-retry-policy.mjs");
+const dataAi28eVerifier = read("scripts/verify-data-ai28e-bounded-incomplete-retry.mjs");
 
 check(providerService.includes('import "server-only"'),
   "provider shadow service must stay server-only");
@@ -217,18 +219,32 @@ check(providerService.includes("ko_tight_afterwash_oily_afternoon_cream"),
   "compound post-wash/afternoon scenario must remain frozen in source for follow-up validation");
 check(
   dataAi1.includes("const DEFAULT_MAX_OUTPUT_TOKENS = 600;") &&
+    dataAi1.includes("executeBoundedProductQueryProviderRetry") &&
+    dataAi28eRetry.includes("maxAttempts: 2") &&
+    dataAi28eRetry.includes("totalDeadlineMs: 14000") &&
+    dataAi28eRetry.includes("retryDelayMs: 0") &&
     workflow.includes('scenario="ko_oily_temporary_sensitive_light_cream"') &&
     workflow.includes("for attempt in $(seq 1 20)") &&
     workflow.includes('"default"') &&
-    workflow.includes("DATA_AI28_PHASE_B_SUMMARY") &&
+    workflow.includes("DATA_AI28E_RETRY_SUMMARY") &&
+    workflow.includes("completed_retried") &&
     workflow.includes('test "$completed" -eq 20') &&
     workflow.includes('test "$incomplete" -eq 0'),
-  "DATA-AI28 Phase B must validate the selected default 600 budget across 20 exact deployed-main attempts"
+  "DATA-AI28E must preserve the 600-token budget and validate one bounded incomplete retry across 20 exact deployed-main attempts"
 );
 check(
   dataAi28Classifier.includes('expectedBudget === "default"') &&
-    dataAi28Classifier.includes("payload.outputBudget !== null"),
-  "DATA-AI28 classifier must distinguish the real default path from explicit budget overrides"
+    dataAi28Classifier.includes("payload.outputBudget !== null") &&
+    dataAi28Classifier.includes("payload.providerAttempts > 2") &&
+    dataAi28Classifier.includes('"completed_retried"'),
+  "DATA-AI28 classifier must distinguish the real default path and enforce bounded retry evidence"
+);
+check(
+  dataAi28eVerifier.includes("PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE") &&
+    dataAi28eVerifier.includes("content_filter") &&
+    dataAi28eVerifier.includes("PRODUCT_QUERY_AI_RESPONSE_INVALID") &&
+    dataAi28eVerifier.includes("providerAttempts === 2"),
+  "DATA-AI28E verifier must cover retry and non-retry provider failure classes"
 );
 check(workflow.includes("validate-data-ai4-provider-shadow-runtime-response.mjs"),
   "deployed provider probe must invoke standalone runtime-response validator");

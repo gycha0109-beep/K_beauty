@@ -12,6 +12,7 @@ on:
       - "components/my/ProductQueryBetaCard.jsx"
       - "lib/my/i18n.js"
       - "lib/server/product-query-intent-service.js"
+      - "lib/product-query-provider-retry-policy.mjs"
       - "lib/product-query-execution-contract.mjs"
       - "lib/product-query-recommendation.js"
       - "lib/recommendation-scoring.ts"
@@ -32,6 +33,7 @@ on:
       - "scripts/verify-data-ai2-product-query-execution.mjs"
       - "scripts/verify-data-ai29a-product-query-quality.mjs"
       - "scripts/verify-data-ai29b-product-query-ranking.mjs"
+      - "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
@@ -53,6 +55,7 @@ on:
       - "components/my/ProductQueryBetaCard.jsx"
       - "lib/my/i18n.js"
       - "lib/server/product-query-intent-service.js"
+      - "lib/product-query-provider-retry-policy.mjs"
       - "lib/product-query-execution-contract.mjs"
       - "lib/product-query-recommendation.js"
       - "lib/recommendation-scoring.ts"
@@ -73,6 +76,7 @@ on:
       - "scripts/verify-data-ai2-product-query-execution.mjs"
       - "scripts/verify-data-ai29a-product-query-quality.mjs"
       - "scripts/verify-data-ai29b-product-query-ranking.mjs"
+      - "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
       - "scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"
@@ -142,6 +146,9 @@ jobs:
 
       - name: Verify DATA-AI29B ranking calibration and score-grounded reasons
         run: node scripts/verify-data-ai29b-product-query-ranking.mjs
+
+      - name: Verify DATA-AI28E bounded incomplete retry
+        run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
 
       - name: Verify DATA-AI3 real-corpus shadow boundary
         run: node scripts/verify-data-ai3-product-query-shadow.mjs
