@@ -277,3 +277,7 @@ console.log(JSON.stringify({
   operatorManifestDigest:
     operatorManifest.manifestDigest
 }, null, 2));
+
+console.log("BEGIN_REVIEW_PACKET_JSON");
+console.log(JSON.stringify(reviewPacket, null, 2));
+console.log("END_REVIEW_PACKET_JSON");
