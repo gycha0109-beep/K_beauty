@@ -1,0 +1,90 @@
+{
+  "contract": "trust-phase8i3a-production-schema-apply-v1",
+  "phase": "PHASE_8I_3A",
+  "result": "PASS",
+  "production_migration": {
+    "version": "20260929045848",
+    "name": "trust_phase8i3a_drift_case_bridge_v1",
+    "filename": "20260929045848_trust_phase8i3a_drift_case_bridge_v1.sql",
+    "source_blueprint": "docs/evidence/trust-phase8i3a-drift-case-bridge-db-blueprint-v1.sql",
+    "source_blueprint_content_sha": "bde9fa748d1e746cdb2e340072b285a47a80c69d",
+    "apply_authority": "SUPABASE_MCP_APPLY_MIGRATION",
+    "result": "SUCCESS"
+  },
+  "migration_scope": "SCHEMA_AND_RPC_ONLY_NO_INCIDENT_BACKFILL",
+  "production_readback": {
+    "tables": [
+      "trust_official_source_transport_drift_case_incidents",
+      "trust_official_source_transport_drift_cases",
+      "trust_official_source_transport_drift_evaluations"
+    ],
+    "counts": {
+      "cases": 0,
+      "links": 0,
+      "evaluations": 0,
+      "transport_incidents": 4,
+      "reentry_events": 3,
+      "source_transport_drift_events": 0,
+      "product_fact_current": 71,
+      "evidence_sources": 40,
+      "confirmed_relocations": 1
+    },
+    "builder_candidate_count": 2,
+    "event_type_constraint_contains_source_transport_drift": true
+  },
+  "security_readback": {
+    "all_phase8i3_tables_rls_enabled": true,
+    "direct_table_grants": {
+      "service_role_select": false,
+      "service_role_insert": false,
+      "authenticated_select": false,
+      "anon_select": false
+    },
+    "service_role_rpc_execute": {
+      "build_trust_official_source_transport_drift_cases_v1": true,
+      "enqueue_trust_official_source_transport_drift_cases_v1": true,
+      "get_trust_official_source_transport_drift_case_v1": true,
+      "get_trust_official_source_transport_drift_cases_v1": true,
+      "record_trust_official_source_transport_drift_evaluation_v1": true,
+      "request_trust_reentry_v1": true,
+      "process_trust_reentry_event_v1": true
+    },
+    "internal_candidate_resolver_service_role_execute": false,
+    "authenticated_phase8i3_rpc_execute": false,
+    "anon_phase8i3_rpc_execute": false,
+    "public_phase8i3_rpc_execute": false,
+    "security_definer_search_path_empty": true,
+    "immutable_trigger_count": 3
+  },
+  "advisors": {
+    "relevant_finding_count": 3,
+    "findings": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "object": "trust_official_source_transport_drift_case_incidents"
+      },
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "object": "trust_official_source_transport_drift_cases"
+      },
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "object": "trust_official_source_transport_drift_evaluations"
+      }
+    ],
+    "accepted_reason": "RPC_ONLY_TABLES_WITH_RLS_ENABLED_AND_ZERO_DIRECT_TABLE_GRANTS",
+    "security_blocker_for_phase8i3a_objects": false
+  },
+  "authority_invariants": {
+    "incident_backfill_executed": false,
+    "historical_evidence_source_mutation": false,
+    "product_fact_current_mutation": false,
+    "relocation_confirmation": false,
+    "recommendation_mutation": false,
+    "semantic_verdict_created": false
+  },
+  "next_step": "PHASE_8I_3C_BACKFILL_ONLY_AFTER_REPOSITORY_MERGE_AND_EXACT_MAIN_VERIFICATION"
+}
