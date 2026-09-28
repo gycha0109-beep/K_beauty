@@ -231,7 +231,62 @@ FACE_LAB_EVAL_COHORT=candidate-personalization npm run eval:face-lab-v2
 
 The all-suite runner also includes the candidate report as diagnostic output.
 
-## 13. Interpretation
+## 13. First observed baseline
+
+The first fixed 96-case run produced:
+
+~~~text
+candidateActivatedCaseCount = 8
+styleDeltaChangedCaseCount = 8
+selectedRouteChangedCaseCount = 5
+routeMutationRate = 0.0521
+
+candidateRelationActionCount = 5
+faceEvidenceUtilizationRate = 1.0
+humanVisibleRationaleMutationRate = 1.0
+
+FL-CAND-001 activation = 6
+FL-CAND-002 activation = 2
+~~~
+
+Target activation counts:
+
+~~~text
+clear_soft = 2
+soft = 2
+cute_playful = 2
+chic = 1
+defined = 1
+~~~
+
+Distribution comparison:
+
+~~~text
+                         vCurrent   vCandidate
+
+unique action signatures     17          18
+unique parameter signatures  11          11
+unique wording signatures    17          18
+unique route strategies       1           1
+
+fully collapsed Targets       6           6
+avg Target unique actions   1.667       1.75
+avg Face unique actions       10          10
+~~~
+
+The candidate therefore has a deliberately bounded effect:
+
+- it reaches only 8 / 96 Target Sweep cases;
+- it changes selected-route semantics in 5 / 96 cases;
+- it adds one additional action/wording signature on this synthetic surface;
+- it does not change the parameter vocabulary;
+- it does not reduce the six fully collapsed Targets.
+
+These numbers are diagnostics, not a quality verdict.
+
+The unchanged fully-collapsed Target count supports the existing design boundary: vCandidate-1 Face Fit alone is not expected to solve classic / trendy / natural / polished-style Current-gap problems. Those remain candidates for a separately authorized Current Styling Baseline rather than broader face-structure heuristics.
+
+## 14. Interpretation
 
 A changed selected route proves only that the candidate policy propagated to route semantics.
 
