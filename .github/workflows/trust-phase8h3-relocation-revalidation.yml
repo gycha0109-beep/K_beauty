@@ -146,7 +146,7 @@ jobs:
 
   transport_live:
     name: Phase 8I-2B live transport rollout
-    if: github.event_name == 'workflow_dispatch' && inputs.transport_mode != 'none'
+    if: inputs.transport_mode == 'canary' || inputs.transport_mode == 'full'
     needs: verify
     runs-on: ubuntu-24.04
     timeout-minutes: 15
