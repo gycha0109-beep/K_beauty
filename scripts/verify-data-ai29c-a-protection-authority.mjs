@@ -45,9 +45,9 @@ function fact({
 }) {
   return {
     proposition_key: String(idSuffix).padStart(64, "b").slice(-64),
-    fact_instance_id: \`00000000-0000-4000-8000-\${String(idSuffix).padStart(12, "0")}\`,
+    fact_instance_id: `00000000-0000-4000-8000-${String(idSuffix).padStart(12, "0")}`,
     subject_id: subjectId,
-    confirmation_id: \`00000000-0000-4000-9000-\${String(idSuffix).padStart(12, "0")}\`,
+    confirmation_id: `00000000-0000-4000-9000-${String(idSuffix).padStart(12, "0")}`,
     fact_key: factKey,
     registry_version: registryVersion,
     proposition_serializer_version: "product-fact-proposition-v1",
