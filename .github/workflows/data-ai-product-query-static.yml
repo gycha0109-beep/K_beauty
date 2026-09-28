@@ -16,6 +16,10 @@ on:
       - "lib/product-query-execution-contract.mjs"
       - "lib/product-query-recommendation.js"
       - "lib/recommendation-scoring.ts"
+      - "lib/recommendation-sunscreen-protection-authority-contract.mjs"
+      - "lib/recommendation-sunscreen-protection-authority-reader.js"
+      - "lib/sunscreen-protection-corpus-audit.mjs"
+      - "supabase/migrations/20260929083000_data_ai29c_sunscreen_protection_authority_v1.sql"
       - "lib/product-source.js"
       - "lib/recommendation-candidate-admission.js"
       - "lib/recommendation-candidate-admission-core.mjs"
@@ -33,6 +37,8 @@ on:
       - "scripts/verify-data-ai2-product-query-execution.mjs"
       - "scripts/verify-data-ai29a-product-query-quality.mjs"
       - "scripts/verify-data-ai29b-product-query-ranking.mjs"
+      - "scripts/verify-data-ai29c-a-protection-authority.mjs"
+      - "scripts/verify-data-ai29c-a-protection-audit.mjs"
       - "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
@@ -59,6 +65,10 @@ on:
       - "lib/product-query-execution-contract.mjs"
       - "lib/product-query-recommendation.js"
       - "lib/recommendation-scoring.ts"
+      - "lib/recommendation-sunscreen-protection-authority-contract.mjs"
+      - "lib/recommendation-sunscreen-protection-authority-reader.js"
+      - "lib/sunscreen-protection-corpus-audit.mjs"
+      - "supabase/migrations/20260929083000_data_ai29c_sunscreen_protection_authority_v1.sql"
       - "lib/product-source.js"
       - "lib/recommendation-candidate-admission.js"
       - "lib/recommendation-candidate-admission-core.mjs"
@@ -76,6 +86,8 @@ on:
       - "scripts/verify-data-ai2-product-query-execution.mjs"
       - "scripts/verify-data-ai29a-product-query-quality.mjs"
       - "scripts/verify-data-ai29b-product-query-ranking.mjs"
+      - "scripts/verify-data-ai29c-a-protection-authority.mjs"
+      - "scripts/verify-data-ai29c-a-protection-audit.mjs"
       - "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs"
       - "scripts/verify-data-ai3-product-query-shadow.mjs"
       - "scripts/verify-data-ai4-provider-shadow.mjs"
@@ -146,6 +158,12 @@ jobs:
 
       - name: Verify DATA-AI29B ranking calibration and score-grounded reasons
         run: node scripts/verify-data-ai29b-product-query-ranking.mjs
+
+      - name: Verify DATA-AI29C-A sunscreen protection authority
+        run: node scripts/verify-data-ai29c-a-protection-authority.mjs
+
+      - name: Verify DATA-AI29C-A sunscreen protection corpus audit
+        run: node scripts/verify-data-ai29c-a-protection-audit.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
