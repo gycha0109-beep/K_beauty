@@ -32,6 +32,13 @@ on:
       - "scripts/trust-research-worker.mjs"
       - "scripts/verify-trust-research-worker.mjs"
       - "scripts/verify-data-ai29c-c-protection-recovery.mjs"
+      - "scripts/build-data-ai29c-protection-expansion-wave-v1.mjs"
+      - "scripts/verify-data-ai29c-protection-expansion-wave-v1.mjs"
+      - "scripts/product-evidence/data-ai29c-protection-expansion-selection-v1.mjs"
+      - "scripts/product-evidence/data-ai29c-protection-expansion-selection-policy-v1.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-1-snapshot-v1.json"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-1-selection-v1.json"
+      - "docs/evidence/data-ai29c-protection-expansion-wave-1-selection-v1.md"
       - "lib/product-source.js"
       - "lib/recommendation-candidate-admission.js"
       - "lib/recommendation-candidate-admission-core.mjs"
@@ -95,6 +102,13 @@ on:
       - "scripts/trust-research-worker.mjs"
       - "scripts/verify-trust-research-worker.mjs"
       - "scripts/verify-data-ai29c-c-protection-recovery.mjs"
+      - "scripts/build-data-ai29c-protection-expansion-wave-v1.mjs"
+      - "scripts/verify-data-ai29c-protection-expansion-wave-v1.mjs"
+      - "scripts/product-evidence/data-ai29c-protection-expansion-selection-v1.mjs"
+      - "scripts/product-evidence/data-ai29c-protection-expansion-selection-policy-v1.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-1-snapshot-v1.json"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-1-selection-v1.json"
+      - "docs/evidence/data-ai29c-protection-expansion-wave-1-selection-v1.md"
       - "lib/product-source.js"
       - "lib/recommendation-candidate-admission.js"
       - "lib/recommendation-candidate-admission-core.mjs"
@@ -200,6 +214,9 @@ jobs:
         run: |
           node scripts/verify-data-ai29c-c-protection-recovery.mjs
           node scripts/verify-trust-research-worker.mjs
+
+      - name: Verify DATA-AI29C-C5 protection expansion planning
+        run: node scripts/verify-data-ai29c-protection-expansion-wave-v1.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
