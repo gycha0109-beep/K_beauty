@@ -182,7 +182,10 @@ check(service.includes("White-cast avoidance and tone-up preference are independ
   "provider instructions must state independent sunscreen semantic ownership");
 check(service.includes("const DEFAULT_MAX_OUTPUT_TOKENS = 600;"),
   "DATA-AI28 stable output budget must remain unchanged");
-check(service.includes('const DEFAULT_MODEL = "gpt-5.6-luna";'),
-  "provider/model authority must remain unchanged");
+check(
+  service.includes("const DEFAULT_MODEL = OPENAI_RUNTIME_MODEL;") &&
+    service.includes("const model = DEFAULT_MODEL;"),
+  "provider/model authority must remain pinned to the shared Luna-only policy"
+);
 
 console.log(`DATA-AI29A semantic/explanation verifier: PASS (${assertions} assertions)`);
