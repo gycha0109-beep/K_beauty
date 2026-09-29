@@ -170,7 +170,7 @@ export default function FaceLabTestClient() {
               <img
                 src={photoUrl}
                 alt="Face Lab 테스트 사진 미리보기"
-                className="h-20 w-16 rounded-lg object-cover"
+                className="h-28 w-24 shrink-0 rounded-xl border border-zinc-200 object-cover object-center dark:border-zinc-800 sm:h-32 sm:w-28"
               />
               <div className="min-w-0">
                 <p className="text-sm font-semibold">

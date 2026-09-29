@@ -25,6 +25,7 @@ on:
       - "scripts/verify-face-lab-v2-route-choice-evidence.mjs"
       - "scripts/verify-face-lab-v2-end-to-end-completion.mjs"
       - "scripts/verify-face-lab-standalone-test-route.mjs"
+      - "scripts/verify-face-lab-v2-uat-polish.mjs"
       - "app/face-lab-test/**"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
@@ -149,3 +150,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-end-to-end-completion.mjs
       - name: Verify Face Lab standalone temporary test route
         run: node scripts/verify-face-lab-standalone-test-route.mjs
+      - name: Verify Face Lab V2 UAT polish
+        run: node scripts/verify-face-lab-v2-uat-polish.mjs
