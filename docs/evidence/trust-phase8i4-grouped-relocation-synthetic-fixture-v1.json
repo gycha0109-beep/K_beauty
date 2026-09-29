@@ -1,0 +1,103 @@
+{
+  "contract": "trust-phase8i4-grouped-relocation-preflight-input-v1",
+  "fixture_kind": "SYNTHETIC_READY_FOR_8I4_NOT_PRODUCTION_AUTHORITY",
+  "case": {
+    "case_id": "ed15edcf-505c-423f-a2d6-cc347625a042",
+    "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+    "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+    "case_digest": "f8963413daf67fce51fbe191cded8facd7e9a3bd46567c1b7249ba1acb07c9f2",
+    "historical_source_ids": [
+      "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "60a55f19-a71d-4063-9ea5-13775193c940",
+      "f55720c7-0252-49b8-967c-8d77f4dfe6d6"
+    ],
+    "incident_ids": [
+      "3911e772-c6c0-4697-af42-e5615faad49a",
+      "9dffee1d-0937-4988-a1c5-0253c7db5686",
+      "e00f274f-1d01-44ce-86a9-80249214b332"
+    ]
+  },
+  "evaluation": {
+    "evaluation_id": "00000000-0000-4000-8000-000000008104",
+    "case_id": "ed15edcf-505c-423f-a2d6-cc347625a042",
+    "policy_version": "v1",
+    "result_kind": "READY_FOR_8I4",
+    "candidate_locator": "https://beautyofjoseon.com/products/synthetic-phase8i4-successor",
+    "qualification_contract": "trust-phase8h-source-identity-qualification-v1",
+    "qualification_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "input_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "result_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "governed_subject": {
+    "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+    "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+    "market_applicability": null,
+    "variant_key": "Relief_Sun_Rice_Probiotics",
+    "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+    "identity_status": "resolved",
+    "current_state": "current"
+  },
+  "current_reviewed_binding": {
+    "binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
+    "review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda",
+    "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+    "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+    "source_name": "beautyofjoseon_official",
+    "external_type": "brand_official_product_page",
+    "source_url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+    "market_code": "GLOBAL",
+    "locale": "en",
+    "binding_state": "resolved",
+    "binding_method": "trust_official_source_review_v1",
+    "product_scope_state": "product",
+    "review_version": "trust-official-source-review-v1",
+    "review_subject_market": null,
+    "review_source_market": "GLOBAL",
+    "review_scope_relation": "equivalent",
+    "review_variant_key": "Relief_Sun_Rice_Probiotics",
+    "review_formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+    "review_source_kind": "brand_official_product_page"
+  },
+  "historical_sources": [
+    {
+      "source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "source_subject_binding_id": "2fc36710-b0db-4210-afc0-60c4ac488de0",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "reviewed_binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
+      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda"
+    },
+    {
+      "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "source_subject_binding_id": "79ae3693-8f5b-4dbc-9377-a0ded8313881",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "reviewed_binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
+      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda"
+    },
+    {
+      "source_id": "f55720c7-0252-49b8-967c-8d77f4dfe6d6",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "source_subject_binding_id": "9ed74fab-856f-4eb7-9d9d-6b1e78406d95",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "reviewed_binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
+      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda"
+    }
+  ],
+  "replacement": {
+    "source_name": "beautyofjoseon_official",
+    "external_type": "brand_official_product_page",
+    "source_url": "https://beautyofjoseon.com/products/synthetic-phase8i4-successor",
+    "market_code": "GLOBAL",
+    "locale": "en"
+  }
+}
