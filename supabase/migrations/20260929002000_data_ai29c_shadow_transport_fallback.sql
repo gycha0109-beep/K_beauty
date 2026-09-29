@@ -80,7 +80,7 @@ begin
 end
 $$;
 
-do $
+do $$
 declare
   v_total integer;
   v_expected integer;
@@ -111,6 +111,6 @@ begin
     raise exception 'DATA_AI29C_TRANSIENT_OWNER_MEMBERSHIP_MUST_BE_RESTORED';
   end if;
 end
-$;
+$$;
 
 commit;
