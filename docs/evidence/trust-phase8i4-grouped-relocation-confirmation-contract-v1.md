@@ -35,6 +35,9 @@ The request must contain:
 - `old_review_id`
 - `old_locator`
 - replacement source identity
+- Phase 8H anchor prestate digest
+- Phase 8H anchor relocation-plan digest
+- a canonical nested `trust-phase8h-governed-relocation-confirmation-request-v1`
 - explicit authority string
 - explicit mutation scope
 - explicit forbidden mutation list
@@ -74,7 +77,23 @@ The future database Admin RPC must independently reconstruct and revalidate:
 
 Any mismatch must fail closed before mutation.
 
-## 5. Allowed mutation scope after future explicit Admin confirmation
+## 5. Phase 8H authority reuse
+
+Phase 8I-4 must not copy or fork the existing Phase 8H binding-mutation algorithm.
+
+The grouped request builder must bridge the exact qualified historical-source anchor into the existing Phase 8H read-only preflight and then build a canonical:
+
+`trust-phase8h-governed-relocation-confirmation-request-v1`
+
+The future grouped database RPC must first revalidate complete grouped lineage, then call the existing:
+
+`admin_confirm_trust_official_source_relocation_v1`
+
+inside the same database transaction using the nested Phase 8H request.
+
+This preserves the already-governed behavior for replacement binding/review creation, one-time old-binding retirement, immutable relocation append, and Phase 8H prestate revalidation. If grouped-lineage persistence fails after the nested call, the entire outer transaction must roll back, including the Phase 8H relocation.
+
+## 6. Allowed mutation scope after future explicit Admin confirmation
 
 Only the future database confirmation transaction may perform:
 
@@ -89,7 +108,7 @@ Only the future database confirmation transaction may perform:
 
 The existing `trust_official_source_relocations.old_binding_id UNIQUE` invariant remains unchanged.
 
-## 6. Forbidden mutations
+## 7. Forbidden mutations
 
 The request and future grouped relocation lifecycle must not directly mutate:
 
@@ -105,7 +124,7 @@ The request and future grouped relocation lifecycle must not directly mutate:
 
 A confirmed relocation is provenance for a source-location lifecycle. It is not semantic SAME/CHANGED authority.
 
-## 7. Idempotency and canonicalization
+## 8. Idempotency and canonicalization
 
 The request builder must consume the same grouped preflight engine used by Phase 8I-4B.
 
@@ -122,13 +141,13 @@ Tampering with:
 
 must make the request unbuildable.
 
-## 8. Production gate
+## 9. Production gate
 
 Current Production Phase 8I-3 evaluations are `HOLD`.
 
 Therefore this phase may merge the request contract and deterministic request builder, but no Production grouped relocation confirmation may run until an actual current evaluation is `READY_FOR_8I4`.
 
-## 9. Next boundary
+## 10. Next boundary
 
 After this contract is sealed, the next implementation boundary is the database migration and privileged Admin preflight/confirmation RPC pair.
 

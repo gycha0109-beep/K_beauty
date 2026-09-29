@@ -92,18 +92,19 @@ grant select on table public.trust_official_source_relocation_group_incidents to
 -- Required reconstruction:
 --   1. require admin.products.review
 --   2. read case and latest evaluation
---   3. require result_kind=READY_FOR_8I4
---   4. read qualified_historical_source_id from the immutable evaluation result_payload
---   5. require that anchor to match the exact qualification that produced qualification_digest
---   6. reconstruct historical source set from case<->incident lineage
---   7. require at least two distinct source IDs
---   8. require every source exact Product/Subject binding
---   9. derive exactly one resolved reviewed old binding/review shared by the source set
---  10. require old binding source_url == every historical source canonical_locator
---  11. re-read governed Subject
---  12. derive candidate replacement from the READY_FOR_8I4 evaluation
---  13. compute canonical grouped prestate/plan digests
---  14. return READY_FOR_ADMIN_GROUPED_RELOCATION_CONFIRMATION or HOLD
+--   3. require result_kind=READY_FOR_8I4 and require p_evaluation_id to be the latest evaluation for the case
+--   4. read qualified_historical_source_id and qualified_exact from the immutable evaluation result_payload
+--   5. require qualified_exact disposition/authority/mutation-policy/product/subject/candidate/digest/locator to match the evaluation and case
+--   6. require that anchor to match the exact qualification that produced qualification_digest
+--   7. reconstruct historical source set from case<->incident lineage
+--   8. require at least two distinct source IDs
+--   9. require every source exact Product/Subject binding
+--  10. derive exactly one resolved reviewed old binding/review shared by the source set
+--  11. require old binding source_url == every historical source canonical_locator
+--  12. re-read governed Subject
+--  13. derive candidate replacement from the READY_FOR_8I4 evaluation
+--  14. compute canonical grouped prestate/plan digests
+--  15. return READY_FOR_ADMIN_GROUPED_RELOCATION_CONFIRMATION or HOLD
 --
 -- The preflight performs no INSERT, UPDATE, DELETE, relocation confirmation,
 -- Product Fact mutation, Current mutation, Confirmation mutation, Evidence Source
@@ -117,12 +118,19 @@ grant select on table public.trust_official_source_relocation_group_incidents to
 --   advisory lock
 --   -> exact grouped prestate revalidation
 --   -> require qualified_historical_source_id as the singular Phase 8H relocation anchor
---   -> create/reuse replacement binding/review
---   -> retire old binding once
---   -> append one existing trust_official_source_relocations authority row using that exact anchor
+--   -> require nested trust-phase8h-governed-relocation-confirmation-request-v1
+--      to match case/evaluation/anchor/old-binding/replacement/qualification identity
+--   -> call existing public.admin_confirm_trust_official_source_relocation_v1(...)
+--      inside the same transaction
+--   -> use returned relocation_id/replacement_binding_id/replacement_review_id
 --   -> append one group header
 --   -> append complete source membership
 --   -> append complete incident membership
---   -> admin audit
+--   -> append grouped admin audit
 --
--- Any failure rolls back the whole transaction.
+-- Do not duplicate the Phase 8H replacement-binding/review creation or old-binding
+-- retirement algorithm in Phase 8I-4. The existing Phase 8H RPC remains the sole
+-- binding-mutation primitive.
+--
+-- Any failure after the nested Phase 8H call rolls back the whole transaction,
+-- including the nested relocation and old-binding retirement.
