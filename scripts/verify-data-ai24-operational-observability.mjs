@@ -338,7 +338,7 @@ check(
 const redaction = readFileSync("lib/security/error-redaction.js", "utf8");
 check(
   redaction.includes('"product_query_beta"') &&
-    redaction.includes('"gpt-5.6-luna"') &&
+    redaction.includes("OPENAI_RUNTIME_MODELS") &&
     redaction.includes("PRODUCT_QUERY_OBSERVABILITY_VERSION") &&
     redaction.includes("PRODUCT_QUERY_OUTCOME_SET") &&
     redaction.includes("PRODUCT_QUERY_LATENCY_BUCKET_SET") &&

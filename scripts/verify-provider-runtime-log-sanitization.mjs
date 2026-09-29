@@ -19,7 +19,7 @@ const event = buildProviderRuntimeLogEvent({
   status: 200,
   ok: true,
   provider: "openai",
-  model: "gpt-4o-mini",
+  model: "gpt-5.6-luna",
   durationMs: 12.8,
   preview: "must-not-be-recorded",
   rawText: "must-not-be-recorded",
@@ -31,10 +31,10 @@ assert.deepEqual(event, {
   status: 200,
   ok: true,
   provider: "openai",
-  model: "gpt-4o-mini",
+  model: "gpt-5.6-luna",
   durationMs: 13
 });
-assert.deepEqual([...SAFE_PROVIDER_MODELS].sort(), ["gpt-4o", "gpt-4o-mini", "gpt-5.6-luna"]);
+assert.deepEqual([...SAFE_PROVIDER_MODELS], ["gpt-5.6-luna"]);
 
 for (const model of [
   "unknown-model",
@@ -69,7 +69,7 @@ const hostileEvent = Object.defineProperties({}, {
   status: { get: () => 503 },
   ok: { get: () => false },
   provider: { get: () => "openai" },
-  model: { get: () => "gpt-4o-mini" },
+  model: { get: () => "gpt-5.6-luna" },
   durationMs: { get: () => 8 },
   prompt: { get: () => "private prompt text" },
   responseBody: { get: () => "private provider response" },
