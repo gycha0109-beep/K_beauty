@@ -40,32 +40,39 @@ const worker = read("scripts/trust-research-worker.mjs");
 
 [
   "data_ai29c_recovery_variant_source_authorized_v1",
+  "claim_data_ai29c_protection_recovery_tasks_v1",
+  "record_data_ai29c_protection_recovery_no_evidence_v1",
+  "reconcile_data_ai29c_protection_recovery_unclaimable_v1",
   "data-ai29c-protection-recovery-v1",
   "water_resistance_duration",
   "exact_subject_match",
   "scope_relation = 'equivalent'",
   "es.canonical_locator = p_canonical_locator",
-  "rt.research_policy_version = 'data-ai29c-protection-recovery-v1'",
-  "v_task.research_policy_version = 'data-ai29c-protection-recovery-v1'",
-  "v_task.fact_key <> 'water_resistance_duration'",
-  "Variant-scoped Subject requires separately governed presentation equivalence.",
-  "DATA-AI29C-C variant recovery requires an existing governed exact-subject/equivalent binding"
+  "GOVERNED_SOURCE_BINDING_REQUIRED",
+  "SOURCE_BLOCKED",
+  "productFactAuthorityMutated",
+  "recommendationAuthorityMutated",
+  "productionCutoverAuthorized"
 ].forEach((value) => includes(variantBridge, value, "DATA-AI29C-C variant bridge"));
 
-assert(
-  /s\.variant_key is null[\s\S]+rt\.research_policy_version = 'data-ai29c-protection-recovery-v1'[\s\S]+rt\.fact_key = 'water_resistance_duration'/m.test(
-    variantBridge
-  ),
-  "global Phase 3 variant boundary must remain the default; only the bounded recovery policy may enter the exception"
+excludes(
+  variantBridge,
+  "create or replace function public.claim_trust_research_tasks_v1",
+  "shared TRUST Phase 3 claim override"
+);
+excludes(
+  variantBridge,
+  "create or replace function public.record_trust_research_result_v1",
+  "shared TRUST Phase 3 result override"
 );
 assert(
-  /c\.research_policy_version <> 'data-ai29c-protection-recovery-v1'[\s\S]+data_ai29c_recovery_variant_source_authorized_v1/m.test(
+  /research_policy_version = 'data-ai29c-protection-recovery-v1'[\s\S]+fact_key = 'water_resistance_duration'[\s\S]+data_ai29c_recovery_variant_source_authorized_v1/m.test(
     variantBridge
   ),
-  "recovery source seeds must be filtered by the governed exact-subject source gate"
+  "bounded recovery claim must require recovery policy, water fact, and governed exact-source gate"
 );
 assert(
-  !/(insert\s+into|update|delete\s+from)\s+public\.(product_evidence_sources|product_evidence_source_subject_bindings|product_evidence_records|product_fact_instances|product_fact_current|product_fact_confirmations)\b/i.test(
+  !/(insert\s+into|update|delete\s+from)\s+public\.(product_evidence_sources|product_evidence_source_subject_bindings|product_evidence_records|product_fact_instances|product_fact_current|product_fact_confirmations|product_fact_subjects)\b/i.test(
     variantBridge
   ),
   "variant recovery bridge must not mutate governed Product Fact authority"
@@ -80,6 +87,11 @@ assert(
   ),
   "internal variant-source gate must not be directly executable by runtime roles"
 );
+[
+  "grant execute on function public.claim_data_ai29c_protection_recovery_tasks_v1(integer, integer)",
+  "grant execute on function public.record_data_ai29c_protection_recovery_no_evidence_v1(uuid, text, text)",
+  "grant execute on function public.reconcile_data_ai29c_protection_recovery_unclaimable_v1()"
+].forEach((value) => includes(variantBridge, value, "DATA-AI29C-C service-role boundary"));
 
 [
   "explicit-water-resistance-duration-v1",
