@@ -1,0 +1,250 @@
+name: Product Query AI - Protection Shadow Runtime
+run-name: "[WT:taxonomy-ai] Product Query AI - Protection Shadow Runtime"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/recommendation-sunscreen-protection-authority-contract.mjs"
+      - "lib/recommendation-sunscreen-protection-authority-reader.js"
+      - "lib/sunscreen-protection-corpus-audit.mjs"
+      - "lib/sunscreen-protection-projection.mjs"
+      - "lib/sunscreen-protection-shadow-scoring.mjs"
+      - "lib/server/product-query-protection-shadow-service.js"
+      - "lib/product-query-protection-shadow-oidc.js"
+      - "app/api/internal/product-query-protection-shadow/route.js"
+      - "scripts/verify-data-ai29c-b-protection-shadow.mjs"
+      - ".github/workflows/data-ai29c-protection-shadow.yml"
+      - ".github/workflows/data-ai-product-query-static.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/recommendation-sunscreen-protection-authority-contract.mjs"
+      - "lib/recommendation-sunscreen-protection-authority-reader.js"
+      - "lib/sunscreen-protection-corpus-audit.mjs"
+      - "lib/sunscreen-protection-projection.mjs"
+      - "lib/sunscreen-protection-shadow-scoring.mjs"
+      - "lib/server/product-query-protection-shadow-service.js"
+      - "lib/product-query-protection-shadow-oidc.js"
+      - "app/api/internal/product-query-protection-shadow/route.js"
+      - "scripts/verify-data-ai29c-b-protection-shadow.mjs"
+      - ".github/workflows/data-ai29c-protection-shadow.yml"
+      - ".github/workflows/data-ai-product-query-static.yml"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  deployments: read
+  id-token: write
+
+concurrency:
+  group: data-ai29c-protection-shadow-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATA_AI29C_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+  DATA_AI29C_OIDC_AUDIENCE: urn:bejewely:data-ai29c:protection-shadow
+
+jobs:
+  verify:
+    name: DATA-AI29C-B static protection shadow contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ env.DATA_AI29C_EXACT_HEAD }}
+
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI29C_EXACT_HEAD"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Gate automatic check on canonical DATA-AI static contract
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ env.DATA_AI29C_EXACT_HEAD }}
+          EXPECTED_EVENT: ${{ github.event_name }}
+          CANONICAL_WORKFLOW_PATH: .github/workflows/data-ai-product-query-static.yml
+        run: node scripts/await-ci-workflow.mjs
+
+      - name: Install dependencies for manual fallback
+        if: github.event_name == 'workflow_dispatch'
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify DATA-AI29C-B protection shadow manually
+        if: github.event_name == 'workflow_dispatch'
+        run: node scripts/verify-data-ai29c-b-protection-shadow.mjs
+
+      - name: Verify architecture boundaries manually
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          ARCHITECTURE_GUARD_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+        run: npm run architecture:guard
+
+      - name: Build production application manually
+        if: github.event_name == 'workflow_dispatch'
+        run: npm run build
+
+      - name: Check manual exact-head and diff hygiene
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI29C_EXACT_HEAD"
+          git diff --check HEAD^
+
+  runtime-probe:
+    name: DATA-AI29C-B deployed protection shadow probe
+    if: github.event_name == 'push'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact runtime probe SHA
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ env.DATA_AI29C_EXACT_HEAD }}
+
+      - name: Verify runtime probe checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DATA_AI29C_EXACT_HEAD"
+
+      - name: Resolve exact Vercel deployment URL
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=""
+          for attempt in $(seq 1 72); do
+            ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?per_page=100" --jq ".[] | select(.sha == \"$GITHUB_SHA\") | .id" || true)"
+            for id in $ids; do
+              candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100" --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
+              if [ -n "$candidate" ]; then
+                url="$candidate"
+                break
+              fi
+            done
+            if [ -n "$url" ]; then
+              break
+            fi
+            sleep 5
+          done
+          test -n "$url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain short-lived GitHub OIDC tokens
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          custom_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${DATA_AI29C_OIDC_AUDIENCE}")"
+          custom="$(printf '%s' "$custom_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          trusted_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")"
+          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$custom"
+          echo "::add-mask::$trusted"
+          printf 'custom=%s\ntrusted=%s\n' "$custom" "$trusted" >> "$GITHUB_OUTPUT"
+
+      - name: Probe deployed protection shadow
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.custom }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          response_file="$(mktemp)"
+          status="$(curl --silent --show-error --retry 4 --retry-delay 3 --retry-all-errors \
+            -o "$response_file" \
+            -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            "$DEPLOYMENT_URL/api/internal/product-query-protection-shadow")"
+
+          node - "$response_file" "$GITHUB_SHA" "$status" <<'NODE'
+          const fs = require("fs");
+          const [file, expectedSha, httpStatus] = process.argv.slice(2);
+          const payload = JSON.parse(fs.readFileSync(file, "utf8"));
+          const safe = {
+            result: payload.result || null,
+            deploymentSha: payload.deploymentSha || null,
+            deploymentRef: payload.deploymentRef || null,
+            contractVersion: payload.contractVersion || null,
+            sunscreenCorpusCount: payload.sunscreenCorpusCount ?? null,
+            authorityResolvedCount: payload.authorityResolvedCount ?? null,
+            auditDecision: payload.audit?.overallDecision || null,
+            readyAxes: payload.audit?.readyAxes || null,
+            enabledAxes: payload.enabledAxes || null,
+            scenarioCount: payload.scenarioCount ?? null,
+            allScenarioChecksPass: payload.allScenarioChecksPass ?? null,
+            scenarios: Array.isArray(payload.scenarios)
+              ? payload.scenarios.map((item) => ({
+                  id: item.id,
+                  baselineStatus: item.baselineStatus,
+                  shadowStatus: item.shadowStatus,
+                  top5OverlapCount: item.top5OverlapCount,
+                  orderChanged: item.orderChanged,
+                  changedProductCount: item.changedProductCount,
+                  maxRankShift: item.maxRankShift,
+                  appliedProtectionProductCount: item.appliedProtectionProductCount,
+                  maxAppliedProtectionDelta: item.maxAppliedProtectionDelta,
+                  enabledAxes: item.enabledAxes,
+                  pass: item.pass,
+                  failures: item.failures
+                }))
+              : null,
+            limits: payload.limits || null,
+            secretValueExposed: payload.secretValueExposed ?? null,
+            queryTextExposed: payload.queryTextExposed ?? null
+          };
+          console.log(`DATA_AI29C_B_RUNTIME_EVIDENCE=${JSON.stringify(safe)}`);
+
+          if (httpStatus !== "200") process.exit(1);
+          if (payload.deploymentSha !== expectedSha || payload.deploymentRef !== "main") process.exit(2);
+          if (payload.result !== "PASS") process.exit(3);
+          if (payload.contractVersion !== "product-query-protection-shadow-v1") process.exit(4);
+          if (!Number.isInteger(payload.sunscreenCorpusCount) || payload.sunscreenCorpusCount < 1) process.exit(5);
+          if (payload.authorityResolvedCount !== payload.sunscreenCorpusCount) process.exit(6);
+          if (payload.audit?.overallDecision !== "HOLD_NO_DISCRIMINATING_AXIS") process.exit(7);
+          if (!Array.isArray(payload.audit?.readyAxes) || payload.audit.readyAxes.length !== 0) process.exit(8);
+          if (!Array.isArray(payload.enabledAxes) || payload.enabledAxes.length !== 0) process.exit(9);
+          if (payload.scenarioCount !== 4 || payload.allScenarioChecksPass !== true) process.exit(10);
+          if (!Array.isArray(payload.scenarios) || payload.scenarios.length !== 4) process.exit(11);
+          if (payload.scenarios.some((item) => item?.pass !== true)) process.exit(12);
+          if (payload.scenarios.some((item) => item?.orderChanged !== false)) process.exit(13);
+          if (payload.scenarios.some((item) => item?.appliedProtectionProductCount !== 0)) process.exit(14);
+          if (payload.scenarios.some((item) => item?.maxAppliedProtectionDelta !== 0)) process.exit(15);
+          const failClosed = payload.scenarios.find((item) => item?.id === "outdoor_only_fail_closed");
+          if (failClosed?.baselineStatus !== "insufficient_supported_intent") process.exit(16);
+          if (failClosed?.shadowStatus !== "insufficient_supported_intent") process.exit(17);
+          if (payload.limits?.productionRankingChanged !== false) process.exit(18);
+          if (payload.limits?.productionCutoverAuthorized !== false) process.exit(19);
+          if (payload.limits?.outdoorRankableSignalAuthorized !== false) process.exit(20);
+          if (payload.limits?.persistence !== false || payload.limits?.publicActivation !== false) process.exit(21);
+          if (payload.secretValueExposed !== false || payload.queryTextExposed !== false) process.exit(22);
+          NODE
+
+          rm -f "$response_file"

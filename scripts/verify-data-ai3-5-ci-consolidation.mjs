@@ -8,6 +8,7 @@ const phasePaths = [
   ".github/workflows/data-ai3-product-query-shadow.yml",
   ".github/workflows/data-ai4-provider-shadow.yml",
   ".github/workflows/data-ai5-activation-readiness.yml",
+  ".github/workflows/data-ai29c-protection-shadow.yml",
 ];
 
 const canonical = fs.readFileSync(canonicalPath, "utf8");
@@ -20,6 +21,7 @@ for (const script of [
   "scripts/verify-data-ai29b-product-query-ranking.mjs",
   "scripts/verify-data-ai29c-a-protection-authority.mjs",
   "scripts/verify-data-ai29c-a-protection-audit.mjs",
+  "scripts/verify-data-ai29c-b-protection-shadow.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",
@@ -53,4 +55,4 @@ assert.ok(waiter.includes("run.event === expectedEvent"));
 assert.ok(waiter.includes('run.conclusion === "success"'));
 assert.ok(waiter.includes("throw new Error"), "canonical gate must fail closed");
 
-console.log("DATA_AI3_5_CI_CONSOLIDATION=PASS canonical_static=1 compatibility_runtime_owners=3");
+console.log("DATA_AI3_5_CI_CONSOLIDATION=PASS canonical_static=1 compatibility_runtime_owners=4");
