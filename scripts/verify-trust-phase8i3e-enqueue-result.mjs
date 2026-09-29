@@ -31,6 +31,7 @@ for (const key of [
 
 assert.equal(result.authority_mutation, false);
 assert.equal(result.current_invalidated, false);
+assert.equal(result.blocked_count, 0, "blocked transport drift incidents require operator review");
 assert.equal(
   result.new_case_count + result.existing_case_count,
   result.candidate_count,
