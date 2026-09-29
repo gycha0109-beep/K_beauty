@@ -313,7 +313,7 @@ assert.match(
 );
 assert.match(
   fallbackMigration,
-  /grant recommendation_protection_reader_owner to postgres/i
+  /grant recommendation_protection_reader_owner to postgres with set true/i
 );
 assert.match(
   fallbackMigration,
@@ -321,11 +321,19 @@ assert.match(
 );
 assert.match(
   fallbackMigration,
-  /revoke recommendation_protection_reader_owner from postgres/i
+  /revoke set option for recommendation_protection_reader_owner from postgres/i
 );
 assert.match(
   fallbackMigration,
-  /DATA_AI29C_TRANSIENT_OWNER_MEMBERSHIP_MUST_BE_REVOKED/
+  /DATA_AI29C_TRANSIENT_OWNER_USAGE_MUST_BE_REVOKED/
+);
+assert.match(
+  fallbackMigration,
+  /m\.set_option/
+);
+assert.match(
+  fallbackMigration,
+  /m\.inherit_option/
 );
 assert.doesNotMatch(
   fallbackMigration,
