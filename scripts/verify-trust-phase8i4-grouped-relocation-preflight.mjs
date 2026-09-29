@@ -37,6 +37,10 @@ assert.equal(
 assert.equal(ready.historical_source_ids.length, 3);
 assert.equal(ready.incident_ids.length, 3);
 assert.equal(ready.old_binding_id, "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c");
+assert.equal(
+  ready.qualified_historical_source_id,
+  "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+);
 assert.match(ready.group_prestate_digest, /^[0-9a-f]{64}$/);
 assert.match(ready.group_plan_digest, /^[0-9a-f]{64}$/);
 
@@ -89,6 +93,34 @@ assert.ok(
   holdEvaluationResult.blockers.includes("EVALUATION_NOT_READY_FOR_8I4"),
 );
 
+const missingQualifiedAnchor = clone(fixture);
+delete missingQualifiedAnchor.evaluation.qualified_historical_source_id;
+const missingQualifiedAnchorResult =
+  preflightGroupedOfficialSourceRelocation(missingQualifiedAnchor);
+assert.equal(missingQualifiedAnchorResult.status, "HOLD");
+assert.ok(
+  missingQualifiedAnchorResult.blockers.includes(
+    "QUALIFIED_HISTORICAL_SOURCE_ID_REQUIRED",
+  ),
+);
+
+const foreignQualifiedAnchor = clone(fixture);
+foreignQualifiedAnchor.evaluation.qualified_historical_source_id =
+  "11111111-1111-4111-8111-111111111111";
+const foreignQualifiedAnchorResult =
+  preflightGroupedOfficialSourceRelocation(foreignQualifiedAnchor);
+assert.equal(foreignQualifiedAnchorResult.status, "HOLD");
+assert.ok(
+  foreignQualifiedAnchorResult.blockers.includes(
+    "QUALIFIED_HISTORICAL_SOURCE_NOT_IN_CASE",
+  ),
+);
+assert.ok(
+  foreignQualifiedAnchorResult.blockers.includes(
+    "QUALIFIED_HISTORICAL_SOURCE_NOT_IN_GROUP",
+  ),
+);
+
 const staleSubject = clone(fixture);
 staleSubject.governed_subject.current_state = "superseded";
 const staleSubjectResult =
@@ -112,6 +144,7 @@ for (const required of [
   "old_binding_id UNIQUE",
   "historical_source_ids",
   "incident_ids",
+  "qualified_historical_source_id",
   "READ_ONLY_GROUPED_PREFLIGHT_NO_PRODUCTION_WRITE",
   "PREFLIGHT_ONLY_REQUIRES_EXPLICIT_ADMIN_GROUPED_CONFIRMATION",
 ]) {
@@ -155,6 +188,8 @@ console.log(
       result: "PASS",
       historical_source_count: ready.historical_source_ids.length,
       incident_count: ready.incident_ids.length,
+      qualified_historical_source_id:
+        ready.qualified_historical_source_id,
       group_prestate_digest: ready.group_prestate_digest,
       group_plan_digest: ready.group_plan_digest,
       authority: ready.authority,
