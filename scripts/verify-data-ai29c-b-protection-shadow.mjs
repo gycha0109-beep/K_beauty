@@ -335,6 +335,16 @@ assert.match(
   fallbackMigration,
   /m\.inherit_option/
 );
+assert.equal(
+  (fallbackMigration.match(/do \$\$/g) || []).length,
+  3,
+  "shadow fallback migration must keep exactly three valid PLpgSQL DO blocks"
+);
+assert.doesNotMatch(
+  fallbackMigration,
+  /do \$(?!\$)/,
+  "shadow fallback migration must not contain a single-dollar DO delimiter"
+);
 assert.doesNotMatch(
   fallbackMigration,
   /grant\s+select[\s\S]{0,180}recommendation_admission_runtime/i

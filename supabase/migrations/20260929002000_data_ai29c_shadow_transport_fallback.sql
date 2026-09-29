@@ -76,7 +76,7 @@ begin
 end
 $$;
 
-do $
+do $$
 declare
   v_set_option boolean;
   v_inherit_option boolean;
@@ -95,6 +95,6 @@ begin
     raise exception 'DATA_AI29C_TRANSIENT_OWNER_USAGE_MUST_BE_REVOKED';
   end if;
 end
-$;
+$$;
 
 commit;
