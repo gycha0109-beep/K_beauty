@@ -1,0 +1,215 @@
+{
+  "version": "data-ai29c-protection-expansion-wave-2-selection-v1",
+  "stage": "DATA-AI29C-C6",
+  "mode": "PROTECTION_DISCRIMINATION_PROOF",
+  "authority": {
+    "source_main_sha": "677076b53de1de66a2bfcc4daa43db858a85aff8",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "candidate_discovery_contract": "data-ai29c-c6-manual-discrimination-discovery-v1",
+    "candidate_source_authority": false
+  },
+  "baseline": {
+    "sunscreenCount": 15,
+    "spfEligibleCount": 13,
+    "uvaEligibleCount": 11,
+    "waterEligibleCount": 0,
+    "spfDistinctScoringBuckets": 1,
+    "uvaDistinctScoringBuckets": 1,
+    "waterDistinctScoringBuckets": 0,
+    "spfCoverage": 0.8667,
+    "uvaCoverage": 0.7333,
+    "waterCoverage": 0,
+    "decision": "HOLD_NO_DISCRIMINATING_AXIS",
+    "productionCutoverAuthorized": false
+  },
+  "target_if_all_primary_confirm": {
+    "sunscreenCount": 20,
+    "spfEligibleCount": 18,
+    "uvaEligibleCount": 16,
+    "waterEligibleCount": 0,
+    "spfCoverage": 0.9,
+    "uvaCoverage": 0.8,
+    "spfDistinctScoringBuckets": 3,
+    "uvaDistinctScoringBuckets": 3,
+    "spfBuckets": [
+      "spf_15_29",
+      "spf_30_49",
+      "spf_50_plus"
+    ],
+    "uvaBuckets": [
+      "uva_pa2",
+      "uva_pa3",
+      "uva_pa4"
+    ],
+    "expectedSpfGatePass": true,
+    "expectedUvaGatePass": true,
+    "expectedWaterGatePass": false,
+    "productionCutoverAuthorized": false
+  },
+  "selection_policy": {
+    "active_wave_size": 5,
+    "reserve_size": 2,
+    "default_brand_cap": 1,
+    "c6_active_brand_cap": 5,
+    "brand_cap_override_scope": "DATA-AI29C-C6_ONLY",
+    "brand_cap_override_reason": "same-brand products are admitted only to establish independently governed SPF/UVA scoring-bucket discrimination; no Recommendation admission is granted",
+    "reserve_semantics": "reserve candidates are not active simultaneously; a reserve may replace one primary only before that primary is promoted into the canonical Product corpus",
+    "post_promotion_failure_semantics": "do not add a reserve merely to compensate for a Product Fact failure after promotion; repair or adjudicate the promoted Product first because adding another shadow Product increases the audit denominator",
+    "identity_requirement": "official SIDMOOL product page + exact HwaHae product identity",
+    "official_fact_requirement": "SPF/UVA labels must be explicit on the official product page and must later pass the strict governed research/adoption path"
+  },
+  "authority_boundaries": {
+    "discovery_lead_is_product_fact": false,
+    "hwahae_is_positive_product_fact_authority": false,
+    "official_page_is_not_fact_until_governed_ingest_and_confirmation": true,
+    "candidate_insert_may_write_product": false,
+    "candidate_insert_may_write_product_fact": false,
+    "candidate_insert_may_change_recommendation": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false
+  },
+  "primary": [
+    {
+      "rank": 1,
+      "candidate_id": "dd651007-a91c-49ad-a1aa-92977c6a8d8a",
+      "external_id": "1883342",
+      "brand": "SIDMOOL",
+      "name": "Physical daily sunmilk [SPF20/PA++]",
+      "official_name": "무기자차 데일리 썬밀크",
+      "official_url": "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+      "hwahae_url": "https://www.hwahae.com/en/products/1883342",
+      "target": {
+        "spf_value": 20,
+        "uva_label": "PA++",
+        "spf_bucket": "spf_15_29",
+        "uva_bucket": "uva_pa2"
+      }
+    },
+    {
+      "rank": 2,
+      "candidate_id": "c8044261-45d8-4c8a-8951-36c294b56165",
+      "external_id": "1801617",
+      "brand": "SIDMOOL",
+      "name": "MIN JUNG GI Physical Sun block [SPF35/PA+++]",
+      "official_name": "민중기 무기자차 썬블럭",
+      "official_url": "https://www.sidmool.com/shop/shopdetail.html?branduid=76921",
+      "hwahae_url": "https://www.hwahae.com/en/products/1801617",
+      "target": {
+        "spf_value": 35,
+        "uva_label": "PA+++",
+        "spf_bucket": "spf_30_49",
+        "uva_bucket": "uva_pa3"
+      }
+    },
+    {
+      "rank": 3,
+      "candidate_id": "51c0727d-f14e-4b94-8344-8a7bb9857ccd",
+      "external_id": "1802915",
+      "brand": "SIDMOOL",
+      "name": "Dr. Troub Zinc Physical [SPF35/PA+++]",
+      "official_name": "닥터트럽 징크자차",
+      "official_url": "https://www.sidmool.com/shop/shopdetail.html?branduid=77142",
+      "hwahae_url": "https://www.hwahae.com/en/products/1802915",
+      "target": {
+        "spf_value": 35,
+        "uva_label": "PA+++",
+        "spf_bucket": "spf_30_49",
+        "uva_bucket": "uva_pa3"
+      }
+    },
+    {
+      "rank": 4,
+      "candidate_id": "dcb681c5-a364-45eb-966a-06b76e00fa90",
+      "external_id": "1790960",
+      "brand": "SIDMOOL",
+      "name": "Dr. TROUB SKIN RETURNING BIO REPAIR + SUNCREAM [SPF40/PA++]",
+      "official_name": "닥터트럽 바이오 리페어 썬크림",
+      "official_url": "https://www.sidmool.com/shop/shopdetail.html?branduid=77107",
+      "hwahae_url": "https://www.hwahae.com/en/products/1790960",
+      "target": {
+        "spf_value": 40,
+        "uva_label": "PA++",
+        "spf_bucket": "spf_30_49",
+        "uva_bucket": "uva_pa2"
+      }
+    },
+    {
+      "rank": 5,
+      "candidate_id": "f03acb34-2975-47a1-aee7-44b12fd9cb7b",
+      "external_id": "1895004",
+      "brand": "SIDMOOL",
+      "name": "JOJOBA SUNCREAM [SPF40/PA++]",
+      "official_name": "호호바 무기자차 썬크림",
+      "official_url": "https://www.sidmool.com/shop/shopdetail.html?branduid=77215",
+      "hwahae_url": "https://www.hwahae.com/en/products/1895004",
+      "target": {
+        "spf_value": 40,
+        "uva_label": "PA++",
+        "spf_bucket": "spf_30_49",
+        "uva_bucket": "uva_pa2"
+      }
+    }
+  ],
+  "reserve": [
+    {
+      "reserve_rank": 1,
+      "candidate_id": "7a49ff29-83eb-412f-a237-6a6e7f1d082f",
+      "external_id": "2005891",
+      "brand": "SIDMOOL",
+      "name": "MIN JUNG GI Physical Sun cream [SPF40/PA++]",
+      "official_name": "민중기 무기자차 썬크림",
+      "official_url": "https://www.sidmool.com/shop/shopdetail.html?branduid=144",
+      "hwahae_url": "https://www.hwahae.com/en/products/2005891",
+      "target": {
+        "spf_value": 40,
+        "uva_label": "PA++",
+        "spf_bucket": "spf_30_49",
+        "uva_bucket": "uva_pa2"
+      },
+      "activation_rule": "one-for-one replacement before failed primary promotion only"
+    },
+    {
+      "reserve_rank": 2,
+      "candidate_id": "eab3c573-6495-4053-810e-e3a5ae1efba0",
+      "external_id": "1920264",
+      "brand": "SIDMOOL",
+      "name": "Natural sun cream [SPF35/PA++]",
+      "official_name": "시드물 내츄럴 썬크림",
+      "official_url": "https://www.sidmool.com/shop/shopdetail.html?branduid=66",
+      "hwahae_url": "https://www.hwahae.com/en/products/1920264",
+      "target": {
+        "spf_value": 35,
+        "uva_label": "PA++",
+        "spf_bucket": "spf_30_49",
+        "uva_bucket": "uva_pa2"
+      },
+      "activation_rule": "one-for-one replacement before failed primary promotion only"
+    }
+  ],
+  "candidate_registration_readback": {
+    "inserted_count": 7,
+    "products_delta": 0,
+    "product_fact_instances_delta": 0,
+    "product_fact_current_delta": 0,
+    "all_review_status": "new",
+    "all_identity_resolution_state": "unresolved",
+    "all_taxonomy_version": "catalog-taxonomy-v1",
+    "all_category_term_id": "catalog-taxonomy-v1:category:sunscreen",
+    "all_classification_state": "active_shadow",
+    "all_product_write_allowed": false,
+    "all_product_promotion_allowed": false,
+    "all_recommendation_admission_allowed": false
+  },
+  "next_gate": {
+    "phase": "C6-D",
+    "action": "governed two-provider structural identity review for the five primary candidates",
+    "stop_before_promotion_if": [
+      "identity collision",
+      "formulation ambiguity",
+      "presentation ambiguity",
+      "official/HwaHae product mismatch"
+    ],
+    "no_automatic_promotion": true
+  }
+}
