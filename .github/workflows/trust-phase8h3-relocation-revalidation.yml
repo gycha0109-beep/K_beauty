@@ -11,6 +11,7 @@ on:
       - "docs/evidence/trust-phase8i4-*"
       - "docs/evidence/trust-phase8i4e-*"
       - "docs/evidence/trust-phase8i4f-*"
+      - "docs/evidence/trust-phase8i4g-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
       - "supabase/migrations/*_trust_phase8i3_*.sql"
       - "supabase/migrations/*_trust_phase8i4_*.sql"
@@ -38,6 +39,14 @@ on:
       - "app/admin/products/trust/relocations/**"
       - "app/api/admin/trust/relocation/**"
       - "scripts/verify-trust-phase8i4f-admin-operator-handoff.mjs"
+      - "lib/trust/official-source-grouped-relocation-canary.mjs"
+      - "scripts/trust-phase8i4g-canary-snapshot.mjs"
+      - "scripts/verify-trust-phase8i4g-canary-snapshot.mjs"
+      - "scripts/verify-trust-phase8i4g-authority-invariants.mjs"
+      - "scripts/verify-trust-phase8i4g-lineage.mjs"
+      - "scripts/verify-trust-phase8i4g-idempotent-replay.mjs"
+      - "scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs"
+      - "scripts/verify-trust-phase8i4g-static-contract.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -60,6 +69,7 @@ on:
       - "docs/evidence/trust-phase8i4-*"
       - "docs/evidence/trust-phase8i4e-*"
       - "docs/evidence/trust-phase8i4f-*"
+      - "docs/evidence/trust-phase8i4g-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
       - "supabase/migrations/*_trust_phase8i3_*.sql"
       - "supabase/migrations/*_trust_phase8i4_*.sql"
@@ -87,6 +97,14 @@ on:
       - "app/admin/products/trust/relocations/**"
       - "app/api/admin/trust/relocation/**"
       - "scripts/verify-trust-phase8i4f-admin-operator-handoff.mjs"
+      - "lib/trust/official-source-grouped-relocation-canary.mjs"
+      - "scripts/trust-phase8i4g-canary-snapshot.mjs"
+      - "scripts/verify-trust-phase8i4g-canary-snapshot.mjs"
+      - "scripts/verify-trust-phase8i4g-authority-invariants.mjs"
+      - "scripts/verify-trust-phase8i4g-lineage.mjs"
+      - "scripts/verify-trust-phase8i4g-idempotent-replay.mjs"
+      - "scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs"
+      - "scripts/verify-trust-phase8i4g-static-contract.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -225,6 +243,18 @@ jobs:
           node --check lib/trust/official-source-grouped-relocation-operator-contract.mjs
           node --check scripts/verify-trust-phase8i4f-admin-operator-handoff.mjs
           node scripts/verify-trust-phase8i4f-admin-operator-handoff.mjs
+
+      - name: Verify Phase 8I-4G first real canary framework
+        run: |
+          node --check lib/trust/official-source-grouped-relocation-canary.mjs
+          node --check scripts/trust-phase8i4g-canary-snapshot.mjs
+          node --check scripts/verify-trust-phase8i4g-canary-snapshot.mjs
+          node --check scripts/verify-trust-phase8i4g-authority-invariants.mjs
+          node --check scripts/verify-trust-phase8i4g-lineage.mjs
+          node --check scripts/verify-trust-phase8i4g-idempotent-replay.mjs
+          node --check scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs
+          node --check scripts/verify-trust-phase8i4g-static-contract.mjs
+          node scripts/verify-trust-phase8i4g-static-contract.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
@@ -513,6 +543,17 @@ jobs:
           echo "### Phase 8I-3E scheduled transport drift evaluation" >> "$GITHUB_STEP_SUMMARY"
           echo >> "$GITHUB_STEP_SUMMARY"
           cat "${summary}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture Phase 8I-4G read-only canary state
+        run: |
+          set -euo pipefail
+          canary="${RUNNER_TEMP}/trust-phase8i3e/phase8i4g-canary-snapshot.json"
+          canary_summary="${RUNNER_TEMP}/trust-phase8i3e/phase8i4g-canary-verification.json"
+          node scripts/trust-phase8i4g-canary-snapshot.mjs --limit=1000 >"${canary}"
+          node scripts/verify-trust-phase8i4g-canary-snapshot.mjs "--result=${canary}" | tee "${canary_summary}"
+          echo "### Phase 8I-4G read-only first-real canary state" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          cat "${canary_summary}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload scheduled drift evaluation evidence
         if: always()

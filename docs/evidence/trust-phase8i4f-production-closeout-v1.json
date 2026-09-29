@@ -1,0 +1,68 @@
+{
+  "contract": "trust-phase8i4f-production-closeout-v1",
+  "watchtower_track": "pipeline-reliability",
+  "result": "PASS",
+  "phase_state": "CLOSED",
+  "repository": {
+    "pr": 915,
+    "pr_head_sha": "81f243c7f16ff1d47bab3826c3b0372e6a96fbdf",
+    "merge_sha": "a10df31e73f4ad453eb5f64b4057c44cf40fe5a4"
+  },
+  "exact_head_ci": {
+    "trust_phase8h3_relocation_revalidation": 170,
+    "current_main_health": 2366,
+    "supply_chain_security": 637,
+    "security_boundary": 291,
+    "admin_access_foundation": 567,
+    "admin_product_current_main_integration": 557,
+    "pie_prospective_shadow": 2040,
+    "result": "SUCCESS"
+  },
+  "post_merge_ci": {
+    "trust_phase8h3_relocation_revalidation": 171,
+    "current_main_health": 2367,
+    "supply_chain_security": 638,
+    "security_boundary": 292,
+    "admin_product_current_main_integration": 558,
+    "result": "SUCCESS"
+  },
+  "operator_boundary": {
+    "route": "/admin/products/trust/relocations",
+    "capability": "admin.products.review",
+    "same_origin_mutation_policy": true,
+    "browser_authority_payload": false,
+    "browser_fields": [
+      "caseId",
+      "evaluationId",
+      "preflightHash"
+    ],
+    "server_rebuilds_confirmation_payload": true,
+    "js_db_dual_preflight": true,
+    "explicit_admin_confirmation_only": true
+  },
+  "production_readback": {
+    "ready_for_8i4": 0,
+    "grouped_relocations": 0,
+    "grouped_sources": 0,
+    "grouped_incidents": 0,
+    "relocations": 1,
+    "product_fact_instances": 71,
+    "product_fact_current": 71,
+    "product_fact_confirmations": 71,
+    "evidence_sources": 40,
+    "evidence_subject_bindings": 40,
+    "recommendation_logs": 1300,
+    "product_source_bindings": 133,
+    "official_source_reviews": 19,
+    "admin_audit_logs": 440
+  },
+  "authority_invariants": {
+    "production_grouped_confirmation_executed": false,
+    "automatic_relocation": false,
+    "product_fact_mutation": false,
+    "historical_evidence_source_mutation": false,
+    "recommendation_authority_mutation": false,
+    "semantic_same_changed_resolution": false
+  },
+  "next_state": "PHASE_8I4G_WAITING_FOR_FIRST_REAL_READY_FOR_8I4_CANARY"
+}
