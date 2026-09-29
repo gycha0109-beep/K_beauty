@@ -246,6 +246,10 @@ const reader = fs.readFileSync(
   "lib/recommendation-sunscreen-protection-authority-reader.js",
   "utf8"
 );
+const fallbackMigration = fs.readFileSync(
+  "supabase/migrations/20260929002000_data_ai29c_shadow_transport_fallback.sql",
+  "utf8"
+);
 
 assert.match(
   service,
@@ -286,6 +290,38 @@ assert.match(
 assert.match(
   reader,
   /from unnest\(\$\{sql\.array\(uniqueIds, "uuid"\)\}\)/
+);
+assert.match(
+  reader,
+  /RECOMMENDATION_PROTECTION_SHADOW_FALLBACK_DATABASE_URL_ENV =\s*"RECOMMENDATION_ADMISSION_DATABASE_URL"/
+);
+assert.match(
+  reader,
+  /options\.allowShadowTransportFallback === true/
+);
+assert.match(
+  service,
+  /allowShadowTransportFallback:\s*true/
+);
+assert.match(
+  fallbackMigration,
+  /grant execute on function public\.read_recommendation_sunscreen_protection_authority_v1\(uuid\)[\s\S]*to recommendation_admission_runtime/i
+);
+assert.match(
+  fallbackMigration,
+  /DATA_AI29C_SHADOW_FALLBACK_RAW_PF_SELECT_FORBIDDEN/
+);
+assert.doesNotMatch(
+  fallbackMigration,
+  /grant\s+select[\s\S]{0,180}recommendation_admission_runtime/i
+);
+assert.doesNotMatch(
+  recommendation,
+  /RECOMMENDATION_ADMISSION_DATABASE_URL|allowShadowTransportFallback/
+);
+assert.doesNotMatch(
+  execution,
+  /RECOMMENDATION_ADMISSION_DATABASE_URL|allowShadowTransportFallback/
 );
 
 console.log("DATA-AI29C-B protection shadow verifier: PASS");

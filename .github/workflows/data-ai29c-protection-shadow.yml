@@ -7,6 +7,7 @@ on:
     paths:
       - "lib/recommendation-sunscreen-protection-authority-contract.mjs"
       - "lib/recommendation-sunscreen-protection-authority-reader.js"
+      - "supabase/migrations/20260929002000_data_ai29c_shadow_transport_fallback.sql"
       - "lib/sunscreen-protection-corpus-audit.mjs"
       - "lib/sunscreen-protection-projection.mjs"
       - "lib/sunscreen-protection-shadow-scoring.mjs"
@@ -21,6 +22,7 @@ on:
     paths:
       - "lib/recommendation-sunscreen-protection-authority-contract.mjs"
       - "lib/recommendation-sunscreen-protection-authority-reader.js"
+      - "supabase/migrations/20260929002000_data_ai29c_shadow_transport_fallback.sql"
       - "lib/sunscreen-protection-corpus-audit.mjs"
       - "lib/sunscreen-protection-projection.mjs"
       - "lib/sunscreen-protection-shadow-scoring.mjs"
