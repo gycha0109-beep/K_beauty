@@ -27,7 +27,25 @@
     "qualification_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "input_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "result_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-    "qualified_historical_source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d"
+    "qualified_historical_source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+    "qualified_exact": {
+      "contract": "trust-phase8h-source-identity-qualification-v1",
+      "historical_source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "historical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "historical_publisher": "Beauty of Joseon",
+      "historical_source_kind": "official_product_page",
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "candidate_locator": "https://beautyofjoseon.com/products/synthetic-phase8i4-successor",
+      "candidate_publisher": "Beauty of Joseon",
+      "candidate_source_kind": "brand_official_product_page",
+      "discovery_method": "official_sitemap",
+      "disposition": "QUALIFIED_EXACT",
+      "reason": "exact_governed_identity_proven",
+      "qualification_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mutation_policy": "READ_ONLY_NO_PRODUCTION_WRITE",
+      "authority": "QUALIFICATION_EVIDENCE_ONLY_REQUIRES_GOVERNED_RELOCATION"
+    }
   },
   "governed_subject": {
     "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
@@ -69,7 +87,12 @@
       "binding_state": "exact_subject_match",
       "scope_relation": "equivalent",
       "reviewed_binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
-      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda"
+      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda",
+      "publisher": "Beauty of Joseon",
+      "source_kind": "official_product_page",
+      "market": "GLOBAL",
+      "locale": null,
+      "content_digest": "cca19ddb32d09d2995995bbe8a8591882bc9cc29367cc5030b78ea726b2adadd"
     },
     {
       "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
@@ -80,7 +103,12 @@
       "binding_state": "exact_subject_match",
       "scope_relation": "equivalent",
       "reviewed_binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
-      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda"
+      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda",
+      "publisher": "Beauty of Joseon",
+      "source_kind": "official_product_page",
+      "market": "GLOBAL",
+      "locale": "en",
+      "content_digest": "e09425390b1fbf0e9c4eb4c4a3d1b2854f25d6a7de82a99f57a56a575184e7c9"
     },
     {
       "source_id": "f55720c7-0252-49b8-967c-8d77f4dfe6d6",
@@ -91,7 +119,12 @@
       "binding_state": "exact_subject_match",
       "scope_relation": "equivalent",
       "reviewed_binding_id": "0dae6fce-111e-4d5b-9b6e-d87f95e9a40c",
-      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda"
+      "reviewed_review_id": "4db8f51b-6fa2-48ba-853d-8d2e65c7bfda",
+      "publisher": "beautyofjoseon_official",
+      "source_kind": "brand_official_product_page",
+      "market": "GLOBAL",
+      "locale": "en",
+      "content_digest": "49ef1e9ec61d67efa691daeb05ba00e2c00edd2908949944a8a59ee4f5c2c63a"
     }
   ],
   "replacement": {

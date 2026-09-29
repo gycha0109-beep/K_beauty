@@ -300,6 +300,18 @@ assert.equal(
     .historical_source_id,
   ricePolicy.rediscovery_case_template.historical_source_id,
 );
+assert.equal(
+  readyRecord.p_result_payload.qualified_exact.historical_source_id,
+  ricePolicy.rediscovery_case_template.historical_source_id,
+);
+assert.equal(
+  readyRecord.p_result_payload.qualified_exact.disposition,
+  "QUALIFIED_EXACT",
+);
+assert.equal(
+  readyRecord.p_result_payload.qualified_exact.qualification_digest,
+  readyRecord.p_qualification_digest,
+);
 assert.equal(holdRecord.p_candidate_locator, null);
 assert.equal(policyRecord.p_candidate_locator, null);
 assert.equal(
@@ -346,6 +358,14 @@ assert.equal(
 assert.equal(
   directRecorded[0].p_result_payload.direct_qualification.historical_source_id,
   ricePolicy.direct_qualification_template.historical_source.source_id,
+);
+assert.equal(
+  directRecorded[0].p_result_payload.qualified_exact.historical_source_id,
+  ricePolicy.direct_qualification_template.historical_source.source_id,
+);
+assert.equal(
+  directRecorded[0].p_result_payload.qualified_exact.disposition,
+  "QUALIFIED_EXACT",
 );
 assert.equal(directRediscoveryCalls, 0);
 
@@ -423,6 +443,7 @@ for (const required of [
   "POLICY_REQUIRED",
   "READY_FOR_8I4",
   "qualified_historical_source_id",
+  "qualified_exact",
   "TRUST_PHASE8I3_READY_FOR_8I4_QUALIFIED_SOURCE_LINEAGE_INVALID",
   "RETRY_INTERVAL_NOT_REACHED",
   "HOLD_STABLE_UNTIL_POLICY_OR_NEW_CASE",

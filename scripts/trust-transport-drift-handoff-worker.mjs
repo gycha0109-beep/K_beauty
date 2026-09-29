@@ -273,6 +273,7 @@ function buildEvaluationPayload({
   candidateLocator,
   qualificationDigest,
   qualifiedHistoricalSourceId = null,
+  qualifiedExact = null,
   reason,
 }) {
   return {
@@ -295,6 +296,7 @@ function buildEvaluationPayload({
     candidate_locator: candidateLocator,
     qualification_digest: qualificationDigest,
     qualified_historical_source_id: qualifiedHistoricalSourceId,
+    qualified_exact: summarizeQualification(qualifiedExact),
     reason,
     authority:
       resultKind === "READY_FOR_8I4"
@@ -363,6 +365,7 @@ async function evaluateCase(caseRow, policy, registry, {
           caseRow,
           directQualification,
         ),
+        qualifiedExact: directQualification,
         reason: "DIRECT_REDIRECT_CANDIDATE_QUALIFIED_EXACT",
       });
       return {
@@ -422,6 +425,7 @@ async function evaluateCase(caseRow, policy, registry, {
           caseRow,
           exact.qualification,
         ),
+        qualifiedExact: exact.qualification,
         reason: "REDISCOVERY_CANDIDATE_QUALIFIED_EXACT",
       }),
     };
