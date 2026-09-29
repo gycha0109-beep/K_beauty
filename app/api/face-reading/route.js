@@ -16,13 +16,14 @@ import {
 } from "@/lib/security/error-redaction";
 import { canonicalizeImageFile } from "@/lib/server/image-upload-boundary";
 import { analyzeVisionObservation } from "@/lib/server/vision-observation-service";
+import { OPENAI_RUNTIME_MODEL } from "@/lib/ai-model-policy";
 import {
   formatUploadSize,
   validateImageRequestContentLength,
   validateImageUpload
 } from "@/lib/upload-validation";
 
-const MODEL = "gpt-4o-mini";
+const MODEL = OPENAI_RUNTIME_MODEL;
 
 const COPY = {
   ko: {
