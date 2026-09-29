@@ -101,12 +101,22 @@ function rehydrateSavedV2(data) {
     analyzedAt: data?.premium_report?.faceLabSummary?.analyzedAt || null
   });
 
+  const rehydratedRouteId = committedRouteId(
+    canonicalV2,
+    normalized.selectedRouteId
+  );
+  const rehydratedRouteChoiceEvidence =
+    rehydratedRouteId &&
+    saved.routeChoiceEvidence?.routeId === rehydratedRouteId
+      ? saved.routeChoiceEvidence
+      : null;
+
   return {
     schemaVersion: SAVED_FACE_LAB_V2_VERSION,
     surveyAnswers: normalized.surveyAnswers,
     targetFinderResult: normalized.targetFinderResult,
-    selectedRouteId: committedRouteId(canonicalV2, normalized.selectedRouteId),
-    routeChoiceEvidence: saved.routeChoiceEvidence || null,
+    selectedRouteId: rehydratedRouteId,
+    routeChoiceEvidence: rehydratedRouteChoiceEvidence,
     canonicalV2,
     updatedAt: saved.updatedAt || null
   };
