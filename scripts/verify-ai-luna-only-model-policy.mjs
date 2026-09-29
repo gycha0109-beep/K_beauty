@@ -37,6 +37,13 @@ const FORBIDDEN_MODEL_OVERRIDE_TOKENS = Object.freeze([
   "AI_PROVIDER_SMOKE_MODEL"
 ]);
 
+const TEST_SENTINEL_EXEMPTIONS = Object.freeze({
+  "scripts/verify-sec12-error-log-boundary.mjs": new Set([
+    "GPT-5.6-LUNA",
+    "gpt-5.6-luna-custom"
+  ])
+});
+
 function isScannableFile(file) {
   if (file === SELF_PATH) return false;
   if (file.startsWith("docs/")) return false;
@@ -70,7 +77,8 @@ for (const file of trackedFiles) {
 
     if (
       token === OPENAI_RUNTIME_MODEL ||
-      NON_RUNTIME_PROVIDER_PROFILE_IDS.has(token)
+      NON_RUNTIME_PROVIDER_PROFILE_IDS.has(token) ||
+      TEST_SENTINEL_EXEMPTIONS[file]?.has(token)
     ) {
       continue;
     }
@@ -163,5 +171,6 @@ console.log(JSON.stringify({
   scannedTrackedSourceCount: trackedFiles.length,
   allowedNonRuntimeProviderProfileIds: [
     ...NON_RUNTIME_PROVIDER_PROFILE_IDS
-  ]
+  ],
+  testSentinelExemptionFiles: Object.keys(TEST_SENTINEL_EXEMPTIONS)
 }, null, 2));
