@@ -120,7 +120,9 @@ jobs:
 
   live-provider-smoke:
     name: Explicit live OpenAI smoke
-    if: github.event_name == 'workflow_dispatch' && inputs.run_live_provider
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.run_live_provider) ||
+      (github.event_name == 'pull_request' && github.head_ref == 'test/ai/luna-live-smoke-once-v2')
     needs: provider-runtime-contract
     runs-on: ubuntu-24.04
     timeout-minutes: 3
