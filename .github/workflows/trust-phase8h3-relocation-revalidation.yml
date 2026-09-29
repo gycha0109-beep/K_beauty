@@ -8,6 +8,7 @@ on:
       - "docs/evidence/trust-phase8h3-*"
       - "docs/evidence/trust-phase8i2-*"
       - "docs/evidence/trust-phase8i3-*"
+      - "docs/evidence/trust-phase8i4-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
       - "supabase/migrations/*_trust_phase8i3_*.sql"
       - "lib/trust/official-source-transport-fetch.mjs"
@@ -24,6 +25,8 @@ on:
       - "scripts/trust-transport-drift-case-enqueue.mjs"
       - "scripts/verify-trust-phase8i3e-enqueue-result.mjs"
       - "scripts/verify-trust-phase8i3e-scheduler-integration.mjs"
+      - "lib/trust/official-source-grouped-relocation-preflight.mjs"
+      - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -41,6 +44,7 @@ on:
       - "docs/evidence/trust-phase8h3-*"
       - "docs/evidence/trust-phase8i2-*"
       - "docs/evidence/trust-phase8i3-*"
+      - "docs/evidence/trust-phase8i4-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
       - "supabase/migrations/*_trust_phase8i3_*.sql"
       - "lib/trust/official-source-transport-fetch.mjs"
@@ -57,6 +61,8 @@ on:
       - "scripts/trust-transport-drift-case-enqueue.mjs"
       - "scripts/verify-trust-phase8i3e-enqueue-result.mjs"
       - "scripts/verify-trust-phase8i3e-scheduler-integration.mjs"
+      - "lib/trust/official-source-grouped-relocation-preflight.mjs"
+      - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -164,6 +170,12 @@ jobs:
           node --check scripts/trust-transport-drift-case-enqueue.mjs
           node --check scripts/verify-trust-phase8i3e-enqueue-result.mjs
           node scripts/verify-trust-phase8i3e-scheduler-integration.mjs
+
+      - name: Verify Phase 8I-4A/B grouped relocation preflight
+        run: |
+          node --check lib/trust/official-source-grouped-relocation-preflight.mjs
+          node --check scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs
+          node scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
