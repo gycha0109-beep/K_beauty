@@ -31,7 +31,7 @@ comment on function public.read_recommendation_sunscreen_protection_authority_v1
 reset role;
 revoke recommendation_protection_reader_owner from postgres;
 
-do $
+do $$
 begin
   if has_table_privilege(
       'recommendation_admission_runtime',
@@ -76,7 +76,7 @@ begin
 end
 $$;
 
-do $
+do $$
 begin
   if exists (
     select 1
@@ -89,6 +89,6 @@ begin
     raise exception 'DATA_AI29C_TRANSIENT_OWNER_MEMBERSHIP_MUST_BE_REVOKED';
   end if;
 end
-$;
+$$;
 
 commit;
