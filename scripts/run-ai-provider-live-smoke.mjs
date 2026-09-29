@@ -10,11 +10,15 @@ import {
 } from "../lib/vision-observation-contract.js";
 import { normalizeVisionObservationBundle } from "../lib/vision-observation-normalizer.js";
 import { logProviderRuntimeEvent } from "../lib/provider-runtime-log.js";
+import {
+  OPENAI_RUNTIME_MODEL,
+  OPENAI_RUNTIME_REASONING_EFFORT
+} from "../lib/ai-model-policy.js";
 
 const apiKey = process.env.OPENAI_API_KEY || "";
 assert.ok(apiKey, "OPENAI_API_KEY is required for the explicit live-provider smoke");
 
-const model = process.env.AI_PROVIDER_SMOKE_MODEL || "gpt-4o-mini";
+const model = OPENAI_RUNTIME_MODEL;
 const fixturePath = new URL(
   "../apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png",
   import.meta.url
@@ -30,6 +34,7 @@ const runtime = await executeOpenAiChatJson({
   body: {
     model,
     max_tokens: 2_200,
+    reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT,
     temperature: 0,
     response_format: { type: "json_object" },
     messages: [
