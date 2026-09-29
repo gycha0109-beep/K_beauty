@@ -199,6 +199,8 @@ jobs:
             contractVersion: payload.contractVersion || null,
             sunscreenCorpusCount: payload.sunscreenCorpusCount ?? null,
             authorityResolvedCount: payload.authorityResolvedCount ?? null,
+            credentialMode: payload.credentialMode || null,
+            authorityFailureCounts: payload.authorityFailureCounts || null,
             auditDecision: payload.audit?.overallDecision || null,
             readyAxes: payload.audit?.readyAxes || null,
             enabledAxes: payload.enabledAxes || null,
@@ -232,6 +234,17 @@ jobs:
           if (payload.contractVersion !== "product-query-protection-shadow-v1") process.exit(4);
           if (!Number.isInteger(payload.sunscreenCorpusCount) || payload.sunscreenCorpusCount < 1) process.exit(5);
           if (payload.authorityResolvedCount !== payload.sunscreenCorpusCount) process.exit(6);
+          if (!["dedicated", "admission_shadow_fallback"].includes(payload.credentialMode)) process.exit(23);
+          const failureCounts = payload.authorityFailureCounts || {};
+          const allowedFailureKeys = [
+            "credential_unavailable",
+            "read_timeout",
+            "read_failed",
+            "malformed_or_stale_authority",
+            "authority_unavailable_other"
+          ];
+          if (Object.keys(failureCounts).sort().join(",") !== allowedFailureKeys.sort().join(",")) process.exit(24);
+          if (allowedFailureKeys.some((key) => failureCounts[key] !== 0)) process.exit(25);
           if (payload.audit?.overallDecision !== "HOLD_NO_DISCRIMINATING_AXIS") process.exit(7);
           if (!Array.isArray(payload.audit?.readyAxes) || payload.audit.readyAxes.length !== 0) process.exit(8);
           if (!Array.isArray(payload.enabledAxes) || payload.enabledAxes.length !== 0) process.exit(9);
