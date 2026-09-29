@@ -23,6 +23,7 @@ on:
       - "scripts/verify-face-lab-v2-route-diversity-audit.mjs"
       - "scripts/verify-face-lab-v2-route-choice-authority.mjs"
       - "scripts/verify-face-lab-v2-route-choice-evidence.mjs"
+      - "scripts/verify-face-lab-v2-end-to-end-completion.mjs"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
@@ -41,6 +42,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-route-diversity-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-explicit-route-choice-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-route-choice-evidence-v1.md"
+      - "docs/domain/facelab/face-lab-v2-end-to-end-completion-audit-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
@@ -139,3 +141,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-route-choice-authority.mjs
       - name: Verify Face Lab V2 Route Choice evidence
         run: node scripts/verify-face-lab-v2-route-choice-evidence.mjs
+      - name: Verify Face Lab V2 end-to-end completion
+        run: node scripts/verify-face-lab-v2-end-to-end-completion.mjs
