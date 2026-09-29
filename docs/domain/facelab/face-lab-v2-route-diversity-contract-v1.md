@@ -145,3 +145,55 @@ Possible interventions depend on the observed baseline:
 - comparator/UI work when route semantics are healthy but differences are poorly exposed.
 
 No diversity metric may be improved by route-ID multiplication or copy-only variation.
+
+
+## 8. Frozen v1 baseline
+
+Measured on the deterministic target-sweep cohort:
+
+~~~text
+caseCount                              96
+emittedRouteCount                     288
+routeCountDistribution                3 routes × 96 cases
+
+selectedStrategyCounts
+  balanced                            96
+
+emittedStrategyCounts
+  hair_led                            96
+  makeup_led                          96
+  balanced                            96
+
+selectedStrategyConcentration         1.0000
+
+MULTI_ROUTE_MEANINGFUL                96
+casesWithAtLeastTwoMeaningfulRoutes   96
+casesWithStrongChoiceDiversity        96
+
+totalPairCount                        288
+cosmeticDuplicatePairCount            0
+meaningfulDistinctPairCount           288
+strongChoiceDistinctPairCount         288
+strengthOnlyDifferencePairCount       0
+
+averageActionIdentityJaccard          0.1352
+hardFailureCount                      0
+~~~
+
+### Interpretation
+
+The current Route Generator does **not** have an emitted-candidate diversity problem on the target-sweep cohort.
+
+It already emits three materially distinct choices for every case, with no cosmetic duplicates and low action overlap.
+
+The observed collapse is specifically:
+
+~~~text
+default selected strategy → balanced in 96 / 96 cases
+~~~
+
+Therefore Route Generator candidate multiplication or route-ID diversification is not justified by this baseline.
+
+The next intervention must investigate default-selection authority and route-comparison UX first.
+
+A future generator change must demonstrate a concrete deficiency not already disproven by this baseline.
