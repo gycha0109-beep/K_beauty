@@ -7,7 +7,7 @@ import {
 
 const body = {
   model: "gpt-5.6-luna",
-  max_tokens: 64,
+  max_completion_tokens: 64,
   reasoning_effort: "none",
   temperature: 0,
   response_format: { type: "json_object" },
