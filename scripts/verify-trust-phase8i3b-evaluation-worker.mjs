@@ -349,6 +349,27 @@ assert.equal(
 );
 assert.equal(directRediscoveryCalls, 0);
 
+const missingQualifiedSourceCase = caseFor(ricePolicy, {
+  case_id: "77777777-7777-4777-8777-777777777777",
+});
+await assert.rejects(
+  () =>
+    runTransportDriftHandoff({
+      client: mockClient([missingQualifiedSourceCase], []),
+      registry,
+      runId: "phase8i3b-missing-qualified-source",
+      record: false,
+      observeCandidate: async (url) => ambiguousObservation(url),
+      runRediscovery: async (batch) => {
+        const value = await exactRiceRediscovery(batch);
+        delete value.results[0].qualifications[0].qualification
+          .historical_source_id;
+        return value;
+      },
+    }),
+  /TRUST_PHASE8I3_READY_FOR_8I4_QUALIFIED_SOURCE_LINEAGE_INVALID/,
+);
+
 const recentRetryCase = caseFor(ricePolicy, {
   case_id: "66666666-6666-4666-8666-666666666666",
   latest_evaluation: {
