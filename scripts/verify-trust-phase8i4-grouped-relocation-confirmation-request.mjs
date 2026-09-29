@@ -59,6 +59,35 @@ assert.equal(
   request.replacement.source_url,
   fixture.evaluation.candidate_locator,
 );
+assert.match(request.phase8h_anchor_prestate_digest, /^[0-9a-f]{64}$/);
+assert.match(
+  request.phase8h_anchor_relocation_plan_digest,
+  /^[0-9a-f]{64}$/,
+);
+assert.equal(
+  request.phase8h_anchor_confirmation_request.contract,
+  "trust-phase8h-governed-relocation-confirmation-request-v1",
+);
+assert.equal(
+  request.phase8h_anchor_confirmation_request.historical_source_id,
+  request.qualified_historical_source_id,
+);
+assert.equal(
+  request.phase8h_anchor_confirmation_request.old_binding_id,
+  request.old_binding_id,
+);
+assert.equal(
+  request.phase8h_anchor_confirmation_request.old_review_id,
+  request.old_review_id,
+);
+assert.equal(
+  request.phase8h_anchor_confirmation_request.replacement.source_url,
+  request.replacement.source_url,
+);
+assert.equal(
+  request.phase8h_anchor_confirmation_request.qualification_digest,
+  request.qualification_digest,
+);
 assert.deepEqual(request.mutation_scope, [
   "CREATE_OR_REUSE_REPLACEMENT_PRODUCT_SOURCE_BINDING",
   "CREATE_OR_REUSE_REPLACEMENT_OFFICIAL_SOURCE_REVIEW",
@@ -92,6 +121,14 @@ assert.equal(
   request.expected_group_prestate_digest,
 );
 assert.equal(reorderedRequest.group_plan_digest, request.group_plan_digest);
+assert.equal(
+  reorderedRequest.phase8h_anchor_prestate_digest,
+  request.phase8h_anchor_prestate_digest,
+);
+assert.equal(
+  reorderedRequest.phase8h_anchor_relocation_plan_digest,
+  request.phase8h_anchor_relocation_plan_digest,
+);
 
 for (const mutate of [
   (value) => {
@@ -123,6 +160,8 @@ for (const mutate of [
 
 for (const required of [
   "qualified_historical_source_id",
+  "trust-phase8h-governed-relocation-confirmation-request-v1",
+  "admin_confirm_trust_official_source_relocation_v1",
   "ADMIN_GROUPED_CONFIRMATION_REQUEST_REQUIRES_DATABASE_REVALIDATION",
   "RETIRE_OLD_REVIEWED_BINDING_ONCE",
   "APPEND_SINGLE_RELOCATION_AUTHORITY_ROW",
@@ -162,6 +201,10 @@ console.log(
       expected_group_prestate_digest:
         request.expected_group_prestate_digest,
       group_plan_digest: request.group_plan_digest,
+      phase8h_anchor_prestate_digest:
+        request.phase8h_anchor_prestate_digest,
+      phase8h_anchor_relocation_plan_digest:
+        request.phase8h_anchor_relocation_plan_digest,
       authority: request.authority,
     },
     null,
