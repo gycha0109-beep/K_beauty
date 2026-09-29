@@ -1355,8 +1355,8 @@ register("M01_STRUCTURED_LOG_MODEL_CREDENTIAL_REJECTED", () => {
   }
 
   const rejectedModels = [
-    "GPT-4O-MINI",
-    "gpt-4o-mini-custom",
+    "GPT-5.6-LUNA",
+    "gpt-5.6-luna-custom",
     "unknown-model",
     "sk-SEC12_FAKE_MODEL_SECRET",
     "sk-proj-SEC12_FAKE_MODEL_SECRET",
@@ -1364,8 +1364,8 @@ register("M01_STRUCTURED_LOG_MODEL_CREDENTIAL_REJECTED", () => {
     "Bearer SEC12_FAKE_TOKEN",
     "Cookie: sb-access-token=SEC12_FAKE_COOKIE",
     "oauth_code=SEC12_FAKE_OAUTH_CODE",
-    "gpt-4o-mini\r\nAuthorization: Bearer SEC12_FAKE_TOKEN",
-    "gpt-4o-mini\u001b[31mSEC12_FAKE_ANSI",
+    "gpt-5.6-luna\r\nAuthorization: Bearer SEC12_FAKE_TOKEN",
+    "gpt-5.6-luna\u001b[31mSEC12_FAKE_ANSI",
     "m".repeat(10_000)
   ];
 
