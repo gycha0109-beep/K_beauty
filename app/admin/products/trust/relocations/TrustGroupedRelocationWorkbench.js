@@ -29,6 +29,10 @@ function messageFor(code) {
       "첫 grouped relocation은 실제 scheduled READY_FOR_8I4 canary만 확정할 수 있습니다.",
     trust_grouped_relocation_canary_candidate_not_first:
       "다른 실제 canary 후보가 먼저 대기 중입니다. 첫 후보를 먼저 처리하세요.",
+    trust_grouped_relocation_canary_closure_required:
+      "첫 실제 canary 검증이 PASS로 닫히기 전에는 다음 grouped relocation을 확정할 수 없습니다.",
+    trust_grouped_relocation_canary_snapshot_failed:
+      "첫 canary 확정 전 보호 상태 스냅샷을 만들지 못했습니다. 확정을 차단했습니다.",
   };
   return messages[code] || "Relocation 처리 중 오류가 발생했습니다.";
 }
@@ -387,7 +391,9 @@ function Detail({ item }) {
               disabled={busy || !canConfirmCanary}
               className="mt-4 rounded-xl bg-amber-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
-              명시적으로 Official Source Relocation 확정
+              {item.canary?.isFirstRealCanary
+                ? "첫 Real Canary Relocation 확정 + 검증"
+                : "명시적으로 Official Source Relocation 확정"}
             </button>
           </div>
         ) : null}
@@ -406,7 +412,13 @@ function Detail({ item }) {
         ) : null}
 
         {result ? (
-          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
+          <div
+            className={
+              result.canaryVerification?.result === "FAIL"
+                ? "mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
+                : "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
+            }
+          >
             <p className="font-semibold">Relocation 확정 완료</p>
             <p className="mt-1">
               Group {short(result.groupId)} · Relocation{" "}
@@ -416,6 +428,39 @@ function Detail({ item }) {
               Source {result.historicalSourceCount} · Incident{" "}
               {result.incidentCount} · Product Fact writes 0
             </p>
+            {result.canaryVerification ? (
+              <div className="mt-3 rounded-lg border border-current/20 p-3">
+                <p className="font-semibold">
+                  Phase 8I-4G canary verification:{" "}
+                  {result.canaryVerification.result}
+                </p>
+                <p className="mt-1">
+                  Authority{" "}
+                  {result.canaryVerification.checks?.authority?.result ?? "FAIL"} ·
+                  Lineage{" "}
+                  {result.canaryVerification.checks?.groupedLineage?.result ??
+                    "FAIL"}{" "}
+                  · Replay{" "}
+                  {result.canaryVerification.checks?.replay?.result ?? "FAIL"} ·
+                  8H-3 handoff{" "}
+                  {result.canaryVerification.checks?.downstream?.result ??
+                    "FAIL"}
+                </p>
+                <p className="mt-1">
+                  Audit{" "}
+                  {result.canaryVerification.audit_recorded
+                    ? "recorded"
+                    : "not recorded"}{" "}
+                  · Next {result.canaryVerification.next_state}
+                </p>
+                {result.canaryVerification.result === "FAIL" ? (
+                  <p className="mt-2 font-semibold">
+                    추가 grouped relocation은 canary closeout 검토 전까지
+                    차단됩니다.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
 
