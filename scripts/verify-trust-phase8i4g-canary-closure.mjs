@@ -94,8 +94,24 @@ for (const required of [
   "Phase 8I-4G canary verification",
   "추가 grouped relocation은 canary closeout 검토 전까지",
   "차단됩니다.",
+  "FIRST_REAL_CANARY_HALTED_REVIEW_REQUIRED",
+  "8I-4G Canary Halted",
+  "8I-4G Canary Closed PASS",
+  "confirmationAllowed",
 ]) {
   assert.ok(workbench.includes(required), "workbench missing: " + required);
+}
+
+for (const required of [
+  "firstCanaryClosure",
+  "laterConfirmationAllowed",
+  "closurePass",
+  "closureFailWithoutPass",
+  "FIRST_REAL_CANARY_CLOSED_PASS",
+  "FIRST_REAL_CANARY_HALTED_REVIEW_REQUIRED",
+  "confirmationAllowed",
+]) {
+  assert.ok(adminService.includes(required), "admin queue closure state missing: " + required);
 }
 
 assert.equal(
