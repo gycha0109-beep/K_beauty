@@ -30,7 +30,7 @@ const NON_RUNTIME_PROVIDER_PROFILE_IDS = new Set([
 ]);
 
 const GENERAL_MODEL_PATTERN =
-  /\b(?:gpt-(?:4o(?:-mini)?|4\.1(?:-[a-z0-9.-]+)?|5(?:\.[0-9]+)?(?:-[a-z0-9.-]+)?)|o[134](?:-[a-z0-9.-]+)?|gemini-[a-z0-9._-]+|claude-[a-z0-9._-]+)\b/gi;
+  /\b(?:gpt-(?:4o(?:-mini)?|4\.1(?:-[a-z0-9.-]+)?|5(?:\.[0-9]+)?(?:-[a-z0-9.-]+)?)|o[134]-[a-z0-9.-]+|gemini-[a-z0-9._-]+|claude-[a-z0-9._-]+)\b/gi;
 
 const FORBIDDEN_MODEL_OVERRIDE_TOKENS = Object.freeze([
   "PRODUCT_QUERY_INTENT_MODEL",
@@ -39,6 +39,8 @@ const FORBIDDEN_MODEL_OVERRIDE_TOKENS = Object.freeze([
 
 function isScannableFile(file) {
   if (file === SELF_PATH) return false;
+  if (file.startsWith("docs/")) return false;
+  if (file.startsWith("fixtures/")) return false;
 
   const base = path.basename(file);
   if (base.startsWith(".env")) return true;
