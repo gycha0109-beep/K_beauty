@@ -448,6 +448,16 @@ function TargetFinder({ locale, onComplete, onBack }) {
     return null;
   }
 
+  const goBack = () => {
+    if (roundIndex > 0) {
+      setChoices((current) => current.slice(0, -1));
+      setRoundIndex((value) => Math.max(0, value - 1));
+      return;
+    }
+
+    onBack();
+  };
+
   const choose = (choice) => {
     const nextChoices = [
       ...choices,
@@ -508,7 +518,12 @@ function TargetFinder({ locale, onComplete, onBack }) {
         <ChoiceButton onClick={() => choose("both")}>{copy.both}</ChoiceButton>
         <ChoiceButton onClick={() => choose("neither")}>{copy.neither}</ChoiceButton>
       </div>
-      <button type="button" onClick={onBack} className="mt-4 text-sm font-semibold text-zinc-500">
+      <button
+        type="button"
+        onClick={goBack}
+        className="mt-4 text-sm font-semibold text-zinc-500"
+        data-face-lab-finder-back={roundIndex > 0 ? "previous-round" : "previous-stage"}
+      >
         {copy.back}
       </button>
     </section>
@@ -1065,6 +1080,7 @@ export default function PremiumFaceLabSection({
         <FaceLabV2Result
           result={canonical}
           locale={locale}
+          photoUrl={photoUrl}
           onSelectRoute={selectRoute}
           onEditTarget={() => {
             if (entryMode === "unknown") {
