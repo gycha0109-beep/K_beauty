@@ -75,4 +75,3 @@ Each selected candidate must pass the existing catalog-only identity preflight/a
 - Candidate source used as Product Fact authority: false
 - Water claim converted to duration evidence: false
 - Runtime consumption: false
-
