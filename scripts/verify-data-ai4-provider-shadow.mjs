@@ -286,7 +286,7 @@ check(runtimeValidator.includes('payload.publicActivation !== false'),
   "runtime validator must require no public activation");
 check(!workflow.includes("OPENAI_API_KEY"),
   "GitHub workflow must not receive provider secret directly");
-check(!workflow.includes("PRODUCT_QUERY_INTENT_MODEL:"),
+check(!workflow.includes("PRODUCT_QUERY_" + "INTENT_MODEL:"),
   "automatic provider probe must use deployed model authority rather than workflow override");
 
 console.log(`DATA-AI4 provider shadow verifier: PASS (${assertions} assertions)`);
