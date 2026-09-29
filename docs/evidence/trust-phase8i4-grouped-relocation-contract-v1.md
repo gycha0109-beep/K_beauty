@@ -100,16 +100,17 @@ A ready result requires all of the following:
 1. Evaluation belongs to the exact drift case and has `result_kind=READY_FOR_8I4`.
 2. Evaluation policy version, qualification digest, input digest, and result digest are valid.
 3. Replacement locator is HTTPS, differs from the historical locator, and exactly matches the qualified candidate locator.
-4. The case contains at least two distinct historical Evidence Source IDs.
-5. The supplied historical source set exactly equals the case historical source set.
-6. Incident IDs are non-empty and unique.
-7. Every historical source remains bound to the same Product and Subject with `exact_subject_match` and `equivalent|narrower`.
-8. Every historical source resolves to the same reviewed old binding and reviewed old review.
-9. Every historical source canonical locator matches the reviewed old binding source URL.
-10. The reviewed old binding is still `resolved`, product-scoped, and governed by `trust_official_source_review_v1`.
-11. The reviewed old review still matches the governed Subject, market, variant, formulation, and source-kind lineage.
-12. The governed Subject remains `resolved/current`.
-13. Source/review/replacement market and locale remain coherent.
+4. The evaluation preserves `qualified_historical_source_id` from the exact qualification that produced `READY_FOR_8I4`, and that source is a member of the complete grouped historical source set.
+5. The case contains at least two distinct historical Evidence Source IDs.
+6. The supplied historical source set exactly equals the case historical source set.
+7. Incident IDs are non-empty and unique.
+8. Every historical source remains bound to the same Product and Subject with `exact_subject_match` and `equivalent|narrower`.
+9. Every historical source resolves to the same reviewed old binding and reviewed old review.
+10. Every historical source canonical locator matches the reviewed old binding source URL.
+11. The reviewed old binding is still `resolved`, product-scoped, and governed by `trust_official_source_review_v1`.
+12. The reviewed old review still matches the governed Subject, market, variant, formulation, and source-kind lineage.
+13. The governed Subject remains `resolved/current`.
+14. Source/review/replacement market and locale remain coherent.
 
 Any failure produces `HOLD`.
 
@@ -136,6 +137,7 @@ The group header binds exactly one:
 
 - Phase 8I-3 case,
 - `READY_FOR_8I4` evaluation,
+- exact qualified historical-source anchor,
 - existing Phase 8H relocation row,
 - old binding,
 - replacement binding,
@@ -152,6 +154,8 @@ Any new `public` table must:
 - revoke client write access,
 - be append-only,
 - grant only the minimum server-side read path required.
+
+The singular `historical_source_id` required by the existing Phase 8H relocation row must be the exact `qualified_historical_source_id` that produced `READY_FOR_8I4`. It must never be selected arbitrarily from the grouped source set.
 
 Any future privileged Admin RPC must:
 
