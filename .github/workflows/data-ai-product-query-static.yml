@@ -34,6 +34,9 @@ on:
       - "supabase/migrations/20260929193000_data_ai29c_c5d_catalog_official_source_projection_v1.sql"
       - "supabase/migrations/20260929194500_data_ai29c_c5e_post_expansion_protection_audit_v1.sql"
       - "scripts/verify-data-ai29c-c5e-post-expansion-protection-audit.mjs"
+      - "scripts/verify-data-ai29c-c6-discrimination-wave2.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-selection-v1.json"
+      - "docs/evidence/data-ai29c-protection-expansion-wave-2-selection-v1.md"
       - "scripts/verify-data-ai29c-c5d-catalog-official-source-projection.mjs"
       - "scripts/verify-data-ai29c-c5c-catalog-only-water-enqueue.mjs"
       - "scripts/verify-data-ai29c-c5b-subject-presentation-correction.mjs"
@@ -112,6 +115,9 @@ on:
       - "supabase/migrations/20260929193000_data_ai29c_c5d_catalog_official_source_projection_v1.sql"
       - "supabase/migrations/20260929194500_data_ai29c_c5e_post_expansion_protection_audit_v1.sql"
       - "scripts/verify-data-ai29c-c5e-post-expansion-protection-audit.mjs"
+      - "scripts/verify-data-ai29c-c6-discrimination-wave2.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-selection-v1.json"
+      - "docs/evidence/data-ai29c-protection-expansion-wave-2-selection-v1.md"
       - "scripts/verify-data-ai29c-c5d-catalog-official-source-projection.mjs"
       - "scripts/verify-data-ai29c-c5c-catalog-only-water-enqueue.mjs"
       - "scripts/verify-data-ai29c-c5b-subject-presentation-correction.mjs"
@@ -245,6 +251,9 @@ jobs:
 
       - name: Verify DATA-AI29C-C5E authoritative post-expansion protection audit
         run: node scripts/verify-data-ai29c-c5e-post-expansion-protection-audit.mjs
+
+      - name: Verify DATA-AI29C-C6 discrimination-first wave 2
+        run: node scripts/verify-data-ai29c-c6-discrimination-wave2.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
