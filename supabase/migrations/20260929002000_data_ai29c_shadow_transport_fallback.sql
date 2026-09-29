@@ -19,10 +19,19 @@ begin
 end
 $$;
 
+grant recommendation_protection_reader_owner to postgres;
+set role recommendation_protection_reader_owner;
+
 grant execute on function public.read_recommendation_sunscreen_protection_authority_v1(uuid)
   to recommendation_admission_runtime;
 
-do $$
+comment on function public.read_recommendation_sunscreen_protection_authority_v1(uuid) is
+  'DATA-AI29C bounded sunscreen protection authority transport. recommendation_protection_runtime is the dedicated authority role; recommendation_admission_runtime may execute this RPC only as the DATA-AI29C-B shadow transport fallback and retains zero raw Product Fact/Evidence SELECT.';
+
+reset role;
+revoke recommendation_protection_reader_owner from postgres;
+
+do $
 begin
   if has_table_privilege(
       'recommendation_admission_runtime',
@@ -67,7 +76,19 @@ begin
 end
 $$;
 
-comment on function public.read_recommendation_sunscreen_protection_authority_v1(uuid) is
-  'DATA-AI29C bounded sunscreen protection authority transport. recommendation_protection_runtime is the dedicated authority role; recommendation_admission_runtime may execute this RPC only as the DATA-AI29C-B shadow transport fallback and retains zero raw Product Fact/Evidence SELECT.';
+do $
+begin
+  if exists (
+    select 1
+    from pg_auth_members m
+    join pg_roles member_role on member_role.oid = m.member
+    join pg_roles granted_role on granted_role.oid = m.roleid
+    where member_role.rolname = 'postgres'
+      and granted_role.rolname = 'recommendation_protection_reader_owner'
+  ) then
+    raise exception 'DATA_AI29C_TRANSIENT_OWNER_MEMBERSHIP_MUST_BE_REVOKED';
+  end if;
+end
+$;
 
 commit;
