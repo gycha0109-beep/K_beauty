@@ -57,6 +57,7 @@ const runtime = read("tests/fixtures/trust-research-worker/verify_trust_research
   "No exact-market resolved *_official HTTPS source binding is available.",
   "explicit-spf-label-v1",
   "explicit-pa-label-v1",
+  "explicit-water-resistance-duration-v1",
   "explicit-filter-system-claim-v1",
   "explicit-parent-bound-active-concentration-v1",
   "parent_proposition_key",
@@ -102,6 +103,18 @@ const spf = extractStrictFactCandidate("spf_value", "Official sunscreen SPF 50+ 
 assert(spf?.normalizedValue === 50 && spf?.qualifier?.plus_modifier === "plus", "strict SPF extractor failed");
 const uva = extractStrictFactCandidate("uva_label", "Official sunscreen SPF 50+ PA++++");
 assert(uva?.normalizedValue === "PA++++", "strict UVA extractor failed");
+const water = extractStrictFactCandidate(
+  "water_resistance_duration",
+  "Water resistant (80 minutes). Reapply after swimming."
+);
+assert(water?.normalizedValue?.amount === 80 && water?.normalizedValue?.unit === "minutes",
+  "strict water-resistance duration extractor failed");
+assert(water?.qualifier?.metric === "water_resistance_duration",
+  "water-resistance qualifier metric missing");
+assert(extractStrictFactCandidate("water_resistance_duration", "UV耐水性★★") === null,
+  "Japanese star rating must not be coerced into a duration");
+assert(extractStrictFactCandidate("water_resistance_duration", "Water resistant sunscreen") === null,
+  "water-resistance claim without explicit duration must remain unresolved");
 const filter = extractStrictFactCandidate("uv_filter_type", "This is a 100% mineral sunscreen.");
 assert(filter?.normalizedValue === "mineral", "strict UV filter extractor failed");
 assert(extractStrictFactCandidate("uv_filter_type", "Ingredients: zinc oxide, titanium dioxide") === null,
