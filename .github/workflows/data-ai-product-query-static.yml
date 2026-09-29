@@ -37,6 +37,9 @@ on:
       - "scripts/verify-data-ai29c-c6-discrimination-wave2.mjs"
       - "supabase/migrations/20260930083000_data_ai29c_c6f_prospective_axis_readiness_v1.sql"
       - "scripts/verify-data-ai29c-c6f-prospective-axis-readiness.mjs"
+      - "lib/sunscreen-protection-prospective-shadow.mjs"
+      - "scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-c6g-prospective-protection-shadow-input-v1.json"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-execution-v1.json"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-selection-v1.json"
       - "docs/evidence/data-ai29c-protection-expansion-wave-2-selection-v1.md"
@@ -121,6 +124,9 @@ on:
       - "scripts/verify-data-ai29c-c6-discrimination-wave2.mjs"
       - "supabase/migrations/20260930083000_data_ai29c_c6f_prospective_axis_readiness_v1.sql"
       - "scripts/verify-data-ai29c-c6f-prospective-axis-readiness.mjs"
+      - "lib/sunscreen-protection-prospective-shadow.mjs"
+      - "scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-c6g-prospective-protection-shadow-input-v1.json"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-execution-v1.json"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-selection-v1.json"
       - "docs/evidence/data-ai29c-protection-expansion-wave-2-selection-v1.md"
@@ -263,6 +269,9 @@ jobs:
 
       - name: Verify DATA-AI29C-C6F prospective protection axis readiness
         run: node scripts/verify-data-ai29c-c6f-prospective-axis-readiness.mjs
+
+      - name: Verify DATA-AI29C-C6G prospective expanded-corpus protection shadow
+        run: node scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
