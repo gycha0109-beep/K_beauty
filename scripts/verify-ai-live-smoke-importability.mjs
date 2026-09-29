@@ -21,7 +21,9 @@ import {
 const prompt = createVisionObservationPrompt();
 assert.equal(typeof prompt, "string");
 assert.ok(prompt.includes(VISION_OBSERVATION_SCHEMA_VERSION));
-assert.ok(prompt.includes(VISION_OBSERVATION_PROMPT_VERSION));
+assert.ok(prompt.includes("Required JSON shape:"));
+assert.ok(prompt.includes("Face rules:"));
+assert.ok(prompt.includes("Eligibility rules:"));
 
 const fallback = createFallbackVisionObservationBundle({
   provider: "openai",
