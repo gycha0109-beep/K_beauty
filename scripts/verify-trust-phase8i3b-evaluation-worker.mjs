@@ -163,10 +163,21 @@ function exactRiceRediscovery(batch) {
             },
             qualification: {
               contract: "trust-phase8h-source-identity-qualification-v1",
+              historical_source_id: batch.cases[0].historical_source_id,
+              historical_locator:
+                batch.cases[0].qualification_template.historical_source
+                  .canonical_locator,
+              product_id: batch.cases[0].product_id,
+              subject_id: batch.cases[0].subject_id,
               candidate_locator: candidate,
+              candidate_source_kind:
+                batch.cases[0].qualification_template.candidate_defaults
+                  .source_kind,
+              discovery_method: "official_sitemap",
               disposition: "QUALIFIED_EXACT",
               reason: "exact_governed_identity_proven",
               qualification_digest: "d".repeat(64),
+              mutation_policy: "READ_ONLY_NO_PRODUCTION_WRITE",
               authority:
                 "QUALIFICATION_EVIDENCE_ONLY_REQUIRES_GOVERNED_RELOCATION",
             },
@@ -280,6 +291,15 @@ assert.ok(policyRecord);
 assert.equal(readyRecord.p_evaluation_mode, "REDISCOVERY");
 assert.match(readyRecord.p_candidate_locator, /^https:\/\//);
 assert.equal(readyRecord.p_qualification_digest, "d".repeat(64));
+assert.equal(
+  readyRecord.p_result_payload.qualified_historical_source_id,
+  ricePolicy.rediscovery_case_template.historical_source_id,
+);
+assert.equal(
+  readyRecord.p_result_payload.rediscovery.qualifications[0].qualification
+    .historical_source_id,
+  ricePolicy.rediscovery_case_template.historical_source_id,
+);
 assert.equal(holdRecord.p_candidate_locator, null);
 assert.equal(policyRecord.p_candidate_locator, null);
 assert.equal(
@@ -319,7 +339,36 @@ const directResult = await runTransportDriftHandoff({
 });
 assert.equal(directResult.result_counts.READY_FOR_8I4, 1);
 assert.equal(directResult.rows[0].evaluation_mode, "REDIRECT_DIRECT");
+assert.equal(
+  directRecorded[0].p_result_payload.qualified_historical_source_id,
+  ricePolicy.direct_qualification_template.historical_source.source_id,
+);
+assert.equal(
+  directRecorded[0].p_result_payload.direct_qualification.historical_source_id,
+  ricePolicy.direct_qualification_template.historical_source.source_id,
+);
 assert.equal(directRediscoveryCalls, 0);
+
+const missingQualifiedSourceCase = caseFor(ricePolicy, {
+  case_id: "77777777-7777-4777-8777-777777777777",
+});
+await assert.rejects(
+  () =>
+    runTransportDriftHandoff({
+      client: mockClient([missingQualifiedSourceCase], []),
+      registry,
+      runId: "phase8i3b-missing-qualified-source",
+      record: false,
+      observeCandidate: async (url) => ambiguousObservation(url),
+      runRediscovery: async (batch) => {
+        const value = await exactRiceRediscovery(batch);
+        delete value.results[0].qualifications[0].qualification
+          .historical_source_id;
+        return value;
+      },
+    }),
+  /TRUST_PHASE8I3_READY_FOR_8I4_QUALIFIED_SOURCE_LINEAGE_INVALID/,
+);
 
 const recentRetryCase = caseFor(ricePolicy, {
   case_id: "66666666-6666-4666-8666-666666666666",
@@ -373,6 +422,8 @@ for (const required of [
   "runRediscoveryQualificationBatch",
   "POLICY_REQUIRED",
   "READY_FOR_8I4",
+  "qualified_historical_source_id",
+  "TRUST_PHASE8I3_READY_FOR_8I4_QUALIFIED_SOURCE_LINEAGE_INVALID",
   "RETRY_INTERVAL_NOT_REACHED",
   "HOLD_STABLE_UNTIL_POLICY_OR_NEW_CASE",
   "NO_AUTOMATIC_RELOCATION_OR_PRODUCT_FACT_MUTATION",

@@ -9,6 +9,7 @@ create table public.trust_official_source_relocation_groups (
   group_id uuid primary key default gen_random_uuid(),
   case_id uuid not null references public.trust_official_source_transport_drift_cases(case_id) on delete restrict,
   evaluation_id uuid not null references public.trust_official_source_transport_drift_evaluations(evaluation_id) on delete restrict,
+  qualified_historical_source_id uuid not null references public.product_evidence_sources(source_id) on delete restrict,
   relocation_id uuid not null references public.trust_official_source_relocations(relocation_id) on delete restrict,
   product_id uuid not null references public.products(id) on delete restrict,
   subject_id uuid not null references public.product_fact_subjects(subject_id) on delete restrict,
@@ -92,15 +93,17 @@ grant select on table public.trust_official_source_relocation_group_incidents to
 --   1. require admin.products.review
 --   2. read case and latest evaluation
 --   3. require result_kind=READY_FOR_8I4
---   4. reconstruct historical source set from case<->incident lineage
---   5. require at least two distinct source IDs
---   6. require every source exact Product/Subject binding
---   7. derive exactly one resolved reviewed old binding/review shared by the source set
---   8. require old binding source_url == every historical source canonical_locator
---   9. re-read governed Subject
---  10. derive candidate replacement from the READY_FOR_8I4 evaluation
---  11. compute canonical grouped prestate/plan digests
---  12. return READY_FOR_ADMIN_GROUPED_RELOCATION_CONFIRMATION or HOLD
+--   4. read qualified_historical_source_id from the immutable evaluation result_payload
+--   5. require that anchor to match the exact qualification that produced qualification_digest
+--   6. reconstruct historical source set from case<->incident lineage
+--   7. require at least two distinct source IDs
+--   8. require every source exact Product/Subject binding
+--   9. derive exactly one resolved reviewed old binding/review shared by the source set
+--  10. require old binding source_url == every historical source canonical_locator
+--  11. re-read governed Subject
+--  12. derive candidate replacement from the READY_FOR_8I4 evaluation
+--  13. compute canonical grouped prestate/plan digests
+--  14. return READY_FOR_ADMIN_GROUPED_RELOCATION_CONFIRMATION or HOLD
 --
 -- The preflight performs no INSERT, UPDATE, DELETE, relocation confirmation,
 -- Product Fact mutation, Current mutation, Confirmation mutation, Evidence Source
@@ -113,9 +116,10 @@ grant select on table public.trust_official_source_relocation_group_incidents to
 -- Must execute one transaction:
 --   advisory lock
 --   -> exact grouped prestate revalidation
+--   -> require qualified_historical_source_id as the singular Phase 8H relocation anchor
 --   -> create/reuse replacement binding/review
 --   -> retire old binding once
---   -> append one existing trust_official_source_relocations authority row
+--   -> append one existing trust_official_source_relocations authority row using that exact anchor
 --   -> append one group header
 --   -> append complete source membership
 --   -> append complete incident membership

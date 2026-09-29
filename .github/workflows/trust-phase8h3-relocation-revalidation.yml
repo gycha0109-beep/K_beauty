@@ -26,6 +26,8 @@ on:
       - "scripts/verify-trust-phase8i3e-enqueue-result.mjs"
       - "scripts/verify-trust-phase8i3e-scheduler-integration.mjs"
       - "lib/trust/official-source-grouped-relocation-preflight.mjs"
+      - "lib/trust/official-source-grouped-relocation-confirmation-request.mjs"
+      - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
@@ -62,6 +64,8 @@ on:
       - "scripts/verify-trust-phase8i3e-enqueue-result.mjs"
       - "scripts/verify-trust-phase8i3e-scheduler-integration.mjs"
       - "lib/trust/official-source-grouped-relocation-preflight.mjs"
+      - "lib/trust/official-source-grouped-relocation-confirmation-request.mjs"
+      - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
@@ -176,6 +180,12 @@ jobs:
           node --check lib/trust/official-source-grouped-relocation-preflight.mjs
           node --check scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs
           node scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs
+
+      - name: Verify Phase 8I-4C grouped confirmation request
+        run: |
+          node --check lib/trust/official-source-grouped-relocation-confirmation-request.mjs
+          node --check scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs
+          node scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |

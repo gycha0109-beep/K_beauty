@@ -26,7 +26,8 @@
     "qualification_contract": "trust-phase8h-source-identity-qualification-v1",
     "qualification_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "input_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "result_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    "result_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "qualified_historical_source_id": "4f74de41-9515-495c-8c93-19ab1cd3cf6d"
   },
   "governed_subject": {
     "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
