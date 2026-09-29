@@ -21,6 +21,9 @@ on:
       - "scripts/verify-trust-phase8i3b-evaluation-worker.mjs"
       - "scripts/verify-trust-phase8i3d-manual-workflow.mjs"
       - "scripts/verify-trust-phase8i3d-live-result.mjs"
+      - "scripts/trust-transport-drift-case-enqueue.mjs"
+      - "scripts/verify-trust-phase8i3e-enqueue-result.mjs"
+      - "scripts/verify-trust-phase8i3e-scheduler-integration.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -51,6 +54,9 @@ on:
       - "scripts/verify-trust-phase8i3b-evaluation-worker.mjs"
       - "scripts/verify-trust-phase8i3d-manual-workflow.mjs"
       - "scripts/verify-trust-phase8i3d-live-result.mjs"
+      - "scripts/trust-transport-drift-case-enqueue.mjs"
+      - "scripts/verify-trust-phase8i3e-enqueue-result.mjs"
+      - "scripts/verify-trust-phase8i3e-scheduler-integration.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
       - "scripts/trust-research-worker.mjs"
       - "scripts/trust-source-verification-worker.mjs"
@@ -152,6 +158,12 @@ jobs:
         run: |
           node scripts/verify-trust-phase8i3d-manual-workflow.mjs
           node --check scripts/verify-trust-phase8i3d-live-result.mjs
+
+      - name: Verify Phase 8I-3D closeout and 8I-3E scheduler integration
+        run: |
+          node --check scripts/trust-transport-drift-case-enqueue.mjs
+          node --check scripts/verify-trust-phase8i3e-enqueue-result.mjs
+          node scripts/verify-trust-phase8i3e-scheduler-integration.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
@@ -369,5 +381,83 @@ jobs:
         with:
           name: trust-phase8i3d-${{ inputs.transport_drift_mode }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/trust-phase8i3d/
+          if-no-files-found: warn
+          retention-days: 30
+
+  transport_drift_scheduled:
+    name: Phase 8I-3E scheduled transport drift evaluation
+    if: github.event_name == 'schedule'
+    needs: [verify, transport_live]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout exact main head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Verify scheduled evaluation authority
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$SUPABASE_URL" = "https://bygrczggxfuisupcevaz.supabase.co"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Enqueue governed transport drift cases
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/trust-phase8i3e"
+          enqueue_result="${RUNNER_TEMP}/trust-phase8i3e/enqueue-result.json"
+          node scripts/trust-transport-drift-case-enqueue.mjs             --limit=100 >"${enqueue_result}"
+          cat "${enqueue_result}"
+
+      - name: Verify governed transport drift enqueue
+        run: |
+          set -euo pipefail
+          enqueue_result="${RUNNER_TEMP}/trust-phase8i3e/enqueue-result.json"
+          enqueue_summary="${RUNNER_TEMP}/trust-phase8i3e/enqueue-verification.json"
+          node scripts/verify-trust-phase8i3e-enqueue-result.mjs             "--result=${enqueue_result}" | tee "${enqueue_summary}"
+          echo "### Phase 8I-3E scheduled drift case enqueue" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          cat "${enqueue_summary}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Execute governed scheduled drift evaluation
+        run: |
+          set -euo pipefail
+          result="${RUNNER_TEMP}/trust-phase8i3e/result.json"
+          run_id="phase8i3e-scheduled-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          node scripts/trust-transport-drift-handoff-worker.mjs             --registry=docs/evidence/trust-phase8i3-transport-drift-evaluation-policy-registry-v1.json             --run-id="${run_id}"             --record=true             --limit=100 >"${result}"
+          cat "${result}"
+
+      - name: Verify governed scheduled drift result
+        run: |
+          set -euo pipefail
+          result="${RUNNER_TEMP}/trust-phase8i3e/result.json"
+          summary="${RUNNER_TEMP}/trust-phase8i3e/verification.json"
+          node scripts/verify-trust-phase8i3d-live-result.mjs             "--result=${result}"             --mode=record | tee "${summary}"
+          echo "### Phase 8I-3E scheduled transport drift evaluation" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          cat "${summary}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload scheduled drift evaluation evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: trust-phase8i3e-scheduled-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/trust-phase8i3e/
           if-no-files-found: warn
           retention-days: 30
