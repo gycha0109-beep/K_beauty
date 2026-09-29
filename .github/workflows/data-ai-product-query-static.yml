@@ -27,6 +27,11 @@ on:
       - "supabase/migrations/20260929083000_data_ai29c_sunscreen_protection_authority_v1.sql"
       - "supabase/migrations/20260929002000_data_ai29c_shadow_transport_fallback.sql"
       - "supabase/migrations/20260929095500_data_ai29c_shadow_owner_membership_cleanup.sql"
+      - "supabase/migrations/20260929113000_data_ai29c_c_protection_recovery_tasks_v1.sql"
+      - "supabase/migrations/20260929115000_data_ai29c_c_variant_recovery_bridge_v1.sql"
+      - "scripts/trust-research-worker.mjs"
+      - "scripts/verify-trust-research-worker.mjs"
+      - "scripts/verify-data-ai29c-c-protection-recovery.mjs"
       - "lib/product-source.js"
       - "lib/recommendation-candidate-admission.js"
       - "lib/recommendation-candidate-admission-core.mjs"
@@ -85,6 +90,11 @@ on:
       - "supabase/migrations/20260929083000_data_ai29c_sunscreen_protection_authority_v1.sql"
       - "supabase/migrations/20260929002000_data_ai29c_shadow_transport_fallback.sql"
       - "supabase/migrations/20260929095500_data_ai29c_shadow_owner_membership_cleanup.sql"
+      - "supabase/migrations/20260929113000_data_ai29c_c_protection_recovery_tasks_v1.sql"
+      - "supabase/migrations/20260929115000_data_ai29c_c_variant_recovery_bridge_v1.sql"
+      - "scripts/trust-research-worker.mjs"
+      - "scripts/verify-trust-research-worker.mjs"
+      - "scripts/verify-data-ai29c-c-protection-recovery.mjs"
       - "lib/product-source.js"
       - "lib/recommendation-candidate-admission.js"
       - "lib/recommendation-candidate-admission-core.mjs"
@@ -185,6 +195,11 @@ jobs:
 
       - name: Verify DATA-AI29C-B protection-aware shadow boundary
         run: node scripts/verify-data-ai29c-b-protection-shadow.mjs
+
+      - name: Verify DATA-AI29C-C protection recovery boundary
+        run: |
+          node scripts/verify-data-ai29c-c-protection-recovery.mjs
+          node scripts/verify-trust-research-worker.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs

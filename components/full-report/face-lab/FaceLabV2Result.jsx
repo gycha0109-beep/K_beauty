@@ -21,15 +21,59 @@ function List({ items }) {
   );
 }
 
-function MetaGrid({ items }) {
+function RouteComparison({ comparison }) {
+  if (!comparison?.columns?.length || !comparison?.rows?.length) return null;
+
   return (
-    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
-      {items.map((item) => (
-        <div key={item.key} className="rounded-lg bg-black/[0.035] px-2.5 py-2 dark:bg-white/[0.045]">
-          <p className="text-[10px] font-semibold uppercase tracking-wide opacity-55">{item.label}</p>
-          <p className="mt-1 text-xs font-semibold">{item.value}</p>
-        </div>
-      ))}
+    <div className="mt-4">
+      <p className="text-xs font-semibold text-zinc-500">{comparison.title}</p>
+      <div className="mt-2 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <table className="w-full min-w-[640px] border-collapse text-xs">
+          <thead>
+            <tr className="bg-black/[0.025] dark:bg-white/[0.035]">
+              <th className="w-24 px-3 py-3 text-left font-semibold text-zinc-500" />
+              {comparison.columns.map((column) => (
+                <th
+                  key={column.routeId}
+                  className="min-w-36 border-l border-zinc-200 px-3 py-3 text-left dark:border-zinc-800"
+                >
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="font-semibold">{column.title}</span>
+                    {column.defaultLabel ? (
+                      <span className="rounded-full border border-current/15 px-1.5 py-0.5 text-[9px] font-semibold opacity-70">
+                        {column.defaultLabel}
+                      </span>
+                    ) : null}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {comparison.rows.map((row) => (
+              <tr key={row.key} className="border-t border-zinc-200 dark:border-zinc-800">
+                <th className="px-3 py-2.5 text-left font-semibold text-zinc-500">
+                  {row.label}
+                </th>
+                {comparison.columns.map((column) => {
+                  const value = row.values.find(
+                    (item) => item.routeId === column.routeId
+                  )?.value;
+
+                  return (
+                    <td
+                      key={column.routeId}
+                      className="border-l border-zinc-200 px-3 py-2.5 font-medium dark:border-zinc-800"
+                    >
+                      {value || "—"}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -139,7 +183,8 @@ export default function FaceLabV2Result({
             {view.routes.selectionPrompt}
           </p>
         ) : null}
-        <div className="mt-3 grid gap-3">
+        <RouteComparison comparison={view.routes.comparison} />
+        <div className="mt-4 grid gap-3">
           {view.routes.cards.map((route) => (
             <button
               key={route.routeId}
@@ -171,7 +216,18 @@ export default function FaceLabV2Result({
                 </div>
               </div>
 
-              <MetaGrid items={route.meta} />
+              {route.focusDomains.length ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {route.focusDomains.map((domain) => (
+                    <span
+                      key={domain}
+                      className="rounded-full bg-black/[0.04] px-2 py-1 text-[10px] font-semibold opacity-75 dark:bg-white/[0.06]"
+                    >
+                      {domain}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
 
               {route.actions.length ? (
                 <div className="mt-3 grid gap-1.5">
@@ -192,6 +248,16 @@ export default function FaceLabV2Result({
                   ))}
                 </div>
               ) : null}
+
+              <span
+                className={`mt-4 block rounded-lg px-3 py-2 text-center text-xs font-semibold ${
+                  route.selected
+                    ? "bg-current/10"
+                    : "border border-current/15"
+                }`}
+              >
+                {route.selectLabel}
+              </span>
             </button>
           ))}
         </div>

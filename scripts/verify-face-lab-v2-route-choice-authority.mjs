@@ -111,7 +111,11 @@ const apiSource = readFileSync("app/api/premium/face-lab-v2/route.js", "utf8");
 assert.ok(apiSource.includes("function committedRouteId("));
 assert.ok(apiSource.includes('selectionState === "default_preview"'));
 assert.ok(
-  apiSource.includes("selectedRouteId: committedRouteId(canonicalV2, normalized.selectedRouteId)")
+  apiSource.includes("const persistedRouteId = committedRouteId(") &&
+    apiSource.includes("canonicalV2,") &&
+    apiSource.includes("normalized.selectedRouteId") &&
+    apiSource.includes("selectedRouteId: persistedRouteId"),
+  "server persistence must still commit only the canonical route-choice authority"
 );
 
 const componentSource = readFileSync(

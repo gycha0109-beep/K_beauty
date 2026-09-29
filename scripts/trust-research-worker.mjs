@@ -90,6 +90,37 @@ export function extractStrictFactCandidate(factKey, text, parentPropositions = [
       observedClaim: { matched_text: match[0], excerpt: excerpt(text, match.index, match[0].length), extractor: "explicit-pa-label-v1" },
     };
   }
+  if (factKey === "water_resistance_duration") {
+    const patterns = [
+      /\bwater[-\s]?resistan(?:t|ce)(?:\s+for)?\s*(?:up\s+to\s*)?\(?\s*(\d{1,3})\s*(?:minutes?|mins?)\s*\)?/i,
+      /\b(\d{1,3})\s*(?:minutes?|mins?)\s+(?:of\s+)?water[-\s]?resistan(?:t|ce)\b/i,
+      /(?:내수성|워터\s*레지스턴스|워터\s*리시스턴스|워터\s*프루프|워터프루프)[^0-9]{0,16}(\d{1,3})\s*분/i,
+      /(\d{1,3})\s*분[^0-9]{0,16}(?:내수성|워터\s*레지스턴스|워터\s*리시스턴스|워터\s*프루프|워터프루프)/i,
+      /(?:耐水性|ウォーターレジスタンス)[^0-9]{0,16}(\d{1,3})\s*分/i,
+      /(\d{1,3})\s*分[^0-9]{0,16}(?:耐水性|ウォーターレジスタンス)/i,
+    ];
+    for (const regex of patterns) {
+      const match = regex.exec(text);
+      if (!match) continue;
+      const amount = Number(match[1]);
+      if (!Number.isInteger(amount) || amount < 1 || amount > 240) continue;
+      return {
+        normalizedValue: { amount, unit: "minutes" },
+        evidenceClass: "product_claim",
+        qualifier: {
+          metric: "water_resistance_duration",
+          method_context: "explicit_product_claim",
+          timepoint: "labeled_duration",
+        },
+        observedClaim: {
+          matched_text: match[0],
+          excerpt: excerpt(text, match.index, match[0].length),
+          extractor: "explicit-water-resistance-duration-v1",
+        },
+      };
+    }
+    return null;
+  }
   if (factKey === "uv_filter_type") {
     const patterns = [
       { value: "hybrid", regex: /\bhybrid sunscreen\b|혼합\s*자차|혼합\s*자외선\s*차단제/i },
