@@ -24,6 +24,8 @@ on:
       - "scripts/verify-face-lab-v2-route-choice-authority.mjs"
       - "scripts/verify-face-lab-v2-route-choice-evidence.mjs"
       - "scripts/verify-face-lab-v2-end-to-end-completion.mjs"
+      - "scripts/verify-face-lab-standalone-test-route.mjs"
+      - "app/face-lab-test/**"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
@@ -74,6 +76,8 @@ on:
       - "scripts/verify-face-lab-v2-target-intent-authority.mjs"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
+      - "scripts/verify-face-lab-standalone-test-route.mjs"
+      - "app/face-lab-test/**"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v2.md"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v3.md"
@@ -143,3 +147,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-route-choice-evidence.mjs
       - name: Verify Face Lab V2 end-to-end completion
         run: node scripts/verify-face-lab-v2-end-to-end-completion.mjs
+      - name: Verify Face Lab standalone temporary test route
+        run: node scripts/verify-face-lab-standalone-test-route.mjs
