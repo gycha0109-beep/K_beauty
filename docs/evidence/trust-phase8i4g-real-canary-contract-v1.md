@@ -146,9 +146,27 @@ No missing or extra source/incident identity is permitted.
 
 The same already-confirmed canary may be replayed only to verify idempotency.
 
+For the first-real canary, the explicit Admin action is presented as **Relocation confirm + canary verification**. After the first governed confirmation succeeds, the server immediately replays the exact same grouped-confirmation request with the same request ID and canonical payload while the original preflight payload is still available in memory.
+
 The replay must return the same group and relocation identities with `idempotent = true` and create no additional relocation, group, source-lineage, incident-lineage, binding, review, Product Fact, Evidence Source, Recommendation, or semantic authority rows.
 
-The automated scheduler never performs this replay; it is an explicit canary verification action after the human confirmation.
+The automated scheduler never performs this replay. It is part of the explicit human-authorized first-real canary confirmation/verification action only.
+
+## Canary closure audit and fail-closed gate
+
+The first-real canary must write one Admin audit closure event after post-confirm verification.
+
+Audit action:
+
+`trust.phase8i4g.first_real_canary_verification`
+
+The audit stores only bounded counts, digests, verification results, group/relocation identities, and the next state. It must not store raw browser payloads or semantic authority decisions.
+
+A PASS audit opens later grouped confirmations.
+
+If the first grouped relocation exists but there is no PASS closure audit, all new non-idempotent grouped confirmations are blocked with a canary-closure-required conflict. Existing confirmed-group readback remains idempotent and readable.
+
+A verification or audit failure therefore leaves the first relocation visible but fail-closes further grouped mutation until reviewed.
 
 ## Phase 8H-3 downstream handoff
 
