@@ -113,11 +113,9 @@ begin
       using errcode = '23514';
   end if;
 
-  select es.*, b.*
-    into v_source, v_evidence_binding
+  select *
+    into v_source
   from public.product_evidence_sources es
-  join public.product_evidence_source_subject_bindings b
-    on b.source_id = es.source_id
   where es.source_id = p_source_id
     and es.canonical_locator ~ '^https://'
     and es.source_kind in (
@@ -125,7 +123,17 @@ begin
       'official_market_sales_page',
       'official_brand_owner_product_page'
     )
-    and es.market is not distinct from v_intake.market
+    and es.market is not distinct from v_intake.market;
+
+  if not found then
+    raise exception 'catalog_trust_official_projection_governed_source_required'
+      using errcode = '23514';
+  end if;
+
+  select *
+    into v_evidence_binding
+  from public.product_evidence_source_subject_bindings b
+  where b.source_id = p_source_id
     and b.product_id = p_product_id
     and b.subject_id = p_subject_id
     and b.binding_state = 'exact_subject_match'
