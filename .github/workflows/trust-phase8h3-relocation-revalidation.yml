@@ -9,8 +9,10 @@ on:
       - "docs/evidence/trust-phase8i2-*"
       - "docs/evidence/trust-phase8i3-*"
       - "docs/evidence/trust-phase8i4-*"
+      - "docs/evidence/trust-phase8i4e-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
       - "supabase/migrations/*_trust_phase8i3_*.sql"
+      - "supabase/migrations/*_trust_phase8i4_*.sql"
       - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
@@ -29,6 +31,7 @@ on:
       - "lib/trust/official-source-grouped-relocation-confirmation-request.mjs"
       - "lib/trust/official-source-grouped-relocation-phase8h-anchor-bridge.mjs"
       - "scripts/verify-trust-phase8i4-phase8h-anchor-bridge.mjs"
+      - "scripts/verify-trust-phase8i4e-grouped-relocation-db-foundation.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -49,8 +52,10 @@ on:
       - "docs/evidence/trust-phase8i2-*"
       - "docs/evidence/trust-phase8i3-*"
       - "docs/evidence/trust-phase8i4-*"
+      - "docs/evidence/trust-phase8i4e-*"
       - "supabase/migrations/*_trust_phase8i2_*.sql"
       - "supabase/migrations/*_trust_phase8i3_*.sql"
+      - "supabase/migrations/*_trust_phase8i4_*.sql"
       - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
@@ -69,6 +74,7 @@ on:
       - "lib/trust/official-source-grouped-relocation-confirmation-request.mjs"
       - "lib/trust/official-source-grouped-relocation-phase8h-anchor-bridge.mjs"
       - "scripts/verify-trust-phase8i4-phase8h-anchor-bridge.mjs"
+      - "scripts/verify-trust-phase8i4e-grouped-relocation-db-foundation.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -196,6 +202,11 @@ jobs:
           node --check lib/trust/official-source-grouped-relocation-phase8h-anchor-bridge.mjs
           node --check scripts/verify-trust-phase8i4-phase8h-anchor-bridge.mjs
           node scripts/verify-trust-phase8i4-phase8h-anchor-bridge.mjs
+
+      - name: Verify Phase 8I-4E grouped relocation DB foundation
+        run: |
+          node --check scripts/verify-trust-phase8i4e-grouped-relocation-db-foundation.mjs
+          node scripts/verify-trust-phase8i4e-grouped-relocation-db-foundation.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
