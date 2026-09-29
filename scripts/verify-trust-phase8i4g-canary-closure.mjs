@@ -92,7 +92,8 @@ for (const forbidden of [
 for (const required of [
   "첫 Real Canary Relocation 확정 + 검증",
   "Phase 8I-4G canary verification",
-  "추가 grouped relocation은 canary closeout 검토 전까지 차단됩니다.",
+  "추가 grouped relocation은 canary closeout 검토 전까지",
+  "차단됩니다.",
 ]) {
   assert.ok(workbench.includes(required), "workbench missing: " + required);
 }
