@@ -553,6 +553,16 @@ function persistenceFingerprint(value) {
   });
 }
 
+function committedRouteIdFromResult(result) {
+  const selectionState = result?.routes?.selectionState || null;
+
+  if (!["user_selected", "single_route_auto"].includes(selectionState)) {
+    return null;
+  }
+
+  return result?.routes?.selectedRouteId || null;
+}
+
 export default function PremiumFaceLabSection({
   faceLabSummary,
   faceLabAnalysis = null,
@@ -990,7 +1000,7 @@ export default function PremiumFaceLabSection({
     void persistServer(
       surveyAnswers,
       approvedFinder,
-      result.routes?.selectedRouteId || null
+      committedRouteIdFromResult(result)
     );
   };
 
@@ -1011,7 +1021,7 @@ export default function PremiumFaceLabSection({
       resultId: resultKey
     });
 
-    const resolvedRouteId = result.routes?.selectedRouteId || null;
+    const resolvedRouteId = committedRouteIdFromResult(result);
 
     activePersistenceStateRef.current = {
       surveyAnswers,
