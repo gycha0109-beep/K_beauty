@@ -5,7 +5,7 @@ import { executeBoundedOpenAIObservation, ObservationTransportError } from "../.
 const base = {
   apiKey: "test-key",
   imageBuffer: Buffer.from("image"),
-  model: "gpt-4o-mini",
+  model: "gpt-5.6-luna",
   prompt: "prompt",
   limits: { timeoutMs: 1000, maxResponseBytes: 1024, maxOutputTokens: 256 }
 };
