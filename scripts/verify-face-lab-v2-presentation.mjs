@@ -155,8 +155,8 @@ assert.equal(JSON.stringify(fixture), before, "presentation adapter must not mut
 assert.equal(ko.status, "available");
 assert.equal(
   ko.version,
-  "face-lab-result-presentation-v8",
-  "Target Intent priority is a versioned presentation-contract change"
+  "face-lab-result-presentation-v9",
+  "explicit route choice authority is a versioned presentation-contract change"
 );
 assert.equal(ko.execution.domains.length, 1);
 assert.equal(
