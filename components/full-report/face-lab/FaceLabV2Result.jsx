@@ -97,6 +97,11 @@ export default function FaceLabV2Result({
           ))}
         </div>
         <p className="ui-text-secondary mt-3 text-sm leading-6">{view.target.summary}</p>
+        {view.target.recommendationPriorityLabel ? (
+          <p className="mt-3 w-fit rounded-full border border-zinc-200 bg-white/60 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/30 dark:text-zinc-300">
+            {view.target.recommendationPriorityLabel}
+          </p>
+        ) : null}
       </section>
 
       {view.notice ? (

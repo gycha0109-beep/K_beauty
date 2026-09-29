@@ -155,10 +155,19 @@ assert.equal(JSON.stringify(fixture), before, "presentation adapter must not mut
 assert.equal(ko.status, "available");
 assert.equal(
   ko.version,
-  "face-lab-result-presentation-v7",
-  "bounded omitted-domain presentation is a versioned presentation-contract change"
+  "face-lab-result-presentation-v8",
+  "Target Intent priority is a versioned presentation-contract change"
 );
 assert.equal(ko.execution.domains.length, 1);
+assert.equal(
+  ko.target.recommendationPriority,
+  "face_harmony",
+  "legacy Target Style fixtures must present the Face Fit default"
+);
+assert.equal(
+  ko.target.recommendationPriorityLabel,
+  "추천 기준 · 얼굴과 자연스럽게"
+);
 assert.equal(
   ko.routes.cards[0].targetFit,
   "활성 목표 방향 3개 중 2개를 이 경로에서 함께 다룹니다.",
@@ -201,6 +210,10 @@ const enFixture = JSON.parse(JSON.stringify(fixture));
 enFixture.routes.routes[0].targetFit.explanation = "This route covers 2 of 3 active target directions together.";
 const en = buildFaceLabV2ResultPresentation(enFixture, { locale: "en" });
 assert.equal(
+  en.target.recommendationPriorityLabel,
+  "Recommendation priority · Facial harmony"
+);
+assert.equal(
   en.routes.cards[0].targetFit,
   "This route covers 2 of 3 active target directions together.",
   "English route card must preserve the canonical target-coverage explanation"
@@ -217,6 +230,21 @@ assert.equal(
 );
 assert.ok(en.execution.domains[0].actions[0].includes("definition"));
 assert.ok(en.productGuides[0].recommended.some((item) => item.includes("Buildable")));
+
+const targetForwardFixture = JSON.parse(JSON.stringify(fixture));
+targetForwardFixture.targetStyle.recommendationPriority = "target_forward";
+const targetForwardView = buildFaceLabV2ResultPresentation(
+  targetForwardFixture,
+  { locale: "ko" }
+);
+assert.equal(
+  targetForwardView.target.recommendationPriority,
+  "target_forward"
+);
+assert.equal(
+  targetForwardView.target.recommendationPriorityLabel,
+  "추천 기준 · 추구미를 더 확실하게"
+);
 
 const unavailable = buildFaceLabV2ResultPresentation({
   status: "unavailable",
@@ -426,6 +454,10 @@ assert.ok(
   "route cards must explain how broadly each route covers the active target"
 );
 assert.ok(
+  resultUi.includes("view.target.recommendationPriorityLabel"),
+  "result UI must expose the active Target Intent recommendation priority"
+);
+assert.ok(
   resultUi.includes("view.look.why"),
   "composed look must expose the canonical rationale instead of showing only a summary"
 );
@@ -452,6 +484,7 @@ console.log(JSON.stringify({
   checks: [
     "canonical_immutability",
     "conditional_execution_domains",
+    "target_intent_priority_visible",
     "route_target_fit_explanation",
     "canonical_execution_details",
     "canonical_look_composer_output",
