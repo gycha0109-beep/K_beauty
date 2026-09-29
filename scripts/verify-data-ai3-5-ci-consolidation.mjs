@@ -25,6 +25,7 @@ for (const script of [
   "scripts/verify-data-ai29c-protection-expansion-wave-v1.mjs",
   "scripts/verify-data-ai29c-c5b-subject-presentation-correction.mjs",
   "scripts/verify-data-ai29c-c5c-catalog-only-water-enqueue.mjs",
+  "scripts/verify-data-ai29c-c5d-catalog-official-source-projection.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",
