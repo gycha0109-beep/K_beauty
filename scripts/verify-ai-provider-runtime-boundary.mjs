@@ -6,8 +6,9 @@ import {
 } from "../lib/server/openai-chat-runtime.js";
 
 const body = {
-  model: "gpt-4o-mini",
+  model: "gpt-5.6-luna",
   max_tokens: 64,
+  reasoning_effort: "none",
   temperature: 0,
   response_format: { type: "json_object" },
   messages: [{ role: "user", content: "Return JSON only." }]
