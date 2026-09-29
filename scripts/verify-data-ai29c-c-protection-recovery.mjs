@@ -19,6 +19,9 @@ const excludes = (text, value, label) =>
 const migration = read(
   "supabase/migrations/20260929113000_data_ai29c_c_protection_recovery_tasks_v1.sql"
 );
+const variantBridge = read(
+  "supabase/migrations/20260929115000_data_ai29c_c_variant_recovery_bridge_v1.sql"
+);
 const worker = read("scripts/trust-research-worker.mjs");
 
 [
@@ -34,6 +37,49 @@ const worker = read("scripts/trust-research-worker.mjs");
   "grant execute on function public.read_data_ai29c_protection_recovery_v1()",
   "grant execute on function public.enqueue_data_ai29c_protection_recovery_tasks_v1()",
 ].forEach((value) => includes(migration, value, "DATA-AI29C-C migration"));
+
+[
+  "data_ai29c_recovery_variant_source_authorized_v1",
+  "data-ai29c-protection-recovery-v1",
+  "water_resistance_duration",
+  "exact_subject_match",
+  "scope_relation = 'equivalent'",
+  "es.canonical_locator = p_canonical_locator",
+  "rt.research_policy_version = 'data-ai29c-protection-recovery-v1'",
+  "v_task.research_policy_version = 'data-ai29c-protection-recovery-v1'",
+  "v_task.fact_key <> 'water_resistance_duration'",
+  "Variant-scoped Subject requires separately governed presentation equivalence.",
+  "DATA-AI29C-C variant recovery requires an existing governed exact-subject/equivalent binding"
+].forEach((value) => includes(variantBridge, value, "DATA-AI29C-C variant bridge"));
+
+assert(
+  /s\.variant_key is null[\s\S]+rt\.research_policy_version = 'data-ai29c-protection-recovery-v1'[\s\S]+rt\.fact_key = 'water_resistance_duration'/m.test(
+    variantBridge
+  ),
+  "global Phase 3 variant boundary must remain the default; only the bounded recovery policy may enter the exception"
+);
+assert(
+  /c\.research_policy_version <> 'data-ai29c-protection-recovery-v1'[\s\S]+data_ai29c_recovery_variant_source_authorized_v1/m.test(
+    variantBridge
+  ),
+  "recovery source seeds must be filtered by the governed exact-subject source gate"
+);
+assert(
+  !/(insert\s+into|update|delete\s+from)\s+public\.(product_evidence_sources|product_evidence_source_subject_bindings|product_evidence_records|product_fact_instances|product_fact_current|product_fact_confirmations)\b/i.test(
+    variantBridge
+  ),
+  "variant recovery bridge must not mutate governed Product Fact authority"
+);
+assert(
+  !/(insert\s+into|update|delete\s+from)\s+public\.recommendation/i.test(variantBridge),
+  "variant recovery bridge must not mutate Recommendation authority"
+);
+assert(
+  !/grant\s+execute[\s\S]{0,180}data_ai29c_recovery_variant_source_authorized_v1[\s\S]{0,80}to\s+(?:anon|authenticated|service_role|public)/i.test(
+    variantBridge
+  ),
+  "internal variant-source gate must not be directly executable by runtime roles"
+);
 
 [
   "explicit-water-resistance-duration-v1",
