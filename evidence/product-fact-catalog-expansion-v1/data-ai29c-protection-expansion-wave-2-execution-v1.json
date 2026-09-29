@@ -1,0 +1,149 @@
+{
+  "version": "data-ai29c-protection-expansion-wave-2-execution-v1",
+  "stage": "DATA-AI29C-C6",
+  "observed_at": "2026-09-30T08:27:25.750843+09:00",
+  "source_main_sha": "6d7b843ea8aa03e14524340aef5363731ae17c0b",
+  "selection_artifact": "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-selection-v1.json",
+  "execution_summary": {
+    "primary_candidate_count": 5,
+    "reserve_candidate_count": 2,
+    "promoted_primary_count": 5,
+    "reserve_promoted_count": 0,
+    "exact_current_subject_count": 5,
+    "spf_confirmed_count": 5,
+    "uva_confirmed_count": 5,
+    "uv_filter_confirmed_count": 3,
+    "uv_filter_insufficient_count": 2,
+    "product_fact_authority": "governed_explicit_confirmation",
+    "recommendation_authority_mutated": false,
+    "production_cutover_authorized": false
+  },
+  "primary": [
+    {
+      "external_id": "1883342",
+      "candidate_id": "dd651007-a91c-49ad-a1aa-92977c6a8d8a",
+      "product_id": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "subject_id": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
+      "variant_key": null,
+      "spf_value": 20,
+      "uva_label": "PA++",
+      "uv_filter_type": "mineral"
+    },
+    {
+      "external_id": "1801617",
+      "candidate_id": "c8044261-45d8-4c8a-8951-36c294b56165",
+      "product_id": "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+      "subject_id": "cb9364c3-2059-49db-adda-47187e97d743",
+      "variant_key": null,
+      "spf_value": 35,
+      "uva_label": "PA+++",
+      "uv_filter_type": "mineral"
+    },
+    {
+      "external_id": "1802915",
+      "candidate_id": "51c0727d-f14e-4b94-8344-8a7bb9857ccd",
+      "product_id": "b576991e-79c9-4189-b6e9-527aeeb03566",
+      "subject_id": "8bacc75c-2df3-4828-bc8e-27b23755bbd3",
+      "variant_key": null,
+      "spf_value": 35,
+      "uva_label": "PA+++",
+      "uv_filter_type": null,
+      "uv_filter_blocker": "EVIDENCE_INSUFFICIENT"
+    },
+    {
+      "external_id": "1790960",
+      "candidate_id": "dcb681c5-a364-45eb-966a-06b76e00fa90",
+      "product_id": "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+      "subject_id": "f4c580f3-6ee3-4c1d-b359-dd058ac13490",
+      "variant_key": null,
+      "spf_value": 40,
+      "uva_label": "PA++",
+      "uv_filter_type": null,
+      "uv_filter_blocker": "EVIDENCE_INSUFFICIENT"
+    },
+    {
+      "external_id": "1895004",
+      "candidate_id": "f03acb34-2975-47a1-aee7-44b12fd9cb7b",
+      "product_id": "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+      "subject_id": "e88dbcb8-a209-4ab1-a92d-3086ad1aeb56",
+      "variant_key": null,
+      "spf_value": 40,
+      "uva_label": "PA++",
+      "uv_filter_type": "mineral"
+    }
+  ],
+  "reserves": [
+    {
+      "external_id": "1920264",
+      "candidate_id": "eab3c573-6495-4053-810e-e3a5ae1efba0",
+      "review_status": "new",
+      "identity_resolution_state": "unresolved",
+      "matched_product_id": null,
+      "promoted": false
+    },
+    {
+      "external_id": "2005891",
+      "candidate_id": "7a49ff29-83eb-412f-a237-6a6e7f1d082f",
+      "review_status": "new",
+      "identity_resolution_state": "unresolved",
+      "matched_product_id": null,
+      "promoted": false
+    }
+  ],
+  "authoritative_post_wave_audit": {
+    "sunscreen_count": 20,
+    "legacy_category_count": 12,
+    "catalog_taxonomy_shadow_count": 8,
+    "exact_current_subject_count": 20,
+    "ambiguous_or_missing_subject_count": 0,
+    "spf": {
+      "eligible_count": 18,
+      "coverage": 0.9,
+      "distinct_scoring_buckets": 3,
+      "gate_pass": true
+    },
+    "uva": {
+      "eligible_count": 16,
+      "coverage": 0.8,
+      "distinct_scoring_buckets": 3,
+      "gate_pass": true
+    },
+    "waterResistance": {
+      "eligible_count": 0,
+      "coverage": 0,
+      "distinct_scoring_buckets": 0,
+      "gate_pass": false
+    },
+    "source_audit_decision": "HOLD_NO_DISCRIMINATING_AXIS"
+  },
+  "prospective_axis_readiness_expected": {
+    "contract_version": "data-ai29c-c6f-prospective-protection-axis-readiness-v1",
+    "ready_axes": [
+      "spf",
+      "uva"
+    ],
+    "overall_decision": "SHADOW_SCORING_PARTIALLY_READY",
+    "prospective_corpus": true,
+    "includes_catalog_taxonomy_shadow": true,
+    "limits": {
+      "productionRankingChanged": false,
+      "productionCutoverAuthorized": false,
+      "outdoorRankableSignalAuthorized": false,
+      "recommendationAdmissionMutated": false,
+      "publicActivation": false,
+      "persistence": false
+    }
+  },
+  "recommendation_boundary": {
+    "primary_product_category": null,
+    "contains_active_current_count_per_primary": 0,
+    "recommendation_admission_authorized": false
+  },
+  "next_boundary": {
+    "stage": "DATA-AI29C-C6G",
+    "action": "prospective expanded-corpus protection shadow evaluation",
+    "must_not_mutate_current_production_protection_shadow": true,
+    "must_not_grant_recommendation_admission": true,
+    "must_not_change_production_ranking": true
+  }
+}
