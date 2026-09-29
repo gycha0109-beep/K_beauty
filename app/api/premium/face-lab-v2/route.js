@@ -43,6 +43,16 @@ function sanitizeLegacySummary(value) {
   return sanitizePremiumFaceLabSummary(value);
 }
 
+function committedRouteId(canonicalV2, requestedRouteId = null) {
+  const selectionState = canonicalV2?.routes?.selectionState || null;
+
+  if (selectionState === "default_preview" || selectionState === "no_route") {
+    return null;
+  }
+
+  return canonicalV2?.routes?.selectedRouteId || requestedRouteId || null;
+}
+
 function readSavedV2(faceLab) {
   if (
     !faceLab ||
@@ -89,7 +99,7 @@ function rehydrateSavedV2(data) {
     schemaVersion: SAVED_FACE_LAB_V2_VERSION,
     surveyAnswers: normalized.surveyAnswers,
     targetFinderResult: normalized.targetFinderResult,
-    selectedRouteId: canonicalV2.routes?.selectedRouteId || normalized.selectedRouteId || null,
+    selectedRouteId: committedRouteId(canonicalV2, normalized.selectedRouteId),
     canonicalV2,
     updatedAt: saved.updatedAt || null
   };
@@ -222,7 +232,7 @@ export async function POST(request) {
     legacySummary,
     surveyAnswers: normalized.surveyAnswers,
     targetFinderResult: normalized.targetFinderResult,
-    selectedRouteId: canonicalV2.routes?.selectedRouteId || normalized.selectedRouteId || null,
+    selectedRouteId: committedRouteId(canonicalV2, normalized.selectedRouteId),
     updatedAt: new Date().toISOString()
   };
 
