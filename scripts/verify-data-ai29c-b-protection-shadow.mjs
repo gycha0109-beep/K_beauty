@@ -311,6 +311,22 @@ assert.match(
   fallbackMigration,
   /DATA_AI29C_SHADOW_FALLBACK_RAW_PF_SELECT_FORBIDDEN/
 );
+assert.match(
+  fallbackMigration,
+  /grant recommendation_protection_reader_owner to postgres/i
+);
+assert.match(
+  fallbackMigration,
+  /set role recommendation_protection_reader_owner/i
+);
+assert.match(
+  fallbackMigration,
+  /revoke recommendation_protection_reader_owner from postgres/i
+);
+assert.match(
+  fallbackMigration,
+  /DATA_AI29C_TRANSIENT_OWNER_MEMBERSHIP_MUST_BE_REVOKED/
+);
 assert.doesNotMatch(
   fallbackMigration,
   /grant\s+select[\s\S]{0,180}recommendation_admission_runtime/i
