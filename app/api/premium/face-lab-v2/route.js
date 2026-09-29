@@ -5,6 +5,10 @@ import { getFaceLabObservationAnalysis } from "@/lib/face-lab-analysis-bundle";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import { buildFaceLabV2Canonical } from "@/lib/face-lab-v2/canonical-composer";
 import {
+  buildFaceLabRouteChoiceEvidence,
+  normalizeFaceLabRouteChoiceEvidence
+} from "@/lib/face-lab-v2/route-choice-evidence";
+import {
   normalizeFaceLabV2PersistencePayload
 } from "@/lib/face-lab-v2/survey-contract";
 import {
@@ -68,6 +72,8 @@ function readSavedV2(faceLab) {
     surveyAnswers: faceLab.surveyAnswers || null,
     targetFinderResult: faceLab.targetFinderResult || null,
     selectedRouteId: faceLab.selectedRouteId || null,
+    routeChoiceEvidence:
+      normalizeFaceLabRouteChoiceEvidence(faceLab.routeChoiceEvidence),
     updatedAt: faceLab.updatedAt || null
   };
 }
@@ -100,6 +106,7 @@ function rehydrateSavedV2(data) {
     surveyAnswers: normalized.surveyAnswers,
     targetFinderResult: normalized.targetFinderResult,
     selectedRouteId: committedRouteId(canonicalV2, normalized.selectedRouteId),
+    routeChoiceEvidence: saved.routeChoiceEvidence || null,
     canonicalV2,
     updatedAt: saved.updatedAt || null
   };
@@ -227,13 +234,24 @@ export async function POST(request) {
       : data.face_lab || null
   );
 
+  const persistedAt = new Date().toISOString();
+  const persistedRouteId = committedRouteId(
+    canonicalV2,
+    normalized.selectedRouteId
+  );
+  const routeChoiceEvidence = buildFaceLabRouteChoiceEvidence(
+    canonicalV2,
+    { capturedAt: persistedAt }
+  );
+
   const persisted = {
     schemaVersion: SAVED_FACE_LAB_V2_VERSION,
     legacySummary,
     surveyAnswers: normalized.surveyAnswers,
     targetFinderResult: normalized.targetFinderResult,
-    selectedRouteId: committedRouteId(canonicalV2, normalized.selectedRouteId),
-    updatedAt: new Date().toISOString()
+    selectedRouteId: persistedRouteId,
+    routeChoiceEvidence,
+    updatedAt: persistedAt
   };
 
   const nextRevision = expectedRevision + 1;
@@ -295,6 +313,7 @@ export async function POST(request) {
       surveyAnswers: persisted.surveyAnswers,
       targetFinderResult: persisted.targetFinderResult,
       selectedRouteId: persisted.selectedRouteId,
+      routeChoiceEvidence: persisted.routeChoiceEvidence,
       canonicalV2,
       updatedAt: persisted.updatedAt
     }
