@@ -55,6 +55,25 @@ assert.ok(
   delta.includes("targetStyle?.stylingScope"),
   "Style Delta must consume the exposed styling-scope selection"
 );
+
+for (const token of [
+  "recommendationPriority",
+  "setRecommendationPriority",
+  "copy.recommendationPriorityTitle"
+]) {
+  assert.ok(
+    premium.includes(token),
+    `Premium Face Lab must expose persisted Target Intent control: ${token}`
+  );
+}
+assert.ok(
+  delta.includes("targetStyle.recommendationPriority"),
+  "Style Delta must consume explicit Target Intent authority"
+);
+assert.ok(
+  survey.includes("normalizeFaceLabRecommendationPriority"),
+  "survey persistence must normalize Target Intent authority"
+);
 assert.ok(
   premium.includes("setStylingScope(defaultScopes(value))"),
   "presentation preference must stay bounded to example/default-scope behavior"
@@ -98,6 +117,7 @@ console.log(JSON.stringify({
     "no_unconsumed_dye_control",
     "exposed_route_constraints_consumed",
     "styling_scope_consumed",
+    "recommendation_priority_consumed",
     "presentation_preference_bounded",
     "legacy_payload_compatibility"
   ]
