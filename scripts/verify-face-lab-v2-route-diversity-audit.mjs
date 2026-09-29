@@ -52,6 +52,57 @@ assert.ok(
   report.summary.cosmeticDuplicatePairCount <= report.summary.totalPairCount
 );
 
+assert.deepEqual(
+  {
+    emittedRouteCount: report.summary.emittedRouteCount,
+    routeCountDistribution: report.summary.routeCountDistribution,
+    selectedStrategyCounts: report.summary.selectedStrategyCounts,
+    emittedStrategyCounts: report.summary.emittedStrategyCounts,
+    selectedStrategyConcentration:
+      report.summary.selectedStrategyConcentration,
+    collapseClassificationCounts:
+      report.summary.collapseClassificationCounts,
+    casesWithAtLeastTwoMeaningfulRoutes:
+      report.summary.casesWithAtLeastTwoMeaningfulRoutes,
+    casesWithStrongChoiceDiversity:
+      report.summary.casesWithStrongChoiceDiversity,
+    totalPairCount: report.summary.totalPairCount,
+    cosmeticDuplicatePairCount:
+      report.summary.cosmeticDuplicatePairCount,
+    meaningfulDistinctPairCount:
+      report.summary.meaningfulDistinctPairCount,
+    strongChoiceDistinctPairCount:
+      report.summary.strongChoiceDistinctPairCount,
+    strengthOnlyDifferencePairCount:
+      report.summary.strengthOnlyDifferencePairCount,
+    averageActionIdentityJaccard:
+      report.summary.averageActionIdentityJaccard
+  },
+  {
+    emittedRouteCount: 288,
+    routeCountDistribution: { "3": 96 },
+    selectedStrategyCounts: { balanced: 96 },
+    emittedStrategyCounts: {
+      hair_led: 96,
+      makeup_led: 96,
+      balanced: 96
+    },
+    selectedStrategyConcentration: 1,
+    collapseClassificationCounts: {
+      MULTI_ROUTE_MEANINGFUL: 96
+    },
+    casesWithAtLeastTwoMeaningfulRoutes: 96,
+    casesWithStrongChoiceDiversity: 96,
+    totalPairCount: 288,
+    cosmeticDuplicatePairCount: 0,
+    meaningfulDistinctPairCount: 288,
+    strongChoiceDistinctPairCount: 288,
+    strengthOnlyDifferencePairCount: 0,
+    averageActionIdentityJaccard: 0.1352
+  },
+  "Route Diversity v1 baseline changed; version the contract before changing Production route semantics"
+);
+
 for (const item of report.cases) {
   assert.ok(item.routeCount >= 0 && item.routeCount <= 3);
   assert.equal(item.routes.length, item.routeCount);
