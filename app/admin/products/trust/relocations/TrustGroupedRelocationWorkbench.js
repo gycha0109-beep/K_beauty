@@ -116,8 +116,9 @@ function Detail({ item }) {
   }
 
   const canConfirmCanary =
-    item.canary?.firstCanaryOpen !== true ||
-    item.canary?.isFirstRealCanary === true;
+    item.canary?.confirmationAllowed !== false &&
+    (item.canary?.firstCanaryOpen !== true ||
+      item.canary?.isFirstRealCanary === true);
 
   async function rerunPreflight() {
     setBusy(true);
@@ -356,6 +357,18 @@ function Detail({ item }) {
           </div>
         ) : null}
 
+        {item.canary?.state === "FIRST_REAL_CANARY_HALTED_REVIEW_REQUIRED" ? (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
+            첫 Real Canary closeout이 PASS로 봉인되지 않았습니다. 추가
+            grouped relocation은 검토 완료 전까지 차단됩니다.
+          </div>
+        ) : item.canary?.state === "FIRST_REAL_CANARY_CLOSED_PASS" ? (
+          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
+            첫 Real Canary closeout PASS · 이후 grouped relocation은 기존
+            명시적 Admin preflight/confirm 규칙으로 진행할 수 있습니다.
+          </div>
+        ) : null}
+
         <button
           type="button"
           onClick={rerunPreflight}
@@ -513,8 +526,11 @@ export default function TrustGroupedRelocationWorkbench({ queue }) {
           ) : queue.canary?.state ===
             "FIRST_REAL_CANARY_READY_FOR_ADMIN_PREFLIGHT" ? (
             <Pill tone="emerald">8I-4G Canary Ready</Pill>
+          ) : queue.canary?.state ===
+            "FIRST_REAL_CANARY_HALTED_REVIEW_REQUIRED" ? (
+            <Pill tone="amber">8I-4G Canary Halted</Pill>
           ) : (
-            <Pill tone="blue">8I-4G Canary Closed</Pill>
+            <Pill tone="blue">8I-4G Canary Closed PASS</Pill>
           )}
           <Pill tone="amber">admin.products.review</Pill>
           <Link
