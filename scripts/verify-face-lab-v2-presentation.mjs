@@ -155,8 +155,8 @@ assert.equal(JSON.stringify(fixture), before, "presentation adapter must not mut
 assert.equal(ko.status, "available");
 assert.equal(
   ko.version,
-  "face-lab-result-presentation-v9",
-  "explicit route choice authority is a versioned presentation-contract change"
+  "face-lab-result-presentation-v10",
+  "Route comparator is a versioned presentation-contract change"
 );
 assert.equal(ko.execution.domains.length, 1);
 assert.equal(
@@ -230,6 +230,82 @@ assert.equal(
 );
 assert.ok(en.execution.domains[0].actions[0].includes("definition"));
 assert.ok(en.productGuides[0].recommended.some((item) => item.includes("Buildable")));
+
+const comparisonFixture = JSON.parse(JSON.stringify(fixture));
+comparisonFixture.routes.defaultRouteId = "balanced";
+comparisonFixture.routes.selectionState = "default_preview";
+comparisonFixture.routes.selectedRouteId = "balanced";
+comparisonFixture.routes.routes = [
+  {
+    ...comparisonFixture.routes.routes[0],
+    routeId: "hair_led",
+    strategy: "hair_led",
+    title: "헤어 중심",
+    domains: ["hair"],
+    changeMagnitude: "low",
+    dailyEffort: "low",
+    maintenance: "medium",
+    costBand: "standard",
+    reversibility: "moderate",
+    constraintFit: { score: 0, softTradeoffs: [] }
+  },
+  {
+    ...comparisonFixture.routes.routes[0],
+    routeId: "balanced",
+    strategy: "balanced",
+    title: "균형형",
+    domains: ["makeup", "eyewear"],
+    changeMagnitude: "medium",
+    dailyEffort: "medium",
+    maintenance: "low",
+    costBand: "standard",
+    reversibility: "easy",
+    constraintFit: { score: 0, softTradeoffs: [] }
+  }
+];
+const comparisonView = buildFaceLabV2ResultPresentation(
+  comparisonFixture,
+  { locale: "ko" }
+);
+assert.equal(comparisonView.routes.selectionCommitted, false);
+assert.equal(comparisonView.routes.selectedRouteId, null);
+assert.equal(comparisonView.routes.comparison.title, "한눈에 비교");
+assert.deepEqual(
+  comparisonView.routes.comparison.columns.map((column) => column.routeId),
+  ["hair_led", "balanced"]
+);
+assert.deepEqual(
+  comparisonView.routes.comparison.rows.map((row) => row.key),
+  [
+    "focus",
+    "changeMagnitude",
+    "dailyEffort",
+    "maintenance",
+    "costBand",
+    "reversibility"
+  ]
+);
+assert.equal(
+  comparisonView.routes.comparison.rows[0].values[0].value,
+  "헤어"
+);
+assert.equal(
+  comparisonView.routes.comparison.rows[0].values[1].value,
+  "메이크업 · 안경"
+);
+assert.equal(
+  comparisonView.routes.cards.find((route) => route.routeId === "balanced").defaultLabel,
+  "시작 제안"
+);
+assert.equal(
+  comparisonView.routes.cards.every((route) => route.selected === false),
+  true,
+  "the comparator must not turn a starting point into a selected route"
+);
+assert.equal(
+  comparisonView.routes.cards.every((route) => route.selectLabel === "이 경로 선택"),
+  true
+);
 
 const targetForwardFixture = JSON.parse(JSON.stringify(fixture));
 targetForwardFixture.targetStyle.recommendationPriority = "target_forward";
@@ -475,6 +551,20 @@ assert.ok(
   resultUi.includes("view.routes.cards.length"),
   "empty route collections must not render an unexplained blank route card"
 );
+assert.ok(
+  resultUi.includes("<RouteComparison comparison={view.routes.comparison} />"),
+  "multi-route results must expose a direct comparison surface"
+);
+assert.ok(
+  resultUi.includes("{route.selectLabel}"),
+  "each route card must expose an explicit route-choice action"
+);
+assert.equal(
+  resultUi.includes("<MetaGrid"),
+  false,
+  "duplicated per-card metadata grid must not compete with the cross-route comparator"
+);
+
 
 console.log(JSON.stringify({
   ok: true,
@@ -486,6 +576,8 @@ console.log(JSON.stringify({
     "conditional_execution_domains",
     "target_intent_priority_visible",
     "route_target_fit_explanation",
+    "route_comparison_matrix",
+    "explicit_route_choice_cta",
     "canonical_execution_details",
     "canonical_look_composer_output",
     "composed_look_rationale",
