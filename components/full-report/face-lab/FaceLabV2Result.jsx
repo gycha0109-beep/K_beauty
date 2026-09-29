@@ -81,6 +81,7 @@ function RouteComparison({ comparison }) {
 export default function FaceLabV2Result({
   result,
   locale = "ko",
+  photoUrl = "",
   onSelectRoute,
   onEditTarget
 }) {
@@ -102,19 +103,31 @@ export default function FaceLabV2Result({
   return (
     <section className="space-y-4">
       <section className="ui-card p-5 sm:p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="ui-kicker">FACE LAB V2</p>
-            <h2 className="ui-title mt-2 text-xl">{view.current.title}</h2>
-            <p className="ui-text-secondary mt-2 text-sm leading-6">{view.current.summary}</p>
+        <div className="flex items-start gap-4 sm:gap-5">
+          {photoUrl ? (
+            <img
+              src={photoUrl}
+              alt={locale === "en" ? "Face Lab analyzed face" : "Face Lab 분석 얼굴"}
+              className="h-32 w-28 shrink-0 rounded-2xl border border-zinc-200 object-cover object-center sm:h-40 sm:w-32 dark:border-zinc-800"
+            />
+          ) : null}
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="ui-kicker">FACE LAB V2</p>
+                <h2 className="ui-title mt-2 text-xl">{view.current.title}</h2>
+                <p className="ui-text-secondary mt-2 text-sm leading-6">{view.current.summary}</p>
+              </div>
+              <button
+                type="button"
+                onClick={onEditTarget}
+                className="ui-button-secondary shrink-0 px-3 py-2 text-xs font-semibold"
+              >
+                {locale === "en" ? "Edit target" : "추구미 수정"}
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onEditTarget}
-            className="ui-button-secondary shrink-0 px-3 py-2 text-xs font-semibold"
-          >
-            {locale === "en" ? "Edit target" : "추구미 수정"}
-          </button>
         </div>
 
         {view.current.features.length ? (
