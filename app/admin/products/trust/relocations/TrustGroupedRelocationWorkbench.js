@@ -25,6 +25,10 @@ function messageFor(code) {
       "Relocation 서비스를 사용할 수 없습니다.",
     trust_grouped_relocation_rpc_failed:
       "Relocation 데이터베이스 처리에 실패했습니다.",
+    trust_grouped_relocation_canary_real_candidate_required:
+      "첫 grouped relocation은 실제 scheduled READY_FOR_8I4 canary만 확정할 수 있습니다.",
+    trust_grouped_relocation_canary_candidate_not_first:
+      "다른 실제 canary 후보가 먼저 대기 중입니다. 첫 후보를 먼저 처리하세요.",
   };
   return messages[code] || "Relocation 처리 중 오류가 발생했습니다.";
 }
@@ -77,7 +81,17 @@ function CandidateCard({ item, selected, onSelect }) {
             {item.incidentIds?.length ?? 0}
           </p>
         </div>
-        <Pill tone="amber">READY_FOR_8I4</Pill>
+        <div className="flex flex-col items-end gap-1">
+          <Pill tone="amber">READY_FOR_8I4</Pill>
+          {item.canary?.isFirstRealCanary ? (
+            <Pill tone="emerald">8I-4G FIRST REAL CANARY</Pill>
+          ) : item.canary?.state === "QUEUED_BEHIND_FIRST_REAL_CANARY" ? (
+            <Pill>Queued behind canary</Pill>
+          ) : item.canary?.state ===
+            "NOT_REAL_SCHEDULED_CANARY_BLOCKED_FOR_FIRST_GROUP" ? (
+            <Pill>Not real canary</Pill>
+          ) : null}
+        </div>
       </div>
     </button>
   );
@@ -96,6 +110,10 @@ function Detail({ item }) {
       </div>
     );
   }
+
+  const canConfirmCanary =
+    item.canary?.firstCanaryOpen !== true ||
+    item.canary?.isFirstRealCanary === true;
 
   async function rerunPreflight() {
     setBusy(true);
@@ -132,6 +150,7 @@ function Detail({ item }) {
 
   async function confirm() {
     if (
+      !canConfirmCanary ||
       preflight?.status !==
         "ready_for_explicit_admin_confirmation" ||
       !preflight?.preflightHash
@@ -185,7 +204,12 @@ function Detail({ item }) {
                 .join(" ") || item.productId}
             </h2>
           </div>
-          <Pill tone="amber">Explicit Admin Confirm</Pill>
+          <div className="flex flex-wrap gap-2">
+            {item.canary?.isFirstRealCanary ? (
+              <Pill tone="emerald">FIRST REAL CANARY</Pill>
+            ) : null}
+            <Pill tone="amber">Explicit Admin Confirm</Pill>
+          </div>
         </div>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
@@ -314,6 +338,20 @@ function Detail({ item }) {
           기존 Phase 8H relocation primitive를 호출합니다.
         </p>
 
+        {item.canary?.firstCanaryOpen ? (
+          <div
+            className={
+              item.canary?.isFirstRealCanary
+                ? "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
+                : "mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-300"
+            }
+          >
+            {item.canary?.isFirstRealCanary
+              ? "Phase 8I-4G 첫 실제 canary 후보입니다. 명시적 Admin 확인 이후에만 첫 grouped relocation을 생성할 수 있습니다."
+              : "첫 실제 canary가 아직 닫히지 않았습니다. 이 후보의 relocation 확정은 현재 차단됩니다."}
+          </div>
+        ) : null}
+
         <button
           type="button"
           onClick={rerunPreflight}
@@ -346,7 +384,7 @@ function Detail({ item }) {
             <button
               type="button"
               onClick={confirm}
-              disabled={busy}
+              disabled={busy || !canConfirmCanary}
               className="mt-4 rounded-xl bg-amber-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
               명시적으로 Official Source Relocation 확정
@@ -424,7 +462,15 @@ export default function TrustGroupedRelocationWorkbench({ queue }) {
             수행하지 않습니다.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {queue.canary?.state === "WAITING_FOR_REAL_READY_FOR_8I4" ? (
+            <Pill>8I-4G Waiting</Pill>
+          ) : queue.canary?.state ===
+            "FIRST_REAL_CANARY_READY_FOR_ADMIN_PREFLIGHT" ? (
+            <Pill tone="emerald">8I-4G Canary Ready</Pill>
+          ) : (
+            <Pill tone="blue">8I-4G Canary Closed</Pill>
+          )}
           <Pill tone="amber">admin.products.review</Pill>
           <Link
             href="/admin/products/trust"
@@ -437,8 +483,9 @@ export default function TrustGroupedRelocationWorkbench({ queue }) {
 
       {queue.count === 0 ? (
         <div className="rounded-2xl border border-dashed border-[#d8dde5] p-10 text-center text-sm text-[#7a828e] dark:border-[#353b45] dark:text-[#9ea6b1]">
-          현재 명시적 Admin relocation confirmation이 가능한
-          READY_FOR_8I4 case가 없습니다.
+          {queue.canary?.state === "WAITING_FOR_REAL_READY_FOR_8I4"
+            ? "WAITING_FOR_REAL_READY_FOR_8I4 · 실제 scheduled READY 후보가 아직 없습니다."
+            : "현재 명시적 Admin relocation confirmation이 가능한 READY_FOR_8I4 case가 없습니다."}
         </div>
       ) : (
         <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.8fr)]">
