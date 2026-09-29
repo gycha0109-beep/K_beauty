@@ -1,0 +1,61 @@
+{
+  "contract": "trust-phase8i3e-first-scheduled-production-observation-v1",
+  "watchtower_track": "pipeline-reliability",
+  "result": "PASS",
+  "phase_state": "CLOSED_FIRST_SCHEDULED_OBSERVATION",
+  "workflow": {
+    "run_id": 36527329922,
+    "run_number": 172,
+    "event": "schedule",
+    "head_sha": "a10df31e73f4ad453eb5f64b4057c44cf40fe5a4",
+    "run_attempt": 1,
+    "created_at": "2026-09-29T05:41:09Z",
+    "completed_at": "2026-09-29T05:43:42Z",
+    "verify": "SUCCESS",
+    "transport_live": "SUCCESS",
+    "transport_drift_scheduled": "SUCCESS",
+    "manual_transport_drift": "SKIPPED"
+  },
+  "artifacts": [
+    {
+      "name": "trust-phase8i3e-scheduled-36527329922-1",
+      "digest": "sha256:9cee3ec65db355911f3dfeac3c9fc652b8b1031f70030811ab0cda2b257d592a"
+    },
+    {
+      "name": "trust-phase8i2b-full-36527329922-1",
+      "digest": "sha256:5e57fd314d15c5d358d54569794eb096a6f87bbfe0ee18d47ec450a8d6374290"
+    }
+  ],
+  "production_readback_after_run": {
+    "transport_incidents": 4,
+    "drift_cases": 2,
+    "drift_evaluations": 2,
+    "ready_for_8i4": 0,
+    "grouped_relocations": 0,
+    "grouped_sources": 0,
+    "grouped_incidents": 0,
+    "relocations": 1,
+    "product_fact_instances": 71,
+    "product_fact_current": 71,
+    "product_fact_confirmations": 71,
+    "evidence_sources": 40,
+    "evidence_subject_bindings": 40,
+    "recommendation_logs": 1300
+  },
+  "evaluation_observation": {
+    "new_evaluation_rows_from_first_scheduled_run": 0,
+    "reason": "EXISTING_HOLD_EVALUATIONS_REMAINED_STABLE_UNTIL_POLICY_OR_NEW_CASE",
+    "existing_latest_results": [
+      "HOLD",
+      "HOLD"
+    ]
+  },
+  "authority": {
+    "automatic_relocation": false,
+    "automatic_grouped_confirmation": false,
+    "product_fact_mutation": false,
+    "historical_evidence_source_mutation": false,
+    "semantic_same_changed_resolution": false
+  },
+  "next_state": "WAITING_FOR_REAL_READY_FOR_8I4"
+}
