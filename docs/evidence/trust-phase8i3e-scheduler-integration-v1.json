@@ -1,0 +1,50 @@
+{
+  "contract": "trust-phase8i3e-scheduler-integration-v1",
+  "phase": "PHASE_8I_3E",
+  "result": "PASS",
+  "decision": "INTEGRATE",
+  "watchtower_track": "pipeline-reliability",
+  "evidence_captured_date": "2026-09-29",
+  "prerequisite": {
+    "evidence": "docs/evidence/trust-phase8i3d-production-closeout-v1.json",
+    "result": "PASS",
+    "shadow_passed": true,
+    "first_record_passed": true,
+    "stable_replay_passed": true
+  },
+  "schedule_contract": {
+    "cadence_cron": "17 */6 * * *",
+    "sequencing": [
+      "verify",
+      "transport_live",
+      "transport_drift_scheduled"
+    ],
+    "transport_scope_on_schedule": "full_dynamic_fleet",
+    "case_enqueue_rpc": "enqueue_trust_official_source_transport_drift_cases_v1",
+    "evaluation_record": true,
+    "retry_interval_hours": 6,
+    "policy_registry": "docs/evidence/trust-phase8i3-transport-drift-evaluation-policy-registry-v1.json",
+    "case_limit": 100
+  },
+  "rationale": [
+    "manual shadow completed without evaluation ledger writes",
+    "first record appended exactly two governed evaluation rows",
+    "stable replay appended zero duplicate rows because both HOLD results are stable until policy or a new case",
+    "the existing six-hour transport schedule matches the evaluation registry retry interval",
+    "scheduled drift evaluation is sequenced after the scheduled full transport pass so newly confirmed transport incidents are visible before case enqueue"
+  ],
+  "authority_invariants": {
+    "transport_operational_observation_only": true,
+    "automatic_relocation_confirmation": false,
+    "product_fact_current_mutation": false,
+    "product_fact_instance_mutation": false,
+    "confirmation_mutation": false,
+    "historical_evidence_source_mutation": false,
+    "source_binding_retirement_or_replacement": false,
+    "recommendation_mutation": false,
+    "semantic_same_or_changed_resolution": false,
+    "automatic_phase8i4_resolution": false
+  },
+  "rollout_status": "CI_GATED_IMPLEMENTATION",
+  "first_scheduled_production_observation": "PENDING"
+}
