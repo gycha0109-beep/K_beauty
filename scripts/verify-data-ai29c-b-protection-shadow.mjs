@@ -254,6 +254,10 @@ const membershipCleanupMigration = fs.readFileSync(
   "supabase/migrations/20260929095500_data_ai29c_shadow_owner_membership_cleanup.sql",
   "utf8"
 );
+const protectionWorkflow = fs.readFileSync(
+  ".github/workflows/data-ai29c-protection-shadow.yml",
+  "utf8"
+);
 
 assert.match(
   service,
@@ -293,7 +297,12 @@ assert.match(
 );
 assert.match(
   reader,
-  /from unnest\(\$\{sql\.array\(uniqueIds, "uuid"\)\}\)/
+  /from unnest\(\$\{sql\.array\(uniqueIds\)\}::uuid\[\]\)/
+);
+assert.doesNotMatch(
+  reader,
+  /sql\.array\(uniqueIds,\s*["']uuid["']\)/,
+  "Postgres.js array type must not use a textual PostgreSQL type name"
 );
 assert.match(
   reader,
@@ -306,6 +315,49 @@ assert.match(
 assert.match(
   service,
   /allowShadowTransportFallback:\s*true/
+);
+assert.match(
+  reader,
+  /getRecommendationProtectionCredentialMode/
+);
+assert.match(
+  reader,
+  /"dedicated"/
+);
+assert.match(
+  reader,
+  /"admission_shadow_fallback"/
+);
+assert.match(
+  reader,
+  /"unavailable"/
+);
+assert.match(
+  service,
+  /authorityFailureCounts/
+);
+for (const bucket of [
+  "credential_unavailable",
+  "read_timeout",
+  "read_failed",
+  "malformed_or_stale_authority",
+  "authority_unavailable_other"
+]) {
+  assert.match(service, new RegExp(bucket));
+}
+assert.match(route, /credentialMode:\s*evaluation\.credentialMode/);
+assert.match(
+  route,
+  /authorityFailureCounts:\s*evaluation\.authorityFailureCounts/
+);
+assert.doesNotMatch(
+  route,
+  /RECOMMENDATION_(?:PROTECTION|ADMISSION)_DATABASE_URL/
+);
+assert.match(protectionWorkflow, /credentialMode:\s*payload\.credentialMode/);
+assert.match(
+  protectionWorkflow,
+  /authorityFailureCounts:\s*payload\.authorityFailureCounts/
 );
 assert.match(
   fallbackMigration,
