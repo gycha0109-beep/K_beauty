@@ -36,6 +36,7 @@ on:
       - "scripts/verify-trust-phase8i4e-grouped-relocation-db-foundation.mjs"
       - "lib/trust/official-source-grouped-relocation-operator-contract.mjs"
       - "lib/admin/trust-grouped-relocation.js"
+      - "lib/admin/trust-grouped-relocation-canary.js"
       - "app/admin/products/trust/relocations/**"
       - "app/api/admin/trust/relocation/**"
       - "scripts/verify-trust-phase8i4f-admin-operator-handoff.mjs"
@@ -47,6 +48,7 @@ on:
       - "scripts/verify-trust-phase8i4g-idempotent-replay.mjs"
       - "scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs"
       - "scripts/verify-trust-phase8i4g-static-contract.mjs"
+      - "scripts/verify-trust-phase8i4g-canary-closure.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -94,6 +96,7 @@ on:
       - "scripts/verify-trust-phase8i4e-grouped-relocation-db-foundation.mjs"
       - "lib/trust/official-source-grouped-relocation-operator-contract.mjs"
       - "lib/admin/trust-grouped-relocation.js"
+      - "lib/admin/trust-grouped-relocation-canary.js"
       - "app/admin/products/trust/relocations/**"
       - "app/api/admin/trust/relocation/**"
       - "scripts/verify-trust-phase8i4f-admin-operator-handoff.mjs"
@@ -105,6 +108,7 @@ on:
       - "scripts/verify-trust-phase8i4g-idempotent-replay.mjs"
       - "scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs"
       - "scripts/verify-trust-phase8i4g-static-contract.mjs"
+      - "scripts/verify-trust-phase8i4g-canary-closure.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -254,7 +258,9 @@ jobs:
           node --check scripts/verify-trust-phase8i4g-idempotent-replay.mjs
           node --check scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs
           node --check scripts/verify-trust-phase8i4g-static-contract.mjs
+          node --check scripts/verify-trust-phase8i4g-canary-closure.mjs
           node scripts/verify-trust-phase8i4g-static-contract.mjs
+          node scripts/verify-trust-phase8i4g-canary-closure.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
