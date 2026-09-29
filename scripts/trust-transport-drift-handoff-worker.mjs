@@ -216,12 +216,32 @@ function summarizeQualification(qualification) {
   if (!qualification) return null;
   return {
     contract: qualification.contract,
+    historical_source_id: qualification.historical_source_id ?? null,
+    historical_locator: qualification.historical_locator ?? null,
+    product_id: qualification.product_id ?? null,
+    subject_id: qualification.subject_id ?? null,
     disposition: qualification.disposition,
     reason: qualification.reason,
     qualification_digest: qualification.qualification_digest,
     candidate_locator: qualification.candidate_locator,
+    candidate_source_kind: qualification.candidate_source_kind ?? null,
+    discovery_method: qualification.discovery_method ?? null,
+    mutation_policy: qualification.mutation_policy ?? null,
     authority: qualification.authority,
   };
+}
+
+function qualifiedHistoricalSourceId(caseRow, qualification) {
+  const sourceId = qualification?.historical_source_id
+    ? String(qualification.historical_source_id)
+    : null;
+  if (
+    !sourceId ||
+    !(caseRow.source_ids || []).map(String).includes(sourceId)
+  ) {
+    throw new Error("TRUST_PHASE8I3_READY_FOR_8I4_QUALIFIED_SOURCE_LINEAGE_INVALID");
+  }
+  return sourceId;
 }
 
 function summarizeRediscovery(result) {
@@ -252,6 +272,7 @@ function buildEvaluationPayload({
   resultKind,
   candidateLocator,
   qualificationDigest,
+  qualifiedHistoricalSourceId = null,
   reason,
 }) {
   return {
@@ -273,6 +294,7 @@ function buildEvaluationPayload({
     result_kind: resultKind,
     candidate_locator: candidateLocator,
     qualification_digest: qualificationDigest,
+    qualified_historical_source_id: qualifiedHistoricalSourceId,
     reason,
     authority:
       resultKind === "READY_FOR_8I4"
@@ -337,6 +359,10 @@ async function evaluateCase(caseRow, policy, registry, {
         resultKind: "READY_FOR_8I4",
         candidateLocator: directQualification.candidate_locator,
         qualificationDigest: directQualification.qualification_digest,
+        qualifiedHistoricalSourceId: qualifiedHistoricalSourceId(
+          caseRow,
+          directQualification,
+        ),
         reason: "DIRECT_REDIRECT_CANDIDATE_QUALIFIED_EXACT",
       });
       return {
@@ -392,6 +418,10 @@ async function evaluateCase(caseRow, policy, registry, {
         resultKind: "READY_FOR_8I4",
         candidateLocator,
         qualificationDigest,
+        qualifiedHistoricalSourceId: qualifiedHistoricalSourceId(
+          caseRow,
+          exact.qualification,
+        ),
         reason: "REDISCOVERY_CANDIDATE_QUALIFIED_EXACT",
       }),
     };
