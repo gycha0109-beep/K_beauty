@@ -93,7 +93,7 @@ function renderMarkdown(result) {
 
 const result = buildProtectionExpansionWave1(process.cwd());
 const json = JSON.stringify(result, null, 2) + "\n";
-const md = renderMarkdown(result) + "\n";
+const md = renderMarkdown(result);
 write(OUT_JSON, json);
 write(OUT_MD, md);
 console.log("DATA_AI29C_C5_PROTECTION_EXPANSION_BUILD=PASS");
