@@ -27,9 +27,31 @@ const imageBuffer = await readFile(fixturePath);
 assert.ok(imageBuffer.length > 0 && imageBuffer.length < 256 * 1024, "live smoke fixture must remain small and bounded");
 
 const prompt = createVisionObservationPrompt();
+
+const diagnosticFetch = async (url, init) => {
+  const response = await fetch(url, init);
+
+  if (!response.ok) {
+    const payload = await response.clone().json().catch(() => null);
+    const error = payload?.error;
+    console.log(JSON.stringify({
+      liveSmokeProviderError: {
+        status: response.status,
+        type: typeof error?.type === "string" ? error.type.slice(0, 80) : null,
+        code: typeof error?.code === "string" ? error.code.slice(0, 80) : null,
+        param: typeof error?.param === "string" ? error.param.slice(0, 80) : null,
+        message: typeof error?.message === "string" ? error.message.slice(0, 300) : null
+      }
+    }));
+  }
+
+  return response;
+};
+
 const runtime = await executeOpenAiChatJson({
   apiKey,
   stage: "vision-observation",
+  fetchImpl: diagnosticFetch,
   timeoutMs: 60_000,
   body: {
     model,
