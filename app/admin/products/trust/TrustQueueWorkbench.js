@@ -321,7 +321,17 @@ export default function TrustQueueWorkbench({ queue, canReview = false }) {
             사람이 판단해야 하는 identity/evidence/registry blocker만 표시합니다. SUBJECT_CREATION_REQUIRED 항목은 admin.products.review 권한에서만 controlled Subject 등록을 수행할 수 있습니다. Phase 6 수동 재검사는 상태를 다시 검증할 뿐 Current/Subject/Evidence를 강제 초기화하지 않으며 Recommendation도 변경하지 않습니다.
           </p>
         </div>
-        {canReview ? <Badge tone="amber">Controlled review</Badge> : <Badge tone="blue">Read only</Badge>}
+        <div className="flex flex-wrap gap-2">
+          {canReview ? (
+            <Link
+              href="/admin/products/trust/relocations"
+              className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+            >
+              Source Relocations
+            </Link>
+          ) : null}
+          {canReview ? <Badge tone="amber">Controlled review</Badge> : <Badge tone="blue">Read only</Badge>}
+        </div>
       </div>
 
       <div className="mb-5 flex flex-wrap gap-2">
