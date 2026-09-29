@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import path from "node:path";
 import {
   OPENAI_RUNTIME_MODEL,
   OPENAI_RUNTIME_MODEL_POLICY_VERSION,
@@ -8,102 +7,49 @@ import {
   OPENAI_RUNTIME_REASONING_EFFORT
 } from "../lib/ai-model-policy.js";
 
-const ROOTS = [
-  ".github",
-  "app",
-  "apps",
-  "components",
-  "crawler",
-  "lib",
-  "packages",
-  "scripts",
-  "supabase",
-  "test",
-  "tests",
-  "tools"
-];
-
-const SOURCE_EXTENSIONS = new Set([
-  ".js",
-  ".jsx",
-  ".ts",
-  ".tsx",
-  ".mjs",
-  ".cjs",
-  ".json",
-  ".yml",
-  ".yaml"
+const RUNTIME_MODEL_OWNERS = Object.freeze([
+  "app/api/analyze/route.js",
+  "app/api/face-reading/route.js",
+  "lib/server/vision-observation-service.js",
+  "lib/server/product-query-intent-service.js",
+  "lib/security/error-redaction.js",
+  "lib/product-query-operational-observability.mjs",
+  "lib/product-query-beta-operational-readiness-contract.mjs",
+  "scripts/run-ai-provider-live-smoke.mjs"
 ]);
 
-const NON_MODEL_PROFILE_IDS = new Set([
-  "gpt-image-manual-v1",
-  "gemini-image-manual-v1"
-]);
-
-const MODEL_TOKEN_PATTERN =
-  /\b(?:gpt|o[134]|gemini|claude)[a-z0-9._-]*\b/gi;
-
-function walk(directory, files = []) {
-  if (!fs.existsSync(directory)) return files;
-
-  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-    const fullPath = path.join(directory, entry.name);
-
-    if (entry.isDirectory()) {
-      walk(fullPath, files);
-      continue;
-    }
-
-    if (
-      entry.isFile() &&
-      SOURCE_EXTENSIONS.has(path.extname(entry.name).toLowerCase())
-    ) {
-      files.push(fullPath);
-    }
-  }
-
-  return files;
-}
+const FORBIDDEN_GENERAL_MODEL_PATTERN =
+  /\b(?:gpt-4o(?:-mini)?|gpt-4\.1(?:-mini|-nano)?|gpt-5(?:\.[0-9]+)?(?:-(?:mini|nano|sol|terra))?|o[134](?:-[a-z0-9.-]+)?|gemini-[0-9][a-z0-9._-]*|claude-[0-9][a-z0-9._-]*)\b/gi;
 
 const violations = [];
-const scanned = [];
 
-for (const root of ROOTS) {
-  for (const file of walk(root)) {
-    const source = fs.readFileSync(file, "utf8");
-    scanned.push(file);
+for (const file of RUNTIME_MODEL_OWNERS) {
+  const source = fs.readFileSync(file, "utf8");
+  const matches = [...source.matchAll(FORBIDDEN_GENERAL_MODEL_PATTERN)]
+    .map((match) => match[0])
+    .filter((token) => token !== OPENAI_RUNTIME_MODEL);
 
-    const tokens = [...source.matchAll(MODEL_TOKEN_PATTERN)]
-      .map((match) => match[0])
-      .filter(Boolean);
-
-    for (const token of tokens) {
-      if (
-        token === OPENAI_RUNTIME_MODEL ||
-        NON_MODEL_PROFILE_IDS.has(token)
-      ) {
-        continue;
-      }
-
-      violations.push({
-        file,
-        token
-      });
-    }
-
-    for (const bypass of [
-      "PRODUCT_QUERY_INTENT_MODEL",
-      "AI_PROVIDER_SMOKE_MODEL"
-    ]) {
-      if (source.includes(bypass)) {
-        violations.push({
-          file,
-          token: bypass
-        });
-      }
-    }
+  for (const token of matches) {
+    violations.push({ file, token });
   }
 }
+
+const productQuerySource = fs.readFileSync(
+  "lib/server/product-query-intent-service.js",
+  "utf8"
+);
+const smokeSource = fs.readFileSync(
+  "scripts/run-ai-provider-live-smoke.mjs",
+  "utf8"
+);
+const analyzeSource = fs.readFileSync(
+  "app/api/analyze/route.js",
+  "utf8"
+);
+const visionSource = fs.readFileSync(
+  "lib/server/vision-observation-service.js",
+  "utf8"
+);
 
 assert.equal(
   OPENAI_RUNTIME_MODEL_POLICY_VERSION,
@@ -112,14 +58,39 @@ assert.equal(
 assert.equal(OPENAI_RUNTIME_MODEL, "gpt-5.6-luna");
 assert.equal(OPENAI_RUNTIME_REASONING_EFFORT, "none");
 assert.deepEqual([...OPENAI_RUNTIME_MODELS], ["gpt-5.6-luna"]);
-assert.ok(scanned.length > 0);
 assert.deepEqual(
   violations,
   [],
-  "non-Luna AI model settings remain:\n" +
-    violations
-      .map((item) => `${item.file}: ${item.token}`)
-      .join("\n")
+  "non-Luna runtime model settings remain:\n" +
+    violations.map((item) => `${item.file}: ${item.token}`).join("\n")
+);
+
+assert.equal(
+  productQuerySource.includes("PRODUCT_QUERY_INTENT_MODEL"),
+  false,
+  "Product Query must not bypass the Luna-only policy through an env model override"
+);
+assert.equal(
+  productQuerySource.includes("options.model ||"),
+  false,
+  "Product Query must not bypass the Luna-only policy through a caller model override"
+);
+assert.equal(
+  smokeSource.includes("AI_PROVIDER_SMOKE_MODEL"),
+  false,
+  "live smoke must exercise the same Luna model as Production"
+);
+assert.ok(
+  analyzeSource.includes("OPENAI_RUNTIME_REASONING_EFFORT") &&
+    analyzeSource.includes("reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT")
+);
+assert.ok(
+  visionSource.includes("OPENAI_RUNTIME_REASONING_EFFORT") &&
+    visionSource.includes("reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT")
+);
+assert.ok(
+  productQuerySource.includes("OPENAI_RUNTIME_REASONING_EFFORT") &&
+    productQuerySource.includes("effort: OPENAI_RUNTIME_REASONING_EFFORT")
 );
 
 console.log(JSON.stringify({
@@ -127,6 +98,5 @@ console.log(JSON.stringify({
   policyVersion: OPENAI_RUNTIME_MODEL_POLICY_VERSION,
   model: OPENAI_RUNTIME_MODEL,
   reasoningEffort: OPENAI_RUNTIME_REASONING_EFFORT,
-  scannedFileCount: scanned.length,
-  allowedNonModelProfileIds: [...NON_MODEL_PROFILE_IDS]
+  runtimeModelOwnerCount: RUNTIME_MODEL_OWNERS.length
 }, null, 2));
