@@ -74,6 +74,10 @@ const COPY = {
     neutral: "중성 / 상관없음",
     scopeTitle: "관심 있는 영역",
     changeTitle: "변화 강도",
+    recommendationPriorityTitle: "추천에서 무엇을 더 우선할까요?",
+    recommendationPriorityBody: "얼굴과의 조화를 기본으로 보거나, 선택한 추구미 방향을 더 강하게 밀 수 있습니다.",
+    faceHarmony: "얼굴과 자연스럽게",
+    targetForward: "추구미를 더 확실하게",
     minimal: "거의 유지",
     light: "조금 바꾸기",
     moderate: "꽤 바꾸기",
@@ -180,6 +184,10 @@ const COPY = {
     neutral: "Neutral / no preference",
     scopeTitle: "Styling areas",
     changeTitle: "Change level",
+    recommendationPriorityTitle: "What should the recommendation prioritize?",
+    recommendationPriorityBody: "Start from facial harmony, or push the target look more strongly.",
+    faceHarmony: "Facial harmony",
+    targetForward: "Push the target look",
     minimal: "Keep it close",
     light: "Small change",
     moderate: "Noticeable change",
@@ -566,6 +574,7 @@ export default function PremiumFaceLabSection({
   const [stylingScope, setStylingScope] = useState([]);
   const [scopeTouched, setScopeTouched] = useState(false);
   const [changeTolerance, setChangeTolerance] = useState("light");
+  const [recommendationPriority, setRecommendationPriority] = useState("face_harmony");
   const [makeupIntensity, setMakeupIntensity] = useState("light");
   const [dailyMinutes, setDailyMinutes] = useState(15);
   const [budgetBand, setBudgetBand] = useState("standard");
@@ -799,6 +808,11 @@ export default function PremiumFaceLabSection({
         })
       );
       setChangeTolerance(stored.surveyAnswers.changeTolerance || "light");
+      setRecommendationPriority(
+        stored.surveyAnswers.recommendationPriority === "target_forward"
+          ? "target_forward"
+          : "face_harmony"
+      );
       setFinderResult(stored.targetFinderResult || null);
       setMakeupIntensity(
         ["light", "medium", "expressive"].includes(restoredMakeupIntensity)
@@ -937,6 +951,7 @@ export default function PremiumFaceLabSection({
     presentationPreference,
     stylingScope,
     changeTolerance,
+    recommendationPriority,
     constraints: {
       makeup: {
         intensity: makeupIntensity
@@ -1113,6 +1128,7 @@ export default function PremiumFaceLabSection({
                 setStylingScope([]);
                 setScopeTouched(false);
                 setPresentationPreference("neutral_examples");
+                setRecommendationPriority("face_harmony");
                 setSoftSharpClarifier(null);
                 setNaturalPolishedClarifier(null);
                 setStage(value === "unknown" ? "finder" : "target");
@@ -1260,6 +1276,27 @@ export default function PremiumFaceLabSection({
               {copy[key]}
             </ChoiceButton>
           ))}
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <p className="text-sm font-semibold">{copy.recommendationPriorityTitle}</p>
+        <p className="ui-text-secondary mt-1 text-xs leading-5">
+          {copy.recommendationPriorityBody}
+        </p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <ChoiceButton
+            active={recommendationPriority === "face_harmony"}
+            onClick={() => setRecommendationPriority("face_harmony")}
+          >
+            {copy.faceHarmony}
+          </ChoiceButton>
+          <ChoiceButton
+            active={recommendationPriority === "target_forward"}
+            onClick={() => setRecommendationPriority("target_forward")}
+          >
+            {copy.targetForward}
+          </ChoiceButton>
         </div>
       </div>
 
