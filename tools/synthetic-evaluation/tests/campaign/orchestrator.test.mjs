@@ -184,7 +184,7 @@ test("wave cancellation fails closed after candidate registration or observation
     runDigest: "a".repeat(64),
     candidate: { candidateId: artifacts.candidateManifest.candidateId, canonicalSha256: artifacts.candidateManifest.asset.canonicalSha256, canonicalTransformPolicyVersion: artifacts.candidateManifest.asset.canonicalTransformPolicyVersion },
     adapter: { profileId: CANONICAL_OBSERVATION_PROFILE.id, profileVersion: CANONICAL_OBSERVATION_PROFILE.version, contractSnapshotId: "snapshot", contractSnapshotDigest: "b".repeat(64) },
-    execution: { mode: "provider_bounded", provider: "openai", model: "gpt-4.1-mini", replicateOrdinal: 1, imageProviderAttemptCount: 1, inputTokens: null, outputTokens: null, startedAt: "2026-08-02T10:30:00.000Z", completedAt: "2026-08-02T10:31:00.000Z" },
+    execution: { mode: "provider_bounded", provider: "openai", model: CANONICAL_OBSERVATION_PROFILE.providerModel, replicateOrdinal: 1, imageProviderAttemptCount: 1, inputTokens: null, outputTokens: null, startedAt: "2026-08-02T10:30:00.000Z", completedAt: "2026-08-02T10:31:00.000Z" },
     authority: "observed_image",
     outcome: "provider_failure",
     observation: null,
