@@ -27,6 +27,8 @@ on:
       - "scripts/verify-trust-phase8i3e-scheduler-integration.mjs"
       - "lib/trust/official-source-grouped-relocation-preflight.mjs"
       - "lib/trust/official-source-grouped-relocation-confirmation-request.mjs"
+      - "lib/trust/official-source-grouped-relocation-phase8h-anchor-bridge.mjs"
+      - "scripts/verify-trust-phase8i4-phase8h-anchor-bridge.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -65,6 +67,8 @@ on:
       - "scripts/verify-trust-phase8i3e-scheduler-integration.mjs"
       - "lib/trust/official-source-grouped-relocation-preflight.mjs"
       - "lib/trust/official-source-grouped-relocation-confirmation-request.mjs"
+      - "lib/trust/official-source-grouped-relocation-phase8h-anchor-bridge.mjs"
+      - "scripts/verify-trust-phase8i4-phase8h-anchor-bridge.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -186,6 +190,12 @@ jobs:
           node --check lib/trust/official-source-grouped-relocation-confirmation-request.mjs
           node --check scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs
           node scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs
+
+      - name: Verify Phase 8I-4D Phase 8H anchor bridge
+        run: |
+          node --check lib/trust/official-source-grouped-relocation-phase8h-anchor-bridge.mjs
+          node --check scripts/verify-trust-phase8i4-phase8h-anchor-bridge.mjs
+          node scripts/verify-trust-phase8i4-phase8h-anchor-bridge.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
