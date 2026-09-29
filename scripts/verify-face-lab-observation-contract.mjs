@@ -120,7 +120,7 @@ function buildRawObservations() {
 const eligibility = { source: "vision", faceLabEligible: true };
 const analysis = observation.buildFaceLabObservationAnalysis(
   { quality, observations: buildRawObservations() },
-  { eligibility, model: "gpt-4o-mini" }
+  { eligibility, model: "gpt-5.6-luna" }
 );
 
 assert.equal(analysis.status, "available");
