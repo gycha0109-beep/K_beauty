@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const sqlPath =
-  "docs/evidence/trust-phase8i4e-grouped-relocation-db-migration-candidate-v1.sql";
+  "supabase/migrations/20260929110902_trust_phase8i4_grouped_relocation_v1.sql";
 const evidencePath =
   "docs/evidence/trust-phase8i4e-db-foundation-validation-v1.json";
+const deploymentPath =
+  "docs/evidence/trust-phase8i4e-production-deployment-v1.json";
 const sql = fs.readFileSync(sqlPath, "utf8");
 const evidence = JSON.parse(fs.readFileSync(evidencePath, "utf8"));
+const deployment = JSON.parse(fs.readFileSync(deploymentPath, "utf8"));
 
 for (const required of [
   "create table public.trust_official_source_relocation_groups",
@@ -31,7 +34,7 @@ for (const required of [
   "EXPLICIT_ADMIN_GROUPED_RELOCATION_CONFIRMATION",
   "READ_ONLY_GROUPED_RELOCATION_LINEAGE",
 ]) {
-  assert.ok(sql.includes(required), "8I-4E DB candidate missing: " + required);
+  assert.ok(sql.includes(required), "8I-4E migration missing: " + required);
 }
 
 for (const required of [
@@ -66,7 +69,7 @@ for (const forbidden of [
   assert.equal(
     sql.toLowerCase().includes(forbidden.toLowerCase()),
     false,
-    "8I-4E candidate contains forbidden direct authority mutation: " +
+    "8I-4E migration contains forbidden direct authority mutation: " +
       forbidden,
   );
 }
@@ -103,6 +106,46 @@ assert.equal(
   true,
 );
 
+assert.equal(
+  deployment.contract,
+  "trust-phase8i4e-production-deployment-v1",
+);
+assert.equal(deployment.migration.version, "20260929110902");
+assert.equal(
+  deployment.migration.name,
+  "trust_phase8i4_grouped_relocation_v1",
+);
+assert.equal(deployment.migration.repository_path, sqlPath);
+assert.equal(deployment.migration.production_registered, true);
+assert.equal(deployment.production_readback.grouped_tables, 3);
+assert.equal(deployment.production_readback.grouped_relocation_rows, 0);
+assert.equal(deployment.production_readback.grouped_source_rows, 0);
+assert.equal(deployment.production_readback.grouped_incident_rows, 0);
+assert.equal(deployment.production_readback.ready_for_8i4_rows, 0);
+assert.equal(deployment.production_readback.existing_relocation_rows, 1);
+assert.equal(deployment.production_readback.product_fact_current_rows, 71);
+assert.equal(deployment.production_readback.evidence_source_rows, 40);
+assert.equal(deployment.hold_preflight_readback.checked_case_count, 2);
+assert.equal(deployment.hold_preflight_readback.all_status, "HOLD");
+assert.equal(
+  deployment.hold_preflight_readback.all_include_blocker,
+  "EVALUATION_NOT_READY_FOR_8I4",
+);
+assert.equal(
+  deployment.deployed_validation.synthetic_atomic_grouped_confirmation,
+  "PASS",
+);
+assert.equal(deployment.deployed_validation.synthetic_source_count, 3);
+assert.equal(deployment.deployed_validation.synthetic_incident_count, 3);
+assert.equal(
+  deployment.deployed_validation.real_grouped_confirmation_executed,
+  false,
+);
+assert.equal(
+  deployment.security_advisor.phase8i4_security_definer_exposure_findings,
+  0,
+);
+
 for (const authority of [
   "READY_FOR_8I4_IS_HANDOFF_ONLY",
   "EXPLICIT_ADMIN_CONFIRMATION_REQUIRED",
@@ -129,7 +172,10 @@ console.log(
       production_ready_for_8i4_count:
         evidence.production_gate.ready_for_8i4_count,
       production_confirmation_executed:
-        evidence.production_gate.production_grouped_confirmation_executed,
+        deployment.deployed_validation.real_grouped_confirmation_executed,
+      migration_version: deployment.migration.version,
+      deployed_synthetic_atomic_confirmation:
+        deployment.deployed_validation.synthetic_atomic_grouped_confirmation,
     },
     null,
     2,
