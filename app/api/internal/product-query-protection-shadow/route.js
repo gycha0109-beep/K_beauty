@@ -93,6 +93,8 @@ export async function POST(request) {
     contractVersion: evaluation.contractVersion,
     sunscreenCorpusCount: evaluation.sunscreenCorpusCount,
     authorityResolvedCount: evaluation.authorityResolvedCount,
+    credentialMode: evaluation.credentialMode,
+    authorityFailureCounts: evaluation.authorityFailureCounts,
     audit: evaluation.audit,
     enabledAxes: evaluation.enabledAxes,
     scenarioCount: evaluation.scenarioCount,
