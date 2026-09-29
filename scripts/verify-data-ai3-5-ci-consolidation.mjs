@@ -22,6 +22,7 @@ for (const script of [
   "scripts/verify-data-ai29c-a-protection-authority.mjs",
   "scripts/verify-data-ai29c-a-protection-audit.mjs",
   "scripts/verify-data-ai29c-b-protection-shadow.mjs",
+  "scripts/verify-data-ai29c-protection-expansion-wave-v1.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",
