@@ -19,7 +19,9 @@ begin
 end
 $$;
 
-grant recommendation_protection_reader_owner to postgres with set true;
+grant recommendation_protection_reader_owner
+  to postgres
+  with inherit false, set true;
 set role recommendation_protection_reader_owner;
 
 grant execute on function public.read_recommendation_sunscreen_protection_authority_v1(uuid)
@@ -29,7 +31,9 @@ comment on function public.read_recommendation_sunscreen_protection_authority_v1
   'DATA-AI29C bounded sunscreen protection authority transport. recommendation_protection_runtime is the dedicated authority role; recommendation_admission_runtime may execute this RPC only as the DATA-AI29C-B shadow transport fallback and retains zero raw Product Fact/Evidence SELECT.';
 
 reset role;
-revoke set option for recommendation_protection_reader_owner from postgres;
+revoke recommendation_protection_reader_owner
+  from postgres
+  granted by postgres;
 
 do $$
 begin
@@ -78,21 +82,33 @@ $$;
 
 do $$
 declare
-  v_set_option boolean;
-  v_inherit_option boolean;
+  v_total integer;
+  v_expected integer;
+  v_postgres_granted integer;
 begin
-  select m.set_option, m.inherit_option
-    into v_set_option, v_inherit_option
+  select
+    count(*),
+    count(*) filter (
+      where grantor_role.rolname = 'supabase_admin'
+        and m.admin_option is true
+        and m.inherit_option is false
+        and m.set_option is false
+    ),
+    count(*) filter (
+      where grantor_role.rolname = 'postgres'
+    )
+    into v_total, v_expected, v_postgres_granted
   from pg_auth_members m
   join pg_roles member_role on member_role.oid = m.member
   join pg_roles granted_role on granted_role.oid = m.roleid
+  join pg_roles grantor_role on grantor_role.oid = m.grantor
   where member_role.rolname = 'postgres'
-    and granted_role.rolname = 'recommendation_protection_reader_owner'
-  limit 1;
+    and granted_role.rolname = 'recommendation_protection_reader_owner';
 
-  if coalesce(v_set_option, false) is true
-     or coalesce(v_inherit_option, false) is true then
-    raise exception 'DATA_AI29C_TRANSIENT_OWNER_USAGE_MUST_BE_REVOKED';
+  if v_total <> 1
+     or v_expected <> 1
+     or v_postgres_granted <> 0 then
+    raise exception 'DATA_AI29C_TRANSIENT_OWNER_MEMBERSHIP_MUST_BE_RESTORED';
   end if;
 end
 $$;

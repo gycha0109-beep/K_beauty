@@ -250,6 +250,10 @@ const fallbackMigration = fs.readFileSync(
   "supabase/migrations/20260929002000_data_ai29c_shadow_transport_fallback.sql",
   "utf8"
 );
+const membershipCleanupMigration = fs.readFileSync(
+  "supabase/migrations/20260929095500_data_ai29c_shadow_owner_membership_cleanup.sql",
+  "utf8"
+);
 
 assert.match(
   service,
@@ -313,7 +317,7 @@ assert.match(
 );
 assert.match(
   fallbackMigration,
-  /grant recommendation_protection_reader_owner to postgres with set true/i
+  /grant recommendation_protection_reader_owner[\s\S]*to postgres[\s\S]*with inherit false, set true/i
 );
 assert.match(
   fallbackMigration,
@@ -321,11 +325,39 @@ assert.match(
 );
 assert.match(
   fallbackMigration,
+  /revoke recommendation_protection_reader_owner[\s\S]*from postgres[\s\S]*granted by postgres/i
+);
+assert.doesNotMatch(
+  fallbackMigration,
   /revoke set option for recommendation_protection_reader_owner from postgres/i
 );
 assert.match(
   fallbackMigration,
-  /DATA_AI29C_TRANSIENT_OWNER_USAGE_MUST_BE_REVOKED/
+  /DATA_AI29C_TRANSIENT_OWNER_MEMBERSHIP_MUST_BE_RESTORED/
+);
+assert.match(
+  fallbackMigration,
+  /grantor_role\.rolname = 'supabase_admin'/
+);
+assert.match(
+  fallbackMigration,
+  /grantor_role\.rolname = 'postgres'/
+);
+assert.match(
+  membershipCleanupMigration,
+  /revoke recommendation_protection_reader_owner[\s\S]*from postgres[\s\S]*granted by postgres/i
+);
+assert.match(
+  membershipCleanupMigration,
+  /DATA_AI29C_OWNER_MEMBERSHIP_BASELINE_NOT_RESTORED/
+);
+assert.match(
+  membershipCleanupMigration,
+  /DATA_AI29C_SHADOW_FALLBACK_RPC_EXECUTE_REQUIRED/
+);
+assert.match(
+  membershipCleanupMigration,
+  /DATA_AI29C_SHADOW_FALLBACK_RAW_PF_SELECT_FORBIDDEN/
 );
 assert.match(
   fallbackMigration,
