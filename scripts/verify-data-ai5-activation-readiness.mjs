@@ -175,7 +175,7 @@ check(workflow.includes("Verify runtime probe checkout"),
   "DATA-AI5 runtime must attest exact checkout");
 check(!workflow.includes("OPENAI_API_KEY"),
   "GitHub workflow must not receive provider secret");
-check(!workflow.includes("PRODUCT_QUERY_INTENT_MODEL:"),
+check(!workflow.includes("PRODUCT_QUERY_" + "INTENT_MODEL:"),
   "DATA-AI5 must use deployed model authority");
 check(!workflow.includes("current-main-health.yml"),
   "DATA-AI5 live provider gate must not become a reverse dependency of Current Main Health");

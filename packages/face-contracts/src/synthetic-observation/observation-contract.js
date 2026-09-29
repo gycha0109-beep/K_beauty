@@ -8,7 +8,7 @@ export const BLIND_JUDGMENT_INPUT_SCHEMA_VERSION = "blind-judgment-input-v1";
 export const CANONICAL_OBSERVATION_PROFILE = Object.freeze({
   id: "bejewely-canonical-vision-v1",
   version: "1.0.0",
-  providerModel: "gpt-4o-mini",
+  providerModel: "gpt-5.6-luna",
   fixtureModel: "fixture-canonical-v1"
 });
 

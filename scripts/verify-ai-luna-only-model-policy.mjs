@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
+import { execFileSync } from "node:child_process";
 import {
   OPENAI_RUNTIME_MODEL,
   OPENAI_RUNTIME_MODEL_POLICY_VERSION,
@@ -7,30 +9,87 @@ import {
   OPENAI_RUNTIME_REASONING_EFFORT
 } from "../lib/ai-model-policy.js";
 
-const RUNTIME_MODEL_OWNERS = Object.freeze([
-  "app/api/analyze/route.js",
-  "app/api/face-reading/route.js",
-  "lib/server/vision-observation-service.js",
-  "lib/server/product-query-intent-service.js",
-  "lib/security/error-redaction.js",
-  "lib/product-query-operational-observability.mjs",
-  "lib/product-query-beta-operational-readiness-contract.mjs",
-  "scripts/run-ai-provider-live-smoke.mjs"
+const SELF_PATH = "scripts/verify-ai-luna-only-model-policy.mjs";
+
+const SCANNED_EXTENSIONS = new Set([
+  ".js",
+  ".jsx",
+  ".ts",
+  ".tsx",
+  ".mjs",
+  ".cjs",
+  ".json",
+  ".yml",
+  ".yaml",
+  ".toml"
 ]);
 
-const FORBIDDEN_GENERAL_MODEL_PATTERN =
-  /\b(?:gpt-4o(?:-mini)?|gpt-4\.1(?:-mini|-nano)?|gpt-5(?:\.[0-9]+)?(?:-(?:mini|nano|sol|terra|luna))?|o[134](?:-[a-z0-9.-]+)?|gemini-[0-9][a-z0-9._-]*|claude-[0-9][a-z0-9._-]*)\b/gi;
+const NON_RUNTIME_PROVIDER_PROFILE_IDS = new Set([
+  "gpt-image-manual-v1",
+  "gemini-image-manual-v1"
+]);
 
-const violations = [];
+const GENERAL_MODEL_PATTERN =
+  /\b(?:gpt-(?:4o(?:-mini)?|4\.1(?:-[a-z0-9.-]+)?|5(?:\.[0-9]+)?(?:-[a-z0-9.-]+)?)|o[134]-[a-z0-9.-]+|gemini-[a-z0-9._-]+|claude-[a-z0-9._-]+)\b/gi;
 
-for (const file of RUNTIME_MODEL_OWNERS) {
+const FORBIDDEN_MODEL_OVERRIDE_TOKENS = Object.freeze([
+  "PRODUCT_QUERY_INTENT_MODEL",
+  "AI_PROVIDER_SMOKE_MODEL"
+]);
+
+const TEST_SENTINEL_EXEMPTIONS = Object.freeze({
+  "scripts/verify-sec12-error-log-boundary.mjs": new Set([
+    "GPT-5.6-LUNA",
+    "gpt-5.6-luna-custom"
+  ])
+});
+
+function isScannableFile(file) {
+  if (file === SELF_PATH) return false;
+  if (file.startsWith("docs/")) return false;
+  if (file.startsWith("fixtures/")) return false;
+
+  const base = path.basename(file);
+  if (base.startsWith(".env")) return true;
+  if (base === "Dockerfile" || base.startsWith("Dockerfile.")) return true;
+
+  return SCANNED_EXTENSIONS.has(path.extname(file).toLowerCase());
+}
+
+const trackedFiles = execFileSync(
+  "git",
+  ["ls-files"],
+  { encoding: "utf8" }
+)
+  .split("\n")
+  .map((file) => file.trim())
+  .filter(Boolean)
+  .filter(isScannableFile);
+
+const modelViolations = [];
+const overrideViolations = [];
+
+for (const file of trackedFiles) {
   const source = fs.readFileSync(file, "utf8");
-  const matches = [...source.matchAll(FORBIDDEN_GENERAL_MODEL_PATTERN)]
-    .map((match) => match[0])
-    .filter((token) => token !== OPENAI_RUNTIME_MODEL);
 
-  for (const token of matches) {
-    violations.push({ file, token });
+  for (const match of source.matchAll(GENERAL_MODEL_PATTERN)) {
+    const token = match[0];
+
+    if (
+      token === OPENAI_RUNTIME_MODEL ||
+      NON_RUNTIME_PROVIDER_PROFILE_IDS.has(token) ||
+      TEST_SENTINEL_EXEMPTIONS[file]?.has(token)
+    ) {
+      continue;
+    }
+
+    modelViolations.push({ file, token });
+  }
+
+  for (const token of FORBIDDEN_MODEL_OVERRIDE_TOKENS) {
+    if (source.includes(token)) {
+      overrideViolations.push({ file, token });
+    }
   }
 }
 
@@ -58,18 +117,25 @@ assert.equal(
 assert.equal(OPENAI_RUNTIME_MODEL, "gpt-5.6-luna");
 assert.equal(OPENAI_RUNTIME_REASONING_EFFORT, "none");
 assert.deepEqual([...OPENAI_RUNTIME_MODELS], ["gpt-5.6-luna"]);
+
 assert.deepEqual(
-  violations,
+  modelViolations,
   [],
-  "non-Luna runtime model settings remain:\n" +
-    violations.map((item) => `${item.file}: ${item.token}`).join("\n")
+  "non-Luna general LLM model tokens remain in tracked executable/config sources:\n" +
+    modelViolations
+      .map((item) => `${item.file}: ${item.token}`)
+      .join("\n")
 );
 
-assert.equal(
-  productQuerySource.includes("PRODUCT_QUERY_INTENT_MODEL"),
-  false,
-  "Product Query must not bypass the Luna-only policy through an env model override"
+assert.deepEqual(
+  overrideViolations,
+  [],
+  "runtime model override paths remain:\n" +
+    overrideViolations
+      .map((item) => `${item.file}: ${item.token}`)
+      .join("\n")
 );
+
 assert.equal(
   productQuerySource.includes("options.model ||"),
   false,
@@ -82,11 +148,15 @@ assert.equal(
 );
 assert.ok(
   analyzeSource.includes("OPENAI_RUNTIME_REASONING_EFFORT") &&
-    analyzeSource.includes("reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT")
+    analyzeSource.includes(
+      "reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT"
+    )
 );
 assert.ok(
   visionSource.includes("OPENAI_RUNTIME_REASONING_EFFORT") &&
-    visionSource.includes("reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT")
+    visionSource.includes(
+      "reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT"
+    )
 );
 assert.ok(
   productQuerySource.includes("OPENAI_RUNTIME_REASONING_EFFORT") &&
@@ -98,5 +168,9 @@ console.log(JSON.stringify({
   policyVersion: OPENAI_RUNTIME_MODEL_POLICY_VERSION,
   model: OPENAI_RUNTIME_MODEL,
   reasoningEffort: OPENAI_RUNTIME_REASONING_EFFORT,
-  runtimeModelOwnerCount: RUNTIME_MODEL_OWNERS.length
+  scannedTrackedSourceCount: trackedFiles.length,
+  allowedNonRuntimeProviderProfileIds: [
+    ...NON_RUNTIME_PROVIDER_PROFILE_IDS
+  ],
+  testSentinelExemptionFiles: Object.keys(TEST_SENTINEL_EXEMPTIONS)
 }, null, 2));
