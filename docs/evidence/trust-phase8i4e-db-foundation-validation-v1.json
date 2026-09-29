@@ -1,0 +1,40 @@
+{
+  "contract": "trust-phase8i4e-db-foundation-validation-v1",
+  "validated_against_production_project": "bygrczggxfuisupcevaz",
+  "validation_mode": "ROLLBACK_ONLY_NO_PERSISTENT_SCHEMA_OR_DATA_MUTATION",
+  "production_gate": {
+    "drift_case_count": 2,
+    "drift_evaluation_count": 2,
+    "evaluation_result_counts": {
+      "HOLD": 2
+    },
+    "relocation_count": 1,
+    "product_fact_current_count": 71,
+    "evidence_source_count": 40,
+    "ready_for_8i4_count": 0,
+    "production_grouped_confirmation_executed": false
+  },
+  "checks": {
+    "candidate_ddl_transaction_rollback": "PASS",
+    "synthetic_three_source_shared_binding_preflight": "PASS",
+    "synthetic_atomic_grouped_confirmation_in_rollback": "PASS",
+    "synthetic_group_source_count": 3,
+    "synthetic_group_incident_count": 3,
+    "synthetic_lineage_resolver": "PASS",
+    "evidence_source_count_unchanged_inside_synthetic_confirmation": true,
+    "product_fact_current_count_unchanged_inside_synthetic_confirmation": true,
+    "rollback_restored_production": true
+  },
+  "authority_invariants": [
+    "READY_FOR_8I4_IS_HANDOFF_ONLY",
+    "EXPLICIT_ADMIN_CONFIRMATION_REQUIRED",
+    "PHASE8H_RELOCATION_RPC_IS_SOLE_BINDING_MUTATION_PRIMITIVE",
+    "NO_PRODUCT_FACT_CURRENT_MUTATION",
+    "NO_PRODUCT_FACT_INSTANCE_MUTATION",
+    "NO_PRODUCT_FACT_CONFIRMATION_MUTATION",
+    "NO_HISTORICAL_EVIDENCE_SOURCE_MUTATION",
+    "NO_RECOMMENDATION_AUTHORITY_MUTATION",
+    "NO_SEMANTIC_SAME_CHANGED_RESOLUTION"
+  ],
+  "next_step": "REGISTER_DEPLOYABLE_SUPABASE_MIGRATION_AFTER_EXACT_HEAD_CI"
+}
