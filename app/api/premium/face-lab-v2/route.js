@@ -86,6 +86,7 @@ function rehydrateSavedV2(data) {
   if (!analysis) {
     return {
       ...saved,
+      routeChoiceEvidence: null,
       canonicalV2: null
     };
   }
