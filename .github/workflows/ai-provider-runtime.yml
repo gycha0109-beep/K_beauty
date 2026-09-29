@@ -18,6 +18,7 @@ on:
       - "scripts/verify-ai-provider-runtime-boundary.mjs"
       - "scripts/verify-ai-luna-only-model-policy.mjs"
       - "scripts/run-ai-provider-live-smoke.mjs"
+      - "scripts/verify-ai-live-smoke-importability.mjs"
       - "scripts/verify-unified-vision-pipeline.mjs"
       - "scripts/verify-provider-runtime-log-sanitization.mjs"
       - ".github/workflows/ai-provider-runtime.yml"
@@ -39,6 +40,7 @@ on:
       - "scripts/verify-ai-provider-runtime-boundary.mjs"
       - "scripts/verify-ai-luna-only-model-policy.mjs"
       - "scripts/run-ai-provider-live-smoke.mjs"
+      - "scripts/verify-ai-live-smoke-importability.mjs"
       - "scripts/verify-unified-vision-pipeline.mjs"
       - "scripts/verify-provider-runtime-log-sanitization.mjs"
       - ".github/workflows/ai-provider-runtime.yml"
@@ -99,6 +101,9 @@ jobs:
 
       - name: Verify provider log sanitization
         run: node scripts/verify-provider-runtime-log-sanitization.mjs
+
+      - name: Verify live smoke Node importability
+        run: node scripts/verify-ai-live-smoke-importability.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
