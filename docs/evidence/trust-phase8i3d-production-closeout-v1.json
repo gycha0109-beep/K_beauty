@@ -1,0 +1,104 @@
+{
+  "contract": "trust-phase8i3d-production-closeout-v1",
+  "phase": "PHASE_8I_3D",
+  "result": "PASS",
+  "watchtower_track": "pipeline-reliability",
+  "evidence_captured_date": "2026-09-29",
+  "manual_runs": {
+    "shadow": {
+      "run_id": 36500285636,
+      "run_number": 143,
+      "head_sha": "7e4c21030bc75562d093bc39a4650c9a4b839730",
+      "conclusion": "success",
+      "artifact": {
+        "id": 11004754220,
+        "name": "trust-phase8i3d-shadow-36500285636-1",
+        "digest": "sha256:f7978d1dbbc6529bfc7d9d232d9b3605327606daf321ed59db4de2868beb1bbc"
+      },
+      "expected_case_count": 2,
+      "evaluation_writes_after_run": 0
+    },
+    "record": {
+      "run_id": 36500750643,
+      "run_number": 144,
+      "head_sha": "7e4c21030bc75562d093bc39a4650c9a4b839730",
+      "conclusion": "success",
+      "artifact": {
+        "id": 11005371717,
+        "name": "trust-phase8i3d-record-36500750643-1",
+        "digest": "sha256:cd46f190c918f0e5a00d6aa1a7d99bfbe1accf9ff2d5447b274b98383f2a5ae2"
+      },
+      "expected_case_count": 2,
+      "evaluation_writes_after_run": 2
+    },
+    "stable_replay": {
+      "run_id": 36504534773,
+      "run_number": 147,
+      "head_sha": "0fe1136f7347dca561833dea9c465ecae6ce1688",
+      "conclusion": "success",
+      "artifact": {
+        "id": 11006591398,
+        "name": "trust-phase8i3d-record-36504534773-1",
+        "digest": "sha256:a3da82bdf65427b5419e2270cc05b0cfefdccd0f919a39d011ca6d66c84fe637"
+      },
+      "case_count": 2,
+      "evaluated_count": 0,
+      "skipped_count": 2,
+      "recorded_count": 0,
+      "stable_skip_reason": "HOLD_STABLE_UNTIL_POLICY_OR_NEW_CASE"
+    }
+  },
+  "production_readback": {
+    "transport_incidents": 4,
+    "drift_cases": 2,
+    "case_incident_links": 4,
+    "evaluations": 2,
+    "reentry_events": 5,
+    "source_transport_drift_events": 2,
+    "product_fact_current": 71,
+    "evidence_sources": 40,
+    "confirmed_relocations": 1
+  },
+  "evaluation_rows": [
+    {
+      "evaluation_id": "d02cff09-90cc-4355-b58f-a3107920443c",
+      "request_id": "phase8i3:phase8i3d-record-36500750643-1:8d366508-075a-4791-8fe3-bc0271f176a8",
+      "case_id": "8d366508-075a-4791-8fe3-bc0271f176a8",
+      "policy_version": "v1",
+      "evaluation_mode": "REDISCOVERY",
+      "result_kind": "HOLD",
+      "input_digest": "dc62b5876ec61e96452d27735eacfeb40e0ed86c194d44e832abac9d0891a16e",
+      "result_digest": "3be3fff14edf5b3076e0c743be20770ee813133327f139499f843bbcc93a2f68",
+      "created_at": "2026-09-29T08:59:53.539922+09:00"
+    },
+    {
+      "evaluation_id": "518b83d6-74ec-44ba-9b3f-ff0271aafea6",
+      "request_id": "phase8i3:phase8i3d-record-36500750643-1:ed15edcf-505c-423f-a2d6-cc347625a042",
+      "case_id": "ed15edcf-505c-423f-a2d6-cc347625a042",
+      "policy_version": "v1",
+      "evaluation_mode": "REDISCOVERY",
+      "result_kind": "HOLD",
+      "input_digest": "c891a11bc54240826fc4523d082855d04a7b3fea58a08c218536fcfc79d056cf",
+      "result_digest": "2aa6047fead6a40df0fac4b2f698aa0bcbdff433959cd6dd2527387a04c2695f",
+      "created_at": "2026-09-29T09:00:01.641537+09:00"
+    }
+  ],
+  "stable_replay_invariants": {
+    "evaluation_count_before": 2,
+    "evaluation_count_after": 2,
+    "duplicate_evaluation_writes": 0,
+    "hold_gate_stable": true,
+    "authority_mutation": false
+  },
+  "authority_invariants": {
+    "automatic_relocation_confirmation": false,
+    "product_fact_current_mutation": false,
+    "product_fact_instance_mutation": false,
+    "confirmation_mutation": false,
+    "historical_evidence_source_mutation": false,
+    "source_binding_retirement_or_replacement": false,
+    "recommendation_mutation": false,
+    "semantic_same_or_changed_resolution": false
+  },
+  "next_step": "PHASE_8I_3E_SCHEDULER_INTEGRATION_DECISION"
+}
