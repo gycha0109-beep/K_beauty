@@ -29,6 +29,8 @@ on:
       - "supabase/migrations/20260929095500_data_ai29c_shadow_owner_membership_cleanup.sql"
       - "supabase/migrations/20260929113000_data_ai29c_c_protection_recovery_tasks_v1.sql"
       - "supabase/migrations/20260929115000_data_ai29c_c_variant_recovery_bridge_v1.sql"
+      - "supabase/migrations/20260929180500_data_ai29c_c5b_subject_presentation_identity_correction_v1.sql"
+      - "scripts/verify-data-ai29c-c5b-subject-presentation-correction.mjs"
       - "scripts/trust-research-worker.mjs"
       - "scripts/verify-trust-research-worker.mjs"
       - "scripts/verify-data-ai29c-c-protection-recovery.mjs"
@@ -99,6 +101,8 @@ on:
       - "supabase/migrations/20260929095500_data_ai29c_shadow_owner_membership_cleanup.sql"
       - "supabase/migrations/20260929113000_data_ai29c_c_protection_recovery_tasks_v1.sql"
       - "supabase/migrations/20260929115000_data_ai29c_c_variant_recovery_bridge_v1.sql"
+      - "supabase/migrations/20260929180500_data_ai29c_c5b_subject_presentation_identity_correction_v1.sql"
+      - "scripts/verify-data-ai29c-c5b-subject-presentation-correction.mjs"
       - "scripts/trust-research-worker.mjs"
       - "scripts/verify-trust-research-worker.mjs"
       - "scripts/verify-data-ai29c-c-protection-recovery.mjs"
@@ -217,6 +221,9 @@ jobs:
 
       - name: Verify DATA-AI29C-C5 protection expansion planning
         run: node scripts/verify-data-ai29c-protection-expansion-wave-v1.mjs
+
+      - name: Verify DATA-AI29C-C5B Subject presentation identity correction
+        run: node scripts/verify-data-ai29c-c5b-subject-presentation-correction.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
