@@ -32,6 +32,8 @@ on:
       - "supabase/migrations/20260929180500_data_ai29c_c5b_subject_presentation_identity_correction_v1.sql"
       - "supabase/migrations/20260929183000_data_ai29c_c5c_catalog_only_water_recovery_enqueue_v1.sql"
       - "supabase/migrations/20260929193000_data_ai29c_c5d_catalog_official_source_projection_v1.sql"
+      - "supabase/migrations/20260929194500_data_ai29c_c5e_post_expansion_protection_audit_v1.sql"
+      - "scripts/verify-data-ai29c-c5e-post-expansion-protection-audit.mjs"
       - "scripts/verify-data-ai29c-c5d-catalog-official-source-projection.mjs"
       - "scripts/verify-data-ai29c-c5c-catalog-only-water-enqueue.mjs"
       - "scripts/verify-data-ai29c-c5b-subject-presentation-correction.mjs"
@@ -108,6 +110,8 @@ on:
       - "supabase/migrations/20260929180500_data_ai29c_c5b_subject_presentation_identity_correction_v1.sql"
       - "supabase/migrations/20260929183000_data_ai29c_c5c_catalog_only_water_recovery_enqueue_v1.sql"
       - "supabase/migrations/20260929193000_data_ai29c_c5d_catalog_official_source_projection_v1.sql"
+      - "supabase/migrations/20260929194500_data_ai29c_c5e_post_expansion_protection_audit_v1.sql"
+      - "scripts/verify-data-ai29c-c5e-post-expansion-protection-audit.mjs"
       - "scripts/verify-data-ai29c-c5d-catalog-official-source-projection.mjs"
       - "scripts/verify-data-ai29c-c5c-catalog-only-water-enqueue.mjs"
       - "scripts/verify-data-ai29c-c5b-subject-presentation-correction.mjs"
@@ -238,6 +242,9 @@ jobs:
 
       - name: Verify DATA-AI29C-C5D governed official source projection
         run: node scripts/verify-data-ai29c-c5d-catalog-official-source-projection.mjs
+
+      - name: Verify DATA-AI29C-C5E authoritative post-expansion protection audit
+        run: node scripts/verify-data-ai29c-c5e-post-expansion-protection-audit.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
