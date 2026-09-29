@@ -76,13 +76,17 @@ import {
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
 import { executeOpenAiChatJson } from "@/lib/server/openai-chat-runtime";
 import {
+  OPENAI_RUNTIME_MODEL,
+  OPENAI_RUNTIME_REASONING_EFFORT
+} from "@/lib/ai-model-policy";
+import {
   createAnalyzeLogEvent,
   createNoStoreHeaders,
   writeSafeLog
 } from "@/lib/security/error-redaction";
 
-const FREE_OPENAI_MODEL = "gpt-4o-mini";
-const PREMIUM_OPENAI_MODEL = "gpt-4o";
+const FREE_OPENAI_MODEL = OPENAI_RUNTIME_MODEL;
+const PREMIUM_OPENAI_MODEL = OPENAI_RUNTIME_MODEL;
 const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
 const ANALYZE_RESPONSE_SCHEMA_VERSION = 2;
 const PRODUCT_SOURCE_UNAVAILABLE_MESSAGE =
@@ -1181,6 +1185,7 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
     body: {
       model,
       max_tokens: PRODUCT_EXPLANATION_MAX_TOKENS,
+      reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT,
       temperature: 0.2,
       response_format: { type: "json_object" },
       messages: [
