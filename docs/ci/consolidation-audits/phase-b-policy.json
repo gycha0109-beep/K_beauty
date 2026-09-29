@@ -3,8 +3,9 @@
   "baselineWorkflowCount": 63,
   "approvedAddedWorkflows": [
     "data-ai-product-query-static.yml",
-    "trust-phase8h3-relocation-revalidation.yml",
-    "trust-phase5b-7d-static.yml"
+    "data-ai29c-protection-shadow.yml",
+    "trust-phase5b-7d-static.yml",
+    "trust-phase8h3-relocation-revalidation.yml"
   ],
   "approvedRetiredWorkflows": [],
   "clusters": {
@@ -13,9 +14,10 @@
       "compatibilityAndRuntimeOwners": [
         "data-ai3-product-query-shadow.yml",
         "data-ai4-provider-shadow.yml",
-        "data-ai5-activation-readiness.yml"
+        "data-ai5-activation-readiness.yml",
+        "data-ai29c-protection-shadow.yml"
       ],
-      "rule": "Canonical static owner executes DATA-AI1-5 verifier chain, architecture guard, dependency install, and production build once per relevant SHA. Existing phase workflows preserve their workflow/job names, manual fallback verification, and push-only deployed runtime probes."
+      "rule": "Canonical static owner executes DATA-AI1-5 plus DATA-AI29 quality/protection verifier chains, architecture guard, dependency install, and production build once per relevant SHA. Existing phase workflows and the DATA-AI29C protection shadow preserve their workflow/job names, manual fallback verification, and push-only deployed runtime probes."
     },
     "taxonomy-ai-prelaunch": {
       "operationalReadinessOwner": "data-ai25-operational-readiness.yml",
