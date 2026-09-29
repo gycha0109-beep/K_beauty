@@ -126,7 +126,7 @@ const leakagePatterns = [
   /\bsubtle\b/i,
   /\b(?:cand_|obs_)[a-z0-9]*/i,
   /GenerationSpec|positivePrompt|promptDigest|specDigest|targetArchetype|intendedCue/i,
-  /Vision output|gpt-4o-mini|shadow score|target rank/i,
+  /Vision output|gpt-5\.6-luna|shadow score|target rank/i,
   /\bD1\b|\bD2C\b/i,
   /source cohort|source ordinal|private map/i
 ];
