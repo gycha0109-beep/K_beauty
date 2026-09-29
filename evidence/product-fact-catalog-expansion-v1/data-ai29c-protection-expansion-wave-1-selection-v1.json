@@ -1,0 +1,635 @@
+{
+  "version": "data-ai29c-protection-expansion-wave-1-selection-v1",
+  "stage": "DATA-AI29C-C5",
+  "mode": "RESEARCH_READINESS_FALLBACK_WAVE",
+  "authority": {
+    "source_main_sha": "a10df31e73f4ad453eb5f64b4057c44cf40fe5a4",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "selection_policy_version": "data-ai29c-protection-expansion-selection-v1",
+    "snapshot_sha256": "2b474f4b4b17e9980d65af4637b790c42ffcb7a754a7a47b69342414989f3716",
+    "candidate_source_authority": false
+  },
+  "current_protection_corpus": {
+    "sunscreenCount": 12,
+    "spfEligibleCount": 12,
+    "uvaEligibleCount": 10,
+    "waterEligibleCount": 0,
+    "spfDistinctScoringBuckets": 1,
+    "uvaDistinctScoringBuckets": 1,
+    "waterDistinctScoringBuckets": 0,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false
+  },
+  "candidate_pool_summary": {
+    "frozen_candidate_count": 37,
+    "eligible_candidate_count": 36,
+    "excluded_candidate_count": 1,
+    "selected_candidate_count": 8,
+    "deferred_candidate_count": 28,
+    "exact_discrimination_lead_candidates": 0,
+    "spf_non_50_lead_candidates": 0,
+    "uva_non_pa4_lead_candidates": 0,
+    "water_duration_lead_candidates": 0,
+    "water_claim_research_lead_candidates": 1
+  },
+  "selection_policy": {
+    "wave_size": 8,
+    "brand_cap": 1,
+    "scoring": {
+      "spf_non_50_lead": 40,
+      "uva_non_pa4_lead": 35,
+      "water_duration_lead": 45,
+      "water_claim_research_lead": 20,
+      "recommendation_relevance": "rank 1..25 => 25..1; otherwise 0",
+      "source_evidence": "min(10, source_evidence_count * 2)",
+      "identity_readiness": "normalized brand/name + HTTPS source + source/external id; max 16"
+    },
+    "tie_break": [
+      "lead_score DESC",
+      "priority_score DESC",
+      "recommendation_relevance_score DESC",
+      "evidence_readiness_score DESC",
+      "normalized_brand ASC",
+      "normalized_name ASC",
+      "candidate_id ASC"
+    ],
+    "semantics": {
+      "candidateSourceAuthority": false,
+      "discoveryLeadIsProductFact": false,
+      "discoveryLeadIsRecommendationSignal": false,
+      "waterClaimResearchLeadIsDurationEvidence": false,
+      "planningMayPromoteProducts": false,
+      "planningMayWriteProductFacts": false,
+      "planningMayChangeRecommendation": false,
+      "productionCutoverAuthorized": false,
+      "outdoorRankableSignalAuthorized": false
+    }
+  },
+  "selected_candidates": [
+    {
+      "selection_rank": 1,
+      "candidate_id": "77856d50-a033-4646-ae23-2a1162138319",
+      "source_name": "hwahae",
+      "external_type": "products",
+      "external_id": "1884027",
+      "source_url": "https://www.hwahae.com/en/products/1884027",
+      "brand": "BUSHMAN",
+      "name": "Waterproof Pro Suncream [SPF50+/PA++++]",
+      "normalized_brand": "bushman",
+      "normalized_name": "waterproof pro suncream [spf50+/pa++++]",
+      "best_rank_position": 5,
+      "source_evidence_count": 5,
+      "discovery_leads": {
+        "spf_non_50": false,
+        "uva_non_pa4": false,
+        "water_duration": false,
+        "water_claim_research": true
+      },
+      "discrimination_lead_count": 0,
+      "lead_score": 20,
+      "recommendation_relevance_score": 21,
+      "evidence_readiness_score": 10,
+      "identity_readiness_score": 16,
+      "priority_score": 67,
+      "priority_class": "PROTECTION_RESEARCH_LEAD",
+      "brand_cap_relaxed": false,
+      "selection_reason": "policy=data-ai29c-protection-expansion-selection-v1; class=PROTECTION_RESEARCH_LEAD; priority_score=67; best_rank=5; source_evidence_count=5; discovery_leads=water_claim_research; brand_cap=satisfied"
+    },
+    {
+      "selection_rank": 2,
+      "candidate_id": "fd94a38e-ce09-4f4e-8bfd-882f47e071b5",
+      "source_name": "hwahae",
+      "external_type": "products",
+      "external_id": "2097741",
+      "source_url": "https://www.hwahae.com/en/products/2097741",
+      "brand": "ohana",
+      "name": "Escape Desert Sun Serum [SPF50+/PA++++]",
+      "normalized_brand": "ohana",
+      "normalized_name": "escape desert sun serum [spf50+/pa++++]",
+      "best_rank_position": 1,
+      "source_evidence_count": 5,
+      "discovery_leads": {
+        "spf_non_50": false,
+        "uva_non_pa4": false,
+        "water_duration": false,
+        "water_claim_research": false
+      },
+      "discrimination_lead_count": 0,
+      "lead_score": 0,
+      "recommendation_relevance_score": 25,
+      "evidence_readiness_score": 10,
+      "identity_readiness_score": 16,
+      "priority_score": 51,
+      "priority_class": "FALLBACK_RESEARCH",
+      "brand_cap_relaxed": false,
+      "selection_reason": "policy=data-ai29c-protection-expansion-selection-v1; class=FALLBACK_RESEARCH; priority_score=51; best_rank=1; source_evidence_count=5; discovery_leads=none; brand_cap=satisfied"
+    },
+    {
+      "selection_rank": 3,
+      "candidate_id": "d433bd51-6bea-4647-a82e-18dafdccd45b",
+      "source_name": "hwahae",
+      "external_type": "products",
+      "external_id": "1920665",
+      "source_url": "https://www.hwahae.com/en/products/1920665",
+      "brand": "ROUNDLAB",
+      "name": "Birch Moisture Sun Cream [SPF50+/PA++++]",
+      "normalized_brand": "roundlab",
+      "normalized_name": "birch moisture sun cream [spf50+/pa++++]",
+      "best_rank_position": 1,
+      "source_evidence_count": 6,
+      "discovery_leads": {
+        "spf_non_50": false,
+        "uva_non_pa4": false,
+        "water_duration": false,
+        "water_claim_research": false
+      },
+      "discrimination_lead_count": 0,
+      "lead_score": 0,
+      "recommendation_relevance_score": 25,
+      "evidence_readiness_score": 10,
+      "identity_readiness_score": 16,
+      "priority_score": 51,
+      "priority_class": "FALLBACK_RESEARCH",
+      "brand_cap_relaxed": false,
+      "selection_reason": "policy=data-ai29c-protection-expansion-selection-v1; class=FALLBACK_RESEARCH; priority_score=51; best_rank=1; source_evidence_count=6; discovery_leads=none; brand_cap=satisfied"
+    },
+    {
+      "selection_rank": 4,
+      "candidate_id": "30104119-75e7-4527-9b89-21c2a2fb37a8",
+      "source_name": "hwahae",
+      "external_type": "products",
+      "external_id": "2134710",
+      "source_url": "https://www.hwahae.com/en/products/2134710",
+      "brand": "CellFusionC",
+      "name": "SUNSCREEN [SPF50+/PA++++] [AQUATICA COOLING]",
+      "normalized_brand": "cellfusionc",
+      "normalized_name": "sunscreen [spf50+/pa++++] [aquatica cooling]",
+      "best_rank_position": 3,
+      "source_evidence_count": 5,
+      "discovery_leads": {
+        "spf_non_50": false,
+        "uva_non_pa4": false,
+        "water_duration": false,
+        "water_claim_research": false
+      },
+      "discrimination_lead_count": 0,
+      "lead_score": 0,
+      "recommendation_relevance_score": 23,
+      "evidence_readiness_score": 10,
+      "identity_readiness_score": 16,
+      "priority_score": 49,
+      "priority_class": "FALLBACK_RESEARCH",
+      "brand_cap_relaxed": false,
+      "selection_reason": "policy=data-ai29c-protection-expansion-selection-v1; class=FALLBACK_RESEARCH; priority_score=49; best_rank=3; source_evidence_count=5; discovery_leads=none; brand_cap=satisfied"
+    },
+    {
+      "selection_rank": 5,
+      "candidate_id": "0af31488-09c8-417c-8cfe-d1ad05231814",
+      "source_name": "hwahae",
+      "external_type": "products",
+      "external_id": "1967779",
+      "source_url": "https://www.hwahae.com/en/products/1967779",
+      "brand": "INNISFREE",
+      "name": "HYALURON MOIST SUNSCREEN [SPF50+/PA++++]",
+      "normalized_brand": "innisfree",
+      "normalized_name": "hyaluron moist sunscreen [spf50+/pa++++]",
+      "best_rank_position": 4,
+      "source_evidence_count": 5,
+      "discovery_leads": {
+        "spf_non_50": false,
+        "uva_non_pa4": false,
+        "water_duration": false,
+        "water_claim_research": false
+      },
+      "discrimination_lead_count": 0,
+      "lead_score": 0,
+      "recommendation_relevance_score": 22,
+      "evidence_readiness_score": 10,
+      "identity_readiness_score": 16,
+      "priority_score": 48,
+      "priority_class": "FALLBACK_RESEARCH",
+      "brand_cap_relaxed": false,
+      "selection_reason": "policy=data-ai29c-protection-expansion-selection-v1; class=FALLBACK_RESEARCH; priority_score=48; best_rank=4; source_evidence_count=5; discovery_leads=none; brand_cap=satisfied"
+    },
+    {
+      "selection_rank": 6,
+      "candidate_id": "787e1c41-7d42-48f1-be74-e6d5c9837b7f",
+      "source_name": "hwahae",
+      "external_type": "products",
+      "external_id": "2133706",
+      "source_url": "https://www.hwahae.com/en/products/2133706",
+      "brand": "Torriden",
+      "name": "DIVE IN Watery Sun Serum [SPF50+/PA++++]",
+      "normalized_brand": "torriden",
+      "normalized_name": "dive in watery sun serum [spf50+/pa++++]",
+      "best_rank_position": 5,
+      "source_evidence_count": 5,
+      "discovery_leads": {
+        "spf_non_50": false,
+        "uva_non_pa4": false,
+        "water_duration": false,
+        "water_claim_research": false
+      },
+      "discrimination_lead_count": 0,
+      "lead_score": 0,
+      "recommendation_relevance_score": 21,
+      "evidence_readiness_score": 10,
+      "identity_readiness_score": 16,
+      "priority_score": 47,
+      "priority_class": "FALLBACK_RESEARCH",
+      "brand_cap_relaxed": false,
+      "selection_reason": "policy=data-ai29c-protection-expansion-selection-v1; class=FALLBACK_RESEARCH; priority_score=47; best_rank=5; source_evidence_count=5; discovery_leads=none; brand_cap=satisfied"
+    },
+    {
+      "selection_rank": 7,
+      "candidate_id": "1eae1cd9-ede3-41c8-87e2-c8bab93ff9e0",
+      "source_name": "hwahae",
+      "external_type": "products",
+      "external_id": "2142402",
+      "source_url": "https://www.hwahae.com/en/products/2142402",
+      "brand": "FULLY",
+      "name": "(RICE) CERAMIDE MOISTURE SUN CREAM [SPF50+/PA++++]",
+      "normalized_brand": "fully",
+      "normalized_name": "(rice) ceramide moisture sun cream [spf50+/pa++++]",
+      "best_rank_position": 6,
+      "source_evidence_count": 5,
+      "discovery_leads": {
+        "spf_non_50": false,
+        "uva_non_pa4": false,
+        "water_duration": false,
+        "water_claim_research": false
+      },
+      "discrimination_lead_count": 0,
+      "lead_score": 0,
+      "recommendation_relevance_score": 20,
+      "evidence_readiness_score": 10,
+      "identity_readiness_score": 16,
+      "priority_score": 46,
+      "priority_class": "FALLBACK_RESEARCH",
+      "brand_cap_relaxed": false,
+      "selection_reason": "policy=data-ai29c-protection-expansion-selection-v1; class=FALLBACK_RESEARCH; priority_score=46; best_rank=6; source_evidence_count=5; discovery_leads=none; brand_cap=satisfied"
+    },
+    {
+      "selection_rank": 8,
+      "candidate_id": "16fe9bcb-ef37-41cd-a379-8db8ab1eb2d0",
+      "source_name": "hwahae",
+      "external_type": "products",
+      "external_id": "2090322",
+      "source_url": "https://www.hwahae.com/en/products/2090322",
+      "brand": "SHINGMULNARA",
+      "name": "White Rice Moisture Sun Cream [SPF50+/PA++++] [Bright Tone up]",
+      "normalized_brand": "shingmulnara",
+      "normalized_name": "white rice moisture sun cream [spf50+/pa++++] [bright tone up]",
+      "best_rank_position": 7,
+      "source_evidence_count": 5,
+      "discovery_leads": {
+        "spf_non_50": false,
+        "uva_non_pa4": false,
+        "water_duration": false,
+        "water_claim_research": false
+      },
+      "discrimination_lead_count": 0,
+      "lead_score": 0,
+      "recommendation_relevance_score": 19,
+      "evidence_readiness_score": 10,
+      "identity_readiness_score": 16,
+      "priority_score": 45,
+      "priority_class": "FALLBACK_RESEARCH",
+      "brand_cap_relaxed": false,
+      "selection_reason": "policy=data-ai29c-protection-expansion-selection-v1; class=FALLBACK_RESEARCH; priority_score=45; best_rank=7; source_evidence_count=5; discovery_leads=none; brand_cap=satisfied"
+    }
+  ],
+  "deferred_candidates": [
+    {
+      "candidate_id": "e53a841f-84ba-491e-a519-ab33eadc7c80",
+      "brand": "ROUNDLAB",
+      "name": "Birch Sunscreen [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 44,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "69ff0049-d68d-4fc9-bb31-3fd949b1724c",
+      "brand": "S.NATURE",
+      "name": "AQUA 365 UV SUN PROTECTIVE CREAM [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 44,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "ba197a03-a753-42f0-9293-a1f93635f58c",
+      "brand": "YBK",
+      "name": "Pore Full Cover Daily Sunscreen [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 44,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "200eea8b-daaf-45ab-819e-69ecb8715758",
+      "brand": "YBK",
+      "name": "Relief Hydration Light Sunscreen [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 42,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "a47e5595-f0da-44d9-bfe2-b31e07d00a21",
+      "brand": "SCINIC",
+      "name": "ENJOY SAFETY MILD SUN CREAM [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 42,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "08e1efda-1e50-47a2-b9e8-7ddc7ca8c52b",
+      "brand": "Abib",
+      "name": "Heartleaf mild sunscreen Relief tube [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 41,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "b42e51b1-cf73-4a7f-9212-eb59f5e91d4a",
+      "brand": "mixsoon",
+      "name": "Bean Sun Serum [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 40,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "ba80a827-cba2-42ca-a967-7297b0db1943",
+      "brand": "beplain",
+      "name": "SUNMUSE MINERAL SUNSCREEN [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 39,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "a0640a1d-b82f-4008-8cf0-33bbdecb09cf",
+      "brand": "AESTURA",
+      "name": "DERMA UV365 BARRIER HYDRO MINERAL SUNSCREEN [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 39,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "0281df7e-983a-4925-9df0-59ef06f65a2c",
+      "brand": "ATOPALM",
+      "name": "EASY-WASH SUN SCREEN [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 38,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "88b622d3-597a-49e9-9ee3-0cf3ef1b27f1",
+      "brand": "goodal",
+      "name": "HEARTLEAF Soothing Moisture SUN CREAM [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 38,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "2b432fab-6231-4fb9-9441-e6915573f135",
+      "brand": "ROUNDLAB",
+      "name": "Birch Moisture Sun Stick [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 38,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "3786ddd0-b72d-4716-81b9-52b80e9cf602",
+      "brand": "manyo",
+      "name": "Foundation-Free Sun Cream [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 37,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "d7f6352f-31da-41a6-9cd8-f0dc2378c9fd",
+      "brand": "mixsoon",
+      "name": "centella Sun Cream [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 35,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "2c3bf6a3-9f79-45eb-8cc7-3f22a9f9535c",
+      "brand": "Biore",
+      "name": "UV AQUA Rich Watery Essence [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 35,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "8ae1fc45-07e0-468c-b009-b0b67e80d98e",
+      "brand": "ETUDE",
+      "name": "Soonjung Director's Moisture Sun Cream [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 34,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "10bd5ed1-ee00-454e-afbc-b2bbba1952f4",
+      "brand": "Dr.G",
+      "name": "GREEN MILD UP SUN+ [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 34,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "94f899f0-94aa-4108-9e5e-d622e1469734",
+      "brand": "celimax",
+      "name": "pore+dark spot brightening care sunscreen [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 33,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "b819a313-ed72-4b24-bbbf-540c15f59adf",
+      "brand": "MEDIHEAL",
+      "name": "Madecassoside Moisture Sun Serum Blemish Repair [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 33,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "310ae44d-5682-463d-8254-3252f79ca8dd",
+      "brand": "MARSHIQUE",
+      "name": "SERUM GLOW TONE UP SUN CUSHION [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 33,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "b08e73d8-1173-465f-ab45-90be6c81a0f4",
+      "brand": "DEWYTREE",
+      "name": "URBAN SHADE COVER & FIT SUN CUSHION [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 30,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "80b6a51f-59b6-49cb-ae10-7d74255ef4bc",
+      "brand": "Derma:B",
+      "name": "Everyday Sun Block [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 30,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "8b72f272-0325-47bc-b4ed-924f4da0438c",
+      "brand": "Dr.G",
+      "name": "R.E.D BLEMISH SOOTHING UP SUN [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 29,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "2d705cde-02ff-4bdd-9f4d-92dad6f873f1",
+      "brand": "INNISFREE",
+      "name": "TONE UP NO SEBUM SUNSCREEN EX [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 28,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "2036c9e9-e152-4c31-a0a8-048c742ffe14",
+      "brand": "d'Alba",
+      "name": "Waterfull sun cream [SPF50+/PA++++] [Essence]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 27,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "53a919c4-15e8-47f2-afa0-4fa4a86bdb43",
+      "brand": "UIQ",
+      "name": "Biome Remedy™ Mild Sun Cream [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 26,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "2ea26c33-7a8c-4b15-a463-4890881a1c46",
+      "brand": "BeautyofJoseon",
+      "name": "Relief Sun Aqua-fresh Rice + B5 [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 24,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    },
+    {
+      "candidate_id": "2c739c1d-3df4-4b20-9812-fa7dcc0cc9fe",
+      "brand": "FATION",
+      "name": "NOSCA9  TROUBLE COMFORT MOISTURE SUN CREAM [SPF50+/PA++++]",
+      "priority_class": "FALLBACK_RESEARCH",
+      "priority_score": 16,
+      "disposition": "DEFERRED_WAVE_SIZE",
+      "reason_codes": [
+        "LOWER_THAN_WAVE_1_CUTOFF"
+      ]
+    }
+  ],
+  "excluded_candidates": [
+    {
+      "candidate_id": "ccf23119-b067-4076-bb9e-01a83cf88fa0",
+      "brand": "Torriden",
+      "name": "DIVE IN Mild Sun Cream [SPF50+/PA++++]",
+      "review_status": "promoted",
+      "matched_product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "duplicate_of_product_id": null,
+      "disposition": "EXCLUDED_ALREADY_PROMOTED"
+    }
+  ],
+  "invariants": {
+    "hosted_writes": 0,
+    "product_promotion_intent": 0,
+    "product_fact_write_intent": 0,
+    "recommendation_write_intent": 0,
+    "production_ranking_changed": false,
+    "candidate_source_used_as_product_fact_authority": false,
+    "water_claim_research_lead_used_as_duration_evidence": false,
+    "brand_cap_relaxation_count": 0,
+    "runtime_consumption": false
+  }
+}
