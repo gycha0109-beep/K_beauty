@@ -134,12 +134,18 @@ export default function FaceLabV2Result({
       {view.routes.cards.length ? (
         <section className="ui-card-subtle p-5 sm:p-6">
         <p className="ui-kicker">{view.routes.title}</p>
+        {view.routes.selectionPrompt ? (
+          <p className="ui-text-secondary mt-2 text-sm leading-6">
+            {view.routes.selectionPrompt}
+          </p>
+        ) : null}
         <div className="mt-3 grid gap-3">
           {view.routes.cards.map((route) => (
             <button
               key={route.routeId}
               type="button"
               onClick={() => onSelectRoute(route.routeId)}
+              aria-pressed={route.selected}
               className={`rounded-xl border p-4 text-left transition ${
                 route.selected
                   ? "ui-choice-active"
@@ -151,11 +157,18 @@ export default function FaceLabV2Result({
                   <p className="text-sm font-semibold">{route.title}</p>
                   <p className="mt-1 text-sm leading-6 opacity-85">{route.summary}</p>
                 </div>
-                {route.fitLabel ? (
-                  <span className="shrink-0 rounded-full border border-current/15 px-2 py-1 text-[10px] font-semibold opacity-70">
-                    {route.fitLabel}
-                  </span>
-                ) : null}
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  {route.defaultLabel ? (
+                    <span className="rounded-full border border-current/20 px-2 py-1 text-[10px] font-semibold">
+                      {route.defaultLabel}
+                    </span>
+                  ) : null}
+                  {route.fitLabel ? (
+                    <span className="rounded-full border border-current/15 px-2 py-1 text-[10px] font-semibold opacity-70">
+                      {route.fitLabel}
+                    </span>
+                  ) : null}
+                </div>
               </div>
 
               <MetaGrid items={route.meta} />

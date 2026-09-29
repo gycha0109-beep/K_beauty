@@ -112,8 +112,9 @@ assert.equal(
   "saved-state reader must never restore a previously persisted canonical cache"
 );
 assert.ok(
-  premiumFaceLab.includes("const resolvedRouteId = result.routes?.selectedRouteId || null"),
-  "route persistence must use the canonical composer-resolved route id"
+  premiumFaceLab.includes("function committedRouteIdFromResult(result)") &&
+    premiumFaceLab.includes("const resolvedRouteId = committedRouteIdFromResult(result)"),
+  "route persistence must distinguish a committed user choice from an uncommitted default preview"
 );
 assert.ok(
   premiumFaceLab.includes("selectedRouteId: routeId") &&
