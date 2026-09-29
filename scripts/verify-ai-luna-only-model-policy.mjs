@@ -19,7 +19,7 @@ const RUNTIME_MODEL_OWNERS = Object.freeze([
 ]);
 
 const FORBIDDEN_GENERAL_MODEL_PATTERN =
-  /\b(?:gpt-4o(?:-mini)?|gpt-4\.1(?:-mini|-nano)?|gpt-5(?:\.[0-9]+)?(?:-(?:mini|nano|sol|terra))?|o[134](?:-[a-z0-9.-]+)?|gemini-[0-9][a-z0-9._-]*|claude-[0-9][a-z0-9._-]*)\b/gi;
+  /\b(?:gpt-4o(?:-mini)?|gpt-4\.1(?:-mini|-nano)?|gpt-5(?:\.[0-9]+)?(?:-(?:mini|nano|sol|terra|luna))?|o[134](?:-[a-z0-9.-]+)?|gemini-[0-9][a-z0-9._-]*|claude-[0-9][a-z0-9._-]*)\b/gi;
 
 const violations = [];
 
