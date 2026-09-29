@@ -121,6 +121,40 @@ assert.ok(
   ),
 );
 
+const missingExactPayload = clone(fixture);
+delete missingExactPayload.evaluation.qualified_exact;
+const missingExactPayloadResult =
+  preflightGroupedOfficialSourceRelocation(missingExactPayload);
+assert.equal(missingExactPayloadResult.status, "HOLD");
+assert.ok(
+  missingExactPayloadResult.blockers.includes(
+    "QUALIFIED_EXACT_PAYLOAD_REQUIRED",
+  ),
+);
+
+const mismatchedExactDigest = clone(fixture);
+mismatchedExactDigest.evaluation.qualified_exact.qualification_digest =
+  "f".repeat(64);
+const mismatchedExactDigestResult =
+  preflightGroupedOfficialSourceRelocation(mismatchedExactDigest);
+assert.equal(mismatchedExactDigestResult.status, "HOLD");
+assert.ok(
+  mismatchedExactDigestResult.blockers.includes(
+    "QUALIFIED_EXACT_DIGEST_MISMATCH",
+  ),
+);
+
+const invalidSourceDigest = clone(fixture);
+invalidSourceDigest.historical_sources[0].content_digest = "not-a-digest";
+const invalidSourceDigestResult =
+  preflightGroupedOfficialSourceRelocation(invalidSourceDigest);
+assert.equal(invalidSourceDigestResult.status, "HOLD");
+assert.ok(
+  invalidSourceDigestResult.blockers.includes(
+    "HISTORICAL_SOURCE_CONTENT_DIGEST_INVALID",
+  ),
+);
+
 const staleSubject = clone(fixture);
 staleSubject.governed_subject.current_state = "superseded";
 const staleSubjectResult =
@@ -145,6 +179,7 @@ for (const required of [
   "historical_source_ids",
   "incident_ids",
   "qualified_historical_source_id",
+  "qualified_exact",
   "READ_ONLY_GROUPED_PREFLIGHT_NO_PRODUCTION_WRITE",
   "PREFLIGHT_ONLY_REQUIRES_EXPLICIT_ADMIN_GROUPED_CONFIRMATION",
 ]) {
