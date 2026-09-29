@@ -21,6 +21,7 @@ on:
       - "scripts/verify-face-lab-v2-human-pairwise-builder.mjs"
       - "scripts/verify-face-lab-v2-target-intent-authority.mjs"
       - "scripts/verify-face-lab-v2-route-diversity-audit.mjs"
+      - "scripts/verify-face-lab-v2-route-choice-authority.mjs"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
@@ -37,6 +38,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-human-pairwise-review-builder-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-target-intent-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-route-diversity-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-explicit-route-choice-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
@@ -131,3 +133,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-target-intent-authority.mjs
       - name: Verify Face Lab V2 Route Diversity audit
         run: node scripts/verify-face-lab-v2-route-diversity-audit.mjs
+      - name: Verify Face Lab V2 explicit Route Choice authority
+        run: node scripts/verify-face-lab-v2-route-choice-authority.mjs
