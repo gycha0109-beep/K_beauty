@@ -70,7 +70,7 @@ function emitGithubWarning(signal) {
     `snapshot=${signal.snapshot_digest}`,
     "Admin preflight and explicit human confirmation are still required",
   ].join(" | ");
-  process.stdout.write(
+  process.stderr.write(
     `::warning title=Phase 8I-4G First Real Canary Detected::${githubEscape(message)}\n`,
   );
 }
