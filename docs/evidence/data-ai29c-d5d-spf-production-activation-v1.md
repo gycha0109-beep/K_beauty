@@ -125,11 +125,11 @@ getRecommendationProducts()
 
 신규 3종은 D5D sunscreen request에서만 governed runtime projection으로 추가한다.
 
-1. Physical Daily Sunmilk  
+1. Physical Daily Sunmilk
    `a6994fcd-302f-4e63-acbe-91a3f17a5a65`
-2. MIN JUNG GI Physical Sun Block  
+2. MIN JUNG GI Physical Sun Block
    `b90bf992-07ae-4f49-a3a4-d90ea6d4a858`
-3. Jojoba Suncream  
+3. Jojoba Suncream
    `7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17`
 
 Production source에 이 세 ID가 이미 나타나거나
