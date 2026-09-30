@@ -1184,7 +1184,7 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
     stage: "product-explanations",
     body: {
       model,
-      max_tokens: PRODUCT_EXPLANATION_MAX_TOKENS,
+      max_completion_tokens: PRODUCT_EXPLANATION_MAX_TOKENS,
       reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT,
       temperature: 0.2,
       response_format: { type: "json_object" },

@@ -7,7 +7,7 @@ import {
 
 const body = {
   model: "gpt-5.6-luna",
-  max_tokens: 64,
+  max_completion_tokens: 64,
   reasoning_effort: "none",
   temperature: 0,
   response_format: { type: "json_object" },
@@ -55,6 +55,9 @@ assert.equal(successCalls[0].url, OPENAI_CHAT_COMPLETIONS_URL);
 assert.equal(successCalls[0].init.redirect, "manual");
 assert.ok(successCalls[0].init.signal instanceof AbortSignal);
 assert.equal(successCalls[0].init.headers.Authorization, "Bearer sk-test-not-real");
+const sentBody = JSON.parse(successCalls[0].init.body);
+assert.equal(sentBody.max_completion_tokens, 64);
+assert.equal(Object.prototype.hasOwnProperty.call(sentBody, "max_tokens"), false);
 assert.equal(successLogs.length, 0, "successful low-level runtime must leave success logging to the owning semantic caller");
 
 const scenarios = [
@@ -142,6 +145,7 @@ for (const scenario of scenarios) {
 const runtimeSource = await readFile(new URL("../lib/server/openai-chat-runtime.js", import.meta.url), "utf8");
 const visionSource = await readFile(new URL("../lib/server/vision-observation-service.js", import.meta.url), "utf8");
 const analyzeSource = await readFile(new URL("../app/api/analyze/route.js", import.meta.url), "utf8");
+const liveSmokeSource = await readFile(new URL("./run-ai-provider-live-smoke.mjs", import.meta.url), "utf8");
 
 const openAiEndpointDeclaration =
   /^export const OPENAI_CHAT_COMPLETIONS_URL = "https:\/\/api\.openai\.com\/v1\/chat\/completions";$/gm;
@@ -154,6 +158,14 @@ assert.doesNotMatch(visionSource, /api\.openai\.com\/v1\/chat\/completions/);
 assert.doesNotMatch(analyzeSource, /api\.openai\.com\/v1\/chat\/completions/);
 assert.match(visionSource, /executeOpenAiChatJson\(/);
 assert.match(analyzeSource, /executeOpenAiChatJson\(/);
+for (const [label, source] of [
+  ["vision", visionSource],
+  ["analyze", analyzeSource],
+  ["live smoke", liveSmokeSource]
+]) {
+  assert.match(source, /max_completion_tokens\s*:/, `${label} must use max_completion_tokens for Luna Chat Completions`);
+  assert.doesNotMatch(source, /\bmax_tokens\s*:/, `${label} must not send legacy max_tokens to Luna`);
+}
 assert.match(runtimeSource, /new AbortController\(\)/);
 assert.match(runtimeSource, /redirect: "manual"/);
 assert.match(runtimeSource, /totalBytes > maxResponseBytes/);

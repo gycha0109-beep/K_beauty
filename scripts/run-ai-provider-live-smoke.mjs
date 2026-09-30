@@ -33,7 +33,7 @@ const runtime = await executeOpenAiChatJson({
   timeoutMs: 60_000,
   body: {
     model,
-    max_tokens: 2_200,
+    max_completion_tokens: 2_200,
     reasoning_effort: OPENAI_RUNTIME_REASONING_EFFORT,
     temperature: 0,
     response_format: { type: "json_object" },
