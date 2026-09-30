@@ -111,10 +111,11 @@ assert.deepEqual(
   expectedProtectionTop,
 );
 
-// D3R2-5: exhaustive safe-context calibration cannot produce a tie-free
-// five-product baseline with the current governed semantic authority.
+// D3R2-5: the 48-scenario matrix includes redness/barrier contexts that
+// correctly become sensitivity-authority HOLD. Among the 36 contexts where all
+// five are scoreable, no tie-free baseline exists.
 assert.equal(result.scenarioMatrix.scenarioCount, 48);
-assert.equal(result.scenarioMatrix.allFiveScoreableScenarioCount, 48);
+assert.equal(result.scenarioMatrix.allFiveScoreableScenarioCount, 36);
 assert.equal(result.scenarioMatrix.tieFreeAllFiveScenarioCount, 0);
 
 const groups = result.scenarioMatrix.scoreSignatureGroups.map(
