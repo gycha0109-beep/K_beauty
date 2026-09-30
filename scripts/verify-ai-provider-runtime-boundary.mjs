@@ -163,8 +163,8 @@ for (const [label, source] of [
   ["analyze", analyzeSource],
   ["live smoke", liveSmokeSource]
 ]) {
-  assert.match(source, /max_completion_tokens\s*:/, `${label} must use max_completion_tokens for GPT-5.6 Luna Chat Completions`);
-  assert.doesNotMatch(source, /\bmax_tokens\s*:/, `${label} must not send legacy max_tokens to GPT-5.6 Luna`);
+  assert.match(source, /max_completion_tokens\s*:/, `${label} must use max_completion_tokens for Luna Chat Completions`);
+  assert.doesNotMatch(source, /\bmax_tokens\s*:/, `${label} must not send legacy max_tokens to Luna`);
 }
 assert.match(runtimeSource, /new AbortController\(\)/);
 assert.match(runtimeSource, /redirect: "manual"/);
