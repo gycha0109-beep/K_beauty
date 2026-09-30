@@ -154,15 +154,16 @@ Water는 계속 0/HOLD다.
 따라서 해당 12개 조합은 unresolved `irritation_risk`를 통과시키지 않고
 의도대로 fail-closed 한다.
 
-현재 authority에서 score-signature equivalence가 유지되는 pair:
+현재 48-scenario matrix 전체에서 확실하게 유지되는 score-signature equivalence pair:
 
 1. Physical Daily Sunmilk ≡ Jojoba Suncream
-2. Dr. Troub Zinc Physical ≡ Bio Repair + Suncream
 
-MIN JUNG GI는 별도 signature다.
+Zinc와 Bio Repair는 표면적인 core semantic은 비슷하지만
+전체 matrix에서는 동일 signature가 아니다. 따라서 이를 임의로 같은 pair로 취급하지 않는다.
 
-즉 현재 governed semantics만으로는
-신규 5종의 완전한 tie-free baseline ranking을 만들 수 없다.
+Physical Daily / Jojoba 한 pair만으로도
+현재 governed semantics만으로 신규 5종의 완전한 tie-free baseline ranking이
+불가능하다는 결론은 충분히 성립한다.
 
 ## D3R2 판정
 
@@ -197,16 +198,9 @@ Physical Daily Sunmilk vs Jojoba Suncream
 
 단, official/review evidence가 실제로 enum을 확정할 수 있을 때만 승격한다.
 
-### Pair B
-
-Dr. Troub Zinc Physical vs Bio Repair + Suncream
-
-후보 differentiation axes:
-
-- finish
-- texture
-- white_cast
-- other governed semantic
+Zinc/Bio에 대해서는 별도 equivalence recovery를 전제하지 않는다.
+현재 matrix에서 이미 분리되므로 실제 분리 축을 다음 calibration에서 관찰만 하고,
+근거 없는 semantic 승격은 하지 않는다.
 
 Safety/pilling은 근거 부족 시 억지 establishment 금지.
 
