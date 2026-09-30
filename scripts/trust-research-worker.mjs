@@ -124,7 +124,7 @@ export function extractStrictFactCandidate(factKey, text, parentPropositions = [
   if (factKey === "uv_filter_type") {
     const patterns = [
       { value: "hybrid", regex: /\bhybrid sunscreen\b|혼합\s*자차|혼합\s*자외선\s*차단제/i },
-      { value: "mineral", regex: /\b(?:100%\s+)?mineral sunscreen\b|\bphysical sunscreen\b|무기\s*자차|무기\s*자외선\s*차단제/i },
+      { value: "mineral", regex: /\b(?:100%\s+)?mineral sunscreen\b|\bphysical sunscreen\b|무기\s*자차|무기\s*자외선\s*차단제|물리적\s*자외선\s*차단제/i },
       { value: "organic", regex: /\bchemical sunscreen\b|\borganic sunscreen\b|유기\s*자차|유기\s*자외선\s*차단제/i },
     ];
     for (const { value, regex } of patterns) {
