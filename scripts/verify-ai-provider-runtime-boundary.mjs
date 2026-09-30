@@ -146,6 +146,8 @@ const runtimeSource = await readFile(new URL("../lib/server/openai-chat-runtime.
 const visionSource = await readFile(new URL("../lib/server/vision-observation-service.js", import.meta.url), "utf8");
 const analyzeSource = await readFile(new URL("../app/api/analyze/route.js", import.meta.url), "utf8");
 const liveSmokeSource = await readFile(new URL("./run-ai-provider-live-smoke.mjs", import.meta.url), "utf8");
+const modelPolicySource = await readFile(new URL("../lib/ai-model-policy.js", import.meta.url), "utf8");
+const usageCostSource = await readFile(new URL("../lib/ai-usage-cost.js", import.meta.url), "utf8");
 
 const openAiEndpointDeclaration =
   /^export const OPENAI_CHAT_COMPLETIONS_URL = "https:\/\/api\.openai\.com\/v1\/chat\/completions";$/gm;
@@ -158,6 +160,12 @@ assert.doesNotMatch(visionSource, /api\.openai\.com\/v1\/chat\/completions/);
 assert.doesNotMatch(analyzeSource, /api\.openai\.com\/v1\/chat\/completions/);
 assert.match(visionSource, /executeOpenAiChatJson\(/);
 assert.match(analyzeSource, /executeOpenAiChatJson\(/);
+assert.match(modelPolicySource, /OPENAI_RUNTIME_IMAGE_DETAIL\s*=\s*"high"/);
+assert.match(visionSource, /detail:\s*imageDetail/);
+assert.match(visionSource, /createOpenAiUsageTelemetry\(/);
+assert.match(visionSource, /estimatedCostNanoUsd/);
+assert.match(usageCostSource, /OPENAI_USAGE_PRICING_VERSION/);
+assert.match(liveSmokeSource, /detail:\s*OPENAI_RUNTIME_IMAGE_DETAIL/);
 for (const [label, source] of [
   ["vision", visionSource],
   ["analyze", analyzeSource],
