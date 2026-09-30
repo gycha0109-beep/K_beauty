@@ -38,6 +38,10 @@ const incidentReadBoundaryMigration = fs.readFileSync(
   "supabase/migrations/20260930212000_trust_phase8i4g_transport_incident_read_boundary_v1.sql",
   "utf8",
 );
+const replayIdempotencyMigration = fs.readFileSync(
+  "supabase/migrations/20260930214000_trust_phase8i4g_grouped_replay_idempotency_v1.sql",
+  "utf8",
+);
 const workflow = fs.readFileSync(
   ".github/workflows/trust-phase8h3-relocation-revalidation.yml",
   "utf8",
@@ -332,6 +336,28 @@ for (const forbidden of [
     `8I-4G read boundary migration contains forbidden authority expansion: ${forbidden}`,
   );
 }
+
+assert.ok(
+  replayIdempotencyMigration.includes(
+    "admin_confirm_trust_official_source_grouped_relocation_v1",
+  ),
+  "8I-4G replay fix must replace grouped confirmation",
+);
+assert.ok(
+  replayIdempotencyMigration.indexOf("select * into v_existing") <
+    replayIdempotencyMigration.indexOf(
+      "v_preflight := public.admin_preflight_trust_official_source_grouped_relocation_v1",
+    ),
+  "persisted idempotent replay must be checked before mutable preflight",
+);
+assert.ok(
+  replayIdempotencyMigration.includes("'idempotent',true"),
+  "8I-4G replay fix must retain exact confirmed idempotent return",
+);
+assert.ok(
+  replayIdempotencyMigration.includes("pg_advisory_xact_lock"),
+  "8I-4G replay fix must retain transaction serialization",
+);
 
 for (const required of [
   "get_trust_official_source_transport_drift_case_incidents_v1",
