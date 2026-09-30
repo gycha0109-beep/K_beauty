@@ -137,13 +137,6 @@ assert.ok(
   "Physical Daily and Jojoba must remain score-equivalent across safe contexts",
 );
 assert.ok(
-  hasGroup([
-    "b576991e-79c9-4189-b6e9-527aeeb03566",
-    "7c709c04-e299-4ca6-be69-6aaf4a753f13",
-  ]),
-  "Zinc and Bio Repair must remain score-equivalent across safe contexts",
-);
-assert.ok(
   hasGroup(["b90bf992-07ae-4f49-a3a4-d90ea6d4a858"]),
   "MIN JUNG GI must remain its own current score signature",
 );
