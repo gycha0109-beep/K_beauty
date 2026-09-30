@@ -12,6 +12,10 @@ const workerSource = fs.readFileSync(
   "scripts/trust-official-source-transport-worker.mjs",
   "utf8",
 );
+const transportFetchSource = fs.readFileSync(
+  "lib/trust/official-source-transport-fetch.mjs",
+  "utf8",
+);
 const workflowSource = fs.readFileSync(
   ".github/workflows/trust-phase8h3-relocation-revalidation.yml",
   "utf8",
@@ -387,6 +391,17 @@ function verifyDnsResolutionClassification() {
   assert.equal(privateTarget.transportResult, "BLOCKED");
   assert.equal(privateTarget.detail, "SOURCE_BLOCKED:private_ip");
   assert.equal(privateTarget.retryAfterSeconds, null);
+
+  assert.ok(
+    transportFetchSource.includes(
+      "const classified = classifyOfficialTransportSafetyFailure(",
+    ),
+    "redirect-target DNS safety resolution must reuse transient classification",
+  );
+  assert.ok(
+    transportFetchSource.includes("redirectTarget,\n          error,"),
+    "redirect-target DNS classification call missing",
+  );
 }
 
 function verifyCliSafetyContract() {
