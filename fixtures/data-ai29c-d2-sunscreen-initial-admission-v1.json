@@ -20,7 +20,8 @@
         "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
         "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
         "assignmentState": "shadow",
-        "assignmentMethod": "source_classification"
+        "assignmentMethod": "source_classification",
+        "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65"
       },
       "registry": {
         "registryVersion": "product-fact-registry-cross-category-v1",
@@ -51,7 +52,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": 20,
-          "valueEnum": null
+          "valueEnum": null,
+          "valueType": "number"
         },
         {
           "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
@@ -67,7 +69,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "PA++"
+          "valueEnum": "PA++",
+          "valueType": "enum"
         },
         {
           "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
@@ -83,7 +86,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "mineral"
+          "valueEnum": "mineral",
+          "valueType": "enum"
         }
       ]
     },
@@ -100,7 +104,8 @@
         "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
         "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
         "assignmentState": "shadow",
-        "assignmentMethod": "source_classification"
+        "assignmentMethod": "source_classification",
+        "productId": "b90bf992-07ae-4f49-a3a4-d90ea6d4a858"
       },
       "registry": {
         "registryVersion": "product-fact-registry-cross-category-v1",
@@ -131,7 +136,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": 35,
-          "valueEnum": null
+          "valueEnum": null,
+          "valueType": "number"
         },
         {
           "subjectId": "cb9364c3-2059-49db-adda-47187e97d743",
@@ -147,7 +153,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "PA+++"
+          "valueEnum": "PA+++",
+          "valueType": "enum"
         },
         {
           "subjectId": "cb9364c3-2059-49db-adda-47187e97d743",
@@ -163,7 +170,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "mineral"
+          "valueEnum": "mineral",
+          "valueType": "enum"
         }
       ]
     },
@@ -180,7 +188,8 @@
         "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
         "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
         "assignmentState": "shadow",
-        "assignmentMethod": "source_classification"
+        "assignmentMethod": "source_classification",
+        "productId": "b576991e-79c9-4189-b6e9-527aeeb03566"
       },
       "registry": {
         "registryVersion": "product-fact-registry-cross-category-v1",
@@ -211,7 +220,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": 35,
-          "valueEnum": null
+          "valueEnum": null,
+          "valueType": "number"
         },
         {
           "subjectId": "8bacc75c-2df3-4828-bc8e-27b23755bbd3",
@@ -227,7 +237,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "PA+++"
+          "valueEnum": "PA+++",
+          "valueType": "enum"
         },
         {
           "subjectId": "8bacc75c-2df3-4828-bc8e-27b23755bbd3",
@@ -243,7 +254,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "mineral"
+          "valueEnum": "mineral",
+          "valueType": "enum"
         }
       ]
     },
@@ -260,7 +272,8 @@
         "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
         "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
         "assignmentState": "shadow",
-        "assignmentMethod": "source_classification"
+        "assignmentMethod": "source_classification",
+        "productId": "7c709c04-e299-4ca6-be69-6aaf4a753f13"
       },
       "registry": {
         "registryVersion": "product-fact-registry-cross-category-v1",
@@ -291,7 +304,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": 40,
-          "valueEnum": null
+          "valueEnum": null,
+          "valueType": "number"
         },
         {
           "subjectId": "f4c580f3-6ee3-4c1d-b359-dd058ac13490",
@@ -307,7 +321,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "PA++"
+          "valueEnum": "PA++",
+          "valueType": "enum"
         },
         {
           "subjectId": "f4c580f3-6ee3-4c1d-b359-dd058ac13490",
@@ -323,7 +338,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "mineral"
+          "valueEnum": "mineral",
+          "valueType": "enum"
         }
       ]
     },
@@ -340,7 +356,8 @@
         "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
         "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
         "assignmentState": "shadow",
-        "assignmentMethod": "source_classification"
+        "assignmentMethod": "source_classification",
+        "productId": "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17"
       },
       "registry": {
         "registryVersion": "product-fact-registry-cross-category-v1",
@@ -371,7 +388,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": 40,
-          "valueEnum": null
+          "valueEnum": null,
+          "valueType": "number"
         },
         {
           "subjectId": "e88dbcb8-a209-4ab1-a92d-3086ad1aeb56",
@@ -387,7 +405,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "PA++"
+          "valueEnum": "PA++",
+          "valueType": "enum"
         },
         {
           "subjectId": "e88dbcb8-a209-4ab1-a92d-3086ad1aeb56",
@@ -403,7 +422,8 @@
           "isCurrent": true,
           "validTo": null,
           "valueNumber": null,
-          "valueEnum": "mineral"
+          "valueEnum": "mineral",
+          "valueType": "enum"
         }
       ]
     }
