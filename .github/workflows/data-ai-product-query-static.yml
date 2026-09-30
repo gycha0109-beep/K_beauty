@@ -90,6 +90,10 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-water-b-evidence-frontier-v1.json"
       - "scripts/verify-data-ai29c-water-b-evidence-frontier.mjs"
       - "docs/evidence/data-ai29c-water-b-evidence-frontier-v1.md"
+      - "lib/sunscreen-water-jcia-label-mapping.mjs"
+      - "fixtures/data-ai29c-water-b1-governed-label-mapping-v1.json"
+      - "scripts/verify-data-ai29c-water-b1-governed-label-mapping.mjs"
+      - "docs/evidence/data-ai29c-water-b1-governed-label-mapping-v1.md"
       - "lib/sunscreen-spf-runtime-gate.mjs"
       - "lib/product-query-recommendation.js"
       - "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
@@ -261,6 +265,10 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-water-b-evidence-frontier-v1.json"
       - "scripts/verify-data-ai29c-water-b-evidence-frontier.mjs"
       - "docs/evidence/data-ai29c-water-b-evidence-frontier-v1.md"
+      - "lib/sunscreen-water-jcia-label-mapping.mjs"
+      - "fixtures/data-ai29c-water-b1-governed-label-mapping-v1.json"
+      - "scripts/verify-data-ai29c-water-b1-governed-label-mapping.mjs"
+      - "docs/evidence/data-ai29c-water-b1-governed-label-mapping-v1.md"
       - "lib/sunscreen-spf-runtime-gate.mjs"
       - "lib/product-query-recommendation.js"
       - "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
@@ -488,6 +496,9 @@ jobs:
 
       - name: Verify DATA-AI29C-WATER-B governed evidence frontier
         run: node scripts/verify-data-ai29c-water-b-evidence-frontier.mjs
+
+      - name: Verify DATA-AI29C-WATER-B1 governed JCIA label mapping
+        run: node scripts/verify-data-ai29c-water-b1-governed-label-mapping.mjs
 
       - name: Verify DATA-AI29C-D5A SPF runtime gate
         run: node --experimental-strip-types scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs
