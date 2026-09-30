@@ -42,6 +42,7 @@ for (const script of [
   "scripts/verify-data-ai29c-d4-spf-axis-review.mjs",
   "scripts/verify-data-ai29c-d4-uva-authority-recovery-review.mjs",
   "scripts/verify-data-ai29c-uva-r1-live-authority-recon.mjs",
+  "scripts/verify-data-ai29c-uva-r2-exact-subject-research.mjs",
   "scripts/verify-data-ai29c-d4-water-axis-review.mjs",
   "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs",
   "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs",
