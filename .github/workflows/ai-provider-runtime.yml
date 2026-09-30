@@ -118,6 +118,28 @@ jobs:
             git diff --check HEAD^
           fi
 
+  image-detail-ab:
+    name: Face Lab image detail A/B
+    if: github.event_name == 'pull_request' && github.head_ref == 'fix/face-research/vision-cost-telemetry-v1'
+    needs: provider-runtime-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Compare auto and high image detail
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/run-ai-provider-image-detail-ab.mjs
+
   live-provider-smoke:
     name: Explicit live OpenAI smoke
     if: github.event_name == 'workflow_dispatch' && inputs.run_live_provider
