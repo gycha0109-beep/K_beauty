@@ -9,6 +9,7 @@ on:
       - "app/api/face-reading/**"
       - "lib/server/openai-chat-runtime.js"
       - "lib/ai-model-policy.js"
+      - "lib/ai-usage-cost.js"
       - "lib/server/product-query-intent-service.js"
       - "lib/server/vision-observation-service.js"
       - "lib/vision-observation-contract.js"
@@ -16,6 +17,7 @@ on:
       - "lib/provider-runtime-log.js"
       - "lib/security/error-redaction.js"
       - "scripts/verify-ai-provider-runtime-boundary.mjs"
+      - "scripts/verify-ai-usage-cost.mjs"
       - "scripts/verify-ai-luna-only-model-policy.mjs"
       - "scripts/run-ai-provider-live-smoke.mjs"
       - "scripts/verify-ai-live-smoke-importability.mjs"
@@ -31,6 +33,7 @@ on:
       - "app/api/face-reading/**"
       - "lib/server/openai-chat-runtime.js"
       - "lib/ai-model-policy.js"
+      - "lib/ai-usage-cost.js"
       - "lib/server/product-query-intent-service.js"
       - "lib/server/vision-observation-service.js"
       - "lib/vision-observation-contract.js"
@@ -38,6 +41,7 @@ on:
       - "lib/provider-runtime-log.js"
       - "lib/security/error-redaction.js"
       - "scripts/verify-ai-provider-runtime-boundary.mjs"
+      - "scripts/verify-ai-usage-cost.mjs"
       - "scripts/verify-ai-luna-only-model-policy.mjs"
       - "scripts/run-ai-provider-live-smoke.mjs"
       - "scripts/verify-ai-live-smoke-importability.mjs"
@@ -95,6 +99,9 @@ jobs:
 
       - name: Verify shared provider runtime boundary
         run: node scripts/verify-ai-provider-runtime-boundary.mjs
+
+      - name: Verify usage cost telemetry
+        run: node scripts/verify-ai-usage-cost.mjs
 
       - name: Verify unified Vision ownership
         run: node scripts/verify-unified-vision-pipeline.mjs
