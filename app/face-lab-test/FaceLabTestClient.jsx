@@ -10,6 +10,7 @@ import {
   buildPremiumFaceLabSummary,
   buildUnavailablePremiumFaceLab
 } from "@/lib/premium-face-lab";
+import { FACE_LAB_PRODUCTION_DAILY_LIMIT } from "@/lib/face-lab-usage-policy";
 
 const ACCEPTED_TYPES = new Set([
   "image/jpeg",
@@ -18,11 +19,23 @@ const ACCEPTED_TYPES = new Set([
 ]);
 
 function cleanError(payload) {
-  if (typeof payload?.error === "string" && payload.error.trim()) {
+  if (typeof payload?.message === "string" && payload.message.trim()) {
+    return payload.message.trim();
+  }
+
+  if (payload?.error === "analysis_rate_limited") {
+    return "테스트 분석 요청이 잠시 제한되었습니다. 잠시 후 다시 시도해 주세요.";
+  }
+
+  if (
+    typeof payload?.error === "string" &&
+    payload.error.trim() &&
+    !payload.error.startsWith("analysis_")
+  ) {
     return payload.error.trim();
   }
 
-  return "Face Lab 분석을 완료하지 못했습니다. 다른 사진으로 다시 시도해 주세요.";
+  return "Face Lab 분석을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
 export default function FaceLabTestClient() {
@@ -75,7 +88,7 @@ export default function FaceLabTestClient() {
     formData.append("locale", "ko");
 
     try {
-      const response = await fetch("/api/face-reading", {
+      const response = await fetch("/api/face-reading-test", {
         method: "POST",
         body: formData
       });
@@ -142,7 +155,17 @@ export default function FaceLabTestClient() {
               <h1 className="ui-title mt-1.5 text-2xl">Face Lab V2</h1>
               <p className="ui-text-secondary mt-2 max-w-2xl text-sm leading-6">
                 풀리포트 결제 흐름을 거치지 않고 Face Lab만 직접 테스트하는 임시 화면입니다.
-                사진은 기존 Face Lab 분석 경로로 처리되며 이 페이지는 테스트 후 제거할 수 있습니다.
+                사진은 테스트 전용 분석 경로로 처리되며 이 페이지는 테스트 후 제거할 수 있습니다.
+              </p>
+              <div className="mt-3 inline-flex max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-full border border-emerald-300/60 bg-emerald-50/80 px-3 py-1.5 text-xs font-semibold text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
+                <span>TEST MODE</span>
+                <span aria-hidden="true">·</span>
+                <span>
+                  일반 Face Lab 이용 횟수(운영 기준 하루 최대 {FACE_LAB_PRODUCTION_DAILY_LIMIT}회)에 포함되지 않습니다.
+                </span>
+              </div>
+              <p className="ui-text-secondary mt-2 text-xs leading-5">
+                테스트 경로에는 비용 보호를 위한 별도 개발 한도만 적용됩니다.
               </p>
             </div>
 
