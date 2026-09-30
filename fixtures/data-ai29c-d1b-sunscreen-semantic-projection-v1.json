@@ -1,0 +1,377 @@
+{
+  "version": "data-ai29c-d1b-semantic-projection-fixture-v1",
+  "observed_from_production": true,
+  "product_count": 5,
+  "products": [
+    {
+      "contractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+      "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "subjectId": "fixture-subject",
+      "subjectCount": 1,
+      "fields": {
+        "category_slot": {
+          "state": "established",
+          "value": "sunscreen",
+          "confidence": "medium"
+        },
+        "skin_types": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "concerns": {
+          "state": "established",
+          "value": [
+            "dehydration"
+          ],
+          "confidence": "medium"
+        },
+        "texture": {
+          "state": "established",
+          "value": "lotion",
+          "confidence": "medium"
+        },
+        "finish": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "uv_filter_type": {
+          "state": "established",
+          "value": "mineral",
+          "confidence": "medium"
+        },
+        "sensitivity_safe": {
+          "state": "conflict",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "irritation_risk": {
+          "state": "conflict",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "tone_up": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "white_cast": {
+          "state": "established",
+          "value": "low",
+          "confidence": "medium"
+        },
+        "eye_sting": {
+          "state": "established",
+          "value": "low",
+          "confidence": "medium"
+        },
+        "pilling_risk": {
+          "state": "conflict",
+          "value": null,
+          "confidence": "unknown"
+        }
+      },
+      "fixtureName": "Physical Daily Sunmilk"
+    },
+    {
+      "contractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+      "productId": "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+      "subjectId": "fixture-subject",
+      "subjectCount": 1,
+      "fields": {
+        "category_slot": {
+          "state": "established",
+          "value": "sunscreen",
+          "confidence": "medium"
+        },
+        "skin_types": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "concerns": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "texture": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "finish": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "uv_filter_type": {
+          "state": "established",
+          "value": "mineral",
+          "confidence": "medium"
+        },
+        "sensitivity_safe": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "irritation_risk": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "tone_up": {
+          "state": "established",
+          "value": true,
+          "confidence": "medium"
+        },
+        "white_cast": {
+          "state": "conflict",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "eye_sting": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "pilling_risk": {
+          "state": "conflict",
+          "value": null,
+          "confidence": "unknown"
+        }
+      },
+      "fixtureName": "MIN JUNG GI Physical Sun Block"
+    },
+    {
+      "contractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+      "productId": "b576991e-79c9-4189-b6e9-527aeeb03566",
+      "subjectId": "fixture-subject",
+      "subjectCount": 1,
+      "fields": {
+        "category_slot": {
+          "state": "established",
+          "value": "sunscreen",
+          "confidence": "medium"
+        },
+        "skin_types": {
+          "state": "established",
+          "value": [
+            "sensitive"
+          ],
+          "confidence": "medium"
+        },
+        "concerns": {
+          "state": "established",
+          "value": [
+            "redness"
+          ],
+          "confidence": "medium"
+        },
+        "texture": {
+          "state": "established",
+          "value": "cream",
+          "confidence": "medium"
+        },
+        "finish": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "uv_filter_type": {
+          "state": "established",
+          "value": "mineral",
+          "confidence": "medium"
+        },
+        "sensitivity_safe": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "irritation_risk": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "tone_up": {
+          "state": "established",
+          "value": true,
+          "confidence": "medium"
+        },
+        "white_cast": {
+          "state": "conflict",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "eye_sting": {
+          "state": "established",
+          "value": "low",
+          "confidence": "medium"
+        },
+        "pilling_risk": {
+          "state": "conflict",
+          "value": null,
+          "confidence": "unknown"
+        }
+      },
+      "fixtureName": "Dr. Troub Zinc Physical"
+    },
+    {
+      "contractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+      "productId": "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+      "subjectId": "fixture-subject",
+      "subjectCount": 1,
+      "fields": {
+        "category_slot": {
+          "state": "established",
+          "value": "sunscreen",
+          "confidence": "medium"
+        },
+        "skin_types": {
+          "state": "established",
+          "value": [
+            "sensitive"
+          ],
+          "confidence": "medium"
+        },
+        "concerns": {
+          "state": "established",
+          "value": [
+            "redness"
+          ],
+          "confidence": "medium"
+        },
+        "texture": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "finish": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "uv_filter_type": {
+          "state": "established",
+          "value": "mineral",
+          "confidence": "medium"
+        },
+        "sensitivity_safe": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "irritation_risk": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "tone_up": {
+          "state": "established",
+          "value": true,
+          "confidence": "medium"
+        },
+        "white_cast": {
+          "state": "established",
+          "value": "high",
+          "confidence": "medium"
+        },
+        "eye_sting": {
+          "state": "established",
+          "value": "low",
+          "confidence": "medium"
+        },
+        "pilling_risk": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        }
+      },
+      "fixtureName": "Dr. Troub Skin Returning Bio Repair + Suncream"
+    },
+    {
+      "contractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+      "productId": "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+      "subjectId": "fixture-subject",
+      "subjectCount": 1,
+      "fields": {
+        "category_slot": {
+          "state": "established",
+          "value": "sunscreen",
+          "confidence": "medium"
+        },
+        "skin_types": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "concerns": {
+          "state": "established",
+          "value": [
+            "dehydration"
+          ],
+          "confidence": "medium"
+        },
+        "texture": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "finish": {
+          "state": "established",
+          "value": "natural",
+          "confidence": "medium"
+        },
+        "uv_filter_type": {
+          "state": "established",
+          "value": "mineral",
+          "confidence": "medium"
+        },
+        "sensitivity_safe": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "irritation_risk": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        },
+        "tone_up": {
+          "state": "established",
+          "value": true,
+          "confidence": "medium"
+        },
+        "white_cast": {
+          "state": "established",
+          "value": "low",
+          "confidence": "medium"
+        },
+        "eye_sting": {
+          "state": "established",
+          "value": "low",
+          "confidence": "medium"
+        },
+        "pilling_risk": {
+          "state": "reviewed_not_established",
+          "value": null,
+          "confidence": "unknown"
+        }
+      },
+      "fixtureName": "Jojoba Suncream"
+    }
+  ],
+  "boundaries": {
+    "missing_is_not_false": true,
+    "all_12_fields_reviewed": true,
+    "core_fields_required": [
+      "category_slot",
+      "uv_filter_type"
+    ],
+    "raw_bundle_complete_not_required_for_envelope": true,
+    "contextual_fail_closed": true,
+    "product_row_mutated": false,
+    "recommendation_admission_mutated": false,
+    "production_ranking_changed": false
+  }
+}
