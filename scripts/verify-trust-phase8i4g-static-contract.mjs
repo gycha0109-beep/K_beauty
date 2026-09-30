@@ -343,12 +343,23 @@ assert.ok(
   ),
   "8I-4G replay fix must replace grouped confirmation",
 );
+const replayReplacementValidationIndex =
+  replayIdempotencyMigration.indexOf(
+    "if p_payload->'replacement'->>'source_name' is distinct from",
+  );
+const replayNestedValidationIndex = replayIdempotencyMigration.indexOf(
+  "v_nested := p_payload->'phase8h_anchor_confirmation_request';",
+);
+const replayExistingIndex =
+  replayIdempotencyMigration.indexOf("select * into v_existing");
+const replayMutablePreflightIndex = replayIdempotencyMigration.indexOf(
+  "v_preflight := public.admin_preflight_trust_official_source_grouped_relocation_v1",
+);
 assert.ok(
-  replayIdempotencyMigration.indexOf("select * into v_existing") <
-    replayIdempotencyMigration.indexOf(
-      "v_preflight := public.admin_preflight_trust_official_source_grouped_relocation_v1",
-    ),
-  "persisted idempotent replay must be checked before mutable preflight",
+  replayReplacementValidationIndex < replayNestedValidationIndex &&
+    replayNestedValidationIndex < replayExistingIndex &&
+    replayExistingIndex < replayMutablePreflightIndex,
+  "immutable payload validation must precede persisted replay, and mutable preflight must follow it",
 );
 assert.ok(
   replayIdempotencyMigration.includes("'idempotent',true"),
