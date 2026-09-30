@@ -176,6 +176,31 @@ begin
       or v_existing.request_id<>v_request_id
       or v_existing.group_version<>'trust-official-source-grouped-relocation-v1'
       or v_existing.result<>'confirmed'
+      or p_payload->>'old_locator' is distinct from (
+        select b.source_url
+        from public.product_source_bindings b
+        where b.binding_id=v_existing.old_binding_id
+      )
+      or p_payload->'historical_source_ids' is distinct from coalesce((
+        select to_jsonb(array_agg(s.source_id order by s.source_id))
+        from public.trust_official_source_relocation_group_sources s
+        where s.group_id=v_existing.group_id
+      ),'[]'::jsonb)
+      or p_payload->'incident_ids' is distinct from coalesce((
+        select to_jsonb(array_agg(i.incident_id order by i.incident_id))
+        from public.trust_official_source_relocation_group_incidents i
+        where i.group_id=v_existing.group_id
+      ),'[]'::jsonb)
+      or p_payload->'replacement'->>'source_url' is distinct from (
+        select b.source_url
+        from public.product_source_bindings b
+        where b.binding_id=v_existing.replacement_binding_id
+      )
+      or p_payload->'replacement'->>'external_id' is distinct from (
+        select b.external_id
+        from public.product_source_bindings b
+        where b.binding_id=v_existing.replacement_binding_id
+      )
     then
       raise exception 'trust_phase8i4_grouped_confirmation_idempotency_conflict' using errcode='23505';
     end if;
