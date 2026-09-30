@@ -35,12 +35,21 @@ for (const script of [
   "scripts/verify-data-ai29c-d1a-unresolved-fact-reresearch.mjs",
   "scripts/verify-data-ai29c-d1b-semantic-projection-policy.mjs",
   "scripts/verify-data-ai29c-d2-sunscreen-initial-admission.mjs",
+  "scripts/verify-data-ai29c-d3-integrated-sunscreen-shadow.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",
   "scripts/verify-data-ai5-activation-readiness.mjs",
 ]) {
-  assert.equal(count(canonical, `node ${script}`), 1, `${script}: canonical automatic execution must be exactly once`);
+  const command =
+    script === "scripts/verify-data-ai29c-d3-integrated-sunscreen-shadow.mjs"
+      ? `node --experimental-strip-types ${script}`
+      : `node ${script}`;
+  assert.equal(
+    count(canonical, command),
+    1,
+    `${script}: canonical automatic execution must be exactly once`,
+  );
 }
 
 assert.equal(count(canonical, "npm ci --no-audit --no-fund"), 1, "canonical npm ci must execute exactly once");
