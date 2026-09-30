@@ -46,6 +46,7 @@ for (const script of [
   "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs",
   "scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs",
   "scripts/verify-data-ai29c-d5d-spf-production-activation.mjs",
+  "scripts/verify-data-ai29c-d5d-r1-recovery.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",
@@ -62,7 +63,8 @@ for (const script of [
     script === "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs" ||
     script === "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs" ||
     script === "scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs" ||
-    script === "scripts/verify-data-ai29c-d5d-spf-production-activation.mjs"
+    script === "scripts/verify-data-ai29c-d5d-spf-production-activation.mjs" ||
+    script === "scripts/verify-data-ai29c-d5d-r1-recovery.mjs"
       ? `node --experimental-strip-types ${script}`
       : `node ${script}`;
   assert.equal(

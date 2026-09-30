@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   getD5dSpfProductionProbeCaseIds,
   runD5dSpfProductionProbeCase,
+  readD5dSpfProductionActivationProbeState,
 } from "@/lib/server/product-query-spf-production-service";
 import {
   getDataAi5BearerTokenFromRequest,
@@ -12,9 +13,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_DEPLOYMENT_REFS = new Set(["main"]);
-const ALLOWED_CASE_IDS = new Set(
-  getD5dSpfProductionProbeCaseIds(),
-);
+const ALLOWED_CASE_IDS = new Set([
+  ...getD5dSpfProductionProbeCaseIds(),
+  "switch_state",
+]);
 
 function noStoreJson(body, status = 200) {
   return NextResponse.json(body, {
@@ -112,9 +114,11 @@ export async function POST(request) {
     );
   }
 
-  const evaluation = await runD5dSpfProductionProbeCase(
-    body.caseId.trim(),
-  );
+  const caseId = body.caseId.trim();
+  const evaluation =
+    caseId === "switch_state"
+      ? await readD5dSpfProductionActivationProbeState()
+      : await runD5dSpfProductionProbeCase(caseId);
 
   return noStoreJson(
     {
