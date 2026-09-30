@@ -49,6 +49,10 @@ on:
       - "fixtures/data-ai29c-d1b-sunscreen-semantic-projection-v1.json"
       - "scripts/verify-data-ai29c-d1b-semantic-projection-policy.mjs"
       - "docs/evidence/data-ai29c-d1b-sunscreen-semantic-projection-policy-v1.md"
+      - "lib/sunscreen-initial-admission-grant-policy.mjs"
+      - "fixtures/data-ai29c-d2-sunscreen-initial-admission-v1.json"
+      - "scripts/verify-data-ai29c-d2-sunscreen-initial-admission.mjs"
+      - "docs/evidence/data-ai29c-d2-sunscreen-initial-admission-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -149,6 +153,10 @@ on:
       - "fixtures/data-ai29c-d1b-sunscreen-semantic-projection-v1.json"
       - "scripts/verify-data-ai29c-d1b-semantic-projection-policy.mjs"
       - "docs/evidence/data-ai29c-d1b-sunscreen-semantic-projection-policy-v1.md"
+      - "lib/sunscreen-initial-admission-grant-policy.mjs"
+      - "fixtures/data-ai29c-d2-sunscreen-initial-admission-v1.json"
+      - "scripts/verify-data-ai29c-d2-sunscreen-initial-admission.mjs"
+      - "docs/evidence/data-ai29c-d2-sunscreen-initial-admission-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -310,6 +318,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D1B fail-closed sunscreen semantic projection
         run: node scripts/verify-data-ai29c-d1b-semantic-projection-policy.mjs
+
+      - name: Verify DATA-AI29C-D2 sunscreen initial admission authority
+        run: node scripts/verify-data-ai29c-d2-sunscreen-initial-admission.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
