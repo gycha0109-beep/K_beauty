@@ -31,7 +31,7 @@ const snapshotter = fs.readFileSync(
   "utf8",
 );
 const readBoundaryMigration = fs.readFileSync(
-  "supabase/migrations/20260930090000_trust_phase8i4g_canary_read_boundary_v1.sql",
+  "supabase/migrations/20260930090756_trust_phase8i4g_canary_read_boundary_v1.sql",
   "utf8",
 );
 const workflow = fs.readFileSync(
