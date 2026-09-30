@@ -77,6 +77,9 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-uva-r1-live-authority-recon-v1.json"
       - "scripts/verify-data-ai29c-uva-r1-live-authority-recon.mjs"
       - "docs/evidence/data-ai29c-uva-r1-live-authority-recon-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-uva-r2-exact-subject-research-v1.json"
+      - "scripts/verify-data-ai29c-uva-r2-exact-subject-research.mjs"
+      - "docs/evidence/data-ai29c-uva-r2-exact-subject-research-v1.md"
       - "lib/sunscreen-water-axis-review.mjs"
       - "scripts/verify-data-ai29c-d4-water-axis-review.mjs"
       - "docs/evidence/data-ai29c-d4-water-axis-review-v1.md"
@@ -238,6 +241,9 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-uva-r1-live-authority-recon-v1.json"
       - "scripts/verify-data-ai29c-uva-r1-live-authority-recon.mjs"
       - "docs/evidence/data-ai29c-uva-r1-live-authority-recon-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-uva-r2-exact-subject-research-v1.json"
+      - "scripts/verify-data-ai29c-uva-r2-exact-subject-research.mjs"
+      - "docs/evidence/data-ai29c-uva-r2-exact-subject-research-v1.md"
       - "lib/sunscreen-water-axis-review.mjs"
       - "scripts/verify-data-ai29c-d4-water-axis-review.mjs"
       - "docs/evidence/data-ai29c-d4-water-axis-review-v1.md"
@@ -456,6 +462,9 @@ jobs:
 
       - name: Verify DATA-AI29C-UVA-R1 live authority recon
         run: node scripts/verify-data-ai29c-uva-r1-live-authority-recon.mjs
+
+      - name: Verify DATA-AI29C-UVA-R2 exact-subject evidence research
+        run: node scripts/verify-data-ai29c-uva-r2-exact-subject-research.mjs
 
       - name: Verify DATA-AI29C-D4 water axis review
         run: node --experimental-strip-types scripts/verify-data-ai29c-d4-water-axis-review.mjs
