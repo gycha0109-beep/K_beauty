@@ -37,7 +37,7 @@ assert.equal(
   "sunscreen-water-jcia-label-mapping-v1",
 );
 assert.equal(
-  adoption.governance.registryFactKey,
+  adoption.governance.factKey,
   "water_resistance_duration",
 );
 
