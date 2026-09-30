@@ -74,6 +74,34 @@ The scheduled path must never call:
 
 No scheduler or worker may approve relocation.
 
+### Activation signal
+
+When the read-only scheduled snapshot changes to
+`REAL_READY_DETECTED_REQUIRES_ADMIN_PREFLIGHT`, CI may emit one bounded warning
+and summary so the operator does not miss the first real candidate.
+
+The activation signal may expose only bounded identifiers, source/incident
+counts, the snapshot digest, and the fact that Admin attention is required. It
+must not expose the replacement locator, raw evaluation payload, browser
+authority payload, or any confirmation token.
+
+The activation signal is not preflight and is not approval.
+
+### Admin stale-state revalidation
+
+Opening the Admin workbench or rerunning preflight must not trust the scheduled
+snapshot as authority. The server must re-read the current case state and
+require the selected evaluation to still be the latest evaluation for that
+case, still be `READY_FOR_8I4`, still have eligible scheduled Phase 8I-3E
+provenance, still be ungrouped, and still be the first eligible real canary.
+
+If the selected evaluation has been superseded or the latest evaluation is no
+longer READY, the candidate becomes:
+
+`STALE_REAL_CANARY_REQUIRES_REEVALUATION`
+
+This is a pre-mutation HOLD and performs zero relocation mutation.
+
 ## Pre-confirmation snapshot
 
 Immediately before an authorized human confirmation, capture the candidate's authority snapshot.
@@ -163,6 +191,12 @@ Audit action:
 The audit stores only bounded counts, digests, verification results, group/relocation identities, and the next state. It must not store raw browser payloads or semantic authority decisions.
 
 A PASS audit opens later grouped confirmations.
+
+The Admin response for the first real canary also returns one bounded closure
+pack containing only the closure state, group/relocation/evaluation identities,
+PASS/FAIL verification summaries, audit status, and whether the next grouped
+confirmation is allowed. The closure pack never carries raw protected-state
+snapshots or semantic authority decisions.
 
 If the first grouped relocation exists but there is no PASS closure audit, all new non-idempotent grouped confirmations are blocked with a canary-closure-required conflict. Existing confirmed-group readback remains idempotent and readable.
 
