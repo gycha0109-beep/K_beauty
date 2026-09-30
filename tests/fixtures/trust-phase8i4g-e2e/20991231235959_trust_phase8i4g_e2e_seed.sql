@@ -22,23 +22,36 @@ values (
 ) on conflict (user_id) do update
 set role='admin_owner',is_active=true,updated_at=now();
 
-insert into public.products(
-  id,name,brand,category,image_url,
-  skin_types,concerns,texture,finish,irritation_risk,sensitivity_safe
-)
-values (
-  '94000000-0000-4000-8000-000000004001',
-  'Isolated E2E Sunscreen',
-  'E2E Official',
-  'sunscreen',
-  null,
-  array['normal','sensitive']::text[],
-  array['uv_protection']::text[],
-  'cream',
-  'natural',
-  'low',
-  true
-);
+insert into public.products
+select (
+  jsonb_populate_record(
+    p,
+    jsonb_build_object(
+      'id','94000000-0000-4000-8000-000000004001',
+      'name','Isolated E2E Sunscreen',
+      'brand','E2E Official',
+      'category','sunscreen',
+      'image_url',null,
+      'skin_types',to_jsonb(array['normal','sensitive']::text[]),
+      'concerns',to_jsonb(array['uv_protection']::text[]),
+      'texture','cream',
+      'finish','natural',
+      'irritation_risk','low',
+      'sensitivity_safe',true,
+      'normalized_name','isolated e2e sunscreen',
+      'normalized_brand','e2e official',
+      'external_source',null,
+      'external_type',null,
+      'external_id',null,
+      'source_url',null,
+      'cleansing_profile',null,
+      'product_form',null
+    )
+  )
+).*
+from public.products p
+where p.id='00000000-0000-4000-8000-000000000305';
+
 
 insert into public.product_fact_registry_versions(
   registry_version,registry_checksum,identity_serializer_version,effective_at
