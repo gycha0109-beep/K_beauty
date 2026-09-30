@@ -63,6 +63,10 @@ on:
       - "fixtures/data-ai29c-d3r2-legacy-sunscreen-runtime-v1.json"
       - "scripts/verify-data-ai29c-d3r2-mixed-corpus-calibration.mjs"
       - "docs/evidence/data-ai29c-d3r2-mixed-corpus-calibration-v1.md"
+      - "lib/sunscreen-authority-complete-subset-shadow.mjs"
+      - "fixtures/data-ai29c-d3r3-semantic-authority-recovery-v1.json"
+      - "scripts/verify-data-ai29c-d3r3-authority-complete-subset.mjs"
+      - "docs/evidence/data-ai29c-d3r3-semantic-authority-recovery-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -177,6 +181,10 @@ on:
       - "fixtures/data-ai29c-d3r2-legacy-sunscreen-runtime-v1.json"
       - "scripts/verify-data-ai29c-d3r2-mixed-corpus-calibration.mjs"
       - "docs/evidence/data-ai29c-d3r2-mixed-corpus-calibration-v1.md"
+      - "lib/sunscreen-authority-complete-subset-shadow.mjs"
+      - "fixtures/data-ai29c-d3r3-semantic-authority-recovery-v1.json"
+      - "scripts/verify-data-ai29c-d3r3-authority-complete-subset.mjs"
+      - "docs/evidence/data-ai29c-d3r3-semantic-authority-recovery-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -350,6 +358,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D3R2 mixed-corpus sunscreen calibration
         run: node --experimental-strip-types scripts/verify-data-ai29c-d3r2-mixed-corpus-calibration.mjs
+
+      - name: Verify DATA-AI29C-D3R3 authority-complete subset shadow
+        run: node --experimental-strip-types scripts/verify-data-ai29c-d3r3-authority-complete-subset.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
