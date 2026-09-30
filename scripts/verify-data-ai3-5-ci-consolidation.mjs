@@ -43,6 +43,9 @@ for (const script of [
   "scripts/verify-data-ai29c-d4-uva-authority-recovery-review.mjs",
   "scripts/verify-data-ai29c-d4-water-axis-review.mjs",
   "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs",
+  "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs",
+  "scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs",
+  "scripts/verify-data-ai29c-d5d-spf-production-activation.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",
@@ -56,7 +59,10 @@ for (const script of [
     script === "scripts/verify-data-ai29c-d4-spf-axis-review.mjs" ||
     script === "scripts/verify-data-ai29c-d4-uva-authority-recovery-review.mjs" ||
     script === "scripts/verify-data-ai29c-d4-water-axis-review.mjs" ||
-    script === "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
+    script === "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs" ||
+    script === "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs" ||
+    script === "scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs" ||
+    script === "scripts/verify-data-ai29c-d5d-spf-production-activation.mjs"
       ? `node --experimental-strip-types ${script}`
       : `node ${script}`;
   assert.equal(
@@ -71,6 +77,7 @@ assert.equal(count(canonical, "npm run architecture:guard"), 1, "canonical archi
 assert.equal(count(canonical, "npm run build"), 1, "canonical production build must execute exactly once");
 assert.ok(canonical.includes("node --check scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"));
 assert.ok(canonical.includes("node --check scripts/validate-data-ai5-activation-readiness-runtime-response.mjs"));
+assert.ok(canonical.includes("node --check scripts/validate-data-ai29c-d5d-spf-production-activation-response.mjs"));
 
 for (const path of phasePaths) {
   const yaml = fs.readFileSync(path, "utf8");

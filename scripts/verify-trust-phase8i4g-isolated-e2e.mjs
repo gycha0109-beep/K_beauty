@@ -66,12 +66,14 @@ assert.equal(
   false,
 );
 assert.equal(seed.includes("trust_official_source_relocation_groups"), false);
+assert.equal(workflow.includes("npx --no-install tsx"), false);
 
 for (const required of [
   "isolated_first_real_canary_e2e:",
   "materialize-trust-phase8i4g-isolated-e2e.mjs",
   "run-trust-phase8i4g-isolated-e2e.mjs",
   "github.event_name != 'schedule'",
+  'npx --yes "tsx@4.23.15"',
 ]) {
   assert.ok(workflow.includes(required), "workflow e2e contract missing: " + required);
 }

@@ -398,7 +398,7 @@ jobs:
           mkdir -p "$artifact_dir"
           result="$artifact_dir/result.json"
           NODE_OPTIONS="--conditions=react-server" \
-            npx --no-install tsx scripts/run-trust-phase8i4g-isolated-e2e.mjs \
+            npx --yes "tsx@4.23.15" scripts/run-trust-phase8i4g-isolated-e2e.mjs \
             | tee "$result"
           node -e '
             const fs=require("node:fs");
