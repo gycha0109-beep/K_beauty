@@ -99,7 +99,10 @@ assert.equal(
 for (const required of [
   "loadLatestEvaluationForCase",
   "verifyCurrentReadyEvaluation",
+  "loadFirstEligibleRealCanaryEvaluationId",
   "STALE_REAL_CANARY_REQUIRES_REEVALUATION",
+  "FIRST_REAL_CANARY_REQUIRES_SCHEDULED_PROVENANCE",
+  "FIRST_REAL_CANARY_CANDIDATE_NOT_FIRST",
   "LATEST_EVALUATION_",
   "trust-phase8i4g-first-real-canary-closure-pack-v1",
   "FIRST_REAL_CANARY_CLOSED_PASS",
