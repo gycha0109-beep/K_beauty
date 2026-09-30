@@ -24,7 +24,7 @@
 6. idempotency complete/fail
 7. 기존 성공 응답 또는 안전한 guard 응답 반환
 
-`/api/analyze`에서는 guard가 OpenAI key 조회, image base64 변환, 제품 snapshot DB 조회보다 먼저 실행된다. `/api/face-reading`에서도 guard가 OpenAI key 조회, image base64 변환, provider 호출보다 먼저 실행된다.
+`/api/analyze`에서는 guard가 OpenAI key 조회, image base64 변환, 제품 snapshot DB 조회보다 먼저 실행된다. `/api/face-reading`에서도 guard가 OpenAI key 조회, image base64 변환, provider 호출보다 먼저 실행된다. Guard 통과 뒤 canonical image 처리나 provider 호출 자체가 실패하면 해당 요청이 소비한 rate bucket을 환급한다. 정상 분석 또는 사진 근거 부족 같은 유효한 분석 결과는 사용량으로 유지한다.
 
 ## 4. Principal 정책
 
@@ -43,11 +43,13 @@ raw user id, raw IP, raw anonymous cookie payload, raw idempotency key, request 
 | `/api/analyze` | authenticated user | 5 / 1시간 | 15 / 24시간 |
 | `/api/analyze` | anonymous cookie | 2 / 1시간 | 4 / 24시간 |
 | `/api/analyze` | IP safety ceiling | 5 / 1시간 | 10 / 24시간 |
-| `/api/face-reading` | authenticated user | 3 / 1시간 | 8 / 24시간 |
-| `/api/face-reading` | anonymous cookie | 3 / 1시간 | 6 / 24시간 |
+| `/api/face-reading` | authenticated user | 3 / 1시간 | 5 / 24시간 |
+| `/api/face-reading` | anonymous cookie | 3 / 1시간 | 5 / 24시간 |
 | `/api/face-reading` | IP safety ceiling | 6 / 1시간 | 12 / 24시간 |
+| `/api/face-reading-test` | UAT user/anonymous | 20 / 1시간 | 50 / 24시간 |
+| `/api/face-reading-test` | UAT IP safety ceiling | 40 / 1시간 | 100 / 24시간 |
 
-정책 값은 `lib/security/analysis-request-guard-core.js` 한 곳에서 중앙 관리한다. `/api/face-reading`은 사진 품질 보정·재촬영 흐름에서 정상 사용자가 같은 시간대에 여러 번 재시도할 수 있으므로 anonymous/IP short-window를 재촬영 가능한 범위로 조정한다. 운영 로그에서 429 비율, 정상 재분석 빈도, provider 비용을 계속 보고 조정한다.
+Face Lab 사용량 숫자는 `lib/face-lab-usage-policy.js`를 단일 기준으로 두고 `lib/security/analysis-request-guard-core.js`가 이를 소비한다. 운영 Face Lab은 principal 기준 하루 최대 5회이며, `/face-lab-test`는 `/api/face-reading-test` 전용 bucket을 사용해 운영 이용 횟수를 소비하지 않는다. 테스트 경로도 공개 비용 남용을 막기 위해 별도 상한은 유지한다. 운영 로그에서 429 비율, 정상 재분석 빈도, provider 비용을 계속 보고 조정한다.
 
 ## 6. Idempotency 정책
 
