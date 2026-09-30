@@ -45,6 +45,10 @@ on:
       - "scripts/verify-data-ai29c-d1-sunscreen-semantic-authority.mjs"
       - "supabase/migrations/20260930120500_data_ai29c_d1a_unresolved_fact_reresearch_v1.sql"
       - "scripts/verify-data-ai29c-d1a-unresolved-fact-reresearch.mjs"
+      - "lib/sunscreen-recommendation-semantic-projection.mjs"
+      - "fixtures/data-ai29c-d1b-sunscreen-semantic-projection-v1.json"
+      - "scripts/verify-data-ai29c-d1b-semantic-projection-policy.mjs"
+      - "docs/evidence/data-ai29c-d1b-sunscreen-semantic-projection-policy-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -141,6 +145,10 @@ on:
       - "scripts/verify-data-ai29c-d1-sunscreen-semantic-authority.mjs"
       - "supabase/migrations/20260930120500_data_ai29c_d1a_unresolved_fact_reresearch_v1.sql"
       - "scripts/verify-data-ai29c-d1a-unresolved-fact-reresearch.mjs"
+      - "lib/sunscreen-recommendation-semantic-projection.mjs"
+      - "fixtures/data-ai29c-d1b-sunscreen-semantic-projection-v1.json"
+      - "scripts/verify-data-ai29c-d1b-semantic-projection-policy.mjs"
+      - "docs/evidence/data-ai29c-d1b-sunscreen-semantic-projection-policy-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -299,6 +307,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D1A unresolved Product Fact re-research
         run: node scripts/verify-data-ai29c-d1a-unresolved-fact-reresearch.mjs
+
+      - name: Verify DATA-AI29C-D1B fail-closed sunscreen semantic projection
+        run: node scripts/verify-data-ai29c-d1b-semantic-projection-policy.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
