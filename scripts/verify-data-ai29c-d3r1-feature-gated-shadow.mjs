@@ -88,7 +88,7 @@ assert.equal(outdoor.appliedProtectionProductCount, 5);
 assert.equal(outdoor.integratedScoreComparisonReady, true);
 assert.equal(outdoor.productionOrderClaimReady, false);
 assert.equal(outdoor.baselineTieCount, 5);
-assert.deepEqual(outdoor.baselineTopSet.sort(), d2.products.map((p) => p.product.id).sort());
+assert.deepEqual([...outdoor.baselineTopSet].sort(), d2.products.map((p) => p.product.id).sort());
 assert.deepEqual(outdoor.shadowTopSet, [
   "b576991e-79c9-4189-b6e9-527aeeb03566",
   "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
