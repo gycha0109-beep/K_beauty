@@ -11,6 +11,7 @@ import {
 import { normalizeVisionObservationBundle } from "../lib/vision-observation-normalizer.js";
 import { logProviderRuntimeEvent } from "../lib/provider-runtime-log.js";
 import {
+  OPENAI_RUNTIME_IMAGE_DETAIL,
   OPENAI_RUNTIME_MODEL,
   OPENAI_RUNTIME_REASONING_EFFORT
 } from "../lib/ai-model-policy.js";
@@ -52,7 +53,8 @@ const runtime = await executeOpenAiChatJson({
           {
             type: "image_url",
             image_url: {
-              url: `data:image/png;base64,${imageBuffer.toString("base64")}`
+              url: `data:image/png;base64,${imageBuffer.toString("base64")}`,
+              detail: OPENAI_RUNTIME_IMAGE_DETAIL
             }
           }
         ]
@@ -92,5 +94,6 @@ console.log(JSON.stringify({
   imageType: bundle.eligibility.imageType,
   faceLabEligible: bundle.eligibility.faceLabEligible,
   skinAnalysisEligible: bundle.eligibility.skinAnalysisEligible,
+  imageDetail: OPENAI_RUNTIME_IMAGE_DETAIL,
   persisted: false
 }));
