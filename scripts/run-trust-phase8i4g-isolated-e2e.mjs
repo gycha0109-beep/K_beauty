@@ -100,6 +100,7 @@ for (const target of targets.targets) {
   assert.equal(target.effective_locator, OLD);
 }
 
+const observedIncidentIds = [];
 for (let index = 0; index < targets.targets.length; index += 1) {
   const target = targets.targets[index];
   const base = {
@@ -141,11 +142,10 @@ for (let index = 0; index < targets.targets.length; index += 1) {
   );
   assert.equal(second.status, "recorded");
   assert.ok(second.incident_id);
+  observedIncidentIds.push(second.incident_id);
 }
-assert.equal(
-  await scopedCount(client, "trust_official_source_transport_incidents"),
-  3,
-);
+assert.equal(observedIncidentIds.length, 3);
+assert.equal(new Set(observedIncidentIds).size, 3);
 result.stages.transport_incidents = "PASS";
 
 const enqueue = await enqueueTransportDriftCases({ client, limit: 100 });
@@ -168,6 +168,10 @@ assert.equal(driftCase.effective_locator, OLD);
 assert.equal(driftCase.confirmed_final_locator, REPLACEMENT);
 assert.equal(driftCase.source_ids.length, 3);
 assert.equal(driftCase.incident_ids.length, 3);
+assert.deepEqual(
+  [...driftCase.incident_ids].sort(),
+  [...observedIncidentIds].sort(),
+);
 result.stages.drift_case = "PASS";
 
 const registry = JSON.parse(await fs.readFile(REGISTRY_PATH, "utf8"));
