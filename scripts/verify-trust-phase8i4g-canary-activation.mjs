@@ -97,6 +97,10 @@ assert.equal(
 );
 
 for (const required of [
+  "get_trust_official_source_transport_drift_case_v1",
+  "get_trust_official_source_transport_drift_cases_v1",
+  "loadGovernedDriftCase",
+  "loadGovernedReadyEvaluations",
   "loadLatestEvaluationForCase",
   "verifyCurrentReadyEvaluation",
   "loadFirstEligibleRealCanaryEvaluationId",
@@ -110,6 +114,18 @@ for (const required of [
   "nextGroupedConfirmationAllowed",
 ]) {
   assert.ok(adminService.includes(required), `admin service missing: ${required}`);
+}
+
+for (const forbiddenTable of [
+  '"trust_official_source_transport_drift_evaluations"',
+  '"trust_official_source_transport_drift_cases"',
+  '"trust_official_source_transport_drift_case_incidents"',
+]) {
+  assert.equal(
+    adminService.includes(forbiddenTable),
+    false,
+    `Admin grouped relocation must use governed drift RPCs, not direct table reads: ${forbiddenTable}`,
+  );
 }
 
 for (const required of [
