@@ -1,0 +1,102 @@
+{
+  "version": "data-ai29c-water-b1-governed-label-mapping-v1",
+  "mappingPolicyVersion": "sunscreen-water-jcia-label-mapping-v1",
+  "track": "taxonomy-ai",
+  "sourceMainSha": "d16f77eaf4b603a60cdd673577ae810560a73cbe",
+  "registryVersion": "product-fact-registry-cross-category-v1",
+  "registryFactKey": "water_resistance_duration",
+  "registryDefinitionChecksum": "14510b53371121c1edc552f33155edc7fc5c9d44e509ed85d9589e65da6542ee",
+  "normativeSemanticAuthority": {
+    "publisher": "Japan Cosmetic Industry Association",
+    "canonicalLocator": "https://jcia.org/en/common/download/top/jcia-notifications-spf-pa.pdf",
+    "standardBasis": "ISO 18861",
+    "policyRole": "semantic_decoder_not_product_evidence",
+    "rules": [
+      {
+        "labels": ["UV耐水性★", "UV耐水性☆"],
+        "waterImmersionConditionMinutes": 40,
+        "pattern": "20 minutes x 2"
+      },
+      {
+        "labels": ["UV耐水性★★", "UV耐水性☆☆"],
+        "waterImmersionConditionMinutes": 80,
+        "pattern": "20 minutes x 4"
+      }
+    ],
+    "passCriterion": "lower limit of the 90% confidence interval on mean SPF retention is at least 50%",
+    "sweatSemanticsExcluded": true,
+    "realWorldDurationGuaranteeExcluded": true
+  },
+  "admissibilityGate": {
+    "marketMustEqual": "JP",
+    "exactCurrentSubjectRequired": true,
+    "officialProductClaimRequired": true,
+    "recognizedJciaLabelRequired": true,
+    "genericWaterproofTermsInsufficient": true,
+    "standardSourceMustNotBeBoundAsExactProductEvidence": true,
+    "numericProjectionMayBeUsedOnlyThroughThisPolicyVersion": true
+  },
+  "anessaCandidate": {
+    "productId": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+    "subjectId": "d1d748c3-8706-4b6c-8719-676f6f317532",
+    "market": "JP",
+    "officialProductLocator": "https://www.shiseido.co.jp/anessa/products/suncare/perfect_uv_sm/",
+    "observedLabel": "UV耐水性★★",
+    "bindingStateRequired": "exact_subject_match",
+    "scopeRelationRequired": "equivalent",
+    "productEvidenceClass": "product_claim",
+    "productEvidenceAuthority": "product_specific_primary",
+    "mappedValue": {
+      "valueType": "number_unit",
+      "valueNumber": 80,
+      "valueUnit": "minutes",
+      "qualifier": {
+        "metric": "SPF_retention_percentage",
+        "method_context": "ISO_18861_JCIA_UV_water_resistance",
+        "timepoint": "after_total_80_min_water_immersion"
+      }
+    },
+    "interpretation": "80 minutes is the standardized total water-immersion test condition represented by the JP label, not a guaranteed real-world effect duration.",
+    "controlledEvidenceIngestEligible": true,
+    "autoConfirmationEligible": false
+  },
+  "forbiddenMappings": [
+    "WATERPROOF_WORD_TO_MINUTES",
+    "SUPER_WATERPROOF_WORD_TO_MINUTES",
+    "SWEAT_RESISTANT_TO_JCIA_WATER_DURATION",
+    "JCIA_STANDARD_AS_EXACT_PRODUCT_EVIDENCE",
+    "JCIA_LABEL_OUTSIDE_JP_MARKET",
+    "LABEL_TO_REAL_WORLD_EFFECT_DURATION_GUARANTEE",
+    "OUT_OF_CORPUS_PRODUCT_TRANSFER",
+    "MISSING_TO_ZERO"
+  ],
+  "nextGate": {
+    "stage": "WATER_C_CONTROLLED_ANESSA_FACT_ADOPTION",
+    "allowed": true,
+    "requirements": [
+      "ingest exact ANESSA official product source through controlled evidence RPC",
+      "encode numeric proposition through sunscreen-water-jcia-label-mapping-v1",
+      "prepare governed Product Fact review",
+      "preflight confirmation",
+      "confirm only if preflight and evidence lineage remain current",
+      "read back Product Fact Current and rerun water authority audit"
+    ]
+  },
+  "limits": {
+    "productFactWritten": false,
+    "evidenceRecordWritten": false,
+    "reviewAssignmentWritten": false,
+    "confirmationWritten": false,
+    "registryChanged": false,
+    "productQueryIntentSchemaMutated": false,
+    "protectionScorerWired": false,
+    "waterAxisActivated": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "persistence": false,
+    "spfProductionStateMutated": false
+  },
+  "decision": "WATER_B1_GOVERNED_LABEL_MAPPING_PASS_CONTROLLED_ADOPTION_CANDIDATE"
+}
