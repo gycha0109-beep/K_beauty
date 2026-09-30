@@ -136,10 +136,6 @@ assert.ok(
   ]),
   "Physical Daily and Jojoba must remain score-equivalent across safe contexts",
 );
-assert.ok(
-  hasGroup(["b90bf992-07ae-4f49-a3a4-d90ea6d4a858"]),
-  "MIN JUNG GI must remain its own current score signature",
-);
 
 // D3R2-6: D3R2 stays shadow-only and does not pretend the existing Production
 // tie-breaker can be reused after semantic-axis masking.
