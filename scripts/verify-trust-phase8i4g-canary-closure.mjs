@@ -26,6 +26,8 @@ for (const required of [
   "Relocation confirm + canary verification",
   "trust.phase8i4g.first_real_canary_verification",
   "A PASS audit opens later grouped confirmations.",
+  "bounded closure",
+  "STALE_REAL_CANARY_REQUIRES_REEVALUATION",
   "no PASS closure audit",
   "fail-closes further grouped mutation",
 ]) {
@@ -42,6 +44,9 @@ for (const required of [
   "admin_confirm_trust_official_source_grouped_relocation_v1",
   "HALT_FURTHER_GROUPED_CONFIRMATIONS",
   "OPEN_AFTER_FIRST_REAL_CANARY_PASS",
+  "trust-phase8i4g-first-real-canary-closure-pack-v1",
+  "nextGroupedConfirmationAllowed",
+  "STALE_REAL_CANARY_REQUIRES_REEVALUATION",
 ]) {
   assert.ok(adminService.includes(required), "admin service missing: " + required);
 }
@@ -98,6 +103,9 @@ for (const required of [
   "8I-4G Canary Halted",
   "8I-4G Canary Closed PASS",
   "confirmationAllowed",
+  "confirmArmed",
+  "첫 Real Canary 최종 확인 단계 열기",
+  "Closure pack",
 ]) {
   assert.ok(workbench.includes(required), "workbench missing: " + required);
 }
