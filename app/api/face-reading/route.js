@@ -83,9 +83,13 @@ async function failGuardedResponse(response, guardResult) {
   return applyAnalysisGuardCookies(response, guardResult);
 }
 
-export async function POST(request) {
+export async function POST(request, context = {}) {
   let responseLocale = "ko";
   let analysisGuard = null;
+  const guardEndpoint =
+    context?.guardEndpoint === "face-reading-test"
+      ? "face-reading-test"
+      : "face-reading";
 
   try {
     const contentLengthValidation = validateImageRequestContentLength(request);
@@ -120,7 +124,7 @@ export async function POST(request) {
 
     analysisGuard = await guardAnalysisRequest({
       request,
-      endpoint: "face-reading",
+      endpoint: guardEndpoint,
       fingerprintInput: {
         locale,
         image: getUploadFingerprintDescriptor(image)
@@ -143,7 +147,7 @@ export async function POST(request) {
 
     const { apiKey } = resolveOpenAiApiKey();
     if (!apiKey) {
-      return completeGuardedResponse(
+      return failGuardedResponse(
         sensitiveJsonResponse(createFaceLabUnavailable("api_key_missing")),
         analysisGuard
       );

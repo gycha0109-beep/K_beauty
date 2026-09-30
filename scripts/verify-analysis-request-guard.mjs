@@ -12,6 +12,10 @@ import {
   validateIdempotencyKey,
   verifySignedAnonymousCookie
 } from "../lib/security/analysis-request-guard-core.js";
+import {
+  FACE_LAB_PRODUCTION_DAILY_LIMIT,
+  FACE_LAB_USAGE_POLICY
+} from "../lib/face-lab-usage-policy.js";
 
 const root = process.cwd();
 
@@ -94,9 +98,28 @@ assert(isGuardHash(firstFingerprint), "fingerprint should be hex sha256");
 assert(!firstFingerprint.includes("redness"), "fingerprint should not expose raw request values");
 assert(stableSerialize({ b: 1, a: 2 }) === '{"a":2,"b":1}', "stableSerialize should sort object keys");
 
-assert(Object.keys(ANALYSIS_GUARD_POLICIES).length === 2, "only two guarded endpoint policies should exist");
+assert(Object.keys(ANALYSIS_GUARD_POLICIES).length === 3, "three guarded endpoint policies should exist");
 assert(getAnalysisGuardPolicy("analyze")?.path === "/api/analyze", "analyze policy should exist");
 assert(getAnalysisGuardPolicy("face-reading")?.path === "/api/face-reading", "face-reading policy should exist");
+assert(getAnalysisGuardPolicy("face-reading-test")?.path === "/api/face-reading-test", "face-reading test policy should exist");
+assert(FACE_LAB_PRODUCTION_DAILY_LIMIT === 5, "production Face Lab daily limit should be explicit");
+assert(FACE_LAB_USAGE_POLICY.production.consumesProductionQuota === true, "production Face Lab should consume production quota");
+assert(FACE_LAB_USAGE_POLICY.test.consumesProductionQuota === false, "Face Lab UAT should not consume production quota");
+assert(getAnalysisGuardPolicy("face-reading")?.refundOnFailure === true, "production Face Lab failures should refund quota");
+assert(getAnalysisGuardPolicy("face-reading-test")?.refundOnFailure === true, "Face Lab UAT failures should refund quota");
+assert(getAnalysisGuardPolicy("analyze")?.refundOnFailure !== true, "general analyze quota semantics must remain unchanged");
+assert(
+  getAnalysisGuardPolicy("face-reading")?.limits.anonymous.find((item) => item.name === "day")?.limit === 5,
+  "production anonymous Face Lab daily quota should be 5"
+);
+assert(
+  getAnalysisGuardPolicy("face-reading")?.limits.user.find((item) => item.name === "day")?.limit === 5,
+  "production user Face Lab daily quota should be 5"
+);
+assert(
+  getAnalysisGuardPolicy("face-reading-test")?.limits.anonymous.find((item) => item.name === "day")?.limit === 50,
+  "Face Lab UAT should use its own bounded daily quota"
+);
 assert(!getAnalysisGuardPolicy("full-report"), "unrelated endpoint policy should not exist");
 
 assert(createGuardHmac(secret, "purpose", "value") !== createGuardHmac(secret, "other", "value"), "hmac purpose should partition hashes");
@@ -135,12 +158,23 @@ const resultReadMigration = read("supabase/migrations/20260715000000_sec_09_resu
 ].forEach((pattern) => assertIncludes(resultReadMigration, pattern, "SEC-09 additive rate migration"));
 assertNotIncludes(resultReadMigration, "analysis_request_idempotency", "SEC-09 additive rate migration");
 
+const faceLabQuotaMigration = read("supabase/migrations/20260930133000_face_lab_test_quota_partition_v1.sql");
+[
+  "'analyze', 'face-reading', 'face-reading-test', 'result-read'",
+  "create or replace function public.refund_analysis_rate_limits",
+  "greatest(request_count - 1, 0)",
+  "revoke all on function public.refund_analysis_rate_limits(jsonb) from public, anon, authenticated",
+  "grant execute on function public.refund_analysis_rate_limits(jsonb) to service_role"
+].forEach((pattern) => assertIncludes(faceLabQuotaMigration, pattern, "Face Lab quota partition migration"));
+
 const guard = read("lib/security/analysis-request-guard.js");
 assertIncludes(guard, "analysis_guard_unavailable", "guard fail closed code");
 assertIncludes(guard, "if (!secret)", "guard secret check");
 assertIncludes(guard, "if (!supabase)", "guard db check");
 assertIncludes(guard, "claim_analysis_idempotency", "guard claim rpc");
 assertIncludes(guard, "consume_analysis_rate_limits", "guard consume rpc");
+assertIncludes(guard, "refund_analysis_rate_limits", "guard refund rpc");
+assertIncludes(guard, "rateLimitItems", "guard tracks consumed windows for refund");
 assertIncludes(guard, "Retry-After", "guard retry-after response");
 
 const analyzeRoute = read("app/api/analyze/route.js");
@@ -159,6 +193,8 @@ assertBefore(facePost, "guardAnalysisRequest({", "const imageBuffer = Buffer.fro
 assertBefore(facePost, "guardAnalysisRequest({", "analyzeVisionObservation({", "face guard before canonical Vision call");
 assertIncludes(faceRoute, "completeGuardedResponse", "face complete helper");
 assertIncludes(faceRoute, "failGuardedResponse", "face fail helper");
+assertIncludes(faceRoute, 'context?.guardEndpoint === "face-reading-test"', "face test quota partition");
+assertBefore(facePost, "guardAnalysisRequest({", "resolveOpenAiApiKey()", "face guard remains before provider resolution");
 
 const page = read("app/page.js");
 assertIncludes(page, "Idempotency-Key", "client idempotency header");
