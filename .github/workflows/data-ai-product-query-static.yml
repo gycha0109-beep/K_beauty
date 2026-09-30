@@ -39,6 +39,10 @@ on:
       - "scripts/verify-data-ai29c-c6f-prospective-axis-readiness.mjs"
       - "lib/sunscreen-protection-prospective-shadow.mjs"
       - "scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs"
+      - "lib/sunscreen-activation-redesign.mjs"
+      - "scripts/verify-data-ai29c-d-r1-staged-activation-redesign.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
+      - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-c6g-prospective-protection-shadow-input-v1.json"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-execution-v1.json"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-selection-v1.json"
@@ -126,6 +130,10 @@ on:
       - "scripts/verify-data-ai29c-c6f-prospective-axis-readiness.mjs"
       - "lib/sunscreen-protection-prospective-shadow.mjs"
       - "scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs"
+      - "lib/sunscreen-activation-redesign.mjs"
+      - "scripts/verify-data-ai29c-d-r1-staged-activation-redesign.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
+      - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-c6g-prospective-protection-shadow-input-v1.json"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-execution-v1.json"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-protection-expansion-wave-2-selection-v1.json"
@@ -272,6 +280,9 @@ jobs:
 
       - name: Verify DATA-AI29C-C6G prospective expanded-corpus protection shadow
         run: node scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs
+
+      - name: Verify DATA-AI29C-D-R1 staged sunscreen activation redesign
+        run: node scripts/verify-data-ai29c-d-r1-staged-activation-redesign.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
