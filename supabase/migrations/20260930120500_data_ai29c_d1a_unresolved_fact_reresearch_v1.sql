@@ -1,5 +1,16 @@
 begin;
 
+alter table public.product_fact_research_tasks
+  drop constraint if exists product_fact_research_tasks_policy_version_check;
+
+alter table public.product_fact_research_tasks
+  add constraint product_fact_research_tasks_policy_version_check
+  check (research_policy_version in (
+    'product-fact-required-policy-v1',
+    'product-fact-required-reresearch-v1',
+    'data-ai29c-protection-recovery-v1'
+  ));
+
 create table if not exists public.product_fact_unresolved_reresearch_requests (
   request_id text primary key,
   prior_task_id uuid not null references public.product_fact_research_tasks(id) on delete restrict,
