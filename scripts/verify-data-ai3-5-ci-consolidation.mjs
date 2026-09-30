@@ -36,13 +36,15 @@ for (const script of [
   "scripts/verify-data-ai29c-d1b-semantic-projection-policy.mjs",
   "scripts/verify-data-ai29c-d2-sunscreen-initial-admission.mjs",
   "scripts/verify-data-ai29c-d3-integrated-sunscreen-shadow.mjs",
+  "scripts/verify-data-ai29c-d3r1-feature-gated-shadow.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",
   "scripts/verify-data-ai5-activation-readiness.mjs",
 ]) {
   const command =
-    script === "scripts/verify-data-ai29c-d3-integrated-sunscreen-shadow.mjs"
+    script === "scripts/verify-data-ai29c-d3-integrated-sunscreen-shadow.mjs" ||
+    script === "scripts/verify-data-ai29c-d3r1-feature-gated-shadow.mjs"
       ? `node --experimental-strip-types ${script}`
       : `node ${script}`;
   assert.equal(
