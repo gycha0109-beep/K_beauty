@@ -62,6 +62,10 @@ assert.ok(
 );
 assert.equal(seed.includes("trust_official_source_transport_incidents"), false);
 assert.equal(
+  runner.includes('scopedCount(client, "trust_official_source_transport_incidents"'),
+  false,
+);
+assert.equal(
   seed.includes("trust_official_source_transport_drift_evaluations"),
   false,
 );
