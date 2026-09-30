@@ -20,7 +20,9 @@ for (const required of [
   "buildPremiumFaceLabSummary",
   "<PremiumFaceLabSection",
   "savedReportId={null}",
-  'resultKey={resultKey}'
+  'resultKey={resultKey}',
+  'payload?.failureReason === "vision_request_failed"',
+  '"Face Lab 분석 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."'
 ]) {
   assert.ok(client.includes(required), "standalone test client missing: " + required);
 }
