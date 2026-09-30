@@ -100,6 +100,13 @@ on:
       - "lib/server/sunscreen-spf-production-activation-reader.js"
       - "lib/sunscreen-spf-production-activation-contract.mjs"
       - "supabase/migrations/20260930211137_data_ai29c_d5d_spf_runtime_activation_v1.sql"
+      - "docs/evidence/data-ai29c-d5d-r1-recovery-v1.md"
+      - "scripts/verify-data-ai29c-d5d-r1-recovery.mjs"
+      - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
+      - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
+      - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
+      - "supabase/migrations/20260930212837_data_ai29c_d5d_emergency_rollback_v1.sql"
+      - "lib/server/recommendation-sunscreen-protection-bounded-reader.js"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -251,6 +258,13 @@ on:
       - "lib/server/sunscreen-spf-production-activation-reader.js"
       - "lib/sunscreen-spf-production-activation-contract.mjs"
       - "supabase/migrations/20260930211137_data_ai29c_d5d_spf_runtime_activation_v1.sql"
+      - "docs/evidence/data-ai29c-d5d-r1-recovery-v1.md"
+      - "scripts/verify-data-ai29c-d5d-r1-recovery.mjs"
+      - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
+      - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
+      - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
+      - "supabase/migrations/20260930212837_data_ai29c_d5d_emergency_rollback_v1.sql"
+      - "lib/server/recommendation-sunscreen-protection-bounded-reader.js"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -452,6 +466,9 @@ jobs:
         run: |
           node --check scripts/validate-data-ai29c-d5d-spf-production-activation-response.mjs
           node --experimental-strip-types scripts/verify-data-ai29c-d5d-spf-production-activation.mjs
+
+      - name: Verify DATA-AI29C-D5D-R1 recovery
+        run: node --experimental-strip-types scripts/verify-data-ai29c-d5d-r1-recovery.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
