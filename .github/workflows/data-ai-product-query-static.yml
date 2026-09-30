@@ -70,6 +70,10 @@ on:
       - "lib/sunscreen-spf-axis-activation-review.mjs"
       - "scripts/verify-data-ai29c-d4-spf-axis-review.mjs"
       - "docs/evidence/data-ai29c-d4-spf-axis-activation-review-v1.md"
+      - "lib/sunscreen-uva-authority-recovery-review.mjs"
+      - "fixtures/data-ai29c-d4-uva-authority-recovery-review-v1.json"
+      - "scripts/verify-data-ai29c-d4-uva-authority-recovery-review.mjs"
+      - "docs/evidence/data-ai29c-d4-uva-authority-recovery-review-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -191,6 +195,10 @@ on:
       - "lib/sunscreen-spf-axis-activation-review.mjs"
       - "scripts/verify-data-ai29c-d4-spf-axis-review.mjs"
       - "docs/evidence/data-ai29c-d4-spf-axis-activation-review-v1.md"
+      - "lib/sunscreen-uva-authority-recovery-review.mjs"
+      - "fixtures/data-ai29c-d4-uva-authority-recovery-review-v1.json"
+      - "scripts/verify-data-ai29c-d4-uva-authority-recovery-review.mjs"
+      - "docs/evidence/data-ai29c-d4-uva-authority-recovery-review-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -370,6 +378,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D4 SPF axis activation review
         run: node --experimental-strip-types scripts/verify-data-ai29c-d4-spf-axis-review.mjs
+
+      - name: Verify DATA-AI29C-D4 UVA authority recovery review
+        run: node --experimental-strip-types scripts/verify-data-ai29c-d4-uva-authority-recovery-review.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs

@@ -1,0 +1,129 @@
+{
+  "version": "data-ai29c-d4-uva-authority-recovery-review-v1",
+  "observedFromProduction": true,
+  "productionProject": "bygrczggxfuisupcevaz",
+  "sourceMainSha": "32739beef96cb3661aedb1da02a4f64514520f3c",
+  "registryVersion": "product-fact-registry-cross-category-v1",
+  "factKey": "uva_label",
+  "allowedValues": [
+    "PA+",
+    "PA++",
+    "PA+++",
+    "PA++++",
+    "UVA-PF-declared"
+  ],
+  "projection": {
+    "PA++++": "uva_high",
+    "PA+++": "uva_medium_high",
+    "UVA-PF-declared": "uva_medium_high",
+    "PA++": "uva_medium",
+    "PA+": "uva_low"
+  },
+  "currentHistoricalUvaPfDeclaredInstanceCount": 0,
+  "targets": [
+    {
+      "productId": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "productName": "La Roche-Posay Anthelios Sun Fluid",
+      "subjectId": "614db853-7865-408b-8f40-a4dcfe6a2ea5",
+      "subjectSemanticKey": "75f3d410ae03c5ffef800fedb28f706741fe59f3490e6155e396d6151b5ce527",
+      "variantKey": "ANTHELIOS_SUN_FLUID_KR_50ML",
+      "market": "KR",
+      "identityResolutionVersion": "trust-p7-sunscreen-stage-b-identity-v1",
+      "currentUvaFact": false,
+      "exactSubjectEvidence": {
+        "canonicalLocator": "https://www.larocheposay.co.kr/product/view/4833.do",
+        "publisher": "La Roche-Posay Korea",
+        "sourceKind": "official_product_page",
+        "observation": "Exact Korean product identity is available, but no registry-admissible PA label or numeric UVA-PF/PPD claim was established from the governed text review."
+      },
+      "outOfScopeEvidence": {
+        "canonicalLocator": "https://www.laroche-posay.co.uk/en_GB/anthelios-uvmune-400-invisible-fluid-spf50-sun-cream-for-sensitive-skin-50ml/3337875797597.html",
+        "publisher": "La Roche-Posay UK",
+        "sourceKind": "official_product_page",
+        "observation": "UK UVMune 400 page declares high PPD and broad UVA protection, but this is a different market presentation/formulation and cannot be transferred to the KR Subject without exact formulation equivalence."
+      },
+      "candidateValue": null,
+      "decision": "HOLD_EXACT_SUBJECT_UVA_LABEL_NOT_ESTABLISHED",
+      "forbiddenConversions": [
+        "UK_HIGH_PPD_TO_KR_UVA_LABEL",
+        "UVA_CIRCLE_OR_BROAD_UVA_COPY_TO_UVA_PF_DECLARED_WITHOUT_GOVERNED_SEMANTIC_RULE"
+      ]
+    },
+    {
+      "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "productName": "SKIN1004 Hyalu-Cica Water-Fit Sun Serum UV",
+      "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+      "subjectSemanticKey": "6ea35ff44d90264c4cb8f845b1f04f28adc794872220f41e4cc9e03d13561320",
+      "variantKey": "HYALU_CICA_WATER_FIT_SUN_SERUM_UV_US_50ML",
+      "market": "US",
+      "identityResolutionVersion": "trust-p17-skin1004-uv-us-market-applicability-recovery-v1",
+      "currentUvaFact": false,
+      "exactSubjectEvidence": {
+        "canonicalLocator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+        "publisher": "SKIN1004 US",
+        "sourceKind": "official_product_page",
+        "observation": "The exact US formulation is governed as Broad Spectrum only. TRUST-P18 already freezes broad_spectrum_to_pa_conversion=false and uva_label_adoption_planned=false."
+      },
+      "outOfScopeEvidence": {
+        "canonicalLocator": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-spf50-pa",
+        "publisher": "SKIN1004",
+        "sourceKind": "official_product_page",
+        "observation": "Global product page declares PA++++, but its UV-filter formulation differs from the US Subject and therefore cannot be transferred."
+      },
+      "exactSubjectActiveIngredients": [
+        "Avobenzone 2.7%",
+        "Homosalate 13.6%",
+        "Octisalate 4.5%",
+        "Octocrylene 9%"
+      ],
+      "globalFormulaUvFilters": [
+        "Diethylamino Hydroxybenzoyl Hexyl Benzoate",
+        "Ethylhexyl Triazone",
+        "Methylene Bis-Benzotriazolyl Tetramethylbutylphenol",
+        "Diethylhexyl Butamido Triazone"
+      ],
+      "candidateValue": null,
+      "decision": "HOLD_CROSS_FORMULA_PA_TRANSFER_FORBIDDEN",
+      "forbiddenConversions": [
+        "BROAD_SPECTRUM_TO_PA",
+        "GLOBAL_PA++++_TO_US_FORMULATION",
+        "BROAD_SPECTRUM_TO_UVA_PF_DECLARED_WITHOUT_GOVERNED_SEMANTIC_RULE"
+      ]
+    }
+  ],
+  "recovery": {
+    "confirmedFactsWritten": 0,
+    "evidenceRecordsWritten": 0,
+    "reviewAssignmentsWritten": 0,
+    "reason": "No admissible exact-Subject product claim currently establishes a registry UVA label for either missing product."
+  },
+  "d4Status": {
+    "comparableCorpusCount": 14,
+    "currentUvaEligibleCount": 12,
+    "currentUvaMissingCount": 2,
+    "decision": "UVA_AXIS_D4_HOLD_EXACT_SUBJECT_AUTHORITY_INCOMPLETE"
+  },
+  "nextGate": {
+    "acceptablePaths": [
+      "obtain an exact-Subject first-party PA/UVA-PF claim",
+      "separately clarify and govern the semantic meaning/adoption rule for UVA-PF-declared before using it"
+    ],
+    "forbiddenPaths": [
+      "cross-market claim transfer",
+      "cross-formulation PA transfer",
+      "Broad Spectrum to PA conversion",
+      "missing authority treated as low protection"
+    ]
+  },
+  "limits": {
+    "productFactWritten": false,
+    "registryChanged": false,
+    "productionCandidateAdmissionWired": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "uvaActivated": false,
+    "waterResistanceApplied": false
+  }
+}
