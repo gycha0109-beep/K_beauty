@@ -158,8 +158,8 @@ Water는 계속 0/HOLD다.
 
 1. Physical Daily Sunmilk ≡ Jojoba Suncream
 
-Zinc와 Bio Repair는 표면적인 core semantic은 비슷하지만
-전체 matrix에서는 동일 signature가 아니다. 따라서 이를 임의로 같은 pair로 취급하지 않는다.
+나머지 세 제품의 signature grouping은 scenario에 따라 달라질 수 있으므로
+별도 고정 분류를 주장하지 않는다.
 
 Physical Daily / Jojoba 한 pair만으로도
 현재 governed semantics만으로 신규 5종의 완전한 tie-free baseline ranking이
