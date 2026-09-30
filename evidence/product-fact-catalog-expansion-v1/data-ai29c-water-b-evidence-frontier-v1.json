@@ -1,0 +1,133 @@
+{
+  "version": "data-ai29c-water-b-evidence-frontier-v1",
+  "researchedAgainstMainSha": "49f61e22b6cad51c8d85af540168940ae63195fd",
+  "track": "taxonomy-ai",
+  "researchDate": "2026-10-01",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "registry": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "factKey": "water_resistance_duration",
+    "definitionChecksum": "14510b53371121c1edc552f33155edc7fc5c9d44e509ed85d9589e65da6542ee",
+    "valueType": "number_unit",
+    "allowedUnits": ["minutes"],
+    "semanticDefinition": "Established water-resistance duration with explicit time unit.",
+    "permittedEvidenceClasses": ["product_claim", "measurement"],
+    "positiveEvidenceRequirement": "product-specific evidence",
+    "requiredQualifierContextFields": ["metric", "method_context", "timepoint"]
+  },
+  "productionBaseline": {
+    "prospectiveCorpusCount": 20,
+    "currentFactInstanceCount": 0,
+    "supportedFactInstanceCount": 0,
+    "productSpecificPrimaryFactInstanceCount": 0,
+    "currentFactCount": 0,
+    "evidenceRecordCount": 0,
+    "reviewAssignmentCount": 0
+  },
+  "currentCorpusCandidates": [
+    {
+      "productId": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+      "productName": "ANESSA Perfect UV Sunscreen Skincare Milk NA",
+      "subjectId": "d1d748c3-8706-4b6c-8719-676f6f317532",
+      "variantKey": "NA",
+      "formulationRevisionKey": "pilot-freeze-81e7ff0bf60b506d8c326970f8d930ea",
+      "market": "JP",
+      "productEvidence": {
+        "canonicalLocator": "https://www.shiseido.co.jp/anessa/products/suncare/perfect_uv_sm/",
+        "publisher": "Shiseido / ANESSA",
+        "sourceKind": "official_product_page",
+        "identityMatch": "exact",
+        "observedClaim": "UV耐水性★★",
+        "directNumericDurationClaim": null
+      },
+      "semanticAuthority": {
+        "canonicalLocator": "https://jcia.org/en/common/download/top/jcia-notifications-spf-pa.pdf",
+        "publisher": "Japan Cosmetic Industry Association",
+        "sourceKind": "official_industry_standard",
+        "standard": "ISO 18861-based JCIA water-resistance labeling standard",
+        "label": "UV耐水性★★",
+        "waterImmersionConditionMinutes": 80,
+        "condition": "20 minutes x 4",
+        "metric": "SPF retention percentage",
+        "passCriterion": "lower limit of the 90% confidence interval on mean SPF retention is at least 50%"
+      },
+      "candidateProjection": {
+        "valueNumber": 80,
+        "valueUnit": "minutes",
+        "metric": "SPF_retention_percentage",
+        "methodContext": "ISO_18861_JCIA_UV_water_resistance",
+        "timepoint": "after_total_80_min_water_immersion",
+        "projectionSource": "exact product label plus governed external label semantics"
+      },
+      "directConfirmationEligible": false,
+      "governedSemanticMappingCandidate": true,
+      "decision": "REVIEW_LABEL_TO_DURATION_MAPPING_BEFORE_FACT_ADOPTION"
+    },
+    {
+      "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "productName": "BUSHMAN Waterproof Pro Suncream",
+      "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "variantKey": null,
+      "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+      "market": "KR",
+      "productEvidence": {
+        "canonicalLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+        "publisher": "BUSHMAN",
+        "sourceKind": "official_product_page",
+        "identityMatch": "exact",
+        "observedClaim": "Waterproof Pro Suncream",
+        "directNumericDurationClaim": null
+      },
+      "candidateProjection": null,
+      "directConfirmationEligible": false,
+      "governedSemanticMappingCandidate": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    }
+  ],
+  "outOfCorpusDiscovery": [
+    {
+      "brand": "Beauty of Joseon",
+      "productName": "Day Dew Sunscreen Lightweight SPF 50",
+      "currentCatalogProductFound": false,
+      "officialLocator": "https://beautyofjoseon.com/products/day-dew-sunscreen",
+      "observedClaim": "Water Resistance (80 min)",
+      "studyContext": "human study under FDA 2021 guidelines by Eurofins CRL, USA",
+      "durationMinutes": 80,
+      "decision": "CATALOG_EXPANSION_CANDIDATE_NOT_TRANSFERABLE_TO_EXISTING_BOJ_SUBJECTS"
+    }
+  ],
+  "semanticBoundaries": {
+    "waterproofWordToDurationForbidden": true,
+    "superWaterproofWordToDurationForbidden": true,
+    "sweatResistanceToWaterDurationForbidden": true,
+    "jciaUvWaterResistanceDoesNotRepresentSweatResistance": true,
+    "outOfCorpusProductClaimTransferForbidden": true,
+    "missingDurationToZeroForbidden": true,
+    "missingDurationToNonWaterproofForbidden": true
+  },
+  "researchOutcome": {
+    "directConfirmationEligibleCurrentSubjectCount": 0,
+    "governedSemanticMappingCandidateCount": 1,
+    "holdCurrentSubjectCount": 1,
+    "catalogExpansionCandidateCount": 1,
+    "factAdoptionPerformed": false,
+    "nextGate": "WATER_B1_GOVERNED_LABEL_TO_DURATION_MAPPING_REVIEW"
+  },
+  "limits": {
+    "productFactWritten": false,
+    "evidenceRecordWritten": false,
+    "reviewAssignmentWritten": false,
+    "confirmationWritten": false,
+    "registryChanged": false,
+    "productQueryIntentSchemaMutated": false,
+    "protectionScorerWired": false,
+    "waterAxisActivated": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "persistence": false,
+    "spfProductionStateMutated": false
+  },
+  "decision": "WATER_B_EVIDENCE_FRONTIER_PASS_SEMANTIC_MAPPING_REVIEW_REQUIRED"
+}
