@@ -1,0 +1,101 @@
+{
+  "version": "data-ai29c-d3r3-semantic-authority-recovery-v1",
+  "observedFromProduction": true,
+  "productionProject": "bygrczggxfuisupcevaz",
+  "sourceMainSha": "88800f1fa75468447644aaef17b7d6f2792c9fbe",
+  "semanticContractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+  "recoveryCount": 3,
+  "recoveries": [
+    {
+      "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
+      "productName": "Physical Daily Sunmilk",
+      "fieldName": "finish",
+      "previousReviewId": "4046f494-f93b-4021-93ce-c03c19f5274e",
+      "reviewId": "ef141ec9-96c5-4f18-9c34-c026a0e396d2",
+      "previousState": "reviewed_not_established",
+      "state": "established",
+      "value": "dewy",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "sourceType": "official_product_page",
+          "sourceRef": "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+          "claim": "Official page describes a milk formula with moist and soft wear."
+        },
+        {
+          "sourceType": "hwahae_review_signal",
+          "sourceRef": "https://www.hwahae.com/en/products/SIDMOOL-Physical-daily-sunmilk-SPF20-PAPLUS-PLUS/1883342",
+          "claim": "Hwahae aggregate and repeated review samples support a dewy/rich rather than matte finish."
+        }
+      ]
+    },
+    {
+      "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
+      "productName": "Physical Daily Sunmilk",
+      "fieldName": "tone_up",
+      "previousReviewId": "dd545b68-19b8-429d-b722-c5fa61e2c73d",
+      "reviewId": "ba68c12e-1745-4dbc-a8d3-14ab1a651afb",
+      "previousState": "reviewed_not_established",
+      "state": "established",
+      "value": true,
+      "confidence": "medium",
+      "evidence": [
+        {
+          "sourceType": "hwahae_review_signal",
+          "sourceRef": "https://www.hwahae.com/en/products/SIDMOOL-Physical-daily-sunmilk-SPF20-PAPLUS-PLUS/1883342",
+          "claim": "Hwahae aggregate includes Evens Out Skin Tone and repeated long-term reviews describe subtle/natural brightening."
+        }
+      ]
+    },
+    {
+      "productId": "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+      "subjectId": "cb9364c3-2059-49db-adda-47187e97d743",
+      "productName": "MIN JUNG GI Physical Sun Block",
+      "fieldName": "finish",
+      "previousReviewId": "14cfb9d6-338f-416a-a67f-2a03826fb6fd",
+      "reviewId": "8aae4a55-226a-431e-a7e5-2c568095f9e0",
+      "previousState": "reviewed_not_established",
+      "state": "established",
+      "value": "soft_matte",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "sourceType": "hwahae_review_signal",
+          "sourceRef": "https://www.hwahae.com/en/products/SIDMOOL-MIN-JUNG-GI-Physical-Sun-block-SPF35-PAPLUS-PLUS-PLUS/1801617",
+          "claim": "Hwahae aggregate reports Matte Finish 115, Not Oily 340 and Soft and Airy 126."
+        },
+        {
+          "sourceType": "hwahae_review_sample",
+          "sourceRef": "https://www.hwahae.com/en/products/SIDMOOL-MIN-JUNG-GI-Physical-Sun-block-SPF35-PAPLUS-PLUS-PLUS/1801617/reviews?topic_id=fe570be6-c7fe-4fa4-b57f-ff6e7b2392ed",
+          "claim": "Multiple review samples explicitly describe matte or very matte finish and drying behavior."
+        }
+      ]
+    }
+  ],
+  "unchangedHolds": [
+    {
+      "productId": "b576991e-79c9-4189-b6e9-527aeeb03566",
+      "productName": "Dr. Troub Zinc Physical",
+      "fieldName": "finish",
+      "state": "reviewed_not_established",
+      "reason": "Current review evidence remains insufficient to collapse glow/oily/dewy observations into one governed finish enum."
+    },
+    {
+      "productId": "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+      "productName": "Dr. Troub Skin Returning Bio Repair + Suncream",
+      "fieldName": "finish",
+      "state": "reviewed_not_established",
+      "reason": "Current review evidence mixes natural makeup finish, glow, oiliness and dryness; no single governed finish enum is established."
+    }
+  ],
+  "limits": {
+    "productRowMutated": false,
+    "recommendationAdmissionMutated": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  }
+}
