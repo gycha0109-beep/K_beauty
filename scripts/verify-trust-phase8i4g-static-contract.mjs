@@ -297,11 +297,17 @@ assert.ok(
 );
 
 for (const required of [
-  "get_trust_phase8i4g_canary_snapshot_v1",
+  "create schema if not exists private",
+  "private.get_trust_phase8i4g_canary_snapshot_internal_v1",
   "security definer",
+  "public.get_trust_phase8i4g_canary_snapshot_v1",
+  "security invoker",
+  "current_user <> 'service_role'",
   "set search_path = ''",
   "READ_ONLY_SERVICE_ROLE_RPC_NO_AUTHORITY_MUTATION",
+  "revoke all on function private.get_trust_phase8i4g_canary_snapshot_internal_v1(integer)",
   "revoke all on function public.get_trust_phase8i4g_canary_snapshot_v1(integer)",
+  "grant execute on function private.get_trust_phase8i4g_canary_snapshot_internal_v1(integer)",
   "grant execute on function public.get_trust_phase8i4g_canary_snapshot_v1(integer)",
   "to service_role",
 ]) {
