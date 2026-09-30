@@ -59,6 +59,10 @@ on:
       - "lib/sunscreen-feature-gated-integrated-shadow.mjs"
       - "scripts/verify-data-ai29c-d3r1-feature-gated-shadow.mjs"
       - "docs/evidence/data-ai29c-d3r1-feature-gated-integrated-shadow-v1.md"
+      - "lib/sunscreen-mixed-corpus-calibration.mjs"
+      - "fixtures/data-ai29c-d3r2-legacy-sunscreen-runtime-v1.json"
+      - "scripts/verify-data-ai29c-d3r2-mixed-corpus-calibration.mjs"
+      - "docs/evidence/data-ai29c-d3r2-mixed-corpus-calibration-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -169,6 +173,10 @@ on:
       - "lib/sunscreen-feature-gated-integrated-shadow.mjs"
       - "scripts/verify-data-ai29c-d3r1-feature-gated-shadow.mjs"
       - "docs/evidence/data-ai29c-d3r1-feature-gated-integrated-shadow-v1.md"
+      - "lib/sunscreen-mixed-corpus-calibration.mjs"
+      - "fixtures/data-ai29c-d3r2-legacy-sunscreen-runtime-v1.json"
+      - "scripts/verify-data-ai29c-d3r2-mixed-corpus-calibration.mjs"
+      - "docs/evidence/data-ai29c-d3r2-mixed-corpus-calibration-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -339,6 +347,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D3R1 feature-gated sunscreen shadow
         run: node --experimental-strip-types scripts/verify-data-ai29c-d3r1-feature-gated-shadow.mjs
+
+      - name: Verify DATA-AI29C-D3R2 mixed-corpus sunscreen calibration
+        run: node --experimental-strip-types scripts/verify-data-ai29c-d3r2-mixed-corpus-calibration.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
