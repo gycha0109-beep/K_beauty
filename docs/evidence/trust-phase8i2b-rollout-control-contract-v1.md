@@ -69,6 +69,7 @@ Hard failure:
 Degraded but not automatically unsafe:
 
 - TRANSIENT
+- DNS resolution unavailable during safe public-host validation (`ENOTFOUND`, `EAI_AGAIN`) is normalized to TRANSIENT; no network fetch proceeds and private/unsafe resolution remains BLOCKED
 - HTTP 401/403/451 BLOCKED
 
 Canary holds at two or more degraded targets. Full fleet holds at 20 percent or more degraded targets.
