@@ -84,6 +84,14 @@ on:
       - "lib/server/product-query-spf-production-shadow-service.js"
       - "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs"
       - "docs/evidence/data-ai29c-d5b-spf-production-shadow-v1.md"
+      - "docs/evidence/data-ai29c-d5c-bounded-internal-canary-v1.md"
+      - "scripts/validate-data-ai29c-d5c-spf-canary-runtime-response.mjs"
+      - "scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs"
+      - "app/api/internal/product-query-spf-canary/route.js"
+      - "lib/server/product-query-spf-canary-service.js"
+      - "lib/server/sunscreen-d5c-canary-authority-reader.js"
+      - "lib/sunscreen-d5c-canary-authority-contract.mjs"
+      - "supabase/migrations/20260930202522_data_ai29c_d5c_bounded_canary_authority_v1.sql"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -219,6 +227,14 @@ on:
       - "lib/server/product-query-spf-production-shadow-service.js"
       - "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs"
       - "docs/evidence/data-ai29c-d5b-spf-production-shadow-v1.md"
+      - "docs/evidence/data-ai29c-d5c-bounded-internal-canary-v1.md"
+      - "scripts/validate-data-ai29c-d5c-spf-canary-runtime-response.mjs"
+      - "scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs"
+      - "app/api/internal/product-query-spf-canary/route.js"
+      - "lib/server/product-query-spf-canary-service.js"
+      - "lib/server/sunscreen-d5c-canary-authority-reader.js"
+      - "lib/sunscreen-d5c-canary-authority-contract.mjs"
+      - "supabase/migrations/20260930202522_data_ai29c_d5c_bounded_canary_authority_v1.sql"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -410,6 +426,11 @@ jobs:
 
       - name: Verify DATA-AI29C-D5B SPF Production shadow
         run: node --experimental-strip-types scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs
+
+      - name: Verify DATA-AI29C-D5C bounded internal SPF canary
+        run: |
+          node --check scripts/validate-data-ai29c-d5c-spf-canary-runtime-response.mjs
+          node --experimental-strip-types scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
