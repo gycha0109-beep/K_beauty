@@ -24,7 +24,7 @@
 6. idempotency complete/fail
 7. 기존 성공 응답 또는 안전한 guard 응답 반환
 
-`/api/analyze`에서는 guard가 OpenAI key 조회, image base64 변환, 제품 snapshot DB 조회보다 먼저 실행된다. `/api/face-reading`에서도 guard가 OpenAI key 조회, image base64 변환, provider 호출보다 먼저 실행된다. Guard 통과 뒤 canonical image 처리나 provider 호출 자체가 실패하면 해당 요청이 소비한 rate bucket을 환급한다. 정상 분석 또는 사진 근거 부족 같은 유효한 분석 결과는 사용량으로 유지한다.
+`/api/analyze`에서는 guard가 OpenAI key 조회, image base64 변환, 제품 snapshot DB 조회보다 먼저 실행된다. `/api/face-reading`에서도 guard가 OpenAI key 조회, image base64 변환, provider 호출보다 먼저 실행된다. `/api/face-reading` 및 `/api/face-reading-test`는 Guard 통과 뒤 canonical image 처리나 provider 호출 자체가 실패하면 해당 요청이 소비한 rate bucket을 환급한다. 정상 분석 또는 사진 근거 부족 같은 유효한 분석 결과는 사용량으로 유지한다. `/api/analyze`의 기존 quota semantics는 이번 변경에서 유지한다.
 
 ## 4. Principal 정책
 
