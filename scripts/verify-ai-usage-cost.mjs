@@ -13,7 +13,7 @@ const cost = estimateOpenAiUsageCost({
 
 assert.equal(
   OPENAI_USAGE_PRICING_VERSION,
-  "openai-gpt-5.6-luna-standard-2026-09-30"
+  "openai-luna-standard-pricing-2026-09-30-v1"
 );
 assert.equal(cost.pricingVersion, OPENAI_USAGE_PRICING_VERSION);
 assert.equal(cost.estimatedCostNanoUsd, 2_498_200);
