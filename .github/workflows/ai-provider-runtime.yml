@@ -120,7 +120,7 @@ jobs:
 
   live-provider-smoke:
     name: Explicit live OpenAI smoke
-    if: (github.event_name == 'workflow_dispatch' && inputs.run_live_provider) || (github.event_name == 'pull_request' && github.head_ref == 'fix/face-research/luna-chat-completion-compat')
+    if: github.event_name == 'workflow_dispatch' && inputs.run_live_provider
     needs: provider-runtime-contract
     runs-on: ubuntu-24.04
     timeout-minutes: 3
