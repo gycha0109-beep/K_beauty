@@ -1,8 +1,14 @@
 -- TRUST Phase 8I-4G: service-role-only read boundary for scheduled first-real canary detection.
--- This function is read-only. It does not create, confirm, retire, relocate, adjudicate,
--- or otherwise mutate Product Fact, Evidence Source, Recommendation, or relocation authority.
+-- The privileged reader stays in a non-exposed schema. The public RPC is SECURITY INVOKER,
+-- explicitly service-role-only, and delegates to the bounded internal read helper.
+-- Neither function creates, confirms, retires, relocates, adjudicates, or otherwise mutates authority.
 
-create or replace function public.get_trust_phase8i4g_canary_snapshot_v1(
+create schema if not exists private;
+
+revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to service_role;
+
+create or replace function private.get_trust_phase8i4g_canary_snapshot_internal_v1(
   p_limit integer default 1000
 )
 returns jsonb
@@ -147,10 +153,36 @@ begin
 end;
 $function$;
 
+revoke all on function private.get_trust_phase8i4g_canary_snapshot_internal_v1(integer)
+  from public, anon, authenticated, service_role;
+grant execute on function private.get_trust_phase8i4g_canary_snapshot_internal_v1(integer)
+  to service_role;
+
+create or replace function public.get_trust_phase8i4g_canary_snapshot_v1(
+  p_limit integer default 1000
+)
+returns jsonb
+language plpgsql
+stable
+security invoker
+set search_path = ''
+as $function$
+begin
+  if current_user <> 'service_role' then
+    raise exception 'trust_phase8i4g_service_role_required'
+      using errcode = '42501';
+  end if;
+
+  return private.get_trust_phase8i4g_canary_snapshot_internal_v1(p_limit);
+end;
+$function$;
+
 revoke all on function public.get_trust_phase8i4g_canary_snapshot_v1(integer)
   from public, anon, authenticated, service_role;
 grant execute on function public.get_trust_phase8i4g_canary_snapshot_v1(integer)
   to service_role;
 
+comment on function private.get_trust_phase8i4g_canary_snapshot_internal_v1(integer) is
+  'Non-exposed privileged read helper for Phase 8I-4G first-real canary detection. No authority mutation.';
 comment on function public.get_trust_phase8i4g_canary_snapshot_v1(integer) is
-  'Service-role-only read boundary for Phase 8I-4G first-real canary detection. Reads governed operational and authority counts without granting direct table access or relocation authority.';
+  'Service-role-only SECURITY INVOKER RPC for Phase 8I-4G first-real canary detection. Delegates to a bounded non-exposed read helper without direct table grants or relocation authority.';
