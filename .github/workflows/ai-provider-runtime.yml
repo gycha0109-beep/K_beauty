@@ -135,6 +135,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install A/B image dependency
+        run: npm ci --ignore-scripts
+
       - name: Compare auto and high image detail
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
