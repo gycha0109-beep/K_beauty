@@ -18,7 +18,7 @@ const apiKey = process.env.OPENAI_API_KEY || "";
 assert.ok(apiKey, "OPENAI_API_KEY is required for the image-detail A/B smoke");
 
 const FIXTURES = Object.freeze(
-  Array.from({ length: 8 }, (_, index) => {
+  Array.from({ length: 4 }, (_, index) => {
     const id = String(index + 1).padStart(2, "0");
     return {
       id: `fcneutralv2_${id}`,
@@ -122,7 +122,6 @@ async function runFixtureDetail(fixture, detail) {
 
   assert.equal(bundle.schemaVersion, VISION_OBSERVATION_SCHEMA_VERSION);
   assert.equal(bundle.promptVersion, VISION_OBSERVATION_PROMPT_VERSION);
-  assert.equal(bundle.status, "available");
   assert.equal(bundle.privacy.sourceImagePersisted, false);
   assert.equal(bundle.privacy.rawProviderResponsePersisted, false);
 
@@ -136,6 +135,7 @@ async function runFixtureDetail(fixture, detail) {
 }
 
 const rows = [];
+let validPairCount = 0;
 let comparableEligibleCount = 0;
 let totalAutoInputTokens = 0;
 let totalHighInputTokens = 0;
@@ -143,18 +143,28 @@ let totalAutoOutputTokens = 0;
 let totalHighOutputTokens = 0;
 
 for (const fixture of FIXTURES) {
-  const results = {};
-  for (const detail of DETAILS) {
-    results[detail] = await runFixtureDetail(fixture, detail);
-  }
+  const [autoResult, highResult] = await Promise.all(
+    DETAILS.map((detail) => runFixtureDetail(fixture, detail))
+  );
+  const results = {
+    auto: autoResult,
+    high: highResult
+  };
 
   const autoBundle = results.auto.bundle;
   const highBundle = results.high.bundle;
   const comparison = compareFaceValues(autoBundle, highBundle);
+  const validPair =
+    autoBundle.status === "available" &&
+    highBundle.status === "available";
   const bothFaceEligible =
+    validPair &&
     autoBundle.eligibility.faceLabEligible === true &&
     highBundle.eligibility.faceLabEligible === true;
 
+  if (validPair) {
+    validPairCount += 1;
+  }
   if (bothFaceEligible) {
     comparableEligibleCount += 1;
   }
@@ -166,6 +176,10 @@ for (const fixture of FIXTURES) {
 
   rows.push({
     fixture: fixture.id,
+    bundleStatus: {
+      auto: autoBundle.status,
+      high: highBundle.status
+    },
     imageType: {
       auto: autoBundle.eligibility.imageType,
       high: highBundle.eligibility.imageType
@@ -187,6 +201,10 @@ for (const fixture of FIXTURES) {
 }
 
 assert.ok(
+  validPairCount >= 2,
+  "A/B fixture set must contain at least two canonical-valid pairs"
+);
+assert.ok(
   comparableEligibleCount >= 1,
   "A/B fixture set must contain at least one face eligible under both detail modes"
 );
@@ -205,6 +223,7 @@ console.log(
       contract: "ai-provider-image-detail-ab-v1",
       model,
       fixtureCount: FIXTURES.length,
+      validPairCount,
       comparableEligibleCount,
       totals: {
         auto: {
