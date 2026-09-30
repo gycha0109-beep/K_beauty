@@ -44,10 +44,10 @@ raw user id, raw IP, raw anonymous cookie payload, raw idempotency key, request 
 | `/api/analyze` | anonymous cookie | 2 / 1시간 | 4 / 24시간 |
 | `/api/analyze` | IP safety ceiling | 5 / 1시간 | 10 / 24시간 |
 | `/api/face-reading` | authenticated user | 3 / 1시간 | 8 / 24시간 |
-| `/api/face-reading` | anonymous cookie | 1 / 1시간 | 2 / 24시간 |
-| `/api/face-reading` | IP safety ceiling | 3 / 1시간 | 5 / 24시간 |
+| `/api/face-reading` | anonymous cookie | 3 / 1시간 | 6 / 24시간 |
+| `/api/face-reading` | IP safety ceiling | 6 / 1시간 | 12 / 24시간 |
 
-정책 값은 `lib/security/analysis-request-guard-core.js` 한 곳에서 중앙 관리한다. 정상 사용자 흐름은 endpoint당 1회 호출이므로 기본 권장값을 유지했다. 운영 로그에서 429 비율, 정상 재분석 빈도, provider 비용을 보고 조정한다.
+정책 값은 `lib/security/analysis-request-guard-core.js` 한 곳에서 중앙 관리한다. `/api/face-reading`은 사진 품질 보정·재촬영 흐름에서 정상 사용자가 같은 시간대에 여러 번 재시도할 수 있으므로 anonymous/IP short-window를 재촬영 가능한 범위로 조정한다. 운영 로그에서 429 비율, 정상 재분석 빈도, provider 비용을 계속 보고 조정한다.
 
 ## 6. Idempotency 정책
 
