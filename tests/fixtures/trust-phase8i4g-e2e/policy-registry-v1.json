@@ -1,0 +1,142 @@
+{
+  "contract": "trust-phase8i3-transport-drift-evaluation-policy-registry-v1",
+  "version": "e2e-v1",
+  "authority": "REPOSITORY_REVIEWED_EVALUATION_POLICY_NOT_PRODUCT_FACT_AUTHORITY",
+  "retry_interval_hours": 6,
+  "policies": [
+    {
+      "policy_key": "product:94000000-0000-4000-8000-000000004001:subject:95000000-0000-4000-8000-000000004001",
+      "product_id": "94000000-0000-4000-8000-000000004001",
+      "subject_id": "95000000-0000-4000-8000-000000004001",
+      "historical_source_ids": [
+        "96000000-0000-4000-8000-000000004001",
+        "96000000-0000-4000-8000-000000004002",
+        "96000000-0000-4000-8000-000000004003"
+      ],
+      "direct_qualification_template": {
+        "contract": "trust-phase8h-source-identity-qualification-v1",
+        "historical_source": {
+          "source_id": "96000000-0000-4000-8000-000000004001",
+          "canonical_locator": "https://official.example.test/products/e2e-sunscreen",
+          "publisher": "E2E Official",
+          "source_kind": "official_product_page",
+          "market": null
+        },
+        "governed_subject": {
+          "product_id": "94000000-0000-4000-8000-000000004001",
+          "subject_id": "95000000-0000-4000-8000-000000004001",
+          "variant_key": null,
+          "formulation_revision_key": "e2e-formula-v1",
+          "market": null
+        },
+        "reviewed_binding": {
+          "binding_id": "9b000000-0000-4000-8000-000000004001",
+          "product_id": "94000000-0000-4000-8000-000000004001",
+          "subject_id": "95000000-0000-4000-8000-000000004001",
+          "binding_state": "resolved",
+          "source_url": "https://official.example.test/products/e2e-sunscreen",
+          "source_market": null,
+          "variant_key": null,
+          "formulation_revision_key": "e2e-formula-v1",
+          "review_version": "trust-official-source-review-v1"
+        },
+        "requirements": {
+          "allowed_hosts": [
+            "official.example.test"
+          ],
+          "product_anchors_all": [
+            "E2E Sunscreen"
+          ],
+          "product_anchors_any": [],
+          "market_anchors_all": [],
+          "variant_anchors_all": [],
+          "formulation_anchors_all": [],
+          "claim_anchors_all": [
+            "SPF50+"
+          ]
+        },
+        "candidate_defaults": {
+          "publisher": "E2E Official",
+          "market": null,
+          "source_kind": "brand_official_product_page"
+        }
+      },
+      "rediscovery_case_template": {
+        "contract": "trust-phase8h-official-source-rediscovery-v1",
+        "case_id": "phase8i4g-isolated-e2e",
+        "historical_source_id": "96000000-0000-4000-8000-000000004001",
+        "historical_source_ids": [
+          "96000000-0000-4000-8000-000000004001",
+          "96000000-0000-4000-8000-000000004002",
+          "96000000-0000-4000-8000-000000004003"
+        ],
+        "product_id": "94000000-0000-4000-8000-000000004001",
+        "subject_id": "95000000-0000-4000-8000-000000004001",
+        "allowed_hosts": [
+          "official.example.test"
+        ],
+        "product_path_prefixes": [
+          "/products/"
+        ],
+        "exclude_path_substrings": [],
+        "query_terms": [
+          "e2e sunscreen"
+        ],
+        "max_sitemaps": 1,
+        "candidate_limit": 1,
+        "qualification_candidate_limit": 1,
+        "discovery_surfaces": [],
+        "external_search_seeds": [],
+        "qualification_template": {
+          "contract": "trust-phase8h-source-identity-qualification-v1",
+          "historical_source": {
+            "source_id": "96000000-0000-4000-8000-000000004001",
+            "canonical_locator": "https://official.example.test/products/e2e-sunscreen",
+            "publisher": "E2E Official",
+            "source_kind": "official_product_page",
+            "market": null
+          },
+          "governed_subject": {
+            "product_id": "94000000-0000-4000-8000-000000004001",
+            "subject_id": "95000000-0000-4000-8000-000000004001",
+            "variant_key": null,
+            "formulation_revision_key": "e2e-formula-v1",
+            "market": null
+          },
+          "candidate_defaults": {
+            "publisher": "E2E Official",
+            "market": null,
+            "source_kind": "brand_official_product_page"
+          },
+          "reviewed_binding": {
+            "binding_id": "9b000000-0000-4000-8000-000000004001",
+            "product_id": "94000000-0000-4000-8000-000000004001",
+            "subject_id": "95000000-0000-4000-8000-000000004001",
+            "binding_state": "resolved",
+            "source_url": "https://official.example.test/products/e2e-sunscreen",
+            "source_market": null,
+            "variant_key": null,
+            "formulation_revision_key": "e2e-formula-v1",
+            "review_version": "trust-official-source-review-v1"
+          },
+          "requirements": {
+            "allowed_hosts": [
+              "official.example.test"
+            ],
+            "product_anchors_all": [
+              "E2E Sunscreen"
+            ],
+            "product_anchors_any": [],
+            "market_anchors_all": [],
+            "variant_anchors_all": [],
+            "formulation_anchors_all": [],
+            "claim_anchors_all": [
+              "SPF50+"
+            ]
+          },
+          "observation": {}
+        }
+      }
+    }
+  ]
+}

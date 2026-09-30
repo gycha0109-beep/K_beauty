@@ -15,6 +15,7 @@ on:
       - "supabase/migrations/*_trust_phase8i2_*.sql"
       - "supabase/migrations/*_trust_phase8i3_*.sql"
       - "supabase/migrations/*_trust_phase8i4_*.sql"
+      - "supabase/migrations/*_trust_phase8i4g_*.sql"
       - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
@@ -51,6 +52,10 @@ on:
       - "scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs"
       - "scripts/verify-trust-phase8i4g-static-contract.mjs"
       - "scripts/verify-trust-phase8i4g-canary-closure.mjs"
+      - "scripts/materialize-trust-phase8i4g-isolated-e2e.mjs"
+      - "scripts/run-trust-phase8i4g-isolated-e2e.mjs"
+      - "scripts/verify-trust-phase8i4g-isolated-e2e.mjs"
+      - "tests/fixtures/trust-phase8i4g-e2e/**"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -77,6 +82,7 @@ on:
       - "supabase/migrations/*_trust_phase8i2_*.sql"
       - "supabase/migrations/*_trust_phase8i3_*.sql"
       - "supabase/migrations/*_trust_phase8i4_*.sql"
+      - "supabase/migrations/*_trust_phase8i4g_*.sql"
       - "lib/trust/official-source-transport-fetch.mjs"
       - "scripts/trust-official-source-transport-worker.mjs"
       - "scripts/verify-trust-phase8i2-transport-foundation.mjs"
@@ -113,6 +119,10 @@ on:
       - "scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs"
       - "scripts/verify-trust-phase8i4g-static-contract.mjs"
       - "scripts/verify-trust-phase8i4g-canary-closure.mjs"
+      - "scripts/materialize-trust-phase8i4g-isolated-e2e.mjs"
+      - "scripts/run-trust-phase8i4g-isolated-e2e.mjs"
+      - "scripts/verify-trust-phase8i4g-isolated-e2e.mjs"
+      - "tests/fixtures/trust-phase8i4g-e2e/**"
       - "scripts/verify-trust-phase8i4-grouped-relocation-confirmation-request.mjs"
       - "scripts/verify-trust-phase8i4-grouped-relocation-preflight.mjs"
       - "supabase/migrations/*_trust_phase8h3_*.sql"
@@ -265,9 +275,13 @@ jobs:
           node --check scripts/verify-trust-phase8i4g-phase8h3-handoff.mjs
           node --check scripts/verify-trust-phase8i4g-static-contract.mjs
           node --check scripts/verify-trust-phase8i4g-canary-closure.mjs
+          node --check scripts/materialize-trust-phase8i4g-isolated-e2e.mjs
+          node --check scripts/run-trust-phase8i4g-isolated-e2e.mjs
+          node --check scripts/verify-trust-phase8i4g-isolated-e2e.mjs
           node scripts/verify-trust-phase8i4g-static-contract.mjs
           node scripts/verify-trust-phase8i4g-canary-activation.mjs
           node scripts/verify-trust-phase8i4g-canary-closure.mjs
+          node scripts/verify-trust-phase8i4g-isolated-e2e.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
         run: |
@@ -301,6 +315,122 @@ jobs:
         run: |
           set -euo pipefail
           git diff --check "$BASE_SHA...$HEAD_SHA"
+
+
+  isolated_first_real_canary_e2e:
+    name: Phase 8I-4G isolated first-real canary e2e
+    if: github.event_name != 'schedule' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch')
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SUPABASE_CLI_VERSION: 2.117.0
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Materialize isolated first-real canary runtime
+        run: node scripts/materialize-trust-phase8i4g-isolated-e2e.mjs
+
+      - name: Start isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_dir="$GITHUB_WORKSPACE/tmp/trust-phase8i4g-isolated-e2e"
+          echo "TRUST_PHASE8I4G_E2E_RUNTIME_DIR=$runtime_dir" >>"$GITHUB_ENV"
+          start_log="$RUNNER_TEMP/trust-phase8i4g-e2e-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "$runtime_dir" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"$start_log" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "$start_log" >&2
+            exit 1
+          fi
+          rm -f "$start_log"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "$runtime_dir"
+
+      - name: Bind isolated Supabase environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file="$RUNNER_TEMP/trust-phase8i4g-e2e.env"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" status \
+            --workdir "$TRUST_PHASE8I4G_E2E_RUNTIME_DIR" -o env >"$env_file"
+          api_url="$(grep '^API_URL=' "$env_file" | cut -d= -f2- | tr -d '"')"
+          anon_key="$(grep '^ANON_KEY=' "$env_file" | cut -d= -f2- | tr -d '"')"
+          service_key="$(grep '^SERVICE_ROLE_KEY=' "$env_file" | cut -d= -f2- | tr -d '"')"
+          test -n "$api_url"
+          test -n "$anon_key"
+          test -n "$service_key"
+          echo "::add-mask::$anon_key"
+          echo "::add-mask::$service_key"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$api_url"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$anon_key"
+            echo "SUPABASE_URL=$api_url"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$service_key"
+          } >>"$GITHUB_ENV"
+          rm -f "$env_file"
+
+      - name: Execute isolated first-real canary e2e
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact_dir="$RUNNER_TEMP/trust-phase8i4g-isolated-e2e"
+          mkdir -p "$artifact_dir"
+          result="$artifact_dir/result.json"
+          NODE_OPTIONS="--conditions=react-server" \
+            npx --yes "tsx@4.23.15" --tsconfig jsconfig.json scripts/run-trust-phase8i4g-isolated-e2e.mjs \
+            | tee "$result"
+          node -e '
+            const fs=require("node:fs");
+            const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+            if(x.contract!=="trust-phase8i4g-isolated-e2e-v1" || x.result!=="PASS") process.exit(1);
+          ' "$result"
+          echo "### Phase 8I-4G isolated first-real canary e2e" >>"$GITHUB_STEP_SUMMARY"
+          echo >>"$GITHUB_STEP_SUMMARY"
+          cat "$result" >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Upload isolated e2e result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: trust-phase8i4g-isolated-e2e-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/trust-phase8i4g-isolated-e2e/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          runtime_dir="${TRUST_PHASE8I4G_E2E_RUNTIME_DIR:-$GITHUB_WORKSPACE/tmp/trust-phase8i4g-isolated-e2e}"
+          if [[ -d "$runtime_dir/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop \
+              --workdir "$runtime_dir" --no-backup
+          fi
+          rm -rf -- "$runtime_dir"
 
   transport_live:
     name: Phase 8I-2B live transport rollout
