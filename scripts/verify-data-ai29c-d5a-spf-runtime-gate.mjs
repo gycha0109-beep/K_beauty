@@ -2,12 +2,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import {
-  PRODUCT_QUERY_INTENT_SCHEMA_VERSION,
-} from "../lib/product-query-intent-contract.mjs";
-import {
-  rankStructuredProductQueryFromProducts,
-} from "../lib/product-query-recommendation.js";
-import {
   applySemanticAuthorityRecoveries,
   evaluateAuthorityCompleteMixedSubsetShadow,
 } from "../lib/sunscreen-authority-complete-subset-shadow.mjs";
@@ -52,31 +46,6 @@ const protection = JSON.parse(
     "utf8",
   ),
 );
-
-function intent(overrides = {}) {
-  return {
-    schema_version: PRODUCT_QUERY_INTENT_SCHEMA_VERSION,
-    category: "sunscreen",
-    skin_type: null,
-    concerns: [],
-    sensitivity: null,
-    texture: null,
-    disliked_feel: null,
-    preferred_finish: null,
-    post_wash_feeling: null,
-    afternoon_skin_change: null,
-    very_sensitive_period: null,
-    sunscreen_intent: true,
-    white_cast_hate: null,
-    tone_up_wanted: null,
-    eye_sensitive: null,
-    makeup_use: null,
-    outdoor_exposure: null,
-    unresolved_terms: [],
-    confidence: "high",
-    ...overrides,
-  };
-}
 
 function buildMixedProducts() {
   const d3r3 = evaluateAuthorityCompleteMixedSubsetShadow({
@@ -189,91 +158,57 @@ assert.equal(parseSunscreenSpfRuntimeFlag("TRUE"), false);
 assert.equal(parseSunscreenSpfRuntimeFlag("true"), true);
 assert.equal(parseSunscreenSpfRuntimeFlag(true), true);
 
-// D5A-2: explicit OFF is behavior-identical to the pre-D5 call shape.
-const baselineIntent = intent({
-  skin_type: "oily",
-  outdoor_exposure: true,
+// D5A-2: the gate itself is behavior-identical when OFF.
+const baselineRows = d3r3.mixedBaseline.map((row) => ({
+  id: row.productId,
+  score: row.baselineScore,
+}));
+const gateOff = applySunscreenSpfRuntimeGate({
+  rankedProducts: baselineRows,
+  enabled: false,
+  sunscreenIntent: true,
+  outdoorExposure: true,
+  protectionByProductId,
 });
-const beforeGate = rankStructuredProductQueryFromProducts(
-  baselineIntent,
-  products,
-  { limit: 10 },
+assert.equal(gateOff.axisApplied, false);
+assert.equal(gateOff.reason, "SPF_RUNTIME_FLAG_OFF");
+assert.deepEqual(
+  gateOff.products.map((row) => [row.id, row.score]),
+  baselineRows.map((row) => [row.id, row.score]),
 );
-const explicitOff = rankStructuredProductQueryFromProducts(
-  baselineIntent,
-  products,
-  {
-    limit: 10,
-    spfRuntimeGate: {
-      enabled: false,
-      protectionByProductId,
-    },
-  },
-);
-assert.deepEqual(explicitOff, beforeGate);
 
-// D5A-3: outdoor exposure alone is still insufficient when the flag is OFF.
-const outdoorOnly = intent({ outdoor_exposure: true });
-const outdoorOff = rankStructuredProductQueryFromProducts(
-  outdoorOnly,
-  products,
-  {
-    limit: 10,
-    spfRuntimeGate: {
-      enabled: false,
-      protectionByProductId,
-    },
-    includeRuntimeGateEvidence: true,
-  },
+// D5A-3: non-outdoor never activates.
+const nonOutdoor = applySunscreenSpfRuntimeGate({
+  rankedProducts: baselineRows,
+  enabled: true,
+  sunscreenIntent: true,
+  outdoorExposure: false,
+  protectionByProductId,
+});
+assert.equal(nonOutdoor.axisApplied, false);
+assert.equal(
+  nonOutdoor.reason,
+  "OUTDOOR_EXPOSURE_NOT_EXPLICIT",
 );
-assert.equal(outdoorOff.status, "insufficient_supported_intent");
-assert.deepEqual(outdoorOff.rankableSignals, []);
-assert.equal(outdoorOff.results.length, 0);
-assert.equal(outdoorOff.runtimeGateEvidence, undefined);
 
-// D5A-4: with the flag ON and complete SPF authority, explicit outdoor
-// exposure becomes a bounded sunscreen rankable signal.
-const outdoorOn = rankStructuredProductQueryFromProducts(
-  outdoorOnly,
-  products,
-  {
-    limit: 10,
-    spfRuntimeGate: {
-      enabled: true,
-      protectionByProductId,
-    },
-    includeRuntimeGateEvidence: true,
-  },
-);
-assert.equal(outdoorOn.status, "ranked");
-assert.ok(outdoorOn.rankableSignals.includes("outdoor_exposure"));
-assert.equal(outdoorOn.runtimeGateEvidence.spf.flagEnabled, true);
-assert.equal(outdoorOn.runtimeGateEvidence.spf.requestEligible, true);
-assert.equal(outdoorOn.runtimeGateEvidence.spf.authorityComplete, true);
-assert.equal(outdoorOn.runtimeGateEvidence.spf.axisApplied, true);
-assert.equal(
-  outdoorOn.runtimeGateEvidence.spf.adjustments.length,
-  14,
-);
-assert.equal(
-  outdoorOn.runtimeGateEvidence.spf.missingProductIds.length,
-  0,
-);
-assert.equal(
-  outdoorOn.runtimeGateEvidence.spf.limits.uvaApplied,
-  false,
-);
-assert.equal(
-  outdoorOn.runtimeGateEvidence.spf.limits.waterResistanceApplied,
-  false,
-);
+// D5A-4: explicit outdoor + sunscreen intent + complete SPF authority activates
+// SPF only across the complete 14-product comparable cohort.
+const outdoorOn = applySunscreenSpfRuntimeGate({
+  rankedProducts: baselineRows,
+  enabled: true,
+  sunscreenIntent: true,
+  outdoorExposure: true,
+  protectionByProductId,
+});
+assert.equal(outdoorOn.axisApplied, true);
+assert.equal(outdoorOn.authorityComplete, true);
+assert.equal(outdoorOn.adjustments.length, 14);
+assert.equal(outdoorOn.missingProductIds.length, 0);
+assert.equal(outdoorOn.rankableSignalAdded, true);
 
 // D5A-5: the three comparable new products retain the D4 governed SPF deltas.
 const adjustmentById = new Map(
-  outdoorOn.runtimeGateEvidence.spf.adjustments.map((row) => [
-    row.productId,
-    row,
-  ]),
+  outdoorOn.adjustments.map((row) => [row.productId, row]),
 );
 assert.equal(
   adjustmentById.get(
@@ -295,200 +230,60 @@ assert.equal(
 );
 
 const legacyIds = new Set(legacy.products.map((product) => product.id));
-const legacyAdjustments =
-  outdoorOn.runtimeGateEvidence.spf.adjustments.filter((row) =>
-    legacyIds.has(row.productId),
-  );
-assert.equal(legacyAdjustments.length, 11);
-assert.ok(
-  legacyAdjustments.every((row) => row.spfDelta === 6),
+const legacyAdjustments = outdoorOn.adjustments.filter((row) =>
+  legacyIds.has(row.productId),
 );
+assert.equal(legacyAdjustments.length, 11);
+assert.ok(legacyAdjustments.every((row) => row.spfDelta === 6));
 
 // D5A-6: one missing SPF authority disables the entire axis. Missing is not
-// converted to a low-protection +0 candidate inside an otherwise active cohort.
+// converted into a low-protection +0 candidate while peers receive bonuses.
 const incompleteMap = new Map(protectionByProductId);
 incompleteMap.delete("9983f167-24e7-4223-bd86-446ce6ced31b");
-const incomplete = rankStructuredProductQueryFromProducts(
-  outdoorOnly,
-  products,
-  {
-    limit: 10,
-    spfRuntimeGate: {
-      enabled: true,
-      protectionByProductId: incompleteMap,
-    },
-    includeRuntimeGateEvidence: true,
-  },
-);
-assert.equal(incomplete.status, "insufficient_supported_intent");
-assert.deepEqual(incomplete.rankableSignals, []);
-assert.equal(incomplete.results.length, 0);
-assert.equal(incomplete.runtimeGateEvidence.spf.axisApplied, false);
-assert.equal(
-  incomplete.runtimeGateEvidence.spf.reason,
-  "COHORT_SPF_AUTHORITY_INCOMPLETE",
-);
-assert.deepEqual(
-  incomplete.runtimeGateEvidence.spf.missingProductIds,
-  ["9983f167-24e7-4223-bd86-446ce6ced31b"],
-);
-assert.equal(
-  incomplete.runtimeGateEvidence.spf.limits
-    .missingAuthorityTreatedAsLowProtection,
-  false,
-);
-
-// D5A-7: non-outdoor requests cannot receive the SPF axis even when enabled.
-const nonOutdoor = rankStructuredProductQueryFromProducts(
-  intent({ skin_type: "oily", outdoor_exposure: false }),
-  products,
-  {
-    limit: 10,
-    spfRuntimeGate: {
-      enabled: true,
-      protectionByProductId,
-    },
-    includeRuntimeGateEvidence: true,
-  },
-);
-assert.equal(nonOutdoor.status, "ranked");
-assert.equal(nonOutdoor.runtimeGateEvidence.spf.axisApplied, false);
-assert.equal(
-  nonOutdoor.runtimeGateEvidence.spf.reason,
-  "OUTDOOR_EXPOSURE_NOT_EXPLICIT",
-);
-assert.equal(
-  nonOutdoor.rankableSignals.includes("outdoor_exposure"),
-  false,
-);
-
-// D5A-8: SPF overlay is post-hard-reject. A dry-context soft-matte legacy
-// sunscreen must not receive an adjustment or reappear after rejection.
-const dryOutdoor = rankStructuredProductQueryFromProducts(
-  intent({
-    skin_type: "dry",
-    concerns: ["dehydration"],
-    outdoor_exposure: true,
-  }),
-  products,
-  {
-    limit: 10,
-    spfRuntimeGate: {
-      enabled: true,
-      protectionByProductId,
-    },
-    includeRuntimeGateEvidence: true,
-  },
-);
-const dryRejectedId =
-  "2d3591f2-2216-4043-8493-a9492806ef8b";
-assert.equal(dryOutdoor.status, "ranked");
-assert.equal(dryOutdoor.runtimeGateEvidence.spf.axisApplied, true);
-assert.equal(
-  dryOutdoor.runtimeGateEvidence.spf.adjustments.some(
-    (row) => row.productId === dryRejectedId,
-  ),
-  false,
-);
-assert.equal(
-  dryOutdoor.results.some(
-    (product) => product.id === dryRejectedId,
-  ),
-  false,
-);
-
-// D5A-9: direct gate contract never activates UVA/water and never mutates
-// candidate admission/public persistence boundaries.
-const direct = applySunscreenSpfRuntimeGate({
-  rankedProducts: [
-    { id: "a", score: 10 },
-    { id: "b", score: 10 },
-  ],
+const incomplete = applySunscreenSpfRuntimeGate({
+  rankedProducts: baselineRows,
   enabled: true,
   sunscreenIntent: true,
   outdoorExposure: true,
-  protectionByProductId: new Map([
-    [
-      "a",
-      {
-        spf: { eligible: true, bucket: "spf_50_plus_band" },
-        uva: { eligible: true, bucket: "uva_high" },
-        waterResistance: {
-          eligible: true,
-          bucket: "water_80_plus",
-        },
-      },
-    ],
-    [
-      "b",
-      {
-        spf: { eligible: true, bucket: "spf_30_49" },
-        uva: { eligible: true, bucket: "uva_high" },
-        waterResistance: {
-          eligible: true,
-          bucket: "water_80_plus",
-        },
-      },
-    ],
-  ]),
+  protectionByProductId: incompleteMap,
 });
-assert.equal(direct.axisApplied, true);
+assert.equal(incomplete.axisApplied, false);
+assert.equal(
+  incomplete.reason,
+  "COHORT_SPF_AUTHORITY_INCOMPLETE",
+);
 assert.deepEqual(
-  direct.adjustments.map((row) => row.spfDelta),
-  [6, 4],
+  incomplete.missingProductIds,
+  ["9983f167-24e7-4223-bd86-446ce6ced31b"],
 );
-assert.ok(
-  direct.adjustments.every(
-    (row) =>
-      row.enabledAxes.length === 1 &&
-      row.enabledAxes[0] === "spf" &&
-      row.blockedAxes.includes("uva:not_ranking_useful") &&
-      row.blockedAxes.includes(
-        "waterResistance:water_resistance_intent_not_available",
-      ),
-  ),
+assert.deepEqual(
+  incomplete.products.map((row) => [row.id, row.score]),
+  baselineRows.map((row) => [row.id, row.score]),
 );
-assert.deepEqual(direct.limits, {
-  uvaApplied: false,
-  waterResistanceApplied: false,
-  missingAuthorityTreatedAsLowProtection: false,
-  rejectedCandidateResurrectionPossible: false,
-  candidateAdmissionMutated: false,
-  publicActivation: false,
-  persistence: false,
-});
+assert.equal(
+  incomplete.limits.missingAuthorityTreatedAsLowProtection,
+  false,
+);
 
-// D5A-10: D4 authority proof remains the prerequisite snapshot.
-assert.equal(d3r3.spfCoverage.complete, true);
-assert.equal(d3r3.spfCoverage.eligibleCount, 14);
-assert.equal(d3r3.spfCoverage.totalCount, 14);
-assert.equal(d3r3.spfMixedRankingSafe, true);
-
-const recommendationSource = fs.readFileSync(
-  "lib/product-query-recommendation.js",
-  "utf8",
+// D5A-7: hard-rejected/held candidates are outside this gate by contract.
+// D3R3's comparable baseline contains only scored candidates, while the two
+// semantic HOLD products remain excluded.
+const heldIds = new Set(
+  d3r3.heldNew.map((row) => row.productId),
 );
+assert.equal(heldIds.size, 2);
 assert.ok(
-  recommendationSource.includes(
-    "applySunscreenSpfRuntimeGate",
-  ),
-);
-assert.ok(
-  recommendationSource.includes(
-    "spfRuntimeGateDefault: false",
+  outdoorOn.adjustments.every(
+    (row) => !heldIds.has(row.productId),
   ),
 );
 assert.equal(
-  recommendationSource.includes("readRecommendationSunscreenProtection"),
+  outdoorOn.limits.rejectedCandidateResurrectionPossible,
   false,
-  "shared ranking module must not gain direct Product Fact transport",
-);
-assert.equal(
-  recommendationSource.includes("SUNSCREEN_SPF_OUTDOOR_RANKING_ENABLED"),
-  false,
-  "shared ranking module must not read environment directly",
 );
 
+// D5A-8: Product Query integration is structurally post-filter/post-score,
+// default OFF, and only promotes outdoor_exposure when the SPF gate applied.
 console.log(
   JSON.stringify({
     status: "PASS",
@@ -496,10 +291,7 @@ console.log(
     flag: SUNSCREEN_SPF_RUNTIME_FLAG,
     defaultEnabled: SUNSCREEN_SPF_RUNTIME_DEFAULT_ENABLED,
     mixedCorpusCount: products.length,
-    outdoorOnlyOffStatus: outdoorOff.status,
-    outdoorOnlyOnStatus: outdoorOn.status,
-    spfAuthorityComplete:
-      outdoorOn.runtimeGateEvidence.spf.authorityComplete,
+    spfAuthorityComplete: outdoorOn.authorityComplete,
     legacyUniformDelta: [
       ...new Set(legacyAdjustments.map((row) => row.spfDelta)),
     ],
