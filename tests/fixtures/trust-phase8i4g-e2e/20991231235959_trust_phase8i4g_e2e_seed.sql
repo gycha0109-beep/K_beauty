@@ -22,13 +22,22 @@ values (
 ) on conflict (user_id) do update
 set role='admin_owner',is_active=true,updated_at=now();
 
-insert into public.products(id,name,brand,category,image_url)
+insert into public.products(
+  id,name,brand,category,image_url,
+  skin_types,concerns,texture,finish,irritation_risk,sensitivity_safe
+)
 values (
   '94000000-0000-4000-8000-000000004001',
   'Isolated E2E Sunscreen',
   'E2E Official',
   'sunscreen',
-  null
+  null,
+  'normal,sensitive',
+  'uv_protection',
+  'cream',
+  'natural',
+  'low',
+  true
 );
 
 insert into public.product_fact_registry_versions(
