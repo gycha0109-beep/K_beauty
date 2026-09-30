@@ -365,6 +365,21 @@ assert.ok(
   replayIdempotencyMigration.includes("'idempotent',true"),
   "8I-4G replay fix must retain exact confirmed idempotent return",
 );
+for (const required of [
+  "p_payload->>'old_locator' is distinct from",
+  "p_payload->'historical_source_ids' is distinct from coalesce",
+  "p_payload->'incident_ids' is distinct from coalesce",
+  "p_payload->'replacement'->>'source_url' is distinct from",
+  "p_payload->'replacement'->>'external_id' is distinct from",
+  "trust_official_source_relocation_group_sources",
+  "trust_official_source_relocation_group_incidents",
+  "v_existing.replacement_binding_id",
+]) {
+  assert.ok(
+    replayIdempotencyMigration.includes(required),
+    `8I-4G exact replay persisted-state check missing: ${required}`,
+  );
+}
 assert.ok(
   replayIdempotencyMigration.includes("pg_advisory_xact_lock"),
   "8I-4G replay fix must retain transaction serialization",
