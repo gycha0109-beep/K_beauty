@@ -1,0 +1,281 @@
+{
+  "version": "data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1",
+  "stage": "DATA-AI29C-D-R1",
+  "source_main_sha": "b74c061012859977bc028235f964d47de1a99c3d",
+  "problem_statement": {
+    "prospective_protection_corpus_ready": true,
+    "production_recommendation_sunscreen_corpus_discriminating": false,
+    "existing_generic_initial_admission_supports_sunscreen": false,
+    "catalog_only_primary_products_have_recommendation_semantics": false,
+    "unsafe_shortcut": "Do not turn protection-axis readiness into Production rank authority before a sunscreen-specific admission authority and reviewed scorer-compatible semantic projection exist."
+  },
+  "current_state": {
+    "prospective_corpus": {
+      "sunscreen_count": 20,
+      "exact_current_subject_count": 20,
+      "spf": {
+        "eligible_count": 18,
+        "coverage": 0.9,
+        "distinct_scoring_buckets": 3,
+        "ranking_useful": true
+      },
+      "uva": {
+        "eligible_count": 16,
+        "coverage": 0.8,
+        "distinct_scoring_buckets": 3,
+        "ranking_useful": true
+      },
+      "water_resistance": {
+        "eligible_count": 0,
+        "coverage": 0,
+        "distinct_scoring_buckets": 0,
+        "ranking_useful": false
+      }
+    },
+    "production_runtime": {
+      "admitted_sunscreen_count": 11,
+      "protection_ready_axes": [],
+      "protection_enabled_axes": [],
+      "production_ranking_changed": false
+    },
+    "existing_admission_authority": {
+      "version": "initial-admission-grant-policy-v1",
+      "sunscreen_classification": "INITIAL_ADMISSION_AUTHORITY_INSUFFICIENT",
+      "sunscreen_grant_supported": false
+    }
+  },
+  "semantic_authority": {
+    "version": "sunscreen-recommendation-semantic-bundle-v1",
+    "authority_kind": "reviewed_product_level_recommendation_semantics",
+    "raw_product_null_is_not_reviewed": false,
+    "missing_is_not_false": true,
+    "required_established_fields": [
+      "category_slot",
+      "skin_types",
+      "concerns",
+      "texture",
+      "finish",
+      "uv_filter_type",
+      "sensitivity_safe",
+      "irritation_risk",
+      "tone_up",
+      "white_cast",
+      "eye_sting",
+      "pilling_risk"
+    ],
+    "controlled_states": [
+      "established",
+      "reviewed_not_established",
+      "conflict",
+      "not_reviewed"
+    ],
+    "admission_requirement": "all required fields must be established for v1; reviewed_not_established remains fail-closed for initial admission",
+    "product_column_write_required": false,
+    "projection_only": true
+  },
+  "sunscreen_admission_policy": {
+    "version": "sunscreen-initial-admission-grant-policy-v1",
+    "creates_authority": "SUNSCREEN_INITIAL_ADMISSION_GRANT",
+    "runtime_composition_target": "LEGACY_FROZEN_RECOMMENDATION_CORPUS_V1 OR INITIAL_ADMISSION_GRANT OR SUNSCREEN_INITIAL_ADMISSION_GRANT",
+    "required_identity": [
+      "canonical product UUID",
+      "catalog-taxonomy-v1 sunscreen shadow assignment",
+      "resolved current Product Fact Subject",
+      "variant_key null for current selected C6 products"
+    ],
+    "required_product_facts": [
+      "spf_value: supported/product_specific_primary/current",
+      "uva_label: supported/product_specific_primary/current",
+      "uv_filter_type: supported/product_specific_primary/current"
+    ],
+    "required_semantics": "sunscreen-recommendation-semantic-bundle-v1 complete and current",
+    "water_resistance_required": false,
+    "grant_does_not_imply": [
+      "safe",
+      "recommended",
+      "approved",
+      "high_score",
+      "production_cutover"
+    ]
+  },
+  "stages": [
+    {
+      "id": "D0",
+      "name": "PROTECTION_AXIS_READINESS",
+      "current_status": "PASS",
+      "input": "C6F/C6G",
+      "output": "SPF/UVA prospective axes ready; water independently held"
+    },
+    {
+      "id": "D1",
+      "name": "SUNSCREEN_RECOMMENDATION_SEMANTIC_AUTHORITY",
+      "current_status": "BLOCKED_DATA_ENRICHMENT",
+      "output": "reviewed scorer-compatible semantic bundle for each candidate"
+    },
+    {
+      "id": "D2",
+      "name": "SUNSCREEN_INITIAL_ADMISSION_AUTHORITY",
+      "current_status": "BLOCKED_BY_D1",
+      "output": "category-scoped initial admission grant without mutating legacy Product columns"
+    },
+    {
+      "id": "D3",
+      "name": "INTEGRATED_RECOMMENDATION_PROTECTION_SHADOW",
+      "current_status": "BLOCKED_BY_D2",
+      "output": "existing baseline scorer + admitted candidate projection + SPF/UVA shadow adjustment"
+    },
+    {
+      "id": "D4",
+      "name": "AXIS_SPECIFIC_ACTIVATION_REVIEW",
+      "current_status": "BLOCKED_BY_D3",
+      "output": "manual activation decision for SPF/UVA only; water remains off"
+    },
+    {
+      "id": "D5",
+      "name": "BOUNDED_PRODUCTION_ACTIVATION",
+      "current_status": "NOT_AUTHORIZED",
+      "output": "feature-gated SPF/UVA outdoor adjustment only after explicit approval"
+    }
+  ],
+  "integrated_shadow_acceptance": {
+    "legacy_behavior_invariance_when_new_grants_excluded": true,
+    "candidate_projection_uses_reviewed_semantics_only": true,
+    "unknown_safety_or_penalty_semantics_fail_closed": true,
+    "outdoor_true_may_apply_ready_axes": [
+      "spf",
+      "uva"
+    ],
+    "outdoor_false_applies_protection_delta": 0,
+    "water_resistance_delta": 0,
+    "rejected_candidate_resurrection_forbidden": true,
+    "protection_may_not_create_category_or_admission": true,
+    "production_write": false
+  },
+  "activation_policy": {
+    "axis_specific": true,
+    "spf_uva_may_progress_without_water": true,
+    "water_independent_hold": true,
+    "outdoor_exposure_rankable_only_after_D4_approval": true,
+    "feature_flag_required": true,
+    "rollback_required": true,
+    "public_cutover_default": false
+  },
+  "current_primary_products": [
+    {
+      "product_id": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "name": "Physical Daily Sunmilk",
+      "taxonomy_sunscreen": true,
+      "spf_value": 20,
+      "uva_label": "PA++",
+      "uv_filter_type": "mineral",
+      "raw_semantics": {
+        "category": null,
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "sensitivity_safe": null,
+        "irritation_risk": null,
+        "tone_up": null,
+        "white_cast": null,
+        "eye_sting": null,
+        "pilling_risk": null
+      }
+    },
+    {
+      "product_id": "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+      "name": "MIN JUNG GI Physical Sun Block",
+      "taxonomy_sunscreen": true,
+      "spf_value": 35,
+      "uva_label": "PA+++",
+      "uv_filter_type": "mineral",
+      "raw_semantics": {
+        "category": null,
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "sensitivity_safe": null,
+        "irritation_risk": null,
+        "tone_up": null,
+        "white_cast": null,
+        "eye_sting": null,
+        "pilling_risk": null
+      }
+    },
+    {
+      "product_id": "b576991e-79c9-4189-b6e9-527aeeb03566",
+      "name": "Dr. Troub Zinc Physical",
+      "taxonomy_sunscreen": true,
+      "spf_value": 35,
+      "uva_label": "PA+++",
+      "uv_filter_type": null,
+      "raw_semantics": {
+        "category": null,
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "sensitivity_safe": null,
+        "irritation_risk": null,
+        "tone_up": null,
+        "white_cast": null,
+        "eye_sting": null,
+        "pilling_risk": null
+      }
+    },
+    {
+      "product_id": "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+      "name": "Dr. Troub Skin Returning Bio Repair + Suncream",
+      "taxonomy_sunscreen": true,
+      "spf_value": 40,
+      "uva_label": "PA++",
+      "uv_filter_type": null,
+      "raw_semantics": {
+        "category": null,
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "sensitivity_safe": null,
+        "irritation_risk": null,
+        "tone_up": null,
+        "white_cast": null,
+        "eye_sting": null,
+        "pilling_risk": null
+      }
+    },
+    {
+      "product_id": "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+      "name": "Jojoba Suncream",
+      "taxonomy_sunscreen": true,
+      "spf_value": 40,
+      "uva_label": "PA++",
+      "uv_filter_type": "mineral",
+      "raw_semantics": {
+        "category": null,
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "sensitivity_safe": null,
+        "irritation_risk": null,
+        "tone_up": null,
+        "white_cast": null,
+        "eye_sting": null,
+        "pilling_risk": null
+      }
+    }
+  ],
+  "redesign_decision": {
+    "overall": "BLOCKED_BEFORE_INTEGRATED_SHADOW",
+    "reason_codes": [
+      "SUNSCREEN_INITIAL_ADMISSION_AUTHORITY_NOT_DEFINED",
+      "SUNSCREEN_RECOMMENDATION_SEMANTIC_AUTHORITY_NOT_ESTABLISHED",
+      "C6_PRIMARY_RECOMMENDATION_SEMANTICS_NOT_REVIEWED",
+      "C6_PRIMARY_UV_FILTER_TYPE_INCOMPLETE"
+    ],
+    "next_stage": "DATA-AI29C-D1-SUNSCREEN-SEMANTIC-AUTHORITY",
+    "production_cutover_authorized": false
+  }
+}
