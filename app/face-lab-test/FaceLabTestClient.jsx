@@ -102,7 +102,10 @@ export default function FaceLabTestClient() {
             ? "한 장에 한 명만 나오도록 다시 촬영해 주세요."
             : payload?.failureReason === "face_not_detected"
               ? "얼굴을 찾지 못했습니다. 정면에 가까운 밝은 사진으로 다시 시도해 주세요."
-              : "현재 사진에서는 Face Lab 판단에 필요한 얼굴 근거가 충분하지 않습니다.";
+              : payload?.failureReason === "vision_request_failed" ||
+                  payload?.failureReason === "api_key_missing"
+                ? "Face Lab 분석 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
+                : "현재 사진에서는 Face Lab 판단에 필요한 얼굴 근거가 충분하지 않습니다.";
 
         setError(reason);
         setFaceLabSummary(summary);
