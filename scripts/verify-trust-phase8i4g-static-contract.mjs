@@ -34,6 +34,10 @@ const readBoundaryMigration = fs.readFileSync(
   "supabase/migrations/20260930090756_trust_phase8i4g_canary_read_boundary_v1.sql",
   "utf8",
 );
+const incidentReadBoundaryMigration = fs.readFileSync(
+  "supabase/migrations/20260930212000_trust_phase8i4g_transport_incident_read_boundary_v1.sql",
+  "utf8",
+);
 const workflow = fs.readFileSync(
   ".github/workflows/trust-phase8h3-relocation-revalidation.yml",
   "utf8",
@@ -328,6 +332,39 @@ for (const forbidden of [
     `8I-4G read boundary migration contains forbidden authority expansion: ${forbidden}`,
   );
 }
+
+for (const required of [
+  "get_trust_official_source_transport_drift_case_incidents_v1",
+  "security definer",
+  "set search_path = ''",
+  "READ_ONLY_CASE_SCOPED_TRANSPORT_INCIDENT_VIEW_NO_AUTHORITY_MUTATION",
+  "revoke all on function public.get_trust_official_source_transport_drift_case_incidents_v1(uuid)",
+  "grant execute on function public.get_trust_official_source_transport_drift_case_incidents_v1(uuid)",
+  "to service_role",
+]) {
+  assert.ok(
+    incidentReadBoundaryMigration.toLowerCase().includes(required.toLowerCase()),
+    `8I-4G incident read boundary migration missing: ${required}`,
+  );
+}
+assert.equal(
+  incidentReadBoundaryMigration.toLowerCase().includes("grant select"),
+  false,
+  "8I-4G incident read boundary must not restore direct SELECT",
+);
+assert.ok(
+  adminService.includes(
+    '"get_trust_official_source_transport_drift_case_incidents_v1"',
+  ),
+  "Admin grouped relocation must use the governed transport incident RPC",
+);
+assert.equal(
+  /rows\(\s*client,\s*"trust_official_source_transport_incidents"/m.test(
+    adminService,
+  ),
+  false,
+  "Admin grouped relocation must not direct-read transport incidents",
+);
 
 for (const required of [
   "Capture Phase 8I-4G read-only canary state",

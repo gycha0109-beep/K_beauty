@@ -27,6 +27,7 @@ const MIGRATIONS = [
   "20260929045848_trust_phase8i3a_drift_case_bridge_v1.sql",
   "20260929110902_trust_phase8i4_grouped_relocation_v1.sql",
   "20260930090756_trust_phase8i4g_canary_read_boundary_v1.sql",
+  "20260930212000_trust_phase8i4g_transport_incident_read_boundary_v1.sql",
 ];
 
 const FIXTURES = [
