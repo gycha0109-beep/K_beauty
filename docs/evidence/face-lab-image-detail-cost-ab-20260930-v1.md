@@ -1,6 +1,6 @@
 # Face Lab GPT-5.6 Luna image-detail cost A/B — 2026-09-30
 
-Status: PASS / production decision evidence  
+Status: PASS / production decision evidence
 Track: `face-research`
 
 ## Purpose
