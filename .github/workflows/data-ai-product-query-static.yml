@@ -83,6 +83,10 @@ on:
       - "lib/sunscreen-water-axis-review.mjs"
       - "scripts/verify-data-ai29c-d4-water-axis-review.mjs"
       - "docs/evidence/data-ai29c-d4-water-axis-review-v1.md"
+      - "lib/sunscreen-water-intent-contract.mjs"
+      - "fixtures/data-ai29c-water-a-intent-contract-v1.json"
+      - "scripts/verify-data-ai29c-water-a-intent-contract.mjs"
+      - "docs/evidence/data-ai29c-water-a-intent-contract-v1.md"
       - "lib/sunscreen-spf-runtime-gate.mjs"
       - "lib/product-query-recommendation.js"
       - "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
@@ -247,6 +251,10 @@ on:
       - "lib/sunscreen-water-axis-review.mjs"
       - "scripts/verify-data-ai29c-d4-water-axis-review.mjs"
       - "docs/evidence/data-ai29c-d4-water-axis-review-v1.md"
+      - "lib/sunscreen-water-intent-contract.mjs"
+      - "fixtures/data-ai29c-water-a-intent-contract-v1.json"
+      - "scripts/verify-data-ai29c-water-a-intent-contract.mjs"
+      - "docs/evidence/data-ai29c-water-a-intent-contract-v1.md"
       - "lib/sunscreen-spf-runtime-gate.mjs"
       - "lib/product-query-recommendation.js"
       - "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
@@ -468,6 +476,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D4 water axis review
         run: node --experimental-strip-types scripts/verify-data-ai29c-d4-water-axis-review.mjs
+
+      - name: Verify DATA-AI29C-WATER-A canonical water intent contract
+        run: node scripts/verify-data-ai29c-water-a-intent-contract.mjs
 
       - name: Verify DATA-AI29C-D5A SPF runtime gate
         run: node --experimental-strip-types scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs
