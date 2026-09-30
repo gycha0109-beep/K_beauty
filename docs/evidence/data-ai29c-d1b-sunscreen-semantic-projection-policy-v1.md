@@ -87,6 +87,39 @@ D1A 이후 5종 모두:
 
 이는 데이터를 억지로 채우지 않고도 기존 scorer의 unknown-value advantage를 막습니다.
 
+## 실제 runtime/scorer null 동작 감사
+
+기준 `main@34742764e2e88a9bba1ce1b54857acf17eb937e0`에서 기존 Recommendation 경로를 다시 확인했다.
+
+`buildRecommendationProductFromSource()`는 legacy Product row의 null을 그대로 보존하지 않는다.
+
+| semantic | legacy Product-source null 처리 |
+|---|---|
+| `skin_types` | `["combination"]` fallback |
+| `concerns` | `["dehydration"]` fallback |
+| `texture` | `watery` fallback |
+| `finish` | `natural` fallback |
+| `sensitivity_safe` | `Boolean(null) = false` |
+| `irritation_risk` | 근거가 없으면 `medium` fallback |
+
+또한 기존 scorer 자체도 nullable 입력에 대해 다음 동작을 가진다.
+
+- null texture를 canonicalize하면 `watery`
+- null finish를 canonicalize하면 `natural`
+- unknown `white_cast / eye_sting / pilling_risk`는 해당 점수에서 0
+- unknown `sensitivity_safe`는 sunscreen adjustment에서 0
+
+따라서 신규 catalog-only sunscreen의 semantic projection을 legacy Product-source materializer에
+다시 넣으면 `unknown != false` 원칙을 깨고 가짜 positive/neutral signal을 만들 수 있다.
+
+D1B의 projection은 **established 값만 직접 전달**해야 하며,
+unresolved field는 uncertainty ledger에 남겨야 한다.
+D2/D3에서 이 projection을 실제 scorer에 연결할 때도
+`buildRecommendationProductFromSource()`를 우회하고 contextual gate를 scorer보다 먼저 적용해야 한다.
+
+이 감사 결과는 기존 Production scorer를 지금 변경하라는 뜻이 아니다.
+현재 단계에서는 위험을 명시적으로 고정하고, 신규 sunscreen admission/projection 경로만 fail-closed로 설계한다.
+
 ## Authority boundary
 
 D1B는 다음을 하지 않습니다.
