@@ -111,6 +111,11 @@ for (const factKey of ["spf_value", "uva_label", "uv_filter_type"]) {
 }
 {
   const input = buildInput(authorityFixture.products[0]);
+  input.taxonomy.productId = "00000000-0000-4000-8000-000000000001";
+  expectNoGrant(input, "CANONICAL_SUNSCREEN_TAXONOMY_UNRESOLVED");
+}
+{
+  const input = buildInput(authorityFixture.products[0]);
   input.taxonomy.assignmentState = "active";
   expectNoGrant(input, "CANONICAL_SUNSCREEN_TAXONOMY_UNRESOLVED");
 }
@@ -128,12 +133,22 @@ for (const factKey of ["spf_value", "uva_label", "uv_filter_type"]) {
 }
 {
   const input = buildInput(authorityFixture.products[0]);
+  input.currentFacts[0].valueType = "enum";
+  expectNoGrant(input, "REQUIRED_CURRENT_FACT_VALUE_INVALID:spf_value");
+}
+{
+  const input = buildInput(authorityFixture.products[0]);
   input.currentFacts[0].validTo = "2020-01-01";
   expectNoGrant(input, "REQUIRED_CURRENT_FACT_AUTHORITY_INCOMPLETE:spf_value");
 }
 {
   const input = buildInput(authorityFixture.products[0]);
   input.registry.registryChecksum = "0".repeat(64);
+  expectNoGrant(input, "PRODUCT_FACT_REGISTRY_MISMATCH");
+}
+{
+  const input = buildInput(authorityFixture.products[0]);
+  input.registry.identitySerializerVersion = "unsupported-v2";
   expectNoGrant(input, "PRODUCT_FACT_REGISTRY_MISMATCH");
 }
 
