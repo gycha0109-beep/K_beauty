@@ -4,6 +4,9 @@ import {
   computeTransportFleetSnapshotDigest,
   runOfficialSourceTransportWorker,
 } from "./trust-official-source-transport-worker.mjs";
+import {
+  classifyOfficialTransportSafetyFailure,
+} from "../lib/trust/official-source-transport-fetch.mjs";
 
 const workerSource = fs.readFileSync(
   "scripts/trust-official-source-transport-worker.mjs",
@@ -362,6 +365,30 @@ async function verifyDynamicFullFleet() {
   );
 }
 
+function verifyDnsResolutionClassification() {
+  for (const code of ["ENOTFOUND", "EAI_AGAIN"]) {
+    const error = new Error(`fixture ${code}`);
+    error.code = code;
+    const result = classifyOfficialTransportSafetyFailure(
+      "https://www.dr-g.co.kr/item/9637",
+      error,
+    );
+    assert.equal(result.transportResult, "TRANSIENT");
+    assert.equal(result.httpStatus, null);
+    assert.equal(result.finalUrl, "https://www.dr-g.co.kr/item/9637");
+    assert.equal(result.detail, `TRANSIENT_FAILURE:dns_${code.toLowerCase()}`);
+    assert.equal(result.retryAfterSeconds, 300);
+  }
+
+  const privateTarget = classifyOfficialTransportSafetyFailure(
+    "https://127.0.0.1/private",
+    new Error("SOURCE_BLOCKED:private_ip"),
+  );
+  assert.equal(privateTarget.transportResult, "BLOCKED");
+  assert.equal(privateTarget.detail, "SOURCE_BLOCKED:private_ip");
+  assert.equal(privateTarget.retryAfterSeconds, null);
+}
+
 function verifyCliSafetyContract() {
   assert.ok(workerSource.includes("--scope=canary|full is required"));
   assert.ok(workerSource.includes('parseRequiredBooleanArg("record")'));
@@ -432,6 +459,7 @@ verifyDigestDeterminism();
 await verifyFailClosedPreflight();
 await verifySelectedCanaryAndRecordFalse();
 await verifyDynamicFullFleet();
+verifyDnsResolutionClassification();
 verifyCliSafetyContract();
 verifyWorkflowBoundary();
 
