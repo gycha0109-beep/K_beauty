@@ -9,6 +9,53 @@ import {
   evaluateSunscreenSemanticScoringEligibility,
 } from "../lib/sunscreen-recommendation-semantic-projection.mjs";
 
+const productSource = fs.readFileSync("lib/product-source.js", "utf8");
+const scorerSource = fs.readFileSync("lib/recommendation-scoring.ts", "utf8");
+const projectionSource = fs.readFileSync(
+  "lib/sunscreen-recommendation-semantic-projection.mjs",
+  "utf8",
+);
+
+for (const token of [
+  'mapSkinTypes(product.skin_types, ["combination"])',
+  'mapConcerns(product.concerns, ["dehydration"])',
+  "const texture = mapTexture(product.texture);",
+  "const finish = mapFinish(product.finish);",
+  "const sensitivitySafe = Boolean(product.sensitivity_safe);",
+  "const irritationRisk = mapIrritationRisk(product.irritation_risk, product.sensitivity_safe);",
+]) {
+  assert.ok(
+    productSource.includes(token),
+    "D1B scorer audit must keep the legacy Product-source fallback visible: " + token,
+  );
+}
+
+for (const token of [
+  'return value || "watery";',
+  'return value || "natural";',
+  "product.sensitivity_safe === false",
+]) {
+  assert.ok(
+    scorerSource.includes(token),
+    "D1B scorer audit must keep the nullable scorer behavior visible: " + token,
+  );
+}
+
+for (const forbidden of [
+  "buildRecommendationProductFromSource",
+  "mapSkinTypes(",
+  "mapConcerns(",
+  "mapTexture(",
+  "mapFinish(",
+  "mapIrritationRisk(",
+]) {
+  assert.equal(
+    projectionSource.includes(forbidden),
+    false,
+    "D1B projection must not route governed unknowns through legacy fallback/default materialization: " + forbidden,
+  );
+}
+
 const fixture = JSON.parse(
   fs.readFileSync(
     "fixtures/data-ai29c-d1b-sunscreen-semantic-projection-v1.json",
