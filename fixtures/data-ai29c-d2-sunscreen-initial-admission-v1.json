@@ -1,0 +1,411 @@
+{
+  "version": "data-ai29c-d2-sunscreen-initial-admission-fixture-v1",
+  "observedFromProduction": true,
+  "productionProject": "bygrczggxfuisupcevaz",
+  "sourceMainSha": "2fc78facd820b9cc3033aedb43b9148eb57d0665",
+  "semanticPolicyVersion": "sunscreen-recommendation-semantic-projection-policy-v1",
+  "grantPolicyVersion": "sunscreen-initial-admission-grant-policy-v1",
+  "productCount": 5,
+  "products": [
+    {
+      "product": {
+        "id": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+        "canonicalProduct": true,
+        "name": "Physical Daily Sunmilk"
+      },
+      "taxonomy": {
+        "taxonomyVersion": "catalog-taxonomy-v1",
+        "entityKindTermId": "catalog-taxonomy-v1:entity_kind:cosmetic",
+        "domainTermId": "catalog-taxonomy-v1:domain:skincare",
+        "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
+        "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
+        "assignmentState": "shadow",
+        "assignmentMethod": "source_classification"
+      },
+      "registry": {
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+        "identitySerializerVersion": "product-fact-subject-identity-v1"
+      },
+      "subject": {
+        "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
+        "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+        "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+        "identityStatus": "resolved",
+        "identityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+        "currentState": "current",
+        "validTo": null
+      },
+      "currentFacts": [
+        {
+          "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
+          "factInstanceId": "d97b8a9d-a7c4-4251-9af3-01200a7edc73",
+          "factKey": "spf_value",
+          "propositionKey": "ede11dd69c5cd0885099130fc7abdb7009e2389503bdd7380174386c5e6bcf81",
+          "confirmationId": "f2b542c7-f1e8-4dc5-9a67-a407b53a78e2",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": 20,
+          "valueEnum": null
+        },
+        {
+          "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
+          "factInstanceId": "f96357cb-13c8-4213-a7ea-053ebf5395a7",
+          "factKey": "uva_label",
+          "propositionKey": "acdcfde91c281b56a2ccf4666174e63a6fef4d8d6906a32f0f570645b07d8916",
+          "confirmationId": "60629702-142e-435d-9528-79a9ef1c7688",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "PA++"
+        },
+        {
+          "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
+          "factInstanceId": "020e3097-60ec-4af2-b433-1796fadd1ae1",
+          "factKey": "uv_filter_type",
+          "propositionKey": "41aefbeae7b77d64c7e5350c538043c069567f874fe9a57899a5184d4e315726",
+          "confirmationId": "ff04a5d2-2c82-468f-96bc-67fb77ab5ac6",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "mineral"
+        }
+      ]
+    },
+    {
+      "product": {
+        "id": "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+        "canonicalProduct": true,
+        "name": "MIN JUNG GI Physical Sun Block"
+      },
+      "taxonomy": {
+        "taxonomyVersion": "catalog-taxonomy-v1",
+        "entityKindTermId": "catalog-taxonomy-v1:entity_kind:cosmetic",
+        "domainTermId": "catalog-taxonomy-v1:domain:skincare",
+        "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
+        "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
+        "assignmentState": "shadow",
+        "assignmentMethod": "source_classification"
+      },
+      "registry": {
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+        "identitySerializerVersion": "product-fact-subject-identity-v1"
+      },
+      "subject": {
+        "subjectId": "cb9364c3-2059-49db-adda-47187e97d743",
+        "productId": "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+        "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+        "identityStatus": "resolved",
+        "identityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+        "currentState": "current",
+        "validTo": null
+      },
+      "currentFacts": [
+        {
+          "subjectId": "cb9364c3-2059-49db-adda-47187e97d743",
+          "factInstanceId": "e52c6f43-8159-4bfd-8d21-0191e2adacc9",
+          "factKey": "spf_value",
+          "propositionKey": "d978cefe163bc81b6a51bd2e9cbde1b3e8a45b43d9b4e3c3bb6f9847f883bee7",
+          "confirmationId": "7c73fa88-0e87-4b58-8ae2-87b2fa3085d4",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": 35,
+          "valueEnum": null
+        },
+        {
+          "subjectId": "cb9364c3-2059-49db-adda-47187e97d743",
+          "factInstanceId": "a2385b19-ddd1-4769-a28c-93b3f199b271",
+          "factKey": "uva_label",
+          "propositionKey": "a96faa48eaae8d9595a26ad8c625faabbb8cda95915e5b86eff62c45421dd4cb",
+          "confirmationId": "09425a9b-46f4-4a5c-821f-76424d9dd4d4",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "PA+++"
+        },
+        {
+          "subjectId": "cb9364c3-2059-49db-adda-47187e97d743",
+          "factInstanceId": "63cacede-8962-4260-8770-eefb70312d8c",
+          "factKey": "uv_filter_type",
+          "propositionKey": "28a9d1bdcafc7016bfd2f92df28c8c60567cd673718826faba0dc114956aa8d6",
+          "confirmationId": "b4472c24-c5ee-42fe-bea8-22e372b29fee",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "mineral"
+        }
+      ]
+    },
+    {
+      "product": {
+        "id": "b576991e-79c9-4189-b6e9-527aeeb03566",
+        "canonicalProduct": true,
+        "name": "Dr. Troub Zinc Physical"
+      },
+      "taxonomy": {
+        "taxonomyVersion": "catalog-taxonomy-v1",
+        "entityKindTermId": "catalog-taxonomy-v1:entity_kind:cosmetic",
+        "domainTermId": "catalog-taxonomy-v1:domain:skincare",
+        "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
+        "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
+        "assignmentState": "shadow",
+        "assignmentMethod": "source_classification"
+      },
+      "registry": {
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+        "identitySerializerVersion": "product-fact-subject-identity-v1"
+      },
+      "subject": {
+        "subjectId": "8bacc75c-2df3-4828-bc8e-27b23755bbd3",
+        "productId": "b576991e-79c9-4189-b6e9-527aeeb03566",
+        "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+        "identityStatus": "resolved",
+        "identityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+        "currentState": "current",
+        "validTo": null
+      },
+      "currentFacts": [
+        {
+          "subjectId": "8bacc75c-2df3-4828-bc8e-27b23755bbd3",
+          "factInstanceId": "5cfa8f25-7e42-44a2-8c1c-2e985cced722",
+          "factKey": "spf_value",
+          "propositionKey": "6f97ed0540cf7ca74a346926df1c8f7428e7b8acb28492aa56108e627fb38a3f",
+          "confirmationId": "ecc09288-029a-4641-99c7-34aff7ef2810",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": 35,
+          "valueEnum": null
+        },
+        {
+          "subjectId": "8bacc75c-2df3-4828-bc8e-27b23755bbd3",
+          "factInstanceId": "76f40b30-d90d-4de3-8e3b-2596e175a50e",
+          "factKey": "uva_label",
+          "propositionKey": "63ac6688ff5397678889b6a60d488d5829fbee27861194a9fab7eb0b4589ea80",
+          "confirmationId": "e8728be0-ac89-421b-a2c1-f32124d47c9c",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "PA+++"
+        },
+        {
+          "subjectId": "8bacc75c-2df3-4828-bc8e-27b23755bbd3",
+          "factInstanceId": "a508bafd-585f-4b2c-99d8-5ae946a00ee6",
+          "factKey": "uv_filter_type",
+          "propositionKey": "06ca9324153401270581a2d8ca1e2db29acb59233150ed3c276763d5c26d4323",
+          "confirmationId": "81239a77-1b4e-4957-8c02-a77aa0b55fcd",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "mineral"
+        }
+      ]
+    },
+    {
+      "product": {
+        "id": "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+        "canonicalProduct": true,
+        "name": "Dr. Troub Skin Returning Bio Repair + Suncream"
+      },
+      "taxonomy": {
+        "taxonomyVersion": "catalog-taxonomy-v1",
+        "entityKindTermId": "catalog-taxonomy-v1:entity_kind:cosmetic",
+        "domainTermId": "catalog-taxonomy-v1:domain:skincare",
+        "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
+        "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
+        "assignmentState": "shadow",
+        "assignmentMethod": "source_classification"
+      },
+      "registry": {
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+        "identitySerializerVersion": "product-fact-subject-identity-v1"
+      },
+      "subject": {
+        "subjectId": "f4c580f3-6ee3-4c1d-b359-dd058ac13490",
+        "productId": "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+        "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+        "identityStatus": "resolved",
+        "identityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+        "currentState": "current",
+        "validTo": null
+      },
+      "currentFacts": [
+        {
+          "subjectId": "f4c580f3-6ee3-4c1d-b359-dd058ac13490",
+          "factInstanceId": "5af9e10e-474d-42be-84a5-91073f3bba94",
+          "factKey": "spf_value",
+          "propositionKey": "4679374277f3cf5c30c05fc456b3ca3a8c596ca4fcb2b8f997557ba347c6e27d",
+          "confirmationId": "39116eea-dbf7-4674-94e1-ea288cee8bab",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": 40,
+          "valueEnum": null
+        },
+        {
+          "subjectId": "f4c580f3-6ee3-4c1d-b359-dd058ac13490",
+          "factInstanceId": "c345a250-ef94-4a09-86c2-fd8cc7dc48bb",
+          "factKey": "uva_label",
+          "propositionKey": "5bcbb33b4e15f6cdce055813faada2a071763120fbc26ab304cbb2bf0c28dabd",
+          "confirmationId": "ba8c006b-ee2f-467c-b99a-8a3319ff621d",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "PA++"
+        },
+        {
+          "subjectId": "f4c580f3-6ee3-4c1d-b359-dd058ac13490",
+          "factInstanceId": "e9ec0162-ae4f-4439-8138-bf40a0bf9a23",
+          "factKey": "uv_filter_type",
+          "propositionKey": "c3a86b595116ac2b8323ba84d1f295491cf7ba5e372ff6372b7482f2e2e12ed9",
+          "confirmationId": "809c7aa0-7459-4948-89e8-8a02574e8447",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "mineral"
+        }
+      ]
+    },
+    {
+      "product": {
+        "id": "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+        "canonicalProduct": true,
+        "name": "Jojoba Suncream"
+      },
+      "taxonomy": {
+        "taxonomyVersion": "catalog-taxonomy-v1",
+        "entityKindTermId": "catalog-taxonomy-v1:entity_kind:cosmetic",
+        "domainTermId": "catalog-taxonomy-v1:domain:skincare",
+        "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
+        "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
+        "assignmentState": "shadow",
+        "assignmentMethod": "source_classification"
+      },
+      "registry": {
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+        "identitySerializerVersion": "product-fact-subject-identity-v1"
+      },
+      "subject": {
+        "subjectId": "e88dbcb8-a209-4ab1-a92d-3086ad1aeb56",
+        "productId": "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+        "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+        "identityStatus": "resolved",
+        "identityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+        "currentState": "current",
+        "validTo": null
+      },
+      "currentFacts": [
+        {
+          "subjectId": "e88dbcb8-a209-4ab1-a92d-3086ad1aeb56",
+          "factInstanceId": "0ed3607d-cd47-4f04-8530-6347a5edfa61",
+          "factKey": "spf_value",
+          "propositionKey": "64a2d414d059101930e9218c11f7e27e35bd33ea9cb8ec4762d1515d20293bef",
+          "confirmationId": "1b78531c-9738-4a0e-bbba-5ccf72416018",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": 40,
+          "valueEnum": null
+        },
+        {
+          "subjectId": "e88dbcb8-a209-4ab1-a92d-3086ad1aeb56",
+          "factInstanceId": "6fb72c43-b20a-4e85-8019-2bfb4ccb8a2f",
+          "factKey": "uva_label",
+          "propositionKey": "0bbed5437c5858b45945721152d4cbe759e08d657d84e05494a5f20691fd1877",
+          "confirmationId": "117524f2-aaa2-4ec7-a42a-6bf04a8b53b4",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "PA++"
+        },
+        {
+          "subjectId": "e88dbcb8-a209-4ab1-a92d-3086ad1aeb56",
+          "factInstanceId": "6bdd826c-c6ba-45b5-920d-72b943aac5d0",
+          "factKey": "uv_filter_type",
+          "propositionKey": "efae53fa83023e38aca10bc0114bb8855e76762d8f02b5a6b497206547a5a838",
+          "confirmationId": "94cc04e0-f79a-48db-b3a8-81fa40057f42",
+          "registryVersion": "product-fact-registry-cross-category-v1",
+          "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+          "semanticStatus": "supported",
+          "authorityCeiling": "product_specific_primary",
+          "fusedConfidence": "high",
+          "isCurrent": true,
+          "validTo": null,
+          "valueNumber": null,
+          "valueEnum": "mineral"
+        }
+      ]
+    }
+  ]
+}
