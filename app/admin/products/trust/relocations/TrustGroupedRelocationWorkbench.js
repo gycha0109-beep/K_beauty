@@ -106,6 +106,7 @@ function Detail({ item }) {
   const [preflight, setPreflight] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [confirmArmed, setConfirmArmed] = useState(false);
 
   if (!item) {
     return (
@@ -124,6 +125,7 @@ function Detail({ item }) {
     setBusy(true);
     setError(null);
     setResult(null);
+    setConfirmArmed(false);
     try {
       const response = await fetch(
         "/api/admin/trust/relocation/preflight",
@@ -158,7 +160,8 @@ function Detail({ item }) {
       !canConfirmCanary ||
       preflight?.status !==
         "ready_for_explicit_admin_confirmation" ||
-      !preflight?.preflightHash
+      !preflight?.preflightHash ||
+      (item.canary?.isFirstRealCanary === true && confirmArmed !== true)
     ) {
       return;
     }
@@ -186,6 +189,7 @@ function Detail({ item }) {
       }
       setResult(payload.result);
       setPreflight(null);
+      setConfirmArmed(false);
     } catch (caught) {
       setError(
         caught.message || "trust_grouped_relocation_failed",
@@ -398,16 +402,87 @@ function Detail({ item }) {
               <strong>Product Fact / Evidence / Recommendation:</strong> 변경
               없음
             </p>
-            <button
-              type="button"
-              onClick={confirm}
-              disabled={busy || !canConfirmCanary}
-              className="mt-4 rounded-xl bg-amber-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              {item.canary?.isFirstRealCanary
-                ? "첫 Real Canary Relocation 확정 + 검증"
-                : "명시적으로 Official Source Relocation 확정"}
-            </button>
+            {item.canary?.isFirstRealCanary ? (
+              confirmArmed ? (
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
+                  <p className="font-bold">
+                    최종 확인 · 첫 Real Canary Source Relocation
+                  </p>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <p>
+                      <strong>Product:</strong> {short(item.productId)}
+                    </p>
+                    <p>
+                      <strong>Subject:</strong> {short(item.subjectId)}
+                    </p>
+                    <p>
+                      <strong>Sources:</strong>{" "}
+                      {item.historicalSourceIds?.length ?? 0}
+                    </p>
+                    <p>
+                      <strong>Incidents:</strong>{" "}
+                      {item.incidentIds?.length ?? 0}
+                    </p>
+                    <p>
+                      <strong>Group plan:</strong>{" "}
+                      <span className="font-mono">
+                        {short(preflight.groupPlanDigest)}
+                      </span>
+                    </p>
+                    <p>
+                      <strong>8H anchor plan:</strong>{" "}
+                      <span className="font-mono">
+                        {short(
+                          preflight.phase8hAnchorRelocationPlanDigest,
+                        )}
+                      </span>
+                    </p>
+                  </div>
+                  <p className="mt-3 leading-5">
+                    이 작업은 Source relocation만 수행합니다. Product Fact,
+                    historical Evidence Source identity/content,
+                    Recommendation authority, semantic SAME/CHANGED는 변경하지
+                    않습니다.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmArmed(false)}
+                      disabled={busy}
+                      className="rounded-xl border border-red-300 px-4 py-2 text-sm font-semibold disabled:opacity-50 dark:border-red-800"
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirm}
+                      disabled={busy || !canConfirmCanary}
+                      className="rounded-xl bg-red-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      첫 Real Canary Relocation 확정 + 검증 실행
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmArmed(true)}
+                  disabled={busy || !canConfirmCanary}
+                  className="mt-4 rounded-xl bg-amber-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                >
+                  첫 Real Canary 최종 확인 단계 열기
+                </button>
+              )
+            ) : (
+              <button
+                type="button"
+                onClick={confirm}
+                disabled={busy || !canConfirmCanary}
+                className="mt-4 rounded-xl bg-amber-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                명시적으로 Official Source Relocation 확정
+              </button>
+            )}
           </div>
         ) : null}
 
@@ -472,6 +547,26 @@ function Detail({ item }) {
                     차단됩니다.
                   </p>
                 ) : null}
+              </div>
+            ) : null}
+            {result.canaryClosurePack ? (
+              <div className="mt-3 rounded-lg border border-current/20 p-3">
+                <p className="font-semibold">
+                  Closure pack · {result.canaryClosurePack.state}
+                </p>
+                <p className="mt-1">
+                  Authority {result.canaryClosurePack.authorityInvariant} ·
+                  Lineage {result.canaryClosurePack.groupedLineage} · Replay{" "}
+                  {result.canaryClosurePack.idempotentReplay} · 8H-3{" "}
+                  {result.canaryClosurePack.phase8h3Handoff} · Audit{" "}
+                  {result.canaryClosurePack.closureAudit}
+                </p>
+                <p className="mt-1">
+                  Next grouped confirmation{" "}
+                  {result.canaryClosurePack.nextGroupedConfirmationAllowed
+                    ? "allowed"
+                    : "blocked"}
+                </p>
               </div>
             ) : null}
           </div>

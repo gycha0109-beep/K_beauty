@@ -42,6 +42,8 @@ on:
       - "scripts/verify-trust-phase8i4f-admin-operator-handoff.mjs"
       - "lib/trust/official-source-grouped-relocation-canary.mjs"
       - "scripts/trust-phase8i4g-canary-snapshot.mjs"
+      - "scripts/trust-phase8i4g-canary-activation-signal.mjs"
+      - "scripts/verify-trust-phase8i4g-canary-activation.mjs"
       - "scripts/verify-trust-phase8i4g-canary-snapshot.mjs"
       - "scripts/verify-trust-phase8i4g-authority-invariants.mjs"
       - "scripts/verify-trust-phase8i4g-lineage.mjs"
@@ -102,6 +104,8 @@ on:
       - "scripts/verify-trust-phase8i4f-admin-operator-handoff.mjs"
       - "lib/trust/official-source-grouped-relocation-canary.mjs"
       - "scripts/trust-phase8i4g-canary-snapshot.mjs"
+      - "scripts/trust-phase8i4g-canary-activation-signal.mjs"
+      - "scripts/verify-trust-phase8i4g-canary-activation.mjs"
       - "scripts/verify-trust-phase8i4g-canary-snapshot.mjs"
       - "scripts/verify-trust-phase8i4g-authority-invariants.mjs"
       - "scripts/verify-trust-phase8i4g-lineage.mjs"
@@ -252,6 +256,8 @@ jobs:
         run: |
           node --check lib/trust/official-source-grouped-relocation-canary.mjs
           node --check scripts/trust-phase8i4g-canary-snapshot.mjs
+          node --check scripts/trust-phase8i4g-canary-activation-signal.mjs
+          node --check scripts/verify-trust-phase8i4g-canary-activation.mjs
           node --check scripts/verify-trust-phase8i4g-canary-snapshot.mjs
           node --check scripts/verify-trust-phase8i4g-authority-invariants.mjs
           node --check scripts/verify-trust-phase8i4g-lineage.mjs
@@ -260,6 +266,7 @@ jobs:
           node --check scripts/verify-trust-phase8i4g-static-contract.mjs
           node --check scripts/verify-trust-phase8i4g-canary-closure.mjs
           node scripts/verify-trust-phase8i4g-static-contract.mjs
+          node scripts/verify-trust-phase8i4g-canary-activation.mjs
           node scripts/verify-trust-phase8i4g-canary-closure.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
@@ -557,9 +564,15 @@ jobs:
           canary_summary="${RUNNER_TEMP}/trust-phase8i3e/phase8i4g-canary-verification.json"
           node scripts/trust-phase8i4g-canary-snapshot.mjs --limit=1000 >"${canary}"
           node scripts/verify-trust-phase8i4g-canary-snapshot.mjs "--result=${canary}" | tee "${canary_summary}"
+          activation="${RUNNER_TEMP}/trust-phase8i3e/phase8i4g-canary-activation.json"
+          node scripts/trust-phase8i4g-canary-activation-signal.mjs "--snapshot=${canary}" | tee "${activation}"
           echo "### Phase 8I-4G read-only first-real canary state" >> "$GITHUB_STEP_SUMMARY"
           echo >> "$GITHUB_STEP_SUMMARY"
           cat "${canary_summary}" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo "### Phase 8I-4G activation signal" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          cat "${activation}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload scheduled drift evaluation evidence
         if: always()
