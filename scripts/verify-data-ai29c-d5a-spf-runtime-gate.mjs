@@ -284,6 +284,118 @@ assert.equal(
 
 // D5A-8: Product Query integration is structurally post-filter/post-score,
 // default OFF, and only promotes outdoor_exposure when the SPF gate applied.
+const recommendationSource = fs.readFileSync(
+  "lib/product-query-recommendation.js",
+  "utf8",
+);
+const filterIndex = recommendationSource.indexOf(
+  "filterSunscreenCandidates",
+);
+const scoreIndex = recommendationSource.indexOf(
+  "scoreSunscreenProduct",
+);
+const gateIndex = recommendationSource.indexOf(
+  "applySunscreenSpfRuntimeGate({",
+);
+assert.ok(filterIndex >= 0);
+assert.ok(scoreIndex > filterIndex);
+assert.ok(gateIndex > scoreIndex);
+assert.ok(
+  recommendationSource.includes(
+    "options?.spfRuntimeGate?.enabled === true",
+  ),
+);
+assert.ok(
+  recommendationSource.includes(
+    'new Set([...plan.rankableSignals, "outdoor_exposure"])',
+  ),
+);
+assert.ok(
+  recommendationSource.includes(
+    "spfRuntimeGateDefault: false",
+  ),
+);
+assert.equal(
+  recommendationSource.includes(
+    "readRecommendationSunscreenProtection",
+  ),
+  false,
+  "shared ranking module must not gain direct Product Fact transport",
+);
+assert.equal(
+  recommendationSource.includes(
+    "SUNSCREEN_SPF_OUTDOOR_RANKING_ENABLED",
+  ),
+  false,
+  "shared ranking module must not read environment directly",
+);
+
+// D5A-9: direct gate contract never activates UVA/water.
+const direct = applySunscreenSpfRuntimeGate({
+  rankedProducts: [
+    { id: "a", score: 10 },
+    { id: "b", score: 10 },
+  ],
+  enabled: true,
+  sunscreenIntent: true,
+  outdoorExposure: true,
+  protectionByProductId: new Map([
+    [
+      "a",
+      {
+        spf: { eligible: true, bucket: "spf_50_plus_band" },
+        uva: { eligible: true, bucket: "uva_high" },
+        waterResistance: {
+          eligible: true,
+          bucket: "water_80_plus",
+        },
+      },
+    ],
+    [
+      "b",
+      {
+        spf: { eligible: true, bucket: "spf_30_49" },
+        uva: { eligible: true, bucket: "uva_high" },
+        waterResistance: {
+          eligible: true,
+          bucket: "water_80_plus",
+        },
+      },
+    ],
+  ]),
+});
+assert.equal(direct.axisApplied, true);
+assert.deepEqual(
+  direct.adjustments.map((row) => row.spfDelta),
+  [6, 4],
+);
+assert.ok(
+  direct.adjustments.every(
+    (row) =>
+      row.enabledAxes.length === 1 &&
+      row.enabledAxes[0] === "spf" &&
+      row.blockedAxes.includes("uva:not_ranking_useful") &&
+      row.blockedAxes.includes(
+        "waterResistance:water_resistance_intent_not_available",
+      ),
+  ),
+);
+assert.deepEqual(direct.limits, {
+  uvaApplied: false,
+  waterResistanceApplied: false,
+  missingAuthorityTreatedAsLowProtection: false,
+  rejectedCandidateResurrectionPossible: false,
+  candidateAdmissionMutated: false,
+  publicActivation: false,
+  persistence: false,
+});
+
+// D5A-10: D4 authority proof remains the prerequisite snapshot.
+assert.equal(d3r3.spfCoverage.complete, true);
+assert.equal(d3r3.spfCoverage.eligibleCount, 14);
+assert.equal(d3r3.spfCoverage.totalCount, 14);
+assert.equal(d3r3.spfMixedRankingSafe, true);
+
 console.log(
   JSON.stringify({
     status: "PASS",
