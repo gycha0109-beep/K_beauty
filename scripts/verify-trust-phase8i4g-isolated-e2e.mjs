@@ -73,7 +73,7 @@ for (const required of [
   "materialize-trust-phase8i4g-isolated-e2e.mjs",
   "run-trust-phase8i4g-isolated-e2e.mjs",
   "github.event_name != 'schedule'",
-  'npx --yes "tsx@4.23.15"',
+  'npx --yes "tsx@4.23.15" --tsconfig jsconfig.json',
 ]) {
   assert.ok(workflow.includes(required), "workflow e2e contract missing: " + required);
 }
