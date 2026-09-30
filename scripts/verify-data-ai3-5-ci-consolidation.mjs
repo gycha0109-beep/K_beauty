@@ -31,6 +31,7 @@ for (const script of [
   "scripts/verify-data-ai29c-c6f-prospective-axis-readiness.mjs",
   "scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs",
   "scripts/verify-data-ai29c-d-r1-staged-activation-redesign.mjs",
+  "scripts/verify-data-ai29c-d1-sunscreen-semantic-authority.mjs",
   "scripts/verify-data-ai28e-bounded-incomplete-retry.mjs",
   "scripts/verify-data-ai3-product-query-shadow.mjs",
   "scripts/verify-data-ai4-provider-shadow.mjs",

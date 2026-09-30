@@ -41,6 +41,8 @@ on:
       - "scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs"
       - "lib/sunscreen-activation-redesign.mjs"
       - "scripts/verify-data-ai29c-d-r1-staged-activation-redesign.mjs"
+      - "supabase/migrations/20260930113000_data_ai29c_d1_sunscreen_recommendation_semantic_authority_v1.sql"
+      - "scripts/verify-data-ai29c-d1-sunscreen-semantic-authority.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-c6g-prospective-protection-shadow-input-v1.json"
@@ -132,6 +134,8 @@ on:
       - "scripts/verify-data-ai29c-c6g-prospective-protection-shadow.mjs"
       - "lib/sunscreen-activation-redesign.mjs"
       - "scripts/verify-data-ai29c-d-r1-staged-activation-redesign.mjs"
+      - "supabase/migrations/20260930113000_data_ai29c_d1_sunscreen_recommendation_semantic_authority_v1.sql"
+      - "scripts/verify-data-ai29c-d1-sunscreen-semantic-authority.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-c6g-prospective-protection-shadow-input-v1.json"
@@ -283,6 +287,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D-R1 staged sunscreen activation redesign
         run: node scripts/verify-data-ai29c-d-r1-staged-activation-redesign.mjs
+
+      - name: Verify DATA-AI29C-D1 sunscreen Recommendation semantic authority
+        run: node scripts/verify-data-ai29c-d1-sunscreen-semantic-authority.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
