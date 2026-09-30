@@ -53,6 +53,9 @@ on:
       - "fixtures/data-ai29c-d2-sunscreen-initial-admission-v1.json"
       - "scripts/verify-data-ai29c-d2-sunscreen-initial-admission.mjs"
       - "docs/evidence/data-ai29c-d2-sunscreen-initial-admission-v1.md"
+      - "lib/sunscreen-integrated-recommendation-shadow.mjs"
+      - "scripts/verify-data-ai29c-d3-integrated-sunscreen-shadow.mjs"
+      - "docs/evidence/data-ai29c-d3-integrated-sunscreen-shadow-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -157,6 +160,9 @@ on:
       - "fixtures/data-ai29c-d2-sunscreen-initial-admission-v1.json"
       - "scripts/verify-data-ai29c-d2-sunscreen-initial-admission.mjs"
       - "docs/evidence/data-ai29c-d2-sunscreen-initial-admission-v1.md"
+      - "lib/sunscreen-integrated-recommendation-shadow.mjs"
+      - "scripts/verify-data-ai29c-d3-integrated-sunscreen-shadow.mjs"
+      - "docs/evidence/data-ai29c-d3-integrated-sunscreen-shadow-v1.md"
       - "scripts/trust-research-worker.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.json"
       - "docs/evidence/data-ai29c-d-r1-staged-sunscreen-activation-redesign-v1.md"
@@ -321,6 +327,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D2 sunscreen initial admission authority
         run: node scripts/verify-data-ai29c-d2-sunscreen-initial-admission.mjs
+
+      - name: Verify DATA-AI29C-D3 integrated sunscreen Recommendation shadow
+        run: node --experimental-strip-types scripts/verify-data-ai29c-d3-integrated-sunscreen-shadow.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
