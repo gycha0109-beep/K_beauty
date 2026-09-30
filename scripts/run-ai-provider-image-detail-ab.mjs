@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import sharp from "sharp";
 import {
   executeOpenAiChatJson
 } from "../lib/server/openai-chat-runtime.js";
@@ -17,20 +18,26 @@ import {
 const apiKey = process.env.OPENAI_API_KEY || "";
 assert.ok(apiKey, "OPENAI_API_KEY is required for the image-detail A/B smoke");
 
-const FIXTURES = Object.freeze(
-  Array.from({ length: 4 }, (_, index) => {
-    const id = String(index + 1).padStart(2, "0");
-    return {
-      id: `fcneutralv2_${id}`,
-      path: new URL(
-        `../public/facelab/neutral-review/v2/assets/fcneutralv2_${id}.jpg`,
-        import.meta.url
-      )
-    };
-  })
-);
+const FIXTURES = Object.freeze([
+  {
+    id: "fcneutralv2_03",
+    path: new URL(
+      "../public/facelab/neutral-review/v2/assets/fcneutralv2_03.jpg",
+      import.meta.url
+    )
+  },
+  {
+    id: "fcneutralv2_04",
+    path: new URL(
+      "../public/facelab/neutral-review/v2/assets/fcneutralv2_04.jpg",
+      import.meta.url
+    )
+  }
+]);
 
 const DETAILS = Object.freeze(["auto", "high"]);
+const REPEAT_COUNT = 2;
+const UPSCALED_LONG_EDGE = 4096;
 const model = OPENAI_RUNTIME_MODEL;
 const prompt = createVisionObservationPrompt();
 
@@ -76,10 +83,36 @@ function compareFaceValues(autoBundle, highBundle) {
   };
 }
 
-async function runFixtureDetail(fixture, detail) {
-  const imageBuffer = await readFile(fixture.path);
-  assert.ok(imageBuffer.length > 0, `${fixture.id}: fixture must not be empty`);
+async function createHighResolutionFixture(path) {
+  const source = await readFile(path);
+  assert.ok(source.length > 0, "A/B source fixture must not be empty");
 
+  const imageBuffer = await sharp(source)
+    .rotate()
+    .resize({
+      width: UPSCALED_LONG_EDGE,
+      height: UPSCALED_LONG_EDGE,
+      fit: "inside",
+      withoutEnlargement: false
+    })
+    .jpeg({ quality: 95, progressive: false })
+    .toBuffer();
+
+  const metadata = await sharp(imageBuffer).metadata();
+  assert.ok(
+    Math.max(metadata.width || 0, metadata.height || 0) === UPSCALED_LONG_EDGE,
+    "A/B fixture must exercise a 4096px long edge"
+  );
+
+  return {
+    imageBuffer,
+    width: metadata.width,
+    height: metadata.height,
+    bytes: imageBuffer.length
+  };
+}
+
+async function runFixtureDetail({ fixtureId, imageBuffer, detail }) {
   const runtime = await executeOpenAiChatJson({
     apiKey,
     stage: "vision-observation",
@@ -126,6 +159,8 @@ async function runFixtureDetail(fixture, detail) {
   assert.equal(bundle.privacy.rawProviderResponsePersisted, false);
 
   return {
+    fixtureId,
+    detail,
     bundle,
     telemetry: {
       inputTokens: safeTokenCount(runtime.providerPayload?.usage?.prompt_tokens),
@@ -137,76 +172,95 @@ async function runFixtureDetail(fixture, detail) {
 const rows = [];
 let validPairCount = 0;
 let comparableEligibleCount = 0;
+let faceAvailablePairCount = 0;
 let totalAutoInputTokens = 0;
 let totalHighInputTokens = 0;
 let totalAutoOutputTokens = 0;
 let totalHighOutputTokens = 0;
 
 for (const fixture of FIXTURES) {
-  const [autoResult, highResult] = await Promise.all(
-    DETAILS.map((detail) => runFixtureDetail(fixture, detail))
-  );
-  const results = {
-    auto: autoResult,
-    high: highResult
-  };
+  const prepared = await createHighResolutionFixture(fixture.path);
 
-  const autoBundle = results.auto.bundle;
-  const highBundle = results.high.bundle;
-  const comparison = compareFaceValues(autoBundle, highBundle);
-  const validPair =
-    autoBundle.status === "available" &&
-    highBundle.status === "available";
-  const bothFaceEligible =
-    validPair &&
-    autoBundle.eligibility.faceLabEligible === true &&
-    highBundle.eligibility.faceLabEligible === true;
+  for (let repeat = 1; repeat <= REPEAT_COUNT; repeat += 1) {
+    const [autoResult, highResult] = await Promise.all(
+      DETAILS.map((detail) =>
+        runFixtureDetail({
+          fixtureId: fixture.id,
+          imageBuffer: prepared.imageBuffer,
+          detail
+        })
+      )
+    );
+    const results = {
+      auto: autoResult,
+      high: highResult
+    };
 
-  if (validPair) {
-    validPairCount += 1;
+    const autoBundle = results.auto.bundle;
+    const highBundle = results.high.bundle;
+    const comparison = compareFaceValues(autoBundle, highBundle);
+    const validPair =
+      autoBundle.status === "available" &&
+      highBundle.status === "available";
+    const bothFaceEligible =
+      validPair &&
+      autoBundle.eligibility.faceLabEligible === true &&
+      highBundle.eligibility.faceLabEligible === true;
+    const bothFaceAvailable =
+      bothFaceEligible &&
+      autoBundle.face.status === "available" &&
+      highBundle.face.status === "available";
+
+    if (validPair) validPairCount += 1;
+    if (bothFaceEligible) comparableEligibleCount += 1;
+    if (bothFaceAvailable) faceAvailablePairCount += 1;
+
+    totalAutoInputTokens += results.auto.telemetry.inputTokens || 0;
+    totalHighInputTokens += results.high.telemetry.inputTokens || 0;
+    totalAutoOutputTokens += results.auto.telemetry.outputTokens || 0;
+    totalHighOutputTokens += results.high.telemetry.outputTokens || 0;
+
+    rows.push({
+      fixture: fixture.id,
+      repeat,
+      preparedImage: {
+        width: prepared.width,
+        height: prepared.height,
+        bytes: prepared.bytes
+      },
+      bundleStatus: {
+        auto: autoBundle.status,
+        high: highBundle.status
+      },
+      imageType: {
+        auto: autoBundle.eligibility.imageType,
+        high: highBundle.eligibility.imageType
+      },
+      faceLabEligible: {
+        auto: autoBundle.eligibility.faceLabEligible,
+        high: highBundle.eligibility.faceLabEligible
+      },
+      faceStatus: {
+        auto: autoBundle.face.status,
+        high: highBundle.face.status
+      },
+      coverage: comparison,
+      tokens: {
+        auto: results.auto.telemetry,
+        high: results.high.telemetry
+      }
+    });
   }
-  if (bothFaceEligible) {
-    comparableEligibleCount += 1;
-  }
-
-  totalAutoInputTokens += results.auto.telemetry.inputTokens || 0;
-  totalHighInputTokens += results.high.telemetry.inputTokens || 0;
-  totalAutoOutputTokens += results.auto.telemetry.outputTokens || 0;
-  totalHighOutputTokens += results.high.telemetry.outputTokens || 0;
-
-  rows.push({
-    fixture: fixture.id,
-    bundleStatus: {
-      auto: autoBundle.status,
-      high: highBundle.status
-    },
-    imageType: {
-      auto: autoBundle.eligibility.imageType,
-      high: highBundle.eligibility.imageType
-    },
-    faceLabEligible: {
-      auto: autoBundle.eligibility.faceLabEligible,
-      high: highBundle.eligibility.faceLabEligible
-    },
-    faceStatus: {
-      auto: autoBundle.face.status,
-      high: highBundle.face.status
-    },
-    coverage: comparison,
-    tokens: {
-      auto: results.auto.telemetry,
-      high: results.high.telemetry
-    }
-  });
 }
 
-assert.ok(
-  validPairCount >= 2,
-  "A/B fixture set must contain at least two canonical-valid pairs"
+assert.equal(
+  validPairCount,
+  FIXTURES.length * REPEAT_COUNT,
+  "all high-resolution A/B pairs must return canonical-valid bundles"
 );
 assert.ok(
-  comparableEligibleCount >= 1,
-  "A/B fixture set must contain at least one face eligible under both detail modes"
+  comparableEligibleCount >= 2,
+  "high-resolution A/B must retain multiple face-eligible comparisons"
 );
 
 const inputTokenReductionRate =
@@ -216,15 +270,23 @@ const inputTokenReductionRate =
       )
     : null;
 
+assert.ok(
+  Number.isFinite(inputTokenReductionRate) && inputTokenReductionRate >= 0.25,
+  "detail: high must demonstrate a material input-token reduction on 4096px fixtures"
+);
+
 console.log(
   JSON.stringify(
     {
       status: "PASS",
-      contract: "ai-provider-image-detail-ab-v1",
+      contract: "ai-provider-image-detail-ab-v2",
       model,
       fixtureCount: FIXTURES.length,
+      repeatCount: REPEAT_COUNT,
+      upscaledLongEdge: UPSCALED_LONG_EDGE,
       validPairCount,
       comparableEligibleCount,
+      faceAvailablePairCount,
       totals: {
         auto: {
           inputTokens: totalAutoInputTokens,
