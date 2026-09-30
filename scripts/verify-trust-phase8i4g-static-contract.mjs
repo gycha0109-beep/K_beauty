@@ -30,6 +30,10 @@ const snapshotter = fs.readFileSync(
   "scripts/trust-phase8i4g-canary-snapshot.mjs",
   "utf8",
 );
+const readBoundaryMigration = fs.readFileSync(
+  "supabase/migrations/20260930090000_trust_phase8i4g_canary_read_boundary_v1.sql",
+  "utf8",
+);
 const workflow = fs.readFileSync(
   ".github/workflows/trust-phase8h3-relocation-revalidation.yml",
   "utf8",
@@ -279,6 +283,49 @@ for (const forbidden of [
     snapshotter.includes(forbidden),
     false,
     `read-only snapshotter contains forbidden confirmation path: ${forbidden}`,
+  );
+}
+
+assert.equal(
+  snapshotter.includes(".from("),
+  false,
+  "scheduled canary snapshotter must not bypass the governed read RPC",
+);
+assert.ok(
+  snapshotter.includes('"get_trust_phase8i4g_canary_snapshot_v1"'),
+  "scheduled canary snapshotter must use the governed read RPC",
+);
+
+for (const required of [
+  "create schema if not exists private",
+  "private.get_trust_phase8i4g_canary_snapshot_internal_v1",
+  "security definer",
+  "public.get_trust_phase8i4g_canary_snapshot_v1",
+  "security invoker",
+  "current_user <> 'service_role'",
+  "set search_path = ''",
+  "READ_ONLY_SERVICE_ROLE_RPC_NO_AUTHORITY_MUTATION",
+  "revoke all on function private.get_trust_phase8i4g_canary_snapshot_internal_v1(integer)",
+  "revoke all on function public.get_trust_phase8i4g_canary_snapshot_v1(integer)",
+  "grant execute on function private.get_trust_phase8i4g_canary_snapshot_internal_v1(integer)",
+  "grant execute on function public.get_trust_phase8i4g_canary_snapshot_v1(integer)",
+  "to service_role",
+]) {
+  assert.ok(
+    readBoundaryMigration.toLowerCase().includes(required.toLowerCase()),
+    `8I-4G read boundary migration missing: ${required}`,
+  );
+}
+for (const forbidden of [
+  "grant select",
+  "admin_confirm_trust_official_source_grouped_relocation_v1",
+  "admin_confirm_trust_official_source_relocation_v1",
+  "admin_confirm_product_fact_v1",
+]) {
+  assert.equal(
+    readBoundaryMigration.includes(forbidden),
+    false,
+    `8I-4G read boundary migration contains forbidden authority expansion: ${forbidden}`,
   );
 }
 

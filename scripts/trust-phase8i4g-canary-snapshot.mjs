@@ -2,7 +2,6 @@ import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import {
   buildReadOnlyCanarySnapshot,
-  classifyRealCanaryProvenance,
 } from "../lib/trust/official-source-grouped-relocation-canary.mjs";
 
 function argValue(name) {
@@ -11,24 +10,12 @@ function argValue(name) {
   return arg ? arg.slice(prefix.length) : null;
 }
 
-async function selectOrThrow(query, label) {
-  const { data, error } = await query;
+async function rpcOrThrow(client, fn, args = {}) {
+  const { data, error } = await client.rpc(fn, args);
   if (error) {
-    throw new Error(`${label}:${error.code || "QUERY_ERROR"}:${error.message}`);
+    throw new Error(`${fn}:${error.code || "RPC_ERROR"}:${error.message}`);
   }
-  return data ?? [];
-}
-
-async function countOrThrow(client, table) {
-  const { count, error } = await client
-    .from(table)
-    .select("*", { count: "exact", head: true });
-  if (error) {
-    throw new Error(
-      `count:${table}:${error.code || "QUERY_ERROR"}:${error.message}`,
-    );
-  }
-  return count ?? 0;
+  return data;
 }
 
 function latestPerCase(rows) {
@@ -49,6 +36,24 @@ function latestPerCase(rows) {
   return [...latest.values()];
 }
 
+function validateReadModel(readModel) {
+  if (
+    !readModel ||
+    readModel.contract !== "trust-phase8i4g-canary-read-model-v1" ||
+    readModel.phase !== "8I-4G" ||
+    readModel.authority !==
+      "READ_ONLY_SERVICE_ROLE_RPC_NO_AUTHORITY_MUTATION" ||
+    !Array.isArray(readModel.evaluations) ||
+    !Array.isArray(readModel.grouped_relocations) ||
+    !readModel.case_lineage ||
+    typeof readModel.case_lineage !== "object" ||
+    !readModel.counts ||
+    typeof readModel.counts !== "object"
+  ) {
+    throw new Error("TRUST_PHASE8I4G_CANARY_READ_MODEL_INVALID");
+  }
+}
+
 export async function capturePhase8i4gCanarySnapshot({
   client,
   limit = 1000,
@@ -59,88 +64,15 @@ export async function capturePhase8i4gCanarySnapshot({
     throw new Error("limit must be an integer between 1 and 5000");
   }
 
-  const evaluations = await selectOrThrow(
-    client
-      .from("trust_official_source_transport_drift_evaluations")
-      .select(
-        "evaluation_id,case_id,request_id,result_kind,candidate_locator,result_payload,created_at",
-      )
-      .order("created_at", { ascending: false })
-      .limit(limit),
-    "load_evaluations",
+  const readModel = await rpcOrThrow(
+    client,
+    "get_trust_phase8i4g_canary_snapshot_v1",
+    { p_limit: limit },
   );
-  const latestEvaluations = latestPerCase(evaluations);
+  validateReadModel(readModel);
 
-  const groupedRelocations = await selectOrThrow(
-    client
-      .from("trust_official_source_relocation_groups")
-      .select("group_id,case_id,evaluation_id,relocation_id,created_at"),
-    "load_grouped_relocations",
-  );
-
-  const realReadyCaseIds = latestEvaluations
-    .filter(
-      (row) =>
-        row.result_kind === "READY_FOR_8I4" &&
-        classifyRealCanaryProvenance(row).eligible,
-    )
-    .map((row) => row.case_id);
-
-  const caseLineage = {};
-  if (realReadyCaseIds.length > 0) {
-    const cases = await selectOrThrow(
-      client
-        .from("trust_official_source_transport_drift_cases")
-        .select("case_id,product_id,subject_id")
-        .in("case_id", realReadyCaseIds),
-      "load_cases",
-    );
-    const links = await selectOrThrow(
-      client
-        .from("trust_official_source_transport_drift_case_incidents")
-        .select("case_id,incident_id,source_id")
-        .in("case_id", realReadyCaseIds),
-      "load_case_lineage",
-    );
-
-    for (const row of cases) {
-      caseLineage[String(row.case_id)] = {
-        product_id: row.product_id,
-        subject_id: row.subject_id,
-        source_ids: [],
-        incident_ids: [],
-      };
-    }
-    for (const link of links) {
-      const entry = caseLineage[String(link.case_id)];
-      if (!entry) continue;
-      entry.source_ids.push(link.source_id);
-      entry.incident_ids.push(link.incident_id);
-    }
-  }
-
-  const countTables = {
-    transport_incidents: "trust_official_source_transport_incidents",
-    drift_cases: "trust_official_source_transport_drift_cases",
-    drift_evaluations: "trust_official_source_transport_drift_evaluations",
-    grouped_relocations: "trust_official_source_relocation_groups",
-    grouped_sources: "trust_official_source_relocation_group_sources",
-    grouped_incidents: "trust_official_source_relocation_group_incidents",
-    relocations: "trust_official_source_relocations",
-    product_fact_instances: "product_fact_instances",
-    product_fact_current: "product_fact_current",
-    product_fact_confirmations: "product_fact_confirmations",
-    evidence_sources: "product_evidence_sources",
-    evidence_subject_bindings: "product_evidence_source_subject_bindings",
-    recommendation_logs: "recommendation_logs",
-    product_source_bindings: "product_source_bindings",
-    official_source_reviews: "trust_official_source_binding_reviews",
-  };
-  const counts = {};
-  for (const [key, table] of Object.entries(countTables)) {
-    counts[key] = await countOrThrow(client, table);
-  }
-
+  const latestEvaluations = latestPerCase(readModel.evaluations);
+  const counts = { ...readModel.counts };
   counts.ready_for_8i4 = latestEvaluations.filter(
     (row) => row.result_kind === "READY_FOR_8I4",
   ).length;
@@ -148,8 +80,8 @@ export async function capturePhase8i4gCanarySnapshot({
   return buildReadOnlyCanarySnapshot({
     capturedAt: now().toISOString(),
     evaluations: latestEvaluations,
-    groupedRelocations,
-    caseLineage,
+    groupedRelocations: readModel.grouped_relocations,
+    caseLineage: readModel.case_lineage,
     counts,
   });
 }
