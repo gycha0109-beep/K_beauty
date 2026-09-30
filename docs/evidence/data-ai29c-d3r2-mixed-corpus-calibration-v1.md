@@ -146,8 +146,13 @@ Water는 계속 0/HOLD다.
 결과:
 
 - scenarios: 48
-- 5/5 scoreable scenarios: 48
+- 5/5 scoreable scenarios: 36
+- sensitivity-authority HOLD scenarios: 12
 - tie-free five-product baseline scenarios: 0
+
+`redness`와 `barrier`는 current scorer에서 sensitive context로 해석된다.
+따라서 해당 12개 조합은 unresolved `irritation_risk`를 통과시키지 않고
+의도대로 fail-closed 한다.
 
 현재 authority에서 score-signature equivalence가 유지되는 pair:
 
