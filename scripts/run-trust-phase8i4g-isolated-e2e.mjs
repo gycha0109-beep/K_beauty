@@ -257,6 +257,20 @@ const confirmed = await confirmTrustGroupedRelocation({
   preflightHash: preflight.preflightHash,
 });
 assert.equal(confirmed.status, "confirmed");
+if (confirmed.canaryClosurePack?.state !== "FIRST_REAL_CANARY_CLOSED_PASS") {
+  process.stderr.write(
+    "TRUST_PHASE8I4G_E2E_CLOSURE_DIAGNOSTIC=" +
+      JSON.stringify(
+        {
+          canaryVerification: confirmed.canaryVerification,
+          canaryClosurePack: confirmed.canaryClosurePack,
+        },
+        null,
+        2,
+      ) +
+      "\n",
+  );
+}
 assert.ok(confirmed.groupId);
 assert.ok(confirmed.relocationId);
 assert.equal(confirmed.historicalSourceCount, 3);
