@@ -265,6 +265,23 @@ assert.equal(confirmed.productFactWrites, 0);
 assert.equal(confirmed.evidenceSourceWrites, 0);
 assert.equal(confirmed.recommendationWrites, 0);
 assert.equal(confirmed.semanticResolutionWrites, 0);
+if (
+  confirmed.canaryClosurePack?.state !== "FIRST_REAL_CANARY_CLOSED_PASS"
+) {
+  process.stderr.write(
+    "TRUST_PHASE8I4G_E2E_CLOSURE_DIAGNOSTIC=" +
+      JSON.stringify(
+        {
+          canaryClosurePack: confirmed.canaryClosurePack ?? null,
+          canaryVerification: confirmed.canaryVerification ?? null,
+          canaryClosureGate: confirmed.canaryClosureGate ?? null,
+        },
+        null,
+        2,
+      ) +
+      "\n",
+  );
+}
 assert.equal(
   confirmed.canaryClosurePack?.state,
   "FIRST_REAL_CANARY_CLOSED_PASS",
