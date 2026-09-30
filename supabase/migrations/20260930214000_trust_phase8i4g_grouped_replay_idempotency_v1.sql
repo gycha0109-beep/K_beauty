@@ -114,6 +114,40 @@ begin
     raise exception 'trust_phase8i4_grouped_confirmation_payload_invalid' using errcode='22023';
   end if;
 
+  if p_payload->'replacement'->>'source_name' is distinct from (
+      select b.source_name from public.product_source_bindings b where b.binding_id=v_old_binding_id
+    )
+    or p_payload->'replacement'->>'external_type' is distinct from (
+      select b.external_type from public.product_source_bindings b where b.binding_id=v_old_binding_id
+    )
+    or nullif(p_payload->'replacement'->>'market_code','') is distinct from (
+      select b.market_code from public.product_source_bindings b where b.binding_id=v_old_binding_id
+    )
+    or nullif(p_payload->'replacement'->>'locale','') is distinct from (
+      select b.locale from public.product_source_bindings b where b.binding_id=v_old_binding_id
+    )
+  then
+    raise exception 'trust_phase8i4_grouped_confirmation_replacement_scope_mismatch' using errcode='23514';
+  end if;
+
+  v_nested := p_payload->'phase8h_anchor_confirmation_request';
+
+  if v_nested->>'contract'<>'trust-phase8h-governed-relocation-confirmation-request-v1'
+    or v_nested->>'historical_source_id' is distinct from v_anchor_id::text
+    or v_nested->>'product_id' is distinct from v_product_id::text
+    or v_nested->>'subject_id' is distinct from v_subject_id::text
+    or v_nested->>'old_binding_id' is distinct from v_old_binding_id::text
+    or v_nested->>'old_review_id' is distinct from v_old_review_id::text
+    or v_nested->>'old_locator' is distinct from p_payload->>'old_locator'
+    or v_nested->>'expected_prestate_digest' is distinct from p_payload->>'phase8h_anchor_prestate_digest'
+    or v_nested->>'relocation_plan_digest' is distinct from p_payload->>'phase8h_anchor_relocation_plan_digest'
+    or v_nested->>'qualification_contract' is distinct from p_payload->>'qualification_contract'
+    or v_nested->>'qualification_digest' is distinct from p_payload->>'qualification_digest'
+    or v_nested->'replacement'<>p_payload->'replacement'
+  then
+    raise exception 'trust_phase8i4_grouped_confirmation_phase8h_bridge_mismatch' using errcode='23514';
+  end if;
+
   perform pg_advisory_xact_lock(
     hashtextextended(
       'bejewely_trust_official_source_grouped_relocation:' ||
@@ -188,40 +222,6 @@ begin
     or v_preflight->'incident_ids'<>p_payload->'incident_ids'
   then
     raise exception 'trust_phase8i4_grouped_confirmation_prestate_stale' using errcode='40001';
-  end if;
-
-  if p_payload->'replacement'->>'source_name' is distinct from (
-      select b.source_name from public.product_source_bindings b where b.binding_id=v_old_binding_id
-    )
-    or p_payload->'replacement'->>'external_type' is distinct from (
-      select b.external_type from public.product_source_bindings b where b.binding_id=v_old_binding_id
-    )
-    or nullif(p_payload->'replacement'->>'market_code','') is distinct from (
-      select b.market_code from public.product_source_bindings b where b.binding_id=v_old_binding_id
-    )
-    or nullif(p_payload->'replacement'->>'locale','') is distinct from (
-      select b.locale from public.product_source_bindings b where b.binding_id=v_old_binding_id
-    )
-  then
-    raise exception 'trust_phase8i4_grouped_confirmation_replacement_scope_mismatch' using errcode='23514';
-  end if;
-
-  v_nested := p_payload->'phase8h_anchor_confirmation_request';
-
-  if v_nested->>'contract'<>'trust-phase8h-governed-relocation-confirmation-request-v1'
-    or v_nested->>'historical_source_id' is distinct from v_anchor_id::text
-    or v_nested->>'product_id' is distinct from v_product_id::text
-    or v_nested->>'subject_id' is distinct from v_subject_id::text
-    or v_nested->>'old_binding_id' is distinct from v_old_binding_id::text
-    or v_nested->>'old_review_id' is distinct from v_old_review_id::text
-    or v_nested->>'old_locator' is distinct from p_payload->>'old_locator'
-    or v_nested->>'expected_prestate_digest' is distinct from p_payload->>'phase8h_anchor_prestate_digest'
-    or v_nested->>'relocation_plan_digest' is distinct from p_payload->>'phase8h_anchor_relocation_plan_digest'
-    or v_nested->>'qualification_contract' is distinct from p_payload->>'qualification_contract'
-    or v_nested->>'qualification_digest' is distinct from p_payload->>'qualification_digest'
-    or v_nested->'replacement'<>p_payload->'replacement'
-  then
-    raise exception 'trust_phase8i4_grouped_confirmation_phase8h_bridge_mismatch' using errcode='23514';
   end if;
 
   v_phase8h_result := public.admin_confirm_trust_official_source_relocation_v1(
