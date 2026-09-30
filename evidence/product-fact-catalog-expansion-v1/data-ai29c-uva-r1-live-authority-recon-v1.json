@@ -1,0 +1,112 @@
+{
+  "version": "data-ai29c-uva-r1-live-authority-recon-v1",
+  "observedFromProduction": true,
+  "productionProject": "bygrczggxfuisupcevaz",
+  "observedAgainstMainSha": "f2bc592ed8811ffe0c20bcaf706d1a59285a1157",
+  "track": "taxonomy-ai",
+  "factKey": "uva_label",
+  "comparableCorpus": {
+    "source": "DATA-AI29C-D3R3 mixed comparable corpus",
+    "count": 14,
+    "productIds": [
+      "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+      "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "57e4a5ec-115d-4322-85a1-7976db669700",
+      "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+      "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17"
+    ],
+    "uvaAuthority": {
+      "eligibleCount": 12,
+      "missingCount": 2,
+      "complete": false,
+      "labelDistribution": {
+        "PA++++": 9,
+        "PA+++": 1,
+        "PA++": 2
+      },
+      "missingProductIds": [
+        "9983f167-24e7-4223-bd86-446ce6ced31b",
+        "fdf06871-db8e-4e73-a48c-c057c5ce925d"
+      ]
+    }
+  },
+  "registry": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "definitionChecksum": "11f1d398e1c460c8597357a162725c708c019d4efc8f3a42b312b5e46bfe43ae",
+    "valueType": "enum",
+    "semanticDefinition": "Market-scoped UVA protection label.",
+    "allowedValues": [
+      "PA+",
+      "PA++",
+      "PA+++",
+      "PA++++",
+      "UVA-PF-declared"
+    ],
+    "positiveEvidenceRequirement": "product-specific evidence",
+    "requiredScopeFields": [
+      "market"
+    ],
+    "historicalUvaPfDeclaredInstanceCount": 0
+  },
+  "missingTargets": [
+    {
+      "productId": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "productName": "La Roche-Posay Anthelios Sun Fluid",
+      "subjectId": "614db853-7865-408b-8f40-a4dcfe6a2ea5",
+      "subjectSemanticKey": "75f3d410ae03c5ffef800fedb28f706741fe59f3490e6155e396d6151b5ce527",
+      "variantKey": "ANTHELIOS_SUN_FLUID_KR_50ML",
+      "formulationRevisionKey": "trust-p7-lrp-4833-current",
+      "identityStatus": "resolved",
+      "identityResolutionVersion": "trust-p7-sunscreen-stage-b-identity-v1",
+      "currentState": "current",
+      "market": "KR",
+      "currentUvaFact": false,
+      "recoveryRequirement": "exact-subject first-party PA/UVA-PF claim"
+    },
+    {
+      "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "productName": "SKIN1004 Hyalu-Cica Water-Fit Sun Serum UV",
+      "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+      "subjectSemanticKey": "6ea35ff44d90264c4cb8f845b1f04f28adc794872220f41e4cc9e03d13561320",
+      "variantKey": "HYALU_CICA_WATER_FIT_SUN_SERUM_UV_US_50ML",
+      "formulationRevisionKey": "trust-p17-skin1004-uv-us-current",
+      "identityStatus": "resolved",
+      "identityResolutionVersion": "trust-p17-skin1004-uv-us-market-applicability-recovery-v1",
+      "currentState": "current",
+      "market": "US",
+      "currentUvaFact": false,
+      "recoveryRequirement": "exact US formulation first-party registry-admissible UVA claim"
+    }
+  ],
+  "continuity": {
+    "previousD4Decision": "UVA_AXIS_D4_HOLD_EXACT_SUBJECT_AUTHORITY_INCOMPLETE",
+    "sameComparableCorpusCount": true,
+    "sameMissingTargets": true,
+    "sameRegistryVersion": true,
+    "sameUvaPfDeclaredUsage": true,
+    "reconOutcome": "UNCHANGED"
+  },
+  "limits": {
+    "productFactWritten": false,
+    "evidenceWritten": false,
+    "registryChanged": false,
+    "productionCandidateAdmissionWired": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "uvaActivated": false,
+    "waterResistanceApplied": false,
+    "spfProductionStateMutated": false
+  },
+  "decision": "UVA_R1_LIVE_RECON_PASS_R2_EXACT_SUBJECT_RESEARCH_REQUIRED"
+}
