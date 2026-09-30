@@ -1,0 +1,65 @@
+{
+  "version": "data-ai29c-water-a-intent-contract-v1",
+  "contractVersion": "sunscreen-water-intent-contract-v1",
+  "canonicalField": "water_resistance_needed",
+  "recommendationAnswerKey": "waterResistanceNeeded",
+  "valueType": "nullable_boolean",
+  "semantics": {
+    "true": "The user explicitly requires the sunscreen to withstand water exposure or heavy perspiration, or explicitly states an aquatic/high-sweat use case that makes water resistance part of the requested product requirement.",
+    "false": "The user explicitly states that water resistance is not required. This is a user requirement state only and says nothing about whether any product is waterproof.",
+    "null": "No governed water-resistance need is available from the query. Missing or ambiguous intent remains unknown."
+  },
+  "ownershipRules": {
+    "outdoorExposureDoesNotImplyWaterResistanceNeed": true,
+    "waterResistanceNeedDoesNotRequireOutdoorExposure": true,
+    "missingDoesNotBecomeFalse": true,
+    "falseDoesNotClassifyProductsAsNonWaterproof": true,
+    "beachWordAloneDoesNotForceTrue": true,
+    "sportsWordAloneDoesNotForceTrue": true,
+    "explicitSwimmingOrWaterActivityMaySupportTrue": true,
+    "explicitSweatResistanceRequirementMaySupportTrue": true
+  },
+  "examples": [
+    {
+      "query": "수영할 때 쓸 워터프루프 선크림 추천해줘",
+      "expected": true,
+      "reason": "explicit aquatic use and explicit waterproof requirement"
+    },
+    {
+      "query": "땀에 잘 안 지워지는 러닝용 선크림이 필요해",
+      "expected": true,
+      "reason": "explicit sweat-resistance requirement"
+    },
+    {
+      "query": "야외에서 오래 있을 선크림 추천해줘",
+      "expected": null,
+      "reason": "outdoor exposure alone does not establish water-resistance need"
+    },
+    {
+      "query": "해변에서 쓸 선크림",
+      "expected": null,
+      "reason": "beach context alone is insufficient without explicit water/sweat-resistance need"
+    },
+    {
+      "query": "워터프루프는 필요 없어",
+      "expected": false,
+      "reason": "explicit negative requirement"
+    }
+  ],
+  "runtimeBoundary": {
+    "productQueryIntentSchemaMutated": false,
+    "providerPromptMutated": false,
+    "recommendationAnswersMutated": false,
+    "protectionScorerWired": false,
+    "waterAuthorityRequiredForFutureRanking": true,
+    "waterAxisActivated": false
+  },
+  "productionBoundary": {
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "persistence": false
+  },
+  "decision": "WATER_A_CANONICAL_INTENT_CONTRACT_FROZEN_RUNTIME_NOT_WIRED"
+}
