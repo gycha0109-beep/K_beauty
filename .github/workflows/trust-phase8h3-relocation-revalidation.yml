@@ -43,6 +43,7 @@ on:
       - "lib/trust/official-source-grouped-relocation-canary.mjs"
       - "scripts/trust-phase8i4g-canary-snapshot.mjs"
       - "scripts/trust-phase8i4g-canary-activation-signal.mjs"
+      - "scripts/verify-trust-phase8i4g-canary-activation.mjs"
       - "scripts/verify-trust-phase8i4g-canary-snapshot.mjs"
       - "scripts/verify-trust-phase8i4g-authority-invariants.mjs"
       - "scripts/verify-trust-phase8i4g-lineage.mjs"
@@ -104,6 +105,7 @@ on:
       - "lib/trust/official-source-grouped-relocation-canary.mjs"
       - "scripts/trust-phase8i4g-canary-snapshot.mjs"
       - "scripts/trust-phase8i4g-canary-activation-signal.mjs"
+      - "scripts/verify-trust-phase8i4g-canary-activation.mjs"
       - "scripts/verify-trust-phase8i4g-canary-snapshot.mjs"
       - "scripts/verify-trust-phase8i4g-authority-invariants.mjs"
       - "scripts/verify-trust-phase8i4g-lineage.mjs"
@@ -255,6 +257,7 @@ jobs:
           node --check lib/trust/official-source-grouped-relocation-canary.mjs
           node --check scripts/trust-phase8i4g-canary-snapshot.mjs
           node --check scripts/trust-phase8i4g-canary-activation-signal.mjs
+          node --check scripts/verify-trust-phase8i4g-canary-activation.mjs
           node --check scripts/verify-trust-phase8i4g-canary-snapshot.mjs
           node --check scripts/verify-trust-phase8i4g-authority-invariants.mjs
           node --check scripts/verify-trust-phase8i4g-lineage.mjs
@@ -263,6 +266,7 @@ jobs:
           node --check scripts/verify-trust-phase8i4g-static-contract.mjs
           node --check scripts/verify-trust-phase8i4g-canary-closure.mjs
           node scripts/verify-trust-phase8i4g-static-contract.mjs
+          node scripts/verify-trust-phase8i4g-canary-activation.mjs
           node scripts/verify-trust-phase8i4g-canary-closure.mjs
 
       - name: Verify Phase 8E and 8F unchanged contracts
