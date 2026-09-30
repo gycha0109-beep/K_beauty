@@ -105,6 +105,9 @@ assert(getAnalysisGuardPolicy("face-reading-test")?.path === "/api/face-reading-
 assert(FACE_LAB_PRODUCTION_DAILY_LIMIT === 5, "production Face Lab daily limit should be explicit");
 assert(FACE_LAB_USAGE_POLICY.production.consumesProductionQuota === true, "production Face Lab should consume production quota");
 assert(FACE_LAB_USAGE_POLICY.test.consumesProductionQuota === false, "Face Lab UAT should not consume production quota");
+assert(getAnalysisGuardPolicy("face-reading")?.refundOnFailure === true, "production Face Lab failures should refund quota");
+assert(getAnalysisGuardPolicy("face-reading-test")?.refundOnFailure === true, "Face Lab UAT failures should refund quota");
+assert(getAnalysisGuardPolicy("analyze")?.refundOnFailure !== true, "general analyze quota semantics must remain unchanged");
 assert(
   getAnalysisGuardPolicy("face-reading")?.limits.anonymous.find((item) => item.name === "day")?.limit === 5,
   "production anonymous Face Lab daily quota should be 5"
