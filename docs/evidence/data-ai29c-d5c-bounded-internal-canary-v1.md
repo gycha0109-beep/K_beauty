@@ -20,11 +20,11 @@ D5C 범위:
 
 정확히 다음 3개만 허용한다.
 
-- Physical Daily Sunmilk  
+- Physical Daily Sunmilk
   `a6994fcd-302f-4e63-acbe-91a3f17a5a65`
-- MIN JUNG GI Physical Sun Block  
+- MIN JUNG GI Physical Sun Block
   `b90bf992-07ae-4f49-a3a4-d90ea6d4a858`
-- Jojoba Suncream  
+- Jojoba Suncream
   `7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17`
 
 Zinc / Bio Repair는 D5C allowlist에 없다.
