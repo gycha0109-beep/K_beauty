@@ -164,6 +164,11 @@ check(route.includes("recommendationLogWrite: false"),
   "runtime evidence must attest zero recommendation-log write");
 check(route.includes("publicActivation: false"),
   "runtime evidence must attest no public activation");
+check(
+  route.includes('"PRODUCT_QUERY_PROVIDER_SHADOW_SCENARIO_FAILED"') &&
+    route.includes('"scenario_mismatch"'),
+  "scenario evaluation failure must be classified separately from provider transport/protocol failure"
+);
 
 check(oidc.includes('DATA_AI4_RUNTIME_PROBE_AUDIENCE =\n  "urn:bejewely:data-ai4:provider-shadow"'),
   "DATA-AI4 OIDC audience must be dedicated");
@@ -234,8 +239,10 @@ check(
     workflow.includes('test "$completed" -ge 18') &&
     workflow.includes('test "$transient_exhausted" -le 2') &&
     workflow.includes('test "$incomplete" -eq 0') &&
+    workflow.includes('scenario_mismatch=0') &&
+    workflow.includes('test "$scenario_mismatch" -eq 0') &&
     workflow.includes('test "$other_failure" -eq 0'),
-  "DATA-AI28E-R1 must preserve the 600-token budget and validate bounded incomplete plus transient provider retry across 20 exact deployed-main attempts"
+  "DATA-AI28E-R2 must preserve the 600-token budget, bounded retry, and hard-fail semantic mismatch separately across 20 exact deployed-main attempts"
 );
 check(
   dataAi28Classifier.includes('expectedBudget === "default"') &&
@@ -251,9 +258,12 @@ check(
     dataAi28Classifier.includes('"PRODUCT_QUERY_AI_REQUEST_FAILED"') &&
     dataAi28Classifier.includes('"transient_exhausted"') &&
     dataAi28Classifier.includes('"nonretryable_provider_failure"') &&
+    dataAi28Classifier.includes('"scenario_mismatch"') &&
+    dataAi28Classifier.includes('"PRODUCT_QUERY_PROVIDER_SHADOW_SCENARIO_FAILED"') &&
+    dataAi28Classifier.includes("DATA_AI28E_SCENARIO_MISMATCH=") &&
     dataAi28Classifier.includes("payload.providerAttempts !== 2") &&
     dataAi28Classifier.includes("DATA_AI28E_UNKNOWN_FAILURE="),
-  "DATA-AI28E-R1 QA classifier must separate bounded transient exhaustion from nonretryable and unknown failures"
+  "DATA-AI28E-R2 QA classifier must separate semantic mismatch, transient exhaustion, nonretryable, and unknown failures"
 );
 check(
   dataAi28eVerifier.includes("PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE") &&
