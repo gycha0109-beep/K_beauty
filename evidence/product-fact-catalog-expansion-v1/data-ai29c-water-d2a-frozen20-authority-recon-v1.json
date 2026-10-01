@@ -1,0 +1,439 @@
+{
+  "version": "data-ai29c-water-d2a-frozen20-authority-recon-v1",
+  "stage": "DATA-AI29C-WATER-D2A",
+  "track": "taxonomy-ai",
+  "researchDate": "2026-10-01",
+  "researchedAgainstMainSha": "1fb3f2d5698cdff6901d132cc6f5f5a9b22be3bb",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "registry": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "factKey": "water_resistance_duration",
+    "definitionChecksum": "14510b53371121c1edc552f33155edc7fc5c9d44e509ed85d9589e65da6542ee",
+    "valueType": "number_unit",
+    "allowedUnits": [
+      "minutes"
+    ],
+    "semanticDefinition": "Established water-resistance duration with explicit time unit.",
+    "permittedEvidenceClasses": [
+      "product_claim",
+      "measurement"
+    ],
+    "positiveEvidenceRequirement": "product-specific evidence",
+    "requiredQualifierContextFields": [
+      "metric",
+      "method_context",
+      "timepoint"
+    ]
+  },
+  "entryState": {
+    "frozenProspectiveCorpusCount": 20,
+    "frozenProspectiveDenominatorRebased": false,
+    "existingFrozenGovernedWaterEligibleCount": 1,
+    "existingFrozenGovernedWaterEligibleProductIds": [
+      "cbcd06a2-de29-47ca-afd1-ab1d5de93903"
+    ],
+    "frozenCoverageBeforeRecon": "1/20",
+    "outOfCorpusGovernedWaterFactCount": 1,
+    "outOfCorpusGovernedWaterProducts": [
+      "6852eeda-eb1d-4c4e-8bea-b30a26126a9c"
+    ]
+  },
+  "researchScope": {
+    "excludedAlreadyGovernedFrozenProductIds": [
+      "cbcd06a2-de29-47ca-afd1-ab1d5de93903"
+    ],
+    "targetCount": 19,
+    "targetProductIds": [
+      "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "7e061f3a-e086-4700-8f09-98391008ecc5",
+      "df32d800-2f16-4511-8efa-dc353ea1c2ef",
+      "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+      "b576991e-79c9-4189-b6e9-527aeeb03566",
+      "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+      "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+      "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "57e4a5ec-115d-4322-85a1-7976db669700"
+    ],
+    "researchMode": "research_only_zero_write",
+    "sourcePriority": "first_party_exact_subject_or_bound_equivalent_scope"
+  },
+  "sourceBindingAudit": {
+    "firstPartyBoundTargetCount": 18,
+    "equivalentScopeTargetCount": 17,
+    "narrowerScopeTargetCount": 1,
+    "firstPartySourceGapCount": 1,
+    "firstPartySourceGapProductIds": [
+      "df32d800-2f16-4511-8efa-dc353ea1c2ef"
+    ]
+  },
+  "targets": [
+    {
+      "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "productName": "BUSHMAN Waterproof Pro Suncream",
+      "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+        "publisher": "BUSHMAN",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": "Waterproof Pro Suncream",
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_GENERIC_WATERPROOF_NO_DURATION_MAPPING"
+    },
+    {
+      "productId": "7e061f3a-e086-4700-8f09-98391008ecc5",
+      "productName": "CellFusionC Aquatica Cooling Sunscreen",
+      "subjectId": "384b336b-c884-4ba0-a185-30245af1346f",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://cellfusionc.co.kr/product/%EC%95%84%EC%BF%A0%EC%95%84%ED%8B%B0%EC%B9%B4-%EC%BF%A8%EB%A7%81-%EC%8D%AC%EC%8A%A4%ED%81%AC%EB%A6%B0-50ml/544/",
+        "publisher": "CellFusionC",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "df32d800-2f16-4511-8efa-dc353ea1c2ef",
+      "productName": "FULLY Rice Ceramide Moisture Sun Cream",
+      "subjectId": "d677c25a-508d-42f8-a0e4-e76d6f9abb0c",
+      "market": "KR",
+      "officialSource": null,
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_FIRST_PARTY_SOURCE_NOT_ESTABLISHED"
+    },
+    {
+      "productId": "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+      "productName": "SIDMOOL Dr. Troub Skin Returning Bio Repair + Suncream",
+      "subjectId": "f4c580f3-6ee3-4c1d-b359-dd058ac13490",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.sidmool.com/shop/shopdetail.html?branduid=77107",
+        "publisher": "SIDMOOL",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "b576991e-79c9-4189-b6e9-527aeeb03566",
+      "productName": "SIDMOOL Dr. Troub Zinc Physical",
+      "subjectId": "8bacc75c-2df3-4828-bc8e-27b23755bbd3",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.sidmool.com/shop/shopdetail.html?branduid=77142",
+        "publisher": "SIDMOOL",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+      "productName": "SIDMOOL Jojoba Suncream",
+      "subjectId": "e88dbcb8-a209-4ab1-a92d-3086ad1aeb56",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.sidmool.com/shop/shopdetail.html?branduid=77215",
+        "publisher": "SIDMOOL",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+      "productName": "SIDMOOL MIN JUNG GI Physical Sun Block",
+      "subjectId": "cb9364c3-2059-49db-adda-47187e97d743",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.sidmool.com/shop/shopdetail.html?branduid=76921",
+        "publisher": "SIDMOOL",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "productName": "SIDMOOL Physical Daily Sunmilk",
+      "subjectId": "2e6afb90-dd1a-4b1f-b434-cee2ee94d83b",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+        "publisher": "SIDMOOL",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "productName": "Dr.G Green Mild Up Sun Plus",
+      "subjectId": "15e25e11-935d-4b04-aa59-68de0531ef39",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.dr-g.co.kr/item/9637",
+        "publisher": "Dr.G / 고운세상코스메틱",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "productName": "La Roche-Posay Anthelios Sun Fluid",
+      "subjectId": "614db853-7865-408b-8f40-a4dcfe6a2ea5",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.larocheposay.co.kr/product/view/4833.do",
+        "publisher": "La Roche-Posay Korea",
+        "sourceKind": "official_market_sales_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "productName": "ROUND LAB Birch Juice Moisturizing Sunscreen",
+      "subjectId": "761e6fd6-3487-4505-a1a7-13c37d5cece4",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://roundlab.co.kr/article/press/8/3087",
+        "publisher": "ROUND LAB",
+        "sourceKind": "official_brand_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "productName": "Beauty of Joseon Relief Sun Rice + Probiotics",
+      "subjectId": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "market": "GLOBAL",
+      "officialSource": {
+        "canonicalLocator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+        "publisher": "Beauty of Joseon",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "productName": "Beauty of Joseon Relief Sun Aqua-Fresh",
+      "subjectId": "1b735d5e-bc57-4808-9f48-b4bb82f3e8fa",
+      "market": "GLOBAL",
+      "officialSource": {
+        "canonicalLocator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+        "publisher": "Beauty of Joseon",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "productName": "SKIN1004 Hyalu-Cica Water-Fit Sun Serum UV",
+      "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+      "market": "US",
+      "officialSource": {
+        "canonicalLocator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+        "publisher": "SKIN1004",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "productName": "AESTURA Derma UV365 Red Calming Tone Up Sunscreen",
+      "subjectId": "d15f9fbd-8cf4-4513-91e0-1d64d123dbdf",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.aestura.com/web/product/view.do?prdSeq=1108",
+        "publisher": "AESTURA",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "productName": "AESTURA Derma UV365 Barrier Hydro Mineral Sunscreen",
+      "subjectId": "a340d9dc-a742-4ca3-9951-3bc7e6ec7655",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen",
+        "publisher": "AESTURA",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "narrower"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "productName": "Isntree Hyaluronic Acid Watery Sun Gel",
+      "subjectId": "2f2377dd-b6d2-4a23-a680-733444bf40fc",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+        "publisher": "Isntree",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "productName": "Torriden DIVE-IN Mild Sun Cream",
+      "subjectId": "5be00a86-82b4-4f42-af65-4c0d3b8324d4",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+        "publisher": "Torriden",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    },
+    {
+      "productId": "57e4a5ec-115d-4322-85a1-7976db669700",
+      "productName": "Torriden DIVE-IN Watery Moisture Sun Cream",
+      "subjectId": "750c298a-e085-4a29-aa24-2656fa7a5d6f",
+      "market": "KR",
+      "officialSource": {
+        "canonicalLocator": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+        "publisher": "Torriden",
+        "sourceKind": "official_product_page",
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      "observedWaterSignal": null,
+      "directNumericDurationClaim": null,
+      "confirmationEligible": false,
+      "decision": "HOLD_NO_EXPLICIT_DURATION_AUTHORITY"
+    }
+  ],
+  "researchOutcome": {
+    "directConfirmationEligibleTargetCount": 0,
+    "newGovernedSemanticMappingCandidateCount": 0,
+    "genericWaterproofHoldCount": 1,
+    "noExplicitDurationAuthorityCount": 17,
+    "firstPartySourceGapCount": 1,
+    "frozenGovernedWaterEligibleAfterRecon": 1,
+    "frozenCoverageAfterRecon": "1/20",
+    "d2bGovernedAdoptionRequired": false,
+    "reason": "No additional frozen-20 exact Subject has a first-party, registry-admissible water-resistance duration or governed label-to-duration mapping candidate. BUSHMAN remains a generic waterproof-word HOLD and FULLY remains a first-party source gap."
+  },
+  "semanticBoundaries": {
+    "waterproofWordToDurationForbidden": true,
+    "superWaterproofWordToDurationForbidden": true,
+    "sweatResistanceToWaterDurationForbidden": true,
+    "crossProductTransferForbidden": true,
+    "crossMarketTransferForbidden": true,
+    "missingDurationToZeroForbidden": true,
+    "missingDurationToNonWaterproofForbidden": true,
+    "outOfCorpusDayDewMustNotRebaseFrozenDenominator": true
+  },
+  "limits": {
+    "productFactWritten": false,
+    "evidenceRecordWritten": false,
+    "reviewAssignmentWritten": false,
+    "confirmationWritten": false,
+    "registryChanged": false,
+    "sourceBindingWritten": false,
+    "productQueryIntentSchemaMutated": false,
+    "protectionScorerWired": false,
+    "waterAxisActivated": false,
+    "waterRankingWired": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "persistence": false,
+    "spfProductionStateMutated": false
+  },
+  "decision": "WATER_D2A_FROZEN20_RECON_HOLD_NO_NEW_ADMISSIBLE_DURATION_AUTHORITY",
+  "nextGate": "NO_D2B_ADOPTION_RESOLVE_SOURCE_GAPS_OR_COMPLETE_SEPARATE_GOVERNED_RESEARCH"
+}
