@@ -82,6 +82,8 @@ Free-text finding notes and raw finding evidence references are not retained.
 
 ## Campaign aggregate
 
+The aggregate intentionally omits case-level intentBindingDigest and Render Spec digest values; those are used only during case admission and repeat-group validation.
+
 The aggregate reports:
 
 - case count,
