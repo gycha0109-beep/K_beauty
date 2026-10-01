@@ -41,6 +41,7 @@ on:
       - "scripts/verify-face-lab-v2-ai-simulation-adapter.mjs"
       - "scripts/verify-face-lab-v2-simulation-guard.mjs"
       - "scripts/verify-face-lab-v2-simulation-uat-endpoint.mjs"
+      - "scripts/verify-face-lab-v2-simulation-uat-ui.mjs"
       - "app/api/face-reading/route.js"
       - "app/api/face-reading-test/route.js"
       - "app/api/face-lab-simulation-test/**"
@@ -117,6 +118,7 @@ on:
       - "scripts/verify-face-lab-v2-ai-simulation-adapter.mjs"
       - "scripts/verify-face-lab-v2-simulation-guard.mjs"
       - "scripts/verify-face-lab-v2-simulation-uat-endpoint.mjs"
+      - "scripts/verify-face-lab-v2-simulation-uat-ui.mjs"
       - "app/api/face-reading/route.js"
       - "app/api/face-reading-test/route.js"
       - "app/api/face-lab-simulation-test/**"
@@ -218,6 +220,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-simulation-guard.mjs
       - name: Verify Face Lab V2 simulation UAT endpoint
         run: node scripts/verify-face-lab-v2-simulation-uat-endpoint.mjs
+      - name: Verify Face Lab V2 simulation UAT UI
+        run: node scripts/verify-face-lab-v2-simulation-uat-ui.mjs
       - name: Check Face Lab V2 simulation UAT route syntax
         run: |
           node --check app/api/face-reading/route.js
