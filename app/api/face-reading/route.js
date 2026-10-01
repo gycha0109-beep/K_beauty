@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { projectFaceLabResult } from "@/lib/face-lab-observation-projector";
-import { createFaceLabUnavailable } from "@/lib/face-lab-result-envelope";
+import {
+  createFaceLabUnavailable,
+  getFaceLabObservationAnalysis
+} from "@/lib/face-lab-result-envelope";
 import { resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import {
   applyAnalysisGuardCookies,
   completeAnalysisRequestGuard,
   createAnalysisGuardResponse,
   failAnalysisRequestGuard,
+  getAnalysisRequestGuardSecret,
   guardAnalysisRequest
 } from "@/lib/security/analysis-request-guard";
 import { getUploadFingerprintDescriptor } from "@/lib/security/analysis-request-guard-core";
@@ -15,6 +19,7 @@ import {
   writeSafeLog
 } from "@/lib/security/error-redaction";
 import { canonicalizeImageFile } from "@/lib/server/image-upload-boundary";
+import { issueFaceLabSimulationAuthority } from "@/lib/server/face-lab-simulation-authority";
 import { analyzeVisionObservation } from "@/lib/server/vision-observation-service";
 import { OPENAI_RUNTIME_MODEL } from "@/lib/ai-model-policy";
 import {
@@ -169,7 +174,44 @@ export async function POST(request, context = {}) {
     }
 
     const faceLab = projectFaceLabResult(observation.bundle, { locale });
-    return completeGuardedResponse(sensitiveJsonResponse(faceLab), analysisGuard);
+    let responsePayload = faceLab;
+
+    if (
+      context?.issueSimulationAuthority === true &&
+      faceLab?.status === "available"
+    ) {
+      const authorityAnalysis =
+        getFaceLabObservationAnalysis(faceLab);
+      const authoritySecret =
+        getAnalysisRequestGuardSecret();
+      const simulationAuthority =
+        issueFaceLabSimulationAuthority({
+          secret: authoritySecret,
+          imageBuffer: canonicalImage.bytes,
+          analysis: authorityAnalysis,
+          locale
+        });
+
+      if (!simulationAuthority) {
+        return failGuardedResponse(
+          sensitiveJsonResponse(
+            { error: copy.serverError },
+            { status: 500 }
+          ),
+          analysisGuard
+        );
+      }
+
+      responsePayload = {
+        ...faceLab,
+        simulationAuthority
+      };
+    }
+
+    return completeGuardedResponse(
+      sensitiveJsonResponse(responsePayload),
+      analysisGuard
+    );
   } catch {
     if (analysisGuard?.ok) {
       await failAnalysisRequestGuard(analysisGuard);

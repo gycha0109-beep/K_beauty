@@ -166,9 +166,9 @@ const sourcePaths = Object.freeze({
 
 const HTTP_METHOD_NAMES = Object.freeze(["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]);
 const HTTP_METHOD_NAME_SET = new Set(HTTP_METHOD_NAMES);
-const EXPECTED_SENSITIVE_ROUTE_COUNT = 19;
-const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 21;
-const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 191;
+const EXPECTED_SENSITIVE_ROUTE_COUNT = 20;
+const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 22;
+const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 207;
 const FULL_REPORT_POST_TERMINAL_SIGNATURES = Object.freeze([
   "call:buildSavedPremiumReportResponse",
   "call:getPremiumPersistenceFailedResponse(\"premium_session_update_failed\")",
@@ -198,7 +198,8 @@ const FULL_REPORT_SESSION_POST_TERMINAL_SIGNATURES = Object.freeze([
 ].sort());
 const SENSITIVE_ROUTE_HANDLER_BINDINGS = Object.freeze([
   Object.freeze({ id: "app/api/analyze/route.js::POST", path: "app/api/analyze/route.js", method: "POST", expectedTerminalPaths: 9 }),
-  Object.freeze({ id: "app/api/face-reading/route.js::POST", path: "app/api/face-reading/route.js", method: "POST", expectedTerminalPaths: 9 }),
+  Object.freeze({ id: "app/api/face-reading/route.js::POST", path: "app/api/face-reading/route.js", method: "POST", expectedTerminalPaths: 10 }),
+  Object.freeze({ id: "app/api/face-lab-simulation-test/route.js::POST", path: "app/api/face-lab-simulation-test/route.js", method: "POST", expectedTerminalPaths: 15 }),
   Object.freeze({
     id: "app/api/full-report/route.js::POST",
     path: "app/api/full-report/route.js",
@@ -753,6 +754,13 @@ function getResponseConstructor(node, model, environment) {
     }
     if (objectName === "Response" && methodName === "json" && !environment.has("Response") && !model.imports.has("Response")) {
       return { initArgumentIndex: 1, name: "Response.json" };
+    }
+  }
+
+  if (node?.type === "NewExpression" && getIdentifierName(node.callee) === "NextResponse") {
+    const imported = model.imports.get("NextResponse");
+    if (imported?.source === "next/server" && imported.imported === "NextResponse") {
+      return { initArgumentIndex: 1, name: "new NextResponse" };
     }
   }
 
@@ -1517,9 +1525,9 @@ register("I09_CLIENT_CONSOLE_BOUNDARY", async () => {
 });
 register("I10_SENSITIVE_ROUTE_NO_STORE", async () => {
   const result = await assertSensitiveRouteIntegrationExactSet();
-  assert.deepEqual(result.routes, { expected: 19, discovered: 19, verified: 19 });
-  assert.deepEqual(result.handlerBindings, { expected: 21, discovered: 21, verified: 21 });
-  assert.deepEqual(result.terminalResponsePaths, { expected: 191, discovered: 191, verified: 191 });
+  assert.deepEqual(result.routes, { expected: 20, discovered: 20, verified: 20 });
+  assert.deepEqual(result.handlerBindings, { expected: 22, discovered: 22, verified: 22 });
+  assert.deepEqual(result.terminalResponsePaths, { expected: 207, discovered: 207, verified: 207 });
   assert.deepEqual(result.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(result.deadHelperCalls, 0);
   assert.equal(result.unsafeResponsePaths, 0);
