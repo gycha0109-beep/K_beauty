@@ -1,0 +1,119 @@
+{
+  "version": "data-ai29c-uva-r3b-registry-compatibility-audit-v1",
+  "stage": "DATA-AI29C-UVA-R3B",
+  "track": "taxonomy-ai",
+  "auditDate": "2026-10-01",
+  "basedOnR3aDecision": "BROAD_SPECTRUM_SEPARATE_FACT_SEMANTICS_PASS",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "productionRegistryState": {
+    "registryVersionCount": 1,
+    "currentRegistryVersion": "product-fact-registry-cross-category-v1",
+    "currentRegistryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "currentRegistryEffectiveAt": null,
+    "activeDefinitionCount": 20,
+    "currentFactCount": 92,
+    "openReviewAssignmentCount": 0,
+    "activeResearchLineage": {
+      "EVIDENCE_CANDIDATE": 28,
+      "REVIEW_REQUIRED": 343,
+      "total": 371
+    }
+  },
+  "latestRegistrySelection": {
+    "function": "product_fact_controlled_latest_registry_v1",
+    "behavior": "selects the most recent registry whose effective_at is null or <= now(), ordered by coalesce(effective_at, created_at) desc, then created_at desc, then registry_version desc",
+    "immediatePublishWithNullEffectiveAtBecomesLatest": true,
+    "futureEffectiveAtDefersLatestUntilEffectiveTime": true
+  },
+  "latestRegistryCoupledWritePaths": [
+    {
+      "function": "admin_prepare_product_fact_review_v1",
+      "impact": "rejects review preparation when requested registry_version is not the current latest registry"
+    },
+    {
+      "function": "product_fact_controlled_build_preflight_v1",
+      "impact": "confirmation preflight is stale/fail-closed when payload registry lineage is not the latest accepted registry state"
+    },
+    {
+      "function": "trust_phase4_build_adoption_plan_v1",
+      "impact": "requires evidence candidate registry_version to equal product_fact_controlled_latest_registry_v1()"
+    },
+    {
+      "function": "trust_phase8e_build_revalidation_plan_legacy_v1",
+      "impact": "legacy revalidation planning is also coupled to latest registry semantics"
+    }
+  ],
+  "sunscreenRecommendationReader": {
+    "readContractVersion": "recommendation-sunscreen-protection-authority-read-v1",
+    "consumedFactKeys": [
+      "spf_value",
+      "uva_label",
+      "water_resistance_duration"
+    ],
+    "broadSpectrumConsumed": false,
+    "requiresSingleRegistryAcrossConsumedFacts": true,
+    "mixedConsumedRegistryFailureReason": "CURRENT_PROTECTION_FACT_REGISTRY_AMBIGUOUS",
+    "broadSpectrumV2FactAloneWouldBeIgnoredByCurrentReader": true,
+    "implication": "A Fact-only broad_spectrum record can remain ranking-inert if the current reader contract is unchanged, but the controlled write pipeline still cannot safely make v2 latest while active v1 lineage remains."
+  },
+  "riskScenarios": [
+    {
+      "scenario": "PUBLISH_V2_EFFECTIVE_NOW",
+      "safe": false,
+      "reason": "v2 becomes latest immediately and 371 active v1 research lineages can no longer complete through latest-registry-gated adoption/review paths without redesign or migration."
+    },
+    {
+      "scenario": "PUBLISH_V2_FUTURE_EFFECTIVE_AT",
+      "safe": false,
+      "reason": "This only postpones the cutover. At effective time the same v1 lineage compatibility problem returns unless the backlog is drained or coexistence semantics are implemented."
+    },
+    {
+      "scenario": "MIGRATE_ONLY_ONE_EXISTING_PROTECTION_FACT_TO_V2",
+      "safe": false,
+      "reason": "The current sunscreen protection reader requires one registry_version across SPF/UVA/Water consumed facts and fails closed on mixed registries."
+    },
+    {
+      "scenario": "ADD_BROAD_SPECTRUM_AS_V2_FACT_ONLY_WITH_READER_UNCHANGED",
+      "safe": "CONDITIONALLY_SEMANTICALLY_SAFE_BUT_NOT_OPERATIONALLY_WRITABLE_YET",
+      "reason": "Recommendation ignores broad_spectrum, so ranking remains unchanged, but current latest-registry write gates still make v2 activation unsafe for unresolved v1 lineage."
+    }
+  ],
+  "compatibilityRequirementsForNextDesign": [
+    "Registry lineage must be explicitly pinned and admissible per task/assignment rather than globally rejected solely because it is not the newest version.",
+    "Existing v1 definitions and Facts remain immutable and readable.",
+    "A new broad_spectrum definition must not force migration or re-confirmation of unrelated v1 Facts.",
+    "Existing protection Fact keys must not be partially reissued under a newer registry until cross-version Current resolution and consumer semantics are separately governed.",
+    "Recommendation sunscreen protection reader must continue to consume only SPF/UVA-label/Water until an explicit versioned consumer change is approved.",
+    "broad_spectrum must remain Fact-only with no ranking bucket or score contribution.",
+    "Cross-version cardinality and proposition collision behavior must be reviewed before any existing fact_key can coexist across registry versions.",
+    "Any registry lifecycle mechanism must fail closed and preserve immutable definition checksums."
+  ],
+  "allowedNextPaths": [
+    {
+      "path": "REGISTRY_COEXISTENCE_REDESIGN",
+      "preferred": true,
+      "description": "Design explicit coexistence/registry-lineage admissibility so unresolved v1 work can finish while a future registry adds new fact keys without becoming a global cutover switch."
+    },
+    {
+      "path": "DRAIN_ALL_ACTIVE_V1_LINEAGE_THEN_PUBLISH",
+      "preferred": false,
+      "description": "Wait until active v1 research lineage is zero before making v2 effective. Operationally simple but currently requires closing 371 lineages and is disproportionate for one new Fact."
+    }
+  ],
+  "prohibitedActions": {
+    "publishV2Now": true,
+    "publishV2WithFutureDateAsIfProblemSolved": true,
+    "mutateV1Definitions": true,
+    "directInsertBroadSpectrumIntoV1": true,
+    "createBroadSpectrumProductFact": true,
+    "migrateExistingProtectionFactsToV2": true,
+    "changeRecommendationProtectionReader": true,
+    "changeRecommendationProjection": true,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "decision": "UVA_R3B_HOLD_V2_PUBLISH_ACTIVE_V1_LINEAGE_AND_LATEST_REGISTRY_COUPLING",
+  "nextGate": "DATA-AI29C-UVA-R3C_REGISTRY_EVOLUTION_COEXISTENCE_DESIGN"
+}
