@@ -48,6 +48,139 @@ function resolveLocalPath(value, label) {
   );
 }
 
+function isObject(value) {
+  return Boolean(value) &&
+    typeof value === "object" &&
+    !Array.isArray(value);
+}
+
+function isSha256(value) {
+  return typeof value === "string" &&
+    /^[a-f0-9]{64}$/i.test(
+      value.trim()
+    );
+}
+
+async function loadCheckEvidence() {
+  const mergedChecks = {};
+  const refs = [];
+  const seenCheckIds = new Set();
+
+  const mergeFragment = (
+    fragment,
+    sourceLabel
+  ) => {
+    if (!isObject(fragment)) {
+      throw new Error(
+        `check evidence must be an object: ${sourceLabel}`
+      );
+    }
+
+    for (const [
+      checkId,
+      check
+    ] of Object.entries(fragment)) {
+      if (seenCheckIds.has(checkId)) {
+        throw new Error(
+          `duplicate check evidence: ${checkId}`
+        );
+      }
+
+      seenCheckIds.add(checkId);
+      mergedChecks[checkId] = check;
+    }
+  };
+
+  if (input.checks != null) {
+    mergeFragment(
+      input.checks,
+      "input.checks"
+    );
+  }
+
+  if (
+    input.checkEvidencePaths != null &&
+    !Array.isArray(
+      input.checkEvidencePaths
+    )
+  ) {
+    throw new Error(
+      "checkEvidencePaths must be an array"
+    );
+  }
+
+  for (
+    const rawPath of
+    input.checkEvidencePaths || []
+  ) {
+    const evidencePath =
+      resolveLocalPath(
+        rawPath,
+        "checkEvidencePaths[]"
+      );
+    const evidence =
+      JSON.parse(
+        await fs.readFile(
+          evidencePath,
+          "utf8"
+        )
+      );
+
+    if (!isObject(evidence)) {
+      throw new Error(
+        "check evidence file must contain an object"
+      );
+    }
+
+    if (
+      evidence.caseId != null &&
+      evidence.caseId !== input.caseId
+    ) {
+      throw new Error(
+        "check evidence caseId mismatch"
+      );
+    }
+
+    const fragment =
+      isObject(evidence.checks)
+        ? evidence.checks
+        : evidence;
+
+    mergeFragment(
+      fragment,
+      "checkEvidencePaths[]"
+    );
+
+    if (
+      typeof evidence.reviewVersion ===
+        "string" &&
+      isSha256(
+        evidence.responseDigest
+      )
+    ) {
+      refs.push({
+        evidenceVersion:
+          evidence.reviewVersion.trim(),
+        evidenceDigest:
+          evidence.responseDigest
+            .trim()
+            .toLowerCase(),
+        checkIds:
+          Object.keys(fragment)
+            .sort()
+      });
+    }
+  }
+
+  return {
+    checks:
+      seenCheckIds.size
+        ? mergedChecks
+        : null,
+    refs
+  };
+}
+
 const sourceImagePath =
   resolveLocalPath(
     input.sourceImagePath,
@@ -83,6 +216,9 @@ if (!canonicalSource.ok) {
   );
 }
 
+const checkEvidence =
+  await loadCheckEvidence();
+
 const packet =
   buildFaceLabSimulationEvidencePacket({
     caseId: input.caseId,
@@ -95,7 +231,9 @@ const packet =
     responseMeta:
       input.responseMeta,
     checks:
-      input.checks || null
+      checkEvidence.checks,
+    checkEvidenceRefs:
+      checkEvidence.refs
   });
 
 console.log(
