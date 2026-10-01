@@ -151,6 +151,13 @@ if (canonical.hair.status === "available") {
 assert.ok(["available", "not_applicable"].includes(canonical.makeup.status));
 assert.ok(["available", "not_applicable"].includes(canonical.grooming.status));
 assert.ok(["partial", "not_requested"].includes(canonical.productHandoff.status));
+assert.equal(canonical.routes.selectionState, "default_preview");
+assert.equal(canonical.appearanceHandoff.status, "awaiting_route_choice");
+assert.deepEqual(
+  canonical.appearanceHandoff.slots,
+  [],
+  "multi-route default preview must not emit route-specific Appearance Slots"
+);
 assert.equal(canonical.looks.status, "available");
 assert.equal(canonical.looks.looks.length, 1);
 assert.equal(canonical.looks.looks[0].routeId, canonical.routes.selectedRouteId);
@@ -172,7 +179,26 @@ const hairRouteCanonical = buildFaceLabV2Canonical({
   resultId: "fixture-face-lab-v2-hair-route"
 });
 assert.equal(hairRouteCanonical.routes.selectedRouteId, hairRoute.routeId);
+assert.equal(hairRouteCanonical.routes.selectionState, "user_selected");
 assert.equal(hairRouteCanonical.looks.looks[0].routeId, hairRoute.routeId);
+assert.equal(hairRouteCanonical.appearanceHandoff.status, "available");
+assert.equal(hairRouteCanonical.appearanceHandoff.routeId, hairRoute.routeId);
+assert.ok(
+  hairRouteCanonical.appearanceHandoff.slots.some(
+    (slot) => slot.slotKey === "hair_shape"
+  ),
+  "explicit hair-led route must expose a generic hair_shape slot"
+);
+assert.ok(
+  hairRouteCanonical.appearanceHandoff.slots.every(
+    (slot) =>
+      slot.matchState?.bindingState === "unbound" &&
+      slot.matchState?.candidateRefs?.length === 0 &&
+      slot.matchState?.selectedEntityRef === null &&
+      slot.matchState?.selectedVariantRef === null
+  ),
+  "Appearance Handoff foundation must not invent catalog candidates"
+);
 assert.notDeepEqual(
   {
     hair: canonical.hair?.value,
@@ -264,6 +290,7 @@ assert.equal(unconfirmed.styleDelta, null);
 assert.equal(unconfirmed.routes, null);
 assert.equal(unconfirmed.hair, null);
 assert.equal(unconfirmed.makeup, null);
+assert.equal(unconfirmed.appearanceHandoff, null);
 assert.equal(isFaceLabV2CanonicalResult(unconfirmed), true);
 
 assert.equal(TARGET_FINDER_ROUNDS.length, 5);
