@@ -556,6 +556,56 @@ assert.equal(
   "checks_invalid"
 );
 
+const mismatchedEvidenceRef =
+  buildFaceLabSimulationEvidencePacket({
+    caseId: "GATE-G-C-BAD-REF",
+    analysis:
+      integration.item.analysis,
+    rawState:
+      integration.rawState,
+    locale: "ko",
+    canonicalSourceImageBytes:
+      Buffer.from("source"),
+    outputImageBytes:
+      Buffer.from("output"),
+    responseMeta: {
+      simulationVersion:
+        FACE_LAB_AI_SIMULATION_VERSION,
+      instructionVersion:
+        FACE_LAB_SIMULATION_INSTRUCTION_VERSION,
+      routeId:
+        integration.reconstructed
+          .renderSpec.routeId,
+      lookId:
+        integration.reconstructed
+          .renderSpec.lookId,
+      renderSpecSha256:
+        integration.reconstructed
+          .renderSpecSha256
+    },
+    checks:
+      integrationReview.checks,
+    checkEvidenceRefs: [
+      {
+        evidenceVersion:
+          integrationReview.reviewVersion,
+        evidenceDigest:
+          integrationReview.responseDigest,
+        checkIds: [
+          "route_adherence"
+        ]
+      }
+    ]
+  });
+assert.equal(
+  mismatchedEvidenceRef.status,
+  "invalid"
+);
+assert.equal(
+  mismatchedEvidenceRef.reason,
+  "check_evidence_ref_without_supplied_check"
+);
+
 const packetCliSource =
   readFileSync(
     "scripts/build-face-lab-v2-simulation-evidence-packet.mjs",
