@@ -29,6 +29,7 @@ on:
       - "scripts/verify-face-lab-v2-appearance-handoff.mjs"
       - "scripts/verify-face-lab-v2-candidate-capability.mjs"
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
+      - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "app/face-lab-test/**"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
@@ -52,6 +53,7 @@ on:
       - "docs/domain/facelab/face-lab-catalog-recommendation-architecture-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-capability-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-catalog-matcher-shadow-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-product-variant-shade-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
@@ -86,6 +88,7 @@ on:
       - "scripts/verify-face-lab-v2-appearance-handoff.mjs"
       - "scripts/verify-face-lab-v2-candidate-capability.mjs"
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
+      - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-standalone-test-route.mjs"
       - "app/face-lab-test/**"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
@@ -106,6 +109,7 @@ on:
       - "docs/domain/facelab/face-lab-catalog-recommendation-architecture-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-capability-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-catalog-matcher-shadow-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-product-variant-shade-authority-v1.md"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
@@ -170,3 +174,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-candidate-capability.mjs
       - name: Verify Face Lab V2 catalog matcher shadow
         run: node scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs
+      - name: Verify Face Lab V2 product variant and shade authority
+        run: node scripts/verify-face-lab-v2-product-variant-shade-authority.mjs
