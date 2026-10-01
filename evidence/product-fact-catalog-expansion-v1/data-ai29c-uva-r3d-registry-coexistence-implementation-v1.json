@@ -1,0 +1,115 @@
+{
+  "version": "data-ai29c-uva-r3d-registry-coexistence-implementation-v1",
+  "stage": "DATA-AI29C-UVA-R3D",
+  "track": "taxonomy-ai",
+  "implementationBaseMainSha": "4cb5d6fc7fbfe9c600c392521baf27f6ab9e01ac",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "migration": {
+    "path": "supabase/migrations/20261001103000_data_ai29c_uva_r3d_registry_coexistence_v1.sql",
+    "rollbackDryRunPassed": true,
+    "productionApplied": true,
+    "registryV2Published": false,
+    "broadSpectrumFactWritten": false
+  },
+  "policyStorage": {
+    "table": "product_fact_registry_fact_write_policy_v1",
+    "seededRegistryVersion": "product-fact-registry-cross-category-v1",
+    "seededFactKeyCount": 20,
+    "policyState": "active",
+    "newLineageAllowed": true,
+    "existingLineageAllowed": true,
+    "singleNewWriterIndex": "product_fact_registry_fact_write_policy_v1_one_new_writer_idx",
+    "serviceRolePrivilege": "SELECT_ONLY"
+  },
+  "controlFunctions": {
+    "admissibilityHelper": "product_fact_controlled_registry_write_admissibility_v2",
+    "adminPolicySetter": "admin_set_product_fact_registry_fact_write_policy_v1",
+    "helperServiceRoleExecute": false,
+    "adminSetterServiceRoleExecute": true
+  },
+  "patchedWritePaths": [
+    {
+      "function": "admin_prepare_product_fact_review_v1",
+      "globalLatestGateRemoved": true,
+      "lineageMode": "new_or_existing_from_assignment_presence",
+      "admissibilityCalls": 1
+    },
+    {
+      "function": "product_fact_controlled_build_preflight_v1",
+      "globalLatestAuthorityGateRemoved": true,
+      "latestRegistryDiagnosticOccurrences": 1,
+      "lineageMode": "existing",
+      "policyDigestBoundIntoPrestate": true,
+      "admissibilityCalls": 1
+    },
+    {
+      "function": "trust_phase4_build_adoption_plan_v1",
+      "globalLatestGateRemoved": true,
+      "lineageMode": "existing",
+      "admissibilityCalls": 1
+    },
+    {
+      "function": "trust_phase8e_build_revalidation_plan_legacy_v1",
+      "globalLatestGateRemoved": true,
+      "lineageMode": "existing",
+      "admissibilityCalls": 1
+    }
+  ],
+  "regressionTests": {
+    "fakeV2LatestRollback": {
+      "passed": true,
+      "fixtureRegistry": "data-ai29c-uva-r3d-regression-v2",
+      "globalLatestWasFixture": true,
+      "v1NewReviewPrepared": true,
+      "v1ExistingConfirmationPreflightReady": true,
+      "rolledBack": true
+    },
+    "dualWriterRollback": {
+      "passed": true,
+      "fixtureRegistry": "data-ai29c-uva-r3d-dual-writer-v2",
+      "attemptedFactKey": "spf_value",
+      "failure": "product_fact_registry_write_policy_dual_writer_forbidden",
+      "rolledBack": true
+    }
+  },
+  "productionReadback": {
+    "registryVersionCount": 1,
+    "latestRegistryVersion": "product-fact-registry-cross-category-v1",
+    "policyRowCount": 20,
+    "activePolicyRowCount": 20,
+    "newLineageAllowedCount": 20,
+    "existingLineageAllowedCount": 20,
+    "currentFactCount": 92,
+    "currentWaterFactCount": 2,
+    "testRegistryCount": 0,
+    "dayDewSpfAssignmentState": "confirmed",
+    "activeV1ResearchLineage": {
+      "EVIDENCE_CANDIDATE": 28,
+      "REVIEW_REQUIRED": 343,
+      "total": 371
+    },
+    "spfAuthenticatedBetaEnabled": true,
+    "spfAuthorizedPhase": "DATA-AI29C-D5D"
+  },
+  "recommendationBoundary": {
+    "sunscreenProtectionReaderChanged": false,
+    "sunscreenProtectionProjectionChanged": false,
+    "broadSpectrumConsumed": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "securityBoundary": {
+    "policyTableAuthenticatedWrite": false,
+    "policyTableServiceRoleWrite": false,
+    "policyTableServiceRoleRead": true,
+    "admissibilityHelperPublicExecute": false,
+    "admissibilityHelperServiceRoleExecute": false,
+    "adminPolicySetterAuthenticatedExecute": false,
+    "adminPolicySetterServiceRoleExecute": true,
+    "adminPolicySetterRequiresAdminOperationsExecute": true
+  },
+  "decision": "UVA_R3D_REGISTRY_COEXISTENCE_IMPLEMENTATION_PASS",
+  "nextGate": "DATA-AI29C-UVA-R3E_BROAD_SPECTRUM_REGISTRY_PUBLISH_PREFLIGHT"
+}
