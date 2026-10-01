@@ -144,12 +144,14 @@ assert.ok(
 for (const required of [
   'formData.get(\n        "simulationAuthority"\n      )',
   "verifyFaceLabSimulationAuthority",
-  "normalizeFaceLabV2PersistencePayload",
-  "buildFaceLabV2Canonical",
-  "buildFaceLabRenderSpec",
+  "normalizeFaceLabSimulationState",
+  "buildFaceLabSimulationCanonical",
+  "buildFaceLabSimulationRenderSpec",
   'endpoint:\n          "face-lab-simulation-test"',
   "generateFaceLabSimulation",
   "new NextResponse(",
+  '"X-Face-Lab-Render-Spec-SHA256"',
+  '"X-Face-Lab-Instruction-Version"',
   '"X-Face-Lab-Fidelity"',
   '"not_evaluated"'
 ]) {
@@ -180,12 +182,12 @@ const authorityIndex =
   );
 const canonicalIndex =
   simulationRoute.indexOf(
-    "buildFaceLabV2Canonical",
+    "buildFaceLabSimulationCanonical",
     authorityIndex + 1
   );
 const renderIndex =
   simulationRoute.indexOf(
-    "buildFaceLabRenderSpec",
+    "buildFaceLabSimulationRenderSpec",
     canonicalIndex + 1
   );
 const guardIndex =
@@ -216,6 +218,7 @@ console.log(JSON.stringify({
     "expiry_rejected",
     "server_canonical_rebuild",
     "server_render_spec_build",
+    "render_spec_trace_digest",
     "guard_before_provider",
     "no_client_render_spec",
     "binary_no_store_output",
