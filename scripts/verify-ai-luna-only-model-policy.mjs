@@ -68,6 +68,7 @@ const trackedFiles = execFileSync(
 
 const modelViolations = [];
 const overrideViolations = [];
+const legacyChatCompletionParameterViolations = [];
 
 for (const file of trackedFiles) {
   const source = fs.readFileSync(file, "utf8");
@@ -92,6 +93,13 @@ for (const file of trackedFiles) {
     }
   }
 }
+
+  if (/\bmax_tokens\s*:/.test(source)) {
+    legacyChatCompletionParameterViolations.push({
+      file,
+      token: "max_tokens"
+    });
+  }
 
 const productQuerySource = fs.readFileSync(
   "lib/server/product-query-intent-service.js",
@@ -132,6 +140,15 @@ assert.deepEqual(
   [],
   "runtime model override paths remain:\n" +
     overrideViolations
+      .map((item) => `${item.file}: ${item.token}`)
+      .join("\n")
+);
+
+assert.deepEqual(
+  legacyChatCompletionParameterViolations,
+  [],
+  "legacy Chat Completions output-limit parameter remains:\n" +
+    legacyChatCompletionParameterViolations
       .map((item) => `${item.file}: ${item.token}`)
       .join("\n")
 );
