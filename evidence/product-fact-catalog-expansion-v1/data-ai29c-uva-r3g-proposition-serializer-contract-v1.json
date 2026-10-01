@@ -1,0 +1,94 @@
+{
+  "version": "data-ai29c-uva-r3g-proposition-serializer-contract-v1",
+  "stage": "DATA-AI29C-UVA-R3G",
+  "track": "taxonomy-ai",
+  "baseMainSha": "3cf82785c00cf7dd260ac2dc22c5a814d66710fe",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "discovery": {
+    "legacySerializerVersion": "product-fact-proposition-pilot-v1",
+    "registryContractExample": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "factKey": "barrier_support_claim",
+      "includeValueIdentity": false,
+      "knownPropositionKey": "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+      "recomputedWithTrue": "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+      "recomputedWithNull": "5b481132d7b55acd1cba235a7745ea7356aff26b7de6d712bea7cb7169c0749f"
+    },
+    "finding": "Legacy product-fact-proposition-pilot-v1 materially includes supported boolean value_identity even when proposition_identity_schema.include_value_identity=false.",
+    "risk": "Using the legacy serializer for broad_spectrum would contradict the published v2 Registry identity contract and could separate true/false evidence into different proposition keys."
+  },
+  "failClosedAction": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "factKey": "broad_spectrum",
+    "policyState": "blocked",
+    "newLineageAllowed": false,
+    "existingLineageAllowed": false,
+    "policyVersion": "data-ai29c-uva-r3g-serializer-drift-lock-v1",
+    "authorizedPhase": "DATA-AI29C-UVA-R3G",
+    "auditId": "9a39c4c7-08bf-4057-922e-cfed3033258c",
+    "broadEvidenceCountAtLock": 0,
+    "broadOpenReviewCountAtLock": 0,
+    "broadFactCountAtLock": 0,
+    "broadCurrentCountAtLock": 0
+  },
+  "repairedSerializer": {
+    "version": "product-fact-proposition-schema-v2",
+    "implementation": "lib/product-fact-proposition-schema-v2.mjs",
+    "rules": [
+      "hash canonical stable JSON identity",
+      "always pin subject_semantic_key, registry_version and fact_key",
+      "include only non-null scope dimensions named by the Registry definition",
+      "include qualifier dimensions named by the Registry definition",
+      "if include_value_identity=false, force value_identity=null regardless of supported value",
+      "parent_proposition_key is explicit and null for the Broad Spectrum pilot"
+    ]
+  },
+  "dayDewPilotIdentity": {
+    "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+    "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+    "subjectSemanticKey": "afce6d4dba5b288999cf087d9827e89e9819be4c99322650ea9e27077778029e",
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "factKey": "broad_spectrum",
+    "identityScope": {
+      "market": "US"
+    },
+    "identityQualifier": {},
+    "valueIdentity": null,
+    "propositionKey": "e653ba036940662aa2e5aad8dd008d1194814923fa72a5cd088a0b585fb6199b",
+    "trueAndFalseShareSamePropositionKey": true,
+    "evidenceDigest": "c6374de35eb81728611a446acc24a2bdc7a8d62bdd1f5d385910bec1e4e4385c"
+  },
+  "rollbackPilot": {
+    "policyTemporarilyActivatedInsideTransaction": true,
+    "evidenceIngested": true,
+    "reviewQueued": true,
+    "reviewUnderReview": true,
+    "reviewReadyForConfirm": true,
+    "confirmationPreflightReady": true,
+    "confirmationSucceeded": true,
+    "currentFactCountInsideTransaction": 93,
+    "broadCurrentTrueInsideTransaction": true,
+    "rolledBack": true
+  },
+  "productionReadbackAfterRollback": {
+    "policyState": "blocked",
+    "newLineageAllowed": false,
+    "existingLineageAllowed": false,
+    "broadEvidenceCount": 0,
+    "broadOpenReviewCount": 0,
+    "broadFactCount": 0,
+    "broadCurrentCount": 0,
+    "currentFactCount": 92
+  },
+  "recommendationBoundary": {
+    "broadSpectrumConsumed": false,
+    "sunscreenProtectionReaderChanged": false,
+    "sunscreenProtectionProjectionChanged": false,
+    "rankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "decision": "UVA_R3G_PROPOSITION_SERIALIZER_SCHEMA_V2_PASS_POLICY_LOCKED",
+  "nextGate": "DATA-AI29C-UVA-R3H_DAY_DEW_BROAD_SPECTRUM_GOVERNED_FACT_PILOT"
+}
