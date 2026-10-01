@@ -347,6 +347,11 @@ const cliSource =
     "scripts/build-face-lab-v2-simulation-evidence-packet.mjs",
     "utf8"
   );
+const clientSource =
+  readFileSync(
+    "app/face-lab-test/FaceLabTestClient.jsx",
+    "utf8"
+  );
 
 for (const required of [
   "normalizeFaceLabSimulationState",
@@ -360,6 +365,17 @@ for (const required of [
   assert.ok(
     endpointSource.includes(required),
     "simulation endpoint is missing shared evidence trace authority: " +
+      required
+  );
+}
+
+for (const required of [
+  'response.headers.get("X-Face-Lab-Render-Spec-SHA256")',
+  'response.headers.get("X-Face-Lab-Instruction-Version")'
+]) {
+  assert.ok(
+    clientSource.includes(required),
+    "test client must preserve simulation evidence trace: " +
       required
   );
 }
