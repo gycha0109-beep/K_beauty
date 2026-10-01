@@ -2,6 +2,7 @@
 
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { spawnSync } from "node:child_process";
 
 const canonicalPath = ".github/workflows/data-ai-product-query-static.yml";
 const phasePaths = [
@@ -82,6 +83,28 @@ for (const script of [
     count(canonical, command),
     1,
     `${script}: canonical automatic execution must be exactly once`,
+  );
+}
+
+const consolidatedOnlyScripts = [
+  "scripts/verify-data-ai29c-water-d1-r1-day-dew-required-facts.mjs",
+];
+
+for (const script of consolidatedOnlyScripts) {
+  assert.ok(fs.existsSync(script), `${script}: consolidated verifier must exist`);
+  assert.equal(
+    count(canonical, `node ${script}`),
+    0,
+    `${script}: consolidated-only verifier must not be duplicated in canonical workflow`,
+  );
+  const result = spawnSync(process.execPath, [script], {
+    stdio: "inherit",
+    env: process.env,
+  });
+  assert.equal(
+    result.status,
+    0,
+    `${script}: consolidated verifier must pass`,
   );
 }
 
