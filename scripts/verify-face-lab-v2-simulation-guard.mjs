@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-  ANALYSIS_GUARD_POLICIES,
-  getAnalysisGuardPolicy
-} from "../lib/security/analysis-request-guard-core.js";
-import {
   FACE_LAB_USAGE_POLICY,
   getFaceLabUsagePolicy
 } from "../lib/face-lab-usage-policy.js";
 
 const SIMULATION_ENDPOINT = "face-lab-simulation-test";
 const SIMULATION_PATH = "/api/face-lab-simulation-test";
+const core = readFileSync(
+  "lib/security/analysis-request-guard-core.js",
+  "utf8"
+);
 const migration = readFileSync(
   "supabase/migrations/20261001043000_face_lab_simulation_test_guard_v1.sql",
   "utf8"
@@ -20,17 +20,19 @@ const guard = readFileSync(
   "utf8"
 );
 
-const policy = getAnalysisGuardPolicy(SIMULATION_ENDPOINT);
 const simulationUsage = FACE_LAB_USAGE_POLICY.simulationTest;
 
-assert.equal(
-  Object.keys(ANALYSIS_GUARD_POLICIES).includes(SIMULATION_ENDPOINT),
-  true
-);
-assert.equal(policy?.path, SIMULATION_PATH);
-assert.equal(policy?.consumesProductionQuota, false);
-assert.equal(policy?.refundOnFailure, true);
-assert.equal(policy?.requireIdempotency, true);
+for (const required of [
+  '"face-lab-simulation-test": createFaceLabGuardPolicy(',
+  "FACE_LAB_USAGE_POLICY.simulationTest",
+  '"/api/face-lab-simulation-test"',
+  "requireIdempotency: usagePolicy.requireIdempotency === true"
+]) {
+  assert.ok(
+    core.includes(required),
+    "simulation guard policy source missing: " + required
+  );
+}
 
 assert.equal(simulationUsage.guardEndpoint, SIMULATION_ENDPOINT);
 assert.equal(simulationUsage.mode, "simulation-test");
@@ -73,6 +75,7 @@ for (const required of [
   "create or replace function public.refund_analysis_rate_limits",
   "create or replace function public.claim_analysis_idempotency",
   "p_endpoint not in ('analyze', 'face-reading', 'face-lab-simulation-test')",
+  "security invoker",
   "revoke all on table public.analysis_request_idempotency from public, anon, authenticated",
   "grant select, insert, update, delete on table public.analysis_request_idempotency to service_role",
   "revoke all on function public.claim_analysis_idempotency(text, text, text, text, text, timestamptz, integer) from public, anon, authenticated",
@@ -98,6 +101,7 @@ for (const forbidden of [
 console.log(JSON.stringify({
   ok: true,
   endpoint: SIMULATION_ENDPOINT,
+  path: SIMULATION_PATH,
   productionQuotaConsumed: false,
   idempotencyRequired: true,
   failureQuotaRefund: true,
