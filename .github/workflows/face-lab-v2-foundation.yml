@@ -9,6 +9,9 @@ on:
       - "lib/server/face-lab-simulation-service.js"
       - "lib/server/openai-image-edit-runtime.js"
       - "lib/openai-image-edit-runtime-core.js"
+      - "lib/face-lab-usage-policy.js"
+      - "lib/security/analysis-request-guard-core.js"
+      - "lib/security/analysis-request-guard.js"
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "scripts/verify-premium-report-reentry-contract.mjs"
@@ -35,6 +38,7 @@ on:
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
       - "scripts/verify-face-lab-v2-ai-simulation-adapter.mjs"
+      - "scripts/verify-face-lab-v2-simulation-guard.mjs"
       - "app/face-lab-test/**"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
@@ -66,6 +70,7 @@ on:
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
+      - "supabase/migrations/20261001043000_face_lab_simulation_test_guard_v1.sql"
       - "components/full-report/PremiumFaceLabSection.jsx"
       - "components/full-report/face-lab/**"
       - "app/result/full-report/page.js"
@@ -79,6 +84,9 @@ on:
       - "lib/server/face-lab-simulation-service.js"
       - "lib/server/openai-image-edit-runtime.js"
       - "lib/openai-image-edit-runtime-core.js"
+      - "lib/face-lab-usage-policy.js"
+      - "lib/security/analysis-request-guard-core.js"
+      - "lib/security/analysis-request-guard.js"
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "scripts/verify-premium-report-reentry-contract.mjs"
@@ -101,6 +109,7 @@ on:
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
       - "scripts/verify-face-lab-v2-ai-simulation-adapter.mjs"
+      - "scripts/verify-face-lab-v2-simulation-guard.mjs"
       - "scripts/verify-face-lab-standalone-test-route.mjs"
       - "app/face-lab-test/**"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
@@ -127,6 +136,7 @@ on:
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
+      - "supabase/migrations/20261001043000_face_lab_simulation_test_guard_v1.sql"
       - "components/full-report/PremiumFaceLabSection.jsx"
       - "components/full-report/face-lab/**"
       - "app/result/full-report/page.js"
@@ -194,3 +204,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-render-adapter.mjs
       - name: Verify Face Lab V2 AI simulation adapter
         run: node scripts/verify-face-lab-v2-ai-simulation-adapter.mjs
+      - name: Verify Face Lab V2 simulation UAT guard
+        run: node scripts/verify-face-lab-v2-simulation-guard.mjs
