@@ -223,3 +223,33 @@ A FAIL halts further grouped canary confirmations until reviewed.
 At this contract's creation there is no real READY candidate. Therefore implementation and scheduled read-only detection are allowed, but no Production grouped confirmation is executed.
 
 Canonical state: `WAITING_FOR_REAL_READY_FOR_8I4`.
+
+## Operational readiness closeout — 2026-10-01
+
+The post-DNS-fix scheduled Production validation completed successfully in GitHub Actions run `36821532775`.
+
+Observed scheduled path:
+
+- Phase 8I-2B full transport rollout: PASS.
+- 34 effective transport targets / 54 source identities observed.
+- Results: 29 `HEALTHY`, 2 `REDIRECTED`, 3 `TRANSIENT`.
+- Hard-blocked transport results: 0.
+- New transport incidents created by the run: 0.
+- Phase 8I-3E scheduled drift step: PASS.
+- Both existing drift cases remained stable `HOLD` and were skipped with `HOLD_STABLE_UNTIL_POLICY_OR_NEW_CASE`.
+- Phase 8I-4G read-only activation remained `WAITING_FOR_REAL_READY_FOR_8I4` with zero candidates.
+- No automatic or human Production grouped relocation confirmation occurred.
+
+The DNS outage regression fixed by PR #981 is therefore validated on the natural scheduled Production path: safe public-host DNS lookup outages degrade to `TRANSIENT` without starving the scheduled drift pipeline, while unsafe/private targets remain fail-closed.
+
+Implementation and operational-readiness work for this phase is closed while no real scheduled `READY_FOR_8I4` candidate exists. This is **not** a claim that the first-real canary lifecycle itself has completed.
+
+Checked-in evidence:
+
+`docs/evidence/trust-phase8i4g-operational-readiness-closeout-v1.json`
+
+Canonical dormant state:
+
+`EVENT_DRIVEN_WAITING_FOR_REAL_READY_FOR_8I4`
+
+The phase reopens only when the governed scheduled path produces a real eligible `READY_FOR_8I4` candidate. At that point the operator may perform read-only candidate/preflight review and must stop before mutation until an explicit human Admin confirmation is given.

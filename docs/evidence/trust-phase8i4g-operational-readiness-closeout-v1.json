@@ -1,0 +1,114 @@
+{
+  "contract": "trust-phase8i4g-operational-readiness-closeout-v1",
+  "watchtower_track": "pipeline-reliability",
+  "result": "PASS",
+  "phase_state": "CLOSED_IMPLEMENTATION_AND_OPERATIONAL_READINESS_WAITING_FOR_REAL_CANARY",
+  "scope": {
+    "implementation_complete": true,
+    "scheduled_production_validation_complete": true,
+    "first_real_ready_for_8i4_canary_complete": false,
+    "reason": "NO_REAL_SCHEDULED_READY_FOR_8I4_CANDIDATE_EXISTS"
+  },
+  "dns_outage_fix": {
+    "pull_request": 981,
+    "merge_sha": "d16f77eaf4b603a60cdd673577ae810560a73cbe",
+    "policy": "SAFE_PUBLIC_HOST_DNS_ENOTFOUND_OR_EAI_AGAIN_IS_TRANSIENT_NOT_BLOCKED",
+    "unsafe_or_private_target_remains_blocked": true
+  },
+  "post_fix_scheduled_production_run": {
+    "run_id": 36821532775,
+    "run_number": 228,
+    "event": "schedule",
+    "head_sha": "1fb3f2d5698cdff6901d132cc6f5f5a9b22be3bb",
+    "run_attempt": 1,
+    "created_at": "2026-10-01T05:48:08Z",
+    "completed_at": "2026-10-01T06:06:02Z",
+    "head_contains_dns_fix_merge": true,
+    "head_ahead_of_dns_fix_merge_by_commits": 47,
+    "workflow_result": "SUCCESS",
+    "verify": "SUCCESS",
+    "transport_live": "SUCCESS",
+    "transport_drift_scheduled": "SUCCESS",
+    "manual_transport_drift": "SKIPPED",
+    "isolated_first_real_canary_e2e": "SKIPPED"
+  },
+  "transport_live_observation": {
+    "contract": "trust-phase8i2b-live-result-verification-v1",
+    "mode": "full",
+    "dynamic_full": true,
+    "selected_target_count": 34,
+    "selected_source_count": 54,
+    "network_probe_count": 34,
+    "observation_count": 54,
+    "incident_count": 0,
+    "result_counts": {
+      "HEALTHY": 29,
+      "REDIRECTED": 2,
+      "TRANSIENT": 3
+    },
+    "degraded_count": 3,
+    "hard_blocked_count": 0,
+    "result": "PASS"
+  },
+  "scheduled_drift_evaluation": {
+    "contract": "trust-phase8i3d-live-result-verification-v1",
+    "mode": "record",
+    "case_count": 2,
+    "evaluated_count": 0,
+    "skipped_count": 2,
+    "network_evaluation_count": 0,
+    "recorded_count": 0,
+    "result_counts": {},
+    "skip_reason": "HOLD_STABLE_UNTIL_POLICY_OR_NEW_CASE",
+    "latest_result_kind": "HOLD",
+    "result": "PASS"
+  },
+  "phase8i4g_activation_state": {
+    "snapshot_contract": "trust-phase8i4g-canary-snapshot-verification-v1",
+    "activation_contract": "trust-phase8i4g-canary-activation-signal-v1",
+    "state": "WAITING_FOR_REAL_READY_FOR_8I4",
+    "candidate_count": 0,
+    "first_candidate_evaluation_id": null,
+    "first_candidate_case_id": null,
+    "automatic_confirmation": false,
+    "snapshot_digest": "512447e44649d7d39b15e7f7339d795a6bf39b26107eb99d555cdbe44df29971"
+  },
+  "artifacts": [
+    {
+      "name": "trust-phase8i2b-full-36821532775-1",
+      "artifact_id": 11143943778,
+      "digest": "sha256:08f1b7810e2017de163004bdd0d89e0ab2367db79c6850810a1dfb01810a6bf3"
+    },
+    {
+      "name": "trust-phase8i3e-scheduled-36821532775-1",
+      "artifact_id": 11142929602,
+      "digest": "sha256:b620ac5c2e84962eadb8881d01ecc00c461dfd39e19437343e330775063b04b1"
+    }
+  ],
+  "production_readback_after_validation": {
+    "transport_incidents": 4,
+    "drift_cases": 2,
+    "drift_evaluations": 2,
+    "ready_for_8i4": 0,
+    "grouped_relocations": 0,
+    "grouped_sources": 0,
+    "grouped_incidents": 0,
+    "relocations": 1
+  },
+  "authority_invariants": {
+    "production_grouped_confirmation_executed": false,
+    "automatic_relocation": false,
+    "automatic_grouped_confirmation": false,
+    "manual_ready_injection": false,
+    "product_fact_authority_mutation": false,
+    "historical_evidence_source_identity_mutation": false,
+    "recommendation_authority_mutation": false,
+    "semantic_same_changed_resolution": false
+  },
+  "closeout": {
+    "further_implementation_required_while_waiting": false,
+    "reopen_trigger": "FIRST_REAL_SCHEDULED_READY_FOR_8I4_CANDIDATE_DETECTED",
+    "required_next_action_on_trigger": "READ_ONLY_CANDIDATE_AND_PREFLIGHT_REVIEW_THEN_EXPLICIT_HUMAN_ADMIN_CONFIRMATION",
+    "canonical_next_state": "EVENT_DRIVEN_WAITING_FOR_REAL_READY_FOR_8I4"
+  }
+}
