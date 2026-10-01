@@ -191,7 +191,10 @@ export default function FaceLabSimulationReviewPanel({
   submitError = "",
   result = null,
   onSubmit,
-  onResetResult
+  onResetResult,
+  onSaveSimulationImage,
+  onSavePilotCapture,
+  captureReady = false
 }) {
   const identityKeys = template?.identity?.dimensions || [];
   const editScopeKeys = template?.editScope?.dimensions || [];
@@ -445,6 +448,24 @@ export default function FaceLabSimulationReviewPanel({
             >
               {copyStatus === "copied" ? "Review JSON 복사됨" : "Review JSON 복사"}
             </button>
+            {captureReady ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onSaveSimulationImage}
+                  className="min-h-10 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold dark:border-zinc-700 dark:bg-zinc-900"
+                >
+                  Simulation 이미지 저장
+                </button>
+                <button
+                  type="button"
+                  onClick={onSavePilotCapture}
+                  className="min-h-10 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold dark:border-zinc-700 dark:bg-zinc-900"
+                >
+                  Capture Manifest 저장
+                </button>
+              </>
+            ) : null}
             <button
               type="button"
               onClick={resetResponses}
