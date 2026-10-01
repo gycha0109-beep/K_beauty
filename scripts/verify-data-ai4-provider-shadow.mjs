@@ -220,17 +220,22 @@ check(providerService.includes("ko_tight_afterwash_oily_afternoon_cream"),
 check(
   dataAi1.includes("const DEFAULT_MAX_OUTPUT_TOKENS = 600;") &&
     dataAi1.includes("executeBoundedProductQueryProviderRetry") &&
+    dataAi1.includes("PRODUCT_QUERY_AI_TRANSIENT_PROVIDER_FAILURE") &&
+    dataAi1.includes("PRODUCT_QUERY_AI_PROVIDER_REJECTED") &&
     dataAi28eRetry.includes("maxAttempts: 2") &&
     dataAi28eRetry.includes("totalDeadlineMs: 14000") &&
     dataAi28eRetry.includes("retryDelayMs: 0") &&
+    dataAi28eRetry.includes("retryableTransientFailureCodes") &&
     workflow.includes('scenario="ko_oily_temporary_sensitive_light_cream"') &&
     workflow.includes("for attempt in $(seq 1 20)") &&
     workflow.includes('"default"') &&
     workflow.includes("DATA_AI28E_RETRY_SUMMARY") &&
     workflow.includes("completed_retried") &&
-    workflow.includes('test "$completed" -eq 20') &&
-    workflow.includes('test "$incomplete" -eq 0'),
-  "DATA-AI28E must preserve the 600-token budget and validate one bounded incomplete retry across 20 exact deployed-main attempts"
+    workflow.includes('test "$completed" -ge 18') &&
+    workflow.includes('test "$transient_exhausted" -le 2') &&
+    workflow.includes('test "$incomplete" -eq 0') &&
+    workflow.includes('test "$other_failure" -eq 0'),
+  "DATA-AI28E-R1 must preserve the 600-token budget and validate bounded incomplete plus transient provider retry across 20 exact deployed-main attempts"
 );
 check(
   dataAi28Classifier.includes('expectedBudget === "default"') &&
@@ -240,19 +245,25 @@ check(
   "DATA-AI28 classifier must distinguish the real default path and enforce bounded retry evidence"
 );
 check(
-  dataAi28Classifier.includes("SAFE_NONPROTOCOL_FAILURE_CLASSES") &&
-    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_TIMEOUT", "timeout"') &&
-    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_REQUEST_FAILED", "request_failed"') &&
-    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_UNAVAILABLE", "unavailable"') &&
-    dataAi28Classifier.includes("DATA_AI28E_SAFE_NONPROTOCOL_FAILURE="),
-  "DATA-AI28E QA classifier must expose only bounded non-protocol failure classes"
+  dataAi28Classifier.includes("TRANSIENT_FAILURE_CLASSES") &&
+    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_TRANSIENT_PROVIDER_FAILURE"') &&
+    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_TIMEOUT"') &&
+    dataAi28Classifier.includes('"PRODUCT_QUERY_AI_REQUEST_FAILED"') &&
+    dataAi28Classifier.includes('"transient_exhausted"') &&
+    dataAi28Classifier.includes('"nonretryable_provider_failure"') &&
+    dataAi28Classifier.includes("payload.providerAttempts !== 2") &&
+    dataAi28Classifier.includes("DATA_AI28E_UNKNOWN_FAILURE="),
+  "DATA-AI28E-R1 QA classifier must separate bounded transient exhaustion from nonretryable and unknown failures"
 );
 check(
   dataAi28eVerifier.includes("PRODUCT_QUERY_AI_RESPONSE_INCOMPLETE") &&
     dataAi28eVerifier.includes("content_filter") &&
     dataAi28eVerifier.includes("PRODUCT_QUERY_AI_RESPONSE_INVALID") &&
+    dataAi28eVerifier.includes("PRODUCT_QUERY_AI_TRANSIENT_PROVIDER_FAILURE") &&
+    dataAi28eVerifier.includes("PRODUCT_QUERY_AI_PROVIDER_REJECTED") &&
+    dataAi28eVerifier.includes("retryTransientEnabled") &&
     dataAi28eVerifier.includes("providerAttempts === 2"),
-  "DATA-AI28E verifier must cover retry and non-retry provider failure classes"
+  "DATA-AI28E-R1 verifier must cover bounded transient retry and non-retry provider failure classes"
 );
 check(workflow.includes("validate-data-ai4-provider-shadow-runtime-response.mjs"),
   "deployed provider probe must invoke standalone runtime-response validator");
