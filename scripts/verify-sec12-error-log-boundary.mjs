@@ -166,9 +166,9 @@ const sourcePaths = Object.freeze({
 
 const HTTP_METHOD_NAMES = Object.freeze(["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]);
 const HTTP_METHOD_NAME_SET = new Set(HTTP_METHOD_NAMES);
-const EXPECTED_SENSITIVE_ROUTE_COUNT = 19;
-const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 21;
-const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 191;
+const EXPECTED_SENSITIVE_ROUTE_COUNT = 20;
+const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 22;
+const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 206;
 const FULL_REPORT_POST_TERMINAL_SIGNATURES = Object.freeze([
   "call:buildSavedPremiumReportResponse",
   "call:getPremiumPersistenceFailedResponse(\"premium_session_update_failed\")",
@@ -199,6 +199,7 @@ const FULL_REPORT_SESSION_POST_TERMINAL_SIGNATURES = Object.freeze([
 const SENSITIVE_ROUTE_HANDLER_BINDINGS = Object.freeze([
   Object.freeze({ id: "app/api/analyze/route.js::POST", path: "app/api/analyze/route.js", method: "POST", expectedTerminalPaths: 9 }),
   Object.freeze({ id: "app/api/face-reading/route.js::POST", path: "app/api/face-reading/route.js", method: "POST", expectedTerminalPaths: 9 }),
+  Object.freeze({ id: "app/api/face-lab-simulation-test/route.js::POST", path: "app/api/face-lab-simulation-test/route.js", method: "POST", expectedTerminalPaths: 15 }),
   Object.freeze({
     id: "app/api/full-report/route.js::POST",
     path: "app/api/full-report/route.js",
