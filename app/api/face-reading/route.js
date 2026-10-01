@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { projectFaceLabResult } from "@/lib/face-lab-observation-projector";
-import {\n  createFaceLabUnavailable,\n  getFaceLabObservationAnalysis\n} from "@/lib/face-lab-result-envelope";
+import {
+  createFaceLabUnavailable,
+  getFaceLabObservationAnalysis
+} from "@/lib/face-lab-result-envelope";
 import { resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import {
   applyAnalysisGuardCookies,
   completeAnalysisRequestGuard,
   createAnalysisGuardResponse,
   failAnalysisRequestGuard,
+  getAnalysisRequestGuardSecret,
   guardAnalysisRequest
 } from "@/lib/security/analysis-request-guard";
 import { getUploadFingerprintDescriptor } from "@/lib/security/analysis-request-guard-core";
@@ -14,7 +18,8 @@ import {
   createNoStoreHeaders,
   writeSafeLog
 } from "@/lib/security/error-redaction";
-import { canonicalizeImageFile } from "@/lib/server/image-upload-boundary";\nimport { issueFaceLabSimulationAuthority } from "@/lib/server/face-lab-simulation-authority";
+import { canonicalizeImageFile } from "@/lib/server/image-upload-boundary";
+import { issueFaceLabSimulationAuthority } from "@/lib/server/face-lab-simulation-authority";
 import { analyzeVisionObservation } from "@/lib/server/vision-observation-service";
 import { OPENAI_RUNTIME_MODEL } from "@/lib/ai-model-policy";
 import {
