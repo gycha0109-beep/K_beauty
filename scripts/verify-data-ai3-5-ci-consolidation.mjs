@@ -49,6 +49,7 @@ for (const script of [
   "scripts/verify-data-ai29c-water-b1-governed-label-mapping.mjs",
   "scripts/verify-data-ai29c-water-c-anessa-controlled-adoption.mjs",
   "scripts/verify-data-ai29c-water-c-r1-cardinality-guard.mjs",
+  "scripts/verify-data-ai29c-water-c-r1-production-validation.mjs",
   "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs",
   "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs",
   "scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs",
