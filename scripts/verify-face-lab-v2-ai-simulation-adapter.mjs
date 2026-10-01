@@ -14,6 +14,11 @@ import {
   generateFaceLabSimulationCore
 } from "../lib/face-lab-v2/simulation-service-core.js";
 import {
+  FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
+  buildFaceLabSimulationProviderConfig,
+  fingerprintFaceLabSimulationProviderConfig
+} from "../lib/face-lab-v2/simulation-provider-config.js";
+import {
   OPENAI_IMAGE_EDITS_URL,
   OPENAI_IMAGE_EDIT_MODEL,
   executeOpenAiImageEdit
@@ -44,6 +49,151 @@ assert.equal(
   OPENAI_IMAGE_EDIT_MODEL,
   "gpt-image-2.5-sunburst"
 );
+assert.equal(
+  FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
+  "face-lab-simulation-provider-config-v1"
+);
+
+const expectedProviderAuthority =
+  buildFaceLabSimulationProviderConfig({
+    provider: "openai",
+    operation: "images.edit",
+    endpoint:
+      OPENAI_IMAGE_EDITS_URL,
+    model:
+      OPENAI_IMAGE_EDIT_MODEL,
+    quality: "high",
+    size: "auto",
+    outputFormat: "png",
+    n: 1
+  });
+
+assert.ok(
+  expectedProviderAuthority
+);
+assert.match(
+  expectedProviderAuthority.fingerprint,
+  /^[a-f0-9]{64}$/
+);
+
+const fingerprintMutations = [
+  {
+    field: "provider",
+    value: "fixture-openai"
+  },
+  {
+    field: "operation",
+    value: "images.generate"
+  },
+  {
+    field: "endpoint",
+    value:
+      "https://api.openai.com/v1/images/generations"
+  },
+  {
+    field: "model",
+    value: "fixture-model-v2"
+  },
+  {
+    field: "quality",
+    value: "medium"
+  },
+  {
+    field: "size",
+    value: "1024x1024"
+  },
+  {
+    field: "outputFormat",
+    value: "webp"
+  },
+  {
+    field: "n",
+    value: 2
+  }
+];
+
+for (
+  const mutation of
+  fingerprintMutations
+) {
+  const fingerprint =
+    fingerprintFaceLabSimulationProviderConfig({
+      ...expectedProviderAuthority.config,
+      [mutation.field]:
+        mutation.value
+    });
+
+  assert.ok(
+    fingerprint
+  );
+  assert.notEqual(
+    fingerprint,
+    expectedProviderAuthority.fingerprint,
+    mutation.field +
+      " must change provider config fingerprint"
+  );
+}
+
+for (
+  const nonAuthorityMutation of
+  [
+    {
+      timeoutMs: 123_456
+    },
+    {
+      maxInputBytes: 123_456
+    },
+    {
+      maxResponseBytes: 654_321
+    },
+    {
+      apiKey: "sk-must-not-enter-config"
+    },
+    {
+      instruction:
+        "must-not-enter-config"
+    },
+    {
+      requestId:
+        "req-must-not-enter-config"
+    }
+  ]
+) {
+  assert.equal(
+    fingerprintFaceLabSimulationProviderConfig({
+      ...expectedProviderAuthority.config,
+      ...nonAuthorityMutation
+    }),
+    expectedProviderAuthority.fingerprint
+  );
+}
+
+const providerConfigSerialized =
+  JSON.stringify({
+    ...expectedProviderAuthority.config
+  });
+
+for (
+  const forbidden of
+  [
+    "apiKey",
+    "Authorization",
+    "instruction",
+    "prompt",
+    "requestId",
+    "image",
+    "usage"
+  ]
+) {
+  assert.equal(
+    providerConfigSerialized.includes(
+      forbidden
+    ),
+    false,
+    "provider config leaked forbidden runtime material: " +
+      forbidden
+  );
+}
 
 const renderSpec = {
   adapterVersion:
@@ -500,6 +650,38 @@ assert.equal(
   providerResult.model,
   OPENAI_IMAGE_EDIT_MODEL
 );
+assert.deepEqual(
+  providerResult.providerConfig,
+  expectedProviderAuthority.config
+);
+assert.equal(
+  providerResult.providerConfigFingerprint,
+  expectedProviderAuthority.fingerprint
+);
+assert.equal(
+  observedRequest.url,
+  providerResult.providerConfig.endpoint
+);
+assert.equal(
+  observedRequest.options.body.get("model"),
+  providerResult.providerConfig.model
+);
+assert.equal(
+  observedRequest.options.body.get("quality"),
+  providerResult.providerConfig.quality
+);
+assert.equal(
+  observedRequest.options.body.get("size"),
+  providerResult.providerConfig.size
+);
+assert.equal(
+  observedRequest.options.body.get("output_format"),
+  providerResult.providerConfig.outputFormat
+);
+assert.equal(
+  observedRequest.options.body.get("n"),
+  String(providerResult.providerConfig.n)
+);
 assert.equal(
   providerResult.requestId,
   "req_fixture_123"
@@ -638,10 +820,31 @@ const simulation =
             )
         });
 
+        const providerAuthority =
+          buildFaceLabSimulationProviderConfig({
+            provider: "openai",
+            operation: "images.edit",
+            endpoint:
+              OPENAI_IMAGE_EDITS_URL,
+            model:
+              request.model,
+            quality:
+              request.quality,
+            size:
+              request.size,
+            outputFormat:
+              request.outputFormat,
+            n: 1
+          });
+
         return {
           provider: "openai",
           model:
             request.model,
+          providerConfig:
+            providerAuthority.config,
+          providerConfigFingerprint:
+            providerAuthority.fingerprint,
           status: 200,
           requestId:
             "req_simulation",
@@ -684,6 +887,22 @@ assert.equal(
 assert.equal(
   simulation.status,
   "ready"
+);
+assert.equal(
+  simulation.providerConfigVersion,
+  FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION
+);
+assert.equal(
+  simulation.providerConfigFingerprint,
+  expectedProviderAuthority.fingerprint
+);
+assert.equal(
+  Object.prototype.hasOwnProperty.call(
+    simulation,
+    "providerConfig"
+  ),
+  false,
+  "full provider config must remain server-runtime internal"
 );
 assert.equal(
   simulation.routeId,
@@ -743,6 +962,31 @@ await assert.rejects(
       apiKey: "sk-test",
       imageBuffer: sourcePng,
       mimeType: "image/png",
+      renderSpec,
+      model:
+        OPENAI_IMAGE_EDIT_MODEL,
+      providerRuntime:
+        async (request) => ({
+          provider: "openai",
+          model: request.model,
+          providerConfig:
+            expectedProviderAuthority.config,
+          providerConfigFingerprint:
+            "f".repeat(64),
+          imageBytes:
+            outputPng,
+          mimeType: "image/png"
+        })
+    }),
+  /simulation_provider_config_invalid/
+);
+
+await assert.rejects(
+  () =>
+    generateFaceLabSimulationCore({
+      apiKey: "sk-test",
+      imageBuffer: sourcePng,
+      mimeType: "image/png",
       renderSpec: {
         ...renderSpec,
         status: "invalid"
@@ -775,6 +1019,11 @@ console.log(JSON.stringify({
     "swatch_role_disclosure",
     "not_pixel_exact_disclosure",
     "provider_multipart_contract",
+    "provider_config_request_binding",
+    "provider_config_fingerprint_mutations",
+    "provider_config_non_authority_exclusions",
+    "provider_config_privacy",
+    "provider_config_result_validation",
     "provider_redirect_rejection",
     "input_signature_validation",
     "output_signature_validation",
