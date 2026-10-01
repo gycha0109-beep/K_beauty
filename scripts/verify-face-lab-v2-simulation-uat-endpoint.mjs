@@ -149,7 +149,7 @@ for (const required of [
   "buildFaceLabRenderSpec",
   'endpoint:\n          "face-lab-simulation-test"',
   "generateFaceLabSimulation",
-  "new Response(",
+  "new NextResponse(",
   '"X-Face-Lab-Fidelity"',
   '"not_evaluated"'
 ]) {
