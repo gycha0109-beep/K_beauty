@@ -168,7 +168,7 @@ const HTTP_METHOD_NAMES = Object.freeze(["DELETE", "GET", "HEAD", "OPTIONS", "PA
 const HTTP_METHOD_NAME_SET = new Set(HTTP_METHOD_NAMES);
 const EXPECTED_SENSITIVE_ROUTE_COUNT = 21;
 const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 23;
-const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 220;
+const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 221;
 const FULL_REPORT_POST_TERMINAL_SIGNATURES = Object.freeze([
   "call:buildSavedPremiumReportResponse",
   "call:getPremiumPersistenceFailedResponse(\"premium_session_update_failed\")",
@@ -199,7 +199,7 @@ const FULL_REPORT_SESSION_POST_TERMINAL_SIGNATURES = Object.freeze([
 const SENSITIVE_ROUTE_HANDLER_BINDINGS = Object.freeze([
   Object.freeze({ id: "app/api/analyze/route.js::POST", path: "app/api/analyze/route.js", method: "POST", expectedTerminalPaths: 9 }),
   Object.freeze({ id: "app/api/face-reading/route.js::POST", path: "app/api/face-reading/route.js", method: "POST", expectedTerminalPaths: 10 }),
-  Object.freeze({ id: "app/api/face-lab-simulation-test/route.js::POST", path: "app/api/face-lab-simulation-test/route.js", method: "POST", expectedTerminalPaths: 15 }),
+  Object.freeze({ id: "app/api/face-lab-simulation-test/route.js::POST", path: "app/api/face-lab-simulation-test/route.js", method: "POST", expectedTerminalPaths: 16 }),
   Object.freeze({ id: "app/api/face-lab-simulation-review-test/route.js::POST", path: "app/api/face-lab-simulation-review-test/route.js", method: "POST", expectedTerminalPaths: 13 }),
   Object.freeze({
     id: "app/api/full-report/route.js::POST",
@@ -1528,7 +1528,7 @@ register("I10_SENSITIVE_ROUTE_NO_STORE", async () => {
   const result = await assertSensitiveRouteIntegrationExactSet();
   assert.deepEqual(result.routes, { expected: 21, discovered: 21, verified: 21 });
   assert.deepEqual(result.handlerBindings, { expected: 23, discovered: 23, verified: 23 });
-  assert.deepEqual(result.terminalResponsePaths, { expected: 220, discovered: 220, verified: 220 });
+  assert.deepEqual(result.terminalResponsePaths, { expected: 221, discovered: 221, verified: 221 });
   assert.deepEqual(result.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(result.deadHelperCalls, 0);
   assert.equal(result.unsafeResponsePaths, 0);
