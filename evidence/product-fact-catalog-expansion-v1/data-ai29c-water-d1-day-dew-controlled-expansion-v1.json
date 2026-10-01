@@ -1,0 +1,154 @@
+{
+  "version": "data-ai29c-water-d1-day-dew-controlled-expansion-v1",
+  "stage": "DATA-AI29C-WATER-D1",
+  "track": "taxonomy-ai",
+  "recordedAgainstMainSha": "4788d86c5e8adfe010b0a23765bc52ea6bc0055a",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "officialSource": {
+    "canonicalLocator": "https://beautyofjoseon.com/products/day-dew-sunscreen",
+    "publisher": "Beauty of Joseon",
+    "sourceKind": "official_product_page",
+    "market": "US",
+    "locale": "en-US",
+    "productName": "Day Dew Sunscreen",
+    "presentationSize": "50 mL / 1.69 FL. OZ.",
+    "observedClaim": "Water Resistance (80 min)",
+    "studyGuideline": "FDA 2021",
+    "studyReference": "Eurofins CRL USA Study No. 624-N23059-27",
+    "studyPeriod": "2024-05-14 to 2024-09-18",
+    "sourceContentDigest": "4a588d8fab62a691c62b6d00dbd6f24f7cc2f36d03285fbb72024ad7037a8c0e"
+  },
+  "identity": {
+    "candidateId": "55776e72-af11-4859-8090-880445b9a8e1",
+    "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+    "canonicalBrand": "Beauty of Joseon",
+    "canonicalName": "Day Dew Sunscreen",
+    "canonicalCategory": "sunscreen",
+    "market": "US",
+    "identityProviders": [
+      {
+        "provider": "beautyofjoseon_official",
+        "locator": "https://beautyofjoseon.com/products/day-dew-sunscreen",
+        "presentationSize": "50 mL / 1.69 FL. OZ.",
+        "authority": "catalog_identity_and_primary_product_fact_source"
+      },
+      {
+        "provider": "sephora_us",
+        "locator": "https://www.sephora.com/product/day-dew-sunscreen-exclusive-50ml-P517678",
+        "presentationSize": "1.69 oz/50 mL",
+        "authority": "identity_only_not_product_fact_authority"
+      }
+    ],
+    "structuralAdoptionAuditId": "28ea1a5d-9fb5-4c3a-9ddf-ec6e96f02509",
+    "recommendationAdmissionGranted": false
+  },
+  "subjectCorrection": {
+    "predecessor": {
+      "subjectId": "984c6078-1bcb-4354-bf4f-eedfe1a1e86e",
+      "subjectSemanticKey": "c56d29f72ae82382c9aad6f7218016ca2126c90efcdb3fb152fa27c682979184",
+      "variantKey": "DAY_DEW_SUNSCREEN_US_50ML",
+      "currentState": "historical"
+    },
+    "current": {
+      "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+      "subjectSemanticKey": "afce6d4dba5b288999cf087d9827e89e9819be4c99322650ea9e27077778029e",
+      "variantKey": null,
+      "formulationRevisionKey": "data-ai29c-water-d1-boj-day-dew-us-current",
+      "marketApplicability": "US",
+      "identityStatus": "resolved",
+      "currentState": "current",
+      "predecessorSubjectId": "984c6078-1bcb-4354-bf4f-eedfe1a1e86e",
+      "supersessionKind": "identity_correction"
+    },
+    "reason": "The canonical Product already represents the exact U.S. 50 mL presentation, so the initial presentation-only Subject variant was removed before any Product Fact authority attached.",
+    "authorityAttachedBeforeCorrection": false,
+    "subjectCorrectionAuditId": "875e0122-64ff-41c0-8540-cbce97d9ef88"
+  },
+  "trustIntake": {
+    "intakeId": "a9c1152c-f934-4f57-8f13-110740212b50",
+    "catalogRevision": "candidate:55776e72-af11-4859-8090-880445b9a8e1:crawler-canonical-product-structural-adoption-v1",
+    "market": "US",
+    "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+    "identityState": "EXACT_SUBJECT_FOUND",
+    "trustState": "RESEARCH_PENDING",
+    "identityResolutionVersion": "product-fact-subject-resolution-v1",
+    "presentationRelationProven": true,
+    "marketBindAuditId": "d6991c99-4f63-4f52-8ebc-d4a47e489f78"
+  },
+  "waterFact": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "factKey": "water_resistance_duration",
+    "valueNumber": 80,
+    "valueUnit": "minutes",
+    "market": "US",
+    "locale": "en-US",
+    "qualifier": {
+      "metric": "water_resistance_duration",
+      "method_context": "FDA_2021_water_resistance_human_study",
+      "timepoint": "80_minutes",
+      "interpretation": "direct_product_specific_water_resistance_duration_claim"
+    },
+    "propositionKey": "2fc99f6e8e53147bacb631c9e99f5c163ec9107901055f4f3d2a82ecd7eed3dd",
+    "sourceId": "9b4a41e2-03a9-4a20-a487-0745028f35e8",
+    "bindingId": "4561906f-c015-4805-9554-d4710a612582",
+    "evidenceId": "e243efc6-d6b9-4e2b-8f25-4c07453e187b",
+    "canonicalEvidenceDigest": "6b0e585b6733caa93daceba44241790db0043778663e52a2df5f90847a9b28e4",
+    "evidenceAuthority": "product_specific_primary",
+    "evidenceConfidence": "high",
+    "assignmentId": "43d3012f-d024-4bcd-914f-7130abc6255b",
+    "assignmentState": "confirmed",
+    "reviewPolicyVersion": "data-ai29c-water-d1-controlled-adoption-v1",
+    "fusionPolicyVersion": "data-ai29c-water-d1-single-primary-direct-duration-v1",
+    "fusionInputDigest": "56b79ce3c916d19cb113fa3cca78a8ae2728eb6a94595e3c4c8e1e2326259a87",
+    "factInstanceId": "55c80191-fa13-4c9f-a594-d8b26f3cada8",
+    "confirmationId": "923c7799-a1ae-44c7-9ddc-9ccb03acb7a6",
+    "confirmationAuditId": "84648a0b-7748-4a34-a78f-d53ff3b0215b"
+  },
+  "authorityReadback": {
+    "currentGovernedWaterFactCount": 2,
+    "currentGovernedWaterSubjectCount": 2,
+    "knownCurrentSubjects": [
+      "d1d748c3-8706-4b6c-8719-676f6f317532",
+      "4f64fa1b-6af7-4767-b818-f1178d4fe986"
+    ]
+  },
+  "requiredFactTasks": [
+    {
+      "taskId": "40569ab3-a227-43ce-a012-97c8c56c62eb",
+      "factKey": "spf_value",
+      "state": "RESEARCH_PENDING"
+    },
+    {
+      "taskId": "74661ab2-2adb-4255-9c05-0418c1caa105",
+      "factKey": "uva_label",
+      "state": "RESEARCH_PENDING"
+    },
+    {
+      "taskId": "00c1863e-b8cb-4c65-a824-9a9cc1ac85e9",
+      "factKey": "uv_filter_type",
+      "state": "RESEARCH_PENDING"
+    }
+  ],
+  "prospectiveCohortBoundary": {
+    "frozenProspectiveCorpusCount": 20,
+    "dayDewIncludedInFrozenProspectiveCorpus": false,
+    "frozenProspectiveWaterEligibleCount": 1,
+    "frozenProspectiveWaterCoverage": "1/20",
+    "doNotRebaseFrozenProspectiveDenominatorTo21": true,
+    "reason": "Day Dew has a governed Water Product Fact but required sunscreen admission facts remain pending and Recommendation admission was not granted."
+  },
+  "productionInvariants": {
+    "spfAuthenticatedBetaEnabled": true,
+    "spfAuthorizedPhase": "DATA-AI29C-D5D",
+    "spfProductionStateMutated": false,
+    "waterAxisActivated": false,
+    "waterRankingWired": false,
+    "productionRankingChangedByWater": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "sephoraUsedAsProductFactAuthority": false
+  },
+  "decision": "WATER_D1_DAY_DEW_GOVERNED_WATER_FACT_PASS_RANKING_COHORT_UNCHANGED",
+  "nextGate": "CONTINUE_WATER_AUTHORITY_EXPANSION_OR_COMPLETE_DAY_DEW_REQUIRED_FACTS_WITHOUT_ACTIVATION"
+}

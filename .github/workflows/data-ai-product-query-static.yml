@@ -103,6 +103,9 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-water-c-r1-production-validation-v1.json"
       - "scripts/verify-data-ai29c-water-c-r1-production-validation.mjs"
       - "docs/evidence/data-ai29c-water-c-r1-production-validation-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-water-d1-day-dew-controlled-expansion-v1.json"
+      - "scripts/verify-data-ai29c-water-d1-day-dew-controlled-expansion.mjs"
+      - "docs/evidence/data-ai29c-water-d1-day-dew-controlled-expansion-v1.md"
       - "lib/sunscreen-spf-runtime-gate.mjs"
       - "lib/product-query-recommendation.js"
       - "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
@@ -287,6 +290,9 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-water-c-r1-production-validation-v1.json"
       - "scripts/verify-data-ai29c-water-c-r1-production-validation.mjs"
       - "docs/evidence/data-ai29c-water-c-r1-production-validation-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-water-d1-day-dew-controlled-expansion-v1.json"
+      - "scripts/verify-data-ai29c-water-d1-day-dew-controlled-expansion.mjs"
+      - "docs/evidence/data-ai29c-water-d1-day-dew-controlled-expansion-v1.md"
       - "lib/sunscreen-spf-runtime-gate.mjs"
       - "lib/product-query-recommendation.js"
       - "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
@@ -526,6 +532,9 @@ jobs:
 
       - name: Verify DATA-AI29C-WATER-C-R1 Production validation
         run: node scripts/verify-data-ai29c-water-c-r1-production-validation.mjs
+
+      - name: Verify DATA-AI29C-WATER-D1 Day Dew controlled expansion
+        run: node scripts/verify-data-ai29c-water-d1-day-dew-controlled-expansion.mjs
 
       - name: Verify DATA-AI29C-D5A SPF runtime gate
         run: node --experimental-strip-types scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs
