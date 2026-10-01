@@ -473,6 +473,25 @@ assert.deepEqual(
   ["magicGlowScore"]
 );
 
+const tamperedSlotId =
+  matchFaceLabAppearanceSlotCandidatesShadow({
+    slot: {
+      ...lipSlot,
+      slotId:
+        "face-lab-appearance-slot:eye_color"
+    },
+    candidates: [preferredMatch]
+  });
+
+assert.equal(
+  tamperedSlotId.status,
+  "invalid_slot"
+);
+assert.equal(
+  tamperedSlotId.reason,
+  "appearance_slot_id_mismatch"
+);
+
 const tamperedSlot =
   matchFaceLabAppearanceSlotCandidatesShadow({
     slot: {
