@@ -142,6 +142,10 @@ export async function POST(request) {
     model: evaluation.model,
     providerAttempts: evaluation.providerAttempts,
     providerRetryUsed: evaluation.providerRetryUsed,
+    providerResultClass:
+      evaluation.pass ? null : "PRODUCT_QUERY_PROVIDER_SHADOW_SCENARIO_FAILED",
+    protocolFailureKind:
+      evaluation.pass ? null : "scenario_mismatch",
     intent: evaluation.intent,
     execution: evaluation.execution,
     scenarioPass: evaluation.pass,
