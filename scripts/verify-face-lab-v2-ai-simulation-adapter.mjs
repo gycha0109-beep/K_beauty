@@ -172,9 +172,13 @@ const providerConfigSerialized =
   JSON.stringify({
     ...expectedProviderAuthority.config
   });
+const providerConfigKeys =
+  Object.keys(
+    expectedProviderAuthority.config
+  );
 
 for (
-  const forbidden of
+  const forbiddenKey of
   [
     "apiKey",
     "Authorization",
@@ -182,16 +186,36 @@ for (
     "prompt",
     "requestId",
     "image",
+    "imageBuffer",
+    "sourceImage",
+    "outputImage",
     "usage"
   ]
 ) {
   assert.equal(
-    providerConfigSerialized.includes(
-      forbidden
+    providerConfigKeys.includes(
+      forbiddenKey
     ),
     false,
-    "provider config leaked forbidden runtime material: " +
-      forbidden
+    "provider config leaked forbidden runtime key: " +
+      forbiddenKey
+  );
+}
+
+for (
+  const forbiddenLiteral of
+  [
+    "sk-must-not-enter-config",
+    "must-not-enter-config",
+    "req-must-not-enter-config"
+  ]
+) {
+  assert.equal(
+    providerConfigSerialized.includes(
+      forbiddenLiteral
+    ),
+    false,
+    "provider config leaked forbidden runtime value"
   );
 }
 
