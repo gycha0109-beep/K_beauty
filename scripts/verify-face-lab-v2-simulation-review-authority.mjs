@@ -5,6 +5,9 @@ import {
   verifyFaceLabSimulationReviewTicket,
   FACE_LAB_SIMULATION_REVIEW_TICKET_VERSION
 } from "../lib/face-lab-v2/simulation-review-ticket-core.js";
+import {
+  FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION
+} from "../lib/face-lab-v2/simulation-provider-config.js";
 
 const secret =
   "gate-g-e1-review-ticket-secret";
@@ -29,7 +32,11 @@ const context = {
   simulationVersion:
     "face-lab-ai-simulation-v1",
   instructionVersion:
-    "face-lab-simulation-instruction-v1"
+    "face-lab-simulation-instruction-v1",
+  providerConfigVersion:
+    FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
+  providerConfigFingerprint:
+    "c".repeat(64)
 };
 const nowMs =
   Date.UTC(
@@ -140,6 +147,14 @@ assert.equal(
 assert.equal(
   verified.renderSpecSha256,
   context.renderSpecSha256
+);
+assert.equal(
+  verified.providerConfigVersion,
+  context.providerConfigVersion
+);
+assert.equal(
+  verified.providerConfigFingerprint,
+  context.providerConfigFingerprint
 );
 
 const secondOutput =
@@ -270,7 +285,9 @@ for (const required of [
   "issueFaceLabSimulationReviewTicket",
   '"X-Face-Lab-Review-Case-Id"',
   '"X-Face-Lab-Review-Ticket"',
-  '"X-Face-Lab-Review-Expires-At"'
+  '"X-Face-Lab-Review-Expires-At"',
+  '"X-Face-Lab-Provider-Config-Version"',
+  '"X-Face-Lab-Provider-Config-Fingerprint"'
 ]) {
   assert.ok(
     simulationRoute.includes(
