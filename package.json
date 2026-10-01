@@ -96,6 +96,8 @@
     "eval:face-lab-v2": "node scripts/run-face-lab-v2-recommendation-evaluation.mjs",
     "build:face-lab-v2-simulation-evidence": "node scripts/build-face-lab-v2-simulation-evidence-packet.mjs",
     "build:face-lab-v2-simulation-identity-scope-review": "node scripts/build-face-lab-v2-simulation-identity-scope-review.mjs",
+    "build:face-lab-v2-simulation-route-color-template": "node scripts/build-face-lab-v2-simulation-route-color-template.mjs",
+    "build:face-lab-v2-simulation-route-color-review": "node scripts/build-face-lab-v2-simulation-route-color-review.mjs",
     "e2e:product-query:prelaunch:login": "node scripts/bootstrap-product-query-prelaunch-auth.mjs",
     "e2e:product-query:prelaunch": "node scripts/run-product-query-prelaunch-e2e.mjs",
     "data-ai25:launch:freeze": "node scripts/freeze-data-ai25-operational-baseline-start.mjs",
