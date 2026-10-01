@@ -4,6 +4,9 @@ import {
   FACE_LAB_AI_SIMULATION_VERSION
 } from "../lib/face-lab-v2/simulation-service-core.js";
 import {
+  FACE_LAB_SIMULATION_INSTRUCTION_VERSION
+} from "../lib/face-lab-v2/simulation-instructions.js";
+import {
   buildFaceLabSimulationCanonical,
   hashFaceLabSimulationRenderSpec,
   normalizeFaceLabSimulationState,
@@ -99,7 +102,7 @@ const responseMeta = {
   simulationVersion:
     FACE_LAB_AI_SIMULATION_VERSION,
   instructionVersion:
-    "face-lab-simulation-instruction-v1",
+    FACE_LAB_SIMULATION_INSTRUCTION_VERSION,
   routeId:
     fixture.reconstructed
       .renderSpec.routeId,
@@ -174,6 +177,8 @@ assert.equal(
   packet.rawImagesIncluded,
   false
 );
+assert.equal(packet.analysis, undefined);
+assert.equal(packet.faceLabV2State, undefined);
 assert.equal(
   packet.evaluation.verdict,
   "not_evaluated"
@@ -242,6 +247,31 @@ assert.equal(
 assert.equal(
   digestMismatch.reason,
   "response_render_spec_digest_mismatch"
+);
+
+const instructionMismatch =
+  buildFaceLabSimulationEvidencePacket({
+    caseId: "GATE-G-B-INSTRUCTION-MISMATCH",
+    analysis: fixture.item.analysis,
+    rawState: fixture.rawState,
+    locale: "ko",
+    canonicalSourceImageBytes:
+      sourceBytes,
+    outputImageBytes:
+      outputBytes,
+    responseMeta: {
+      ...responseMeta,
+      instructionVersion:
+        "face-lab-simulation-instruction-old"
+    }
+  });
+assert.equal(
+  instructionMismatch.status,
+  "invalid"
+);
+assert.equal(
+  instructionMismatch.reason,
+  "response_instruction_version_mismatch"
 );
 
 const routeMismatch =
@@ -337,6 +367,11 @@ for (const required of [
 assert.ok(
   cliSource.includes(
     "canonicalizeImageBytes"
+  )
+);
+assert.ok(
+  cliSource.includes(
+    "detectImageSignature"
   )
 );
 assert.ok(
