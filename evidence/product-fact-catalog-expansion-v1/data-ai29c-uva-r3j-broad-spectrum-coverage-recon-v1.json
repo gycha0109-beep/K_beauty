@@ -1,0 +1,68 @@
+{
+  "version": "data-ai29c-uva-r3j-broad-spectrum-coverage-recon-v1",
+  "stage": "DATA-AI29C-UVA-R3J",
+  "track": "taxonomy-ai",
+  "baseMainSha": "21b9439e6edf91e175c18667fb8747c3a2d18f59",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "scope": {
+    "resolvedCurrentSunscreenSubjects": 13,
+    "usSubjects": 2,
+    "nonUsSubjects": 9,
+    "unscopedSubjects": 2
+  },
+  "governedCoverage": {
+    "totalBroadSpectrumCurrentSubjects": 2,
+    "usEligibleSubjects": 2,
+    "usGovernedBroadSpectrumSubjects": 2,
+    "usMissingBroadSpectrumSubjects": 0,
+    "usCoverage": "2/2"
+  },
+  "usSubjects": [
+    {
+      "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+      "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+      "brand": "Beauty of Joseon",
+      "name": "Day Dew Sunscreen",
+      "exactOfficialEquivalentSources": 2,
+      "broadSpectrumCurrent": true
+    },
+    {
+      "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+      "brand": "스킨1004",
+      "name": "히알루-시카 워터핏 선세럼 UV",
+      "exactOfficialEquivalentSources": 3,
+      "broadSpectrumCurrent": true
+    }
+  ],
+  "nonUsBoundary": {
+    "subjectCount": 11,
+    "broadSpectrumCurrentSubjects": 0,
+    "automaticCrossMarketTransferAllowed": false,
+    "reason": "broad_spectrum is a market-scoped declaration under the applicable market framework; US Broad Spectrum evidence is not transferred to KR, JP, GLOBAL, or unscoped Subjects without exact market authority."
+  },
+  "recommendationBoundary": {
+    "protectionAuthorityContractConsumesBroadSpectrum": false,
+    "sunscreenProjectionConsumesBroadSpectrum": false,
+    "recommendationAdmissionGrantedByThisStage": false,
+    "rankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "frozenCorpusBoundary": {
+    "prospectiveCorpusCount": 20,
+    "skin1004InFrozenProspective": true,
+    "dayDewInFrozenProspective": false,
+    "broadSpectrumDoesNotChangeFrozenWaterCoverage": true,
+    "frozenWaterCoverage": "1/20",
+    "d2AdmissionChanged": false
+  },
+  "writeBoundary": {
+    "productFactWritesInThisStage": 0,
+    "registryWritesInThisStage": 0,
+    "policyWritesInThisStage": 0
+  },
+  "decision": "UVA_R3J_BROAD_SPECTRUM_COVERAGE_RECON_PASS_US_SCOPE_COMPLETE",
+  "nextGate": "DATA-AI29C-UVA-R3K_BROAD_SPECTRUM_PHASE_CLOSEOUT"
+}
