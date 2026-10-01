@@ -1,0 +1,138 @@
+{
+  "version": "data-ai29c-water-c-anessa-controlled-adoption-v1",
+  "track": "taxonomy-ai",
+  "executedAgainstMainSha": "0c87fee498670f9fdb08c78a18346c2917549695",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "stage": "DATA-AI29C-WATER-C",
+  "product": {
+    "productId": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+    "productName": "ANESSA Perfect UV Sunscreen Skincare Milk NA",
+    "subjectId": "d1d748c3-8706-4b6c-8719-676f6f317532",
+    "market": "JP",
+    "variantKey": "NA"
+  },
+  "governance": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "factKey": "water_resistance_duration",
+    "registryDefinitionChecksum": "14510b53371121c1edc552f33155edc7fc5c9d44e509ed85d9589e65da6542ee",
+    "mappingPolicyVersion": "sunscreen-water-jcia-label-mapping-v1",
+    "reviewPolicyVersion": "data-ai29c-water-c-controlled-adoption-v1",
+    "fusionPolicyVersion": "data-ai29c-water-c-single-primary-mapped-label-v1",
+    "propositionSerializerVersion": "product-fact-proposition-pilot-v1"
+  },
+  "source": {
+    "sourceId": "afa605ae-dc1c-41ea-b566-59c8e9b26d30",
+    "bindingId": "c6a42da9-4cef-49a8-94a2-67e024a60f68",
+    "canonicalLocator": "https://www.shiseido.co.jp/anessa/products/suncare/perfect_uv_sm/",
+    "publisher": "Shiseido / ANESSA",
+    "sourceKind": "official_product_page",
+    "contentDigest": "5f9568df79171fff49043803a352778d97eddd64dbe3f4cdc2229ecd54b97377",
+    "bindingState": "exact_subject_match",
+    "scopeRelation": "equivalent",
+    "observedLabel": "UV耐水性★★",
+    "createdAt": "2026-10-01T08:31:42.495489+09:00"
+  },
+  "evidence": {
+    "evidenceId": "2e118375-6bf8-43a3-abec-2a68400aa76b",
+    "canonicalEvidenceDigest": "ee9e38cc0062c547ba24ca04be7158f808dc2ca72dfa5ae78f618bf62d3ba967",
+    "evidenceClass": "product_claim",
+    "evidenceAuthority": "product_specific_primary",
+    "confidence": "medium",
+    "supportDirection": "supports",
+    "negativeAdmissibility": "not_applicable",
+    "market": "JP",
+    "locale": "ja-JP",
+    "createdAt": "2026-10-01T08:31:42.495489+09:00"
+  },
+  "review": {
+    "assignmentId": "c373aa09-7cb8-4fda-ba7e-fdf3346381e9",
+    "stateSequence": [
+      "under_review",
+      "ready_for_confirm",
+      "confirmed"
+    ],
+    "finalOperationalState": "confirmed",
+    "createdAt": "2026-10-01T08:32:04.528448+09:00",
+    "updatedAt": "2026-10-01T08:32:51.887757+09:00"
+  },
+  "preflight": {
+    "status": "ready",
+    "payloadDigest": "286cc3c7932d222a9a70e626eb82954c693273120a8adc25b428016a08be2f6e",
+    "prestateDigest": "a82541182bfd7a019025d40e0090b939d76e5019e34d62348bfc491357780e05",
+    "fusionInputDigest": "f4ff3e1a58b34e96981c2bad25902fc66f4568f7c6d2df587732f49d4cfcdd57",
+    "expectedWriteSet": {
+      "product_fact_instances": 1,
+      "product_fact_current": 1,
+      "product_fact_confirmations": 1,
+      "product_fact_evidence_links": 1,
+      "product_fact_review_events": 1,
+      "product_fact_review_assignments_update": 1
+    }
+  },
+  "confirmedFact": {
+    "propositionKey": "2b145dff9a002879db9d66c5dda622c6f8fc10d807dae2cf134bed62dbd5b63b",
+    "factInstanceId": "39394ff3-3f57-49d6-96ee-2df39f404872",
+    "confirmationId": "11b9359a-eac4-46e2-afe2-697341743230",
+    "semanticStatus": "supported",
+    "valueType": "number_unit",
+    "valueNumber": 80,
+    "valueUnit": "minutes",
+    "market": "JP",
+    "locale": "ja-JP",
+    "qualifier": {
+      "metric": "SPF_retention_percentage",
+      "method_context": "ISO_18861_JCIA_UV_water_resistance",
+      "timepoint": "after_total_80_min_water_immersion",
+      "mapping_policy_version": "sunscreen-water-jcia-label-mapping-v1",
+      "interpretation": "standardized_test_immersion_condition_not_real_world_effect_duration",
+      "observed_label": "UV耐水性★★"
+    },
+    "authorityCeiling": "product_specific_primary",
+    "fusedConfidence": "medium",
+    "createdAt": "2026-10-01T08:32:51.887757+09:00"
+  },
+  "verification": {
+    "currentReadbackPass": true,
+    "supportingEvidenceLinkCount": 1,
+    "confirmationReplayIdempotent": true,
+    "prospectiveCorpusCount": 20,
+    "waterEligibleBefore": 0,
+    "waterEligibleAfter": 1,
+    "waterAuthorityCoverage": "1/20"
+  },
+  "limits": {
+    "registryChanged": false,
+    "productQueryIntentSchemaMutated": false,
+    "providerPromptMutated": false,
+    "recommendationAnswersMutated": false,
+    "protectionScorerWired": false,
+    "waterAxisActivated": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "queryPersistenceChanged": false,
+    "spfProductionStateMutated": false
+  },
+  "decision": "WATER_C_ANESSA_CONTROLLED_FACT_ADOPTION_PASS",
+  "parallelDuplicateRemediation": {
+    "detected": true,
+    "cause": "A later parallel WATER-C confirmation created a second proposition for the same cardinality-one Subject/fact after the canonical adoption had already completed.",
+    "canonicalPropositionKey": "2b145dff9a002879db9d66c5dda622c6f8fc10d807dae2cf134bed62dbd5b63b",
+    "canonicalFactInstanceId": "39394ff3-3f57-49d6-96ee-2df39f404872",
+    "canonicalConfirmationId": "11b9359a-eac4-46e2-afe2-697341743230",
+    "duplicatePropositionKey": "035a31aceae525e29bcd4dc795be4fe8f65d42aba55b8a39cbe1c03b1c524d29",
+    "duplicateFactInstanceId": "ceb0bf3f-bff6-477a-b7b3-1bb0a11ab287",
+    "duplicateConfirmationId": "9a319795-795c-41eb-b471-4b3bc7d2854c",
+    "duplicateAssignmentId": "a03a436e-fdc2-48e8-84ca-c0583e0d3d9f",
+    "duplicateFinalAssignmentState": "superseded",
+    "currentMappingRemoved": true,
+    "immutableHistoryPreserved": true,
+    "reviewEventId": "3a1eb4e7-5747-4a92-84ec-f029516feeb4",
+    "auditId": "ac16ba96-77e8-4830-8370-a9e5eb711626",
+    "remediationRequestId": "data-ai29c-water-c-duplicate-remediation-v1",
+    "prestateDigest": "e3a83f1756d07db10c4214dde720a825abc7a6d88d151b86687e099ff84fa187",
+    "currentWaterFactCountAfterRemediation": 1,
+    "decision": "PARALLEL_DUPLICATE_CURRENT_REMEDIATED_CANONICAL_WATER_C_PRESERVED"
+  }
+}
