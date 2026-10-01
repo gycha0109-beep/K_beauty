@@ -142,7 +142,35 @@ The command writes the packet to stdout.
 
 It does not persist images or upload anything.
 
-## 9. Invalid packet conditions
+## 9. Partial check evidence
+
+The local input may optionally provide:
+
+~~~json
+{
+  "checkEvidencePaths": [
+    "./G-001.identity-scope.review.json"
+  ]
+}
+~~~
+
+Each local evidence file may contain either a `checks` object or a direct object keyed by Gate G check ID.
+
+Fragments are merged over the pending Gate G defaults. Duplicate supplied check IDs are rejected rather than silently overridden.
+
+When a structured evidence artifact contains a version plus a SHA-256 response digest, the packet preserves only:
+
+- evidence contract version,
+- response digest,
+- contributed check IDs.
+
+The local evidence path, reviewer reference, and raw response matrix are not copied into the packet.
+
+If an evidence artifact declares a case ID, it must match the packet case ID.
+
+Evidence references cannot claim a check that was not actually supplied by the same packet build.
+
+## 10. Invalid packet conditions
 
 The runner must reject at minimum:
 
@@ -159,7 +187,7 @@ The runner must reject at minimum:
 - reconstructed Render Spec digest mismatch,
 - invalid Gate G-A evidence.
 
-## 10. Authority separation
+## 11. Authority separation
 
 The browser remains unable to submit:
 
@@ -173,7 +201,7 @@ Gate G-B does not change recommendation or product authority.
 
 The response trace proves which server-authoritative Render Spec the generated image was associated with; it does not make the browser an authority.
 
-## 11. Next gates
+## 12. Next gates
 
 Gate G-C produces Identity Preservation and Edit Scope evidence.
 
