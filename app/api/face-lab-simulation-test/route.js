@@ -3,14 +3,13 @@ import {
   isFaceLabObservationAnalysis
 } from "@/lib/face-lab-analysis-bundle";
 import {
-  buildFaceLabV2Canonical
-} from "@/lib/face-lab-v2/canonical-composer";
-import {
-  buildFaceLabRenderSpec
-} from "@/lib/face-lab-v2/render-adapter";
-import {
-  normalizeFaceLabV2PersistencePayload
-} from "@/lib/face-lab-v2/survey-contract";
+  buildFaceLabSimulationCanonical,
+  buildFaceLabSimulationRenderSpec,
+  findFaceLabSimulationCanonicalLook,
+  hasCommittedFaceLabSimulationRoute,
+  hashFaceLabSimulationRenderSpec,
+  normalizeFaceLabSimulationState
+} from "@/lib/face-lab-v2/simulation-render-authority";
 import {
   applyAnalysisGuardCookies,
   completeAnalysisRequestGuard,
@@ -46,10 +45,6 @@ import {
 const MAX_AUTHORITY_TOKEN_CHARS = 2048;
 const MAX_ANALYSIS_JSON_CHARS = 256 * 1024;
 const MAX_STATE_JSON_CHARS = 128 * 1024;
-const COMMITTED_ROUTE_STATES = new Set([
-  "user_selected",
-  "single_route_auto"
-]);
 
 function json(body, init = {}) {
   return NextResponse.json(body, {
@@ -256,19 +251,15 @@ export async function POST(request) {
     }
 
     const normalized =
-      normalizeFaceLabV2PersistencePayload(
+      normalizeFaceLabSimulationState(
         rawState
       );
 
     const canonicalV2 =
-      buildFaceLabV2Canonical({
+      buildFaceLabSimulationCanonical({
         analysis,
-        surveyAnswers:
-          normalized.surveyAnswers,
-        targetFinderResult:
-          normalized.targetFinderResult,
-        selectedRouteId:
-          normalized.selectedRouteId,
+        normalizedState:
+          normalized,
         locale
       });
 
@@ -287,13 +278,9 @@ export async function POST(request) {
     }
 
     if (
-      !COMMITTED_ROUTE_STATES.has(
-        canonicalV2?.routes
-          ?.selectionState
-      ) ||
-      canonicalV2
-        ?.appearanceHandoff
-        ?.status !== "available"
+      !hasCommittedFaceLabSimulationRoute(
+        canonicalV2
+      )
     ) {
       return json(
         {
@@ -306,19 +293,9 @@ export async function POST(request) {
     }
 
     const canonicalLook =
-      canonicalV2?.looks?.status ===
-        "available" &&
-      Array.isArray(
-        canonicalV2.looks.looks
-      )
-        ? canonicalV2.looks.looks.find(
-            (look) =>
-              look?.routeId ===
-              canonicalV2
-                .appearanceHandoff
-                .routeId
-          )
-        : null;
+      findFaceLabSimulationCanonicalLook(
+        canonicalV2
+      );
 
     if (!canonicalLook) {
       return json(
@@ -332,12 +309,9 @@ export async function POST(request) {
     }
 
     const renderSpec =
-      buildFaceLabRenderSpec({
-        appearanceHandoff:
-          canonicalV2
-            .appearanceHandoff,
-        look: canonicalLook,
-        bindingsBySlot: {}
+      buildFaceLabSimulationRenderSpec({
+        canonicalV2,
+        canonicalLook
       });
 
     if (
@@ -353,6 +327,11 @@ export async function POST(request) {
         { status: 409 }
       );
     }
+
+    const renderSpecSha256 =
+      hashFaceLabSimulationRenderSpec(
+        renderSpec
+      );
 
     analysisGuard =
       await guardAnalysisRequest({
@@ -373,7 +352,8 @@ export async function POST(request) {
           routeId:
             renderSpec.routeId,
           lookId:
-            renderSpec.lookId
+            renderSpec.lookId,
+          renderSpecSha256
         }
       });
 
@@ -441,7 +421,11 @@ export async function POST(request) {
           fidelityStatus:
             simulation.fidelity
               ?.status ||
-            "not_evaluated"
+            "not_evaluated",
+          renderSpecSha256,
+          instructionVersion:
+            simulation
+              .instructionVersion
         }
       );
 
@@ -480,6 +464,11 @@ export async function POST(request) {
                 simulation.routeId,
               "X-Face-Lab-Look-Id":
                 simulation.lookId,
+              "X-Face-Lab-Render-Spec-SHA256":
+                renderSpecSha256,
+              "X-Face-Lab-Instruction-Version":
+                simulation
+                  .instructionVersion,
               "X-Face-Lab-Fidelity":
                 simulation.fidelity
                   ?.status ||

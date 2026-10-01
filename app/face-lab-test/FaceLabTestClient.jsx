@@ -282,6 +282,10 @@ export default function FaceLabTestClient() {
       setSimulationMeta({
         routeId: response.headers.get("X-Face-Lab-Route-Id") || simulationState.selectedRouteId,
         lookId: response.headers.get("X-Face-Lab-Look-Id") || null,
+        renderSpecSha256:
+          response.headers.get("X-Face-Lab-Render-Spec-SHA256") || null,
+        instructionVersion:
+          response.headers.get("X-Face-Lab-Instruction-Version") || null,
         fidelity: response.headers.get("X-Face-Lab-Fidelity") || "not_evaluated"
       });
       setSimulationStatus("ready");
@@ -502,6 +506,14 @@ export default function FaceLabTestClient() {
                     <span className="ui-chip-compact px-3 py-1.5">
                       Fidelity: {simulationMeta?.fidelity || "not_evaluated"}
                     </span>
+                    {simulationMeta?.renderSpecSha256 ? (
+                      <span
+                        className="ui-chip-compact px-3 py-1.5"
+                        title={simulationMeta.renderSpecSha256}
+                      >
+                        Trace: {simulationMeta.renderSpecSha256.slice(0, 12)}
+                      </span>
+                    ) : null}
                   </div>
                   <p className="ui-text-secondary mt-3 text-xs leading-5">
                     Fidelity는 아직 평가되지 않았습니다. Gate G에서 정체성 보존, 경로 준수, 색상 충실도, 편집 범위를 별도로 검증합니다.
