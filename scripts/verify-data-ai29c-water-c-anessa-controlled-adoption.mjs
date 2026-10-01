@@ -100,6 +100,41 @@ assert.deepEqual(adoption.verification, {
   waterAuthorityCoverage: "1/20",
 });
 
+const remediation = adoption.parallelDuplicateRemediation;
+assert.equal(remediation.detected, true);
+assert.equal(
+  remediation.canonicalPropositionKey,
+  adoption.confirmedFact.propositionKey,
+);
+assert.equal(
+  remediation.canonicalFactInstanceId,
+  adoption.confirmedFact.factInstanceId,
+);
+assert.equal(
+  remediation.canonicalConfirmationId,
+  adoption.confirmedFact.confirmationId,
+);
+assert.equal(
+  remediation.duplicatePropositionKey,
+  "035a31aceae525e29bcd4dc795be4fe8f65d42aba55b8a39cbe1c03b1c524d29",
+);
+assert.equal(
+  remediation.duplicateFactInstanceId,
+  "ceb0bf3f-bff6-477a-b7b3-1bb0a11ab287",
+);
+assert.equal(
+  remediation.duplicateConfirmationId,
+  "9a319795-795c-41eb-b471-4b3bc7d2854c",
+);
+assert.equal(remediation.duplicateFinalAssignmentState, "superseded");
+assert.equal(remediation.currentMappingRemoved, true);
+assert.equal(remediation.immutableHistoryPreserved, true);
+assert.equal(remediation.currentWaterFactCountAfterRemediation, 1);
+assert.equal(
+  remediation.decision,
+  "PARALLEL_DUPLICATE_CURRENT_REMEDIATED_CANONICAL_WATER_C_PRESERVED",
+);
+
 assert.ok(
   Object.values(adoption.limits).every((value) => value === false),
 );
@@ -137,5 +172,6 @@ console.log(JSON.stringify({
   waterAuthorityCoverage: adoption.verification.waterAuthorityCoverage,
   runtimeWired: false,
   waterAxisActivated: false,
+  parallelDuplicateRemediated: true,
   decision: adoption.decision,
 }));
