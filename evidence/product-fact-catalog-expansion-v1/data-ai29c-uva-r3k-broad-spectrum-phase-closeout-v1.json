@@ -1,0 +1,94 @@
+{
+  "version": "data-ai29c-uva-r3k-broad-spectrum-phase-closeout-v1",
+  "stage": "DATA-AI29C-UVA-R3K",
+  "track": "taxonomy-ai",
+  "baseMainSha": "1b641e6f7d36ff2b8d8a0e96770406cfc5bd1a09",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "phaseOutcome": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "registryDefinitionCount": 21,
+    "broadSpectrumFactKey": "broad_spectrum",
+    "broadSpectrumSerializerVersion": "product-fact-proposition-schema-v2",
+    "governedBroadSpectrumCurrentSubjects": 2,
+    "usEligibleSubjects": 2,
+    "usCoverage": "2/2",
+    "currentProductFactCount": 94,
+    "governedWaterFactCount": 2
+  },
+  "governedSubjects": [
+    {
+      "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+      "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+      "name": "Day Dew Sunscreen",
+      "market": "US",
+      "broadSpectrum": true
+    },
+    {
+      "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+      "name": "히알루-시카 워터핏 선세럼 UV",
+      "market": "US",
+      "broadSpectrum": true
+    }
+  ],
+  "semantics": {
+    "separateFromUvaLabel": true,
+    "separateFromPaGrade": true,
+    "separateFromUvaPf": true,
+    "separateFromPpd": true,
+    "quantitativeUvaStrength": false,
+    "crossMarketTransferAllowed": false
+  },
+  "recommendationBoundary": {
+    "protectionAuthorityContractConsumesBroadSpectrum": false,
+    "sunscreenProjectionConsumesBroadSpectrum": false,
+    "rankingContribution": 0,
+    "recommendationAdmissionGranted": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "reopenConditions": [
+    "a new resolved current US sunscreen Subject enters the catalog without governed broad_spectrum",
+    "an existing Subject acquires new exact-market Broad Spectrum evidence that changes a prior HOLD or negative state",
+    "Recommendation semantics are explicitly redesigned to consume broad_spectrum without conflating it with quantitative UVA strength",
+    "the proposition identity or market-scope contract changes"
+  ],
+  "uvaLabelHandoff": {
+    "currentUvaLabelSubjects": 10,
+    "blockedSubjects": [
+      {
+        "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+        "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+        "name": "Day Dew Sunscreen",
+        "market": "US",
+        "taskId": "74661ab2-2adb-4255-9c05-0418c1caa105",
+        "blockerCode": "EVIDENCE_INSUFFICIENT"
+      },
+      {
+        "productId": "9983f167-24e7-4223-bd86-446ce6ced31b",
+        "subjectId": "614db853-7865-408b-8f40-a4dcfe6a2ea5",
+        "name": "안뗄리오스 선 플루이드",
+        "market": "KR",
+        "taskId": "5d5acb5e-9202-4a71-a826-668edfcd1795",
+        "blockerCode": "EVIDENCE_INSUFFICIENT"
+      },
+      {
+        "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+        "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+        "name": "히알루-시카 워터핏 선세럼 UV",
+        "market": "US",
+        "taskId": "ba340a0c-17b6-47bb-975e-d2255fccc433",
+        "blockerCode": "EVIDENCE_INSUFFICIENT"
+      }
+    ],
+    "broadSpectrumDoesNotResolveTheseBlocks": true
+  },
+  "writeBoundary": {
+    "productFactWritesInThisStage": 0,
+    "registryWritesInThisStage": 0,
+    "policyWritesInThisStage": 0
+  },
+  "decision": "UVA_R3K_BROAD_SPECTRUM_PHASE_CLOSEOUT_PASS",
+  "nextGate": "DATA-AI29C-UVA-R4_UVA_LABEL_BLOCKED_SUBJECT_REASSESSMENT"
+}
