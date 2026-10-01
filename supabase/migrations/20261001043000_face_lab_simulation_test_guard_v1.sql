@@ -269,52 +269,17 @@ create or replace function public.claim_analysis_idempotency(
 )
 returns jsonb
 language plpgsql
+security invoker
 set search_path = public
-as $
+as $$
 declare
   v_row public.analysis_request_idempotency%rowtype;
 begin
   if p_scope not in ('user', 'anonymous')
      or p_endpoint not in ('analyze', 'face-reading', 'face-lab-simulation-test')
-     or p_subject_hash !~ '^[0-9a-f]{64}
-
-revoke all on table public.analysis_request_rate_windows from public, anon, authenticated;
-grant select, insert, update, delete on table public.analysis_request_rate_windows to service_role;
-
-revoke all on function public.consume_analysis_rate_limits(jsonb) from public, anon, authenticated;
-grant execute on function public.consume_analysis_rate_limits(jsonb) to service_role;
-
-revoke all on function public.refund_analysis_rate_limits(jsonb) from public, anon, authenticated;
-grant execute on function public.refund_analysis_rate_limits(jsonb) to service_role;
-
-commit;
-
-     or p_idempotency_key_hash !~ '^[0-9a-f]{64}
-
-revoke all on table public.analysis_request_rate_windows from public, anon, authenticated;
-grant select, insert, update, delete on table public.analysis_request_rate_windows to service_role;
-
-revoke all on function public.consume_analysis_rate_limits(jsonb) from public, anon, authenticated;
-grant execute on function public.consume_analysis_rate_limits(jsonb) to service_role;
-
-revoke all on function public.refund_analysis_rate_limits(jsonb) from public, anon, authenticated;
-grant execute on function public.refund_analysis_rate_limits(jsonb) to service_role;
-
-commit;
-
-     or p_request_fingerprint_hash !~ '^[0-9a-f]{64}
-
-revoke all on table public.analysis_request_rate_windows from public, anon, authenticated;
-grant select, insert, update, delete on table public.analysis_request_rate_windows to service_role;
-
-revoke all on function public.consume_analysis_rate_limits(jsonb) from public, anon, authenticated;
-grant execute on function public.consume_analysis_rate_limits(jsonb) to service_role;
-
-revoke all on function public.refund_analysis_rate_limits(jsonb) from public, anon, authenticated;
-grant execute on function public.refund_analysis_rate_limits(jsonb) to service_role;
-
-commit;
-
+     or p_subject_hash !~ '^[0-9a-f]{64}$'
+     or p_idempotency_key_hash !~ '^[0-9a-f]{64}$'
+     or p_request_fingerprint_hash !~ '^[0-9a-f]{64}$'
      or p_expires_at is null
      or p_expires_at <= now()
      or p_in_progress_timeout_seconds is null
@@ -404,25 +369,23 @@ commit;
 
   return jsonb_build_object('state', 'in_progress');
 end;
-$;
-
-alter table public.analysis_request_idempotency enable row level security;
-
-revoke all on table public.analysis_request_idempotency from public, anon, authenticated;
-grant select, insert, update, delete on table public.analysis_request_idempotency to service_role;
-
-revoke all on function public.claim_analysis_idempotency(text, text, text, text, text, timestamptz, integer) from public, anon, authenticated;
-grant execute on function public.claim_analysis_idempotency(text, text, text, text, text, timestamptz, integer) to service_role;
+$$;
 
 alter table public.analysis_request_rate_windows enable row level security;
+alter table public.analysis_request_idempotency enable row level security;
 
 revoke all on table public.analysis_request_rate_windows from public, anon, authenticated;
+revoke all on table public.analysis_request_idempotency from public, anon, authenticated;
 grant select, insert, update, delete on table public.analysis_request_rate_windows to service_role;
+grant select, insert, update, delete on table public.analysis_request_idempotency to service_role;
 
 revoke all on function public.consume_analysis_rate_limits(jsonb) from public, anon, authenticated;
 grant execute on function public.consume_analysis_rate_limits(jsonb) to service_role;
 
 revoke all on function public.refund_analysis_rate_limits(jsonb) from public, anon, authenticated;
 grant execute on function public.refund_analysis_rate_limits(jsonb) to service_role;
+
+revoke all on function public.claim_analysis_idempotency(text, text, text, text, text, timestamptz, integer) from public, anon, authenticated;
+grant execute on function public.claim_analysis_idempotency(text, text, text, text, text, timestamptz, integer) to service_role;
 
 commit;
