@@ -10,6 +10,9 @@ import {
   issueFaceLabSimulationReviewTicket,
   verifyFaceLabSimulationReviewTicket
 } from "../lib/face-lab-v2/simulation-review-ticket-core.js";
+import {
+  FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION
+} from "../lib/face-lab-v2/simulation-provider-config.js";
 
 const secret =
   "test-secret-face-lab-simulation-authority";
@@ -132,7 +135,11 @@ const reviewContext = {
   simulationVersion:
     "face-lab-ai-simulation-v1",
   instructionVersion:
-    "face-lab-simulation-instruction-v1"
+    "face-lab-simulation-instruction-v1",
+  providerConfigVersion:
+    FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
+  providerConfigFingerprint:
+    "c".repeat(64)
 };
 const reviewTicket =
   issueFaceLabSimulationReviewTicket({
@@ -312,6 +319,8 @@ for (const required of [
   '"X-Face-Lab-Review-Case-Id"',
   '"X-Face-Lab-Review-Ticket"',
   '"X-Face-Lab-Review-Expires-At"',
+  '"X-Face-Lab-Provider-Config-Version"',
+  '"X-Face-Lab-Provider-Config-Fingerprint"',
   "issueFaceLabSimulationReviewTicket",
   '"not_evaluated"'
 ]) {
@@ -459,6 +468,8 @@ console.log(JSON.stringify({
     "review_ticket_expiry_rejected",
     "review_ticket_after_provider",
     "review_api_no_provider",
-    "review_ticket_before_review_guard"
+    "review_ticket_before_review_guard",
+    "provider_config_response_headers",
+    "provider_config_review_ticket_binding"
   ]
 }, null, 2));
