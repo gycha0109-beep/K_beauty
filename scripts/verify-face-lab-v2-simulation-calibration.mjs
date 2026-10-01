@@ -811,6 +811,41 @@ assert.ok(
   "private calibration workspace must remain ignored"
 );
 
+const coreSource =
+  readFileSync(
+    "lib/face-lab-v2/evaluation/simulation-calibration.js",
+    "utf8"
+  );
+
+for (const forbidden of [
+  "generateFaceLabSimulation",
+  "resolveOpenAiApiKey",
+  "productionFidelity",
+  "promotionThreshold",
+  "qualityThreshold"
+]) {
+  assert.equal(
+    coreSource.includes(forbidden),
+    false,
+    "Gate G-E0 must not invoke providers or invent production thresholds: " +
+      forbidden
+  );
+}
+
+for (const forbiddenKey of [
+  "qualityThreshold",
+  "promotionThreshold",
+  "productionFidelity"
+]) {
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(
+      aggregate,
+      forbiddenKey
+    ),
+    false
+  );
+}
+
 console.log(
   "FACE_LAB_V2_SIMULATION_CALIBRATION=PASS"
 );
