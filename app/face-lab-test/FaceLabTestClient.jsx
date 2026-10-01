@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import PremiumFaceLabSection from "@/components/full-report/PremiumFaceLabSection";
+import FaceLabSimulationReviewPanel from "@/components/face-lab-test/FaceLabSimulationReviewPanel";
 import {
   getFaceLabObservationAnalysis,
   isFaceLabResultEnvelope
@@ -52,6 +53,32 @@ function simulationErrorMessage(code) {
   return "AI 시뮬레이션을 생성하지 못했습니다.";
 }
 
+function reviewErrorMessage(code) {
+  if (code === "simulation_review_ticket_expired") {
+    return "이 시뮬레이션의 검토 권한이 만료되었습니다. 새 시뮬레이션을 생성해 주세요.";
+  }
+  if (
+    code === "simulation_review_ticket_invalid" ||
+    code === "simulation_review_ticket_mismatch"
+  ) {
+    return "현재 시뮬레이션과 검토 정보가 일치하지 않습니다. 새 시뮬레이션을 생성해 주세요.";
+  }
+  if (
+    code === "route_not_committed" ||
+    code === "canonical_look_unavailable" ||
+    code === "render_spec_unavailable"
+  ) {
+    return "현재 스타일 경로의 검토 기준을 다시 만들 수 없습니다. 스타일 경로를 다시 확정해 주세요.";
+  }
+  if (code === "analysis_rate_limited") {
+    return "테스트 검토 요청 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  if (code === "simulation_review_unavailable") {
+    return "시뮬레이션 검토 기능을 현재 사용할 수 없습니다.";
+  }
+  return "시뮬레이션 검토 정보를 처리하지 못했습니다.";
+}
+
 function cleanError(payload) {
   if (typeof payload?.message === "string" && payload.message.trim()) {
     return payload.message.trim();
@@ -74,6 +101,8 @@ function cleanError(payload) {
 
 export default function FaceLabTestClient() {
   const inputRef = useRef(null);
+  const simulationRequestSequenceRef = useRef(0);
+  const reviewRequestSequenceRef = useRef(0);
   const [photoUrl, setPhotoUrl] = useState("");
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
@@ -89,6 +118,11 @@ export default function FaceLabTestClient() {
   const [simulationError, setSimulationError] = useState("");
   const [simulationImageUrl, setSimulationImageUrl] = useState("");
   const [simulationMeta, setSimulationMeta] = useState(null);
+  const [reviewAuthority, setReviewAuthority] = useState(null);
+  const [reviewTemplate, setReviewTemplate] = useState(null);
+  const [reviewStatus, setReviewStatus] = useState("idle");
+  const [reviewError, setReviewError] = useState("");
+  const [reviewResult, setReviewResult] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -106,7 +140,18 @@ export default function FaceLabTestClient() {
     };
   }, [simulationImageUrl]);
 
+  const resetReview = useCallback(() => {
+    reviewRequestSequenceRef.current += 1;
+    setReviewAuthority(null);
+    setReviewTemplate(null);
+    setReviewStatus("idle");
+    setReviewError("");
+    setReviewResult(null);
+  }, []);
+
   const resetSimulation = useCallback(() => {
+    simulationRequestSequenceRef.current += 1;
+    resetReview();
     setSimulationStatus("idle");
     setSimulationError("");
     setSimulationMeta(null);
@@ -116,7 +161,7 @@ export default function FaceLabTestClient() {
       }
       return "";
     });
-  }, []);
+  }, [resetReview]);
 
   const handleSimulationStateChange = useCallback((value) => {
     setSimulationState(value?.selectedRouteId ? value : null);
@@ -222,6 +267,157 @@ export default function FaceLabTestClient() {
     }
   };
 
+  const loadReviewTemplate = useCallback(
+    async (authority, stateValue) => {
+      if (
+        !authority?.token ||
+        !authority?.caseId ||
+        !faceLabAnalysis ||
+        !stateValue?.selectedRouteId
+      ) {
+        setReviewStatus("error");
+        setReviewError("시뮬레이션 검토 권한을 확인할 수 없습니다.");
+        return;
+      }
+
+      const requestSequence =
+        reviewRequestSequenceRef.current;
+
+      setReviewStatus("loading");
+      setReviewError("");
+      setReviewResult(null);
+
+      try {
+        const response = await fetch("/api/face-lab-simulation-review-test", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            mode: "template",
+            reviewTicket: authority.token,
+            analysis: faceLabAnalysis,
+            faceLabV2State: stateValue,
+            locale: "ko"
+          })
+        });
+        const payload = await response.json().catch(() => null);
+
+        if (
+          requestSequence !==
+          reviewRequestSequenceRef.current
+        ) {
+          return;
+        }
+
+        if (!response.ok || payload?.success !== true || payload?.mode !== "template") {
+          setReviewStatus("error");
+          setReviewError(reviewErrorMessage(payload?.error));
+          return;
+        }
+
+        if (
+          payload.caseId !== authority.caseId ||
+          payload?.trace?.renderSpecSha256 !== authority.renderSpecSha256
+        ) {
+          setReviewStatus("error");
+          setReviewError("시뮬레이션 검토 기준이 현재 생성 결과와 일치하지 않습니다.");
+          return;
+        }
+
+        setReviewTemplate(payload);
+        setReviewStatus("ready");
+      } catch {
+        setReviewStatus("error");
+        setReviewError("네트워크 오류로 시뮬레이션 검토 기준을 불러오지 못했습니다.");
+      }
+    },
+    [faceLabAnalysis]
+  );
+
+  const submitReview = useCallback(
+    async (responses) => {
+      if (
+        !reviewAuthority?.token ||
+        !reviewAuthority?.caseId ||
+        !faceLabAnalysis ||
+        !simulationState?.selectedRouteId ||
+        reviewStatus === "submitting"
+      ) {
+        return;
+      }
+
+      const requestSequence =
+        reviewRequestSequenceRef.current;
+
+      setReviewStatus("submitting");
+      setReviewError("");
+
+      try {
+        const response = await fetch("/api/face-lab-simulation-review-test", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            mode: "submit",
+            reviewTicket: reviewAuthority.token,
+            analysis: faceLabAnalysis,
+            faceLabV2State: simulationState,
+            locale: "ko",
+            reviewerRef: responses.reviewerRef,
+            identity: responses.identity,
+            editScope: responses.editScope,
+            routeOperations: responses.routeOperations,
+            colorTargets: responses.colorTargets
+          })
+        });
+        const payload = await response.json().catch(() => null);
+
+        if (
+          requestSequence !==
+          reviewRequestSequenceRef.current
+        ) {
+          return;
+        }
+
+        if (
+          !response.ok ||
+          payload?.success !== true ||
+          payload?.mode !== "submit" ||
+          payload?.caseId !== reviewAuthority.caseId
+        ) {
+          setReviewStatus("error");
+          setReviewError(reviewErrorMessage(payload?.error));
+          return;
+        }
+
+        setReviewResult({
+          caseId: payload.caseId,
+          identityScopeReview: payload.identityScopeReview,
+          routeColorReview: payload.routeColorReview,
+          summary: payload.summary
+        });
+        setReviewStatus("submitted");
+      } catch {
+        setReviewStatus("error");
+        setReviewError("네트워크 오류로 시뮬레이션 평가를 확정하지 못했습니다.");
+      }
+    },
+    [
+      faceLabAnalysis,
+      reviewAuthority,
+      reviewStatus,
+      simulationState
+    ]
+  );
+
+  const resetReviewResult = useCallback(() => {
+    setReviewResult(null);
+    setReviewStatus(reviewTemplate ? "ready" : "idle");
+    setReviewError("");
+  }, [reviewTemplate]);
+
   const generateSimulation = async () => {
     if (
       !sourceImageFile ||
@@ -240,6 +436,8 @@ export default function FaceLabTestClient() {
     }
 
     resetSimulation();
+    const requestSequence =
+      simulationRequestSequenceRef.current;
     setSimulationStatus("generating");
 
     const formData = new FormData();
@@ -258,6 +456,13 @@ export default function FaceLabTestClient() {
         body: formData
       });
 
+      if (
+        requestSequence !==
+        simulationRequestSequenceRef.current
+      ) {
+        return;
+      }
+
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
         setSimulationStatus("error");
@@ -265,7 +470,37 @@ export default function FaceLabTestClient() {
         return;
       }
 
+      const reviewCaseId =
+        response.headers.get("X-Face-Lab-Review-Case-Id");
+      const reviewTicket =
+        response.headers.get("X-Face-Lab-Review-Ticket");
+      const reviewExpiresAt =
+        response.headers.get("X-Face-Lab-Review-Expires-At");
+      const renderSpecSha256 =
+        response.headers.get("X-Face-Lab-Render-Spec-SHA256");
+
+      if (
+        !reviewCaseId ||
+        !reviewTicket ||
+        !reviewExpiresAt ||
+        !renderSpecSha256
+      ) {
+        setSimulationStatus("error");
+        setSimulationError(
+          "시뮬레이션은 생성되었지만 검토 권한을 확인할 수 없습니다. 새 시뮬레이션을 생성해 주세요."
+        );
+        return;
+      }
+
       const blob = await response.blob();
+
+      if (
+        requestSequence !==
+        simulationRequestSequenceRef.current
+      ) {
+        return;
+      }
+
       if (!blob.type.startsWith("image/")) {
         setSimulationStatus("error");
         setSimulationError("AI 시뮬레이션 응답 이미지 형식이 올바르지 않습니다.");
@@ -282,13 +517,24 @@ export default function FaceLabTestClient() {
       setSimulationMeta({
         routeId: response.headers.get("X-Face-Lab-Route-Id") || simulationState.selectedRouteId,
         lookId: response.headers.get("X-Face-Lab-Look-Id") || null,
-        renderSpecSha256:
-          response.headers.get("X-Face-Lab-Render-Spec-SHA256") || null,
+        renderSpecSha256,
         instructionVersion:
           response.headers.get("X-Face-Lab-Instruction-Version") || null,
-        fidelity: response.headers.get("X-Face-Lab-Fidelity") || "not_evaluated"
+        simulationVersion:
+          response.headers.get("X-Face-Lab-Simulation-Version") || null,
+        fidelity: response.headers.get("X-Face-Lab-Fidelity") || "not_evaluated",
+        reviewCaseId
       });
+
+      const nextReviewAuthority = {
+        caseId: reviewCaseId,
+        token: reviewTicket,
+        expiresAt: reviewExpiresAt,
+        renderSpecSha256
+      };
+      setReviewAuthority(nextReviewAuthority);
       setSimulationStatus("ready");
+      void loadReviewTemplate(nextReviewAuthority, simulationState);
     } catch {
       setSimulationStatus("error");
       setSimulationError("네트워크 오류로 AI 시뮬레이션을 생성하지 못했습니다.");
@@ -521,6 +767,34 @@ export default function FaceLabTestClient() {
                 </div>
               ) : null}
             </section>
+
+            {simulationImageUrl && reviewAuthority ? (
+              reviewStatus === "loading" ? (
+                <section className="ui-card p-5 text-sm sm:p-6" data-face-lab-simulation-review-loading>
+                  <p className="ui-kicker">GATE G · CALIBRATION REVIEW</p>
+                  <p className="ui-text-secondary mt-2 leading-6">
+                    현재 시뮬레이션에 연결된 검토 기준을 불러오고 있습니다.
+                  </p>
+                </section>
+              ) : reviewTemplate ? (
+                <FaceLabSimulationReviewPanel
+                  key={reviewTemplate.caseId}
+                  template={reviewTemplate}
+                  submitStatus={reviewStatus}
+                  submitError={reviewError}
+                  result={reviewResult}
+                  onSubmit={(responses) => void submitReview(responses)}
+                  onResetResult={resetReviewResult}
+                />
+              ) : reviewError ? (
+                <section className="ui-card p-5 sm:p-6" data-face-lab-simulation-review-error>
+                  <p className="ui-kicker">GATE G · CALIBRATION REVIEW</p>
+                  <p className="mt-3 rounded-xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm leading-6 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-100">
+                    {reviewError}
+                  </p>
+                </section>
+              ) : null
+            ) : null}
           </div>
         ) : null}
       </div>
