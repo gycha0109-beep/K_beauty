@@ -91,6 +91,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-data-ai29c-uva-r3a-broad-spectrum-semantic-contract.mjs",
   "scripts/verify-data-ai29c-uva-r3b-registry-compatibility-audit.mjs",
   "scripts/verify-data-ai29c-uva-r3c-registry-coexistence-design.mjs",
+  "scripts/verify-data-ai29c-uva-r3d-registry-coexistence-implementation.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
