@@ -130,6 +130,30 @@ if (
   process.exit(0);
 }
 
+if (
+  failureClass === "PRODUCT_QUERY_PROVIDER_SHADOW_SCENARIO_FAILED" &&
+  protocolKind === "scenario_mismatch"
+) {
+  if (
+    payload.scenarioPass !== false ||
+    !Array.isArray(payload.failures) ||
+    payload.failures.length < 1 ||
+    payload.provider !== "openai" ||
+    typeof payload.model !== "string" ||
+    !payload.model
+  ) {
+    console.error("DATA_AI28E_SCENARIO_MISMATCH_CONTRACT_INVALID");
+    process.stdout.write("other_failure");
+    process.exit(0);
+  }
+
+  console.error(
+    `DATA_AI28E_SCENARIO_MISMATCH=${payload.failures.join(",")}:providerAttempts=${payload.providerAttempts}`
+  );
+  process.stdout.write("scenario_mismatch");
+  process.exit(0);
+}
+
 if (TRANSIENT_FAILURE_CLASSES.has(failureClass)) {
   if (
     payload.providerAttempts !== 2 ||
