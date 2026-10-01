@@ -757,6 +757,13 @@ function getResponseConstructor(node, model, environment) {
     }
   }
 
+  if (node?.type === "NewExpression" && getIdentifierName(node.callee) === "NextResponse") {
+    const imported = model.imports.get("NextResponse");
+    if (imported?.source === "next/server" && imported.imported === "NextResponse") {
+      return { initArgumentIndex: 1, name: "new NextResponse" };
+    }
+  }
+
   if (node?.type === "NewExpression" && getIdentifierName(node.callee) === "Response" && !environment.has("Response") && !model.imports.has("Response")) {
     return { initArgumentIndex: 1, name: "new Response" };
   }
