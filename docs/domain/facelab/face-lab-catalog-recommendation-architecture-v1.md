@@ -1,7 +1,7 @@
 # Face Lab Catalog / Recommendation Architecture v1
 
-> Track: face-research  
-> Status: foundation contract / no catalog matching activation  
+> Track: face-research
+> Status: foundation contract / no catalog matching activation
 > Baseline intent: preserve existing catalog-taxonomy-v1 authority and add a Face Lab-specific appearance handoff plane
 
 ## 1. Purpose
