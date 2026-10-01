@@ -10,6 +10,9 @@ import {
   FACE_LAB_SIMULATION_INSTRUCTION_VERSION
 } from "../lib/face-lab-v2/simulation-instructions.js";
 import {
+  FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION
+} from "../lib/face-lab-v2/simulation-provider-config.js";
+import {
   reconstructFaceLabSimulationRenderAuthority
 } from "../lib/face-lab-v2/simulation-render-authority.js";
 import {
@@ -669,6 +672,10 @@ const fullPacket =
         FACE_LAB_AI_SIMULATION_VERSION,
       instructionVersion:
         FACE_LAB_SIMULATION_INSTRUCTION_VERSION,
+      providerConfigVersion:
+        FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
+      providerConfigFingerprint:
+        "d".repeat(64),
       routeId:
         fixtures.color
           .reconstructed
