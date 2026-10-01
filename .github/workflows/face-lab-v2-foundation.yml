@@ -42,6 +42,7 @@ on:
       - "scripts/verify-face-lab-v2-simulation-guard.mjs"
       - "scripts/verify-face-lab-v2-simulation-uat-endpoint.mjs"
       - "scripts/verify-face-lab-v2-simulation-uat-ui.mjs"
+      - "scripts/verify-face-lab-v2-simulation-evaluation.mjs"
       - "app/api/face-reading/route.js"
       - "app/api/face-reading-test/route.js"
       - "app/api/face-lab-simulation-test/**"
@@ -71,6 +72,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-product-variant-shade-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-render-adapter-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-ai-simulation-adapter-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-simulation-evaluation-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
@@ -119,6 +121,7 @@ on:
       - "scripts/verify-face-lab-v2-simulation-guard.mjs"
       - "scripts/verify-face-lab-v2-simulation-uat-endpoint.mjs"
       - "scripts/verify-face-lab-v2-simulation-uat-ui.mjs"
+      - "scripts/verify-face-lab-v2-simulation-evaluation.mjs"
       - "app/api/face-reading/route.js"
       - "app/api/face-reading-test/route.js"
       - "app/api/face-lab-simulation-test/**"
@@ -145,6 +148,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-product-variant-shade-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-render-adapter-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-ai-simulation-adapter-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-simulation-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
@@ -222,6 +226,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-simulation-uat-endpoint.mjs
       - name: Verify Face Lab V2 simulation UAT UI
         run: node scripts/verify-face-lab-v2-simulation-uat-ui.mjs
+      - name: Verify Face Lab V2 simulation evaluation contract
+        run: node scripts/verify-face-lab-v2-simulation-evaluation.mjs
       - name: Check Face Lab V2 simulation UAT route syntax
         run: |
           node --check app/api/face-reading/route.js
