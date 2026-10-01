@@ -138,36 +138,6 @@ async function failGuardedResponse(
   );
 }
 
-function simulationImageResponse(
-  simulation
-) {
-  return new NextResponse(
-    simulation.imageBytes,
-    {
-      status: 200,
-      headers:
-        createNoStoreHeaders({
-          "Content-Type":
-            simulation.mimeType ||
-            "image/png",
-          "Content-Length":
-            String(
-              simulation.imageBytes.length
-            ),
-          "X-Face-Lab-Simulation-Version":
-            simulation.simulationVersion,
-          "X-Face-Lab-Route-Id":
-            simulation.routeId,
-          "X-Face-Lab-Look-Id":
-            simulation.lookId,
-          "X-Face-Lab-Fidelity":
-            simulation.fidelity?.status ||
-            "not_evaluated"
-        })
-    }
-  );
-}
-
 export async function POST(request) {
   let analysisGuard = null;
 
@@ -486,10 +456,39 @@ export async function POST(request) {
       );
     }
 
+    const simulationResponse =
+      new NextResponse(
+        simulation.imageBytes,
+        {
+          status: 200,
+          headers:
+            createNoStoreHeaders({
+              "Content-Type":
+                simulation.mimeType ||
+                "image/png",
+              "Content-Length":
+                String(
+                  simulation
+                    .imageBytes
+                    .length
+                ),
+              "X-Face-Lab-Simulation-Version":
+                simulation
+                  .simulationVersion,
+              "X-Face-Lab-Route-Id":
+                simulation.routeId,
+              "X-Face-Lab-Look-Id":
+                simulation.lookId,
+              "X-Face-Lab-Fidelity":
+                simulation.fidelity
+                  ?.status ||
+                "not_evaluated"
+            })
+        }
+      );
+
     return completeGuardedResponse(
-      simulationImageResponse(
-        simulation
-      ),
+      simulationResponse,
       analysisGuard,
       {
         simulationVersion:
