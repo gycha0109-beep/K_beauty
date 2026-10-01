@@ -362,7 +362,11 @@ export async function POST(request) {
           lookId:
             ticket.lookId,
           renderSpecSha256:
-            ticket.renderSpecSha256
+            ticket.renderSpecSha256,
+          providerConfigVersion:
+            ticket.providerConfigVersion,
+          providerConfigFingerprint:
+            ticket.providerConfigFingerprint
         }
       };
     } else {
@@ -434,6 +438,18 @@ export async function POST(request) {
           ticket.caseId,
         identityScopeReview,
         routeColorReview,
+        trace: {
+          routeId:
+            ticket.routeId,
+          lookId:
+            ticket.lookId,
+          renderSpecSha256:
+            ticket.renderSpecSha256,
+          providerConfigVersion:
+            ticket.providerConfigVersion,
+          providerConfigFingerprint:
+            ticket.providerConfigFingerprint
+        },
         summary:
           summarizeReview({
             identityScopeReview,
@@ -463,6 +479,8 @@ export async function POST(request) {
             ticket.caseId,
           renderSpecSha256:
             ticket.renderSpecSha256,
+          providerConfigFingerprint:
+            ticket.providerConfigFingerprint,
           ...fingerprintReview
         }
       });
