@@ -430,7 +430,11 @@ export async function POST(request) {
         simulationVersion:
           simulation.simulationVersion,
         instructionVersion:
-          simulation.instructionVersion
+          simulation.instructionVersion,
+        providerConfigVersion:
+          simulation.providerConfigVersion,
+        providerConfigFingerprint:
+          simulation.providerConfigFingerprint
       });
 
     if (!reviewTicket) {
@@ -469,7 +473,13 @@ export async function POST(request) {
           reviewCaseId:
             reviewTicket.caseId,
           reviewTicketVersion:
-            reviewTicket.version
+            reviewTicket.version,
+          providerConfigVersion:
+            simulation
+              .providerConfigVersion,
+          providerConfigFingerprint:
+            simulation
+              .providerConfigFingerprint
         }
       );
 
@@ -517,6 +527,12 @@ export async function POST(request) {
                 simulation.fidelity
                   ?.status ||
                 "not_evaluated",
+              "X-Face-Lab-Provider-Config-Version":
+                simulation
+                  .providerConfigVersion,
+              "X-Face-Lab-Provider-Config-Fingerprint":
+                simulation
+                  .providerConfigFingerprint,
               "X-Face-Lab-Review-Case-Id":
                 reviewTicket.caseId,
               "X-Face-Lab-Review-Ticket":
