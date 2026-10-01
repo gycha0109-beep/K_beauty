@@ -218,5 +218,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-simulation-guard.mjs
       - name: Verify Face Lab V2 simulation UAT endpoint
         run: node scripts/verify-face-lab-v2-simulation-uat-endpoint.mjs
-      - name: Check Face Lab V2 simulation UAT endpoint syntax
-        run: node --check app/api/face-lab-simulation-test/route.js
+      - name: Check Face Lab V2 simulation UAT route syntax
+        run: |
+          node --check app/api/face-reading/route.js
+          node --check app/api/face-reading-test/route.js
+          node --check app/api/face-lab-simulation-test/route.js
