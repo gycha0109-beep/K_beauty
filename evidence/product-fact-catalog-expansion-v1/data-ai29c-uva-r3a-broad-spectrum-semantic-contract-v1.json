@@ -1,0 +1,166 @@
+{
+  "version": "data-ai29c-uva-r3a-broad-spectrum-semantic-contract-v1",
+  "stage": "DATA-AI29C-UVA-R3A",
+  "track": "taxonomy-ai",
+  "researchDate": "2026-10-01",
+  "basedOnHeadSha": "39ab689757b1e4244f2e5bac53438b8313bfcba1",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "currentUvaRegistry": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "factKey": "uva_label",
+    "definitionChecksum": "11f1d398e1c460c8597357a162725c708c019d4efc8f3a42b312b5e46bfe43ae",
+    "semanticDefinition": "Market-scoped UVA protection label.",
+    "allowedValues": [
+      "PA+",
+      "PA++",
+      "PA+++",
+      "PA++++",
+      "UVA-PF-declared"
+    ]
+  },
+  "currentRecommendationProjection": {
+    "factKeys": [
+      "spf_value",
+      "uva_label",
+      "water_resistance_duration"
+    ],
+    "uvaBuckets": {
+      "PA++++": "uva_high",
+      "PA+++": "uva_medium_high",
+      "UVA-PF-declared": "uva_medium_high",
+      "PA++": "uva_medium",
+      "PA+": "uva_low"
+    },
+    "broadSpectrumConsumed": false,
+    "broadSpectrumRankingBucket": null
+  },
+  "regulatoryBasis": {
+    "jurisdiction": "US",
+    "authority": "U.S. Food and Drug Administration",
+    "currentReference": "OTC Monograph M020: Sunscreen Drug Products for Over-the-Counter Human Use",
+    "referenceUrl": "https://www.accessdata.fda.gov/drugsatfda_docs/omuf/monographs/OTCMonograph_M020-SunscreenDrugProductsforOTCHumanUse.pdf",
+    "broadSpectrumTestObservation": "Broad Spectrum is a distinct UVA/UVB breadth designation; the FDA monograph classifies mean critical wavelength >= 370 nm as broad spectrum protection.",
+    "semanticConsequence": "Broad Spectrum is not itself a PA grade, numeric UVA-PF value, PPD value, or quantitative UVA-strength bucket."
+  },
+  "proposedFactDefinition": {
+    "fact_key": "broad_spectrum",
+    "registry_version": "UNPUBLISHED_FUTURE_REGISTRY_VERSION",
+    "domain_scope": [
+      "sunscreen"
+    ],
+    "value_type": "boolean",
+    "allowed_values": null,
+    "unit_schema": null,
+    "cardinality": "one",
+    "qualifier_schema": {
+      "optional_context_fields": [
+        "regulatory_framework",
+        "test_basis",
+        "critical_wavelength_threshold_nm"
+      ]
+    },
+    "relationship_schema": {},
+    "scope_schema": {
+      "allowed_fields": [
+        "market",
+        "region",
+        "locale",
+        "variant",
+        "formulation_version",
+        "valid_from",
+        "valid_to"
+      ],
+      "required_fields": [
+        "market"
+      ]
+    },
+    "proposition_identity_schema": {
+      "include_fact_key": true,
+      "include_subject_ref": false,
+      "include_value_identity": false,
+      "scope_dimensions": [
+        "market",
+        "region",
+        "locale",
+        "variant",
+        "formulation_version",
+        "valid_from",
+        "valid_to"
+      ],
+      "qualifier_dimensions": []
+    },
+    "semantic_definition": "Market-scoped declaration that the exact product is labeled or explicitly claimed to provide broad-spectrum UV protection under the applicable market framework. This fact does not encode a PA grade, UVA-PF value, PPD value, or quantitative UVA protection strength.",
+    "positive_evidence_requirement": "exact-Subject, exact-market, product-specific first-party broad-spectrum product claim",
+    "negative_evidence_requirement": "explicit_negative_only",
+    "conflict_semantics": "same semantic proposition with admissible support/opposition or incompatible supported values requires unresolved conflict; value=null",
+    "permitted_evidence_classes": [
+      "product_claim"
+    ],
+    "measurementEvidenceDeferred": true,
+    "deprecated": false,
+    "superseded_by": null
+  },
+  "candidateObservations": [
+    {
+      "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+      "productName": "Beauty of Joseon Day Dew Sunscreen",
+      "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+      "market": "US",
+      "exactSubject": true,
+      "firstPartyUrl": "https://beautyofjoseon.com/products/day-dew-sunscreen",
+      "observedClaim": "SPF 50 broad spectrum UV protection",
+      "candidateValue": true,
+      "semanticEligibleIfRegistryExists": true,
+      "recommendationRankingEligible": false
+    },
+    {
+      "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "productName": "SKIN1004 Hyalu-Cica Water-Fit Sun Serum UV",
+      "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+      "market": "US",
+      "exactSubject": true,
+      "firstPartyUrl": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-uv?variant=51261874995446",
+      "observedClaim": "SPF50 broad-spectrum coverage",
+      "candidateValue": true,
+      "semanticEligibleIfRegistryExists": true,
+      "recommendationRankingEligible": false
+    },
+    {
+      "productId": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "productName": "La Roche-Posay Anthelios Sun Fluid",
+      "subjectId": "614db853-7865-408b-8f40-a4dcfe6a2ea5",
+      "market": "KR",
+      "exactSubject": true,
+      "observedClaim": "strong UVA protection wording without exact Broad Spectrum market label",
+      "candidateValue": null,
+      "semanticEligibleIfRegistryExists": false,
+      "recommendationRankingEligible": false,
+      "reason": "Do not transfer U.S./foreign Broad Spectrum semantics to the exact KR Subject."
+    }
+  ],
+  "semanticBoundaries": {
+    "broadSpectrumIsNotPa": true,
+    "broadSpectrumIsNotUvaPfDeclared": true,
+    "broadSpectrumIsNotPpd": true,
+    "broadSpectrumIsNotQuantitativeUvaStrength": true,
+    "spfAloneDoesNotImplyBroadSpectrum": true,
+    "crossMarketTransferForbidden": true,
+    "crossFormulationTransferForbidden": true,
+    "missingBroadSpectrumDoesNotMeanFalse": true,
+    "falseRequiresExplicitNegative": true,
+    "factDoesNotCreateDecisionAxis": true,
+    "factDoesNotCreateRecommendationScore": true
+  },
+  "adoptionBoundary": {
+    "registryPublishAuthorized": false,
+    "productFactWriteAuthorized": false,
+    "recommendationAuthorityContractChanged": false,
+    "recommendationProjectionChanged": false,
+    "uvaRankingChanged": false,
+    "productionRankingChanged": false,
+    "publicActivation": false,
+    "nextPhase": "DATA-AI29C-UVA-R3B"
+  },
+  "decision": "BROAD_SPECTRUM_SEPARATE_FACT_SEMANTICS_PASS",
+  "nextGate": "AUDIT_REGISTRY_VERSION_COMPATIBILITY_BEFORE_ANY_REGISTRY_PUBLISH"
+}
