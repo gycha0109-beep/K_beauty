@@ -108,7 +108,14 @@ for (let attempt = 1; attempt <= policy.resolution.completionAttempts; attempt +
     const run = latestRuns.find((candidate) => candidate.id === state.runId);
     if (!run) continue;
     if (run.status !== "completed") {
-      console.log(`CURRENT_MAIN_DELEGATION=WAIT owner=${ownerId} run_id=${run.id} status=${run.status} attempt=${attempt}`);
+      states.set(ownerId, {
+        mode: "fallback",
+        runId: run.id,
+        reason: "same-head-canonical-not-completed",
+      });
+      console.log(
+        `CURRENT_MAIN_DELEGATION=FALLBACK owner=${ownerId} run_id=${run.id} status=${run.status} reason=same-head-canonical-not-completed`,
+      );
       continue;
     }
     if (run.conclusion !== "success") {

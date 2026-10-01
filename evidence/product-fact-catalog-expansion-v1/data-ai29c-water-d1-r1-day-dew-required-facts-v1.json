@@ -1,0 +1,199 @@
+{
+  "version": "data-ai29c-water-d1-r1-day-dew-required-facts-v1",
+  "stage": "DATA-AI29C-WATER-D1-R1",
+  "track": "taxonomy-ai",
+  "recordedAgainstMainSha": "c0547601b5541cc51b5e9e45f3e089b59510f8ce",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "identity": {
+    "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+    "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+    "subjectSemanticKey": "afce6d4dba5b288999cf087d9827e89e9819be4c99322650ea9e27077778029e",
+    "canonicalBrand": "Beauty of Joseon",
+    "canonicalName": "Day Dew Sunscreen",
+    "market": "US",
+    "locale": "en-US",
+    "variantKey": null,
+    "formulationRevisionKey": "data-ai29c-water-d1-boj-day-dew-us-current",
+    "identityStatus": "resolved",
+    "currentState": "current"
+  },
+  "officialSource": {
+    "canonicalLocator": "https://beautyofjoseon.com/products/day-dew-sunscreen",
+    "publisher": "Beauty of Joseon",
+    "sourceKind": "official_product_page",
+    "market": "US",
+    "locale": "en-US",
+    "presentationSize": "50 mL / 1.69 FL. OZ.",
+    "observedSpfLabel": "SPF 50 broad spectrum UV protection",
+    "observedFilterSystem": "chemical sunscreen",
+    "observedActiveFilters": [
+      "Avobenzone 3.0%",
+      "Homosalate 7.0%",
+      "Octisalate 5.0%",
+      "Octocrylene 5.0%"
+    ],
+    "observedWaterClaim": "Water Resistance (80 min)",
+    "registryAdmissibleUvaLabel": null,
+    "contentDigest": "e7f55bea45637d1eb94f1223f8a1b2ecf14f9e3b0680dfadd77b6eeb02612a3b",
+    "digestBasis": "data-ai29c-day-dew-required-facts-frozen-first-party-observation-v1-not-live-page-bytes"
+  },
+  "governedEvidenceSource": {
+    "sourceId": "38b1662b-9b9c-4869-aa63-eed6ae3074a8",
+    "bindingId": "f0cd536b-9a58-4cd0-b6ae-8e5ac3222565",
+    "bindingState": "exact_subject_match",
+    "scopeRelation": "equivalent",
+    "identityResolutionVersion": "data-ai29c-day-dew-required-facts-v1"
+  },
+  "spfFact": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "factKey": "spf_value",
+    "valueNumber": 50,
+    "valueUnit": null,
+    "qualifier": {
+      "plus_modifier": "none"
+    },
+    "market": "US",
+    "locale": "en-US",
+    "propositionKey": "fb4139cdf42814d755f41ee3fdab4b8d0dbc175002339bc68a5d9e775a06153b",
+    "evidenceId": "2cec6fa0-59c4-4bee-9ac7-36c653800f5d",
+    "canonicalEvidenceDigest": "aa1c71770b291c05ca53392fd9dddfcdcf73c67f41a98ba945821fa85adc97d7",
+    "evidenceClass": "product_claim",
+    "evidenceAuthority": "product_specific_primary",
+    "evidenceConfidence": "high",
+    "assignmentId": "8a1d059c-1de2-4b16-87ad-d105c8cd1f18",
+    "reviewPolicyVersion": "data-ai29c-day-dew-required-facts-v1",
+    "fusionPolicyVersion": "trust-phase4-single-primary-evidence-v1",
+    "fusionInputDigest": "dcb765ad1adf4b3a6adbfa34273736e7ee44f6323c6bf6b49adcfed07f6f8f42",
+    "preflightPayloadDigest": "e472fa25109a24f5a59849927a5cfb47b77b0f370c076fe02b916bc5e8dd35c6",
+    "preflightPrestateDigest": "b45742c892f746efc090bd40d11ceb7905d92b5e2aaf1545f7398248068f3e4a",
+    "factInstanceId": "5d51819b-4542-44da-a4ab-01f8903b59de",
+    "confirmationId": "6f9aac4e-4cb8-4f7d-b436-a236122987f4",
+    "semanticStatus": "supported",
+    "current": true
+  },
+  "uvFilterFact": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "factKey": "uv_filter_type",
+    "valueEnum": "organic",
+    "qualifier": {},
+    "market": "US",
+    "locale": "en-US",
+    "propositionKey": "2958b29b148413c1d8a14e79235579086252f0611ce6dd8f2e8ad579a55bc854",
+    "evidenceId": "865dd465-0574-4fe1-91ad-989ac1fca15c",
+    "canonicalEvidenceDigest": "a8a2fbf999e1bdb2e607cd171bbab5d45575dab8b4927d1e642a0109f19d9fb4",
+    "evidenceClass": "composition_identity",
+    "evidenceAuthority": "product_specific_primary",
+    "evidenceConfidence": "high",
+    "assignmentId": "7072619c-b305-461d-bc9b-b062d881cebd",
+    "reviewPolicyVersion": "data-ai29c-day-dew-required-facts-v1",
+    "fusionPolicyVersion": "trust-phase4-single-primary-evidence-v1",
+    "fusionInputDigest": "0967329c04e4bb94184bee0a7daa255ef81828e9af9ff43a4740a0ef33ac3116",
+    "preflightPayloadDigest": "d78e501ddacc069efcb3cc99f6817f21f816f7fab5ec374644ce8db24bc27e3c",
+    "preflightPrestateDigest": "bd30550d667a4158bbf592865eed6fc34390785e4c48c7a6f5be3503c75631b4",
+    "factInstanceId": "91490849-519b-408a-9d03-1efb3b17629f",
+    "confirmationId": "5f35b0c6-76b6-42e2-961e-e7d9f4821c92",
+    "semanticStatus": "supported",
+    "current": true
+  },
+  "existingWaterFact": {
+    "factKey": "water_resistance_duration",
+    "valueNumber": 80,
+    "valueUnit": "minutes",
+    "market": "US",
+    "locale": "en-US",
+    "factInstanceId": "55c80191-fa13-4c9f-a594-d8b26f3cada8",
+    "confirmationId": "923c7799-a1ae-44c7-9ddc-9ccb03acb7a6",
+    "current": true,
+    "mutatedByR1": false
+  },
+  "uvaHold": {
+    "factKey": "uva_label",
+    "currentFactExists": false,
+    "registryAllowedValues": [
+      "PA+",
+      "PA++",
+      "PA+++",
+      "PA++++",
+      "UVA-PF-declared"
+    ],
+    "exactSourceObservedClaim": "broad-spectrum SPF 50",
+    "registryAdmissibleCandidateValue": null,
+    "broadSpectrumToPaForbidden": true,
+    "broadSpectrumToUvaPfDeclaredWithoutGovernedRuleForbidden": true,
+    "researchTaskId": "74661ab2-2adb-4255-9c05-0418c1caa105",
+    "researchTaskState": "BLOCKED",
+    "blockerCode": "EVIDENCE_INSUFFICIENT",
+    "decision": "HOLD_NO_REGISTRY_ADMISSIBLE_EXACT_US_UVA_LABEL"
+  },
+  "researchTaskCloseout": [
+    {
+      "taskId": "40569ab3-a227-43ce-a012-97c8c56c62eb",
+      "factKey": "spf_value",
+      "state": "ALREADY_COVERED",
+      "attemptCount": 1
+    },
+    {
+      "taskId": "00c1863e-b8cb-4c65-a824-9a9cc1ac85e9",
+      "factKey": "uv_filter_type",
+      "state": "ALREADY_COVERED",
+      "attemptCount": 1
+    },
+    {
+      "taskId": "74661ab2-2adb-4255-9c05-0418c1caa105",
+      "factKey": "uva_label",
+      "state": "BLOCKED",
+      "blockerCode": "EVIDENCE_INSUFFICIENT",
+      "attemptCount": 1
+    }
+  ],
+  "preflightRecovery": {
+    "initialFusionInputPreflightRejected": true,
+    "initialFailureKind": "product_fact_confirmation_fusion_input_stale",
+    "businessWriteOccurredOnRejectedPreflight": false,
+    "correctedDigestSource": "current Product Evidence rows under product_fact_controlled_build_preflight_v1 semantics",
+    "finalSpfPreflightStatus": "ready",
+    "finalUvFilterPreflightStatus": "ready"
+  },
+  "productionReadback": {
+    "currentDayDewFactKeys": [
+      "spf_value",
+      "uv_filter_type",
+      "water_resistance_duration"
+    ],
+    "currentDayDewFactCount": 3,
+    "currentDayDewUvaFactCount": 0,
+    "currentGovernedWaterFactCount": 2,
+    "spfAuthenticatedBetaEnabled": true,
+    "spfAuthorizedPhase": "DATA-AI29C-D5D",
+    "spfProductionStateMutated": false,
+    "waterAxisActivated": false,
+    "waterRankingWired": false
+  },
+  "recommendationBoundary": {
+    "d2InitialAdmissionFixtureContainsDayDew": false,
+    "frozenProspectiveCorpusContainsDayDew": false,
+    "frozenProspectiveCorpusCount": 20,
+    "frozenProspectiveWaterEligibleCount": 1,
+    "frozenProspectiveWaterCoverage": "1/20",
+    "frozenProspectiveDenominatorRebased": false,
+    "recommendationAdmissionGrantedByThisStage": false,
+    "reason": "Product Fact completion does not grant Recommendation admission, and Day Dew remains outside both the D2 initial-admission fixture and frozen prospective 20-product corpus."
+  },
+  "limits": {
+    "evidenceRecordWritten": true,
+    "spfProductFactWritten": true,
+    "uvFilterProductFactWritten": true,
+    "uvaProductFactWritten": false,
+    "waterProductFactMutated": false,
+    "recommendationAuthorityMutated": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "waterAxisActivated": false,
+    "waterRankingWired": false,
+    "spfProductionStateMutated": false
+  },
+  "decision": "WATER_D1_R1_DAY_DEW_REQUIRED_FACTS_PARTIAL_PASS_UVA_HOLD",
+  "nextGate": "KEEP_DAY_DEW_RECOMMENDATION_ADMISSION_CLOSED_UNTIL_SEPARATE_D2_REVIEW_AND_UVA_GOVERNANCE_RESOLUTION"
+}
