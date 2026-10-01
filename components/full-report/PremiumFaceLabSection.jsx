@@ -584,7 +584,8 @@ export default function PremiumFaceLabSection({
   photoUrl = "",
   locale = "ko",
   resultKey = "current",
-  savedReportId = null
+  savedReportId = null,
+  onSimulationStateChange = null
 }) {
   const copy = getCopy(locale);
   const storageKey = useMemo(() => `bejewely:face-lab-v2:${resultKey}`, [resultKey]);
@@ -612,6 +613,28 @@ export default function PremiumFaceLabSection({
   const latestPersistRequestFingerprintRef = useRef(null);
   const serverRevisionRef = useRef(0);
   const conflictEpochRef = useRef(0);
+
+  const emitSimulationState = useCallback((surveyAnswers, approvedFinder, result) => {
+    if (typeof onSimulationStateChange !== "function") return;
+
+    const selectedRouteId = committedRouteIdFromResult(result);
+    if (!selectedRouteId || !surveyAnswers) {
+      onSimulationStateChange(null);
+      return;
+    }
+
+    onSimulationStateChange({
+      surveyAnswers,
+      targetFinderResult: approvedFinder || null,
+      selectedRouteId
+    });
+  }, [onSimulationStateChange]);
+
+  const clearSimulationState = useCallback(() => {
+    if (typeof onSimulationStateChange === "function") {
+      onSimulationStateChange(null);
+    }
+  }, [onSimulationStateChange]);
 
   const writeLocalState = useCallback((value, metadata) => {
     if (typeof window === "undefined") return false;
@@ -807,6 +830,11 @@ export default function PremiumFaceLabSection({
         targetFinderResult: stored.targetFinderResult || null
       };
       setCanonical(restored);
+      emitSimulationState(
+        stored.surveyAnswers,
+        stored.targetFinderResult || null,
+        restored
+      );
       setEntryMode(stored.surveyAnswers.entryMode || "known");
       setTargets(
         stored.surveyAnswers.targetSelections?.length
@@ -959,7 +987,7 @@ export default function PremiumFaceLabSection({
     return () => {
       active = false;
     };
-  }, [faceLabAnalysis, locale, resultKey, savedReportId, storageKey, persistServer, writeLocalState]);
+  }, [faceLabAnalysis, locale, resultKey, savedReportId, storageKey, persistServer, writeLocalState, emitSimulationState]);
 
   if (!faceLabAnalysis) {
     return <LegacyFaceLab faceLabSummary={faceLabSummary} photoUrl={photoUrl} locale={locale} />;
@@ -1011,6 +1039,7 @@ export default function PremiumFaceLabSection({
     };
     setCanonical(result);
     setStage("result");
+    emitSimulationState(surveyAnswers, approvedFinder, result);
 
     void persistServer(
       surveyAnswers,
@@ -1043,6 +1072,7 @@ export default function PremiumFaceLabSection({
       targetFinderResult: approvedFinder
     };
     setCanonical(result);
+    emitSimulationState(surveyAnswers, approvedFinder, result);
 
     void persistServer(surveyAnswers, approvedFinder, resolvedRouteId);
   };
@@ -1083,6 +1113,7 @@ export default function PremiumFaceLabSection({
           photoUrl={photoUrl}
           onSelectRoute={selectRoute}
           onEditTarget={() => {
+            clearSimulationState();
             if (entryMode === "unknown") {
               setEntryMode("known");
               setFinderResult(null);
