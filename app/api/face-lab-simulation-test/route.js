@@ -319,32 +319,6 @@ export async function POST(request) {
         rawState
       );
 
-    analysisGuard =
-      await guardAnalysisRequest({
-        request,
-        endpoint:
-          "face-lab-simulation-test",
-        fingerprintInput: {
-          locale,
-          image:
-            getUploadFingerprintDescriptor(
-              image
-            ),
-          analysisSha256:
-            authority.analysisSha256,
-          imageSha256:
-            authority.imageSha256,
-          faceLabV2State: normalized
-        }
-      });
-
-    if (!analysisGuard.ok) {
-      return createAnalysisGuardResponse(
-        analysisGuard,
-        locale
-      );
-    }
-
     const canonicalV2 =
       buildFaceLabV2Canonical({
         analysis,
@@ -361,16 +335,13 @@ export async function POST(request) {
       canonicalV2?.targetStyle
         ?.status !== "available"
     ) {
-      return failGuardedResponse(
-        json(
-          {
-            success: false,
-            error:
-              "target_style_not_confirmed"
-          },
-          { status: 409 }
-        ),
-        analysisGuard
+      return json(
+        {
+          success: false,
+          error:
+            "target_style_not_confirmed"
+        },
+        { status: 409 }
       );
     }
 
@@ -383,16 +354,13 @@ export async function POST(request) {
         ?.appearanceHandoff
         ?.status !== "available"
     ) {
-      return failGuardedResponse(
-        json(
-          {
-            success: false,
-            error:
-              "route_not_committed"
-          },
-          { status: 409 }
-        ),
-        analysisGuard
+      return json(
+        {
+          success: false,
+          error:
+            "route_not_committed"
+        },
+        { status: 409 }
       );
     }
 
@@ -412,16 +380,13 @@ export async function POST(request) {
         : null;
 
     if (!canonicalLook) {
-      return failGuardedResponse(
-        json(
-          {
-            success: false,
-            error:
-              "canonical_look_unavailable"
-          },
-          { status: 409 }
-        ),
-        analysisGuard
+      return json(
+        {
+          success: false,
+          error:
+            "canonical_look_unavailable"
+        },
+        { status: 409 }
       );
     }
 
@@ -438,16 +403,43 @@ export async function POST(request) {
       renderSpec?.status !==
       "ready"
     ) {
-      return failGuardedResponse(
-        json(
-          {
-            success: false,
-            error:
-              "render_spec_unavailable"
-          },
-          { status: 409 }
-        ),
-        analysisGuard
+      return json(
+        {
+          success: false,
+          error:
+            "render_spec_unavailable"
+        },
+        { status: 409 }
+      );
+    }
+
+    analysisGuard =
+      await guardAnalysisRequest({
+        request,
+        endpoint:
+          "face-lab-simulation-test",
+        fingerprintInput: {
+          locale,
+          image:
+            getUploadFingerprintDescriptor(
+              image
+            ),
+          analysisSha256:
+            authority.analysisSha256,
+          imageSha256:
+            authority.imageSha256,
+          faceLabV2State: normalized,
+          routeId:
+            renderSpec.routeId,
+          lookId:
+            renderSpec.lookId
+        }
+      });
+
+    if (!analysisGuard.ok) {
+      return createAnalysisGuardResponse(
+        analysisGuard,
+        locale
       );
     }
 
