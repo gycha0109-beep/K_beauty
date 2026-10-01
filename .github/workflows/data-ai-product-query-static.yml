@@ -100,6 +100,9 @@ on:
       - "supabase/migrations/20261001090000_data_ai29c_water_c_r1_cardinality_guard_v1.sql"
       - "scripts/verify-data-ai29c-water-c-r1-cardinality-guard.mjs"
       - "docs/evidence/data-ai29c-water-c-r1-cardinality-guard-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-water-c-r1-production-validation-v1.json"
+      - "scripts/verify-data-ai29c-water-c-r1-production-validation.mjs"
+      - "docs/evidence/data-ai29c-water-c-r1-production-validation-v1.md"
       - "lib/sunscreen-spf-runtime-gate.mjs"
       - "lib/product-query-recommendation.js"
       - "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
@@ -281,6 +284,9 @@ on:
       - "supabase/migrations/20261001090000_data_ai29c_water_c_r1_cardinality_guard_v1.sql"
       - "scripts/verify-data-ai29c-water-c-r1-cardinality-guard.mjs"
       - "docs/evidence/data-ai29c-water-c-r1-cardinality-guard-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-water-c-r1-production-validation-v1.json"
+      - "scripts/verify-data-ai29c-water-c-r1-production-validation.mjs"
+      - "docs/evidence/data-ai29c-water-c-r1-production-validation-v1.md"
       - "lib/sunscreen-spf-runtime-gate.mjs"
       - "lib/product-query-recommendation.js"
       - "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs"
@@ -517,6 +523,9 @@ jobs:
 
       - name: Verify DATA-AI29C-WATER-C-R1 cardinality-one guard
         run: node scripts/verify-data-ai29c-water-c-r1-cardinality-guard.mjs
+
+      - name: Verify DATA-AI29C-WATER-C-R1 Production validation
+        run: node scripts/verify-data-ai29c-water-c-r1-production-validation.mjs
 
       - name: Verify DATA-AI29C-D5A SPF runtime gate
         run: node --experimental-strip-types scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs
