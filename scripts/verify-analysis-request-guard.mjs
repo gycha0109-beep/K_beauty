@@ -98,15 +98,20 @@ assert(isGuardHash(firstFingerprint), "fingerprint should be hex sha256");
 assert(!firstFingerprint.includes("redness"), "fingerprint should not expose raw request values");
 assert(stableSerialize({ b: 1, a: 2 }) === '{"a":2,"b":1}', "stableSerialize should sort object keys");
 
-assert(Object.keys(ANALYSIS_GUARD_POLICIES).length === 3, "three guarded endpoint policies should exist");
+assert(Object.keys(ANALYSIS_GUARD_POLICIES).length === 4, "four guarded endpoint policies should exist");
 assert(getAnalysisGuardPolicy("analyze")?.path === "/api/analyze", "analyze policy should exist");
 assert(getAnalysisGuardPolicy("face-reading")?.path === "/api/face-reading", "face-reading policy should exist");
 assert(getAnalysisGuardPolicy("face-reading-test")?.path === "/api/face-reading-test", "face-reading test policy should exist");
+assert(getAnalysisGuardPolicy("face-lab-simulation-test")?.path === "/api/face-lab-simulation-test", "Face Lab simulation test policy should exist");
 assert(FACE_LAB_PRODUCTION_DAILY_LIMIT === 5, "production Face Lab daily limit should be explicit");
 assert(FACE_LAB_USAGE_POLICY.production.consumesProductionQuota === true, "production Face Lab should consume production quota");
 assert(FACE_LAB_USAGE_POLICY.test.consumesProductionQuota === false, "Face Lab UAT should not consume production quota");
+assert(FACE_LAB_USAGE_POLICY.simulationTest.consumesProductionQuota === false, "Face Lab simulation UAT should not consume production quota");
+assert(FACE_LAB_USAGE_POLICY.simulationTest.requireIdempotency === true, "Face Lab simulation UAT should require idempotency");
 assert(getAnalysisGuardPolicy("face-reading")?.refundOnFailure === true, "production Face Lab failures should refund quota");
 assert(getAnalysisGuardPolicy("face-reading-test")?.refundOnFailure === true, "Face Lab UAT failures should refund quota");
+assert(getAnalysisGuardPolicy("face-lab-simulation-test")?.refundOnFailure === true, "Face Lab simulation UAT failures should refund quota");
+assert(getAnalysisGuardPolicy("face-lab-simulation-test")?.requireIdempotency === true, "Face Lab simulation UAT guard should require idempotency");
 assert(getAnalysisGuardPolicy("analyze")?.refundOnFailure !== true, "general analyze quota semantics must remain unchanged");
 assert(
   getAnalysisGuardPolicy("face-reading")?.limits.anonymous.find((item) => item.name === "day")?.limit === 5,
@@ -166,6 +171,19 @@ const faceLabQuotaMigration = read("supabase/migrations/20260930133000_face_lab_
   "revoke all on function public.refund_analysis_rate_limits(jsonb) from public, anon, authenticated",
   "grant execute on function public.refund_analysis_rate_limits(jsonb) to service_role"
 ].forEach((pattern) => assertIncludes(faceLabQuotaMigration, pattern, "Face Lab quota partition migration"));
+
+const faceLabSimulationGuardMigration = read("supabase/migrations/20261001043000_face_lab_simulation_test_guard_v1.sql");
+[
+  "analysis_request_rate_windows_endpoint_check",
+  "'analyze', 'face-reading', 'face-reading-test', 'face-lab-simulation-test', 'result-read'",
+  "analysis_request_idempotency_endpoint_check",
+  "'analyze', 'face-reading', 'face-lab-simulation-test'",
+  "create or replace function public.claim_analysis_idempotency",
+  "p_endpoint not in ('analyze', 'face-reading', 'face-lab-simulation-test')",
+  "security invoker",
+  "revoke all on table public.analysis_request_idempotency from public, anon, authenticated",
+  "grant select, insert, update, delete on table public.analysis_request_idempotency to service_role"
+].forEach((pattern) => assertIncludes(faceLabSimulationGuardMigration, pattern, "Face Lab simulation guard migration"));
 
 const guard = read("lib/security/analysis-request-guard.js");
 assertIncludes(guard, "analysis_guard_unavailable", "guard fail closed code");
