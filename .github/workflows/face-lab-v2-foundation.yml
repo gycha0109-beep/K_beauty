@@ -6,6 +6,9 @@ on:
   pull_request:
     paths:
       - "lib/face-lab-v2/**"
+      - "lib/server/face-lab-simulation-service.js"
+      - "lib/server/openai-image-edit-runtime.js"
+      - "lib/openai-image-edit-runtime-core.js"
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "scripts/verify-premium-report-reentry-contract.mjs"
@@ -31,6 +34,7 @@ on:
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
+      - "scripts/verify-face-lab-v2-ai-simulation-adapter.mjs"
       - "app/face-lab-test/**"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
@@ -56,6 +60,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-catalog-matcher-shadow-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-product-variant-shade-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-render-adapter-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-ai-simulation-adapter-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
       - "app/api/full-report/route.js"
@@ -71,6 +76,9 @@ on:
       - main
     paths:
       - "lib/face-lab-v2/**"
+      - "lib/server/face-lab-simulation-service.js"
+      - "lib/server/openai-image-edit-runtime.js"
+      - "lib/openai-image-edit-runtime-core.js"
       - "scripts/verify-face-lab-v2-foundation.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "scripts/verify-premium-report-reentry-contract.mjs"
@@ -92,6 +100,7 @@ on:
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
+      - "scripts/verify-face-lab-v2-ai-simulation-adapter.mjs"
       - "scripts/verify-face-lab-standalone-test-route.mjs"
       - "app/face-lab-test/**"
       - "docs/domain/facelab/face-lab-v2-recommendation-evaluation-contract-v1.md"
@@ -114,6 +123,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-catalog-matcher-shadow-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-product-variant-shade-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-render-adapter-contract-v1.md"
+      - "docs/domain/facelab/face-lab-v2-ai-simulation-adapter-contract-v1.md"
       - "app/api/full-report/route.js"
       - "app/api/premium/face-lab-v2/route.js"
       - "supabase/migrations/*face_lab_v2_persistence_revision.sql"
@@ -182,3 +192,5 @@ jobs:
         run: node scripts/verify-face-lab-v2-product-variant-shade-authority.mjs
       - name: Verify Face Lab V2 render adapter
         run: node scripts/verify-face-lab-v2-render-adapter.mjs
+      - name: Verify Face Lab V2 AI simulation adapter
+        run: node scripts/verify-face-lab-v2-ai-simulation-adapter.mjs
