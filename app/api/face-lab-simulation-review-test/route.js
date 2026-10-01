@@ -16,6 +16,9 @@ import {
   buildFaceLabSimulationIdentityScopeReview
 } from "@/lib/face-lab-v2/evaluation/simulation-identity-scope-review";
 import {
+  buildFaceLabSimulationPilotCapture
+} from "@/lib/face-lab-v2/evaluation/simulation-pilot-capture";
+import {
   FACE_LAB_SIMULATION_COLOR_REVIEW_VALUES,
   FACE_LAB_SIMULATION_ROUTE_REVIEW_VALUES,
   buildFaceLabSimulationRouteColorReview,
@@ -431,6 +434,52 @@ export async function POST(request) {
         );
       }
 
+      const pilotCapture =
+        buildFaceLabSimulationPilotCapture({
+          caseId:
+            ticket.caseId,
+          locale,
+          analysis,
+          faceLabV2State:
+            reconstructed
+              .normalizedState,
+          responseMeta: {
+            simulationVersion:
+              ticket.simulationVersion,
+            instructionVersion:
+              ticket.instructionVersion,
+            providerConfigVersion:
+              ticket.providerConfigVersion,
+            providerConfigFingerprint:
+              ticket.providerConfigFingerprint,
+            routeId:
+              ticket.routeId,
+            lookId:
+              ticket.lookId,
+            renderSpecSha256:
+              ticket.renderSpecSha256
+          },
+          identityScopeReview,
+          routeColorReview,
+          files:
+            body.captureFiles
+        });
+
+      if (
+        pilotCapture.status !==
+        "ready"
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "pilot_capture_" +
+              pilotCapture.reason
+          },
+          { status: 400 }
+        );
+      }
+
       responseBody = {
         success: true,
         mode,
@@ -438,6 +487,7 @@ export async function POST(request) {
           ticket.caseId,
         identityScopeReview,
         routeColorReview,
+        pilotCapture,
         trace: {
           routeId:
             ticket.routeId,
