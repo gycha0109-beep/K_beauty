@@ -241,6 +241,7 @@ jobs:
           schema_rejected=0
           invalid_output=0
           refusal=0
+          scenario_mismatch=0
           transient_exhausted=0
           nonretryable_provider_failure=0
           other_failure=0
@@ -265,13 +266,14 @@ jobs:
               schema_rejected) schema_rejected=$((schema_rejected + 1)) ;;
               invalid_output) invalid_output=$((invalid_output + 1)) ;;
               refusal) refusal=$((refusal + 1)) ;;
+              scenario_mismatch) scenario_mismatch=$((scenario_mismatch + 1)) ;;
               transient_exhausted) transient_exhausted=$((transient_exhausted + 1)) ;;
               nonretryable_provider_failure) nonretryable_provider_failure=$((nonretryable_provider_failure + 1)) ;;
               *) other_failure=$((other_failure + 1)) ;;
             esac
           done
 
-          echo "DATA_AI28E_RETRY_SUMMARY={\"defaultBudget\":600,\"attempts\":20,\"completed\":${completed},\"retried\":${retried},\"incomplete\":${incomplete},\"schemaRejected\":${schema_rejected},\"invalidOutput\":${invalid_output},\"refusal\":${refusal},\"transientExhausted\":${transient_exhausted},\"nonretryableProviderFailure\":${nonretryable_provider_failure},\"otherFailure\":${other_failure}}"
+          echo "DATA_AI28E_RETRY_SUMMARY={\"defaultBudget\":600,\"attempts\":20,\"completed\":${completed},\"retried\":${retried},\"incomplete\":${incomplete},\"schemaRejected\":${schema_rejected},\"invalidOutput\":${invalid_output},\"refusal\":${refusal},\"scenarioMismatch\":${scenario_mismatch},\"transientExhausted\":${transient_exhausted},\"nonretryableProviderFailure\":${nonretryable_provider_failure},\"otherFailure\":${other_failure}}"
 
           test "$completed" -ge 18
           test "$transient_exhausted" -le 2
@@ -279,5 +281,6 @@ jobs:
           test "$schema_rejected" -eq 0
           test "$invalid_output" -eq 0
           test "$refusal" -eq 0
+          test "$scenario_mismatch" -eq 0
           test "$nonretryable_provider_failure" -eq 0
           test "$other_failure" -eq 0
