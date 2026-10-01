@@ -130,6 +130,31 @@ if (
   process.exit(0);
 }
 
+if (
+  !failureClass &&
+  !protocolKind &&
+  payload.scenarioPass === false &&
+  Array.isArray(payload.failures) &&
+  payload.failures.length > 0
+) {
+  const safeFailures = payload.failures
+    .map((value) => String(value || ""))
+    .filter((value) => /^[a-z0-9_]+$/.test(value))
+    .slice(0, 16);
+
+  if (safeFailures.length !== payload.failures.length) {
+    console.error("DATA_AI28E_SCENARIO_MISMATCH_DIAGNOSTIC_INVALID");
+    process.stdout.write("other_failure");
+    process.exit(0);
+  }
+
+  console.error(
+    `DATA_AI28E_SCENARIO_MISMATCH=${safeFailures.join(",")}:providerAttempts=${payload.providerAttempts}`
+  );
+  process.stdout.write("scenario_mismatch");
+  process.exit(0);
+}
+
 if (TRANSIENT_FAILURE_CLASSES.has(failureClass)) {
   if (
     payload.providerAttempts !== 2 ||
