@@ -134,6 +134,78 @@ supporting evidence link:
 
 새 Fact / Confirmation은 생성되지 않았다.
 
+
+## Parallel execution remediation
+
+WATER-C 실행 중 별도 taxonomy-ai 실행이 canonical adoption을 먼저 완료한 상태에서
+후발 병렬 confirmation이 같은 `cardinality=one` Subject/fact에
+qualifier가 다른 두 번째 proposition을 잠시 Current로 만들었다.
+
+canonical 선행 Fact:
+
+```text
+proposition  = 2b145dff9a002879db9d66c5dda622c6f8fc10d807dae2cf134bed62dbd5b63b
+fact         = 39394ff3-3f57-49d6-96ee-2df39f404872
+confirmation = 11b9359a-eac4-46e2-afe2-697341743230
+assignment   = c373aa09-7cb8-4fda-ba7e-fdf3346381e9
+```
+
+이 Fact를 canonical로 유지한 이유:
+
+- B1 `mapping_policy_version` 보존
+- exact observed label `UV耐水性★★` 보존
+- `standardized_test_immersion_condition_not_real_world_effect_duration` 의미 제한 보존
+- WATER-C 정식 review/fusion policy 사용
+
+후발 중복:
+
+```text
+proposition  = 035a31aceae525e29bcd4dc795be4fe8f65d42aba55b8a39cbe1c03b1c524d29
+fact         = ceb0bf3f-bff6-477a-b7b3-1bb0a11ab287
+confirmation = 9a319795-795c-41eb-b471-4b3bc7d2854c
+assignment   = a03a436e-fdc2-48e8-84ca-c0583e0d3d9f
+```
+
+복구는 exact prestate를 검증하는 단일 transaction으로 제한했다.
+
+- 후발 duplicate `product_fact_current` mapping만 제거
+- 후발 assignment를 `superseded`로 전환
+- immutable Fact / Confirmation / Evidence history는 보존
+- review event 및 admin audit 기록
+
+복구 기록:
+
+- review event: `3a1eb4e7-5747-4a92-84ec-f029516feeb4`
+- audit: `ac16ba96-77e8-4830-8370-a9e5eb711626`
+- request: `data-ai29c-water-c-duplicate-remediation-v1`
+- prestate digest:
+  `e3a83f1756d07db10c4214dde720a825abc7a6d88d151b86687e099ff84fa187`
+
+복구 후:
+
+```text
+current water_resistance_duration Fact count = 1
+canonical assignment = confirmed
+duplicate assignment = superseded
+immutable duplicate history = preserved
+```
+
+### 발견된 governance gap
+
+이번 사건은 generic Product Fact preflight/confirmation이
+`cardinality=one` definition에 대해
+**이미 다른 proposition이 Current인 상태에서 새로운 다른 proposition confirmation을 원자적으로 차단하지 못하는 경로**가 있음을 보여준다.
+
+따라서 WATER-C 이후 우선 작업은 authority 확장보다:
+
+`cardinality-one parallel confirmation guard hardening`
+
+이다.
+
+새 proposition이 기존 Current를 대체해야 한다면
+일반 confirmation이 아니라 explicit governed replacement/revalidation path를 사용해야 한다.
+
+
 ## Coverage 변화
 
 WATER-B 이전:
