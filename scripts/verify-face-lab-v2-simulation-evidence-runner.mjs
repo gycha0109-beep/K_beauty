@@ -18,6 +18,9 @@ import {
   FACE_LAB_SIMULATION_EVIDENCE_TRACE_VERSION
 } from "../lib/face-lab-v2/evaluation/simulation-evidence-packet.js";
 import {
+  FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION
+} from "../lib/face-lab-v2/simulation-provider-config.js";
+import {
   buildFaceLabV2CoverageCohort
 } from "../lib/face-lab-v2/evaluation/harness.js";
 
@@ -103,6 +106,10 @@ const responseMeta = {
     FACE_LAB_AI_SIMULATION_VERSION,
   instructionVersion:
     FACE_LAB_SIMULATION_INSTRUCTION_VERSION,
+  providerConfigVersion:
+    FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
+  providerConfigFingerprint:
+    "d".repeat(64),
   routeId:
     fixture.reconstructed
       .renderSpec.routeId,
@@ -144,6 +151,18 @@ assert.equal(
 assert.equal(
   packet.traceVersion,
   FACE_LAB_SIMULATION_EVIDENCE_TRACE_VERSION
+);
+assert.equal(
+  FACE_LAB_SIMULATION_EVIDENCE_TRACE_VERSION,
+  "face-lab-simulation-evidence-trace-v2"
+);
+assert.equal(
+  packet.trace.providerConfigVersion,
+  responseMeta.providerConfigVersion
+);
+assert.equal(
+  packet.trace.providerConfigFingerprint,
+  responseMeta.providerConfigFingerprint
 );
 assert.equal(
   packet.trace.renderSpecSha256,
@@ -223,6 +242,60 @@ for (const forbidden of [
       forbidden
   );
 }
+
+const providerVersionMismatch =
+  buildFaceLabSimulationEvidencePacket({
+    caseId: "case-provider-version-mismatch",
+    analysis:
+      fixture.item.analysis,
+    rawState:
+      fixture.rawState,
+    locale: "ko",
+    canonicalSourceImageBytes:
+      sourceBytes,
+    outputImageBytes:
+      outputBytes,
+    responseMeta: {
+      ...responseMeta,
+      providerConfigVersion:
+        "face-lab-simulation-provider-config-old"
+    }
+  });
+assert.equal(
+  providerVersionMismatch.status,
+  "invalid"
+);
+assert.equal(
+  providerVersionMismatch.reason,
+  "response_provider_config_version_mismatch"
+);
+
+const providerFingerprintInvalid =
+  buildFaceLabSimulationEvidencePacket({
+    caseId: "case-provider-fingerprint-invalid",
+    analysis:
+      fixture.item.analysis,
+    rawState:
+      fixture.rawState,
+    locale: "ko",
+    canonicalSourceImageBytes:
+      sourceBytes,
+    outputImageBytes:
+      outputBytes,
+    responseMeta: {
+      ...responseMeta,
+      providerConfigFingerprint:
+        "not-a-sha"
+    }
+  });
+assert.equal(
+  providerFingerprintInvalid.status,
+  "invalid"
+);
+assert.equal(
+  providerFingerprintInvalid.reason,
+  "response_provider_config_fingerprint_invalid"
+);
 
 const digestMismatch =
   buildFaceLabSimulationEvidencePacket({

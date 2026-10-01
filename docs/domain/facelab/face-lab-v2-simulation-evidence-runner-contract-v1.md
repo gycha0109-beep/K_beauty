@@ -24,6 +24,8 @@ The simulation endpoint therefore returns:
 - Route ID,
 - Look ID,
 - Render Spec SHA-256,
+- provider config version,
+- provider config fingerprint,
 - current fidelity status.
 
 The Render Spec itself remains server-authoritative and is not accepted from the browser.
@@ -116,6 +118,8 @@ The local operator input JSON has this shape:
   "responseMeta": {
     "simulationVersion": "face-lab-ai-simulation-v1",
     "instructionVersion": "face-lab-simulation-instruction-v1",
+    "providerConfigVersion": "face-lab-simulation-provider-config-v1",
+    "providerConfigFingerprint": "64-hex",
     "routeId": "route-id",
     "lookId": "look-id",
     "renderSpecSha256": "64-hex"
@@ -182,6 +186,8 @@ The runner must reject at minimum:
 - unavailable Render Spec,
 - stale/wrong simulation version,
 - stale/wrong instruction version,
+- stale/wrong provider config version,
+- malformed or missing provider config fingerprint,
 - Route or Look mismatch,
 - malformed Render Spec digest,
 - reconstructed Render Spec digest mismatch,
@@ -199,7 +205,9 @@ The browser remains unable to submit:
 
 Gate G-B does not change recommendation or product authority.
 
-The response trace proves which server-authoritative Render Spec the generated image was associated with; it does not make the browser an authority.
+The response trace proves which server-authoritative Render Spec and provider runtime configuration the generated image was associated with; it does not make the browser an authority.
+
+The packet trace version is face-lab-simulation-evidence-trace-v2. Provider config binding is mandatory in trace v2.
 
 ## 12. Next gates
 

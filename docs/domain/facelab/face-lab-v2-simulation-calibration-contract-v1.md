@@ -38,6 +38,8 @@ A persistent calibration case must not retain:
 
 The case retains a one-way intentBindingDigest computed from source-image SHA-256 plus Render Spec SHA-256. This permits repeat-group consistency checks without storing either raw hash independently.
 
+The case also retains providerConfigVersion and providerConfigFingerprint as non-personal experiment-control metadata.
+
 ## Repeat generation binding
 
 intentGroupId identifies repeated generations intended to share the same source image and Render Spec.
@@ -83,6 +85,18 @@ Free-text finding notes and raw finding evidence references are not retained.
 ## Campaign aggregate
 
 The aggregate intentionally omits case-level intentBindingDigest and Render Spec digest values; those are used only during case admission and repeat-group validation.
+
+A campaign must contain exactly one value for each runtime binding:
+
+- simulationVersion,
+- instructionVersion,
+- renderSpecVersion,
+- providerConfigVersion,
+- providerConfigFingerprint.
+
+Any mixed runtime binding makes the aggregate invalid with campaign_runtime_binding_mismatch. A provider model/quality/size/output-format change therefore requires a new campaign.
+
+The aggregate exposes the single accepted binding as campaignRuntime.
 
 The aggregate reports:
 
@@ -161,4 +175,4 @@ Campaign promotion thresholds require real pilot and calibration evidence.
 
 Gate G-E1 should add a test-only UAT review panel that emits G-C/G-D-compatible review JSON without turning the browser into Render Spec or evaluation authority.
 
-Gate G-E2 then runs the first 6-8 output pilot through this campaign pipeline.
+Gate G-E2 then runs the first 6-8 output pilot through this campaign pipeline under one frozen campaignRuntime binding.

@@ -318,7 +318,9 @@ export default function FaceLabTestClient() {
 
         if (
           payload.caseId !== authority.caseId ||
-          payload?.trace?.renderSpecSha256 !== authority.renderSpecSha256
+          payload?.trace?.renderSpecSha256 !== authority.renderSpecSha256 ||
+          payload?.trace?.providerConfigVersion !== authority.providerConfigVersion ||
+          payload?.trace?.providerConfigFingerprint !== authority.providerConfigFingerprint
         ) {
           setReviewStatus("error");
           setReviewError("시뮬레이션 검토 기준이 현재 생성 결과와 일치하지 않습니다.");
@@ -385,7 +387,9 @@ export default function FaceLabTestClient() {
           !response.ok ||
           payload?.success !== true ||
           payload?.mode !== "submit" ||
-          payload?.caseId !== reviewAuthority.caseId
+          payload?.caseId !== reviewAuthority.caseId ||
+          payload?.trace?.providerConfigVersion !== reviewAuthority.providerConfigVersion ||
+          payload?.trace?.providerConfigFingerprint !== reviewAuthority.providerConfigFingerprint
         ) {
           setReviewStatus("error");
           setReviewError(reviewErrorMessage(payload?.error));
@@ -478,12 +482,18 @@ export default function FaceLabTestClient() {
         response.headers.get("X-Face-Lab-Review-Expires-At");
       const renderSpecSha256 =
         response.headers.get("X-Face-Lab-Render-Spec-SHA256");
+      const providerConfigVersion =
+        response.headers.get("X-Face-Lab-Provider-Config-Version");
+      const providerConfigFingerprint =
+        response.headers.get("X-Face-Lab-Provider-Config-Fingerprint");
 
       if (
         !reviewCaseId ||
         !reviewTicket ||
         !reviewExpiresAt ||
-        !renderSpecSha256
+        !renderSpecSha256 ||
+        !providerConfigVersion ||
+        !providerConfigFingerprint
       ) {
         setSimulationStatus("error");
         setSimulationError(
@@ -523,6 +533,8 @@ export default function FaceLabTestClient() {
         simulationVersion:
           response.headers.get("X-Face-Lab-Simulation-Version") || null,
         fidelity: response.headers.get("X-Face-Lab-Fidelity") || "not_evaluated",
+        providerConfigVersion,
+        providerConfigFingerprint,
         reviewCaseId
       });
 
@@ -530,7 +542,9 @@ export default function FaceLabTestClient() {
         caseId: reviewCaseId,
         token: reviewTicket,
         expiresAt: reviewExpiresAt,
-        renderSpecSha256
+        renderSpecSha256,
+        providerConfigVersion,
+        providerConfigFingerprint
       };
       setReviewAuthority(nextReviewAuthority);
       setSimulationStatus("ready");

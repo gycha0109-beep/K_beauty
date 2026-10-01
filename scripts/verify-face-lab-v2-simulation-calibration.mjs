@@ -34,6 +34,12 @@ import {
 import {
   buildFaceLabV2CoverageCohort
 } from "../lib/face-lab-v2/evaluation/harness.js";
+import {
+  FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION
+} from "../lib/face-lab-v2/simulation-provider-config.js";
+
+const PROVIDER_CONFIG_FINGERPRINT =
+  "d".repeat(64);
 
 function identity(value = "stable") {
   return {
@@ -239,6 +245,10 @@ function buildReviewedPacket({
           FACE_LAB_AI_SIMULATION_VERSION,
         instructionVersion:
           FACE_LAB_SIMULATION_INSTRUCTION_VERSION,
+        providerConfigVersion:
+          FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
+        providerConfigFingerprint:
+          PROVIDER_CONFIG_FINGERPRINT,
         routeId:
           fixture.reconstructed
             .renderSpec.routeId,
@@ -429,6 +439,16 @@ for (
     FACE_LAB_SIMULATION_CALIBRATION_CASE_VERSION
   );
   assert.equal(
+    item.trace
+      .providerConfigVersion,
+    FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION
+  );
+  assert.equal(
+    item.trace
+      .providerConfigFingerprint,
+    PROVIDER_CONFIG_FINGERPRINT
+  );
+  assert.equal(
     item.privacy
       .rawImagesIncluded,
     false
@@ -594,6 +614,22 @@ assert.equal(
   aggregate.aggregateVersion,
   FACE_LAB_SIMULATION_CALIBRATION_AGGREGATE_VERSION
 );
+assert.deepEqual(
+  aggregate.campaignRuntime,
+  {
+    simulationVersion:
+      FACE_LAB_AI_SIMULATION_VERSION,
+    instructionVersion:
+      FACE_LAB_SIMULATION_INSTRUCTION_VERSION,
+    renderSpecVersion:
+      passCase.trace
+        .renderSpecVersion,
+    providerConfigVersion:
+      FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
+    providerConfigFingerprint:
+      PROVIDER_CONFIG_FINGERPRINT
+  }
+);
 assert.equal(
   aggregate.caseCount,
   3
@@ -693,6 +729,36 @@ for (const forbidden of [
       forbidden
   );
 }
+
+const runtimeMismatch =
+  aggregateFaceLabSimulationCalibration({
+    campaignId:
+      "G-E-PILOT-001",
+    cases: [
+      passCase,
+      {
+        ...failCase,
+        trace: {
+          ...failCase.trace,
+          providerConfigFingerprint:
+            "e".repeat(64)
+        }
+      }
+    ]
+  });
+
+assert.equal(
+  runtimeMismatch.status,
+  "invalid"
+);
+assert.equal(
+  runtimeMismatch.reason,
+  "campaign_runtime_binding_mismatch"
+);
+assert.equal(
+  runtimeMismatch.field,
+  "providerConfigFingerprint"
+);
 
 const duplicateGeneration =
   aggregateFaceLabSimulationCalibration({

@@ -1,0 +1,131 @@
+{
+  "version": "data-ai29c-uva-r3i-skin1004-broad-spectrum-recovery-v1",
+  "stage": "DATA-AI29C-UVA-R3I",
+  "track": "taxonomy-ai",
+  "baseMainSha": "bf8c30eece09d48a1bff297917cfe85018aed529",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "identity": {
+    "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+    "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+    "subjectSemanticKey": "6ea35ff44d90264c4cb8f845b1f04f28adc794872220f41e4cc9e03d13561320",
+    "brand": "스킨1004",
+    "name": "히알루-시카 워터핏 선세럼 UV",
+    "variantKey": "HYALU_CICA_WATER_FIT_SUN_SERUM_UV_US_50ML",
+    "market": "US",
+    "identityStatus": "resolved",
+    "currentState": "current"
+  },
+  "registryAuthority": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "factKey": "broad_spectrum",
+    "serializerVersion": "product-fact-proposition-schema-v2",
+    "propositionKey": "07ca68d4f7f55c81f90a5686e861585c4eb2a9c185044a5f97f2029f72244068",
+    "valueIdentity": null,
+    "identityScope": {
+      "market": "US"
+    },
+    "identityQualifier": {}
+  },
+  "governedSource": {
+    "canonicalLocator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+    "publisher": "SKIN1004",
+    "sourceKind": "brand_official_product_page",
+    "sourceId": "0ef63aa7-f7b6-4ef9-91c4-d2d1b6774910",
+    "bindingId": "21bc2a1d-7634-4746-858a-db7c446b97bb",
+    "bindingState": "exact_subject_match",
+    "scopeRelation": "equivalent",
+    "contentDigest": "b52c1c856baf22b4392d6b2b16de52befb7a1ce9163693a969e199b8300708df",
+    "observedClaim": "SPF50 broad-spectrum coverage",
+    "externalSnapshotReference": "web:turn472541search6",
+    "observationDate": "2026-10-01"
+  },
+  "evidence": {
+    "evidenceId": "ac0ead74-809c-49ce-9d50-733001a00554",
+    "canonicalEvidenceDigest": "71cd03aeda29d5d053cd7bbce6e807b0afe8974c449165bd6812096cdad52b6f",
+    "evidenceClass": "product_claim",
+    "evidenceAuthority": "product_specific_primary",
+    "confidence": "high",
+    "supportDirection": "supports",
+    "negativeAdmissibility": "not_applicable",
+    "propositionValueIdentity": null,
+    "qualifier": {
+      "regulatory_framework": "US_Broad_Spectrum",
+      "test_basis": "explicit_first_party_product_claim"
+    }
+  },
+  "review": {
+    "assignmentId": "2e61fee9-3eba-4b29-af0e-c255feede7a3",
+    "finalOperationalState": "confirmed",
+    "reviewPolicyVersion": "data-ai29c-uva-r3i-skin1004-pilot-v1",
+    "lifecycle": [
+      "queued",
+      "under_review",
+      "ready_for_confirm",
+      "confirmed"
+    ]
+  },
+  "confirmation": {
+    "confirmationId": "b2f9df90-beab-4f07-a82a-8098618437d8",
+    "factInstanceId": "07bb7628-b2c6-4566-abd0-793863fb2496",
+    "requestId": "data-ai29c-uva-r3i-confirm",
+    "payloadDigest": "96eda8103513ab0646f91d44cabdbf9d4e5144227bc8d3e8c2d2aa6681beb03f",
+    "prestateDigest": "e012811d86aedcdb3605174ab12518de34fd6d80120befe5c73c447914965217",
+    "resultDigest": "7c169195aaaadc05fec79790fe7d8ca728e21beca4fc99691bfa7f0cdc444d11",
+    "semanticStatus": "supported",
+    "valueBoolean": true,
+    "authorityCeiling": "product_specific_primary",
+    "fusedConfidence": "high",
+    "fusionPolicyVersion": "trust-phase4-single-primary-evidence-v1",
+    "fusionInputDigest": "3e272e1b3a075cb5f79d75fd521cce534b93458eece54a4e979178c4dbbbf4a1",
+    "current": true
+  },
+  "preservedFacts": [
+    {
+      "factKey": "spf_value",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "valueNumber": 50,
+      "factInstanceId": "304b8be8-e80a-49a5-9ceb-dfafef6b0828",
+      "confirmationId": "eea66ab9-abee-46c5-bb57-e3f9f119e5b3"
+    },
+    {
+      "factKey": "uv_filter_type",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "valueEnum": "organic",
+      "factInstanceId": "342002d4-b0c6-40d8-9903-68a716c77c11",
+      "confirmationId": "ff4356be-b9f3-452a-9ae0-c7960585b502"
+    }
+  ],
+  "uvaLabelHold": {
+    "currentFactCount": 0,
+    "researchTaskId": "ba340a0c-17b6-47bb-975e-d2255fccc433",
+    "state": "BLOCKED",
+    "blockerCode": "EVIDENCE_INSUFFICIENT",
+    "attemptCount": 1,
+    "broadSpectrumDoesNotResolveUvaLabel": true
+  },
+  "productionReadback": {
+    "currentFactCount": 94,
+    "broadSpectrumCurrentFactCount": 2,
+    "governedWaterFactCount": 2,
+    "skin1004CurrentFactCount": 3,
+    "skin1004CurrentFactKeys": [
+      "broad_spectrum",
+      "spf_value",
+      "uv_filter_type"
+    ]
+  },
+  "recommendationBoundary": {
+    "protectionAuthorityContractConsumesBroadSpectrum": false,
+    "sunscreenProjectionConsumesBroadSpectrum": false,
+    "frozenProspectiveCorpusCount": 20,
+    "frozenProspectiveCorpusContainsSkin1004": true,
+    "d2InitialAdmissionContainsSkin1004": false,
+    "recommendationAdmissionGrantedByThisStage": false,
+    "rankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "decision": "UVA_R3I_SKIN1004_BROAD_SPECTRUM_SECOND_SUBJECT_PASS",
+  "nextGate": "DATA-AI29C-UVA-R3J_BROAD_SPECTRUM_COVERAGE_RECON"
+}

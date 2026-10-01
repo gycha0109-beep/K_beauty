@@ -32,11 +32,16 @@ requireFragment(client, 'response.headers.get("X-Face-Lab-Fidelity")', "fidelity
 requireFragment(client, 'response.headers.get("X-Face-Lab-Review-Case-Id")', "review case response metadata");
 requireFragment(client, 'response.headers.get("X-Face-Lab-Review-Ticket")', "review ticket response metadata");
 requireFragment(client, 'response.headers.get("X-Face-Lab-Review-Expires-At")', "review expiry response metadata");
+requireFragment(client, 'response.headers.get("X-Face-Lab-Provider-Config-Version")', "provider config version metadata");
+requireFragment(client, 'response.headers.get("X-Face-Lab-Provider-Config-Fingerprint")', "provider config fingerprint metadata");
 requireFragment(client, 'fetch("/api/face-lab-simulation-review-test"', "review endpoint");
 requireFragment(client, 'mode: "template"', "review template mode");
 requireFragment(client, 'mode: "submit"', "review submit mode");
 requireFragment(client, 'setReviewAuthority(nextReviewAuthority);', "review ticket retention");
 requireFragment(client, 'payload?.trace?.renderSpecSha256 !== authority.renderSpecSha256', "review template trace binding");
+requireFragment(client, 'payload?.trace?.providerConfigVersion !== authority.providerConfigVersion', "review provider config version binding");
+requireFragment(client, 'payload?.trace?.providerConfigFingerprint !== authority.providerConfigFingerprint', "review provider config fingerprint binding");
+requireFragment(client, 'payload?.trace?.providerConfigFingerprint !== reviewAuthority.providerConfigFingerprint', "review submit provider config binding");
 requireFragment(client, 'simulationImageUrl && reviewAuthority', "review panel output gating");
 requireFragment(client, '<FaceLabSimulationReviewPanel', "review panel wiring");
 requireFragment(client, 'resetReview();', "review invalidation on simulation reset");

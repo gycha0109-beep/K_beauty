@@ -1,0 +1,153 @@
+{
+  "version": "data-ai29c-uva-r3h-day-dew-broad-spectrum-governed-pilot-v1",
+  "stage": "DATA-AI29C-UVA-R3H",
+  "track": "taxonomy-ai",
+  "baseMainSha": "77dc123d7cdfdc2e65e15f99292cab6248f4bbfc",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "identity": {
+    "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+    "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+    "subjectSemanticKey": "afce6d4dba5b288999cf087d9827e89e9819be4c99322650ea9e27077778029e",
+    "canonicalBrand": "Beauty of Joseon",
+    "canonicalName": "Day Dew Sunscreen",
+    "market": "US",
+    "locale": "en-US",
+    "currentState": "current",
+    "identityStatus": "resolved"
+  },
+  "registryAuthority": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "factKey": "broad_spectrum",
+    "serializerVersion": "product-fact-proposition-schema-v2",
+    "propositionKey": "e653ba036940662aa2e5aad8dd008d1194814923fa72a5cd088a0b585fb6199b",
+    "definitionChecksum": "c888474e8970f787dee3f71bdcc505a779400b0ebf438901bbc5fd7f2dc32dc9",
+    "valueIdentity": null,
+    "identityScope": {
+      "market": "US"
+    },
+    "identityQualifier": {},
+    "trueAndFalseShareSamePropositionKey": true
+  },
+  "writePolicy": {
+    "policyState": "active",
+    "newLineageAllowed": true,
+    "existingLineageAllowed": true,
+    "policyVersion": "data-ai29c-uva-r3h-day-dew-pilot-v1",
+    "authorizedPhase": "DATA-AI29C-UVA-R3H"
+  },
+  "governedSource": {
+    "canonicalLocator": "https://beautyofjoseon.com/products/day-dew-sunscreen",
+    "publisher": "Beauty of Joseon",
+    "sourceKind": "official_product_page",
+    "sourceId": "38b1662b-9b9c-4869-aa63-eed6ae3074a8",
+    "bindingId": "f0cd536b-9a58-4cd0-b6ae-8e5ac3222565",
+    "bindingState": "exact_subject_match",
+    "scopeRelation": "equivalent",
+    "contentDigest": "e7f55bea45637d1eb94f1223f8a1b2ecf14f9e3b0680dfadd77b6eeb02612a3b",
+    "observedClaim": "SPF 50 broad spectrum UV protection",
+    "digestBasis": "data-ai29c-day-dew-required-facts-frozen-first-party-observation-v1-not-live-page-bytes"
+  },
+  "evidence": {
+    "evidenceId": "08cc057d-11b1-48bc-bcf1-6ec2ce91887d",
+    "canonicalEvidenceDigest": "c6374de35eb81728611a446acc24a2bdc7a8d62bdd1f5d385910bec1e4e4385c",
+    "evidenceClass": "product_claim",
+    "evidenceAuthority": "product_specific_primary",
+    "confidence": "high",
+    "supportDirection": "supports",
+    "negativeAdmissibility": "not_applicable",
+    "propositionValueIdentity": null,
+    "qualifier": {
+      "regulatory_framework": "US_Broad_Spectrum",
+      "test_basis": "explicit_first_party_product_claim"
+    }
+  },
+  "review": {
+    "assignmentId": "f8158e46-c9a0-460e-9a5f-482a7cc5df1e",
+    "finalOperationalState": "confirmed",
+    "assignedTo": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "reviewPolicyVersion": "data-ai29c-uva-r3h-day-dew-pilot-v1",
+    "lifecycle": [
+      "queued",
+      "under_review",
+      "ready_for_confirm",
+      "confirmed"
+    ]
+  },
+  "confirmation": {
+    "confirmationId": "d110e320-06c6-4e79-9ef3-8eb86f4bba3b",
+    "factInstanceId": "0d4f6352-ff30-441f-88c3-8c0685fca8d2",
+    "requestId": "data-ai29c-uva-r3h-confirm",
+    "payloadDigest": "7cf5d53cb784b4f9a4422ffd80cddecdca616b575645e674301ecff33707856f",
+    "prestateDigest": "95c60651955bf84e68c8567f06aa4d5712f771616d5499cf9d2a9a77d91f0553",
+    "resultDigest": "a0d334451cc15a72370e0f87226861b6db7c902d2ce70e858dce9df19b492e7b",
+    "semanticStatus": "supported",
+    "valueBoolean": true,
+    "authorityCeiling": "product_specific_primary",
+    "fusedConfidence": "high",
+    "fusionPolicyVersion": "trust-phase4-single-primary-evidence-v1",
+    "fusionInputDigest": "b962d412da0211ea64d7c0faab79a710593172b168d12c62749e980a258512fe",
+    "previousFactInstanceId": null,
+    "current": true
+  },
+  "existingDayDewFactsPreserved": [
+    {
+      "factKey": "spf_value",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "valueNumber": 50,
+      "factInstanceId": "5d51819b-4542-44da-a4ab-01f8903b59de",
+      "confirmationId": "6f9aac4e-4cb8-4f7d-b436-a236122987f4"
+    },
+    {
+      "factKey": "uv_filter_type",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "valueEnum": "organic",
+      "factInstanceId": "91490849-519b-408a-9d03-1efb3b17629f",
+      "confirmationId": "5f35b0c6-76b6-42e2-961e-e7d9f4821c92"
+    },
+    {
+      "factKey": "water_resistance_duration",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "valueNumber": 80,
+      "valueUnit": "minutes",
+      "factInstanceId": "55c80191-fa13-4c9f-a594-d8b26f3cada8",
+      "confirmationId": "923c7799-a1ae-44c7-9ddc-9ccb03acb7a6"
+    }
+  ],
+  "uvaLabelHold": {
+    "factKey": "uva_label",
+    "currentFactCount": 0,
+    "researchTaskId": "74661ab2-2adb-4255-9c05-0418c1caa105",
+    "researchTaskState": "BLOCKED",
+    "blockerCode": "EVIDENCE_INSUFFICIENT",
+    "broadSpectrumDoesNotResolveUvaLabel": true
+  },
+  "productionReadback": {
+    "currentFactCount": 93,
+    "dayDewCurrentFactCount": 4,
+    "dayDewCurrentFactKeys": [
+      "broad_spectrum",
+      "spf_value",
+      "uv_filter_type",
+      "water_resistance_duration"
+    ],
+    "broadSpectrumCurrentFactCount": 1,
+    "governedWaterFactCount": 2,
+    "spfAuthenticatedBetaEnabled": true,
+    "spfAuthorizedPhase": "DATA-AI29C-D5D"
+  },
+  "recommendationBoundary": {
+    "recommendationProtectionContractConsumesBroadSpectrum": false,
+    "sunscreenProjectionConsumesBroadSpectrum": false,
+    "d2InitialAdmissionFixtureContainsDayDew": false,
+    "frozenProspectiveCorpusContainsDayDew": false,
+    "frozenProspectiveCorpusCount": 20,
+    "frozenProspectiveWaterCoverage": "1/20",
+    "recommendationAdmissionGrantedByThisStage": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "decision": "UVA_R3H_DAY_DEW_BROAD_SPECTRUM_GOVERNED_FACT_PILOT_PASS",
+  "nextGate": "DATA-AI29C-UVA-R3I_BROAD_SPECTRUM_SECOND_SUBJECT_RECOVERY"
+}
