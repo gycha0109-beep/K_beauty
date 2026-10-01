@@ -157,6 +157,37 @@ check(realToneConflict.unresolved_terms.includes("tone-up preference conflict"),
 check(realToneConflict.confidence === "low",
   "real tone-up conflict must lower confidence");
 
+const temporarySensitiveCream = canonicalizeProductQuerySemanticOwnership(
+  "요즘 피부가 갑자기 엄청 예민한데 평소엔 지성이야. 가벼운 크림 추천해줘",
+  validIntent({
+    category: "moisturizer_cream",
+    skin_type: null,
+    sensitivity: null,
+    texture: "cream",
+    very_sensitive_period: null
+  })
+);
+check(temporarySensitiveCream.skin_type === "oily",
+  "explicit 평소 지성 statement must deterministically own oily skin type");
+check(temporarySensitiveCream.sensitivity === "high",
+  "explicit degree-bearing general-skin sensitivity must deterministically own high sensitivity");
+check(temporarySensitiveCream.very_sensitive_period === true,
+  "explicit temporary general-skin sensitivity must deterministically own very_sensitive_period");
+check(temporarySensitiveCream.texture === null,
+  "cream product-family noun must not duplicate into texture without an independent texture claim");
+
+const eyeOnlySensitivity = canonicalizeProductQuerySemanticOwnership(
+  "눈이 엄청 예민한데 백탁 없는 선크림 추천해줘",
+  validIntent({
+    category: "sunscreen",
+    sunscreen_intent: true,
+    eye_sensitive: true,
+    sensitivity: null
+  })
+);
+check(eyeOnlySensitivity.sensitivity === null,
+  "eye-area sensitivity must not be promoted into general-skin sensitivity");
+
 const unresolved = validIntent({
   category: "treatment",
   concerns: ["acne"],
