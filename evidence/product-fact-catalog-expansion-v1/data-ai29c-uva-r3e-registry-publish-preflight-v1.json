@@ -1,0 +1,160 @@
+{
+  "version": "data-ai29c-uva-r3e-registry-publish-preflight-v1",
+  "stage": "DATA-AI29C-UVA-R3E",
+  "track": "taxonomy-ai",
+  "basedOnMainSha": "6577887aa26179a554c7f889e2bb170d755a7187",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "entryDecision": "UVA_R3D_REGISTRY_COEXISTENCE_IMPLEMENTATION_PASS",
+  "prospectiveRegistry": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "identitySerializerVersion": "product-fact-subject-identity-v1",
+    "definitionCount": 21,
+    "clonedV1DefinitionCount": 20,
+    "addedFactKey": "broad_spectrum",
+    "registryChecksum": "453b8523bfeae634e0d8467d9eb69dcdc301626d9c6b27c6abd13fa3f974e696",
+    "broadSpectrumDefinitionChecksum": "59f6d5e5232f8603f66091f5a1d641ce9f056fec20413370a470fa61dca703d9",
+    "existingSemanticsOnlyRegistryVersionChanged": true,
+    "broadSpectrumDefinition": {
+      "fact_key": "broad_spectrum",
+      "registry_version": "product-fact-registry-cross-category-v2",
+      "domain_scope": [
+        "sunscreen"
+      ],
+      "value_type": "boolean",
+      "allowed_values": null,
+      "unit_schema": null,
+      "cardinality": "one",
+      "qualifier_schema": {
+        "optional_context_fields": [
+          "regulatory_framework",
+          "test_basis",
+          "critical_wavelength_threshold_nm"
+        ]
+      },
+      "relationship_schema": {},
+      "scope_schema": {
+        "allowed_fields": [
+          "market",
+          "region",
+          "locale",
+          "variant",
+          "formulation_version",
+          "valid_from",
+          "valid_to"
+        ],
+        "required_fields": [
+          "market"
+        ]
+      },
+      "proposition_identity_schema": {
+        "include_fact_key": true,
+        "include_subject_ref": false,
+        "include_value_identity": false,
+        "scope_dimensions": [
+          "market",
+          "region",
+          "locale",
+          "variant",
+          "formulation_version",
+          "valid_from",
+          "valid_to"
+        ],
+        "qualifier_dimensions": []
+      },
+      "semantic_definition": "Market-scoped declaration that the exact product is labeled or explicitly claimed to provide broad-spectrum UV protection under the applicable market framework. This fact does not encode a PA grade, UVA-PF value, PPD value, or quantitative UVA protection strength.",
+      "positive_evidence_requirement": "exact-Subject, exact-market, product-specific first-party broad-spectrum product claim",
+      "negative_evidence_requirement": "explicit_negative_only",
+      "conflict_semantics": "same semantic proposition with admissible support/opposition or incompatible supported values requires unresolved conflict; value=null",
+      "permitted_evidence_classes": [
+        "product_claim"
+      ],
+      "deprecated": false,
+      "superseded_by": null
+    }
+  },
+  "payloadConstruction": {
+    "cloneRule": "Read all 20 immutable v1 definitions, replace only definition.registry_version with product-fact-registry-cross-category-v2, recompute each definition checksum with product_fact_controlled_sha256_json_v1, then append the frozen broad_spectrum definition.",
+    "registryChecksumRule": "Use admin_publish_product_fact_registry_v1 checksum contract: hash registry_version + identity_serializer_version + sorted definition metadata (fact_key, value_type, definition_checksum, deprecated, superseded_by_fact_key).",
+    "effectiveAt": null,
+    "publishFunction": "admin_publish_product_fact_registry_v1",
+    "policyFunction": "admin_set_product_fact_registry_fact_write_policy_v1"
+  },
+  "prospectiveWriteAuthority": {
+    "v1ExistingKeys": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "factKeyCount": 20,
+      "policyChangeRequired": false,
+      "remainNewLineageAllowed": true,
+      "remainExistingLineageAllowed": true
+    },
+    "v2BroadSpectrum": {
+      "registryVersion": "product-fact-registry-cross-category-v2",
+      "factKey": "broad_spectrum",
+      "policyState": "active",
+      "newLineageAllowed": true,
+      "existingLineageAllowed": true,
+      "policyVersion": "data-ai29c-uva-r3e-broad-spectrum-v2-preflight-v1"
+    },
+    "v2ClonedExistingKeys": {
+      "factKeyCount": 20,
+      "policyRowsRequired": 0,
+      "newLineageAllowed": false,
+      "existingLineageAllowed": false,
+      "failureReason": "POLICY_MISSING"
+    }
+  },
+  "rollbackPreflight": {
+    "publishInitialPassed": true,
+    "publishReplayIdempotentPassed": true,
+    "v2BecameGlobalLatestInsideTransaction": true,
+    "v1SpfNewLineageRemainedAllowed": true,
+    "v1SpfExistingLineageRemainedAllowed": true,
+    "v2BroadSpectrumNewLineageAllowed": true,
+    "v2SpfNewLineageBlocked": true,
+    "v2SpfBlockReason": "POLICY_MISSING",
+    "v2BroadSpectrumReviewPreparationPassed": true,
+    "v2SpfReviewPreparationBlocked": true,
+    "transactionState": {
+      "registryVersionCount": 2,
+      "v2DefinitionCount": 21,
+      "v2PolicyCount": 1,
+      "currentFactCount": 92,
+      "v2CurrentFactCount": 0
+    },
+    "rolledBack": true
+  },
+  "postRollbackProductionReadback": {
+    "registryVersionCount": 1,
+    "v2RegistryCount": 0,
+    "v2DefinitionCount": 0,
+    "v2PolicyCount": 0,
+    "v2ReviewAssignmentCount": 0,
+    "currentFactCount": 92,
+    "v2CurrentFactCount": 0,
+    "v1PolicyRowCount": 20
+  },
+  "recommendationBoundary": {
+    "currentProtectionReaderFactKeys": [
+      "spf_value",
+      "uva_label",
+      "water_resistance_duration"
+    ],
+    "broadSpectrumConsumed": false,
+    "protectionReaderChanged": false,
+    "protectionProjectionChanged": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "authorizationBoundary": {
+    "registryPublishAuthorizedByR3E": false,
+    "registryPublishExecutedPersistently": false,
+    "broadSpectrumPolicyExecutedPersistently": false,
+    "broadSpectrumEvidenceWriteAuthorized": false,
+    "broadSpectrumProductFactWriteAuthorized": false,
+    "dayDewPilotAuthorized": false
+  },
+  "decision": "UVA_R3E_BROAD_SPECTRUM_REGISTRY_PUBLISH_PREFLIGHT_PASS_NO_PERSISTENT_PUBLISH",
+  "nextGate": "DATA-AI29C-UVA-R3F_BROAD_SPECTRUM_REGISTRY_CONTROLLED_PUBLISH"
+}
