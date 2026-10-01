@@ -19,6 +19,92 @@ const ACCEPTED_TYPES = new Set([
   "image/webp"
 ]);
 
+function safePilotFileStem(value) {
+  const normalized =
+    typeof value === "string"
+      ? value
+          .trim()
+          .replace(
+            /[^A-Za-z0-9._-]+/g,
+            "_"
+          )
+          .replace(/^_+|_+$/g, "")
+      : "";
+
+  return normalized ||
+    "face-lab-pilot";
+}
+
+function safePilotSourceName(file) {
+  const original =
+    typeof file?.name === "string"
+      ? file.name.trim()
+      : "";
+
+  const normalized =
+    original
+      .replace(
+        /[<>:"/\\|?*\u0000-\u001F]/g,
+        "_"
+      )
+      .replace(/[. ]+$/g, "");
+
+  return normalized ||
+    "face-lab-source";
+}
+
+function imageExtension(mimeType) {
+  if (mimeType === "image/jpeg") {
+    return "jpg";
+  }
+  if (mimeType === "image/webp") {
+    return "webp";
+  }
+  return "png";
+}
+
+function pilotOutputName(
+  caseId,
+  mimeType
+) {
+  return (
+    safePilotFileStem(caseId) +
+    "-simulation." +
+    imageExtension(mimeType)
+  );
+}
+
+function downloadLocalBlob(
+  blob,
+  fileName
+) {
+  if (
+    !(blob instanceof Blob) ||
+    !blob.size ||
+    typeof fileName !== "string" ||
+    !fileName
+  ) {
+    return false;
+  }
+
+  const url =
+    URL.createObjectURL(blob);
+  const anchor =
+    document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.rel = "noopener";
+  anchor.click();
+
+  setTimeout(
+    () => URL.revokeObjectURL(url),
+    0
+  );
+
+  return true;
+}
+
 function simulationErrorMessage(code) {
   if (code === "simulation_authority_expired") {
     return "시뮬레이션 권한이 만료되었습니다. 사진 분석을 다시 실행해 주세요.";
@@ -117,7 +203,10 @@ export default function FaceLabTestClient() {
   const [simulationStatus, setSimulationStatus] = useState("idle");
   const [simulationError, setSimulationError] = useState("");
   const [simulationImageUrl, setSimulationImageUrl] = useState("");
+  const [simulationImageBlob, setSimulationImageBlob] = useState(null);
   const [simulationMeta, setSimulationMeta] = useState(null);
+  const [simulationCaptureContext, setSimulationCaptureContext] = useState(null);
+  const [pilotCapture, setPilotCapture] = useState(null);
   const [reviewAuthority, setReviewAuthority] = useState(null);
   const [reviewTemplate, setReviewTemplate] = useState(null);
   const [reviewStatus, setReviewStatus] = useState("idle");
@@ -147,6 +236,7 @@ export default function FaceLabTestClient() {
     setReviewStatus("idle");
     setReviewError("");
     setReviewResult(null);
+    setPilotCapture(null);
   }, []);
 
   const resetSimulation = useCallback(() => {
@@ -155,6 +245,8 @@ export default function FaceLabTestClient() {
     setSimulationStatus("idle");
     setSimulationError("");
     setSimulationMeta(null);
+    setSimulationImageBlob(null);
+    setSimulationCaptureContext(null);
     setSimulationImageUrl((current) => {
       if (current) {
         URL.revokeObjectURL(current);
@@ -342,8 +434,9 @@ export default function FaceLabTestClient() {
       if (
         !reviewAuthority?.token ||
         !reviewAuthority?.caseId ||
-        !faceLabAnalysis ||
-        !simulationState?.selectedRouteId ||
+        !simulationCaptureContext?.analysis ||
+        !simulationCaptureContext?.faceLabV2State?.selectedRouteId ||
+        !simulationCaptureContext?.files ||
         reviewStatus === "submitting"
       ) {
         return;
@@ -364,9 +457,14 @@ export default function FaceLabTestClient() {
           body: JSON.stringify({
             mode: "submit",
             reviewTicket: reviewAuthority.token,
-            analysis: faceLabAnalysis,
-            faceLabV2State: simulationState,
-            locale: "ko",
+            analysis:
+              simulationCaptureContext.analysis,
+            faceLabV2State:
+              simulationCaptureContext.faceLabV2State,
+            locale:
+              simulationCaptureContext.locale,
+            captureFiles:
+              simulationCaptureContext.files,
             reviewerRef: responses.reviewerRef,
             identity: responses.identity,
             editScope: responses.editScope,
@@ -389,7 +487,9 @@ export default function FaceLabTestClient() {
           payload?.mode !== "submit" ||
           payload?.caseId !== reviewAuthority.caseId ||
           payload?.trace?.providerConfigVersion !== reviewAuthority.providerConfigVersion ||
-          payload?.trace?.providerConfigFingerprint !== reviewAuthority.providerConfigFingerprint
+          payload?.trace?.providerConfigFingerprint !== reviewAuthority.providerConfigFingerprint ||
+          payload?.pilotCapture?.status !== "ready" ||
+          payload?.pilotCapture?.caseId !== reviewAuthority.caseId
         ) {
           setReviewStatus("error");
           setReviewError(reviewErrorMessage(payload?.error));
@@ -402,6 +502,9 @@ export default function FaceLabTestClient() {
           routeColorReview: payload.routeColorReview,
           summary: payload.summary
         });
+        setPilotCapture(
+          payload.pilotCapture
+        );
         setReviewStatus("submitted");
       } catch {
         setReviewStatus("error");
@@ -409,15 +512,15 @@ export default function FaceLabTestClient() {
       }
     },
     [
-      faceLabAnalysis,
       reviewAuthority,
       reviewStatus,
-      simulationState
+      simulationCaptureContext
     ]
   );
 
   const resetReviewResult = useCallback(() => {
     setReviewResult(null);
+    setPilotCapture(null);
     setReviewStatus(reviewTemplate ? "ready" : "idle");
     setReviewError("");
   }, [reviewTemplate]);
@@ -517,6 +620,34 @@ export default function FaceLabTestClient() {
         return;
       }
 
+      const outputImageName =
+        pilotOutputName(
+          reviewCaseId,
+          blob.type
+        );
+      const nextCaptureContext = {
+        locale: "ko",
+        analysis:
+          structuredClone(
+            faceLabAnalysis
+          ),
+        faceLabV2State:
+          structuredClone(
+            simulationState
+          ),
+        files: {
+          sourceImageName:
+            safePilotSourceName(
+              sourceImageFile
+            ),
+          sourceMimeType:
+            sourceImageFile.type,
+          outputImageName,
+          outputMimeType:
+            blob.type
+        }
+      };
+
       const nextImageUrl = URL.createObjectURL(blob);
       setSimulationImageUrl((current) => {
         if (current) {
@@ -524,6 +655,10 @@ export default function FaceLabTestClient() {
         }
         return nextImageUrl;
       });
+      setSimulationImageBlob(blob);
+      setSimulationCaptureContext(
+        nextCaptureContext
+      );
       setSimulationMeta({
         routeId: response.headers.get("X-Face-Lab-Route-Id") || simulationState.selectedRouteId,
         lookId: response.headers.get("X-Face-Lab-Look-Id") || null,
@@ -554,6 +689,60 @@ export default function FaceLabTestClient() {
       setSimulationError("네트워크 오류로 AI 시뮬레이션을 생성하지 못했습니다.");
     }
   };
+
+  const saveSimulationImage = useCallback(() => {
+    if (
+      !simulationImageBlob ||
+      !pilotCapture?.files
+        ?.outputImageName
+    ) {
+      return;
+    }
+
+    downloadLocalBlob(
+      simulationImageBlob,
+      pilotCapture.files
+        .outputImageName
+    );
+  }, [
+    pilotCapture,
+    simulationImageBlob
+  ]);
+
+  const savePilotCapture = useCallback(() => {
+    if (
+      !pilotCapture ||
+      pilotCapture.status !==
+        "ready"
+    ) {
+      return;
+    }
+
+    const manifestBlob =
+      new Blob(
+        [
+          JSON.stringify(
+            pilotCapture,
+            null,
+            2
+          )
+        ],
+        {
+          type:
+            "application/json"
+        }
+      );
+    const fileName =
+      safePilotFileStem(
+        pilotCapture.caseId
+      ) +
+      ".capture.json";
+
+    downloadLocalBlob(
+      manifestBlob,
+      fileName
+    );
+  }, [pilotCapture]);
 
   const canGenerateSimulation = Boolean(
     sourceImageFile &&
@@ -799,6 +988,13 @@ export default function FaceLabTestClient() {
                   result={reviewResult}
                   onSubmit={(responses) => void submitReview(responses)}
                   onResetResult={resetReviewResult}
+                  onSaveSimulationImage={saveSimulationImage}
+                  onSavePilotCapture={savePilotCapture}
+                  captureReady={Boolean(
+                    pilotCapture?.status ===
+                      "ready" &&
+                    simulationImageBlob
+                  )}
                 />
               ) : reviewError ? (
                 <section className="ui-card p-5 sm:p-6" data-face-lab-simulation-review-error>
