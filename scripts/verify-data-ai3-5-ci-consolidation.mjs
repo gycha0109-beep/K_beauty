@@ -52,6 +52,7 @@ for (const script of [
   "scripts/verify-data-ai29c-water-c-r1-production-validation.mjs",
   "scripts/verify-data-ai29c-water-d1-day-dew-controlled-expansion.mjs",
   "scripts/verify-data-ai29c-water-d2a-frozen20-authority-recon.mjs",
+  "scripts/verify-data-ai29c-water-d2a-r1-fully-source-recovery.mjs",
   "scripts/verify-data-ai29c-d5a-spf-runtime-gate.mjs",
   "scripts/verify-data-ai29c-d5b-spf-production-shadow.mjs",
   "scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs",
