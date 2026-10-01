@@ -1,0 +1,82 @@
+{
+  "version": "data-ai29c-water-c-r1-production-validation-v1",
+  "track": "taxonomy-ai",
+  "stage": "DATA-AI29C-WATER-C-R1-PRODUCTION-VALIDATION",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "validatedAgainstMainSha": "a70a3eaa85437eda03be3a42313932d0a60d5cf1",
+  "migration": {
+    "repositoryPath": "supabase/migrations/20261001090000_data_ai29c_water_c_r1_cardinality_guard_v1.sql",
+    "productionLedgerVersion": "20261001091011",
+    "productionLedgerName": "data_ai29c_water_c_r1_cardinality_guard_v1",
+    "applied": true
+  },
+  "guard": {
+    "triggerName": "product_fact_current_cardinality_guard_v1",
+    "triggerEnabled": true,
+    "functionName": "product_fact_current_cardinality_guard_v1",
+    "securityDefiner": true,
+    "functionAcl": ["postgres=X/postgres"],
+    "semanticSlot": [
+      "subject_id",
+      "registry_version",
+      "fact_key"
+    ],
+    "cardinalityOneDifferentPropositionFailClosed": true,
+    "samePropositionReplayAllowed": true,
+    "governedReplacementExceptionPolicy": "trust-phase8f-revalidation-replacement-v1"
+  },
+  "anessa": {
+    "subjectId": "d1d748c3-8706-4b6c-8719-676f6f317532",
+    "factKey": "water_resistance_duration",
+    "canonical": {
+      "propositionKey": "2b145dff9a002879db9d66c5dda622c6f8fc10d807dae2cf134bed62dbd5b63b",
+      "factInstanceId": "39394ff3-3f57-49d6-96ee-2df39f404872",
+      "confirmationId": "11b9359a-eac4-46e2-afe2-697341743230",
+      "assignmentId": "c373aa09-7cb8-4fda-ba7e-fdf3346381e9",
+      "assignmentState": "confirmed"
+    },
+    "remediatedDuplicate": {
+      "propositionKey": "035a31aceae525e29bcd4dc795be4fe8f65d42aba55b8a39cbe1c03b1c524d29",
+      "factInstanceId": "ceb0bf3f-bff6-477a-b7b3-1bb0a11ab287",
+      "confirmationId": "9a319795-795c-41eb-b471-4b3bc7d2854c",
+      "assignmentId": "a03a436e-fdc2-48e8-84ca-c0583e0d3d9f",
+      "assignmentState": "superseded",
+      "immutableHistoryPreserved": true
+    }
+  },
+  "liveRegression": {
+    "duplicateReinsertAttempted": true,
+    "duplicateReinsertRejected": true,
+    "expectedSqlState": "23514",
+    "expectedMessage": "product_fact_current_cardinality_one_conflict",
+    "samePropositionReplayAttempted": true,
+    "samePropositionReplayAllowed": true,
+    "finalCurrentWaterFactCount": 1,
+    "finalCanonicalCurrentCount": 1,
+    "finalDuplicateCurrentCount": 0
+  },
+  "production": {
+    "vercelDeploymentId": "dpl_3kdBsEthejjzcUE8kg7LWPX8KvdS",
+    "vercelState": "READY",
+    "vercelTarget": "production",
+    "vercelGitSha": "a70a3eaa85437eda03be3a42313932d0a60d5cf1",
+    "spfAuthenticatedBeta": {
+      "scope": "authenticated_product_query_beta",
+      "enabled": true,
+      "authorizedPhase": "DATA-AI29C-D5D",
+      "activatedBy": "d5d_r1_reactivation_after_off_state_pass",
+      "unchanged": true
+    }
+  },
+  "limits": {
+    "waterAuthorityCoverage": "1/20",
+    "waterAxisActivated": false,
+    "protectionScorerWiredForWater": false,
+    "productionRankingChangedByWater": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "spfProductionStateMutated": false
+  },
+  "decision": "WATER_C_R1_PRODUCTION_CARDINALITY_GUARD_PASS"
+}
