@@ -82,35 +82,6 @@ function parseJsonField(value, maxChars) {
   }
 }
 
-async function completeGuardedResponse(
-  response,
-  guardResult,
-  resultReference = null
-) {
-  const completion =
-    await completeAnalysisRequestGuard(
-      guardResult,
-      resultReference
-    );
-
-  if (!completion.ok) {
-    writeSafeLog("warn", {
-      event:
-        "face_lab_simulation_guard_complete_failed",
-      category: "internal_error",
-      operation:
-        "face_lab_simulation_test",
-      dependency: "application",
-      retryable: false
-    });
-  }
-
-  return applyAnalysisGuardCookies(
-    response,
-    guardResult
-  );
-}
-
 async function failGuardedResponse(
   response,
   guardResult
@@ -456,7 +427,37 @@ export async function POST(request) {
       );
     }
 
-    const simulationResponse =
+    const completion =
+      await completeAnalysisRequestGuard(
+        analysisGuard,
+        {
+          simulationVersion:
+            simulation
+              .simulationVersion,
+          routeId:
+            simulation.routeId,
+          lookId:
+            simulation.lookId,
+          fidelityStatus:
+            simulation.fidelity
+              ?.status ||
+            "not_evaluated"
+        }
+      );
+
+    if (!completion.ok) {
+      writeSafeLog("warn", {
+        event:
+          "face_lab_simulation_guard_complete_failed",
+        category: "internal_error",
+        operation:
+          "face_lab_simulation_test",
+        dependency: "application",
+        retryable: false
+      });
+    }
+
+    return applyAnalysisGuardCookies(
       new NextResponse(
         simulation.imageBytes,
         {
@@ -485,24 +486,8 @@ export async function POST(request) {
                 "not_evaluated"
             })
         }
-      );
-
-    return completeGuardedResponse(
-      simulationResponse,
-      analysisGuard,
-      {
-        simulationVersion:
-          simulation
-            .simulationVersion,
-        routeId:
-          simulation.routeId,
-        lookId:
-          simulation.lookId,
-        fidelityStatus:
-          simulation.fidelity
-            ?.status ||
-          "not_evaluated"
-      }
+      ),
+      analysisGuard
     );
   } catch {
     if (analysisGuard?.ok) {
