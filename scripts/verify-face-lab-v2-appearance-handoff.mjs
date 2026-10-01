@@ -44,7 +44,7 @@ assert.equal(
 );
 assert.equal(
   FACE_LAB_APPEARANCE_HANDOFF_VERSION,
-  "face-lab-appearance-handoff-v1"
+  "face-lab-appearance-handoff-v2"
 );
 
 assert.deepEqual(
@@ -326,8 +326,15 @@ assert.deepEqual(
   ["natural", "satin"]
 );
 assert.deepEqual(
-  byKey.get("complexion_even").criteria.excludedAttributes.constraints,
-  ["avoid_heavy_coverage"]
+  byKey.get("complexion_even").criteria.excludedAttributes,
+  {},
+  "application constraints must not masquerade as catalog exclusion attributes"
+);
+assert.ok(
+  byKey.get("complexion_even").executionCues.notes.includes(
+    "avoid_heavy_coverage"
+  ),
+  "application constraints must remain available as execution cues"
 );
 
 assert.equal(
