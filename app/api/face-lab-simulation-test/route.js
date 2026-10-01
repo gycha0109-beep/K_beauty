@@ -458,7 +458,7 @@ export async function POST(request) {
     }
 
     return applyAnalysisGuardCookies(
-      new Response(
+      new NextResponse(
         simulation.imageBytes,
         {
           status: 200,
