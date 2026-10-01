@@ -138,7 +138,7 @@ The proof class states what governed layer establishes the candidate-to-capabili
 
 ### evidenceRefs
 
-A `supported` claim requires at least one evidence reference.
+Every capability claim requires at least one evidence reference. A `supported` claim can never be inferred from missing or malformed evidence.
 
 Examples:
 
