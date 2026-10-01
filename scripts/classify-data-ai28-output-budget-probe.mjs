@@ -2,10 +2,15 @@
 
 import fs from "node:fs";
 
-const SAFE_NONPROTOCOL_FAILURE_CLASSES = new Map([
-  ["PRODUCT_QUERY_AI_TIMEOUT", "timeout"],
-  ["PRODUCT_QUERY_AI_REQUEST_FAILED", "request_failed"],
-  ["PRODUCT_QUERY_AI_UNAVAILABLE", "unavailable"]
+const TRANSIENT_FAILURE_CLASSES = new Set([
+  "PRODUCT_QUERY_AI_TRANSIENT_PROVIDER_FAILURE",
+  "PRODUCT_QUERY_AI_REQUEST_FAILED",
+  "PRODUCT_QUERY_AI_TIMEOUT"
+]);
+
+const NONRETRYABLE_PROVIDER_FAILURE_CLASSES = new Set([
+  "PRODUCT_QUERY_AI_PROVIDER_REJECTED",
+  "PRODUCT_QUERY_AI_UNAVAILABLE"
 ]);
 
 const [file, expectedSha, httpStatus, expectedScenario, expectedBudget] =
@@ -89,7 +94,11 @@ if (
   protocolKind === "incomplete"
 ) {
   const incompleteReason = String(payload.incompleteReason || "unknown");
-  if (!["max_output_tokens", "content_filter", "other", "unknown"].includes(incompleteReason)) {
+  if (
+    !["max_output_tokens", "content_filter", "other", "unknown"].includes(
+      incompleteReason
+    )
+  ) {
     console.error("DATA_AI28_BUDGET_PROBE_INCOMPLETE_REASON_INVALID");
     process.exit(71);
   }
@@ -121,10 +130,45 @@ if (
   process.exit(0);
 }
 
-const nonProtocolClass = SAFE_NONPROTOCOL_FAILURE_CLASSES.get(failureClass);
-if (nonProtocolClass) {
+if (TRANSIENT_FAILURE_CLASSES.has(failureClass)) {
+  if (
+    payload.providerAttempts !== 2 ||
+    payload.providerRetryUsed !== true
+  ) {
+    console.error(
+      `DATA_AI28E_TRANSIENT_RETRY_CONTRACT_VIOLATION=${failureClass}:providerAttempts=${payload.providerAttempts}`
+    );
+    process.stdout.write("other_failure");
+    process.exit(0);
+  }
+
   console.error(
-    `DATA_AI28E_SAFE_NONPROTOCOL_FAILURE=${nonProtocolClass}:providerAttempts=${payload.providerAttempts}`
+    `DATA_AI28E_TRANSIENT_EXHAUSTED=${failureClass}:providerAttempts=${payload.providerAttempts}`
   );
+  process.stdout.write("transient_exhausted");
+  process.exit(0);
 }
+
+if (NONRETRYABLE_PROVIDER_FAILURE_CLASSES.has(failureClass)) {
+  if (
+    payload.providerAttempts !== 1 ||
+    payload.providerRetryUsed !== false
+  ) {
+    console.error(
+      `DATA_AI28E_NONRETRYABLE_CONTRACT_VIOLATION=${failureClass}:providerAttempts=${payload.providerAttempts}`
+    );
+    process.stdout.write("other_failure");
+    process.exit(0);
+  }
+
+  console.error(
+    `DATA_AI28E_NONRETRYABLE_PROVIDER_FAILURE=${failureClass}:providerAttempts=${payload.providerAttempts}`
+  );
+  process.stdout.write("nonretryable_provider_failure");
+  process.exit(0);
+}
+
+console.error(
+  `DATA_AI28E_UNKNOWN_FAILURE=${failureClass || "missing"}:providerAttempts=${payload.providerAttempts}`
+);
 process.stdout.write("other_failure");
