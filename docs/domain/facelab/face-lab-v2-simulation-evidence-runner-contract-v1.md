@@ -49,7 +49,7 @@ The local runner may read:
 
 The source image is canonicalized through the same image canonicalization boundary used by the simulation endpoint before hashing.
 
-The output image is hashed as the exact returned bytes.
+The output image must have a recognized image signature and is hashed as the exact returned bytes.
 
 The output packet contains only SHA-256 values.
 
@@ -153,6 +153,7 @@ The runner must reject at minimum:
 - unavailable canonical Look,
 - unavailable Render Spec,
 - stale/wrong simulation version,
+- stale/wrong instruction version,
 - Route or Look mismatch,
 - malformed Render Spec digest,
 - reconstructed Render Spec digest mismatch,
