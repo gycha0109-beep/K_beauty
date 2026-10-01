@@ -1,0 +1,79 @@
+{
+  "version": "data-ai29c-uva-r3f-broad-spectrum-registry-controlled-publish-v1",
+  "stage": "DATA-AI29C-UVA-R3F",
+  "track": "taxonomy-ai",
+  "baseMainSha": "6b578b4ac463809022eba9a625e56f764b0d1e61",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "registryPublish": {
+    "sourceRegistryVersion": "product-fact-registry-cross-category-v1",
+    "publishedRegistryVersion": "product-fact-registry-cross-category-v2",
+    "identitySerializerVersion": "product-fact-subject-identity-v1",
+    "definitionCount": 21,
+    "carriedForwardDefinitionCount": 20,
+    "newDefinitionCount": 1,
+    "newFactKey": "broad_spectrum",
+    "registryChecksum": "923256ca2468b2af31e1b7026655739408035daf62d3ff40a7132eca22afddd7",
+    "broadSpectrumDefinitionChecksum": "c888474e8970f787dee3f71bdcc505a779400b0ebf438901bbc5fd7f2dc32dc9",
+    "committed": true,
+    "latestRegistryAfterCommit": "product-fact-registry-cross-category-v2"
+  },
+  "broadSpectrumWritePolicy": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "factKey": "broad_spectrum",
+    "policyState": "active",
+    "newLineageAllowed": true,
+    "existingLineageAllowed": true,
+    "policyVersion": "data-ai29c-uva-r3f-broad-spectrum-v1",
+    "authorizedPhase": "DATA-AI29C-UVA-R3F",
+    "policyDigest": "98d43d2a8d34704423e893b36d1433c8b7a02c0aa1c1394b13ef5ce3ec6b6361"
+  },
+  "failClosedControls": {
+    "v2SpfValue": {
+      "newLineageAllowed": false,
+      "reason": "POLICY_MISSING"
+    },
+    "v2CarriedForwardPolicyRowCount": 0,
+    "v1SpfValue": {
+      "newLineageAllowed": true,
+      "reason": "ALLOWED"
+    }
+  },
+  "productionReadback": {
+    "registryVersionCount": 2,
+    "latestRegistryVersion": "product-fact-registry-cross-category-v2",
+    "v2DefinitionCount": 21,
+    "writePolicyRowCount": 21,
+    "v1WritePolicyRowCount": 20,
+    "v2WritePolicyRowCount": 1,
+    "v2NonBroadPolicyRowCount": 0,
+    "currentFactCount": 92,
+    "broadSpectrumCurrentFactCount": 0,
+    "currentWaterFactCount": 2,
+    "activeV1ResearchLineage": {
+      "EVIDENCE_CANDIDATE": 28,
+      "REVIEW_REQUIRED": 343,
+      "total": 371
+    },
+    "spfAuthenticatedBeta": {
+      "enabled": true,
+      "authorizedPhase": "DATA-AI29C-D5D",
+      "activatedBy": "d5d_r1_reactivation_after_off_state_pass"
+    }
+  },
+  "recommendationBoundary": {
+    "broadSpectrumConsumed": false,
+    "sunscreenProtectionReaderChanged": false,
+    "sunscreenProtectionProjectionChanged": false,
+    "rankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "productFactBoundary": {
+    "broadSpectrumFactWritten": false,
+    "currentFactCountChanged": false,
+    "existingProtectionFactsMigratedToV2": false
+  },
+  "decision": "UVA_R3F_BROAD_SPECTRUM_REGISTRY_CONTROLLED_PUBLISH_PASS",
+  "nextGate": "DATA-AI29C-UVA-R3G_DAY_DEW_BROAD_SPECTRUM_GOVERNED_FACT_PILOT"
+}
