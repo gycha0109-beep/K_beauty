@@ -90,6 +90,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-data-ai29c-water-d1-r1-day-dew-required-facts.mjs",
   "scripts/verify-data-ai29c-uva-r3a-broad-spectrum-semantic-contract.mjs",
   "scripts/verify-data-ai29c-uva-r3b-registry-compatibility-audit.mjs",
+  "scripts/verify-data-ai29c-uva-r3c-registry-coexistence-design.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
