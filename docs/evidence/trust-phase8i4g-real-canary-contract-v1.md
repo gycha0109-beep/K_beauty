@@ -253,4 +253,3 @@ Canonical dormant state:
 `EVENT_DRIVEN_WAITING_FOR_REAL_READY_FOR_8I4`
 
 The phase reopens only when the governed scheduled path produces a real eligible `READY_FOR_8I4` candidate. At that point the operator may perform read-only candidate/preflight review and must stop before mutation until an explicit human Admin confirmation is given.
-
