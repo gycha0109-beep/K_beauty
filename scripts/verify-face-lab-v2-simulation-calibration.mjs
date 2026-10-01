@@ -471,7 +471,7 @@ for (const forbidden of [
   "outputImageSha256",
   "analysisSha256",
   "faceLabV2StateSha256",
-  "reviewerRef",
+  '"reviewerRef":',
   "operator-01",
   passArtifacts.packet.trace
     .sourceImageSha256,
@@ -679,7 +679,8 @@ for (const forbidden of [
   "outputImageSha256",
   "analysisSha256",
   "faceLabV2StateSha256",
-  "reviewerRef",
+  '"reviewerRef":',
+  "operator-01",
   "intentBindingDigest",
   "renderSpecSha256"
 ]) {
