@@ -1,0 +1,225 @@
+{
+  "version": "data-ai29c-uva-r3c-registry-coexistence-design-v1",
+  "stage": "DATA-AI29C-UVA-R3C",
+  "track": "taxonomy-ai",
+  "designDate": "2026-10-01",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "entryDecisions": {
+    "r3a": "BROAD_SPECTRUM_SEPARATE_FACT_SEMANTICS_PASS",
+    "r3b": "UVA_R3B_HOLD_V2_PUBLISH_ACTIVE_V1_LINEAGE_AND_LATEST_REGISTRY_COUPLING"
+  },
+  "problem": {
+    "globalLatestRegistryGate": true,
+    "activeV1ResearchLineage": 371,
+    "currentCardinalityGuardIncludesRegistryVersion": true,
+    "consequence": "Simply allowing multiple registries without an explicit per-fact write authority can create duplicate cardinality-one Current facts for the same Subject + fact_key across registry versions."
+  },
+  "designPrinciples": [
+    "Registry version existence/effectiveness and Registry write authority are separate concepts.",
+    "Exactly one registry version may be write-authoritative for a given fact_key at a time.",
+    "Existing v1 fact keys remain write-authoritative on v1 until an explicit fact-key migration is completed.",
+    "The new broad_spectrum fact_key may be write-authoritative on a future v2 without migrating unrelated v1 fact keys.",
+    "Current Facts and definitions remain immutable.",
+    "Recommendation consumers do not automatically follow registry publication.",
+    "Existing fact_key migration requires a separate drain/migration protocol; registry publication alone never migrates Facts."
+  ],
+  "proposedPolicyTable": {
+    "name": "product_fact_registry_fact_write_policy_v1",
+    "purpose": "Explicit per-registry/per-fact controlled-write authority, independent from global latest registry selection.",
+    "columns": [
+      {
+        "name": "registry_version",
+        "type": "text",
+        "role": "FK to product_fact_registry_versions"
+      },
+      {
+        "name": "fact_key",
+        "type": "text",
+        "role": "Fact definition key"
+      },
+      {
+        "name": "policy_state",
+        "type": "text",
+        "allowed": [
+          "active",
+          "draining",
+          "blocked"
+        ]
+      },
+      {
+        "name": "new_lineage_allowed",
+        "type": "boolean"
+      },
+      {
+        "name": "existing_lineage_allowed",
+        "type": "boolean"
+      },
+      {
+        "name": "effective_from",
+        "type": "timestamptz"
+      },
+      {
+        "name": "effective_to",
+        "type": "timestamptz nullable"
+      },
+      {
+        "name": "policy_version",
+        "type": "text"
+      },
+      {
+        "name": "authorized_phase",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamptz"
+      }
+    ],
+    "primaryKey": [
+      "registry_version",
+      "fact_key"
+    ],
+    "invariant": "At most one registry_version can have new_lineage_allowed=true for the same fact_key at a time."
+  },
+  "proposedAdmissibilityHelper": {
+    "name": "product_fact_controlled_registry_write_admissibility_v2",
+    "inputs": [
+      "registry_version",
+      "fact_key",
+      "lineage_kind"
+    ],
+    "lineageKinds": [
+      "new",
+      "existing"
+    ],
+    "outputs": [
+      "allowed",
+      "reason",
+      "policy_state",
+      "policy_version"
+    ],
+    "rules": [
+      "Registry version must exist and the requested fact definition must exist and be non-deprecated.",
+      "For lineage_kind=new, new_lineage_allowed must be true.",
+      "For lineage_kind=existing, existing_lineage_allowed must be true.",
+      "Blocked or expired policy fails closed.",
+      "A newer registry_version alone never invalidates a pinned existing lineage."
+    ]
+  },
+  "writePathChanges": [
+    {
+      "function": "admin_prepare_product_fact_review_v1",
+      "currentGate": "requested registry must equal product_fact_controlled_latest_registry_v1()",
+      "replacement": "new assignment -> require new lineage authority; existing open assignment transition -> require existing lineage authority"
+    },
+    {
+      "function": "product_fact_controlled_build_preflight_v1",
+      "currentGate": "confirmation payload registry participates in latest-registry prestate",
+      "replacement": "require existing-lineage authority for the assignment registry/fact_key; include write-policy digest in prestate"
+    },
+    {
+      "function": "trust_phase4_build_adoption_plan_v1",
+      "currentGate": "candidate registry must equal global latest registry",
+      "replacement": "candidate research lineage must have existing-lineage authority for its pinned registry/fact_key"
+    },
+    {
+      "function": "trust_phase8e_build_revalidation_plan_legacy_v1",
+      "currentGate": "legacy revalidation coupled to latest registry",
+      "replacement": "revalidation transition remains pinned to its existing registry and requires existing-lineage authority"
+    }
+  ],
+  "publicationSemantics": {
+    "adminPublishProductFactRegistryV1RemainsImmutable": true,
+    "registryEffectiveAtDoesNotGrantWriteAuthority": true,
+    "publishAndWriteAuthorityAreSeparateAdminActions": true,
+    "productFactControlledLatestRegistryV1MayRemainDiagnostic": true,
+    "writePathsMustNotUseGlobalLatestAsSoleAuthority": true
+  },
+  "initialPolicySeed": {
+    "v1": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "existingFactKeyCount": 20,
+      "policy": "existing 20 fact keys remain active for both new and existing lineage until each fact_key is explicitly migrated"
+    },
+    "futureV2": {
+      "registryVersion": "future broad-spectrum registry version",
+      "definitionModel": "full immutable snapshot may include existing definitions plus broad_spectrum",
+      "writePolicy": {
+        "broad_spectrum": {
+          "new_lineage_allowed": true,
+          "existing_lineage_allowed": true
+        },
+        "existingV1FactKeys": {
+          "new_lineage_allowed": false,
+          "existing_lineage_allowed": false
+        }
+      }
+    }
+  },
+  "sameFactKeyMigrationProtocol": {
+    "requiredBeforeSwitch": [
+      "Block creation of new lineage on old registry for the target fact_key.",
+      "Drain or explicitly disposition all old-registry active lineages for that fact_key.",
+      "Verify no cross-version cardinality-one Current ambiguity exists.",
+      "Define explicit Current replacement/supersession semantics across registry versions.",
+      "Update affected consumers if they require single-registry lineage.",
+      "Only then block old existing-lineage writes and enable new-registry writes for that fact_key."
+    ],
+    "broadSpectrumNeedsMigration": false,
+    "reason": "broad_spectrum is a new fact_key, so it does not collide with existing v1 fact keys."
+  },
+  "cardinalityBoundary": {
+    "currentGuard": "product_fact_current_cardinality_guard_v1",
+    "currentSlot": "subject_id + registry_version + fact_key",
+    "risk": "The current guard does not prevent the same cardinality-one fact_key from existing as Current in both v1 and v2.",
+    "mitigation": [
+      "Enforce one write-authoritative registry per fact_key in the write-policy layer.",
+      "Do not enable existing fact keys on v2 until the explicit migration protocol is implemented.",
+      "Before future same-key migration, add or prove a cross-registry Current replacement guard."
+    ]
+  },
+  "recommendationBoundary": {
+    "currentReaderFactKeys": [
+      "spf_value",
+      "uva_label",
+      "water_resistance_duration"
+    ],
+    "broadSpectrumConsumed": false,
+    "broadSpectrumRankingBucket": null,
+    "currentReaderMustRemainUnchangedDuringCoexistenceImplementation": true,
+    "existingProtectionFactMigrationForbidden": true,
+    "reason": "The current reader requires a single registry_version across the three consumed protection facts."
+  },
+  "implementationOrder": [
+    "Add per-fact registry write-policy storage and fail-closed admin management boundary.",
+    "Seed current v1 fact-key write authority without changing any Fact or consumer.",
+    "Replace four global-latest write gates with lineage-aware admissibility checks.",
+    "Bind write-policy state into confirmation prestate digest so policy changes invalidate stale confirmation.",
+    "Add regression tests proving v1 active lineage remains completable after a second registry exists.",
+    "Add tests proving an unauthorized fact_key/registry pair fails closed.",
+    "Add tests proving same fact_key cannot become write-authoritative in two registries simultaneously.",
+    "Keep Recommendation sunscreen authority reader/projection unchanged.",
+    "Only after all above passes may a future Registry version containing broad_spectrum be published and separately granted write authority."
+  ],
+  "nonGoals": [
+    "No Registry v2 publish in R3C.",
+    "No Production schema migration in R3C.",
+    "No broad_spectrum Product Fact write in R3C.",
+    "No migration of SPF/UVA-label/Water facts.",
+    "No Recommendation reader or ranking change.",
+    "No public activation."
+  ],
+  "limits": {
+    "productionSchemaChanged": false,
+    "registryPublished": false,
+    "productFactWritten": false,
+    "recommendationAuthorityChanged": false,
+    "recommendationProjectionChanged": false,
+    "productionRankingChanged": false,
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false
+  },
+  "decision": "UVA_R3C_REGISTRY_COEXISTENCE_DESIGN_PASS_IMPLEMENTATION_REQUIRED",
+  "nextGate": "DATA-AI29C-UVA-R3D_REGISTRY_COEXISTENCE_IMPLEMENTATION"
+}
