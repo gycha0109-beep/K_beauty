@@ -385,6 +385,19 @@ assert.equal(
   "entity_type_not_accepted"
 );
 
+const malformedClaimList =
+  validateFaceLabCandidateCapabilityCandidate({
+    ...candidate(),
+    capabilityClaims: {
+      capabilityKey: "lip_color"
+    }
+  });
+assert.equal(malformedClaimList.valid, false);
+assert.equal(
+  malformedClaimList.reason,
+  "capability_claims_not_array"
+);
+
 const badVariant = validateFaceLabCandidateCapabilityCandidate(
   candidate({
     candidateRef:
