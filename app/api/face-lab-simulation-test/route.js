@@ -3,6 +3,9 @@ import {
   isFaceLabObservationAnalysis
 } from "@/lib/face-lab-analysis-bundle";
 import {
+  issueFaceLabSimulationReviewTicket
+} from "@/lib/face-lab-v2/simulation-review-ticket-core";
+import {
   buildFaceLabSimulationCanonical,
   buildFaceLabSimulationRenderSpec,
   findFaceLabSimulationCanonicalLook,
@@ -407,6 +410,43 @@ export async function POST(request) {
       );
     }
 
+    const reviewTicket =
+      issueFaceLabSimulationReviewTicket({
+        secret:
+          guardSecret,
+        sourceImageBuffer:
+          canonicalImage.bytes,
+        outputImageBuffer:
+          simulation.imageBytes,
+        analysis,
+        faceLabV2State:
+          normalized,
+        locale,
+        renderSpecSha256,
+        routeId:
+          simulation.routeId,
+        lookId:
+          simulation.lookId,
+        simulationVersion:
+          simulation.simulationVersion,
+        instructionVersion:
+          simulation.instructionVersion
+      });
+
+    if (!reviewTicket) {
+      return failGuardedResponse(
+        json(
+          {
+            success: false,
+            error:
+              "simulation_review_unavailable"
+          },
+          { status: 500 }
+        ),
+        analysisGuard
+      );
+    }
+
     const completion =
       await completeAnalysisRequestGuard(
         analysisGuard,
@@ -425,7 +465,11 @@ export async function POST(request) {
           renderSpecSha256,
           instructionVersion:
             simulation
-              .instructionVersion
+              .instructionVersion,
+          reviewCaseId:
+            reviewTicket.caseId,
+          reviewTicketVersion:
+            reviewTicket.version
         }
       );
 
@@ -472,7 +516,13 @@ export async function POST(request) {
               "X-Face-Lab-Fidelity":
                 simulation.fidelity
                   ?.status ||
-                "not_evaluated"
+                "not_evaluated",
+              "X-Face-Lab-Review-Case-Id":
+                reviewTicket.caseId,
+              "X-Face-Lab-Review-Ticket":
+                reviewTicket.token,
+              "X-Face-Lab-Review-Expires-At":
+                reviewTicket.expiresAt
             })
         }
       ),
