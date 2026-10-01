@@ -1518,9 +1518,9 @@ register("I09_CLIENT_CONSOLE_BOUNDARY", async () => {
 });
 register("I10_SENSITIVE_ROUTE_NO_STORE", async () => {
   const result = await assertSensitiveRouteIntegrationExactSet();
-  assert.deepEqual(result.routes, { expected: 19, discovered: 19, verified: 19 });
-  assert.deepEqual(result.handlerBindings, { expected: 21, discovered: 21, verified: 21 });
-  assert.deepEqual(result.terminalResponsePaths, { expected: 191, discovered: 191, verified: 191 });
+  assert.deepEqual(result.routes, { expected: 20, discovered: 20, verified: 20 });
+  assert.deepEqual(result.handlerBindings, { expected: 22, discovered: 22, verified: 22 });
+  assert.deepEqual(result.terminalResponsePaths, { expected: 207, discovered: 207, verified: 207 });
   assert.deepEqual(result.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(result.deadHelperCalls, 0);
   assert.equal(result.unsafeResponsePaths, 0);
