@@ -3,7 +3,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import {
-  canonicalizeImageBytes
+  canonicalizeImageBytes,
+  detectImageSignature
 } from "../lib/image-upload-boundary-core.js";
 import {
   buildFaceLabSimulationEvidencePacket
@@ -62,6 +63,12 @@ const rawSourceBytes =
   await fs.readFile(sourceImagePath);
 const outputImageBytes =
   await fs.readFile(outputImagePath);
+
+if (!detectImageSignature(outputImageBytes)) {
+  throw new Error(
+    "output_image_signature_invalid"
+  );
+}
 
 const canonicalSource =
   await canonicalizeImageBytes({
