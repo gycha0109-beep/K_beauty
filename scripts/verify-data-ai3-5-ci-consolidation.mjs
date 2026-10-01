@@ -96,6 +96,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-data-ai29c-uva-r3f-broad-spectrum-registry-controlled-publish.mjs",
   "scripts/verify-data-ai29c-uva-r3g-proposition-serializer-contract.mjs",
   "scripts/verify-data-ai29c-uva-r3h-day-dew-broad-spectrum-governed-pilot.mjs",
+  "scripts/verify-data-ai29c-uva-r3i-skin1004-broad-spectrum-recovery.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
