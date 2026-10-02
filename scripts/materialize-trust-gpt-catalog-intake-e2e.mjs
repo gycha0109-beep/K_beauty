@@ -174,7 +174,7 @@ const authorityCoreEnd = registryAuthoritySource.indexOf(
   "create or replace function public.admin_set_product_fact_registry_fact_write_policy_v1",
 );
 const authoritySeedStart = registryAuthoritySource.indexOf(
-  "insert into public.product_fact_registry_fact_write_policy_v1",
+  "do $seed$",
 );
 const authoritySeedEnd = registryAuthoritySource.indexOf(
   "create or replace function public.admin_prepare_product_fact_review_v1",
