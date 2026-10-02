@@ -1,0 +1,220 @@
+{
+  "version": "v21-8f-r1-hosted-selection-snapshot-v2",
+  "stage": "V2.1-8F-R1",
+  "source": "Hosted Supabase read-only planning refresh",
+  "source_main_sha": "541f0cc033eba31d4c03f55c08471b7b19fedf63",
+  "production_project": "bygrczggxfuisupcevaz",
+  "captured_at": "2026-10-02T13:33:54.772408+09:00",
+  "registry_version": "product-fact-registry-cross-category-v2",
+  "registry_digest_sha256": "6cc67db348f2847b6e35b17067e7e13cc6476b0988ba0d3ceae9d8fdc880e4b9",
+  "selection_policy_version": "catalog-expansion-selection-policy-v2",
+  "catalog_product_count": 175,
+  "adopted_product_count": 32,
+  "adopted_current_fact_count": 95,
+  "candidate_pool_count": 140,
+  "candidate_pool_digest_sha256": "b706172a2951da3e0e20c6b372d68b8dca5d80df6af26db37a3e641523214066",
+  "exclusions": {
+    "sunscreen": {
+      "total_products": 13,
+      "adopted_products": 13,
+      "unadopted_products": 0,
+      "reason": "FULLY_ADOPTED"
+    },
+    "uncategorized": {
+      "total_products": 9,
+      "adopted_products": 6,
+      "unadopted_products": 3,
+      "reason": "CATEGORY_HYGIENE_BACKLOG"
+    }
+  },
+  "category_row_schema": [
+    "category",
+    "total_products",
+    "adopted_products",
+    "unadopted_products",
+    "floor_gap",
+    "candidate_fact_families"
+  ],
+  "categories": [
+    [
+      "cleanser",
+      26,
+      2,
+      24,
+      1,
+      [
+        "deep_cleansing",
+        "fragrance_declared",
+        "low_ph"
+      ]
+    ],
+    [
+      "moisturizer_balm",
+      20,
+      1,
+      19,
+      2,
+      [
+        "active_concentration",
+        "barrier_support_claim",
+        "contains_active",
+        "fragrance_declared",
+        "primary_use_role"
+      ]
+    ],
+    [
+      "moisturizer_cream",
+      10,
+      1,
+      9,
+      2,
+      [
+        "active_concentration",
+        "barrier_support_claim",
+        "contains_active",
+        "fragrance_declared",
+        "primary_use_role"
+      ]
+    ],
+    [
+      "moisturizer_gel",
+      10,
+      1,
+      9,
+      2,
+      [
+        "active_concentration",
+        "barrier_support_claim",
+        "contains_active",
+        "fragrance_declared",
+        "primary_use_role"
+      ]
+    ],
+    [
+      "moisturizer_lotion_emulsion",
+      21,
+      1,
+      20,
+      2,
+      [
+        "active_concentration",
+        "barrier_support_claim",
+        "contains_active",
+        "fragrance_declared",
+        "primary_use_role"
+      ]
+    ],
+    [
+      "sunscreen",
+      13,
+      13,
+      0,
+      0,
+      [
+        "active_concentration",
+        "broad_spectrum",
+        "contains_active",
+        "fragrance_declared",
+        "spf_value",
+        "uv_filter_type",
+        "uva_label",
+        "water_resistance_duration"
+      ]
+    ],
+    [
+      "toner_essence",
+      24,
+      2,
+      22,
+      1,
+      [
+        "active_concentration",
+        "contains_active",
+        "fragrance_declared",
+        "product_format",
+        "recommended_use_frequency",
+        "wipe_off_use"
+      ]
+    ],
+    [
+      "toner_pad",
+      24,
+      2,
+      22,
+      1,
+      [
+        "active_concentration",
+        "contains_active",
+        "fragrance_declared",
+        "pad_surface_texture",
+        "product_format",
+        "recommended_use_frequency",
+        "wipe_off_use"
+      ]
+    ],
+    [
+      "treatment",
+      18,
+      3,
+      15,
+      0,
+      [
+        "active_concentration",
+        "contains_active",
+        "fragrance_declared",
+        "recommended_use_frequency",
+        "treatment_claim"
+      ]
+    ]
+  ],
+  "frontier_row_schema": [
+    "product_id",
+    "category",
+    "brand",
+    "name",
+    "normalized_brand",
+    "normalized_name",
+    "recommendation_events",
+    "top_picks",
+    "size_present",
+    "product_form_present",
+    "external_id_present",
+    "source_class",
+    "subject_creation_required_tasks",
+    "identity_risk_tasks",
+    "noncurrent_or_unresolved_subjects"
+  ],
+  "frontier_files": [
+    {
+      "path": "frontier-a.json"
+    },
+    {
+      "path": "frontier-b.json"
+    },
+    {
+      "path": "frontier-c.json"
+    }
+  ],
+  "frontier_contract": {
+    "coverage": "floor quota plus first remaining contender for every floor-gap category, plus top contender for zero-floor categories",
+    "sufficient_flex_slots": 1,
+    "full_pool_identity_preserved_by_digest": true
+  },
+  "privacy_contract": {
+    "recommendation_aggregates_only": true,
+    "forbidden_raw_fields": [
+      "user_id",
+      "session_id",
+      "question_id",
+      "answer",
+      "meta_json"
+    ]
+  },
+  "capture_invariants": {
+    "hosted_read_only": true,
+    "hosted_product_fact_writes": 0,
+    "hosted_subject_writes": 0,
+    "hosted_evidence_writes": 0,
+    "external_product_evidence_research": 0
+  }
+}
