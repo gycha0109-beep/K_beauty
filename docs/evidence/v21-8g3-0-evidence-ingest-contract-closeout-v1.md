@@ -8,7 +8,8 @@ The exact six DIRECT Wave 1 research results are compatible with the existing co
 
 This phase performs **zero committed Production writes**.
 
-Preflight authority main: `f5f49f1cabfcea951688d7d0a30feee193a512fe`  
+Preflight authority main: `f5f49f1cabfcea951688d7d0a30feee193a512fe`
+
 Integration main after unrelated Face Lab backoff changes: `7faafd3571cf047ba299f12db0e66f2c64578f08`.
 
 ## Handoff
