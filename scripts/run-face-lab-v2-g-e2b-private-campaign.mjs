@@ -27,6 +27,26 @@ const campaignDirectory =
     ""
   );
 
+const campaignMode =
+  String(
+    process.env
+      .FACE_LAB_PRIVATE_CAMPAIGN_MODE ||
+      "G-E2B_PILOT"
+  ).trim();
+
+if (
+  ![
+    "G-E2B_PILOT",
+    "G-E3_WAVE"
+  ].includes(
+    campaignMode
+  )
+) {
+  throw new Error(
+    "private_campaign_mode_invalid"
+  );
+}
+
 if (
   !campaignDirectory ||
   campaignDirectory ===
@@ -95,6 +115,47 @@ async function writeJson(
       2
     )}\n`,
     "utf8"
+  );
+}
+
+const campaignManifest =
+  await readJson(
+    path.join(
+      campaignDirectory,
+      "manifest.json"
+    )
+  ).catch(
+    () => null
+  );
+
+if (
+  campaignMode ===
+    "G-E3_WAVE" &&
+  (
+    campaignManifest
+      ?.calibrationStage !==
+        "G-E3" ||
+    !/^wave-0[1-3]$/.test(
+      String(
+        campaignManifest
+          ?.waveId ||
+          ""
+      )
+    ) ||
+    !Number.isInteger(
+      campaignManifest
+        ?.intentOffset
+    ) ||
+    campaignManifest
+      ?.intentCount !== 4 ||
+    campaignManifest
+      ?.generationsPerIntent !== 2 ||
+    campaignManifest
+      ?.caseCount !== 8
+  )
+) {
+  throw new Error(
+    "g_e3_wave_manifest_invalid"
   );
 }
 
@@ -424,7 +485,10 @@ if (
   const blockerReport = {
     ok: false,
     verdict:
-      "FACE_LAB_G_E2B_CASE_PROCESSING_BLOCKED",
+      campaignMode ===
+        "G-E3_WAVE"
+        ? "FACE_LAB_G_E3_WAVE_PROCESSING_BLOCKED"
+        : "FACE_LAB_G_E2B_CASE_PROCESSING_BLOCKED",
     campaignId,
     reviewedCaseCount:
       descriptors.length,
@@ -506,17 +570,122 @@ if (
     process.exitCode = 1;
   } else {
     const closeout =
-      buildFaceLabSimulationPilotCloseout({
-        campaignId,
-        expectedCaseCount:
-          descriptors.length,
-        expectedIntentGroupCount:
-          intentGroups.size,
-        reviewedCaseCount:
-          descriptors.length,
-        aggregate,
-        acceptedNotAssessable
-      });
+      campaignMode ===
+        "G-E3_WAVE"
+        ? {
+            closeoutVersion:
+              "face-lab-g-e3-wave-closeout-v1",
+            status: "ready",
+            reason:
+              "g_e3_wave_closeout_built",
+            campaignId,
+            calibrationStage:
+              "G-E3",
+            waveId:
+              campaignManifest
+                .waveId,
+            intentOffset:
+              campaignManifest
+                .intentOffset,
+            coverage: {
+              reviewedCaseCount:
+                descriptors.length,
+              admittedCalibrationCaseCount:
+                aggregate.caseCount,
+              acceptedNotAssessableCaseCount:
+                acceptedNotAssessable
+                  .length,
+              observedIntentGroupCount:
+                intentGroups.size,
+              admittedIntentGroupCount:
+                aggregate
+                  .intentGroupCount,
+              admittedRepeatGroupCount:
+                aggregate
+                  .repeatGroupCount
+            },
+            acceptedNotAssessable: {
+              count:
+                acceptedNotAssessable
+                  .length,
+              observations:
+                acceptedNotAssessable.map(
+                  (item) => ({
+                    caseId:
+                      item.caseId,
+                    intentGroupId:
+                      item.intentGroupId,
+                    generationIndex:
+                      item.generationIndex,
+                    incompleteCheckId:
+                      item.incompleteCheckId,
+                    evidenceCheckStatuses:
+                      item
+                        .evidenceCheckStatuses,
+                    reviewFindingCodes:
+                      item
+                        .reviewFindingCodes
+                  })
+                )
+            },
+            calibrationSummary: {
+              verdictCounts:
+                aggregate
+                  .verdictCounts,
+              checkStatusCounts:
+                aggregate
+                  .checkStatusCounts,
+              hardFailureCaseCount:
+                aggregate
+                  .hardFailureCaseCount,
+              findingCodeCounts:
+                aggregate
+                  .findingCodeCounts,
+              failureSourceCounts:
+                aggregate
+                  .failureSourceCounts,
+              repeatVariance:
+                aggregate
+                  .repeatVariance
+            },
+            protocol: {
+              hardFailureStop:
+                aggregate
+                  .hardFailureCaseCount >
+                0,
+              notAssessablePolicy:
+                "retain_human_observation_exclude_from_calibration_case"
+            },
+            nextStage:
+              aggregate
+                .hardFailureCaseCount >
+                0
+                ? "G-E3_FAILURE_ATTRIBUTION"
+                : campaignManifest
+                    .waveId ===
+                    "wave-03"
+                  ? "G-E3_FULL_AGGREGATE"
+                  : "G-E3_NEXT_WAVE",
+            privacy: {
+              rawImagesIncluded:
+                false,
+              imageHashesIncluded:
+                false,
+              reviewerRefsIncluded:
+                false
+            }
+          }
+        : buildFaceLabSimulationPilotCloseout({
+            campaignId,
+            expectedCaseCount:
+              descriptors.length,
+            expectedIntentGroupCount:
+              intentGroups.size,
+            reviewedCaseCount:
+              descriptors.length,
+            aggregate,
+            acceptedNotAssessable
+          });
 
     if (
       closeout.status !==
@@ -570,7 +739,10 @@ if (
       await writeJson(
         path.join(
           campaignDirectory,
-          "campaign.closeout.json"
+          campaignMode ===
+            "G-E3_WAVE"
+            ? "wave.closeout.json"
+            : "campaign.closeout.json"
         ),
         closeout
       );
@@ -590,12 +762,29 @@ if (
           {
             ok: true,
             verdict:
-              closeout
-                .protocol
-                .hardFailureStop
-                ? "FACE_LAB_G_E2C_HARD_FAILURE_STOP"
-                : "FACE_LAB_G_E2C_PILOT_CLOSEOUT_READY",
+              campaignMode ===
+                "G-E3_WAVE"
+                ? (
+                    closeout
+                      .protocol
+                      .hardFailureStop
+                      ? "FACE_LAB_G_E3_WAVE_HARD_FAILURE_STOP"
+                      : "FACE_LAB_G_E3_WAVE_CLOSEOUT_READY"
+                  )
+                : (
+                    closeout
+                      .protocol
+                      .hardFailureStop
+                      ? "FACE_LAB_G_E2C_HARD_FAILURE_STOP"
+                      : "FACE_LAB_G_E2C_PILOT_CLOSEOUT_READY"
+                  ),
             campaignId,
+            campaignMode,
+            waveId:
+              campaignMode ===
+                "G-E3_WAVE"
+                ? closeout.waveId
+                : null,
             reviewedCaseCount:
               closeout
                 .coverage
@@ -618,7 +807,10 @@ if (
             aggregatePath:
               "./campaign.aggregate.json",
             closeoutPath:
-              "./campaign.closeout.json"
+              campaignMode ===
+                "G-E3_WAVE"
+                ? "./wave.closeout.json"
+                : "./campaign.closeout.json"
           },
           null,
           2
