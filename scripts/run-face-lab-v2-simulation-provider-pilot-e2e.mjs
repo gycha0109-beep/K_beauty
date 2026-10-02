@@ -80,10 +80,6 @@ function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function shortHash(value) {
-  return sha256(String(value || "")).slice(0, 12);
-}
-
 function decodeJwtPayload(value) {
   try {
     const parts = String(value || "").split(".");
@@ -173,7 +169,6 @@ function projectAuthenticatedAccount(label, data) {
   return {
     label,
     userId: data.user.id,
-    userHash: shortHash(data.user.id),
     accessToken: data.session.access_token
   };
 }
@@ -648,8 +643,7 @@ async function main() {
     runtimeBinding,
     accounts: {
       distinct: accountB ? accountA.userId !== accountB.userId : null,
-      A: accountA.userHash,
-      B: accountB?.userHash || null
+      activeLabels: accountB ? ["A", "B"] : ["A"]
     },
     cases
   };
