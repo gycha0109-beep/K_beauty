@@ -77,6 +77,46 @@ assert.equal(prestate.write_boundary.selected_task_mutations, 0);
 assert.equal(prestate.write_boundary.recommendation_changes, 0);
 assert.equal(prestate.write_boundary.public_activation, false);
 
+const deployed = JSON.parse(fs.readFileSync(
+  "evidence/product-fact-catalog-expansion-v1/v21-8g0-registry-pinned-reconciliation-production-readback-v1.json",
+  "utf8",
+));
+assert.equal(deployed.migration.production_version, "20261002142611");
+assert.equal(deployed.migration.applied, true);
+assert.equal(deployed.runtime_probe.v2_policy_missing_fail_closed_before_mutation, true);
+assert.equal(deployed.runtime_probe.v1_explicit_registry_path_executable, true);
+assert.equal(deployed.runtime_probe.v1_probe_rolled_back, true);
+assert.equal(deployed.production_readback.current_product_facts, 95);
+assert.equal(deployed.production_readback.selected_subjects, 0);
+assert.equal(deployed.production_readback.selected_null_market_intakes, 12);
+assert.equal(deployed.production_readback.selected_v1_tasks, 26);
+assert.equal(deployed.production_readback.selected_v2_tasks, 0);
+assert.equal(deployed.production_readback.selected_pristine_required_tasks, 26);
+assert.equal(deployed.production_readback.exact_frozen_task_ids_matched, 26);
+assert.equal(deployed.production_readback.exact_frozen_task_rows_unchanged, 26);
+assert.equal(deployed.deployed_function_contract.no_latest_registry_selection, true);
+assert.equal(deployed.deployed_function_contract.registry_write_policy_gate, true);
+assert.equal(deployed.deployed_function_contract.full_product_preflight_before_resolver, true);
+assert.equal(deployed.privileges.process_v2_service_role_execute, true);
+assert.equal(deployed.privileges.process_v2_anon_execute, false);
+assert.equal(deployed.privileges.process_v2_authenticated_execute, false);
+assert.equal(deployed.privileges.identity_rpc_service_role_execute, true);
+assert.equal(deployed.privileges.identity_rpc_anon_execute, false);
+assert.equal(deployed.privileges.identity_rpc_authenticated_execute, false);
+assert.equal(deployed.write_boundary.product_fact_current_delta, 0);
+assert.equal(deployed.write_boundary.selected_subject_delta, 0);
+assert.equal(deployed.write_boundary.selected_v2_task_delta, 0);
+assert.equal(deployed.decision, "V21_8G0_PRODUCTION_MIGRATION_READBACK_PASS");
+assert.equal(deployed.next_gate, "V2.1-8G1_SELECTED_12_SUBJECT_IDENTITY");
+
+const closeout = fs.readFileSync(
+  "docs/evidence/v21-8g0-registry-pinned-reconciliation-closeout-v1.md",
+  "utf8",
+);
+assert.ok(closeout.includes("26/26"));
+assert.ok(closeout.includes("Product Fact Current delta = 0"));
+assert.ok(closeout.includes("8G1 has not started"));
+
 console.log(JSON.stringify({
   status: "PASS",
   stage: "V2.1-8G0",
