@@ -247,6 +247,45 @@ assert.equal(
   "pilot_capture_response_meta_invalid"
 );
 
+
+const liveCaseId =
+  "face-lab-review:123e4567-e89b-12d3-a456-426614174000";
+
+const liveCapture =
+  buildFaceLabSimulationPilotCapture({
+    ...input,
+    caseId:
+      liveCaseId,
+    responseMeta: {
+      ...input.responseMeta,
+      reviewCaseId:
+        liveCaseId
+    },
+    identityScopeReview: {
+      ...identityScopeReview,
+      caseId:
+        liveCaseId
+    },
+    routeColorReview: {
+      ...routeColorReview,
+      caseId:
+        liveCaseId
+    }
+  });
+
+assert.equal(
+  liveCapture.status,
+  "ready"
+);
+assert.equal(
+  liveCapture.fileNames.manifest,
+  "face-lab-review%3A123e4567-e89b-12d3-a456-426614174000.evidence-input.json"
+);
+assert.equal(
+  liveCapture.manifest.caseId,
+  liveCaseId
+);
+
 const unsafeCaseId =
   buildFaceLabSimulationPilotCapture({
     ...input,

@@ -317,6 +317,46 @@ assert.deepEqual(
   }
 );
 
+const colonCaseId =
+  "face-lab-review:123e4567-e89b-12d3-a456-426614174000";
+const colonResult =
+  buildFaceLabSimulationPilotCaseArtifacts({
+    runSpec,
+    captureManifest: {
+      ...captureManifest,
+      caseId:
+        colonCaseId
+    },
+    canonicalSourceImageBytes:
+      Buffer.from("source"),
+    outputImageBytes:
+      Buffer.from("output"),
+    identityScopeReview: {
+      ...identityScopeReview,
+      caseId:
+        colonCaseId
+    },
+    routeColorReview: {
+      ...routeColorReview,
+      caseId:
+        colonCaseId
+    }
+  });
+
+assert.equal(
+  colonResult.status,
+  "ready"
+);
+assert.deepEqual(
+  colonResult.outputNames,
+  {
+    evidencePacket:
+      "face-lab-review%3A123e4567-e89b-12d3-a456-426614174000.evidence-packet.json",
+    calibrationCase:
+      "face-lab-review%3A123e4567-e89b-12d3-a456-426614174000.calibration-case.json"
+  }
+);
+
 const serialized =
   JSON.stringify(result);
 
@@ -447,8 +487,8 @@ const cliSource =
   );
 
 for (const required of [
-  'path.basename(',
-  ') !== "private"',
+  "findPrivateRoot",
+  '"private"',
   "resolveContainedPath",
   "canonicalizeImageBytes",
   "detectImageSignature",

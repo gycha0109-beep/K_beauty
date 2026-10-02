@@ -1,0 +1,369 @@
+#!/usr/bin/env node
+
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import path from "node:path";
+import {
+  spawnSync
+} from "node:child_process";
+import {
+  fileURLToPath
+} from "node:url";
+import {
+  aggregateFaceLabSimulationCalibration
+} from "../lib/face-lab-v2/evaluation/simulation-calibration.js";
+import {
+  faceLabPrivateArtifactStem
+} from "../lib/face-lab-v2/evaluation/private-artifact-filename.js";
+
+const campaignDirectory =
+  path.resolve(
+    process.argv[2] ||
+    process.env
+      .FACE_LAB_G_E2B_PRIVATE_CAMPAIGN ||
+    ""
+  );
+
+if (
+  !campaignDirectory ||
+  campaignDirectory ===
+    path.resolve("")
+) {
+  throw new Error(
+    "Provide the private G-E2B campaign directory"
+  );
+}
+
+function findPrivateRoot(
+  directory
+) {
+  let current =
+    path.resolve(directory);
+
+  while (true) {
+    if (
+      path.basename(current) ===
+        "private"
+    ) {
+      return current;
+    }
+
+    const parent =
+      path.dirname(current);
+
+    if (parent === current) {
+      return null;
+    }
+
+    current = parent;
+  }
+}
+
+if (
+  !findPrivateRoot(
+    campaignDirectory
+  )
+) {
+  throw new Error(
+    "campaign_directory_must_be_under_private"
+  );
+}
+
+async function readJson(
+  filePath
+) {
+  return JSON.parse(
+    await fs.readFile(
+      filePath,
+      "utf8"
+    )
+  );
+}
+
+async function writeJson(
+  filePath,
+  value
+) {
+  await fs.writeFile(
+    filePath,
+    `${JSON.stringify(
+      value,
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+}
+
+const names =
+  await fs.readdir(
+    campaignDirectory
+  );
+const runSpecNames =
+  names.filter(
+    (name) =>
+      name.endsWith(
+        ".pilot-case-run.json"
+      )
+  );
+
+assert.equal(
+  runSpecNames.length,
+  8,
+  "g_e2b_requires_exactly_eight_reviewed_run_specs"
+);
+
+const descriptors = [];
+
+for (
+  const name of
+  runSpecNames
+) {
+  const runSpecPath =
+    path.join(
+      campaignDirectory,
+      name
+    );
+  const runSpec =
+    await readJson(
+      runSpecPath
+    );
+  const capturePath =
+    path.resolve(
+      campaignDirectory,
+      runSpec
+        .captureManifestPath
+    );
+
+  if (
+    path.dirname(
+      capturePath
+    ) !==
+      campaignDirectory
+  ) {
+    throw new Error(
+      "capture_manifest_must_remain_in_campaign_directory"
+    );
+  }
+
+  const capture =
+    await readJson(
+      capturePath
+    );
+  const stem =
+    faceLabPrivateArtifactStem(
+      capture.caseId
+    );
+
+  if (!stem) {
+    throw new Error(
+      "campaign_case_id_invalid"
+    );
+  }
+
+  descriptors.push({
+    name,
+    runSpec,
+    runSpecPath,
+    caseId:
+      capture.caseId,
+    stem
+  });
+}
+
+descriptors.sort(
+  (left, right) => {
+    const groupOrder =
+      String(
+        left.runSpec
+          .intentGroupId
+      ).localeCompare(
+        String(
+          right.runSpec
+            .intentGroupId
+        )
+      );
+
+    return groupOrder ||
+      left.runSpec
+        .generationIndex -
+        right.runSpec
+          .generationIndex;
+  }
+);
+
+const campaignIds =
+  new Set(
+    descriptors.map(
+      (item) =>
+        item.runSpec
+          .campaignId
+    )
+  );
+assert.equal(
+  campaignIds.size,
+  1,
+  "campaign_id_mismatch"
+);
+
+const intentGroups =
+  new Map();
+
+for (
+  const item of
+  descriptors
+) {
+  const group =
+    item.runSpec
+      .intentGroupId;
+  const generations =
+    intentGroups.get(
+      group
+    ) || [];
+
+  generations.push(
+    item.runSpec
+      .generationIndex
+  );
+  intentGroups.set(
+    group,
+    generations
+  );
+}
+
+assert.equal(
+  intentGroups.size,
+  4,
+  "g_e2b_requires_four_intent_groups"
+);
+
+for (
+  const generations of
+  intentGroups.values()
+) {
+  assert.deepEqual(
+    generations.sort(
+      (a, b) =>
+        a - b
+    ),
+    [1, 2],
+    "each_intent_group_requires_generation_1_and_2"
+  );
+}
+
+const runnerPath =
+  fileURLToPath(
+    new URL(
+      "./run-face-lab-v2-simulation-pilot-case.mjs",
+      import.meta.url
+    )
+  );
+
+for (
+  const item of
+  descriptors
+) {
+  const result =
+    spawnSync(
+      process.execPath,
+      [
+        runnerPath,
+        item.runSpecPath
+      ],
+      {
+        stdio: "inherit"
+      }
+    );
+
+  if (
+    result.status !== 0
+  ) {
+    throw new Error(
+      `pilot_case_failed_${item.caseId}`
+    );
+  }
+}
+
+const calibrationCases =
+  [];
+
+for (
+  const item of
+  descriptors
+) {
+  const casePath =
+    path.join(
+      campaignDirectory,
+      `${item.stem}.calibration-case.json`
+    );
+
+  calibrationCases.push(
+    await readJson(
+      casePath
+    )
+  );
+}
+
+const campaignId =
+  [...campaignIds][0];
+const aggregate =
+  aggregateFaceLabSimulationCalibration({
+    campaignId,
+    cases:
+      calibrationCases
+  });
+
+if (
+  aggregate.status !==
+    "ready"
+) {
+  console.log(
+    JSON.stringify(
+      aggregate,
+      null,
+      2
+    )
+  );
+  process.exitCode = 1;
+} else {
+  const aggregateInput = {
+    campaignId,
+    casePaths:
+      descriptors.map(
+        (item) =>
+          `./${item.stem}.calibration-case.json`
+      )
+  };
+
+  await writeJson(
+    path.join(
+      campaignDirectory,
+      "campaign.aggregate-input.json"
+    ),
+    aggregateInput
+  );
+  await writeJson(
+    path.join(
+      campaignDirectory,
+      "campaign.aggregate.json"
+    ),
+    aggregate
+  );
+
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        verdict:
+          "FACE_LAB_G_E2C_AGGREGATE_READY",
+        campaignId,
+        caseCount:
+          calibrationCases.length,
+        aggregatePath:
+          "./campaign.aggregate.json"
+      },
+      null,
+      2
+    )
+  );
+}

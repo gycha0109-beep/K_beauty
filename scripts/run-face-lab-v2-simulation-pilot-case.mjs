@@ -36,13 +36,39 @@ const privateDirectory =
     resolvedRunSpecPath
   );
 
-if (
-  path.basename(
-    privateDirectory
-  ) !== "private"
+function findPrivateRoot(
+  directory
 ) {
+  let current =
+    path.resolve(directory);
+
+  while (true) {
+    if (
+      path.basename(current) ===
+        "private"
+    ) {
+      return current;
+    }
+
+    const parent =
+      path.dirname(current);
+
+    if (parent === current) {
+      return null;
+    }
+
+    current = parent;
+  }
+}
+
+const privateRoot =
+  findPrivateRoot(
+    privateDirectory
+  );
+
+if (!privateRoot) {
   throw new Error(
-    "pilot_case_run_spec_must_be_in_private_directory"
+    "pilot_case_run_spec_must_be_under_private_directory"
   );
 }
 
