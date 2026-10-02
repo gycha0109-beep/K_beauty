@@ -752,6 +752,146 @@ assert.equal(
   false
 );
 
+const retryEvents = [];
+let retryAttemptCount = 0;
+
+const retryResult =
+  await executeOpenAiImageEdit({
+    apiKey: "sk-test-redacted",
+    imageBuffer: sourcePng,
+    mimeType: "image/png",
+    instruction:
+      compiled.instruction,
+    fetchImpl: async () => {
+      retryAttemptCount += 1;
+
+      if (
+        retryAttemptCount === 1
+      ) {
+        return new Response(
+          JSON.stringify({
+            error: {
+              message:
+                "rate limited fixture"
+            }
+          }),
+          {
+            status: 429,
+            headers: {
+              "content-type":
+                "application/json",
+              "retry-after-ms":
+                "0"
+            }
+          }
+        );
+      }
+
+      return new Response(
+        JSON.stringify(
+          providerPayload
+        ),
+        {
+          status: 200,
+          headers: {
+            "content-type":
+              "application/json",
+            "x-request-id":
+              "req_retry_fixture"
+          }
+        }
+      );
+    },
+    logEvent: (event) => {
+      retryEvents.push(
+        structuredClone(event)
+      );
+      return event;
+    }
+  });
+
+assert.equal(
+  retryAttemptCount,
+  2
+);
+assert.equal(
+  retryResult.requestId,
+  "req_retry_fixture"
+);
+assert.deepEqual(
+  retryResult.imageBytes,
+  outputPng
+);
+assert.equal(
+  retryEvents.length,
+  2
+);
+assert.equal(
+  retryEvents[0].ok,
+  false
+);
+assert.equal(
+  retryEvents[0].status,
+  429
+);
+assert.equal(
+  retryEvents[0].errorCategory,
+  "rate_limited_retry"
+);
+assert.equal(
+  retryEvents[0].attempt,
+  1
+);
+assert.equal(
+  retryEvents[0].retryDelayMs,
+  0
+);
+assert.equal(
+  retryEvents[1].ok,
+  true
+);
+
+let exhaustedAttemptCount = 0;
+
+await assert.rejects(
+  () =>
+    executeOpenAiImageEdit({
+      apiKey: "sk-test",
+      imageBuffer: sourcePng,
+      mimeType: "image/png",
+      instruction:
+        compiled.instruction,
+      fetchImpl:
+        async () => {
+          exhaustedAttemptCount += 1;
+          return new Response(
+            JSON.stringify({
+              error: {
+                message:
+                  "rate limited fixture"
+              }
+            }),
+            {
+              status: 429,
+              headers: {
+                "content-type":
+                  "application/json",
+                "retry-after-ms":
+                  "0"
+              }
+            }
+          );
+        },
+      logEvent: () => {}
+    }),
+  /provider_http_429/
+);
+
+assert.equal(
+  exhaustedAttemptCount,
+  2
+);
+
 await assert.rejects(
   () =>
     executeOpenAiImageEdit({
@@ -1048,6 +1188,8 @@ console.log(JSON.stringify({
     "provider_config_non_authority_exclusions",
     "provider_config_privacy",
     "provider_config_result_validation",
+    "provider_429_retry_once",
+    "provider_429_retry_exhaustion",
     "provider_redirect_rejection",
     "input_signature_validation",
     "output_signature_validation",
