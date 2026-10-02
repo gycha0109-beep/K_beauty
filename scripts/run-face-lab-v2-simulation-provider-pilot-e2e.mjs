@@ -277,7 +277,11 @@ async function postFaceReading({ baseUrl, sourcePath, sourceBytes, mimeType, tok
   };
 }
 
-function buildPilotIntents(analysis, intentCount) {
+function buildPilotIntents(
+  analysis,
+  intentCount,
+  intentOffset = 0
+) {
   const coverage = buildFaceLabV2CoverageCohort();
   const groups = new Map();
 
@@ -288,14 +292,29 @@ function buildPilotIntents(analysis, intentCount) {
     groups.get(targetKey).push(caseDef);
   }
 
-  const selectedTargets = [...groups.entries()].slice(0, intentCount);
-  if (selectedTargets.length !== intentCount) {
-    throw new Error("pilot_distinct_target_coverage_insufficient");
+  const targetEntries =
+    [...groups.entries()];
+  const selectedTargets =
+    targetEntries.slice(
+      intentOffset,
+      intentOffset + intentCount
+    );
+
+  if (
+    selectedTargets.length !==
+      intentCount
+  ) {
+    throw new Error(
+      "pilot_distinct_target_coverage_insufficient"
+    );
   }
 
   return selectedTargets.map(([targetKey, cases], index) => {
+    const globalIndex =
+      intentOffset + index;
+
     for (let offset = 0; offset < cases.length; offset += 1) {
-      const source = cases[(index + offset) % cases.length];
+      const source = cases[(globalIndex + offset) % cases.length];
       const surveyAnswers = source?.surveyAnswers;
       const preview = buildFaceLabV2Canonical({
         analysis,
@@ -320,7 +339,7 @@ function buildPilotIntents(analysis, intentCount) {
       }
 
       return {
-        intentGroupId: `intent-${String(index + 1).padStart(2, "0")}`,
+        intentGroupId: `intent-${String(globalIndex + 1).padStart(2, "0")}`,
         targetKey,
         scopeProfile: source.tags?.find((tag) => tag.startsWith("scope_profile:")) || null,
         surveyAnswers,
@@ -431,11 +450,63 @@ async function main() {
   const privateRoot = resolve(process.cwd(), process.env.FACE_LAB_E2E_PRIVATE_ROOT || "private");
   const persistOutputs = process.env.FACE_LAB_E2E_PERSIST_OUTPUTS === "1" || (!process.env.CI && process.env.FACE_LAB_E2E_PERSIST_OUTPUTS !== "0");
   const intentCount = parseBoundedInt("FACE_LAB_E2E_INTENTS", 4, 1, 4);
+  const intentOffset = parseBoundedInt("FACE_LAB_E2E_INTENT_OFFSET", 0, 0, 11);
   const generationsPerIntent = parseBoundedInt("FACE_LAB_E2E_GENERATIONS", 2, 1, 2);
   const campaignId = safeCampaignId(process.env.FACE_LAB_E2E_CAMPAIGN_ID || defaultCampaignId());
+  const campaignRootName = String(
+    process.env.FACE_LAB_E2E_CAMPAIGN_ROOT ||
+      "face-lab-g-e2b"
+  ).trim();
+  const waveId = String(
+    process.env.FACE_LAB_E2E_WAVE_ID ||
+      ""
+  ).trim();
+  const calibrationStage = String(
+    process.env.FACE_LAB_E2E_CALIBRATION_STAGE ||
+      "G-E2B"
+  ).trim();
 
   if (basename(privateRoot) !== "private") {
     throw new Error("face_lab_e2e_private_root_must_be_private");
+  }
+
+  if (
+    !["face-lab-g-e2b", "face-lab-g-e3"].includes(
+      campaignRootName
+    )
+  ) {
+    throw new Error(
+      "face_lab_e2e_campaign_root_invalid"
+    );
+  }
+
+  if (
+    intentOffset + intentCount > 12
+  ) {
+    throw new Error(
+      "face_lab_e2e_intent_window_invalid"
+    );
+  }
+
+  if (
+    waveId &&
+    !/^wave-0[1-3]$/.test(
+      waveId
+    )
+  ) {
+    throw new Error(
+      "face_lab_e2e_wave_id_invalid"
+    );
+  }
+
+  if (
+    !["G-E2B", "G-E3"].includes(
+      calibrationStage
+    )
+  ) {
+    throw new Error(
+      "face_lab_e2e_calibration_stage_invalid"
+    );
   }
 
   const [sourceBytes, publicConfig] = await Promise.all([
@@ -507,8 +578,24 @@ async function main() {
     mimeType,
     token: accountA.accessToken
   });
-  const intents = buildPilotIntents(reading.analysis, intentCount);
-  const campaignDir = resolve(privateRoot, "face-lab-g-e2b", campaignId);
+  const intents = buildPilotIntents(
+    reading.analysis,
+    intentCount,
+    intentOffset
+  );
+  const campaignDir =
+    waveId
+      ? resolve(
+          privateRoot,
+          campaignRootName,
+          campaignId,
+          waveId
+        )
+      : resolve(
+          privateRoot,
+          campaignRootName,
+          campaignId
+        );
   const cases = [];
   let runtimeBinding = null;
   let sequence = 0;
@@ -607,6 +694,10 @@ async function main() {
           `${JSON.stringify({
             schemaVersion: "face-lab-g-e2b-provider-review-input-v1",
             campaignId,
+            calibrationStage,
+            waveId:
+              waveId || null,
+            intentOffset,
             caseId: simulation.meta.reviewCaseId,
             intentGroupId: intent.intentGroupId,
             generationIndex,
@@ -651,6 +742,11 @@ async function main() {
     schemaVersion: "face-lab-g-e2b-provider-pilot-e2e-v1",
     status: "complete",
     campaignId,
+    calibrationStage,
+    campaignRootName,
+    waveId:
+      waveId || null,
+    intentOffset,
     baseHost: new URL(baseUrl).hostname,
     intentCount,
     generationsPerIntent,
