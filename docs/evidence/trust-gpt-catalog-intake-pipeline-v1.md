@@ -34,6 +34,8 @@ Before catalog admission the runtime must:
 
 No value claimed by ChatGPT becomes Product Fact Current merely because it was present in the input.
 
+TRUST task reconciliation is explicitly pinned to `product-fact-registry-cross-category-v1` and routed through `process_catalog_trust_product_v3(product_id, registry_version)`. A newer Registry being globally latest does not grant this GPT intake path authority to create that newer Registry lineage; its per-Fact write policy must be separately authorized.
+
 ## Supported categories
 
 Automatic admission is currently limited to Product Fact policy-backed skincare categories:

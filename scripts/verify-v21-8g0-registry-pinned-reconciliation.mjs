@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const migrationPath = "supabase/migrations/20261002142000_v21_8g0_registry_pinned_reconciliation_v1.sql";
+const migrationPath = "supabase/migrations/20261002142611_v21_8g0_registry_pinned_reconciliation_v1.sql";
 const prestatePath = "evidence/product-fact-catalog-expansion-v1/v21-8g0-registry-pinned-reconciliation-prestate-v1.json";
 const selectionPath = "evidence/product-fact-catalog-expansion-v1/coverage-expansion-wave-1-selection-v2.json";
 

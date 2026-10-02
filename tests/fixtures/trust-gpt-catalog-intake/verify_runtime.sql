@@ -49,6 +49,9 @@ declare
   v_other_result jsonb;
   v_other_tasks_before jsonb;
   v_other_tasks_after jsonb;
+  v_v2_probe_tasks_before jsonb;
+  v_v2_probe_tasks_after jsonb;
+  v_latest_registry text;
   v_task_count integer;
 begin
   v_payload := jsonb_build_object(
@@ -98,6 +101,88 @@ begin
   then
     raise exception 'GPT_E2E_SUPPORTED_INGEST_FAILED:%', v_result;
   end if;
+
+  reset role;
+
+  select registry_version into v_latest_registry
+  from public.product_fact_registry_versions
+  order by effective_at desc nulls last, created_at desc
+  limit 1;
+
+  if v_latest_registry is distinct from 'product-fact-registry-cross-category-v2' then
+    raise exception 'GPT_E2E_LATEST_REGISTRY_NOT_V2:%', v_latest_registry;
+  end if;
+
+  if (
+    select count(*)::integer
+    from public.product_fact_research_tasks
+    where product_id = (v_result ->> 'product_id')::uuid
+      and registry_version = 'product-fact-registry-cross-category-v1'
+      and fact_key in ('spf_value','uva_label','uv_filter_type')
+  ) <> 3
+  or exists (
+    select 1
+    from public.product_fact_research_tasks
+    where product_id = (v_result ->> 'product_id')::uuid
+      and registry_version <> 'product-fact-registry-cross-category-v1'
+  ) then
+    raise exception 'GPT_E2E_REGISTRY_PIN_V1_FAILED:%', v_result;
+  end if;
+
+  select coalesce(
+    jsonb_agg(jsonb_build_object(
+      'id',id,
+      'registry_version',registry_version,
+      'fact_key',fact_key,
+      'state',state,
+      'attempt_count',attempt_count,
+      'subject_id',subject_id,
+      'updated_at',updated_at
+    ) order by id),
+    '[]'::jsonb
+  )
+  into v_v2_probe_tasks_before
+  from public.product_fact_research_tasks
+  where product_id = (v_result ->> 'product_id')::uuid;
+
+  set local role service_role;
+
+  begin
+    perform public.process_catalog_trust_product_v3(
+      (v_result ->> 'product_id')::uuid,
+      'product-fact-registry-cross-category-v2'
+    );
+    raise exception 'GPT_E2E_V2_POLICY_PROBE_NOT_BLOCKED';
+  exception
+    when check_violation then
+      null;
+  end;
+
+  reset role;
+
+  select coalesce(
+    jsonb_agg(jsonb_build_object(
+      'id',id,
+      'registry_version',registry_version,
+      'fact_key',fact_key,
+      'state',state,
+      'attempt_count',attempt_count,
+      'subject_id',subject_id,
+      'updated_at',updated_at
+    ) order by id),
+    '[]'::jsonb
+  )
+  into v_v2_probe_tasks_after
+  from public.product_fact_research_tasks
+  where product_id = (v_result ->> 'product_id')::uuid;
+
+  if v_v2_probe_tasks_after is distinct from v_v2_probe_tasks_before then
+    raise exception 'GPT_E2E_V2_POLICY_FAIL_CLOSED_MUTATED_TASKS:%:%',
+      v_v2_probe_tasks_before,
+      v_v2_probe_tasks_after;
+  end if;
+
+  set local role service_role;
 
   v_replay := public.ingest_gpt_catalog_product_v1(
     'gpt-e2e-supported-sunscreen-001',
@@ -311,5 +396,8 @@ select jsonb_build_object(
   'automatic_confirmation',false,
   'unsupported_makeup_activation',false,
   'authenticated_ingest_denied',true,
-  'cross_product_claim_isolation',true
+  'cross_product_claim_isolation',true,
+  'latest_registry_v2',true,
+  'gpt_registry_pinned_v1',true,
+  'v2_policy_missing_fail_closed',true
 ) as result;

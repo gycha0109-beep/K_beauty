@@ -12,6 +12,9 @@ const REGISTRY_SOURCE = path.join(
   "cross-category-registry-v1.json",
 );
 const REGISTRY_FIXTURE_MIGRATION = "20260909000000_trust_gpt_catalog_registry_fixture_v1.sql";
+const REGISTRY_AUTHORITY_SOURCE_MIGRATION = "20261001103000_data_ai29c_uva_r3d_registry_coexistence_v1.sql";
+const REGISTRY_AUTHORITY_FIXTURE_MIGRATION = "20261001103000_trust_gpt_catalog_registry_authority_fixture_v1.sql";
+const LATEST_REGISTRY_FIXTURE_MIGRATION = "20261002000000_trust_gpt_catalog_registry_v2_fixture_v1.sql";
 const MIGRATIONS = [
   "20260809115932_product_fact_storage_v1.sql",
   "20260810174400_product_fact_controlled_write_v1.sql",
@@ -34,6 +37,8 @@ const MIGRATIONS = [
   "20260915131141_trust_phase3_research_worker_v1.sql",
   "20260915155618_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql",
   "20261001183000_trust_gpt_catalog_intake_pipeline_v1.sql",
+  "20261002142611_v21_8g0_registry_pinned_reconciliation_v1.sql",
+  "20261002153238_v21_8g1_identity_authority_preservation_v1.sql",
 ];
 
 function fail(message) {
@@ -158,6 +163,82 @@ await writeFile(
   "utf8",
 );
 
+const registryAuthoritySource = await readFile(
+  path.join(ROOT, "supabase", "migrations", REGISTRY_AUTHORITY_SOURCE_MIGRATION),
+  "utf8",
+);
+const authorityCoreStart = registryAuthoritySource.indexOf(
+  "create table public.product_fact_registry_fact_write_policy_v1",
+);
+const authorityCoreEnd = registryAuthoritySource.indexOf(
+  "create or replace function public.admin_set_product_fact_registry_fact_write_policy_v1",
+);
+const authoritySeedStart = registryAuthoritySource.indexOf(
+  "do $seed$",
+);
+const authoritySeedEnd = registryAuthoritySource.indexOf(
+  "create or replace function public.admin_prepare_product_fact_review_v1",
+);
+if (
+  authorityCoreStart < 0 ||
+  authorityCoreEnd <= authorityCoreStart ||
+  authoritySeedStart < 0 ||
+  authoritySeedEnd <= authoritySeedStart
+) {
+  fail("TRUST_GPT_CATALOG_E2E_REGISTRY_AUTHORITY_SOURCE_INVALID");
+}
+const registryAuthorityFixtureSql = [
+  "-- GENERATED FROM the canonical DATA-AI29C-UVA-R3D migration.",
+  "-- TEST / LOCAL REPLAY ONLY. NOT A PRODUCTION MIGRATION.",
+  "begin;",
+  "",
+  registryAuthoritySource.slice(authorityCoreStart, authorityCoreEnd).trim(),
+  "",
+  registryAuthoritySource.slice(authoritySeedStart, authoritySeedEnd).trim(),
+  "",
+  "commit;",
+  "",
+].join("\n");
+await writeFile(
+  path.join(migrationDir, REGISTRY_AUTHORITY_FIXTURE_MIGRATION),
+  registryAuthorityFixtureSql,
+  "utf8",
+);
+
+const latestRegistryFixtureSql = [
+  "-- TEST / LOCAL REPLAY ONLY. Simulates Production where Registry v2 is latest",
+  "-- while carried-forward sunscreen keys have no v2 write-policy authority.",
+  "begin;",
+  "",
+  "insert into public.product_fact_registry_versions (",
+  "  registry_version, registry_checksum, identity_serializer_version, effective_at",
+  ") values (",
+  "  'product-fact-registry-cross-category-v2',",
+  "  '923256ca2468b2af31e1b7026655739408035daf62d3ff40a7132eca22afddd7',",
+  "  'product-fact-subject-identity-v1',",
+  "  null",
+  ")",
+  "on conflict (registry_version) do nothing;",
+  "",
+  "insert into public.product_fact_definition_snapshots (",
+  "  registry_version, fact_key, value_type, definition, definition_checksum, deprecated, superseded_by_fact_key",
+  ")",
+  "select",
+  "  'product-fact-registry-cross-category-v2',",
+  "  fact_key, value_type, definition, definition_checksum, deprecated, superseded_by_fact_key",
+  "from public.product_fact_definition_snapshots",
+  "where registry_version = 'product-fact-registry-cross-category-v1'",
+  "on conflict (registry_version, fact_key) do nothing;",
+  "",
+  "commit;",
+  "",
+].join("\n");
+await writeFile(
+  path.join(migrationDir, LATEST_REGISTRY_FIXTURE_MIGRATION),
+  latestRegistryFixtureSql,
+  "utf8",
+);
+
 const manifest = {
   contract: "trust-gpt-catalog-intake-isolated-e2e-runtime-v1",
   local_only: true,
@@ -167,6 +248,9 @@ const manifest = {
   registry_fixture_source: path.relative(ROOT, REGISTRY_SOURCE).replaceAll(path.sep, "/"),
   registry_fixture_migration: REGISTRY_FIXTURE_MIGRATION,
   registry_fixture_fact_count: registry.facts.length,
+  registry_authority_source_migration: REGISTRY_AUTHORITY_SOURCE_MIGRATION,
+  registry_authority_fixture_migration: REGISTRY_AUTHORITY_FIXTURE_MIGRATION,
+  latest_registry_fixture_migration: LATEST_REGISTRY_FIXTURE_MIGRATION,
   post_baseline_migrations: MIGRATIONS,
 };
 await writeFile(
