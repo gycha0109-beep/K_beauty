@@ -109,7 +109,9 @@
     "verify:data-ai25:launch-ops": "node scripts/verify-data-ai25-launch-ops.mjs",
     "verify:face-lab-v2-provider-pilot-evidence": "node scripts/verify-face-lab-v2-provider-pilot-execution-evidence.mjs",
     "verify:face-lab-v2-private-review-board": "node scripts/verify-face-lab-v2-g-e2b-private-review-board.mjs",
-    "run:face-lab-v2-g-e2b-private-campaign": "node scripts/run-face-lab-v2-g-e2b-private-campaign.mjs"
+    "run:face-lab-v2-g-e2b-private-campaign": "node scripts/run-face-lab-v2-g-e2b-private-campaign.mjs",
+    "run:face-lab-v2-g-e2b-local-pilot": "node scripts/run-face-lab-v2-g-e2b-local-pilot.mjs",
+    "verify:face-lab-v2-g-e2b-local-launcher": "node scripts/verify-face-lab-v2-g-e2b-local-launcher.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
