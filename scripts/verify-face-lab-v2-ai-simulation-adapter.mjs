@@ -780,8 +780,8 @@ const retryResult =
             headers: {
               "content-type":
                 "application/json",
-              "retry-after-ms":
-                "0"
+              "retry-after":
+                "0.001"
             }
           }
         );
@@ -844,7 +844,8 @@ assert.equal(
 );
 assert.equal(
   retryEvents[0].retryDelayMs,
-  0
+  1,
+  "standard Retry-After must be honored when retry-after-ms is absent"
 );
 assert.equal(
   retryEvents[1].ok,
