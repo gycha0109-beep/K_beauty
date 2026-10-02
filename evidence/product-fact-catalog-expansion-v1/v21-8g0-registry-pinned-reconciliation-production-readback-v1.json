@@ -1,0 +1,54 @@
+{
+  "version": "v21-8g0-registry-pinned-reconciliation-production-readback-v1",
+  "stage": "V2.1-8G0",
+  "source_pr": 1044,
+  "source_head_sha": "622ba82d06cbaa8abbbe1ec1e4f56d53a711ff7c",
+  "migration": {
+    "name": "v21_8g0_registry_pinned_reconciliation_v1",
+    "production_version": "20261002142611",
+    "applied": true
+  },
+  "runtime_probe": {
+    "v2_policy_missing_fail_closed_before_mutation": true,
+    "v1_explicit_registry_path_executable": true,
+    "v1_probe_rolled_back": true
+  },
+  "production_readback": {
+    "current_product_facts": 95,
+    "selected_subjects": 0,
+    "selected_null_market_intakes": 12,
+    "selected_v1_tasks": 26,
+    "selected_v2_tasks": 0,
+    "selected_pristine_required_tasks": 26,
+    "exact_frozen_task_ids_matched": 26,
+    "exact_frozen_task_rows_unchanged": 26
+  },
+  "deployed_function_contract": {
+    "process_catalog_trust_product_v2_exists": true,
+    "admin_resolve_catalog_trust_intake_identity_v1_exists": true,
+    "no_latest_registry_selection": true,
+    "registry_write_policy_gate": true,
+    "full_product_preflight_before_resolver": true,
+    "identity_source_authority_fields": true
+  },
+  "privileges": {
+    "process_v2_service_role_execute": true,
+    "process_v2_anon_execute": false,
+    "process_v2_authenticated_execute": false,
+    "identity_rpc_service_role_execute": true,
+    "identity_rpc_anon_execute": false,
+    "identity_rpc_authenticated_execute": false
+  },
+  "write_boundary": {
+    "product_fact_current_delta": 0,
+    "selected_subject_delta": 0,
+    "selected_v1_task_count_delta": 0,
+    "selected_v2_task_delta": 0,
+    "selected_task_state_delta": 0,
+    "evidence_writes": 0,
+    "recommendation_changes": 0,
+    "public_activation": false
+  },
+  "decision": "V21_8G0_PRODUCTION_MIGRATION_READBACK_PASS",
+  "next_gate": "V2.1-8G1_SELECTED_12_SUBJECT_IDENTITY"
+}

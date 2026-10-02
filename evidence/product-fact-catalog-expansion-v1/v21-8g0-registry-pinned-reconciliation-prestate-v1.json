@@ -1,0 +1,78 @@
+{
+  "version": "v21-8g0-registry-pinned-reconciliation-prestate-v1",
+  "stage": "V2.1-8G0",
+  "source_main_sha": "af15434ab3315576e5cd234b8777f936e95d942e",
+  "production_project": "bygrczggxfuisupcevaz",
+  "selected_batch_authority": "coverage-expansion-wave-1-selection-v2",
+  "snapshot": {
+    "catalog_products": 175,
+    "adopted_products": 32,
+    "current_product_facts": 95,
+    "selected_products": 12,
+    "selected_subjects": 0,
+    "selected_intakes_with_null_market": 12,
+    "selected_required_tasks": 26,
+    "selected_v2_required_tasks": 0
+  },
+  "task_contract": {
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "state": "REVIEW_REQUIRED",
+    "blocker_code": "SUBJECT_CREATION_REQUIRED",
+    "attempt_count": 0,
+    "subject_id": null,
+    "task_ids": [
+      "2d41d0f1-fd3e-4a8c-9bd3-35e8f1438459",
+      "64485266-e135-4f9a-baa0-9c9addf8669e",
+      "d181a158-d816-44a4-ae1c-6aa9c41414cc",
+      "e08328cc-3213-4970-8122-c9c62f2de987",
+      "00f76198-4f61-4416-88e6-edf83fba0414",
+      "0e567f54-a8ec-434a-9562-d3ad0fb88a0f",
+      "8a86b5a4-6c45-4283-b607-d1e95884ffd8",
+      "47699358-41b4-4bee-803d-8bd5274ce8ee",
+      "194b2a1a-43e4-4691-99d1-bd5b1fc59bfa",
+      "41007337-a35f-4f1a-87d4-4b87bd9d568f",
+      "ec41b166-a5da-478c-8b67-371a2c081716",
+      "bfd3d47c-0fcf-4e80-8307-cf85581b4043",
+      "1b6ec496-6a94-4159-a5ec-f3a5a801d295",
+      "35090d4c-9c0c-419b-86a2-a572233eca29",
+      "f133d067-a5f6-44fc-a3f5-6b8706d35c9a",
+      "b1ee9a58-538d-4032-a0fe-690c1e82f751",
+      "a125b39f-a53b-48f8-b1d9-26310a6daa84",
+      "66f0d4df-c1a8-4b67-869a-8ef8b5528779",
+      "bc3f3808-1487-4827-bd7f-52c79b6c53c1",
+      "d10c40bc-7c4d-4b6f-b78d-42d5d9743fe5",
+      "cf143b70-f9ba-4d57-aa30-2e13da39de25",
+      "46f6bd75-3c64-4edb-ab38-92c1b5897b90",
+      "361d7e50-dc94-47b6-a770-b879fd67b6a7",
+      "a513f5fd-4ef0-4372-9272-5e6e8cd3366c",
+      "cfc6f2e5-3d41-4c54-b973-308b06c37972",
+      "1b2062c6-9a3d-4fe4-b192-4c1ac06dda2c"
+    ]
+  },
+  "required_fact_keys": [
+    "barrier_support_claim",
+    "contains_active",
+    "deep_cleansing",
+    "low_ph",
+    "pad_surface_texture",
+    "primary_use_role",
+    "product_format",
+    "wipe_off_use"
+  ],
+  "registry_write_policy": {
+    "v1_existing": "ALLOWED_8_OF_8",
+    "v1_new": "ALLOWED_8_OF_8",
+    "v2_existing": "POLICY_MISSING_8_OF_8",
+    "v2_new": "POLICY_MISSING_8_OF_8",
+    "definition_checksum_equal_v1_v2": "0_OF_8"
+  },
+  "write_boundary": {
+    "product_fact_current_writes": 0,
+    "subject_writes": 0,
+    "evidence_writes": 0,
+    "selected_task_mutations": 0,
+    "recommendation_changes": 0,
+    "public_activation": false
+  },
+  "decision": "V21_8G0_PRESTATE_FROZEN"
+}
