@@ -12,6 +12,7 @@ import {
   buildUnavailablePremiumFaceLab
 } from "@/lib/premium-face-lab";
 import { FACE_LAB_PRODUCTION_DAILY_LIMIT } from "@/lib/face-lab-usage-policy";
+import { buildFaceLabSimulationPilotCapture } from "@/lib/face-lab-v2/evaluation/simulation-pilot-capture";
 
 const ACCEPTED_TYPES = new Set([
   "image/jpeg",
@@ -79,6 +80,44 @@ function reviewErrorMessage(code) {
   return "시뮬레이션 검토 정보를 처리하지 못했습니다.";
 }
 
+function jsonFileBlob(value) {
+  return new Blob(
+    [`${JSON.stringify(value, null, 2)}\n`],
+    {
+      type:
+        "application/json"
+    }
+  );
+}
+
+async function writeDirectoryFile(
+  directory,
+  name,
+  data
+) {
+  const handle =
+    await directory.getFileHandle(
+      name,
+      {
+        create: true
+      }
+    );
+  const writable =
+    await handle.createWritable();
+
+  try {
+    await writable.write(data);
+    await writable.close();
+  } catch (error) {
+    try {
+      await writable.abort();
+    } catch {
+      // Best-effort cleanup only.
+    }
+    throw error;
+  }
+}
+
 function cleanError(payload) {
   if (typeof payload?.message === "string" && payload.message.trim()) {
     return payload.message.trim();
@@ -117,12 +156,15 @@ export default function FaceLabTestClient() {
   const [simulationStatus, setSimulationStatus] = useState("idle");
   const [simulationError, setSimulationError] = useState("");
   const [simulationImageUrl, setSimulationImageUrl] = useState("");
+  const [simulationImageBlob, setSimulationImageBlob] = useState(null);
   const [simulationMeta, setSimulationMeta] = useState(null);
   const [reviewAuthority, setReviewAuthority] = useState(null);
   const [reviewTemplate, setReviewTemplate] = useState(null);
   const [reviewStatus, setReviewStatus] = useState("idle");
   const [reviewError, setReviewError] = useState("");
   const [reviewResult, setReviewResult] = useState(null);
+  const [pilotCaptureStatus, setPilotCaptureStatus] = useState("idle");
+  const [pilotCaptureError, setPilotCaptureError] = useState("");
 
   useEffect(() => {
     return () => {
@@ -147,6 +189,8 @@ export default function FaceLabTestClient() {
     setReviewStatus("idle");
     setReviewError("");
     setReviewResult(null);
+    setPilotCaptureStatus("idle");
+    setPilotCaptureError("");
   }, []);
 
   const resetSimulation = useCallback(() => {
@@ -155,6 +199,7 @@ export default function FaceLabTestClient() {
     setSimulationStatus("idle");
     setSimulationError("");
     setSimulationMeta(null);
+    setSimulationImageBlob(null);
     setSimulationImageUrl((current) => {
       if (current) {
         URL.revokeObjectURL(current);
@@ -420,7 +465,159 @@ export default function FaceLabTestClient() {
     setReviewResult(null);
     setReviewStatus(reviewTemplate ? "ready" : "idle");
     setReviewError("");
+    setPilotCaptureStatus("idle");
+    setPilotCaptureError("");
   }, [reviewTemplate]);
+
+  const savePilotCapture = useCallback(async () => {
+    if (
+      !sourceImageFile ||
+      !simulationImageBlob ||
+      !simulationMeta ||
+      !faceLabAnalysis ||
+      !simulationState?.selectedRouteId ||
+      !reviewResult ||
+      reviewStatus !== "submitted" ||
+      pilotCaptureStatus === "saving"
+    ) {
+      return;
+    }
+
+    if (
+      simulationMeta.reviewCaseId !==
+      reviewResult.caseId
+    ) {
+      setPilotCaptureStatus("error");
+      setPilotCaptureError(
+        "현재 리뷰와 시뮬레이션 Case ID가 일치하지 않습니다."
+      );
+      return;
+    }
+
+    const capture =
+      buildFaceLabSimulationPilotCapture({
+        caseId:
+          reviewResult.caseId,
+        locale: "ko",
+        sourceMimeType:
+          sourceImageFile.type,
+        outputMimeType:
+          simulationImageBlob.type,
+        analysis:
+          faceLabAnalysis,
+        faceLabV2State:
+          simulationState,
+        responseMeta:
+          simulationMeta,
+        identityScopeReview:
+          reviewResult
+            .identityScopeReview,
+        routeColorReview:
+          reviewResult
+            .routeColorReview
+      });
+
+    if (capture.status !== "ready") {
+      setPilotCaptureStatus("error");
+      setPilotCaptureError(
+        `Pilot Capture를 만들 수 없습니다: ${capture.reason || "invalid_capture"}`
+      );
+      return;
+    }
+
+    if (
+      typeof window.showDirectoryPicker !==
+      "function"
+    ) {
+      setPilotCaptureStatus("error");
+      setPilotCaptureError(
+        "이 브라우저에서는 로컬 private/ 저장을 지원하지 않습니다. 데스크톱 Chrome 또는 Edge에서 다시 시도해 주세요."
+      );
+      return;
+    }
+
+    setPilotCaptureStatus("saving");
+    setPilotCaptureError("");
+
+    try {
+      let directory = null;
+
+      try {
+        directory =
+          await window.showDirectoryPicker({
+            mode: "readwrite"
+          });
+      } catch (error) {
+        if (
+          error?.name === "AbortError"
+        ) {
+          setPilotCaptureStatus("idle");
+          return;
+        }
+        throw error;
+      }
+
+      if (
+        directory.name !== "private"
+      ) {
+        setPilotCaptureStatus("error");
+        setPilotCaptureError(
+          "저장소의 private/ 폴더를 선택해 주세요. 다른 폴더에는 Pilot Capture를 저장하지 않습니다."
+        );
+        return;
+      }
+
+      await writeDirectoryFile(
+        directory,
+        capture.fileNames.sourceImage,
+        sourceImageFile
+      );
+      await writeDirectoryFile(
+        directory,
+        capture.fileNames.outputImage,
+        simulationImageBlob
+      );
+      await writeDirectoryFile(
+        directory,
+        capture.fileNames.identityScopeReview,
+        jsonFileBlob(
+          capture.reviews
+            .identityScopeReview
+        )
+      );
+      await writeDirectoryFile(
+        directory,
+        capture.fileNames.routeColorReview,
+        jsonFileBlob(
+          capture.reviews
+            .routeColorReview
+        )
+      );
+      await writeDirectoryFile(
+        directory,
+        capture.fileNames.manifest,
+        jsonFileBlob(
+          capture.manifest
+        )
+      );
+
+      setPilotCaptureStatus("saved");
+    } catch {
+      setPilotCaptureStatus("error");
+      setPilotCaptureError(
+        "Pilot Capture 파일을 private/에 저장하지 못했습니다."
+      );
+    }
+  }, [
+    faceLabAnalysis,
+    pilotCaptureStatus,
+    reviewResult,
+    reviewStatus,
+    simulationImageBlob,
+    simulationMeta,
+    simulationState,
+    sourceImageFile
+  ]);
 
   const generateSimulation = async () => {
     if (
@@ -517,6 +714,7 @@ export default function FaceLabTestClient() {
         return;
       }
 
+      setSimulationImageBlob(blob);
       const nextImageUrl = URL.createObjectURL(blob);
       setSimulationImageUrl((current) => {
         if (current) {
@@ -808,6 +1006,55 @@ export default function FaceLabTestClient() {
                   </p>
                 </section>
               ) : null
+            ) : null}
+
+            {reviewStatus === "submitted" &&
+            reviewResult &&
+            simulationImageBlob ? (
+              <section
+                className="ui-card p-5 sm:p-6"
+                data-face-lab-pilot-capture
+              >
+                <p className="ui-kicker">
+                  GATE G-E2A-2 · PRIVATE PILOT CAPTURE
+                </p>
+                <h2 className="ui-title mt-2 text-lg">
+                  검토 완료 Case를 로컬 private/에 저장
+                </h2>
+                <p className="ui-text-secondary mt-2 text-sm leading-6">
+                  원본, 생성 결과, G-C/G-D 리뷰, G-B 입력 manifest를 같은 Case ID로 저장합니다.
+                  서버에는 이미지를 추가 저장하지 않습니다.
+                </p>
+                <p className="ui-text-secondary mt-2 text-xs leading-5">
+                  버튼을 누른 뒤 반드시 로컬 저장소의 <code>private</code> 폴더를 선택하세요.
+                  다른 이름의 폴더는 저장을 거부합니다.
+                </p>
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void savePilotCapture()}
+                    disabled={pilotCaptureStatus === "saving"}
+                    className="ui-button-primary min-h-11 px-4 text-sm font-semibold disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {pilotCaptureStatus === "saving"
+                      ? "Pilot Capture 저장 중..."
+                      : "private/에 Pilot Capture 저장"}
+                  </button>
+
+                  {pilotCaptureStatus === "saved" ? (
+                    <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                      저장 완료 · G-B evidence runner 입력 준비됨
+                    </span>
+                  ) : null}
+                </div>
+
+                {pilotCaptureError ? (
+                  <p className="mt-3 rounded-xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm leading-6 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-100">
+                    {pilotCaptureError}
+                  </p>
+                ) : null}
+              </section>
             ) : null}
           </div>
         ) : null}
