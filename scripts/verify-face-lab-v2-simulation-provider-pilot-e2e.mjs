@@ -53,6 +53,10 @@ assert.ok(
   "access tokens must never be logged"
 );
 assert.ok(
+  !runner.includes("shortHash(") && !runner.includes("userHash"),
+  "account identifiers must not be hashed or persisted"
+);
+assert.ok(
   !runner.includes("reviewTicket: simulation.meta.reviewTicket,\n            analysis"),
   "review ticket must not be persisted in review input"
 );
