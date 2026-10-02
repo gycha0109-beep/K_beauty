@@ -1,0 +1,157 @@
+{
+  "version": "data-ai29c-filter-r1-uv-filter-recovery-v1",
+  "stage": "DATA-AI29C-FILTER-R1",
+  "track": "taxonomy-ai",
+  "baseMainSha": "7582ef4000e1485360241a4e394b5def7fbddd35",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "registryContract": {
+    "registryVersion": "product-fact-registry-cross-category-v1",
+    "factKey": "uv_filter_type",
+    "valueType": "enum",
+    "allowedValues": [
+      "mineral",
+      "organic",
+      "hybrid"
+    ],
+    "permittedEvidenceClasses": [
+      "product_claim",
+      "composition_identity"
+    ],
+    "positiveEvidenceRequirement": "product-specific evidence"
+  },
+  "initialCoverage": {
+    "resolvedCurrentSunscreenSubjects": 13,
+    "uvFilterCurrentSubjects": 11,
+    "missingSubjects": 2,
+    "currentProductFacts": 94
+  },
+  "recovered": {
+    "productId": "57e4a5ec-115d-4322-85a1-7976db669700",
+    "subjectId": "750c298a-e085-4a29-aa24-2656fa7a5d6f",
+    "subjectSemanticKey": "3f1b752bc8e1c7829f04bbc11fec3dd9b0c6646e481a3088d4214ec3b7dac03f",
+    "name": "다이브인 모이스처 선크림 60ml",
+    "market": "KR",
+    "variantKey": "DIVE_IN_MOISTURE_SUN_CREAM_KR_60ML",
+    "formulationRevisionKey": "trust-p20-torriden-252-current-upgraded",
+    "result": "RECOVERED",
+    "value": "organic",
+    "authority": "product_specific_primary",
+    "confidence": "high",
+    "proposition": {
+      "serializerVersion": "product-fact-proposition-pilot-v1",
+      "propositionKey": "08351695d513524564e4d378c86eda200e3a24b89941948aa838d5168a738042",
+      "valueIdentity": "organic",
+      "scope": {
+        "market": "KR"
+      }
+    },
+    "officialSource": {
+      "canonicalLocator": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+      "detailImageLocator": "https://ai.esmplus.com/torriden/product/dive-in/SUN/MoistureSunCream/99.jpg",
+      "sourceId": "a46a6d70-d5fc-4e39-a74d-53088e48c8b6",
+      "bindingId": "82dc997f-b64b-472f-8538-a066e8e5132e",
+      "contentDigest": "adf476a9790ff3c5f235233efd80bacd397fbff0a570b5c6e663fe9b98a13659",
+      "bindingState": "exact_subject_match",
+      "scopeRelation": "equivalent",
+      "compositionMarkers": [
+        "에칠헥실트리아존",
+        "디에칠아미노하이드록시벤조일헥실벤조에이트",
+        "드로메트리졸트리실록산",
+        "메칠렌비스-벤조트리아졸릴테트라메칠부틸페놀"
+      ],
+      "inorganicFilterMarkersObserved": []
+    },
+    "evidence": {
+      "evidenceId": "7ec26952-2bb8-4ab4-b5f5-5ce382f53ab5",
+      "canonicalEvidenceDigest": "e44ee01a8ccb9525779b1bff2091294821a5f6ee87ecc5868cbf829843970419",
+      "evidenceClass": "composition_identity",
+      "evidenceAuthority": "product_specific_primary",
+      "confidence": "high",
+      "supportDirection": "supports"
+    },
+    "review": {
+      "assignmentId": "2929d5a8-4a70-4867-9636-0672eb4713af",
+      "operationalState": "confirmed",
+      "reviewPolicyVersion": "data-ai29c-filter-r1-torriden-pilot-v1"
+    },
+    "confirmation": {
+      "confirmationId": "d9f2ca21-457a-438f-8fbd-a02cbc99e1df",
+      "factInstanceId": "c794fb23-5ff6-4af8-b503-fd7e3c5578a6",
+      "requestId": "data-ai29c-filter-r1-torriden-confirm",
+      "payloadDigest": "5a0b9471aa58f0b7846a3d0b2694700c7adfbde3d574642ad8f6b22880410fff",
+      "prestateDigest": "5f9e61c5a2233df91c016bccc3254ee09f78b7e70e65849027a4791148c532c6",
+      "resultDigest": "ef6f76a914fd6482f52d60f6f3c106a145d657bdc76b05853467c59f851bd694",
+      "fusionInputDigest": "bdeca4ab8069ee83a66f8f3c795f71cb7b02b6b7624c3ba0905aceb72d55acc8"
+    },
+    "existingFactsPreserved": [
+      {
+        "factKey": "spf_value",
+        "valueNumber": 50,
+        "factInstanceId": "393aefcc-6967-4fd2-895e-ff13915dbb2f",
+        "confirmationId": "74d45976-b84f-4af8-84b1-0f7b25693bc6"
+      },
+      {
+        "factKey": "uva_label",
+        "valueEnum": "PA++++",
+        "factInstanceId": "07ea5c2d-70a7-4d24-84a4-2b3fd334a4ca",
+        "confirmationId": "72c15698-b06d-4883-a9b2-3c3f1c4c7d9d"
+      }
+    ],
+    "historicalResearchTask": {
+      "taskId": "f00ecbcc-7dec-437e-bc62-bc154fd06ecc",
+      "databaseState": "BLOCKED",
+      "blockerCode": "EVIDENCE_INSUFFICIENT",
+      "attemptCount": 1,
+      "directMutationApplied": false,
+      "operationalDisposition": "HISTORICAL_BLOCKER_SUPERSEDED_BY_GOVERNED_CURRENT_FACT",
+      "reason": "No governed task transition exists from an already BLOCKED task directly to ALREADY_COVERED after an independently controlled confirmation."
+    }
+  },
+  "held": {
+    "productId": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+    "subjectId": "761e6fd6-3487-4505-a1a7-13c37d5cece4",
+    "subjectSemanticKey": "cb287a3632034e8626d1580a2b9d82493730882f7694f73accf6cdca1d790e3e",
+    "name": "자작나무 수분 선크림 50ml",
+    "market": "KR",
+    "variantKey": "renewed_KR",
+    "formulationRevisionKey": "pilot-freeze-9aba73ebdc1f56e6041286efa04eb74f",
+    "result": "HOLD_EVIDENCE_INSUFFICIENT",
+    "currentUvFilterFactCount": 0,
+    "taskId": "6e0e8b65-0ac2-4246-894b-a19494bd7329",
+    "taskState": "BLOCKED",
+    "blockerCode": "EVIDENCE_INSUFFICIENT",
+    "exactKrSource": {
+      "canonicalLocator": "https://roundlab.co.kr/article/press/8/3087",
+      "sourceId": "3fa2f78b-d7c4-4355-bbda-79e747a3ea99",
+      "bindingId": "f1734dc9-8ad2-458d-a976-966bfe6e6ef8",
+      "contentDigest": "879027d0cd4ffb563e7c028ee98b6454055f6a73c609c2bad80321474886049a"
+    },
+    "currentOfficialProductPage": "https://roundlab.co.kr/product/자작나무-수분-선크림-50ml/138/category/105/display/1/",
+    "globalOfficialClassification": {
+      "locator": "https://roundlab.com/blogs/sun-protection/birch-sun-care-line-guide-spf-products",
+      "observedClassification": "Chemical",
+      "transferToKrSubjectAuthorized": false,
+      "reason": "The current global/US UVLock presentation and active-filter disclosure do not establish formulation equivalence to the current KR SPF50+ Subject."
+    },
+    "crossProductInferenceRejected": [
+      "A separate 자작나무 무기자차 선크림 exists.",
+      "Third-party current listings classify the standard product as organic.",
+      "Neither establishes exact-formulation first-party authority for this governed KR Subject."
+    ]
+  },
+  "finalCoverage": {
+    "resolvedCurrentSunscreenSubjects": 13,
+    "uvFilterCurrentSubjects": 12,
+    "missingSubjects": 1,
+    "currentProductFacts": 95
+  },
+  "writeBoundary": {
+    "torridenProductFactWrite": true,
+    "roundLabProductFactWrite": false,
+    "recommendationWrite": false,
+    "rankingChanged": false,
+    "publicActivation": false
+  },
+  "decision": "FILTER_R1_PARTIAL_PASS_TORRIDEN_ORGANIC_RECOVERED_ROUNDLAB_HOLD",
+  "nextGate": "DATA-AI29C-FILTER-R2_ROUNDLAB_EXACT_KR_FORMULATION_CLOSEOUT"
+}
