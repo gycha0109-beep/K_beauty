@@ -1,0 +1,91 @@
+{
+  "version": "data-ai29c-uva-r4-blocked-subject-reassessment-v1",
+  "stage": "DATA-AI29C-UVA-R4",
+  "track": "taxonomy-ai",
+  "baseMainSha": "f84884dfe5d17d409872c7642b7290d47ad4ca05",
+  "registryContract": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "factKey": "uva_label",
+    "valueType": "enum",
+    "allowedValues": [
+      "PA+",
+      "PA++",
+      "PA+++",
+      "PA++++",
+      "UVA-PF-declared"
+    ],
+    "requiredScope": [
+      "market"
+    ],
+    "permittedEvidenceClasses": [
+      "product_claim"
+    ],
+    "positiveEvidenceRequirement": "product-specific evidence",
+    "broadSpectrumIsAllowedValue": false
+  },
+  "reassessment": [
+    {
+      "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+      "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+      "name": "Day Dew Sunscreen",
+      "market": "US",
+      "taskId": "74661ab2-2adb-4255-9c05-0418c1caa105",
+      "officialUrl": "https://beautyofjoseon.com/products/day-dew-sunscreen",
+      "observed": "SPF 50 broad spectrum UV protection",
+      "paFound": false,
+      "uvaPfFound": false,
+      "ppdFound": false,
+      "registryAdmissibleUvaLabelRecovered": false,
+      "result": "HOLD_EVIDENCE_INSUFFICIENT"
+    },
+    {
+      "productId": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "subjectId": "614db853-7865-408b-8f40-a4dcfe6a2ea5",
+      "name": "안뗄리오스 선 플루이드",
+      "market": "KR",
+      "taskId": "5d5acb5e-9202-4a71-a826-668edfcd1795",
+      "officialUrl": "https://www.larocheposay.co.kr/product/view/4833.do",
+      "paFound": false,
+      "uvaPfFound": false,
+      "ppdFound": false,
+      "searchableUvaLabelFound": false,
+      "registryAdmissibleUvaLabelRecovered": false,
+      "result": "HOLD_EVIDENCE_INSUFFICIENT"
+    },
+    {
+      "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+      "name": "히알루-시카 워터핏 선세럼 UV",
+      "market": "US",
+      "taskId": "ba340a0c-17b6-47bb-975e-d2255fccc433",
+      "officialUrl": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+      "observed": "SPF50 broad-spectrum coverage",
+      "paFound": false,
+      "uvaPfFound": false,
+      "ppdFound": false,
+      "registryAdmissibleUvaLabelRecovered": false,
+      "result": "HOLD_EVIDENCE_INSUFFICIENT"
+    }
+  ],
+  "summary": {
+    "blockedSubjectsReassessed": 3,
+    "recoveredUvaLabels": 0,
+    "tasksRemainBlocked": 3,
+    "blockerCode": "EVIDENCE_INSUFFICIENT",
+    "broadSpectrumMayNotBeMappedToUvaLabel": true
+  },
+  "writeBoundary": {
+    "productFactWrites": 0,
+    "researchTaskWrites": 0,
+    "registryWrites": 0,
+    "policyWrites": 0
+  },
+  "recommendationBoundary": {
+    "broadSpectrumConsumptionChanged": false,
+    "uvaRankingChanged": false,
+    "productionRankingChanged": false,
+    "publicActivation": false
+  },
+  "decision": "UVA_R4_BLOCKED_SUBJECT_REASSESSMENT_HOLD_NO_NEW_REGISTRY_ADMISSIBLE_UVA_LABEL",
+  "nextGate": "DATA-AI29C-UVA-R5_BLOCKED_SUBJECT_CLOSEOUT"
+}
