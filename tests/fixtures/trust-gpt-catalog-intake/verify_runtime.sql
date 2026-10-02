@@ -102,6 +102,8 @@ begin
     raise exception 'GPT_E2E_SUPPORTED_INGEST_FAILED:%', v_result;
   end if;
 
+  reset role;
+
   select registry_version into v_latest_registry
   from public.product_fact_registry_versions
   order by effective_at desc nulls last, created_at desc
@@ -143,6 +145,8 @@ begin
   from public.product_fact_research_tasks
   where product_id = (v_result ->> 'product_id')::uuid;
 
+  set local role service_role;
+
   begin
     perform public.process_catalog_trust_product_v3(
       (v_result ->> 'product_id')::uuid,
@@ -153,6 +157,8 @@ begin
     when check_violation then
       null;
   end;
+
+  reset role;
 
   select coalesce(
     jsonb_agg(jsonb_build_object(
@@ -175,6 +181,8 @@ begin
       v_v2_probe_tasks_before,
       v_v2_probe_tasks_after;
   end if;
+
+  set local role service_role;
 
   v_replay := public.ingest_gpt_catalog_product_v1(
     'gpt-e2e-supported-sunscreen-001',
