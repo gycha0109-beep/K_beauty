@@ -50,6 +50,12 @@ on:
       - "scripts/verify-face-lab-v2-simulation-pilot-capture.mjs"
       - "scripts/verify-face-lab-v2-simulation-pilot-case-runner.mjs"
       - "scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs"
+      - "scripts/verify-face-lab-v2-g-e2b-private-review-board.mjs"
+      - "scripts/run-face-lab-v2-g-e2b-private-campaign.mjs"
+      - "app/api/face-lab-simulation-private-review/**"
+      - "app/face-lab-test/pilot-review/**"
+      - "components/face-lab-test/FaceLabPilotReviewBoard.jsx"
+      - "docs/domain/facelab/face-lab-v2-g-e2b-private-review-board-v1.md"
       - "scripts/verify-face-lab-v2-provider-pilot-execution-evidence.mjs"
       - "evidence/facelab/face-lab-g-e2b-provider-pilot-execution-20261002-v1.json"
       - "docs/domain/facelab/face-lab-v2-g-e2b-provider-execution-evidence-v1.md"
@@ -153,6 +159,12 @@ on:
       - "scripts/verify-face-lab-v2-simulation-pilot-capture.mjs"
       - "scripts/verify-face-lab-v2-simulation-pilot-case-runner.mjs"
       - "scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs"
+      - "scripts/verify-face-lab-v2-g-e2b-private-review-board.mjs"
+      - "scripts/run-face-lab-v2-g-e2b-private-campaign.mjs"
+      - "app/api/face-lab-simulation-private-review/**"
+      - "app/face-lab-test/pilot-review/**"
+      - "components/face-lab-test/FaceLabPilotReviewBoard.jsx"
+      - "docs/domain/facelab/face-lab-v2-g-e2b-private-review-board-v1.md"
       - "scripts/verify-face-lab-v2-provider-pilot-execution-evidence.mjs"
       - "evidence/facelab/face-lab-g-e2b-provider-pilot-execution-20261002-v1.json"
       - "docs/domain/facelab/face-lab-v2-g-e2b-provider-execution-evidence-v1.md"
@@ -294,6 +306,11 @@ jobs:
         run: |
           node scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs
           node --check scripts/run-face-lab-v2-simulation-provider-pilot-e2e.mjs
+      - name: Verify Face Lab G-E2B private review board
+        run: |
+          node scripts/verify-face-lab-v2-g-e2b-private-review-board.mjs
+          node --check app/api/face-lab-simulation-private-review/route.js
+          node --check scripts/run-face-lab-v2-g-e2b-private-campaign.mjs
       - name: Verify Face Lab G-E2B provider execution evidence
         run: node scripts/verify-face-lab-v2-provider-pilot-execution-evidence.mjs
       - name: Check Face Lab V2 simulation UAT route syntax
