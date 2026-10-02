@@ -24,6 +24,7 @@
     "verify:shared-skin-decision-context": "node scripts/verify-shared-skin-decision-context-v4.mjs",
     "verify:premium-integrated-evaluation-v2": "node scripts/verify-premium-integrated-evaluation-v2.mjs",
     "verify:unified-vision-pipeline": "node scripts/verify-unified-vision-pipeline.mjs",
+    "verify:face-lab-v2-vision-provider-retry": "node scripts/verify-face-lab-v2-vision-provider-retry.mjs",
     "verify:face-lab-archetype-scoring": "node scripts/verify-face-lab-archetype-scoring.mjs",
     "verify:face-lab-archetype-human-evaluation": "node scripts/verify-face-lab-archetype-human-evaluation-contract-v1.mjs",
     "verify:face-lab-target-axis-definitions": "node scripts/check-face-lab-target-axis-operational-definitions-v1.mjs",
