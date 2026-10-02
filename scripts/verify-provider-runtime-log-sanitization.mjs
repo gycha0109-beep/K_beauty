@@ -36,6 +36,64 @@ assert.deepEqual(event, {
 });
 assert.deepEqual([...SAFE_PROVIDER_MODELS], ["gpt-5.6-luna"]);
 
+const classifiedEvent =
+  buildProviderRuntimeLogEvent({
+    stage: "vision-observation",
+    status: 429,
+    ok: false,
+    provider: "openai",
+    model: "gpt-5.6-luna",
+    durationMs: 9,
+    errorCategory: "http_error",
+    providerErrorCode:
+      "project_spend_limit_exceeded",
+    providerErrorType:
+      "insufficient_quota",
+    retryable: false
+  });
+
+assert.equal(
+  classifiedEvent.providerErrorCode,
+  "project_spend_limit_exceeded"
+);
+assert.equal(
+  classifiedEvent.providerErrorType,
+  "insufficient_quota"
+);
+assert.equal(
+  classifiedEvent.retryable,
+  false
+);
+
+const rejectedProviderMetadata =
+  buildProviderRuntimeLogEvent({
+    stage: "vision-observation",
+    status: 429,
+    ok: false,
+    provider: "openai",
+    model: "gpt-5.6-luna",
+    durationMs: 9,
+    providerErrorCode:
+      "sk-SEC12_FAKE_ERROR_CODE",
+    providerErrorType:
+      "private_provider_type"
+  });
+
+assert.equal(
+  Object.hasOwn(
+    rejectedProviderMetadata,
+    "providerErrorCode"
+  ),
+  false
+);
+assert.equal(
+  Object.hasOwn(
+    rejectedProviderMetadata,
+    "providerErrorType"
+  ),
+  false
+);
+
 for (const model of [
   "unknown-model",
   "sk-SEC12_FAKE_MODEL_SECRET",
@@ -71,6 +129,14 @@ const hostileEvent = Object.defineProperties({}, {
   provider: { get: () => "openai" },
   model: { get: () => "gpt-5.6-luna" },
   durationMs: { get: () => 8 },
+  providerErrorCode: {
+    get: () =>
+      "sk-SEC12_FAKE_ERROR_CODE"
+  },
+  providerErrorType: {
+    get: () =>
+      "private_provider_type"
+  },
   prompt: { get: () => "private prompt text" },
   responseBody: { get: () => "private provider response" },
   token: { get: () => "access-token-value" }
