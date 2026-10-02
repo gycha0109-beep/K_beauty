@@ -106,7 +106,8 @@
     "e2e:product-query:prelaunch": "node scripts/run-product-query-prelaunch-e2e.mjs",
     "data-ai25:launch:freeze": "node scripts/freeze-data-ai25-operational-baseline-start.mjs",
     "data-ai25:readiness": "node scripts/run-data-ai25-post-launch-evaluation.mjs",
-    "verify:data-ai25:launch-ops": "node scripts/verify-data-ai25-launch-ops.mjs"
+    "verify:data-ai25:launch-ops": "node scripts/verify-data-ai25-launch-ops.mjs",
+    "verify:face-lab-v2-provider-pilot-evidence": "node scripts/verify-face-lab-v2-provider-pilot-execution-evidence.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",

@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "face-lab-g-e2b-provider-pilot-execution-evidence-v1",
+  "track": "face-research",
+  "gate": "G-E2B",
+  "status": "provider_execution_complete_human_review_pending",
+  "gateClosed": false,
+  "campaignId": "G-E-PILOT-20261002042302",
+  "execution": {
+    "githubRunId": 36964276217,
+    "githubHeadSha": "1b09e89d2f46f863ece315cca69dfd80b345e802",
+    "conclusion": "success",
+    "providerVerdict": "FACE_LAB_G_E2B_PROVIDER_E2E_PASS",
+    "intentCount": 4,
+    "generationsPerIntent": 2,
+    "caseCount": 8,
+    "completedGuardRows": 8,
+    "reviewTemplateBindingValidatedCount": 8,
+    "generatedOutputsPersisted": false,
+    "generatedOutputArtifactsPublished": false
+  },
+  "campaignRuntime": {
+    "simulationVersion": "face-lab-ai-simulation-v1",
+    "instructionVersion": "face-lab-simulation-instruction-v1",
+    "renderSpecVersion": "face-lab-render-spec-v1",
+    "providerConfigVersion": "face-lab-simulation-provider-config-v1",
+    "providerConfigFingerprint": "494604a044aa5631b5834cd6a6863a0c34e1d09d800caceda357775535cda6f8"
+  },
+  "intents": [
+    {
+      "intentGroupId": "intent-01",
+      "routeId": "hair_led",
+      "renderSpecSha256": "95aa68f0fa5aec8160918d04c158d4851d7b74b6b546fb49a940e13461400a28",
+      "pairRenderSpecConsistent": true,
+      "generations": [
+        {
+          "generationIndex": 1,
+          "accountLabel": "A"
+        },
+        {
+          "generationIndex": 2,
+          "accountLabel": "B"
+        }
+      ]
+    },
+    {
+      "intentGroupId": "intent-02",
+      "routeId": "makeup_led",
+      "renderSpecSha256": "644bded97ebe65144c97387bc480d3dcdac0e35812af4a606c2dac9605e7bbeb",
+      "pairRenderSpecConsistent": true,
+      "generations": [
+        {
+          "generationIndex": 1,
+          "accountLabel": "A"
+        },
+        {
+          "generationIndex": 2,
+          "accountLabel": "B"
+        }
+      ]
+    },
+    {
+      "intentGroupId": "intent-03",
+      "routeId": "low_effort",
+      "renderSpecSha256": "8a65571e737c41f8775c763d88c80b2d894a2dcb8010108102d2658d28cfec1b",
+      "pairRenderSpecConsistent": true,
+      "generations": [
+        {
+          "generationIndex": 1,
+          "accountLabel": "A"
+        },
+        {
+          "generationIndex": 2,
+          "accountLabel": "B"
+        }
+      ]
+    },
+    {
+      "intentGroupId": "intent-04",
+      "routeId": "balanced",
+      "renderSpecSha256": "babed06147acdb3bea6ee364795e5683447f82b4ed426f530da5f35a72fa33b9",
+      "pairRenderSpecConsistent": true,
+      "generations": [
+        {
+          "generationIndex": 1,
+          "accountLabel": "A"
+        },
+        {
+          "generationIndex": 2,
+          "accountLabel": "B"
+        }
+      ]
+    }
+  ],
+  "invariants": {
+    "distinctIntentGroups": 4,
+    "pairedRenderSpecBindingErrors": 0,
+    "campaignRuntimeBindingErrors": 0,
+    "guardFailures": 0,
+    "providerGenerationFailures": 0,
+    "reviewTemplateBindingFailures": 0
+  },
+  "privacy": {
+    "rawSourceImageBytesRetained": false,
+    "rawGeneratedImageBytesRetained": false,
+    "sourceImageSha256Retained": false,
+    "outputImageSha256Retained": false,
+    "analysisSha256Retained": false,
+    "faceLabStateSha256Retained": false,
+    "reviewerRefRetained": false,
+    "localFilesystemPathRetained": false
+  },
+  "humanReview": {
+    "status": "pending",
+    "requiredAxes": [
+      "identity_preservation",
+      "route_adherence",
+      "color_fidelity",
+      "edit_scope"
+    ],
+    "hardFailureEvaluation": "not_evaluated",
+    "calibrationCasesAdmitted": 0,
+    "aggregateReady": false
+  },
+  "nextGate": "complete private G-C/G-D Human Review for all eight outputs, build G-B packets and G-E calibration cases, then run G-E2C aggregate"
+}
