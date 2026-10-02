@@ -459,6 +459,63 @@ assert.equal(
   "pilot_case_calibration_case_invalid"
 );
 
+
+const incompleteIdentityReview =
+  buildFaceLabSimulationIdentityScopeReview({
+    caseId,
+    reviewerRef:
+      "operator-private",
+    identity: {
+      ...identityStable(),
+      facial_geometry:
+        "not_assessable"
+    },
+    editScope:
+      editScopeStable()
+  });
+
+assert.equal(
+  incompleteIdentityReview.status,
+  "ready"
+);
+assert.equal(
+  incompleteIdentityReview
+    .checks
+    .identity_preservation
+    .status,
+  "not_evaluated"
+);
+
+const incompleteReviewResult =
+  buildFaceLabSimulationPilotCaseArtifacts({
+    runSpec,
+    captureManifest,
+    canonicalSourceImageBytes:
+      Buffer.from("source"),
+    outputImageBytes:
+      Buffer.from("output"),
+    identityScopeReview:
+      incompleteIdentityReview,
+    routeColorReview
+  });
+
+assert.equal(
+  incompleteReviewResult.status,
+  "invalid"
+);
+assert.equal(
+  incompleteReviewResult.reason,
+  "pilot_case_calibration_case_invalid"
+);
+assert.equal(
+  incompleteReviewResult.calibrationReason,
+  "evidence_packet_evaluation_incomplete"
+);
+assert.equal(
+  incompleteReviewResult.incompleteCheckId,
+  "identity_preservation"
+);
+
 const emptyBytes =
   buildFaceLabSimulationPilotCaseArtifacts({
     runSpec,
