@@ -105,6 +105,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-data-ai29c-filter-r2-roundlab-exact-kr-formulation-closeout.mjs",
   "scripts/verify-data-ai29c-protection-r1-gap-watch-closeout.mjs",
   "scripts/verify-v21-8f-r1-catalog-expansion-planning-refresh.mjs",
+  "scripts/verify-v21-8g0-registry-pinned-reconciliation.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
