@@ -1,0 +1,190 @@
+{
+  "version": "v21-8g3-a-controlled-evidence-ingest-v1",
+  "stage": "V2.1-8G3-A",
+  "captured_on": "2026-10-02",
+  "production_write_main_sha": "fd721425ffcc8d1eb24c23c84a649a8ac9cdf3f0",
+  "integration_main_sha": "3749dd79e95b08d8a6311f40ee6c5fabbd49d8b1",
+  "parent_contract": {
+    "path": "evidence/product-fact-catalog-expansion-v1/v21-8g3-0-evidence-ingest-contract-v1.json",
+    "decision": "V21_8G3_0_EVIDENCE_INGEST_CONTRACT_PREFLIGHT_PASS"
+  },
+  "coexistence_contract": {
+    "path": "evidence/product-fact-catalog-expansion-v1/v21-8g3-0-r1-gpt-worker-coexistence-v1.json",
+    "decision": "V21_8G3_0_R1_GPT_WORKER_COEXISTENCE_PASS"
+  },
+  "runtime_contract": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "admin_ingest_function_sha256": "c5bf2429801f3f5811c41d3c39fbddff3eca2914bccb59f100321f369264b481",
+    "admin_prepare_review_function_sha256": "9d0992369021a37a83c96561f8ad3d9e9b505a61771b7b5312fa35fc424dbff1",
+    "admin_preflight_confirmation_function_sha256": "7d9ce38e47468fb1a419528256857e399a3d7e50e719f7bd449034c96019f59e",
+    "controlled_build_preflight_function_sha256": "b736e373ebbcf577f332626e9fab2d8715c87c8a69a931de2ba3727bcc102f16",
+    "registry_write_admissibility_function_sha256": "0234789969fd824b975d58e166125220ff24e83717e12186723c58a5628a1743",
+    "canonical_json_function_sha256": "01420646597cd144a594c2eef7cdf46c13b1d67da0188c77e01d628664be27a5",
+    "sha256_json_function_sha256": "53d8226a25f3573d9e8f6f86fc4a2eb83938cfee6ea55f3a61fa0430595ca7ce",
+    "claim_gpt_catalog_research_tasks_v1_sha256": "2349b1d3e4593c89f9198d7b5302ecbc44d81b763efe7a8b2d37387447de551b",
+    "ingest_gpt_catalog_product_v1_sha256": "6d78cb35d8e3663987755876ff07a481c47bfce8750c8c494c3a4d25825eed12"
+  },
+  "preflight": {
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "registry_write_policy_version": "data-ai29c-uva-r3d-registry-coexistence-v1",
+    "ready_v1_tasks_total": 16,
+    "ready_v1_tasks_pristine": 16,
+    "ready_v2_tasks": 0,
+    "product_fact_current": 95,
+    "ready_evidence": 0,
+    "ready_fact_instances": 0,
+    "exact_target_sources": 0,
+    "exact_target_bindings": 0,
+    "exact_target_evidence": 0,
+    "ready_gpt_intake_runs": 0,
+    "max_ready_task_updated_at": "2026-10-02T15:43:44.136807+09:00"
+  },
+  "execution": {
+    "isolation_level": "serializable",
+    "product_fact_current_lock": "share",
+    "frozen_wave1_task_row_locks": 16,
+    "allowed_rpc": "admin_ingest_product_fact_evidence_v1",
+    "rpc_calls_attempted": 6,
+    "rpc_calls_committed": 6,
+    "forbidden_rpcs_called": [],
+    "executed_at": "2026-10-02T21:23:42.918895+09:00",
+    "request_ids": [
+      "v21-8g3a-beplain-low-ph",
+      "v21-8g3a-atopalm-barrier",
+      "v21-8g3a-atopalm-role",
+      "v21-8g3a-dr20-format",
+      "v21-8g3a-drg-barrier",
+      "v21-8g3a-drg-role"
+    ]
+  },
+  "sources": [
+    {
+      "source_id": "f65cd3f7-7758-441b-8099-b2e02d9c5406",
+      "source_ref": "beplain_product",
+      "content_digest": "74e3f097e770d93a5a21ae4abc43619fbe7d5c5939ba77b3eec20197332536c3",
+      "market": "KR"
+    },
+    {
+      "source_id": "df6119d2-279d-4560-a309-c20c386ebf7e",
+      "source_ref": "atopalm_product",
+      "content_digest": "2b8b4605be077d126280a010706c3788cd63df24dea6ac7635df76209eb797d2",
+      "market": "KR"
+    },
+    {
+      "source_id": "23fc7d07-0496-4980-ae81-fa11977afd17",
+      "source_ref": "dr20_category",
+      "content_digest": "e398df369d0b4bf03dd6ac44d2c60b6396f88fc4a8693d7b32c3ebe8c23def8d",
+      "market": "KR"
+    },
+    {
+      "source_id": "fd7ace63-3788-4f0a-9868-9aedc9d77265",
+      "source_ref": "drg_product",
+      "content_digest": "150acaf2639e4f221e9a877bb8bbe5933f09764174b05b2e84493105190f6ea8",
+      "market": "KR"
+    }
+  ],
+  "bindings": [
+    {
+      "binding_id": "51c57f97-496c-412c-a55a-0978702349a6",
+      "source_id": "f65cd3f7-7758-441b-8099-b2e02d9c5406",
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae"
+    },
+    {
+      "binding_id": "912503f9-1806-4150-ba01-b95a097b0299",
+      "source_id": "df6119d2-279d-4560-a309-c20c386ebf7e",
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262"
+    },
+    {
+      "binding_id": "dea69f32-fc99-496e-85ca-969746963b0e",
+      "source_id": "23fc7d07-0496-4980-ae81-fa11977afd17",
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd"
+    },
+    {
+      "binding_id": "d081d00d-a4b2-42d7-91c5-18313de97974",
+      "source_id": "fd7ace63-3788-4f0a-9868-9aedc9d77265",
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "subject_id": "84ecf763-b521-4cba-8413-df093098342e"
+    }
+  ],
+  "evidence": [
+    {
+      "request_id": "v21-8g3a-beplain-low-ph",
+      "evidence_id": "e2317293-6e43-4ab7-a723-03d794d98603",
+      "fact_key": "low_ph",
+      "proposition_key": "ebf267ec813986fb282ff61eb30846e35e1eaa1222b8243bde5b8e8cd4f5d1e7",
+      "canonical_evidence_digest": "e1b294d1f02395521f4e5783532f2ab42ea93a52e1a16d24bc88c0162f88a623"
+    },
+    {
+      "request_id": "v21-8g3a-atopalm-barrier",
+      "evidence_id": "d8a8eae9-164b-48b8-bebf-6cd3bc1a89fc",
+      "fact_key": "barrier_support_claim",
+      "proposition_key": "776518f7ef5cc2079623a67bd3ea387acac89afbc9bcda107878b7da3e058590",
+      "canonical_evidence_digest": "6a03fa1643bec33fc43550e60c9b0303dff73aa56935e37cce0a91b2bdb0433b"
+    },
+    {
+      "request_id": "v21-8g3a-atopalm-role",
+      "evidence_id": "ec40b4f2-efff-4084-be16-409cd3aef02f",
+      "fact_key": "primary_use_role",
+      "proposition_key": "5ef27cd2a45dd0bc8d450b09532b761b5df093b91829222ac368578dd38f01ba",
+      "canonical_evidence_digest": "c45129bb8002d956f7622a1c4e1cea465d45100713f76815207522aba05b5885"
+    },
+    {
+      "request_id": "v21-8g3a-dr20-format",
+      "evidence_id": "efcb4e81-3f91-496b-9904-066a38c64460",
+      "fact_key": "product_format",
+      "proposition_key": "730ffbc3483c2e02c57b3381a4101be73525fe1a96e103a0660a27eb301adebd",
+      "canonical_evidence_digest": "8f6fed4df0d48b88bc139e003b71b3e16123211ae39bb71a8e813e75df85625c"
+    },
+    {
+      "request_id": "v21-8g3a-drg-barrier",
+      "evidence_id": "94b69391-8aa5-429a-ae54-123ebd9fac8a",
+      "fact_key": "barrier_support_claim",
+      "proposition_key": "21699978665834b197081ffe419ca6aa6a6aca12698a4f55ddfbd6cdd59008e0",
+      "canonical_evidence_digest": "baeac7d059ca991c72673e9ccfc92a30411a05bfcf80d87e90a4321e12deb750"
+    },
+    {
+      "request_id": "v21-8g3a-drg-role",
+      "evidence_id": "fadc53d4-7ab4-482c-a75a-2948c5307857",
+      "fact_key": "primary_use_role",
+      "proposition_key": "638768a54ec7dfc7082f522241d53d896c21b07ffb4f1e00ff89e5e2821a80d6",
+      "canonical_evidence_digest": "9fc611e224400af8014a9ce32908664a0d4cde322f31f3d6587f01eed309539e"
+    }
+  ],
+  "audit": {
+    "action": "admin.product_fact.evidence_ingested",
+    "records": 6,
+    "audit_ids": [
+      "9aa6717e-2ede-412e-9010-6200bd725e52",
+      "c400941f-e43a-48f0-a2a1-ab472a7c6428",
+      "64631696-6259-4dbc-8f24-c4491b499531",
+      "26a2adf4-5545-4374-9149-c6e683609f9b",
+      "2c24f5e5-077c-42c0-bded-01906b723bc4",
+      "9beabe10-738e-4130-bf55-215e43be2d9d"
+    ]
+  },
+  "post_write_invariants": {
+    "unique_sources": 4,
+    "unique_bindings": 4,
+    "evidence_records": 6,
+    "product_fact_current": 95,
+    "target_fact_instances": 0,
+    "target_review_assignments": 0,
+    "ready_v1_tasks_pristine": 16,
+    "ready_v2_tasks": 0,
+    "ready_gpt_intake_runs": 0
+  },
+  "authority_boundary": {
+    "evidence_materialization_complete": true,
+    "review_preparation_authorized_for_8g3_a": false,
+    "confirmation_preflight_authorized_for_8g3_a": false,
+    "confirmation_authorized_for_8g3_a": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "decision": "V21_8G3_A_CONTROLLED_EVIDENCE_INGEST_PASS",
+  "next_gate": "V2.1-8G3-B_PRODUCT_FACT_REVIEW_PREPARATION"
+}
