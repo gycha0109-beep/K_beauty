@@ -101,6 +101,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-data-ai29c-uva-r3k-broad-spectrum-phase-closeout.mjs",
   "scripts/verify-data-ai29c-uva-r4-blocked-subject-reassessment.mjs",
   "scripts/verify-data-ai29c-uva-r5-blocked-subject-closeout.mjs",
+  "scripts/verify-data-ai29c-filter-r1-uv-filter-recovery.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
