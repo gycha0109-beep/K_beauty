@@ -73,6 +73,21 @@ if (!migration.includes("gpt-catalog-identity-evidence-v1")) {
   throw new Error("gpt_identity_provenance_evidence_missing");
 }
 
+if (!migration.includes("v_registry_version constant text := 'product-fact-registry-cross-category-v1'")) {
+  throw new Error("gpt_registry_v1_pin_missing");
+}
+if (migration.includes("perform public.process_catalog_trust_product_v1(v_product_id);")) {
+  throw new Error("legacy_latest_registry_processor_forbidden");
+}
+if (
+  migration.split("perform public.process_catalog_trust_product_v3(v_product_id, v_registry_version);").length - 1 !== 2
+) {
+  throw new Error("v3_registry_pinned_processor_call_count_invalid");
+}
+if (!migration.includes("gpt_catalog_trust_processor_unavailable")) {
+  throw new Error("v3_runtime_prerequisite_gate_missing");
+}
+
 for (const marker of [
   "materialize-product-fact-replay-baseline-v1.mjs",
   "20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql",
@@ -81,7 +96,12 @@ for (const marker of [
   "product-fact-subject-identity-v1",
   "20260914072000_data_taxonomy11_catalog_only_transactional_adoption_v1.sql",
   "20260915155618_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql",
+  "20261001103000_data_ai29c_uva_r3d_registry_coexistence_v1.sql",
+  "20261001103000_trust_gpt_catalog_registry_authority_fixture_v1.sql",
   "20261001183000_trust_gpt_catalog_intake_pipeline_v1.sql",
+  "20261002000000_trust_gpt_catalog_registry_v2_fixture_v1.sql",
+  "20261002142611_v21_8g0_registry_pinned_reconciliation_v1.sql",
+  "20261002153238_v21_8g1_identity_authority_preservation_v1.sql",
   "production_database_used: false",
   "hosted_branch_used: false"
 ]) {
@@ -107,6 +127,9 @@ for (const marker of [
   "GPT_E2E_AUTHENTICATED_INGEST_ALLOWED",
   "gpt-e2e-supported-sunscreen-isolation-001",
   "GPT_E2E_CROSS_PRODUCT_TASK_MUTATION",
+  "GPT_E2E_LATEST_REGISTRY_NOT_V2",
+  "GPT_E2E_REGISTRY_PIN_V1_FAILED",
+  "GPT_E2E_V2_POLICY_FAIL_CLOSED_MUTATED_TASKS",
   "'cross_product_claim_isolation',true"
 ]) {
   if (!runtimeProof.includes(marker)) {
