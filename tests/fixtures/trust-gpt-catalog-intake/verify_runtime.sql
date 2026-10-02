@@ -37,6 +37,20 @@ reset role;
 set local role service_role;
 
 do $test$
+begin
+  begin
+    perform public.process_gpt_catalog_trust_product_pinned_v1(
+      '00000000-0000-0000-0000-000000000000'::uuid
+    );
+    raise exception 'GPT_E2E_PINNED_HELPER_SERVICE_ROLE_ALLOWED';
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end;
+$test$;
+
+do $test$
 declare
   v_payload jsonb;
   v_result jsonb;
@@ -131,6 +145,16 @@ begin
 
   if v_task_count < 1 then
     raise exception 'GPT_E2E_NO_TRUST_TASKS:%', v_status;
+  end if;
+
+  if exists (
+    select 1
+    from jsonb_array_elements(coalesce(v_status -> 'intakes','[]'::jsonb)) intake,
+         jsonb_array_elements(coalesce(intake -> 'tasks','[]'::jsonb)) task
+    where task ->> 'registry_version'
+      is distinct from 'product-fact-registry-cross-category-v1'
+  ) then
+    raise exception 'GPT_E2E_REGISTRY_PIN_DRIFT:%', v_status;
   end if;
 
   v_other_payload := jsonb_build_object(
@@ -311,5 +335,6 @@ select jsonb_build_object(
   'automatic_confirmation',false,
   'unsupported_makeup_activation',false,
   'authenticated_ingest_denied',true,
-  'cross_product_claim_isolation',true
+  'cross_product_claim_isolation',true,
+  'registry_pinned_dispatch',true
 ) as result;
