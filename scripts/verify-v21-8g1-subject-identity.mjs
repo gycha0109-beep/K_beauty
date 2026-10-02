@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const dossierPath = "evidence/product-fact-catalog-expansion-v1/v21-8g1-wave1-subject-identity-plan-v2.json";
-const migrationPath = "supabase/migrations/20261002152000_v21_8g1_identity_authority_preservation_v1.sql";
+const migrationPath = "supabase/migrations/20261002153238_v21_8g1_identity_authority_preservation_v1.sql";
 const selectionPath = "evidence/product-fact-catalog-expansion-v1/coverage-expansion-wave-1-selection-v2.json";
 const readbackPath = "evidence/product-fact-catalog-expansion-v1/v21-8g1-wave1-subject-identity-production-readback-v1.json";
 const closeoutPath = "docs/evidence/v21-8g1-wave1-subject-identity-closeout-v1.md";
