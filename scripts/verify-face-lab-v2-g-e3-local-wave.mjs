@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import {
   readFileSync
 } from "node:fs";
+import {
+  buildFaceLabV2CoverageCohort
+} from "../lib/face-lab-v2/evaluation/harness.js";
+import {
+  TARGET_STYLE_REGISTRY
+} from "../lib/face-lab-v2/target-style-registry.js";
 
 const source =
   readFileSync(
@@ -78,6 +84,31 @@ for (const forbidden of [
     false
   );
 }
+
+const coverage =
+  buildFaceLabV2CoverageCohort();
+const distinctTargets =
+  new Set(
+    coverage.cases.map(
+      (item) =>
+        item.surveyAnswers
+          .targetSelections[0]
+    )
+  );
+
+assert.equal(
+  Object.keys(
+    TARGET_STYLE_REGISTRY
+  ).length,
+  12
+);
+assert.equal(
+  distinctTargets.size,
+  12
+);
+assert.ok(
+  coverage.caseCount >= 96
+);
 
 console.log(
   "FACE_LAB_G_E3_LOCAL_WAVE_LAUNCHER=PASS"
