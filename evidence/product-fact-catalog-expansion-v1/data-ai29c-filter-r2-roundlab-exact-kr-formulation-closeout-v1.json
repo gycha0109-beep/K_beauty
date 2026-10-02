@@ -1,0 +1,119 @@
+{
+  "version": "data-ai29c-filter-r2-roundlab-exact-kr-formulation-closeout-v1",
+  "stage": "DATA-AI29C-FILTER-R2",
+  "track": "taxonomy-ai",
+  "baseMainSha": "452da55d461e500abc482f2d78d7bf2192465d9b",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "registryContracts": {
+    "currentPublished": {
+      "registryVersion": "product-fact-registry-cross-category-v2",
+      "factKey": "uv_filter_type",
+      "definitionChecksum": "6dd4e0016889b65dafade9d410692e9ab85b036e0654089950950ceb46f6e917",
+      "valueType": "enum",
+      "allowedValues": ["mineral", "organic", "hybrid"],
+      "semanticDefinition": "Declared or composition-established UV filter system class.",
+      "permittedEvidenceClasses": ["product_claim", "composition_identity"],
+      "positiveEvidenceRequirement": "product-specific evidence"
+    },
+    "historicalTaskLineage": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "factKey": "uv_filter_type",
+      "definitionChecksum": "c6107f2924d443c80f1c61e7977f54f69a97ac5b5da21f8eb2be13891f1ec52c"
+    }
+  },
+  "target": {
+    "productId": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+    "subjectId": "761e6fd6-3487-4505-a1a7-13c37d5cece4",
+    "subjectSemanticKey": "cb287a3632034e8626d1580a2b9d82493730882f7694f73accf6cdca1d790e3e",
+    "name": "자작나무 수분 선크림 50ml",
+    "brand": "라운드랩",
+    "market": "KR",
+    "variantKey": "renewed_KR",
+    "formulationRevisionKey": "pilot-freeze-9aba73ebdc1f56e6041286efa04eb74f",
+    "task": {
+      "taskId": "6e0e8b65-0ac2-4246-894b-a19494bd7329",
+      "state": "BLOCKED",
+      "blockerCode": "EVIDENCE_INSUFFICIENT",
+      "attemptCount": 1,
+      "lastResearchAt": "2026-09-21T07:11:43.370135+09:00"
+    },
+    "governedExactKrSource": {
+      "canonicalLocator": "https://roundlab.co.kr/article/press/8/3087",
+      "sourceId": "3fa2f78b-d7c4-4355-bbda-79e747a3ea99",
+      "bindingId": "f1734dc9-8ad2-458d-a976-966bfe6e6ef8",
+      "contentDigest": "879027d0cd4ffb563e7c028ee98b6454055f6a73c609c2bad80321474886049a",
+      "bindingState": "exact_subject_match",
+      "scopeRelation": "equivalent",
+      "market": "KR",
+      "observed": [
+        "renewed Birch Juice Moisturizing Sunscreen identity",
+        "SPF 50+",
+        "PA++++"
+      ],
+      "notObserved": [
+        "direct mineral/organic/hybrid declaration",
+        "full composition sufficient for uv_filter_type classification"
+      ]
+    },
+    "currentOfficialProductPage": {
+      "locator": "https://roundlab.co.kr/product/자작나무-수분-선크림-50ml/138/",
+      "market": "KR",
+      "observed": "Exact current product identity is exposed, but the accessible official text layer does not expose a direct UV-filter-system declaration or full composition sufficient for governed classification."
+    },
+    "globalOfficialEvidence": {
+      "locator": "https://roundlab.com/products/birch-moisturizing-uv-sunscreen",
+      "observedClassification": "Chemical",
+      "observedActiveFilters": ["Avobenzone", "Homosalate", "Octisalate"],
+      "transferToKrSubjectAuthorized": false,
+      "reason": "Current global/US UVLock presentation and active-filter disclosure do not establish exact formulation equivalence to the governed renewed KR SPF50+ Subject."
+    },
+    "result": "HOLD_EVIDENCE_INSUFFICIENT",
+    "currentUvFilterFactCount": 0
+  },
+  "coverageAtCloseout": {
+    "resolvedCurrentSunscreenSubjects": 13,
+    "spfCurrentSubjects": 13,
+    "uvaLabelCurrentSubjects": 10,
+    "uvFilterCurrentSubjects": 12,
+    "uvFilterMissingSubjects": 1,
+    "waterResistanceDurationCurrentSubjects": 2,
+    "broadSpectrumCurrentSubjects": 2,
+    "currentProductFacts": 95
+  },
+  "watchPolicy": {
+    "repeatSearchUnderUnchangedFingerprint": false,
+    "fingerprintFields": [
+      "subjectSemanticKey",
+      "formulationRevisionKey",
+      "market",
+      "governedExactKrSource.contentDigest",
+      "registryContracts.currentPublished.definitionChecksum"
+    ],
+    "reopenIf": [
+      "the exact KR governed source content_digest changes and a direct filter-system claim or complete composition appears",
+      "the current exact KR product page exposes a governed first-party direct filter classification or complete composition",
+      "first-party documentation establishes exact formulation equivalence between the governed renewed KR Subject and the global/US UVLock presentation",
+      "subject_semantic_key, formulation_revision_key, variant, or market scope materially changes",
+      "uv_filter_type Registry checksum, allowed values, evidence contract, or write-authority contract changes",
+      "a manually reviewed product-specific exact-subject evidence candidate becomes admissible"
+    ],
+    "doNotReopenFor": [
+      "the existence of a separate Birch Juice mineral sunscreen sibling",
+      "third-party organic/chemical classification",
+      "global or US Chemical classification without exact-formulation equivalence",
+      "SPF or PA changes alone",
+      "generic brand-family UV-filter claims"
+    ]
+  },
+  "writeBoundary": {
+    "productFactWrites": 0,
+    "researchTaskWrites": 0,
+    "registryWrites": 0,
+    "policyWrites": 0,
+    "recommendationWrites": 0,
+    "rankingChanged": false,
+    "publicActivation": false
+  },
+  "decision": "FILTER_R2_ROUNDLAB_CLOSEOUT_PASS_WATCH_ON_CHANGE_NO_ADMISSIBLE_EXACT_KR_FILTER_AUTHORITY",
+  "nextGate": "DATA-AI29C-PROTECTION-R1_PROTECTION_GAP_WATCH_CLOSEOUT"
+}
