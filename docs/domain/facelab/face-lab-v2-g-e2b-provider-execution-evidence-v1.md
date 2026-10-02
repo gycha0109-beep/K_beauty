@@ -1,9 +1,9 @@
 # Face Lab V2 G-E2B Provider Execution Evidence v1
 
-> Track: Face Lab / face-research  
-> Gate: G-E2B  
-> Provider execution: complete  
-> Human Review: pending  
+> Track: Face Lab / face-research
+> Gate: G-E2B
+> Provider execution: complete
+> Human Review: pending
 > Gate closeout: prohibited until G-C/G-D review is complete
 
 ## What this evidence proves
