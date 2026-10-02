@@ -624,7 +624,10 @@ if (
                         .evidenceCheckStatuses,
                     reviewFindingCodes:
                       item
-                        .reviewFindingCodes
+                        .reviewFindingCodes,
+                    hardFailureCodes:
+                      item
+                        .hardFailureCodes
                   })
                 )
             },
