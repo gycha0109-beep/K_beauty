@@ -259,6 +259,9 @@ const runnerPath =
     )
   );
 
+const caseFailures =
+  [];
+
 for (
   const item of
   descriptors
@@ -271,99 +274,191 @@ for (
         item.runSpecPath
       ],
       {
-        stdio: "inherit"
+        encoding: "utf8",
+        stdio: [
+          "ignore",
+          "pipe",
+          "inherit"
+        ]
       }
     );
+
+  const stdout =
+    String(
+      result.stdout || ""
+    ).trim();
+  let payload = null;
+
+  if (stdout) {
+    try {
+      payload =
+        JSON.parse(
+          stdout
+        );
+    } catch {
+      payload = null;
+    }
+
+    console.log(stdout);
+  }
 
   if (
     result.status !== 0
   ) {
-    throw new Error(
-      `pilot_case_failed_${item.caseId}`
-    );
+    caseFailures.push({
+      caseId:
+        item.caseId,
+      intentGroupId:
+        item.runSpec
+          .intentGroupId,
+      generationIndex:
+        item.runSpec
+          .generationIndex,
+      reason:
+        payload?.reason ||
+        "pilot_case_runner_failed",
+      calibrationReason:
+        payload
+          ?.calibrationReason ||
+        null,
+      incompleteCheckId:
+        payload
+          ?.incompleteCheckId ||
+        null
+    });
   }
-}
-
-const calibrationCases =
-  [];
-
-for (
-  const item of
-  descriptors
-) {
-  const casePath =
-    path.join(
-      campaignDirectory,
-      `${item.stem}.calibration-case.json`
-    );
-
-  calibrationCases.push(
-    await readJson(
-      casePath
-    )
-  );
 }
 
 const campaignId =
   [...campaignIds][0];
-const aggregate =
-  aggregateFaceLabSimulationCalibration({
-    campaignId,
-    cases:
-      calibrationCases
-  });
 
 if (
-  aggregate.status !==
-    "ready"
+  caseFailures.length
 ) {
-  console.log(
-    JSON.stringify(
-      aggregate,
-      null,
-      2
-    )
-  );
-  process.exitCode = 1;
-} else {
-  const aggregateInput = {
+  const blockerReport = {
+    ok: false,
+    verdict:
+      "FACE_LAB_G_E2B_HUMAN_REVIEW_INCOMPLETE",
     campaignId,
-    casePaths:
-      descriptors.map(
-        (item) =>
-          `./${item.stem}.calibration-case.json`
-      )
+    reviewedCaseCount:
+      descriptors.length,
+    readyCaseCount:
+      descriptors.length -
+      caseFailures.length,
+    blockedCaseCount:
+      caseFailures.length,
+    blockers:
+      caseFailures,
+    remediation:
+      "Re-open the blocked cases in the private review board. A not_assessable response intentionally remains not_evaluated and cannot enter calibration."
   };
 
   await writeJson(
     path.join(
       campaignDirectory,
-      "campaign.aggregate-input.json"
+      "campaign.blockers.json"
     ),
-    aggregateInput
-  );
-  await writeJson(
-    path.join(
-      campaignDirectory,
-      "campaign.aggregate.json"
-    ),
-    aggregate
+    blockerReport
   );
 
   console.log(
     JSON.stringify(
-      {
-        ok: true,
-        verdict:
-          "FACE_LAB_G_E2C_AGGREGATE_READY",
-        campaignId,
-        caseCount:
-          calibrationCases.length,
-        aggregatePath:
-          "./campaign.aggregate.json"
-      },
+      blockerReport,
       null,
       2
     )
   );
+  process.exitCode = 2;
+} else {
+  const calibrationCases =
+    [];
+
+  for (
+    const item of
+    descriptors
+  ) {
+    const casePath =
+      path.join(
+        campaignDirectory,
+        `${item.stem}.calibration-case.json`
+      );
+
+    calibrationCases.push(
+      await readJson(
+        casePath
+      )
+    );
+  }
+
+  const aggregate =
+    aggregateFaceLabSimulationCalibration({
+      campaignId,
+      cases:
+        calibrationCases
+    });
+
+  if (
+    aggregate.status !==
+      "ready"
+  ) {
+    console.log(
+      JSON.stringify(
+        aggregate,
+        null,
+        2
+      )
+    );
+    process.exitCode = 1;
+  } else {
+    const aggregateInput = {
+      campaignId,
+      casePaths:
+        descriptors.map(
+          (item) =>
+            `./${item.stem}.calibration-case.json`
+        )
+    };
+
+    await writeJson(
+      path.join(
+        campaignDirectory,
+        "campaign.aggregate-input.json"
+      ),
+      aggregateInput
+    );
+    await writeJson(
+      path.join(
+        campaignDirectory,
+        "campaign.aggregate.json"
+      ),
+      aggregate
+    );
+
+    await fs.rm(
+      path.join(
+        campaignDirectory,
+        "campaign.blockers.json"
+      ),
+      {
+        force: true
+      }
+    );
+
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          verdict:
+            "FACE_LAB_G_E2C_AGGREGATE_READY",
+          campaignId,
+          caseCount:
+            calibrationCases.length,
+          aggregatePath:
+            "./campaign.aggregate.json"
+        },
+        null,
+        2
+      )
+    );
+  }
 }
