@@ -454,7 +454,7 @@ async function main() {
     ),
     password: requiredEnv("FACE_LAB_E2E_PASSWORD_A", { trim: false })
   };
-  const credentialsB = bootstrapUsers || expectedCaseCount > 1
+  const credentialsB = expectedCaseCount > 1
     ? {
         email: resolveE2EAuthEmail(
           requiredEnv("FACE_LAB_E2E_EMAIL_B"),
