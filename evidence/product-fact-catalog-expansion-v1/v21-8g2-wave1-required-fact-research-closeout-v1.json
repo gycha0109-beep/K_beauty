@@ -1,0 +1,749 @@
+{
+  "version": "v21-8g2-wave1-required-fact-research-closeout-v1",
+  "stage": "V2.1-8G2-CLOSE",
+  "source_main_sha": "35b15a1c70389f21951e1b61450da9ff1e7d8588",
+  "captured_on": "2026-10-02",
+  "source_artifacts": [
+    {
+      "stage": "V2.1-8G2-0",
+      "path": "evidence/product-fact-catalog-expansion-v1/v21-8g2-0-registry-v1-research-contract-v1.json",
+      "git_blob_sha": "6f1606fc91f6dc3f7b059e635ef39953ffbd6b89"
+    },
+    {
+      "stage": "V2.1-8G2-A",
+      "path": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json",
+      "git_blob_sha": "2f730598a523e69552cf8fef273f3a55ee6e1665"
+    },
+    {
+      "stage": "V2.1-8G2-B",
+      "path": "evidence/product-fact-catalog-expansion-v1/v21-8g2-b-required-fact-research-v1.json",
+      "git_blob_sha": "49d504fd0fd4752cd5206c9f1b13759b2c4ce90c"
+    },
+    {
+      "stage": "V2.1-8G2-C",
+      "path": "evidence/product-fact-catalog-expansion-v1/v21-8g2-c-required-fact-research-v1.json",
+      "git_blob_sha": "b383507c5d40cadf1a9829a8c510edbecadaba5c"
+    }
+  ],
+  "registry": {
+    "version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "identity_serializer_version": "product-fact-subject-identity-v1"
+  },
+  "totals": {
+    "products": 8,
+    "subjects": 8,
+    "tasks": 16,
+    "direct": 6,
+    "insufficient": 10,
+    "blocked": 0
+  },
+  "handoff_contract": {
+    "evidence_ingest_authorized": false,
+    "fact_instance_write_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "direct_is_not_fact": true,
+    "direct_is_not_ready_for_confirmation": true,
+    "insufficient_false_inference_forbidden": true
+  },
+  "direct_candidates": [
+    {
+      "wave": "A",
+      "task_id": "66f0d4df-c1a8-4b67-869a-8ef8b5528779",
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "brand": "비플레인",
+      "name": "녹두 약산성 클렌징폼",
+      "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+      "subject_semantic_key": "8d724aa6518b76d64b1b860bfbb771759a6616186be41df71f464142e0e3d65b",
+      "formulation_revision_key": "v21-8g1:ebd51ca307be7df6291894e7e9b91bc3bb1fbd7274214444e0eecb1c7072359d",
+      "market_applicability": "KR",
+      "fact_key": "low_ph",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "2c695147eda6da905207cfa5d4c32e756ff0fa7726e04882f5da5a6f3f29bdcf",
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": true,
+      "evidence_class": "product_claim",
+      "support_summary": "The exact official product title is '[대용량] 녹두 약산성 클렌징폼 160ml', directly declaring the low-pH proposition for the exact SKU.",
+      "reason": "Product-specific official claim matches Registry v1 low_ph semantics.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "beplain_product",
+          "source_locator": "https://www.beplain.co.kr/m/product_detail.html?brand_uid=43",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "beplain / Moments Company",
+          "market": "KR",
+          "canonical_capture_digest": "74e3f097e770d93a5a21ae4abc43619fbe7d5c5939ba77b3eec20197332536c3"
+        }
+      ],
+      "eligible_for_8g3": true
+    },
+    {
+      "wave": "A",
+      "task_id": "f133d067-a5f6-44fc-a3f5-6b8706d35c9a",
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "brand": "아토팜",
+      "name": "MLE 크림 스틱 밤",
+      "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+      "subject_semantic_key": "e809fefc0a4652b0022a8084f90933a3a8e342e9218e2b0dfb85517c63d78157",
+      "formulation_revision_key": "v21-8g1:5b73e1d0fee304d995cf2e18da1c56cdc26f4c9f6a60978f7e5743bc1191225e",
+      "market_applicability": "KR",
+      "fact_key": "barrier_support_claim",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": true,
+      "evidence_class": "measurement",
+      "support_summary": "The exact official 10g page reports a product-specific human application test showing 21.1% improvement in skin barrier / transepidermal water loss after two weeks, and also explicitly describes barrier strengthening.",
+      "reason": "Registry v1 permits measurement and product_claim evidence; exact product-specific barrier evidence is present.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "atopalm_product",
+          "source_locator": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "ATOPALM SHOP / NeoPharm",
+          "market": "KR",
+          "canonical_capture_digest": "2b8b4605be077d126280a010706c3788cd63df24dea6ac7635df76209eb797d2"
+        }
+      ],
+      "eligible_for_8g3": true
+    },
+    {
+      "wave": "A",
+      "task_id": "b1ee9a58-538d-4032-a0fe-690c1e82f751",
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "brand": "아토팜",
+      "name": "MLE 크림 스틱 밤",
+      "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+      "subject_semantic_key": "e809fefc0a4652b0022a8084f90933a3a8e342e9218e2b0dfb85517c63d78157",
+      "formulation_revision_key": "v21-8g1:5b73e1d0fee304d995cf2e18da1c56cdc26f4c9f6a60978f7e5743bc1191225e",
+      "market_applicability": "KR",
+      "fact_key": "primary_use_role",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": "local_area",
+      "evidence_class": "usage_instruction",
+      "support_summary": "The exact official usage instruction says to reapply to dry local areas of the face and body, explicitly matching a local-area usage role.",
+      "reason": "The phrase '얼굴과 몸 국소부위 등 건조 부위' directly supports the Registry v1 local_area enum.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "atopalm_product",
+          "source_locator": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "ATOPALM SHOP / NeoPharm",
+          "market": "KR",
+          "canonical_capture_digest": "2b8b4605be077d126280a010706c3788cd63df24dea6ac7635df76209eb797d2"
+        }
+      ],
+      "eligible_for_8g3": true
+    },
+    {
+      "wave": "A",
+      "task_id": "1b2062c6-9a3d-4fe4-b192-4c1ac06dda2c",
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "brand": "닥터트웬티프로젝트",
+      "name": "나인 토너",
+      "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+      "subject_semantic_key": "379b1231208b796c99775d98d7f5938e1e982d8a631002bebce29449e3f14d43",
+      "formulation_revision_key": "v21-8g1:eacd4c398dfebe713f91830feb367cdd2e2848422dceef4087d35cc736eef3b7",
+      "market_applicability": "KR",
+      "fact_key": "product_format",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "f04ee27fd5526ce0866693d146811324f0da4c323fd55f82e91c38ef9273fcc4",
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": "liquid",
+      "evidence_class": "physical_characteristic",
+      "support_summary": "The official exact SKU is '나인 토너 300ml' and is classified under the official '토너/미스트' type category, supporting the liquid rather than pad presentation.",
+      "reason": "Product-specific official physical-presentation evidence maps to the Registry v1 liquid enum.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "dr20_product",
+          "source_locator": "https://dr20project.com/product/%EB%82%98%EC%9D%B8-%ED%86%A0%EB%84%88-300ml/175/",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "Dr.twentyproject / Twenty Medicos",
+          "market": "KR",
+          "canonical_capture_digest": "d068b0d2e80a105e3bd3c95b7be6f6b6a7615c77ac9e02a8ce3e872951a037df"
+        },
+        {
+          "source_id": "dr20_category",
+          "source_locator": "https://dr20project.com/category/%ED%86%A0%EB%84%88%EB%AF%B8%EC%8A%A4%ED%8A%B8/58",
+          "authority_kind": "official_kr_category_page",
+          "publisher": "Dr.twentyproject / Twenty Medicos",
+          "market": "KR",
+          "canonical_capture_digest": "e398df369d0b4bf03dd6ac44d2c60b6396f88fc4a8693d7b32c3ebe8c23def8d"
+        }
+      ],
+      "eligible_for_8g3": true
+    },
+    {
+      "wave": "B",
+      "task_id": "cf143b70-f9ba-4d57-aa30-2e13da39de25",
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "brand": "닥터지",
+      "name": "더모이스처 배리어.D 멀티 밤",
+      "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+      "subject_semantic_key": "77e92456cde099730e408c65f1b09b59ef2a07201cc7c21b2ccdfdd0756c11da",
+      "formulation_revision_key": "v21-8g1:0b2bbf07c8c5807e0a1ed3f2c825db2fdb8e6147840ea97300dc56a5995b824e",
+      "market_applicability": "KR",
+      "fact_key": "barrier_support_claim",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": true,
+      "evidence_class": "product_claim",
+      "support_summary": "The exact official 50ml page explicitly describes the product as a moisturizing coating barrier multi balm.",
+      "reason": "Product-specific official barrier-support language directly matches Registry v1 barrier_support_claim.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "drg_product",
+          "source_locator": "https://www.dr-g.co.kr/item/4688",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "Dr.G / Gowoonsesang Cosmetics",
+          "market": "KR",
+          "canonical_capture_digest": "150acaf2639e4f221e9a877bb8bbe5933f09764174b05b2e84493105190f6ea8"
+        }
+      ],
+      "eligible_for_8g3": true
+    },
+    {
+      "wave": "B",
+      "task_id": "46f6bd75-3c64-4edb-ab38-92c1b5897b90",
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "brand": "닥터지",
+      "name": "더모이스처 배리어.D 멀티 밤",
+      "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+      "subject_semantic_key": "77e92456cde099730e408c65f1b09b59ef2a07201cc7c21b2ccdfdd0756c11da",
+      "formulation_revision_key": "v21-8g1:0b2bbf07c8c5807e0a1ed3f2c825db2fdb8e6147840ea97300dc56a5995b824e",
+      "market_applicability": "KR",
+      "fact_key": "primary_use_role",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": "multi_area",
+      "evidence_class": "usage_instruction",
+      "support_summary": "The official usage instruction explicitly enumerates multiple face/body areas including face, around the mouth, elbows, heels, and nail cuticles, with reapplication to dry areas.",
+      "reason": "The exact product is declared for multiple discrete application areas; existing governed v1 multi_area examples use the same multi-area usage semantics.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "drg_product",
+          "source_locator": "https://www.dr-g.co.kr/item/4688",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "Dr.G / Gowoonsesang Cosmetics",
+          "market": "KR",
+          "canonical_capture_digest": "150acaf2639e4f221e9a877bb8bbe5933f09764174b05b2e84493105190f6ea8"
+        }
+      ],
+      "eligible_for_8g3": true
+    }
+  ],
+  "insufficient_tasks": [
+    {
+      "wave": "A",
+      "task_id": "a125b39f-a53b-48f8-b1d9-26310a6daa84",
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "brand": "비플레인",
+      "name": "녹두 약산성 클렌징폼",
+      "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+      "subject_semantic_key": "8d724aa6518b76d64b1b860bfbb771759a6616186be41df71f464142e0e3d65b",
+      "formulation_revision_key": "v21-8g1:ebd51ca307be7df6291894e7e9b91bc3bb1fbd7274214444e0eecb1c7072359d",
+      "market_applicability": "KR",
+      "fact_key": "deep_cleansing",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "43e03202518cb69cbf63f08f8494f8f0aabf252dcf942a241c6aac636ed91fd7",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "Exact 160ml official SKU is current. Official indexed product/category text establishes cleansing use but no admissible product-specific deep-cleansing claim or measurement was found.",
+      "reason": "missing != false; absence of a deep-cleansing statement does not justify false.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "beplain_product",
+          "source_locator": "https://www.beplain.co.kr/m/product_detail.html?brand_uid=43",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "beplain / Moments Company",
+          "market": "KR",
+          "canonical_capture_digest": "74e3f097e770d93a5a21ae4abc43619fbe7d5c5939ba77b3eec20197332536c3"
+        },
+        {
+          "source_id": "beplain_category",
+          "source_locator": "https://www.beplain.co.kr/shop/shopbrand.html?mcode=001&type=Y&xcode=013",
+          "authority_kind": "official_kr_category_page",
+          "publisher": "beplain / Moments Company",
+          "market": "KR",
+          "canonical_capture_digest": "bd3bb46bc4442b63aa876261628d5fc3408a63fcc5a90f67285bd3c38c8fd73c"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "A",
+      "task_id": "cfc6f2e5-3d41-4c54-b973-308b06c37972",
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "brand": "닥터트웬티프로젝트",
+      "name": "나인 토너",
+      "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+      "subject_semantic_key": "379b1231208b796c99775d98d7f5938e1e982d8a631002bebce29449e3f14d43",
+      "formulation_revision_key": "v21-8g1:eacd4c398dfebe713f91830feb367cdd2e2848422dceef4087d35cc736eef3b7",
+      "market_applicability": "KR",
+      "fact_key": "contains_active",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "7b6f785309dc34f6cd4042ebc7b108b49e118c364e633457c3baf53c77dcb7b3",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 300ml product page was verified, but the indexed official product text does not establish a specific active/functional ingredient identity admissible under Registry v1.",
+      "reason": "Ingredient identity is not inferred from product naming, third-party listings, or missing official text.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "dr20_product",
+          "source_locator": "https://dr20project.com/product/%EB%82%98%EC%9D%B8-%ED%86%A0%EB%84%88-300ml/175/",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "Dr.twentyproject / Twenty Medicos",
+          "market": "KR",
+          "canonical_capture_digest": "d068b0d2e80a105e3bd3c95b7be6f6b6a7615c77ac9e02a8ce3e872951a037df"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "B",
+      "task_id": "2d41d0f1-fd3e-4a8c-9bd3-35e8f1438459",
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "brand": "웰라쥬",
+      "name": "리얼 히알루로닉 수딩크림",
+      "subject_id": "e483dee5-c986-4ba6-8ea5-ad5fe0b481ef",
+      "subject_semantic_key": "7862f69ce01c03c1bb28b54fa565457f258b606bd02fc3dcb68ccf19895a4aa6",
+      "formulation_revision_key": "v21-8g1:d736715e418de148f6d3cc8665c0e529f6a24fb57192a632917ba439e551eb28",
+      "market_applicability": "KR",
+      "fact_key": "barrier_support_claim",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 80ml page and detail images establish moisture replenishment, oil-water balance, cooling/soothing, and surface-moisture coating, but do not establish a product-specific skin-barrier support claim or barrier measurement.",
+      "reason": "Surface-moisture coating and hydration are not silently promoted to barrier_support_claim; missing != false.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "wellage_product",
+          "source_locator": "https://wellage.co.kr/product/%EB%A6%AC%EC%96%BC-%ED%9E%88%EC%95%8C%EB%A3%A8%EB%A1%9C%EB%8B%89-%EC%88%98%EB%94%A9-%ED%81%AC%EB%A6%BC-80ml/1769/",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "WELLAGE / Hugel",
+          "market": "KR",
+          "canonical_capture_digest": "e2b2f870b08b56bdebda1c6420bd1afa0de8d96c79ed684f87886ace21b3c8c1"
+        },
+        {
+          "source_id": "wellage_detail_checkpoint",
+          "source_locator": "https://www.wellage.co.kr/detail/ha_soothing/ver2/sd_02-2.jpg",
+          "authority_kind": "official_kr_product_detail_image",
+          "publisher": "WELLAGE / Hugel",
+          "market": "KR",
+          "canonical_capture_digest": "bb0478428bd6aad39bedb8e6896e2756854c70a3a449c99c46a18d72547b57a4"
+        },
+        {
+          "source_id": "wellage_detail_moisture",
+          "source_locator": "https://www.wellage.co.kr/detail/ha_soothing/ver2/sd_08.jpg",
+          "authority_kind": "official_kr_product_detail_image",
+          "publisher": "WELLAGE / Hugel",
+          "market": "KR",
+          "canonical_capture_digest": "883bc3ca45e62e840feed2d98597f3876271bf12872c4bdc5485c36dd2972128"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "B",
+      "task_id": "64485266-e135-4f9a-baa0-9c9addf8669e",
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "brand": "웰라쥬",
+      "name": "리얼 히알루로닉 수딩크림",
+      "subject_id": "e483dee5-c986-4ba6-8ea5-ad5fe0b481ef",
+      "subject_semantic_key": "7862f69ce01c03c1bb28b54fa565457f258b606bd02fc3dcb68ccf19895a4aa6",
+      "formulation_revision_key": "v21-8g1:d736715e418de148f6d3cc8665c0e529f6a24fb57192a632917ba439e551eb28",
+      "market_applicability": "KR",
+      "fact_key": "primary_use_role",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official page identifies a soothing cream for all skin types, but the indexed official page only points to the detail view for usage and the reviewed official detail images do not establish an allowed primary-use-role enum.",
+      "reason": "Cream form or all-skin-type labeling is not sufficient to infer full_face or another role.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "wellage_product",
+          "source_locator": "https://wellage.co.kr/product/%EB%A6%AC%EC%96%BC-%ED%9E%88%EC%95%8C%EB%A3%A8%EB%A1%9C%EB%8B%89-%EC%88%98%EB%94%A9-%ED%81%AC%EB%A6%BC-80ml/1769/",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "WELLAGE / Hugel",
+          "market": "KR",
+          "canonical_capture_digest": "e2b2f870b08b56bdebda1c6420bd1afa0de8d96c79ed684f87886ace21b3c8c1"
+        },
+        {
+          "source_id": "wellage_detail_checkpoint",
+          "source_locator": "https://www.wellage.co.kr/detail/ha_soothing/ver2/sd_02-2.jpg",
+          "authority_kind": "official_kr_product_detail_image",
+          "publisher": "WELLAGE / Hugel",
+          "market": "KR",
+          "canonical_capture_digest": "bb0478428bd6aad39bedb8e6896e2756854c70a3a449c99c46a18d72547b57a4"
+        },
+        {
+          "source_id": "wellage_detail_moisture",
+          "source_locator": "https://www.wellage.co.kr/detail/ha_soothing/ver2/sd_08.jpg",
+          "authority_kind": "official_kr_product_detail_image",
+          "publisher": "WELLAGE / Hugel",
+          "market": "KR",
+          "canonical_capture_digest": "883bc3ca45e62e840feed2d98597f3876271bf12872c4bdc5485c36dd2972128"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "B",
+      "task_id": "d181a158-d816-44a4-ae1c-6aa9c41414cc",
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "brand": "브링그린",
+      "name": "알로에 수딩 젤",
+      "subject_id": "3a102aae-17bf-4c19-b979-ddd36a801ce4",
+      "subject_semantic_key": "a7704f04555c708b73831ec639a6d897fa23360449f8393122abd0590e0a6777",
+      "formulation_revision_key": "v21-8g1:84a9249140754cceb87ec06e8532e4fdfe20ea9ef0ad9cf4c8550200617e5528",
+      "market_applicability": "KR",
+      "fact_key": "barrier_support_claim",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "First-party commerce and brand-owner sources establish the exact aloe soothing-gel product and cooling/soothing context, but no product-specific barrier-support claim or barrier measurement was established.",
+      "reason": "Cooling/soothing identity is not equivalent to barrier support; missing != false.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "bringgreen_product",
+          "source_locator": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000215502",
+          "authority_kind": "first_party_kr_commerce",
+          "publisher": "CJ Olive Young / BRINGGREEN",
+          "market": "KR",
+          "canonical_capture_digest": "2ef422a55aa068796deecb20b77847a799b1185fbcb2ae8e3dbe70d23967e19f"
+        },
+        {
+          "source_id": "bringgreen_owner",
+          "source_locator": "https://corp.oliveyoung.com/ko/business/brand/bringgreen",
+          "authority_kind": "brand_owner_official_page",
+          "publisher": "CJ Olive Young",
+          "market": "KR",
+          "canonical_capture_digest": "d9a1ed7246d0d80b141c8e94ef67ea799bb27e5e0475f272e2e7a9cbb7bad5dc"
+        },
+        {
+          "source_id": "bringgreen_press",
+          "source_locator": "https://corp.oliveyoung.com/ko/news/139?pg=2",
+          "authority_kind": "brand_owner_press_release",
+          "publisher": "CJ Olive Young",
+          "market": "KR",
+          "canonical_capture_digest": "4c8318f08893ffe28168552d34b079aa984a408302a669d80df48f9a1054e032"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "B",
+      "task_id": "e08328cc-3213-4970-8122-c9c62f2de987",
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "brand": "브링그린",
+      "name": "알로에 수딩 젤",
+      "subject_id": "3a102aae-17bf-4c19-b979-ddd36a801ce4",
+      "subject_semantic_key": "a7704f04555c708b73831ec639a6d897fa23360449f8393122abd0590e0a6777",
+      "formulation_revision_key": "v21-8g1:84a9249140754cceb87ec06e8532e4fdfe20ea9ef0ad9cf4c8550200617e5528",
+      "market_applicability": "KR",
+      "fact_key": "primary_use_role",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The reviewed first-party sources do not expose an explicit usage-area instruction sufficient to map the exact product to full_face, local_area, spot_use, multi_area, or body_possible.",
+      "reason": "Third-party copied usage disclosures were discovery-only and were not promoted into governed evidence.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "bringgreen_product",
+          "source_locator": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000215502",
+          "authority_kind": "first_party_kr_commerce",
+          "publisher": "CJ Olive Young / BRINGGREEN",
+          "market": "KR",
+          "canonical_capture_digest": "2ef422a55aa068796deecb20b77847a799b1185fbcb2ae8e3dbe70d23967e19f"
+        },
+        {
+          "source_id": "bringgreen_owner",
+          "source_locator": "https://corp.oliveyoung.com/ko/business/brand/bringgreen",
+          "authority_kind": "brand_owner_official_page",
+          "publisher": "CJ Olive Young",
+          "market": "KR",
+          "canonical_capture_digest": "d9a1ed7246d0d80b141c8e94ef67ea799bb27e5e0475f272e2e7a9cbb7bad5dc"
+        },
+        {
+          "source_id": "bringgreen_press",
+          "source_locator": "https://corp.oliveyoung.com/ko/news/139?pg=2",
+          "authority_kind": "brand_owner_press_release",
+          "publisher": "CJ Olive Young",
+          "market": "KR",
+          "canonical_capture_digest": "4c8318f08893ffe28168552d34b079aa984a408302a669d80df48f9a1054e032"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "C",
+      "task_id": "ec41b166-a5da-478c-8b67-371a2c081716",
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "brand": "러베",
+      "name": "5중 세라마이드 로션",
+      "subject_id": "96e5dc37-11b3-4c41-9a8a-f61d7c7c5a81",
+      "subject_semantic_key": "5186ea77890e36e1b19c04b7272e2b724c7a5be4c0e4214fb5d23db90f5c1b20",
+      "formulation_revision_key": "v21-8g1:b380bb88b5be8c7bae7bc4f29ed9c1f88c9ff06b902c9ad233966ea23f13ae6d",
+      "market_applicability": "KR",
+      "fact_key": "barrier_support_claim",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact current 200ml official SKU is established, but indexed first-party text provides no product-specific skin-barrier support claim or barrier measurement.",
+      "reason": "The phrase '5중 세라마이드' in the product name is ingredient/composition identity, not by itself a Registry v1 barrier-support proposition; missing != false.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "ruuve_product",
+          "source_locator": "https://ruuve.kr/product/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EC%95%84%EA%B8%B0%EB%A1%9C%EC%85%98-200ml/4140/",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "ruuve / Villagebaby",
+          "market": "KR",
+          "canonical_capture_digest": "f03a288387cec55048a0cfbe9d5eec586eb08f557ac1a6d8e0e34651fe712d4c"
+        },
+        {
+          "source_id": "ruuve_category",
+          "source_locator": "https://ruuve.kr/category/skin-care/56/",
+          "authority_kind": "official_kr_category_page",
+          "publisher": "ruuve / Villagebaby",
+          "market": "KR",
+          "canonical_capture_digest": "f600b1776bbc6d032c4719caa8f48eb0b6c57e6e1d598037fde0ca586cd972f6"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "C",
+      "task_id": "bfd3d47c-0fcf-4e80-8307-cf85581b4043",
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "brand": "러베",
+      "name": "5중 세라마이드 로션",
+      "subject_id": "96e5dc37-11b3-4c41-9a8a-f61d7c7c5a81",
+      "subject_semantic_key": "5186ea77890e36e1b19c04b7272e2b724c7a5be4c0e4214fb5d23db90f5c1b20",
+      "formulation_revision_key": "v21-8g1:b380bb88b5be8c7bae7bc4f29ed9c1f88c9ff06b902c9ad233966ea23f13ae6d",
+      "market_applicability": "KR",
+      "fact_key": "primary_use_role",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact current 200ml official SKU is established, but first-party indexed text does not expose an explicit application-area instruction that maps to a Registry v1 usage-role enum.",
+      "reason": "Baby-lotion naming and SKIN CARE category placement are not sufficient to infer full_face, local_area, spot_use, multi_area, or body_possible.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "ruuve_product",
+          "source_locator": "https://ruuve.kr/product/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EC%95%84%EA%B8%B0%EB%A1%9C%EC%85%98-200ml/4140/",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "ruuve / Villagebaby",
+          "market": "KR",
+          "canonical_capture_digest": "f03a288387cec55048a0cfbe9d5eec586eb08f557ac1a6d8e0e34651fe712d4c"
+        },
+        {
+          "source_id": "ruuve_category",
+          "source_locator": "https://ruuve.kr/category/skin-care/56/",
+          "authority_kind": "official_kr_category_page",
+          "publisher": "ruuve / Villagebaby",
+          "market": "KR",
+          "canonical_capture_digest": "f600b1776bbc6d032c4719caa8f48eb0b6c57e6e1d598037fde0ca586cd972f6"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "C",
+      "task_id": "361d7e50-dc94-47b6-a770-b879fd67b6a7",
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "brand": "싸이닉",
+      "name": "더 심플 데일리 로션",
+      "subject_id": "10d6e476-7ce4-445d-8e0b-6f2b41731813",
+      "subject_semantic_key": "21b8799ab6520e2300290fbf3bb13b0879b00b148a1379207f2cbfdbf651c0e8",
+      "formulation_revision_key": "v21-8g1:32ef22f75b6802e86ebc21684be703be77ff17277852bac3b03b095332dcdd0d",
+      "market_applicability": "KR",
+      "fact_key": "barrier_support_claim",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 300ml SKU is a mild acidic moisturizing lotion and appears in official lotion and sensitive/soothing categories, but no product-specific skin-barrier support claim or barrier measurement is stated.",
+      "reason": "Moisturizing, mild-acidic, and sensitive/soothing classifications are not silently promoted to barrier_support_claim; absence is not false.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "scinic_product",
+          "source_locator": "https://scinic.com/product/%EC%8B%B8%EC%9D%B4%EB%8B%89-%EB%8D%94-%EC%8B%AC%ED%94%8C-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%EB%A1%9C%EC%85%98-300ml/43",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "SCINIC",
+          "market": "KR",
+          "canonical_capture_digest": "53d64ff286ffd73c9eeb938a0affce5050446f0cc47b3b51db99c8cea37f7864"
+        },
+        {
+          "source_id": "scinic_lotion_category",
+          "source_locator": "https://scinic.com/category/%EB%A1%9C%EC%85%98/108/",
+          "authority_kind": "official_kr_category_page",
+          "publisher": "SCINIC",
+          "market": "KR",
+          "canonical_capture_digest": "f8dafd137671227b2e9e3dba24f2ec41ae142bcfcca4b90fb8b81e41f25cc5af"
+        },
+        {
+          "source_id": "scinic_sensitive_category",
+          "source_locator": "https://scinic.com/category/%EB%AF%BC%EA%B0%90%EC%A7%84%EC%A0%95/50/",
+          "authority_kind": "official_kr_category_page",
+          "publisher": "SCINIC",
+          "market": "KR",
+          "canonical_capture_digest": "4e0741b1af850814241fe99b9ede1e02bd465cc4347c5a4b043b8c173a48c64f"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    },
+    {
+      "wave": "C",
+      "task_id": "a513f5fd-4ef0-4372-9272-5e6e8cd3366c",
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "brand": "싸이닉",
+      "name": "더 심플 데일리 로션",
+      "subject_id": "10d6e476-7ce4-445d-8e0b-6f2b41731813",
+      "subject_semantic_key": "21b8799ab6520e2300290fbf3bb13b0879b00b148a1379207f2cbfdbf651c0e8",
+      "formulation_revision_key": "v21-8g1:32ef22f75b6802e86ebc21684be703be77ff17277852bac3b03b095332dcdd0d",
+      "market_applicability": "KR",
+      "fact_key": "primary_use_role",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "research_policy_version": "product-fact-required-policy-v1",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 300ml product and categories are current, but indexed first-party text exposes no explicit usage-area instruction sufficient to map to an allowed Registry v1 role.",
+      "reason": "Lotion form and category placement do not establish full_face or another usage-role enum.",
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "sources": [
+        {
+          "source_id": "scinic_product",
+          "source_locator": "https://scinic.com/product/%EC%8B%B8%EC%9D%B4%EB%8B%89-%EB%8D%94-%EC%8B%AC%ED%94%8C-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%EB%A1%9C%EC%85%98-300ml/43",
+          "authority_kind": "official_kr_product_page",
+          "publisher": "SCINIC",
+          "market": "KR",
+          "canonical_capture_digest": "53d64ff286ffd73c9eeb938a0affce5050446f0cc47b3b51db99c8cea37f7864"
+        },
+        {
+          "source_id": "scinic_lotion_category",
+          "source_locator": "https://scinic.com/category/%EB%A1%9C%EC%85%98/108/",
+          "authority_kind": "official_kr_category_page",
+          "publisher": "SCINIC",
+          "market": "KR",
+          "canonical_capture_digest": "f8dafd137671227b2e9e3dba24f2ec41ae142bcfcca4b90fb8b81e41f25cc5af"
+        },
+        {
+          "source_id": "scinic_sensitive_category",
+          "source_locator": "https://scinic.com/category/%EB%AF%BC%EA%B0%90%EC%A7%84%EC%A0%95/50/",
+          "authority_kind": "official_kr_category_page",
+          "publisher": "SCINIC",
+          "market": "KR",
+          "canonical_capture_digest": "4e0741b1af850814241fe99b9ede1e02bd465cc4347c5a4b043b8c173a48c64f"
+        }
+      ],
+      "eligible_for_8g3": false,
+      "false_inference_forbidden": true
+    }
+  ],
+  "production_preflight": {
+    "product_fact_current": 95,
+    "registry_v1_tasks": 16,
+    "pristine_registry_v1_tasks": 16,
+    "registry_v2_tasks": 0,
+    "ready_evidence_records": 0,
+    "ready_fact_instances": 0,
+    "claim_gpt_catalog_research_tasks_v1_exists": false,
+    "ingest_gpt_catalog_product_v1_exists": false
+  },
+  "decision": "V21_8G2_WAVE1_RESEARCH_CLOSEOUT_PASS_DIRECT6_INSUFFICIENT10",
+  "next_gate": "V2.1-8G3-0_EVIDENCE_INGEST_CONTRACT_PREFLIGHT",
+  "integration_main_sha": "5d92695eda8e47d3e6cbb727b5d904327ffb8fe0"
+}
