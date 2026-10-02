@@ -1,0 +1,279 @@
+{
+  "version": "v21-8g2-b-required-fact-research-v1",
+  "stage": "V2.1-8G2-B",
+  "source_main_sha": "3c08e2dc85d597302dc2ebb6cbe7392a2f5b5465",
+  "captured_on": "2026-10-02",
+  "registry": {
+    "version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "identity_serializer_version": "product-fact-subject-identity-v1"
+  },
+  "scope": {
+    "products": 3,
+    "tasks": 6,
+    "allowed_task_ids": [
+      "cf143b70-f9ba-4d57-aa30-2e13da39de25",
+      "46f6bd75-3c64-4edb-ab38-92c1b5897b90",
+      "2d41d0f1-fd3e-4a8c-9bd3-35e8f1438459",
+      "64485266-e135-4f9a-baa0-9c9addf8669e",
+      "d181a158-d816-44a4-ae1c-6aa9c41414cc",
+      "e08328cc-3213-4970-8122-c9c62f2de987"
+    ],
+    "evidence_write_authorized": false,
+    "fact_instance_write_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false
+  },
+  "source_captures": [
+    {
+      "source_id": "drg_product",
+      "source_locator": "https://www.dr-g.co.kr/item/4688",
+      "publisher": "Dr.G / Gowoonsesang Cosmetics",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+      "observed_product_title": "더모이스처 배리어.D 멀티 밤 50ml",
+      "observed_presentation": "50ml",
+      "relevant_claims": [
+        "끈적임 없이 깊은 보습만 전달하는 보습 코팅 장벽 멀티 밤",
+        "사용방법: 얼굴, 입 주변, 팔꿈치, 발꿈치, 손톱 큐티클 등에 펴 바르고 건조하고 민감한 얼굴과 몸의 건조 부위에 덧발라 사용"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "150acaf2639e4f221e9a877bb8bbe5933f09764174b05b2e84493105190f6ea8"
+    },
+    {
+      "source_id": "wellage_product",
+      "source_locator": "https://wellage.co.kr/product/%EB%A6%AC%EC%96%BC-%ED%9E%88%EC%95%8C%EB%A3%A8%EB%A1%9C%EB%8B%89-%EC%88%98%EB%94%A9-%ED%81%AC%EB%A6%BC-80ml/1769/",
+      "publisher": "WELLAGE / Hugel",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "subject_id": "e483dee5-c986-4ba6-8ea5-ad5fe0b481ef",
+      "observed_product_title": "리얼 히알루로닉 수딩 크림 80ml",
+      "observed_presentation": "80ml",
+      "relevant_claims": [
+        "해시태그: 유수분밸런스 속수분충전",
+        "제품주요사항: 모든피부타입",
+        "사용방법은 제품 상세보기 참조로만 노출"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "e2b2f870b08b56bdebda1c6420bd1afa0de8d96c79ed684f87886ace21b3c8c1"
+    },
+    {
+      "source_id": "wellage_detail_checkpoint",
+      "source_locator": "https://www.wellage.co.kr/detail/ha_soothing/ver2/sd_02-2.jpg",
+      "publisher": "WELLAGE / Hugel",
+      "authority_kind": "official_kr_product_detail_image",
+      "market": "KR",
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "subject_id": "e483dee5-c986-4ba6-8ea5-ad5fe0b481ef",
+      "observed_product_title": "리얼 히알루로닉 수딩 크림 80ml",
+      "observed_presentation": "official detail image",
+      "relevant_claims": [
+        "끈적임 ZERO 산뜻촉촉",
+        "유수분 밸런스 개기름 OUT",
+        "바르자마자 열감진정"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "bb0478428bd6aad39bedb8e6896e2756854c70a3a449c99c46a18d72547b57a4"
+    },
+    {
+      "source_id": "wellage_detail_moisture",
+      "source_locator": "https://www.wellage.co.kr/detail/ha_soothing/ver2/sd_08.jpg",
+      "publisher": "WELLAGE / Hugel",
+      "authority_kind": "official_kr_product_detail_image",
+      "market": "KR",
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "subject_id": "e483dee5-c986-4ba6-8ea5-ad5fe0b481ef",
+      "observed_product_title": "리얼 히알루로닉 수딩 크림 80ml",
+      "observed_presentation": "official detail image",
+      "relevant_claims": [
+        "속수분 충전 솔루션",
+        "과잉 유분 차단",
+        "겉수분 코팅"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "883bc3ca45e62e840feed2d98597f3876271bf12872c4bdc5485c36dd2972128"
+    },
+    {
+      "source_id": "bringgreen_product",
+      "source_locator": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000215502",
+      "publisher": "CJ Olive Young / BRINGGREEN",
+      "authority_kind": "first_party_kr_commerce",
+      "market": "KR",
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "subject_id": "3a102aae-17bf-4c19-b979-ddd36a801ce4",
+      "observed_product_title": "브링그린 알로에 97% 수딩젤",
+      "observed_presentation": "300ml single option included in first-party commerce listing",
+      "relevant_claims": [
+        "first-party commerce product title identifies 알로에 97% 수딩젤",
+        "indexed first-party text does not expose a product-specific barrier claim or explicit usage-area instruction"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "2ef422a55aa068796deecb20b77847a799b1185fbcb2ae8e3dbe70d23967e19f"
+    },
+    {
+      "source_id": "bringgreen_owner",
+      "source_locator": "https://corp.oliveyoung.com/ko/business/brand/bringgreen",
+      "publisher": "CJ Olive Young",
+      "authority_kind": "brand_owner_official_page",
+      "market": "KR",
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "subject_id": "3a102aae-17bf-4c19-b979-ddd36a801ce4",
+      "observed_product_title": "BRINGGREEN brand owner authority",
+      "observed_presentation": "brand authority",
+      "relevant_claims": [
+        "브링그린은 CJ올리브영 Private Brand",
+        "민감피부를 위한 액티브 비건 스킨케어"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "d9a1ed7246d0d80b141c8e94ef67ea799bb27e5e0475f272e2e7a9cbb7bad5dc"
+    },
+    {
+      "source_id": "bringgreen_press",
+      "source_locator": "https://corp.oliveyoung.com/ko/news/139?pg=2",
+      "publisher": "CJ Olive Young",
+      "authority_kind": "brand_owner_press_release",
+      "market": "KR",
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "subject_id": "3a102aae-17bf-4c19-b979-ddd36a801ce4",
+      "observed_product_title": "브링그린 알로에 97% 수딩젤",
+      "observed_presentation": "summer survival beauty/cooling care context",
+      "relevant_claims": [
+        "브링그린 알로에 97% 수딩젤을 여름철 서바이벌 뷰티 상품으로 소개",
+        "공식 보도자료의 범주는 쿨링 케어이며 barrier support나 usage-area role은 명시하지 않음"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "4c8318f08893ffe28168552d34b079aa984a408302a669d80df48f9a1054e032"
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "cf143b70-f9ba-4d57-aa30-2e13da39de25",
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "drg_product"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": true,
+      "evidence_class": "product_claim",
+      "support_summary": "The exact official 50ml page explicitly describes the product as a moisturizing coating barrier multi balm.",
+      "reason": "Product-specific official barrier-support language directly matches Registry v1 barrier_support_claim."
+    },
+    {
+      "task_id": "46f6bd75-3c64-4edb-ab38-92c1b5897b90",
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "drg_product"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": "multi_area",
+      "evidence_class": "usage_instruction",
+      "support_summary": "The official usage instruction explicitly enumerates multiple face/body areas including face, around the mouth, elbows, heels, and nail cuticles, with reapplication to dry areas.",
+      "reason": "The exact product is declared for multiple discrete application areas; existing governed v1 multi_area examples use the same multi-area usage semantics."
+    },
+    {
+      "task_id": "2d41d0f1-fd3e-4a8c-9bd3-35e8f1438459",
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "subject_id": "e483dee5-c986-4ba6-8ea5-ad5fe0b481ef",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "wellage_product",
+        "wellage_detail_checkpoint",
+        "wellage_detail_moisture"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 80ml page and detail images establish moisture replenishment, oil-water balance, cooling/soothing, and surface-moisture coating, but do not establish a product-specific skin-barrier support claim or barrier measurement.",
+      "reason": "Surface-moisture coating and hydration are not silently promoted to barrier_support_claim; missing != false."
+    },
+    {
+      "task_id": "64485266-e135-4f9a-baa0-9c9addf8669e",
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "subject_id": "e483dee5-c986-4ba6-8ea5-ad5fe0b481ef",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "wellage_product",
+        "wellage_detail_checkpoint",
+        "wellage_detail_moisture"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official page identifies a soothing cream for all skin types, but the indexed official page only points to the detail view for usage and the reviewed official detail images do not establish an allowed primary-use-role enum.",
+      "reason": "Cream form or all-skin-type labeling is not sufficient to infer full_face or another role."
+    },
+    {
+      "task_id": "d181a158-d816-44a4-ae1c-6aa9c41414cc",
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "subject_id": "3a102aae-17bf-4c19-b979-ddd36a801ce4",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "bringgreen_product",
+        "bringgreen_owner",
+        "bringgreen_press"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "First-party commerce and brand-owner sources establish the exact aloe soothing-gel product and cooling/soothing context, but no product-specific barrier-support claim or barrier measurement was established.",
+      "reason": "Cooling/soothing identity is not equivalent to barrier support; missing != false."
+    },
+    {
+      "task_id": "e08328cc-3213-4970-8122-c9c62f2de987",
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "subject_id": "3a102aae-17bf-4c19-b979-ddd36a801ce4",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "bringgreen_product",
+        "bringgreen_owner",
+        "bringgreen_press"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The reviewed first-party sources do not expose an explicit usage-area instruction sufficient to map the exact product to full_face, local_area, spot_use, multi_area, or body_possible.",
+      "reason": "Third-party copied usage disclosures were discovery-only and were not promoted into governed evidence."
+    }
+  ],
+  "summary": {
+    "direct_evidence_found": 2,
+    "evidence_insufficient": 4,
+    "identity_or_scope_blocked": 0,
+    "evidence_db_writes": 0,
+    "fact_instance_writes": 0,
+    "recommendation_writes": 0,
+    "product_fact_current_expected": 95
+  },
+  "next_gate": "V2.1-8G2-C_REQUIRED_FACT_RESEARCH_RUUVE_SCINIC_4_TASKS"
+}
