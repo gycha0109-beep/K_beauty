@@ -516,6 +516,106 @@ assert.equal(
   "identity_preservation"
 );
 
+assert.equal(
+  incompleteReviewResult.evidenceVerdict,
+  "not_evaluated"
+);
+assert.deepEqual(
+  incompleteReviewResult.hardFailureCodes,
+  []
+);
+assert.deepEqual(
+  incompleteReviewResult.reviewFindingCodes,
+  []
+);
+assert.equal(
+  incompleteReviewResult
+    .evidenceCheckStatuses
+    .identity_preservation,
+  "not_evaluated"
+);
+
+const hardIdentityReview =
+  buildFaceLabSimulationIdentityScopeReview({
+    caseId,
+    reviewerRef:
+      "operator-private",
+    identity: {
+      ...identityStable(),
+      facial_geometry:
+        "major_drift"
+    },
+    editScope:
+      editScopeStable()
+  });
+
+const incompleteRouteOperations =
+  responseMap(
+    routeTemplate.routeTargets,
+    "executed"
+  );
+
+incompleteRouteOperations[
+  routeTemplate.routeTargets[0]
+    .operationId
+] = "not_assessable";
+
+const incompleteRouteReview =
+  buildFaceLabSimulationRouteColorReview({
+    caseId,
+    reviewerRef:
+      "operator-private",
+    analysis:
+      fixture.item.analysis,
+    rawState:
+      fixture.rawState,
+    locale: "ko",
+    renderSpecSha256:
+      routeTemplate.trace
+        .renderSpecSha256,
+    routeOperations:
+      incompleteRouteOperations,
+    colorTargets:
+      responseMap(
+        routeTemplate.colorTargets,
+        "on_target"
+      )
+  });
+
+const hardAndIncomplete =
+  buildFaceLabSimulationPilotCaseArtifacts({
+    runSpec,
+    captureManifest,
+    canonicalSourceImageBytes:
+      Buffer.from("source"),
+    outputImageBytes:
+      Buffer.from("output"),
+    identityScopeReview:
+      hardIdentityReview,
+    routeColorReview:
+      incompleteRouteReview
+  });
+
+assert.equal(
+  hardAndIncomplete.status,
+  "invalid"
+);
+assert.equal(
+  hardAndIncomplete.incompleteCheckId,
+  "route_adherence"
+);
+assert.equal(
+  hardAndIncomplete.evidenceVerdict,
+  "fail"
+);
+assert.ok(
+  hardAndIncomplete
+    .hardFailureCodes
+    .includes(
+      "IDENTITY_MAJOR_DRIFT"
+    )
+);
+
 const emptyBytes =
   buildFaceLabSimulationPilotCaseArtifacts({
     runSpec,
