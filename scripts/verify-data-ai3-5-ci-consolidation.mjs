@@ -106,6 +106,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-data-ai29c-protection-r1-gap-watch-closeout.mjs",
   "scripts/verify-v21-8f-r1-catalog-expansion-planning-refresh.mjs",
   "scripts/verify-v21-8g0-registry-pinned-reconciliation.mjs",
+  "scripts/verify-v21-8g1-subject-identity.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {

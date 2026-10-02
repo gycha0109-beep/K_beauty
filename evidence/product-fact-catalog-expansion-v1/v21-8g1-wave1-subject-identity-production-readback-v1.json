@@ -1,0 +1,128 @@
+{
+  "version": "v21-8g1-wave1-subject-identity-production-readback-v1",
+  "stage": "V2.1-8G1",
+  "source_pr": 1046,
+  "source_head_sha": "711d2c1fa954acf2e324f14602294d80ca63c800",
+  "source_main_sha": "6a6f9e84e04736c48c924cffa997edd08aba327f",
+  "production_project": "bygrczggxfuisupcevaz",
+  "migration": {
+    "name": "v21_8g1_identity_authority_preservation_v1",
+    "production_version": "20261002153238",
+    "applied": true
+  },
+  "rollback_probe": {
+    "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+    "identity_rpc": true,
+    "subject_registration": true,
+    "process_v3": true,
+    "exact_task_reconciliation": true,
+    "identity_authority_preserved": true,
+    "forced_rollback": true,
+    "post_probe_prestate_restored": true
+  },
+  "production_readback": {
+    "selected_products": 12,
+    "ready_products": 8,
+    "hold_products": 4,
+    "selected_subjects": 8,
+    "ready_current_resolved_kr_product_scoped_subjects": 8,
+    "hold_subjects": 0,
+    "selected_null_market_intakes": 4,
+    "selected_v1_tasks": 26,
+    "selected_v2_tasks": 0,
+    "frozen_task_ids_matched": 26,
+    "frozen_task_ids_v1": 26,
+    "ready_research_pending_tasks": 16,
+    "hold_pristine_review_required_tasks": 10,
+    "ready_exact_subject_intakes": 8,
+    "hold_intakes_untouched": 4,
+    "product_fact_current_total": 95,
+    "selected_evidence_records": 0,
+    "selected_fact_instances": 0,
+    "selected_current_facts": 0
+  },
+  "ready_subjects": [
+    {
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "subject_id": "e483dee5-c986-4ba6-8ea5-ad5fe0b481ef",
+      "subject_semantic_key": "7862f69ce01c03c1bb28b54fa565457f258b606bd02fc3dcb68ccf19895a4aa6",
+      "source_content_digest": "d736715e418de148f6d3cc8665c0e529f6a24fb57192a632917ba439e551eb28"
+    },
+    {
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "subject_id": "3a102aae-17bf-4c19-b979-ddd36a801ce4",
+      "subject_semantic_key": "a7704f04555c708b73831ec639a6d897fa23360449f8393122abd0590e0a6777",
+      "source_content_digest": "84a9249140754cceb87ec06e8532e4fdfe20ea9ef0ad9cf4c8550200617e5528"
+    },
+    {
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "subject_id": "96e5dc37-11b3-4c41-9a8a-f61d7c7c5a81",
+      "subject_semantic_key": "5186ea77890e36e1b19c04b7272e2b724c7a5be4c0e4214fb5d23db90f5c1b20",
+      "source_content_digest": "b380bb88b5be8c7bae7bc4f29ed9c1f88c9ff06b902c9ad233966ea23f13ae6d"
+    },
+    {
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+      "subject_semantic_key": "e809fefc0a4652b0022a8084f90933a3a8e342e9218e2b0dfb85517c63d78157",
+      "source_content_digest": "5b73e1d0fee304d995cf2e18da1c56cdc26f4c9f6a60978f7e5743bc1191225e"
+    },
+    {
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+      "subject_semantic_key": "8d724aa6518b76d64b1b860bfbb771759a6616186be41df71f464142e0e3d65b",
+      "source_content_digest": "ebd51ca307be7df6291894e7e9b91bc3bb1fbd7274214444e0eecb1c7072359d"
+    },
+    {
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+      "subject_semantic_key": "77e92456cde099730e408c65f1b09b59ef2a07201cc7c21b2ccdfdd0756c11da",
+      "source_content_digest": "0b2bbf07c8c5807e0a1ed3f2c825db2fdb8e6147840ea97300dc56a5995b824e"
+    },
+    {
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "subject_id": "10d6e476-7ce4-445d-8e0b-6f2b41731813",
+      "subject_semantic_key": "21b8799ab6520e2300290fbf3bb13b0879b00b148a1379207f2cbfdbf651c0e8",
+      "source_content_digest": "32ef22f75b6802e86ebc21684be703be77ff17277852bac3b03b095332dcdd0d"
+    },
+    {
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+      "subject_semantic_key": "379b1231208b796c99775d98d7f5938e1e982d8a631002bebce29449e3f14d43",
+      "source_content_digest": "eacd4c398dfebe713f91830feb367cdd2e2848422dceef4087d35cc736eef3b7"
+    }
+  ],
+  "hold_products": [
+    {
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "reason_code": "PRESENTATION_SCOPE_UNRESOLVED"
+    },
+    {
+      "product_id": "d0319209-502b-4c85-be54-392600ff6b23",
+      "reason_code": "FIRST_PARTY_SKU_AUTHORITY_MISSING"
+    },
+    {
+      "product_id": "65a4c320-4815-4488-b031-b0a06b4702ca",
+      "reason_code": "CURRENT_FORMULATION_AUTHORITY_MISSING"
+    },
+    {
+      "product_id": "4de82c5d-9cb4-4163-a225-953e744f934c",
+      "reason_code": "CATALOG_PRESENTATION_CONFLICT"
+    }
+  ],
+  "authority_boundary": {
+    "evidence_research_started": false,
+    "evidence_writes": 0,
+    "fact_instance_writes": 0,
+    "product_fact_current_delta": 0,
+    "recommendation_changes": 0,
+    "public_activation": false,
+    "missing_implies_false": false
+  },
+  "reconciled_main_drift": {
+    "sha": "6a6f9e84e04736c48c924cffa997edd08aba327f",
+    "gpt_catalog_intake_migration_production_applied_at_readback": false,
+    "wave1_compatibility": "PASS_EXISTING_FROZEN_PRODUCTS_NOT_AUTO_ENROLLED"
+  },
+  "decision": "V21_8G1_SUBJECT_IDENTITY_PRODUCTION_PASS_READY8_HOLD4",
+  "next_gate": "V2.1-8G2_REQUIRED_FACT_RESEARCH_READY8_ONLY"
+}
