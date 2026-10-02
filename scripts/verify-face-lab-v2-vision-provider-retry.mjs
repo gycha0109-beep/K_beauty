@@ -167,6 +167,100 @@ assert.equal(
   "missing retry headers must use the bounded Vision fallback"
 );
 
+let quotaError = null;
+const quotaLogs = [];
+
+try {
+  await executeOpenAiChatJson({
+    apiKey: "sk-test-not-real",
+    body,
+    stage: "vision-observation",
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            message:
+              "quota fixture",
+            type:
+              "insufficient_quota",
+            code:
+              "project_spend_limit_exceeded"
+          }
+        }),
+        {
+          status: 429,
+          headers: {
+            "content-type":
+              "application/json"
+          }
+        }
+      ),
+    logEvent: (event) => {
+      quotaLogs.push(event);
+    }
+  });
+} catch (error) {
+  quotaError = error;
+}
+
+assert.ok(quotaError);
+assert.equal(
+  quotaError.providerStatus,
+  429
+);
+assert.equal(
+  quotaError.providerErrorCode,
+  "project_spend_limit_exceeded"
+);
+assert.equal(
+  quotaError.providerErrorType,
+  "insufficient_quota"
+);
+assert.equal(
+  quotaError.providerRetryable,
+  false
+);
+assert.equal(
+  quotaLogs[0]?.providerErrorCode,
+  "project_spend_limit_exceeded"
+);
+assert.equal(
+  quotaLogs[0]?.providerErrorType,
+  "insufficient_quota"
+);
+assert.equal(
+  quotaLogs[0]?.retryable,
+  false
+);
+
+let quotaAttempts = 0;
+let quotaWaits = 0;
+
+await assert.rejects(
+  () =>
+    executeVisionProviderWithRetry({
+      run: async () => {
+        quotaAttempts += 1;
+        throw quotaError;
+      },
+      waitImpl: async () => {
+        quotaWaits += 1;
+      }
+    }),
+  /provider_http_429/
+);
+
+assert.equal(
+  quotaAttempts,
+  1,
+  "known quota 429 must not be retried"
+);
+assert.equal(
+  quotaWaits,
+  0,
+  "known quota 429 must not wait for retry"
+);
+
 const waits = [];
 let visionAttempts = 0;
 

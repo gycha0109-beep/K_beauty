@@ -81,6 +81,33 @@ const scenarios = [
     category: "http_error"
   },
   {
+    name: "quota failure",
+    response: () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            message: "quota fixture",
+            type: "insufficient_quota",
+            code: "credit_balance_exhausted"
+          }
+        }),
+        {
+          status: 429,
+          headers: {
+            "content-type":
+              "application/json"
+          }
+        }
+      ),
+    error: /provider_http_429/,
+    category: "http_error",
+    providerErrorCode:
+      "credit_balance_exhausted",
+    providerErrorType:
+      "insufficient_quota",
+    retryable: false
+  },
+  {
     name: "invalid provider envelope",
     response: () => new Response("not-json", { status: 200 }),
     error: /provider_response_invalid/,
@@ -117,6 +144,27 @@ for (const scenario of scenarios) {
   assert.equal(attempts, 1, `${scenario.name}: provider runtime must not retry`);
   assert.equal(logs.length, 1, `${scenario.name}: failure must emit one bounded provider event`);
   assert.equal(logs[0].errorCategory, scenario.category);
+  if (scenario.providerErrorCode) {
+    assert.equal(
+      logs[0].providerErrorCode,
+      scenario.providerErrorCode
+    );
+  }
+  if (scenario.providerErrorType) {
+    assert.equal(
+      logs[0].providerErrorType,
+      scenario.providerErrorType
+    );
+  }
+  if (
+    typeof scenario.retryable ===
+    "boolean"
+  ) {
+    assert.equal(
+      logs[0].retryable,
+      scenario.retryable
+    );
+  }
   assert.equal(JSON.stringify(logs).includes("sk-test-not-real"), false);
   assert.equal(JSON.stringify(logs).includes("Return JSON only."), false);
 }
