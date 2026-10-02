@@ -198,6 +198,22 @@ async function signInAccount({
   }
 
   const signInCode = safeAuthErrorCode(signIn.error);
+  if (bootstrap && signInCode === "email_not_confirmed") {
+    const resend = await client.auth.resend({
+      type: "signup",
+      email
+    });
+    if (resend.error) {
+      throw new Error(
+        `face_lab_e2e_auth_resend_failed_${label.toLowerCase()}_${safeAuthErrorCode(resend.error)}`
+      );
+    }
+    return {
+      account: null,
+      confirmationRequired: true
+    };
+  }
+
   if (!bootstrap || signInCode !== "invalid_credentials") {
     throw new Error(
       `face_lab_e2e_auth_failed_${label.toLowerCase()}_${signInCode}`
