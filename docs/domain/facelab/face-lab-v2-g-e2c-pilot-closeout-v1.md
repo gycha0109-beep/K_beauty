@@ -1,7 +1,7 @@
 # Face Lab V2 G-E2C Pilot Closeout v1
 
-> Track: Face Lab / face-research  
-> Gate: G-E2C  
+> Track: Face Lab / face-research
+> Gate: G-E2C
 > Scope: G-E2B 4-intent × 2-generation pilot closeout
 
 ## Purpose
