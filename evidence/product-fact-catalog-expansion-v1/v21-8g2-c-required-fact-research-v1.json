@@ -1,0 +1,205 @@
+{
+  "version": "v21-8g2-c-required-fact-research-v1",
+  "stage": "V2.1-8G2-C",
+  "source_main_sha": "98bf056a33858547d62b45dab7bd575da7bba33d",
+  "captured_on": "2026-10-02",
+  "registry": {
+    "version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "identity_serializer_version": "product-fact-subject-identity-v1"
+  },
+  "scope": {
+    "products": 2,
+    "tasks": 4,
+    "allowed_task_ids": [
+      "ec41b166-a5da-478c-8b67-371a2c081716",
+      "bfd3d47c-0fcf-4e80-8307-cf85581b4043",
+      "361d7e50-dc94-47b6-a770-b879fd67b6a7",
+      "a513f5fd-4ef0-4372-9272-5e6e8cd3366c"
+    ],
+    "evidence_write_authorized": false,
+    "fact_instance_write_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false
+  },
+  "source_captures": [
+    {
+      "source_id": "ruuve_product",
+      "source_locator": "https://ruuve.kr/product/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EC%95%84%EA%B8%B0%EB%A1%9C%EC%85%98-200ml/4140/",
+      "publisher": "ruuve / Villagebaby",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "subject_id": "96e5dc37-11b3-4c41-9a8a-f61d7c7c5a81",
+      "observed_product_title": "러베 5중 세라마이드 아기로션 200ml",
+      "observed_presentation": "200ml",
+      "relevant_claims": [
+        "공식 exact product page identifies the current 200ml SKU",
+        "indexed official text exposes no product-specific skin-barrier support claim",
+        "indexed official text exposes no explicit usage-area instruction"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "f03a288387cec55048a0cfbe9d5eec586eb08f557ac1a6d8e0e34651fe712d4c"
+    },
+    {
+      "source_id": "ruuve_category",
+      "source_locator": "https://ruuve.kr/category/skin-care/56/",
+      "publisher": "ruuve / Villagebaby",
+      "authority_kind": "official_kr_category_page",
+      "market": "KR",
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "subject_id": "96e5dc37-11b3-4c41-9a8a-f61d7c7c5a81",
+      "observed_product_title": "러베 5중 세라마이드 아기로션 200ml",
+      "observed_presentation": "current official SKIN CARE catalog entry",
+      "relevant_claims": [
+        "exact 200ml SKU remains listed in official SKIN CARE catalog",
+        "category placement does not establish a Registry v1 usage-area role or barrier-support proposition"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "f600b1776bbc6d032c4719caa8f48eb0b6c57e6e1d598037fde0ca586cd972f6"
+    },
+    {
+      "source_id": "scinic_product",
+      "source_locator": "https://scinic.com/product/%EC%8B%B8%EC%9D%B4%EB%8B%89-%EB%8D%94-%EC%8B%AC%ED%94%8C-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%EB%A1%9C%EC%85%98-300ml/43",
+      "publisher": "SCINIC",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "subject_id": "10d6e476-7ce4-445d-8e0b-6f2b41731813",
+      "observed_product_title": "싸이닉 더 심플 데일리 로션 300ml",
+      "observed_presentation": "300ml",
+      "relevant_claims": [
+        "상품 요약설명: 대용량! 순한 약산성 수분 로션",
+        "indexed official text exposes no product-specific skin-barrier support claim",
+        "indexed official text exposes no explicit usage-area instruction"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "53d64ff286ffd73c9eeb938a0affce5050446f0cc47b3b51db99c8cea37f7864"
+    },
+    {
+      "source_id": "scinic_lotion_category",
+      "source_locator": "https://scinic.com/category/%EB%A1%9C%EC%85%98/108/",
+      "publisher": "SCINIC",
+      "authority_kind": "official_kr_category_page",
+      "market": "KR",
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "subject_id": "10d6e476-7ce4-445d-8e0b-6f2b41731813",
+      "observed_product_title": "싸이닉 더 심플 데일리 로션 300ml",
+      "observed_presentation": "official lotion-category entry",
+      "relevant_claims": [
+        "exact 300ml SKU remains listed as 로션",
+        "summary remains 대용량! 순한 약산성 수분 로션",
+        "the same category separately labels another product as 장벽 강화, while this SKU is not given that claim"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "f8dafd137671227b2e9e3dba24f2ec41ae142bcfcca4b90fb8b81e41f25cc5af"
+    },
+    {
+      "source_id": "scinic_sensitive_category",
+      "source_locator": "https://scinic.com/category/%EB%AF%BC%EA%B0%90%EC%A7%84%EC%A0%95/50/",
+      "publisher": "SCINIC",
+      "authority_kind": "official_kr_category_page",
+      "market": "KR",
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "subject_id": "10d6e476-7ce4-445d-8e0b-6f2b41731813",
+      "observed_product_title": "싸이닉 더 심플 데일리 로션 300ml",
+      "observed_presentation": "official 민감/진정 category entry",
+      "relevant_claims": [
+        "exact 300ml SKU is listed under 민감/진정",
+        "category placement is not equivalent to a barrier-support claim or usage-area instruction"
+      ],
+      "captured_on": "2026-10-02",
+      "canonical_capture_digest": "4e0741b1af850814241fe99b9ede1e02bd465cc4347c5a4b043b8c173a48c64f"
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "ec41b166-a5da-478c-8b67-371a2c081716",
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "subject_id": "96e5dc37-11b3-4c41-9a8a-f61d7c7c5a81",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "ruuve_product",
+        "ruuve_category"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact current 200ml official SKU is established, but indexed first-party text provides no product-specific skin-barrier support claim or barrier measurement.",
+      "reason": "The phrase '5중 세라마이드' in the product name is ingredient/composition identity, not by itself a Registry v1 barrier-support proposition; missing != false."
+    },
+    {
+      "task_id": "bfd3d47c-0fcf-4e80-8307-cf85581b4043",
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "subject_id": "96e5dc37-11b3-4c41-9a8a-f61d7c7c5a81",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "ruuve_product",
+        "ruuve_category"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact current 200ml official SKU is established, but first-party indexed text does not expose an explicit application-area instruction that maps to a Registry v1 usage-role enum.",
+      "reason": "Baby-lotion naming and SKIN CARE category placement are not sufficient to infer full_face, local_area, spot_use, multi_area, or body_possible."
+    },
+    {
+      "task_id": "361d7e50-dc94-47b6-a770-b879fd67b6a7",
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "subject_id": "10d6e476-7ce4-445d-8e0b-6f2b41731813",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "scinic_product",
+        "scinic_lotion_category",
+        "scinic_sensitive_category"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 300ml SKU is a mild acidic moisturizing lotion and appears in official lotion and sensitive/soothing categories, but no product-specific skin-barrier support claim or barrier measurement is stated.",
+      "reason": "Moisturizing, mild-acidic, and sensitive/soothing classifications are not silently promoted to barrier_support_claim; absence is not false."
+    },
+    {
+      "task_id": "a513f5fd-4ef0-4372-9272-5e6e8cd3366c",
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "subject_id": "10d6e476-7ce4-445d-8e0b-6f2b41731813",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "scinic_product",
+        "scinic_lotion_category",
+        "scinic_sensitive_category"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 300ml product and categories are current, but indexed first-party text exposes no explicit usage-area instruction sufficient to map to an allowed Registry v1 role.",
+      "reason": "Lotion form and category placement do not establish full_face or another usage-role enum."
+    }
+  ],
+  "summary": {
+    "direct_evidence_found": 0,
+    "evidence_insufficient": 4,
+    "identity_or_scope_blocked": 0,
+    "evidence_db_writes": 0,
+    "fact_instance_writes": 0,
+    "recommendation_writes": 0,
+    "product_fact_current_expected": 95
+  },
+  "next_gate": "V2.1-8G2-CLOSE_WAVE1_REQUIRED_FACT_RESEARCH_AGGREGATE"
+}
