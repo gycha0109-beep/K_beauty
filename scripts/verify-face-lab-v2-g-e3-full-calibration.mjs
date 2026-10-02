@@ -259,7 +259,9 @@ for (const required of [
   "FACE_LAB_G_E3_HARD_FAILURE_STOP",
   "FACE_LAB_G_E3_FULL_CALIBRATION_EVIDENCE_READY",
   "full-calibration.aggregate.json",
-  "full-calibration.closeout.json"
+  "full-calibration.closeout.json",
+  "manifest.sourceSha256",
+  "sameRuntimeBinding"
 ]) {
   assert.ok(
     scriptSource.includes(
