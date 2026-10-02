@@ -19,7 +19,8 @@ const d = read(paths.closeout);
 
 assert.equal(d.version,"v21-8g2-wave1-required-fact-research-closeout-v1");
 assert.equal(d.stage,"V2.1-8G2-CLOSE");
-assert.equal(d.source_main_sha,"35b15a1c70389f21951e1b61450da9ff1e7d8588");\nassert.equal(d.integration_main_sha,"5d92695eda8e47d3e6cbb727b5d904327ffb8fe0");
+assert.equal(d.source_main_sha,"35b15a1c70389f21951e1b61450da9ff1e7d8588");
+assert.equal(d.integration_main_sha,"5d92695eda8e47d3e6cbb727b5d904327ffb8fe0");
 assert.equal(d.registry.version,"product-fact-registry-cross-category-v1");
 assert.equal(d.registry.registry_checksum,"79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575");
 assert.equal(d.registry.identity_serializer_version,"product-fact-subject-identity-v1");
