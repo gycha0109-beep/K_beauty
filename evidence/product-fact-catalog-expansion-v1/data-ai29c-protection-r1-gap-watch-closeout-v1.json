@@ -1,0 +1,103 @@
+{
+  "version": "data-ai29c-protection-r1-gap-watch-closeout-v1",
+  "stage": "DATA-AI29C-PROTECTION-R1",
+  "track": "taxonomy-ai",
+  "baseMainSha": "fbe44c4c9e98fd103d35de4dc918f51d3a6e2eaf",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "productionSnapshot": {
+    "resolvedCurrentSunscreenSubjects": 13,
+    "currentProductFacts": 95,
+    "spfValueSubjects": 13,
+    "uvaLabelSubjects": 10,
+    "uvaBlockedSubjects": 3,
+    "uvFilterTypeSubjects": 12,
+    "uvFilterHeldSubjects": 1,
+    "waterResistanceDurationSubjects": 2,
+    "broadSpectrumSubjects": 2,
+    "broadSpectrumUsEligibleSubjects": 2,
+    "broadSpectrumUsCoverage": "2/2"
+  },
+  "axisDisposition": {
+    "spf_value": {
+      "status": "COMPLETE_CURRENT_SCOPE",
+      "coverage": "13/13",
+      "automaticResearch": false,
+      "reopenIf": [
+        "a new current/resolved sunscreen Subject enters scope",
+        "Subject identity or formulation scope materially changes",
+        "the spf_value Registry/evidence contract changes",
+        "a governed Current SPF fact becomes stale, superseded, or invalid"
+      ]
+    },
+    "uva_label": {
+      "status": "WATCH_ON_CHANGE",
+      "coverage": "10/13",
+      "blocked": 3,
+      "closeoutArtifact": "data-ai29c-uva-r5-blocked-subject-closeout-v1",
+      "closeoutDecision": "UVA_R5_BLOCKED_SUBJECT_CLOSEOUT_PASS_WATCH_ON_CHANGE",
+      "automaticResearch": false,
+      "reopenAuthority": "R5 fingerprint change only"
+    },
+    "uv_filter_type": {
+      "status": "WATCH_ON_CHANGE",
+      "coverage": "12/13",
+      "held": 1,
+      "heldSubjectId": "761e6fd6-3487-4505-a1a7-13c37d5cece4",
+      "closeoutArtifact": "data-ai29c-filter-r2-roundlab-exact-kr-formulation-closeout-v1",
+      "closeoutDecision": "FILTER_R2_ROUNDLAB_CLOSEOUT_PASS_WATCH_ON_CHANGE_NO_ADMISSIBLE_EXACT_KR_FILTER_AUTHORITY",
+      "automaticResearch": false,
+      "reopenAuthority": "R2 exact-KR fingerprint change only"
+    },
+    "water_resistance_duration": {
+      "status": "DIRECT_DURATION_AUTHORITY_ONLY",
+      "currentCoverage": "2/13",
+      "frozenProspective20Coverage": "1/20",
+      "automaticCoverageExpansion": false,
+      "reopenIf": [
+        "new exact-subject first-party or otherwise admissible authority directly declares a numeric water-resistance duration",
+        "an existing exact source changes to include a numeric duration",
+        "the Water Registry/evidence contract materially changes"
+      ],
+      "doNotReopenFor": [
+        "water resistant wording without numeric duration",
+        "Broad Spectrum wording",
+        "SPF/UVA changes",
+        "coverage percentage alone"
+      ]
+    },
+    "broad_spectrum": {
+      "status": "COMPLETE_ELIGIBLE_US_SCOPE",
+      "currentSubjects": 2,
+      "eligibleUsCoverage": "2/2",
+      "recommendationConsumed": false,
+      "rankingContribution": 0,
+      "automaticResearch": false,
+      "reopenIf": [
+        "a new US current/resolved sunscreen Subject enters scope",
+        "new exact-market Broad Spectrum authority appears",
+        "the Broad Spectrum semantic or proposition contract changes",
+        "Recommendation consumption is explicitly redesigned under a separate gate"
+      ]
+    }
+  },
+  "authorityBoundary": {
+    "productionCutoverAuthorized": false,
+    "outdoorRankableSignalAuthorized": false,
+    "publicActivation": false,
+    "broadSpectrumToUvaLabelMappingAuthorized": false,
+    "factAdoptionImpliesRecommendationActivation": false,
+    "missingImpliesFalse": false,
+    "waterResistanceIndependentAxis": true
+  },
+  "writeBoundary": {
+    "productFactWrites": 0,
+    "researchTaskWrites": 0,
+    "registryWrites": 0,
+    "policyWrites": 0,
+    "recommendationWrites": 0,
+    "rankingChanged": false,
+    "publicActivation": false
+  },
+  "decision": "PROTECTION_R1_PHASE_CLOSEOUT_PASS_TRIGGERED_REOPEN_ONLY",
+  "nextGate": "TRIGGERED_REOPEN_ONLY_NO_AUTOMATIC_PROTECTION_RESEARCH_WAVE"
+}

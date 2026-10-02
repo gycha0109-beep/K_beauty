@@ -103,6 +103,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-data-ai29c-uva-r5-blocked-subject-closeout.mjs",
   "scripts/verify-data-ai29c-filter-r1-uv-filter-recovery.mjs",
   "scripts/verify-data-ai29c-filter-r2-roundlab-exact-kr-formulation-closeout.mjs",
+  "scripts/verify-data-ai29c-protection-r1-gap-watch-closeout.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
