@@ -80,6 +80,93 @@ assert.equal(
   "shared OpenAI runtime must remain single-attempt"
 );
 
+let retryAfterOnlyError = null;
+
+try {
+  await executeOpenAiChatJson({
+    apiKey: "sk-test-not-real",
+    body,
+    stage: "vision-observation",
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            message:
+              "rate limited fixture"
+          }
+        }),
+        {
+          status: 429,
+          headers: {
+            "content-type":
+              "application/json",
+            "retry-after":
+              "2"
+          }
+        }
+      ),
+    logEvent: () => {}
+  });
+} catch (error) {
+  retryAfterOnlyError = error;
+}
+
+assert.ok(
+  retryAfterOnlyError
+);
+assert.equal(
+  retryAfterOnlyError
+    .providerBackoffMs,
+  2000,
+  "Retry-After must be honored when retry-after-ms is absent"
+);
+
+let noRetryHeaderError = null;
+
+try {
+  await executeOpenAiChatJson({
+    apiKey: "sk-test-not-real",
+    body,
+    stage: "vision-observation",
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            message:
+              "rate limited fixture"
+          }
+        }),
+        {
+          status: 429,
+          headers: {
+            "content-type":
+              "application/json"
+          }
+        }
+      ),
+    logEvent: () => {}
+  });
+} catch (error) {
+  noRetryHeaderError = error;
+}
+
+assert.ok(
+  noRetryHeaderError
+);
+assert.equal(
+  noRetryHeaderError
+    .providerBackoffMs,
+  null,
+  "missing retry headers must remain null"
+);
+assert.equal(
+  resolveVisionProviderBackoffMs(
+    noRetryHeaderError
+  ),
+  VISION_PROVIDER_FALLBACK_BACKOFF_MS,
+  "missing retry headers must use the bounded Vision fallback"
+);
+
 const waits = [];
 let visionAttempts = 0;
 
