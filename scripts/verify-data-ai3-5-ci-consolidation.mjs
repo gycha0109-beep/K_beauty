@@ -112,6 +112,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-v21-8g2-b-required-fact-research.mjs",
   "scripts/verify-v21-8g2-c-required-fact-research.mjs",
   "scripts/verify-v21-8g2-wave1-research-closeout.mjs",
+  "scripts/verify-v21-8g3-0-evidence-ingest-contract.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
