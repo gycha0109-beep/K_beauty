@@ -1,0 +1,113 @@
+{
+  "version": "data-ai29c-uva-r5-blocked-subject-closeout-v1",
+  "stage": "DATA-AI29C-UVA-R5",
+  "track": "taxonomy-ai",
+  "baseMainSha": "915d157e04e7a3beb59412b0df6f13f70e0fb12c",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "registryContract": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "factKey": "uva_label",
+    "definitionChecksum": "9027670c9d68f16c980dafa1416788f2cc0b5faad3fbe0da23b0b50c0de87bfa",
+    "allowedValues": [
+      "PA+",
+      "PA++",
+      "PA+++",
+      "PA++++",
+      "UVA-PF-declared"
+    ]
+  },
+  "blockedSubjects": [
+    {
+      "taskId": "74661ab2-2adb-4255-9c05-0418c1caa105",
+      "productId": "6852eeda-eb1d-4c4e-8bea-b30a26126a9c",
+      "subjectId": "4f64fa1b-6af7-4767-b818-f1178d4fe986",
+      "name": "Day Dew Sunscreen",
+      "market": "US",
+      "state": "BLOCKED",
+      "blockerCode": "EVIDENCE_INSUFFICIENT",
+      "attemptCount": 1,
+      "watchFingerprint": {
+        "subjectSemanticKey": "afce6d4dba5b288999cf087d9827e89e9819be4c99322650ea9e27077778029e",
+        "formulationRevisionKey": "data-ai29c-water-d1-boj-day-dew-us-current",
+        "sourceLocator": "https://beautyofjoseon.com/products/day-dew-sunscreen",
+        "sourceContentDigest": "e7f55bea45637d1eb94f1223f8a1b2ecf14f9e3b0680dfadd77b6eeb02612a3b",
+        "sourceMarket": "US",
+        "sourceLocale": "en-US",
+        "scopeRelation": "equivalent"
+      }
+    },
+    {
+      "taskId": "5d5acb5e-9202-4a71-a826-668edfcd1795",
+      "productId": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "subjectId": "614db853-7865-408b-8f40-a4dcfe6a2ea5",
+      "name": "안뗄리오스 선 플루이드",
+      "market": "KR",
+      "state": "BLOCKED",
+      "blockerCode": "EVIDENCE_INSUFFICIENT",
+      "attemptCount": 1,
+      "watchFingerprint": {
+        "subjectSemanticKey": "75f3d410ae03c5ffef800fedb28f706741fe59f3490e6155e396d6151b5ce527",
+        "formulationRevisionKey": "trust-p7-lrp-4833-current",
+        "sourceLocator": "https://www.larocheposay.co.kr/product/view/4833.do",
+        "sourceContentDigest": "79fe5e252ad569bbadd0bb65e7c605b9b8d89224bc2cc8342f9adc2312115d05",
+        "sourceMarket": "KR",
+        "sourceLocale": "ko-KR",
+        "scopeRelation": "equivalent"
+      }
+    },
+    {
+      "taskId": "ba340a0c-17b6-47bb-975e-d2255fccc433",
+      "productId": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "subjectId": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+      "name": "히알루-시카 워터핏 선세럼 UV",
+      "market": "US",
+      "state": "BLOCKED",
+      "blockerCode": "EVIDENCE_INSUFFICIENT",
+      "attemptCount": 1,
+      "watchFingerprint": {
+        "subjectSemanticKey": "6ea35ff44d90264c4cb8f845b1f04f28adc794872220f41e4cc9e03d13561320",
+        "formulationRevisionKey": "trust-p17-skin1004-uv-us-current",
+        "sourceLocator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+        "sourceContentDigest": "b52c1c856baf22b4392d6b2b16de52befb7a1ce9163693a969e199b8300708df",
+        "sourceMarket": "US",
+        "sourceLocale": "en-US",
+        "scopeRelation": "equivalent"
+      }
+    }
+  ],
+  "watchPolicy": {
+    "repeatSearchUnderUnchangedFingerprint": false,
+    "reopenIf": [
+      "latest exact-market exact-subject source content_digest changes",
+      "a new equivalent exact-subject first-party source appears with a registry-admissible PA or UVA-PF declaration",
+      "subject_semantic_key changes",
+      "formulation_revision_key changes",
+      "uva_label Registry definition checksum or allowed values change",
+      "a manually reviewed product-specific evidence candidate supplies a registry-admissible UVA label"
+    ],
+    "doNotReopenFor": [
+      "Broad Spectrum wording alone",
+      "SPF changes alone",
+      "generic brand-family UVA claims",
+      "cross-formulation or cross-market evidence without exact-subject authority"
+    ]
+  },
+  "coverageAtCloseout": {
+    "resolvedCurrentSunscreenSubjects": 13,
+    "currentUvaLabelSubjects": 10,
+    "blockedUvaSubjects": 3,
+    "currentProductFactCount": 94,
+    "broadSpectrumCurrentSubjects": 2,
+    "uvFilterTypeCurrentSubjects": 11,
+    "spfCurrentSubjects": 13,
+    "waterResistanceDurationCurrentSubjects": 2
+  },
+  "writeBoundary": {
+    "productFactWrites": 0,
+    "researchTaskWrites": 0,
+    "registryWrites": 0,
+    "policyWrites": 0
+  },
+  "decision": "UVA_R5_BLOCKED_SUBJECT_CLOSEOUT_PASS_WATCH_ON_CHANGE",
+  "nextGate": "DATA-AI29C-FILTER-R1_UV_FILTER_TYPE_MISSING_SUBJECT_RECOVERY"
+}
