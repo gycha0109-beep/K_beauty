@@ -106,6 +106,9 @@ for (
     "aggregateFaceLabSimulationCalibration",
     "g_e2b_requires_exactly_eight_reviewed_run_specs",
     "g_e2b_requires_four_intent_groups",
+"FACE_LAB_G_E2B_HUMAN_REVIEW_INCOMPLETE",
+    "campaign.blockers.json",
+    "incompleteCheckId",
     "FACE_LAB_G_E2C_AGGREGATE_READY"
   ]
 ) {
