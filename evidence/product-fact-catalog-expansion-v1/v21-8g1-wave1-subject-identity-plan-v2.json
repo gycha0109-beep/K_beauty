@@ -1,0 +1,337 @@
+{
+  "version": "v21-8g1-wave1-subject-identity-plan-v2",
+  "stage": "V2.1-8G1",
+  "source_main_sha": "6a6f9e84e04736c48c924cffa997edd08aba327f",
+  "selected_batch_authority": "coverage-expansion-wave-1-selection-v2",
+  "registry_version": "product-fact-registry-cross-category-v1",
+  "identity_resolution_version": "v21-8g1-official-identity-v1",
+  "digest_contract": "public.admin_product_review_sha256_json(canonical_capture::jsonb); canonical_capture is frozen in this artifact",
+  "ready_count": 8,
+  "hold_count": 4,
+  "ready_task_count": 16,
+  "hold_task_count": 10,
+  "ready": [
+    {
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "brand": "비플레인",
+      "name": "녹두 약산성 클렌징폼",
+      "intake_id": "dc0a272c-b1ce-4eed-8e50-cba4e10c3e4d",
+      "expected_updated_at": "2026-09-21 00:53:57.499289+09",
+      "market": "KR",
+      "source_locator": "https://www.beplain.co.kr/",
+      "capture_digest": "ebd51ca307be7df6291894e7e9b91bc3bb1fbd7274214444e0eecb1c7072359d",
+      "formulation_revision_key": "v21-8g1:ebd51ca307be7df6291894e7e9b91bc3bb1fbd7274214444e0eecb1c7072359d",
+      "subject_semantic_key": "8d724aa6518b76d64b1b860bfbb771759a6616186be41df71f464142e0e3d65b",
+      "formulation_label": "KR official identity — 녹두 약산성 클렌징폼 160ml",
+      "source_capture": {
+        "catalog_size_ml": "160",
+        "observed_title": "녹두 약산성 클렌징폼",
+        "observed_presentation": "160ml",
+        "publisher": "beplain official KR shop"
+      },
+      "canonical_capture": {
+        "brand": "비플레인",
+        "market": "KR",
+        "publisher": "beplain official KR shop",
+        "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+        "captured_on": "2026-10-02",
+        "catalog_name": "녹두 약산성 클렌징폼",
+        "authority_note": "Official KR shop lists 160ml large-size presentation matching selected catalog size.",
+        "source_locator": "https://www.beplain.co.kr/",
+        "catalog_size_ml": "160",
+        "observed_product": "녹두 약산성 클렌징폼",
+        "observed_presentation": "160ml"
+      }
+    },
+    {
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "brand": "아토팜",
+      "name": "MLE 크림 스틱 밤",
+      "intake_id": "2738c50c-dfe0-4794-8e49-817339b7c6f3",
+      "expected_updated_at": "2026-09-21 00:53:57.499289+09",
+      "market": "KR",
+      "source_locator": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+      "capture_digest": "5b73e1d0fee304d995cf2e18da1c56cdc26f4c9f6a60978f7e5743bc1191225e",
+      "formulation_revision_key": "v21-8g1:5b73e1d0fee304d995cf2e18da1c56cdc26f4c9f6a60978f7e5743bc1191225e",
+      "subject_semantic_key": "e809fefc0a4652b0022a8084f90933a3a8e342e9218e2b0dfb85517c63d78157",
+      "formulation_label": "KR official identity — MLE 크림 스틱 밤 10g",
+      "source_capture": {
+        "observed_presentation": "10g",
+        "manufacturer_responsible_seller": "(주)네오팜",
+        "country": "한국",
+        "publisher": "ATOPALM official shop / NEOPHARM"
+      },
+      "canonical_capture": {
+        "brand": "아토팜",
+        "market": "KR",
+        "publisher": "ATOPALM official shop / NEOPHARM",
+        "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+        "captured_on": "2026-10-02",
+        "catalog_name": "MLE 크림 스틱 밤",
+        "authority_note": "Official shop identifies exact product and 10g presentation; manufacturer/responsible seller is NEOPHARM and country is Korea.",
+        "source_locator": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+        "observed_product": "아토팜 MLE 크림 스틱 밤",
+        "observed_presentation": "10g"
+      }
+    },
+    {
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "brand": "닥터지",
+      "name": "더모이스처 배리어.D 멀티 밤",
+      "intake_id": "590fbbc9-7d97-4501-9ebe-3c2bcd97019b",
+      "expected_updated_at": "2026-09-21 00:54:01.52261+09",
+      "market": "KR",
+      "source_locator": "https://www.dr-g.co.kr/item/4688",
+      "capture_digest": "0b2bbf07c8c5807e0a1ed3f2c825db2fdb8e6147840ea97300dc56a5995b824e",
+      "formulation_revision_key": "v21-8g1:0b2bbf07c8c5807e0a1ed3f2c825db2fdb8e6147840ea97300dc56a5995b824e",
+      "subject_semantic_key": "77e92456cde099730e408c65f1b09b59ef2a07201cc7c21b2ccdfdd0756c11da",
+      "formulation_label": "KR official identity — 더모이스처 배리어.D 멀티 밤 50ml",
+      "source_capture": {
+        "catalog_size_ml": "50",
+        "observed_presentation": "50ml",
+        "country": "한국",
+        "publisher": "Dr.G official KR shop"
+      },
+      "canonical_capture": {
+        "brand": "닥터지",
+        "market": "KR",
+        "publisher": "Dr.G official KR shop",
+        "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+        "captured_on": "2026-10-02",
+        "catalog_name": "더모이스처 배리어.D 멀티 밤",
+        "authority_note": "Official Dr.G page identifies exact 50ml product and Korea manufacture.",
+        "source_locator": "https://www.dr-g.co.kr/item/4688",
+        "catalog_size_ml": "50",
+        "observed_product": "더모이스처 배리어.D 멀티 밤",
+        "observed_presentation": "50ml"
+      }
+    },
+    {
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "brand": "웰라쥬",
+      "name": "리얼 히알루로닉 수딩크림",
+      "intake_id": "b26183fc-fdf7-4240-a3e8-996b2cff163d",
+      "expected_updated_at": "2026-09-21 00:53:30.502646+09",
+      "market": "KR",
+      "source_locator": "https://wellage.co.kr/product/%EB%A6%AC%EC%96%BC-%ED%9E%88%EC%95%8C%EB%A3%A8%EB%A1%9C%EB%8B%89-%EC%88%98%EB%94%A9-%ED%81%AC%EB%A6%BC-80ml/1769/",
+      "capture_digest": "d736715e418de148f6d3cc8665c0e529f6a24fb57192a632917ba439e551eb28",
+      "formulation_revision_key": "v21-8g1:d736715e418de148f6d3cc8665c0e529f6a24fb57192a632917ba439e551eb28",
+      "subject_semantic_key": "7862f69ce01c03c1bb28b54fa565457f258b606bd02fc3dcb68ccf19895a4aa6",
+      "formulation_label": "KR official identity — 리얼 히알루로닉 수딩 크림 80ml",
+      "source_capture": {
+        "catalog_size_ml": "80",
+        "observed_presentation": "80ml",
+        "country": "한국",
+        "responsible_seller": "휴젤㈜",
+        "publisher": "WELLAGE official KR shop"
+      },
+      "canonical_capture": {
+        "brand": "웰라쥬",
+        "market": "KR",
+        "publisher": "WELLAGE official KR shop",
+        "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+        "captured_on": "2026-10-02",
+        "catalog_name": "리얼 히알루로닉 수딩크림",
+        "authority_note": "Official product information identifies exact 80ml product, Korea manufacture, and HUGEL responsible seller.",
+        "source_locator": "https://wellage.co.kr/product/%EB%A6%AC%EC%96%BC-%ED%9E%88%EC%95%8C%EB%A3%A8%EB%A1%9C%EB%8B%89-%EC%88%98%EB%94%A9-%ED%81%AC%EB%A6%BC-80ml/1769/",
+        "catalog_size_ml": "80",
+        "observed_product": "웰라쥬 리얼 히알루로닉 수딩 크림",
+        "observed_presentation": "80ml"
+      }
+    },
+    {
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "brand": "브링그린",
+      "name": "알로에 수딩 젤",
+      "intake_id": "9511770c-1c0b-4649-9b6d-8463e868e918",
+      "expected_updated_at": "2026-09-21 00:53:30.502646+09",
+      "market": "KR",
+      "source_locator": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000215502",
+      "capture_digest": "84a9249140754cceb87ec06e8532e4fdfe20ea9ef0ad9cf4c8550200617e5528",
+      "formulation_revision_key": "v21-8g1:84a9249140754cceb87ec06e8532e4fdfe20ea9ef0ad9cf4c8550200617e5528",
+      "subject_semantic_key": "a7704f04555c708b73831ec639a6d897fa23360449f8393122abd0590e0a6777",
+      "formulation_label": "KR first-party identity — 브링그린 알로에 97% 수딩젤 300ml",
+      "source_capture": {
+        "catalog_size_ml": "300",
+        "observed_product": "브링그린 알로에 97% 수딩젤",
+        "brand_authority": "CJ올리브영 private brand",
+        "brand_authority_locator": "https://corp.oliveyoung.com/ko/business/brand/bringgreen"
+      },
+      "canonical_capture": {
+        "brand": "브링그린",
+        "market": "KR",
+        "publisher": "CJ Olive Young / BRINGGREEN first-party commerce",
+        "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+        "captured_on": "2026-10-02",
+        "catalog_name": "알로에 수딩 젤",
+        "authority_note": "CJ Olive Young identifies BRINGGREEN as its private brand; first-party commerce matches selected 300ml presentation.",
+        "source_locator": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000215502",
+        "catalog_size_ml": "300",
+        "observed_product": "브링그린 알로에 97% 수딩젤",
+        "observed_presentation": "300ml",
+        "brand_authority_locator": "https://corp.oliveyoung.com/ko/business/brand/bringgreen"
+      }
+    },
+    {
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "brand": "러베",
+      "name": "5중 세라마이드 로션",
+      "intake_id": "20e2db68-cca5-4e98-af02-f4126e1c5904",
+      "expected_updated_at": "2026-09-21 00:53:54.526265+09",
+      "market": "KR",
+      "source_locator": "https://ruuve.kr/product/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EC%95%84%EA%B8%B0%EB%A1%9C%EC%85%98-200ml/4140/",
+      "capture_digest": "b380bb88b5be8c7bae7bc4f29ed9c1f88c9ff06b902c9ad233966ea23f13ae6d",
+      "formulation_revision_key": "v21-8g1:b380bb88b5be8c7bae7bc4f29ed9c1f88c9ff06b902c9ad233966ea23f13ae6d",
+      "subject_semantic_key": "5186ea77890e36e1b19c04b7272e2b724c7a5be4c0e4214fb5d23db90f5c1b20",
+      "formulation_label": "KR official identity — 러베 5중 세라마이드 아기로션 200ml",
+      "source_capture": {
+        "catalog_size_ml": "200",
+        "observed_presentation": "200ml",
+        "publisher": "ruuve official KR shop"
+      },
+      "canonical_capture": {
+        "brand": "러베",
+        "market": "KR",
+        "publisher": "ruuve official KR shop",
+        "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+        "captured_on": "2026-10-02",
+        "catalog_name": "5중 세라마이드 로션",
+        "authority_note": "Official ruuve shop identifies exact 200ml presentation.",
+        "source_locator": "https://ruuve.kr/product/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EC%95%84%EA%B8%B0%EB%A1%9C%EC%85%98-200ml/4140/",
+        "catalog_size_ml": "200",
+        "observed_product": "러베 5중 세라마이드 아기로션",
+        "observed_presentation": "200ml"
+      }
+    },
+    {
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "brand": "닥터트웬티프로젝트",
+      "name": "나인 토너",
+      "intake_id": "741b1b0b-7959-48d9-b531-73d8b0827a74",
+      "expected_updated_at": "2026-09-21 00:54:01.52261+09",
+      "market": "KR",
+      "source_locator": "https://dr20project.com/product/%EB%82%98%EC%9D%B8-%ED%86%A0%EB%84%88-300ml/175/",
+      "capture_digest": "eacd4c398dfebe713f91830feb367cdd2e2848422dceef4087d35cc736eef3b7",
+      "formulation_revision_key": "v21-8g1:eacd4c398dfebe713f91830feb367cdd2e2848422dceef4087d35cc736eef3b7",
+      "subject_semantic_key": "379b1231208b796c99775d98d7f5938e1e982d8a631002bebce29449e3f14d43",
+      "formulation_label": "KR official identity — 나인 토너 300ml",
+      "source_capture": {
+        "catalog_size_ml": "300",
+        "observed_presentation": "300ml",
+        "publisher": "Dr.twentyproject official KR shop"
+      },
+      "canonical_capture": {
+        "brand": "닥터트웬티프로젝트",
+        "market": "KR",
+        "publisher": "Dr.twentyproject official KR shop",
+        "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+        "captured_on": "2026-10-02",
+        "catalog_name": "나인 토너",
+        "authority_note": "Official product page identifies exact 300ml presentation.",
+        "source_locator": "https://dr20project.com/product/%EB%82%98%EC%9D%B8-%ED%86%A0%EB%84%88-300ml/175/",
+        "catalog_size_ml": "300",
+        "observed_product": "나인 토너",
+        "observed_presentation": "300ml"
+      }
+    },
+    {
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "brand": "싸이닉",
+      "name": "더 심플 데일리 로션",
+      "intake_id": "e5d7ddb7-9737-4020-bd10-c083792770b2",
+      "expected_updated_at": "2026-09-21 00:54:01.52261+09",
+      "market": "KR",
+      "source_locator": "https://scinic.com/product/%EC%8B%B8%EC%9D%B4%EB%8B%89-%EB%8D%94-%EC%8B%AC%ED%94%8C-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%EB%A1%9C%EC%85%98-300ml/43",
+      "capture_digest": "32ef22f75b6802e86ebc21684be703be77ff17277852bac3b03b095332dcdd0d",
+      "formulation_revision_key": "v21-8g1:32ef22f75b6802e86ebc21684be703be77ff17277852bac3b03b095332dcdd0d",
+      "subject_semantic_key": "21b8799ab6520e2300290fbf3bb13b0879b00b148a1379207f2cbfdbf651c0e8",
+      "formulation_label": "KR official identity — 싸이닉 더 심플 데일리 로션 300ml",
+      "source_capture": {
+        "catalog_size_ml": "300",
+        "observed_presentation": "300ml",
+        "publisher": "SCINIC official shop"
+      },
+      "canonical_capture": {
+        "brand": "싸이닉",
+        "market": "KR",
+        "publisher": "SCINIC official shop",
+        "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+        "captured_on": "2026-10-02",
+        "catalog_name": "더 심플 데일리 로션",
+        "authority_note": "Official SCINIC page identifies exact 300ml product matching selected catalog size.",
+        "source_locator": "https://scinic.com/product/%EC%8B%B8%EC%9D%B4%EB%8B%89-%EB%8D%94-%EC%8B%AC%ED%94%8C-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%EB%A1%9C%EC%85%98-300ml/43",
+        "catalog_size_ml": "300",
+        "observed_product": "싸이닉 더 심플 데일리 로션",
+        "observed_presentation": "300ml"
+      }
+    }
+  ],
+  "hold": [
+    {
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "brand": "에스네이처",
+      "name": "아쿠아 스쿠알란 수분크림",
+      "catalog_size_ml": "160",
+      "decision": "HOLD",
+      "reason_code": "PRESENTATION_SCOPE_UNRESOLVED",
+      "reason": "Selected catalog row is 160ml while official KR pages expose 80ml and 60ml; no exact 160ml first-party presentation/formulation authority was established."
+    },
+    {
+      "product_id": "d0319209-502b-4c85-be54-392600ff6b23",
+      "brand": "그린핑거",
+      "name": "판테딘 엠디 더마 수딩젤",
+      "catalog_size_ml": "120",
+      "decision": "HOLD",
+      "reason_code": "FIRST_PARTY_SKU_AUTHORITY_MISSING",
+      "reason": "Exact 120ml product is corroborated by secondary sources, but no exact first-party SKU page was established."
+    },
+    {
+      "product_id": "65a4c320-4815-4488-b031-b0a06b4702ca",
+      "brand": "에뛰드",
+      "name": "순정 10무 수분 에멀전",
+      "catalog_size_ml": "130",
+      "decision": "HOLD",
+      "reason_code": "CURRENT_FORMULATION_AUTHORITY_MISSING",
+      "reason": "No current exact first-party 130ml formulation page was established; do not infer current formulation identity."
+    },
+    {
+      "product_id": "4de82c5d-9cb4-4163-a225-953e744f934c",
+      "brand": "듀이트리",
+      "name": "AC 딥 진정 모공 패드",
+      "catalog_size_ml": "415",
+      "decision": "HOLD",
+      "reason_code": "CATALOG_PRESENTATION_CONFLICT",
+      "reason": "Selected catalog row carries size_ml=415 while official product page states 60 pads / 180g. Exact catalog-to-presentation identity is not safe to assert."
+    }
+  ],
+  "expected_poststate": {
+    "selected_subjects": 8,
+    "selected_null_market_intakes": 4,
+    "selected_v1_tasks": 26,
+    "selected_v2_tasks": 0,
+    "ready_tasks_research_pending": 16,
+    "hold_tasks_review_required": 10,
+    "current_product_facts": 95
+  },
+  "invariants": {
+    "evidence_research_started": false,
+    "product_fact_current_writes": 0,
+    "evidence_writes": 0,
+    "recommendation_changes": 0,
+    "public_activation": false,
+    "missing_implies_false": false
+  },
+  "reconciled_main_drift": {
+    "sha": "6a6f9e84e04736c48c924cffa997edd08aba327f",
+    "track": "pipeline-reliability",
+    "summary": "Adds GPT catalog intake and product-scoped TRUST research for newly researched products.",
+    "compatibility": "PASS",
+    "rationale": [
+      "normalized duplicate products are blocked before new Product/Subject creation",
+      "frozen Wave 1 contains existing catalog Products and is not auto-enrolled by this GPT intake path",
+      "new claim RPC is product_id-scoped and is not invoked by V2.1-8G1",
+      "no existing Wave 1 intake/task/Subject rows are mutated by the migration itself"
+    ],
+    "production_applied_at_reconciliation": false
+  }
+}
