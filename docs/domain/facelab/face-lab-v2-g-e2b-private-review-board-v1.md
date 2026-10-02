@@ -60,3 +60,13 @@ The batch runner requires exactly:
 - eight reviewed run specs.
 
 It invokes the existing Pilot Case Runner for every case, then builds the G-E2C campaign aggregate. It performs no provider or network call.
+
+A completed Human Review response of `not_assessable` remains a legitimate Human Review observation. The batch runner does not force a replacement judgment. Instead:
+
+- calibration-admissible cases enter the normal aggregate,
+- not-assessable cases remain outside Calibration Case admission,
+- their four-axis status summary and review findings are carried into `campaign.closeout.json`,
+- any hard failure prevents the not-assessable exception from being used,
+- G-E2C decides between failure attribution and protocol freeze from the combined closeout.
+
+This preserves the strict Calibration Case contract without treating `not_assessable` as unfinished Human Review.
