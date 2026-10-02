@@ -244,6 +244,7 @@ set search_path = ''
 as $function$
 declare
   v_request_id text := btrim(coalesce(p_request_id, ''));
+  v_registry_version constant text := 'product-fact-registry-cross-category-v1';
   v_payload_digest text;
   v_existing public.gpt_catalog_intake_runs%rowtype;
   v_brand text;
@@ -281,6 +282,10 @@ declare
   v_result jsonb;
   v_state text;
 begin
+  if to_regprocedure('public.process_catalog_trust_product_v3(uuid,text)') is null then
+    raise exception 'gpt_catalog_trust_processor_unavailable' using errcode = '55000';
+  end if;
+
   if char_length(v_request_id) not between 8 and 160 then
     raise exception 'gpt_catalog_request_id_invalid' using errcode = '22023';
   end if;
@@ -601,7 +606,7 @@ begin
     returning binding_id into v_binding_id;
   end if;
 
-  perform public.process_catalog_trust_product_v1(v_product_id);
+  perform public.process_catalog_trust_product_v3(v_product_id, v_registry_version);
 
   select * into v_intake
   from public.catalog_trust_intake
@@ -676,7 +681,7 @@ begin
     )
     returning subject_id into v_subject_id;
 
-    perform public.process_catalog_trust_product_v1(v_product_id);
+    perform public.process_catalog_trust_product_v3(v_product_id, v_registry_version);
   else
     v_subject_id := v_intake.subject_id;
   end if;
