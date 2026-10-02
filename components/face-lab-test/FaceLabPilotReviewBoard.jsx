@@ -670,7 +670,7 @@ export default function FaceLabPilotReviewBoard() {
       <div className="mx-auto w-full max-w-[1180px] px-4 pb-24 pt-5 sm:px-6 sm:pt-8">
         <header className="mb-5 rounded-[1.35rem] border border-zinc-200 bg-white/85 p-5 dark:border-zinc-800 dark:bg-zinc-950/60">
           <p className="ui-kicker">
-            LOCAL ONLY · GATE G-E2B
+            LOCAL ONLY · GATE G · PRIVATE CALIBRATION
           </p>
           <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -678,7 +678,7 @@ export default function FaceLabPilotReviewBoard() {
                 Private Pilot Review Board
               </h1>
               <p className="ui-text-secondary mt-2 max-w-2xl text-sm leading-6">
-                로컬 private campaign 폴더의 Before/Simulation 8쌍을 직접 비교해 G-C/G-D Human Review를 확정합니다. 이미지 파일은 이 브라우저 세션에서 로컬 폴더 안에서만 읽고 씁니다.
+                로컬 private campaign 폴더의 Before/Simulation 8쌍을 직접 비교해 Gate G Human Review를 확정합니다. G-E2B pilot과 G-E3 calibration wave를 같은 로컬 전용 화면에서 검토하며 이미지 파일은 이 브라우저 세션에서 로컬 폴더 안에서만 읽고 씁니다.
               </p>
             </div>
             <button
@@ -849,7 +849,16 @@ export default function FaceLabPilotReviewBoard() {
                   Human Review 8/8 저장 완료
                 </p>
                 <p className="mt-2 text-sm leading-6">
-                  같은 campaign 폴더에서 <code>node scripts/run-face-lab-v2-g-e2b-private-campaign.mjs &lt;campaign-folder&gt;</code>를 실행하면 G-B packet, Calibration Case, G-E2C aggregate가 생성됩니다.
+                  {campaign?.calibrationStage ===
+                  "G-E3" ? (
+                    <>
+                      같은 wave 폴더에서 <code>npm run run:face-lab-v2-g-e3-private-wave -- &lt;wave-folder&gt;</code>를 실행해 G-E3 wave closeout을 생성합니다.
+                    </>
+                  ) : (
+                    <>
+                      같은 campaign 폴더에서 <code>node scripts/run-face-lab-v2-g-e2b-private-campaign.mjs &lt;campaign-folder&gt;</code>를 실행하면 G-B packet, Calibration Case, G-E2C aggregate가 생성됩니다.
+                    </>
+                  )}
                 </p>
               </section>
             ) : null}

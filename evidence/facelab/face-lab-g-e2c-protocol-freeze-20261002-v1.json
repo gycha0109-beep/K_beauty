@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "face-lab-g-e2c-protocol-freeze-evidence-v1",
+  "track": "face-research",
+  "gate": "G-E2C",
+  "campaignId": "G-E-PILOT-20261002053556",
+  "status": "protocol_frozen_ready_for_g_e3",
+  "pilot": {
+    "expectedCaseCount": 8,
+    "reviewedCaseCount": 8,
+    "admittedCalibrationCaseCount": 6,
+    "acceptedNotAssessableCaseCount": 2,
+    "expectedIntentGroupCount": 4,
+    "observedIntentGroupCount": 4
+  },
+  "acceptedNotAssessable": {
+    "routeAdherenceCount": 2,
+    "colorFidelityNotEvaluatedCount": 2,
+    "forcedReassessmentCount": 0
+  },
+  "calibration": {
+    "verdictCounts": {
+      "pass": 4,
+      "review": 2
+    },
+    "hardFailureCaseCount": 0,
+    "findingCodeCounts": {
+      "OVER_EDITED": 3
+    },
+    "failureSourceCounts": {
+      "evaluation_uncertain": 3
+    },
+    "repeatVariance": {
+      "verdictDisagreementGroupCount": 2,
+      "checkDisagreementGroupCount": 2,
+      "routeResponseVarianceGroupCount": 0,
+      "colorResponseVarianceGroupCount": 0
+    }
+  },
+  "freeze": {
+    "requiredAxes": [
+      "identity_preservation",
+      "route_adherence",
+      "color_fidelity",
+      "edit_scope"
+    ],
+    "hardFailureSemantics": "unchanged",
+    "notAssessablePolicy": "retain_human_observation_exclude_from_calibration_case",
+    "reviewFindingPolicy": "retain_without_promoting_to_hard_failure",
+    "repeatVariancePolicy": "variance_signal_not_automatic_provider_attribution",
+    "thresholdPolicy": "no_numeric_promotion_thresholds_frozen",
+    "runtimeBindingPolicy": "single_runtime_binding_required_per_full_calibration"
+  },
+  "decision": {
+    "hardFailureStop": false,
+    "nextStage": "G-E3_FULL_CALIBRATION",
+    "fullCalibrationShape": {
+      "intentCount": 12,
+      "generationsPerIntent": 2,
+      "outputCount": 24,
+      "waveCount": 3,
+      "intentsPerWave": 4,
+      "outputsPerWave": 8
+    }
+  }
+}

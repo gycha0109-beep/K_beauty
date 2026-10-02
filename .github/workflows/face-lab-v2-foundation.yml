@@ -54,6 +54,19 @@ on:
       - "scripts/verify-face-lab-v2-g-e2c-pilot-closeout.mjs"
       - "docs/domain/facelab/face-lab-v2-g-e2c-pilot-closeout-v1.md"
       - "scripts/verify-face-lab-v2-g-e2b-local-launcher.mjs"
+      - "scripts/verify-face-lab-v2-g-e2c-protocol-freeze.mjs"
+      - "evidence/facelab/face-lab-g-e2c-protocol-freeze-20261002-v1.json"
+      - "docs/domain/facelab/face-lab-v2-g-e2c-protocol-freeze-v1.md"
+      - "lib/face-lab-v2/evaluation/simulation-g-e3-full-calibration-closeout.js"
+      - "scripts/run-face-lab-v2-g-e3-local-wave.mjs"
+      - "scripts/verify-face-lab-v2-g-e3-local-wave.mjs"
+      - "scripts/run-face-lab-v2-g-e3-private-wave.mjs"
+      - "scripts/verify-face-lab-v2-g-e3-private-wave.mjs"
+      - "scripts/run-face-lab-v2-g-e3-full-calibration.mjs"
+      - "scripts/verify-face-lab-v2-g-e3-full-calibration.mjs"
+      - "docs/domain/facelab/face-lab-v2-g-e3-local-wave-v1.md"
+      - "docs/domain/facelab/face-lab-v2-g-e3-private-wave-closeout-v1.md"
+      - "docs/domain/facelab/face-lab-v2-g-e3-full-calibration-v1.md"
       - "scripts/run-face-lab-v2-g-e2b-local-pilot.mjs"
       - "docs/domain/facelab/face-lab-v2-g-e2b-local-pilot-launcher-v1.md"
       - "scripts/run-face-lab-v2-g-e2b-private-campaign.mjs"
@@ -168,6 +181,19 @@ on:
       - "scripts/verify-face-lab-v2-g-e2c-pilot-closeout.mjs"
       - "docs/domain/facelab/face-lab-v2-g-e2c-pilot-closeout-v1.md"
       - "scripts/verify-face-lab-v2-g-e2b-local-launcher.mjs"
+      - "scripts/verify-face-lab-v2-g-e2c-protocol-freeze.mjs"
+      - "evidence/facelab/face-lab-g-e2c-protocol-freeze-20261002-v1.json"
+      - "docs/domain/facelab/face-lab-v2-g-e2c-protocol-freeze-v1.md"
+      - "lib/face-lab-v2/evaluation/simulation-g-e3-full-calibration-closeout.js"
+      - "scripts/run-face-lab-v2-g-e3-local-wave.mjs"
+      - "scripts/verify-face-lab-v2-g-e3-local-wave.mjs"
+      - "scripts/run-face-lab-v2-g-e3-private-wave.mjs"
+      - "scripts/verify-face-lab-v2-g-e3-private-wave.mjs"
+      - "scripts/run-face-lab-v2-g-e3-full-calibration.mjs"
+      - "scripts/verify-face-lab-v2-g-e3-full-calibration.mjs"
+      - "docs/domain/facelab/face-lab-v2-g-e3-local-wave-v1.md"
+      - "docs/domain/facelab/face-lab-v2-g-e3-private-wave-closeout-v1.md"
+      - "docs/domain/facelab/face-lab-v2-g-e3-full-calibration-v1.md"
       - "scripts/run-face-lab-v2-g-e2b-local-pilot.mjs"
       - "docs/domain/facelab/face-lab-v2-g-e2b-local-pilot-launcher-v1.md"
       - "scripts/run-face-lab-v2-g-e2b-private-campaign.mjs"
@@ -327,6 +353,20 @@ jobs:
           node --check scripts/run-face-lab-v2-g-e2b-private-campaign.mjs
       - name: Verify Face Lab G-E2C pilot closeout
         run: node scripts/verify-face-lab-v2-g-e2c-pilot-closeout.mjs
+      - name: Verify Face Lab G-E2C protocol freeze
+        run: node scripts/verify-face-lab-v2-g-e2c-protocol-freeze.mjs
+      - name: Verify Face Lab G-E3 local wave launcher
+        run: |
+          node scripts/verify-face-lab-v2-g-e3-local-wave.mjs
+          node --check scripts/run-face-lab-v2-g-e3-local-wave.mjs
+      - name: Verify Face Lab G-E3 private wave closeout
+        run: |
+          node scripts/verify-face-lab-v2-g-e3-private-wave.mjs
+          node --check scripts/run-face-lab-v2-g-e3-private-wave.mjs
+      - name: Verify Face Lab G-E3 full calibration aggregate
+        run: |
+          node scripts/verify-face-lab-v2-g-e3-full-calibration.mjs
+          node --check scripts/run-face-lab-v2-g-e3-full-calibration.mjs
       - name: Verify Face Lab G-E2B provider execution evidence
         run: node scripts/verify-face-lab-v2-provider-pilot-execution-evidence.mjs
       - name: Check Face Lab V2 simulation UAT route syntax
