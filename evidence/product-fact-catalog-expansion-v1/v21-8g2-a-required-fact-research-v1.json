@@ -1,0 +1,236 @@
+{
+  "version": "v21-8g2-a-required-fact-research-v1",
+  "stage": "V2.1-8G2-A",
+  "source_main_sha": "00d11bb306d0138f09d8b9b1565d32e6022705a4",
+  "captured_on": "2026-10-02",
+  "registry": {
+    "version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "identity_serializer_version": "product-fact-subject-identity-v1"
+  },
+  "scope": {
+    "products": 3,
+    "tasks": 6,
+    "allowed_task_ids": [
+      "a125b39f-a53b-48f8-b1d9-26310a6daa84",
+      "66f0d4df-c1a8-4b67-869a-8ef8b5528779",
+      "f133d067-a5f6-44fc-a3f5-6b8706d35c9a",
+      "b1ee9a58-538d-4032-a0fe-690c1e82f751",
+      "cfc6f2e5-3d41-4c54-b973-308b06c37972",
+      "1b2062c6-9a3d-4fe4-b192-4c1ac06dda2c"
+    ],
+    "evidence_write_authorized": false,
+    "fact_instance_write_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false
+  },
+  "source_captures": [
+    {
+      "source_id": "beplain_product",
+      "source_locator": "https://www.beplain.co.kr/m/product_detail.html?brand_uid=43",
+      "publisher": "beplain / Moments Company",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+      "observed_product_title": "[대용량] 녹두 약산성 클렌징폼 160ml",
+      "observed_presentation": "160ml",
+      "relevant_claims": [
+        "상품명에 '약산성' 명시",
+        "사용방법: 세안 시 거품을 내어 피부 결을 마사지한 후 미온수로 씻어냄"
+      ],
+      "canonical_capture_digest": "74e3f097e770d93a5a21ae4abc43619fbe7d5c5939ba77b3eec20197332536c3",
+      "captured_on": "2026-10-02"
+    },
+    {
+      "source_id": "beplain_category",
+      "source_locator": "https://www.beplain.co.kr/shop/shopbrand.html?mcode=001&type=Y&xcode=013",
+      "publisher": "beplain / Moments Company",
+      "authority_kind": "official_kr_category_page",
+      "market": "KR",
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+      "observed_product_title": "[대용량] 녹두 약산성 클렌징폼 160ml",
+      "observed_presentation": "160ml",
+      "relevant_claims": [
+        "클렌징 카테고리에 160ml SKU가 현재 노출",
+        "대상 클렌징폼에는 딥클렌징 문구가 확인되지 않음"
+      ],
+      "canonical_capture_digest": "bd3bb46bc4442b63aa876261628d5fc3408a63fcc5a90f67285bd3c38c8fd73c",
+      "captured_on": "2026-10-02"
+    },
+    {
+      "source_id": "atopalm_product",
+      "source_locator": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+      "publisher": "ATOPALM SHOP / NeoPharm",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+      "observed_product_title": "아토팜 MLE 크림 스틱 밤 10g",
+      "observed_presentation": "10g",
+      "relevant_claims": [
+        "피부장벽 21.1% 개선 / 경피수분손실량 개선 인체적용시험",
+        "MLE 기술과 특허성분이 피부장벽 강화부터 보습, 보호까지 도움",
+        "사용법: 얼굴과 몸 국소부위 등 건조 부위에 수시로 덧바름"
+      ],
+      "canonical_capture_digest": "2b8b4605be077d126280a010706c3788cd63df24dea6ac7635df76209eb797d2",
+      "captured_on": "2026-10-02"
+    },
+    {
+      "source_id": "dr20_product",
+      "source_locator": "https://dr20project.com/product/%EB%82%98%EC%9D%B8-%ED%86%A0%EB%84%88-300ml/175/",
+      "publisher": "Dr.twentyproject / Twenty Medicos",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+      "observed_product_title": "나인 토너 300ml",
+      "observed_presentation": "300ml",
+      "relevant_claims": [
+        "공식 상품명 '나인 토너 300ml'",
+        "공식 indexed 상품 상세 텍스트에서 특정 active/functional ingredient identity는 확인되지 않음"
+      ],
+      "canonical_capture_digest": "d068b0d2e80a105e3bd3c95b7be6f6b6a7615c77ac9e02a8ce3e872951a037df",
+      "captured_on": "2026-10-02"
+    },
+    {
+      "source_id": "dr20_category",
+      "source_locator": "https://dr20project.com/category/%ED%86%A0%EB%84%88%EB%AF%B8%EC%8A%A4%ED%8A%B8/58",
+      "publisher": "Dr.twentyproject / Twenty Medicos",
+      "authority_kind": "official_kr_category_page",
+      "market": "KR",
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+      "observed_product_title": "나인 토너 300ml",
+      "observed_presentation": "토너/미스트 category; 300ml",
+      "relevant_claims": [
+        "공식 유형별 '토너/미스트' 카테고리에 나인 토너 300ml 노출"
+      ],
+      "canonical_capture_digest": "e398df369d0b4bf03dd6ac44d2c60b6396f88fc4a8693d7b32c3ebe8c23def8d",
+      "captured_on": "2026-10-02"
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "a125b39f-a53b-48f8-b1d9-26310a6daa84",
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+      "fact_key": "deep_cleansing",
+      "definition_checksum": "43e03202518cb69cbf63f08f8494f8f0aabf252dcf942a241c6aac636ed91fd7",
+      "source_ids": [
+        "beplain_product",
+        "beplain_category"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "Exact 160ml official SKU is current. Official indexed product/category text establishes cleansing use but no admissible product-specific deep-cleansing claim or measurement was found.",
+      "reason": "missing != false; absence of a deep-cleansing statement does not justify false."
+    },
+    {
+      "task_id": "66f0d4df-c1a8-4b67-869a-8ef8b5528779",
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+      "fact_key": "low_ph",
+      "definition_checksum": "2c695147eda6da905207cfa5d4c32e756ff0fa7726e04882f5da5a6f3f29bdcf",
+      "source_ids": [
+        "beplain_product"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": true,
+      "evidence_class": "product_claim",
+      "support_summary": "The exact official product title is '[대용량] 녹두 약산성 클렌징폼 160ml', directly declaring the low-pH proposition for the exact SKU.",
+      "reason": "Product-specific official claim matches Registry v1 low_ph semantics."
+    },
+    {
+      "task_id": "f133d067-a5f6-44fc-a3f5-6b8706d35c9a",
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "atopalm_product"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": true,
+      "evidence_class": "measurement",
+      "support_summary": "The exact official 10g page reports a product-specific human application test showing 21.1% improvement in skin barrier / transepidermal water loss after two weeks, and also explicitly describes barrier strengthening.",
+      "reason": "Registry v1 permits measurement and product_claim evidence; exact product-specific barrier evidence is present."
+    },
+    {
+      "task_id": "b1ee9a58-538d-4032-a0fe-690c1e82f751",
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "atopalm_product"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": "local_area",
+      "evidence_class": "usage_instruction",
+      "support_summary": "The exact official usage instruction says to reapply to dry local areas of the face and body, explicitly matching a local-area usage role.",
+      "reason": "The phrase '얼굴과 몸 국소부위 등 건조 부위' directly supports the Registry v1 local_area enum."
+    },
+    {
+      "task_id": "cfc6f2e5-3d41-4c54-b973-308b06c37972",
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+      "fact_key": "contains_active",
+      "definition_checksum": "7b6f785309dc34f6cd4042ebc7b108b49e118c364e633457c3baf53c77dcb7b3",
+      "source_ids": [
+        "dr20_product"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 300ml product page was verified, but the indexed official product text does not establish a specific active/functional ingredient identity admissible under Registry v1.",
+      "reason": "Ingredient identity is not inferred from product naming, third-party listings, or missing official text."
+    },
+    {
+      "task_id": "1b2062c6-9a3d-4fe4-b192-4c1ac06dda2c",
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+      "fact_key": "product_format",
+      "definition_checksum": "f04ee27fd5526ce0866693d146811324f0da4c323fd55f82e91c38ef9273fcc4",
+      "source_ids": [
+        "dr20_product",
+        "dr20_category"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": "liquid",
+      "evidence_class": "physical_characteristic",
+      "support_summary": "The official exact SKU is '나인 토너 300ml' and is classified under the official '토너/미스트' type category, supporting the liquid rather than pad presentation.",
+      "reason": "Product-specific official physical-presentation evidence maps to the Registry v1 liquid enum."
+    }
+  ],
+  "summary": {
+    "direct_evidence_found": 4,
+    "evidence_insufficient": 2,
+    "identity_or_scope_blocked": 0,
+    "evidence_db_writes": 0,
+    "fact_instance_writes": 0,
+    "recommendation_writes": 0,
+    "product_fact_current_expected": 95
+  },
+  "next_gate": "V2.1-8G2-B_REQUIRED_FACT_RESEARCH_DR_G_WELLAGE_BRINGGREEN_6_TASKS"
+}
