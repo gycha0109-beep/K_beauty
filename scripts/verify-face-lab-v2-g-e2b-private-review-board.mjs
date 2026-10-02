@@ -63,8 +63,10 @@ for (
     "outputImagePath",
     "FaceLabSimulationReviewPanel",
     "/api/face-lab-simulation-private-review",
-    "capture.fileNames.sourceImage",
-    "capture.fileNames.outputImage",
+    "payload.capture",
+    ".fileNames",
+    ".sourceImage",
+    ".outputImage",
     "runSpecFileName",
     "Human Review 8/8 저장 완료"
   ]
