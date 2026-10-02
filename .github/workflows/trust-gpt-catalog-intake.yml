@@ -1,0 +1,165 @@
+name: TRUST Data Governance - GPT Catalog Intake
+
+run-name: "[WT:trust] TRUST GPT Catalog Intake"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/evidence/trust-gpt-catalog-intake-*"
+      - "lib/trust/gpt-catalog-intake.mjs"
+      - "scripts/trust-gpt-catalog-intake.mjs"
+      - "scripts/materialize-trust-gpt-catalog-intake-e2e.mjs"
+      - "scripts/run-trust-gpt-catalog-intake-e2e.mjs"
+      - "scripts/verify-trust-gpt-catalog-intake.mjs"
+      - "tests/fixtures/trust-gpt-catalog-intake/**"
+      - "supabase/migrations/*_trust_gpt_catalog_intake_*.sql"
+      - ".github/workflows/trust-gpt-catalog-intake.yml"
+  push:
+    branches: [main, "pipeline-reliability/trust-gpt-catalog-intake"]
+    paths:
+      - "docs/evidence/trust-gpt-catalog-intake-*"
+      - "lib/trust/gpt-catalog-intake.mjs"
+      - "scripts/trust-gpt-catalog-intake.mjs"
+      - "scripts/materialize-trust-gpt-catalog-intake-e2e.mjs"
+      - "scripts/run-trust-gpt-catalog-intake-e2e.mjs"
+      - "scripts/verify-trust-gpt-catalog-intake.mjs"
+      - "tests/fixtures/trust-gpt-catalog-intake/**"
+      - "supabase/migrations/*_trust_gpt_catalog_intake_*.sql"
+      - ".github/workflows/trust-gpt-catalog-intake.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify GPT catalog intake contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify syntax and authority contract
+        run: |
+          set -euo pipefail
+          node --check lib/trust/gpt-catalog-intake.mjs
+          node --check scripts/trust-gpt-catalog-intake.mjs
+          node --check scripts/materialize-trust-gpt-catalog-intake-e2e.mjs
+          node --check scripts/run-trust-gpt-catalog-intake-e2e.mjs
+          node scripts/verify-trust-gpt-catalog-intake.mjs
+
+      - name: Check exact-head diff hygiene
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --check "$BASE_SHA...$HEAD_SHA"
+
+  isolated_sql_e2e:
+    name: Isolated GPT catalog intake SQL e2e
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      SUPABASE_CLI_VERSION: 2.117.0
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Materialize isolated GPT catalog intake runtime
+        run: node scripts/materialize-trust-gpt-catalog-intake-e2e.mjs
+
+      - name: Start isolated Supabase and apply migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_dir="$GITHUB_WORKSPACE/tmp/trust-gpt-catalog-intake-e2e"
+          echo "TRUST_GPT_CATALOG_E2E_RUNTIME_DIR=$runtime_dir" >>"$GITHUB_ENV"
+          start_log="$RUNNER_TEMP/trust-gpt-catalog-intake-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "$runtime_dir" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"$start_log" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "$start_log" >&2
+            exit 1
+          fi
+          rm -f "$start_log"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "$runtime_dir"
+
+      - name: Bind isolated database URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file="$RUNNER_TEMP/trust-gpt-catalog-intake.env"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" status \
+            --workdir "$TRUST_GPT_CATALOG_E2E_RUNTIME_DIR" -o env >"$env_file"
+          db_url="$(grep '^DB_URL=' "$env_file" | cut -d= -f2- | tr -d '"')"
+          test -n "$db_url"
+          echo "::add-mask::$db_url"
+          echo "TRUST_GPT_CATALOG_DB_URL=$db_url" >>"$GITHUB_ENV"
+          rm -f "$env_file"
+
+      - name: Execute isolated SQL runtime proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$TRUST_GPT_CATALOG_DB_URL" \
+            -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/trust-gpt-catalog-intake/verify_runtime.sql
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          runtime_dir="${TRUST_GPT_CATALOG_E2E_RUNTIME_DIR:-$GITHUB_WORKSPACE/tmp/trust-gpt-catalog-intake-e2e}"
+          if [[ -d "$runtime_dir/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop \
+              --workdir "$runtime_dir" --no-backup
+          fi
+          rm -rf -- "$runtime_dir"

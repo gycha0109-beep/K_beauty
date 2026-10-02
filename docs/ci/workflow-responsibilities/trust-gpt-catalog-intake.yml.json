@@ -1,0 +1,13 @@
+{
+  "workflow": "trust-gpt-catalog-intake.yml",
+  "primaryResponsibility": "trust-data-governance",
+  "capabilities": [
+    "database",
+    "evidence-governance",
+    "official-source",
+    "pipeline"
+  ],
+  "watchtowerTrackBinding": "static:trust",
+  "lifecycleNameClass": "descriptive",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}
