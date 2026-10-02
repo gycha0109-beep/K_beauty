@@ -233,6 +233,57 @@ $function$;
 revoke all on function public.enqueue_catalog_trust_intake_from_promotion_v1()
   from public, anon, authenticated, service_role;
 
+create or replace function public.process_gpt_catalog_trust_product_pinned_v1(
+  p_product_id uuid
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  v_registry_version constant text := 'product-fact-registry-cross-category-v1';
+  v_result jsonb;
+  v_dispatch text;
+begin
+  if not exists (
+    select 1
+    from public.product_fact_registry_versions r
+    where r.registry_version = v_registry_version
+      and (r.effective_at is null or r.effective_at <= now())
+  ) then
+    raise exception 'gpt_catalog_registry_pin_unavailable:%', v_registry_version
+      using errcode = '23514';
+  end if;
+
+  if to_regprocedure('public.process_catalog_trust_product_v3(uuid,text)') is not null then
+    execute 'select public.process_catalog_trust_product_v3($1,$2)'
+      into v_result
+      using p_product_id, v_registry_version;
+    v_dispatch := 'process_catalog_trust_product_v3';
+  elsif to_regprocedure('public.process_catalog_trust_product_v2(uuid,text)') is not null then
+    execute 'select public.process_catalog_trust_product_v2($1,$2)'
+      into v_result
+      using p_product_id, v_registry_version;
+    v_dispatch := 'process_catalog_trust_product_v2';
+  else
+    v_result := public.process_catalog_trust_product_v1(p_product_id);
+    v_dispatch := 'process_catalog_trust_product_v1';
+  end if;
+
+  return coalesce(v_result, '{}'::jsonb) || jsonb_build_object(
+    'gpt_registry_pin', v_registry_version,
+    'gpt_trust_dispatch', v_dispatch
+  );
+end;
+$function$;
+
+comment on function public.process_gpt_catalog_trust_product_pinned_v1(uuid) is
+  'Internal GPT catalog TRUST processor. Pins Product Fact Registry v1 and dispatches to the newest governed catalog processor available, falling back to historical v1 only in older isolated replay baselines.';
+
+revoke all on function public.process_gpt_catalog_trust_product_pinned_v1(uuid)
+  from public, anon, authenticated, service_role;
+
 create or replace function public.ingest_gpt_catalog_product_v1(
   p_request_id text,
   p_payload jsonb
@@ -601,7 +652,7 @@ begin
     returning binding_id into v_binding_id;
   end if;
 
-  perform public.process_catalog_trust_product_v1(v_product_id);
+  perform public.process_gpt_catalog_trust_product_pinned_v1(v_product_id);
 
   select * into v_intake
   from public.catalog_trust_intake
@@ -676,7 +727,7 @@ begin
     )
     returning subject_id into v_subject_id;
 
-    perform public.process_catalog_trust_product_v1(v_product_id);
+    perform public.process_gpt_catalog_trust_product_pinned_v1(v_product_id);
   else
     v_subject_id := v_intake.subject_id;
   end if;

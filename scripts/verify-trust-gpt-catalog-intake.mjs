@@ -15,6 +15,7 @@ const runtimeProof = fs.readFileSync("tests/fixtures/trust-gpt-catalog-intake/ve
 const required = [
   "create table if not exists public.gpt_catalog_intake_runs",
   "create or replace function public.ingest_gpt_catalog_product_v1",
+  "create or replace function public.process_gpt_catalog_trust_product_pinned_v1",
   "create or replace function public.claim_gpt_catalog_research_tasks_v1",
   "grant execute on function public.ingest_gpt_catalog_product_v1(text,jsonb)",
   "to service_role",
@@ -74,6 +75,23 @@ if (!migration.includes("gpt-catalog-identity-evidence-v1")) {
 }
 
 for (const marker of [
+  "product-fact-registry-cross-category-v1",
+  "process_catalog_trust_product_v3(uuid,text)",
+  "process_catalog_trust_product_v2(uuid,text)",
+  "process_gpt_catalog_trust_product_pinned_v1(v_product_id)"
+]) {
+  if (!migration.includes(marker)) {
+    throw new Error(`registry_pinned_dispatch_marker_missing:${marker}`);
+  }
+}
+if (migration.includes("perform public.process_catalog_trust_product_v1(v_product_id);")) {
+  throw new Error("direct_legacy_trust_processor_call_forbidden");
+}
+if (!migration.includes("revoke all on function public.process_gpt_catalog_trust_product_pinned_v1(uuid)\n  from public, anon, authenticated, service_role;")) {
+  throw new Error("registry_pinned_helper_revoke_missing");
+}
+
+for (const marker of [
   "materialize-product-fact-replay-baseline-v1.mjs",
   "20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql",
   "cross-category-registry-v1.json",
@@ -107,7 +125,10 @@ for (const marker of [
   "GPT_E2E_AUTHENTICATED_INGEST_ALLOWED",
   "gpt-e2e-supported-sunscreen-isolation-001",
   "GPT_E2E_CROSS_PRODUCT_TASK_MUTATION",
-  "'cross_product_claim_isolation',true"
+  "GPT_E2E_PINNED_HELPER_SERVICE_ROLE_ALLOWED",
+  "GPT_E2E_REGISTRY_PIN_DRIFT",
+  "'cross_product_claim_isolation',true",
+  "'registry_pinned_dispatch',true"
 ]) {
   if (!runtimeProof.includes(marker)) {
     throw new Error(`runtime_proof_marker_missing:${marker}`);
@@ -200,5 +221,6 @@ console.log(JSON.stringify({
   automatic_confirmation: false,
   unsupported_makeup_activation: false,
   isolated_runtime_materializer: true,
-  hardcoded_local_database_password: false
+  hardcoded_local_database_password: false,
+  registry_pinned_dispatch: true
 }));

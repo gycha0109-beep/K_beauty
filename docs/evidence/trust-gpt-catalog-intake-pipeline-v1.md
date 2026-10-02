@@ -184,6 +184,23 @@ This pipeline must never automatically:
 - unsupported category: blocker is persisted,
 - duplicate Product: blocker is persisted.
 
+## Production rollout compatibility
+
+Production preflight on 2026-10-02 found a newer governed TRUST processor than the original isolated baseline:
+
+- Production exposes `process_catalog_trust_product_v3(product_id, registry_version)`.
+- V3 preserves controlled identity authority and delegates to the registry-pinned V2 processor.
+- Product Fact Registry v2 has definitions for the GPT-required facts but does not authorize new lineage for those facts.
+- Product Fact Registry v1 authorizes new lineage for all 13 distinct required Fact keys used across the 10 supported skincare categories.
+
+GPT intake therefore pins `product-fact-registry-cross-category-v1` and dispatches to the newest governed TRUST processor available:
+
+`v3 -> v2 -> historical v1 fallback`
+
+The historical v1 fallback exists only for older isolated replay baselines where V2/V3 are absent. The internal dispatch helper is not executable by `anon`, `authenticated`, or `service_role` directly.
+
+This preserves current Production registry/write-policy governance without broadening Registry v2 admission.
+
 ## Verification
 
 Static verification:
@@ -203,6 +220,8 @@ The isolated E2E proves:
 - exact replay is idempotent,
 - request ID reuse with changed payload is rejected,
 - `foundation` / cushion-class intake fails closed,
-- automatic Product Fact confirmation remains false.
+- automatic Product Fact confirmation remains false,
+- the internal registry-pinned helper is not directly executable by service role,
+- generated TRUST research tasks remain pinned to Product Fact Registry v1.
 
 Watchtower-Track: `pipeline-reliability`.
