@@ -1,0 +1,715 @@
+{
+  "version": "v21-8g3-0-evidence-ingest-contract-v1",
+  "stage": "V2.1-8G3-0",
+  "source_main_sha": "f5f49f1cabfcea951688d7d0a30feee193a512fe",
+  "captured_on": "2026-10-02",
+  "input_authority": {
+    "research_closeout_path": "evidence/product-fact-catalog-expansion-v1/v21-8g2-wave1-required-fact-research-closeout-v1.json",
+    "research_closeout_git_blob_sha": "d58495d6463a55ab39037d8f65c564308aff462e",
+    "research_closeout_decision": "V21_8G2_WAVE1_RESEARCH_CLOSEOUT_PASS_DIRECT6_INSUFFICIENT10",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "subject_identity_resolution_version": "v21-8g1-official-identity-v1"
+  },
+  "runtime_contract": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "required_capability": "admin.products.review",
+    "admin_ingest_function_sha256": "c5bf2429801f3f5811c41d3c39fbddff3eca2914bccb59f100321f369264b481",
+    "admin_prepare_review_function_sha256": "9d0992369021a37a83c96561f8ad3d9e9b505a61771b7b5312fa35fc424dbff1",
+    "admin_preflight_confirmation_function_sha256": "7d9ce38e47468fb1a419528256857e399a3d7e50e719f7bd449034c96019f59e",
+    "controlled_build_preflight_function_sha256": "b736e373ebbcf577f332626e9fab2d8715c87c8a69a931de2ba3727bcc102f16",
+    "registry_write_admissibility_function_sha256": "0234789969fd824b975d58e166125220ff24e83717e12186723c58a5628a1743",
+    "canonical_json_function_sha256": "01420646597cd144a594c2eef7cdf46c13b1d67da0188c77e01d628664be27a5",
+    "sha256_json_function_sha256": "53d8226a25f3573d9e8f6f86fc4a2eb83938cfee6ea55f3a61fa0430595ca7ce",
+    "service_role_execute_only": true,
+    "active_review_actor": true
+  },
+  "registry_write_policy": {
+    "low_ph": {
+      "policy_digest": "e5550958e3c121ca855d5e1fa267e709a7841020850f1641e964607588dcf2fc",
+      "new_lineage_allowed": true,
+      "existing_lineage_allowed": true
+    },
+    "barrier_support_claim": {
+      "policy_digest": "6f3cbd77ba4501100cc637c2ac1300ccc0591563973a50c8d28a4b70503c6f6e",
+      "new_lineage_allowed": true,
+      "existing_lineage_allowed": true
+    },
+    "primary_use_role": {
+      "policy_digest": "1ee29792af7acddc521916fedef250944d10e2a4c0a55ef75ba46a9d3ca03e46",
+      "new_lineage_allowed": true,
+      "existing_lineage_allowed": true
+    },
+    "product_format": {
+      "policy_digest": "73fa5003af5d5591c2a99d3215b1ec7a3c845a17742db03995c2d39bc264bf61",
+      "new_lineage_allowed": true,
+      "existing_lineage_allowed": true
+    },
+    "policy_version": "data-ai29c-uva-r3d-registry-coexistence-v1",
+    "policy_state": "active"
+  },
+  "digest_contract": {
+    "proposition": {
+      "version": "product-fact-proposition-pilot-v1",
+      "material_fields": [
+        "serializer_version",
+        "subject_semantic_key",
+        "registry_version",
+        "fact_key",
+        "value_identity",
+        "scope",
+        "qualifier",
+        "parent_proposition_key"
+      ],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier": {},
+      "parent_proposition_key": null
+    },
+    "evidence": {
+      "version": "v21-8g3-evidence-v1",
+      "material_fields": [
+        "digest_contract",
+        "task_id",
+        "source_content_digest",
+        "subject_semantic_key",
+        "registry_version",
+        "fact_key",
+        "proposition_key",
+        "proposition_value_identity",
+        "evidence_class",
+        "evidence_authority",
+        "confidence",
+        "support_direction",
+        "negative_admissibility",
+        "scope",
+        "qualifier"
+      ]
+    }
+  },
+  "execution_plan": {
+    "candidates": 6,
+    "unique_sources": 4,
+    "unique_bindings": 4,
+    "evidence_records": 6,
+    "review_assignments": 0,
+    "fact_instances": 0,
+    "product_fact_current_writes": 0,
+    "committed_writes_in_8g3_0": 0,
+    "transaction_mode_for_8g3_a": "controlled_rpc_only",
+    "evidence_ingest_authorized_for_8g3_a": true,
+    "review_preparation_authorized": false,
+    "confirmation_preflight_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "sources": [
+    {
+      "source_ref": "beplain_product",
+      "payload": {
+        "canonical_locator": "https://www.beplain.co.kr/m/product_detail.html?brand_uid=43",
+        "publisher": "beplain / Moments Company",
+        "source_kind": "official_product_page",
+        "source_metadata": {
+          "research_stage": "V2.1-8G2-A",
+          "research_source_id": "beplain_product",
+          "authority_kind": "official_kr_product_page",
+          "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+          "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json#beplain_product"
+        },
+        "content_digest": "74e3f097e770d93a5a21ae4abc43619fbe7d5c5939ba77b3eec20197332536c3",
+        "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json",
+        "market": "KR",
+        "region": null,
+        "locale": null,
+        "published_at": null,
+        "accessed_at": "2026-10-02T00:00:00+09:00",
+        "observed_at": null
+      }
+    },
+    {
+      "source_ref": "atopalm_product",
+      "payload": {
+        "canonical_locator": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+        "publisher": "ATOPALM SHOP / NeoPharm",
+        "source_kind": "official_product_page",
+        "source_metadata": {
+          "research_stage": "V2.1-8G2-A",
+          "research_source_id": "atopalm_product",
+          "authority_kind": "official_kr_product_page",
+          "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+          "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json#atopalm_product"
+        },
+        "content_digest": "2b8b4605be077d126280a010706c3788cd63df24dea6ac7635df76209eb797d2",
+        "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json",
+        "market": "KR",
+        "region": null,
+        "locale": null,
+        "published_at": null,
+        "accessed_at": "2026-10-02T00:00:00+09:00",
+        "observed_at": null
+      }
+    },
+    {
+      "source_ref": "dr20_category",
+      "payload": {
+        "canonical_locator": "https://dr20project.com/category/%ED%86%A0%EB%84%88%EB%AF%B8%EC%8A%A4%ED%8A%B8/58",
+        "publisher": "Dr.twentyproject / Twenty Medicos",
+        "source_kind": "official_category_page",
+        "source_metadata": {
+          "research_stage": "V2.1-8G2-A",
+          "research_source_id": "dr20_category",
+          "authority_kind": "official_kr_category_page",
+          "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+          "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json#dr20_category"
+        },
+        "content_digest": "e398df369d0b4bf03dd6ac44d2c60b6396f88fc4a8693d7b32c3ebe8c23def8d",
+        "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json",
+        "market": "KR",
+        "region": null,
+        "locale": null,
+        "published_at": null,
+        "accessed_at": "2026-10-02T00:00:00+09:00",
+        "observed_at": null
+      }
+    },
+    {
+      "source_ref": "drg_product",
+      "payload": {
+        "canonical_locator": "https://www.dr-g.co.kr/item/4688",
+        "publisher": "Dr.G / Gowoonsesang Cosmetics",
+        "source_kind": "official_product_page",
+        "source_metadata": {
+          "research_stage": "V2.1-8G2-B",
+          "research_source_id": "drg_product",
+          "authority_kind": "official_kr_product_page",
+          "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+          "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-b-required-fact-research-v1.json#drg_product"
+        },
+        "content_digest": "150acaf2639e4f221e9a877bb8bbe5933f09764174b05b2e84493105190f6ea8",
+        "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-b-required-fact-research-v1.json",
+        "market": "KR",
+        "region": null,
+        "locale": null,
+        "published_at": null,
+        "accessed_at": "2026-10-02T00:00:00+09:00",
+        "observed_at": null
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "binding_ref": "binding:beplain_product",
+      "source_ref": "beplain_product",
+      "payload": {
+        "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+        "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+        "binding_state": "exact_subject_match",
+        "scope_relation": "equivalent",
+        "presentation_metadata": {
+          "exact_product_match": "yes",
+          "source_market": "KR",
+          "subject_market": "KR",
+          "subject_semantic_key": "8d724aa6518b76d64b1b860bfbb771759a6616186be41df71f464142e0e3d65b",
+          "formulation_revision_key": "v21-8g1:ebd51ca307be7df6291894e7e9b91bc3bb1fbd7274214444e0eecb1c7072359d"
+        },
+        "identity_resolution_version": "v21-8g1-official-identity-v1",
+        "reviewed_at": "2026-10-02T00:00:00+09:00"
+      }
+    },
+    {
+      "binding_ref": "binding:atopalm_product",
+      "source_ref": "atopalm_product",
+      "payload": {
+        "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+        "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+        "binding_state": "exact_subject_match",
+        "scope_relation": "equivalent",
+        "presentation_metadata": {
+          "exact_product_match": "yes",
+          "source_market": "KR",
+          "subject_market": "KR",
+          "subject_semantic_key": "e809fefc0a4652b0022a8084f90933a3a8e342e9218e2b0dfb85517c63d78157",
+          "formulation_revision_key": "v21-8g1:5b73e1d0fee304d995cf2e18da1c56cdc26f4c9f6a60978f7e5743bc1191225e"
+        },
+        "identity_resolution_version": "v21-8g1-official-identity-v1",
+        "reviewed_at": "2026-10-02T00:00:00+09:00"
+      }
+    },
+    {
+      "binding_ref": "binding:dr20_category",
+      "source_ref": "dr20_category",
+      "payload": {
+        "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+        "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+        "binding_state": "exact_subject_match",
+        "scope_relation": "equivalent",
+        "presentation_metadata": {
+          "exact_product_match": "yes",
+          "source_market": "KR",
+          "subject_market": "KR",
+          "subject_semantic_key": "379b1231208b796c99775d98d7f5938e1e982d8a631002bebce29449e3f14d43",
+          "formulation_revision_key": "v21-8g1:eacd4c398dfebe713f91830feb367cdd2e2848422dceef4087d35cc736eef3b7"
+        },
+        "identity_resolution_version": "v21-8g1-official-identity-v1",
+        "reviewed_at": "2026-10-02T00:00:00+09:00"
+      }
+    },
+    {
+      "binding_ref": "binding:drg_product",
+      "source_ref": "drg_product",
+      "payload": {
+        "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+        "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+        "binding_state": "exact_subject_match",
+        "scope_relation": "equivalent",
+        "presentation_metadata": {
+          "exact_product_match": "yes",
+          "source_market": "KR",
+          "subject_market": "KR",
+          "subject_semantic_key": "77e92456cde099730e408c65f1b09b59ef2a07201cc7c21b2ccdfdd0756c11da",
+          "formulation_revision_key": "v21-8g1:0b2bbf07c8c5807e0a1ed3f2c825db2fdb8e6147840ea97300dc56a5995b824e"
+        },
+        "identity_resolution_version": "v21-8g1-official-identity-v1",
+        "reviewed_at": "2026-10-02T00:00:00+09:00"
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "task_id": "66f0d4df-c1a8-4b67-869a-8ef8b5528779",
+      "request_id": "v21-8g3a-beplain-low-ph",
+      "source_ref": "beplain_product",
+      "proposition_key": "ebf267ec813986fb282ff61eb30846e35e1eaa1222b8243bde5b8e8cd4f5d1e7",
+      "canonical_evidence_digest": "e1b294d1f02395521f4e5783532f2ab42ea93a52e1a16d24bc88c0162f88a623",
+      "rpc_payload": {
+        "source": {
+          "canonical_locator": "https://www.beplain.co.kr/m/product_detail.html?brand_uid=43",
+          "publisher": "beplain / Moments Company",
+          "source_kind": "official_product_page",
+          "source_metadata": {
+            "research_stage": "V2.1-8G2-A",
+            "research_source_id": "beplain_product",
+            "authority_kind": "official_kr_product_page",
+            "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+            "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json#beplain_product"
+          },
+          "content_digest": "74e3f097e770d93a5a21ae4abc43619fbe7d5c5939ba77b3eec20197332536c3",
+          "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-10-02T00:00:00+09:00",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+          "subject_id": "a0663741-ddb5-4d03-9a3b-bb32c3fc14ae",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "exact_product_match": "yes",
+            "source_market": "KR",
+            "subject_market": "KR",
+            "subject_semantic_key": "8d724aa6518b76d64b1b860bfbb771759a6616186be41df71f464142e0e3d65b",
+            "formulation_revision_key": "v21-8g1:ebd51ca307be7df6291894e7e9b91bc3bb1fbd7274214444e0eecb1c7072359d"
+          },
+          "identity_resolution_version": "v21-8g1-official-identity-v1",
+          "reviewed_at": "2026-10-02T00:00:00+09:00"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "low_ph",
+          "proposition_key": "ebf267ec813986fb282ff61eb30846e35e1eaa1222b8243bde5b8e8cd4f5d1e7",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": true,
+          "parent_proposition_key": null,
+          "evidence_class": "product_claim",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "e1b294d1f02395521f4e5783532f2ab42ea93a52e1a16d24bc88c0162f88a623",
+          "supersedes_evidence_id": null
+        }
+      }
+    },
+    {
+      "task_id": "f133d067-a5f6-44fc-a3f5-6b8706d35c9a",
+      "request_id": "v21-8g3a-atopalm-barrier",
+      "source_ref": "atopalm_product",
+      "proposition_key": "776518f7ef5cc2079623a67bd3ea387acac89afbc9bcda107878b7da3e058590",
+      "canonical_evidence_digest": "6a03fa1643bec33fc43550e60c9b0303dff73aa56935e37cce0a91b2bdb0433b",
+      "rpc_payload": {
+        "source": {
+          "canonical_locator": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+          "publisher": "ATOPALM SHOP / NeoPharm",
+          "source_kind": "official_product_page",
+          "source_metadata": {
+            "research_stage": "V2.1-8G2-A",
+            "research_source_id": "atopalm_product",
+            "authority_kind": "official_kr_product_page",
+            "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+            "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json#atopalm_product"
+          },
+          "content_digest": "2b8b4605be077d126280a010706c3788cd63df24dea6ac7635df76209eb797d2",
+          "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-10-02T00:00:00+09:00",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+          "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "exact_product_match": "yes",
+            "source_market": "KR",
+            "subject_market": "KR",
+            "subject_semantic_key": "e809fefc0a4652b0022a8084f90933a3a8e342e9218e2b0dfb85517c63d78157",
+            "formulation_revision_key": "v21-8g1:5b73e1d0fee304d995cf2e18da1c56cdc26f4c9f6a60978f7e5743bc1191225e"
+          },
+          "identity_resolution_version": "v21-8g1-official-identity-v1",
+          "reviewed_at": "2026-10-02T00:00:00+09:00"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "barrier_support_claim",
+          "proposition_key": "776518f7ef5cc2079623a67bd3ea387acac89afbc9bcda107878b7da3e058590",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": true,
+          "parent_proposition_key": null,
+          "evidence_class": "measurement",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "6a03fa1643bec33fc43550e60c9b0303dff73aa56935e37cce0a91b2bdb0433b",
+          "supersedes_evidence_id": null
+        }
+      }
+    },
+    {
+      "task_id": "b1ee9a58-538d-4032-a0fe-690c1e82f751",
+      "request_id": "v21-8g3a-atopalm-role",
+      "source_ref": "atopalm_product",
+      "proposition_key": "5ef27cd2a45dd0bc8d450b09532b761b5df093b91829222ac368578dd38f01ba",
+      "canonical_evidence_digest": "c45129bb8002d956f7622a1c4e1cea465d45100713f76815207522aba05b5885",
+      "rpc_payload": {
+        "source": {
+          "canonical_locator": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+          "publisher": "ATOPALM SHOP / NeoPharm",
+          "source_kind": "official_product_page",
+          "source_metadata": {
+            "research_stage": "V2.1-8G2-A",
+            "research_source_id": "atopalm_product",
+            "authority_kind": "official_kr_product_page",
+            "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+            "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json#atopalm_product"
+          },
+          "content_digest": "2b8b4605be077d126280a010706c3788cd63df24dea6ac7635df76209eb797d2",
+          "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-10-02T00:00:00+09:00",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+          "subject_id": "27d95669-eeb9-4ec6-9065-a8c9d111a262",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "exact_product_match": "yes",
+            "source_market": "KR",
+            "subject_market": "KR",
+            "subject_semantic_key": "e809fefc0a4652b0022a8084f90933a3a8e342e9218e2b0dfb85517c63d78157",
+            "formulation_revision_key": "v21-8g1:5b73e1d0fee304d995cf2e18da1c56cdc26f4c9f6a60978f7e5743bc1191225e"
+          },
+          "identity_resolution_version": "v21-8g1-official-identity-v1",
+          "reviewed_at": "2026-10-02T00:00:00+09:00"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "primary_use_role",
+          "proposition_key": "5ef27cd2a45dd0bc8d450b09532b761b5df093b91829222ac368578dd38f01ba",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": "local_area",
+          "parent_proposition_key": null,
+          "evidence_class": "usage_instruction",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "c45129bb8002d956f7622a1c4e1cea465d45100713f76815207522aba05b5885",
+          "supersedes_evidence_id": null
+        }
+      }
+    },
+    {
+      "task_id": "1b2062c6-9a3d-4fe4-b192-4c1ac06dda2c",
+      "request_id": "v21-8g3a-dr20-format",
+      "source_ref": "dr20_category",
+      "proposition_key": "730ffbc3483c2e02c57b3381a4101be73525fe1a96e103a0660a27eb301adebd",
+      "canonical_evidence_digest": "8f6fed4df0d48b88bc139e003b71b3e16123211ae39bb71a8e813e75df85625c",
+      "rpc_payload": {
+        "source": {
+          "canonical_locator": "https://dr20project.com/category/%ED%86%A0%EB%84%88%EB%AF%B8%EC%8A%A4%ED%8A%B8/58",
+          "publisher": "Dr.twentyproject / Twenty Medicos",
+          "source_kind": "official_category_page",
+          "source_metadata": {
+            "research_stage": "V2.1-8G2-A",
+            "research_source_id": "dr20_category",
+            "authority_kind": "official_kr_category_page",
+            "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+            "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json#dr20_category"
+          },
+          "content_digest": "e398df369d0b4bf03dd6ac44d2c60b6396f88fc4a8693d7b32c3ebe8c23def8d",
+          "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-a-required-fact-research-v1.json",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-10-02T00:00:00+09:00",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+          "subject_id": "3f528224-0c38-40a8-af61-00bad33940dd",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "exact_product_match": "yes",
+            "source_market": "KR",
+            "subject_market": "KR",
+            "subject_semantic_key": "379b1231208b796c99775d98d7f5938e1e982d8a631002bebce29449e3f14d43",
+            "formulation_revision_key": "v21-8g1:eacd4c398dfebe713f91830feb367cdd2e2848422dceef4087d35cc736eef3b7"
+          },
+          "identity_resolution_version": "v21-8g1-official-identity-v1",
+          "reviewed_at": "2026-10-02T00:00:00+09:00"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "product_format",
+          "proposition_key": "730ffbc3483c2e02c57b3381a4101be73525fe1a96e103a0660a27eb301adebd",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": "liquid",
+          "parent_proposition_key": null,
+          "evidence_class": "physical_characteristic",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "8f6fed4df0d48b88bc139e003b71b3e16123211ae39bb71a8e813e75df85625c",
+          "supersedes_evidence_id": null
+        }
+      }
+    },
+    {
+      "task_id": "cf143b70-f9ba-4d57-aa30-2e13da39de25",
+      "request_id": "v21-8g3a-drg-barrier",
+      "source_ref": "drg_product",
+      "proposition_key": "21699978665834b197081ffe419ca6aa6a6aca12698a4f55ddfbd6cdd59008e0",
+      "canonical_evidence_digest": "baeac7d059ca991c72673e9ccfc92a30411a05bfcf80d87e90a4321e12deb750",
+      "rpc_payload": {
+        "source": {
+          "canonical_locator": "https://www.dr-g.co.kr/item/4688",
+          "publisher": "Dr.G / Gowoonsesang Cosmetics",
+          "source_kind": "official_product_page",
+          "source_metadata": {
+            "research_stage": "V2.1-8G2-B",
+            "research_source_id": "drg_product",
+            "authority_kind": "official_kr_product_page",
+            "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+            "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-b-required-fact-research-v1.json#drg_product"
+          },
+          "content_digest": "150acaf2639e4f221e9a877bb8bbe5933f09764174b05b2e84493105190f6ea8",
+          "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-b-required-fact-research-v1.json",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-10-02T00:00:00+09:00",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+          "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "exact_product_match": "yes",
+            "source_market": "KR",
+            "subject_market": "KR",
+            "subject_semantic_key": "77e92456cde099730e408c65f1b09b59ef2a07201cc7c21b2ccdfdd0756c11da",
+            "formulation_revision_key": "v21-8g1:0b2bbf07c8c5807e0a1ed3f2c825db2fdb8e6147840ea97300dc56a5995b824e"
+          },
+          "identity_resolution_version": "v21-8g1-official-identity-v1",
+          "reviewed_at": "2026-10-02T00:00:00+09:00"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "barrier_support_claim",
+          "proposition_key": "21699978665834b197081ffe419ca6aa6a6aca12698a4f55ddfbd6cdd59008e0",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": true,
+          "parent_proposition_key": null,
+          "evidence_class": "product_claim",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "baeac7d059ca991c72673e9ccfc92a30411a05bfcf80d87e90a4321e12deb750",
+          "supersedes_evidence_id": null
+        }
+      }
+    },
+    {
+      "task_id": "46f6bd75-3c64-4edb-ab38-92c1b5897b90",
+      "request_id": "v21-8g3a-drg-role",
+      "source_ref": "drg_product",
+      "proposition_key": "638768a54ec7dfc7082f522241d53d896c21b07ffb4f1e00ff89e5e2821a80d6",
+      "canonical_evidence_digest": "9fc611e224400af8014a9ce32908664a0d4cde322f31f3d6587f01eed309539e",
+      "rpc_payload": {
+        "source": {
+          "canonical_locator": "https://www.dr-g.co.kr/item/4688",
+          "publisher": "Dr.G / Gowoonsesang Cosmetics",
+          "source_kind": "official_product_page",
+          "source_metadata": {
+            "research_stage": "V2.1-8G2-B",
+            "research_source_id": "drg_product",
+            "authority_kind": "official_kr_product_page",
+            "content_digest_basis": "sha256(canonical frozen 8G2 source capture); NOT live-page byte snapshot",
+            "provenance_container": "evidence/product-fact-catalog-expansion-v1/v21-8g2-b-required-fact-research-v1.json#drg_product"
+          },
+          "content_digest": "150acaf2639e4f221e9a877bb8bbe5933f09764174b05b2e84493105190f6ea8",
+          "external_snapshot_reference": "evidence/product-fact-catalog-expansion-v1/v21-8g2-b-required-fact-research-v1.json",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-10-02T00:00:00+09:00",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+          "subject_id": "84ecf763-b521-4cba-8413-df093098342e",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "exact_product_match": "yes",
+            "source_market": "KR",
+            "subject_market": "KR",
+            "subject_semantic_key": "77e92456cde099730e408c65f1b09b59ef2a07201cc7c21b2ccdfdd0756c11da",
+            "formulation_revision_key": "v21-8g1:0b2bbf07c8c5807e0a1ed3f2c825db2fdb8e6147840ea97300dc56a5995b824e"
+          },
+          "identity_resolution_version": "v21-8g1-official-identity-v1",
+          "reviewed_at": "2026-10-02T00:00:00+09:00"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "primary_use_role",
+          "proposition_key": "638768a54ec7dfc7082f522241d53d896c21b07ffb4f1e00ff89e5e2821a80d6",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": "multi_area",
+          "parent_proposition_key": null,
+          "evidence_class": "usage_instruction",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "9fc611e224400af8014a9ce32908664a0d4cde322f31f3d6587f01eed309539e",
+          "supersedes_evidence_id": null
+        }
+      }
+    }
+  ],
+  "rollback_probe": {
+    "decision": "V21_8G3_0_ROLLBACK_PROBE_PASS",
+    "rpc_calls_attempted": 6,
+    "rpc_calls_accepted": 6,
+    "transaction_rolled_back": true,
+    "residue": {
+      "product_fact_current": 95,
+      "target_sources": 0,
+      "target_bindings": 0,
+      "target_evidence": 0,
+      "probe_admin_audits": 0,
+      "probe_review_events": 0
+    },
+    "note": "All six ingest calls completed before ROLLBACK. The first post-rollback readback query used a wrong audit table name; corrected readback against public.admin_audit_logs confirmed zero residue."
+  },
+  "production_prestate": {
+    "product_fact_current": 95,
+    "ready_v1_tasks": 16,
+    "pristine_ready_v1_tasks": 16,
+    "ready_v2_tasks": 0,
+    "ready_evidence_records": 0,
+    "ready_fact_instances": 0,
+    "exact_target_sources": 0,
+    "exact_target_bindings": 0,
+    "exact_target_evidence": 0,
+    "claim_gpt_catalog_research_tasks_v1_exists": false,
+    "ingest_gpt_catalog_product_v1_exists": false
+  },
+  "stop_conditions": [
+    "source_main_sha drift without compatibility review",
+    "runtime function SHA-256 drift",
+    "registry write policy becomes forbidden",
+    "any target Source/Binding/Evidence appears before 8G3-A",
+    "any of the 16 READY research tasks loses pristine state",
+    "Product Fact Current != 95",
+    "Registry v2 task appears for READY Wave 1",
+    "Subject identity/lineage drift",
+    "proposition or canonical Evidence digest mismatch"
+  ],
+  "decision": "V21_8G3_0_EVIDENCE_INGEST_CONTRACT_PREFLIGHT_PASS",
+  "next_gate": "V2.1-8G3-A_CONTROLLED_EVIDENCE_INGEST",
+  "integration_main_sha": "7faafd3571cf047ba299f12db0e66f2c64578f08"
+}
