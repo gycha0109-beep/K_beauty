@@ -51,6 +51,9 @@ on:
       - "scripts/verify-face-lab-v2-simulation-pilot-case-runner.mjs"
       - "scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs"
       - "scripts/verify-face-lab-v2-g-e2b-private-review-board.mjs"
+      - "scripts/verify-face-lab-v2-g-e2b-local-launcher.mjs"
+      - "scripts/run-face-lab-v2-g-e2b-local-pilot.mjs"
+      - "docs/domain/facelab/face-lab-v2-g-e2b-local-pilot-launcher-v1.md"
       - "scripts/run-face-lab-v2-g-e2b-private-campaign.mjs"
       - "app/api/face-lab-simulation-private-review/**"
       - "app/face-lab-test/pilot-review/**"
@@ -160,6 +163,9 @@ on:
       - "scripts/verify-face-lab-v2-simulation-pilot-case-runner.mjs"
       - "scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs"
       - "scripts/verify-face-lab-v2-g-e2b-private-review-board.mjs"
+      - "scripts/verify-face-lab-v2-g-e2b-local-launcher.mjs"
+      - "scripts/run-face-lab-v2-g-e2b-local-pilot.mjs"
+      - "docs/domain/facelab/face-lab-v2-g-e2b-local-pilot-launcher-v1.md"
       - "scripts/run-face-lab-v2-g-e2b-private-campaign.mjs"
       - "app/api/face-lab-simulation-private-review/**"
       - "app/face-lab-test/pilot-review/**"
@@ -306,6 +312,10 @@ jobs:
         run: |
           node scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs
           node --check scripts/run-face-lab-v2-simulation-provider-pilot-e2e.mjs
+      - name: Verify Face Lab G-E2B local launcher
+        run: |
+          node scripts/verify-face-lab-v2-g-e2b-local-launcher.mjs
+          node --check scripts/run-face-lab-v2-g-e2b-local-pilot.mjs
       - name: Verify Face Lab G-E2B private review board
         run: |
           node scripts/verify-face-lab-v2-g-e2b-private-review-board.mjs
