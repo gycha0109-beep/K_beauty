@@ -100,6 +100,8 @@
     "build:face-lab-v2-simulation-route-color-review": "node scripts/build-face-lab-v2-simulation-route-color-review.mjs",
     "build:face-lab-v2-simulation-calibration-case": "node scripts/build-face-lab-v2-simulation-calibration-case.mjs",
     "aggregate:face-lab-v2-simulation-calibration": "node scripts/aggregate-face-lab-v2-simulation-calibration.mjs",
+    "verify:face-lab-v2-provider-pilot-e2e": "node scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs",
+    "e2e:face-lab-v2-provider-pilot": "node scripts/run-face-lab-v2-simulation-provider-pilot-e2e.mjs",
     "e2e:product-query:prelaunch:login": "node scripts/bootstrap-product-query-prelaunch-auth.mjs",
     "e2e:product-query:prelaunch": "node scripts/run-product-query-prelaunch-e2e.mjs",
     "data-ai25:launch:freeze": "node scripts/freeze-data-ai25-operational-baseline-start.mjs",

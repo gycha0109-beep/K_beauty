@@ -1,0 +1,54 @@
+name: Face Lab - Provider Pilot Smoke
+
+run-name: "${{ contains(github.event.head_commit.message, '[g-e2b-full-pilot]') && '[WT:face-research] Face Lab - Provider Full Pilot' || '[WT:face-research] Face Lab - Provider Pilot Smoke' }}"
+
+on:
+  push:
+    branches:
+      - "feat/face-research/g-e2b-provider-e2e-v1"
+    paths:
+      - "scripts/run-face-lab-v2-simulation-provider-pilot-e2e.mjs"
+      - "scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs"
+      - ".github/workflows/face-lab-v2-provider-pilot-smoke.yml"
+      - "docs/domain/facelab/face-lab-v2-g-e2b-provider-pilot-run-v1.md"
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: "1"
+      FACE_LAB_E2E_EMAIL_A: ${{ secrets.FACE_LAB_E2E_EMAIL_A }}
+      FACE_LAB_E2E_PASSWORD_A: ${{ secrets.FACE_LAB_E2E_PASSWORD_A }}
+      FACE_LAB_E2E_EMAIL_B: ${{ secrets.FACE_LAB_E2E_EMAIL_B }}
+      FACE_LAB_E2E_PASSWORD_B: ${{ secrets.FACE_LAB_E2E_PASSWORD_B }}
+      FACE_LAB_E2E_INTENTS: ${{ contains(github.event.head_commit.message, '[g-e2b-full-pilot]') && '4' || '1' }}
+      FACE_LAB_E2E_GENERATIONS: ${{ contains(github.event.head_commit.message, '[g-e2b-full-pilot]') && '2' || '1' }}
+      FACE_LAB_E2E_PERSIST_OUTPUTS: "0"
+      FACE_LAB_E2E_BOOTSTRAP_USERS: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify provider pilot E2E contract
+        run: |
+          node scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs
+          node --check scripts/run-face-lab-v2-simulation-provider-pilot-e2e.mjs
+      - name: Verify test account secrets are configured
+        shell: bash
+        run: |
+          test -n "$FACE_LAB_E2E_EMAIL_A"
+          test -n "$FACE_LAB_E2E_PASSWORD_A"
+          test -n "$FACE_LAB_E2E_EMAIL_B"
+          test -n "$FACE_LAB_E2E_PASSWORD_B"
+      - name: Run provider pilot
+        run: node scripts/run-face-lab-v2-simulation-provider-pilot-e2e.mjs
