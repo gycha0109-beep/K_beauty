@@ -164,6 +164,27 @@ const acceptedNotAssessable =
 const waves =
   [];
 let campaignId = null;
+let sourceSha256 = null;
+let runtimeBinding = null;
+
+function sameRuntimeBinding(
+  left,
+  right
+) {
+  const fields = [
+    "simulationVersion",
+    "instructionVersion",
+    "renderSpecVersion",
+    "providerConfigVersion",
+    "providerConfigFingerprint"
+  ];
+
+  return fields.every(
+    (field) =>
+      left?.[field] ===
+        right?.[field]
+  );
+}
 
 for (
   const waveSpec of
@@ -217,12 +238,22 @@ for (
   if (!campaignId) {
     campaignId =
       manifest.campaignId;
+    sourceSha256 =
+      manifest.sourceSha256;
+    runtimeBinding =
+      manifest.runtimeBinding;
   }
 
   if (
     !campaignId ||
     manifest.campaignId !==
       campaignId ||
+    manifest.sourceSha256 !==
+      sourceSha256 ||
+    !sameRuntimeBinding(
+      runtimeBinding,
+      manifest.runtimeBinding
+    ) ||
     waveCloseout.campaignId !==
       campaignId ||
     waveCloseout.waveId !==
