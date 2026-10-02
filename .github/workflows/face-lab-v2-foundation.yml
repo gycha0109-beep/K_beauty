@@ -9,6 +9,10 @@ on:
       - "lib/server/face-lab-simulation-service.js"
       - "lib/server/face-lab-simulation-authority.js"
       - "lib/server/openai-image-edit-runtime.js"
+      - "lib/server/openai-chat-runtime.js"
+      - "lib/server/vision-observation-service.js"
+      - "lib/vision-observation-retry-core.js"
+      - "scripts/verify-face-lab-v2-vision-provider-retry.mjs"
       - "lib/openai-image-edit-runtime-core.js"
       - "lib/face-lab-usage-policy.js"
       - "lib/security/analysis-request-guard-core.js"
@@ -140,6 +144,10 @@ on:
       - "lib/server/face-lab-simulation-service.js"
       - "lib/server/face-lab-simulation-authority.js"
       - "lib/server/openai-image-edit-runtime.js"
+      - "lib/server/openai-chat-runtime.js"
+      - "lib/server/vision-observation-service.js"
+      - "lib/vision-observation-retry-core.js"
+      - "scripts/verify-face-lab-v2-vision-provider-retry.mjs"
       - "lib/openai-image-edit-runtime-core.js"
       - "lib/face-lab-usage-policy.js"
       - "lib/security/analysis-request-guard-core.js"
@@ -316,6 +324,10 @@ jobs:
         run: node scripts/verify-face-lab-v2-render-adapter.mjs
       - name: Verify Face Lab V2 AI simulation adapter
         run: node scripts/verify-face-lab-v2-ai-simulation-adapter.mjs
+      - name: Verify Face Lab Vision provider 429 retry
+        run: |
+          node scripts/verify-face-lab-v2-vision-provider-retry.mjs
+          node scripts/verify-unified-vision-pipeline.mjs
       - name: Verify Face Lab V2 simulation UAT guard
         run: node scripts/verify-face-lab-v2-simulation-guard.mjs
       - name: Verify Face Lab V2 simulation UAT endpoint

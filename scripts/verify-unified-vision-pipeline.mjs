@@ -68,7 +68,14 @@ assert.ok(providerRuntime.includes('redirect: "manual"'), "provider redirects mu
 assert.ok(providerRuntime.includes("response.body.getReader"), "provider response size must be enforced while streaming");
 assert.ok(providerRuntime.includes("totalBytes > maxResponseBytes"), "provider stream must stop at the byte cap");
 assert.ok(providerRuntime.includes("new AbortController()"), "provider runtime must enforce a timeout signal");
-assert.ok(service.includes("imageProviderAttemptCount: 1"), "provider telemetry must record one image attempt");
+assert.ok(
+  service.includes("executeVisionProviderWithRetry"),
+  "canonical Vision service must own the bounded 429 retry policy"
+);
+assert.ok(
+  service.includes("imageProviderAttemptCount: attemptCount"),
+  "provider telemetry must record the actual Vision provider attempt count"
+);
 
 assert.ok(contract.includes('VISION_OBSERVATION_SCHEMA_VERSION = "vision-observation-v1"'));
 assert.ok(contract.includes('VISION_OBSERVATION_PROMPT_VERSION = "vision-observation-prompt-v1"'));
