@@ -1,0 +1,57 @@
+{
+  "version": "g4f1-p0-category-authority-ledger-reader-scenarios-v1",
+  "target_product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+  "read_contract_version": "recommendation-category-authority-read-v1",
+  "scenarios": [
+    {
+      "id": "F1",
+      "scenario": "exact FATION assignment + current established reviewed grant",
+      "expected": "CATEGORY_AUTHORITY_RESOLVED"
+    },
+    {
+      "id": "F2",
+      "scenario": "no current reviewed grant",
+      "expected": "NO_AUTHORITY:CURRENT_CATEGORY_REVIEW_MISSING"
+    },
+    {
+      "id": "F3",
+      "scenario": "current review revoked",
+      "expected": "NO_AUTHORITY:CURRENT_CATEGORY_REVIEW_NOT_ESTABLISHED"
+    },
+    {
+      "id": "F4",
+      "scenario": "products.category becomes non-null",
+      "expected": "NO_AUTHORITY:LEGACY_CATEGORY_PRESENT"
+    },
+    {
+      "id": "F5",
+      "scenario": "assignment digest/source snapshot drifts",
+      "expected": "NO_AUTHORITY:ASSIGNMENT_SNAPSHOT_DRIFT"
+    },
+    {
+      "id": "F6",
+      "scenario": "taxonomy lifecycle or authority mode drifts",
+      "expected": "NO_AUTHORITY:TAXONOMY_GLOBAL_AUTHORITY_DRIFT"
+    },
+    {
+      "id": "F7",
+      "scenario": "unsupported category",
+      "expected": "NO_AUTHORITY:CATEGORY_UNSUPPORTED"
+    },
+    {
+      "id": "F8",
+      "scenario": "non-target product requests protected reader",
+      "expected": "NO_AUTHORITY:PRODUCT_NOT_G4_F1_TARGET"
+    },
+    {
+      "id": "F9",
+      "scenario": "candidate/source-rule binding drifts",
+      "expected": "NO_AUTHORITY:BINDING_DRIFT"
+    },
+    {
+      "id": "F10",
+      "scenario": "runtime attempts raw taxonomy/ledger select",
+      "expected": "PERMISSION_DENIED"
+    }
+  ]
+}
