@@ -1,0 +1,68 @@
+{
+  "version": "barrier-support-non-numeric-shadow-feasibility-v1",
+  "stage": "V2.1-8H-R2",
+  "gate": "BARRIER_SUPPORT_NON_NUMERIC_PDA_SHADOW_FEASIBILITY",
+  "root_question": "Can governed barrier_support Product Fact state add decision-useful shadow information without inventing efficacy magnitude, duplicating legacy numeric pathways, or activating Production Recommendation consumption?",
+  "evidence": {
+    "post_r1_structural_state": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION",
+    "eligible_products": 6,
+    "adopted_moisturizer_products": 10,
+    "all_adopted_products_already_legacy_candidates": true,
+    "relevant_frozen_scenarios": 9,
+    "bounded_scenario_product_pairs": 90,
+    "established_claim_pairs": 54,
+    "unknown_claim_pairs": 36,
+    "established_claim_authority": "product_specific_primary",
+    "established_claim_confidence": "high",
+    "legacy_overlap": {
+      "concern_path_products": 5,
+      "ingredient_path_products": 6,
+      "review_path_products": 4
+    },
+    "existing_mapper_coverage": "claim_only",
+    "existing_mapper_numeric_estimate": null
+  },
+  "decisions": {
+    "numeric_calibration": "NOT_FEASIBLE_FROM_CURRENT_CLAIM_FACTS",
+    "ordinal_strength": "NOT_FEASIBLE_FROM_CURRENT_CLAIM_FACTS",
+    "direct_binary_score_boost": "REJECTED_DOUBLE_COUNT_AND_AUTHORITY_RISK",
+    "structured_categorical_shadow": "FEASIBLE_AND_RECOMMENDED",
+    "candidate_admission_change_required": false,
+    "production_consumption_authorized": false
+  },
+  "feasibility_contract": {
+    "proposed_shadow_signal": "governed official barrier-support claim truth state",
+    "proposed_context": "primary_use_role as non-efficacy context only",
+    "allowed_shadow_action": "ANNOTATE_AND_COMPARE_NON_ADDITIVELY",
+    "prohibited_actions": [
+      "ADD_NUMERIC_SCORE",
+      "ADD_RANK_BONUS",
+      "INFER_BARRIER_EFFECT_MAGNITUDE",
+      "INFER_STRONGER_WEAKER",
+      "TREAT_USAGE_ROLE_AS_EFFICACY",
+      "COERCE_MISSING_TO_FALSE",
+      "COUNT_GOVERNED_CLAIM_AS_ADDITIONAL_LEGACY_BARRIER_UNIT",
+      "CHANGE_CANDIDATE_ELIGIBILITY",
+      "CHANGE_PUBLIC_RECOMMENDATION"
+    ]
+  },
+  "terminal_outcome": "BARRIER_SUPPORT_NON_NUMERIC_SHADOW_FEASIBLE_CONTRACT_REQUIRED",
+  "next_gate": "V2.1-8H-R3_BARRIER_SUPPORT_NON_NUMERIC_PDA_CONTRACT",
+  "execute_next_gate_now": false,
+  "explicit_non_actions": {
+    "hosted_product_fact_writes": 0,
+    "pda_writes": 0,
+    "external_product_evidence_research": 0,
+    "registry_delta": 0,
+    "migration_delta": 0,
+    "numeric_fitting": 0,
+    "scorer_changed": false,
+    "ranker_changed": false,
+    "candidate_policy_changed": false,
+    "candidate_admission_changed": false,
+    "recommendation_behavior_delta": 0,
+    "production_consumption": 0,
+    "recommendation_activated": false,
+    "public_activation": false
+  }
+}
