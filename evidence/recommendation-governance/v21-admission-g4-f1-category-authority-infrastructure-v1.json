@@ -29,8 +29,21 @@
       "recommendation_admission_runtime"
     ],
     "reader_owner": "recommendation_admission_reader_owner",
-    "existing_d5c_policy_preserved": true,
-    "fation_taxonomy_policy_additive": true
+    "existing_d5c_scope_preserved": true,
+    "taxonomy_reader_policy_mode": "single_exact_union_4",
+    "taxonomy_reader_product_ids": [
+      "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+      "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+      "da5df70c-8cdd-4eb2-93b6-ede46c2f171d"
+    ],
+    "postgres_reader_owner_membership_preserved": true,
+    "ledger_fk_indexes": [
+      "product_id",
+      "candidate_id",
+      "supersedes_review_id",
+      "reviewed_by"
+    ]
   },
   "mutation_boundary": {
     "products_category_mutated": false,
