@@ -242,6 +242,10 @@ const child =
           "2",
         FACE_LAB_E2E_PERSIST_OUTPUTS:
           "1",
+        FACE_LAB_E2E_MAX_OUTPUTS:
+          "8",
+        FACE_LAB_E2E_LIVE_APPROVAL:
+          "I_ACCEPT_OPENAI_IMAGE_COST",
         FACE_LAB_E2E_BOOTSTRAP_USERS:
           "1",
         FACE_LAB_E2E_CAMPAIGN_ROOT:
