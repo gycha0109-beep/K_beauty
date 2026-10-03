@@ -38,7 +38,9 @@ requireText(home, 'import { fetchNativeMyDashboard } from "../lib/my";', "dashbo
 requireText(home, "let initialEntryResolvedForRuntime = false;", "cold-start-only-gate");
 requireText(home, "const isFocused = useIsFocused();", "focus-state-read");
 requireText(home, "const session = await getNativeSession();", "session-read");
-requireText(home, "const dashboard = await fetchNativeMyDashboard(session);", "dashboard-read");
+requireText(home, "const dashboard = await fetchNativeMyDashboard(session, { signal });", "bounded-dashboard-read");
+requireText(home, "shouldOpenHome === null", "failure-is-unknown-not-no-report");
+requireText(home, "MOBILE_READ_TIMEOUT_MS", "bounded-cold-start-gate");
 requireText(home, "return Boolean(dashboard.latestSavedReport?.id);", "saved-report-positive-gate");
 requireText(home, 'router.replace("/analyze");', "first-use-analyze-route");
 requireText(home, 'testID="mobile-initial-entry-gate"', "no-home-flash-gate");

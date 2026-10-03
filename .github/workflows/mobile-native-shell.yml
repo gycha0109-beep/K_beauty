@@ -1,37 +1,27 @@
 name: BEJEWELY Mobile Native Shell
 run-name: "[WT:mobile] BEJEWELY Mobile Native Shell"
 
+# Routine evidence is owned by .github/workflows/mobile-android-runtime.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "apps/mobile/modules/**"
-      - "apps/mobile/assets/**"
-      - "apps/mobile/app.json"
-      - "apps/mobile/package.json"
-      - "scripts/verify-mobile-native-shell.mjs"
-      - "scripts/verify-mobile-android-smoke.sh"
-      - "scripts/await-mobile-android-runtime.mjs"
-      - ".github/workflows/mobile-native-shell.yml"
-      - ".github/workflows/mobile-android-runtime.yml"
-  push:
-    branches: [main]
-    paths:
-      - "apps/mobile/modules/**"
-      - "apps/mobile/assets/**"
-      - "apps/mobile/app.json"
-      - "apps/mobile/package.json"
-      - "scripts/verify-mobile-native-shell.mjs"
-      - "scripts/verify-mobile-android-smoke.sh"
-      - "scripts/await-mobile-android-runtime.mjs"
-      - ".github/workflows/mobile-native-shell.yml"
-      - ".github/workflows/mobile-android-runtime.yml"
   workflow_dispatch:
     inputs:
       watchtower_track:
         description: CI Watchtower Track Key
         required: false
         type: string
+      producer_run_id:
+        description: Completed canonical Android Runtime run ID for this exact ref
+        required: true
+        type: string
+      producer_run_attempt:
+        description: Latest completed producer attempt (rerun all jobs for a new attempt)
+        required: true
+        type: string
+      producer_event:
+        description: Original producer event
+        required: true
+        type: choice
+        options: [pull_request, push, workflow_dispatch]
 
 
 permissions:
@@ -46,15 +36,18 @@ jobs:
   android-native-shell:
     name: Android Native Shell
     runs-on: ubuntu-24.04
-    timeout-minutes: 55
+    timeout-minutes: 5
     env:
-      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      EXPECTED_SHA: ${{ github.sha }}
+      MOBILE_RUNTIME_RUN_ID: ${{ inputs.producer_run_id }}
+      MOBILE_RUNTIME_RUN_ATTEMPT: ${{ inputs.producer_run_attempt }}
+      MOBILE_RUNTIME_EXPECTED_EVENT: ${{ inputs.producer_event }}
     steps:
       - name: Checkout exact candidate SHA
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Attest exact checked-out SHA
         shell: bash
@@ -69,7 +62,7 @@ jobs:
         with:
           node-version: 22.23.1
 
-      - name: Gate compatibility check on canonical Android Runtime
+      - name: Verify completed canonical Android Runtime
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/await-mobile-android-runtime.mjs

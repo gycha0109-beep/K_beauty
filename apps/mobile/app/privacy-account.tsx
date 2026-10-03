@@ -4,8 +4,9 @@ import { useRouter } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { NativeAccountDeletionCard } from "../components/NativeAccountDeletionCard";
+import { NativePrivacyLinks } from "../components/NativePrivacyLinks";
 import { ScreenShell } from "../components/ScreenShell";
-import { getNativeSession, subscribeNativeAuth } from "../lib/auth";
+import { observeNativeSession } from "../lib/auth";
 import { useMobileShell } from "../lib/mobile-shell";
 
 const COPY = {
@@ -38,28 +39,11 @@ export default function PrivacyAccountScreen() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
 
   useEffect(() => {
-    let active = true;
-
-    getNativeSession()
-      .then((nextSession) => {
-        if (active) setSession(nextSession);
-      })
-      .catch(() => {
-        if (active) setSession(null);
-      });
-
-    const subscription = subscribeNativeAuth((nextSession) => {
-      if (active) setSession(nextSession);
-    });
-
-    return () => {
-      active = false;
-      subscription?.unsubscribe();
-    };
+    return observeNativeSession(setSession);
   }, []);
 
-  function handleDeleted() {
-    setSession(null);
+  function handleDeleted(deletedUserId: string) {
+    setSession((current) => current?.user.id === deletedUserId ? null : current);
     Alert.alert(copy.deletedTitle, copy.deletedBody, [
       { text: "OK", onPress: () => router.replace("/my") }
     ]);
@@ -67,12 +51,13 @@ export default function PrivacyAccountScreen() {
 
   return (
     <ScreenShell eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
+      <NativePrivacyLinks />
       {session === undefined ? (
         <Text style={[styles.body, { color: palette.textMuted }]}>{copy.loading}</Text>
       ) : null}
 
       {session ? (
-        <NativeAccountDeletionCard session={session} onDeleted={handleDeleted} />
+        <NativeAccountDeletionCard key={session.user.id} session={session} onDeleted={() => handleDeleted(session.user.id)} />
       ) : null}
 
       {session === null ? (

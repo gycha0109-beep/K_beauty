@@ -19,6 +19,7 @@ const nativeDeletion = mobileRead("lib", "account-deletion.ts");
 const nativeDeletionCard = mobileRead("components", "NativeAccountDeletionCard.tsx");
 const nativeLayout = mobileRead("app", "_layout.tsx");
 const nativePrivacyScreen = mobileRead("app", "privacy-account.tsx");
+const nativePrivacyLinks = mobileRead("components", "NativePrivacyLinks.tsx");
 
 for (const path of [
   ["app", "privacy", "page.js"],
@@ -106,7 +107,8 @@ assert.match(nativeDeletionCard, /mobile-account-delete/);
 assert.match(nativeDeletionCard, /getNativeAppleDeletionAuthorizationCode/);
 assert.match(nativeDeletionCard, /deleteNativeAccount/);
 assert.match(nativeDeletionCard, /clearNativeSessionAfterAccountDeletion/);
-assert.match(nativeDeletionCard, /\/privacy/);
+assert.match(nativePrivacyLinks, /\/privacy/);
+assert.match(nativePrivacyScreen, /<NativePrivacyLinks \/>/, "Public privacy access must be independent of session");
 assert.match(nativeDeletionCard, /\/account-deletion/);
 assert.match(nativeLayout, /mobile-my-privacy-account/);
 assert.match(nativeLayout, /router\.push\(["']\/privacy-account["']\)/);

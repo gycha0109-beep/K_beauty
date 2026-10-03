@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/auth-js";
 import { getMobileApiBaseUrl } from "./env";
+import { fetchWithTimeout } from "./request";
 
 export const CHECKIN_LEVEL_KEYS = [
   "dryness_level",
@@ -191,13 +192,13 @@ export function createNativeCheckinFromExisting(checkin: NativeDailyCheckin | nu
 
 export async function fetchNativeMyDashboard(
   session: Session,
-  options: { localDate?: string; diaryMonth?: string } = {}
+  options: { localDate?: string; diaryMonth?: string; signal?: AbortSignal } = {}
 ): Promise<NativeMyDashboard> {
   const localDate = options.localDate || getNativeLocalDate();
   const diaryMonth = options.diaryMonth || getNativeDiaryMonth();
   const query = new URLSearchParams({ localDate, diaryMonth });
-  const response = await fetch(`${getMobileApiBaseUrl()}/api/my/dashboard?${query.toString()}`, {
-    headers: bearerHeaders(session)
+  const response = await fetchWithTimeout(`${getMobileApiBaseUrl()}/api/my/dashboard?${query.toString()}`, {
+    headers: bearerHeaders(session), signal: options.signal
   });
   const payload = await readJson(response);
   requireOk(response, payload, "mobile_dashboard_unavailable");
@@ -205,7 +206,7 @@ export async function fetchNativeMyDashboard(
 }
 
 export async function saveNativeCheckin(session: Session, input: NativeCheckinInput) {
-  const response = await fetch(`${getMobileApiBaseUrl()}/api/my/check-in`, {
+  const response = await fetchWithTimeout(`${getMobileApiBaseUrl()}/api/my/check-in`, {
     method: "POST",
     headers: {
       ...bearerHeaders(session),
@@ -219,7 +220,7 @@ export async function saveNativeCheckin(session: Session, input: NativeCheckinIn
 }
 
 export async function fetchNativeDiaryDay(session: Session, date: string): Promise<NativeDiaryDay> {
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${getMobileApiBaseUrl()}/api/my/diary-day?date=${encodeURIComponent(date)}`,
     { headers: bearerHeaders(session) }
   );

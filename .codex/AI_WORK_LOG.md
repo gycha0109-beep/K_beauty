@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-03 / Mobile release hardening implementation
+
+- Task type: approved design execution / detailed auth, privacy and distribution-config procedure. User requested diagnosis, design only, then explicitly approved implementation. Baseline `origin/main` `7fe4c2c229208202947e63c2c6695722712c58c4`; work is on `codex/mobile-release-hardening`, not main.
+- Impact: DB=N, Auth=Y, RLS=N, Storage=Y (existing SDK/session cleanup and owned photo-cache lifecycle only; persisted formats unchanged), Provider=Y (nonce/client consent), Payment=N (existing client finalization only), Secret=Y (public-key boundary/CI injection; no secrets edited), Production=N (no production execution/deploy/data changes).
+- Implementation: SDK-first session observation and serialized SDK writes; account/latest-request guards; strict deduplicated PKCE callbacks, Apple cryptographic nonce; explicit draft-scoped photo/OpenAI consent; bounded network/body waits and preserved retry keys; transport-scoped photo leases and stale camera capture discard; guest privacy, honest publish/delete states, midnight draft protection and readable main controls.
+- CI scope expansion reason: new auth/request/privacy consumers require direct trigger coverage, and root dependency changes alter the native graph. Preserved API/Store Readiness canonical owners, one Android producer, compatibility checks, job names and manual signed jobs. Five root package/lock exceptions are explicit in the topology verifier and CI documentation. Release configuration reuses existing repository public-variable authority and validates before prebuild.
+- Verification: clean npm ci and pinned versions; mobile typecheck; 20 actual-function/effect regression tests; 17 mobile contracts including generated Android preflight/autolinking; YAML, topology, workflow registry and 13–15 responsibility checks; Android/iOS JS exports; actual repository public config shape/canonical-origin gate. Existing supply-chain exceptions remain unchanged; Windows npm.cmd spawn requires an in-memory cmd.exe adapter for local audit verification, not claimed Linux CI evidence.
+- Status: IMPLEMENTED_UNVERIFIED overall. Local checks pass; Android NDK/device, macOS/Xcode, native provider sign-in, Apple revocation/deletion, two-account hosted runtime, physical UI/accessibility, signed artifacts and store distribution remain unverified. No live AI photo upload, production account deletion, schema/migration/RLS change, commit, push, merge or deployment was performed.
+- Evidence: [Korean implementation report](../docs/verification/mobile-release-hardening-2026-10-03.md), [architecture contract](../docs/architecture/mobile-foundation.md), [CI responsibility exception](../docs/ci/workflow-responsibility-map.md). Runtime/readiness external authorities stay pending; no AI_CONTEXT promotion required.
+
 ### 2026-08-27 / MOBILE-3 My / Skin Diary
 
 - Task type: execution / Medium Android-first native My and Skin Diary projection. Existing Web cookie auth, Supabase user/RLS authority, Recommendation/Product Fact/Face Lab/Premium server authority, DB schema/migrations, provider secrets, camera, survey extraction, `/api/analyze`, push, billing, and store readiness were not expanded.
@@ -2982,3 +2992,31 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+
+### 2026-10-03 / 모바일 CI 보정 단계 A
+
+- 브랜치: codex/mobile-ci-compatibility (HEAD 3af30370546a58e8d8e086c2cf92c5c59cfefa62).
+- 작업 유형: 실행형, Medium. 승인된 CI 보정 설계의 첫 단계만 구현.
+- 라우팅 판단: 세 자동 polling 호환 workflow, 직접 helper/test/verifier 및 책임 문서로 제한. 실제 Android/iOS runtime·캐시·선택 실행은 이번 변경 범위에서 제외.
+- 목표: 실제 APK/smoke/20A/20B 계약을 유지하며 자동 결과 대기 3개를 수동 완료 결과 확인으로 전환.
+- 변경 파일: 세 compatibility workflow, await-mobile-android-runtime.mjs, test-mobile-runtime-gate.mjs, topology/overlap/responsibility verifier, responsibility map/세 registry, docs/ci/consolidation-audits/mobile-ci-correction-verification.md, 본 기록.
+- 보호 구역: GitHub 정책/권한 추가, 인증/DB/저장/개인정보/production/배포/의존성은 변경하지 않음. 실제 Android producer와 이번 범위 밖 기존 변경은 SHA-256 비교로 보존 확인.
+- 검증 결과: gate unit 45개, topology, responsibility/69 workflows, overlap, MOBILE-13–15 책임, 20B scenario/capture, 로컬 native-shell 계약 및 3개 workflow YAML 검사 PASS. 과거 성공 producer run 36189655150의 실제 읽기 API 검증 PASS (현재 후보 runtime 증거 아님).
+- 문제/주의점: 기존 Windows 20A verifier는 CRLF shell source에서 함수 구간 탐지 실패. 메모리 LF 읽기로 전체 PASS를 확인했으나 원본 명령/Linux CI PASS로 취급하지 않음. 마지막 보호 조회는 main protected=false, required_status_checks 404, rulesets/effective rules 빈 배열. 원격 main은 작업 중 4cf58a6290d1ec0fd5c9074b89fd5b4c0b72fc4d로 전진했으며 추가 4개 파일은 이번 수정과 비중첩.
+- 현재 상태: IMPLEMENTED_UNVERIFIED. 커밋/staging/push/merge/deploy 미실행. 현재 후보의 같은-SHA Linux/macOS native 및 수동 workflow 원격 확인 미수행. 상세 실행 증거는 위 검증 기록 참조.
+- 다음 작업: 원격 후보 생성 전 기준·보호 설정을 재확인하고 동일 SHA CI 동등성 확인. 그 전 단계 B/C는 HOLD.
+- 재사용할 규칙: 과거 green/API fixture/로컬 generated native 검사를 현재 후보의 실제 native 성공으로 승격하지 않는다.
+- 규칙 승격 후보: 없음. AI_CONTEXT 수정 없음.
+
+
+### 2026-10-03 / 모바일 CI 단계 A 원격 검증 착수
+
+- 브랜치: codex/mobile-ci-verification. 최신 원격 11cbffc37ce243a8a27ee05518dff12db3986c6d에서 기존 수정 보존 전환.
+- 작업 유형: 실행형/Medium. 사용자 후속 승인: 기존 모바일 보완과 CI 단계 A의 커밋·push·검증용 PR. main 병합/운영 배포 제외.
+- 목표/범위: 동일 후보의 실제 Android/iOS CI 동등성 확인을 먼저 완료하고 단계 B/C 순서 유지. 캐시/선택 실행 코드는 아직 변경하지 않음.
+- 검증: mobile:typecheck, 실제 함수 회귀 20개 + gate 45개, 직접 모바일/CI verifier 14개 PASS. 기존 Windows 20A 줄바꿈 검사 제한은 별도 기록 유지.
+- 보호 구역: .env/DB/RLS/운영 데이터/production 배포 추가 변경 없음. 기존 승인 구현만 전달.
+- 다음 작업: 원격 후보 SHA의 native jobs/산출물 및 세 manual gate 확인. 이전 과거 API readback은 현재 runtime 증거로 쓰지 않음.
+- 상세 기록: docs/ci/consolidation-audits/mobile-ci-correction-verification.md.
+- 규칙 승격 후보: 없음.

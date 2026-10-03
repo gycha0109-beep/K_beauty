@@ -11,7 +11,7 @@ const appConfig = JSON.parse(readFileSync(join(mobileRoot, "app.json"), "utf8"))
 const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "NativeFaceCamera.tsx"), "utf8");
 const analyzeSource = readFileSync(join(mobileRoot, "app", "analyze.tsx"), "utf8");
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
-const nativeShellWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"), "utf8");
+const nativeShellWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-android-runtime.yml"), "utf8").replace(/\r\n/g, "\n");
 const mobileCiWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ci.yml"), "utf8");
 const androidSmokeSource = readFileSync(join(repoRoot, "scripts", "verify-mobile-android-smoke.sh"), "utf8");
 

@@ -3,6 +3,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Image, Linking, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { cleanupNativePhoto } from "../../lib/photo-cache";
 
 import {
   detectNativeFacesAsync,
@@ -68,6 +69,7 @@ type NativeFaceCameraProps = {
     border: string;
   };
   onPhotoChange?: (photo: NativeCameraPhoto | null) => void;
+  disabled?: boolean;
 };
 
 export function buildUploadReadyCameraPhoto(photo: CameraCapturedPicture): NativeCameraPhoto {
@@ -109,7 +111,18 @@ function resolveGuidanceCopy(copy: NativeFaceCameraCopy, state: NativeFaceGuidan
   }
 }
 
-export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCameraProps) {
+export function NativeFaceCamera({ copy, palette, onPhotoChange, disabled = false }: NativeFaceCameraProps) {
+  const mounted = useRef(true);
+  const photoRef = useRef<NativeCameraPhoto | null>(null);
+  const captureGeneration = useRef(0);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      captureGeneration.current += 1;
+      if (photoRef.current) void cleanupNativePhoto(photoRef.current.uri);
+    };
+  }, []);
   const cameraRef = useRef<CameraView | null>(null);
   const guidanceInFlightRef = useRef<Promise<void> | null>(null);
   const guidanceGenerationRef = useRef(0);
@@ -138,30 +151,35 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
       setIsFullscreenOpen(true);
       resetGuidance();
       return () => {
+        captureGeneration.current += 1;
         guidanceGenerationRef.current += 1;
         guidanceReadySamplesRef.current = 0;
         finalCaptureLockRef.current = false;
         setIsFocused(false);
         setIsFullscreenOpen(false);
         setIsCameraReady(false);
+        setIsCapturing(false);
       };
     }, [resetGuidance])
   );
 
   const closeCamera = useCallback(() => {
+    captureGeneration.current += 1;
     finalCaptureLockRef.current = false;
     setIsFullscreenOpen(false);
     setIsCameraReady(false);
+    setIsCapturing(false);
     setCameraError(null);
     resetGuidance();
   }, [resetGuidance]);
 
   const openCamera = useCallback(() => {
+    if (disabled) return;
     setIsFullscreenOpen(true);
     setIsCameraReady(false);
     setCameraError(null);
     resetGuidance();
-  }, [resetGuidance]);
+  }, [disabled, resetGuidance]);
 
   useEffect(() => {
     if (
@@ -273,11 +291,12 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
   }, [capturedPhoto, isCameraReady, isCapturing, isFocused, isFullscreenOpen, permission?.granted]);
 
   const capturePhoto = useCallback(async () => {
-    if (!cameraRef.current || !isCameraReady || isCapturing) {
+    if (!cameraRef.current || !isCameraReady || isCapturing || disabled || finalCaptureLockRef.current) {
       return;
     }
 
     finalCaptureLockRef.current = true;
+    const generation = captureGeneration.current;
     guidanceGenerationRef.current += 1;
     setIsCapturing(true);
     setCameraError(null);
@@ -295,25 +314,33 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
         skipProcessing: false
       });
       const uploadReadyPhoto = buildUploadReadyCameraPhoto(photo);
-
+      if (!mounted.current || generation !== captureGeneration.current) { void cleanupNativePhoto(uploadReadyPhoto.uri); return; }
+      if (photoRef.current) void cleanupNativePhoto(photoRef.current.uri);
+      photoRef.current = uploadReadyPhoto;
       setCapturedPhoto(uploadReadyPhoto);
       onPhotoChange?.(uploadReadyPhoto);
       setIsCameraReady(false);
     } catch {
-      setCameraError(copy.captureFailed);
+      if (mounted.current && generation === captureGeneration.current) setCameraError(copy.captureFailed);
     } finally {
-      finalCaptureLockRef.current = false;
-      setIsCapturing(false);
+      if (generation === captureGeneration.current) {
+        finalCaptureLockRef.current = false;
+        if (mounted.current) setIsCapturing(false);
+      }
     }
-  }, [copy.captureFailed, isCameraReady, isCapturing, onPhotoChange]);
+  }, [copy.captureFailed, disabled, isCameraReady, isCapturing, onPhotoChange]);
 
   const retakePhoto = useCallback(() => {
+    if (disabled) return;
+    captureGeneration.current += 1;
+    if (photoRef.current) void cleanupNativePhoto(photoRef.current.uri);
+    photoRef.current = null;
     setCapturedPhoto(null);
     onPhotoChange?.(null);
     setCameraError(null);
     setIsCameraReady(false);
     resetGuidance();
-  }, [onPhotoChange, resetGuidance]);
+  }, [disabled, onPhotoChange, resetGuidance]);
 
   if (!permission) {
     return (
@@ -363,6 +390,8 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={copy.openCamera}
+            accessibilityState={{ disabled }}
+            disabled={disabled}
             onPress={openCamera}
             style={({ pressed }) => [
               styles.primaryButton,
@@ -463,6 +492,8 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={copy.retake}
+                    accessibilityState={{ disabled }}
+                    disabled={disabled}
                     onPress={retakePhoto}
                     style={({ pressed }) => [styles.captureButton, pressed ? styles.pressedButton : null]}
                   >
@@ -488,8 +519,8 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={copy.capture}
-                  accessibilityState={{ disabled: !isCameraReady || isCapturing }}
-                  disabled={!isCameraReady || isCapturing}
+                  accessibilityState={{ disabled: disabled || !isCameraReady || isCapturing }}
+                  disabled={disabled || !isCameraReady || isCapturing}
                   onPress={capturePhoto}
                   style={({ pressed }) => [
                     styles.shutterOuter,

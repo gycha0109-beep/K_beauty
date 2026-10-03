@@ -1,6 +1,7 @@
 import type { Session } from "@supabase/auth-js";
 
 import { getMobileApiBaseUrl } from "../../lib/env";
+import { fetchWithTimeout, MOBILE_ANALYZE_TIMEOUT_MS } from "../../lib/request";
 
 export type NativePremiumAccess = Readonly<{
   canCreatePremium: boolean;
@@ -179,7 +180,7 @@ export async function loadNativePremiumAccess(
   let response: Response;
 
   try {
-    response = await fetch(`${getMobileApiBaseUrl()}/api/premium/access`, {
+    response = await fetchWithTimeout(`${getMobileApiBaseUrl()}/api/premium/access`, {
       method: "GET",
       headers: bearerHeaders(session),
       credentials: "include"
@@ -215,7 +216,7 @@ export async function loadNativePremiumAccess(
 async function loadCurrentProductCategory(
   category: string
 ): Promise<NativeCurrentProductOption[]> {
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${getMobileApiBaseUrl()}/api/current-products/products?category=${encodeURIComponent(category)}`,
     {
       method: "GET",
@@ -271,7 +272,7 @@ export async function createNativePremiumReport(input: {
   let response: Response;
 
   try {
-    response = await fetch(`${getMobileApiBaseUrl()}/api/full-report`, {
+    response = await fetchWithTimeout(`${getMobileApiBaseUrl()}/api/full-report`, {
       method: "POST",
       headers: {
         ...bearerHeaders(input.session),
@@ -282,7 +283,7 @@ export async function createNativePremiumReport(input: {
         locale: input.locale,
         currentProducts: input.currentProducts
       })
-    });
+    }, MOBILE_ANALYZE_TIMEOUT_MS);
   } catch {
     throw new NativePremiumRequestError(
       "mobile_premium_finalize_network_failed",

@@ -3,10 +3,9 @@
   "primaryResponsibility": "mobile-e2e",
   "capabilities": [
     "mobile",
-    "required-check-compatibility",
     "runtime-gate"
   ],
   "watchtowerTrackBinding": "static:mobile",
   "lifecycleNameClass": "canonical",
-  "preservationPolicy": "preserve-as-required-check-compatibility-shim-until-classic-protection-audited"
+  "preservationPolicy": "preserve-until-equivalence-proven"
 }

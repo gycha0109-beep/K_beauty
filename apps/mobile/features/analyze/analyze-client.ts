@@ -3,6 +3,8 @@ import type { SupportedLocale } from "@bejewely/shared";
 import type { NativeCameraPhoto } from "../camera/NativeFaceCamera";
 import { getNativeSession } from "../../lib/auth";
 import { getMobileApiBaseUrl } from "../../lib/env";
+import { fetchWithTimeout, MOBILE_ANALYZE_TIMEOUT_MS, NativeTransportError } from "../../lib/request";
+import { retainNativePhoto } from "../../lib/photo-cache";
 import { normalizeSurveyAnswers, type SurveyFormInput } from "../../lib/survey-contract";
 
 export type NativeAnalyzeProduct = Readonly<{
@@ -162,10 +164,21 @@ export async function submitNativeAnalyze(input: {
   form: SurveyFormInput;
   locale: SupportedLocale;
   idempotencyKey?: string;
+  consentAccepted?: boolean;
+  expectedUserId?: string | null;
+  signal?: AbortSignal;
 }): Promise<NativeAnalyzeResult> {
+  if (input.consentAccepted !== true) {
+    throw new NativeAnalyzeRequestError("mobile_analyze_consent_required",
+      input.locale === "ko" ? "사진과 설문 전송에 동의해 주세요." : "Please consent to sending your photo and answers.");
+  }
   const { payload } = buildNativeAnalyzeFormData(input.photo, input.form, input.locale);
   const idempotencyKey = input.idempotencyKey || createNativeAnalyzeIdempotencyKey();
   const session = await getNativeSession();
+  if (input.expectedUserId !== undefined && (session?.user.id ?? null) !== input.expectedUserId) {
+    throw new NativeAnalyzeRequestError("mobile_analyze_account_changed",
+      input.locale === "ko" ? "계정이 변경되었습니다. 새 분석을 시작해 주세요." : "Your account changed. Start a new analysis.");
+  }
   const headers: Record<string, string> = {
     Accept: "application/json",
     "Idempotency-Key": idempotencyKey
@@ -176,15 +189,23 @@ export async function submitNativeAnalyze(input: {
   }
 
   let response: Response;
+  const releasePhoto = retainNativePhoto(input.photo.uri);
 
   try {
-    response = await fetch(`${getMobileApiBaseUrl()}/api/analyze`, {
+    response = await fetchWithTimeout(`${getMobileApiBaseUrl()}/api/analyze`, {
       method: "POST",
       headers,
       body: payload,
-      credentials: "include"
-    });
-  } catch {
+      credentials: "include",
+      signal: input.signal
+    }, MOBILE_ANALYZE_TIMEOUT_MS, releasePhoto);
+  } catch (error) {
+    if (error instanceof NativeTransportError) {
+      throw new NativeAnalyzeRequestError(error.code,
+        input.locale === "ko"
+          ? "결과를 기다리기를 중단했습니다. 서버에서는 분석이 진행 중일 수 있습니다. 같은 입력으로 다시 확인해 주세요."
+          : "Waiting stopped. The server may still be processing. Retry with the same input to check.");
+    }
     throw new NativeAnalyzeRequestError(
       "mobile_analyze_network_failed",
       input.locale === "ko"
@@ -201,18 +222,28 @@ export async function submitNativeAnalyze(input: {
       : typeof responsePayload?.code === "string"
         ? responsePayload.code
         : "mobile_analyze_request_failed";
-    const message = typeof responsePayload?.message === "string"
+    const knownMessages: Record<string, [string, string]> = {
+      analysis_request_in_progress: ["이 요청은 이미 처리 중입니다. 새 분석을 만들지 말고 잠시 후 같은 입력으로 확인해 주세요.", "This request is already processing. Wait and check with the same input."],
+      analysis_request_already_completed: ["서버에서 이 요청의 처리가 완료되었습니다. 응답을 다시 받을 수 없는 경우 저장 리포트를 확인해 주세요. 자동으로 새 분석을 실행하지 않습니다.", "The server completed this request. If the response was lost, check your saved reports. A new analysis will not run automatically."],
+      analysis_idempotency_conflict: ["재시도할 입력이 이전 요청과 다릅니다. 새 분석을 명시적으로 시작해 주세요.", "The retry input differs from the original request. Start a new analysis explicitly."],
+      analysis_request_failed: ["이전 요청을 완료하지 못했습니다. 잠시 후 같은 입력으로 확인해 주세요.", "The earlier request did not complete. Wait and check with the same input."]
+    };
+    const message = knownMessages[code]?.[input.locale === "ko" ? 0 : 1] ?? (typeof responsePayload?.message === "string"
       ? responsePayload.message
       : typeof responsePayload?.error === "string" && !responsePayload.error.includes("_")
         ? responsePayload.error
         : input.locale === "ko"
           ? "피부 분석을 완료하지 못했습니다. 다시 시도해 주세요."
-          : "The skin analysis could not be completed. Please try again.";
+          : "The skin analysis could not be completed. Please try again.");
+
+    const headerDelay = response.headers.get("Retry-After");
+    const seconds = responsePayload?.retryAfterSeconds ?? (headerDelay && /^\d+$/.test(headerDelay)
+      ? Number(headerDelay) : headerDelay ? Math.ceil((Date.parse(headerDelay) - Date.now()) / 1000) : null);
 
     throw new NativeAnalyzeRequestError(code, message, {
       status: response.status,
-      retryAfterSeconds: Number.isFinite(Number(responsePayload?.retryAfterSeconds))
-        ? Number(responsePayload?.retryAfterSeconds)
+      retryAfterSeconds: seconds !== null && Number.isFinite(Number(seconds)) && Number(seconds) >= 0
+        ? Number(seconds)
         : null
     });
   }

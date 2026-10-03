@@ -5,6 +5,18 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "apps/mobile/app/_layout.tsx"
+      - "apps/mobile/app/privacy-account.tsx"
+      - "apps/mobile/app/saved-report.tsx"
+      - "apps/mobile/app/premium.tsx"
+      - "apps/mobile/app/auth/callback.tsx"
+      - "apps/mobile/components/NativeAccountDeletionCard.tsx"
+      - "apps/mobile/components/NativePrivacyLinks.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+      - "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx"
+      - "apps/mobile/lib/auth.ts"
+      - "apps/mobile/lib/supabase.ts"
+      - "apps/mobile/lib/account-deletion.ts"
       - "app/account-deletion/**"
       - "app/api/my/account/**"
       - "app/en/account-deletion/**"
@@ -49,6 +61,18 @@ on:
   push:
     branches: [main]
     paths:
+      - "apps/mobile/app/_layout.tsx"
+      - "apps/mobile/app/privacy-account.tsx"
+      - "apps/mobile/app/saved-report.tsx"
+      - "apps/mobile/app/premium.tsx"
+      - "apps/mobile/app/auth/callback.tsx"
+      - "apps/mobile/components/NativeAccountDeletionCard.tsx"
+      - "apps/mobile/components/NativePrivacyLinks.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+      - "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx"
+      - "apps/mobile/lib/auth.ts"
+      - "apps/mobile/lib/supabase.ts"
+      - "apps/mobile/lib/account-deletion.ts"
       - "app/account-deletion/**"
       - "app/api/my/account/**"
       - "app/en/account-deletion/**"

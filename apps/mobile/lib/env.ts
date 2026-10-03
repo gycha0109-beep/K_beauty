@@ -27,6 +27,9 @@ function requireHttpUrl(name: string, value: string) {
   if (url.protocol !== "http:" && url.protocol !== "https:") {
     throw new Error(`${name} must use http or https`);
   }
+  if (url.username || url.password || url.search || url.hash) {
+    throw new Error(`${name} must not contain credentials, query parameters, or fragments`);
+  }
   return url;
 }
 
@@ -39,7 +42,9 @@ function requireProductionTransport(name: string, url: URL) {
     throw new Error(`${name} must use https in production`);
   }
 
-  if (LOCAL_ONLY_HOSTNAMES.has(url.hostname)) {
+  if (LOCAL_ONLY_HOSTNAMES.has(url.hostname) ||
+    /^(?:\[?::1\]?|0\.0\.0\.0|127\.|10\.|192\.168\.|169\.254\.|172\.(?:1[6-9]|2\d|3[01])\.)/.test(url.hostname) ||
+    /(?:\.localhost|\.local|\.internal)$/.test(url.hostname)) {
     throw new Error(`${name} cannot target a local-only hostname in production`);
   }
 }
@@ -60,6 +65,9 @@ export function getMobileSupabasePublicEnv(): MobileSupabasePublicEnv {
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
   );
   const parsedSupabaseUrl = requireHttpUrl("EXPO_PUBLIC_SUPABASE_URL", supabaseUrl);
+  if (supabaseAnonKey.startsWith("sb_secret_")) {
+    throw new Error("EXPO_PUBLIC_SUPABASE_ANON_KEY must be a public client key");
+  }
 
   requireProductionTransport("EXPO_PUBLIC_SUPABASE_URL", parsedSupabaseUrl);
 

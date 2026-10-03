@@ -19,7 +19,7 @@ const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "Native
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
 const mobileCiWorkflowSource = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ci.yml"), "utf8");
 const nativeShellWorkflowSource = readFileSync(
-  join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"),
+  join(repoRoot, ".github", "workflows", "mobile-android-runtime.yml"),
   "utf8"
 );
 
@@ -128,12 +128,12 @@ assert.match(
 assert.match(
   nativeShellWorkflowSource,
   /npm run mobile:prebuild:android/,
-  "Native Shell CI must exercise Expo native autolinking for MOBILE-6"
+  "Android Runtime CI must exercise Expo native autolinking for MOBILE-6"
 );
 assert.match(
   nativeShellWorkflowSource,
   /npm run verify:mobile-native/,
-  "Native Shell CI must verify the generated Android shell for MOBILE-6"
+  "Android Runtime CI must verify the generated Android shell for MOBILE-6"
 );
 
 console.log("MOBILE_FACE_GUIDANCE_NATIVE_MODULE=PASS");
