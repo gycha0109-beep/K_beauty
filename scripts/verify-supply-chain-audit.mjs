@@ -224,6 +224,35 @@ function validateTemporaryAdvisoryExceptions(name, report) {
     .sort();
   const expectedPackages = [...expectedPackageSet].sort();
 
+  if (
+    JSON.stringify(highOrCriticalPackages) !==
+    JSON.stringify(expectedPackages)
+  ) {
+    const diagnostic =
+      Object.fromEntries(
+        highOrCriticalPackages.map(
+          (packageName) => [
+            packageName,
+            collectLeafAdvisories(
+              packageName,
+              report
+            ).filter(
+              (leaf) =>
+                ["high", "critical"].includes(
+                  leaf.severity
+                )
+            )
+          ]
+        )
+      );
+
+    console.log(
+      `SUPPLY_CHAIN_SCOPED_EXCEPTION_DIAGNOSTIC_${name}=${JSON.stringify(
+        diagnostic
+      )}`
+    );
+  }
+
   assert.deepEqual(
     highOrCriticalPackages,
     expectedPackages,
