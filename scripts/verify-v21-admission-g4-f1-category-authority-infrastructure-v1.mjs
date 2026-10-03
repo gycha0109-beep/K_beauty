@@ -43,7 +43,7 @@ for(const marker of [
   "set search_path = ''",
   "recommendation_admission_reader_owner",
   "recommendation_admission_runtime",
-  "g4_f1_admission_reader_fation_taxonomy_select_v1",
+  "data_ai29c_d5c_admission_reader_taxonomy_select_v1",
   "g4_f1_admission_reader_category_review_select_v1",
   "g4_f1_admission_reader_taxonomy_version_select_v1",
   "G4_F1_RUNTIME_RAW_SELECT_FORBIDDEN",
@@ -85,10 +85,21 @@ for(const forbidden of [
 assert.ok(
   d5c.includes("data_ai29c_d5c_admission_reader_taxonomy_select_v1")
 );
-assert.equal(
+assert.ok(
   migration.includes(
-    "drop policy if exists data_ai29c_d5c_admission_reader_taxonomy_select_v1"
-  ),
+    "drop policy if exists\n  data_ai29c_d5c_admission_reader_taxonomy_select_v1"
+  )
+);
+for(const productId of [
+  "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+  "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+  "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17",
+  "da5df70c-8cdd-4eb2-93b6-ede46c2f171d"
+]){
+  assert.ok(migration.includes(productId));
+}
+assert.equal(
+  migration.includes("g4_f1_admission_reader_fation_taxonomy_select_v1"),
   false
 );
 
@@ -115,8 +126,25 @@ assert.equal(
   false
 );
 
-assert.equal(evidence.security.existing_d5c_policy_preserved,true);
-assert.equal(evidence.security.fation_taxonomy_policy_additive,true);
+assert.equal(evidence.security.existing_d5c_scope_preserved,true);
+assert.equal(evidence.security.taxonomy_reader_policy_mode,"single_exact_union_4");
+assert.equal(evidence.security.taxonomy_reader_product_ids.length,4);
+assert.equal(evidence.security.postgres_reader_owner_membership_preserved,true);
+assert.deepEqual(
+  evidence.security.ledger_fk_indexes,
+  ["product_id","candidate_id","supersedes_review_id","reviewed_by"]
+);
+assert.equal(
+  migration.includes("grant recommendation_admission_reader_owner to postgres"),
+  false
+);
+assert.equal(
+  migration.includes("revoke recommendation_admission_reader_owner from postgres"),
+  false
+);
+assert.ok(
+  migration.includes("G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_REQUIRED")
+);
 assert.equal(evidence.security.service_role_direct_ledger_access,false);
 assert.equal(evidence.security.runtime_raw_ledger_select,false);
 assert.equal(evidence.mutation_boundary.g3_runtime_wired,false);
