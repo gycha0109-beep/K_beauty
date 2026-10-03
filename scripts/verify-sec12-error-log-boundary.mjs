@@ -199,7 +199,7 @@ const FULL_REPORT_SESSION_POST_TERMINAL_SIGNATURES = Object.freeze([
 const SENSITIVE_ROUTE_HANDLER_BINDINGS = Object.freeze([
   Object.freeze({ id: "app/api/analyze/route.js::POST", path: "app/api/analyze/route.js", method: "POST", expectedTerminalPaths: 9 }),
   Object.freeze({ id: "app/api/face-reading/route.js::POST", path: "app/api/face-reading/route.js", method: "POST", expectedTerminalPaths: 10 }),
-  Object.freeze({ id: "app/api/face-lab-simulation-test/route.js::POST", path: "app/api/face-lab-simulation-test/route.js", method: "POST", expectedTerminalPaths: 16 }),
+  Object.freeze({ id: "app/api/face-lab-simulation-test/route.js::POST", path: "app/api/face-lab-simulation-test/route.js", method: "POST", expectedTerminalPaths: 17 }),
   Object.freeze({ id: "app/api/face-lab-simulation-review-test/route.js::POST", path: "app/api/face-lab-simulation-review-test/route.js", method: "POST", expectedTerminalPaths: 13 }),
   Object.freeze({
     id: "app/api/full-report/route.js::POST",
