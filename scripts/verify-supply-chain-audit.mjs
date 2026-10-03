@@ -79,12 +79,20 @@ const TEMPORARY_ADVISORY_EXCEPTIONS = Object.freeze([
     lockPath: "node_modules/node-forge",
     lockedVersion: "1.4.0",
     expiresAt: "2026-10-16T00:00:00.000Z",
-    propagatedHighPackages: Object.freeze([
-      "@expo/cli",
-      "@expo/code-signing-certificates",
-      "expo",
-      "node-forge",
-    ]),
+    propagatedHighPackages: Object.freeze({
+      production: Object.freeze([
+        "@expo/cli",
+        "@expo/code-signing-certificates",
+        "expo",
+        "node-forge",
+      ]),
+      all: Object.freeze([
+        "@expo/cli",
+        "@expo/code-signing-certificates",
+        "expo",
+        "node-forge",
+      ]),
+    }),
   }),
   Object.freeze({
     id: "GHSA-vfj7-8cjw-p6xm",
@@ -94,25 +102,49 @@ const TEMPORARY_ADVISORY_EXCEPTIONS = Object.freeze([
     lockPath: "node_modules/braces",
     lockedVersion: "3.0.3",
     expiresAt: "2026-10-10T00:00:00.000Z",
-    propagatedHighPackages: Object.freeze([
-      "@expo/cli",
-      "@expo/metro",
-      "@expo/metro-config",
-      "@expo/metro-file-map",
-      "@react-native/community-cli-plugin",
-      "@react-native/metro-config",
-      "@react-native/virtualized-lists",
-      "braces",
-      "expo",
-      "metro",
-      "metro-config",
-      "metro-file-map",
-      "metro-transform-worker",
-      "micromatch",
-      "react-native",
-      "react-native-reanimated",
-      "react-native-worklets",
-    ]),
+    propagatedHighPackages: Object.freeze({
+      production: Object.freeze([
+        "@expo/cli",
+        "@expo/metro",
+        "@expo/metro-config",
+        "@expo/metro-file-map",
+        "@react-native/community-cli-plugin",
+        "@react-native/metro-config",
+        "@react-native/virtualized-lists",
+        "braces",
+        "expo",
+        "metro",
+        "metro-config",
+        "metro-file-map",
+        "metro-transform-worker",
+        "micromatch",
+        "react-native",
+        "react-native-reanimated",
+        "react-native-worklets",
+      ]),
+      all: Object.freeze([
+        "@expo/cli",
+        "@expo/metro",
+        "@expo/metro-config",
+        "@expo/metro-file-map",
+        "@react-native/community-cli-plugin",
+        "@react-native/metro-config",
+        "@react-native/virtualized-lists",
+        "braces",
+        "chokidar",
+        "expo",
+        "fast-glob",
+        "metro",
+        "metro-config",
+        "metro-file-map",
+        "metro-transform-worker",
+        "micromatch",
+        "react-native",
+        "react-native-reanimated",
+        "react-native-worklets",
+        "tailwindcss",
+      ]),
+    }),
   }),
 ]);
 
@@ -170,6 +202,18 @@ function collectLeafAdvisories(packageName, report, seen = new Set()) {
   return leaves;
 }
 
+function packagesForTemporaryException(exception, name) {
+  const packages =
+    exception?.propagatedHighPackages?.[name];
+
+  assert.ok(
+    Array.isArray(packages),
+    `${name}: temporary advisory exception ${exception?.id || "unknown"} has no scoped propagated package set`,
+  );
+
+  return packages;
+}
+
 function leafMatchesTemporaryException(leaf, exception) {
   return (
     leaf?.source === exception.source &&
@@ -203,7 +247,7 @@ function validateTemporaryAdvisoryExceptions(name, report) {
       `${name}: ${exception.package} lock version changed; remove or reassess temporary advisory exception ${exception.id}`,
     );
 
-    for (const packageName of exception.propagatedHighPackages) {
+    for (const packageName of packagesForTemporaryException(exception, name)) {
       expectedPackageSet.add(packageName);
     }
 
@@ -214,7 +258,7 @@ function validateTemporaryAdvisoryExceptions(name, report) {
       affectedRange: exception.affectedRange,
       expiresAt: exception.expiresAt,
       lockedVersion,
-      packages: [...exception.propagatedHighPackages].sort(),
+      packages: [...packagesForTemporaryException(exception, name)].sort(),
     });
   }
 
@@ -223,35 +267,6 @@ function validateTemporaryAdvisoryExceptions(name, report) {
     .map(([packageName]) => packageName)
     .sort();
   const expectedPackages = [...expectedPackageSet].sort();
-
-  if (
-    JSON.stringify(highOrCriticalPackages) !==
-    JSON.stringify(expectedPackages)
-  ) {
-    const diagnostic =
-      Object.fromEntries(
-        highOrCriticalPackages.map(
-          (packageName) => [
-            packageName,
-            collectLeafAdvisories(
-              packageName,
-              report
-            ).filter(
-              (leaf) =>
-                ["high", "critical"].includes(
-                  leaf.severity
-                )
-            )
-          ]
-        )
-      );
-
-    console.log(
-      `SUPPLY_CHAIN_SCOPED_EXCEPTION_DIAGNOSTIC_${name}=${JSON.stringify(
-        diagnostic
-      )}`
-    );
-  }
 
   assert.deepEqual(
     highOrCriticalPackages,
@@ -272,7 +287,7 @@ function validateTemporaryAdvisoryExceptions(name, report) {
     for (const leaf of highLeaves) {
       const matched = TEMPORARY_ADVISORY_EXCEPTIONS.some(
         (exception) =>
-          exception.propagatedHighPackages.includes(packageName) &&
+          packagesForTemporaryException(exception, name).includes(packageName) &&
           leafMatchesTemporaryException(leaf, exception),
       );
 
@@ -284,7 +299,7 @@ function validateTemporaryAdvisoryExceptions(name, report) {
   }
 
   for (const exception of TEMPORARY_ADVISORY_EXCEPTIONS) {
-    for (const packageName of exception.propagatedHighPackages) {
+    for (const packageName of packagesForTemporaryException(exception, name)) {
       const highLeaves = collectLeafAdvisories(packageName, report).filter((leaf) =>
         ["high", "critical"].includes(leaf.severity),
       );
