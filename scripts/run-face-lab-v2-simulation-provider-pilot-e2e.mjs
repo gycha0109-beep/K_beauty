@@ -465,6 +465,16 @@ async function main() {
     process.env.FACE_LAB_E2E_CALIBRATION_STAGE ||
       "G-E2B"
   ).trim();
+  const liveApproval = String(
+    process.env.FACE_LAB_E2E_LIVE_APPROVAL ||
+      ""
+  ).trim();
+  const maxOutputs = parseBoundedInt(
+    "FACE_LAB_E2E_MAX_OUTPUTS",
+    process.env.CI ? 1 : 8,
+    1,
+    8
+  );
 
   if (basename(privateRoot) !== "private") {
     throw new Error("face_lab_e2e_private_root_must_be_private");
@@ -509,13 +519,33 @@ async function main() {
     );
   }
 
+  if (
+    liveApproval !==
+      "I_ACCEPT_OPENAI_IMAGE_COST"
+  ) {
+    throw new Error(
+      "face_lab_e2e_live_cost_approval_required"
+    );
+  }
+
+  const expectedCaseCount =
+    intentCount *
+    generationsPerIntent;
+
+  if (
+    expectedCaseCount >
+    maxOutputs
+  ) {
+    throw new Error(
+      `face_lab_e2e_output_budget_exceeded_${expectedCaseCount}_gt_${maxOutputs}`
+    );
+  }
+
   const [sourceBytes, publicConfig] = await Promise.all([
     readFile(sourcePath),
     discoverPublicConfig(baseUrl)
   ]);
   if (!sourceBytes.length) throw new Error("source_image_empty");
-
-  const expectedCaseCount = intentCount * generationsPerIntent;
   const bootstrapUsers = process.env.FACE_LAB_E2E_BOOTSTRAP_USERS === "1";
   const credentialsA = {
     email: resolveE2EAuthEmail(
