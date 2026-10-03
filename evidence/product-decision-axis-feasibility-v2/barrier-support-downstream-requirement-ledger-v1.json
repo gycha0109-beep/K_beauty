@@ -1,0 +1,116 @@
+{
+  "version": "barrier-support-downstream-requirement-ledger-v1",
+  "stage": "V2.1-8H-R2",
+  "axis_key": "barrier_support",
+  "authority": {
+    "mapper": "scripts/product-evidence/product-decision-axis-cross-category-v1.mjs",
+    "offline_shadow": "scripts/product-evidence/product-decision-axis-shadow-recommendation-v1.mjs",
+    "production_engine": "lib/skin-match-decision-engine-core.js",
+    "registry": "evidence/product-evidence-decision-axis-v1/cross-category-registry-v1.json"
+  },
+  "requirements": [
+    {
+      "requirement_id": "R01",
+      "description": "detect governed official barrier-support claim state",
+      "required_information_type": "BOOLEAN_CATEGORICAL_STATE",
+      "numeric_magnitude_required": "NO",
+      "status": "IMPLEMENTED_MAPPER",
+      "reason": "barrier_support_claim is boolean claim authority and mapper already exposes claim_only"
+    },
+    {
+      "requirement_id": "R02",
+      "description": "preserve primary usage role without treating role as efficacy",
+      "required_information_type": "CONTEXT_ENUM",
+      "numeric_magnitude_required": "NO",
+      "status": "IMPLEMENTED_MAPPER",
+      "reason": "primary_use_role is context only and mapper explicitly excludes it from efficacy contribution"
+    },
+    {
+      "requirement_id": "R03",
+      "description": "determine whether barrier_support is relevant to current user concern context",
+      "required_information_type": "CATEGORICAL_RELATION",
+      "numeric_magnitude_required": "NO",
+      "status": "IMPLEMENTED_OFFLINE_SHADOW",
+      "reason": "barrier and dehydration concern relevance already includes barrier_support"
+    },
+    {
+      "requirement_id": "R04",
+      "description": "identify moisturizer as preferred product slot for barrier/dehydration priority",
+      "required_information_type": "CATEGORY_RELATION",
+      "numeric_magnitude_required": "NO",
+      "status": "IMPLEMENTED_LEGACY_RUNTIME",
+      "reason": "preferred-slot logic is categorical and does not require Product Fact effect magnitude"
+    },
+    {
+      "requirement_id": "R05",
+      "description": "emit provenance-grounded explanation that an official barrier-support claim is established",
+      "required_information_type": "CATEGORICAL_STATE_PLUS_LINEAGE",
+      "numeric_magnitude_required": "NO",
+      "status": "FEASIBLE",
+      "reason": "Current Fact Instance, Confirmation and proposition lineage are available for all six established claims"
+    },
+    {
+      "requirement_id": "R06",
+      "description": "prevent duplicate contribution with legacy barrier concern / ingredient / review pathways",
+      "required_information_type": "DEDUPLICATION_CLASSIFICATION",
+      "numeric_magnitude_required": "NO",
+      "status": "REQUIRED_FOR_ANY_SHADOW",
+      "reason": "observed overlap is concern 5/6, ingredient 6/6, review 4/6 among established claim products"
+    },
+    {
+      "requirement_id": "R07",
+      "description": "add Product Fact barrier claim as a numeric recommendation bonus",
+      "required_information_type": "NUMERIC_MAGNITUDE",
+      "numeric_magnitude_required": "YES",
+      "status": "NOT_AUTHORIZED",
+      "reason": "official claim is explicitly distinct from measured barrier improvement and legacy engine already has independent numeric barrier pathways"
+    },
+    {
+      "requirement_id": "R08",
+      "description": "rank barrier products as stronger/weaker using barrier_support_claim",
+      "required_information_type": "ORDINAL_MAGNITUDE",
+      "numeric_magnitude_required": "YES_OR_ORDINAL_ANCHOR",
+      "status": "NOT_ESTABLISHED",
+      "reason": "boolean claim presence and primary_use_role provide no effect-strength ordering"
+    },
+    {
+      "requirement_id": "R09",
+      "description": "estimate measured barrier improvement magnitude",
+      "required_information_type": "NUMERIC_EFFECT_MAGNITUDE",
+      "numeric_magnitude_required": "YES",
+      "status": "NOT_SUPPORTED_BY_CURRENT_FACT",
+      "reason": "barrier_support_claim is claim authority, not measured outcome magnitude"
+    },
+    {
+      "requirement_id": "R10",
+      "description": "combine product claim state with user barrier/dehydration priority",
+      "required_information_type": "DOWNSTREAM_CONTEXT_RELATION",
+      "numeric_magnitude_required": "NO",
+      "status": "FEASIBLE_SHADOW_ONLY",
+      "reason": "user concern state remains downstream and can annotate relevance without changing rank"
+    },
+    {
+      "requirement_id": "R11",
+      "description": "distinguish supported false from missing/unknown barrier claim",
+      "required_information_type": "CATEGORICAL_TRUTH_STATE",
+      "numeric_magnitude_required": "NO",
+      "status": "REQUIRED",
+      "reason": "supported(false) requires explicit-negative evidence; missing Current must remain unknown"
+    },
+    {
+      "requirement_id": "R12",
+      "description": "make final recommendation eligibility/rank decision from barrier Product Fact",
+      "required_information_type": "FINAL_POLICY_DECISION",
+      "numeric_magnitude_required": "NOT_ESTABLISHED",
+      "status": "OUT_OF_SCOPE_SEPARATE_AUTHORITY",
+      "reason": "Fact adoption and PDA shadow do not authorize Production Recommendation consumption"
+    }
+  ],
+  "summary": {
+    "total_requirements": 12,
+    "numeric_or_ordinal_required_but_not_authorized": 3,
+    "non_numeric_or_context_requirements": 9,
+    "direct_score_requirement_authorized": false,
+    "non_numeric_shadow_need_established": true
+  }
+}
