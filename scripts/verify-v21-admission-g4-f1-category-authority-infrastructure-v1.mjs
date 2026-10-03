@@ -72,8 +72,12 @@ for(const forbidden of [
   /update\s+public\.catalog_taxonomy_versions/i,
   /insert\s+into\s+public\.product_fact_/i,
   /update\s+public\.product_fact_/i,
-  /insert\s+into\s+public\.recommendation/i,
-  /update\s+public\.recommendation/i,
+  /insert\s+into\s+public\.recommendations\b/i,
+  /update\s+public\.recommendations\b/i,
+  /insert\s+into\s+public\.recommendation_logs\b/i,
+  /update\s+public\.recommendation_logs\b/i,
+  /insert\s+into\s+public\.recommendation_shadow_evidence_daily_v1\b/i,
+  /update\s+public\.recommendation_shadow_evidence_daily_v1\b/i,
 ]){
   assert.equal(forbidden.test(migration),false,`forbidden mutation: ${forbidden}`);
 }
