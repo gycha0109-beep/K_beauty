@@ -1,0 +1,199 @@
+{
+  "version": "v21-admission-g4-f1-d1-production-migration-preflight-v1",
+  "stage": "V2.1-ADMISSION-G4-F1-D1",
+  "decision": "V21_ADMISSION_G4_F1_D1_PRODUCTION_MIGRATION_PREFLIGHT_PASS",
+  "captured_on": "2026-10-03",
+  "source_main_sha": "5de0b28724ff63be70f72178dab951384d50d0d9",
+  "mode": "READ_ONLY_PRODUCTION_PREFLIGHT",
+  "production_write_count": 0,
+  "migration": {
+    "path": "supabase/migrations/20261003160200_v21_admission_g4_f1_category_authority_v1.sql",
+    "production_history_present": false,
+    "production_apply_executed": false
+  },
+  "production_object_absence": {
+    "ledger_table": false,
+    "admin_writer": false,
+    "protected_reader": false,
+    "g4_f1_policies": 0
+  },
+  "target_prestate": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "legacy_category": null,
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "entity_kind_term_id": "catalog-taxonomy-v1:entity_kind:cosmetic",
+    "domain_term_id": "catalog-taxonomy-v1:domain:skincare",
+    "recommendation_family_term_id": "catalog-taxonomy-v1:recommendation_family:treatment",
+    "category_term_id": "catalog-taxonomy-v1:category:treatment",
+    "assignment_state": "shadow",
+    "assignment_method": "source_classification",
+    "legacy_projection_key": null,
+    "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+    "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "taxonomy_lifecycle_state": "shadow",
+    "taxonomy_authority_mode": "shadow_only"
+  },
+  "role_prestate": {
+    "recommendation_admission_reader_owner": {
+      "login": false,
+      "inherit": false,
+      "superuser": false,
+      "bypassrls": false,
+      "public_schema_create": false
+    },
+    "recommendation_admission_runtime": {
+      "login": true,
+      "inherit": false,
+      "superuser": false,
+      "bypassrls": false,
+      "public_schema_create": false,
+      "raw_taxonomy_select": false,
+      "raw_taxonomy_version_select": false
+    },
+    "postgres_reader_owner_membership": {
+      "member": true,
+      "admin_option": true,
+      "grantor": "supabase_admin"
+    }
+  },
+  "existing_authority_prestate": {
+    "protected_pf_reader": {
+      "signature": "read_recommendation_admission_authority_v1(uuid)",
+      "owner": "recommendation_admission_reader_owner",
+      "security_definer": true
+    },
+    "admin_helpers": {
+      "actor_gate": "admin_require_product_review_actor(uuid,text)",
+      "sha256": "admin_product_review_sha256_json(jsonb)",
+      "audit": "record_admin_audit_event(uuid,text,text,text,text,jsonb,jsonb,text,text,jsonb)",
+      "audit_result_type": "uuid"
+    },
+    "d5c_taxonomy_policy": {
+      "policy_name": "data_ai29c_d5c_admission_reader_taxonomy_select_v1",
+      "role": "recommendation_admission_reader_owner",
+      "action": "SELECT",
+      "exact_product_ids": [
+        "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+        "b90bf992-07ae-4f49-a3a4-d90ea6d4a858",
+        "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17"
+      ]
+    }
+  },
+  "database_compatibility": {
+    "postgres_version": "17.6",
+    "gen_random_uuid_available": true,
+    "hashtextextended_available": true
+  },
+  "advisor_baseline": {
+    "security": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 71
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 2
+      },
+      {
+        "name": "auth_allow_anonymous_sign_ins",
+        "level": "WARN",
+        "count": 1
+      },
+      {
+        "name": "auth_allow_anonymous_sign_ins",
+        "level": "WARN",
+        "count": 1
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1
+      }
+    ],
+    "performance": [
+      {
+        "name": "unindexed_foreign_keys",
+        "level": "INFO",
+        "count": 104
+      },
+      {
+        "name": "auth_rls_initplan",
+        "level": "WARN",
+        "count": 19
+      },
+      {
+        "name": "unused_index",
+        "level": "INFO",
+        "count": 30
+      },
+      {
+        "name": "multiple_permissive_policies",
+        "level": "WARN",
+        "count": 1
+      }
+    ],
+    "g4_specific_findings_before_apply": 0
+  },
+  "d1_corrections": [
+    {
+      "id": "PRESERVE_EXISTING_READER_OWNER_MEMBERSHIP",
+      "finding": "postgres is already a member of recommendation_admission_reader_owner with admin option",
+      "correction": "migration no longer grants then revokes this pre-existing membership; it asserts membership exists and preserves it"
+    },
+    {
+      "id": "SINGLE_BOUNDED_TAXONOMY_POLICY",
+      "finding": "a separate FATION permissive SELECT policy would create an additional same-role/action policy",
+      "correction": "reuse the existing D5C policy name with the exact original 3 IDs plus FATION, keeping one bounded four-product policy"
+    },
+    {
+      "id": "INDEX_LEDGER_FOREIGN_KEYS",
+      "finding": "new ledger foreign keys should not add unindexed_foreign_keys advisor findings",
+      "correction": "add indexes for product_id, candidate_id, supersedes_review_id, and reviewed_by"
+    }
+  ],
+  "expected_post_apply": {
+    "reviewed_grant_rows": 0,
+    "products_category": null,
+    "taxonomy_assignment_unchanged": true,
+    "taxonomy_lifecycle_state": "shadow",
+    "taxonomy_authority_mode": "shadow_only",
+    "g3_runtime_wired": false,
+    "recommendation_admission_mutated": false,
+    "category_reader_initial_result": {
+      "status": "NO_AUTHORITY",
+      "reason": "CURRENT_CATEGORY_REVIEW_MISSING"
+    },
+    "security_advisor": {
+      "new_g4_security_findings": 0,
+      "authenticated_security_definer_delta": 0,
+      "ledger_rls_no_policy_finding": false,
+      "catalog_taxonomy_versions_rls_no_policy_finding": false
+    },
+    "performance_advisor": {
+      "new_multiple_permissive_policy_for_taxonomy_reader": false,
+      "new_unindexed_foreign_key_for_ledger": false,
+      "unused_index_info_may_appear": true
+    }
+  },
+  "apply_stop_conditions": [
+    "FATION products.category is non-null",
+    "FATION taxonomy assignment digest is not eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "catalog-taxonomy-v1 is not shadow/shadow_only",
+    "G4-F1 ledger/writer/reader already exists",
+    "G4-F1 migration version is already present in Production migration history",
+    "existing D5C policy no longer represents exactly the original three D5C product IDs",
+    "postgres loses membership in recommendation_admission_reader_owner",
+    "recommendation_admission_runtime gains raw taxonomy/version access before migration",
+    "main migration file drifts after this preflight"
+  ],
+  "authority_boundary": {
+    "production_migration_apply_authorized": false,
+    "reviewed_grant_write_authorized": false,
+    "g3_runtime_wiring_authorized": false,
+    "recommendation_cutover_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-F1-D2_PRODUCTION_MIGRATION_APPLY"
+}

@@ -143,6 +143,22 @@ create index
     reviewed_at desc
   );
 
+create index
+  recommendation_category_authority_product_idx
+  on public.recommendation_category_authority_reviews(product_id);
+
+create index
+  recommendation_category_authority_candidate_idx
+  on public.recommendation_category_authority_reviews(candidate_id);
+
+create index
+  recommendation_category_authority_supersedes_idx
+  on public.recommendation_category_authority_reviews(supersedes_review_id);
+
+create index
+  recommendation_category_authority_reviewer_idx
+  on public.recommendation_category_authority_reviews(reviewed_by);
+
 alter table public.recommendation_category_authority_reviews
   enable row level security;
 
@@ -183,7 +199,9 @@ create policy g4_f1_admission_reader_category_review_select_v1
     product_id = 'da5df70c-8cdd-4eb2-93b6-ede46c2f171d'::uuid
   );
 
--- Preserve the existing D5C three-product policy. Add only the FATION frontier.
+-- Preserve D5C semantics while extending the exact bounded reader set
+-- from three sunscreen canaries to those same three IDs plus FATION.
+-- Keep one permissive SELECT policy for this role/action.
 revoke all privileges on public.product_catalog_taxonomy_assignments
   from recommendation_admission_runtime;
 
@@ -195,14 +213,19 @@ grant select (
   to recommendation_admission_reader_owner;
 
 drop policy if exists
-  g4_f1_admission_reader_fation_taxonomy_select_v1
+  data_ai29c_d5c_admission_reader_taxonomy_select_v1
   on public.product_catalog_taxonomy_assignments;
-create policy g4_f1_admission_reader_fation_taxonomy_select_v1
+create policy data_ai29c_d5c_admission_reader_taxonomy_select_v1
   on public.product_catalog_taxonomy_assignments
   for select
   to recommendation_admission_reader_owner
   using (
-    product_id = 'da5df70c-8cdd-4eb2-93b6-ede46c2f171d'::uuid
+    product_id in (
+      'a6994fcd-302f-4e63-acbe-91a3f17a5a65'::uuid,
+      'b90bf992-07ae-4f49-a3a4-d90ea6d4a858'::uuid,
+      '7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17'::uuid,
+      'da5df70c-8cdd-4eb2-93b6-ede46c2f171d'::uuid
+    )
   );
 
 revoke all privileges on public.catalog_taxonomy_versions
@@ -905,11 +928,22 @@ grant execute on function
   to recommendation_admission_runtime;
 
 -- Transfer only the reader to the existing narrow NOLOGIN reader owner.
+-- Production already grants postgres membership in this owner role. Preserve it.
+do $
+begin
+  if not pg_has_role(
+    'postgres',
+    'recommendation_admission_reader_owner',
+    'MEMBER'
+  ) then
+    raise exception 'G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_REQUIRED';
+  end if;
+end
+$;
+
 grant create on schema public to recommendation_admission_reader_owner;
-grant recommendation_admission_reader_owner to postgres;
 alter function public.read_recommendation_category_authority_v1(uuid)
   owner to recommendation_admission_reader_owner;
-revoke recommendation_admission_reader_owner from postgres;
 revoke create on schema public from recommendation_admission_reader_owner;
 
 do $$
@@ -920,6 +954,14 @@ begin
     'CREATE'
   ) then
     raise exception 'G4_F1_READER_OWNER_SCHEMA_CREATE_FORBIDDEN';
+  end if;
+
+  if not pg_has_role(
+    'postgres',
+    'recommendation_admission_reader_owner',
+    'MEMBER'
+  ) then
+    raise exception 'G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_MUST_PERSIST';
   end if;
 
   if has_table_privilege(
@@ -999,19 +1041,25 @@ begin
       and p.tablename = 'product_catalog_taxonomy_assignments'
       and p.policyname =
         'data_ai29c_d5c_admission_reader_taxonomy_select_v1'
+      and p.roles = array['recommendation_admission_reader_owner']::name[]
+      and p.cmd = 'SELECT'
+      and p.qual like '%a6994fcd-302f-4e63-acbe-91a3f17a5a65%'
+      and p.qual like '%b90bf992-07ae-4f49-a3a4-d90ea6d4a858%'
+      and p.qual like '%7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17%'
+      and p.qual like '%da5df70c-8cdd-4eb2-93b6-ede46c2f171d%'
   ) then
-    raise exception 'G4_F1_EXISTING_D5C_POLICY_MISSING';
+    raise exception 'G4_F1_BOUNDED_FOUR_PRODUCT_TAXONOMY_POLICY_INVALID';
   end if;
 
-  if not exists (
-    select 1
+  if (
+    select count(*)::integer
     from pg_policies p
     where p.schemaname = 'public'
       and p.tablename = 'product_catalog_taxonomy_assignments'
-      and p.policyname =
-        'g4_f1_admission_reader_fation_taxonomy_select_v1'
-  ) then
-    raise exception 'G4_F1_FATION_TAXONOMY_POLICY_MISSING';
+      and p.roles = array['recommendation_admission_reader_owner']::name[]
+      and p.cmd = 'SELECT'
+  ) <> 1 then
+    raise exception 'G4_F1_TAXONOMY_READER_POLICY_CARDINALITY_INVALID';
   end if;
 
   if (select count(*)::integer
