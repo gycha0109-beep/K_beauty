@@ -35,7 +35,7 @@ assert.equal(
 );
 
 for(const marker of [
-  "create table if not exists public.recommendation_category_authority_reviews",
+  "create table public.recommendation_category_authority_reviews",
   "alter table public.recommendation_category_authority_reviews\n  enable row level security",
   "admin_register_recommendation_category_authority_review_v1",
   "read_recommendation_category_authority_v1",
