@@ -7,6 +7,7 @@ const root = process.cwd();
 const files = {
   identity: "lib/admin/trust-subject-identity.js",
   orchestration: "lib/admin/trust-subject-registration.js",
+  reprocessContract: "lib/admin/trust-subject-reprocess-contract.js",
   preflightRoute:
     "app/api/admin/trust/subject-registration/preflight/route.js",
   confirmRoute:
@@ -18,6 +19,10 @@ const files = {
     "supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql",
   phase2:
     "supabase/migrations/20260915112124_trust_phase2_subject_resolution_v1.sql",
+  registryPinnedProcessor:
+    "supabase/migrations/20261002142611_v21_8g0_registry_pinned_reconciliation_v1.sql",
+  identityPreservingProcessor:
+    "supabase/migrations/20261002153238_v21_8g1_identity_authority_preservation_v1.sql",
   workflow: ".github/workflows/trust-phase5b-subject-registration.yml",
   currentHealth: "scripts/verify-current-main-health.mjs"
 };
@@ -103,14 +108,36 @@ for (const forbidden of [
 const rpcNames = [
   ...source.orchestration.matchAll(/\.rpc\(\s*["']([^"']+)["']/g)
 ].map((match) => match[1]);
-check(rpcNames.length === 2, "orchestration must call exactly two RPCs");
+check(rpcNames.length === 1, "orchestration must call exactly one direct RPC");
 check(
   rpcNames[0] === "admin_register_product_fact_subject_v1",
   "only existing governed Subject writer may register the Subject"
 );
 check(
-  rpcNames[1] === "process_catalog_trust_product_v1",
-  "post-registration refresh must reuse canonical TRUST processor"
+  source.orchestration.includes("runTrustSubjectRegistryPinnedReprocess"),
+  "post-registration refresh must use the registry-pinned reprocess helper"
+);
+check(
+  !source.orchestration.includes("process_catalog_trust_product_v1"),
+  "Subject registration must not call the dynamic latest-registry processor"
+);
+for (const token of [
+  '"process_catalog_trust_product_v3"',
+  '"product-fact-registry-cross-category-v1"',
+  '"v21-8g1-identity-authority-preserving-v1"',
+  "p_registry_version: TRUST_SUBJECT_REPROCESS_REGISTRY_VERSION",
+  'value.registry_selection === "explicit"'
+]) {
+  check(
+    source.reprocessContract.includes(token),
+    `registry-pinned reprocess contract missing: ${token}`
+  );
+}
+check(
+  source.orchestration.includes(
+    "trust_subject_registration_resolution_refresh_invalid_result"
+  ),
+  "unexpected reprocess result must fail closed"
 );
 
 check(
@@ -131,7 +158,23 @@ check(
   source.phase2.includes(
     "create or replace function public.process_catalog_trust_product_v1("
   ),
-  "canonical TRUST processor missing"
+  "historical TRUST v1 processor missing"
+);
+check(
+  source.registryPinnedProcessor.includes(
+    "create or replace function public.process_catalog_trust_product_v2("
+  ) &&
+    source.registryPinnedProcessor.includes("'registry_selection', 'explicit'"),
+  "explicit-registry TRUST processor missing"
+);
+check(
+  source.identityPreservingProcessor.includes(
+    "create or replace function public.process_catalog_trust_product_v3("
+  ) &&
+    source.identityPreservingProcessor.includes(
+      "v21-8g1-identity-authority-preserving-v1"
+    ),
+  "identity-preserving explicit-registry TRUST processor missing"
 );
 
 for (const token of [
