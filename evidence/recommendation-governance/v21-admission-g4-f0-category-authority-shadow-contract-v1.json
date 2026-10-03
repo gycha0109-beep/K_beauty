@@ -1,0 +1,113 @@
+{
+  "version": "v21-admission-g4-f0-category-authority-shadow-contract-v1",
+  "stage": "V2.1-ADMISSION-G4-F0",
+  "decision": "V21_ADMISSION_G4_F0_CATEGORY_AUTHORITY_SHADOW_CONTRACT_READY",
+  "captured_on": "2026-10-03",
+  "source_main_sha": "4cf58a6290d1ec0fd5c9074b89fd5b4c0b72fc4d",
+  "mode": "REPOSITORY_ONLY_SHADOW_NO_DB_WRITE",
+  "parallel_lane_reason": "FATION Product Fact Subject lane is blocked on unresolved formulation authority; category authority can be specified independently without crossing Recommendation admission.",
+  "target": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "brand": "파티온",
+    "name": "노스카나인 트러블 세럼",
+    "legacy_category": null,
+    "canonical_taxonomy": {
+      "taxonomy_version": "catalog-taxonomy-v1",
+      "assignment_state": "shadow",
+      "assignment_method": "source_classification",
+      "category_term_id": "catalog-taxonomy-v1:category:treatment",
+      "recommendation_family_term_id": "catalog-taxonomy-v1:recommendation_family:treatment",
+      "lifecycle_state": "shadow",
+      "authority_mode": "shadow_only",
+      "legacy_projection_key": null,
+      "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+      "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment",
+      "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39"
+    },
+    "exact_equivalence": {
+      "projection_present": false,
+      "category_equivalent": null,
+      "exact_equivalent": false
+    }
+  },
+  "architecture": {
+    "product_level_authority": true,
+    "product_fact_subject_dependency": false,
+    "global_taxonomy_activation_required": false,
+    "products_category_backfill_forbidden": true,
+    "existing_assignment_mutation_forbidden": true,
+    "runtime_raw_taxonomy_select_forbidden": true,
+    "g3_runtime_cutover_in_f0": false
+  },
+  "reviewed_grant_contract": {
+    "one_current_grant_per_product": true,
+    "minimum_binding": [
+      "product_id",
+      "taxonomy_version",
+      "category_term_id",
+      "assignment_snapshot_digest",
+      "candidate_id",
+      "source_rule_key",
+      "review_policy_version",
+      "review_state",
+      "is_current"
+    ],
+    "valid_review_state": "established",
+    "supported_initial_admission_categories": [
+      "treatment",
+      "toner_essence",
+      "toner_pad"
+    ],
+    "fail_closed_on": [
+      "assignment digest drift",
+      "candidate drift",
+      "source-rule drift",
+      "taxonomy version drift",
+      "assignment state/method drift",
+      "legacy projection appearance",
+      "taxonomy lifecycle/authority mode drift",
+      "unsupported category",
+      "grant supersession or revocation"
+    ]
+  },
+  "security_reuse": {
+    "runtime_role": "recommendation_admission_runtime",
+    "reader_owner_role": "recommendation_admission_reader_owner",
+    "direct_raw_taxonomy_access_to_runtime": false,
+    "recommended_future_transport": "SECURITY DEFINER product-scoped read owned by narrow NOLOGIN reader owner; EXECUTE only for recommendation_admission_runtime"
+  },
+  "f0_output": {
+    "pure_contract_module": "lib/recommendation-category-authority-shadow-contract.mjs",
+    "fixture": "fixtures/recommendation-governance/g4f0-category-authority-shadow-v1.json",
+    "database_schema_change": false,
+    "production_data_write": false,
+    "recommendation_admission_change": false
+  },
+  "future_stages": [
+    {
+      "stage": "V2.1-ADMISSION-G4-F1",
+      "purpose": "database review-ledger + protected product-scoped reader",
+      "authorized_now": false
+    },
+    {
+      "stage": "V2.1-ADMISSION-G4-F2",
+      "purpose": "shadow dual-read against FATION while G3 production input remains unchanged",
+      "authorized_now": false
+    },
+    {
+      "stage": "V2.1-ADMISSION-G4-G",
+      "purpose": "explicit final category-authority + Product Fact admission cutover",
+      "authorized_now": false
+    }
+  ],
+  "authority_boundary": {
+    "database_migration_authorized": false,
+    "category_grant_write_authorized": false,
+    "category_reader_deployment_authorized": false,
+    "g3_runtime_wiring_authorized": false,
+    "recommendation_admission_cutover_authorized": false,
+    "products_category_mutation_authorized": false,
+    "taxonomy_global_activation_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-F1_CATEGORY_AUTHORITY_LEDGER_AND_PROTECTED_READER"
+}

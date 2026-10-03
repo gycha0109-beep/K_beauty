@@ -1,0 +1,43 @@
+{
+  "version": "v21-admission-g4-f0-category-authority-shadow-fixture-v1",
+  "target": {
+    "product": {
+      "id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+      "legacyCategory": null
+    },
+    "assignment": {
+      "productId": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+      "taxonomyVersion": "catalog-taxonomy-v1",
+      "assignmentState": "shadow",
+      "assignmentMethod": "source_classification",
+      "categoryTermId": "catalog-taxonomy-v1:category:treatment",
+      "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:treatment",
+      "legacyProjectionKey": null,
+      "taxonomyLifecycleState": "shadow",
+      "taxonomyAuthorityMode": "shadow_only",
+      "assignmentSnapshotDigest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+      "candidateId": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+      "sourceRuleKey": "catalog-taxonomy-v1:source:hwahae:treatment"
+    },
+    "reviewedGrant": {
+      "reviewId": "11111111-1111-4111-8111-111111111111",
+      "productId": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+      "taxonomyVersion": "catalog-taxonomy-v1",
+      "categoryTermId": "catalog-taxonomy-v1:category:treatment",
+      "assignmentSnapshotDigest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+      "candidateId": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+      "sourceRuleKey": "catalog-taxonomy-v1:source:hwahae:treatment",
+      "reviewPolicyVersion": "recommendation-category-authority-review-policy-v1",
+      "reviewState": "established",
+      "isCurrent": true
+    }
+  },
+  "expected": {
+    "valid": "CATEGORY_AUTHORITY_SHADOW_RESOLVED",
+    "noGrant": "CATEGORY_AUTHORITY_SHADOW_UNAVAILABLE",
+    "digestDrift": "CATEGORY_AUTHORITY_SHADOW_UNAVAILABLE",
+    "unsupportedSunscreen": "CATEGORY_AUTHORITY_SHADOW_UNAVAILABLE",
+    "legacyProjectionPresent": "CATEGORY_AUTHORITY_SHADOW_UNAVAILABLE",
+    "globalAuthorityDrift": "CATEGORY_AUTHORITY_SHADOW_UNAVAILABLE"
+  }
+}
