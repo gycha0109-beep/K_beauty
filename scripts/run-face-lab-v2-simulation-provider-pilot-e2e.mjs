@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, extname, relative, resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { buildFaceLabV2Canonical } from "../lib/face-lab-v2/canonical-composer.js";
@@ -25,6 +25,27 @@ const REQUIRED_SIMULATION_HEADERS = Object.freeze({
   reviewCaseId: "x-face-lab-review-case-id",
   reviewTicket: "x-face-lab-review-ticket",
   reviewExpiresAt: "x-face-lab-review-expires-at"
+});
+
+const OPTIONAL_SIMULATION_HEADERS = Object.freeze({
+  providerAttemptCount:
+    "x-face-lab-provider-attempts",
+  inputTokens:
+    "x-face-lab-usage-input-tokens",
+  inputImageTokens:
+    "x-face-lab-usage-input-image-tokens",
+  inputTextTokens:
+    "x-face-lab-usage-input-text-tokens",
+  outputTokens:
+    "x-face-lab-usage-output-tokens",
+  outputImageTokens:
+    "x-face-lab-usage-output-image-tokens",
+  totalTokens:
+    "x-face-lab-usage-total-tokens",
+  estimatedCostNanoUsd:
+    "x-face-lab-estimated-cost-nano-usd",
+  pricingVersion:
+    "x-face-lab-cost-pricing-version"
 });
 
 function requiredEnv(name, { trim = true } = {}) {
@@ -396,10 +417,51 @@ async function postSimulation({
   const imageBytes = Buffer.from(await response.arrayBuffer());
   if (!imageBytes.length) throw new Error("simulation_output_empty");
 
+  const telemetry = {};
+
+  for (
+    const [key, header] of
+    Object.entries(
+      OPTIONAL_SIMULATION_HEADERS
+    )
+  ) {
+    const value =
+      response.headers.get(
+        header
+      );
+
+    if (!value) {
+      continue;
+    }
+
+    if (
+      key ===
+      "pricingVersion"
+    ) {
+      telemetry[key] =
+        value;
+      continue;
+    }
+
+    const numeric =
+      Number(value);
+
+    if (
+      Number.isSafeInteger(
+        numeric
+      ) &&
+      numeric >= 0
+    ) {
+      telemetry[key] =
+        numeric;
+    }
+  }
+
   return {
     imageBytes,
     mimeType: contentType,
-    meta
+    meta,
+    telemetry
   };
 }
 
@@ -442,6 +504,352 @@ function safeCampaignId(value) {
 
 function defaultCampaignId() {
   return `G-E-PILOT-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14)}`;
+}
+
+async function readJsonIfPresent(
+  filePath
+) {
+  try {
+    return JSON.parse(
+      await readFile(
+        filePath,
+        "utf8"
+      )
+    );
+  } catch (error) {
+    if (
+      error?.code === "ENOENT"
+    ) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+function expectedCaseNamesForWindow({
+  intentOffset,
+  intentCount,
+  generationsPerIntent
+}) {
+  const names = [];
+
+  for (
+    let intentIndex = 0;
+    intentIndex < intentCount;
+    intentIndex += 1
+  ) {
+    const intentGroupId =
+      `intent-${String(
+        intentOffset +
+          intentIndex +
+          1
+      ).padStart(2, "0")}`;
+
+    for (
+      let generationIndex = 1;
+      generationIndex <=
+        generationsPerIntent;
+      generationIndex += 1
+    ) {
+      names.push(
+        `${intentGroupId}-g${generationIndex}`
+      );
+    }
+  }
+
+  return names;
+}
+
+async function validateReusableCases({
+  campaignDir,
+  manifest,
+  expectedCaseNames
+}) {
+  const expected =
+    new Set(
+      expectedCaseNames
+    );
+  const reusable =
+    new Map();
+
+  for (
+    const item of
+    manifest.cases
+  ) {
+    if (
+      !item ||
+      typeof item !== "object" ||
+      !expected.has(
+        item.caseName
+      ) ||
+      reusable.has(
+        item.caseName
+      ) ||
+      typeof item.outputFile !==
+        "string" ||
+      typeof item.reviewInputFile !==
+        "string" ||
+      typeof item.outputSha256 !==
+        "string"
+    ) {
+      throw new Error(
+        "face_lab_e2e_checkpoint_case_invalid"
+      );
+    }
+
+    const outputPath =
+      resolve(
+        campaignDir,
+        item.outputFile
+      );
+    const inputPath =
+      resolve(
+        campaignDir,
+        item.reviewInputFile
+      );
+
+    if (
+      (
+        !outputPath.startsWith(
+          campaignDir +
+            "/"
+        ) &&
+        !outputPath.startsWith(
+          campaignDir +
+            "\\"
+        )
+      ) ||
+      (
+        !inputPath.startsWith(
+          campaignDir +
+            "/"
+        ) &&
+        !inputPath.startsWith(
+          campaignDir +
+            "\\"
+        )
+      )
+    ) {
+      throw new Error(
+        "face_lab_e2e_checkpoint_path_invalid"
+      );
+    }
+
+    const outputBytes =
+      await readFile(
+        outputPath
+      );
+    const reviewInput =
+      JSON.parse(
+        await readFile(
+          inputPath,
+          "utf8"
+        )
+      );
+
+    if (
+      sha256(outputBytes) !==
+        item.outputSha256 ||
+      reviewInput?.caseId !==
+        item.caseId ||
+      reviewInput
+        ?.intentGroupId !==
+        item.intentGroupId ||
+      reviewInput
+        ?.generationIndex !==
+        item.generationIndex ||
+      reviewInput
+        ?.simulation
+        ?.routeId !==
+        item.routeId ||
+      reviewInput
+        ?.simulation
+        ?.renderSpecSha256 !==
+        item.renderSpecSha256 ||
+      reviewInput
+        ?.simulation
+        ?.providerConfigFingerprint !==
+        item.providerConfigFingerprint
+    ) {
+      throw new Error(
+        "face_lab_e2e_checkpoint_binding_invalid"
+      );
+    }
+
+    reusable.set(
+      item.caseName,
+      item
+    );
+  }
+
+  return reusable;
+}
+
+async function loadReusableCampaignState({
+  campaignDir,
+  campaignId,
+  calibrationStage,
+  campaignRootName,
+  waveId,
+  intentOffset,
+  intentCount,
+  generationsPerIntent,
+  sourceSha256,
+  expectedCaseNames
+}) {
+  const candidates = [
+    {
+      path:
+        resolve(
+          campaignDir,
+          "manifest.json"
+        ),
+      expectedStatus:
+        "complete"
+    },
+    {
+      path:
+        resolve(
+          campaignDir,
+          "manifest.checkpoint.json"
+        ),
+      expectedStatus:
+        "partial"
+    }
+  ];
+
+  for (
+    const candidate of
+    candidates
+  ) {
+    const manifest =
+      await readJsonIfPresent(
+        candidate.path
+      );
+
+    if (!manifest) {
+      continue;
+    }
+
+    if (
+      manifest
+        .schemaVersion !==
+        "face-lab-g-e2b-provider-pilot-e2e-v1" ||
+      manifest.status !==
+        candidate.expectedStatus ||
+      manifest.campaignId !==
+        campaignId ||
+      manifest.calibrationStage !==
+        calibrationStage ||
+      manifest.campaignRootName !==
+        campaignRootName ||
+      (
+        manifest.waveId ||
+        null
+      ) !==
+        (
+          waveId ||
+          null
+        ) ||
+      manifest.intentOffset !==
+        intentOffset ||
+      manifest.intentCount !==
+        intentCount ||
+      manifest.generationsPerIntent !==
+        generationsPerIntent ||
+      manifest.sourceSha256 !==
+        sourceSha256 ||
+      !Array.isArray(
+        manifest.cases
+      ) ||
+      manifest.cases.length >
+        expectedCaseNames.length
+    ) {
+      throw new Error(
+        "face_lab_e2e_checkpoint_manifest_mismatch"
+      );
+    }
+
+    const reusableCases =
+      await validateReusableCases({
+        campaignDir,
+        manifest,
+        expectedCaseNames
+      });
+
+    if (
+      candidate.expectedStatus ===
+        "complete" &&
+      reusableCases.size !==
+        expectedCaseNames.length
+    ) {
+      throw new Error(
+        "face_lab_e2e_complete_manifest_incomplete"
+      );
+    }
+
+    return {
+      manifest,
+      reusableCases,
+      complete:
+        candidate.expectedStatus ===
+          "complete"
+    };
+  }
+
+  return {
+    manifest: null,
+    reusableCases:
+      new Map(),
+    complete: false
+  };
+}
+
+function buildCostTelemetry(
+  cases
+) {
+  let providerAttemptCount = 0;
+  let measuredCostCaseCount = 0;
+  let estimatedCostNanoUsd = 0;
+  let pricingVersion = null;
+
+  for (const item of cases) {
+    if (
+      Number.isSafeInteger(
+        item.providerAttemptCount
+      )
+    ) {
+      providerAttemptCount +=
+        item.providerAttemptCount;
+    }
+
+    if (
+      Number.isSafeInteger(
+        item.estimatedCostNanoUsd
+      )
+    ) {
+      measuredCostCaseCount += 1;
+      estimatedCostNanoUsd +=
+        item.estimatedCostNanoUsd;
+    }
+
+    if (
+      !pricingVersion &&
+      typeof item.pricingVersion ===
+        "string"
+    ) {
+      pricingVersion =
+        item.pricingVersion;
+    }
+  }
+
+  return {
+    providerAttemptCount,
+    measuredCostCaseCount,
+    estimatedCostNanoUsd,
+    pricingVersion
+  };
 }
 
 async function main() {
@@ -541,11 +949,119 @@ async function main() {
     );
   }
 
-  const [sourceBytes, publicConfig] = await Promise.all([
-    readFile(sourcePath),
-    discoverPublicConfig(baseUrl)
-  ]);
-  if (!sourceBytes.length) throw new Error("source_image_empty");
+  const sourceBytes =
+    await readFile(
+      sourcePath
+    );
+
+  if (!sourceBytes.length) {
+    throw new Error(
+      "source_image_empty"
+    );
+  }
+
+  const sourceSha256 =
+    sha256(sourceBytes);
+  const campaignDir =
+    waveId
+      ? resolve(
+          privateRoot,
+          campaignRootName,
+          campaignId,
+          waveId
+        )
+      : resolve(
+          privateRoot,
+          campaignRootName,
+          campaignId
+        );
+  const expectedCaseNames =
+    expectedCaseNamesForWindow({
+      intentOffset,
+      intentCount,
+      generationsPerIntent
+    });
+
+  if (persistOutputs) {
+    await mkdir(
+      campaignDir,
+      {
+        recursive: true
+      }
+    );
+  }
+
+  const reusableState =
+    persistOutputs
+      ? await loadReusableCampaignState({
+          campaignDir,
+          campaignId,
+          calibrationStage,
+          campaignRootName,
+          waveId,
+          intentOffset,
+          intentCount,
+          generationsPerIntent,
+          sourceSha256,
+          expectedCaseNames
+        })
+      : {
+          manifest: null,
+          reusableCases:
+            new Map(),
+          complete: false
+        };
+
+  if (
+    reusableState.complete
+  ) {
+    const costTelemetry =
+      reusableState.manifest
+        .costTelemetry ||
+      buildCostTelemetry(
+        reusableState
+          .manifest.cases
+      );
+
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          verdict:
+            "FACE_LAB_G_E2B_PROVIDER_E2E_REUSED_COMPLETE",
+          campaignId,
+          caseCount:
+            reusableState
+              .reusableCases
+              .size,
+          reusedCaseCount:
+            reusableState
+              .reusableCases
+              .size,
+          generatedCaseCount: 0,
+          runtimeBinding:
+            reusableState
+              .manifest
+              .runtimeBinding,
+          costTelemetry,
+          persisted: true,
+          outputDirectory:
+            relative(
+              process.cwd(),
+              campaignDir
+            )
+        },
+        null,
+        2
+      )
+    );
+    return;
+  }
+
+  const publicConfig =
+    await discoverPublicConfig(
+      baseUrl
+    );
   const bootstrapUsers = process.env.FACE_LAB_E2E_BOOTSTRAP_USERS === "1";
   const credentialsA = {
     email: resolveE2EAuthEmail(
@@ -613,26 +1129,67 @@ async function main() {
     intentCount,
     intentOffset
   );
-  const campaignDir =
-    waveId
-      ? resolve(
-          privateRoot,
-          campaignRootName,
-          campaignId,
-          waveId
-        )
-      : resolve(
-          privateRoot,
-          campaignRootName,
-          campaignId
-        );
   const cases = [];
-  let runtimeBinding = null;
+  let runtimeBinding =
+    reusableState
+      .manifest
+      ?.runtimeBinding ||
+    null;
   let sequence = 0;
+  let reusedCaseCount = 0;
+  let generatedCaseCount = 0;
+
+  const buildManifest =
+    (status) => ({
+      schemaVersion:
+        "face-lab-g-e2b-provider-pilot-e2e-v1",
+      status,
+      campaignId,
+      calibrationStage,
+      campaignRootName,
+      waveId:
+        waveId || null,
+      intentOffset,
+      baseHost:
+        new URL(
+          baseUrl
+        ).hostname,
+      intentCount,
+      generationsPerIntent,
+      caseCount:
+        cases.length,
+      sourceSha256,
+      runtimeBinding,
+      resumeTelemetry: {
+        reusedCaseCount,
+        generatedCaseCount
+      },
+      costTelemetry:
+        buildCostTelemetry(
+          cases
+        ),
+      accounts: {
+        distinct:
+          accountB
+            ? accountA.userId !==
+              accountB.userId
+            : null,
+        activeLabels:
+          accountB
+            ? ["A", "B"]
+            : ["A"]
+      },
+      cases
+    });
 
   if (persistOutputs) {
-    await mkdir(campaignDir, { recursive: true });
-    await writeFile(resolve(campaignDir, `source${extname(sourcePath).toLowerCase() || ".png"}`), sourceBytes);
+    await writeFile(
+      resolve(
+        campaignDir,
+        `source${extname(sourcePath).toLowerCase() || ".png"}`
+      ),
+      sourceBytes
+    );
   }
 
   for (const intent of intents) {
@@ -646,6 +1203,82 @@ async function main() {
         targetFinderResult: intent.targetFinderResult,
         selectedRouteId: intent.selectedRouteId
       };
+      const caseName =
+        `${intent.intentGroupId}-g${generationIndex}`;
+      const reusableCase =
+        reusableState
+          .reusableCases
+          .get(caseName) ||
+        null;
+
+      if (reusableCase) {
+        assert.equal(
+          reusableCase.routeId,
+          intent.expectedRouteId,
+          "reused_simulation_route_binding_mismatch"
+        );
+
+        if (
+          pairedRenderSpecSha256 ==
+          null
+        ) {
+          pairedRenderSpecSha256 =
+            reusableCase
+              .renderSpecSha256;
+        } else {
+          assert.equal(
+            reusableCase
+              .renderSpecSha256,
+            pairedRenderSpecSha256,
+            "reused_repeat_generation_render_spec_mismatch"
+          );
+        }
+
+        const reusedRuntimeBinding = {
+          simulationVersion:
+            reusableCase
+              .simulationVersion,
+          instructionVersion:
+            reusableCase
+              .instructionVersion,
+          providerConfigVersion:
+            reusableCase
+              .providerConfigVersion,
+          providerConfigFingerprint:
+            reusableCase
+              .providerConfigFingerprint
+        };
+
+        if (runtimeBinding == null) {
+          runtimeBinding =
+            reusedRuntimeBinding;
+        } else {
+          assert.deepEqual(
+            reusedRuntimeBinding,
+            runtimeBinding,
+            "reused_campaign_runtime_binding_mismatch"
+          );
+        }
+
+        cases.push(
+          reusableCase
+        );
+        reusedCaseCount += 1;
+
+        console.log(
+          JSON.stringify({
+            event:
+              "face_lab_g_e2b_generation_reused",
+            caseName,
+            caseId:
+              reusableCase.caseId,
+            routeId:
+              reusableCase.routeId,
+            persisted: true
+          })
+        );
+        continue;
+      }
 
       const simulation = await postSimulation({
         baseUrl,
@@ -693,7 +1326,6 @@ async function main() {
       assert.equal(reviewTemplate.trace?.renderSpecSha256, simulation.meta.renderSpecSha256, "review_render_spec_binding_mismatch");
       assert.equal(reviewTemplate.trace?.providerConfigFingerprint, simulation.meta.providerConfigFingerprint, "review_provider_binding_mismatch");
 
-      const caseName = `${intent.intentGroupId}-g${generationIndex}`;
       const extension = outputExtension(simulation.mimeType);
       const outputFile = `${caseName}.output${extension}`;
       const inputFile = `${caseName}.review-input.json`;
@@ -713,6 +1345,42 @@ async function main() {
         providerConfigFingerprint: simulation.meta.providerConfigFingerprint,
         outputSha256: sha256(simulation.imageBytes),
         outputMimeType: simulation.mimeType,
+        providerAttemptCount:
+          simulation.telemetry
+            ?.providerAttemptCount ??
+          null,
+        inputTokens:
+          simulation.telemetry
+            ?.inputTokens ??
+          null,
+        inputImageTokens:
+          simulation.telemetry
+            ?.inputImageTokens ??
+          null,
+        inputTextTokens:
+          simulation.telemetry
+            ?.inputTextTokens ??
+          null,
+        outputTokens:
+          simulation.telemetry
+            ?.outputTokens ??
+          null,
+        outputImageTokens:
+          simulation.telemetry
+            ?.outputImageTokens ??
+          null,
+        totalTokens:
+          simulation.telemetry
+            ?.totalTokens ??
+          null,
+        estimatedCostNanoUsd:
+          simulation.telemetry
+            ?.estimatedCostNanoUsd ??
+          null,
+        pricingVersion:
+          simulation.telemetry
+            ?.pricingVersion ??
+          null,
         outputFile: persistOutputs ? outputFile : null,
         reviewInputFile: persistOutputs ? inputFile : null
       };
@@ -751,6 +1419,25 @@ async function main() {
       }
 
       cases.push(safeMeta);
+      generatedCaseCount += 1;
+
+      if (persistOutputs) {
+        await writeFile(
+          resolve(
+            campaignDir,
+            "manifest.checkpoint.json"
+          ),
+          `${JSON.stringify(
+            buildManifest(
+              "partial"
+            ),
+            null,
+            2
+          )}\n`,
+          "utf8"
+        );
+      }
+
       console.log(JSON.stringify({
         event: "face_lab_g_e2b_generation_complete",
         caseName,
@@ -768,41 +1455,63 @@ async function main() {
   assert.equal(cases.length, expectedCaseCount, "pilot_case_count_mismatch");
   assert.ok(runtimeBinding, "campaign_runtime_binding_missing");
 
-  const manifest = {
-    schemaVersion: "face-lab-g-e2b-provider-pilot-e2e-v1",
-    status: "complete",
-    campaignId,
-    calibrationStage,
-    campaignRootName,
-    waveId:
-      waveId || null,
-    intentOffset,
-    baseHost: new URL(baseUrl).hostname,
-    intentCount,
-    generationsPerIntent,
-    caseCount: cases.length,
-    sourceSha256: sha256(sourceBytes),
-    runtimeBinding,
-    accounts: {
-      distinct: accountB ? accountA.userId !== accountB.userId : null,
-      activeLabels: accountB ? ["A", "B"] : ["A"]
-    },
-    cases
-  };
+  const manifest =
+    buildManifest(
+      "complete"
+    );
 
   if (persistOutputs) {
-    await writeFile(resolve(campaignDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+    await writeFile(
+      resolve(
+        campaignDir,
+        "manifest.json"
+      ),
+      `${JSON.stringify(
+        manifest,
+        null,
+        2
+      )}\n`,
+      "utf8"
+    );
+    await rm(
+      resolve(
+        campaignDir,
+        "manifest.checkpoint.json"
+      ),
+      {
+        force: true
+      }
+    );
   }
 
-  console.log(JSON.stringify({
-    ok: true,
-    verdict: "FACE_LAB_G_E2B_PROVIDER_E2E_PASS",
-    campaignId,
-    caseCount: cases.length,
-    runtimeBinding,
-    persisted: persistOutputs,
-    outputDirectory: persistOutputs ? relative(process.cwd(), campaignDir) : null
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        verdict:
+          "FACE_LAB_G_E2B_PROVIDER_E2E_PASS",
+        campaignId,
+        caseCount:
+          cases.length,
+        reusedCaseCount,
+        generatedCaseCount,
+        runtimeBinding,
+        costTelemetry:
+          manifest.costTelemetry,
+        persisted:
+          persistOutputs,
+        outputDirectory:
+          persistOutputs
+            ? relative(
+                process.cwd(),
+                campaignDir
+              )
+            : null
+      },
+      null,
+      2
+    )
+  );
 }
 
 main().catch((error) => {

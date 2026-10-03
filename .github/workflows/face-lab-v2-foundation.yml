@@ -14,6 +14,7 @@ on:
       - "lib/vision-observation-retry-core.js"
       - "scripts/verify-face-lab-v2-vision-provider-retry.mjs"
       - "scripts/verify-face-lab-v2-image-provider-cost-guard.mjs"
+      - "scripts/verify-face-lab-v2-paid-calibration-resume-cost.mjs"
       - ".github/workflows/face-lab-v2-provider-pilot-smoke.yml"
       - "lib/openai-image-edit-runtime-core.js"
       - "lib/face-lab-usage-policy.js"
@@ -332,6 +333,8 @@ jobs:
           node scripts/verify-unified-vision-pipeline.mjs
       - name: Verify Face Lab image provider cost guard
         run: node scripts/verify-face-lab-v2-image-provider-cost-guard.mjs
+      - name: Verify Face Lab paid calibration resume and cost telemetry
+        run: node scripts/verify-face-lab-v2-paid-calibration-resume-cost.mjs
       - name: Verify Face Lab V2 simulation UAT guard
         run: node scripts/verify-face-lab-v2-simulation-guard.mjs
       - name: Verify Face Lab V2 simulation UAT endpoint
