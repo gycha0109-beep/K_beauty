@@ -1,0 +1,160 @@
+{
+  "version": "v21-admission-g4-b-fation-subject-registration-hold-v1",
+  "stage": "V2.1-ADMISSION-G4-B",
+  "decision": "V21_ADMISSION_G4_B_FATION_SUBJECT_REGISTRATION_HOLD",
+  "captured_on": "2026-10-03",
+  "source_main_sha": "d512769e12ceba2519ca54260b3622f35ea9aaa6",
+  "mode": "ZERO_WRITE_HOLD",
+  "upstream": {
+    "g4_0_decision": "V21_ADMISSION_G4_0_NONLEGACY_FRONTIER_DESIGN_FROZEN",
+    "g4_a_decision": "V21_ADMISSION_G4_A_REPOSITORY_CONTRACT_READY",
+    "g4_a_merge_sha": "d512769e12ceba2519ca54260b3622f35ea9aaa6",
+    "prior_hold": "TRUST Phase 5-C / FORMULATION_CONFLICT"
+  },
+  "target": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "product_name": "노스카나인 트러블 세럼",
+    "brand": "파티온",
+    "market": "KR",
+    "presentation": "30 ml / 1.01 fl. oz.",
+    "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+    "intake_id": "15566618-d039-44c5-ad45-6413ee399db3"
+  },
+  "production_prestate": {
+    "subject_count": 0,
+    "current_kr_subject_count": 0,
+    "intake_identity_state": "SUBJECT_CREATION_REQUIRED",
+    "intake_trust_state": "REVIEW_REQUIRED",
+    "research_tasks": [
+      {
+        "id": "e4677942-4132-43b9-ac13-1ddf3d8167d1",
+        "fact_key": "contains_active",
+        "state": "REVIEW_REQUIRED",
+        "blocker_code": "SUBJECT_CREATION_REQUIRED",
+        "attempt_count": 0,
+        "evidence_id": null
+      },
+      {
+        "id": "3ef281e7-a246-4e90-a53f-9ea1deb6164a",
+        "fact_key": "active_concentration",
+        "state": "REVIEW_REQUIRED",
+        "blocker_code": "SUBJECT_CREATION_REQUIRED",
+        "attempt_count": 0,
+        "evidence_id": null
+      },
+      {
+        "id": "d2eb907c-7185-4e61-bdd2-0259f06babb4",
+        "fact_key": "recommended_use_frequency",
+        "state": "REVIEW_REQUIRED",
+        "blocker_code": "SUBJECT_CREATION_REQUIRED",
+        "attempt_count": 0,
+        "evidence_id": null
+      }
+    ]
+  },
+  "current_first_party_revalidation": {
+    "retrieved_on": "2026-10-03",
+    "distinct_orderings": 3,
+    "same_ingredient_set": true,
+    "ingredient_count": 26,
+    "observations": [
+      {
+        "source_id": "fation_product_329",
+        "publisher": "FATION",
+        "source_kind": "official_product_page",
+        "url": "https://www.fation.co.kr/product/%EB%85%B8%EC%8A%A4%EC%B9%B4%EB%82%98%EC%9D%B8-%ED%8A%B8%EB%9F%AC%EB%B8%94-%EC%84%B8%EB%9F%BC/329/",
+        "presentation": "30 ml / 1.01 fl. oz.",
+        "ingredient_order_class": "water_first",
+        "ingredients_sha256": "6eeed9473eaaee36bd09a73fb7b9ac1ddd4b7761c9fe21ae57070c9bc0484334",
+        "functional_cosmetic_status": "official_page_states_review_or_notification_completed"
+      },
+      {
+        "source_id": "fation_try_332",
+        "publisher": "FATION",
+        "source_kind": "official_try_product_page",
+        "url": "https://www.fation.co.kr/product/try-%EB%85%B8%EC%8A%A4%EC%B9%B4%EB%82%98%EC%9D%B8-%ED%8A%B8%EB%9F%AC%EB%B8%94-%EC%84%B8%EB%9F%BC-5ml/332/",
+        "presentation": "5 ml / 0.16 fl. oz.",
+        "ingredient_order_class": "water_first",
+        "ingredients_sha256": "6eeed9473eaaee36bd09a73fb7b9ac1ddd4b7761c9fe21ae57070c9bc0484334",
+        "functional_cosmetic_status": "N"
+      },
+      {
+        "source_id": "fation_set_613",
+        "publisher": "FATION",
+        "source_kind": "official_set_page",
+        "url": "https://www.fation.co.kr/product/%EB%85%B8%EC%8A%A4%EC%B9%B4%EB%82%98%EC%9D%B8-2%EC%A2%85-%EC%84%B8%ED%8A%B8-%EC%84%B8%EB%9F%BC%ED%81%AC%EB%A6%BC/613/",
+        "presentation": "30 ml",
+        "ingredient_order_class": "mugwort_first_a",
+        "ingredients_sha256": "2c0cd6fc3765c9b59baf72b6f34abd4ad905e94c07a49c3c7c5c4facbf977d20",
+        "functional_cosmetic_status": "N"
+      },
+      {
+        "source_id": "fation_set_757",
+        "publisher": "FATION",
+        "source_kind": "official_set_page",
+        "url": "https://fation.co.kr/product/%EB%85%B8%EC%8A%A4%EC%B9%B4%EB%82%98%EC%9D%B8-3%EC%A2%85-%EC%84%B8%ED%8A%B8-%ED%81%B4%EB%A6%AC%EC%96%B4-%ED%86%A0%EB%84%88%EC%84%B8%EB%9F%BC%ED%81%AC%EB%A6%BC/757/",
+        "presentation": "30 ml / 1.01 fl. oz.",
+        "ingredient_order_class": "mugwort_first_b",
+        "ingredients_sha256": "2bfec79eb1d7c9600e898cfbdecfcbbf53606767bf7c6561db6732f5a5583cc4",
+        "functional_cosmetic_status": "N"
+      },
+      {
+        "source_id": "donga_product_NNTS20",
+        "publisher": "동아제약",
+        "source_kind": "corporate_product_page",
+        "url": "https://www.dapharm.com/ko/brand/product/NNTS20",
+        "presentation": "30 ml / 1.01 fl. oz.",
+        "ingredient_order_class": "mugwort_first_b",
+        "ingredients_sha256": "2bfec79eb1d7c9600e898cfbdecfcbbf53606767bf7c6561db6732f5a5583cc4",
+        "functional_cosmetic_status": "not_used_for_resolution"
+      }
+    ],
+    "conflict": {
+      "state": "FORMULATION_CONFLICT",
+      "resolution": "HOLD",
+      "first_party_current_30ml_ordering_count": 3,
+      "formulation_revision_identifiable": false,
+      "reason": "Current first-party sources still expose mutually incompatible ingredient ordering for the same 30 ml Product/presentation. Product identity convergence does not establish one current Product Fact formulation revision."
+    }
+  },
+  "subject_identity_preflight": {
+    "variant_key": "NOSCA9_TROUBLE_SERUM_KR_30ML",
+    "variant_key_status": "PROVISIONAL_NOT_AUTHORIZED",
+    "formulation_revision_key": null,
+    "formulation_label": null,
+    "subject_semantic_key": null,
+    "registration_allowed": false,
+    "reason_code": "EXTERNAL_FORMULATION_AUTHORITY_REQUIRED"
+  },
+  "required_next_authority": {
+    "state": "EXTERNAL_FORMULATION_AUTHORITY_REQUIRED",
+    "acceptable_examples": [
+      "current 30 ml package ingredient panel tied to a manufacturing lot/date",
+      "FATION or Dong-A first-party statement identifying the current 30 ml ingredient list or reformulation history",
+      "equivalent first-party evidence that distinguishes the current 30 ml formulation from stale/set-page metadata"
+    ],
+    "not_sufficient": [
+      "catalog identity convergence alone",
+      "product name or 30 ml presentation alone",
+      "retailer-only ingredient ordering",
+      "choosing the most recent-looking official web page without effective-date or lot authority"
+    ]
+  },
+  "authorized_deltas": {
+    "product_fact_subjects": 0,
+    "product_fact_research_tasks": 0,
+    "product_fact_evidence": 0,
+    "product_fact_confirmations": 0,
+    "product_fact_current": 0,
+    "recommendations": 0
+  },
+  "authority_boundary": {
+    "subject_registration_authorized": false,
+    "task_claim_authorized": false,
+    "evidence_ingest_authorized": false,
+    "product_fact_confirmation_authorized": false,
+    "category_authority_grant_authorized": false,
+    "recommendation_admission_cutover_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-B-R1_FATION_FORMULATION_AUTHORITY_RECOVERY"
+}
