@@ -298,6 +298,7 @@ for (const liveValue of [
   const implementation = [
     source.identity,
     source.orchestration,
+    source.reprocessContract,
     source.preflightRoute,
     source.confirmRoute,
     source.action,
@@ -560,6 +561,7 @@ check(
 );
 for (const token of [
   "node scripts/verify-trust-phase5b-subject-registration.mjs",
+  "node scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs",
   "node scripts/verify-product-fact-subject-registration-v1.mjs",
   "node scripts/verify-trust-subject-resolution.mjs",
   "node scripts/verify-trust-phase5-admin-queue.mjs",
