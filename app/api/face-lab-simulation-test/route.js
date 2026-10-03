@@ -110,6 +110,25 @@ async function failGuardedResponse(
 export async function POST(request) {
   let analysisGuard = null;
 
+  if (
+    process.env.NODE_ENV ===
+      "production" &&
+    process.env
+      .FACE_LAB_SIMULATION_TEST_ENABLED !==
+      "1"
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "simulation_test_disabled"
+      },
+      {
+        status: 503
+      }
+    );
+  }
+
   try {
     const contentLengthValidation =
       validateImageRequestContentLength(

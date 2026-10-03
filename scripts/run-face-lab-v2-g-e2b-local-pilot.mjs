@@ -170,12 +170,20 @@ const child =
         ...process.env,
         CI:
           "",
+        FACE_LAB_E2E_BASE_URL:
+          process.env
+            .FACE_LAB_E2E_BASE_URL ||
+          "http://localhost:3001",
         FACE_LAB_E2E_INTENTS:
           "4",
         FACE_LAB_E2E_GENERATIONS:
           "2",
         FACE_LAB_E2E_PERSIST_OUTPUTS:
           "1",
+        FACE_LAB_E2E_MAX_OUTPUTS:
+          "8",
+        FACE_LAB_E2E_LIVE_APPROVAL:
+          "I_ACCEPT_OPENAI_IMAGE_COST",
         FACE_LAB_E2E_BOOTSTRAP_USERS:
           "1"
       }

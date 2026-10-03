@@ -1,18 +1,18 @@
 name: Face Lab - Provider Pilot Smoke
 
-run-name: "${{ contains(github.event.head_commit.message, '[g-e2b-full-pilot]') && '[WT:face-research] Face Lab - Provider Full Pilot' || '[WT:face-research] Face Lab - Provider Pilot Smoke' }}"
+run-name: "${{ github.event.inputs.mode == 'full-pilot' && '[WT:face-research] Face Lab - Provider Full Pilot (MANUAL)' || '[WT:face-research] Face Lab - Provider Canary (MANUAL)' }}"
 
 on:
-  push:
-    branches:
-      - "feat/face-research/g-e2b-provider-e2e-v1"
-    paths:
-      - "scripts/run-face-lab-v2-simulation-provider-pilot-e2e.mjs"
-      - "scripts/verify-face-lab-v2-simulation-provider-pilot-e2e.mjs"
-      - ".github/workflows/face-lab-v2-provider-pilot-smoke.yml"
-      - "docs/domain/facelab/face-lab-v2-g-e2b-provider-pilot-run-v1.md"
-      - "package.json"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Paid OpenAI image run. Use canary unless a full 8-output pilot is explicitly required."
+        required: true
+        default: "canary"
+        type: choice
+        options:
+          - canary
+          - full-pilot
 
 permissions:
   contents: read
@@ -27,8 +27,10 @@ jobs:
       FACE_LAB_E2E_PASSWORD_A: ${{ secrets.FACE_LAB_E2E_PASSWORD_A }}
       FACE_LAB_E2E_EMAIL_B: ${{ secrets.FACE_LAB_E2E_EMAIL_B }}
       FACE_LAB_E2E_PASSWORD_B: ${{ secrets.FACE_LAB_E2E_PASSWORD_B }}
-      FACE_LAB_E2E_INTENTS: ${{ contains(github.event.head_commit.message, '[g-e2b-full-pilot]') && '4' || '1' }}
-      FACE_LAB_E2E_GENERATIONS: ${{ contains(github.event.head_commit.message, '[g-e2b-full-pilot]') && '2' || '1' }}
+      FACE_LAB_E2E_INTENTS: ${{ github.event.inputs.mode == 'full-pilot' && '4' || '1' }}
+      FACE_LAB_E2E_GENERATIONS: ${{ github.event.inputs.mode == 'full-pilot' && '2' || '1' }}
+      FACE_LAB_E2E_MAX_OUTPUTS: ${{ github.event.inputs.mode == 'full-pilot' && '8' || '1' }}
+      FACE_LAB_E2E_LIVE_APPROVAL: "I_ACCEPT_OPENAI_IMAGE_COST"
       FACE_LAB_E2E_PERSIST_OUTPUTS: "0"
       FACE_LAB_E2E_BOOTSTRAP_USERS: "1"
     steps:
@@ -50,5 +52,5 @@ jobs:
           test -n "$FACE_LAB_E2E_PASSWORD_A"
           test -n "$FACE_LAB_E2E_EMAIL_B"
           test -n "$FACE_LAB_E2E_PASSWORD_B"
-      - name: Run provider pilot
+      - name: Run paid provider pilot
         run: node scripts/run-face-lab-v2-simulation-provider-pilot-e2e.mjs
