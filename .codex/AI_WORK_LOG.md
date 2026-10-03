@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-09-21 / Full Report final five-sector presentation
+
+- Execution / Medium. Fresh origin/main: `2cfcdc0cdaa34ced035dd0f65898e27389ec9baf`; branch `codex/full-report-final-ia`. Prior reference worktree was not modified.
+- Implemented Today, Current routine review, Issue tracking, Next change plan and Situational care. Removed standalone caution navigation; retained contextual safety and completion controls. Added scoped light/dark reference styling and decorative unbranded asset.
+- Authority: no policy, score, API, DB, auth, saved snapshot or Face Lab engine changes. Missing tracking chronology/causal ranking/replacement verdicts remain explicitly unavailable. Intake focus is decorative only; skipped/unknown are not negative answers.
+- Verified: local fixture browser flow at 390/430/1448 in both themes, KO/EN, hold/unknown/legacy/empty/candidate cases; saved replay does not regenerate. Persistence reentry and Premium intake verifier pass. Architecture guard reports UI route change documented in `docs/architecture/full-report-final-ia.md`.
+- Validation limitations: existing root ESLint setup missing; Windows current-main-health fails spawning npm.cmd under Node 22 (Node 24 additionally rejects an old flag). Existing dev nonce hydration warning recorded, not suppressed in application code. Frozen corpus LF checkout repair changes no logical tracked content. Build and CI results are recorded in the PR, not assumed here.
+- Self-review: preserved individual audit findings and safe product placeholders; differentiated routine step state from product verdict. Existing orphan legacy route helpers remain a bounded follow-up, not active navigation.
+- Context promotion: none; UI-specific architecture documentation is sufficient.
+
 ### 2026-08-27 / MOBILE-3 My / Skin Diary
 
 - Task type: execution / Medium Android-first native My and Skin Diary projection. Existing Web cookie auth, Supabase user/RLS authority, Recommendation/Product Fact/Face Lab/Premium server authority, DB schema/migrations, provider secrets, camera, survey extraction, `/api/analyze`, push, billing, and store readiness were not expanded.
