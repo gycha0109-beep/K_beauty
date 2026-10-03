@@ -232,6 +232,10 @@ const child =
       env: {
         ...process.env,
         CI: "",
+        FACE_LAB_E2E_BASE_URL:
+          process.env
+            .FACE_LAB_E2E_BASE_URL ||
+          "http://localhost:3001",
         FACE_LAB_E2E_INTENTS:
           "4",
         FACE_LAB_E2E_INTENT_OFFSET:
