@@ -78,7 +78,7 @@ begin
 end
 $$;
 
-create table if not exists public.recommendation_category_authority_reviews (
+create table public.recommendation_category_authority_reviews (
   review_id uuid primary key default gen_random_uuid(),
   product_id uuid not null references public.products(id) on delete cascade,
   taxonomy_version text not null,
@@ -131,12 +131,12 @@ create table if not exists public.recommendation_category_authority_reviews (
     check (payload_digest ~ '^[0-9a-f]{64}$')
 );
 
-create unique index if not exists
+create unique index
   recommendation_category_authority_current_product_uidx
   on public.recommendation_category_authority_reviews(product_id)
   where is_current;
 
-create index if not exists
+create index
   recommendation_category_authority_state_idx
   on public.recommendation_category_authority_reviews(
     review_state,
