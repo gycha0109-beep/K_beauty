@@ -929,7 +929,7 @@ grant execute on function
 
 -- Transfer only the reader to the existing narrow NOLOGIN reader owner.
 -- Production already grants postgres membership in this owner role. Preserve it.
-do $
+do $g4_f1_membership$
 begin
   if not pg_has_role(
     'postgres',
@@ -939,7 +939,7 @@ begin
     raise exception 'G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_REQUIRED';
   end if;
 end
-$;
+$g4_f1_membership$;
 
 grant create on schema public to recommendation_admission_reader_owner;
 alter function public.read_recommendation_category_authority_v1(uuid)
