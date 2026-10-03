@@ -1,0 +1,279 @@
+{
+  "version": "v21-admission-g4-f1-p0-ledger-reader-preflight-v1",
+  "stage": "V2.1-ADMISSION-G4-F1-P0",
+  "decision": "V21_ADMISSION_G4_F1_P0_LEDGER_READER_PREFLIGHT_READY",
+  "captured_on": "2026-10-03",
+  "source_main_sha": "11cbffc37ce243a8a27ee05518dff12db3986c6d",
+  "mode": "REPOSITORY_ONLY_PREFLIGHT_NO_SCHEMA_CHANGE",
+  "upstream": {
+    "f0_decision": "V21_ADMISSION_G4_F0_CATEGORY_AUTHORITY_SHADOW_CONTRACT_READY",
+    "f0_contract": "recommendation-category-authority-shadow-v1",
+    "f0_next_gate": "V2.1-ADMISSION-G4-F1_CATEGORY_AUTHORITY_LEDGER_AND_PROTECTED_READER"
+  },
+  "target": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "brand": "파티온",
+    "name": "노스카나인 트러블 세럼",
+    "category": "treatment",
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+    "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment"
+  },
+  "current_security_baseline": {
+    "runtime_role": {
+      "role": "recommendation_admission_runtime",
+      "login": true,
+      "inherit": false,
+      "bypassrls": false,
+      "superuser": false
+    },
+    "reader_owner_role": {
+      "role": "recommendation_admission_reader_owner",
+      "login": false,
+      "inherit": false,
+      "bypassrls": false,
+      "superuser": false
+    },
+    "protected_pf_reader": {
+      "function": "read_recommendation_admission_authority_v1(uuid)",
+      "security_definer": true,
+      "owner": "recommendation_admission_reader_owner",
+      "runtime_execute_only": true
+    },
+    "admin_helpers": {
+      "actor_gate": "admin_require_product_review_actor(uuid,text)",
+      "actor_permission": "admin.products.review",
+      "sha256_helper": "admin_product_review_sha256_json(jsonb)",
+      "audit_writer": "record_admin_audit_event(uuid,text,text,text,text,jsonb,jsonb,text,text,jsonb)"
+    },
+    "existing_taxonomy_reader_policy": {
+      "policy": "data_ai29c_d5c_admission_reader_taxonomy_select_v1",
+      "product_count": 3,
+      "target_fation_included": false,
+      "replacement_forbidden": true
+    }
+  },
+  "proposed_ledger": {
+    "table": "public.recommendation_category_authority_reviews",
+    "reusable_table": true,
+    "initial_writer_reader_scope": "FATION_ONLY",
+    "columns": [
+      "review_id uuid primary key default gen_random_uuid()",
+      "product_id uuid not null references public.products(id) on delete cascade",
+      "taxonomy_version text not null",
+      "entity_kind_term_id text not null",
+      "domain_term_id text not null",
+      "recommendation_family_term_id text not null",
+      "category_term_id text not null",
+      "assignment_state_snapshot text not null",
+      "assignment_method_snapshot text not null",
+      "legacy_projection_key_snapshot text null",
+      "source_snapshot jsonb not null",
+      "assignment_snapshot_digest text not null",
+      "candidate_id uuid not null references public.product_candidates(id) on delete restrict",
+      "source_rule_key text not null",
+      "review_state text not null",
+      "review_policy_version text not null",
+      "request_id text not null unique",
+      "supersedes_review_id uuid null references public.recommendation_category_authority_reviews(review_id) on delete restrict",
+      "payload_digest text not null",
+      "is_current boolean not null default true",
+      "reviewed_by uuid not null references auth.users(id) on delete restrict",
+      "reviewed_at timestamptz not null default now()",
+      "created_at timestamptz not null default now()"
+    ],
+    "constraints": {
+      "review_states": [
+        "established",
+        "revoked"
+      ],
+      "review_policy_version": "recommendation-category-authority-review-policy-v1",
+      "taxonomy_version": "catalog-taxonomy-v1",
+      "digest_regex": "^[0-9a-f]{64}$",
+      "source_snapshot_json_object": true,
+      "source_snapshot_max_bytes": 16384,
+      "one_current_row_per_product": true
+    },
+    "rls": {
+      "enabled": true,
+      "public_access": false,
+      "anon_access": false,
+      "authenticated_access": false,
+      "service_role_direct_access": false,
+      "runtime_direct_access": false,
+      "reader_owner_select_only": true,
+      "reader_owner_policy_scope": "product_id = FATION target only"
+    }
+  },
+  "proposed_writer": {
+    "function": "public.admin_register_recommendation_category_authority_review_v1(uuid,text,jsonb)",
+    "owner": "postgres",
+    "security_definer": true,
+    "executable_by": [
+      "service_role"
+    ],
+    "forbidden_execute": [
+      "public",
+      "anon",
+      "authenticated",
+      "recommendation_admission_runtime"
+    ],
+    "actor_gate": "admin_require_product_review_actor(actor,'admin.products.review')",
+    "initial_target_allowlist": [
+      "da5df70c-8cdd-4eb2-93b6-ede46c2f171d"
+    ],
+    "establish_contract": {
+      "explicit_expected_fields": [
+        "product_id",
+        "expected_category_term_id",
+        "expected_assignment_snapshot_digest",
+        "review_state",
+        "supersedes_review_id"
+      ],
+      "product_legacy_category_must_be_null": true,
+      "exact_assignment_required": true,
+      "assignment_required": {
+        "taxonomy_version": "catalog-taxonomy-v1",
+        "assignment_state": "shadow",
+        "assignment_method": "source_classification",
+        "entity_kind_term_id": "catalog-taxonomy-v1:entity_kind:cosmetic",
+        "domain_term_id": "catalog-taxonomy-v1:domain:skincare",
+        "recommendation_family_term_id": "catalog-taxonomy-v1:recommendation_family:treatment",
+        "category_term_id": "catalog-taxonomy-v1:category:treatment",
+        "legacy_projection_key": null,
+        "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+        "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment"
+      },
+      "taxonomy_version_required": {
+        "lifecycle_state": "shadow",
+        "authority_mode": "shadow_only"
+      },
+      "snapshot_source": "server_recomputed_from_current_assignment",
+      "supplied_digest_trusted": false,
+      "review_state": "established"
+    },
+    "revoke_contract": {
+      "review_state": "revoked",
+      "current_established_review_required": true,
+      "exact_supersedes_review_id_required": true,
+      "current_assignment_validity_required": false,
+      "reason": "revocation must remain possible after taxonomy drift"
+    },
+    "idempotency": {
+      "request_id_unique": true,
+      "payload_digest_required": true,
+      "replay_same_actor_same_digest_returns_existing": true,
+      "changed_payload_conflict": true
+    },
+    "audit": {
+      "event": "admin.recommendation_category_authority_reviewed",
+      "actor_permission": "admin.products.review",
+      "product_row_mutated": false,
+      "taxonomy_assignment_mutated": false,
+      "recommendation_admission_mutated": false
+    }
+  },
+  "proposed_reader": {
+    "function": "public.read_recommendation_category_authority_v1(uuid)",
+    "read_contract_version": "recommendation-category-authority-read-v1",
+    "owner": "recommendation_admission_reader_owner",
+    "security_definer": true,
+    "executable_by": [
+      "recommendation_admission_runtime"
+    ],
+    "forbidden_execute": [
+      "public",
+      "anon",
+      "authenticated",
+      "service_role"
+    ],
+    "initial_target_allowlist": [
+      "da5df70c-8cdd-4eb2-93b6-ede46c2f171d"
+    ],
+    "required_reads": [
+      "products.id, products.category",
+      "product_catalog_taxonomy_assignments minimal assignment columns",
+      "catalog_taxonomy_versions version/lifecycle_state/authority_mode",
+      "recommendation_category_authority_reviews current review columns"
+    ],
+    "raw_runtime_select_forbidden": true,
+    "subject_dependency": false,
+    "fail_closed_reasons": [
+      "PRODUCT_ID_REQUIRED",
+      "PRODUCT_NOT_G4_F1_TARGET",
+      "CANONICAL_PRODUCT_NOT_FOUND",
+      "LEGACY_CATEGORY_PRESENT",
+      "CURRENT_CATEGORY_REVIEW_MISSING",
+      "CURRENT_CATEGORY_REVIEW_AMBIGUOUS",
+      "CURRENT_CATEGORY_REVIEW_NOT_ESTABLISHED",
+      "CANONICAL_TAXONOMY_ASSIGNMENT_MISSING",
+      "CANONICAL_TAXONOMY_ASSIGNMENT_AMBIGUOUS",
+      "ASSIGNMENT_STATE_NOT_ELIGIBLE",
+      "TAXONOMY_GLOBAL_AUTHORITY_DRIFT",
+      "CATEGORY_UNSUPPORTED",
+      "ASSIGNMENT_SNAPSHOT_DRIFT",
+      "CANDIDATE_BINDING_DRIFT",
+      "SOURCE_RULE_BINDING_DRIFT"
+    ],
+    "resolved_output": {
+      "status": "CATEGORY_AUTHORITY_RESOLVED",
+      "category": "treatment",
+      "recommendation_admission_mutated": false,
+      "production_cutover_authorized": false
+    }
+  },
+  "proposed_acl_changes": {
+    "taxonomy_assignment_column_grants_to_reader_owner_additive": [
+      "assignment_method",
+      "legacy_projection_key",
+      "source_snapshot"
+    ],
+    "taxonomy_assignment_rls_policy": "add new FATION-only permissive SELECT policy; do not replace D5C policy",
+    "taxonomy_version_column_grants_to_reader_owner": [
+      "version",
+      "lifecycle_state",
+      "authority_mode"
+    ],
+    "taxonomy_version_rls_policy": "version = 'catalog-taxonomy-v1'",
+    "ledger_reader_owner_policy": "product_id = FATION target only",
+    "runtime_raw_selects": [
+      [
+        "recommendation_category_authority_reviews",
+        false
+      ],
+      [
+        "product_catalog_taxonomy_assignments",
+        false
+      ],
+      [
+        "catalog_taxonomy_versions",
+        false
+      ]
+    ]
+  },
+  "post_migration_assertions": [
+    "recommendation_admission_runtime has no raw SELECT on ledger/taxonomy/version",
+    "recommendation_admission_reader_owner cannot CREATE in public schema",
+    "recommendation_admission_runtime can EXECUTE protected category reader",
+    "service_role cannot EXECUTE protected category reader",
+    "service_role cannot directly mutate/read category ledger",
+    "service_role can EXECUTE admin category review writer",
+    "existing D5C taxonomy reader policy still exists unchanged",
+    "FATION taxonomy reader policy adds only the FATION product ID",
+    "products.category remains NULL",
+    "catalog-taxonomy-v1 remains shadow/shadow_only",
+    "no Product Fact Subject dependency is introduced",
+    "no Recommendation admission/runtime wiring is introduced"
+  ],
+  "p0_authority_boundary": {
+    "database_migration_authorized": false,
+    "ledger_creation_authorized": false,
+    "writer_deployment_authorized": false,
+    "protected_reader_deployment_authorized": false,
+    "reviewed_grant_write_authorized": false,
+    "g3_runtime_wiring_authorized": false,
+    "recommendation_cutover_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-F1_CATEGORY_AUTHORITY_LEDGER_AND_PROTECTED_READER_IMPLEMENTATION"
+}
