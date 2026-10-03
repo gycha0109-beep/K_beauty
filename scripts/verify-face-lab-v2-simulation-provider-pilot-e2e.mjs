@@ -93,3 +93,37 @@ assert.match(
   workflow,
   /I_ACCEPT_OPENAI_IMAGE_COST/
 );
+
+const simulationRoute = readFileSync(
+  new URL("../app/api/face-lab-simulation-test/route.js", import.meta.url),
+  "utf8"
+);
+const localPilot = readFileSync(
+  new URL("./run-face-lab-v2-g-e2b-local-pilot.mjs", import.meta.url),
+  "utf8"
+);
+const localWave = readFileSync(
+  new URL("./run-face-lab-v2-g-e3-local-wave.mjs", import.meta.url),
+  "utf8"
+);
+
+assert.match(
+  simulationRoute,
+  /FACE_LAB_SIMULATION_TEST_ENABLED/
+);
+assert.match(
+  simulationRoute,
+  /process\.env\.NODE_ENV\s*===\s*"production"/
+);
+assert.match(
+  simulationRoute,
+  /simulation_test_disabled/
+);
+assert.match(
+  localPilot,
+  /http:\/\/localhost:3001/
+);
+assert.match(
+  localWave,
+  /http:\/\/localhost:3001/
+);
