@@ -246,6 +246,7 @@ declare
   v_assignment public.product_catalog_taxonomy_assignments%rowtype;
   v_current public.recommendation_category_authority_reviews%rowtype;
   v_existing public.recommendation_category_authority_reviews%rowtype;
+  v_current_found boolean := false;
   v_review_id uuid;
   v_audit_id uuid;
   v_assignment_digest text;
@@ -379,8 +380,10 @@ begin
     and r.is_current
   for update;
 
+  v_current_found := found;
+
   if v_review_state = 'established' then
-    if found then
+    if v_current_found then
       if v_supersedes is distinct from v_current.review_id then
         raise exception
           'recommendation_category_authority_supersedes_current_required'
@@ -470,7 +473,7 @@ begin
     v_category_value := 'treatment';
 
   else
-    if not found
+    if not v_current_found
        or v_current.review_state <> 'established'
        or v_supersedes is distinct from v_current.review_id then
       raise exception
@@ -502,7 +505,7 @@ begin
     v_category_value := 'treatment';
   end if;
 
-  if found then
+  if v_current_found then
     update public.recommendation_category_authority_reviews
        set is_current = false
      where review_id = v_current.review_id;
@@ -638,8 +641,8 @@ declare
   v_review_count integer;
   v_assignment_count integer;
   v_category text;
-  v_review public.recommendation_category_authority_reviews%rowtype;
-  v_assignment public.product_catalog_taxonomy_assignments%rowtype;
+  v_review record;
+  v_assignment record;
   v_taxonomy_lifecycle text;
   v_taxonomy_authority text;
 begin
@@ -709,7 +712,24 @@ begin
     );
   end if;
 
-  select *
+  select
+    r.review_id,
+    r.product_id,
+    r.taxonomy_version,
+    r.entity_kind_term_id,
+    r.domain_term_id,
+    r.recommendation_family_term_id,
+    r.category_term_id,
+    r.assignment_state_snapshot,
+    r.assignment_method_snapshot,
+    r.legacy_projection_key_snapshot,
+    r.source_snapshot,
+    r.assignment_snapshot_digest,
+    r.candidate_id,
+    r.source_rule_key,
+    r.review_state,
+    r.review_policy_version,
+    r.is_current
     into v_review
   from public.recommendation_category_authority_reviews r
   where r.product_id = p_product_id
@@ -743,7 +763,17 @@ begin
     );
   end if;
 
-  select *
+  select
+    a.product_id,
+    a.taxonomy_version,
+    a.entity_kind_term_id,
+    a.domain_term_id,
+    a.recommendation_family_term_id,
+    a.category_term_id,
+    a.legacy_projection_key,
+    a.assignment_state,
+    a.assignment_method,
+    a.source_snapshot
     into v_assignment
   from public.product_catalog_taxonomy_assignments a
   where a.product_id = p_product_id
