@@ -1,0 +1,57 @@
+{
+  "version": "v21-admission-g4-f1-category-authority-infrastructure-v1",
+  "stage": "V2.1-ADMISSION-G4-F1",
+  "decision": "V21_ADMISSION_G4_F1_REPOSITORY_IMPLEMENTATION_READY",
+  "captured_on": "2026-10-03",
+  "source_main_sha": "3bced23bf8250e52379ce7778610f8c9d0636ee6",
+  "migration": "supabase/migrations/20261003160200_v21_admission_g4_f1_category_authority_v1.sql",
+  "production_applied": false,
+  "reviewed_grant_rows_created_by_migration": 0,
+  "infrastructure": {
+    "ledger": "public.recommendation_category_authority_reviews",
+    "writer": "public.admin_register_recommendation_category_authority_review_v1(uuid,text,jsonb)",
+    "reader": "public.read_recommendation_category_authority_v1(uuid)",
+    "reader_contract": "recommendation-category-authority-read-v1",
+    "initial_product_scope": [
+      "da5df70c-8cdd-4eb2-93b6-ede46c2f171d"
+    ]
+  },
+  "security": {
+    "ledger_rls": true,
+    "service_role_direct_ledger_access": false,
+    "runtime_raw_ledger_select": false,
+    "runtime_raw_taxonomy_select": false,
+    "runtime_raw_taxonomy_version_select": false,
+    "writer_execute": [
+      "service_role"
+    ],
+    "reader_execute": [
+      "recommendation_admission_runtime"
+    ],
+    "reader_owner": "recommendation_admission_reader_owner",
+    "existing_d5c_policy_preserved": true,
+    "fation_taxonomy_policy_additive": true
+  },
+  "mutation_boundary": {
+    "products_category_mutated": false,
+    "taxonomy_assignment_mutated": false,
+    "taxonomy_global_authority_mutated": false,
+    "product_fact_mutated": false,
+    "recommendation_admission_mutated": false,
+    "g3_runtime_wired": false
+  },
+  "frozen_target": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "category": "treatment",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+    "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment"
+  },
+  "deployment_boundary": {
+    "migration_application_authorized": false,
+    "reviewed_grant_write_authorized": false,
+    "g3_runtime_wiring_authorized": false,
+    "recommendation_cutover_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-F1-D1_PRODUCTION_MIGRATION_PREFLIGHT"
+}
