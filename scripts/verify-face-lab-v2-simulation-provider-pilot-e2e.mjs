@@ -14,6 +14,10 @@ for (const required of [
   "FACE_LAB_E2E_PERSIST_OUTPUTS",
   "FACE_LAB_E2E_INTENTS",
   "FACE_LAB_E2E_GENERATIONS",
+  "FACE_LAB_E2E_MAX_OUTPUTS",
+  "FACE_LAB_E2E_LIVE_APPROVAL",
+  "I_ACCEPT_OPENAI_IMAGE_COST",
+  "face_lab_e2e_output_budget_exceeded_",
   "face-lab-g-e2b",
   "repeat_generation_render_spec_mismatch",
   "campaign_runtime_binding_mismatch",
@@ -66,3 +70,26 @@ assert.ok(
 );
 
 console.log("Face Lab G-E2B provider pilot E2E contract verification passed.");
+
+const workflow = readFileSync(
+  new URL("../.github/workflows/face-lab-v2-provider-pilot-smoke.yml", import.meta.url),
+  "utf8"
+);
+
+assert.doesNotMatch(
+  workflow,
+  /\n\s*push:\s*\n/,
+  "paid Face Lab provider workflow must not run on push"
+);
+assert.match(
+  workflow,
+  /workflow_dispatch:/
+);
+assert.match(
+  workflow,
+  /FACE_LAB_E2E_MAX_OUTPUTS/
+);
+assert.match(
+  workflow,
+  /I_ACCEPT_OPENAI_IMAGE_COST/
+);
