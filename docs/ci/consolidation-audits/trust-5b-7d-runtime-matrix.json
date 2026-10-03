@@ -7,6 +7,7 @@
       "authority": "phase5b-controlled-subject-registration",
       "staticPrerequisites": [
         "scripts/verify-trust-phase5b-subject-registration.mjs",
+        "scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs",
         "scripts/verify-product-fact-subject-registration-v1.mjs",
         "scripts/verify-trust-subject-resolution.mjs",
         "scripts/verify-trust-subject-resolution-presentation-hardening.mjs",
