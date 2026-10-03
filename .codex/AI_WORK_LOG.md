@@ -3020,3 +3020,17 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 다음 작업: 원격 후보 SHA의 native jobs/산출물 및 세 manual gate 확인. 이전 과거 API readback은 현재 runtime 증거로 쓰지 않음.
 - 상세 기록: docs/ci/consolidation-audits/mobile-ci-correction-verification.md.
 - 규칙 승격 후보: 없음.
+
+
+### 2026-10-03 / 모바일 native CI 실패의 제한 진단·복구
+
+- 브랜치: codex/mobile-ci-verification / PR #1081 / 후보 2318084515f56cccc9f24eb4d7aa515c92e08542.
+- 작업 유형: 복구형. 실제 runtime failure가 발생해 CI 캐시/선택 실행은 계속 HOLD.
+- expected: 동일 후보 APK/Smoke/20A/20B와 iOS 성공. observed: APK 및 20B/iOS와 기본 검사 PASS, Smoke/20A FAIL. runtime: GitHub Ubuntu Android API35 x86_64 / macOS26 Simulator.
+- failure stage/classification: Smoke의 locale-ko testID와 현재 접근성 label 불일치, 20A 첫 시작에서 SIGSEGV/mqt_v_js/MountingCoordinator::pullTransaction(+706) native crash. 부분 재실행 attempt2의 20A는 EN capture 후 같은 locale selector 불일치로 실패했다.
+- 범위 확장 근거/변경: 직접 consumer인 verify-mobile-android-smoke.sh, capture-mobile-store-assets.sh 및 direct entry/20A verifier. 앱 label·동작, SDK 버전, job/캡처/언어 범위는 변경하지 않음. Windows CRLF는 20A shell 읽기에서 정규화.
+- 검증: entry/camera/20A/topology 및 diff PASS. 실제 verifier를 UI label drift fixture로 실행해 expected exit1 및 명시 diagnostic 확인. 원격 수정 후보 검증 전 IMPLEMENTED_UNVERIFIED.
+- native source 진단: 고정 Screens4.26.0의 관련4파일이 공식 PR4413 수정 전 source와 모두 일치. node_modules 미변경, 공식 수정 backport 제안만 작성하며 추가 범위 승인 요청.
+- 상세/재현: docs/ci/consolidation-audits/mobile-native-runtime-recovery.md, gh run view 37105260119; 외부 ci-audit에 job 로그/logcat/source fingerprints 보존.
+- 다음 작업: native 제한 복구 승인 후 실제 새 후보 재검증, 그 뒤 CI A manual gates 및 B/C 재개. main/production/signing 실행 없음.
+- 규칙 승격 후보: 없음.

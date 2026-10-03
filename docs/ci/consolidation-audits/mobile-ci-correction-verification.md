@@ -77,6 +77,21 @@
 
 이 기준에서 모바일 typecheck, 실제 함수 회귀 20개와 runtime gate 45개(합계 65개), 직접 모바일/CI verifier 14개가 통과했다. 원격 결과는 실제 후보 SHA/run/job/artifact로 별도 기록하며, 그 전에는 다음 캐시/선택 실행 구현을 시작하지 않는다. 서명 배포 workflow는 실행하지 않는다.
 
+## 원격 실행 결과와 제한 복구 — 2026-10-03
+
+PR [#1081](https://github.com/gycha0109-beep/K_beauty/pull/1081), 후보 `2318084515f56cccc9f24eb4d7aa515c92e08542`:
+
+- Android run `37105260119` attempt 1: APK PASS(컴파일 793초), 20B PASS, Smoke/20A FAIL.
+- iOS run `37105260141`: 빌드·설치·Simulator 화면 확인 PASS.
+- Current Main Health 및 모바일 Client/API/Store Readiness PASS. 세 legacy workflow의 PR 자동 실행은 0개였다.
+- Smoke failure는 앱의 현재 접근성 label 대신 예전 testID를 text/content-desc로 찾던 selector 불일치였다. Smoke/20A consumer와 직접 verifier를 현재 label에 맞춰 수정하고 label drift 음성 검사로 재발 방지했다. 앱 label이나 언어 전환 동작을 변경하지 않았다.
+- 20A 최초 failure는 logcat에서 native SIGSEGV를 확인했다. 단독 재실행(attempt 2)은 시작과 EN capture를 지나 예전 locale selector에서 실패했다. 이 재실행을 전체 통과 또는 native 경합 부재 증거로 쓰지 않는다.
+- 검사 실패와 native stack에 근거하여 직접 두 smoke/capture script 및 두 verifier까지 복구 범위를 확장했다. 이 범위 확장 이유를 본 기록에 남겼다. APK/consumer job, 고유 캡처 및 실패 조건은 제거하지 않았다.
+- 수정한 20A verifier는 shell 입력만 LF로 읽어 Windows CRLF 검사 문제도 해결했다. 원본 Windows 명령이 현재 PASS이며, 위 최초 CRLF 실패 기록은 역사적 진단이다. 차단 조건을 약화하지 않았다.
+- native dependency의 추가 수정은 아직 제안/HOLD다. [제한 복구 제안](mobile-native-runtime-recovery.md)의 공식 수정 4개 source와 현재 고정 package의 수정 전 source가 모두 일치한다. 추가 사용자 범위 승인 뒤 구현·runtime 재검증이 필요하다.
+
+단계 A는 아직 IMPLEMENTED_UNVERIFIED이며 B/C는 native failure 복구 이후 진행한다. 원격의 두 실패를 성공으로 우회하거나 불완전한 attempt를 manual gate로 승인하지 않았다. main 병합·운영 배포·서명 workflow 실행은 수행하지 않았다.
+
 ## 복구 및 다음 단계
 
 필요하면 이번 단계의 일반 후속 커밋으로 세 workflow의 자동 진입과 이전 polling 계약 및 책임/verifier를 함께 복원한다. 기존 57개 모바일 보완 변경까지 되돌리거나 강제 Git 작업을 사용하지 않는다.

@@ -8,6 +8,8 @@ const cameraPath = path.join(root, "apps/mobile/features/camera/NativeFaceCamera
 const myPath = path.join(root, "apps/mobile/lib/my.ts");
 const smokePath = path.join(root, "scripts/verify-mobile-android-smoke.sh");
 const iosSmokePath = path.join(root, "scripts/verify-mobile-ios-smoke.sh");
+const shellPath = path.join(root, "apps/mobile/components/ScreenShell.tsx");
+const storeCapturePath = path.join(root, "scripts/capture-mobile-store-assets.sh");
 
 function fail(message) {
   console.error(`MOBILE_INITIAL_ENTRY_ROUTING=FAIL ${message}`);
@@ -22,7 +24,7 @@ function forbidText(source, token, label) {
   if (source.includes(token)) fail(`${label}:forbidden:${token}`);
 }
 
-for (const file of [homePath, cameraPath, myPath, smokePath, iosSmokePath]) {
+for (const file of [homePath, cameraPath, myPath, smokePath, iosSmokePath, shellPath, storeCapturePath]) {
   if (!fs.existsSync(file)) fail(`missing-file:${path.relative(root, file)}`);
 }
 
@@ -31,6 +33,8 @@ const camera = fs.readFileSync(cameraPath, "utf8");
 const my = fs.readFileSync(myPath, "utf8");
 const smoke = fs.readFileSync(smokePath, "utf8");
 const iosSmoke = fs.readFileSync(iosSmokePath, "utf8");
+const shell = fs.readFileSync(shellPath, "utf8");
+const storeCapture = fs.readFileSync(storeCapturePath, "utf8");
 
 requireText(home, 'import { useIsFocused, useRouter } from "expo-router";', "focus-authority");
 requireText(home, 'import { getNativeSession } from "../lib/auth";', "session-authority");
@@ -87,6 +91,14 @@ requireText(smoke, 'wait_for_text "SKIN ANALYSIS"', "android-cold-start-analyze"
 requireText(smoke, 'wait_for_text "Camera ready"', "android-cold-start-camera");
 requireText(smoke, "MOBILE_ANDROID_INITIAL_ENTRY_ANALYZE=PASS", "android-cold-start-evidence");
 requireText(smoke, "MOBILE_ANDROID_SAME_RUNTIME_HOME_ACCESS=PASS", "android-home-reentry-evidence");
+// Tap through the user-facing accessibility label actually exposed by the shell.
+// The testID is a resource-id, not a text/content-desc selector in tap_text.
+const localeSwitchLabel = shell.match(/accessibilityLabel=\{locale === "ko" \? "[^"]+" : "([^"]+)"\}/)?.[1];
+if (!localeSwitchLabel) fail("shell-locale-accessibility-label-missing");
+requireText(smoke, `tap_text "${localeSwitchLabel}"`, "android-locale-accessibility-selector");
+forbidText(smoke, 'tap_text "locale-ko"', "stale-locale-testid-text-selector");
+requireText(storeCapture, `tap_text "${localeSwitchLabel}"`, "store-locale-accessibility-selector");
+forbidText(storeCapture, 'tap_text "locale-ko"', "stale-store-locale-testid-text-selector");
 forbidText(smoke, 'wait_for_text "Find what fits your skin today"\nadb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"\n\ntap_text "Analyze"', "stale-home-first-smoke");
 
 

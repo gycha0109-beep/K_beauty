@@ -323,7 +323,7 @@ printf 'MOBILE_ANDROID_PREMIUM_ROUTE_SMOKE=PASS\n'
 tap_text "Home"
 wait_for_text "BEJEWELY"
 
-tap_text "locale-ko"
+tap_text "Switch language to Korean"
 wait_for_text "BEJEWELY"
 wait_for_text "오늘 내 피부에 맞는 루틴 찾기"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-ko.png"

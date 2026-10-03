@@ -637,7 +637,7 @@ capture_png "02-analyze-en-1080x1920.png"
 reset_store_capture_session
 wait_for_text "BEJEWELY"
 wait_for_text "Find what fits your skin today"
-tap_text "locale-ko"
+tap_text "Switch language to Korean"
 wait_for_text "오늘 내 피부에 맞는 루틴 찾기"
 capture_png "01-home-ko-1080x1920.png"
 
