@@ -905,11 +905,22 @@ grant execute on function
   to recommendation_admission_runtime;
 
 -- Transfer only the reader to the existing narrow NOLOGIN reader owner.
+-- Production already grants postgres membership in this owner role. Preserve it.
+do $
+begin
+  if not pg_has_role(
+    'postgres',
+    'recommendation_admission_reader_owner',
+    'MEMBER'
+  ) then
+    raise exception 'G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_REQUIRED';
+  end if;
+end
+$;
+
 grant create on schema public to recommendation_admission_reader_owner;
-grant recommendation_admission_reader_owner to postgres;
 alter function public.read_recommendation_category_authority_v1(uuid)
   owner to recommendation_admission_reader_owner;
-revoke recommendation_admission_reader_owner from postgres;
 revoke create on schema public from recommendation_admission_reader_owner;
 
 do $$
@@ -920,6 +931,14 @@ begin
     'CREATE'
   ) then
     raise exception 'G4_F1_READER_OWNER_SCHEMA_CREATE_FORBIDDEN';
+  end if;
+
+  if not pg_has_role(
+    'postgres',
+    'recommendation_admission_reader_owner',
+    'MEMBER'
+  ) then
+    raise exception 'G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_MUST_PERSIST';
   end if;
 
   if has_table_privilege(
