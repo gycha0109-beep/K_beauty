@@ -161,6 +161,36 @@ function validateTemporaryAdvisoryException(name, report) {
     .sort();
 
   const expectedPackages = [...TEMPORARY_ADVISORY_EXCEPTION.propagatedHighPackages].sort();
+
+  if (
+    JSON.stringify(highOrCriticalPackages) !==
+    JSON.stringify(expectedPackages)
+  ) {
+    const highLeafDiagnostic =
+      Object.fromEntries(
+        highOrCriticalPackages.map(
+          (packageName) => [
+            packageName,
+            collectLeafAdvisories(
+              packageName,
+              report
+            ).filter(
+              (leaf) =>
+                ["high", "critical"].includes(
+                  leaf.severity
+                )
+            )
+          ]
+        )
+      );
+
+    console.log(
+      `SUPPLY_CHAIN_HIGH_PROPAGATION_DIAGNOSTIC_${name}=${JSON.stringify(
+        highLeafDiagnostic
+      )}`
+    );
+  }
+
   assert.deepEqual(
     highOrCriticalPackages,
     expectedPackages,
