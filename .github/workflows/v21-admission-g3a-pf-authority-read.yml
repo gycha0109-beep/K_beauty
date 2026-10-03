@@ -22,6 +22,9 @@ on:
       - "fixtures/recommendation-governance/g4f1-p0-ledger-reader-scenarios-v1.json"
       - "evidence/recommendation-governance/v21-admission-g4-f1-p0-ledger-reader-preflight-v1.json"
       - "scripts/verify-v21-admission-g4-f1-p0-ledger-reader-preflight-v1.mjs"
+      - "supabase/migrations/20261003160200_v21_admission_g4_f1_category_authority_v1.sql"
+      - "evidence/recommendation-governance/v21-admission-g4-f1-category-authority-infrastructure-v1.json"
+      - "scripts/verify-v21-admission-g4-f1-category-authority-infrastructure-v1.mjs"
   pull_request:
     branches:
       - main
@@ -43,6 +46,9 @@ on:
       - "fixtures/recommendation-governance/g4f1-p0-ledger-reader-scenarios-v1.json"
       - "evidence/recommendation-governance/v21-admission-g4-f1-p0-ledger-reader-preflight-v1.json"
       - "scripts/verify-v21-admission-g4-f1-p0-ledger-reader-preflight-v1.mjs"
+      - "supabase/migrations/20261003160200_v21_admission_g4_f1_category_authority_v1.sql"
+      - "evidence/recommendation-governance/v21-admission-g4-f1-category-authority-infrastructure-v1.json"
+      - "scripts/verify-v21-admission-g4-f1-category-authority-infrastructure-v1.mjs"
 
 permissions:
   contents: read
@@ -92,6 +98,9 @@ jobs:
 
       - name: Verify G4-F1-P0 ledger and protected-reader preflight
         run: node scripts/verify-v21-admission-g4-f1-p0-ledger-reader-preflight-v1.mjs
+
+      - name: Verify G4-F1 category authority infrastructure
+        run: node scripts/verify-v21-admission-g4-f1-category-authority-infrastructure-v1.mjs
 
   runtime-probe:
     name: G3A deployed runtime authority probe
