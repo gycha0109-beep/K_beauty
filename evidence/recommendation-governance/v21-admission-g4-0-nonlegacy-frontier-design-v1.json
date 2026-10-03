@@ -1,0 +1,288 @@
+{
+  "version": "v21-admission-g4-0-nonlegacy-frontier-design-v1",
+  "stage": "V2.1-ADMISSION-G4-0",
+  "decision": "V21_ADMISSION_G4_0_NONLEGACY_FRONTIER_DESIGN_FROZEN",
+  "source_main_sha": "f7e27b64052ce11d051e384f8f7f85d9a93b86fc",
+  "mode": "ZERO_WRITE_DESIGN",
+  "captured_on": "2026-10-03",
+  "upstream": {
+    "product_fact_closeout": {
+      "stage": "V2.1-8H",
+      "decision": "V21_8H_FINAL_PRODUCT_FACT_CONFIRMATION_PASS",
+      "current_facts": 101
+    },
+    "recommendation_governance": {
+      "g2": "canonical-recommendation-initial-admission-authority-v1",
+      "g3": "v21-admission-g3-production-candidate-gate-v1",
+      "legacy_corpus_count": 164,
+      "nonlegacy_runtime_requires_protected_pf_authority": true
+    },
+    "taxonomy": {
+      "version": "catalog-taxonomy-v1",
+      "lifecycle_state": "shadow",
+      "authority_mode": "shadow_only",
+      "catalog_only_recommendation_leak_required": 0
+    }
+  },
+  "corrections_to_initial_hypothesis": {
+    "eight_h_products_all_legacy": true,
+    "eight_h_products": [
+      {
+        "slug": "drg",
+        "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3"
+      },
+      {
+        "slug": "atopalm",
+        "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1"
+      },
+      {
+        "slug": "dr20",
+        "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247"
+      },
+      {
+        "slug": "beplain",
+        "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412"
+      }
+    ],
+    "implication": "Do not research or confirm additional Product Facts for these four merely to unlock initial Recommendation admission; G3 admits them through LEGACY_COMPATIBILITY_ADMISSION."
+  },
+  "nonlegacy_frontier": {
+    "product_count": 12,
+    "candidate_classification_counts": {
+      "sunscreen": 11,
+      "treatment": 1
+    },
+    "g2_supported_frontier_count": 1,
+    "selected_product": {
+      "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+      "brand": "파티온",
+      "name": "노스카나인 트러블 세럼",
+      "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+      "intake_id": "15566618-d039-44c5-ad45-6413ee399db3",
+      "market": "KR",
+      "legacy_category_projection": null,
+      "canonical_taxonomy": {
+        "assignment_count": 1,
+        "taxonomy_version": "catalog-taxonomy-v1",
+        "assignment_state": "shadow",
+        "assignment_method": "source_classification",
+        "canonical_category": "treatment",
+        "recommendation_family": "treatment",
+        "domain": "skincare",
+        "entity_kind": "cosmetic",
+        "legacy_projection_key": null,
+        "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment"
+      },
+      "catalog_identity": {
+        "state": "resolved",
+        "version": "crawler-identity-resolution-v1",
+        "providers": [
+          "hwahae",
+          "fation_official"
+        ],
+        "convergence": [
+          "brand",
+          "product_name",
+          "presentation"
+        ],
+        "presentation": "30 ml / 1.01 fl. oz.",
+        "treated_as_product_fact_authority": false
+      },
+      "product_fact_prestate": {
+        "subject_count": 0,
+        "current_fact_count": 0,
+        "intake_identity_state": "SUBJECT_CREATION_REQUIRED",
+        "intake_trust_state": "REVIEW_REQUIRED",
+        "tasks": [
+          {
+            "id": "e4677942-4132-43b9-ac13-1ddf3d8167d1",
+            "fact_key": "contains_active",
+            "state": "REVIEW_REQUIRED",
+            "blocker_code": "SUBJECT_CREATION_REQUIRED",
+            "attempt_count": 0
+          },
+          {
+            "id": "3ef281e7-a246-4e90-a53f-9ea1deb6164a",
+            "fact_key": "active_concentration",
+            "state": "REVIEW_REQUIRED",
+            "blocker_code": "SUBJECT_CREATION_REQUIRED",
+            "attempt_count": 0
+          },
+          {
+            "id": "d2eb907c-7185-4e61-bdd2-0259f06babb4",
+            "fact_key": "recommended_use_frequency",
+            "state": "REVIEW_REQUIRED",
+            "blocker_code": "SUBJECT_CREATION_REQUIRED",
+            "attempt_count": 0
+          }
+        ]
+      }
+    },
+    "excluded_nonlegacy": {
+      "count": 11,
+      "reason": "Current candidate taxonomy classification is sunscreen; G2 initial-admission policy does not support sunscreen.",
+      "inference_from_name_forbidden": true
+    }
+  },
+  "runtime_risk": {
+    "subject_registration_current_reprocess": "process_catalog_trust_product_v1(uuid)",
+    "current_reprocess_sha256": "700a6d2c1186400b28f61c334498052520a5b23eb39db97bc314945d8bc9f9d2",
+    "current_reprocess_behavior": "selects latest effective registry dynamically",
+    "required_reprocess": "process_catalog_trust_product_v3(uuid,text)",
+    "required_reprocess_sha256": "bfbeee3b896034129fb4c76ff10dab91df7d2c89ac954cdf75d2454da2e8b704",
+    "required_registry_version": "product-fact-registry-cross-category-v1",
+    "rule": "No FATION Subject registration may execute until the subject-registration reprocess path is registry-pinned or an equivalent exact-registry contract is verified."
+  },
+  "frozen_architecture": {
+    "legacy_projection_rule": "Do not backfill products.category for FATION. products.category is a legacy Recommendation compatibility projection.",
+    "canonical_taxonomy_rule": "The existing product_catalog_taxonomy_assignments row is the canonical classification lineage and remains shadow.",
+    "taxonomy_authority_rule": "catalog-taxonomy-v1 shadow/shadow_only is not itself Recommendation admission authority.",
+    "category_bridge_rule": "Recommendation category authority must be a separate product-scoped reviewed grant derived from the exact existing taxonomy assignment; it must not globally activate catalog-taxonomy-v1.",
+    "product_fact_rule": "Catalog identity/taxonomy authority never creates Product Fact Subject or Fact authority automatically.",
+    "task_rule": "Do not call GPT/TRUST task claim workers while the three FATION tasks are identity-blocked.",
+    "g2_rule": "contains_active is the mandatory Product Fact input for supported treatment admission. active_concentration and recommended_use_frequency are optional PDA context and must not become artificial admission blockers.",
+    "cutover_rule": "No Recommendation admission/runtime cutover occurs until Product Fact and category-authority lanes independently pass and an explicit final cutover gate is authorized."
+  },
+  "staged_plan": [
+    {
+      "stage": "V2.1-ADMISSION-G4-A",
+      "name": "SUBJECT_REGISTRATION_REPROCESS_CONTRACT",
+      "production_writes": 0,
+      "purpose": "Harden the existing Admin Subject registration flow to reprocess TRUST with exact Registry v1 via process_catalog_trust_product_v3 (or an equivalently pinned verified contract).",
+      "exit": [
+        "isolated runtime proves SUBJECT_CREATION_REQUIRED -> exact Subject -> three RESEARCH_PENDING tasks",
+        "Evidence writes = 0",
+        "Product Fact Current writes = 0",
+        "Recommendation writes = 0"
+      ]
+    },
+    {
+      "stage": "V2.1-ADMISSION-G4-B",
+      "name": "FATION_SUBJECT_REGISTRATION",
+      "purpose": "Run reviewed Subject identity preflight and explicit controlled registration for FATION only.",
+      "required_reviewed_identity": [
+        "variantKey or explicit reviewed-null",
+        "formulationRevisionKey",
+        "formulationLabel if authoritative",
+        "marketApplicability=KR",
+        "region/validity only when supported"
+      ],
+      "expected_write_envelope": {
+        "product_fact_subjects": 1,
+        "subject_registration_audit": 1,
+        "evidence": 0,
+        "product_fact_current": 0,
+        "recommendations": 0
+      },
+      "expected_poststate": {
+        "intake_identity_state": "EXACT_SUBJECT_FOUND",
+        "intake_trust_state": "RESEARCH_PENDING",
+        "research_tasks_subject_bound": 3,
+        "research_tasks_state": "RESEARCH_PENDING",
+        "subject_creation_blockers": 0
+      }
+    },
+    {
+      "stage": "V2.1-ADMISSION-G4-C",
+      "name": "FATION_REQUIRED_FACT_RESEARCH",
+      "purpose": "Research official/product-specific evidence after Subject identity exists.",
+      "mandatory_for_initial_admission": [
+        "contains_active"
+      ],
+      "optional_context": [
+        "active_concentration",
+        "recommended_use_frequency"
+      ],
+      "rule": "Optional context may improve exfoliation_load but missing optional context must remain uncertainty, not a synthetic admission blocker.",
+      "recommendation_writes": 0
+    },
+    {
+      "stage": "V2.1-ADMISSION-G4-D",
+      "name": "FATION_EVIDENCE_REVIEW_PREFLIGHT",
+      "purpose": "Materialize admissible Evidence, prepare review, and run Product Fact confirmation preflight.",
+      "stop_before": "Product Fact confirmation",
+      "recommendation_writes": 0
+    },
+    {
+      "stage": "V2.1-ADMISSION-G4-E",
+      "name": "FATION_PRODUCT_FACT_CONFIRMATION",
+      "purpose": "Separately authorize and confirm only evidence-supported FATION Product Facts.",
+      "condition": "Recommendation category-authority bridge remains inactive, so Product Fact confirmation alone cannot cut FATION into G3.",
+      "required_for_initial_admission": [
+        "Current supported contains_active at product_specific_primary"
+      ],
+      "recommendation_writes": 0
+    },
+    {
+      "stage": "V2.1-ADMISSION-G4-F",
+      "name": "FATION_CATEGORY_AUTHORITY_SHADOW",
+      "production_mode": "shadow_only",
+      "purpose": "Introduce a Recommendation-specific product-scoped category-authority grant/read contract over the existing FATION shadow taxonomy assignment.",
+      "minimum_grant_identity": [
+        "product_id",
+        "taxonomy_version",
+        "category_term_id",
+        "assignment_state/assignment_method snapshot",
+        "source_rule_key",
+        "candidate_id",
+        "assignment/source snapshot digest",
+        "review policy version",
+        "reviewed actor/time",
+        "active/revoked state"
+      ],
+      "invariants": [
+        "products.category remains NULL",
+        "catalog-taxonomy-v1 remains shadow/shadow_only",
+        "existing taxonomy assignment remains unchanged unless separately governed",
+        "G3 production decision still uses existing path",
+        "dual-read shadow must show FATION category=treatment without catalog-only Recommendation leak"
+      ]
+    },
+    {
+      "stage": "V2.1-ADMISSION-G4-G",
+      "name": "FATION_INITIAL_ADMISSION_CUTOVER",
+      "purpose": "Explicitly activate the reviewed nonlegacy category-authority read for FATION and validate G3/G2 end to end.",
+      "preconditions": [
+        "FATION Product Fact authority resolved",
+        "FATION product-scoped category authority resolved",
+        "G2 shadow result is INITIAL_ADMISSION_GRANT",
+        "legacy corpus cardinality remains exactly 164",
+        "no other nonlegacy product becomes grantable"
+      ],
+      "expected_scope": {
+        "newly_admitted_nonlegacy_products": 1,
+        "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d"
+      },
+      "forbidden": [
+        "score formula changes",
+        "ranking policy changes",
+        "CandidatePolicy bypass",
+        "sunscreen admission expansion",
+        "global taxonomy authority cutover",
+        "public activation beyond existing Recommendation runtime semantics"
+      ]
+    }
+  ],
+  "stop_conditions": [
+    "FATION official/candidate identity no longer converges on exact product/presentation",
+    "reviewed Subject formulation identity is ambiguous",
+    "registry v1 write admissibility fails",
+    "FATION taxonomy assignment/source rule drifts",
+    "catalog-taxonomy-v1 is no longer shadow/shadow_only without a separately reviewed migration",
+    "any of the 164 legacy compatibility products changes admission mode",
+    "any non-target nonlegacy product becomes newly admitted",
+    "contains_active evidence is insufficient or below product_specific_primary",
+    "G2/G3 output differs for reasons other than the bounded FATION admission"
+  ],
+  "authority_boundary": {
+    "production_writes_in_g4_0": 0,
+    "subject_registration_authorized": false,
+    "research_worker_claim_authorized": false,
+    "evidence_ingest_authorized": false,
+    "product_fact_confirmation_authorized": false,
+    "category_authority_grant_authorized": false,
+    "recommendation_admission_cutover_authorized": false,
+    "recommendation_ranking_change_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-A_SUBJECT_REGISTRATION_REPROCESS_CONTRACT"
+}
