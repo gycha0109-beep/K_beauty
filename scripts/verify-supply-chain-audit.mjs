@@ -70,20 +70,83 @@ const BASELINE = Object.freeze({
   }),
 });
 
-const TEMPORARY_ADVISORY_EXCEPTION = Object.freeze({
-  id: "GHSA-86w9-cpqp-85rv",
-  source: 1240912,
-  package: "node-forge",
-  affectedRange: "<=1.4.0",
-  lockedVersion: "1.4.0",
-  expiresAt: "2026-10-16T00:00:00.000Z",
-  propagatedHighPackages: Object.freeze([
-    "@expo/cli",
-    "@expo/code-signing-certificates",
-    "expo",
-    "node-forge",
-  ]),
-});
+const TEMPORARY_ADVISORY_EXCEPTIONS = Object.freeze([
+  Object.freeze({
+    id: "GHSA-86w9-cpqp-85rv",
+    source: 1240912,
+    package: "node-forge",
+    affectedRange: "<=1.4.0",
+    lockPath: "node_modules/node-forge",
+    lockedVersion: "1.4.0",
+    expiresAt: "2026-10-16T00:00:00.000Z",
+    propagatedHighPackages: Object.freeze({
+      production: Object.freeze([
+        "@expo/cli",
+        "@expo/code-signing-certificates",
+        "expo",
+        "node-forge",
+      ]),
+      all: Object.freeze([
+        "@expo/cli",
+        "@expo/code-signing-certificates",
+        "expo",
+        "node-forge",
+      ]),
+    }),
+  }),
+  Object.freeze({
+    id: "GHSA-vfj7-8cjw-p6xm",
+    source: 1240992,
+    package: "braces",
+    affectedRange: "<=3.0.3",
+    lockPath: "node_modules/braces",
+    lockedVersion: "3.0.3",
+    expiresAt: "2026-10-10T00:00:00.000Z",
+    propagatedHighPackages: Object.freeze({
+      production: Object.freeze([
+        "@expo/cli",
+        "@expo/metro",
+        "@expo/metro-config",
+        "@expo/metro-file-map",
+        "@react-native/community-cli-plugin",
+        "@react-native/metro-config",
+        "@react-native/virtualized-lists",
+        "braces",
+        "expo",
+        "metro",
+        "metro-config",
+        "metro-file-map",
+        "metro-transform-worker",
+        "micromatch",
+        "react-native",
+        "react-native-reanimated",
+        "react-native-worklets",
+      ]),
+      all: Object.freeze([
+        "@expo/cli",
+        "@expo/metro",
+        "@expo/metro-config",
+        "@expo/metro-file-map",
+        "@react-native/community-cli-plugin",
+        "@react-native/metro-config",
+        "@react-native/virtualized-lists",
+        "braces",
+        "chokidar",
+        "expo",
+        "fast-glob",
+        "metro",
+        "metro-config",
+        "metro-file-map",
+        "metro-transform-worker",
+        "micromatch",
+        "react-native",
+        "react-native-reanimated",
+        "react-native-worklets",
+        "tailwindcss",
+      ]),
+    }),
+  }),
+]);
 
 function summarizePackages(report) {
   return Object.entries(report?.vulnerabilities || {})
@@ -139,32 +202,76 @@ function collectLeafAdvisories(packageName, report, seen = new Set()) {
   return leaves;
 }
 
-function validateTemporaryAdvisoryException(name, report) {
-  const expiry = Date.parse(TEMPORARY_ADVISORY_EXCEPTION.expiresAt);
-  assert.ok(Number.isFinite(expiry), "temporary advisory exception expiry is invalid");
+function packagesForTemporaryException(exception, name) {
+  const packages =
+    exception?.propagatedHighPackages?.[name];
+
   assert.ok(
-    Date.now() < expiry,
-    `${name}: temporary advisory exception expired at ${TEMPORARY_ADVISORY_EXCEPTION.expiresAt}`,
+    Array.isArray(packages),
+    `${name}: temporary advisory exception ${exception?.id || "unknown"} has no scoped propagated package set`,
   );
 
-  const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
-  const lockedNodeForge = lock?.packages?.["node_modules/node-forge"]?.version ?? null;
-  assert.equal(
-    lockedNodeForge,
-    TEMPORARY_ADVISORY_EXCEPTION.lockedVersion,
-    `${name}: node-forge lock version changed; remove or reassess the temporary advisory exception`,
+  return packages;
+}
+
+function leafMatchesTemporaryException(leaf, exception) {
+  return (
+    leaf?.source === exception.source &&
+    leaf?.name === exception.package &&
+    leaf?.range === exception.affectedRange &&
+    leaf?.url === `https://github.com/advisories/${exception.id}` &&
+    leaf?.severity === "high"
   );
+}
+
+function validateTemporaryAdvisoryExceptions(name, report) {
+  const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
+  const expectedPackageSet = new Set();
+  const exceptionSummaries = [];
+
+  for (const exception of TEMPORARY_ADVISORY_EXCEPTIONS) {
+    const expiry = Date.parse(exception.expiresAt);
+    assert.ok(
+      Number.isFinite(expiry),
+      `${name}: temporary advisory exception ${exception.id} expiry is invalid`,
+    );
+    assert.ok(
+      Date.now() < expiry,
+      `${name}: temporary advisory exception ${exception.id} expired at ${exception.expiresAt}`,
+    );
+
+    const lockedVersion = lock?.packages?.[exception.lockPath]?.version ?? null;
+    assert.equal(
+      lockedVersion,
+      exception.lockedVersion,
+      `${name}: ${exception.package} lock version changed; remove or reassess temporary advisory exception ${exception.id}`,
+    );
+
+    for (const packageName of packagesForTemporaryException(exception, name)) {
+      expectedPackageSet.add(packageName);
+    }
+
+    exceptionSummaries.push({
+      id: exception.id,
+      source: exception.source,
+      package: exception.package,
+      affectedRange: exception.affectedRange,
+      expiresAt: exception.expiresAt,
+      lockedVersion,
+      packages: [...packagesForTemporaryException(exception, name)].sort(),
+    });
+  }
 
   const highOrCriticalPackages = Object.entries(report?.vulnerabilities || {})
     .filter(([, entry]) => ["high", "critical"].includes(entry?.severity))
     .map(([packageName]) => packageName)
     .sort();
+  const expectedPackages = [...expectedPackageSet].sort();
 
-  const expectedPackages = [...TEMPORARY_ADVISORY_EXCEPTION.propagatedHighPackages].sort();
   assert.deepEqual(
     highOrCriticalPackages,
     expectedPackages,
-    `${name}: high/critical package set changed; temporary advisory exception cannot apply`,
+    `${name}: high/critical package set changed; scoped temporary advisory exceptions cannot apply`,
   );
 
   for (const packageName of expectedPackages) {
@@ -178,40 +285,35 @@ function validateTemporaryAdvisoryException(name, report) {
     );
 
     for (const leaf of highLeaves) {
-      assert.equal(
-        leaf.source,
-        TEMPORARY_ADVISORY_EXCEPTION.source,
-        `${name}: ${packageName} includes an unapproved high advisory source`,
+      const matched = TEMPORARY_ADVISORY_EXCEPTIONS.some(
+        (exception) =>
+          packagesForTemporaryException(exception, name).includes(packageName) &&
+          leafMatchesTemporaryException(leaf, exception),
       );
-      assert.equal(
-        leaf.name,
-        TEMPORARY_ADVISORY_EXCEPTION.package,
-        `${name}: ${packageName} high advisory does not resolve to node-forge`,
+
+      assert.ok(
+        matched,
+        `${name}: ${packageName} includes an unapproved high/critical advisory leaf ${JSON.stringify(leaf)}`,
       );
-      assert.equal(
-        leaf.range,
-        TEMPORARY_ADVISORY_EXCEPTION.affectedRange,
-        `${name}: node-forge affected range changed`,
+    }
+  }
+
+  for (const exception of TEMPORARY_ADVISORY_EXCEPTIONS) {
+    for (const packageName of packagesForTemporaryException(exception, name)) {
+      const highLeaves = collectLeafAdvisories(packageName, report).filter((leaf) =>
+        ["high", "critical"].includes(leaf.severity),
       );
-      assert.equal(
-        leaf.url,
-        `https://github.com/advisories/${TEMPORARY_ADVISORY_EXCEPTION.id}`,
-        `${name}: node-forge high advisory URL changed`,
-      );
-      assert.equal(
-        leaf.severity,
-        "high",
-        `${name}: node-forge advisory severity changed`,
+      assert.ok(
+        highLeaves.some((leaf) => leafMatchesTemporaryException(leaf, exception)),
+        `${name}: ${packageName} no longer traces to temporary exception ${exception.id}; remove or reassess that exception`,
       );
     }
   }
 
   return {
-    id: TEMPORARY_ADVISORY_EXCEPTION.id,
-    expiresAt: TEMPORARY_ADVISORY_EXCEPTION.expiresAt,
     allowedHighPackageCount: expectedPackages.length,
-    lockedNodeForge,
     packages: expectedPackages,
+    exceptions: exceptionSummaries,
   };
 }
 
@@ -250,11 +352,11 @@ const all = {
   packages: summarizePackages(allResult.report),
 };
 
-const productionException = validateTemporaryAdvisoryException(
+const productionException = validateTemporaryAdvisoryExceptions(
   "production",
   production.report,
 );
-const allException = validateTemporaryAdvisoryException("all", all.report);
+const allException = validateTemporaryAdvisoryExceptions("all", all.report);
 
 const productionAdjusted = assertNoRegression(
   "production",
@@ -273,7 +375,7 @@ fs.writeFileSync(
   JSON.stringify(
     {
       baseline: BASELINE,
-      temporaryAdvisoryException: TEMPORARY_ADVISORY_EXCEPTION,
+      temporaryAdvisoryExceptions: TEMPORARY_ADVISORY_EXCEPTIONS,
       production: {
         ...production,
         adjustedVulnerabilities: productionAdjusted,
@@ -312,4 +414,4 @@ console.log(
 console.log(
   `SUPPLY_CHAIN_AUDIT_ALL_PACKAGES=${JSON.stringify(all.packages)}`,
 );
-console.log("SUPPLY_CHAIN_AUDIT=PASS baseline-non-regression-with-scoped-temporary-exception");
+console.log("SUPPLY_CHAIN_AUDIT=PASS baseline-non-regression-with-scoped-temporary-exceptions");
