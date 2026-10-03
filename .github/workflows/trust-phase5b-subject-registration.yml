@@ -10,6 +10,9 @@ on:
       - "app/api/admin/trust/subject-registration/**"
       - "lib/admin/trust-subject-identity.js"
       - "lib/admin/trust-subject-registration.js"
+      - "lib/admin/trust-subject-reprocess-contract.js"
+      - "scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs"
+      - "evidence/recommendation-governance/v21-admission-g4-a-subject-registration-reprocess-contract-v1.json"
       - "scripts/verify-trust-phase5b-subject-registration.mjs"
       - ".github/workflows/trust-phase5b-subject-registration.yml"
   push:
@@ -19,6 +22,9 @@ on:
       - "app/api/admin/trust/subject-registration/**"
       - "lib/admin/trust-subject-identity.js"
       - "lib/admin/trust-subject-registration.js"
+      - "lib/admin/trust-subject-reprocess-contract.js"
+      - "scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs"
+      - "evidence/recommendation-governance/v21-admission-g4-a-subject-registration-reprocess-contract-v1.json"
       - "scripts/verify-trust-phase5b-subject-registration.mjs"
       - ".github/workflows/trust-phase5b-subject-registration.yml"
   workflow_dispatch:
@@ -78,6 +84,10 @@ jobs:
       - name: Verify Phase 5B controlled Subject contract
         if: github.event_name == 'workflow_dispatch'
         run: node scripts/verify-trust-phase5b-subject-registration.mjs
+
+      - name: Verify G4-A registry-pinned Subject reprocess
+        if: github.event_name == 'workflow_dispatch'
+        run: node scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs
 
       - name: Verify existing governed Subject authority
         if: github.event_name == 'workflow_dispatch'
