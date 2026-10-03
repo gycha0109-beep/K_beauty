@@ -6,6 +6,9 @@ import {
   issueFaceLabSimulationReviewTicket
 } from "@/lib/face-lab-v2/simulation-review-ticket-core";
 import {
+  estimateFaceLabImageCost
+} from "@/lib/face-lab-v2/image-generation-cost";
+import {
   buildFaceLabSimulationCanonical,
   buildFaceLabSimulationRenderSpec,
   findFaceLabSimulationCanonicalLook,
@@ -78,6 +81,88 @@ function parseJsonField(value, maxChars) {
   } catch {
     return null;
   }
+}
+
+function buildSimulationTelemetryHeaders(
+  simulation
+) {
+  const headers = {};
+  const attemptCount =
+    simulation?.telemetry
+      ?.attemptCount;
+
+  if (
+    Number.isSafeInteger(
+      attemptCount
+    ) &&
+    attemptCount >= 1
+  ) {
+    headers[
+      "X-Face-Lab-Provider-Attempts"
+    ] = String(attemptCount);
+  }
+
+  const cost =
+    estimateFaceLabImageCost(
+      simulation?.telemetry
+        ?.usage
+    );
+
+  if (!cost) {
+    return headers;
+  }
+
+  const add =
+    (
+      name,
+      value
+    ) => {
+      if (
+        Number.isSafeInteger(
+          value
+        ) &&
+        value >= 0
+      ) {
+        headers[name] =
+          String(value);
+      }
+    };
+
+  add(
+    "X-Face-Lab-Usage-Input-Tokens",
+    cost.usage.inputTokens
+  );
+  add(
+    "X-Face-Lab-Usage-Input-Image-Tokens",
+    cost.usage.inputImageTokens
+  );
+  add(
+    "X-Face-Lab-Usage-Input-Text-Tokens",
+    cost.usage.inputTextTokens
+  );
+  add(
+    "X-Face-Lab-Usage-Output-Tokens",
+    cost.usage.outputTokens
+  );
+  add(
+    "X-Face-Lab-Usage-Output-Image-Tokens",
+    cost.usage.outputImageTokens
+  );
+  add(
+    "X-Face-Lab-Usage-Total-Tokens",
+    cost.usage.totalTokens
+  );
+  add(
+    "X-Face-Lab-Estimated-Cost-Nano-USD",
+    cost.estimatedCostNanoUsd
+  );
+
+  headers[
+    "X-Face-Lab-Cost-Pricing-Version"
+  ] =
+    cost.pricingVersion;
+
+  return headers;
 }
 
 async function failGuardedResponse(
@@ -558,6 +643,10 @@ export async function POST(request) {
                 reviewTicket.token,
               "X-Face-Lab-Review-Expires-At":
                 reviewTicket.expiresAt
+,
+              ...buildSimulationTelemetryHeaders(
+                simulation
+              )
             })
         }
       ),
