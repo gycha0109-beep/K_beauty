@@ -14,6 +14,7 @@ const expected = {
   "trust-phase5b-subject-registration.yml": {
     "scripts": [
       "scripts/verify-trust-phase5b-subject-registration.mjs",
+      "scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs",
       "scripts/verify-product-fact-subject-registration-v1.mjs",
       "scripts/verify-trust-subject-resolution.mjs",
       "scripts/verify-trust-subject-resolution-presentation-hardening.mjs",
@@ -25,7 +26,7 @@ const expected = {
       "stop --workdir"
     ],
     "replay": false,
-    "fallbackSteps": 4
+    "fallbackSteps": 5
   },
   "trust-phase6a-reentry.yml": {
     "scripts": [
@@ -94,7 +95,7 @@ const expected = {
 };
 
 const canonicalScripts = [...new Set(Object.values(expected).flatMap((contract) => contract.scripts))];
-assert.equal(canonicalScripts.length, 14, "TRUST canonical static script inventory drift");
+assert.equal(canonicalScripts.length, 15, "TRUST canonical static script inventory drift");
 for (const script of canonicalScripts) {
   assert.equal(count(canonical, `node ${script}`), 1, `${script}: canonical automatic execution must be exactly once`);
 }

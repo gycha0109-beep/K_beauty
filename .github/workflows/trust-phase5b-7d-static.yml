@@ -9,6 +9,9 @@ on:
       - "app/api/admin/trust/subject-registration/**"
       - "lib/admin/trust-subject-identity.js"
       - "lib/admin/trust-subject-registration.js"
+      - "lib/admin/trust-subject-reprocess-contract.js"
+      - "scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs"
+      - "evidence/recommendation-governance/v21-admission-g4-a-subject-registration-reprocess-contract-v1.json"
       - "supabase/migrations/*trust_phase6a_*.sql"
       - "tests/fixtures/trust-phase6a-reentry/**"
       - "lib/admin/trust-reentry.js"
@@ -57,6 +60,9 @@ on:
       - "app/api/admin/trust/subject-registration/**"
       - "lib/admin/trust-subject-identity.js"
       - "lib/admin/trust-subject-registration.js"
+      - "lib/admin/trust-subject-reprocess-contract.js"
+      - "scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs"
+      - "evidence/recommendation-governance/v21-admission-g4-a-subject-registration-reprocess-contract-v1.json"
       - "supabase/migrations/*trust_phase6a_*.sql"
       - "tests/fixtures/trust-phase6a-reentry/**"
       - "lib/admin/trust-reentry.js"
@@ -150,6 +156,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/verify-trust-phase5b-subject-registration.mjs
+          node scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs
           node scripts/verify-product-fact-subject-registration-v1.mjs
           node scripts/verify-trust-subject-resolution.mjs
           node scripts/verify-trust-subject-resolution-presentation-hardening.mjs

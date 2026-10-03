@@ -1,0 +1,61 @@
+{
+  "version": "v21-admission-g4-a-subject-registration-reprocess-contract-v1",
+  "stage": "V2.1-ADMISSION-G4-A",
+  "decision": "V21_ADMISSION_G4_A_REPOSITORY_CONTRACT_READY",
+  "source_main_sha": "219330b0f1977d916c3ee8e7119a6ed4ba31e370",
+  "production_writes": 0,
+  "target": {
+    "orchestration": "lib/admin/trust-subject-registration.js",
+    "contract": "lib/admin/trust-subject-reprocess-contract.js"
+  },
+  "pinned_reprocess": {
+    "rpc": "process_catalog_trust_product_v3",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "registry_selection": "explicit",
+    "orchestrator_version": "v21-8g1-identity-authority-preserving-v1",
+    "forbidden_rpc": "process_catalog_trust_product_v1"
+  },
+  "response_fail_closed": {
+    "requires_status": "processed",
+    "requires_same_product_id": true,
+    "requires_registry_version": true,
+    "requires_registry_selection": true,
+    "requires_orchestrator_version": true,
+    "error_code": "trust_subject_registration_resolution_refresh_invalid_result"
+  },
+  "reused_deployed_authority": {
+    "explicit_registry_processor": "process_catalog_trust_product_v2(uuid,text)",
+    "identity_preserving_wrapper": "process_catalog_trust_product_v3(uuid,text)",
+    "prior_runtime_probe_explicit_registry_executable": true,
+    "prior_runtime_probe_rolled_back": true,
+    "prior_subject_identity_ready_products": 8,
+    "prior_subject_identity_research_pending_tasks": 16
+  },
+  "fation_expected_transition": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "current_state": {
+      "subject_count": 0,
+      "intake_identity_state": "SUBJECT_CREATION_REQUIRED",
+      "intake_trust_state": "REVIEW_REQUIRED",
+      "review_required_tasks": 3
+    },
+    "after_future_explicit_subject_registration": {
+      "intake_identity_state": "EXACT_SUBJECT_FOUND",
+      "intake_trust_state": "RESEARCH_PENDING",
+      "subject_bound_tasks": 3,
+      "research_pending_tasks": 3,
+      "evidence_writes": 0,
+      "current_fact_writes": 0,
+      "recommendation_writes": 0
+    },
+    "executed_in_g4_a": false
+  },
+  "authority_boundary": {
+    "subject_registration_authorized": false,
+    "task_claim_authorized": false,
+    "evidence_ingest_authorized": false,
+    "product_fact_confirmation_authorized": false,
+    "recommendation_admission_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-B_FATION_SUBJECT_REGISTRATION"
+}
