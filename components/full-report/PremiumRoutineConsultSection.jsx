@@ -1,256 +1,66 @@
 "use client";
-
-import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
-import CurrentProductSlotNote from "@/components/result/premium/CurrentProductSlotNote";
+import { useState } from "react";
 import SafeProductImage from "@/components/common/SafeProductImage";
-import { buildCurrentProductRoutineSlots } from "@/lib/current-products";
+import { getCurrentProductCategoryLabel, getCurrentProductRoutineSlots, resolveCurrentProductSemantics } from "@/lib/current-products";
 import { getCurrentProductVerdictSlotKey } from "@/lib/current-product-verdicts";
+import { list, saved, selections, verdictForSelection, snapshot, productName } from "@/lib/full-report-view";
+import { Header, Badge, Disclosure, Evidence, Notice, Empty, Icon, Next, styles } from "./ReportUI";
 
-function RoutineConsultProductInline({ product, locale = "ko" }) {
-  if (!product) {
-    return (
-      <div className="mt-3 rounded-[0.9rem] border border-white/10 bg-white/[0.035] px-3 py-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-        {locale === "en" ? "No specific item is fixed for this step yet." : "현재 입력값 기준으로 고정된 항목은 아직 없습니다."}
-      </div>
-    );
-  }
+const USAGE = {
+  ko: { morning: "아침 사용", evening: "저녁 사용", both: "아침 · 저녁 사용", occasional: "가끔 사용", daily: "매일", few_times_week: "주 몇 회", weekly_or_less: "주 1회 이하", as_needed: "필요할 때", good: "만족", okay: "보통", bad: "불편함", unknown: "잘 모르겠음" },
+  en: { morning: "AM use", evening: "PM use", both: "AM · PM use", occasional: "Occasionally", daily: "Daily", few_times_week: "A few times a week", weekly_or_less: "Weekly or less", as_needed: "As needed", good: "Satisfied", okay: "Okay", bad: "Uncomfortable", unknown: "Unsure" }
+};
+const ROLE_CATEGORIES = { cleanser: ["cleanser"], hydration_base: ["toner_essence", "toner_pad", "moisturizer"], functional_leave_on: ["treatment"], sunscreen: ["sunscreen"] };
 
-  return (
-    <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-[0.95rem] border border-white/10 bg-white/[0.035] p-3">
-      <div className="h-12 w-10 overflow-hidden rounded-[1.25rem] border border-white/10 bg-zinc-900/70">
-        <SafeProductImage
-          product={product}
-          alt={product.name || "Product"}
-          className="h-full w-full object-cover"
-          fallback={<div className="h-full w-full bg-white/5" aria-hidden="true" />}
-        />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-          {locale === "en" ? "RECOMMENDED FOR THIS STEP" : "이 단계 추천 제품"}
-        </p>
-        <p className="mt-1 break-words text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{product.name}</p>
-        {product.brand ? <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p> : null}
-      </div>
+function productVerdict(report, selection, mode) {
+  if (!selection || selection.status === "not_using" || !["selected", "not_in_db"].includes(selection.status)) return null;
+  const category = resolveCurrentProductSemantics(selection)?.canonicalCategory || selection.category;
+  const slots = getCurrentProductRoutineSlots(selection).filter((slot) => slot.mode === mode);
+  return verdictForSelection(report, selection, mode, slots.map((slot) => getCurrentProductVerdictSlotKey(mode, slot.slot, category)));
+}
+function RoutineRow({ step, selection, index, report, mode, locale }) {
+  const en = locale === "en";
+  const usage = USAGE[en ? "en" : "ko"];
+  const verdict = productVerdict(report, selection, mode);
+  const product = snapshot(selection);
+  return <details className={styles.routineRow}>
+    <summary><span className={styles.number}>{String(index + 1).padStart(2, "0")}</span><div><h3>{selection ? getCurrentProductCategoryLabel(selection.category, locale) : step.title || step.stepName || (en ? "Saved step" : "저장된 단계")}</h3><div className={styles.productLine}>{product ? <SafeProductImage product={product} alt="" className={styles.productImage} fallback={<span className={styles.productPlaceholder}><Icon/></span>}/> : <span className={styles.productPlaceholder}><Icon/></span>}<div><p>{selection ? productName(selection, locale) : en ? "Current product not recorded" : "현재 제품 미기록"}</p><p className={styles.metadata}>{[usage[selection?.useTime] || (en ? "Time not recorded" : "사용 시간 미기록"), usage[selection?.useFrequency]].filter(Boolean).join(" · ")}</p>{verdict && verdict.status !== "keep" && <p className={styles.action}>{verdict.adjustment || verdict.title}</p>}</div></div></div><span className={styles.rowEnd}>{verdict ? <Badge status={verdict.status} locale={locale}/> : <Badge>{selection?.status === "not_using" ? (en ? "Not using" : "미사용") : en ? "Unknown" : "미확인"}</Badge>}<Icon name="arrow"/></span></summary>
+    <div className={styles.detailBody}>
+      {step.title && <p>{en ? "Routine step" : "루틴 단계"} · {step.title}{step.status ? ` · ${step.status}` : ""}</p>}
+      {(step.action || step.instruction) && <p>{step.action || step.instruction}</p>}{step.frequency && <p>{en ? "Recommended frequency" : "권장 빈도"} · {step.frequency}</p>}
+      {selection?.satisfaction && <p>{en ? "Satisfaction" : "사용 만족도"} · {usage[selection.satisfaction] || selection.satisfaction}</p>}
+      {selection?.status === "not_in_db" && <p>{en ? "In use; detailed product fit is unknown." : "사용 중인 제품이며, DB 미등록으로 상세 적합도는 미확인이에요."}</p>}
+      {verdict ? <Evidence item={verdict} locale={locale}/> : <p>{en ? "No product verdict is stored for this window." : "이 시간대의 개별 제품 판단은 저장되지 않았어요."}</p>}
+      <Evidence item={{ caution: step.caution, adjustment: step.adjustment !== step.caution ? step.adjustment : null, reasonCodes: step.reasonCodes }} locale={locale}/>
+      {step.product && <Disclosure title={en ? "Saved step candidate" : "이 단계의 저장된 후보"}><p>{step.product.name}</p></Disclosure>}
     </div>
-  );
+  </details>;
 }
-
-function RoutineConsultStatusBadge({ status }) {
-  const fixed = status === "고정" || status === "Fixed";
-  const skippable = status === "생략 가능" || status === "Skippable";
-  const tone = fixed
-    ? "border-[#e79582]/45 bg-[#e87662]/12 text-[#a55349] dark:border-[#e79582]/35 dark:bg-[#e87662]/16 dark:text-[#f0b7a7]"
-    : skippable
-      ? "border-zinc-300/60 bg-zinc-500/8 text-zinc-600 dark:border-zinc-700 dark:bg-white/5 dark:text-zinc-300"
-      : "border-[#d8b5aa]/55 bg-white/45 text-[#7a5c55] dark:border-[#6d3f3a]/58 dark:bg-white/5 dark:text-[#d6beb6]";
-
-  return (
-    <span className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-[11px] font-semibold ${tone}`}>
-      {status}
-    </span>
-  );
-}
-
-function RoutineConsultStepCard({ step, direction = "left", locale = "ko", getCurrentProductVerdict }) {
-  const cardRef = useRef(null);
-  const prefersReducedMotion = useReducedMotion();
-  const [isVisible, setIsVisible] = useState(false);
-  const initialX = direction === "right" ? 22 : -22;
-
-  useEffect(() => {
-    const node = cardRef.current;
-    if (!node || prefersReducedMotion) {
-      setIsVisible(true);
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.08 }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [prefersReducedMotion, step.order, step.title]);
-
-  return (
-    <motion.article
-      ref={cardRef}
-      initial={prefersReducedMotion ? false : { opacity: 0, x: initialX }}
-      animate={prefersReducedMotion || isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: initialX }}
-      transition={{ duration: 0.42, ease: "easeOut" }}
-      className="rounded-[1.1rem] border border-white/10 bg-white/5 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-      data-routine-flow-card={direction}
-    >
-      <div className="flex items-start gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2b1f26] text-xs font-semibold text-white dark:bg-[#f5ded4] dark:text-[#271318]">
-          {step.order}
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="ui-title text-base leading-6">{step.title}</h3>
-            <RoutineConsultStatusBadge status={step.status} />
-          </div>
-          <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{step.action}</p>
-          <RoutineConsultProductInline product={step.product} locale={locale} />
-          <CurrentProductSlotNote
-            items={step.currentProducts}
-            getVerdict={getCurrentProductVerdict}
-            locale={locale}
-          />
-          {step.adjustment ? (
-            <p className="mt-3 rounded-[0.9rem] bg-white/5 px-3 py-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              <span className="font-semibold text-zinc-900 dark:text-zinc-100">Tip</span>
-              <span className="mx-1 text-zinc-400">·</span>
-              {step.adjustment}
-            </p>
-          ) : null}
-        </div>
-      </div>
-    </motion.article>
-  );
-}
-
-function RoutineModeSwitch({ activeMode, locale = "ko", onChange }) {
-  return (
-    <div className="grid grid-cols-2 gap-2 rounded-[1rem] border border-white/10 bg-white/5 p-1">
-      {[
-        ["morning", locale === "en" ? "Morning routine" : "아침 루틴"],
-        ["night", locale === "en" ? "Evening routine" : "저녁 루틴"]
-      ].map(([modeKey, label]) => (
-        <button
-          key={modeKey}
-          type="button"
-          onClick={() => onChange(modeKey)}
-          className={`min-h-11 rounded-[0.85rem] px-3 text-sm font-semibold transition ${
-            activeMode === modeKey
-              ? "bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] text-white shadow-[0_10px_24px_rgba(215,111,91,0.22)]"
-              : "text-zinc-600 hover:bg-white/50 dark:text-zinc-300 dark:hover:bg-white/8"
-          }`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function getCanonicalSteps(report, activeMode) {
-  const plan = report?.routinePlan || report?.decisionBundle?.routinePlan || null;
-  const steps = activeMode === "morning" ? plan?.morningSteps : plan?.nightSteps;
-  return Array.isArray(steps) && steps.length ? steps : null;
-}
-
-export default function PremiumRoutineConsultSection({
-  freeResult,
-  report,
-  morningSteps = [],
-  nightSteps = [],
-  copy,
-  locale = "ko",
-  onNavigate,
-  getMeta,
-  buildSteps
-}) {
-  const [activeMode, setActiveMode] = useState("morning");
-  const routineTopRef = useRef(null);
-  const meta = getMeta(activeMode, locale);
-  const currentProductSlots = buildCurrentProductRoutineSlots(report?.currentProducts, locale);
-  const currentProductVerdictMap = new Map(
-    Array.isArray(report?.currentProductVerdicts)
-      ? report.currentProductVerdicts.filter((verdict) => verdict?.slotKey).map((verdict) => [verdict.slotKey, verdict])
-      : []
-  );
-  const getCurrentProductVerdict = (item) => {
-    if (!item || item.status === "not_using") return null;
-    return currentProductVerdictMap.get(
-      getCurrentProductVerdictSlotKey(activeMode === "morning" ? "am" : "pm", item.slot, item.category)
-    ) || null;
-  };
-
-  const canonicalSteps = getCanonicalSteps(report, activeMode);
-  const displaySteps = canonicalSteps || buildSteps({
-    mode: activeMode,
-    freeResult,
-    report,
-    morningSteps,
-    nightSteps,
-    locale,
-    currentProductSlots
+export default function PremiumRoutineConsultSection({ report = {}, morningSteps = [], nightSteps = [], locale = "ko", onNavigate }) {
+  const [mode, setMode] = useState("am");
+  const en = locale === "en";
+  const plan = saved(report, "routinePlan");
+  const canonical = mode === "am" ? plan?.morningSteps : plan?.nightSteps;
+  const steps = list(Array.isArray(canonical) ? canonical : mode === "am" ? morningSteps : nightSteps);
+  const used = new Set();
+  const rows = steps.flatMap((step) => {
+    const categories = ROLE_CATEGORIES[step.productRole] || [];
+    const products = selections(report).filter((selection) => {
+      const category = resolveCurrentProductSemantics(selection)?.canonicalCategory || selection.category;
+      const timeMatches = !selection.useTime || ["both", "occasional", mode === "am" ? "morning" : "evening"].includes(selection.useTime);
+      if (used.has(selection) || !categories.includes(category) || !timeMatches) return false;
+      used.add(selection); return true;
+    });
+    return products.length ? products.map((selection) => ({ step, selection })) : [{ step, selection: null }];
   });
-  const isMorning = activeMode === "morning";
-  const functionalCurrentProducts = !isMorning && Array.isArray(currentProductSlots?.pm?.functional)
-    ? currentProductSlots.pm.functional
-    : [];
-
-  const switchToMode = (nextMode, shouldScroll = true) => {
-    setActiveMode(nextMode);
-    if (shouldScroll) {
-      window.requestAnimationFrame(() => routineTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-    }
-  };
-
-  return (
-    <section ref={routineTopRef} className="ui-card p-5 sm:p-6" data-routine-source={canonicalSteps ? "canonical" : "legacy_adapter"}>
-      <div className="flex flex-col gap-4">
-        <div>
-          <p className="ui-kicker">{locale === "en" ? "ROUTINE CONSULT" : "루틴 상담"}</p>
-          <h3 className="ui-title mt-2 text-xl leading-tight">{meta.title}</h3>
-          <p className="ui-text-secondary mt-2 text-sm leading-6">{meta.body}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {meta.chips.map((chip) => <span key={chip} className="ui-chip-compact px-3 py-1.5">{chip}</span>)}
-          </div>
-        </div>
-
-        <RoutineModeSwitch activeMode={activeMode} locale={locale} onChange={switchToMode} />
-
-        <div key={activeMode} className="grid gap-4 overflow-hidden py-1">
-          {displaySteps.map((step, index) => (
-            <RoutineConsultStepCard
-              key={`${activeMode}-${step.order}-${step.title}`}
-              step={step}
-              direction={index % 2 === 1 ? "right" : "left"}
-              locale={locale}
-              getCurrentProductVerdict={getCurrentProductVerdict}
-            />
-          ))}
-        </div>
-
-        {functionalCurrentProducts.length ? (
-          <div className="rounded-[1rem] border border-white/10 bg-white/[0.035] p-3">
-            <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
-              {locale === "en" ? "Active selections" : "기능성 선택값"}
-            </p>
-            <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-              {locale === "en"
-                ? "Check these in the functional plan rather than adding them to the routine here."
-                : "여기서 루틴을 늘리기보다 별도 기능성 플랜에서 확인합니다."}
-            </p>
-            <CurrentProductSlotNote
-              items={functionalCurrentProducts}
-              compact
-              getVerdict={getCurrentProductVerdict}
-              locale={locale}
-            />
-          </div>
-        ) : null}
-
-        <button
-          type="button"
-          onClick={() => isMorning ? switchToMode("night", true) : onNavigate?.("product-plan")}
-          className="ui-button-primary mt-1 min-h-12 w-full justify-center px-5 text-sm font-semibold"
-        >
-          {isMorning
-            ? locale === "en" ? "See evening routine" : "저녁 루틴 보기"
-            : locale === "en" ? "See functional plan" : "기능성 플랜 보기"}
-        </button>
-      </div>
-    </section>
-  );
+  const remaining = selections(report).filter((selection) => !used.has(selection));
+  return <section className={styles.page} data-report-section="routine" data-routine-source={Array.isArray(canonical) ? "canonical" : "legacy_adapter"}>
+    <Header number="01" title={en ? "Current routine review" : "현재 루틴 점검"} locale={locale} onNavigate={onNavigate}/>
+    <div className={styles.segmented} aria-label={en ? "Routine time" : "루틴 시간"}>{["am", "pm"].map((time) => <button type="button" key={time} aria-pressed={mode === time} onClick={() => setMode(time)}>{time.toUpperCase()}<Icon name={time === "am" ? "sun" : "moon"}/></button>)}</div>
+    <ol className={styles.routineList}>{rows.map((row, i) => <li key={`${mode}-${i}`}><RoutineRow {...row} index={i} report={report} mode={mode} locale={locale}/></li>)}</ol>
+    {!steps.length && <Empty>{en ? "No saved routine order." : "저장된 루틴 순서가 없어요."}</Empty>}
+    {remaining.length > 0 && <Disclosure title={en ? "Other recorded products" : "그 외 입력한 현재 제품"}>{remaining.map((selection, i) => <RoutineRow key={i} step={{}} selection={selection} index={i} report={report} mode={mode} locale={locale}/>)}</Disclosure>}
+    {list(report.avoidCombinations).length > 0 && <Disclosure title={en ? "Routine cautions" : "루틴 주의사항"}>{report.avoidCombinations.map((item, i) => <Notice key={i}>{item}</Notice>)}</Disclosure>}
+    <Next onClick={() => onNavigate?.("problem-tracking")}>{en ? "Review change signals" : "변화 신호 확인하기"}</Next>
+  </section>;
 }
