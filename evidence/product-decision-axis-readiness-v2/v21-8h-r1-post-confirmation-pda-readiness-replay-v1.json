@@ -1,0 +1,339 @@
+{
+  "version": "v21-8h-r1-post-confirmation-pda-readiness-replay-v1",
+  "stage": "V2.1-8H-R1",
+  "contract": {
+    "structural_floor_distinct_products": 3,
+    "numeric_calibration": false,
+    "production_consumption": false,
+    "recommendation_activation": false,
+    "missing_is_false": false
+  },
+  "axes": [
+    {
+      "axis_key": "barrier_support",
+      "historical_v21_8j": {
+        "frozen_applicable_catalog_distinct_products": 61,
+        "adopted_distinct_products": 4,
+        "mapper_signal_eligible_distinct_products": 2,
+        "calibration_cohort_eligible_distinct_products": 2,
+        "partial_structural_coverage_distinct_products": 2,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "pre_v21_8h": {
+        "live_applicable_catalog_distinct_products": 61,
+        "adopted_distinct_products": 10,
+        "mapper_signal_eligible_distinct_products": 4,
+        "calibration_cohort_eligible_distinct_products": 4,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION"
+      },
+      "post_v21_8h": {
+        "live_applicable_catalog_distinct_products": 61,
+        "adopted_distinct_products": 10,
+        "mapper_signal_eligible_distinct_products": 6,
+        "calibration_cohort_eligible_distinct_products": 6,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION"
+      },
+      "direct_v21_8h_delta": {
+        "mapper_signal_eligible_distinct_products": 2,
+        "calibration_cohort_eligible_distinct_products": 2,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness_changed": false
+      },
+      "numeric_anchor_available": false,
+      "production_consumed": false,
+      "topology_coverage": [
+        {
+          "topology_key": "shared_moisturizer_barrier_claim_topology",
+          "eligible_distinct_products": 6,
+          "met": true
+        }
+      ]
+    },
+    {
+      "axis_key": "cleansing_burden",
+      "historical_v21_8j": {
+        "frozen_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 2,
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "pre_v21_8h": {
+        "live_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "post_v21_8h": {
+        "live_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "direct_v21_8h_delta": {
+        "mapper_signal_eligible_distinct_products": 0,
+        "calibration_cohort_eligible_distinct_products": 0,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness_changed": false
+      },
+      "numeric_anchor_available": false,
+      "production_consumed": false,
+      "topology_coverage": [
+        {
+          "topology_key": "cleanser",
+          "eligible_distinct_products": 1,
+          "met": true
+        }
+      ]
+    },
+    {
+      "axis_key": "exfoliation_load",
+      "historical_v21_8j": {
+        "frozen_applicable_catalog_distinct_products": 66,
+        "adopted_distinct_products": 7,
+        "mapper_signal_eligible_distinct_products": 3,
+        "calibration_cohort_eligible_distinct_products": 3,
+        "partial_structural_coverage_distinct_products": 4,
+        "readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION"
+      },
+      "pre_v21_8h": {
+        "live_applicable_catalog_distinct_products": 66,
+        "adopted_distinct_products": 8,
+        "mapper_signal_eligible_distinct_products": 3,
+        "calibration_cohort_eligible_distinct_products": 3,
+        "partial_structural_coverage_distinct_products": 4,
+        "readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION"
+      },
+      "post_v21_8h": {
+        "live_applicable_catalog_distinct_products": 66,
+        "adopted_distinct_products": 8,
+        "mapper_signal_eligible_distinct_products": 3,
+        "calibration_cohort_eligible_distinct_products": 3,
+        "partial_structural_coverage_distinct_products": 5,
+        "readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION"
+      },
+      "direct_v21_8h_delta": {
+        "mapper_signal_eligible_distinct_products": 0,
+        "calibration_cohort_eligible_distinct_products": 0,
+        "partial_structural_coverage_distinct_products": 1,
+        "readiness_changed": false
+      },
+      "numeric_anchor_available": false,
+      "production_consumed": false,
+      "topology_coverage": [
+        {
+          "topology_key": "treatment",
+          "eligible_distinct_products": 1,
+          "met": true
+        },
+        {
+          "topology_key": "toner_essence",
+          "eligible_distinct_products": 1,
+          "met": true
+        },
+        {
+          "topology_key": "toner_pad",
+          "eligible_distinct_products": 1,
+          "met": true
+        }
+      ]
+    },
+    {
+      "axis_key": "hydration_preservation",
+      "historical_v21_8j": {
+        "frozen_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 2,
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "pre_v21_8h": {
+        "live_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "post_v21_8h": {
+        "live_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 2,
+        "calibration_cohort_eligible_distinct_products": 2,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "direct_v21_8h_delta": {
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness_changed": false
+      },
+      "numeric_anchor_available": false,
+      "production_consumed": false,
+      "topology_coverage": [
+        {
+          "topology_key": "cleanser",
+          "eligible_distinct_products": 2,
+          "met": true
+        }
+      ]
+    },
+    {
+      "axis_key": "irritation_burden",
+      "historical_v21_8j": {
+        "frozen_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 2,
+        "mapper_signal_eligible_distinct_products": 0,
+        "calibration_cohort_eligible_distinct_products": 0,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "REGISTRY_OR_MAPPER_EXTENSION_REQUIRED"
+      },
+      "pre_v21_8h": {
+        "live_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 0,
+        "calibration_cohort_eligible_distinct_products": 0,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "REGISTRY_OR_MAPPER_EXTENSION_REQUIRED"
+      },
+      "post_v21_8h": {
+        "live_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 0,
+        "calibration_cohort_eligible_distinct_products": 0,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "REGISTRY_OR_MAPPER_EXTENSION_REQUIRED"
+      },
+      "direct_v21_8h_delta": {
+        "mapper_signal_eligible_distinct_products": 0,
+        "calibration_cohort_eligible_distinct_products": 0,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness_changed": false
+      },
+      "numeric_anchor_available": false,
+      "production_consumed": false,
+      "topology_coverage": [
+        {
+          "topology_key": "cleanser",
+          "eligible_distinct_products": 0,
+          "met": false
+        }
+      ]
+    },
+    {
+      "axis_key": "photo_protection",
+      "historical_v21_8j": {
+        "frozen_applicable_catalog_distinct_products": 11,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 3,
+        "calibration_cohort_eligible_distinct_products": 2,
+        "partial_structural_coverage_distinct_products": 1,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "pre_v21_8h": {
+        "live_applicable_catalog_distinct_products": 13,
+        "adopted_distinct_products": 13,
+        "mapper_signal_eligible_distinct_products": 13,
+        "calibration_cohort_eligible_distinct_products": 10,
+        "partial_structural_coverage_distinct_products": 3,
+        "readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION"
+      },
+      "post_v21_8h": {
+        "live_applicable_catalog_distinct_products": 13,
+        "adopted_distinct_products": 13,
+        "mapper_signal_eligible_distinct_products": 13,
+        "calibration_cohort_eligible_distinct_products": 10,
+        "partial_structural_coverage_distinct_products": 3,
+        "readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION"
+      },
+      "direct_v21_8h_delta": {
+        "mapper_signal_eligible_distinct_products": 0,
+        "calibration_cohort_eligible_distinct_products": 0,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness_changed": false
+      },
+      "numeric_anchor_available": false,
+      "production_consumed": false,
+      "topology_coverage": [
+        {
+          "topology_key": "sunscreen",
+          "eligible_distinct_products": 10,
+          "met": true
+        }
+      ]
+    },
+    {
+      "axis_key": "sebum_pore_control",
+      "historical_v21_8j": {
+        "frozen_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 2,
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "pre_v21_8h": {
+        "live_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "post_v21_8h": {
+        "live_applicable_catalog_distinct_products": 26,
+        "adopted_distinct_products": 3,
+        "mapper_signal_eligible_distinct_products": 1,
+        "calibration_cohort_eligible_distinct_products": 1,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED"
+      },
+      "direct_v21_8h_delta": {
+        "mapper_signal_eligible_distinct_products": 0,
+        "calibration_cohort_eligible_distinct_products": 0,
+        "partial_structural_coverage_distinct_products": 0,
+        "readiness_changed": false
+      },
+      "numeric_anchor_available": false,
+      "production_consumed": false,
+      "topology_coverage": [
+        {
+          "topology_key": "cleanser",
+          "eligible_distinct_products": 1,
+          "met": true
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "post_v21_8h_structurally_ready_axes": [
+      "barrier_support",
+      "exfoliation_load",
+      "photo_protection"
+    ],
+    "post_v21_8h_targeted_coverage_axes": [
+      "cleansing_burden",
+      "hydration_preservation",
+      "sebum_pore_control"
+    ],
+    "post_v21_8h_registry_or_mapper_extension_axes": [
+      "irritation_burden"
+    ],
+    "v21_8h_readiness_state_transitions": [],
+    "readiness_state_transition_count": 0,
+    "numeric_anchor_available_axes": [],
+    "production_consumed_axes": [],
+    "recommendation_activation": false
+  },
+  "decision": "V21_8H_R1_POST_CONFIRMATION_PDA_READINESS_RECONCILIATION_PASS",
+  "next_gate": "V2.1-8H-R2_BARRIER_SUPPORT_NON_NUMERIC_PDA_SHADOW_FEASIBILITY"
+}

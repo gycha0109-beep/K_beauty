@@ -1,0 +1,179 @@
+{
+  "version": "v21-8h-r1-post-confirmation-pda-delta-attribution-v1",
+  "stage": "V2.1-8H-R1",
+  "authority": {
+    "historical_contract": "product-decision-axis-mapper-contract-v1",
+    "historical_replay": "product-decision-axis-contract-replay-v1",
+    "v21_8h_receipt": "v21-8h-final-product-fact-confirmation-v1"
+  },
+  "exact_v21_8h_facts": [
+    {
+      "slug": "beplain-low-ph",
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "fact_key": "low_ph",
+      "value": true,
+      "request_id": "v21-8h-beplain-low-ph-confirm",
+      "axis_effect": {
+        "hydration_preservation": "CALIBRATION_REQUIRED_SIGNAL_PLUS_ONE"
+      },
+      "readiness_effect": "NO_STATE_TRANSITION"
+    },
+    {
+      "slug": "atopalm-barrier",
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "fact_key": "barrier_support_claim",
+      "value": true,
+      "request_id": "v21-8h-atopalm-barrier-confirm",
+      "axis_effect": {
+        "barrier_support": "CALIBRATION_REQUIRED_SIGNAL_PLUS_ONE"
+      },
+      "readiness_effect": "NO_STATE_TRANSITION_ALREADY_READY_PRE_8H"
+    },
+    {
+      "slug": "atopalm-role",
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "fact_key": "primary_use_role",
+      "value": "local_area",
+      "request_id": "v21-8h-atopalm-role-confirm",
+      "axis_effect": {
+        "barrier_support": "CONTEXT_ONLY"
+      },
+      "readiness_effect": "NO_ELIGIBILITY_EFFECT"
+    },
+    {
+      "slug": "drg-barrier",
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "fact_key": "barrier_support_claim",
+      "value": true,
+      "request_id": "v21-8h-drg-barrier-confirm",
+      "axis_effect": {
+        "barrier_support": "CALIBRATION_REQUIRED_SIGNAL_PLUS_ONE"
+      },
+      "readiness_effect": "NO_STATE_TRANSITION_ALREADY_READY_PRE_8H"
+    },
+    {
+      "slug": "drg-role",
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "fact_key": "primary_use_role",
+      "value": "multi_area",
+      "request_id": "v21-8h-drg-role-confirm",
+      "axis_effect": {
+        "barrier_support": "CONTEXT_ONLY"
+      },
+      "readiness_effect": "NO_ELIGIBILITY_EFFECT"
+    },
+    {
+      "slug": "dr20-format",
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "fact_key": "product_format",
+      "value": "liquid",
+      "request_id": "v21-8h-dr20-format-confirm",
+      "axis_effect": {
+        "exfoliation_load": "CONTEXT_ONLY_PARTIAL_PLUS_ONE"
+      },
+      "readiness_effect": "NO_ELIGIBILITY_EFFECT"
+    }
+  ],
+  "axis_attribution": [
+    {
+      "axis_key": "barrier_support",
+      "historical_v21_8j_eligible": 2,
+      "pre_v21_8h_eligible": 4,
+      "post_v21_8h_eligible": 6,
+      "historical_to_pre_v21_8h_delta": 2,
+      "direct_v21_8h_delta": 2,
+      "historical_readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED",
+      "pre_v21_8h_readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION",
+      "post_v21_8h_readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION",
+      "transition_attribution": "INTERVENING_PRE_8H_FACT_LINEAGE",
+      "v21_8h_caused_transition": false
+    },
+    {
+      "axis_key": "photo_protection",
+      "historical_v21_8j_eligible": 2,
+      "pre_v21_8h_eligible": 10,
+      "post_v21_8h_eligible": 10,
+      "historical_to_pre_v21_8h_delta": 8,
+      "direct_v21_8h_delta": 0,
+      "historical_readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED",
+      "pre_v21_8h_readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION",
+      "post_v21_8h_readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION",
+      "transition_attribution": "INTERVENING_PRE_8H_PROTECTION_FACT_LINEAGE",
+      "v21_8h_caused_transition": false
+    },
+    {
+      "axis_key": "hydration_preservation",
+      "historical_v21_8j_eligible": 1,
+      "pre_v21_8h_eligible": 1,
+      "post_v21_8h_eligible": 2,
+      "historical_to_pre_v21_8h_delta": 0,
+      "direct_v21_8h_delta": 1,
+      "historical_readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED",
+      "pre_v21_8h_readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED",
+      "post_v21_8h_readiness": "TARGETED_PRODUCT_FACT_COVERAGE_REQUIRED",
+      "transition_attribution": "NO_TRANSITION_STRUCTURAL_FLOOR_REMAINS_SHORT_BY_ONE",
+      "v21_8h_caused_transition": false
+    },
+    {
+      "axis_key": "exfoliation_load",
+      "historical_v21_8j_eligible": 3,
+      "pre_v21_8h_eligible": 3,
+      "post_v21_8h_eligible": 3,
+      "historical_to_pre_v21_8h_delta": 0,
+      "direct_v21_8h_delta": 0,
+      "direct_v21_8h_partial_context_delta": 1,
+      "historical_readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION",
+      "pre_v21_8h_readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION",
+      "post_v21_8h_readiness": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION",
+      "transition_attribution": "NO_TRANSITION_ALREADY_READY_IN_V21_8J",
+      "v21_8h_caused_transition": false
+    },
+    {
+      "axis_key": "cleansing_burden",
+      "historical_v21_8j_eligible": 1,
+      "pre_v21_8h_eligible": 1,
+      "post_v21_8h_eligible": 1,
+      "direct_v21_8h_delta": 0,
+      "v21_8h_caused_transition": false
+    },
+    {
+      "axis_key": "sebum_pore_control",
+      "historical_v21_8j_eligible": 1,
+      "pre_v21_8h_eligible": 1,
+      "post_v21_8h_eligible": 1,
+      "direct_v21_8h_delta": 0,
+      "v21_8h_caused_transition": false
+    },
+    {
+      "axis_key": "irritation_burden",
+      "historical_v21_8j_eligible": 0,
+      "pre_v21_8h_eligible": 0,
+      "post_v21_8h_eligible": 0,
+      "direct_v21_8h_delta": 0,
+      "blocker": "NO_GOVERNED_CLEANSER_COMPATIBLE_IRRITATION_SIGNAL_FAMILY",
+      "v21_8h_caused_transition": false
+    }
+  ],
+  "readiness_transition_summary": {
+    "v21_8h_caused_axis_readiness_transitions": 0,
+    "axes_ready_post_v21_8h": [
+      "barrier_support",
+      "exfoliation_load",
+      "photo_protection"
+    ],
+    "axes_becoming_ready_before_v21_8h_after_v21_8j": [
+      "barrier_support",
+      "photo_protection"
+    ],
+    "axes_already_ready_in_v21_8j": [
+      "exfoliation_load"
+    ]
+  },
+  "authority_boundary": {
+    "fact_adoption_implies_recommendation_activation": false,
+    "numeric_calibration_authorized": false,
+    "production_consumption_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  }
+}
