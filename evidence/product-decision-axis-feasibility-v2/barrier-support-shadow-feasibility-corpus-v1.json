@@ -1,0 +1,177 @@
+{
+  "version": "barrier-support-shadow-feasibility-corpus-v1",
+  "stage": "V2.1-8H-R2",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "execution_main_sha": "7fe4c2c229208202947e63c2c6695722712c58c4",
+    "hosted_project": "bygrczggxfuisupcevaz",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "r1_replay": "evidence/product-decision-axis-readiness-v2/v21-8h-r1-post-confirmation-pda-readiness-replay-v1.json",
+    "frozen_legacy_corpus": "fixtures/recommendation-governance/legacy-frozen-recommendation-corpus-v1.txt",
+    "frozen_scenarios": "fixtures/recommendation-metadata/user-scenarios-v1.json",
+    "legacy_metadata": "fixtures/recommendation-metadata/products-v1.json"
+  },
+  "axis_key": "barrier_support",
+  "mapper_contract": {
+    "signal_fact": "barrier_support_claim",
+    "signal_semantics": "Official barrier-support claim; distinct from measured barrier improvement.",
+    "signal_value_type": "boolean",
+    "signal_cardinality": "one",
+    "positive_authority_required": "product-specific evidence",
+    "explicit_negative_only": true,
+    "context_fact": "primary_use_role",
+    "context_semantics": "Declared or reviewed primary usage role; role is not recommendation policy.",
+    "context_contributes_efficacy": false,
+    "mapper_coverage_for_primary_authority": "claim_only",
+    "numeric_estimate": null
+  },
+  "bounded_shadow_corpus": {
+    "adopted_moisturizer_products": 10,
+    "legacy_candidate_corpus_members": 10,
+    "admission_extension_required": false,
+    "relevant_scenarios": [
+      "U2",
+      "U3",
+      "U4",
+      "U5",
+      "U6",
+      "U7",
+      "U9",
+      "U10",
+      "U11"
+    ],
+    "relevant_scenario_count": 9,
+    "scenario_product_pairs": 90,
+    "claim_established_products": 6,
+    "no_current_claim_products": 4,
+    "claim_established_pairs": 54,
+    "no_current_claim_pairs": 36,
+    "no_current_claim_semantics": "UNKNOWN_NOT_FALSE"
+  },
+  "products": [
+    {
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "brand": "웰라쥬",
+      "name": "리얼 히알루로닉 수딩크림",
+      "category": "moisturizer_cream",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_UNKNOWN_NO_CURRENT",
+      "primary_use_role": null
+    },
+    {
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "brand": "브링그린",
+      "name": "알로에 수딩 젤",
+      "category": "moisturizer_gel",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_UNKNOWN_NO_CURRENT",
+      "primary_use_role": null
+    },
+    {
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "brand": "라운드랩",
+      "name": "소나무 진정 시카 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_ESTABLISHED_TRUE",
+      "claim_authority": "product_specific_primary",
+      "claim_confidence": "high",
+      "primary_use_role": "full_face"
+    },
+    {
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "brand": "라운드랩",
+      "name": "자작나무 수분 수딩젤",
+      "category": "moisturizer_gel",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_ESTABLISHED_TRUE",
+      "claim_authority": "product_specific_primary",
+      "claim_confidence": "high",
+      "primary_use_role": "multi_area"
+    },
+    {
+      "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+      "brand": "일리윤",
+      "name": "세라마이드 아토 집중크림",
+      "category": "moisturizer_cream",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_ESTABLISHED_TRUE",
+      "claim_authority": "product_specific_primary",
+      "claim_confidence": "high",
+      "primary_use_role": "multi_area"
+    },
+    {
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "brand": "러베",
+      "name": "5중 세라마이드 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_UNKNOWN_NO_CURRENT",
+      "primary_use_role": null
+    },
+    {
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "brand": "아토팜",
+      "name": "MLE 크림 스틱 밤",
+      "category": "moisturizer_balm",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_ESTABLISHED_TRUE",
+      "claim_authority": "product_specific_primary",
+      "claim_confidence": "high",
+      "primary_use_role": "local_area"
+    },
+    {
+      "product_id": "c67266dd-3706-4929-9196-936d1f61cbc5",
+      "brand": "라로슈포제",
+      "name": "시카플라스트 밤 B5+",
+      "category": "moisturizer_balm",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_ESTABLISHED_TRUE",
+      "claim_authority": "product_specific_primary",
+      "claim_confidence": "high",
+      "primary_use_role": "multi_area"
+    },
+    {
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "brand": "닥터지",
+      "name": "더모이스처 배리어.D 멀티 밤",
+      "category": "moisturizer_balm",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_ESTABLISHED_TRUE",
+      "claim_authority": "product_specific_primary",
+      "claim_confidence": "high",
+      "primary_use_role": "multi_area"
+    },
+    {
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "brand": "싸이닉",
+      "name": "더 심플 데일리 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "legacy_candidate": true,
+      "claim_state": "GOVERNED_CLAIM_UNKNOWN_NO_CURRENT",
+      "primary_use_role": null
+    }
+  ],
+  "semantic_overlap_audit": {
+    "claim_established_products": 6,
+    "overlaps": {
+      "legacy_product_concern_barrier": 5,
+      "legacy_ingredient_barrier_signal": 6,
+      "legacy_review_barrier_signal": 4
+    },
+    "direct_additive_consumption_risk": "HIGH_DOUBLE_COUNT_RISK",
+    "evidence_identity_equivalence_claimed": false,
+    "dedupe_requirement": "NEW_GOVERNED_CLAIM_MUST_NOT_BE_ADDED_AS_ANOTHER_NUMERIC_BARRIER_UNIT"
+  },
+  "invariants": {
+    "product_fact_writes": 0,
+    "pda_writes": 0,
+    "candidate_admission_changes": 0,
+    "scorer_changes": 0,
+    "ranker_changes": 0,
+    "candidate_policy_changes": 0,
+    "recommendation_activation": false,
+    "public_activation": false
+  }
+}

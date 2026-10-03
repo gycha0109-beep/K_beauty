@@ -1,0 +1,69 @@
+{
+  "version": "barrier-support-representation-option-matrix-v1",
+  "stage": "V2.1-8H-R2",
+  "axis_key": "barrier_support",
+  "vocabulary": [
+    "SUPPORTED",
+    "PARTIALLY_SUPPORTED",
+    "NOT_SUPPORTED",
+    "NOT_AUTHORIZED",
+    "NOT_ESTABLISHED"
+  ],
+  "options": {
+    "numeric_effect_score": {
+      "disposition": "REJECTED",
+      "semantic_validity": "NOT_SUPPORTED",
+      "current_fact_support": "NOT_SUPPORTED",
+      "independent_anchor_requirement": "REQUIRED_BUT_ABSENT",
+      "false_precision_risk": "HIGH",
+      "double_count_risk": "HIGH",
+      "production_boundary_compatibility": "NOT_AUTHORIZED",
+      "reason": "official claim presence is not measured barrier improvement and cannot be converted into effect score"
+    },
+    "ordinal_strength": {
+      "disposition": "REJECTED",
+      "semantic_validity": "NOT_SUPPORTED",
+      "current_fact_support": "NOT_SUPPORTED",
+      "independent_anchor_requirement": "REQUIRED_BUT_ABSENT",
+      "false_precision_risk": "HIGH",
+      "double_count_risk": "HIGH",
+      "reason": "boolean claim and usage role cannot establish stronger/weaker product ordering"
+    },
+    "direct_binary_recommendation_boost": {
+      "disposition": "REJECTED",
+      "semantic_validity": "PARTIALLY_SUPPORTED",
+      "current_fact_support": "SUPPORTED_AS_CLAIM_ONLY",
+      "independent_anchor_requirement": "NOT_SATISFIED_FOR_NUMERIC_BOOST",
+      "false_precision_risk": "MEDIUM",
+      "double_count_risk": "HIGH",
+      "reason": "claim truth is governed but direct boost would create a new numeric unit overlapping legacy barrier pathways"
+    },
+    "structured_categorical_claim_state": {
+      "disposition": "RECOMMENDED_PRIMARY",
+      "semantic_validity": "SUPPORTED",
+      "current_fact_support": "SUPPORTED",
+      "independent_anchor_requirement": "NOT_REQUIRED_WITHOUT_EFFECT_MAGNITUDE_CLAIM",
+      "false_precision_risk": "LOW",
+      "double_count_risk": "MANAGEABLE_IF_NON_ADDITIVE",
+      "production_boundary_compatibility": "SHADOW_ONLY",
+      "proposed_states": [
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE",
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_FALSE",
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN",
+        "GOVERNED_BARRIER_CLAIM_BLOCKED",
+        "NOT_APPLICABLE"
+      ],
+      "guardrails": [
+        "NO_EFFECT_MAGNITUDE",
+        "NO_STRENGTH_ORDERING",
+        "NO_DIRECT_FACT_TO_SCORE",
+        "PRIMARY_USE_ROLE_CONTEXT_ONLY",
+        "MISSING_NOT_FALSE",
+        "EXPLICIT_NEGATIVE_ONLY_FOR_FALSE",
+        "LEGACY_PATHWAYS_NON_ADDITIVE",
+        "PRODUCTION_CONSUMPTION_DISABLED"
+      ]
+    }
+  },
+  "primary_terminal_outcome": "STRUCTURED_CATEGORICAL_NON_NUMERIC_SHADOW_RECOMMENDED"
+}

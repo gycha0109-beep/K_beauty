@@ -119,6 +119,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-v21-8g3-c-confirmation-preflight.mjs",
   "scripts/verify-v21-8h-final-product-fact-confirmation.mjs",
   "scripts/verify-v21-8h-r1-post-confirmation-pda-readiness.mjs",
+  "scripts/verify-v21-8h-r2-barrier-support-non-numeric-shadow-feasibility.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
