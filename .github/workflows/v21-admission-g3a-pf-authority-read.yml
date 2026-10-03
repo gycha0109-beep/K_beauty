@@ -15,6 +15,10 @@ on:
       - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
       - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
       - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
+      - "lib/recommendation-category-authority-shadow-contract.mjs"
+      - "fixtures/recommendation-governance/g4f0-category-authority-shadow-v1.json"
+      - "evidence/recommendation-governance/v21-admission-g4-f0-category-authority-shadow-contract-v1.json"
+      - "scripts/verify-v21-admission-g4-f0-category-authority-shadow-contract-v1.mjs"
   pull_request:
     branches:
       - main
@@ -29,6 +33,10 @@ on:
       - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
       - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
       - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
+      - "lib/recommendation-category-authority-shadow-contract.mjs"
+      - "fixtures/recommendation-governance/g4f0-category-authority-shadow-v1.json"
+      - "evidence/recommendation-governance/v21-admission-g4-f0-category-authority-shadow-contract-v1.json"
+      - "scripts/verify-v21-admission-g4-f0-category-authority-shadow-contract-v1.mjs"
 
 permissions:
   contents: read
@@ -72,6 +80,9 @@ jobs:
 
       - name: Verify DATA-TAXONOMY15 catalog-only parity extension
         run: node scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs
+
+      - name: Verify G4-F0 category authority shadow contract
+        run: node scripts/verify-v21-admission-g4-f0-category-authority-shadow-contract-v1.mjs
 
   runtime-probe:
     name: G3A deployed runtime authority probe
