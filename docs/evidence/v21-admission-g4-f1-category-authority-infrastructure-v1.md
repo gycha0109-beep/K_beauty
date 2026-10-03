@@ -46,13 +46,22 @@ The reader is Product-level and has no Product Fact Subject dependency.
 
 ## Existing D5C boundary
 
-The existing three-product D5C taxonomy RLS policy is preserved unchanged.
+D1 preflight found that adding a second permissive SELECT policy for the same reader role/action would create a Supabase `multiple_permissive_policies` warning.
 
-F1 adds a separate FATION-only permissive policy. It does not replace the old policy with a broad predicate.
+The implementation therefore preserves the exact existing D5C three-product scope and extends that same bounded policy to one additional Product: FATION.
+
+The resulting single policy contains exactly four Product IDs:
+
+- the existing three D5C sunscreen canaries;
+- FATION `da5df70c-8cdd-4eb2-93b6-ede46c2f171d`.
+
+It is **not** widened to `USING (true)`, a category-wide predicate, or any dynamic catalog predicate.
 
 ## Migration output
 
 The migration creates **zero category review rows**.
+
+All ledger foreign keys are indexed for deployment hygiene: Product, Candidate, superseded review, and reviewer.
 
 It performs no:
 
