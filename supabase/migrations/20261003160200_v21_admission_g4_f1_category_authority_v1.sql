@@ -665,7 +665,7 @@ begin
     );
   end if;
 
-  select count(*)::integer
+  select count(p.id)::integer
     into v_product_count
   from public.products p
   where p.id = p_product_id;
@@ -693,7 +693,7 @@ begin
     );
   end if;
 
-  select count(*)::integer
+  select count(r.review_id)::integer
     into v_review_count
   from public.recommendation_category_authority_reviews r
   where r.product_id = p_product_id
@@ -744,7 +744,7 @@ begin
     );
   end if;
 
-  select count(*)::integer
+  select count(a.product_id)::integer
     into v_assignment_count
   from public.product_catalog_taxonomy_assignments a
   where a.product_id = p_product_id
