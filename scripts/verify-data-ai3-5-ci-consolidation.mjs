@@ -124,6 +124,7 @@ const consolidatedOnlyScripts = [
   "scripts/verify-v21-8h-r1-post-confirmation-pda-readiness.mjs",
   "scripts/verify-v21-8h-r2-barrier-support-non-numeric-shadow-feasibility.mjs",
   "scripts/product-evidence/verify-barrier-support-non-numeric-pda-contract-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-non-numeric-pda-offline-shadow-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
