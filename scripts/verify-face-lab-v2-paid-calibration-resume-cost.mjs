@@ -86,7 +86,11 @@ for (const marker of [
   "generatedCaseCount",
   "estimatedCostNanoUsd",
   "providerAttemptCount",
-  "costTelemetry"
+  "costTelemetry",
+  "FACE_LAB_E2E_NEW_OUTPUT_BUDGET",
+  "FACE_LAB_PROVIDER_E2E_PARTIAL_BUDGET_REACHED",
+  "generationBudgetReached",
+  "face_lab_e2e_checkpoint_case_order_invalid"
 ]) {
   assert.ok(
     runner.includes(marker),
@@ -116,6 +120,34 @@ assert.ok(
     "face_lab_e2e_checkpoint_path_invalid"
   ),
   "resumed output and review-input paths must remain confined to the campaign directory"
+);
+
+const paidCallIndex =
+  mainSource.indexOf(
+    "const simulation = await postSimulation"
+  );
+const paidBudgetGuardIndex =
+  mainSource.indexOf(
+    "generatedCaseCount >=\n        newOutputBudget"
+  );
+
+assert.ok(
+  paidBudgetGuardIndex >= 0 &&
+    paidBudgetGuardIndex <
+      paidCallIndex,
+  "new-output budget must be checked immediately before any new paid simulation call"
+);
+assert.ok(
+  mainSource.includes(
+    "break generationLoop"
+  ),
+  "paid budget must hard-stop the generation loop"
+);
+assert.ok(
+  mainSource.includes(
+    'buildManifest(\n        "partial"\n      )'
+  ),
+  "budget stop must persist a partial checkpoint instead of completing the wave"
 );
 
 for (const marker of [

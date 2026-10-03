@@ -33,6 +33,18 @@ for (const required of [
   '"face-lab-g-e3"',
   '"G-E3"',
   "current-campaign.json",
+  "canary-gate.json",
+  "g_e3_run_mode_required",
+  "g_e3_local_base_url_required",
+  "g_e3_canary_already_started",
+  "g_e3_canary_hard_stop_failed",
+  "g_e3_canary_approval_required",
+  "g_e3_canary_approval_binding_mismatch",
+  "FACE_LAB_E2E_NEW_OUTPUT_BUDGET",
+  "FACE_LAB_G_E3_PRECHECK_PASS",
+  "FACE_LAB_G_E3_CANARY_READY_FOR_REVIEW",
+  "FACE_LAB_G_E3_CANARY_APPROVED",
+  "FACE_LAB_G_E3_CANARY_REJECTED",
   "g_e3_campaign_runtime_binding_mismatch_",
   "g_e3_source_binding_mismatch",
   "FACE_LAB_G_E3_WAVE_READY_FOR_HUMAN_REVIEW"
@@ -70,6 +82,37 @@ assert.ok(
   provider.includes(
     "globalIndex + 1"
   )
+);
+
+assert.ok(
+  source.includes(
+    'newOutputBudget: 1'
+  ),
+  "G-E3 canary must permit exactly one new paid output"
+);
+assert.ok(
+  source.includes(
+    'providerCalls: 0'
+  ),
+  "precheck/approval paths must expose zero provider calls"
+);
+assert.ok(
+  source.includes(
+    'mode === "approve" ||\n  mode === "reject"'
+  ),
+  "G-E3 human gate transition must be explicit"
+);
+assert.ok(
+  source.includes(
+    'mode === "resume"'
+  ),
+  "G-E3 resume mode missing"
+);
+assert.ok(
+  source.includes(
+    "TARGET_CASE_COUNT -\n    checkpoint.cases.length"
+  ),
+  "resume must derive its paid budget from persisted progress"
 );
 
 for (const forbidden of [

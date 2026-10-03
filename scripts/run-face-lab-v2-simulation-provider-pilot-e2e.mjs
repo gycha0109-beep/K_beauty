@@ -570,6 +570,31 @@ async function validateReusableCases({
     new Set(
       expectedCaseNames
     );
+  const actualCaseNames =
+    manifest.cases.map(
+      (item) =>
+        item?.caseName ||
+        null
+    );
+  const expectedPrefix =
+    expectedCaseNames.slice(
+      0,
+      actualCaseNames.length
+    );
+
+  if (
+    JSON.stringify(
+      actualCaseNames
+    ) !==
+    JSON.stringify(
+      expectedPrefix
+    )
+  ) {
+    throw new Error(
+      "face_lab_e2e_checkpoint_case_order_invalid"
+    );
+  }
+
   const reusable =
     new Map();
 
@@ -883,6 +908,13 @@ async function main() {
     1,
     8
   );
+  const newOutputBudget =
+    parseBoundedInt(
+      "FACE_LAB_E2E_NEW_OUTPUT_BUDGET",
+      maxOutputs,
+      1,
+      maxOutputs
+    );
 
   if (basename(privateRoot) !== "private") {
     throw new Error("face_lab_e2e_private_root_must_be_private");
@@ -1138,6 +1170,8 @@ async function main() {
   let sequence = 0;
   let reusedCaseCount = 0;
   let generatedCaseCount = 0;
+  let generationBudgetReached =
+    false;
 
   const buildManifest =
     (status) => ({
@@ -1156,6 +1190,7 @@ async function main() {
         ).hostname,
       intentCount,
       generationsPerIntent,
+      newOutputBudget,
       caseCount:
         cases.length,
       sourceSha256,
@@ -1192,6 +1227,7 @@ async function main() {
     );
   }
 
+  generationLoop:
   for (const intent of intents) {
     let pairedRenderSpecSha256 = null;
 
@@ -1278,6 +1314,15 @@ async function main() {
           })
         );
         continue;
+      }
+
+      if (
+        generatedCaseCount >=
+        newOutputBudget
+      ) {
+        generationBudgetReached =
+          true;
+        break generationLoop;
       }
 
       const simulation = await postSimulation({
@@ -1450,6 +1495,74 @@ async function main() {
         persisted: persistOutputs
       }));
     }
+  }
+
+  if (
+    generationBudgetReached &&
+    cases.length <
+      expectedCaseCount
+  ) {
+    assert.ok(
+      runtimeBinding,
+      "campaign_runtime_binding_missing"
+    );
+
+    const partialManifest =
+      buildManifest(
+        "partial"
+      );
+
+    if (persistOutputs) {
+      await writeFile(
+        resolve(
+          campaignDir,
+          "manifest.checkpoint.json"
+        ),
+        `${JSON.stringify(
+          partialManifest,
+          null,
+          2
+        )}\n`,
+        "utf8"
+      );
+    }
+
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          verdict:
+            "FACE_LAB_PROVIDER_E2E_PARTIAL_BUDGET_REACHED",
+          campaignId,
+          caseCount:
+            cases.length,
+          targetCaseCount:
+            expectedCaseCount,
+          remainingCaseCount:
+            expectedCaseCount -
+            cases.length,
+          reusedCaseCount,
+          generatedCaseCount,
+          newOutputBudget,
+          runtimeBinding,
+          costTelemetry:
+            partialManifest
+              .costTelemetry,
+          persisted:
+            persistOutputs,
+          outputDirectory:
+            persistOutputs
+              ? relative(
+                  process.cwd(),
+                  campaignDir
+                )
+              : null
+        },
+        null,
+        2
+      )
+    );
+    return;
   }
 
   assert.equal(cases.length, expectedCaseCount, "pilot_case_count_mismatch");
