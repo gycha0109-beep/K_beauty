@@ -51,28 +51,33 @@ taxonomy authority         = shadow_only
 
 The existing Product Fact protected reader remains owned by that reader-owner.
 
-## D1 correction 1 — preserve existing role membership
+## D1/D2 correction 1 — preserve existing role membership and satisfy PostgreSQL 17 SET-role semantics
 
-Production already has:
+Production has the following base membership:
 
 ```text
-postgres
-  MEMBER OF recommendation_admission_reader_owner
-  admin_option = true
-  grantor = supabase_admin
+member       = postgres
+role         = recommendation_admission_reader_owner
+grantor      = supabase_admin
+admin_option = true
+inherit      = false
+set_option   = false
 ```
 
-The original F1 migration temporarily granted this membership and revoked it after owner transfer.
+PostgreSQL 17 requires the current session user to have **SET TRUE** on the destination role before `ALTER ... OWNER TO`. Mere membership is insufficient.
 
-That would have removed pre-existing Production state.
+The migration therefore:
 
-The migration is corrected to:
+1. verifies the existing `supabase_admin` grant is exactly `ADMIN=true / INHERIT=false / SET=false`;
+2. creates a separate, grantor-scoped temporary grant from `postgres` to itself with `INHERIT=false / SET=true / ADMIN=false`;
+3. verifies SET ROLE is temporarily available;
+4. grants temporary schema `CREATE` to the reader-owner;
+5. transfers the reader function owner;
+6. revokes temporary schema `CREATE`;
+7. revokes **only the postgres-grantor temporary membership** using `GRANTED BY CURRENT_USER`;
+8. verifies the original `supabase_admin` membership remains unchanged and no postgres-grantor membership residue exists.
 
-1. require the membership to already exist;
-2. temporarily grant only `CREATE` on the public schema;
-3. transfer the reader function owner;
-4. revoke the temporary schema `CREATE`;
-5. preserve the existing role membership unchanged.
+A rollback-only Production probe confirmed that the temporary grant/revoke leaves the original membership intact.
 
 ## D1 correction 2 — one bounded taxonomy reader policy
 
