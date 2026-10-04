@@ -143,3 +143,17 @@ Mobile CI는 동일 architecture-foundation verifier를 다시 호출하던 `mob
 직접 topology guard는 캐시 입력 범위, 단일 캐시 소유자, 전체 APK/consumer 유지와 alias 동일성·남은 config/build를 검증한다. topology/69개 책임/overlap/세 YAML/diff 검사는 PASS다. 실제 cold/warm cache restore/save 및 APK 시간은 원격 결과를 기록하기 전 **IMPLEMENTED_UNVERIFIED**다.
 
 PR 캐시는 PR merge ref에 격리된다. 첫 PR 실행의 cold 결과를 기록하는 후속 문서 커밋으로 같은 PR의 warm 결과를 비교한다. 두 후보의 SHA 차이를 명시하고 build code/lock/tool/cache key 입력이 동일한지 확인한다. branch manual을 PR warm으로 오인하거나 같은 run의 immutable artifact를 덮어쓰지 않는다. cache hit를 컴파일 속도 개선으로 취급하지 않는다. B2는 실측 뒤 결정하고 C는 계속 HOLD다.
+
+### B1 cold APK 및 입력 검증
+
+후보 `47ba067f8182e5196c6c23b48c003fe5c12ec31d`, Android `37171079374` attempt1 / pull_request의 APK job은 SUCCESS다. `gradle cache is not found`에서 시작해 Gradle compile 1106초(실제 build step 1107초), 374 tasks executed / FROM-CACHE 0, Java setup 1초 / post-save 16초 / 전체 APK job 1202초다. 캐시 ID8470598074는 `refs/pull/1081/merge`에 저장됐으며 압축 크기 1,584,830,971 bytes다.
+
+실제 key는 `setup-java-Linux-x64-gradle-68b1efdef66eb3347b92a98f57948d3d3f9812495452e78b7c9b9d7ef9277f97`다. 실제 LF Git blob 16개와 Actions의 파일 digest 집계 방식으로 동일 key를 재현했다. JDK17→18, SDK36→37, NDK 변경 및 lock/app config/local Android build/vendor source의 메모리상 변경 8개가 각자 key를 바꾸는 것도 확인했다. 작업 파일이나 고정 도구 버전을 변경한 실험이 아니다. 이는 입력 fingerprint 증거이며 변경 버전의 native runtime 검증이라고 주장하지 않는다.
+
+같은 후보 iOS `37171079239`는 SUCCESS다. PID68626 유지 / root URL 한 번 / 두 번째 관찰에서 Home / 기존 Analyze/My/crash scan PASS. 첫 frame은 Camera ready Modal, 두 번째 frame은 Home이었다. 이 표본에서는 지연 전환을 관측했으며 이전 실패의 원인 확정과는 구분한다. iOS 입력과 캐시 구성은 변경하지 않았으므로 iOS 시간 차이를 B1 효과로 쓰지 않는다.
+
+기존 cache usage는 35개 / 10,571,502,765 bytes, 새 Gradle 저장 직후는 36개 / 12,156,333,736 bytes다. [실제 설정 한도 조회](https://docs.github.com/en/rest/actions/cache#get-github-actions-cache-storage-limit-for-a-repository)는 HTTP402 및 결제 수단 확인 메시지로 실패했다. 설정된 한도·과금·향후 eviction을 추정하지 않는다. quota/결제/보관 정책 변경이나 기존 cache 삭제는 수행하지 않았다. warm에서 실제 복원과 보관 여부도 확인한다.
+
+Android 네 job은 모두 SUCCESS이며 각 현재 SHA의 고유 nonempty/unexpired 산출물을 확인했다. Smoke의 별도 process cold launch 10회와 기존 기능 검사도 PASS다. Android 네 job의 실제 runner 누적 시간은 2271초이며 배정 대기 시간과 구분한다. 같은 후보의 전체 PR 검사도 SUCCESS다.
+
+다음 warm 비교는 이 cold 결과만 기록하는 문서 커밋으로 같은 PR에서 수행한다. APK/앱/lock/도구/native patch/캐시 key 입력 16개는 변경하지 않는다. warm 측정 전 B1 전체는 IMPLEMENTED_UNVERIFIED다. 과거 compile 표본 792–1151초의 편차도 있으므로 cold 1106초를 회귀나 절감으로 단정하지 않는다.

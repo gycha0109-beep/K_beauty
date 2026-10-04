@@ -3064,3 +3064,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 보호 구역 DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N. SDK/서명 workflow 실행·권한/production 변경 없음. 신규 dependency/cache action/workflow/카테고리/skip 경로 없음.
 - 로컬 검증: topology/alias 동일성/cache 입력/69개 책임/overlap/세 YAML/diff PASS. 원격 cold/warm restore/save/compile/runtime 측정 전 B1 IMPLEMENTED_UNVERIFIED. 빌드 입력을 바꾸지 않는 cold 결과 기록 커밋으로 같은 PR의 warm을 검증하며 branch dispatch를 PR warm으로 쓰지 않음.
 - 다음 작업: B1 실제 cold/warm과 보존된 runtime 계약 확인. 실측에 따라 B2 판단, C는 HOLD. 상세 결과는 docs/ci/consolidation-audits/mobile-ci-correction-verification.md. 규칙 승격 후보 없음; AI_CONTEXT 변경 없음.
+
+### 2026-10-04 / B1 cold 실측 및 warm 비교 착수
+
+- 후보47ba067f, Android37171079374 네 job/별도 process cold launch10회/네 고유 artifact PASS; iOS37171079239 PID68626/단일 root URL/두 번째 관찰 Home 및 route/crash scan PASS; 전체 PR 검사 SUCCESS.
+- cold: Gradle dependency cache miss, compile1106초/build step1107초/APK job1202초/Java setup1초/post-save16초, 374 tasks executed 및 FROM-CACHE0. PR ref 캐시8470598074, 1,584,830,971 bytes. Android 네 job runner 누적2271초는 배정 대기/전체 완료 시간과 구분.
+- key 실제재현: LF Git blob16개가 실제 Linux key68b1efde...와 일치. lock/app config/local native build/vendor source/JDK/SDK/NDK 등 메모리 변경8개 invalidation PASS. 빌드 설정이나 원본 파일을 실험 변경하지 않음.
+- 외부 제한: cache 한도 GET HTTP402(결제 수단 확인 응답). 실제 한도/과금/eviction 미확인; 설정·결제·기존 cache 삭제 없음. 새 cache 저장 성공은 실제 API metadata로 확인.
+- 이번 변경은 cold 결과 기록 두 문서만 갱신해 같은 PR warm을 실행하기 위한 checkpoint다. 앱/lock/tool/key 입력 보존 확인. warm 실제 복원/시간/native 전 B1 IMPLEMENTED_UNVERIFIED, B2 실측 뒤 결정 및 C HOLD 유지.
+- 상세 evidence: docs/ci/consolidation-audits/mobile-ci-correction-verification.md 및 외부 ci-audit의 cold log/metrics/key proof/cache metadata. 규칙 승격 후보 없음.
