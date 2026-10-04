@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import TrustSubjectRegistrationAction from "@/app/admin/products/trust/TrustSubjectRegistrationAction";
 import TrustReentryAction from "@/app/admin/products/trust/TrustReentryAction";
@@ -91,7 +94,7 @@ function Badge({ children, tone = "slate" }) {
   );
 }
 
-function buildHref({ blocker = "all", taskId = null }) {
+function buildHref({ blocker = "all", taskId = null, search = "" }) {
   const query = [];
   if (blocker !== "all") {
     query.push(`blocker=${encodeURIComponent(blocker)}`);
@@ -99,44 +102,74 @@ function buildHref({ blocker = "all", taskId = null }) {
   if (taskId) {
     query.push(`task=${encodeURIComponent(taskId)}`);
   }
+  if (search.trim()) {
+    query.push(`q=${encodeURIComponent(search.trim())}`);
+  }
   return `/admin/products/trust${query.length ? `?${query.join("&")}` : ""}`;
 }
 
-function QueueList({ queue }) {
-  if (queue.items.length === 0) {
+function matchesQueueSearch(item, search) {
+  const normalized = search.trim().toLowerCase();
+  if (!normalized) {
+    return true;
+  }
+
+  const values = [
+    item.product?.brand,
+    item.product?.name,
+    item.task?.id,
+    item.task?.productId,
+    item.task?.factKey,
+    item.task?.state,
+    item.task?.blockerCode,
+    BLOCKER_LABELS[item.task?.blockerCode],
+    item.intake?.market,
+    item.intake?.category,
+    item.product?.category
+  ];
+
+  return values
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .includes(normalized);
+}
+
+function QueueList({ queue, items, search }) {
+  if (items.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-[#d8dde5] p-8 text-center text-sm text-[#7a828e] dark:border-[#353b45] dark:text-[#9ea6b1]">
-        현재 필터에 해당하는 관리자 검토 항목이 없습니다.
+        검색 조건에 해당하는 관리자 검토 항목이 없습니다.
       </div>
     );
   }
 
   return (
     <div className="grid gap-2">
-      {queue.items.map((item) => {
+      {items.map((item) => {
         const selected = queue.selected?.task.id === item.task.id;
         const title = [item.product?.brand, item.product?.name].filter(Boolean).join(" ") || item.task.productId;
         return (
           <Link
             key={item.task.id}
-            href={buildHref({ blocker: queue.filter, taskId: item.task.id })}
+            href={buildHref({ blocker: queue.filter, taskId: item.task.id, search })}
             aria-current={selected ? "true" : undefined}
             className={
               selected
-                ? "rounded-2xl border border-[#20242b] bg-[#171a20] p-4 text-white dark:border-[#e6e9ee] dark:bg-[#eef1f5] dark:text-[#171a20]"
-                : "rounded-2xl border border-[#e0e4ea] bg-white p-4 transition hover:border-[#aeb5bf] dark:border-[#303640] dark:bg-[#181c22] dark:hover:border-[#59616d]"
+                ? "rounded-2xl border border-[#8b95a3] bg-[#f3f5f7] p-3 shadow-sm dark:border-[#667080] dark:bg-[#252a33]"
+                : "rounded-2xl border border-[#e0e4ea] bg-white p-3 transition hover:border-[#aeb5bf] hover:bg-[#f8f9fb] dark:border-[#303640] dark:bg-[#181c22] dark:hover:border-[#59616d] dark:hover:bg-[#20242b]"
             }
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{title}</p>
-                <p className={selected ? "mt-1 text-xs opacity-75" : "mt-1 text-xs text-[#7a828e] dark:text-[#9da5b0]"}>
+                <p className="mt-1 truncate text-xs text-[#7a828e] dark:text-[#9da5b0]">
                   {item.task.factKey} · {item.intake?.market ?? "-"} · {item.intake?.category ?? item.product?.category ?? "-"}
                 </p>
               </div>
-              <Badge tone={item.task.blockerCode?.includes("CONFLICT") ? "red" : "amber"}>
+              <span className="shrink-0"><Badge tone={item.task.blockerCode?.includes("CONFLICT") ? "red" : "amber"}>
                 {BLOCKER_LABELS[item.task.blockerCode] || item.task.state || "Review"}
-              </Badge>
+              </Badge></span>
             </div>
           </Link>
         );
@@ -257,7 +290,7 @@ function Detail({ item, canReview }) {
   const identityDetail = item.intake?.identityResolutionDetail || {};
 
   return (
-    <div className="grid gap-4">
+    <div className="min-w-0 grid gap-4">
       <section className="rounded-2xl border border-[#e0e4ea] bg-white p-5 dark:border-[#303640] dark:bg-[#181c22]">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -310,9 +343,19 @@ function Detail({ item, canReview }) {
   );
 }
 
-export default function TrustQueueWorkbench({ queue, canReview = false }) {
+export default function TrustQueueWorkbench({
+  queue,
+  canReview = false,
+  initialSearch = ""
+}) {
+  const [search, setSearch] = useState(initialSearch);
+  const filteredItems = useMemo(
+    () => queue.items.filter((item) => matchesQueueSearch(item, search)),
+    [queue.items, search]
+  );
+
   return (
-    <div className="mx-auto w-full max-w-7xl">
+    <div className="mx-auto w-full max-w-[1500px] min-w-0">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a828e]">TRUST / Product Fact Operations</p>
@@ -336,7 +379,7 @@ export default function TrustQueueWorkbench({ queue, canReview = false }) {
 
       <div className="mb-5 flex flex-wrap gap-2">
         <Link
-          href={buildHref({ blocker: "all" })}
+          href={buildHref({ blocker: "all", search })}
           className={queue.filter === "all" ? "rounded-full bg-[#171a20] px-3 py-1.5 text-xs font-semibold text-white dark:bg-[#eef1f5] dark:text-[#171a20]" : "rounded-full border border-[#dce1e8] px-3 py-1.5 text-xs font-semibold dark:border-[#343a44]"}
         >
           전체 {queue.items.length}
@@ -344,7 +387,7 @@ export default function TrustQueueWorkbench({ queue, canReview = false }) {
         {queue.visibleBlockers.map((blocker) => (
           <Link
             key={blocker}
-            href={buildHref({ blocker })}
+            href={buildHref({ blocker, search })}
             className={queue.filter === blocker ? "rounded-full bg-[#171a20] px-3 py-1.5 text-xs font-semibold text-white dark:bg-[#eef1f5] dark:text-[#171a20]" : "rounded-full border border-[#dce1e8] px-3 py-1.5 text-xs font-semibold dark:border-[#343a44]"}
           >
             {BLOCKER_LABELS[blocker] || blocker} {queue.blockerCounts[blocker] ?? 0}
@@ -352,11 +395,40 @@ export default function TrustQueueWorkbench({ queue, canReview = false }) {
         ))}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.8fr)]">
-        <aside>
-          <QueueList queue={queue} />
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[380px_minmax(0,1fr)] xl:items-start">
+        <aside className="min-w-0 xl:sticky xl:top-4 xl:self-start">
+          <div className="overflow-hidden rounded-2xl border border-[#dfe3e8] bg-[#f7f8fa] dark:border-[#303640] dark:bg-[#14171c]">
+            <div className="border-b border-[#dfe3e8] bg-white p-3 dark:border-[#303640] dark:bg-[#181c22]">
+              <div className="flex items-center gap-2">
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="제품명 · 브랜드 · Fact · Task ID 검색"
+                  aria-label="TRUST 검토 항목 검색"
+                  className="min-w-0 flex-1 rounded-xl border border-[#d8dde5] bg-[#f8f9fb] px-3 py-2.5 text-sm outline-none transition focus:border-[#7c8796] focus:bg-white dark:border-[#3a414c] dark:bg-[#111419] dark:focus:border-[#687381]"
+                />
+                {search ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="shrink-0 rounded-xl border border-[#d8dde5] px-3 py-2.5 text-xs font-semibold text-[#59616d] dark:border-[#3a414c] dark:text-[#b6bdc8]"
+                  >
+                    지우기
+                  </button>
+                ) : null}
+              </div>
+              <p className="mt-2 px-1 text-[11px] text-[#7a828e] dark:text-[#9da5b0]">
+                검색 결과 <strong>{filteredItems.length}</strong> / 현재 목록 {queue.items.length}
+              </p>
+            </div>
+            <div className="max-h-[calc(100vh-15rem)] overflow-y-auto p-2">
+              <QueueList queue={queue} items={filteredItems} search={search} />
+            </div>
+          </div>
         </aside>
-        <main>
+
+        <main className="min-w-0 overflow-hidden">
           <Detail item={queue.selected} canReview={canReview} />
         </main>
       </div>
