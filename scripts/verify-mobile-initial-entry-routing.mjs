@@ -109,6 +109,9 @@ requireText(iosSmoke, "MOBILE_IOS_NO_HOME_FLASH=PASS", "ios-no-home-flash-eviden
 requireText(iosSmoke, 'xcrun simctl openurl "$UDID" "$URL_SCHEME:///"', "ios-same-runtime-root-open");
 requireText(iosSmoke, 'assert_screenshot_contains "$HOME_SCREENSHOT" "BEJEWELY" "Find what fits your skin today"', "ios-same-runtime-home-ocr");
 requireText(iosSmoke, "MOBILE_IOS_SAME_RUNTIME_HOME_ACCESS=PASS", "ios-same-runtime-home-evidence");
+requireText(iosSmoke, 'wait_for_screenshot_contains "$HOME_SCREENSHOT" "BEJEWELY" "Find what fits your skin today"', "ios-home-transition-observation");
+requireText(iosSmoke, 'kill -0 "$APP_PID"', "ios-same-process-observation");
+requireText(iosSmoke, "collect_runtime_diagnostics", "ios-failure-runtime-diagnostics");
 requireText(iosSmoke, 'assert_screenshot_contains "$ARTIFACT_DIR/analyze-en.png" "Camera ready"', "ios-explicit-analyze-ocr");
 requireText(iosSmoke, "import Vision", "ios-runtime-ocr-authority");
 forbidText(iosSmoke, "home-en.png", "stale-ios-home-capture-name");

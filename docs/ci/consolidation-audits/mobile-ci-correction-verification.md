@@ -104,6 +104,14 @@ PR [#1081](https://github.com/gycha0109-beep/K_beauty/pull/1081), 후보 `231808
 - 현재 원격 main은 `a8c5d666`로 전진했고 작업 브랜치는 원격과 0/0이다. main을 작업 브랜치에 임의 병합하지 않는다.
 - 새 native 후보 원격 검증 전 **IMPLEMENTED_UNVERIFIED**. Stage B/C의 순서와 완료 기준을 유지한다.
 
+### 1dd7fbe4 원격 결과 및 iOS 전환 진단
+
+Android `37166436677`의 APK/Smoke/20A/20B 전체 SUCCESS, 열 번의 새 process cold launch와 원래 기능 Smoke PASS. 동일 candidate의 수동 확인 세 경로 `37167887020`/`37167888403`/`37167889877`도 SUCCESS이며 정확한 producer attempt 1 / pull_request / SHA를 승인했다. 각 고유 산출물 네 개를 확인했다. 승인된 Android 복구는 이 runtime에서 VERIFIED다.
+
+iOS `37166436724`는 build/install/initial camera/no-Home-flash PASS 이후 root URL→Home transition에서 FAIL. 실제 캡처는 여전히 camera Modal이다. iOS/app/SDK 입력은 이전 성공 후보와 동일했고 실패 원인을 아직 확정하지 않았다. root URL을 한 번만 보내고 원래 PID가 살아 있는 동안 정확한 Home token을 관찰하는 보강과, 실패 시 누락되던 runtime/crash artifact 수집을 추가한다. direct shell fixture 정상/지연/지속 오화면/프로세스 종료/OCR 이후 종료 5개 및 entry/topology/책임/syntax 검사는 PASS. 원래 필수 화면/초기 프레임 검사와 crash failure는 보존한다.
+
+상세 진단은 [native 복구 기록](mobile-native-runtime-recovery.md)을 참조한다. 전체 A는 iOS 재검증 전 IMPLEMENTED_UNVERIFIED이며 B/C는 HOLD다. 테스트 재시도 성공으로 실패를 덮거나 캐시 작업을 먼저 시작하지 않는다.
+
 필요하면 이번 단계의 일반 후속 커밋으로 세 workflow의 자동 진입과 이전 polling 계약 및 책임/verifier를 함께 복원한다. 기존 57개 모바일 보완 변경까지 되돌리거나 강제 Git 작업을 사용하지 않는다.
 
 다음 필수 작업은 현재 후보를 원격 검증 가능한 상태로 만들고 **동일 SHA CI 동등성 확인**을 수행하는 것이다. 최초 구현 턴은 저장소 규칙에 따라 로컬 검증까지 완료했으며, 후속 사용자 승인으로 검증용 커밋·push·PR 생성이 허용되었다.

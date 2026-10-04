@@ -44,3 +44,18 @@ Android를 실제 컴파일하는 기존 unsigned/debug/signed 소유자의 설�
 - 실제 Android 컴파일 소유자 세 곳의 설치 후/prebuild 전 guard를 연결한다. 잘못된 버전·source·payload·혼합 상태·경로 이탈을 거부하고 교체 실패 시 이전 byte를 복원한다. 프로세스 강제 종료 시 혼합 상태를 거부하므로 clean install로 복구한다.
 - 기존 Smoke에서 초기 실행 후 열 번 force-stop/start를 수행하고 각 시작 UI 및 15초 process 생존/누적 app crash buffer를 확인한다. 실패한 launch를 재시도하지 않고 최초 실패에서 종료한다. 결과는 기존 Smoke artifact에 보존한다. 실제 emulator 결과 전에는 반복 검증 PASS로 보고하지 않는다.
 - 같은 SDK/JSX/UI source를 유지한다. 적용된 package의 native source가 추가 빌드 입력이 되므로 후속 Gradle 캐시 key에도 guard/vendor 입력을 포함한다.
+
+## 실제 Android 결과와 iOS 추가 진단
+
+후보 `1dd7fbe4bc18d6f2ab74373ef9c9aaf8dad71531`, Android run `37166436677` attempt 1 / pull_request:
+
+- 네 job 모두 SUCCESS, 고유 SHA 산출물 네 개 모두 nonempty/unexpired.
+- 고정 Node22.23.1에서 직접 suite 12/12와 source guard PASS. 실제 APK 컴파일 876초, 374 tasks executed; cache 효과 측정은 아니다.
+- 최초 시작 뒤 열 번의 별도 process cold launch 모두 PASS. 각 15초 생존과 누적 app crash buffer 검사 성공. PID 열 개가 서로 다름을 로그에서 확인했고 원래 기능 Smoke도 PASS. 이 표본에서 충돌 0회 관측이며 낮은 빈도의 경합 완전 부재를 보장하지 않는다.
+- 세 수동 확인도 동일 SHA/producer/attempt/event로 PASS: `37167887020`, `37167888403`, `37167889877`. APK/에뮬레이터를 다시 만들지 않았다.
+
+따라서 승인된 **Android 복구는 해당 runtime에서 VERIFIED**다. 전체 CI 단계 A는 아래 iOS 문제 때문에 아직 완료하지 않는다.
+
+iOS run `37166436724`는 unsigned build/install/initial camera/16-frame no-Home-flash까지 PASS였으나 같은 runtime의 root URL 이동 후 Home OCR 검사에 실패했다. 실패 캡처는 `Preparing camera...`가 표시된 카메라 Modal이다. 이 후보에서 앱/SDK/iOS 실행 코드가 이전 성공 `ca5139de`와 byte 기준 동일함을 확인했다. 원인 분류는 **runtime 화면 전환 실패, 원인 미확정**이며 단순 OCR 오류나 Android backport 회귀로 단정하지 않는다.
+
+직접 실패 consumer인 iOS smoke와 그 테스트/진입 verifier까지 진단 범위를 넓힌다. 한 번 보낸 root URL을 다시 보내거나 앱을 재실행하지 않고, 원래 PID 생존과 정확한 Home 두 token을 최대 열 프레임/45초 관찰 예산으로 확인한다. 진행 중 screenshot/OCR 명령이 종료된 뒤 예산을 판단한다. 모든 프레임/OCR 및 실패 시 runtime log와 새 crash report를 기존 artifact에 보존한다. 원래 최초 진입/flash exclusion/Home 필수 token/crash failure를 유지한다. 동일 프로세스의 지연 전환과 지속 오화면/종료를 구분하는 실제 shell fixture 5개 PASS. 이는 iOS 기능 복구 증거가 아니라 **IMPLEMENTED_UNVERIFIED 진단 보강**이며 실제 재검증에서 판정한다.

@@ -47,6 +47,7 @@ on:
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
+      - "scripts/test-mobile-ios-runtime-observer.mjs"
       - ".github/workflows/mobile-ios-shell.yml"
   push:
     branches: [main]
@@ -93,6 +94,7 @@ on:
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
+      - "scripts/test-mobile-ios-runtime-observer.mjs"
       - ".github/workflows/mobile-ios-shell.yml"
   workflow_dispatch:
     inputs:
@@ -157,6 +159,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --test scripts/test-mobile-ios-runtime-observer.mjs
           npm run verify:mobile-foundation
           npm run verify:mobile-entry-routing
           npm run mobile:typecheck

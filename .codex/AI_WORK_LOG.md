@@ -3046,3 +3046,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 검증: clean npm ci 이후 patch 적용 및 idempotent PASS. source drift/부분 적용/잘못된 버전/payload/경로, 교체 실패 rollback/concurrent mutation 및 실제 shell 정상/충돌/종료 fixture 포함 12개 PASS. 직접 CI/mobile 계약 검사 및 lock/앱 source 보존 확인. 원격 native 후보 검증 전 IMPLEMENTED_UNVERIFIED.
 - 실제 실행 전의 간헐 종료 위험은 완료로 처리하지 않음. 상세 evidence와 다음 단계는 docs/ci/consolidation-audits/mobile-native-runtime-recovery.md 및 mobile-ci-correction-verification.md.
 - 규칙 승격 후보 없음; AI_CONTEXT 변경 없음.
+
+### 2026-10-04 / Android 복구 검증과 iOS 화면 전환 관찰 보강
+
+- 브랜치 codex/mobile-ci-verification / PR1081 / native candidate 1dd7fbe4. 복구형. Android native 4 jobs 및 열 번 cold launch, 세 manual gate 같은-SHA 검증 PASS. SDK/node version/원본 guard 및 12개 직접 suite도 실제 CI PASS.
+- 새 실패: iOS run37166436724 unsigned build/install/initial camera/16-frame no-Home-flash는 PASS, root URL→Home OCR에서 camera Modal/Preparing camera 화면으로 FAIL. macOS26/Xcode26.6/iOS26.5 Simulator, failure stage 화면 전환, classification runtime 원인 미확정. 재현: gh run view 37166436724; screenshot/log/artifact 외부 ci-audit에 보존.
+- 추가 탐색 근거: 실제 failure 및 app/SDK/iOS input이 직전 성공 후보와 동일함을 확인. 직접 iOS smoke/camera focus caller/initial entry verifier만 읽었으며 app source는 변경하지 않음. Android source 수정이 iOS에서 호출되지 않음을 확인.
+- 변경: 기존 고정 4초 뒤 단일 Home 캡처를 최대 열 프레임/45초 관찰 예산의 정확한 Home token 관찰로 교체. URL 재전송/앱 재실행 없이 원래 PID를 확인. 실패해도 runtime log/crash report/frame/OCR을 보존하고 원래 exit status 유지. 직접 test와 workflow 연결/trigger 및 entry verifier 갱신.
+- 검증: 실제 shell 정상/지연/지속 오화면/종료/OCR 이후 종료 5개 PASS; entry/topology/69개 책임/syntax/diff 및 app/lock 보존 PASS. iOS 실제 재검증 전 IMPLEMENTED_UNVERIFIED; A 전체 완료 기준 미충족으로 B/C HOLD 유지.
+- 보호 구역 DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N. 인증/redirect 설정 및 앱 동작 변경 없음. 규칙 승격 후보 없음.
