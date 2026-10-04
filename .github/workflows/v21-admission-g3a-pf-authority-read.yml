@@ -31,6 +31,8 @@ on:
       - "scripts/verify-v21-admission-g4-f1-d2-production-migration-apply-v1.mjs"
       - "evidence/recommendation-governance/v21-admission-g4-f1-d3-fation-category-authority-review-preflight-v1.json"
       - "scripts/verify-v21-admission-g4-f1-d3-fation-category-authority-review-preflight-v1.mjs"
+      - "evidence/recommendation-governance/v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.json"
+      - "scripts/verify-v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.mjs"
   pull_request:
     branches:
       - main
@@ -61,6 +63,8 @@ on:
       - "scripts/verify-v21-admission-g4-f1-d2-production-migration-apply-v1.mjs"
       - "evidence/recommendation-governance/v21-admission-g4-f1-d3-fation-category-authority-review-preflight-v1.json"
       - "scripts/verify-v21-admission-g4-f1-d3-fation-category-authority-review-preflight-v1.mjs"
+      - "evidence/recommendation-governance/v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.json"
+      - "scripts/verify-v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.mjs"
 
 permissions:
   contents: read
@@ -122,6 +126,9 @@ jobs:
 
       - name: Verify G4-F1-D3 FATION category authority review preflight
         run: node scripts/verify-v21-admission-g4-f1-d3-fation-category-authority-review-preflight-v1.mjs
+
+      - name: Verify G4-F1-D4 FATION category authority review execution
+        run: node scripts/verify-v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.mjs
 
   runtime-probe:
     name: G3A deployed runtime authority probe

@@ -1,0 +1,71 @@
+{
+  "version": "v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1",
+  "stage": "V2.1-ADMISSION-G4-F1-D4",
+  "decision": "V21_ADMISSION_G4_F1_D4_FATION_CATEGORY_AUTHORITY_REVIEW_ESTABLISHED_PASS",
+  "captured_on": "2026-10-04",
+  "source_main_sha": "2303ebcbbdc15b68da9b7013014172ef854274de",
+  "mode": "PRODUCTION_REVIEW_WRITE_PRODUCT_LEVEL_AUTHORITY_ONLY",
+  "upstream": {
+    "d3_decision": "V21_ADMISSION_G4_F1_D3_FATION_CATEGORY_AUTHORITY_REVIEW_PREFLIGHT_PASS"
+  },
+  "execution": {
+    "writer": "public.admin_register_recommendation_category_authority_review_v1(uuid,text,jsonb)",
+    "request_id": "v21-admission-g4-f1-d4-fation-category-authority-establish-v1",
+    "actor_resolution": "resolved_at_execution_from_exactly_one_active admin.products.review actor; UUID not persisted",
+    "writer_boundary": "service_role",
+    "direct_ledger_write": false,
+    "result": {
+      "status": "reviewed",
+      "category": "treatment",
+      "review_state": "established",
+      "inserted": true,
+      "idempotent": false,
+      "category_term_id": "catalog-taxonomy-v1:category:treatment",
+      "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+      "product_row_mutated": false,
+      "taxonomy_assignment_mutated": false,
+      "recommendation_admission_mutated": false,
+      "production_cutover_authorized": false
+    }
+  },
+  "production_poststate": {
+    "review_rows": 1,
+    "current_review_rows": 1,
+    "current_established_rows": 1,
+    "exact_audit_events": 1,
+    "products_category": null,
+    "taxonomy_mode": "shadow/shadow_only",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "product_fact_subject_count": 0,
+    "product_fact_current_count": 0
+  },
+  "protected_reader_poststate": {
+    "role": "recommendation_admission_runtime",
+    "read_contract_version": "recommendation-category-authority-read-v1",
+    "status": "CATEGORY_AUTHORITY_RESOLVED",
+    "category": "treatment",
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "category_term_id": "catalog-taxonomy-v1:category:treatment",
+    "recommendation_family_term_id": "catalog-taxonomy-v1:recommendation_family:treatment",
+    "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+    "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "recommendation_admission_mutated": false,
+    "production_cutover_authorized": false,
+    "temporary_probe_grant_residue": 0
+  },
+  "runtime_boundary": {
+    "recommendation_candidate_admission_runtime_category_reader_wired": false,
+    "recommendation_admission_authority_reader_category_reader_wired": false,
+    "recommendation_admission_changed": false
+  },
+  "unchanged_boundaries": {
+    "products_category": true,
+    "taxonomy_assignment": true,
+    "taxonomy_global_authority": true,
+    "product_fact": true,
+    "g3_runtime_wiring": true,
+    "recommendation_admission": true
+  },
+  "next_gate": "V2.1-ADMISSION-G4-F2_CATEGORY_AUTHORITY_SHADOW_DUAL_READ"
+}
