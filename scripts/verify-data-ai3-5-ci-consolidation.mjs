@@ -127,6 +127,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-non-numeric-pda-offline-shadow-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-non-numeric-pda-shadow-adapter-contract-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-non-numeric-pda-shadow-adapter-implementation-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-shadow-consumption-evaluation-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
