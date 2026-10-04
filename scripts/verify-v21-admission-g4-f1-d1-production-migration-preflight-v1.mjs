@@ -75,6 +75,18 @@ assert.equal(evidence.d1_corrections.length,3);
 assert.ok(
   migration.includes("G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_REQUIRED")
 );
+
+assert.ok(
+  migration.includes("do $g4_f1_membership$")
+);
+assert.ok(
+  migration.includes("$g4_f1_membership$;")
+);
+assert.equal(
+  /(^|\n)do \$(?:\n|\r\n)/.test(migration),
+  false,
+  "malformed anonymous DO delimiter must not be committed"
+);
 assert.ok(
   migration.includes("G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_MUST_PERSIST")
 );
