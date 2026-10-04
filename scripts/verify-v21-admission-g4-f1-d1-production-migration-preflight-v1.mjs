@@ -101,6 +101,19 @@ assert.ok(
 assert.ok(
   migration.includes("G4_F1_TEMP_SET_ROLE_GRANT_REQUIRED")
 );
+
+assert.ok(
+  migration.includes(
+    "'recommendation_admission_reader_owner',\n    'SET'"
+  )
+);
+assert.equal(
+  migration.includes(
+    "'recommendation_admission_reader_owner',\n    'USAGE'"
+  ),
+  false,
+  "PostgreSQL role-switch capability must be checked with pg_has_role(..., 'SET'), not 'USAGE'"
+);
 assert.ok(
   migration.includes("G4_F1_TEMP_ROLE_GRANT_RESIDUE_FORBIDDEN")
 );
