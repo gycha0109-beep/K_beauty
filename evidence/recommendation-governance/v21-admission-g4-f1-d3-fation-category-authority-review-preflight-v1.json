@@ -1,0 +1,123 @@
+{
+  "version": "v21-admission-g4-f1-d3-fation-category-authority-review-preflight-v1",
+  "stage": "V2.1-ADMISSION-G4-F1-D3",
+  "decision": "V21_ADMISSION_G4_F1_D3_FATION_CATEGORY_AUTHORITY_REVIEW_PREFLIGHT_PASS",
+  "captured_on": "2026-10-04",
+  "source_main_sha": "8a938ec0dc9933c5a824f58eb5e8509c76c6afa8",
+  "mode": "READ_ONLY_REVIEW_PREFLIGHT_NO_GRANT_WRITE",
+  "upstream": {
+    "d2_decision": "V21_ADMISSION_G4_F1_D2_PRODUCTION_MIGRATION_APPLIED_PASS",
+    "infrastructure_deployed": true
+  },
+  "reviewer_prestate": {
+    "active_admin_memberships": 1,
+    "eligible_product_review_actors": 1,
+    "eligible_roles": [
+      "admin_owner"
+    ],
+    "required_capability": "admin.products.review",
+    "actor_uuid_persisted_in_repository": false,
+    "actor_resolution_rule": "D4 must re-read Production admin_memberships and select the active actor that still has admin.products.review; stop on cardinality != 1"
+  },
+  "target": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "brand": "파티온",
+    "product_name": "노스카나인 트러블 세럼",
+    "legacy_category": null,
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "entity_kind_term_id": "catalog-taxonomy-v1:entity_kind:cosmetic",
+    "domain_term_id": "catalog-taxonomy-v1:domain:skincare",
+    "recommendation_family_term_id": "catalog-taxonomy-v1:recommendation_family:treatment",
+    "category_term_id": "catalog-taxonomy-v1:category:treatment",
+    "assignment_state": "shadow",
+    "assignment_method": "source_classification",
+    "legacy_projection_key": null,
+    "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+    "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "taxonomy_lifecycle_state": "shadow",
+    "taxonomy_authority_mode": "shadow_only"
+  },
+  "review_prestate": {
+    "total_review_rows": 0,
+    "current_rows": 0,
+    "current_established_rows": 0,
+    "category_review_audit_events": 0,
+    "protected_reader_status": "NO_AUTHORITY",
+    "protected_reader_reason": "CURRENT_CATEGORY_REVIEW_MISSING"
+  },
+  "transport_prestate": {
+    "writer": "public.admin_register_recommendation_category_authority_review_v1(uuid,text,jsonb)",
+    "writer_service_role_execute": true,
+    "reader": "public.read_recommendation_category_authority_v1(uuid)",
+    "reader_runtime_execute": true,
+    "direct_ledger_write_required": false,
+    "direct_ledger_write_forbidden": true
+  },
+  "frozen_d4_request": {
+    "request_id": "v21-admission-g4-f1-d4-fation-category-authority-establish-v1",
+    "actor_user_id": "RESOLVE_AT_EXECUTION_DO_NOT_PERSIST",
+    "payload": {
+      "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+      "expected_category_term_id": "catalog-taxonomy-v1:category:treatment",
+      "expected_assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+      "review_state": "established",
+      "supersedes_review_id": null
+    }
+  },
+  "d4_expected_writer_result": {
+    "status": "reviewed",
+    "review_state": "established",
+    "category": "treatment",
+    "category_term_id": "catalog-taxonomy-v1:category:treatment",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "inserted": true,
+    "idempotent": false,
+    "product_row_mutated": false,
+    "taxonomy_assignment_mutated": false,
+    "recommendation_admission_mutated": false,
+    "production_cutover_authorized": false
+  },
+  "d4_expected_poststate": {
+    "total_review_rows": 1,
+    "current_rows": 1,
+    "current_established_rows": 1,
+    "category_review_audit_event_delta": 1,
+    "protected_reader": {
+      "status": "CATEGORY_AUTHORITY_RESOLVED",
+      "category": "treatment",
+      "recommendation_admission_mutated": false,
+      "production_cutover_authorized": false
+    },
+    "products_category": null,
+    "taxonomy_assignment_unchanged": true,
+    "taxonomy_global_authority_unchanged": true,
+    "product_fact_unchanged": true,
+    "g3_runtime_wiring_unchanged": true,
+    "recommendation_admission_unchanged": true
+  },
+  "stop_conditions": [
+    "eligible admin.products.review actor cardinality is not exactly 1",
+    "any FATION category-authority review row already exists",
+    "any prior category-authority audit event exists unexpectedly",
+    "products.category becomes non-null",
+    "taxonomy assignment count is not exactly 1",
+    "assignment snapshot digest differs from eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "candidate_id or source_rule_key drifts",
+    "taxonomy leaves shadow/shadow_only",
+    "writer loses service_role EXECUTE or gains unintended EXECUTE",
+    "protected reader no longer returns NO_AUTHORITY/CURRENT_CATEGORY_REVIEW_MISSING before review",
+    "main D3 contract drifts after preflight"
+  ],
+  "authority_boundary": {
+    "reviewed_category_grant_write_authorized": false,
+    "actor_uuid_repository_persistence_authorized": false,
+    "products_category_mutation_authorized": false,
+    "taxonomy_assignment_mutation_authorized": false,
+    "taxonomy_global_activation_authorized": false,
+    "product_fact_mutation_authorized": false,
+    "g3_runtime_wiring_authorized": false,
+    "recommendation_cutover_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-F1-D4_FATION_CATEGORY_AUTHORITY_REVIEW_EXECUTION"
+}
