@@ -445,8 +445,16 @@ assert.deepEqual(gradleCacheInputs, [
 ], "Gradle dependency cache must hash all tracked SDK/tool/native patch inputs without secret/generated paths");
 assert.equal(mobileAndroidRuntime.split("cache: gradle").length - 1, 1);
 assertNotContains(".github/workflows/mobile-android-runtime.yml", [
-  "actions/cache@", "gradle/actions/setup-gradle@", "--build-cache", "--configuration-cache",
+  "actions/cache@", "gradle/actions/setup-gradle@", "--configuration-cache",
 ]);
+assert.equal(mobileAndroidRuntime.split("--build-cache").length - 1, 1,
+  "Only the canonical debug build may enable task output caching");
+assertContains(".github/workflows/mobile-android-runtime.yml", [
+  "run: npm run mobile:build:android:debug -- -- --build-cache",
+]);
+for (const releaseOwner of ["mobile-13-store-release-preflight.yml", "mobile-15-distribution-authority.yml"]) {
+  assertNotContains(`.github/workflows/${releaseOwner}`, ["cache: gradle", "--build-cache", "--configuration-cache"]);
+}
 // Public aliases stay available; the same verifier runs once in Mobile CI.
 const rootMobileCommands = JSON.parse(read("package.json")).scripts;
 const workspaceMobileCommands = JSON.parse(read("apps/mobile/package.json")).scripts;

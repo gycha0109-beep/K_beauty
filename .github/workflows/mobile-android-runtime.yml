@@ -225,7 +225,7 @@ jobs:
         run: npm run verify:mobile-native
 
       - name: Build installable debug APK once
-        run: npm run mobile:build:android:debug
+        run: npm run mobile:build:android:debug -- -- --build-cache
 
       - name: Upload canonical debug APK
         uses: actions/upload-artifact@v6

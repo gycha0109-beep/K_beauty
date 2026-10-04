@@ -157,3 +157,28 @@ PR 캐시는 PR merge ref에 격리된다. 첫 PR 실행의 cold 결과를 기�
 Android 네 job은 모두 SUCCESS이며 각 현재 SHA의 고유 nonempty/unexpired 산출물을 확인했다. Smoke의 별도 process cold launch 10회와 기존 기능 검사도 PASS다. Android 네 job의 실제 runner 누적 시간은 2271초이며 배정 대기 시간과 구분한다. 같은 후보의 전체 PR 검사도 SUCCESS다.
 
 다음 warm 비교는 이 cold 결과만 기록하는 문서 커밋으로 같은 PR에서 수행한다. APK/앱/lock/도구/native patch/캐시 key 입력 16개는 변경하지 않는다. warm 측정 전 B1 전체는 IMPLEMENTED_UNVERIFIED다. 과거 compile 표본 792–1151초의 편차도 있으므로 cold 1106초를 회귀나 절감으로 단정하지 않는다.
+
+### B1 warm 완료 및 실측 범위
+
+warm 후보 `1ea015ca14622ed4da60838d8b93b2bdb5f9a702`는 두 기록 문서만 변경했다. 실제 key 입력 16개를 Git diff로 비교해 동일함을 확인했다. 같은 PR ref에서 같은 key/캐시 ID8470598074를 복원했고 새 key 생성/복사나 branch cache 우회는 없다.
+
+| 항목 | cold 47ba067f / run37171079374 | warm 1ea015ca / run37173034175 |
+|---|---:|---:|
+| Gradle dependency cache | miss / 새 저장 | 동일 key hit / 복원 SUCCESS |
+| Java setup (복원 포함) | 1초 | 29초 |
+| Gradle banner / 실제 build step | 1106 / 1107초 | 698 / 699초 |
+| APK job | 1202초 | 818초 |
+| post-save | 16초 | hit이므로 저장 없음, 0초 |
+| executed / FROM-CACHE tasks | 374 / 0 | 374 / 0 |
+| Android 네 job runner 누적 | 2271초 | 1893초 |
+| 네 job / 10회 cold launch / 네 고유 artifact | SUCCESS / PASS / 확인 | SUCCESS / PASS / 확인 |
+
+warm의 iOS `37173034078`도 SUCCESS이며 전체 PR 검사 SUCCESS다. **이 기준 B1은 VERIFIED**다. 이 한 쌍의 표본에서 compile 408초, APK job 384초, Android runner 누적 378초 감소를 관측했다. 캐시 복원 비용은 포함했다. runner 배정/host 부하와 iOS 실행 편차를 통제한 반복 실험은 아니므로 보장된 절감률이나 전체 repository/사용자 대기 시간 절감으로 일반화하지 않는다. task output reuse는 0이며 캐시 hit를 그 증거로 쓰지 않는다.
+
+## Stage B2 — debug task output cache 검증
+
+B1 warm에서도 실제 compiler 작업 374개가 다시 실행되고 compile 698초가 남았다. 승인 설계에 따라 canonical debug build에만 `--build-cache`를 전달하는 최소 변경을 적용한다. root/workspace 공개 alias는 그대로 유지하며 실제 임시 npm workspace에서 `npm run mobile:build:android:debug -- -- --build-cache`가 `:app:assembleDebug --no-daemon --build-cache`를 전달하는 것을 확인했다. generated project/사용자 Gradle 설정이나 configuration cache는 추가하지 않는다. release/signing 두 owner에는 캐시/인자 변경이 없다.
+
+고정 RN0.86.3은 debug variant에 JS bundle task를 생성하지 않으며 실제 Smoke/20A/20B는 각 현재 checkout의 Metro를 새로 시작한다. 이 경로의 JS를 Gradle output cache나 이전 APK에서 가져오지 않는다. source 소비와 모든 실제 화면 검사는 계속 실행한다. 고정 AGP8.12.0의 [공식 source artifact](https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.12.0/gradle-8.12.0-sources.jar)의 ExternalNativeBuildTask는 DisableCachingByDefault다. 네 ABI의 CMake가 제거된다고 주장하지 않으며 managed compiler task의 실제 FROM-CACHE/시간/캐시 크기를 별도로 판정한다.
+
+workflow 자체가 key 입력이므로 B2는 별도 새 key의 cold/warm으로 측정한다. 입력 mutation의 key 변경과 캐시 miss의 현재 source build, warm의 실제 native/UI/고유 artifact 유지가 필요하다. 현재는 **IMPLEMENTED_UNVERIFIED**이며 C는 계속 HOLD다. APK/signing/env 캐시와 동일 Gradle home을 소유하는 두 번째 cache action은 추가하지 않았다.

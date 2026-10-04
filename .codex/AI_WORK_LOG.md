@@ -3073,3 +3073,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 외부 제한: cache 한도 GET HTTP402(결제 수단 확인 응답). 실제 한도/과금/eviction 미확인; 설정·결제·기존 cache 삭제 없음. 새 cache 저장 성공은 실제 API metadata로 확인.
 - 이번 변경은 cold 결과 기록 두 문서만 갱신해 같은 PR warm을 실행하기 위한 checkpoint다. 앱/lock/tool/key 입력 보존 확인. warm 실제 복원/시간/native 전 B1 IMPLEMENTED_UNVERIFIED, B2 실측 뒤 결정 및 C HOLD 유지.
 - 상세 evidence: docs/ci/consolidation-audits/mobile-ci-correction-verification.md 및 외부 ci-audit의 cold log/metrics/key proof/cache metadata. 규칙 승격 후보 없음.
+
+### 2026-10-04 / B1 warm 검증 완료 및 B2 debug task cache 착수
+
+- B1 warm1ea015ca / Android37173034175 네 job/10 cold launch/네 artifact PASS, iOS37173034078와 전체 PR 검사 SUCCESS. 같은 PR ref/key/16개 입력 보존 및 1.58GB 복원 SUCCESS. B1 VERIFIED.
+- warm: Java restore29초/compile698초/build step699초/APK job818초/postsave0초, 374 executed/FROM-CACHE0, Android runner 누적1893초. cold 대비 compile408초/APK384초/runner누적378초 감소 관측. 한 쌍의 host 편차 표본으로 보장 latency/전체 pipeline 절감률을 주장하지 않음.
+- B2 범위는 기존 debug APK build 한 번에 --build-cache 인자만 전달, 직접 topology의 debug-only/release/config cache 경계 및 기록. root/workspace alias의 실제 npm 전달을 임시 fixture로 확인. 신규 dependency/action/workflow/제품 category 없음. 앱/lock/ABI/SDK/공개 API/저장/서명 실행 변경 없음.
+- 범위 근거: warm compiler 작업374개/698초가 남아 task output reuse를 별도 실측. 직접 SDK dependency인 RN debug bundle 등록 및 고정 AGP8.12.0 source를 확인했다. CMake는 기본 비캐시형이며 모든 ABI compile 유지. 현재 JS는 새 Metro에서 소비하고 실제 screen checks를 유지.
+- cold/warm FROM-CACHE/현재 candidate runtime/캐시 크기 전 B2 IMPLEMENTED_UNVERIFIED. C HOLD, DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N. main/production/signing 실행 없음. 규칙 승격 후보 없음.
