@@ -432,6 +432,24 @@ assertContains(".github/workflows/mobile-native-shell.yml", [
 ]);
 
 const mobileAndroidRuntime = read(".github/workflows/mobile-android-runtime.yml");
+for (const platform of ["android", "ios"]) {
+  const workflow = `.github/workflows/mobile-${platform === "android" ? "android-runtime" : "ios-shell"}.yml`;
+  assertContains(workflow, [
+    '"scripts/resolve-mobile-ci-impact.mjs"', '"scripts/test-mobile-ci-impact.mjs"',
+    "mobile-impact-plan:", "mobile-impact-verify:", "if: always()", "timeout-minutes: 10",
+    "run_android: ${{ steps.plan.outputs.run_android }}", "run_ios: ${{ steps.plan.outputs.run_ios }}",
+    "shadow: ${{ steps.plan.outputs.shadow }}", "MOBILE_CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}",
+    "MOBILE_CI_EVENT: ${{ github.event_name }}", "MOBILE_CI_NEEDS: ${{ toJSON(needs) }}",
+    "run: node scripts/resolve-mobile-ci-impact.mjs", `run: node scripts/resolve-mobile-ci-impact.mjs verify ${platform}`,
+  ]);
+  assertNotContains(workflow, ["if: needs.mobile-impact-plan.outputs.run_", "needs: mobile-impact-plan"]);
+}
+assertContains(".github/workflows/mobile-android-runtime.yml", [
+  "needs: [mobile-impact-plan, android-debug-apk, native-shell-smoke, store-capture-20a, store-capture-20b]",
+  "node --test scripts/test-mobile-ci-impact.mjs",
+]);
+assertContains(".github/workflows/mobile-ios-shell.yml", ["needs: [mobile-impact-plan, ios-native-shell]"]);
+assertContains("scripts/resolve-mobile-ci-impact.mjs", ["shadow: true, run_android: true, run_ios: true", "--ignore-scripts", "NPM_CONFIG_USERCONFIG", "NPM_CONFIG_GLOBALCONFIG"]);
 // Cache only through the existing Java owner. Native projects/APKs still rebuild.
 const gradleCacheInputs = mobileAndroidRuntime.match(/cache-dependency-path: \|\r?\n((?: {12}.+\r?\n)+)/)?.[1]
   .split(/\r?\n/).map((line) => line.trim()).filter(Boolean);

@@ -192,3 +192,36 @@ workflow 자체가 key 입력이므로 B2는 별도 새 key의 cold/warm으로 �
 iOS `37175168750`도 SUCCESS다. PID89614 유지 / root URL 한 번 / 첫 관찰 Home / initial camera 및 16-frame no-Home-flash / Analyze/My/crash scan PASS. Xcode26.6 / iOS26.5 unsigned Simulator 결과이며 실제 기기·서명·인증 provider 검증과는 구분한다. iOS 시간 편차를 Android 캐시 효과로 쓰지 않는다.
 
 이 checkpoint는 두 기록 문서만 바꾼다. 같은 PR에서 build code/lock/tool/key 입력을 보존한 warm 실행으로 복원·task reuse·복원 비용·현재 화면 검사를 비교한다. cold 통과만으로 B2의 속도 효과를 판단하지 않으며 warm 완료 전 B2 IMPLEMENTED_UNVERIFIED, C HOLD다.
+
+### B2 warm 완료
+
+warm 후보 `ed9b30658ed0cda8f1113195d302096effd661c8`는 기록 두 문서만 변경했다. Android `37177680924` 네 job 및 현재 SHA의 고유 nonempty/unexpired 산출물 네 개, iOS `37177680871` 모두 SUCCESS다. 기존 native/화면 검사를 제거하지 않았다. 같은 PR ref의 동일 key/캐시 ID8471873322 / 1,657,691,884 bytes 복원에 성공했다.
+
+| 항목 | B2 cold 622cd790 | B2 warm ed9b3065 |
+|---|---:|---:|
+| Java setup/캐시 복원 | 1초 / miss | 29초 / hit |
+| compile / build step | 1177 / 1178초 | 652 / 653초 |
+| APK job | 1280초 | 768초 |
+| post-save | 19초 | hit, 저장 없음 / step 1초 |
+| executed / FROM-CACHE | 318 / 56 | 219 / 155 |
+| Android 네 job runner 누적 | 2451초 | 1954초 |
+
+**이 후보에서 B2 VERIFIED**다. 이 한 쌍에서는 compile525초/APK job512초/runner누적497초 감소를 관측했다. B1 warm과 B2 warm의 차이는 compile46초/APK job50초로 더 작고 host 편차를 통제하지 않았으므로 B2만의 보장 절감으로 주장하지 않는다. managed compiler/resource task 재사용은 실제 FROM-CACHE이며 네 ABI CMake는 계속 실행됐다. 추가 압축 크기는 B1 대비72,860,913 bytes다. APK/JS/env/signing cache나 ABI 축소는 없다.
+
+## Stage C — 영향 판정의 관찰 단계
+
+승인 설계의 첫 관찰 단계만 구현한다. 두 기존 owner의 작은 Linux plan과 final guard가 같은 `scripts/resolve-mobile-ci-impact.mjs`를 호출한다. workflow/Track/원래 job·산출물 이름 및 책임69개는 보존한다. 계획 계산 실패/출력 누락/다른 SHA/선택된 native job 실패·skip은 최종 guard에서 실패한다. plan이 계산돼도 runtime PASS로 취급하지 않는다.
+
+실제 PR base→head / push before→sha / NUL diff를 사용한다. manual, base 부재, 삭제/rename/unknown 및 source/config/module 변경은 전체 검사다. 루트 package/lock만 수정한 경우에만 credentials를 제외한 임시 두 snapshot에 `npm ci --ignore-scripts`를 수행한다. 고정 TypeScript로 bare import/re-export/require/type import를 읽고, 실제 위치·peer·optional·workspace link 및 version/resolved/integrity/새 필드를 보존한 lock v3 그래프를 비교한다. 전역 설치 조건, local/workspace hook, 동적 loader, custom registry, 변경된 OS/CPU/bin/install/native 설정은 무영향으로 추정하지 않는다.
+
+고정 Expo의 Android/Apple resolve, Android/iOS react-native-config 및 public config를 양쪽에서 비교한다. 임시 절대 경로 값만 정규화하고 field/array/조건부 export 순서를 버리지 않는다. 설치/해석이 불확실하면 전체 검사로 보낸다. 로컬 현재 입력은 source79개/import request43개/lock726개 중609개가 모바일 그래프에 연결됐다. 이는 현재 프로젝트의 진단 표본이며 더 작은 고정 whitelist로 바꾸지 않는다.
+
+직접 suite20개와 실제 SDK를 설치한 web-only version overlay fixture를 추가했다. fixture는 임시 복사본의 html-to-image만1.11.13→1.11.12로 바꾸고 root/lock/SDK/모바일 source를 작업 브랜치에서 변경하지 않는다. 로컬 Node24.14 Windows에서21개 PASS, 실제 비교99.5초다. SDK fixture는 CI에서 판정기/직접 test가 변경됐을 때 Android owner 한 곳만 수행한다. 일반 앱 변경에 같은 두 설치를 반복하지 않는다. 고정 Node22.23.1/Linux의 결과와 계획/최종 guard 비용은 해당 candidate의 실제 [PR1081 검사](https://github.com/gycha0109-beep/K_beauty/pull/1081/checks) 및 실행 증거에 기록한다. 본 절은 구현 시점의 계약/로컬 증거이며 원격 결과의 source of truth를 대체하지 않는다.
+
+**검사 생략 활성화는 HOLD**다. 현재 helper는 shadow=true/run_android=true/run_ios=true이고 모든 native 검사가 실행된다. 이 PR은 앱·native·workflow 변경을 포함하므로 실제 root-only 이벤트 관찰을 대신할 수 없다. 두 owner의 PR 대상은 main이며 main 병합이 현재 승인 범위에 없으므로, 타깃에 이 source가 있는 실제 root-only PR에서 계획 결과·소비자 의미·현재 protection을 확인한 뒤 활성화한다. main 변경이나 필터 확대를 임시 검증 우회로 사용하지 않는다.
+
+Architecture Check:
+
+- Docs updated: yes — 책임 map과 본 판정/검증 계약 갱신.
+- Ghost-code risk: passed — 단일 helper를 두 계획·두 최종 guard와 직접 suite가 호출한다.
+- Notes: 신규 내부 CI plan/result 계약과 shadow 관찰을 추가했다. 앱 API/DB/저장/인증/SDK/제품 category 변경 및 두 번째 normalization owner는 없다. 무영향 후보와 실제 runtime PASS를 구분하며 기존 manual runtime 증거 기준은 유지한다.

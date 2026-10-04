@@ -3088,3 +3088,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - cold: dependency key miss, compile1177초/build step1178초/APK job1280초/Java setup1초/postsave19초, 318 executed/56 FROM-CACHE. cold 내부 재사용을 이전 run restore로 오인하지 않음. 네 ABI CMake 실행 유지. 캐시8471873322 1,657,691,884 bytes. 실제 Linux key와 Git LF 입력16개 일치 및 메모리 mutation8개 invalidation PASS.
 - 이번 변경은 결과 기록 두 문서만 갱신한다. 같은 PR의 build code/SDK/lock/native patch/key 입력을 유지해 warm restore·시간·task output·runtime 비용을 비교한다. main/배포/서명/DB/Auth/권한 변경 없음; 규칙 승격 후보 없음.
 - warm 검증 전 B2 IMPLEMENTED_UNVERIFIED, C HOLD. 상세 결과는 mobile-ci-correction-verification.md와 외부 ci-audit 로그/metrics/key proof에 보존.
+
+### 2026-10-04 / B2 원격 완료와 C 관찰 구현
+
+- B2 warmed9b3065 / Android37177680924 네 job·현재 artifact 네 개 및 iOS37177680871 SUCCESS. 동일 build/key 입력 보존, 실제1.66GB restore29초 / compile652초 / build653초 / APK job768초 / 219executed·155FROM-CACHE / runner누적1954초. B2 VERIFIED. B1 warm 대비APK50초 차이는 host 편차가 있는 관측이며 보장 절감으로 일반화하지 않음.
+- C scope: 기존 Android/iOS owner의 plan·완료 guard, 단일 root-only snapshot/lock/import/SDK 판정 helper, 직접 test/topology/map/기록. 현재 모든 native job 유지, skip activation HOLD. main/배포/서명/ABI/SDK/lock/앱/권한 변경 없음. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N; NPM snapshot은 credential 제외·scripts 비실행·public registry 제한·guarded cleanup.
+- 읽기 전용 진단 근거: source79/import43/lock726 중 모바일609개, 미선언 auth-js/file-system 및 optional peer를 확인. 따라서 단순 모바일 package 목록/filename 판정은 사용하지 않음. 실제 SDK snapshot과 unknown field/순서 보존을 추가.
+- 최초 외부 prototype의 import Map entry 반환 형식에서 TypeError(Array path)가 나왔으며 source-request 직접 검사로 수정 후21개 PASS. Windows Node24의 임시 web-version overlay/SDK 비교99.5초 PASS; 실제 repo package/lock 변경 없음. 직접20개/static topology/69개 책임/overlap/YAML/needs PASS. 원격Node22 및 same-head plan/guard/native 검증 기준은 PR1081 candidate checks/외부 ci-audit 증거이며 구현 시점에는 미검증.
+- skip을 켜려면 target에 해당 source가 있는 실제 root-only PR 관찰이 필요. 현재 PR에는 앱 변경이 있고 main merge는 승인 제외이므로 필터 확대/가짜 base/수동 skip 우회 없이 HOLD한다. AI_CONTEXT 변경/규칙 승격 후보 없음. 구조 계약은 책임 map과 verification report에 갱신.

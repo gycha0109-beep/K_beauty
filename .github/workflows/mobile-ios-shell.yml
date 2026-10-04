@@ -32,6 +32,8 @@ on:
       - "apps/mobile/lib/photo-cache.ts"
       - "package.json"
       - "package-lock.json"
+      - "scripts/resolve-mobile-ci-impact.mjs"
+      - "scripts/test-mobile-ci-impact.mjs"
       - "apps/mobile/modules/**"
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
@@ -79,6 +81,8 @@ on:
       - "apps/mobile/lib/photo-cache.ts"
       - "package.json"
       - "package-lock.json"
+      - "scripts/resolve-mobile-ci-impact.mjs"
+      - "scripts/test-mobile-ci-impact.mjs"
       - "apps/mobile/modules/**"
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
@@ -111,6 +115,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  mobile-impact-plan:
+    name: iOS Mobile Impact Shadow Plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      candidate_sha: ${{ steps.plan.outputs.candidate_sha }}
+      run_android: ${{ steps.plan.outputs.run_android }}
+      run_ios: ${{ steps.plan.outputs.run_ios }}
+      shadow: ${{ steps.plan.outputs.shadow }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+      - name: Record conservative mobile impact plan
+        id: plan
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          MOBILE_CI_EVENT: ${{ github.event_name }}
+          MOBILE_CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/resolve-mobile-ci-impact.mjs
+
   ios-native-shell:
     name: iOS Native Shell
     runs-on: macos-26
@@ -192,3 +221,22 @@ jobs:
           include-hidden-files: true
           retention-days: 14
           path: apps/mobile/.mobile-ios-artifacts/**
+
+  mobile-impact-verify:
+    name: iOS Selected Native Verification
+    if: always()
+    needs: [mobile-impact-plan, ios-native-shell]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+      - name: Reject failed planner or selected native jobs
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          MOBILE_CI_NEEDS: ${{ toJSON(needs) }}
+        run: node scripts/resolve-mobile-ci-impact.mjs verify ios
