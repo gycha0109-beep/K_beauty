@@ -1,0 +1,62 @@
+{
+  "stage": "V2.1-8H-R11A",
+  "version": "barrier-support-ready3-legacy-backfill-controlled-subject-path-v1",
+  "primary_terminal_outcome": "LEGACY_BACKFILL_CONTROLLED_SUBJECT_PATH_READY",
+  "problem": {
+    "ready3_source_candidate_count": 0,
+    "existing_phase5b_requires_source_candidate": true,
+    "direct_connector_subject_registration_available": false,
+    "safe_resolution": "extend existing Phase 5B identity source normalization without adding a writer"
+  },
+  "implementation": {
+    "changed_modules": [
+      "lib/admin/trust-subject-identity.js",
+      "lib/admin/trust-subject-registration.js"
+    ],
+    "new_database_writer": false,
+    "governed_subject_writer": "admin_register_product_fact_subject_v1",
+    "post_registration_reprocess": "process_catalog_trust_product_v3",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "accepted_identity_source_kinds": [
+      "source_candidate",
+      "admin_identity_authority"
+    ]
+  },
+  "admin_identity_authority_requirements": {
+    "source_candidate_id_must_be_null": true,
+    "authority_kind": "admin_identity_authority",
+    "intake_market_required": true,
+    "authority_market_must_match_intake": true,
+    "official_source_locator_https_required": true,
+    "source_content_digest_sha256_required": true,
+    "authority_resolution_version_required": true,
+    "product_lineage_must_match": true,
+    "synthetic_authority_boundary": {
+      "product_fact_write_allowed": false
+    }
+  },
+  "invariants": {
+    "semantic_identity_shape_unchanged": true,
+    "subject_serializer_unchanged": "product-fact-subject-identity-v1",
+    "reviewer_identity_still_required": true,
+    "stale_preflight_still_fails_closed": true,
+    "competing_current_subject_still_fails_closed": true,
+    "evidence_adoption": false,
+    "product_fact_confirmation": false,
+    "recommendation_mutation": false,
+    "catalog_identity_is_product_fact_authority": false
+  },
+  "production_state": {
+    "ready3_identity_authority_prepositioned": true,
+    "ready3_subject_count": 0,
+    "product_fact_current": 101,
+    "fact_instances": 102,
+    "confirmations": 102,
+    "subject_total": 47
+  },
+  "next_gate": {
+    "stage": "V2.1-8H-R11B_READY3_CONTROLLED_SUBJECT_REGISTRATION",
+    "status": "NOT_EXECUTED",
+    "product_count": 3
+  }
+}
