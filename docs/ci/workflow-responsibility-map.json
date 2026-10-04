@@ -93,7 +93,7 @@
     },
     "mobileArchitecture": {
       "hostWorkflow": "distributed",
-      "mode": "six-lane mobile responsibility split with canonical Android Runtime artifact reuse active; legacy Android Native Shell / MOBILE-20A / MOBILE-20B workflow names are lightweight required-check compatibility gates because classic branch-protection requirements are not readable by the current integration",
+      "mode": "six-lane mobile responsibility split with canonical Android Runtime artifact reuse; legacy Android Native Shell / MOBILE-20A / MOBILE-20B names are manual-only completed-run checks after main protection audit",
       "lanes": {
         "client": [
           "mobile-ci.yml"
@@ -146,17 +146,13 @@
         },
         "androidRuntime": {
           "canonicalOwner": "mobile-android-runtime.yml",
-          "compatibilityShims": [
-            "mobile-native-shell.yml",
-            "mobile-20a-store-capture.yml",
-            "mobile-20b-store-capture.yml"
-          ],
+          "compatibilityShims": [],
           "equivalenceEvidence": "PR #749 head bb3cc23c6d03b25fcc0a781b15a2ba9f1ea0b96f: canonical APK producer + Native Shell + MOBILE-20A + MOBILE-20B + all three legacy Android workflows + Current Main Health GREEN on the same head"
         }
       },
       "androidRuntimeConsolidation": {
         "canonicalWorkflow": "mobile-android-runtime.yml",
-        "state": "canonical-runtime-active-with-required-check-compatibility-shims",
+        "state": "canonical-runtime-active-with-manual-compatibility-checks",
         "buildArtifact": "bejewely-mobile-android-debug-<candidate-sha>",
         "producerJob": "android-debug-apk",
         "consumers": [
@@ -164,17 +160,14 @@
           "store-capture-20a",
           "store-capture-20b"
         ],
-        "requiredCheckCompatibilityShims": [
-          "mobile-native-shell.yml",
-          "mobile-20a-store-capture.yml",
-          "mobile-20b-store-capture.yml"
-        ],
-        "compatibilityGate": "legacy job names wait for the same-head canonical mobile-android-runtime.yml run and fail closed unless it completes successfully",
+        "requiredCheckCompatibilityShims": [],
+        "compatibilityGate": "manual-only legacy names require an explicit completed producer run ID, latest attempt and original event for the checked-out SHA; all four successful jobs and unexpired artifacts are checked without polling",
         "branchProtectionVisibility": {
           "repositoryRulesets": "none-observed",
-          "classicBranchProtection": "unreadable-by-current-integration-403"
+          "classicBranchProtection": "main-not-protected-observed-2026-10-03",
+          "effectiveMainRules": "none-observed"
         },
-        "cutoverRule": "duplicate Android builds/emulators are retired after same-head equivalence; compatibility shims remain until classic required-check configuration can be audited safely"
+        "cutoverRule": "automatic legacy polling can stop only after a fresh protection audit; canonical APK/smoke/20A/20B remain intact and same-head remote equivalence must be verified before merge; local implementation evidence is in docs/ci/consolidation-audits/mobile-ci-correction-verification.md"
       }
     }
   },

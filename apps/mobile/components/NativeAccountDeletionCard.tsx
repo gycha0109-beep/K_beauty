@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Session } from "@supabase/auth-js";
 import { Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   clearNativeSessionAfterAccountDeletion,
+  getNativeSession,
   getNativeAppleDeletionAuthorizationCode
 } from "../lib/auth";
 import {
@@ -17,7 +18,6 @@ const COPY = {
   ko: {
     title: "개인정보 · 계정",
     body: "개인정보 처리 기준을 확인하거나 계정과 연결된 피부·분석·추천·다이어리 데이터를 영구 삭제할 수 있습니다.",
-    privacy: "개인정보 처리방침",
     externalDeletion: "웹 계정 삭제 페이지",
     delete: "계정 영구 삭제",
     deleting: "삭제 중…",
@@ -26,13 +26,12 @@ const COPY = {
     cancel: "취소",
     continue: "영구 삭제",
     appleReauth: "Apple 로그인 계정은 삭제 직전에 Apple 재인증과 토큰 해제가 필요합니다.",
-    failed: "계정을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    failed: "계정 삭제 결과를 확인하지 못했습니다. 웹 계정 삭제 페이지에서 계정 상태를 확인해 주세요.",
     support: "보호된 운영·보안 감사 기록과 연결된 계정은 자동 삭제를 완료할 수 없습니다. 웹 삭제 페이지의 안내를 확인해 주세요."
   },
   en: {
     title: "Privacy · Account",
     body: "Review the privacy policy or permanently delete your account and associated skin, analysis, recommendation, report, and diary data.",
-    privacy: "Privacy policy",
     externalDeletion: "Web account deletion page",
     delete: "Delete account permanently",
     deleting: "Deleting…",
@@ -41,7 +40,7 @@ const COPY = {
     cancel: "Cancel",
     continue: "Delete permanently",
     appleReauth: "Accounts using Sign in with Apple require Apple reauthorization and token revocation immediately before deletion.",
-    failed: "We could not delete the account. Please try again shortly.",
+    failed: "The account deletion result could not be confirmed. Check your account on the web deletion page.",
     support: "Accounts tied to protected operational or security audit records cannot complete automatic deletion. Review the web deletion page for guidance."
   }
 } as const;
@@ -55,29 +54,43 @@ export function NativeAccountDeletionCard({ session, onDeleted }: Props) {
   const { locale, palette } = useMobileShell();
   const copy = COPY[locale];
   const [state, setState] = useState<"idle" | "deleting" | "error" | "support">("idle");
+  const active = useRef(true);
+  const deleting = useRef(false);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const needsAppleReauthorization = nativeAccountDeletionNeedsAppleReauthorization(session);
-  const baseUrl = getMobileApiBaseUrl().replace(/\/$/, "");
 
   async function openWebPath(path: string) {
-    await Linking.openURL(`${baseUrl}${path}`);
+    try { await Linking.openURL(`${getMobileApiBaseUrl()}${path}`); }
+    catch { if (active.current) setState("error"); }
   }
 
   async function performDeletion() {
-    if (state === "deleting") return;
+    if (deleting.current || !active.current) return;
 
+    deleting.current = true;
     setState("deleting");
 
     try {
+      const currentSession = await getNativeSession();
+      if (!active.current || currentSession?.user.id !== session.user.id) return;
       const appleAuthorizationCode = needsAppleReauthorization
         ? await getNativeAppleDeletionAuthorizationCode()
         : null;
 
-      await deleteNativeAccount(session, { appleAuthorizationCode });
-      await clearNativeSessionAfterAccountDeletion();
-      onDeleted();
+      const authorizedSession = await getNativeSession();
+      if (!active.current || authorizedSession?.user.id !== session.user.id) return;
+      await deleteNativeAccount(authorizedSession, { appleAuthorizationCode });
+      const remainingSession = await getNativeSession();
+      if (remainingSession && remainingSession.user.id !== session.user.id) return;
+      if (remainingSession?.user.id === session.user.id) {
+        if (!await clearNativeSessionAfterAccountDeletion(session.user.id)) return;
+      }
+      if (active.current) onDeleted();
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
-      setState(code === "account_deletion_requires_support" ? "support" : "error");
+      if (active.current) setState(code === "account_deletion_requires_support" ? "support" : "error");
+    } finally {
+      deleting.current = false;
     }
   }
 
@@ -99,16 +112,8 @@ export function NativeAccountDeletionCard({ session, onDeleted }: Props) {
 
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel="mobile-privacy-policy"
-        onPress={() => void openWebPath(locale === "ko" ? "/privacy" : "/en/privacy")}
-        style={[styles.linkButton, { borderColor: palette.border }]}
-      >
-        <Text style={[styles.linkText, { color: palette.text }]}>{copy.privacy}</Text>
-      </Pressable>
-
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel="mobile-external-account-deletion"
+        testID="mobile-external-account-deletion"
+        accessibilityLabel={copy.externalDeletion}
         onPress={() => void openWebPath(locale === "ko" ? "/account-deletion" : "/en/account-deletion")}
         style={[styles.linkButton, { borderColor: palette.border }]}
       >
@@ -121,7 +126,9 @@ export function NativeAccountDeletionCard({ session, onDeleted }: Props) {
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="mobile-account-delete"
+        testID="mobile-account-delete"
+        accessibilityLabel={copy.delete}
+        accessibilityState={{ disabled: state === "deleting" }}
         disabled={state === "deleting"}
         onPress={confirmDeletion}
         style={({ pressed }) => [
@@ -147,7 +154,7 @@ const styles = StyleSheet.create({
   body: { fontSize: 14, lineHeight: 21 },
   hint: { fontSize: 12, lineHeight: 18 },
   linkButton: {
-    minHeight: 42,
+    minHeight: 48,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
@@ -156,7 +163,7 @@ const styles = StyleSheet.create({
   },
   linkText: { fontSize: 14, fontWeight: "700" },
   deleteButton: {
-    minHeight: 44,
+    minHeight: 48,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,

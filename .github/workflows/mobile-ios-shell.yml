@@ -5,6 +5,33 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/app/auth/callback.tsx"
+      - "apps/mobile/app/my.tsx"
+      - "apps/mobile/app/premium.tsx"
+      - "apps/mobile/app/privacy-account.tsx"
+      - "apps/mobile/app/saved-report.tsx"
+      - "apps/mobile/components/NativePrivacyLinks.tsx"
+      - "apps/mobile/components/NativeAccountDeletionCard.tsx"
+      - "apps/mobile/components/ScreenShell.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeResult.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+      - "apps/mobile/features/analyze/analyze-client.ts"
+      - "apps/mobile/features/my/NativeMyDiaryView.tsx"
+      - "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx"
+      - "apps/mobile/features/premium/premium-client.ts"
+      - "apps/mobile/features/reports/NativeSavedReport.tsx"
+      - "apps/mobile/features/reports/public-result-client.ts"
+      - "apps/mobile/features/reports/public-share-client.ts"
+      - "apps/mobile/features/reports/saved-report-client.ts"
+      - "apps/mobile/lib/auth-callback.ts"
+      - "apps/mobile/lib/mobile-shell.tsx"
+      - "apps/mobile/lib/account-deletion.ts"
+      - "apps/mobile/lib/request.ts"
+      - "apps/mobile/lib/request-scope.ts"
+      - "apps/mobile/lib/photo-cache.ts"
+      - "package.json"
+      - "package-lock.json"
       - "apps/mobile/modules/**"
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
@@ -20,10 +47,38 @@ on:
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
+      - "scripts/test-mobile-ios-runtime-observer.mjs"
       - ".github/workflows/mobile-ios-shell.yml"
   push:
     branches: [main]
     paths:
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/app/auth/callback.tsx"
+      - "apps/mobile/app/my.tsx"
+      - "apps/mobile/app/premium.tsx"
+      - "apps/mobile/app/privacy-account.tsx"
+      - "apps/mobile/app/saved-report.tsx"
+      - "apps/mobile/components/NativePrivacyLinks.tsx"
+      - "apps/mobile/components/NativeAccountDeletionCard.tsx"
+      - "apps/mobile/components/ScreenShell.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeResult.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+      - "apps/mobile/features/analyze/analyze-client.ts"
+      - "apps/mobile/features/my/NativeMyDiaryView.tsx"
+      - "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx"
+      - "apps/mobile/features/premium/premium-client.ts"
+      - "apps/mobile/features/reports/NativeSavedReport.tsx"
+      - "apps/mobile/features/reports/public-result-client.ts"
+      - "apps/mobile/features/reports/public-share-client.ts"
+      - "apps/mobile/features/reports/saved-report-client.ts"
+      - "apps/mobile/lib/auth-callback.ts"
+      - "apps/mobile/lib/mobile-shell.tsx"
+      - "apps/mobile/lib/account-deletion.ts"
+      - "apps/mobile/lib/request.ts"
+      - "apps/mobile/lib/request-scope.ts"
+      - "apps/mobile/lib/photo-cache.ts"
+      - "package.json"
+      - "package-lock.json"
       - "apps/mobile/modules/**"
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
@@ -39,6 +94,7 @@ on:
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
+      - "scripts/test-mobile-ios-runtime-observer.mjs"
       - ".github/workflows/mobile-ios-shell.yml"
   workflow_dispatch:
     inputs:
@@ -103,6 +159,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --test scripts/test-mobile-ios-runtime-observer.mjs
           npm run verify:mobile-foundation
           npm run verify:mobile-entry-routing
           npm run mobile:typecheck

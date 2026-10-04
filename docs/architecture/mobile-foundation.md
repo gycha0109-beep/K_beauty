@@ -1,5 +1,27 @@
 # BEJEWELY Mobile Architecture Foundation
 
+## 2026-10-03 release hardening contract
+
+This is an approved implementation on `codex/mobile-release-hardening`, based on
+`7fe4c2c229208202947e63c2c6695722712c58c4`. Native/hosted release acceptance remains
+`IMPLEMENTED_UNVERIFIED`; local source and logic checks do not close store readiness.
+
+- `lib/auth.ts` observes SDK events before reading the initial session. App SDK session writes are serialized, including code exchange, Apple sign-in, logout and deletion cleanup. The SDK and server remain the session/authorization authority; no new persisted session format or auth singleton is introduced.
+- `lib/request-scope.ts` tracks only transient screen ownership and latest requests. Account change, logout and unmount invalidate old dashboard, diary, report, publication, analysis and Premium completions. Same-user token refresh preserves edited diary inputs.
+- OAuth callback accepts a code on the exact approved callback URL; raw URL access/refresh tokens are rejected. Apple uses 32 random bytes from SDK-compatible `expo-crypto@57.0.2`, sends the SHA-256 nonce to Apple and the raw nonce to Supabase verification.
+- Analysis requires explicit photo/survey/OpenAI consent before auth or network access. Changing input/account/locale resets that draft's consent. Unchanged retries retain their request key. 409 and Retry-After are shown without automatic resubmission. Blur/background cancels waiting; it does not promise to undo server processing.
+- `lib/request.ts` bounds header and body waiting. Read deadlines are 20 seconds, analysis/Premium creation 180 seconds, deletion 60 seconds. Photo leases finish with the underlying transport rather than the timeout race, so cache cleanup cannot remove an in-flight upload file. Cleanup is confined to the app's cache and is best effort; process death is not an immediate-deletion guarantee.
+- Publishing remains the existing explicit server operation. Cancelling the system share sheet does not revoke a published link. SDK session cleanup after deletion cannot perform a second raw deletion that erases a subsequent sign-in.
+- Public privacy links are available to guests. A diary draft is bound to its account and date; crossing midnight requires explicit reload before saving to a new date.
+- Brand `accent` is preserved. `accentText` separates readable small text from the brand color; `action`/`actionText` make filled controls readable in either theme. Main controls use 48-point targets and human accessibility labels; numeric contrast checks do not substitute for native screen-reader/layout QA.
+- Signed jobs map the existing repository public variables (`NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) to the three Expo public keys. `scripts/verify-mobile-public-env.mjs` executes the application validator before prebuild, binds the API origin to `store-readiness.json`, and rejects non-public Supabase keys. Values are not printed or copied into the repository. Successful shape checks do not prove the installed application's backend/project pairing.
+- CI retains canonical ownership: Mobile CI owns client regression tests, Mobile API Integration owns its six API contracts, Android Runtime builds one APK, compatibility gates await that producer, and Store Readiness owns privacy/consumer-copy contracts. Five mobile owners explicitly watch root package/lock changes because those can alter native dependencies without a mobile source diff. Other broad native source filters and automatic signed release jobs remain prohibited.
+
+Existing endpoints, response fields, saved-report/check-in schemas, RLS, migrations,
+payment policy, Recommendation and Face Lab authority are unchanged. External store,
+signing, provider and physical-device prerequisites stay pending in readiness manifests.
+See [implementation evidence and remaining release gates](../verification/mobile-release-hardening-2026-10-03.md).
+
 ## Baseline
 
 MOBILE-0 starts from the live `main` architecture and adds a native client without replacing Web or moving server authority into the app.

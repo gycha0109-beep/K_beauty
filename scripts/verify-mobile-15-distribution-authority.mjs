@@ -120,6 +120,18 @@ const androidJobSource = workflowSource.split("\n  android-signed-distribution:"
 const iosJobSource = workflowSource.split("\n  ios-signed-distribution:")[1] || "";
 assert.ok(androidJobSource, "Android signed distribution job is missing");
 assert.ok(iosJobSource, "iOS signed distribution job is missing");
+for (const [platform, source] of [["Android", androidJobSource], ["iOS", iosJobSource]]) {
+  for (const [name, authority] of [
+    ["EXPO_PUBLIC_API_BASE_URL", "NEXT_PUBLIC_SITE_URL"],
+    ["EXPO_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL"],
+    ["EXPO_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
+  ]) {
+    assert.ok(source.includes(`${name}: \u0024{{ vars.${authority} }}`), `${platform} public config must reuse existing repository variables: ${name}`);
+  }
+  const gate = source.indexOf("run: node scripts/verify-mobile-public-env.mjs");
+  const prebuild = source.indexOf("run: npm run prebuild:");
+  assert.ok(gate > 0 && gate < prebuild, `${platform} release config must be validated before prebuild`);
+}
 assert.match(androidJobSource, /apps\/mobile\/android\/app\/build\/outputs\/bundle\/release\/app-release\.aab/);
 assert.match(androidJobSource, /apps\/mobile\/mobile15-android-signing-evidence\.txt/);
 assert.ok(!/upload-artifact[\s\S]*?\.keystore/.test(androidJobSource), "Android upload artifact boundary must not include keystore material");

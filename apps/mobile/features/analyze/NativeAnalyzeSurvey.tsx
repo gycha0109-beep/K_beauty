@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     gap: 8
   },
   option: {
-    minHeight: 40,
+    minHeight: 48,
     justifyContent: "center",
     borderWidth: 1,
     borderRadius: 20,

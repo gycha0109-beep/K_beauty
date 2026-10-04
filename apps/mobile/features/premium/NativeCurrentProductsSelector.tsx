@@ -16,11 +16,11 @@ const COPY = {
   en: {
     kicker: "CURRENT PRODUCTS",
     title: "Current products",
-    body: "Optional context only. The server remains authoritative for all Premium judgments.",
+    body: "Optional: select your current products to include them in your private report.",
     loading: "Loading product options…",
     loadError: "Product options could not be loaded. You can still continue without selecting products.",
-    selected: "DB product",
-    notInDb: "Using / not in DB",
+    selected: "Choose from list",
+    notInDb: "Using another product",
     notUsing: "Not using",
     noProducts: "No products are available for this group.",
     tapAgain: "Tap the selected status again to clear it."
@@ -28,11 +28,11 @@ const COPY = {
   ko: {
     kicker: "현재 제품",
     title: "현재 쓰는 제품",
-    body: "선택 사항입니다. Premium 판단 권한은 그대로 서버에 있으며 앱은 선택값만 전달합니다.",
+    body: "선택 사항입니다. 현재 쓰는 제품을 선택하면 비공개 리포트에 반영됩니다.",
     loading: "제품 목록을 불러오는 중…",
     loadError: "제품 목록을 불러오지 못했습니다. 제품을 선택하지 않고 계속할 수 있습니다.",
-    selected: "DB 제품 선택",
-    notInDb: "사용 중 / DB 미등록",
+    selected: "목록에서 선택",
+    notInDb: "목록에 없는 제품 사용 중",
     notUsing: "사용 안 함",
     noProducts: "이 그룹에서 선택할 수 있는 제품이 없습니다.",
     tapAgain: "선택한 상태를 다시 누르면 해제됩니다."
@@ -74,10 +74,12 @@ function findGroupForSelection(selection: NativeCurrentProductSelection) {
 
 export function NativeCurrentProductsSelector({
   value,
-  onChange
+  onChange,
+  disabled = false
 }: {
   value: NativeCurrentProductSelection[];
   onChange: (value: NativeCurrentProductSelection[]) => void;
+  disabled?: boolean;
 }) {
   const { locale, palette } = useMobileShell();
   const copy = COPY[locale];
@@ -126,6 +128,7 @@ export function NativeCurrentProductsSelector({
   );
 
   const setGroupStatus = (group: NativeCurrentProductGroup, status: NativeCurrentProductStatus) => {
+    if (disabled) return;
     setSelectionMap((current) => {
       if (current[group.groupId]?.status === status) {
         const next = { ...current };
@@ -162,6 +165,7 @@ export function NativeCurrentProductsSelector({
     group: NativeCurrentProductGroup,
     product: NativeCurrentProductOption
   ) => {
+    if (disabled) return;
     const acceptedCategories = group.categories as readonly string[];
     setSelectionMap((current) => ({
       ...current,
@@ -181,7 +185,7 @@ export function NativeCurrentProductsSelector({
       style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}
     >
       <View style={styles.header}>
-        <Text style={[styles.kicker, { color: palette.accent }]}>{copy.kicker}</Text>
+        <Text style={[styles.kicker, { color: palette.accentText }]}>{copy.kicker}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{copy.title}</Text>
         <Text style={[styles.body, { color: palette.textMuted }]}>{copy.body}</Text>
       </View>
@@ -213,18 +217,19 @@ export function NativeCurrentProductsSelector({
                     key={option.status}
                     testID={`native-premium-product-status-${group.groupId}-${option.status}`}
                     accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
+                    accessibilityState={{ selected: active, disabled }}
+                    disabled={disabled}
                     onPress={() => setGroupStatus(group, option.status)}
                     style={({ pressed }) => [
                       styles.statusButton,
                       {
                         borderColor: active ? palette.accent : palette.border,
-                        backgroundColor: active ? palette.accent : palette.surfaceMuted,
+                        backgroundColor: active ? palette.action : palette.surfaceMuted,
                         opacity: pressed ? 0.72 : 1
                       }
                     ]}
                   >
-                    <Text style={[styles.statusText, { color: active ? palette.background : palette.text }]}>
+                    <Text style={[styles.statusText, { color: active ? palette.actionText : palette.text }]}>
                       {option.label}
                     </Text>
                   </Pressable>
@@ -246,7 +251,8 @@ export function NativeCurrentProductsSelector({
                         key={product.id}
                         testID={`native-premium-product-${group.groupId}-${product.id}`}
                         accessibilityRole="button"
-                        accessibilityState={{ selected: active }}
+                        accessibilityState={{ selected: active, disabled }}
+                    disabled={disabled}
                         onPress={() => setGroupProduct(group, product)}
                         style={({ pressed }) => [
                           styles.productButton,
@@ -321,7 +327,7 @@ const styles = StyleSheet.create({
     gap: 8
   },
   statusButton: {
-    minHeight: 38,
+    minHeight: 48,
     borderWidth: 1,
     borderRadius: 19,
     alignItems: "center",
@@ -339,7 +345,7 @@ const styles = StyleSheet.create({
   },
   productButton: {
     maxWidth: 230,
-    minHeight: 42,
+    minHeight: 48,
     borderWidth: 1,
     borderRadius: 12,
     justifyContent: "center",

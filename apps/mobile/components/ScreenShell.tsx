@@ -25,10 +25,11 @@ export function ScreenShell({ eyebrow, title, description, children }: ScreenShe
         <View style={styles.contentColumn}>
           <View style={styles.header}>
             <View style={styles.topRow}>
-              <Text style={[styles.eyebrow, { color: palette.accent }]}>{eyebrow}</Text>
+              <Text style={[styles.eyebrow, { color: palette.accentText }]}>{eyebrow}</Text>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`locale-${copy.localeSwitch.toLowerCase()}`}
+                testID={`locale-${copy.localeSwitch.toLowerCase()}`}
+                accessibilityLabel={locale === "ko" ? "언어를 영어로 변경" : "Switch language to Korean"}
                 onPress={toggleLocale}
                 style={({ pressed }) => [
                   styles.localeButton,
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     gap: 10
   },
   topRow: {
-    minHeight: 36,
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
   },
   localeButton: {
     minWidth: 48,
-    minHeight: 36,
+    minHeight: 48,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,

@@ -63,7 +63,7 @@ requireText(mobileMyScreen, "NativeMyDiaryView", "native My shared diary present
 requireText(mobileMyScreen, "fetchNativeMyDashboard", "native My dashboard screen");
 requireText(mobileMyScreen, "saveNativeCheckin", "native My write screen");
 requireText(mobileMyScreen, "fetchNativeDiaryDay", "native historical diary screen");
-requireText(mobileMyScreen, 'accessibilityLabel="mobile-checkin-save"', "native check-in accessibility target");
+requireText(mobileMyScreen, 'testID="mobile-checkin-save"', "native check-in accessibility target");
 requireText(mobileMyScreen, "dashboard.todayRoutine", "server routine rendering");
 
 requireText(mobileMyDiaryView, "dashboard.recentTrendCheckins", "recent trend rendering");

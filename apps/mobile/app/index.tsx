@@ -6,12 +6,13 @@ import { getNativeSession } from "../lib/auth";
 import { MOBILE_COPY } from "../lib/copy";
 import { useMobileShell } from "../lib/mobile-shell";
 import { fetchNativeMyDashboard } from "../lib/my";
+import { MOBILE_READ_TIMEOUT_MS } from "../lib/request";
 
 let initialEntryResolvedForRuntime = false;
 const storeCaptureInitialHomeBypass =
   __DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === "1";
 
-async function shouldOpenHomeOnInitialEntry() {
+async function shouldOpenHomeOnInitialEntry(signal: AbortSignal) {
   try {
     const session = await getNativeSession();
 
@@ -19,12 +20,12 @@ async function shouldOpenHomeOnInitialEntry() {
       return false;
     }
 
-    const dashboard = await fetchNativeMyDashboard(session);
+    const dashboard = await fetchNativeMyDashboard(session, { signal });
+    if ((await getNativeSession())?.user.id !== session.user.id) return null;
     return Boolean(dashboard.latestSavedReport?.id);
   } catch {
-    // A saved report must be positively confirmed by the server before Home
-    // becomes the cold-start destination. Analyze remains the safe fallback.
-    return false;
+    // Failure is unknown, not evidence that this user has no saved report.
+    return null;
   }
 }
 
@@ -37,6 +38,8 @@ export default function HomeScreen() {
     initialEntryResolvedForRuntime || storeCaptureInitialHomeBypass
   );
   const homeReady = entryResolved || (isFocused && initialEntryResolvedForRuntime);
+  const [entryError, setEntryError] = useState(false);
+  const [entryAttempt, setEntryAttempt] = useState(0);
 
   useEffect(() => {
     if (storeCaptureInitialHomeBypass) {
@@ -49,11 +52,18 @@ export default function HomeScreen() {
     }
 
     let active = true;
+    const controller = new AbortController();
+    setEntryError(false);
+    const timer = setTimeout(() => {
+      active = false; controller.abort(); setEntryError(true);
+    }, MOBILE_READ_TIMEOUT_MS);
 
-    void shouldOpenHomeOnInitialEntry().then((shouldOpenHome) => {
+    void shouldOpenHomeOnInitialEntry(controller.signal).then((shouldOpenHome) => {
       if (!active) {
         return;
       }
+      clearTimeout(timer);
+      if (shouldOpenHome === null) { setEntryError(true); return; }
 
       initialEntryResolvedForRuntime = true;
 
@@ -67,8 +77,9 @@ export default function HomeScreen() {
 
     return () => {
       active = false;
+      clearTimeout(timer); controller.abort();
     };
-  }, [router]);
+  }, [router, entryAttempt]);
 
   if (!homeReady) {
     return (
@@ -76,7 +87,17 @@ export default function HomeScreen() {
         testID="mobile-initial-entry-gate"
         style={[styles.entryGate, { backgroundColor: palette.background }]}
       >
-        <ActivityIndicator color={palette.accent} />
+        {entryError ? <View style={styles.entryError}>
+          <Text style={{ color: palette.text, textAlign: "center" }}>{locale === "ko"
+            ? "저장 리포트가 있는지 확인하지 못했습니다. 연결 상태를 확인하고 다시 시도하거나 분석 화면으로 이동할 수 있습니다."
+            : "We could not check for a saved report. Check your connection and retry, or continue to analysis."}</Text>
+          <Pressable accessibilityRole="button" onPress={() => setEntryAttempt((current) => current + 1)} style={styles.entryAction}>
+            <Text style={{ color: palette.accentText }}>{locale === "ko" ? "다시 확인" : "Try again"}</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" onPress={() => {
+            initialEntryResolvedForRuntime = true; router.replace("/analyze");
+          }} style={styles.entryAction}><Text style={{ color: palette.text }}>{locale === "ko" ? "분석 화면으로 이동" : "Continue to analysis"}</Text></Pressable>
+        </View> : <ActivityIndicator color={palette.accent} />}
       </View>
     );
   }
@@ -94,7 +115,7 @@ export default function HomeScreen() {
           style={({ pressed }) => [
             styles.primaryButton,
             {
-              backgroundColor: palette.accent,
+              backgroundColor: palette.action,
               opacity: pressed ? 0.72 : 1
             }
           ]}
@@ -119,6 +140,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  entryError: { maxWidth: 420, padding: 24, gap: 12 },
+  entryAction: { minHeight: 48, alignItems: "center", justifyContent: "center" },
   entryGate: {
     flex: 1,
     alignItems: "center",

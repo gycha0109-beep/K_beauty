@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 
 function read(path) {
@@ -386,7 +387,6 @@ assertContains(".github/workflows/mobile-ci.yml", [
   "npm run verify:mobile-entry-routing",
 ]);
 assertNotContains(".github/workflows/mobile-ci.yml", [
-  ...rootPackageTriggers,
   "npm run mobile:prebuild:android",
   "npm run verify:mobile-native",
 ]);
@@ -395,7 +395,18 @@ assertContains(".github/workflows/mobile-ci.yml", [
   "npm run verify:mobile-entry-routing",
   "node scripts/verify-mobile-camera-foundation.mjs",
   "node scripts/verify-mobile-face-guidance.mjs",
+  "node --test scripts/test-mobile-release-hardening.mjs",
 ]);
+// Root workspace graph changes can alter the native runtime without a mobile
+// source diff. These four automatic owners must rebuild/check the locked candidate.
+for (const path of [
+  ".github/workflows/mobile-ci.yml",
+  ".github/workflows/mobile-android-runtime.yml",
+  ".github/workflows/mobile-ios-shell.yml",
+  ".github/workflows/mobile-15-distribution-authority.yml"
+]) {
+  assertContains(path, ['- "package.json"', '- "package-lock.json"']);
+}
 assertNotContains(".github/workflows/mobile-ci.yml", [
   "node scripts/verify-mobile-analyze-integration.mjs",
   "node scripts/verify-mobile-saved-report-reentry.mjs",
@@ -416,11 +427,53 @@ assertContains(".github/workflows/mobile-api-integration.yml", [
 ]);
 assertContains(".github/workflows/mobile-native-shell.yml", [
   "actions: read",
-  "Gate compatibility check on canonical Android Runtime",
+  "Verify completed canonical Android Runtime",
   "node scripts/await-mobile-android-runtime.mjs",
 ]);
 
 const mobileAndroidRuntime = read(".github/workflows/mobile-android-runtime.yml");
+// Cache only through the existing Java owner. Native projects/APKs still rebuild.
+const gradleCacheInputs = mobileAndroidRuntime.match(/cache-dependency-path: \|\r?\n((?: {12}.+\r?\n)+)/)?.[1]
+  .split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+assert.deepEqual(gradleCacheInputs, [
+  "package.json", "package-lock.json", "apps/mobile/package.json", "apps/mobile/app.json",
+  "apps/mobile/modules/**", "packages/shared/package.json", ".github/workflows/mobile-android-runtime.yml",
+  "scripts/apply-mobile-screens-android-compat.mjs",
+  "scripts/patches/react-native-screens-4.26.2/manifest.json",
+  "scripts/patches/react-native-screens-4.26.2/android/src/main/cpp/*",
+  "scripts/patches/react-native-screens-4.26.2/cpp/*",
+], "Gradle dependency cache must hash all tracked SDK/tool/native patch inputs without secret/generated paths");
+assert.equal(mobileAndroidRuntime.split("cache: gradle").length - 1, 1);
+assertNotContains(".github/workflows/mobile-android-runtime.yml", [
+  "actions/cache@", "gradle/actions/setup-gradle@", "--configuration-cache",
+]);
+assert.equal(mobileAndroidRuntime.split("--build-cache").length - 1, 1,
+  "Only the canonical debug build may enable task output caching");
+assertContains(".github/workflows/mobile-android-runtime.yml", [
+  "run: npm run mobile:build:android:debug -- -- --build-cache",
+]);
+for (const releaseOwner of ["mobile-13-store-release-preflight.yml", "mobile-15-distribution-authority.yml"]) {
+  assertNotContains(`.github/workflows/${releaseOwner}`, ["cache: gradle", "--build-cache", "--configuration-cache"]);
+}
+// Public aliases stay available; the same verifier runs once in Mobile CI.
+const rootMobileCommands = JSON.parse(read("package.json")).scripts;
+const workspaceMobileCommands = JSON.parse(read("apps/mobile/package.json")).scripts;
+assert.equal(rootMobileCommands["verify:mobile-foundation"], "node scripts/verify-mobile-architecture-foundation.mjs");
+assert.equal(workspaceMobileCommands.lint, "node ../../scripts/verify-mobile-architecture-foundation.mjs");
+assert.equal(read(".github/workflows/mobile-ci.yml").split("npm run verify:mobile-foundation").length - 1, 1);
+assertNotContains(".github/workflows/mobile-ci.yml", ["npm run mobile:lint"]);
+assertContains(".github/workflows/mobile-store-readiness.yml", ["npm run mobile:config", "npm run build"]);
+assertNotContains(".github/workflows/mobile-store-readiness.yml", ["npx expo config", "mobile-store-readiness-expo-config.json"]);
+for (const path of ["mobile-android-runtime.yml", "mobile-13-store-release-preflight.yml", "mobile-15-distribution-authority.yml"]) {
+  const source = read(`.github/workflows/${path}`);
+  const install = source.indexOf("run: npm ci");
+  const patch = source.indexOf("run: node scripts/apply-mobile-screens-android-compat.mjs");
+  const prebuild = source.indexOf("name: Generate Android native project");
+  assert.ok(install > 0 && patch > install && prebuild > patch, `${path}: actual Android compiler must apply the bounded Screens patch after install and before prebuild`);
+}
+for (const input of ["scripts/apply-mobile-screens-android-compat.mjs", "scripts/test-mobile-screens-android-compat.mjs", "scripts/patches/react-native-screens-4.26.2/**"]) {
+  assert.equal(mobileAndroidRuntime.split(`\"${input}\"`).length - 1, 2, `Android push/PR must watch native patch input: ${input}`);
+}
 assertContains(".github/workflows/mobile-android-runtime.yml", [
   "android-debug-apk:",
   "needs: android-debug-apk",
@@ -445,7 +498,7 @@ for (const legacyPath of [
     '.github/workflows/mobile-android-runtime.yml',
     'scripts/await-mobile-android-runtime.mjs',
     "actions: read",
-    "Gate compatibility check on canonical Android Runtime",
+    "Verify completed canonical Android Runtime",
   ]);
   assertNotContains(legacyPath, [
     "npm run mobile:build:android:debug",
@@ -454,10 +507,21 @@ for (const legacyPath of [
     "npm ci",
   ]);
 }
-assertContains(".github/workflows/mobile-20b-store-capture.yml", [
-  "  push:",
-  "    branches: [main]",
-]);
+// Legacy names remain available manually; all routine evidence stays in the producer.
+for (const file of ["mobile-native-shell.yml", "mobile-20a-store-capture.yml", "mobile-20b-store-capture.yml"]) {
+  const source = read(".github/workflows/" + file);
+  assert(!/\n  (pull_request|push|workflow_run|schedule|workflow_call):/.test(source), file + ": compatibility checks must be manual-only");
+  assertContains(".github/workflows/" + file, [
+    "workflow_dispatch:", "producer_run_id:", "producer_run_attempt:", "producer_event:",
+    "MOBILE_RUNTIME_RUN_ID: ${{ inputs.producer_run_id }}",
+    "MOBILE_RUNTIME_RUN_ATTEMPT: ${{ inputs.producer_run_attempt }}",
+    "MOBILE_RUNTIME_EXPECTED_EVENT: ${{ inputs.producer_event }}",
+    "EXPECTED_SHA: ${{ github.sha }}", "timeout-minutes: 5", "contents: read", "actions: read",
+  ]);
+  assertNotContains(".github/workflows/" + file, ["checks: write", "contents: write", "MOBILE_RUNTIME_WAIT_"]);
+}
+const gateTests = spawnSync(process.execPath, ["--test", "scripts/test-mobile-runtime-gate.mjs"], { encoding: "utf8" });
+assert.equal(gateTests.status, 0, "manual mobile runtime gate regression failed: " + gateTests.stdout + gateTests.stderr);
 
 assertContains(".github/workflows/mobile-ios-shell.yml", [
   '- "apps/mobile/app/_layout.tsx"',
@@ -598,7 +662,6 @@ assertNotContains(".github/workflows/admin-product-current-main-integration.yml"
 
 for (const path of [
   ".github/workflows/mobile-14-auth-app-links.yml",
-  ".github/workflows/mobile-15-distribution-authority.yml",
   ".github/workflows/mobile-20b-store-capture.yml",
 ]) {
   assertNotContains(path, rootPackageTriggers);
@@ -682,11 +745,9 @@ const nativeBroadTriggers = [
   '- "apps/mobile/features/**"',
   '- "apps/mobile/lib/**"',
   '- "packages/shared/**"',
-  ...rootPackageTriggers,
 ];
 
 for (const path of [
-  ".github/workflows/mobile-native-shell.yml",
   ".github/workflows/mobile-ios-shell.yml",
 ]) {
   assertNotContains(path, nativeBroadTriggers);
@@ -785,7 +846,7 @@ console.log(JSON.stringify({
   retired_product_query_ai_workflows: 0,
   retired_mobile_store_stage_workflows: 0,
   retired_mobile_app_stage_workflows: 0,
-  heavy_mobile_root_package_triggers: 0,
+  heavy_mobile_root_package_triggers: 4,
   g3a_unbounded_main_push: false,
   data_ai3_unbounded_main_push: false,
   data_ai4_unbounded_main_push: false,

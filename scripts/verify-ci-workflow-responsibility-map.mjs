@@ -62,11 +62,8 @@ assert.deepEqual(
 const allowed = new Set(map.allowedPrimaryResponsibilities || []);
 assert.ok(allowed.size > 0, "allowedPrimaryResponsibilities must not be empty");
 
-const requiredCheckCompatibilityShims = new Set([
-  "mobile-native-shell.yml",
-  "mobile-20a-store-capture.yml",
-  "mobile-20b-store-capture.yml",
-]);
+const requiredCheckCompatibilityShims = new Set(map.embeddedResponsibilities.mobileArchitecture.androidRuntimeConsolidation.requiredCheckCompatibilityShims);
+assert.equal(requiredCheckCompatibilityShims.size, 0, "automatic Android compatibility shims must stay retired after protection audit");
 
 const staticTrackByResponsibility = {
   "product-query-ai": "taxonomy-ai",

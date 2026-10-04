@@ -1,6 +1,7 @@
 import type { Session } from "@supabase/auth-js";
 
 import { getMobileApiBaseUrl } from "./env";
+import { fetchWithTimeout } from "./request";
 
 function userUsesApple(session: Session) {
   const provider = typeof session.user.app_metadata?.provider === "string"
@@ -21,7 +22,7 @@ export async function deleteNativeAccount(
   session: Session,
   { appleAuthorizationCode = null }: { appleAuthorizationCode?: string | null } = {}
 ) {
-  const response = await fetch(`${getMobileApiBaseUrl()}/api/my/account`, {
+  const response = await fetchWithTimeout(`${getMobileApiBaseUrl()}/api/my/account`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${session.access_token}`,
@@ -32,7 +33,7 @@ export async function deleteNativeAccount(
       confirmation: "delete_account",
       ...(appleAuthorizationCode ? { appleAuthorizationCode } : {})
     })
-  });
+  }, 60_000);
   const payload = await response.json().catch(() => null);
 
   if (response.status === 401) {

@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/auth-js";
 import { getMobileApiBaseUrl } from "../../lib/env";
+import { fetchWithTimeout } from "../../lib/request";
 import { fetchNativeMyDashboard, type NativeMyDashboard, type NativeSavedReport } from "../../lib/my";
 
 export type NativeSavedReportMetadata = Readonly<{
@@ -116,7 +117,7 @@ async function loadFreeSavedReport(
   const shareId = getNativeFreeShareId(latestSharePath);
   if (!shareId) throw new Error("mobile_saved_report_reentry_unavailable");
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${getMobileApiBaseUrl()}/api/results/${encodeURIComponent(shareId)}`,
     {
       method: "GET",
@@ -144,7 +145,7 @@ async function loadPremiumSavedReport(
   metadata: NativeSavedReportMetadata,
   locale: "ko" | "en"
 ): Promise<NativeSavedReportRead> {
-  const response = await fetch(`${getMobileApiBaseUrl()}/api/full-report`, {
+  const response = await fetchWithTimeout(`${getMobileApiBaseUrl()}/api/full-report`, {
     method: "POST",
     headers: {
       ...bearerHeaders(session),

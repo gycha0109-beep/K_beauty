@@ -13,6 +13,9 @@ type MobilePalette = {
   text: string;
   textMuted: string;
   accent: string;
+  accentText: string;
+  action: string;
+  actionText: string;
   border: string;
   tabBar: string;
 };
@@ -26,7 +29,7 @@ type MobileShellValue = {
 };
 
 // Keep the native shell on the same visual language as the current web app.
-// These values mirror app/globals.css rather than introducing a mobile-only palette.
+// Preserve the brand accent; readable text and filled actions have separate contrast roles.
 const LIGHT_PALETTE: MobilePalette = {
   background: "#FFF8FA",
   surface: "#FFFFFF",
@@ -34,6 +37,9 @@ const LIGHT_PALETTE: MobilePalette = {
   text: "#111111",
   textMuted: "#666666",
   accent: "#FF4F8A",
+  accentText: "#B8245E",
+  action: "#B8245E",
+  actionText: "#FFFFFF",
   border: "#F0E6EA",
   tabBar: "#FFFFFF"
 };
@@ -45,6 +51,9 @@ const DARK_PALETTE: MobilePalette = {
   text: "#FFFFFF",
   textMuted: "#A1A1AA",
   accent: "#FF4F8A",
+  accentText: "#FF4F8A",
+  action: "#B8245E",
+  actionText: "#FFFFFF",
   border: "#2D2932",
   tabBar: "#17141C"
 };

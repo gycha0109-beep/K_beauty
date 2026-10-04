@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Session } from "@supabase/auth-js";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useIsFocused } from "expo-router";
+import { Alert, AppState, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { ScreenShell } from "../components/ScreenShell";
 import { NativeAppleSignInButton } from "../components/NativeAppleSignInButton";
 import { NativeMyDiaryView } from "../features/my/NativeMyDiaryView";
-import { getNativeSession, signInNativeWithApple, signInNativeWithGoogle, signOutNative, subscribeNativeAuth } from "../lib/auth";
+import { observeNativeSession, signInNativeWithApple, signInNativeWithGoogle, signOutNative } from "../lib/auth";
+import { createNativeRequestScope } from "../lib/request-scope";
 import { MOBILE_COPY } from "../lib/copy";
 import { useMobileShell } from "../lib/mobile-shell";
 import { getMobileSupabaseClient } from "../lib/supabase";
@@ -72,11 +74,12 @@ function RoutineView({ routine, locale, palette }: { routine: NativeRoutineLog |
 }
 
 export default function MyScreen() {
+  const isFocused = useIsFocused();
   const { locale, palette } = useMobileShell();
   const copy = MOBILE_COPY[locale].my;
   const diaryCopy = MY_COPY[locale];
-  const today = useMemo(() => getNativeLocalDate(), []);
-  const currentMonth = useMemo(() => getNativeDiaryMonth(), []);
+  const [today, setToday] = useState(getNativeLocalDate);
+  const currentMonth = today.slice(0, 7);
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [session, setSession] = useState<Session | null>(null);
   const [dashboard, setDashboard] = useState<NativeMyDashboard | null>(null);
@@ -86,41 +89,143 @@ export default function MyScreen() {
   const [dashboardError, setDashboardError] = useState(false);
   const [detail, setDetail] = useState<NativeDiaryDay | null>(null);
   const [detailState, setDetailState] = useState<"idle" | "loading" | "error">("idle");
+  const requests = useRef(createNativeRequestScope()).current;
+  const sessionRef = useRef<Session | null>(null);
+  const selectedMonthRef = useRef(currentMonth);
+  const formOwner = useRef<string | null>(null);
+  const dirty = useRef(false);
+  const saving = useRef(false);
+  const dateRef = useRef(today);
+  const refreshSession = useRef<(() => void) | null>(null);
+  const authActionPending = useRef(false);
 
-  async function loadDashboard(activeSession: Session, month = selectedMonth) {
+  async function loadDashboard(activeSession: Session, month = selectedMonthRef.current) {
+    if (!requests.owns(activeSession.user.id)) return;
+    const ticket = requests.begin("dashboard");
     setDashboardError(false);
     try {
-      const next = await fetchNativeMyDashboard(activeSession, { localDate: today, diaryMonth: month });
+      const next = await fetchNativeMyDashboard(activeSession, { localDate: getNativeLocalDate(), diaryMonth: month });
+      if (!requests.isCurrent(ticket)) return;
       setDashboard(next);
-      setForm(createNativeCheckinFromExisting(next.todayCheckin));
-    } catch { setDashboardError(true); }
+      if (!dirty.current) {
+        setForm(createNativeCheckinFromExisting(next.todayCheckin));
+        formOwner.current = activeSession.user.id;
+      }
+    } catch { if (requests.isCurrent(ticket)) setDashboardError(true); }
   }
 
   useEffect(() => {
     if (!getMobileSupabaseClient()) { setStatus("unconfigured"); return; }
-    let active = true;
-    async function applySession(nextSession: Session | null) {
-      if (!active) return;
-      setSession(nextSession); setDashboard(null); setDetail(null); setDashboardError(false);
+    function applySession(nextSession: Session | null) {
+      const changed = requests.setOwner(nextSession?.user.id ?? null);
+      sessionRef.current = nextSession;
+      setSession(nextSession);
+      if (changed || !nextSession) {
+        setDashboard(null); setDetail(null); setDashboardError(false); setDetailState("idle");
+        setForm(createNativeCheckinFromExisting(null)); setSaveState("idle");
+        formOwner.current = null; dirty.current = false; saving.current = false;
+      }
       if (!nextSession) { setStatus("signed-out"); return; }
       setStatus("signed-in");
-      try {
-        const next = await fetchNativeMyDashboard(nextSession, { localDate: today, diaryMonth: currentMonth });
-        if (active) { setSelectedMonth(currentMonth); setDashboard(next); setForm(createNativeCheckinFromExisting(next.todayCheckin)); }
-      } catch { if (active) setDashboardError(true); }
+      if (changed) {
+        const month = getNativeDiaryMonth();
+        selectedMonthRef.current = month; setSelectedMonth(month);
+        void loadDashboard(nextSession, month);
+      }
     }
-    getNativeSession().then(applySession).catch(() => active && setStatus("error"));
-    const subscription = subscribeNativeAuth((next) => void applySession(next));
-    return () => { active = false; subscription?.unsubscribe(); };
-  }, [currentMonth, today]);
+    const stop = observeNativeSession(applySession);
+    refreshSession.current = stop.refresh;
+    return () => {
+      refreshSession.current = null; sessionRef.current = null; formOwner.current = null;
+      stop(); requests.setOwner(null); requests.invalidate();
+    };
+  }, [requests]);
 
-  async function handleSignIn(provider: "google" | "apple") { setStatus("signing-in"); try { provider === "google" ? await signInNativeWithGoogle() : await signInNativeWithApple(); } catch { setStatus("error"); } }
-  async function handleSignOut() { try { await signOutNative(); setSession(null); setDashboard(null); setDetail(null); setStatus("signed-out"); } catch { setStatus("error"); } }
-  async function handleMonth(delta: number) { if (!session) return; const next = shiftNativeDiaryMonth(selectedMonth, delta); if (next > currentMonth) return; setSelectedMonth(next); setDetail(null); await loadDashboard(session, next); }
-  async function handleSave() { if (!session || !dashboard?.hasProfile) return; setSaveState("saving"); try { await saveNativeCheckin(session, { ...form, checkinDate: today }); await loadDashboard(session, selectedMonth); setSaveState("saved"); } catch { setSaveState("error"); } }
-  async function handleDiaryDay(date: string) { if (!session) return; setDetailState("loading"); setDetail(null); try { setDetail(await fetchNativeDiaryDay(session, date)); setDetailState("idle"); } catch { setDetailState("error"); } }
-  function updateLevel(key: CheckinLevelKey, value: number) { setSaveState("idle"); setForm((current) => ({ ...current, [key]: value })); }
-  function toggleEvent(key: CheckinEventKey) { setSaveState("idle"); setForm((current) => ({ ...current, checkinEvents: { ...current.checkinEvents, [key]: !current.checkinEvents[key] } })); }
+  useEffect(() => { if (isFocused) refreshSession.current?.(); }, [isFocused]);
+
+  useEffect(() => {
+    function refreshDate() {
+      const next = getNativeLocalDate();
+      if (next === dateRef.current) return;
+      const previousMonth = dateRef.current.slice(0, 7);
+      dateRef.current = next; setToday(next);
+      if (selectedMonthRef.current === previousMonth) {
+        selectedMonthRef.current = next.slice(0, 7); setSelectedMonth(selectedMonthRef.current);
+      }
+      if (sessionRef.current) void loadDashboard(sessionRef.current);
+    }
+    const timer = setInterval(refreshDate, 30_000);
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") { refreshDate(); refreshSession.current?.(); }
+    });
+    return () => { clearInterval(timer); subscription.remove(); };
+  }, [requests]);
+
+  async function handleSignIn(provider: "google" | "apple") {
+    if (sessionRef.current || status === "signing-in" || authActionPending.current) return;
+    authActionPending.current = true;
+    const ticket = requests.begin("auth-action");
+    setStatus("signing-in");
+    try { provider === "google" ? await signInNativeWithGoogle() : await signInNativeWithApple(); }
+    catch { if (requests.isCurrent(ticket)) setStatus("error"); }
+    finally { authActionPending.current = false; if (requests.isCurrent(ticket)) refreshSession.current?.(); }
+  }
+  async function handleSignOut() {
+    if (!session || session.user.id !== sessionRef.current?.user.id) return;
+    const ticket = requests.begin("auth-action");
+    try { await signOutNative(session.user.id); }
+    catch { if (requests.isCurrent(ticket)) setStatus("error"); }
+  }
+  async function handleMonth(delta: number) {
+    const activeSession = sessionRef.current;
+    if (!activeSession) return;
+    const next = shiftNativeDiaryMonth(selectedMonthRef.current, delta);
+    if (next > getNativeDiaryMonth()) return;
+    selectedMonthRef.current = next; setSelectedMonth(next);
+    requests.begin("detail"); setDetail(null); setDetailState("idle");
+    await loadDashboard(activeSession, next);
+  }
+  async function handleSave() {
+    const activeSession = sessionRef.current;
+    if (!activeSession || !dashboard?.hasProfile || saving.current ||
+      formOwner.current !== activeSession.user.id || session?.user.id !== activeSession.user.id) return;
+    if (form.checkinDate !== getNativeLocalDate()) {
+      Alert.alert(locale === "ko" ? "날짜가 바뀌었습니다" : "The date has changed",
+        locale === "ko" ? "작성 중인 기록을 새 날짜로 자동 저장하지 않습니다. 오늘 기록을 다시 불러오면 작성 중인 내용이 지워집니다." : "Your draft will not be moved to a new date. Reloading today's check-in discards this draft.",
+        [{ text: locale === "ko" ? "취소" : "Cancel", style: "cancel" },
+          { text: locale === "ko" ? "오늘 기록 불러오기" : "Reload today", onPress: () => {
+            if (!requests.owns(activeSession.user.id)) return;
+            dirty.current = false; void loadDashboard(activeSession);
+          } }]);
+      return;
+    }
+    const ticket = requests.begin("save");
+    saving.current = true; setSaveState("saving");
+    try {
+      await saveNativeCheckin(activeSession, { ...form });
+      if (!requests.isCurrent(ticket)) return;
+      dirty.current = false; await loadDashboard(activeSession);
+      if (requests.isCurrent(ticket)) setSaveState("saved");
+    } catch { if (requests.isCurrent(ticket)) setSaveState("error"); }
+    finally { if (requests.isCurrent(ticket)) saving.current = false; }
+  }
+  async function handleDiaryDay(date: string) {
+    const activeSession = sessionRef.current;
+    if (!activeSession) return;
+    const ticket = requests.begin("detail");
+    setDetailState("loading"); setDetail(null);
+    try {
+      const next = await fetchNativeDiaryDay(activeSession, date);
+      if (requests.isCurrent(ticket)) { setDetail(next); setDetailState("idle"); }
+    } catch { if (requests.isCurrent(ticket)) setDetailState("error"); }
+  }
+  function canEditForm() {
+    return Boolean(session && !saving.current && session.user.id === sessionRef.current?.user.id &&
+      formOwner.current === session.user.id && requests.owns(session.user.id));
+  }
+  function updateLevel(key: CheckinLevelKey, value: number) { if (!canEditForm()) return; dirty.current = true; setSaveState("idle"); setForm((current) => ({ ...current, [key]: value })); }
+  function toggleEvent(key: CheckinEventKey) { if (!canEditForm()) return; dirty.current = true; setSaveState("idle"); setForm((current) => ({ ...current, checkinEvents: { ...current.checkinEvents, [key]: !current.checkinEvents[key] } })); }
+  function toggleContext(key: "makeup_today" | "outdoor_today") { if (!canEditForm()) return; dirty.current = true; setSaveState("idle"); setForm((current) => ({ ...current, [key]: !current[key] })); }
 
   let statusText = copy.signedOut;
   if (status === "loading") statusText = copy.loading; else if (status === "unconfigured") statusText = copy.authUnavailable; else if (status === "signing-in") statusText = copy.signingIn; else if (status === "error") statusText = copy.authFailed; else if (session) statusText = session.user.email ? `${copy.signedIn} · ${session.user.email}` : copy.signedIn;
@@ -128,37 +233,38 @@ export default function MyScreen() {
   return <ScreenShell eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
     <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
       <Text style={[styles.status, { color: palette.text }]}>{statusText}</Text>
-      {!session && status !== "loading" && status !== "unconfigured" ? <Pressable accessibilityRole="button" accessibilityLabel="mobile-google-sign-in" disabled={status === "signing-in"} onPress={() => void handleSignIn("google")} style={[styles.primaryButton, { backgroundColor: palette.accent }]}><Text style={styles.primaryButtonText}>{status === "signing-in" ? copy.signingIn : copy.signInGoogle}</Text></Pressable> : null}
+      {!session && status !== "loading" && status !== "unconfigured" ? <Pressable accessibilityRole="button" testID="mobile-google-sign-in" accessibilityLabel={copy.signInGoogle} disabled={status === "signing-in"} onPress={() => void handleSignIn("google")} style={[styles.primaryButton, { backgroundColor: palette.action }]}><Text style={styles.primaryButtonText}>{status === "signing-in" ? copy.signingIn : copy.signInGoogle}</Text></Pressable> : null}
       {!session && status !== "loading" && status !== "unconfigured" ? <NativeAppleSignInButton disabled={status === "signing-in"} onPress={() => void handleSignIn("apple")} /> : null}
-      {session ? <Pressable accessibilityRole="button" accessibilityLabel="mobile-sign-out" onPress={() => void handleSignOut()} style={[styles.secondaryButton, { borderColor: palette.border }]}><Text style={[styles.secondaryButtonText, { color: palette.text }]}>{copy.signOut}</Text></Pressable> : null}
+      {session ? <Pressable accessibilityRole="button" testID="mobile-sign-out" accessibilityLabel={copy.signOut} onPress={() => void handleSignOut()} style={[styles.secondaryButton, { borderColor: palette.border }]}><Text style={[styles.secondaryButtonText, { color: palette.text }]}>{copy.signOut}</Text></Pressable> : null}
     </View>
 
     {session && dashboardError ? <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}><Text style={[styles.bodyText, { color: palette.textMuted }]}>{diaryCopy.dashboardFailed}</Text><Pressable onPress={() => void loadDashboard(session)} style={[styles.secondaryButton, { borderColor: palette.border }]}><Text style={[styles.secondaryButtonText, { color: palette.text }]}>{diaryCopy.reload}</Text></Pressable></View> : null}
 
     {session && dashboard ? <>
-      <NativeMyDiaryView locale={locale} dashboard={dashboard} palette={palette} onDiaryDay={(date) => void handleDiaryDay(date)} onPreviousMonth={() => void handleMonth(-1)} onNextMonth={() => void handleMonth(1)} canNextMonth={selectedMonth < currentMonth} />
+      <NativeMyDiaryView locale={locale} dashboard={dashboard} palette={{ ...palette, accent: palette.accentText }} onDiaryDay={(date) => void handleDiaryDay(date)} onPreviousMonth={() => void handleMonth(-1)} onNextMonth={() => void handleMonth(1)} canNextMonth={selectedMonth < currentMonth} />
 
       {dashboard.hasProfile ? <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
         <Text style={[styles.sectionTitle, { color: palette.text }]}>{diaryCopy.checkinTitle}</Text><Text style={[styles.bodyText, { color: palette.textMuted }]}>{diaryCopy.checkinBody}</Text>
-        {CHECKIN_LEVEL_KEYS.map((key) => <View key={key} style={styles.levelBlock}><View style={styles.rowBetween}><Text style={[styles.subheading, { color: palette.text }]}>{diaryCopy.levels[key]}</Text><Text style={[styles.bodyText, { color: palette.textMuted }]}>{form[key]} / 4</Text></View><View style={styles.chipRow}>{[0,1,2,3,4].map((value) => { const selected = form[key] === value; return <Pressable key={value} onPress={() => updateLevel(key, value)} style={[styles.levelChip, { borderColor: selected ? palette.accent : palette.border, backgroundColor: selected ? palette.surfaceMuted : palette.surface }]}><Text style={[styles.levelChipText, { color: selected ? palette.accent : palette.textMuted }]}>{value}</Text></Pressable>; })}</View><View style={styles.rowBetween}><Text style={[styles.hint, { color: palette.textMuted }]}>{diaryCopy.low}</Text><Text style={[styles.hint, { color: palette.textMuted }]}>{diaryCopy.high}</Text></View></View>)}
+        <Text style={[styles.hint, { color: palette.textMuted }]}>{form.checkinDate}</Text>
+        {CHECKIN_LEVEL_KEYS.map((key) => <View key={key} style={styles.levelBlock}><View style={styles.rowBetween}><Text style={[styles.subheading, { color: palette.text }]}>{diaryCopy.levels[key]}</Text><Text style={[styles.bodyText, { color: palette.textMuted }]}>{form[key]} / 4</Text></View><View style={styles.chipRow}>{[0,1,2,3,4].map((value) => { const selected = form[key] === value; return <Pressable key={value} accessibilityRole="radio" accessibilityLabel={`${diaryCopy.levels[key]} ${value} / 4`} accessibilityState={{ selected, disabled: saveState === "saving" }} disabled={saveState === "saving"} onPress={() => updateLevel(key, value)} style={[styles.levelChip, { borderColor: selected ? palette.accent : palette.border, backgroundColor: selected ? palette.surfaceMuted : palette.surface }]}><Text style={[styles.levelChipText, { color: selected ? palette.accent : palette.textMuted }]}>{value}</Text></Pressable>; })}</View><View style={styles.rowBetween}><Text style={[styles.hint, { color: palette.textMuted }]}>{diaryCopy.low}</Text><Text style={[styles.hint, { color: palette.textMuted }]}>{diaryCopy.high}</Text></View></View>)}
         <Text style={[styles.subheading, { color: palette.text }]}>{diaryCopy.context}</Text><View style={styles.chipRow}>
-          <Pressable onPress={() => setForm((c) => ({ ...c, makeup_today: !c.makeup_today }))} style={[styles.toggleChip, { borderColor: form.makeup_today ? palette.accent : palette.border }]}><Text style={[styles.toggleText, { color: palette.text }]}>{diaryCopy.makeup}</Text></Pressable>
-          <Pressable onPress={() => setForm((c) => ({ ...c, outdoor_today: !c.outdoor_today }))} style={[styles.toggleChip, { borderColor: form.outdoor_today ? palette.accent : palette.border }]}><Text style={[styles.toggleText, { color: palette.text }]}>{diaryCopy.outdoor}</Text></Pressable>
-          {CHECKIN_EVENT_KEYS.map((key) => <Pressable key={key} onPress={() => toggleEvent(key)} style={[styles.toggleChip, { borderColor: form.checkinEvents[key] ? palette.accent : palette.border }]}><Text style={[styles.toggleText, { color: palette.text }]}>{diaryCopy.events[key]}</Text></Pressable>)}
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: form.makeup_today, disabled: saveState === "saving" }} disabled={saveState === "saving"} onPress={() => toggleContext("makeup_today")} style={[styles.toggleChip, { borderColor: form.makeup_today ? palette.accent : palette.border }]}><Text style={[styles.toggleText, { color: palette.text }]}>{diaryCopy.makeup}</Text></Pressable>
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: form.outdoor_today, disabled: saveState === "saving" }} disabled={saveState === "saving"} onPress={() => toggleContext("outdoor_today")} style={[styles.toggleChip, { borderColor: form.outdoor_today ? palette.accent : palette.border }]}><Text style={[styles.toggleText, { color: palette.text }]}>{diaryCopy.outdoor}</Text></Pressable>
+          {CHECKIN_EVENT_KEYS.map((key) => <Pressable key={key} accessibilityRole="checkbox" accessibilityState={{ checked: form.checkinEvents[key], disabled: saveState === "saving" }} disabled={saveState === "saving"} onPress={() => toggleEvent(key)} style={[styles.toggleChip, { borderColor: form.checkinEvents[key] ? palette.accent : palette.border }]}><Text style={[styles.toggleText, { color: palette.text }]}>{diaryCopy.events[key]}</Text></Pressable>)}
         </View>
-        <Text style={[styles.subheading, { color: palette.text }]}>{diaryCopy.memo}</Text><TextInput multiline maxLength={1000} value={form.memo} placeholder={diaryCopy.memoPlaceholder} placeholderTextColor={palette.textMuted} onChangeText={(memo) => { setSaveState("idle"); setForm((c) => ({ ...c, memo })); }} style={[styles.memoInput, { color: palette.text, borderColor: palette.border, backgroundColor: palette.surfaceMuted }]} />
-        <Pressable accessibilityRole="button" accessibilityLabel="mobile-checkin-save" disabled={saveState === "saving"} onPress={() => void handleSave()} style={[styles.primaryButton, { backgroundColor: palette.accent }]}><Text style={styles.primaryButtonText}>{saveState === "saving" ? diaryCopy.saving : diaryCopy.save}</Text></Pressable>
-        {saveState === "saved" ? <Text style={[styles.hint, { color: palette.accent }]}>{diaryCopy.saved}</Text> : null}{saveState === "error" ? <Text style={[styles.hint, { color: palette.textMuted }]}>{diaryCopy.saveFailed}</Text> : null}
+        <Text style={[styles.subheading, { color: palette.text }]}>{diaryCopy.memo}</Text><TextInput multiline editable={saveState !== "saving"} accessibilityLabel={diaryCopy.memo} maxLength={1000} value={form.memo} placeholder={diaryCopy.memoPlaceholder} placeholderTextColor={palette.textMuted} onChangeText={(memo) => { if (!canEditForm()) return; dirty.current = true; setSaveState("idle"); setForm((c) => ({ ...c, memo })); }} style={[styles.memoInput, { color: palette.text, borderColor: palette.border, backgroundColor: palette.surfaceMuted }]} />
+        <Pressable accessibilityRole="button" testID="mobile-checkin-save" accessibilityLabel={diaryCopy.save} accessibilityState={{ disabled: saveState === "saving" }} disabled={saveState === "saving"} onPress={() => void handleSave()} style={[styles.primaryButton, { backgroundColor: palette.action }]}><Text style={styles.primaryButtonText}>{saveState === "saving" ? diaryCopy.saving : diaryCopy.save}</Text></Pressable>
+        {saveState === "saved" ? <Text style={[styles.hint, { color: palette.accentText }]}>{diaryCopy.saved}</Text> : null}{saveState === "error" ? <Text style={[styles.hint, { color: palette.textMuted }]}>{diaryCopy.saveFailed}</Text> : null}
       </View> : null}
 
       <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}><Text style={[styles.sectionTitle, { color: palette.text }]}>{diaryCopy.routine}</Text><RoutineView routine={dashboard.todayRoutine} locale={locale} palette={palette} /></View>
       {detailState === "loading" ? <Text style={[styles.bodyText, { color: palette.textMuted }]}>{diaryCopy.detailLoading}</Text> : null}{detailState === "error" ? <Text style={[styles.bodyText, { color: palette.textMuted }]}>{diaryCopy.detailFailed}</Text> : null}
-      {detail ? <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}><View style={styles.rowBetween}><Text style={[styles.sectionTitle, { color: palette.text }]}>{diaryCopy.detail} · {detail.date}</Text><Pressable onPress={() => setDetail(null)}><Text style={[styles.toggleText, { color: palette.accent }]}>{diaryCopy.close}</Text></Pressable></View>{CHECKIN_LEVEL_KEYS.map((key) => <Text key={key} style={[styles.bodyText, { color: palette.textMuted }]}>{diaryCopy.levels[key]} · {detail.checkin[key]} / 4</Text>)}{detail.checkin.memo ? <Text style={[styles.bodyText, { color: palette.textMuted }]}>{diaryCopy.memo} · {detail.checkin.memo}</Text> : null}<RoutineView routine={detail.routine} locale={locale} palette={palette} /></View> : null}
+      {detail ? <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}><View style={styles.rowBetween}><Text style={[styles.sectionTitle, { color: palette.text }]}>{diaryCopy.detail} · {detail.date}</Text><Pressable accessibilityRole="button" style={{ minHeight: 48, justifyContent: "center" }} onPress={() => { requests.begin("detail"); setDetail(null); setDetailState("idle"); }}><Text style={[styles.toggleText, { color: palette.accentText }]}>{diaryCopy.close}</Text></Pressable></View>{CHECKIN_LEVEL_KEYS.map((key) => <Text key={key} style={[styles.bodyText, { color: palette.textMuted }]}>{diaryCopy.levels[key]} · {detail.checkin[key]} / 4</Text>)}{detail.checkin.memo ? <Text style={[styles.bodyText, { color: palette.textMuted }]}>{diaryCopy.memo} · {detail.checkin.memo}</Text> : null}<RoutineView routine={detail.routine} locale={locale} palette={palette} /></View> : null}
     </> : null}
     <Text style={[styles.notice, { color: palette.textMuted }]}>{copy.notice}</Text>
   </ScreenShell>;
 }
 
 const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 18, padding: 18, gap: 14 }, status: { fontSize: 16, fontWeight: "700" }, sectionTitle: { fontSize: 18, fontWeight: "800" }, subheading: { fontSize: 14, fontWeight: "700", lineHeight: 20 }, bodyText: { fontSize: 14, lineHeight: 21 }, hint: { fontSize: 12, lineHeight: 18 }, stackSmall: { gap: 8 }, rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }, primaryButton: { minHeight: 46, alignItems: "center", justifyContent: "center", borderRadius: 999, paddingHorizontal: 18 }, primaryButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" }, secondaryButton: { minHeight: 44, alignItems: "center", justifyContent: "center", borderWidth: 1, borderRadius: 999, paddingHorizontal: 18 }, secondaryButtonText: { fontSize: 15, fontWeight: "600" }, levelBlock: { gap: 8 }, chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 }, levelChip: { width: 42, minHeight: 38, alignItems: "center", justifyContent: "center", borderWidth: 1, borderRadius: 12 }, levelChipText: { fontSize: 14, fontWeight: "800" }, toggleChip: { minHeight: 38, justifyContent: "center", borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 }, toggleText: { fontSize: 13, fontWeight: "700" }, memoInput: { minHeight: 96, borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, textAlignVertical: "top" }, notice: { fontSize: 14, lineHeight: 21 }
+  card: { borderWidth: 1, borderRadius: 18, padding: 18, gap: 14 }, status: { fontSize: 16, fontWeight: "700" }, sectionTitle: { fontSize: 18, fontWeight: "800" }, subheading: { fontSize: 14, fontWeight: "700", lineHeight: 20 }, bodyText: { fontSize: 14, lineHeight: 21 }, hint: { fontSize: 12, lineHeight: 18 }, stackSmall: { gap: 8 }, rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }, primaryButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderRadius: 999, paddingHorizontal: 18 }, primaryButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" }, secondaryButton: { minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderRadius: 999, paddingHorizontal: 18 }, secondaryButtonText: { fontSize: 15, fontWeight: "600" }, levelBlock: { gap: 8 }, chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 }, levelChip: { width: 48, minHeight: 48, alignItems: "center", justifyContent: "center", borderWidth: 1, borderRadius: 12 }, levelChipText: { fontSize: 14, fontWeight: "800" }, toggleChip: { minHeight: 48, justifyContent: "center", borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 }, toggleText: { fontSize: 13, fontWeight: "700" }, memoInput: { minHeight: 96, borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, textAlignVertical: "top" }, notice: { fontSize: 14, lineHeight: 21 }
 });

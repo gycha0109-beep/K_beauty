@@ -9,6 +9,7 @@ type Palette = Readonly<{
   text: string;
   textMuted: string;
   accent: string;
+  action: string;
   border: string;
 }>;
 
@@ -406,7 +407,7 @@ export function NativeAnalyzeResultView({
           style={({ pressed }) => [
             styles.primaryButton,
             {
-              backgroundColor: palette.accent,
+              backgroundColor: palette.action,
               shadowColor: visual.rose,
               opacity: pressed ? 0.76 : 1
             }

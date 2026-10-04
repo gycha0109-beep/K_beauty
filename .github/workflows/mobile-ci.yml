@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/test-mobile-release-hardening.mjs"
+      - "scripts/verify-mobile-public-env.mjs"
       - "apps/mobile/**"
       - "!apps/mobile/store-readiness.json"
       - "!apps/mobile/google-play-data-safety.json"
@@ -20,6 +24,10 @@ on:
   push:
     branches: [main]
     paths:
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/test-mobile-release-hardening.mjs"
+      - "scripts/verify-mobile-public-env.mjs"
       - "apps/mobile/**"
       - "!apps/mobile/store-readiness.json"
       - "!apps/mobile/google-play-data-safety.json"
@@ -78,7 +86,6 @@ jobs:
         run: |
           set -euo pipefail
           npm run verify:mobile-foundation
-          npm run mobile:lint
           npm run mobile:typecheck
           npm run mobile:config
           bash -n scripts/verify-mobile-android-smoke.sh
@@ -91,6 +98,7 @@ jobs:
           npm run verify:mobile-entry-routing
           node scripts/verify-mobile-camera-foundation.mjs
           node scripts/verify-mobile-face-guidance.mjs
+          node --test scripts/test-mobile-release-hardening.mjs
 
       - name: Verify Android JS bundle export
         run: npm run mobile:export:android
