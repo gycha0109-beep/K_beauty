@@ -134,16 +134,32 @@ assert.deepEqual(
   evidence.security.ledger_fk_indexes,
   ["product_id","candidate_id","supersedes_review_id","reviewed_by"]
 );
-assert.equal(
-  migration.includes("grant recommendation_admission_reader_owner to postgres"),
-  false
-);
-assert.equal(
-  migration.includes("revoke recommendation_admission_reader_owner from postgres"),
-  false
+assert.ok(
+  migration.includes("grant recommendation_admission_reader_owner to postgres")
 );
 assert.ok(
-  migration.includes("G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_REQUIRED")
+  migration.includes("with inherit false, set true, admin false")
+);
+assert.ok(
+  migration.includes("granted by current_user")
+);
+assert.ok(
+  migration.includes("revoke recommendation_admission_reader_owner from postgres")
+);
+assert.ok(
+  migration.includes("G4_F1_POSTGRES_READER_OWNER_BASE_MEMBERSHIP_DRIFT")
+);
+assert.ok(
+  migration.includes("G4_F1_TEMP_SET_ROLE_GRANT_REQUIRED")
+);
+assert.ok(
+  migration.includes("G4_F1_POSTGRES_READER_OWNER_BASE_MEMBERSHIP_MUST_PERSIST")
+);
+assert.ok(
+  migration.includes("G4_F1_TEMP_ROLE_GRANT_RESIDUE_FORBIDDEN")
+);
+assert.ok(
+  migration.includes("G4_F1_POSTGRES_SET_ROLE_MUST_RETURN_FALSE")
 );
 assert.equal(evidence.security.service_role_direct_ledger_access,false);
 assert.equal(evidence.security.runtime_raw_ledger_select,false);

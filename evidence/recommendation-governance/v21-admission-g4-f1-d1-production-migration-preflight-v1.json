@@ -54,7 +54,9 @@
     "postgres_reader_owner_membership": {
       "member": true,
       "admin_option": true,
-      "grantor": "supabase_admin"
+      "grantor": "supabase_admin",
+      "inherit_option": false,
+      "set_option": false
     }
   },
   "existing_authority_prestate": {
@@ -140,8 +142,8 @@
   "d1_corrections": [
     {
       "id": "PRESERVE_EXISTING_READER_OWNER_MEMBERSHIP",
-      "finding": "postgres is already a member of recommendation_admission_reader_owner with admin option",
-      "correction": "migration no longer grants then revokes this pre-existing membership; it asserts membership exists and preserves it"
+      "finding": "PostgreSQL 17 Production membership is grantor=supabase_admin, ADMIN=true, INHERIT=false, SET=false; MEMBER alone cannot ALTER FUNCTION OWNER",
+      "correction": "preserve the supabase_admin membership exactly; create a separate postgres-grantor temporary membership with INHERIT=false/SET=true/ADMIN=false for owner transfer, then revoke only that temporary grant and assert no residue"
     },
     {
       "id": "SINGLE_BOUNDED_TAXONOMY_POLICY",

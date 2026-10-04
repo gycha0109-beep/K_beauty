@@ -928,23 +928,58 @@ grant execute on function
   to recommendation_admission_runtime;
 
 -- Transfer only the reader to the existing narrow NOLOGIN reader owner.
--- Production already grants postgres membership in this owner role. Preserve it.
+-- PostgreSQL 17 requires SET TRUE, not mere MEMBER, for ALTER ... OWNER.
+-- Production's existing supabase_admin grant is ADMIN=true / INHERIT=false /
+-- SET=false. Preserve that row exactly and create a separate grantor-scoped
+-- temporary postgres grant only for the owner transfer.
 do $g4_f1_membership$
+begin
+  if not exists (
+    select 1
+    from pg_catalog.pg_auth_members m
+    join pg_catalog.pg_roles member_role
+      on member_role.oid = m.member
+    join pg_catalog.pg_roles granted_role
+      on granted_role.oid = m.roleid
+    join pg_catalog.pg_roles grantor_role
+      on grantor_role.oid = m.grantor
+    where member_role.rolname = 'postgres'
+      and granted_role.rolname =
+        'recommendation_admission_reader_owner'
+      and grantor_role.rolname = 'supabase_admin'
+      and m.admin_option
+      and not m.inherit_option
+      and not m.set_option
+  ) then
+    raise exception
+      'G4_F1_POSTGRES_READER_OWNER_BASE_MEMBERSHIP_DRIFT';
+  end if;
+end
+$g4_f1_membership$;
+
+grant recommendation_admission_reader_owner to postgres
+  with inherit false, set true, admin false
+  granted by current_user;
+
+do $g4_f1_set_role$
 begin
   if not pg_has_role(
     'postgres',
     'recommendation_admission_reader_owner',
-    'MEMBER'
+    'USAGE'
   ) then
-    raise exception 'G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_REQUIRED';
+    raise exception 'G4_F1_TEMP_SET_ROLE_GRANT_REQUIRED';
   end if;
 end
-$g4_f1_membership$;
+$g4_f1_set_role$;
 
 grant create on schema public to recommendation_admission_reader_owner;
 alter function public.read_recommendation_category_authority_v1(uuid)
   owner to recommendation_admission_reader_owner;
 revoke create on schema public from recommendation_admission_reader_owner;
+
+revoke recommendation_admission_reader_owner from postgres
+  granted by current_user;
 
 do $$
 begin
@@ -956,12 +991,50 @@ begin
     raise exception 'G4_F1_READER_OWNER_SCHEMA_CREATE_FORBIDDEN';
   end if;
 
-  if not pg_has_role(
+  if not exists (
+    select 1
+    from pg_catalog.pg_auth_members m
+    join pg_catalog.pg_roles member_role
+      on member_role.oid = m.member
+    join pg_catalog.pg_roles granted_role
+      on granted_role.oid = m.roleid
+    join pg_catalog.pg_roles grantor_role
+      on grantor_role.oid = m.grantor
+    where member_role.rolname = 'postgres'
+      and granted_role.rolname =
+        'recommendation_admission_reader_owner'
+      and grantor_role.rolname = 'supabase_admin'
+      and m.admin_option
+      and not m.inherit_option
+      and not m.set_option
+  ) then
+    raise exception
+      'G4_F1_POSTGRES_READER_OWNER_BASE_MEMBERSHIP_MUST_PERSIST';
+  end if;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_auth_members m
+    join pg_catalog.pg_roles member_role
+      on member_role.oid = m.member
+    join pg_catalog.pg_roles granted_role
+      on granted_role.oid = m.roleid
+    join pg_catalog.pg_roles grantor_role
+      on grantor_role.oid = m.grantor
+    where member_role.rolname = 'postgres'
+      and granted_role.rolname =
+        'recommendation_admission_reader_owner'
+      and grantor_role.rolname = 'postgres'
+  ) then
+    raise exception 'G4_F1_TEMP_ROLE_GRANT_RESIDUE_FORBIDDEN';
+  end if;
+
+  if pg_has_role(
     'postgres',
     'recommendation_admission_reader_owner',
-    'MEMBER'
+    'USAGE'
   ) then
-    raise exception 'G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_MUST_PERSIST';
+    raise exception 'G4_F1_POSTGRES_SET_ROLE_MUST_RETURN_FALSE';
   end if;
 
   if has_table_privilege(
