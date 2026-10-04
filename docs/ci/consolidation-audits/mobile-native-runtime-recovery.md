@@ -59,3 +59,9 @@ Android를 실제 컴파일하는 기존 unsigned/debug/signed 소유자의 설�
 iOS run `37166436724`는 unsigned build/install/initial camera/16-frame no-Home-flash까지 PASS였으나 같은 runtime의 root URL 이동 후 Home OCR 검사에 실패했다. 실패 캡처는 `Preparing camera...`가 표시된 카메라 Modal이다. 이 후보에서 앱/SDK/iOS 실행 코드가 이전 성공 `ca5139de`와 byte 기준 동일함을 확인했다. 원인 분류는 **runtime 화면 전환 실패, 원인 미확정**이며 단순 OCR 오류나 Android backport 회귀로 단정하지 않는다.
 
 직접 실패 consumer인 iOS smoke와 그 테스트/진입 verifier까지 진단 범위를 넓힌다. 한 번 보낸 root URL을 다시 보내거나 앱을 재실행하지 않고, 원래 PID 생존과 정확한 Home 두 token을 최대 열 프레임/45초 관찰 예산으로 확인한다. 진행 중 screenshot/OCR 명령이 종료된 뒤 예산을 판단한다. 모든 프레임/OCR 및 실패 시 runtime log와 새 crash report를 기존 artifact에 보존한다. 원래 최초 진입/flash exclusion/Home 필수 token/crash failure를 유지한다. 동일 프로세스의 지연 전환과 지속 오화면/종료를 구분하는 실제 shell fixture 5개 PASS. 이는 iOS 기능 복구 증거가 아니라 **IMPLEMENTED_UNVERIFIED 진단 보강**이며 실제 재검증에서 판정한다.
+
+## 동일 후보 재검증 완료
+
+`f70078a4e8e77ccb3ad255a0c671fa862f1177d5`의 Android `37168515289` 네 job과 iOS `37168515296`가 모두 SUCCESS다. Android는 별도 PID cold launch 10회와 기존 기능/두 capture 경로를 다시 통과했다. iOS는 PID97701로 직접 시작해 root URL 한 번 후 첫 관찰 프레임에서 Home을 확인했고 Analyze/My 및 crash scan도 통과했다. 세 manual gate `37169831641`/`37169833470`/`37169835267`는 정확한 같은-SHA Android 완료 결과를 승인했다.
+
+이 기준의 native 필수 검사와 Stage A는 **VERIFIED**다. 이전 iOS Modal 잔류의 원인은 여전히 미확정이며 SDK/앱 수정으로 해결했다는 뜻이 아니다. 후속 재발 시 보존된 frame/PID/runtime/crash 증거로 제한 진단한다. 실제 기기/서명/운영 배포는 미검증이다. 상세 단계 B의 순서와 측정은 [CI 보정 검증 기록](mobile-ci-correction-verification.md)을 따른다.

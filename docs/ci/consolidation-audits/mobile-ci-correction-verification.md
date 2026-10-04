@@ -115,3 +115,31 @@ iOS `37166436724`는 build/install/initial camera/no-Home-flash PASS 이후 root
 필요하면 이번 단계의 일반 후속 커밋으로 세 workflow의 자동 진입과 이전 polling 계약 및 책임/verifier를 함께 복원한다. 기존 57개 모바일 보완 변경까지 되돌리거나 강제 Git 작업을 사용하지 않는다.
 
 다음 필수 작업은 현재 후보를 원격 검증 가능한 상태로 만들고 **동일 SHA CI 동등성 확인**을 수행하는 것이다. 최초 구현 턴은 저장소 규칙에 따라 로컬 검증까지 완료했으며, 후속 사용자 승인으로 검증용 커밋·push·PR 생성이 허용되었다.
+
+## 현재 완료 기준 — 2026-10-04
+
+Stage A는 후보 `f70078a4e8e77ccb3ad255a0c671fa862f1177d5`에서 **VERIFIED**다. main 병합/배포 상태가 아니다.
+
+| 실제 실행 | 결과 |
+|---|---|
+| Android Runtime `37168515289`, attempt 1, pull_request | APK/Smoke/20A/20B 모두 SUCCESS; 컴파일 792초, 374 tasks executed; 새 PID의 cold launch 10회 및 기존 기능 검사 PASS |
+| iOS Shell `37168515296` | Xcode26.6 / iOS26.5 / iPhone Air unsigned build/install PASS; PID97701 유지, 한 번의 root URL에서 첫 관찰 프레임 Home PASS; Analyze/My 및 crash scan PASS |
+| Native Shell manual `37169831641` | 정확한 위 Android producer/SHA/attempt/event 승인 SUCCESS |
+| 20A manual `37169833470` | 같은 producer 승인 SUCCESS |
+| 20B manual `37169835267` | 같은 producer 승인 SUCCESS |
+
+원격 PR 검사 모두 SUCCESS이며 Android 고유 산출물 네 개와 iOS 산출물은 현재 SHA의 만료되지 않은 파일이다. PR 자동 실행에서 세 manual-only compatibility workflow의 자동 실행은 없다. Android suite 12개와 iOS observer fixture 5개도 고정 Node22.23.1에서 PASS.
+
+이 iOS 실행은 기다림을 여러 번 시도해 얻은 성공이 아니다. 첫 관찰에서 Home이 확인됐다. 이전 camera Modal 잔류 실패의 원인은 아직 확정되지 않았으며 앱 코드/SDK 수정으로 해결했다고 주장하지 않는다. 향후 같은 실패가 나오면 보강된 frame/OCR/PID/runtime/crash 증거로 진단한다. 실제 기기와 서명된 배포 검증은 수행하지 않았다.
+
+## Stage B1 — 의존성 캐시와 중복 호출 보정
+
+Stage A의 같은-head 검증 뒤 착수했다. 기존 `setup-java@v5`만 Gradle 의존성 캐시 소유자로 사용한다. cache key는 루트 package/lock, mobile package/app 설정, 로컬 native modules, shared package, 고정 JDK/SDK/NDK를 포함하는 실제 Android workflow, Screens guard/manifest/네 native source를 명시적으로 해시한다. lock에 포함된 Expo/Gradle 생성 버전 변경도 키를 바꾼다. 생성 프로젝트, APK, env, keystore, Gradle credential 설정은 캐시 입력이나 추가 캐시 경로로 만들지 않는다.
+
+캐시 hit/miss에 관계없이 clean prebuild/실제 APK build와 세 consumer를 모두 실행한다. ABI/SDK/앱 코드/권한/서명 경계와 output 이름은 그대로다. task build cache와 configuration cache는 아직 활성화하지 않았다. 공개 package alias도 유지한다.
+
+Mobile CI는 동일 architecture-foundation verifier를 다시 호출하던 `mobile:lint` 한 번만 제거한다. Store Readiness는 앞의 `mobile:config`가 이미 실제 workspace를 검증한 뒤 실행하던, 미사용 root Expo config 호출만 제거한다. workspace config/웹 build/직접 client 및 store 검사는 유지한다.
+
+직접 topology guard는 캐시 입력 범위, 단일 캐시 소유자, 전체 APK/consumer 유지와 alias 동일성·남은 config/build를 검증한다. topology/69개 책임/overlap/세 YAML/diff 검사는 PASS다. 실제 cold/warm cache restore/save 및 APK 시간은 원격 결과를 기록하기 전 **IMPLEMENTED_UNVERIFIED**다.
+
+PR 캐시는 PR merge ref에 격리된다. 첫 PR 실행의 cold 결과를 기록하는 후속 문서 커밋으로 같은 PR의 warm 결과를 비교한다. 두 후보의 SHA 차이를 명시하고 build code/lock/tool/cache key 입력이 동일한지 확인한다. branch manual을 PR warm으로 오인하거나 같은 run의 immutable artifact를 덮어쓰지 않는다. cache hit를 컴파일 속도 개선으로 취급하지 않는다. B2는 실측 뒤 결정하고 C는 계속 HOLD다.

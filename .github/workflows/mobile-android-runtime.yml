@@ -177,6 +177,20 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
+          # Prebuild generates Gradle files later; hash the tracked native inputs.
+          cache-dependency-path: |
+            package.json
+            package-lock.json
+            apps/mobile/package.json
+            apps/mobile/app.json
+            apps/mobile/modules/**
+            packages/shared/package.json
+            .github/workflows/mobile-android-runtime.yml
+            scripts/apply-mobile-screens-android-compat.mjs
+            scripts/patches/react-native-screens-4.26.2/manifest.json
+            scripts/patches/react-native-screens-4.26.2/android/src/main/cpp/*
+            scripts/patches/react-native-screens-4.26.2/cpp/*
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4

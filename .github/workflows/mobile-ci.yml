@@ -86,7 +86,6 @@ jobs:
         run: |
           set -euo pipefail
           npm run verify:mobile-foundation
-          npm run mobile:lint
           npm run mobile:typecheck
           npm run mobile:config
           bash -n scripts/verify-mobile-android-smoke.sh

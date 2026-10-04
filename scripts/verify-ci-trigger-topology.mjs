@@ -432,6 +432,30 @@ assertContains(".github/workflows/mobile-native-shell.yml", [
 ]);
 
 const mobileAndroidRuntime = read(".github/workflows/mobile-android-runtime.yml");
+// Cache only through the existing Java owner. Native projects/APKs still rebuild.
+const gradleCacheInputs = mobileAndroidRuntime.match(/cache-dependency-path: \|\r?\n((?: {12}.+\r?\n)+)/)?.[1]
+  .split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+assert.deepEqual(gradleCacheInputs, [
+  "package.json", "package-lock.json", "apps/mobile/package.json", "apps/mobile/app.json",
+  "apps/mobile/modules/**", "packages/shared/package.json", ".github/workflows/mobile-android-runtime.yml",
+  "scripts/apply-mobile-screens-android-compat.mjs",
+  "scripts/patches/react-native-screens-4.26.2/manifest.json",
+  "scripts/patches/react-native-screens-4.26.2/android/src/main/cpp/*",
+  "scripts/patches/react-native-screens-4.26.2/cpp/*",
+], "Gradle dependency cache must hash all tracked SDK/tool/native patch inputs without secret/generated paths");
+assert.equal(mobileAndroidRuntime.split("cache: gradle").length - 1, 1);
+assertNotContains(".github/workflows/mobile-android-runtime.yml", [
+  "actions/cache@", "gradle/actions/setup-gradle@", "--build-cache", "--configuration-cache",
+]);
+// Public aliases stay available; the same verifier runs once in Mobile CI.
+const rootMobileCommands = JSON.parse(read("package.json")).scripts;
+const workspaceMobileCommands = JSON.parse(read("apps/mobile/package.json")).scripts;
+assert.equal(rootMobileCommands["verify:mobile-foundation"], "node scripts/verify-mobile-architecture-foundation.mjs");
+assert.equal(workspaceMobileCommands.lint, "node ../../scripts/verify-mobile-architecture-foundation.mjs");
+assert.equal(read(".github/workflows/mobile-ci.yml").split("npm run verify:mobile-foundation").length - 1, 1);
+assertNotContains(".github/workflows/mobile-ci.yml", ["npm run mobile:lint"]);
+assertContains(".github/workflows/mobile-store-readiness.yml", ["npm run mobile:config", "npm run build"]);
+assertNotContains(".github/workflows/mobile-store-readiness.yml", ["npx expo config", "mobile-store-readiness-expo-config.json"]);
 for (const path of ["mobile-android-runtime.yml", "mobile-13-store-release-preflight.yml", "mobile-15-distribution-authority.yml"]) {
   const source = read(`.github/workflows/${path}`);
   const install = source.indexOf("run: npm ci");

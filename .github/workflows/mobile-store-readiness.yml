@@ -183,8 +183,5 @@ jobs:
           node --check scripts/verify-mobile-19a-public-support.mjs
           node scripts/verify-mobile-19a-public-support.mjs
 
-      - name: Verify Expo public config
-        run: npx expo config --type public --json > /tmp/mobile-store-readiness-expo-config.json
-
       - name: Verify production build once
         run: npm run build

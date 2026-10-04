@@ -3055,3 +3055,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 변경: 기존 고정 4초 뒤 단일 Home 캡처를 최대 열 프레임/45초 관찰 예산의 정확한 Home token 관찰로 교체. URL 재전송/앱 재실행 없이 원래 PID를 확인. 실패해도 runtime log/crash report/frame/OCR을 보존하고 원래 exit status 유지. 직접 test와 workflow 연결/trigger 및 entry verifier 갱신.
 - 검증: 실제 shell 정상/지연/지속 오화면/종료/OCR 이후 종료 5개 PASS; entry/topology/69개 책임/syntax/diff 및 app/lock 보존 PASS. iOS 실제 재검증 전 IMPLEMENTED_UNVERIFIED; A 전체 완료 기준 미충족으로 B/C HOLD 유지.
 - 보호 구역 DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N. 인증/redirect 설정 및 앱 동작 변경 없음. 규칙 승격 후보 없음.
+
+### 2026-10-04 / Stage A 같은-head 완료와 B1 착수
+
+- 브랜치 codex/mobile-ci-verification / PR1081. 실행형/Medium, 승인된 CI 보정 다음 단계. 목표는 APK/runtime 검사 의미를 유지하면서 기존 Java action의 의존성 캐시와 확실한 중복 두 호출만 보정하는 것.
+- 완료 기준점 f70078a4: Android37168515289 네 job/별도 process cold launch10회 PASS, iOS37168515296 원래PID97701/단일 root URL/첫 관찰 Home 및 기존 route/crash scan PASS. manual37169831641/37169833470/37169835267 같은 producer/SHA/attempt/event 승인 PASS. 이 기준 Stage A VERIFIED. 이전 iOS Modal 잔류 원인 미확정/실제 기기·서명·배포 미검증은 유지.
+- B1 변경 범위: Android Runtime setup-java@v5의 Gradle dependency cache/명시적 tracked key; Mobile CI 동일 foundation alias 재호출 제거; Store Readiness 미사용 root Expo config 제거; 직접 topology guard 및 기록. 앱/lock/native ABI/도구/공개 alias/전체 APK 및 세 consumer/69개 책임은 보존.
+- 보호 구역 DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N. SDK/서명 workflow 실행·권한/production 변경 없음. 신규 dependency/cache action/workflow/카테고리/skip 경로 없음.
+- 로컬 검증: topology/alias 동일성/cache 입력/69개 책임/overlap/세 YAML/diff PASS. 원격 cold/warm restore/save/compile/runtime 측정 전 B1 IMPLEMENTED_UNVERIFIED. 빌드 입력을 바꾸지 않는 cold 결과 기록 커밋으로 같은 PR의 warm을 검증하며 branch dispatch를 PR warm으로 쓰지 않음.
+- 다음 작업: B1 실제 cold/warm과 보존된 runtime 계약 확인. 실측에 따라 B2 판단, C는 HOLD. 상세 결과는 docs/ci/consolidation-audits/mobile-ci-correction-verification.md. 규칙 승격 후보 없음; AI_CONTEXT 변경 없음.
