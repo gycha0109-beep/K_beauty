@@ -1,0 +1,75 @@
+{
+  "version": "v21-admission-g4-f2-d1-deployed-shadow-dual-read-observation-v1",
+  "stage": "V2.1-ADMISSION-G4-F2-D1",
+  "decision": "V21_ADMISSION_G4_F2_D1_DEPLOYED_SHADOW_DUAL_READ_OBSERVED_PASS",
+  "captured_on": "2026-10-04",
+  "source_main_sha": "d34bd85a1943467b9a9e1f4f0378a2d2e3071c2e",
+  "mode": "PRODUCTION_DEPLOYED_READ_ONLY_OBSERVATION",
+  "upstream": {
+    "f2_decision": "V21_ADMISSION_G4_F2_CATEGORY_AUTHORITY_SHADOW_DUAL_READ_READY",
+    "d4_decision": "V21_ADMISSION_G4_F1_D4_FATION_CATEGORY_AUTHORITY_REVIEW_ESTABLISHED_PASS"
+  },
+  "deployment_observation": {
+    "workflow": "Recommendation Admission - G3A PF Authority Read",
+    "workflow_run_id": 37194196847,
+    "workflow_run_number": 165,
+    "deployed_runtime_job_id": 111412654318,
+    "deployment_sha": "d34bd85a1943467b9a9e1f4f0378a2d2e3071c2e",
+    "deployment_ref": "main",
+    "http_status": 200,
+    "result": "PASS"
+  },
+  "target": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "expected_category": "treatment",
+    "expected_assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39"
+  },
+  "dual_read_observation": {
+    "credential_available": true,
+    "runtime_role_match": true,
+    "raw_category_review_select_denied": true,
+    "raw_taxonomy_select_denied": true,
+    "raw_taxonomy_version_select_denied": true,
+    "pf_authority_status": "NO_AUTHORITY",
+    "pf_authority_reason": "CURRENT_SUBJECT_MISSING",
+    "category_authority_status": "CATEGORY_AUTHORITY_RESOLVED",
+    "category_authority_reason": null,
+    "category_authority_read_contract_version": "recommendation-category-authority-read-v1",
+    "category": "treatment",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "production_decision_source": "G3_PF_AUTHORITY_ONLY",
+    "category_authority_observational_only": true,
+    "recommendation_admission_mutated": false,
+    "production_cutover_authorized": false,
+    "secret_value_exposed": false
+  },
+  "recommendation_parity_observation": {
+    "recommendation_product_count": 164,
+    "legacy_exact_overlay_count": 165,
+    "catalog_only_shadow_count": 10,
+    "catalog_only_recommendation_leak_count": 0,
+    "score_delta_count": 0,
+    "slot_delta_count": 0,
+    "full_order_delta_count": 0,
+    "top1_delta_count": 0,
+    "top3_delta_count": 0,
+    "recommendation_runtime_cutover": false
+  },
+  "category_lane_closeout": {
+    "category_authority_resolved": true,
+    "shadow_dual_read_verified": true,
+    "products_category_mutated": false,
+    "taxonomy_global_authority_activated": false,
+    "product_fact_mutated": false,
+    "recommendation_admission_changed": false
+  },
+  "g4_g_precondition": {
+    "authorized_now": false,
+    "blocker": "FATION_PRODUCT_FACT_AUTHORITY_UNRESOLVED",
+    "pf_lane_decision": "V21_ADMISSION_G4_B_R1_FORMULATION_AUTHORITY_NOT_RECOVERED",
+    "observed_runtime_reason": "CURRENT_SUBJECT_MISSING",
+    "rule": "Do not enter G4-G until FATION Product Fact authority is resolved and G2 shadow evaluation can prove INITIAL_ADMISSION_GRANT."
+  },
+  "next_gate": "V2.1-ADMISSION-G4-G_FATION_INITIAL_ADMISSION_CUTOVER",
+  "next_gate_authorized": false
+}

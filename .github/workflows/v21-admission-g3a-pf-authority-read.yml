@@ -37,6 +37,8 @@ on:
       - "app/api/internal/recommendation-category-authority-shadow-dual-read/route.js"
       - "evidence/recommendation-governance/v21-admission-g4-f2-category-authority-shadow-dual-read-v1.json"
       - "scripts/verify-v21-admission-g4-f2-category-authority-shadow-dual-read-v1.mjs"
+      - "evidence/recommendation-governance/v21-admission-g4-f2-d1-deployed-shadow-dual-read-observation-v1.json"
+      - "scripts/verify-v21-admission-g4-f2-d1-deployed-shadow-dual-read-observation-v1.mjs"
   pull_request:
     branches:
       - main
@@ -73,6 +75,8 @@ on:
       - "app/api/internal/recommendation-category-authority-shadow-dual-read/route.js"
       - "evidence/recommendation-governance/v21-admission-g4-f2-category-authority-shadow-dual-read-v1.json"
       - "scripts/verify-v21-admission-g4-f2-category-authority-shadow-dual-read-v1.mjs"
+      - "evidence/recommendation-governance/v21-admission-g4-f2-d1-deployed-shadow-dual-read-observation-v1.json"
+      - "scripts/verify-v21-admission-g4-f2-d1-deployed-shadow-dual-read-observation-v1.mjs"
 
 permissions:
   contents: read
@@ -140,6 +144,9 @@ jobs:
 
       - name: Verify G4-F2 category authority shadow dual-read
         run: node scripts/verify-v21-admission-g4-f2-category-authority-shadow-dual-read-v1.mjs
+
+      - name: Verify G4-F2-D1 deployed shadow dual-read observation
+        run: node scripts/verify-v21-admission-g4-f2-d1-deployed-shadow-dual-read-observation-v1.mjs
 
   runtime-probe:
     name: G3A deployed runtime authority probe
