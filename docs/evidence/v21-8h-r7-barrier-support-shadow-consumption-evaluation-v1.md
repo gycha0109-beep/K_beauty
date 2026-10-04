@@ -4,7 +4,7 @@
 
 `BARRIER_SUPPORT_SHADOW_CONSUMPTION_EVALUATION_VALIDATED`
 
-평가 결론은 `BOUNDED_EXPLANATION_UTILITY_COVERAGE_RECOVERY_REQUIRED`다.
+평가 결론은 `BOUNDED_EXPLANATION_UTILITY_COVERAGE_RECOVERY_REQUIRED`이다.
 
 R6 어댑터 자체는 설명용 그림자 입력으로 유효하지만, 현재 고정 후보 164개 중 배리어축 적용 후보 61개에서 공식 참 권위가 6개뿐이고 51개가 상품 사실 주체 단계에서 차단되어 있다. 따라서 소비 로직을 더 확장하기보다 자료 커버리지 복구가 우선이다.
 
