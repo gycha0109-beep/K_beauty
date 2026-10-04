@@ -77,7 +77,7 @@ assert.ok(
   categoryReader.includes("read_recommendation_category_authority_v1")
 );
 assert.ok(
-  categoryReader.includes("recommendation_admission_runtime")
+  categoryReader.includes("RECOMMENDATION_ADMISSION_RUNTIME_ROLE")
 );
 assert.ok(
   route.includes("readRecommendationAdmissionAuthority")
