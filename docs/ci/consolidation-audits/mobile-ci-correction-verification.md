@@ -182,3 +182,13 @@ B1 warm에서도 실제 compiler 작업 374개가 다시 실행되고 compile 69
 고정 RN0.86.3은 debug variant에 JS bundle task를 생성하지 않으며 실제 Smoke/20A/20B는 각 현재 checkout의 Metro를 새로 시작한다. 이 경로의 JS를 Gradle output cache나 이전 APK에서 가져오지 않는다. source 소비와 모든 실제 화면 검사는 계속 실행한다. 고정 AGP8.12.0의 [공식 source artifact](https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.12.0/gradle-8.12.0-sources.jar)의 ExternalNativeBuildTask는 DisableCachingByDefault다. 네 ABI의 CMake가 제거된다고 주장하지 않으며 managed compiler task의 실제 FROM-CACHE/시간/캐시 크기를 별도로 판정한다.
 
 workflow 자체가 key 입력이므로 B2는 별도 새 key의 cold/warm으로 측정한다. 입력 mutation의 key 변경과 캐시 miss의 현재 source build, warm의 실제 native/UI/고유 artifact 유지가 필요하다. 현재는 **IMPLEMENTED_UNVERIFIED**이며 C는 계속 HOLD다. APK/signing/env 캐시와 동일 Gradle home을 소유하는 두 번째 cache action은 추가하지 않았다.
+
+### B2 cold 실행 완료 및 warm 비교 착수
+
+후보 `622cd790f15a50b76f57f2d84a1315b75627108d`, Android `37175168746` attempt1 / pull_request의 네 job 모두 SUCCESS다. 별도 PID의 cold launch 10회와 기존 카메라/결과/deep link/화면 검사 PASS, 현재 SHA의 고유 nonempty/unexpired artifact 네 개를 확인했다. 실제 npm 명령이 Gradle의 `:app:assembleDebug --no-daemon --build-cache`로 전달됐다.
+
+새 dependency key는 miss에서 시작했다. compile 1177초 / build step1178초 / APK job1280초, Java setup1초 / post-save19초, 318 executed / 56 FROM-CACHE다. cold 실행 내부에서 동일 task 결과가 재사용될 수 있으므로 이 56개를 이전 실행 캐시 복원의 증거로 쓰지 않는다. 네 ABI의 CMake 작업은 실제 실행됐다. 캐시 ID8471873322 / PR merge ref / 압축1,657,691,884 bytes가 저장됐다. 실제 key `b24741ccff98d9303e171cb4c26d7a9ca8217efbaa9023096c584d8c4f40e07a`는 tracked LF blob16개로 재현했으며 메모리상 native/tool 입력 mutation8개가 각각 invalidation을 일으켰다. SDK/lock/앱 파일을 실험 변경하지 않았다.
+
+iOS `37175168750`도 SUCCESS다. PID89614 유지 / root URL 한 번 / 첫 관찰 Home / initial camera 및 16-frame no-Home-flash / Analyze/My/crash scan PASS. Xcode26.6 / iOS26.5 unsigned Simulator 결과이며 실제 기기·서명·인증 provider 검증과는 구분한다. iOS 시간 편차를 Android 캐시 효과로 쓰지 않는다.
+
+이 checkpoint는 두 기록 문서만 바꾼다. 같은 PR에서 build code/lock/tool/key 입력을 보존한 warm 실행으로 복원·task reuse·복원 비용·현재 화면 검사를 비교한다. cold 통과만으로 B2의 속도 효과를 판단하지 않으며 warm 완료 전 B2 IMPLEMENTED_UNVERIFIED, C HOLD다.

@@ -3081,3 +3081,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - B2 범위는 기존 debug APK build 한 번에 --build-cache 인자만 전달, 직접 topology의 debug-only/release/config cache 경계 및 기록. root/workspace alias의 실제 npm 전달을 임시 fixture로 확인. 신규 dependency/action/workflow/제품 category 없음. 앱/lock/ABI/SDK/공개 API/저장/서명 실행 변경 없음.
 - 범위 근거: warm compiler 작업374개/698초가 남아 task output reuse를 별도 실측. 직접 SDK dependency인 RN debug bundle 등록 및 고정 AGP8.12.0 source를 확인했다. CMake는 기본 비캐시형이며 모든 ABI compile 유지. 현재 JS는 새 Metro에서 소비하고 실제 screen checks를 유지.
 - cold/warm FROM-CACHE/현재 candidate runtime/캐시 크기 전 B2 IMPLEMENTED_UNVERIFIED. C HOLD, DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N. main/production/signing 실행 없음. 규칙 승격 후보 없음.
+
+### 2026-10-04 / B2 cold 완료와 동일 입력 warm checkpoint
+
+- 후보622cd790 / Android37175168746 네 job·10회 별도 process 시작·원래 기능 검사·현재 artifact 네 개 PASS; iOS37175168750 PID89614·단일 URL·첫 관찰 Home·기존 초기/route/crash 검사 PASS.
+- cold: dependency key miss, compile1177초/build step1178초/APK job1280초/Java setup1초/postsave19초, 318 executed/56 FROM-CACHE. cold 내부 재사용을 이전 run restore로 오인하지 않음. 네 ABI CMake 실행 유지. 캐시8471873322 1,657,691,884 bytes. 실제 Linux key와 Git LF 입력16개 일치 및 메모리 mutation8개 invalidation PASS.
+- 이번 변경은 결과 기록 두 문서만 갱신한다. 같은 PR의 build code/SDK/lock/native patch/key 입력을 유지해 warm restore·시간·task output·runtime 비용을 비교한다. main/배포/서명/DB/Auth/권한 변경 없음; 규칙 승격 후보 없음.
+- warm 검증 전 B2 IMPLEMENTED_UNVERIFIED, C HOLD. 상세 결과는 mobile-ci-correction-verification.md와 외부 ci-audit 로그/metrics/key proof에 보존.
