@@ -1,0 +1,44 @@
+{
+  "version": "v21-admission-g4-f2-category-authority-shadow-dual-read-v1",
+  "stage": "V2.1-ADMISSION-G4-F2",
+  "decision": "V21_ADMISSION_G4_F2_CATEGORY_AUTHORITY_SHADOW_DUAL_READ_READY",
+  "captured_on": "2026-10-04",
+  "source_main_sha": "7483e957eca7b4a3cfe1099cfa8dc72aa19de24a",
+  "mode": "DEPLOYED_SHADOW_DUAL_READ_NO_ADMISSION_CUTOVER",
+  "upstream": {
+    "d4_decision": "V21_ADMISSION_G4_F1_D4_FATION_CATEGORY_AUTHORITY_REVIEW_ESTABLISHED_PASS"
+  },
+  "target": {
+    "product_id": "da5df70c-8cdd-4eb2-93b6-ede46c2f171d",
+    "expected_category": "treatment",
+    "expected_assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39"
+  },
+  "architecture": {
+    "category_reader_rpc": "public.read_recommendation_category_authority_v1(uuid)",
+    "credential_boundary": "recommendation_admission_runtime",
+    "dual_read_route": "/api/internal/recommendation-category-authority-shadow-dual-read",
+    "production_admission_runtime_modified": false,
+    "production_authority_reader_modified": false
+  },
+  "shadow_contract": {
+    "production_decision_source": "G3_PF_AUTHORITY_ONLY",
+    "category_authority_observational_only": true,
+    "recommendation_admission_mutated": false,
+    "production_cutover_authorized": false,
+    "products_category_mutated": false,
+    "taxonomy_global_authority_activated": false,
+    "product_fact_mutated": false
+  },
+  "deployed_probe_expectation": {
+    "credential_available": true,
+    "runtime_role_match": true,
+    "raw_category_review_select_denied": true,
+    "raw_taxonomy_select_denied": true,
+    "raw_taxonomy_version_select_denied": true,
+    "category_authority_status": "CATEGORY_AUTHORITY_RESOLVED",
+    "category": "treatment",
+    "read_contract_version": "recommendation-category-authority-read-v1",
+    "secret_value_exposed": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-F2-D1_DEPLOYED_SHADOW_DUAL_READ_OBSERVATION"
+}
