@@ -966,7 +966,7 @@ begin
   if not pg_has_role(
     'postgres',
     'recommendation_admission_reader_owner',
-    'USAGE'
+    'SET'
   ) then
     raise exception 'G4_F1_TEMP_SET_ROLE_GRANT_REQUIRED';
   end if;
@@ -1032,7 +1032,7 @@ begin
   if pg_has_role(
     'postgres',
     'recommendation_admission_reader_owner',
-    'USAGE'
+    'SET'
   ) then
     raise exception 'G4_F1_POSTGRES_SET_ROLE_MUST_RETURN_FALSE';
   end if;
