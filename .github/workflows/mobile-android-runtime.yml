@@ -49,6 +49,9 @@ on:
       - "apps/mobile/.gitignore"
       - "docs/store/mobile-store-listing-final.json"
       - "scripts/verify-mobile-native-shell.mjs"
+      - "scripts/apply-mobile-screens-android-compat.mjs"
+      - "scripts/test-mobile-screens-android-compat.mjs"
+      - "scripts/patches/react-native-screens-4.26.2/**"
       - "scripts/verify-mobile-android-smoke.sh"
       - "scripts/capture-mobile-store-assets.sh"
       - "scripts/capture-mobile-store-scenarios.sh"
@@ -112,6 +115,9 @@ on:
       - "apps/mobile/.gitignore"
       - "docs/store/mobile-store-listing-final.json"
       - "scripts/verify-mobile-native-shell.mjs"
+      - "scripts/apply-mobile-screens-android-compat.mjs"
+      - "scripts/test-mobile-screens-android-compat.mjs"
+      - "scripts/patches/react-native-screens-4.26.2/**"
       - "scripts/verify-mobile-android-smoke.sh"
       - "scripts/capture-mobile-store-assets.sh"
       - "scripts/capture-mobile-store-scenarios.sh"
@@ -186,10 +192,14 @@ jobs:
       - name: Install monorepo dependencies
         run: npm ci
 
+      - name: Apply bounded Android Screens listener compatibility
+        run: node scripts/apply-mobile-screens-android-compat.mjs
+
       - name: Verify shared Android build contracts
         shell: bash
         run: |
           set -euo pipefail
+          node --test scripts/test-mobile-screens-android-compat.mjs
           npm run verify:mobile-foundation
           npm run mobile:typecheck
           npm run mobile:config

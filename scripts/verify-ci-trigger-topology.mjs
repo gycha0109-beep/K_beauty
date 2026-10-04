@@ -432,6 +432,16 @@ assertContains(".github/workflows/mobile-native-shell.yml", [
 ]);
 
 const mobileAndroidRuntime = read(".github/workflows/mobile-android-runtime.yml");
+for (const path of ["mobile-android-runtime.yml", "mobile-13-store-release-preflight.yml", "mobile-15-distribution-authority.yml"]) {
+  const source = read(`.github/workflows/${path}`);
+  const install = source.indexOf("run: npm ci");
+  const patch = source.indexOf("run: node scripts/apply-mobile-screens-android-compat.mjs");
+  const prebuild = source.indexOf("name: Generate Android native project");
+  assert.ok(install > 0 && patch > install && prebuild > patch, `${path}: actual Android compiler must apply the bounded Screens patch after install and before prebuild`);
+}
+for (const input of ["scripts/apply-mobile-screens-android-compat.mjs", "scripts/test-mobile-screens-android-compat.mjs", "scripts/patches/react-native-screens-4.26.2/**"]) {
+  assert.equal(mobileAndroidRuntime.split(`\"${input}\"`).length - 1, 2, `Android push/PR must watch native patch input: ${input}`);
+}
 assertContains(".github/workflows/mobile-android-runtime.yml", [
   "android-debug-apk:",
   "needs: android-debug-apk",

@@ -268,6 +268,37 @@ wait_for_text "Camera ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/initial-entry-camera-en.png"
 printf 'MOBILE_ANDROID_INITIAL_ENTRY_ANALYZE=PASS\n'
 
+# Exercise the Screens listener race with ten new processes, without retrying a failed launch.
+# Crash buffers are retained throughout the smoke run, including the first startup above.
+for launch in $(seq 1 10); do
+  adb logcat -b crash -d > "$ARTIFACT_DIR/cold-launch-crash-$launch.txt"
+  if grep -Eq '>>> com\.bejewely\.mobile <<<|Process: com\.bejewely\.mobile([, ]|$)|Cmdline: com\.bejewely\.mobile' "$ARTIFACT_DIR/cold-launch-crash-$launch.txt"; then
+    echo "App crash recorded before cold launch $launch; refuse retry" >&2
+    exit 1
+  fi
+  adb shell am force-stop "$PACKAGE_ID"
+  if [[ -n "$(adb shell pidof "$PACKAGE_ID" | tr -d '\r' || true)" ]]; then
+    echo "App process remained after force-stop" >&2
+    exit 1
+  fi
+  adb shell am start -W -n "$PACKAGE_ID/.MainActivity" > "$ARTIFACT_DIR/cold-launch-start-$launch.txt"
+  cold_pid="$(adb shell pidof "$PACKAGE_ID" | tr -d '\r' || true)"
+  test -n "$cold_pid"
+  wait_for_text "SKIN ANALYSIS"
+  wait_for_text "Camera ready"
+  for _ in $(seq 1 5); do
+    sleep 3
+    test "$(adb shell pidof "$PACKAGE_ID" | tr -d '\r' || true)" = "$cold_pid"
+  done
+  adb logcat -b crash -d > "$ARTIFACT_DIR/cold-launch-crash-$launch.txt"
+  if grep -Eq '>>> com\.bejewely\.mobile <<<|Process: com\.bejewely\.mobile([, ]|$)|Cmdline: com\.bejewely\.mobile' "$ARTIFACT_DIR/cold-launch-crash-$launch.txt"; then
+    echo "App crash recorded during cold launch $launch" >&2
+    exit 1
+  fi
+  printf 'MOBILE_ANDROID_COLD_LAUNCH=PASS iteration=%s total=10 pid=%s\n' "$launch" "$cold_pid" | tee -a "$ARTIFACT_DIR/cold-launch-results.txt"
+done
+printf 'MOBILE_ANDROID_COLD_LAUNCH_REPETITIONS=10\n'
+
 tap_text "Take photo"
 wait_for_text "CAPTURED PHOTO"
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-captured-en.png"

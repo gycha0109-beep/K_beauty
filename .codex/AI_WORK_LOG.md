@@ -3022,6 +3022,8 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 규칙 승격 후보: 없음.
 
 
+
+
 ### 2026-10-03 / 모바일 native CI 실패의 제한 진단·복구
 
 - 브랜치: codex/mobile-ci-verification / PR #1081 / 후보 2318084515f56cccc9f24eb4d7aa515c92e08542.
@@ -3034,3 +3036,13 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 상세/재현: docs/ci/consolidation-audits/mobile-native-runtime-recovery.md, gh run view 37105260119; 외부 ci-audit에 job 로그/logcat/source fingerprints 보존.
 - 다음 작업: native 제한 복구 승인 후 실제 새 후보 재검증, 그 뒤 CI A manual gates 및 B/C 재개. main/production/signing 실행 없음.
 - 규칙 승격 후보: 없음.
+
+### 2026-10-04 / 승인된 Android native listener 복구
+
+- 브랜치: codex/mobile-ci-verification / PR #1081. 복구형, Android dependency source 및 직접 compile/runtime 검증에 한정. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N; 기존 signed workflow의 컴파일 전 source guard만 추가하고 서명 실행·자격증명·권한은 변경하지 않음.
+- 승인: 사용자 “승인. 계속 진행”. Expo/RN/lock 유지, 공식 PR4413 네 파일의 제한 backport 및 실제 cold-launch 검증 이후 CI B/C 계속.
+- 변경: 버전/전후 source hash/전체 상태/path를 검증하는 설치 직후 guard, MIT/source manifest 및 원본 test fixture, 기존 Android 컴파일 소유자 세 곳 연결, 기존 Smoke에 실패 즉시 종료하는 열 번 cold launch, 직접 topology/테스트/복구 문서.
+- 설치 버전 정정: 실제 Screens 4.26.2 (`~4.26.0` 선언). 이전 기록의 설치 4.26.0은 부정확했으며 실제 resolver와 lock으로 정정.
+- 검증: clean npm ci 이후 patch 적용 및 idempotent PASS. source drift/부분 적용/잘못된 버전/payload/경로, 교체 실패 rollback/concurrent mutation 및 실제 shell 정상/충돌/종료 fixture 포함 12개 PASS. 직접 CI/mobile 계약 검사 및 lock/앱 source 보존 확인. 원격 native 후보 검증 전 IMPLEMENTED_UNVERIFIED.
+- 실제 실행 전의 간헐 종료 위험은 완료로 처리하지 않음. 상세 evidence와 다음 단계는 docs/ci/consolidation-audits/mobile-native-runtime-recovery.md 및 mobile-ci-correction-verification.md.
+- 규칙 승격 후보 없음; AI_CONTEXT 변경 없음.

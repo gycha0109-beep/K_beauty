@@ -94,6 +94,16 @@ PR [#1081](https://github.com/gycha0109-beep/K_beauty/pull/1081), 후보 `231808
 
 ## 복구 및 다음 단계
 
+### 2026-10-04 승인된 native 복구 구현
+
+- selector 수정 후보 `ca5139de8ed029be69b9ff3a636e152e1b51aeb6`는 Android `37107541106` 및 iOS `37107541133`에서 전체 native 검사에 성공했다. 앞서 관측된 간헐 경합의 해결 증거와는 구분한다.
+- 사용자 승인으로 공식 Screens PR4413의 네 파일을 기존 SDK에 backport한다. 실제 설치/lock 버전은 **4.26.2**이며 선언은 `~4.26.0`이다. 과거 제안/PR의 4.26.0 설치 버전 표기를 정정한다.
+- clean `npm ci` 이후 실제 resolver/원본 fingerprint 일치, guard 적용/재실행, 원본·버전·payload·혼합·경로 이탈 거부, 파일 교체 실패 복구 및 concurrent overwrite 방지 검사 PASS. 실제 cold-launch shell을 정상/충돌/프로세스 종료 fixture로 실행해 실패 즉시 종료를 확인했다. 직접 suite 12개 PASS.
+- foundation/typecheck/workspace config, CI topology/69개 책임/overlap, Android preflight 및 signed-source 경계, entry/20A, shell syntax 검사를 수행한다. 로컬 Node는 24.14.0이며 원격 고정 Node22.23.1/Android compile·runtime 결과는 별도 확인한다.
+- Android 컴파일 소유자 세 곳의 설치 후 guard를 추가했다. 신규 workflow/의존성/lock/API/저장/권한/서명 진입 변경은 없다. Smoke에 열 번의 새 process 시작과 각각 15초 생존·app crash buffer 검증을 추가하고 기존 앱 기능 검사는 계속 실행한다.
+- 현재 원격 main은 `a8c5d666`로 전진했고 작업 브랜치는 원격과 0/0이다. main을 작업 브랜치에 임의 병합하지 않는다.
+- 새 native 후보 원격 검증 전 **IMPLEMENTED_UNVERIFIED**. Stage B/C의 순서와 완료 기준을 유지한다.
+
 필요하면 이번 단계의 일반 후속 커밋으로 세 workflow의 자동 진입과 이전 polling 계약 및 책임/verifier를 함께 복원한다. 기존 57개 모바일 보완 변경까지 되돌리거나 강제 Git 작업을 사용하지 않는다.
 
 다음 필수 작업은 현재 후보를 원격 검증 가능한 상태로 만들고 **동일 SHA CI 동등성 확인**을 수행하는 것이다. 최초 구현 턴은 저장소 규칙에 따라 로컬 검증까지 완료했으며, 후속 사용자 승인으로 검증용 커밋·push·PR 생성이 허용되었다.
