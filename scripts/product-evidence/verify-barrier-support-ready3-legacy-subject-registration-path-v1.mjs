@@ -125,9 +125,9 @@ throws(()=>buildTrustSubjectIdentityProposal(escalation,reviewed),"trust_subject
 
 for(const token of [
   "buildTrustAdminIdentityAuthorityCandidate",
-  "candidate ?? buildTrustAdminIdentityAuthorityCandidate(intake, product)",
-  "admin_identity_authority"
+  "candidate ?? buildTrustAdminIdentityAuthorityCandidate(intake, product)"
 ]) ok(registrationSource.includes(token),`registration token ${token}`);
+ok(identitySource.includes("admin_identity_authority"),"identity module carries admin authority marker");
 
 ok(registrationSource.includes('"admin_register_product_fact_subject_v1"'),"existing governed writer retained");
 ok(registrationSource.includes("runTrustSubjectRegistryPinnedReprocess"),"registry-pinned reprocess retained");
