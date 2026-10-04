@@ -1,0 +1,131 @@
+{
+  "version": "v21-admission-g4-f1-d2-production-migration-apply-v1",
+  "stage": "V2.1-ADMISSION-G4-F1-D2",
+  "decision": "V21_ADMISSION_G4_F1_D2_PRODUCTION_MIGRATION_APPLIED_PASS",
+  "captured_on": "2026-10-04",
+  "source_main_sha": "1027a07d5f26870cacd7ecdc9856c3846173a995",
+  "mode": "PRODUCTION_SCHEMA_APPLY_NO_SEMANTIC_GRANT",
+  "migration": {
+    "repository_path": "supabase/migrations/20261003160200_v21_admission_g4_f1_category_authority_v1.sql",
+    "production_history_version": "20261004122609",
+    "production_history_name": "v21_admission_g4_f1_category_authority_v1",
+    "applied": true
+  },
+  "deployed_objects": {
+    "ledger": "public.recommendation_category_authority_reviews",
+    "writer": "public.admin_register_recommendation_category_authority_review_v1(uuid,text,jsonb)",
+    "reader": "public.read_recommendation_category_authority_v1(uuid)"
+  },
+  "production_poststate": {
+    "reviewed_grant_rows": 0,
+    "fation_legacy_category": null,
+    "taxonomy_mode": "shadow/shadow_only",
+    "assignment_snapshot_digest": "eaed6cb9dd58b0f1e08bc5b35da817a72887b81ee497e0d144fcb5018b108d39",
+    "category_reader_runtime_result": {
+      "read_contract_version": "recommendation-category-authority-read-v1",
+      "status": "NO_AUTHORITY",
+      "reason": "CURRENT_CATEGORY_REVIEW_MISSING"
+    }
+  },
+  "acl_poststate": {
+    "runtime_raw_ledger_select": false,
+    "runtime_raw_taxonomy_select": false,
+    "runtime_raw_taxonomy_version_select": false,
+    "service_direct_ledger_select": false,
+    "service_direct_ledger_insert": false,
+    "service_writer_execute": true,
+    "runtime_writer_execute": false,
+    "runtime_reader_execute": true,
+    "service_reader_execute": false,
+    "postgres_reader_execute": false,
+    "reader_owner_public_schema_create": false
+  },
+  "function_poststate": {
+    "writer_owner": "postgres",
+    "writer_security_definer": true,
+    "writer_public_execute": false,
+    "writer_anon_execute": false,
+    "writer_authenticated_execute": false,
+    "reader_owner": "recommendation_admission_reader_owner",
+    "reader_security_definer": true,
+    "reader_public_execute": false,
+    "reader_anon_execute": false,
+    "reader_authenticated_execute": false
+  },
+  "rls_poststate": {
+    "ledger_rls_enabled": true,
+    "ledger_policy": "g4_f1_admission_reader_category_review_select_v1",
+    "taxonomy_policy": "data_ai29c_d5c_admission_reader_taxonomy_select_v1",
+    "taxonomy_policy_exact_product_count": 4,
+    "taxonomy_version_policy": "g4_f1_admission_reader_taxonomy_version_select_v1"
+  },
+  "owner_transfer_poststate": {
+    "postgres_set_role_after": false,
+    "temporary_postgres_grant_residue": 0,
+    "base_supabase_admin_membership_count": 1,
+    "base_membership": {
+      "admin_option": true,
+      "inherit_option": false,
+      "set_option": false
+    }
+  },
+  "advisor_delta": {
+    "security": {
+      "rls_enabled_no_policy": {
+        "before": 71,
+        "after": 70
+      },
+      "authenticated_security_definer_function_executable": {
+        "before": 2,
+        "after": 2
+      },
+      "g4_specific_new_warnings": 0
+    },
+    "performance": {
+      "unindexed_foreign_keys": {
+        "before": 104,
+        "after": 104
+      },
+      "multiple_permissive_policies": {
+        "before": 1,
+        "after": 1
+      },
+      "unused_index": {
+        "before": 30,
+        "after": 35
+      },
+      "g4_specific_mentions": [
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "accepted_reason": "new ledger is empty immediately after infrastructure deployment"
+        }
+      ]
+    }
+  },
+  "failed_apply_history": [
+    {
+      "failure": "malformed anonymous DO delimiter",
+      "residue_after_rollback": 0
+    },
+    {
+      "failure": "owner transfer lacked PostgreSQL 17 SET-role capability",
+      "residue_after_rollback": 0
+    },
+    {
+      "failure": "temporary SET-role guard used pg_has_role USAGE instead of SET",
+      "residue_after_rollback": 0
+    }
+  ],
+  "mutation_boundary": {
+    "reviewed_category_grant_created": false,
+    "products_category_mutated": false,
+    "taxonomy_assignment_mutated": false,
+    "taxonomy_global_authority_mutated": false,
+    "product_fact_mutated": false,
+    "g3_runtime_wired": false,
+    "recommendation_admission_mutated": false,
+    "recommendation_cutover_authorized": false
+  },
+  "next_gate": "V2.1-ADMISSION-G4-F1-D3_FATION_CATEGORY_AUTHORITY_REVIEW_PREFLIGHT"
+}
