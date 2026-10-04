@@ -54,6 +54,14 @@ assert.equal(
   true
 );
 assert.equal(
+  evidence.role_prestate.postgres_reader_owner_membership.inherit_option,
+  false
+);
+assert.equal(
+  evidence.role_prestate.postgres_reader_owner_membership.set_option,
+  false
+);
+assert.equal(
   evidence.role_prestate.recommendation_admission_runtime.raw_taxonomy_select,
   false
 );
@@ -73,7 +81,7 @@ assert.equal(evidence.database_compatibility.hashtextextended_available,true);
 assert.equal(evidence.d1_corrections.length,3);
 
 assert.ok(
-  migration.includes("G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_REQUIRED")
+  migration.includes("G4_F1_POSTGRES_READER_OWNER_BASE_MEMBERSHIP_DRIFT")
 );
 
 assert.ok(
@@ -88,15 +96,34 @@ assert.equal(
   "malformed anonymous DO delimiter must not be committed"
 );
 assert.ok(
-  migration.includes("G4_F1_POSTGRES_READER_OWNER_MEMBERSHIP_MUST_PERSIST")
+  migration.includes("G4_F1_POSTGRES_READER_OWNER_BASE_MEMBERSHIP_MUST_PERSIST")
 );
-assert.equal(
-  migration.includes("grant recommendation_admission_reader_owner to postgres"),
-  false
+assert.ok(
+  migration.includes("G4_F1_TEMP_SET_ROLE_GRANT_REQUIRED")
 );
-assert.equal(
-  migration.includes("revoke recommendation_admission_reader_owner from postgres"),
-  false
+assert.ok(
+  migration.includes("G4_F1_TEMP_ROLE_GRANT_RESIDUE_FORBIDDEN")
+);
+assert.ok(
+  migration.includes("G4_F1_POSTGRES_SET_ROLE_MUST_RETURN_FALSE")
+);
+assert.ok(
+  migration.includes(
+    "grant recommendation_admission_reader_owner to postgres"
+  )
+);
+assert.ok(
+  migration.includes(
+    "with inherit false, set true, admin false"
+  )
+);
+assert.ok(
+  migration.includes("granted by current_user")
+);
+assert.ok(
+  migration.includes(
+    "revoke recommendation_admission_reader_owner from postgres"
+  )
 );
 
 assert.ok(
