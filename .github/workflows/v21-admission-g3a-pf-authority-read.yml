@@ -33,6 +33,10 @@ on:
       - "scripts/verify-v21-admission-g4-f1-d3-fation-category-authority-review-preflight-v1.mjs"
       - "evidence/recommendation-governance/v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.json"
       - "scripts/verify-v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.mjs"
+      - "lib/recommendation-category-authority-reader.js"
+      - "app/api/internal/recommendation-category-authority-shadow-dual-read/route.js"
+      - "evidence/recommendation-governance/v21-admission-g4-f2-category-authority-shadow-dual-read-v1.json"
+      - "scripts/verify-v21-admission-g4-f2-category-authority-shadow-dual-read-v1.mjs"
   pull_request:
     branches:
       - main
@@ -65,6 +69,10 @@ on:
       - "scripts/verify-v21-admission-g4-f1-d3-fation-category-authority-review-preflight-v1.mjs"
       - "evidence/recommendation-governance/v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.json"
       - "scripts/verify-v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.mjs"
+      - "lib/recommendation-category-authority-reader.js"
+      - "app/api/internal/recommendation-category-authority-shadow-dual-read/route.js"
+      - "evidence/recommendation-governance/v21-admission-g4-f2-category-authority-shadow-dual-read-v1.json"
+      - "scripts/verify-v21-admission-g4-f2-category-authority-shadow-dual-read-v1.mjs"
 
 permissions:
   contents: read
@@ -129,6 +137,9 @@ jobs:
 
       - name: Verify G4-F1-D4 FATION category authority review execution
         run: node scripts/verify-v21-admission-g4-f1-d4-fation-category-authority-review-execution-v1.mjs
+
+      - name: Verify G4-F2 category authority shadow dual-read
+        run: node scripts/verify-v21-admission-g4-f2-category-authority-shadow-dual-read-v1.mjs
 
   runtime-probe:
     name: G3A deployed runtime authority probe
@@ -220,6 +231,70 @@ jobs:
           if (payload.runtimeRoleMatch !== true) process.exit(4);
           if (payload.rawPfSelectDenied !== true) process.exit(5);
           if (payload.authorityStatus !== 'AUTHORITY_RESOLVED') process.exit(6);
+          NODE
+          rm -f "$response_file"
+
+      - name: Probe deployed G4-F2 category authority shadow dual-read
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.custom }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+          G4F2_TARGET_PRODUCT_ID: da5df70c-8cdd-4eb2-93b6-ede46c2f171d
+        shell: bash
+        run: |
+          set -euo pipefail
+          response_file="$(mktemp)"
+          status="$(curl --silent --show-error --retry 18 --retry-delay 5 --retry-all-errors \
+            -o "$response_file" \
+            -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data "{\"productId\":\"$G4F2_TARGET_PRODUCT_ID\"}" \
+            "$DEPLOYMENT_URL/api/internal/recommendation-category-authority-shadow-dual-read")"
+          cat "$response_file"
+          echo
+          echo "G4F2_RUNTIME_PROBE_HTTP_STATUS=$status"
+          node - "$response_file" "$GITHUB_SHA" "$status" <<'NODE'
+          const fs = require('fs');
+          const [file, expectedSha, httpStatus] = process.argv.slice(2);
+          const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const safe = {
+            result: payload.result || null,
+            deploymentSha: payload.deploymentSha || null,
+            deploymentRef: payload.deploymentRef || null,
+            credentialAvailable: payload.credentialAvailable ?? null,
+            runtimeRoleMatch: payload.runtimeRoleMatch ?? null,
+            rawCategoryReviewSelectDenied: payload.rawCategoryReviewSelectDenied ?? null,
+            rawTaxonomySelectDenied: payload.rawTaxonomySelectDenied ?? null,
+            rawTaxonomyVersionSelectDenied: payload.rawTaxonomyVersionSelectDenied ?? null,
+            pfAuthorityStatus: payload.pfAuthorityStatus || null,
+            pfAuthorityReason: payload.pfAuthorityReason || null,
+            categoryAuthorityStatus: payload.categoryAuthorityStatus || null,
+            categoryAuthorityReason: payload.categoryAuthorityReason || null,
+            categoryAuthorityReadContractVersion: payload.categoryAuthorityReadContractVersion || null,
+            category: payload.category || null,
+            productionDecisionSource: payload.productionDecisionSource || null,
+            categoryAuthorityObservationalOnly: payload.categoryAuthorityObservationalOnly ?? null,
+            recommendationAdmissionMutated: payload.recommendationAdmissionMutated ?? null,
+            productionCutoverAuthorized: payload.productionCutoverAuthorized ?? null,
+            secretValueExposed: payload.secretValueExposed ?? null,
+          };
+          console.log(`G4F2_RUNTIME_EVIDENCE=${JSON.stringify(safe)}`);
+          if (httpStatus !== '200') process.exit(1);
+          if (payload.deploymentSha !== expectedSha || payload.deploymentRef !== 'main') process.exit(2);
+          if (payload.result !== 'PASS') process.exit(3);
+          if (payload.credentialAvailable !== true || payload.runtimeRoleMatch !== true) process.exit(4);
+          if (payload.rawCategoryReviewSelectDenied !== true) process.exit(5);
+          if (payload.rawTaxonomySelectDenied !== true || payload.rawTaxonomyVersionSelectDenied !== true) process.exit(6);
+          if (payload.categoryAuthorityStatus !== 'CATEGORY_AUTHORITY_RESOLVED') process.exit(7);
+          if (payload.categoryAuthorityReadContractVersion !== 'recommendation-category-authority-read-v1') process.exit(8);
+          if (payload.category !== 'treatment') process.exit(9);
+          if (payload.productionDecisionSource !== 'G3_PF_AUTHORITY_ONLY') process.exit(10);
+          if (payload.categoryAuthorityObservationalOnly !== true) process.exit(11);
+          if (payload.recommendationAdmissionMutated !== false || payload.productionCutoverAuthorized !== false) process.exit(12);
+          if (payload.secretValueExposed !== false) process.exit(13);
           NODE
           rm -f "$response_file"
 
