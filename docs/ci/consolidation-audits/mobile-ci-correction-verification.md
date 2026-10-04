@@ -225,3 +225,11 @@ Architecture Check:
 - Docs updated: yes — 책임 map과 본 판정/검증 계약 갱신.
 - Ghost-code risk: passed — 단일 helper를 두 계획·두 최종 guard와 직접 suite가 호출한다.
 - Notes: 신규 내부 CI plan/result 계약과 shadow 관찰을 추가했다. 앱 API/DB/저장/인증/SDK/제품 category 변경 및 두 번째 normalization owner는 없다. 무영향 후보와 실제 runtime PASS를 구분하며 기존 manual runtime 증거 기준은 유지한다.
+
+### C 원격 관찰 완료 및 설정 의존성 판정 보강
+
+후보95a732bf의 Android37180216711 여섯 job과 iOS37180216644 세 job은 모두 SUCCESS다. 계획/최종 guard와 기존 모든 native 검사가 함께 통과했다. Linux Node22의 실제 SDK overlay fixture도37.4초에 PASS했고 직접 suite21개가 모두 통과했다. 이전 절의 원격 미검증은 구현 시점 기록이다.
+
+마지막 직접 검토에서 source import 밖의 앱 entry/Expo plugin 선언도 resolver 시작점이어야 함을 확인했다. 이 설정 패키지를 같은 lock 그래프에 포함하며, 동적 app/Babel/Metro 설정·사용자 TypeScript alias/JSX resolver·package mapping은 JSON만으로 무영향을 추정하지 않고 전체 검사로 보낸다. 이에 따라 직접 caller/config 범위만 보강했다. 신규 앱 동작이나 dependency는 없다.
+
+보강 후 로컬 Windows Node24에서 직접 suite23개와 실제 SDK fixture1개, 총24개 PASS(실제 SDK102.1초). 현재 작업 브랜치 package/lock/SDK/앱 source는 그대로다. 최종 후보의 Linux/native 검증은 PR1081의 같은-head 검사와 실행 증거를 기준으로 한다. 검사 생략 활성화 HOLD 및 release의 실제 기기·provider·서명 미검증 경계는 유지한다.

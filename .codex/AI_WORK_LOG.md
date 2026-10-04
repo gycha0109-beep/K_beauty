@@ -3096,3 +3096,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 읽기 전용 진단 근거: source79/import43/lock726 중 모바일609개, 미선언 auth-js/file-system 및 optional peer를 확인. 따라서 단순 모바일 package 목록/filename 판정은 사용하지 않음. 실제 SDK snapshot과 unknown field/순서 보존을 추가.
 - 최초 외부 prototype의 import Map entry 반환 형식에서 TypeError(Array path)가 나왔으며 source-request 직접 검사로 수정 후21개 PASS. Windows Node24의 임시 web-version overlay/SDK 비교99.5초 PASS; 실제 repo package/lock 변경 없음. 직접20개/static topology/69개 책임/overlap/YAML/needs PASS. 원격Node22 및 same-head plan/guard/native 검증 기준은 PR1081 candidate checks/외부 ci-audit 증거이며 구현 시점에는 미검증.
 - skip을 켜려면 target에 해당 source가 있는 실제 root-only PR 관찰이 필요. 현재 PR에는 앱 변경이 있고 main merge는 승인 제외이므로 필터 확대/가짜 base/수동 skip 우회 없이 HOLD한다. AI_CONTEXT 변경/규칙 승격 후보 없음. 구조 계약은 책임 map과 verification report에 갱신.
+
+### 2026-10-04 / C 원격 관찰 및 설정 의존성 보강
+
+- 후보95a732bf / Android37180216711 여섯 job 및 iOS37180216644 세 job SUCCESS. 기존 native 검사와 plan/final guard 모두 통과. Linux Node22 실제 SDK fixture37.4초/직접21개 PASS. C shadow 관찰은 이 기준 VERIFIED, 검사 생략 활성화 HOLD.
+- 직접 마지막 검토에서 import 외 앱 entry/Expo plugin이 resolver 시작점에서 빠질 수 있음을 확인. 변경 범위를 같은 helper/직접 test와 기록으로 제한해 설정 패키지를 lock 그래프에 포함하고, 동적 app/Babel/Metro·custom TypeScript resolver·package mapping은 전체 검사로 처리. 새로운 앱 동작/SDK/lock/계약/권한 변경 없음.
+- 보강 후 Windows Node24 직접23개와 실제 SDK fixture1개, 총24개 PASS/SDK102.1초. 최종 후보 원격 검증 전 해당 보강 IMPLEMENTED. 결과 source of truth는 PR1081 같은-head 검사 및 외부 ci-audit 증거. 기존 native 검사를 생략하지 않음.
+- main/production/signing 실행 및 DB/Auth/RLS/Storage/Provider/Payment/Secret 영향 N. AI_CONTEXT 변경/규칙 승격 후보 없음. 필수 보강 후 한 번의 직접 재검토에서 추가 Critical/High 발견 없음.

@@ -17,6 +17,30 @@ const json = text => { try { return JSON.parse(text); } catch { unavailable('inv
 const readAt = (sha, file) => git(['show', `${sha}:${file}`]).toString();
 const packageName = spec => spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0];
 const withoutDependencies = record => Object.fromEntries(Object.entries(record).filter(([key]) => !dependencyFields.includes(key)));
+const dynamicConfig = /^(?:apps\/mobile\/)?(?:app\.config\.[^/]+|babel\.config\.[^/]+|metro\.config\.[^/]+|react-native\.config\.[^/]+|\.babelrc(?:\.[^/]+)?)$/;
+
+export function configurationRequests(files, app, tsconfig, rootPackage, mobilePackage) {
+  if (files.some(file => dynamicConfig.test(file))) unavailable('unsupported-dynamic-config');
+  if (tsconfig.extends !== 'expo/tsconfig.base' || tsconfig.references
+    || Object.keys(tsconfig.compilerOptions || {}).some(key => !['strict', 'noUncheckedIndexedAccess'].includes(key))) unavailable('unsupported-typescript-resolution');
+  if ([rootPackage, mobilePackage].some(pkg => ['babel', 'metro', 'browser', 'imports', 'react-native'].some(key => Object.hasOwn(pkg, key)))) unavailable('unsupported-package-resolution');
+  if (!app.expo || !Array.isArray(app.expo.plugins)) unavailable('unsupported-app-config');
+  const requests = new Map();
+  const add = spec => {
+    if (typeof spec !== 'string') unavailable('unsupported-config-module');
+    if (spec.startsWith('.')) {
+      const target = path.posix.normalize(path.posix.join('apps/mobile', spec));
+      if (!sourceRoots.some(prefix => target.startsWith(prefix + '/'))) unavailable('external-config-module');
+      return;
+    }
+    if (!/^(@[a-z\d._-]+\/[a-z\d._-]+|[a-z\d._-]+)(\/.*)?$/i.test(spec)) unavailable('unsupported-config-module');
+    const request = ['apps/mobile', packageName(spec)];
+    requests.set(JSON.stringify(request), request);
+  };
+  add(mobilePackage.main);
+  for (const plugin of app.expo.plugins) add(Array.isArray(plugin) ? plugin[0] : plugin);
+  return [...requests.values()].sort(([a, b], [c, d]) => a.localeCompare(c) || b.localeCompare(d));
+}
 
 export function rootDependencyDiff(raw) {
   const fields = raw.split('\0');
@@ -181,6 +205,7 @@ function nativeEvidence(root, env) {
 function snapshot(sha, target) {
   const all = git(['ls-tree', '-r', '--name-only', '-z', sha]).toString().split('\0').filter(Boolean);
   if (all.some(file => /(^|\/)\.npmrc$/.test(file))) unavailable('project-npm-config');
+  if (all.some(file => dynamicConfig.test(file))) unavailable('unsupported-dynamic-config');
   const files = all.filter(file => sourceRoots.some(root => file.startsWith(root + '/'))
     || ['package.json', 'package-lock.json'].includes(file) || /^(apps|packages|tools)\/[^/]+\/package\.json$/.test(file));
   const modes = new Map(git(['ls-tree', '-r', '-z', sha]).toString().split('\0').filter(Boolean).map(record => {
@@ -245,7 +270,11 @@ export function isolatedEvidence(baseSha, headSha, prepareSnapshots) {
     const env = childEnv(config);
     for (const root of [base, head]) child(process.execPath, [npmCli(), 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], root, env);
     const evidence = [base, head].map((root, index) => {
-      const imports = importRequests(root, files[index]);
+      const configImports = configurationRequests(files[index],
+        json(readFileSync(path.join(root, 'apps/mobile/app.json'), 'utf8')),
+        json(readFileSync(path.join(root, 'apps/mobile/tsconfig.json'), 'utf8')),
+        packages[index], json(readFileSync(path.join(root, 'apps/mobile/package.json'), 'utf8')));
+      const imports = [...importRequests(root, files[index]), ...configImports];
       return { global: global[index], imports, closure: lockClosure(locks[index], imports) };
     });
     const graph = compareEvidence({ ...evidence[0], native: {} }, { ...evidence[1], native: {} });

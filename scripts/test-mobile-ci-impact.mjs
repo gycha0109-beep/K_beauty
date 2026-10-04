@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { compareEvidence, isolatedEvidence, lockClosure, normalizeSnapshotPaths, rootDependencyDiff, scanSourceRequests, shadowPlan, verifySelectedJobs } from './resolve-mobile-ci-impact.mjs';
+import { compareEvidence, configurationRequests, isolatedEvidence, lockClosure, normalizeSnapshotPaths, rootDependencyDiff, scanSourceRequests, shadowPlan, verifySelectedJobs } from './resolve-mobile-ci-impact.mjs';
 const ts = createRequire(path.join(process.cwd(), 'package.json'))('typescript');
 const candidate = 'a'.repeat(40), base = 'b'.repeat(40);
 const source = [['apps/mobile/app/index.tsx', 'import type { Session } from "@supabase/auth-js"; export { a } from "expo-file-system/legacy"; import React from "react";']];
@@ -109,6 +109,23 @@ test('skip activation is absent regardless of cache/protection/evidence conditio
 test('unsupported lock and unresolved nonoptional imports cannot prove no impact',()=>{
   assert.throws(()=>lockClosure({...lock,lockfileVersion:2},imports));
   assert.throws(()=>lockClosure(lock,[['apps/mobile/app','missing']]));
+});
+test('entry and undeclared Expo plugin packages are explicit resolver roots',()=>{
+  const requests=configurationRequests([], {expo:{plugins:[['extra-plugin',{}]]}}, {extends:'expo/tsconfig.base'}, {}, {main:'expo-router/entry'});
+  assert.deepEqual(requests,[['apps/mobile','expo-router'],['apps/mobile','extra-plugin']]);
+  const before=clone(lock); before.packages['node_modules/expo-router']={version:'57'};
+  before.packages['node_modules/extra-plugin']={version:'1',integrity:'plugin-pinned'};
+  const after=clone(before); after.packages['node_modules/extra-plugin'].integrity='changed';
+  assert.notDeepEqual(lockClosure(before,requests),lockClosure(after,requests));
+});
+test('dynamic Babel/Metro/app config cannot be classified by JSON alone',()=>{
+  for(const file of ['babel.config.js','apps/mobile/metro.config.js','apps/mobile/app.config.ts','react-native.config.js','.babelrc'])
+    assert.throws(()=>configurationRequests([file],{expo:{plugins:[]}},{extends:'expo/tsconfig.base'},{},{main:'expo-router/entry'}));
+});
+test('custom aliases, JSX resolver and package mappings require full native',()=>{
+  for(const option of ['paths','jsxImportSource','baseUrl','plugins'])
+    assert.throws(()=>configurationRequests([],{expo:{plugins:[]}},{extends:'expo/tsconfig.base',compilerOptions:{[option]:{}}},{},{main:'expo-router/entry'}));
+  assert.throws(()=>configurationRequests([],{expo:{plugins:[]}},{extends:'expo/tsconfig.base'},{browser:{}},{main:'expo-router/entry'}));
 });
 
 // The expensive SDK fixture runs for classifier changes, not every app change.
