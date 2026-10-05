@@ -1,0 +1,130 @@
+{
+  "version": "data-ai29c-d5e-d-r1-cosrx-subject-authority-recovery-preflight-v1",
+  "stage": "DATA-AI29C-D5E-D-R1",
+  "track": "taxonomy-ai",
+  "decision": "D5E_D_R1_COSRX_SUBJECT_AUTHORITY_RECOVERY_PREFLIGHT_HOLD_EXISTING_PATH_SEMANTIC_KEY_CONFLICT",
+  "observedOn": "2026-10-05",
+  "sourceMainSha": "6fbd9663c1d17efae7c44e5e32baeaa8b3454e6c",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "mode": "READ_ONLY_RECOVERY_PREFLIGHT_ZERO_WRITE",
+  "upstream": {
+    "stage": "DATA-AI29C-D5E-D",
+    "decision": "D5E_D_COSRX_ADMISSION_HOLD_SUBJECT_IDENTITY_AUTHORITY_LINEAGE_MISMATCH"
+  },
+  "target": {
+    "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+    "subjectSemanticKey": "db6a09f788a6b6008881525d1b409d3c16d8b3132006c8a0f174607516133501",
+    "variantKey": null,
+    "formulationRevisionKey": "official-snapshot:c0ea336524925d3d493d73c43e49207e",
+    "formulationLabel": "Initial official product snapshot from GPT catalog intake",
+    "marketApplicability": "KR",
+    "regionApplicability": null,
+    "validFrom": null,
+    "validTo": null,
+    "identityStatus": "resolved",
+    "currentState": "current",
+    "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+    "currentIdentityResolutionVersion": "gpt-catalog-machine-subject-v1",
+    "requiredAdmissionIdentityResolutionVersion": "trust-phase5-admin-subject-review-v1"
+  },
+  "currentCatalogLineage": {
+    "intakeId": "f78e9366-6709-4c3e-8c36-4c643c805b56",
+    "sourceCandidateId": "ce1653d4-5ea2-47a0-bf79-d39f9fb72ae6",
+    "intakeIdentityState": "EXACT_SUBJECT_FOUND",
+    "intakeTrustState": "RESEARCH_PENDING",
+    "intakeIdentityResolutionVersion": "product-fact-subject-resolution-v1",
+    "candidateReviewStatus": "promoted",
+    "candidateIdentityResolutionState": "resolved",
+    "candidateIdentityResolutionVersion": "crawler-identity-resolution-v1",
+    "candidateProductFactWriteAllowed": false,
+    "market": "KR",
+    "taskCount": 3,
+    "taskStates": [
+      "EVIDENCE_CANDIDATE",
+      "EVIDENCE_CANDIDATE",
+      "EVIDENCE_CANDIDATE"
+    ]
+  },
+  "reviewedIdentityForExistingSubject": {
+    "variantKey": null,
+    "variantKeyReviewedAsNull": true,
+    "formulationRevisionKey": "official-snapshot:c0ea336524925d3d493d73c43e49207e",
+    "formulationLabel": "Initial official product snapshot from GPT catalog intake",
+    "marketApplicability": "KR",
+    "regionApplicability": null,
+    "validFrom": null,
+    "validTo": null
+  },
+  "proposalProbe": {
+    "proposalVersion": "trust-phase5-subject-identity-proposal-v2",
+    "proposedSubjectSemanticKey": "db6a09f788a6b6008881525d1b409d3c16d8b3132006c8a0f174607516133501",
+    "semanticKeyMatchesExisting": true,
+    "proposedIdentityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+    "payloadDifferenceKeys": [
+      "identity_resolution_version"
+    ],
+    "semanticIdentityChanged": false,
+    "formulationIdentityChanged": false,
+    "marketChanged": false
+  },
+  "existingRegistrationPath": {
+    "preflightFunction": "runTrustSubjectRegistrationPreflight",
+    "writerRpc": "admin_register_product_fact_subject_v1",
+    "semanticKeyReplayIdempotentOnlyWhenFullPayloadMatches": true,
+    "differingIdentityResolutionVersionCausesSemanticKeyConflict": true,
+    "expectedFailureCode": "trust_subject_registration_semantic_key_conflict",
+    "existingPathCanUpgradeAuthorityInPlace": false
+  },
+  "databaseGuards": {
+    "subjectSemanticKeyUnique": true,
+    "currentApplicabilityUnique": true,
+    "serviceRoleDirectSubjectWrites": 0,
+    "currentApplicabilityKey": [
+      "product_id",
+      "variant_key",
+      "market_applicability",
+      "region_applicability"
+    ]
+  },
+  "dependentAuthorityRows": {
+    "productFactCurrent": 3,
+    "productFactInstances": 3,
+    "researchTasks": 3,
+    "sourceBindings": 2,
+    "evidenceRecords": 3,
+    "currentSemanticReviews": 12
+  },
+  "recoveryAssessment": {
+    "directSubjectUpdateAllowed": false,
+    "duplicateSameSemanticSubjectAllowed": false,
+    "secondSameApplicabilityCurrentSubjectAllowed": false,
+    "existingRegistrationPathReusableForAuthorityUpgrade": false,
+    "rebindExistingFactsToNewSubjectAuthorized": false,
+    "admissionPolicyBypassAuthorized": false,
+    "safeRecoveryRequiresNewGovernedAuthorityUpgradeContract": true
+  },
+  "productionBoundary": {
+    "subjectWrites": 0,
+    "productFactWrites": 0,
+    "evidenceWrites": 0,
+    "semanticReviewWrites": 0,
+    "recommendationAdmissionChanged": false,
+    "productionRankingChanged": false,
+    "d5cD5dAllowlistChanged": false,
+    "publicActivation": false,
+    "uvaActivated": false,
+    "waterResistanceActivated": false
+  },
+  "nextGate": "DATA-AI29C-D5E-D-R2_COSRX_SUBJECT_IDENTITY_AUTHORITY_UPGRADE_CONTRACT",
+  "nextGateMode": "DESIGN_ONLY",
+  "nextGateRequirements": [
+    "preserve existing subject_id and semantic/formulation identity",
+    "do not create a duplicate Subject for the same semantic key or current applicability",
+    "define an explicit admin-reviewed authority-upgrade contract with audit trail and stale-prestate guard",
+    "allow only identity authority provenance change; prohibit product/formulation/market/validity mutation",
+    "prove all existing Product Fact, Evidence, Research Task and Semantic Review bindings remain unchanged",
+    "do not relax sunscreen admission policy until the new governed authority proof is implemented and verified",
+    "no mixed shadow until actual admission grant succeeds"
+  ]
+}
