@@ -1,0 +1,270 @@
+{
+  "version": "barrier-support-p0-ready3-official-source-gap-recovery-v1",
+  "stage": "V2.1-8H-R12A",
+  "source_main_sha": "2a6c604c75d3ed033db949e1cc8d279ff70c6bf0",
+  "captured_on": "2026-10-05",
+  "parent_research": {
+    "path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-official-evidence-research-v1.json",
+    "terminal": "BARRIER_SUPPORT_P0_READY3_OFFICIAL_EVIDENCE_RESEARCH_DIRECT1_INSUFFICIENT5",
+    "direct_evidence_task_id": "39449932-6c41-4762-bf39-e6848c9ad09a"
+  },
+  "registry": {
+    "version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575"
+  },
+  "production_readback": {
+    "global_counts": {
+      "product_fact_subjects": 50,
+      "product_fact_current": 104,
+      "fact_instances": 105,
+      "confirmations": 105
+    },
+    "concurrent_global_delta_note": "Global Current/Instance/Confirmation totals increased in an unrelated Product Fact track after R11B. All three READY3 Subjects remain at zero Fact Instance and zero Current Fact.",
+    "ready3_subject_fact_instances": 0,
+    "ready3_subject_current_facts": 0,
+    "ready3_tasks_research_pending": 6,
+    "ready3_task_attempt_count_nonzero": 0
+  },
+  "authority_boundary": {
+    "evidence_db_writes": 0,
+    "fact_instance_writes": 0,
+    "confirmation_writes": 0,
+    "recommendation_writes": 0,
+    "public_activation": false,
+    "missing_implies_false": false,
+    "line_or_sibling_claim_transfer": false,
+    "cross_market_evidence_transfer": false,
+    "category_or_form_inference_to_usage_role": false
+  },
+  "unresolved_task_ids": [
+    "02b9ba0a-207c-4d23-b522-853bd45ff815",
+    "e08b1e23-771d-4c0b-8263-8ca02fa687f6",
+    "0d0cee84-f218-40bb-9dd3-4b2b00078259",
+    "7cf58ffe-88c1-4f11-9f7a-905513cc6917",
+    "6955dada-e845-4a53-a44a-0cdc53dd9ad8"
+  ],
+  "source_captures": [
+    {
+      "source_id": "theharnay_exact_product",
+      "source_locator": "https://theharnay.co.kr/product/%EB%8D%94%ED%95%98%EB%A5%B4%EB%82%98%EC%9D%B4-%EC%8B%9C%EC%B9%B4%EC%9D%B4%EB%93%9C-%EB%B0%A4-100ml/19/",
+      "publisher": "THE HARNAY",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "observations": [
+        "Exact 100ml balm identity remains current.",
+        "Reviewable official product text exposes no product-specific skin-barrier support claim.",
+        "Reviewable official product text exposes no explicit application-area instruction."
+      ],
+      "canonical_capture_digest": "fd6a6e1844c0e1084dae0cb326ce8597dd672d198e00d7b84b42ca7123a9a886"
+    },
+    {
+      "source_id": "theharnay_official_qna",
+      "source_locator": "https://theharnay.co.kr/article/q-a/6/3025/",
+      "publisher": "THE HARNAY",
+      "authority_kind": "official_kr_brand_staff_qna",
+      "market": "KR",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "observations": [
+        "Brand staff states the balm is a creamier, more moisturizing texture than the cream.",
+        "Brand staff recommends serum > cream > balm if all three are used, or serum followed by either cream or balm depending on skin type.",
+        "The answer does not declare a face/local/body application area and therefore does not map to a Registry v1 primary_use_role enum."
+      ],
+      "canonical_capture_digest": "7f1b8e731bf0f50ad757ac58e67fa2eecb928e27942f92bcbf527f1ff8327213"
+    },
+    {
+      "source_id": "theharnay_home_line_context",
+      "source_locator": "https://theharnay.co.kr/",
+      "publisher": "THE HARNAY",
+      "authority_kind": "official_kr_brand_home_discovery_only",
+      "market": "KR",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "observations": [
+        "Current homepage advertises skin-barrier strengthening for Cicaide cream and soothing/moisturizing synergy for the Cicaide line.",
+        "The exact 100ml balm is listed separately.",
+        "Cream-specific and line-level claims are not transferred to the balm Subject."
+      ],
+      "canonical_capture_digest": "a379369ffd910733bb63100f4936b4691bd7ee8f18a5095eba46dade358c0e30"
+    },
+    {
+      "source_id": "etude_exact_product",
+      "source_locator": "https://www.amoremall.com/kr/ko/product/detail?onlineProdCode=110090000335&onlineProdSn=60162",
+      "publisher": "AMOREPACIFIC / ETUDE",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+      "observations": [
+        "Exact 50ml product identity is current.",
+        "Reviewable machine-readable official text does not expose an explicit product-specific skin-barrier support claim."
+      ],
+      "canonical_capture_digest": "33f3af6034641a8d5025fe333dcc2c14c810c33ad3b925fb394c3e4b3a9fc3ce"
+    },
+    {
+      "source_id": "etude_exact_unit_bundle",
+      "source_locator": "https://www.amoremall.com/kr/ko/product/detail?onlineProdCode=110090000337&onlineProdSn=60201",
+      "publisher": "AMOREPACIFIC / ETUDE",
+      "authority_kind": "official_kr_product_bundle_page",
+      "market": "KR",
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+      "observations": [
+        "Bundle is two units of the exact 50ml product.",
+        "Official usage instruction supports the already-recovered multi_area role.",
+        "No reviewable machine-readable explicit barrier-support claim is exposed."
+      ],
+      "canonical_capture_digest": "bc8b13e844f42f35eed75210e8faee460c676be77a6cc25bc6c9c0517bf3e0de"
+    },
+    {
+      "source_id": "manyo_exact_product",
+      "source_locator": "https://www.manyo.co.kr/goods/goods_view.php?goodsNo=1905",
+      "publisher": "ma:nyo",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "observations": [
+        "Exact 80ml product identity is current.",
+        "Official KR text describes concentrated soothing/moisturizing care.",
+        "Official KR usage says to apply evenly along skin texture and absorb.",
+        "No explicit skin-barrier support claim or face/local/body application area is declared."
+      ],
+      "canonical_capture_digest": "83a00d22a07020030c4d25f3c6552518c5d3b3e82d1512dd76c9467da0f83a43"
+    },
+    {
+      "source_id": "manyo_panthetoin_category",
+      "source_locator": "https://manyo.co.kr/goods/goods_list.php?cateCd=003",
+      "publisher": "ma:nyo",
+      "authority_kind": "official_kr_category_discovery_only",
+      "market": "KR",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "observations": [
+        "Official ingredient category exposes Panthetoin as a product family.",
+        "Category and sibling-product statements do not provide an exact-product barrier claim or application-area instruction for the 80ml balm."
+      ],
+      "canonical_capture_digest": "86a742d4ddd3fb5e43c151cbc60754ca22634fcb24509d70ab7ced51d6cc7ef7"
+    },
+    {
+      "source_id": "manyo_jp_exact_product_discovery",
+      "source_locator": "https://manyo-japanese.com/Product/Detail/view/pid/382/cid/101",
+      "publisher": "ma:nyo Japan official",
+      "authority_kind": "official_jp_product_page_discovery_only",
+      "market": "JP",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "observations": [
+        "JP official page exposes richer dry-area usage context for an 80ml Panthetoin Enriched Balm.",
+        "Cross-market evidence is not transferred to the KR Subject without separate market/formulation authority."
+      ],
+      "canonical_capture_digest": "9cad5ff4b052924898662a6ae56c9e5f7e42ecfd3e14a3a383ecfa66fe4d6f8e"
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "02b9ba0a-207c-4d23-b522-853bd45ff815",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "fact_key": "barrier_support_claim",
+      "prior_outcome": "EVIDENCE_INSUFFICIENT",
+      "recovery_outcome": "NOT_RECOVERED",
+      "final_research_state": "EVIDENCE_INSUFFICIENT",
+      "source_ids": [
+        "theharnay_exact_product",
+        "theharnay_home_line_context"
+      ],
+      "reason": "Current official barrier language remains cream-specific or line-level, not exact-balm product-specific evidence."
+    },
+    {
+      "task_id": "e08b1e23-771d-4c0b-8263-8ca02fa687f6",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "fact_key": "primary_use_role",
+      "prior_outcome": "EVIDENCE_INSUFFICIENT",
+      "recovery_outcome": "NOT_RECOVERED",
+      "final_research_state": "EVIDENCE_INSUFFICIENT",
+      "source_ids": [
+        "theharnay_exact_product",
+        "theharnay_official_qna"
+      ],
+      "reason": "Official staff explains layer order and texture choice but never declares face/local/body application area."
+    },
+    {
+      "task_id": "0d0cee84-f218-40bb-9dd3-4b2b00078259",
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+      "fact_key": "barrier_support_claim",
+      "prior_outcome": "EVIDENCE_INSUFFICIENT",
+      "recovery_outcome": "NOT_RECOVERED",
+      "final_research_state": "EVIDENCE_INSUFFICIENT",
+      "source_ids": [
+        "etude_exact_product",
+        "etude_exact_unit_bundle"
+      ],
+      "rejected_discovery": [
+        "Third-party catalog/review pages mention barrier protection or strengthening, but they are not first-party authority and are not promoted."
+      ],
+      "reason": "No explicit product-specific barrier-support statement was recovered from reviewable official KR text."
+    },
+    {
+      "task_id": "7cf58ffe-88c1-4f11-9f7a-905513cc6917",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "fact_key": "barrier_support_claim",
+      "prior_outcome": "EVIDENCE_INSUFFICIENT",
+      "recovery_outcome": "NOT_RECOVERED",
+      "final_research_state": "EVIDENCE_INSUFFICIENT",
+      "source_ids": [
+        "manyo_exact_product",
+        "manyo_panthetoin_category"
+      ],
+      "reason": "Soothing/moisturizing and Panthetoin family context do not establish an explicit exact-product barrier-support claim."
+    },
+    {
+      "task_id": "6955dada-e845-4a53-a44a-0cdc53dd9ad8",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "fact_key": "primary_use_role",
+      "prior_outcome": "EVIDENCE_INSUFFICIENT",
+      "recovery_outcome": "NOT_RECOVERED",
+      "final_research_state": "EVIDENCE_INSUFFICIENT",
+      "source_ids": [
+        "manyo_exact_product"
+      ],
+      "discovery_only_source_ids": [
+        "manyo_jp_exact_product_discovery"
+      ],
+      "reason": "KR official usage gives application method but not application area; JP official area guidance is not transferred across market scope."
+    }
+  ],
+  "summary": {
+    "source_gap_tasks": 5,
+    "recovered": 0,
+    "unresolved": 5,
+    "prior_direct_evidence_preserved": 1,
+    "new_direct_evidence": 0,
+    "evidence_db_writes": 0,
+    "fact_instance_writes": 0,
+    "confirmation_writes": 0,
+    "recommendation_writes": 0
+  },
+  "terminal": "BARRIER_SUPPORT_P0_READY3_OFFICIAL_SOURCE_GAP_RECOVERY_0_OF_5",
+  "next_gate": {
+    "stage": "V2.1-8H-R12B_READY3_DIRECT_EVIDENCE_INGEST_PREFLIGHT",
+    "status": "NOT_EXECUTED",
+    "candidate_task_ids": [
+      "39449932-6c41-4762-bf39-e6848c9ad09a"
+    ],
+    "unresolved_task_ids": [
+      "02b9ba0a-207c-4d23-b522-853bd45ff815",
+      "e08b1e23-771d-4c0b-8263-8ca02fa687f6",
+      "0d0cee84-f218-40bb-9dd3-4b2b00078259",
+      "7cf58ffe-88c1-4f11-9f7a-905513cc6917",
+      "6955dada-e845-4a53-a44a-0cdc53dd9ad8"
+    ],
+    "evidence_ingest_authorized": false
+  }
+}
