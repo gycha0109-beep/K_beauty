@@ -146,6 +146,9 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-b-cosrx-product-fact-controlled-confirmation-v1.json"
       - "docs/evidence/data-ai29c-d5e-b-cosrx-product-fact-controlled-confirmation-v1.md"
       - "scripts/verify-data-ai29c-d5e-b-cosrx-product-fact-controlled-confirmation.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-c-cosrx-sunscreen-semantic-bundle-v1.json"
+      - "docs/evidence/data-ai29c-d5e-c-cosrx-sunscreen-semantic-bundle-v1.md"
+      - "scripts/verify-data-ai29c-d5e-c-cosrx-sunscreen-semantic-bundle.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -348,6 +351,9 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-b-cosrx-product-fact-controlled-confirmation-v1.json"
       - "docs/evidence/data-ai29c-d5e-b-cosrx-product-fact-controlled-confirmation-v1.md"
       - "scripts/verify-data-ai29c-d5e-b-cosrx-product-fact-controlled-confirmation.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-c-cosrx-sunscreen-semantic-bundle-v1.json"
+      - "docs/evidence/data-ai29c-d5e-c-cosrx-sunscreen-semantic-bundle-v1.md"
+      - "scripts/verify-data-ai29c-d5e-c-cosrx-sunscreen-semantic-bundle.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -599,6 +605,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D5E-B COSRX Product Fact controlled confirmation
         run: node scripts/verify-data-ai29c-d5e-b-cosrx-product-fact-controlled-confirmation.mjs
+
+      - name: Verify DATA-AI29C-D5E-C COSRX sunscreen semantic bundle
+        run: node scripts/verify-data-ai29c-d5e-c-cosrx-sunscreen-semantic-bundle.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs

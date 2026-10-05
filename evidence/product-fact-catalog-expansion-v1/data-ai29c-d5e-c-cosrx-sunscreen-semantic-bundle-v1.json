@@ -1,0 +1,241 @@
+{
+  "version": "data-ai29c-d5e-c-cosrx-sunscreen-semantic-bundle-v1",
+  "stage": "DATA-AI29C-D5E-C",
+  "track": "taxonomy-ai",
+  "decision": "D5E_C_COSRX_SEMANTIC_REVIEW_PASS_D1B_ENVELOPE_READY_NEUTRAL_COMPARABLE",
+  "executedOn": "2026-10-05",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "sourceMainSha": "9e31c64ccd18727604bbf0944ebdaf5dd7205ec9",
+  "target": {
+    "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+    "name": "Ultra-Light Invisible Sunscreen SPF50 PA++++",
+    "market": "KR"
+  },
+  "sourceAuthority": {
+    "canonicalOfficialUrl": "https://www.cosrx.com/collections/sun-protection/products/ultra-light-invisible-sunscreen-spf50",
+    "observedClaims": [
+      "sheer, transparent formula",
+      "refreshing, hydrated finish",
+      "Invisible on all skin tones",
+      "Non-White cast",
+      "Non-Greasy",
+      "SPF Hydration boost",
+      "Sensitive skin",
+      "Niacinamide controls sebum"
+    ],
+    "governedUvFilterFactInstanceId": "b4498a13-9090-4053-a416-281cc1e06bdc"
+  },
+  "semanticBundle": {
+    "contractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+    "reviewPolicyVersion": "sunscreen-recommendation-semantic-review-policy-v1",
+    "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+    "subjectCount": 1,
+    "reviewedAt": "2026-10-05T17:21:04.273705+09:00",
+    "fields": {
+      "category_slot": {
+        "state": "established",
+        "value": "sunscreen",
+        "confidence": "high",
+        "reviewId": "fb00ce24-269c-4a8e-ba75-712c06c8ac66",
+        "evidenceDigest": "c9e1692b647027553619d6e4d05bbdf4c9c6a4bf826a0124ab670024d4584c82"
+      },
+      "skin_types": {
+        "state": "established",
+        "value": [
+          "sensitive"
+        ],
+        "confidence": "high",
+        "reviewId": "523ed07c-8f66-44fe-9c1e-f48154b2a22e",
+        "evidenceDigest": "572d2b1285231f3c7b371ec77b118a73726b4fe037f201837c0ebbe9022ab790"
+      },
+      "concerns": {
+        "state": "established",
+        "value": [
+          "dehydration",
+          "oiliness"
+        ],
+        "confidence": "medium",
+        "reviewId": "1a5aa8fb-c4e9-41e2-8a5d-2a94b26e6234",
+        "evidenceDigest": "9d446237103048fdd38ef7a63f7f993efd050408b568dce3a6676835bbd63048"
+      },
+      "texture": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown",
+        "reviewId": "b2046e1f-7a3f-47e7-832c-3c66af66f2a7",
+        "evidenceDigest": "c69014b19e9c6766c16e124f1f779e10fe839910758de474982c1afeab37ec8d"
+      },
+      "finish": {
+        "state": "established",
+        "value": "fresh",
+        "confidence": "medium",
+        "reviewId": "df2bd836-9b88-4433-842e-3d45c890c2b1",
+        "evidenceDigest": "b0142feff6b60f4a7379621ca4fc8369c36e7964da4036e15321426419539b1c"
+      },
+      "uv_filter_type": {
+        "state": "established",
+        "value": "organic",
+        "confidence": "high",
+        "reviewId": "a6ce2fd8-37df-4c20-81a1-2a82c4824bb2",
+        "evidenceDigest": "a799cfc45e45d45e741d37dd9de30c6f8017fc7f3192b767dcede527aa91a8f0"
+      },
+      "sensitivity_safe": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown",
+        "reviewId": "a3dd4337-24b1-41de-88e7-42410c9fec25",
+        "evidenceDigest": "1ff92b456a8b520c1cf2c27aefe5c6d432a98bdb70fe447e458df0d6d4dc683f"
+      },
+      "irritation_risk": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown",
+        "reviewId": "1fac1793-70d9-464d-8004-1c73c73e18bf",
+        "evidenceDigest": "6b86625f6344f31d718ce5904b21b5f1226319039ea7e95b3b93a48d98711d6f"
+      },
+      "tone_up": {
+        "state": "established",
+        "value": false,
+        "confidence": "medium",
+        "reviewId": "7dfb9310-23c7-40e9-8aa2-f3f74de6b888",
+        "evidenceDigest": "3435315ae63af725138f7c641ce228e7e37455a09bd3901b228fb5c9974c824a"
+      },
+      "white_cast": {
+        "state": "established",
+        "value": "none",
+        "confidence": "high",
+        "reviewId": "a009c74b-d9b2-488d-96b9-7a87419b1dab",
+        "evidenceDigest": "14d07f90f85a4710dd41ab974b01433b5cb9f90b3e5ec61488b790f0c6782592"
+      },
+      "eye_sting": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown",
+        "reviewId": "7f5a9222-e2da-4c35-a69b-96736c0caf10",
+        "evidenceDigest": "09e15ffd068b4f9489142cc56843624a0bda4bf5eb6c0098832827baba981c5c"
+      },
+      "pilling_risk": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown",
+        "reviewId": "633d8439-9d97-434c-a824-ee869754ae40",
+        "evidenceDigest": "352abd795815966593fa0f724e3641f92a9b49aa99c06bf4951e399dd3fcb133"
+      }
+    }
+  },
+  "rawReader": {
+    "status": "SEMANTIC_BUNDLE_INCOMPLETE",
+    "complete": false,
+    "requiredFieldCount": 12,
+    "reviewedFieldCount": 12,
+    "establishedFieldCount": 7,
+    "reviewedNotEstablishedFieldCount": 5,
+    "conflictFieldCount": 0,
+    "notReviewedFieldCount": 0
+  },
+  "d1bProjectionExpectation": {
+    "policyVersion": "sunscreen-recommendation-semantic-projection-policy-v1",
+    "contractValid": true,
+    "subjectExact": true,
+    "allReviewed": true,
+    "coreEstablished": true,
+    "envelopeReady": true,
+    "unresolvedFields": [
+      "texture",
+      "sensitivity_safe",
+      "irritation_risk",
+      "eye_sting",
+      "pilling_risk"
+    ],
+    "projected": {
+      "category": "sunscreen",
+      "skin_types": [
+        "sensitive"
+      ],
+      "concerns": [
+        "dehydration",
+        "oiliness"
+      ],
+      "finish": "fresh",
+      "uv_filter_type": "organic",
+      "tone_up": false,
+      "white_cast": "none"
+    }
+  },
+  "contextualEligibilityExpectation": {
+    "neutral": {
+      "eligible": true,
+      "blockers": []
+    },
+    "finishRelevant": {
+      "eligible": true,
+      "blockers": []
+    },
+    "toneUpRelevant": {
+      "eligible": true,
+      "blockers": []
+    },
+    "whiteCastRelevant": {
+      "eligible": true,
+      "blockers": []
+    },
+    "sensitivityRelevant": {
+      "eligible": false,
+      "blockers": [
+        "SEMANTIC_UNCERTAINTY:sensitivityRelevant:irritation_risk",
+        "SEMANTIC_UNCERTAINTY:sensitivityRelevant:sensitivity_safe"
+      ]
+    },
+    "eyeStingRelevant": {
+      "eligible": false,
+      "blockers": [
+        "SEMANTIC_UNCERTAINTY:eyeStingRelevant:eye_sting"
+      ]
+    },
+    "pillingRelevant": {
+      "eligible": false,
+      "blockers": [
+        "SEMANTIC_UNCERTAINTY:pillingRelevant:pilling_risk"
+      ]
+    },
+    "textureRelevant": {
+      "eligible": false,
+      "blockers": [
+        "SEMANTIC_UNCERTAINTY:textureRelevant:texture"
+      ]
+    }
+  },
+  "reviewExecution": {
+    "requestCount": 12,
+    "insertedCount": 12,
+    "productRowMutated": false,
+    "recommendationAdmissionMutated": false,
+    "productionRankingChanged": false
+  },
+  "productionBoundary": {
+    "admissionCriticalCurrentFactCount": 3,
+    "productLegacyCategory": null,
+    "taxonomyAssignmentState": "shadow",
+    "d5cD5dLiveAllowlistCount": 3,
+    "cosrxInD5cD5dAllowlist": false,
+    "d5dActivationScope": "authenticated_product_query_beta",
+    "d5dActivationEnabled": true,
+    "d5dAuthorizedPhase": "DATA-AI29C-D5D",
+    "recommendationAdmissionChanged": false,
+    "productionRankingChanged": false,
+    "publicSearchCutover": false,
+    "uvaActivated": false,
+    "waterResistanceActivated": false
+  },
+  "interpretation": {
+    "rawBundleCompleteRequiresAll12Established": true,
+    "d1bEnvelopeReadyRequiresAll12ReviewedAndCoreEstablished": true,
+    "rawIncompleteDoesNotMeanD1bEnvelopeFailure": true,
+    "missingConvertedToFalse": false,
+    "unresolvedScoredAsEstablished": false
+  },
+  "nextGate": "DATA-AI29C-D5E-D_COSRX_ADMISSION_AND_MIXED_SHADOW",
+  "nextGateAuthorizedAfter": "D5E_C_EVIDENCE_MERGED_AND_CI_PASS"
+}
