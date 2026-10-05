@@ -81,10 +81,10 @@ for (const liveValue of [
   check(!implementation.includes(liveValue), `Production fixture must not be hard-coded: ${liveValue}`);
 }
 
-check(content.workbench.includes("Read only"), "read-only boundary must be visible");
-check(content.workbench.includes("Evidence candidate"), "Evidence detail surface missing");
-check(content.workbench.includes("Existing Current"), "Current summary surface missing");
-check(content.workbench.includes("Governed review"), "governed review summary missing");
+check(content.workbench.includes("읽기 전용"), "read-only boundary must be visible");
+check(content.workbench.includes("근거 / 관리 상태"), "Evidence detail surface missing");
+check(content.workbench.includes("현재 채택 사실"), "Current summary surface missing");
+check(content.workbench.includes("관리형 검토"), "governed review summary missing");
 check(
   !fs.existsSync(path.join(root, ".github/workflows/trust-phase5-admin-queue.yml")),
   "retired TRUST Phase 5 Admin Queue workflow must stay absent"

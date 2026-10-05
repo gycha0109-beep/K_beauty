@@ -248,17 +248,29 @@ check(
   "read-only admins must not receive mutation controls"
 );
 for (const token of [
-  "Formulation revision key",
-  "Variant key",
-  "Market applicability",
+  "form.formulationRevisionKey",
+  "form.variantKey",
+  "form.marketApplicability",
   "variantKeyReviewedAsNull",
-  "catalog evidence에서 자동 생성하지 않습니다",
-  "Subject 등록 Preflight",
-  "명시적으로 Subject 등록",
-  "Evidence 채택",
-  "Product Fact confirmation"
+  "/api/admin/trust/subject-registration/preflight",
+  "/api/admin/trust/subject-registration/confirm",
+  "preflight?.preflightHash",
+  "preflight.plannedWrites?.productFactSubjects"
 ]) {
-  check(source.action.includes(token), `review UI contract missing: ${token}`);
+  check(source.action.includes(token), `review UI functional contract missing: ${token}`);
+}
+for (const token of [
+  "제품 사실 대상 등록",
+  "처방 버전 키",
+  "변형 키",
+  "적용 시장",
+  "카탈로그의 제품 식별 근거는 제품 사실 대상의 최종 권위가 아닙니다.",
+  "대상 등록 사전 검증",
+  "검토한 대상 등록",
+  "근거 채택",
+  "제품 사실 확정"
+]) {
+  check(source.action.includes(token), `review UI Korean safety copy missing: ${token}`);
 }
 check(
   !source.action.includes("trust-phase5-review-"),

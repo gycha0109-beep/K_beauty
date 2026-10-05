@@ -6,31 +6,31 @@ import { ADMIN_CAPABILITIES } from "@/lib/admin/capabilities";
 
 const NAVIGATION = Object.freeze([
   {
-    label: "Overview",
+    label: "개요",
     href: "/admin",
     capability: ADMIN_CAPABILITIES.DASHBOARD_READ
   },
   {
-    label: "Product reviews",
+    label: "제품 리뷰",
     href: "/admin/products/reviews",
     capability: ADMIN_CAPABILITIES.PRODUCTS_READ,
     exact: true
   },
   {
-    label: "TRUST queue",
+    label: "제품 신뢰 검토",
     href: "/admin/products/trust",
     capability: ADMIN_CAPABILITIES.PRODUCTS_READ
   },
   {
-    label: "Review import",
+    label: "리뷰 가져오기",
     href: "/admin/products/reviews/import",
     capability: ADMIN_CAPABILITIES.PRODUCTS_REVIEW
   },
-  { label: "Skin Match", href: null },
-  { label: "Face Lab", href: null },
-  { label: "Users & reports", href: null },
-  { label: "Privacy", href: null },
-  { label: "System", href: null }
+  { label: "피부 맞춤 추천", href: null },
+  { label: "얼굴 분석", href: null },
+  { label: "사용자 및 신고", href: null },
+  { label: "개인정보", href: null },
+  { label: "시스템", href: null }
 ]);
 
 function isActivePath(pathname, href, exact = false) {
@@ -68,7 +68,7 @@ export default function AdminNavigation({ capabilities = [] }) {
             >
               {item.label}
               <span className="ml-2 text-[10px] uppercase tracking-[0.12em]">
-                Later
+                준비 중
               </span>
             </span>
           );
