@@ -1,0 +1,228 @@
+{
+  "version": "barrier-support-p0-ready3-direct-evidence-ingest-preflight-v1",
+  "stage": "V2.1-8H-R12B",
+  "source_main_sha": "1e7ec7617c3ec439afe45cf4b5fda84f016cf929",
+  "captured_on": "2026-10-05",
+  "parent_authority": {
+    "r12": {
+      "path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-official-evidence-research-v1.json",
+      "git_blob_sha": "5d6a19cfe1d527ee78946a4b9f882550d92e24c0",
+      "terminal": "BARRIER_SUPPORT_P0_READY3_OFFICIAL_EVIDENCE_RESEARCH_DIRECT1_INSUFFICIENT5"
+    },
+    "r12a": {
+      "path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-official-source-gap-recovery-v1.json",
+      "git_blob_sha": "446787fdc19e31acdeca397d13807890d7ec7c62",
+      "terminal": "BARRIER_SUPPORT_P0_READY3_OFFICIAL_SOURCE_GAP_RECOVERY_0_OF_5"
+    }
+  },
+  "runtime_contract": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "required_capability": "admin.products.review",
+    "ingest_function": "admin_ingest_product_fact_evidence_v1(uuid,text,jsonb)",
+    "ingest_function_sha256": "c5bf2429801f3f5811c41d3c39fbddff3eca2914bccb59f100321f369264b481",
+    "anon_execute": false,
+    "authenticated_execute": false,
+    "service_role_execute": true,
+    "actor_capability_probe": "accepted_by_rollback_rpc"
+  },
+  "registry_contract": {
+    "version": "product-fact-registry-cross-category-v1",
+    "checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "fact_key": "primary_use_role",
+    "value_type": "enum",
+    "allowed_value": "multi_area",
+    "evidence_class": "usage_instruction",
+    "positive_evidence_requirement": "product-specific evidence",
+    "deprecated": false
+  },
+  "target": {
+    "task_id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+    "intake_id": "a35898bb-832e-4444-b4f7-98de3f9c78bc",
+    "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+    "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+    "subject_semantic_key": "028945101121562f1f5470a44fd1a7974477a7c8a50cd6954102993fb087650d",
+    "formulation_revision_key": "v21-8h-r10:a8a01568cf96737549c033542599a2d94e843367d0c876774262f0b409125327",
+    "market": "KR",
+    "identity_status": "resolved",
+    "current_state": "current",
+    "task_state": "RESEARCH_PENDING",
+    "task_attempt_count": 0,
+    "task_blocker_code": null,
+    "proposed_value": "multi_area",
+    "evidence_class": "usage_instruction"
+  },
+  "digest_contract": {
+    "proposition": {
+      "version": "product-fact-proposition-pilot-v1",
+      "material": {
+        "serializer_version": "product-fact-proposition-pilot-v1",
+        "subject_semantic_key": "028945101121562f1f5470a44fd1a7974477a7c8a50cd6954102993fb087650d",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "primary_use_role",
+        "value_identity": "multi_area",
+        "scope": {
+          "market": "KR"
+        },
+        "qualifier": {},
+        "parent_proposition_key": null
+      },
+      "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2"
+    },
+    "evidence": {
+      "version": "v21-8g3-evidence-v1",
+      "material": {
+        "digest_contract": "v21-8g3-evidence-v1",
+        "task_id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+        "source_content_digest": "a7eb1b96d8551cc88727abedfda7a758e801d5a78eec4acee1de040d970846dc",
+        "subject_semantic_key": "028945101121562f1f5470a44fd1a7974477a7c8a50cd6954102993fb087650d",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "primary_use_role",
+        "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+        "proposition_value_identity": "multi_area",
+        "evidence_class": "usage_instruction",
+        "evidence_authority": "product_specific_primary",
+        "confidence": "high",
+        "support_direction": "supports",
+        "negative_admissibility": "not_applicable",
+        "scope": {
+          "market": "KR"
+        },
+        "qualifier": {}
+      },
+      "canonical_evidence_digest": "fee6031cbf1683f03de5792d3521dd25b5257deca9b64160656de3453f7ddab9"
+    }
+  },
+  "planned_rpc": {
+    "request_id": "v21-8h-r12c-etude-role-ingest",
+    "payload": {
+      "source": {
+        "canonical_locator": "https://www.amoremall.com/kr/ko/product/detail?onlineProdCode=110090000337&onlineProdSn=60201",
+        "publisher": "AMOREPACIFIC / ETUDE",
+        "source_kind": "official_product_bundle_page",
+        "source_metadata": {
+          "research_stage": "V2.1-8H-R12",
+          "research_source_id": "etude_bundle_kr",
+          "authority_kind": "official_kr_product_bundle_page",
+          "content_digest_basis": "sha256(canonical frozen R12 source capture); NOT live-page byte snapshot",
+          "provenance_container": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-official-evidence-research-v1.json#etude_bundle_kr",
+          "presentation_relation": "same exact 50ml unit x2"
+        },
+        "content_digest": "a7eb1b96d8551cc88727abedfda7a758e801d5a78eec4acee1de040d970846dc",
+        "external_snapshot_reference": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-official-evidence-research-v1.json",
+        "market": "KR",
+        "region": null,
+        "locale": null,
+        "published_at": null,
+        "accessed_at": "2026-10-05T00:00:00+09:00",
+        "observed_at": null
+      },
+      "binding": {
+        "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+        "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+        "binding_state": "equivalent_presentation_match",
+        "scope_relation": "equivalent",
+        "presentation_metadata": {
+          "exact_unit_match": "yes",
+          "bundle_units": 2,
+          "source_market": "KR",
+          "subject_market": "KR",
+          "subject_semantic_key": "028945101121562f1f5470a44fd1a7974477a7c8a50cd6954102993fb087650d",
+          "formulation_revision_key": "v21-8h-r10:a8a01568cf96737549c033542599a2d94e843367d0c876774262f0b409125327",
+          "presentation_relation": "same_exact_50ml_unit_x2"
+        },
+        "identity_resolution_version": "v21-8h-r10-official-identity-v1",
+        "reviewed_at": "2026-10-05T00:00:00+09:00"
+      },
+      "evidence": {
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "primary_use_role",
+        "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+        "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+        "proposition_value_identity": "multi_area",
+        "parent_proposition_key": null,
+        "evidence_class": "usage_instruction",
+        "evidence_authority": "product_specific_primary",
+        "confidence": "high",
+        "support_direction": "supports",
+        "negative_admissibility": "not_applicable",
+        "market": "KR",
+        "region": null,
+        "locale": null,
+        "valid_from": null,
+        "valid_to": null,
+        "qualifier": {},
+        "canonical_evidence_digest": "fee6031cbf1683f03de5792d3521dd25b5257deca9b64160656de3453f7ddab9",
+        "supersedes_evidence_id": null
+      }
+    }
+  },
+  "production_prestate": {
+    "product_fact_subjects": 50,
+    "product_fact_current": 104,
+    "fact_instances": 105,
+    "confirmations": 105,
+    "evidence_records": 107,
+    "target_source_rows": 0,
+    "target_subject_binding_rows": 0,
+    "target_proposition_evidence_rows": 0,
+    "target_subject_fact_instances": 0,
+    "target_subject_current_facts": 0
+  },
+  "rollback_probe": {
+    "request_id": "v21-8h-r12b-etude-role-preflight",
+    "transaction_mode": "BEGIN -> controlled RPC -> in-transaction readback -> ROLLBACK",
+    "rpc_calls_attempted": 1,
+    "rpc_calls_accepted": 1,
+    "in_transaction": {
+      "target_source_rows": 1,
+      "target_binding_rows": 1,
+      "target_evidence_rows": 1,
+      "target_subject_fact_instances": 0,
+      "target_subject_current_facts": 0
+    },
+    "post_rollback": {
+      "target_source_rows": 0,
+      "target_binding_rows": 0,
+      "target_evidence_rows": 0,
+      "target_review_events": 0,
+      "target_audit_rows": 0,
+      "target_subject_fact_instances": 0,
+      "target_subject_current_facts": 0
+    }
+  },
+  "authority_boundary": {
+    "committed_source_writes": 0,
+    "committed_binding_writes": 0,
+    "committed_evidence_writes": 0,
+    "committed_fact_instance_writes": 0,
+    "committed_confirmation_writes": 0,
+    "committed_recommendation_writes": 0,
+    "review_preparation_authorized": false,
+    "confirmation_preflight_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "stop_conditions": [
+    "target task id/state/registry changes",
+    "target Subject no longer resolved/current/KR",
+    "proposition key or canonical evidence digest mismatch",
+    "source content digest no longer matches frozen R12 etude_bundle_kr capture",
+    "existing source/binding/evidence creates identity conflict",
+    "ingest function hash or privilege boundary changes",
+    "rollback probe leaves any Production residue"
+  ],
+  "decision": "BARRIER_SUPPORT_P0_READY3_DIRECT_EVIDENCE_INGEST_PREFLIGHT_PASS",
+  "next_gate": {
+    "stage": "V2.1-8H-R12C_READY3_CONTROLLED_EVIDENCE_INGEST",
+    "status": "NOT_EXECUTED",
+    "authorized_candidate_count": 1,
+    "authorized_task_ids": [
+      "39449932-6c41-4762-bf39-e6848c9ad09a"
+    ],
+    "allowed_rpc": "admin_ingest_product_fact_evidence_v1",
+    "evidence_ingest_authorized": true,
+    "review_preparation_authorized": false,
+    "confirmation_authorized": false
+  }
+}
