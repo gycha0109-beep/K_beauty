@@ -11,7 +11,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "TRUST Admin Queue"
+  title: "제품 신뢰 검토 대기열"
 };
 
 function ErrorState({ code }) {
