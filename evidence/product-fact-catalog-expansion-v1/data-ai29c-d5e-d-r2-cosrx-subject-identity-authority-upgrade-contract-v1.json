@@ -1,0 +1,264 @@
+{
+  "version": "data-ai29c-d5e-d-r2-cosrx-subject-identity-authority-upgrade-contract-v1",
+  "stage": "DATA-AI29C-D5E-D-R2",
+  "track": "taxonomy-ai",
+  "decision": "D5E_D_R2_SUBJECT_IDENTITY_AUTHORITY_UPGRADE_CONTRACT_READY_DESIGN_ONLY",
+  "sourceMainSha": "1e7ec7617c3ec439afe45cf4b5fda84f016cf929",
+  "mode": "DESIGN_ONLY_ZERO_PRODUCTION_WRITE",
+  "target": {
+    "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+    "sourceCandidateId": "ce1653d4-5ea2-47a0-bf79-d39f9fb72ae6",
+    "subjectSemanticKey": "db6a09f788a6b6008881525d1b409d3c16d8b3132006c8a0f174607516133501",
+    "fromIdentityResolutionVersion": "gpt-catalog-machine-subject-v1",
+    "toIdentityResolutionVersion": "trust-phase5-admin-subject-review-v1"
+  },
+  "contractIntent": [
+    "preserve the existing Subject identity and all dependent authority bindings",
+    "upgrade only identity authority provenance after explicit admin review",
+    "make stale or broader mutations fail closed",
+    "leave sunscreen admission policy unchanged"
+  ],
+  "proposedApi": {
+    "preflight": {
+      "functionName": "admin_preflight_product_fact_subject_identity_authority_upgrade_v1",
+      "inputs": [
+        "actor_user_id",
+        "subject_id",
+        "source_candidate_id",
+        "reviewed_identity"
+      ],
+      "writeCount": 0,
+      "returns": [
+        "status",
+        "subject_id",
+        "product_id",
+        "source_candidate_id",
+        "current_identity_resolution_version",
+        "target_identity_resolution_version",
+        "subject_semantic_key",
+        "payload_digest",
+        "prestate_digest",
+        "planned_writes",
+        "requires_explicit_confirmation"
+      ]
+    },
+    "confirm": {
+      "functionName": "admin_upgrade_product_fact_subject_identity_authority_v1",
+      "inputs": [
+        "actor_user_id",
+        "request_id",
+        "payload",
+        "expected_payload_digest",
+        "expected_prestate_digest"
+      ],
+      "requiresExplicitConfirmation": true,
+      "idempotencyKey": "request_id",
+      "advisoryLock": "subject_id",
+      "expectedStatus": "identity_authority_upgraded"
+    }
+  },
+  "capability": {
+    "required": "admin.products.review",
+    "anonymousExecute": false,
+    "authenticatedExecute": false,
+    "directServiceRoleTableWrite": false,
+    "executionSurface": "service_role-only RPC behind admin review path"
+  },
+  "reviewedIdentity": {
+    "variantKey": null,
+    "variantKeyReviewedAsNull": true,
+    "formulationRevisionKey": "official-snapshot:c0ea336524925d3d493d73c43e49207e",
+    "formulationLabel": "Initial official product snapshot from GPT catalog intake",
+    "marketApplicability": "KR",
+    "regionApplicability": null,
+    "validFrom": null,
+    "validTo": null
+  },
+  "subjectInvariantFields": [
+    "subject_id",
+    "product_id",
+    "subject_semantic_key",
+    "subject_identity_serializer_version",
+    "variant_key",
+    "formulation_revision_key",
+    "formulation_label",
+    "identity_status",
+    "current_state",
+    "market_applicability",
+    "region_applicability",
+    "valid_from",
+    "valid_to",
+    "predecessor_subject_id",
+    "supersession_kind"
+  ],
+  "onlyMutableSubjectField": "identity_resolution_version",
+  "allowedTransition": {
+    "from": "gpt-catalog-machine-subject-v1",
+    "to": "trust-phase5-admin-subject-review-v1",
+    "exactSubjectRequired": true,
+    "sameSemanticKeyRequired": true,
+    "sameFormulationRequired": true,
+    "sameMarketRequired": true,
+    "identityStatusRequired": "resolved",
+    "currentStateRequired": "current"
+  },
+  "catalogAuthorityRequirements": {
+    "sourceCandidateReviewStatus": "promoted",
+    "sourceCandidateIdentityState": "resolved",
+    "sourceCandidateProductMatchRequired": true,
+    "officialHttpsLocatorRequired": true,
+    "officialContentDigestSha256Required": true,
+    "productFactWriteAllowedMustRemainFalse": true,
+    "recommendationAdmissionAllowedMayRemainFalse": true,
+    "catalogIdentityTreatedAsProductFactAuthority": false,
+    "adminReviewCreatesSubjectIdentityAuthorityAttestation": true
+  },
+  "prestateDigestBasis": {
+    "subject": [
+      "all subject invariant fields",
+      "current identity_resolution_version",
+      "updated_at"
+    ],
+    "catalog": [
+      "source candidate id/product id",
+      "review_status",
+      "identity_resolution_state/version",
+      "official source locator/content digest",
+      "authority boundary"
+    ],
+    "dependents": [
+      "sorted Product Fact Current identities",
+      "sorted Product Fact Instance identities/propositions",
+      "sorted Research Task identities/states/candidate ids",
+      "sorted Source Binding identities",
+      "sorted Evidence identities/canonical evidence digests",
+      "sorted current Semantic Review identities/evidence digests"
+    ],
+    "applicability": [
+      "resolved/current subject count for exact product+variant+market+region"
+    ]
+  },
+  "payloadDigestBasis": [
+    "subject_id",
+    "product_id",
+    "source_candidate_id",
+    "reviewed_identity",
+    "expected subject_semantic_key",
+    "from identity_resolution_version",
+    "to identity_resolution_version",
+    "reason_code"
+  ],
+  "exactProductionPrestate": {
+    "productFactCurrent": 3,
+    "productFactInstances": 3,
+    "researchTasks": 3,
+    "sourceBindings": 2,
+    "evidenceRecords": 3,
+    "currentSemanticReviews": 12,
+    "exactCurrentApplicabilitySubjectCount": 1
+  },
+  "confirmationGuards": [
+    "admin.products.review actor required",
+    "request_id syntax and idempotency required",
+    "advisory lock on subject_id",
+    "recompute payload digest and require exact match",
+    "recompute prestate digest immediately before write and require exact match",
+    "rebuild admin-reviewed semantic identity and require existing subject_semantic_key exact match",
+    "reject any invariant field difference",
+    "require exact allowed from/to authority transition",
+    "require promoted resolved source candidate bound to same product",
+    "require official HTTPS locator and SHA-256 official content digest",
+    "require authority boundary product_fact_write_allowed=false",
+    "require exactly one resolved/current subject for same applicability",
+    "reject competing current subject",
+    "reject any dependency identity drift",
+    "reject if target authority already differs from both allowed endpoints"
+  ],
+  "writeSet": {
+    "productFactSubjects": {
+      "rows": 1,
+      "columns": [
+        "identity_resolution_version",
+        "updated_at"
+      ]
+    },
+    "productFactReviewEvents": {
+      "rows": 1,
+      "eventKind": "subject_identity_authority_upgraded",
+      "reasonCode": "controlled_identity_authority_upgrade"
+    },
+    "adminAuditLogs": {
+      "rows": 1,
+      "action": "admin.product_fact.subject_identity_authority_upgraded",
+      "targetType": "product_fact_subject"
+    },
+    "productFacts": 0,
+    "evidence": 0,
+    "sourceBindings": 0,
+    "researchTasks": 0,
+    "semanticReviews": 0,
+    "taxonomy": 0,
+    "recommendations": 0
+  },
+  "auditPayloadRequirements": [
+    "request_id",
+    "subject_id",
+    "product_id",
+    "source_candidate_id",
+    "subject_semantic_key",
+    "previous_identity_resolution_version",
+    "next_identity_resolution_version",
+    "official_source_locator",
+    "official_content_digest",
+    "payload_digest",
+    "prestate_digest",
+    "reviewed_identity"
+  ],
+  "idempotency": {
+    "sameRequestSamePoststate": "return idempotent success only if audit request maps to exact same subject/transition/digests",
+    "sameRequestDifferentPayload": "reject",
+    "alreadyUpgradedDifferentRequest": "preflight returns already_upgraded only when all invariants and provenance match",
+    "downgradeAllowed": false
+  },
+  "explicitForbiddenMutations": [
+    "subject_id",
+    "product_id",
+    "subject_semantic_key",
+    "variant_key",
+    "formulation_revision_key",
+    "formulation_label",
+    "identity_status",
+    "current_state",
+    "market_applicability",
+    "region_applicability",
+    "valid_from",
+    "valid_to",
+    "predecessor_subject_id",
+    "supersession_kind",
+    "Product Fact rows",
+    "Evidence rows",
+    "Source Binding rows",
+    "Research Task rows",
+    "Semantic Review rows",
+    "taxonomy assignment",
+    "Recommendation admission",
+    "runtime ranking",
+    "D5C/D5D allowlist"
+  ],
+  "implementationPlan": {
+    "nextGate": "DATA-AI29C-D5E-D-R3_COSRX_SUBJECT_IDENTITY_AUTHORITY_UPGRADE_IMPLEMENTATION",
+    "steps": [
+      "add one migration defining preflight and confirm RPCs",
+      "reuse admin_require_product_review_actor and product_fact_controlled_sha256_json_v1",
+      "reuse product_fact_review_events and record_admin_audit_event; create no new audit table",
+      "grant RPC execute to service_role only and keep direct subject table writes revoked",
+      "add static verifier for exact write-set and privilege boundaries",
+      "deploy migration before any Production execution",
+      "after deploy, run read-only COSRX preflight and STOP before confirmation"
+    ],
+    "productionExecutionAuthorizedInR2": false,
+    "admissionReevaluationAuthorizedInR2": false,
+    "mixedShadowAuthorizedInR2": false
+  }
+}
