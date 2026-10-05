@@ -132,6 +132,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p0-official-identity-authority-research-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p0-ready3-subject-identity-preflight-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-ready3-legacy-subject-registration-path-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p0-ready3-controlled-subject-registration-closeout-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
