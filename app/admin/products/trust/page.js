@@ -25,7 +25,7 @@ function ErrorState({ code }) {
   return (
     <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950/30">
       <p className="text-sm font-semibold text-red-800 dark:text-red-200">{message}</p>
-      <p className="mt-2 text-xs text-red-700/80 dark:text-red-300/80">오류 코드: {code}</p>
+      <p className="mt-2 text-xs text-red-700/80 dark:text-red-300/80">세부 오류 정보는 서버 로그에 기록됩니다.</p>
     </div>
   );
 }
