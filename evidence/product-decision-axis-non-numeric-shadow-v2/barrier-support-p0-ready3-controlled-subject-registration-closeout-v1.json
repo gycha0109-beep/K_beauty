@@ -1,0 +1,179 @@
+{
+  "stage": "V2.1-8H-R11B",
+  "version": "barrier-support-p0-ready3-controlled-subject-registration-closeout-v1",
+  "captured_on": "2026-10-05",
+  "production_project": "bygrczggxfuisupcevaz",
+  "primary_terminal_outcome": "BARRIER_SUPPORT_P0_READY3_CONTROLLED_SUBJECT_REGISTRATION_PASS",
+  "authority": {
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+    "identity_resolution_version": "v21-8h-r10-official-identity-v1",
+    "post_registration_reprocess": "process_catalog_trust_product_v3(uuid,text)",
+    "authority_preservation_fix_repo_migration": "supabase/migrations/20261005044500_v21_8h_r11b_identity_authority_preservation_fix_v1.sql",
+    "authority_preservation_fix_production_migration": {
+      "version": "20261005153209",
+      "name": "v21_8h_r11b_identity_authority_preservation_fix_v1"
+    }
+  },
+  "production_poststate": {
+    "product_fact_subject_total": 50,
+    "product_fact_current": 101,
+    "fact_instances": 102,
+    "confirmations": 102,
+    "ready3_subject_count": 3,
+    "ready3_research_pending_task_count": 6,
+    "ready3_subject_creation_required_task_count": 0
+  },
+  "authority_boundary": {
+    "evidence_writes_observed": 0,
+    "product_fact_instance_writes_observed": 0,
+    "product_fact_current_writes_observed": 0,
+    "confirmation_writes_observed": 0,
+    "automatic_evidence_adoption": false,
+    "automatic_fact_confirmation": false,
+    "recommendation_mutation": false,
+    "public_activation": false
+  },
+  "function_readback": {
+    "nested_identity_authority_supported": true,
+    "anon_execute": false,
+    "authenticated_execute": false,
+    "service_role_execute": true
+  },
+  "products": [
+    {
+      "brand": "더하르나이",
+      "name": "시카이드 밤",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "intake_id": "18d3e025-7325-4a53-b8ab-6f0c88b86e6c",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "subject_semantic_key": "9d756f9088eae3572db9d75eb3f654424db7ac01cbb0b6b4d3ada389dc3bf9d6",
+      "formulation_revision_key": "v21-8h-r10:e769b508ecdcf0f6f652a00da3434867364ef5d04cc627c9bec65163b641e4de",
+      "variant_key": null,
+      "market": "KR",
+      "identity_status": "resolved",
+      "current_state": "current",
+      "intake_identity_state": "EXACT_SUBJECT_FOUND",
+      "intake_trust_state": "RESEARCH_PENDING",
+      "identity_authority": {
+        "authority_kind": "admin_identity_authority",
+        "market": "KR",
+        "official_source_locator": "https://www.theharnay.com/",
+        "source_content_digest": "e769b508ecdcf0f6f652a00da3434867364ef5d04cc627c9bec65163b641e4de",
+        "authority_resolution_version": "v21-8h-r10-official-identity-v1"
+      },
+      "tasks": [
+        {
+          "id": "02b9ba0a-207c-4d23-b522-853bd45ff815",
+          "fact_key": "barrier_support_claim",
+          "state": "RESEARCH_PENDING",
+          "blocker_code": null,
+          "attempt_count": 0
+        },
+        {
+          "id": "e08b1e23-771d-4c0b-8263-8ca02fa687f6",
+          "fact_key": "primary_use_role",
+          "state": "RESEARCH_PENDING",
+          "blocker_code": null,
+          "attempt_count": 0
+        }
+      ],
+      "subject_fact_instances": 0,
+      "subject_current_facts": 0
+    },
+    {
+      "brand": "에뛰드",
+      "name": "순정 판텐소사이드™ 10 시카 밤",
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "intake_id": "a35898bb-832e-4444-b4f7-98de3f9c78bc",
+      "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+      "subject_semantic_key": "028945101121562f1f5470a44fd1a7974477a7c8a50cd6954102993fb087650d",
+      "formulation_revision_key": "v21-8h-r10:a8a01568cf96737549c033542599a2d94e843367d0c876774262f0b409125327",
+      "variant_key": null,
+      "market": "KR",
+      "identity_status": "resolved",
+      "current_state": "current",
+      "intake_identity_state": "EXACT_SUBJECT_FOUND",
+      "intake_trust_state": "RESEARCH_PENDING",
+      "identity_authority": {
+        "authority_kind": "admin_identity_authority",
+        "market": "KR",
+        "official_source_locator": "https://www.amoremall.com/kr/ko/product/detail?onlineProdCode=110090000335&onlineProdSn=60162",
+        "source_content_digest": "a8a01568cf96737549c033542599a2d94e843367d0c876774262f0b409125327",
+        "authority_resolution_version": "v21-8h-r10-official-identity-v1"
+      },
+      "tasks": [
+        {
+          "id": "0d0cee84-f218-40bb-9dd3-4b2b00078259",
+          "fact_key": "barrier_support_claim",
+          "state": "RESEARCH_PENDING",
+          "blocker_code": null,
+          "attempt_count": 0
+        },
+        {
+          "id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+          "fact_key": "primary_use_role",
+          "state": "RESEARCH_PENDING",
+          "blocker_code": null,
+          "attempt_count": 0
+        }
+      ],
+      "subject_fact_instances": 0,
+      "subject_current_facts": 0
+    },
+    {
+      "brand": "마녀공장",
+      "name": "판테토인 인리치드 밤",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "intake_id": "5d987802-4a2a-4832-8a61-e769b4b953df",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "subject_semantic_key": "facb3e2bb9ebd6768b71dbf076dfd7b9ebd3bbbef8cd3fb401603ddba08a65f2",
+      "formulation_revision_key": "v21-8h-r10:c48757c1795e8fc7afe01fb3d479c7ff3c87753ab20e28e51894dee04fbd4a60",
+      "variant_key": null,
+      "market": "KR",
+      "identity_status": "resolved",
+      "current_state": "current",
+      "intake_identity_state": "EXACT_SUBJECT_FOUND",
+      "intake_trust_state": "RESEARCH_PENDING",
+      "identity_authority": {
+        "authority_kind": "admin_identity_authority",
+        "market": "KR",
+        "official_source_locator": "https://m.manyo.co.kr/goods/goods_view.php?goodsNo=1905",
+        "source_content_digest": "c48757c1795e8fc7afe01fb3d479c7ff3c87753ab20e28e51894dee04fbd4a60",
+        "authority_resolution_version": "v21-8h-r10-official-identity-v1"
+      },
+      "tasks": [
+        {
+          "id": "7cf58ffe-88c1-4f11-9f7a-905513cc6917",
+          "fact_key": "barrier_support_claim",
+          "state": "RESEARCH_PENDING",
+          "blocker_code": null,
+          "attempt_count": 0
+        },
+        {
+          "id": "6955dada-e845-4a53-a44a-0cdc53dd9ad8",
+          "fact_key": "primary_use_role",
+          "state": "RESEARCH_PENDING",
+          "blocker_code": null,
+          "attempt_count": 0
+        }
+      ],
+      "subject_fact_instances": 0,
+      "subject_current_facts": 0
+    }
+  ],
+  "hold_products_excluded": [
+    {
+      "brand": "아토팜",
+      "reason_code": "BUNDLE_PRESENTATION_SCOPE_UNRESOLVED"
+    },
+    {
+      "brand": "제로이드",
+      "reason_code": "FIRST_PARTY_PRESENTATION_SIZE_UNCONFIRMED"
+    }
+  ],
+  "next_gate": {
+    "stage": "V2.1-8H-R12_READY3_BARRIER_SUPPORT_OFFICIAL_EVIDENCE_RESEARCH",
+    "status": "NOT_EXECUTED"
+  }
+}
