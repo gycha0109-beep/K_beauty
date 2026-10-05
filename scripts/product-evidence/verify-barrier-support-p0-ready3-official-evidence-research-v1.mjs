@@ -92,11 +92,11 @@ assert.deepEqual(
 
 const expectedSources = new Map([
   ["theharnay_product_kr", "569f401596f2cc3f13c7612ae4c4f5c7a782e3bf1eb530eeb54dba2548338ab8"],
-  ["theharnay_line_kr", "ef9cb167a7deaab3540a1d56f511a8f6aeb06ce7c19c7eb40a75a3602cdf7ded"],
+  ["theharnay_line_kr", "2677d1d9793a96af4c79b7bcc40faf60b4835ece0cc8abdb24607eaeb2fe5bc1"],
   ["etude_product_kr", "6c050961d9d65178b5446d42a12483491f0a6b1e02c886c8319ee70bcc52c6a6"],
-  ["etude_bundle_kr", "af02b9ed1e1a7b3e6ebce07e8dbf972ad70b7244628372a980e480b1888955a8"],
-  ["manyo_product_kr", "70d49afd94fd8046bc4e1a60b4988de688093687a2b61a27abb50d97d8162d14"],
-  ["manyo_cross_market_discovery", "c5e3901a9d1a17f875087b8c858c15c34b71c973844f609fa4c0094b032f9aca"]
+  ["etude_bundle_kr", "a7eb1b96d8551cc88727abedfda7a758e801d5a78eec4acee1de040d970846dc"],
+  ["manyo_product_kr", "1f3e879bdf608e379abf6b51dd7738196f514ec441ebef538b473d8670410812"],
+  ["manyo_cross_market_discovery", "734296bfe43617639a60c6689f17d3deaf3c09fecf639d5cdf7c10d07878df9c"]
 ]);
 
 assert.equal(evidence.source_captures.length, 6);
