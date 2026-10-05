@@ -140,6 +140,9 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-sunscreen-admission-expansion-frontier-v1.json"
       - "docs/evidence/data-ai29c-d5e-sunscreen-admission-expansion-frontier-v1.md"
       - "scripts/verify-data-ai29c-d5e-sunscreen-admission-expansion-frontier.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-a-cosrx-product-fact-adoption-preflight-v1.json"
+      - "docs/evidence/data-ai29c-d5e-a-cosrx-product-fact-adoption-preflight-v1.md"
+      - "scripts/verify-data-ai29c-d5e-a-cosrx-product-fact-adoption-preflight.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -336,6 +339,9 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-sunscreen-admission-expansion-frontier-v1.json"
       - "docs/evidence/data-ai29c-d5e-sunscreen-admission-expansion-frontier-v1.md"
       - "scripts/verify-data-ai29c-d5e-sunscreen-admission-expansion-frontier.mjs"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-a-cosrx-product-fact-adoption-preflight-v1.json"
+      - "docs/evidence/data-ai29c-d5e-a-cosrx-product-fact-adoption-preflight-v1.md"
+      - "scripts/verify-data-ai29c-d5e-a-cosrx-product-fact-adoption-preflight.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -581,6 +587,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D5E-0 sunscreen admission expansion frontier
         run: node scripts/verify-data-ai29c-d5e-sunscreen-admission-expansion-frontier.mjs
+
+      - name: Verify DATA-AI29C-D5E-A COSRX Product Fact adoption preflight
+        run: node scripts/verify-data-ai29c-d5e-a-cosrx-product-fact-adoption-preflight.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs

@@ -1,0 +1,193 @@
+{
+  "version": "data-ai29c-d5e-a-cosrx-product-fact-adoption-preflight-v1",
+  "stage": "DATA-AI29C-D5E-A",
+  "track": "taxonomy-ai",
+  "decision": "D5E_A_COSRX_PRODUCT_FACT_ADOPTION_PREFLIGHT_PASS_READY_FOR_SEPARATE_CONTROLLED_WRITE",
+  "capturedOn": "2026-10-05",
+  "sourceMainSha": "83f8602eaa33a01a2246a04ced1cff54edd89328",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "mode": "READ_ONLY_PRODUCTION_PREFLIGHT_ZERO_WRITE",
+  "upstream": {
+    "stage": "DATA-AI29C-D5E-0",
+    "decision": "D5E0_SUNSCREEN_ADMISSION_EXPANSION_FRONTIER_FROZEN_COSRX_WAVE2_SELECTED",
+    "wave2ProductId": "888eca86-af25-4a12-b9ea-47922d83f520"
+  },
+  "target": {
+    "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "brand": "COSRX",
+    "name": "Ultra-Light Invisible Sunscreen SPF50 PA++++",
+    "legacyCategory": null,
+    "subject": {
+      "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+      "subjectSemanticKey": "db6a09f788a6b6008881525d1b409d3c16d8b3132006c8a0f174607516133501",
+      "formulationRevisionKey": "official-snapshot:c0ea336524925d3d493d73c43e49207e",
+      "variantKey": null,
+      "market": "KR",
+      "region": null,
+      "identityStatus": "resolved",
+      "identityResolutionVersion": "gpt-catalog-machine-subject-v1",
+      "currentState": "current",
+      "validFrom": null,
+      "validTo": null,
+      "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1"
+    },
+    "exactCurrentSubjectCount": 1,
+    "currentAdmissionCriticalFactCount": 0
+  },
+  "registry": {
+    "latestPublishedRegistry": "product-fact-registry-cross-category-v2",
+    "candidateRegistry": "product-fact-registry-cross-category-v1",
+    "coexistencePolicyVersion": "data-ai29c-uva-r3d-registry-coexistence-v1",
+    "coexistenceAuthorizedPhase": "DATA-AI29C-UVA-R3D",
+    "candidateRegistryNewLineageAllowed": true,
+    "facts": {
+      "spf_value": {
+        "allowed": true,
+        "reason": "ALLOWED",
+        "policyState": "active",
+        "policyDigest": "b76372394fb927d50b1d7cdaf3e44eb491d6d1b71cedad6472d07d7a9fa568c9"
+      },
+      "uva_label": {
+        "allowed": true,
+        "reason": "ALLOWED",
+        "policyState": "active",
+        "policyDigest": "d5f4353b972c9fb850d92f4a85f7a5be84d5c9e44692f504a639d0e467b9af3c"
+      },
+      "uv_filter_type": {
+        "allowed": true,
+        "reason": "ALLOWED",
+        "policyState": "active",
+        "policyDigest": "904d32a17e7285e0dd414de068b91b371c131839f0ca197a12cbefa47e97638d"
+      }
+    }
+  },
+  "candidatePreflights": [
+    {
+      "factKey": "spf_value",
+      "taskId": "e5b6276b-f16a-4441-9a61-f7f9767064eb",
+      "candidateId": "d21124ef-f597-492d-9208-f224c544b229",
+      "candidateState": "READY",
+      "normalizedValue": 50,
+      "evidenceClass": "product_claim",
+      "evidenceAuthority": "product_specific_primary",
+      "confidence": "high",
+      "market": "KR",
+      "canonicalEvidenceDigest": "e28d4a93d444452e203effa010146be5a002b324a84182deae549db4adde2a2b",
+      "propositionKey": "b7fc9e4afd849dad34cc355e4bddebe94e0a44c98d50d7a1b98b64de629c6bbf",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "preflightStatus": "ready",
+      "openAssignmentCount": 0,
+      "automaticConfirmation": false,
+      "expectedGovernedWriteBoundary": [
+        "evidence_ingest",
+        "review_prepare",
+        "confirmation_preflight"
+      ],
+      "plannedAdoptionRequestId": "data-ai29c-d5e-b-cosrx-spf-adopt-v1"
+    },
+    {
+      "factKey": "uva_label",
+      "taskId": "42524102-1b42-4a20-a9ec-bcfa1477bd72",
+      "candidateId": "cbf34ff2-b0e2-4ab6-92da-f60d20211abb",
+      "candidateState": "READY",
+      "normalizedValue": "PA++++",
+      "evidenceClass": "product_claim",
+      "evidenceAuthority": "product_specific_primary",
+      "confidence": "high",
+      "market": "KR",
+      "canonicalEvidenceDigest": "22edf5c927b6cdb221505049b5290b497512ba3a4ad6a32e98e991f973194f3e",
+      "propositionKey": "4dac7dcefa8b39fa6c3e2c62e5b4921322b4ce97e97b53d5b5675f7eb2c5eb1a",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "preflightStatus": "ready",
+      "openAssignmentCount": 0,
+      "automaticConfirmation": false,
+      "expectedGovernedWriteBoundary": [
+        "evidence_ingest",
+        "review_prepare",
+        "confirmation_preflight"
+      ],
+      "plannedAdoptionRequestId": "data-ai29c-d5e-b-cosrx-uva-adopt-v1"
+    },
+    {
+      "factKey": "uv_filter_type",
+      "taskId": "21d949c7-3ace-4691-a018-e8465018b160",
+      "candidateId": "0a5c3e77-d92d-4a95-9e92-7e21bcb8ecf1",
+      "candidateState": "READY",
+      "normalizedValue": "organic",
+      "evidenceClass": "composition_identity",
+      "evidenceAuthority": "product_specific_primary",
+      "confidence": "high",
+      "market": "KR",
+      "canonicalEvidenceDigest": "9db458772414b8e99d7357db07d39db59a6e66c28f76e8b1c2c7b1dd74f42e2c",
+      "propositionKey": "dd203d2b3d0d827312207bb3f3395ea63a746b277a4d4425d8ebdd480049293e",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "preflightStatus": "ready",
+      "openAssignmentCount": 0,
+      "automaticConfirmation": false,
+      "expectedGovernedWriteBoundary": [
+        "evidence_ingest",
+        "review_prepare",
+        "confirmation_preflight"
+      ],
+      "plannedAdoptionRequestId": "data-ai29c-d5e-b-cosrx-uv-filter-adopt-v1"
+    }
+  ],
+  "governedExecutionContract": {
+    "adoptionRpc": "admin_adopt_trust_evidence_candidate_v1",
+    "adoptionBehavior": [
+      "governed evidence ingest",
+      "review assignment under_review",
+      "review assignment ready_for_confirm",
+      "Product Fact confirmation preflight"
+    ],
+    "adoptionAutomaticConfirmation": false,
+    "explicitConfirmationRpc": "admin_confirm_product_fact_v1",
+    "confirmationMustUseReturnedPayloadAndDigests": true,
+    "directProductFactDmlForbidden": true,
+    "exactPerFactSequenceRequired": true,
+    "parallelConfirmationForbidden": true,
+    "cardinalityOneGuardMustRemainActive": true
+  },
+  "d5eBPlannedOrder": [
+    "spf_value",
+    "uva_label",
+    "uv_filter_type"
+  ],
+  "d5eBStopRules": [
+    "re-read exact current Subject before first write",
+    "re-run adoption preflight for the exact candidate immediately before each adoption",
+    "stop if any candidate/preflight/policy/proposition digest drifts",
+    "execute one fact at a time; do not parallelize confirmations",
+    "after each explicit confirmation, verify exactly one Current fact for that Subject/fact_key before continuing",
+    "do not touch sunscreen semantic reviews in D5E-B",
+    "do not widen D5C/D5D product allowlists in D5E-B",
+    "do not change SPF runtime switch, UVA ranking, or Water ranking"
+  ],
+  "productionBoundary": {
+    "productFactWrites": 0,
+    "evidenceWrites": 0,
+    "reviewAssignmentWrites": 0,
+    "confirmationWrites": 0,
+    "semanticReviewWrites": 0,
+    "productRowMutated": false,
+    "taxonomyAuthorityChanged": false,
+    "d5cD5dThreeProductAllowlistChanged": false,
+    "d5dRuntimeSwitchChanged": false,
+    "recommendationAdmissionChanged": false,
+    "productionRankingChanged": false,
+    "publicSearchCutover": false,
+    "uvaActivated": false,
+    "waterResistanceActivated": false
+  },
+  "result": {
+    "candidateCount": 3,
+    "readyPreflightCount": 3,
+    "openAssignmentCount": 0,
+    "registryWriteAdmissibleCount": 3,
+    "exactCurrentSubject": true,
+    "currentFactCollisionCount": 0,
+    "readyForSeparateControlledWrite": true
+  },
+  "nextGate": "DATA-AI29C-D5E-B_COSRX_PRODUCT_FACT_CONTROLLED_CONFIRMATION",
+  "nextGateExecutionRule": "SEPARATE_STAGE_AFTER_D5E_A_MERGE_AND_CI_PASS"
+}
