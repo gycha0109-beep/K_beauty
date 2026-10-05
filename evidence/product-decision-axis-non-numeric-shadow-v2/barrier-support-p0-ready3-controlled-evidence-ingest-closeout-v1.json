@@ -1,0 +1,128 @@
+{
+  "version": "barrier-support-p0-ready3-controlled-evidence-ingest-closeout-v1",
+  "stage": "V2.1-8H-R12C",
+  "source_main_sha": "d96af8a01849a360221fe1ee64b89ae114f86573",
+  "captured_on": "2026-10-05",
+  "parent_authority": {
+    "r12b_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-direct-evidence-ingest-preflight-v1.json",
+    "r12b_git_blob_sha": "ef0d74576841e44a302939fbc569c813df678721",
+    "r12b_decision": "BARRIER_SUPPORT_P0_READY3_DIRECT_EVIDENCE_INGEST_PREFLIGHT_PASS"
+  },
+  "execution": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "required_capability": "admin.products.review",
+    "request_id": "v21-8h-r12c-etude-role-ingest",
+    "rpc": "admin_ingest_product_fact_evidence_v1(uuid,text,jsonb)",
+    "rpc_result_status": "evidence_recorded",
+    "source_inserted": true,
+    "binding_inserted": true,
+    "evidence_inserted": true,
+    "committed_at": "2026-10-05T22:08:18.431129+09:00"
+  },
+  "target": {
+    "task_id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+    "intake_id": "a35898bb-832e-4444-b4f7-98de3f9c78bc",
+    "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+    "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+    "subject_semantic_key": "028945101121562f1f5470a44fd1a7974477a7c8a50cd6954102993fb087650d",
+    "formulation_revision_key": "v21-8h-r10:a8a01568cf96737549c033542599a2d94e843367d0c876774262f0b409125327",
+    "market": "KR",
+    "fact_key": "primary_use_role",
+    "value": "multi_area",
+    "evidence_class": "usage_instruction",
+    "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+    "canonical_evidence_digest": "fee6031cbf1683f03de5792d3521dd25b5257deca9b64160656de3453f7ddab9"
+  },
+  "production_ids": {
+    "source_id": "e6b24da7-5f48-43a1-a2ba-f46fad063cf2",
+    "binding_id": "15bf791d-a36a-4214-b7ce-f1b38559ae11",
+    "evidence_id": "45b57536-0637-44e0-b427-bb55923c4812",
+    "audit_id": "f92570f5-d00e-4f49-b1dd-21db1a28cd1f"
+  },
+  "production_readback": {
+    "source": {
+      "canonical_locator": "https://www.amoremall.com/kr/ko/product/detail?onlineProdCode=110090000337&onlineProdSn=60201",
+      "publisher": "AMOREPACIFIC / ETUDE",
+      "source_kind": "official_product_bundle_page",
+      "content_digest": "a7eb1b96d8551cc88727abedfda7a758e801d5a78eec4acee1de040d970846dc",
+      "market": "KR",
+      "external_snapshot_reference": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-official-evidence-research-v1.json"
+    },
+    "binding": {
+      "binding_state": "equivalent_presentation_match",
+      "scope_relation": "equivalent",
+      "bundle_units": 2,
+      "exact_unit_match": "yes",
+      "identity_resolution_version": "v21-8h-r10-official-identity-v1"
+    },
+    "evidence": {
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "multi_area",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "market": "KR",
+      "qualifier": {},
+      "supersedes_evidence_id": null
+    },
+    "review_event": {
+      "event_kind": "evidence_ingested",
+      "reason_code": "controlled_ingest",
+      "request_id": "v21-8h-r12c-etude-role-ingest"
+    },
+    "audit": {
+      "required_capability": "admin.products.review",
+      "action": "admin.product_fact.evidence_ingested",
+      "target_type": "product_evidence_record",
+      "target_id": "45b57536-0637-44e0-b427-bb55923c4812",
+      "request_id": "v21-8h-r12c-etude-role-ingest"
+    },
+    "task": {
+      "state": "RESEARCH_PENDING",
+      "blocker_code": null,
+      "attempt_count": 0,
+      "registry_version": "product-fact-registry-cross-category-v1"
+    }
+  },
+  "production_counts": {
+    "evidence_records_before": 107,
+    "evidence_records_after": 108,
+    "product_fact_subjects": 50,
+    "product_fact_current": 104,
+    "fact_instances": 105,
+    "confirmations": 105,
+    "target_subject_fact_instances": 0,
+    "target_subject_current_facts": 0,
+    "target_evidence_links": 0
+  },
+  "authority_boundary": {
+    "committed_source_writes": 1,
+    "committed_binding_writes": 1,
+    "committed_evidence_writes": 1,
+    "committed_review_events": 1,
+    "committed_audit_rows": 1,
+    "committed_fact_instance_writes": 0,
+    "committed_product_fact_current_writes": 0,
+    "committed_confirmation_writes": 0,
+    "committed_evidence_links": 0,
+    "committed_recommendation_writes": 0,
+    "review_preparation_authorized": false,
+    "confirmation_preflight_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "decision": "BARRIER_SUPPORT_P0_READY3_CONTROLLED_EVIDENCE_INGEST_PASS",
+  "next_gate": {
+    "stage": "V2.1-8H-R12D_READY3_REVIEW_PREPARATION_PREFLIGHT",
+    "status": "NOT_EXECUTED",
+    "candidate_evidence_ids": [
+      "45b57536-0637-44e0-b427-bb55923c4812"
+    ],
+    "review_preparation_authorized": false,
+    "confirmation_preflight_authorized": false,
+    "confirmation_authorized": false
+  }
+}
