@@ -1,0 +1,286 @@
+{
+  "version": "barrier-support-p0-ready3-official-evidence-research-v1",
+  "stage": "V2.1-8H-R12",
+  "source_main_sha": "9e31c64ccd18727604bbf0944ebdaf5dd7205ec9",
+  "captured_on": "2026-10-05",
+  "registry": {
+    "version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "identity_serializer_version": "product-fact-subject-identity-v1"
+  },
+  "scope": {
+    "products": 3,
+    "tasks": 6,
+    "allowed_task_ids": [
+      "02b9ba0a-207c-4d23-b522-853bd45ff815",
+      "e08b1e23-771d-4c0b-8263-8ca02fa687f6",
+      "0d0cee84-f218-40bb-9dd3-4b2b00078259",
+      "39449932-6c41-4762-bf39-e6848c9ad09a",
+      "6955dada-e845-4a53-a44a-0cdc53dd9ad8",
+      "7cf58ffe-88c1-4f11-9f7a-905513cc6917"
+    ],
+    "evidence_write_authorized": false,
+    "fact_instance_write_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "research_rules": {
+    "evidence_is_not_fact": true,
+    "insufficiency_does_not_imply_false": true,
+    "official_claim_is_not_measured_efficacy": true,
+    "primary_use_role_is_context_only": true,
+    "cross_market_evidence_transfer_forbidden": true,
+    "sibling_or_line_claim_transfer_forbidden": true,
+    "image_only_detail_not_promoted_without_reviewable_fact_bearing_capture": true
+  },
+  "source_captures": [
+    {
+      "source_id": "theharnay_product_kr",
+      "source_locator": "https://theharnay.co.kr/product/%EB%8D%94%ED%95%98%EB%A5%B4%EB%82%98%EC%9D%B4-%EC%8B%9C%EC%B9%B4%EC%9D%B4%EB%93%9C-%EB%B0%A4-100ml/19/",
+      "publisher": "THE HARNAY",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "observed_product_title": "더하르나이 시카이드 밤 100ml",
+      "observed_presentation": "100ml",
+      "relevant_observations": [
+        "Exact official KR product page is current and identifies the 100ml balm.",
+        "Machine-readable product text does not expose a product-specific barrier-support claim.",
+        "Machine-readable product text does not expose an explicit application-area instruction."
+      ],
+      "canonical_capture_digest": "569f401596f2cc3f13c7612ae4c4f5c7a782e3bf1eb530eeb54dba2548338ab8",
+      "captured_on": "2026-10-05"
+    },
+    {
+      "source_id": "theharnay_line_kr",
+      "source_locator": "https://theharnay.co.kr/",
+      "publisher": "THE HARNAY",
+      "authority_kind": "official_kr_brand_home_discovery_only",
+      "market": "KR",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "observed_product_title": "Cicaide line; exact 100ml balm listed separately",
+      "observed_presentation": "line-level context plus exact balm listing",
+      "relevant_observations": [
+        "Brand homepage describes the Cicaide line as soothing/moisturizing care with cica and ceramide synergy.",
+        "A barrier-strengthening statement is attached to a Cicaide cream promotion, not specifically to the 100ml balm.",
+        "Line-level or sibling-product claims are not transferred to the exact balm Subject."
+      ],
+      "canonical_capture_digest": "ef9cb167a7deaab3540a1d56f511a8f6aeb06ce7c19c7eb40a75a3602cdf7ded",
+      "captured_on": "2026-10-05"
+    },
+    {
+      "source_id": "etude_product_kr",
+      "source_locator": "https://www.amoremall.com/kr/ko/product/detail?onlineProdCode=110090000335&onlineProdSn=60162",
+      "publisher": "AMOREPACIFIC / ETUDE",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+      "observed_product_title": "순정 판텐소사이드10 시카밤 50ml",
+      "observed_presentation": "50ml",
+      "relevant_observations": [
+        "Exact official KR 50ml product page is current.",
+        "Machine-readable text does not expose an explicit barrier-support claim."
+      ],
+      "canonical_capture_digest": "6c050961d9d65178b5446d42a12483491f0a6b1e02c886c8319ee70bcc52c6a6",
+      "captured_on": "2026-10-05"
+    },
+    {
+      "source_id": "etude_bundle_kr",
+      "source_locator": "https://www.amoremall.com/kr/ko/product/detail?onlineProdCode=110090000337&onlineProdSn=60201",
+      "publisher": "AMOREPACIFIC / ETUDE",
+      "authority_kind": "official_kr_product_bundle_page",
+      "market": "KR",
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+      "observed_product_title": "순정판텐소사이드10시카밤 50ml *2",
+      "observed_presentation": "same exact 50ml unit x2",
+      "relevant_observations": [
+        "Official usage instruction says to apply to areas needing soothing or to the entire face; thicker application is suggested for intensive care.",
+        "The bundle contains two units of the exact 50ml product and does not present a different formulation.",
+        "No machine-readable explicit barrier-support claim was observed."
+      ],
+      "canonical_capture_digest": "af02b9ed1e1a7b3e6ebce07e8dbf972ad70b7244628372a980e480b1888955a8",
+      "captured_on": "2026-10-05"
+    },
+    {
+      "source_id": "manyo_product_kr",
+      "source_locator": "https://www.manyo.co.kr/goods/goods_view.php?goodsNo=1905",
+      "publisher": "ma:nyo",
+      "authority_kind": "official_kr_product_page",
+      "market": "KR",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "observed_product_title": "판테토인 인리치드 밤 80ml",
+      "observed_presentation": "80ml",
+      "relevant_observations": [
+        "Official KR page describes the product as a concentrated soothing/moisturizing balm.",
+        "Official KR machine-readable text does not state an explicit skin-barrier support claim.",
+        "Usage says to apply an appropriate amount evenly along skin texture and absorb; no explicit application-area role is declared."
+      ],
+      "canonical_capture_digest": "70d49afd94fd8046bc4e1a60b4988de688093687a2b61a27abb50d97d8162d14",
+      "captured_on": "2026-10-05"
+    },
+    {
+      "source_id": "manyo_cross_market_discovery",
+      "source_locator": "https://manyo-japanese.com/Product/Detail/view/pid/382/cid/101",
+      "publisher": "ma:nyo Japan official",
+      "authority_kind": "official_jp_product_page_discovery_only",
+      "market": "JP",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "observed_product_title": "Panthetoin Enriched Balm",
+      "observed_presentation": "80ml",
+      "relevant_observations": [
+        "JP official usage text describes final-step use and several dry areas including facial areas, mouth, neck and elbows.",
+        "The source remains discovery-only because KR Subject evidence is not automatically transferred across market scope."
+      ],
+      "canonical_capture_digest": "c5e3901a9d1a17f875087b8c858c15c34b71c973844f609fa4c0094b032f9aca",
+      "captured_on": "2026-10-05"
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "02b9ba0a-207c-4d23-b522-853bd45ff815",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "theharnay_product_kr"
+      ],
+      "discovery_only_source_ids": [
+        "theharnay_line_kr"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official 100ml balm page establishes identity but exposes no product-specific barrier-support claim. Cicaide line and sibling-cream barrier language is not transferred to this exact balm Subject.",
+      "reason": "Product-specific evidence is required; line/sibling marketing context cannot establish true, and missing does not imply false."
+    },
+    {
+      "task_id": "e08b1e23-771d-4c0b-8263-8ca02fa687f6",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "theharnay_product_kr"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official product page does not expose an application-area instruction that maps to full_face, local_area, spot_use, multi_area, or body_possible.",
+      "reason": "Balm form and product-line context are not sufficient to infer a primary usage role."
+    },
+    {
+      "task_id": "0d0cee84-f218-40bb-9dd3-4b2b00078259",
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "etude_product_kr",
+        "etude_bundle_kr"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The official KR exact product and same-unit bundle pages establish the 50ml product and usage, but the reviewable text does not expose an explicit product-specific barrier-support claim.",
+      "reason": "Soothing/cica naming or ingredient identity is not promoted into a barrier-support claim; missing does not imply false."
+    },
+    {
+      "task_id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "etude_bundle_kr"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": "multi_area",
+      "evidence_class": "usage_instruction",
+      "support_summary": "The official KR page for the exact 50ml unit x2 explicitly permits application to areas needing soothing or to the entire face, establishing more than one supported application area for the same exact product.",
+      "reason": "Existing Registry v1 multi_area precedent requires product-specific directions that explicitly permit multiple application areas; this official instruction satisfies that usage-role semantics."
+    },
+    {
+      "task_id": "7cf58ffe-88c1-4f11-9f7a-905513cc6917",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "manyo_product_kr"
+      ],
+      "discovery_only_source_ids": [
+        "manyo_cross_market_discovery"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact official KR 80ml page describes soothing and moisturizing care but does not expose an explicit skin-barrier support claim in reviewable KR text.",
+      "reason": "Moisturizing/soothing wording is not equivalent to barrier_support_claim, and cross-market official material is not transferred to the KR Subject."
+    },
+    {
+      "task_id": "6955dada-e845-4a53-a44a-0cdc53dd9ad8",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "manyo_product_kr"
+      ],
+      "discovery_only_source_ids": [
+        "manyo_cross_market_discovery"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "evidence_class": null,
+      "support_summary": "The exact KR usage text says to spread an appropriate amount evenly along skin texture but does not identify a face/local/body application role. JP official directions are richer but remain cross-market discovery only.",
+      "reason": "Automatic evidence transfer across market scope is forbidden; the KR text alone does not map to a Registry v1 usage-role enum."
+    }
+  ],
+  "summary": {
+    "direct_evidence_found": 1,
+    "evidence_insufficient": 5,
+    "identity_or_scope_blocked": 0,
+    "evidence_db_writes": 0,
+    "fact_instance_writes": 0,
+    "confirmation_writes": 0,
+    "recommendation_writes": 0,
+    "product_fact_subject_total_expected": 50,
+    "product_fact_current_expected": 101,
+    "fact_instances_expected": 102,
+    "confirmations_expected": 102
+  },
+  "terminal": "BARRIER_SUPPORT_P0_READY3_OFFICIAL_EVIDENCE_RESEARCH_DIRECT1_INSUFFICIENT5",
+  "next_gate": {
+    "stage": "V2.1-8H-R12A_READY3_OFFICIAL_SOURCE_GAP_RECOVERY",
+    "status": "NOT_EXECUTED",
+    "unresolved_task_count": 5,
+    "direct_evidence_task_count": 1,
+    "evidence_ingest_authorized": false
+  }
+}
