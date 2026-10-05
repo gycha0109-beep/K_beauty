@@ -23,6 +23,8 @@ const files = {
     "supabase/migrations/20261002142611_v21_8g0_registry_pinned_reconciliation_v1.sql",
   identityPreservingProcessor:
     "supabase/migrations/20261002153238_v21_8g1_identity_authority_preservation_v1.sql",
+  identityAuthorityRepair:
+    "supabase/migrations/20261005044500_v21_8h_r11b_identity_authority_preservation_fix_v1.sql",
   workflow: ".github/workflows/trust-phase5b-subject-registration.yml",
   currentHealth: "scripts/verify-current-main-health.mjs"
 };
@@ -176,6 +178,82 @@ check(
     ),
   "identity-preserving explicit-registry TRUST processor missing"
 );
+
+for (const token of [
+  "identity_resolution_detail -> 'identity_authority'",
+  "jsonb_typeof",
+  "authority_kind",
+  "official_source_locator",
+  "source_content_digest",
+  "authority_resolution_version",
+  "process_catalog_trust_product_v2",
+  "grant execute on function public.process_catalog_trust_product_v3(uuid,text)",
+  "to service_role"
+]) {
+  check(
+    source.identityAuthorityRepair.includes(token),
+    `R11B nested authority preservation contract missing: ${token}`
+  );
+}
+
+for (const forbiddenRole of ["to anon", "to authenticated"]) {
+  check(
+    !source.identityAuthorityRepair.includes(
+      `grant execute on function public.process_catalog_trust_product_v3(uuid,text)\n  ${forbiddenRole}`
+    ),
+    `R11B process v3 must not grant execute ${forbiddenRole}`
+  );
+}
+
+for (const frozenValue of [
+  "18d3e025-7325-4a53-b8ab-6f0c88b86e6c",
+  "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+  "9d756f9088eae3572db9d75eb3f654424db7ac01cbb0b6b4d3ada389dc3bf9d6",
+  "v21-8h-r10:e769b508ecdcf0f6f652a00da3434867364ef5d04cc627c9bec65163b641e4de",
+  "a35898bb-832e-4444-b4f7-98de3f9c78bc",
+  "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+  "028945101121562f1f5470a44fd1a7974477a7c8a50cd6954102993fb087650d",
+  "v21-8h-r10:a8a01568cf96737549c033542599a2d94e843367d0c876774262f0b409125327"
+]) {
+  check(
+    source.identityAuthorityRepair.includes(frozenValue),
+    `R11B affected-row repair guard missing: ${frozenValue}`
+  );
+}
+
+for (const guard of [
+  "i.source_candidate_id is null",
+  "i.identity_state = 'EXACT_SUBJECT_FOUND'",
+  "s.subject_id = i.subject_id",
+  "s.subject_semantic_key = r.subject_semantic_key",
+  "s.formulation_revision_key = r.formulation_revision_key",
+  "s.variant_key is null",
+  "s.market_applicability = 'KR'",
+  "s.identity_status = 'resolved'",
+  "s.current_state = 'current'"
+]) {
+  check(
+    source.identityAuthorityRepair.includes(guard),
+    `R11B repair fail-closed guard missing: ${guard}`
+  );
+}
+
+for (const forbiddenMutation of [
+  "product_fact_instances",
+  "product_fact_current",
+  "product_fact_confirmations",
+  "recommendation_logs",
+  "recommendation_results",
+  "recommendation_cutover"
+]) {
+  check(
+    !new RegExp(
+      `(?:insert\\s+into|update|delete\\s+from)\\s+public\\.${forbiddenMutation}\\b`,
+      "i"
+    ).test(source.identityAuthorityRepair),
+    `R11B repair must not mutate ${forbiddenMutation}`
+  );
+}
 
 for (const token of [
   '"product-fact-subject-identity-v1"',
