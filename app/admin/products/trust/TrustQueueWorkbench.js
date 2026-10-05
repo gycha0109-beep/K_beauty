@@ -118,7 +118,7 @@ function formatCurrentValue(fact) {
   }
 
   if (fact.valueBoolean !== null) {
-    return String(fact.valueBoolean);
+    return fact.valueBoolean ? "예" : "아니오";
   }
   if (fact.valueEnum) {
     return fact.valueEnum;
@@ -264,7 +264,7 @@ function SourceSection({ item }) {
         <Field label="해시 산출 기준" value={observation?.digestBasis} />
         <Field label="관찰 시각" value={formatDate(observation?.observedAt)} />
         <Field label="카탈로그 출처" value={catalog?.sourceName} />
-        <Field label="카탈로그 출처 URL" value={catalog?.sourceUrl} />
+        <Field label="카탈로그 출처 주소" value={catalog?.sourceUrl} />
       </dl>
       {catalog?.providers?.length ? (
         <div className="mt-5">
@@ -272,7 +272,7 @@ function SourceSection({ item }) {
           <div className="mt-2 grid gap-2">
             {catalog.providers.map((provider, index) => (
               <div key={`${provider.provider ?? "provider"}-${index}`} className="rounded-xl bg-[#f6f7f9] p-3 text-xs dark:bg-[#20242b]">
-                <span className="font-semibold">{provider.provider ?? "unknown"}</span>
+                <span className="font-semibold">{provider.provider ?? "알 수 없음"}</span>
                 {provider.locator ? <span className="ml-2 break-all text-[#68717d] dark:text-[#aeb5bf]">{provider.locator}</span> : null}
               </div>
             ))}
@@ -304,7 +304,10 @@ function EvidenceSection({ item }) {
             <Field label="신뢰도" value={evidence.confidence} />
             <Field label="시장 / 언어권" value={[displayMarket(evidence.market), evidence.locale].filter(Boolean).join(" / ")} />
           </dl>
-          <pre className="mt-4 max-h-48 overflow-auto whitespace-pre-wrap rounded-xl bg-[#f6f7f9] p-3 text-xs dark:bg-[#20242b]">{formatJson(evidence.normalizedValue)}</pre>
+          <details className="mt-4">
+            <summary className="cursor-pointer text-xs font-semibold">원본 근거 값 보기</summary>
+            <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap rounded-xl bg-[#f6f7f9] p-3 text-xs dark:bg-[#20242b]">{formatJson(evidence.normalizedValue)}</pre>
+          </details>
         </>
       ) : (
         <p className="mt-3 text-sm text-[#7a828e] dark:text-[#9ea6b1]">아직 근거 후보가 없습니다.</p>
