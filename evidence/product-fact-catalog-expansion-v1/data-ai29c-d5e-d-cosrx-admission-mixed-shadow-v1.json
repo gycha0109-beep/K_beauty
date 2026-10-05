@@ -1,0 +1,161 @@
+{
+  "version": "data-ai29c-d5e-d-cosrx-admission-mixed-shadow-v1",
+  "stage": "DATA-AI29C-D5E-D",
+  "track": "taxonomy-ai",
+  "decision": "D5E_D_COSRX_ADMISSION_HOLD_SUBJECT_IDENTITY_AUTHORITY_LINEAGE_MISMATCH",
+  "observedOn": "2026-10-05",
+  "sourceMainSha": "2a6c604c75d3ed033db949e1cc8d279ff70c6bf0",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "mode": "READ_ONLY_ADMISSION_REEVALUATION_NO_MIXED_SHADOW_ON_NO_GRANT",
+  "upstream": {
+    "d5eCDecision": "D5E_C_COSRX_SEMANTIC_REVIEW_PASS_D1B_ENVELOPE_READY_NEUTRAL_COMPARABLE",
+    "semanticEnvelopeReady": true,
+    "admissionCriticalCurrentFactCount": 3
+  },
+  "admissionPolicy": {
+    "policyVersion": "sunscreen-initial-admission-grant-policy-v1",
+    "positiveDecision": "SUNSCREEN_INITIAL_ADMISSION_GRANT",
+    "acceptedSubjectResolutionVersions": [
+      "trust-phase5-admin-subject-review-v1"
+    ],
+    "currentSubjectResolutionVersion": "gpt-catalog-machine-subject-v1"
+  },
+  "admissionInput": {
+    "product": {
+      "id": "888eca86-af25-4a12-b9ea-47922d83f520",
+      "canonicalProduct": true,
+      "name": "Ultra-Light Invisible Sunscreen SPF50 PA++++"
+    },
+    "taxonomy": {
+      "taxonomyVersion": "catalog-taxonomy-v1",
+      "entityKindTermId": "catalog-taxonomy-v1:entity_kind:cosmetic",
+      "domainTermId": "catalog-taxonomy-v1:domain:skincare",
+      "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
+      "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
+      "assignmentState": "shadow",
+      "assignmentMethod": "source_classification",
+      "productId": "888eca86-af25-4a12-b9ea-47922d83f520"
+    },
+    "registry": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+      "identitySerializerVersion": "product-fact-subject-identity-v1"
+    },
+    "subject": {
+      "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+      "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+      "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+      "identityStatus": "resolved",
+      "identityResolutionVersion": "gpt-catalog-machine-subject-v1",
+      "currentState": "current",
+      "validTo": null
+    },
+    "currentFacts": [
+      {
+        "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+        "factInstanceId": "2f2efccf-165e-4b78-baf6-7348136ceb24",
+        "factKey": "spf_value",
+        "propositionKey": "b7fc9e4afd849dad34cc355e4bddebe94e0a44c98d50d7a1b98b64de629c6bbf",
+        "confirmationId": "247a9c8f-4599-4789-8608-0465a36e2e65",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "isCurrent": true,
+        "validTo": null,
+        "valueNumber": 50,
+        "valueEnum": null,
+        "valueType": "number"
+      },
+      {
+        "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+        "factInstanceId": "7ad2a820-dbfe-457a-8340-d0da67525010",
+        "factKey": "uva_label",
+        "propositionKey": "4dac7dcefa8b39fa6c3e2c62e5b4921322b4ce97e97b53d5b5675f7eb2c5eb1a",
+        "confirmationId": "12bc107c-8eb8-4e0f-82f3-054e11f878fa",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "isCurrent": true,
+        "validTo": null,
+        "valueNumber": null,
+        "valueEnum": "PA++++",
+        "valueType": "enum"
+      },
+      {
+        "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+        "factInstanceId": "b4498a13-9090-4053-a416-281cc1e06bdc",
+        "factKey": "uv_filter_type",
+        "propositionKey": "dd203d2b3d0d827312207bb3f3395ea63a746b277a4d4425d8ebdd480049293e",
+        "confirmationId": "2e341612-a174-4d96-be6f-8fb013528e3a",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "isCurrent": true,
+        "validTo": null,
+        "valueNumber": null,
+        "valueEnum": "organic",
+        "valueType": "enum"
+      }
+    ]
+  },
+  "actualEvaluation": {
+    "decision": "NO_GRANT",
+    "grant": false,
+    "reasons": [
+      "PRODUCT_FACT_SUBJECT_UNRESOLVED_OR_NON_CURRENT"
+    ]
+  },
+  "blockerAnalysis": {
+    "blockerKind": "SUBJECT_IDENTITY_AUTHORITY_LINEAGE_MISMATCH",
+    "subjectResolved": true,
+    "subjectCurrent": true,
+    "subjectSerializerAccepted": true,
+    "taxonomyAccepted": true,
+    "registryAccepted": true,
+    "requiredCurrentFactsAccepted": true,
+    "semanticEnvelopeAccepted": true,
+    "onlyObservedAdmissionPolicyMismatch": "identityResolutionVersion",
+    "policyBypassForbidden": true
+  },
+  "counterfactualPolicyProbe": {
+    "mutationAppliedToProduction": false,
+    "changedFieldOnly": "subject.identityResolutionVersion",
+    "hypotheticalValue": "trust-phase5-admin-subject-review-v1",
+    "expectedDecision": "SUNSCREEN_INITIAL_ADMISSION_GRANT",
+    "expectedGrant": true,
+    "purpose": "prove the current admission failure is isolated to Subject authority lineage, not to taxonomy/Product Fact/semantic readiness"
+  },
+  "mixedShadow": {
+    "executed": false,
+    "reason": "SUNSCREEN_INITIAL_ADMISSION_GRANT_REQUIRED",
+    "proposedMixedCorpusCountIfGrant": 15,
+    "existingAuthorityCompleteMixedProofCount": 14,
+    "productionWrite": false,
+    "recommendationAdmissionMutation": false,
+    "productionRankingChanged": false,
+    "publicActivation": false
+  },
+  "authorityRecoveryBoundary": {
+    "existingControlledSubjectRegistrationPath": "admin_register_product_fact_subject_v1 via Phase 5B explicit preflight/confirm",
+    "automaticOverwriteOfExistingMachineSubjectForbidden": true,
+    "subjectMutationAuthorizedInD5eD": false,
+    "evidenceMutationAuthorizedInD5eD": false,
+    "productFactMutationAuthorizedInD5eD": false,
+    "recommendationMutationAuthorizedInD5eD": false
+  },
+  "nextGate": "DATA-AI29C-D5E-D-R1_COSRX_SUBJECT_IDENTITY_AUTHORITY_RECOVERY_PREFLIGHT",
+  "nextGateMode": "READ_ONLY",
+  "nextGateRequirements": [
+    "determine whether exact existing COSRX Subject can be authority-upgraded without changing semantic/formulation identity",
+    "reuse governed Subject registration/review contracts; do not invent a direct UPDATE path",
+    "fail closed on semantic-key conflict, competing current Subject, formulation drift, or market mismatch",
+    "preserve the three confirmed Product Facts only if Subject identity is semantically identical and governed lineage remains valid",
+    "do not execute mixed shadow until evaluateSunscreenInitialAdmissionGrant returns SUNSCREEN_INITIAL_ADMISSION_GRANT"
+  ]
+}
