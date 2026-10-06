@@ -1,0 +1,155 @@
+{
+  "version": "barrier-support-p0-ready3-review-preparation-preflight-v1",
+  "stage": "V2.1-8H-R12D",
+  "source_main_sha": "291f902d3a47333428213eacbd656cab0ba0ad4d",
+  "captured_on": "2026-10-06",
+  "parent_authority": {
+    "r12c_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-controlled-evidence-ingest-closeout-v1.json",
+    "r12c_git_blob_sha": "1be762258a9a8c07e9cba109c98fae2bb34c2848",
+    "r12c_decision": "BARRIER_SUPPORT_P0_READY3_CONTROLLED_EVIDENCE_INGEST_PASS"
+  },
+  "runtime_contract": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "required_capability": "admin.products.review",
+    "prepare_review_function": "admin_prepare_product_fact_review_v1(uuid,text,jsonb)",
+    "prepare_review_function_sha256": "9d0992369021a37a83c96561f8ad3d9e9b505a61771b7b5312fa35fc424dbff1",
+    "anon_execute": false,
+    "authenticated_execute": false,
+    "service_role_execute": true,
+    "review_policy_version": "v21-8g3-b-direct-evidence-review-v1"
+  },
+  "registry_write_policy": {
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "fact_key": "primary_use_role",
+    "lineage_kind": "new",
+    "allowed": true,
+    "reason": "ALLOWED",
+    "policy_state": "active",
+    "policy_version": "data-ai29c-uva-r3d-registry-coexistence-v1",
+    "policy_digest": "1ee29792af7acddc521916fedef250944d10e2a4c0a55ef75ba46a9d3ca03e46",
+    "new_lineage_allowed": true,
+    "existing_lineage_allowed": true
+  },
+  "target": {
+    "task_id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+    "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+    "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+    "evidence_id": "45b57536-0637-44e0-b427-bb55923c4812",
+    "fact_key": "primary_use_role",
+    "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+    "value": "multi_area",
+    "evidence_class": "usage_instruction",
+    "evidence_authority": "product_specific_primary",
+    "confidence": "high",
+    "support_direction": "supports",
+    "task_state": "RESEARCH_PENDING",
+    "task_attempt_count": 0,
+    "task_blocker_code": null
+  },
+  "transition_contract": {
+    "required_sequence": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "direct_new_to_ready_for_confirm_forbidden": true,
+    "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "under_reason_code": "v21_8h_r12e_direct_evidence_under_review",
+    "ready_reason_code": "v21_8h_r12e_direct_evidence_ready_for_confirm"
+  },
+  "planned_rpcs": [
+    {
+      "request_id": "v21-8h-r12e-etude-role-under",
+      "payload": {
+        "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+        "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "primary_use_role",
+        "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+        "operational_state": "under_review",
+        "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+        "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+        "reason_code": "v21_8h_r12e_direct_evidence_under_review"
+      }
+    },
+    {
+      "request_id": "v21-8h-r12e-etude-role-ready",
+      "payload": {
+        "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+        "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "primary_use_role",
+        "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+        "operational_state": "ready_for_confirm",
+        "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+        "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+        "reason_code": "v21_8h_r12e_direct_evidence_ready_for_confirm"
+      }
+    }
+  ],
+  "production_prestate": {
+    "product_fact_subjects": 50,
+    "product_fact_current": 104,
+    "fact_instances": 105,
+    "confirmations": 105,
+    "evidence_records": 108,
+    "target_evidence_rows": 1,
+    "target_review_assignments": 0,
+    "target_fact_instances": 0,
+    "target_current_facts": 0,
+    "target_confirmations": 0
+  },
+  "rollback_probe": {
+    "transaction_mode": "BEGIN -> under_review RPC -> ready_for_confirm RPC -> in-transaction readback -> ROLLBACK",
+    "rpc_calls_attempted": 2,
+    "rpc_calls_accepted": 2,
+    "in_transaction": {
+      "target_assignments": 1,
+      "ready_for_confirm_assignments": 1,
+      "assignment_review_events": 2,
+      "admin_audits": 2,
+      "target_fact_instances": 0,
+      "target_current_facts": 0,
+      "target_confirmations": 0
+    },
+    "post_rollback": {
+      "target_assignments": 0,
+      "assignment_review_events": 0,
+      "admin_audits": 0,
+      "target_fact_instances": 0,
+      "target_current_facts": 0,
+      "target_confirmations": 0,
+      "target_evidence_rows": 1
+    }
+  },
+  "authority_boundary": {
+    "committed_review_assignment_writes": 0,
+    "committed_review_event_writes": 0,
+    "committed_audit_writes": 0,
+    "committed_fact_instance_writes": 0,
+    "committed_product_fact_current_writes": 0,
+    "committed_confirmation_writes": 0,
+    "committed_recommendation_writes": 0,
+    "review_preparation_authorized_for_current_stage": false,
+    "confirmation_preflight_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "decision": "BARRIER_SUPPORT_P0_READY3_REVIEW_PREPARATION_PREFLIGHT_PASS",
+  "next_gate": {
+    "stage": "V2.1-8H-R12E_READY3_CONTROLLED_REVIEW_PREPARATION",
+    "status": "NOT_EXECUTED",
+    "authorized_proposition_count": 1,
+    "authorized_proposition_keys": [
+      "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2"
+    ],
+    "allowed_rpc": "admin_prepare_product_fact_review_v1",
+    "required_sequence": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "review_preparation_authorized": true,
+    "confirmation_preflight_authorized": false,
+    "confirmation_authorized": false
+  }
+}
