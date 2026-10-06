@@ -158,6 +158,10 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-d-r2-cosrx-subject-identity-authority-upgrade-contract-v1.json"
       - "docs/evidence/data-ai29c-d5e-d-r2-cosrx-subject-identity-authority-upgrade-contract-v1.md"
       - "scripts/verify-data-ai29c-d5e-d-r2-cosrx-subject-identity-authority-upgrade-contract.mjs"
+      - "supabase/migrations/20261006110000_data_ai29c_d5e_d_r3_subject_identity_authority_upgrade_v1.sql"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-d-r3-cosrx-subject-identity-authority-upgrade-implementation-v1.json"
+      - "docs/evidence/data-ai29c-d5e-d-r3-cosrx-subject-identity-authority-upgrade-implementation-v1.md"
+      - "scripts/verify-data-ai29c-d5e-d-r3-cosrx-subject-identity-authority-upgrade-implementation.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -372,6 +376,10 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-d-r2-cosrx-subject-identity-authority-upgrade-contract-v1.json"
       - "docs/evidence/data-ai29c-d5e-d-r2-cosrx-subject-identity-authority-upgrade-contract-v1.md"
       - "scripts/verify-data-ai29c-d5e-d-r2-cosrx-subject-identity-authority-upgrade-contract.mjs"
+      - "supabase/migrations/20261006110000_data_ai29c_d5e_d_r3_subject_identity_authority_upgrade_v1.sql"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-d-r3-cosrx-subject-identity-authority-upgrade-implementation-v1.json"
+      - "docs/evidence/data-ai29c-d5e-d-r3-cosrx-subject-identity-authority-upgrade-implementation-v1.md"
+      - "scripts/verify-data-ai29c-d5e-d-r3-cosrx-subject-identity-authority-upgrade-implementation.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -635,6 +643,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D5E-D-R2 COSRX Subject identity authority upgrade contract
         run: node scripts/verify-data-ai29c-d5e-d-r2-cosrx-subject-identity-authority-upgrade-contract.mjs
+
+      - name: Verify DATA-AI29C-D5E-D-R3 COSRX Subject identity authority upgrade implementation
+        run: node scripts/verify-data-ai29c-d5e-d-r3-cosrx-subject-identity-authority-upgrade-implementation.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
