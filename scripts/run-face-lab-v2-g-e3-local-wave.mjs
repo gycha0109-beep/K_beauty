@@ -12,6 +12,9 @@ import {
   fileURLToPath
 } from "node:url";
 import dotenv from "dotenv";
+import {
+  getFaceLabGE3CalibrationWavePlan
+} from "../lib/face-lab-v2/evaluation/simulation-g-e3-calibration-plan.js";
 
 const ENV_FILE =
   path.resolve(
@@ -249,6 +252,17 @@ function validateWaveManifest({
   waveId,
   intentOffset
 }) {
+  const wavePlan =
+    getFaceLabGE3CalibrationWavePlan(
+      waveId
+    );
+
+  if (!wavePlan) {
+    throw new Error(
+      "g_e3_wave_plan_missing"
+    );
+  }
+
   if (
     !manifest ||
     manifest.schemaVersion !==
@@ -268,6 +282,16 @@ function validateWaveManifest({
     manifest.intentCount !== 4 ||
     manifest.generationsPerIntent !==
       2 ||
+    manifest.intentPlanVersion !==
+      wavePlan.planVersion ||
+    manifest.surveyProfileVersion !==
+      wavePlan.surveyProfileVersion ||
+    JSON.stringify(
+      manifest.intentKeys
+    ) !==
+      JSON.stringify(
+        wavePlan.targetKeys
+      ) ||
     !Array.isArray(
       manifest.cases
     ) ||
@@ -289,6 +313,39 @@ function validateWaveManifest({
         item?.caseName ||
         null
     );
+
+  for (
+    let index = 0;
+    index <
+      manifest.cases.length;
+    index += 1
+  ) {
+    const item =
+      manifest.cases[index];
+    const targetIndex =
+      Math.floor(
+        index / 2
+      );
+    const expectedTargetKey =
+      wavePlan
+        .targetKeys[
+          targetIndex
+        ];
+
+    if (
+      item?.targetKey !==
+        expectedTargetKey ||
+      item
+        ?.presentationPreference !==
+        "masculine_examples" ||
+      item?.changeTolerance !==
+        "moderate"
+    ) {
+      throw new Error(
+        "g_e3_wave_case_plan_binding_invalid"
+      );
+    }
+  }
 
   if (
     JSON.stringify(
@@ -408,7 +465,11 @@ async function assertGateBinding({
     gate.providerConfigVersion ===
       canaryCase.providerConfigVersion,
     gate.providerConfigFingerprint ===
-      canaryCase.providerConfigFingerprint
+      canaryCase.providerConfigFingerprint,
+    gate.intentPlanVersion ===
+      checkpoint.intentPlanVersion,
+    gate.surveyProfileVersion ===
+      checkpoint.surveyProfileVersion
   ];
 
   if (
@@ -455,6 +516,14 @@ function makeGate({
       canaryCase.providerConfigVersion,
     providerConfigFingerprint:
       canaryCase.providerConfigFingerprint,
+    intentPlanVersion:
+      checkpoint.intentPlanVersion,
+    surveyProfileVersion:
+      checkpoint.surveyProfileVersion,
+    targetKey:
+      canaryCase.targetKey,
+    presentationPreference:
+      canaryCase.presentationPreference,
     providerAttemptCount:
       canaryCase.providerAttemptCount ??
       null,
@@ -477,7 +546,9 @@ function projectState({
   waveId,
   status,
   completedCases,
-  complete
+  complete,
+  evaluationPlanVersion,
+  surveyProfileVersion
 }) {
   const sameCampaign =
     previous?.campaignId ===
@@ -505,6 +576,8 @@ function projectState({
     schemaVersion:
       "face-lab-g-e3-local-campaign-state-v2",
     campaignId,
+    evaluationPlanVersion,
+    surveyProfileVersion,
     sourceSha256:
       sourceSha256 ||
       sameCampaign
@@ -633,6 +706,33 @@ if (
   );
 }
 
+const waveId =
+  "wave-0" +
+  waveNumber;
+const intentOffset =
+  (waveNumber - 1) * 4;
+const wavePlan =
+  getFaceLabGE3CalibrationWavePlan(
+    waveId
+  );
+
+if (!wavePlan) {
+  throw new Error(
+    "g_e3_wave_plan_missing"
+  );
+}
+
+if (
+  wavePlan.intentOffset !==
+    intentOffset ||
+  wavePlan.targetKeys.length !==
+    4
+) {
+  throw new Error(
+    "g_e3_wave_plan_window_invalid"
+  );
+}
+
 await loadLocalEnv({
   requireSecrets:
     mode === "precheck" ||
@@ -659,11 +759,20 @@ const explicitCampaignId =
   safeCampaignId(
     process.argv[4]
   );
+const previousPlanCompatible =
+  previousState
+    ?.evaluationPlanVersion ===
+      wavePlan.planVersion &&
+  previousState
+    ?.surveyProfileVersion ===
+      wavePlan.surveyProfileVersion;
 const previousCampaignId =
-  safeCampaignId(
-    previousState
-      ?.campaignId
-  );
+  previousPlanCompatible
+    ? safeCampaignId(
+        previousState
+          ?.campaignId
+      )
+    : null;
 
 if (
   waveNumber > 1 &&
@@ -706,11 +815,6 @@ if (
   );
 }
 
-const waveId =
-  "wave-0" +
-  waveNumber;
-const intentOffset =
-  (waveNumber - 1) * 4;
 const waveDirectory =
   path.join(
     campaignRoot,
