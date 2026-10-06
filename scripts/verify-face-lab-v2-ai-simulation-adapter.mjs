@@ -26,7 +26,7 @@ import {
 
 assert.equal(
   FACE_LAB_SIMULATION_INSTRUCTION_VERSION,
-  "face-lab-simulation-instruction-v1"
+  "face-lab-simulation-instruction-v2"
 );
 assert.equal(
   FACE_LAB_AI_SIMULATION_VERSION,
@@ -221,13 +221,15 @@ for (
 
 const renderSpec = {
   adapterVersion:
-    "face-lab-render-adapter-v1",
+    "face-lab-render-adapter-v2",
   renderSpecVersion:
     FACE_LAB_RENDER_SPEC_VERSION,
   status: "ready",
   reason: "render_spec_built",
   routeId: "route-balanced",
   lookId: "look-route-balanced",
+  presentationPreference:
+    "masculine_examples",
   identityLock: [
     ...FACE_LAB_IDENTITY_LOCK
   ],
@@ -417,6 +419,21 @@ assert.ok(
 );
 assert.ok(
   compiled.instruction.includes(
+    "Presentation preference: masculine."
+  )
+);
+assert.ok(
+  compiled.instruction.includes(
+    "must not by themselves feminize the person's presentation"
+  )
+);
+assert.ok(
+  compiled.instruction.includes(
+    "Preserve masculine presentation"
+  )
+);
+assert.ok(
+  compiled.instruction.includes(
     "Source mode: execution-only"
   )
 );
@@ -478,6 +495,11 @@ for (const invalidSpec of [
     ...renderSpec,
     renderSpecVersion:
       "face-lab-render-spec-v999"
+  },
+  {
+    ...renderSpec,
+    presentationPreference:
+      "unsupported_presentation"
   },
   {
     ...renderSpec,
@@ -1178,6 +1200,7 @@ console.log(JSON.stringify({
     "same_person_instruction",
     "identity_lock",
     "committed_operations_only",
+    "presentation_preference_guard",
     "execution_only_disclosure",
     "candidate_identity_preserved",
     "applied_reference_serialization",
