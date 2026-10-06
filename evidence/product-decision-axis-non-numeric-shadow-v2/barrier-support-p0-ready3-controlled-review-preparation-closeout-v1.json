@@ -1,0 +1,141 @@
+{
+  "version": "barrier-support-p0-ready3-controlled-review-preparation-closeout-v1",
+  "stage": "V2.1-8H-R12E",
+  "execution_main_sha": "5f66a953551101e62db7dbf412006fb78474c678",
+  "closeout_base_main_sha": "c746fbe2a3b8433de2a2f01d3d672569831a9000",
+  "captured_on": "2026-10-06",
+  "parent_authority": {
+    "r12d_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-review-preparation-preflight-v1.json",
+    "r12d_git_blob_sha": "43198d8df77cadda7521b546dbf9cbce56ff510c",
+    "r12d_decision": "BARRIER_SUPPORT_P0_READY3_REVIEW_PREPARATION_PREFLIGHT_PASS"
+  },
+  "execution": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "required_capability": "admin.products.review",
+    "rpc": "admin_prepare_product_fact_review_v1(uuid,text,jsonb)",
+    "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+    "transaction_mode": "single transaction / ordered two-step commit",
+    "sequence": [
+      {
+        "request_id": "v21-8h-r12e-etude-role-under",
+        "to_state": "under_review",
+        "reason_code": "v21_8h_r12e_direct_evidence_under_review"
+      },
+      {
+        "request_id": "v21-8h-r12e-etude-role-ready",
+        "from_state": "under_review",
+        "to_state": "ready_for_confirm",
+        "reason_code": "v21_8h_r12e_direct_evidence_ready_for_confirm"
+      }
+    ],
+    "committed_at": "2026-10-06T13:46:57.823239+09:00"
+  },
+  "target": {
+    "task_id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+    "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+    "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+    "evidence_id": "45b57536-0637-44e0-b427-bb55923c4812",
+    "assignment_id": "4eef7c5f-30d6-495e-a42b-a6cdeaacc380",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "fact_key": "primary_use_role",
+    "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+    "value": "multi_area"
+  },
+  "production_readback": {
+    "assignment": {
+      "operational_state": "ready_for_confirm",
+      "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+      "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+      "created_at": "2026-10-06T13:46:57.823239+09:00",
+      "updated_at": "2026-10-06T13:46:57.823239+09:00"
+    },
+    "review_events": [
+      {
+        "event_id": "ad0e4af8-54b0-4bae-8352-44ea8f66e09d",
+        "event_kind": "review_assignment_prepared",
+        "reason_code": "v21_8h_r12e_direct_evidence_under_review",
+        "request_id": "v21-8h-r12e-etude-role-under",
+        "from_state": null,
+        "to_state": "under_review",
+        "evidence_id": null,
+        "fact_instance_id": null,
+        "confirmation_id": null
+      },
+      {
+        "event_id": "01e29ff1-5558-4aa0-b794-2acdaa4c32c8",
+        "event_kind": "review_assignment_transitioned",
+        "reason_code": "v21_8h_r12e_direct_evidence_ready_for_confirm",
+        "request_id": "v21-8h-r12e-etude-role-ready",
+        "from_state": "under_review",
+        "to_state": "ready_for_confirm",
+        "evidence_id": null,
+        "fact_instance_id": null,
+        "confirmation_id": null
+      }
+    ],
+    "audits": [
+      {
+        "audit_id": "efe2e8c1-845c-4aae-87f7-6f7dcc3c2b0c",
+        "request_id": "v21-8h-r12e-etude-role-under",
+        "action": "admin.product_fact.review_prepared",
+        "target_type": "product_fact_review_assignment",
+        "target_id": "4eef7c5f-30d6-495e-a42b-a6cdeaacc380"
+      },
+      {
+        "audit_id": "a5b591e8-ce48-4a3e-af71-1b03bbf5edb5",
+        "request_id": "v21-8h-r12e-etude-role-ready",
+        "action": "admin.product_fact.review_prepared",
+        "target_type": "product_fact_review_assignment",
+        "target_id": "4eef7c5f-30d6-495e-a42b-a6cdeaacc380"
+      }
+    ],
+    "task": {
+      "state": "RESEARCH_PENDING",
+      "blocker_code": null,
+      "attempt_count": 0,
+      "registry_version": "product-fact-registry-cross-category-v1"
+    }
+  },
+  "production_counts": {
+    "product_fact_subjects": 50,
+    "product_fact_current": 104,
+    "fact_instances": 105,
+    "confirmations": 105,
+    "evidence_records": 108,
+    "target_evidence_rows": 1,
+    "target_ready_assignments": 1,
+    "target_fact_instances": 0,
+    "target_current_facts": 0,
+    "target_confirmations": 0
+  },
+  "authority_boundary": {
+    "committed_review_assignment_writes": 1,
+    "committed_review_event_writes": 2,
+    "committed_audit_writes": 2,
+    "committed_fact_instance_writes": 0,
+    "committed_product_fact_current_writes": 0,
+    "committed_confirmation_writes": 0,
+    "committed_recommendation_writes": 0,
+    "confirmation_preflight_authorized_for_current_stage": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "decision": "BARRIER_SUPPORT_P0_READY3_CONTROLLED_REVIEW_PREPARATION_PASS",
+  "next_gate": {
+    "stage": "V2.1-8H-R12F_READY3_CONFIRMATION_PREFLIGHT_ONLY",
+    "status": "NOT_EXECUTED",
+    "candidate_assignment_ids": [
+      "4eef7c5f-30d6-495e-a42b-a6cdeaacc380"
+    ],
+    "candidate_evidence_ids": [
+      "45b57536-0637-44e0-b427-bb55923c4812"
+    ],
+    "allowed_rpc": "admin_preflight_product_fact_confirmation_v1",
+    "confirmation_preflight_authorized": true,
+    "confirmation_authorized": false,
+    "expected_confirmation_rpc": "admin_confirm_product_fact_v1",
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  }
+}
