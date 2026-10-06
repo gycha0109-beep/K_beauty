@@ -1,0 +1,211 @@
+{
+  "version": "barrier-support-p0-ready3-post-confirmation-pda-recommendation-invariance-v1",
+  "stage": "V2.1-8H-R12H",
+  "source_main_sha": "b5038995e5b41bd2292b448c59538b9c80f84c49",
+  "captured_on": "2026-10-06",
+  "parent_authority": {
+    "r12g_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-final-product-fact-confirmation-closeout-v1.json",
+    "r12g_git_blob_sha": "30c7421188842d291ffeabb50961f899c7c77914",
+    "r12g_decision": "BARRIER_SUPPORT_P0_READY3_FINAL_PRODUCT_FACT_CONFIRMATION_PASS"
+  },
+  "frozen_r7_authority": {
+    "summary_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-shadow-consumption-evaluation-summary-v1.json",
+    "summary_git_blob_sha": "f83cb5ed0d84881f4e3cf6d34db3a9cde28acabf",
+    "adapter_path": "lib/barrier-support-non-numeric-pda-shadow-adapter.js",
+    "adapter_git_blob_sha": "095ee315f40e601f38991700ec660faf2629c599",
+    "candidate_products": 164,
+    "user_scenarios": 12,
+    "candidate_scenario_evaluations": 1968,
+    "historical_denominator_mutated": false
+  },
+  "mapper_contract": {
+    "applicable_categories": [
+      "moisturizer_balm",
+      "moisturizer_cream",
+      "moisturizer_gel",
+      "moisturizer_lotion_emulsion"
+    ],
+    "usage_role_is_context_only": true,
+    "numeric_contribution": null,
+    "rank_effect": "NONE",
+    "eligibility_effect": "NONE",
+    "production_consumption": "NO"
+  },
+  "target": {
+    "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+    "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+    "fact_instance_id": "3317cbd1-0d05-4342-ad75-d7acf49980d3",
+    "confirmation_id": "9947fc0b-2a75-43a5-8569-156dedcba5e1",
+    "category": "moisturizer_balm",
+    "barrier_support_claim_current": false,
+    "primary_use_role_current": true,
+    "primary_use_role_value": "multi_area",
+    "frozen_candidate_member": true
+  },
+  "exact_r12g_attribution": {
+    "pre_r12g": {
+      "signal_state": "GOVERNED_BARRIER_CLAIM_UNKNOWN",
+      "coverage_state": "missing_fact",
+      "primary_use_role_state": "MISSING",
+      "primary_use_role_values": []
+    },
+    "post_r12g": {
+      "signal_state": "GOVERNED_BARRIER_CLAIM_UNKNOWN",
+      "coverage_state": "missing_fact",
+      "primary_use_role_state": "ESTABLISHED",
+      "primary_use_role_values": [
+        "multi_area"
+      ]
+    },
+    "signal_state_changed": false,
+    "coverage_state_changed": false,
+    "role_context_changed": true,
+    "numeric_contribution_delta": 0,
+    "rank_effect_delta": 0,
+    "eligibility_effect_delta": 0
+  },
+  "live_176_reconciliation": {
+    "pre_r12g": {
+      "catalog_products": 176,
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 48,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 6,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 17,
+        "NOT_APPLICABLE": 105
+      },
+      "coverage_counts": {
+        "category_unknown": 10,
+        "claim_with_usage_role_context": 6,
+        "identity_blocked": 48,
+        "missing_fact": 7,
+        "not_applicable": 105
+      }
+    },
+    "post_r12g": {
+      "catalog_products": 176,
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 48,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 6,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 17,
+        "NOT_APPLICABLE": 105
+      },
+      "coverage_counts": {
+        "category_unknown": 10,
+        "claim_with_usage_role_context": 6,
+        "identity_blocked": 48,
+        "missing_fact": 7,
+        "not_applicable": 105
+      }
+    },
+    "exact_r12g_state_count_delta": 0,
+    "exact_r12g_coverage_count_delta": 0
+  },
+  "frozen_164_reconciliation": {
+    "historical_r7": {
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 51,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 6,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 4,
+        "NOT_APPLICABLE": 103
+      },
+      "coverage_counts": {
+        "claim_with_usage_role_context": 6,
+        "identity_blocked": 51,
+        "missing_fact": 4,
+        "not_applicable": 103
+      },
+      "aggregate_annotation_state_counts": {
+        "blocked": 612,
+        "held_unknown_product_fact": 36,
+        "not_applicable": 1236,
+        "not_relevant": 30,
+        "positive_claim_context_available": 54
+      }
+    },
+    "current_pre_r12g": {
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 48,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 6,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 7,
+        "NOT_APPLICABLE": 103
+      },
+      "coverage_counts": {
+        "claim_with_usage_role_context": 6,
+        "identity_blocked": 48,
+        "missing_fact": 7,
+        "not_applicable": 103
+      },
+      "aggregate_annotation_state_counts": {
+        "blocked": 576,
+        "held_unknown_product_fact": 63,
+        "not_applicable": 1236,
+        "not_relevant": 39,
+        "positive_claim_context_available": 54
+      }
+    },
+    "current_post_r12g": {
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 48,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 6,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 7,
+        "NOT_APPLICABLE": 103
+      },
+      "coverage_counts": {
+        "claim_with_usage_role_context": 6,
+        "identity_blocked": 48,
+        "missing_fact": 7,
+        "not_applicable": 103
+      },
+      "aggregate_annotation_state_counts": {
+        "blocked": 576,
+        "held_unknown_product_fact": 63,
+        "not_applicable": 1236,
+        "not_relevant": 39,
+        "positive_claim_context_available": 54
+      }
+    },
+    "r7_to_current_cumulative_delta": {
+      "blocked_candidates": -3,
+      "unknown_candidates": 3,
+      "note": "cumulative coverage recovery between R7 and R12G; not attributable to the R12G confirmation alone"
+    },
+    "exact_r12g_delta": {
+      "state_counts_changed": false,
+      "coverage_counts_changed": false,
+      "annotation_counts_changed": false,
+      "positive_claim_context_rows_delta": 0,
+      "held_unknown_product_fact_rows_delta": 0,
+      "blocked_rows_delta": 0,
+      "not_relevant_rows_delta": 0,
+      "not_applicable_rows_delta": 0,
+      "candidate_scenario_evaluation_delta": 0
+    }
+  },
+  "recommendation_invariance": {
+    "ranking_outputs_recomputed": false,
+    "top1_top3_product_ids_available_in_frozen_artifact": false,
+    "numeric_contribution_units_delta": 0,
+    "rank_effect_units_delta": 0,
+    "eligibility_effect_units_delta": 0,
+    "candidate_policy_authority_changed": false,
+    "scoring_authority_changed": false,
+    "recommendation_admission_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false,
+    "conclusion": "R12G adds context-only primary_use_role provenance for one UNKNOWN barrier candidate; no ranking or eligibility authority is created"
+  },
+  "hosted_writes": {
+    "product_fact_writes": 0,
+    "pda_writes": 0,
+    "recommendation_writes": 0,
+    "registry_writes": 0
+  },
+  "decision": "BARRIER_SUPPORT_P0_READY3_POST_CONFIRMATION_PDA_RECOMMENDATION_INVARIANCE_PASS",
+  "follow_up": {
+    "status": "NOT_EXECUTED",
+    "remaining_ready3_research_tasks": 5,
+    "focus": "remaining official-evidence gaps; especially barrier_support_claim coverage",
+    "recommendation_activation_still_requires_separate_authority": true
+  }
+}
