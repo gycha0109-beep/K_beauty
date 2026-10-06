@@ -12,11 +12,11 @@ import {
 
 assert.equal(
   FACE_LAB_RENDER_ADAPTER_VERSION,
-  "face-lab-render-adapter-v1"
+  "face-lab-render-adapter-v2"
 );
 assert.equal(
   FACE_LAB_RENDER_SPEC_VERSION,
-  "face-lab-render-spec-v1"
+  "face-lab-render-spec-v2"
 );
 assert.ok(
   FACE_LAB_IDENTITY_LOCK.includes(
@@ -320,6 +320,8 @@ const render =
   buildFaceLabRenderSpec({
     appearanceHandoff,
     look,
+    presentationPreference:
+      "masculine_examples",
     bindingsBySlot: {
       lip_color: {
         candidate:
@@ -344,6 +346,10 @@ assert.equal(
 assert.equal(
   render.lookId,
   "look-route-balanced"
+);
+assert.equal(
+  render.presentationPreference,
+  "masculine_examples"
 );
 assert.equal(
   render.providerPayload,
@@ -660,6 +666,23 @@ assert.equal(routeMismatch.status, "invalid");
 assert.equal(
   routeMismatch.reason,
   "look_route_mismatch"
+);
+
+const invalidPresentation =
+  buildFaceLabRenderSpec({
+    appearanceHandoff,
+    look,
+    presentationPreference:
+      "unsupported_presentation"
+  });
+
+assert.equal(
+  invalidPresentation.status,
+  "invalid"
+);
+assert.equal(
+  invalidPresentation.reason,
+  "presentation_preference_invalid"
 );
 
 const unavailableHandoff =
