@@ -90,7 +90,11 @@ for (const marker of [
   "FACE_LAB_E2E_NEW_OUTPUT_BUDGET",
   "FACE_LAB_PROVIDER_E2E_PARTIAL_BUDGET_REACHED",
   "generationBudgetReached",
-  "face_lab_e2e_checkpoint_case_order_invalid"
+  "face_lab_e2e_checkpoint_case_order_invalid",
+  "intentPlanBinding",
+  "manifest.intentPlanVersion",
+  "manifest.surveyProfileVersion",
+  "manifest.intentKeys"
 ]) {
   assert.ok(
     runner.includes(marker),
