@@ -1,0 +1,114 @@
+{
+  "version": "data-ai29c-d5e-d-r3-cosrx-subject-identity-authority-upgrade-implementation-v1",
+  "stage": "DATA-AI29C-D5E-D-R3",
+  "track": "taxonomy-ai",
+  "decision": "D5E_D_R3_SUBJECT_IDENTITY_AUTHORITY_UPGRADE_IMPLEMENTATION_READY_NOT_DEPLOYED",
+  "sourceMainSha": "291f902d3a47333428213eacbd656cab0ba0ad4d",
+  "mode": "IMPLEMENTATION_ONLY_ZERO_PRODUCTION_SCHEMA_OR_DATA_WRITE",
+  "upstreamDecision": "D5E_D_R2_SUBJECT_IDENTITY_AUTHORITY_UPGRADE_CONTRACT_READY_DESIGN_ONLY",
+  "migrationPath": "supabase/migrations/20261006110000_data_ai29c_d5e_d_r3_subject_identity_authority_upgrade_v1.sql",
+  "implementation": {
+    "internalPlanFunction": "product_fact_subject_identity_authority_upgrade_plan_v1",
+    "preflightFunction": "admin_preflight_product_fact_subject_identity_authority_upgrade_v1",
+    "confirmationFunction": "admin_upgrade_product_fact_subject_identity_authority_v1",
+    "securityDefiner": true,
+    "preflightWriteCount": 0,
+    "directSubjectTableWriteForServiceRole": false,
+    "callableRoles": {
+      "anon": false,
+      "authenticated": false,
+      "serviceRolePreflight": true,
+      "serviceRoleConfirmation": true,
+      "serviceRoleInternalPlan": false
+    }
+  },
+  "allowedTransition": {
+    "from": "gpt-catalog-machine-subject-v1",
+    "to": "trust-phase5-admin-subject-review-v1",
+    "onlyMutableSubjectColumn": "identity_resolution_version",
+    "systemUpdatedColumn": "updated_at"
+  },
+  "guards": [
+    "admin.products.review actor capability",
+    "exact reviewed_identity key set",
+    "existing resolved/current Subject",
+    "product-fact-subject-identity-v1 serializer",
+    "reviewed identity exact-match against existing immutable Subject fields",
+    "DB recomputation of subject_semantic_key",
+    "promoted/resolved source candidate bound to same product",
+    "official HTTPS locator and SHA-256 official content digest",
+    "catalog authority boundary product_fact_write_allowed=false",
+    "exactly one resolved/current Subject for same product+variant+market+region",
+    "stale-sensitive digest over Subject, catalog source and all dependent authority bindings",
+    "explicit payload digest",
+    "explicit prestate digest",
+    "subject advisory lock",
+    "row lock before confirmation",
+    "request idempotency through existing admin audit log"
+  ],
+  "stalePrestateCovers": [
+    "Product Fact Current",
+    "Product Fact Instances",
+    "Research Tasks",
+    "Source Bindings",
+    "Evidence Records",
+    "current Sunscreen Semantic Reviews",
+    "exact current applicability Subject set"
+  ],
+  "successWriteSet": {
+    "product_fact_subjects": {
+      "rows": 1,
+      "columns": [
+        "identity_resolution_version",
+        "updated_at"
+      ]
+    },
+    "product_fact_review_events": {
+      "rows": 1,
+      "event_kind": "subject_identity_authority_upgraded",
+      "reason_code": "controlled_identity_authority_upgrade"
+    },
+    "admin_audit_logs": {
+      "rows": 1,
+      "action": "admin.product_fact.subject_identity_authority_upgraded"
+    },
+    "ProductFact": 0,
+    "Evidence": 0,
+    "SourceBinding": 0,
+    "ResearchTask": 0,
+    "SemanticReview": 0,
+    "Taxonomy": 0,
+    "Recommendation": 0
+  },
+  "currentProductionExpectedPrestate": {
+    "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+    "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "sourceCandidateId": "ce1653d4-5ea2-47a0-bf79-d39f9fb72ae6",
+    "subjectSemanticKey": "db6a09f788a6b6008881525d1b409d3c16d8b3132006c8a0f174607516133501",
+    "productFactCurrent": 3,
+    "productFactInstances": 3,
+    "researchTasks": 3,
+    "sourceBindings": 2,
+    "evidenceRecords": 3,
+    "currentSemanticReviews": 12,
+    "exactCurrentApplicabilitySubjects": 1
+  },
+  "deploymentBoundary": {
+    "productionMigrationApplied": false,
+    "productionPreflightExecuted": false,
+    "productionAuthorityUpgraded": false,
+    "admissionReevaluated": false,
+    "mixedShadowExecuted": false,
+    "d5cD5dAllowlistChanged": false
+  },
+  "nextGate": "DATA-AI29C-D5E-D-R3-P_COSRX_PRODUCTION_PREFLIGHT",
+  "nextGateRequirements": [
+    "merge R3 implementation PR with all CI passing",
+    "deploy migration through governed migration path",
+    "verify RPC privileges and security advisors",
+    "re-read exact COSRX Subject/source candidate/dependent cardinalities",
+    "call read-only preflight only",
+    "require status=ready, exact payload/prestate digests and planned write set 1/1/1",
+    "STOP before explicit confirmation"
+  ]
+}
