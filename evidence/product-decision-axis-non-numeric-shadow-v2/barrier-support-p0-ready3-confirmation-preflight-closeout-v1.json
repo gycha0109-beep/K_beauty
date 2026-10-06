@@ -1,0 +1,125 @@
+{
+  "version": "barrier-support-p0-ready3-confirmation-preflight-closeout-v1",
+  "stage": "V2.1-8H-R12F",
+  "source_main_sha": "0cec5857ba1329ef40d938875916c617a45b8580",
+  "captured_on": "2026-10-06",
+  "parent_authority": {
+    "r12e_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-controlled-review-preparation-closeout-v1.json",
+    "r12e_git_blob_sha": "3f07f240898d9c6be18d97a0ebf96d588c018ab8",
+    "r12e_decision": "BARRIER_SUPPORT_P0_READY3_CONTROLLED_REVIEW_PREPARATION_PASS"
+  },
+  "authority": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "preflight_rpc": "admin_preflight_product_fact_confirmation_v1(uuid,text,jsonb)",
+    "preflight_function_sha256": "7d9ce38e47468fb1a419528256857e399a3d7e50e719f7bd449034c96019f59e",
+    "confirm_rpc": "admin_confirm_product_fact_v1(uuid,text,jsonb,text,text)",
+    "confirm_function_sha256": "b143613eac0e27b7e223379f7b5c20179a89f2b4b04150463c84e880656dcf29",
+    "confirm_called": false
+  },
+  "target": {
+    "task_id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+    "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+    "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+    "assignment_id": "4eef7c5f-30d6-495e-a42b-a6cdeaacc380",
+    "evidence_id": "45b57536-0637-44e0-b427-bb55923c4812",
+    "fact_key": "primary_use_role",
+    "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+    "semantic_status": "supported",
+    "value_type": "enum",
+    "value": "multi_area",
+    "authority_ceiling": "product_specific_primary",
+    "fused_confidence": "high"
+  },
+  "payload": {
+    "assignment_id": "4eef7c5f-30d6-495e-a42b-a6cdeaacc380",
+    "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "fact_key": "primary_use_role",
+    "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "semantic_status": "supported",
+    "value_type": "enum",
+    "value_boolean": null,
+    "value_enum": "multi_area",
+    "value_number": null,
+    "value_unit": null,
+    "value_range_min": null,
+    "value_range_max": null,
+    "value_entity_identifier": null,
+    "market": "KR",
+    "region": null,
+    "locale": null,
+    "valid_from": null,
+    "valid_to": null,
+    "qualifier": {},
+    "parent_fact_instance_id": null,
+    "parent_proposition_key": null,
+    "authority_ceiling": "product_specific_primary",
+    "fused_confidence": "high",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "fusion_input_digest": "61ad796e16ccdd844f2ec2e97c4d47053b6bfa1591830353e53d97efdaeacdf2",
+    "supporting_evidence_ids": [
+      "45b57536-0637-44e0-b427-bb55923c4812"
+    ],
+    "opposing_evidence_ids": []
+  },
+  "execution": {
+    "request_id": "v21-8h-r12f-etude-role-preflight",
+    "status": "ready",
+    "actor_role": "admin_owner",
+    "payload_digest": "6a777a2bab29f38ba246db4d72b6f318465ddbf2fbd0b69bdedfb45dc75898d6",
+    "prestate_digest": "e3d9e16b9aa36cedc37a92911a0b9a62f58d1211af7b3c21bd32345a47915411",
+    "fusion_input_digest": "61ad796e16ccdd844f2ec2e97c4d47053b6bfa1591830353e53d97efdaeacdf2",
+    "previous_current": null,
+    "supporting_evidence_ids": [
+      "45b57536-0637-44e0-b427-bb55923c4812"
+    ],
+    "opposing_evidence_ids": [],
+    "expected_write_set": {
+      "product_fact_current": 1,
+      "product_fact_instances": 1,
+      "product_fact_confirmations": 1,
+      "product_fact_review_events": 1,
+      "product_fact_evidence_links": 1,
+      "product_fact_review_assignments_update": 1
+    }
+  },
+  "post_preflight_readback": {
+    "assignment_state": "ready_for_confirm",
+    "assignment_event_count": 2,
+    "preflight_audit_count": 0,
+    "target_fact_instances": 0,
+    "target_current_facts": 0,
+    "target_confirmations": 0,
+    "target_evidence_links": 0,
+    "global_product_fact_current": 104,
+    "global_fact_instances": 105,
+    "global_confirmations": 105
+  },
+  "authority_boundary": {
+    "confirmation_preflight_complete": true,
+    "confirmation_authorized_in_r12f": false,
+    "confirmation_called": false,
+    "product_fact_materialized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "decision": "BARRIER_SUPPORT_P0_READY3_CONFIRMATION_PREFLIGHT_PASS",
+  "stop_boundary": "STOP_BEFORE_R12G_FINAL_CONFIRMATION",
+  "next_gate": {
+    "stage": "V2.1-8H-R12G_READY3_FINAL_PRODUCT_FACT_CONFIRMATION",
+    "status": "NOT_EXECUTED",
+    "candidate_assignment_id": "4eef7c5f-30d6-495e-a42b-a6cdeaacc380",
+    "candidate_evidence_id": "45b57536-0637-44e0-b427-bb55923c4812",
+    "preflight_payload_digest": "6a777a2bab29f38ba246db4d72b6f318465ddbf2fbd0b69bdedfb45dc75898d6",
+    "preflight_prestate_digest": "e3d9e16b9aa36cedc37a92911a0b9a62f58d1211af7b3c21bd32345a47915411",
+    "requires_fresh_prestate_revalidation": true,
+    "allowed_rpc": "admin_confirm_product_fact_v1(uuid,text,jsonb,text,text)",
+    "confirmation_execution_candidate": true,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  }
+}
