@@ -5,6 +5,10 @@ import { basename, extname, relative, resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { buildFaceLabV2Canonical } from "../lib/face-lab-v2/canonical-composer.js";
 import { buildFaceLabV2CoverageCohort } from "../lib/face-lab-v2/evaluation/harness.js";
+import {
+  applyFaceLabGE3CalibrationSurveyProfile,
+  getFaceLabGE3CalibrationWavePlan
+} from "../lib/face-lab-v2/evaluation/simulation-g-e3-calibration-plan.js";
 import { isFaceLabObservationAnalysis } from "../lib/face-lab-analysis-bundle.js";
 
 const DEFAULT_BASE_URL = "https://k-beauty-two.vercel.app";
@@ -301,77 +305,236 @@ async function postFaceReading({ baseUrl, sourcePath, sourceBytes, mimeType, tok
 function buildPilotIntents(
   analysis,
   intentCount,
-  intentOffset = 0
+  intentOffset = 0,
+  {
+    calibrationStage =
+      "G-E2B",
+    waveId = ""
+  } = {}
 ) {
-  const coverage = buildFaceLabV2CoverageCohort();
-  const groups = new Map();
+  const coverage =
+    buildFaceLabV2CoverageCohort();
+  const groups =
+    new Map();
 
-  for (const caseDef of coverage.cases) {
-    const targetKey = caseDef?.surveyAnswers?.targetSelections?.[0];
-    if (!targetKey) continue;
-    if (!groups.has(targetKey)) groups.set(targetKey, []);
-    groups.get(targetKey).push(caseDef);
+  for (
+    const caseDef of
+    coverage.cases
+  ) {
+    const targetKey =
+      caseDef
+        ?.surveyAnswers
+        ?.targetSelections
+        ?.[0];
+
+    if (!targetKey) {
+      continue;
+    }
+
+    if (!groups.has(targetKey)) {
+      groups.set(
+        targetKey,
+        []
+      );
+    }
+
+    groups
+      .get(targetKey)
+      .push(caseDef);
   }
 
-  const targetEntries =
-    [...groups.entries()];
-  const selectedTargets =
-    targetEntries.slice(
-      intentOffset,
-      intentOffset + intentCount
+  const gE3Plan =
+    calibrationStage === "G-E3"
+      ? getFaceLabGE3CalibrationWavePlan(
+          waveId
+        )
+      : null;
+
+  if (
+    calibrationStage === "G-E3" &&
+    !gE3Plan
+  ) {
+    throw new Error(
+      "g_e3_calibration_wave_plan_missing"
     );
+  }
+
+  if (
+    gE3Plan &&
+    (
+      gE3Plan.intentOffset !==
+        intentOffset ||
+      gE3Plan.targetKeys.length !==
+        intentCount
+    )
+  ) {
+    throw new Error(
+      "g_e3_calibration_wave_plan_window_mismatch"
+    );
+  }
+
+  const selectedTargets =
+    gE3Plan
+      ? gE3Plan.targetKeys.map(
+          (targetKey) => [
+            targetKey,
+            groups.get(
+              targetKey
+            ) || []
+          ]
+        )
+      : [...groups.entries()]
+          .slice(
+            intentOffset,
+            intentOffset +
+              intentCount
+          );
 
   if (
     selectedTargets.length !==
-      intentCount
+      intentCount ||
+    selectedTargets.some(
+      ([, cases]) =>
+        !cases.length
+    )
   ) {
     throw new Error(
       "pilot_distinct_target_coverage_insufficient"
     );
   }
 
-  return selectedTargets.map(([targetKey, cases], index) => {
-    const globalIndex =
-      intentOffset + index;
+  return selectedTargets.map(
+    (
+      [targetKey, cases],
+      index
+    ) => {
+      const globalIndex =
+        intentOffset +
+        index;
 
-    for (let offset = 0; offset < cases.length; offset += 1) {
-      const source = cases[(globalIndex + offset) % cases.length];
-      const surveyAnswers = source?.surveyAnswers;
-      const preview = buildFaceLabV2Canonical({
-        analysis,
-        surveyAnswers,
-        targetFinderResult: null,
-        selectedRouteId: null,
-        locale: "ko"
-      });
-      const route = preview?.routes?.routes?.[0];
-      if (!route?.routeId) continue;
+      const candidateCases =
+        gE3Plan
+          ? cases.filter(
+              (item) =>
+                item.tags?.includes(
+                  "scope_profile:all_domains_facial_hair_disabled"
+                )
+            )
+          : cases;
 
-      const committed = buildFaceLabV2Canonical({
-        analysis,
-        surveyAnswers,
-        targetFinderResult: null,
-        selectedRouteId: route.routeId,
-        locale: "ko"
-      });
-      if (committed?.routes?.selectionState !== "user_selected" ||
-          committed?.appearanceHandoff?.status !== "available") {
-        continue;
+      if (
+        !candidateCases.length
+      ) {
+        throw new Error(
+          "g_e3_calibration_scope_profile_missing_" +
+            targetKey
+        );
       }
 
-      return {
-        intentGroupId: `intent-${String(globalIndex + 1).padStart(2, "0")}`,
-        targetKey,
-        scopeProfile: source.tags?.find((tag) => tag.startsWith("scope_profile:")) || null,
-        surveyAnswers,
-        targetFinderResult: null,
-        selectedRouteId: route.routeId,
-        expectedRouteId: route.routeId
-      };
-    }
+      for (
+        let offset = 0;
+        offset <
+          candidateCases.length;
+        offset += 1
+      ) {
+        const source =
+          candidateCases[
+            (
+              globalIndex +
+              offset
+            ) %
+              candidateCases.length
+          ];
 
-    throw new Error(`pilot_intent_route_missing_${targetKey}`);
-  });
+        const surveyAnswers =
+          gE3Plan
+            ? applyFaceLabGE3CalibrationSurveyProfile({
+                surveyAnswers:
+                  source
+                    ?.surveyAnswers,
+                targetKey,
+                waveId
+              })
+            : source
+                ?.surveyAnswers;
+
+        const preview =
+          buildFaceLabV2Canonical({
+            analysis,
+            surveyAnswers,
+            targetFinderResult:
+              null,
+            selectedRouteId:
+              null,
+            locale: "ko"
+          });
+
+        const route =
+          preview
+            ?.routes
+            ?.routes
+            ?.[0];
+
+        if (!route?.routeId) {
+          continue;
+        }
+
+        const committed =
+          buildFaceLabV2Canonical({
+            analysis,
+            surveyAnswers,
+            targetFinderResult:
+              null,
+            selectedRouteId:
+              route.routeId,
+            locale: "ko"
+          });
+
+        if (
+          committed
+            ?.routes
+            ?.selectionState !==
+            "user_selected" ||
+          committed
+            ?.appearanceHandoff
+            ?.status !==
+            "available"
+        ) {
+          continue;
+        }
+
+        return {
+          intentGroupId:
+            `intent-${String(
+              globalIndex + 1
+            ).padStart(
+              2,
+              "0"
+            )}`,
+          targetKey,
+          scopeProfile:
+            source.tags?.find(
+              (tag) =>
+                tag.startsWith(
+                  "scope_profile:"
+                )
+            ) ||
+            null,
+          surveyAnswers,
+          targetFinderResult:
+            null,
+          selectedRouteId:
+            route.routeId,
+          expectedRouteId:
+            route.routeId
+        };
+      }
+
+      throw new Error(
+        `pilot_intent_route_missing_${targetKey}`
+      );
+    }
+  );
 }
 
 async function postSimulation({
@@ -721,7 +884,8 @@ async function loadReusableCampaignState({
   intentCount,
   generationsPerIntent,
   sourceSha256,
-  expectedCaseNames
+  expectedCaseNames,
+  intentPlanBinding = null
 }) {
   const candidates = [
     {
@@ -785,6 +949,21 @@ async function loadReusableCampaignState({
         generationsPerIntent ||
       manifest.sourceSha256 !==
         sourceSha256 ||
+      (
+        intentPlanBinding &&
+        (
+          manifest.intentPlanVersion !==
+            intentPlanBinding.planVersion ||
+          manifest.surveyProfileVersion !==
+            intentPlanBinding.surveyProfileVersion ||
+          JSON.stringify(
+            manifest.intentKeys
+          ) !==
+            JSON.stringify(
+              intentPlanBinding.targetKeys
+            )
+        )
+      ) ||
       !Array.isArray(
         manifest.cases
       ) ||
@@ -959,6 +1138,36 @@ async function main() {
     );
   }
 
+  const gE3Plan =
+    calibrationStage === "G-E3"
+      ? getFaceLabGE3CalibrationWavePlan(
+          waveId
+        )
+      : null;
+
+  if (
+    calibrationStage === "G-E3" &&
+    !gE3Plan
+  ) {
+    throw new Error(
+      "g_e3_calibration_wave_plan_missing"
+    );
+  }
+
+  if (
+    gE3Plan &&
+    (
+      gE3Plan.intentOffset !==
+        intentOffset ||
+      gE3Plan.targetKeys.length !==
+        intentCount
+    )
+  ) {
+    throw new Error(
+      "g_e3_calibration_wave_plan_window_mismatch"
+    );
+  }
+
   if (
     liveApproval !==
       "I_ACCEPT_OPENAI_IMAGE_COST"
@@ -1035,7 +1244,9 @@ async function main() {
           intentCount,
           generationsPerIntent,
           sourceSha256,
-          expectedCaseNames
+          expectedCaseNames,
+          intentPlanBinding:
+            gE3Plan
         })
       : {
           manifest: null,
@@ -1159,7 +1370,11 @@ async function main() {
   const intents = buildPilotIntents(
     reading.analysis,
     intentCount,
-    intentOffset
+    intentOffset,
+    {
+      calibrationStage,
+      waveId
+    }
   );
   const cases = [];
   let runtimeBinding =
@@ -1190,6 +1405,21 @@ async function main() {
         ).hostname,
       intentCount,
       generationsPerIntent,
+      intentPlanVersion:
+        gE3Plan
+          ?.planVersion ||
+        null,
+      surveyProfileVersion:
+        gE3Plan
+          ?.surveyProfileVersion ||
+        null,
+      intentKeys:
+        gE3Plan
+          ? [...gE3Plan.targetKeys]
+          : intents.map(
+              (item) =>
+                item.targetKey
+            ),
       newOutputBudget,
       caseCount:
         cases.length,
@@ -1380,6 +1610,16 @@ async function main() {
         caseId: simulation.meta.reviewCaseId,
         intentGroupId: intent.intentGroupId,
         generationIndex,
+        targetKey:
+          intent.targetKey,
+        presentationPreference:
+          intent.surveyAnswers
+            ?.presentationPreference ||
+          null,
+        changeTolerance:
+          intent.surveyAnswers
+            ?.changeTolerance ||
+          null,
         account: account.label,
         routeId: simulation.meta.routeId,
         lookId: simulation.meta.lookId,

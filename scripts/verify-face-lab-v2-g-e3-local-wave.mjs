@@ -6,8 +6,18 @@ import {
   buildFaceLabV2CoverageCohort
 } from "../lib/face-lab-v2/evaluation/harness.js";
 import {
-  TARGET_STYLE_REGISTRY
+  TARGET_STYLE_REGISTRY,
+  getTargetStylePrototype
 } from "../lib/face-lab-v2/target-style-registry.js";
+import {
+  FACE_LAB_G_E3_CALIBRATION_PLAN_VERSION,
+  FACE_LAB_G_E3_SURVEY_PROFILE_VERSION,
+  applyFaceLabGE3CalibrationSurveyProfile,
+  listFaceLabGE3CalibrationWavePlans
+} from "../lib/face-lab-v2/evaluation/simulation-g-e3-calibration-plan.js";
+import {
+  buildFaceLabV2Canonical
+} from "../lib/face-lab-v2/canonical-composer.js";
 
 const source =
   readFileSync(
@@ -47,7 +57,11 @@ for (const required of [
   "FACE_LAB_G_E3_CANARY_REJECTED",
   "g_e3_campaign_runtime_binding_mismatch_",
   "g_e3_source_binding_mismatch",
-  "FACE_LAB_G_E3_WAVE_READY_FOR_HUMAN_REVIEW"
+  "FACE_LAB_G_E3_WAVE_READY_FOR_HUMAN_REVIEW",
+  "evaluationPlanVersion",
+  "surveyProfileVersion",
+  "previousPlanCompatible",
+  "g_e3_wave_case_plan_binding_invalid"
 ]) {
   assert.ok(
     source.includes(
@@ -83,6 +97,22 @@ assert.ok(
     "globalIndex + 1"
   )
 );
+
+for (const marker of [
+  "getFaceLabGE3CalibrationWavePlan",
+  "applyFaceLabGE3CalibrationSurveyProfile",
+  "intentPlanVersion",
+  "surveyProfileVersion",
+  "intentKeys",
+  "presentationPreference",
+  "changeTolerance"
+]) {
+  assert.ok(
+    provider.includes(marker),
+    "missing G-E3 plan binding marker: " +
+      marker
+  );
+}
 
 assert.ok(
   source.includes(
@@ -145,6 +175,220 @@ assert.equal(
   ).length,
   12
 );
+
+const plans =
+  listFaceLabGE3CalibrationWavePlans();
+
+assert.equal(
+  plans.length,
+  3
+);
+assert.equal(
+  new Set(
+    plans.flatMap(
+      (plan) =>
+        plan.targetKeys
+    )
+  ).size,
+  12,
+  "G-E3 must cover every target exactly once"
+);
+assert.deepEqual(
+  plans.map(
+    (plan) =>
+      plan.targetKeys
+  ),
+  [
+    [
+      "natural",
+      "cute_playful",
+      "mature_calm",
+      "defined"
+    ],
+    [
+      "clear_soft",
+      "sophisticated",
+      "statement_glam",
+      "classic"
+    ],
+    [
+      "soft",
+      "chic",
+      "minimal",
+      "trendy"
+    ]
+  ]
+);
+
+for (const plan of plans) {
+  assert.equal(
+    plan.planVersion,
+    FACE_LAB_G_E3_CALIBRATION_PLAN_VERSION
+  );
+  assert.equal(
+    plan.surveyProfileVersion,
+    FACE_LAB_G_E3_SURVEY_PROFILE_VERSION
+  );
+  assert.equal(
+    plan.surveyProfile
+      .presentationPreference,
+    "masculine_examples"
+  );
+  assert.equal(
+    plan.surveyProfile
+      .changeTolerance,
+    "moderate"
+  );
+  assert.equal(
+    plan.surveyProfile
+      .recommendationPriority,
+    "target_forward"
+  );
+  assert.deepEqual(
+    plan.surveyProfile
+      .stylingScope,
+    [
+      "hair",
+      "brow_grooming",
+      "makeup",
+      "color",
+      "eyewear",
+      "accessories",
+      "facial_hair"
+    ]
+  );
+
+  const vectors =
+    plan.targetKeys.map(
+      getTargetStylePrototype
+    );
+
+  for (
+    let left = 0;
+    left < vectors.length;
+    left += 1
+  ) {
+    for (
+      let right =
+        left + 1;
+      right < vectors.length;
+      right += 1
+    ) {
+      const axes =
+        Object.keys(
+          vectors[left]
+        );
+      const distance =
+        Math.sqrt(
+          axes.reduce(
+            (sum, axis) =>
+              sum +
+              (
+                vectors[left][axis] -
+                vectors[right][axis]
+              ) ** 2,
+            0
+          )
+        );
+
+      assert.ok(
+        distance >= 0.4,
+        `G-E3 wave contrast collapsed: ${plan.waveId} ${plan.targetKeys[left]} vs ${plan.targetKeys[right]} = ${distance}`
+      );
+    }
+  }
+}
+
+assert.notDeepEqual(
+  plans[0].targetKeys,
+  Object.keys(
+    TARGET_STYLE_REGISTRY
+  ).slice(
+    0,
+    4
+  ),
+  "G-E3 must not regress to registry-order wave slicing"
+);
+
+
+for (const plan of plans) {
+  for (
+    const targetKey of
+      plan.targetKeys
+  ) {
+    const sourceCase =
+      coverage.cases.find(
+        (item) =>
+          item.surveyAnswers
+            .targetSelections[0] ===
+              targetKey &&
+          item.tags?.includes(
+            "scope_profile:all_domains_facial_hair_disabled"
+          )
+      );
+
+    assert.ok(
+      sourceCase,
+      "missing fixed G-E3 coverage source: " +
+        targetKey
+    );
+
+    const surveyAnswers =
+      applyFaceLabGE3CalibrationSurveyProfile({
+        surveyAnswers:
+          sourceCase
+            .surveyAnswers,
+        targetKey,
+        waveId:
+          plan.waveId
+      });
+
+    const preview =
+      buildFaceLabV2Canonical({
+        analysis:
+          sourceCase.analysis,
+        surveyAnswers,
+        selectedRouteId:
+          null,
+        locale: "ko"
+      });
+    const route =
+      preview.routes
+        ?.routes
+        ?.[0];
+
+    assert.ok(
+      route?.routeId,
+      "G-E3 fixed survey produced no route: " +
+        targetKey
+    );
+
+    const committed =
+      buildFaceLabV2Canonical({
+        analysis:
+          sourceCase.analysis,
+        surveyAnswers,
+        selectedRouteId:
+          route.routeId,
+        locale: "ko"
+      });
+
+    assert.equal(
+      committed.routes
+        ?.selectionState,
+      "user_selected"
+    );
+    assert.equal(
+      committed
+        .appearanceHandoff
+        ?.status,
+      "available",
+      "G-E3 fixed survey produced no renderable handoff: " +
+        targetKey
+    );
+  }
+}
+
 assert.equal(
   distinctTargets.size,
   12

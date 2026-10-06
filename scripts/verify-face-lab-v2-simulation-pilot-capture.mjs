@@ -66,7 +66,7 @@ const input = {
     simulationVersion:
       "face-lab-ai-simulation-v1",
     instructionVersion:
-      "face-lab-simulation-instruction-v1",
+      "face-lab-simulation-instruction-v2",
     providerConfigVersion:
       "face-lab-simulation-provider-config-v1",
     providerConfigFingerprint:
