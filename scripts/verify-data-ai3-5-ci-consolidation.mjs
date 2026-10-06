@@ -136,6 +136,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p0-ready3-official-evidence-research-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p0-ready3-official-source-gap-recovery-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p0-ready3-direct-evidence-ingest-preflight-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p0-ready3-controlled-evidence-ingest-closeout-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
