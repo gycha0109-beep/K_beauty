@@ -84,7 +84,7 @@ not_applicable                  105
 
 동일하다.
 
-R12G exact state-count delta = **0**  
+R12G exact state-count delta = **0**
 R12G exact coverage-count delta = **0**
 
 ## frozen 164 × 12 재검증
