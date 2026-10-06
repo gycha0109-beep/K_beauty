@@ -204,7 +204,9 @@
   "decision": "BARRIER_SUPPORT_P0_READY3_POST_CONFIRMATION_PDA_RECOMMENDATION_INVARIANCE_PASS",
   "follow_up": {
     "status": "NOT_EXECUTED",
-    "remaining_ready3_research_tasks": 5,
+    "ready3_task_rows_pending_in_db": 6,
+    "unresolved_official_evidence_gaps": 5,
+    "confirmed_etude_role_task_still_pending_by_design": true,
     "focus": "remaining official-evidence gaps; especially barrier_support_claim coverage",
     "recommendation_activation_still_requires_separate_authority": true
   }
