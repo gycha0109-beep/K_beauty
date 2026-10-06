@@ -1,9 +1,9 @@
 # Face Lab V2 G-E3 Local Wave Runner v1
 
-> Track: Face Lab / face-research  
-> Stage: G-E3 Full Calibration  
-> Shape: 12 intents × 2 generations = 24 outputs  
-> Execution: 3 waves × 8 outputs  
+> Track: Face Lab / face-research
+> Stage: G-E3 Full Calibration
+> Shape: 12 intents × 2 generations = 24 outputs
+> Execution: 3 waves × 8 outputs
 > Paid execution: precheck → one-image canary → explicit human approval → checkpointed resume
 
 ## Evaluation-plan correction
