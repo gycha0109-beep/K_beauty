@@ -12,8 +12,12 @@ import {
 import {
   FACE_LAB_G_E3_CALIBRATION_PLAN_VERSION,
   FACE_LAB_G_E3_SURVEY_PROFILE_VERSION,
+  applyFaceLabGE3CalibrationSurveyProfile,
   listFaceLabGE3CalibrationWavePlans
 } from "../lib/face-lab-v2/evaluation/simulation-g-e3-calibration-plan.js";
+import {
+  buildFaceLabV2Canonical
+} from "../lib/face-lab-v2/canonical-composer.js";
 
 const source =
   readFileSync(
@@ -305,6 +309,85 @@ assert.notDeepEqual(
   ),
   "G-E3 must not regress to registry-order wave slicing"
 );
+
+
+for (const plan of plans) {
+  for (
+    const targetKey of
+      plan.targetKeys
+  ) {
+    const sourceCase =
+      coverage.cases.find(
+        (item) =>
+          item.surveyAnswers
+            .targetSelections[0] ===
+              targetKey &&
+          item.tags?.includes(
+            "scope_profile:all_domains_facial_hair_disabled"
+          )
+      );
+
+    assert.ok(
+      sourceCase,
+      "missing fixed G-E3 coverage source: " +
+        targetKey
+    );
+
+    const surveyAnswers =
+      applyFaceLabGE3CalibrationSurveyProfile({
+        surveyAnswers:
+          sourceCase
+            .surveyAnswers,
+        targetKey,
+        waveId:
+          plan.waveId
+      });
+
+    const preview =
+      buildFaceLabV2Canonical({
+        analysis:
+          sourceCase.analysis,
+        surveyAnswers,
+        selectedRouteId:
+          null,
+        locale: "ko"
+      });
+    const route =
+      preview.routes
+        ?.routes
+        ?.[0];
+
+    assert.ok(
+      route?.routeId,
+      "G-E3 fixed survey produced no route: " +
+        targetKey
+    );
+
+    const committed =
+      buildFaceLabV2Canonical({
+        analysis:
+          sourceCase.analysis,
+        surveyAnswers,
+        selectedRouteId:
+          route.routeId,
+        locale: "ko"
+      });
+
+    assert.equal(
+      committed.routes
+        ?.selectionState,
+      "user_selected"
+    );
+    assert.equal(
+      committed
+        .appearanceHandoff
+        ?.status,
+      "available",
+      "G-E3 fixed survey produced no renderable handoff: " +
+        targetKey
+    );
+  }
+}
 
 assert.equal(
   distinctTargets.size,
