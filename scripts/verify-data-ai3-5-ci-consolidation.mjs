@@ -141,6 +141,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p0-ready3-controlled-review-preparation-closeout-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p0-ready3-confirmation-preflight-closeout-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p0-ready3-final-product-fact-confirmation-closeout-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p0-ready3-post-confirmation-pda-recommendation-invariance-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
