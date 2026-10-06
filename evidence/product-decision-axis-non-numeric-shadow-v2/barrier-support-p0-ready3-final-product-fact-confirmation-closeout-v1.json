@@ -1,0 +1,131 @@
+{
+  "version": "barrier-support-p0-ready3-final-product-fact-confirmation-closeout-v1",
+  "stage": "V2.1-8H-R12G",
+  "source_main_sha": "8e764e07e996cb9d53eca59b45837f5e65d2269c",
+  "captured_on": "2026-10-06",
+  "parent_authority": {
+    "r12f_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-confirmation-preflight-closeout-v1.json",
+    "r12f_git_blob_sha": "6bc724165837e3d76ed485ed8979f12d45ff0dfa",
+    "r12f_decision": "BARRIER_SUPPORT_P0_READY3_CONFIRMATION_PREFLIGHT_PASS"
+  },
+  "authority": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "confirm_rpc": "admin_confirm_product_fact_v1(uuid,text,jsonb,text,text)",
+    "confirm_function_sha256": "b143613eac0e27b7e223379f7b5c20179a89f2b4b04150463c84e880656dcf29",
+    "required_capability": "admin.products.review",
+    "service_role_only": true
+  },
+  "stale_revalidation": {
+    "assignment_state": "ready_for_confirm",
+    "subject_identity_status": "resolved",
+    "subject_current_state": "current",
+    "subject_market": "KR",
+    "registry_write_allowed": true,
+    "registry_write_reason": "ALLOWED",
+    "current_evidence_count": 1,
+    "target_fact_instances_before": 0,
+    "target_current_before": 0,
+    "target_confirmations_before": 0,
+    "fusion_input_digest": "61ad796e16ccdd844f2ec2e97c4d47053b6bfa1591830353e53d97efdaeacdf2",
+    "final_preflight_request_id": "v21-8h-r12g-etude-role-final-preflight",
+    "final_preflight_status": "ready",
+    "payload_digest": "6a777a2bab29f38ba246db4d72b6f318465ddbf2fbd0b69bdedfb45dc75898d6",
+    "prestate_digest": "e3d9e16b9aa36cedc37a92911a0b9a62f58d1211af7b3c21bd32345a47915411",
+    "previous_current": null,
+    "digest_match_with_r12f": true
+  },
+  "confirmation": {
+    "request_id": "v21-8h-r12g-etude-role-confirm",
+    "status": "confirmed",
+    "idempotent": false,
+    "confirmation_id": "9947fc0b-2a75-43a5-8569-156dedcba5e1",
+    "fact_instance_id": "3317cbd1-0d05-4342-ad75-d7acf49980d3",
+    "audit_id": "a68fe1dc-24de-40a1-9a87-fe4f9175f867",
+    "fact_confirmed_event_id": "ad69b1e1-190e-4c5c-b664-c1d3ca2e00b8",
+    "assignment_id": "4eef7c5f-30d6-495e-a42b-a6cdeaacc380",
+    "subject_id": "84beae6f-72c8-424e-b561-c2c067fef9e0",
+    "evidence_id": "45b57536-0637-44e0-b427-bb55923c4812",
+    "fact_key": "primary_use_role",
+    "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+    "semantic_status": "supported",
+    "value_type": "enum",
+    "value_enum": "multi_area",
+    "market": "KR",
+    "authority_ceiling": "product_specific_primary",
+    "fused_confidence": "high",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "fusion_input_digest": "61ad796e16ccdd844f2ec2e97c4d47053b6bfa1591830353e53d97efdaeacdf2",
+    "payload_digest": "6a777a2bab29f38ba246db4d72b6f318465ddbf2fbd0b69bdedfb45dc75898d6",
+    "prestate_digest": "e3d9e16b9aa36cedc37a92911a0b9a62f58d1211af7b3c21bd32345a47915411",
+    "result_digest": "cfe5d6b14a2e150d8bdda0536ec794ed301431e0fdd39a70ebfcbf3b2e548784",
+    "previous_fact_instance_id": null,
+    "created_at": "2026-10-06T18:18:29.892816+09:00"
+  },
+  "production_readback": {
+    "fact_instance": {
+      "fact_instance_id": "3317cbd1-0d05-4342-ad75-d7acf49980d3",
+      "semantic_status": "supported",
+      "value_type": "enum",
+      "value_enum": "multi_area",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "supersedes_fact_instance_id": null,
+      "adjudicated_at": null
+    },
+    "current": {
+      "proposition_key": "379a68e4b599cbcc5583b0a830b3718c3f5af0fc52ec62d4d823a728626834d2",
+      "fact_instance_id": "3317cbd1-0d05-4342-ad75-d7acf49980d3",
+      "confirmation_id": "9947fc0b-2a75-43a5-8569-156dedcba5e1"
+    },
+    "evidence_link": {
+      "evidence_id": "45b57536-0637-44e0-b427-bb55923c4812",
+      "fact_instance_id": "3317cbd1-0d05-4342-ad75-d7acf49980d3",
+      "link_role": "supporting"
+    },
+    "assignment": {
+      "operational_state": "confirmed",
+      "updated_at": "2026-10-06T18:18:29.892816+09:00"
+    },
+    "review_event_count": 3,
+    "confirmation_event_count": 1,
+    "audit_action": "admin.product_fact.confirmed"
+  },
+  "production_counts": {
+    "product_fact_subjects": 50,
+    "product_fact_current_before": 104,
+    "product_fact_current_after": 105,
+    "fact_instances_before": 105,
+    "fact_instances_after": 106,
+    "confirmations_before": 105,
+    "confirmations_after": 106,
+    "evidence_records_after": 108,
+    "evidence_links_after": 106,
+    "target_fact_instances_after": 1,
+    "target_current_after": 1,
+    "target_confirmation_events_after": 1,
+    "target_evidence_links_after": 1
+  },
+  "research_task_invariance": {
+    "task_id": "39449932-6c41-4762-bf39-e6848c9ad09a",
+    "state": "RESEARCH_PENDING",
+    "blocker_code": null,
+    "attempt_count": 0,
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "intentionally_not_mutated_by_confirmation": true
+  },
+  "authority_boundary": {
+    "product_fact_confirmation_complete": true,
+    "recommendation_admission_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false
+  },
+  "decision": "BARRIER_SUPPORT_P0_READY3_FINAL_PRODUCT_FACT_CONFIRMATION_PASS",
+  "follow_up": {
+    "status": "NOT_EXECUTED",
+    "recommended_analysis": "post-confirmation PDA readiness and recommendation invariance reconciliation",
+    "separate_authority_required_for_recommendation_admission": true,
+    "separate_authority_required_for_recommendation_activation": true
+  }
+}
