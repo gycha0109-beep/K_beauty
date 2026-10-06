@@ -550,9 +550,27 @@ function projectState({
   evaluationPlanVersion,
   surveyProfileVersion
 }) {
+  const plan =
+    getFaceLabGE3CalibrationWavePlan(
+      waveId
+    );
+  const resolvedEvaluationPlanVersion =
+    evaluationPlanVersion ||
+    plan?.planVersion ||
+    null;
+  const resolvedSurveyProfileVersion =
+    surveyProfileVersion ||
+    plan?.surveyProfileVersion ||
+    null;
   const sameCampaign =
     previous?.campaignId ===
-      campaignId
+      campaignId &&
+    previous
+      ?.evaluationPlanVersion ===
+      resolvedEvaluationPlanVersion &&
+    previous
+      ?.surveyProfileVersion ===
+      resolvedSurveyProfileVersion
       ? previous
       : null;
   const completedWaves =
@@ -576,8 +594,10 @@ function projectState({
     schemaVersion:
       "face-lab-g-e3-local-campaign-state-v2",
     campaignId,
-    evaluationPlanVersion,
-    surveyProfileVersion,
+    evaluationPlanVersion:
+      resolvedEvaluationPlanVersion,
+    surveyProfileVersion:
+      resolvedSurveyProfileVersion,
     sourceSha256:
       sourceSha256 ||
       sameCampaign
@@ -969,7 +989,17 @@ if (
         complete:
           Boolean(
             manifest
-          )
+          ),
+        intentKeys:
+          [...wavePlan.targetKeys],
+        presentationPreference:
+          wavePlan
+            .surveyProfile
+            .presentationPreference,
+        changeTolerance:
+          wavePlan
+            .surveyProfile
+            .changeTolerance
       },
       null,
       2
@@ -1136,6 +1166,12 @@ if (
           canaryCase
             .pricingVersion ??
           null,
+        targetKey:
+          canaryCase
+            .targetKey,
+        presentationPreference:
+          canaryCase
+            .presentationPreference,
         reviewBoardUrl:
           "http://localhost:3001/face-lab-test/pilot-review",
         nextCommand:
