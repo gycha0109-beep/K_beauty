@@ -1,137 +1,159 @@
 # Face Lab V2 G-E3 Local Wave Runner v1
 
-> Track: Face Lab / face-research
-> Stage: G-E3 Full Calibration
-> Shape: 12 intents × 2 generations = 24 outputs
-> Execution: 3 waves × 8 outputs
+> Track: Face Lab / face-research  
+> Stage: G-E3 Full Calibration  
+> Shape: 12 intents × 2 generations = 24 outputs  
+> Execution: 3 waves × 8 outputs  
 > Paid execution: precheck → one-image canary → explicit human approval → checkpointed resume
+
+## Evaluation-plan correction
+
+G-E3 must not slice the target registry in declaration order.
+
+The previous registry-order grouping put visually adjacent targets such as `natural`, `clear_soft`, and `soft` into the same wave while also varying presentation preference, scope, and change tolerance. That made the generated outputs poor evidence for target-style contrast.
+
+G-E3 now uses the frozen evaluation plan:
+
+### Wave 1
+
+- `natural`
+- `cute_playful`
+- `mature_calm`
+- `defined`
+
+### Wave 2
+
+- `clear_soft`
+- `sophisticated`
+- `statement_glam`
+- `classic`
+
+### Wave 3
+
+- `soft`
+- `chic`
+- `minimal`
+- `trendy`
+
+Each wave contains four deliberately separated target vectors instead of four adjacent registry entries.
+
+All 12 targets appear exactly once across the three waves.
+
+## Fixed calibration survey profile
+
+Every G-E3 target uses the same evaluation conditions so differences are attributable to target style rather than survey noise.
+
+Frozen profile:
+
+- presentation preference: `masculine_examples`
+- change tolerance: `moderate`
+- recommendation priority: `target_forward`
+- styling scope:
+  - hair
+  - brow grooming
+  - makeup
+  - color
+  - eyewear
+  - accessories
+  - facial hair
+- facial hair is explicitly disabled for this calibration source
+- hair change allowance: large
+- hair dye: allowed
+- makeup intensity: light
+- daily styling budget: 30 minutes
+- monetary budget band: standard
+- maintenance tolerance: medium
+
+The male calibration source is therefore not evaluated with randomly mixed masculine/feminine/neutral presentation examples. The selected presentation preference is propagated into the render spec and the image-model instruction, where masculine presentation is explicitly preserved while the committed target-style operations are applied.
+
+## Plan binding
+
+Every G-E3 manifest/checkpoint records:
+
+- evaluation-plan version
+- survey-profile version
+- exact four target keys for the wave
+
+Checkpoint reuse is permitted only when all three match the current frozen plan.
+
+An older checkpoint created under the previous registry-order plan is intentionally rejected and is never reused as evidence for the corrected campaign.
+
+A Wave 1 precheck automatically starts a fresh campaign if the previously recorded campaign state belongs to an older evaluation-plan version. Existing old output directories are left untouched as historical evidence.
 
 ## Why waves exist
 
-G-E3 keeps the 12-intent calibration split into:
+G-E3 runs:
 
-- wave 1: intents 01-04,
-- wave 2: intents 05-08,
-- wave 3: intents 09-12.
+- 4 targets per wave
+- 2 generations per target
+- 8 outputs per wave
+- 24 outputs total
 
-Each intent still receives exactly two generations.
+Each target still receives two independent generations for repeatability review.
 
-A wave has a hard total cap of 8 outputs. The launcher also applies a separate **new-output budget** so a single process cannot accidentally pay for the entire wave before the first result is reviewed.
+A wave has a hard total cap of 8 outputs. A separate new-output budget limits how many **new paid provider outputs** one process may create.
 
 ## Safety model
 
-Two different caps are intentionally preserved:
-
-- `FACE_LAB_E2E_MAX_OUTPUTS=8`: total wave shape may never exceed eight outputs.
-- `FACE_LAB_E2E_NEW_OUTPUT_BUDGET`: maximum number of **new paid provider outputs in this process**.
-
-Reused checkpoint cases do not consume the new-output budget.
-
-Automatic PR/push CI does not execute the paid provider path.
-
-G-E3 paid execution is local-first and fails closed unless the base URL is localhost / loopback.
+- `FACE_LAB_E2E_MAX_OUTPUTS=8`: total wave cap.
+- `FACE_LAB_E2E_NEW_OUTPUT_BUDGET`: new paid outputs allowed in the current process.
+- checkpoint reuse does not consume the new-output budget.
+- automatic PR/push CI does not execute the paid image provider.
+- G-E3 paid execution is localhost/loopback only.
 
 ## Commands
 
-### 1. Precheck — zero paid image calls
+### Wave 1 precheck — zero paid calls
 
 ```bash
 npm run run:face-lab-v2-g-e3-wave -- 1 precheck
 ```
 
-Precheck validates:
+Expected precheck output includes:
 
-- local environment secrets,
-- source image availability,
-- localhost base URL,
-- current campaign continuity,
-- existing checkpoint / canary-gate shape.
+- current campaign ID
+- wave ID
+- exact target keys
+- `masculine_examples`
+- `moderate`
+- provider calls = 0
 
-It does not call the image provider.
-
-For a fresh wave 1 it creates or reuses the current G-E3 campaign identity in the ignored private state.
-
-### 2. Canary — exactly one new paid output
+### Wave 1 canary — one new paid output maximum
 
 ```bash
 npm run run:face-lab-v2-g-e3-wave -- 1 canary
 ```
 
-The provider runner still targets the full 8-case wave, but the process receives:
+After one successful generation:
 
-```text
-FACE_LAB_E2E_MAX_OUTPUTS=8
-FACE_LAB_E2E_NEW_OUTPUT_BUDGET=1
-```
+- `manifest.checkpoint.json` remains partial
+- exactly one case is persisted
+- `manifest.json` must not exist
+- `canary-gate.json` is written
+- process stops with `FACE_LAB_G_E3_CANARY_READY_FOR_REVIEW`
 
-After the first successful output:
-
-- `manifest.checkpoint.json` remains `status: partial`,
-- `manifest.json` must not exist,
-- `canary-gate.json` is written with exact source/output/runtime/provider bindings,
-- the launcher exits successfully with `FACE_LAB_G_E3_CANARY_READY_FOR_REVIEW`.
-
-A second paid image call in the same canary execution is a contract failure.
-
-### 3. Human review
-
-Open the existing local review board:
+### Human review
 
 ```text
 http://localhost:3001/face-lab-test/pilot-review
 ```
 
-Review the canary output before continuing.
-
-### 4. Explicit approval — zero paid image calls
-
-Approve the exact reviewed canary:
+### Approve or reject — zero paid calls
 
 ```bash
 npm run run:face-lab-v2-g-e3-wave -- 1 approve
-```
-
-Or reject it:
-
-```bash
 npm run run:face-lab-v2-g-e3-wave -- 1 reject
 ```
 
-Approval is bound to:
-
-- campaign ID,
-- wave ID,
-- case ID/name,
-- source SHA-256,
-- output SHA-256,
-- render-spec SHA-256,
-- simulation version,
-- instruction version,
-- provider config version/fingerprint.
-
-If any binding changes, resume fails before another paid provider call.
-
-### 5. Resume
+### Resume
 
 ```bash
 npm run run:face-lab-v2-g-e3-wave -- 1 resume
 ```
 
-Resume requires an approved canary gate.
-
-The existing canary is reused and does not consume the new-output budget. The launcher derives the remaining paid budget from the checkpoint:
-
-```text
-remaining = 8 - persisted_case_count
-```
-
-If execution stops after additional successful outputs, those cases remain in `manifest.checkpoint.json`. The next resume reuses them and pays only for still-missing cases.
-
-When all eight cases are present, the provider runner writes the final `manifest.json` and removes the checkpoint.
+Resume reuses all valid persisted cases and pays only for missing cases.
 
 ## Later waves
-
-Wave 2 and wave 3 reuse the same campaign and follow the exact same gate:
 
 ```bash
 npm run run:face-lab-v2-g-e3-wave -- 2 precheck
@@ -145,47 +167,32 @@ npm run run:face-lab-v2-g-e3-wave -- 3 approve
 npm run run:face-lab-v2-g-e3-wave -- 3 resume
 ```
 
-A specific campaign ID may be supplied as the fourth CLI argument when recovery requires it:
-
-```bash
-npm run run:face-lab-v2-g-e3-wave -- 2 resume G-E3-CAL-YYYYMMDDHHMMSS
-```
-
-## Frozen bindings
-
-The launcher fails closed if campaign continuity changes:
-
-- source image hash,
-- simulation version,
-- instruction version,
-- Render Spec version when present,
-- provider config version,
-- provider config fingerprint.
-
-The three waves therefore remain one calibration campaign rather than unrelated experiments.
+Wave 2 and Wave 3 must continue the same plan-compatible campaign.
 
 ## Local state
 
-Wave outputs remain under:
+Outputs remain under:
 
 `private/face-lab-g-e3/<campaign-id>/wave-0N`
 
 Relevant files:
 
-- `manifest.checkpoint.json`: partial persisted progress.
-- `canary-gate.json`: human-gate binding and approval state.
-- `manifest.json`: complete 8-case wave only.
-- `private/face-lab-g-e3/current-campaign.json`: campaign/wave continuation state.
+- `manifest.checkpoint.json`: partial generation progress
+- `canary-gate.json`: exact reviewed-canary binding
+- `manifest.json`: complete 8-case wave
+- `private/face-lab-g-e3/current-campaign.json`: active campaign and evaluation-plan binding
 
-All generated calibration images remain local and ignored by Git.
+All generated images remain local and ignored by Git.
 
 ## Required invariants
 
-1. Precheck, approve and reject make zero image-provider calls.
-2. Canary creates at most one new paid output.
-3. Resume is impossible without an approved canary binding.
-4. Reused outputs never consume the new paid-output budget.
-5. Partial success is checkpointed after every successful paid generation.
-6. Re-running a partial wave pays only for missing outputs.
-7. No mode can exceed eight total outputs for one wave.
-8. CI/push paths never automatically execute paid image generation.
+1. All 12 target styles occur exactly once across the three waves.
+2. Each wave contains four contrastive targets rather than registry-adjacent targets.
+3. Every G-E3 case uses the same masculine, moderate, target-forward calibration profile.
+4. Precheck, approve, and reject make zero image-provider calls.
+5. Canary creates at most one new paid output.
+6. Resume is blocked unless the canary binding is explicitly approved.
+7. Old evaluation-plan checkpoints are rejected before reuse.
+8. Partial success is checkpointed after every successful paid generation.
+9. No wave can exceed eight total outputs.
+10. PR/push CI never automatically invokes the paid image provider.
