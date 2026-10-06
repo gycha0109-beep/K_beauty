@@ -25,6 +25,20 @@ test -d "$WORKSPACE"
 
 INITIAL_STATE="Unknown"
 UDID=""
+APP_PID=""
+
+collect_runtime_diagnostics() {
+  [[ -n "$UDID" ]] || return 0
+  xcrun simctl spawn "$UDID" log show --last 15m --style compact --predicate 'process == "BEJEWELY"' \
+    > "$ARTIFACT_DIR/ios-runtime.log" 2>&1 || true
+  find "$HOME/Library/Logs/DiagnosticReports" -type f \
+    \( -name 'BEJEWELY*.ips' -o -name 'BEJEWELY*.crash' \) \
+    -newer "$START_MARKER" -print > "$ARTIFACT_DIR/crash-reports.txt" 2>/dev/null || true
+  mkdir -p "$ARTIFACT_DIR/crash-reports"
+  while IFS= read -r report; do
+    [[ -f "$report" ]] && cp "$report" "$ARTIFACT_DIR/crash-reports/" || true
+  done < "$ARTIFACT_DIR/crash-reports.txt"
+}
 
 stage_artifacts() {
   set +e
@@ -40,10 +54,15 @@ stage_artifacts() {
 }
 
 cleanup() {
+  local status=$?
+  set +e
+  collect_runtime_diagnostics
   stage_artifacts
   if [[ -n "$UDID" && "$INITIAL_STATE" != "Booted" ]]; then
     xcrun simctl shutdown "$UDID" >/dev/null 2>&1 || true
   fi
+  trap - EXIT
+  exit "$status"
 }
 trap cleanup EXIT
 
@@ -179,6 +198,36 @@ assert_screenshot_excludes() {
   xcrun swift "$OCR_SCRIPT" "$image" excludes "$@"
 }
 
+# Observe one navigation attempt; never reopen the URL or relaunch to obtain a passing frame.
+wait_for_screenshot_contains() {
+  local target="$1"
+  shift
+  local deadline=$((SECONDS + 45))
+  local frame=""
+  for attempt in $(seq -w 1 10); do
+    if (( SECONDS >= deadline )); then break; fi
+    if ! kill -0 "$APP_PID" 2>/dev/null; then
+      echo "Original iOS app process exited while waiting for $target" >&2
+      return 1
+    fi
+    frame="${target%.png}-wait-$attempt.png"
+    xcrun simctl io "$UDID" screenshot "$frame" >/dev/null
+    if assert_screenshot_contains "$frame" "$@" > "$frame.ocr.txt" 2>&1; then
+      kill -0 "$APP_PID" || return 1
+      cp "$frame" "$target"
+      printf 'MOBILE_IOS_TRANSITION_OBSERVED=PASS file=%s attempt=%s pid=%s\n' "$target" "$attempt" "$APP_PID"
+      return 0
+    fi
+    sleep 2
+  done
+  if [[ -n "$frame" ]]; then
+    cp "$frame" "$target"
+    cat "$frame.ocr.txt" >&2
+  fi
+  echo "iOS transition did not reach required screen in ten frames / 45-second observation budget" >&2
+  return 1
+}
+
 {
   xcodebuild -version
   printf '\n'
@@ -273,6 +322,10 @@ LAUNCH_OUTPUT="$(xcrun simctl launch --terminate-running-process "$UDID" "$BUNDL
 printf '%s\n' "$LAUNCH_OUTPUT" | tee "$ARTIFACT_DIR/launch.txt"
 printf '%s\n' "$LAUNCH_OUTPUT" | grep -F "$BUNDLE_ID:" >/dev/null
 printf 'MOBILE_IOS_DIRECT_APP_LAUNCH=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
+APP_PID="${LAUNCH_OUTPUT##*: }"
+[[ "$APP_PID" =~ ^[1-9][0-9]*$ ]]
+kill -0 "$APP_PID"
+printf 'MOBILE_IOS_APP_PID=%s\n' "$APP_PID" | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
 write_ocr_script
 FLASH_DIR="$ARTIFACT_DIR/initial-entry-frames"
@@ -294,9 +347,8 @@ done
 printf 'MOBILE_IOS_NO_HOME_FLASH=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
 xcrun simctl openurl "$UDID" "$URL_SCHEME:///"
-sleep 4
 HOME_SCREENSHOT="$ARTIFACT_DIR/home-same-runtime-en.png"
-xcrun simctl io "$UDID" screenshot "$HOME_SCREENSHOT" >/dev/null
+wait_for_screenshot_contains "$HOME_SCREENSHOT" "BEJEWELY" "Find what fits your skin today"
 assert_screenshot_contains "$HOME_SCREENSHOT" "BEJEWELY" "Find what fits your skin today"
 printf 'MOBILE_IOS_SAME_RUNTIME_HOME_ACCESS=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
@@ -311,8 +363,7 @@ sleep 4
 xcrun simctl io "$UDID" screenshot "$ARTIFACT_DIR/my-signed-out-en.png" >/dev/null
 printf 'MOBILE_IOS_MY_ROUTE_OPEN=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
-xcrun simctl spawn "$UDID" log show --last 15m --style compact --predicate 'process == "BEJEWELY"' \
-  > "$ARTIFACT_DIR/ios-runtime.log" 2>&1 || true
+collect_runtime_diagnostics
 
 if grep -Eiq 'Terminating app due to uncaught exception|RCTFatal|EXC_CRASH|SIGABRT|fatal error' "$ARTIFACT_DIR/ios-runtime.log"; then
   printf 'MOBILE_IOS_CRASH_SCAN=FAIL\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
@@ -320,10 +371,6 @@ if grep -Eiq 'Terminating app due to uncaught exception|RCTFatal|EXC_CRASH|SIGAB
 fi
 
 CRASH_REPORTS="$ARTIFACT_DIR/crash-reports.txt"
-find "$HOME/Library/Logs/DiagnosticReports" -type f \
-  \( -name 'BEJEWELY*.ips' -o -name 'BEJEWELY*.crash' \) \
-  -newer "$START_MARKER" -print > "$CRASH_REPORTS" 2>/dev/null || true
-
 test ! -s "$CRASH_REPORTS"
 printf 'MOBILE_IOS_CRASH_SCAN=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 printf 'MOBILE_IOS_SIMULATOR_SMOKE=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"

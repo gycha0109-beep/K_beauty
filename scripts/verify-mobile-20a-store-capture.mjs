@@ -19,7 +19,7 @@ function assert(condition, label) {
 
 const listing = JSON.parse(read("docs/store/mobile-store-listing-final.json"));
 const result = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
-const capture = read("scripts/capture-mobile-store-assets.sh");
+const capture = read("scripts/capture-mobile-store-assets.sh").replace(/\r\n/g, "\n");
 const runtimeWorkflow = read(".github/workflows/mobile-android-runtime.yml");
 const workflowStart = runtimeWorkflow.indexOf("\n  store-capture-20a:");
 const workflowEnd = runtimeWorkflow.indexOf("\n  store-capture-20b:", workflowStart + 1);
@@ -158,7 +158,7 @@ const enSurveyPosition = capture.indexOf('scroll_text_into_store_frame "Skin sur
 const enFramePosition = capture.indexOf("\nposition_en_analyze_store_frame\n", enSurveyPosition);
 const enAnalyzeCapture = capture.indexOf('capture_png "02-analyze-en-1080x1920.png"', enFramePosition);
 const localeSessionReset = capture.indexOf("reset_store_capture_session\n", enAnalyzeCapture);
-const koLocaleSwitch = capture.indexOf('tap_text "locale-ko"', localeSessionReset);
+const koLocaleSwitch = capture.indexOf('tap_text "Switch language to Korean"', localeSessionReset);
 const koHomeCapture = capture.indexOf('capture_png "01-home-ko-1080x1920.png"', koLocaleSwitch);
 const koSurveyPosition = capture.indexOf('scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8', koHomeCapture);
 const koFramePosition = capture.indexOf("\nposition_ko_analyze_store_frame\n", koSurveyPosition);

@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/auth-js";
 import { getMobileApiBaseUrl } from "../../lib/env";
+import { fetchWithTimeout } from "../../lib/request";
 import { getNativeFreeShareId } from "./saved-report-client";
 
 export type NativePublicShare = Readonly<{
@@ -43,7 +44,7 @@ export async function publishNativeFreeSavedReport(
     throw new Error("mobile_public_share_id_invalid");
   }
 
-  const response = await fetch(`${getMobileApiBaseUrl()}/api/results`, {
+  const response = await fetchWithTimeout(`${getMobileApiBaseUrl()}/api/results`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${session.access_token}`,

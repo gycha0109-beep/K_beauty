@@ -1,5 +1,23 @@
 # CI Workflow Responsibility Map
 
+## Mobile release hardening dependency exception — 2026-10-03
+
+Mobile CI, Android Runtime, iOS Shell and Distribution Authority watch root
+`package.json`/`package-lock.json`. A workspace dependency change can change the
+compiled native graph while leaving mobile source files untouched. These four
+automatic owners are required by `verify-ci-trigger-topology.mjs`; its mobile
+root-trigger count is four. Native Shell compatibility is now manual-only.
+
+Canonical API contract checks remain in Mobile API Integration. Privacy and consumer
+copy remain in Store Readiness, whose paths include the direct files now read by
+those verifiers. Mobile CI adds the deterministic release-hardening logic suite.
+Android still builds once and runs the existing smoke, 20A and 20B consumers.
+Three legacy workflow names are retained as manual checks of an explicitly selected,
+already successful producer run, with no polling. Signed jobs remain manual and
+native source filters remain explicit. Workflow/job names and Watchtower bindings
+are preserved. Current-head remote verification remains pending; see
+[Stage A verification](consolidation-audits/mobile-ci-correction-verification.md).
+
 This document separates **workflow technical responsibility** from **CI Watchtower run attribution**.
 
 ## Non-negotiable rule
@@ -77,7 +95,9 @@ Mobile CI is now represented as six technical responsibilities while preserving 
 - `mobile-e2e`: Android/iOS install-and-runtime shell verification in `mobile-native-shell.yml` and `mobile-ios-shell.yml`.
 - `mobile-release-store`: policy, signing/distribution and store capture/assets in the Store Readiness, MOBILE-15 and MOBILE-20 workflows.
 
-PR #746 proved same-head green equivalence for `mobile-api-integration.yml`, `mobile-ci.yml` and `current-main-health`. The six API-integration verifiers were therefore removed from `mobile-ci.yml`, and the ten duplicated mobile static checks were removed from `current-main-health`; Mobile Client and Mobile API Integration are now the canonical owners for those contracts. PR #749 then proved Android runtime consolidation on head `bb3cc23c6d03b25fcc0a781b15a2ba9f1ea0b96f`: the canonical `mobile-android-runtime.yml` APK producer, its Native Shell/MOBILE-20A/MOBILE-20B consumers, all three legacy Android workflows, and Current Main Health were green on the same head. `mobile-android-runtime.yml` is therefore the canonical Android debug-APK/runtime/store-capture owner and builds the APK exactly once for its three consumers. Because repository rulesets are empty but classic branch-protection requirements are unreadable to the current integration (403), `mobile-native-shell.yml`, `mobile-20a-store-capture.yml` and `mobile-20b-store-capture.yml` are retained only as lightweight required-check compatibility gates: they preserve the existing job names, wait for the same-head canonical Android Runtime run through the Actions read API, and fail closed unless that canonical run succeeds. They no longer build APKs or boot emulators.
+PR #746 proved same-head green equivalence for `mobile-api-integration.yml`, `mobile-ci.yml` and `current-main-health`. The six API-integration verifiers were therefore removed from `mobile-ci.yml`, and the ten duplicated mobile static checks were removed from `current-main-health`; Mobile Client and Mobile API Integration are now the canonical owners for those contracts. PR #749 then proved Android runtime consolidation on head `bb3cc23c6d03b25fcc0a781b15a2ba9f1ea0b96f`: the canonical `mobile-android-runtime.yml` APK producer, its Native Shell/MOBILE-20A/MOBILE-20B consumers, all three legacy Android workflows, and Current Main Health were green on the same head. `mobile-android-runtime.yml` is therefore the canonical Android debug-APK/runtime/store-capture owner and builds the APK exactly once for its three consumers. The 2026-10-03 read-only protection audit supersedes the earlier 403 observation: main reports protected=false, classic required_status_checks returns 404 (Branch not protected), and repository rulesets/effective main rules are empty. The local Stage A candidate therefore retains `mobile-native-shell.yml`, `mobile-20a-store-capture.yml` and `mobile-20b-store-capture.yml` as manual-only completed-run checks. Their existing job names remain available, but automatic PR/push polling is removed. Each manual invocation requires the producer run ID, latest attempt and original event, and checks the calling repository, canonical workflow, exact checked-out SHA, four successful jobs and four unexpired artifacts. No APK is built and no emulator is started in these legacy files. Stage A was verified on candidate f70078a4 with current Android/iOS runtime and all three manual same-producer checks; dated A/B results are recorded in the verification report. See [Stage A verification](consolidation-audits/mobile-ci-correction-verification.md).
+
+The Android Runtime and iOS Shell owners each record a lightweight Linux shadow impact plan through scripts/resolve-mobile-ci-impact.mjs. Only root package/lock changes can enter isolated, credential-free SDK resolution comparison. Both platforms remain selected; the plan is impact evidence, not a runtime PASS. Each owner has an always-running final guard that rejects a failed/missing plan or any failed/skipped native job. Existing job/artifact names, Track binding and the 69-workflow registry remain intact. Skip activation is HOLD pending an actual root-dependency-only PR observation after this source is available on the target branch; main merge is outside the current authorization.
 
 ### Site E2E
 

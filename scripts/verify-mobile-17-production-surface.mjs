@@ -10,7 +10,13 @@ const files = [
   "apps/mobile/app/index.tsx",
   "apps/mobile/app/analyze.tsx",
   "apps/mobile/app/my.tsx",
-  "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+  "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx",
+  "apps/mobile/app/saved-report.tsx",
+  "apps/mobile/app/premium.tsx",
+  "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx",
+  "apps/mobile/app/auth/callback.tsx",
+  "apps/mobile/components/NativePrivacyLinks.tsx",
+  "apps/mobile/components/NativeAccountDeletionCard.tsx"
 ];
 
 const source = Object.fromEntries(
@@ -24,6 +30,9 @@ const forbiddenUserSurfaceFragments = [
   "MOBILE-5",
   "MOBILE-6",
   "MOBILE-7",
+  "MOBILE-8",
+  "MOBILE-9",
+  "MOBILE-11",
   "Native shell ready",
   "native shell",
   "Native My",

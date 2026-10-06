@@ -5,6 +5,37 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/app/auth/callback.tsx"
+      - "apps/mobile/app/index.tsx"
+      - "apps/mobile/app/premium.tsx"
+      - "apps/mobile/app/privacy-account.tsx"
+      - "apps/mobile/app/saved-report.tsx"
+      - "apps/mobile/components/NativePrivacyLinks.tsx"
+      - "apps/mobile/components/NativeAccountDeletionCard.tsx"
+      - "apps/mobile/components/ScreenShell.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+      - "apps/mobile/features/analyze/analyze-client.ts"
+      - "apps/mobile/features/camera/NativeFaceCamera.tsx"
+      - "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx"
+      - "apps/mobile/features/premium/premium-client.ts"
+      - "apps/mobile/features/reports/NativeSavedReport.tsx"
+      - "apps/mobile/features/reports/public-result-client.ts"
+      - "apps/mobile/features/reports/public-share-client.ts"
+      - "apps/mobile/features/reports/saved-report-client.ts"
+      - "apps/mobile/lib/auth.ts"
+      - "apps/mobile/lib/auth-callback.ts"
+      - "apps/mobile/lib/env.ts"
+      - "apps/mobile/lib/my.ts"
+      - "apps/mobile/lib/supabase.ts"
+      - "apps/mobile/lib/account-deletion.ts"
+      - "apps/mobile/lib/request.ts"
+      - "apps/mobile/lib/request-scope.ts"
+      - "apps/mobile/lib/photo-cache.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/resolve-mobile-ci-impact.mjs"
+      - "scripts/test-mobile-ci-impact.mjs"
       - "apps/mobile/modules/**"
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
@@ -20,6 +51,9 @@ on:
       - "apps/mobile/.gitignore"
       - "docs/store/mobile-store-listing-final.json"
       - "scripts/verify-mobile-native-shell.mjs"
+      - "scripts/apply-mobile-screens-android-compat.mjs"
+      - "scripts/test-mobile-screens-android-compat.mjs"
+      - "scripts/patches/react-native-screens-4.26.2/**"
       - "scripts/verify-mobile-android-smoke.sh"
       - "scripts/capture-mobile-store-assets.sh"
       - "scripts/capture-mobile-store-scenarios.sh"
@@ -39,6 +73,37 @@ on:
   push:
     branches: [main]
     paths:
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/app/auth/callback.tsx"
+      - "apps/mobile/app/index.tsx"
+      - "apps/mobile/app/premium.tsx"
+      - "apps/mobile/app/privacy-account.tsx"
+      - "apps/mobile/app/saved-report.tsx"
+      - "apps/mobile/components/NativePrivacyLinks.tsx"
+      - "apps/mobile/components/NativeAccountDeletionCard.tsx"
+      - "apps/mobile/components/ScreenShell.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+      - "apps/mobile/features/analyze/analyze-client.ts"
+      - "apps/mobile/features/camera/NativeFaceCamera.tsx"
+      - "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx"
+      - "apps/mobile/features/premium/premium-client.ts"
+      - "apps/mobile/features/reports/NativeSavedReport.tsx"
+      - "apps/mobile/features/reports/public-result-client.ts"
+      - "apps/mobile/features/reports/public-share-client.ts"
+      - "apps/mobile/features/reports/saved-report-client.ts"
+      - "apps/mobile/lib/auth.ts"
+      - "apps/mobile/lib/auth-callback.ts"
+      - "apps/mobile/lib/env.ts"
+      - "apps/mobile/lib/my.ts"
+      - "apps/mobile/lib/supabase.ts"
+      - "apps/mobile/lib/account-deletion.ts"
+      - "apps/mobile/lib/request.ts"
+      - "apps/mobile/lib/request-scope.ts"
+      - "apps/mobile/lib/photo-cache.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/resolve-mobile-ci-impact.mjs"
+      - "scripts/test-mobile-ci-impact.mjs"
       - "apps/mobile/modules/**"
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
@@ -54,6 +119,9 @@ on:
       - "apps/mobile/.gitignore"
       - "docs/store/mobile-store-listing-final.json"
       - "scripts/verify-mobile-native-shell.mjs"
+      - "scripts/apply-mobile-screens-android-compat.mjs"
+      - "scripts/test-mobile-screens-android-compat.mjs"
+      - "scripts/patches/react-native-screens-4.26.2/**"
       - "scripts/verify-mobile-android-smoke.sh"
       - "scripts/capture-mobile-store-assets.sh"
       - "scripts/capture-mobile-store-scenarios.sh"
@@ -85,6 +153,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  mobile-impact-plan:
+    name: Android Mobile Impact Shadow Plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      candidate_sha: ${{ steps.plan.outputs.candidate_sha }}
+      run_android: ${{ steps.plan.outputs.run_android }}
+      run_ios: ${{ steps.plan.outputs.run_ios }}
+      shadow: ${{ steps.plan.outputs.shadow }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+      - name: Record conservative mobile impact plan
+        id: plan
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          MOBILE_CI_EVENT: ${{ github.event_name }}
+          MOBILE_CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/resolve-mobile-ci-impact.mjs
+
   android-debug-apk:
     name: Android Debug APK Build
     runs-on: ubuntu-24.04
@@ -113,6 +206,20 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
+          # Prebuild generates Gradle files later; hash the tracked native inputs.
+          cache-dependency-path: |
+            package.json
+            package-lock.json
+            apps/mobile/package.json
+            apps/mobile/app.json
+            apps/mobile/modules/**
+            packages/shared/package.json
+            .github/workflows/mobile-android-runtime.yml
+            scripts/apply-mobile-screens-android-compat.mjs
+            scripts/patches/react-native-screens-4.26.2/manifest.json
+            scripts/patches/react-native-screens-4.26.2/android/src/main/cpp/*
+            scripts/patches/react-native-screens-4.26.2/cpp/*
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
@@ -128,10 +235,17 @@ jobs:
       - name: Install monorepo dependencies
         run: npm ci
 
+      - name: Apply bounded Android Screens listener compatibility
+        run: node scripts/apply-mobile-screens-android-compat.mjs
+
       - name: Verify shared Android build contracts
+        env:
+          MOBILE_CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         shell: bash
         run: |
           set -euo pipefail
+          node --test scripts/test-mobile-screens-android-compat.mjs
+          node --test scripts/test-mobile-ci-impact.mjs
           npm run verify:mobile-foundation
           npm run mobile:typecheck
           npm run mobile:config
@@ -143,7 +257,7 @@ jobs:
         run: npm run verify:mobile-native
 
       - name: Build installable debug APK once
-        run: npm run mobile:build:android:debug
+        run: npm run mobile:build:android:debug -- -- --build-cache
 
       - name: Upload canonical debug APK
         uses: actions/upload-artifact@v6
@@ -405,3 +519,22 @@ jobs:
           path: |
             apps/mobile/.mobile-20b-store-artifacts/**
             apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+
+  mobile-impact-verify:
+    name: Android Selected Native Verification
+    if: always()
+    needs: [mobile-impact-plan, android-debug-apk, native-shell-smoke, store-capture-20a, store-capture-20b]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+      - name: Reject failed planner or selected native jobs
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          MOBILE_CI_NEEDS: ${{ toJSON(needs) }}
+        run: node scripts/resolve-mobile-ci-impact.mjs verify android

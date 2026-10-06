@@ -1,4 +1,5 @@
 import { getMobileApiBaseUrl } from "../../lib/env";
+import { fetchWithTimeout } from "../../lib/request";
 import type { NativeFreeSavedResult } from "./saved-report-client";
 
 export type NativePublicResultLoadResult =
@@ -24,7 +25,7 @@ export async function loadNativePublicResult(shareId: string): Promise<NativePub
   if (!canonicalShareId) return { status: "invalid" };
 
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${getMobileApiBaseUrl()}/api/results/${encodeURIComponent(canonicalShareId)}`,
       {
         method: "GET",

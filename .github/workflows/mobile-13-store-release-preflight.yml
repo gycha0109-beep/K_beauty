@@ -64,6 +64,9 @@ jobs:
       - name: Install monorepo dependencies
         run: npm ci
 
+      - name: Apply bounded Android Screens listener compatibility
+        run: node scripts/apply-mobile-screens-android-compat.mjs
+
       - name: Verify mobile regression boundary
         shell: bash
         run: |

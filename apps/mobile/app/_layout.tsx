@@ -113,7 +113,7 @@ function NativeTabs() {
           headerTintColor: palette.text,
           headerShadowVisible: false,
           sceneStyle: { backgroundColor: palette.background },
-          tabBarActiveTintColor: palette.accent,
+          tabBarActiveTintColor: palette.accentText,
           tabBarInactiveTintColor: palette.textMuted,
           tabBarStyle: {
             backgroundColor: palette.tabBar,
@@ -149,12 +149,15 @@ function NativeTabs() {
                   accessibilityLabel={privacyAccountTitle}
                   onPress={() => router.push("/privacy-account")}
                   style={({ pressed }) => ({
+                    minHeight: 48,
+                    minWidth: 48,
+                    justifyContent: "center",
                     paddingHorizontal: 7,
                     paddingVertical: 6,
                     opacity: pressed ? 0.6 : 1
                   })}
                 >
-                  <Text style={{ color: palette.accent, fontSize: 12, fontWeight: "700" }}>
+                  <Text style={{ color: palette.accentText, fontSize: 12, fontWeight: "700" }}>
                     {privacyTitle}
                   </Text>
                 </Pressable>
@@ -164,12 +167,15 @@ function NativeTabs() {
                   accessibilityLabel={savedReportTitle}
                   onPress={() => router.push("/saved-report")}
                   style={({ pressed }) => ({
+                    minHeight: 48,
+                    minWidth: 48,
+                    justifyContent: "center",
                     paddingHorizontal: 7,
                     paddingVertical: 6,
                     opacity: pressed ? 0.6 : 1
                   })}
                 >
-                  <Text style={{ color: palette.accent, fontSize: 12, fontWeight: "700" }}>
+                  <Text style={{ color: palette.accentText, fontSize: 12, fontWeight: "700" }}>
                     {savedReportTitle}
                   </Text>
                 </Pressable>

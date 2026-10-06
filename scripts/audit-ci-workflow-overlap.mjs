@@ -484,7 +484,9 @@ if (phaseCExecutionSemantics) {
 }
 
 const projectWide = new Set(["current-main-health.yml", "pie-prospective.yml"]);
-const protectedShims = new Set(baseline.protectedCompatibilityShims);
+// Baseline shim names are historical; current registry determines active protection.
+const protectedShims = new Set(graph.filter((node) => node.preservationPolicy === "preserve-as-required-check-compatibility-shim-until-classic-protection-audited").map((node) => node.workflow));
+const manualCompatibility = new Set(baseline.protectedCompatibilityShims);
 const overlaps = [];
 for (let i = 0; i < graph.length; i += 1) {
   for (let j = i + 1; j < graph.length; j += 1) {
@@ -514,6 +516,8 @@ overlaps.sort((a, b) => b.containment - a.containment || b.sharedUnits - a.share
 for (const node of graph) {
   if (protectedShims.has(node.workflow)) {
     node.preliminaryDisposition = "COMPAT_SHIM";
+  } else if (manualCompatibility.has(node.workflow)) {
+    node.preliminaryDisposition = "MANUAL_ONLY_REVIEW";
   } else if (node.workflow === "mobile-android-runtime.yml") {
     node.preliminaryDisposition = "CANONICAL";
   } else if (projectWide.has(node.workflow)) {
@@ -529,9 +533,11 @@ for (const node of graph) {
   }
 }
 
-for (const shim of protectedShims) {
+for (const shim of manualCompatibility) {
   const node = graph.find((item) => item.workflow === shim);
-  assert.ok(node, `${shim}: protected compatibility shim missing`);
+  assert.ok(node, `${shim}: manual compatibility workflow missing`);
+  assert.deepEqual(node.events, ["workflow_dispatch"], `${shim}: routine polling must stay retired`);
+  assert.equal(node.preservationPolicy, "preserve-until-equivalence-proven", `${shim}: stale protected-shim policy`);
   assert.deepEqual(node.directScripts, ["scripts/await-mobile-android-runtime.mjs"], `${shim}: compatibility shim execution drift`);
   assert.ok(!node.capabilities.some((value) => ["android-emulator", "android-debug-build", "android-release-build"].includes(value)), `${shim}: heavy Android execution must stay retired`);
 }

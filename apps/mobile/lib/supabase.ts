@@ -3,6 +3,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as SecureStore from "expo-secure-store";
 import { GoTrueClient } from "@supabase/auth-js";
 import { getMobileSupabasePublicEnv } from "./env";
+import { fetchWithTimeout } from "./request";
 
 const LEGACY_STORAGE_FILE_PREFIX = "bejewely-supabase-";
 const SECURE_STORAGE_PREFIX = "bejewely.auth.";
@@ -255,7 +256,8 @@ export function getMobileSupabaseClient() {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
-      flowType: "pkce"
+      flowType: "pkce",
+      fetch: (url, options) => fetchWithTimeout(String(url), options)
     });
 
     mobileSupabaseClient = { auth };
@@ -287,7 +289,7 @@ export function getMobileSupabaseClient() {
 }
 
 export async function clearMobileSupabaseSessionStorage() {
-  mobileSupabaseClient?.auth.stopAutoRefresh();
   await nativeSessionStorage.removeItem(NATIVE_AUTH_STORAGE_KEY);
-  mobileSupabaseClient = undefined;
+  // Keep the SDK instance: mounted screens subscribe to its auth events.
+  // Clearing the singleton would orphan subscriptions after the next sign-in.
 }

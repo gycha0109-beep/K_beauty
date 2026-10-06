@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "apps/mobile/lib/env.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/verify-mobile-public-env.mjs"
       - ".gitignore"
       - "apps/mobile/app.json"
       - "apps/mobile/package.json"
@@ -16,6 +20,10 @@ on:
   push:
     branches: [main]
     paths:
+      - "apps/mobile/lib/env.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/verify-mobile-public-env.mjs"
       - ".gitignore"
       - "apps/mobile/app.json"
       - "apps/mobile/package.json"
@@ -77,6 +85,9 @@ jobs:
       - name: Install monorepo dependencies
         run: npm ci
 
+      - name: Apply bounded Android Screens listener compatibility
+        run: node scripts/apply-mobile-screens-android-compat.mjs
+
       - name: Verify MOBILE-15 source baseline
         shell: bash
         run: |
@@ -95,6 +106,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     env:
+      EXPO_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       MOBILE_ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.MOBILE_ANDROID_UPLOAD_KEYSTORE_BASE64 }}
       MOBILE_ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.MOBILE_ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
       MOBILE_ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.MOBILE_ANDROID_UPLOAD_KEY_ALIAS }}
@@ -139,6 +153,9 @@ jobs:
 
       - name: Install monorepo dependencies
         run: npm ci
+
+      - name: Validate release public configuration before bundling
+        run: node scripts/verify-mobile-public-env.mjs
 
       - name: Generate Android native project
         run: npm run prebuild:android --workspace @bejewely/mobile
@@ -223,6 +240,9 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 120
     env:
+      EXPO_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
       MOBILE_IOS_DISTRIBUTION_CERT_P12_BASE64: ${{ secrets.MOBILE_IOS_DISTRIBUTION_CERT_P12_BASE64 }}
       MOBILE_IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.MOBILE_IOS_DISTRIBUTION_CERT_PASSWORD }}
@@ -261,6 +281,9 @@ jobs:
 
       - name: Apply bounded Expo Modules JSI compatibility shim
         run: node scripts/apply-expo-modules-jsi-xcode26-compat.mjs
+
+      - name: Validate release public configuration before bundling
+        run: node scripts/verify-mobile-public-env.mjs
 
       - name: Generate iOS native project
         run: npm run prebuild:ios --workspace @bejewely/mobile

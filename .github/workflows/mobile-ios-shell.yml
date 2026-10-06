@@ -5,6 +5,35 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/app/auth/callback.tsx"
+      - "apps/mobile/app/my.tsx"
+      - "apps/mobile/app/premium.tsx"
+      - "apps/mobile/app/privacy-account.tsx"
+      - "apps/mobile/app/saved-report.tsx"
+      - "apps/mobile/components/NativePrivacyLinks.tsx"
+      - "apps/mobile/components/NativeAccountDeletionCard.tsx"
+      - "apps/mobile/components/ScreenShell.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeResult.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+      - "apps/mobile/features/analyze/analyze-client.ts"
+      - "apps/mobile/features/my/NativeMyDiaryView.tsx"
+      - "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx"
+      - "apps/mobile/features/premium/premium-client.ts"
+      - "apps/mobile/features/reports/NativeSavedReport.tsx"
+      - "apps/mobile/features/reports/public-result-client.ts"
+      - "apps/mobile/features/reports/public-share-client.ts"
+      - "apps/mobile/features/reports/saved-report-client.ts"
+      - "apps/mobile/lib/auth-callback.ts"
+      - "apps/mobile/lib/mobile-shell.tsx"
+      - "apps/mobile/lib/account-deletion.ts"
+      - "apps/mobile/lib/request.ts"
+      - "apps/mobile/lib/request-scope.ts"
+      - "apps/mobile/lib/photo-cache.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/resolve-mobile-ci-impact.mjs"
+      - "scripts/test-mobile-ci-impact.mjs"
       - "apps/mobile/modules/**"
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
@@ -20,10 +49,40 @@ on:
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
+      - "scripts/test-mobile-ios-runtime-observer.mjs"
       - ".github/workflows/mobile-ios-shell.yml"
   push:
     branches: [main]
     paths:
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/app/auth/callback.tsx"
+      - "apps/mobile/app/my.tsx"
+      - "apps/mobile/app/premium.tsx"
+      - "apps/mobile/app/privacy-account.tsx"
+      - "apps/mobile/app/saved-report.tsx"
+      - "apps/mobile/components/NativePrivacyLinks.tsx"
+      - "apps/mobile/components/NativeAccountDeletionCard.tsx"
+      - "apps/mobile/components/ScreenShell.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeResult.tsx"
+      - "apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx"
+      - "apps/mobile/features/analyze/analyze-client.ts"
+      - "apps/mobile/features/my/NativeMyDiaryView.tsx"
+      - "apps/mobile/features/premium/NativeCurrentProductsSelector.tsx"
+      - "apps/mobile/features/premium/premium-client.ts"
+      - "apps/mobile/features/reports/NativeSavedReport.tsx"
+      - "apps/mobile/features/reports/public-result-client.ts"
+      - "apps/mobile/features/reports/public-share-client.ts"
+      - "apps/mobile/features/reports/saved-report-client.ts"
+      - "apps/mobile/lib/auth-callback.ts"
+      - "apps/mobile/lib/mobile-shell.tsx"
+      - "apps/mobile/lib/account-deletion.ts"
+      - "apps/mobile/lib/request.ts"
+      - "apps/mobile/lib/request-scope.ts"
+      - "apps/mobile/lib/photo-cache.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/resolve-mobile-ci-impact.mjs"
+      - "scripts/test-mobile-ci-impact.mjs"
       - "apps/mobile/modules/**"
       - "apps/mobile/assets/**"
       - "apps/mobile/app.json"
@@ -39,6 +98,7 @@ on:
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
+      - "scripts/test-mobile-ios-runtime-observer.mjs"
       - ".github/workflows/mobile-ios-shell.yml"
   workflow_dispatch:
     inputs:
@@ -55,6 +115,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  mobile-impact-plan:
+    name: iOS Mobile Impact Shadow Plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      candidate_sha: ${{ steps.plan.outputs.candidate_sha }}
+      run_android: ${{ steps.plan.outputs.run_android }}
+      run_ios: ${{ steps.plan.outputs.run_ios }}
+      shadow: ${{ steps.plan.outputs.shadow }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+      - name: Record conservative mobile impact plan
+        id: plan
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          MOBILE_CI_EVENT: ${{ github.event_name }}
+          MOBILE_CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/resolve-mobile-ci-impact.mjs
+
   ios-native-shell:
     name: iOS Native Shell
     runs-on: macos-26
@@ -103,6 +188,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --test scripts/test-mobile-ios-runtime-observer.mjs
           npm run verify:mobile-foundation
           npm run verify:mobile-entry-routing
           npm run mobile:typecheck
@@ -135,3 +221,22 @@ jobs:
           include-hidden-files: true
           retention-days: 14
           path: apps/mobile/.mobile-ios-artifacts/**
+
+  mobile-impact-verify:
+    name: iOS Selected Native Verification
+    if: always()
+    needs: [mobile-impact-plan, ios-native-shell]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+      - name: Reject failed planner or selected native jobs
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          MOBILE_CI_NEEDS: ${{ toJSON(needs) }}
+        run: node scripts/resolve-mobile-ci-impact.mjs verify ios

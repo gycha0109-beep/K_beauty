@@ -190,7 +190,7 @@ export function NativeSavedReport({ value }: { value: NativeSavedReportRead }) {
   return (
     <View testID="native-saved-report" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
       <View style={styles.header}>
-        <Text style={[styles.kicker, { color: palette.accent }]}>{reportLabel}</Text>
+        <Text style={[styles.kicker, { color: palette.accentText }]}>{reportLabel}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{value.metadata.title || reportLabel}</Text>
         <View style={styles.metaRow}>
           {value.metadata.reportVersion ? <Text style={[styles.meta, { color: palette.textMuted }]}>{copy.version} · {value.metadata.reportVersion}</Text> : null}

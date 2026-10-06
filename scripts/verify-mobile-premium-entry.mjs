@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function read(relativePath) {
-  return fs.readFileSync(path.join(root, relativePath), "utf8");
+  return fs.readFileSync(path.join(root, relativePath), "utf8").replace(/\r\n/g, "\n");
 }
 
 function fail(label) {
@@ -39,14 +39,14 @@ assert(analyzeResult.includes("onOpenPremium"), "free-result-premium-callback");
 assert(analyzeScreen.includes('onOpenPremium={() => router.push("/premium")}'), "premium-route-navigation");
 assert(analyzeScreen.includes("onPhotoChange={setCapturedPhoto}"), "mobile5-camera-regression-contract");
 
-assert(premiumScreen.includes("getNativeSession()"), "native-session-presence-check");
+assert(premiumScreen.includes("observeNativeSession("), "native-session-presence-and-change-check");
 assert(premiumScreen.includes('status: "signed-out"'), "signed-out-local-gate");
 assert(premiumScreen.includes("Sign in on My to create a premium report."), "signed-out-runtime-copy");
 assert(premiumScreen.includes("loadNativePremiumAccess"), "server-access-loader-wiring");
 assert(premiumScreen.includes("createNativePremiumReport"), "server-finalization-wiring");
 assert(premiumScreen.includes("NativeCurrentProductsSelector"), "current-products-selector-wiring");
 assert(premiumScreen.includes('router.replace("/saved-report")'), "mobile8-private-reentry-after-finalize");
-assert(premiumScreen.includes("This mobile slice does not add or change a payment flow."), "payment-boundary-copy");
+assert(premiumScreen.includes("Premium creation is not available with your current access. You can still reopen saved reports."), "payment-boundary-copy");
 assert(premiumScreen.includes('testID="native-premium-create"'), "premium-create-marker");
 assert(premiumScreen.includes('testID="native-premium-state"'), "premium-state-marker");
 

@@ -70,7 +70,12 @@ if (read(mobileSupabase).includes('from "@supabase/supabase-js"')) {
 requireText(mobileAuth, 'provider: "google"', "native Google OAuth");
 requireText(mobileAuth, 'bejewely://auth/callback', "native callback scheme");
 requireText(mobileAuth, "exchangeCodeForSession(code)", "PKCE callback exchange");
-requireText(mobileAuth, "supabase.auth.setSession", "implicit callback fallback");
+requireText(mobileAuth, "parseNativeAuthCode(value, MOBILE_AUTH_REDIRECT_URL)", "approved PKCE callback validation");
+if (read(mobileAuth).includes("supabase.auth.setSession")) {
+  throw new Error("Native OAuth callbacks must not accept raw access/refresh tokens");
+}
+requireText(mobileAuth, "nonce: hashedNonce", "Apple request nonce binding");
+requireText(mobileAuth, "getRandomBytesAsync(32)", "native cryptographic nonce entropy");
 requireText(mobileAuth, 'Authorization: `Bearer ${session.access_token}`', "Bearer API header");
 requireText(mobileCallback, "completeNativeAuthFromUrl(authUrl)", "native callback handler");
 requireText(mobileLayout, 'name="auth/callback"', "callback route registration");
