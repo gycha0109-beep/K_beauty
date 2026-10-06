@@ -884,7 +884,8 @@ async function loadReusableCampaignState({
   intentCount,
   generationsPerIntent,
   sourceSha256,
-  expectedCaseNames
+  expectedCaseNames,
+  intentPlanBinding = null
 }) {
   const candidates = [
     {
@@ -948,6 +949,21 @@ async function loadReusableCampaignState({
         generationsPerIntent ||
       manifest.sourceSha256 !==
         sourceSha256 ||
+      (
+        intentPlanBinding &&
+        (
+          manifest.intentPlanVersion !==
+            intentPlanBinding.planVersion ||
+          manifest.surveyProfileVersion !==
+            intentPlanBinding.surveyProfileVersion ||
+          JSON.stringify(
+            manifest.intentKeys
+          ) !==
+            JSON.stringify(
+              intentPlanBinding.targetKeys
+            )
+        )
+      ) ||
       !Array.isArray(
         manifest.cases
       ) ||
@@ -1122,6 +1138,36 @@ async function main() {
     );
   }
 
+  const gE3Plan =
+    calibrationStage === "G-E3"
+      ? getFaceLabGE3CalibrationWavePlan(
+          waveId
+        )
+      : null;
+
+  if (
+    calibrationStage === "G-E3" &&
+    !gE3Plan
+  ) {
+    throw new Error(
+      "g_e3_calibration_wave_plan_missing"
+    );
+  }
+
+  if (
+    gE3Plan &&
+    (
+      gE3Plan.intentOffset !==
+        intentOffset ||
+      gE3Plan.targetKeys.length !==
+        intentCount
+    )
+  ) {
+    throw new Error(
+      "g_e3_calibration_wave_plan_window_mismatch"
+    );
+  }
+
   if (
     liveApproval !==
       "I_ACCEPT_OPENAI_IMAGE_COST"
@@ -1198,7 +1244,9 @@ async function main() {
           intentCount,
           generationsPerIntent,
           sourceSha256,
-          expectedCaseNames
+          expectedCaseNames,
+          intentPlanBinding:
+            gE3Plan
         })
       : {
           manifest: null,
@@ -1322,7 +1370,11 @@ async function main() {
   const intents = buildPilotIntents(
     reading.analysis,
     intentCount,
-    intentOffset
+    intentOffset,
+    {
+      calibrationStage,
+      waveId
+    }
   );
   const cases = [];
   let runtimeBinding =
@@ -1353,6 +1405,21 @@ async function main() {
         ).hostname,
       intentCount,
       generationsPerIntent,
+      intentPlanVersion:
+        gE3Plan
+          ?.planVersion ||
+        null,
+      surveyProfileVersion:
+        gE3Plan
+          ?.surveyProfileVersion ||
+        null,
+      intentKeys:
+        gE3Plan
+          ? [...gE3Plan.targetKeys]
+          : intents.map(
+              (item) =>
+                item.targetKey
+            ),
       newOutputBudget,
       caseCount:
         cases.length,
@@ -1543,6 +1610,16 @@ async function main() {
         caseId: simulation.meta.reviewCaseId,
         intentGroupId: intent.intentGroupId,
         generationIndex,
+        targetKey:
+          intent.targetKey,
+        presentationPreference:
+          intent.surveyAnswers
+            ?.presentationPreference ||
+          null,
+        changeTolerance:
+          intent.surveyAnswers
+            ?.changeTolerance ||
+          null,
         account: account.label,
         routeId: simulation.meta.routeId,
         lookId: simulation.meta.lookId,
