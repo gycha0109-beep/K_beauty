@@ -32,7 +32,7 @@ const context = {
   simulationVersion:
     "face-lab-ai-simulation-v1",
   instructionVersion:
-    "face-lab-simulation-instruction-v1",
+    "face-lab-simulation-instruction-v2",
   providerConfigVersion:
     FACE_LAB_SIMULATION_PROVIDER_CONFIG_VERSION,
   providerConfigFingerprint:
