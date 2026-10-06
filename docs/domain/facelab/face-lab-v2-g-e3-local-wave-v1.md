@@ -59,12 +59,12 @@ Frozen profile:
 - facial hair is explicitly disabled for this calibration source
 - hair change allowance: large
 - hair dye: allowed
-- makeup intensity: medium
+- makeup intensity: light
 - daily styling budget: 30 minutes
 - monetary budget band: standard
 - maintenance tolerance: medium
 
-The male calibration source is therefore not evaluated with randomly mixed masculine/feminine/neutral presentation examples.
+The male calibration source is therefore not evaluated with randomly mixed masculine/feminine/neutral presentation examples. The selected presentation preference is propagated into the render spec and the image-model instruction, where masculine presentation is explicitly preserved while the committed target-style operations are applied.
 
 ## Plan binding
 
