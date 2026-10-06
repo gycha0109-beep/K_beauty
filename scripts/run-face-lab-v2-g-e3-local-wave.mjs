@@ -786,13 +786,15 @@ const previousPlanCompatible =
   previousState
     ?.surveyProfileVersion ===
       wavePlan.surveyProfileVersion;
-const previousCampaignId =
+const continuationState =
   previousPlanCompatible
-    ? safeCampaignId(
-        previousState
-          ?.campaignId
-      )
+    ? previousState
     : null;
+const previousCampaignId =
+  safeCampaignId(
+    continuationState
+      ?.campaignId
+  );
 
 if (
   waveNumber > 1 &&
@@ -927,7 +929,7 @@ if (
     statePath,
     projectState({
       previous:
-        previousState,
+        continuationState,
       campaignId,
       sourceSha256:
         checkpoint
@@ -1082,7 +1084,7 @@ if (
   }
 
   if (
-    previousState
+    continuationState
       ?.sourceSha256 &&
     previousState
       .sourceSha256 !==
@@ -1094,11 +1096,11 @@ if (
   }
 
   if (
-    previousState
+    continuationState
       ?.runtimeBinding
   ) {
     assertRuntimeBinding(
-      previousState
+      continuationState
         .runtimeBinding,
       checkpoint
         .runtimeBinding
@@ -1121,7 +1123,7 @@ if (
     statePath,
     projectState({
       previous:
-        previousState,
+        continuationState,
       campaignId,
       sourceSha256:
         checkpoint
@@ -1250,7 +1252,7 @@ if (
     statePath,
     projectState({
       previous:
-        previousState,
+        continuationState,
       campaignId,
       sourceSha256:
         checkpoint
@@ -1379,7 +1381,7 @@ if (
   });
 
   if (
-    previousState
+    continuationState
       ?.sourceSha256 &&
     previousState
       .sourceSha256 !==
@@ -1391,11 +1393,11 @@ if (
   }
 
   if (
-    previousState
+    continuationState
       ?.runtimeBinding
   ) {
     assertRuntimeBinding(
-      previousState
+      continuationState
         .runtimeBinding,
       checkpoint
         .runtimeBinding
@@ -1452,11 +1454,11 @@ if (
   });
 
   if (
-    previousState
+    continuationState
       ?.runtimeBinding
   ) {
     assertRuntimeBinding(
-      previousState
+      continuationState
         .runtimeBinding,
       manifest.runtimeBinding
     );
@@ -1466,7 +1468,7 @@ if (
     statePath,
     projectState({
       previous:
-        previousState,
+        continuationState,
       campaignId,
       sourceSha256:
         manifest
