@@ -1,0 +1,164 @@
+{
+  "version": "barrier-support-atopalm-p0-official-evidence-research-v1",
+  "stage": "V2.1-8H-R13C",
+  "source_main_sha": "3b10c0f5ab330632dd4335e635c3478d4f784505",
+  "captured_on": "2026-10-07",
+  "production_project": "bygrczggxfuisupcevaz",
+  "parent_authority": {
+    "r13b_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-atopalm-p0-controlled-subject-registration-closeout-v1.json",
+    "r13b_stage": "V2.1-8H-R13B",
+    "r13b_terminal": "BARRIER_SUPPORT_ATOPALM_P0_CONTROLLED_SUBJECT_REGISTRATION_PASS",
+    "target_product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+    "target_subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc"
+  },
+  "registry": {
+    "version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "identity_serializer_version": "product-fact-subject-identity-v1"
+  },
+  "scope": {
+    "products": 1,
+    "tasks": 2,
+    "allowed_task_ids": [
+      "b1430a7d-79bb-43a5-bfea-a19599441811",
+      "cbdad075-35a1-476e-b3ac-6279b676e73e"
+    ],
+    "evidence_write_authorized": false,
+    "fact_instance_write_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "research_rules": {
+    "evidence_is_not_fact": true,
+    "insufficiency_does_not_imply_false": true,
+    "official_claim_is_not_measured_efficacy": true,
+    "primary_use_role_is_context_only": true,
+    "cross_market_evidence_transfer_forbidden": true,
+    "sibling_or_line_claim_transfer_forbidden": true,
+    "exact_bundle_unit_relation_required": true,
+    "image_only_detail_not_promoted_without_reviewable_fact_bearing_capture": true
+  },
+  "source_captures": [
+    {
+      "source_id": "atopalm_bundle_kr",
+      "source_locator": "https://www.neopharmshop.co.kr/product/detail.html?cate_no=123&display_group=1&product_no=3324",
+      "publisher": "ATOPALM / NEOPHARM",
+      "authority_kind": "official_kr_product_bundle_page",
+      "market": "KR",
+      "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "observed_product_title": "아토팜 릴렉싱 나이트 밤 100ml ×2개 세트",
+      "observed_presentation": "100ml ×2",
+      "relevant_observations": [
+        "Exact official KR bundle page identifies two units of the 100ml Relaxing Night Balm.",
+        "Product detail explicitly states skin-barrier strengthening and includes a human application test naming transepidermal water loss (skin barrier) as an evaluated endpoint.",
+        "Usage instruction says after cleansing or showering to apply to the face, arms, legs and other needed areas.",
+        "Barrier-support proposition is grounded in the explicit product claim; the measurement text is retained as corroboration and is not conflated with the claim semantics.",
+        "Usage instruction explicitly covers multiple application areas and maps to Registry v1 multi_area."
+      ],
+      "captured_on": "2026-10-07",
+      "canonical_capture_digest": "4dca54c0900e568bea4e856b1ad7be75f1cf07907406246b91f6d536b06c7c5b"
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "b1430a7d-79bb-43a5-bfea-a19599441811",
+      "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "fact_key": "barrier_support_claim",
+      "definition_checksum": "108ad711469c9018bc06560fce20257f05d32d3a4ed57571a4df5f653abc850d",
+      "source_ids": [
+        "atopalm_bundle_kr"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": true,
+      "evidence_class": "product_claim",
+      "corroborating_evidence_class": "measurement",
+      "support_summary": "The exact official KR bundle page makes a product-specific skin-barrier strengthening claim. The same page also reports a human application test that names transepidermal water loss (skin barrier) as an evaluated endpoint; that measurement is corroborating context rather than a replacement for the claim semantics.",
+      "reason": "Registry v1 requires product-specific positive evidence. The exact Subject presentation has an explicit product claim, so true is supported without inferring from ingredients, moisturizing language, or measurement alone."
+    },
+    {
+      "task_id": "cbdad075-35a1-476e-b3ac-6279b676e73e",
+      "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "fact_key": "primary_use_role",
+      "definition_checksum": "7e12fb3509c5978f01ab1e7d53ec8a86311de4fa6ead83f0391237abe0044dca",
+      "source_ids": [
+        "atopalm_bundle_kr"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "DIRECT_EVIDENCE_FOUND",
+      "proposed_value": "multi_area",
+      "evidence_class": "usage_instruction",
+      "support_summary": "The exact official KR bundle page instructs use after cleansing or showering on the face, arms, legs and other needed areas.",
+      "reason": "The product-specific instruction explicitly permits multiple application areas, satisfying the existing Registry v1 multi_area usage-role semantics."
+    }
+  ],
+  "production_prestate": {
+    "product_fact_subject_total": 51,
+    "product_fact_current": 105,
+    "fact_instances": 106,
+    "confirmations": 106,
+    "evidence_records": 108,
+    "target_subject_count": 1,
+    "target_current_facts": 0,
+    "target_fact_instances": 0,
+    "target_evidence_records": 0,
+    "target_tasks": [
+      {
+        "id": "b1430a7d-79bb-43a5-bfea-a19599441811",
+        "fact_key": "barrier_support_claim",
+        "state": "RESEARCH_PENDING",
+        "blocker_code": null,
+        "attempt_count": 0,
+        "evidence_id": null,
+        "evidence_candidate_id": null
+      },
+      {
+        "id": "cbdad075-35a1-476e-b3ac-6279b676e73e",
+        "fact_key": "primary_use_role",
+        "state": "RESEARCH_PENDING",
+        "blocker_code": null,
+        "attempt_count": 0,
+        "evidence_id": null,
+        "evidence_candidate_id": null
+      }
+    ]
+  },
+  "summary": {
+    "direct_evidence_found": 2,
+    "evidence_insufficient": 0,
+    "identity_or_scope_blocked": 0,
+    "evidence_db_writes": 0,
+    "fact_instance_writes": 0,
+    "confirmation_writes": 0,
+    "recommendation_writes": 0,
+    "product_fact_subject_total_expected": 51,
+    "product_fact_current_expected": 105,
+    "fact_instances_expected": 106,
+    "confirmations_expected": 106,
+    "evidence_records_expected": 108
+  },
+  "authority_boundary": {
+    "evidence_ingest_authorized": false,
+    "product_fact_confirmation_authorized": false,
+    "recommendation_admission_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false
+  },
+  "terminal": "BARRIER_SUPPORT_ATOPALM_P0_OFFICIAL_EVIDENCE_RESEARCH_DIRECT2",
+  "next_gate": {
+    "stage": "V2.1-8H-R13D_ATOPALM_DIRECT_EVIDENCE_INGEST_PREFLIGHT",
+    "status": "NOT_EXECUTED",
+    "unresolved_task_count": 0,
+    "direct_evidence_task_count": 2,
+    "evidence_ingest_authorized": false
+  }
+}
