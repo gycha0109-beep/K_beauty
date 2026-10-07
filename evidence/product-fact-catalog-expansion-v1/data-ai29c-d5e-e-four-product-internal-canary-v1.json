@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "data-ai29c-d5e-e-four-product-internal-canary-evidence-v1",
+  "stage": "DATA-AI29C-D5E-E",
+  "decision": "D5E_E_FOUR_PRODUCT_INTERNAL_CANARY_DEPLOYED_PROBE_REQUIRED",
+  "target": {
+    "legacyProductionSunscreenCount": 11,
+    "existingD5cTargetCount": 3,
+    "cosrxProductId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "internalCanaryTargetCount": 4,
+    "combinedInternalCanaryCount": 15
+  },
+  "authorityIsolation": {
+    "strategy": "EXISTING_D5C_THREE_PLUS_SEPARATE_COSRX_BOUNDED_READER",
+    "d5cD5dSourceFilesModified": false,
+    "d5cD5dAllowlistCount": 3,
+    "cosrxInD5cD5dAllowlist": false,
+    "betaAllowlistExpanded": false,
+    "d5dRuntimeSwitchChanged": false,
+    "d5dRuntimeActivation": {
+      "scope": "authenticated_product_query_beta",
+      "enabled": true,
+      "authorizedPhase": "DATA-AI29C-D5D"
+    }
+  },
+  "productionAuthority": {
+    "migrationVersion": "20261007155804",
+    "migrationName": "data_ai29c_d5e_e_cosrx_internal_canary_authority_v1",
+    "applied": true,
+    "cosrxReadContractVersion": "data-ai29c-d5e-e-cosrx-canary-authority-read-v1",
+    "cosrxRpc": "read_data_ai29c_d5e_e_cosrx_canary_authority_v1",
+    "runtimeRole": "recommendation_admission_runtime",
+    "publicExecute": false,
+    "anonExecute": false,
+    "authenticatedExecute": false,
+    "serviceRoleExecute": false,
+    "runtimeRawTaxonomySelect": false,
+    "runtimeDirectSemanticRpc": false
+  },
+  "admissionPrerequisite": {
+    "sourceStage": "DATA-AI29C-D5E-D-R4",
+    "sourceDecision": "D5E_D_R4_COSRX_RECOMMENDATION_ADMISSION_REEVALUATION_PASS",
+    "admissionDecision": "SUNSCREEN_INITIAL_ADMISSION_GRANT",
+    "cosrxSpfValue": 50,
+    "cosrxUvaLabel": "PA++++",
+    "cosrxUvFilterType": "organic"
+  },
+  "canary": {
+    "route": "/api/internal/product-query-spf-four-product-canary",
+    "deploymentRef": "main",
+    "auth": "existing DATA-AI5 GitHub Actions OIDC",
+    "cases": [
+      {
+        "id": "outdoor_spf_on",
+        "repeats": 2
+      },
+      {
+        "id": "rollback_off",
+        "repeats": 2
+      },
+      {
+        "id": "non_outdoor_control",
+        "repeats": 2
+      }
+    ],
+    "expectedDeployedProbeCount": 6,
+    "executed": false
+  },
+  "expectedSpfDelta": {
+    "a6994fcd-302f-4e63-acbe-91a3f17a5a65": 2,
+    "b90bf992-07ae-4f49-a3a4-d90ea6d4a858": 4,
+    "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17": 4,
+    "888eca86-af25-4a12-b9ea-47922d83f520": 6,
+    "legacyEach": 6
+  },
+  "productionBoundary": {
+    "productionWritesFromCanary": 0,
+    "recommendationLogWrites": 0,
+    "productRowMutation": false,
+    "permanentCandidateAdmissionMutation": false,
+    "productionRankingChanged": false,
+    "publicActivation": false,
+    "uvaActivated": false,
+    "waterResistanceActivated": false,
+    "persistence": false
+  },
+  "nextGate": {
+    "stage": "DATA-AI29C-D5E-F_AUTHENTICATED_BETA_ALLOWLIST_EXPANSION",
+    "status": "BLOCKED_UNTIL_D5E_E_DEPLOYED_6_OF_6_PASS"
+  }
+}

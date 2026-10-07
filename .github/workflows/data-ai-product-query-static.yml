@@ -165,6 +165,15 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-d-r4-cosrx-recommendation-admission-reevaluation-v1.json"
       - "docs/evidence/data-ai29c-d5e-d-r4-cosrx-recommendation-admission-reevaluation-v1.md"
       - "scripts/verify-data-ai29c-d5e-d-r4-cosrx-recommendation-admission-reevaluation.mjs"
+      - "supabase/migrations/20261007155804_data_ai29c_d5e_e_cosrx_internal_canary_authority_v1.sql"
+      - "lib/sunscreen-d5e-e-cosrx-canary-authority-contract.mjs"
+      - "lib/server/sunscreen-d5e-e-cosrx-canary-authority-reader.js"
+      - "lib/server/product-query-spf-four-product-canary-service.js"
+      - "app/api/internal/product-query-spf-four-product-canary/route.js"
+      - "scripts/validate-data-ai29c-d5e-e-four-product-canary-runtime-response.mjs"
+      - "scripts/verify-data-ai29c-d5e-e-four-product-internal-canary.mjs"
+      - "docs/evidence/data-ai29c-d5e-e-four-product-internal-canary-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-e-four-product-internal-canary-v1.json"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -386,6 +395,15 @@ on:
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-d-r4-cosrx-recommendation-admission-reevaluation-v1.json"
       - "docs/evidence/data-ai29c-d5e-d-r4-cosrx-recommendation-admission-reevaluation-v1.md"
       - "scripts/verify-data-ai29c-d5e-d-r4-cosrx-recommendation-admission-reevaluation.mjs"
+      - "supabase/migrations/20261007155804_data_ai29c_d5e_e_cosrx_internal_canary_authority_v1.sql"
+      - "lib/sunscreen-d5e-e-cosrx-canary-authority-contract.mjs"
+      - "lib/server/sunscreen-d5e-e-cosrx-canary-authority-reader.js"
+      - "lib/server/product-query-spf-four-product-canary-service.js"
+      - "app/api/internal/product-query-spf-four-product-canary/route.js"
+      - "scripts/validate-data-ai29c-d5e-e-four-product-canary-runtime-response.mjs"
+      - "scripts/verify-data-ai29c-d5e-e-four-product-internal-canary.mjs"
+      - "docs/evidence/data-ai29c-d5e-e-four-product-internal-canary-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-e-four-product-internal-canary-v1.json"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -655,6 +673,9 @@ jobs:
 
       - name: Verify DATA-AI29C-D5E-D-R4 COSRX Recommendation admission reevaluation
         run: node scripts/verify-data-ai29c-d5e-d-r4-cosrx-recommendation-admission-reevaluation.mjs
+
+      - name: Verify DATA-AI29C-D5E-E COSRX four-product internal canary
+        run: node --experimental-strip-types scripts/verify-data-ai29c-d5e-e-four-product-internal-canary.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
