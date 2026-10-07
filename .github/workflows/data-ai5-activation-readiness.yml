@@ -433,11 +433,24 @@ jobs:
           test "$pass_count" -eq 6
           echo "DATA_AI29C_D5E_E_CANARY_PASS_COUNT=$pass_count"
 
+      - name: Refresh short-lived GitHub OIDC tokens for activation-readiness
+        id: oidc-activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          custom_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${DATA_AI5_OIDC_AUDIENCE}")"
+          custom="$(printf '%s' "$custom_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          trusted_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")"
+          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$custom"
+          echo "::add-mask::$trusted"
+          printf 'custom=%s\ntrusted=%s\n' "$custom" "$trusted" >> "$GITHUB_OUTPUT"
+
       - name: Probe activation-readiness cases twice
         env:
           DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
-          OIDC_TOKEN: ${{ steps.oidc.outputs.custom }}
-          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+          OIDC_TOKEN: ${{ steps.oidc-activation.outputs.custom }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc-activation.outputs.trusted }}
         shell: bash
         run: |
           set -euo pipefail
