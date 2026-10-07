@@ -1,0 +1,236 @@
+{
+  "version": "barrier-support-atopalm-p0-review-preparation-preflight-v1",
+  "stage": "V2.1-8H-R13F",
+  "source_main_sha": "e1903171a23acde370424146feac75a065ef1e7d",
+  "captured_on": "2026-10-07",
+  "production_project": "bygrczggxfuisupcevaz",
+  "parent_authority": {
+    "r13e_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-atopalm-p0-controlled-evidence-ingest-closeout-v1.json",
+    "r13e_git_blob_sha": "043a59bf1b8f4a414541a0bb77731ed41ba2c1da",
+    "r13e_decision": "BARRIER_SUPPORT_ATOPALM_P0_CONTROLLED_EVIDENCE_INGEST_PASS"
+  },
+  "runtime_contract": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "required_capability": "admin.products.review",
+    "prepare_review_function": "admin_prepare_product_fact_review_v1(uuid,text,jsonb)",
+    "prepare_review_function_sha256": "9d0992369021a37a83c96561f8ad3d9e9b505a61771b7b5312fa35fc424dbff1",
+    "security_definer": true,
+    "anon_execute": false,
+    "authenticated_execute": false,
+    "service_role_execute": true,
+    "review_policy_version": "v21-8g3-b-direct-evidence-review-v1"
+  },
+  "registry_write_policies": [
+    {
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "fact_key": "barrier_support_claim",
+      "lineage_kind": "new",
+      "allowed": true,
+      "reason": "ALLOWED",
+      "policy_state": "active",
+      "policy_version": "data-ai29c-uva-r3d-registry-coexistence-v1",
+      "policy_digest": "6f3cbd77ba4501100cc637c2ac1300ccc0591563973a50c8d28a4b70503c6f6e",
+      "new_lineage_allowed": true,
+      "existing_lineage_allowed": true
+    },
+    {
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "fact_key": "primary_use_role",
+      "lineage_kind": "new",
+      "allowed": true,
+      "reason": "ALLOWED",
+      "policy_state": "active",
+      "policy_version": "data-ai29c-uva-r3d-registry-coexistence-v1",
+      "policy_digest": "1ee29792af7acddc521916fedef250944d10e2a4c0a55ef75ba46a9d3ca03e46",
+      "new_lineage_allowed": true,
+      "existing_lineage_allowed": true
+    }
+  ],
+  "targets": [
+    {
+      "task_id": "b1430a7d-79bb-43a5-bfea-a19599441811",
+      "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "evidence_id": "af1a47e6-e168-4492-8407-1072f9f7ff60",
+      "fact_key": "barrier_support_claim",
+      "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+      "value": true,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "task_state": "RESEARCH_PENDING",
+      "task_attempt_count": 0,
+      "task_blocker_code": null
+    },
+    {
+      "task_id": "cbdad075-35a1-476e-b3ac-6279b676e73e",
+      "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "evidence_id": "73bd7367-857f-476b-a88e-5beae7347c8b",
+      "fact_key": "primary_use_role",
+      "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+      "value": "multi_area",
+      "evidence_class": "usage_instruction",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "task_state": "RESEARCH_PENDING",
+      "task_attempt_count": 0,
+      "task_blocker_code": null
+    }
+  ],
+  "transition_contract": {
+    "required_sequence": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "direct_new_to_ready_for_confirm_forbidden": true,
+    "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "per_proposition_independent_assignment": true
+  },
+  "planned_rpcs": [
+    {
+      "request_id": "v21-8h-r13g-atopalm-barrier-under",
+      "payload": {
+        "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+        "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+        "operational_state": "under_review",
+        "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+        "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+        "reason_code": "v21_8h_r13g_atopalm_barrier_under_review"
+      }
+    },
+    {
+      "request_id": "v21-8h-r13g-atopalm-barrier-ready",
+      "payload": {
+        "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+        "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+        "operational_state": "ready_for_confirm",
+        "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+        "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+        "reason_code": "v21_8h_r13g_atopalm_barrier_ready_for_confirm"
+      }
+    },
+    {
+      "request_id": "v21-8h-r13g-atopalm-role-under",
+      "payload": {
+        "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+        "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "primary_use_role",
+        "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+        "operational_state": "under_review",
+        "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+        "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+        "reason_code": "v21_8h_r13g_atopalm_role_under_review"
+      }
+    },
+    {
+      "request_id": "v21-8h-r13g-atopalm-role-ready",
+      "payload": {
+        "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+        "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "fact_key": "primary_use_role",
+        "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+        "operational_state": "ready_for_confirm",
+        "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+        "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+        "reason_code": "v21_8h_r13g_atopalm_role_ready_for_confirm"
+      }
+    }
+  ],
+  "production_prestate": {
+    "product_fact_subjects": 51,
+    "product_fact_current": 105,
+    "fact_instances": 106,
+    "confirmations": 106,
+    "evidence_records": 110,
+    "target_evidence_rows": 2,
+    "target_review_assignments": 0,
+    "target_fact_instances": 0,
+    "target_current_facts": 0,
+    "target_confirmations": 0
+  },
+  "rollback_probe": {
+    "request_ids": [
+      "v21-8h-r13f-atopalm-barrier-under",
+      "v21-8h-r13f-atopalm-barrier-ready",
+      "v21-8h-r13f-atopalm-role-under",
+      "v21-8h-r13f-atopalm-role-ready"
+    ],
+    "transaction_mode": "PL/pgSQL nested subtransaction -> 4 controlled review RPCs -> in-transaction readback -> forced exception rollback",
+    "rpc_calls_attempted": 4,
+    "rpc_calls_accepted": 4,
+    "barrier_assignment_id_ephemeral": "fb17c0c4-9a79-40f4-a8fe-ebcdf42bd838",
+    "role_assignment_id_ephemeral": "5ac03cef-2013-42ae-921b-9f4c589fca0b",
+    "in_transaction": {
+      "target_assignments": 2,
+      "ready_for_confirm_assignments": 2,
+      "assignment_review_events": 4,
+      "admin_audits": 4,
+      "target_fact_instances": 0,
+      "target_current_facts": 0,
+      "target_confirmations": 0
+    },
+    "post_rollback": {
+      "target_assignments": 0,
+      "assignment_review_events": 0,
+      "admin_audits": 0,
+      "target_fact_instances": 0,
+      "target_current_facts": 0,
+      "target_confirmations": 0,
+      "target_evidence_rows": 2
+    },
+    "final_global_counts": {
+      "product_fact_subjects": 51,
+      "product_fact_current": 105,
+      "fact_instances": 106,
+      "confirmations": 106,
+      "evidence_records": 110
+    }
+  },
+  "authority_boundary": {
+    "committed_review_assignment_writes": 0,
+    "committed_review_event_writes": 0,
+    "committed_audit_writes": 0,
+    "committed_fact_instance_writes": 0,
+    "committed_product_fact_current_writes": 0,
+    "committed_confirmation_writes": 0,
+    "committed_recommendation_writes": 0,
+    "review_preparation_authorized_for_current_stage": false,
+    "confirmation_preflight_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false
+  },
+  "decision": "BARRIER_SUPPORT_ATOPALM_P0_REVIEW_PREPARATION_PREFLIGHT_PASS",
+  "next_gate": {
+    "stage": "V2.1-8H-R13G_ATOPALM_CONTROLLED_REVIEW_PREPARATION",
+    "status": "NOT_EXECUTED",
+    "authorized_proposition_count": 2,
+    "authorized_proposition_keys": [
+      "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+      "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240"
+    ],
+    "allowed_rpc": "admin_prepare_product_fact_review_v1",
+    "required_sequence": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "max_committed_review_assignments": 2,
+    "max_committed_review_events": 4,
+    "review_preparation_authorized": true,
+    "confirmation_preflight_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false
+  }
+}
