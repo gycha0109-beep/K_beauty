@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-closeout-v1",
+  "stage": "DATA-AI29C-D5E-F-CLOSEOUT",
+  "track": "taxonomy-ai",
+  "decision": "D5E_F_AUTHENTICATED_BETA_ALLOWLIST_EXPANSION_PASS",
+  "source": {
+    "mergeSha": "0fe05b64b14e455ddebe2387c2f5a82fe6619e9d",
+    "canonicalStaticRunId": "37608315052",
+    "canonicalStaticRunAttempt": 2,
+    "activationReadinessRunId": "37608315267",
+    "activationReadinessRunAttempt": 2,
+    "validatedDeploymentRef": "main"
+  },
+  "passCounts": {
+    "d5dProductionActivation": 4,
+    "d5cInternalCanary": 6,
+    "d5eEFourProductInternalCanary": 6,
+    "d5eFAuthenticatedBetaExpansion": 4,
+    "activationReadiness": 24
+  },
+  "authenticatedBeta": {
+    "legacyProductionSunscreenCount": 11,
+    "governedTargetCount": 4,
+    "combinedSunscreenCount": 15,
+    "cosrxProductId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "runtimeSwitchEnabled": true,
+    "runtimeSwitchScope": "authenticated_product_query_beta",
+    "publicSearchCutover": false
+  },
+  "outdoorProbe": {
+    "caseId": "outdoor_live",
+    "repeat2Pass": true,
+    "candidateCount": 15,
+    "targetGrantedCount": 4,
+    "combinedSunscreenCount": 15,
+    "legacySpfEligibleCount": 11,
+    "authorityComplete": true,
+    "axisApplied": true,
+    "adjustmentCount": 15,
+    "cosrxSpfDelta": 6
+  },
+  "nonOutdoorProbe": {
+    "caseId": "non_outdoor_live",
+    "repeat2Pass": true,
+    "candidateCount": 15,
+    "targetGrantedCount": 4,
+    "combinedSunscreenCount": 15,
+    "axisApplied": false,
+    "adjustmentCount": 0
+  },
+  "frozenBoundaries": {
+    "d5cD5dThreeProductSourceContractChanged": false,
+    "previewRouteExpanded": false,
+    "productionCanaryRouteExpanded": false,
+    "productRowMutation": false,
+    "recommendationLogWrite": false,
+    "persistence": false,
+    "publicActivation": false,
+    "uvaActivated": false,
+    "waterResistanceActivated": false,
+    "taxonomyGlobalActivation": false
+  },
+  "disposition": {
+    "d5eComplete": true,
+    "definedStages": [
+      "DATA-AI29C-D5E-A",
+      "DATA-AI29C-D5E-B",
+      "DATA-AI29C-D5E-C",
+      "DATA-AI29C-D5E-D",
+      "DATA-AI29C-D5E-E",
+      "DATA-AI29C-D5E-F"
+    ],
+    "nextD5eStage": null,
+    "followOnWaveDefined": false,
+    "reason": "D5E_FRONTIER_PLAN_ENDS_AT_F_AND_NO_WAVE3_ARTIFACT_EXISTS"
+  }
+}
