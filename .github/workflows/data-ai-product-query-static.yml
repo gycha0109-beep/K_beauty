@@ -181,6 +181,9 @@ on:
       - "scripts/verify-data-ai29c-d5e-f-authenticated-beta-expansion.mjs"
       - "docs/evidence/data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-v1.json"
+      - "docs/evidence/data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-closeout-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-closeout-v1.json"
+      - "scripts/verify-data-ai29c-d5e-f-authenticated-beta-expansion-closeout.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -418,6 +421,9 @@ on:
       - "scripts/verify-data-ai29c-d5e-f-authenticated-beta-expansion.mjs"
       - "docs/evidence/data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-v1.json"
+      - "docs/evidence/data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-closeout-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-closeout-v1.json"
+      - "scripts/verify-data-ai29c-d5e-f-authenticated-beta-expansion-closeout.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -695,6 +701,9 @@ jobs:
         run: |
           node --check scripts/validate-data-ai29c-d5e-f-authenticated-beta-runtime-response.mjs
           node --experimental-strip-types scripts/verify-data-ai29c-d5e-f-authenticated-beta-expansion.mjs
+
+      - name: Verify DATA-AI29C-D5E-F authenticated beta expansion closeout
+        run: node --experimental-strip-types scripts/verify-data-ai29c-d5e-f-authenticated-beta-expansion-closeout.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
