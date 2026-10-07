@@ -1,0 +1,146 @@
+{
+  "schemaVersion": "data-ai29c-filter-r3-r1-bushman-write-policy-handoff-preflight-v1",
+  "stage": "DATA-AI29C-FILTER-R3-R1",
+  "track": "taxonomy-ai",
+  "mode": "ZERO_WRITE_POLICY_HANDOFF_PREFLIGHT",
+  "decision": "FILTER_R3_R1_POLICY_MISSING_FAIL_CLOSED_HANDOFF_PREFLIGHT_PASS",
+  "sourceMainSha": "e6dcab96a191498d767502b5b991d4fb69ab3202",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "upstream": {
+    "r3Decision": "FILTER_R3_BUSHMAN_HYBRID_RECOVERY_PREFLIGHT_PASS_WRITE_NOT_AUTHORIZED",
+    "d5eComplete": true
+  },
+  "target": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subjectSemanticKey": "33696edfb47c47672930e0d398b0cd67fb966c355ec474ea9ec4ffa72400a584",
+    "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "factKey": "uv_filter_type",
+    "proposedValue": "hybrid",
+    "market": "KR"
+  },
+  "productionPrestate": {
+    "currentFactsTotal": 105,
+    "sources": 81,
+    "bindings": 81,
+    "evidence": 110,
+    "factInstances": 106,
+    "reviewAssignments": 108,
+    "confirmations": 106,
+    "targetUvFilterCurrent": 0,
+    "targetOpenUvFilterAssignments": 0,
+    "targetSpf": {
+      "value": 50,
+      "factInstanceId": "5fe7666a-9854-4a0e-9248-72780b3e699f",
+      "confirmationId": "3594ca85-1313-4684-9821-f0b138605e2b"
+    },
+    "targetUva": {
+      "value": "PA++++",
+      "factInstanceId": "ad138548-3f4d-4dad-be05-8869465534a5",
+      "confirmationId": "c1e4baff-843f-4703-adbc-bd9c7db4d498"
+    }
+  },
+  "registryV2": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "registryChecksum": "923256ca2468b2af31e1b7026655739408035daf62d3ff40a7132eca22afddd7",
+    "definitionChecksum": "6dd4e0016889b65dafade9d410692e9ab85b036e0654089950950ceb46f6e917",
+    "serializerVersion": "product-fact-proposition-schema-v2",
+    "allowedValues": [
+      "mineral",
+      "organic",
+      "hybrid"
+    ],
+    "includeValueIdentity": false
+  },
+  "policyPrestate": {
+    "v1": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "policyState": "active",
+      "newLineageAllowed": true,
+      "existingLineageAllowed": true,
+      "policyVersion": "data-ai29c-uva-r3d-registry-coexistence-v1",
+      "authorizedPhase": "DATA-AI29C-UVA-R3D"
+    },
+    "v2": null,
+    "v2NewLineageAdmissibility": {
+      "allowed": false,
+      "reason": "POLICY_MISSING"
+    },
+    "dualNewWriterForbidden": true
+  },
+  "v1UvFilterImpact": {
+    "currentCount": 18,
+    "currentV2Count": 0,
+    "researchTasks": {
+      "BLOCKED": 7,
+      "ALREADY_COVERED": 4,
+      "EVIDENCE_CANDIDATE": 12
+    },
+    "openReviewAssignments": 0,
+    "drainingPreservesExistingLineage": true
+  },
+  "frozenCompositionAuthority": {
+    "canonicalLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+    "observationVersion": "data-ai29c-filter-r3-bushman-official-composition-v1",
+    "sourceDigest": "3a9fbcb280935133e95a0f7f19bfff20157258b4dc17b8dce4d601e40f6681a9",
+    "propositionKey": "717e0e0eb6b8f5575ac20f0189878bd5af4195bda7da19f427670b12ca95200f",
+    "canonicalEvidenceDigest": "e33410c566219ed28795cd3474abcc5752226b3a7cc8b931f5f0302ffab9bb3f",
+    "inorganicMarkers": [
+      "징크옥사이드",
+      "티타늄디옥사이드"
+    ],
+    "organicMarkers": [
+      "디에칠아미노하이드록시벤조일헥실벤조에이트",
+      "비스-에칠헥실옥시페놀메톡시페닐트리아진",
+      "에칠헥실트리아존"
+    ],
+    "evidenceClass": "composition_identity",
+    "authority": "product_specific_primary",
+    "confidence": "high"
+  },
+  "plannedPolicyHandoff": {
+    "atomicTransactionRequired": true,
+    "policyVersion": "data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-v1",
+    "authorizedPhase": "DATA-AI29C-FILTER-R3-R2",
+    "step1": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "factKey": "uv_filter_type",
+      "policyState": "draining",
+      "newLineageAllowed": false,
+      "existingLineageAllowed": true,
+      "reasonCode": "filter_r3_r2_handoff_old_registry_draining"
+    },
+    "step2": {
+      "registryVersion": "product-fact-registry-cross-category-v2",
+      "factKey": "uv_filter_type",
+      "policyState": "active",
+      "newLineageAllowed": true,
+      "existingLineageAllowed": true,
+      "reasonCode": "filter_r3_r2_handoff_new_registry_active"
+    },
+    "expectedAfter": {
+      "singleNewWriterRegistry": "product-fact-registry-cross-category-v2",
+      "v1ExistingLineageAllowed": true,
+      "v1NewLineageAllowed": false,
+      "v2NewLineageAllowed": true,
+      "v2ExistingLineageAllowed": true
+    },
+    "sourceEvidenceFactWritesInPolicyStage": 0
+  },
+  "writeBoundary": {
+    "registryPolicyWrite": false,
+    "sourceWrite": false,
+    "sourceBindingWrite": false,
+    "evidenceWrite": false,
+    "reviewAssignmentWrite": false,
+    "productFactWrite": false,
+    "researchTaskMutation": false,
+    "productMutation": false,
+    "recommendationWrite": false,
+    "rankingChanged": false,
+    "betaAllowlistChanged": false,
+    "publicActivation": false
+  },
+  "nextGate": "DATA-AI29C-FILTER-R3-R2_UV_FILTER_REGISTRY_WRITE_AUTHORITY_HANDOFF",
+  "followingGateOnPass": "DATA-AI29C-FILTER-R3-R3_BUSHMAN_GOVERNED_SOURCE_REFRESH_AND_CONFIRMATION"
+}
