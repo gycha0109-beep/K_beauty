@@ -6,9 +6,18 @@ import {
 } from "../lib/face-lab-v2/product-variant-authority.js";
 import {
   FACE_LAB_VISUAL_TRY_ON_AUTHORITY_VERSION,
-  FACE_LAB_VISUAL_TRY_ON_P0_SLOT_KEYS,
   buildFaceLabVisualTryOnAuthority
 } from "../lib/face-lab-v2/visual-try-on-authority.js";
+import {
+  FACE_LAB_VISUAL_TRY_ON_CATEGORY_REGISTRY,
+  FACE_LAB_VISUAL_TRY_ON_REFERENCE_ROLES,
+  FACE_LAB_VISUAL_TRY_ON_REGISTRY_VERSION,
+  FACE_LAB_VISUAL_TRY_ON_SUPPORTED_SLOT_KEYS,
+  getFaceLabVisualTryOnSlotSupport
+} from "../lib/face-lab-v2/visual-try-on-registry.js";
+import {
+  getFaceLabAppearanceSlotDefinition
+} from "../lib/face-lab-v2/appearance-registry.js";
 
 function capabilityClaim(
   capabilityKey,
@@ -20,7 +29,7 @@ function capabilityClaim(
     proofClass:
       "governed_catalog_attribute_mapping",
     proofVersion:
-      "visual-try-on-fixture-v1",
+      "visual-try-on-fixture-v2",
     evidenceRefs: [
       `catalog_attribute_review:try-on-${suffix}`
     ]
@@ -32,47 +41,56 @@ function variantBundle({
   variantId,
   displayLabel,
   capabilityKey,
-  attributes,
+  attributes = null,
   colorAnchors = []
 }) {
-  const evidenceRefsByAttribute =
-    Object.fromEntries(
-      Object.keys(attributes)
-        .map((key) => [
-          key,
-          [
-            `catalog_attribute_review:${productId}-${variantId}-${key}`
-          ]
-        ])
-    );
+  const shadeProfile =
+    attributes
+      ? {
+          profileVersion:
+            FACE_LAB_SHADE_PROFILE_VERSION,
+          shadeKey: variantId,
+          displayLabel,
+          attributes,
+          evidenceRefsByAttribute:
+            Object.fromEntries(
+              Object.keys(attributes)
+                .map((key) => [
+                  key,
+                  [
+                    `catalog_attribute_review:${productId}-${variantId}-${key}`
+                  ]
+                ])
+            ),
+          colorAnchors
+        }
+      : undefined;
 
   return buildFaceLabProductVariantCandidateRecord({
     variant: {
       productId,
       variantId,
       identityVersion:
-        "visual-try-on-fixture-identity-v1",
+        "visual-try-on-fixture-identity-v2",
       identityState: "resolved",
       lifecycleState: "active",
-      variantAxes: {
-        shade: variantId,
-        market: "KR"
-      },
+      variantAxes: shadeProfile
+        ? {
+            shade: variantId,
+            market: "KR"
+          }
+        : {
+            market: "KR"
+          },
       identityEvidenceRefs: [
         `catalog_variant_review:${productId}-${variantId}`
       ],
       sourceVariantRefs: [
         `brand_variant:${productId}-${variantId}`
       ],
-      shadeProfile: {
-        profileVersion:
-          FACE_LAB_SHADE_PROFILE_VERSION,
-        shadeKey: variantId,
-        displayLabel,
-        attributes,
-        evidenceRefsByAttribute,
-        colorAnchors
-      }
+      ...(shadeProfile
+        ? { shadeProfile }
+        : {})
     },
     capabilityClaims: [
       capabilityClaim(
@@ -83,8 +101,131 @@ function variantBundle({
   });
 }
 
-const lip =
-  variantBundle({
+assert.equal(
+  FACE_LAB_VISUAL_TRY_ON_REGISTRY_VERSION,
+  "face-lab-visual-try-on-registry-v1"
+);
+assert.equal(
+  FACE_LAB_VISUAL_TRY_ON_AUTHORITY_VERSION,
+  "face-lab-visual-try-on-authority-v2"
+);
+
+const expectedCategoryKeys = [
+  "complexion_base",
+  "blush",
+  "contour",
+  "highlighter",
+  "eye_shadow",
+  "eyeliner",
+  "mascara_lash",
+  "brow",
+  "lip",
+  "color_lens",
+  "eyewear",
+  "hair",
+  "facial_hair",
+  "face_accessory"
+];
+
+assert.deepEqual(
+  Object.keys(
+    FACE_LAB_VISUAL_TRY_ON_CATEGORY_REGISTRY
+  ),
+  expectedCategoryKeys
+);
+
+assert.deepEqual(
+  FACE_LAB_VISUAL_TRY_ON_REFERENCE_ROLES,
+  [
+    "product_image",
+    "brand_swatch",
+    "merchant_swatch",
+    "applied_reference",
+    "style_reference",
+    "wearing_reference"
+  ]
+);
+
+assert.equal(
+  FACE_LAB_VISUAL_TRY_ON_SUPPORTED_SLOT_KEYS.length,
+  19
+);
+assert.equal(
+  FACE_LAB_VISUAL_TRY_ON_SUPPORTED_SLOT_KEYS.includes(
+    "overall_palette"
+  ),
+  false
+);
+
+for (
+  const slotKey of
+    FACE_LAB_VISUAL_TRY_ON_SUPPORTED_SLOT_KEYS
+) {
+  const support =
+    getFaceLabVisualTryOnSlotSupport(
+      slotKey
+    );
+  const appearance =
+    getFaceLabAppearanceSlotDefinition(
+      slotKey
+    );
+
+  assert.ok(
+    support,
+    `missing try-on support: ${slotKey}`
+  );
+  assert.equal(
+    support.supportState,
+    "supported"
+  );
+  assert.ok(
+    appearance,
+    `missing appearance slot: ${slotKey}`
+  );
+  assert.equal(
+    support.slotKey,
+    appearance.slotKey
+  );
+  assert.ok(
+    ["P0", "P1", "P2", "P3"]
+      .includes(
+        support.rolloutStage
+      )
+  );
+  assert.ok(
+    support.defaultApplication
+  );
+}
+
+assert.deepEqual(
+  FACE_LAB_VISUAL_TRY_ON_CATEGORY_REGISTRY
+    .lip.slotKeys,
+  [
+    "lip_color",
+    "lip_finish"
+  ]
+);
+assert.deepEqual(
+  FACE_LAB_VISUAL_TRY_ON_CATEGORY_REGISTRY
+    .complexion_base.slotKeys,
+  [
+    "complexion_prepare",
+    "complexion_even",
+    "complexion_correct",
+    "complexion_finish"
+  ]
+);
+assert.deepEqual(
+  FACE_LAB_VISUAL_TRY_ON_CATEGORY_REGISTRY
+    .hair.slotKeys,
+  [
+    "hair_shape",
+    "hair_color"
+  ]
+);
+
+const bundles = {
+  lip: variantBundle({
     productId: "fixture-lip",
     variantId: "coral-orange",
     displayLabel: "Coral Orange",
@@ -110,10 +251,8 @@ const lip =
         ]
       }
     ]
-  });
-
-const highlight =
-  variantBundle({
+  }),
+  highlight: variantBundle({
     productId:
       "fixture-highlighter",
     variantId: "lavender",
@@ -130,10 +269,8 @@ const highlight =
       finish: "pearl",
       shimmerLevel: "medium"
     }
-  });
-
-const lens =
-  variantBundle({
+  }),
+  lens: variantBundle({
     productId: "fixture-lens",
     variantId: "soft-gray",
     displayLabel: "Soft Gray",
@@ -146,36 +283,152 @@ const lens =
       chroma: "low",
       opacity: "medium"
     }
-  });
+  }),
+  eyeShadow: variantBundle({
+    productId:
+      "fixture-eye-shadow",
+    variantId: "taupe",
+    displayLabel: "Soft Taupe",
+    capabilityKey: "eye_color",
+    attributes: {
+      hueFamily: "taupe",
+      undertone: "neutral",
+      depth: "medium",
+      chroma: "low",
+      finish: "satin",
+      shimmerLevel: "low"
+    }
+  }),
+  eyeliner: variantBundle({
+    productId:
+      "fixture-eyeliner",
+    variantId: "brown-black",
+    displayLabel: "Brown Black",
+    capabilityKey:
+      "eye_definition",
+    attributes: {
+      hueFamily: "brown_black",
+      undertone: "neutral",
+      depth: "deep",
+      chroma: "low",
+      finish: "matte"
+    }
+  }),
+  brow: variantBundle({
+    productId: "fixture-brow",
+    variantId: "ash-brown",
+    displayLabel: "Ash Brown",
+    capabilityKey:
+      "brow_definition",
+    attributes: {
+      hueFamily: "ash_brown",
+      undertone: "cool",
+      depth: "medium",
+      chroma: "low",
+      finish: "matte"
+    }
+  }),
+  base: variantBundle({
+    productId: "fixture-base",
+    variantId: "satin-21",
+    displayLabel: "Satin 21",
+    capabilityKey:
+      "complexion_even",
+    attributes: {
+      undertone: "neutral",
+      depth: "light_medium",
+      opacity: "medium",
+      finish: "satin"
+    }
+  }),
+  eyewear: variantBundle({
+    productId: "fixture-eyewear",
+    variantId: "thin-gray",
+    displayLabel: "Thin Gray",
+    capabilityKey:
+      "facial_frame",
+    attributes: {
+      hueFamily: "gray",
+      depth: "medium",
+      chroma: "low",
+      finish: "glossy"
+    }
+  }),
+  hairShape: variantBundle({
+    productId: "fixture-hair",
+    variantId: "soft-layer",
+    displayLabel: "Soft Layer",
+    capabilityKey:
+      "hair_shape"
+  }),
+  accessory: variantBundle({
+    productId:
+      "fixture-accessory",
+    variantId: "silver",
+    displayLabel: "Silver",
+    capabilityKey:
+      "face_accessory"
+  })
+};
 
-for (const bundle of [
-  lip,
-  highlight,
-  lens
-]) {
-  assert.equal(
-    bundle.status,
-    "ready"
+for (
+  const [key, bundle] of
+    Object.entries(bundles)
+) {
+  assert.ok(
+    ["ready", "identity_only"]
+      .includes(bundle.status),
+    `${key} bundle invalid: ${bundle.reason}`
   );
 }
 
 const authority =
   buildFaceLabVisualTryOnAuthority({
     sessionId:
-      "fixture-visual-try-on",
+      "fixture-registry-driven",
     selections: [
       {
-        slotKey: "lip_color",
-        binding: lip,
+        slotKey: "complexion_even",
+        binding: bundles.base,
         referenceAssets: [
           {
             assetRef:
-              "catalog_image:fixture-lip-product",
+              "catalog_image:fixture-base-product",
             role:
               "product_image",
             evidenceRef:
-              "catalog_variant_review:fixture-lip-product"
-          },
+              "catalog_variant_review:fixture-base-product"
+          }
+        ]
+      },
+      {
+        slotKey: "eye_color",
+        binding: bundles.eyeShadow,
+        referenceAssets: [
+          {
+            assetRef:
+              "applied_reference:fixture-eye-shadow",
+            role:
+              "applied_reference",
+            evidenceRef:
+              "applied_reference:fixture-eye-shadow"
+          }
+        ]
+      },
+      {
+        slotKey:
+          "eye_definition",
+        binding: bundles.eyeliner
+      },
+      {
+        slotKey:
+          "brow_definition",
+        binding: bundles.brow
+      },
+      {
+        slotKey: "lip_color",
+        binding: bundles.lip,
+        referenceAssets: [
           {
             assetRef:
               "brand_swatch:fixture-lip-coral",
@@ -188,52 +441,64 @@ const authority =
       },
       {
         slotKey:
-          "face_highlight",
-        binding: highlight,
+          "iris_appearance",
+        binding: bundles.lens,
         referenceAssets: [
           {
             assetRef:
-              "catalog_image:fixture-highlight",
+              "wearing_reference:fixture-gray-lens",
             role:
-              "product_image",
+              "wearing_reference",
             evidenceRef:
-              "catalog_variant_review:fixture-highlight"
+              "applied_reference:fixture-gray-lens"
           }
         ]
       },
       {
-        slotKey:
-          "iris_appearance",
-        binding: lens,
+        slotKey: "facial_frame",
+        binding: bundles.eyewear,
         referenceAssets: [
           {
             assetRef:
-              "applied_reference:fixture-gray-lens",
+              "product_image:fixture-eyewear",
             role:
-              "applied_reference",
+              "product_image",
             evidenceRef:
-              "applied_reference:fixture-gray-lens"
+              "catalog_variant_review:fixture-eyewear"
+          }
+        ]
+      },
+      {
+        slotKey: "hair_shape",
+        binding: bundles.hairShape,
+        referenceAssets: [
+          {
+            assetRef:
+              "style_reference:fixture-soft-layer",
+            role:
+              "style_reference",
+            evidenceRef:
+              "style_reference:fixture-soft-layer"
+          }
+        ]
+      },
+      {
+        slotKey: "face_accessory",
+        binding: bundles.accessory,
+        referenceAssets: [
+          {
+            assetRef:
+              "wearing_reference:fixture-accessory",
+            role:
+              "wearing_reference",
+            evidenceRef:
+              "applied_reference:fixture-accessory"
           }
         ]
       }
     ]
   });
 
-assert.equal(
-  FACE_LAB_VISUAL_TRY_ON_AUTHORITY_VERSION,
-  "face-lab-visual-try-on-authority-v1"
-);
-assert.deepEqual(
-  FACE_LAB_VISUAL_TRY_ON_P0_SLOT_KEYS,
-  [
-    "lip_color",
-    "lip_finish",
-    "cheek_color",
-    "face_highlight",
-    "iris_appearance",
-    "facial_frame"
-  ]
-);
 assert.equal(
   authority.status,
   "ready"
@@ -254,17 +519,10 @@ assert.equal(
   authority.renderSpec.status,
   "ready"
 );
-assert.deepEqual(
+assert.equal(
   authority.renderSpec
-    .operations
-    .map((operation) =>
-      operation.slotKey
-    ),
-  [
-    "face_highlight",
-    "iris_appearance",
-    "lip_color"
-  ]
+    .operations.length,
+  9
 );
 assert.ok(
   authority.renderSpec
@@ -278,9 +536,51 @@ assert.ok(
       "facial_geometry"
     )
 );
+
+const selectionBySlot =
+  new Map(
+    authority.selections.map(
+      (item) => [
+        item.slotKey,
+        item
+      ]
+    )
+  );
+
+assert.equal(
+  selectionBySlot
+    .get("complexion_even")
+    .categoryKey,
+  "complexion_base"
+);
+assert.equal(
+  selectionBySlot
+    .get("complexion_even")
+    .rolloutStage,
+  "P3"
+);
+assert.equal(
+  selectionBySlot
+    .get("eye_color")
+    .categoryKey,
+  "eye_shadow"
+);
+assert.equal(
+  selectionBySlot
+    .get("hair_shape")
+    .categoryKey,
+  "hair"
+);
+assert.equal(
+  selectionBySlot
+    .get("hair_shape")
+    .rolloutStage,
+  "P2"
+);
+
 assert.equal(
   authority.referenceAssets.length,
-  4
+  7
 );
 assert.deepEqual(
   authority.referenceAssets
@@ -288,11 +588,47 @@ assert.deepEqual(
       asset.slotKey
     ),
   [
-    "face_highlight",
+    "complexion_even",
+    "eye_color",
+    "face_accessory",
+    "facial_frame",
+    "hair_shape",
     "iris_appearance",
-    "lip_color",
     "lip_color"
   ]
+);
+
+const originalExperiment =
+  buildFaceLabVisualTryOnAuthority({
+    sessionId:
+      "fixture-original-experiment",
+    selections: [
+      {
+        slotKey: "lip_color",
+        binding: bundles.lip
+      },
+      {
+        slotKey:
+          "face_highlight",
+        binding: bundles.highlight
+      },
+      {
+        slotKey:
+          "iris_appearance",
+        binding: bundles.lens
+      }
+    ]
+  });
+
+assert.equal(
+  originalExperiment.status,
+  "ready"
+);
+assert.equal(
+  originalExperiment
+    .renderSpec
+    .operations.length,
+  3
 );
 
 const duplicateSlot =
@@ -302,11 +638,11 @@ const duplicateSlot =
     selections: [
       {
         slotKey: "lip_color",
-        binding: lip
+        binding: bundles.lip
       },
       {
         slotKey: "lip_color",
-        binding: lip
+        binding: bundles.lip
       }
     ]
   });
@@ -326,8 +662,9 @@ const unsupportedSlot =
       "unsupported-slot",
     selections: [
       {
-        slotKey: "hair_shape",
-        binding: lip
+        slotKey:
+          "overall_palette",
+        binding: bundles.lip
       }
     ]
   });
@@ -338,7 +675,7 @@ assert.equal(
 );
 assert.equal(
   unsupportedSlot.reason,
-  "selection_slot_not_p0"
+  "selection_slot_not_supported"
 );
 
 const malformedReference =
@@ -348,11 +685,13 @@ const malformedReference =
     selections: [
       {
         slotKey: "lip_color",
-        binding: lip,
+        binding: bundles.lip,
         referenceAssets: [
           {
-            assetRef: "not namespaced",
-            role: "brand_swatch",
+            assetRef:
+              "not namespaced",
+            role:
+              "brand_swatch",
             evidenceRef:
               "brand_swatch:fixture"
           }
@@ -378,7 +717,7 @@ const mismatchedCapability =
       {
         slotKey:
           "face_highlight",
-        binding: lip
+        binding: bundles.lip
       }
     ]
   });
@@ -395,11 +734,18 @@ assert.equal(
 console.log(
   JSON.stringify({
     status: "PASS",
+    registryVersion:
+      FACE_LAB_VISUAL_TRY_ON_REGISTRY_VERSION,
     authorityVersion:
       FACE_LAB_VISUAL_TRY_ON_AUTHORITY_VERSION,
-    p0Slots:
-      FACE_LAB_VISUAL_TRY_ON_P0_SLOT_KEYS,
-    operationCount:
+    categoryCount:
+      Object.keys(
+        FACE_LAB_VISUAL_TRY_ON_CATEGORY_REGISTRY
+      ).length,
+    supportedSlotCount:
+      FACE_LAB_VISUAL_TRY_ON_SUPPORTED_SLOT_KEYS
+        .length,
+    mixedLookOperationCount:
       authority.renderSpec
         .operations.length,
     referenceAssetCount:
