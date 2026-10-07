@@ -1,0 +1,289 @@
+{
+  "version": "data-ai29c-d5e-d-r4-cosrx-recommendation-admission-reevaluation-v1",
+  "stage": "DATA-AI29C-D5E-D-R4",
+  "track": "taxonomy-ai",
+  "decision": "D5E_D_R4_COSRX_RECOMMENDATION_ADMISSION_REEVALUATION_PASS",
+  "observedOn": "2026-10-07",
+  "sourceMainSha": "fba721541812c87018e66faa6950f30e750e3026",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "mode": "READ_ONLY_RECOMMENDATION_ADMISSION_REEVALUATION",
+  "target": {
+    "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+    "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+    "name": "Ultra-Light Invisible Sunscreen SPF50 PA++++",
+    "market": "KR"
+  },
+  "priorHold": {
+    "evidencePath": "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-d-cosrx-admission-mixed-shadow-v1.json",
+    "decision": "D5E_D_COSRX_ADMISSION_HOLD_SUBJECT_IDENTITY_AUTHORITY_LINEAGE_MISMATCH",
+    "actualDecision": "NO_GRANT",
+    "actualReason": "PRODUCT_FACT_SUBJECT_UNRESOLVED_OR_NON_CURRENT",
+    "blockerKind": "SUBJECT_IDENTITY_AUTHORITY_LINEAGE_MISMATCH",
+    "onlyObservedPolicyMismatch": "identityResolutionVersion",
+    "previousIdentityResolutionVersion": "gpt-catalog-machine-subject-v1"
+  },
+  "governedAuthorityUpgrade": {
+    "completed": true,
+    "reviewEventId": "76226190-4d0e-4cc9-b169-8b62a3f63c66",
+    "auditLogId": "97b50178-cea2-479f-86e8-5c9939d2ea9d",
+    "requestId": "data-ai29c-d5e-d-r3p-d2d54525-f441-48c5-b4a2-b35a56d9796d",
+    "eventKind": "subject_identity_authority_upgraded",
+    "reasonCode": "controlled_identity_authority_upgrade",
+    "executedAt": "2026-10-06T19:56:32.72353+09:00",
+    "previousIdentityResolutionVersion": "gpt-catalog-machine-subject-v1",
+    "nextIdentityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+    "payloadDigest": "188fa1d79901e914543dca9246f6ba84a430b8b733f2fb61ca29ab35c9881fe6",
+    "prestateDigest": "bc311232e1daa997eb48fe85daee6b4870339a042bc76af13e58f8ec42ed9697"
+  },
+  "liveAuthority": {
+    "subject": {
+      "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+      "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+      "subjectSemanticKey": "db6a09f788a6b6008881525d1b409d3c16d8b3132006c8a0f174607516133501",
+      "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+      "variantKey": null,
+      "formulationRevisionKey": "official-snapshot:c0ea336524925d3d493d73c43e49207e",
+      "formulationLabel": "Initial official product snapshot from GPT catalog intake",
+      "identityStatus": "resolved",
+      "identityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+      "currentState": "current",
+      "marketApplicability": "KR",
+      "regionApplicability": null,
+      "validFrom": null,
+      "validTo": null
+    },
+    "subjectAdmissionShape": {
+      "subjectId": "994d7edb-7432-40c3-b09f-08cd59f91627",
+      "productId": "888eca86-af25-4a12-b9ea-47922d83f520",
+      "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+      "identityStatus": "resolved",
+      "identityResolutionVersion": "trust-phase5-admin-subject-review-v1",
+      "currentState": "current",
+      "validTo": null
+    },
+    "taxonomy": {
+      "taxonomyVersion": "catalog-taxonomy-v1",
+      "entityKindTermId": "catalog-taxonomy-v1:entity_kind:cosmetic",
+      "domainTermId": "catalog-taxonomy-v1:domain:skincare",
+      "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
+      "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
+      "assignmentState": "shadow",
+      "assignmentMethod": "source_classification",
+      "productId": "888eca86-af25-4a12-b9ea-47922d83f520"
+    },
+    "registry": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+      "identitySerializerVersion": "product-fact-subject-identity-v1"
+    },
+    "counts": {
+      "productFactCurrent": 3,
+      "productFactInstances": 3,
+      "researchTasks": 3,
+      "sourceBindings": 2,
+      "evidenceRecords": 3,
+      "currentSemanticReviews": 12,
+      "exactCurrentApplicabilitySubjects": 1
+    },
+    "currentFacts": [
+      {
+        "factKey": "spf_value",
+        "factInstanceId": "2f2efccf-165e-4b78-baf6-7348136ceb24",
+        "confirmationId": "247a9c8f-4599-4789-8608-0465a36e2e65",
+        "propositionKey": "b7fc9e4afd849dad34cc355e4bddebe94e0a44c98d50d7a1b98b64de629c6bbf",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "validTo": null,
+        "valueType": "number",
+        "valueNumber": 50,
+        "valueEnum": null
+      },
+      {
+        "factKey": "uv_filter_type",
+        "factInstanceId": "b4498a13-9090-4053-a416-281cc1e06bdc",
+        "confirmationId": "2e341612-a174-4d96-be6f-8fb013528e3a",
+        "propositionKey": "dd203d2b3d0d827312207bb3f3395ea63a746b277a4d4425d8ebdd480049293e",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "validTo": null,
+        "valueType": "enum",
+        "valueNumber": null,
+        "valueEnum": "organic"
+      },
+      {
+        "factKey": "uva_label",
+        "factInstanceId": "7ad2a820-dbfe-457a-8340-d0da67525010",
+        "confirmationId": "12bc107c-8eb8-4e0f-82f3-054e11f878fa",
+        "propositionKey": "4dac7dcefa8b39fa6c3e2c62e5b4921322b4ce97e97b53d5b5675f7eb2c5eb1a",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "validTo": null,
+        "valueType": "enum",
+        "valueNumber": null,
+        "valueEnum": "PA++++"
+      }
+    ],
+    "semanticReviewRows": [
+      {
+        "fieldName": "category_slot",
+        "state": "established",
+        "value": "sunscreen",
+        "confidence": "high"
+      },
+      {
+        "fieldName": "concerns",
+        "state": "established",
+        "value": [
+          "dehydration",
+          "oiliness"
+        ],
+        "confidence": "medium"
+      },
+      {
+        "fieldName": "eye_sting",
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      {
+        "fieldName": "finish",
+        "state": "established",
+        "value": "fresh",
+        "confidence": "medium"
+      },
+      {
+        "fieldName": "irritation_risk",
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      {
+        "fieldName": "pilling_risk",
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      {
+        "fieldName": "sensitivity_safe",
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      {
+        "fieldName": "skin_types",
+        "state": "established",
+        "value": [
+          "sensitive"
+        ],
+        "confidence": "high"
+      },
+      {
+        "fieldName": "texture",
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      {
+        "fieldName": "tone_up",
+        "state": "established",
+        "value": false,
+        "confidence": "medium"
+      },
+      {
+        "fieldName": "uv_filter_type",
+        "state": "established",
+        "value": "organic",
+        "confidence": "high"
+      },
+      {
+        "fieldName": "white_cast",
+        "state": "established",
+        "value": "none",
+        "confidence": "high"
+      }
+    ]
+  },
+  "admissionPolicy": {
+    "policyVersion": "sunscreen-initial-admission-grant-policy-v1",
+    "acceptedSubjectResolutionVersions": [
+      "trust-phase5-admin-subject-review-v1"
+    ],
+    "requiredFacts": [
+      "spf_value",
+      "uva_label",
+      "uv_filter_type"
+    ]
+  },
+  "actualEvaluation": {
+    "grant": true,
+    "decision": "SUNSCREEN_INITIAL_ADMISSION_GRANT",
+    "reasons": [
+      "SUNSCREEN_IDENTITY_PROTECTION_AND_SEMANTIC_AUTHORITY_COMPLETE"
+    ],
+    "newBlockers": []
+  },
+  "auditability": {
+    "priorHoldResolved": true,
+    "changedAdmissionInputFieldOnly": "subject.identityResolutionVersion",
+    "semanticKeyUnchanged": true,
+    "formulationRevisionUnchanged": true,
+    "productFactSetUnchanged": true,
+    "taxonomyUnchanged": true,
+    "registryUnchanged": true,
+    "semanticReviewSetUnchanged": true
+  },
+  "safetyBoundary": {
+    "unresolvedFieldsRemainFailClosed": [
+      "texture",
+      "sensitivity_safe",
+      "irritation_risk",
+      "eye_sting",
+      "pilling_risk"
+    ],
+    "grantImpliesSafety": false,
+    "grantImpliesRecommendation": false,
+    "grantModifiesScoring": false,
+    "grantModifiesProductionRanking": false,
+    "grantAuthorizesPublicActivation": false,
+    "waterResistanceMixedIntoGrant": false,
+    "broadProtectionAuthorityInferred": false
+  },
+  "productionBoundary": {
+    "productionWrites": 0,
+    "mixedShadowExecuted": false,
+    "d5cD5dAllowlistCount": 3,
+    "d5cD5dAllowlistChanged": false,
+    "cosrxInD5cD5dAllowlist": false,
+    "runtimeActivation": {
+      "scope": "authenticated_product_query_beta",
+      "enabled": true,
+      "authorizedPhase": "DATA-AI29C-D5D",
+      "changed": false
+    },
+    "recommendationAdmissionMutation": false,
+    "productionRankingChanged": false,
+    "publicActivation": false,
+    "uvaActivated": false,
+    "waterResistanceActivated": false
+  },
+  "nextGate": {
+    "stage": "DATA-AI29C-D5E-E_COSRX_4_PRODUCT_INTERNAL_CANARY",
+    "status": "NOT_EXECUTED",
+    "proposedCanaryProductCount": 4,
+    "prerequisites": [
+      "R4 evidence merged with static verification passing",
+      "existing D5D allowlist remains exactly three",
+      "COSRX admission grant remains valid on fresh readback",
+      "no public activation or D5D beta allowlist expansion"
+    ]
+  }
+}
