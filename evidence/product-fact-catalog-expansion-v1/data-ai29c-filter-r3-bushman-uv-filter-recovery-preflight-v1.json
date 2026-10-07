@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "data-ai29c-filter-r3-bushman-uv-filter-recovery-preflight-v1",
+  "stage": "DATA-AI29C-FILTER-R3",
+  "track": "taxonomy-ai",
+  "mode": "ZERO_WRITE_PREFLIGHT",
+  "decision": "FILTER_R3_BUSHMAN_HYBRID_RECOVERY_PREFLIGHT_PASS_WRITE_NOT_AUTHORIZED",
+  "sourceMainSha": "6b8a7ca3a07a6ab22f3a91f932d8a377c6e84220",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "upstream": {
+    "d5eCloseoutDecision": "D5E_F_AUTHENTICATED_BETA_ALLOWLIST_EXPANSION_PASS",
+    "d5eComplete": true,
+    "wave3PreviouslyDefined": false,
+    "frontierReevaluatedReadOnly": true
+  },
+  "frontier": {
+    "remainingCandidates": [
+      {
+        "productId": "b576991e-79c9-4189-b6e9-527aeeb03566",
+        "name": "Dr. Troub Zinc Physical",
+        "admissionCriticalFactCount": 3,
+        "semanticReviewCount": 12,
+        "blocker": "finish:reviewed_not_established",
+        "disposition": "HOLD_NO_NEW_FINISH_AUTHORITY"
+      },
+      {
+        "productId": "7c709c04-e299-4ca6-be69-6aaf4a753f13",
+        "name": "Dr. Troub Skin Returning Bio Repair + Suncream",
+        "admissionCriticalFactCount": 3,
+        "semanticReviewCount": 12,
+        "blocker": "finish:reviewed_not_established",
+        "disposition": "HOLD_NO_NEW_FINISH_AUTHORITY"
+      },
+      {
+        "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+        "name": "Waterproof Pro Suncream",
+        "admissionCriticalFactCount": 2,
+        "semanticReviewCount": 0,
+        "blocker": "uv_filter_type:EVIDENCE_INSUFFICIENT",
+        "disposition": "SELECTED_FILTER_RECOVERY_PREFLIGHT"
+      },
+      {
+        "productId": "7e061f3a-e086-4700-8f09-98391008ecc5",
+        "name": "Aquatica Cooling Sunscreen",
+        "admissionCriticalFactCount": 0,
+        "semanticReviewCount": 0,
+        "blocker": "ALL_ADMISSION_CRITICAL_FACTS_EVIDENCE_INSUFFICIENT",
+        "disposition": "HOLD"
+      },
+      {
+        "productId": "df32d800-2f16-4511-8efa-dc353ea1c2ef",
+        "name": "Rice Ceramide Moisture Sun Cream",
+        "admissionCriticalFactCount": 0,
+        "semanticReviewCount": 0,
+        "blocker": "SOURCE_BLOCKED",
+        "disposition": "HOLD"
+      }
+    ]
+  },
+  "target": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "brand": "BUSHMAN",
+    "name": "Waterproof Pro Suncream",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subjectSemanticKey": "33696edfb47c47672930e0d398b0cd67fb966c355ec474ea9ec4ffa72400a584",
+    "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "market": "KR",
+    "identityStatus": "resolved",
+    "identityResolutionVersion": "data-ai29c-c5-presentation-identity-correction-v1",
+    "currentAdmissionFacts": {
+      "spf_value": 50,
+      "uva_label": "PA++++",
+      "uv_filter_type": null
+    },
+    "historicalResearchTask": {
+      "taskId": "3aec1254-60e6-42cc-b88d-efb8ed99fd93",
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "state": "BLOCKED",
+      "blockerCode": "EVIDENCE_INSUFFICIENT",
+      "attemptCount": 1
+    }
+  },
+  "registryContract": {
+    "registryVersion": "product-fact-registry-cross-category-v2",
+    "registryChecksum": "923256ca2468b2af31e1b7026655739408035daf62d3ff40a7132eca22afddd7",
+    "definitionChecksum": "6dd4e0016889b65dafade9d410692e9ab85b036e0654089950950ceb46f6e917",
+    "factKey": "uv_filter_type",
+    "valueType": "enum",
+    "allowedValues": [
+      "mineral",
+      "organic",
+      "hybrid"
+    ],
+    "semanticDefinition": "Declared or composition-established UV filter system class.",
+    "permittedEvidenceClasses": [
+      "product_claim",
+      "composition_identity"
+    ],
+    "positiveEvidenceRequirement": "product-specific evidence"
+  },
+  "governedSourceBaseline": {
+    "canonicalLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+    "sourceId": "9b98d800-66c3-4a40-880c-4c99f415a920",
+    "bindingId": "09650eb5-db97-474b-995c-5f5aeb706467",
+    "bindingState": "exact_subject_match",
+    "scopeRelation": "equivalent",
+    "priorContentDigest": "696c6ab509c4a0045ef5b408b06a2359e08570cc4d3ece1338a749c3fa2e6460",
+    "priorObservationVersion": "data-ai29c-c5d-bushman-official-page-v1",
+    "priorObserved": [
+      "SPF50+",
+      "PA++++",
+      "50ml",
+      "한국콜마",
+      "대한민국"
+    ],
+    "priorCompositionAuthorityCaptured": false
+  },
+  "liveOfficialObservation": {
+    "observedOn": "2026-10-07",
+    "exactProductName": "부쉬맨 워터프루프 프로 선크림 SPF50+ PA++++ 50ml",
+    "manufacturer": "한국콜마",
+    "country": "대한민국",
+    "fullIngredientListExposed": true,
+    "inorganicFilterMarkers": [
+      "징크옥사이드",
+      "티타늄디옥사이드"
+    ],
+    "organicFilterMarkers": [
+      "디에칠아미노하이드록시벤조일헥실벤조에이트",
+      "비스-에칠헥실옥시페놀메톡시페닐트리아진",
+      "에칠헥실트리아존"
+    ],
+    "proposedUvFilterType": "hybrid",
+    "evidenceClass": "composition_identity",
+    "proposedAuthority": "product_specific_primary",
+    "proposedConfidence": "high"
+  },
+  "corroboration": {
+    "hwahaeIngredientPageObserved": true,
+    "shinsegaeDutyFreeIngredientPageObserved": true,
+    "positiveAuthorityRequiredFromExactOfficialSource": true,
+    "thirdPartyTransferAloneAuthorized": false
+  },
+  "requiredNextGateActions": [
+    "refresh the exact official source observation through the governed source pipeline",
+    "produce a new content digest for the current exact official page",
+    "bind the refreshed source to the existing exact current Subject",
+    "create/review admissible composition_identity evidence for uv_filter_type=hybrid",
+    "run governed Product Fact confirmation using the current Registry v2 contract",
+    "verify existing SPF/UVA Fact IDs remain unchanged",
+    "do not mutate Recommendation or ranking in the Product Fact recovery gate"
+  ],
+  "writeBoundary": {
+    "productFactWrite": false,
+    "evidenceAdoption": false,
+    "researchTaskMutation": false,
+    "sourceBindingMutation": false,
+    "registryWrite": false,
+    "semanticReviewWrite": false,
+    "recommendationWrite": false,
+    "rankingChanged": false,
+    "betaAllowlistChanged": false,
+    "publicActivation": false,
+    "uvaActivation": false,
+    "waterActivation": false
+  },
+  "nextGate": "DATA-AI29C-FILTER-R3-R1_BUSHMAN_GOVERNED_SOURCE_REFRESH_AND_CONFIRMATION"
+}
