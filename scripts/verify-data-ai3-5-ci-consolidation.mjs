@@ -150,6 +150,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-atopalm-p0-review-preparation-preflight-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-atopalm-p0-controlled-review-preparation-closeout-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-atopalm-p0-confirmation-preflight-closeout-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-atopalm-p0-final-product-fact-confirmation-closeout-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {

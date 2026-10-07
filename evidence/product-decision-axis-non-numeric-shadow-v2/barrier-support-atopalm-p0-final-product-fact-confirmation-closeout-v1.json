@@ -1,0 +1,225 @@
+{
+  "version": "barrier-support-atopalm-p0-final-product-fact-confirmation-closeout-v1",
+  "stage": "V2.1-8H-R13I",
+  "source_main_sha": "12101d94b850619caed6cdc94bddb94cfa9515ee",
+  "captured_on": "2026-10-07",
+  "production_project": "bygrczggxfuisupcevaz",
+  "parent_authority": {
+    "r13h_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-atopalm-p0-confirmation-preflight-closeout-v1.json",
+    "r13h_git_blob_sha": "5d439fb7fc2956bcb65001330162e2e598bceef5",
+    "r13h_decision": "BARRIER_SUPPORT_ATOPALM_P0_CONFIRMATION_PREFLIGHT_PASS"
+  },
+  "authority": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "preflight_rpc": "admin_preflight_product_fact_confirmation_v1(uuid,text,jsonb)",
+    "preflight_function_sha256": "7d9ce38e47468fb1a419528256857e399a3d7e50e719f7bd449034c96019f59e",
+    "confirm_rpc": "admin_confirm_product_fact_v1(uuid,text,jsonb,text,text)",
+    "confirm_function_sha256": "b143613eac0e27b7e223379f7b5c20179a89f2b4b04150463c84e880656dcf29",
+    "required_capability": "admin.products.review",
+    "service_role_only": true
+  },
+  "execution": {
+    "executed_at": "2026-10-07T23:30:46.747433+09:00",
+    "isolation_level": "serializable",
+    "transaction_mode": "all-or-nothing",
+    "confirmations_requested": 2,
+    "confirmations_committed": 2,
+    "stale_preflight_rechecks": 2,
+    "stale_preflight_matches": 2,
+    "rollback_on_any_mismatch": true
+  },
+  "stale_revalidation": [
+    {
+      "fact_key": "barrier_support_claim",
+      "assignment_id": "dc558642-3dfb-4fe4-8733-d69310f71c51",
+      "evidence_id": "af1a47e6-e168-4492-8407-1072f9f7ff60",
+      "assignment_state": "ready_for_confirm",
+      "subject_identity_status": "resolved",
+      "subject_current_state": "current",
+      "subject_market": "KR",
+      "registry_write_allowed": true,
+      "registry_write_reason": "ALLOWED",
+      "current_evidence_count": 1,
+      "target_fact_instances_before": 0,
+      "target_current_before": 0,
+      "target_confirmations_before": 0,
+      "final_preflight_request_id": "v21-8h-r13i-atopalm-barrier-final-preflight",
+      "final_preflight_status": "ready",
+      "fusion_input_digest": "51c863da9e5b26764539ca6af70a3d8a8c44d113093fc15078b49356b2e8f5cf",
+      "payload_digest": "fc107c10634a788da789ab775857a3e33091a9375424cb5b0b8042a63d5c5ad1",
+      "prestate_digest": "9587aa29bb4a39ff24f93e549f40f863527d9b1f5311d8e467f76d2ab83ee344",
+      "previous_current": null,
+      "digest_match_with_r13h": true
+    },
+    {
+      "fact_key": "primary_use_role",
+      "assignment_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3",
+      "evidence_id": "73bd7367-857f-476b-a88e-5beae7347c8b",
+      "assignment_state": "ready_for_confirm",
+      "subject_identity_status": "resolved",
+      "subject_current_state": "current",
+      "subject_market": "KR",
+      "registry_write_allowed": true,
+      "registry_write_reason": "ALLOWED",
+      "current_evidence_count": 1,
+      "target_fact_instances_before": 0,
+      "target_current_before": 0,
+      "target_confirmations_before": 0,
+      "final_preflight_request_id": "v21-8h-r13i-atopalm-role-final-preflight",
+      "final_preflight_status": "ready",
+      "fusion_input_digest": "0fed8f311336a2f6a16628a5f4c992baeaecdd43234fa6176494e40e9837ba0e",
+      "payload_digest": "2abed6501c2a7c017e46f4b9a8cb9d27534afd58b8c4e69d4862d4b0e038cea9",
+      "prestate_digest": "1e76ac3f6b9e85ae970c187d35e2b29e85263bd4b9592bfd73d6c10d8f8c67a3",
+      "previous_current": null,
+      "digest_match_with_r13h": true
+    }
+  ],
+  "confirmations": [
+    {
+      "fact_key": "barrier_support_claim",
+      "value": true,
+      "request_id": "v21-8h-r13i-atopalm-barrier-confirm",
+      "assignment_id": "dc558642-3dfb-4fe4-8733-d69310f71c51",
+      "evidence_id": "af1a47e6-e168-4492-8407-1072f9f7ff60",
+      "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+      "status": "confirmed",
+      "confirmation_id": "bb9554a6-852b-4c18-b10f-e56ff39f30f6",
+      "fact_instance_id": "324cc23b-62d6-4c7b-8276-85cdc89ef070",
+      "audit_id": "f5d985d7-0035-4e04-b7fd-8efbe3e329fd",
+      "fact_confirmed_event_id": "4f5d41cb-102c-4388-98fe-4bd10807ecba",
+      "semantic_status": "supported",
+      "value_type": "boolean",
+      "value_boolean": true,
+      "market": "KR",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+      "fusion_input_digest": "51c863da9e5b26764539ca6af70a3d8a8c44d113093fc15078b49356b2e8f5cf",
+      "payload_digest": "fc107c10634a788da789ab775857a3e33091a9375424cb5b0b8042a63d5c5ad1",
+      "prestate_digest": "9587aa29bb4a39ff24f93e549f40f863527d9b1f5311d8e467f76d2ab83ee344",
+      "result_digest": "989b60e23b919a4308bda320a6313bbd7b884e2f96d0ad26e539b4b75ccb236d",
+      "previous_fact_instance_id": null
+    },
+    {
+      "fact_key": "primary_use_role",
+      "value": "multi_area",
+      "request_id": "v21-8h-r13i-atopalm-role-confirm",
+      "assignment_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3",
+      "evidence_id": "73bd7367-857f-476b-a88e-5beae7347c8b",
+      "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+      "status": "confirmed",
+      "confirmation_id": "06354e09-5122-417c-b3c7-ca64e078754a",
+      "fact_instance_id": "1d35eaae-3166-4ad8-842f-4d36e743a22a",
+      "audit_id": "1bc44b9d-6896-458f-bb3a-b591f0b27ee0",
+      "fact_confirmed_event_id": "4c2cc9ab-becc-44b0-b60c-6bc90b88fd95",
+      "semantic_status": "supported",
+      "value_type": "enum",
+      "value_enum": "multi_area",
+      "market": "KR",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+      "fusion_input_digest": "0fed8f311336a2f6a16628a5f4c992baeaecdd43234fa6176494e40e9837ba0e",
+      "payload_digest": "2abed6501c2a7c017e46f4b9a8cb9d27534afd58b8c4e69d4862d4b0e038cea9",
+      "prestate_digest": "1e76ac3f6b9e85ae970c187d35e2b29e85263bd4b9592bfd73d6c10d8f8c67a3",
+      "result_digest": "7590c595bf62ad65be89d57243cd2ad6175066b8d87081b08bf4afb445c871f7",
+      "previous_fact_instance_id": null
+    }
+  ],
+  "production_readback": {
+    "assignments": [
+      {
+        "assignment_id": "dc558642-3dfb-4fe4-8733-d69310f71c51",
+        "fact_key": "barrier_support_claim",
+        "operational_state": "confirmed",
+        "updated_at": "2026-10-07T23:30:46.747433+09:00"
+      },
+      {
+        "assignment_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3",
+        "fact_key": "primary_use_role",
+        "operational_state": "confirmed",
+        "updated_at": "2026-10-07T23:30:46.747433+09:00"
+      }
+    ],
+    "current": [
+      {
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+        "fact_instance_id": "324cc23b-62d6-4c7b-8276-85cdc89ef070",
+        "confirmation_id": "bb9554a6-852b-4c18-b10f-e56ff39f30f6"
+      },
+      {
+        "fact_key": "primary_use_role",
+        "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+        "fact_instance_id": "1d35eaae-3166-4ad8-842f-4d36e743a22a",
+        "confirmation_id": "06354e09-5122-417c-b3c7-ca64e078754a"
+      }
+    ],
+    "evidence_links": [
+      {
+        "evidence_id": "af1a47e6-e168-4492-8407-1072f9f7ff60",
+        "fact_instance_id": "324cc23b-62d6-4c7b-8276-85cdc89ef070",
+        "link_role": "supporting"
+      },
+      {
+        "evidence_id": "73bd7367-857f-476b-a88e-5beae7347c8b",
+        "fact_instance_id": "1d35eaae-3166-4ad8-842f-4d36e743a22a",
+        "link_role": "supporting"
+      }
+    ],
+    "research_tasks": [
+      {
+        "task_id": "b1430a7d-79bb-43a5-bfea-a19599441811",
+        "fact_key": "barrier_support_claim",
+        "state": "RESEARCH_PENDING",
+        "blocker_code": null,
+        "attempt_count": 0
+      },
+      {
+        "task_id": "cbdad075-35a1-476e-b3ac-6279b676e73e",
+        "fact_key": "primary_use_role",
+        "state": "RESEARCH_PENDING",
+        "blocker_code": null,
+        "attempt_count": 0
+      }
+    ]
+  },
+  "production_counts": {
+    "product_fact_current_before": 105,
+    "product_fact_current_after": 107,
+    "fact_instances_before": 106,
+    "fact_instances_after": 108,
+    "confirmations_before": 106,
+    "confirmations_after": 108,
+    "evidence_records_before": 110,
+    "evidence_records_after": 110,
+    "global_evidence_links_after": 108,
+    "target_current_before": 0,
+    "target_current_after": 2,
+    "target_fact_instances_before": 0,
+    "target_fact_instances_after": 2,
+    "target_confirmations_before": 0,
+    "target_confirmations_after": 2,
+    "target_evidence_links_before": 0,
+    "target_evidence_links_after": 2,
+    "target_confirmed_assignments_after": 2,
+    "target_fact_confirmed_events_after": 2,
+    "target_admin_audits_after": 2
+  },
+  "authority_boundary": {
+    "product_fact_confirmation_complete": true,
+    "recommendation_admission_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false
+  },
+  "decision": "BARRIER_SUPPORT_ATOPALM_P0_FINAL_PRODUCT_FACT_CONFIRMATION_PASS",
+  "follow_up": {
+    "stage": "V2.1-8H-R13J_ATOPALM_POST_CONFIRMATION_PDA_RECOMMENDATION_INVARIANCE",
+    "status": "NOT_EXECUTED",
+    "recommended_analysis": "post-confirmation PDA state delta and recommendation invariance reconciliation",
+    "separate_authority_required_for_recommendation_admission": true,
+    "separate_authority_required_for_recommendation_activation": true
+  }
+}
