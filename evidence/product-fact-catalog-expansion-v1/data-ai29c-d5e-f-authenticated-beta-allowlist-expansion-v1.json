@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "data-ai29c-d5e-f-authenticated-beta-allowlist-expansion-evidence-v1",
+  "stage": "DATA-AI29C-D5E-F",
+  "decision": "D5E_F_AUTHENTICATED_BETA_ALLOWLIST_EXPANSION_DEPLOYED_PROBE_REQUIRED",
+  "prerequisite": {
+    "d5eEStage": "DATA-AI29C-D5E-E",
+    "deploymentSha": "266922e7198ba5904a05a5ba3968ad6330593cbf",
+    "workflowRunId": "37601242380",
+    "d5eEDeployedProbePassCount": 6,
+    "d5dProductionProbePassCount": 4,
+    "d5cCanaryPassCount": 6,
+    "activationReadinessPassCount": 24
+  },
+  "target": {
+    "legacyProductionSunscreenCount": 11,
+    "previousAuthenticatedBetaTargetCount": 3,
+    "expandedAuthenticatedBetaTargetCount": 4,
+    "combinedAuthenticatedBetaSunscreenCount": 15,
+    "cosrxProductId": "888eca86-af25-4a12-b9ea-47922d83f520"
+  },
+  "routingBoundary": {
+    "betaRoute": "/api/my/product-query-beta",
+    "betaExpansionOption": "authenticatedBetaSunscreenExpansion",
+    "betaExpansionEnabled": true,
+    "previewRouteExpansionEnabled": false,
+    "productionCanaryRouteExpansionEnabled": false,
+    "publicSearchCutover": false
+  },
+  "authority": {
+    "d5cTargetCount": 3,
+    "cosrxAuthorityRpc": "read_data_ai29c_d5e_e_cosrx_canary_authority_v1",
+    "cosrxAuthorityMigrationVersion": "20261007155804",
+    "newProductionMigrationRequired": false,
+    "d5dRuntimeSwitchChanged": false,
+    "runtimeSwitchScope": "authenticated_product_query_beta"
+  },
+  "runtimeProbe": {
+    "route": "/api/internal/product-query-spf-authenticated-beta-expansion",
+    "cases": [
+      {
+        "id": "outdoor_live",
+        "repeats": 2
+      },
+      {
+        "id": "non_outdoor_live",
+        "repeats": 2
+      }
+    ],
+    "expectedDeployedProbeCount": 4,
+    "executed": false
+  },
+  "expectedSpfDelta": {
+    "a6994fcd-302f-4e63-acbe-91a3f17a5a65": 2,
+    "b90bf992-07ae-4f49-a3a4-d90ea6d4a858": 4,
+    "7fc45e7c-38aa-41a1-b1a1-c0e09fcd8c17": 4,
+    "888eca86-af25-4a12-b9ea-47922d83f520": 6,
+    "legacyEach": 6
+  },
+  "productionBoundary": {
+    "productRowMutation": false,
+    "recommendationLogWrite": false,
+    "persistence": false,
+    "publicActivation": false,
+    "uvaActivated": false,
+    "waterResistanceActivated": false
+  }
+}

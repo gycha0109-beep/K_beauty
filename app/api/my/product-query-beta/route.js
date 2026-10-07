@@ -157,6 +157,7 @@ export async function POST(request) {
 
   try {
     const result = await executeProductQueryPreview(body.query, {
+      authenticatedBetaSunscreenExpansion: true,
       onOperationalObservation(observation) {
         runtimeObservation = observation;
       }
