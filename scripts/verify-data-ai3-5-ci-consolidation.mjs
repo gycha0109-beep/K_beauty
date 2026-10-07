@@ -145,6 +145,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-atopalm-p0-identity-recovery-preflight-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-atopalm-p0-controlled-subject-registration-closeout-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-atopalm-p0-official-evidence-research-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-atopalm-p0-direct-evidence-ingest-preflight-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
