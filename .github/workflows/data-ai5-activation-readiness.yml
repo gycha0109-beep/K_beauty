@@ -23,6 +23,15 @@ on:
       - "lib/server/product-query-spf-canary-service.js"
       - "lib/server/sunscreen-d5c-canary-authority-reader.js"
       - "lib/sunscreen-d5c-canary-authority-contract.mjs"
+      - "supabase/migrations/20261007155804_data_ai29c_d5e_e_cosrx_internal_canary_authority_v1.sql"
+      - "lib/sunscreen-d5e-e-cosrx-canary-authority-contract.mjs"
+      - "lib/server/sunscreen-d5e-e-cosrx-canary-authority-reader.js"
+      - "lib/server/product-query-spf-four-product-canary-service.js"
+      - "app/api/internal/product-query-spf-four-product-canary/route.js"
+      - "scripts/validate-data-ai29c-d5e-e-four-product-canary-runtime-response.mjs"
+      - "scripts/verify-data-ai29c-d5e-e-four-product-internal-canary.mjs"
+      - "docs/evidence/data-ai29c-d5e-e-four-product-internal-canary-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-e-four-product-internal-canary-v1.json"
       - "docs/evidence/data-ai29c-d5d-spf-production-activation-v1.md"
       - "scripts/validate-data-ai29c-d5d-spf-production-activation-response.mjs"
       - "scripts/verify-data-ai29c-d5d-spf-production-activation.mjs"
@@ -63,6 +72,15 @@ on:
       - "lib/server/product-query-spf-canary-service.js"
       - "lib/server/sunscreen-d5c-canary-authority-reader.js"
       - "lib/sunscreen-d5c-canary-authority-contract.mjs"
+      - "supabase/migrations/20261007155804_data_ai29c_d5e_e_cosrx_internal_canary_authority_v1.sql"
+      - "lib/sunscreen-d5e-e-cosrx-canary-authority-contract.mjs"
+      - "lib/server/sunscreen-d5e-e-cosrx-canary-authority-reader.js"
+      - "lib/server/product-query-spf-four-product-canary-service.js"
+      - "app/api/internal/product-query-spf-four-product-canary/route.js"
+      - "scripts/validate-data-ai29c-d5e-e-four-product-canary-runtime-response.mjs"
+      - "scripts/verify-data-ai29c-d5e-e-four-product-internal-canary.mjs"
+      - "docs/evidence/data-ai29c-d5e-e-four-product-internal-canary-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-d5e-e-four-product-internal-canary-v1.json"
       - "docs/evidence/data-ai29c-d5d-spf-production-activation-v1.md"
       - "scripts/validate-data-ai29c-d5d-spf-production-activation-response.mjs"
       - "scripts/verify-data-ai29c-d5d-spf-production-activation.mjs"
@@ -171,6 +189,12 @@ jobs:
         run: |
           node --check scripts/validate-data-ai29c-d5c-spf-canary-runtime-response.mjs
           node --experimental-strip-types scripts/verify-data-ai29c-d5c-bounded-internal-canary.mjs
+
+      - name: Verify DATA-AI29C-D5E-E four-product internal canary manually
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          node --check scripts/validate-data-ai29c-d5e-e-four-product-canary-runtime-response.mjs
+          node --experimental-strip-types scripts/verify-data-ai29c-d5e-e-four-product-internal-canary.mjs
 
       - name: Verify DATA-AI29C-D5D SPF Production activation manually
         if: github.event_name == 'workflow_dispatch'
@@ -367,6 +391,47 @@ jobs:
 
           test "$pass_count" -eq 6
           echo "DATA_AI29C_D5C_CANARY_PASS_COUNT=$pass_count"
+
+      - name: Probe D5E-E four-product SPF internal canary cases twice
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.custom }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cases=(
+            outdoor_spf_on
+            rollback_off
+            non_outdoor_control
+          )
+
+          pass_count=0
+          for case_id in "${cases[@]}"; do
+            for repeat in 1 2; do
+              response_file="$(mktemp)"
+              status="$(curl --silent --show-error --retry 1 --retry-delay 1 --retry-all-errors \
+                -o "$response_file" \
+                -w '%{http_code}' \
+                -X POST \
+                -H "Authorization: Bearer $OIDC_TOKEN" \
+                -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+                -H 'Content-Type: application/json' \
+                --data "{\"caseId\":\"${case_id}\"}" \
+                "$DEPLOYMENT_URL/api/internal/product-query-spf-four-product-canary")"
+              cat "$response_file"
+              echo
+              echo "DATA_AI29C_D5E_E_RUNTIME_PROBE_HTTP_STATUS=${case_id}:repeat_${repeat}:${status}"
+
+              node scripts/validate-data-ai29c-d5e-e-four-product-canary-runtime-response.mjs \
+                "$response_file" "$GITHUB_SHA" "$status" "$case_id" "$repeat"
+              pass_count=$((pass_count + 1))
+              rm -f "$response_file"
+            done
+          done
+
+          test "$pass_count" -eq 6
+          echo "DATA_AI29C_D5E_E_CANARY_PASS_COUNT=$pass_count"
 
       - name: Probe activation-readiness cases twice
         env:
