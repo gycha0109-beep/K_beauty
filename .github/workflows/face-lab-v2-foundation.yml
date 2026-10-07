@@ -46,6 +46,7 @@ on:
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
       - "scripts/verify-face-lab-v2-visual-try-on.mjs"
+      - "scripts/verify-face-lab-v2-visual-try-on-multi-reference.mjs"
       - "scripts/verify-face-lab-v2-ai-simulation-adapter.mjs"
       - "scripts/verify-face-lab-v2-simulation-guard.mjs"
       - "scripts/verify-face-lab-v2-simulation-uat-endpoint.mjs"
@@ -328,6 +329,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-render-adapter.mjs
       - name: Verify Face Lab V2 Visual Try-On authority
         run: node scripts/verify-face-lab-v2-visual-try-on.mjs
+      - name: Verify Face Lab V2 Visual Try-On multi-reference provider path
+        run: node scripts/verify-face-lab-v2-visual-try-on-multi-reference.mjs
       - name: Verify Face Lab V2 AI simulation adapter
         run: node scripts/verify-face-lab-v2-ai-simulation-adapter.mjs
       - name: Verify Face Lab Vision provider 429 retry
