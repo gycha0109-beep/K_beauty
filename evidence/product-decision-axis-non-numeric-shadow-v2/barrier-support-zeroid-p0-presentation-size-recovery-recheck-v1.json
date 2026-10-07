@@ -1,0 +1,171 @@
+{
+  "version": "barrier-support-zeroid-p0-presentation-size-recovery-recheck-v1",
+  "stage": "V2.1-8H-R14A",
+  "source_main_sha": "e66c748cb5ef83585262ec39f02d3ef8161b89ec",
+  "captured_on": "2026-10-07",
+  "product": {
+    "product_id": "7a98b5e7-2c1f-441a-afee-dd1c592d95bc",
+    "brand": "제로이드",
+    "brand_en": "ZEROID",
+    "catalog_name": "인텐시브 SOS 플러스 밤",
+    "catalog_name_en": "Intensive SOS Plus Balm",
+    "category": "moisturizer_balm",
+    "catalog_size_ml": 40,
+    "price_krw": 24000,
+    "recommendation_tier_trace": "Tier1",
+    "source_url": "https://www.hwahae.co.kr/products/2097713",
+    "external_source": "hwahae",
+    "external_id": "2097713"
+  },
+  "parent_authority": {
+    "r9_research_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-official-identity-authority-research-v1.json",
+    "r9_research_git_blob_sha": "c040d01f85dbda02afa8261b1ac46f05903c87f5",
+    "r9_ledger_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-official-identity-decision-ledger-v1.json",
+    "r9_ledger_git_blob_sha": "f87a71963f974d2cf83e8f118198c3a56ea6b709",
+    "prior_decision": "HOLD",
+    "prior_reason_code": "FIRST_PARTY_PRESENTATION_SIZE_UNCONFIRMED",
+    "prior_formulation_scope": "CURRENT_FORMULA_ESTABLISHED_PRESENTATION_SIZE_NOT_FIRST_PARTY_CLOSED"
+  },
+  "authority_policy": {
+    "ready_requires": "CURRENT_EXACT_PRODUCT_AND_PRESENTATION_ESTABLISHED_BY_FIRST_PARTY_OR_BRAND_OFFICIAL_AUTHORITY",
+    "first_party_product_identity_required": true,
+    "secondary_source_may_corroborate_but_cannot_close_missing_first_party_presentation_scope": true,
+    "missing_implies_false": false,
+    "subject_registration_authorized": false,
+    "product_fact_write_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "current_research": {
+    "first_party": [
+      {
+        "authority_type": "ZEROID_OFFICIAL_PRODUCT_PAGE",
+        "locator": "https://www.zeroid.co.kr/web/product/product_detail.asp?idx=365",
+        "observed_name": "인텐시브 SOS 플러스 밤",
+        "observed_english_name": "INTENSIVE SOS+ BALM",
+        "observed_description": "자극 받은 피부의 진정을 도와주는 SOS 집중 손상 케어 밤",
+        "observed_formula_text": true,
+        "observed_size_ml": null,
+        "html_text_contains_40ml": false,
+        "official_image_locator": "https://www.zeroid.co.kr/data/rental/goods/big/202509739133436.jpg",
+        "official_image_size_text_verified": false,
+        "supports": [
+          "current_product_identity",
+          "current_formula_text",
+          "kr_brand_authority"
+        ],
+        "limitation": "official HTML text does not expose 40ml; official product image bytes were not retrievable in the current research environment, so image-printed size cannot be asserted"
+      },
+      {
+        "authority_type": "ZEROID_OFFICIAL_BUSINESS_MALL_ENTRYPOINT",
+        "locator": "https://shop.zeroid.co.kr/shopping/list.asp",
+        "observed_public_product_detail_for_target": false,
+        "observed_size_ml": null,
+        "supports": [
+          "brand_official_sales_channel_exists"
+        ],
+        "limitation": "publicly crawlable target SKU presentation text was not available"
+      }
+    ],
+    "corroborating_sources": [
+      {
+        "authority_type": "HWAHAE_SECONDARY",
+        "locator": "https://www.hwahae.co.kr/products/2097713",
+        "observed_name": "인텐시브 SOS 플러스 밤",
+        "observed_size_ml": 40,
+        "observed_price_krw": 24000,
+        "supports": [
+          "presentation_size_corroboration_only"
+        ]
+      },
+      {
+        "authority_type": "AUTHORIZED_OR_SPECIALTY_RETAIL_CORROBORATION_UNVERIFIED_FIRST_PARTY",
+        "locator": "https://www.gomdolfarm.com/m/product.html?GfDT=bWp3UQ%3D%3D&branduid=1063623&mcode=023&scode=&search=&xcode=009",
+        "observed_name": "제로이드 인텐시브 SOS 플러스 밤 40ml",
+        "observed_size_ml": 40,
+        "observed_manufacturer": "(주)네오팜",
+        "supports": [
+          "presentation_size_corroboration_only",
+          "manufacturer_corroboration_only"
+        ]
+      },
+      {
+        "authority_type": "SPECIALTY_RETAIL_CORROBORATION",
+        "locator": "https://www.mdeshop.co.kr/shop/shopdetail.html?branduid=10855088",
+        "observed_name": "제로이드 인텐시브 SOS 플러스 밤 40ml",
+        "observed_size_ml": 40,
+        "observed_manufacturer": "(주)네오팜",
+        "observed_responsible_seller": "(주)네오팜",
+        "supports": [
+          "presentation_size_corroboration_only",
+          "manufacturer_corroboration_only"
+        ]
+      },
+      {
+        "authority_type": "MARKETPLACE_CORROBORATION",
+        "locator": "https://www.coupang.com/vp/products/8051934856",
+        "observed_name": "제로이드 인텐시브 SOS 플러스 밤 40ml",
+        "observed_size_ml": 40,
+        "observed_manufacturer": "(주)네오팜",
+        "supports": [
+          "presentation_size_corroboration_only"
+        ]
+      }
+    ],
+    "official_family_domain_search": {
+      "searched_domains": [
+        "zeroid.co.kr",
+        "shop.zeroid.co.kr",
+        "neopharm.co.kr",
+        "neopharmshop.co.kr"
+      ],
+      "exact_40ml_first_party_text_found": false
+    }
+  },
+  "production_readback": {
+    "product_size_ml": 40,
+    "subject_count": 0,
+    "current_fact_count": 0,
+    "fact_instance_count": 0,
+    "confirmation_count": 0,
+    "hosted_writes_from_r14a": {
+      "product": 0,
+      "subject": 0,
+      "evidence": 0,
+      "fact_instance": 0,
+      "current": 0,
+      "confirmation": 0,
+      "recommendation": 0
+    }
+  },
+  "decision": {
+    "result": "HOLD",
+    "reason_code": "FIRST_PARTY_PRESENTATION_SIZE_UNCONFIRMED",
+    "formulation_scope": "CURRENT_FORMULA_ESTABLISHED_PRESENTATION_SIZE_NOT_FIRST_PARTY_CLOSED",
+    "unresolved": [
+      "official_zeroid_html_text_does_not_expose_40ml",
+      "official_product_image_size_text_not_verified",
+      "official_business_mall_target_sku_size_not_publicly_verified",
+      "secondary_and_retail_40ml_corroboration_cannot_close_first_party_presentation_requirement"
+    ],
+    "hold_auto_released": false
+  },
+  "next_gate": {
+    "stage": "V2.1-8H-R14B_ZEROID_FIRST_PARTY_PRESENTATION_CAPTURE",
+    "status": "BLOCKED_PENDING_EXTERNAL_FIRST_PARTY_EVIDENCE",
+    "entry_condition": "obtain verifiable first-party or brand-official target SKU presentation showing 40ml, or an official product-information record that explicitly binds idx=365 to 40ml",
+    "allowed_actions": [
+      "read_only_official_source_capture",
+      "official_business_mall_target_sku_capture",
+      "official_product_image_visual_size_verification"
+    ],
+    "forbidden_until_entry_condition": [
+      "subject_registration",
+      "product_fact_evidence_ingest",
+      "review_preparation",
+      "confirmation",
+      "recommendation_admission",
+      "recommendation_activation"
+    ]
+  }
+}
