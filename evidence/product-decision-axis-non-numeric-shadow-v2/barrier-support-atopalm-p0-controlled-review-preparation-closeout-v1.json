@@ -1,0 +1,238 @@
+{
+  "version": "barrier-support-atopalm-p0-controlled-review-preparation-closeout-v1",
+  "stage": "V2.1-8H-R13G",
+  "execution_main_sha": "6b8a7ca3a07a6ab22f3a91f932d8a377c6e84220",
+  "closeout_base_main_sha": "6b8a7ca3a07a6ab22f3a91f932d8a377c6e84220",
+  "captured_on": "2026-10-07",
+  "production_project": "bygrczggxfuisupcevaz",
+  "parent_authority": {
+    "r13f_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-atopalm-p0-review-preparation-preflight-v1.json",
+    "r13f_git_blob_sha": "7f5158936d2e302bbc84cefd3c38c1c1a81b0bec",
+    "r13f_decision": "BARRIER_SUPPORT_ATOPALM_P0_REVIEW_PREPARATION_PREFLIGHT_PASS"
+  },
+  "execution": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "required_capability": "admin.products.review",
+    "rpc": "admin_prepare_product_fact_review_v1(uuid,text,jsonb)",
+    "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+    "transaction_mode": "single atomic DO block / ordered four-step commit",
+    "committed_at": "2026-10-07T20:51:06.751063+09:00",
+    "sequence": [
+      {
+        "request_id": "v21-8h-r13g-atopalm-barrier-under",
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+        "to_state": "under_review",
+        "reason_code": "v21_8h_r13g_atopalm_barrier_under_review"
+      },
+      {
+        "request_id": "v21-8h-r13g-atopalm-barrier-ready",
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+        "from_state": "under_review",
+        "to_state": "ready_for_confirm",
+        "reason_code": "v21_8h_r13g_atopalm_barrier_ready_for_confirm"
+      },
+      {
+        "request_id": "v21-8h-r13g-atopalm-role-under",
+        "fact_key": "primary_use_role",
+        "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+        "to_state": "under_review",
+        "reason_code": "v21_8h_r13g_atopalm_role_under_review"
+      },
+      {
+        "request_id": "v21-8h-r13g-atopalm-role-ready",
+        "fact_key": "primary_use_role",
+        "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+        "from_state": "under_review",
+        "to_state": "ready_for_confirm",
+        "reason_code": "v21_8h_r13g_atopalm_role_ready_for_confirm"
+      }
+    ]
+  },
+  "targets": [
+    {
+      "task_id": "b1430a7d-79bb-43a5-bfea-a19599441811",
+      "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "evidence_id": "af1a47e6-e168-4492-8407-1072f9f7ff60",
+      "assignment_id": "dc558642-3dfb-4fe4-8733-d69310f71c51",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "fact_key": "barrier_support_claim",
+      "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+      "value": true
+    },
+    {
+      "task_id": "cbdad075-35a1-476e-b3ac-6279b676e73e",
+      "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "evidence_id": "73bd7367-857f-476b-a88e-5beae7347c8b",
+      "assignment_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "fact_key": "primary_use_role",
+      "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+      "value": "multi_area"
+    }
+  ],
+  "production_readback": {
+    "assignments": [
+      {
+        "assignment_id": "dc558642-3dfb-4fe4-8733-d69310f71c51",
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5",
+        "operational_state": "ready_for_confirm",
+        "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+        "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+        "created_at": "2026-10-07T20:51:06.751063+09:00",
+        "updated_at": "2026-10-07T20:51:06.751063+09:00"
+      },
+      {
+        "assignment_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3",
+        "fact_key": "primary_use_role",
+        "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240",
+        "operational_state": "ready_for_confirm",
+        "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+        "review_policy_version": "v21-8g3-b-direct-evidence-review-v1",
+        "created_at": "2026-10-07T20:51:06.751063+09:00",
+        "updated_at": "2026-10-07T20:51:06.751063+09:00"
+      }
+    ],
+    "review_events": [
+      {
+        "event_id": "067e82d6-c7e1-4f07-bfdc-b74cbc9d96f0",
+        "assignment_id": "dc558642-3dfb-4fe4-8733-d69310f71c51",
+        "event_kind": "review_assignment_prepared",
+        "reason_code": "v21_8h_r13g_atopalm_barrier_under_review",
+        "request_id": "v21-8h-r13g-atopalm-barrier-under",
+        "from_state": null,
+        "to_state": "under_review"
+      },
+      {
+        "event_id": "f25c143d-a1d9-4c6e-a6d7-671b4c475465",
+        "assignment_id": "dc558642-3dfb-4fe4-8733-d69310f71c51",
+        "event_kind": "review_assignment_transitioned",
+        "reason_code": "v21_8h_r13g_atopalm_barrier_ready_for_confirm",
+        "request_id": "v21-8h-r13g-atopalm-barrier-ready",
+        "from_state": "under_review",
+        "to_state": "ready_for_confirm"
+      },
+      {
+        "event_id": "1216d1fa-07af-4e55-9ded-d441e65b5575",
+        "assignment_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3",
+        "event_kind": "review_assignment_prepared",
+        "reason_code": "v21_8h_r13g_atopalm_role_under_review",
+        "request_id": "v21-8h-r13g-atopalm-role-under",
+        "from_state": null,
+        "to_state": "under_review"
+      },
+      {
+        "event_id": "b6e8cf0f-171c-4bd9-be2a-845959323bbc",
+        "assignment_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3",
+        "event_kind": "review_assignment_transitioned",
+        "reason_code": "v21_8h_r13g_atopalm_role_ready_for_confirm",
+        "request_id": "v21-8h-r13g-atopalm-role-ready",
+        "from_state": "under_review",
+        "to_state": "ready_for_confirm"
+      }
+    ],
+    "audits": [
+      {
+        "audit_id": "cd3650ac-eba5-489d-bd67-bf0061171a24",
+        "request_id": "v21-8h-r13g-atopalm-barrier-under",
+        "action": "admin.product_fact.review_prepared",
+        "target_id": "dc558642-3dfb-4fe4-8733-d69310f71c51"
+      },
+      {
+        "audit_id": "0ab33de4-aa95-4fdb-b1dd-b903f8150033",
+        "request_id": "v21-8h-r13g-atopalm-barrier-ready",
+        "action": "admin.product_fact.review_prepared",
+        "target_id": "dc558642-3dfb-4fe4-8733-d69310f71c51"
+      },
+      {
+        "audit_id": "a07fc48d-9fd2-4bd1-ba6a-df5b0736cd81",
+        "request_id": "v21-8h-r13g-atopalm-role-under",
+        "action": "admin.product_fact.review_prepared",
+        "target_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3"
+      },
+      {
+        "audit_id": "bdcdb53f-ef66-44d7-981a-446c198039cf",
+        "request_id": "v21-8h-r13g-atopalm-role-ready",
+        "action": "admin.product_fact.review_prepared",
+        "target_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3"
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "b1430a7d-79bb-43a5-bfea-a19599441811",
+        "fact_key": "barrier_support_claim",
+        "state": "RESEARCH_PENDING",
+        "attempt_count": 0,
+        "blocker_code": null,
+        "evidence_id": null,
+        "evidence_candidate_id": null
+      },
+      {
+        "task_id": "cbdad075-35a1-476e-b3ac-6279b676e73e",
+        "fact_key": "primary_use_role",
+        "state": "RESEARCH_PENDING",
+        "attempt_count": 0,
+        "blocker_code": null,
+        "evidence_id": null,
+        "evidence_candidate_id": null
+      }
+    ]
+  },
+  "production_counts": {
+    "product_fact_subjects": 51,
+    "product_fact_current": 105,
+    "fact_instances": 106,
+    "confirmations": 106,
+    "evidence_records": 110,
+    "target_evidence_rows": 2,
+    "target_ready_assignments": 2,
+    "target_review_events": 4,
+    "target_audits": 4,
+    "target_fact_instances": 0,
+    "target_current_facts": 0,
+    "target_confirmations": 0
+  },
+  "authority_boundary": {
+    "committed_review_assignment_writes": 2,
+    "committed_review_event_writes": 4,
+    "committed_audit_writes": 4,
+    "committed_fact_instance_writes": 0,
+    "committed_product_fact_current_writes": 0,
+    "committed_confirmation_writes": 0,
+    "committed_recommendation_writes": 0,
+    "confirmation_preflight_authorized_for_current_stage": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false
+  },
+  "decision": "BARRIER_SUPPORT_ATOPALM_P0_CONTROLLED_REVIEW_PREPARATION_PASS",
+  "next_gate": {
+    "stage": "V2.1-8H-R13H_ATOPALM_CONFIRMATION_PREFLIGHT_ONLY",
+    "status": "NOT_EXECUTED",
+    "candidates": [
+      {
+        "assignment_id": "dc558642-3dfb-4fe4-8733-d69310f71c51",
+        "evidence_id": "af1a47e6-e168-4492-8407-1072f9f7ff60",
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "a1e01fd7508d83f2b251d33f59397f902a1ed20b4a09c51ed4dd3e3da7a639c5"
+      },
+      {
+        "assignment_id": "8148748f-aea3-43fb-9cf1-4d50ac01cca3",
+        "evidence_id": "73bd7367-857f-476b-a88e-5beae7347c8b",
+        "fact_key": "primary_use_role",
+        "proposition_key": "82e11e7bb7e999b242759f6ebdabcfb5fce4625ad0432e85144abbd64d2ce240"
+      }
+    ],
+    "allowed_rpc": "admin_preflight_product_fact_confirmation_v1",
+    "confirmation_preflight_authorized": true,
+    "confirmation_authorized": false,
+    "expected_confirmation_rpc": "admin_confirm_product_fact_v1",
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  }
+}
