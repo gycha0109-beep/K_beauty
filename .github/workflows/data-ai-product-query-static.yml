@@ -190,6 +190,9 @@ on:
       - "docs/evidence/data-ai29c-filter-r3-r1-bushman-write-policy-handoff-preflight-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r3-r1-bushman-write-policy-handoff-preflight-v1.json"
       - "scripts/verify-data-ai29c-filter-r3-r1-bushman-write-policy-handoff-preflight.mjs"
+      - "docs/evidence/data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-closeout-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-closeout-v1.json"
+      - "scripts/verify-data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-closeout.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -436,6 +439,9 @@ on:
       - "docs/evidence/data-ai29c-filter-r3-r1-bushman-write-policy-handoff-preflight-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r3-r1-bushman-write-policy-handoff-preflight-v1.json"
       - "scripts/verify-data-ai29c-filter-r3-r1-bushman-write-policy-handoff-preflight.mjs"
+      - "docs/evidence/data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-closeout-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-closeout-v1.json"
+      - "scripts/verify-data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-closeout.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -720,6 +726,8 @@ jobs:
         run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r3-bushman-uv-filter-recovery-preflight.mjs
       - name: Verify DATA-AI29C-FILTER-R3-R1 BUSHMAN write-policy handoff preflight
         run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r3-r1-bushman-write-policy-handoff-preflight.mjs
+      - name: Verify DATA-AI29C-FILTER-R3-R2 UV filter write-authority handoff closeout
+        run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-closeout.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
