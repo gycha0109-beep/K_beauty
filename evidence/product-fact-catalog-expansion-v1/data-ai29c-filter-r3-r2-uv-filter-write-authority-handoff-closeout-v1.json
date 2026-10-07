@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-closeout-v1",
+  "stage": "DATA-AI29C-FILTER-R3-R2",
+  "track": "taxonomy-ai",
+  "decision": "FILTER_R3_R2_UV_FILTER_REGISTRY_WRITE_AUTHORITY_HANDOFF_PASS",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "validatedMergeSha": "4c1fea94cbb83b1af3f53c2f1375e5d9ce4f45d6",
+  "repositoryMainAtCloseoutBase": "99ea71fc15c80fb9f38b4ade1f8108ae752b899d",
+  "exactShaCi": {
+    "canonicalStatic": {
+      "runId": 37635193460,
+      "attempt": 2,
+      "conclusion": "success"
+    },
+    "shadowRuntime": {
+      "runId": 37635193430,
+      "attempt": 2,
+      "conclusion": "success"
+    },
+    "providerShadowRuntime": {
+      "runId": 37635193511,
+      "attempt": 2,
+      "conclusion": "success"
+    },
+    "protectionShadowRuntime": {
+      "runId": 37635193619,
+      "attempt": 2,
+      "conclusion": "success"
+    },
+    "activationReadiness": {
+      "runId": 37635193445,
+      "attempt": 2,
+      "conclusion": "success"
+    },
+    "currentMainHealth": {
+      "runId": 37635193554,
+      "attempt": 2,
+      "conclusion": "success"
+    },
+    "supplyChain": {
+      "runId": 37635193659,
+      "attempt": 4,
+      "conclusion": "success"
+    }
+  },
+  "rollbackDryRun": {
+    "passed": true,
+    "effectiveFrom": "2026-10-08T00:33:19.722543+09:00",
+    "v1New": {
+      "allowed": false,
+      "reason": "NEW_LINEAGE_NOT_ALLOWED"
+    },
+    "v1Existing": {
+      "allowed": true,
+      "reason": "ALLOWED"
+    },
+    "v2New": {
+      "allowed": true,
+      "reason": "ALLOWED"
+    },
+    "v2Existing": {
+      "allowed": true,
+      "reason": "ALLOWED"
+    },
+    "persisted": false
+  },
+  "execution": {
+    "atomicTransaction": true,
+    "effectiveFrom": "2026-10-08T00:33:19.722543+09:00",
+    "policyVersion": "data-ai29c-filter-r3-r2-uv-filter-write-authority-handoff-v1",
+    "authorizedPhase": "DATA-AI29C-FILTER-R3-R2",
+    "actorRole": "admin_owner",
+    "capability": "admin.operations.execute",
+    "v1": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "factKey": "uv_filter_type",
+      "before": {
+        "policyState": "active",
+        "newLineageAllowed": true,
+        "existingLineageAllowed": true
+      },
+      "after": {
+        "policyState": "draining",
+        "newLineageAllowed": false,
+        "existingLineageAllowed": true
+      },
+      "requestId": "data-ai29c-filter-r3-r2-v1-drain",
+      "auditId": "8889660a-3c92-47fe-86a8-c985b7230a2d",
+      "policyDigest": "13958ac75019fcc02a7810e02f1eaa927bcf5d72dfa4e43f89aedf404ee93fc4"
+    },
+    "v2": {
+      "registryVersion": "product-fact-registry-cross-category-v2",
+      "factKey": "uv_filter_type",
+      "before": null,
+      "after": {
+        "policyState": "active",
+        "newLineageAllowed": true,
+        "existingLineageAllowed": true
+      },
+      "requestId": "data-ai29c-filter-r3-r2-v2-active",
+      "auditId": "1be4983d-8b99-4eaf-88fb-193c5199eb89",
+      "policyDigest": "dbad9ae9bc50c3fd0f1c5fcc885ab90a858eb06d0f15d0967859f4c626bb25a2"
+    }
+  },
+  "productionReadback": {
+    "singleNewWriterCount": 1,
+    "singleNewWriterRegistry": "product-fact-registry-cross-category-v2",
+    "v1CurrentUvFilterCount": 18,
+    "v2CurrentUvFilterCount": 0,
+    "v1OpenUvFilterReviewAssignments": 0,
+    "bushmanSpf": {
+      "value": 50,
+      "factInstanceId": "5fe7666a-9854-4a0e-9248-72780b3e699f",
+      "confirmationId": "3594ca85-1313-4684-9821-f0b138605e2b",
+      "unchanged": true
+    },
+    "bushmanUva": {
+      "value": "PA++++",
+      "factInstanceId": "ad138548-3f4d-4dad-be05-8869465534a5",
+      "confirmationId": "c1e4baff-843f-4703-adbc-bd9c7db4d498",
+      "unchanged": true
+    },
+    "bushmanUvFilterCurrentCount": 0
+  },
+  "invariants": {
+    "v1ExistingLineagePreserved": true,
+    "v1NewLineageBlocked": true,
+    "v2NewLineageAllowed": true,
+    "v2ExistingLineageAllowed": true,
+    "dualNewWriterPrevented": true,
+    "existingCurrentFactsPreserved": true
+  },
+  "writeBoundary": {
+    "registryPolicyWrites": 2,
+    "sourceWrites": 0,
+    "sourceBindingWrites": 0,
+    "evidenceWrites": 0,
+    "reviewAssignmentWrites": 0,
+    "productFactWrites": 0,
+    "researchTaskMutations": 0,
+    "productMutations": 0,
+    "recommendationWrites": 0,
+    "rankingChanged": false,
+    "betaAllowlistChanged": false,
+    "publicActivation": false,
+    "uvaActivation": false,
+    "waterActivation": false
+  },
+  "bushmanFrozenAuthority": {
+    "sourceDigest": "3a9fbcb280935133e95a0f7f19bfff20157258b4dc17b8dce4d601e40f6681a9",
+    "propositionKey": "717e0e0eb6b8f5575ac20f0189878bd5af4195bda7da19f427670b12ca95200f",
+    "canonicalEvidenceDigest": "e33410c566219ed28795cd3474abcc5752226b3a7cc8b931f5f0302ffab9bb3f",
+    "proposedValue": "hybrid"
+  },
+  "nextGate": "DATA-AI29C-FILTER-R3-R3_BUSHMAN_GOVERNED_SOURCE_REFRESH_AND_CONFIRMATION"
+}
