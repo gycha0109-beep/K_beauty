@@ -1,0 +1,207 @@
+{
+  "stage": "V2.1-8H-R13B",
+  "version": "barrier-support-atopalm-p0-controlled-subject-registration-closeout-v1",
+  "captured_on": "2026-10-07",
+  "source_main_sha": "eb0f96282f38101a4ab3517e5a85b5a54b9496d6",
+  "production_project": "bygrczggxfuisupcevaz",
+  "primary_terminal_outcome": "BARRIER_SUPPORT_ATOPALM_P0_CONTROLLED_SUBJECT_REGISTRATION_PASS",
+  "parent_authority": {
+    "r13a_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-atopalm-p0-identity-recovery-preflight-v1.json",
+    "r13a_git_blob_sha": "dc661a0d0646c5e671ff57daf1774e6821d7ded2",
+    "r13a_stage": "V2.1-8H-R13A",
+    "r13a_next_gate": "V2.1-8H-R13B_ATOPALM_CONTROLLED_IDENTITY_AND_SUBJECT_REGISTRATION"
+  },
+  "target": {
+    "brand": "아토팜",
+    "name": "릴렉싱 나이트 밤",
+    "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+    "intake_id": "70486cba-1578-4a3a-a82e-70a0285ca94f",
+    "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+    "category": "moisturizer_balm"
+  },
+  "frozen_identity": {
+    "subject_semantic_key": "f6665f595558d93a4887f63ae5574db014020602e67c59097699d2a40402850b",
+    "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+    "formulation_revision_key": "v21-8h-r13a:50d690c76745f352907a9c1e22e47346de6bc95c5ad933871fc22c33c1dec4ac",
+    "formulation_label": "KR official identity — 릴렉싱 나이트 밤 100ml ×2개 세트",
+    "variant_key": null,
+    "market_applicability": "KR",
+    "region_applicability": null,
+    "valid_from": null,
+    "valid_to": null,
+    "source_content_digest": "50d690c76745f352907a9c1e22e47346de6bc95c5ad933871fc22c33c1dec4ac",
+    "official_source_locator": "https://www.neopharmshop.co.kr/product/detail.html?cate_no=123&display_group=1&product_no=3324"
+  },
+  "execution": {
+    "actor_user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "identity_request_id": "r13b-atopalm-identity-20261007",
+    "subject_request_id": "r13b-atopalm-subject-20261007",
+    "identity_audit_id": "335221fd-2386-477d-9230-1a28fac9032c",
+    "subject_audit_id": "a79bebf7-f447-4ed8-bfb2-10938144e302",
+    "identity_resolved_at": "2026-10-07T13:38:41.657526+09:00",
+    "subject_registered_at": "2026-10-07T13:39:05.224869+09:00",
+    "post_registration_reprocessed_at": "2026-10-07T13:39:13.315695+09:00",
+    "subject_registration_idempotent": false,
+    "required_sequence": [
+      "admin_resolve_catalog_trust_intake_identity_v1",
+      "process_catalog_trust_product_v3",
+      "controlled subject registration preflight",
+      "admin_register_product_fact_subject_v1",
+      "process_catalog_trust_product_v3",
+      "production readback"
+    ],
+    "sequence_completed": true
+  },
+  "function_contracts": {
+    "intake_identity": {
+      "signature": "admin_resolve_catalog_trust_intake_identity_v1(uuid,text,jsonb)",
+      "function_sha256": "e4d3309d34b74beb1737297b727b3647991822628a1e31c199e1475982907d12",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_role_execute": true
+    },
+    "subject_registration": {
+      "signature": "admin_register_product_fact_subject_v1(uuid,text,jsonb)",
+      "function_sha256": "379b9da9b8b1e521876b30f1a2d04d6da7a7f3bf6ab7e145875636c6eddf0418",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_role_execute": true
+    },
+    "post_registration_reprocess": {
+      "signature": "process_catalog_trust_product_v3(uuid,text)",
+      "function_sha256": "2d4e9115e0a4f753c53bdfcff4aa29fbbeb0aa431c0d1b2a62efbd98caf3b12e",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "nested_identity_authority_preserved": true,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_role_execute": true
+    }
+  },
+  "production_prestate": {
+    "product_fact_subject_total": 50,
+    "product_fact_current": 105,
+    "fact_instances": 106,
+    "confirmations": 106,
+    "evidence_records": 108,
+    "existing_target_subjects": 0,
+    "target_current_facts": 0,
+    "target_fact_instances": 0
+  },
+  "production_poststate": {
+    "product_fact_subject_total": 51,
+    "product_fact_current": 105,
+    "fact_instances": 106,
+    "confirmations": 106,
+    "evidence_records": 108,
+    "target_subject_count": 1,
+    "target_current_facts": 0,
+    "target_fact_instances": 0,
+    "target_evidence_records": 0
+  },
+  "subject_readback": {
+    "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+    "identity_status": "resolved",
+    "current_state": "current",
+    "market_applicability": "KR",
+    "region_applicability": null,
+    "variant_key": null,
+    "identity_resolution_version": "trust-phase5-admin-subject-review-v1",
+    "subject_semantic_key": "f6665f595558d93a4887f63ae5574db014020602e67c59097699d2a40402850b",
+    "formulation_revision_key": "v21-8h-r13a:50d690c76745f352907a9c1e22e47346de6bc95c5ad933871fc22c33c1dec4ac",
+    "formulation_label": "KR official identity — 릴렉싱 나이트 밤 100ml ×2개 세트"
+  },
+  "intake_readback": {
+    "market": "KR",
+    "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+    "identity_state": "EXACT_SUBJECT_FOUND",
+    "trust_state": "RESEARCH_PENDING",
+    "identity_resolution_version": "product-fact-subject-resolution-v1",
+    "presentation_relation_proven": true,
+    "identity_authority": {
+      "authority_kind": "admin_identity_authority",
+      "market": "KR",
+      "official_source_locator": "https://www.neopharmshop.co.kr/product/detail.html?cate_no=123&display_group=1&product_no=3324",
+      "source_content_digest": "50d690c76745f352907a9c1e22e47346de6bc95c5ad933871fc22c33c1dec4ac",
+      "resolution_reason": "R13A Atopalm exact first-party KR 100ml ×2 bundle presentation authority recovery",
+      "authority_resolution_version": "v21-8h-r13a-official-identity-v1"
+    }
+  },
+  "tasks": [
+    {
+      "id": "b1430a7d-79bb-43a5-bfea-a19599441811",
+      "fact_key": "barrier_support_claim",
+      "state": "RESEARCH_PENDING",
+      "blocker_code": null,
+      "attempt_count": 0,
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "registry_version": "product-fact-registry-cross-category-v1"
+    },
+    {
+      "id": "cbdad075-35a1-476e-b3ac-6279b676e73e",
+      "fact_key": "primary_use_role",
+      "state": "RESEARCH_PENDING",
+      "blocker_code": null,
+      "attempt_count": 0,
+      "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+      "registry_version": "product-fact-registry-cross-category-v1"
+    }
+  ],
+  "product_guard_fields": {
+    "before": {
+      "size_ml": 200,
+      "price_min": 44500,
+      "price_max": 44500,
+      "unit_price_per_10ml": 2225,
+      "buy_link": "https://neopharmshop.co.kr/product/detail.html?product_no=3323&srsltid=AfmBOooyoKRZKXaPht8oVZZHMzDobcHSn3sJbxZUT_glWER8D0zVOCr7Heg",
+      "recommendation_tier": "Tier1"
+    },
+    "after": {
+      "size_ml": 200,
+      "price_min": 44500,
+      "price_max": 44500,
+      "unit_price_per_10ml": 2225,
+      "buy_link": "https://neopharmshop.co.kr/product/detail.html?product_no=3323&srsltid=AfmBOooyoKRZKXaPht8oVZZHMzDobcHSn3sJbxZUT_glWER8D0zVOCr7Heg",
+      "recommendation_tier": "Tier1"
+    }
+  },
+  "catalog_link_drift": {
+    "detected": true,
+    "current_buy_link_points_to": "official 100ml single-unit product_no=3323",
+    "canonical_catalog_presentation": "100ml ×2 bundle / total 200ml",
+    "correct_official_bundle_locator": "https://www.neopharmshop.co.kr/product/detail.html?cate_no=123&display_group=1&product_no=3324",
+    "generic_governed_product_buy_link_update_rpc_available": false,
+    "direct_sql_update_authorized": false,
+    "disposition": "SEPARATE_CATALOG_LINK_CORRECTION_DEBT"
+  },
+  "zeroid_hold": {
+    "product_id": "7a98b5e7-2c1f-441a-afee-dd1c592d95bc",
+    "decision": "HOLD",
+    "reason_code": "FIRST_PARTY_PRESENTATION_SIZE_UNCONFIRMED",
+    "subject_count": 0,
+    "touched_in_r13b": false
+  },
+  "authority_boundary": {
+    "subject_writes_observed": 1,
+    "evidence_writes_observed": 0,
+    "product_fact_instance_writes_observed": 0,
+    "product_fact_current_writes_observed": 0,
+    "confirmation_writes_observed": 0,
+    "automatic_evidence_adoption": false,
+    "automatic_fact_confirmation": false,
+    "recommendation_mutation": false,
+    "catalog_product_mutation": false,
+    "public_activation": false,
+    "production_cutover_authorized": false
+  },
+  "next_gate": {
+    "stage": "V2.1-8H-R13C_ATOPALM_OFFICIAL_EVIDENCE_RESEARCH",
+    "status": "NOT_EXECUTED",
+    "target_product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+    "required_fact_keys": [
+      "barrier_support_claim",
+      "primary_use_role"
+    ],
+    "evidence_research_only": true,
+    "recommendation_activation_authorized": false
+  }
+}
