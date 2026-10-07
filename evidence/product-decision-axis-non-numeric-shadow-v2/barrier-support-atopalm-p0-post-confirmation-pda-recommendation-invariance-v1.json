@@ -1,0 +1,243 @@
+{
+  "version": "barrier-support-atopalm-p0-post-confirmation-pda-recommendation-invariance-v1",
+  "stage": "V2.1-8H-R13J",
+  "source_main_sha": "99ea71fc15c80fb9f38b4ade1f8108ae752b899d",
+  "captured_on": "2026-10-07",
+  "parent_authority": {
+    "r13i_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-atopalm-p0-final-product-fact-confirmation-closeout-v1.json",
+    "r13i_git_blob_sha": "fd410d507e8493240f51c338bae619ec60b8615b",
+    "r13i_decision": "BARRIER_SUPPORT_ATOPALM_P0_FINAL_PRODUCT_FACT_CONFIRMATION_PASS"
+  },
+  "frozen_r7_authority": {
+    "summary_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-shadow-consumption-evaluation-summary-v1.json",
+    "summary_git_blob_sha": "f83cb5ed0d84881f4e3cf6d34db3a9cde28acabf",
+    "adapter_path": "lib/barrier-support-non-numeric-pda-shadow-adapter.js",
+    "adapter_git_blob_sha": "095ee315f40e601f38991700ec660faf2629c599",
+    "mapper_path": "scripts/product-evidence/barrier-support-non-numeric-pda-contract-v1.mjs",
+    "mapper_git_blob_sha": "34746e4aa8d28ce073ba52d33c18dfd54c66e172",
+    "candidate_products": 164,
+    "user_scenarios": 12,
+    "relevant_scenarios": 9,
+    "candidate_scenario_evaluations": 1968,
+    "historical_denominator_mutated": false
+  },
+  "mapper_contract": {
+    "applicable_categories": [
+      "moisturizer_balm",
+      "moisturizer_cream",
+      "moisturizer_gel",
+      "moisturizer_lotion_emulsion"
+    ],
+    "usage_role_is_context_only": true,
+    "numeric_contribution": null,
+    "rank_effect": "NONE",
+    "eligibility_effect": "NONE",
+    "production_consumption": "NO"
+  },
+  "target": {
+    "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+    "subject_id": "c7e19978-5678-466b-ba69-f5936aeca5cc",
+    "category": "moisturizer_balm",
+    "barrier_fact_instance_id": "324cc23b-62d6-4c7b-8276-85cdc89ef070",
+    "barrier_confirmation_id": "bb9554a6-852b-4c18-b10f-e56ff39f30f6",
+    "role_fact_instance_id": "1d35eaae-3166-4ad8-842f-4d36e743a22a",
+    "role_confirmation_id": "06354e09-5122-417c-b3c7-ca64e078754a",
+    "barrier_support_claim_current": true,
+    "primary_use_role_current": true,
+    "primary_use_role_value": "multi_area",
+    "frozen_candidate_member": true
+  },
+  "exact_r13i_attribution": {
+    "methodology": "current Production mapper replay plus counterfactual replay excluding only the two R13I proposition keys",
+    "pre_r13i": {
+      "signal_state": "GOVERNED_BARRIER_CLAIM_UNKNOWN",
+      "coverage_state": "missing_fact",
+      "primary_use_role_state": "MISSING",
+      "primary_use_role_values": []
+    },
+    "post_r13i": {
+      "signal_state": "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE",
+      "coverage_state": "claim_with_usage_role_context",
+      "primary_use_role_state": "ESTABLISHED",
+      "primary_use_role_values": [
+        "multi_area"
+      ]
+    },
+    "signal_state_changed": true,
+    "coverage_state_changed": true,
+    "role_context_changed": true,
+    "numeric_contribution_delta": 0,
+    "rank_effect_delta": 0,
+    "eligibility_effect_delta": 0
+  },
+  "live_176_reconciliation": {
+    "pre_r13i": {
+      "catalog_products": 176,
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 47,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 6,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 18,
+        "NOT_APPLICABLE": 105
+      },
+      "coverage_counts": {
+        "category_unknown": 10,
+        "claim_with_usage_role_context": 6,
+        "identity_blocked": 47,
+        "missing_fact": 8,
+        "not_applicable": 105
+      }
+    },
+    "post_r13i": {
+      "catalog_products": 176,
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 47,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 7,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 17,
+        "NOT_APPLICABLE": 105
+      },
+      "coverage_counts": {
+        "category_unknown": 10,
+        "claim_with_usage_role_context": 7,
+        "identity_blocked": 47,
+        "missing_fact": 7,
+        "not_applicable": 105
+      }
+    },
+    "exact_r13i_delta": {
+      "blocked_candidates": 0,
+      "established_true_candidates": 1,
+      "unknown_candidates": -1,
+      "not_applicable_candidates": 0,
+      "claim_with_usage_role_context": 1,
+      "missing_fact": -1,
+      "identity_blocked": 0,
+      "category_unknown": 0
+    },
+    "note": "R12H 이후 별도 identity recovery 누적으로 blocked/unknown baseline이 이동했으므로 R13I 귀속은 current-vs-counterfactual 방식으로 분리했다."
+  },
+  "frozen_164_reconciliation": {
+    "historical_r7": {
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 51,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 6,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 4,
+        "NOT_APPLICABLE": 103
+      },
+      "coverage_counts": {
+        "claim_with_usage_role_context": 6,
+        "identity_blocked": 51,
+        "missing_fact": 4,
+        "not_applicable": 103
+      },
+      "aggregate_annotation_state_counts": {
+        "blocked": 612,
+        "held_unknown_product_fact": 36,
+        "not_applicable": 1236,
+        "not_relevant": 30,
+        "positive_claim_context_available": 54
+      }
+    },
+    "current_pre_r13i": {
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 47,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 6,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 8,
+        "NOT_APPLICABLE": 103
+      },
+      "coverage_counts": {
+        "claim_with_usage_role_context": 6,
+        "identity_blocked": 47,
+        "missing_fact": 8,
+        "not_applicable": 103
+      },
+      "aggregate_annotation_state_counts": {
+        "blocked": 564,
+        "held_unknown_product_fact": 72,
+        "not_applicable": 1236,
+        "not_relevant": 42,
+        "positive_claim_context_available": 54
+      },
+      "positive_claim_role_counts": {
+        "full_face": 9,
+        "local_area": 9,
+        "multi_area": 36
+      }
+    },
+    "current_post_r13i": {
+      "state_counts": {
+        "GOVERNED_BARRIER_CLAIM_BLOCKED": 47,
+        "GOVERNED_BARRIER_CLAIM_ESTABLISHED_TRUE": 7,
+        "GOVERNED_BARRIER_CLAIM_UNKNOWN": 7,
+        "NOT_APPLICABLE": 103
+      },
+      "coverage_counts": {
+        "claim_with_usage_role_context": 7,
+        "identity_blocked": 47,
+        "missing_fact": 7,
+        "not_applicable": 103
+      },
+      "aggregate_annotation_state_counts": {
+        "blocked": 564,
+        "held_unknown_product_fact": 63,
+        "not_applicable": 1236,
+        "not_relevant": 42,
+        "positive_claim_context_available": 63
+      },
+      "positive_claim_role_counts": {
+        "full_face": 9,
+        "local_area": 9,
+        "multi_area": 45
+      }
+    },
+    "exact_r13i_delta": {
+      "established_true_candidates": 1,
+      "unknown_candidates": -1,
+      "blocked_candidates": 0,
+      "claim_with_usage_role_context": 1,
+      "missing_fact": -1,
+      "positive_claim_context_rows_delta": 9,
+      "held_unknown_product_fact_rows_delta": -9,
+      "blocked_rows_delta": 0,
+      "not_relevant_rows_delta": 0,
+      "not_applicable_rows_delta": 0,
+      "multi_area_positive_role_rows_delta": 9,
+      "candidate_scenario_evaluation_delta": 0
+    }
+  },
+  "recommendation_invariance": {
+    "ranking_outputs_recomputed": false,
+    "top1_top3_product_ids_available_in_frozen_artifact": false,
+    "adapter_contract_unchanged": true,
+    "numeric_contribution_units_pre": 0,
+    "numeric_contribution_units_post": 0,
+    "numeric_contribution_units_delta": 0,
+    "rank_effect_units_pre": 0,
+    "rank_effect_units_post": 0,
+    "rank_effect_units_delta": 0,
+    "eligibility_effect_units_pre": 0,
+    "eligibility_effect_units_post": 0,
+    "eligibility_effect_units_delta": 0,
+    "candidate_policy_authority_changed": false,
+    "scoring_authority_changed": false,
+    "recommendation_admission_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false,
+    "conclusion": "R13I converts one frozen candidate from unknown to established positive context, but the unchanged non-numeric shadow adapter creates no score, rank, eligibility, admission, or activation authority."
+  },
+  "hosted_writes": {
+    "product_fact_writes": 0,
+    "pda_writes": 0,
+    "recommendation_writes": 0,
+    "registry_writes": 0
+  },
+  "decision": "BARRIER_SUPPORT_ATOPALM_P0_POST_CONFIRMATION_PDA_RECOMMENDATION_INVARIANCE_PASS",
+  "follow_up": {
+    "status": "NOT_EXECUTED",
+    "atopalm_research_tasks_still_pending_by_design": 2,
+    "atopalm_product_fact_confirmation_complete": true,
+    "remaining_p0_hold": "ZEROID Intensive SOS Plus Balm — FIRST_PARTY_PRESENTATION_SIZE_UNCONFIRMED",
+    "recommendation_activation_still_requires_separate_authority": true,
+    "suggested_next_focus": "separate ZEROID official identity/presentation evidence recovery or research-task lifecycle reconciliation; do not auto-activate Recommendation"
+  }
+}
