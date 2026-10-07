@@ -117,6 +117,8 @@
     "verify:face-lab-v2-g-e2c-protocol-freeze": "node scripts/verify-face-lab-v2-g-e2c-protocol-freeze.mjs",
     "run:face-lab-v2-g-e3-wave": "node scripts/run-face-lab-v2-g-e3-local-wave.mjs",
     "verify:face-lab-v2-g-e3-local-wave": "node scripts/verify-face-lab-v2-g-e3-local-wave.mjs",
+    "verify:face-lab-v2-visual-try-on": "node scripts/verify-face-lab-v2-visual-try-on.mjs",
+    "verify:face-lab-v2-visual-try-on-multi-reference": "node scripts/verify-face-lab-v2-visual-try-on-multi-reference.mjs",
     "run:face-lab-v2-g-e3-private-wave": "node scripts/run-face-lab-v2-g-e3-private-wave.mjs",
     "verify:face-lab-v2-g-e3-private-wave": "node scripts/verify-face-lab-v2-g-e3-private-wave.mjs",
     "run:face-lab-v2-g-e3-full-calibration": "node scripts/run-face-lab-v2-g-e3-full-calibration.mjs",
