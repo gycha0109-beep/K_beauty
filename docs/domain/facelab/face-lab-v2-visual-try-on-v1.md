@@ -556,3 +556,26 @@ Implementation: `lib/face-lab-v2/visual-try-on-look-session.js`
 현재 저장소의 catalog taxonomy 마이그레이션은 `shadow_only`/shadow 분류를 포함한다. 현재 실제 hosted DB의 canonical 활성화는 여기서 검증하지 않았다.
 
 `Product ID → Subject/Variant → taxonomy`를 **실제 서비스에서 읽는 구현**은 별도 승인된 서버 권한 및 canonical 자료가 필요하다. Shadow 분류를 기존 code의 `canonical` guard를 우회해 사용하지 않는다. 보호된 DB/Auth/Storage 변경 없이 `실제 상품 DB 연결 완료`라 표시하지 않는다.
+
+---
+
+## 19. Server-side trusted catalog read bridge — P1-D
+
+Implementation: `lib/face-lab-v2/try-on-catalog-read-bridge.js`
+
+이 단위는 P1-A 카탈로그 바인딩, P1-B 이미지 검증, P1-C 가상 화장대의 **서버 연결 경계**다. 임의 client JSON을 canonical 데이터라고 인정하지 않는다.
+
+- 클라이언트에서 허용하는 선택 입력은 `productId`, `subjectId`, `slotKey`만이다.
+- Host route는 요청자 인증을 별도로 수행해야 한다. `actorId` 매개변수 자체는 인증 토큰이 아니다.
+- `readAuthorizedSelection`: 서버 접근권한을 검사하고 Product/Subject/Variant/Taxonomy/Slot 근거를 반환해야 한다. 결과의 `actorId`, Product ID, Subject ID, Slot과 서버가 승인한 응답 계약을 정확히 확인한다.
+- `readAuthorizedAssets`: 동일 사용자·선택 범위에서만 `approved` 참조 이미지 metadata를 읽어야 한다. 미선택 Variant/Slot의 이미지가 포함되면 전체 요청을 거절한다.
+- `loadAuthorizedBlob`: 같은 사용자에게 승인된 private blob만 읽으며 제공자는 서버가 직접 검사한다. 상대경로·용량·SHA-256·MIME magic·개수 제한은 기존 resolver에서 다시 확인한다.
+- 반환된 canonical 권한을 변경/추측하지 않고 기존 Appearance Slot → Render Spec 경로로 변환한다.
+- 모든 거절은 fail-closed다. 내부 DB·스토리지 에러 메시지, 이미지 bytes, secret은 응답 또는 로그에 반환하지 않는다.
+- 준비 출력에 들어가는 `providerRequest`에는 이미지 bytes가 있으므로 오직 서버 내부에서만 소비하고 브라우저에 직렬화하면 안 된다. provider 자체는 이 경로에서 호출하지 않는다.
+
+> **현황 제한:** 저장소의 catalog taxonomy는 shadow-only 분류가 포함돼 있고, 실제 hosted DB의 active canonical Try-On 범주/variant/storage 접근권한을 이 단계에서 확인하거나 변경하지 않았다. `readAuthorizedSelection`, `readAuthorizedAssets`, `loadAuthorizedBlob`는 **실제 DB RPC/Storage 구현이 아닌 주입 가능한 서버 측 계약**이다. 따라서 아직 live 상품 조회나 실제 사용자 대상 Try-On 실행을 연결했다고 표시하지 않는다.
+
+이 단계에서 DB schema/migration, Auth, RLS, Storage policy, production DB, API response, env, 외부 이미지 생성/결제를 건드리지 않는다. 후속 실제 접근은 별도의 권한/실데이터 승인을 확보한 뒤 결합한다.
+
+무료 검증: `npm run verify:face-lab-v2-try-on-catalog-read-bridge`
