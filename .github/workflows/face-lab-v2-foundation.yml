@@ -49,6 +49,7 @@ on:
       - "scripts/verify-face-lab-v2-visual-try-on-multi-reference.mjs"
       - "scripts/verify-face-lab-v2-catalog-product-try-on-binding.mjs"
       - "scripts/verify-face-lab-v2-catalog-reference-resolver.mjs"
+      - "scripts/verify-face-lab-v2-visual-try-on-look-session.mjs"
       - "scripts/verify-face-lab-v2-visual-try-on-canary.mjs"
       - "scripts/run-face-lab-v2-visual-try-on-canary.mjs"
       - "lib/face-lab-v2/visual-try-on-canary-plan.js"
@@ -341,6 +342,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-catalog-product-try-on-binding.mjs
       - name: Verify Face Lab V2 Catalog Reference Resolver
         run: node scripts/verify-face-lab-v2-catalog-reference-resolver.mjs
+      - name: Verify Face Lab V2 Visual Try-On Look Session
+        run: node scripts/verify-face-lab-v2-visual-try-on-look-session.mjs
       - name: Verify Face Lab V2 Visual Try-On canary guards
         run: |
           node scripts/verify-face-lab-v2-visual-try-on-canary.mjs
