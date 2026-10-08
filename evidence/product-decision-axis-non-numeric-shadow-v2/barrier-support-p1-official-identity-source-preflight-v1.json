@@ -1,0 +1,871 @@
+{
+  "version": "barrier-support-p1-official-identity-source-preflight-v1",
+  "stage": "V2.1-8H-R16A_P1_OFFICIAL_IDENTITY_SOURCE_PREFLIGHT",
+  "captured_on": "2026-10-08",
+  "production_project": "bygrczggxfuisupcevaz",
+  "main_baseline_sha": "b8e84c6e91d66937822d382e7264cb5821ca01ea",
+  "upstream": {
+    "r8_queue_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-coverage-recovery-priority-queue-v1.json",
+    "r8_queue_git_blob_sha": "1c04bc023391d7f1a519b538d128bb4a5138dabf",
+    "r15b_closeout_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-remaining-targeted-official-gap-recovery-v1.json",
+    "r16a_priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+    "priority_order_contract": "READ_R8_QUEUE_ONLY"
+  },
+  "capture_method": {
+    "source_type": "WEB_REVIEWED_FIRST_PARTY_TEXT_AND_SECONDARY_BUNDLE_CROSSCHECK",
+    "raw_source_bytes_archived": false,
+    "content_digest_generated": false,
+    "source_capture_sha256": null,
+    "no_invented_digest": true,
+    "preflight_not_product_fact": true,
+    "unreviewed_official_detail_images_not_promoted": true
+  },
+  "rules": {
+    "missing_is_not_negative": true,
+    "source_binding_resolved_is_not_first_party_authority": true,
+    "source_name_mismatch_is_not_automatic_binding_mutation": true,
+    "bundle_total_volume_is_not_single_sku": true,
+    "historical_hold_auto_release_forbidden": true,
+    "variant_renaming_or_size_overwrite_forbidden": true,
+    "fact_not_inferred_from_marketing": true,
+    "cross_product_claim_transfer_forbidden": true
+  },
+  "products": [
+    {
+      "research_order": 6,
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "brand": "에스네이처",
+      "name": "아쿠아 스쿠알란 수분크림",
+      "category": "moisturizer_cream",
+      "catalog_size_ml": 160,
+      "market_attention_review_count": 41475,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": {
+        "decision": "HOLD",
+        "reason_code": "PRESENTATION_SCOPE_UNRESOLVED"
+      },
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "ee3b675d-1b92-4144-88e0-2a984b3d7cec",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.hwahae.co.kr/goods/45194",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.hwahae.co.kr",
+          "locator_type": "PRODUCT_OR_RETAIL_DETAIL",
+          "declared_vs_host_mismatch": false,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "35090d4c-9c0c-419b-86a2-a572233eca29",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "1b6ec496-6a94-4159-a5ec-f3a5a801d295",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "HOLD_PRESENTATION",
+        "confidence": "HIGH_FOR_HOLD",
+        "sources": [
+          {
+            "url": "https://snature.kr/product/detail.html?product_no=74",
+            "authority": "KR_BRAND_OFFICIAL_EXACT_SINGLE_UNIT",
+            "observed": "아쿠아 스쿠알란 수분크림 60ml",
+            "size_ml": 60,
+            "role": "sibling_presentation_only"
+          },
+          {
+            "url": "https://www.snature.kr/product/detail.html?product_no=151",
+            "authority": "KR_BRAND_OFFICIAL_EXACT_SINGLE_UNIT",
+            "observed": "아쿠아 스쿠알란 수분크림 80ml",
+            "size_ml": 80,
+            "role": "sibling_presentation_only"
+          },
+          {
+            "url": "https://www.hwahae.co.kr/goods/45194",
+            "authority": "SECONDARY_RETAILER_BUNDLE",
+            "observed": "80ml 더블+세럼 10ml 세트, 정가 160ml",
+            "size_ml": 160,
+            "role": "catalog_160ml_bundle_explanation"
+          }
+        ],
+        "observations": [
+          "Catalog displays 160ml without encoding 80ml x 2 set packaging.",
+          "Official brand catalog presents 60ml and 80ml single-unit listings, not confirmed standalone 160ml.",
+          "The exact bound Hwahae listing identifies an 80ml double set plus 10ml serum; 160ml is cream double total."
+        ],
+        "unresolved": [
+          "Official first-party declaration tying catalog 160ml row to specific 80ml x 2 bundle configuration",
+          "Whether Product Catalog row should represent unit 80ml or separate set; separate catalog mutation gate required"
+        ],
+        "reason_code": "CATALOG_160ML_EQUALS_RETAILER_DOUBLE_BUNDLE_NOT_BRAND_CONFIRMED_SINGLE_SKU"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 7,
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "name": "비자 시카 밤 EX",
+      "category": "moisturizer_balm",
+      "catalog_size_ml": 40,
+      "market_attention_review_count": 10681,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "4c4c737f-ea6c-488d-997a-124eeb6a5894",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.hwahae.co.kr/goods/50252",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.hwahae.co.kr",
+          "locator_type": "PRODUCT_OR_RETAIL_DETAIL",
+          "declared_vs_host_mismatch": false,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "1251839f-d258-48f3-99f2-f7b37c2988a3",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "1c9b7a19-c238-4434-9338-6ba4285a9422",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "READY",
+        "confidence": "MEDIUM_HIGH",
+        "sources": [
+          {
+            "url": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+            "authority": "KR_BRAND_OFFICIAL_PRODUCT_DETAIL",
+            "observed": "비자 시카 밤 EX(40mL)",
+            "size_ml": 40,
+            "role": "matching_exact_product_presentation"
+          }
+        ],
+        "observations": [
+          "Brand product-page title names the exact balm EX and 40mL.",
+          "Same brand page distinguishes concentrated balm and spots/areas from generic moisturizer; factual area claim not adjudicated in R16A."
+        ],
+        "unresolved": [
+          "Confirm variant/formulation currentness and source-capture digest in controlled R16B before any Subject write"
+        ],
+        "reason_code": "FIRST_PARTY_EXACT_KR_IDENTITY_PRESENTATION_LOCATED"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 8,
+      "product_id": "976c13ef-8ebd-4b69-acae-0d070f6cd590",
+      "brand": "아누아",
+      "name": "피디알엔 히알루론산캡슐 100 수분크림",
+      "category": "moisturizer_cream",
+      "catalog_size_ml": 60,
+      "market_attention_review_count": 4785,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "2b353ba2-f2ff-4ab6-aa74-55e271f8c1ab",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.hwahae.co.kr/goods/70767",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.hwahae.co.kr",
+          "locator_type": "PRODUCT_OR_RETAIL_DETAIL",
+          "declared_vs_host_mismatch": false,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "14ff2db7-331b-4fe2-a96f-f7399df9374c",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "e2645a77-5119-4952-8173-04e67dfa5cf8",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "READY",
+        "confidence": "HIGH",
+        "sources": [
+          {
+            "url": "https://www.anua.kr/product/detail.html?cate_no=83&display_group=1&product_no=402",
+            "authority": "KR_BRAND_OFFICIAL_PRODUCT_DETAIL",
+            "observed": "피디알엔 히알루론산 100 수분 크림 60mL",
+            "size_ml": 60,
+            "role": "matching_exact_product_presentation"
+          }
+        ],
+        "observations": [
+          "Brand product information explicitly names the 60mL PDRN hyaluronic 100 moisture cream.",
+          "The official instruction is generic even application, not a use-area role claim."
+        ],
+        "unresolved": [
+          "Confirm current production variation and reproducible official snapshot digest during R16B"
+        ],
+        "reason_code": "FIRST_PARTY_EXACT_KR_IDENTITY_PRESENTATION_LOCATED"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 9,
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "name": "아쿠아 오아시스 수분 젤크림",
+      "category": "moisturizer_gel",
+      "catalog_size_ml": 80,
+      "market_attention_review_count": 2545,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "1893fed6-84a2-49ec-8a7b-caf3ee0ab2df",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.hwahae.co.kr/rankings?english_name=category&theme_id=4199",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.hwahae.co.kr",
+          "locator_type": "CATEGORY_RANKING",
+          "declared_vs_host_mismatch": false,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "13a959d7-c94e-4532-af79-a32d4f4c15fa",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "b206bbf5-2571-4407-9969-fa0348abb365",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "READY",
+        "confidence": "HIGH",
+        "sources": [
+          {
+            "url": "https://www.snature.kr/product/detail.html?cate_no=0&display_group=0&product_no=99",
+            "authority": "KR_BRAND_OFFICIAL_PRODUCT_DETAIL",
+            "observed": "아쿠아 오아시스 수분 젤크림 80ml",
+            "size_ml": 80,
+            "role": "matching_exact_product_presentation"
+          }
+        ],
+        "observations": [
+          "Brand official product_no=99 provides exact 80ml gel cream title and price.",
+          "Existing stored source URL is a Hwahae category ranking query, not the subject's product detail page."
+        ],
+        "unresolved": [
+          "R16B should validate exact product variant and traceable snapshot, then separately repair mismatching source bindings if authorized"
+        ],
+        "reason_code": "FIRST_PARTY_EXACT_KR_IDENTITY_PRESENTATION_LOCATED"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 10,
+      "product_id": "ae72c231-3629-4272-8c16-9ca4372e3985",
+      "brand": "코스노리",
+      "name": "판테놀 베리어 에멀전",
+      "category": "moisturizer_lotion_emulsion",
+      "catalog_size_ml": 150,
+      "market_attention_review_count": 1343,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "68e249c6-cd05-4f43-9128-ba7d0b7f9a05",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.hwahae.co.kr/goods/77109",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.hwahae.co.kr",
+          "locator_type": "PRODUCT_OR_RETAIL_DETAIL",
+          "declared_vs_host_mismatch": false,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "17e951d8-8b4c-477d-8734-d1e2cfb070e7",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "2192622e-8d76-4c07-99a5-cf50b9c73441",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "DEFERRED_P1_RESEARCH",
+        "confidence": "NOT_EVALUATED",
+        "sources": [],
+        "observations": [
+          "Inventory and source-binding classification only; no independent first-party SKU authority adjudication in R16A."
+        ],
+        "unresolved": [
+          "Official exact-product first-party identity and presentation to be researched in next tranche"
+        ],
+        "reason_code": "OUTSIDE_R16A_TOP4_DEEP_RESEARCH_SCOPE"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 11,
+      "product_id": "de9fbe7f-e28b-4a8e-bbf6-536d3aa2a2c4",
+      "brand": "이즈앤트리",
+      "name": "알로에 수딩 젤",
+      "category": "moisturizer_gel",
+      "catalog_size_ml": 150,
+      "market_attention_review_count": 878,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "a22967f8-5d47-4a1e-b696-fd0ada1f749b",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://isntree.com/product/알로에-수딩-젤-촉촉한-타입-150ml/148/",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "isntree.com",
+          "locator_type": "PRODUCT_DETAIL",
+          "declared_vs_host_mismatch": true,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "5cd55d84-ba68-4f24-87aa-4dd3a8a6a197",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "9a5768db-5e15-4f80-867c-5fdc8e40775e",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "DEFERRED_P1_RESEARCH",
+        "confidence": "NOT_EVALUATED",
+        "sources": [],
+        "observations": [
+          "Inventory and source-binding classification only; no independent first-party SKU authority adjudication in R16A."
+        ],
+        "unresolved": [
+          "Official exact-product first-party identity and presentation to be researched in next tranche"
+        ],
+        "reason_code": "OUTSIDE_R16A_TOP4_DEEP_RESEARCH_SCOPE"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 12,
+      "product_id": "cd0022c9-a80e-4f57-876b-79e1cb311a15",
+      "brand": "아비노베이비",
+      "name": "더멕사 아토 나이트타임 밤",
+      "category": "moisturizer_balm",
+      "catalog_size_ml": null,
+      "market_attention_review_count": 276,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "3cea704a-cbda-416c-a5af-43fe5db3217a",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.hwahae.co.kr/products/1806237",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.hwahae.co.kr",
+          "locator_type": "PRODUCT_OR_RETAIL_DETAIL",
+          "declared_vs_host_mismatch": false,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "c22bf387-dafa-4935-bde6-e4a62c79d661",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "0e594089-c0f7-4f73-8d05-404b6f4c4a05",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "DEFERRED_P1_RESEARCH",
+        "confidence": "NOT_EVALUATED",
+        "sources": [],
+        "observations": [
+          "Inventory and source-binding classification only; no independent first-party SKU authority adjudication in R16A."
+        ],
+        "unresolved": [
+          "Official exact-product first-party identity and presentation to be researched in next tranche"
+        ],
+        "reason_code": "OUTSIDE_R16A_TOP4_DEEP_RESEARCH_SCOPE"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 13,
+      "product_id": "d0319209-502b-4c85-be54-392600ff6b23",
+      "brand": "그린핑거",
+      "name": "판테딘 엠디 더마 수딩젤",
+      "category": "moisturizer_gel",
+      "catalog_size_ml": 120,
+      "market_attention_review_count": 236,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": {
+        "decision": "HOLD",
+        "reason_code": "FIRST_PARTY_SKU_AUTHORITY_MISSING"
+      },
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "35a7e192-f09b-4b91-810a-c3ae10d56bc7",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://prod.danawa.com/info/?pcode=76228166",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "prod.danawa.com",
+          "locator_type": "UNKNOWN",
+          "declared_vs_host_mismatch": true,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "d10c40bc-7c4d-4b6f-b78d-42d5d9743fe5",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "bc3f3808-1487-4827-bd7f-52c79b6c53c1",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "DEFERRED_P1_RESEARCH",
+        "confidence": "NOT_EVALUATED",
+        "sources": [],
+        "observations": [
+          "Inventory and source-binding classification only; no independent first-party SKU authority adjudication in R16A."
+        ],
+        "unresolved": [
+          "Official exact-product first-party identity and presentation to be researched in next tranche"
+        ],
+        "reason_code": "OUTSIDE_R16A_TOP4_DEEP_RESEARCH_SCOPE"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 14,
+      "product_id": "358bb655-d0e8-4bbf-93c0-58eea5b5d7ae",
+      "brand": "일리윤",
+      "name": "세라마이드 아토 수딩젤",
+      "category": "moisturizer_gel",
+      "catalog_size_ml": 175,
+      "market_attention_review_count": 138,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "f4b865b9-b0c7-4010-a527-681dd3661894",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000218528",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.oliveyoung.co.kr",
+          "locator_type": "PRODUCT_OR_RETAIL_DETAIL",
+          "declared_vs_host_mismatch": true,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "93ca8bb4-2d49-4b6b-a7b3-9a8374c7e8b1",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "8b51182b-108b-401f-b153-74a3913cbc06",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "DEFERRED_P1_RESEARCH",
+        "confidence": "NOT_EVALUATED",
+        "sources": [],
+        "observations": [
+          "Inventory and source-binding classification only; no independent first-party SKU authority adjudication in R16A."
+        ],
+        "unresolved": [
+          "Official exact-product first-party identity and presentation to be researched in next tranche"
+        ],
+        "reason_code": "OUTSIDE_R16A_TOP4_DEEP_RESEARCH_SCOPE"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 15,
+      "product_id": "3fe73499-c2a9-4ee5-b4b5-6a60e07c6686",
+      "brand": "디에이이펙트",
+      "name": "포스트케어 밤",
+      "category": "moisturizer_balm",
+      "catalog_size_ml": 30,
+      "market_attention_review_count": 105,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "011d3d97-7ab6-4519-be03-0d285b1086c8",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.hwahae.co.kr/products/2161078",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.hwahae.co.kr",
+          "locator_type": "PRODUCT_OR_RETAIL_DETAIL",
+          "declared_vs_host_mismatch": false,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "fc258c4e-9b9f-42cf-9aff-e917690b2556",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "01090f4a-e93e-44fc-b1b4-33d02aff3fe6",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "DEFERRED_P1_RESEARCH",
+        "confidence": "NOT_EVALUATED",
+        "sources": [],
+        "observations": [
+          "Inventory and source-binding classification only; no independent first-party SKU authority adjudication in R16A."
+        ],
+        "unresolved": [
+          "Official exact-product first-party identity and presentation to be researched in next tranche"
+        ],
+        "reason_code": "OUTSIDE_R16A_TOP4_DEEP_RESEARCH_SCOPE"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    },
+    {
+      "research_order": 16,
+      "product_id": "4c7af697-1413-4b7d-a89e-6edd2bd5f40c",
+      "brand": "키엘",
+      "name": "울트라 훼이셜 베리어 스틱 밤",
+      "category": "moisturizer_balm",
+      "catalog_size_ml": null,
+      "market_attention_review_count": 32,
+      "priority_band": "P1_FULL_CONTEXT_BOUND_SOURCE",
+      "historical_hold": null,
+      "subject_count": 0,
+      "fact_instance_count": 0,
+      "intakes": [
+        {
+          "id": "8698e770-a42c-4196-b5a2-9e319ee661dc",
+          "state": "SUBJECT_CREATION_REQUIRED",
+          "trust": "REVIEW_REQUIRED",
+          "market": null,
+          "subject_id": null,
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        }
+      ],
+      "source_bindings": [
+        {
+          "url": "https://www.hwahae.co.kr/products/2085392",
+          "scope": "product_subject_unresolved",
+          "method": "legacy_product_external_key",
+          "source_name": "hwahae",
+          "binding_state": "resolved",
+          "hostname": "www.hwahae.co.kr",
+          "locator_type": "PRODUCT_OR_RETAIL_DETAIL",
+          "declared_vs_host_mismatch": false,
+          "exact_product_verified_by_binding_alone": false
+        }
+      ],
+      "research_tasks": [
+        {
+          "id": "341f4e21-58e6-471a-b1be-15f5a5f3e33b",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "primary_use_role"
+        },
+        {
+          "id": "27f1e908-b585-4dc4-a7d5-b49e17eaf6ce",
+          "state": "REVIEW_REQUIRED",
+          "attempts": 0,
+          "fact_key": "barrier_support_claim"
+        }
+      ],
+      "official_research": {
+        "status": "DEFERRED_P1_RESEARCH",
+        "confidence": "NOT_EVALUATED",
+        "sources": [],
+        "observations": [
+          "Inventory and source-binding classification only; no independent first-party SKU authority adjudication in R16A."
+        ],
+        "unresolved": [
+          "Official exact-product first-party identity and presentation to be researched in next tranche"
+        ],
+        "reason_code": "OUTSIDE_R16A_TOP4_DEEP_RESEARCH_SCOPE"
+      },
+      "subject_registration_authorized": false,
+      "evidence_ingest_authorized": false,
+      "fact_confirmation_authorized": false
+    }
+  ],
+  "summary": {
+    "p1_inventory": 11,
+    "deep_research": 4,
+    "official_identity_ready": 3,
+    "hold_presentation": 1,
+    "deferred": 7,
+    "subjects": 0,
+    "intakes": 11,
+    "research_tasks": 22,
+    "source_binding_mismatches": 3,
+    "ranking_locator_count": 1,
+    "production_writes": 0
+  },
+  "invariance": {
+    "registry_changed": false,
+    "source_bindings_mutated": false,
+    "subject_writes": 0,
+    "trust_intake_writes": 0,
+    "product_writes": 0,
+    "evidence_writes": 0,
+    "review_writes": 0,
+    "fact_instance_writes": 0,
+    "confirmation_writes": 0,
+    "research_task_writes": 0,
+    "recommendation_writes": 0,
+    "numeric_pda_enabled": false,
+    "numeric_contribution_delta": 0,
+    "rank_delta": 0,
+    "eligibility_delta": 0,
+    "production_cutover_authorized": false,
+    "outdoor_rankable_signal_authorized": false,
+    "public_activation": false,
+    "recommendation_activation_authorized": false,
+    "frozen_candidates": 164,
+    "frozen_scenarios": 12,
+    "frozen_evaluations": 1968
+  },
+  "decision": "R16A_P1_SOURCE_PREFLIGHT_READY3_HOLD1_DEFERRED7",
+  "next_gate": {
+    "stage": "V2.1-8H-R16B_P1_OFFICIAL_IDENTITY_AUTHORITY_REVIEW",
+    "ready_candidate_product_ids": [
+      "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "976c13ef-8ebd-4b69-acae-0d070f6cd590",
+      "5848640c-84ca-4079-9d9e-8f3113159fe1"
+    ],
+    "hold_product_ids": [
+      "b639c8b4-6a61-440e-b4db-fac7381593ff"
+    ],
+    "deferred_product_ids": [
+      "ae72c231-3629-4272-8c16-9ca4372e3985",
+      "de9fbe7f-e28b-4a8e-bbf6-536d3aa2a2c4",
+      "cd0022c9-a80e-4f57-876b-79e1cb311a15",
+      "d0319209-502b-4c85-be54-392600ff6b23",
+      "358bb655-d0e8-4bbf-93c0-58eea5b5d7ae",
+      "3fe73499-c2a9-4ee5-b4b5-6a60e07c6686",
+      "4c7af697-1413-4b7d-a89e-6edd2bd5f40c"
+    ],
+    "status": "RESEARCH_CLOSEOUT_ONLY",
+    "registration_authorized": false,
+    "registry_change_authorized": false,
+    "source_binding_repair_authorized": false,
+    "recommendation_activation_authorized": false
+  }
+}
