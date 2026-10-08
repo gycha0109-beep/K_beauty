@@ -1,0 +1,279 @@
+{
+  "version": "barrier-support-p0-remaining-targeted-official-gap-recovery-v1",
+  "stage": "V2.1-8H-R15B_P0_TARGETED_OFFICIAL_EVIDENCE_GAP_RECOVERY",
+  "research_date": "2026-10-08",
+  "baseline_main_sha": "5e1b1ba389b1e01590bbe1218a6864d60438aefc",
+  "production_project": "bygrczggxfuisupcevaz",
+  "parent_authority": {
+    "stage": "V2.1-8H-R15A",
+    "artifact": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-remaining-ready-official-evidence-research-v1.json",
+    "git_blob_sha": "b7813178d1da3100c9c1274bdac2e9d8ce0a4a34",
+    "inherited_outcome": "EVIDENCE_INSUFFICIENT",
+    "inherited_tasks": 4
+  },
+  "scope": {
+    "products": 2,
+    "tasks": 4,
+    "allowed_fact_keys": [
+      "barrier_support_claim",
+      "primary_use_role"
+    ],
+    "official_product_targeted_research_only": true,
+    "research_db_write_authorized": false,
+    "evidence_ingest_authorized": false,
+    "confirmation_authorized": false,
+    "registry_change_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false,
+    "outdoor_rankable_signal_authorized": false
+  },
+  "subjects": [
+    {
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "name": "마녀공장 판테토인 인리치드 밤",
+      "market": "KR",
+      "size_ml": 80,
+      "identity_status": "resolved",
+      "current_state": "current"
+    },
+    {
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "name": "더하르나이 시카이드 밤",
+      "market": "KR",
+      "size_ml": 100,
+      "identity_status": "resolved",
+      "current_state": "current"
+    }
+  ],
+  "new_source_captures": [
+    {
+      "source_id": "manyo_us_exact_balm_detail",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "locator": "https://manyo.us/products/panthetoin-enriched-balm",
+      "publisher": "ma:nyo US",
+      "origin": "brand_operated_first_party",
+      "market": "US",
+      "observed_name": "Panthetoin Enriched Balm",
+      "observed_size": "80ml",
+      "source_mode": "public_web_indexed_text",
+      "source_capture_date": "2026-10-08",
+      "content_digest": null,
+      "content_bytes_captured": false,
+      "product_identity_match": "name_and_80ml_only",
+      "kr_formulation_lineage_verified": false,
+      "observations": [
+        "Balm product described as moisturizing and soothing",
+        "Generic massage-into-skin instruction; no explicit application-area range",
+        "User review mentions barrier, but is user-authored and not official product claim"
+      ],
+      "fact_bearing_for_target": false,
+      "disqualification": [
+        "US market is not KR formulation-lineage proof",
+        "No brand-authored target-balm explicit barrier support claim",
+        "No full_face/local_area/multi_area use scope; user reviews not brand authority"
+      ]
+    },
+    {
+      "source_id": "manyo_us_three_step_set",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "locator": "https://manyo.us/products/dry-skin-saver-3-step-set",
+      "publisher": "ma:nyo US",
+      "origin": "brand_operated_first_party_bundle",
+      "market": "US",
+      "observed_name": "Dry Skin Saver 3-Step Set",
+      "observed_size": "includes Panthetoin Enriched Balm 80ml",
+      "source_mode": "official_page_text",
+      "source_capture_date": "2026-10-08",
+      "content_digest": null,
+      "content_bytes_captured": false,
+      "product_identity_match": "bundled_named_balm_80ml",
+      "kr_formulation_lineage_verified": false,
+      "observations": [
+        "Bundle lists balm as step 3 and gives general massage usage",
+        "Bundle text includes dry-skin protection language at set level"
+      ],
+      "fact_bearing_for_target": false,
+      "disqualification": [
+        "Set-level protect wording cannot be attributed to balm's barrier claim",
+        "No explicit target-balm application-area range",
+        "Other-market formulation lineage not verified"
+      ]
+    },
+    {
+      "source_id": "theharnay_brand_qna_3025",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "locator": "https://theharnay.co.kr/article/q-a/6/3025/",
+      "publisher": "더하르나이",
+      "origin": "brand_authored_public_answer",
+      "market": "KR",
+      "observed_name": "시카이드 밤과 크림차이가 뭔가요?",
+      "source_mode": "official_page_text",
+      "published_at": "2021-03-19 09:52:13 KST",
+      "source_capture_date": "2026-10-08",
+      "content_digest": null,
+      "content_bytes_captured": false,
+      "product_identity_match": "named_balm_and_distinct_cream",
+      "current_formulation_lineage_verified": false,
+      "observations": [
+        "Brand answer distinguishes creamy balm from gel-cream formulation",
+        "Brand explains serum, cream, balm application order and recommends avoiding overly heavy layering",
+        "Answer does not specify body area, face-wide use or spot use"
+      ],
+      "fact_bearing_for_target": false,
+      "disqualification": [
+        "Historic Q&A does not verify current formulation lineage",
+        "Texture and layering order are not a skin barrier support claim",
+        "Application order is not application area"
+      ]
+    },
+    {
+      "source_id": "theharnay_exact_product_page_19",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "locator": "https://theharnay.co.kr/product/%EB%8D%94%ED%95%98%EB%A5%B4%EB%82%98%EC%9D%B4-%EC%8B%9C%EC%B9%B4%EC%9D%B4%EB%93%9C-%EB%B0%A4-100ml/19/category/1/display/13/?icid=MAIN.product_listmain_12",
+      "publisher": "더하르나이",
+      "origin": "brand_operated_product_page",
+      "market": "KR",
+      "observed_name": "더하르나이 시카이드 밤 100ml",
+      "observed_size": "100ml",
+      "source_mode": "official_page_text_partial",
+      "source_capture_date": "2026-10-08",
+      "content_digest": null,
+      "content_bytes_captured": false,
+      "product_identity_match": "exact_balm_100ml",
+      "current_formulation_lineage_verified": "identity_and_presentation_only",
+      "observations": [
+        "Exact balm product name, 100ml, and ordering options are directly on brand-operated page",
+        "Review and Q&A navigation available; detailed image claim text not captured"
+      ],
+      "fact_bearing_for_target": false,
+      "disqualification": [
+        "Product identity is not a claim",
+        "No reviewable source-to-exact-product image text for either target Fact"
+      ]
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "7cf58ffe-88c1-4f11-9f7a-905513cc6917",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "fact_key": "barrier_support_claim",
+      "source_ids": [
+        "manyo_us_exact_balm_detail",
+        "manyo_us_three_step_set"
+      ],
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "reason_code": "OFFICIAL_EXACT_KR_BARRIER_CLAIM_NOT_OBSERVED",
+      "reason": "US brand page states moisturizing/soothing but not a target-specific barrier support claim. US skin-barrier collection and bundle-level protection language do not prove KR exact-balm claim.",
+      "direct_product_specific_fact_evidence": false,
+      "explicit_negative_established": false,
+      "db_task_state_unmodified": true
+    },
+    {
+      "task_id": "6955dada-e845-4a53-a44a-0cdc53dd9ad8",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "fact_key": "primary_use_role",
+      "source_ids": [
+        "manyo_us_exact_balm_detail",
+        "manyo_us_three_step_set"
+      ],
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "reason_code": "EXPLICIT_APPLICATION_AREA_NOT_OBSERVED",
+      "reason": "US official instructions describe massage/application but not full_face/local_area/multi_area. KR detail likewise lacks explicit area.",
+      "direct_product_specific_fact_evidence": false,
+      "explicit_negative_established": false,
+      "db_task_state_unmodified": true
+    },
+    {
+      "task_id": "02b9ba0a-207c-4d23-b522-853bd45ff815",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "fact_key": "barrier_support_claim",
+      "source_ids": [
+        "theharnay_brand_qna_3025",
+        "theharnay_exact_product_page_19"
+      ],
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "reason_code": "EXACT_BALM_BARRIER_CLAIM_NOT_CAPTURED",
+      "reason": "Official brand Q&A independently differentiates balm and cream, but discusses feel and layering rather than barrier support. Cream/line/retailer slogans remain out of scope.",
+      "direct_product_specific_fact_evidence": false,
+      "explicit_negative_established": false,
+      "db_task_state_unmodified": true
+    },
+    {
+      "task_id": "e08b1e23-771d-4c0b-8263-8ca02fa687f6",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "fact_key": "primary_use_role",
+      "source_ids": [
+        "theharnay_brand_qna_3025",
+        "theharnay_exact_product_page_19"
+      ],
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "reason_code": "APPLICATION_ORDER_IS_NOT_AREA",
+      "reason": "Brand layering answer has no exact full-face/local/multi-area indication; current product detail has no reviewable area instruction.",
+      "direct_product_specific_fact_evidence": false,
+      "explicit_negative_established": false,
+      "db_task_state_unmodified": true
+    }
+  ],
+  "production_readback": {
+    "read_only": true,
+    "observed_on": "2026-10-08",
+    "market": "KR",
+    "subjects_resolved_current": 2,
+    "evidence_records_for_target_facts": 0,
+    "fact_instances_for_target_facts": 0,
+    "current_facts_for_target_subjects": 0,
+    "review_assignments_for_target_facts": 0,
+    "research_tasks": 4,
+    "research_task_state": "RESEARCH_PENDING",
+    "research_task_attempt_count": 0
+  },
+  "invariance": {
+    "candidate_products_frozen": 164,
+    "user_scenarios_frozen": 12,
+    "evaluations_frozen": 1968,
+    "registry_changed": false,
+    "non_numeric_barrier_pda": true,
+    "numeric_contribution_delta": 0,
+    "ranking_effect_delta": 0,
+    "eligibility_effect_delta": 0,
+    "candidate_policy_delta": 0,
+    "production_db_writes": 0,
+    "recommendation_activation": false,
+    "outdoor_rankable_signal_authorized": false,
+    "public_activation": false,
+    "zeroid_hold_released": false
+  },
+  "summary": {
+    "new_first_party_leads": 4,
+    "direct_evidence_found": 0,
+    "evidence_insufficient": 4,
+    "identity_or_scope_blocked": 0,
+    "proposed_values": 0,
+    "production_writes": 0,
+    "meaningful_delta_vs_r15a": "New exact-balm brand-authored US directions and older KR brand Q&A now traced; neither establishes one of the four KR Product Facts."
+  },
+  "decision": "R15B_TARGETED_RESEARCH_COMPLETE_FOUR_FACTS_STILL_UNESTABLISHED",
+  "next_gate": {
+    "kind": "EXTERNAL_FIRST_PARTY_FACT_BEARING_AUTHORITY_REQUIRED",
+    "status": "BLOCKED_ON_NEW_OFFICIAL_SOURCE",
+    "exact_requests": [
+      "마녀공장 KR 판테토인 인리치드 밤 80ml 자체 장벽 주장 및 부위별 사용법을 명시한 공식 문서/답변",
+      "더하르나이 시카이드 밤 100ml의 공식 상세이미지 원본과 현재 SKU 연결 및 장벽 주장·사용 부위 명시 문서/답변"
+    ],
+    "no_repeat_without_new_source": true,
+    "evidence_ingest_authorized": false,
+    "confirmation_authorized": false,
+    "zeroid_separate_hold_maintained": true
+  }
+}
