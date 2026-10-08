@@ -7,6 +7,10 @@ import {
   FACE_LAB_SHADE_PROFILE_VERSION
 } from "../lib/face-lab-v2/product-variant-authority.js";
 import {
+  FACE_LAB_CATALOG_TRY_ON_READ_VERSION,
+  resolveFaceLabCatalogTryOnRead
+} from "../lib/face-lab-v2/catalog-product-try-on-read-core.js";
+import {
   FACE_LAB_PRODUCT_DRIVEN_TRY_ON_BINDING_VERSION,
   buildFaceLabCatalogProductTryOnSelection,
   buildFaceLabCatalogProductTryOnAuthority
@@ -194,6 +198,41 @@ const duplication = buildFaceLabCatalogProductTryOnAuthority({
 assert.equal(duplication.status, "invalid");
 assert.equal(duplication.authorityReason, "duplicate_selection_slot");
 assert.equal(duplication.imageModelInvoked, false);
+
+const catalogRequest = {
+  productId: P1,
+  variantKey: "coral-01",
+  slotKey: "lip_color"
+};
+const readCatalogProduct = async id => ({ id });
+
+async function tryRead(overrides = {}) {
+  return resolveFaceLabCatalogTryOnRead({
+    request: catalogRequest,
+    lookupCatalogProduct: readCatalogProduct,
+    ...overrides
+  });
+}
+
+assert.equal(FACE_LAB_CATALOG_TRY_ON_READ_VERSION, "face-lab-catalog-try-on-read-v1");
+assert.equal((await tryRead()).reason, "approved_try_on_projection_unavailable");
+assert.equal((await tryRead({ lookupCatalogProduct: async () => null })).reason, "catalog_product_not_found");
+assert.equal((await tryRead({ lookupCatalogProduct: async () => ({ id: P2 }) })).reason, "catalog_product_identity_mismatch");
+assert.equal((await tryRead({ lookupCatalogProduct: async () => { throw Error("offline"); } })).reason, "catalog_product_read_failed");
+assert.equal((await tryRead({ readApprovedTryOnBundle: async () => null })).reason, "approved_try_on_projection_missing");
+assert.equal((await tryRead({ readApprovedTryOnBundle: async () => { throw Error("unavailable"); } })).reason, "approved_try_on_projection_read_failed");
+assert.equal((await tryRead({ readApprovedTryOnBundle: async () => ({ ...lip, slotKey: "hair_color" }) })).reason, "approved_try_on_projection_identity_mismatch");
+assert.equal((await tryRead({ readApprovedTryOnBundle: async () => ({ ...lip, subject: { ...lip.subject, variant_key: "other" } }) })).reason, "approved_try_on_projection_identity_mismatch");
+assert.equal((await tryRead({ readApprovedTryOnBundle: async () => ({ ...lip, taxonomyVersion: { ...lip.taxonomyVersion, authority_mode: "shadow_only" } }) })).reason, "taxonomy_not_canonical");
+const invalidRead = await tryRead({
+  request: { ...catalogRequest, productId: "not-a-uuid" },
+  lookupCatalogProduct: async () => { throw Error("must not query"); }
+});
+assert.equal(invalidRead.reason, "catalog_try_on_request_invalid");
+const validRead = await tryRead({ readApprovedTryOnBundle: async () => structuredClone(lip) });
+assert.equal(validRead.status, "ready", JSON.stringify(validRead));
+assert.equal(validRead.variantRef, `product_variant:${P1}:coral-01`);
+assert.equal(validRead.imageModelInvoked, false);
 
 console.log(JSON.stringify({
   status: "PASS",
