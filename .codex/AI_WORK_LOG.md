@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-09 / Face Lab P1-D2A Catalog Try-On read authority
+
+- Task type: diagnosis + bounded verifier. Baseline `main@60224fa0feb17df033e7cc4ca2329318f4c03a48`. Watchtower-Track: `face-research`.
+- Findings: authenticated `products.id` read exists; Product Fact Subject and Taxonomy direct reads are protected. Recommendation G3A RPC is role-specific and omits `variant_key`; initial catalog taxonomy is shadow-only. No authorized server projection currently supplies complete Try-On Product/Variant/Canonical/Slot/Capability evidence.
+- Implementation: dedicated repository-static guard, imported into the existing Catalog Product Try-On verifier, plus a scoped authority audit document. No DB/migration/RLS/auth/payment/storage/provider/production changes or hosted reads.
+- Verification: static boundary checks must pass in the current Face Lab PR workflow; no hosted/actual product availability or paid image generation claim.
+- Next boundary: explicit permission to inspect the hosted authority state and approve an exact minimal Try-On read projection if missing; D2B owns any protected DB/RLS/role/RPC change.
+- Context promotion candidate: none; source code and scoped audit remain authority.
+
+
 ### 2026-08-27 / MOBILE-3 My / Skin Diary
 
 - Task type: execution / Medium Android-first native My and Skin Diary projection. Existing Web cookie auth, Supabase user/RLS authority, Recommendation/Product Fact/Face Lab/Premium server authority, DB schema/migrations, provider secrets, camera, survey extraction, `/api/analyze`, push, billing, and store readiness were not expanded.
