@@ -1,0 +1,213 @@
+{
+  "version": "data-ai29c-filter-r4-a-bushman-mixed-registry-admission-compatibility-preflight-v1",
+  "stage": "DATA-AI29C-FILTER-R4-A",
+  "track": "taxonomy-ai",
+  "decision": "FILTER_R4_A_READ_ONLY_COMPATIBILITY_PREFLIGHT_PASS_ADMISSION_HOLD",
+  "mode": "READ_ONLY_POLICY_REPLAY_NO_ADMISSION_WRITE",
+  "sourceMainSha": "c35f71854559865a103e73e4aba4e96bdbe405c8",
+  "sourcePr": 1153,
+  "sourceMergeSha": "98ab075a7ae7f8b836f0b08a0719c3df15c8a768",
+  "sourceCi": {
+    "mergeExactShaPassed": 7,
+    "mergeExactShaTotal": 7
+  },
+  "productionProject": "bygrczggxfuisupcevaz",
+  "target": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "name": "Waterproof Pro Suncream",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subjectSemanticKey": "33696edfb47c47672930e0d398b0cd67fb966c355ec474ea9ec4ffa72400a584",
+    "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "market": "KR",
+    "canonicalProduct": true,
+    "exactLegacyCorpusMember": false
+  },
+  "frozenProduction": {
+    "subject": {
+      "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+      "identityStatus": "resolved",
+      "identityResolutionVersion": "data-ai29c-c5-presentation-identity-correction-v1",
+      "currentState": "current",
+      "validTo": null
+    },
+    "exactCurrentSubjectCount": 1,
+    "taxonomy": {
+      "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "taxonomyVersion": "catalog-taxonomy-v1",
+      "entityKindTermId": "catalog-taxonomy-v1:entity_kind:cosmetic",
+      "domainTermId": "catalog-taxonomy-v1:domain:skincare",
+      "recommendationFamilyTermId": "catalog-taxonomy-v1:recommendation_family:sunscreen",
+      "categoryTermId": "catalog-taxonomy-v1:category:sunscreen",
+      "assignmentState": "shadow",
+      "assignmentMethod": "source_classification"
+    },
+    "registryV1": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+      "identitySerializerVersion": "product-fact-subject-identity-v1"
+    },
+    "registryV2": {
+      "registryVersion": "product-fact-registry-cross-category-v2",
+      "registryChecksum": "923256ca2468b2af31e1b7026655739408035daf62d3ff40a7132eca22afddd7",
+      "identitySerializerVersion": "product-fact-subject-identity-v1"
+    },
+    "facts": [
+      {
+        "factKey": "spf_value",
+        "factInstanceId": "5fe7666a-9854-4a0e-9248-72780b3e699f",
+        "confirmationId": "3594ca85-1313-4684-9821-f0b138605e2b",
+        "propositionKey": "447df87a55f13cffae30d3c019add7372c9d41b5b0142d09a9ded1b1d341d85b",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+        "isCurrent": true,
+        "validTo": null,
+        "valueType": "number",
+        "valueNumber": 50,
+        "valueEnum": null
+      },
+      {
+        "factKey": "uv_filter_type",
+        "factInstanceId": "1a4602c5-02e8-4ae0-b2f5-92dc66c85fc0",
+        "confirmationId": "8d8af903-eb6a-4e8f-bf3f-dfd9647f587f",
+        "propositionKey": "717e0e0eb6b8f5575ac20f0189878bd5af4195bda7da19f427670b12ca95200f",
+        "registryVersion": "product-fact-registry-cross-category-v2",
+        "propositionSerializerVersion": "product-fact-proposition-schema-v2",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+        "isCurrent": true,
+        "validTo": null,
+        "valueType": "enum",
+        "valueNumber": null,
+        "valueEnum": "hybrid"
+      },
+      {
+        "factKey": "uva_label",
+        "factInstanceId": "ad138548-3f4d-4dad-be05-8869465534a5",
+        "confirmationId": "c1e4baff-843f-4703-adbc-bd9c7db4d498",
+        "propositionKey": "7f77cb83d77e924083b8c09d81dd6530406165ce9a35c2bcd748541b445fcd16",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "fusedConfidence": "high",
+        "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+        "isCurrent": true,
+        "validTo": null,
+        "valueType": "enum",
+        "valueNumber": null,
+        "valueEnum": "PA++++"
+      }
+    ],
+    "semanticReviewCount": 0,
+    "legacyProductProjection": {
+      "category": null,
+      "spf_value": null,
+      "uva_label": null,
+      "uv_filter_type": null
+    },
+    "d5dBetaRuntime": {
+      "scope": "authenticated_product_query_beta",
+      "enabled": true,
+      "authorizedPhase": "DATA-AI29C-D5D"
+    }
+  },
+  "legacyPolicy": {
+    "name": "sunscreen-initial-admission-grant-policy-v1",
+    "acceptedRegistryVersion": "product-fact-registry-cross-category-v1",
+    "acceptedRegistryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "acceptedPropositionSerializer": "product-fact-proposition-pilot-v1",
+    "acceptedSubjectResolution": [
+      "trust-phase5-admin-subject-review-v1"
+    ],
+    "requiredFacts": [
+      "spf_value",
+      "uva_label",
+      "uv_filter_type"
+    ]
+  },
+  "replayExpected": {
+    "baseline": {
+      "decision": "NO_GRANT",
+      "reasons": [
+        "PRODUCT_FACT_SUBJECT_UNRESOLVED_OR_NON_CURRENT"
+      ]
+    },
+    "authorityLineageOnly": {
+      "decision": "NO_GRANT",
+      "reasons": [
+        "REQUIRED_CURRENT_FACT_AUTHORITY_INCOMPLETE:uv_filter_type"
+      ]
+    },
+    "authorityLineagePlusRegistryV2": {
+      "decision": "NO_GRANT",
+      "reasons": [
+        "PRODUCT_FACT_REGISTRY_MISMATCH"
+      ]
+    },
+    "authorityLineagePlusUvRegistryRewriteOnly": {
+      "decision": "NO_GRANT",
+      "reasons": [
+        "REQUIRED_CURRENT_FACT_AUTHORITY_INCOMPLETE:uv_filter_type"
+      ]
+    },
+    "authorityLineagePlusForgedUvV1Pilot": {
+      "decision": "NO_GRANT",
+      "reasons": [
+        "SUNSCREEN_RECOMMENDATION_SEMANTIC_ENVELOPE_NOT_READY"
+      ]
+    },
+    "authorityLineagePlusForgedUvV1PilotAndCoreOnly": {
+      "decision": "NO_GRANT",
+      "reasons": [
+        "SUNSCREEN_RECOMMENDATION_SEMANTIC_ENVELOPE_NOT_READY"
+      ]
+    }
+  },
+  "replayCaveat": "Any scenario with authority lineage or Fact registry/serializer replacement is an in-memory counterfactual. It is not current Production authority, not permission to mutate or convert governed Fact provenance, and cannot support a real GRANT.",
+  "findings": {
+    "canonicalProductIdentity": true,
+    "taxonomyMatchesLegacyPolicy": true,
+    "spfAuthorityMatchesLegacyPolicy": true,
+    "uvaAuthorityMatchesLegacyPolicy": true,
+    "subjectAuthorityLineageAccepted": false,
+    "uvRegistryCompatibleWithLegacyPolicy": false,
+    "uvSerializerCompatibleWithLegacyPolicy": false,
+    "semanticEnvelopeReady": false,
+    "initialAdmissionGrant": false,
+    "initialAdmissionGrantForbiddenToInferFromFactConfirmation": true
+  },
+  "nextGate": {
+    "name": "DATA-AI29C-FILTER-R4-B_MIXED_REGISTRY_ADMISSION_COMPATIBILITY_CONTRACT",
+    "executionState": "NOT_STARTED",
+    "prerequisite": "R4-A evidence merge SHA canonical CI PASS",
+    "designOnlyInitially": true,
+    "preserveLegacyAdmissionPolicyV1": true,
+    "validatePerFactRegistryAndSerializer": true,
+    "mixedVersionAllowlistMustBeExplicit": true,
+    "subjectAuthoritySeparateGate": true,
+    "semantic12Of12SeparateGate": true,
+    "automaticActivation": false
+  },
+  "writeBoundary": {
+    "productionDatabaseWrites": 0,
+    "subjectAuthorityUpgrades": 0,
+    "sourceOrEvidenceWrites": 0,
+    "semanticReviewWrites": 0,
+    "policyChanges": 0,
+    "existingD5EAllowlistChanges": 0,
+    "recommendationAdmissionWrites": 0,
+    "recommendationRankingChanges": 0,
+    "betaSwitchChanges": 0,
+    "publicActivation": false,
+    "uvaActivation": false,
+    "waterActivation": false
+  }
+}
