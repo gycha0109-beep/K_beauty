@@ -58,11 +58,27 @@
   "limitations": [
     "synthetic subset of Production schema, not full schema dump/replay",
     "synthetic admin audit helper does not exercise all live audit constraints",
-    "legacy COSRX RPC not executed within same isolated runtime",
-    "no two-session concurrent confirmation experiment",
     "no real manufacturer identity observation or 50g/50ml reconciliation",
-    "stage closure and merge depend on final PR CI and owner gates"
+    "stage closure and merge depend on final PR CI and owner gates",
+    "two-session identical request concurrency passed; distinct concurrent request IDs, multiactor races and lock-timeout scenarios remain untested",
+    "COSRX migration coexistence and denial smoke passed; COSRX positive confirmation and full idempotent replay path not exercised"
   ],
   "authority_boundary": "Product Fact evidence and Subject identity do not imply Semantic Review, Admission or Recommendation approval",
-  "evidence_document": "docs/evidence/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.md"
+  "evidence_document": "docs/evidence/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.md",
+  "extended_execution": {
+    "head_sha": "ead6101e318d26ce9f4138476592c8e48da5daff",
+    "workflow_run_id": 37834813478,
+    "workflow_job_id": 113509208727,
+    "two_independent_postgresql_sessions": "PASS",
+    "first_confirmation_count": 1,
+    "idempotent_replay_count": 1,
+    "review_event_count": 1,
+    "authority_audit_count": 1,
+    "cosrx_migration_coexistence_smoke": "PASS",
+    "cosrx_unauthorized_rejection": "PASS",
+    "cosrx_unknown_subject_rejection": "PASS",
+    "concurrent_database_discarded": "PASS",
+    "clean_history_head_sha": "27fd53547100458ded32b56e7e204ec3f55ae75f",
+    "gitguardian_clean_head": "PASS"
+  }
 }
