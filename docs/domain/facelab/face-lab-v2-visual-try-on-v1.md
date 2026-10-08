@@ -485,3 +485,39 @@ Implementation: `lib/face-lab-v2/catalog-product-try-on-binding.js`
 무료 검증: `npm run verify:face-lab-v2-catalog-product-try-on-binding`
 
 다음 독립 단위: 실제 server read authority 및 product reference asset resolver를 기존 인증/접근 제약 아래에서 별도로 연결한다.
+
+---
+
+## 17. Catalog reference resolver — P1-B
+
+Implementation: `lib/face-lab-v2/catalog-reference-resolver.js`
+
+두 단계로 분리한다.
+
+1. `bindFaceLabCatalogTryOnReferences`: Product/Subject/Variant 바인딩을 기반으로 승인된 참고 이미지 metadata 중 동일 candidate/slot의 것을 자동 선택한다. 적용컷, 착용컷, 브랜드 스와치, 유통사 스와치, 상품 이미지, 스타일 참고컷을 결정적인 순서로 정렬한다. 한 slot당 최대 2개, 전체 이미지 최대 8개만 참조한다.
+2. `prepareFaceLabCatalogTryOnReferences`: image 원본의 사전 승인이 확인된 private blob을 읽어 SHA-256, MIME magic bytes, 파일 크기와 metadata binding을 교차 검증한 다음 기존 `buildFaceLabVisualTryOnProviderRequest`로 보낸다. 이 함수는 Provider를 호출하지 않는다.
+
+Asset record의 필수 속성:
+
+- `assetRef`, `candidateRef`, `slotKey`, `role`, `evidenceRef`
+- `approvalState: approved`, `assetStatus: active`
+- `usagePermission: virtual_try_on`
+- `storageKind: governed_blob`, `storageKey` (상대경로 형태, URL 불허)
+- `mimeType`, `byteLength`, `sha256`
+
+이것은 **이미 존재하는 DB 테이블의 컬럼이라고 주장하는 내용이 아니라**, 향후 별도의 서버 측 권한 검사/스토리지 reader가 제공해야 하는 승인된 자료 계약이다. 현재 제품용 이미지 메타와 product fact 권한은 별도이며, 추천 이미지 URL이 있다고 해서 곧바로 모델 입력으로 사용할 수 있는 것은 아니다.
+
+보안 경계:
+
+- 원격 URL 직접 fetch 금지, 임의 사용자 경로 금지
+- 외부에서 주입한 `loadApprovedBlob`은 사용 권한과 테넌트 접근을 서버에서 검사해야 함
+- 제품/slot/reference identity를 정확히 일치시킴
+- 승인이 없는 이미지, 증거가 없는 이미지, 파일 종류·SHA·크기 불일치: 차단
+- 불완전한 이미지 목록을 다른 이미지로 추측하거나 보충하지 않음
+- provider 전송순서: 원본 얼굴 image 1 + 정렬된 reference image 2..N
+- 개인정보 이미지/원본 byte/base64를 로그·메타데이터에 기록하지 않음
+- 비용이 발생하는 provider 호출 0회
+
+무료 검증: `npm run verify:face-lab-v2-catalog-reference-resolver`
+
+후속 연결: Product Fact Subject/Taxonomy를 읽는 서버 authority와 접근권한이 있는 blob reader를 별도 명시적으로 연동한다. 새 migration 또는 무권한 public URL download를 만들지 않는다.
