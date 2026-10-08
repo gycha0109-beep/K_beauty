@@ -1,0 +1,134 @@
+{
+  "version": "barrier-support-zeroid-p0-current-sku-visual-lineage-v1",
+  "stage": "V2.1-8H-R14C",
+  "captured_on": "2026-10-08",
+  "source_main_sha": "c35f71854559865a103e73e4aba4e96bdbe405c8",
+  "product_id": "7a98b5e7-2c1f-441a-afee-dd1c592d95bc",
+  "parent_authority": {
+    "r14b_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-zeroid-p0-first-party-visual-presentation-capture-v1.json",
+    "r14b_git_blob_sha": "465a0a79010db825a20e86350128d183e94cd8dc",
+    "r14b_decision": "HOLD_WITH_FIRST_PARTY_VISUAL_CANDIDATE",
+    "r9_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-official-identity-authority-research-v1.json",
+    "r9_git_blob_sha": "c040d01f85dbda02afa8261b1ac46f05903c87f5",
+    "r9_hold_reason": "FIRST_PARTY_PRESENTATION_SIZE_UNCONFIRMED"
+  },
+  "checked_sources": {
+    "current_official_product_page": {
+      "url": "https://www.zeroid.co.kr/web/product/product_detail.asp?idx=365",
+      "product_name": "인텐시브 SOS 플러스 밤",
+      "product_name_en": "INTENSIVE SOS+ BALM",
+      "page_contains_current_formula": true,
+      "visible_size_ml": null,
+      "linked_product_thumbnail": "https://www.zeroid.co.kr/data/rental/brand/top_Intensive_sosbalm.jpg",
+      "linked_product_graphic": "https://www.zeroid.co.kr/data/rental/goods/big/202509739133436.jpg",
+      "directly_links_to_size_graphic": false,
+      "media_links_verified_by": "2026-10-08 official detail-page image-link extraction"
+    },
+    "official_40ml_graphic": {
+      "url": "https://www.zeroid.co.kr/data/rental/brand/summery_Intensive_sosbalm.jpg",
+      "image_search_preview_name": "인텐시브 SOS 플러스 밤",
+      "image_search_preview_size_ml": 40,
+      "is_official_domain_asset": true,
+      "matches_current_detail_thumbnail_product_basename": true,
+      "is_directly_linked_from_current_detail_page": false,
+      "original_image_bytes_obtained": false,
+      "original_sha256": null,
+      "current_product_page_lineage_verified": false,
+      "evidence_strength": "BRAND_VISUAL_SIZE_SUPPORTED_CURRENT_SKU_LINEAGE_UNVERIFIED"
+    },
+    "image_index_caution": {
+      "indexed_association_url": "https://www.zeroid.co.kr/web/product/product_detail.asp?idx=322",
+      "currently_observed_indexed_page_product": "리케닉 크림 우레아 10%",
+      "matches_40ml_graphic_product": false,
+      "indexed_association_accepted_as_lineage": false
+    },
+    "request_environment": {
+      "official_asset_direct_fetch": "FAILED",
+      "reason": "network resolution / cache unavailable from runtime; cannot certify source bytes or snapshot",
+      "screenshot_of_current_official_detail_capturing_40ml": false
+    }
+  },
+  "link_tests": [
+    {
+      "test_id": "BRAND_ASSET_40ML",
+      "description": "Brand-hosted graphic visually carries exact ZEROID 40ml name",
+      "outcome": "PASS",
+      "sufficient_for_subject_registration": false
+    },
+    {
+      "test_id": "CURRENT_PRODUCT_IDENTITY",
+      "description": "Official idx=365 page presents target product name and formula",
+      "outcome": "PASS",
+      "sufficient_for_subject_registration": false
+    },
+    {
+      "test_id": "CURRENT_PAGE_REFERENCES_40ML_GRAPHIC",
+      "description": "Official idx=365 page directly references summary 40ml graphic",
+      "outcome": "NOT_ESTABLISHED",
+      "sufficient_for_subject_registration": false
+    },
+    {
+      "test_id": "CURRENT_PAGE_EXPLICIT_40ML",
+      "description": "Official idx=365 page explicitly displays 40ml for current product",
+      "outcome": "NOT_ESTABLISHED",
+      "sufficient_for_subject_registration": false
+    },
+    {
+      "test_id": "IMAGE_INDEX_PAGE_IDENTITY",
+      "description": "Image-index associated idx=322 page is target product",
+      "outcome": "FAIL",
+      "sufficient_for_subject_registration": false
+    },
+    {
+      "test_id": "SOURCE_BYTES_AND_PROVENANCE",
+      "description": "Official 40ml graphic raw bytes and reproducible URL/page linkage captured",
+      "outcome": "NOT_ESTABLISHED",
+      "sufficient_for_subject_registration": false
+    }
+  ],
+  "authority_policy": {
+    "first_party_exact_product_and_presentation_required": true,
+    "common_asset_basename_not_sufficient_for_current_sku_lineage": true,
+    "secondary_40ml_corroboration_not_sufficient_for_auto_release": true,
+    "prior_hold_auto_release_forbidden": true,
+    "missing_not_false": true
+  },
+  "decision": {
+    "result": "HOLD",
+    "reason_code": "CURRENT_SKU_TO_OFFICIAL_40ML_GRAPHIC_LINEAGE_UNVERIFIED",
+    "original_r9_hold_reason_still_unresolved": "FIRST_PARTY_PRESENTATION_SIZE_UNCONFIRMED",
+    "visual_40ml_candidate_preserved": true,
+    "current_presentation_first_party_closed": false,
+    "subject_registration_authorized": false,
+    "evidence_ingest_authorized": false,
+    "product_fact_confirmation_authorized": false,
+    "recommendation_admission_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false,
+    "production_cutover_authorized": false
+  },
+  "execution_boundary": {
+    "research_only": true,
+    "hosted_write_count": 0,
+    "registry_write_count": 0,
+    "repository_changes_limited_to_closeout_artifacts": true
+  },
+  "next_gate": {
+    "stage": "V2.1-8H-R14D_ZEROID_CURRENT_PRESENTATION_OFFICIAL_AUTHORITY_ACQUISITION",
+    "status": "EXTERNAL_EVIDENCE_DEPENDENCY",
+    "entry_conditions": [
+      "Brand-operated target product-detail page explicitly states 40ml",
+      "OR official manufacturer/brand catalog or SKU listing binds current Intensive SOS+ Balm to 40ml",
+      "OR reproducible official page or brand-provided capture associates idx=365 with graphic carrying 40ml and locks provenance"
+    ],
+    "if_satisfied": "Perform separately gated Product Fact Subject identity preflight; do not directly register Subject or activate recommendations",
+    "if_not_satisfied": "Maintain HOLD and advance unrelated ready candidates without changing ZEROID identity authority",
+    "forbidden_until_satisfied": [
+      "subject_registration",
+      "product_fact_evidence_ingest",
+      "product_fact_confirmation",
+      "recommendation_admission",
+      "recommendation_activation"
+    ]
+  }
+}
