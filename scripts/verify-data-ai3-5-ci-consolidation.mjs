@@ -154,6 +154,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-atopalm-p0-post-confirmation-pda-recommendation-invariance-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-zeroid-p0-presentation-size-recovery-recheck-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-zeroid-p0-first-party-visual-presentation-capture-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-zeroid-p0-current-sku-visual-lineage-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
