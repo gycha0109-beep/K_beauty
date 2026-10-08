@@ -521,3 +521,38 @@ Asset record의 필수 속성:
 무료 검증: `npm run verify:face-lab-v2-catalog-reference-resolver`
 
 후속 연결: Product Fact Subject/Taxonomy를 읽는 서버 authority와 접근권한이 있는 blob reader를 별도 명시적으로 연동한다. 새 migration 또는 무권한 public URL download를 만들지 않는다.
+
+---
+
+## 18. Product-driven Virtual Vanity session — P1-C
+
+Implementation: `lib/face-lab-v2/visual-try-on-look-session.js`
+
+`look-composer.js`는 추천 Style Look을 구성하는 기존 도메인 로직이며 변경하지 않는다. 이 새 모듈은 **사용자가 직접 선택한 제품의 가상 화장대 임시 세션**을 담당한다.
+
+상태: `sessionId + revision + selections + history` (변경 후 최대 32개 action log). 저장 구조나 DB를 추가하는 것이 아니라 순수 함수가 반환하는 임시 상태다.
+
+지원 action:
+
+- `add(slotKey, productSelection)`: 비어 있는 기존 Appearance Slot에만 추가
+- `replace(slotKey, productSelection)`: 이미 선택한 Slot을 명시적으로 대체
+- `remove(slotKey)`: 선택된 Slot 삭제
+- `clear()`: 모든 선택 삭제
+
+규칙:
+
+- 슬롯 충돌은 자동 덮어쓰지 않고 거절한다.
+- 하나의 제품이 별도로 증거를 갖춘 2개 슬롯(예: lip_color/lip_finish)을 차지할 수 있다.
+- revision의 낡은 요청은 거절해 UI 다중 클릭 충돌을 막는다.
+- 각 액션이 완료될 때 catalog/variant/capability/reference authority 전체를 다시 확인한다. 한 항목이라도 미승인이면 상태 변경 자체를 실패 처리한다.
+- 슬롯 오름차순으로 정규화하고, reference는 기존 P1-B resolver ordering을 그대로 사용한다.
+- 결과는 빈 화장대일 때 provider 입력 없음, 선택된 화장대일 때 기존 Render Spec만 반환.
+- 서버/클라이언트 UI나 영구 저장은 아직 연결하지 않았다. 이미지 생성 0회.
+
+무료 검증: `npm run verify:face-lab-v2-visual-try-on-look-session`
+
+### 실제 Product DB 연동 경계
+
+현재 저장소의 catalog taxonomy 마이그레이션은 `shadow_only`/shadow 분류를 포함한다. 현재 실제 hosted DB의 canonical 활성화는 여기서 검증하지 않았다.
+
+`Product ID → Subject/Variant → taxonomy`를 **실제 서비스에서 읽는 구현**은 별도 승인된 서버 권한 및 canonical 자료가 필요하다. Shadow 분류를 기존 code의 `canonical` guard를 우회해 사용하지 않는다. 보호된 DB/Auth/Storage 변경 없이 `실제 상품 DB 연결 완료`라 표시하지 않는다.
