@@ -1,0 +1,232 @@
+{
+  "version": "data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1",
+  "stage": "DATA-AI29C-FILTER-R4-C-R1",
+  "track": "taxonomy-ai",
+  "decision": "R4_C_R1_SOURCE_BRIDGE_DESIGN_COMPLETE_IDENTITY_UPGRADE_HOLD",
+  "productionProject": "bygrczggxfuisupcevaz",
+  "mode": "READ_ONLY_DESIGN_ONLY",
+  "mainAtCapture": "b0771f39d32848e8409ca81b8ba5fd94fc497495",
+  "predecessor": {
+    "stage": "DATA-AI29C-FILTER-R4-C",
+    "decision": "FILTER_R4_C_HOLD_UNSUPPORTED_SUBJECT_LINEAGE_AND_OFFICIAL_CATALOG_SOURCE",
+    "mergeSha": "b8e84c6e91d66937822d382e7264cb5821ca01ea",
+    "mergeCiPassed": 7,
+    "mergeCiTotal": 7
+  },
+  "target": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subjectSemanticKey": "33696edfb47c47672930e0d398b0cd67fb966c355ec474ea9ec4ffa72400a584",
+    "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "formulationLabel": "BUSHMAN Waterproof Pro Suncream 50g",
+    "market": "KR",
+    "variantKey": null,
+    "region": null,
+    "validFrom": null,
+    "validTo": null,
+    "exactCurrentCount": 1,
+    "semanticKeyRecomputedMatch": true,
+    "currentIdentityAuthority": "data-ai29c-c5-presentation-identity-correction-v1",
+    "expectedAuthority": "trust-phase5-admin-subject-review-v1"
+  },
+  "catalogCandidate": {
+    "count": 1,
+    "id": "77856d50-a033-4646-ae23-2a1162138319",
+    "source": "hwahae",
+    "url": "https://www.hwahae.com/en/products/1884027",
+    "state": "promoted",
+    "identityState": "resolved",
+    "firstPartyCandidate": false,
+    "noReclassification": true
+  },
+  "sourceBridge": {
+    "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+    "productSource": {
+      "bindingId": "9da03b35-9e00-4c46-8ff0-8f6835382349",
+      "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "sourceName": "bushman_official",
+      "sourceUrl": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "market": "KR",
+      "state": "resolved",
+      "method": "trust_official_source_review_v1",
+      "scope": "product"
+    },
+    "sourceReview": {
+      "reviewId": "067e861d-2e61-4ec2-a3f7-660d78be468d",
+      "bindingId": "9da03b35-9e00-4c46-8ff0-8f6835382349",
+      "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "market": "KR",
+      "sourceMarket": "KR",
+      "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+      "sourceKind": "brand_official_product_page",
+      "scopeRelation": "equivalent",
+      "reviewVersion": "trust-official-source-review-v1",
+      "subjectAuthorityAttestation": false
+    },
+    "evidenceSources": [
+      {
+        "sourceId": "76cc7f5b-d5dc-4d72-bb1c-ab2a899211c1",
+        "bindingId": "c8b91f9b-a1b1-4b26-a435-b390672bf73f",
+        "kind": "brand_official_product_page",
+        "publisher": "bushman_official",
+        "digest": "02aa9f0073cd4e4a6f433a3596fe94eee77b0bb8bb880f202c36fd44eb24c701",
+        "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+        "market": "KR",
+        "region": null,
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      {
+        "sourceId": "94b32b8d-8340-4b91-9e62-646794fd4f41",
+        "bindingId": "2b554836-0c57-4829-ac01-2631f34267d2",
+        "kind": "official_product_page",
+        "publisher": "주식회사 부쉬맨 / BUSHMAN",
+        "digest": "3a9fbcb280935133e95a0f7f19bfff20157258b4dc17b8dce4d601e40f6681a9",
+        "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+        "market": "KR",
+        "region": null,
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      {
+        "sourceId": "9b98d800-66c3-4a40-880c-4c99f415a920",
+        "bindingId": "09650eb5-db97-474b-995c-5f5aeb706467",
+        "kind": "official_product_page",
+        "publisher": "주식회사 부쉬맨 / BUSHMAN",
+        "digest": "696c6ab509c4a0045ef5b408b06a2359e08570cc4d3ece1338a749c3fa2e6460",
+        "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+        "market": "KR",
+        "region": null,
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      },
+      {
+        "sourceId": "f25f3fc4-07b3-45e9-a0a8-12f0d1b37f06",
+        "bindingId": "a19156b9-8a1c-4af5-8a8b-d9f58ae9b17d",
+        "kind": "brand_official_product_page",
+        "publisher": "bushman_official",
+        "digest": "183405aeaaec9640d798ae38da817a7ca39ceac4881b22485cf2cf118aa3e7ab",
+        "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+        "market": "KR",
+        "region": null,
+        "bindingState": "exact_subject_match",
+        "scopeRelation": "equivalent"
+      }
+    ],
+    "validStructuralChain": true,
+    "provesIdentityAuthority": false
+  },
+  "identityDiscrepancy": {
+    "subjectLabel": "BUSHMAN Waterproof Pro Suncream 50g",
+    "officialUrlToken": "50ml",
+    "pageBodyFreshnessVerified": false,
+    "adminSkuFormulationEquivalenceAttested": false,
+    "requiresAdminReview": true
+  },
+  "dependencies": {
+    "productFactCurrent": 3,
+    "factInstances": 3,
+    "researchTasks": 4,
+    "evidenceRecords": 3,
+    "governedSourceBindings": 4,
+    "semanticReviews": 0
+  },
+  "contract": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "fromAuthority": "data-ai29c-c5-presentation-identity-correction-v1",
+    "toAuthority": "trust-phase5-admin-subject-review-v1",
+    "ownerCapability": "admin.products.review",
+    "plannedFunctions": [
+      "bushman_identity_auth_plan_v1",
+      "admin_pf_bushman_identity_auth_v1",
+      "admin_confirm_bushman_identity_auth_v1"
+    ],
+    "implemented": false,
+    "legacyCosrxUpgradeUnchanged": true,
+    "legacySubjectRegistrationUnchanged": true,
+    "sourceReviewNotAutomaticallyIdentityAttestation": true,
+    "requiredAttestationFields": [
+      "product_id",
+      "subject_id",
+      "reviewed_identity",
+      "first_party_source_id",
+      "official_binding_id",
+      "source_review_id",
+      "source_content_digest",
+      "sku_and_unit_reconciliation",
+      "reviewer_capability"
+    ],
+    "immutableSubjectFields": [
+      "subject_id",
+      "product_id",
+      "subject_semantic_key",
+      "variant_key",
+      "formulation_revision_key",
+      "formulation_label",
+      "market_applicability",
+      "region_applicability",
+      "valid_from",
+      "valid_to",
+      "identity_status",
+      "current_state"
+    ],
+    "preflightWriteCount": 0,
+    "requiresExactCurrentSubjectCount": 1,
+    "requiresExpectedPayloadDigest": true,
+    "requiresExpectedPrestateDigest": true,
+    "prestateIncludes": [
+      "subject/updated_at",
+      "source binding and official source review",
+      "4 evidence sources and bindings",
+      "Product Fact Current and Instances",
+      "research tasks",
+      "evidence records",
+      "semantic reviews",
+      "new identity attestation"
+    ],
+    "confirmationSeparateExplicitApproval": true,
+    "confirmationUsesAdvisoryAndRowLocks": true,
+    "confirmationRechecksPrestateDigest": true,
+    "confirmationStrictIdempotency": true,
+    "confirmationExpectedWriteSet": {
+      "product_fact_subjects": 1,
+      "product_fact_review_events": 1,
+      "admin_audit_logs": 1
+    },
+    "onlyBusinessColumnChanged": "identity_resolution_version",
+    "allowedSystemColumnChanged": "updated_at",
+    "productionRpcDeployment": false,
+    "subjectUpgradeAuthorized": false,
+    "admissionAuthorized": false
+  },
+  "gates": {
+    "sourceBridgeReady": true,
+    "identityAttestationPresent": false,
+    "unitMismatchResolved": false,
+    "upgradeRpcDeployed": false,
+    "preflightExecuted": false,
+    "subjectUpgraded": false,
+    "semanticReviewed12": false,
+    "admissionGranted": false
+  },
+  "safety": {
+    "productionWrites": 0,
+    "subjectWrites": 0,
+    "candidateWrites": 0,
+    "sourceWrites": 0,
+    "productFactWrites": 0,
+    "semanticWrites": 0,
+    "rankingWrites": 0,
+    "betaAllowlistWrites": 0,
+    "publicActivation": false,
+    "uvaActivation": false,
+    "waterActivation": false
+  },
+  "nextGate": {
+    "stage": "DATA-AI29C-FILTER-R4-C-R2_BUSHMAN_BOUNDED_SUBJECT_UPGRADE_RPC_IMPLEMENTATION",
+    "authorizedAfter": "R4-C-R1 exact merge SHA CI PASS",
+    "productionSubjectUpgradeAllowed": false
+  }
+}
