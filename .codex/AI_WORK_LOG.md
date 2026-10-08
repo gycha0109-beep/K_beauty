@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-10-09 / Face Lab P1-D2B approved catalog read design
+
+- Task type: design / high-risk DB/Auth boundary. Baseline `main@5f153f350b2766928d1e0eb4d6b3bb6887c0bcc2`.
+- Critical contract mismatch: Gate D says Product Fact Subject `variant_key` is not by itself a real Product Variant/shade identifier, but P1-A/P1-B/D read core equate it with `variantId`. This is a pre-integration correctness blocker; explicitly approved Subject-to-Variant mapping required.
+- Design: introduced a scoped P1-D2B specification splitting code-only semantic reconciliation (D2B-0), permissioned hosted read inventory (D2B-1), reviewed least-privilege read projection (D2B-2), and free integration/security regression (D2B-3).
+- Protected decision: no SQL, migration, RLS, Auth, credential, storage, hosted DB, production, or paid provider call in this design. Recommendations' dedicated runtime role cannot be reused.
+- Verification: documentation/source contract/diff and PR CI; no actual Hosted authority readiness claim.
+- Next boundary: implement code-only D2B-0 first; obtain separate explicit approval for D2B-1/D2B-2 protected execution.
+- Context promotion: not required; detailed spec serves as scoped reference.
+
+
 ### 2026-10-09 / Face Lab P1-D2A Catalog Try-On read authority
 
 - Task type: diagnosis + bounded verifier. Baseline `main@60224fa0feb17df033e7cc4ca2329318f4c03a48`. Watchtower-Track: `face-research`.
