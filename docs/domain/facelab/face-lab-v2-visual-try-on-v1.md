@@ -430,7 +430,7 @@ coral/orange lip
 
 신규 유료 output 최대 1장.
 
-Canary 성공 후 다음 category를 같은 contract로 순차 검증한다.
+내부 Canary 성공 결과는 제품 적용 경로의 기준점으로 고정한다. 별도 승인 없이 추가 이미지 생성·품질 실험을 진행하지 않으며, 이후 카테고리 확장은 코드·계약·모킹/무료 CI 중심으로 검증한다.
 
 ### Product/UI wiring
 
@@ -457,3 +457,31 @@ v1에서 보증하지 않는다.
 - 의류의 실제 사이즈 fitting
 
 Visual Try-On은 구매 전 시각 참고 도구다.
+
+---
+
+## 16. Product-driven catalog binding — P1-A
+
+Implementation: `lib/face-lab-v2/catalog-product-try-on-binding.js`
+
+독립된 첫 단계에서는 실시간 DB 조회·UI·새 테이블을 추가하지 않는다. 이미 신뢰할 수 있는 서버 측 catalog read bundle만 Try-On selection으로 연결한다.
+
+선택 입력은 현행 DB 구조에 맞춘다.
+
+- `public.products.id`: Product ID (UUID)
+- `public.product_fact_subjects.subject_id/product_id/variant_key/identity_status/current_state`: 정확한 variant identity
+- `public.catalog_taxonomy_versions`: canonical active version
+- `public.catalog_taxonomy_terms`: active category term
+- `public.product_catalog_taxonomy_assignments`: canonical assignment
+- `categoryBinding`: 운영자가 별도로 승인한 taxonomy term → 기존 Visual Try-On category mapping과 증거
+- `Face Lab Product Variant Authority` 자료: 동일 Product/variant, source subject provenance, shade facts 및 capability claims
+
+기존 `visual-try-on-registry.js`와 Appearance Slot을 그대로 사용한다. 카테고리명/상품명/쇼핑 설명으로 slot을 추측하지 않으며 다른 product/subject/shade의 binding을 섞지 않는다. `identity_only`이면 참고 이미지가 전혀 없는 제품은 차단한다.
+
+실제 taxonomy가 shadow-only이거나 상품 fact/variant 근거가 미확정이면 `invalid`로 차단한다. 이 경우 제품 도메인 쪽에서 적법한 canonical 읽기 권한을 준비하기 전까지 Try-On 제품으로 자동 노출하지 않는다.
+
+최종 출력: `catalog provenance + governed Try-On selection + 기존 render spec`, 모델 호출 0회.
+
+무료 검증: `npm run verify:face-lab-v2-catalog-product-try-on-binding`
+
+다음 독립 단위: 실제 server read authority 및 product reference asset resolver를 기존 인증/접근 제약 아래에서 별도로 연결한다.
