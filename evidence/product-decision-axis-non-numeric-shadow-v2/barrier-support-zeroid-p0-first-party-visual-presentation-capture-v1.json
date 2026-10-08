@@ -1,0 +1,96 @@
+{
+  "version": "barrier-support-zeroid-p0-first-party-visual-presentation-capture-v1",
+  "stage": "V2.1-8H-R14B",
+  "source_main_sha": "98ab075a7ae7f8b836f0b08a0719c3df15c8a768",
+  "captured_on": "2026-10-08",
+  "product_id": "7a98b5e7-2c1f-441a-afee-dd1c592d95bc",
+  "catalog": {
+    "brand": "ZEROID",
+    "name": "인텐시브 SOS 플러스 밤",
+    "name_en": "INTENSIVE SOS+ BALM",
+    "size_ml": 40,
+    "source_authority": "hwahae_secondary"
+  },
+  "parent_authority": {
+    "r14a_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-zeroid-p0-presentation-size-recovery-recheck-v1.json",
+    "r14a_blob_sha": "522142b218d02db0b3f1f87a8fb449a00c22d87f",
+    "r14a_decision": "FIRST_PARTY_PRESENTATION_SIZE_UNCONFIRMED",
+    "r9_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-official-identity-authority-research-v1.json",
+    "r9_blob_sha": "c040d01f85dbda02afa8261b1ac46f05903c87f5"
+  },
+  "visual_findings": {
+    "official_asset": {
+      "url": "https://www.zeroid.co.kr/data/rental/brand/summery_Intensive_sosbalm.jpg",
+      "host": "www.zeroid.co.kr",
+      "observed_via": "2026-10-08 image-index preview of official-domain asset",
+      "visible_name": "인텐시브 SOS 플러스 밤",
+      "visible_size": "40ml",
+      "visible_brand": "ZEROID",
+      "image_preview_40ml_verified": true,
+      "direct_image_bytes_retrieved": false,
+      "asset_sha256": null,
+      "source_asset_type": "official_brand_graphic",
+      "proof_scope": "official_brand_visual_label_only"
+    },
+    "current_detail_page": {
+      "url": "https://www.zeroid.co.kr/web/product/product_detail.asp?idx=365",
+      "visible_product_name": "인텐시브 SOS 플러스 밤",
+      "visible_english_name": "INTENSIVE SOS+ BALM",
+      "html_text_size_ml": null,
+      "product_thumbnail_url": "https://www.zeroid.co.kr/data/rental/brand/top_Intensive_sosbalm.jpg",
+      "detail_image_url": "https://www.zeroid.co.kr/data/rental/goods/big/202509739133436.jpg",
+      "summary_graphic_explicitly_linked_in_page_html": false,
+      "asset_basename_correspondence": "Intensive_sosbalm",
+      "current_page_to_summary_graphic_proven": false
+    },
+    "indexing_caution": {
+      "indexed_source_page": "https://www.zeroid.co.kr/web/product/product_detail.asp?idx=322",
+      "indexed_page_live_name": "리케닉 크림 우레아 10%",
+      "indexed_page_matches_graphic_product": false,
+      "reason": "image index associations cannot establish current product-detail ownership"
+    }
+  },
+  "secondary_corroboration": {
+    "source": "https://www.hwahae.co.kr/products/2097713",
+    "observed_size_ml": 40,
+    "may_close_official_identity_scope": false
+  },
+  "decision": {
+    "result": "HOLD_WITH_FIRST_PARTY_VISUAL_CANDIDATE",
+    "reason_code": "CURRENT_SKU_TO_OFFICIAL_40ML_GRAPHIC_LINEAGE_UNVERIFIED",
+    "prior_hold_not_auto_released": true,
+    "official_visual_40ml_observed": true,
+    "first_party_exact_current_presentation_established": false,
+    "subject_registration_authorized": false,
+    "evidence_ingest_authorized": false,
+    "confirmation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "production_cutover_authorized": false
+  },
+  "hosted_mutations": {
+    "product": 0,
+    "subject": 0,
+    "evidence": 0,
+    "fact_instance": 0,
+    "current": 0,
+    "confirmation": 0,
+    "recommendation": 0
+  },
+  "next_gate": {
+    "stage": "V2.1-8H-R14C_ZEROID_OFFICIAL_VISUAL_LINEAGE_VERIFICATION",
+    "status": "EVIDENCE_REQUIRED",
+    "required": [
+      "capture exact idx=365 HTML or official product page screenshot that links to an asset visibly presenting 40ml",
+      "or obtain direct product-specific brand official SKU description stating 40ml",
+      "preserve official source URL and reproducible captured bytes or dated screenshot with provenance"
+    ],
+    "if_confirmed": "allow separate governed Subject identity preflight, not direct Subject registration",
+    "if_unconfirmed": "keep HOLD; do not repeat secondary-site collection",
+    "forbidden": [
+      "subject_registration",
+      "fact_evidence_ingest",
+      "fact_confirmation",
+      "recommendation_activation"
+    ]
+  }
+}
