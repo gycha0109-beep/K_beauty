@@ -206,6 +206,9 @@ on:
       - "scripts/verify-data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight-v1.json"
       - "docs/evidence/data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight-v1.md"
+      - "docs/evidence/data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1.json"
+      - "scripts/verify-data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -468,6 +471,9 @@ on:
       - "scripts/verify-data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight.mjs"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight-v1.json"
       - "docs/evidence/data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight-v1.md"
+      - "docs/evidence/data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1.json"
+      - "scripts/verify-data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -762,6 +768,8 @@ jobs:
         run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r4-b-bushman-mixed-registry-compatibility-contract.mjs
       - name: Verify DATA-AI29C-FILTER-R4-C BUSHMAN identity authority preflight
         run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight.mjs
+      - name: Verify DATA-AI29C-FILTER-R4-C-R1 BUSHMAN identity source bridge design
+        run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
