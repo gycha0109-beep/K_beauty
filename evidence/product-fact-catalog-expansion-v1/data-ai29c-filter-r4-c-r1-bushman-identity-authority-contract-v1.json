@@ -199,7 +199,8 @@
     "allowedSystemColumnChanged": "updated_at",
     "productionRpcDeployment": false,
     "subjectUpgradeAuthorized": false,
-    "admissionAuthorized": false
+    "admissionAuthorized": false,
+    "confirmationNotAuthorizedInR1": true
   },
   "gates": {
     "sourceBridgeReady": true,
