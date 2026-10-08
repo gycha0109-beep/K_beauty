@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-09 / Face Lab P1-D2B-0 explicit Subject↔Variant bridge
+
+- Task type: bounded execution (Medium), preserving existing server auth and response field shape.
+- Baseline: `main@b93b08ad12a992aa9ed203f92d92cd71b58ac2b5`; track `face-research`.
+- Code: separate Product Fact formulation `variant_key` from Face Lab Product Variant `variantId`, require approved Subject↔Variant bridge and namespaced evidence, propagate commerce `variantId` through catalog read, binding, reference selection and Look Session history.
+- Validation: existing Catalog Product Try-On / Catalog Reference Resolver / Look Session focused free verifiers plus triggered CI; no paid provider.
+- Protected boundaries unchanged: no DB, role, RLS, migration, environment secret, hosted data, authentication, provider or storage changes.
+- Remains blocked: Hosted approved bridge data and actual canonically approved catalog reader; requires separate D2B-1/D2B-2 authorization.
+
+
 ### 2026-10-09 / Face Lab P1-D2A Catalog Try-On read authority
 
 - Task type: diagnosis + bounded verifier. Baseline `main@60224fa0feb17df033e7cc4ca2329318f4c03a48`. Watchtower-Track: `face-research`.

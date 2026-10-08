@@ -31,9 +31,14 @@ function selection({
     subject: {
       subject_id: subjectId,
       product_id: productId,
-      variant_key: variantId,
+      variant_key: "formula-v1",
       identity_status: "resolved",
       current_state: "current"
+    },
+    subjectVariantBridge: {
+      productId, subjectId, variantId, subjectVariantKey: "formula-v1",
+      mappingVersion: "reviewed-fixture-v1", approvalState: "approved",
+      evidenceRefs: [`variant_review:${productId}-${variantId}`]
     },
     taxonomyVersion: { version: v, lifecycle_state: "active", authority_mode: "canonical" },
     taxonomyTerm: {
@@ -91,7 +96,7 @@ const finish = selection({ slotKey: "lip_finish" });
 function meta(item, assetRef) {
   return {
     assetRef,
-    candidateRef: `product_variant:${item.product.id}:${item.subject.variant_key}`,
+    candidateRef: `product_variant:${item.product.id}:${item.variant.variantId}`,
     slotKey: item.slotKey,
     role: "brand_swatch",
     evidenceRef: `manual_asset_review:${item.slotKey}-${item.product.id}`,
@@ -138,10 +143,14 @@ mustFail(createFaceLabVisualTryOnLookSession({sessionId:""}), "session_id_invali
 const addedLip = act(initialized.state, "add", "lip_color", lip);
 assert.equal(addedLip.status, "ready", JSON.stringify(addedLip));
 assert.equal(addedLip.state.revision, 1);
+assert.equal(addedLip.state.history[0].selectedVariantRef, `product_variant:${p1}:coral`);
 assert.equal(addedLip.referenceCount, 1);
 assert.equal(addedLip.authority.imageModelInvoked, false);
 assert.equal(addedLip.renderSpec.operations[0].slotKey, "lip_color");
 mustFail(act(addedLip.state, "add", "lip_color", lip), "look_slot_already_selected");
+const invalidMapping = structuredClone(finish);
+invalidMapping.subjectVariantBridge.approvalState = "pending";
+mustFail(act(addedLip.state, "add", "lip_finish", invalidMapping), "subject_variant_mapping_not_approved");
 mustFail(act(addedLip.state, "replace", "iris_appearance", lens), "look_slot_not_selected");
 mustFail(act(addedLip.state, "remove", "eye_color"), "look_slot_not_selected");
 mustFail(act(addedLip.state, "add", "hair_jewelry", lip), "look_action_slot_invalid");

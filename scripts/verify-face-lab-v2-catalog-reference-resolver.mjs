@@ -27,7 +27,12 @@ function product({
     product:{id:productId},
     subject:{
       subject_id:subjectId,product_id:productId,
-      variant_key:variantId,identity_status:"resolved",current_state:"current"
+      variant_key:"formula-v1",identity_status:"resolved",current_state:"current"
+    },
+    subjectVariantBridge:{
+      productId,subjectId,variantId,subjectVariantKey:"formula-v1",
+      mappingVersion:"reviewed-v1",approvalState:"approved",
+      evidenceRefs:[`variant_review:${productId}-${variantId}`]
     },
     taxonomyVersion:{version:VER,lifecycle_state:"active",authority_mode:"canonical"},
     taxonomyTerm:{term_id:term,term_key:category,taxonomy_version:VER,axis:"category",lifecycle_state:"active"},
@@ -114,6 +119,10 @@ assert.deepEqual(bound.authority.referenceAssets.map(r=>r.assetRef),[
   "catalog_image:lip-product"
 ]);
 assert.equal(bound.imageModelInvoked,false);
+const unreviewed=structuredClone(lip);
+unreviewed.subjectVariantBridge.approvalState="pending";
+assert.equal(bindFaceLabCatalogTryOnReferences({sessionId:"rejected",productSelections:[unreviewed],catalogAssets:withNoBytes}).reason,
+  "subject_variant_mapping_not_approved");
 const source=img(1);
 const loaded=[];
 const prepare=(authority,assets,loader)=>prepareFaceLabCatalogTryOnReferences({
