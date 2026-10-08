@@ -1,0 +1,118 @@
+{
+  "version": "data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight-v1",
+  "stage": "DATA-AI29C-FILTER-R4-C",
+  "track": "taxonomy-ai",
+  "decision": "FILTER_R4_C_HOLD_UNSUPPORTED_SUBJECT_LINEAGE_AND_OFFICIAL_CATALOG_SOURCE",
+  "mode": "PRODUCTION_READ_ONLY_SUBJECT_AUTHORITY_RECOVERY_PREFLIGHT",
+  "sourceMainSha": "5e1b1ba389b1e01590bbe1218a6864d60438aefc",
+  "prerequisite": {
+    "priorStage": "DATA-AI29C-FILTER-R4-B",
+    "priorDecision": "FILTER_R4_B_EXACT_MIXED_REGISTRY_COMPATIBILITY_CONTRACT_IMPLEMENTED_NO_ADMISSION",
+    "r4bMergeSha": "5e1b1ba389b1e01590bbe1218a6864d60438aefc",
+    "r4bMergeExactShaMainCi": {
+      "passed": 7,
+      "total": 7
+    },
+    "mixedRegistryLineageCompatible": true,
+    "admissionGranted": false
+  },
+  "productionProject": "bygrczggxfuisupcevaz",
+  "target": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subjectSemanticKey": "33696edfb47c47672930e0d398b0cd67fb966c355ec474ea9ec4ffa72400a584",
+    "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "formulationLabel": "BUSHMAN Waterproof Pro Suncream 50g",
+    "variantKey": null,
+    "market": "KR",
+    "region": null,
+    "validFrom": null,
+    "validTo": null,
+    "subjectSerializer": "product-fact-subject-identity-v1",
+    "identityStatus": "resolved",
+    "currentState": "current"
+  },
+  "subjectAuthority": {
+    "actual": "data-ai29c-c5-presentation-identity-correction-v1",
+    "admissionRequires": "trust-phase5-admin-subject-review-v1",
+    "legacyUpgradeAcceptedFrom": "gpt-catalog-machine-subject-v1",
+    "deployedUpgradePlanName": "product_fact_subject_identity_authority_upgrade_plan_v1",
+    "deployedPreflightName": "admin_preflight_product_fact_subject_identity_authority_upgrade",
+    "oldPlanAcceptsActualLineage": false,
+    "oldPlanAcceptsMachineLineage": true,
+    "subjectIdWouldBePreserved": true,
+    "subjectSemanticKeyCalculatedEqualsStored": true,
+    "currentApplicabilitySubjectCount": 1,
+    "exactSubjectIdentityImmutable": true,
+    "subjectUpgradeAuditCount": 0,
+    "serviceRoleDirectSubjectUpdate": false
+  },
+  "catalog": {
+    "candidateCount": 1,
+    "candidate": {
+      "id": "77856d50-a033-4646-ae23-2a1162138319",
+      "matchedProductId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "reviewStatus": "promoted",
+      "identityResolutionState": "resolved",
+      "identityResolutionVersion": "crawler-identity-resolution-v1",
+      "sourceLocator": "https://www.hwahae.com/en/products/1884027",
+      "sourceIsFirstPartyBushman": false,
+      "officialContentDigest": null,
+      "officialContentDigestValid": false,
+      "productFactWriteAllowed": false
+    },
+    "eligibleFirstPartyIdentityCandidates": 0,
+    "existingFirstPartyProductFactSource": {
+      "sourceId": "94b32b8d-8340-4b91-9e62-646794fd4f41",
+      "bindingId": "2b554836-0c57-4829-ac01-2631f34267d2",
+      "sourceKind": "official_product_page",
+      "productFactPurposeOnly": true,
+      "automaticallyPromotableToCatalogIdentity": false
+    }
+  },
+  "dependentAuthority": {
+    "currentFacts": 3,
+    "factInstances": 3,
+    "researchTasks": 4,
+    "governedSourceBindings": 4,
+    "evidenceRecords": 3,
+    "currentSemanticReviews": 0
+  },
+  "reviewedGate": {
+    "subjectSemanticIdentityConsistent": true,
+    "identityUpgradePolicyReady": false,
+    "officialCatalogCandidateReady": false,
+    "authenticatedAdminAttestationPresent": false,
+    "productionPreflightExecuted": false,
+    "upgradeConfirmationExecuted": false,
+    "recommendationAdmissionReevaluated": false
+  },
+  "nextGate": {
+    "stage": "DATA-AI29C-FILTER-R4-C-R1_BUSHMAN_SUBJECT_AUTHORITY_RECOVERY_CONTRACT",
+    "mode": "DESIGN_ONLY_AND_CANDIDATE_RESEARCH_FIRST",
+    "prerequisites": [
+      "Select or ingest a first-party BUSHMAN catalog identity candidate through existing governed catalog pipeline; do not repurpose Product Fact Source as automatic identity authority",
+      "Prove promoted/resolved exact product and official HTTPS product locator with canonical official SHA256 digest and product_fact_write_allowed=false",
+      "Design distinct reviewed C5-presentation-identity-correction-v1 to trust-phase5-admin-subject-review-v1 transition; do not modify COSRX-only old RPC in place",
+      "Require admin actor, immutable subject semantic/formulation/market fields, stale prestate and post-write audit and dependent authority invariance",
+      "Production read-only preflight must PASS before separate explicit upgrade confirmation authorization"
+    ],
+    "automaticSubjectUpgrade": false,
+    "automaticAdmission": false
+  },
+  "writeBoundary": {
+    "productionDatabaseWrites": 0,
+    "subjectUpgrade": 0,
+    "sourceCandidateWrites": 0,
+    "productFactWrites": 0,
+    "evidenceWrites": 0,
+    "semanticReviewWrites": 0,
+    "admissionPolicyChanges": 0,
+    "recommendationChanges": 0,
+    "rankingChanges": 0,
+    "betaAllowlistChanges": 0,
+    "publicActivation": false,
+    "uvaActivation": false,
+    "waterActivation": false
+  }
+}
