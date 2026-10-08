@@ -1,0 +1,392 @@
+{
+  "version": "barrier-support-p1-r16c-ready2-subject-identity-preflight-v1",
+  "stage": "V2.1-8H-R16C_P1_READY2_SUBJECT_IDENTITY_PREFLIGHT",
+  "captured_on": "2026-10-09",
+  "baseline_main_sha": "60224fa0feb17df033e7cc4ca2329318f4c03a48",
+  "production_project": "bygrczggxfuisupcevaz",
+  "upstream": {
+    "r16b_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16b-official-identity-authority-review-v1.json",
+    "r16b_git_blob_sha": "e2ea467296d3a12dd2fb6a53d90de42655158d97",
+    "r16b_decision": "R16B_IDENTITY_AUTHORITY_REVIEW_READY2_HOLD2",
+    "r16b_ready_product_ids": [
+      "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "5848640c-84ca-4079-9d9e-8f3113159fe1"
+    ],
+    "r16b_hold_product_ids": [
+      "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "976c13ef-8ebd-4b69-acae-0d070f6cd590"
+    ],
+    "r10_reference_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-ready3-subject-identity-preflight-v1.json",
+    "r10_git_blob_sha": "0b7115cbffcc9e5eccfbf751b4e8486785d60f2f"
+  },
+  "scope": {
+    "read_only": true,
+    "product_count": 2,
+    "allowed_product_ids": [
+      "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "5848640c-84ca-4079-9d9e-8f3113159fe1"
+    ],
+    "exact_subject_registration_authorized": false,
+    "intake_write_authorized": false,
+    "source_binding_repair_authorized": false,
+    "product_catalog_correction_authorized": false,
+    "fact_research_write_authorized": false
+  },
+  "production_snapshot": {
+    "subject_total": 51,
+    "registry_versions": [
+      {
+        "version": "product-fact-registry-cross-category-v1",
+        "checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+        "serializer": "product-fact-subject-identity-v1"
+      },
+      {
+        "version": "product-fact-registry-cross-category-v2",
+        "checksum": "923256ca2468b2af31e1b7026655739408035daf62d3ff40a7132eca22afddd7",
+        "serializer": "product-fact-subject-identity-v1"
+      }
+    ],
+    "registry_target_version": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "identity_serializer_version": "product-fact-subject-identity-v1",
+    "fact_policies": [
+      {
+        "state": "active",
+        "version": "product-fact-registry-cross-category-v1",
+        "fact_key": "barrier_support_claim",
+        "new_lineage_allowed": true
+      },
+      {
+        "state": "active",
+        "version": "product-fact-registry-cross-category-v1",
+        "fact_key": "primary_use_role",
+        "new_lineage_allowed": true
+      }
+    ],
+    "admin_rpc_privileges": [
+      {
+        "name": "admin_register_product_fact_subject_v1",
+        "anon_execute": false,
+        "identity_args": "p_actor_user_id uuid, p_request_id text, p_payload jsonb",
+        "security_definer": true,
+        "service_role_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "name": "admin_resolve_catalog_trust_intake_identity_v1",
+        "anon_execute": false,
+        "identity_args": "p_actor_user_id uuid, p_request_id text, p_payload jsonb",
+        "security_definer": true,
+        "service_role_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "name": "process_catalog_trust_product_v3",
+        "anon_execute": false,
+        "identity_args": "p_product_id uuid, p_registry_version text",
+        "security_definer": true,
+        "service_role_execute": true,
+        "authenticated_execute": false
+      }
+    ]
+  },
+  "function_contracts": {
+    "intake_identity": {
+      "exact_payload_keys": [
+        "intake_id",
+        "market",
+        "identity_resolution_version",
+        "official_source_locator",
+        "source_content_digest",
+        "resolution_reason",
+        "expected_updated_at"
+      ],
+      "optimistic_lock_field": "expected_updated_at",
+      "service_role_only": true,
+      "signature": "admin_resolve_catalog_trust_intake_identity_v1(uuid,text,jsonb)"
+    },
+    "subject_registration": {
+      "exact_payload_keys": [
+        "product_id",
+        "subject_semantic_key",
+        "subject_identity_serializer_version",
+        "variant_key",
+        "formulation_revision_key",
+        "formulation_label",
+        "identity_status",
+        "identity_resolution_version",
+        "current_state",
+        "market_applicability",
+        "region_applicability",
+        "valid_from",
+        "valid_to",
+        "predecessor_subject_id",
+        "supersession_kind"
+      ],
+      "idempotency_key": "subject_semantic_key",
+      "service_role_only": true,
+      "signature": "admin_register_product_fact_subject_v1(uuid,text,jsonb)"
+    },
+    "reconciliation": {
+      "preserves_identity_authority": true,
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "service_role_only": true,
+      "signature": "process_catalog_trust_product_v3(uuid,text)"
+    }
+  },
+  "items": [
+    {
+      "research_order": 7,
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "catalog_name": "비자 시카 밤 EX",
+      "catalog_size_ml": 40,
+      "category": "moisturizer_balm",
+      "official_page_id": "34622",
+      "official_kr_url": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+      "market": "KR",
+      "identity_presentation_preflight": "PASS_EXACT_BRAND_LISTING_NAME_AND_SIZE",
+      "product_variant_preflight": "PARTIAL_CURRENT_LISTING_NO_FORMULA_REVISION_PROOF",
+      "source_capture": {
+        "source_mode": "OFFICIAL_INDEXED_WEB_TEXT",
+        "original_response_bytes_saved": false,
+        "original_response_sha256": null,
+        "source_content_digest": null,
+        "official_page_retrieval": "INDEXED_PAGE_READABLE_DIRECT_RUNTIME_DNS_UNAVAILABLE",
+        "identity_capture_ready_for_registration": false
+      },
+      "provisional_identity": {
+        "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+        "market_applicability": "KR",
+        "variant_key": null,
+        "formulation_revision_key": null,
+        "identity_resolution_version": "v21-8h-r16c-p1-preflight-research-only",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "subject_semantic_key": null,
+        "subject_registration_payload": null
+      },
+      "collision_checks": {
+        "existing_subject_for_product": "PASS_ZERO_EXISTING_SUBJECTS",
+        "subject_semantic_key_collision": "NOT_EVALUABLE_NO_FINAL_KEY",
+        "formulation_revision_key_collision": "NOT_EVALUABLE_NO_SOURCE_DIGEST",
+        "identity_serializer_consistent": true
+      },
+      "production_prestate": {
+        "intake": {
+          "id": "4c4c737f-ea6c-488d-997a-124eeb6a5894",
+          "market": null,
+          "subject_id": null,
+          "updated_at": "2026-09-21T00:53:57.499289+09:00",
+          "trust_state": "REVIEW_REQUIRED",
+          "identity_state": "SUBJECT_CREATION_REQUIRED",
+          "preflight_fingerprint": "cb44fb68a83c120aeaf421664dc76fc0746d7591f5b026eaae522dbbfaa7c847",
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        },
+        "subject_count": 0,
+        "research_tasks": [
+          {
+            "id": "1251839f-d258-48f3-99f2-f7b37c2988a3",
+            "state": "REVIEW_REQUIRED",
+            "fact_key": "primary_use_role",
+            "subject_id": null,
+            "attempt_count": 0,
+            "registry_version": "product-fact-registry-cross-category-v1"
+          },
+          {
+            "id": "1c9b7a19-c238-4434-9338-6ba4285a9422",
+            "state": "REVIEW_REQUIRED",
+            "fact_key": "barrier_support_claim",
+            "subject_id": null,
+            "attempt_count": 0,
+            "registry_version": "product-fact-registry-cross-category-v1"
+          }
+        ],
+        "source_bindings": [
+          {
+            "url": "https://www.hwahae.co.kr/goods/50252",
+            "scope": "product_subject_unresolved",
+            "state": "resolved",
+            "source_name": "hwahae"
+          }
+        ],
+        "trust_observations": 0,
+        "evidence_candidates": 0
+      },
+      "registration_preflight": {
+        "authorized": false,
+        "prerequisites": [
+          "ARCHIVE_REPRODUCIBLE_FIRST_PARTY_SOURCE_BYTES",
+          "COMPUTE_REAL_SOURCE_DIGEST",
+          "VERIFY_FORMULATION_REVISION",
+          "MATERIALIZE_CANONICAL_SUBJECT_SEMANTIC_KEY",
+          "RECHECK_ZERO_KEY_COLLISIONS",
+          "RECHECK_INTAKE_OPTIMISTIC_LOCK_AT_WRITE"
+        ],
+        "rpc_execute_called": false
+      },
+      "mutations": {
+        "catalog_intake": 0,
+        "subjects": 0,
+        "research_tasks": 0,
+        "evidence": 0,
+        "product_facts": 0,
+        "recommendations": 0
+      }
+    },
+    {
+      "research_order": 9,
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "catalog_name": "아쿠아 오아시스 수분 젤크림",
+      "catalog_size_ml": 80,
+      "category": "moisturizer_gel",
+      "official_page_id": "99",
+      "official_kr_url": "https://www.snature.kr/product/detail.html?cate_no=0&display_group=0&product_no=99",
+      "market": "KR",
+      "identity_presentation_preflight": "PASS_EXACT_BRAND_LISTING_NAME_AND_SIZE",
+      "product_variant_preflight": "PARTIAL_CURRENT_LISTING_NO_FORMULA_REVISION_PROOF",
+      "source_capture": {
+        "source_mode": "OFFICIAL_INDEXED_WEB_TEXT",
+        "original_response_bytes_saved": false,
+        "original_response_sha256": null,
+        "source_content_digest": null,
+        "official_page_retrieval": "INDEXED_PAGE_READABLE_DIRECT_RUNTIME_DNS_UNAVAILABLE",
+        "identity_capture_ready_for_registration": false
+      },
+      "provisional_identity": {
+        "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+        "market_applicability": "KR",
+        "variant_key": null,
+        "formulation_revision_key": null,
+        "identity_resolution_version": "v21-8h-r16c-p1-preflight-research-only",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "subject_semantic_key": null,
+        "subject_registration_payload": null
+      },
+      "collision_checks": {
+        "existing_subject_for_product": "PASS_ZERO_EXISTING_SUBJECTS",
+        "subject_semantic_key_collision": "NOT_EVALUABLE_NO_FINAL_KEY",
+        "formulation_revision_key_collision": "NOT_EVALUABLE_NO_SOURCE_DIGEST",
+        "identity_serializer_consistent": true
+      },
+      "production_prestate": {
+        "intake": {
+          "id": "1893fed6-84a2-49ec-8a7b-caf3ee0ab2df",
+          "market": null,
+          "subject_id": null,
+          "updated_at": "2026-09-21T00:53:50.755843+09:00",
+          "trust_state": "REVIEW_REQUIRED",
+          "identity_state": "SUBJECT_CREATION_REQUIRED",
+          "preflight_fingerprint": "cb44fb68a83c120aeaf421664dc76fc0746d7591f5b026eaae522dbbfaa7c847",
+          "identity_resolution_version": "trust-phase7b-legacy-materialization-v1"
+        },
+        "subject_count": 0,
+        "research_tasks": [
+          {
+            "id": "13a959d7-c94e-4532-af79-a32d4f4c15fa",
+            "state": "REVIEW_REQUIRED",
+            "fact_key": "primary_use_role",
+            "subject_id": null,
+            "attempt_count": 0,
+            "registry_version": "product-fact-registry-cross-category-v1"
+          },
+          {
+            "id": "b206bbf5-2571-4407-9969-fa0348abb365",
+            "state": "REVIEW_REQUIRED",
+            "fact_key": "barrier_support_claim",
+            "subject_id": null,
+            "attempt_count": 0,
+            "registry_version": "product-fact-registry-cross-category-v1"
+          }
+        ],
+        "source_bindings": [
+          {
+            "url": "https://www.hwahae.co.kr/rankings?english_name=category&theme_id=4199",
+            "scope": "product_subject_unresolved",
+            "state": "resolved",
+            "source_name": "hwahae"
+          }
+        ],
+        "trust_observations": 0,
+        "evidence_candidates": 0
+      },
+      "registration_preflight": {
+        "authorized": false,
+        "prerequisites": [
+          "ARCHIVE_REPRODUCIBLE_FIRST_PARTY_SOURCE_BYTES",
+          "COMPUTE_REAL_SOURCE_DIGEST",
+          "VERIFY_FORMULATION_REVISION",
+          "MATERIALIZE_CANONICAL_SUBJECT_SEMANTIC_KEY",
+          "RECHECK_ZERO_KEY_COLLISIONS",
+          "RECHECK_INTAKE_OPTIMISTIC_LOCK_AT_WRITE"
+        ],
+        "rpc_execute_called": false
+      },
+      "mutations": {
+        "catalog_intake": 0,
+        "subjects": 0,
+        "research_tasks": 0,
+        "evidence": 0,
+        "product_facts": 0,
+        "recommendations": 0
+      }
+    }
+  ],
+  "hold_exclusions": {
+    "hold_product_ids": [
+      "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "976c13ef-8ebd-4b69-acae-0d070f6cd590"
+    ],
+    "zeroid_hold_maintained": true,
+    "anua_capsule_name_hold_maintained": true,
+    "esnature_160ml_presentation_hold_maintained": true,
+    "unreviewed_p1_products": 7
+  },
+  "summary": {
+    "reviewed": 2,
+    "exact_kr_listing_matches": 2,
+    "existing_subject_conflicts": 0,
+    "clean_legacy_intakes": 2,
+    "pristine_v1_tasks": 4,
+    "service_role_only_mutators": 3,
+    "unproven_final_semantic_keys": 2,
+    "unproven_formulation_revisions": 2,
+    "production_writes": 0
+  },
+  "terminal": "R16C_READ_ONLY_PRESTATE_PASS_REGISTRATION_BLOCKED_ON_SOURCE_CAPTURE_AND_KEY_MATERIALIZATION",
+  "next_gate": {
+    "stage": "V2.1-8H-R16D_P1_OFFICIAL_SOURCE_CAPTURE_AND_CANONICAL_IDENTITY_MATERIALIZATION",
+    "status": "BLOCKED_UNTIL_AUTHENTICATED_FIRST_PARTY_CAPTURE",
+    "preconditions": [
+      "Persist independently reproducible first-party exact-KR SKU source bytes for each target",
+      "Compute source content digests only from actual captured canonical bytes",
+      "Establish formulation_revision_key from governed identity policy, including product variant and revision",
+      "Derive subject_semantic_key with registry serializer v1 and check global uniqueness",
+      "Refresh intake updated_at and verify optimistic-lock at registration gate",
+      "R16D must separately approve service_role-only write after all checks"
+    ],
+    "subject_registration_authorized": false,
+    "automatic_registration_authorized": false
+  },
+  "invariance": {
+    "production_db_writes": 0,
+    "subject_writes": 0,
+    "intake_writes": 0,
+    "source_binding_writes": 0,
+    "registry_delta": 0,
+    "product_fact_writes": 0,
+    "review_writes": 0,
+    "recommendation_writes": 0,
+    "non_numeric_pda": true,
+    "numeric_contribution_delta": 0,
+    "ranking_effect_delta": 0,
+    "eligibility_delta": 0,
+    "candidate_count": 164,
+    "scenario_count": 12,
+    "evaluation_count": 1968,
+    "public_activation": false,
+    "production_cutover_authorized": false,
+    "outdoor_rankable_signal_authorized": false,
+    "recommendation_activation_authorized": false
+  }
+}
