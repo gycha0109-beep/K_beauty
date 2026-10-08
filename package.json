@@ -122,6 +122,7 @@
     "verify:face-lab-v2-catalog-product-try-on-binding": "node scripts/verify-face-lab-v2-catalog-product-try-on-binding.mjs",
     "verify:face-lab-v2-catalog-reference-resolver": "node scripts/verify-face-lab-v2-catalog-reference-resolver.mjs",
     "verify:face-lab-v2-visual-try-on-look-session": "node scripts/verify-face-lab-v2-visual-try-on-look-session.mjs",
+    "verify:face-lab-v2-try-on-catalog-read-bridge": "node scripts/verify-face-lab-v2-try-on-catalog-read-bridge.mjs",
     "run:face-lab-v2-visual-try-on-canary": "node scripts/run-face-lab-v2-visual-try-on-canary.mjs",
     "verify:face-lab-v2-visual-try-on-canary": "node scripts/verify-face-lab-v2-visual-try-on-canary.mjs",
     "run:face-lab-v2-g-e3-private-wave": "node scripts/run-face-lab-v2-g-e3-private-wave.mjs",
