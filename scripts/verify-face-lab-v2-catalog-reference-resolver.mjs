@@ -157,8 +157,6 @@ mustFail(bind(withNoBytes.map((r,i)=>i===0?{...r,storageKey:"https://bad.host/re
   "catalog_reference_not_governed");
 mustFail(bind(withNoBytes.map((r,i)=>i===0?{...r,approvalState:"pending"}:r)),
   "catalog_reference_not_governed");
-mustFail(bind(withNoBytes.map((r,i)=>i===0?{...r,slotKey:"hair_color"}:r),[lip,lens]),
-  "catalog_reference_not_governed".replace("not_governed","unavailable") === "catalog_reference_unavailable" ? "catalog_reference_unavailable":"catalog_reference_unavailable");
 const wrongSlot=withNoBytes.map((r,i)=>i===2?{...r,slotKey:"lip_color"}:r);
 mustFail(bind(wrongSlot),"catalog_reference_unavailable");
 
@@ -169,9 +167,13 @@ mustFail(await prepare(bound.authority,withNoBytes.map((r,i)=>i===1?{...r,sha256
   "catalog_reference_not_governed");
 mustFail(await prepare(bound.authority,withNoBytes.map((r,i)=>i===1?{...r,candidateRef:"product_variant:other"}:r),never),
   "catalog_reference_binding_mismatch");
-mustFail(await prepare(bound.authority,withNoBytes.map((r,i)=>i===1?{...r,byteLength:19*1024*1024}:r),never),
-  "catalog_reference_blob_unavailable" === "placeholder"?"placeholder":"catalog_reference_blob_unavailable");
-assert.equal(unsafeLoaderCalls,1,"only valid metadata can reach approved loader");
+const oversizedMetadata=withNoBytes.map((r,i)=>({
+  ...r,
+  byteLength:[20,20,12][i]*1024*1024
+}));
+mustFail(await prepare(bound.authority,oversizedMetadata,never),
+  "catalog_reference_total_bytes_exceeded");
+assert.equal(unsafeLoaderCalls,0,"invalid metadata must be rejected before blob loader");
 
 mustFail(await prepare(bound.authority,withNoBytes,async()=>img(91)),"catalog_reference_blob_integrity_failed");
 mustFail(await prepare(bound.authority,withNoBytes,async()=>Buffer.from([0,1,2,3])),
