@@ -1,0 +1,410 @@
+{
+  "version": "barrier-support-p1-r16b-official-identity-authority-review-v1",
+  "stage": "V2.1-8H-R16B_P1_OFFICIAL_IDENTITY_AUTHORITY_REVIEW",
+  "reviewed_on": "2026-10-09",
+  "baseline_main_sha": "4d8f569630da53507f5e624e3daf40f92b99b56f",
+  "production_project": "bygrczggxfuisupcevaz",
+  "upstream": {
+    "r16a_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-official-identity-source-preflight-v1.json",
+    "r16a_git_blob_sha": "f50350fa7c59201f5dd5081d6695734feef3ae02",
+    "r16a_terminal": "R16A_P1_SOURCE_PREFLIGHT_READY3_HOLD1_DEFERRED7",
+    "original_r8_priority_preserved": true
+  },
+  "scope": {
+    "research_orders": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "products_reviewed": 4,
+    "market": "KR",
+    "review_kind": "FIRST_PARTY_IDENTITY_AUTHORITY_ONLY",
+    "subject_registration_authorized": false,
+    "intake_identity_write_authorized": false,
+    "source_binding_repair_authorized": false,
+    "product_catalog_rewrite_authorized": false,
+    "fact_evidence_ingest_authorized": false,
+    "fact_confirmation_authorized": false,
+    "recommendation_activation_authorized": false
+  },
+  "source_policy": {
+    "brand_operated_first_party_must_anchor_product_and_presentation": true,
+    "secondary_listing_not_independent_identity_authority": true,
+    "indexed_official_text_accepted_for_research_review_only": true,
+    "full_original_response_bytes_collected": false,
+    "source_content_digest": null,
+    "canonical_identity_digest": null,
+    "source_snapshot_archive_reference": null,
+    "no_fabricated_digest": true,
+    "exact_formulation_revision_not_proven_by_listing": true,
+    "source_capture_required_before_governed_subject_registration": true,
+    "missing_not_false": true,
+    "bundle_volume_not_single_container": true,
+    "near_name_token_difference_requires_review": true,
+    "cross_product_or_serum_token_transfer_forbidden": true
+  },
+  "items": [
+    {
+      "research_order": 6,
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "brand": "에스네이처",
+      "catalog_name": "아쿠아 스쿠알란 수분크림",
+      "catalog_size_ml": 160,
+      "category": "moisturizer_cream",
+      "prior_r16a_decision": "HOLD_PRESENTATION",
+      "prior_historical_hold": {
+        "decision": "HOLD",
+        "reason_code": "PRESENTATION_SCOPE_UNRESOLVED"
+      },
+      "production_prestate": {
+        "subject_count": 0,
+        "intake_id": "ee3b675d-1b92-4144-88e0-2a984b3d7cec",
+        "intake_identity_state": "SUBJECT_CREATION_REQUIRED",
+        "intake_trust_state": "REVIEW_REQUIRED",
+        "intake_subject_id": null,
+        "research_tasks": [
+          {
+            "id": "35090d4c-9c0c-419b-86a2-a572233eca29",
+            "fact_key": "primary_use_role",
+            "state": "REVIEW_REQUIRED",
+            "attempts": 0
+          },
+          {
+            "id": "1b6ec496-6a94-4159-a5ec-f3a5a801d295",
+            "fact_key": "barrier_support_claim",
+            "state": "REVIEW_REQUIRED",
+            "attempts": 0
+          }
+        ],
+        "source_binding_url": "https://www.hwahae.co.kr/goods/45194",
+        "source_binding_state": "resolved",
+        "source_binding_name": "hwahae",
+        "trust_observations_count": 0,
+        "evidence_candidates_count": 0
+      },
+      "decision": "HOLD_PRESENTATION_SCOPE",
+      "authority_level": "INSUFFICIENT_EXACT_CATALOG_PRESENTATION",
+      "reason_code": "CATALOG_160ML_BUNDLE_UNIT_AUTHORITY_UNRESOLVED",
+      "current_kr_sku_identity_established": false,
+      "normalized_sku_authority": null,
+      "market": "KR",
+      "sources": [
+        {
+          "url": "https://snature.kr/product/detail.html?product_no=74",
+          "publisher": "S.NATURE KR",
+          "source_mode": "FIRST_PARTY_PREVIOUSLY_IDENTIFIED_BRAND_PRODUCT",
+          "observed_name": "아쿠아 스쿠알란 수분크림",
+          "observed_size_ml": 60,
+          "role": "SINGLE_CONTAINER_ALTERNATIVE",
+          "raw_content_bytes_obtained": false
+        },
+        {
+          "url": "https://www.snature.kr/product/detail.html?product_no=151",
+          "publisher": "S.NATURE KR",
+          "source_mode": "FIRST_PARTY_PREVIOUSLY_IDENTIFIED_BRAND_PRODUCT",
+          "observed_name": "아쿠아 스쿠알란 수분크림",
+          "observed_size_ml": 80,
+          "role": "SINGLE_CONTAINER_ALTERNATIVE",
+          "raw_content_bytes_obtained": false
+        },
+        {
+          "url": "https://www.hwahae.co.kr/goods/45194",
+          "publisher": "Hwahae",
+          "source_mode": "SECONDARY_BUNDLE_R16A",
+          "observed_name": "아쿠아 스쿠알란 수분크림 80ml 더블+세럼 10ml 세트",
+          "observed_size_ml": 160,
+          "role": "BUNDLE_NOT_SINGLE_SKU",
+          "raw_content_bytes_obtained": false
+        }
+      ],
+      "unresolved": [
+        "160ml 카탈로그 행의 단품/세트 의미를 브랜드가 직접 확정해야 함",
+        "기존 PRESENTATION_SCOPE_UNRESOLVED HOLD와 등록 금지를 유지"
+      ],
+      "name_variant_review_required": false,
+      "subject_registration_authorized": false,
+      "intake_write_authorized": false,
+      "catalog_mutation_authorized": false,
+      "product_fact_confirmed": false
+    },
+    {
+      "research_order": 7,
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "catalog_name": "비자 시카 밤 EX",
+      "catalog_size_ml": 40,
+      "category": "moisturizer_balm",
+      "prior_r16a_decision": "READY",
+      "prior_historical_hold": null,
+      "production_prestate": {
+        "subject_count": 0,
+        "intake_id": "4c4c737f-ea6c-488d-997a-124eeb6a5894",
+        "intake_identity_state": "SUBJECT_CREATION_REQUIRED",
+        "intake_trust_state": "REVIEW_REQUIRED",
+        "intake_subject_id": null,
+        "research_tasks": [
+          {
+            "id": "1251839f-d258-48f3-99f2-f7b37c2988a3",
+            "fact_key": "primary_use_role",
+            "state": "REVIEW_REQUIRED",
+            "attempts": 0
+          },
+          {
+            "id": "1c9b7a19-c238-4434-9338-6ba4285a9422",
+            "fact_key": "barrier_support_claim",
+            "state": "REVIEW_REQUIRED",
+            "attempts": 0
+          }
+        ],
+        "source_binding_url": "https://www.hwahae.co.kr/goods/50252",
+        "source_binding_state": "resolved",
+        "source_binding_name": "hwahae",
+        "trust_observations_count": 0,
+        "evidence_candidates_count": 0
+      },
+      "decision": "READY_IDENTITY_PREFLIGHT_ONLY",
+      "authority_level": "KR_FIRST_PARTY_EXACT_LISTING_TITLE_AND_ACTIVE_DETAIL",
+      "reason_code": "BRAND_CURRENT_KR_PRODUCT_40ML_MATCH",
+      "current_kr_sku_identity_established": true,
+      "normalized_sku_authority": {
+        "product_name": "비자 시카 밤 EX",
+        "presentation_ml": 40,
+        "packaging": "single-product",
+        "brand": "이니스프리",
+        "product_page_id": "34622",
+        "catalog_alias_review_required": false
+      },
+      "market": "KR",
+      "sources": [
+        {
+          "url": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+          "publisher": "INNISFREE KR",
+          "source_mode": "OFFICIAL_INDEX_TITLE_AND_LIVE_PRODUCT_DETAIL",
+          "observed_name": "비자 시카 밤 EX",
+          "observed_size_ml": 40,
+          "role": "EXACT_TARGET_BRAND_PAGE",
+          "raw_content_bytes_obtained": false
+        }
+      ],
+      "unresolved": [
+        "공식 인덱스 제목에 40mL 존재하나 라이브 본문의 용량 고시 항목은 값이 비어 있어 원문 아카이브·용량/포뮬러 지문 추가 고정 필요",
+        "R16C에서 현재 SKU 직접 캡처 및 canonical identity digest를 별도 확정해야 함"
+      ],
+      "name_variant_review_required": false,
+      "subject_registration_authorized": false,
+      "intake_write_authorized": false,
+      "catalog_mutation_authorized": false,
+      "product_fact_confirmed": false
+    },
+    {
+      "research_order": 8,
+      "product_id": "976c13ef-8ebd-4b69-acae-0d070f6cd590",
+      "brand": "아누아",
+      "catalog_name": "피디알엔 히알루론산캡슐 100 수분크림",
+      "catalog_size_ml": 60,
+      "category": "moisturizer_cream",
+      "prior_r16a_decision": "READY",
+      "prior_historical_hold": null,
+      "production_prestate": {
+        "subject_count": 0,
+        "intake_id": "2b353ba2-f2ff-4ab6-aa74-55e271f8c1ab",
+        "intake_identity_state": "SUBJECT_CREATION_REQUIRED",
+        "intake_trust_state": "REVIEW_REQUIRED",
+        "intake_subject_id": null,
+        "research_tasks": [
+          {
+            "id": "14ff2db7-331b-4fe2-a96f-f7399df9374c",
+            "fact_key": "primary_use_role",
+            "state": "REVIEW_REQUIRED",
+            "attempts": 0
+          },
+          {
+            "id": "e2645a77-5119-4952-8173-04e67dfa5cf8",
+            "fact_key": "barrier_support_claim",
+            "state": "REVIEW_REQUIRED",
+            "attempts": 0
+          }
+        ],
+        "source_binding_url": "https://www.hwahae.co.kr/goods/70767",
+        "source_binding_state": "resolved",
+        "source_binding_name": "hwahae",
+        "trust_observations_count": 0,
+        "evidence_candidates_count": 0
+      },
+      "decision": "HOLD_NAME_VARIANT_AUTHORITY",
+      "authority_level": "KR_FIRST_PARTY_CREAM_60ML_BUT_CATALOG_EXTRA_TOKEN",
+      "reason_code": "CATALOG_CAPSULE_TOKEN_ABSENT_FROM_BRAND_OFFICIAL_CREAM_NAME",
+      "current_kr_sku_identity_established": false,
+      "normalized_sku_authority": null,
+      "market": "KR",
+      "sources": [
+        {
+          "url": "https://www.anua.kr/product/detail.html?cate_no=83&display_group=1&product_no=402",
+          "publisher": "ANUA KR",
+          "source_mode": "OFFICIAL_INDEXED_PRODUCT_INFORMATION",
+          "observed_name": "아누아 피디알엔 히알루론산 100 수분 크림",
+          "observed_size_ml": 60,
+          "role": "LIKELY_TARGET_CREAM_NOT_IDENTITY_CLOSED",
+          "raw_content_bytes_obtained": false
+        },
+        {
+          "url": "https://www.hwahae.co.kr/goods/69027",
+          "publisher": "Hwahae",
+          "source_mode": "SECONDARY_CORROBORATION_CREAM_60ML",
+          "observed_name": "피디알엔 히알루론산 100 수분 크림",
+          "observed_size_ml": 60,
+          "role": "NAME_AND_VOLUME_CORROBORATION_ONLY",
+          "raw_content_bytes_obtained": false
+        }
+      ],
+      "unresolved": [
+        "카탈로그 명칭 '피디알엔 히알루론산캡슐 100 수분크림'의 '캡슐' 토큰이 공식 크림 상품명에 없음",
+        "별도 아누아 '캡슐 100 세럼' 명칭과 크림 표기가 섞인 데이터 오염 가능성을 확인하되 동일 상품임을 추론으로 확정하지 말 것",
+        "브랜드 공식 상품 alias/영수증·원본 카탈로그 증빙 또는 승인된 catalog name 정정 게이트가 필요"
+      ],
+      "name_variant_review_required": true,
+      "subject_registration_authorized": false,
+      "intake_write_authorized": false,
+      "catalog_mutation_authorized": false,
+      "product_fact_confirmed": false
+    },
+    {
+      "research_order": 9,
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "catalog_name": "아쿠아 오아시스 수분 젤크림",
+      "catalog_size_ml": 80,
+      "category": "moisturizer_gel",
+      "prior_r16a_decision": "READY",
+      "prior_historical_hold": null,
+      "production_prestate": {
+        "subject_count": 0,
+        "intake_id": "1893fed6-84a2-49ec-8a7b-caf3ee0ab2df",
+        "intake_identity_state": "SUBJECT_CREATION_REQUIRED",
+        "intake_trust_state": "REVIEW_REQUIRED",
+        "intake_subject_id": null,
+        "research_tasks": [
+          {
+            "id": "13a959d7-c94e-4532-af79-a32d4f4c15fa",
+            "fact_key": "primary_use_role",
+            "state": "REVIEW_REQUIRED",
+            "attempts": 0
+          },
+          {
+            "id": "b206bbf5-2571-4407-9969-fa0348abb365",
+            "fact_key": "barrier_support_claim",
+            "state": "REVIEW_REQUIRED",
+            "attempts": 0
+          }
+        ],
+        "source_binding_url": "https://www.hwahae.co.kr/rankings?english_name=category&theme_id=4199",
+        "source_binding_state": "resolved",
+        "source_binding_name": "hwahae",
+        "trust_observations_count": 0,
+        "evidence_candidates_count": 0
+      },
+      "decision": "READY_IDENTITY_PREFLIGHT_ONLY",
+      "authority_level": "KR_FIRST_PARTY_EXACT_PRODUCT_ACTIVE_DETAIL",
+      "reason_code": "BRAND_CURRENT_KR_PRODUCT_80ML_MATCH",
+      "current_kr_sku_identity_established": true,
+      "normalized_sku_authority": {
+        "product_name": "아쿠아 오아시스 수분 젤크림",
+        "presentation_ml": 80,
+        "packaging": "single-product",
+        "brand": "에스네이처",
+        "product_page_id": "99",
+        "catalog_alias_review_required": false
+      },
+      "market": "KR",
+      "sources": [
+        {
+          "url": "https://www.snature.kr/product/detail.html?cate_no=0&display_group=0&product_no=99",
+          "publisher": "S.NATURE KR",
+          "source_mode": "OFFICIAL_INDEXED_PRODUCT_DETAIL_WITH_CURRENT_ORDER_SECTION",
+          "observed_name": "아쿠아 오아시스 수분 젤크림 80ml",
+          "observed_size_ml": 80,
+          "role": "EXACT_TARGET_BRAND_PAGE",
+          "raw_content_bytes_obtained": false
+        },
+        {
+          "url": "https://m.snature.kr/product/detail.html?product_no=99",
+          "publisher": "S.NATURE KR",
+          "source_mode": "OFFICIAL_MOBILE_PRODUCT_DETAIL_CROSSCHECK",
+          "observed_name": "아쿠아 오아시스 수분 젤크림 80ml",
+          "observed_size_ml": 80,
+          "role": "BRAND_SAME_PRODUCT_ID_RECHECK",
+          "raw_content_bytes_obtained": false
+        }
+      ],
+      "unresolved": [
+        "제품의 현재 리뉴얼/성분 변경 여부와 최초 제조 변형의 지문을 R16C에서 별도 검증",
+        "화해 랭킹 URL source binding 정정은 독립 허가 전까지 금지"
+      ],
+      "name_variant_review_required": false,
+      "subject_registration_authorized": false,
+      "intake_write_authorized": false,
+      "catalog_mutation_authorized": false,
+      "product_fact_confirmed": false
+    }
+  ],
+  "summary": {
+    "reviewed_products": 4,
+    "r16a_ready_rechecked": 3,
+    "ready_for_r16c_identity_preflight": 2,
+    "hold_name_variant": 1,
+    "hold_presentation": 1,
+    "production_writes": 0,
+    "new_fact_confirmations": 0,
+    "source_bytes_captured": 0,
+    "body_hashes_claimed": 0
+  },
+  "invariance": {
+    "hosted_writes": 0,
+    "source_binding_writes": 0,
+    "subject_writes": 0,
+    "trust_intake_writes": 0,
+    "catalog_product_writes": 0,
+    "research_task_writes": 0,
+    "evidence_writes": 0,
+    "fact_instance_writes": 0,
+    "confirmation_writes": 0,
+    "review_writes": 0,
+    "recommendation_writes": 0,
+    "registry_changes": 0,
+    "numeric_pda": false,
+    "numeric_contribution_delta": 0,
+    "ranking_delta": 0,
+    "eligibility_delta": 0,
+    "production_cutover_authorized": false,
+    "outdoor_rankable_signal_authorized": false,
+    "public_activation": false,
+    "recommendation_activation_authorized": false,
+    "zeroid_r14c_hold_released": false,
+    "candidate_products_frozen": 164,
+    "user_scenarios_frozen": 12,
+    "evaluations_frozen": 1968
+  },
+  "decision": "R16B_IDENTITY_AUTHORITY_REVIEW_READY2_HOLD2",
+  "next_gate": {
+    "stage": "V2.1-8H-R16C_P1_READY2_SUBJECT_IDENTITY_PREFLIGHT",
+    "ready_product_ids": [
+      "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "5848640c-84ca-4079-9d9e-8f3113159fe1"
+    ],
+    "hold_product_ids": [
+      "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "976c13ef-8ebd-4b69-acae-0d070f6cd590"
+    ],
+    "status": "RESEARCH_AUTHORITY_READY_FOR_SEPARATE_READ_ONLY_PREFLIGHT",
+    "pre_registration_requirements": [
+      "verify exact brand-operated KR SKU again and archive reproducible first-party bytes",
+      "compute digest from actual captured canonical source, not index summary",
+      "confirm no subject semantic/formulation-key collisions and valid intake optimistic lock",
+      "preserve R16B review-only and require distinct authorization for RPC writes"
+    ],
+    "automatic_registration_authorized": false,
+    "unreviewed_p1_count": 7,
+    "product_fact_work_authorized": false
+  }
+}
