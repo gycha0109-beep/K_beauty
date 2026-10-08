@@ -155,6 +155,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-zeroid-p0-presentation-size-recovery-recheck-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-zeroid-p0-first-party-visual-presentation-capture-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-zeroid-p0-current-sku-visual-lineage-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p0-remaining-ready-official-evidence-research-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
