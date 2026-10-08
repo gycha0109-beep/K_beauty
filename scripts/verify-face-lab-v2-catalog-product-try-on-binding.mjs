@@ -27,6 +27,7 @@ function curated({
   productId = P1,
   subjectId = S1,
   shade = "coral-01",
+  subjectVariantKey = "formula-v1",
   category = "lip",
   capability = "lip_color",
   includeShadeProfile = true
@@ -42,10 +43,19 @@ function curated({
     subject: {
       subject_id: subjectId,
       product_id: productId,
-      variant_key: shade,
+      variant_key: subjectVariantKey,
       identity_status: "resolved",
       current_state: "current",
       subject_semantic_key: "a".repeat(64)
+    },
+    subjectVariantBridge: {
+      productId,
+      subjectId,
+      variantId: shade,
+      subjectVariantKey,
+      mappingVersion: "reviewed-subject-variant-v1",
+      approvalState: "approved",
+      evidenceRefs: [`catalog_variant_review:${productId}-${shade}`]
     },
     taxonomyVersion: {
       version,
@@ -150,6 +160,15 @@ assert.equal(bound.slotKey, "lip_color");
 assert.equal(bound.selection.binding.candidate.entityType, "product_variant");
 assert.equal(bound.selection.binding.attributeSnapshot.attributes.hueFamily, "coral_orange");
 assert.equal(bound.imageModelInvoked, false);
+// Separate formulation identity and shade identity, including a nullable formulation key.
+const sameKeyWithoutBridge = structuredClone(lip);
+sameKeyWithoutBridge.subject.variant_key = sameKeyWithoutBridge.variant.variantId;
+sameKeyWithoutBridge.subjectVariantBridge.subjectVariantKey = sameKeyWithoutBridge.subject.variant_key;
+sameKeyWithoutBridge.subjectVariantBridge.approvalState = "pending";
+assert.equal(buildFaceLabCatalogProductTryOnSelection(sameKeyWithoutBridge).reason, "subject_variant_mapping_not_approved");
+const noFormulationVariant = curated({ subjectVariantKey: null });
+assert.equal(buildFaceLabCatalogProductTryOnSelection(noFormulationVariant).status, "ready");
+assert.equal(bound.selection.binding.candidate.candidateRef, `product_variant:${P1}:coral-01`);
 
 const composed = buildFaceLabCatalogProductTryOnAuthority({
   sessionId: "catalog-selections-1",
@@ -172,14 +191,20 @@ const cases = [
   ["product id mismatch", p => {p.product.id = P2;}, "subject_product_identity_mismatch"],
   ["unresolved subject", p => {p.subject.identity_status = "ambiguous";}, "subject_variant_not_current_resolved"],
   ["historical subject", p => {p.subject.current_state = "historical";}, "subject_variant_not_current_resolved"],
-  ["missing variant", p => {p.subject.variant_key = null;}, "subject_variant_not_current_resolved"],
+  ["missing bridge", p => {delete p.subjectVariantBridge;}, "subject_variant_mapping_not_approved"],
+  ["unapproved bridge", p => {p.subjectVariantBridge.approvalState = "pending";}, "subject_variant_mapping_not_approved"],
+  ["bridge subject mismatch", p => {p.subjectVariantBridge.subjectId = S2;}, "subject_variant_mapping_not_approved"],
+  ["bridge variant mismatch", p => {p.subjectVariantBridge.variantId = "rose-02";}, "subject_variant_mapping_not_approved"],
+  ["bridge key drift", p => {p.subject.variant_key = "new-formula";}, "subject_variant_mapping_not_approved"],
+  ["bridge proof absent", p => {p.subjectVariantBridge.evidenceRefs = [];}, "subject_variant_mapping_not_approved"],
+  ["subject variant key missing", p => {delete p.subject.variant_key;}, "subject_variant_not_current_resolved"],
   ["shadow taxonomy", p => {p.taxonomyVersion.authority_mode = "shadow_only";}, "taxonomy_not_canonical"],
   ["shadow assignment", p => {p.taxonomyAssignment.assignment_state = "shadow";}, "product_taxonomy_assignment_not_canonical"],
   ["reserved category", p => {p.taxonomyTerm.lifecycle_state = "reserved";}, "taxonomy_category_term_not_active"],
   ["mismatch category", p => {p.categoryBinding.categoryTermId = "wrong";}, "category_slot_mapping_not_governed"],
   ["unreviewed mapping", p => {p.categoryBinding.approvalState = "pending";}, "category_slot_mapping_not_governed"],
   ["wrong slot", p => {p.slotKey = "hair_color";}, "slot_not_in_governed_category"],
-  ["subject variant drift", p => {p.variant.variantId = "shade-02";}, "variant_subject_identity_mismatch"],
+  ["variant identity drift", p => {p.variant.variantId = "shade-02";}, "subject_variant_mapping_not_approved"],
   ["subject provenance absent", p => {p.variant.sourceVariantRefs = [];}, "variant_subject_provenance_missing"],
   ["ungoverned capability", p => {p.capabilityClaims[0].proofClass = "category_inference";}, "variant_candidate_not_authorized"],
   ["non-supported capability", p => {p.capabilityClaims[0].supportState = "unsupported";}, "variant_candidate_not_authorized"],
@@ -202,7 +227,7 @@ assert.equal(duplication.imageModelInvoked, false);
 
 const catalogRequest = {
   productId: P1,
-  variantKey: "coral-01",
+  variantId: "coral-01",
   slotKey: "lip_color"
 };
 const readCatalogProduct = async id => ({ id });
@@ -223,7 +248,8 @@ assert.equal((await tryRead({ lookupCatalogProduct: async () => { throw Error("o
 assert.equal((await tryRead({ readApprovedTryOnBundle: async () => null })).reason, "approved_try_on_projection_missing");
 assert.equal((await tryRead({ readApprovedTryOnBundle: async () => { throw Error("unavailable"); } })).reason, "approved_try_on_projection_read_failed");
 assert.equal((await tryRead({ readApprovedTryOnBundle: async () => ({ ...lip, slotKey: "hair_color" }) })).reason, "approved_try_on_projection_identity_mismatch");
-assert.equal((await tryRead({ readApprovedTryOnBundle: async () => ({ ...lip, subject: { ...lip.subject, variant_key: "other" } }) })).reason, "approved_try_on_projection_identity_mismatch");
+assert.equal((await tryRead({ readApprovedTryOnBundle: async () => ({ ...lip, subjectVariantBridge: { ...lip.subjectVariantBridge, variantId: "other" } }) })).reason, "approved_try_on_projection_identity_mismatch");
+assert.equal((await tryRead({ readApprovedTryOnBundle: async () => ({ ...lip, subject: { ...lip.subject, variant_key: "other" } }) })).reason, "subject_variant_mapping_not_approved");
 assert.equal((await tryRead({ readApprovedTryOnBundle: async () => ({ ...lip, taxonomyVersion: { ...lip.taxonomyVersion, authority_mode: "shadow_only" } }) })).reason, "taxonomy_not_canonical");
 const invalidRead = await tryRead({
   request: { ...catalogRequest, productId: "not-a-uuid" },
