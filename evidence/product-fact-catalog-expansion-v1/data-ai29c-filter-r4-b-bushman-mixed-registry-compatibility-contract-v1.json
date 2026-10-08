@@ -1,0 +1,103 @@
+{
+  "version": "data-ai29c-filter-r4-b-bushman-mixed-registry-compatibility-contract-v1",
+  "stage": "DATA-AI29C-FILTER-R4-B",
+  "track": "taxonomy-ai",
+  "decision": "FILTER_R4_B_EXACT_MIXED_REGISTRY_COMPATIBILITY_CONTRACT_IMPLEMENTED_NO_ADMISSION",
+  "mode": "PURE_READ_ONLY_CONTRACT_NOT_RUNTIME_WIRED",
+  "mainAtStart": "5c0b8cc030f899d5810221330717efc03c58c8e2",
+  "priorR4A": {
+    "decision": "FILTER_R4_A_READ_ONLY_COMPATIBILITY_PREFLIGHT_PASS_ADMISSION_HOLD",
+    "mergedSha": "5c0b8cc030f899d5810221330717efc03c58c8e2",
+    "mergeShaMainCi": "7/7 PASS",
+    "frozenEvidence": "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-a-bushman-mixed-registry-admission-compatibility-preflight-v1.json"
+  },
+  "target": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "market": "KR"
+  },
+  "factContracts": {
+    "spf_value": {
+      "value": 50,
+      "registry": "product-fact-registry-cross-category-v1",
+      "checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+      "serializer": "product-fact-proposition-pilot-v1"
+    },
+    "uva_label": {
+      "value": "PA++++",
+      "registry": "product-fact-registry-cross-category-v1",
+      "checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+      "serializer": "product-fact-proposition-pilot-v1"
+    },
+    "uv_filter_type": {
+      "value": "hybrid",
+      "registry": "product-fact-registry-cross-category-v2",
+      "checksum": "923256ca2468b2af31e1b7026655739408035daf62d3ff40a7132eca22afddd7",
+      "serializer": "product-fact-proposition-schema-v2"
+    }
+  },
+  "baseline": {
+    "decision": "MIXED_REGISTRY_LINEAGE_VALID_ADMISSION_HOLD",
+    "lineageCompatible": true,
+    "subjectAuthorityReady": false,
+    "semanticEnvelopeReady": false,
+    "prerequisiteShapeReady": false,
+    "independentGates": [
+      "SEMANTIC_12_OF_12_ENVELOPE_NOT_READY",
+      "SUBJECT_AUTHORITY_NOT_GOVERNED"
+    ],
+    "admissionGranted": false
+  },
+  "negativeTestMatrix": [
+    "corrupted_v1_checksum",
+    "corrupted_v2_checksum",
+    "extra_registry_snapshot",
+    "missing_registry_snapshot",
+    "spf_migrated_to_v2_without_authority",
+    "uva_serializer_changed_to_schema_v2",
+    "uv_filter_downgraded_to_v1",
+    "uv_filter_wrong_serializer",
+    "uv_filter_wrong_value",
+    "spf_wrong_value",
+    "missing_uv_fact",
+    "duplicate_uv_fact",
+    "unlisted_fact",
+    "fact_instance_id_invalid",
+    "confirmation_id_missing",
+    "proposition_key_invalid",
+    "fact_authority_secondary",
+    "fact_expired",
+    "subject_id_mismatch",
+    "subject_superseded",
+    "subject_market_changed",
+    "subject_revision_changed",
+    "taxonomy_not_shadow",
+    "other_product_not_bushman",
+    "core_only_not_full_semantics",
+    "full_synthetic_semantics_still_not_a_grant",
+    "synthetic_governed_subject_and_semantics_still_not_a_grant"
+  ],
+  "invariants": {
+    "legacyAdmissionV1Unmodified": true,
+    "legacyFiveFixtureGrantRegressionRequired": true,
+    "noRuntimeWiring": true,
+    "noProductFactWrite": true,
+    "noPolicyWrite": true,
+    "noSubjectAuthorityUpgrade": true,
+    "noSemanticReviewWrite": true,
+    "noRecommendationAdmissionWrite": true,
+    "noRankingChange": true,
+    "noAllowlistChange": true,
+    "noActivation": true,
+    "noProductionDatabaseWrite": true
+  },
+  "nextGate": {
+    "stage": "DATA-AI29C-FILTER-R4-C_BUSHMAN_SUBJECT_IDENTITY_AUTHORITY_PREFLIGHT",
+    "status": "NOT_STARTED",
+    "authorizedOnlyAfter": "R4-B merge SHA all CI PASS",
+    "requiresGovernedIdentityReview": true,
+    "semanticStageAfter": "DATA-AI29C-FILTER-R4-D",
+    "admissionEvaluationNotAuthorized": true
+  }
+}
