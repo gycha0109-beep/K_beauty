@@ -209,6 +209,10 @@ on:
       - "docs/evidence/data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1.json"
       - "scripts/verify-data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract.mjs"
+      - "supabase/migrations/20261009003000_data_ai29c_filter_r4_c_r2_bushman_subject_auth_v1.sql"
+      - "docs/evidence/data-ai29c-filter-r4-c-r2-bushman-subject-authority-rpc-implementation-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r2-bushman-subject-authority-rpc-implementation-v1.json"
+      - "scripts/verify-data-ai29c-filter-r4-c-r2-bushman-subject-authority-rpc.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -474,6 +478,10 @@ on:
       - "docs/evidence/data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract-v1.json"
       - "scripts/verify-data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract.mjs"
+      - "supabase/migrations/20261009003000_data_ai29c_filter_r4_c_r2_bushman_subject_auth_v1.sql"
+      - "docs/evidence/data-ai29c-filter-r4-c-r2-bushman-subject-authority-rpc-implementation-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r2-bushman-subject-authority-rpc-implementation-v1.json"
+      - "scripts/verify-data-ai29c-filter-r4-c-r2-bushman-subject-authority-rpc.mjs"
       - "supabase/migrations/20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
       - "supabase/migrations/20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
       - "supabase/migrations/20260930213348_data_ai29c_d5d_activation_control_v1.sql"
@@ -770,6 +778,8 @@ jobs:
         run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r4-c-bushman-subject-identity-authority-preflight.mjs
       - name: Verify DATA-AI29C-FILTER-R4-C-R1 BUSHMAN identity source bridge design
         run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r4-c-r1-bushman-identity-authority-contract.mjs
+      - name: Verify DATA-AI29C-FILTER-R4-C-R2 BUSHMAN bounded Subject authority RPC static contract
+        run: node --experimental-strip-types scripts/verify-data-ai29c-filter-r4-c-r2-bushman-subject-authority-rpc.mjs
 
       - name: Verify DATA-AI28E bounded incomplete retry
         run: node scripts/verify-data-ai28e-bounded-incomplete-retry.mjs
