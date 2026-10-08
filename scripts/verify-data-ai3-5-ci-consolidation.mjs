@@ -159,6 +159,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p0-targeted-official-evidence-gap-recovery-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-official-identity-source-preflight-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16b-official-identity-authority-review-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16c-ready2-subject-identity-preflight-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
