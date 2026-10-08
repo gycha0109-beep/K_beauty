@@ -1,0 +1,262 @@
+{
+  "version": "barrier-support-p0-remaining-ready-official-evidence-research-v1",
+  "stage": "V2.1-8H-R15A",
+  "source_main_sha": "5c0b8cc030f899d5810221330717efc03c58c8e2",
+  "captured_on": "2026-10-08",
+  "production_project": "bygrczggxfuisupcevaz",
+  "parent_authority": {
+    "r9_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p0-official-identity-authority-research-v1.json",
+    "r9_git_blob_sha": "c040d01f85dbda02afa8261b1ac46f05903c87f5",
+    "r13c_precedent_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-atopalm-p0-official-evidence-research-v1.json",
+    "r13c_precedent_git_blob_sha": "cd8e9793653389340006cb051ee139cd935c706e"
+  },
+  "scope": {
+    "products": 2,
+    "tasks": 4,
+    "target_product_ids": [
+      "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea"
+    ],
+    "allowed_fact_keys": [
+      "barrier_support_claim",
+      "primary_use_role"
+    ],
+    "official_research_only": true,
+    "product_fact_write_authorized": false,
+    "evidence_ingest_authorized": false,
+    "review_preparation_authorized": false,
+    "recommendation_activation_authorized": false,
+    "public_activation": false
+  },
+  "research_rules": {
+    "evidence_is_not_fact": true,
+    "insufficiency_does_not_imply_false": true,
+    "missing_does_not_imply_negative": true,
+    "sibling_or_line_claim_transfer_forbidden": true,
+    "product_specific_claim_required": true,
+    "primary_use_role_requires_explicit_application_scope": true,
+    "marketing_moisturizing_is_not_barrier_claim": true,
+    "image_only_detail_not_promoted_without_reviewable_fact_bearing_capture": true,
+    "secondary_retailer_label_cannot_alone_confirm_governed_fact": true
+  },
+  "subjects": [
+    {
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "brand": "마녀공장",
+      "product_name": "판테토인 인리치드 밤",
+      "category": "moisturizer_balm",
+      "size_ml": 80,
+      "market": "KR",
+      "identity_status": "resolved",
+      "current_state": "current"
+    },
+    {
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "brand": "더하르나이",
+      "product_name": "시카이드 밤",
+      "category": "moisturizer_balm",
+      "size_ml": 100,
+      "market": "KR",
+      "identity_status": "resolved",
+      "current_state": "current"
+    }
+  ],
+  "source_captures": [
+    {
+      "source_id": "manyo_enriched_balm_kr",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "publisher": "MANYO",
+      "locator": "https://www.manyo.co.kr/goods/goods_view.php?goodsNo=1905",
+      "authority_kind": "brand_official_current_product_kr",
+      "market": "KR",
+      "observed_product_name": "판테토인 인리치드 밤",
+      "observed_presentation": "80ml",
+      "observed_product_description": "속부터 꽉 찬 진정 보습, 판테토인™ 함유 고농축 속보습 충전 밤",
+      "observed_usage_instruction": "적당량을 취해 피부 결에 따라 골고루 발라준 후에 가볍게 두드리며 흡수시켜 줍니다",
+      "observed_functional_review_disclosure": "해당없음",
+      "supported_observations": [
+        "Product identity and KR 80ml presentation",
+        "Moisturizing/soothing marketing text",
+        "General skin application instruction"
+      ],
+      "unestablished_facts": [
+        "product-specific explicit skin-barrier support claim",
+        "full_face/local_area/multi_area exact use role"
+      ],
+      "source_text_reviewed": true,
+      "image_only_details_promoted": false
+    },
+    {
+      "source_id": "manyo_panthetoin_cream_sibling_guard",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "publisher": "MANYO",
+      "locator": "https://manyo.co.kr/goods/goods_view.php?goodsNo=1906",
+      "authority_kind": "official_sibling_product_do_not_transfer",
+      "market": "KR",
+      "observed_product_name": "판테토인 크림",
+      "observed_presentation": "80ml",
+      "sibling_claim": "피부장벽의 기능을 회복하여 가려움 등의 개선에 도움을 주는 기능성 화장품",
+      "supports": [
+        "sibling_specific_barrier_claim_only"
+      ],
+      "transfer_to_target_balm_forbidden": true
+    },
+    {
+      "source_id": "theharnay_cicaide_balm_kr",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "publisher": "THE HARNAY",
+      "locator": "https://theharnay.co.kr/product/%EB%8D%94%ED%95%98%EB%A5%B4%EB%82%98%EC%9D%B4-%EC%8B%9C%EC%B9%B4%EC%9D%B4%EB%93%9C-%EB%B0%A4-100ml/19/",
+      "authority_kind": "brand_official_product_detail_indexed",
+      "market": "KR",
+      "observed_product_name": "시카이드 밤",
+      "observed_presentation": "100ml",
+      "text_capture_scope": "indexed product identity/title and presentation; full current image detail and instruction text not reviewably captured",
+      "supported_observations": [
+        "Brand product identity and KR 100ml presentation"
+      ],
+      "unestablished_facts": [
+        "product-specific explicit skin-barrier support claim",
+        "full_face/local_area/multi_area exact use role"
+      ],
+      "image_only_details_promoted": false
+    },
+    {
+      "source_id": "theharnay_official_home_kr",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "publisher": "THE HARNAY",
+      "locator": "https://www.theharnay.com/",
+      "authority_kind": "brand_official_product_listing",
+      "market": "KR",
+      "observed_target_listing": "더하르나이 시카이드 밤 100ml",
+      "neighboring_claim_scope": "홈페이지 장벽 강화 홍보 문구는 시카이드 크림/라인 홍보 맥락과 혼재하며 target 밤에 단독 귀속 불가",
+      "supported_observations": [
+        "Exact target listing name and 100ml",
+        "Cream and balm represented as different products"
+      ],
+      "transfer_from_sibling_or_line_forbidden": true
+    },
+    {
+      "source_id": "oliveyoung_cicaide_balm_secondary_guard",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "publisher": "OLIVE YOUNG",
+      "locator": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000212725",
+      "authority_kind": "secondary_retailer_listing",
+      "market": "KR",
+      "observed_title": "[피부장벽강화크림] 더하르나이 시카이드 밤 100ml기획(+앰플5ml*3p+크림5ml*2p)",
+      "supports": [
+        "retail_100ml_presentation_and_possible_claim_lead"
+      ],
+      "product_specific_primary_claim_authority_established": false,
+      "usage_role_authority_established": false,
+      "cannot_promote_to_governed_product_fact": true
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "7cf58ffe-88c1-4f11-9f7a-905513cc6917",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "fact_key": "barrier_support_claim",
+      "source_ids": [
+        "manyo_enriched_balm_kr",
+        "manyo_panthetoin_cream_sibling_guard"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "explicit_negative_established": false,
+      "reason": "Exact balm page supports soothing/moisturizing but contains no independently reviewable exact-product affirmative barrier claim in the inspected text; sibling cream has a barrier-functional claim that cannot transfer."
+    },
+    {
+      "task_id": "6955dada-e845-4a53-a44a-0cdc53dd9ad8",
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "subject_id": "9ef1863e-b16c-414b-88ae-d686fc4fda33",
+      "fact_key": "primary_use_role",
+      "source_ids": [
+        "manyo_enriched_balm_kr"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "explicit_negative_established": false,
+      "reason": "Official apply-evenly-along-skin instruction does not establish full_face vs local_area vs multi_area; catalog balm_usage_scope is not governed fact authority."
+    },
+    {
+      "task_id": "02b9ba0a-207c-4d23-b522-853bd45ff815",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "fact_key": "barrier_support_claim",
+      "source_ids": [
+        "theharnay_cicaide_balm_kr",
+        "theharnay_official_home_kr",
+        "oliveyoung_cicaide_balm_secondary_guard"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "explicit_negative_established": false,
+      "reason": "Official product listing proves 100ml balm but no reviewable target-specific skin-barrier claim was captured; broader line/cream slogans and retailer labels are not governed target claim evidence."
+    },
+    {
+      "task_id": "e08b1e23-771d-4c0b-8263-8ca02fa687f6",
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "subject_id": "f8e92b1d-6586-430c-88e2-03763dbd6777",
+      "fact_key": "primary_use_role",
+      "source_ids": [
+        "theharnay_cicaide_balm_kr",
+        "theharnay_official_home_kr"
+      ],
+      "identity_match": true,
+      "market_match": true,
+      "formulation_match": true,
+      "outcome": "EVIDENCE_INSUFFICIENT",
+      "proposed_value": null,
+      "explicit_negative_established": false,
+      "reason": "No accessible official usage-area instruction for the exact balm that supports Registry full_face/local_area/multi_area."
+    }
+  ],
+  "production_prestate": {
+    "subject_count_for_targets": 2,
+    "target_current_facts": 0,
+    "target_fact_instances": 0,
+    "target_evidence_records": 0,
+    "target_review_assignments": 0,
+    "research_tasks_count": 4,
+    "research_task_state": "RESEARCH_PENDING",
+    "research_task_attempt_count": 0,
+    "research_task_updates_performed": 0
+  },
+  "summary": {
+    "direct_evidence_found": 0,
+    "evidence_insufficient": 4,
+    "identity_or_scope_blocked": 0,
+    "target_products": 2,
+    "tasks_evaluated": 4,
+    "evidence_db_writes": 0,
+    "subject_writes": 0,
+    "fact_instance_writes": 0,
+    "confirmation_writes": 0,
+    "review_assignment_writes": 0,
+    "research_task_writes": 0,
+    "recommendation_writes": 0
+  },
+  "decision": "BARRIER_SUPPORT_P0_REMAINING_READY_OFFICIAL_EVIDENCE_RESEARCH_INSUFFICIENT4",
+  "next_gate": {
+    "stage": "V2.1-8H-R15B_P0_TARGETED_OFFICIAL_EVIDENCE_GAP_RECOVERY",
+    "status": "NOT_EXECUTED",
+    "entry_recommendation": "Seek exact-product text-bearing first-party information for barrier support and actual use areas, ideally a brand-authored product detailed instruction, official FAQ, manufacturer data sheet or dated first-party capture.",
+    "evidence_ingest_authorized": false,
+    "confirmation_authorized": false,
+    "skip_zeroid_hold_auto_release": true,
+    "unsupported_fact_false_inference_forbidden": true,
+    "repeated_undifferentiated_secondary_research_not_recommended": true
+  }
+}
