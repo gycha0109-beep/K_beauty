@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import "./verify-face-lab-v2-catalog-read-authority-boundary.mjs";
 import {
   FACE_LAB_CANDIDATE_ATTRIBUTE_SNAPSHOT_VERSION
 } from "../lib/face-lab-v2/catalog-matcher-shadow.js";
