@@ -77,6 +77,26 @@ try{
  // This is an offline source-verification guard, not hosted ingredient evidence.
  const self=await fs.readFile("scripts/product-evidence/capture-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs","utf8");
  for(const token of ["SUPABASE_SERVICE_ROLE_KEY",".rpc(", ".insert(", ".upsert("])assert.ok(!self.includes(token));
+ const research=JSON.parse(await fs.readFile("evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16h-web-first-source-conflict-v1.json","utf8"));
+ assert.equal(research.terminal,"R16H_WEB_FIRST_FORMULATION_EQUIVALENCE_UNPROVEN_SOURCE_CONFLICT_HOLD2");
+ assert.equal(research.innisfree.kr_70.raw_ing_count,null);
+ assert.equal(research.innisfree.kr_70.actual_html_captured,false);
+ assert.equal(research.innisfree.my_70.title_volume,"70ml");
+ assert.equal(research.innisfree.my_70.spec_table_volume,"40 mL");
+ assert.equal(research.innisfree.my_70.seed_oil_name,"Birch Seed Oil");
+ assert.equal(research.innisfree.au_40.seed_oil_name,"Torreya Nucifera Seed Oil");
+ assert.equal(research.innisfree.exact_kr_40_70_ingredient_equality,"NOT_EVALUABLE_KR_70_PANEL_NOT_CAPTURED");
+ assert.equal(research.snature.official_80.total_ingredients,25);
+ assert.equal(research.snature.official_80.first_ingredient,"정제수");
+ assert.equal(research.snature.merchant_90_water_first.first_ingredient,"정제수");
+ assert.ok(research.snature.merchant_90_blue_agave_first.first_ingredient.startsWith("블루아가베잎추출물"));
+ assert.equal(research.snature.exact_80_90_formula_equivalence,"NOT_PROVEN");
+ assert.equal(research.summary.revision_keys,0);
+ assert.equal(research.summary.semantic_keys,0);
+ assert.equal(research.summary.production_writes,0);
+ assert.equal(research.summary.non_numeric_pda_cases,1968);
+ const report=await fs.readFile("docs/evidence/v21-8h-r16h-web-first-ingredient-source-conflict-v1.md","utf8");
+ for(const text of ["Birch Seed Oil","Torreya Nucifera Seed Oil","500,000ppm","R16H_R2_CAPTURE_KR_70ML_AND_RECOVER_OFFICIAL_90ML_PANEL"])assert.ok(report.includes(text));
  console.log(JSON.stringify({status:"PASS",stage:"R16H",offline_fixture_lists:26,exact_sku_guards:true,
   list_equal_and_difference_guard:true,blocked_fetch_and_redirect_guard:true,
   authoritative_formula_revision_established:false,production_writes:0}));
