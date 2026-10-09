@@ -21,6 +21,13 @@ on:
       - "docs/evidence/data-ai29c-filter-r4-d-s2-bushman-web-review-evidence-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-d-s2-bushman-web-review-evidence-v1.json"
       - "scripts/verify-data-ai29c-filter-r4-d-s2-bushman-web-review-evidence.mjs"
+      - "lib/admin/bushman-sunscreen-semantic-review-contract.mjs"
+      - "lib/admin/bushman-sunscreen-semantic-review.js"
+      - "app/api/admin/products/bushman-semantic-review/confirm/route.js"
+      - "app/admin/products/bushman-semantic-review/page.js"
+      - "app/admin/products/bushman-semantic-review/BushmanSemanticReviewWorkbench.js"
+      - "scripts/verify-data-ai29c-filter-r4-d-s3-admin-review-workbench.mjs"
+      - "docs/evidence/data-ai29c-filter-r4-d-s3-admin-semantic-review-workbench-v1.md"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
       - "docs/ci/database-integration-authority.json"
@@ -47,6 +54,13 @@ on:
       - "docs/evidence/data-ai29c-filter-r4-d-s2-bushman-web-review-evidence-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-d-s2-bushman-web-review-evidence-v1.json"
       - "scripts/verify-data-ai29c-filter-r4-d-s2-bushman-web-review-evidence.mjs"
+      - "lib/admin/bushman-sunscreen-semantic-review-contract.mjs"
+      - "lib/admin/bushman-sunscreen-semantic-review.js"
+      - "app/api/admin/products/bushman-semantic-review/confirm/route.js"
+      - "app/admin/products/bushman-semantic-review/page.js"
+      - "app/admin/products/bushman-semantic-review/BushmanSemanticReviewWorkbench.js"
+      - "scripts/verify-data-ai29c-filter-r4-d-s3-admin-review-workbench.mjs"
+      - "docs/evidence/data-ai29c-filter-r4-d-s3-admin-semantic-review-workbench-v1.md"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
       - "docs/ci/database-integration-authority.json"
@@ -108,6 +122,9 @@ jobs:
 
       - name: Verify R4-D-S2 web review evidence and reviewer preview fail-closed
         run: node scripts/verify-data-ai29c-filter-r4-d-s2-bushman-web-review-evidence.mjs
+
+      - name: Verify R4-D-S3 authenticated BUSHMAN semantic review workbench
+        run: node scripts/verify-data-ai29c-filter-r4-d-s3-admin-review-workbench.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
