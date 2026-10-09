@@ -46,7 +46,7 @@
 ## 3. 권한 상승 함수·Advisor 관찰
 
 - `public`에서 이름에 `admin_` 또는 `face_lab`를 포함하는 함수 **59건**, 그중 `SECURITY DEFINER` **55건**. 이를 모두 취약하다고 결론 내리지 않는다.
-- 추출한 함수 메타에서 일반 인증 역할에 EXECUTE 가능 상태인 `SECURITY DEFINER` 함수로 `admin_has_capability`와 `get_current_admin_role`이 확인됨. 앞서 개별 이름 검사와 집계 수가 불일치하므로, **관리 함수 수·중복 서명은 재집계 필요**. 두 함수 모두 `anon`에 직접 실행 권한은 확인되지 않음.
+- 위 59건 이름 필터 범위에서 `authenticated`에게 EXECUTE가 열려 있는 `SECURITY DEFINER`는 `admin_has_capability` **1건**. 범위 바깥에 있는 별도의 `get_current_admin_role` 함수도 `SECURITY DEFINER`·`authenticated` 실행 가능으로 확인. **두 함수 모두 `anon` 직접 EXECUTE 권한 없음**. 이 집계는 개별 함수 서명/명칭 필터 기준으로 제한된 결과이며 프로젝트 전체 함수 감사를 뜻하지 않음.
 - `get_current_admin_role`은 `auth.uid()`와 `admin_memberships`를 참조하며, `admin_has_capability`는 상위 역할 판정 함수를 거친다. 실제 권한 우회/익명 계정 차단은 호출 실험 없이 확정하지 않는다. **같은 이름의 오버로드/서명에 따라 검사 행이 달라질 수 있으므로 위 건수 자체를 전역 보증으로 사용하지 않는다.**
 - 관리자 감사 RLS는 `admin_has_capability('admin.audit.read')`; 회원 RLS는 `user_id = auth.uid()`와 `is_active`를 검사한다. 현재 `is_anonymous`를 명시 확인하는 코드는 발견하지 못했다.
 - Supabase Security Advisor 관찰: `rls_enabled_no_policy`(INFO), `authenticated_security_definer_function_executable`(WARN), `auth_allow_anonymous_sign_ins` 관련 관리자 테이블 2건(WARN), `auth_leaked_password_protection`(WARN).
@@ -57,7 +57,7 @@
 - https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable
 - https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 
-**정정할 부분:** 위 `SECURITY DEFINER` 실행 가능 함수 수는 함수 서명·권한 확인에 따라 감사 최종본에서 정확히 다시 산정하고, 중간 요약값만으로 PASS 판정하지 않는다.
+**한계:** 일반 인증 역할에 EXECUTE가 가능하다는 사실만으로 함수 내용이 악용 가능하다고 결론 내릴 수 없다. 관리자 함수 내부 분기와 실제 익명 사용자의 역할별 호출 거부를 별도 시험해야 한다.
 
 ## 4. 저장소 migration ↔ 후보 DB의 이력 불일치
 
