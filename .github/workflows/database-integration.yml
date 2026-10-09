@@ -7,6 +7,9 @@ on:
     paths:
       - "supabase/migrations/**"
       - "supabase/local-shadow-test/**"
+      - "tests/fixtures/data-ai29c-filter-r4-c-r3/**"
+      - "docs/evidence/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.json"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
       - "docs/ci/database-integration-authority.json"
@@ -19,6 +22,9 @@ on:
     paths:
       - "supabase/migrations/**"
       - "supabase/local-shadow-test/**"
+      - "tests/fixtures/data-ai29c-filter-r4-c-r3/**"
+      - "docs/evidence/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.json"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
       - "docs/ci/database-integration-authority.json"
@@ -84,3 +90,103 @@ jobs:
           else
             git diff --check HEAD^
           fi
+
+  bushman-r3-isolated-postgres:
+    name: BUSHMAN R3 isolated PostgreSQL 17 runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          POSTGRES_DB: postgres
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout exact PR head / merge SHA
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - name: Assert isolated loopback-only PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test -z "${SUPABASE_ACCESS_TOKEN:-}"
+          test -z "${SUPABASE_DB_PASSWORD:-}"
+          test -x "$(command -v psql)"
+          test "$(psql --version | grep -oE '[0-9]+' | head -1)" -ge 14
+      - name: Apply exact R2 migration and execute rollback-only R3 tests
+        shell: bash
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "54329"
+          PGUSER: postgres
+          PGPASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "5"
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f tests/fixtures/data-ai29c-filter-r4-c-r3/00_schema_fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261009003000_data_ai29c_filter_r4_c_r2_bushman_subject_auth_v1.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261009043000_data_ai29c_filter_r4_c_r3_bushman_replay_digest_guard_v1.sql
+          psql -v ON_ERROR_STOP=1 -f tests/fixtures/data-ai29c-filter-r4-c-r3/10_runtime_checks.sql | tee "${RUNNER_TEMP}/bushman-r3.log"
+          grep -Fq "R3_ISOLATED_RUNTIME_TRANSACTION_ROLLED_BACK" "${RUNNER_TEMP}/bushman-r3.log"
+          test "$(psql -Atqc "select count(*) from public.bushman_subject_identity_attestations_v1")" = "0"
+          test "$(psql -Atqc "select identity_resolution_version from public.product_fact_subjects where subject_id='0b5963bb-67d6-4738-a620-32ec86c1e3d0'")" = "data-ai29c-c5-presentation-identity-correction-v1"
+          test "$(psql -Atqc "select count(*) from public.product_fact_review_events")" = "0"
+          echo "R3_ISOLATED_PG17_ROLLBACK_PASS"
+          psql -v ON_ERROR_STOP=1 -c "create database r3_missing_prerequisites"
+          if PGDATABASE=r3_missing_prerequisites psql -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20261009003000_data_ai29c_filter_r4_c_r2_bushman_subject_auth_v1.sql \
+            >"${RUNNER_TEMP}/r3-prerequisite-reject.log" 2>&1; then
+            echo "R3_MISSING_PREREQUISITE_WAS_ACCEPTED" >&2
+            exit 1
+          fi
+          grep -Fq "r4c_r2_missing_prerequisite" "${RUNNER_TEMP}/r3-prerequisite-reject.log"
+          test "$(PGDATABASE=r3_missing_prerequisites psql -Atqc "select coalesce(to_regclass('public.bushman_subject_identity_attestations_v1')::text,'none')")" = "none"
+          echo "R3_FAILED_MIGRATION_ROLLBACK_PASS"
+          # A fresh disposable database is used for real independent sessions.
+          psql -v ON_ERROR_STOP=1 -c "create database r3_concurrent"
+          PGDATABASE=r3_concurrent psql -v ON_ERROR_STOP=1 -f tests/fixtures/data-ai29c-filter-r4-c-r3/00_schema_fixture.sql
+          PGDATABASE=r3_concurrent psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261009003000_data_ai29c_filter_r4_c_r2_bushman_subject_auth_v1.sql
+          PGDATABASE=r3_concurrent psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261009043000_data_ai29c_filter_r4_c_r3_bushman_replay_digest_guard_v1.sql
+          PGDATABASE=r3_concurrent psql -v ON_ERROR_STOP=1 -f tests/fixtures/data-ai29c-filter-r4-c-r3/20_concurrency_setup.sql
+          # Primary holds advisory lock for two seconds; secondary races through separate backend.
+          PGDATABASE=r3_concurrent psql -qAt -v ON_ERROR_STOP=1 -v primary=true \
+            -f tests/fixtures/data-ai29c-filter-r4-c-r3/30_concurrent_confirmation.sql \
+            >"${RUNNER_TEMP}/r3-primary.log" 2>&1 &
+          primary_pid=$!
+          sleep 0.5
+          PGDATABASE=r3_concurrent psql -qAt -v ON_ERROR_STOP=1 -v primary=false \
+            -f tests/fixtures/data-ai29c-filter-r4-c-r3/30_concurrent_confirmation.sql \
+            >"${RUNNER_TEMP}/r3-secondary.log" 2>&1 &
+          secondary_pid=$!
+          wait "${primary_pid}"
+          wait "${secondary_pid}"
+          grep -Fxq "false" "${RUNNER_TEMP}/r3-primary.log"
+          grep -Fxq "true" "${RUNNER_TEMP}/r3-secondary.log"
+          test "$(PGDATABASE=r3_concurrent psql -Atqc "select count(*) from public.product_fact_review_events")" = "1"
+          test "$(PGDATABASE=r3_concurrent psql -Atqc "select count(*) from public.admin_audit_logs where action='admin.product_fact.bushman_subject_identity_authority_upgraded'")" = "1"
+          test "$(PGDATABASE=r3_concurrent psql -Atqc "select identity_resolution_version from public.product_fact_subjects where subject_id='0b5963bb-67d6-4738-a620-32ec86c1e3d0'")" = "trust-phase5-admin-subject-review-v1"
+          echo "R3_TWO_SESSION_LOCK_AND_IDEMPOTENCY_PASS"
+          # Test the untouched COSRX RPC alongside R2+R3 on the same disposable schema.
+          PGDATABASE=r3_concurrent psql -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20261006110000_data_ai29c_d5e_d_r3_subject_identity_authority_upgrade_v1.sql
+          PGDATABASE=r3_concurrent psql -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/data-ai29c-filter-r4-c-r3/40_cosrx_coexistence.sql \
+            | tee "${RUNNER_TEMP}/r3-cosrx-smoke.log"
+          grep -Fq "R3_COSRX_LEGACY_RPC_COEXISTENCE_PASS" "${RUNNER_TEMP}/r3-cosrx-smoke.log"
+          psql -v ON_ERROR_STOP=1 -c "drop database r3_concurrent with (force)"
+          echo "R3_CONCURRENCY_TEST_DATABASE_DISCARDED"
+      - name: Verify exact-head diff hygiene
+        shell: bash
+        run: git diff --check HEAD^
