@@ -10,6 +10,9 @@ on:
       - "tests/fixtures/data-ai29c-filter-r4-c-r3/**"
       - "docs/evidence/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.json"
+      - "docs/evidence/data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap-v1.json"
+      - "scripts/verify-data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap.mjs"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
       - "docs/ci/database-integration-authority.json"
@@ -25,6 +28,9 @@ on:
       - "tests/fixtures/data-ai29c-filter-r4-c-r3/**"
       - "docs/evidence/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r3-isolated-postgres-runtime-v1.json"
+      - "docs/evidence/data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap-v1.json"
+      - "scripts/verify-data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap.mjs"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
       - "docs/ci/database-integration-authority.json"
@@ -77,6 +83,9 @@ jobs:
 
       - name: Verify database migration authority and non-production safety
         run: node scripts/verify-database-integration-authority.mjs
+
+      - name: Verify R4-C-R4 independent SKU identity HOLD and negative cases
+        run: node scripts/verify-data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
