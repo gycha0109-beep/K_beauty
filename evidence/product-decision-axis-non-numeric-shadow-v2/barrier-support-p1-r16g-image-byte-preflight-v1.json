@@ -1,0 +1,19 @@
+{
+  "stage": "V2.1-8H-R16G_P1_OFFICIAL_IMAGE_CAPTURE_PREFLIGHT",
+  "upstream": "R16F_OFFICIAL_80ML_90ML_PRESENTATION_SCOPE_MIXED_AND_REVISION_LINEAGE_UNBOUND_HOLD2",
+  "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+  "official_80ml_sku": "cafe24_smasteri_1_99",
+  "requested_assets": 3,
+  "host": "www.snature.kr",
+  "official_80ml_info": "/web/upload/new_design/gelcream/80ml/gel80ml_info.jpg",
+  "official_90ml_detail_first": "/web/upload/new_design/gelcream/90ml/260826/gelcream_01.webp",
+  "official_90ml_detail_last": "/web/upload/new_design/gelcream/90ml/260826/gelcream_17.jpg",
+  "actual_image_bytes_captured_at_preflight": false,
+  "github_hosted_probe": "PENDING",
+  "first_party_scope_unresolved": true,
+  "formula_revision_key": null,
+  "subject_semantic_key": null,
+  "registration_authorized": false,
+  "production_writes": 0,
+  "next_gate": "R16G_R2_REVIEW_ACTUAL_OFFICIAL_IMAGE_BYTES_AND_CONTENT"
+}
