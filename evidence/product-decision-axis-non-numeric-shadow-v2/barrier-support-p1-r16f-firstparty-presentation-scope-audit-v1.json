@@ -1,0 +1,176 @@
+{
+  "version": "barrier-support-p1-r16f-firstparty-presentation-scope-audit-v1",
+  "stage": "V2.1-8H-R16F_P1_FIRSTPARTY_PRESENTATION_SCOPE_AUDIT",
+  "observed_on": "2026-10-09",
+  "upstream": {
+    "r16e_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16e-formulation-revision-authority-frontier-v1.json",
+    "r16e_git_blob_sha": "bb6a7c07ca09cd7bec70673940b864f794ff6817",
+    "r16e_decision": "R16E_INGREDIENT_PANEL_1_OF_2_FORMULATION_REVISION_0_OF_2_HOLD",
+    "r16e_subject_registration_authority": 0
+  },
+  "evidence_sources": {
+    "official_html_archive": {
+      "repo": "gycha0109-beep/K_beauty",
+      "run_id": 37899489889,
+      "artifact_id": 11600769958,
+      "head_sha": "d01a5c6b4d6dd74fc637a8f3bfc3849caaf03389",
+      "manifest_sha_consistent": true,
+      "source_blob_sha256_recomputed": true,
+      "raw_bytes_kept_outside_git": true,
+      "ephemeral_action_artifact": true,
+      "expires_at": "2026-10-16T07:31:38Z"
+    },
+    "current_snat_shop": {
+      "url": "https://www.snature.kr/product/detail.html?cate_no=0&display_group=0&product_no=99",
+      "publisher": "S.NATURE official KR shop",
+      "observed_2026_10_09_label": "아쿠아 오아시스 수분 젤크림 80ml",
+      "source_kind": "FIRST_PARTY_CURRENT_PUBLIC_LISTING"
+    },
+    "historical_snat_news": {
+      "url": "https://m.snature.kr/article/news/3/10033/page/2/",
+      "publisher": "S.NATURE official NEWS channel hosting a syndicated press article",
+      "published_post_date": "2024-06-25",
+      "story_event": "2024 April Olive Young promotion",
+      "observed_historical_package": "아쿠아 오아시스 수분 젤크림 한정기획 세트(젤크림 90ml + 카밍 패드 2매 증정)",
+      "source_kind": "FIRST_PARTY_HOSTED_HISTORICAL_COMMERCE_PROMOTION_TEXT",
+      "raw_response_bytes_archived": false,
+      "source_content_digest": null,
+      "limitation": "A promotion's component size does not prove identical SKU, formulation, lot or current presentation."
+    },
+    "sibling_innisfree": {
+      "url_40ml": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+      "url_70ml": "https://m.innisfree.com/kr/ko/dp/product/34623",
+      "source_kind": "FIRST_PARTY_SIBLING_COMMERCIAL_PRESENTATIONS",
+      "same_formula_asserted": false
+    }
+  },
+  "targets": [
+    {
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "catalog_name": "비자 시카 밤 EX",
+      "catalog_size_ml": 40,
+      "official_product_id": "34622",
+      "source_html_sha256": "84c2a82eaaa0c5a777365a310d9fa46e8c4d4691051788bcd70350db2fa9e451",
+      "observations": {
+        "first_party_current_40ml_listing": true,
+        "sibling_70ml_official_listing": true,
+        "serialized_first_party_ingredient_panel_count": 26,
+        "complete_current_lot_bound_ingredient_panel": false,
+        "manufacturing_date_or_lot_bound_formula": false,
+        "first_party_40ml_to_70ml_formula_equivalence_statement": false,
+        "confirmed_current_formula_revision": false
+      },
+      "identity_boundary": {
+        "presentation_id_verified": true,
+        "variant_equivalence": "NOT_PROVEN",
+        "revision_lineage": "NOT_PROVEN",
+        "formulation_revision_key": null,
+        "subject_semantic_key": null,
+        "global_semantic_collision": "NOT_EVALUABLE_NO_KEY",
+        "registration_authorized": false
+      },
+      "decision": "HOLD_LOT_BOUND_FORMULATION_REVISION_AUTHORITY",
+      "required_first_party_evidence": [
+        "Official 40ml batch/label ingredient panel with lot or manufacturing-window provenance",
+        "Manufacturer's effective-date or lot-range affirmation of current 40ml formula",
+        "Independent review before any 40ml ↔ 70ml same-formula inference"
+      ]
+    },
+    {
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "catalog_name": "아쿠아 오아시스 수분 젤크림",
+      "catalog_size_ml": 80,
+      "official_product_id": "99",
+      "source_html_sha256": "12234f1acdc3e520850b06b09485e79ba9b36abbdbfc93a429718bf8fb1bc88b",
+      "observations": {
+        "official_current_product_metadata": "80ml",
+        "official_structured_product_sku": "cafe24_smasteri_1_99",
+        "official_archived_html_detail_image_paths_total": 20,
+        "detail_image_90ml_260826_path_count": 17,
+        "detail_image_80ml_info_path_count": 1,
+        "other_detail_paths_count": 2,
+        "detail_image_90ml_example": "/web/upload/new_design/gelcream/90ml/260826/gelcream_01.webp",
+        "detail_image_80ml_info": "/web/upload/new_design/gelcream/80ml/gel80ml_info.jpg",
+        "official_past_2024_promo_90ml_gel_cream_component": true,
+        "complete_80ml_ingredient_image_inspected": false,
+        "detail_image_bytes_captured": false,
+        "manufacturer_confirmed_same_formula_between_80_and_90ml": false,
+        "manufacturing_date_or_lot_bound_formula": false,
+        "confirmed_current_formula_revision": false
+      },
+      "conflict": {
+        "type": "MIXED_OFFICIAL_PRESENTATION_ASSET_PATHS_AND_HISTORICAL_90ML_PROMOTION",
+        "is_a_confirmed_reformulation": false,
+        "is_a_confirmed_80ml_listing_error": false,
+        "is_a_confirmed_80_to_90ml_renewal": false,
+        "asset_directory_token_260826_is_proven_effective_date": false,
+        "branding_90ml_asset_path_is_formula_authority": false,
+        "official_2024_90ml_promo_is_current_80ml_formula_authority": false
+      },
+      "identity_boundary": {
+        "presentation_id_verified": true,
+        "variant_equivalence": "NOT_PROVEN",
+        "revision_lineage": "NOT_PROVEN",
+        "formulation_revision_key": null,
+        "subject_semantic_key": null,
+        "global_semantic_collision": "NOT_EVALUABLE_NO_KEY",
+        "registration_authorized": false
+      },
+      "decision": "HOLD_PRESENTATION_ASSET_SCOPE_AND_FORMULATION_REVISION",
+      "required_first_party_evidence": [
+        "Capture and review actual official 80ml info image bytes and all 90ml-designated detail images without assuming path names prove product contents",
+        "Brand/manufacturer written clarification of 80ml vs 90ml SKU/presentation relationship, effective dates, old/current formula and notice accuracy",
+        "Complete current 80ml ingredient panel and manufacturing lot/revision applicability"
+      ]
+    }
+  ],
+  "confidence": {
+    "official_current_80ml_listing": "CONFIRMED_FIRST_PARTY",
+    "official_2024_90ml_promotion": "CONFIRMED_FIRST_PARTY_HOSTED_HISTORICAL_TEXT",
+    "mixed_80_90_asset_paths": "CONFIRMED_IN_ARCHIVED_OFFICIAL_HTML_REFERENCES",
+    "current_80ml_ingredient_panel_image_content": "NOT_INSPECTED",
+    "formula_or_renewal_equivalence": "NOT_ESTABLISHED",
+    "page_asset_path_date_meaning": "NOT_ESTABLISHED"
+  },
+  "production_boundary": {
+    "production_db_queries_this_step": 0,
+    "prior_R16E_readonly_snapshot_reused": true,
+    "subject_registration_authorized": false,
+    "intake_identity_resolution_authorized": false,
+    "research_task_claim_authorized": false,
+    "product_fact_confirmation_authorized": false,
+    "source_binding_repair_authorized": false,
+    "product_catalog_size_override_authorized": false,
+    "hold_products_excluded": true,
+    "zeroid_hold_preserved": true
+  },
+  "terminal": "R16F_OFFICIAL_80ML_90ML_PRESENTATION_SCOPE_MIXED_AND_REVISION_LINEAGE_UNBOUND_HOLD2",
+  "next_gate": {
+    "stage": "V2.1-8H-R16G_P1_OFFICIAL_IMAGE_CONTENT_AND_MANUFACTURER_APPLICABILITY_RECOVERY",
+    "status": "TARGETED_FIRST_PARTY_EVIDENCE_DEPENDENCY",
+    "image_path_existence_does_not_close_scope": true,
+    "source_image_capture_and_content_review_required": true,
+    "manufacturer_or_lot_authority_required": true,
+    "service_role_subject_registration_authorized": false,
+    "only_readonly_first_party_research_allowed": true
+  },
+  "invariance": {
+    "non_numeric_pda": true,
+    "candidate_count": 164,
+    "scenario_count": 12,
+    "comparison_count": 1968,
+    "numeric_rank_delta": 0,
+    "eligibility_delta": 0,
+    "production_db_writes": 0,
+    "intake_writes": 0,
+    "subject_writes": 0,
+    "product_fact_writes": 0,
+    "source_binding_writes": 0,
+    "recommendation_writes": 0,
+    "admission_activation": false,
+    "public_activation": false,
+    "retired_holds_reopened": 0
+  }
+}
