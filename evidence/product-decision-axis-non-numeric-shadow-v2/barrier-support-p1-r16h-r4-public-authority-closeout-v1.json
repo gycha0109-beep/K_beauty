@@ -148,8 +148,8 @@
     "subject_registration_authorized": false
   },
   "conclusions": {
-    "decision": "R16H_R4_PUBLIC_SEARCH_EXHAUSTED_PARTNER_METADATA_OBSERVED_BRAND_ATTESTATION_HOLD",
-    "next_gate": "R16H_R5_WAIT_FOR_AUTHENTICATED_BRAND_RESPONSE_OR_LOT_BOUND_90ML_LABEL",
+    "decision": "R16H_R4_PUBLIC_EVIDENCE_REVIEWED_NO_BRAND_90ML_FORMULA_ATTESTATION_HOLD",
+    "next_gate": "R16H_R4_WAIT_FOR_BRAND_OR_LOT_BOUND_90ML_AUTHORITY_BEFORE_R5",
     "new_workflows_added": 0,
     "production_queries_executed": 0,
     "production_writes": 0,
