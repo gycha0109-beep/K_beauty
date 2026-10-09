@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-09 / 페이스랩 독립 실행 상품·옵션 계약 구현
+
+- 작업 유형: 제한된 코드 구현 / 중간 위험. 기준 main `0c664fa11cda5d626e9c334058246c9a7059dc8b`, 작업 분야 `face-research`.
+- 구현: `lib/face-lab-v2/independent-execution-candidate.js`에서 페이스랩 전용 제품·옵션 ID, 실행 종류, 승인 상태·자료 근거 형식, 영역별 지원 증거, 색상 프로필을 독립적으로 검증. 헤어 참고자료·서비스·색 조합을 실물 상품과 구분.
+- 확인: `scripts/verify-face-lab-v2-independent-execution-candidate.mjs`에서 상품·색상·다중 영역, 근거/승인/철회/잘못된 종류/식별자 충돌 및 부정 사례 테스트 추가. `face-lab-v2-foundation.yml`에 무료 테스트 연결.
+- 권한 경계: 이 코드는 **검증용 자료의 형식**만 확인하며 서버의 실제 승인 출처·조회 권한을 보증하지 않음. `renderReady=false`, `governedSourceVerified=false`, 유료 이미지 호출 0.
+- 미변경: 스킨케어 상품·추천·Product Fact, 기존 페이스랩 구형 연결 경로, 데이터베이스/마이그레이션/권한/인증/운영 자료/실제 이미지 생성.
+- 다음: 별도 작업으로 독립 실행 후보와 기존 합성기 간 어댑터 및 참조 이미지 승인 검증. 실제 상품 자료 연결은 별도 검토와 권한 승인 필요.
+
+
 ### 2026-10-09 / 페이스랩 독립 상품·스타일 실행 자료 재설계
 
 - 유형: 보호 경계 관련 설계. 기준 `main@b82117394e61cf8fa687768b8f18c88cbb3030f7`, 작업 분야 `face-research`.
