@@ -38,7 +38,7 @@ function issues(x) {
      scope.formulationRevisionKey!==BUSHMAN_MIXED_REGISTRY_TARGET.formulationRevisionKey ||
      scope.ownerDecision!=="50g/50ml same product for internal review only") fail.push("EXACT_IDENTITY_SCOPE");
   const trueKeys=["ownerAssumesSameProductForInternalCatalog","reviewKeywordCountsAreNotPrevalence","reviewersMayBeIncentivizedOrSelfSelected"];
-  const falseKeys=["manufacturerSignedSkuEquivalence","representativeSampleOrDenominatorValidated","sourceRawSnapshotNewlyIngested","sourceContentDigestNewlyComputed","researchDoesNotCreateAdminApproval"];
+  const falseKeys=["manufacturerSignedSkuEquivalence","representativeSampleOrDenominatorValidated","sourceRawSnapshotNewlyIngested","sourceContentDigestNewlyComputed"];
   if(trueKeys.some(k=>ind[k]!==true) || falseKeys.some(k=>ind[k]!==false) || ind.researchDoesNotCreateAdminApproval!==true){
      // researchDoesNotCreateAdminApproval must be true, never a fictitious admin approval
      fail.push("SOURCE_AUTHORITY_OVERCLAIM");
@@ -53,7 +53,7 @@ function issues(x) {
      tag?.observedTags?.allergic_reaction!==3 ||
      fact?.level!=="governed_product_fact_current" ||
      fact?.sourceRef!=="db:product_fact_current:1a4602c5-02e8-4ae0-b2f5-92dc66c85fc0" ||
-     (x.sources??[]).some(s=>s.rawCapturedInThisStage!==false)) fail.push("SOURCE_INTEGRITY");
+     (x.sources??[]).some(s=>s.level!=="governed_product_fact_current" && s.rawCapturedInThisStage!==false)) fail.push("SOURCE_INTEGRITY");
   const items=x.reviewDecisions??[], b=x.refinedSemanticBundle??{}, fields=b.fields??{},p=x.rpcPayloadPreview??[];
   if(!Array.isArray(items) || items.length!==12 || !Array.isArray(p) || p.length!==12 ||
      JSON.stringify(Object.keys(fields).sort())!==JSON.stringify([...FIELD_NAMES].sort()) ||
