@@ -64,6 +64,39 @@ try{
  assert.ok(workflow.includes("r16h-r3-snature-firstparty-detail-images"));
  assert.ok(workflow.includes("retention-days: 7"));
  assert.ok(workflow.includes("R16HR3_EXACT_HEAD_SHA"));
+ const audit=JSON.parse(await fs.readFile("evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16h-r3-snature-official-image-review-v1.json","utf8"));
+ assert.equal(audit.stage,"R16H-R3");
+ assert.equal(audit.artifact_id,11618211091);
+ assert.equal(audit.head_sha,"18b7875d46916ec802f0f01dfd3fe091d747ac6c");
+ assert.equal(audit.artifact_sha256,"4cef66598d10c55f0f5135433091abfed7e9eabd3782d21a4e1e1d266d2cdb82");
+ assert.equal(audit.firstparty_image_paths_total,17);
+ assert.equal(audit.prior_reviewed,2);
+ assert.equal(audit.newly_fetched,15);
+ assert.equal(audit.newly_sha256_verified,15);
+ assert.equal(audit.newly_blocked,0);
+ assert.equal(audit.animated_files,7);
+ assert.equal(audit.official_90ml_legal_ingredient_panel_found,false);
+ assert.equal(audit.official_90ml_manufacture_or_lot_info_found,false);
+ assert.equal(audit.official_80ml_ingredient_count,25);
+ assert.equal(audit.official_80ml_first_ingredient,"정제수");
+ assert.equal(audit.retailer_claims_are_not_formulation_authority,true);
+ assert.equal(audit.folder_name_is_not_formula_revision,true);
+ assert.equal(audit.formulation_revision_key,null);
+ assert.equal(audit.subject_semantic_key,null);
+ assert.equal(audit.subject_registration_authorized,false);
+ assert.equal(audit.production_writes,0);
+ assert.equal(audit.pda_evaluations,1968);
+ assert.equal(audit.archived_asset_checks.length,15);
+ assert.deepEqual(audit.archived_asset_checks.map(x=>x.index),Array.from({length:15},(_,i)=>i+2));
+ for(const row of audit.archived_asset_checks){
+   assert.match(row.sha256,/^[0-9a-f]{64}$/);
+   assert.ok(row.bytes>0&&row.bytes<8388608);
+   assert.equal(row.independently_verified,true);
+ }
+ assert.equal(new Set(audit.archived_asset_checks.map(x=>x.sha256)).size,15);
+ assert.equal(audit.decision,"R16H_R3_OFFICIAL_IMAGES_17_17_INSPECTED_90ML_LEGAL_PANEL_NOT_RECOVERED_HOLD");
+ const report=await fs.readFile("docs/evidence/v21-8h-r16h-r3-snature-official-image-full-review-v1.md","utf8");
+ for(const keyword of ["#11618211091","17개","15/15","500,000ppm","R16H-R4","formulation_revision_key=null"])assert.ok(report.includes(keyword),keyword);
  console.log(JSON.stringify({status:"PASS",stage:"R16H-R3",fixed_assets:15,existing_reviewed_assets:2,
   malicious_redirect_blocked:true,image_magic_guard:true,ingredient_authority_issued:false,production_writes:0}));
 }finally{await fs.rm(temp,{recursive:true,force:true});}
