@@ -38,11 +38,22 @@ export async function POST(request) {
   }
   let body;
   try {
-    const raw = await request.text();
-    if (Buffer.byteLength(raw, "utf8") > 2048) {
-      return response({ ok: false, error: "semantic_review_request_too_large" }, 413);
+    const reader = request.body?.getReader();
+    const chunks = [];
+    let received = 0;
+    if (reader) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += value.byteLength;
+        if (received > 2048) {
+          await reader.cancel();
+          return response({ ok: false, error: "semantic_review_request_too_large" }, 413);
+        }
+        chunks.push(Buffer.from(value));
+      }
     }
-    body = JSON.parse(raw);
+    body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
   } catch {
     return response({ ok: false, error: "semantic_review_request_invalid" }, 400);
   }
