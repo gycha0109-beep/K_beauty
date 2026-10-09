@@ -1,0 +1,13 @@
+{
+  "workflow": "taxonomy-ai-r16d-source-capture.yml",
+  "primaryResponsibility": "catalog-taxonomy",
+  "capabilities": [
+    "official-source",
+    "read-only-audit",
+    "provenance-capture",
+    "static-contract"
+  ],
+  "watchtowerTrackBinding": "static:taxonomy-ai",
+  "lifecycleNameClass": "phase-coded",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

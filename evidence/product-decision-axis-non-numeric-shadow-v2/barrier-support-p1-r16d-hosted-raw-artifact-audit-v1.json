@@ -1,0 +1,99 @@
+{
+  "stage": "V2.1-8H-R16D-R1_HOSTED_RAW_SOURCE_ARTIFACT_AUDIT",
+  "version": "barrier-support-p1-r16d-hosted-raw-artifact-audit-v1",
+  "review_date": "2026-10-09",
+  "upstream": {
+    "r16d_preflight_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16d-official-source-capture-preflight-v1.json",
+    "git_blob_sha": "c782a2e21c530dcfd61467cf03a738b6a0aa9504",
+    "expected_product_ids": [
+      "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "5848640c-84ca-4079-9d9e-8f3113159fe1"
+    ]
+  },
+  "source": {
+    "repo": "gycha0109-beep/K_beauty",
+    "pr_number": 1175,
+    "run_id": 37830938121,
+    "workflow": "[WT:taxonomy-ai] R16D P1 Official Source Capture",
+    "pr_head_sha_at_run": "eb2192fd289ecc2409f799d39e8677954a2d8132",
+    "checkout_exact_head_verified_by_ci": true,
+    "reported_manifest_github_head_sha": "6da20e5335cb85877030de88742562345c79783b",
+    "manifest_sha_matches_pr_head": false,
+    "manifest_issue": "GITHUB_SHA_REFERS_TO_PR_SYNTHETIC_MERGE_REF_WHILE_CHECKOUT_USES_EXPLICIT_HEAD_SHA",
+    "artifact_id": 11572854459,
+    "artifact_name": "r16d-p1-official-kr-source-bytes",
+    "zip_sha256_from_github": "0db2c8c0ccadbd20f02a4f8dc80a1be320ee846ac40a48f2e46fa830626d178a",
+    "artifact_expires_at": "2026-10-15T19:18:44Z",
+    "raw_files_held_outside_git": true
+  },
+  "manual_recomputed_from_extracted_raw_bytes": true,
+  "products": [
+    {
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "source_product_id": "34622",
+      "raw_name": "innisfree-bija-cica-balm-ex-40ml.html",
+      "raw_bytes": 553877,
+      "sha256_recomputed": "f85c16714bf53bb14f29f85bf2766190b8e34f909720a55d64d1b6adc8d391cd",
+      "matches_manifest": true,
+      "exact_brand_domain": true,
+      "official_name": "비자 시카 밤 EX",
+      "size_ml": 40,
+      "identity_evidence": {
+        "kind": "OFFICIAL_DOCUMENT_TITLE",
+        "observed": "비자 시카 밤 EX(40mL) | 이니스프리"
+      },
+      "variant_revision_confirmed": false,
+      "subject_semantic_key": null,
+      "registration_authorized": false
+    },
+    {
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "source_product_id": "99",
+      "raw_name": "snature-aqua-oasis-gel-cream-80ml.html",
+      "raw_bytes": 248632,
+      "sha256_recomputed": "6a69b5f2c3cf7371ceabe7a41ba65de2dcad1d49858607e110a389bc88472112",
+      "matches_manifest": true,
+      "exact_brand_domain": true,
+      "official_name": "아쿠아 오아시스 수분 젤크림",
+      "size_ml": 80,
+      "identity_evidence": {
+        "kind": "OFFICIAL_HTML_JSON_LD_PRODUCT",
+        "product_name": "아쿠아 오아시스 수분 젤크림 80ml",
+        "sku": "cafe24_smasteri_1_99",
+        "linked_official_url": "https://www.snature.kr/product/아쿠아-오아시스-수분-젤크림-80ml/99/"
+      },
+      "variant_revision_confirmed": false,
+      "subject_semantic_key": null,
+      "registration_authorized": false
+    }
+  ],
+  "decision": "RAW_OFFICIAL_SOURCE_2_OF_2_VERIFIED_IDENTITY_OBSERVED_BUT_MANIFEST_CHECKOUT_SHA_MISMATCH_RECAPTURE_REQUIRED",
+  "next_gate": {
+    "stage": "V2.1-8H-R16D-R2_EXACT_HEAD_RECAPTURE_AND_REVIEW",
+    "requires_new_run": true,
+    "exact_checkout_sha_manifest_fixed_in_branch": true,
+    "validate_raw_hashes_again": true,
+    "verify_current_formula_revision": true,
+    "materialize_identity_key_only_from_governed_serializer": true,
+    "production_subject_registration_authorized": false
+  },
+  "invariance": {
+    "production_writes": 0,
+    "source_binding_writes": 0,
+    "intake_writes": 0,
+    "subject_writes": 0,
+    "evidence_writes": 0,
+    "fact_writes": 0,
+    "recommendation_writes": 0,
+    "non_numeric_pda": true,
+    "frozen_candidates": 164,
+    "frozen_scenarios": 12,
+    "frozen_evaluations": 1968,
+    "zeroid_hold_released": false,
+    "anua_hold_released": false,
+    "esnature_160ml_hold_released": false,
+    "public_activation": false
+  }
+}
