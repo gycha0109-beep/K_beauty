@@ -123,11 +123,106 @@ for (const [name, mutation, expected] of negativeTests) {
   mutation(changed);
   assert.ok(evaluate(changed).includes(expected), name);
 }
+// R4-C-R5 is an append-only first-party unit-label observation. It cannot
+// reinterpret the frozen R4-C-R4 record or grant real-world identity authority.
+const r5 = JSON.parse(fs.readFileSync(
+  "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-c-r5-first-party-unit-conflict-v1.json",
+  "utf8",
+));
+function evaluateR5(x) {
+  const fails = [];
+  if (x.stage !== "DATA-AI29C-FILTER-R4-C-R5" ||
+      x.decision !== "FIRST_PARTY_UNIT_CONFLICT_REPRODUCED_MANUFACTURER_ATTESTATION_HOLD" ||
+      x.conclusion !== "PUBLIC_FIRST_PARTY_INCONSISTENCY_IS_NOT_A_MANUFACTURER_SIGNED_OR_ADMIN_ATTESTED_SAME_SKU_FORMULATION" ||
+      x.next_gate !== "AWAIT_BRAND_OR_MANUFACTURER_EXPLICIT_SKU_AND_FORMULATION_EQUIVALENCE_EVIDENCE") {
+    fails.push("R5_STAGE_OR_APPROVAL_BOUNDARY");
+  }
+  const [single, bundle, retailer] = x.checked_urls ?? [];
+  if (x.checked_urls?.length !== 3 ||
+      single?.source_tier !== "BRAND_FIRST_PARTY" ||
+      single?.product_no !== 31 ||
+      single?.url !== "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/" ||
+      single?.title_unit !== "50ml" || single?.disclosure_unit !== "50ml" ||
+      bundle?.source_tier !== "BRAND_FIRST_PARTY" ||
+      bundle?.product_no !== 50 ||
+      bundle?.url !== "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%94%A8%ED%94%84%EB%A0%8C%EB%93%A4%EB%A6%AC-%EB%B8%8C%EB%A1%A0%EC%A6%88-%ED%83%9C%EB%8B%9D%EC%98%A4%EC%9D%BC-190ml-spf7-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-50g-spf50-pa-2%EC%A2%85-%EC%84%B8%ED%8A%B8/50/" ||
+      bundle?.title_unit !== "50g" || bundle?.disclosure_unit !== "190ml/50ml" ||
+      bundle?.disclosure_unit_scope !== "190ml 태닝오일과 50ml 선크림의 세트" ||
+      retailer?.source_tier !== "RETAILER" ||
+      retailer?.product_no !== "270878000493" ||
+      retailer?.title_unit !== "50g" || retailer?.disclosure_unit !== "50g") {
+    fails.push("R5_SOURCE_LABEL_REPRODUCTION");
+  }
+  const strength = x.evidence_strength ?? {};
+  const yes = ["same_brand","same_named_pro_product","public_inci_sequence_appears_matching","first_party_unit_conflict_reproduced"];
+  const no = ["identical_sku_confirmed","barcode_link_confirmed","manufacturer_formulation_revision_confirmed",
+              "manufacturer_explicit_response","content_sha256_independently_computed","prior_source_digests_recomputed"];
+  if (yes.some(k => strength[k] !== true) || no.some(k => strength[k] !== false)) {
+    fails.push("R5_PROOF_OVERCLAIM");
+  }
+  const external = x.external_reference_boundary ?? {};
+  if (external.japanese_listing_jan !== "8809990190508" ||
+      external.jan_source_kind !== "third_party_catalog_unverified_against_brand_sku" ||
+      external.sku_equivalence_inferred_from_jan !== false) {
+    fails.push("R5_EXTERNAL_IDENTIFIER_MISUSED");
+  }
+  const contact = x.human_escalation ?? {};
+  if (contact.brand_contact_from_official_footer !== "bushmankorea@gmail.com" ||
+      contact.phone_from_official_footer !== "02-998-5127" ||
+      contact.outreach_sent !== false ||
+      contact.manufacturer_response_received !== false ||
+      contact.approval_audit_created !== false ||
+      contact.requested_clarifications?.length !== 4) {
+    fails.push("R5_HUMAN_APPROVAL_MISREPRESENTED");
+  }
+  const prod = x.frozen_production ?? {};
+  if (prod.product_id !== r2.target.productId ||
+      prod.subject_id !== r2.target.subjectId ||
+      prod.identity_resolution_version !== r2.target.fromAuthority ||
+      prod.attestation_table_present !== false ||
+      prod.preflight_rpc_present !== false ||
+      prod.confirmation_rpc_present !== false ||
+      prod.upgrade_audit_count !== 0 ||
+      prod.current_semantic_review_count !== 0 ||
+      prod.live_db_write_count !== 0) {
+    fails.push("R5_PRODUCTION_SCOPE_OR_WRITE");
+  }
+  const changes = x.prohibited_changes ?? {};
+  const changeKeys = ["product_subject_update","official_source_binding_update","fact_evidence_update",
+    "production_r2_r3_migration","independent_attestation_issued","subject_identity_authority_upgraded",
+    "semantic_review_granted","admission_granted","ranking_beta_uva_water_enabled"];
+  if (Object.keys(changes).sort().join() !== changeKeys.sort().join() ||
+      changeKeys.some(k => changes[k] !== false)) {
+    fails.push("R5_UNAUTHORIZED_ACTIVATION");
+  }
+  return fails;
+}
+assert.deepEqual(evaluateR5(r5), [], "R5 must fail closed without manufacturer response");
+const r5Negatives = [
+  ["false_brand_solo_label", x => x.checked_urls[0].title_unit = "50g", "R5_SOURCE_LABEL_REPRODUCTION"],
+  ["false_brand_bundle_label", x => x.checked_urls[1].title_unit = "50ml", "R5_SOURCE_LABEL_REPRODUCTION"],
+  ["false_brand_bundle_disclosure", x => x.checked_urls[1].disclosure_unit = "190ml/50g", "R5_SOURCE_LABEL_REPRODUCTION"],
+  ["forged_sku", x => x.evidence_strength.identical_sku_confirmed = true, "R5_PROOF_OVERCLAIM"],
+  ["fabricated_brand_response", x => x.evidence_strength.manufacturer_explicit_response = true, "R5_PROOF_OVERCLAIM"],
+  ["unverified_jan_promoted", x => x.external_reference_boundary.sku_equivalence_inferred_from_jan = true, "R5_EXTERNAL_IDENTIFIER_MISUSED"],
+  ["outreach_falsified", x => x.human_escalation.outreach_sent = true, "R5_HUMAN_APPROVAL_MISREPRESENTED"],
+  ["approval_falsified", x => x.human_escalation.approval_audit_created = true, "R5_HUMAN_APPROVAL_MISREPRESENTED"],
+  ["live_migration", x => x.frozen_production.attestation_table_present = true, "R5_PRODUCTION_SCOPE_OR_WRITE"],
+  ["activation_escalation", x => x.prohibited_changes.admission_granted = true, "R5_UNAUTHORIZED_ACTIVATION"],
+];
+for (const [label, edit, expected] of r5Negatives) {
+  const bad = structuredClone(r5);
+  edit(bad);
+  assert.ok(evaluateR5(bad).includes(expected), label);
+}
+
 console.log(JSON.stringify({
   stage:e.stage,
   status:"PASS",
   decision:e.decision,
   negativeTests:negativeTests.length,
+  r5NegativeTests:r5Negatives.length,
+  r5Decision:r5.decision,
   publicSourceComparison:"PASS_NOT_IDENTITY_ATTESTATION",
   subjectAuthority:"HOLD",
   productionWrites:0

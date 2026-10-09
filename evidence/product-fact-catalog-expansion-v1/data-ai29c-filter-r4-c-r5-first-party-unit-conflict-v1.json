@@ -1,0 +1,89 @@
+{
+  "stage": "DATA-AI29C-FILTER-R4-C-R5",
+  "decision": "FIRST_PARTY_UNIT_CONFLICT_REPRODUCED_MANUFACTURER_ATTESTATION_HOLD",
+  "observed_date": "2026-10-09",
+  "checked_urls": [
+    {
+      "source_tier": "BRAND_FIRST_PARTY",
+      "product_no": 31,
+      "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "title_unit": "50ml",
+      "disclosure_unit": "50ml",
+      "manufacturer": "한국콜마",
+      "primary_product": "부쉬맨 워터프루프 프로 선크림 SPF50+ PA++++"
+    },
+    {
+      "source_tier": "BRAND_FIRST_PARTY",
+      "product_no": 50,
+      "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%94%A8%ED%94%84%EB%A0%8C%EB%93%A4%EB%A6%AC-%EB%B8%8C%EB%A1%A0%EC%A6%88-%ED%83%9C%EB%8B%9D%EC%98%A4%EC%9D%BC-190ml-spf7-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-50g-spf50-pa-2%EC%A2%85-%EC%84%B8%ED%8A%B8/50/",
+      "title_unit": "50g",
+      "disclosure_unit": "190ml/50ml",
+      "disclosure_unit_scope": "190ml 태닝오일과 50ml 선크림의 세트",
+      "manufacturer": "한국화장품/한국콜마",
+      "primary_product": "씨프렌들리 브론즈 태닝오일과 워터프루프 프로 선크림 세트"
+    },
+    {
+      "source_tier": "RETAILER",
+      "product_no": "270878000493",
+      "url": "https://www.ssgdfs.com/kr/goos/initDetailGoos?goos_cd=270878000493",
+      "title_unit": "50g",
+      "disclosure_unit": "50g",
+      "manufacturer": "㈜한국콜마",
+      "primary_product": "부쉬맨 워터프루프 프로 선크림 SPF50+ PA++++"
+    }
+  ],
+  "evidence_strength": {
+    "same_brand": true,
+    "same_named_pro_product": true,
+    "public_inci_sequence_appears_matching": true,
+    "first_party_unit_conflict_reproduced": true,
+    "identical_sku_confirmed": false,
+    "barcode_link_confirmed": false,
+    "manufacturer_formulation_revision_confirmed": false,
+    "manufacturer_explicit_response": false,
+    "content_sha256_independently_computed": false,
+    "prior_source_digests_recomputed": false
+  },
+  "external_reference_boundary": {
+    "japanese_listing_jan": "8809990190508",
+    "jan_source_kind": "third_party_catalog_unverified_against_brand_sku",
+    "sku_equivalence_inferred_from_jan": false
+  },
+  "human_escalation": {
+    "brand_contact_from_official_footer": "bushmankorea@gmail.com",
+    "phone_from_official_footer": "02-998-5127",
+    "outreach_sent": false,
+    "manufacturer_response_received": false,
+    "approval_audit_created": false,
+    "requested_clarifications": [
+      "Does official solo product no.31 (50ml) have the exact same KR sellable SKU and formulation revision as the Pro suncream included in official mixed bundle no.50 (headline 50g, product disclosure 50ml)?",
+      "Is 50g a legacy label, weight measurement or mistake? Provide explicit capacity/weight statement and effective date.",
+      "What are the official SKU/GTIN/barcode identifiers and any packaging/formulation revision or batch differences?",
+      "May a written manufacturer/brand statement documenting equivalence be retained as independent Subject identity review evidence?"
+    ]
+  },
+  "frozen_production": {
+    "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "identity_resolution_version": "data-ai29c-c5-presentation-identity-correction-v1",
+    "attestation_table_present": false,
+    "preflight_rpc_present": false,
+    "confirmation_rpc_present": false,
+    "upgrade_audit_count": 0,
+    "current_semantic_review_count": 0,
+    "live_db_write_count": 0
+  },
+  "prohibited_changes": {
+    "product_subject_update": false,
+    "official_source_binding_update": false,
+    "fact_evidence_update": false,
+    "production_r2_r3_migration": false,
+    "independent_attestation_issued": false,
+    "subject_identity_authority_upgraded": false,
+    "semantic_review_granted": false,
+    "admission_granted": false,
+    "ranking_beta_uva_water_enabled": false
+  },
+  "conclusion": "PUBLIC_FIRST_PARTY_INCONSISTENCY_IS_NOT_A_MANUFACTURER_SIGNED_OR_ADMIN_ATTESTED_SAME_SKU_FORMULATION",
+  "next_gate": "AWAIT_BRAND_OR_MANUFACTURER_EXPLICIT_SKU_AND_FORMULATION_EQUIVALENCE_EVIDENCE"
+}
