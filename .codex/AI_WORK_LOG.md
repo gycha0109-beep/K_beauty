@@ -3,6 +3,17 @@
 ## Entries
 
 
+### 2026-10-10 / Face Lab 프로덕션 DB 식별·마이그레이션 이력 해소 설계
+
+- 유형: 설계형, 보호 영역 변경 없음. 기준 `main@54aae425134cbebe65c958845c98aa87a0825afa`, 분야 `face-research`.
+- 근거: #1199 후보 DB 읽기 전용 감사. Vercel Production 환경변수 조회 403, 후보 프로젝트 동일성 미확정; repo SQL 142 / hosted 이력 171, 공통 버전 101 / repo-only 41 / hosted-only 70.
+- 문서: `docs/domain/facelab/face-lab-v2-p1-d2c6-hosted-identity-migration-reconciliation-plan-v1.md`.
+- 결정: 배포 프로젝트 확인(A)과 migration 이력 설명(B)을 독립 게이트로 분리. 현재 서비스 alias/Production SHA와 프로젝트 참조의 안전 비교를 먼저 시행하고, 대상 확정 후 파일명/버전/설명/코드 이력/DB 객체를 분리하여 전수 분류. 자동 적용·기존 이력 편집 금지.
+- 다음 실행 제안: 네트워크 없는 마이그레이션 비교 스크립트 및 목록 보고서 → 프로젝트 소유자/권한 있는 Vercel 조회로 배포 참조 확인 → 고위험 SQL 객체 대조.
+- 미변경: DB, migration, RLS, 관리자/인증, Storage, Vercel 환경변수, API, 운영 데이터, 유료 모델 요청 0. 환경 동등성은 여전히 HOLD.
+
+
+
 ### 2026-10-09 / Face Lab 실제 배포 후보 DB·권한 읽기 전용 감사
 
 - 작업: #1198의 4나-1 읽기 전용 감사. Vercel `k-beauty` production READY/현재 main 커밋 일치, Supabase 연결 계정의 서울 후보 프로젝트 메타·카탈로그·Advisor·migration 목록 확인.
