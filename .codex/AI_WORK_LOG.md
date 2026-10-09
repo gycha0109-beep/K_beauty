@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
+
+- 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
+- 근거: #1201 설치 차단 조건 A(Production↔Supabase 정체성) 및 B(repo↔hosted migration 이력) 해소 설계. A는 미확정, 과거 142/171/101/41/70은 이전 조사 스냅샷으로만 취급.
+- 코드: `scripts/facelab/audit/migration-reconciliation-core.mjs` 결정적 오프라인 비교·집계·분류; `compare-face-lab-migration-history.mjs`은 로컬 SQL 파일·비밀 없는 hosted JSON만 읽고 CSV/Markdown/JSON 보고서 생성.
+- 테스트: `scripts/facelab/audit/verify-face-lab-migration-history.mjs`에 버전/이름 차이·동명이인 후보·이력 보존·역순 결정성·중복/잘못된 입력·CLI 실패·DB 접근/운영 권한 오용 방지 검사, 기존 Face Lab Foundation CI 연결.
+- 보호: SQL 실행·DB 호출·네트워크 호출·운영 마이그레이션/권한/인증/API/배포/실상품 변경 0. 보고 결과가 모두 같아도 `productionReadiness=HOLD`, `projectIdentityVerified=false`, `appliedSqlVerified=false`. 실제 운영 DB 동일성 미확정.
+- 다음: Production 설정 참조의 합법적 읽기 확인 또는 소유자 확인, 정확한 DB 정체성 확보 후 새로운 이력 JSON으로 비교기 실행 및 영향 객체 읽기 전용 조사.
+
+
 
 ### 2026-10-10 / Face Lab 프로덕션 DB 식별·마이그레이션 이력 해소 설계
 
