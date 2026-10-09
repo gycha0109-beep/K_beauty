@@ -100,9 +100,18 @@ export default function BushmanSemanticReviewWorkbench({ workbench }) {
               </button>
             </div>
             <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-slate-300">{field.rationale}</p>
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-              근거: {field.sourceIds.join(", ")}
-            </p>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <span>근거:</span>
+              {field.sourceIds.map((id) => {
+                const source = workbench.sources?.find((item) => item.id === id);
+                return source?.url ? (
+                  <a key={id} href={source.url} target="_blank" rel="noopener noreferrer"
+                    className="underline decoration-dotted underline-offset-2">
+                    {id}
+                  </a>
+                ) : <span key={id}>{id}</span>;
+              })}
+            </div>
             {field.blocker ? <p className="mt-2 font-mono text-xs text-amber-700">{field.blocker}</p> : null}
           </article>
         ))}
