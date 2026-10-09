@@ -1,0 +1,116 @@
+{
+  "stage": "V2.1-8H-R16H-R2_KR_INNISFREE_40_70_OFFICIAL_RAW_PROVENANCE_AUDIT",
+  "version": "barrier-support-p1-r16h-r2-kr-40-70-official-inci-audit-v1",
+  "observed_utc": "2026-10-09T12:44:08.905Z",
+  "upstream": "R16H_WEB_FIRST_FORMULATION_EQUIVALENCE_UNPROVEN_SOURCE_CONFLICT_HOLD2",
+  "source": {
+    "repository": "gycha0109-beep/K_beauty",
+    "pr_number": 1192,
+    "run_id": 37931941113,
+    "artifact_id": 11616921172,
+    "artifact_name": "r16h-p1-innisfree-kr-40-70-bytes",
+    "head_sha": "1c4d407b4c49cd63889417f9eff77a5764b507a0",
+    "manifest_head_sha": "1c4d407b4c49cd63889417f9eff77a5764b507a0",
+    "artifact_zip_sha256": "b9a12c7da48b7782d673e5b48d92c9bec6761bb14a3a931f822666e7e17b643f",
+    "raw_files_kept_out_of_git": true,
+    "ephemeral_retention_days": 7,
+    "expires_utc": "2026-10-16T12:44:10Z",
+    "independent_full_response_sha256_recomputed": true,
+    "independent_ingredient_panel_sha256_recomputed": true
+  },
+  "products": [
+    {
+      "id": "innisfree_bija_ex_40ml",
+      "catalog_product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "official_product_no": "34622",
+      "nominal_ml": 40,
+      "first_party_url": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+      "official_html_title": "비자 시카 밤 EX(40mL) | 이니스프리",
+      "artifact_file": "innisfree_bija_ex_40ml.html",
+      "raw_byte_length": 555448,
+      "raw_sha256": "d562438e70289b9bd5da5dfece7445de8d5c67f28f2184e61381bba81e1734b2",
+      "official_ingredient_count": 26,
+      "ordered_panel_sha256": "3a9ecd76e31282c42b245986c6b5f6adba0d9dd61c2adfa592a2f411403a8134",
+      "verified": true
+    },
+    {
+      "id": "innisfree_bija_ex_70ml",
+      "catalog_product_id": null,
+      "official_product_no": "34623",
+      "nominal_ml": 70,
+      "first_party_url": "https://m.innisfree.com/kr/ko/dp/product/34623",
+      "official_html_title": "비자 시카 밤 EX [대용량](70mL) | 이니스프리",
+      "artifact_file": "innisfree_bija_ex_70ml.html",
+      "raw_byte_length": 538371,
+      "raw_sha256": "7b7e2c0821202fd6d1fc1bffe6c52829caf6f76d53debda5c38b8e378cc2a3bd",
+      "official_ingredient_count": 26,
+      "ordered_panel_sha256": "3a9ecd76e31282c42b245986c6b5f6adba0d9dd61c2adfa592a2f411403a8134",
+      "verified": true
+    }
+  ],
+  "comparison": {
+    "same_branded_product_family": true,
+    "exact_KR_presentations_confirmed": 2,
+    "exact_first_party_KR_ordered_panels_confirmed": 2,
+    "ordered_ingredient_lists_identical": true,
+    "ingredient_names_count": 26,
+    "ingredient_order_match_all_26": true,
+    "initial_ingredient_names": [
+      "정제수",
+      "프로판다이올",
+      "글리세린",
+      "사이클로펜타실록세인",
+      "스쿠알란"
+    ],
+    "contains_bija_seed_oil": "비자나무씨오일(1,000ppm)",
+    "formula_masses_concentrations_identical": "NOT_ESTABLISHED",
+    "same_manufacturing_formula_generation": "NOT_ESTABLISHED",
+    "lot_bound_version": "NOT_ESTABLISHED",
+    "effective_date": "NOT_ESTABLISHED",
+    "cross_market_MY_birch_oil_contradiction_resolved_for_kr_list_only": true,
+    "cross_market_MY_volume_typo_resolved": false
+  },
+  "authority": {
+    "product_id_is_catalog_not_formula": true,
+    "size_is_commercial_presentation": true,
+    "official_identical_ingredient_list_suggests_possible_same_formula": true,
+    "identical_INCI_does_not_prove_same_formula_generation": true,
+    "no_lot_or_effective_date": true,
+    "formulation_revision_key": null,
+    "subject_semantic_key": null,
+    "semantic_key_collision_check": "NOT_EVALUABLE_NO_MATERIALIZED_KEY",
+    "production_subject_registration_authorized": false,
+    "product_fact_adjudication_authorized": false,
+    "source_binding_reassignment_authorized": false
+  },
+  "other_p1_status": {
+    "snature_80ml_official_panel_observed": true,
+    "snature_90ml_brand_first_party_panel_observed": false,
+    "snature_90ml_third_party_panel_conflict_open": true,
+    "registration_authorized": false
+  },
+  "summary": {
+    "attempted": 2,
+    "raw_captured": 2,
+    "exact_KR_panels": 2,
+    "INCI_order_equal": 2,
+    "formula_revision_confirmed": 0,
+    "semantic_keys_materialized": 0,
+    "subjects_registered": 0,
+    "production_writes": 0
+  },
+  "terminal": "R16H_R2_EXACT_KR_INCI_40_70_MATCH_FORMULATION_LINEAGE_HOLD",
+  "next_gate": "R16H_R3_SNATURE_90ML_BRAND_INCI_AUTHORITY_AND_BOTH_FORMULAS_LOT_APPLICABILITY",
+  "invariance": {
+    "zeroid_hold": true,
+    "r16b_anua_hold": true,
+    "r16b_snature_160ml_hold": true,
+    "non_numeric_pda": true,
+    "candidates": 164,
+    "scenarios": 12,
+    "evaluations": 1968,
+    "ranking_delta": 0,
+    "admission_delta": 0,
+    "production_writes": 0
+  }
+}
