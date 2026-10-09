@@ -3,6 +3,18 @@
 ## Entries
 
 
+### 2026-10-09 / 페이스랩 독립 상품 관리 승인·철회 검증 구현
+
+- 유형: 제한 코드 실행. 기준 main `6051434dd47428bb3574010fe942dc6d9a2cf8f0`, 분야 `face-research`.
+- 구현: `independent-catalog-review-state.js`에 초안→심사→승인→공개, 반려, 수정, 중지, 철회, 재심사의 순수 상태 전이와 변경 버전·자료 지문·감사 이력 검증을 추가.
+- 구현: `independent-catalog-publication-gate.js`에 상품·옵션·색상·부위 기능·이미지의 각 자료 지문과 최신 공개 심사 기록을 대응하는 무료 가상 체험 검증을 추가.
+- 검증: `scripts/verify-face-lab-v2-independent-catalog-governance.mjs` 신설, 기존 Face Lab 자동 검증에 연결. 잘못된 역할·상태 변경·버전 경합·반려·중지·철회·자료 변경·중복·가짜 승인 검증.
+- 안전: 형식과 심사 기록의 **자체 정합성만 확인**하며, 클라이언트가 기록 전체를 위조할 수 있으므로 실제 관리자 인증이나 자료 출처 검증이 아님. 반환값 `dry_run`, `governedSourceVerified=false`, `renderReady=false`, `authority=null`, `providerRequest=null`.
+- 미변경: 운영 DB/권한/RLS/인증/API/실제 상품·이미지/스킨케어 및 결제/유료 이미지 생성.
+- 다음: 서버가 실제 심사 이력과 현재 철회 상태를 신뢰 가능한 자료원에서 읽도록 저장·조회 보안 설계/승인. 운영 접근은 별도 승인 전 불허.
+
+
+
 ### 2026-10-09 / 페이스랩 독립 상품 운영 체계 3단계 설계
 
 - 유형: 설계. 기준 `main@28b40325ef0bca5f3d855da0b6112a887a8dc6a8`, 분야 `face-research`.
