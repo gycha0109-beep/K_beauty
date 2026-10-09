@@ -1,0 +1,82 @@
+{
+  "stage": "V2.1-8H-R16H_WEB_FIRST_CROSS_PRESENTATION_FORMULA_AUDIT",
+  "observed_on": "2026-10-09",
+  "target_product_ids": [
+    "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+    "5848640c-84ca-4079-9d9e-8f3113159fe1"
+  ],
+  "innisfree": {
+    "kr_40": {
+      "url": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+      "official_id": "34622",
+      "raw_ing_count": 26
+    },
+    "kr_70": {
+      "url": "https://m.innisfree.com/kr/ko/dp/product/34623",
+      "official_id": "34623",
+      "raw_ing_count": null,
+      "actual_html_captured": false
+    },
+    "au_40": {
+      "url": "https://au.innisfree.com/products/bija-cica-balm-40ml-new",
+      "listed_ingredient_count": 26,
+      "seed_oil_name": "Torreya Nucifera Seed Oil"
+    },
+    "my_70": {
+      "url": "https://my.innisfree.com/products/bija-cica-balm-ex-70ml",
+      "title_volume": "70ml",
+      "spec_table_volume": "40 mL",
+      "listed_ingredient_count": 26,
+      "seed_oil_name": "Birch Seed Oil"
+    },
+    "discrepancies": [
+      "Malaysia page title 70ml while product specification volume 40ml",
+      "Birch Seed Oil vs Torreya Nucifera Seed Oil in foreign official ingredient lists"
+    ],
+    "exact_kr_40_70_ingredient_equality": "NOT_EVALUABLE_KR_70_PANEL_NOT_CAPTURED",
+    "formula_revision_identified": false
+  },
+  "snature": {
+    "official_80": {
+      "url": "https://www.snature.kr/web/upload/new_design/gelcream/80ml/gel80ml_info.jpg",
+      "artifact_id": 11608812161,
+      "sha256": "4d62a3be8996ef8b2ab52421cc2f153e63eb20c73f453cac95c0f3d583b696c6",
+      "total_ingredients": 25,
+      "first_ingredient": "정제수",
+      "fifth_ingredient": "블루아가베잎추출물"
+    },
+    "merchant_90_water_first": {
+      "url": "https://funchreward.com/product/에스네이처-아쿠아-오아시스-수분-젤크림-90ml/549",
+      "ingredients": 25,
+      "first_ingredient": "정제수",
+      "source_tier": "third-party"
+    },
+    "merchant_90_blue_agave_first": {
+      "url": "https://item.gmarket.co.kr/Item/ItemDetailV2?goodsCode=4671825529",
+      "ingredients": 25,
+      "first_ingredient": "블루아가베잎추출물(500,000ppm)",
+      "source_tier": "third-party"
+    },
+    "conflict": "THIRD_PARTY_90ML_INGREDIENT_ORDER_CONTRADICTION",
+    "exact_80_90_formula_equivalence": "NOT_PROVEN",
+    "brand_90_legal_ingredient_panel_observed": false
+  },
+  "policy": {
+    "no_inferred_lot_or_renewal_date": true,
+    "foreign_market_panel_is_not_kr_registration_authority": true,
+    "retailer_ingredient_list_is_not_90ml_firstparty_authority": true,
+    "source_text_sha_is_not_revision_key": true,
+    "zeroid_hold_preserved": true,
+    "r16b_holds_preserved": true
+  },
+  "summary": {
+    "full_korean_formula_pairs_confirmed": 0,
+    "revision_keys": 0,
+    "semantic_keys": 0,
+    "subjects_registered": 0,
+    "production_writes": 0,
+    "non_numeric_pda_cases": 1968
+  },
+  "terminal": "R16H_WEB_FIRST_FORMULATION_EQUIVALENCE_UNPROVEN_SOURCE_CONFLICT_HOLD2",
+  "next_gate": "R16H_R2_CAPTURE_KR_70ML_AND_RECOVER_OFFICIAL_90ML_PANEL"
+}
