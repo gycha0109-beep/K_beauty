@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-09 / 페이스랩 독립 스타일 후보→합성기 무료 연결 검증
+
+- 유형: 제한 코드 구현. 기준 본선 `73f5b82c8e8b7b191d4a01b73713d056d0371891`, 작업 분야 `face-research`.
+- 구현: `lib/face-lab-v2/independent-look-preview-bridge.js`에서 독립 후보 검사 → 부위별 기능 근거·색상 정보·참고 이미지 소유권/권한/무결성 *메타데이터* 검사 → 기존 가상 체험 합성기로 지시서 생성.
+- 안전 경계: 합성기의 실행 가능한 승인 객체는 **반환하지 않음**. 출력은 `dry_run`, `authority=null`, `providerRequest=null`, `governedSourceVerified=false`, `renderReady=false`. 실제 자료 승인/파일 해시·바이트 검증·접근권한 검증은 후속 서버 작업.
+- 검사: `scripts/verify-face-lab-v2-independent-look-preview-bridge.mjs` 추가, 기존 Face Lab 자동 검증에 연결. 복수 부위·상품군·헤어 참고자료 및 오인/무승인/참고 이미지 교차 연결·철회·중복 거부 테스트.
+- 미변경: 기존 추천/스킨케어/구형 Catalog Try-On, 운영 DB·RLS·GRANT·인증·저장/외부 이미지·유료 생성 실행. 유료 호출 0.
+- 다음: 페이스랩 전용 승인 자료의 수집·검토·철회/조회 권한 체계 설계. 별도 운영 승인 전 이미지 생성 연결 금지.
+
+
 ### 2026-10-09 / 페이스랩 독립 실행 상품·옵션 계약 구현
 
 - 작업 유형: 제한된 코드 구현 / 중간 위험. 기준 main `0c664fa11cda5d626e9c334058246c9a7059dc8b`, 작업 분야 `face-research`.
