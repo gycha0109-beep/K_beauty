@@ -163,6 +163,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16e-formulation-authority-frontier-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16f-firstparty-presentation-scope-audit-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16g-official-images-v1.mjs",
 ];
 
 for (const script of consolidatedOnlyScripts) {
