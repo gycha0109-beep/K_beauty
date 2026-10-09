@@ -67,4 +67,3 @@
 이번 단계는 `R16H-R4` 종료까지만 승인. `R16H-R5` **Independent Identity Review는 공식 회신/실물 로트 기반 증거 수령 후에만 착수 가능**. R6 Production Subject 등록은 R5 통과 및 별도 서비스 관리자 승인 전까지 차단한다.
 
 `formulation_revision_key=null`, `subject_semantic_key=null`. Subject/Intake/Review/Fact/Source Binding/추천/랭킹/Production DB **쓰기 0건**, R16B/아누아/160ml·ZEROID HOLD, 비수치 PDA **164×12=1,968** 비교 불변.
-
