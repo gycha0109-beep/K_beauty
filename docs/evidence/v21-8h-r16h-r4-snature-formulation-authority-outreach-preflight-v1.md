@@ -1,6 +1,6 @@
 # R16H-R4 — 에스네이처 80·90ml 포뮬러 공식 권한 회복 조사 종료
 
-**판정: `R16H_R4_PUBLIC_SEARCH_EXHAUSTED_PARTNER_METADATA_OBSERVED_BRAND_ATTESTATION_HOLD`**
+**판정: `R16H_R4_PUBLIC_EVIDENCE_REVIEWED_NO_BRAND_90ML_FORMULA_ATTESTATION_HOLD`**
 
 관측일: 2026-10-10 (KST). 이번 단계는 새 크롤러·CI·DB 작업을 만들지 않는 **공개 웹 근거 검토 및 공식 문의 전 단계**다. 공식 브랜드/제조사 회신을 받은 사실이 없으며 **문의도 발송하지 않았다**.
 
