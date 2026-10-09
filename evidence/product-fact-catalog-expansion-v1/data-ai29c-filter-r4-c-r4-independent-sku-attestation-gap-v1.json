@@ -1,0 +1,119 @@
+{
+  "stage": "DATA-AI29C-FILTER-R4-C-R4",
+  "decision": "R4_C_R4_PUBLIC_SOURCE_CROSSCHECK_COMPLETE_IDENTITY_ATTESTATION_HOLD",
+  "snapshot_date": "2026-10-09",
+  "track": "taxonomy-ai",
+  "production_project": "bygrczggxfuisupcevaz",
+  "merged_r3": {
+    "pr": 1174,
+    "merge_sha": "1e20ad810119ab53e3bbf89771faba749aacb29c",
+    "post_merge_ci": "PASS"
+  },
+  "identity": {
+    "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subject_semantic_key": "33696edfb47c47672930e0d398b0cd67fb966c355ec474ea9ec4ffa72400a584",
+    "formulation_revision_key": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "subject_label": "BUSHMAN Waterproof Pro Suncream 50g",
+    "current_authority": "data-ai29c-c5-presentation-identity-correction-v1",
+    "required_authority": "trust-phase5-admin-subject-review-v1"
+  },
+  "source_comparison": [
+    {
+      "origin": "brand_first_party",
+      "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "unit_label": "50ml",
+      "manufacturer": "한국콜마",
+      "responsible_seller": "주식회사 부쉬맨",
+      "spf": "SPF50+ PA++++",
+      "ingredient_markers": [
+        "정제수",
+        "징크옥사이드",
+        "다이부틸아디페이트",
+        "칼라민",
+        "트로폴론"
+      ],
+      "source_status": "PUBLIC_PAGE_OBSERVED_NOT_SIGNED_IDENTITY_ATTESTATION"
+    },
+    {
+      "origin": "retailer_supplier_listing",
+      "url": "https://www.ssgdfs.com/kr/goos/initDetailGoos?goos_cd=270878000493",
+      "unit_label": "50g",
+      "manufacturer": "㈜한국콜마",
+      "responsible_seller": "주식회사 부쉬맨",
+      "spf": "SPF50+ PA++++",
+      "ingredient_markers": [
+        "정제수",
+        "징크옥사이드",
+        "다이부틸아디페이트",
+        "칼라민",
+        "트로폴론"
+      ],
+      "source_status": "SUPPLIER_REGISTERED_RETAILER_DETAIL_NOT_MANUFACTURER_IDENTITY_ATTESTATION"
+    },
+    {
+      "origin": "retailer_listing",
+      "url": "https://www.musinsa.com/products/4416202",
+      "unit_label": "50g",
+      "manufacturer": null,
+      "responsible_seller": null,
+      "spf": "SPF50+ PA++++",
+      "ingredient_markers": [],
+      "source_status": "SECONDARY_CATALOG_LABEL_ONLY"
+    }
+  ],
+  "production_read_only_snapshot": {
+    "subject_authority_unchanged": true,
+    "official_product_binding_count": 1,
+    "official_source_review_count": 1,
+    "official_source_subject_binding_count": 4,
+    "latest_frozen_source_id": "94b32b8d-8340-4b91-9e62-646794fd4f41",
+    "latest_frozen_source_digest": "3a9fbcb280935133e95a0f7f19bfff20157258b4dc17b8dce4d601e40f6681a9",
+    "source_frozen_observed_at": "2026-10-08T01:09:02.383289+09:00",
+    "current_product_facts": 3,
+    "fact_instances": 3,
+    "research_tasks": 4,
+    "evidence_records": 3,
+    "current_semantic_review_count": 0,
+    "attestation_table_deployed": false,
+    "confirmation_rpc_deployed": false,
+    "identity_upgrade_audit_count": 0
+  },
+  "independent_attestation": {
+    "manufacturer_signed_or_first_party_explicit_sku_equivalence": false,
+    "manufacturer_or_brand_direct_response": false,
+    "same_sku_or_batch_or_barcode_cross_reference": false,
+    "unit_label_reconciled_by_approved_reviewer": false,
+    "full_ingredient_list_revision_equivalence_independently_verified": false,
+    "fresh_observation_sha256_verified_and_ingested": false,
+    "approval_audit_record_created": false,
+    "attestation_writer_deployed": false,
+    "attestation_approved": false
+  },
+  "assessment": {
+    "name_and_spf_match": true,
+    "manufacturer_name_match": true,
+    "ingredient_markers_match": true,
+    "unit_display_conflict": true,
+    "exact_product_identity_established": false,
+    "formulation_identity_established": false,
+    "market_equivalence_attested": false
+  },
+  "future_required_evidence": [
+    "Brand/manufacturer first-party written explanation whether the 50g retailer listing and 50ml official listing refer to the same exact retail SKU/formulation in KR, including the unit basis (mass vs volume), effective dates and any packaging revision",
+    "Traceable matching SKU, EAN/GTIN or batch/packaging evidence for the 50g and 50ml listings, or explicit producer-approved alternative identifier",
+    "Preserved fresh official observation with own SHA-256 receipt, observation time and immutable provenance, with explicit scope and formulation",
+    "Separate independent admin reviewer judgment with rationale and auditable approval (not inferred from existing official source binding)"
+  ],
+  "authority_outcome": {
+    "subject_upgrade_allowed": false,
+    "production_migration_allowed": false,
+    "issue_attestation_allowed": false,
+    "production_preflight_allowed": false,
+    "semantic_review_allowed": false,
+    "admission_allowed": false,
+    "recommendation_activation_allowed": false
+  },
+  "production_writes": 0,
+  "next_gate": "BRAND_MANUFACTURER_FIRST_PARTY_SKU_FORMULATION_EQUIVALENCE_EVIDENCE_REQUIRED"
+}
