@@ -3,6 +3,17 @@
 ## Entries
 
 
+### 2026-10-09 / Face Lab 실제 배포 후보 DB·권한 읽기 전용 감사
+
+- 작업: #1198의 4나-1 읽기 전용 감사. Vercel `k-beauty` production READY/현재 main 커밋 일치, Supabase 연결 계정의 서울 후보 프로젝트 메타·카탈로그·Advisor·migration 목록 확인.
+- 확인: 후보 DB `public` 일반 테이블 91개/RLS 91개, 뷰 6개(security_invoker), 기존 admin 회원/감사 테이블/정책 존재. 페이스랩 독립 운영 스키마·전용 테이블 및 Storage 버킷 0.
+- 차단: Vercel 프로젝트 Production 환경변수 목록 조회 403(프로젝트·팀 지정 재확인), **배포와 Supabase 동일성 미확인**. Git SQL migration 142개/DB 적용 이력 171건, 버전 교집합 101/저장소 전용 41/DB 전용 70으로 대응표 필요.
+- 보안: `authenticated`이 실행 가능한 특권 admin 함수와 익명 로그인·유출 비밀번호 방어 관련 Supabase Advisor 경고 관찰. 권한/정책 실제 사용자 호출 테스트는 미실행.
+- 보고: `docs/domain/facelab/face-lab-v2-p1-d2c5-hosted-readonly-audit-20261009-v1.md`. 실제 대상 및 migration 동등성 확인 전 DB 운영 변경 **HOLD**.
+- 미변경: SQL 읽기만 수행. 스키마/권한/RLS/Storage/Auth/API/운영 데이터/배포/유료 이미지 변경 없음.
+
+
+
 ### 2026-10-09 / Face Lab 독립 상품 운영 저장소 설치 전 보안·권한 설계
 
 - 작업 성격: **설계형**, 페이스랩 상품 영역에 향후 DB·Auth·RLS·Storage 영향 Y, 현재 변경은 docs/work log만. 기준 `main@2718e7c3419ef4602177e29e5396c468d6849551`, 트랙 `face-research`.
