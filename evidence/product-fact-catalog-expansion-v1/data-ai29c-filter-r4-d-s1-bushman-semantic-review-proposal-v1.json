@@ -1,0 +1,272 @@
+{
+  "stage": "DATA-AI29C-FILTER-R4-D-S1",
+  "decision": "BUSHMAN_12_FIELD_SEMANTIC_REVIEW_PROPOSAL_READY_NOT_APPLIED",
+  "track": "taxonomy-ai",
+  "date": "2026-10-09",
+  "predecessor": {
+    "r4cR5Merge": "171b1dd121946332fb936e928f7f815bdbffe32d",
+    "r4bDecision": "FILTER_R4_B_EXACT_MIXED_REGISTRY_COMPATIBILITY_CONTRACT_IMPLEMENTED_NO_ADMISSION"
+  },
+  "ownerDecision": {
+    "scope": "INTERNAL_CATALOG_IDENTITY_PRESENTATION_ONLY",
+    "decision": "TREAT_50G_AND_50ML_AS_SAME_PRODUCT_FOR_REVIEW_PREPARATION",
+    "source": "User explicit instruction on 2026-10-09",
+    "manufacturerAttested": false,
+    "verifiedSkuBarcode": false,
+    "changesFormalSubjectAuthority": false,
+    "overridesSafetyClaims": false
+  },
+  "target": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subjectSemanticKey": "33696edfb47c47672930e0d398b0cd67fb966c355ec474ea9ec4ffa72400a584",
+    "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "subjectAuthority": "data-ai29c-c5-presentation-identity-correction-v1",
+    "label": "BUSHMAN Waterproof Pro Suncream 50g"
+  },
+  "source": {
+    "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+    "firstPartyProductNo": 31,
+    "officialClaimExcerpts": [
+      "선크림 SPF50+ PA++++ 50ml",
+      "세부제품특징 : 저자극, 레포츠용, 어린이겸용, 워터프루프, 지속력",
+      "주요제품특징 : 부드러운 발림, 백탁현상방지"
+    ],
+    "latestFrozenOfficialSourceId": "94b32b8d-8340-4b91-9e62-646794fd4f41",
+    "latestFrozenOfficialContentDigest": "3a9fbcb280935133e95a0f7f19bfff20157258b4dc17b8dce4d601e40f6681a9",
+    "officialSourceUsedAsManufacturerClaimsOnly": true
+  },
+  "productionBaseline": {
+    "subjectIdentityResolutionVersion": "data-ai29c-c5-presentation-identity-correction-v1",
+    "currentProductFacts": 3,
+    "currentSemanticReviewCount": 0,
+    "attestationTableDeployed": false
+  },
+  "semanticBundle": {
+    "contractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subjectCount": 1,
+    "fields": {
+      "category_slot": {
+        "state": "established",
+        "value": "sunscreen",
+        "confidence": "high"
+      },
+      "skin_types": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "concerns": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "texture": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "finish": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "uv_filter_type": {
+        "state": "established",
+        "value": "hybrid",
+        "confidence": "high"
+      },
+      "sensitivity_safe": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "irritation_risk": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "tone_up": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "white_cast": {
+        "state": "established",
+        "value": "none",
+        "confidence": "medium"
+      },
+      "eye_sting": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "pilling_risk": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      }
+    }
+  },
+  "reviewDecisions": [
+    {
+      "field": "category_slot",
+      "state": "established",
+      "value": "sunscreen",
+      "confidence": "high",
+      "rationale": "The official first-party page names the product 선크림. Category only, no sensitivity or efficacy inference.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "skin_types",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "The first-party statement 어린이겸용 does not establish a specific oily, dry, combination, sensitive, or normal skin type.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "concerns",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "An SPF/PA claim does not by itself substantiate a controlled skin-concern list.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "texture",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "부드러운 발림 is a spreading claim, not a confirmed watery/gel/lotion/cream enum.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "finish",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "부드러운 발림 does not establish a controlled finish enum.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "uv_filter_type",
+      "state": "established",
+      "value": "hybrid",
+      "confidence": "high",
+      "rationale": "Previously confirmed Product Fact Current uv_filter_type=hybrid under registry v2; reuse that governed fact, not ad hoc ingredient classification.",
+      "authority": "governed_fact",
+      "sourceLocator": null,
+      "factEvidenceId": "88d1b9fc-a02c-4af3-9d49-f102978d4769"
+    },
+    {
+      "field": "sensitivity_safe",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "저자극 and 어린이겸용 are marketed claims, not a universal skin-safety guarantee.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "irritation_risk",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "저자극 does not quantify individual irritation risk as low/medium/high.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "tone_up",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "The page does not explicitly establish tone-up presence/absence. Do not convert absence of a claim to false.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "white_cast",
+      "state": "established",
+      "value": "none",
+      "confidence": "medium",
+      "rationale": "Manufacturer product disclosure lists 백탁현상방지. Use as a manufacturer claim-level 'none' in the review proposal, NOT independent clinical white-cast testing.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "eye_sting",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "No authoritative low/medium/high eye-stinging observation.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    },
+    {
+      "field": "pilling_risk",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "rationale": "No authoritative low/medium/high makeup-pilling observation.",
+      "authority": "official_product",
+      "sourceLocator": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "factEvidenceId": null
+    }
+  ],
+  "reviewCounts": {
+    "required": 12,
+    "proposedReviewed": 12,
+    "proposedEstablished": 3,
+    "proposedUnresolved": 9,
+    "productionReviewed": 0
+  },
+  "expectedDryRun": {
+    "envelopeReady": true,
+    "coreEstablished": true,
+    "neutralEligible": true,
+    "whiteCastRelevantEligible": true,
+    "sensitivityRelevantEligible": false,
+    "toneUpRelevantEligible": false,
+    "contextualUnresolvedFields": [
+      "skin_types",
+      "concerns",
+      "texture",
+      "finish",
+      "sensitivity_safe",
+      "irritation_risk",
+      "tone_up",
+      "eye_sting",
+      "pilling_risk"
+    ]
+  },
+  "execution": {
+    "proposalOnly": true,
+    "adminReviewActorVerified": false,
+    "reviewRpcExecuted": false,
+    "productionSemanticRowsWritten": 0,
+    "productionMigrationsApplied": 0,
+    "productOrSubjectUpdated": false,
+    "admissionGranted": false,
+    "betaOrRankingChanged": false
+  },
+  "nextGate": "DATA_AI29C_FILTER_R4_D_S2_ADMIN_SEMANTIC_REVIEW_EXECUTION_DECISION"
+}
