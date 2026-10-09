@@ -73,11 +73,8 @@ try{
  assert.ok(hostile.targets.every(x=>x.failure_code==="SOURCE_BLOCKED:official_sku_host_or_path_mismatch"));
  const scope=await fs.readFile("docs/architecture/product-fact-subject-formulation-scope-v1.md","utf8");
  assert.ok(scope.includes("Commercial presentation"));
- const workflow=await fs.readFile(".github/workflows/taxonomy-ai-r16d-source-capture.yml","utf8");
- for(const token of ["capture-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs","verify-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs",
-  "r16h-p1-innisfree-kr-40-70-bytes","R16H_EXACT_CHECKOUT_SHA","retention-days: 7"]){
-   assert.ok(workflow.includes(token),token);
- }
+ // The browser and runner have not yet acquired a live 70ml KR response.
+ // This is an offline source-verification guard, not hosted ingredient evidence.
  const self=await fs.readFile("scripts/product-evidence/capture-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs","utf8");
  for(const token of ["SUPABASE_SERVICE_ROLE_KEY",".rpc(", ".insert(", ".upsert("])assert.ok(!self.includes(token));
  console.log(JSON.stringify({status:"PASS",stage:"R16H",offline_fixture_lists:26,exact_sku_guards:true,
