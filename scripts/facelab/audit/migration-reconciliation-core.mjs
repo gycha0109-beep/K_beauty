@@ -52,7 +52,8 @@ function parseHosted(items) {
   }
   const found = new Set();
   return items.map(item => {
-    if (!isPlain(item) || !VERSION_RE.test(item.version) ||
+    if (!isPlain(item) || typeof item.version !== "string" ||
+        typeof item.name !== "string" || !VERSION_RE.test(item.version) ||
         !NAME_RE.test(item.name)) {
       fail("hosted_entry_invalid");
     }
