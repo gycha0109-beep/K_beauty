@@ -43,6 +43,7 @@ on:
       - "scripts/verify-face-lab-v2-appearance-handoff.mjs"
       - "scripts/verify-face-lab-v2-candidate-capability.mjs"
       - "scripts/verify-face-lab-v2-independent-execution-candidate.mjs"
+      - "scripts/verify-face-lab-v2-independent-look-preview-bridge.mjs"
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
@@ -184,6 +185,7 @@ on:
       - "scripts/verify-face-lab-v2-appearance-handoff.mjs"
       - "scripts/verify-face-lab-v2-candidate-capability.mjs"
       - "scripts/verify-face-lab-v2-independent-execution-candidate.mjs"
+      - "scripts/verify-face-lab-v2-independent-look-preview-bridge.mjs"
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
@@ -342,6 +344,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-visual-try-on-multi-reference.mjs
       - name: Verify Face Lab V2 Independent Execution candidate contract
         run: node scripts/verify-face-lab-v2-independent-execution-candidate.mjs
+      - name: Verify Face Lab V2 Independent Look preview bridge
+        run: node scripts/verify-face-lab-v2-independent-look-preview-bridge.mjs
       - name: Verify Face Lab V2 Catalog Product Try-On binding
         run: node scripts/verify-face-lab-v2-catalog-product-try-on-binding.mjs
       - name: Verify Face Lab V2 Catalog Reference Resolver
