@@ -2,6 +2,18 @@
 
 ## Entries
 
+
+### 2026-10-09 / 페이스랩 독립 공개본 모의 조회·철회 경합 검증
+
+- 유형: 제한 코드 실행/무료 검증. 기준 `main@d3675c087fdc418c102094a8b4605b320a57a9c3`, 트랙 `face-research`.
+- 구현: `lib/face-lab-v2/independent-catalog-published-read-core.js`에 사용자 선택 ID만 받는 독립 조회 계약, 초기·최종 최신 공개본/철회 확인, 기존 승인 게이트와 무료 합성기 연결을 추가.
+- 가짜 자료원: `scripts/fixtures/face-lab-independent-catalog-memory-store.mjs`에서 상품별 공개본/의존 심사 기록/철회 세대 및 버전 비교, 원자적 모의 업데이트, 기대 개정번호 충돌·중복 요청 차단을 재현.
+- 검증: `scripts/verify-face-lab-v2-independent-published-read.mjs`에 정상 다중 선택, 미공개/오옵션, 무관한 상품 변경, 검증 전·후 철회 경합, 참고 이미지 중지, 오프라인 및 조회 장애, 중복·낡은 수정 요청 거부. Face Lab Foundation 자동 검증에 연결.
+- 안전 경계: 사용자 입력에 승인·원본·이미지 경로·검수 기록을 받지 않는다. 모의 자료와 결과는 실제 관리자 인증·운영 출처 증거 아님. `dry_run`, `authority=null`, `renderReady=false`, `governedSourceVerified=false`, 유료 모델 호출 0.
+- 운영 비대상: DB/RLS/스키마/실제 관리자/인증/API/프로덕션 데이터·이미지/기존 스킨케어 추천/배포 변경 없음.
+- 다음: 실제 배포 DB/인증 권한 식별, 읽기 거래·이미지 원본 권리 검증 및 마이그레이션/롤백 계획 보안 검토(별도 사용자 승인 필요).
+
+
 ### 2026-10-09 / 페이스랩 독립 상품 운영 자료 저장·권한·조회 경계 설계
 
 - 유형: 보호 영역 **설계만**. 기준 `main@1058b27a5c69b37d43c1528b941aee9c54f99c95`, 분야 `face-research`.
