@@ -1,0 +1,170 @@
+{
+  "schema": "barrier-support-p1-r16h-r4-public-source-authority-closeout-v1",
+  "stage": "V2.1-8H-R16H-R4_OFFICIAL_FORMULA_ATTESTATION_RECOVERY",
+  "observed_on": "2026-10-10",
+  "main_baseline": "229f22f16da3d5f59ec20c4a12b1889a8253b4a2",
+  "product": {
+    "catalog_product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+    "brand": "에스네이처",
+    "name": "아쿠아 오아시스 수분 젤크림",
+    "catalog_size_ml": 80,
+    "official_80ml_product_no": "99",
+    "official_80ml_structured_sku": "cafe24_smasteri_1_99"
+  },
+  "provenance": [
+    {
+      "id": "FIRSTPARTY_KR_80ML_LABEL",
+      "tier": "FIRST_PARTY_BRAND_LABEL",
+      "source_url": "https://www.snature.kr/web/upload/new_design/gelcream/80ml/gel80ml_info.jpg",
+      "capture_workflow_run_id": 37914831456,
+      "capture_artifact_id": 11608812161,
+      "raw_byte_length": 127146,
+      "raw_sha256": "4d62a3be8996ef8b2ab52421cc2f153e63eb20c73f453cac95c0f3d583b696c6",
+      "legal_notice_size_ml": 80,
+      "ingredient_count": 25,
+      "initial_ingredients": [
+        "정제수",
+        "글리세린",
+        "부틸렌글라이콜",
+        "1,2-헥산다이올",
+        "블루아가베잎추출물"
+      ],
+      "lot_bound": false,
+      "ingredient_list_attested_to_90ml": false
+    },
+    {
+      "id": "FIRSTPARTY_BRAND_SITE_90ML_MARKETING_ASSETS",
+      "tier": "FIRST_PARTY_BRAND_MARKETING",
+      "source_url": "https://www.snature.kr/product/detail.html?product_no=99",
+      "capture_workflow_run_id": 37935024707,
+      "capture_artifact_id": 11618211091,
+      "official_html_references_90ml_directory_images": 17,
+      "inspected_total": 17,
+      "contains_complete_90ml_legal_ingredient_panel": false,
+      "contains_90ml_lot_identifier": false,
+      "directory_name_proves_90ml_formula": false
+    },
+    {
+      "id": "OLIVEYOUNG_CURRENT_90ML_LISTING",
+      "tier": "RETAILER_PARTNER_SUBMITTED_CATALOG",
+      "source_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?dispCatNo=90000010009&goodsNo=A000000264149&t_click=%ED%8C%90%EB%A7%A4%EB%9E%AD%ED%82%B9_%EC%8A%A4%ED%82%A8%EC%BC%80%EC%96%B4_%EC%83%81%ED%92%88%EC%83%81%EC%84%B8&t_number=90&t_page=%EB%9E%AD%ED%82%B9&trackingCd=Best_Sellingbest",
+      "retailer_goods_no": "A000000264149",
+      "observed_presentation_ml": 90,
+      "description": "산리오/헬로키티 기획 90ml",
+      "page_statement": "본 상품 정보의 내용은 협력사가 직접 등록한 것입니다.",
+      "supplier_individual_identity_verified": false,
+      "first_party_legal_ingredient_or_batch_attestation_exposed": false,
+      "brand_source_90ml_formula_confirmed": false,
+      "raw_page_bytes_captured": false,
+      "raw_digest": null
+    },
+    {
+      "id": "FUNCHREWARD_90ML",
+      "tier": "THIRD_PARTY_RETAILER_LEGAL_NOTICE",
+      "source_url": "https://funchreward.com/product/%EC%97%90%EC%8A%A4%EB%84%A4%EC%9D%B4%EC%B2%98-%EC%95%84%EC%BF%A0%EC%95%84-%EC%98%A4%EC%95%84%EC%8B%9C%EC%8A%A4-%EC%88%98%EB%B6%84-%EC%A0%A4%ED%81%AC%EB%A6%BC-90ml/549",
+      "observed_presentation_ml": 90,
+      "ingredient_count_claimed": 25,
+      "first_five": [
+        "정제수",
+        "글리세린",
+        "부틸렌글라이콜",
+        "1,2-헥산다이올",
+        "블루아가베잎추출물"
+      ],
+      "listed_manufacturer": "(주)씨엔에프",
+      "manufacturer_claim_verified_with_brand": false,
+      "lot_bound": false,
+      "raw_page_bytes_captured": false,
+      "raw_digest": null
+    },
+    {
+      "id": "GMARKET_90ML_4671825529",
+      "tier": "THIRD_PARTY_MARKETPLACE_NOTICE",
+      "source_url": "https://item.gmarket.co.kr/Item/ItemDetailV2?detailVersionType=2&fasterDeliveryYn=false&fromBottomLayer=true&goodsCode=4671825529&isNew=true",
+      "retailer_goods_no": "4671825529",
+      "observed_presentation_ml": 90,
+      "first_five": [
+        "블루아가베잎추출물(500,000ppm)",
+        "정제수",
+        "글리세린",
+        "부틸렌글라이콜",
+        "1,2-헥산다이올"
+      ],
+      "blue_agave_claim_ppm": 500000,
+      "independent_formulation_or_manufacturing_document": false,
+      "lot_bound": false,
+      "raw_page_bytes_captured": false,
+      "raw_digest": null
+    },
+    {
+      "id": "ENURI_90ML_PRICE_COMPARE",
+      "tier": "THIRD_PARTY_AGGREGATOR",
+      "source_url": "https://www.enuri.com/detail.jsp?modelno=124854100",
+      "product_size_ml": 90,
+      "listed_manufacturer": "바이오코스메틱",
+      "manufacturer_claim_verified_with_brand": false,
+      "no_proof_same_legal_manufacturer_as_funch": true
+    }
+  ],
+  "contradiction_matrix": {
+    "label_80_vs_90_funch": "MATCHING_ORDERED_INGREDIENT_NAMES_REPORTED; NOT_FORMULATION_EQUIVALENCE",
+    "label_80_vs_90_gmarket": "DIFFERENT_FIRST_INGREDIENT_AND_500000PPM_ADDITION",
+    "olivyoung_90ml_commerce_vs_brand_80ml": "BOTH_PRESENTATIONS_OBSERVED; BRAND_FORMULA_RELATION_UNPROVEN",
+    "manufacturer_90ml_funch_vs_price_aggregator": "CONFLICTING_OR_AMBIGUOUS_THIRD_PARTY_COMPANY_DESCRIPTORS",
+    "true_formula_change": "NOT_ESTABLISHED",
+    "seller_metadata_error": "NOT_ESTABLISHED",
+    "verified_90ml_GTIN_EAN": null,
+    "verified_90ml_batch_or_mfg_date": null,
+    "old_new_formula_effective_date": null
+  },
+  "contact": {
+    "brand_source_url": "https://snature.kr/product/search.html",
+    "official_kr_email": "ssnature@snature.kr",
+    "official_kr_phone": "070-4271-2278",
+    "outreach_draft_prepared": true,
+    "message_sent": false,
+    "actual_brand_reply_received": false,
+    "nonbrand_manufacturer_contact_verified": false,
+    "routing": "ASK_BRAND_FIRST_DO_NOT_ASSUME_UNVERIFIED_CNF_HOMONYM"
+  },
+  "decision_gate": {
+    "A_same_formula": "NOT_PROVEN",
+    "B_different_formula": "NOT_PROVEN",
+    "C_insufficient_evidence": "PASS_HOLD",
+    "required_for_A": [
+      "Official SKU/GTIN relation or brand confirmation identifying exact 80ml and 90ml formula",
+      "Current lot/manufacturing-window applicability and revision state",
+      "Independent semantic reviewer approval before any Subject promotion"
+    ],
+    "required_for_B": [
+      "Official old/new formula distinction including complete legal INCI or revision record",
+      "Exact effective date/lot/manufacturing boundary",
+      "Independent semantic reviewer approval before separate Subject lineages"
+    ],
+    "identity_review_gate_released": false,
+    "production_registration_gate_released": false,
+    "auto_subject_semantic_key": null,
+    "auto_formulation_revision_key": null,
+    "subject_registration_authorized": false
+  },
+  "conclusions": {
+    "decision": "R16H_R4_PUBLIC_EVIDENCE_REVIEWED_NO_BRAND_90ML_FORMULA_ATTESTATION_HOLD",
+    "next_gate": "R16H_R4_WAIT_FOR_BRAND_OR_LOT_BOUND_90ML_AUTHORITY_BEFORE_R5",
+    "new_workflows_added": 0,
+    "production_queries_executed": 0,
+    "production_writes": 0,
+    "subjects_registered": 0,
+    "tasks_claimed": 0,
+    "facts_confirmed": 0,
+    "review_status_changes": 0,
+    "source_binding_changes": 0,
+    "recommendations_changed": 0,
+    "ranking_changed": 0,
+    "public_activation": false,
+    "r16b_holds_unchanged": true,
+    "zeroid_hold_unchanged": true,
+    "pda_candidates": 164,
+    "pda_scenarios": 12,
+    "pda_evaluations": 1968
+  }
+}
