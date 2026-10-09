@@ -8,6 +8,8 @@ on:
       - ".github/workflows/taxonomy-ai-r16d-source-capture.yml"
       - "scripts/product-evidence/capture-barrier-support-p1-r16d-official-sources-v1.mjs"
       - "scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs"
+      - "scripts/product-evidence/capture-barrier-support-p1-r16g-official-images-v1.mjs"
+      - "scripts/product-evidence/verify-barrier-support-p1-r16g-official-images-v1.mjs"
       - "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16d-official-source-capture-preflight-v1.json"
   workflow_dispatch:
     inputs:
@@ -54,6 +56,12 @@ jobs:
           node --check scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs
           node scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs
 
+      - name: Verify bounded official image capture contract
+        run: |
+          node --check scripts/product-evidence/capture-barrier-support-p1-r16g-official-images-v1.mjs
+          node --check scripts/product-evidence/verify-barrier-support-p1-r16g-official-images-v1.mjs
+          node scripts/product-evidence/verify-barrier-support-p1-r16g-official-images-v1.mjs
+
       - name: Capture two bounded official KR source pages
         shell: bash
         env:
@@ -91,5 +99,43 @@ jobs:
         with:
           name: r16d-p1-official-kr-source-bytes
           path: tmp/r16d-source-capture/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Capture three bounded official first-party image assets
+        shell: bash
+        env:
+          R16G_EXACT_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/capture-barrier-support-p1-r16g-official-images-v1.mjs --output-dir tmp/r16g-official-images
+
+      - name: Check exact image artifact provenance
+        shell: bash
+        env:
+          R16G_EXACT_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const d=JSON.parse(fs.readFileSync("tmp/r16g-official-images/manifest.json","utf8"));
+          if (d.execution.exact_checkout_sha!==process.env.R16G_EXACT_CHECKOUT_SHA) {
+            throw new Error("R16G exact checkout SHA mismatch");
+          }
+          if (d.production_writes!==0 || d.subject_registration_authorized!==false ||
+              d.formulation_revision_key!==null || d.subject_semantic_key!==null) {
+            throw new Error("R16G research privilege boundary violated");
+          }
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+            "\n### R16G read-only official images\nCaptured: "+d.summary.captured+
+            "/3 | blocked: "+d.summary.blocked+
+            " | visual review: pending | Subject registration: blocked\n");
+          console.log(JSON.stringify({capture:d.summary,exact_head:true,registration:false}));
+          NODE
+
+      - name: Upload seven-day official image bytes and manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: r16g-p1-official-visual-assets
+          path: tmp/r16g-official-images/
           if-no-files-found: error
           retention-days: 7
