@@ -45,6 +45,8 @@ on:
       - "scripts/verify-face-lab-v2-independent-execution-candidate.mjs"
       - "scripts/verify-face-lab-v2-independent-look-preview-bridge.mjs"
       - "scripts/verify-face-lab-v2-independent-catalog-governance.mjs"
+      - "scripts/verify-face-lab-v2-independent-published-read.mjs"
+      - "scripts/fixtures/face-lab-independent-catalog-memory-store.mjs"
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
@@ -188,6 +190,8 @@ on:
       - "scripts/verify-face-lab-v2-independent-execution-candidate.mjs"
       - "scripts/verify-face-lab-v2-independent-look-preview-bridge.mjs"
       - "scripts/verify-face-lab-v2-independent-catalog-governance.mjs"
+      - "scripts/verify-face-lab-v2-independent-published-read.mjs"
+      - "scripts/fixtures/face-lab-independent-catalog-memory-store.mjs"
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
       - "scripts/verify-face-lab-v2-render-adapter.mjs"
@@ -350,6 +354,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-independent-look-preview-bridge.mjs
       - name: Verify Face Lab V2 Independent Catalog governance
         run: node scripts/verify-face-lab-v2-independent-catalog-governance.mjs
+      - name: Verify Face Lab V2 Independent Published Read
+        run: node scripts/verify-face-lab-v2-independent-published-read.mjs
       - name: Verify Face Lab V2 Catalog Product Try-On binding
         run: node scripts/verify-face-lab-v2-catalog-product-try-on-binding.mjs
       - name: Verify Face Lab V2 Catalog Reference Resolver
