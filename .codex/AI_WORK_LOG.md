@@ -2,6 +2,18 @@
 
 ## Entries
 
+### 2026-10-09 / 페이스랩 독립 상품·스타일 실행 자료 재설계
+
+- 유형: 보호 경계 관련 설계. 기준 `main@b82117394e61cf8fa687768b8f18c88cbb3030f7`, 작업 분야 `face-research`.
+- 문제: 공용 스킨케어 Product Fact Subject 및 분류 자료의 승인 상태를 페이스랩 가상 체험 상품 연결에 필수로 강제해, 독립된 스타일 추천 업무가 차단됨.
+- 설계 결정: 페이스랩 전용 실행 대상·색상/옵션·적용 기능 증거·참고 이미지·선택적 외부 매핑을 독립적으로 정의. 공용 로그인/이미지 인프라와 기존 페이스랩 적용 영역·합성기·보안 기준은 보존.
+- 구현 순서: 독립 순수 코드 계약과 무료 검사 → 합성기 어댑터 → 승인 출처·저장 설계 → 별도 사용자 승인 후 DB/권한/운영 데이터 변경.
+- 문서: `docs/domain/facelab/face-lab-v2-p1-d2c-independent-execution-catalog-design-v1.md`.
+- 경계: 스킨케어 추천, DB 스키마/정책/RLS/권한, 인증/응답/저장 구조, 운영 제품·비밀/유료 이미지 변경 없음.
+- 이전 공용 분류 필수 경로 및 미병합 PR #1173은 페이스랩 의존 구조 관점에서 대체 대상으로 명시. 과거 관측 결과는 보존.
+- 검사: 문서 내용·경로·PR 변경 범위 및 관련 CI. 실제 실행/운영 상품 연결 미검증.
+
+
 ### 2026-10-09 / Face Lab P1-D2B-1 connected DB read-only inventory
 
 - Task: execute only permissioned Supabase metadata and aggregated Subject/Taxonomy readback; `main@0c38485842c4250621ccb1b17cbf358556a3270d` baseline, `face-research` track.
