@@ -75,6 +75,24 @@ export default function BushmanSemanticReviewWorkbench({ workbench }) {
           추천 편입/Subject 승격 <strong>별도 절차 · 미승인</strong>
         </div>
       </div>
+      <div className="mt-4 text-sm leading-6 text-slate-700 dark:text-slate-300">
+        <p className="font-semibold">S4 운영 검증 · {workbench.s4?.reviewReady ? "검토·감사 일치 PASS" : "검토·감사 미완료 HOLD"}</p>
+        <p>
+          감사 일치 {workbench.s4?.audited ?? 0}/12 ·
+          Subject 권한 {workbench.s4?.subjectAuthorityReady ? "충족" : "별도 승인 필요"} ·
+          추천 편입 {workbench.s4?.readyForAdmissionPreflight ? "사전검증 가능" : "HOLD"}
+        </p>
+        {workbench.s4?.blockers?.length ? (
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            남은 조건: {workbench.s4.blockers.map((code) => {
+              if (code === "SUBJECT_AUTHORITY_NOT_GOVERNED") return "Subject 권한 미승격";
+              if (code === "SEMANTIC_12_OF_12_NOT_CURRENT") return "현재 12개 리뷰 미완료";
+              if (code === "AUDIT_12_OF_12_NOT_VERIFIED") return "감사 기록 12건 미검증";
+              return code;
+            }).join(" · ")}
+          </p>
+        ) : null}
+      </div>
       {error ? <p role="alert" className="mt-4 rounded-lg border border-red-200 p-3 text-sm text-red-700">{error}</p> : null}
       {notice ? <p role="status" className="mt-4 rounded-lg border border-emerald-200 p-3 text-sm text-emerald-700">{notice}</p> : null}
       <div className="mt-6 space-y-3">
