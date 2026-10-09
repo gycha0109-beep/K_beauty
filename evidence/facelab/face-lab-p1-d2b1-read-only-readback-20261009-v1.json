@@ -1,0 +1,110 @@
+{
+  "auditVersion": "face-lab-d2b1-hosted-inventory-v1",
+  "repositorySha": "0c38485842c4250621ccb1b17cbf358556a3270d",
+  "observedAtUtc": "2026-10-09T06:33:50.030068Z",
+  "target": {
+    "linkedWorkspace": "bejewely-supabase-connection",
+    "schemaMatch": true,
+    "deployedProductionParity": "unverified",
+    "projectIdentifierOmitted": true
+  },
+  "operation": {
+    "sqlWrites": 0,
+    "migrations": 0,
+    "rlsOrGrantChanges": 0,
+    "providerCalls": 0,
+    "privateRowExports": 0,
+    "singleProductReads": 0,
+    "inspectedRole": "postgres",
+    "metadataSelectOnly": true,
+    "aggregateTransactionReadOnly": true,
+    "statementTimeoutMs": 3000,
+    "lockTimeoutMs": 1000
+  },
+  "tableAuthority": [
+    {
+      "name": "products",
+      "exists": true,
+      "rlsEnabled": true,
+      "authenticatedSelectPrivilege": true,
+      "anonSelectPrivilege": true
+    },
+    {
+      "name": "product_fact_subjects",
+      "exists": true,
+      "rlsEnabled": true,
+      "authenticatedSelectPrivilege": false,
+      "anonSelectPrivilege": false
+    },
+    {
+      "name": "catalog_taxonomy_versions",
+      "exists": true,
+      "rlsEnabled": true,
+      "authenticatedSelectPrivilege": false,
+      "anonSelectPrivilege": false
+    },
+    {
+      "name": "catalog_taxonomy_terms",
+      "exists": true,
+      "rlsEnabled": true,
+      "authenticatedSelectPrivilege": false,
+      "anonSelectPrivilege": false
+    },
+    {
+      "name": "product_catalog_taxonomy_assignments",
+      "exists": true,
+      "rlsEnabled": true,
+      "authenticatedSelectPrivilege": false,
+      "anonSelectPrivilege": false
+    }
+  ],
+  "subjectCoverage": {
+    "total": 51,
+    "currentResolved": 47,
+    "historicalResolved": 4,
+    "nullVariantKeyAllSubjects": 35,
+    "productsWithCurrentSubjects": 47,
+    "productsWithMultipleCurrentSubjects": 0,
+    "notYetValidCurrent": 0,
+    "expiredCurrent": 0
+  },
+  "catalogTaxonomy": {
+    "versions": [
+      {
+        "version": "catalog-taxonomy-v1",
+        "lifecycle": "shadow",
+        "authorityMode": "shadow_only"
+      }
+    ],
+    "categoryTerms": {
+      "active": 5,
+      "reserved": 5
+    },
+    "assignments": {
+      "shadow": 175,
+      "canonical": 0
+    },
+    "eligibleCanonicalCategoryAssignments": 0
+  },
+  "faceLabAuthority": {
+    "dedicatedApprovedVariantReader": "not_discovered_in_public_schema_metadata",
+    "reviewedSubjectVariantBridge": "unknown_source",
+    "categorySlotApproval": "unknown_source",
+    "styleCapabilityProof": "unknown_source",
+    "approvedReferenceBlob": "not_checked"
+  },
+  "decision": {
+    "designGateA": "pass",
+    "readOnlyInventoryGateB": "partial",
+    "runtimeReaderGateC": "blocked_by_authority",
+    "canOfferRealProductTryOnReady": false
+  },
+  "limitations": [
+    "production_deployment_project_link_unverified",
+    "admin_role_used_only_for_diagnostic_read_only_queries",
+    "authenticated_rls_row_level_not_verified",
+    "private_schemas_and_external_authority_sources_not_checked",
+    "no_single_product_readback",
+    "data_snapshot_only"
+  ]
+}
