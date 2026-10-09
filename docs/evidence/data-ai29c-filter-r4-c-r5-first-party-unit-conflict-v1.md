@@ -7,8 +7,8 @@
 
 | 출처 | 공식 표시된 상품 | 상품명 | 상품정보고시 |
 |---|---|---|---|
-| [브랜드 공식 단품 #31](https://bushmankorea.com/product/detail.html?product_no=31) | 워터프루프 **프로** 선크림 | **50ml** | **50ml** |
-| [브랜드 공식 세트 #50](https://bushmankorea.com/product/detail.html?product_no=50) | 태닝오일 + 워터프루프 **프로** 선크림 | **프로 선크림 50g** | **190ml/50ml** (태닝오일/선크림) |
+| [브랜드 공식 단품 #31](https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/) | 워터프루프 **프로** 선크림 | **50ml** | **50ml** |
+| [브랜드 공식 세트 #50](https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%94%A8%ED%94%84%EB%A0%8C%EB%93%A4%EB%A6%AC-%EB%B8%8C%EB%A1%A0%EC%A6%88-%ED%83%9C%EB%8B%9D%EC%98%A4%EC%9D%BC-190ml-spf7-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-50g-spf50-pa-2%EC%A2%85-%EC%84%B8%ED%8A%B8/50/) | 태닝오일 + 워터프루프 **프로** 선크림 | **프로 선크림 50g** | **190ml/50ml** (태닝오일/선크림) |
 | [신세계면세점 #270878000493](https://www.ssgdfs.com/kr/goos/initDetailGoos?goos_cd=270878000493) | 워터프루프 **프로** 선크림 | **50g** | **50g** |
 
 세트 #50의 상품명에는 선크림 50g이 쓰이지만, **같은 페이지의 제품 고시 본문은 선크림 50ml**로 읽힌다. 이는 서로 다른 유통업체의 차이에 국한되지 않고 **브랜드 1차 상품 기록 자체에서 용량 표기가 혼재**함을 의미한다.
@@ -39,8 +39,8 @@
 4. 가능하다면 공식 회신이나 정정된 상품 고시를 제공해 주실 수 있을까요?
 
 참고 주소:
-- 단품: https://bushmankorea.com/product/detail.html?product_no=31
-- 세트: https://bushmankorea.com/product/detail.html?product_no=50
+- 단품: https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/
+- 세트: https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%94%A8%ED%94%84%EB%A0%8C%EB%93%A4%EB%A6%AC-%EB%B8%8C%EB%A1%A0%EC%A6%88-%ED%83%9C%EB%8B%9D%EC%98%A4%EC%9D%BC-190ml-spf7-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-50g-spf50-pa-2%EC%A2%85-%EC%84%B8%ED%8A%B8/50/
 - 판매처: https://www.ssgdfs.com/kr/goos/initDetailGoos?goos_cd=270878000493
 
 감사합니다.

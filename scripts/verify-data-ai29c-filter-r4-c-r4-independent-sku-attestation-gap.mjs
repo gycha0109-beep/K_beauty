@@ -141,11 +141,11 @@ function evaluateR5(x) {
   if (x.checked_urls?.length !== 3 ||
       single?.source_tier !== "BRAND_FIRST_PARTY" ||
       single?.product_no !== 31 ||
-      single?.url !== "https://bushmankorea.com/product/detail.html?product_no=31" ||
+      single?.url !== "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/" ||
       single?.title_unit !== "50ml" || single?.disclosure_unit !== "50ml" ||
       bundle?.source_tier !== "BRAND_FIRST_PARTY" ||
       bundle?.product_no !== 50 ||
-      bundle?.url !== "https://bushmankorea.com/product/detail.html?product_no=50" ||
+      bundle?.url !== "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%94%A8%ED%94%84%EB%A0%8C%EB%93%A4%EB%A6%AC-%EB%B8%8C%EB%A1%A0%EC%A6%88-%ED%83%9C%EB%8B%9D%EC%98%A4%EC%9D%BC-190ml-spf7-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-50g-spf50-pa-2%EC%A2%85-%EC%84%B8%ED%8A%B8/50/" ||
       bundle?.title_unit !== "50g" || bundle?.disclosure_unit !== "190ml/50ml" ||
       bundle?.disclosure_unit_scope !== "190ml 태닝오일과 50ml 선크림의 세트" ||
       retailer?.source_tier !== "RETAILER" ||
