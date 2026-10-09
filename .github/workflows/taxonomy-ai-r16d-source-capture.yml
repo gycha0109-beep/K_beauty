@@ -10,6 +10,8 @@ on:
       - "scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs"
       - "scripts/product-evidence/capture-barrier-support-p1-r16g-official-images-v1.mjs"
       - "scripts/product-evidence/verify-barrier-support-p1-r16g-official-images-v1.mjs"
+      - "scripts/product-evidence/capture-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs"
+      - "scripts/product-evidence/verify-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs"
       - "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16d-official-source-capture-preflight-v1.json"
   workflow_dispatch:
     inputs:
@@ -137,5 +139,21 @@ jobs:
         with:
           name: r16g-p1-official-visual-assets
           path: tmp/r16g-official-images/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Capture R16H exact Korean 40ml and 70ml source evidence
+        shell: bash
+        env:
+          R16H_EXACT_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/capture-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs --output-dir tmp/r16h-kr-bija-comparison
+
+      - name: Upload seven-day Korean 40ml and 70ml official-source evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: r16h-p1-innisfree-kr-40-70-bytes
+          path: tmp/r16h-kr-bija-comparison/
           if-no-files-found: error
           retention-days: 7
