@@ -306,3 +306,15 @@
 - **C — 실제 DB/관리자/이미지 저장·서버 조회 운영 완료:** 보호 권한/실제 심사·저장/동시성/이미지 사용권 검증이 운영 확인됨. **현재 미구현**.
 
 **다음 즉시 작업은 4가: 비운영 모형 자료 공급자 기반의 '원자적 공개본 읽기와 철회 상태 검사' 구현 및 무료 테스트.**
+
+## 14. 외부 보안 기준 참고 (2026-10-09 확인)
+
+이 절은 현재 Supabase 공식 문서에서 확인한 일반 동작이며, **BEJEWELY 운영 프로젝트의 실제 설정 확인을 대신하지 않는다**.
+
+- [데이터 API 보안: 테이블 권한과 행 단위 보안의 차이](https://supabase.com/docs/guides/api/securing-your-api)
+- [공개/비공개 데이터베이스 스키마 설정](https://supabase.com/docs/guides/api/using-custom-schemas)
+- [행 단위 보안 및 허용/거부 시험](https://supabase.com/docs/guides/database/postgres/row-level-security)
+- [비공개 저장소와 저장 객체 접근 통제](https://supabase.com/docs/guides/storage/security/access-control)
+- [서명 URL, 만료 및 저장 객체 전달](https://supabase.com/docs/guides/storage/serving/downloads)
+- [서명 URL과 캐시의 권한 철회 한계](https://supabase.com/docs/guides/storage/cdn/smart-cdn)
+- [저장소 시스템 테이블은 API로 변경해야 함](https://supabase.com/docs/guides/storage/schema/design)
