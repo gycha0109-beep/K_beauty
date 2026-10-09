@@ -1,0 +1,37 @@
+{
+  "stage": "V2.1-8H-R16H-R3_SNATURE_OFFICIAL_90ML_ASSET_CAPTURE_PREFLIGHT",
+  "observed_on": "2026-10-09",
+  "main_baseline": "d3675c087fdc418c102094a8b4605b320a57a9c3",
+  "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+  "official_shop_product_id": "99",
+  "official_shop_presentation_ml": 80,
+  "upstream_official_html_artifact_id": 11600769958,
+  "upstream_official_80ml_image_artifact_id": 11608812161,
+  "official_80ml_ingredient_panel_sha256": "4d62a3be8996ef8b2ab52421cc2f153e63eb20c73f453cac95c0f3d583b696c6",
+  "already_inspected_first_and_last_assets": [
+    "gelcream_01.webp",
+    "gelcream_17.jpg"
+  ],
+  "remaining_asset_count": 15,
+  "source_hostname": "www.snature.kr",
+  "directory_path": "/web/upload/new_design/gelcream/90ml/260826/",
+  "official_90ml_product_or_label_proven_by_directory_name": false,
+  "official_90ml_ingredient_notice_found_before_this_capture": false,
+  "online_capture_status": "PENDING",
+  "intended_artifact_name": "r16h-r3-snature-firstparty-detail-images",
+  "seven_day_ephemeral_artifact": true,
+  "read_only": true,
+  "source_images_committed_to_git": false,
+  "verified_90ml_manufacturer_formula_and_lot": false,
+  "formulation_revision_key": null,
+  "subject_semantic_key": null,
+  "subject_registration_authorized": false,
+  "production_writes": 0,
+  "next_gate": "V2.1-8H-R16H-R3-R2_INSPECT_REAL_OFFICIAL_IMAGE_CONTENT",
+  "hold": {
+    "r16b_anua": true,
+    "r16b_snature_160ml": true,
+    "zeroid": true,
+    "non_numeric_pda_cases": 1968
+  }
+}
