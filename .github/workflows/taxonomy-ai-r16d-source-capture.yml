@@ -10,6 +10,8 @@ on:
       - "scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs"
       - "scripts/product-evidence/capture-barrier-support-p1-r16g-official-images-v1.mjs"
       - "scripts/product-evidence/verify-barrier-support-p1-r16g-official-images-v1.mjs"
+      - "scripts/product-evidence/capture-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs"
+      - "scripts/product-evidence/verify-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs"
       - "scripts/product-evidence/capture-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs"
       - "scripts/product-evidence/verify-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs"
       - "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16d-official-source-capture-preflight-v1.json"
