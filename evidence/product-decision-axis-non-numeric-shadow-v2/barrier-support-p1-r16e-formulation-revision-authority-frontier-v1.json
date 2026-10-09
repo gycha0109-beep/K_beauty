@@ -1,0 +1,210 @@
+{
+  "version": "barrier-support-p1-r16e-formulation-revision-authority-frontier-v1",
+  "stage": "V2.1-8H-R16E_P1_FORMULATION_REVISION_AUTHORITY_FRONTIER",
+  "inspection_date": "2026-10-09",
+  "branch_baseline_main_sha": "0c664fa11cda5d626e9c334058246c9a7059dc8b",
+  "upstream": {
+    "r16d_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16d-exact-head-recapture-audit-v1.json",
+    "r16d_git_blob_sha": "7df9f24971fa6f4edb626b7e243adc1a966b7bd8",
+    "terminal": "R16D_RAW_SOURCE_AND_EXACT_HEAD_PROVENANCE_PASS_FORMULATION_REVISION_AND_SEMANTIC_KEY_HOLD",
+    "source_product_ids": [
+      "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "5848640c-84ca-4079-9d9e-8f3113159fe1"
+    ]
+  },
+  "evidence_source": {
+    "repository": "gycha0109-beep/K_beauty",
+    "source_type": "GitHub Actions archived, first-party HTTP response bytes",
+    "workflow_run_id": 37899489889,
+    "artifact_id": 11600769958,
+    "artifact_name": "r16d-p1-official-kr-source-bytes",
+    "exact_capture_head_sha": "d01a5c6b4d6dd74fc637a8f3bfc3849caaf03389",
+    "captured_at": "2026-10-09T07:31:34.913Z",
+    "artifact_retention_end": "2026-10-16T07:31:38Z",
+    "archive_raw_html_in_repository": false,
+    "actual_raw_bytes_independently_sha256_verified": true,
+    "caveat": "Artifact is ephemeral. File content digests prove captured bytes but cannot be assigned as formulation revision identifiers."
+  },
+  "production_read_only_snapshot": {
+    "project_id": "bygrczggxfuisupcevaz",
+    "current_total_subjects": 51,
+    "expected_registry": "product-fact-registry-cross-category-v1",
+    "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+    "identity_serializer_version": "product-fact-subject-identity-v1",
+    "target_product_subject_count": 0,
+    "target_intake_count": 2,
+    "target_task_count": 4,
+    "intakes": [
+      {
+        "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+        "intake_id": "4c4c737f-ea6c-488d-997a-124eeb6a5894",
+        "updated_at": "2026-09-21T00:53:57.499289+09:00",
+        "identity_state": "SUBJECT_CREATION_REQUIRED",
+        "trust_state": "REVIEW_REQUIRED",
+        "subject_id": null
+      },
+      {
+        "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+        "intake_id": "1893fed6-84a2-49ec-8a7b-caf3ee0ab2df",
+        "updated_at": "2026-09-21T00:53:50.755843+09:00",
+        "identity_state": "SUBJECT_CREATION_REQUIRED",
+        "trust_state": "REVIEW_REQUIRED",
+        "subject_id": null
+      }
+    ],
+    "task_states": {
+      "registry_v1_review_required": 4,
+      "attempted": 0
+    }
+  },
+  "products": [
+    {
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "name": "비자 시카 밤 EX",
+      "catalog_presentation": "40ml",
+      "official_source_product_id": "34622",
+      "official_url": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+      "first_party_html": {
+        "artifact_file": "innisfree-bija-cica-balm-ex-40ml.html",
+        "byte_length": 552567,
+        "raw_bytes_sha256": "84c2a82eaaa0c5a777365a310d9fa46e8c4d4691051788bcd70350db2fa9e451",
+        "verified_against_manifest": true,
+        "exact_sku_name_size_confirmed": true
+      },
+      "ingredient_observation": {
+        "evidence_level": "RAW_HTML_EMBEDDED_PRODUCT_NOTICE_VALUE",
+        "extraction_location": "Nuxt/SPA dehydrated product-notification data carrying field '화장품법에 따라 기재 표시하여야하는 모든 성분'",
+        "visible_rendered_table_empty_in_captured_html": true,
+        "panel_observed": true,
+        "panel_list_is_complete_by_declared_notice_field": true,
+        "count_ingredients_with_numeric_commas_protected": 26,
+        "panel_source_utf8_byte_length": 746,
+        "panel_text_sha256": "3a9ecd76e31282c42b245986c6b5f6adba0d9dd61c2adfa592a2f411403a8134",
+        "first_five": [
+          "정제수",
+          "프로판다이올",
+          "글리세린",
+          "사이클로펜타실록세인",
+          "스쿠알란"
+        ],
+        "final_five": [
+          "마데카소사이드",
+          "아시아티코사이드",
+          "마데카식애씨드",
+          "아시아틱애씨드",
+          "글루코오스"
+        ],
+        "contains_manufacturing_date_rule_only": true,
+        "exact_lot_number_observed": false,
+        "manufacture_or_formula_effective_date_observed": false,
+        "first_party_reformulation_notice_observed": false,
+        "note": "The ingredient text is first-party, but the observed source does not establish which lot or date began this formulation."
+      },
+      "formulation_revision": {
+        "resolved": false,
+        "reason_code": "PANEL_PRESENT_REVISION_LINEAGE_UNBOUND",
+        "formulation_revision_key": null,
+        "variant_key": null,
+        "subject_semantic_key": null,
+        "semantic_key_global_collision": "NOT_EVALUABLE_NO_MATERIALIZED_KEY",
+        "subject_registration_authorized": false
+      },
+      "next_required_evidence": [
+        "Official exact 40ml pack panel with manufacturing lot/date and ingredient list, or official effective-date/reformulation mapping",
+        "Independent provenance and variant review separating 40ml from 70ml commercial presentation",
+        "Recheck Subject key uniqueness only after formulation revision authority is established"
+      ]
+    },
+    {
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "name": "아쿠아 오아시스 수분 젤크림",
+      "catalog_presentation": "80ml",
+      "official_source_product_id": "99",
+      "official_url": "https://www.snature.kr/product/detail.html?cate_no=0&display_group=0&product_no=99",
+      "first_party_html": {
+        "artifact_file": "snature-aqua-oasis-gel-cream-80ml.html",
+        "byte_length": 248632,
+        "raw_bytes_sha256": "12234f1acdc3e520850b06b09485e79ba9b36abbdbfc93a429718bf8fb1bc88b",
+        "verified_against_manifest": true,
+        "exact_sku_name_size_confirmed": true,
+        "structured_product_sku": "cafe24_smasteri_1_99"
+      },
+      "ingredient_observation": {
+        "evidence_level": "RAW_HTML_TEXT_INSPECTION_ONLY",
+        "panel_observed": false,
+        "complete_ingredient_panel_in_captured_raw_html_text": false,
+        "raw_korean_terms_count": {
+          "전성분": 0,
+          "정제수": 0,
+          "리뉴얼": 0,
+          "제조번호": 0
+        },
+        "image_ingredient_panels_not_exhaustively_reviewed": true,
+        "exact_lot_number_observed": false,
+        "manufacture_or_formula_effective_date_observed": false,
+        "first_party_reformulation_notice_observed": false,
+        "note": "The captured HTML confirms the exact Cafe24 product SKU but does not expose an auditable complete ingredient panel in its raw text. Image-backed notices remain a separate recovery path."
+      },
+      "formulation_revision": {
+        "resolved": false,
+        "reason_code": "FIRST_PARTY_COMPLETE_FORMULA_PANEL_NOT_OBSERVED",
+        "formulation_revision_key": null,
+        "variant_key": null,
+        "subject_semantic_key": null,
+        "semantic_key_global_collision": "NOT_EVALUABLE_NO_MATERIALIZED_KEY",
+        "subject_registration_authorized": false
+      },
+      "next_required_evidence": [
+        "Official exact 80ml label image or complete ingredient disclosure and reviewable raw capture",
+        "Manufacturer or first-party revision/lot applicability record for formula generation",
+        "Derive revision and semantic keys only after verified source-to-formulation linkage"
+      ]
+    }
+  ],
+  "governance": {
+    "source_html_sha_is_not_formula_revision_key": true,
+    "ingredient_panel_digest_is_not_formula_revision_key": true,
+    "exact_presentation_is_not_semantic_formulation_authority": true,
+    "r10_canonical_capture_hash_method_not_imported_to_r16e": true,
+    "no_synthetic_version_or_effective_date": true,
+    "future_semantic_key_serializer": "product-fact-subject-identity-v1",
+    "future_semantic_identity_fields": [
+      "product_id",
+      "variant_key",
+      "formulation_revision_key",
+      "market_applicability",
+      "region_applicability",
+      "valid_from",
+      "valid_to"
+    ],
+    "semantic_key_not_materialized_because_revision_unknown": true,
+    "original_R16B_hold_products_untouched": true,
+    "zeroid_hold_unchanged": true
+  },
+  "outcome": {
+    "first_party_exact_kr_product_confirmed": 2,
+    "source_raw_html_verified": 2,
+    "complete_first_party_ingredient_panel_observed": 1,
+    "identity_formula_revision_confirmed": 0,
+    "subject_semantic_key_materialized": 0,
+    "subjects_registered": 0,
+    "tasks_claimed": 0,
+    "production_database_writes": 0,
+    "decision": "R16E_INGREDIENT_PANEL_1_OF_2_FORMULATION_REVISION_0_OF_2_HOLD",
+    "next_gate": "V2.1-8H-R16F_P1_TARGETED_FIRST_PARTY_FORMULA_LINEAGE_RECOVERY"
+  },
+  "invariance": {
+    "non_numeric_pda": true,
+    "candidate_count": 164,
+    "scenario_count": 12,
+    "shadow_evaluations": 1968,
+    "ranking_delta": 0,
+    "eligibility_delta": 0,
+    "review_writes": 0,
+    "source_binding_writes": 0,
+    "recommendation_activation": false,
+    "product_fact_confirmation": false
+  }
+}
