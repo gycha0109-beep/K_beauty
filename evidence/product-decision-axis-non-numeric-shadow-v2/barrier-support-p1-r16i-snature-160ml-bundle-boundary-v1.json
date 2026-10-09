@@ -1,0 +1,104 @@
+{
+  "version": "barrier-support-p1-r16i-snature-160ml-bundle-boundary-v1",
+  "stage": "V2.1-8H-R16I_P1_BUNDLE_PRESENTATION_SCOPE_REVIEW",
+  "observed_date": "2026-10-10",
+  "upstream": {
+    "r16b_path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16b-official-identity-authority-review-v1.json",
+    "r16b_git_blob_sha": "e2ea467296d3a12dd2fb6a53d90de42655158d97",
+    "r16b_decision": "R16B_IDENTITY_AUTHORITY_REVIEW_READY2_HOLD2",
+    "research_order": 6,
+    "decision": "HOLD_PRESENTATION_SCOPE",
+    "preexisting_hold_reopened": false
+  },
+  "target": {
+    "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+    "brand": "에스네이처",
+    "catalog_name": "아쿠아 스쿠알란 수분크림",
+    "catalog_volume_ml": 160,
+    "category": "moisturizer_cream",
+    "source_binding": "https://www.hwahae.co.kr/goods/45194",
+    "production_subject_count_at_r16b": 0
+  },
+  "new_public_evidence": [
+    {
+      "id": "official_80_single",
+      "authority": "FIRST_PARTY_KR_BRAND_CURRENT_COMMERCE_PRESENTATION",
+      "url": "https://www.snature.kr/product/detail.html?product_no=151",
+      "product_no": "151",
+      "observed_title": "아쿠아 스쿠알란 수분크림 80ml",
+      "commercial_presentation": "SINGLE_CONTAINER_80ML",
+      "observed_nominal_size_ml": 80,
+      "brand_formula_revision_attested": false,
+      "source_raw_bytes_archived": false,
+      "source_sha256": null
+    },
+    {
+      "id": "hwahae_160_commerce",
+      "authority": "THIRD_PARTY_RETAILER_BUNDLE_EXPLICIT_TITLE",
+      "url": "https://www.hwahae.co.kr/goods/45194",
+      "observed_title": "[only화해] 아쿠아 스쿠알란 수분크림 80ml 더블+세럼 10ml 세트",
+      "displayed_total_cream_volume_ml": 160,
+      "explicit_component_count_claimed": 2,
+      "nominal_volume_ml_per_cream": 80,
+      "additional_promotional_component": "세럼 10ml",
+      "confidence_in_two_80ml_components": "HIGH_FROM_DOUBLE_TITLE_AND_COMBINED_VOLUME_NOT_PACK_PHOTO_ATTESTATION",
+      "source_raw_bytes_archived": false,
+      "source_sha256": null
+    }
+  ],
+  "scope_findings": {
+    "exact_160ml_single_container_firstparty_evidence_observed": false,
+    "claim_160ml_single_container_authorized": false,
+    "retailer_title_supported_double_pack": true,
+    "retailer_volume_160ml_corresponds_to_80ml_times_2": true,
+    "retailer_description_is_not_manufacturer_formula_authority": true,
+    "normalized_pack_hypothesis": "CREAM_80ML_X2_PLUS_SERUM_10ML_GIFT_SET",
+    "single_container_size_proposed_for_review_ml": 80,
+    "pack_count_proposed_for_review": 2,
+    "pack_volume_total_ml": 160,
+    "presentation_cannot_stand_in_for_semantic_variant": true,
+    "formula_generation_or_batch_proven": false,
+    "canonical_product_subject_ready": false
+  },
+  "proposed_action": {
+    "catalog_auto_volume_correction_authorized": false,
+    "existing_commercial_offer_may_require_separate_bundle_representation": true,
+    "firstparty_single_80ml_may_be_candidate_subject_presentation_only": true,
+    "migration_or_catalog_update_without_owner_review": false,
+    "source_binding_repair_authorized": false,
+    "require_before_write": [
+      "Verify current products row and source binding against live DB immediately before any mutation",
+      "Review original catalog normalization: is 160ml an offer total or single-unit capacity?",
+      "Confirm marketing bundle and exact package components from merchant offer original or approved admin",
+      "Resolve owned catalog product vs offer/bundle modeling and explicit reviewer decision",
+      "Get explicit catalog-write authorization and post-write readback"
+    ],
+    "intake_or_fact_write_authorized": false
+  },
+  "decision": "R16I_BUNDLE_PRESENTATION_MISMATCH_CONFIRMED_REVIEW_REQUIRED_HOLD",
+  "source_limitations": {
+    "observed_web_snippets_not_immutable_raw_capture": true,
+    "snapshot_digest_not_claimed": true,
+    "current_merchandise_set_contents_not_independently_photo_verified": true,
+    "no_brand_confirmed_80ml_to_160ml_lot_formula_relation": true,
+    "do_not_reinterpret_R16B_HOLD_as_PASS": true
+  },
+  "safety": {
+    "subjects_registered": 0,
+    "catalog_rows_mutated": 0,
+    "production_db_writes": 0,
+    "intake_writes": 0,
+    "fact_writes": 0,
+    "source_binding_writes": 0,
+    "review_status_writes": 0,
+    "ranking_delta": 0,
+    "recommendation_delta": 0,
+    "zeroid_hold_preserved": true,
+    "r16b_anua_hold_preserved": true,
+    "r16h_snat_80_90_hold_preserved": true,
+    "candidates": 164,
+    "scenarios": 12,
+    "comparisons": 1968
+  },
+  "next_gate": "R16I_R2_REVIEW_BUNDLE_CATALOG_MODEL_AND_APPROVE_NONAUTOMATIC_CORRECTION"
+}
