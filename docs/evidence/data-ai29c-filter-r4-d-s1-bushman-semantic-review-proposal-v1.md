@@ -1,6 +1,6 @@
 # DATA-AI29C-FILTER-R4-D-S1 — BUSHMAN 선크림 Semantic 12항목 사전검토
 
-**판정:** `BUSHMAN_12_FIELD_SEMANTIC_REVIEW_PROPOSAL_READY_NOT_APPLIED`  
+**판정:** `BUSHMAN_12_FIELD_SEMANTIC_REVIEW_PROPOSAL_READY_NOT_APPLIED`
 2026-10-09 / taxonomy-ai / **미배포 사전검토**
 
 ## 1. 제품 동일성에 관한 사용자 결정
