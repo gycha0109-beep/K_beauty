@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-09 / Face Lab P1-D2B-1 connected DB read-only inventory
+
+- Task: execute only permissioned Supabase metadata and aggregated Subject/Taxonomy readback; `main@0c38485842c4250621ccb1b17cbf358556a3270d` baseline, `face-research` track.
+- Observed: five required tables installed with RLS; only `products` has `authenticated` SELECT. Subject total 51, current/resolved 47, NULL formulation variant_key 35 (all subjects). Installed taxonomy `catalog-taxonomy-v1` remains shadow/shadow_only; 175 shadow assignments, **0 canonical assignments**.
+- Reader reality: approved Face Lab Variant/Bridge/Category/Capability runtime sources not discovered from public schema metadata. Dedicated Recommendation RPCs not executable by anon/authenticated. No single-product or image read occurred.
+- Guard: Supabase metadata SELECT and verified READ ONLY transaction with 3s statement/1s lock timeout; admin diagnostic `postgres` context not reused as Face Lab runtime credential. No SQL writes, hosted mutations, secret/client images, or paid provider calls.
+- Outcome: Gate A complete, Gate B partial (deployment target parity and authoritative source owner unverified), Gate C HOLD (`blocked_by_authority`). Separate DATA-TAXONOMY governance and Face Lab mapping/source approvals required before D2B-2.
+- Evidence: `docs/domain/facelab/face-lab-v2-p1-d2b1-hosted-authority-readback-20261009-v1.md` and `evidence/facelab/face-lab-p1-d2b1-read-only-readback-20261009-v1.json`.
+
+
 ### 2026-10-09 / Face Lab P1-D2B-1 hosted authority inventory design
 
 - Task type: design / protected boundary decision. Baseline `main@1e20ad810119ab53e3bbf89771faba749aacb29c`, Watchtower `face-research`.
