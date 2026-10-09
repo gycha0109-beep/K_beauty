@@ -1,0 +1,58 @@
+{
+  "stage": "V2.1-8H-R16G_R2_FIRST_PARTY_VISUAL_CONTENT_REVIEW",
+  "reviewed_on": "2026-10-09",
+  "run_id": 37914831456,
+  "artifact_id": 11608812161,
+  "exact_capture_sha": "a67c46e0e7ad881b49845ea64f206b12506467c2",
+  "head_manifest_consistent": true,
+  "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+  "brand": "에스네이처",
+  "product": "아쿠아 오아시스 수분 젤크림",
+  "official_sku": "cafe24_smasteri_1_99",
+  "current_size_ml": 80,
+  "images": [
+    {
+      "id": "snature_80ml_product_notice",
+      "bytes": 127146,
+      "sha256": "4d62a3be8996ef8b2ab52421cc2f153e63eb20c73f453cac95c0f3d583b696c6",
+      "verified": true,
+      "visual_inspection": true,
+      "notice_size_ml": 80,
+      "full_ingredient_field": true,
+      "manufacturer_lot_linked": false
+    },
+    {
+      "id": "snature_90ml_detail_first",
+      "bytes": 115606,
+      "sha256": "2acfba92e91890c63529d9c0e486ae091a61b2fc815ee224cd1ff1c267f3cf70",
+      "verified": true,
+      "visual_inspection": true,
+      "actual_90ml_label_in_image": false,
+      "full_ingredient_field": false,
+      "manufacturer_lot_linked": false
+    },
+    {
+      "id": "snature_90ml_detail_last",
+      "bytes": 167772,
+      "sha256": "80a35274ac6cc06f64dc30a437ce551b4750a670d93d7aa1b83da84638a153a7",
+      "verified": true,
+      "visual_inspection": true,
+      "actual_90ml_label_in_image": false,
+      "full_ingredient_field": false,
+      "manufacturer_lot_linked": false
+    }
+  ],
+  "interpretation": {
+    "official_80ml_ingredient_panel_observed": true,
+    "marketing_90ml_directory_images_do_not_prove_90ml_actual_presentation": true,
+    "manufacturer_lot_or_revision_available": false,
+    "formula_identity_80_and_90_same": "NOT_ESTABLISHED",
+    "formulation_revision_key": null,
+    "subject_semantic_key": null,
+    "subjects_registerable": 0
+  },
+  "decision": "R16G_80ML_OFFICIAL_INGREDIENT_NOTICE_RECOVERED_REVISION_LINEAGE_UNBOUND_HOLD2",
+  "next_gate": "R16H_MANUFACTURER_APPLICABILITY_AND_LOT_FORMULATION_EVIDENCE",
+  "production_writes": 0,
+  "non_numeric_pda_evaluations": 1968
+}
