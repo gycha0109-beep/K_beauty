@@ -1,0 +1,126 @@
+{
+  "stage": "R16H-R3",
+  "date": "2026-10-09",
+  "run_id": 37935024707,
+  "artifact_id": 11618211091,
+  "head_sha": "18b7875d46916ec802f0f01dfd3fe091d747ac6c",
+  "artifact_sha256": "4cef66598d10c55f0f5135433091abfed7e9eabd3782d21a4e1e1d266d2cdb82",
+  "firstparty_image_paths_total": 17,
+  "prior_reviewed": 2,
+  "newly_fetched": 15,
+  "newly_sha256_verified": 15,
+  "newly_blocked": 0,
+  "animated_files": 7,
+  "animation_review": "representative keyframes",
+  "observed": "marketing product imagery, charts and skin-care copy",
+  "marketing_label": "Blue Agave Leaf (500,000ppm)",
+  "official_90ml_legal_ingredient_panel_found": false,
+  "official_90ml_manufacture_or_lot_info_found": false,
+  "official_80ml_ingredient_count": 25,
+  "official_80ml_first_ingredient": "정제수",
+  "retailer_90_conflicting_first_ingredients": [
+    "정제수",
+    "블루아가베잎추출물(500,000ppm)"
+  ],
+  "retailer_claims_are_not_formulation_authority": true,
+  "folder_name_is_not_formula_revision": true,
+  "formulation_revision_key": null,
+  "subject_semantic_key": null,
+  "subject_registration_authorized": false,
+  "production_writes": 0,
+  "decision": "R16H_R3_OFFICIAL_IMAGES_17_17_INSPECTED_90ML_LEGAL_PANEL_NOT_RECOVERED_HOLD",
+  "next_gate": "R16H_R4_FIRSTPARTY_90ML_LOT_BOUND_LEGAL_PANEL_OR_BRAND_ATTESTATION",
+  "pda_evaluations": 1968,
+  "archived_asset_checks": [
+    {
+      "index": 2,
+      "bytes": 384363,
+      "sha256": "856ba9dbd9c9c3121a451a8cc424deee7698269751fe65d841189a6570e4b30d",
+      "independently_verified": true
+    },
+    {
+      "index": 3,
+      "bytes": 333635,
+      "sha256": "1c1501f7e72f748ffb7d461ca9cd4a1beba33730909b67ce931dd369a3280d98",
+      "independently_verified": true
+    },
+    {
+      "index": 4,
+      "bytes": 4198962,
+      "sha256": "00f146ad21569c4c9d2f807fd811deb9301bfa05ef78740d6516c69d71c4b45c",
+      "independently_verified": true
+    },
+    {
+      "index": 5,
+      "bytes": 665682,
+      "sha256": "2aed225ccb8576d4fe4d99d23e5fc63afa637960131dcd5df182fe5799a0dfdb",
+      "independently_verified": true
+    },
+    {
+      "index": 6,
+      "bytes": 460227,
+      "sha256": "ec05fbc97d0b4eda47c0f90d6e2202314a113a9ffdce2b4364cdcc5a78230ed3",
+      "independently_verified": true
+    },
+    {
+      "index": 7,
+      "bytes": 244367,
+      "sha256": "4e67abd2bc808380fcd8b8bd4e93eabbdfcd1c86d5869ed59254606fb90f7920",
+      "independently_verified": true
+    },
+    {
+      "index": 8,
+      "bytes": 4522816,
+      "sha256": "9c40d07a743df486ad85ec82753fb27b5eecf49e8dd2014231816d9bd1d290e0",
+      "independently_verified": true
+    },
+    {
+      "index": 9,
+      "bytes": 58856,
+      "sha256": "a093a01c225f42ebe492cdf8b1b973fa11ab595d12505a3834788e4b04be17eb",
+      "independently_verified": true
+    },
+    {
+      "index": 10,
+      "bytes": 40551,
+      "sha256": "4a9a69c76eaa1705a2e6e7256a17fa4d1e07ebee40859777f6d1490c5654f912",
+      "independently_verified": true
+    },
+    {
+      "index": 11,
+      "bytes": 39827,
+      "sha256": "806e4566ed97cc7b91c81d0f9efb6679cc3dbb5bbcd9fe481e6b9643a3150216",
+      "independently_verified": true
+    },
+    {
+      "index": 12,
+      "bytes": 527254,
+      "sha256": "5a06f92167bfe16284dd6410ecd8d473d4d13a714f53cf1b3ab73fac96102599",
+      "independently_verified": true
+    },
+    {
+      "index": 13,
+      "bytes": 39933,
+      "sha256": "b2a96932ea727953d9ccf193c2aad44bdbe4706a59610b74b7e0a4e9377d5ecd",
+      "independently_verified": true
+    },
+    {
+      "index": 14,
+      "bytes": 38914,
+      "sha256": "12f553266b0543374ecb7ff54d17ba59135cf0e82aaadf8198947923104bd395",
+      "independently_verified": true
+    },
+    {
+      "index": 15,
+      "bytes": 39750,
+      "sha256": "a859c3f40a58ddfc20dca7102112aab93f839a6a256f6c32806abdd7aa3dfdeb",
+      "independently_verified": true
+    },
+    {
+      "index": 16,
+      "bytes": 784364,
+      "sha256": "7207e191ac2b89c9a12913eec1c72b38a2d4ab5bb2927bb2f19b305097854b28",
+      "independently_verified": true
+    }
+  ]
+}

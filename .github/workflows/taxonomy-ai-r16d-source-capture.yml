@@ -10,6 +10,8 @@ on:
       - "scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs"
       - "scripts/product-evidence/capture-barrier-support-p1-r16g-official-images-v1.mjs"
       - "scripts/product-evidence/verify-barrier-support-p1-r16g-official-images-v1.mjs"
+      - "scripts/product-evidence/capture-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs"
+      - "scripts/product-evidence/verify-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs"
       - "scripts/product-evidence/capture-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs"
       - "scripts/product-evidence/verify-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs"
       - "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16d-official-source-capture-preflight-v1.json"
@@ -155,5 +157,42 @@ jobs:
         with:
           name: r16h-p1-innisfree-kr-40-70-bytes
           path: tmp/r16h-kr-bija-comparison/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Verify R16H-R3 bounded remaining official image collector
+        run: |
+          node --check scripts/product-evidence/capture-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs
+          node --check scripts/product-evidence/verify-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs
+          node scripts/product-evidence/verify-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs
+
+      - name: Capture 15 remaining official detail images from 90ml directory
+        shell: bash
+        env:
+          R16HR3_EXACT_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/capture-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs --output-dir tmp/r16h-r3-snature-official-images
+
+      - name: Check R16H-R3 provenance and no-write boundary
+        shell: bash
+        env:
+          R16HR3_EXACT_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const d=JSON.parse(fs.readFileSync("tmp/r16h-r3-snature-official-images/manifest.json","utf8"));
+          if(d.execution.exact_checkout_sha!==process.env.R16HR3_EXACT_HEAD_SHA)throw Error("R16H-R3 checkout SHA mismatch");
+          if(d.registration_authorized!==false||d.production_writes!==0||d.subject_semantic_key!==null||d.formulation_revision_key!==null)throw Error("R16H-R3 authority violation");
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,"\n### R16H-R3 official asset capture (no writes)\n15 images attempted: "+
+            d.summary.captured+" captured, "+d.summary.blocked+" blocked. Visual/manual review REQUIRED; Subject registration HOLD.\n");
+          console.log(JSON.stringify({summary:d.summary,exact_head:true,subject_registration:false}));
+          NODE
+
+      - name: Upload seven-day first-party 90ml-directory detail image evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: r16h-r3-snature-firstparty-detail-images
+          path: tmp/r16h-r3-snature-official-images/
           if-no-files-found: error
           retention-days: 7
