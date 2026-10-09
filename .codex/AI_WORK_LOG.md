@@ -3,6 +3,18 @@
 ## Entries
 
 
+### 2026-10-09 / Face Lab 독립 상품 운영 저장소 설치 전 보안·권한 설계
+
+- 작업 성격: **설계형**, 페이스랩 상품 영역에 향후 DB·Auth·RLS·Storage 영향 Y, 현재 변경은 docs/work log만. 기준 `main@2718e7c3419ef4602177e29e5396c468d6849551`, 트랙 `face-research`.
+- 조사: #1196 오프라인 공개본 조회기 및 모의 저장소, #1194 설계, 현재 관리자 `admin_memberships`와 `ADMIN_CAPABILITIES`, 기존 Supabase 인증·스토리지/감사 migration 소스.
+- 설계 문서: `docs/domain/facelab/face-lab-v2-p1-d2c5-operational-storage-security-preflight-v1.md`.
+- 결정: 페이스랩 전용 비공개 자료와 불변 버전/심사 사건/공개본/철회 head 분리, 권한 최소화, 원자적 승인·철회, 신뢰 서버 조회/이미지 원본 검증, 격리 테스트·롤백 게이트.
+- 현행 Supabase 2026-10-30 Data API 기본 GRANT 변경 예정 반영. 현 배포 프로젝트에서 실제 정책/마이그레이션 설치 확인하지 않음.
+- 비변경: 운영 DB·SQL·migration·RLS·GRANT·Auth·Storage·API·실상품·배포·결제·유료 이미지 0.
+- 다음: 사용자 별도 승인 후 **실제 배포 대상과 프로젝트 동등성 읽기 전용 감사** → DDL·권한/트랜잭션 리뷰 → 격리 DB 시험 → 명시적 운영 설치 승인.
+
+
+
 ### 2026-10-09 / 페이스랩 독립 공개본 모의 조회·철회 경합 검증
 
 - 유형: 제한 코드 실행/무료 검증. 기준 `main@d3675c087fdc418c102094a8b4605b320a57a9c3`, 트랙 `face-research`.
