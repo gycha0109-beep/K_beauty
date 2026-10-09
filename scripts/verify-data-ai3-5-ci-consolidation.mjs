@@ -165,6 +165,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p1-r16f-firstparty-presentation-scope-audit-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16g-official-images-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16h-innisfree-kr-comparison-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16h-r2-kr-40-70-inci-audit-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16g-visual-content-audit-v1.mjs",
 ];
 

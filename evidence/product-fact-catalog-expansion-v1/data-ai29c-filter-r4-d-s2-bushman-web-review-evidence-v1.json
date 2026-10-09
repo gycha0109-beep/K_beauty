@@ -1,0 +1,655 @@
+{
+  "stage": "DATA-AI29C-FILTER-R4-D-S2",
+  "decision": "WEB_REVIEW_EVIDENCE_CROSSCHECK_COMPLETE_ADMIN_REVIEW_NOT_EXECUTED",
+  "observedOn": "2026-10-09",
+  "track": "taxonomy-ai",
+  "scope": {
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "formulationRevisionKey": "data-ai29c-c5-bushman-waterproof-pro-current",
+    "ownerDecision": "50g/50ml same product for internal review only",
+    "market": "KR"
+  },
+  "predecessor": {
+    "s1Evidence": "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-d-s1-bushman-semantic-review-proposal-v1.json",
+    "s1MergeSha": "6051434dd47428bb3574010fe942dc6d9a2cf8f0",
+    "s1Established": 3,
+    "s1Unresolved": 9
+  },
+  "independence": {
+    "ownerAssumesSameProductForInternalCatalog": true,
+    "manufacturerSignedSkuEquivalence": false,
+    "reviewKeywordCountsAreNotPrevalence": true,
+    "reviewersMayBeIncentivizedOrSelfSelected": true,
+    "representativeSampleOrDenominatorValidated": false,
+    "sourceRawSnapshotNewlyIngested": false,
+    "sourceContentDigestNewlyComputed": false,
+    "researchDoesNotCreateAdminApproval": true
+  },
+  "sources": [
+    {
+      "id": "BRAND_PRODUCT_31",
+      "level": "brand_first_party_claim",
+      "url": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/",
+      "claimScope": "manufacturer product disclosure: 50ml, SPF50+ PA++++, 백탁현상방지, 저자극, 워터프루프, 부드러운 발림",
+      "rawCapturedInThisStage": false
+    },
+    {
+      "id": "HWAHAE_REVIEW_TAGS",
+      "level": "review_aggregate_tag_ui",
+      "url": "https://www.hwahae.co.kr/goods/50706?goods_tab=review_ingredients",
+      "claimScope": "search-visible AI-generated positive/negative keyword counts; denominator not controlled",
+      "observedTags": {
+        "good_apply": 75,
+        "no_white_cast": 32,
+        "no_irritation": 31,
+        "no_eye_pain": 22,
+        "not_sticky": 21,
+        "oily": 17,
+        "feels_heavy": 3,
+        "allergic_reaction": 3
+      },
+      "tagCountIsNotIncidence": true,
+      "rawCapturedInThisStage": false
+    },
+    {
+      "id": "HWAHAE_INDIVIDUAL",
+      "level": "individual_testimonial",
+      "url": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews",
+      "claimScope": "named/date-filtered anecdotal observations: favorable wear and some eye/pilling concerns",
+      "rawCapturedInThisStage": false
+    },
+    {
+      "id": "HWAHAE_DRY",
+      "level": "individual_testimonial",
+      "url": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews?skin_type=dry",
+      "claimScope": "individual dry/sensitive skin experiences including noticeable white cast and light eye irritation",
+      "rawCapturedInThisStage": false
+    },
+    {
+      "id": "BRAND_PURCHASE_REVIEW_388",
+      "level": "individual_testimonial",
+      "url": "https://review3.cre.ma/bushman001.cafe24.com/mobile/reviews/388",
+      "claimScope": "2026-04-07 review reports no tone-up, no white cast, powdery finish, good spread",
+      "rawCapturedInThisStage": false
+    },
+    {
+      "id": "BRAND_PURCHASE_REVIEW_508",
+      "level": "individual_testimonial",
+      "url": "https://review3.cre.ma/bushman001.cafe24.com/mobile/reviews/508",
+      "claimScope": "2026-03-26 review reports low white cast, no eye stinging, moisturizing application",
+      "rawCapturedInThisStage": false
+    },
+    {
+      "id": "BRAND_PURCHASE_REVIEW_4845",
+      "level": "individual_testimonial",
+      "url": "https://review3.cre.ma/bushman001.cafe24.com/mobile/reviews/4845",
+      "claimScope": "2026-06-22 sensitive skin buyer reports irritation",
+      "rawCapturedInThisStage": false
+    },
+    {
+      "id": "GOVERNED_UV_FACT",
+      "level": "governed_product_fact_current",
+      "url": null,
+      "sourceRef": "db:product_fact_current:1a4602c5-02e8-4ae0-b2f5-92dc66c85fc0",
+      "claimScope": "registry-v2 confirmed current UV hybrid; NOT inferred from review"
+    }
+  ],
+  "reviewDecisions": [
+    {
+      "field": "category_slot",
+      "state": "established",
+      "value": "sunscreen",
+      "confidence": "high",
+      "sourceIds": [
+        "BRAND_PRODUCT_31"
+      ],
+      "sourceKinds": [
+        "brand_first_party_claim"
+      ],
+      "reason": "Official product is sunscreen and existing canonical sunscreen taxonomy is the binding evidence.",
+      "expectedEvidenceRecordKinds": [
+        "canonical_taxonomy",
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "skin_types",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "HWAHAE_INDIVIDUAL",
+        "HWAHAE_DRY",
+        "BRAND_PURCHASE_REVIEW_4845"
+      ],
+      "sourceKinds": [
+        "individual_testimonial",
+        "individual_testimonial",
+        "individual_testimonial"
+      ],
+      "reason": "Mixed sensitive/dry/combination personal responses do not prove controlled skin-type eligibility.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "concerns",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "HWAHAE_INDIVIDUAL",
+        "BRAND_PRODUCT_31"
+      ],
+      "sourceKinds": [
+        "individual_testimonial",
+        "brand_first_party_claim"
+      ],
+      "reason": "UV claims and isolated subjective anecdotes are insufficient for canonical oiliness/dehydration/acne/pores concerns.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "texture",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "HWAHAE_DRY",
+        "BRAND_PRODUCT_31"
+      ],
+      "sourceKinds": [
+        "individual_testimonial",
+        "brand_first_party_claim"
+      ],
+      "reason": "Thick, light and creamy user impressions conflict; not enough to settle watery/gel/lotion/cream enum.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "finish",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "HWAHAE_REVIEW_TAGS",
+        "HWAHAE_INDIVIDUAL",
+        "BRAND_PURCHASE_REVIEW_388"
+      ],
+      "sourceKinds": [
+        "review_aggregate_tag_ui",
+        "individual_testimonial",
+        "individual_testimonial"
+      ],
+      "reason": "Powdery/dry feel and oily/heavy reports coexist; no stable controlled finish enum.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "uv_filter_type",
+      "state": "established",
+      "value": "hybrid",
+      "confidence": "high",
+      "sourceIds": [
+        "GOVERNED_UV_FACT"
+      ],
+      "sourceKinds": [
+        "governed_product_fact_current"
+      ],
+      "reason": "Confirmed current governed product-fact value via registry v2; review comments are not filter authority.",
+      "expectedEvidenceRecordKinds": [
+        "product_fact_current"
+      ]
+    },
+    {
+      "field": "sensitivity_safe",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "BRAND_PRODUCT_31",
+        "HWAHAE_REVIEW_TAGS",
+        "BRAND_PURCHASE_REVIEW_4845"
+      ],
+      "sourceKinds": [
+        "brand_first_party_claim",
+        "review_aggregate_tag_ui",
+        "individual_testimonial"
+      ],
+      "reason": "Official 저자극 claim and 31 no-irritation AI tag mentions cannot guarantee universal safety; irritation counterexample exists.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "irritation_risk",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "BRAND_PURCHASE_REVIEW_4845",
+        "HWAHAE_DRY",
+        "HWAHAE_REVIEW_TAGS"
+      ],
+      "sourceKinds": [
+        "individual_testimonial",
+        "individual_testimonial",
+        "review_aggregate_tag_ui"
+      ],
+      "reason": "At least one self-reported irritation counterexample; tags cannot be converted to low/medium/high incidence.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "tone_up",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "BRAND_PURCHASE_REVIEW_388",
+        "BRAND_PRODUCT_31"
+      ],
+      "sourceKinds": [
+        "individual_testimonial",
+        "brand_first_party_claim"
+      ],
+      "reason": "One buyer perceived no tone-up; absence of an official tone-up statement is not a verified false boolean.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "white_cast",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "BRAND_PRODUCT_31",
+        "HWAHAE_REVIEW_TAGS",
+        "HWAHAE_DRY",
+        "BRAND_PURCHASE_REVIEW_388"
+      ],
+      "sourceKinds": [
+        "brand_first_party_claim",
+        "review_aggregate_tag_ui",
+        "individual_testimonial",
+        "individual_testimonial"
+      ],
+      "reason": "REVISION_FROM_S1_NONE: official 백탁현상방지 claim plus no-cast tags conflict with explicit visible-cast experiences; cannot establish universal none/low/medium/high.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "eye_sting",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "HWAHAE_REVIEW_TAGS",
+        "HWAHAE_DRY",
+        "BRAND_PURCHASE_REVIEW_508"
+      ],
+      "sourceKinds": [
+        "review_aggregate_tag_ui",
+        "individual_testimonial",
+        "individual_testimonial"
+      ],
+      "reason": "No-eye-pain tag and favorable single review conflict with mild eye tingling report; severity not established.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    },
+    {
+      "field": "pilling_risk",
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown",
+      "sourceIds": [
+        "HWAHAE_INDIVIDUAL",
+        "HWAHAE_DRY"
+      ],
+      "sourceKinds": [
+        "individual_testimonial",
+        "individual_testimonial"
+      ],
+      "reason": "Reported pilling in extreme heat or thick base layering is conditional, no general low/medium/high probability.",
+      "expectedEvidenceRecordKinds": [
+        "official_product_page"
+      ]
+    }
+  ],
+  "rpcPayloadPreview": [
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "category_slot",
+      "review_state": "established",
+      "field_value": "sunscreen",
+      "confidence": "high",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "canonical_taxonomy",
+          "source_ref": "db:product_catalog_taxonomy_assignments:4608b3b4-8b51-4464-b46e-380b05c1a3d7"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "skin_types",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "concerns",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "texture",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "finish",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "uv_filter_type",
+      "review_state": "established",
+      "field_value": "hybrid",
+      "confidence": "high",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "product_fact_current",
+          "source_ref": "db:product_fact_current:1a4602c5-02e8-4ae0-b2f5-92dc66c85fc0"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "sensitivity_safe",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "irritation_risk",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "tone_up",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "white_cast",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "eye_sting",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    },
+    {
+      "product_id": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+      "subject_id": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+      "field_name": "pilling_risk",
+      "review_state": "reviewed_not_established",
+      "field_value": null,
+      "confidence": "unknown",
+      "supersedes_review_id": null,
+      "evidence_records": [
+        {
+          "source_type": "official_product_page",
+          "source_ref": "https://bushmankorea.com/product/%EB%B6%80%EC%89%AC%EB%A7%A8-%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84-%ED%94%84%EB%A1%9C-%EC%84%A0%ED%81%AC%EB%A6%BC-spf50-pa-50ml/31/"
+        },
+        {
+          "source_type": "hwahae_review_sample",
+          "source_ref": "https://www.hwahae.com/en/products/BUSHMAN-Waterproof-Pro-Suncream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1884027/reviews"
+        }
+      ]
+    }
+  ],
+  "refinedSemanticBundle": {
+    "contractVersion": "sunscreen-recommendation-semantic-bundle-v1",
+    "productId": "4608b3b4-8b51-4464-b46e-380b05c1a3d7",
+    "subjectId": "0b5963bb-67d6-4738-a620-32ec86c1e3d0",
+    "subjectCount": 1,
+    "fields": {
+      "category_slot": {
+        "state": "established",
+        "value": "sunscreen",
+        "confidence": "high"
+      },
+      "skin_types": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "concerns": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "texture": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "finish": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "uv_filter_type": {
+        "state": "established",
+        "value": "hybrid",
+        "confidence": "high"
+      },
+      "sensitivity_safe": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "irritation_risk": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "tone_up": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "white_cast": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "eye_sting": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      },
+      "pilling_risk": {
+        "state": "reviewed_not_established",
+        "value": null,
+        "confidence": "unknown"
+      }
+    }
+  },
+  "resultCounts": {
+    "reviewedProposed": 12,
+    "establishedProposed": 2,
+    "unresolvedProposed": 10,
+    "productionReviewed": 0
+  },
+  "s1Adjustment": {
+    "field": "white_cast",
+    "from": {
+      "state": "established",
+      "value": "none",
+      "confidence": "medium"
+    },
+    "to": {
+      "state": "reviewed_not_established",
+      "value": null,
+      "confidence": "unknown"
+    },
+    "reason": "Concrete conflicting reviews outweigh an unconditional product-level no-white-cast claim"
+  },
+  "dryRun": {
+    "neutralEligible": true,
+    "whiteCastRelevantEligible": false,
+    "eyeStingRelevantEligible": false,
+    "sensitivityRelevantEligible": false,
+    "pillingRelevantEligible": false,
+    "envelopeReady": true,
+    "productionAdmissible": false
+  },
+  "execution": {
+    "productionWrites": 0,
+    "adminActorVerified": false,
+    "adminRpcExecuted": false,
+    "productionCurrentSemanticReviews": 0,
+    "changedProductFact": false,
+    "changedSubjectAuthority": false,
+    "changedRecommendation": false,
+    "changedRanking": false,
+    "changedBeta": false,
+    "dispatchedManufacturerEmail": false
+  },
+  "nextGate": "DATA_AI29C_FILTER_R4_D_S3_REAL_ADMIN_REVIEW_CAPABILITY_AND_EVIDENCE_PAYLOAD_PRECHECK"
+}
