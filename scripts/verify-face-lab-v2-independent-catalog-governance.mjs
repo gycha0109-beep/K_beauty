@@ -300,11 +300,14 @@ draft = step(draft, action("revoke", publisher,
   { reason: "License permission revoked" }));
 assert.equal(draft.status, "revoked");
 step(draft, action("publish", publisher), "review_transition_forbidden");
+step(draft, action("reopen", publisher,
+  { reason: "Reassessment required" }), "review_new_source_digest_required");
 draft = step(draft, action("reopen", publisher,
-  { reason: "Reassessment required" }));
+  { reason: "Reassessment required", nextSourceDigest: "d".repeat(64) }));
 assert.equal(draft.status, "draft");
 assert.equal(draft.publishedContentRevision, null);
 assert.equal(draft.reviewedEvidenceRefs.length, 0);
+assert.equal(draft.contentRevision, 4);
 assert.equal(draft.imageModelInvoked, undefined);
 
 console.log(JSON.stringify({
