@@ -5,6 +5,7 @@
     "data-ai-product-query-static.yml",
     "data-ai29c-protection-shadow.yml",
     "face-lab-v2-provider-pilot-smoke.yml",
+    "taxonomy-ai-r16d-source-capture.yml",
     "trust-gpt-catalog-intake.yml",
     "trust-phase5b-7d-static.yml",
     "trust-phase8h3-relocation-revalidation.yml"
@@ -77,6 +78,24 @@
       "sharedReplayMaterializer": "scripts/materialize-product-fact-replay-baseline-v1.mjs",
       "rule": "B-6 closes the replay duplication review by preserving six local replay materializations. The shared materializer is already deterministic and repository-local; a measured successful Phase 8G reference run materialized in about 0.22 seconds while the subsequent isolated Supabase runtime window was about 97 seconds. Cross-workflow artifact/cache orchestration is therefore rejected as added complexity without meaningful savings. Each phase retains its own migration append, Supabase runtime, SQL evidence, semantic verifier, and TRUST 8G operational probes.",
       "decisionRecord": "docs/ci/consolidation-audits/trust-8b-8g-replay-decision.json"
+    },
+    "taxonomy-ai-r16d-p1-official-source": {
+      "mode": "bounded-single-job-read-only-source-capture",
+      "workflow": "taxonomy-ai-r16d-source-capture.yml",
+      "primaryResponsibility": "catalog-taxonomy",
+      "watchtowerTrackBinding": "static:taxonomy-ai",
+      "uniqueCoverage": [
+        "Fixed two-brand HTTPS raw response byte acquisition and seven-day ephemeral provenance artifact",
+        "Exact HEAD SHA attestation and manifest attribution",
+        "Digest recomputation guard; no Supabase credentials or Production writes"
+      ],
+      "overlapReview": "No other existing Phase B owner performs scheduled fixed P1 Innisfree 40ml and S.NATURE gel 80ml official live-page capture with raw byte artifact in this read-only unit. Canonical static verifier may exercise the offline no-write contract independently; no new deployment/production build or database runtime is added.",
+      "hardRules": [
+        "This approval does not authorize Product Subject registration or Product Fact confirmation",
+        "R16D dedicated live probe must stay within 5 minutes and only trigger for declared paths",
+        "Do not duplicate the canonical full contract suite in the dedicated workflow",
+        "Reassess this phase-coded workflow if the live capture is later folded into an established TRUST owner"
+      ]
     }
   }
 }

@@ -1,0 +1,114 @@
+{
+  "stage": "V2.1-8H-R16D-R2_EXACT_HEAD_RECAPTURE_AUDIT",
+  "version": "barrier-support-p1-r16d-exact-head-recapture-audit-v1",
+  "review_date": "2026-10-09",
+  "previous": {
+    "path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16d-hosted-raw-artifact-audit-v1.json",
+    "git_blob_sha": "82f8b2a1f99e551515b47b88a299a17fb81f1158",
+    "r1_artifact_id": 11572854459,
+    "r1_checkout_sha_mismatch_corrected_in_collector": true
+  },
+  "hosted_run": {
+    "repository": "gycha0109-beep/K_beauty",
+    "pr_number": 1175,
+    "run_id": 37835054466,
+    "artifact_id": 11574787645,
+    "head_sha": "1be460b108d26c3a962295b4b898901b1729697a",
+    "manifest_head_sha": "1be460b108d26c3a962295b4b898901b1729697a",
+    "checkout_attestation_passed": true,
+    "manifest_sha_matches_exact_head": true,
+    "artifact_zip_sha256": "03c9279105a29cb4ae5fe5c0303e8d3cd64e6d10cca888a8c7692cba6c5b1439",
+    "artifact_expires_at": "2026-10-15T19:51:41Z",
+    "raw_source_bytes_preserved_in_git": false,
+    "artifact_retention_days": 7,
+    "independent_verification": "DOWNLOADED_ARTIFACT_BYTES_AND_RECOMPUTED_SHA256"
+  },
+  "products": [
+    {
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "catalog_name": "비자 시카 밤 EX",
+      "catalog_size_ml": 40,
+      "official_source_product_id": "34622",
+      "artifact_file": "innisfree-bija-cica-balm-ex-40ml.html",
+      "byte_count": 553319,
+      "raw_sha256": "a4640eea1c5c13800951c129d11839da91876afb7b50f05f15f7ff93fb4e0e9d",
+      "matches_original_manifest": true,
+      "content_digest_basis": "live-page-bytes-v1",
+      "identity_evidence": {
+        "official_title": "비자 시카 밤 EX(40mL) | 이니스프리",
+        "title_with_volume": true,
+        "structured_exact_product_id": "34622",
+        "structured_exact_volume": true
+      },
+      "formulation_revision_established": false,
+      "subject_semantic_key": null,
+      "registration_authorized": false
+    },
+    {
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "catalog_name": "아쿠아 오아시스 수분 젤크림",
+      "catalog_size_ml": 80,
+      "official_source_product_id": "99",
+      "artifact_file": "snature-aqua-oasis-gel-cream-80ml.html",
+      "byte_count": 248632,
+      "raw_sha256": "f051b4e8b395d2957724bbb4cdaba16a3c8e3cb10d04d629147dfbf7fa4e8139",
+      "matches_original_manifest": true,
+      "content_digest_basis": "live-page-bytes-v1",
+      "identity_evidence": {
+        "official_title": "S.NATURE | 아쿠아 오아시스 수분 젤크림",
+        "title_with_volume": false,
+        "structured_exact_product_id": "cafe24_smasteri_1_99",
+        "structured_exact_volume": true
+      },
+      "formulation_revision_established": false,
+      "subject_semantic_key": null,
+      "registration_authorized": false
+    }
+  ],
+  "summary": {
+    "raw_source_captured": 2,
+    "raw_sha256_verified": 2,
+    "exact_head_provenance_verified": true,
+    "official_exact_product_identification": 2,
+    "formulation_revision_confirmed": 0,
+    "semantic_keys_materialized": 0,
+    "registerable": 0,
+    "production_writes": 0
+  },
+  "provenance_caveats": [
+    "Raw HTML source digests differ between R1 and R2 even for same official URL, therefore do not equate whole-page SHA with product formulation identity.",
+    "An exact SKU product page and structured Product metadata prove brand presentation, not manufacturing formula revision.",
+    "The seven-day artifact is ephemeral; permanent identity registration must retain independently reviewable official evidence under approved retention policy."
+  ],
+  "terminal": "R16D_RAW_SOURCE_AND_EXACT_HEAD_PROVENANCE_PASS_FORMULATION_REVISION_AND_SEMANTIC_KEY_HOLD",
+  "next_gate": {
+    "stage": "V2.1-8H-R16E_P1_FORMULATION_REVISION_AND_SUBJECT_KEY_MATERIALIZATION_REVIEW",
+    "status": "READ_ONLY_FORMULATION_AUTHORITY_RESEARCH_REQUIRED",
+    "preconditions": [
+      "Isolate first-party formulation/revision evidence separate from volatile page HTML",
+      "Use governed Subject identity serializer to derive reproducible formulation and semantic keys",
+      "Recheck global semantic-key uniqueness in Production",
+      "Require independently authorized service-role write gate after identity proof"
+    ],
+    "subject_registration_authorized": false,
+    "product_fact_confirmation_authorized": false,
+    "recommendation_activation_authorized": false
+  },
+  "invariance": {
+    "production_db_writes": 0,
+    "intake_writes": 0,
+    "subject_writes": 0,
+    "source_binding_writes": 0,
+    "product_fact_writes": 0,
+    "recommendation_writes": 0,
+    "numeric_pda": false,
+    "frozen_candidates": 164,
+    "frozen_scenarios": 12,
+    "frozen_evaluations": 1968,
+    "zeroid_hold_released": false,
+    "anua_hold_released": false,
+    "esnature_bundle_hold_released": false
+  }
+}

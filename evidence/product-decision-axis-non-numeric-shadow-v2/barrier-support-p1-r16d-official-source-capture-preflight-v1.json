@@ -1,0 +1,126 @@
+{
+  "version": "barrier-support-p1-r16d-official-source-capture-preflight-v1",
+  "stage": "V2.1-8H-R16D_P1_OFFICIAL_SOURCE_CAPTURE_AND_IDENTITY_MATERIALIZATION_PREFLIGHT",
+  "captured_on": "2026-10-09",
+  "main_baseline_sha": "b93b08ad12a992aa9ed203f92d92cd71b58ac2b5",
+  "upstream": {
+    "path": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16c-ready2-subject-identity-preflight-v1.json",
+    "git_blob_sha": "b8ad5627b1763152d07327d6f09b0f11244f6126",
+    "decision": "R16C_READ_ONLY_PRESTATE_PASS_REGISTRATION_BLOCKED_ON_SOURCE_CAPTURE_AND_KEY_MATERIALIZATION",
+    "target_product_ids": [
+      "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "5848640c-84ca-4079-9d9e-8f3113159fe1"
+    ]
+  },
+  "capture_protocol": {
+    "name": "v21-8h-r16d-p1-exact-kr-official-source-capture-v1",
+    "script": "scripts/product-evidence/capture-barrier-support-p1-r16d-official-sources-v1.mjs",
+    "workflow": ".github/workflows/taxonomy-ai-r16d-source-capture.yml",
+    "fetcher": "lib/trust/official-source-fetch.mjs:fetchOfficialBytes",
+    "fixed_target_count": 2,
+    "https_only": true,
+    "dns_private_ip_guard": true,
+    "manual_redirect_check": true,
+    "max_html_response_bytes": 2097152,
+    "timeout_seconds_per_fetch": 10,
+    "allow_only_fixed_first_party_targets": true,
+    "artifact_retention_days": 7,
+    "artifact_name": "r16d-p1-official-kr-source-bytes",
+    "no_secrets": true,
+    "raw_bytes_archive_in_git": false,
+    "raw_bytes_archive_in_ephemeral_action_artifact": true,
+    "source_capture_not_product_fact_confirmation": true,
+    "source_content_digest_sha256_only_actual_raw_bytes": true,
+    "source_digest_not_equivalent_to_formulation_revision_key": true,
+    "subject_semantic_key_not_generated_from_page_hash": true,
+    "production_write_authorized": false
+  },
+  "local_probe": {
+    "environment": "chat_run_isolated_container",
+    "attempts": [
+      {
+        "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+        "url": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+        "method": "Python_requests_direct_GET",
+        "result": "DNS_NAME_RESOLUTION_ERROR",
+        "bytes_obtained": false,
+        "actual_sha256": null
+      },
+      {
+        "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+        "url": "https://www.snature.kr/product/detail.html?cate_no=0&display_group=0&product_no=99",
+        "method": "Python_requests_direct_GET",
+        "result": "DNS_NAME_RESOLUTION_ERROR",
+        "bytes_obtained": false,
+        "actual_sha256": null
+      }
+    ],
+    "none_misrepresented_as_negative_product_claim": true
+  },
+  "targets": [
+    {
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "catalog_name": "비자 시카 밤 EX",
+      "catalog_size_ml": 40,
+      "official_page_id": "34622",
+      "official_url": "https://m.innisfree.com/kr/ko/dp/product/34622?inmPrdCatCd=UA",
+      "subject_preflight": "PASS_EXACT_BRAND_LISTING_NAME_AND_SIZE",
+      "source_bytes_captured_locally": false,
+      "source_content_digest": null,
+      "formulation_revision_key": null,
+      "subject_semantic_key": null,
+      "subject_registration_authorized": false
+    },
+    {
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "catalog_name": "아쿠아 오아시스 수분 젤크림",
+      "catalog_size_ml": 80,
+      "official_page_id": "99",
+      "official_url": "https://www.snature.kr/product/detail.html?cate_no=0&display_group=0&product_no=99",
+      "subject_preflight": "PASS_EXACT_BRAND_LISTING_NAME_AND_SIZE",
+      "source_bytes_captured_locally": false,
+      "source_content_digest": null,
+      "formulation_revision_key": null,
+      "subject_semantic_key": null,
+      "subject_registration_authorized": false
+    }
+  ],
+  "source_capture_outcome": "LOCAL_CAPTURE_BLOCKED_WAITING_FOR_HOSTED_RUN_ARTIFACT",
+  "next_gate": {
+    "stage": "V2.1-8H-R16D_R1_REVIEW_HOSTED_OFFICIAL_RAW_CAPTURE_ARTIFACT",
+    "status": "HOSTED_EVIDENCE_DEPENDENCY",
+    "entry_conditions": [
+      "GitHub Action must produce exact-head raw source artifact, or provide genuine first-party archival capture through a reviewed alternative",
+      "All supplied sha256 digests must be independently recomputed from captured raw bytes",
+      "Official page product identity and size must be confirmed without sibling/variant transfer",
+      "Formulation revision and serializer keys must be independently established before any Subject registration"
+    ],
+    "may_research_other_ready_items_while_blocked": true,
+    "service_role_subject_registration_authorized": false,
+    "production_cutover_authorized": false
+  },
+  "invariance": {
+    "production_writes": 0,
+    "catalog_writes": 0,
+    "source_binding_writes": 0,
+    "registry_writes": 0,
+    "subject_writes": 0,
+    "review_writes": 0,
+    "evidence_writes": 0,
+    "fact_instance_writes": 0,
+    "recommendation_writes": 0,
+    "zeroid_hold_released": false,
+    "anua_hold_released": false,
+    "esnature_bundle_hold_released": false,
+    "non_numeric_pda": true,
+    "candidate_products": 164,
+    "scenarios": 12,
+    "evaluations": 1968,
+    "rank_delta": 0,
+    "eligibility_delta": 0,
+    "numeric_contribution_delta": 0,
+    "public_activation": false
+  }
+}

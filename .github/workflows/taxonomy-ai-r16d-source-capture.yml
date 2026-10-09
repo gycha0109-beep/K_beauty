@@ -1,0 +1,95 @@
+name: Taxonomy AI - R16D Official Source Capture
+run-name: "[WT:taxonomy-ai] R16D P1 Official Source Capture"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/taxonomy-ai-r16d-source-capture.yml"
+      - "scripts/product-evidence/capture-barrier-support-p1-r16d-official-sources-v1.mjs"
+      - "scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs"
+      - "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16d-official-source-capture-preflight-v1.json"
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: "CI Watchtower Track Key"
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  official-source-capture:
+    name: R16D isolated read-only acquisition
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Verify offline capture and block contract
+        run: |
+          node --check scripts/product-evidence/capture-barrier-support-p1-r16d-official-sources-v1.mjs
+          node --check scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs
+          node scripts/product-evidence/verify-barrier-support-p1-r16d-official-source-capture-v1.mjs
+
+      - name: Capture two bounded official KR source pages
+        shell: bash
+        env:
+          R16D_EXACT_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/capture-barrier-support-p1-r16d-official-sources-v1.mjs --output-dir tmp/r16d-source-capture
+
+      - name: Publish captured source provenance summary
+        shell: bash
+        env:
+          R16D_EXACT_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('tmp/r16d-source-capture/manifest.json','utf8'));
+          if (d.execution.github_head_sha !== process.env.R16D_EXACT_CHECKOUT_SHA) {
+            throw new Error('R16D exact checkout SHA provenance mismatch');
+          }
+          const summary=[
+            '### R16D first-party source capture (read-only)',
+            'Captured: '+d.summary.raw_sources_captured+'/2',
+            'Blocked: '+d.summary.raw_sources_blocked+'/2',
+            'Title+volume colocation: '+d.summary.identity_title_collocation+'/2',
+            'Structured exact-SKU+volume: '+d.summary.identity_structured_collocation+'/2',
+            'Production writes: 0 · Subject registration: blocked',
+            ...d.targets.map(t=>'- '+t.product_id+': '+t.decision+' / '+(t.failure_code || t.content_digest || 'no digest')),
+          ];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,summary.join('\n')+'\n');
+          console.log(JSON.stringify({capture:d.summary, subject_registration:false}));
+          NODE
+
+      - name: Upload seven-day private evidence artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: r16d-p1-official-kr-source-bytes
+          path: tmp/r16d-source-capture/
+          if-no-files-found: error
+          retention-days: 7
