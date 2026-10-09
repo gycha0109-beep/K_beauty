@@ -18,6 +18,9 @@ on:
       - "docs/evidence/data-ai29c-filter-r4-d-s1-bushman-semantic-review-proposal-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-d-s1-bushman-semantic-review-proposal-v1.json"
       - "scripts/verify-data-ai29c-filter-r4-d-s1-bushman-semantic-review-proposal.mjs"
+      - "docs/evidence/data-ai29c-filter-r4-d-s2-bushman-web-review-evidence-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-d-s2-bushman-web-review-evidence-v1.json"
+      - "scripts/verify-data-ai29c-filter-r4-d-s2-bushman-web-review-evidence.mjs"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
       - "docs/ci/database-integration-authority.json"
@@ -41,6 +44,9 @@ on:
       - "docs/evidence/data-ai29c-filter-r4-d-s1-bushman-semantic-review-proposal-v1.md"
       - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-d-s1-bushman-semantic-review-proposal-v1.json"
       - "scripts/verify-data-ai29c-filter-r4-d-s1-bushman-semantic-review-proposal.mjs"
+      - "docs/evidence/data-ai29c-filter-r4-d-s2-bushman-web-review-evidence-v1.md"
+      - "evidence/product-fact-catalog-expansion-v1/data-ai29c-filter-r4-d-s2-bushman-web-review-evidence-v1.json"
+      - "scripts/verify-data-ai29c-filter-r4-d-s2-bushman-web-review-evidence.mjs"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
       - "docs/ci/database-integration-authority.json"
@@ -99,6 +105,9 @@ jobs:
 
       - name: Verify R4-D BUSHMAN semantic 12-field dry-run (no Production writes)
         run: node scripts/verify-data-ai29c-filter-r4-d-s1-bushman-semantic-review-proposal.mjs
+
+      - name: Verify R4-D-S2 web review evidence and reviewer preview fail-closed
+        run: node scripts/verify-data-ai29c-filter-r4-d-s2-bushman-web-review-evidence.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
