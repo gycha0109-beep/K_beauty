@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-10-09 / Face Lab P1-D2B-1 hosted authority inventory design
+
+- Task type: design / protected boundary decision. Baseline `main@1e20ad810119ab53e3bbf89771faba749aacb29c`, Watchtower `face-research`.
+- Scope: inventory protocol for exact Hosted authorization, Postgres object/RLS/role metadata, Product Fact Subject counts and lifecycle/market/region ambiguity, active canonical Taxonomy/assignment state, approved Subject↔Variant bridge, Category→Slot binding, Style Capability source/ownership.
+- Implementation: one scoped runbook with A/B/C completion, explicit authorization gate, read-only aggregate probe examples, evidence and stop rules. No operational queries were executed.
+- Protection: no DB/migration/RLS/Grant/Auth/credential/Storage/Provider/production data changes, no privileged Recommendation credential reuse, no image generation.
+- Verification: PR diff/content review and triggered CI only. Hosted state and actual product readiness remain unknown pending explicit authorization.
+- Next: authorized D2B-1 probe, then separately approved D2B-2 adapter if required.
+- Context promotion candidate: none; detailed document remains bounded domain reference.
+
+
 ### 2026-10-09 / Face Lab P1-D2B-0 explicit Subject↔Variant bridge
 
 - Task type: bounded execution (Medium), preserving existing server auth and response field shape.
