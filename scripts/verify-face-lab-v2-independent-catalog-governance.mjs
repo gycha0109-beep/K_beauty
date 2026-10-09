@@ -222,7 +222,7 @@ deny("cross-linked asset", x => x.referenceRecords[0].candidateRef =
   "face_lab_item:style_reference:layers-test",
   "review_gate_content_changed");
 deny("changed digest only", x => x.reviewRecords[0].sourceDigest = "a".repeat(64),
-  "review_gate_content_changed");
+  "review_gate_record_invalid");
 deny("fabricated approval flag", x => {
   const r = x.reviewRecords[0];
   r.status = "published";
