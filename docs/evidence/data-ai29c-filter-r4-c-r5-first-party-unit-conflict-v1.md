@@ -1,6 +1,6 @@
 # DATA-AI29C-FILTER-R4-C-R5 — BUSHMAN 공식몰 내부 50g/50ml 표기 불일치 재현
 
-**판정: `FIRST_PARTY_UNIT_CONFLICT_REPRODUCED_MANUFACTURER_ATTESTATION_HOLD`**  
+**판정: `FIRST_PARTY_UNIT_CONFLICT_REPRODUCED_MANUFACTURER_ATTESTATION_HOLD`**
 조사일: 2026-10-09 / 트랙: `taxonomy-ai` / 선행 PR: [R4-C-R4 #1179](https://github.com/gycha0109-beep/K_beauty/pull/1179)
 
 ## 1. R4-C-R4 이후 추가 확인된 1차 출처
