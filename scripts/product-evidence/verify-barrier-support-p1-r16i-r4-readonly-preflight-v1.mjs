@@ -77,6 +77,11 @@ blocked("intake approved without owner", x => x.intakes[0].trust_state = "APPROV
 blocked("intake revision changed", x => x.intakes[0].updated_at = "2026-10-11T00:53:57+09:00", intake);
 blocked("offer created", x => x.conflicting_offers.push({ offer_id: "unknown" }), "TARGET_OFFER_OR_SELLER_LISTING_COLLISION");
 blocked("subject invented", x => x.subjects.push({ subject_id: "unknown" }), "UNAPPROVED_PRODUCT_FACT_SUBJECT");
+blocked("invalid global offer observation", x => x.total_offer_count = -1, "INVALID_GLOBAL_OFFER_OBSERVATION");
+// Unrelated Offers can be added globally without changing this Product's exact mapping.
+const unrelatedOfferGrowth = clone();
+unrelatedOfferGrowth.total_offer_count += 1;
+assert.equal(evaluateR16IR4Preflight(unrelatedOfferGrowth, composition).decision, "REVIEW_REQUIRED");
 const corruptedComposition = { ...composition, primary_units: 1 };
 const rejectedComposition = evaluateR16IR4Preflight(base, corruptedComposition);
 assert.equal(rejectedComposition.decision, "BLOCKED");
