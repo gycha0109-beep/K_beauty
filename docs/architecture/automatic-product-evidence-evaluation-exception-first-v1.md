@@ -122,3 +122,26 @@ F. 카테고리 확대: 선크림→클렌저·보습제·세럼/토너. 각 도
 **검증 범위:** CI는 격리된 가짜 DB 응답을 통해 쿼리·권한 경계·상반 후기·변조/중복을 시험한다. 운영 DB 상태는 별도 SELECT로 대조한다. **인증된 관리자 세션으로 실제 배포 API를 호출하기 전까지 운영 실행 성공으로 단정하지 않는다.**
 
 후속 과제는 확인된 후기 원본의 Subject 귀속, 증거 해시/관찰 이력의 서버 검증, 자동 판단 이력 영속화, 예외 큐 및 추천 Shadow 분리이다. 현재 문서와 어댑터만으로 Subject authority, Semantic Review, Admission, 랭킹 또는 공개 추천을 활성화하지 않는다.
+
+## 10. 정확한 Evidence 연결 재검증(2026-10-11)
+
+실제 Production SELECT에서 Product Fact Current 3건의 근거 연결을 확인했다.
+
+```text
+product_fact_current.fact_instance_id
+→ product_fact_evidence_links.fact_instance_id
+→ product_evidence_records.evidence_id
+→ product_evidence_source_subject_bindings.binding_id + source_id
+→ product_evidence_sources.source_id
+```
+
+`product_fact_evidence_links.evidence_id`는 `product_evidence_sources.source_id`가 아니다.
+동일 URL의 SPF·UVA·UV 근거 3건은 서로 다른 EvidenceRecord이지만 독립적인 3개 제품 출처로 계산하지 않는다.
+
+서버 읽기 어댑터는 위 체인에 대한 SELECT를 추가하고, 지원 근거의 Fact/Proposition/Registry/Subject/제품 일치, `exact_subject_match`, `equivalent`, 공식 Source 종류, HTTPS, content digest를 재검증한다.
+보조 provenance가 누락되거나 바뀌면 해당 Fact를 `verifiedFacts`로 보내지 않고 정보 부족으로 처리한다. 일반 누락은 관리자 수동 승인으로 전환하지 않는다.
+
+- Production 데이터 쓰기/승격/추천 변경 없음.
+- 오프라인 테스트는 가짜 DB 응답, 위조 Evidence 및 Subject mismatch를 검증한다.
+- 실제 운영 DB SQL 대조와 배포된 관리자 API 인증 실행은 별도 확인 영역이다.
+- Source 문서 원문을 재수집·변경하거나 과거 Evidence digest를 수정하지 않는다.
