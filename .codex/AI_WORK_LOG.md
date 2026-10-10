@@ -2,6 +2,35 @@
 
 ## Entries
 
+### 2026-10-10 / Face Lab P1-D2C9 — 중복 유지형 후보 이력 대응 도구
+
+- 목적: 중복 버전 `20260824`가 엄격한 오프라인 비교를 차단해도, 후보 Supabase의 공개된 공식 migration 메타데이터와 저장소 목록을 **증거 수준 '후보'**로 비교. DB 동일성/실제 적용 확정 금지.
+- 새 파일: `scripts/facelab/audit/candidate-migration-differences-core.mjs`, `scripts/facelab/audit/inspect-face-lab-migration-candidates.mjs`.
+- 기능: 8자리/14자리 버전 허용·저장소 중복 그룹 보존·직접 버전 일치·이름만 같은 유일 후보·모호한 다중 후보·잔여 항목의 보존식과 정렬. 파일 내용 로컬 SHA-256만 계산, SQL 실행/DB 접속/네트워크/운영 쓰기 0.
+- 보호: 엄격한 `compare-face-lab-migration-history.mjs`의 중복 차단 정책 유지. 새 도구는 항상 `status=HOLD` / `projectIdentityConfirmed=false`, `appliedSqlVerified=false` 유지.
+- 추가 단위 검증: 20260824 충돌 유지, 입력 순서 무관 결정성, 동명이인 후보 모호성, 악성/중복/빈 입력, CLI 출력/재현성. 23→28건.
+- 직접 읽은 후보 이력 설명 이름 비교(별도 메타데이터 조사): 143 repo SQL / 171 candidate-hosted records / 같은 버전 101 files / 이름 유일 후보 37쌍 / 이름 대응 후 잔여 repo 5 + hosted 33. 운영 DB 신원은 403 때문에 HOLD.
+- 외부 보안: GHSA-vfj7-8cjw-p6xm 공식 패치 버전 없음. 예외 만료 우회 없음, PR #1209 병합은 공급망 체크 복구 전 보류.
+- 검증 상태: GitHub Actions 정확 HEAD 점검으로 확정 (개발 로그 작성 시 작업 진행 중).
+
+### 2026-10-10 / Face Lab P1-D2C7 — 저장소 마이그레이션 중복 사전 진단
+
+- 범위: P1-D2C6 비교기 재사용, DB 접속·SQL 적용 없이 로컬 SQL 이력 충돌 원인을 사전 분석.
+- Git 확인: `20260824_add_product_localized_names.sql` 및 `20260824_backfill_product_english_display_names.sql` 모두 PR #303 / 커밋 `aa3042eb5c94128d4af7a4286231a1fc390362a5`에서 추가. 두 파일의 SQL 책임은 표시용 영문 컬럼 생성과 상품 영문 표시명 백필로 분리되어 있음. 실행 순서·Hosted 적용 여부는 미검증.
+- 구현: `scripts/facelab/audit/inspect-face-lab-migration-inventory.mjs` 저장소 전용 파일명·SHA-256·14/8자리 버전·중복 그룹·무효 파일명 수 정렬/보존 보고; `verify-face-lab-migration-history.mjs` 4개 가상 검증과 실제 저장소 오프라인 사전 진단 보강. 기존 Face Lab Foundation CI만 사용.
+- 보호: 중복 버전은 자동 보정/삭제/재실행 금지. 진단 완료는 이력 대조 또는 운영 PASS가 아님. DB/네트워크/마이그레이션 실행 0.
+- 외부 차단: `GHSA-vfj7-8cjw-p6xm` braces upstream 공식 패치 부재 및 기존 공급망 예외 만료로 Supply Chain 보안 CI는 여전히 FAIL (기준 main에서도 동일). 보안 정책 우회·예외 연장 없음.
+- 다음: PR #1209 최신 head CI 검증. 보호된 보안 검사 차단 해소 후 병합. Production DB 동일성 확인과 두 파일의 DB 기록·물리 객체 읽기 전용 감사는 별도 HOLD.
+
+### 2026-10-10 / Face Lab P1-D2C6 오프라인 비교기 보수 검수
+
+- 본선 #1205 병합 확인 `040d1abac8b6fc045abb4ac09f8497d155d6102a`. 후속 보수 작업은 최신 main에서 분리해 기존 트랙 변경 유지.
+- 발견 문제: 저장소 SQL 143개 중 과거 8자리 날짜 버전 7개(그중 `20260824` 중복 버전 2개로 전체 대조 입력은 충돌 HOLD), 복수 이름 후보의 모호성 미표기, 빈 비교 입력 허용, CSV 수식 주입 방어 및 입력 디렉터리 필터 누락.
+- 변경: `migration-reconciliation-core.mjs` 분류·보존·CSV 안전·메타데이터; `compare-face-lab-migration-history.mjs` 명시적 레거시 날짜 옵션·비밀 없는 provenance 및 JSON 미해결 목록; `verify-face-lab-migration-history.mjs` 회귀 사례 보강; README 사용법 수정.
+- 운영 안전: 변경은 로컬 비교기/테스트/문서로 제한, DB·RLS·GRANT·마이그레이션 적용·Storage·서비스 모델 호출 0. 실제 운영 DB 연결 동일성·이력 정합성은 계속 HOLD.
+- 검증: 기존 Face Lab Foundation CI에 이미 연결된 Node 테스트로 검증 예정. 별도 신규 CI 생성 없음.
+- 다음: 현재 커밋 CI 결과 확인 및 본선 반영 후, 소유자 권한으로 Vercel Production DB 식별 → 동시점 이력 확보 → 읽기 전용 영향 객체 감사.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
