@@ -145,3 +145,20 @@ product_fact_current.fact_instance_id
 - 오프라인 테스트는 가짜 DB 응답, 위조 Evidence 및 Subject mismatch를 검증한다.
 - 실제 운영 DB SQL 대조와 배포된 관리자 API 인증 실행은 별도 확인 영역이다.
 - Source 문서 원문을 재수집·변경하거나 과거 Evidence digest를 수정하지 않는다.
+
+## 11. 3단계 A — 평가 이력 후보 생성 및 중복·변경 감지(2026-10-11)
+
+이 단계는 이력 **저장 준비**만 구현한다. Production migration, INSERT/UPSERT/RPC, 관리자 감사 기록, 추천 활성화는 포함하지 않는다.
+
+- 구현: `lib/product-intelligence/automatic-evidence-history-candidate-v1.mjs`
+- 호출: 기존 서버 DB 리더가 정확한 Product/Subject/Current Fact/Registry/Evidence 원본을 SELECT 및 자동 평가한 후, `historyPreview`를 같은 관리자 전용 조회 결과에 첨부한다.
+- 저장 상태: `writeState=NOT_SAVED`; `databaseWrites=0`, `adminReviewWrites=0`, `recommendationWrites=0`.
+- 이력 후보: productId, subjectId, evaluator/adapter/contract version, 실행 시각, system actor, 12필드 판단, 불확실성/예외, 근거 digest, 판단 digest, 결정론적 멱등 키.
+- 실행 시각은 후보의 관찰 메타데이터이며 동일 근거·판단의 멱등 키를 매번 바꾸지 않는다.
+- `compareAutomaticEvidenceHistoryCandidates`: 최초 관측 / 동일 평가 중복 / 근거 갱신만 발생 / 실제 판단 변경을 구분하며, 실제 변경된 필드를 식별한다.
+- 필드 판단과 인정된 근거 digest는 서로 다른 해시다. 공식 URL이 동일하다고 증거 3개를 독립적인 리뷰 표본으로 계산하지 않는다.
+- 부쉬맨 기본값: 사실 2개 / 후기 0개 / 정보 부족 10개, 관리자 자동 승인 및 Admission 없음.
+
+**검증:** 기존 `scripts/verify-automatic-product-evidence-live-v1.mjs`에 멱등성, 재실행 시각 불변, 근거만 변경, 분류 authority 변경, Subject 범위 불일치, 출처 누락, 부정한 쓰기 상태 차단을 추가했다. 신규 전용 워크플로 대신 Database Integration Authority 기존 CI에서 실행한다.
+
+**다음 별도 승인 Gate (3단계 B):** 데이터베이스 schema/RLS, 기록 수명 및 접근 정책, 서버 machine actor 및 원자적 멱등 저장 RPC, compare-and-append 동시성 안전성, replay/rollback, 운영 권한 경계 검증. 이를 승인하고 실제 migration이 수행되기 전까지 자동 평가 **이력이 DB에 기록되었다고 주장하지 않는다**.
