@@ -88,6 +88,20 @@ node scripts/facelab/audit/verify-face-lab-migration-history.mjs
 
 `matched+repo_only=repo_count`, `matched+hosted_only=hosted_count`를 검증하고 모든 불일치 기록을 CSV에 보존합니다.
 
+## Face Lab 물리 객체·RLS·권한 읽기 전용 증거 템플릿
+
+준비된 SQL: `scripts/facelab/audit/sql/face-lab-v2-catalog-readonly-v1.sql`
+
+**자동 실행하지 않습니다.** Vercel Production과 실제 Supabase 프로젝트 ref의 동일성이 소유자 검증으로 확인되고, 해당 대상에서 카탈로그 메타데이터만 조회하도록 별도 허가된 뒤에만 실행할 수 있습니다.
+
+- PostgreSQL `BEGIN TRANSACTION READ ONLY`, 짧은 statement/lock timeout, `pg_catalog`의 객체 메타데이터만 조회. 실제 사용자·상품·분석 데이터 행을 SELECT하지 않습니다.
+- `saved_reports.face_lab_revision` 컬럼, 기본값, CHECK 제약의 존재 및 정의.
+- `analysis_request_rate_windows`, `analysis_request_idempotency`의 endpoint CHECK, RLS 설정과 정책 수.
+- `consume_analysis_rate_limits`, `refund_analysis_rate_limits`, `claim_analysis_idempotency`의 시그니처, SECURITY DEFINER 여부, 함수 정의 SHA-256. 함수 원문은 반환하지 않습니다.
+- `anon`, `authenticated`, `service_role`의 스키마 USAGE, 테이블 권한, 함수 EXECUTE 권한을 분리해 기록합니다. 이는 Data API 노출, RLS 조건식, 런타임 인증·인가 통합 검증을 대신하지 않습니다.
+- 쿼리 결과는 의도적으로 `production_project_identity_verified=false`, `sql_application_verified=false`, `production_readiness=HOLD`를 반환합니다. 해시나 객체 존재만으로 실제 SQL 적용을 확정하지 않습니다.
+
+**DB 동일성 확인 전 실행 및 운영 DB 쓰기, 기록 수정, 재마이그레이션은 금지합니다.**
 ## 운영 안전 경계
 
 **Production 판정은 항상 `HOLD`**. Vercel ↔ Supabase 실제 배포 프로젝트 동일성, SQL 실행 시점·실제 DB 객체 상태, 권한 및 RLS 안전성은 이 오프라인 도구가 검증하지 못합니다. 비교 결과를 근거로 기존 이력을 삭제/교정하거나 SQL을 재실행하지 마십시오.
