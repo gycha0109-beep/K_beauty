@@ -236,8 +236,8 @@ export const FACE_LAB_MIGRATION_RECONCILIATION_COLUMNS = Object.freeze([
 
 function csvCell(value) {
   // Quoting alone does not prevent spreadsheet formula execution.
-  let s = String(value ?? "").replace(/[\\u0000-\\u001f\\u007f]/g, " ");
-  if (/^\\s*[=+@-]/.test(s)) s = "'" + s;
+  let s = String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ");
+  if (/^\s*[=+@-]/.test(s)) s = "'" + s;
   return '"' + s.replaceAll('"', '""') + '"';
 }
 
@@ -258,7 +258,7 @@ export function migrationReconciliationMarkdown(report, provenance = {}) {
   const snapshotAt = provenance.snapshotAt ?? "not_provided";
   if ((gitCommit !== "not_provided" && !/^[a-f0-9]{40}$/.test(gitCommit)) ||
       (snapshotAt !== "not_provided" &&
-       !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/.test(snapshotAt))) {
+       !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshotAt))) {
     fail("provenance_invalid");
   }
   const attention = report.rows.filter(r =>
