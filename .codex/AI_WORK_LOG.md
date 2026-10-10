@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-10 / Face Lab P1-D2C6 오프라인 비교기 보수 검수
+
+- 본선 #1205 병합 확인 `040d1abac8b6fc045abb4ac09f8497d155d6102a`. 후속 보수 작업은 최신 main에서 분리해 기존 트랙 변경 유지.
+- 발견 문제: 저장소 SQL 143개 중 과거 8자리 날짜 버전 7개, 복수 이름 후보의 모호성 미표기, 빈 비교 입력 허용, CSV 수식 주입 방어 및 입력 디렉터리 필터 누락.
+- 변경: `migration-reconciliation-core.mjs` 분류·보존·CSV 안전·메타데이터; `compare-face-lab-migration-history.mjs` 명시적 레거시 날짜 옵션·비밀 없는 provenance 및 JSON 미해결 목록; `verify-face-lab-migration-history.mjs` 회귀 사례 보강; README 사용법 수정.
+- 운영 안전: 변경은 로컬 비교기/테스트/문서로 제한, DB·RLS·GRANT·마이그레이션 적용·Storage·서비스 모델 호출 0. 실제 운영 DB 연결 동일성·이력 정합성은 계속 HOLD.
+- 검증: 기존 Face Lab Foundation CI에 이미 연결된 Node 테스트로 검증 예정. 별도 신규 CI 생성 없음.
+- 다음: 현재 커밋 CI 결과 확인 및 본선 반영 후, 소유자 권한으로 Vercel Production DB 식별 → 동시점 이력 확보 → 읽기 전용 영향 객체 감사.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
