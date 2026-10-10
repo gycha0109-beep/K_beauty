@@ -1,6 +1,5 @@
 {
   "contract_version": "r16i-r4-d1-indexed-source-reconciliation-v1",
-  "observed_at": "2026-10-10T21:40:00+09:00",
   "observation_channel": "SEARCH_ENGINE_INDEX_NOT_RAW_OR_CHECKOUT",
   "evidence_authority": "SEARCH_INDEX_DISPLAY_ONLY",
   "raw_html_captured": false,
@@ -59,6 +58,8 @@
     "Prices are indexed offer display claims and not checkout price",
     "Review counter is not a proved single formulation cohort or latest live count",
     "Multiple listing sale options are shown but active selected SKU unknown",
-    "Do not replace product market_signals, size_ml, price, unit_price or buy_link"
-  ]
+    "Do not replace product market_signals, size_ml, price, unit_price or buy_link",
+    "Another crawled indexing variant showed a different review count; indexed value is not the latest validated counter"
+  ],
+  "research_date_kr": "2026-10-10"
 }
