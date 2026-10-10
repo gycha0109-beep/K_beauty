@@ -189,7 +189,7 @@ function mockClient(rows, failTable) {
   };
 }
 const client=mockClient(fixture());
-const live=await evaluateAutomaticEvidenceFromLiveDB(client,PRODUCT,{},"2026-10-10");
+const live=await evaluateAutomaticEvidenceFromLiveDB(client,PRODUCT,{whiteCastRelevant:true},"2026-10-10");
 assert.deepEqual(live.evaluation,result.evaluation);
 assert.equal(live.evaluation.fields.uv_filter_type.value,"hybrid");
 assert.ok(client.activity.includes("FROM:product_fact_current"));
