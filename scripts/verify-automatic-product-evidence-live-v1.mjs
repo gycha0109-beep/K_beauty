@@ -9,6 +9,10 @@ import {
   readAutomaticEvidenceSnapshot,
   evaluateAutomaticEvidenceFromLiveDB,
 } from "../lib/product-intelligence/automatic-product-evidence-db-reader-v1.mjs";
+import {
+  buildAutomaticEvidenceHistoryCandidate,
+  compareAutomaticEvidenceHistoryCandidates,
+} from "../lib/product-intelligence/automatic-evidence-history-candidate-v1.mjs";
 
 const PRODUCT = "4608b3b4-8b51-4464-b46e-380b05c1a3d7";
 const SUBJECT = "0b5963bb-67d6-4738-a620-32ec86c1e3d0";
@@ -256,6 +260,62 @@ assert.ok(client.activity.every(x=>x.startsWith("FROM:")));
 await assert.rejects(()=>readAutomaticEvidenceSnapshot(mockClient(fixture(),"product_fact_confirmations"),PRODUCT),
   /AUTOMATIC_EVIDENCE_READ_FAILED:confirmations/);
 
+// Stage 3A: deterministic history PREVIEW, without any persistence authority.
+const stamp = "2026-10-11T08:30:00.000Z";
+const histRows=fixture();
+const histEval=evaluateLiveAutomaticEvidenceSnapshot(histRows,PRODUCT,{},"2026-10-11");
+const hist=buildAutomaticEvidenceHistoryCandidate(histRows,histEval,stamp);
+assert.equal(hist.writeState,"NOT_SAVED");
+assert.equal(hist.actorType,"automatic_evidence_system");
+assert.equal(hist.productId,PRODUCT);
+assert.equal(hist.subjectId,SUBJECT);
+assert.equal(hist.sourceEvidenceDigests.length,3);
+assert.equal(Object.values(hist.fields).filter(x=>x.status==="verified_fact").length,2);
+assert.equal(Object.values(hist.fields).filter(x=>x.status==="insufficient").length,10);
+assert.equal(hist.databaseWrites,0);
+assert.equal(hist.adminReviewWrites,0);
+assert.equal(hist.recommendationWrites,0);
+assert.match(hist.idempotencyKey,/^[0-9a-f]{64}$/);
+const later=buildAutomaticEvidenceHistoryCandidate(histRows,histEval,"2026-10-12T08:30:00.000Z");
+assert.equal(later.idempotencyKey,hist.idempotencyKey,
+  "repeated evaluations with identical evidence and decision are idempotent");
+assert.equal(later.decisionDigest,hist.decisionDigest);
+assert.equal(compareAutomaticEvidenceHistoryCandidates(hist,later).kind,"duplicate");
+assert.equal(compareAutomaticEvidenceHistoryCandidates(null,hist).kind,"first_observation");
+
+const freshSource=structuredClone(histRows);
+freshSource.evidenceSources[2].content_digest="9".repeat(64);
+const refreshedEvaluation=evaluateLiveAutomaticEvidenceSnapshot(freshSource,PRODUCT,{},"2026-10-11");
+const refresh=buildAutomaticEvidenceHistoryCandidate(freshSource,refreshedEvaluation,stamp);
+assert.notEqual(refresh.sourceDigest,hist.sourceDigest);
+assert.equal(refresh.decisionDigest,hist.decisionDigest);
+assert.equal(compareAutomaticEvidenceHistoryCandidates(hist,refresh).kind,"evidence_refresh");
+
+const missingCategory=structuredClone(histRows);
+missingCategory.taxonomy=[];
+const missingCategoryEval=evaluateLiveAutomaticEvidenceSnapshot(missingCategory,PRODUCT,{},"2026-10-11");
+const missingHist=buildAutomaticEvidenceHistoryCandidate(missingCategory,missingCategoryEval,stamp);
+const diff=compareAutomaticEvidenceHistoryCandidates(hist,missingHist);
+assert.equal(diff.kind,"assessment_changed");
+assert.deepEqual(diff.changedFields,["category_slot"]);
+const wrongSubjectHistory={...hist,subjectId:OLD};
+assert.throws(()=>compareAutomaticEvidenceHistoryCandidates(hist,wrongSubjectHistory),
+  /HISTORY_PREVIOUS_SCOPE_MISMATCH/);
+const lostProvenance=structuredClone(histRows);
+lostProvenance.evidenceSources=lostProvenance.evidenceSources.slice(0,2);
+assert.throws(()=>buildAutomaticEvidenceHistoryCandidate(lostProvenance,histEval,stamp),
+  /HISTORY_MISSING_ACCEPTED_FACT_PROVENANCE/);
+assert.throws(()=>buildAutomaticEvidenceHistoryCandidate(histRows,histEval,"bad timestamp"),
+  /HISTORY_INVALID_EVALUATION_TIME/);
+const unsafeResult={...histEval,databaseWrites:1};
+assert.throws(()=>buildAutomaticEvidenceHistoryCandidate(histRows,unsafeResult,stamp),
+  /HISTORY_UNTRUSTED_READ_RESULT/);
+const replay=await evaluateAutomaticEvidenceFromLiveDB(
+  mockClient(fixture()),PRODUCT,{},"2026-10-11",stamp
+);
+assert.equal(replay.historyPreview.idempotencyKey,hist.idempotencyKey);
+assert.equal(replay.historyPreview.writeState,"NOT_SAVED");
+
 const route=fs.readFileSync("app/api/admin/products/automatic-evidence/preview/route.js","utf8");
 assert.ok(route.includes("requireAdminCapability(ADMIN_CAPABILITIES.PRODUCTS_REVIEW)"));
 assert.ok(route.includes("createSupabaseAdminClient()"));
@@ -277,4 +337,5 @@ console.log(JSON.stringify({status:"PASS",phase:"LIVE_READONLY_PRODUCT_EVIDENCE_
   missingOrTamperedLineageRejected:true,
   mixedVerifiedReviewTagsRemainNonProbabilistic:true,
   failClosedTests:failCases.length,
-  mockSupabaseReadTest:true,productionWrites:0,adminApprovals:0,admission:false},null,2));
+  mockSupabaseReadTest:true,historyPreviewDeterministic:true,
+  historyWrites:0,productionWrites:0,adminApprovals:0,admission:false},null,2));
