@@ -1,0 +1,56 @@
+{
+  "contract_version": "retailer-offer-composition-review-v1",
+  "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+  "source": {
+    "seller_key": "hwahae",
+    "listing_id": "45194",
+    "listing_url": "https://www.hwahae.co.kr/goods/45194",
+    "authority": "RETAILER_TITLE_ONLY",
+    "raw_html_archived": false,
+    "components_physically_verified": false
+  },
+  "components": [
+    {
+      "role": "PRIMARY_PRODUCT",
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "name": "아쿠아 스쿠알란 수분크림",
+      "unit_volume_ml": 80,
+      "quantity": 2,
+      "physically_verified": false
+    },
+    {
+      "role": "GIFT_OTHER_PRODUCT",
+      "product_id": null,
+      "name": "세럼 (기획세트 구성)",
+      "unit_volume_ml": 10,
+      "quantity": 1,
+      "physically_verified": false
+    }
+  ],
+  "claimed_primary_total_ml": 160,
+  "legacy_catalog_volume_ml": 160,
+  "historical_kit_price_krw": 29900,
+  "historical_price_is_current": false,
+  "review_state": "REVIEW_REQUIRED",
+  "formulation_revision_key": null,
+  "subject_semantic_key": null,
+  "offer_id": null,
+  "authorize_offer_write": false,
+  "authorize_price_projection": false,
+  "authorize_catalog_write": false,
+  "scope_limitations": {
+    "unit_quantity": "From retailer double-kit title, not verified physical component image",
+    "serum_quantity": "Provisional title reading, not confirmed brand SKU",
+    "historical_price": "Recorded Production price, not verified live retailer price",
+    "formula_generation": "Unknown"
+  },
+  "expected": {
+    "decision": "REVIEW_REQUIRED",
+    "primary_single_unit_ml": 80,
+    "primary_units": 2,
+    "primary_total_ml": 160,
+    "gift_total_ml": 10,
+    "historical_kit_unit_price_per_10ml": 1868.75,
+    "display_price_krw": null
+  }
+}
