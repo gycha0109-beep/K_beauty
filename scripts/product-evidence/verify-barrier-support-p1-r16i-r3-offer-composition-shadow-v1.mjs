@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { evaluateOfferCompositionShadow, OFFER_COMPOSITION_SHADOW_VERSION } from "../../lib/product-offer-composition-shadow.js";
+const file="evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16i-r3-offer-composition-shadow-fixture-v1.json";
+const src=JSON.parse(fs.readFileSync(file,"utf8"));
+const base=()=>structuredClone(src);
+function blockCase(name, edit, expected){
+  const f=base();
+  edit(f);
+  const result=evaluateOfferCompositionShadow(f);
+  assert.equal(result.decision,"BLOCKED",name);
+  assert.equal(result.reasons[0],expected,name);
+  assert.equal(result.display_price_krw,null,name);
+  assert.equal(result.normalized_product_size_ml,null,name);
+  assert.equal(result.catalog_writes_authorized,false,name);
+  assert.equal(result.offer_writes_authorized,false,name);
+  assert.equal(result.subject_writes_authorized,false,name);
+}
+assert.equal(src.contract_version,OFFER_COMPOSITION_SHADOW_VERSION);
+const approved=evaluateOfferCompositionShadow(src);
+assert.equal(approved.decision,"REVIEW_REQUIRED");
+for(const [key,value] of Object.entries(src.expected))assert.deepEqual(approved[key],value,key);
+assert.deepEqual(approved.reasons,[
+ "RETAILER_TITLE_COMPONENTS_NOT_PHYSICALLY_VERIFIED",
+ "NO_CURRENT_PRICE_AUTHORITY",
+ "NO_SUBJECT_FORMULATION_AUTHORITY"
+]);
+assert.equal(approved.catalog_writes_authorized,false);
+assert.equal(approved.offer_writes_authorized,false);
+assert.equal(approved.subject_writes_authorized,false);
+assert.equal(approved.ranking_writes_authorized,false);
+assert.equal(approved.normalized_product_size_ml,null);
+assert.equal(approved.display_price_krw,null);
+assert.equal(approved.primary_total_ml,160);
+assert.equal(approved.gift_total_ml,10);
+assert.notEqual(approved.primary_total_ml,approved.primary_total_ml+approved.gift_total_ml);
+assert.notEqual(approved.historical_kit_unit_price_per_10ml,3737.5);
+assert.equal(src.scope_limitations.historical_price.startsWith("Recorded"),true);
+assert.equal(src.scope_limitations.formula_generation,"Unknown");
+blockCase("wrong contract",x=>x.contract_version="another-version","INVALID_CONTRACT_OR_PRODUCT");
+blockCase("missing product",x=>x.product_id="bad-uuid","INVALID_CONTRACT_OR_PRODUCT");
+blockCase("seller impersonation",x=>x.source.seller_key="not_hwahae","SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("wrong merchant hostname",x=>x.source.listing_url="https://evil.invalid/goods/45194","SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("redirect lookalike subdomain",x=>x.source.listing_url="https://www.hwahae.co.kr.evil.invalid/goods/45194","SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("query injected",x=>x.source.listing_url+="?set=invalid","SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("wrong listing scope",x=>x.source.listing_id="99999","SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("unarchived source authority promoted",x=>x.source.raw_html_archived=true,"SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("physical claim invented",x=>x.source.components_physically_verified=true,"SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("source authority forged",x=>x.source.authority="OFFICIAL_MANUFACTURER","SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("pre-approved review",x=>x.review_state="APPROVED","REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("offer identity invented",x=>x.offer_id="ce2ade21-a1a9-497f-ae79-61bdb5a786e9","REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("formula identity invented",x=>x.formulation_revision_key="current","REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("subject key invented",x=>x.subject_semantic_key="same_formula","REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("writes switched on",x=>x.authorize_offer_write=true,"REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("price projection switched on",x=>x.authorize_price_projection=true,"REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("catalog mutation switched on",x=>x.authorize_catalog_write=true,"REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("negative quantity",x=>x.components[0].quantity=-1,"COMPONENTS_UNVERIFIED_OR_INVALID");
+blockCase("fractional quantity",x=>x.components[0].quantity=1.5,"COMPONENTS_UNVERIFIED_OR_INVALID");
+blockCase("fractional ml",x=>x.components[0].unit_volume_ml=79.5,"COMPONENTS_UNVERIFIED_OR_INVALID");
+blockCase("wrong component role",x=>x.components[1].role="PRIMARY_PRODUCT","PRIMARY_GIFT_IDENTITY_MISMATCH");
+blockCase("formula gift as primary",x=>x.components[1].product_id=x.product_id,"PRIMARY_GIFT_IDENTITY_MISMATCH");
+blockCase("pack item foreign product",x=>x.components[0].product_id="00000000-0000-4000-8000-000000000099","PRIMARY_GIFT_IDENTITY_MISMATCH");
+blockCase("wrong aggregate",x=>x.claimed_primary_total_ml=170,"PACK_VOLUME_SCOPE_CONFLICT");
+blockCase("legacy single volume incorrectly 80",x=>x.legacy_catalog_volume_ml=80,"PACK_VOLUME_SCOPE_CONFLICT");
+blockCase("bundle count lied",x=>x.components[0].quantity=1,"PACK_VOLUME_SCOPE_CONFLICT");
+blockCase("made-up current price",x=>x.historical_price_is_current=true,"PRICE_AUTHORITY_NOT_VERIFIED");
+blockCase("nonfinite amount",x=>x.historical_kit_price_krw=Number.NaN,"PRICE_AUTHORITY_NOT_VERIFIED");
+blockCase("invalid price",x=>x.historical_kit_price_krw=-1,"PRICE_AUTHORITY_NOT_VERIFIED");
+const priorDesign=JSON.parse(fs.readFileSync("evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16i-r2-existing-offer-composition-design-v1.json","utf8"));
+assert.equal(priorDesign.catalog_anchor.product_id,src.product_id);
+assert.equal(priorDesign.catalog_anchor.legacy_price_min,src.historical_kit_price_krw);
+assert.equal(priorDesign.catalog_anchor.legacy_size_ml,src.claimed_primary_total_ml);
+assert.equal(priorDesign.model_separation.retailer_offer.listing_id,src.source.listing_id);
+const code=fs.readFileSync("lib/product-offer-composition-shadow.js","utf8");
+assert.doesNotMatch(code,/\b(fetch|axios|postgres|supabase|createClient)\s*\(/);
+assert.doesNotMatch(code,/process\.env|from\s+["']server-only/);
+assert.doesNotMatch(code,/\.insert\s*\(|\.upsert\s*\(|\.update\s*\(|\.rpc\s*\(/);
+assert.equal(priorDesign.safety.production_writes,0);
+console.log(JSON.stringify({status:"PASS",stage:"R16I-R3",primary_ml:approved.primary_single_unit_ml,units:approved.primary_units,kit_primary_ml:approved.primary_total_ml,gift_ml:approved.gift_total_ml,historical_price_per_10ml:approved.historical_kit_unit_price_per_10ml,market_price_confirmed:false,live_authority:false,production_writes:0}));
