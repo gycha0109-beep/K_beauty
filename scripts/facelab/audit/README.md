@@ -38,6 +38,27 @@ node scripts/facelab/audit/inspect-face-lab-migration-inventory.mjs \
 - 이름/버전을 자동 교정·삭제하거나 다른 파일을 무시하지 않습니다.
 - Hosted 이력, Vercel/Supabase 프로젝트 동일성, 실제 SQL 실행 여부, 물리 객체 상태는 검증하지 않습니다.
 
+## 중복 보존형 후보 진단 — 운영 적용 판정 불가
+
+기존 엄격한 비교기는 `20260824`와 같은 중복 버전에서 계속 `repo_duplicate_version`으로 중단합니다. 그 규칙을 완화하지 않고, **별도 후보 진단기**로 보류 중인 파일들의 이름 대응 후보를 찾아볼 수 있습니다.
+
+```bash
+node scripts/facelab/audit/inspect-face-lab-migration-candidates.mjs \
+  --repo-dir supabase/migrations \
+  --hosted-list /path/to/nonsecret-candidate-migrations.json \
+  --out-dir /path/to/local-candidate-diagnostic
+```
+
+- Hosted 입력은 DB 비밀·토큰이 포함되지 않은 JSON 배열 또는 `{"migrations":[{"version":"20260824123819","name":"add_product_localized_names"}]}` 형식입니다.
+- `candidate-migration-diagnostic.json`, `candidate-migration-diagnostic.md`가 생성됩니다.
+- 14자리 및 과거 8자리 파일명·중복 버전을 모두 원문대로 보존하고, 버전 그대로 대응하는 기록과 **이름만 같은 후보**를 분리합니다.
+- 저장소 파일 수, 후보 DB 이력 행 수, 버전 대응 건수, 이름만 같은 유일 후보, 미대응 잔여 수의 보존식이 실패하면 중단합니다.
+- 동일 이름이 다수면 후보 자동 연결하지 않고 `ambiguous_name_candidate`로 남깁니다.
+- 최종 상태는 언제나 `HOLD`: **Production DB 동일성, SQL 실행 여부, 실제 객체 상태**는 이 기능이 검증하지 않습니다.
+- SQL은 로컬 해시 계산에만 사용하며 SQL 실행·DB 네트워크 호출·Migration 기록/파일명 수정은 하지 않습니다.
+
+2026-10-10 후보 목록 메타데이터만 직접 조사한 결과(운영 DB 정체성 미확정): 저장소 143개, 후보 이력 171개, 같은 버전의 저장소 파일 101개, 이름만 같은 후보 37쌍, 이름까지 비교해도 남는 저장소 파일 5개 및 후보 이력 33개, `20260824` 로컬 버전 충돌 1그룹(2개 파일). 이 수치는 진단기의 승인/실행 결과가 아닌 **별도로 관찰한 후보 데이터**이며, 재실행 시점의 입력으로 다시 계산해야 합니다.
+
 ## 로컬 실행
 
 ```bash
