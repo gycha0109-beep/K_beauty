@@ -102,6 +102,24 @@ node scripts/facelab/audit/verify-face-lab-migration-history.mjs
 - 쿼리 결과는 의도적으로 `production_project_identity_verified=false`, `sql_application_verified=false`, `production_readiness=HOLD`를 반환합니다. 해시나 객체 존재만으로 실제 SQL 적용을 확정하지 않습니다.
 
 **DB 동일성 확인 전 실행 및 운영 DB 쓰기, 기록 수정, 재마이그레이션은 금지합니다.**
+## 읽기 전용 객체 증거 오프라인 판독
+
+소유자가 실제 Production 연결 대상을 확인하고 별도 승인을 받은 경우에만 위 카탈로그 SQL을 **수동** 실행하여 JSON을 저장할 수 있습니다. SQL 직접 실행, DB 접속, secret 조회는 오프라인 분석기가 수행하지 않습니다.
+
+```bash
+node scripts/facelab/audit/evaluate-face-lab-catalog-evidence.mjs \
+  --evidence-json /path/to/authorized-catalog-readback.json \
+  --out-dir /path/to/local-catalog-evaluation
+```
+
+출력: `face-lab-catalog-evidence-review.json`, `face-lab-catalog-evidence-review.md`. 입력 JSON은 `face_lab_metadata_json` 키로 감싸도 됩니다.
+
+- `saved_reports`·request rate windows·idempotency 객체와 필수 컬럼/CHECK/RLS/함수 서명의 **존재**, 함수 SECURITY INVOKER 여부, 익명·인증 사용자 및 service_role의 테이블/함수 권한을 점검합니다.
+- 익명 또는 일반 인증 역할에 요청 횟수 제한 테이블 CRUD나 내부 RPC 실행권한이 노출되면 우선 검토 항목으로 남깁니다.
+- 누락된 입력·모호한 권한·함수 해시·검증되지 않은 제약은 긍정적으로 추정하지 않고 `evidence_gap` / `priority`로 분류합니다.
+- 이상 항목 0건이어도 보고 상태는 `HOLD`, 승인은 `manual_review_required`, 운영 DB 동일성 및 SQL 실제 적용 여부는 `false`로 유지합니다.
+- 경고는 교정 SQL이 아닙니다. 이 결과만으로 운영 ALTER/GRANT/RLS 변경·migration 이력 수정·재실행을 진행하지 않습니다.
+- 재현용 합성 검증만 자동 CI에서 수행하며, 실제 호스팅 DB 조회는 하지 않습니다.
 ## 운영 안전 경계
 
 **Production 판정은 항상 `HOLD`**. Vercel ↔ Supabase 실제 배포 프로젝트 동일성, SQL 실행 시점·실제 DB 객체 상태, 권한 및 RLS 안전성은 이 오프라인 도구가 검증하지 못합니다. 비교 결과를 근거로 기존 이력을 삭제/교정하거나 SQL을 재실행하지 마십시오.
