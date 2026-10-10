@@ -120,6 +120,15 @@ test("strict timestamps and explicit historical compatibility", () => {
   assert.throws(() => reconcileFaceLabMigrationInventories({repository:a,hosted:b},
     {allowLegacyDates:"true"}), /input_invalid/);
 });
+test("legacy day-version collisions remain blocked even with opt-in", () => {
+  assert.throws(() => reconcileFaceLabMigrationInventories({
+    repository: [
+      {filename:"20260824_add_product_localized_names.sql",sha256:sha},
+      {filename:"20260824_backfill_product_english_display_names.sql",sha256:sha}
+    ],
+    hosted: [{version:"20260824",name:"add_product_localized_names"}]
+  }, {allowLegacyDates:true}), /repo_duplicate_version/);
+});
 test("reject duplicate repository versions", () => {
   assert.throws(() => reconcile([...repository,
     { filename: "20260102000000_different.sql" }
