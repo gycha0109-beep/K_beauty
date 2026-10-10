@@ -291,6 +291,11 @@ const refresh=buildAutomaticEvidenceHistoryCandidate(freshSource,refreshedEvalua
 assert.notEqual(refresh.sourceDigest,hist.sourceDigest);
 assert.equal(refresh.decisionDigest,hist.decisionDigest);
 assert.equal(compareAutomaticEvidenceHistoryCandidates(hist,refresh).kind,"evidence_refresh");
+const versionOnly={...hist,versions:{...hist.versions,evaluator:"automatic-product-evidence-evaluator-v2"},
+  idempotencyKey:"f".repeat(64)};
+assert.equal(compareAutomaticEvidenceHistoryCandidates(hist,versionOnly).kind,
+  "evaluation_version_change");
+
 
 const missingCategory=structuredClone(histRows);
 missingCategory.taxonomy=[];
