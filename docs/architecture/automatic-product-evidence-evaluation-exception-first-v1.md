@@ -99,3 +99,26 @@ F. 카테고리 확대: 선크림→클렌저·보습제·세럼/토너. 각 도
 50g/50ml는 내부적으로 동일 제품 취급하는 사용자 판단을 유지한다. 이는 공식 제조사 SKU 동일성이나 Subject attestation으로 둔갑하지 않는다. 선행 S2의 백탁 none 확정 철회는 유지하며, 화해/브랜드 구매 후기에서 나온 상반된 백탁·눈시림·밀림·자극을 후기 경향으로 기록한다. 기존 Product Fact 3개와 관리자 Semantic Review 0/12라는 역사적 상태를 자동 승인 12/12로 바꾸지 않는다.
 
 다음 단계의 진정한 블로커는 운영 Fact DB 어댑터와 Admission 권한이다. 추가 제조사 메일·상품 12회 승인 반복을 정상 업무로 도입하지 않는다.
+
+
+## 9. 2단계 — 운영 데이터 읽기 전용 어댑터(2026-10-10)
+
+실제 Supabase 스키마를 SELECT로 확인하고, 개발용 고정 S2 자료를 운영 자료인 것처럼 사용하지 않도록 별도 어댑터를 구현한다.
+
+- 서버 접근: `lib/product-intelligence/automatic-product-evidence-db-reader-v1.mjs` — 기존 서비스 역할 서버 클라이언트에서 SELECT만 수행. `products`, `product_fact_subjects`, `product_catalog_taxonomy_assignments`, `product_fact_current`, `product_fact_instances`, `product_fact_confirmations`, `product_fact_definition_snapshots`, `product_source_bindings`, `trust_source_observations`.
+- 데이터 검증: `lib/product-intelligence/automatic-product-evidence-live-adapter-v1.mjs` — Current·resolved Subject는 1개만 허용, 분류는 기존 v1 canonical taxonomy의 정확한 shadow/source classification을 요구, UV는 현재 Fact 인스턴스·확인 결과·Registry 정의·지원 상태·권한 수준·신뢰도·유효기간을 함께 대조.
+- SPF·PA는 `protectedSunscreenFacts` 진단으로 보존하되, 의미가 다른 12필드에 강제 대응하지 않는다.
+- 후기: `products.review_signals`만으로 확정하거나 추천하지 않는다. 해당 화해 바인딩이 `resolved + product`이며 정확한 URL로 이어지는 경우에만 검증 가능한 화해 AI 요약 태그를 약한 사용감 신호로 변환한다. 태그 개수는 발생 확률이나 독립 사용자 수가 아니다. Subject에 미귀속인 `product_subject_unresolved` 연결은 신호 생성 금지.
+- 공식 제품 설명과 `trust_source_observations`의 SPF/PA 관측은 존재하더라도 백탁·눈시림·민감성에 대한 확정 결론으로 확장하지 않는다. 미수집 원문 후기를 추측하지 않는다.
+- 관리자 전용 읽기 API: `GET /api/admin/products/automatic-evidence/preview?productId=<uuid>`. `admin.products.review` 권한과 실제 로그인 세션 필요, 공유 캐시 금지, 내부 오류 노출 금지. 어떤 운영 승인·추천 수정도 수행하지 않는다.
+
+**부쉬맨 실제 운영 조사 결과(SELECT, 2026-10-10):**
+- Subject: resolved/current 1개, 별도 historical 1개. 현재 lineage는 `data-ai29c-c5-presentation-identity-correction-v1`로 기존 Admission 권한 미충족.
+- Current Fact: SPF 50 / PA++++ / hybrid 3건이 확인됨. 카탈로그 분류는 `product_catalog_taxonomy_assignments`의 `shadow/source_classification`인 sunscreen.
+- 제품 row의 `review_signals={}`, `hwahae_url=null`. 화해 바인딩은 `product_subject_unresolved`. 실사용 후기 자동 신호 0건.
+- 실제 12필드 읽기 전용 기대치: 분류·혼합자차 2개 근거 준비 / 후기 신호 0개 / 나머지 10개 정보 부족. 이전 **고정 S2 자료 파일럿의 2/7/3은 실제 DB 평가 결과가 아니다**.
+- 정보 부족 10개는 자동 재수집 후보이며 관리자 승인 요청 10개로 바꾸지 않는다.
+
+**검증 범위:** CI는 격리된 가짜 DB 응답을 통해 쿼리·권한 경계·상반 후기·변조/중복을 시험한다. 운영 DB 상태는 별도 SELECT로 대조한다. **인증된 관리자 세션으로 실제 배포 API를 호출하기 전까지 운영 실행 성공으로 단정하지 않는다.**
+
+후속 과제는 확인된 후기 원본의 Subject 귀속, 증거 해시/관찰 이력의 서버 검증, 자동 판단 이력 영속화, 예외 큐 및 추천 Shadow 분리이다. 현재 문서와 어댑터만으로 Subject authority, Semantic Review, Admission, 랭킹 또는 공개 추천을 활성화하지 않는다.
