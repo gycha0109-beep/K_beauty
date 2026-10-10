@@ -14,6 +14,11 @@ import {
   compareAutomaticEvidenceHistoryCandidates,
 } from "../lib/product-intelligence/automatic-evidence-history-candidate-v1.mjs";
 import { recordAutomaticEvidenceFromLiveDB } from "../lib/product-intelligence/automatic-evidence-history-store-v1.mjs";
+import {
+  runDailyAutomaticEvidencePilot,
+  classifyAutomaticEvidenceAttention,
+  AUTOMATIC_EVIDENCE_DAILY_PILOT_PRODUCTS,
+} from "../lib/product-intelligence/automatic-evidence-daily-v1.mjs";
 
 const PRODUCT = "4608b3b4-8b51-4464-b46e-380b05c1a3d7";
 const SUBJECT = "0b5963bb-67d6-4738-a620-32ec86c1e3d0";
@@ -361,6 +366,87 @@ assert.ok(writeRoute.includes("Object.keys(body).length !== 1"));
 assert.ok(!writeRoute.includes("admissionGranted:true"));
 assert.ok(!writeRoute.includes("rankingChanged:true"));
 
+
+const firstNormal={
+  history_id:17,product_id:PRODUCT,subject_id:SUBJECT,
+  evaluated_at:stamp,event_kind:"first_observation",changed_fields:[],
+  fields:hist.fields, exceptions:[],
+};
+assert.equal(classifyAutomaticEvidenceAttention(firstNormal),null,
+  "ten missing optional review fields must not create review tasks");
+const updatedBad={...firstNormal,event_kind:"assessment_changed",
+  changed_fields:["uv_filter_type"],fields:{
+    ...hist.fields,uv_filter_type:{...hist.fields.uv_filter_type,
+      status:"insufficient",value:null},
+  }};
+assert.deepEqual(classifyAutomaticEvidenceAttention(updatedBad).reasonCodes,
+  ["CORE_EVIDENCE_LOST:uv_filter_type"]);
+const critical={...firstNormal,exceptions:[
+  {code:"EVIDENCE_IDENTITY_SCOPE_MISMATCH",field:null}]};
+assert.deepEqual(classifyAutomaticEvidenceAttention(critical).reasonCodes,
+  ["EVIDENCE_IDENTITY_SCOPE_MISMATCH"]);
+assert.equal(classifyAutomaticEvidenceAttention({...firstNormal,
+  exceptions:[{code:"INFORMATION_INSUFFICIENT",field:"eye_sting"}]}),null);
+assert.deepEqual(AUTOMATIC_EVIDENCE_DAILY_PILOT_PRODUCTS,[PRODUCT]);
+const dailyClient=mockClient(fixture());
+const fromOriginal=dailyClient.from.bind(dailyClient);
+dailyClient.from=(table)=>{
+  if(table==="automatic_product_evidence_history_v1") {
+    const q={historyId:null,productId:null};
+    return {
+      select(){return this;},
+      eq(k,v){if(k==="history_id")q.historyId=v; if(k==="product_id")q.productId=v;return this;},
+      async single(){assert.equal(q.historyId,17);assert.equal(q.productId,PRODUCT);
+        return {data:firstNormal,error:null};},
+    };
+  }
+  return fromOriginal(table);
+};
+dailyClient.rpc=async()=>({data:{
+  status:"inserted",historyId:17,eventKind:"first_observation",changedFields:[],
+},error:null});
+const ran=await runDailyAutomaticEvidencePilot(dailyClient,{
+  nowDate:"2026-10-11",evaluatedAt:stamp,
+});
+assert.equal(ran.checked,1);
+assert.equal(ran.recorded,1);
+assert.equal(ran.duplicates,0);
+assert.equal(ran.needsReview,0);
+assert.equal(ran.failed,0);
+const duplicateClient=mockClient(fixture());
+duplicateClient.rpc=async()=>({data:{
+  status:"duplicate",historyId:17,eventKind:"first_observation",changedFields:[],
+},error:null});
+const rerun=await runDailyAutomaticEvidencePilot(duplicateClient,{
+  nowDate:"2026-10-11",evaluatedAt:stamp,
+});
+assert.equal(rerun.checked,1);
+assert.equal(rerun.recorded,0);
+assert.equal(rerun.duplicates,1);
+assert.equal(rerun.failed,0);
+const brokenDaily=mockClient(fixture());
+brokenDaily.rpc=async()=>({data:null,error:{message:"database failed"}});
+const errorRun=await runDailyAutomaticEvidencePilot(brokenDaily,{
+  nowDate:"2026-10-11",evaluatedAt:stamp,
+});
+assert.equal(errorRun.failed,1);
+assert.equal(errorRun.recorded,0);
+assert.equal(errorRun.failures[0].code,"AUTO_DAILY_EVALUATION_FAILED");
+
+const cronRoute=fs.readFileSync("app/api/internal/automatic-evidence-daily/route.js","utf8");
+assert.match(cronRoute,/timingSafeEqual/);
+assert.match(cronRoute,/CRON_SECRET/);
+assert.match(cronRoute,/BEJEWELY_AUTO_EVIDENCE_DAILY_ENABLED/);
+assert.match(cronRoute,/!== "true"/);
+assert.match(cronRoute,/runDailyAutomaticEvidencePilot\(client\)/);
+assert.doesNotMatch(cronRoute,/requireAdminCapability/);
+const exceptionsRoute=fs.readFileSync("app/api/admin/products/automatic-evidence/exceptions/route.js","utf8");
+assert.match(exceptionsRoute,/requireAdminCapability\(ADMIN_CAPABILITIES.PRODUCTS_REVIEW\)/);
+assert.match(exceptionsRoute,/classifyAutomaticEvidenceAttention/);
+assert.match(exceptionsRoute,/normalInsufficientEvidenceSuppressed:true/);
+const vConfig=JSON.parse(fs.readFileSync("vercel.json","utf8"));
+assert.deepEqual(vConfig.crons,[{path:"/api/internal/automatic-evidence-daily",schedule:"0 2 * * *"}]);
+
 const route=fs.readFileSync("app/api/admin/products/automatic-evidence/preview/route.js","utf8");
 assert.ok(route.includes("requireAdminCapability(ADMIN_CAPABILITIES.PRODUCTS_REVIEW)"));
 assert.ok(route.includes("createSupabaseAdminClient()"));
@@ -382,5 +468,5 @@ console.log(JSON.stringify({status:"PASS",phase:"LIVE_READONLY_PRODUCT_EVIDENCE_
   missingOrTamperedLineageRejected:true,
   mixedVerifiedReviewTagsRemainNonProbabilistic:true,
   failClosedTests:failCases.length,
-  mockSupabaseReadTest:true,historyPreviewDeterministic:true,historyStoreBridgeVerified:true,
+  mockSupabaseReadTest:true,historyPreviewDeterministic:true,historyStoreBridgeVerified:true,dailyPilotVerified:true,
   historyWrites:0,productionWrites:0,adminApprovals:0,admission:false},null,2));
