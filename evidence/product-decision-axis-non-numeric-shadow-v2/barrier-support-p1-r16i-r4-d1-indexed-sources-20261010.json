@@ -1,0 +1,64 @@
+{
+  "contract_version": "r16i-r4-d1-indexed-source-reconciliation-v1",
+  "observed_at": "2026-10-10T21:40:00+09:00",
+  "observation_channel": "SEARCH_ENGINE_INDEX_NOT_RAW_OR_CHECKOUT",
+  "evidence_authority": "SEARCH_INDEX_DISPLAY_ONLY",
+  "raw_html_captured": false,
+  "actual_checkout_verified": false,
+  "current_price_authorized": false,
+  "review_subject_attribution_verified": false,
+  "approval_payload": null,
+  "producer": "R16I_R4_D1_READ_ONLY_SOURCE_RESEARCH",
+  "official_single": {
+    "canonical_url": "https://www.snature.kr/product/detail.html?product_no=151",
+    "source": "MANUFACTURER_STORE_SEARCH_INDEX",
+    "source_crawl_label": "3_WEEKS_BEFORE_RESEARCH_APPROXIMATE",
+    "product_no": "151",
+    "name": "아쿠아 스쿠알란 수분크림 80ml",
+    "presentation": "SINGLE_80ML",
+    "unit_volume_ml": 80,
+    "catalog_list_price_krw": 35000,
+    "member_display_price_krw": 24500,
+    "availability_authorized": false,
+    "formulation_identity_verified": false
+  },
+  "retailer_bundle": {
+    "canonical_url": "https://www.hwahae.co.kr/goods/45194",
+    "indexed_url": "https://www.hwahae.co.kr/goods/45194?af_siteid=940056100",
+    "source": "RETAILER_LISTING_SEARCH_INDEX",
+    "source_crawl_label": "LAST_WEEK_BEFORE_RESEARCH_APPROXIMATE",
+    "listing_id": "45194",
+    "name": "[only화해] 아쿠아 스쿠알란 수분크림 80ml 더블+세럼 10ml 세트",
+    "presentation": "CREAM_80ML_X2_PLUS_SERUM_10ML",
+    "cream_unit_ml": 80,
+    "cream_quantity": 2,
+    "gift_serum_ml": 10,
+    "indexed_listing_price_krw": 29900,
+    "indexed_review_count": 43482,
+    "indexed_rating": 4.58,
+    "multiple_sale_options_observed": true,
+    "selected_checkout_option_verified": false,
+    "gift_sku_verified": false,
+    "review_single_product_attribution_verified": false
+  },
+  "citations": [
+    {
+      "scope": "BRAND_SINGLE",
+      "url": "https://www.snature.kr/product/detail.html?product_no=151",
+      "discovery": "2026-10-10 search index, crawled 3 weeks before query"
+    },
+    {
+      "scope": "RETAIL_BUNDLE",
+      "url": "https://www.hwahae.co.kr/goods/45194?af_siteid=940056100",
+      "discovery": "2026-10-10 search index, crawled last week before query"
+    }
+  ],
+  "caveats": [
+    "Original brand/retailer page direct live fetch or checkout not verified",
+    "Crawl relative labels are not wall clock timestamps",
+    "Prices are indexed offer display claims and not checkout price",
+    "Review counter is not a proved single formulation cohort or latest live count",
+    "Multiple listing sale options are shown but active selected SKU unknown",
+    "Do not replace product market_signals, size_ml, price, unit_price or buy_link"
+  ]
+}
