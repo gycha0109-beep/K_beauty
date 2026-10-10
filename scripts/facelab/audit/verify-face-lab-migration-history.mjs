@@ -570,6 +570,34 @@ test("frozen 2026-10-10 candidate metadata reproduces all 143/171 records", () =
   const csv=candidateMigrationDiagnosticCsv(result);
   assert.equal(csv.trimEnd().split("\n").length,214);
 });
+test("Face Lab catalog evidence SQL is read-only and scoped", () => {
+  const sql=readFileSync(new URL(
+    "./sql/face-lab-v2-catalog-readonly-v1.sql",import.meta.url),"utf8");
+  const statements=sql.replace(/^--[^\n]*$/gm,"").split(";")
+    .map(x=>x.trim()).filter(Boolean);
+  assert.equal(statements.length,5);
+  assert.equal(statements[0],"BEGIN TRANSACTION READ ONLY");
+  assert.equal(statements[1],"SET LOCAL statement_timeout = '3s'");
+  assert.equal(statements[2],"SET LOCAL lock_timeout = '500ms'");
+  assert.match(statements[3],/^WITH\b/i);
+  assert.match(statements[3],/AS face_lab_metadata_json$/);
+  assert.equal(statements[4],"COMMIT");
+  const query=statements[3].replace(/'(?:''|[^'])*'/g,"''");
+  assert.doesNotMatch(query,/\b(?:INSERT|UPDATE|DELETE|ALTER|DROP|CREATE|TRUNCATE|GRANT|REVOKE|CALL|PERFORM|EXECUTE|COPY)\b/i);
+  assert.doesNotMatch(query,/\b(?:FROM|JOIN)\s+public\./i);
+  for(const expected of [
+    "saved_reports","analysis_request_rate_windows","analysis_request_idempotency",
+    "face_lab_revision","consume_analysis_rate_limits","refund_analysis_rate_limits",
+    "claim_analysis_idempotency","has_table_privilege","has_function_privilege",
+    "has_schema_privilege","pg_catalog.pg_policy","pg_catalog.pg_constraint",
+    "pg_catalog.pg_get_functiondef","pg_catalog.sha256",
+    "'production_readiness','HOLD'",
+    "'production_project_identity_verified',false",
+    "'sql_application_verified',false"
+  ]) assert.ok(sql.includes(expected),"missing catalog probe contract "+expected);
+  assert.ok(!sql.includes("SUPABASE_SERVICE_ROLE_KEY"));
+  assert.ok(!sql.includes("DATABASE_URL"));
+});
 test("the audited source and tools cannot reach databases", () => {
   for (const relative of [
     "./migration-reconciliation-core.mjs",
