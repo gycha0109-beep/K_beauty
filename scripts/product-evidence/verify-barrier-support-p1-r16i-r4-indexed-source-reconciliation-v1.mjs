@@ -53,7 +53,7 @@ blocked("pretend raw source archived", x=>x.raw_html_captured=true, authority);
 blocked("pretend review attribution resolved", x=>x.review_subject_attribution_verified=true, authority);
 blocked("inject approval token", x=>x.approval_payload="signed", authority);
 blocked("pretend source is checkout", x=>x.observation_channel="DIRECT_CHECKOUT", authority);
-blocked("change indexed observation timestamp", x=>x.observed_at="invalid", authority);
+blocked("change research date", x=>x.research_date_kr="2026-10-11", authority);
 blocked("replace brand SKU with kit", x=>x.official_single.product_no="45194", source);
 blocked("blend brand price and kit price", x=>x.official_single.catalog_list_price_krw=29900, source);
 blocked("affiliate URL into brand", x=>x.official_single.canonical_url="https://www.hwahae.co.kr/goods/45194", source);
