@@ -9,7 +9,8 @@ import {resolve,sep} from "node:path";
 import {fileURLToPath} from "node:url";
 import {
   inspectCandidateMigrationDifferences,
-  candidateMigrationDiagnosticMarkdown
+  candidateMigrationDiagnosticMarkdown,
+  candidateMigrationDiagnosticCsv
 } from "./candidate-migration-differences-core.mjs";
 
 function fail(code){throw new Error("migration_candidates_"+code);}
@@ -56,6 +57,8 @@ export function main(argv=[]){
   mkdirSync(opts.outDir,{recursive:true});
   writeFileSync(resolve(opts.outDir,"candidate-migration-diagnostic.json"),output);
   writeFileSync(resolve(opts.outDir,"candidate-migration-diagnostic.md"),markdown);
+  writeFileSync(resolve(opts.outDir,"candidate-migration-diagnostic.csv"),
+    candidateMigrationDiagnosticCsv(report));
   process.stdout.write(JSON.stringify({status:report.status,scope:report.scope,
     counts:report.counts})+"\n");
   return 0;

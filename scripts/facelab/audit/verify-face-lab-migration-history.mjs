@@ -10,7 +10,8 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   inspectCandidateMigrationDifferences,
-  candidateMigrationDiagnosticMarkdown
+  candidateMigrationDiagnosticMarkdown,
+  candidateMigrationDiagnosticCsv
 } from "./candidate-migration-differences-core.mjs";
 import {
   inspectFaceLabMigrationInventory,
@@ -504,6 +505,8 @@ test("candidate-only CLI yields stable HOLD with zero network or DB calls", () =
     const md=readFileSync(join(out,
       "candidate-migration-diagnostic.md"),"utf8");
     assert.match(md,/HOLD/);
+    const csv=readFileSync(join(out,"candidate-migration-diagnostic.csv"),"utf8");
+    assert.equal(csv.trimEnd().split("\n").length,parsed.rows.length+1);
     const run2=spawnSync(process.execPath,arguments_,{
       encoding:"utf8",timeout:12000
     });
@@ -511,6 +514,21 @@ test("candidate-only CLI yields stable HOLD with zero network or DB calls", () =
     assert.equal(readFileSync(join(out,
       "candidate-migration-diagnostic.md"),"utf8"),md);
   } finally {rmSync(temp,{recursive:true,force:true});}
+});
+test("candidate-only CSV preserves rows and neutralizes spreadsheet formulas", () => {
+  const r=inspectCandidateMigrationDifferences({
+    repository:[{filename:"20260824_a.sql",sha256:sha},
+      {filename:"20260824_b.sql",sha256:sha}],
+    hosted:[{version:"20260824123456",name:"a"}]
+  });
+  const first=candidateMigrationDiagnosticCsv(r);
+  assert.equal(first.trimEnd().split("\n").length,r.rows.length+1);
+  assert.match(first,/duplicate_repository_version/);
+  r.rows[0].name="=HYPERLINK(\"test\")";
+  const escaped=candidateMigrationDiagnosticCsv(r);
+  assert.ok(escaped.includes("'=HYPERLINK("));
+  assert.ok(!escaped.includes('"=HYPERLINK('));
+  assert.throws(()=>candidateMigrationDiagnosticCsv({}),/invalid_report/);
 });
 test("the audited source and tools cannot reach databases", () => {
   for (const relative of [

@@ -50,7 +50,7 @@ node scripts/facelab/audit/inspect-face-lab-migration-candidates.mjs \
 ```
 
 - Hosted 입력은 DB 비밀·토큰이 포함되지 않은 JSON 배열 또는 `{"migrations":[{"version":"20260824123819","name":"add_product_localized_names"}]}` 형식입니다.
-- `candidate-migration-diagnostic.json`, `candidate-migration-diagnostic.md`가 생성됩니다.
+- `candidate-migration-diagnostic.json`, `candidate-migration-diagnostic.md`, `candidate-migration-diagnostic.csv`가 생성됩니다.
 - 14자리 및 과거 8자리 파일명·중복 버전을 모두 원문대로 보존하고, 버전 그대로 대응하는 기록과 **이름만 같은 후보**를 분리합니다.
 - 저장소 파일 수, 후보 DB 이력 행 수, 버전 대응 건수, 이름만 같은 유일 후보, 미대응 잔여 수의 보존식이 실패하면 중단합니다.
 - 동일 이름이 다수면 후보 자동 연결하지 않고 `ambiguous_name_candidate`로 남깁니다.

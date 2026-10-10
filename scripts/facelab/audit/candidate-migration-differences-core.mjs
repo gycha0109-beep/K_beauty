@@ -138,3 +138,21 @@ export function candidateMigrationDiagnosticMarkdown(report) {
     "migration replay, and permission changes are prohibited.",""
   ].join("\n");
 }
+
+export const CANDIDATE_DIAGNOSTIC_CSV_COLUMNS = Object.freeze([
+  "source","version","name","filename","contentSha256",
+  "classification","counterpartVersion","risk","executionVerified"
+]);
+function csvCell(value){
+  let v=String(value??"").replace(/[\u0000-\u001f\u007f]/g," ");
+  if(/^\s*[=+@-]/.test(v))v="'"+v;
+  return '"'+v.replaceAll('"','""')+'"';
+}
+export function candidateMigrationDiagnosticCsv(report){
+  if(!object(report)||!Array.isArray(report.rows))fail("invalid_report");
+  return [
+    CANDIDATE_DIAGNOSTIC_CSV_COLUMNS.map(csvCell).join(","),
+    ...report.rows.map(row=>
+      CANDIDATE_DIAGNOSTIC_CSV_COLUMNS.map(k=>csvCell(row[k])).join(","))
+  ].join("\n")+"\n";
+}
