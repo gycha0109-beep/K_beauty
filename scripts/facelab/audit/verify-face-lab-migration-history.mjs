@@ -530,6 +530,46 @@ test("candidate-only CSV preserves rows and neutralizes spreadsheet formulas", (
   assert.ok(!escaped.includes('"=HYPERLINK('));
   assert.throws(()=>candidateMigrationDiagnosticCsv({}),/invalid_report/);
 });
+test("frozen 2026-10-10 candidate metadata reproduces all 143/171 records", () => {
+  const snapshot=JSON.parse(readFileSync(new URL(
+    "./fixtures/candidate-migration-metadata-20261010.json",import.meta.url),"utf8"));
+  assert.equal(snapshot.sourceKind,"candidate_supabase_not_verified_production");
+  assert.equal(snapshot.projectIdentityConfirmed,false);
+  assert.equal(snapshot.appliedSqlVerified,false);
+  assert.equal(snapshot.productionReconciliationComplete,false);
+  assert.equal(snapshot.nonSecretMetadataOnly,true);
+  assert.equal(snapshot.repositoryCommit,"4715f25de103aaae882a7fed387838b5d2c75000");
+  assert.equal(snapshot.repository.length,143);
+  assert.equal(snapshot.hosted.length,171);
+  const result=inspectCandidateMigrationDifferences({
+    repository:snapshot.repository,
+    hosted:snapshot.hosted
+  });
+  assert.equal(result.status,"HOLD");
+  assert.equal(result.scope,"hosted_candidate_unverified");
+  assert.equal(result.counts.repositoryFiles,143);
+  assert.equal(result.counts.repositoryUniqueVersions,142);
+  assert.equal(result.counts.hostedHistoryRecords,171);
+  assert.equal(result.counts.hostedUniqueVersions,171);
+  assert.equal(result.counts.directVersionCandidates,101);
+  assert.equal(result.counts.repositoryWithoutDirectVersion,42);
+  assert.equal(result.counts.hostedWithoutDirectVersion,70);
+  assert.equal(result.counts.uniqueNameOnlyCandidates,37);
+  assert.equal(result.counts.remainingRepoWithoutUniqueName,5);
+  assert.equal(result.counts.remainingHostedWithoutUniqueName,33);
+  assert.equal(result.counts.duplicateRepositoryVersionGroups,1);
+  assert.equal(result.counts.outputRows,213);
+  assert.ok(result.uniqueNameOnlyCandidates.some(x=>
+    x.name==="face_lab_test_quota_partition_v1"&&
+    x.hostedVersion==="20260930133304"));
+  assert.ok(result.collisionGroups.some(x=>x.version==="20260824"&&x.files.length===2));
+  assert.ok(result.rows.every(x=>x.executionVerified===false));
+  assert.equal(result.databaseCalls,0);
+  assert.equal(result.databaseWrites,0);
+  assert.equal(result.networkCalls,0);
+  const csv=candidateMigrationDiagnosticCsv(result);
+  assert.equal(csv.trimEnd().split("\n").length,214);
+});
 test("the audited source and tools cannot reach databases", () => {
   for (const relative of [
     "./migration-reconciliation-core.mjs",
