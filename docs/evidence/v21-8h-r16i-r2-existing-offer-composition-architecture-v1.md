@@ -1,8 +1,8 @@
 # R16I-R2 — 제품·단품·유통 Offer·포뮬러 Subject 경계 설계 v1
 
-> 상태: **DESIGN ONLY / HOLD**  
-> 판정: `R16I_R2_REUSE_EXISTING_OFFERS_COMPOSITION_SHADOW_DESIGN_HOLD`  
-> 기준: 2026-10-10, main `040d1abac8b6fc045abb4ac09f8497d155d6102a`  
+> 상태: **DESIGN ONLY / HOLD**
+> 판정: `R16I_R2_REUSE_EXISTING_OFFERS_COMPOSITION_SHADOW_DESIGN_HOLD`
+> 기준: 2026-10-10, main `040d1abac8b6fc045abb4ac09f8497d155d6102a`
 > 제품: 에스네이처 아쿠아 스쿠알란 수분크림, `b639c8b4-6a61-440e-b4db-fac7381593ff`
 
 ## 1. 결론 — 기존 인프라 재사용, 새 테이블/워크플로 금지
