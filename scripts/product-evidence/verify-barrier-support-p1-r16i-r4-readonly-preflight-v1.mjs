@@ -63,11 +63,13 @@ blocked("write statements attached", x => x.write_commands = ["UPDATE products"]
 blocked("observed time invalid", x => x.observed_at = "not-a-time", contract);
 blocked("catalog id substituted", x => x.product.id = "00000000-0000-4000-8000-000000000099", product);
 blocked("catalog size changed", x => x.product.size_ml = 80, product);
+blocked("normalized identity changed", x => x.product.normalized_name = "다른 상품", product);
 blocked("bundle price moved to single", x => x.product.unit_price_per_10ml = 3737.5, product);
 blocked("historical price altered", x => x.product.price_min = 25000, product);
 blocked("shop url switched", x => x.product.buy_link = "https://example.invalid/", product);
 blocked("product optimistic revision changed", x => x.product.updated_at = "2026-10-11T09:32:38+09:00", product);
 blocked("review count reassigned", x => x.product.market_signals.review_count = 43000, product);
+blocked("review distribution changed", x => x.product.market_signals.rating_distribution = { 5: 100 }, product);
 blocked("binding removed", x => x.bindings = [], binding);
 blocked("binding replaced", x => x.bindings[0].binding_id = "00000000-0000-4000-8000-000000000099", binding);
 blocked("binding revision changed", x => x.bindings[0].updated_at = "2026-10-11T10:10:29+09:00", binding);
