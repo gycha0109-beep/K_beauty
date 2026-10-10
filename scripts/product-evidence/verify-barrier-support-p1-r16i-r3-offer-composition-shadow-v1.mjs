@@ -40,11 +40,13 @@ assert.equal(src.scope_limitations.historical_price.startsWith("Recorded"),true)
 assert.equal(src.scope_limitations.formula_generation,"Unknown");
 blockCase("wrong contract",x=>x.contract_version="another-version","INVALID_CONTRACT_OR_PRODUCT");
 blockCase("missing product",x=>x.product_id="bad-uuid","INVALID_CONTRACT_OR_PRODUCT");
+blockCase("different valid product id",x=>{x.product_id="00000000-0000-4000-8000-000000000099";x.components[0].product_id=x.product_id;},"INVALID_CONTRACT_OR_PRODUCT");
 blockCase("seller impersonation",x=>x.source.seller_key="not_hwahae","SOURCE_SCOPE_NOT_ATTESTED");
 blockCase("wrong merchant hostname",x=>x.source.listing_url="https://evil.invalid/goods/45194","SOURCE_SCOPE_NOT_ATTESTED");
 blockCase("redirect lookalike subdomain",x=>x.source.listing_url="https://www.hwahae.co.kr.evil.invalid/goods/45194","SOURCE_SCOPE_NOT_ATTESTED");
 blockCase("query injected",x=>x.source.listing_url+="?set=invalid","SOURCE_SCOPE_NOT_ATTESTED");
 blockCase("wrong listing scope",x=>x.source.listing_id="99999","SOURCE_SCOPE_NOT_ATTESTED");
+blockCase("consistent unrelated listing",x=>{x.source.listing_id="99999";x.source.listing_url="https://www.hwahae.co.kr/goods/99999";},"SOURCE_SCOPE_NOT_ATTESTED");
 blockCase("unarchived source authority promoted",x=>x.source.raw_html_archived=true,"SOURCE_SCOPE_NOT_ATTESTED");
 blockCase("physical claim invented",x=>x.source.components_physically_verified=true,"SOURCE_SCOPE_NOT_ATTESTED");
 blockCase("source authority forged",x=>x.source.authority="OFFICIAL_MANUFACTURER","SOURCE_SCOPE_NOT_ATTESTED");
@@ -63,7 +65,10 @@ blockCase("formula gift as primary",x=>x.components[1].product_id=x.product_id,"
 blockCase("pack item foreign product",x=>x.components[0].product_id="00000000-0000-4000-8000-000000000099","PRIMARY_GIFT_IDENTITY_MISMATCH");
 blockCase("wrong aggregate",x=>x.claimed_primary_total_ml=170,"PACK_VOLUME_SCOPE_CONFLICT");
 blockCase("legacy single volume incorrectly 80",x=>x.legacy_catalog_volume_ml=80,"PACK_VOLUME_SCOPE_CONFLICT");
-blockCase("bundle count lied",x=>x.components[0].quantity=1,"PACK_VOLUME_SCOPE_CONFLICT");
+blockCase("bundle count lied",x=>x.components[0].quantity=1,"EXACT_LISTING_COMPONENTS_MISMATCH");
+blockCase("equal volume 40ml x 4",x=>{x.components[0].unit_volume_ml=40;x.components[0].quantity=4;},"EXACT_LISTING_COMPONENTS_MISMATCH");
+blockCase("equal volume 160ml x 1",x=>{x.components[0].unit_volume_ml=160;x.components[0].quantity=1;},"EXACT_LISTING_COMPONENTS_MISMATCH");
+blockCase("equal gift volume 5ml x 2",x=>{x.components[1].unit_volume_ml=5;x.components[1].quantity=2;},"EXACT_LISTING_COMPONENTS_MISMATCH");
 blockCase("made-up current price",x=>x.historical_price_is_current=true,"PRICE_AUTHORITY_NOT_VERIFIED");
 blockCase("nonfinite amount",x=>x.historical_kit_price_krw=Number.NaN,"PRICE_AUTHORITY_NOT_VERIFIED");
 blockCase("invalid price",x=>x.historical_kit_price_krw=-1,"PRICE_AUTHORITY_NOT_VERIFIED");
