@@ -43,7 +43,7 @@ column_targets(table_name,column_name) AS (
     ('analysis_request_idempotency','endpoint')
 ),
 columns AS (
-  SELECT x.table_name,x.column_name,a.attnum IS NOT NULL AS exists,
+  SELECT x.table_name,x.column_name,a.attnum IS NOT NULL AS is_present,
     CASE WHEN a.attnum IS NULL THEN NULL
       ELSE pg_catalog.format_type(a.atttypid,a.atttypmod) END AS data_type,
     a.attnotnull AS not_null,
@@ -61,7 +61,7 @@ constraint_targets(table_name,constraint_name) AS (
     ('analysis_request_idempotency','analysis_request_idempotency_endpoint_check')
 ),
 constraints AS (
-  SELECT x.table_name,x.constraint_name,k.oid IS NOT NULL AS exists,
+  SELECT x.table_name,x.constraint_name,k.oid IS NOT NULL AS is_present,
     k.contype AS constraint_type,
     CASE WHEN k.oid IS NULL THEN NULL
       ELSE pg_catalog.pg_get_constraintdef(k.oid,true) END AS definition,
@@ -78,7 +78,7 @@ routine_targets(routine_name,signature) AS (
      'public.claim_analysis_idempotency(text,text,text,text,text,timestamptz,integer)')
 ),
 routines AS (
-  SELECT x.routine_name,x.signature,p.oid IS NOT NULL AS exists,
+  SELECT x.routine_name,x.signature,p.oid IS NOT NULL AS is_present,
     p.prosecdef AS security_definer,p.provolatile AS volatility,
     CASE WHEN p.oid IS NULL THEN NULL ELSE
       pg_catalog.encode(pg_catalog.sha256(
@@ -108,19 +108,19 @@ SELECT pg_catalog.jsonb_build_object(
       'policy_count',policy_count,'table_privileges',privileges) ORDER BY table_name) FROM tables),
   'column_metadata',(
     SELECT jsonb_agg(jsonb_build_object(
-      'table',table_name,'name',column_name,'exists',exists,
+      'table',table_name,'name',column_name,'exists',is_present,
       'data_type',data_type,'not_null',not_null,
       'default_expression',default_expression) ORDER BY table_name,column_name)
     FROM columns),
   'constraint_metadata',(
     SELECT jsonb_agg(jsonb_build_object(
-      'table',table_name,'name',constraint_name,'exists',exists,
+      'table',table_name,'name',constraint_name,'exists',is_present,
       'constraint_type',constraint_type,'definition',definition,
       'validated',validated) ORDER BY table_name,constraint_name)
     FROM constraints),
   'routine_metadata',(
     SELECT jsonb_agg(jsonb_build_object(
-      'name',routine_name,'signature',signature,'exists',exists,
+      'name',routine_name,'signature',signature,'exists',is_present,
       'security_definer',security_definer,'volatility',volatility,
       'definition_sha256',definition_sha256,
       'function_execute_privileges',privileges) ORDER BY routine_name)
