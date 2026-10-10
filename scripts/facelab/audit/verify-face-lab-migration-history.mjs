@@ -9,6 +9,10 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
+  inspectFaceLabMigrationInventory,
+  migrationInventoryPreflightMarkdown
+} from "./inspect-face-lab-migration-inventory.mjs";
+import {
   FACE_LAB_MIGRATION_RECONCILER_VERSION,
   reconcileFaceLabMigrationInventories,
   migrationReconciliationCsv,
@@ -299,6 +303,90 @@ test("CLI opt-in permits historical 8-digit migration names", () => {
       /2026-10-10T09:00:00Z/);
   } finally { rmSync(tmp, {recursive:true,force:true}); }
 });
+test("repository preflight classifies legacy timestamps and duplicate groups", () => {
+  const r = inspectFaceLabMigrationInventory([
+    {filename:"20260824_backfill.sql",sha256:sha},
+    {filename:"20260824_add_columns.sql",sha256:sha},
+    {filename:"20261010090000_unique.sql",sha256:sha}
+  ]);
+  assert.equal(r.status,"HOLD");
+  assert.equal(r.projectIdentityConfirmed,false);
+  assert.equal(r.hostedHistoryCompared,false);
+  assert.equal(r.databaseCalls,0);
+  assert.equal(r.databaseWrites,0);
+  assert.equal(r.networkCalls,0);
+  assert.equal(r.counts.repositoryEntries,3);
+  assert.equal(r.counts.timestamp14Files,1);
+  assert.equal(r.counts.legacyDate8Files,2);
+  assert.equal(r.counts.duplicateVersionGroups,1);
+  assert.equal(r.counts.duplicateVersionFileCount,2);
+  assert.equal(r.inventoryReconciliationEligible,false);
+  assert.equal(r.duplicateVersions[0].version,"20260824");
+  assert.deepEqual(r.duplicateVersions[0].files.map(x=>x.filename),
+    ["20260824_add_columns.sql","20260824_backfill.sql"]);
+  assert.match(migrationInventoryPreflightMarkdown(r),/20260824/);
+});
+test("repository preflight is order-independent and conserves input count", () => {
+  const list = [
+    {filename:"20260101000000_a.sql",sha256:sha},
+    {filename:"bad_file.sql",sha256:sha},
+    {filename:"20260101_legacy.sql",sha256:sha}
+  ];
+  const a=inspectFaceLabMigrationInventory(list);
+  const b=inspectFaceLabMigrationInventory([...list].reverse());
+  assert.deepEqual(a,b);
+  assert.equal(a.counts.invalidFileCount,1);
+  assert.equal(a.counts.validSqlFiles+a.counts.invalidFileCount,
+    a.counts.repositoryEntries);
+  assert.equal(a.invalidFilenameDiagnostic,
+    "unexpected_file_names_present_names_redacted");
+  assert.ok(!JSON.stringify(a).includes("bad_file.sql"));
+  assert.equal(a.inventoryReconciliationEligible,false);
+});
+test("repository preflight rejects malformed manifest or duplicate filename", () => {
+  assert.throws(()=>inspectFaceLabMigrationInventory([]),/entries_invalid/);
+  assert.throws(()=>inspectFaceLabMigrationInventory([
+    {filename:"20260101000000_a.sql",sha256:"bad"}
+  ]),/entry_invalid/);
+  assert.throws(()=>inspectFaceLabMigrationInventory([
+    {filename:"20260101000000_a.sql",sha256:sha},
+    {filename:"20260101000000_a.sql",sha256:sha}
+  ]),/duplicate_filename/);
+});
+test("repository preflight CLI only reads local SQL and reports HOLD", () => {
+  const tmp=mkdtempSync(join(tmpdir(),"facelab-preflight-"));
+  try {
+    const dir=join(tmp,"sql"),out=join(tmp,"out");
+    mkdirSync(dir);
+    writeFileSync(join(dir,"20260824_one.sql"),"select 1;");
+    writeFileSync(join(dir,"20260824_two.sql"),"select 2;");
+    const cli=fileURLToPath(new URL(
+      "./inspect-face-lab-migration-inventory.mjs",import.meta.url));
+    const args=[cli,"--repo-dir",dir,"--out-dir",out];
+    const run=spawnSync(process.execPath,args,{encoding:"utf8",timeout:12000});
+    assert.equal(run.status,0,run.stderr);
+    const summary=JSON.parse(readFileSync(join(out,
+      "migration-inventory-preflight.json"),"utf8"));
+    assert.equal(summary.status,"HOLD");
+    assert.equal(summary.counts.duplicateVersionGroups,1);
+    assert.equal(summary.databaseWrites,0);
+    assert.equal(summary.hostedHistoryCompared,false);
+    const md=readFileSync(join(out,"migration-inventory-preflight.md"),"utf8");
+    assert.match(md,/20260824/);
+    const repeat=spawnSync(process.execPath,args,{encoding:"utf8",timeout:12000});
+    assert.equal(repeat.status,0,repeat.stderr);
+    assert.equal(readFileSync(join(out,
+      "migration-inventory-preflight.md"),"utf8"),md);
+    writeFileSync(join(dir,"unexpected.txt"),"never execute");
+    const check=spawnSync(process.execPath,args,{encoding:"utf8",timeout:12000});
+    assert.equal(check.status,0,check.stderr);
+    const again=JSON.parse(readFileSync(join(out,
+      "migration-inventory-preflight.json"),"utf8"));
+    assert.equal(again.counts.invalidFileCount,1);
+    assert.equal(again.status,"HOLD");
+    assert.ok(!JSON.stringify(again).includes("unexpected.txt"));
+  } finally {rmSync(tmp,{recursive:true,force:true});}
+});
 test("the audited source and tools cannot reach databases", () => {
   for (const relative of [
     "./migration-reconciliation-core.mjs",
@@ -313,6 +401,17 @@ test("the audited source and tools cannot reach databases", () => {
   }
 });
 
+const actualRepoPath = fileURLToPath(new URL("../../../supabase/migrations/", import.meta.url));
+const preflightCli = fileURLToPath(new URL(
+  "./inspect-face-lab-migration-inventory.mjs", import.meta.url));
+const actualPreflight = spawnSync(process.execPath, [
+  preflightCli, "--repo-dir", actualRepoPath
+], {encoding:"utf8",timeout:12000});
+assert.equal(actualPreflight.status, 0, actualPreflight.stderr);
+const actualPreflightSummary = JSON.parse(actualPreflight.stdout);
+assert.equal(actualPreflightSummary.status, "HOLD");
+assert.ok(actualPreflightSummary.counts.repositoryEntries > 0);
+
 console.log(JSON.stringify({
   status: "PASS",
   cases: passed,
@@ -321,5 +420,6 @@ console.log(JSON.stringify({
   providerCalls: 0,
   databaseCalls: 0,
   appliedMigrations: 0,
-  productionReadiness: "HOLD"
+  productionReadiness: "HOLD",
+  repositoryPreflight: actualPreflightSummary
 }));
