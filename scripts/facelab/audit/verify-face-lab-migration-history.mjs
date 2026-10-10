@@ -9,6 +9,10 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
+  inspectCandidateMigrationDifferences,
+  candidateMigrationDiagnosticMarkdown
+} from "./candidate-migration-differences-core.mjs";
+import {
   inspectFaceLabMigrationInventory,
   migrationInventoryPreflightMarkdown
 } from "./inspect-face-lab-migration-inventory.mjs";
@@ -387,10 +391,133 @@ test("repository preflight CLI only reads local SQL and reports HOLD", () => {
     assert.ok(!JSON.stringify(again).includes("unexpected.txt"));
   } finally {rmSync(tmp,{recursive:true,force:true});}
 });
+test("candidate-only diagnostic preserves 20260824 duplicate and name aliases", () => {
+  const r=inspectCandidateMigrationDifferences({
+    repository:[
+      {filename:"20260824_add_product_localized_names.sql",sha256:sha},
+      {filename:"20260824_backfill_product_english_display_names.sql",sha256:sha},
+      {filename:"20261001010000_face_lab_test_quota_partition_v1.sql",sha256:sha},
+      {filename:"20261002020000_exact.sql",sha256:sha}
+    ],
+    hosted:[
+      {version:"20260824123819",name:"add_product_localized_names"},
+      {version:"20261001095555",name:"face_lab_test_quota_partition_v1"},
+      {version:"20261002020000",name:"exact"}
+    ]
+  });
+  assert.equal(r.status,"HOLD");
+  assert.equal(r.scope,"hosted_candidate_unverified");
+  assert.equal(r.projectIdentityConfirmed,false);
+  assert.equal(r.productionReconciliationComplete,false);
+  assert.equal(r.databaseCalls,0);
+  assert.equal(r.databaseWrites,0);
+  assert.equal(r.sqlExecuted,false);
+  assert.equal(r.counts.repositoryFiles,4);
+  assert.equal(r.counts.hostedHistoryRecords,3);
+  assert.equal(r.counts.directVersionCandidates,1);
+  assert.equal(r.counts.repositoryWithoutDirectVersion,3);
+  assert.equal(r.counts.hostedWithoutDirectVersion,2);
+  assert.equal(r.counts.uniqueNameOnlyCandidates,2);
+  assert.equal(r.counts.remainingRepoWithoutUniqueName,1);
+  assert.equal(r.counts.remainingHostedWithoutUniqueName,0);
+  assert.equal(r.counts.duplicateRepositoryVersionGroups,1);
+  assert.equal(r.counts.outputRows,6);
+  assert.equal(r.collisionGroups[0].version,"20260824");
+  assert.ok(!r.rows.some(x=>x.executionVerified));
+  assert.ok(r.rows.some(x=>x.name==="backfill_product_english_display_names" &&
+    x.classification==="duplicate_repository_version"));
+  assert.match(candidateMigrationDiagnosticMarkdown(r),/20260824/);
+});
+test("candidate-only diagnostic deterministic across input order", () => {
+  const repository=[
+    {filename:"20260824_a.sql",sha256:sha},
+    {filename:"20260824_b.sql",sha256:sha},
+    {filename:"20261001000000_c.sql",sha256:sha}
+  ];
+  const hosted=[{version:"20260824120000",name:"a"},
+    {version:"20261001000000",name:"c"}];
+  const a=inspectCandidateMigrationDifferences({repository,hosted});
+  const b=inspectCandidateMigrationDifferences({
+    repository:[...repository].reverse(),hosted:[...hosted].reverse()
+  });
+  assert.deepEqual(a,b);
+  assert.equal(a.counts.repositoryFiles,
+    a.counts.directVersionCandidates+a.counts.repositoryWithoutDirectVersion);
+  assert.equal(a.counts.hostedHistoryRecords,
+    a.counts.directVersionCandidates+a.counts.hostedWithoutDirectVersion);
+});
+test("candidate-only diagnostic refuses ambiguous name mapping", () => {
+  const r=inspectCandidateMigrationDifferences({
+    repository:[{filename:"20260824_a.sql",sha256:sha}],
+    hosted:[
+      {version:"20260824123456",name:"a"},
+      {version:"20260824125555",name:"a"}
+    ]
+  });
+  assert.equal(r.counts.ambiguousNameGroups,1);
+  assert.equal(r.counts.uniqueNameOnlyCandidates,0);
+  assert.equal(r.rows.length,3);
+  assert.equal(r.rows.filter(x=>x.classification==="ambiguous_name_candidate").length,3);
+});
+test("candidate-only diagnostic rejects duplicates, unsafe names and empty lists", () => {
+  assert.throws(()=>inspectCandidateMigrationDifferences({
+    repository:[],hosted:[]}),/invalid_inventory/);
+  assert.throws(()=>inspectCandidateMigrationDifferences({
+    repository:[{filename:"20260824_a.sql",sha256:sha},
+      {filename:"20260824_a.sql",sha256:sha}],
+    hosted:[{version:"20260824123456",name:"a"}]
+  }),/invalid_repository_entry/);
+  assert.throws(()=>inspectCandidateMigrationDifferences({
+    repository:[{filename:"20260824_a.sql",sha256:sha}],
+    hosted:[{version:"20260824123456",name:"a"},
+      {version:"20260824123456",name:"b"}]
+  }),/hosted_duplicate_version/);
+  assert.throws(()=>inspectCandidateMigrationDifferences({
+    repository:[{filename:"../../etc/passwd",sha256:sha}],
+    hosted:[{version:"20260824123456",name:"a"}]
+  }),/invalid_repository_entry/);
+});
+test("candidate-only CLI yields stable HOLD with zero network or DB calls", () => {
+  const temp=mkdtempSync(join(tmpdir(),"facelab-candidates-"));
+  try {
+    const dir=join(temp,"sql"),out=join(temp,"out"),input=join(temp,"hosted.json");
+    mkdirSync(dir);
+    writeFileSync(join(dir,"20260824_add.sql"),"select 1;");
+    writeFileSync(join(dir,"20260824_backfill.sql"),"select 2;");
+    writeFileSync(input,JSON.stringify({migrations:[
+      {version:"20260824123819",name:"add"}
+    ]}));
+    const cli=fileURLToPath(new URL(
+      "./inspect-face-lab-migration-candidates.mjs",import.meta.url));
+    const arguments_=[cli,"--repo-dir",dir,"--hosted-list",input,"--out-dir",out];
+    const run=spawnSync(process.execPath,arguments_,{
+      encoding:"utf8",timeout:12000
+    });
+    assert.equal(run.status,0,run.stderr);
+    const parsed=JSON.parse(readFileSync(join(out,
+      "candidate-migration-diagnostic.json"),"utf8"));
+    assert.equal(parsed.status,"HOLD");
+    assert.equal(parsed.counts.duplicateRepositoryVersionGroups,1);
+    assert.equal(parsed.counts.uniqueNameOnlyCandidates,1);
+    assert.equal(parsed.databaseCalls,0);
+    assert.equal(parsed.databaseWrites,0);
+    const md=readFileSync(join(out,
+      "candidate-migration-diagnostic.md"),"utf8");
+    assert.match(md,/HOLD/);
+    const run2=spawnSync(process.execPath,arguments_,{
+      encoding:"utf8",timeout:12000
+    });
+    assert.equal(run2.status,0,run2.stderr);
+    assert.equal(readFileSync(join(out,
+      "candidate-migration-diagnostic.md"),"utf8"),md);
+  } finally {rmSync(temp,{recursive:true,force:true});}
+});
 test("the audited source and tools cannot reach databases", () => {
   for (const relative of [
     "./migration-reconciliation-core.mjs",
-    "./compare-face-lab-migration-history.mjs"
+    "./compare-face-lab-migration-history.mjs",
+    "./candidate-migration-differences-core.mjs",
+    "./inspect-face-lab-migration-candidates.mjs"
   ]) {
     const source = readFileSync(new URL(relative, import.meta.url), "utf8");
     for (const forbidden of [
