@@ -9,6 +9,10 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
+  assessFaceLabCatalogEvidence,
+  faceLabCatalogEvidenceMarkdown
+} from "./catalog-evidence-evaluator-core.mjs";
+import {
   inspectCandidateMigrationDifferences,
   candidateMigrationDiagnosticMarkdown,
   candidateMigrationDiagnosticCsv
@@ -598,12 +602,143 @@ test("Face Lab catalog evidence SQL is read-only and scoped", () => {
   assert.ok(!sql.includes("SUPABASE_SERVICE_ROLE_KEY"));
   assert.ok(!sql.includes("DATABASE_URL"));
 });
+function syntheticCatalogEvidence(){
+  const rolePerms=()=>({
+    anon:{select:false,insert:false,update:false,delete:false},
+    authenticated:{select:false,insert:false,update:false,delete:false},
+    service_role:{select:true,insert:true,update:true,delete:true}
+  });
+  return {
+    kind:"face_lab_v2_catalog_metadata_readonly_v1",
+    production_project_identity_verified:false,sql_application_verified:false,
+    production_readiness:"HOLD",
+    schema_public_usage:{anon:true,authenticated:true,service_role:true},
+    table_metadata:[
+      {name:"saved_reports",exists:true,relkind:"r",rls_enabled:true,
+       rls_forced:false,policy_count:2,table_privileges:rolePerms()},
+      ...["analysis_request_rate_windows","analysis_request_idempotency"]
+        .map(name=>({name,exists:true,relkind:"r",rls_enabled:true,
+          rls_forced:false,policy_count:0,table_privileges:rolePerms()}))
+    ],
+    column_metadata:[
+      {table:"saved_reports",name:"face_lab_revision",exists:true,
+       data_type:"bigint",not_null:true,default_expression:"0"},
+      ...["analysis_request_rate_windows","analysis_request_idempotency"]
+        .map(table=>({table,name:"endpoint",exists:true,
+          data_type:"text",not_null:true,default_expression:null}))
+    ],
+    constraint_metadata:[
+      {table:"saved_reports",name:"saved_reports_face_lab_revision_nonnegative",
+       exists:true,constraint_type:"c",validated:true,
+       definition:"CHECK ((face_lab_revision >= 0))"},
+      {table:"analysis_request_rate_windows",
+       name:"analysis_request_rate_windows_endpoint_check",
+       exists:true,constraint_type:"c",validated:true,
+       definition:"CHECK (endpoint IN ('face-reading-test','face-lab-simulation-test'))"},
+      {table:"analysis_request_idempotency",
+       name:"analysis_request_idempotency_endpoint_check",
+       exists:true,constraint_type:"c",validated:true,
+       definition:"CHECK (endpoint IN ('face-lab-simulation-test'))"}
+    ],
+    routine_metadata:[
+      ["consume_analysis_rate_limits","public.consume_analysis_rate_limits(jsonb)"],
+      ["refund_analysis_rate_limits","public.refund_analysis_rate_limits(jsonb)"],
+      ["claim_analysis_idempotency",
+       "public.claim_analysis_idempotency(text,text,text,text,text,timestamptz,integer)"]
+    ].map(([routine_name,signature])=>({
+      routine_name,signature,exists:true,security_definer:false,volatility:"v",
+      definition_sha256:"a".repeat(64),
+      function_execute_privileges:{
+        anon_execute:false,authenticated_execute:false,service_role_execute:true
+      }
+    }))
+  };
+}
+test("catalog readback neutral synthetic metadata remains HOLD despite no findings", () => {
+  const r=assessFaceLabCatalogEvidence(syntheticCatalogEvidence());
+  assert.equal(r.status,"HOLD");
+  assert.equal(r.productionIdentityConfirmed,false);
+  assert.equal(r.appliedSqlVerified,false);
+  assert.equal(r.authorizationVerified,false);
+  assert.equal(r.databaseCalls,0);
+  assert.equal(r.databaseWrites,0);
+  assert.equal(r.counts.totalFindings,0);
+  assert.equal(r.counts.expectedTables,3);
+  assert.equal(r.counts.expectedColumns,3);
+  assert.equal(r.counts.expectedConstraints,3);
+  assert.equal(r.counts.expectedRoutines,3);
+  assert.match(faceLabCatalogEvidenceMarkdown(r),/HOLD/);
+});
+test("catalog readback flags missing metadata without false-positive approval", () => {
+  const input=syntheticCatalogEvidence();
+  input.table_metadata.splice(0,1);
+  input.column_metadata.splice(0,1);
+  input.constraint_metadata.splice(0,1);
+  input.routine_metadata.splice(0,1);
+  const r=assessFaceLabCatalogEvidence(input);
+  assert.equal(r.status,"HOLD");
+  for(const code of ["table_metadata_missing","column_metadata_missing",
+    "constraint_metadata_missing","routine_metadata_missing"])
+    assert.ok(r.findings.some(x=>x.code===code));
+  assert.equal(r.counts.evidenceGaps,4);
+});
+test("catalog readback flags RLS, ACL, function-security and token regression", () => {
+  const input=syntheticCatalogEvidence();
+  input.table_metadata[1].rls_enabled=false;
+  input.table_metadata[1].table_privileges.anon.insert=true;
+  input.constraint_metadata[1].definition="CHECK (endpoint = 'analyze')";
+  input.routine_metadata[0].security_definer=true;
+  input.routine_metadata[0].function_execute_privileges.authenticated_execute=true;
+  input.routine_metadata[1].function_execute_privileges.service_role_execute=false;
+  const r=assessFaceLabCatalogEvidence(input);
+  assert.equal(r.status,"HOLD");
+  for(const code of ["rls_not_enabled","request_guard_table_access_exposed",
+    "expected_constraint_token_missing","routine_security_invoker_unconfirmed",
+    "routine_executable_by_untrusted_role","routine_service_role_execute_missing"])
+    assert.ok(r.findings.some(x=>x.code===code),code);
+  assert.ok(r.counts.priority>=6);
+  assert.equal(r.networkCalls,0);
+});
+test("catalog readback fails closed on invalid scope or duplicates", () => {
+  const input=syntheticCatalogEvidence();
+  input.production_project_identity_verified=true;
+  assert.throws(()=>assessFaceLabCatalogEvidence(input),/header_invalid/);
+  const other=syntheticCatalogEvidence();
+  other.routine_metadata.push(structuredClone(other.routine_metadata[0]));
+  assert.throws(()=>assessFaceLabCatalogEvidence(other),/duplicate_or_invalid_entry/);
+  const third=syntheticCatalogEvidence();
+  third.routine_metadata=undefined;
+  assert.throws(()=>assessFaceLabCatalogEvidence(third),/collection_invalid/);
+});
+test("catalog evidence CLI is offline, deterministic, and produces HOLD", () => {
+  const dir=mkdtempSync(join(tmpdir(),"facelab-evidence-"));
+  try {
+    const input=join(dir,"evidence.json"),out=join(dir,"out");
+    writeFileSync(input,JSON.stringify({
+      face_lab_metadata_json:syntheticCatalogEvidence()
+    }));
+    const cli=fileURLToPath(new URL(
+      "./evaluate-face-lab-catalog-evidence.mjs",import.meta.url));
+    const args=[cli,"--evidence-json",input,"--out-dir",out];
+    const run=spawnSync(process.execPath,args,{encoding:"utf8",timeout:12000});
+    assert.equal(run.status,0,run.stderr);
+    const a=readFileSync(join(out,"face-lab-catalog-evidence-review.json"),"utf8");
+    const m=readFileSync(join(out,"face-lab-catalog-evidence-review.md"),"utf8");
+    assert.equal(JSON.parse(a).status,"HOLD");
+    assert.match(m,/manual|HOLD/i);
+    const again=spawnSync(process.execPath,args,{encoding:"utf8",timeout:12000});
+    assert.equal(again.status,0,again.stderr);
+    assert.equal(readFileSync(join(out,"face-lab-catalog-evidence-review.json"),"utf8"),a);
+  } finally {rmSync(dir,{recursive:true,force:true});}
+});
 test("the audited source and tools cannot reach databases", () => {
   for (const relative of [
     "./migration-reconciliation-core.mjs",
     "./compare-face-lab-migration-history.mjs",
     "./candidate-migration-differences-core.mjs",
-    "./inspect-face-lab-migration-candidates.mjs"
+    "./inspect-face-lab-migration-candidates.mjs",
+    "./catalog-evidence-evaluator-core.mjs",
+    "./evaluate-face-lab-catalog-evidence.mjs"
   ]) {
     const source = readFileSync(new URL(relative, import.meta.url), "utf8");
     for (const forbidden of [
