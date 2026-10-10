@@ -54,6 +54,7 @@ declare
   r jsonb;
   source_refresh jsonb;
   assessment_change jsonb;
+  version_change jsonb;
   mismatch jsonb;
   v_num bigint;
   v_changed text[];
@@ -75,6 +76,12 @@ begin
   if r->>'status'<>'inserted' or r->>'eventKind'<>'evidence_refresh'
     then raise exception 'AUTOMATIC_HISTORY_EVIDENCE_REFRESH_FAIL: %',r;end if;
 
+  version_change := jsonb_set(
+    jsonb_set(c,'{versions,evaluator}','"automatic-product-evidence-evaluator-v2"'::jsonb),
+    '{idempotencyKey}',to_jsonb(repeat('2',64)));
+  r := public.record_automatic_product_evidence_history_v1(version_change);
+  if r->>'status'<>'inserted' or r->>'eventKind'<>'evaluation_version_change'
+    then raise exception 'AUTOMATIC_HISTORY_VERSION_CHANGE_FAIL: %',r;end if;
   assessment_change := jsonb_set(
     jsonb_set(
       jsonb_set(
@@ -90,7 +97,7 @@ begin
   if r->>'status'<>'duplicate' then
     raise exception 'AUTOMATIC_HISTORY_NONADJACENT_DUPLICATE_FAIL';end if;
   select count(*) into v_num from public.automatic_product_evidence_history_v1;
-  if v_num<>3 then raise exception 'AUTOMATIC_HISTORY_APPEND_ONLY_COUNT_FAIL';end if;
+  if v_num<>4 then raise exception 'AUTOMATIC_HISTORY_APPEND_ONLY_COUNT_FAIL';end if;
 
   mismatch := jsonb_set(c,'{subjectId}',
     '"8c100558-f7b0-45a4-9c93-eb159eadbf3d"'::jsonb);
