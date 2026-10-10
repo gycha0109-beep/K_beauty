@@ -89,7 +89,10 @@ assert.ok(rejectedComposition.reasons.includes("COMPOSITION_SHADOW_NOT_SAFE_FOR_
 assert.equal(evaluateR16IR4Preflight(base, null).decision, "BLOCKED");
 const moduleText = fs.readFileSync("lib/product-offer-r16i-r4-readonly-preflight.mjs", "utf8");
 assert.doesNotMatch(moduleText, /\b(fetch|axios|createClient|postgres)\s*\(/);
-assert.doesNotMatch(moduleText, /\.insert\s*\(|\.upsert\s*\(|\.update\s*\(|\.rpc\s*\(/);
+// Hash.update is the sole permitted .update call; it is NOT a database operation.
+assert.equal((moduleText.match(/\.update\s*\(/g) || []).length, 1);
+assert.match(moduleText, /createHash\("sha256"\)\.update\s*\(/);
+assert.doesNotMatch(moduleText.replace('createHash("sha256").update(', 'createHash("sha256").HASH_UPDATE('), /\.insert\s*\(|\.upsert\s*\(|\.update\s*\(|\.rpc\s*\(/);
 assert.doesNotMatch(moduleText, /process\.env|from\s+["']server-only/);
 assert.equal(base.allow_production_write, false);
 assert.equal(base.operator_approval_granted, false);
