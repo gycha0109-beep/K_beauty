@@ -15,6 +15,21 @@ const SUBJECT = "0b5963bb-67d6-4738-a620-32ec86c1e3d0";
 const OLD = "8c100558-f7b0-45a4-9c93-eb159eadbf3d";
 const OFFICIAL = "https://bushmankorea.com/product/31/";
 const HWAHAE = "https://www.hwahae.com/en/products/1884027";
+const EVIDENCE_IDS = [
+  "a2bc9ca8-740e-47fe-b5fb-828b691b8c6b",
+  "d485b20c-d136-4689-85cf-22fd360f10c7",
+  "88d1b9fc-a02c-4af3-9d49-f102978d4769",
+];
+const SOURCE_IDS = [
+  "11111111-1111-4111-8111-111111111111",
+  "11111111-1111-4111-8111-111111111112",
+  "11111111-1111-4111-8111-111111111113",
+];
+const BINDING_IDS = [
+  "22222222-2222-4222-8222-222222222221",
+  "22222222-2222-4222-8222-222222222222",
+  "22222222-2222-4222-8222-222222222223",
+];
 function fixture() {
   const facts = [
     ["5fe7666a-9854-4a0e-9248-72780b3e699f","spf_value","number",null,"50","product-fact-registry-cross-category-v1","3594ca85-1313-4684-9821-f0b138605e2b"],
@@ -54,6 +69,24 @@ function fixture() {
         [["spf_value","number"],["uva_label","enum"],["uv_filter_type","enum"]].map(([key,type])=>
           ({registry_version:v,fact_key:key,value_type:type,deprecated:false}))),
     ],
+    factEvidenceLinks:facts.map((f,i)=>({
+      fact_instance_id:f[0],evidence_id:EVIDENCE_IDS[i],subject_id:SUBJECT,
+      proposition_key:String(i+1).repeat(64),link_role:"supporting",
+    })),
+    evidenceRecords:facts.map((f,i)=>({
+      evidence_id:EVIDENCE_IDS[i],source_id:SOURCE_IDS[i],binding_id:BINDING_IDS[i],
+      subject_id:SUBJECT,registry_version:f[5],fact_key:f[1],
+      proposition_key:String(i+1).repeat(64),binding_state:"exact_subject_match",
+      evidence_authority:"product_specific_primary",support_direction:"supports",valid_to:null,
+    })),
+    evidenceBindings:facts.map((_,i)=>({
+      binding_id:BINDING_IDS[i],source_id:SOURCE_IDS[i],product_id:PRODUCT,
+      subject_id:SUBJECT,binding_state:"exact_subject_match",scope_relation:"equivalent",
+    })),
+    evidenceSources:facts.map((_,i)=>({
+      source_id:SOURCE_IDS[i],canonical_locator:OFFICIAL,
+      content_digest:String(i+1).repeat(64),source_kind:"official_product_page",
+    })),
     sourceObservationCount:2,
   };
 }
@@ -115,6 +148,22 @@ assert.equal(evaluateLiveAutomaticEvidenceSnapshot(noRegistry,PRODUCT,{},"2026-1
 const stale = fixture();stale.factInstances[2].valid_to="2026-10-09";
 assert.equal(evaluateLiveAutomaticEvidenceSnapshot(stale,PRODUCT,{},"2026-10-10").evaluation.evidenceReady,false);
 
+const missingEvidence=fixture();
+missingEvidence.evidenceRecords=missingEvidence.evidenceRecords.slice(0,2);
+assert.equal(evaluateLiveAutomaticEvidenceSnapshot(missingEvidence,PRODUCT,{},"2026-10-10")
+  .evaluation.fields.uv_filter_type.status,"insufficient");
+const unrelatedBinding=fixture();
+unrelatedBinding.evidenceBindings[2].subject_id=OLD;
+assert.equal(evaluateLiveAutomaticEvidenceSnapshot(unrelatedBinding,PRODUCT,{},"2026-10-10")
+  .evaluation.evidenceReady,false);
+const tamperedDigest=fixture();
+tamperedDigest.evidenceSources[2].content_digest="unsigned";
+assert.equal(evaluateLiveAutomaticEvidenceSnapshot(tamperedDigest,PRODUCT,{},"2026-10-10")
+  .evaluation.fields.uv_filter_type.value,null);
+const wrongEvidenceScope=fixture();
+wrongEvidenceScope.factEvidenceLinks[2].subject_id=OLD;
+assert.equal(evaluateLiveAutomaticEvidenceSnapshot(wrongEvidenceScope,PRODUCT,{},"2026-10-10")
+  .evaluation.evidenceReady,false);
 const fakeTag = fixture();
 fakeTag.product.review_signals={source:"hwahae_ai_review",
   positive:[{label:"눈통증없는",count:1000}],negative:[]};
@@ -174,6 +223,10 @@ function mockClient(rows, failTable) {
             product_fact_instances:rows.factInstances,
             product_fact_confirmations:rows.confirmations,
             product_fact_definition_snapshots:rows.definitions,
+            product_fact_evidence_links:rows.factEvidenceLinks,
+            product_evidence_records:rows.evidenceRecords,
+            product_evidence_source_subject_bindings:rows.evidenceBindings,
+            product_evidence_sources:rows.evidenceSources,
             trust_source_observations:Array.from({length:rows.sourceObservationCount},(_,i)=>({observation_id:String(i)})),
           };
           if(!Object.hasOwn(map,table)) return Promise.resolve({data:null,error:new Error("TABLE_UNKNOWN")}).then(resolve,reject);
@@ -194,6 +247,10 @@ assert.deepEqual(live.evaluation,result.evaluation);
 assert.equal(live.evaluation.fields.uv_filter_type.value,"hybrid");
 assert.ok(client.activity.includes("FROM:product_fact_current"));
 assert.ok(client.activity.includes("FROM:product_fact_confirmations"));
+assert.ok(client.activity.includes("FROM:product_fact_evidence_links"));
+assert.ok(client.activity.includes("FROM:product_evidence_records"));
+assert.ok(client.activity.includes("FROM:product_evidence_source_subject_bindings"));
+assert.ok(client.activity.includes("FROM:product_evidence_sources"));
 assert.ok(client.activity.includes("FROM:trust_source_observations"));
 assert.ok(client.activity.every(x=>x.startsWith("FROM:")));
 await assert.rejects(()=>readAutomaticEvidenceSnapshot(mockClient(fixture(),"product_fact_confirmations"),PRODUCT),
@@ -216,6 +273,8 @@ console.log(JSON.stringify({status:"PASS",phase:"LIVE_READONLY_PRODUCT_EVIDENCE_
   liveSnapshotBaseline:{verifiedFacts:2,reviewTrends:0,insufficient:10,
     currentProductFacts:3,storedReviewSignals:0},
   spoofedReviewDataRejected:true,
+  exactOfficialEvidenceBindingVerified:true,
+  missingOrTamperedLineageRejected:true,
   mixedVerifiedReviewTagsRemainNonProbabilistic:true,
   failClosedTests:failCases.length,
   mockSupabaseReadTest:true,productionWrites:0,adminApprovals:0,admission:false},null,2));
