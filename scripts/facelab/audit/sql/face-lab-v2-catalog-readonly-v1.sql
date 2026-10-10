@@ -12,6 +12,9 @@ table_targets(table_name) AS (
 tables AS (
   SELECT t.table_name,c.oid AS relation_id,c.relrowsecurity AS rls_enabled,
     c.relforcerowsecurity AS rls_forced,c.relkind,
+    CASE WHEN c.oid IS NULL THEN NULL ELSE (
+      SELECT count(*)::integer FROM pg_catalog.pg_policy pol WHERE pol.polrelid=c.oid
+    ) END AS policy_count,
     CASE WHEN c.oid IS NULL THEN NULL ELSE jsonb_build_object(
       'anon',jsonb_build_object(
         'select',has_table_privilege('anon',c.oid,'SELECT'),
@@ -28,7 +31,7 @@ tables AS (
         'insert',has_table_privilege('service_role',c.oid,'INSERT'),
         'update',has_table_privilege('service_role',c.oid,'UPDATE'),
         'delete',has_table_privilege('service_role',c.oid,'DELETE'))
-    ) END AS effective_privileges
+    ) END AS privileges
   FROM table_targets t
   LEFT JOIN pg_catalog.pg_namespace n ON n.nspname='public'
   LEFT JOIN pg_catalog.pg_class c
@@ -85,7 +88,7 @@ routines AS (
       'anon_execute',has_function_privilege('anon',p.oid,'EXECUTE'),
       'authenticated_execute',has_function_privilege('authenticated',p.oid,'EXECUTE'),
       'service_role_execute',has_function_privilege('service_role',p.oid,'EXECUTE'))
-    END AS effective_privileges
+    END AS privileges
   FROM routine_targets x LEFT JOIN pg_catalog.pg_proc p
     ON p.oid=pg_catalog.to_regprocedure(x.signature)
 )
@@ -94,11 +97,15 @@ SELECT pg_catalog.jsonb_build_object(
   'production_project_identity_verified',false,
   'sql_application_verified',false,
   'production_readiness','HOLD',
+  'schema_public_usage',jsonb_build_object(
+    'anon',has_schema_privilege('anon','public','USAGE'),
+    'authenticated',has_schema_privilege('authenticated','public','USAGE'),
+    'service_role',has_schema_privilege('service_role','public','USAGE')),
   'table_metadata',(
     SELECT jsonb_agg(jsonb_build_object(
       'name',table_name,'exists',relation_id IS NOT NULL,'relkind',relkind,
       'rls_enabled',rls_enabled,'rls_forced',rls_forced,
-      'effective_privileges',effective_privileges) ORDER BY table_name) FROM tables),
+      'policy_count',policy_count,'table_privileges',privileges) ORDER BY table_name) FROM tables),
   'column_metadata',(
     SELECT jsonb_agg(jsonb_build_object(
       'table',table_name,'name',column_name,'exists',exists,
@@ -116,7 +123,7 @@ SELECT pg_catalog.jsonb_build_object(
       'name',routine_name,'signature',signature,'exists',exists,
       'security_definer',security_definer,'volatility',volatility,
       'definition_sha256',definition_sha256,
-      'effective_privileges',effective_privileges) ORDER BY routine_name)
+      'function_execute_privileges',privileges) ORDER BY routine_name)
     FROM routines)
 ) AS face_lab_metadata_json;
 COMMIT;
