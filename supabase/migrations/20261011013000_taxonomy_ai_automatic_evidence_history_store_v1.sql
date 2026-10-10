@@ -111,11 +111,13 @@ begin
   perform pg_catalog.pg_advisory_xact_lock(
     pg_catalog.hashtextextended(v_product::text || ':' || v_subject::text, 0)
   );
-  select true into v_subject_valid
-  from public.product_fact_subjects s
-  where s.subject_id = v_subject and s.product_id = v_product
-    and s.identity_status = 'resolved' and s.current_state = 'current'
-  for share;
+  -- Read under SELECT-only authority; a row lock here would require UPDATE
+  -- rights on product_fact_subjects and violate this writer's narrow boundary.
+  select exists(
+    select 1 from public.product_fact_subjects s
+    where s.subject_id = v_subject and s.product_id = v_product
+      and s.identity_status = 'resolved' and s.current_state = 'current'
+  ) into v_subject_valid;
   if not v_subject_valid then
     raise exception 'automatic_history_subject_not_current' using errcode='55000';
   end if;
