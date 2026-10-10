@@ -38,13 +38,17 @@ function fixture() {
         product_scope_state:"product_subject_unresolved"},
     ],
     currentFacts:facts.map(f=>({fact_instance_id:f[0],subject_id:SUBJECT,confirmation_id:f[6]})),
-    factInstances:facts.map(f=>({
-      fact_instance_id:f[0],subject_id:SUBJECT,fact_key:f[1],value_type:f[2],
+    factInstances:facts.map((f,i)=>({
+      fact_instance_id:f[0],subject_id:SUBJECT,fact_key:f[1],proposition_key:String(i+1).repeat(64),value_type:f[2],
       value_enum:f[3],value_number:f[4],registry_version:f[5],
       semantic_status:"supported",authority_ceiling:"product_specific_primary",
       fused_confidence:"high",valid_to:null,
     })),
-    confirmations:facts.map(f=>({confirmation_id:f[6],result:{status:"confirmed"}})),
+    confirmations:facts.map((f,i)=>({confirmation_id:f[6],result:{
+      status:"confirmed",confirmation_id:f[6],fact_instance_id:f[0],
+      subject_id:SUBJECT,fact_key:f[1],registry_version:f[5],
+      proposition_key:String(i+1).repeat(64),
+    }})),
     definitions:[
       ...["product-fact-registry-cross-category-v1","product-fact-registry-cross-category-v2"].flatMap(v=>
         [["spf_value","number"],["uva_label","enum"],["uv_filter_type","enum"]].map(([key,type])=>
@@ -93,6 +97,16 @@ const noUvResult=evaluateLiveAutomaticEvidenceSnapshot(noUv,PRODUCT,{},"2026-10-
 assert.equal(noUvResult.evaluation.evidenceReady,false);
 assert.equal(noUvResult.evaluation.fields.uv_filter_type.value,null);
 assert.equal(noUvResult.diagnostics.excludedCurrentFacts.length,1);
+
+const mismatchedReceipt=fixture();
+mismatchedReceipt.confirmations[2].result.subject_id=OLD;
+const fakeReceipt=evaluateLiveAutomaticEvidenceSnapshot(mismatchedReceipt,PRODUCT,{},"2026-10-10");
+assert.equal(fakeReceipt.evaluation.evidenceReady,false);
+assert.ok(fakeReceipt.diagnostics.excludedCurrentFacts.includes("1a4602c5-02e8-4ae0-b2f5-92dc66c85fc0"));
+const wrongProposition=fixture();
+wrongProposition.confirmations[2].result.proposition_key="0".repeat(64);
+assert.equal(evaluateLiveAutomaticEvidenceSnapshot(wrongProposition,PRODUCT,{},"2026-10-10")
+  .evaluation.fields.uv_filter_type.status,"insufficient");
 
 const noRegistry = fixture();
 noRegistry.definitions=noRegistry.definitions.filter(x=>x.registry_version!=="product-fact-registry-cross-category-v2" || x.fact_key!=="uv_filter_type");
@@ -176,7 +190,7 @@ function mockClient(rows, failTable) {
 }
 const client=mockClient(fixture());
 const live=await evaluateAutomaticEvidenceFromLiveDB(client,PRODUCT,{},"2026-10-10");
-assert.deepEqual(live,result.evaluation?{...live}:live);
+assert.deepEqual(live.evaluation,result.evaluation);
 assert.equal(live.evaluation.fields.uv_filter_type.value,"hybrid");
 assert.ok(client.activity.includes("FROM:product_fact_current"));
 assert.ok(client.activity.includes("FROM:product_fact_confirmations"));
