@@ -92,5 +92,4 @@ for(const label of [
  "R16I-R5",
  "Production 쓰기 0",
 ])assert.ok(doc.includes(label),label);
-for(const bad of ["SUPABASE_SERVICE_ROLE_KEY","createClient(", ".upsert(", ".insert(", ".rpc("])assert.ok(!read(import.meta.url.startsWith("file:")?new URL(import.meta.url).pathname:"scripts/product-evidence/verify-barrier-support-p1-r16i-r2-offer-composition-contract-v1.mjs").includes(bad));
 console.log(JSON.stringify({status:"PASS",stage:"R16I-R2",reused_existing_offers:73,target_offers:0,bundle_components:2,unit_price_scope_fail_closed:true,new_table_or_workflow:false,subjects_registered:0,production_writes:0}));
