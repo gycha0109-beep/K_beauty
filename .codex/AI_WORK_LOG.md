@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-10 / Face Lab P1-D2C7 — 저장소 마이그레이션 중복 사전 진단
+
+- 범위: P1-D2C6 비교기 재사용, DB 접속·SQL 적용 없이 로컬 SQL 이력 충돌 원인을 사전 분석.
+- Git 확인: `20260824_add_product_localized_names.sql` 및 `20260824_backfill_product_english_display_names.sql` 모두 PR #303 / 커밋 `aa3042eb5c94128d4af7a4286231a1fc390362a5`에서 추가. 두 파일의 SQL 책임은 표시용 영문 컬럼 생성과 상품 영문 표시명 백필로 분리되어 있음. 실행 순서·Hosted 적용 여부는 미검증.
+- 구현: `scripts/facelab/audit/inspect-face-lab-migration-inventory.mjs` 저장소 전용 파일명·SHA-256·14/8자리 버전·중복 그룹·무효 파일명 수 정렬/보존 보고; `verify-face-lab-migration-history.mjs` 4개 가상 검증과 실제 저장소 오프라인 사전 진단 보강. 기존 Face Lab Foundation CI만 사용.
+- 보호: 중복 버전은 자동 보정/삭제/재실행 금지. 진단 완료는 이력 대조 또는 운영 PASS가 아님. DB/네트워크/마이그레이션 실행 0.
+- 외부 차단: `GHSA-vfj7-8cjw-p6xm` braces upstream 공식 패치 부재 및 기존 공급망 예외 만료로 Supply Chain 보안 CI는 여전히 FAIL (기준 main에서도 동일). 보안 정책 우회·예외 연장 없음.
+- 다음: PR #1209 최신 head CI 검증. 보호된 보안 검사 차단 해소 후 병합. Production DB 동일성 확인과 두 파일의 DB 기록·물리 객체 읽기 전용 감사는 별도 HOLD.
+
 ### 2026-10-10 / Face Lab P1-D2C6 오프라인 비교기 보수 검수
 
 - 본선 #1205 병합 확인 `040d1abac8b6fc045abb4ac09f8497d155d6102a`. 후속 보수 작업은 최신 main에서 분리해 기존 트랙 변경 유지.
