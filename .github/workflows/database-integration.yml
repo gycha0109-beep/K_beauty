@@ -42,6 +42,10 @@ on:
       - "docs/architecture/automatic-product-evidence-evaluation-exception-first-v1.md"
       - "lib/product-intelligence/automatic-product-evidence-live-adapter-v1.mjs"
       - "lib/product-intelligence/automatic-product-evidence-db-reader-v1.mjs"
+      - "lib/product-intelligence/automatic-evidence-history-candidate-v1.mjs"
+      - "lib/product-intelligence/automatic-evidence-history-store-v1.mjs"
+      - "app/api/admin/products/automatic-evidence/history/route.js"
+      - "tests/fixtures/automatic-evidence-history-v1/**"
       - "app/api/admin/products/automatic-evidence/preview/route.js"
       - "scripts/verify-automatic-product-evidence-live-v1.mjs"
       - "docs/evidence/data-ai29c-filter-r4-d-s3-admin-semantic-review-workbench-v1.md"
@@ -92,6 +96,10 @@ on:
       - "docs/architecture/automatic-product-evidence-evaluation-exception-first-v1.md"
       - "lib/product-intelligence/automatic-product-evidence-live-adapter-v1.mjs"
       - "lib/product-intelligence/automatic-product-evidence-db-reader-v1.mjs"
+      - "lib/product-intelligence/automatic-evidence-history-candidate-v1.mjs"
+      - "lib/product-intelligence/automatic-evidence-history-store-v1.mjs"
+      - "app/api/admin/products/automatic-evidence/history/route.js"
+      - "tests/fixtures/automatic-evidence-history-v1/**"
       - "app/api/admin/products/automatic-evidence/preview/route.js"
       - "scripts/verify-automatic-product-evidence-live-v1.mjs"
       - "docs/evidence/data-ai29c-filter-r4-d-s3-admin-semantic-review-workbench-v1.md"
@@ -281,6 +289,22 @@ jobs:
           grep -Fq "R3_COSRX_LEGACY_RPC_COEXISTENCE_PASS" "${RUNNER_TEMP}/r3-cosrx-smoke.log"
           psql -v ON_ERROR_STOP=1 -c "drop database r3_concurrent with (force)"
           echo "R3_CONCURRENCY_TEST_DATABASE_DISCARDED"
+      - name: Verify automatic evaluation append-only history in isolated PG17
+        shell: bash
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "54329"
+          PGUSER: postgres
+          PGPASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "5"
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261011013000_taxonomy_ai_automatic_evidence_history_store_v1.sql
+          psql -v ON_ERROR_STOP=1 -f tests/fixtures/automatic-evidence-history-v1/10_pg17_runtime.sql | tee "${RUNNER_TEMP}/automatic-history-pg17.log"
+          grep -Fq "AUTOMATIC_EVIDENCE_HISTORY_PG17_ROLLBACK_PASS" "${RUNNER_TEMP}/automatic-history-pg17.log"
+          test "$(psql -Atqc "select count(*) from public.automatic_product_evidence_history_v1")" = "0"
+          echo "AUTOMATIC_EVIDENCE_HISTORY_ISOLATED_PG17_PASS"
       - name: Verify exact-head diff hygiene
         shell: bash
         run: git diff --check HEAD^

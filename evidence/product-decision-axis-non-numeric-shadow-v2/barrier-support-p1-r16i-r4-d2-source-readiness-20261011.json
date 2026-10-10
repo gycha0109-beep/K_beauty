@@ -1,0 +1,99 @@
+{
+  "contract_version": "r16i-r4-d2-evidence-readiness-v1",
+  "research_date_kr": "2026-10-11",
+  "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+  "authority": "READ_ONLY_HISTORICAL_AND_INDEXED_EVIDENCE",
+  "production_select": {
+    "observed_at": "2026-10-11T00:44:59.236503+09:00",
+    "product_updated_at": "2026-09-10T09:32:38.713599+09:00",
+    "size_ml": 160,
+    "price_min": 29900,
+    "price_max": 29900,
+    "unit_price_per_10ml": 1868.75,
+    "market_review_count": 41475,
+    "linked_offers": 0,
+    "subjects": 0,
+    "bindings": 1,
+    "intakes": 1,
+    "source": "SUPABASE_PRODUCTION_SELECT_ONLY",
+    "write_lock": false,
+    "operator_approval": false
+  },
+  "brand_page": {
+    "source_url": "https://snature.kr/product/detail.html?cate_no=1&display_group=3&product_no=151",
+    "source_origin": "FIRST_PARTY_DOMAIN_HISTORICAL_WEB_CACHE_TEXT",
+    "cache_age_label": "ABOUT_9_MONTHS_AT_RESEARCH",
+    "raw_html_archived": false,
+    "raw_html_digest": null,
+    "live_checkout_verified": false,
+    "product_no": "151",
+    "presentation": "SINGLE_80ML",
+    "cream_unit_ml": 80,
+    "visible_list_price_krw": 35000,
+    "visible_member_price_krw": 24500,
+    "visible_text_has_checkout_caveat": true,
+    "selected_option_verified": false,
+    "current_stock_verified": false,
+    "gift_serum_10ml_sku_verified": false
+  },
+  "retailer_page": {
+    "source_url": "https://www.hwahae.co.kr/goods/45194",
+    "source_origin": "RETAILER_SEARCH_INDEX_VARIANTS",
+    "direct_page_status": "JAVASCRIPT_BOT_VERIFICATION_NO_RAW_PAGE",
+    "raw_html_archived": false,
+    "raw_html_digest": null,
+    "live_checkout_verified": false,
+    "listing_id": "45194",
+    "presentation": "CREAM_80ML_X2_PLUS_SERUM_10ML",
+    "cream_unit_ml": 80,
+    "cream_units": 2,
+    "gift_serum_ml": 10,
+    "indexed_listing_price_krw": 29900,
+    "other_options_mentioned": true,
+    "selected_option_verified": false,
+    "gift_serum_sku_verified": false,
+    "review_single_subject_attributed": false,
+    "review_index_samples": [
+      {
+        "url": "https://www.hwahae.co.kr/goods/45194?goods_tab=review_ingredients",
+        "review_count": 43222,
+        "source_freshness_label": "CRAWLED_4_WEEKS_APPROXIMATE"
+      },
+      {
+        "url": "https://www.hwahae.co.kr/goods/45194",
+        "review_count": 43257,
+        "source_freshness_label": "CRAWLED_3_WEEKS_APPROXIMATE"
+      },
+      {
+        "url": "https://www.hwahae.co.kr/goods/45194?goods_tab=goods_info",
+        "review_count": 43269,
+        "source_freshness_label": "CRAWLED_3_WEEKS_APPROXIMATE"
+      },
+      {
+        "url": "https://www.hwahae.co.kr/goods/45194?af_siteid=940056100",
+        "review_count": 43482,
+        "source_freshness_label": "CRAWLED_LAST_WEEK_APPROXIMATE"
+      }
+    ],
+    "promotional_gift_claims_vary_across_index": true,
+    "current_promotional_gift_verified": false
+  },
+  "evidence_constraints": {
+    "brand_text_is_live": false,
+    "retailer_text_is_live": false,
+    "display_price_is_checkout_price": false,
+    "review_count_is_latest_live": false,
+    "review_scope_is_product_fact_subject": false,
+    "product_offer_subject_binding_approved": false,
+    "fresh_transactional_lock": false,
+    "automatic_field_mutation": false
+  },
+  "notes": [
+    "Official manufacturer's 80ml product presentation is visible in archived web-cache text, not current checkout.",
+    "Retailer listing label explicitly distinguishes 80ml×2 cream and additional 10ml serum; actual selected option/physical components remain unverified.",
+    "Indexed review counts disagree across crawl windows; no count is nominated as a new canonical total.",
+    "Promotional gifts can differ from the named 10ml serum in the fixed listing title.",
+    "Do not overwrite 160ml with 80ml or infer single-price and per-10ml economics.",
+    "No product, offer, subject, ranking or source binding write is permitted."
+  ]
+}
