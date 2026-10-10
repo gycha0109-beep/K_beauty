@@ -119,7 +119,7 @@ export function main(argv = []) {
     projectIdentityVerified: report.projectIdentityVerified,
     appliedSqlVerified: report.appliedSqlVerified,
     counts: report.counts,
-    unresolved: report.rows.filter(row => !["exact_record", "version_match_name_drift"].includes(row.classification)).map(row => ({
+    unresolved: report.rows.filter(row => row.classification !== "exact_record").map(row => ({
       repo_version: row.repo_version,
       hosted_version: row.hosted_version,
       classification: row.classification,
