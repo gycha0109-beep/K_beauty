@@ -1,0 +1,69 @@
+{
+  "contract_version": "r16i-r4-readonly-preflight-v1",
+  "source_kind": "PRODUCTION_READ_ONLY_SELECT",
+  "observed_at": "2026-10-10T21:25:21.686838+09:00",
+  "source_project_ref": "bygrczggxfuisupcevaz",
+  "allow_production_write": false,
+  "operator_approval_granted": false,
+  "current_price_verified": false,
+  "physical_components_verified": false,
+  "write_commands": null,
+  "product": {
+    "id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+    "name": "아쿠아 스쿠알란 수분크림",
+    "brand": "에스네이처",
+    "category": "moisturizer_cream",
+    "normalized_name": "아쿠아 스쿠알란 수분크림",
+    "normalized_brand": "에스네이처",
+    "size_ml": 160,
+    "price_min": 29900,
+    "price_max": 29900,
+    "unit_price_per_10ml": 1868.75,
+    "buy_link": "https://www.hwahae.co.kr/goods/45194",
+    "hwahae_url": "https://www.hwahae.co.kr/goods/45194",
+    "source_url": "https://www.hwahae.co.kr/goods/45194",
+    "external_source": "hwahae",
+    "external_type": "goods",
+    "external_id": "45194",
+    "market_signals": {
+      "rating": 4.58,
+      "source": "hwahae_visible_page",
+      "updated_at": "2026-05-26",
+      "review_count": 41475,
+      "rating_distribution": {}
+    },
+    "updated_at": "2026-09-10T09:32:38.713599+09:00"
+  },
+  "bindings": [
+    {
+      "binding_id": "53155404-5518-4130-825a-8c918588f37a",
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "source_name": "hwahae",
+      "external_type": "goods",
+      "external_id": "45194",
+      "source_url": "https://www.hwahae.co.kr/goods/45194",
+      "binding_state": "resolved",
+      "product_scope_state": "product_subject_unresolved",
+      "updated_at": "2026-09-10T10:10:29.03509+09:00"
+    }
+  ],
+  "conflicting_offers": [],
+  "subjects": [],
+  "intakes": [
+    {
+      "id": "ee3b675d-1b92-4144-88e0-2a984b3d7cec",
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "subject_id": null,
+      "identity_state": "SUBJECT_CREATION_REQUIRED",
+      "trust_state": "REVIEW_REQUIRED",
+      "updated_at": "2026-09-21T00:53:57.499289+09:00"
+    }
+  ],
+  "total_offer_count": 73,
+  "limitations": [
+    "One-time Production SELECT observation; not a live transaction, write lock, or authorization",
+    "Readback required immediately before any future write",
+    "Current listing/checkout price, barcode, review scope and formulation unresolved",
+    "No Product Fact Subject or Offer created"
+  ]
+}
