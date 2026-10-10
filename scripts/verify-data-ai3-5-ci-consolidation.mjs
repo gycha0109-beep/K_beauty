@@ -168,6 +168,11 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p1-r16h-r2-kr-40-70-inci-audit-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16h-r3-snature-official-detail-assets-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16h-r4-source-authority-closeout-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16i-r2-offer-composition-contract-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16i-r3-offer-composition-shadow-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-readonly-preflight-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-operator-review-packet-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-indexed-source-reconciliation-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16g-visual-content-audit-v1.mjs",
 ];
 
