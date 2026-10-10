@@ -23,9 +23,9 @@ Supabase 목록은 비밀값을 제거한 JSON으로 저장합니다. 대상 프
 node scripts/facelab/audit/compare-face-lab-migration-history.mjs \
   --repo-dir supabase/migrations \
   --hosted-list /path/to/nonsecret-migrations.json \
-  --out-dir /path/to/local-audit-output \\
-  --allow-legacy-date-versions \\
-  --git-commit YOUR_40_CHARACTER_COMMIT_SHA \\
+  --out-dir /path/to/local-audit-output \
+  --allow-legacy-date-versions \
+  --git-commit YOUR_40_CHARACTER_COMMIT_SHA \
   --snapshot-at 2026-10-10T09:00:00Z
 
 node scripts/facelab/audit/verify-face-lab-migration-history.mjs
