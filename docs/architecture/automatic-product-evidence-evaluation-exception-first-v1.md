@@ -162,3 +162,15 @@ product_fact_current.fact_instance_id
 **검증:** 기존 `scripts/verify-automatic-product-evidence-live-v1.mjs`에 멱등성, 재실행 시각 불변, 근거만 변경, 분류 authority 변경, Subject 범위 불일치, 출처 누락, 부정한 쓰기 상태 차단을 추가했다. 신규 전용 워크플로 대신 Database Integration Authority 기존 CI에서 실행한다.
 
 **다음 별도 승인 Gate (3단계 B):** 데이터베이스 schema/RLS, 기록 수명 및 접근 정책, 서버 machine actor 및 원자적 멱등 저장 RPC, compare-and-append 동시성 안전성, replay/rollback, 운영 권한 경계 검증. 이를 승인하고 실제 migration이 수행되기 전까지 자동 평가 **이력이 DB에 기록되었다고 주장하지 않는다**.
+
+## 12. 3단계 B — 서버 전용 자동 평가 이력 저장
+
+구현: `supabase/migrations/20261011013000_taxonomy_ai_automatic_evidence_history_store_v1.sql`, `lib/product-intelligence/automatic-evidence-history-store-v1.mjs`, `app/api/admin/products/automatic-evidence/history/route.js`.
+
+- `public.automatic_product_evidence_history_v1`: 평가 이력만 기록하는 append-only 장부. 현재 Product/Subject, 평가 시각, 버전, 근거·판단 digest, 12개 필드, 근거 정보, 이전 행 참조, 변경 종류/필드를 저장한다. 동일 Product/Subject/idempotencyKey는 UNIQUE 제약으로 하나의 행만 허용한다.
+- `public.record_automatic_product_evidence_history_v1(jsonb)`: `SECURITY INVOKER`, `service_role` 단독 실행, 정확한 현재 Subject 요구, product/subject 단위 트랜잭션 advisory lock, 동일 키 재실행은 기존 행 반환, 이전 판단과 비교 후 새로운 이력만 append. 다른 제품 정보와 추천 등록은 변경하지 않는다.
+- 접근: RLS enabled/forced; `anon`·`authenticated` 테이블 및 RPC 불허; `service_role` SELECT/INSERT만 가능하며 UPDATE/DELETE 불가. 관리자 브라우저는 service-role 키를 소유하지 않는다.
+- 관리자 POST는 `PRODUCTS_REVIEW` 인증·동일 출처 검사를 요구하고 **제품 ID 하나만** 입력받는다. DB 원천 근거와 평가를 서버에서 다시 실행한 후 저장한다. 관리자 필드별 승인 및 추천 활성화는 이 API가 수행하지 않는다. 기존 GET preview는 그대로 읽기 전용이다.
+- 운영 활용: 검증된 서버 평가 호출을 batch/scheduler에서 `recordAutomaticEvidenceFromLiveDB`로 재사용할 수 있다. 이번 단계에서는 **자동 실행 스케줄/대량 백필은 활성화하지 않는다**. 호출 없이 자동으로 평가가 쌓이는 것으로 설명하지 않는다.
+- 회귀: 기존 Database Integration Authority (Node 테스트 + 별도 PostgreSQL 17 격리 트랜잭션), 중복/근거 갱신/판단 변경/비현재 Subject/권한 차단/롤백을 확인한다. Production 적용 여부와 최초 행 저장은 별도 실측한다.
+- 제한: 기록은 평가 시점의 **서버 판정 스냅샷**이다. 저장 자체가 Fact confirmation, 제품 권위 상승, 추천 허가를 뜻하지 않는다. 쓰기 트리거의 사용자 요청 이력, 백그라운드 주기, 보관/삭제 정책은 추후 운영 단계에서 다룬다.

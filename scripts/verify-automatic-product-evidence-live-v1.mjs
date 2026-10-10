@@ -13,6 +13,7 @@ import {
   buildAutomaticEvidenceHistoryCandidate,
   compareAutomaticEvidenceHistoryCandidates,
 } from "../lib/product-intelligence/automatic-evidence-history-candidate-v1.mjs";
+import { recordAutomaticEvidenceFromLiveDB } from "../lib/product-intelligence/automatic-evidence-history-store-v1.mjs";
 
 const PRODUCT = "4608b3b4-8b51-4464-b46e-380b05c1a3d7";
 const SUBJECT = "0b5963bb-67d6-4738-a620-32ec86c1e3d0";
@@ -290,6 +291,11 @@ const refresh=buildAutomaticEvidenceHistoryCandidate(freshSource,refreshedEvalua
 assert.notEqual(refresh.sourceDigest,hist.sourceDigest);
 assert.equal(refresh.decisionDigest,hist.decisionDigest);
 assert.equal(compareAutomaticEvidenceHistoryCandidates(hist,refresh).kind,"evidence_refresh");
+const versionOnly={...hist,versions:{...hist.versions,evaluator:"automatic-product-evidence-evaluator-v2"},
+  idempotencyKey:"f".repeat(64)};
+assert.equal(compareAutomaticEvidenceHistoryCandidates(hist,versionOnly).kind,
+  "evaluation_version_change");
+
 
 const missingCategory=structuredClone(histRows);
 missingCategory.taxonomy=[];
@@ -316,6 +322,45 @@ const replay=await evaluateAutomaticEvidenceFromLiveDB(
 assert.equal(replay.historyPreview.idempotencyKey,hist.idempotencyKey);
 assert.equal(replay.historyPreview.writeState,"NOT_SAVED");
 
+// 3B: trusted store bridge must compute evidence server-side; no caller candidate.
+const recordClient=mockClient(fixture());
+let seenCandidate=null;
+recordClient.rpc=async(name,args)=>{
+  assert.equal(name,"record_automatic_product_evidence_history_v1");
+  assert.deepEqual(Object.keys(args),["p_candidate"]);
+  seenCandidate=args.p_candidate;
+  assert.equal(seenCandidate.writeState,"NOT_SAVED");
+  assert.equal(seenCandidate.productId,PRODUCT);
+  assert.equal(seenCandidate.databaseWrites,0);
+  return {data:{status:"inserted",historyId:17,eventKind:"first_observation",changedFields:[]},error:null};
+};
+const saved=await recordAutomaticEvidenceFromLiveDB(
+  recordClient,PRODUCT,{},"2026-10-11",stamp
+);
+assert.equal(saved.writeState,"SAVED");
+assert.equal(saved.historyId,17);
+assert.equal(saved.eventKind,"first_observation");
+assert.equal(saved.admissionGranted,false);
+assert.equal(saved.rankingChanged,false);
+assert.equal(saved.adminReviewsCreated,0);
+assert.equal(saved.idempotencyKey,hist.idempotencyKey);
+assert.ok(recordClient.activity.every(x=>x.startsWith("FROM:")));
+const failureClient=mockClient(fixture());
+failureClient.rpc=async()=>({data:null,error:{message:"RPC unavailable"}});
+await assert.rejects(()=>recordAutomaticEvidenceFromLiveDB(
+  failureClient,PRODUCT,{},"2026-10-11",stamp
+),/AUTOMATIC_HISTORY_STORE_FAILED/);
+const noRpc=mockClient(fixture());
+await assert.rejects(()=>recordAutomaticEvidenceFromLiveDB(noRpc,PRODUCT),
+  /AUTOMATIC_HISTORY_STORE_INVALID_REQUEST/);
+const writeRoute=fs.readFileSync("app/api/admin/products/automatic-evidence/history/route.js","utf8");
+assert.ok(writeRoute.includes("requireAdminCapability(ADMIN_CAPABILITIES.PRODUCTS_REVIEW)"));
+assert.ok(writeRoute.includes('request.headers.get("origin")'));
+assert.ok(writeRoute.includes("recordAutomaticEvidenceFromLiveDB(client,body.productId)"));
+assert.ok(writeRoute.includes("Object.keys(body).length !== 1"));
+assert.ok(!writeRoute.includes("admissionGranted:true"));
+assert.ok(!writeRoute.includes("rankingChanged:true"));
+
 const route=fs.readFileSync("app/api/admin/products/automatic-evidence/preview/route.js","utf8");
 assert.ok(route.includes("requireAdminCapability(ADMIN_CAPABILITIES.PRODUCTS_REVIEW)"));
 assert.ok(route.includes("createSupabaseAdminClient()"));
@@ -337,5 +382,5 @@ console.log(JSON.stringify({status:"PASS",phase:"LIVE_READONLY_PRODUCT_EVIDENCE_
   missingOrTamperedLineageRejected:true,
   mixedVerifiedReviewTagsRemainNonProbabilistic:true,
   failClosedTests:failCases.length,
-  mockSupabaseReadTest:true,historyPreviewDeterministic:true,
+  mockSupabaseReadTest:true,historyPreviewDeterministic:true,historyStoreBridgeVerified:true,
   historyWrites:0,productionWrites:0,adminApprovals:0,admission:false},null,2));
