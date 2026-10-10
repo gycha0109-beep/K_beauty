@@ -71,7 +71,26 @@ const crawlerAuthorityFindings = crawlerFiles.filter((file) => crawlerAuthorityP
 assert.deepEqual(crawlerAuthorityFindings, [], `crawler must not bypass canonical adoption boundary: ${crawlerAuthorityFindings.join(", ")}`);
 
 const vercel = JSON.parse(readFileSync(path.join(ROOT, "vercel.json"), "utf8"));
-assert(!Object.prototype.hasOwnProperty.call(vercel, "crons"), "crawler/scheduled auto-adoption must remain disabled");
+const allowedEvidenceCron = Object.freeze({
+  path: "/api/internal/automatic-evidence-daily",
+  schedule: "0 2 * * *",
+});
+assert.deepEqual(vercel.crons ?? [], [allowedEvidenceCron],
+  "only the specifically gated evidence-history cron is allowed; scheduled adoption remains forbidden");
+const evidenceCronPath = path.join(ROOT, "app/api/internal/automatic-evidence-daily/route.js");
+const evidenceCron = readFileSync(evidenceCronPath, "utf8");
+assert(evidenceCron.includes("timingSafeEqual(") &&
+  evidenceCron.includes("process.env.CRON_SECRET") &&
+  evidenceCron.includes('process.env.BEJEWELY_AUTO_EVIDENCE_DAILY_ENABLED !== "true"') &&
+  evidenceCron.includes("runDailyAutomaticEvidencePilot(client)") &&
+  !evidenceCron.includes("admin_register_sunscreen_recommendation_semantic_field_v1"),
+  "scheduled evidence history must stay secret-protected, opt-in and separated from product adoption");
+const dailyPilotPath = path.join(ROOT, "lib/product-intelligence/automatic-evidence-daily-v1.mjs");
+const dailyPilot = readFileSync(dailyPilotPath, "utf8");
+assert(dailyPilot.includes('4608b3b4-8b51-4464-b46e-380b05c1a3d7') &&
+  dailyPilot.includes("recordAutomaticEvidenceFromLiveDB(") &&
+  !/\.upsert\(|\.insert\(|\.update\(|admissionGranted:\s*true/.test(dailyPilot),
+  "daily evidence pilot may append through the governed history RPC only");
 assert.equal(vercel.git?.deploymentEnabled?.["**"], false, "non-main automatic Vercel deployment disabled");
 assert.equal(vercel.git?.deploymentEnabled?.main, true, "main Vercel deployment enabled");
 
@@ -104,4 +123,5 @@ console.log(JSON.stringify({
   secret_or_shortcut_findings: 0,
   crawler_authority_findings: 0,
   scheduled_auto_adoption: false,
+  opt_in_history_only_daily_cron: true,
 }, null, 2));
