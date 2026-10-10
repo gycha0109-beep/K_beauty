@@ -57,6 +57,8 @@ blockCase("subject key invented",x=>x.subject_semantic_key="same_formula","REVIE
 blockCase("writes switched on",x=>x.authorize_offer_write=true,"REVIEW_AND_WRITE_GATE_REQUIRED");
 blockCase("price projection switched on",x=>x.authorize_price_projection=true,"REVIEW_AND_WRITE_GATE_REQUIRED");
 blockCase("catalog mutation switched on",x=>x.authorize_catalog_write=true,"REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("subject mutation switched on",x=>x.authorize_subject_write=true,"REVIEW_AND_WRITE_GATE_REQUIRED");
+blockCase("ranking mutation switched on",x=>x.authorize_ranking_write=true,"REVIEW_AND_WRITE_GATE_REQUIRED");
 blockCase("negative quantity",x=>x.components[0].quantity=-1,"COMPONENTS_UNVERIFIED_OR_INVALID");
 blockCase("fractional quantity",x=>x.components[0].quantity=1.5,"COMPONENTS_UNVERIFIED_OR_INVALID");
 blockCase("fractional ml",x=>x.components[0].unit_volume_ml=79.5,"COMPONENTS_UNVERIFIED_OR_INVALID");
@@ -72,6 +74,7 @@ blockCase("equal gift volume 5ml x 2",x=>{x.components[1].unit_volume_ml=5;x.com
 blockCase("made-up current price",x=>x.historical_price_is_current=true,"PRICE_AUTHORITY_NOT_VERIFIED");
 blockCase("nonfinite amount",x=>x.historical_kit_price_krw=Number.NaN,"PRICE_AUTHORITY_NOT_VERIFIED");
 blockCase("invalid price",x=>x.historical_kit_price_krw=-1,"PRICE_AUTHORITY_NOT_VERIFIED");
+blockCase("altered legacy price",x=>x.historical_kit_price_krw=28900,"PRICE_AUTHORITY_NOT_VERIFIED");
 const priorDesign=JSON.parse(fs.readFileSync("evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16i-r2-existing-offer-composition-design-v1.json","utf8"));
 assert.equal(priorDesign.catalog_anchor.product_id,src.product_id);
 assert.equal(priorDesign.catalog_anchor.legacy_price_min,src.historical_kit_price_krw);
