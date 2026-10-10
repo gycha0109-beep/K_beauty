@@ -78,6 +78,11 @@ jobs:
       - name: Verify lockfile install without lifecycle scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: Trace vulnerable dependency paths without changing audit policy
+        run: |
+          node scripts/security/verify-supply-chain-lock-path-tracer.mjs
+          node scripts/security/report-supply-chain-lock-paths.mjs
+
       - name: Audit dependency vulnerabilities
         run: node scripts/verify-supply-chain-audit.mjs
 
