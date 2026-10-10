@@ -51,10 +51,11 @@ for(const token of [
   "workbench.s4?.subjectAuthorityReady",
 ]) assert.ok(ui.includes(token), "필수 사용자 흐름 누락: "+token);
 for(const forbidden of [
-  "{field.rationale}", "{field.blocker}", "{source.id}",
+  "{field.rationale}", "{field.blocker}",
   "workbench.s4?.blockers.map", "Audit ID:",
   "DATA-AI29C-FILTER-R4-D-S3", "font-mono",
 ]) assert.ok(!ui.includes(forbidden),"내부 시스템 표현이 화면에 노출될 가능성: "+forbidden);
+assert.ok(!/>\\s*\\{source\\.id\\}\\s*</.test(ui), "근거 식별자는 링크 텍스트에 노출하지 않습니다.");
 assert.ok(page.includes("부쉬맨 선크림 · 제품 정보 검토"));
 assert.ok(!page.includes("{code}") && !page.includes("BUSHMAN Semantic Review"));
 assert.ok(ui.includes("BUSHMAN_SOURCE_LABELS[id]"),"근거 링크의 한국어 명칭이 필요합니다.");
