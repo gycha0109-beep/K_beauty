@@ -27,7 +27,7 @@ create table public.automatic_product_evidence_history_v1 (
   exceptions jsonb not null check (jsonb_typeof(exceptions) = 'array'),
   context_cautions jsonb not null check (jsonb_typeof(context_cautions) = 'array'),
   event_kind text not null check (event_kind in (
-    'first_observation', 'evidence_refresh', 'assessment_changed'
+    'first_observation', 'evidence_refresh', 'evaluation_version_change', 'assessment_changed'
   )),
   previous_history_id bigint references public.automatic_product_evidence_history_v1(history_id),
   changed_fields text[] not null default '{}'::text[],
@@ -111,11 +111,11 @@ begin
   perform pg_catalog.pg_advisory_xact_lock(
     pg_catalog.hashtextextended(v_product::text || ':' || v_subject::text, 0)
   );
-  select exists(
-    select 1 from public.product_fact_subjects s
-    where s.subject_id = v_subject and s.product_id = v_product
-      and s.identity_status = 'resolved' and s.current_state = 'current'
-  ) into v_subject_valid;
+  select true into v_subject_valid
+  from public.product_fact_subjects s
+  where s.subject_id = v_subject and s.product_id = v_product
+    and s.identity_status = 'resolved' and s.current_state = 'current'
+  for share;
   if not v_subject_valid then
     raise exception 'automatic_history_subject_not_current' using errcode='55000';
   end if;
@@ -124,7 +124,9 @@ begin
   limit 1;
   if found then
     if v_seen.decision_digest is distinct from v_decision or
-       v_seen.source_digest is distinct from v_source then
+       v_seen.source_digest is distinct from v_source or
+       v_seen.versions is distinct from p_candidate->'versions' or
+       v_seen.fields is distinct from p_candidate->'fields' then
       raise exception 'automatic_history_key_payload_conflict' using errcode='23505';
     end if;
     return pg_catalog.jsonb_build_object(
@@ -139,7 +141,14 @@ begin
     v_kind := 'first_observation';
     v_changed := '{}'::text[];
   elsif v_prior.decision_digest = v_decision then
-    v_kind := 'evidence_refresh';
+    if v_prior.source_digest = v_source then
+      if v_prior.versions = p_candidate->'versions' then
+        raise exception 'automatic_history_inconsistent_idempotency_key' using errcode='23505';
+      end if;
+      v_kind := 'evaluation_version_change';
+    else
+      v_kind := 'evidence_refresh';
+    end if;
     v_changed := '{}'::text[];
   else
     v_kind := 'assessment_changed';
