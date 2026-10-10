@@ -244,6 +244,52 @@ test("invalid CLI manifest aborts before creating reports", () => {
     rmSync(tmp, { recursive: true, force: true });
   }
 });
+test("CLI rejects unexpected files and malformed JSON", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "facelab-files-"));
+  try {
+    const dir = join(tmp, "sql"), out = join(tmp, "out"), input = join(tmp, "hosted.json");
+    mkdirSync(dir);
+    writeFileSync(join(dir, "20260101000000_a.sql"), "select 1;");
+    writeFileSync(input, "{malformed");
+    const cli = fileURLToPath(new URL("./compare-face-lab-migration-history.mjs", import.meta.url));
+    const args = [cli, "--repo-dir", dir, "--hosted-list", input, "--out-dir", out];
+    let result = spawnSync(process.execPath, args, {encoding:"utf8",timeout:12000});
+    assert.equal(result.status, 2);
+    assert.equal(existsSync(out), false);
+    writeFileSync(input, JSON.stringify({migrations:[{version:"20260101000000",name:"a"}]}));
+    writeFileSync(join(dir, "notes.txt"), "unexpected");
+    result = spawnSync(process.execPath, args, {encoding:"utf8",timeout:12000});
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /repo_filename_invalid/);
+    assert.equal(existsSync(out), false);
+  } finally { rmSync(tmp, {recursive:true,force:true}); }
+});
+test("CLI opt-in permits historical 8-digit migration names", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "facelab-legacy-"));
+  try {
+    const dir = join(tmp, "sql"), out = join(tmp, "out"), input = join(tmp, "hosted.json");
+    mkdirSync(dir);
+    writeFileSync(join(dir, "20260410_legacy.sql"), "select 1;");
+    writeFileSync(input, JSON.stringify({migrations:[{version:"20260410",name:"legacy"}]}));
+    const cli = fileURLToPath(new URL("./compare-face-lab-migration-history.mjs", import.meta.url));
+    const args = [cli, "--repo-dir", dir, "--hosted-list", input, "--out-dir", out];
+    let result = spawnSync(process.execPath, args, {encoding:"utf8",timeout:12000});
+    assert.equal(result.status, 2);
+    assert.equal(existsSync(out), false);
+    result = spawnSync(process.execPath, [
+      ...args, "--allow-legacy-date-versions", "--git-commit", "a".repeat(40),
+      "--snapshot-at", "2026-10-10T09:00:00Z"
+    ], {encoding:"utf8",timeout:12000});
+    assert.equal(result.status, 0, result.stderr);
+    const summary = JSON.parse(readFileSync(join(out, "migration-reconciliation-summary.json"), "utf8"));
+    assert.equal(summary.counts.repository, 1);
+    assert.equal(summary.counts.exact_version_and_name, 1);
+    assert.equal(summary.legacyDateVersionsAllowed, true);
+    assert.equal(summary.status, "HOLD");
+    assert.match(readFileSync(join(out, "migration-reconciliation-review.md"), "utf8"),
+      /2026-10-10T09:00:00Z/);
+  } finally { rmSync(tmp, {recursive:true,force:true}); }
+});
 test("the audited source and tools cannot reach databases", () => {
   for (const relative of [
     "./migration-reconciliation-core.mjs",
