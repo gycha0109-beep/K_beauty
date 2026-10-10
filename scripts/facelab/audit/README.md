@@ -17,6 +17,27 @@ Supabase 목록은 비밀값을 제거한 JSON으로 저장합니다. 대상 프
 
 기본 입력은 14자리 버전 `YYYYMMDDHHMMSS_description.sql`만 허용합니다. 실제 main의 2026-10-10 파일 143개 중 7개는 기존 8자리 날짜 버전이므로, 8자리 파일도 입력 대상으로 읽으려면 `--allow-legacy-date-versions`를 **명시적으로** 지정해야 합니다. 그러나 `20260824` 버전이 두 파일에 중복돼 있어, 해당 옵션을 켜도 현 저장소 전체 입력은 `repo_duplicate_version`으로 안전하게 중단됩니다. 중복은 임의로 제거·이름 변경·실행 순서 확정하지 말고 원본 이력과 별도 대조해야 합니다. 이 옵션은 8자리 버전을 있는 그대로 비교할 뿐 14자리로 자동 보정하거나 적용 여부를 확정하지 않습니다. 잘못된 버전·설명, 중복, 예상하지 못한 파일과 심볼릭 링크는 무시하지 않고 중단합니다. 빈 목록도 비교 완료로 인정하지 않습니다.
 
+## 8자리 중복 버전 사전 진단 (DB 이력 없이 실행 가능)
+
+현재 저장소의 20260824 버전은 PR #303 (커밋 aa3042eb5c94128d4af7a4286231a1fc390362a5)에서 동시에 추가된 서로 다른 SQL 2개입니다. 하나는 \`products.name_en\`, \`brand_en\` 컬럼 추가, 다른 하나는 상품 표시명 백필입니다. **같은 날짜라는 사실은 실행 이력·실행 순서 증거가 아닙니다.**
+
+호스팅 DB 정체성 확인이나 JSON 수집 전에, 다음 오프라인 명령으로 파일 구조를 먼저 진단합니다.
+
+\`\`\`bash
+node scripts/facelab/audit/inspect-face-lab-migration-inventory.mjs \
+  --repo-dir supabase/migrations \
+  --out-dir /path/to/local-inventory-diagnostic
+\`\`\`
+
+산출물: \`migration-inventory-preflight.json\`, \`migration-inventory-preflight.md\`.
+
+- SHA-256은 SQL 내용에 대해 **로컬 계산만** 수행하며 SQL은 실행하지 않습니다.
+- 14자리/8자리 버전 수, 중복 그룹과 충돌한 파일, 이상한 파일명 개수를 결정적으로 집계합니다.
+- 형식이 틀린 파일명 원문은 비밀 노출 예방을 위해 출력하지 않습니다.
+- 중복이 발견돼도 진단 자체는 정상 완료될 수 있지만 결과 \`status=HOLD\`, \`inventoryReconciliationEligible=false\`입니다. 실제 비교기에서는 계속 \`repo_duplicate_version\`으로 중단합니다.
+- 이름/버전을 자동 교정·삭제하거나 다른 파일을 무시하지 않습니다.
+- Hosted 이력, Vercel/Supabase 프로젝트 동일성, 실제 SQL 실행 여부, 물리 객체 상태는 검증하지 않습니다.
+
 ## 로컬 실행
 
 ```bash
