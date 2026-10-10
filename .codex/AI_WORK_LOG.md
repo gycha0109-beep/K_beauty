@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-10-10 / Face Lab P1-D2C9 — 중복 유지형 후보 이력 대응 도구
+
+- 목적: 중복 버전 `20260824`가 엄격한 오프라인 비교를 차단해도, 후보 Supabase의 공개된 공식 migration 메타데이터와 저장소 목록을 **증거 수준 '후보'**로 비교. DB 동일성/실제 적용 확정 금지.
+- 새 파일: `scripts/facelab/audit/candidate-migration-differences-core.mjs`, `scripts/facelab/audit/inspect-face-lab-migration-candidates.mjs`.
+- 기능: 8자리/14자리 버전 허용·저장소 중복 그룹 보존·직접 버전 일치·이름만 같은 유일 후보·모호한 다중 후보·잔여 항목의 보존식과 정렬. 파일 내용 로컬 SHA-256만 계산, SQL 실행/DB 접속/네트워크/운영 쓰기 0.
+- 보호: 엄격한 `compare-face-lab-migration-history.mjs`의 중복 차단 정책 유지. 새 도구는 항상 `status=HOLD` / `projectIdentityConfirmed=false`, `appliedSqlVerified=false` 유지.
+- 추가 단위 검증: 20260824 충돌 유지, 입력 순서 무관 결정성, 동명이인 후보 모호성, 악성/중복/빈 입력, CLI 출력/재현성. 23→28건.
+- 직접 읽은 후보 이력 설명 이름 비교(별도 메타데이터 조사): 143 repo SQL / 171 candidate-hosted records / 같은 버전 101 files / 이름 유일 후보 37쌍 / 이름 대응 후 잔여 repo 5 + hosted 33. 운영 DB 신원은 403 때문에 HOLD.
+- 외부 보안: GHSA-vfj7-8cjw-p6xm 공식 패치 버전 없음. 예외 만료 우회 없음, PR #1209 병합은 공급망 체크 복구 전 보류.
+- 검증 상태: GitHub Actions 정확 HEAD 점검으로 확정 (개발 로그 작성 시 작업 진행 중).
+
 ### 2026-10-10 / Face Lab P1-D2C7 — 저장소 마이그레이션 중복 사전 진단
 
 - 범위: P1-D2C6 비교기 재사용, DB 접속·SQL 적용 없이 로컬 SQL 이력 충돌 원인을 사전 분석.
