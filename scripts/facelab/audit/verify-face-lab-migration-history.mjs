@@ -157,7 +157,7 @@ test("CSV neutralizes potentially executable spreadsheet values", () => {
     hosted_name: "+cmd|'/C calc'!A0", notes: "@SUM(1,1)"
   }];
   const csv = migrationReconciliationCsv(r);
-  assert.ok(csv.includes("'=2+2"));
+  assert.match(csv, /\'\s+=2\+2/);
   assert.ok(csv.includes("'+cmd"));
   assert.ok(csv.includes("'@SUM"));
 });
