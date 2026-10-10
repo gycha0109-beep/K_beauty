@@ -1,0 +1,201 @@
+{
+  "contract_version": "r16i-r2-product-offer-composition-design-v1",
+  "stage": "V2.1-8H-R16I_R2_EXISTING_OFFER_MODEL_REUSE",
+  "observed_on": "2026-10-10",
+  "baseline_main_sha": "040d1abac8b6fc045abb4ac09f8497d155d6102a",
+  "baseline_upstream": {
+    "r16i_evidence": "evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16i-snature-160ml-bundle-boundary-v1.json",
+    "architecture": "docs/architecture/product-fact-subject-formulation-scope-v1.md",
+    "offer_migration": "supabase/migrations/20260910103000_product_offers_shadow_v1.sql",
+    "offer_read": "lib/product-offer-read-path.js",
+    "offer_transport": "supabase/migrations/20260925121815_product_offers_health_presentation_read_v2.sql",
+    "offer_review_issue": 1204
+  },
+  "catalog_anchor": {
+    "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+    "brand": "에스네이처",
+    "name": "아쿠아 스쿠알란 수분크림",
+    "legacy_size_ml": 160,
+    "legacy_price_min": 29900,
+    "legacy_price_max": 29900,
+    "legacy_unit_price_per_10ml": 1868.75,
+    "legacy_buy_link": "https://www.hwahae.co.kr/goods/45194",
+    "row_updated_at": "2026-09-10T09:32:38.713599+09:00",
+    "source_binding": {
+      "id": "53155404-5518-4130-825a-8c918588f37a",
+      "url": "https://www.hwahae.co.kr/goods/45194",
+      "state": "resolved",
+      "scope": "product_subject_unresolved",
+      "updated_at": "2026-09-10T10:10:29.03509+09:00"
+    },
+    "intake": {
+      "id": "ee3b675d-1b92-4144-88e0-2a984b3d7cec",
+      "identity_state": "SUBJECT_CREATION_REQUIRED",
+      "trust_state": "REVIEW_REQUIRED",
+      "subject_id": null,
+      "updated_at": "2026-09-21T00:53:57.499289+09:00"
+    },
+    "subject_count": 0
+  },
+  "existing_offer_infrastructure": {
+    "product_offers_total_count_observed": 73,
+    "matching_target_product_offers": 0,
+    "matching_hwahae_listing_offers": 0,
+    "source_table": "public.product_offers",
+    "listing_transport_reusable": true,
+    "columns_available": [
+      "offer_id",
+      "product_id",
+      "seller_key",
+      "seller_name",
+      "source_name",
+      "listing_id",
+      "listing_url",
+      "price_amount",
+      "currency_code",
+      "availability_state",
+      "offer_state",
+      "product_scope_state",
+      "link_health_state"
+    ],
+    "missing_component_attributes": [
+      "unit_volume_ml",
+      "component_quantity",
+      "component_role",
+      "component_catalog_product_id",
+      "set_total_volume_ml"
+    ],
+    "seller_listing_observations_component_attributes_available": false,
+    "trusted_live_link_policy_has_hwahae": false,
+    "price_projection_automatically_authorized": false,
+    "new_offer_table_needed": false,
+    "new_workflow_needed": false
+  },
+  "model_separation": {
+    "product": {
+      "meaning": "RECOMMENDATION_PRODUCT_ANCHOR",
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "product_family": "S.NATURE Aqua Squalane Moisture Cream",
+      "commercial_size_and_price_not_formula_authority": true
+    },
+    "single_presentation": {
+      "brand_sku": "151",
+      "brand_source": "https://www.snature.kr/product/detail.html?product_no=151",
+      "primary_container_volume_ml": 80,
+      "official_single_80ml_observed": true,
+      "formula_revision_key": null,
+      "product_fact_subject_semantic_key": null
+    },
+    "retailer_offer": {
+      "seller_key_candidate": "hwahae",
+      "source_name": "hwahae",
+      "listing_id": "45194",
+      "listing_url": "https://www.hwahae.co.kr/goods/45194",
+      "listing_is_kit": true,
+      "offer_id": null,
+      "offer_record_exists": false,
+      "price_amount_historical": 29900,
+      "price_currently_verified": false,
+      "currency_code": "KRW",
+      "state_for_design": "REVIEW_REQUIRED_NO_OFFER_WRITE"
+    },
+    "bundle_components": [
+      {
+        "role": "PRIMARY_PRODUCT",
+        "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+        "item_name": "아쿠아 스쿠알란 수분크림",
+        "brand_sku": "151",
+        "unit_volume_ml": 80,
+        "quantity_inferred_from_retail_title": 2,
+        "aggregate_volume_ml": 160,
+        "physically_verified": false,
+        "identity_lineage_proven": false
+      },
+      {
+        "role": "GIFT_OTHER_PRODUCT",
+        "product_id": null,
+        "item_name": "세럼",
+        "brand_sku": null,
+        "unit_volume_ml": 10,
+        "quantity_inferred_from_retail_title": 1,
+        "aggregate_volume_ml": 10,
+        "physically_verified": false,
+        "formula_relationship_to_cream": "NONE_ESTABLISHED"
+      }
+    ],
+    "primary_offer_volume_ml": 160,
+    "total_mixed_component_volume_ml": 170,
+    "mixed_total_volume_as_single_product_volume_allowed": false,
+    "review_signal_scope": "UNRESOLVED_DO_NOT_REDISTRIBUTE"
+  },
+  "price_policy": {
+    "legacy_unit_price_calculation": "29900 / 160 * 10 = 1868.75",
+    "incorrect_single_unit_relabel_result": "29900 / 80 * 10 = 3737.5",
+    "price_29900_proven_live_today": false,
+    "price_owner": "RETAILER_OFFER_ONLY_UNTIL_REVIEW",
+    "show_legacy_offer_price_as_80ml_single_price": false,
+    "derive_price_per_10ml_from_mixed_170ml": false,
+    "post_recommendation_projection_authorized": false
+  },
+  "alternatives": {
+    "approved_design_direction": "REUSE_PRODUCT_OFFERS_AND_ADD_REVIEW_ONLY_COMPOSITION_ENVELOPE_FIRST",
+    "reject_auto_size_overwrite": "Would double derived unit price and mismatch delivered quantities, offer link and review scope",
+    "reject_new_offer_table": "Existing table covers seller listing identity, availability, price and link",
+    "defer_first_class_component_table": "Only consider additive component model after review demands persisted pack-level analytics; no migration in R16I-R2",
+    "reject_product_fact_subject_for_bundle": "Pack count and gift serum are commercial presentations, not formula revisions"
+  },
+  "future_operations": [
+    {
+      "gate": "R16I-R2",
+      "status": "DESIGN_ONLY",
+      "writes": 0,
+      "deliverable": "Source-backed component model and review action matrix"
+    },
+    {
+      "gate": "R16I-R3",
+      "status": "NOT_AUTHORIZED",
+      "writes": 0,
+      "deliverable": "Dry-run existing product_offers shadow candidate and component evidence, exact-scope authority and unchanged recommendation replay"
+    },
+    {
+      "gate": "R16I-R4",
+      "status": "NOT_AUTHORIZED",
+      "writes": 0,
+      "deliverable": "Owner-approved edit plan with exact prestate, rollback, atomic writes and readback"
+    },
+    {
+      "gate": "R16I-R5",
+      "status": "NOT_AUTHORIZED",
+      "writes": 0,
+      "deliverable": "Scoped read-path adoption after tests and source policy review"
+    }
+  ],
+  "write_prerequisites": [
+    "Product owner chooses product-line vs merchant-offer anchor semantics",
+    "Merchant 80ml×2 and serum gift components validated from authoritative original listing",
+    "Exact current production product/binding/intake/offer prestate read immediately before any write",
+    "Review affect on price_min/price_max/unit_price_per_10ml/buy_link/market_signals/review_signals",
+    "Explicit Admin authorization, idempotency and optimistic concurrency/rollback",
+    "No inferred product_fact_subject or revised formula from bundle quantity",
+    "Postwrite readback, recommendation shadow delta and link policy checks"
+  ],
+  "verdict": "R16I_R2_REUSE_EXISTING_OFFERS_COMPOSITION_SHADOW_DESIGN_HOLD",
+  "safety": {
+    "catalog_rows_updated": 0,
+    "offers_inserted": 0,
+    "subject_rows_inserted": 0,
+    "source_bindings_changed": 0,
+    "intakes_changed": 0,
+    "production_writes": 0,
+    "recommendation_delta": 0,
+    "review_signals_reassigned": 0,
+    "formula_key": null,
+    "subject_semantic_key": null,
+    "r16b_hold_preserved": true,
+    "r16h_hold_preserved": true,
+    "zeroid_hold_preserved": true,
+    "non_numeric_pda_candidates": 164,
+    "scenarios": 12,
+    "comparisons": 1968
+  }
+}
