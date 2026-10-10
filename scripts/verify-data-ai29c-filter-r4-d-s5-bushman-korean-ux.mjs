@@ -25,7 +25,7 @@ assert.deepEqual(Object.keys(BUSHMAN_REVIEW_GUIDE).sort(),[...BUSHMAN_SEMANTIC_R
 assert.deepEqual(Object.keys(BUSHMAN_SOURCE_LABELS).sort(),s2.sources.map(x=>x.id).sort());
 for(const [name,info] of Object.entries(BUSHMAN_REVIEW_GUIDE)) {
   for(const key of ["label","explanation","instruction"]) {
-    assert.ok(typeof info[key]==="string" && info[key].length>=4 && korean.test(info[key]),
+    assert.ok(typeof info[key]==="string" && info[key].length >= (key === "label" ? 2 : 12) && korean.test(info[key]),
       `한국어 설명 누락: ${name} / ${key}`);
   }
 }
