@@ -173,6 +173,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-readonly-preflight-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-operator-review-packet-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-indexed-source-reconciliation-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-d2-source-readiness-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16g-visual-content-audit-v1.mjs",
 ];
 
