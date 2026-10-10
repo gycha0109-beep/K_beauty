@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync
 } from "node:fs";
@@ -90,7 +91,11 @@ test("candidate ambiguity cannot be auto matched", () => {
   const r = reconcile(dupNameRepo, hosted);
   assert.equal(r.counts.unique_name_candidates, 0);
   const candidate = r.rows.find(x => x.repo_version === "20260104000000");
-  assert.equal(candidate.classification, "repo_only_unresolved");
+  assert.equal(candidate.classification, "ambiguous_candidate");
+  assert.equal(candidate.candidate_matches, "20260202000000");
+  const remote = r.rows.find(x => x.hosted_version === "20260202000000");
+  assert.equal(remote.classification, "ambiguous_candidate");
+  assert.equal(remote.candidate_matches, "20260104000000|20260107000000");
 });
 test("order independent report", () => {
   const a = reconcile();
@@ -99,10 +104,21 @@ test("order independent report", () => {
   assert.equal(migrationReconciliationCsv(a), migrationReconciliationCsv(b));
   assert.equal(migrationReconciliationMarkdown(a), migrationReconciliationMarkdown(b));
 });
-test("empty inventories are valid inventory but never production ready", () => {
-  const r = reconcile([], []);
-  assert.equal(r.counts.rows, 0);
+test("empty or partial inventories fail closed", () => {
+  assert.throws(() => reconcile([], []), /repo_list_invalid/);
+  assert.throws(() => reconcile([], hosted), /repo_list_invalid/);
+  assert.throws(() => reconcile(repository, []), /hosted_list_invalid/);
+});
+test("strict timestamps and explicit historical compatibility", () => {
+  const a = [{ filename: "20260410_old_style.sql", sha256: sha }];
+  const b = [{ version: "20260410", name: "old_style" }];
+  assert.throws(() => reconcileFaceLabMigrationInventories({repository:a,hosted:b}), /repo_filename_invalid/);
+  const r = reconcileFaceLabMigrationInventories({repository:a,hosted:b}, {allowLegacyDates:true});
+  assert.equal(r.counts.exact_version_and_name, 1);
+  assert.equal(r.projectIdentityConfirmed, false);
   assert.equal(r.productionReadiness, "HOLD");
+  assert.throws(() => reconcileFaceLabMigrationInventories({repository:a,hosted:b},
+    {allowLegacyDates:"true"}), /input_invalid/);
 });
 test("reject duplicate repository versions", () => {
   assert.throws(() => reconcile([...repository,
@@ -133,6 +149,17 @@ test("reject fake content digests and invalid lists", () => {
     /migration_inventory_repo_list_invalid/);
   assert.throws(() => reconcile(repository, null),
     /migration_inventory_hosted_list_invalid/);
+});
+test("CSV neutralizes potentially executable spreadsheet values", () => {
+  const r = reconcile();
+  r.rows = [{
+    ...r.rows[0], repo_name: "\t=2+2",
+    hosted_name: "+cmd|'/C calc'!A0", notes: "@SUM(1,1)"
+  }];
+  const csv = migrationReconciliationCsv(r);
+  assert.ok(csv.includes("'=2+2"));
+  assert.ok(csv.includes("'+cmd"));
+  assert.ok(csv.includes("'@SUM"));
 });
 test("CSV and markdown do not assert production safety", () => {
   const csv = migrationReconciliationCsv(reconcile());
@@ -166,11 +193,31 @@ test("CLI only accesses local files, generates reports with HOLD", () => {
     );
     assert.equal(summary.projectIdentityVerified, false);
     assert.equal(summary.appliedSqlVerified, false);
+    assert.equal(summary.databaseWrites, 0);
+    assert.equal(summary.projectIdentityConfirmed, false);
+    assert.equal(summary.productionReconciliationComplete, false);
+    assert.equal(summary.status, "HOLD");
     const csv = readFileSync(join(out, "migration-reconciliation.csv"), "utf8");
     assert.match(csv, /20260104000000/);
     assert.match(csv, /[a-f0-9]{64}/);
     const md = readFileSync(join(out, "migration-reconciliation-review.md"), "utf8");
     assert.match(md, /Production/);
+    const outputs = ["migration-reconciliation.csv",
+      "migration-reconciliation-review.md","migration-reconciliation-summary.json"];
+    const before = outputs.map(file => readFileSync(join(out,file),"utf8"));
+    const repeat = spawnSync(process.execPath, [
+      cli,"--repo-dir",dir,"--hosted-list",input,"--out-dir",out
+    ],{encoding:"utf8",timeout:12000});
+    assert.equal(repeat.status,0,repeat.stderr);
+    assert.deepEqual(outputs.map(file => readFileSync(join(out,file),"utf8")),before);
+    writeFileSync(join(dir,"20260101000000_initial_baseline.sql"),"select 99;");
+    const changed = spawnSync(process.execPath, [
+      cli,"--repo-dir",dir,"--hosted-list",input,"--out-dir",out
+    ],{encoding:"utf8",timeout:12000});
+    assert.equal(changed.status,0,changed.stderr);
+    const updatedCsv=readFileSync(join(out,"migration-reconciliation.csv"),"utf8");
+    assert.notEqual(updatedCsv,csv);
+    assert.ok(updatedCsv.includes(createHash("sha256").update("select 99;").digest("hex")));
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
