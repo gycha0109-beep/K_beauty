@@ -174,3 +174,14 @@ product_fact_current.fact_instance_id
 - 운영 활용: 검증된 서버 평가 호출을 batch/scheduler에서 `recordAutomaticEvidenceFromLiveDB`로 재사용할 수 있다. 이번 단계에서는 **자동 실행 스케줄/대량 백필은 활성화하지 않는다**. 호출 없이 자동으로 평가가 쌓이는 것으로 설명하지 않는다.
 - 회귀: 기존 Database Integration Authority (Node 테스트 + 별도 PostgreSQL 17 격리 트랜잭션), 중복/근거 갱신/판단 변경/비현재 Subject/권한 차단/롤백을 확인한다. Production 적용 여부와 최초 행 저장은 별도 실측한다.
 - 제한: 기록은 평가 시점의 **서버 판정 스냅샷**이다. 저장 자체가 Fact confirmation, 제품 권위 상승, 추천 허가를 뜻하지 않는다. 쓰기 트리거의 사용자 요청 이력, 백그라운드 주기, 보관/삭제 정책은 추후 운영 단계에서 다룬다.
+
+## 13. 3단계 C1 — 부쉬맨 제한 자동 실행과 중요 예외 인박스 (2026-10-11)
+
+- `vercel.json`: UTC 02:00(한국시간 11:00) 하루 1회 Cron만 등록. Hobby 플랜에서도 허용되는 일일 간격. 실제 호출 시각은 플랫폼 정책에 따라 달라질 수 있다.
+- `/api/internal/automatic-evidence-daily`: `CRON_SECRET` 길이 32자 이상 및 Bearer 인증을 항상 요구한다. `BEJEWELY_AUTO_EVIDENCE_DAILY_ENABLED=true`가 **명시적으로 설정된 경우에만** 평가를 실행한다. 둘 중 하나라도 누락되면 DB 쓰기 없이 거절/비활성 응답한다. 서비스 키는 서버 전용.
+- 첫 운영 적용 범위: **BUSHMAN Waterproof Pro Suncream 단일 검증 상품 ID만** 고정된 allowlist로 처리한다. 21개 선크림 전부를 임의로 확장하지 않는다. 제약 범위 확대는 Product/Subject 및 Evidence 준비도에 대한 별도 검토 후 허용한다.
+- 매일 정해진 Product ID로 DB를 최신 조회한 후 3단계 B `recordAutomaticEvidenceFromLiveDB`를 호출한다. 동등한 source/decision/version은 DB 멱등성으로 기록 중복 없이 끝낸다. 추가 평가가 실제로 필요할 때만 append. 추천 랭킹·사용자 제품·admin review·Face Lab은 수정하지 않는다.
+- `/api/admin/products/automatic-evidence/exceptions`: 기존 `admin.products.review` 권한만 조회 가능. 최근 100개 저장된 이력에서 각 Product/Subject 최신 상태만 표시한다. `SUBJECT_IDENTITY_UNRESOLVED`, `EVIDENCE_IDENTITY_SCOPE_MISMATCH`, `AUTHORITATIVE_FACT_CONFLICT`, 혹은 기존 확정 핵심 `category_slot`/`uv_filter_type`가 판단 변경으로 검증을 잃는 경우만 `needs_review` 표시한다. 단순 insufficient 10건은 예외/관리자 승인 생성 0. 창 크기가 제한되면 `limitedHistoryWindow=true`를 함께 반환한다.
+- 호출 실패 시 자동 실행 API는 503을 반환하며 로그에 합계만 기록한다. **읽기 실패는 DB 평가 이력에 기록되지 않으므로**, 이력 예외 인박스만으로 작업자 장애를 전부 발견할 수 있다고 주장하지 않는다. 별도 모니터링/알림 전달은 후속 단계이다.
+- `CRON_SECRET`, 활성화 플래그가 Production에 설정되지 않았다면 정기 실행은 등록되어 있어도 **실제로 비활성**이다. 원격 환경변수 권한/배포/실행 로그의 확인 없이 자동화가 작동 중이라고 보고하지 않는다.
+- 검증: 기존 `scripts/verify-automatic-product-evidence-live-v1.mjs`에서 1개 제품 고정, 최초 평가, duplicate, 실패 격리, core degradation, 단순 insuffression, 관리자 인증/비밀키/비활성 상태를 검사한다. 새 CI 워크플로는 만들지 않는다.
