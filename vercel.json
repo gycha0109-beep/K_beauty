@@ -13,5 +13,11 @@
     "BEJEWELY_PRODUCT_QUERY_BETA_AUTOMATIC_TRAFFIC_SAMPLING": "false",
     "BEJEWELY_PRODUCT_QUERY_BETA_PUBLIC_SEARCH_CUTOVER": "false",
     "BEJEWELY_PRODUCT_QUERY_BETA_PERSISTENCE": "none"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/internal/automatic-evidence-daily",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }
