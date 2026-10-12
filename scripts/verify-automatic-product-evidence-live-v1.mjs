@@ -444,6 +444,21 @@ const exceptionsRoute=fs.readFileSync("app/api/admin/products/automatic-evidence
 assert.match(exceptionsRoute,/requireAdminCapability\(ADMIN_CAPABILITIES.PRODUCTS_REVIEW\)/);
 assert.match(exceptionsRoute,/classifyAutomaticEvidenceAttention/);
 assert.match(exceptionsRoute,/normalInsufficientEvidenceSuppressed:true/);
+const inboxPage=fs.readFileSync("app/admin/products/automatic-evidence/page.js","utf8");
+const adminNav=fs.readFileSync("app/admin/AdminNavigation.js","utf8");
+assert.match(inboxPage,/requireAdminCapability\(ADMIN_CAPABILITIES.PRODUCTS_REVIEW\)/);
+assert.match(inboxPage,/notFound\(\)/);
+assert.match(inboxPage,/redirect\("\/\?auth_required=admin"\)/);
+assert.match(inboxPage,/classifyAutomaticEvidenceAttention\(row\)/);
+assert.match(inboxPage,/createSupabaseAdminClient\(\)/);
+assert.match(inboxPage,/order\("history_id",\{ascending:false\}\)\.limit\(LIMIT\)/);
+assert.match(inboxPage,/조회 실패를 '예외 없음'으로 처리하지 않습니다/);
+assert.match(inboxPage,/평가 이력이 아직 없습니다/);
+assert.match(inboxPage,/truncated &&/);
+assert.doesNotMatch(inboxPage,/\.insert\(|\.update\(|\.upsert\(|\.delete\(|\.rpc\(/);
+assert.match(adminNav,/href: "\/admin\/products\/automatic-evidence"/);
+assert.match(adminNav,/capability: ADMIN_CAPABILITIES.PRODUCTS_REVIEW/);
+
 const vConfig=JSON.parse(fs.readFileSync("vercel.json","utf8"));
 assert.deepEqual(vConfig.crons,[{path:"/api/internal/automatic-evidence-daily",schedule:"0 2 * * *"}]);
 
@@ -468,5 +483,5 @@ console.log(JSON.stringify({status:"PASS",phase:"LIVE_READONLY_PRODUCT_EVIDENCE_
   missingOrTamperedLineageRejected:true,
   mixedVerifiedReviewTagsRemainNonProbabilistic:true,
   failClosedTests:failCases.length,
-  mockSupabaseReadTest:true,historyPreviewDeterministic:true,historyStoreBridgeVerified:true,dailyPilotVerified:true,
+  mockSupabaseReadTest:true,historyPreviewDeterministic:true,historyStoreBridgeVerified:true,dailyPilotVerified:true,adminExceptionInboxVerified:true,
   historyWrites:0,productionWrites:0,adminApprovals:0,admission:false},null,2));
