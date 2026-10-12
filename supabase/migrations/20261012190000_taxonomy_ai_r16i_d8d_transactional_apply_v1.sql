@@ -101,8 +101,8 @@ BEGIN
   IF NOT FOUND OR proposal.product_id <> 'b639c8b4-6a61-440e-b4db-fac7381593ff'::uuid
      OR proposal.strategy <> 'A_PRODUCT_ANCHOR_REUSE_AND_OFFER_SEPARATION'
   THEN RAISE EXCEPTION 'R16I_D8D_PROPOSAL_INVALID'; END IF;
-  SELECT * INTO decision FROM public.admin_product_correction_decisions_v1
-    WHERE proposal_id=p_proposal_id AND decision='APPROVE_FOR_D8D_REVIEW';
+  SELECT d.* INTO decision FROM public.admin_product_correction_decisions_v1 AS d
+    WHERE d.proposal_id=p_proposal_id AND d.decision='APPROVE_FOR_D8D_REVIEW';
   IF NOT FOUND THEN RAISE EXCEPTION 'R16I_D8D_APPROVAL_MISSING'; END IF;
   IF EXISTS(SELECT 1 FROM public.admin_r16i_correction_applications_v1
      WHERE proposal_id=p_proposal_id OR (product_id=proposal.product_id AND rolled_back_at IS NULL))
