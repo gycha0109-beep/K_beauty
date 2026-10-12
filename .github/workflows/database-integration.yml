@@ -60,6 +60,8 @@ on:
       - "docs/evidence/data-ai29c-filter-r4-d-s3-admin-semantic-review-workbench-v1.md"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
+      - "scripts/database/audit/**"
+      - "scripts/verify-database-migration-candidate-reconciliation.mjs"
       - "docs/ci/database-integration-authority.json"
       - "docs/evidence/data-taxonomy2-candidate-manual-classification-v1.md"
       - ".github/workflows/database-integration.yml"
@@ -123,6 +125,8 @@ on:
       - "docs/evidence/data-ai29c-filter-r4-d-s3-admin-semantic-review-workbench-v1.md"
       - "scripts/assert-non-production-supabase-target.mjs"
       - "scripts/verify-database-integration-authority.mjs"
+      - "scripts/database/audit/**"
+      - "scripts/verify-database-migration-candidate-reconciliation.mjs"
       - "docs/ci/database-integration-authority.json"
       - "docs/evidence/data-taxonomy2-candidate-manual-classification-v1.md"
       - ".github/workflows/database-integration.yml"
@@ -173,6 +177,9 @@ jobs:
 
       - name: Verify database migration authority and non-production safety
         run: node scripts/verify-database-integration-authority.mjs
+
+      - name: Verify candidate migration comparison offline (legacy collisions remain HOLD)
+        run: node scripts/verify-database-migration-candidate-reconciliation.mjs
 
       - name: Verify R4-C-R4 independent SKU identity HOLD and negative cases
         run: node scripts/verify-data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap.mjs
