@@ -59,6 +59,37 @@ assert.ok(futureResult.targets.every(t=>t.knownAffectedReachable===false));
 assert.ok(futureResult.targets.every(t=>t.resolution_status==="NO_KNOWN_AFFECTED_VERSION_DETECTED_REQUIRES_AUDIT"));
 assert.equal(futureResult.audit_gate_unchanged,true);
 
+// Earlier versions remain vulnerable under the official "<=" ranges.
+// A formerly exact-match-only check falsely suggested such cases were clear.
+const earlier = structuredClone(demo);
+earlier.packages["node_modules/braces"].version = "3.0.2";
+earlier.packages["node_modules/node-forge"].version = "1.3.9";
+const earlierResult = traceSupplyChainLockGraph(earlier);
+assert.equal(earlierResult.targets.find(t=>t.package==="braces").knownAffectedReachable,true);
+assert.equal(earlierResult.targets.find(t=>t.package==="node-forge").knownAffectedReachable,true);
+assert.deepEqual(earlierResult.targets.find(t=>t.package==="braces").knownAffectedReachablePaths,["node_modules/braces"]);
+assert.equal(earlierResult.targets.find(t=>t.package==="braces").resolution_status,
+  "KNOWN_AFFECTED_PATH_REQUIRES_SECURITY_REMEDIATION");
+
+// Non-standard or pre-release versions require the authoritative npm audit.
+// Static inference never marks them as clean.
+const ambiguous = structuredClone(demo);
+ambiguous.packages["node_modules/braces"].version="3.0.4-preview.1";
+ambiguous.packages["node_modules/node-forge"].version="unparsed";
+const ambiguousResult=traceSupplyChainLockGraph(ambiguous);
+for (const target of ambiguousResult.targets) {
+  assert.equal(target.knownAffectedReachable,false);
+  assert.equal(target.unknownVersionReachablePaths.length,1);
+  assert.equal(target.resolution_status,"UNKNOWN_VERSION_REQUIRES_AUDIT");
+}
+const absurd = structuredClone(demo);
+absurd.packages["node_modules/braces"].version="999999999999999999999.0.0";
+assert.equal(traceSupplyChainLockGraph(absurd).targets.find(t=>t.package==="braces").resolution_status,
+  "UNKNOWN_VERSION_REQUIRES_AUDIT");
+
+// Valid newer versions are only "no known affected version" (not security PASS).
+assert.equal(futureResult.audit_gate_unchanged,true);
+
 const empty = traceSupplyChainLockGraph({lockfileVersion:3, packages:{"":{dependencies:{}}}});
 assert.equal(empty.targets[0].resolution_status,"NOT_INSTALLED_IN_LOCK_REQUIRES_AUDIT");
 assert.equal(empty.audit_gate_unchanged,true);
@@ -73,6 +104,6 @@ const unknownResult=traceSupplyChainLockGraph(unknown);
 assert.equal(unknownResult.unresolvedDependencyEdges,1);
 assert.ok(unknownResult.unresolvedDependencyExamples.some(x=>x.dependency==="optionalPlatformOnly"));
 
-console.log(JSON.stringify({status:"PASS",stage:"SEC_SCA_LOCK_PATH_TRIAGE",fixtures:6,
+console.log(JSON.stringify({status:"PASS",stage:"SEC_SCA_LOCK_PATH_TRIAGE",fixtures:9,
   analyzedAdvisories:2,knownAffectedReachable:2,expiryPolicyChanged:false,
   auditGateDisabled:false,productionWrites:0}));
