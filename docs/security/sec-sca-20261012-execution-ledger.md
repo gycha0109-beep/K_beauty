@@ -114,4 +114,3 @@ Security workflow [run #38223030217](https://github.com/gycha0109-beep/K_beauty/
 - **실제 공개 수정 후보 소스 검토:** [별도 SCA-2 후보 평가](sec-sca-20261012-upstream-patch-candidate-review.md) 작성. `braces` PR [#72](https://github.com/micromatch/braces/pull/72) (head `28d440b5...`, CLOSED/NOT MERGED, AST 재귀 제한), `node-forge` PR [#1152](https://github.com/digitalbazaar/forge/pull/1152) (head `ceba3440...`, OPEN/NOT MERGED, DigestAlgorithm child-count 엄격화). 두 PR의 실제 source patch를 비교했으나 **공식 보안 패치 배포본이 아니고, 프로젝트에 적용하거나 정상 설치/Android를 검증하지 않았다.**
 - 정확한 코드 실험은 **해당 HEAD의 CI 로그 검수 이후** PASS로 기록한다. 문서 변경 이후의 재실행/취소는 따로 구분한다.
 - **SCA-3 진입 불가:** 두 Advisory의 공급망이 동시에 깨끗해지고 안전한 npm 패키지·무결성·호환성이 입증된 후보 없음. 임의 override/lockfile 수정/expired exception 연장/범위 확대하지 않았다.
-
