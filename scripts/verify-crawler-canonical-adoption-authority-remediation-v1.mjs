@@ -211,7 +211,16 @@ for (const file of walk("crawler")) {
 }
 
 const vercel = JSON.parse(read("vercel.json"));
-assert(!Object.prototype.hasOwnProperty.call(vercel, "crons"), "crawler scheduler is active in Vercel");
+assert(JSON.stringify(vercel.crons ?? []) === JSON.stringify([
+  {path:"/api/internal/automatic-evidence-daily",schedule:"0 2 * * *"},
+]), "crawler scheduler remains disabled; only the gated evidence-history cron is permitted");
+const evidenceCronRoute = read("app/api/internal/automatic-evidence-daily/route.js");
+assert(evidenceCronRoute.includes("process.env.CRON_SECRET") &&
+  evidenceCronRoute.includes('process.env.BEJEWELY_AUTO_EVIDENCE_DAILY_ENABLED !== "true"') &&
+  evidenceCronRoute.includes("runDailyAutomaticEvidencePilot(client)") &&
+  !evidenceCronRoute.includes("promote_product_candidate") &&
+  !evidenceCronRoute.includes("INITIAL_ADMISSION_GRANT"),
+  "history cron authorization/admission boundary invalid");
 
 const result = {
   stage: "CRAWLER-CANONICAL-ADOPTION-AUTHORITY-REMEDIATION",

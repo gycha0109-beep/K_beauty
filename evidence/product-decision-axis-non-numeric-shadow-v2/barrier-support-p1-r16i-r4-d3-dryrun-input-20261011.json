@@ -1,0 +1,85 @@
+{
+  "contract_version": "r16i-r4-d3-correction-dryrun-v1",
+  "source_kind": "READ_ONLY_PRODUCTION_AND_PUBLIC_INDEX_EVIDENCE",
+  "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+  "observed_at_kr": "2026-10-11T06:04:51.876455+09:00",
+  "product_revision": "2026-09-10T09:32:38.713599+09:00",
+  "production_readback": {
+    "size_ml": 160,
+    "price_min": 29900,
+    "price_max": 29900,
+    "unit_price_per_10ml": 1868.75,
+    "buy_link": "https://www.hwahae.co.kr/goods/45194",
+    "source_url": "https://www.hwahae.co.kr/goods/45194",
+    "hwahae_url": "https://www.hwahae.co.kr/goods/45194",
+    "review_count": 41475,
+    "in_scope_offer_count": 0,
+    "in_scope_subject_count": 0,
+    "in_scope_binding_count": 1,
+    "transaction_lock": false,
+    "operator_approval": false
+  },
+  "seller_source": {
+    "seller_key": "hwahae",
+    "seller_name": "화해",
+    "source_name": "hwahae",
+    "listing_id": "45194",
+    "listing_url": "https://www.hwahae.co.kr/goods/45194",
+    "indexed_cream_unit_ml": 80,
+    "indexed_cream_quantity": 2,
+    "indexed_serum_gift_ml": 10,
+    "indexed_display_price_krw": 29900,
+    "indexed_display_rating": 4.58,
+    "newly_discovered_search_result": {
+      "source_kind": "SEARCH_ENGINE_INDEX_NOT_RAW_OR_CHECKOUT",
+      "source_url": "https://www.hwahae.co.kr/goods/%EC%97%90%EC%8A%A4%EB%84%A4%EC%9D%B4%EC%B2%98-%5Bonly%ED%99%94%ED%95%B4%5D-%EC%95%84%EC%BF%A0%EC%95%84-%EC%8A%A4%EC%BF%A0%EC%95%8C%EB%9E%80-%EC%88%98%EB%B6%84%ED%81%AC%EB%A6%BC-80ml-%EB%8D%94%EB%B8%94%2B%EC%84%B8%EB%9F%BC-10ml-%EC%84%B8%ED%8A%B8/45194",
+      "crawl_label": "CRAWLED_TODAY_PER_SEARCH_RESULT",
+      "review_count": 43612,
+      "search_page_says_more_than_one_option": true
+    },
+    "live_option_selection_verified": false,
+    "checkout_price_verified": false,
+    "raw_page_archived": false,
+    "component_sku_verified": false,
+    "review_subject_attribution_verified": false
+  },
+  "brand_source": {
+    "product_no": "151",
+    "url": "https://m.snature.kr/product/detail.html?cate_no=0&display_group=0&product_no=151",
+    "indexed_single_ml": 80,
+    "indexed_list_price_krw": 35000,
+    "indexed_member_price_krw": 24500,
+    "source_kind": "OFFICIAL_MOBILE_STORE_SEARCH_CACHE",
+    "crawl_label": "CRAWLED_3_WEEKS_AGO_PER_SEARCH_RESULT",
+    "live_checkout_verified": false,
+    "stock_verified": false,
+    "sku_verified": false
+  },
+  "verified_schema": {
+    "product_offers_table_exists": true,
+    "offer_product_fk": true,
+    "unique_seller_listing_id": true,
+    "unique_seller_listing_url": true,
+    "nullable_price_amount": true,
+    "allowed_availability_unknown": true,
+    "allowed_product_scope_unresolved": true,
+    "source_binding_resolved_identity_unique": true,
+    "product_id_preservation_required": true
+  },
+  "authority": {
+    "actual_checkout_captured": false,
+    "operator_field_level_approval": false,
+    "transactional_concurrency_guard": false,
+    "rollback_proven": false,
+    "recommendation_release_approved": false,
+    "production_mutation_allowed": false
+  },
+  "source_caveats": [
+    "All newly discovered seller/brand prices and counts are search-engine indexed presentations, not live checkout values.",
+    "Brand mobile page was cached weeks ago; the current selling option and final payable price were not obtained.",
+    "Retailer source page direct open requires JavaScript anti-bot verification.",
+    "Do not interpret search-index count 43,612 as current live review total or one formulation's cohort.",
+    "Product row and seller listing are currently conflated; a preserved Product ID is a plan, not a correction approval.",
+    "Offer FK and unique constraints are schema affordances only, not approval to insert an Offer."
+  ]
+}
