@@ -731,6 +731,56 @@ test("catalog evidence CLI is offline, deterministic, and produces HOLD", () => 
     assert.equal(readFileSync(join(out,"face-lab-catalog-evidence-review.json"),"utf8"),a);
   } finally {rmSync(dir,{recursive:true,force:true});}
 });
+test("candidate Face Lab catalog actual metadata is recorded without Production approval", () => {
+  const snapshot=JSON.parse(readFileSync(new URL(
+    "./fixtures/candidate-face-lab-catalog-20261012.json",import.meta.url),"utf8"));
+  assert.equal(snapshot.kind,"face_lab_candidate_catalog_snapshot_v1");
+  assert.equal(snapshot.sourceRef,"bygrczggxfuisupcevaz");
+  assert.equal(snapshot.status,"HOLD");
+  assert.equal(snapshot.runtimeServerConnectionVerified,false);
+  assert.equal(snapshot.sqlAppliedVerified,false);
+  assert.equal(snapshot.noSQLOrDataRowsQueried,true);
+  assert.equal(snapshot.tables.length,3);
+  const expected=new Map([
+    ["public.saved_reports",["face_lab_revision","bigint",["face_lab_revision >= 0"]]],
+    ["public.analysis_request_rate_windows",["endpoint","text",
+      ["face-reading-test","face-lab-simulation-test"]]],
+    ["public.analysis_request_idempotency",["endpoint","text",
+      ["face-lab-simulation-test"]]]
+  ]);
+  for(const row of snapshot.tables){
+    const e=expected.get(row.name);
+    assert.ok(e,row.name);
+    assert.equal(row.rls_enabled,true,row.name);
+    const column=row.columns.find(c=>c.name===e[0]);
+    assert.ok(column,row.name);
+    assert.equal(column.data_type,e[1]);
+    for(const token of e[2])assert.ok(column.check.includes(token),row.name);
+    if(row.name==="public.saved_reports")assert.equal(column.default_value,"0");
+    expected.delete(row.name);
+  }
+  assert.equal(expected.size,0);
+  assert.deepEqual(snapshot.advisors.relatedInfo.map(x=>x.table).sort(),[
+    "public.analysis_request_idempotency","public.analysis_request_rate_windows"
+  ]);
+  assert.deepEqual(snapshot.advisors.securityDefinerAuthenticatedCallable.map(x=>x.name).sort(),[
+    "public.admin_has_capability","public.get_current_admin_role"
+  ]);
+  assert.equal(snapshot.advisors.cannotProveActualPrivileges,true);
+  const raw=JSON.stringify(snapshot);
+  assert.ok(!raw.includes("SUPABASE_SERVICE_ROLE_KEY"));
+  assert.ok(!raw.includes("access_token"));
+  assert.ok(!raw.includes("password"));
+});
+test("candidate catalog metadata cannot be submitted as proof of authorized SQL", () => {
+  const snapshot=JSON.parse(readFileSync(new URL(
+    "./fixtures/candidate-face-lab-catalog-20261012.json",import.meta.url),"utf8"));
+  assert.throws(()=>assessFaceLabCatalogEvidence(snapshot),/header_invalid/);
+  // The actual catalog fixture has no table ACL/function hash evidence,
+  // so it MUST NOT satisfy the stricter production-readback contract.
+  assert.ok(snapshot.tables.every(t=>!Object.hasOwn(t,"table_privileges")));
+  assert.equal(snapshot.runtimeServerConnectionVerified,false);
+});
 test("the audited source and tools cannot reach databases", () => {
   for (const relative of [
     "./migration-reconciliation-core.mjs",
