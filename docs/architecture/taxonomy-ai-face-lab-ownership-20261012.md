@@ -44,6 +44,12 @@
 - 공개 클라이언트 bundle ref 및 연결된 Supabase 후보 프로젝트가 같다는 관찰은 있었으나 **서버 runtime Production DB identity·실행 SQL 동일성은 미증명: HOLD**.
 - 읽기 전용 도구가 경고를 보고하는 것은 보안 취약점, 사용 허가 또는 운영 적용 사실의 최종 판정이 아님.
 
+## 3-1. 이어서 확보한 후보 DB 이력 증거 (같은 날짜, 별도 기준점)
+
+2026-10-12 최신 `main@12b329fbe1dee3da716e95fc983d49fe336ea766`와 연결된 후보 Supabase 프로젝트의 공식 **읽기 전용 `list_migrations`** 자료를 새로 수집했다. 저장소 SQL 145개 / 후보 이력 173건 / 버전 직접 대응 101개 / **이름만 동일한 후보 39쌍** / 미대응 5·33 / `20260824` 중복 1그룹이다. 두 데이터 소스를 같은 조사에서 다시 수집했으며, 143·171·37(10/10 스냅샷)과 144(이전 main)를 섞지 않았다. 이 결과는 **후보 DB**의 목록 비교일 뿐 서버 runtime Production identity, 실제 SQL 적용, 최종 객체·권한 일치를 증명하지 않는다.
+
+상세 근거·실행 범위: [taxonomy-ai 후보 이력 증거 2026-10-12](../evidence/taxonomy-ai-migration-candidate-readonly-20261012.md). 기존 #1209의 비교 도구는 코드 인수 대상으로 유지하며 별도 검사기를 만들지 않는다.
+
 ## 4. 작업 경계와 단일 CI 소유권
 
 **추가 대조 — 이미 존재하는 기술 책임:** `scripts/verify-database-integration-authority.mjs` 및 `docs/ci/workflow-responsibility-map.json`은 이미 `database-integration.yml`을 공통 DB/migration inventory와 non-production safety의 기술 CI 오너로 지정하고 있다. 이 검증은 로컬 파일명/버전 충돌과 이력 정책을 보호한다. #1209 비교기의 **외부에서 수집한 hosted manifest↔repo 후보 매칭, SQL SHA, CSV/증거 보존** 기능과는 서로 다른 검사 범위이다. 즉 단순 중복으로 삭제할 수 없고, 새로운 세 번째 공통 검사기를 만들 필요도 없다.
