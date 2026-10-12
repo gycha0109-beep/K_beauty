@@ -10,6 +10,7 @@
 import assert from "node:assert/strict";
 import { createHash, constants, generateKeyPairSync, privateEncrypt, sign } from "node:crypto";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
 const braces = require("braces");
@@ -36,14 +37,14 @@ function verifyOrFalse(publicKey, hash, signature) {
   }
 }
 
-function observeRsaDigestAlgorithmValidation() {
+export function observeRsaDigestAlgorithmValidation(forgeModule = forge) {
   // Ephemeral, test-only key pair. No production keys, certs, credentials or network.
   const { publicKey, privateKey } = generateKeyPairSync("rsa", {
     modulusLength: 2048, publicExponent: 65537,
   });
   const sourceDigest = createHash("sha256").update(FIXTURE_MESSAGE).digest();
   const publicKeyPem = publicKey.export({ format: "pem", type: "spki" });
-  const forgePublicKey = forge.pki.publicKeyFromPem(publicKeyPem);
+  const forgePublicKey = forgeModule.pki.publicKeyFromPem(publicKeyPem);
   const normalSignature = sign("sha256", FIXTURE_MESSAGE, {
     key: privateKey, padding: constants.RSA_PKCS1_PADDING,
   });
@@ -108,8 +109,10 @@ function observeBraceDepthBoundary() {
   };
 }
 
-const forgeObservation = observeRsaDigestAlgorithmValidation();
-const bracesObservation = observeBraceDepthBoundary();
-console.log("SUPPLY_CHAIN_RUNTIME_BOUNDARY_FORGE=" + JSON.stringify(forgeObservation));
-console.log("SUPPLY_CHAIN_RUNTIME_BOUNDARY_BRACES=" + JSON.stringify(bracesObservation));
-console.log("SUPPLY_CHAIN_RUNTIME_BOUNDARY_STATUS=OBSERVATION_ONLY canonical-npm-audit-remains-authoritative");
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const forgeObservation = observeRsaDigestAlgorithmValidation();
+  const bracesObservation = observeBraceDepthBoundary();
+  console.log("SUPPLY_CHAIN_RUNTIME_BOUNDARY_FORGE=" + JSON.stringify(forgeObservation));
+  console.log("SUPPLY_CHAIN_RUNTIME_BOUNDARY_BRACES=" + JSON.stringify(bracesObservation));
+  console.log("SUPPLY_CHAIN_RUNTIME_BOUNDARY_STATUS=OBSERVATION_ONLY canonical-npm-audit-remains-authoritative");
+}
