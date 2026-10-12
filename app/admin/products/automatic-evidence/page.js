@@ -4,6 +4,7 @@ import { ADMIN_CAPABILITIES } from "@/lib/admin/capabilities";
 import { requireAdminCapability } from "@/lib/admin/access";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { classifyAutomaticEvidenceAttention } from "@/lib/product-intelligence/automatic-evidence-daily-v1.mjs";
+import { readAutomaticEvidenceRunHealth } from "@/lib/product-intelligence/automatic-evidence-run-health-v1.mjs";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -42,6 +43,7 @@ export default async function AutomaticEvidenceInboxPage() {
   if(!access.allowed || !access.userId) notFound();
 
   let rows;
+  let runHealth;
   try {
     const client=createSupabaseAdminClient();
     if(!client) throw new Error("DATA_CONNECTION_MISSING");
@@ -50,9 +52,10 @@ export default async function AutomaticEvidenceInboxPage() {
       .order("history_id",{ascending:false}).limit(LIMIT);
     if(error || !Array.isArray(data)) throw new Error("DATA_READ_FAILED");
     rows=data;
+    runHealth=await readAutomaticEvidenceRunHealth(client);
   } catch {
     return <ResultState title="자동 평가 기록을 불러오지 못했습니다"
-      detail="데이터 연결을 확인해 주세요. 조회 실패를 '예외 없음'으로 처리하지 않습니다." />;
+      detail="평가 이력 또는 자동 실행 로그의 조회에 실패했습니다. 조회 실패를 '예외 없음'으로 처리하지 않습니다." />;
   }
 
   const seen=new Set(),latest=[];
@@ -69,6 +72,15 @@ export default async function AutomaticEvidenceInboxPage() {
     return Number.isFinite(time)&&time>last?time:last;
   },0);
   const truncated=rows.length===LIMIT;
+  const healthText={
+    unobserved:"실행 기록 없음 · 가동 상태 미확인",
+    running:"실행 중 · 완료 결과 대기",
+    interrupted:"실행 시작 후 완료 기록 없음 · 확인 필요",
+    failed:"최근 자동 실행 실패 · 확인 필요",
+    stale:"마지막 정상 실행 36시간 경과 · 확인 필요",
+    healthy:"최근 정상 실행 확인",
+    clock_error:"실행 시각 이상 · 확인 필요",
+  };
   return <div className="mx-auto max-w-5xl space-y-6">
     <header>
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#68727f]">Evidence operations</p>
@@ -78,6 +90,34 @@ export default async function AutomaticEvidenceInboxPage() {
         제품 승인·추천 편입·랭킹 수정은 실행하지 않습니다.
       </p>
     </header>
+
+    <section className={card} aria-label="자동 실행 상태">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">자동 실행 상태</h2>
+          <p className={"mt-1 "+small}>평가 내용이 아니라 별도의 실행 로그를 기준으로 표시합니다.</p>
+        </div>
+        <span role="status" className={runHealth.warning
+          ?"rounded-full border border-amber-400 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+          :"rounded-full border border-[#cbd9cb] bg-[#eff7ef] px-3 py-1.5 text-xs font-semibold text-[#236035] dark:border-[#23503a] dark:bg-[#173024] dark:text-[#a6d9b1]"}>
+          {healthText[runHealth.state]??"실행 상태 확인 필요"}
+        </span>
+      </div>
+      <dl className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div><dt className={small}>최근 실행 시작</dt><dd className="mt-1 text-sm font-semibold">{dateLabel(runHealth.lastStartedAt)}</dd></div>
+        <div><dt className={small}>마지막 정상 완료</dt><dd className="mt-1 text-sm font-semibold">{dateLabel(runHealth.lastSuccessAt)}</dd></div>
+        <div><dt className={small}>마지막 완료 기록</dt><dd className="mt-1 text-sm font-semibold">{dateLabel(runHealth.lastCompletedAt)}</dd></div>
+      </dl>
+      {runHealth.state==="unobserved" && <p className={"mt-3 "+small}>
+        운영 로그 도입 이전에 생성된 평가 이력은 자동 실행 성공으로 간주하지 않습니다.
+      </p>}
+      {runHealth.warning && <p className="mt-3 text-sm text-[#91551e] dark:text-[#f1b87d]">
+        Vercel 예약 실행 설정과 서버 연결, 최근 실패 기록을 확인해 주세요.
+      </p>}
+      {runHealth.limitedWindow && <p className={"mt-3 "+small}>
+        최근 실행 이벤트 100건만 조회했습니다. 전체 실행 이력 통계는 아닙니다.
+      </p>}
+    </section>
 
     <section className="grid gap-3 sm:grid-cols-3" aria-label="자동 평가 현황">
       <div className={card}>
@@ -126,8 +166,10 @@ export default async function AutomaticEvidenceInboxPage() {
     <section className={card}>
       <h2 className="font-semibold">운영 범위</h2>
       <p className={"mt-2 "+small}>
-        이 화면은 DB에 저장된 평가 결과만 표시합니다. Cron 실행 자체의 성공·실패를 보장하거나
-        외부 알림을 보내지는 않습니다. 마지막 평가가 오래됐다면 배포·스케줄 로그를 별도로 확인하세요.
+        평가 이력과 별도의 시작·완료 실행 로그를 조회합니다. 정상 완료 후 36시간 초과,
+        최근 실행 실패 또는 시작 후 20분 동안 완료 없음은 경고로 표시합니다.
+        예약 서비스가 요청을 보내지 않거나 DB 접속이 끊긴 경우에는 기록 자체가 없을 수 있습니다.
+        외부 알림은 발송하지 않으며, 실제 호출 경로는 Vercel 로그로 추가 확인해야 합니다.
       </p>
       <Link href="/admin/products/trust"
         className="mt-4 inline-block text-sm font-semibold underline underline-offset-4">

@@ -195,3 +195,13 @@ product_fact_current.fact_instance_id
 - 추가 DB 스키마/권한/추천 편입/RPC/관리자 필드 승인 변경 없음.
 - Production DB 현황(확인 시점): 1개 BUSHMAN first_observation, `evidence_ready=true`, 2개 verified fact, 10개 insufficient, 중요 예외 0. 이는 **첫 이력의 정상 저장**을 검증하며 Cron 호출 경로/중복 실제 실행 성공까지 자동으로 증명하지는 않음.
 - 기존 `scripts/verify-automatic-product-evidence-live-v1.mjs`에 관리자 권한, 읽기 전용, false-green 및 메뉴 접근 계약 검증 추가. 기존 Database Integration Authority 워크플로에서 실행.
+
+## 15. 3단계 C3 — Cron 성공·실패 실행 이벤트와 무실행 경고 (2026-10-12)
+
+- `public.automatic_product_evidence_run_events_v1`는 **평가 근거 이력과 별개의 append-only 실행 감사 테이블**이다. 시작/성공/실패를 별개 event로 기록하며 `run_id`와 고정 계약 버전, DB 수신 시각, 제한된 카운트와 비민감 오류 코드만 저장한다. 민감한 CRON_SECRET, 예외 원문, 제품 근거·승인 데이터는 저장하지 않는다.
+- DB는 RLS/FORCE와 service_role 전용 SELECT/INSERT로 보호된다. anon/authenticated 접근, service_role UPDATE/DELETE는 금지. (run_id,event_kind) 중복, 한 run의 복수 성공/실패 종료 이벤트는 유니크 인덱스로 거절한다. DB count check로 플래그/카운트 오염을 거부한다.
+- 기존 Cron 라우트는 **인증 및 명시적 활성화 통과 후** `crypto.randomUUID()`로 `run_id`를 만들고, 시작 이벤트 DB INSERT가 성공하지 않으면 평가를 **시작하지 않고 503**으로 종료한다. 평가 성공 시 성공 종료 이벤트, 평가 실패 시 실패 종료 이벤트를 기록한다. 종료 이벤트 기록 실패는 최종 503으로 반환하며 DB에 남은 미종료 시작 이벤트가 경고로 분류된다.
+- 정기 실행의 현재 범위는 기존 1개 BUSHMAN allowlist다. 정상적 근거 부족 10개는 실패로 세지 않는다. 멱등 중복 재평가도 `duplicate_count`로 실행 성공 이력에 저장된다. product/admission/ranking/admin review 변경은 여전히 0.
+- 관리자 `/admin/products/automatic-evidence` 페이지는 기존 PRODUCTS_REVIEW 검증 후 **두 저장소**를 읽는다. 실행 상태 분류: 새 run 이벤트가 없으면 `unobserved`(초기/비활성/무실행 판단 유보); 현재 미완료 시작 <=20분이면 `running`; >20분이면 `interrupted` 경고; 최근 종료 실패면 `failed` 경고; 마지막 정상 성공 뒤 **36시간 초과**면 `stale` 경고; 마지막 정상 성공이 36시간 이내면 `healthy`다. 조회 실패는 전체 오류로 처리하며 정상/예외 없음으로 숨기지 않는다.
+- 평가 이력과 실행 로그는 **별개 진실**이다. 기존 `first_observation` 1건을 실행 로그 도입 이후의 정기 호출 성공으로 소급하지 않는다. Vercel이 Cron 호출을 보내지 않거나 DB 접속이 불가한 경우 신호가 없을 수 있으며, 36시간 지나기 전 `unobserved` 경고가 선행된다. 전용 외부 이메일/푸시는 본 범위에 없다.
+- 운영 DB 마이그레이션은 GitHub 병합 후 **동일 SQL**을 Supabase Migration으로 적용한다. 운영 DB에 테스트 가짜 성공/실패 기록을 삽입하지 않는다. CI의 독립 PostgreSQL 17 fixture는 트랜잭션 전체 롤백을 검사한다.

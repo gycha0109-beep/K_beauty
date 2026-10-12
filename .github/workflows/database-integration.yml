@@ -45,6 +45,9 @@ on:
       - "lib/product-intelligence/automatic-evidence-history-candidate-v1.mjs"
       - "lib/product-intelligence/automatic-evidence-history-store-v1.mjs"
       - "lib/product-intelligence/automatic-evidence-daily-v1.mjs"
+      - "lib/product-intelligence/automatic-evidence-run-health-v1.mjs"
+      - "scripts/verify-automatic-evidence-run-health-v1.mjs"
+      - "tests/fixtures/automatic-evidence-history-v1/20_run_events_pg17.sql"
       - "app/api/internal/automatic-evidence-daily/route.js"
       - "app/api/admin/products/automatic-evidence/exceptions/route.js"
       - "app/admin/products/automatic-evidence/page.js"
@@ -105,6 +108,9 @@ on:
       - "lib/product-intelligence/automatic-evidence-history-candidate-v1.mjs"
       - "lib/product-intelligence/automatic-evidence-history-store-v1.mjs"
       - "lib/product-intelligence/automatic-evidence-daily-v1.mjs"
+      - "lib/product-intelligence/automatic-evidence-run-health-v1.mjs"
+      - "scripts/verify-automatic-evidence-run-health-v1.mjs"
+      - "tests/fixtures/automatic-evidence-history-v1/20_run_events_pg17.sql"
       - "app/api/internal/automatic-evidence-daily/route.js"
       - "app/api/admin/products/automatic-evidence/exceptions/route.js"
       - "app/admin/products/automatic-evidence/page.js"
@@ -191,6 +197,8 @@ jobs:
 
       - name: Verify live read-only product evidence adapter and fail-closed source bindings
         run: node scripts/verify-automatic-product-evidence-live-v1.mjs
+      - name: Verify separate automatic execution health and fail-closed alert states
+        run: node scripts/verify-automatic-evidence-run-health-v1.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
@@ -317,6 +325,11 @@ jobs:
           grep -Fq "AUTOMATIC_EVIDENCE_HISTORY_PG17_ROLLBACK_PASS" "${RUNNER_TEMP}/automatic-history-pg17.log"
           test "$(psql -Atqc "select count(*) from public.automatic_product_evidence_history_v1")" = "0"
           echo "AUTOMATIC_EVIDENCE_HISTORY_ISOLATED_PG17_PASS"
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012043000_taxonomy_ai_automatic_evidence_run_events_v1.sql
+          psql -v ON_ERROR_STOP=1 -f tests/fixtures/automatic-evidence-history-v1/20_run_events_pg17.sql | tee "${RUNNER_TEMP}/automatic-run-pg17.log"
+          grep -Fq "AUTOMATIC_RUN_PG17_ROLLBACK_PASS" "${RUNNER_TEMP}/automatic-run-pg17.log"
+          test "$(psql -Atqc "select count(*) from public.automatic_product_evidence_run_events_v1")" = "0"
+          echo "AUTOMATIC_EVIDENCE_RUN_EVENTS_ISOLATED_PG17_PASS"
       - name: Verify exact-head diff hygiene
         shell: bash
         run: git diff --check HEAD^
