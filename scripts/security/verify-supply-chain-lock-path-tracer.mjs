@@ -104,6 +104,6 @@ const unknownResult=traceSupplyChainLockGraph(unknown);
 assert.equal(unknownResult.unresolvedDependencyEdges,1);
 assert.ok(unknownResult.unresolvedDependencyExamples.some(x=>x.dependency==="optionalPlatformOnly"));
 
-console.log(JSON.stringify({status:"PASS",stage:"SEC_SCA_LOCK_PATH_TRIAGE",fixtures:9,
+console.log(JSON.stringify({status:"PASS",stage:"SEC_SCA_LOCK_PATH_TRIAGE",fixtures:10,
   analyzedAdvisories:2,knownAffectedReachable:2,expiryPolicyChanged:false,
   auditGateDisabled:false,productionWrites:0}));
