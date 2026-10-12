@@ -66,7 +66,10 @@ export async function probeTrustP2CProduct({
       ...base,status:detected.status,
       pageDigest:detected.sha256,bytesRead:page.bytes.length,
       identitySurface:detected.identitySurface,
-      metadataTitleMatched:detected.status!=="IDENTITY_UNRESOLVED",
+      metadataTitleMatched:["STRUCTURED_NAME_CANDIDATE","TITLE_NAME_CANDIDATE"]
+        .includes(detected.status),
+      scopedProductHeadingCandidate:detected.status==="SCOPED_HEADING_CANDIDATE",
+      bodyMentionOnly:detected.status==="BODY_NAME_MENTION_ONLY",
       knownNameVisibleInNonScriptText:knownNameVisible,
       evidenceAdmissionAuthorized:false,
       sourceLocator:VERIFIED_BASELINE.locator,
