@@ -18,8 +18,6 @@ on:
       - "scripts/verify-trust-p2c-robots-smoke.mjs"
       - "scripts/trust-p2c-known-product-smoke.mjs"
       - "scripts/verify-trust-p2c-known-product-smoke.mjs"
-      - ".github/workflows/trust-p2c-known-product-live.yml"
-      - ".github/workflows/trust-p2c-official-robots-live.yml"
       - "lib/trust/official-peer-index-links-v1.mjs"
       - "lib/trust/official-discovery-observation-store-v1.mjs"
       - "scripts/verify-trust-p2b-official-observation-v1.mjs"
