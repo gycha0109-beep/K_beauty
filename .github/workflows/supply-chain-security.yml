@@ -86,6 +86,7 @@ jobs:
           node scripts/security/verify-supply-chain-call-site-scanner.mjs
           node scripts/security/report-supply-chain-call-sites.mjs
           node scripts/security/report-supply-chain-runtime-boundaries.mjs
+          node scripts/security/verify-node-forge-upstream-patch-isolation.mjs
 
       - name: Audit dependency vulnerabilities
         run: node scripts/verify-supply-chain-audit.mjs
