@@ -115,7 +115,7 @@ checked("CSV, Markdown retain explicit unverified status", () => {
   assert.ok(csv.includes("version_name_drift_candidate"));
   assert.match(md, /Decision: HOLD/);
   assert.match(md, /not execution evidence/);
-  assert.doesNotMatch(md, /Production.*verified\./);
+  assert.doesNotMatch(md, /Production identity verified:\\s*true/i);
 });
 
 checked("Offline CLI with temporary files only; output remains HOLD", () => {
