@@ -142,6 +142,7 @@ assert.match(sql,/REVOKE ALL ON public\.admin_product_correction_evidence_verdic
 assert.match(sql,/GRANT EXECUTE ON FUNCTION public\.decide_r16i_product_correction_v1/);
 assert.match(sql,/SECURITY INVOKER/);
 assert.match(sql,/R16I_UNVERIFIED_EVIDENCE/);
+assert.match(sql,/R16I_TWO_SOURCE_EVIDENCE_REQUIRED/);
 assert.match(sql,/FOR UPDATE/);
 assert.match(sql,/R16I_PRODUCT_REVISION_DRIFT/);
 assert.match(sql,/R16I_SCOPE_COLLISION/);
