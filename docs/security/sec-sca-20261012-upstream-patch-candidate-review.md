@@ -70,7 +70,8 @@
 | 정확한 upstream 수정 source SHA/diff | 확인 | 확인 |
 | 승인 가능한 배포 아티팩트 및 integrity | UNKNOWN | UNKNOWN |
 | BEJEWELY lockfile 전체 영향 검증 | NOT_RUN | NOT_RUN |
-| 정상/비정상 입력 회귀 테스트 | NOT_RUN | NOT_RUN |
+| 격리 지정 fixture 동작 회귀 | **PASS** (정상 RSA·오류 메시지·ASN.1 추가 요소) | **PASS** (정상 glob·중첩 파서·AST compile·maxDepth) |
+| Upstream 전체 단위 테스트/배포 통합 테스트 | NOT_RUN | NOT_RUN |
 | Expo 57/Metro/Android 호환성 | NOT_RUN | NOT_RUN |
 | 설치 artifact와 앱 패키지에 동일 취약 코드 부재 | NOT_RUN | NOT_RUN |
 | npm audit full+production HIGH 0 | FAIL (현 상태) | FAIL (현 상태) |
@@ -83,3 +84,27 @@
 1. Upstream patch release / GHSA metadata를 주기적으로 새로 조회하고 상태 변경 시 각 SHA, 패키지 버전, tarball integrity를 Ledger에 남긴다.
 2. 실제 후보를 승인할 수 있으면 **독립 Security 실험 브랜치**에서 lockfile을 npm resolver로 생성하고 `npm ci` 및 설치 코드/원본 audit를 비교한다. `npm audit fix --force`나 타 트랙 파일 수정 금지.
 3. 두 Advisory의 원인 코드가 모두 제거된 때에만 무예외 audit v2와 mutation guard 동시 교체. 그 전에 PR #1240 Draft/HOLD 및 #1208 OPEN.
+
+## 7. BEJEWELY 독립 실행 검증 결과 — 2026-10-12
+
+**실행 SHA:** `19ab597ec5ff0d1f8a874c31d7ddda7e696be1ad`. **보안 CI:** [#38228717035](https://github.com/gycha0109-beep/K_beauty/actions/runs/38228717035). 이 기록의 PASS는 **임시 복사본의 제한된 동작 검증**에 한정되며, 원래 Supply Chain 감사는 예외 만료로 의도대로 FAIL이다.
+
+### 기존 설치 패키지의 실제 경계
+
+- `node-forge@1.4.0`: 임시 RSA-2048 키로 정상 서명 수용/다른 메시지 서명 거부. 그러나 DigestAlgorithm 시퀀스의 비정상 추가 ASN.1 요소가 있는 서명은 수용. 실제 설치 코드의 parser gap을 확인한 것이며, 개인키 없는 외부 위조나 공격자 입력 도달을 입증한 것은 아니다.
+- `braces@3.0.3`: 최대 500자 미만의 중첩 깊이 110 입력을 수용. stack-exhaustion이 아닌 낮은 부하의 경계 동작 관찰이다.
+
+### 임시 패치 복사본 실험
+
+- `node-forge`: `scripts/security/verify-node-forge-upstream-patch-isolation.mjs`가 설치된 1.4.0의 라이브러리를 OS 임시 폴더에 복사하고 upstream [PR #1152](https://github.com/digitalbazaar/forge/pull/1152) HEAD `ceba34402e329f0365134f23fe19898756527d65`의 검토된 `lib/rsa.js` 조건만 수정했다. 변경 전 비정상 ASN.1 요소 수용 → 변경 후 거부; 정상 RSA 검증과 다른 메시지 거부는 그대로다. 출력: `SCA_FORGE_PATCH_ISOLATION=ISOLATED_CANDIDATE_BEHAVIOR_PASS`.
+- `braces`: `scripts/security/candidates/braces-pr72-library.patch.b64`에 upstream [PR #72](https://github.com/micromatch/braces/pull/72) HEAD `28d440b5dd449dbf1fe6f3506cf94ecca4d02660`의 라이브러리 5개 파일 diff를 손실 없이 고정했다. `verify-braces-upstream-patch-isolation.mjs`에서 임시 복사본에만 적용해 정상 glob 결과 동등, depth 110 parser 거부, depth 101 compile AST 거부, caller `maxDepth` 반영을 확인했다. 출력: `SCA_BRACES_PATCH_ISOLATION=ISOLATED_CANDIDATE_BEHAVIOR_PASS`.
+- Unified diff의 context lines는 공백 1자 줄을 포함하므로 GitHub `git diff --check`와 충돌하지 않도록 Base64로 저장하고 임시 디렉터리에서만 복원한다. **실제 node_modules, package-lock, 감사 예외, baseline 또는 배포 설정은 변경하지 않았다.**
+
+### 여전히 필요한 SCA-3 선행 조건
+
+1. 공식 패치 release 또는 Security 검토를 마친 provenance/무결성 확보 배포본. 임시 패치 복사본은 배포 가능한 npm 패키지 승인이 아니다.
+2. `braces`의 Expo/Metro watcher와 Tailwind/chokidar/fast-glob 경로 호환성·전체 upstream suite. `node-forge`의 Expo code-signing 및 인증서 생성·검증 정상/비정상 입력 호환성·전체 suite.
+3. 모든 root/nested lock 경로, 실제 npm 설치·Android 빌드/실행, full/prod 원본 audit HIGH=0 증거.
+4. 이후에만 만료 예외 제거 및 무예외 fail-closed 감사 v2/변형 검사 동시 전환. 그 전까지 **#1240 Draft/HOLD, #1208 OPEN**.
+
+**주의:** 이 실험 PASS는 공식 CVE 해결·운영 패치·감사 PASS가 아니며, override/alias/advisory 은폐 또는 만료일 연장은 불허한다.
