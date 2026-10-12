@@ -115,3 +115,13 @@ node scripts/trust-p2-official-discovery.mjs --product-id=<uuid> --execute --per
 ```
 
 **P2 remaining:** Record genuine live site/robots success under permitted policies; improve catalog-index coverage (many official pages render navigation only in JavaScript); add independent exact SKU, market and formulation attestation and guard source admission through the existing governed workflow, then schedule bounded operations. P1 machine Subject creation remains DISABLED pending a separate authorization review and canary.
+
+## P2-C initial live site policy measurement (2026-10-12)
+
+Production seed selected: Torriden's governed brand URL `https://www.torriden.com/goods/goods_view.php?goodsNo=136`. External web page lookup showed a historic public product page, **not** proof the current TRUST HTTP runner could access it. Direct container DNS attempts and web lookup of `/robots.txt` and `/sitemap.xml` were unsuccessful. The site terms include restrictions on commercial reproduction of protected content; do not copy proprietary page materials.
+
+This task introduces a **single origin, single request** GitHub Actions live smoke probe for `https://www.torriden.com/robots.txt`, triggered by main push of its own files or manually. It requires no Supabase or commercial APIs, does not fetch a sitemap or product page, and cannot create or update Subject / Fact / product source evidence. `scripts/trust-p2c-robots-smoke.mjs` uses the existing SSRF-safe, 10-second HTTP transport and same-origin redirect rejection; it records robots policy access, crawl-delay hold and whether the sitemap and numeric product paths would be allowed *if later approved*. Read failures become explicit HOLD states, never permission to crawl.
+
+This is **only the P2-C policy and connectivity gate**, not proof of actual target product collection. A subsequent guarded pilot may retrieve one official product page only if site policies, current robots response and operational authorization permit; capture objective metadata and a hash only, not long copyrighted content. Measure completed sample coverage separately.
+
+Exit conditions for full P2-C remain: at least one permitted real product page fetched with exact origin and target SKU identity, explicit robots/terms record, provenance digest, and zero unapproved authority writes. If the site is unavailable, record the block and evaluate another official brand without bypassing robots.
