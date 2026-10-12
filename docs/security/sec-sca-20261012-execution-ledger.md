@@ -106,3 +106,12 @@ Security workflow [run #38223030217](https://github.com/gycha0109-beep/K_beauty/
 - [ ] 실제 dependency fix 이후 무예외 감사 정책 v2, final CI, merge, #1232/#1233 handoff.
 
 **최종 현재 판정: VULNERABILITY_REMEDIATION=NOT_ATTESTED / SECURITY_GATE=FAIL(HOLD).** 예외 연장, 신규 허용 목록, overrides, 대규모 SDK 교체, 운영 변경은 수행하지 않았다.
+
+## 7. SCA-1 진단 보수 및 SCA-2 패치 후보 비교 (추가 실행)
+
+- **Lockfile tracer의 범위 판정 오류 보수:** 기존 구현은 `braces@3.0.3` / `node-forge@1.4.0` 버전 완전 일치만 `knownAffectedReachable=true`로 인식해, 공식 Advisory상 여전히 영향받는 더 낮은 버전을 놓칠 수 있었다. 실제 패치에서 기준 버전 **이하의 안정적인 x.y.z 세그먼트 비교**로 전환했으며, 프리릴리스·불명확 버전은 `UNKNOWN_VERSION_REQUIRES_AUDIT` 및 `unknownVersionReachablePaths`로 표시한다. 수정은 읽기 전용 tracer에서만 이루어졌고 canonical `npm audit` 및 예외 정책은 그대로다.
+- **부정/경계 fixture 확장:** `braces@3.0.2`와 `node-forge@1.3.9`가 영향받음, `3.0.4-preview.1`·`unparsed`·매우 큰 세그먼트 버전이 UNKNOWN, 임시 정상 상위 버전은 **단지** `NO_KNOWN_AFFECTED_VERSION_DETECTED_REQUIRES_AUDIT`라는 해석 등 총 10개 scenario. `scripts/security/verify-supply-chain-lock-path-tracer.mjs`에서 검증.
+- **실제 공개 수정 후보 소스 검토:** [별도 SCA-2 후보 평가](sec-sca-20261012-upstream-patch-candidate-review.md) 작성. `braces` PR [#72](https://github.com/micromatch/braces/pull/72) (head `28d440b5...`, CLOSED/NOT MERGED, AST 재귀 제한), `node-forge` PR [#1152](https://github.com/digitalbazaar/forge/pull/1152) (head `ceba3440...`, OPEN/NOT MERGED, DigestAlgorithm child-count 엄격화). 두 PR의 실제 source patch를 비교했으나 **공식 보안 패치 배포본이 아니고, 프로젝트에 적용하거나 정상 설치/Android를 검증하지 않았다.**
+- 정확한 코드 실험은 **해당 HEAD의 CI 로그 검수 이후** PASS로 기록한다. 문서 변경 이후의 재실행/취소는 따로 구분한다.
+- **SCA-3 진입 불가:** 두 Advisory의 공급망이 동시에 깨끗해지고 안전한 npm 패키지·무결성·호환성이 입증된 후보 없음. 임의 override/lockfile 수정/expired exception 연장/범위 확대하지 않았다.
+
