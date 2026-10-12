@@ -4,7 +4,7 @@
  * always robots first. No database, no store, no page text disclosure.
  * Product baseline comes from existing governed exact-subject binding.
  */
-import { createHash } from "node:crypto";
+import { normalizeSemanticTextV1 } from "../lib/trust/official-source-semantic-adapter.mjs";
 import { pathToFileURL } from "node:url";
 import { appendFileSync } from "node:fs";
 import { fetchOfficialBytes } from "../lib/trust/official-source-fetch.mjs";
@@ -54,11 +54,21 @@ export async function probeTrustP2CProduct({
     if(page.finalUrl!==VERIFIED_BASELINE.locator||page.bytes.length>maxBytes)
       throw Error("TRUST_P2C_PRODUCT_SCOPE_INVALID");
     const detected=classifyTrustOfficialCandidatePage(page.bytes,VERIFIED_BASELINE);
+    // Diagnostic only: a product name in generic visible page text is NOT
+    // eligible evidence or verification for an unknown/new product SKU.
+    // Exclude non-visible script/style/template content before checking.
+    const visible=normalizeSemanticTextV1(page.bytes.toString("utf8")
+      .replace(/<!--[^]*?-->/g," ")
+      .replace(/<(script|style|noscript|template|svg)\\b[^>]*>[^]*?<\\/\\1\\s*>/gi," ")
+      .replace(/<[^>]+>/g," "));
+    const knownNameVisible=visible.includes(VERIFIED_BASELINE.name);
     return {
       ...base,status:detected.status,
       pageDigest:detected.sha256,bytesRead:page.bytes.length,
       identitySurface:detected.identitySurface,
       metadataTitleMatched:detected.status!=="IDENTITY_UNRESOLVED",
+      knownNameVisibleInNonScriptText:knownNameVisible,
+      evidenceAdmissionAuthorized:false,
       sourceLocator:VERIFIED_BASELINE.locator,
       requests:2,
     };
