@@ -65,11 +65,11 @@ export async function runTrustP2CCommand(args=process.argv.slice(2)){
   const result=await probeTrustP2CRobots({execute,fetchRobots});
   if(process.env.GITHUB_STEP_SUMMARY){
     appendFileSync(process.env.GITHUB_STEP_SUMMARY,
-      "### TRUST P2-C actual robots policy probe\\n"+
-      "- Site: "+result.origin+"\\n"+
-      "- Status: **"+result.status+"**\\n"+
-      "- Product page requests: **0**\\n"+
-      "- Product evidence / Subject / Fact promotion: **0**\\n");
+      "### TRUST P2-C actual robots policy probe\n"+
+      "- Site: "+result.origin+"\n"+
+      "- Status: **"+result.status+"**\n"+
+      "- Product page requests: **0**\n"+
+      "- Product evidence / Subject / Fact promotion: **0**\n");
   }
   return result;
 }
