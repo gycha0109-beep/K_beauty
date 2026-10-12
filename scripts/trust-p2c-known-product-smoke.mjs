@@ -59,7 +59,7 @@ export async function probeTrustP2CProduct({
     // Exclude non-visible script/style/template content before checking.
     const visible=normalizeSemanticTextV1(page.bytes.toString("utf8")
       .replace(/<!--[^]*?-->/g," ")
-      .replace(/<(script|style|noscript|template|svg)\\b[^>]*>[^]*?<\\/\\1\\s*>/gi," ")
+      .replace(/<(script|style|noscript|template|svg)\b[^>]*>[\s\S]*?<\/\1\s*>/gi," ")
       .replace(/<[^>]+>/g," "));
     const knownNameVisible=visible.includes(VERIFIED_BASELINE.name);
     return {
