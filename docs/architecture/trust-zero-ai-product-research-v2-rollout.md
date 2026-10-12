@@ -125,3 +125,13 @@ This task introduces a **single origin, single request** GitHub Actions live smo
 This is **only the P2-C policy and connectivity gate**, not proof of actual target product collection. A subsequent guarded pilot may retrieve one official product page only if site policies, current robots response and operational authorization permit; capture objective metadata and a hash only, not long copyrighted content. Measure completed sample coverage separately.
 
 Exit conditions for full P2-C remain: at least one permitted real product page fetched with exact origin and target SKU identity, explicit robots/terms record, provenance digest, and zero unapproved authority writes. If the site is unavailable, record the block and evaluate another official brand without bypassing robots.
+
+## P2-C: official visible identity signals (2026-10-12)
+
+Live known Torriden sunscreen pilot (PR #1247/#1248) fetched 176,341 bytes from the pre-governed exact official URL. Existing Product JSON-LD/title matcher reported `IDENTITY_UNRESOLVED`, but the target name appeared in non-script body text. Such occurrence alone is not evidence of exact SKU identity, market or formulation.
+
+The new read-only extraction path `official-visible-identity-v1.mjs` checks a bounded product H1/product-name-class heading separately from a generic body mention. It excludes script/template/style content and unrelated links before testing. The decision outputs `SCOPED_HEADING_CANDIDATE` (scoped element) or `BODY_NAME_MENTION_ONLY` (incidental diagnostic). Both have `identityAuthority=NONE`, subject/Fact confirmation disabled and market/formulation verification false. Original JSON-LD and page-title signals retain their priority.
+
+The existing pre-Subject unverified observation ledger, not Product Fact Current or the governed TRUST observations, now permits these explicitly typed candidate dispositions through a limited migration. PostgreSQL 17 checks enforce surface-to-disposition mapping and unchanged append-only RLS rights. A matching body mention is NOT a positive source authorization and must never create a Product Fact Subject.
+
+Next gate: live P2-C recheck on same previously governed known product (two GET requests, robots first), then test separate unknown SKUs with independent official product/market/formulation evidence before source binding or Subject creation. No automatic admission.
