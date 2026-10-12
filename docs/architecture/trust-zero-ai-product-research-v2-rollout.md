@@ -68,3 +68,25 @@ Next gated implementation:
 1. Controlled P2 site robots/terms-aware sitemap fetch and product-level URL candidate matching; use the existing SSRF-safe fetcher with bounded budget. No source binding until exact target identity and market/formulation checks.
 2. P1 brand/market identity authority from verified content; do NOT infer market=KR from catalog language or a Hwahae URL.
 3. Any system Subject-creation authorizer must undergo its own Shadow→Canary authority and audit gate. It is **not** enabled by this PR.
+
+## P2-A policy-gated official sitemap discovery (2026-10-12)
+
+P2-A is a **bounded, read-only operational pilot** on top of the 25-product P1 same-brand discovery frontier. It is not the P2 final product-source admission, full catalog scheduler, or automated Subject registration.
+
+- Code: `lib/trust/official-product-discovery-p2-v1.mjs` uses the existing `official-source-rediscovery.mjs`, `official-source-fetch.mjs` SSRF-safe HTTP transport, source HTML semantics adapter, and P1 same-brand frontier.
+- CLI: `scripts/trust-p2-official-discovery.mjs` reads only existing exact/equivalent official lineage of **another product** at the same canonical brand. Running without `--execute` makes no external network requests; `--execute` additionally requires `TRUST_P2_LIVE_DISCOVERY_ENABLED=true`.
+- Per selected product: maximum 2 first-party origins, at most 2 requested sitemaps and 2 candidate product pages per origin. The sitemap worker may process up to 2 nested sitemap URLs within the same 2-fetch budget. HTTP transport has a per-request timeout, 2 MiB body cap, DNS/private-IP guard, same-origin request enforcement and no redirect following.
+- Site policy: `robots.txt` is fetched before either sitemap or product page; missing/unreadable robots blocks the site. A matching positive crawl-delay blocks the site until a pacing scheduler is implemented. Allow/Disallow wildcards, user-agent specificity and longest path are checked; disallowed pages are never fetched. Site-specific terms/licensing require operations review before real scanning.
+- Findings: candidate URL, SHA-256 of fetched bytes, extracted product JSON-LD name or page-title match, and explicit `marketVerified=false`, `formulationVerified=false`, `subjectCreationAuthorized=false`. A matching name is **not** a verified formulation; no Candidate is promoted, no source binding/Subject/Fact/recommendation writes and no AI API calls.
+- Do not falsely claim production collection: P2-A ships a callable, gated CLI plus deterministic fixture tests. Automatic scheduling, durable persisted discovery snapshots with provenance and repeat deduplication, validated exact-SKU/market/formulation binding, and administrator exception workflows remain further P2/P1 work.
+
+Manual operator usage (one product only, intentionally no credential values in output):
+
+```bash
+node scripts/trust-p2-official-discovery.mjs --product-id=<uuid>
+TRUST_P2_LIVE_DISCOVERY_ENABLED=true node scripts/trust-p2-official-discovery.mjs --product-id=<uuid> --execute
+```
+
+Never set the live flag on scheduled public endpoints or the default production environment without an approved source/robots/terms review. Output is read-only JSON and is not a governed Product Fact candidate.
+
+**Acceptance remaining:** Per-brand permitted-site policy + robots/terms review, a repeatable read-only live pilot, exact market/formulation identity adjudication, and provenance-preserving durable observation storage under a governed writer. Do not auto-approve a Source Binding or Subject.
