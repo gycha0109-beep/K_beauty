@@ -163,6 +163,7 @@ Android 네이티브 빌드는 격리된 작업 환경에서 적절한 SDK/JDK�
 - **taxonomy-ai:** #1232 DB 마이그레이션 진단 및 관련 own CI. Security 오너가 기능 코드를 손대지 않음.
 - **face-research:** #1233 Face Lab 상품 연결 및 own CI. Security 오너가 기능 코드를 손대지 않음.
 - **Watchtower:** CI 귀속 메타데이터 기록만. `PASS`를 재판정하거나 실패 gate를 중복·대체하지 않음.
+- **기존 CI 책임 맵과의 차이:** `docs/ci/workflow-responsibility-map.md`의 2026-10-12 canonical Track Key 열거에는 `security`가 없다. 이 이관문의 명시적 `Watchtower-Track: security` 요구와 불일치하므로, Watchtower 운영 오너에게 **별도의 귀속 정책 확인/키 등록 판단**이 필요하다. 이 보수 작업에서 공유 CI 책임 맵·워크플로를 임의로 재분류하거나 신규 CI를 만들지 않는다.
 - **병합 순서:** Security PR의 실제 취약점 해결 + 전체 승인 → main 반영 확인 → #1232/#1233 각각 최신 main 동기화 → 각 PR 최종 HEAD의 소유 검증과 공용 Security CI 재실행 → 각각 별도 병합 판단. #1240의 진단 보호 PASS는 선행 Security fix가 아님.
 
 ## 7. HOLD 및 에스컬레이션
