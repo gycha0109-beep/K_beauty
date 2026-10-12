@@ -46,6 +46,13 @@
 
 ## 4. 작업 경계와 단일 CI 소유권
 
+**추가 대조 — 이미 존재하는 기술 책임:** `scripts/verify-database-integration-authority.mjs` 및 `docs/ci/workflow-responsibility-map.json`은 이미 `database-integration.yml`을 공통 DB/migration inventory와 non-production safety의 기술 CI 오너로 지정하고 있다. 이 검증은 로컬 파일명/버전 충돌과 이력 정책을 보호한다. #1209 비교기의 **외부에서 수집한 hosted manifest↔repo 후보 매칭, SQL SHA, CSV/증거 보존** 기능과는 서로 다른 검사 범위이다. 즉 단순 중복으로 삭제할 수 없고, 새로운 세 번째 공통 검사기를 만들 필요도 없다.
+
+- **도메인/데이터 책임:** taxonomy-ai가 migration reconciliation 결과·미대응 분류·일관성의 단일 주책임.
+- **공통 기술 CI 실행 주책임:** 현재 `database-integration.yml`을 유지. `face-lab-v2-foundation.yml`에서 실행하는 기존 #1209 검사는 현재로서는 보존해야 한다.
+- **통합 조건:** #1209 코드가 main에 통합되고 database-integration에 동일한 기능·실패 모드·fixture가 정상 편입되며 동일 HEAD에서 통과하는 것을 확인하기 전까지 Face Lab CI 경로를 제거하지 않는다. 이동·실행 중복 제거는 그때 한 번만 실시한다.
+- **오래된 기준:** `docs/ci/database-integration-authority.json`에 남아 있는 Production 관찰 수치는 당시 감사의 기록이며 2026-10-12 현재 DB 실제 이력으로 사용하지 않는다.
+
 1. **migration inventory / version compare / candidate-only reconciliation:** taxonomy-ai가 검증 책임. #1209의 기존 verifier를 재사용하고 Face Lab Foundation의 현재 실행 연결을 보존한다. 후속 통합 검토 없이 `database-integration.yml` 또는 새로운 taxonomy 전용 workflow에 같은 검사를 추가하지 않는다.
 2. **Face Lab 객체 expectation / fail-closed 소비:** face-research가 현재 Face Lab verifier를 유지. taxonomy-ai는 필요한 공통 메타데이터 증거 형식만 협의.
 3. **공급망·권한 검사:** Security의 `supply-chain-security.yml`·Security Boundary 책임. 다른 트랙에서 예외를 연장하거나 skip하지 않는다.
