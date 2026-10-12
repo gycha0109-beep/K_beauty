@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import R16IR4D8RefreshControls from "./R16IR4D8RefreshControls";
+import R16IR4D8PrivateEvidence from "./R16IR4D8PrivateEvidence";
 
 const issueUrl = "https://github.com/gycha0109-beep/K_beauty/issues/1204";
 const brandUrl = "https://www.snature.kr/product/detail.html?product_no=151";
@@ -297,6 +298,7 @@ export default function R16ICorrectionEvidenceWorkbench({ review: initialReview 
               </button>
               <span role="status" className={"text-xs leading-5 " + muted}>{copyState || "저장·검증·승인 기능은 제공하지 않습니다."}</span>
             </div>
+            <R16IR4D8PrivateEvidence blocked={blocked} />
           </section>
 
           <section className={card + " p-4 sm:p-5"}>
