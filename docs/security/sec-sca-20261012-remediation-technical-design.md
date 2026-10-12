@@ -247,6 +247,7 @@ report PASS only after all assertions
 - `continue-on-error`, 조건부 스킵, baseline/timeout을 느슨하게 바꾸지 않는다.
 - 관련 보안 회귀를 테스트 명령에 연결할 때 동일 워크플로 안에서 실행한다. 새로운 세대별 CI workflow를 만들지 않는다.
 - GitHub Actions `pull_request` paths filter가 문서 전용 변경을 생략할 수 있으므로 **변경된 보안 PR HEAD에서 실제 실행됐는지** 확인한다.
+- `docs/ci/workflow-responsibility-map.md`의 현재 canonical Track Key 열거에는 `security`가 빠져 있다. 보안 이관문이 요구하는 `Watchtower-Track: security`와의 차이를 기록하고 Watchtower 정책 오너에게 귀속 여부를 확인한다. **공유 기술 CI를 security 전용으로 영구 재분류하지 않는다.**
 
 ## 7. 명령과 검증 매트릭스
 
