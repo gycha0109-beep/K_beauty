@@ -176,6 +176,7 @@ const consolidatedOnlyScripts = [
   "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-d2-source-readiness-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-d3-correction-dryrun-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-d4-live-operator-review-v1.mjs",
+  "scripts/product-evidence/verify-barrier-support-p1-r16i-r4-d5-admin-evidence-workbench-v1.mjs",
   "scripts/product-evidence/verify-barrier-support-p1-r16g-visual-content-audit-v1.mjs",
 ];
 
