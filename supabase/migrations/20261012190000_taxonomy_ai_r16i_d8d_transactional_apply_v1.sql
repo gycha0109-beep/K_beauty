@@ -282,7 +282,7 @@ $$;
 CREATE FUNCTION public.r16i_d8d_rollback_v1(
   p_application_id uuid, p_actor_id uuid, p_request_id uuid
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
-AS $
+AS $r16i_rollback$
 DECLARE
   a public.admin_r16i_correction_applications_v1%ROWTYPE;
   p public.products%ROWTYPE;
@@ -338,7 +338,7 @@ BEGIN
     'productId',a.product_id,'restoredRevision',restored.updated_at,
     'productWrites',1,'offerDeletes',1,'rankingWrites',0,'subjectWrites',0);
 END;
-$$;
+$r16i_rollback$;
 ALTER TABLE public.admin_r16i_correction_release_gate_v1 ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON FUNCTION public.r16i_d8d_apply_v1(uuid,uuid,uuid,text),
  public.r16i_d8d_rollback_v1(uuid,uuid,uuid) FROM PUBLIC,anon,authenticated;
