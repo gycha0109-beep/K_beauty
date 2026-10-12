@@ -32,12 +32,17 @@ const rootPackageTriggers = [
 // approved robots-only probe performs unique bounded live network behavior.
 // The exemption is an exact filename, never a prefix or a general wildcard.
 const approvedTrustRobotsProbe = "trust-p2c-official-robots-live.yml";
+const approvedTrustKnownProductProbe = "trust-p2c-known-product-live.yml";
+const approvedIndependentTrustProbes = new Set([
+  approvedTrustRobotsProbe,
+  approvedTrustKnownProductProbe,
+]);
 const historicalTrustWorkflows = readdirSync(".github/workflows")
   .filter(
     (name) =>
       /^trust-p\d/i.test(name) &&
       /\.ya?ml$/i.test(name) &&
-      name !== approvedTrustRobotsProbe,
+      !approvedIndependentTrustProbes.has(name),
   );
 assert.deepEqual(
   historicalTrustWorkflows,
@@ -95,6 +100,58 @@ assert.deepEqual(
     "scripts/verify-trust-p2c-robots-smoke.mjs",
   ].sort(),
   "TRUST P2-C robots probe push scope must remain exact",
+);
+
+const approvedTrustProductPath = ".github/workflows/" + approvedTrustKnownProductProbe;
+assert(existsSync(approvedTrustProductPath), "approved TRUST product probe missing");
+const approvedTrustProductSource = read(approvedTrustProductPath);
+assertContains(approvedTrustProductPath, [
+  "name: TRUST P2-C Known Sunscreen Live Pilot",
+  'run-name: "[WT:trust] P2-C Known Sunscreen Live Pilot"',
+  "  push:",
+  "    branches: [main]",
+  "  workflow_dispatch:",
+  "  contents: read",
+  "  cancel-in-progress: false",
+  "    timeout-minutes: 5",
+  "          persist-credentials: false",
+  "        run: npm ci --ignore-scripts --no-audit --no-fund",
+  "        run: node scripts/verify-trust-p2c-known-product-smoke.mjs",
+  '          TRUST_P2C_PRODUCT_LIVE_ENABLED: "true"',
+  "        run: node scripts/trust-p2c-known-product-smoke.mjs --execute",
+]);
+assert(
+  !approvedTrustProductSource.includes("  pull_request:"),
+  "live known-product probe must not run on pull_request",
+);
+assertNotContains(approvedTrustProductPath, [
+  "  schedule:",
+  "  pull_request_target:",
+  "  issues:",
+  "  workflow_run:",
+  "  repository_dispatch:",
+  "  write-all",
+  "  contents: write",
+  "  actions: write",
+  "  id-token: write",
+  "service_role",
+  "OPENAI_API_KEY",
+  "supabase",
+]);
+const productPushMatch = approvedTrustProductSource.match(
+  /  push:\n    branches: \[main\]\n    paths:\n((?:      - "[^"\n]+"\n)+)/,
+);
+assert(productPushMatch, "TRUST P2-C known product probe requires scoped main push");
+assert.deepEqual(
+  productPushMatch[1].trim().split("\n").map((line) =>
+    line.replace(/^\s*- /, "").replace(/^"|"$/g, "")
+  ).sort(),
+  [
+    ".github/workflows/trust-p2c-known-product-live.yml",
+    "scripts/trust-p2c-known-product-smoke.mjs",
+    "scripts/verify-trust-p2c-known-product-smoke.mjs",
+  ].sort(),
+  "TRUST P2-C known product probe push scope must remain exact",
 );
 
 const retiredTrustDataGovernanceWorkflows = new Set([
