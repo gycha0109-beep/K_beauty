@@ -61,5 +61,7 @@ export async function GET(request) {
   });
   const status = result.serverProjectMatch === false ? 409 :
     result.dbHeadReadback === "failed" ? 503 : 200;
-  return respond({ok:true,mode:"read_only_identity_probe",...result},status);
+  const readbackSucceeded = result.serverProjectMatch === true &&
+    result.dbHeadReadback === "ok";
+  return respond({ok:readbackSucceeded,mode:"read_only_identity_probe",...result},status);
 }
