@@ -40,7 +40,7 @@ assert.match(ui,/DB 필드 20개/);
 assert.match(ui,/판매처별 실제 정보 확인/);
 assert.match(ui,/판매 정보 정정안 미리보기/);
 assert.match(ui,/확인한 원본 근거 기록/);
-assert.match(ui,/최종 검토 · 승인 전/);
+assert.match(ui,/최종 검토 · 정정안 승인/);
 assert.match(ui,/<details/);
 assert.match(ui,/<summary/);
 assert.match(ui,/disabled aria-disabled="true"/);

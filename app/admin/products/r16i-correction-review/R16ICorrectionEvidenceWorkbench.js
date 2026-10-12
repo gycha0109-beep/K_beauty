@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import R16IR4D8RefreshControls from "./R16IR4D8RefreshControls";
 import R16IR4D8PrivateEvidence from "./R16IR4D8PrivateEvidence";
+import R16IR4D8CorrectionApproval from "./R16IR4D8CorrectionApproval";
 
 const issueUrl = "https://github.com/gycha0109-beep/K_beauty/issues/1204";
 const brandUrl = "https://www.snature.kr/product/detail.html?product_no=151";
@@ -193,7 +194,7 @@ export default function R16ICorrectionEvidenceWorkbench({ review: initialReview 
             {blocked ? "검토 차단" : "근거 미확보 · 검토 보류"}
           </span>
         </div>
-        <div className={"text-xs " + muted}>DB 마지막 조회: {seenAt} · 승인 0건 · 이번 화면에서 데이터 변경 없음</div>
+        <div className={"text-xs " + muted}>DB 마지막 조회: {seenAt} · 상품정보 DB 변경 없음 · 검토 승인 이력은 아래에서 조회</div>
       </header>
 
       <R16IR4D8RefreshControls onReview={setReview} />
@@ -246,7 +247,7 @@ export default function R16ICorrectionEvidenceWorkbench({ review: initialReview 
               </EvidenceSource>
             </div>
             <div className="mt-4 rounded-xl bg-[#f3f6fb] px-4 py-3 text-xs leading-6 text-[#53647b] dark:bg-[#222b37] dark:text-[#b4c2d5]">
-              원본 화면 캡처·파일은 저장되지 않습니다. <a className="font-semibold underline underline-offset-2" href={issueUrl} target="_blank" rel="noopener noreferrer">정정 이슈 #1204</a>에 별도 첨부해야 하며, 텍스트 입력만으로 사실 확인이나 승인이 완료되지 않습니다.
+              이 입력창은 메모용으로 서버에 저장되지 않습니다. 아래 별도의 비공개 캡처 등록 기능은 실제로 저장됩니다. <a className="font-semibold underline underline-offset-2" href={issueUrl} target="_blank" rel="noopener noreferrer">정정 이슈 #1204</a>에 별도 첨부해야 하며, 텍스트 입력만으로 사실 확인이나 승인이 완료되지 않습니다.
             </div>
           </section>
 
@@ -277,7 +278,7 @@ export default function R16ICorrectionEvidenceWorkbench({ review: initialReview 
 
           <section className={card + " p-4 sm:p-5"}>
             <StepTitle number="3" title="확인한 원본 근거 기록"
-              description="직접 확인한 내용을 적어 미검증 메모로 복사할 수 있습니다. 서버나 DB에 자동 저장되지 않습니다." />
+              description="자유 메모는 로컬에서만 보관되며 복사할 수 있습니다. 비공개 캡처는 별도 업로드로 실제 저장됩니다." />
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <EvidenceTextarea field={fields[4]} notes={notes} onUpdate={updateNote} disabled={false}/>
               <EvidenceTextarea field={fields[6]} notes={notes} onUpdate={updateNote} disabled={false}/>
@@ -302,18 +303,19 @@ export default function R16ICorrectionEvidenceWorkbench({ review: initialReview 
           </section>
 
           <section className={card + " p-4 sm:p-5"}>
-            <StepTitle number="4" title="최종 검토 · 승인 전"
-              description="원본 증거가 확인되고 필드별 변경 전후값이 확정되기 전까지 검토 요청과 DB 적용은 불가능합니다." />
+            <StepTitle number="4" title="최종 검토 · 정정안 승인"
+              description="증빙 판정과 정정안 제출·승인·보류·반려를 기록합니다. 상품정보의 실제 DB 반영은 D8-D 이후에만 가능합니다." />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#efd5a7] bg-[#fff9ee] px-4 py-3.5 dark:border-[#624d2e] dark:bg-[#342c20]">
               <p className="text-sm font-medium text-[#925e1c] dark:text-[#f2d3a1]">
-                근거 검증 및 운영 승인이 없어 정정이 차단된 상태입니다.
+                이 단계의 승인과 상품 데이터 실제 적용은 별개입니다. 승인 기록이 있어도 적용은 차단됩니다.
               </p>
               <button type="button" disabled aria-disabled="true"
                 title="실제 원본 근거 및 운영 승인 기능이 아직 준비되지 않았습니다."
                 className="cursor-not-allowed rounded-lg bg-[#e1e4e9] px-4 py-2 text-xs font-bold text-[#828b98] dark:bg-[#3a414b] dark:text-[#9fa8b5]">
-                정정 검토 요청 · 사용 불가
+                실제 DB 반영 · D8-D 전까지 불가
               </button>
             </div>
+            <R16IR4D8CorrectionApproval review={review} />
           </section>
 
           <details className={card + " px-4 py-3.5 sm:px-5"}>
