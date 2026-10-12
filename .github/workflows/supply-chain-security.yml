@@ -80,6 +80,7 @@ jobs:
 
       - name: Trace vulnerable dependency paths without changing audit policy
         run: |
+          node scripts/security/verify-supply-chain-policy-integrity.mjs
           node scripts/security/verify-supply-chain-lock-path-tracer.mjs
           node scripts/security/report-supply-chain-lock-paths.mjs
 
