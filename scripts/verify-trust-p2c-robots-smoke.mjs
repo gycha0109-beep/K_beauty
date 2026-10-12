@@ -32,6 +32,13 @@ const redirected=await probeTrustP2CRobots({execute:true,fetchRobots:async()=>({
  finalUrl:"https://evil.example.test/robots.txt",
 })});
 assert.equal(redirected.status,"ROBOTS_FETCH_FAILED");
-await assert.rejects(()=>runTrustP2CCommand(["--execute"]),/TRUST_P2C_LIVE_DISABLED/);
+const prior=process.env.TRUST_P2C_ROBOTS_LIVE_ENABLED;
+try {
+  delete process.env.TRUST_P2C_ROBOTS_LIVE_ENABLED;
+  await assert.rejects(()=>runTrustP2CCommand(["--execute"]),/TRUST_P2C_LIVE_DISABLED/);
+} finally {
+  if(prior===undefined) delete process.env.TRUST_P2C_ROBOTS_LIVE_ENABLED;
+  else process.env.TRUST_P2C_ROBOTS_LIVE_ENABLED=prior;
+}
 await assert.rejects(()=>runTrustP2CCommand(["--unsafe"]),/TRUST_P2C_UNSUPPORTED_FLAG/);
 console.log("TRUST_P2C_LIVE_ROBOTS_POLICY_CONTRACT_PASS");

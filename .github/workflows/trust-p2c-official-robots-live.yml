@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/trust-p2c-official-robots-live.yml"
       - "scripts/trust-p2c-robots-smoke.mjs"
+      - "scripts/verify-trust-p2c-robots-smoke.mjs"
   workflow_dispatch:
 
 permissions:
@@ -20,8 +21,6 @@ jobs:
     name: One official robots.txt request, no product retrieval
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    env:
-      TRUST_P2C_ROBOTS_LIVE_ENABLED: "true"
     steps:
       - name: Checkout exact commit
         uses: actions/checkout@v4
@@ -38,4 +37,6 @@ jobs:
       - name: Verify offline policy and fail-closed cases
         run: node scripts/verify-trust-p2c-robots-smoke.mjs
       - name: Probe only the previously observed official site's robots.txt
+        env:
+          TRUST_P2C_ROBOTS_LIVE_ENABLED: "true"
         run: node scripts/trust-p2c-robots-smoke.mjs --execute
