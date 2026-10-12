@@ -28,12 +28,73 @@ const rootPackageTriggers = [
   "- 'package-lock.json'",
 ];
 
+// Retired TRUST-P per-phase jobs must stay retired. This one separately
+// approved robots-only probe performs unique bounded live network behavior.
+// The exemption is an exact filename, never a prefix or a general wildcard.
+const approvedTrustRobotsProbe = "trust-p2c-official-robots-live.yml";
 const historicalTrustWorkflows = readdirSync(".github/workflows")
-  .filter((name) => /^trust-p\d/i.test(name) && /\.ya?ml$/i.test(name));
+  .filter(
+    (name) =>
+      /^trust-p\d/i.test(name) &&
+      /\.ya?ml$/i.test(name) &&
+      name !== approvedTrustRobotsProbe,
+  );
 assert.deepEqual(
   historicalTrustWorkflows,
   [],
   `historical TRUST-P workflows must stay retired: ${historicalTrustWorkflows.join(", ")}`,
+);
+
+const approvedTrustRobotsPath = ".github/workflows/" + approvedTrustRobotsProbe;
+assert(existsSync(approvedTrustRobotsPath), "approved TRUST robots probe missing");
+const approvedTrustRobotsSource = read(approvedTrustRobotsPath);
+assertContains(approvedTrustRobotsPath, [
+  "name: TRUST P2-C Official Robots Live Probe",
+  'run-name: "[WT:trust] P2-C Official Robots Live Probe"',
+  "  push:",
+  "    branches: [main]",
+  "  workflow_dispatch:",
+  "  contents: read",
+  "  cancel-in-progress: false",
+  "    timeout-minutes: 5",
+  "          persist-credentials: false",
+  "        run: npm ci --ignore-scripts --no-audit --no-fund",
+  "        run: node scripts/verify-trust-p2c-robots-smoke.mjs",
+  '          TRUST_P2C_ROBOTS_LIVE_ENABLED: "true"',
+  "        run: node scripts/trust-p2c-robots-smoke.mjs --execute",
+]);
+assert(
+  !approvedTrustRobotsSource.includes("  pull_request:"),
+  "live robots network probe cannot run on pull_request",
+);
+assertNotContains(approvedTrustRobotsPath, [
+  "  schedule:",
+  "  pull_request_target:",
+  "  issues:",
+  "  workflow_run:",
+  "  repository_dispatch:",
+  "  write-all",
+  "  contents: write",
+  "  actions: write",
+  "  id-token: write",
+  "service_role",
+  "OPENAI_API_KEY",
+  "supabase",
+]);
+const robotsPushMatch = approvedTrustRobotsSource.match(
+  /  push:\n    branches: \[main\]\n    paths:\n((?:      - "[^"\n]+"\n)+)/,
+);
+assert(robotsPushMatch, "TRUST P2-C robots probe requires scoped main push");
+assert.deepEqual(
+  robotsPushMatch[1].trim().split("\n").map((line) =>
+    line.replace(/^\s*- /, "").replace(/^"|"$/g, "")
+  ).sort(),
+  [
+    ".github/workflows/trust-p2c-official-robots-live.yml",
+    "scripts/trust-p2c-robots-smoke.mjs",
+    "scripts/verify-trust-p2c-robots-smoke.mjs",
+  ].sort(),
+  "TRUST P2-C robots probe push scope must remain exact",
 );
 
 const retiredTrustDataGovernanceWorkflows = new Set([
