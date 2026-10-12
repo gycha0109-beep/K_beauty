@@ -346,8 +346,11 @@ jobs:
           psql -v ON_ERROR_STOP=1 -c "create database trust_p2b_discovery"
           PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f tests/fixtures/trust-p2b-discovery/00_minimal_pg17.sql
           PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012110000_trust_p2b_official_discovery_observations_v1.sql
+          PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012190000_trust_p2c_visible_identity_dispositions_v1.sql
           PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f tests/fixtures/trust-p2b-discovery/20_runtime_rollback_pg17.sql | tee "${RUNNER_TEMP}/trust-p2b.log"
           grep -Fq "TRUST_P2B_OBSERVATIONS_PG17_ROLLBACK_PASS" "${RUNNER_TEMP}/trust-p2b.log"
+          PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f tests/fixtures/trust-p2b-discovery/30_visible_identity_pg17.sql | tee "${RUNNER_TEMP}/trust-p2c.log"
+          grep -Fq "TRUST_P2C_VISIBLE_IDENTITY_PG17_ROLLBACK_PASS" "${RUNNER_TEMP}/trust-p2c.log"
           test "$(PGDATABASE=trust_p2b_discovery psql -Atqc "select count(*) from public.trust_official_discovery_observations_v1")" = "0"
           psql -v ON_ERROR_STOP=1 -c "drop database trust_p2b_discovery with (force)"
           echo "TRUST_P2B_ISOLATED_PG17_PASS"
