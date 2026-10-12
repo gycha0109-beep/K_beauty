@@ -22,6 +22,11 @@ const NAVIGATION = Object.freeze([
     capability: ADMIN_CAPABILITIES.PRODUCTS_READ
   },
   {
+    label: "자동 평가 예외",
+    href: "/admin/products/automatic-evidence",
+    capability: ADMIN_CAPABILITIES.PRODUCTS_REVIEW
+  },
+  {
     label: "리뷰 가져오기",
     href: "/admin/products/reviews/import",
     capability: ADMIN_CAPABILITIES.PRODUCTS_REVIEW
