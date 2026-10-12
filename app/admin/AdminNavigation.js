@@ -26,6 +26,11 @@ const NAVIGATION = Object.freeze([
     href: "/admin/products/reviews/import",
     capability: ADMIN_CAPABILITIES.PRODUCTS_REVIEW
   },
+  {
+    label: "에스네이처 정정 검토",
+    href: "/admin/products/r16i-correction-review",
+    capability: ADMIN_CAPABILITIES.PRODUCTS_REVIEW
+  },
   { label: "피부 맞춤 추천", href: null },
   { label: "얼굴 분석", href: null },
   { label: "사용자 및 신고", href: null },
