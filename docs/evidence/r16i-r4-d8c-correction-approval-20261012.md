@@ -8,7 +8,7 @@ D8-A 실조회와 D8-B 비공개 캡처 제출 다음으로 **소유자 판정 �
 2. 관리자 owner가 D8-B 비공개 signed 캡처를 실제로 열어 보고, 출처·선택 옵션·가격 검증 범위를 12자 이상 서술하여 `VERIFIED` 또는 `REJECTED` 판정. 단순 업로드는 자동 승인 안 됨. 판정은 불변 1건, 중복 차단.
 3. `admin.products.review` 운영자가 VERIFIED 근거를 1건 이상 선택하고 필요한 필드별 before/after를 작성하여 immutable 정정안을 등록. `products.size_ml`, `price_min`, `price_max`, `unit_price_per_10ml`, `buy_link`만 후속 D8-D 후보로 허용하며, 실제 Offer 신규 등록·Subject 생성은 여기서 하지 않음.
 4. owner가 `APPROVE_FOR_D8D_REVIEW`, `HOLD`, `REJECT` 중 하나를 이유와 함께 결정. 결정은 정정안당 불변 1회. APPROVE는 D8-D 운영 적용 **권한이 아님**.
-5. 승인 RPC가 상품 updated_at을 `FOR UPDATE`로 잠그고, 정정안 리비전 일치·동일 상품 증빙 VERIFIED·동일 원본 중복/Offer/Subject 충돌 및 관리자 owner 회원 자격을 확인. 실패 시 decision INSERT 자체를 중단.
+5. 승인 RPC가 상품 updated_at을 `FOR UPDATE`로 잠그고, 정정안 리비전 일치·공식몰 및 화해 양측의 개별 VERIFIED 근거·동일 원본 중복/Offer/Subject 충돌 및 관리자 owner 회원 자격을 확인. 실패 시 decision INSERT 자체를 중단.
 6. D4의 정체성/Source Binding/Offer collision 검사도 요청 시작 전에 다시 실행.
 
 ## 데이터 구조
