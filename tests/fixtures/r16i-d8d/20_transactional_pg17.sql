@@ -157,6 +157,10 @@ BEGIN
     OR NOT has_function_privilege('service_role','public.r16i_d8d_rollback_v1(uuid,uuid,uuid)','EXECUTE')
     OR has_function_privilege('anon','public.r16i_d8d_rollback_v1(uuid,uuid,uuid)','EXECUTE')
     OR has_function_privilege('authenticated','public.r16i_d8d_rollback_v1(uuid,uuid,uuid)','EXECUTE')
+    OR NOT (SELECT p.prosecdef FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+       WHERE n.nspname='public' AND p.proname='r16i_d8d_rollback_v1')
+    OR (SELECT p.prosecdef FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+       WHERE n.nspname='public' AND p.proname='r16i_d8d_apply_v1')
     OR (SELECT enabled FROM public.admin_r16i_correction_release_gate_v1
         WHERE scope='R16I_S_NATURE_PRODUCT_1') IS DISTINCT FROM true
   THEN RAISE EXCEPTION 'D8D_PRIVILEGE_OR_ROLLOUT_GATE_CONTRACT_FAILED'; END IF;
