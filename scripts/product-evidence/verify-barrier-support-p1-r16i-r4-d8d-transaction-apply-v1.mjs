@@ -1,0 +1,74 @@
+#!/usr/bin/env node
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const api=fs.readFileSync("app/api/admin/products/r16i-correction-review/apply/route.js","utf8");
+const ui=fs.readFileSync("app/admin/products/r16i-correction-review/R16IR4D8ApplyWorkspace.js","utf8");
+const parent=fs.readFileSync("app/admin/products/r16i-correction-review/R16ICorrectionEvidenceWorkbench.js","utf8");
+const migration=fs.readFileSync("supabase/migrations/20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql","utf8");
+const setup=fs.readFileSync("tests/fixtures/r16i-d8d/00_minimal_pg17.sql","utf8");
+const pg=fs.readFileSync("tests/fixtures/r16i-d8d/20_transactional_pg17.sql","utf8");
+const workflow=fs.readFileSync(".github/workflows/database-integration.yml","utf8");
+let cases=0;
+function req(regex,text,title){assert.match(text,regex,title);cases++;}
+function ban(regex,text,title){assert.doesNotMatch(text,regex,title);cases++;}
+req(/requireAdminCapability\(ADMIN_CAPABILITIES\.PRODUCTS_REVIEW\)/,api,"capability gate");
+req(/access\.role!==ADMIN_ROLES\.OWNER/,api,"owner-only gate");
+req(/new URL\(request\.url\)\.origin/,api,"origin check");
+req(/content-length/,api,"bounded request");
+req(/Number\.isSafeInteger\(size\)/,api,"strict length");
+req(/exact\(body,\["mode","proposalId","requestId","confirmation"\]\)/,api,"bounded body keys");
+req(/exact\(body,\["mode","applicationId","requestId","confirmation"\]\)/,api,"rollback body keys");
+req(/UUID\.test\(body\.requestId\)/,api,"idempotency key");
+req(/APPLY_FLAG = "BEJEWELY_R16I_D8D_APPLY_ENABLED"/,api,"server release gate");
+req(/process\.env\[APPLY_FLAG\]!=="true"/,api,"server gate default deny");
+req(/r16i_d8d_apply_v1/,api,"db apply RPC");
+req(/r16i_d8d_rollback_v1/,api,"db rollback RPC");
+req(/"PREVIEW"/,api,"preview mode");
+req(/"APPLY"/,api,"apply mode");
+req(/"ROLLBACK"/,api,"rollback mode");
+req(/"실제 DB 반영"/,api,"explicit apply acknowledgement");
+req(/"원복 실행"/,api,"explicit rollback acknowledgement");
+ban(/\.from\(["'](?:products|product_offers|product_fact_subjects)["']\)\.update\(/,api,"no direct DB update from route");
+ban(/export async function (PATCH|PUT|DELETE)\(/,api,"no ungated mutating method");
+req(/Cache-Control":"private, no-store/,api,"no cache");
+req(/R16IR4D8ApplyWorkspace review=\{review\}/,parent,"workspace remains available after D4 drift");
+req(/applyAvailable===true/,ui,"dual gate UI");
+req(/실제 Product \+ Offer DB 반영/,ui,"explicit action label");
+req(/ROLLBACK/,ui,"rollback UI");
+req(/PREVIEW/,ui,"read-only preview UI");
+req(/R16I_S_NATURE_PRODUCT_1/,migration,"exact rollout scope");
+req(/VALUES\('R16I_S_NATURE_PRODUCT_1',false,null\)/,migration,"default disabled");
+req(/REVOKE ALL ON public\.admin_r16i_correction_release_gate_v1 FROM PUBLIC,anon,authenticated,service_role/,migration,"non-service mutation gate");
+req(/GRANT SELECT ON public\.admin_r16i_correction_release_gate_v1 TO service_role/,migration,"read gate");
+req(/GRANT INSERT ON public\.admin_product_correction_decisions_v1 TO service_role/,migration,"D8C invoker INSERT repair");
+req(/SECURITY INVOKER/g,migration,"RLS invoker functions");
+req(/REVOKE ALL ON FUNCTION public\.r16i_d8d_apply_v1/,migration,"disable public rpc");
+req(/R16I_D8D_OWNER_REQUIRED/,migration,"owner membership at DB");
+req(/R16I_D8D_PRESTATE_DRIFT/,migration,"frozen revision");
+req(/R16I_D8D_CHECKOUT_EVIDENCE_MISSING/,migration,"two verified seller checkouts");
+req(/R16I_D8D_TWO_DISTINCT_SOURCES_REQUIRED/,migration,"source count");
+req(/R16I_D8D_PRODUCT_PRICE_UNIT_INCOHERENT/,migration,"unit price identity");
+req(/R16I_D8D_RELEASE_GATE_DISABLED/,migration,"sql independent gate");
+req(/R16I_D8D_BINDING_OR_OFFER_COLLISION/,migration,"offer uniqueness and binding state");
+req(/R16I_D8D_ALREADY_APPLIED/,migration,"idempotency");
+req(/R16I_D8D_ROLLBACK_DRIFT/,migration,"rollback compare-and-swap");
+req(/FOR UPDATE/g,migration,"transaction locks");
+req(/INSERT INTO public\.product_offers\(/,migration,"single offer insert");
+req(/UPDATE public\.products SET/,migration,"atomic product update");
+req(/DELETE FROM public\.product_offers WHERE offer_id=a\.offer_id/,migration,"drift locked offer rollback");
+req(/admin_r16i_correction_application_events_v1/,migration,"event audit");
+req(/R16I_D8D_PG17_APPLY_FAIL_ROLLBACK_PASS/,pg,"isolated PG test success marker");
+req(/SYNTHETIC_OFFER_WRITE_FAILURE/,pg,"mid-transaction rollback failure injection");
+req(/D8D_DUPLICATE_APPLICATION_ALLOWED/,pg,"duplicate rejection");
+req(/D8D_ROLLBACK_DRIFT_NOT_BLOCKED/,pg,"drift rejection");
+req(/D8D_DUPLICATE_ROLLBACK_ALLOWED/,pg,"duplicate rollback rejection");
+req(/00_minimal_pg17\.sql/,workflow,"fixture in existing job");
+req(/20_transactional_pg17\.sql/,workflow,"atomic runtime in existing job");
+req(/create database taxonomy_r16i_d8d/,workflow,"isolated DB");
+req(/synthetic/i,setup,"no production commercial price assumption");
+ban(/VALUES\('R16I_S_NATURE_PRODUCT_1',true/i,migration,"never release gate in migration");
+console.log(JSON.stringify({status:"PASS",stage:"R16I-R4-D8D",
+  guards:cases,transaction_runtime:"PG17_WORKFLOW",
+  release_gate_initial:false,product_mutation_in_migration:false,
+  real_product_writes_in_tests:0}));
