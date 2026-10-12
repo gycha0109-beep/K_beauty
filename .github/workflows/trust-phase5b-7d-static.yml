@@ -7,6 +7,8 @@ on:
     paths:
       - "app/admin/products/trust/**"
       - "lib/trust/intake-identity-readiness-v1.mjs"
+      - "lib/trust/brand-official-frontier-v1.mjs"
+      - "scripts/verify-trust-brand-official-frontier-v1.mjs"
       - "lib/admin/trust-intake-readiness.js"
       - "scripts/verify-trust-intake-readiness-v1.mjs"
       - "app/admin/AdminNavigation.js"
@@ -63,6 +65,8 @@ on:
     paths:
       - "app/admin/products/trust/**"
       - "lib/trust/intake-identity-readiness-v1.mjs"
+      - "lib/trust/brand-official-frontier-v1.mjs"
+      - "scripts/verify-trust-brand-official-frontier-v1.mjs"
       - "lib/admin/trust-intake-readiness.js"
       - "scripts/verify-trust-intake-readiness-v1.mjs"
       - "app/admin/AdminNavigation.js"
@@ -167,6 +171,7 @@ jobs:
           set -euo pipefail
           node scripts/verify-trust-phase5b-subject-registration.mjs
           node scripts/verify-trust-intake-readiness-v1.mjs
+          node scripts/verify-trust-brand-official-frontier-v1.mjs
           node scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs
           node scripts/verify-product-fact-subject-registration-v1.mjs
           node scripts/verify-trust-subject-resolution.mjs
