@@ -37,3 +37,7 @@ DB release gate 해제는 신뢰된 운영 change control에서 보안 #1208 해
 **실제 제품 정정 완료:** 증빙 VERIFIED 2건 + 정정안 승인 + 공급망 보안 장애 제거 + 운영 승인 + 두 release gate 명시 해제 + apply readback + D8E 추천 164×12 회귀. 해당 조건을 이행하지 않은 상태에서 ‘실제 상품 갱신 완료’로 보고 금지.
 
 Watchtower-Track: taxonomy-ai
+
+### 원복 권한 경계 보완
+- 연결된 운영 Supabase에서 `service_role`의 기존 `product_offers` 권한은 INSERT 가능, DELETE 불가임을 확인. 광범위한 `GRANT DELETE ON product_offers`는 금지.
+- **적용 함수는 SECURITY INVOKER**, **원복 함수만 SECURITY DEFINER**이며 RPC EXECUTE는 service_role에만 부여. 원복은 owner 회원 자격/기존 적용 기록/정확한 Product revision과 Offer 가격·연결·상품 범위를 확인하고, 통과할 때만 한 건을 삭제. 익명·일반 인증 사용자에게 RPC 권한은 없음. 본 privileged RPC를 범용 Offer 삭제에 재사용하지 않음.
