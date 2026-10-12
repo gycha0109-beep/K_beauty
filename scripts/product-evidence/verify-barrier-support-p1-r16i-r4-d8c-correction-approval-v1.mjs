@@ -122,7 +122,7 @@ const root="app/api/admin/products/r16i-correction-review/approval/route.js";
 const api=fs.readFileSync(root,"utf8");
 const ui=fs.readFileSync("app/admin/products/r16i-correction-review/R16IR4D8CorrectionApproval.js","utf8");
 const parent=fs.readFileSync("app/admin/products/r16i-correction-review/R16ICorrectionEvidenceWorkbench.js","utf8");
-const sql=fs.readFileSync("supabase/migrations/20261012170000_taxonomy_ai_r16i_correction_approval_ledger_v1.sql","utf8");
+const sql=fs.readFileSync("supabase/migrations/20261012172837_taxonomy_ai_r16i_correction_approval_ledger_v1.sql","utf8");
 assert.match(api,/requireAdminCapability\(ADMIN_CAPABILITIES\.PRODUCTS_REVIEW\)/);
 assert.match(api,/a\.access\.role!==ADMIN_ROLES\.OWNER/);
 assert.match(api,/request\.headers\.get\("origin"\)/);
