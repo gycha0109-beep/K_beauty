@@ -7,6 +7,10 @@ on:
       - ".github/workflows/trust-p2c-known-product-live.yml"
       - "scripts/trust-p2c-known-product-smoke.mjs"
       - "scripts/verify-trust-p2c-known-product-smoke.mjs"
+      - "lib/trust/official-visible-identity-v1.mjs"
+      - "lib/trust/official-product-discovery-p2-v1.mjs"
+      - "lib/trust/official-discovery-observation-store-v1.mjs"
+      - "scripts/verify-trust-p2c-visible-identity-v1.mjs"
   workflow_dispatch:
 
 permissions:
@@ -34,6 +38,8 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify offline product smoke guardrails
         run: node scripts/verify-trust-p2c-known-product-smoke.mjs
+      - name: Verify non-authoritative scoped heading and body-only paths
+        run: node scripts/verify-trust-p2c-visible-identity-v1.mjs
       - name: Verify robots then fetch one existing governed sunscreen product
         env:
           TRUST_P2C_PRODUCT_LIVE_ENABLED: "true"
