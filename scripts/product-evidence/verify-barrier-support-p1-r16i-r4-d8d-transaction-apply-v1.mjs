@@ -42,7 +42,8 @@ req(/VALUES\('R16I_S_NATURE_PRODUCT_1',false,null\)/,migration,"default disabled
 req(/REVOKE ALL ON public\.admin_r16i_correction_release_gate_v1 FROM PUBLIC,anon,authenticated,service_role/,migration,"non-service mutation gate");
 req(/GRANT SELECT ON public\.admin_r16i_correction_release_gate_v1 TO service_role/,migration,"read gate");
 req(/GRANT INSERT ON public\.admin_product_correction_decisions_v1 TO service_role/,migration,"D8C invoker INSERT repair");
-req(/SECURITY INVOKER/g,migration,"RLS invoker functions");
+req(/SECURITY INVOKER/g,migration,"apply runs as invoker");
+req(/r16i_d8d_rollback_v1[\s\S]*?SECURITY DEFINER SET search_path=\x27\x27/,migration,"narrow privileged rollback with exact CAS checks");
 req(/REVOKE ALL ON FUNCTION public\.r16i_d8d_apply_v1/,migration,"disable public rpc");
 req(/R16I_D8D_OWNER_REQUIRED/,migration,"owner membership at DB");
 req(/R16I_D8D_PRESTATE_DRIFT/,migration,"frozen revision");
