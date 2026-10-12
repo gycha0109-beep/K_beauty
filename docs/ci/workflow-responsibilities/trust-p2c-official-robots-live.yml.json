@@ -1,0 +1,13 @@
+{
+  "workflow": "trust-p2c-official-robots-live.yml",
+  "primaryResponsibility": "trust-data-governance",
+  "capabilities": [
+    "backend",
+    "evidence-governance",
+    "pipeline",
+    "runtime-probe"
+  ],
+  "watchtowerTrackBinding": "static:trust",
+  "lifecycleNameClass": "semantic",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}

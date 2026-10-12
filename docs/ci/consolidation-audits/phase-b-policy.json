@@ -7,6 +7,8 @@
     "face-lab-v2-provider-pilot-smoke.yml",
     "taxonomy-ai-r16d-source-capture.yml",
     "trust-gpt-catalog-intake.yml",
+    "trust-p2c-known-product-live.yml",
+    "trust-p2c-official-robots-live.yml",
     "trust-phase5b-7d-static.yml",
     "trust-phase8h3-relocation-revalidation.yml"
   ],
@@ -96,6 +98,20 @@
         "Do not duplicate the canonical full contract suite in the dedicated workflow",
         "Reassess this phase-coded workflow if the live capture is later folded into an established TRUST owner"
       ]
+    },
+    "trust-p2c-bounded-official-live-probes": {
+      "mode": "independent-unique-live-boundary-preserve",
+      "independentWorkflowOwners": [
+        "trust-p2c-official-robots-live.yml",
+        "trust-p2c-known-product-live.yml"
+      ],
+      "canonicalOfflineOwner": "trust-phase5b-7d-static.yml",
+      "uniqueRuntimeCoverage": [
+        "One explicit one-origin official robots.txt live probe, max one network GET, no product request, no DB/provider writes.",
+        "One explicit known governed Torriden sunscreen page validation after robots policy, max two bounded GETs, no fact adoption or Subject identity authority."
+      ],
+      "authorityBoundary": "Two explicit, manually dispatched or tightly path-scoped main pushes; never PR or schedule; no secret/write permission; source bytes not published. Offline-only checks run in the canonical TRUST static workflow, while the unique live network evidence is preserved here.",
+      "reviewRule": "Do not retire/consolidate live probes without exact-head evidence proving parity of HTTP sequence, robots enforcement, scope, side effects and Watchtower attribution. TRUST owner approval required before merging workflow changes that may trigger live site requests."
     }
   }
 }
