@@ -89,6 +89,13 @@ BEGIN
      ON v.evidence_id=e.evidence_id AND v.verdict='VERIFIED'
    WHERE e.evidence_id IS NULL OR v.verdict_id IS NULL;
    IF blocking_count>0 THEN RAISE EXCEPTION 'R16I_UNVERIFIED_EVIDENCE'; END IF;
+   IF (SELECT count(DISTINCT e.source_key)
+       FROM public.admin_product_correction_evidence_v1 e
+       JOIN public.admin_product_correction_evidence_verdicts_v1 v
+         ON v.evidence_id=e.evidence_id AND v.verdict='VERIFIED'
+       WHERE e.product_id=proposal.product_id
+         AND e.evidence_id=ANY(proposal.evidence_ids)) <> 2
+   THEN RAISE EXCEPTION 'R16I_TWO_SOURCE_EVIDENCE_REQUIRED'; END IF;
    IF (SELECT count(DISTINCT evidence_id) FROM unnest(proposal.evidence_ids) AS x(evidence_id))
       <> cardinality(proposal.evidence_ids)
    THEN RAISE EXCEPTION 'R16I_DUPLICATE_EVIDENCE'; END IF;
