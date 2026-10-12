@@ -5,6 +5,7 @@ import { useState } from "react";
 import R16IR4D8RefreshControls from "./R16IR4D8RefreshControls";
 import R16IR4D8PrivateEvidence from "./R16IR4D8PrivateEvidence";
 import R16IR4D8CorrectionApproval from "./R16IR4D8CorrectionApproval";
+import R16IR4D8ApplyWorkspace from "./R16IR4D8ApplyWorkspace";
 
 const issueUrl = "https://github.com/gycha0109-beep/K_beauty/issues/1204";
 const brandUrl = "https://www.snature.kr/product/detail.html?product_no=151";
@@ -345,6 +346,8 @@ export default function R16ICorrectionEvidenceWorkbench({ review: initialReview 
           </details>
         </>
       )}
+
+      <R16IR4D8ApplyWorkspace review={review} />
 
       <p className={"px-1 text-xs leading-6 " + muted}>
         본 화면은 비공개 증빙과 검토·승인 이력을 저장합니다. Product, Offer, Subject, 리뷰, 구매 링크 및 추천 랭킹을 실제 변경하지는 않습니다.
