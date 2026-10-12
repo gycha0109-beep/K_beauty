@@ -23,8 +23,18 @@ assert.equal(got.newProductIdentityVerified,false);
 assert.equal(got.factConfirmationAuthorized,false);
 assert.equal(got.productFactWrites,0);
 assert.equal(got.dbWrites,0);
+assert.equal(got.knownNameVisibleInNonScriptText,true);
+assert.equal(got.evidenceAdmissionAuthorized,false);
 assert.equal(got.pageDigest.length,64);
 assert.equal("pageContent" in got,false);
+const scriptOnly=await probeTrustP2CProduct({execute:true,
+ ...mocks,fetchPage:async url=>({
+   bytes:Buffer.from('<title>Generic brand shop</title><script>var name="다이브인 무기자차 마일드 선크림";</script>'),
+   finalUrl:url,
+ }),
+});
+assert.equal(scriptOnly.knownNameVisibleInNonScriptText,false);
+assert.equal(scriptOnly.metadataTitleMatched,false);
 const blocked=await probeTrustP2CProduct({execute:true,
  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nDisallow: /goods/\n"),finalUrl:url}),
  fetchPage:async()=>{throw Error("unexpected HTTP");},
