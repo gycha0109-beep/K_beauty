@@ -63,7 +63,26 @@ Watchtower-Track: security. Owner: Security Track. [Issue #1208](https://github.
 
 **새 HEAD CI 로그에서 스캐너 자체 PASS와 설치 코드 marker를 확인해야 SCA-1 call-site 관찰을 승격할 수 있다.** CI 미완료 시 이 부분은 NOT_VERIFIED.
 
-## 5. SCA-2 초기 후보·결정
+## 5. SCA-1 실제 설치 코드 관찰 — CI 근거 확보
+
+Security workflow [run #38223030217](https://github.com/gycha0109-beep/K_beauty/actions/runs/38223030217)의 **정확한 소스 SHA 2583ff489f559c7029f59d983a1b17e53c08550c**에서 다음을 확인했다. 이 run은 원본 보안 audit가 만료된 braces 예외 때문에 여전히 FAIL이며, **call-site scanner PASS는 전체 보안 PASS가 아니다**.
+
+- SUPPLY_CHAIN_CALL_SITE_SCANNER_TEST=PASS cases=5, package count 9, absent 0, incomplete 0, mutation guard 9/9 PASS, npm ci PASS.
+- @expo/cli: 402 JS/TS files scanned; build/src/run/ios/codeSigning/Security.js:42에 node-forge import 1건.
+- @expo/code-signing-certificates: 2 files scanned; build/main.js:8 node-forge import, line 176 및 line 203 verify-method marker, line 200 signBufferRSASHA256AndVerify marker.
+- @expo/metro-file-map: 41 files; build/watchers/common.js:18 micromatch import.
+- metro-file-map: 43 files; src/watchers/common.js:14 micromatch import.
+- metro-config 중첩 metro-file-map: 43 files; src/watchers/common.js:14 micromatch import.
+- micromatch: 1 file; index.js:4 braces import. 다수의 self-reference marker는 문자열 탐지의 false positive 가능성이 있으므로 실제 호출로 단정하지 않음.
+- fast-glob: 26 files; out/utils/pattern.js:6 micromatch import, line 137 explicit brace API marker.
+- chokidar: 4 files; index.js:11 braces import, line 258 explicit brace API marker.
+- braces: 7 files; index.js 자체의 brace AST API marker 다수. 해당 표시는 **취약 함수가 설치됨**을 뜻하지 외부 유입 호출을 뜻하지 않음.
+
+검출 위치는 CI가 실제 설치한 소스의 파일/행 번호이며, 업스트림 main 소스와 혼동하지 않는다. scanner는 node_modules 내부 파일을 읽기만 하고 regex textual marker를 표시한다. line 주변 함수 컨텍스트, 입력 종류, URL/파일 경로에서 glob 패턴으로의 변환, 서명 검증 대상과 키 출처 및 Android 패키징은 **추가 수동·동적 검증 필요**. 관찰한 0건도 부재 증거는 아니다.
+
+원본 CI 결과: canonical audit FAIL, CodeQL PASS, Main Health [run #38223030323](https://github.com/gycha0109-beep/K_beauty/actions/runs/38223030323) PASS. 추후 문서 반영을 포함한 새 HEAD는 별도 검사 결과를 확인해야 한다.
+
+## 6. SCA-2 초기 후보·결정
 
 | 후보 | 확인된 사실 | 결정 |
 | --- | --- | --- |
