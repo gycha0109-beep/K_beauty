@@ -55,6 +55,7 @@ on:
       - "vercel.json"
       - "app/api/admin/products/automatic-evidence/history/route.js"
       - "tests/fixtures/automatic-evidence-history-v1/**"
+      - "tests/fixtures/trust-p2b-discovery/**"
       - "app/api/admin/products/automatic-evidence/preview/route.js"
       - "scripts/verify-automatic-product-evidence-live-v1.mjs"
       - "docs/evidence/data-ai29c-filter-r4-d-s3-admin-semantic-review-workbench-v1.md"
@@ -118,6 +119,7 @@ on:
       - "vercel.json"
       - "app/api/admin/products/automatic-evidence/history/route.js"
       - "tests/fixtures/automatic-evidence-history-v1/**"
+      - "tests/fixtures/trust-p2b-discovery/**"
       - "app/api/admin/products/automatic-evidence/preview/route.js"
       - "scripts/verify-automatic-product-evidence-live-v1.mjs"
       - "docs/evidence/data-ai29c-filter-r4-d-s3-admin-semantic-review-workbench-v1.md"
@@ -330,6 +332,26 @@ jobs:
           grep -Fq "AUTOMATIC_RUN_PG17_ROLLBACK_PASS" "${RUNNER_TEMP}/automatic-run-pg17.log"
           test "$(psql -Atqc "select count(*) from public.automatic_product_evidence_run_events_v1")" = "0"
           echo "AUTOMATIC_EVIDENCE_RUN_EVENTS_ISOLATED_PG17_PASS"
+      - name: Verify P2B append-only discovery observations in isolated PG17
+        shell: bash
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "54329"
+          PGUSER: postgres
+          PGPASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "5"
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -c "create database trust_p2b_discovery"
+          PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f tests/fixtures/trust-p2b-discovery/00_minimal_pg17.sql
+          PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012110000_trust_p2b_official_discovery_observations_v1.sql
+          PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f tests/fixtures/trust-p2b-discovery/20_runtime_rollback_pg17.sql | tee "${RUNNER_TEMP}/trust-p2b.log"
+          grep -Fq "TRUST_P2B_OBSERVATIONS_PG17_ROLLBACK_PASS" "${RUNNER_TEMP}/trust-p2b.log"
+          test "$(PGDATABASE=trust_p2b_discovery psql -Atqc "select count(*) from public.trust_official_discovery_observations_v1")" = "0"
+          psql -v ON_ERROR_STOP=1 -c "drop database trust_p2b_discovery with (force)"
+          echo "TRUST_P2B_ISOLATED_PG17_PASS"
+
       - name: Verify exact-head diff hygiene
         shell: bash
         run: git diff --check HEAD^

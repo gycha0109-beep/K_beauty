@@ -11,6 +11,7 @@
  */
 import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import { appendTrustP2BObservations } from "../lib/trust/official-discovery-observation-store-v1.mjs";
 import { planTrustBrandOfficialFrontier } from "../lib/trust/brand-official-frontier-v1.mjs";
 import {
   runTrustP2Discovery, trustP2LiveFetchers,
@@ -62,9 +63,12 @@ export async function runTrustP2Cli(args=process.argv.slice(2)){
   const productArg=args.find(x=>x.startsWith("--product-id="));
   const id=productArg?.slice("--product-id=".length);
   if(!UUID.test(id??""))fail("TRUST_P2_PRODUCT_ID_REQUIRED");
-  if(args.some(x=>!x.startsWith("--product-id=")&&x!=="--execute"))
+  if(args.some(x=>!x.startsWith("--product-id=")&&x!=="--execute"&&x!=="--persist"))
     fail("TRUST_P2_UNSUPPORTED_FLAG");
   const execute=args.includes("--execute");
+  const persist=args.includes("--persist");
+  if(persist&&(!execute||process.env.TRUST_P2_PERSIST_ENABLED!=="true"))
+    fail("TRUST_P2_PERSIST_DISABLED");
   if(execute&&process.env.TRUST_P2_LIVE_DISCOVERY_ENABLED!=="true")
     fail("TRUST_P2_LIVE_DISABLED");
   const url=process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -83,7 +87,10 @@ export async function runTrustP2Cli(args=process.argv.slice(2)){
       discoveryOriginCount:0,readOnly:true,aiApiCalls:0};
   }
   const result=await runTrustP2Discovery(row,target,trustP2LiveFetchers());
-  return {...result,mode:"LIVE_DISCOVERY_NO_AUTHORITY_WRITE"};
+  const ledger=persist?await appendTrustP2BObservations(client,result):null;
+  return {...result,mode:persist?"LIVE_DISCOVERY_UNVERIFIED_OBSERVATIONS_RECORDED":
+    "LIVE_DISCOVERY_NO_AUTHORITY_WRITE",
+    ...(ledger?{observationLedger:ledger}:{})};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   try{console.log(JSON.stringify(await runTrustP2Cli(),null,2));}
