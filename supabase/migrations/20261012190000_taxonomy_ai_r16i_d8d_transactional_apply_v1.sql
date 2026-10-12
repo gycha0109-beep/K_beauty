@@ -53,8 +53,10 @@ ALTER TABLE public.admin_r16i_correction_applications_v1 ENABLE ROW LEVEL SECURI
 ALTER TABLE public.admin_r16i_correction_application_events_v1 ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.admin_r16i_correction_applications_v1,
  public.admin_r16i_correction_application_events_v1 FROM PUBLIC,anon,authenticated;
-GRANT SELECT ON public.admin_r16i_correction_applications_v1,
- public.admin_r16i_correction_application_events_v1 TO service_role;
+GRANT SELECT,INSERT,UPDATE ON public.admin_r16i_correction_applications_v1 TO service_role;
+GRANT SELECT,INSERT ON public.admin_r16i_correction_application_events_v1 TO service_role;
+-- D8C previously granted decisions SELECT only; its SECURITY INVOKER RPC needs INSERT.
+GRANT INSERT ON public.admin_product_correction_decisions_v1 TO service_role;
 
 -- Everything uses SECURITY INVOKER and is callable only by the trusted service role.
 -- Caller must separately authenticate the real web session and owner role.
@@ -87,7 +89,7 @@ DECLARE
   created_offer public.product_offers%ROWTYPE;
 BEGIN
   IF p_proposal_id IS NULL OR p_actor_id IS NULL OR p_request_id IS NULL
-     OR p_mode NOT IN ('PREVIEW','APPLY') THEN RAISE EXCEPTION 'R16I_D8D_INVALID_REQUEST'; END IF;
+     OR p_mode IS NULL OR p_mode NOT IN ('PREVIEW','APPLY') THEN RAISE EXCEPTION 'R16I_D8D_INVALID_REQUEST'; END IF;
   IF NOT EXISTS(SELECT 1 FROM public.admin_memberships
       WHERE user_id=p_actor_id AND role='admin_owner' AND is_active=true)
      THEN RAISE EXCEPTION 'R16I_D8D_OWNER_REQUIRED'; END IF;
@@ -131,9 +133,11 @@ BEGIN
           AND b.source_url='https://www.hwahae.co.kr/goods/45194'
           AND b.binding_state='resolved'
           AND b.product_scope_state='product_subject_unresolved')<>1
+    OR (SELECT count(*) FROM public.product_source_bindings b WHERE b.product_id=product.id)<>1
     OR (SELECT count(*) FROM public.catalog_trust_intake i WHERE i.product_id=product.id
         AND i.identity_state='SUBJECT_CREATION_REQUIRED'
         AND i.trust_state='REVIEW_REQUIRED' AND i.subject_id IS NULL)<>1
+    OR (SELECT count(*) FROM public.catalog_trust_intake i WHERE i.product_id=product.id)<>1
   THEN RAISE EXCEPTION 'R16I_D8D_BINDING_OR_OFFER_COLLISION'; END IF;
 
   IF cardinality(proposal.evidence_ids) <> 2 OR
