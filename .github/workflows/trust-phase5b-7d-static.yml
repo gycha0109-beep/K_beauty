@@ -14,6 +14,9 @@ on:
       - "scripts/verify-trust-p2-official-discovery-v1.mjs"
       - "scripts/trust-p2c-robots-smoke.mjs"
       - "scripts/verify-trust-p2c-robots-smoke.mjs"
+      - "scripts/trust-p2c-known-product-smoke.mjs"
+      - "scripts/verify-trust-p2c-known-product-smoke.mjs"
+      - ".github/workflows/trust-p2c-known-product-live.yml"
       - ".github/workflows/trust-p2c-official-robots-live.yml"
       - "lib/trust/official-peer-index-links-v1.mjs"
       - "lib/trust/official-discovery-observation-store-v1.mjs"
@@ -81,6 +84,9 @@ on:
       - "scripts/verify-trust-p2-official-discovery-v1.mjs"
       - "scripts/trust-p2c-robots-smoke.mjs"
       - "scripts/verify-trust-p2c-robots-smoke.mjs"
+      - "scripts/trust-p2c-known-product-smoke.mjs"
+      - "scripts/verify-trust-p2c-known-product-smoke.mjs"
+      - ".github/workflows/trust-p2c-known-product-live.yml"
       - ".github/workflows/trust-p2c-official-robots-live.yml"
       - "lib/trust/official-peer-index-links-v1.mjs"
       - "lib/trust/official-discovery-observation-store-v1.mjs"
@@ -192,6 +198,7 @@ jobs:
           node scripts/verify-trust-brand-official-frontier-v1.mjs
           node scripts/verify-trust-p2-official-discovery-v1.mjs
           node scripts/verify-trust-p2c-robots-smoke.mjs
+          node scripts/verify-trust-p2c-known-product-smoke.mjs
           node scripts/verify-trust-p2b-official-observation-v1.mjs
           node scripts/verify-v21-admission-g4-a-subject-registration-reprocess-contract-v1.mjs
           node scripts/verify-product-fact-subject-registration-v1.mjs
