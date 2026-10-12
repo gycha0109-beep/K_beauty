@@ -186,7 +186,7 @@ try{
  const phaseB=JSON.parse(await fs.readFile("docs/ci/consolidation-audits/phase-b-policy.json","utf8"));
  assert.ok(phaseB.approvedAddedWorkflows.includes("taxonomy-ai-r16d-source-capture.yml"));
  const governedWorkflowCount = (await fs.readdir(".github/workflows"))
-    .filter((name) => /\\.ya?ml$/i.test(name)).length;
+    .filter((name) => /\.ya?ml$/i.test(name)).length;
   assert.equal(
     phaseB.baselineWorkflowCount +
       phaseB.approvedAddedWorkflows.length -
