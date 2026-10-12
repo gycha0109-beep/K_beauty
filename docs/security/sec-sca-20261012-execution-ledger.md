@@ -114,3 +114,16 @@ Security workflow [run #38223030217](https://github.com/gycha0109-beep/K_beauty/
 - **실제 공개 수정 후보 소스 검토:** [별도 SCA-2 후보 평가](sec-sca-20261012-upstream-patch-candidate-review.md) 작성. `braces` PR [#72](https://github.com/micromatch/braces/pull/72) (head `28d440b5...`, CLOSED/NOT MERGED, AST 재귀 제한), `node-forge` PR [#1152](https://github.com/digitalbazaar/forge/pull/1152) (head `ceba3440...`, OPEN/NOT MERGED, DigestAlgorithm child-count 엄격화). 두 PR의 실제 source patch를 비교했으나 **공식 보안 패치 배포본이 아니고, 프로젝트에 적용하거나 정상 설치/Android를 검증하지 않았다.**
 - 정확한 코드 실험은 **해당 HEAD의 CI 로그 검수 이후** PASS로 기록한다. 문서 변경 이후의 재실행/취소는 따로 구분한다.
 - **SCA-3 진입 불가:** 두 Advisory의 공급망이 동시에 깨끗해지고 안전한 npm 패키지·무결성·호환성이 입증된 후보 없음. 임의 override/lockfile 수정/expired exception 연장/범위 확대하지 않았다.
+
+## 8. SCA-1 동적 동작 확인 / SCA-2 복사본 패치 검증 (2026-10-12)
+
+**정확한 검사 대상 코드 SHA:** `19ab597ec5ff0d1f8a874c31d7ddda7e696be1ad`. [Supply Chain workflow #38228717035](https://github.com/gycha0109-beep/K_beauty/actions/runs/38228717035).
+
+- **실제 npm 설치본 `node-forge@1.4.0`**: `scripts/security/report-supply-chain-runtime-boundaries.mjs`가 메모리 내 임시 RSA-2048 키와 정상/오류 메시지·비정상 ASN.1 구조의 서명 검증을 수행했다. 정상 서명 수용·다른 메시지 거부·비정상 DigestAlgorithm child **수용**. 따라서 현재 실제 설치된 코드의 ASN.1 구조 검증 결함을 독립 확인했다. 공격자의 원격 입력 도달성·개인키 없는 RSA 위조·실제 Expo APK 포함 여부는 UNKNOWN.
+- **실제 npm 설치본 `braces@3.0.3`**: 길이 223바이트/깊이 110의 통제된 brace 입력 수용. 실제 stack overflow 재현/서비스 가용성 영향 증거로 해석 금지.
+- **격리 `node-forge` 후보:** `verify-node-forge-upstream-patch-isolation.mjs`가 원본 1.4.0 파일과 upstream PR #1152의 정확 hunk 일치를 검사한 뒤 **OS 임시 복사본에만** 패치. 정상 RSA 수용, 다른 메시지 거부가 유지되고 추가 ASN.1 child만 거부됨. `ISOLATED_CANDIDATE_BEHAVIOR_PASS`.
+- **격리 `braces` 후보:** `verify-braces-upstream-patch-isolation.mjs`가 PR #72 HEAD의 라이브러리 5개 파일 diff를 임시 복사본에 적용. 정상 glob 결과 보존, 깊이 110 파서 차단, 깊이 101 AST compile 차단, `maxDepth` 축소 반영. `ISOLATED_CANDIDATE_BEHAVIOR_PASS`.
+- Upstream patch는 아직 공식 릴리스가 아니다. 두 후보의 정확 source/변경 파일/테스트 한계는 [SCA-2 patch candidate review](sec-sca-20261012-upstream-patch-candidate-review.md)에서 관리한다.
+- **공급망 보안 게이트는 계속 FAIL.** 이 격리 실험은 `node_modules`, `package.json`, `package-lock.json`, npm 감사, 임시 예외, 배포 구성을 전혀 바꾸지 않는다. 감사 통과·Android 호환성·운영 수정으로 취급하지 않는다.
+
+SCA-2 출처 보유 코드 변경의 **제한된 개별 동작 실험은 완료**. SCA-3의 공식/검증된 배포 아티팩트, Expo/Metro 및 Code Signing 통합 회귀, source provenance, lockfile·실제 CI 무예외 PASS는 미충족이라 여전히 HOLD다.
