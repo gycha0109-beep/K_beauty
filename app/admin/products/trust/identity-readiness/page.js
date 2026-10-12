@@ -40,7 +40,7 @@ export default async function TrustIdentityReadinessPage() {
       <p className="mt-3 text-sm">운영 DB 연결과 조회 범위를 확인해 주세요. 실패를 완료 상태로 표시하지 않습니다.</p>
     </section>;
   }
-  const {summary,items}=report;
+  const {summary,items,frontier}=report;
   const visible=items.slice(0,60);
   return <div className="mx-auto max-w-6xl space-y-6">
     <header>
@@ -71,6 +71,20 @@ export default async function TrustIdentityReadinessPage() {
       </p>
     </section>
     <section className={card}>
+      <h2 className="text-lg font-semibold">P1 · 같은 브랜드의 공식 출처 재활용</h2>
+      <p className="mt-3 text-sm leading-7 text-[#627080] dark:text-[#aab5c3]">
+        이미 확인된 <strong>다른 제품</strong>의 공식 출처를 브랜드 사이트 탐색의 출발점으로만 사용합니다.
+        새 상품의 공식 근거·판매 시장·처방이 검증됐다는 뜻이 아니며, 자동 Subject 생성은 허가하지 않습니다.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {metric("브랜드 공식 탐색 후보 확보",frontier.withSeeds)}
+        {metric("검증된 브랜드 출발점 없음",frontier.withoutSeeds)}
+      </div>
+      <p className="mt-3 text-xs text-[#657080] dark:text-[#a9b4c3]">
+        해당 숫자는 실제 신규 상품 공식 페이지 발견 건수가 아닙니다. AI API 호출 0회, DB 쓰기 0건입니다.
+      </p>
+    </section>
+    <section className={card}>
       <h2 className="text-lg font-semibold">상품별 확인 목록</h2>
       <p className="mt-2 text-sm text-[#657080] dark:text-[#a9b4c3]">
         이름과 원인만 표시하며 승인·생성 버튼은 제공하지 않습니다.
@@ -85,8 +99,13 @@ export default async function TrustIdentityReadinessPage() {
           </div>
           <p className="mt-1 text-xs text-[#657080] dark:text-[#a9b4c3]">
             시장: {item.market??"미확인"} · 조사 {item.taskCount}건 ·
-            기존 연결 {item.resolvedBindingCount}건
+            기존 연결 {item.resolvedBindingCount}건 ·
+            브랜드 공식 사이트 탐색 후보 {item.discoveryFrontier?.seedCount??0}개
           </p>
+          {item.discoveryFrontier?.discoveryOrigins?.length>0 && <p className="mt-1 break-all text-xs text-[#657080] dark:text-[#a9b4c3]">
+            출발 도메인: {item.discoveryFrontier.discoveryOrigins.map(x=>new URL(x.origin).hostname).join(", ")}
+            {" · "}제품 일치/시장/처방 미검증
+          </p>}
         </li>)}
       </ul>
       {items.length>visible.length && <p className="mt-3 text-sm text-[#657080] dark:text-[#a9b4c3]">
