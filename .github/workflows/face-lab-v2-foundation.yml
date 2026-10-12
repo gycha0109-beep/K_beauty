@@ -34,6 +34,8 @@ on:
       - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-builder.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-pilot.mjs"
+      - "scripts/run-face-lab-v2-human-pairwise-local-pilot.mjs"
+      - "scripts/verify-face-lab-v2-human-pairwise-local-pilot.mjs"
       - "scripts/verify-face-lab-v2-target-intent-authority.mjs"
       - "scripts/verify-face-lab-v2-route-diversity-audit.mjs"
       - "scripts/verify-face-lab-v2-route-choice-authority.mjs"
@@ -129,6 +131,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-recommendation-human-pairwise-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-human-pairwise-review-builder-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-human-pairwise-pilot-e1-sealed-intake-v1.md"
+      - "docs/domain/facelab/face-lab-v2-human-pairwise-pilot-e2-local-operator-v1.md"
       - "docs/domain/facelab/face-lab-v2-target-intent-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-route-diversity-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-explicit-route-choice-authority-v1.md"
@@ -188,6 +191,8 @@ on:
       - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-builder.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-pilot.mjs"
+      - "scripts/run-face-lab-v2-human-pairwise-local-pilot.mjs"
+      - "scripts/verify-face-lab-v2-human-pairwise-local-pilot.mjs"
       - "scripts/verify-face-lab-v2-target-intent-authority.mjs"
       - "scripts/build-face-lab-v2-human-pairwise-packet.mjs"
       - "scripts/run-face-lab-v2-recommendation-evaluation.mjs"
@@ -269,6 +274,7 @@ on:
       - "docs/domain/facelab/face-lab-v2-recommendation-human-pairwise-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-human-pairwise-review-builder-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-human-pairwise-pilot-e1-sealed-intake-v1.md"
+      - "docs/domain/facelab/face-lab-v2-human-pairwise-pilot-e2-local-operator-v1.md"
       - "docs/domain/facelab/face-lab-v2-target-intent-authority-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-face-fit-contract-v1.md"
       - "docs/domain/facelab/face-lab-v2-candidate-evaluation-contract-v1.md"
@@ -332,6 +338,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-human-pairwise-builder.mjs
       - name: Verify Face Lab V2 sealed Human pilot intake and reveal
         run: node scripts/verify-face-lab-v2-human-pairwise-pilot.mjs
+      - name: Verify Face Lab V2 private offline Human pilot E2
+        run: node scripts/verify-face-lab-v2-human-pairwise-local-pilot.mjs
       - name: Verify Face Lab V2 Target Intent authority
         run: node scripts/verify-face-lab-v2-target-intent-authority.mjs
       - name: Verify Face Lab V2 Route Diversity audit
