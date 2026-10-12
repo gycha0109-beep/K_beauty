@@ -15,7 +15,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
-const patchPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "candidates", "braces-pr72-library.patch");
+const encodedPatchPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "candidates", "braces-pr72-library.patch.b64");
 const candidate = {
   source: "micromatch/braces#72",
   upstreamHead: "28d440b5dd449dbf1fe6f3506cf94ecca4d02660",
@@ -75,6 +75,10 @@ if (!installed) {
       // Resolve unchanged fill-range/is-number dependencies from npm-ci install.
       // Only a symlink inside the ephemeral directory is created.
       fs.symlinkSync(path.resolve("node_modules"), path.join(temp, "node_modules"), "dir");
+      const patchPath = path.join(temp, "reviewed-library.patch");
+      const encodedPatch = fs.readFileSync(encodedPatchPath, "utf8").replace(/\s/g, "");
+      assert.match(encodedPatch, /^[A-Za-z0-9+/]+=*$/, "invalid pinned base64 patch");
+      fs.writeFileSync(patchPath, Buffer.from(encodedPatch, "base64"));
       const run = (args) => spawnSync("git", ["apply", ...args, patchPath], {
         cwd: temp, encoding: "utf8", timeout: 15000,
       });
