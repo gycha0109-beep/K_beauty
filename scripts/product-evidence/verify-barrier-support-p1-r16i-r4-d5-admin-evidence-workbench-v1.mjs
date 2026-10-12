@@ -34,7 +34,7 @@ assert.match(page,/readR16IR4D4Review\(client\)/);
 assert.doesNotMatch(page,/(createServerAction|use server|export async function (POST|PUT|PATCH|DELETE))\b/);
 
 assert.match(ui,/"use client"/);
-assert.match(ui,/review\.decision/);
+assert.match(ui,/review\?\.decision/);
 assert.match(ui,/20개 항목/);
 assert.match(ui,/fields\.map/);
 assert.match(ui,/selected|option|옵션/);
