@@ -146,7 +146,8 @@ assert.equal(validateFaceLabV2PilotReviewPacket(corruptedPacket), false);
 assert.equal(seal(submission(), corruptedPacket).status, "blocked");
 
 const mutatedManifest = structuredClone(manifest);
-mutatedManifest.mappings[0].mapping.A.role = "candidate";
+mutatedManifest.mappings[0].mapping.A.role =
+  manifest.mappings[0].mapping.A.role === "current" ? "candidate" : "current";
 assert.equal(
   reveal({
     operatorManifest: mutatedManifest, judgments: [intake.judgment]
