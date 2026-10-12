@@ -90,3 +90,28 @@ TRUST_P2_LIVE_DISCOVERY_ENABLED=true node scripts/trust-p2-official-discovery.mj
 Never set the live flag on scheduled public endpoints or the default production environment without an approved source/robots/terms review. Output is read-only JSON and is not a governed Product Fact candidate.
 
 **Acceptance remaining:** Per-brand permitted-site policy + robots/terms review, a repeatable read-only live pilot, exact market/formulation identity adjudication, and provenance-preserving durable observation storage under a governed writer. Do not auto-approve a Source Binding or Subject.
+
+## P2-B: numeric official paths and append-only non-authoritative observations (2026-10-12)
+
+P2-A was intentionally opt-in and read-only. P2-B addresses a real observed production gap: Torriden's governed official source locators are `https://www.torriden.com/goods/goods_view.php?goodsNo=...`, not `/products/`, and the numeric URL cannot be identified from a Korean product name in a sitemap path.
+
+Implementation:
+- Existing `exact_subject_match` + `equivalent` official PEER source bindings provide at most one same-brand, same-origin official peer page as a link discovery surface. Never copy its verified identity or formulation authority to the target.
+- `official-peer-index-links-v1.mjs` accepts only a bounded, visible anchor label equal to/containing the complete target name; only HTTPS same-origin catalog routes, including `/goods/goods_view.php`, can be candidates. Other domains, mismatched anchors and unrelated paths are rejected.
+- P2 execution checks robots before fetching the peer page and enforces the existing SSRF-safe transport, time/byte bounds and no redirect. Still no API LLM calls.
+- `trust_official_discovery_observations_v1` is **a new pre-Subject, pre-Fact unverified evidence queue/ledger**, not a duplicate of `trust_source_observations`, which requires existing research task, Subject and source binding. Its immutable row has product/intake, origin, optional candidate locator/content digest, site/page status, semantic identity surface, observation fingerprint, and contract version. It stores *no* positive Product Fact assertion or market/formulation authorization.
+- Forced RLS, only service_role SELECT/INSERT, no UPDATE/DELETE, globally unique SHA-256 fingerprint. Re-run duplicate fingerprints are accepted as idempotent duplicates, and digest collisions fail closed. No history overwrites.
+- CLI is **disabled for live fetch by default**, and database observation persistence has an **independent** off-by-default switch. Both `--execute` and `--persist` and `TRUST_P2_LIVE_DISCOVERY_ENABLED=true` and `TRUST_P2_PERSIST_ENABLED=true` are mandatory to write discovery observations.
+- Existing TRUST static CI validates deterministic P2B candidate filtering and fingerprint replays. The existing DB integration PostgreSQL 17 job exercises ACL, replay uniqueness, invalid status constraints, and transactional rollback in a disposable database.
+- Source-policy acceptance remains a separate live operations gate: network access to `https://www.torriden.com/robots.txt` and `/sitemap.xml` could not be established in this execution environment. **Do not report actual product URLs discovered or production live success unless an execution log proves it.**
+- On P2-B deployment, no live scans are enabled and no approved Subject or Fact is created.
+
+Operator-only command contract (requires existing service role env and reviewed source policy; no public endpoint):
+```bash
+node scripts/trust-p2-official-discovery.mjs --product-id=<uuid>
+TRUST_P2_LIVE_DISCOVERY_ENABLED=true \\
+TRUST_P2_PERSIST_ENABLED=true \\
+node scripts/trust-p2-official-discovery.mjs --product-id=<uuid> --execute --persist
+```
+
+**P2 remaining:** Record genuine live site/robots success under permitted policies; improve catalog-index coverage (many official pages render navigation only in JavaScript); add independent exact SKU, market and formulation attestation and guard source admission through the existing governed workflow, then schedule bounded operations. P1 machine Subject creation remains DISABLED pending a separate authorization review and canary.
