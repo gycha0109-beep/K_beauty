@@ -89,7 +89,7 @@ export default function R16IR4D8CorrectionApproval({review}){
     catch{setLedger(null);setEvidence([]);setMessage("이력 조회 실패");}finally{setBusy("");}
    }}>검토 이력 새로고침</button>
   </div>
-  <p className={light}>여기서 승인하는 정정안은 D8-D 적용 전의 검토 기록입니다. 가격·상품·판매 옵션을 실제 DB에 적용하지 않습니다.</p>
+  <p className={light}>여기서 승인하는 정정안은 D8-D 적용 전의 검토 기록입니다. 가격·상품·판매 옵션을 실제 DB에 적용하지 않습니다. 승인하려면 공식몰 단품과 화해 기획세트 양쪽의 VERIFIED 캡처가 필요합니다.</p>
   {blocked||!ledger?<p role="alert" className="rounded-lg bg-[#fff3e9] p-3 text-sm text-[#a2581c] dark:bg-[#413022]">
    {blocked?"상품의 검증된 변경 전 상태가 달라 처리할 수 없습니다.":"검토 이력을 불러오지 못해 제출과 승인을 차단했습니다."}
   </p>:<>
