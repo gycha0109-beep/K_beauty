@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { readFile, readdir, lstat, mkdir, writeFile, rm, symlink } from "node:fs/promises";
+import { readFile, readdir, lstat, writeFile, rm, symlink, rename } from "node:fs/promises";
 import { join } from "node:path";
 import {
   validateFaceLabV2HumanPairwiseBindings
@@ -179,6 +179,27 @@ try {
     );
   } catch (error) {
     if (!["EPERM", "EACCES", "ENOTSUP"].includes(error.code)) throw error;
+  }
+
+  // Parent-directory symlinks must not redirect artifact reads elsewhere.
+  const inboxDir = join(root, "inbox");
+  const backupDir = join(root, "inbox-backup");
+  await rename(inboxDir, backupDir);
+  let linkedParent = false;
+  try {
+    try {
+      await symlink(backupDir, inboxDir, "dir");
+      linkedParent = true;
+      assert.match(
+        command("seal", ["--input", "plain.json"], false),
+        /private_parent_not_a_real_directory/
+      );
+    } catch (error) {
+      if (!["EPERM", "EACCES", "ENOTSUP"].includes(error.code)) throw error;
+    }
+  } finally {
+    if (linkedParent) await rm(inboxDir);
+    await rename(backupDir, inboxDir);
   }
 
   console.log(JSON.stringify({
