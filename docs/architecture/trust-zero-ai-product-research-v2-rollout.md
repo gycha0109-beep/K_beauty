@@ -135,3 +135,14 @@ The new read-only extraction path `official-visible-identity-v1.mjs` checks a bo
 The existing pre-Subject unverified observation ledger, not Product Fact Current or the governed TRUST observations, now permits these explicitly typed candidate dispositions through a limited migration. PostgreSQL 17 checks enforce surface-to-disposition mapping and unchanged append-only RLS rights. A matching body mention is NOT a positive source authorization and must never create a Product Fact Subject.
 
 Next gate: live P2-C recheck on same previously governed known product (two GET requests, robots first), then test separate unknown SKUs with independent official product/market/formulation evidence before source binding or Subject creation. No automatic admission.
+
+### Canonical CI ownership note
+The historical one-off `trust-p2c-known-product-live.yml` and
+`trust-p2c-official-robots-live.yml` workflows have been **retired** after
+their measured real-site smoke runs. The repository's CI trigger topology
+requires all `trust-pN` historical workflows to remain absent. Offline
+contract verification now runs through the existing TRUST 5B-7D static
+suite; PostgreSQL identity observation constraints run through the existing
+Database Integration Authority job. The bounded manual CLI remains
+available for authorized subsequent source-policy measurements. No live
+cron or unattended URL probe was introduced in this phase.
