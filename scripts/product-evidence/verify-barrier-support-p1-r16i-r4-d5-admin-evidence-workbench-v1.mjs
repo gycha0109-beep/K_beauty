@@ -7,6 +7,7 @@ const read = x=>fs.readFileSync(x,"utf8");
 const page=read("app/admin/products/r16i-correction-review/page.js");
 const ui=read("app/admin/products/r16i-correction-review/R16ICorrectionEvidenceWorkbench.js");
 const route=read("app/api/admin/products/r16i-correction-review/route.js");
+const navigation=read("app/admin/AdminNavigation.js");
 const d4=JSON.parse(read("evidence/product-decision-axis-non-numeric-shadow-v2/barrier-support-p1-r16i-r4-readonly-prestate-20261010.json"));
 const snapshot={
   observed_at:"2026-10-12T10:15:00+09:00",
@@ -51,6 +52,8 @@ assert.match(ui,/target="_blank" rel="noopener noreferrer"/);
 assert.doesNotMatch(ui,/(localStorage|sessionStorage|indexedDB|fetch\(|axios|WebSocket|sendBeacon|formAction|method="post")/);
 assert.doesNotMatch(ui,/\b(approve|승인 완료|실제 반영)\s*\(/);
 
+assert.match(navigation,/href: "\/admin\/products\/r16i-correction-review",\s*capability: ADMIN_CAPABILITIES\.PRODUCTS_REVIEW/);
+assert.match(navigation,/!grantedCapabilities\.has\(item\.capability\)/);
 assert.match(route,/admin\.products|PRODUCTS_REVIEW/);
 for(const [name,source] of [["page",page],["UI",ui],["API",route]]){
   assert.doesNotMatch(source,/\.insert\s*\(|\.upsert\s*\(|\.update\s*\(|\.delete\s*\(|\.rpc\s*\(/,name);
