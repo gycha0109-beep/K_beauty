@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { constants } from "node:fs";
 import { lstat, mkdir, open, readdir } from "node:fs/promises";
-import { basename, isAbsolute, join, relative, sep } from "node:path";
+import { isAbsolute, join, relative, sep } from "node:path";
 import {
   buildFaceLabV2HumanPairwiseOperatorManifest,
   buildFaceLabV2HumanPairwiseReviewPacket
@@ -76,7 +76,24 @@ async function guardedDirectory(directory) {
   }
 }
 
+async function assertTrustedReadParents(file) {
+  const rel = relative(process.cwd(), file);
+  if (rel.startsWith("..") || isAbsolute(rel)) {
+    throw new Error("private_read_outside_repository");
+  }
+  let current = process.cwd();
+  const segments = rel.split(sep).filter(Boolean);
+  for (const segment of segments.slice(0, -1)) {
+    current = join(current, segment);
+    const st = await lstat(current);
+    if (!st.isDirectory() || st.isSymbolicLink()) {
+      throw new Error("private_parent_not_a_real_directory");
+    }
+  }
+}
+
 async function readPrivateJson(file) {
+  await assertTrustedReadParents(file);
   const st = await lstat(file);
   if (!st.isFile() || st.isSymbolicLink() || st.size > MAX_JSON_BYTES) {
     throw new Error("private_input_not_a_bounded_regular_file");
@@ -104,6 +121,11 @@ async function writePrivateJson(file, value) {
 }
 
 async function listedJson(directory) {
+  await assertTrustedReadParents(join(directory, "child.json"));
+  const st = await lstat(directory);
+  if (!st.isDirectory() || st.isSymbolicLink()) {
+    throw new Error("private_list_directory_invalid");
+  }
   const names = await readdir(directory);
   return names.filter((name) => name.endsWith(".json")).sort();
 }
