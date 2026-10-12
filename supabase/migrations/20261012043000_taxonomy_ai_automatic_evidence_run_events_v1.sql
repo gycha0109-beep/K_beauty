@@ -27,7 +27,7 @@ create table public.automatic_product_evidence_run_events_v1 (
     ) or (
       event_kind='failure' and
       ((checked_count=1 and failed_count=1 and
-        inserted_count+duplicate_count=0) or
+        inserted_count+duplicate_count<=1) or
        (checked_count=0 and failed_count=0 and
         inserted_count=0 and duplicate_count=0 and exception_count=0))
       and error_code is not null
