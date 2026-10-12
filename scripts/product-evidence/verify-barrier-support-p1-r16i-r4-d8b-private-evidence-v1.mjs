@@ -131,7 +131,7 @@ const signed=await signR16IEvidence(client(),randomUUID());
 assert.equal(signed.expiresInSeconds,60);
 await assert.rejects(()=>signR16IEvidence(client(),"bad"),/INVALID_EVIDENCE_ID/);
 
-const sql=fs.readFileSync("supabase/migrations/20261012054000_taxonomy_ai_r16i_private_evidence_v1.sql","utf8");
+const sql=fs.readFileSync("supabase/migrations/20261012141026_taxonomy_ai_r16i_private_evidence_v1.sql","utf8");
 const api=fs.readFileSync("app/api/admin/products/r16i-correction-review/evidence/route.js","utf8");
 const store=fs.readFileSync("lib/product-intelligence/r16i-private-evidence-store.mjs","utf8");
 const ui=fs.readFileSync("app/admin/products/r16i-correction-review/R16IR4D8PrivateEvidence.js","utf8");
