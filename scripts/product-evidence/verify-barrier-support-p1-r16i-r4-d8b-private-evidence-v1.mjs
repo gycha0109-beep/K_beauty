@@ -86,12 +86,14 @@ function client(options={}) {
     return {
       insert(record){
         io.inserts.push(record);
-        return {select(){return {single:async()=>options.insertError?
-          {data:null,error:{code:"write_failure"}}:
-          {data:{evidence_id:randomUUID(),source_key:record.source_key,
-            selected_option:record.selected_option,checkout_price_krw:record.checkout_price_krw,
-            captured_at:record.captured_at,evidence_state:"UNVERIFIED",created_at:new Date().toISOString()},error:null}
-        };};};
+        return { select: () => ({
+          single: async () => options.insertError
+            ? {data:null,error:{code:"write_failure"}}
+            : {data:{evidence_id:randomUUID(),source_key:record.source_key,
+                selected_option:record.selected_option,checkout_price_krw:record.checkout_price_krw,
+                captured_at:record.captured_at,evidence_state:"UNVERIFIED",created_at:new Date().toISOString()},
+               error:null}
+        }) };
       },
       select(columns){
         io.queries.push(columns);
