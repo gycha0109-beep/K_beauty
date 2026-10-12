@@ -185,3 +185,13 @@ product_fact_current.fact_instance_id
 - 호출 실패 시 자동 실행 API는 503을 반환하며 로그에 합계만 기록한다. **읽기 실패는 DB 평가 이력에 기록되지 않으므로**, 이력 예외 인박스만으로 작업자 장애를 전부 발견할 수 있다고 주장하지 않는다. 별도 모니터링/알림 전달은 후속 단계이다.
 - `CRON_SECRET`, 활성화 플래그가 Production에 설정되지 않았다면 정기 실행은 등록되어 있어도 **실제로 비활성**이다. 원격 환경변수 권한/배포/실행 로그의 확인 없이 자동화가 작동 중이라고 보고하지 않는다.
 - 검증: 기존 `scripts/verify-automatic-product-evidence-live-v1.mjs`에서 1개 제품 고정, 최초 평가, duplicate, 실패 격리, core degradation, 단순 insuffression, 관리자 인증/비밀키/비활성 상태를 검사한다. 새 CI 워크플로는 만들지 않는다.
+
+## 14. 3단계 C2 — 관리자 중요 예외 인박스 화면 (2026-10-12)
+
+- `/admin/products/automatic-evidence`: 기존 관리자 레이아웃과 `PRODUCTS_REVIEW` capability 경계를 사용하는 **읽기 전용** 화면. 관리자 메뉴의 `자동 평가 예외`에서 접근.
+- 서버에서 서비스 클라이언트로 append-only 평가 이력을 최근 ID 기준 최대 100건 읽고, Product/Subject의 최신 기록만 대상으로 3C1 `classifyAutomaticEvidenceAttention` 규칙을 적용. 일반 insufficient는 검토 요청으로 만들지 않음.
+- 첫 이력이 없으면 반드시 `평가 이력이 아직 없습니다`로 표시. DB 실패면 오류를 표시하며 `정상/예외 없음`으로 오인시키지 않음. 최근 100건 제한에 도달하면 전체를 열람한 것처럼 표시하지 않고 경고 노출.
+- 카드: 조회된 최신 평가 대상 수, 주의가 필요한 평가 수, 최근 평가 기록 시각. 데이터에 없는 Cron 호출 성공 여부를 녹색 상태로 추정하거나 외부 메시지/이메일을 생성하지 않음.
+- 추가 DB 스키마/권한/추천 편입/RPC/관리자 필드 승인 변경 없음.
+- Production DB 현황(확인 시점): 1개 BUSHMAN first_observation, `evidence_ready=true`, 2개 verified fact, 10개 insufficient, 중요 예외 0. 이는 **첫 이력의 정상 저장**을 검증하며 Cron 호출 경로/중복 실제 실행 성공까지 자동으로 증명하지는 않음.
+- 기존 `scripts/verify-automatic-product-evidence-live-v1.mjs`에 관리자 권한, 읽기 전용, false-green 및 메뉴 접근 계약 검증 추가. 기존 Database Integration Authority 워크플로에서 실행.
