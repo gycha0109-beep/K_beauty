@@ -19,7 +19,8 @@ CREATE TABLE public.admin_r16i_correction_applications_v1 (
   proposal_id uuid NOT NULL UNIQUE REFERENCES public.admin_product_correction_proposals_v1(proposal_id) ON DELETE RESTRICT,
   decision_id uuid NOT NULL REFERENCES public.admin_product_correction_decisions_v1(decision_id) ON DELETE RESTRICT,
   product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,
-  offer_id uuid NOT NULL UNIQUE REFERENCES public.product_offers(offer_id) ON DELETE RESTRICT,
+  -- Keep historical offer identifier even when a verified rollback deletes the offer.
+  offer_id uuid NOT NULL UNIQUE,
   before_values jsonb NOT NULL,
   after_values jsonb NOT NULL,
   offer_values jsonb NOT NULL,
