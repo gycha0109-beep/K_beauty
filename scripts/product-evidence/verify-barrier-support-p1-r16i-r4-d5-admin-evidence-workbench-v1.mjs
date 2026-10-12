@@ -36,7 +36,18 @@ assert.doesNotMatch(page,/(createServerAction|use server|export async function (
 
 assert.match(ui,/"use client"/);
 assert.match(ui,/review\?\.decision/);
-assert.match(ui,/20개 항목/);
+assert.match(ui,/DB 필드 20개/);
+assert.match(ui,/판매처별 실제 정보 확인/);
+assert.match(ui,/판매 정보 정정안 미리보기/);
+assert.match(ui,/확인한 원본 근거 기록/);
+assert.match(ui,/최종 검토 · 승인 전/);
+assert.match(ui,/<details/);
+assert.match(ui,/<summary/);
+assert.match(ui,/disabled aria-disabled="true"/);
+assert.match(ui,/review\?\.decision !== "REVIEW_REQUIRED"/);
+assert.match(ui,/const rows = blocked \? \[\]/);
+assert.match(ui,/80ml 단품 가격으로 옮기거나/);
+assert.match(ui,/정정 이슈 #1204/);
 assert.match(ui,/fields\.map/);
 assert.match(ui,/selected|option|옵션/);
 assert.match(ui,/navigator\.clipboard\.writeText/);
