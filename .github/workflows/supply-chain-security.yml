@@ -90,6 +90,7 @@ jobs:
           node scripts/security/verify-braces-upstream-patch-isolation.mjs
           node scripts/security/verify-sca-candidate-integration-isolation.mjs
           node scripts/security/run-sca-mobile-baseline-observation.mjs
+          node scripts/security/verify-sca-native-tracked-integrity.mjs
           node scripts/security/run-sca-native-prebuild-observation.mjs
 
       - name: Audit dependency vulnerabilities
