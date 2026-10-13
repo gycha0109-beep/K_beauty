@@ -162,3 +162,11 @@
 - Vercel Production alias now at `dpl_D2cMapWhKCFDsjUPy23yPTspm2az` (`main@697f4004`); project environment metadata list still HTTP 403. Candidate Supabase SELECT reconfirms Product 160ml/29,900 and evidence/proposal/application/offer/subject counts 0 with release gate disabled; deployed-server identity **UNATTESTED**.
 - Seller public listing 35,000/24,500 KRW (official 80ml single), 29,900 KRW (Hwahae bundle) remains **non-checkout**, and no private capture/VERIFIED decision or owner product/offer field authorization exists. Do not reassign review counts or approve price/CTA.
 - Security #1208 OPEN, Draft #1240 still vulnerable; no expiry extensions, no merge or Production apply. See `docs/evidence/r16i-r4-d8g-production-readiness-gate-20261013.md` §6 for exact SHA, CI runs and owner-only unblock actions.
+
+### D8F/D8G continuation — public review-scope drift and guarded replay (2026-10-13)
+
+- Current Production alias now resolves to `dpl_5MztRfqUfLgTYb9J9CWj5sGdCKVX` at `main@5272378c`. Effective Production Supabase DB identity remains **UNATTESTED** (project env metadata list forbidden); candidate database is not a substitute.
+- Indexed retailer page shows 43,652 reviews vs the stored source historical 41,475; this is **review population uncertainty**, not an approved live review refresh or single-80ml attribution. Public official list/member and retailer bundle prices remain **non-checkout only**.
+- Existing D8F no-write verifier now checks three exact publicly indexed listing promotions and one Offer URL collision fail-closed scenario. Do not count new checks as D8F original evidence, D8G launch or D8H authorized correction.
+- PR #1255 remains OPEN/HOLD until independent #1208 security remediation, owner verification and exact current CI. Full details: `docs/evidence/r16i-r4-d8f-candidate-d4-readonly-prestate-20261013.md` and D8G gate §7.
+

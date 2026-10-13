@@ -3177,3 +3177,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Vercel Production alias READY `dpl_D2cMapWhKCFDsjUPy23yPTspm2az` from `main@697f4004`. Correct project/account metadata known; project env metadata SELECT HTTP 403. Server effective Supabase project and APPLY flag UNATTESTED, not inferred from candidate DB.
 - Connected candidate Supabase read-only SQL: original Product 160ml/29,900, evidence/proposals/applications/offers/subjects 0, DB release gate false. Public prices only, no exact original checkout captures or owner VERIFIED decisions. D8F/G/H remain HOLD. No Product, Offer, Subject, DB schema, RLS, privileges, admin, env, deploy, gate or merge write.
 - Evidence + operator next steps: `docs/evidence/r16i-r4-d8g-production-readiness-gate-20261013.md` §6. Final HEAD CI must be rechecked after this doc commit.
+
+### 2026-10-13 / R16I-R4 public price/review scope negative controls
+
+- Scope: taxonomy-ai PR #1255. Main advanced to `5272378c` with disjoint TRUST P3 change; preserve integration via verified two-parent merge. Production alias `dpl_5MztRfqUfLgTYb9J9CWj5sGdCKVX` at main; effective server DB UNATTESTED.
+- Previously exact-head `c3f62904`: Database Integration/PG17, Main Health, PIE, Security Boundary, CodeQL PASS; Supply Chain canonical vulnerability FAIL (#1208 and security Draft #1240 remain HOLD).
+- New bounded offline verifier tests reject promotion of publicly indexed official 80ml list/member prices, Hwahae displayed review count 43,652 instead of frozen 41,475 and an Offer URL collision. No checkout, owner verdict, product changes, Offer insertion, Subject write, migration, privileges, env or release gate change. CI on new SHA mandatory.
+- Evidence and owner action: D8F read-only prestate document / D8G gate §7. Production correction never approved.
+

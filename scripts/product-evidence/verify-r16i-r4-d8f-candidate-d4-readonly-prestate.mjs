@@ -89,6 +89,16 @@ const negatives = [
   ["PRODUCT_REVIEW_POPULATION_CHANGED", "PRODUCT_LEGACY_STATE_OR_REVISION_DRIFT", v => {
     v.product.market_signals.review_count += 1;
   }],
+  // Publicly indexed seller displays are diagnostic only, never Product price/review authority.
+  ["PUBLIC_OFFICIAL_SINGLE_LIST_PRICE_UNVERIFIED", "PRODUCT_LEGACY_STATE_OR_REVISION_DRIFT", v => {
+    v.product.price_min = 35000;
+  }],
+  ["PUBLIC_OFFICIAL_SINGLE_MEMBER_PRICE_UNVERIFIED", "PRODUCT_LEGACY_STATE_OR_REVISION_DRIFT", v => {
+    v.product.price_max = 24500;
+  }],
+  ["PUBLIC_RETAILER_REVIEW_COUNT_NOT_PRODUCT_AUTHORITY", "PRODUCT_LEGACY_STATE_OR_REVISION_DRIFT", v => {
+    v.product.market_signals.review_count = 43652;
+  }],
   ["PRODUCT_IDENTITY_CHANGED", "PRODUCT_LEGACY_STATE_OR_REVISION_DRIFT", v => {
     v.product.id = "00000000-0000-4000-8000-000000000001";
   }],
@@ -106,6 +116,9 @@ const negatives = [
   }],
   ["OFFER_COLLISION", "OFFER_LISTING_OR_SUBJECT_COLLISION", v => {
     v.offers_by_listing.push({offer_id:"synthetic-collision"});
+  }],
+  ["OFFER_URL_COLLISION", "OFFER_LISTING_OR_SUBJECT_COLLISION", v => {
+    v.offers_by_url.push({offer_id:"synthetic-url-collision"});
   }],
   ["SUBJECT_COLLISION", "OFFER_LISTING_OR_SUBJECT_COLLISION", v => {
     v.subjects.push({subject_id:"synthetic-subject"});
