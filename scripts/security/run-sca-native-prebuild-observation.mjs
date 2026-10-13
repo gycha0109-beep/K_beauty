@@ -27,6 +27,7 @@ const trackedPaths = tracked.map((p) => path.join(root, p));
 const digest = (p) => fs.existsSync(p) ?
   createHash("sha256").update(fs.readFileSync(p)).digest("hex") : "MISSING";
 const before = trackedPaths.map(digest);
+const beforeContents = trackedPaths.map((p) => fs.readFileSync(p));
 const androidExistedBefore = fs.existsSync(android);
 const checks = [];
 const childEnv = {
@@ -82,6 +83,31 @@ try {
 } finally {
   const after = trackedPaths.map(digest);
   const changedFiles = tracked.filter((_, index) => before[index] !== after[index]);
+  // Expo prebuild may normalize workspace package.json even with --no-install.
+  // Restore exact original bytes on the disposable CI checkout before npm audit.
+  const restored = [];
+  const restorationErrors = [];
+  if (!androidExistedBefore) {
+    for (let index = 0; index < trackedPaths.length; index++) {
+      if (before[index] === after[index]) continue;
+      const file = trackedPaths[index];
+      try {
+        assert.ok(fs.existsSync(file) && fs.statSync(file).isFile(),
+          "changed tracked input is missing or non-regular");
+        assert.ok(!fs.lstatSync(file).isSymbolicLink(),
+          "refuse restore through symlink");
+        fs.writeFileSync(file, beforeContents[index]);
+        if (digest(file) !== before[index]) {
+          throw new Error("tracked input content not recovered");
+        }
+        restored.push(tracked[index]);
+      } catch {
+        restorationErrors.push(tracked[index]);
+      }
+    }
+  }
+  const trackedInputsRestored = trackedPaths.every((file, index) =>
+    digest(file) === before[index]);
   const nativeWasCreated = !fs.existsSync(android) ? false :
     !fs.lstatSync(android).isSymbolicLink() && fs.lstatSync(android).isDirectory();
   const safeToClean = !androidExistedBefore && nativeWasCreated &&
@@ -104,17 +130,25 @@ try {
     generatedNativeShell,
     stopReason,
     changedTrackedInputs: changedFiles, // names only; never print file contents
+    restoredTrackedInputs: restored,
+    restorationErrors,
+    trackedInputsRestored,
     cleanup,
     nativeGradleBuild: "NOT_RUN",
     apkArtifact: "NOT_CREATED",
     candidatePatchedDependencyTested: false,
-    canonicalAuditUnchanged: true,
-    conclusion: stopReason === null && changedFiles.length === 0 &&
+    canonicalAuditUnchanged: trackedInputsRestored,
+    conclusion: stopReason === null && trackedInputsRestored &&
       cleanup === "REMOVED_GENERATED_NATIVE_DIRECTORY" &&
       checks.every((check) => check.status === "PASS") ?
-      "NATIVE_PREBUILD_BASELINE_PASS" : "NATIVE_PREBUILD_BASELINE_INCOMPLETE",
+      (changedFiles.length ? "NATIVE_PREBUILD_PASS_WITH_RESTORED_INPUT_MUTATION" :
+        "NATIVE_PREBUILD_BASELINE_PASS") : "NATIVE_PREBUILD_BASELINE_INCOMPLETE",
   };
   console.log("SCA_NATIVE_PREBUILD_OBSERVATION=" + JSON.stringify(result));
+  if (!trackedInputsRestored || restorationErrors.length > 0 ||
+      cleanup === "CLEANUP_FAILED") {
+    process.exitCode = 1; // fail closed; never audit altered tracked inputs
+  }
   // Do not prevent the separately-executed original npm audit from running.
   // This is an observation, not a policy waiver.
 }
