@@ -169,4 +169,3 @@
 - Indexed retailer page shows 43,652 reviews vs the stored source historical 41,475; this is **review population uncertainty**, not an approved live review refresh or single-80ml attribution. Public official list/member and retailer bundle prices remain **non-checkout only**.
 - Existing D8F no-write verifier now checks three exact publicly indexed listing promotions and one Offer URL collision fail-closed scenario. Do not count new checks as D8F original evidence, D8G launch or D8H authorized correction.
 - PR #1255 remains OPEN/HOLD until independent #1208 security remediation, owner verification and exact current CI. Full details: `docs/evidence/r16i-r4-d8f-candidate-d4-readonly-prestate-20261013.md` and D8G gate §7.
-

@@ -26,4 +26,3 @@
 - Existing D8F offline verifier now exercises three additional **unapproved seller-to-Product promotion** negatives (35,000 list price, 24,500 member price, 43,652 public review count) and an independent **Offer URL collision** negative. All must fail closed with zero write or release authority.
 - Merchant evidence: https://m.snature.kr/category/aqua/75/ (official catalog); https://www.hwahae.co.kr/goods/45194 (retailer listing and publicly indexed redirect). Page indexing is secondary public observation and **not** existing private owner VERIFIED evidence.
 - Frozen candidate prestate and D4 logic remain unchanged. Original checkout images, promotion conditions, serum exact SKU, owner decisions and deployed server DB identity remain **HOLD**. No Product/Offer/Subject/DB write.
-
