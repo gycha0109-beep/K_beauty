@@ -1,0 +1,111 @@
+{
+  "contract": "trust-p3-official-locator-revalidation-cohort-v1",
+  "baselineDate": "2026-10-13",
+  "purpose": "OFFICIAL_INDEX_DISCOVERY_VS_RUNNER_LIVE_SOURCE_SEPARATED",
+  "authority": {
+    "readOnly": true,
+    "newSourceBinding": false,
+    "newSubject": false,
+    "newProductFact": false,
+    "newRecommendation": false,
+    "automaticPromotion": false,
+    "aiApiCalls": 0
+  },
+  "targets": [
+    {
+      "productId": "57e4a5ec-115d-4322-85a1-7976db669700",
+      "brand": "토리든",
+      "catalogName": "다이브인 워터리 모이스처 선크림",
+      "sizeMl": 60,
+      "officialSourceId": "0faa9a86-8d74-495f-8fcb-ac47cb0529d6",
+      "origin": "https://www.torriden.com",
+      "locators": [
+        {
+          "role": "EXISTING_BOUND_SOURCE",
+          "url": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+          "indexedTitle": "다이브인 모이스처 선크림 60ml",
+          "indexedTitleSizeMl": 60,
+          "displayedNameEqualsCatalog": false,
+          "indexedSource": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+          "interpretation": "PRESENTATION_NAME_DRIFT_HOLD"
+        },
+        {
+          "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+          "url": "https://www.torriden.com/goods/goods_view.php?goodsNo=173",
+          "indexedTitle": "다이브인 워터리 모이스처 선크림 60ml",
+          "indexedTitleSizeMl": 60,
+          "displayedNameEqualsCatalog": true,
+          "indexedSource": "https://www.torriden.com/goods/goods_view.php?goodsNo=173",
+          "interpretation": "NAME_AND_VOLUME_INDEX_CANDIDATE_ONLY"
+        }
+      ],
+      "scopeCaution": "Distinct goodsNo values 252 and 173 do not prove unchanged formulation, equivalence or market identity."
+    },
+    {
+      "productId": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "brand": "뷰티오브조선",
+      "catalogName": "맑은쌀 선크림",
+      "catalogNameEn": "Relief Sun : Rice + Probiotics",
+      "sizeMl": 50,
+      "officialSourceId": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "origin": "https://beautyofjoseon.com",
+      "locators": [
+        {
+          "role": "EXISTING_BOUND_SOURCE",
+          "url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+          "indexedTitle": "Relief Sun : Rice + Niacinamide (SPF50+ PA++++)",
+          "indexedTitleSizeMl": 50,
+          "displayedNameEqualsCatalog": false,
+          "indexedSource": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics?country=PH&currency=PHP",
+          "interpretation": "BRAND_EXPLICIT_RENAME_REVIEW_REQUIRED"
+        },
+        {
+          "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+          "url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics-spf50-pa-uk",
+          "indexedTitle": "Relief Sun : Rice + Niacinamide (SPF50+ PA++++)",
+          "indexedTitleSizeMl": 50,
+          "displayedNameEqualsCatalog": false,
+          "indexedSource": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics-spf50-pa-uk?country=GB&currency=GBP",
+          "interpretation": "BRAND_EXPLICIT_RENAME_REVIEW_REQUIRED"
+        }
+      ],
+      "brandExplicitClaim": {
+        "type": "NAME_ONLY_CHANGE_UNCHANGED_FORMULA_INGREDIENTS_SIZE",
+        "source": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics-spf50-pa-uk?country=GB&currency=GBP",
+        "section": "Did the Relief Sun formula change?",
+        "summary": "Brand states Rice + Probiotics renamed Rice + Niacinamide, formula ingredients and size unchanged."
+      },
+      "scopeCaution": "UK GB page and global original URL are different presentations; product-level equivalence still requires independent exact source review, and direct runner previously returned SOURCE_BLOCKED."
+    },
+    {
+      "productId": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "brand": "에스트라",
+      "catalogName": "더마 UV365 레드 카밍 톤업 선스크린",
+      "catalogNameEn": "DERMA UV365 Red Calming Tone-up Sunscreen",
+      "sizeMl": 40,
+      "officialSourceId": "041e11d3-c0de-40a1-9c90-487c4437e96f",
+      "origin": "https://www.aestura.com",
+      "locators": [
+        {
+          "role": "EXISTING_BOUND_SOURCE",
+          "url": "https://www.aestura.com/web/product/view.do?prdSeq=1108",
+          "indexedTitle": "더마UV365 레드진정 톤업 선크림",
+          "indexedTitleSizeMl": 40,
+          "displayedNameEqualsCatalog": false,
+          "indexedSource": "https://www.aestura.com/web/product/view.do?prdSeq=1108",
+          "interpretation": "KOREAN_PRESENTATION_NAME_REVIEW_REQUIRED"
+        },
+        {
+          "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+          "url": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen",
+          "indexedTitle": "DERMA UV365 Red Calming Tone-up Sunscreen",
+          "indexedTitleSizeMl": 40,
+          "displayedNameEqualsCatalog": true,
+          "indexedSource": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen",
+          "interpretation": "REGIONAL_PRESENTATION_REVIEW_REQUIRED"
+        }
+      ],
+      "scopeCaution": "International product page offers 40ml and 25ml selectable sizes; Korean and international formulation/market equivalence is not proven by localized names."
+    }
+  ]
+}

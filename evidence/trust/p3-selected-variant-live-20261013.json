@@ -1,0 +1,106 @@
+{
+  "contract": "trust-p3-selected-variant-live-acceptance-v1",
+  "measuredAt": "2026-10-13",
+  "source": {
+    "commit": "00f92cca3d36c014a816f4db6aacef530ca726f9",
+    "pr": 1267,
+    "runId": 38345355813,
+    "jobId": 115125387721,
+    "artifactId": 11788153871,
+    "artifactName": "trust-p3-locator-revalidation"
+  },
+  "scope": {
+    "products": 3,
+    "locators": 6,
+    "origins": 4,
+    "officialHtmlFetched": 4,
+    "sourceBlocked": 2
+  },
+  "summary": {
+    "directProductCandidates": 0,
+    "exactSkuVerified": 0,
+    "marketVerified": 0,
+    "formulationVerified": 0,
+    "dbWrites": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "newSourceBindings": 0,
+    "aiApiCalls": 0
+  },
+  "items": [
+    {
+      "brand": "토리든",
+      "locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+      "role": "EXISTING_BOUND_SOURCE",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "identity": "IDENTITY_UNRESOLVED",
+      "variant": "SIZE_UNKNOWN",
+      "hasMainContent": false,
+      "primaryName": false,
+      "selectedSizeStatus": "NO_SCOPED_SELECTED_VARIANT",
+      "selectedSizesMl": [],
+      "digest": "4102896d16d522b9c253eb1b66b85cabdc3e5e78c0fe27e66f7b53af463b1acf"
+    },
+    {
+      "brand": "토리든",
+      "locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=173",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "identity": "BODY_NAME_MENTION_ONLY",
+      "variant": "SIZE_UNKNOWN",
+      "hasMainContent": false,
+      "primaryName": false,
+      "selectedSizeStatus": "NO_SCOPED_SELECTED_VARIANT",
+      "selectedSizesMl": [],
+      "digest": "7cd770c102006a20007e6c679f231ea01d9540f39441ecb43346cfcfc28214da"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "role": "EXISTING_BOUND_SOURCE",
+      "status": "SOURCE_FETCH_HOLD",
+      "failure": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics-spf50-pa-uk",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "status": "SOURCE_FETCH_HOLD",
+      "failure": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "에스트라",
+      "locator": "https://www.aestura.com/web/product/view.do?prdSeq=1108",
+      "role": "EXISTING_BOUND_SOURCE",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "identity": "IDENTITY_UNRESOLVED",
+      "variant": "SIZE_UNKNOWN",
+      "hasMainContent": false,
+      "primaryName": false,
+      "selectedSizeStatus": "NO_SCOPED_SELECTED_VARIANT",
+      "selectedSizesMl": [],
+      "digest": "450ab379eaf6b9a17d46c3d4c346a427608208fa5bc51cf30edf7310b8f088ef"
+    },
+    {
+      "brand": "에스트라",
+      "locator": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "status": "VARIANT_REVIEW_REQUIRED",
+      "identity": "STRUCTURED_NAME_CANDIDATE",
+      "variant": "SIZE_UNKNOWN",
+      "hasMainContent": true,
+      "primaryName": false,
+      "selectedSizeStatus": "NO_UNIQUE_SELECTED_SIZE",
+      "selectedSizesMl": [],
+      "optionSizesMl": [],
+      "digest": "05fa4b424a2cfd2ef9bfede0f61d250be46a4084391d4afb6734cc4599892330"
+    }
+  ],
+  "adjudication": {
+    "candidatePass": false,
+    "exactSkuPromotion": false,
+    "reliabilityInterpretation": "The scoped-first parser intentionally returns HOLD for sites with no unique main scope or no observable selected size. Aestura missing selection may be non-rendered or a different template; no inference about actual site code is made.",
+    "nextGate": "Bounded non-authoritative official template-family structural diagnostics; no generic fallback based on script/OG or unselected 40ml."
+  }
+}
