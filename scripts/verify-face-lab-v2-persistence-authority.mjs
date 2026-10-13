@@ -115,7 +115,7 @@ assert.ok(localEnvelope.localEditedAt);
 const route = readFileSync("app/api/premium/face-lab-v2/route.js", "utf8");
 const component = readFileSync("components/full-report/PremiumFaceLabSection.jsx", "utf8");
 const migration = readFileSync(
-  "supabase/migrations/20260928035500_face_lab_v2_persistence_revision.sql",
+  "supabase/migrations/20260928045032_face_lab_v2_persistence_revision.sql",
   "utf8"
 );
 
