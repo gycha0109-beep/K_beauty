@@ -155,3 +155,10 @@
 - 단순 구조 격리 목적으로 **과거 가격을 고정**했으므로, 확인되지 않은 실가격 기반 D8E2 통과로 확대 해석하지 않는다. 후보 운영 DB는 176행이며 최신 전체 2,112쌍 검증은 별도 작업.
 - 현재 공식몰 에스네이처 구매 URL은 직접링크 허용 정책에 등록되지 않아 fallback되고, 분리 예정 화해 Offer는 trusted read-path에 노출되지 않는다. D8G 실구매 CTA는 HOLD. No implicit trust promotion.
 - D8D-R1 migration/code 테스트는 PASS지만 Production runtime DB identity 확인(403), #1208 security, 판매 옵션·가격·세럼 SKU·리뷰 귀속 및 소유자 승인이 차단 조건. D8F 실증 수집 관련 항목 HOLD, D8G/D8H 실제 운영 반영 금지.
+
+### D8G continuation — 2026-10-13 14:28 KST (read-only / security HOLD)
+
+- Synced latest verified `main@697f4004` into PR #1255 as `b44d9826` with an exact disjoint-file merge; existing TRUST changes preserved and R16I SQL body unchanged. New PR HEAD CI: Database Integration/isolated PG17, Main Health, Security Boundary, PIE, CodeQL all PASS; mandatory Supply Chain vulnerability gate FAIL at the same HEAD.
+- Vercel Production alias now at `dpl_D2cMapWhKCFDsjUPy23yPTspm2az` (`main@697f4004`); project environment metadata list still HTTP 403. Candidate Supabase SELECT reconfirms Product 160ml/29,900 and evidence/proposal/application/offer/subject counts 0 with release gate disabled; deployed-server identity **UNATTESTED**.
+- Seller public listing 35,000/24,500 KRW (official 80ml single), 29,900 KRW (Hwahae bundle) remains **non-checkout**, and no private capture/VERIFIED decision or owner product/offer field authorization exists. Do not reassign review counts or approve price/CTA.
+- Security #1208 OPEN, Draft #1240 still vulnerable; no expiry extensions, no merge or Production apply. See `docs/evidence/r16i-r4-d8g-production-readiness-gate-20261013.md` §6 for exact SHA, CI runs and owner-only unblock actions.

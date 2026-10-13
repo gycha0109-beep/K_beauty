@@ -3169,3 +3169,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Candidate Supabase exact-target SELECT confirmed 176 catalog, old Product 160ml/29900, evidence 0, correction proposals 0, applications 0, release gate disabled. Public official 80ml list/member prices and Hwahae bundle public price are not real checkout evidence.
 - Security #1208 open; Draft #1240 unresolved (Expo 57.0.28 genuine candidate keeps braces@3.0.3/node-forge@1.4.0; raw audit fails). No security source changes.
 - Added precise owner-only capture, VERIFIED judgement, runtime DB attestation, future release-gate readiness packet and roadmap pointer. Existing UI/route unchanged; 0 Product/Offer/RLS/env/permission/deployment changes, D8F/G/H HOLD, PR merge HOLD.
+
+### 2026-10-13 / R16I-R4 D8G continuation — main sync and read-only blocker refresh
+
+- 유형: bounded execution + read-only production-gate diagnosis; Watchtower-Track: taxonomy-ai. GitHub PR #1255 old HEAD `e5bf89c2`, `main@697f4004`; no overlapping changed files, verified 3,866 resulting tracked blobs against disjoint merge semantics, merged main via `b44d9826` while preserving TRUST P3 changes.
+- CI on exact synced HEAD: Database Integration/PG17, Main Health, Security Boundary, PIE, CodeQL PASS; mandatory Supply Chain Security FAIL. Security #1208 OPEN and Draft PR #1240 latest mandatory audit FAIL. No bypass or other-track edit.
+- Vercel Production alias READY `dpl_D2cMapWhKCFDsjUPy23yPTspm2az` from `main@697f4004`. Correct project/account metadata known; project env metadata SELECT HTTP 403. Server effective Supabase project and APPLY flag UNATTESTED, not inferred from candidate DB.
+- Connected candidate Supabase read-only SQL: original Product 160ml/29,900, evidence/proposals/applications/offers/subjects 0, DB release gate false. Public prices only, no exact original checkout captures or owner VERIFIED decisions. D8F/G/H remain HOLD. No Product, Offer, Subject, DB schema, RLS, privileges, admin, env, deploy, gate or merge write.
+- Evidence + operator next steps: `docs/evidence/r16i-r4-d8g-production-readiness-gate-20261013.md` §6. Final HEAD CI must be rechecked after this doc commit.
