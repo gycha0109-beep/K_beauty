@@ -135,3 +135,17 @@
 로그에서 `chokidarFileEvents=PASS_READY_ADD_CHANGE_UNLINK_PATCHED_BRACE_GLOB` 및 `expoCodeSigning=PASS_SELF_SIGNED_CERT_PEM_SIGNATURE_WRONG_KEY_AND_EXPIRY_REJECTION`을 확인했다. 타임아웃, polling과 watcher 종료로 실험의 자원·실행 범위를 제한했다.
 
 **해석:** 파일 시스템 이벤트와 주요 서명 검증 거부 조건의 동작 검증은 확보했지만, 공식 보안 패치 배포·원본 감사 무예외 통과·전체 Metro/Android 호환성은 증명하지 않는다. **SCA-3 정식 설치/보수 및 SCA-4~7은 HOLD**.
+
+## 10. Android JavaScript 번들 기준선에서 확인한 노출 범위 (2026-10-13)
+
+정확한 관찰 코드 SHA `45db48626fdf110858c524f9fa271f422d3c4fd7`, [Supply Chain #38333569911](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333569911). 기존 `package-lock.json`과 실제 npm-installed 취약 패키지는 **변경하지 않은 상태**에서 Expo Android JS export `--source-maps`를 성공시켰다.
+
+- Mobile foundation/typecheck/Android JS export/external source-map inventory **모두 PASS**.
+- Android JS source map **1개, sources 총 1,307개**.
+- `braces` package source path **0/1,307**, `node-forge` package source path **0/1,307**.
+- 안전한 판정: **해당 export의 source map에서 두 패키지가 관측되지 않음**. 이는 설치 의존성 그래프·Expo 개발 CLI의 인증서 처리·Metro watcher 호출과 별개의 단편적 앱 JS 번들 노출 관찰이다.
+- **불가한 판정:** APK/native 전체에서의 부재, 런타임/개발툴의 불가침성, 원격 공격면 제거, 다른 환경의 번들 부재, CVE 수정 또는 audit PASS. 실제 `npm audit`는 만료 예외로 계속 실패한다.
+
+검증 방식의 세부 사항, 초기 CI 보호기 충돌·Android prebuild 선행 순서·소스맵 옵션 전달 오류의 수정 내역은 [실행 ledger의 11절](sec-sca-20261012-execution-ledger.md) 참조. 이는 **원본 패키지 빌드 기준선**이므로 임시 소스 패치 후보의 실제 Metro/Android export를 증명하지 않는다.
+
+**SCA-3 정식 후보 lockfile·출처·무결성·APK·무예외 감사 = HOLD / NOT_ATTESTED.** SCA-4~7 진행 조건 미충족.
