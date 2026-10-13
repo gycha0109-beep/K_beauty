@@ -49,14 +49,19 @@ try{
  },null,2)+"\n");
  run("npm",["install","--ignore-scripts","--no-fund","--no-audit","--package-lock=false"],
   harness,160000,{...process.env,npm_config_update_notifier:"false"});
+ const unitDir=path.join(checkout,"tests/unit");
+ const cases=fs.readdirSync(unitDir).filter(name=>name.endsWith(".js")&&name!=="index.js").sort();
+ assert.ok(cases.length>=20,"upstream unit test inventory unexpectedly small");
+ const files=[...cases.map(name=>path.join(unitDir,name)),
+   path.join(checkout,"tests/security.js")];
  const output=run(process.execPath,[path.join(harness,"node_modules/mocha/bin/mocha"),
-   "--timeout","30000","--reporter","dot","tests/unit/index.js"
+   "--timeout","30000","--reporter","dot",...files
  ],checkout,240000,{...process.env,NODE_ENV:"test",NODE_PATH:path.join(harness,"node_modules"),NODE_OPTIONS:""});
  const found=[...output.matchAll(/(\d+)\s+passing\b/g)];
  assert.ok(found.length>0,"no passing-count summary from forge upstream unit suite");
  const passed=Number(found[found.length-1][1]);
  console.log("SCA_B2_UPSTREAM_SUITE_COUNT="+JSON.stringify({
-   testsPassed:passed,outputTail:output.slice(-800),
+   testsPassed:passed,unitTestFiles:files.length,outputTail:output.slice(-800),
    expectedTestEntrypoint:"tests/unit/index.js"
  }));
  assert.ok(passed>=100,"incomplete node-forge full Node unit suite");
