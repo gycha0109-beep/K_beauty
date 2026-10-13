@@ -42,8 +42,9 @@ assert.ok(
   actionContainerStart >= 0 &&
     actionContainerStart < captureNoticeStart &&
     captureNoticeStart < firstCaptureButton &&
-    captureNoticeStart < galleryButton,
-  "guidance must be visible before both camera and gallery actions"
+    captureNoticeStart < galleryButton &&
+    photoUpload.slice(actionContainerStart, captureNoticeStart).includes("{!hasPreview ? ("),
+  "guidance must be visible only before selecting a photo and precede camera/gallery actions"
 );
 assert.ok(
   photoUpload.includes('role="note"') &&
