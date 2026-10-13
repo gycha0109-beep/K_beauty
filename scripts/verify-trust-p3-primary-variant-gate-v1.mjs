@@ -50,7 +50,7 @@ const cases=[
  ["no main product scope",'<title>official</title><aside>'+title+sizeVariants()+'</aside>',"IDENTITY_REVIEW_REQUIRED"],
  ["OG title only",'<meta property="og:title" content="'+product.name_en+' 40ml">'+
     '<main><h1>Other</h1>'+sizeVariants()+'</main>',"IDENTITY_REVIEW_REQUIRED"],
- ["duplicate heading",main(title+title),"VARIANT_REVIEW_REQUIRED"],
+ ["duplicate heading",main(title+title),"IDENTITY_REVIEW_REQUIRED"],
  ["two different selected options",main(title,sizeVariants(
    '<option selected>40ml</option><option selected>25ml</option>')),"VARIANT_REVIEW_REQUIRED"],
  ["bundled title",main(title).replace("<title>Aestura official product</title>",
