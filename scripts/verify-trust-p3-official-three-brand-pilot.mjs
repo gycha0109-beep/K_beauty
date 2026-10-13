@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { inspectTrustP3OfficialPageShape } from "../lib/trust/official-product-page-shape-p3-v1.mjs";
 import {assertTrustP3Cohort,observeTrustP3OfficialThreeBrand,runTrustP3ThreeBrandCli}
   from "./trust-p3-official-three-brand-pilot.mjs";
 const cohort=JSON.parse(fs.readFileSync("evidence/trust/p3-official-three-brand-live-cohort-v1.json","utf8"));
@@ -42,6 +43,24 @@ assert.equal(fetched.summary.subjectWrites,0);
 assert.equal(fetched.summary.factWrites,0);
 assert.equal(fetched.summary.aiApiCalls,0);
 assert.equal(fetched.items[0].evidence.fields.spf.value,"SPF50+");
+
+assert.equal(fetched.items[0].pageShape.titleNameMatch,true);
+assert.equal(fetched.items[0].pageShape.h1Count,1);
+assert.equal(fetched.items[0].pageShape.factConfirmationAuthorized,false);
+const diagnosticTarget={id:cohort.targets[0].productId,name:cohort.targets[0].name};
+const scriptOnly='<title>Just a moment...</title><script>const x="'+diagnosticTarget.name+'";</script>';
+const shape=inspectTrustP3OfficialPageShape(Buffer.from(scriptOnly),diagnosticTarget,
+  {contentType:"text/html; charset=utf-8"});
+assert.equal(shape.likelyChallengeTitle,true);
+assert.equal(shape.scriptNameMention,true);
+assert.equal(shape.visibleTextNameMention,false);
+assert.equal(shape.exactSkuVerified,false);
+assert.equal(shape.declaredCharset,"utf-8");
+const oddCharset=inspectTrustP3OfficialPageShape(Buffer.from("<title>Other</title>"),
+  diagnosticTarget,{contentType:"text/html; charset=euc-kr"});
+assert.equal(oddCharset.declaredCharset,"euc-kr");
+assert.equal(oddCharset.titleNameMatch,false);
+
 assert.equal(fetched.fullyVerifiedExactSkuCount,0);
 assert.ok(!JSON.stringify(fetched).includes("data-product-specs"));
 let pageRequests=0;
