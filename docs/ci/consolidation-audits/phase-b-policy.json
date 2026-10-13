@@ -2,7 +2,6 @@
   "schemaVersion": "bejewely-ci-consolidation-phase-b-policy-v1",
   "baselineWorkflowCount": 63,
   "approvedAddedWorkflows": [
-    "catalog-official-five-brand-pilot.yml",
     "data-ai-product-query-static.yml",
     "data-ai29c-protection-shadow.yml",
     "face-lab-v2-provider-pilot-smoke.yml",
