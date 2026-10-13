@@ -54,3 +54,10 @@ Watchtower-Track: taxonomy-ai
 - Supabase candidate Product row count `176` from read-only COUNT on 2026-10-13. Historic 164×12 cannot be described as complete current-catalog 176×12 coverage; **2,112 current pair comparison not executed**.
 - Target error cases covered in this narrow replay: spoof hostname, untrusted Offer source, no unapproved Offer price promotion, exact reviews and product identities, and zero ranking/Top1/Top3 deltas. D8D duplicate/stale/rollback tests remain in existing isolated PostgreSQL 17 fixture.
 - Security #1208 remains RED and Vercel runtime identity attestation remains HOLD. Even a passing D8E1 shadow does **not** authorize D8G/D8H.
+
+## CI result for exact candidate head `fcc283edf4b653ca8da87b8bdcd43ff497bd72a3`
+
+- Database Integration Authority workflow [#38333704396](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333704396): **both jobs PASS** — database migration authority and full existing isolated PG17 runtime. D8D atomic apply/failure rollback/duplicate/stale/rollback collision fixture PASS.
+- New D8E1 real-engine verifier: **PASS**, `evaluatedProductScenarios=1968`; `scoreChanges=0`, `rankChanges=0`, `top1Changes=0`, `top3Changes=0`, `candidateCountChanges=0`. Category pair counts: cleanser 312, balm 240, cream 120, gel 120, lotion/emulsion 252, sunscreen 132, toner/essence 288, toner/pad 288, treatment 216. Actual `buildSkinMatchDecisionBundle` runtime, not an arithmetic-only check.
+- Executable purchase authority assertions: official snature direct URL is **FALLBACK_NOT_DIRECT_HOLD**, synthetic `hwahae::hwahae` Offer is **NOT_ADMITTED_BY_SOURCE_POLICY**, spoofed hostname and Offer price authority remain blocked. Neither block is silently turned into an allowed purchase URL.
+- This verdict **cannot** be promoted to full D8E2 checkout-price / 176-live-catalog / Vercel production runtime attestation. Price authority remains unavailable. Operational Product/Offer D8G/D8H and security #1208 stay HOLD.
