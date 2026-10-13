@@ -251,6 +251,91 @@ for (const forbiddenSetter of [
   );
 }
 
+// P0 target edit cancellation must restore the fully approved UX state.
+assert.ok(
+  premiumFaceLab.includes("const targetEditSnapshotRef = useRef(null)") &&
+    editTargetBlock.includes("targetEditSnapshotRef.current = {") &&
+    editTargetBlock.includes("restoreInteractionRef.current += 1"),
+  "editing a saved result must snapshot the current UI and reject a late initial restore"
+);
+for (const field of [
+  "entryMode",
+  "targets: [...targets]",
+  "softSharpClarifier",
+  "naturalPolishedClarifier",
+  "finderResult",
+  "finderInconclusive",
+  "presentationPreference",
+  "stylingScope: [...stylingScope]",
+  "scopeTouched",
+  "changeTolerance",
+  "recommendationPriority",
+  "makeupIntensity",
+  "dailyMinutes",
+  "budgetBand",
+  "maintenanceTolerance"
+]) {
+  assert.ok(
+    editTargetBlock.includes(field),
+    `target edit snapshot must retain user-visible state: ${field}`
+  );
+}
+const cancelTargetBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf("const cancelTargetEdit = () =>"),
+  premiumFaceLab.indexOf("const choosePresentation = (value) =>")
+);
+assert.ok(cancelTargetBlock.includes("targetEditSnapshotRef.current") &&
+  cancelTargetBlock.includes('setStage("result")') &&
+  cancelTargetBlock.includes("emitSimulationState(") &&
+  cancelTargetBlock.includes("activePersistenceStateRef.current"),
+  "cancelling an edit must restore the previous result and simulation handoff"
+);
+for (const setter of [
+  "setEntryMode(snapshot.entryMode)",
+  "setTargets(snapshot.targets)",
+  "setSoftSharpClarifier(snapshot.softSharpClarifier)",
+  "setNaturalPolishedClarifier(snapshot.naturalPolishedClarifier)",
+  "setFinderResult(snapshot.finderResult)",
+  "setFinderInconclusive(snapshot.finderInconclusive)",
+  "setPresentationPreference(snapshot.presentationPreference)",
+  "setStylingScope(snapshot.stylingScope)",
+  "setScopeTouched(snapshot.scopeTouched)",
+  "setChangeTolerance(snapshot.changeTolerance)",
+  "setRecommendationPriority(snapshot.recommendationPriority)",
+  "setMakeupIntensity(snapshot.makeupIntensity)",
+  "setDailyMinutes(snapshot.dailyMinutes)",
+  "setBudgetBand(snapshot.budgetBand)",
+  "setMaintenanceTolerance(snapshot.maintenanceTolerance)"
+]) {
+  assert.ok(cancelTargetBlock.includes(setter),
+    `cancellation must roll back every edited UI field: ${setter}`);
+}
+assert.equal(
+  cancelTargetBlock.includes("persistServer(") ||
+    cancelTargetBlock.includes("writeLocalState(") ||
+    cancelTargetBlock.includes("buildFaceLabV2Canonical("),
+  false,
+  "cancelling an edit cannot update user authority, storage or recompute a new route"
+);
+assert.ok(
+  premiumFaceLab.includes("targetEditSnapshotRef.current ? cancelTargetEdit") &&
+    premiumFaceLab.includes('data-face-lab-target-back={targetEditSnapshotRef.current ? "cancel-edit" : "initial-setup"}') &&
+    premiumFaceLab.includes("targetEditSnapshotRef.current ? copy.cancelEdit : copy.back") &&
+    premiumFaceLab.includes('cancelEdit: "수정 취소"') &&
+    premiumFaceLab.includes('cancelEdit: "Cancel changes"'),
+  "target editing must offer explicit reversible cancel in both locales"
+);
+const confirmTargetBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf("const confirm = () =>"),
+  premiumFaceLab.indexOf("const selectRoute = (routeId) =>")
+);
+assert.ok(confirmTargetBlock.includes("targetEditSnapshotRef.current = null"),
+  "confirmation must end the editable draft boundary");
+assert.ok(
+  premiumFaceLab.includes("targetEditSnapshotRef.current = null;\n      setCanonical(restored)"),
+  "server/local restores must not retain an obsolete edit draft"
+);
+
 const buildSurveyBlock = premiumFaceLab.slice(
   premiumFaceLab.indexOf("const buildSurveyAnswers = () =>"),
   premiumFaceLab.indexOf("const confirm = () =>")
