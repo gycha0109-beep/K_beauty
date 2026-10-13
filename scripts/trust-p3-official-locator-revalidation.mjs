@@ -56,6 +56,7 @@ const summarize=(candidate,shape)=>({
   identitySignal:candidate.identitySignal,
   variantStatus:candidate.variantStatus,
   sourceDigest:candidate.sourceDigest,
+  primaryVariantProbe:candidate.primaryVariantProbe,
   diagnostic:shape,
   claimProposalStates:Object.fromEntries(Object.entries(candidate.findings)
     .map(([key,v])=>[key,v.state])),
