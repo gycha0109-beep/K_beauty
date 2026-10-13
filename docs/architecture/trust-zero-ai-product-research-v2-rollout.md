@@ -146,3 +146,15 @@ suite; PostgreSQL identity observation constraints run through the existing
 Database Integration Authority job. The bounded manual CLI remains
 available for authorized subsequent source-policy measurements. No live
 cron or unattended URL probe was introduced in this phase.
+
+## P2-D: real five-product/five-brand exact-product discovery cohort (2026-10-13)
+
+Purpose: measure **actual** discovery reliability on five currently blocked catalog intakes selected from five independent brands. The target IDs, intake IDs, and previously governed same-brand **other-product** source bindings were verified in production Supabase, then frozen in `evidence/trust/p2d-five-brand-cohort-v1.json`.
+
+Cohort: Dr.G Red Blemish Clear Soothing Cream EX; beplain Mung Bean Pore Clearing Filter Pad; ATOPALM MLE Lotion; Isntree Ultra-Low Molecular Hyaluronic Acid Toner; Torriden DIVE IN Low Molecular Hyaluronic Acid Serum. One per official domain, each with its own prior governed source of another SKU. This is *not* a claim that those five SKUs are already officially verified.
+
+Execution: `scripts/trust-p2d-five-brand-pilot.mjs` delegates to existing robots/SSRF/same-origin guarded P2 discovery; one live run through `.github/workflows/catalog-official-five-brand-pilot.yml` on main push, also manually dispatchable. Default CLI is offline. It has no Supabase credentials, no Product Fact/Subject/source admission privileges, no AI, no source HTML copied to reports. At most one origin per target; existing per-origin caps apply (robots then ≤2 sitemaps, ≤1 peer page, ≤2 product pages). A site that blocks access yields an honest source-policy HOLD. The run produces a per-product verdict and a JSON Actions artifact (30-day retention).
+
+Verdicts: `IDENTITY_CANDIDATE_REVIEW_REQUIRED` (structured product name/title/scoped heading candidate), `BODY_MENTION_REVIEW_REQUIRED` (incidental text only), `NO_MATCHING_PRODUCT_IDENTITY`, `NO_PRODUCT_PAGE`, `SOURCE_POLICY_HOLD`, or `SAFE_EXECUTION_FAILURE`. **None** equals verified exact SKU/market/formulation. Measurement denominator is five preselected blocked products. This phase does NOT assert empirical 0 false positives; that requires independent human gold-set review of source pages and market/formulation.
+
+Acceptance for this slice: five subjects attempted and every subject assigned a truthful outcome without policy bypass or any authority writes. Later work can improve blocked-domain coverage, perform independent exact SKU validation, and only then revisit governed Subject creation. Do not equate five attempted to five successfully found.
