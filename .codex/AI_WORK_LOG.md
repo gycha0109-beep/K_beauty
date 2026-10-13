@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA Android prebuild 계약 실검증·Gradle 제한 시간 증거
+
+- 유형: Security SCA-3 진단·제한 실행. 브랜치 `fix/security/supply-chain-policy-mutation-guard-20261012`, Draft PR #1240. Production/DB/Auth/RLS/Storage/Secret/Payment/Provider 패치 없음, 의존성/lock/audit 예외/배포 구성 미변경.
+- 신규 `scripts/security/run-sca-native-prebuild-observation.mjs`: disposable CI에서 원본 Expo 57 `prebuild:android`→`verify:mobile-native` 실행. `android/` 기생성 시 덮어쓰기 금지, SHA-256 스냅샷으로 prebuild의 `apps/mobile/package.json` 묵시적 수정을 감지하고 정확한 원본 바이트로 복원, 생성 native 파일 정리.
+- [Supply Chain #38335626887](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335626887): prebuild/native shell PASS, 변경된 package.json 원본 복원 PASS, 원본 감사 만료 braces HIGH로 FAIL 유지. [Supply Chain #38335884865](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335884865): Gradle debug assemble은 7분 후 ETIMEDOUT, APK 없음/검증 불가; cleanup·원본 복원 및 CodeQL PASS. 긴 Gradle stage는 `SCA_ENABLE_GRADLE_DEBUG_OBSERVATION=1` opt-in으로 분리.
+- Ledger §12, patch candidate review §11 갱신. 원본 Android prebuild PASS는 수정 후보 기반 APK/실기기 검증 또는 원본 npm audit HIGH=0의 증거가 아니므로 SCA-3 정식 보수와 SCA-4~7 HOLD, PR Draft/#1208 OPEN.
+
 ### 2026-10-13 / SEC-SCA Android JS export 원본 기준선과 sourcemap 패키지 경계 관측
 
 - 유형: Security 진단·제한 구현. 저장소 `gycha0109-beep/K_beauty`, Draft/HOLD PR #1240; Production/Secret/DB/Auth/Payment/원본 lockfile 패키지 변경 없음.
