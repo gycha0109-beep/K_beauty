@@ -157,3 +157,13 @@
 이후 [CI #38335884865](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335884865)에서 디버그 `assembleDebug`를 420초 동안 시도했으나 `ETIMEDOUT`; APK 아티팩트 생성·기기 smoke는 **NOT_ATTESTED**. 따라서 단지 prebuild/shell PASS를 전체 Expo/Android 호환성이나 패치 승인으로 해석하지 않는다. 비용·보안 감사 실행 순서를 보존하기 위해 긴 Gradle 진단은 opt-in으로 분리했다. 정확한 명령·복원·증거는 [실행 ledger §12](sec-sca-20261012-execution-ledger.md)에 있다.
 
 **두 수정 후보는 현재도 미병합·미배포.** 수정 후보 기반 native/Gradle/Android 실험, 실제 source-verified lock 변경과 원본 감사 HIGH=0이 없는 한 **SCA-3 정식 패치/Android 보수 HOLD**.
+
+## 12. Android prebuild 전체 추적 트리 무결성 검증 보강 (2026-10-13)
+
+[실제 GitHub Actions #38339766608](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339766608)에서 추가된 `git diff HEAD` 기준 전체 추적 파일 guard와 임시 Git fixture 6건은 PASS했다. Expo 57 원본 native prebuild·생성 셸 계약·`apps/mobile/package.json` 원본 바이트 복원 이후 **추적 파일 잔여 변경 0건**을 확인했다. 코드 SHA: `6903130d1c054ae27220d98df0873ba20bd3275f`.
+
+변경 범위는 SCA-3 *테스트 환경 신뢰성* 향상에 한정된다. 원본 앱의 `braces@3.0.3` 및 `node-forge@1.4.0` 잠금 그래프를 변경하지 않았고, 기존 `npm audit`는 만료된 `braces` 예외로 계속 FAIL. **Gradle APK 빌드 420초 ETIMEDOUT·실기기 NOT_RUN**도 변하지 않았다.
+
+초기부터 변경돼 있던 추적 파일이나 예상하지 못한 미복원 파일을 자동으로 덮어쓰지 않고 진단을 실패시킨다. 다만 `git diff`는 ignored/untracked 산출물 전체를 대상으로 하지 않으므로 패키지 포함·APK 원본 보안에 대한 보증이 아니다. [실행 Ledger §13](sec-sca-20261012-execution-ledger.md)에 검사 범위와 남은 위험을 기록했다.
+
+**공식 패치 릴리스·provenance/승인·실제 후보 lockfile·Android 전체 런타임/무예외 감사 HIGH 0 = HOLD.**
