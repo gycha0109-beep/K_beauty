@@ -139,7 +139,7 @@ try{
  fs.mkdirSync(consumer);
  fs.writeFileSync(path.join(consumer,"package.json"),JSON.stringify({
    name:"bejewely-b3-install-verification",version:"0.0.0",private:true,
- },null,2)+"\\n");
+ },null,2)+"\n");
  const localTarballs=[
    path.join(tmp,"braces-1","output","braces-3.0.3.tgz"),
    path.join(tmp,"node-forge-1","output","node-forge-1.4.0.tgz"),
