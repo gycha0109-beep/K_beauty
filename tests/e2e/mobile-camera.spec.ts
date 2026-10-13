@@ -511,6 +511,7 @@ test.describe("mobile fullscreen camera", () => {
 
     const galleryPreview = page.getByAltText("업로드한 얼굴 사진 미리보기");
     await expect(galleryPreview).toBeVisible();
+    await expect(page.getByTestId("face-lab-capture-notice")).toHaveCount(0);
     await expect(galleryPreview).toHaveAttribute("data-preview-orientation", "original");
     await expect(galleryPreview).not.toHaveClass(/scale-x-\[-1\]/);
     const getUserMediaCalls = await page.evaluate(
