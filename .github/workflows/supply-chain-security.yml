@@ -84,6 +84,7 @@ jobs:
           node scripts/security/report-supply-chain-lock-paths.mjs
           node scripts/security/verify-private-braces-source-candidate.mjs
           node scripts/security/verify-private-braces-registry-origin.mjs
+          node scripts/security/run-private-braces-upstream-suite.mjs
 
       - name: Audit dependency vulnerabilities
         run: node scripts/verify-supply-chain-audit.mjs
