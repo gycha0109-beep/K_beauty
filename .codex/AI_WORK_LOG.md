@@ -2,6 +2,14 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA 격리 패치 provenance 및 실제 소비자 smoke 범위 확장
+
+- 유형: 보안 진단·격리 실험 실행. Security Draft PR #1240; 실제 설치 의존성 변경·Production/DB/Auth/Secret 영향 N. 설계/운영 보안 경계는 Y로 처리해 임시 작업 공간 외 변경을 금지.
+- 변경: `verify-braces-upstream-patch-isolation.mjs`와 `verify-sca-candidate-integration-isolation.mjs`에 검토된 PR #72 패치 바이트 Git blob identity pin, Metro 파일맵 3개 및 `chokidar`의 임시 patched consumer resolve/load smoke 추가.
+- 확인: `85bceaa09e788e6d507fba8e27380bc0ae18134a`의 [Supply Chain #38330955980](https://github.com/gycha0109-beep/K_beauty/actions/runs/38330955980) 진단 단계에서 Expo code-signing, micromatch, fast-glob, Metro 파일맵 3개, chokidar PASS. 기존 npm audit는 만료된 GHSA-vfj7-8cjw-p6xm로 FAIL 유지.
+- 증거: `docs/security/sec-sca-20261012-execution-ledger.md` 및 `sec-sca-20261012-upstream-patch-candidate-review.md`.
+- 미완: 공식 두 패치 배포/무결성 확인, candidate lockfile 생성·full/prod audit HIGH=0, watcher event·모바일/Android 전체 회귀, SCA-4~7; #1208 OPEN, #1240 Draft/HOLD. 테스트 결과를 취약점 해결이나 배포 승인으로 승격하지 않음.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
