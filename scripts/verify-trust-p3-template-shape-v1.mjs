@@ -93,7 +93,15 @@ assert.equal(longOption.scanStatus,"COMPLETE_WITH_SKIPPED_OVERSIZED_TAGS");
 assert.equal(longOption.variantControlSurfaces.option,1);
 assert.equal(longOption.variantControlSurfaces.explicitSelectedOption,0);
 assert.equal(longOption.countsComplete,false);
-const tooLong=make('<main><div data-json="'+('a'.repeat(140000))+'"><h1>x</h1></div></main>');
+const longButBounded=make('<main><div data-json="'+('a'.repeat(330000))+
+  '"><h1>SAFE_POST_LONG_TAG</h1></div></main>');
+assert.equal(longButBounded.scanStatus,"COMPLETE_WITH_SKIPPED_OVERSIZED_TAGS");
+assert.equal(longButBounded.oversizedTagCount,1);
+assert.equal(longButBounded.h1Count,1);
+assert.equal(longButBounded.primaryTitleSurfaces.h1WithinMain,1);
+assert.equal(longButBounded.countsComplete,false);
+assert.ok(!JSON.stringify(longButBounded).includes("SAFE_POST_LONG_TAG"));
+const tooLong=make('<main><div data-json="'+('a'.repeat(600000))+'"><h1>x</h1></div></main>');
 assert.equal(tooLong.scanStatus,"TAG_SCAN_LIMIT_REACHED");
 assert.equal(tooLong.countsComplete,false);
 assert.equal(tooLong.h1Count,0);
