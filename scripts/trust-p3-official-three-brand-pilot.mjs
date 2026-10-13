@@ -74,8 +74,8 @@ export async function observeTrustP3OfficialThreeBrand({
       let policy;
       try{
         const robotUrl=u.origin+"/robots.txt";
-        const robot=await fetchRobots(robotUrl,u.origin);
         row.requests++;
+        const robot=await fetchRobots(robotUrl,u.origin);
         if(robot.finalUrl!==robotUrl)throw Error("TRUST_P3_ROBOTS_REDIRECT");
         policy=createTrustRobotsPolicy(robot.bytes);
       }catch(error){
