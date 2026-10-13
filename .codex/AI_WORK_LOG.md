@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA 공식 Expo 57 패치 후보의 실제 lockfile·dual raw audit 실험
+
+- 유형: Security SCA-2/3 격리 호환성 실험. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N. `package.json`, `package-lock.json` 또는 audit 예외·workflow 보안 강도·배포 대상 변경 없음.
+- `scripts/security/run-sca-official-expo57-lock-candidate.mjs` 및 기존 Supply Chain trace 연결: 임시 manifest + lock 환경에서 공식 `expo@~57.0.28` 후보를 npm resolver로 생성, 중첩 Expo/CLI 정확 배치와 원인 2패키지 버전 조사, raw full/prod npm audit JSON과 exit codes 기록. 임시 후보 파일 삭제, 원본 manifest hash 유지.
+- 구현 테스트 SHA `53f68f680d9cd7014c70886742479240247a6e35` [Security CI #38341157494](https://github.com/gycha0109-beep/K_beauty/actions/runs/38341157494): 모바일 중첩 Expo `57.0.28`/CLI `57.0.29`, 루트 Expo `57.0.21`/CLI `57.0.23` 잔존. braces `3.0.3`, node-forge `1.4.0` 여전. production HIGH19/full HIGH22, 모두 raw exit1. 기존 canonical audit도 만료 braces 예외로 FAIL. 공식 SDK 57 patch update를 **REJECT_FOR_REMEDIATION**.
+- Probe 최초 root 버전만 보고하여 nested workspace의 최신 설치를 놓친 결함 보수 후 exact-head 재실행. 소스 임시 lock SHA256 `d4d40a8a683ae3ff698bac550fb7f6684039a4b9e9587a7ce9db6853b20149f4`. SCA-2 대체/승인 포크 검토는 후속 조건으로 남고 SCA-3 정식 보수 및 SCA-4~7 HOLD. Ledger §14 / candidate review §13.
+
 ### 2026-10-13 / SEC-SCA native prebuild 추적 파일 전체 변형 차단
 
 - 분류: 보안 진단/제한 실행. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production N(읽기·수정·배포 없음). Security PR #1240 Draft/HOLD, 기존 package/lock/audit exception 원본 유지.
