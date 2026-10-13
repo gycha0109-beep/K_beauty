@@ -169,3 +169,28 @@ SCA-2 출처 보유 코드 변경의 **제한된 개별 동작 실험은 완료*
 - `@expo/code-signing-certificates@0.0.6`와 임시 patched `node-forge` 경로에서 기존 self-signed/PEM/서명 **정상 시나리오**에 더해, 서로 다른 테스트용 RSA 키쌍을 전달하면 인증서 검증 거부, 만료된 유효기간이면 검증 거부를 확인. 결과 `expoCodeSigning=PASS_SELF_SIGNED_CERT_PEM_SIGNATURE_WRONG_KEY_AND_EXPIRY_REJECTION`.
 - 기존 `braces`와 `node-forge` 원본-패치 동작 비교, patch identity pin, 세 종류의 Metro file-map consumer resolve/load, micromatch 및 fast-glob 검사는 같은 진단 단계에서 재통과. 모든 인증서·키·감시 파일은 격리 테스트 전용이며 원본 `node_modules`, 잠금 파일, 설정, 운영 인증서에 접근하거나 변경하지 않는다.
 - **범위 한계:** 정상 glob의 실제 watcher 동작 및 일부 인증서 거부 조건만 확인. Metro 자체 watch loop, 실제 Android 번들·네이티브 실행, signed production manifest, 정식 배포 후보 패키지/npm tarball integrity 및 원본 감사 HIGH=0은 **미검증**. 따라서 로드맵상 정식 SCA-3 HOLD 유지.
+
+## 11. SCA-3 Android JS export 기준선·소스맵 경계 관찰 (2026-10-13)
+
+### 변하지 않은 릴리스 전제
+
+- 정확한 검증 코드 HEAD: `45db48626fdf110858c524f9fa271f422d3c4fd7`. [Supply Chain Security #38333569911](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333569911), [Main Health #38333569865](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333569865), [PIE #38333570547](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333570547).
+- 작업 시 조회한 main `f49aa65cb7d83d58784bf149b409f7e20108ef9d`, Security PR은 Draft/HOLD. Root `package-lock.json` blob `37dfa247a664593440667b35d9af96d604d7949b` 동일. `braces@3.0.3`, `node-forge@1.4.0`이 계속 설치됨. 2026-10-13 기준 두 GitHub 공식 Advisory는 HIGH, 수정된 npm 배포 버전은 없음.
+
+### 관찰 코드와 정확한 CI 결과
+
+- `scripts/security/run-sca-mobile-baseline-observation.mjs`에서 **실제 잠금된 원본 패키지**를 사용해 `verify:mobile-foundation`, `mobile:typecheck`, `npm run export:android --workspace @bejewely/mobile -- --source-maps`를 순차적으로 실행. 호출별 PASS/FAIL/시간 초과를 구조화해 기록한다. npm 명령 출력은 보안 로그에 재출력하지 않는다.
+- `scripts/security/report-sca-android-bundle-boundary.mjs`는 Android JS export의 생성된 외부 source maps만 읽는다. indexed sourcemap `sections` 포함, 파일/깊이/크기 제한과 symlink 거부를 적용한다. 소스 코드·소스맵 원문·환경 값은 로그에 출력하지 않고 패키지별 source path 참조만 집계한다.
+- `SCA_MOBILE_BASELINE_OBSERVATION`: foundation **PASS**, typecheck **PASS**, androidJsExport **PASS**, bundleSourceMapInventory **PASS**. 생성된 `.expo-ci-dist`는 CI 종료 전에 삭제한다.
+- `SCA_ANDROID_BUNDLE_BOUNDARY`: **source maps 1개, sourceEntries 1,307개**. `braces` 참조 **0건**, `node-forge` 참조 **0건**. 출력 의미는 **해당 Android JavaScript export의 source map에서 경로가 관측되지 않았다**는 것에 한정된다. 설치/빌드 툴에서의 사용이나 네이티브/다른 환경/전체 APK 내 부재, 공격자 접근 불가를 입증하지 않는다.
+- 패치 후보의 기존 임시 라이브러리·Expo signing·micromatch·fast-glob·Metro x3·chokidar 실제 이벤트 테스트 및 정책 mutation guard도 PASS. 별도 CodeQL 및 Main Health/PIE PASS. **Canonical `npm audit`는 만료된 `GHSA-vfj7-8cjw-p6xm` 예외로 FAIL 유지**. 수정 없는 생산/전체 감사 HIGH=0 주장 없음.
+
+### 검증 중 장애와 수정
+
+첫 CI [#38333193023](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333193023)는 신규 workflow `always()` 조건문을 기존 보안 정책 보호기가 차단했고, Android prebuild 전 `verify:mobile-native`를 호출해 실패했다. 이 상태에서는 canonical audit가 실행되지 않아 **수용 불가**.
+
+조건부 보안 단계와 추가 install ID를 완전히 제거하고, 원래 trace 단계 안에 **비게이팅·명시적 PASS/FAIL 관측 스크립트**를 넣는 방식으로 교체했다. Native/Gradle은 `NOT_RUN_REQUIRES_SEPARATE_PREBUILD_ISOLATION`로 표시한다. 다음 CI [#38333383928](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333383928)는 기초 검사·typecheck·Android export PASS였으나 중첩 npm 인수 전달로 source-map 인벤토리가 실패하여, 작업 공간의 `export:android` 스크립트를 직접 호출해 `--source-maps` 전달을 고쳤다. 최종 [#38333569911](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333569911)에서 source map inventory까지 PASS했고, 원래 audit 실패가 다시 독립적으로 관측되었다.
+
+### 판정
+
+**SCA-3 Android JS 번들 기준선 관찰만 완료.** 수정된 의존성 기반 Android export가 아니며, Android native prebuild·Gradle assembleDebug·APK 설치/실행·전체 아티팩트 검사·공식 패치/npm integrity·잠금 그래프 수정/원본 감사 HIGH=0은 **NOT_RUN/UNKNOWN**. 유지 가능하고 감사 정합성 있는 두 패키지 해결책이 없으므로 **SCA-3 정식 교체/빌드 및 SCA-4~7 HOLD**, PR #1240 Draft, 이슈 #1208 OPEN.
