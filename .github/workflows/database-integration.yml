@@ -188,6 +188,12 @@ jobs:
           set -euo pipefail
           node scripts/product-evidence/verify-r16i-r4-d8e2-readonly-catalog-replay.mjs
 
+      - name: Verify R16I D8F current-candidate D4 exact prestate and drift blockers (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-r16i-r4-d8f-candidate-d4-readonly-prestate.mjs
+
       - name: Verify R4-C-R4 independent SKU identity HOLD and negative cases
         run: node scripts/verify-data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap.mjs
 

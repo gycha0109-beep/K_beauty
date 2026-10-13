@@ -98,6 +98,13 @@
 - 신규 추천 권한 RPC를 후보 DB에서 read-only 조회한 결과 이 통합 역할에 PostgreSQL 42501(EXECUTE 권한 없음). 운영 사용자 권한을 우회하지 않으며 신규 2개 상품의 승인 상태는 미검증. 격리 테스트에서는 실제 admission core + 합성 NO_CURRENT_SUBJECT로 신규 12개 FAIL-CLOSED, 별도 164×12×2 회귀를 추가해 총 7,920건 비교하도록 구성(최종 CI 결과 별도 확인).
 - 배포 DB identity 미입증, 공식 구매 링크 direct allowlist 미승인, #1208 security 차단. 근거: [D8E2 read-only candidate snapshot](../evidence/r16i-r4-d8e2-live-snapshot-listing-scenarios-20261013.md).
 
+### D8F 운영 전상태 실조회 검증 (2026-10-13, 증빙 승인과 분리)
+
+- 연결된 Supabase **후보 DB**에서 에스네이처 정정 대상 Product + binding 1 + intake 1 및 Offer/Subject 0을 현재 SELECT로 재확인. 상품 revision은 2026-09-10의 기존값, 상품 160ml/29,900원, gate disabled, 적용 기록 0. 배포 Vercel 런타임 DB 동일성은 미확인.
+- 현행 D4 검토 엔진의 실제 SELECT 형태 스냅샷을 `fixtures/recommendation-metadata/r16i-d8f-candidate-d4-readonly-prestate-20261013.json`에 날짜·출처·권한 HOLD와 함께 기록하고, `scripts/product-evidence/verify-r16i-r4-d8f-candidate-d4-readonly-prestate.mjs`에서 **읽기 전용**으로 D4 원본 계약 + 15개 수정·드리프트·충돌 부정 경로 검증.
+- 예상되는 정상 판단은 `REVIEW_REQUIRED`이고 `release_ready=false`입니다. 이는 **실제 결제 증빙 2건, owner 승인, D8D PREVIEW 및 D8G/D8H 허가를 대체하지 않습니다.** 기존 Database Integration Authority에 검증기만 추가; CI PASS 확인 전 완료 판정 금지.
+- 운영 DB 식별·#1208 보안 차단은 변경 없음. 관련 근거: [D8F read-only prestate](../evidence/r16i-r4-d8f-candidate-d4-readonly-prestate-20261013.md).
+
 ## 3. 우선순위와 차단 조건
 
 | 우선순위 | 바로 해야 할 일 | 의존성 | 실패 시 |

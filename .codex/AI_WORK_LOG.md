@@ -3158,3 +3158,8 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Read-only RPC for two new sunscreen product IDs returned 42501 permission denied for function under connected integration credentials. No grant changes, retries with privileged identity, or claims about production actual admission.
 - D8E2 verification script extended to use genuine admission core with an explicit synthetic NO_CURRENT_SUBJECT reader (164 legacy admit, 12 nonlegacy reject), fail-closed infrastructure faults, and extra 164×12×2 real engine comparison. Total tested pair assertions will be 7,920 across both structural and conservative synthetic projections; CI evidence required.
 - All Product/Offer writes, schema, permissions, gate flags, owner approvals and deployment config unchanged; #1208 security red, PR merge HOLD.
+
+## 2026-10-13 — taxonomy-ai D8F candidate D4 read-only prestate verification
+- Classification: Medium test/evidence; DB read-only Y, Protected Area writes N. Connected Supabase candidate SELECT observed target Product old revision/160ml/29,900 KRW, Binding 1, Intake 1, Offer/Subject/Application 0, release gate false.
+- Added dated exact D4 read-only snapshot and 15 fail-closed synthetic negative-path tests against existing `buildR16IR4D4LiveReview`. No owner evidence or approvals synthesized. Reuse existing Database Integration Authority workflow.
+- Deployed Vercel runtime database identity unattested, #1208 security issue unresolved, final checkout evidence absent. D8F/G/H and PR merge HOLD, no Production mutations or gate changes.
