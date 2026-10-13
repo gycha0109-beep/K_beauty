@@ -60,6 +60,14 @@ function npm(args, limitMs) {
   });
   return done;
 }
+function packageInstances(lock, name) {
+  const suffix = "node_modules/" + name;
+  return Object.entries(lock.packages || {})
+    .filter(([p, info]) => (p === suffix || p.endsWith("/" + suffix)) &&
+      typeof info.version === "string")
+    .map(([p, info]) => ({ path: p, version: info.version }))
+    .sort((a, b) => a.path.localeCompare(b.path));
+}
 function pinnedVersions(lock, name) {
   const versions = new Set();
   for (const [p, info] of Object.entries(lock.packages || {})) {
@@ -103,8 +111,17 @@ try {
     result.candidateResolved = true;
     result.candidateLockSha256 = sha256(path.join(temp, "package-lock.json"));
     result.expoSpec = mobile.dependencies?.expo || "UNKNOWN";
-    result.lockedExpo = candidateLock.packages?.["node_modules/expo"]?.version || "UNKNOWN";
-    result.lockedExpoCli = candidateLock.packages?.["node_modules/@expo/cli"]?.version || "UNKNOWN";
+    // Root hoisting can retain an older Expo version when npm places the
+    // workspace-updated version under apps/mobile/node_modules. All paths
+    // matter, not only the root node_modules slot.
+    result.expoInstances = packageInstances(candidateLock, "expo");
+    result.expoCliInstances = packageInstances(candidateLock, "@expo/cli");
+    const workspaceExpo = candidateLock.packages?.["apps/mobile/node_modules/expo"]?.version;
+    const hoistedExpo = candidateLock.packages?.["node_modules/expo"]?.version;
+    result.mobileResolvedExpo = workspaceExpo || hoistedExpo || "UNKNOWN";
+    result.candidateTargetVersionResolved = /^57\.0\.(?:2[8-9]|[3-9][0-9])$/.test(
+      result.mobileResolvedExpo);
+
     for (const name of targets) {
       result.targetPackages[name] = {
         initialVersions: pinnedVersions(baseline, name),
@@ -137,7 +154,9 @@ try {
       result.audits[kind] = record;
       if (!record.readable) auditsReadable = false;
     }
-    result.state = !auditsReadable ? "CANDIDATE_AUDIT_UNREADABLE_HOLD" :
+    result.state = !result.candidateTargetVersionResolved ?
+      "CANDIDATE_EXPO_WORKSPACE_VERSION_NOT_RESOLVED_HOLD" :
+      !auditsReadable ? "CANDIDATE_AUDIT_UNREADABLE_HOLD" :
       auditKinds.every(([kind]) => result.audits[kind].high === 0 &&
         result.audits[kind].critical === 0) ?
         "RAW_HIGH_CRITICAL_ZERO_REQUIRES_COMPATIBILITY_REVIEW" :
