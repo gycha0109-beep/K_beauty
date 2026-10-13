@@ -35,8 +35,12 @@ assert.equal(scenarioFixture.scenarioCount, 12, "12 real engine scenario inputs"
 assert.equal(scenarioFixture.scenarios.length, 12);
 const uniqueIds = new Set(fixture.products.map((p) => p.id));
 assert.equal(uniqueIds.size, 164, "unique catalog rows");
-const original = fixture.products.find((p) => p.id === PRODUCT_ID);
-assert(original, "target product must exist in frozen catalog");
+const historicalTarget = fixture.products.find((p) => p.id === PRODUCT_ID);
+assert(historicalTarget, "target product must exist in frozen catalog");
+// The 2026-08-04 fixture did not carry buy_link; the link below is the
+// independently observed 2026-10-13 read-only catalog value (same fixed ID).
+assert.equal(Object.hasOwn(historicalTarget, "buy_link"), false);
+const original = { ...historicalTarget, buy_link: HWAHAE_URL };
 assert.equal(original.size_ml, 160);
 assert.equal(original.price_min, 29900);
 assert.equal(original.price_max, 29900);
