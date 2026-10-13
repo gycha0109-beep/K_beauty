@@ -24,8 +24,10 @@ const tracked = [
   "apps/mobile/.gitignore",
 ];
 const trackedPaths = tracked.map((p) => path.join(root, p));
-const digest = (p) => createHash("sha256").update(fs.readFileSync(p)).digest("hex");
+const digest = (p) => fs.existsSync(p) ?
+  createHash("sha256").update(fs.readFileSync(p)).digest("hex") : "MISSING";
 const before = trackedPaths.map(digest);
+const androidExistedBefore = fs.existsSync(android);
 const checks = [];
 const childEnv = {
   ...process.env,
@@ -57,7 +59,7 @@ let stopReason = null;
 let generatedNativeShell = false;
 try {
   assert.ok(fs.existsSync(path.join(mobile, "app.json")), "mobile config missing");
-  if (fs.existsSync(android)) {
+  if (androidExistedBefore) {
     stopReason = "ANDROID_DIRECTORY_ALREADY_EXISTS_REFUSE_OVERWRITE";
   } else {
     const prebuild = stage("androidPrebuild",
@@ -82,7 +84,7 @@ try {
   const changedFiles = tracked.filter((_, index) => before[index] !== after[index]);
   const nativeWasCreated = !fs.existsSync(android) ? false :
     !fs.lstatSync(android).isSymbolicLink() && fs.lstatSync(android).isDirectory();
-  const safeToClean = nativeWasCreated &&
+  const safeToClean = !androidExistedBefore && nativeWasCreated &&
     path.dirname(android) === mobile && !fs.existsSync(path.join(android, ".git"));
   let cleanup = "NOT_NEEDED";
   if (safeToClean) {
