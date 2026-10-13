@@ -1,0 +1,30 @@
+{
+  "schema": "bejewely.security.private-patch-source.v1",
+  "stage": "B1_ISOLATED_SOURCE_CANDIDATE_ONLY",
+  "upstreamPackage": "braces",
+  "originalVersion": "3.0.3",
+  "originalRegistryTarball": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+  "originalLockIntegritySha512": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+  "advisory": "GHSA-vfj7-8cjw-p6xm",
+  "upstreamPatch": {
+    "repo": "micromatch/braces",
+    "pullRequest": 72,
+    "headSha": "28d440b5dd449dbf1fe6f3506cf94ecca4d02660",
+    "stateAtReview": "CLOSED_UNMERGED",
+    "reviewedLibraryPatchGitBlobSha1": "b6aa05571a91ec9c6c4bc80ae7c6a26cb5db31af",
+    "existingPatchPath": "scripts/security/candidates/braces-pr72-library.patch.b64",
+    "expectedChangedFiles": [
+      "lib/compile.js",
+      "lib/constants.js",
+      "lib/expand.js",
+      "lib/parse.js",
+      "lib/stringify.js"
+    ]
+  },
+  "distributionApproved": false,
+  "licenseReviewed": false,
+  "sourceTarballIndependentSha512Verified": false,
+  "releaseArtifactBuilt": false,
+  "securityOwnerApproval": "UNKNOWN",
+  "vulnerabilityRemediated": false
+}
