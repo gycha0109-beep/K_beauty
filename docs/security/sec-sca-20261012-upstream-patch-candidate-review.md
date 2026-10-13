@@ -149,3 +149,11 @@
 검증 방식의 세부 사항, 초기 CI 보호기 충돌·Android prebuild 선행 순서·소스맵 옵션 전달 오류의 수정 내역은 [실행 ledger의 11절](sec-sca-20261012-execution-ledger.md) 참조. 이는 **원본 패키지 빌드 기준선**이므로 임시 소스 패치 후보의 실제 Metro/Android export를 증명하지 않는다.
 
 **SCA-3 정식 후보 lockfile·출처·무결성·APK·무예외 감사 = HOLD / NOT_ATTESTED.** SCA-4~7 진행 조건 미충족.
+
+## 11. 미패치 원본 Android native baseline 한계 (2026-10-13)
+
+공식 패치 후보가 설치되지 않은 **원본 npm lockfile**에서 Expo 57 `prebuild:android`와 `verify:mobile-native`가 PASS했다 ([CI #38335626887](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335626887)). Expo prebuild는 `apps/mobile/package.json`을 임시로 변경했으며, 원래 바이트 복원과 SHA-256 재검증은 PASS했다. 생성된 `android/` 디렉터리도 삭제했다.
+
+이후 [CI #38335884865](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335884865)에서 디버그 `assembleDebug`를 420초 동안 시도했으나 `ETIMEDOUT`; APK 아티팩트 생성·기기 smoke는 **NOT_ATTESTED**. 따라서 단지 prebuild/shell PASS를 전체 Expo/Android 호환성이나 패치 승인으로 해석하지 않는다. 비용·보안 감사 실행 순서를 보존하기 위해 긴 Gradle 진단은 opt-in으로 분리했다. 정확한 명령·복원·증거는 [실행 ledger §12](sec-sca-20261012-execution-ledger.md)에 있다.
+
+**두 수정 후보는 현재도 미병합·미배포.** 수정 후보 기반 native/Gradle/Android 실험, 실제 source-verified lock 변경과 원본 감사 HIGH=0이 없는 한 **SCA-3 정식 패치/Android 보수 HOLD**.
