@@ -55,6 +55,10 @@ try{
  const found=[...output.matchAll(/(\d+)\s+passing\b/g)];
  assert.ok(found.length>0,"no passing-count summary from forge upstream unit suite");
  const passed=Number(found[found.length-1][1]);
+ console.log("SCA_B2_UPSTREAM_SUITE_COUNT="+JSON.stringify({
+   testsPassed:passed,outputTail:output.slice(-800),
+   expectedTestEntrypoint:"tests/unit/index.js"
+ }));
  assert.ok(passed>=100,"incomplete node-forge full Node unit suite");
  console.log("SCA_B2_UPSTREAM_SUITE="+JSON.stringify({
   state:"PASS_FULL_UPSTREAM_NODE_UNIT_SUITE_AGAINST_B2_CANDIDATE",
