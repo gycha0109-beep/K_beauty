@@ -127,8 +127,23 @@ export async function runTrustP2DFiveBrandPilot({
       try {
         // Existing P2 owns robots, same-origin safety, per-site URL limits,
         // sitemap/peer discovery, and exact product heading candidate checks.
-        assessment=assessTrustP2DDiscovery(
-          await runTrustP2Discovery(row,product,fetchers));
+        const discovery=await runTrustP2Discovery(row,product,fetchers);
+        assessment=assessTrustP2DDiscovery(discovery);
+        // Diagnostic-only provenance. The source HTML is never persisted.
+        // These locators are unverified and cannot authorize a Subject or Fact.
+        assessment.sourceDiagnostics=discovery.sites.map(site=>({
+          origin:site.origin,status:site.status,
+          peerIndexCandidateCount:site.peerIndexCandidateCount??0,
+          candidateCount:site.candidateCount??0,
+          observations:(site.observations??[]).map(o=>({
+            kind:o.kind,status:o.status,fetched:o.fetched,
+          })),
+          pages:(site.pages??[]).map(page=>({
+            url:page.url,status:page.status,
+            title:page.title??null,identitySurface:page.identitySurface??null,
+            sha256:page.sha256??null,
+          })),
+        }));
       }catch(e){
         assessment={state:"SAFE_EXECUTION_FAILURE",reason:safePublicFailure(e),
           pagesFetched:0,scopedCandidates:0,bodyOnlyMentions:0,
