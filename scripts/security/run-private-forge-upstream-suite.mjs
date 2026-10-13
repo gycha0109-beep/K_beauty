@@ -79,7 +79,7 @@ try{
  }));
  assert.ok(passed>=100&&executed.length>=100,
    "incomplete node-forge full Node unit suite");
- assert.ok(executed.some(t=>/\\brsa\\b/i.test(t.fullTitle||"")),
+ assert.ok(executed.some(t=>/rsa/i.test(t.fullTitle||"")),
    "critical RSA regression suite not registered or executed");
  assert.ok(executed.some(t=>/DigestInfo|signature verification/i.test(t.fullTitle||"")),
    "RSA verification boundary regressions did not execute");
