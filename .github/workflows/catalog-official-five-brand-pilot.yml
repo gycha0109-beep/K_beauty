@@ -1,0 +1,47 @@
+name: "[WT:trust] Catalog Five-Brand Official Live Pilot"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/catalog-official-five-brand-pilot.yml"
+      - "scripts/trust-p2d-five-brand-pilot.mjs"
+      - "scripts/verify-trust-p2d-five-brand-pilot.mjs"
+      - "evidence/trust/p2d-five-brand-cohort-v1.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-five-brand-official-live-pilot
+  cancel-in-progress: false
+
+jobs:
+  live-five-brand-source-measurement:
+    name: Robots-gated 5 brands, no DB credentials or evidence admission
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate pilot cohort and anti-false-positive cases offline
+        run: node scripts/verify-trust-p2d-five-brand-pilot.mjs
+      - name: Perform bounded official live source discovery for five products
+        env:
+          TRUST_P2D_FIVE_BRAND_LIVE_ENABLED: "true"
+        run: node scripts/trust-p2d-five-brand-pilot.mjs --execute
+      - name: Archive observation-only results
+        uses: actions/upload-artifact@v4
+        with:
+          name: trust-p2d-five-brand-results
+          path: artifacts/trust-p2d-five-brand-result.json
+          if-no-files-found: error
+          retention-days: 30
