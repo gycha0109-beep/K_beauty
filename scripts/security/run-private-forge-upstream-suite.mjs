@@ -51,7 +51,7 @@ try{
   harness,160000,{...process.env,npm_config_update_notifier:"false"});
  const output=run(process.execPath,[path.join(harness,"node_modules/mocha/bin/mocha"),
    "--timeout","30000","--reporter","dot","tests/unit/index.js"
- ],checkout,240000,{...process.env,NODE_PATH:path.join(harness,"node_modules"),NODE_OPTIONS:""});
+ ],checkout,240000,{...process.env,NODE_ENV:"test",NODE_PATH:path.join(harness,"node_modules"),NODE_OPTIONS:""});
  const found=[...output.matchAll(/(\d+)\s+passing\b/g)];
  assert.ok(found.length>0,"no passing-count summary from forge upstream unit suite");
  const passed=Number(found[found.length-1][1]);
