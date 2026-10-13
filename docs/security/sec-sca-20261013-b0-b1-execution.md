@@ -61,3 +61,12 @@
 - 같은 HEAD에서 pinned upstream braces 수정 소스의 정상/비정상 회귀 **PASS**, CodeQL **PASS**, Main Health **PASS**, PIE **PASS**. 정식 감사는 기존 만료 예외 때문에 **FAIL 유지**.
 - **증명 범위:** 실제 npm 공식 원본 tarball의 잠금 파일 정합성. 패치된 배포 tarball이나 license/NOTICE, upstream 전체 unit test suite의 PASS 또는 Security 오너의 포크 승인까지 증명한 것은 아님.
 - **B0 PARTIAL / B1 patch source + registry integrity PASS (B1 전체 HOLD).** B2, B3~7은 독립 요건이며 이 문서에서 승격하지 않는다.
+
+## 6. B1 업스트림 전체 단위 테스트 — 904개 PASS (2026-10-13)
+
+- [정확 코드 SHA 9c8380e5914b03a9c6813bcbf25249676dca3c65 / Supply Chain #38356625466](https://github.com/gycha0109-beep/K_beauty/actions/runs/38356625466) trace 단계에서 `SCA_B1_UPSTREAM_SUITE=PASS_FULL_UPSTREAM_TEST_SUITE_AGAINST_B1_CANDIDATE`, **904 passing**.
+- 실험은 등록된 업스트림 커밋 `28d440b5dd449dbf1fe6f3506cf94ecca4d02660`을 정확히 fetch하여 전체 테스트를 가져왔다. npm 원본 3.0.3에 검토된 5개 소스 패치 및 명시적인 기존 업스트림 호환 변경(quote 처리, `block.invalid = false`)을 적용했다.
+- 임시 테스트 환경의 최종 소스 5개 파일은 **업스트림 커밋과 바이트 불일치 0개**, parser Git blob `99cfb63528ff0124989d4c280e87888236a02be8` 검증 PASS. 기존 앱의 npm lock·설치 의존성은 그대로였다.
+- 최초 파서 Git blob 불일치는 명시적 upstream 변경 중 comma parser invalid-state 한 줄 누락에 기인했으며, 임시 소스에만 검토·고정된 추가 hunk로 정정했다. upstream 전체 suite는 수정 이후에만 PASS했다.
+- 같은 HEAD Main Health·PIE PASS 및 CodeQL PASS. 정식 보안 audit는 취약 원본 라이브러리가 lock에 남아 있어 만료 예외로 **의도된 FAIL**.
+- **단계 해석:** B1 소스 동작, 원본 npm tarball SHA, 전체 테스트는 PASS. B0 owner/라이선스 검수, B3 자체 패키지 재현·승인, B4 실제 그래프 교체는 여전히 HOLD. 이는 수정 패키지 배포/운영 취약점 해결 증명이 아니다.

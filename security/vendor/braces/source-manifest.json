@@ -31,5 +31,13 @@
     "run": "https://github.com/gycha0109-beep/K_beauty/actions/runs/38350267266",
     "result": "SOURCE_REGISTRY_INTEGRITY_PASS_NOT_A_PATCH_RELEASE",
     "packFiles": 10
+  },
+  "upstreamFullNodeUnitSuite": {
+    "verified": true,
+    "passingTests": 904,
+    "exactRun": "https://github.com/gycha0109-beep/K_beauty/actions/runs/38356625466",
+    "method": "SHA-pinned upstream test suite with independently pinned five-file patched npm 3.0.3 source; 0 modified source drift files",
+    "candidateOnly": true,
+    "notReleaseAttestation": true
   }
 }
