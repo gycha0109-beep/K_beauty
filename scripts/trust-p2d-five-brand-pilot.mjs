@@ -16,10 +16,10 @@ const AUTHORITATIVE=false;
 const GOOD=new Set(["STRUCTURED_NAME_CANDIDATE","TITLE_NAME_CANDIDATE","SCOPED_HEADING_CANDIDATE"]);
 const WEAK=new Set(["BODY_NAME_MENTION_ONLY"]);
 const KINDS=new Set(["official_product_page","brand_official_product_page","official_brand_product_page","official_brand_owner_product_page"]);
-const COHORT_FILE="evidence/trust/p2d-five-brand-cohort-v1.json";
+const COHORT_FILE="evidence/trust/p2d-five-brand-cohort-v2.json";
 
 export function assertTrustP2DCohort(cohort){
-  if(cohort?.contract!=="trust-p2d-five-brand-live-cohort-v1"||
+  if(!["trust-p2d-five-brand-live-cohort-v1","trust-p2d-five-brand-live-cohort-v2"].includes(cohort?.contract)||
     !Array.isArray(cohort.targets)||cohort.targets.length!==5)
     throw Error("P2D_INVALID_COHORT");
   const brands=new Set(),origins=new Set(),products=new Set();
@@ -35,6 +35,8 @@ export function assertTrustP2DCohort(cohort){
       /^(\d+\.){3}\d+$/.test(origin.hostname)||
       brands.has(item.brand)||origins.has(origin.origin)||products.has(item.productId))
       throw Error("P2D_INVALID_OR_DUPLICATE_BRAND");
+    if(cohort.contract==="trust-p2d-five-brand-live-cohort-v2"&&
+      (!Number.isFinite(item.sizeMl)||item.sizeMl<=0))throw Error("P2D_CATALOG_SIZE_SCOPE_INVALID");
     brands.add(item.brand);origins.add(origin.origin);products.add(item.productId);
   }
   return true;
@@ -116,7 +118,7 @@ export async function runTrustP2DFiveBrandPilot({
   for(const target of cohort.targets){
     const row=cohortToTrustedDiscoveryRow(target);
     const product={
-      id:target.productId,name:target.name,
+      id:target.productId,name:target.name,brand:target.brand,size_ml:target.sizeMl??null,
       name_en:target.nameEn,normalized_name:target.normalizedName,
     };
     let assessment;
