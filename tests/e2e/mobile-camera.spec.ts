@@ -182,6 +182,41 @@ async function setFaceGuideMode(page: Page, mode: FaceGuideMode) {
 test.describe("mobile fullscreen camera", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
+  test("displays the shared Face Lab capture guidance once without blocking photo choices", async ({ page }) => {
+    await installCameraMock(page);
+    await openHydratedHome(page);
+
+    const note = page.getByTestId("face-lab-capture-notice");
+    await expect(note).toHaveCount(1);
+    await expect(note).toBeVisible();
+    await expect(note).toContainText("Face Lab은 사진에 나타난 얼굴 특징과 색감을");
+    await expect(note).toContainText("조명·각도·필터에 따라 결과가 달라질 수 있으니");
+    await expect(getCameraOpenButton(page)).toBeEnabled();
+    await expect(page.getByRole("button", { name: "사진에서 선택", exact: true })).toBeEnabled();
+
+    // Opening the live camera may add an overlay, but never another capture warning.
+    await getCameraOpenButton(page).click();
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "open");
+    await expect(note).toHaveCount(1);
+
+    await page.getByRole("button", { name: "카메라 닫기" }).click();
+    await expect(note).toHaveCount(1);
+    await expect(note).toBeVisible();
+  });
+
+  test("uses the same single non-blocking Face Lab capture notice in English", async ({ page }) => {
+    await page.goto("/en", { waitUntil: "domcontentloaded" });
+    await page.waitForLoadState("networkidle");
+
+    const note = page.getByTestId("face-lab-capture-notice");
+    await expect(note).toHaveCount(1);
+    await expect(note).toContainText("Face Lab analyzes visible facial features and colors");
+    await expect(note).toContainText("Lighting, angles, and filters can affect the result");
+    await expect(page.getByRole("button", { name: "Use Camera", exact: true })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Choose Photo", exact: true })).toBeEnabled();
+  });
+
+
   test("prepares the live video invisibly before the fullscreen expansion", async ({ page }) => {
     await installCameraMock(page, { deferFirstFrame: true });
     await openHydratedHome(page);
