@@ -1,0 +1,68 @@
+{
+  "kind": "face_lab_candidate_catalog_snapshot_v1",
+  "observedDate": "2026-10-12",
+  "source": "connected_supabase_list_tables_and_security_advisors",
+  "sourceRef": "bygrczggxfuisupcevaz",
+  "sourceScope": "connected_candidate_with_matching_public_client_bundle_ref",
+  "runtimeServerConnectionVerified": false,
+  "sqlAppliedVerified": false,
+  "noSQLOrDataRowsQueried": true,
+  "status": "HOLD",
+  "tables": [
+    {
+      "name": "public.saved_reports",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "face_lab_revision",
+          "data_type": "bigint",
+          "default_value": "0",
+          "check": "face_lab_revision >= 0"
+        }
+      ]
+    },
+    {
+      "name": "public.analysis_request_rate_windows",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "endpoint",
+          "data_type": "text",
+          "check": "endpoint = ANY (ARRAY['analyze'::text, 'face-reading'::text, 'face-reading-test'::text, 'face-lab-simulation-test'::text, 'result-read'::text])"
+        }
+      ]
+    },
+    {
+      "name": "public.analysis_request_idempotency",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "endpoint",
+          "data_type": "text",
+          "check": "endpoint = ANY (ARRAY['analyze'::text, 'face-reading'::text, 'face-lab-simulation-test'::text])"
+        }
+      ]
+    }
+  ],
+  "advisors": {
+    "relatedInfo": [
+      {
+        "code": "rls_enabled_no_policy",
+        "table": "public.analysis_request_rate_windows"
+      },
+      {
+        "code": "rls_enabled_no_policy",
+        "table": "public.analysis_request_idempotency"
+      }
+    ],
+    "securityDefinerAuthenticatedCallable": [
+      {
+        "name": "public.admin_has_capability"
+      },
+      {
+        "name": "public.get_current_admin_role"
+      }
+    ],
+    "cannotProveActualPrivileges": true
+  }
+}

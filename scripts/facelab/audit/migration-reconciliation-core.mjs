@@ -2,6 +2,8 @@ export const FACE_LAB_MIGRATION_RECONCILER_VERSION =
   "face-lab-migration-reconciliation-offline-v1";
 
 const FILE_RE = /^([0-9]{14})_([a-zA-Z0-9][a-zA-Z0-9._-]*)\.sql$/;
+const LEGACY_FILE_RE = /^([0-9]{8})_([a-zA-Z0-9][a-zA-Z0-9._-]*)\.sql$/;
+const LEGACY_VERSION_RE = /^[0-9]{8}$/;
 const VERSION_RE = /^[0-9]{14}$/;
 const NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,239}$/;
 const SHA_RE = /^[a-f0-9]{64}$/;
@@ -24,14 +26,15 @@ function sortVersion(left, right) {
   return stringCompare(left.version, right.version) ||
     stringCompare(left.name, right.name);
 }
-function parseRepository(items) {
-  if (!Array.isArray(items) || items.length > 10000) fail("repo_list_invalid");
+function parseRepository(items, allowLegacyDates) {
+  if (!Array.isArray(items) || items.length === 0 || items.length > 10000) fail("repo_list_invalid");
   const found = new Set();
   return items.map(item => {
     if (!isPlain(item) || typeof item.filename !== "string") {
       fail("repo_entry_invalid");
     }
-    const match = FILE_RE.exec(item.filename);
+    const match = FILE_RE.exec(item.filename) ||
+      (allowLegacyDates ? LEGACY_FILE_RE.exec(item.filename) : null);
     if (!match || item.filename.length > 260) fail("repo_filename_invalid");
     if (found.has(match[1])) fail("repo_duplicate_version");
     found.add(match[1]);
@@ -46,15 +49,17 @@ function parseRepository(items) {
     };
   }).sort(sortVersion);
 }
-function parseHosted(items) {
-  if (!Array.isArray(items) || items.length > 10000) {
+function parseHosted(items, allowLegacyDates) {
+  if (!Array.isArray(items) || items.length === 0 || items.length > 10000) {
     fail("hosted_list_invalid");
   }
   const found = new Set();
   return items.map(item => {
     if (!isPlain(item) || typeof item.version !== "string" ||
-        typeof item.name !== "string" || !VERSION_RE.test(item.version) ||
-        !NAME_RE.test(item.name)) {
+        typeof item.name !== "string" ||
+        !NAME_RE.test(item.name) ||
+        !(VERSION_RE.test(item.version) ||
+          (allowLegacyDates && LEGACY_VERSION_RE.test(item.version)))) {
       fail("hosted_entry_invalid");
     }
     if (found.has(item.version)) fail("hosted_duplicate_version");
@@ -69,7 +74,7 @@ function baseRow() {
   return {
     repo_version: null, repo_name: null, repo_sql_sha256: null,
     hosted_version: null, hosted_name: null,
-    match_type: null, name_candidate: null,
+    match_type: null, name_candidate: null, candidate_matches: "", notes: "offline_inventory_only",
     affects_face_lab_or_privileges: "unverified",
     classification: null, evidence_level: "inventory_only",
     object_status: "not_checked",
@@ -95,10 +100,13 @@ function fromRepo(item) {
  *  { repository: [{filename,sha256?}], hosted: [{version,name}] }
  * Every item stays represented. A name-only candidate never counts as match.
  */
-export function reconcileFaceLabMigrationInventories(input = {}) {
-  if (!isPlain(input)) fail("input_invalid");
-  const repository = parseRepository(input.repository);
-  const hosted = parseHosted(input.hosted);
+export function reconcileFaceLabMigrationInventories(input = {}, options = {}) {
+  if (!isPlain(input) || !isPlain(options) ||
+      (options.allowLegacyDates !== undefined &&
+       typeof options.allowLegacyDates !== "boolean")) fail("input_invalid");
+  const allowLegacyDates = options.allowLegacyDates === true;
+  const repository = parseRepository(input.repository, allowLegacyDates);
+  const hosted = parseHosted(input.hosted, allowLegacyDates);
 
   const byVersion = new Map(hosted.map(item => [item.version, item]));
   const repoVersions = new Set(repository.map(item => item.version));
@@ -147,24 +155,32 @@ export function reconcileFaceLabMigrationInventories(input = {}) {
       else changedName++;
     } else {
       const otherVersion = uniqueCandidates.get(item.version);
-      row.match_type = otherVersion ? "name_only_candidate" : "repo_only";
-      row.name_candidate = otherVersion;
+      const options = hostedNames.get(normalizeName(item.name)) ?? [];
+      row.match_type = otherVersion ? "name_only_candidate" :
+        options.length ? "ambiguous_name_candidate" : "repo_only";
+      row.name_candidate = otherVersion ?? null;
+      row.candidate_matches = options.map(x => x.version).join("|");
       row.classification = otherVersion
-        ? "renamed_or_reversioned_candidate" : "repo_only_unresolved";
+        ? "renamed_or_reversioned_candidate"
+        : options.length ? "ambiguous_candidate" : "repo_only";
     }
     rows.push(row);
   }
   for (const remote of hostedOnly) {
     const counterpart = reverseCandidates.get(remote.version);
+    const options = repoNames.get(normalizeName(remote.name)) ?? [];
     rows.push({
       ...baseRow(),
       hosted_version: remote.version,
       hosted_name: remote.name,
-      match_type: counterpart ? "name_only_candidate" : "hosted_only",
+      match_type: counterpart ? "name_only_candidate" :
+        options.length ? "ambiguous_name_candidate" : "hosted_only",
       name_candidate: counterpart ?? null,
+      candidate_matches: options.map(x => x.version).join("|"),
       affects_face_lab_or_privileges: riskOf(remote.name),
       classification: counterpart
-        ? "renamed_or_reversioned_candidate" : "hosted_only_unresolved"
+        ? "renamed_or_reversioned_candidate"
+        : options.length ? "ambiguous_candidate" : "hosted_only"
     });
   }
 
@@ -178,6 +194,7 @@ export function reconcileFaceLabMigrationInventories(input = {}) {
     repo_only: repoOnly.length,
     hosted_only: hostedOnly.length,
     unique_name_candidates: uniqueCandidates.size,
+    ambiguous_candidate_rows: rows.filter(r => r.classification === "ambiguous_candidate").length,
     rows: rows.length,
     high_risk_rows: rows.filter(r =>
       r.affects_face_lab_or_privileges === "high_review_required").length
@@ -201,7 +218,10 @@ export function reconcileFaceLabMigrationInventories(input = {}) {
     appliedSqlVerified: false,
     databaseAccess: false,
     networkAccess: false,
+    databaseWrites: 0,
     migrationExecuted: false,
+    productionReconciliationComplete: false,
+    projectIdentityConfirmed: false,
     counts,
     rows: sorted
   };
@@ -210,12 +230,14 @@ export function reconcileFaceLabMigrationInventories(input = {}) {
 export const FACE_LAB_MIGRATION_RECONCILIATION_COLUMNS = Object.freeze([
   "repo_version", "repo_name", "repo_sql_sha256",
   "hosted_version", "hosted_name", "match_type", "name_candidate",
-  "affects_face_lab_or_privileges", "classification", "evidence_level",
-  "object_status", "action_proposal", "decision"
+  "candidate_matches", "classification", "evidence_level", "object_status",
+  "affects_face_lab_or_privileges", "action_proposal", "decision", "notes"
 ]);
 
 function csvCell(value) {
-  const s = String(value ?? "");
+  // Quoting alone does not prevent spreadsheet formula execution.
+  let s = String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ");
+  if (/^\s*[=+@-]/.test(s)) s = "'" + s;
   return '"' + s.replaceAll('"', '""') + '"';
 }
 
@@ -229,11 +251,27 @@ export function migrationReconciliationCsv(report) {
   ].join("\n") + "\n";
 }
 
-export function migrationReconciliationMarkdown(report) {
+export function migrationReconciliationMarkdown(report, provenance = {}) {
   if (!isPlain(report) || !isPlain(report.counts)) fail("report_invalid");
   const c = report.counts;
+  const gitCommit = provenance.gitCommit ?? "not_provided";
+  const snapshotAt = provenance.snapshotAt ?? "not_provided";
+  if ((gitCommit !== "not_provided" && !/^[a-f0-9]{40}$/.test(gitCommit)) ||
+      (snapshotAt !== "not_provided" &&
+       !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshotAt))) {
+    fail("provenance_invalid");
+  }
+  const attention = report.rows.filter(r =>
+    ["version_match_name_drift", "ambiguous_candidate",
+      "renamed_or_reversioned_candidate"].includes(r.classification) ||
+      r.affects_face_lab_or_privileges === "high_review_required"
+  ).slice(0, 30);
   return [
     "# Face Lab migration inventory — offline, provisional",
+    "",
+    "- Git commit (operator-supplied; not independently verified): " + gitCommit,
+    "- Hosted history snapshot (operator-supplied): " + snapshotAt,
+    "- Inputs: local SQL filenames/content SHA-256 and nonsecret hosted history JSON",
     "",
     "**Operational decision: HOLD.** This inventory does not establish",
     "Vercel Production ↔ Supabase identity or that SQL was actually applied.",
@@ -249,11 +287,24 @@ export function migrationReconciliationMarkdown(report) {
     "| Repository only | " + c.repo_only + " |",
     "| Hosted only | " + c.hosted_only + " |",
     "| Unique name-only candidates (not proven) | " + c.unique_name_candidates + " |",
+    "| Ambiguous candidate rows | " + c.ambiguous_candidate_rows + " |",
     "| Rows flagged for priority review | " + c.high_risk_rows + " |",
     "",
     "All reported matches are **inventory** matches, not SQL-execution proofs.",
     "A name-only candidate remains two unmatched records; ambiguous name",
     "matches are left unresolved. Review the accompanying CSV.",
+    "",
+    "## Priority review (at most 30 rows; full details in CSV)",
+    ...attention.map(r => "- " +
+      (r.repo_version ?? "-") + " / " + (r.hosted_version ?? "-") +
+      " — " + r.classification + " — " +
+      (r.candidate_matches || "no name candidate")),
+    ...(attention.length ? [] : ["- No flagged rows in supplied inventory"]),
+    "",
+    "## Evidence and operating decision",
+    "- File SHA-256 is a local repository content digest, not a hosted execution hash.",
+    "- Database object status, RLS/GRANT and deployment identity: NOT CHECKED.",
+    "- Production reconciliation: HOLD; database operational changes: NOT AUTHORIZED.",
     "",
     "Next: verify actual Production DB identity, explain unmatched history,",
     "then inspect Face Lab / auth / RLS / Storage object-level evidence.",

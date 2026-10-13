@@ -1,0 +1,1129 @@
+{
+  "kind": "face_lab_offline_candidate_migration_metadata_fixture",
+  "sourceKind": "candidate_supabase_not_verified_production",
+  "gitRepository": "gycha0109-beep/K_beauty",
+  "repositoryCommit": "4715f25de103aaae882a7fed387838b5d2c75000",
+  "observedDate": "2026-10-10",
+  "candidateProjectRef": "bygrczggxfuisupcevaz",
+  "projectIdentityConfirmed": false,
+  "appliedSqlVerified": false,
+  "productionReconciliationComplete": false,
+  "nonSecretMetadataOnly": true,
+  "repository": [
+    {
+      "filename": "20260410_safe_review_and_promotion_layer.sql"
+    },
+    {
+      "filename": "20260424_align_analysis_results_share_schema.sql"
+    },
+    {
+      "filename": "20260430_add_products_signal_columns.sql"
+    },
+    {
+      "filename": "20260506070849_create_premium_report_sessions.sql"
+    },
+    {
+      "filename": "20260506092454_set_database_timezone_asia_seoul.sql"
+    },
+    {
+      "filename": "20260507_restrict_promote_product_candidate_execute.sql"
+    },
+    {
+      "filename": "20260520170737_add_revisit_core_tables.sql"
+    },
+    {
+      "filename": "20260524054039_split_moisturizer_categories.sql"
+    },
+    {
+      "filename": "20260524054049_reclassify_existing_moisturizers.sql"
+    },
+    {
+      "filename": "20260526_moisturizer_lotion_emulsion_insert.sql"
+    },
+    {
+      "filename": "20260531123349_restrict_anonymous_user_data_policies.sql"
+    },
+    {
+      "filename": "20260613025816_add_treatment_product_form.sql"
+    },
+    {
+      "filename": "20260613030023_migrate_treatment_product_forms.sql"
+    },
+    {
+      "filename": "20260620212309_candidate_product_form_promotion_contract.sql"
+    },
+    {
+      "filename": "20260620214740_fail_closed_map_product_category.sql"
+    },
+    {
+      "filename": "20260621030000_phase1_ranking_snapshot_pipeline.sql"
+    },
+    {
+      "filename": "20260621151304_repair_phase1_ranking_snapshot_ingest_rpc.sql"
+    },
+    {
+      "filename": "20260621152040_repair_phase1_ranking_snapshots_truncate_privilege.sql"
+    },
+    {
+      "filename": "20260621155819_phase2_candidate_promotion_review_queue.sql"
+    },
+    {
+      "filename": "20260621160633_repair_phase2_snapshot_concern_context.sql"
+    },
+    {
+      "filename": "20260622180503_repair_review_queue_distinct_observed_dates.sql"
+    },
+    {
+      "filename": "20260627224615_ranking_review_v2_b_policy.sql"
+    },
+    {
+      "filename": "20260704221747_sec_01_analysis_request_guard.sql"
+    },
+    {
+      "filename": "20260711032649_sec_05_anonymous_write_grants.sql"
+    },
+    {
+      "filename": "20260714110252_sec_06_saved_reports_premium_write_boundary.sql"
+    },
+    {
+      "filename": "20260715000000_sec_09_result_read_rate_limit.sql"
+    },
+    {
+      "filename": "20260717031925_premium_saved_report_snapshot_immutability.sql"
+    },
+    {
+      "filename": "20260730152900_admin_access_foundation.sql"
+    },
+    {
+      "filename": "20260804233000_admin_product_candidate_reviews.sql"
+    },
+    {
+      "filename": "20260804233100_admin_product_candidate_reviews_hardening.sql"
+    },
+    {
+      "filename": "20260804233200_admin_product_candidate_reviews_security_hardening.sql"
+    },
+    {
+      "filename": "20260804233300_admin_product_review_import_confirm.sql"
+    },
+    {
+      "filename": "20260805220000_admin_product_review_cleanser_metadata_v2.sql"
+    },
+    {
+      "filename": "20260805220005_admin_product_review_cleanser_metadata_v2_validate.sql"
+    },
+    {
+      "filename": "20260805220010_admin_product_review_cleanser_metadata_v2_confirm.sql"
+    },
+    {
+      "filename": "20260809115932_product_fact_storage_v1.sql"
+    },
+    {
+      "filename": "20260810174400_product_fact_controlled_write_v1.sql"
+    },
+    {
+      "filename": "20260810174410_product_fact_subject_registration_v1.sql"
+    },
+    {
+      "filename": "20260815023734_face_lab_hosted_intake_v1.sql"
+    },
+    {
+      "filename": "20260820093000_v21_9l_organic_shadow_evidence_daily_v1.sql"
+    },
+    {
+      "filename": "20260820094500_v21_9m_shadow_evidence_readback_v1.sql"
+    },
+    {
+      "filename": "20260822083000_v21_admission_g3a_pf_authority_read_v1.sql"
+    },
+    {
+      "filename": "20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql"
+    },
+    {
+      "filename": "20260824_add_product_localized_names.sql"
+    },
+    {
+      "filename": "20260824_backfill_product_english_display_names.sql"
+    },
+    {
+      "filename": "20260901012653_face_lab_neutral_face_count_intake_v1.sql"
+    },
+    {
+      "filename": "20260910093000_admin_product_identity_key_repair_v1.sql"
+    },
+    {
+      "filename": "20260910102000_product_source_bindings_v1.sql"
+    },
+    {
+      "filename": "20260910103000_product_offers_shadow_v1.sql"
+    },
+    {
+      "filename": "20260910103500_product_evidence_presentation_authority_read_v1.sql"
+    },
+    {
+      "filename": "20260910124000_product_evidence_presentation_canonical_fact_keys_v1.sql"
+    },
+    {
+      "filename": "20260913033707_data_offer14_manual_catalog_review_intake_v1.sql"
+    },
+    {
+      "filename": "20260913035725_seller_listing_observations_append_only_v1.sql"
+    },
+    {
+      "filename": "20260913052338_data_offer16_offer_presentation_authority_read_v1.sql"
+    },
+    {
+      "filename": "20260913152500_data_taxonomy5_recommendation_shadow_replay_v1.sql"
+    },
+    {
+      "filename": "20260913201050_data_taxonomy1_shadow_catalog_taxonomy_foundation_v1.sql"
+    },
+    {
+      "filename": "20260913201324_data_taxonomy1_shadow_catalog_taxonomy_hardening_v1.sql"
+    },
+    {
+      "filename": "20260913202500_data_taxonomy2_candidate_manual_classification_v1.sql"
+    },
+    {
+      "filename": "20260913210000_data_taxonomy2_production_adoption_reconcile_v1.sql"
+    },
+    {
+      "filename": "20260913232300_data_taxonomy3_product_exact_equivalence_v1.sql"
+    },
+    {
+      "filename": "20260914030000_data_taxonomy8_nullable_legacy_category_projection_v1.sql"
+    },
+    {
+      "filename": "20260914072000_data_taxonomy11_catalog_only_transactional_adoption_v1.sql"
+    },
+    {
+      "filename": "20260914175512_face_lab_neutral_face_count_campaign_v2_compat.sql"
+    },
+    {
+      "filename": "20260915095306_trust_phase1_intake_foundation_v1.sql"
+    },
+    {
+      "filename": "20260915095333_trust_phase1_intake_delivery_hardening_v1.sql"
+    },
+    {
+      "filename": "20260915095347_trust_phase1_promotion_decoupling_v1.sql"
+    },
+    {
+      "filename": "20260915112124_trust_phase2_subject_resolution_v1.sql"
+    },
+    {
+      "filename": "20260915112151_trust_phase2_presentation_scope_hardening_v1.sql"
+    },
+    {
+      "filename": "20260915120000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+    },
+    {
+      "filename": "20260915131141_trust_phase3_research_worker_v1.sql"
+    },
+    {
+      "filename": "20260915155618_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql"
+    },
+    {
+      "filename": "20260915155629_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql"
+    },
+    {
+      "filename": "20260917195000_trust_phase4_controlled_evidence_adoption_v1.sql"
+    },
+    {
+      "filename": "20260917195100_trust_phase4_controlled_evidence_adoption_fusion_hardening_v1.sql"
+    },
+    {
+      "filename": "20260919194545_trust_phase6a_reentry_foundation_v1.sql"
+    },
+    {
+      "filename": "20260920200010_trust_phase6b_reentry_detectors_v1.sql"
+    },
+    {
+      "filename": "20260920233114_trust_phase7a_legacy_backfill_preflight_v1.sql"
+    },
+    {
+      "filename": "20260921005252_trust_phase7b_legacy_backfill_materialization_v1.sql"
+    },
+    {
+      "filename": "20260921061719_trust_phase7c_legacy_research_readiness_v1.sql"
+    },
+    {
+      "filename": "20260921094643_trust_phase7c_phase4_legacy_adoption_compat_v1.sql"
+    },
+    {
+      "filename": "20260921211920_trust_phase7d_relational_fact_adoption_v1.sql"
+    },
+    {
+      "filename": "20260922000135_trust_phase4_evidence_null_replay_idempotency_v1.sql"
+    },
+    {
+      "filename": "20260922010350_trust_phase8b_source_verification_ledger_v1.sql"
+    },
+    {
+      "filename": "20260922011229_trust_phase8c_revalidation_transition_v1.sql"
+    },
+    {
+      "filename": "20260922011324_trust_phase8c_revalidation_transition_index_hardening_v1.sql"
+    },
+    {
+      "filename": "20260922012833_trust_phase8c_prestate_binding_hardening_v1.sql"
+    },
+    {
+      "filename": "20260922064822_trust_phase8d_revalidation_research_bridge_v1.sql"
+    },
+    {
+      "filename": "20260922064829_trust_phase8e_revalidation_adjudication_v1.sql"
+    },
+    {
+      "filename": "20260922064844_trust_phase8f_changed_semantic_replacement_v1.sql"
+    },
+    {
+      "filename": "20260924025307_trust_phase8g_source_verification_comparability_v1.sql"
+    },
+    {
+      "filename": "20260924025341_trust_phase8g_profile_idempotency_hardening_v1.sql"
+    },
+    {
+      "filename": "20260924104150_trust_phase8g_semantic_profile_contract_v1.sql"
+    },
+    {
+      "filename": "20260924165109_trust_phase8g_claim_asset_profile_contract_v1.sql"
+    },
+    {
+      "filename": "20260925085338_product_source_bindings_projection_integrity_v1.sql"
+    },
+    {
+      "filename": "20260925105754_commerce_link_health_v1.sql"
+    },
+    {
+      "filename": "20260925121815_product_offers_health_presentation_read_v2.sql"
+    },
+    {
+      "filename": "20260926074409_trust_phase8h_governed_official_source_relocation_v1.sql"
+    },
+    {
+      "filename": "20260927094055_trust_phase8h3_relocation_revalidation_v1.sql"
+    },
+    {
+      "filename": "20260928035500_face_lab_v2_persistence_revision.sql"
+    },
+    {
+      "filename": "20260928040319_trust_phase8h3_research_result_security_hardening_v1.sql"
+    },
+    {
+      "filename": "20260928042607_trust_phase8h3_relational_candidate_persistence_hardening_v1.sql"
+    },
+    {
+      "filename": "20260928042612_trust_phase8h3_8e_relationship_scope_hardening_v1.sql"
+    },
+    {
+      "filename": "20260928042618_trust_phase8h3_8e_security_hardening_v1.sql"
+    },
+    {
+      "filename": "20260928060828_trust_phase8i_reentry_runtime_security_hardening_v1.sql"
+    },
+    {
+      "filename": "20260928072013_trust_phase8i1_fair_detector_runtime_v1.sql"
+    },
+    {
+      "filename": "20260928081244_trust_phase8i2_transport_foundation_v1.sql"
+    },
+    {
+      "filename": "20260929002000_data_ai29c_shadow_transport_fallback.sql"
+    },
+    {
+      "filename": "20260929045848_trust_phase8i3a_drift_case_bridge_v1.sql"
+    },
+    {
+      "filename": "20260929083000_data_ai29c_sunscreen_protection_authority_v1.sql"
+    },
+    {
+      "filename": "20260929095500_data_ai29c_shadow_owner_membership_cleanup.sql"
+    },
+    {
+      "filename": "20260929110902_trust_phase8i4_grouped_relocation_v1.sql"
+    },
+    {
+      "filename": "20260929113000_data_ai29c_c_protection_recovery_tasks_v1.sql"
+    },
+    {
+      "filename": "20260929115000_data_ai29c_c_variant_recovery_bridge_v1.sql"
+    },
+    {
+      "filename": "20260929180500_data_ai29c_c5b_subject_presentation_identity_correction_v1.sql"
+    },
+    {
+      "filename": "20260929183000_data_ai29c_c5c_catalog_only_water_recovery_enqueue_v1.sql"
+    },
+    {
+      "filename": "20260929193000_data_ai29c_c5d_catalog_official_source_projection_v1.sql"
+    },
+    {
+      "filename": "20260929194500_data_ai29c_c5e_post_expansion_protection_audit_v1.sql"
+    },
+    {
+      "filename": "20260930083000_data_ai29c_c6f_prospective_axis_readiness_v1.sql"
+    },
+    {
+      "filename": "20260930090756_trust_phase8i4g_canary_read_boundary_v1.sql"
+    },
+    {
+      "filename": "20260930113000_data_ai29c_d1_sunscreen_recommendation_semantic_authority_v1.sql"
+    },
+    {
+      "filename": "20260930120500_data_ai29c_d1a_unresolved_fact_reresearch_v1.sql"
+    },
+    {
+      "filename": "20260930133000_face_lab_test_quota_partition_v1.sql"
+    },
+    {
+      "filename": "20260930202522_data_ai29c_d5c_bounded_canary_authority_v1.sql"
+    },
+    {
+      "filename": "20260930211137_data_ai29c_d5d_spf_runtime_activation_v1.sql"
+    },
+    {
+      "filename": "20260930212000_trust_phase8i4g_transport_incident_read_boundary_v1.sql"
+    },
+    {
+      "filename": "20260930212837_data_ai29c_d5d_emergency_rollback_v1.sql"
+    },
+    {
+      "filename": "20260930213348_data_ai29c_d5d_activation_control_v1.sql"
+    },
+    {
+      "filename": "20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql"
+    },
+    {
+      "filename": "20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql"
+    },
+    {
+      "filename": "20260930214000_trust_phase8i4g_grouped_replay_idempotency_v1.sql"
+    },
+    {
+      "filename": "20261001043000_face_lab_simulation_test_guard_v1.sql"
+    },
+    {
+      "filename": "20261001090000_data_ai29c_water_c_r1_cardinality_guard_v1.sql"
+    },
+    {
+      "filename": "20261001103000_data_ai29c_uva_r3d_registry_coexistence_v1.sql"
+    },
+    {
+      "filename": "20261001183000_trust_gpt_catalog_intake_pipeline_v1.sql"
+    },
+    {
+      "filename": "20261002142611_v21_8g0_registry_pinned_reconciliation_v1.sql"
+    },
+    {
+      "filename": "20261002153238_v21_8g1_identity_authority_preservation_v1.sql"
+    },
+    {
+      "filename": "20261003160200_v21_admission_g4_f1_category_authority_v1.sql"
+    },
+    {
+      "filename": "20261005044500_v21_8h_r11b_identity_authority_preservation_fix_v1.sql"
+    },
+    {
+      "filename": "20261006110000_data_ai29c_d5e_d_r3_subject_identity_authority_upgrade_v1.sql"
+    },
+    {
+      "filename": "20261006173000_data_ai29c_d5e_d_r3_preflight_rpc_alias_v1.sql"
+    },
+    {
+      "filename": "20261007155804_data_ai29c_d5e_e_cosrx_internal_canary_authority_v1.sql"
+    },
+    {
+      "filename": "20261009003000_data_ai29c_filter_r4_c_r2_bushman_subject_auth_v1.sql"
+    },
+    {
+      "filename": "20261009043000_data_ai29c_filter_r4_c_r3_bushman_replay_digest_guard_v1.sql"
+    }
+  ],
+  "hosted": [
+    {
+      "version": "20260410",
+      "name": "safe_review_and_promotion_layer"
+    },
+    {
+      "version": "20260424",
+      "name": "align_analysis_results_share_schema"
+    },
+    {
+      "version": "20260430",
+      "name": "add_products_signal_columns"
+    },
+    {
+      "version": "20260506070849",
+      "name": "create_premium_report_sessions"
+    },
+    {
+      "version": "20260506092454",
+      "name": "set_database_timezone_asia_seoul"
+    },
+    {
+      "version": "20260507",
+      "name": "restrict_promote_product_candidate_execute"
+    },
+    {
+      "version": "20260520170737",
+      "name": "add_revisit_core_tables"
+    },
+    {
+      "version": "20260524054039",
+      "name": "split_moisturizer_categories"
+    },
+    {
+      "version": "20260524054049",
+      "name": "reclassify_existing_moisturizers"
+    },
+    {
+      "version": "20260526",
+      "name": "moisturizer_lotion_emulsion_insert"
+    },
+    {
+      "version": "20260531123349",
+      "name": "restrict_anonymous_user_data_policies"
+    },
+    {
+      "version": "20260613025816",
+      "name": "add_treatment_product_form"
+    },
+    {
+      "version": "20260613030023",
+      "name": "migrate_treatment_product_forms"
+    },
+    {
+      "version": "20260620212309",
+      "name": "candidate_product_form_promotion_contract"
+    },
+    {
+      "version": "20260620214740",
+      "name": "fail_closed_map_product_category"
+    },
+    {
+      "version": "20260621030000",
+      "name": "phase1_ranking_snapshot_pipeline"
+    },
+    {
+      "version": "20260621151304",
+      "name": "repair_phase1_ranking_snapshot_ingest_rpc"
+    },
+    {
+      "version": "20260621152040",
+      "name": "repair_phase1_ranking_snapshots_truncate_privilege"
+    },
+    {
+      "version": "20260621155819",
+      "name": "phase2_candidate_promotion_review_queue"
+    },
+    {
+      "version": "20260621160633",
+      "name": "repair_phase2_snapshot_concern_context"
+    },
+    {
+      "version": "20260622180503",
+      "name": "20260622093000_repair_review_queue_distinct_observed_dates"
+    },
+    {
+      "version": "20260627224615",
+      "name": "ranking_review_v2_b_policy"
+    },
+    {
+      "version": "20260704221747",
+      "name": "sec_01_analysis_request_guard"
+    },
+    {
+      "version": "20260711032649",
+      "name": "sec_05_anonymous_write_grants"
+    },
+    {
+      "version": "20260714110252",
+      "name": "sec_06_saved_reports_premium_write_boundary"
+    },
+    {
+      "version": "20260715000000",
+      "name": "sec_09_result_read_rate_limit"
+    },
+    {
+      "version": "20260717031925",
+      "name": "premium_saved_report_snapshot_immutability"
+    },
+    {
+      "version": "20260730152900",
+      "name": "admin_access_foundation"
+    },
+    {
+      "version": "20260804233000",
+      "name": "admin_product_candidate_reviews"
+    },
+    {
+      "version": "20260804233100",
+      "name": "admin_product_candidate_reviews_hardening"
+    },
+    {
+      "version": "20260804233200",
+      "name": "admin_product_candidate_reviews_security_hardening"
+    },
+    {
+      "version": "20260804233300",
+      "name": "admin_product_review_import_confirm"
+    },
+    {
+      "version": "20260805220000",
+      "name": "admin_product_review_cleanser_metadata_v2"
+    },
+    {
+      "version": "20260805220005",
+      "name": "admin_product_review_cleanser_metadata_v2_validate"
+    },
+    {
+      "version": "20260805220010",
+      "name": "admin_product_review_cleanser_metadata_v2_confirm"
+    },
+    {
+      "version": "20260809115932",
+      "name": "product_fact_storage_v1"
+    },
+    {
+      "version": "20260810174400",
+      "name": "product_fact_controlled_write_v1"
+    },
+    {
+      "version": "20260810174410",
+      "name": "product_fact_subject_registration_v1"
+    },
+    {
+      "version": "20260815023734",
+      "name": "face_lab_hosted_intake_v1"
+    },
+    {
+      "version": "20260820183130",
+      "name": "v21_9l_organic_shadow_evidence_daily_v1"
+    },
+    {
+      "version": "20260820190246",
+      "name": "v21_9m_shadow_evidence_readback_v1"
+    },
+    {
+      "version": "20260822082619",
+      "name": "v21_admission_g3a_pf_authority_read_v1"
+    },
+    {
+      "version": "20260822090515",
+      "name": "v21_admission_g3a_emergency_revoke_exposed_runtime_password"
+    },
+    {
+      "version": "20260822130309",
+      "name": "crawler_canonical_adoption_authority_remediation_v1"
+    },
+    {
+      "version": "20260824123819",
+      "name": "add_product_localized_names"
+    },
+    {
+      "version": "20260901012653",
+      "name": "face_lab_neutral_face_count_intake_v1"
+    },
+    {
+      "version": "20260910093012",
+      "name": "admin_product_identity_key_repair_v1"
+    },
+    {
+      "version": "20260910101029",
+      "name": "product_source_bindings_v1"
+    },
+    {
+      "version": "20260910104729",
+      "name": "product_offers_shadow_v1"
+    },
+    {
+      "version": "20260910125119",
+      "name": "product_evidence_presentation_authority_read_v1"
+    },
+    {
+      "version": "20260910125840",
+      "name": "product_evidence_presentation_canonical_fact_keys_v1"
+    },
+    {
+      "version": "20260913033707",
+      "name": "data_offer14_manual_catalog_review_intake_v1"
+    },
+    {
+      "version": "20260913035725",
+      "name": "seller_listing_observations_append_only_v1"
+    },
+    {
+      "version": "20260913052338",
+      "name": "data_offer16_offer_presentation_authority_read_v1"
+    },
+    {
+      "version": "20260913201050",
+      "name": "data_taxonomy1_shadow_catalog_taxonomy_foundation_v1"
+    },
+    {
+      "version": "20260913201324",
+      "name": "data_taxonomy1_shadow_catalog_taxonomy_hardening_v1"
+    },
+    {
+      "version": "20260913203720",
+      "name": "data_taxonomy2_candidate_resolution_table_v1"
+    },
+    {
+      "version": "20260913203753",
+      "name": "data_taxonomy2_candidate_resolution_request_ledger_v1"
+    },
+    {
+      "version": "20260913203803",
+      "name": "data_taxonomy2_candidate_resolution_request_security_v1"
+    },
+    {
+      "version": "20260913203821",
+      "name": "data_taxonomy2_resolution_category_fk_v1"
+    },
+    {
+      "version": "20260913203839",
+      "name": "data_taxonomy2_family_domain_seed_v1"
+    },
+    {
+      "version": "20260913203927",
+      "name": "data_taxonomy2_resolution_shape_check_v1"
+    },
+    {
+      "version": "20260913204806",
+      "name": "data_taxonomy2_resolution_projection_fk_v1"
+    },
+    {
+      "version": "20260913204815",
+      "name": "data_taxonomy2_resolution_form_fk_v1"
+    },
+    {
+      "version": "20260913204825",
+      "name": "data_taxonomy2_resolution_domain_fk_v1"
+    },
+    {
+      "version": "20260913204831",
+      "name": "data_taxonomy2_resolution_family_fk_v1"
+    },
+    {
+      "version": "20260913204843",
+      "name": "data_taxonomy2_resolution_entity_kind_fk_v1"
+    },
+    {
+      "version": "20260913204915",
+      "name": "data_taxonomy2_resolution_link_unique_v1"
+    },
+    {
+      "version": "20260913204925",
+      "name": "data_taxonomy2_existing_promoted_resolution_backfill_v1"
+    },
+    {
+      "version": "20260913204935",
+      "name": "data_taxonomy2_candidate_admission_link_columns_v1"
+    },
+    {
+      "version": "20260913204946",
+      "name": "data_taxonomy2_existing_promoted_admission_link_v1"
+    },
+    {
+      "version": "20260913204955",
+      "name": "data_taxonomy2_candidate_admission_link_fk_v1"
+    },
+    {
+      "version": "20260913205005",
+      "name": "data_taxonomy2_candidate_admission_state_guard_v1"
+    },
+    {
+      "version": "20260913205146",
+      "name": "data_taxonomy2_server_admin_write_boundary_v1"
+    },
+    {
+      "version": "20260913205404",
+      "name": "data_taxonomy2_scope_recovery_drop_candidate_gate_v1"
+    },
+    {
+      "version": "20260913205413",
+      "name": "data_taxonomy2_scope_recovery_drop_candidate_link_columns_v1"
+    },
+    {
+      "version": "20260913205423",
+      "name": "data_taxonomy2_scope_recovery_drop_transient_resolution_tables_v1"
+    },
+    {
+      "version": "20260913205433",
+      "name": "data_taxonomy2_scope_recovery_remove_transient_relation_v1"
+    },
+    {
+      "version": "20260913205501",
+      "name": "data_taxonomy2_shadow_term_state_function_v1"
+    },
+    {
+      "version": "20260913205512",
+      "name": "data_taxonomy2_candidate_projection_bridge_v1"
+    },
+    {
+      "version": "20260913205525",
+      "name": "data_taxonomy2_candidate_source_rules_v1"
+    },
+    {
+      "version": "20260913205543",
+      "name": "data_taxonomy2_candidate_shadow_classifications_v1"
+    },
+    {
+      "version": "20260913210057",
+      "name": "data_taxonomy2_candidate_source_rules_seed_v1"
+    },
+    {
+      "version": "20260913210351",
+      "name": "data_taxonomy2_candidate_shadow_backfill_v1"
+    },
+    {
+      "version": "20260913210822",
+      "name": "data_taxonomy2_production_adoption_reconcile_v1"
+    },
+    {
+      "version": "20260913213530",
+      "name": "data_taxonomy2_candidate_freshness_gate_v1"
+    },
+    {
+      "version": "20260913233044",
+      "name": "data_taxonomy3_product_exact_equivalence_v1"
+    },
+    {
+      "version": "20260914004655",
+      "name": "data_taxonomy5_recommendation_shadow_replay_v1"
+    },
+    {
+      "version": "20260914153348",
+      "name": "data_taxonomy8_nullable_legacy_category_projection_v1"
+    },
+    {
+      "version": "20260914173147",
+      "name": "data_taxonomy11_catalog_only_transactional_adoption_v1"
+    },
+    {
+      "version": "20260914175512",
+      "name": "face_lab_neutral_face_count_campaign_v2_compat"
+    },
+    {
+      "version": "20260915095306",
+      "name": "trust_phase1_intake_foundation_v1"
+    },
+    {
+      "version": "20260915095333",
+      "name": "trust_phase1_intake_delivery_hardening_v1"
+    },
+    {
+      "version": "20260915095347",
+      "name": "trust_phase1_promotion_decoupling_v1"
+    },
+    {
+      "version": "20260915112124",
+      "name": "trust_phase2_subject_resolution_v1"
+    },
+    {
+      "version": "20260915112151",
+      "name": "trust_phase2_presentation_scope_hardening_v1"
+    },
+    {
+      "version": "20260915131141",
+      "name": "trust_phase3_research_worker_v1"
+    },
+    {
+      "version": "20260915142243",
+      "name": "data_taxonomy13_catalog_only_candidate_approval_v1"
+    },
+    {
+      "version": "20260915155618",
+      "name": "data_taxonomy15_catalog_only_trust_intake_bridge_v1"
+    },
+    {
+      "version": "20260915155629",
+      "name": "data_taxonomy15_recommendation_shadow_catalog_only_v2"
+    },
+    {
+      "version": "20260917195000",
+      "name": "trust_phase4_controlled_evidence_adoption_v1"
+    },
+    {
+      "version": "20260917195100",
+      "name": "trust_phase4_controlled_evidence_adoption_fusion_hardening_v1"
+    },
+    {
+      "version": "20260919194545",
+      "name": "trust_phase6a_reentry_foundation_v1"
+    },
+    {
+      "version": "20260920200010",
+      "name": "trust_phase6b_reentry_detectors_v1"
+    },
+    {
+      "version": "20260920233114",
+      "name": "trust_phase7a_legacy_backfill_preflight_v1"
+    },
+    {
+      "version": "20260921005252",
+      "name": "trust_phase7b_legacy_backfill_materialization_v1"
+    },
+    {
+      "version": "20260921061719",
+      "name": "trust_phase7c_legacy_research_readiness_v1"
+    },
+    {
+      "version": "20260921094643",
+      "name": "trust_phase7c_phase4_legacy_adoption_compat_v1"
+    },
+    {
+      "version": "20260921211920",
+      "name": "trust_phase7d_relational_fact_adoption_v1"
+    },
+    {
+      "version": "20260922000135",
+      "name": "trust_phase4_evidence_null_replay_idempotency_v1"
+    },
+    {
+      "version": "20260922010350",
+      "name": "trust_phase8b_source_verification_ledger_v1"
+    },
+    {
+      "version": "20260922011229",
+      "name": "trust_phase8c_revalidation_transition_v1"
+    },
+    {
+      "version": "20260922011324",
+      "name": "trust_phase8c_revalidation_transition_index_hardening_v1"
+    },
+    {
+      "version": "20260922012833",
+      "name": "trust_phase8c_prestate_binding_hardening_v1"
+    },
+    {
+      "version": "20260922064822",
+      "name": "trust_phase8d_revalidation_research_bridge_v1"
+    },
+    {
+      "version": "20260922064829",
+      "name": "trust_phase8e_revalidation_adjudication_v1"
+    },
+    {
+      "version": "20260922064844",
+      "name": "trust_phase8f_changed_semantic_replacement_v1"
+    },
+    {
+      "version": "20260924025307",
+      "name": "trust_phase8g_source_verification_comparability_v1"
+    },
+    {
+      "version": "20260924025341",
+      "name": "trust_phase8g_profile_idempotency_hardening_v1"
+    },
+    {
+      "version": "20260924104150",
+      "name": "trust_phase8g_semantic_profile_contract_v1"
+    },
+    {
+      "version": "20260924165109",
+      "name": "trust_phase8g_claim_asset_profile_contract_v1"
+    },
+    {
+      "version": "20260925085338",
+      "name": "product_source_bindings_projection_integrity_v1"
+    },
+    {
+      "version": "20260925105754",
+      "name": "commerce_link_health_v1"
+    },
+    {
+      "version": "20260925121815",
+      "name": "product_offers_health_presentation_read_v2"
+    },
+    {
+      "version": "20260926074409",
+      "name": "trust_phase8h_governed_official_source_relocation_v1"
+    },
+    {
+      "version": "20260927094055",
+      "name": "trust_phase8h3_relocation_revalidation_v1"
+    },
+    {
+      "version": "20260927105935",
+      "name": "trust_phase8h3_relocation_verification_target_v1"
+    },
+    {
+      "version": "20260927124840",
+      "name": "trust_phase8h3_relocation_verification_identity_context_v1"
+    },
+    {
+      "version": "20260927131237",
+      "name": "trust_phase8h3_relocation_research_seed_hardening_v1"
+    },
+    {
+      "version": "20260928040319",
+      "name": "trust_phase8h3_research_result_security_hardening_v1"
+    },
+    {
+      "version": "20260928042607",
+      "name": "trust_phase8h3_relational_candidate_persistence_hardening_v1"
+    },
+    {
+      "version": "20260928042612",
+      "name": "trust_phase8h3_8e_relationship_scope_hardening_v1"
+    },
+    {
+      "version": "20260928042618",
+      "name": "trust_phase8h3_8e_security_hardening_v1"
+    },
+    {
+      "version": "20260928045032",
+      "name": "face_lab_v2_persistence_revision"
+    },
+    {
+      "version": "20260928060828",
+      "name": "trust_phase8i_reentry_runtime_security_hardening_v1"
+    },
+    {
+      "version": "20260928072013",
+      "name": "trust_phase8i1_fair_detector_runtime_v1"
+    },
+    {
+      "version": "20260928081244",
+      "name": "trust_phase8i2_transport_foundation_v1"
+    },
+    {
+      "version": "20260929045848",
+      "name": "trust_phase8i3a_drift_case_bridge_v1"
+    },
+    {
+      "version": "20260929082905",
+      "name": "data_ai29c_sunscreen_protection_authority_v1"
+    },
+    {
+      "version": "20260929095204",
+      "name": "data_ai29c_shadow_transport_fallback"
+    },
+    {
+      "version": "20260929100150",
+      "name": "data_ai29c_shadow_owner_membership_cleanup"
+    },
+    {
+      "version": "20260929110902",
+      "name": "trust_phase8i4_grouped_relocation_v1"
+    },
+    {
+      "version": "20260929113130",
+      "name": "data_ai29c_c_protection_recovery_tasks_v1"
+    },
+    {
+      "version": "20260929114942",
+      "name": "data_ai29c_c_variant_recovery_bridge_v1"
+    },
+    {
+      "version": "20260929181051",
+      "name": "data_ai29c_c5b_subject_presentation_identity_correction_v1"
+    },
+    {
+      "version": "20260929181810",
+      "name": "data_ai29c_c5c_catalog_only_water_recovery_enqueue_v1"
+    },
+    {
+      "version": "20260929192559",
+      "name": "data_ai29c_c5d_catalog_official_source_projection_v1"
+    },
+    {
+      "version": "20260929194150",
+      "name": "data_ai29c_c5e_post_expansion_protection_audit_v1"
+    },
+    {
+      "version": "20260930083026",
+      "name": "data_ai29c_c6f_prospective_axis_readiness_v1"
+    },
+    {
+      "version": "20260930090756",
+      "name": "trust_phase8i4g_canary_read_boundary_v1"
+    },
+    {
+      "version": "20260930112228",
+      "name": "data_ai29c_d1_sunscreen_recommendation_semantic_authority_v1"
+    },
+    {
+      "version": "20260930114053",
+      "name": "data_ai29c_d1a_unresolved_fact_reresearch_v1"
+    },
+    {
+      "version": "20260930133304",
+      "name": "face_lab_test_quota_partition_v1"
+    },
+    {
+      "version": "20260930202522",
+      "name": "data_ai29c_d5c_bounded_canary_authority_v1"
+    },
+    {
+      "version": "20260930211137",
+      "name": "data_ai29c_d5d_spf_runtime_activation_v1"
+    },
+    {
+      "version": "20260930212837",
+      "name": "data_ai29c_d5d_emergency_rollback_v1"
+    },
+    {
+      "version": "20260930213348",
+      "name": "data_ai29c_d5d_activation_control_v1"
+    },
+    {
+      "version": "20260930213448",
+      "name": "data_ai29c_d5d_activation_control_acl_fix_v1"
+    },
+    {
+      "version": "20260930213521",
+      "name": "data_ai29c_d5d_activation_control_return_fix_v1"
+    },
+    {
+      "version": "20261001080202",
+      "name": "trust_phase8i4g_transport_incident_read_boundary_v1"
+    },
+    {
+      "version": "20261001080214",
+      "name": "trust_phase8i4g_grouped_replay_idempotency_v1"
+    },
+    {
+      "version": "20261001091011",
+      "name": "data_ai29c_water_c_r1_cardinality_guard_v1"
+    },
+    {
+      "version": "20261001183000",
+      "name": "trust_gpt_catalog_intake_pipeline_v1"
+    },
+    {
+      "version": "20261002131736",
+      "name": "face_lab_simulation_test_guard_v1"
+    },
+    {
+      "version": "20261002142611",
+      "name": "v21_8g0_registry_pinned_reconciliation_v1"
+    },
+    {
+      "version": "20261002153238",
+      "name": "v21_8g1_identity_authority_preservation_v1"
+    },
+    {
+      "version": "20261004122609",
+      "name": "v21_admission_g4_f1_category_authority_v1"
+    },
+    {
+      "version": "20261005153209",
+      "name": "v21_8h_r11b_identity_authority_preservation_fix_v1"
+    },
+    {
+      "version": "20261006140650",
+      "name": "data_ai29c_d5e_d_r3_subject_identity_authority_upgrade_v1"
+    },
+    {
+      "version": "20261006191734",
+      "name": "data_ai29c_d5e_d_r3_preflight_rpc_alias_v1"
+    },
+    {
+      "version": "20261007155804",
+      "name": "data_ai29c_d5e_e_cosrx_internal_canary_authority_v1"
+    }
+  ]
+}
