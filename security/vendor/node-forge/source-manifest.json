@@ -1,0 +1,27 @@
+{
+  "schema": "bejewely.security.private-patch-source.v1",
+  "stage": "B2_ISOLATED_SOURCE_CANDIDATE_ONLY",
+  "upstreamPackage": "node-forge",
+  "originalVersion": "1.4.0",
+  "originalRegistryTarball": "https://registry.npmjs.org/node-forge/-/node-forge-1.4.0.tgz",
+  "originalLockIntegritySha512": "sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==",
+  "advisory": "GHSA-86w9-cpqp-85rv",
+  "upstreamPatch": {
+    "repo": "digitalbazaar/forge",
+    "pullRequest": 1152,
+    "headSha": "ceba34402e329f0365134f23fe19898756527d65",
+    "stateAtReview": "OPEN_UNMERGED",
+    "patchedRsaJsGitBlobSha1": "43090545115be1b1ffc484a2a27ecf31f840437e",
+    "expectedChangedFiles": [
+      "lib/rsa.js"
+    ],
+    "testedSourceOnly": true
+  },
+  "distributionApproved": false,
+  "licenseReviewed": false,
+  "sourceTarballIndependentSha512Verified": false,
+  "releaseArtifactBuilt": false,
+  "bundledDistributionRebuilt": false,
+  "securityOwnerApproval": "UNKNOWN",
+  "vulnerabilityRemediated": false
+}
