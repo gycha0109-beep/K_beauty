@@ -13,7 +13,9 @@ import {
 } from "@/lib/face-lab-v2/target-finder";
 import {
   buildFaceLabLocalState,
+  isLatestFaceLabSaveRequest,
   normalizeFaceLabRevision,
+  resolveFaceLabDeferredSaveStatus,
   resolveFaceLabRestore
 } from "@/lib/face-lab-v2/persistence-state";
 
@@ -673,7 +675,7 @@ export default function PremiumFaceLabSection({
     });
 
     if (!savedReportId) {
-      setPersistenceStatus(locallySaved ? "pending" : "local_failed");
+      setPersistenceStatus(resolveFaceLabDeferredSaveStatus({ localSaved: locallySaved }));
       return Promise.resolve();
     }
 
@@ -685,9 +687,12 @@ export default function PremiumFaceLabSection({
       }
 
       const expectedRevision = serverRevisionRef.current;
-      const isLatestRequest = () =>
-        latestPersistRequestFingerprintRef.current === requestFingerprint &&
-        latestPersistRequestSequenceRef.current === requestSequence;
+      const isLatestRequest = () => isLatestFaceLabSaveRequest({
+        requestFingerprint,
+        latestFingerprint: latestPersistRequestFingerprintRef.current,
+        requestSequence,
+        latestSequence: latestPersistRequestSequenceRef.current
+      });
 
       try {
         const accessToken = await getBrowserSupabaseAccessToken();
@@ -698,7 +703,10 @@ export default function PremiumFaceLabSection({
               baseServerRevision: expectedRevision,
               acknowledgedRevision: serverRevisionRef.current
             });
-            setPersistenceStatus(authCached ? "auth_required" : "local_failed");
+            setPersistenceStatus(resolveFaceLabDeferredSaveStatus({
+              localSaved: authCached,
+              authRequired: true
+            }));
           }
           return;
         }
@@ -754,7 +762,10 @@ export default function PremiumFaceLabSection({
               baseServerRevision: expectedRevision,
               acknowledgedRevision: serverRevisionRef.current
             });
-            setPersistenceStatus(fallbackCached ? nextStatus : "local_failed");
+            setPersistenceStatus(resolveFaceLabDeferredSaveStatus({
+              localSaved: fallbackCached,
+              authRequired: nextStatus === "auth_required"
+            }));
           }
           return;
         }
@@ -797,7 +808,9 @@ export default function PremiumFaceLabSection({
             baseServerRevision: expectedRevision,
             acknowledgedRevision: serverRevisionRef.current
           });
-          setPersistenceStatus(fallbackCached ? "pending" : "local_failed");
+          setPersistenceStatus(resolveFaceLabDeferredSaveStatus({
+            localSaved: fallbackCached
+          }));
         }
       }
     };
