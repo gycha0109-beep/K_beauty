@@ -158,3 +158,14 @@ Execution: `scripts/trust-p2d-five-brand-pilot.mjs` delegates to existing robots
 Verdicts: `IDENTITY_CANDIDATE_REVIEW_REQUIRED` (structured product name/title/scoped heading candidate), `BODY_MENTION_REVIEW_REQUIRED` (incidental text only), `NO_MATCHING_PRODUCT_IDENTITY`, `NO_PRODUCT_PAGE`, `SOURCE_POLICY_HOLD`, or `SAFE_EXECUTION_FAILURE`. **None** equals verified exact SKU/market/formulation. Measurement denominator is five preselected blocked products. This phase does NOT assert empirical 0 false positives; that requires independent human gold-set review of source pages and market/formulation.
 
 Acceptance for this slice: five subjects attempted and every subject assigned a truthful outcome without policy bypass or any authority writes. Later work can improve blocked-domain coverage, perform independent exact SKU validation, and only then revisit governed Subject creation. Do not equate five attempted to five successfully found.
+
+### P2-D measured five-brand cohort — 2026-10-13 (real GitHub runner)
+
+Evidence source: [GitHub Actions run #38332070497](https://github.com/gycha0109-beep/K_beauty/actions/runs/38332070497), job 115083828288, main `7b9b5927f027d2138b5a4eb09f143cad92f36edc`; frozen result: `evidence/trust/p2d-five-brand-live-observed-20261013.json`.
+
+- All five independently branded, actually blocked intake targets were attempted via robots-gated official domains; live job passed. **2 official HTML candidate pages fetched, belonging to one target** (ATOPALM MLE Lotion). The two name/heading signals require human review and are not evidence of an exact SKU match.
+- Dr.G: `ROBOTS_UNAVAILABLE`, policy HOLD; beplain: `NO_SAFE_CANDIDATE`; ATOPALM: `CANDIDATES_DISCOVERED` with 2 unverified candidate pages; Isntree: `SOURCE_BLOCKED`; Torriden: `NO_SAFE_CANDIDATE`.
+- Measured **identity candidate discovery yield = 1/5 = 20%**. This is neither a verified product identification accuracy nor a 20% trusted Fact coverage claim. **Verified exact-SKU identity = 0**, formulation/market corroboration = 0, Product Fact/Subject/Recommendation/DB writes = 0, AI API calls = 0. Empirical false-positive rate cannot be computed without an independently reviewed labeled set.
+- First follow-up: inspect the two ATOPALM candidate locators and independent SKU/market/formulation authority, then widen safe sitemap/index discovery for sites that returned no candidate, or record genuine robots failure without bypass. P3 automatic official Fact extraction remains gated on exact product lineage; no machine actor or automated Subject creation is authorized.
+
+The narrowly scoped live task was executed through the existing TRUST canonical job only on the explicit one-time `P2D-LIVE-TRIAL` main commit marker, not an always-running schedule. The separate historical P2-C live workflows remain retired.
