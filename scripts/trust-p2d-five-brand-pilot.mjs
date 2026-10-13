@@ -70,7 +70,9 @@ export function assessTrustP2DDiscovery(run){
   const pages=run.sites.flatMap(s=>s.pages??[]);
   const good=pages.filter(p=>GOOD.has(p.status));
   const weak=pages.filter(p=>WEAK.has(p.status));
+  const mismatched=pages.filter(p=>p.status==="CATALOG_SIZE_MISMATCH"||p.status==="BUNDLE_VARIANT_REVIEW_REQUIRED"||p.status==="SIZE_CONFLICT_REVIEW_REQUIRED");
   const candidateResult=good.length?"IDENTITY_CANDIDATE_REVIEW_REQUIRED":
+    mismatched.length?"VARIANT_REVIEW_REQUIRED":
     weak.length?"BODY_MENTION_REVIEW_REQUIRED":
     pages.length?"NO_MATCHING_PRODUCT_IDENTITY":"NO_PRODUCT_PAGE";
   const blocked=run.sites.some(s=>["ROBOTS_UNAVAILABLE","ROBOTS_DISALLOWED","CRAWL_DELAY_NOT_SUPPORTED"].includes(s.status));
@@ -80,6 +82,7 @@ export function assessTrustP2DDiscovery(run){
     siteStatus:run.sites.map(s=>s.status).slice(0,2),
     pagesFetched:pages.filter(p=>typeof p.sha256==="string").length,
     scopedCandidates:good.length,
+    variantMismatchPages:mismatched.length,
     bodyOnlyMentions:weak.length,
     distinctCandidateLocators:new Set(good.map(p=>p.url)).size,
     verifiedSourceBindings:0,verifiedMarkets:0,verifiedFormulations:0,
