@@ -1,0 +1,139 @@
+{
+  "contract": "trust-p3-official-locator-live-verified-v1",
+  "measuredAt": "2026-10-13",
+  "run": {
+    "repository": "gycha0109-beep/K_beauty",
+    "mainSha": "1a98f67824ae6b25a762bafb0e28de5db106e8eb",
+    "runId": 38342826207,
+    "jobId": 115117421375,
+    "artifactId": 11787711280,
+    "artifactName": "trust-p3-locator-revalidation"
+  },
+  "scope": {
+    "brands": 3,
+    "products": 3,
+    "officialLocators": 6,
+    "origins": 4,
+    "actualHtmlFetched": 4,
+    "sourceFetchHold": 2,
+    "robotsBypass": 0
+  },
+  "summary": {
+    "outcomes": {
+      "IDENTITY_OR_VARIANT_REVIEW_REQUIRED": 4,
+      "SOURCE_FETCH_HOLD": 2
+    },
+    "directProductCandidates": 0,
+    "exactSkuVerified": 0,
+    "marketVerified": 0,
+    "formulationVerified": 0,
+    "newSourceBindings": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0
+  },
+  "items": [
+    {
+      "brand": "토리든",
+      "role": "EXISTING_BOUND_SOURCE",
+      "url": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+      "liveStatus": "IDENTITY_OR_VARIANT_REVIEW_REQUIRED",
+      "gate": "IDENTITY_REVIEW_REQUIRED",
+      "identitySignal": "IDENTITY_UNRESOLVED",
+      "variantStatus": "SIZE_UNKNOWN",
+      "digest": "773322dfe32cffce33246b7637596a16dd9e0e5285a7ec8a7c0f8753da409acf",
+      "markup": {
+        "utf8": true,
+        "titleNameMatch": false,
+        "ogTitleNameMatch": false,
+        "schemaProductCount": 0,
+        "rawMarkupNameMention": false,
+        "visibleTextNameMention": false
+      },
+      "adjudication": "NAME_DRIFT_UNPROVEN_EXACT_SKU"
+    },
+    {
+      "brand": "토리든",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "url": "https://www.torriden.com/goods/goods_view.php?goodsNo=173",
+      "liveStatus": "IDENTITY_OR_VARIANT_REVIEW_REQUIRED",
+      "gate": "IDENTITY_REVIEW_REQUIRED",
+      "identitySignal": "BODY_NAME_MENTION_ONLY",
+      "variantStatus": "SIZE_UNKNOWN",
+      "digest": "a543efb2213c3358db36f9e29c19fb036b14509b036116e5d40725d989afbd8e",
+      "markup": {
+        "utf8": true,
+        "titleNameMatch": false,
+        "ogTitleNameMatch": true,
+        "schemaProductCount": 0,
+        "rawMarkupNameMention": true,
+        "visibleTextNameMention": true
+      },
+      "adjudication": "NAME_SIZE_OFFICIAL_CANDIDATE_NOT_SCOPED_SKU"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "EXISTING_BOUND_SOURCE",
+      "url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "liveStatus": "SOURCE_FETCH_HOLD",
+      "failure": "SOURCE_BLOCKED",
+      "adjudication": "CANNOT_REPROBE_ORIGINAL_WITHOUT_POLICY_ACCESS"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics-spf50-pa-uk",
+      "liveStatus": "SOURCE_FETCH_HOLD",
+      "failure": "SOURCE_BLOCKED",
+      "adjudication": "BRAND_RENAME_WEB_EVIDENCE_EXISTS_BUT_LIVE_PAGE_BLOCKED"
+    },
+    {
+      "brand": "에스트라",
+      "role": "EXISTING_BOUND_SOURCE",
+      "url": "https://www.aestura.com/web/product/view.do?prdSeq=1108",
+      "liveStatus": "IDENTITY_OR_VARIANT_REVIEW_REQUIRED",
+      "gate": "IDENTITY_REVIEW_REQUIRED",
+      "identitySignal": "IDENTITY_UNRESOLVED",
+      "variantStatus": "SIZE_UNKNOWN",
+      "digest": "7bde6cecaa32f8be44216d4b1c6cbbc3efdc66f0a6bc87f2beb5a0030148222b",
+      "markup": {
+        "utf8": true,
+        "titleNameMatch": false,
+        "ogTitleNameMatch": false,
+        "schemaProductCount": 0,
+        "rawMarkupNameMention": false,
+        "visibleTextNameMention": false
+      },
+      "adjudication": "KOREAN_LOCALIZED_NAME_UNPROVEN_IDENTITY"
+    },
+    {
+      "brand": "에스트라",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "url": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen",
+      "liveStatus": "IDENTITY_OR_VARIANT_REVIEW_REQUIRED",
+      "gate": "VARIANT_REVIEW_REQUIRED",
+      "identitySignal": "STRUCTURED_NAME_CANDIDATE",
+      "variantStatus": "SIZE_UNKNOWN",
+      "digest": "0d59f91356c5382dadee15e589a677e096b54789910d2428c3cd30da9d218dda",
+      "markup": {
+        "utf8": true,
+        "titleNameMatch": true,
+        "ogTitleNameMatch": true,
+        "schemaProductCount": 1,
+        "schemaProductNameMatch": true,
+        "rawMarkupNameMention": true
+      },
+      "adjudication": "STRUCTURED_NAME_PRESENT_BUT_40ML_VS_25ML_SELECTION_UNRESOLVED"
+    }
+  ],
+  "provenanceNote": "Official indexed page content is independent of GitHub-runner responses and cannot override robot/policy/variant holds. This is not a ground truth product identification accuracy measurement.",
+  "authority": {
+    "autoSourcePromotion": false,
+    "autoSubjectCreation": false,
+    "autoFactConfirmation": false,
+    "autoProductUpdate": false,
+    "marketVerifiedFromPage": false
+  }
+}

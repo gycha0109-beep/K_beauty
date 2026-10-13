@@ -1,0 +1,106 @@
+{
+  "contract": "trust-p3-root-colocation-diagnostic-baseline-v1",
+  "observedAt": "2026-10-13",
+  "provenance": {
+    "mainSha": "a65a32aa9e5a707789bfdc76c8d41d8e9942991c",
+    "mergedPr": 1276,
+    "runId": 38354635933,
+    "jobId": 115154545000,
+    "artifactId": 11792556121
+  },
+  "scope": {
+    "officialLocators": 6,
+    "origins": 4,
+    "products": 3,
+    "fetched": 4,
+    "sourceFetchHold": 2
+  },
+  "outcomes": {
+    "identityOrVariantReviewRequired": 4,
+    "sourceFetchHold": 2,
+    "actualP3CandidateCount": 0,
+    "verifiedExactSku": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "sourceBindings": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0
+  },
+  "structuralObservations": [
+    {
+      "brand": "토리든",
+      "role": "EXISTING_BOUND_SOURCE",
+      "scan": "COMPLETE",
+      "main": 0,
+      "markedRoots": {
+        "goodsDetail": 2,
+        "itemDetail": 3
+      },
+      "nameClass": 1,
+      "selects": 1,
+      "explicitSelectedOptions": 0,
+      "verdict": "PRIMARY_ROOT_NOT_PROVEN"
+    },
+    {
+      "brand": "토리든",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "scan": "COMPLETE",
+      "main": 0,
+      "markedRoots": {
+        "goodsDetail": 2,
+        "itemDetail": 3
+      },
+      "nameClass": 1,
+      "selects": 1,
+      "explicitSelectedOptions": 0,
+      "verdict": "PRIMARY_ROOT_NOT_PROVEN"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "EXISTING_BOUND_SOURCE",
+      "fetch": "SOURCE_BLOCKED",
+      "verdict": "SOURCE_HOLD"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "fetch": "SOURCE_BLOCKED",
+      "verdict": "SOURCE_HOLD"
+    },
+    {
+      "brand": "에스트라",
+      "role": "EXISTING_BOUND_SOURCE",
+      "scan": "COMPLETE_WITH_SKIPPED_OVERSIZED_TAGS",
+      "skippedLongTags": 1,
+      "countsComplete": false,
+      "main": 0,
+      "markedRoots": {},
+      "nameClass": 0,
+      "selects": 0,
+      "verdict": "PARTIAL_STRUCTURE_NO_PRIMARY_ROOT_PROOF"
+    },
+    {
+      "brand": "에스트라",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "scan": "COMPLETE_WITH_SKIPPED_OVERSIZED_TAGS",
+      "skippedLongTags": 1,
+      "countsComplete": false,
+      "main": 1,
+      "markedRoots": {
+        "productDataAttribute": 1
+      },
+      "h1WithinMarkedRoot": 1,
+      "selects": 0,
+      "verdict": "POTENTIAL_ROOT_BUT_SELECTED_VARIANT_UNOBSERVED"
+    }
+  ],
+  "nextGate": {
+    "goal": "In previously measured marked product roots, count only bounded co-located scoped title markers and variant control surfaces; no raw markup, option values, names or SKU attribution.",
+    "automaticRootValidation": false,
+    "classificationMutation": false,
+    "sourcePolicyBypass": false,
+    "noSourceOrFactAuthority": true,
+    "reactiveSiteScriptsNotExecuted": true
+  }
+}
