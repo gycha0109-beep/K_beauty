@@ -6,7 +6,8 @@
  * copied and resulting package is categorically NOT approved for release.
  */
 import assert from "node:assert/strict";
-import {createHash} from "node:crypto";
+import {createHash,constants,generateKeyPairSync,sign} from "node:crypto";
+import {createRequire} from "node:module";
 import {spawnSync} from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -108,9 +109,13 @@ function pack(name,seq){
 }
 try{
  const summaries=[];
+ const expectedInstalledSources={};
  for(const name of ["braces","node-forge"]){
    const first=pack(name,1);
    const second=pack(name,2);
+   expectedInstalledSources[name]=name==="braces"
+     ?first.patchedLibraryEvidence.modifiedFileSha256
+     :{"lib/rsa.js":first.patchedLibraryEvidence.patchedRsaSha256};
    assert.equal(first.tarballSha256,second.tarballSha256,
      name+" candidate tarball byte reproducibility failed");
    assert.equal(first.tarballSha512,second.tarballSha512,
@@ -127,11 +132,67 @@ try{
      releaseApproved:false,
    });
  }
+ // Reinstall BOTH real, byte-verified tarballs into a second disposable
+ // consumer project. This checks npm's physical installation result, not just
+ // tar headers. It never updates the actual BEJEWELY dependency graph.
+ const consumer=path.join(tmp,"isolated-consumer");
+ fs.mkdirSync(consumer);
+ fs.writeFileSync(path.join(consumer,"package.json"),JSON.stringify({
+   name:"bejewely-b3-install-verification",version:"0.0.0",private:true,
+ },null,2)+"\\n");
+ const localTarballs=[
+   path.join(tmp,"braces-1","output","braces-3.0.3.tgz"),
+   path.join(tmp,"node-forge-1","output","node-forge-1.4.0.tgz"),
+ ];
+ run("npm",["install","--ignore-scripts","--no-audit","--no-fund",
+   "--no-save","--package-lock=false",...localTarballs],consumer,120000);
+ const testRequire=createRequire(path.join(consumer,"package.json"));
+ for(const name of ["braces","node-forge"]){
+   const installed=path.join(consumer,"node_modules",name);
+   assert.equal(fs.realpathSync(installed),installed,
+     "isolated consumer resolved an external symlinked package");
+   assert.equal(JSON.parse(fs.readFileSync(path.join(installed,"package.json"),"utf8")).name,name);
+   assert.ok(fs.existsSync(path.join(installed,"LICENSE")),
+     "installed candidate omitted license");
+   for(const [file,digest] of Object.entries(expectedInstalledSources[name])){
+     assert.equal(sha(fs.readFileSync(path.join(installed,file))),digest,
+       "npm consumer installed wrong reviewed patch bytes: "+name+"/"+file);
+   }
+   if(name==="node-forge"){
+     assert.ok(!fs.existsSync(path.join(installed,"dist")),
+       "unreviewed forge browser bundles entered installed package");
+   }
+ }
+ const braces=testRequire("braces");
+ assert.deepEqual(braces.expand("src/{a,b}.js"),["src/a.js","src/b.js"],
+   "installed patched brace expansion regressed");
+ assert.throws(()=>braces.parse("{".repeat(110)+"a,b"+"}".repeat(110)),
+   /exceeds max depth/,"installed braces lost depth guard");
+ const forge=testRequire("node-forge");
+ const msg=Buffer.from("bejewely-b3-isolated-installed-forge-test");
+ const pair=generateKeyPairSync("rsa",{modulusLength:2048,publicExponent:65537});
+ const signature=sign("sha256",msg,
+   {key:pair.privateKey,padding:constants.RSA_PKCS1_PADDING});
+ const pem=pair.publicKey.export({format:"pem",type:"spki"});
+ const pk=forge.pki.publicKeyFromPem(pem);
+ assert.equal(pk.verify(createHash("sha256").update(msg).digest("binary"),
+   signature.toString("binary")),true,
+   "installed forge rejects valid RSA signature");
+ const installedConsumer={
+   state:"PASS_ISOLATED_NPM_INSTALL",
+   physicallyInstalledPatchedFiles:Object.values(expectedInstalledSources)
+     .reduce((count,items)=>count+Object.keys(items).length,0),
+   bracesExpansionAndDepth:"PASS",
+   nodeForgeValidRsa:"PASS",
+   forgeBrowserDist:"ABSENT_AND_NOT_ATTESTED",
+   packagesNotIntegratedIntoApplication:true,
+ };
  assert.deepEqual(currentInputs(),priorInputs,
    "committed package manifests or original lock changed");
  console.log("SCA_B3_TEMPORARY_PATCH_PACKAGE="+JSON.stringify({
    state:"PASS_REPRODUCIBLE_SOURCE_ONLY_TEST_PACKAGES",
    packages:summaries,
+   isolatedConsumer:installedConsumer,
    originalRepoLockUnmodified:true,
    tempTarballsDeletedOnExit:true,
    registryPublished:false,
