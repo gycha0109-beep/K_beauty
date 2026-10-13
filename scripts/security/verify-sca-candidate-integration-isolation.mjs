@@ -25,6 +25,7 @@ const evidence = {
   fastGlob: "NOT_RUN",
   metroFileMaps: "NOT_RUN",
   chokidar: "NOT_RUN",
+  chokidarFileEvents: "NOT_RUN",
 };
 
 function installed(name, version) {
@@ -157,7 +158,57 @@ function verifyGlobConsumers() {
   assert.deepEqual(files, ["src/a.js"]);
   evidence.fastGlob = "PASS_MATCH_AND_NEGATIVE_GLOB";
 }
-function verifyRemainingConsumers() {
+// Polling avoids OS-specific inotify timing in the disposable CI workspace.
+// Each event is causally triggered *after* its listener is registered.
+function awaitWatcherEvent(watcher, eventName, action = null) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error("bounded patched-chokidar event timeout: " + eventName));
+    }, 10000);
+    const cleanup = () => {
+      clearTimeout(timer);
+      watcher.off(eventName, accept);
+      watcher.off("error", fail);
+    };
+    const accept = (...args) => { cleanup(); resolve(args); };
+    const fail = (error) => { cleanup(); reject(error); };
+    watcher.on(eventName, accept);
+    watcher.on("error", fail);
+    try { if (action) action(); } catch (error) { fail(error); }
+  });
+}
+async function verifyChokidarFileEvents(watcherLibrary) {
+  const directory = path.join(tmp, "watch-events");
+  fs.mkdirSync(directory, { recursive: true });
+  const file = path.join(directory, "a.js");
+  // A brace glob exercises the patched glob consumer, not just API import.
+  const watcher = watcherLibrary.watch(path.join(directory, "{a,b}.js"), {
+    ignoreInitial: true,
+    usePolling: true,
+    interval: 80,
+    binaryInterval: 80,
+    persistent: true,
+  });
+  try {
+    await awaitWatcherEvent(watcher, "ready");
+    const [added] = await awaitWatcherEvent(watcher, "add", () => {
+      fs.writeFileSync(file, "const value = 1;\\n");
+    });
+    assert.equal(path.resolve(added), file, "unexpected watched add path");
+    const [changed] = await awaitWatcherEvent(watcher, "change", () => {
+      fs.appendFileSync(file, "const nextValue = 2;\\n");
+    });
+    assert.equal(path.resolve(changed), file, "unexpected watched change path");
+    const [removed] = await awaitWatcherEvent(watcher, "unlink", () => fs.unlinkSync(file));
+    assert.equal(path.resolve(removed), file, "unexpected watched unlink path");
+    evidence.chokidarFileEvents = "PASS_READY_ADD_CHANGE_UNLINK_PATCHED_BRACE_GLOB";
+  } finally {
+    await watcher.close();
+  }
+}
+
+async function verifyRemainingConsumers() {
   // Verify that every installed Metro watcher client resolves to the patched
   // temporary micromatch copy, which in turn resolves to patched braces.
   // Merely loading a watcher is a smoke test, NOT an end-to-end Metro build.
@@ -182,6 +233,7 @@ function verifyRemainingConsumers() {
   const watcherLibrary = require(dest("chokidar"));
   assert.equal(typeof watcherLibrary.watch, "function");
   evidence.chokidar = "PASS_INSTALLED_WATCHER_LIBRARY_LOAD_AND_PATCHED_BRACES_RESOLUTION";
+  await verifyChokidarFileEvents(watcherLibrary);
 }
 
 try {
@@ -190,12 +242,13 @@ try {
   patchBraces();
   verifyExpoSigning();
   verifyGlobConsumers();
-  verifyRemainingConsumers();
+  await verifyRemainingConsumers();
   assert.equal(evidence.expoCodeSigning.startsWith("PASS"), true);
   assert.equal(evidence.micromatch.startsWith("PASS"), true);
   assert.equal(evidence.fastGlob.startsWith("PASS"), true);
   assert.equal(evidence.metroFileMaps.startsWith("PASS"), true);
   assert.equal(evidence.chokidar.startsWith("PASS"), true);
+  assert.equal(evidence.chokidarFileEvents.startsWith("PASS"), true);
   console.log("SCA_CANDIDATE_DEPENDENT_INTEGRATION=" + JSON.stringify(evidence));
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
