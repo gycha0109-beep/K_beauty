@@ -20,6 +20,7 @@ on:
       - "lib/trust/official-product-page-shape-p3-v1.mjs"
       - "lib/trust/official-template-shape-p3-v1.mjs"
       - "scripts/verify-trust-p3-template-shape-v1.mjs"
+      - "scripts/verify-trust-p3-root-colocation-diagnostic-v1.mjs"
       - "scripts/verify-trust-p3-official-extraction-v1.mjs"
       - "scripts/trust-p3-official-three-brand-pilot.mjs"
       - "scripts/verify-trust-p3-official-three-brand-pilot.mjs"
@@ -106,6 +107,7 @@ on:
       - "lib/trust/official-product-page-shape-p3-v1.mjs"
       - "lib/trust/official-template-shape-p3-v1.mjs"
       - "scripts/verify-trust-p3-template-shape-v1.mjs"
+      - "scripts/verify-trust-p3-root-colocation-diagnostic-v1.mjs"
       - "scripts/verify-trust-p3-official-extraction-v1.mjs"
       - "scripts/trust-p3-official-three-brand-pilot.mjs"
       - "scripts/verify-trust-p3-official-three-brand-pilot.mjs"
@@ -237,6 +239,7 @@ jobs:
           node scripts/verify-trust-p3-official-extraction-v1.mjs
           node scripts/verify-trust-p3-primary-variant-gate-v1.mjs
           node scripts/verify-trust-p3-template-shape-v1.mjs
+          node scripts/verify-trust-p3-root-colocation-diagnostic-v1.mjs
           node scripts/verify-trust-p3-official-three-brand-pilot.mjs
           node scripts/verify-trust-p3-official-locator-revalidation.mjs
           node scripts/verify-trust-p2c-robots-smoke.mjs
