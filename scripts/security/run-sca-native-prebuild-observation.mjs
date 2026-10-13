@@ -12,6 +12,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { trackedChangesAtHead, unexpectedTrackedChanges } from "./sca-native-tracked-integrity.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const mobile = path.join(root, "apps", "mobile");
@@ -29,6 +30,7 @@ const digest = (p) => fs.existsSync(p) ?
 const before = trackedPaths.map(digest);
 const beforeContents = trackedPaths.map((p) => fs.readFileSync(p));
 const androidExistedBefore = fs.existsSync(android);
+const initialTrackedChanges = trackedChangesAtHead(root);
 const checks = [];
 const childEnv = {
   ...process.env,
@@ -87,7 +89,9 @@ function restoreTrackedInputs() {
 }
 try {
   assert.ok(fs.existsSync(path.join(mobile, "app.json")), "mobile config missing");
-  if (androidExistedBefore) {
+  if (initialTrackedChanges.length > 0) {
+    stopReason = "PREEXISTING_TRACKED_WORKTREE_CHANGES_REFUSE_PREBUILD";
+  } else if (androidExistedBefore) {
     stopReason = "ANDROID_DIRECTORY_ALREADY_EXISTS_REFUSE_OVERWRITE";
   } else {
     const prebuild = stage("androidPrebuild",
@@ -142,6 +146,18 @@ try {
   const restorationErrors = [...restoreErrors];
   const trackedInputsRestored = trackedPaths.every((file, index) =>
     digest(file) === before[index]);
+  // The five byte-exact snapshots are not the whole repo. Expo and Gradle
+  // must not introduce changes to any *other* tracked file unnoticed.
+  let changedTrackedRepositoryFiles = [];
+  let gitTrackedCheckPassed = false;
+  try {
+    changedTrackedRepositoryFiles = trackedChangesAtHead(root);
+    gitTrackedCheckPassed = unexpectedTrackedChanges(
+      initialTrackedChanges, changedTrackedRepositoryFiles).length === 0 &&
+      initialTrackedChanges.length === 0;
+  } catch {
+    stopReason ||= "WHOLE_REPOSITORY_TRACKED_INTEGRITY_CHECK_FAILED";
+  }
   const nativeWasCreated = !fs.existsSync(android) ? false :
     !fs.lstatSync(android).isSymbolicLink() && fs.lstatSync(android).isDirectory();
   const safeToClean = !androidExistedBefore && nativeWasCreated &&
@@ -164,6 +180,8 @@ try {
     generatedNativeShell,
     stopReason,
     changedTrackedInputs: changedFiles, // names only; never print file contents
+    changedTrackedRepositoryFiles, // filenames only, never file content
+    gitTrackedCheckPassed,
     restoredTrackedInputs: restored,
     restorationErrors,
     trackedInputsRestored,
@@ -173,16 +191,16 @@ try {
     apkArtifact: apkEvidence || "NOT_CREATED",
     candidatePatchedDependencyTested: false,
     extendedGradleOptIn: process.env.SCA_ENABLE_GRADLE_DEBUG_OBSERVATION === "1",
-    canonicalAuditUnchanged: trackedInputsRestored,
-    conclusion: stopReason === null && trackedInputsRestored &&
+    canonicalAuditUnchanged: trackedInputsRestored && gitTrackedCheckPassed,
+    conclusion: stopReason === null && trackedInputsRestored && gitTrackedCheckPassed &&
       cleanup === "REMOVED_GENERATED_NATIVE_DIRECTORY" &&
       checks.every((check) => check.status === "PASS") ?
       (apkEvidence ? "NATIVE_DEBUG_APK_BASELINE_PASS" :
         "NATIVE_PREBUILD_BASELINE_PASS_GRADLE_NOT_RUN") : "NATIVE_BUILD_BASELINE_INCOMPLETE",
   };
   console.log("SCA_NATIVE_PREBUILD_OBSERVATION=" + JSON.stringify(result));
-  if (!trackedInputsRestored || restorationErrors.length > 0 ||
-      cleanup === "CLEANUP_FAILED") {
+  if (!trackedInputsRestored || !gitTrackedCheckPassed ||
+      restorationErrors.length > 0 || cleanup !== "REMOVED_GENERATED_NATIVE_DIRECTORY") {
     process.exitCode = 1; // fail closed; never audit altered tracked inputs
   }
   // Do not prevent the separately-executed original npm audit from running.
