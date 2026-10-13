@@ -16,10 +16,10 @@ const AUTHORITATIVE=false;
 const GOOD=new Set(["STRUCTURED_NAME_CANDIDATE","TITLE_NAME_CANDIDATE","SCOPED_HEADING_CANDIDATE"]);
 const WEAK=new Set(["BODY_NAME_MENTION_ONLY"]);
 const KINDS=new Set(["official_product_page","brand_official_product_page","official_brand_product_page","official_brand_owner_product_page"]);
-const COHORT_FILE="evidence/trust/p2d-five-brand-cohort-v1.json";
+const COHORT_FILE="evidence/trust/p2d-five-brand-cohort-v2.json";
 
 export function assertTrustP2DCohort(cohort){
-  if(cohort?.contract!=="trust-p2d-five-brand-live-cohort-v1"||
+  if(!["trust-p2d-five-brand-live-cohort-v1","trust-p2d-five-brand-live-cohort-v2"].includes(cohort?.contract)||
     !Array.isArray(cohort.targets)||cohort.targets.length!==5)
     throw Error("P2D_INVALID_COHORT");
   const brands=new Set(),origins=new Set(),products=new Set();
@@ -35,6 +35,8 @@ export function assertTrustP2DCohort(cohort){
       /^(\d+\.){3}\d+$/.test(origin.hostname)||
       brands.has(item.brand)||origins.has(origin.origin)||products.has(item.productId))
       throw Error("P2D_INVALID_OR_DUPLICATE_BRAND");
+    if(cohort.contract==="trust-p2d-five-brand-live-cohort-v2"&&
+      (!Number.isFinite(item.sizeMl)||item.sizeMl<=0))throw Error("P2D_CATALOG_SIZE_SCOPE_INVALID");
     brands.add(item.brand);origins.add(origin.origin);products.add(item.productId);
   }
   return true;
@@ -68,7 +70,9 @@ export function assessTrustP2DDiscovery(run){
   const pages=run.sites.flatMap(s=>s.pages??[]);
   const good=pages.filter(p=>GOOD.has(p.status));
   const weak=pages.filter(p=>WEAK.has(p.status));
+  const mismatched=pages.filter(p=>p.status==="CATALOG_SIZE_MISMATCH"||p.status==="BUNDLE_VARIANT_REVIEW_REQUIRED"||p.status==="SIZE_CONFLICT_REVIEW_REQUIRED");
   const candidateResult=good.length?"IDENTITY_CANDIDATE_REVIEW_REQUIRED":
+    mismatched.length?"VARIANT_REVIEW_REQUIRED":
     weak.length?"BODY_MENTION_REVIEW_REQUIRED":
     pages.length?"NO_MATCHING_PRODUCT_IDENTITY":"NO_PRODUCT_PAGE";
   const blocked=run.sites.some(s=>["ROBOTS_UNAVAILABLE","ROBOTS_DISALLOWED","CRAWL_DELAY_NOT_SUPPORTED"].includes(s.status));
@@ -78,6 +82,7 @@ export function assessTrustP2DDiscovery(run){
     siteStatus:run.sites.map(s=>s.status).slice(0,2),
     pagesFetched:pages.filter(p=>typeof p.sha256==="string").length,
     scopedCandidates:good.length,
+    variantMismatchPages:mismatched.length,
     bodyOnlyMentions:weak.length,
     distinctCandidateLocators:new Set(good.map(p=>p.url)).size,
     verifiedSourceBindings:0,verifiedMarkets:0,verifiedFormulations:0,
@@ -98,6 +103,7 @@ export function summarizeTrustP2D(rows){
   return {
     selectedProducts:5,processedProducts:rows.length,
     brands:5,officialPagesFetched:fetched,
+    variantMismatchPages:rows.reduce((n,r)=>n+(r.assessment.variantMismatchPages??0),0),
     identityCandidateProducts:rows.filter(x=>x.assessment.scopedCandidates>0).length,
     productIdentificationRate:rows.filter(x=>x.assessment.scopedCandidates>0).length/5,
     candidatePages:candidates,bodyOnlyMentions:mentions,
@@ -116,7 +122,7 @@ export async function runTrustP2DFiveBrandPilot({
   for(const target of cohort.targets){
     const row=cohortToTrustedDiscoveryRow(target);
     const product={
-      id:target.productId,name:target.name,
+      id:target.productId,name:target.name,brand:target.brand,size_ml:target.sizeMl??null,
       name_en:target.nameEn,normalized_name:target.normalizedName,
     };
     let assessment;
@@ -127,8 +133,26 @@ export async function runTrustP2DFiveBrandPilot({
       try {
         // Existing P2 owns robots, same-origin safety, per-site URL limits,
         // sitemap/peer discovery, and exact product heading candidate checks.
-        assessment=assessTrustP2DDiscovery(
-          await runTrustP2Discovery(row,product,fetchers));
+        const discovery=await runTrustP2Discovery(row,product,fetchers);
+        assessment=assessTrustP2DDiscovery(discovery);
+        // Diagnostic-only provenance. The source HTML is never persisted.
+        // These locators are unverified and cannot authorize a Subject or Fact.
+        assessment.sourceDiagnostics=discovery.sites.map(site=>({
+          origin:site.origin,status:site.status,
+          peerIndexCandidateCount:site.peerIndexCandidateCount??0,
+          candidateCount:site.candidateCount??0,
+          homepageIndexStatus:site.homepageIndexStatus??"NOT_RECORDED",
+          observations:(site.observations??[]).map(o=>({
+            kind:o.kind,status:o.status,fetched:o.fetched,
+          })),
+          pages:(site.pages??[]).map(page=>({
+            url:page.url,status:page.status,
+            title:page.title??null,identitySurface:page.identitySurface??null,
+            sha256:page.sha256??null,
+            nameSignalStatus:page.nameSignalStatus??null,
+            variantScope:page.variantScope??null,
+          })),
+        }));
       }catch(e){
         assessment={state:"SAFE_EXECUTION_FAILURE",reason:safePublicFailure(e),
           pagesFetched:0,scopedCandidates:0,bodyOnlyMentions:0,

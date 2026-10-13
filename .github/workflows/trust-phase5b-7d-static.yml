@@ -14,6 +14,8 @@ on:
       - "scripts/verify-trust-p2c-visible-identity-v1.mjs"
       - "scripts/trust-p2d-five-brand-pilot.mjs"
       - "scripts/verify-trust-p2d-five-brand-pilot.mjs"
+      - "lib/trust/official-product-extraction-p3-v1.mjs"
+      - "scripts/verify-trust-p3-official-extraction-v1.mjs"
       - "evidence/trust/p2d-five-brand-cohort-v1.json"
       - "scripts/trust-p2-official-discovery.mjs"
       - "scripts/verify-trust-p2-official-discovery-v1.mjs"
@@ -208,6 +210,7 @@ jobs:
           node scripts/verify-trust-p2-official-discovery-v1.mjs
           node scripts/verify-trust-p2c-visible-identity-v1.mjs
           node scripts/verify-trust-p2d-five-brand-pilot.mjs
+          node scripts/verify-trust-p3-official-extraction-v1.mjs
           node scripts/verify-trust-p2c-robots-smoke.mjs
           node scripts/verify-trust-p2c-known-product-smoke.mjs
           node scripts/verify-trust-p2b-official-observation-v1.mjs

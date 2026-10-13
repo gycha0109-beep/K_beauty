@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import { inspectTrustOfficialVariantScope } from "../lib/trust/official-variant-scope-v1.mjs";
+import { classifyTrustOfficialCandidatePage } from "../lib/trust/official-product-discovery-p2-v1.mjs";
+import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
 import fs from "node:fs";
 import {
   assertTrustP2DCohort,cohortToTrustedDiscoveryRow,
@@ -7,6 +10,25 @@ import {
   summarizeTrustP2D,runTrustP2DCli,
 } from "./trust-p2d-five-brand-pilot.mjs";
 const cohort=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v1.json","utf8"));
+const sized={id:"bd98f785-15c8-4800-af64-d39c3ad873a0",brand:"아토팜",name:"MLE 로션",size_ml:600};
+for(const size of [60,300]){
+  const title="[신규회원특가] 아토팜 MLE 로션 "+size+"ml - 아토팜 공식몰";
+  assert.equal(inspectTrustOfficialVariantScope(title,sized).status,"CATALOG_SIZE_MISMATCH");
+  const classified=classifyTrustOfficialCandidatePage(Buffer.from("<title>"+title+"</title>"),sized);
+  assert.equal(classified.status,"CATALOG_SIZE_MISMATCH");
+  assert.equal(classified.variantScope.exactSkuVerified,false);
+}
+assert.equal(inspectTrustOfficialVariantScope("MLE 로션 300ml x2개",sized).status,"BUNDLE_VARIANT_REVIEW_REQUIRED");
+assert.equal(inspectTrustOfficialVariantScope("MLE 로션 600ml",sized).status,"SIZE_MATCH_CANDIDATE");
+const torrent={brand:"토리든",name:"다이브인 저분자 히알루론산 세럼"};
+const index=Buffer.from('<a href="/goods/goods_view.php?goodsNo=58">[NEW] 토리든 다이브인 저분자 히알루론산 세럼 50ml</a>');
+assert.deepEqual(findTrustP2BOfficialPeerLinks(index,"https://www.torriden.com/",torrent),[
+  "https://www.torriden.com/goods/goods_view.php?goodsNo=58"]);
+const beplain={brand:"비플레인",name:"녹두 모공 클리어링 필터 패드"};
+assert.equal(findTrustP2BOfficialPeerLinks(Buffer.from('<a href="/m/product_detail.html?brand_uid=432">녹두 모공 클리어링 필터 패드 70매+10매</a>'),"https://www.beplain.co.kr/",beplain).length,1);
+const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
+assert.equal(assertTrustP2DCohort(v2),true);
+assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
 assert.equal(assertTrustP2DCohort(cohort),true);
 assert.equal(cohort.targets.length,5);
 assert.equal(new Set(cohort.targets.map(t=>t.brand)).size,5);
@@ -41,6 +63,23 @@ function assessed(siteStatus,pages){
 assert.equal(assessed("ROBOTS_UNAVAILABLE",[]).state,"SOURCE_POLICY_HOLD");
 assert.equal(assessed("ROBOTS_DISALLOWED",[]).state,"SOURCE_POLICY_HOLD");
 assert.equal(assessed("NO_SAFE_CANDIDATE",[]).state,"NO_PRODUCT_PAGE");
+// The live diagnostic path preserves only locator/status/title/digest; no raw pages.
+const diagnosticMock={
+  fetchRobots:async()=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n")}),
+  fetchSitemap:async url=>({bytes:Buffer.from(url.endsWith("sitemap.xml")?
+    '<urlset><url><loc>https://neopharmshop.co.kr/product/mle-%EB%A1%9C%EC%85%98/3000</loc></url></urlset>':
+    "<urlset></urlset>"),finalUrl:url}),
+  fetchPage:async url=>({bytes:Buffer.from("<title>MLE 로션 - 아토팜</title>"),finalUrl:url}),
+};
+const diagnosticCohort=structuredClone(cohort);
+diagnosticCohort.targets[0].officialPeerUrl="https://neopharmshop.co.kr/product/peer/2166";
+// The other 4 domains are intentionally not contacted in this deterministic fixture.
+const mock=await runTrustP2DFiveBrandPilot({execute:true,cohort,fetchers:diagnosticMock});
+assert.equal(mock.items.length,5);
+assert.equal(mock.items[0].assessment.sourceDiagnostics.length,1);
+assert.ok(Array.isArray(mock.items[0].assessment.sourceDiagnostics[0].pages));
+assert.equal(JSON.stringify(mock).includes("<title>"),false);
+assert.equal(mock.summary.dbWrites,0);
 assert.equal(assessed("CANDIDATES_DISCOVERED",[page("SCOPED_HEADING_CANDIDATE")]).state,
  "IDENTITY_CANDIDATE_REVIEW_REQUIRED");
 assert.equal(assessed("CANDIDATES_DISCOVERED",[page("BODY_NAME_MENTION_ONLY")]).state,
