@@ -90,6 +90,13 @@
 - 향후 배치/다른 품목은 별도 정책·상품별 출처·상품 정체성·Offer 구성/권한/공급망 검사를 거친 후 독립 승인.
 - 일반화가 과설계라면 이번 실무 워크플로를 단일 상품용으로 종료한다.
 
+### D8E2 후보 DB 176건 격리 회귀 체크포인트 (2026-10-13)
+
+- 연결된 후보 DB: 기존 164 ID + 신규 12 ID = 176. 신규 10건 category null 배제, 신규 sunscreen 2건은 구조적 projector만 통과; 실제 추천 admission 권한은 미검증.
+- 공식몰 80ml 표기가 35,000원(일반)/24,500원(회원), 화해 80ml 두 개+세럼 세트 표기는 29,900원. 결제 확정 증빙이 없으므로 두 공식몰 표기가격은 격리 비교 **가정값**으로만 사용.
+- 176행 snapshot + 격리 실런타임 166×12×2 구조적 회귀 검증기를 기존 Database Integration Authority에 연결. 176건 운영 추천 승인을 의미하지 않으며 D8E2 완료조건, D8F/G/H는 HOLD.
+- 배포 DB identity 미입증, 공식 구매 링크 direct allowlist 미승인, #1208 security 차단. 근거: [D8E2 read-only candidate snapshot](../evidence/r16i-r4-d8e2-live-snapshot-listing-scenarios-20261013.md).
+
 ## 3. 우선순위와 차단 조건
 
 | 우선순위 | 바로 해야 할 일 | 의존성 | 실패 시 |

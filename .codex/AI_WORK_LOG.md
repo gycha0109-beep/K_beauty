@@ -3146,3 +3146,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+## 2026-10-13 — taxonomy-ai R16I-R4 D8E2 candidate-catalog listing-scenario replay
+- Classification: Medium tests / DB read-only Y / Auth N / RLS N / Storage N / Provider N / Payment N / Secret N / Production write N. No protected-surface mutations.
+- SELECT snapshot observed 176 unique rows (164 historical+12 new; 10 category null, 2 newly sunscreen-projectable without admission evidence).
+- Added dated read-only source fixture and true Skin Match runtime comparator for two non-checkout public-listed prices (35,000 ordinary, 24,500 member), structurally 166×12 each. No real checkout amount promoted to Product, Hwahae 29,900 remains set-only.
+- Existing DB Integration CI reused; outcome must be taken from actual PR jobs, not assumed.
+- Holds: deployed DB identity, owner verified screenshots, trusted direct CTA, #1208 Supply Chain Security. Product/Offer writes 0; release gate 0; PR merge HOLD.

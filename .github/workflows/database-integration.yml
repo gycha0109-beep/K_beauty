@@ -182,6 +182,12 @@ jobs:
           set -euo pipefail
           node scripts/product-evidence/verify-r16i-r4-d8e1-structural-replay.mjs
 
+      - name: Verify R16I D8E2 176-row candidate snapshot and listing-price scenarios (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-r16i-r4-d8e2-readonly-catalog-replay.mjs
+
       - name: Verify R4-C-R4 independent SKU identity HOLD and negative cases
         run: node scripts/verify-data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap.mjs
 
