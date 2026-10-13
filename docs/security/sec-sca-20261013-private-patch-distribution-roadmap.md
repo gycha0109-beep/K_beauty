@@ -2,7 +2,7 @@
 
 > 작성일: 2026-10-13 KST · Track: security · Watchtower-Track: security
 >
-> **상태: PLAN / NOT IMPLEMENTED.** B안 방향은 사용자 선택사항이며, 패키지 변경·외부 배포·병합 및 보안 해결 완료가 승인된 상태는 아니다. 현행 원본 보안 감사 FAIL/HOLD 유지.
+> **상태: IN_PROGRESS — B0 PARTIAL / B1 SOURCE+ORIGINAL-TARBALL PREFLIGHT PASS / B2 ISOLATED SOURCE PREFLIGHT PASS (별도 PR), B1·B2 전체 승인 HOLD.** 원본 package/lock·감사 정책 변경, 자체 배포본·병합·보안 해결 완료는 아직 없다. 기존 Supply Chain 감사 FAIL 유지.
 >
 > [전체 SCA-0~7 로드맵](sec-sca-20261012-remediation-roadmap.md) · [상세 기술 설계](sec-sca-20261012-remediation-technical-design.md) · [업스트림 패치 검토](sec-sca-20261012-upstream-patch-candidate-review.md) · [실행 Ledger](sec-sca-20261012-execution-ledger.md) · [보안 이슈 #1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) · [진단 PR #1240](https://github.com/gycha0109-beep/K_beauty/pull/1240)
 
@@ -141,7 +141,7 @@ npm 공식 문서상 루트 package.json overrides는 다른 패키지·포크·
 | 7 · B6 | 취약점 해결 PR + 무예외 감사 및 policy v2 | 정확 HEAD CI + 보안 리뷰 PASS |
 | 8 · B7 | 승인된 main 병합·#1208 종료·유지보수 | 병합 재확인 후 closeout |
 
-**현재 진척:** B0 일부 경로·원본 감사 증거 확보, B1/B2의 **임시 복사본 한정 테스트 일부**만 완료. 검증된 정식 수정 배포본 **0개**, 자체 패키지 실물 lock/감사·패치 적용 APK/기기 PASS는 **없음**. 구현 단계는 시작되지 않았으며 이 문서 추가는 계획 기록만이다.
+**현재 진척 (2026-10-13):** B0 원본 경로·암호화 원본 tarball 검증 일부 확보. [B1 PR #1270](https://github.com/gycha0109-beep/K_beauty/pull/1270)에서 braces 3.0.3 원본 npm SHA512, upstream SHA 고정된 5개 수정 소스와 제한적 회귀 PASS ([실행기록](sec-sca-20261013-b0-b1-execution.md)); [B2 PR #1271](https://github.com/gycha0109-beep/K_beauty/pull/1271)에서 node-forge 1.4.0 원본 tarball·lib/rsa.js upstream blob·RSA/Expo 격리 검증 PASS ([실행기록](https://github.com/gycha0109-beep/K_beauty/blob/fix/security/sca-b2-private-forge-candidate-20261013/docs/security/sec-sca-20261013-b2-execution.md)). 두 패키지의 full suite·라이선스/소유자 검증·포크 배포·전체 lock 교체·무예외 audit·Android APK는 **미완료**, B3~B7 HOLD. B2 npm 원본 tarball에는 아직 재빌드하지 않은 browser dist 6개 파일이 포함된다.
 
 ## 5. 실패/금지 시나리오와 롤백
 
