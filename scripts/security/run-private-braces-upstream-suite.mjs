@@ -68,7 +68,8 @@ try{
  fs.copyFileSync(path.join(candidate,"index.js"),path.join(repo,"index.js"));
  fs.writeFileSync(path.join(harness,"package.json"),JSON.stringify({
    name:"bejewely-b1-test-only",version:"0.0.0",private:true,
-   dependencies:{mocha:"6.2.3","bash-path":"2.0.1","ansi-colors":"3.2.4"}
+   dependencies:{mocha:"6.2.3","bash-path":"2.0.1","ansi-colors":"3.2.4",
+     "fill-range":"7.1.1"}
  },null,2)+"\n");
  command("npm",["install","--ignore-scripts","--no-fund","--no-audit","--package-lock=false"],
    harness,150000,{...process.env,npm_config_update_notifier:"false"});
