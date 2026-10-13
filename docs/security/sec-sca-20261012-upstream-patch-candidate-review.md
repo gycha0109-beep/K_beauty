@@ -167,3 +167,20 @@
 초기부터 변경돼 있던 추적 파일이나 예상하지 못한 미복원 파일을 자동으로 덮어쓰지 않고 진단을 실패시킨다. 다만 `git diff`는 ignored/untracked 산출물 전체를 대상으로 하지 않으므로 패키지 포함·APK 원본 보안에 대한 보증이 아니다. [실행 Ledger §13](sec-sca-20261012-execution-ledger.md)에 검사 범위와 남은 위험을 기록했다.
 
 **공식 패치 릴리스·provenance/승인·실제 후보 lockfile·Android 전체 런타임/무예외 감사 HIGH 0 = HOLD.**
+
+## 13. 공식 Expo SDK 57 patch 후보 — 실제 npm lock·감사 결과에 따른 거절 (2026-10-13)
+
+**독립 SCA-2→3 후보:** 원본 루트와 각 workspace의 `package.json` 및 `package-lock.json`을 임시 폴더에 복제하고 `npm install expo@~57.0.28 --workspace @bejewely/mobile --package-lock-only --ignore-scripts --no-fund --no-audit`를 실행. [검증 코드 SHA `53f68f680d9cd7014c70886742479240247a6e35` / CI #38341157494](https://github.com/gycha0109-beep/K_beauty/actions/runs/38341157494).
+
+**판정: REJECT_FOR_REMEDIATION.** 공식 resolver가 실제 `expo@57.0.28`, `@expo/cli@57.0.29`를 모바일 중첩 경로에 추가했으나 root `expo@57.0.21` 및 `@expo/cli@57.0.23`도 잔존. `braces@3.0.3`, `node-forge@1.4.0` **둘 다 잔존**. 원본 raw npm audit는 production HIGH **19**, full HIGH **22** (critical 모두 0, 두 audit exit=1). 업데이트로 HIGH가 하나도 줄지 않고 Expo/CLI 버전 중복을 늘렸다.
+
+실제 격리 후보 lock SHA-256 `d4d40a8a683ae3ff698bac550fb7f6684039a4b9e9587a7ce9db6853b20149f4`은 실행 증거일 뿐 승인된 릴리스/아티팩트가 아니다. 원본 repo package·lock·audit exception 변경 없음. 초기 probe에서는 루트 `node_modules` 조회만으로 최신 버전을 놓칠 수 있어 **중첩 패키지 버전 검사로 보완**하고 재실행했다.
+
+| 방식 | 2026-10-13 판정 | 미충족 조건 |
+| --- | --- | --- |
+| 공식 Expo SDK 57 patch bump `~57.0.28` | **REJECT** | 두 취약 패키지 모두 잔존, HIGH 19/22, 중복 Expo/CLI |
+| 공식 `braces` 보안 릴리스 | **UNAVAILABLE** | GitHub Advisory patched versions 없음; PR #72 병합되지 않음 |
+| 공식 `node-forge` 보안 릴리스 | **UNAVAILABLE** | Advisory patched versions 없음; PR #1152 미병합 |
+| 소비자 제거/정식 대체·검증된 포크 | **REVIEW REQUIRED** | 두 advisory 동시 해결, audit raw HIGH0, 코드·라이선스·tarball provenance 및 모바일/Android 호환성 |
+
+다른 패키지 이름으로 래핑해 단지 스캐너만 통과시키는 행위는 승인 불가. **SCA-3 실제 취약점 수정 패키지/정식 후보 lock 및 SCA-4~7은 HOLD**, 현재 모바일 기능을 위험한 Expo 메이저 다운그레이드로 교체하지 않음. [실행 ledger §14](sec-sca-20261012-execution-ledger.md)에 정확 경로와 결과를 기록했다.
