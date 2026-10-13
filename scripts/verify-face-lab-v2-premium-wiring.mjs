@@ -9,8 +9,54 @@ const fullReportApi = read("app/api/full-report/route.js");
 const faceLabApi = read("app/api/premium/face-lab-v2/route.js");
 const fullReportPage = read("app/result/full-report/page.js");
 const premiumFaceLab = read("components/full-report/PremiumFaceLabSection.jsx");
+const photoUpload = read("components/onboarding/PhotoUploadStep.js");
+const homePage = read("app/page.js");
 const composer = read("lib/face-lab-v2/canonical-composer.js");
 const styleDelta = read("lib/face-lab-v2/style-delta.js");
+
+
+const captureNoticeKey = 'data-testid="face-lab-capture-notice"';
+const koreanCaptureNotice = "Face Lab은 사진에 나타난 얼굴 특징과 색감을 바탕으로 스타일 방향을 분석합니다. 조명·각도·필터에 따라 결과가 달라질 수 있으니, 가능하면 밝고 고른 빛에서 필터 없이 얼굴이 잘 보이게 촬영해 주세요.";
+const englishCaptureNotice = "Face Lab analyzes visible facial features and colors in your photo to suggest styling directions. Lighting, angles, and filters can affect the result, so use even lighting, no filters, and a clearly visible face when possible.";
+
+assert.ok(
+  homePage.includes('import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep"') &&
+    homePage.includes("<PhotoUploadStep"),
+  "Face Lab and Skin Match must continue to use the existing shared web capture entry"
+);
+assert.equal(
+  photoUpload.split(captureNoticeKey).length - 1,
+  1,
+  "the shared photo entry must show one Face Lab guidance note (not duplicate it for each camera/gallery action)"
+);
+assert.ok(
+  photoUpload.includes(`faceLabCaptureNotice: "${koreanCaptureNotice}"`) &&
+    photoUpload.includes(`faceLabCaptureNotice: "${englishCaptureNotice}"`),
+  "exact approved two-sentence Face Lab capture guidance must be present in both locales"
+);
+const actionContainerStart = photoUpload.indexOf('className="mx-auto mt-5 grid w-full max-w-[360px]');
+const captureNoticeStart = photoUpload.indexOf(captureNoticeKey);
+const firstCaptureButton = photoUpload.indexOf("onClick={primaryAction}", actionContainerStart);
+const galleryButton = photoUpload.indexOf("onClick={secondaryAction}", actionContainerStart);
+assert.ok(
+  actionContainerStart >= 0 &&
+    actionContainerStart < captureNoticeStart &&
+    captureNoticeStart < firstCaptureButton &&
+    captureNoticeStart < galleryButton,
+  "guidance must be visible before both camera and gallery actions"
+);
+assert.ok(
+  photoUpload.includes('role="note"') &&
+    photoUpload.includes("{t.faceLabCaptureNotice}") &&
+    !photoUpload.includes("required={true}") &&
+    !photoUpload.includes("onCaptureNoticeAccept"),
+  "capture guidance is passive: it cannot demand an acceptance gate or disable the photo path"
+);
+assert.equal(
+  premiumFaceLab.includes(captureNoticeKey),
+  false,
+  "the universal capture disclaimer must not be duplicated in the Premium Face Lab result"
+);
 
 assert.ok(fullReportApi.includes("faceLabAnalysis"), "full report must persist validated Face Lab analysis");
 assert.ok(
