@@ -10,7 +10,8 @@
 > Dependabot 후보: [#1224](https://github.com/gycha0109-beep/K_beauty/pull/1224)
 >
 > 상세 구현 계약: [SEC-SCA 기술 설계](sec-sca-20261012-remediation-technical-design.md) ·
-> 기존 정적 경로 추적: [SEC-SCA-P1](sec-sca-p1-advisory-lockfile-path-triage-20261010.md)
+> 기존 정적 경로 추적: [SEC-SCA-P1](sec-sca-p1-advisory-lockfile-path-triage-20261010.md) ·
+> **B안 자체 패치 전용 구현:** [B0~B7 자체 보안 패치 배포본 로드맵 (2026-10-13)](sec-sca-20261013-private-patch-distribution-roadmap.md)
 
 ## 0. 문서 권위와 변경 통제
 
