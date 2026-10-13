@@ -24,12 +24,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
       - name: Validate pilot cohort and anti-false-positive cases offline
@@ -39,7 +39,7 @@ jobs:
           TRUST_P2D_FIVE_BRAND_LIVE_ENABLED: "true"
         run: node scripts/trust-p2d-five-brand-pilot.mjs --execute
       - name: Archive observation-only results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: trust-p2d-five-brand-results
           path: artifacts/trust-p2d-five-brand-result.json
