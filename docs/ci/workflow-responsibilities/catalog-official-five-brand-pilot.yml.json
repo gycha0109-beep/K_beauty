@@ -1,0 +1,13 @@
+{
+  "workflow": "catalog-official-five-brand-pilot.yml",
+  "primaryResponsibility": "trust-data-governance",
+  "capabilities": [
+    "pipeline",
+    "evidence-governance",
+    "backend",
+    "source-discovery"
+  ],
+  "watchtowerTrackBinding": "static:trust",
+  "lifecycleNameClass": "semantic",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}
