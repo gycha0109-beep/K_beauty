@@ -470,8 +470,8 @@ assert.equal(isLatestFaceLabSaveRequest({
 
 // Status displays and direct retry must use active approved canonical state.
 assert.ok(
-  premiumFaceLab.includes('saveLocalFailed: "이 기기와 서버에 변경사항을 저장하지 못했습니다.') &&
-    premiumFaceLab.includes('saveLocalFailed: "Changes could not be saved on this device') &&
+  premiumFaceLab.includes('saveLocalFailed: "이 기기에 저장하지 못했고 서버 저장도 확인되지 않았습니다.') &&
+    premiumFaceLab.includes('saveLocalFailed: "Changes were not saved on this device') &&
     premiumFaceLab.includes('data-face-lab-persistence-status={persistenceStatus}') &&
     premiumFaceLab.includes('persistenceStatus === "local_failed"'),
   "both locales must warn when the local backup actually failed"
