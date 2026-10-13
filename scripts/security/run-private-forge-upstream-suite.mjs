@@ -55,16 +55,23 @@ try{
  const files=[...cases.map(name=>path.join(unitDir,name)),
    path.join(checkout,"tests/security.js")];
  const output=run(process.execPath,[path.join(harness,"node_modules/mocha/bin/mocha"),
-   "--timeout","30000","--reporter","dot",...files
+   "--timeout","30000","--reporter","json",...files
  ],checkout,240000,{...process.env,NODE_ENV:"test",NODE_PATH:path.join(harness,"node_modules"),NODE_OPTIONS:""});
- const found=[...output.matchAll(/(\d+)\s+passing\b/g)];
- assert.ok(found.length>0,"no passing-count summary from forge upstream unit suite");
- const passed=Number(found[found.length-1][1]);
+ let json;
+ try { json=JSON.parse(output); }
+ catch {throw new Error("full forge upstream JSON reporter output malformed: "+output.slice(0,600));}
+ const passed=Number(json.stats?.passes);
+ const executed=Array.isArray(json.tests)?json.tests:[];
+ const actualFiles=[...new Set(executed.map(t=>t.file||"UNKNOWN"))].sort();
  console.log("SCA_B2_UPSTREAM_SUITE_COUNT="+JSON.stringify({
-   testsPassed:passed,unitTestFiles:files.length,outputTail:output.slice(-800),
-   expectedTestEntrypoint:"tests/unit/index.js"
+   testsPassed:passed,unitTestFiles:files.length,
+   executedTestFiles:actualFiles,executedSamples:executed.slice(0,12).map(t=>t.fullTitle),
+   testStats:json.stats,
  }));
- assert.ok(passed>=100,"incomplete node-forge full Node unit suite");
+ assert.ok(passed>=100&&executed.length>=100,
+   "incomplete node-forge full Node unit suite");
+ assert.ok(actualFiles.some(x=>x.endsWith("rsa.js")),
+   "critical RSA regression suite not included");
  console.log("SCA_B2_UPSTREAM_SUITE="+JSON.stringify({
   state:"PASS_FULL_UPSTREAM_NODE_UNIT_SUITE_AGAINST_B2_CANDIDATE",
   upstreamTestCommit:SHA,patchedRsaBlobSha1:source.patchedRsaBlobSha1,
