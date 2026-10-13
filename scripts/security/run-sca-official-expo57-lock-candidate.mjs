@@ -56,7 +56,6 @@ function npm(args, limitMs) {
       CI: "1",
       npm_config_update_notifier: "false",
       npm_config_fund: "false",
-      npm_config_audit: "false",
     },
   });
   return done;
@@ -90,7 +89,6 @@ try {
   const install = npm([
     "install", candidateSpec, "--workspace", "@bejewely/mobile",
     "--package-lock-only", "--ignore-scripts", "--no-fund", "--no-audit",
-    "--no-save=false",
   ], 210000);
   result.install = {
     exitCode: install.status,
