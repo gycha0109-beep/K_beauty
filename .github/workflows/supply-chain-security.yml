@@ -53,7 +53,7 @@ jobs:
   package-integrity:
     name: Package integrity and vulnerability gate
     runs-on: ubuntu-24.04
-    timeout-minutes: 24
+    timeout-minutes: 15
     steps:
       - name: Checkout exact candidate SHA
         uses: actions/checkout@v7
@@ -76,7 +76,6 @@ jobs:
           cache: npm
 
       - name: Verify lockfile install without lifecycle scripts
-        id: lock-install
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Trace vulnerable dependency paths without changing audit policy
@@ -90,26 +89,10 @@ jobs:
           node scripts/security/verify-node-forge-upstream-patch-isolation.mjs
           node scripts/security/verify-braces-upstream-patch-isolation.mjs
           node scripts/security/verify-sca-candidate-integration-isolation.mjs
+          node scripts/security/run-sca-mobile-baseline-observation.mjs
 
       - name: Audit dependency vulnerabilities
         run: node scripts/verify-supply-chain-audit.mjs
-
-      - name: Observe unchanged Android JS export and source-map dependency boundary
-        if: ${{ always() && steps.lock-install.outcome == 'success' }}
-        timeout-minutes: 9
-        env:
-          CI: "1"
-          EXPO_NO_DOTENV: "1"
-          EXPO_TELEMETRY_DISABLED: "1"
-        shell: bash
-        run: |
-          set -euo pipefail
-          trap 'rm -rf apps/mobile/.expo-ci-dist' EXIT
-          npm run verify:mobile-foundation
-          npm run mobile:typecheck
-          npm run verify:mobile-native
-          npm run mobile:export:android -- --source-maps
-          node scripts/security/report-sca-android-bundle-boundary.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
