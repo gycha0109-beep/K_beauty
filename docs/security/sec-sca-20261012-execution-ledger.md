@@ -127,3 +127,36 @@ Security workflow [run #38223030217](https://github.com/gycha0109-beep/K_beauty/
 - **공급망 보안 게이트는 계속 FAIL.** 이 격리 실험은 `node_modules`, `package.json`, `package-lock.json`, npm 감사, 임시 예외, 배포 구성을 전혀 바꾸지 않는다. 감사 통과·Android 호환성·운영 수정으로 취급하지 않는다.
 
 SCA-2 출처 보유 코드 변경의 **제한된 개별 동작 실험은 완료**. SCA-3의 공식/검증된 배포 아티팩트, Expo/Metro 및 Code Signing 통합 회귀, source provenance, lockfile·실제 CI 무예외 PASS는 미충족이라 여전히 HOLD다.
+
+## 9. SCA-3 진입 전 실제 소비자 통합·패치 무결성 검증 (2026-10-13)
+
+**검사 대상 코드 SHA:** `85bceaa09e788e6d507fba8e27380bc0ae18134a` · [Supply Chain run #38330955980](https://github.com/gycha0109-beep/K_beauty/actions/runs/38330955980). 실험은 `npm ci --ignore-scripts`로 재현한 실제 원본 의존성에서 시작하되 **OS 임시 폴더 내부 복사본만 수정**한다.
+
+### 추가된 구현
+
+- `verify-braces-upstream-patch-isolation.mjs`와 `verify-sca-candidate-integration-isolation.mjs`에서 고정된 PR #72 diff를 디코딩한 뒤, Git blob SHA-1 `b6aa05571a91ec9c6c4bc80ae7c6a26cb5db31af`와 **정확한 바이트 동일성**을 검증한다. 검토본이 바뀌면 테스트가 실패하며, SHA-1 식별자 자체는 공식 npm 배포 서명/무결성을 증명하지 않는다.
+- 이전 임시 소비자 검사: `@expo/code-signing-certificates@0.0.6`의 self-signed 인증서 생성·PEM 왕복·인증서/키 검증·manifest 서명, `micromatch@4.0.8`의 부정 패턴·brace 확장, `fast-glob@3.3.3` 파일 검색.
+- 새로 추가한 실제 소비자 로드: `@expo/metro-file-map@57.0.3`의 watcher helper, `metro-file-map@0.84.5` 및 `metro-config` 하위 `metro-file-map@0.84.6`의 watcher helper. **모두 격리된 patched `micromatch` 경로를 resolve하는지 검사**한다.
+- `chokidar@3.6.0`의 CJS 모듈과 `watch` API를 로드하고, 원본 설치본이 아닌 임시 patched `braces` 경로로 resolve하는지 확인한다. 이는 **watch loop나 실제 장기 파일 변경 이벤트 검증은 아니다**.
+
+### 실제 CI 관찰
+
+`SCA_CANDIDATE_DEPENDENT_INTEGRATION`:
+- `expoCodeSigning=PASS_SELF_SIGNED_CERT_PEM_VALIDATION_MANIFEST_SIGNATURE`
+- `micromatch=PASS_MATCH_NEGATE_BRACE_EXPANSION`
+- `fastGlob=PASS_MATCH_AND_NEGATIVE_GLOB`
+- `metroFileMaps=PASS_THREE_WATCHER_HELPERS_USING_PATCHED_MICROMATCH`
+- `chokidar=PASS_INSTALLED_WATCHER_LIBRARY_LOAD_AND_PATCHED_BRACES_RESOLUTION`
+
+두 업스트림 패치의 자체 격리 행동 테스트도 통과했다. **Supply Chain은 만료된 braces 예외에 대한 원본 production `npm audit`가 계속 실패해야 한다.** CodeQL·Main Health·PIE는 이 코드 SHA의 개별 결과로만 결론을 기록한다.
+
+### 단계 판정 및 남은 차단
+
+**SCA-3 사전 통합 테스트는 부분 완료**, 로드맵상의 **정식 SCA-3(실제 후보 `package-lock` 재생성·전체 통합/Android 검증)는 HOLD**. 상위 PR 두 건은 여전히 공식 병합/배포가 확인되지 않아, 기존 lockfile 취약 버전 `braces@3.0.3`, `node-forge@1.4.0`를 제거하거나 대체하지 않았다. 미완료:
+
+1. 승인 가능한 패치 배포본 또는 동등 안전 대체와 해당 artifact의 정확한 출처·SHA512 integrity·license·오너 결정.
+2. 별도 worktree 후보 lock 설치 및 전체/production raw audit high/critical 0.
+3. Expo/Metro watcher 실제 이벤트, 정상·변형 인증서의 폭넓은 회귀, 모바일 typecheck/Metro export/native/Android build 및 실제 번들 포함 경계.
+4. 원인 제거 후 예외 없는 fail-closed audit v2 → 최종 HEAD CI → Security 리뷰·병합·타 트랙 인계.
+
+금지: `npm overrides`로 패키지 출처 속이기, advisory 허용 목록 확대, 예외 만료 연장, 원래 감사를 성공 처리, Production 의존성 패치의 검증 전 적용. **#1240 Draft/HOLD와 #1208 OPEN 유지.**
