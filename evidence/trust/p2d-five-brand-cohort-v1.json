@@ -1,0 +1,73 @@
+{
+  "contract": "trust-p2d-five-brand-live-cohort-v1",
+  "baselineDate": "2026-10-13",
+  "scope": "ONE_PRODUCT_PER_BRAND_DISCOVERY_ONLY",
+  "sourceNote": "Exact product IDs, intake IDs and governed exact/equivalent official peer binding links were read from production Supabase; links apply to other SKUs and are only discovery seeds.",
+  "targets": [
+    {
+      "productId": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "intakeId": "09947670-84f6-4c76-96c4-a8d5b219abad",
+      "brand": "닥터지",
+      "name": "레드 블레미쉬 클리어 수딩 크림 EX",
+      "nameEn": "Red Blemish Clear Soothing Cream EX",
+      "normalizedName": "레드 블레미쉬 클리어 수딩 크림 ex",
+      "officialPeerUrl": "https://www.dr-g.co.kr/item/4688",
+      "peerProductId": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "peerBindingId": "d081d00d-a4b2-42d7-91c5-18313de97974",
+      "peerSourceId": "fd7ace63-3788-4f0a-9868-9aedc9d77265",
+      "peerKind": "official_product_page"
+    },
+    {
+      "productId": "9b81da7a-649e-41ec-a22b-7e367c05afe4",
+      "intakeId": "70a7fb46-c296-4713-9692-1e3165aedb65",
+      "brand": "비플레인",
+      "name": "녹두 모공 클리어링 필터 패드",
+      "nameEn": "Mung Bean Pore Clearing Filter Pad",
+      "normalizedName": "녹두 모공 클리어링 필터 패드",
+      "officialPeerUrl": "https://www.beplain.co.kr/m/product_detail.html?brand_uid=43",
+      "peerProductId": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "peerBindingId": "51c57f97-496c-412c-a55a-0978702349a6",
+      "peerSourceId": "f65cd3f7-7758-441b-8099-b2e02d9c5406",
+      "peerKind": "official_product_page"
+    },
+    {
+      "productId": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "intakeId": "999fd1d0-924d-44d0-abcf-38fbbd42a8d4",
+      "brand": "아토팜",
+      "name": "MLE 로션",
+      "nameEn": "MLE Lotion",
+      "normalizedName": "mle 로션",
+      "officialPeerUrl": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+      "peerProductId": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "peerBindingId": "912503f9-1806-4150-ba01-b95a097b0299",
+      "peerSourceId": "df6119d2-279d-4560-a309-c20c386ebf7e",
+      "peerKind": "official_product_page"
+    },
+    {
+      "productId": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
+      "intakeId": "ddc5259a-e3d3-44b2-b4b8-ee14ed2dd491",
+      "brand": "이즈앤트리",
+      "name": "초저분자 히아루론산 토너",
+      "nameEn": "Ultra-Low Molecular Hyaluronic Acid Toner",
+      "normalizedName": "초저분자 히아루론산 토너",
+      "officialPeerUrl": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "peerProductId": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "peerBindingId": "597c8303-9c9d-43af-9fc6-806b4541630f",
+      "peerSourceId": "2e75ba01-7ecb-4824-b712-d7e5d707782d",
+      "peerKind": "official_product_page"
+    },
+    {
+      "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+      "intakeId": "a848bf57-b041-4073-b6d9-f0dbcffc2e91",
+      "brand": "토리든",
+      "name": "다이브인 저분자 히알루론산 세럼",
+      "nameEn": "DIVE IN Low Molecular Hyaluronic Acid Serum",
+      "normalizedName": "다이브인 저분자 히알루론산 세럼",
+      "officialPeerUrl": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "peerProductId": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "peerBindingId": "c70aadca-aecb-409a-9995-71016a2ef9d7",
+      "peerSourceId": "f493aa44-75dc-40b8-a179-b7d748bc7989",
+      "peerKind": "official_product_page"
+    }
+  ]
+}
