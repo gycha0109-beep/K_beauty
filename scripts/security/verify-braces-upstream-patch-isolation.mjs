@@ -7,6 +7,7 @@
  * This does not approve the upstream PR or constitute vulnerability remediation.
  */
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -78,7 +79,12 @@ if (!installed) {
       const patchPath = path.join(temp, "reviewed-library.patch");
       const encodedPatch = fs.readFileSync(encodedPatchPath, "utf8").replace(/\s/g, "");
       assert.match(encodedPatch, /^[A-Za-z0-9+/]+=*$/, "invalid pinned base64 patch");
-      fs.writeFileSync(patchPath, Buffer.from(encodedPatch, "base64"));
+      const patchBytes = Buffer.from(encodedPatch, "base64");
+      const gitBlobIdentity = createHash("sha1")
+        .update("blob " + patchBytes.length + "\0").update(patchBytes).digest("hex");
+      assert.equal(gitBlobIdentity, "b6aa05571a91ec9c6c4bc80ae7c6a26cb5db31af",
+        "reviewed upstream braces patch bytes drifted; fail closed");
+      fs.writeFileSync(patchPath, patchBytes);
       const run = (args) => spawnSync("git", ["apply", ...args, patchPath], {
         cwd: temp, encoding: "utf8", timeout: 15000,
       });
