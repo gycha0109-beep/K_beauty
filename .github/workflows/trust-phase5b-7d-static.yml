@@ -15,7 +15,6 @@ on:
       - "scripts/trust-p2d-five-brand-pilot.mjs"
       - "scripts/verify-trust-p2d-five-brand-pilot.mjs"
       - "evidence/trust/p2d-five-brand-cohort-v1.json"
-      - ".github/workflows/catalog-official-five-brand-pilot.yml"
       - "scripts/trust-p2-official-discovery.mjs"
       - "scripts/verify-trust-p2-official-discovery-v1.mjs"
       - "scripts/trust-p2c-robots-smoke.mjs"
@@ -233,3 +232,30 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$TRUST_STATIC_EXACT_HEAD"
           git diff --check "${{ github.event.pull_request.base.sha || github.event.before }}...$TRUST_STATIC_EXACT_HEAD" || git diff --check HEAD^
+
+  p2d_five_brand_live:
+    name: P2D guarded five-brand live source trial
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'P2D-LIVE-TRIAL')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact merged main
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Run explicit one-time five-brand public official source probe
+        env:
+          TRUST_P2D_FIVE_BRAND_LIVE_ENABLED: "true"
+        run: node scripts/trust-p2d-five-brand-pilot.mjs --execute
+      - name: Keep no-content measurement report
+        uses: actions/upload-artifact@v6
+        with:
+          name: trust-p2d-five-brand-results
+          path: artifacts/trust-p2d-five-brand-result.json
+          if-no-files-found: error
+          retention-days: 30
