@@ -1,8 +1,8 @@
 # [Face Lab] BEJEWELY Face Lab V2 — 제품 완결 로드맵
 
-> **상태:** 제품 완결 기준 / 실행 추적용 canonical 로드맵 (2026-10-13)  
-> **현황 확인 기준:** `main@5272378c3f561407629e4c91a42d80baa1f520c3`, 최신 Open PR 목록, 현재 Face Lab V2 코드  
-> **Owner:** `face-research` / **문서 권위:** 제품 목표는 `페이스랩 정의 V2 (2026-09-24)`, 관찰·보안 불변식은 `FACE_LAB_MASTER_SPEC`, 평가 근거는 `FACE_LAB_EVALUATION_STRATEGY`. 본 문서는 **개발 계획과 수용 기준**이지 운영 승인이나 새 분석 authority가 아님.  
+> **상태:** 제품 완결 기준 / 실행 추적용 canonical 로드맵 (2026-10-13)
+> **현황 확인 기준:** `main@5272378c3f561407629e4c91a42d80baa1f520c3`, 최신 Open PR 목록, 현재 Face Lab V2 코드
+> **Owner:** `face-research` / **문서 권위:** 제품 목표는 `페이스랩 정의 V2 (2026-09-24)`, 관찰·보안 불변식은 `FACE_LAB_MASTER_SPEC`, 평가 근거는 `FACE_LAB_EVALUATION_STRATEGY`. 본 문서는 **개발 계획과 수용 기준**이지 운영 승인이나 새 분석 authority가 아님.
 > **최신 의사결정:** 공통 Face Lab 촬영 주의 문구는 **처음 사진 업로드/촬영 화면 한 곳**에만 두 문장으로 안내한다. 퍼스널 컬러 결과 화면에 포괄적 한계 경고를 반복하지 않는다.
 
 ## 0. 완성의 정의와 우선순위
