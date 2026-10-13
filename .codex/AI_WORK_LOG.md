@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA 임시 수정 패치 chokidar 실제 watcher 및 Expo 인증서 부정경로 검증
+
+- 유형: 제한적 Security 진단/회귀 테스트 실행. #1240 Draft/HOLD, 실제 npm package/lockfile 변경 및 Production/DB/Auth/Secret/배포 구성 영향 없음.
+- 수정: `scripts/security/verify-sca-candidate-integration-isolation.mjs`에 patched braces 소비자의 disposable `{a,b}.js` glob watcher ready/add/change/unlink와 strict event timeout/close, patched node-forge 소비자의 잘못된 RSA 키·만료 인증서 거부 시나리오 추가.
+- 검증: `65b03d5137c0ea5e521256dffd5a3dcde2c4ca21`의 [Supply Chain #38331934597](https://github.com/gycha0109-beep/K_beauty/actions/runs/38331934597)에서 진단 단계 PASS, live watcher·Expo negative gates PASS. 원본 npm audit는 만료된 braces GHSA 때문에 의도대로 FAIL.
+- 증거: `docs/security/sec-sca-20261012-execution-ledger.md`와 `sec-sca-20261012-upstream-patch-candidate-review.md`; SCA-3 실제 패키지 교체·전체 Android·무예외 audit 및 후속 SCA-4~7 미완료. 미병합 upstream PR 패치 테스트가 릴리스/배포 보안 승인을 대체하지 않음.
+
 ### 2026-10-13 / SEC-SCA 격리 패치 provenance 및 실제 소비자 smoke 범위 확장
 
 - 유형: 보안 진단·격리 실험 실행. Security Draft PR #1240; 실제 설치 의존성 변경·Production/DB/Auth/Secret 영향 N. 설계/운영 보안 경계는 Y로 처리해 임시 작업 공간 외 변경을 금지.
