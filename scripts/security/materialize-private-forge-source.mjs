@@ -74,7 +74,16 @@ export function materializePrivateForgeSource(destination){
  ].join("\n");
  const prior=fs.readFileSync(rsa,"utf8");
  assert.equal(prior.split(original).length-1,1,"RSA patch anchor not unique");
- const after=prior.replace(original,replacement);
+ const oldComment="          // validate DigestInfo structure and element count";
+ const updatedComment=[
+   "          // validate DigestInfo structure and element counts (outer DigestInfo",
+   "          // and nested DigestAlgorithm). asn1.validate ignores extra children,",
+   "          // so length must be checked explicitly at each nesting level to",
+   "          // prevent low-exponent PKCS#1 v1.5 signature forgery (CVE-2026-85393)."
+ ].join("\n");
+ assert.equal(prior.split(oldComment).length-1,1,
+   "upstream review comment anchor not unique");
+ const after=prior.replace(oldComment,updatedComment).replace(original,replacement);
  fs.writeFileSync(rsa,after);
  const post=inventory(path.join(destination,"lib"));
  const modified=Object.keys(before).filter(p=>before[p]!==post[p]);
