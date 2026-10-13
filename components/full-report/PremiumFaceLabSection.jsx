@@ -47,6 +47,8 @@ const COPY = {
     savePending: "변경사항이 이 기기에 임시 저장되었습니다.",
     saveAuthRequired: "로그인이 필요해 서버에 저장하지 못했습니다.",
     saveConflict: "다른 곳에서 변경된 결과가 있어 이 변경은 저장되지 않았습니다.",
+    saveLocalFailed: "이 기기와 서버에 변경사항을 저장하지 못했습니다. 이 화면을 닫지 말고 다시 시도해 주세요.",
+    saveRetry: "저장 다시 시도",
     introTitle: "추구미부터 정해볼까요?",
     introBody: "현재 얼굴을 다시 분석하지 않고, 원하는 분위기와 바꿀 수 있는 범위를 더하면 여러 스타일 경로를 비교할 수 있습니다.",
     modeTitle: "원하는 스타일이 이미 있으신가요?",
@@ -157,6 +159,8 @@ const COPY = {
     savePending: "Changes are temporarily saved on this device.",
     saveAuthRequired: "Sign in is required to save these changes to the server.",
     saveConflict: "This change was not saved because the report changed elsewhere.",
+    saveLocalFailed: "Changes could not be saved on this device or to the server. Keep this page open and retry.",
+    saveRetry: "Retry saving",
     introTitle: "Set your target look",
     introBody: "Keep the existing face analysis and add your preferred direction and practical constraints to compare styling routes.",
     modeTitle: "Do you already know the look you want?",
@@ -611,6 +615,7 @@ export default function PremiumFaceLabSection({
   const restoreInteractionRef = useRef(0);
   const activePersistenceStateRef = useRef(null);
   const latestPersistRequestFingerprintRef = useRef(null);
+  const latestPersistRequestSequenceRef = useRef(0);
   const serverRevisionRef = useRef(0);
   const conflictEpochRef = useRef(0);
 
@@ -657,17 +662,18 @@ export default function PremiumFaceLabSection({
       selectedRouteId: routeId
     };
     const requestFingerprint = persistenceFingerprint(requestState);
+    const requestSequence = ++latestPersistRequestSequenceRef.current;
     const requestConflictEpoch = conflictEpochRef.current;
     latestPersistRequestFingerprintRef.current = requestFingerprint;
 
-    writeLocalState(requestState, {
+    const locallySaved = writeLocalState(requestState, {
       syncStatus: "pending",
       baseServerRevision: serverRevisionRef.current,
       acknowledgedRevision: serverRevisionRef.current
     });
 
     if (!savedReportId) {
-      setPersistenceStatus("pending");
+      setPersistenceStatus(locallySaved ? "pending" : "local_failed");
       return Promise.resolve();
     }
 
@@ -680,18 +686,19 @@ export default function PremiumFaceLabSection({
 
       const expectedRevision = serverRevisionRef.current;
       const isLatestRequest = () =>
-        latestPersistRequestFingerprintRef.current === requestFingerprint;
+        latestPersistRequestFingerprintRef.current === requestFingerprint &&
+        latestPersistRequestSequenceRef.current === requestSequence;
 
       try {
         const accessToken = await getBrowserSupabaseAccessToken();
         if (!accessToken) {
           if (isLatestRequest()) {
-            writeLocalState(requestState, {
+            const authCached = writeLocalState(requestState, {
               syncStatus: "auth_required",
               baseServerRevision: expectedRevision,
               acknowledgedRevision: serverRevisionRef.current
             });
-            setPersistenceStatus("auth_required");
+            setPersistenceStatus(authCached ? "auth_required" : "local_failed");
           }
           return;
         }
@@ -742,12 +749,12 @@ export default function PremiumFaceLabSection({
         if (!response.ok || !serverStored?.surveyAnswers) {
           if (isLatestRequest()) {
             const nextStatus = response.status === 401 ? "auth_required" : "pending";
-            writeLocalState(requestState, {
+            const fallbackCached = writeLocalState(requestState, {
               syncStatus: nextStatus,
               baseServerRevision: expectedRevision,
               acknowledgedRevision: serverRevisionRef.current
             });
-            setPersistenceStatus(nextStatus);
+            setPersistenceStatus(fallbackCached ? nextStatus : "local_failed");
           }
           return;
         }
@@ -785,12 +792,12 @@ export default function PremiumFaceLabSection({
         setPersistenceStatus("synced");
       } catch {
         if (isLatestRequest()) {
-          writeLocalState(requestState, {
+          const fallbackCached = writeLocalState(requestState, {
             syncStatus: "pending",
             baseServerRevision: expectedRevision,
             acknowledgedRevision: serverRevisionRef.current
           });
-          setPersistenceStatus("pending");
+          setPersistenceStatus(fallbackCached ? "pending" : "local_failed");
         }
       }
     };
@@ -1077,6 +1084,17 @@ export default function PremiumFaceLabSection({
     void persistServer(surveyAnswers, approvedFinder, resolvedRouteId);
   };
 
+  const retrySave = () => {
+    const activeState = activePersistenceStateRef.current;
+    if (!activeState?.surveyAnswers || !canonical) return;
+
+    void persistServer(
+      activeState.surveyAnswers,
+      activeState.targetFinderResult || null,
+      committedRouteIdFromResult(canonical)
+    );
+  };
+
   const choosePresentation = (value) => {
     setPresentationPreference(value);
     if (!scopeTouched) {
@@ -1103,7 +1121,9 @@ export default function PremiumFaceLabSection({
             ? copy.saveAuthRequired
             : persistenceStatus === "conflict"
               ? copy.saveConflict
-              : null;
+              : persistenceStatus === "local_failed"
+                ? copy.saveLocalFailed
+                : null;
 
     return (
       <div className="space-y-3">
@@ -1129,6 +1149,16 @@ export default function PremiumFaceLabSection({
           >
             {persistenceMessage}
           </p>
+        ) : null}
+        {["pending", "auth_required", "local_failed"].includes(persistenceStatus) ? (
+          <button
+            type="button"
+            onClick={retrySave}
+            className="ui-button-secondary min-h-10 self-start px-4 text-xs font-semibold"
+            data-face-lab-save-retry={persistenceStatus}
+          >
+            {copy.saveRetry}
+          </button>
         ) : null}
       </div>
     );
