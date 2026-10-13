@@ -193,11 +193,11 @@ async function verifyChokidarFileEvents(watcherLibrary) {
   try {
     await awaitWatcherEvent(watcher, "ready");
     const [added] = await awaitWatcherEvent(watcher, "add", () => {
-      fs.writeFileSync(file, "const value = 1;\\n");
+      fs.writeFileSync(file, "const value = 1;\n");
     });
     assert.equal(path.resolve(added), file, "unexpected watched add path");
     const [changed] = await awaitWatcherEvent(watcher, "change", () => {
-      fs.appendFileSync(file, "const nextValue = 2;\\n");
+      fs.appendFileSync(file, "const nextValue = 2;\n");
     });
     assert.equal(path.resolve(changed), file, "unexpected watched change path");
     const [removed] = await awaitWatcherEvent(watcher, "unlink", () => fs.unlinkSync(file));
