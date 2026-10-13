@@ -9,6 +9,7 @@ import { pathToFileURL } from "node:url";
 import { fetchOfficialBytes } from "../lib/trust/official-source-fetch.mjs";
 import { createTrustRobotsPolicy,strictOriginTransport } from "../lib/trust/official-product-discovery-p2-v1.mjs";
 import { extractTrustP3OfficialProductCandidates } from "../lib/trust/official-product-extraction-p3-v1.mjs";
+import { inspectTrustP3OfficialPageShape } from "../lib/trust/official-product-page-shape-p3-v1.mjs";
 
 export const TRUST_P3_LIVE_COHORT_VERSION="trust-p3-three-brand-live-observation-v1";
 const FILE="evidence/trust/p3-official-three-brand-live-cohort-v1.json";
@@ -95,6 +96,7 @@ export async function observeTrustP3OfficialThreeBrand({
           sourceUrl:t.officialUrl,sourceKind:t.sourceKind,robotsAllowed:true});
         row.status=candidate.gate;
         row.evidence=summarized(candidate);
+        row.pageShape=inspectTrustP3OfficialPageShape(response.bytes,product,{contentType:response.contentType});
       }catch(error){
         row.status="SOURCE_FETCH_HOLD";row.failure=failureCode(error);
       }
