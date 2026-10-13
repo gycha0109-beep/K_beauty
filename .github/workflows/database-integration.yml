@@ -176,6 +176,12 @@ jobs:
       - name: Verify database migration authority and non-production safety
         run: node scripts/verify-database-integration-authority.mjs
 
+      - name: Verify R16I D8E1 164x12 real-engine structural shadow (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-r16i-r4-d8e1-structural-replay.mjs
+
       - name: Verify R4-C-R4 independent SKU identity HOLD and negative cases
         run: node scripts/verify-data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap.mjs
 
@@ -374,12 +380,6 @@ jobs:
           test "$(PGDATABASE=taxonomy_r16i_d8d psql -Atqc "select count(*) from public.admin_r16i_correction_application_events_v1")" = "2"
           psql -v ON_ERROR_STOP=1 -c "drop database taxonomy_r16i_d8d with (force)"
           echo "R16I_D8D_ISOLATED_PG17_PASS"
-
-      - name: Verify R16I D8E1 164x12 real-engine structural shadow (offline)
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/product-evidence/verify-r16i-r4-d8e1-structural-replay.mjs
 
       - name: Verify exact-head diff hygiene
         shell: bash
