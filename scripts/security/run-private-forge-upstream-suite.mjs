@@ -52,10 +52,19 @@ try{
  const unitDir=path.join(checkout,"tests/unit");
  const cases=fs.readdirSync(unitDir).filter(name=>name.endsWith(".js")&&name!=="index.js").sort();
  assert.ok(cases.length>=20,"upstream unit test inventory unexpectedly small");
- const files=[...cases.map(name=>path.join(unitDir,name)),
-   path.join(checkout,"tests/security.js")];
+ // Mocha 5 may accept only the final positional test filename; passing
+ // all 27 files individually can silently execute just tests/security.js.
+ // The upstream canonical entrypoint explicitly requires every unit file
+ // AND the security suite, making partial registration observable.
+ const index=path.join(unitDir,"index.js");
+ assert.ok(fs.existsSync(index),"canonical upstream Node suite index missing");
+ const indexSource=fs.readFileSync(index,"utf8");
+ assert.ok(indexSource.includes("require('./rsa')"),
+   "critical RSA suite is no longer registered in upstream index");
+ assert.ok(indexSource.includes("require('../security')"),
+   "security regression suite is no longer registered");
  const output=run(process.execPath,[path.join(harness,"node_modules/mocha/bin/mocha"),
-   "--timeout","30000","--reporter","json",...files
+   "--timeout","30000","--reporter","json",index
  ],checkout,240000,{...process.env,NODE_ENV:"test",NODE_PATH:path.join(harness,"node_modules"),NODE_OPTIONS:""});
  let json;
  try { json=JSON.parse(output); }
@@ -64,14 +73,16 @@ try{
  const executed=Array.isArray(json.tests)?json.tests:[];
  const actualFiles=[...new Set(executed.map(t=>t.file||"UNKNOWN"))].sort();
  console.log("SCA_B2_UPSTREAM_SUITE_COUNT="+JSON.stringify({
-   testsPassed:passed,unitTestFiles:files.length,
+   testsPassed:passed,unitTestFiles:cases.length,
    executedTestFiles:actualFiles,executedSamples:executed.slice(0,12).map(t=>t.fullTitle),
    testStats:json.stats,
  }));
  assert.ok(passed>=100&&executed.length>=100,
    "incomplete node-forge full Node unit suite");
- assert.ok(actualFiles.some(x=>x.endsWith("rsa.js")),
-   "critical RSA regression suite not included");
+ assert.ok(executed.some(t=>/\\brsa\\b/i.test(t.fullTitle||"")),
+   "critical RSA regression suite not registered or executed");
+ assert.ok(executed.some(t=>/DigestInfo|signature verification/i.test(t.fullTitle||"")),
+   "RSA verification boundary regressions did not execute");
  console.log("SCA_B2_UPSTREAM_SUITE="+JSON.stringify({
   state:"PASS_FULL_UPSTREAM_NODE_UNIT_SUITE_AGAINST_B2_CANDIDATE",
   upstreamTestCommit:SHA,patchedRsaBlobSha1:source.patchedRsaBlobSha1,
