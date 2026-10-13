@@ -5,6 +5,7 @@
  * No production credentials, native build, registry publication or audit bypass.
  */
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -22,6 +23,8 @@ const evidence = {
   expoCodeSigning: "NOT_RUN",
   micromatch: "NOT_RUN",
   fastGlob: "NOT_RUN",
+  metroFileMaps: "NOT_RUN",
+  chokidar: "NOT_RUN",
 };
 
 function installed(name, version) {
@@ -85,7 +88,12 @@ function patchBraces() {
   ).replace(/\s/g, "");
   assert.match(encoded, /^[A-Za-z0-9+/]+=*$/, "invalid fixed patch");
   const patchFile = path.join(tmp, "reviewed-braces.patch");
-  fs.writeFileSync(patchFile, Buffer.from(encoded, "base64"));
+  const patchBytes = Buffer.from(encoded, "base64");
+  const verifiedBlob = createHash("sha1")
+    .update("blob " + patchBytes.length + "\0").update(patchBytes).digest("hex");
+  assert.equal(verifiedBlob, "b6aa05571a91ec9c6c4bc80ae7c6a26cb5db31af",
+    "braces reviewed upstream diff identity changed");
+  fs.writeFileSync(patchFile, patchBytes);
   for (const extra of [["--check"], []]) {
     const proc = spawnSync("git", ["apply", ...extra, patchFile], {
       cwd: root, encoding: "utf8", timeout: 15000,
@@ -149,15 +157,45 @@ function verifyGlobConsumers() {
   assert.deepEqual(files, ["src/a.js"]);
   evidence.fastGlob = "PASS_MATCH_AND_NEGATIVE_GLOB";
 }
+function verifyRemainingConsumers() {
+  // Verify that every installed Metro watcher client resolves to the patched
+  // temporary micromatch copy, which in turn resolves to patched braces.
+  // Merely loading a watcher is a smoke test, NOT an end-to-end Metro build.
+  const consumers = [
+    ["@expo/metro-file-map", "57.0.3", "build/watchers/common.js"],
+    ["metro-file-map", "0.84.5", "src/watchers/common.js"],
+    ["metro-config/node_modules/metro-file-map", "0.84.6", "src/watchers/common.js"],
+  ];
+  for (const [name, version, modulePath] of consumers) {
+    const root = copyPackage(name, version);
+    linkOtherDependencies(name);
+    expectLocalRequire("micromatch", name);
+    const loaded = require(path.join(root, modulePath));
+    assert.ok(loaded !== null && (typeof loaded === "object" || typeof loaded === "function"),
+      name + " watcher helper failed to load");
+  }
+  evidence.metroFileMaps = "PASS_THREE_WATCHER_HELPERS_USING_PATCHED_MICROMATCH";
+
+  copyPackage("chokidar", "3.6.0");
+  linkOtherDependencies("chokidar");
+  expectLocalRequire("braces", "chokidar");
+  const watcherLibrary = require(dest("chokidar"));
+  assert.equal(typeof watcherLibrary.watch, "function");
+  evidence.chokidar = "PASS_INSTALLED_WATCHER_LIBRARY_LOAD_AND_PATCHED_BRACES_RESOLUTION";
+}
+
 try {
   fs.mkdirSync(targetModules, { recursive: true });
   patchForge();
   patchBraces();
   verifyExpoSigning();
   verifyGlobConsumers();
+  verifyRemainingConsumers();
   assert.equal(evidence.expoCodeSigning.startsWith("PASS"), true);
   assert.equal(evidence.micromatch.startsWith("PASS"), true);
   assert.equal(evidence.fastGlob.startsWith("PASS"), true);
+  assert.equal(evidence.metroFileMaps.startsWith("PASS"), true);
+  assert.equal(evidence.chokidar.startsWith("PASS"), true);
   console.log("SCA_CANDIDATE_DEPENDENT_INTEGRATION=" + JSON.stringify(evidence));
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
