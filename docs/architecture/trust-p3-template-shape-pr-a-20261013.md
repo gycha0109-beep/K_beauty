@@ -30,3 +30,16 @@ All outputs keep `exactSkuVerified=false`, `marketVerified=false`, `formulationV
 Review run artifact and identify which first-party HTML page families have *scoped* product detail markers worth a narrowly defined parser/selector. Confirm the marker refers to a unique primary product region, rather than recommendations/reviews. If a page offers only metadata or script-side variants, retain `HOLD` and do not implement an imagined selected option. Unreachable Beauty of Joseon pages remain source-policy HOLD.
 
 Known unrelated SCA issue (`braces` advisory allowlist expiration) is not bypassed.
+
+
+## PR-A exact-main live acceptance (2026-10-13)
+
+Main merge `e14cef3c9e570bc8ef8f5e30896701eef6336495` (PR #1273), [official source run #38351753272](https://github.com/gycha0109-beep/K_beauty/actions/runs/38351753272), job `115145490366` successful, artifact `11790653317`. Frozen bounded measurements: `evidence/trust/p3-template-shape-live-20261013.json`.
+
+Measured unchanged 4/6 HTML fetched, 2/6 source blocked, **0/6 P3 review candidates**, **0 exact SKUs verified**. Subject/Fact/source/DB/recommendation/AI writes = 0.
+
+Torriden both tested HTML pages returned `scanStatus=COMPLETE`, `mainCount=0`, `goodsDetail=2`, `itemDetail=3`, `scopedNameClass=1`, `select=1`, `option=5`, `explicitSelectedOption=0`. These **are structural markers only**, and two goods-detail counts are **not** a unique primary root. Do not use these counts to approve even the alternate URL.
+
+Aestura KR and international pages each stopped the diagnostic scanner with `MALFORMED_OR_OVERSIZED_TAG` at tag 488 and 1002 respectively. Subsequent **zero counters do not prove absence** of root or variant controls; the current parser has a 2,048-char-per-tag limit and the error may be an oversized tag or malformed markup. First implement bounded skip/provenance *while leaving identity/size gates unchanged*, then independently verify the true primary root and selected variant. Beauty of Joseon remained `SOURCE_BLOCKED` and must remain policy HOLD.
+
+**Exit**: PR-A scanner delivered and live observability established. **PR-B entry BLOCKED** for Aestura until an overflow-safe structural diagnostic is verified, and for Torriden until unique primary root can be established from markup rather than matching incidental names. No authority relaxation.
