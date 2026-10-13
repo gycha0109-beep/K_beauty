@@ -96,6 +96,16 @@ export default function FaceLabV2Result({
         <p className="ui-kicker">FACE LAB V2</p>
         <h2 className="ui-title mt-2 text-xl">{view.notice?.title}</h2>
         <p className="ui-text-secondary mt-2 text-sm leading-6">{view.notice?.body}</p>
+        {typeof onEditTarget === "function" && result?.targetStyle?.approvedByUser ? (
+          <button
+            type="button"
+            onClick={onEditTarget}
+            className="ui-button-secondary mt-4 px-4 py-2 text-xs font-semibold"
+            data-face-lab-unavailable-edit-target
+          >
+            {locale === "en" ? "Edit target settings" : "추구미 설정 수정"}
+          </button>
+        ) : null}
       </section>
     );
   }
