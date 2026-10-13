@@ -160,3 +160,12 @@ SCA-2 출처 보유 코드 변경의 **제한된 개별 동작 실험은 완료*
 4. 원인 제거 후 예외 없는 fail-closed audit v2 → 최종 HEAD CI → Security 리뷰·병합·타 트랙 인계.
 
 금지: `npm overrides`로 패키지 출처 속이기, advisory 허용 목록 확대, 예외 만료 연장, 원래 감사를 성공 처리, Production 의존성 패치의 검증 전 적용. **#1240 Draft/HOLD와 #1208 OPEN 유지.**
+
+## 10. SCA-3 실제 감시 이벤트·Expo 인증서 거부 조건 검증 (2026-10-13)
+
+**검증 코드 SHA:** `65b03d5137c0ea5e521256dffd5a3dcde2c4ca21` · [Supply Chain CI #38331934597](https://github.com/gycha0109-beep/K_beauty/actions/runs/38331934597). 이 로그의 `Trace vulnerable dependency paths without changing audit policy` 단계는 PASS. **정식 취약점 감사 단계는 만료된 GHSA-vfj7-8cjw-p6xm 예외로 의도대로 FAIL**.
+
+- `scripts/security/verify-sca-candidate-integration-isolation.mjs`의 **실제 chokidar 파일 이벤트**: OS 임시 폴더의 `{a,b}.js` 중괄호 glob을 격리된 `chokidar@3.6.0`로 감시하고 `ready` → `a.js` 생성(`add`) → 변경(`change`) → 삭제(`unlink`) 순서대로 이벤트와 정확한 파일 경로를 확인. 파일 감시는 테스트용 polling을 사용하고 이벤트마다 10초 제한을 두며 `finally`에서 watcher를 닫는다. 결과 `chokidarFileEvents=PASS_READY_ADD_CHANGE_UNLINK_PATCHED_BRACE_GLOB`.
+- `@expo/code-signing-certificates@0.0.6`와 임시 patched `node-forge` 경로에서 기존 self-signed/PEM/서명 **정상 시나리오**에 더해, 서로 다른 테스트용 RSA 키쌍을 전달하면 인증서 검증 거부, 만료된 유효기간이면 검증 거부를 확인. 결과 `expoCodeSigning=PASS_SELF_SIGNED_CERT_PEM_SIGNATURE_WRONG_KEY_AND_EXPIRY_REJECTION`.
+- 기존 `braces`와 `node-forge` 원본-패치 동작 비교, patch identity pin, 세 종류의 Metro file-map consumer resolve/load, micromatch 및 fast-glob 검사는 같은 진단 단계에서 재통과. 모든 인증서·키·감시 파일은 격리 테스트 전용이며 원본 `node_modules`, 잠금 파일, 설정, 운영 인증서에 접근하거나 변경하지 않는다.
+- **범위 한계:** 정상 glob의 실제 watcher 동작 및 일부 인증서 거부 조건만 확인. Metro 자체 watch loop, 실제 Android 번들·네이티브 실행, signed production manifest, 정식 배포 후보 패키지/npm tarball integrity 및 원본 감사 HIGH=0은 **미검증**. 따라서 로드맵상 정식 SCA-3 HOLD 유지.
