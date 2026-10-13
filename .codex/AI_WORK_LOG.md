@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA B0/B1 braces 패치 실행 (clean main 기반 독립 PR)
+
+- 목적: 사용자 승인 B안 [자체 patched distribution 로드맵](../docs/security/sec-sca-20261013-private-patch-distribution-roadmap.md) B0 현행 소스/락 기준 부분 고정 및 B1 braces 실제 수정본 검증용 격리 재현 스크립트. GitHub [Draft PR #1270](https://github.com/gycha0109-beep/K_beauty/pull/1270); 최초 #1240의 오래된 ancestry 때문에 Main Health 조상 검사 실패하여 최신 main 812e39d995c0131212b3fb9fbef7dc2e415c0ecc 위로 변경 파일 8개만 재기반. 코드 비교 diff 8개로 한정.
+- 변경: `security/vendor/braces/source-manifest.json` (원본 integrity·upstream source/patch 고정), `scripts/security/candidates/braces-pr72-library.patch.b64`, `scripts/security/materialize-private-braces-source.mjs`, `scripts/security/verify-private-braces-probe-child.mjs`, `scripts/security/verify-private-braces-source-candidate.mjs`, 기존 supply chain workflow에 검증 호출 1개, `docs/security/sec-sca-20261013-private-patch-distribution-roadmap.md`, `docs/security/sec-sca-20261013-b0-b1-execution.md`.
+- 실제 선행 CI [#38346042122](https://github.com/gycha0109-beep/K_beauty/actions/runs/38346042122): 검토된 braces patch 5개 파일 source-digest, 잠금 integrity, 정상 glob·parser depth·AST 3개 walker·순환 parent 경계, 원본 package/lock 무변경 PASS. 원본 canonical audit는 만료 GHSA로 FAIL 유지. 새 clean main 기반 SHA에서 재검증 수행; CI 결과는 실행 로그 기준 판단.
+- 한계: B0 owner/license/source tarball 독립 검증 미충족, B1 full upstream suite·review 미완료, patched tarball 미제작, 두 원인 라이브러리 실제 lock 교체 없음. B2~B7 HOLD. Production/Auth/DB/Secret/Payment/Provider/Storage 접근·변경 N, npm audit 보안 정책 변경 N.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
