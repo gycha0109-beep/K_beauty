@@ -883,13 +883,15 @@ export default function PhotoUploadStep({
               </div>
 
               <div className="mx-auto mt-5 grid w-full max-w-[360px] grid-cols-1 gap-2.5 sm:mt-6 sm:max-w-[390px] sm:gap-3">
-                <p
-                  data-testid="face-lab-capture-notice"
-                  role="note"
-                  className="rounded-lg bg-[#FFF8FA] px-3 py-2.5 text-center text-[11px] leading-[1.7] text-[#666666] dark:bg-[#242029] dark:text-[#C9C5CE] sm:text-xs"
-                >
-                  {t.faceLabCaptureNotice}
-                </p>
+                {!hasPreview ? (
+                  <p
+                    data-testid="face-lab-capture-notice"
+                    role="note"
+                    className="rounded-lg bg-[#FFF8FA] px-3 py-2.5 text-center text-[11px] leading-[1.7] text-[#666666] dark:bg-[#242029] dark:text-[#C9C5CE] sm:text-xs"
+                  >
+                    {t.faceLabCaptureNotice}
+                  </p>
+                ) : null}
                 <button
                   type="button"
                   onClick={primaryAction}
