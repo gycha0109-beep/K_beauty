@@ -1,0 +1,106 @@
+{
+  "contract": "trust-p2d-five-brand-live-remeasurement-v2",
+  "measuredAt": "2026-10-13",
+  "source": {
+    "repository": "gycha0109-beep/K_beauty",
+    "mainSha": "926c19b31d735ca9d39030af83c1b20a2ab4adbe",
+    "workflowRunId": 38335766742,
+    "artifactId": 11785325604,
+    "artifactName": "trust-p2d-five-brand-results",
+    "artifactFile": "trust-p2d-five-brand-result.json",
+    "sourceKind": "github-actions-exact-main-live"
+  },
+  "baseline": {
+    "workflowRunId": 38332070497,
+    "products": 5,
+    "officialPagesFetched": 2,
+    "nameSignalProducts": 1,
+    "nameCandidateYield": 0.2,
+    "confirmedExactSku": 0
+  },
+  "remeasurement": {
+    "products": 5,
+    "officialPagesFetched": 2,
+    "nameSignalProducts": 0,
+    "nameCandidateYield": 0,
+    "variantMismatchPages": 2,
+    "confirmedExactSku": 0,
+    "verifiedMarket": 0,
+    "verifiedFormulation": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0,
+    "statusCounts": {
+      "SOURCE_POLICY_HOLD": 1,
+      "NO_PRODUCT_PAGE": 3,
+      "VARIANT_REVIEW_REQUIRED": 1
+    }
+  },
+  "items": [
+    {
+      "brand": "닥터지",
+      "status": "SOURCE_POLICY_HOLD",
+      "reason": "ROBOTS_UNAVAILABLE",
+      "pagesFetched": 0
+    },
+    {
+      "brand": "비플레인",
+      "status": "NO_PRODUCT_PAGE",
+      "reason": "NO_SAFE_CANDIDATE",
+      "homepageIndexStatus": "FETCHED",
+      "pagesFetched": 0
+    },
+    {
+      "brand": "아토팜",
+      "status": "VARIANT_REVIEW_REQUIRED",
+      "reason": "CATALOG_SIZE_MISMATCH",
+      "catalogSizeMl": 600,
+      "pagesFetched": 2,
+      "pages": [
+        {
+          "url": "https://neopharmshop.co.kr/product/%EC%8B%A0%EA%B7%9C%ED%9A%8C%EC%9B%90-%EC%9B%B0%EC%BB%B4-%EC%95%84%ED%86%A0%ED%8C%9C-mle-%EB%A1%9C%EC%85%98-60ml/3606/",
+          "titleSizeMl": 60,
+          "sha256": "583d279257b732e59da1bcc96e5d5eb268104f48e777cc525213f2be6c405dd3"
+        },
+        {
+          "url": "https://neopharmshop.co.kr/product/%EC%8B%A0%EA%B7%9C%ED%9A%8C%EC%9B%90%ED%8A%B9%EA%B0%80-%EC%95%84%ED%86%A0%ED%8C%9C-mle-%EB%A1%9C%EC%85%98-300ml/3453/",
+          "titleSizeMl": 300,
+          "sha256": "aa92ac2afbce3b80ca5ca2e5db1550e76b5fccfd59e1f8f04eacdca1a5387b0f"
+        }
+      ]
+    },
+    {
+      "brand": "이즈앤트리",
+      "status": "NO_PRODUCT_PAGE",
+      "reason": "SOURCE_BLOCKED",
+      "homepageIndexStatus": "FETCHED",
+      "pagesFetched": 0
+    },
+    {
+      "brand": "토리든",
+      "status": "NO_PRODUCT_PAGE",
+      "reason": "NO_SAFE_CANDIDATE",
+      "homepageIndexStatus": "FETCHED",
+      "pagesFetched": 0
+    }
+  ],
+  "interpretation": {
+    "candidateYieldIsNotAccuracy": true,
+    "falsePositiveRate": null,
+    "fullyVerifiedSku": 0,
+    "improvement": "two previously counted wrong-volume pages are now held; positive candidate yield decreases rather than increases",
+    "remaining": [
+      "beplain and torriden product page locator discovery",
+      "isntree source blocked",
+      "dr-g robots unavailable",
+      "subject market formulation unverified"
+    ]
+  },
+  "authority": {
+    "subjectCreationAuthorized": false,
+    "factConfirmationAuthorized": false,
+    "recommendationActivationAuthorized": false
+  }
+}
