@@ -96,6 +96,26 @@ export function materializePrivateBracesSource(destination) {
   assert.deepEqual(touched, expected, "unreviewed library patch files detected");
   git(destination, ["apply", "--check", patchPath]);
   git(destination, ["apply", patchPath]);
+  // The upstream PR head also carries a quote-parsing fix not present in the
+  // npm 3.0.3 tarball. Apply only the independently reviewed, exact anchored
+  // compatibility hunk and pin the COMPLETE final parser Git blob identity.
+  const quoteSpec = JSON.parse(fs.readFileSync(
+    path.join(root,"scripts/security/candidates/braces-upstream-quote-compatibility.json"),"utf8"));
+  assert.equal(quoteSpec.schema,"bejewely.security.braces.reviewed-quote-compat.v1");
+  assert.equal(quoteSpec.upstreamCommit,m.upstreamPatch.headSha);
+  assert.equal(quoteSpec.reviewedUpstreamParseJsGitBlobSha1,
+    "99cfb63528ff0124989d4c280e87888236a02be8");
+  const parseFile = path.join(destination,"lib/parse.js");
+  const sourceBeforeQuote = fs.readFileSync(parseFile,"utf8");
+  assert.equal(sourceBeforeQuote.split(quoteSpec.before).length-1,
+    quoteSpec.expectedOriginalOccurrences,"unreviewed braces source quote anchor");
+  assert.equal(sourceBeforeQuote.split(quoteSpec.after).length-1,0,
+    "braces quote delta already applied");
+  const parseAfterQuote=sourceBeforeQuote.replace(quoteSpec.before,quoteSpec.after);
+  const parsedBlob=blob(Buffer.from(parseAfterQuote,"utf8"));
+  assert.equal(parsedBlob,quoteSpec.reviewedUpstreamParseJsGitBlobSha1,
+    "final braces parser differs from independently pinned upstream PR head");
+  fs.writeFileSync(parseFile,parseAfterQuote);
   const after = inventory(destination);
   const modified = Object.keys(before).filter(p=>before[p] !== after[p]).sort();
   assert.deepEqual(modified, expected, "patch source changes differ from approved paths");
@@ -109,6 +129,7 @@ export function materializePrivateBracesSource(destination) {
     originalLockIntegrity:m.originalLockIntegritySha512,
     reviewedPatchGitBlobSha1:blob(bytes),
     reviewedPatchSha256:hash(bytes),
+    quoteCompatibilityUpstreamParseJsGitBlobSha1:parsedBlob,
     modifiedFiles:modified,
     modifiedFileSha256:Object.fromEntries(modified.map(p=>[p,after[p]])),
     installedSourceUntouched:Object.entries(before).every(([p,digest]) =>
