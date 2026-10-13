@@ -121,3 +121,17 @@
 - 검토된 braces PR #72 라이브러리 diff는 디코딩 뒤 Git blob SHA-1 `b6aa05571a91ec9c6c4bc80ae7c6a26cb5db31af`와 일치해야 하며, 달라지면 검증 실패. 이 source-pinning은 *검토한 bytes에 대한 무결성 검사*이지 upstream 서명이나 배포 tarball의 SHA512 provenance가 아니다.
 
 **결정:** SCA-3 사전 통합 smoke 근거 추가만 인정. 공식 채택 가능한 두 패치의 배포·무결성, Expo/Android 전체 회귀, 취약 코드를 모두 제거한 lock graph, 원본 audit 통과가 없으므로 **SCA-3 정식 설치/보수 HOLD, SCA-4~7 미착수**.
+
+## 9. SCA-3 제한적 실제 이벤트/거부 경계 회귀 (2026-10-13)
+
+검사 코드 SHA `65b03d5137c0ea5e521256dffd5a3dcde2c4ca21`, [GitHub Security run #38331934597](https://github.com/gycha0109-beep/K_beauty/actions/runs/38331934597). Source-pinned 미병합 수정본을 **OS 임시 복사본에서만** 테스트했다.
+
+| 격리 경로 | 추가 검증 | 판정 |
+| --- | --- | --- |
+| `braces` PR #72 → `chokidar@3.6.0` | `{a,b}.js` glob을 실제 감시하여 ready, add, change, unlink, 파일 경로 비교 | **PASS** |
+| `node-forge` PR #1152 → `@expo/code-signing-certificates@0.0.6` | 정상 인증서·PEM·서명과 함께 잘못된 RSA 키쌍 및 만료 인증서 거부 | **PASS** |
+| 두 후보의 npm 출시·SBOM/출처·lockfile 보수·전체 Android 빌드 | 정식 배포 아티팩트 없음 | **HOLD / NOT_RUN** |
+
+로그에서 `chokidarFileEvents=PASS_READY_ADD_CHANGE_UNLINK_PATCHED_BRACE_GLOB` 및 `expoCodeSigning=PASS_SELF_SIGNED_CERT_PEM_SIGNATURE_WRONG_KEY_AND_EXPIRY_REJECTION`을 확인했다. 타임아웃, polling과 watcher 종료로 실험의 자원·실행 범위를 제한했다.
+
+**해석:** 파일 시스템 이벤트와 주요 서명 검증 거부 조건의 동작 검증은 확보했지만, 공식 보안 패치 배포·원본 감사 무예외 통과·전체 Metro/Android 호환성은 증명하지 않는다. **SCA-3 정식 설치/보수 및 SCA-4~7은 HOLD**.
