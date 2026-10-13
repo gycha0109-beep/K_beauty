@@ -103,6 +103,7 @@ export function summarizeTrustP2D(rows){
   return {
     selectedProducts:5,processedProducts:rows.length,
     brands:5,officialPagesFetched:fetched,
+    variantMismatchPages:rows.reduce((n,r)=>n+(r.assessment.variantMismatchPages??0),0),
     identityCandidateProducts:rows.filter(x=>x.assessment.scopedCandidates>0).length,
     productIdentificationRate:rows.filter(x=>x.assessment.scopedCandidates>0).length/5,
     candidatePages:candidates,bodyOnlyMentions:mentions,
@@ -140,6 +141,7 @@ export async function runTrustP2DFiveBrandPilot({
           origin:site.origin,status:site.status,
           peerIndexCandidateCount:site.peerIndexCandidateCount??0,
           candidateCount:site.candidateCount??0,
+          homepageIndexStatus:site.homepageIndexStatus??"NOT_RECORDED",
           observations:(site.observations??[]).map(o=>({
             kind:o.kind,status:o.status,fetched:o.fetched,
           })),
@@ -147,6 +149,8 @@ export async function runTrustP2DFiveBrandPilot({
             url:page.url,status:page.status,
             title:page.title??null,identitySurface:page.identitySurface??null,
             sha256:page.sha256??null,
+            nameSignalStatus:page.nameSignalStatus??null,
+            variantScope:page.variantScope??null,
           })),
         }));
       }catch(e){
