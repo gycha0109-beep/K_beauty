@@ -203,3 +203,17 @@ The new `lib/trust/official-product-primary-variant-p3-v1.mjs` derives two indep
 In P3 extraction, a successful pair becomes `SCOPED_SELECTED_VARIANT_CANDIDATE` / `SELECTED_SIZE_MATCH_CANDIDATE` and is still only `EVIDENCE_CANDIDATE_ONLY`: human review, no verified exact SKU, locale, market or formulation, no automated source binding, Subject or Fact write. `scripts/trust-p3-official-locator-revalidation.mjs` records compact `primaryVariantProbe` metadata alongside existing P3 statuses so a one-off governed, robots-first run can distinguish **no primary heading** from **unselected variants**. Bounded negative fixtures cover cross-sell, option mismatch, bundles, ambiguity, scripts, disabled selection and robots policy.
 
 The baseline measured on 2026-10-13 still stands at **0/6 eligible**; no improvement in real-world extraction yield may be claimed before the new exact-main runner trial has completed and its artifact has been inspected. This reusable gate is deliberately conservative, not a per-product manual approval process.
+
+
+## P3 selected-variant parser: live acceptance after reusable gate (2026-10-13)
+
+Generic P3 strict primary-title + **explicitly selected** size gate [PR #1267](https://github.com/gycha0109-beep/K_beauty/pull/1267), merged SHA `00f92cca3d36c014a816f4db6aacef530ca726f9`, passed exact-head TRUST / PIE / CodeQL / Main Health. One-time 6-locator real official fetch [GitHub Actions #38345355813](https://github.com/gycha0109-beep/K_beauty/actions/runs/38345355813), artifact `11788153871`, frozen `evidence/trust/p3-selected-variant-live-20261013.json`.
+
+**Measured 4/6 fetched, 2/6 policy/source blocked, 0/6 eligible direct product claim candidates, 0 exact SKU/market/formulation verified, 0 DB/Subject/Fact/source/ranking/recommendation writes and 0 AI API.** This is **not** a demonstrated improvement to real-world automated coverage, even though all deterministic positive/negative fixture tests passed.
+
+Technical template blockers, no product-by-product manual exceptions:
+- **Torriden KR (2 pages) and Aestura KR (1 page)**: product HTML fetched; the probe has `hasMainContent=false`. For a safe generic fallback, inspect bounded *explicit primary product container markers* in other first-party layouts, not page-wide body or OG text. Treat absent confirmed roots as identity HOLD.
+- **Aestura international**: `hasMainContent=true`, structured product name matches, but neither a unique product heading nor a uniquely **selected** 40ml variant was observed. Page supports multiple capacity options in public index; no inference of selected size from the mere appearance of 40ml is allowed. Determine whether alternate first-party variant widget templates offer static selected controls before any gate extension.
+- **Beauty of Joseon**: two source fetch holds remain. Do not use browser search-index success to bypass official runner access policy.
+
+Next phase is *one bounded template-family shape probe* with outputs limited to counts / boolean presence / tag-class categories, followed by reusable fail-closed selection adapters where independently justified. Do not retain raw HTML, infer formulation from product name, silently change source binding, or expand from 3 products to full catalog before false-positive testing. Unchanged historical SCA vulnerability is an independent gate.
