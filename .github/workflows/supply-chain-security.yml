@@ -92,6 +92,7 @@ jobs:
           node scripts/security/run-sca-mobile-baseline-observation.mjs
           node scripts/security/verify-sca-native-tracked-integrity.mjs
           node scripts/security/run-sca-native-prebuild-observation.mjs
+          node scripts/security/run-sca-official-expo57-lock-candidate.mjs
 
       - name: Audit dependency vulnerabilities
         run: node scripts/verify-supply-chain-audit.mjs
