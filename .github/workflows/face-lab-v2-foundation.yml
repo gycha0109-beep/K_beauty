@@ -49,6 +49,9 @@ on:
       - "scripts/facelab/audit/migration-reconciliation-core.mjs"
       - "scripts/facelab/audit/compare-face-lab-migration-history.mjs"
       - "scripts/facelab/audit/verify-face-lab-migration-history.mjs"
+      - "scripts/verify-face-lab-v2-production-identity-readback.mjs"
+      - "lib/face-lab-v2/production-identity-readback-core.mjs"
+      - "app/api/admin/face-lab/production-identity/route.js"
       - "scripts/fixtures/face-lab-independent-catalog-memory-store.mjs"
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
@@ -197,6 +200,9 @@ on:
       - "scripts/facelab/audit/migration-reconciliation-core.mjs"
       - "scripts/facelab/audit/compare-face-lab-migration-history.mjs"
       - "scripts/facelab/audit/verify-face-lab-migration-history.mjs"
+      - "scripts/verify-face-lab-v2-production-identity-readback.mjs"
+      - "lib/face-lab-v2/production-identity-readback-core.mjs"
+      - "app/api/admin/face-lab/production-identity/route.js"
       - "scripts/fixtures/face-lab-independent-catalog-memory-store.mjs"
       - "scripts/verify-face-lab-v2-catalog-matcher-shadow.mjs"
       - "scripts/verify-face-lab-v2-product-variant-shade-authority.mjs"
@@ -364,6 +370,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-independent-published-read.mjs
       - name: Verify Face Lab Offline Migration Reconciliation
         run: node scripts/facelab/audit/verify-face-lab-migration-history.mjs
+      - name: Verify Face Lab server Production identity guard (offline)
+        run: node scripts/verify-face-lab-v2-production-identity-readback.mjs
       - name: Verify Face Lab V2 Catalog Product Try-On binding
         run: node scripts/verify-face-lab-v2-catalog-product-try-on-binding.mjs
       - name: Verify Face Lab V2 Catalog Reference Resolver
