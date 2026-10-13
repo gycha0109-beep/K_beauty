@@ -169,3 +169,14 @@ Evidence source: [GitHub Actions run #38332070497](https://github.com/gycha0109-
 - First follow-up: inspect the two ATOPALM candidate locators and independent SKU/market/formulation authority, then widen safe sitemap/index discovery for sites that returned no candidate, or record genuine robots failure without bypass. P3 automatic official Fact extraction remains gated on exact product lineage; no machine actor or automated Subject creation is authorized.
 
 The narrowly scoped live task was executed through the existing TRUST canonical job only on the explicit one-time `P2D-LIVE-TRIAL` main commit marker, not an always-running schedule. The separate historical P2-C live workflows remain retired.
+
+
+## P3 — governed official-source live validation and blocker diagnosis (2026-10-13)
+
+Implemented in `main`: read-only deterministic SPF/PA/direct UV-filter/INCI candidates, catalog variant holds, official source+robots prerequisite, and static contract tests. One-time exact-main live read-only three-brand trial [#38340197868](https://github.com/gycha0109-beep/K_beauty/actions/runs/38340197868) returned `0/3` eligible product pages: Torriden and Aestura primary identity unresolved, Beauty of Joseon source fetch blocked. It caused no Subject, Product Fact, source binding, ranking, Recommendation, DB or AI API writes.
+
+The separately approved, bounded HTML-shape diagnosis [#38341012942](https://github.com/gycha0109-beep/K_beauty/actions/runs/38341012942) confirmed `0/3` again. Both fetchable pages were UTF-8 and had document/OG titles, but **no target-name signal** in title, OG, Product JSON-LD, raw HTML, visible text or scripts. This **does not prove the source URL is wrong**, and a historical governed binding is not proof of currently displayed exact SKU. The inaccessible third source remains blocked; no scraping-policy bypass.
+
+Machine-readable immutable metadata: `evidence/trust/p3-three-brand-live-page-shape-20261013.json`. No raw source pages have been frozen. P3 candidate extraction implementation exists, but current live authority coverage for this cohort is **blocked (0/3)** and production auto-confirmation is **not authorized**. The next evidence gate is bounded existing official locator freshness/product-presentation revalidation (including market and formulation scope), then re-run P3 on independently verified exact product pages. **Do not activate P4 machine actor or FACT confirmation due only to parser fixture passes.**
+
+Global Supply Chain CI retains its independently owned expired `braces` advisory exception failure and is not waived in TRUST.
