@@ -2,6 +2,10 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA B1 npm 원본 tarball 독립 integrity 검증
+- [CI #38350267266](https://github.com/gycha0109-beep/K_beauty/actions/runs/38350267266): `npm pack braces@3.0.3` 원본 아카이브 sha512가 잠금 파일 integrity와 **일치 PASS**, 10개 패키지 경로 검사. B1 패치 소스 회귀/CodeQL PASS, canonical audit 원인 취약점으로 FAIL 유지.
+- source manifest에 검증된 사실만 true 및 근거 URL 기록. 수정 릴리스 tarball, upstream 전체 suite, 라이선스·보안 reviewer/배포는 미완료, PR #1270 Draft, main/원본 의존성/보안 정책 변경 없음.
+
 ### 2026-10-13 / SEC-SCA B0/B1 braces 패치 실행 (clean main 기반 독립 PR)
 
 - 목적: 사용자 승인 B안 [자체 patched distribution 로드맵](../docs/security/sec-sca-20261013-private-patch-distribution-roadmap.md) B0 현행 소스/락 기준 부분 고정 및 B1 braces 실제 수정본 검증용 격리 재현 스크립트. GitHub [Draft PR #1270](https://github.com/gycha0109-beep/K_beauty/pull/1270); 최초 #1240의 오래된 ancestry 때문에 Main Health 조상 검사 실패하여 최신 main 812e39d995c0131212b3fb9fbef7dc2e415c0ecc 위로 변경 파일 8개만 재기반. 코드 비교 diff 8개로 한정.

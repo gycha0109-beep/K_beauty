@@ -51,3 +51,13 @@
 | B6/B7 | BLOCKED | 정책 v2, exact HEAD CI, 리뷰, main 병합·유지보수 |
 
 **최종 결정:** B1의 직접 패치 소스 재현 경로와 검증 fixture는 구현되었지만 아직 B1 전체 승격 조건은 미충족. #1270은 Draft/HOLD. 독립 리뷰 전 배포/의존성 변경 불허.
+
+## 5. B1 공식 npm 원본 tarball 무결성 증명 (2026-10-13)
+
+정확한 코드 검증 HEAD `85ceb5d1f34ba5c0303880a2efe0934074e01f43`에서 [Supply Chain #38350267266](https://github.com/gycha0109-beep/K_beauty/actions/runs/38350267266)의 `verify-private-braces-registry-origin.mjs` 실행 성공.
+
+- `npm pack braces@3.0.3 --ignore-scripts --json`을 OS 임시 디렉터리에서 실행하고 실제 `.tgz` 파일의 SHA-512를 원본 `package-lock.json`의 `integrity`와 독립 비교, **동일 PASS**.
+- 10개 원본 아카이브 경로와 `lib/parse.js`, `lib/compile.js`, `lib/expand.js`, `lib/stringify.js`, `lib/constants.js` 등 필수 파일을 확인했다. path traversal/수상한 archive root는 즉시 FAIL.
+- 같은 HEAD에서 pinned upstream braces 수정 소스의 정상/비정상 회귀 **PASS**, CodeQL **PASS**, Main Health **PASS**, PIE **PASS**. 정식 감사는 기존 만료 예외 때문에 **FAIL 유지**.
+- **증명 범위:** 실제 npm 공식 원본 tarball의 잠금 파일 정합성. 패치된 배포 tarball이나 license/NOTICE, upstream 전체 unit test suite의 PASS 또는 Security 오너의 포크 승인까지 증명한 것은 아님.
+- **B0 PARTIAL / B1 patch source + registry integrity PASS (B1 전체 HOLD).** B2, B3~7은 독립 요건이며 이 문서에서 승격하지 않는다.
