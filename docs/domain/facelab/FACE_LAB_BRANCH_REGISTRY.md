@@ -1,7 +1,7 @@
 # [Face Lab] GitHub 브랜치·PR 관리 대장
 
-> 작성: 2026-10-13. 작업 시작 당시 Open Face Lab PR 12건 + 신규 로드맵 PR #1277 / 종료된 이전 로드맵 PR #1261 기준. PR 상태는 변하므로 실행 전 GitHub를 다시 조회한다.  
-> 기준: [FACE_LAB_V2_ROADMAP.md](FACE_LAB_V2_ROADMAP.md)  
+> 작성: 2026-10-13. 작업 시작 당시 Open Face Lab PR 12건 + 신규 로드맵 PR #1277 / 종료된 이전 로드맵 PR #1261 기준. PR 상태는 변하므로 실행 전 GitHub를 다시 조회한다.
+> 기준: [FACE_LAB_V2_ROADMAP.md](FACE_LAB_V2_ROADMAP.md)
 > 목표: 프로젝트의 PR/브랜치 식별이 **명백하고**, 오래된 Draft·연구·운영 DB 관련 PR을 제품 main 구현으로 혼동하지 않도록 한다.
 
 ## 1. 규칙 (새 PR/브랜치)
