@@ -1,0 +1,81 @@
+{
+  "contract": "trust-p2d-five-brand-observed-evidence-v1",
+  "observedAt": "2026-10-13T01:26:07.064Z",
+  "source": {
+    "repository": "gycha0109-beep/K_beauty",
+    "workflowRunId": 38332070497,
+    "jobId": 115083828288,
+    "commitSha": "7b9b5927f027d2138b5a4eb09f143cad92f36edc",
+    "immutableReportArtifact": "trust-p2d-five-brand-results",
+    "sourceKind": "exact-head-github-actions-live-stdout-and-artifact"
+  },
+  "metrics": {
+    "productsSelected": 5,
+    "productsProcessed": 5,
+    "brands": 5,
+    "officialPagesFetched": 2,
+    "productsWithCandidateSignals": 1,
+    "candidateYield": 0.2,
+    "candidatePages": 2,
+    "confirmedExactSku": 0,
+    "verifiedMarket": 0,
+    "verifiedFormulation": 0,
+    "factWrites": 0,
+    "subjectWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0,
+    "empiricalFalsePositiveRate": null
+  },
+  "items": [
+    {
+      "brand": "닥터지",
+      "productId": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "name": "레드 블레미쉬 클리어 수딩 크림 EX",
+      "status": "SOURCE_POLICY_HOLD",
+      "siteStatus": "ROBOTS_UNAVAILABLE",
+      "pagesFetched": 0
+    },
+    {
+      "brand": "비플레인",
+      "productId": "9b81da7a-649e-41ec-a22b-7e367c05afe4",
+      "name": "녹두 모공 클리어링 필터 패드",
+      "status": "NO_PRODUCT_PAGE",
+      "siteStatus": "NO_SAFE_CANDIDATE",
+      "pagesFetched": 0
+    },
+    {
+      "brand": "아토팜",
+      "productId": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "name": "MLE 로션",
+      "status": "IDENTITY_CANDIDATE_REVIEW_REQUIRED",
+      "siteStatus": "CANDIDATES_DISCOVERED",
+      "pagesFetched": 2,
+      "unverifiedCandidatePages": 2
+    },
+    {
+      "brand": "이즈앤트리",
+      "productId": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
+      "name": "초저분자 히아루론산 토너",
+      "status": "NO_PRODUCT_PAGE",
+      "siteStatus": "SOURCE_BLOCKED",
+      "pagesFetched": 0
+    },
+    {
+      "brand": "토리든",
+      "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+      "name": "다이브인 저분자 히알루론산 세럼",
+      "status": "NO_PRODUCT_PAGE",
+      "siteStatus": "NO_SAFE_CANDIDATE",
+      "pagesFetched": 0
+    }
+  ],
+  "verification": {
+    "fullyVerifiedProducts": 0,
+    "sourcePolicyBypass": false,
+    "newSourceBoundToSubject": false,
+    "marketInferredFromOrigin": false,
+    "proofStatus": "DISCOVERY_MEASURED__EXACT_SKU_UNVERIFIED",
+    "falsePositiveRateDetermination": "UNMEASURED_NO_INDEPENDENT_GOLD_SET"
+  }
+}
