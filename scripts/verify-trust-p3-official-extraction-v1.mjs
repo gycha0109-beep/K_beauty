@@ -25,7 +25,7 @@ assert.equal(positive.dbWrites,0);
 assert.equal(positive.aiApiCalls,0);
 const sizeMismatch=run(wrap("SPF50+ PA++++ / 무기자차",
   "다이브인 저분자 히알루론산 선크림 70ml"));
-assert.equal(sizeMismatch.gate,"IDENTITY_REVIEW_REQUIRED");
+assert.equal(sizeMismatch.gate,"VARIANT_REVIEW_REQUIRED");
 assert.equal(sizeMismatch.findings.spf.value,null);
 const policy=run(wrap("SPF50+ PA++++"),{robotsAllowed:false});
 assert.equal(policy.gate,"SOURCE_POLICY_HOLD");
