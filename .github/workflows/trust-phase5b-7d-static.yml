@@ -15,7 +15,11 @@ on:
       - "scripts/trust-p2d-five-brand-pilot.mjs"
       - "scripts/verify-trust-p2d-five-brand-pilot.mjs"
       - "lib/trust/official-product-extraction-p3-v1.mjs"
+      - "lib/trust/official-product-page-shape-p3-v1.mjs"
       - "scripts/verify-trust-p3-official-extraction-v1.mjs"
+      - "scripts/trust-p3-official-three-brand-pilot.mjs"
+      - "scripts/verify-trust-p3-official-three-brand-pilot.mjs"
+      - "evidence/trust/p3-official-three-brand-live-cohort-v1.json"
       - "evidence/trust/p2d-five-brand-cohort-v1.json"
       - "scripts/trust-p2-official-discovery.mjs"
       - "scripts/verify-trust-p2-official-discovery-v1.mjs"
@@ -89,6 +93,12 @@ on:
       - "scripts/verify-trust-p2c-visible-identity-v1.mjs"
       - "scripts/trust-p2d-five-brand-pilot.mjs"
       - "scripts/verify-trust-p2d-five-brand-pilot.mjs"
+      - "lib/trust/official-product-extraction-p3-v1.mjs"
+      - "lib/trust/official-product-page-shape-p3-v1.mjs"
+      - "scripts/verify-trust-p3-official-extraction-v1.mjs"
+      - "scripts/trust-p3-official-three-brand-pilot.mjs"
+      - "scripts/verify-trust-p3-official-three-brand-pilot.mjs"
+      - "evidence/trust/p3-official-three-brand-live-cohort-v1.json"
       - "evidence/trust/p2d-five-brand-cohort-v1.json"
       - ".github/workflows/catalog-official-five-brand-pilot.yml"
       - "scripts/trust-p2-official-discovery.mjs"
@@ -211,6 +221,7 @@ jobs:
           node scripts/verify-trust-p2c-visible-identity-v1.mjs
           node scripts/verify-trust-p2d-five-brand-pilot.mjs
           node scripts/verify-trust-p3-official-extraction-v1.mjs
+          node scripts/verify-trust-p3-official-three-brand-pilot.mjs
           node scripts/verify-trust-p2c-robots-smoke.mjs
           node scripts/verify-trust-p2c-known-product-smoke.mjs
           node scripts/verify-trust-p2b-official-observation-v1.mjs
@@ -260,5 +271,32 @@ jobs:
         with:
           name: trust-p2d-five-brand-results
           path: artifacts/trust-p2d-five-brand-result.json
+          if-no-files-found: error
+          retention-days: 30
+
+  p3_official_three_brand_live:
+    name: P3 guarded existing-source 3-brand live observation
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'P3-LIVE-TRIAL')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact merged main
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Run one-time robots-gated official three-source read-only measurement
+        env:
+          TRUST_P3_OFFICIAL_LIVE_ENABLED: "true"
+        run: node scripts/trust-p3-official-three-brand-pilot.mjs --execute
+      - name: Preserve metadata-only trial result
+        uses: actions/upload-artifact@v6
+        with:
+          name: trust-p3-three-brand-results
+          path: artifacts/trust-p3-official-three-brand-result.json
           if-no-files-found: error
           retention-days: 30
