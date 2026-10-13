@@ -2,6 +2,14 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA Android JS export 원본 기준선과 sourcemap 패키지 경계 관측
+
+- 유형: Security 진단·제한 구현. 저장소 `gycha0109-beep/K_beauty`, Draft/HOLD PR #1240; Production/Secret/DB/Auth/Payment/원본 lockfile 패키지 변경 없음.
+- 구현: `scripts/security/run-sca-mobile-baseline-observation.mjs` (명령별 명시적 PASS/FAIL 및 자원 상한, 로그·환경변수 본문 미출력), `scripts/security/report-sca-android-bundle-boundary.mjs` (source-map 경로만 검사), 기존 Supply Chain 진단 단계 안에 연결. Canonical audit는 별도 원래 단계 유지.
+- 정확한 검증 코드 HEAD `45db48626fdf110858c524f9fa271f422d3c4fd7`, [Supply Chain #38333569911](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333569911): `verify:mobile-foundation`, `mobile:typecheck`, Android JS export, source-map inventory PASS. Source map 1개/1,307 소스 항목에서 `braces`·`node-forge` 경로 각 0건. 공급망 policy mutation guard PASS; canonical audit는 만료된 `braces` 예외로 의도대로 FAIL. 동일 HEAD [Main Health #38333569865](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333569865), [PIE #38333570547](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333570547) PASS.
+- 시행착오: `always()` 조건이 보안 보호기를 차단하고 prebuild 전 native 검증을 실행한 첫 CI는 폐기. 조건부 단계 제거, native 별도 게이트로 보류, npm nested-script 소스맵 옵션 전달을 workspace 직접 실행으로 정정하여 canonical audit가 반드시 다시 실행됨을 검증.
+- 해석: Android JS export 소스맵 비관측은 APK/native/다른 구성의 부재, 공격자 도달 불가, 취약점 보수의 근거 아님. 정식 source-verified replacement·candidate lockfile·full/native Android·무예외 audit HIGH0 미확보; SCA-3 정식 보수~SCA-7 HOLD. Ledger 11절 및 후보 평가 10절에 증거 기록.
+
 ### 2026-10-13 / SEC-SCA 임시 수정 패치 chokidar 실제 watcher 및 Expo 인증서 부정경로 검증
 
 - 유형: 제한적 Security 진단/회귀 테스트 실행. #1240 Draft/HOLD, 실제 npm package/lockfile 변경 및 Production/DB/Auth/Secret/배포 구성 영향 없음.
