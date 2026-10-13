@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  isLatestFaceLabSaveRequest,
+  resolveFaceLabDeferredSaveStatus
+} from "../lib/face-lab-v2/persistence-state.js";
 
 const root = resolve(process.cwd());
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -402,10 +406,12 @@ assert.ok(
   "each server persistence request must claim latest-request authority before entering the serialized queue"
 );
 assert.ok(
-  premiumFaceLab.includes("const isLatestRequest = () =>") &&
-    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&
+  premiumFaceLab.includes("const latestPersistRequestSequenceRef = useRef(0)") &&
+    premiumFaceLab.includes("const requestSequence = ++latestPersistRequestSequenceRef.current") &&
+    premiumFaceLab.includes("const isLatestRequest = () => isLatestFaceLabSaveRequest({") &&
+    premiumFaceLab.includes("latestSequence: latestPersistRequestSequenceRef.current") &&
     premiumFaceLab.includes("if (!isLatestRequest())"),
-  "an older server acknowledgement must not overwrite newer in-memory user state even when local persistence failed"
+  "an older request with identical payload must not overwrite the newest in-memory state"
 );
 assert.ok(
   premiumFaceLab.includes('syncStatus: "synced"') &&
@@ -419,11 +425,12 @@ assert.ok(
   "a non-stale server acknowledgement must update the active route-selection state to the server-normalized survey/finder payload"
 );
 assert.ok(
-  premiumFaceLab.includes("const isLatestRequest = () =>") &&
-    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&
+  premiumFaceLab.includes("const isLatestRequest = () => isLatestFaceLabSaveRequest({") &&
+    premiumFaceLab.includes("latestFingerprint: latestPersistRequestFingerprintRef.current") &&
+    premiumFaceLab.includes("latestSequence: latestPersistRequestSequenceRef.current") &&
     premiumFaceLab.includes("if (!isLatestRequest())") &&
     premiumFaceLab.includes("activePersistenceStateRef.current = {"),
-  "server acknowledgement must only replace active persistence state after the latest-request fingerprint guard passes"
+  "server acknowledgement must only replace active state after latest sequence and fingerprint verification"
 );
 assert.equal(
   premiumFaceLab.includes("persistenceFingerprint(currentStored) !=="),
@@ -434,6 +441,68 @@ assert.equal(
   premiumFaceLab.includes("canonicalV2: stored.canonicalV2"),
   false,
   "refreshing the local fallback must not cache canonical output"
+);
+
+// P0 recovery behavior: storage denial never masquerades as a saved draft.
+assert.equal(resolveFaceLabDeferredSaveStatus({ localSaved: false }), "local_failed");
+assert.equal(resolveFaceLabDeferredSaveStatus({ localSaved: false, authRequired: true }), "local_failed");
+assert.equal(resolveFaceLabDeferredSaveStatus({ localSaved: true }), "pending");
+assert.equal(resolveFaceLabDeferredSaveStatus({ localSaved: true, authRequired: true }), "auth_required");
+assert.equal(resolveFaceLabDeferredSaveStatus({}), "local_failed");
+
+// Identical request content is not proof of freshness after A → B → A or retry.
+assert.equal(isLatestFaceLabSaveRequest({
+  requestFingerprint: "A", latestFingerprint: "A",
+  requestSequence: 1, latestSequence: 3
+}), false);
+assert.equal(isLatestFaceLabSaveRequest({
+  requestFingerprint: "A", latestFingerprint: "B",
+  requestSequence: 3, latestSequence: 3
+}), false);
+assert.equal(isLatestFaceLabSaveRequest({
+  requestFingerprint: "A", latestFingerprint: "A",
+  requestSequence: 3, latestSequence: 3
+}), true);
+assert.equal(isLatestFaceLabSaveRequest({
+  requestFingerprint: "A", latestFingerprint: "A",
+  requestSequence: 0, latestSequence: 0
+}), false);
+
+// Status displays and direct retry must use active approved canonical state.
+assert.ok(
+  premiumFaceLab.includes('saveLocalFailed: "이 기기와 서버에 변경사항을 저장하지 못했습니다.') &&
+    premiumFaceLab.includes('saveLocalFailed: "Changes could not be saved on this device') &&
+    premiumFaceLab.includes('data-face-lab-persistence-status={persistenceStatus}') &&
+    premiumFaceLab.includes('persistenceStatus === "local_failed"'),
+  "both locales must warn when the local backup actually failed"
+);
+assert.ok(
+  premiumFaceLab.includes('const locallySaved = writeLocalState(requestState') &&
+    premiumFaceLab.includes('localSaved: locallySaved') &&
+    premiumFaceLab.includes('localSaved: authCached') &&
+    premiumFaceLab.includes('localSaved: fallbackCached'),
+  "every deferred save outcome must check that the local fallback write succeeded"
+);
+assert.ok(
+  premiumFaceLab.includes('["pending", "auth_required", "local_failed"].includes(persistenceStatus)') &&
+    premiumFaceLab.includes('onClick={retrySave}') &&
+    premiumFaceLab.includes('data-face-lab-save-retry={persistenceStatus}') &&
+    premiumFaceLab.includes('committedRouteIdFromResult(canonical)'),
+  "retry must be exposed for unsynced results and retain the committed route"
+);
+const retryBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf("const retrySave = () =>"),
+  premiumFaceLab.indexOf("const choosePresentation = (value) =>")
+);
+assert.ok(
+  retryBlock.includes("activePersistenceStateRef.current") &&
+    retryBlock.includes("void persistServer("),
+  "retry must reuse the active, previously approved survey/finder authority"
+);
+assert.equal(
+  retryBlock.includes("buildSurveyAnswers()") || retryBlock.includes("buildFaceLabV2Canonical("),
+  false,
+  "retry must not fabricate new user approval or re-run canonical decisions"
 );
 
 assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
