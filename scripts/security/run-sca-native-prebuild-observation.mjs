@@ -58,6 +58,33 @@ function stage(label, cmd, args, timeoutMs) {
 }
 let stopReason = null;
 let generatedNativeShell = false;
+let apkEvidence = null;
+const changesSeen = new Set();
+const restoredSeen = new Set();
+const restoreErrors = new Set();
+// Explicitly restore package metadata before Gradle, since Expo prebuild
+// is known to rewrite apps/mobile/package.json even with --no-install.
+function restoreTrackedInputs() {
+  let success = true;
+  for (let index = 0; index < trackedPaths.length; index++) {
+    const file = trackedPaths[index];
+    if (before[index] === digest(file)) continue;
+    changesSeen.add(tracked[index]);
+    try {
+      assert.ok(fs.existsSync(file) && fs.statSync(file).isFile(),
+        "changed tracked input is missing or non-regular");
+      assert.ok(!fs.lstatSync(file).isSymbolicLink(),
+        "refuse restore through symlink");
+      fs.writeFileSync(file, beforeContents[index]);
+      assert.equal(digest(file), before[index], "restore verification failed");
+      restoredSeen.add(tracked[index]);
+    } catch {
+      restoreErrors.add(tracked[index]);
+      success = false;
+    }
+  }
+  return success;
+}
 try {
   assert.ok(fs.existsSync(path.join(mobile, "app.json")), "mobile config missing");
   if (androidExistedBefore) {
@@ -67,8 +94,33 @@ try {
       "npm", ["run", "mobile:prebuild:android"], 360000);
     if (prebuild.status === "PASS") {
       generatedNativeShell = true;
-      stage("nativeShellContract",
+      const shell = stage("nativeShellContract",
         "npm", ["run", "verify:mobile-native"], 60000);
+      if (shell.status !== "PASS") {
+        stopReason = "NATIVE_SHELL_CONTRACT_FAILED";
+      } else if (!restoreTrackedInputs()) {
+        stopReason = "TRACKED_INPUTS_NOT_RESTORED_BEFORE_GRADLE";
+      } else {
+        const gradle = stage("androidGradleDebug",
+          "npm", ["run", "mobile:build:android:debug"], 420000);
+        if (gradle.status === "PASS") {
+          const apk = path.join(android, "app", "build", "outputs", "apk", "debug", "app-debug.apk");
+          if (fs.existsSync(apk) && fs.statSync(apk).isFile() &&
+              !fs.lstatSync(apk).isSymbolicLink() && fs.statSync(apk).size > 100000) {
+            apkEvidence = {
+              observed: "DEBUG_APK_FILE_GENERATED",
+              bytes: fs.statSync(apk).size,
+              sha256: digest(apk),
+              caveat: "NO_DEVICE_SMOKE_OR_PATCHED_DEPENDENCY_ATTESTATION",
+            };
+          } else {
+            stopReason = "GRADLE_PASS_BUT_APK_MISSING_OR_INVALID";
+          }
+        } else {
+          stopReason = gradle.timedOut ?
+            "GRADLE_DEBUG_BUILD_TIMED_OUT" : "GRADLE_DEBUG_BUILD_FAILED";
+        }
+      }
     } else {
       stopReason = "ANDROID_PREBUILD_FAILED";
     }
@@ -81,31 +133,11 @@ try {
     errorType: e?.name || "Error",
   });
 } finally {
-  const after = trackedPaths.map(digest);
-  const changedFiles = tracked.filter((_, index) => before[index] !== after[index]);
-  // Expo prebuild may normalize workspace package.json even with --no-install.
-  // Restore exact original bytes on the disposable CI checkout before npm audit.
-  const restored = [];
-  const restorationErrors = [];
-  if (!androidExistedBefore) {
-    for (let index = 0; index < trackedPaths.length; index++) {
-      if (before[index] === after[index]) continue;
-      const file = trackedPaths[index];
-      try {
-        assert.ok(fs.existsSync(file) && fs.statSync(file).isFile(),
-          "changed tracked input is missing or non-regular");
-        assert.ok(!fs.lstatSync(file).isSymbolicLink(),
-          "refuse restore through symlink");
-        fs.writeFileSync(file, beforeContents[index]);
-        if (digest(file) !== before[index]) {
-          throw new Error("tracked input content not recovered");
-        }
-        restored.push(tracked[index]);
-      } catch {
-        restorationErrors.push(tracked[index]);
-      }
-    }
-  }
+  // Final idempotent restoration also covers any later Gradle metadata edits.
+  if (!androidExistedBefore) restoreTrackedInputs();
+  const changedFiles = [...changesSeen];
+  const restored = [...restoredSeen];
+  const restorationErrors = [...restoreErrors];
   const trackedInputsRestored = trackedPaths.every((file, index) =>
     digest(file) === before[index]);
   const nativeWasCreated = !fs.existsSync(android) ? false :
@@ -134,15 +166,15 @@ try {
     restorationErrors,
     trackedInputsRestored,
     cleanup,
-    nativeGradleBuild: "NOT_RUN",
-    apkArtifact: "NOT_CREATED",
+    nativeGradleBuild: checks.find((check) => check.label === "androidGradleDebug")?.status || "NOT_RUN",
+    apkArtifact: apkEvidence || "NOT_CREATED",
     candidatePatchedDependencyTested: false,
     canonicalAuditUnchanged: trackedInputsRestored,
     conclusion: stopReason === null && trackedInputsRestored &&
       cleanup === "REMOVED_GENERATED_NATIVE_DIRECTORY" &&
       checks.every((check) => check.status === "PASS") ?
-      (changedFiles.length ? "NATIVE_PREBUILD_PASS_WITH_RESTORED_INPUT_MUTATION" :
-        "NATIVE_PREBUILD_BASELINE_PASS") : "NATIVE_PREBUILD_BASELINE_INCOMPLETE",
+      (apkEvidence ? "NATIVE_DEBUG_APK_BASELINE_PASS" :
+        "NATIVE_PREBUILD_PASS_NO_APK") : "NATIVE_BUILD_BASELINE_INCOMPLETE",
   };
   console.log("SCA_NATIVE_PREBUILD_OBSERVATION=" + JSON.stringify(result));
   if (!trackedInputsRestored || restorationErrors.length > 0 ||
