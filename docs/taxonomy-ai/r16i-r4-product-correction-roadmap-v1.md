@@ -1,8 +1,8 @@
 # BEJEWELY / taxonomy-ai — R16I-R4 상품 정정 운영 완결 로드맵 v1
 
-> 수립: 2026-10-13 KST · 트랙: `taxonomy-ai` · 상태: **D8-A~D 구현/배포, 실제 Product/Offer 정정은 HOLD**  
-> 단일 진입점: `/admin/products/r16i-correction-review`  
-> 관련 이슈: [#1204](https://github.com/gycha0109-beep/K_beauty/issues/1204) (상품 정정), [#1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) (별도 security 공급망 차단)  
+> 수립: 2026-10-13 KST · 트랙: `taxonomy-ai` · 상태: **D8-A~D 구현/배포, 실제 Product/Offer 정정은 HOLD**
+> 단일 진입점: `/admin/products/r16i-correction-review`
+> 관련 이슈: [#1204](https://github.com/gycha0109-beep/K_beauty/issues/1204) (상품 정정), [#1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) (별도 security 공급망 차단)
 > Watchtower-Track: taxonomy-ai
 
 ## 0. 목적과 권한
@@ -29,7 +29,7 @@
 
 **2026-10-13 10:04 KST SELECT (연결된 Supabase 후보)**: Product **160ml / 29,900원**, R16I 캡처·정정안·결정·적용 이벤트 **0건**, 대상 Offer·Subject **0건**. `admin_r16i_correction_release_gate_v1.enabled=false`. D8D RPC는 `anon/authenticated EXECUTE=false`, `service_role=true`, apply=SECURITY INVOKER, rollback=SECURITY DEFINER. **실제 Production 상품 정정은 0건**.
 
-**확인된 드리프트:** 저장소 D8D migration 파일명은 `supabase/migrations/20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql`, 위 후보 DB 적용 이력은 `20261012181320 / taxonomy_ai_r16i_d8d_transactional_apply_v1`. 이력을 임의 수정하거나 동일 DDL을 재적용하지 않는다. 추가로 최신 main `5fac6c72a3aa3d60887cb63f76f8b772908c40cd`의 Database Integration Authority #38228827854는 실패, Main Health와 Security Boundary는 통과, Supply Chain Security #38228827799는 실패. 실패의 **정확한 원인과 이번 작업의 관련성은 로그를 새로 읽어 판정**한다. 보안 이슈 [#1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) 미해결.
+**확인된 드리프트:** 저장소 D8D migration 파일명은 `supabase/migrations/20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql`, 위 후보 DB 적용 이력은 `20261012181320 / taxonomy_ai_r16i_d8d_transactional_apply_v1`. 이력을 임의 수정하거나 동일 DDL을 재적용하지 않는다. 추가로 최신 main `5fac6c72a3aa3d60887cb63f76f8b772908c40cd`의 Database Integration Authority #38228827854는 실패, Main Health와 Security Boundary는 통과, Supply Chain Security #38228827799는 실패. 실패의 **정확한 원인과 이번 작업의 관련성은 로그를 새로 읽어 판정**한다. 보안 이슈 [#1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) 미해결.
 
 ## 2. 다음 개발 단계 — 순서 고정
 
@@ -116,6 +116,13 @@
 - `docs/evidence/v21-8h-r16i-r4-readonly-prestate-and-operator-gate-20261010.md`
 - `docs/evidence/r16i-r4-d8a-live-refresh-20261012.md` ~ `docs/evidence/r16i-r4-d8d-transactional-apply-20261012.md`
 - `lib/product-offer-read-path.js`, `lib/product-offer-r16i-r4-d4-db-reader.mjs`
-- `supabase/migrations/20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql` (현재 GitHub 경로; 적용 ledger 버전과 불일치 정합화 필요)
+- `supabase/migrations/20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql` (현재 GitHub 경로; 적용 ledger 버전과 불일치 정합화 필요)
 - `scripts/product-evidence/verify-barrier-support-p1-r16i-r4-d8d-transaction-apply-v1.mjs`
 - `.github/workflows/database-integration.yml`, `scripts/verify-data-ai3-5-ci-consolidation.mjs`
+
+## 6. D8D-R1 첫 실행 기록 (2026-10-13)
+
+- **완료한 저장소 수정**: Supabase 적용 ledger SQL과 원본 migration SQL 전체가 정확히 일치함을 확인하고 D8D migration 파일의 timestamp만 `20261012181320`으로 정렬. 기존 R16I static verifier 참조 동기화. DB ledger/DDL/상품 쓰기 없음.
+- **실패 원인 확정**: Database Integration Authority #38228827854는 기존 TRUST 파일과 D8D 파일의 `20261012190000` 버전 충돌로 실패. Supply Chain Security #38228827799는 #1208 예외 만료(독립 security track). 기존 Main Health #38331616991의 원인은 이 로드맵 첫머리의 trailing whitespace이며, 최신 main #38332070445는 PASS.
+- **아직 미완료**: 배포 Vercel runtime→Supabase DB identity 검증(HOLD, 환경변수 메타 조회 403), 현재 서버 APPLY flag 확인, PR CI 확인, D8E1 실제 기준 fixture 조사, D8E2 실런타임 1,968 결과. D8F 원본 캡처/승인 미확보. D8G/D8H 잠금 해제 금지.
+- 세부 증거: [D8D-R1 reconciliation](../evidence/r16i-r4-d8d-r1-ledger-reconciliation-20261013.md). 위 2026-10-13 초기 시점 표는 역사적 스냅샷이며, 실제 수정/배포 완료 판정은 이 새 기록과 최신 검증을 우선한다.
