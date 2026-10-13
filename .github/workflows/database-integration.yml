@@ -375,6 +375,12 @@ jobs:
           psql -v ON_ERROR_STOP=1 -c "drop database taxonomy_r16i_d8d with (force)"
           echo "R16I_D8D_ISOLATED_PG17_PASS"
 
+      - name: Verify R16I D8E1 164x12 real-engine structural shadow (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-r16i-r4-d8e1-structural-replay.mjs
+
       - name: Verify exact-head diff hygiene
         shell: bash
         run: git diff --check HEAD^
