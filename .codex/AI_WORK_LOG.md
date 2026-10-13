@@ -3153,3 +3153,8 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added dated read-only source fixture and true Skin Match runtime comparator for two non-checkout public-listed prices (35,000 ordinary, 24,500 member), structurally 166×12 each. No real checkout amount promoted to Product, Hwahae 29,900 remains set-only.
 - Existing DB Integration CI reused; outcome must be taken from actual PR jobs, not assumed.
 - Holds: deployed DB identity, owner verified screenshots, trusted direct CTA, #1208 Supply Chain Security. Product/Offer writes 0; release gate 0; PR merge HOLD.
+
+## 2026-10-13 — taxonomy-ai D8E2 offline production-admission negative control
+- Read-only RPC for two new sunscreen product IDs returned 42501 permission denied for function under connected integration credentials. No grant changes, retries with privileged identity, or claims about production actual admission.
+- D8E2 verification script extended to use genuine admission core with an explicit synthetic NO_CURRENT_SUBJECT reader (164 legacy admit, 12 nonlegacy reject), fail-closed infrastructure faults, and extra 164×12×2 real engine comparison. Total tested pair assertions will be 7,920 across both structural and conservative synthetic projections; CI evidence required.
+- All Product/Offer writes, schema, permissions, gate flags, owner approvals and deployment config unchanged; #1208 security red, PR merge HOLD.

@@ -23,3 +23,11 @@
 - Vercel alias k-beauty-two.vercel.app points to production deployment dpl_7VNeyxZNCRAjJrxsMSX6TAAYDJsh (READY at observation); alias/project metadata does not establish server DB identity.
 - Security #1208 remains open; do not bypass/extend expired advisory exception. Do not merge while Supply Chain Security is failing.
 - Product writes=0; Offer writes=0; release gate changes=0; owner approval=none.
+
+## Additional D8E2 negative controls — synthetic admission failure
+
+- An attempted read-only call to the candidate DB's real `read_recommendation_admission_authority_v1` for the two new sunscreen rows failed with PostgreSQL `42501 permission denied for function` using this integration's role. **Do not broaden grants, impersonate the production `recommendation_admission_runtime` role, or label either product admitted or rejected**. The actual runtime's authority result remains UNVERIFIED.
+- The existing production admission **core**, `admitRecommendationProductsWithDependencies`, can be used offline with an explicitly synthetic `NO_CURRENT_SUBJECT` PF reader. Negative-control expectations: 164 frozen legacy admitted, 12 nonlegacy rejected, reader called exactly 12 times; 10 null-category rows still excluded. An infrastructure read failure or missing reader must throw, not degrade to silent admission.
+- For each displayed-price hypothesis the original 166 structurally-projectable shadow (1,992 product-scenario comparisons) is retained, and another **164 ×12 = 1,968** score/rank comparisons are run after synthetic fail-closed admission. Combined across two price branches this is **7,920** scored comparisons, strictly **non-production and not admission proof**.
+- Official-source link fallback and untrusted Hwahae bundle Offer remain fail-closed. A clean CI outcome cannot replace the inaccessible production authority read or owner checkout screenshots.
+- Expected CI: existing Database Integration Authority; record exact run result rather than inferring PASS from authored assertions.

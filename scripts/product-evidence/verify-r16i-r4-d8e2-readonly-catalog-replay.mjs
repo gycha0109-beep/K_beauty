@@ -21,6 +21,14 @@ const { projectProductWithOfferAuthority } =
 const { resolveProductPurchaseLink } =
   await import("../../lib/product-purchase-link.js");
 
+const {
+  admitRecommendationProductsWithDependencies,
+  projectAdmittedRecommendationProducts,
+  RECOMMENDATION_CANDIDATE_ADMISSION_TYPE
+} = await import("../../lib/recommendation-candidate-admission-core.mjs");
+const { noRecommendationAdmissionAuthority } =
+  await import("../../lib/recommendation-admission-authority-contract.mjs");
+
 const snapshot = JSON.parse(readFileSync(
   "fixtures/recommendation-metadata/products-candidate-readonly-20261013.json", "utf8"
 ));
@@ -52,6 +60,48 @@ const newlyEligible = raw.filter(p => !frozenIds.has(p.id) && p.category != null
 assert.equal(newlyEligible.length, 2);
 assert(newlyEligible.every(p => p.category === "sunscreen"));
 assert.equal(raw.filter(p => p.category == null).length, 10);
+
+// Negative-control only: simulate *missing* PF authority for all 12 new IDs.
+// This is NOT an attestation of current Production grant/reject decisions.
+let simulatedAuthorityReads = 0;
+const conservativeAdmission = await admitRecommendationProductsWithDependencies(raw, {
+  reader: async () => {
+    simulatedAuthorityReads += 1;
+    return noRecommendationAdmissionAuthority("NO_CURRENT_SUBJECT");
+  }
+});
+assert.equal(conservativeAdmission.summary.enumeratedCount, 176);
+assert.equal(conservativeAdmission.summary.legacyAdmittedCount, 164);
+assert.equal(conservativeAdmission.summary.nonlegacyCheckedCount, 12);
+assert.equal(conservativeAdmission.summary.nonlegacyGrantedCount, 0);
+assert.equal(conservativeAdmission.summary.nonlegacyRejectedCount, 12);
+assert.equal(simulatedAuthorityReads, 12);
+assert.equal(conservativeAdmission.decisions.filter(d =>
+  d.admissionType === RECOMMENDATION_CANDIDATE_ADMISSION_TYPE.REJECTED
+).length, 12);
+const conservativeIds = new Set(conservativeAdmission.decisions.filter(d =>
+  d.admissionType !== RECOMMENDATION_CANDIDATE_ADMISSION_TYPE.REJECTED
+).map(d => d.product.id));
+assert.deepEqual([...conservativeIds].sort(), [...frozenIds].sort(),
+  "synthetically rejected nonlegacy must not leak into admitted set");
+const conservativeRaw = projectAdmittedRecommendationProducts(conservativeAdmission, p => p);
+assert.equal(conservativeRaw.length, 164);
+assert(conservativeRaw.every(p => frozenIds.has(p.id)));
+// Infrastructure failure must throw, never transform into a silent admit/skip.
+await assert.rejects(
+  () => admitRecommendationProductsWithDependencies(raw, {
+    reader: async () => noRecommendationAdmissionAuthority("PF_AUTHORITY_READ_FAILED")
+  }),
+  error => error?.code === "RECOMMENDATION_CANDIDATE_ADMISSION_INFRASTRUCTURE_FAILURE" &&
+    error?.reason === "PF_AUTHORITY_READ_FAILED",
+  "PF authority transport errors fail the entire source closed"
+);
+await assert.rejects(
+  () => admitRecommendationProductsWithDependencies(raw, {}),
+  error => error?.code === "RECOMMENDATION_CANDIDATE_ADMISSION_INFRASTRUCTURE_FAILURE" &&
+    error?.reason === "PF_AUTHORITY_READER_REQUIRED",
+  "missing PF reader does not silently authorize nonlegacy"
+);
 
 const before = raw.find(p => p.id === TARGET);
 assert(before);
@@ -87,6 +137,13 @@ function project(replacement) {
   return candidates;
 }
 const oldProducts = project(before);
+const conservativeBeforeProducts = conservativeRaw.map(p =>
+  buildRecommendationProductFromSource(p)
+);
+assert.equal(conservativeBeforeProducts.length, 164);
+assert(conservativeBeforeProducts.every(Boolean));
+
+
 const originalProjected = oldProducts.find(p => p.id === TARGET);
 assert(originalProjected);
 assert.equal(originalProjected.buy_link, HWAHAE);
@@ -176,7 +233,57 @@ for (const branch of branches) {
   assert.equal(changedTop1, 0);
   assert.equal(changedTop3, 0);
   assert.equal(changedCounts, 0);
+  // Real engine again under an explicit *synthetic* missing-authority fail-closed gate.
+  // For 164 legacy rows this is 1,968 more scored comparisons per branch,
+  // not a claim about currently deployed admission grants.
+  const conservativeAfterProducts = conservativeRaw.map(p =>
+    buildRecommendationProductFromSource(p.id === TARGET ? hypothetical : p)
+  );
+  assert.equal(conservativeAfterProducts.length, 164);
+  let conservativePairs = 0, conservativeScoreChanges = 0;
+  let conservativeRankChanges = 0, conservativeTop1Changes = 0;
+  let conservativeTop3Changes = 0, conservativeCandidateCountChanges = 0;
+  for (const scenario of scenarios.scenarios) {
+    const [a, b] = await Promise.all([
+      buildSkinMatchDecisionBundle(scenario.answers, {
+        products: conservativeBeforeProducts,
+        includeCandidateSourceDiagnostics: true, locale: "ko"
+      }),
+      buildSkinMatchDecisionBundle(scenario.answers, {
+        products: conservativeAfterProducts,
+        includeCandidateSourceDiagnostics: true, locale: "ko"
+      })
+    ]);
+    const x = a?.diagnostics?.candidateSource?.products;
+    const y = b?.diagnostics?.candidateSource?.products;
+    assert.equal(x?.length, 164);
+    assert.equal(y?.length, 164);
+    const oldIds = x.map(p => p.id), newIds = y.map(p => p.id);
+    conservativeRankChanges += JSON.stringify(oldIds) !== JSON.stringify(newIds) ? 1 : 0;
+    conservativeCandidateCountChanges += oldIds.length !== newIds.length ? 1 : 0;
+    conservativeTop1Changes += (a.topPick?.id ?? a.topPick?.product?.id ?? null) !==
+      (b.topPick?.id ?? b.topPick?.product?.id ?? null) ? 1 : 0;
+    conservativeTop3Changes += JSON.stringify(oldIds.slice(0, 3)) !==
+      JSON.stringify(newIds.slice(0, 3)) ? 1 : 0;
+    const byId = new Map(y.map(p => [p.id, [p.engine_score ?? null, p.score ?? null]]));
+    for (const item of x) {
+      conservativePairs += 1;
+      conservativeScoreChanges += JSON.stringify([
+        item.engine_score ?? null, item.score ?? null
+      ]) !== JSON.stringify(byId.get(item.id)) ? 1 : 0;
+    }
+  }
+  assert.equal(conservativePairs, 1968);
+  assert.equal(conservativeScoreChanges, 0);
+  assert.equal(conservativeRankChanges, 0);
+  assert.equal(conservativeTop1Changes, 0);
+  assert.equal(conservativeTop3Changes, 0);
+  assert.equal(conservativeCandidateCountChanges, 0);
   results.push({
+    conservativeFailClosedPairs: conservativePairs,
+    conservativeScoreChanges, conservativeRankChanges,
+    conservativeTop1Changes, conservativeTop3Changes,
+    conservativeCandidateCountChanges,
     branch: branch.name, exampleDisplayPriceKrw: branch.listingPrice,
     hypotheticalUnitPricePer10ml: hypothetical.unit_price_per_10ml,
     pairs, changedScores, changedRankings, changedTop1, changedTop3, changedCounts
@@ -189,6 +296,12 @@ console.log(JSON.stringify({
   structurallyProjectableRows: 166, nullCategoryRejectedRows: 10,
   newlyStructurallyProjectableRowsWithoutAdmissionEvidence: 2,
   actualProductionAdmittedCandidateCount: "UNVERIFIED",
+  negativeControl: "SYNTHETIC_NO_CURRENT_SUBJECT_FOR_ALL_NEW_PRODUCTS_NOT_LIVE_AUTHORITY",
+  syntheticAuthorityReads: simulatedAuthorityReads,
+  syntheticLegacyAdmitted: conservativeAdmission.summary.legacyAdmittedCount,
+  syntheticNonlegacyRejected: conservativeAdmission.summary.nonlegacyRejectedCount,
+  totalScoredComparisonPairsAcrossBothProjections: 7920,
+  actualAdmissionAuthorityRead: "DENIED_BY_CONNECTED_INTEGRATION_ROLE_42501_HOLD",
   comparisonScenarios: results,
   actualCheckoutPrice: "NOT_VERIFIED",
   offerCheckoutAndSellerSku: "HOLD",

@@ -95,6 +95,7 @@
 - 연결된 후보 DB: 기존 164 ID + 신규 12 ID = 176. 신규 10건 category null 배제, 신규 sunscreen 2건은 구조적 projector만 통과; 실제 추천 admission 권한은 미검증.
 - 공식몰 80ml 표기가 35,000원(일반)/24,500원(회원), 화해 80ml 두 개+세럼 세트 표기는 29,900원. 결제 확정 증빙이 없으므로 두 공식몰 표기가격은 격리 비교 **가정값**으로만 사용.
 - 176행 snapshot + 격리 실런타임 166×12×2 구조적 회귀 검증기를 기존 Database Integration Authority에 연결. 176건 운영 추천 승인을 의미하지 않으며 D8E2 완료조건, D8F/G/H는 HOLD.
+- 신규 추천 권한 RPC를 후보 DB에서 read-only 조회한 결과 이 통합 역할에 PostgreSQL 42501(EXECUTE 권한 없음). 운영 사용자 권한을 우회하지 않으며 신규 2개 상품의 승인 상태는 미검증. 격리 테스트에서는 실제 admission core + 합성 NO_CURRENT_SUBJECT로 신규 12개 FAIL-CLOSED, 별도 164×12×2 회귀를 추가해 총 7,920건 비교하도록 구성(최종 CI 결과 별도 확인).
 - 배포 DB identity 미입증, 공식 구매 링크 direct allowlist 미승인, #1208 security 차단. 근거: [D8E2 read-only candidate snapshot](../evidence/r16i-r4-d8e2-live-snapshot-listing-scenarios-20261013.md).
 
 ## 3. 우선순위와 차단 조건
