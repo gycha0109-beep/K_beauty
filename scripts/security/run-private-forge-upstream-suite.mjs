@@ -52,6 +52,28 @@ try{
  const unitDir=path.join(checkout,"tests/unit");
  const cases=fs.readdirSync(unitDir).filter(name=>name.endsWith(".js")&&name!=="index.js").sort();
  assert.ok(cases.length>=20,"upstream unit test inventory unexpectedly small");
+ // The verified upstream SHA contains describe.only('jsbn'), so a naïve
+ // mocha run reports five passing tests and skips the entire RSA suite.
+ // Alter ONLY the disposable test harness source, NOT the reviewed library.
+ const focusFile=path.join(unitDir,"jsbn.js");
+ const focusMarker="describe.only('jsbn', function() {";
+ const sourceBeforeFocus=fs.readFileSync(focusFile,"utf8");
+ assert.equal(sourceBeforeFocus.split(focusMarker).length-1,1,
+   "unreviewed upstream focus marker count or source drift");
+ const sourceAfterFocus=sourceBeforeFocus.replace(focusMarker,
+   "describe('jsbn', function() {");
+ fs.writeFileSync(focusFile,sourceAfterFocus);
+ const focusRemoval={path:"tests/unit/jsbn.js",
+   focusedBefore:true,focusedAfter:false,
+   originalSha256:sha256(Buffer.from(sourceBeforeFocus,"utf8")),
+   harnessSha256:sha256(Buffer.from(sourceAfterFocus,"utf8")),
+   reason:"upstream describe.only silenced all but five non-RSA tests"};
+ const focusLeft=[];
+ for(const testName of cases.concat(["index.js"])){
+   const data=fs.readFileSync(path.join(unitDir,testName),"utf8");
+   if(/\\b(?:describe|it)\\.only\\s*\\(/.test(data))focusLeft.push(testName);
+ }
+ assert.deepEqual(focusLeft,[],"additional focused tests still mask full suite");
  // Mocha 5 may accept only the final positional test filename; passing
  // all 27 files individually can silently execute just tests/security.js.
  // The upstream canonical entrypoint explicitly requires every unit file
@@ -74,6 +96,7 @@ try{
  const actualFiles=[...new Set(executed.map(t=>t.file||"UNKNOWN"))].sort();
  console.log("SCA_B2_UPSTREAM_SUITE_COUNT="+JSON.stringify({
    testsPassed:passed,unitTestFiles:cases.length,
+   focusedUpstreamTestHarnessRemoval:focusRemoval,
    executedTestFiles:actualFiles,executedSamples:executed.slice(0,12).map(t=>t.fullTitle),
    testStats:json.stats,
  }));
@@ -87,6 +110,7 @@ try{
   state:"PASS_FULL_UPSTREAM_NODE_UNIT_SUITE_AGAINST_B2_CANDIDATE",
   upstreamTestCommit:SHA,patchedRsaBlobSha1:source.patchedRsaBlobSha1,
   mochaVersion:"5.2.0",testsPassed:passed,
+  focusedUpstreamTestHarnessRemoval:focusRemoval,
   patchedLibOnly:true,originalLockUnmodified:true,
   browserDistNotAttested:true,packageReleaseNotApproved:true
  }));
