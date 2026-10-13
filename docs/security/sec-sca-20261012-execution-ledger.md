@@ -214,3 +214,23 @@ SCA-2 출처 보유 코드 변경의 **제한된 개별 동작 실험은 완료*
 **원본 Expo Android native prebuild·네이티브 셸·추적 파일 복원은 PASS.** 디버그 APK assembleDebug는 제한 시간 내 **미완료**, 실기기 설치·화면/카메라 smoke 미수행. 또한 **원본 잠금 그래프의 두 취약 코드가 그대로 존재**하므로 검증된 *패치 후보*의 prebuild/native/Android 호환성이나 `npm audit` HIGH=0 수락과 무관하다.
 
 **SCA-3 정식 패치 후보 lockfile·공급망 artifact provenance·Android APK 및 실기기·무예외 전체/production audit는 HOLD. SCA-4~7 미착수.** Security PR #1240은 Draft, 이슈 #1208 OPEN 유지.
+
+## 13. SCA-3 네이티브 prebuild 전체 Git 추적 파일 무결성 보강 (2026-10-13)
+
+**검증 코드 HEAD:** `6903130d1c054ae27220d98df0873ba20bd3275f`. [Security CI #38339766608](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339766608), [Main Health #38339766567](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339766567), [PIE #38339767122](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339767122).
+
+### 추가 구현과 테스트
+
+- `scripts/security/sca-native-tracked-integrity.mjs`: Git `diff --no-ext-diff --no-textconv --name-only -z HEAD --`로 **전체 추적 파일의 변경된 상대경로만** 기록한다. Git 출력을 원문 로그로 노출하지 않고 반환코드·실행시간·버퍼 상한을 검증한다.
+- `scripts/security/verify-sca-native-tracked-integrity.mjs`: OS 임시 폴더에만 자체 Git 저장소를 만들어 baseline, 파일 수정, 원본 복원, 추적 범위 밖 임의 파일 변경, 추적 파일 삭제, 생성 파일 무시 등 여섯 가지 합성 경계를 검증. 실제 CI `SCA_NATIVE_TRACKED_INTEGRITY_TEST=PASS cases=6 disposable-only`.
+- `run-sca-native-prebuild-observation.mjs`: 시작 시 원본 tracked worktree가 이미 더러우면 prebuild 거부. 기존 5개 설정 파일 바이트 해시 복원 외에 **전체 Git 추적 파일 diff가 0건인지** 추가 확인. 기록된 예기치 않은 변경, Git 비교 실패, 파일 복원 실패 또는 생성 native 디렉터리 정리 실패는 완료 상태를 거부하며 실패 종료. 추적되지 않은 생성 파일의 무결성은 별도 `android/` 정리 절차만 검증하므로 전체 파일시스템 안전 증명은 아니다.
+
+### 실제 정확 HEAD 관찰
+
+- `SCA_NATIVE_TRACKED_INTEGRITY_TEST=PASS cases=6`, `SCA_NATIVE_PREBUILD_OBSERVATION`: Expo 57 `androidPrebuild=PASS`, `nativeShellContract=PASS`; `apps/mobile/package.json`의 임시 변경 감지→원본 바이트 복원 PASS, `changedTrackedRepositoryFiles=[]`, `gitTrackedCheckPassed=true`, `trackedInputsRestored=true`, `cleanup=REMOVED_GENERATED_NATIVE_DIRECTORY`.
+- 원본 모바일 기초·TypeScript·Android JS export·sourcemap inventory 및 기존 패치 복사본 테스트는 PASS. Main Health PASS, PIE PASS, CodeQL 개별 검사 PASS. **Canonical npm audit FAIL 유지:** 만료된 `braces` `GHSA-vfj7-8cjw-p6xm` 예외가 원인; 정책 변형 검사 PASS(9건).
+- 지난 Gradle 420초 `ETIMEDOUT` 결과는 유효하며, 이 실행은 기존 opt-in 규칙대로 Gradle을 실행하지 않았다. **APK/실기기 PASS 주장 금지**.
+
+### 단계 판정
+
+원본 잠금 파일에 설치된 취약 패키지를 바꾸지 않고, SCA-3의 **네이티브 prebuild 작업공간 오염 감지·복원 방어를 보강**했다. `braces`/ `node-forge` 공식 패치 출처 및 승인된 후보 lockfile, raw full/prod audit HIGH=0, 실제 APK 및 patched Expo/Android 검증은 여전히 미충족. **Security PR #1240 Draft/HOLD, Issue #1208 OPEN; SCA-3 정식 패치 및 SCA-4~7 HOLD.**
