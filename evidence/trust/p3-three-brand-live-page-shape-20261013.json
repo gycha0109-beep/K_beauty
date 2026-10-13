@@ -1,0 +1,86 @@
+{
+  "contract": "trust-p3-three-brand-live-page-shape-observed-v1",
+  "observedAt": "2026-10-13",
+  "source": {
+    "mainSha": "e859a9a25736e59dccdfaf42380dae6f11fc4d63",
+    "workflowRunId": 38341012942,
+    "jobId": 115111762971,
+    "artifactId": 11786831368,
+    "artifactName": "trust-p3-three-brand-results",
+    "sourceKind": "exact-main-github-actions-live-read-only"
+  },
+  "summary": {
+    "processed": 3,
+    "eligibleCandidatePages": 0,
+    "observedSpfCandidates": 0,
+    "observedPaCandidates": 0,
+    "identityUnresolved": 2,
+    "sourceBlocked": 1,
+    "dbWrites": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "aiApiCalls": 0
+  },
+  "items": [
+    {
+      "brand": "토리든",
+      "productId": "57e4a5ec-115d-4322-85a1-7976db669700",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "gate": "IDENTITY_REVIEW_REQUIRED",
+      "shape": {
+        "htmlBytes": 176228,
+        "charset": "utf-8",
+        "titlePresent": true,
+        "titleMatch": false,
+        "ogTitlePresent": true,
+        "ogTitleMatch": false,
+        "jsonLdProductCount": 0,
+        "matchedJsonLd": false,
+        "h1Count": 1,
+        "rawMarkupNameMention": false,
+        "visibleTextNameMention": false,
+        "scriptNameMention": false,
+        "challengeTitle": false
+      }
+    },
+    {
+      "brand": "뷰티오브조선",
+      "productId": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "status": "SOURCE_FETCH_HOLD",
+      "failure": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "에스트라",
+      "productId": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "gate": "IDENTITY_REVIEW_REQUIRED",
+      "shape": {
+        "htmlBytes": 369540,
+        "charset": "utf-8",
+        "titlePresent": true,
+        "titleMatch": false,
+        "ogTitlePresent": true,
+        "ogTitleMatch": false,
+        "jsonLdProductCount": 0,
+        "matchedJsonLd": false,
+        "h1Count": 3,
+        "rawMarkupNameMention": false,
+        "visibleTextNameMention": false,
+        "scriptNameMention": false,
+        "challengeTitle": false
+      }
+    }
+  ],
+  "interpretation": {
+    "productIdentityAbsenceNotProofOfWrongProduct": true,
+    "officialSourceHistoricalBindingDoesNotVerifyCurrentPage": true,
+    "encodingMismatchObserved": false,
+    "scriptOnlyIdentityObserved": false,
+    "exactSkuMarketFormulationVerified": 0,
+    "nextGate": "Read-only source locator revalidation with independent product presentation / market / formulation evidence, then measure P3 extraction again",
+    "automatedSourceBinding": false,
+    "automatedSubjectCreation": false,
+    "automatedFactConfirmation": false
+  }
+}
