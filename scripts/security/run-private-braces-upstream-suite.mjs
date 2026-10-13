@@ -35,8 +35,18 @@ try{
  for(const basename of libPaths) {
    const src=path.join(candidate,"lib",basename);
    const upstream=path.join(repo,"lib",basename);
-   assert.equal(hash(fs.readFileSync(src)),hash(fs.readFileSync(upstream)),
-     "patched source differs from exact reviewed upstream library: "+basename);
+   const candidateSource=fs.readFileSync(src,"utf8");
+   const upstreamSource=fs.readFileSync(upstream,"utf8");
+   if(candidateSource!==upstreamSource){
+     const a=candidateSource.split("\n"),z=upstreamSource.split("\n");
+     let first=0;
+     while(first<Math.min(a.length,z.length)&&a[first]===z[first])first++;
+     throw new Error("reviewed upstream file mismatch "+basename+
+       " candidateLines="+a.length+" upstreamLines="+z.length+
+       " firstDifferentLine="+(first+1)+
+       " candidate="+JSON.stringify(a[first]?.slice(0,160))+
+       " upstream="+JSON.stringify(z[first]?.slice(0,160)));
+   }
  }
  // Run full upstream tests against actual B1 original-install + patch bytes.
  fs.rmSync(path.join(repo,"lib"),{recursive:true,force:true});
