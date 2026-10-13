@@ -134,6 +134,9 @@ function verifyGlobConsumers() {
 
   copyPackage("fast-glob", "3.3.3");
   linkOtherDependencies("fast-glob");
+  // npm ci nests glob-parent@5 within fast-glob, while is-glob is hoisted.
+  // The copied nested consumer must see that original hoisted dependency.
+  linkInstalled("is-glob");
   expectLocalRequire("micromatch", "fast-glob");
   const scratch = path.join(tmp, "glob-fixtures");
   fs.mkdirSync(path.join(scratch, "src"), { recursive: true });
