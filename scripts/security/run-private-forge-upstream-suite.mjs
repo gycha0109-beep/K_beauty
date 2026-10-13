@@ -71,7 +71,7 @@ try{
  const focusLeft=[];
  for(const testName of cases.concat(["index.js"])){
    const data=fs.readFileSync(path.join(unitDir,testName),"utf8");
-   if(/\\b(?:describe|it)\\.only\\s*\\(/.test(data))focusLeft.push(testName);
+   if(data.includes("describe.only(")||data.includes("it.only("))focusLeft.push(testName);
  }
  assert.deepEqual(focusLeft,[],"additional focused tests still mask full suite");
  // Mocha 5 may accept only the final positional test filename; passing
