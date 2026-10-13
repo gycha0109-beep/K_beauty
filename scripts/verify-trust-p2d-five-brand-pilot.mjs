@@ -41,6 +41,23 @@ function assessed(siteStatus,pages){
 assert.equal(assessed("ROBOTS_UNAVAILABLE",[]).state,"SOURCE_POLICY_HOLD");
 assert.equal(assessed("ROBOTS_DISALLOWED",[]).state,"SOURCE_POLICY_HOLD");
 assert.equal(assessed("NO_SAFE_CANDIDATE",[]).state,"NO_PRODUCT_PAGE");
+// The live diagnostic path preserves only locator/status/title/digest; no raw pages.
+const diagnosticMock={
+  fetchRobots:async()=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n")}),
+  fetchSitemap:async url=>({bytes:Buffer.from(url.endsWith("sitemap.xml")?
+    '<urlset><url><loc>https://neopharmshop.co.kr/product/mle-%EB%A1%9C%EC%85%98/3000</loc></url></urlset>':
+    "<urlset></urlset>"),finalUrl:url}),
+  fetchPage:async url=>({bytes:Buffer.from("<title>MLE 로션 - 아토팜</title>"),finalUrl:url}),
+};
+const diagnosticCohort=structuredClone(cohort);
+diagnosticCohort.targets[0].officialPeerUrl="https://neopharmshop.co.kr/product/peer/2166";
+// The other 4 domains are intentionally not contacted in this deterministic fixture.
+const mock=await runTrustP2DFiveBrandPilot({execute:true,cohort,fetchers:diagnosticMock});
+assert.equal(mock.items.length,5);
+assert.equal(mock.items[0].assessment.sourceDiagnostics.length,1);
+assert.ok(Array.isArray(mock.items[0].assessment.sourceDiagnostics[0].pages));
+assert.equal(JSON.stringify(mock).includes("<title>"),false);
+assert.equal(mock.summary.dbWrites,0);
 assert.equal(assessed("CANDIDATES_DISCOVERED",[page("SCOPED_HEADING_CANDIDATE")]).state,
  "IDENTITY_CANDIDATE_REVIEW_REQUIRED");
 assert.equal(assessed("CANDIDATES_DISCOVERED",[page("BODY_NAME_MENTION_ONLY")]).state,
