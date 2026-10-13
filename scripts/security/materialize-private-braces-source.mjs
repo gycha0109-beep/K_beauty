@@ -111,7 +111,21 @@ export function materializePrivateBracesSource(destination) {
     quoteSpec.expectedOriginalOccurrences,"unreviewed braces source quote anchor");
   assert.equal(sourceBeforeQuote.split(quoteSpec.after).length-1,0,
     "braces quote delta already applied");
-  const parseAfterQuote=sourceBeforeQuote.replace(quoteSpec.before,quoteSpec.after);
+  let parseAfterQuote=sourceBeforeQuote.replace(quoteSpec.before,quoteSpec.after);
+  assert.ok(Array.isArray(quoteSpec.additionalReviewedCompatibilityHunks),
+    "missing reviewed extra upstream compatibility patch list");
+  assert.equal(quoteSpec.additionalReviewedCompatibilityHunks.length,1,
+    "unexpected number of B1 parser compatibility patches");
+  for (const hunk of quoteSpec.additionalReviewedCompatibilityHunks) {
+    assert.ok(typeof hunk.before==="string" && typeof hunk.after==="string",
+      "invalid extra compatibility hunk");
+    assert.equal(parseAfterQuote.split(hunk.before).length-1,
+      hunk.expectedOriginalOccurrences,
+      "B1 parser compatibility hunk anchor drift");
+    assert.equal(parseAfterQuote.split(hunk.after).length-1,0,
+      "B1 compatibility hunk already present");
+    parseAfterQuote=parseAfterQuote.replace(hunk.before,hunk.after);
+  }
   const parsedBlob=blob(Buffer.from(parseAfterQuote,"utf8"));
   assert.equal(parsedBlob,quoteSpec.reviewedUpstreamParseJsGitBlobSha1,
     "final braces parser differs from independently pinned upstream PR head");
