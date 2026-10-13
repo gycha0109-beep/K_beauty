@@ -52,3 +52,12 @@ Aestura official pages stopped scanning at the original 2,048-character tag limi
 The change touches **only the diagnostic** and its deterministic tests; no source, SKU, Subject, Fact, recommendation or existing P3 review candidate logic is modified. Tests inject fake HTML inside huge quoted attributes and check no secret/HTML/option text leaks, that normal subsequent tags are counted, that long selected options are never inferred as selected, and that both length/count limits terminate safely.
 
 A real robots-gated fixed six-locator run is needed before claiming Aestura template visibility improved; even a structurally complete result does not establish official variant selection or a unique primary product root.
+
+
+## PR-A.2 measured limitation and bounded 512 KiB follow-up
+
+Live [workflow #38354149646](https://github.com/gycha0109-beep/K_beauty/actions/runs/38354149646) on merged PR #1275 (`049a4970b6fc7df170b74c5e8f64ae2da046450e`, artifact `11792306105`) again fetched 4/6 and blocked 2/6, with 0 P3 candidate approvals. **Aestura international** recovered after skipping one oversized tag: `main=1`, `productDataAttribute=1`, `h1WithinMarkedRoot=1`, **selected variants not observed**. This is a *structural lead*, not proof of the displayed product title/variant. **Aestura KR** still hit `TAG_SCAN_LIMIT_REACHED` at a markup tag extending beyond the 128 KiB quote-aware bound. Both Torriden pages remained structurally complete (`main=0`, several goods/item-detail markers), no unique root confirmed.
+
+Because full official page responses are capped at 2 MiB, the follow-up raises the bounded quote-aware **skip-only** tag scan ceiling from 128 to 512 KiB, retaining the same 2 KiB attribute-inspection cutoff, 128 skipped-tag maximum and read-only/no-authority contract. A larger quoted attribute never supplies a product name, option selection or root marker. A 600 KiB long tag must still terminate with `TAG_SCAN_LIMIT_REACHED` and `countsComplete=false`. Re-measure KR to see whether a complete structural diagnostic can be established; do not assume it will pass.
+
+When the template shape is incomplete, its zero counts remain **unknown rather than absent**. Current recommendation, Fact and Subject authority are unchanged.
