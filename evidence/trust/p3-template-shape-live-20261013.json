@@ -1,0 +1,130 @@
+{
+  "contract": "trust-p3-template-shape-live-acceptance-v1",
+  "observedAt": "2026-10-13",
+  "provenance": {
+    "mainSha": "e14cef3c9e570bc8ef8f5e30896701eef6336495",
+    "mergedPr": 1273,
+    "workflowRunId": 38351753272,
+    "jobId": 115145490366,
+    "artifactId": 11790653317,
+    "artifactName": "trust-p3-locator-revalidation"
+  },
+  "scope": {
+    "governedProducts": 3,
+    "officialLocatorUrls": 6,
+    "origins": 4,
+    "htmlFetched": 4,
+    "sourceFetchHold": 2,
+    "robotsBypass": 0
+  },
+  "measurements": {
+    "outcomes": {
+      "IDENTITY_OR_VARIANT_REVIEW_REQUIRED": 4,
+      "SOURCE_FETCH_HOLD": 2
+    },
+    "actualP3ReviewCandidates": 0,
+    "verifiedExactSku": 0,
+    "verifiedMarket": 0,
+    "verifiedFormulation": 0,
+    "newSourceBindings": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0
+  },
+  "sourceShapes": [
+    {
+      "brand": "토리든",
+      "role": "EXISTING_BOUND_SOURCE",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "identity": "IDENTITY_UNRESOLVED",
+      "sourceDigest": "857b1a5503da5bd49df9f2dc3a97dd65e0aa8cc29e8a1bc480adc78a3b027f3d",
+      "scanStatus": "COMPLETE",
+      "mainCount": 0,
+      "forms": 2,
+      "productRootCandidates": 5,
+      "rootMarkers": {
+        "goodsDetail": 2,
+        "itemDetail": 3
+      },
+      "h1Count": 1,
+      "scopedNameClass": 1,
+      "variantControls": {
+        "select": 1,
+        "option": 5,
+        "explicitSelectedOption": 0
+      },
+      "decision": "PRIMARY_ROOT_NOT_PROVEN"
+    },
+    {
+      "brand": "토리든",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "identity": "BODY_NAME_MENTION_ONLY",
+      "sourceDigest": "bf5b68eddbf12e33d93f0ed735229bcb43edb35f298da8322666d998f58eb4c4",
+      "scanStatus": "COMPLETE",
+      "mainCount": 0,
+      "forms": 2,
+      "productRootCandidates": 5,
+      "rootMarkers": {
+        "goodsDetail": 2,
+        "itemDetail": 3
+      },
+      "h1Count": 1,
+      "scopedNameClass": 1,
+      "variantControls": {
+        "select": 1,
+        "option": 5,
+        "explicitSelectedOption": 0
+      },
+      "decision": "PRODUCT_NAME_CLASS_IS_DIAGNOSTIC_ONLY"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "EXISTING_BOUND_SOURCE",
+      "status": "SOURCE_FETCH_HOLD",
+      "failure": "SOURCE_BLOCKED",
+      "decision": "NO_HTML_POLICY_RESPECTED"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "status": "SOURCE_FETCH_HOLD",
+      "failure": "SOURCE_BLOCKED",
+      "decision": "NO_HTML_POLICY_RESPECTED"
+    },
+    {
+      "brand": "에스트라",
+      "role": "EXISTING_BOUND_SOURCE",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "identity": "IDENTITY_UNRESOLVED",
+      "sourceDigest": "876fb5109b6fb59266dd2b2404b05c18632a00dfe856d34558a439b8e75e19f1",
+      "scanStatus": "MALFORMED_OR_OVERSIZED_TAG",
+      "scannedTagsBeforeStop": 488,
+      "mainCountBeforeStop": 0,
+      "decision": "INCOMPLETE_SHAPE_DO_NOT_INFER_ROOT_ABSENCE"
+    },
+    {
+      "brand": "에스트라",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "status": "VARIANT_REVIEW_REQUIRED",
+      "identity": "STRUCTURED_NAME_CANDIDATE",
+      "sourceDigest": "6c9243d631265f7c37b6c79361a951d0302bdf187b8e67a9138640cd4c6a3a42",
+      "scanStatus": "MALFORMED_OR_OVERSIZED_TAG",
+      "scannedTagsBeforeStop": 1002,
+      "mainCountBeforeStop": 1,
+      "decision": "INCOMPLETE_SHAPE_DO_NOT_INFER_VARIANT_CONTROL_ABSENCE"
+    }
+  ],
+  "interpretation": {
+    "torriden": "Two fetched pages exhibit the same bounded count distribution for some goods/item-detail markers but uniqueness and primary-product attribution remain unproven; no product-specific exception.",
+    "aestura": "Both scanned pages terminated early at malformed-or-oversized tag and zero counts for later controls cannot be taken as confirmed absence. Safely diagnose scanner limit before PR-B template attribution.",
+    "beautyOfJoseon": "Both pages still source blocked; crawler does not bypass robots/access policy.",
+    "validatedTemplateFamilies": 0,
+    "authority": "SHAPE_COUNTS_ARE_DIAGNOSTIC_NOT_IDENTITY_OR_SKU_PROOF",
+    "nextGate": "Bounded oversize-tag provenance and safe partial diagnostic recovery, then cross-product scoped primary root test."
+  },
+  "readOnly": true,
+  "automaticPromotionAuthorized": false
+}
