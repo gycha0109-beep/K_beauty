@@ -126,3 +126,10 @@
 - **실패 원인 확정**: Database Integration Authority #38228827854는 기존 TRUST 파일과 D8D 파일의 `20261012190000` 버전 충돌로 실패. Supply Chain Security #38228827799는 #1208 예외 만료(독립 security track). 기존 Main Health #38331616991의 원인은 이 로드맵 첫머리의 trailing whitespace이며, 최신 main #38332070445는 PASS.
 - **아직 미완료**: 배포 Vercel runtime→Supabase DB identity 검증(HOLD, 환경변수 메타 조회 403), 현재 서버 APPLY flag 확인, PR CI 확인, D8E1 실제 기준 fixture 조사, D8E2 실런타임 1,968 결과. D8F 원본 캡처/승인 미확보. D8G/D8H 잠금 해제 금지.
 - 세부 증거: [D8D-R1 reconciliation](../evidence/r16i-r4-d8d-r1-ledger-reconciliation-20261013.md). 위 2026-10-13 초기 시점 표는 역사적 스냅샷이며, 실제 수정/배포 완료 판정은 이 새 기록과 최신 검증을 우선한다.
+
+### D8E1 구조적 Shadow 검증 결과 (2026-10-13)
+
+- `fixtures/recommendation-metadata/products-v1.json`(164)과 `user-scenarios-v1.json`(12)을 이용해 실제 `buildSkinMatchDecisionBundle` 1,968쌍 전후 비교 **PASS**. 점수, 순서, Top1/Top3, 후보 개수 변화 모두 0. [검증 실행 #38333704396](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333704396).
+- 단순 구조 격리 목적으로 **과거 가격을 고정**했으므로, 확인되지 않은 실가격 기반 D8E2 통과로 확대 해석하지 않는다. 후보 운영 DB는 176행이며 최신 전체 2,112쌍 검증은 별도 작업.
+- 현재 공식몰 에스네이처 구매 URL은 직접링크 허용 정책에 등록되지 않아 fallback되고, 분리 예정 화해 Offer는 trusted read-path에 노출되지 않는다. D8G 실구매 CTA는 HOLD. No implicit trust promotion.
+- D8D-R1 migration/code 테스트는 PASS지만 Production runtime DB identity 확인(403), #1208 security, 판매 옵션·가격·세럼 SKU·리뷰 귀속 및 소유자 승인이 차단 조건. D8F 실증 수집 관련 항목 HOLD, D8G/D8H 실제 운영 반영 금지.
