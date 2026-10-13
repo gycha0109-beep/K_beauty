@@ -1,6 +1,6 @@
 # SEC-SCA-2 — Upstream 패치 후보 검토 (2026-10-12)
 
-> 상태: **HOLD — 공식 패치 릴리스 없음 / 코드 검토만 수행.**
+> 상태: **HOLD — 공식 패치 릴리스 없음 / 임시 복사본 동작 및 제한적 실제 소비자 스모크 검증 완료, 정식 배포·Android 미검증.**
 > Watchtower-Track: security · Issue [#1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) · Security Draft PR [#1240](https://github.com/gycha0109-beep/K_beauty/pull/1240).
 >
 > [전체 로드맵](sec-sca-20261012-remediation-roadmap.md) · [상세 설계](sec-sca-20261012-remediation-technical-design.md) · [실행 Ledger](sec-sca-20261012-execution-ledger.md)
@@ -72,7 +72,8 @@
 | BEJEWELY lockfile 전체 영향 검증 | NOT_RUN | NOT_RUN |
 | 격리 지정 fixture 동작 회귀 | **PASS** (정상 RSA·오류 메시지·ASN.1 추가 요소) | **PASS** (정상 glob·중첩 파서·AST compile·maxDepth) |
 | Upstream 전체 단위 테스트/배포 통합 테스트 | NOT_RUN | NOT_RUN |
-| Expo 57/Metro/Android 호환성 | NOT_RUN | NOT_RUN |
+| Expo 57 코드서명·micromatch/fast-glob·Metro 파일맵 및 chokidar 제한적 스모크 | PASS (Expo 코드서명 경로) | PASS (glob/파일맵 3개 및 chokidar 로딩·패치 경로) |
+| Android 전체 번들·실기기/네이티브 및 end-to-end watcher 이벤트 | NOT_RUN | NOT_RUN |
 | 설치 artifact와 앱 패키지에 동일 취약 코드 부재 | NOT_RUN | NOT_RUN |
 | npm audit full+production HIGH 0 | FAIL (현 상태) | FAIL (현 상태) |
 | 최종 조건 | **HOLD** | **HOLD** |
@@ -108,3 +109,15 @@
 4. 이후에만 만료 예외 제거 및 무예외 fail-closed 감사 v2/변형 검사 동시 전환. 그 전까지 **#1240 Draft/HOLD, #1208 OPEN**.
 
 **주의:** 이 실험 PASS는 공식 CVE 해결·운영 패치·감사 PASS가 아니며, override/alias/advisory 은폐 또는 만료일 연장은 불허한다.
+
+## 8. SCA-3 사전 통합 및 reviewed patch byte-pin
+
+코드 기준 SHA `85bceaa09e788e6d507fba8e27380bc0ae18134a`; [Supply Chain CI #38330955980](https://github.com/gycha0109-beep/K_beauty/actions/runs/38330955980). 두 upstream 수정본은 **실제 원본 잠금 파일에 설치하지 않고 임시 디렉터리에만 적용**했다.
+
+- Expo `@expo/code-signing-certificates@0.0.6`: 임시 node-forge 수정본을 require하도록 구성한 뒤 테스트용 self-signed 인증서 생성 → PEM 왕복 → 인증서/키 검증 → manifest SHA-256 서명을 수행.
+- `micromatch@4.0.8`: 정상 glob·exclude/negation·brace expansion 비교; `fast-glob@3.3.3`: 샘플 파일을 대상으로 정상/부정 glob 비교.
+- `@expo/metro-file-map@57.0.3`, `metro-file-map@0.84.5`, `metro-config/node_modules/metro-file-map@0.84.6`: 실제 설치된 파일맵 watcher helper 모듈을 임시 복사하고 patched `micromatch`를 사용하도록 resolve한 뒤 로딩 검증.
+- `chokidar@3.6.0`: 실제 모듈을 임시 복사하고 patched `braces`를 resolve하는지 및 `watch` API 로딩 검증. **실제 watcher 파일 변경 이벤트, Android 번들·구동 검증은 아님.**
+- 검토된 braces PR #72 라이브러리 diff는 디코딩 뒤 Git blob SHA-1 `b6aa05571a91ec9c6c4bc80ae7c6a26cb5db31af`와 일치해야 하며, 달라지면 검증 실패. 이 source-pinning은 *검토한 bytes에 대한 무결성 검사*이지 upstream 서명이나 배포 tarball의 SHA512 provenance가 아니다.
+
+**결정:** SCA-3 사전 통합 smoke 근거 추가만 인정. 공식 채택 가능한 두 패치의 배포·무결성, Expo/Android 전체 회귀, 취약 코드를 모두 제거한 lock graph, 원본 audit 통과가 없으므로 **SCA-3 정식 설치/보수 HOLD, SCA-4~7 미착수**.
