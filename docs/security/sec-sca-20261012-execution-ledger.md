@@ -234,3 +234,38 @@ SCA-2 출처 보유 코드 변경의 **제한된 개별 동작 실험은 완료*
 ### 단계 판정
 
 원본 잠금 파일에 설치된 취약 패키지를 바꾸지 않고, SCA-3의 **네이티브 prebuild 작업공간 오염 감지·복원 방어를 보강**했다. `braces`/ `node-forge` 공식 패치 출처 및 승인된 후보 lockfile, raw full/prod audit HIGH=0, 실제 APK 및 patched Expo/Android 검증은 여전히 미충족. **Security PR #1240 Draft/HOLD, Issue #1208 OPEN; SCA-3 정식 패치 및 SCA-4~7 HOLD.**
+
+## 14. 공식 Expo 57 패치 후보 lockfile·원본 npm audit 격리 검증 (2026-10-13)
+
+### 목적과 방법
+
+앞선 원본 Android 네이티브 검증은 실제 취약점을 해결하지 못했다. 이번 실험은 SCA-2/3의 **정식 업그레이드로 원인 두 패키지를 제거할 수 있는지** 확인하는 실물 후보다. 기존 보안 PR에 의존성/lock/앱 코드 변경을 커밋하지 않고, `scripts/security/run-sca-official-expo57-lock-candidate.mjs`가 OS 임시 디렉터리에 root/각 workspace `package.json`과 기존 root `package-lock.json`을 복사한다.
+
+- 임시 작업 디렉터리에서만 `npm install expo@~57.0.28 --workspace @bejewely/mobile --package-lock-only --ignore-scripts --no-fund --no-audit`를 실행, 실제 npm resolver로 새로운 후보 lockfile 생성.
+- **생성된 후보 lock에서 root뿐 아니라 중첩 경로의 정확한 설치 버전을 확인**하여 버전 배치/중복을 구분한다.
+- 같은 임시 디렉터리의 lock을 대상으로 `npm audit --json --omit=dev`와 `npm audit --json`의 실제 raw metadata 및 exit code를 각각 수집한다. 취약한 상태는 정상 종료로 취급하지 않는다.
+- 원본 3개 manifest/lock SHA-256 보존 여부를 검사하고 후보 원문 파일은 격리 디렉터리에서 삭제. 후보 잠금 파일 SHA-256만 출력, 설치/보안 우회로 해석 금지.
+
+### 실제 실행 증거
+
+**최종 후보 실험 코드 SHA:** `53f68f680d9cd7014c70886742479240247a6e35`. [Supply Chain CI #38341157494](https://github.com/gycha0109-beep/K_beauty/actions/runs/38341157494). 초기 [#38340954438](https://github.com/gycha0109-beep/K_beauty/actions/runs/38340954438)에서 루트 `node_modules`만 읽어 Expo 최신 후보 설치가 안 된 듯한 불완전 경로 표기를 발견, 실제 npm workspace의 **중첩 경로까지 조회하도록 수정**한 것이다.
+
+| 관찰 | 기본 lock | 실제 공식 Expo 57 후보 lock |
+| --- | --- | --- |
+| Expo root | `57.0.21` | `node_modules/expo@57.0.21` 유지 |
+| Expo 모바일 workspace | 기존 루트 사용 | `apps/mobile/node_modules/expo@57.0.28` 추가 |
+| `@expo/cli` root | `57.0.23` | `node_modules/@expo/cli@57.0.23` 유지 |
+| `@expo/cli` 모바일 workspace | 기존 루트 사용 | `apps/mobile/node_modules/expo/node_modules/@expo/cli@57.0.29` 추가 |
+| `braces` | `3.0.3` | **`3.0.3` 그대로** |
+| `node-forge` | `1.4.0` | **`1.4.0` 그대로** |
+| production raw audit | HIGH 19, CRITICAL 0 | **HIGH 19, CRITICAL 0**, exit 1 |
+| full raw audit | HIGH 22, CRITICAL 0 | **HIGH 22, CRITICAL 0**, exit 1 |
+
+후보 lock SHA-256: `d4d40a8a683ae3ff698bac550fb7f6684039a4b9e9587a7ce9db6853b20149f4`. 후보 상태 `CANDIDATE_STILL_HAS_HIGH_OR_CRITICAL_HOLD`; `candidateTargetVersionResolved=true`, `packageLockChangedInSourceTree=false`. 원본 audit 정책 변조 검사 9건 PASS, 정식 원본 `verify-supply-chain-audit.mjs`는 `braces` 예외 만료로 **FAIL 유지**.
+
+### 결정과 차단 이유
+
+- 정식 Expo 57 패치 업그레이드는 **취약점 미해결 + Expo/CLI 중복 그래프 증가**. **후보 거절(REJECT_FOR_REMEDIATION)**, 원본 root `package.json`/`package-lock.json` 변경 없음. 더 최신 Expo 버전을 설치했다는 사실은 보안 패치가 아니라는 증거.
+- 2026-10-13 공식 GitHub Advisory 기준 [`braces`](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) / [`node-forge`](https://github.com/advisories/GHSA-86w9-cpqp-85rv) 모두 Patched versions: None. `braces` upstream PR #72 CLOSED/UNMERGED, `node-forge` upstream PR #1152 OPEN/UNMERGED. Expo 자체 patch bump으로 해결 불가.
+- **다음 유효 경로:** (A) 각 패키지 공식 보안 릴리스와 함께 직접 교체하거나, (B) 실제 `braces/micromatch` 경로 및 Expo 서명 `node-forge` 경로를 함께 제거하는 상위 유지보수자 배포본, (C) 오너 검토·승인·라이선스·출처·재현 패키지·무결성 증명된 포크. 포크 이름 바꾸기로 audit 숫자만 줄이는 방법은 **보수로 승인 불가**.
+- 이 실험은 실제 후보 lock을 만들고 raw audit를 실행했으나 미달하여 SCA-3 정식 설치/Android 빌드로는 승격하지 않았다. **SCA-2 후보 공식 업그레이드 경로 REJECT, SCA-3 실물 보수 HOLD, SCA-4~7 미착수**, PR #1240 Draft / 이슈 #1208 OPEN.
