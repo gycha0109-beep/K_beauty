@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA native prebuild 추적 파일 전체 변형 차단
+
+- 분류: 보안 진단/제한 실행. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production N(읽기·수정·배포 없음). Security PR #1240 Draft/HOLD, 기존 package/lock/audit exception 원본 유지.
+- `scripts/security/sca-native-tracked-integrity.mjs` 및 `verify-sca-native-tracked-integrity.mjs` 추가: Git tracked path-only 검사 + 임시 합성 Git fixture 여섯 경계. `run-sca-native-prebuild-observation.mjs`에 dirty baseline 거부·Expo prebuild 후 전체 tracked diff 0건 확인·복원 및 정리 실패 차단을 연결하고 기존 Security CI trace에서 fixture 실행.
+- 정확 테스트 코드 HEAD `6903130d1c054ae27220d98df0873ba20bd3275f`; [Security #38339766608](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339766608): synthetic 6 PASS, Expo 57 prebuild/native shell PASS, 임시 `apps/mobile/package.json` 원본 복원 PASS, whole-tree residual changes 0, CodeQL PASS, 원본 npm audit는 만료 `braces` 고위험 예외로 FAIL 유지. [Main Health #38339766567](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339766567) PASS, [PIE #38339767122](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339767122) PASS.
+- 실행 ledger §13, upstream candidate review §12 갱신. 기존 Gradle 420초 ETIMEDOUT은 재실행하지 않음. 공식 수정 패키지/검증 후보 lockfile/실제 APK·기기/audit HIGH0 미확보: SCA-3 정식 보수~SCA-7 HOLD.
+
 ### 2026-10-13 / SEC-SCA Android prebuild 계약 실검증·Gradle 제한 시간 증거
 
 - 유형: Security SCA-3 진단·제한 실행. 브랜치 `fix/security/supply-chain-policy-mutation-guard-20261012`, Draft PR #1240. Production/DB/Auth/RLS/Storage/Secret/Payment/Provider 패치 없음, 의존성/lock/audit 예외/배포 구성 미변경.
