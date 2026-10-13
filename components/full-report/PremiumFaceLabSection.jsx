@@ -108,6 +108,7 @@ const COPY = {
     edit: "추구미 수정",
     next: "다음",
     back: "이전",
+    cancelEdit: "수정 취소",
     currentTitle: "지금의 나",
     targetResultTitle: "나의 추구미",
     deltaTitle: "가장 영향이 큰 변화",
@@ -220,6 +221,7 @@ const COPY = {
     edit: "Edit target",
     next: "Next",
     back: "Back",
+    cancelEdit: "Cancel changes",
     currentTitle: "Current face profile",
     targetResultTitle: "Target style",
     deltaTitle: "Highest-impact changes",
@@ -616,6 +618,7 @@ export default function PremiumFaceLabSection({
   const persistQueueRef = useRef(Promise.resolve());
   const restoreInteractionRef = useRef(0);
   const activePersistenceStateRef = useRef(null);
+  const targetEditSnapshotRef = useRef(null);
   const latestPersistRequestFingerprintRef = useRef(null);
   const latestPersistRequestSequenceRef = useRef(0);
   const serverRevisionRef = useRef(0);
@@ -849,6 +852,7 @@ export default function PremiumFaceLabSection({
         surveyAnswers: stored.surveyAnswers,
         targetFinderResult: stored.targetFinderResult || null
       };
+      targetEditSnapshotRef.current = null;
       setCanonical(restored);
       emitSimulationState(
         stored.surveyAnswers,
@@ -1057,6 +1061,7 @@ export default function PremiumFaceLabSection({
       surveyAnswers,
       targetFinderResult: approvedFinder
     };
+    targetEditSnapshotRef.current = null;
     setCanonical(result);
     setStage("result");
     emitSimulationState(surveyAnswers, approvedFinder, result);
@@ -1108,6 +1113,34 @@ export default function PremiumFaceLabSection({
     );
   };
 
+  const cancelTargetEdit = () => {
+    const snapshot = targetEditSnapshotRef.current;
+    if (!snapshot || !canonical) return;
+
+    setEntryMode(snapshot.entryMode);
+    setTargets(snapshot.targets);
+    setSoftSharpClarifier(snapshot.softSharpClarifier);
+    setNaturalPolishedClarifier(snapshot.naturalPolishedClarifier);
+    setFinderResult(snapshot.finderResult);
+    setFinderInconclusive(snapshot.finderInconclusive);
+    setPresentationPreference(snapshot.presentationPreference);
+    setStylingScope(snapshot.stylingScope);
+    setScopeTouched(snapshot.scopeTouched);
+    setChangeTolerance(snapshot.changeTolerance);
+    setRecommendationPriority(snapshot.recommendationPriority);
+    setMakeupIntensity(snapshot.makeupIntensity);
+    setDailyMinutes(snapshot.dailyMinutes);
+    setBudgetBand(snapshot.budgetBand);
+    setMaintenanceTolerance(snapshot.maintenanceTolerance);
+    targetEditSnapshotRef.current = null;
+    setStage("result");
+
+    const active = activePersistenceStateRef.current;
+    if (active?.surveyAnswers) {
+      emitSimulationState(active.surveyAnswers, active.targetFinderResult || null, canonical);
+    }
+  };
+
   const choosePresentation = (value) => {
     setPresentationPreference(value);
     if (!scopeTouched) {
@@ -1146,6 +1179,26 @@ export default function PremiumFaceLabSection({
           photoUrl={photoUrl}
           onSelectRoute={selectRoute}
           onEditTarget={() => {
+            // Editing is a draft until Confirm. Cancel restores every visible
+            // field and the previous approved Route/Look without saving.
+            targetEditSnapshotRef.current = {
+              entryMode,
+              targets: [...targets],
+              softSharpClarifier,
+              naturalPolishedClarifier,
+              finderResult,
+              finderInconclusive,
+              presentationPreference,
+              stylingScope: [...stylingScope],
+              scopeTouched,
+              changeTolerance,
+              recommendationPriority,
+              makeupIntensity,
+              dailyMinutes,
+              budgetBand,
+              maintenanceTolerance
+            };
+            restoreInteractionRef.current += 1;
             clearSimulationState();
             if (entryMode === "unknown") {
               setEntryMode("known");
@@ -1231,6 +1284,7 @@ export default function PremiumFaceLabSection({
                 setRecommendationPriority("face_harmony");
                 setSoftSharpClarifier(null);
                 setNaturalPolishedClarifier(null);
+                targetEditSnapshotRef.current = null;
                 setStage(value === "unknown" ? "finder" : "target");
               }}
             >
@@ -1304,8 +1358,13 @@ export default function PremiumFaceLabSection({
         ) : null}
 
         <div className="mt-5 flex gap-2">
-          <button type="button" onClick={() => setStage("mode")} className="ui-button-secondary min-h-11 flex-1 px-4 text-sm font-semibold">
-            {copy.back}
+          <button
+            type="button"
+            onClick={targetEditSnapshotRef.current ? cancelTargetEdit : () => setStage("mode")}
+            className="ui-button-secondary min-h-11 flex-1 px-4 text-sm font-semibold"
+            data-face-lab-target-back={targetEditSnapshotRef.current ? "cancel-edit" : "initial-setup"}
+          >
+            {targetEditSnapshotRef.current ? copy.cancelEdit : copy.back}
           </button>
           <button
             type="button"
