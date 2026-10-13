@@ -194,3 +194,23 @@ SCA-2 출처 보유 코드 변경의 **제한된 개별 동작 실험은 완료*
 ### 판정
 
 **SCA-3 Android JS 번들 기준선 관찰만 완료.** 수정된 의존성 기반 Android export가 아니며, Android native prebuild·Gradle assembleDebug·APK 설치/실행·전체 아티팩트 검사·공식 패치/npm integrity·잠금 그래프 수정/원본 감사 HIGH=0은 **NOT_RUN/UNKNOWN**. 유지 가능하고 감사 정합성 있는 두 패키지 해결책이 없으므로 **SCA-3 정식 교체/빌드 및 SCA-4~7 HOLD**, PR #1240 Draft, 이슈 #1208 OPEN.
+
+## 12. Android 원본 네이티브 prebuild·셸 검증 및 Gradle 시간 제한 (2026-10-13)
+
+### 검증 기준
+
+- 최신 시작 시점 main `efc47f51487bac1e39ac5e101631e67600606770`. `braces` upstream [PR #72](https://github.com/micromatch/braces/pull/72)는 CLOSED/NOT_MERGED, `node-forge` upstream [PR #1152](https://github.com/digitalbazaar/forge/pull/1152)는 OPEN/NOT_MERGED. 두 GitHub Advisory에는 정식 patched npm 버전 없음.
+- Security Draft PR #1240의 원본 `npm ci --ignore-scripts` 결과 위에서만 수행. 실제 `package.json`/lockfile·배포 구성·Provider·운영 DB 및 audit 예외 정책은 커밋상 변경 없음.
+
+### 실제 CI 단계별 관찰
+
+1. 코드 HEAD `a0e40afcfe73502998b04d9bd4ec655e7357f209`, [CI #38335414970](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335414970): `npm run mobile:prebuild:android` **PASS**; 이후 `npm run verify:mobile-native` **PASS**. 단 Expo prebuild가 disposable checkout의 `apps/mobile/package.json`을 변경해 전체 baseline은 **INCOMPLETE**로 기록. 생성 `android/`는 정리됨.
+2. 코드 HEAD `8e9b9921ddb929e61bffb0c9c325e9aefd51c4ae`, [CI #38335626887](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335626887): 작업 전 추적된 구성/lock 파일의 원본 바이트를 보관, 네이티브 계약 검사 후 원본 바이트 복원·SHA-256 재검증. `apps/mobile/package.json`의 prebuild 변경이 감지되고 **원본 복원 PASS**, `restorationErrors=[]`, `trackedInputsRestored=true`; 생성 native 디렉터리 정리 PASS. **audit**는 복원된 입력을 기준으로 별도 원래 단계에서 계속 실행해 만료 `braces` advisory로 FAIL.
+3. 코드 HEAD `9ddaa52bfd9d22ae5f721d40cfd3d71e3ae2a573`, [CI #38335884865](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335884865): 같은 disposable 생성 디렉터리에서 `npm run mobile:build:android:debug`를 **최대 420초(7분)** 시도했으나 `ETIMEDOUT`. `androidGradleDebug=FAIL/TIMED_OUT`, **APK 생성 여부·설치 실행 NOT_ATTESTED**. Prebuild/네이티브 셸 PASS, 추적 파일 복원 PASS, 생성 Android 디렉터리 삭제 PASS, CodeQL PASS. **시간 제한은 소스 빌드 오류·취약점 수정 성공/실패를 입증하지 않는다.**
+4. CI 자원 낭비 방지: `scripts/security/run-sca-native-prebuild-observation.mjs`의 장시간 Gradle 단계는 `SCA_ENABLE_GRADLE_DEBUG_OBSERVATION=1`이 명시된 때만 실행하도록 변경. 기본 Security CI는 **원본 prebuild·네이티브 셸 검증 및 복원만** 실행하고 Gradle은 `NOT_RUN_OPT_IN_ONLY`로 정확히 표시한다. 공급망 CI의 원본 audit 단계·fail-close 정책·mutation guard는 계속 유지한다.
+
+### 수락 판정과 미충족 조건
+
+**원본 Expo Android native prebuild·네이티브 셸·추적 파일 복원은 PASS.** 디버그 APK assembleDebug는 제한 시간 내 **미완료**, 실기기 설치·화면/카메라 smoke 미수행. 또한 **원본 잠금 그래프의 두 취약 코드가 그대로 존재**하므로 검증된 *패치 후보*의 prebuild/native/Android 호환성이나 `npm audit` HIGH=0 수락과 무관하다.
+
+**SCA-3 정식 패치 후보 lockfile·공급망 artifact provenance·Android APK 및 실기기·무예외 전체/production audit는 HOLD. SCA-4~7 미착수.** Security PR #1240은 Draft, 이슈 #1208 OPEN 유지.
