@@ -105,6 +105,13 @@
 - 예상되는 정상 판단은 `REVIEW_REQUIRED`이고 `release_ready=false`입니다. 이는 **실제 결제 증빙 2건, owner 승인, D8D PREVIEW 및 D8G/D8H 허가를 대체하지 않습니다.** 기존 Database Integration Authority에 검증기만 추가; CI PASS 확인 전 완료 판정 금지.
 - 운영 DB 식별·#1208 보안 차단은 변경 없음. 관련 근거: [D8F read-only prestate](../evidence/r16i-r4-d8f-candidate-d4-readonly-prestate-20261013.md).
 
+### D8G 운영 출시 차단요건 재검증 (2026-10-13)
+
+- Vercel READY Production 배포 `dpl_8iYCmxYiynuiTtGftUQWsG3yx5JM`(GitHub main `8f1f0559`)의 소스·별칭만 확인했습니다. 실제 서버 환경 `NEXT_PUBLIC_SUPABASE_URL`은 Vercel 403으로 열람 권한이 없어 **서버 DB 동일성 미입증**. 운영 apply 플래그도 미확인.
+- 연결된 Supabase 후보에서 대상 Product 160ml/29,900원, 증빙 0, 정정안 0, 적용 이력 0, DB gate disabled. 공식몰 80ml와 화해 80ml×2+세럼 10ml 공개 표시는 재확인했지만 실제 선택 옵션의 결제 직전 금액은 미확인.
+- 보안 이슈 #1208 OPEN, 보안 PR #1240 DRAFT이며 실제 Expo 57.0.28 lock 후보에도 braces/node-forge 취약 버전 잔존. 보안 우회나 다른 트랙 변경 금지. 운영자 실제 증빙 2건·승인, 동일성 증명 및 보안 해결 전 D8F/G/H HOLD.
+- 승인된 인증 관리자에서 실행할 정확한 절차·필요 근거·릴리스 차단표: [D8G 운영 근거·오너 이관](../evidence/r16i-r4-d8g-production-readiness-gate-20261013.md). 신규 관리자 기능이나 DB 변경 없음.
+
 ## 3. 우선순위와 차단 조건
 
 | 우선순위 | 바로 해야 할 일 | 의존성 | 실패 시 |

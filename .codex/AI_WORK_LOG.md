@@ -3163,3 +3163,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Classification: Medium test/evidence; DB read-only Y, Protected Area writes N. Connected Supabase candidate SELECT observed target Product old revision/160ml/29,900 KRW, Binding 1, Intake 1, Offer/Subject/Application 0, release gate false.
 - Added dated exact D4 read-only snapshot and 15 fail-closed synthetic negative-path tests against existing `buildR16IR4D4LiveReview`. No owner evidence or approvals synthesized. Reuse existing Database Integration Authority workflow.
 - Deployed Vercel runtime database identity unattested, #1208 security issue unresolved, final checkout evidence absent. D8F/G/H and PR merge HOLD, no Production mutations or gate changes.
+
+## 2026-10-13 — taxonomy-ai D8G production-readiness inventory and owner handoff
+- Classification: Medium read-only diagnosis/documentation / DB select Y; Protected Area mutation N. Vercel Production alias READY and deployment SHA identified; deployed effective Supabase URL/DB identity still unattested because Vercel env inventory 403.
+- Candidate Supabase exact-target SELECT confirmed 176 catalog, old Product 160ml/29900, evidence 0, correction proposals 0, applications 0, release gate disabled. Public official 80ml list/member prices and Hwahae bundle public price are not real checkout evidence.
+- Security #1208 open; Draft #1240 unresolved (Expo 57.0.28 genuine candidate keeps braces@3.0.3/node-forge@1.4.0; raw audit fails). No security source changes.
+- Added precise owner-only capture, VERIFIED judgement, runtime DB attestation, future release-gate readiness packet and roadmap pointer. Existing UI/route unchanged; 0 Product/Offer/RLS/env/permission/deployment changes, D8F/G/H HOLD, PR merge HOLD.
