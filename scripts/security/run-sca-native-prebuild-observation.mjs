@@ -100,7 +100,9 @@ try {
         stopReason = "NATIVE_SHELL_CONTRACT_FAILED";
       } else if (!restoreTrackedInputs()) {
         stopReason = "TRACKED_INPUTS_NOT_RESTORED_BEFORE_GRADLE";
-      } else {
+      } else if (process.env.SCA_ENABLE_GRADLE_DEBUG_OBSERVATION === "1") {
+        // Long native assembly is opt-in only. The previous cold-build
+        // diagnostic exhausted 7 minutes without producing an APK.
         const gradle = stage("androidGradleDebug",
           "npm", ["run", "mobile:build:android:debug"], 420000);
         if (gradle.status === "PASS") {
@@ -166,15 +168,17 @@ try {
     restorationErrors,
     trackedInputsRestored,
     cleanup,
-    nativeGradleBuild: checks.find((check) => check.label === "androidGradleDebug")?.status || "NOT_RUN",
+    nativeGradleBuild: checks.find((check) => check.label === "androidGradleDebug")?.status ||
+      "NOT_RUN_OPT_IN_ONLY",
     apkArtifact: apkEvidence || "NOT_CREATED",
     candidatePatchedDependencyTested: false,
+    extendedGradleOptIn: process.env.SCA_ENABLE_GRADLE_DEBUG_OBSERVATION === "1",
     canonicalAuditUnchanged: trackedInputsRestored,
     conclusion: stopReason === null && trackedInputsRestored &&
       cleanup === "REMOVED_GENERATED_NATIVE_DIRECTORY" &&
       checks.every((check) => check.status === "PASS") ?
       (apkEvidence ? "NATIVE_DEBUG_APK_BASELINE_PASS" :
-        "NATIVE_PREBUILD_PASS_NO_APK") : "NATIVE_BUILD_BASELINE_INCOMPLETE",
+        "NATIVE_PREBUILD_BASELINE_PASS_GRADLE_NOT_RUN") : "NATIVE_BUILD_BASELINE_INCOMPLETE",
   };
   console.log("SCA_NATIVE_PREBUILD_OBSERVATION=" + JSON.stringify(result));
   if (!trackedInputsRestored || restorationErrors.length > 0 ||
