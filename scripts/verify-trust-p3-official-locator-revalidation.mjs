@@ -48,6 +48,14 @@ assert.equal(live.summary.subjectWrites,0);
 assert.equal(live.summary.verifiedExactSkuCount,0);
 assert.equal(live.summary.productCandidates,6);
 assert.ok(live.items.every(x=>x.live.exactSkuVerified===false));
+assert.ok(live.items.every(x=>x.live.templateShape.contract==="trust-p3-template-shape-v1"));
+assert.ok(live.items.every(x=>x.live.templateShape.templateFamily==="UNDETERMINED"));
+assert.ok(live.items.every(x=>x.live.templateShape.factConfirmationAuthorized===false));
+assert.ok(live.items.every(x=>x.live.templateShape.dbWrites===0));
+assert.ok(live.items.every(x=>x.live.templateShape.aiApiCalls===0));
+assert.ok(live.items.every(x=>x.live.templateShape.primaryTitleSurfaces.h1WithinMain===1));
+assert.ok(!JSON.stringify(live).includes("selected value"));
+
 assert.ok(!JSON.stringify(live).includes("data-product-specs"));
 const disallowed=await observeTrustP3LocatorFreshness({
   execute:true,cohort,

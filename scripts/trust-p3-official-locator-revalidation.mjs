@@ -13,6 +13,8 @@ import {extractTrustP3OfficialProductCandidates}
   from "../lib/trust/official-product-extraction-p3-v1.mjs";
 import {inspectTrustP3OfficialPageShape}
   from "../lib/trust/official-product-page-shape-p3-v1.mjs";
+import {inspectTrustP3TemplateShape}
+  from "../lib/trust/official-template-shape-p3-v1.mjs";
 
 export const P3_LOCATOR_VERSION="trust-p3-official-locator-freshness-v1";
 const FROZEN="evidence/trust/p3-official-locator-revalidation-cohort-v1.json";
@@ -51,7 +53,8 @@ export function validateTrustP3LocatorCohort(cohort){
   }
   return true;
 }
-const summarize=(candidate,shape)=>({
+const summarize=(candidate,shape,templateShape)=>({
+  templateShape,
   gate:candidate.gate,
   identitySignal:candidate.identitySignal,
   variantStatus:candidate.variantStatus,
@@ -109,7 +112,19 @@ export async function observeTrustP3LocatorFreshness({
             {contentType:page.contentType??""});
           row.status=candidate.gate==="EVIDENCE_CANDIDATE_ONLY"?
             "DIRECT_PRODUCT_CANDIDATE_REVIEW_REQUIRED":"IDENTITY_OR_VARIANT_REVIEW_REQUIRED";
-          row.live=summarize(candidate,shape);
+          // Structural metadata is observability only; diagnostic failures
+          // must not change identity, variant, policy or P3 claim gates.
+          let templateShape;
+          try {
+            templateShape=inspectTrustP3TemplateShape(page.bytes,
+              {contentType:page.contentType??""});
+          } catch {
+            templateShape={contract:"trust-p3-template-shape-v1",
+              status:"DIAGNOSTIC_UNAVAILABLE",templateFamily:"UNDETERMINED",
+              exactSkuVerified:false,subjectCreationAuthorized:false,
+              factConfirmationAuthorized:false,dbWrites:0,aiApiCalls:0};
+          }
+          row.live=summarize(candidate,shape,templateShape);
         }catch(error){row.status="SOURCE_FETCH_HOLD";row.failure=fail(error);}
       }
       rows.push(row);
