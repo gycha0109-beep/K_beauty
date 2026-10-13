@@ -30,9 +30,19 @@ function observe(label, command, args, timeoutMs) {
     timeout: timeoutMs,
     maxBuffer: 16 * 1024 * 1024,
   });
+  const knownFailures = [
+    ["exportDirAbsent", "expected Android JS export folder absent"],
+    ["noSourceMaps", "no generated Android source maps"],
+    ["noSourceEntries", "no source entries"],
+    ["sourceMapSizeExceeded", "oversized"],
+    ["symlinkRejected", "symlink in generated bundle output"],
+  ];
+  const failureCode = knownFailures.find(([, message]) =>
+    (result.stderr || "").includes(message))?.[0] || null;
   return {
     label,
     result: result.status === 0 ? "PASS" : "FAIL",
+    failureCode,
     exitCode: result.status,
     timedOut: result.error?.code === "ETIMEDOUT",
     spawnError: result.error?.code || null,
@@ -61,7 +71,7 @@ try {
     fs.rmSync(exportDir, { recursive: true, force: true });
   }
   const exported = observe("androidJsExport", "npm",
-    ["run", "mobile:export:android", "--", "--source-maps"], 360000);
+    ["run", "export:android", "--workspace", "@bejewely/mobile", "--", "--source-maps"], 360000);
   checks.push(exported);
   if (exported.result === "PASS") {
     const inventory = observe("bundleSourceMapInventory", process.execPath, [
