@@ -128,7 +128,23 @@ function verifyExpoSigning() {
     keyPair.privateKey, parsed, Buffer.from("isolated-expo-manifest"),
   );
   assert.ok(typeof signature === "string" && signature.length > 0);
-  evidence.expoCodeSigning = "PASS_SELF_SIGNED_CERT_PEM_VALIDATION_MANIFEST_SIGNATURE";
+
+  // Negative certificate controls: patched forge may not silently broaden the
+  // verification boundary to wrong-key or expired development certificates.
+  const otherKeyPair = forge.pki.rsa.generateKeyPair({ bits: 1024, e: 65537 });
+  assert.throws(
+    () => signing.validateSelfSignedCertificate(parsed, otherKeyPair),
+    /key pair public key/,
+    "Expo certificate validator accepted a mismatched RSA public key",
+  );
+  const expiredCertificate = signing.convertCertificatePEMToCertificate(pem);
+  expiredCertificate.validity.notAfter = new Date(now - 120000);
+  assert.throws(
+    () => signing.validateSelfSignedCertificate(expiredCertificate, keyPair),
+    /validity expired/,
+    "Expo certificate validator accepted a certificate with expired validity",
+  );
+  evidence.expoCodeSigning = "PASS_SELF_SIGNED_CERT_PEM_SIGNATURE_WRONG_KEY_AND_EXPIRY_REJECTION";
 }
 function verifyGlobConsumers() {
   copyPackage("micromatch", "4.0.8");
