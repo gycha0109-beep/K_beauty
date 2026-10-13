@@ -1,0 +1,48 @@
+{
+  "contract": "trust-p3-three-brand-real-page-observed-v1",
+  "observedAt": "2026-10-13T03:07:43.390Z",
+  "source": {
+    "main": "a159c5367700432856a41698ad11920efbb4b834",
+    "workflowRunId": 38340197868,
+    "jobId": 115109225407,
+    "artifactId": 11786673545
+  },
+  "summary": {
+    "products": 3,
+    "attempted": 3,
+    "eligibleCandidatePages": 0,
+    "observedDirectSpf": 0,
+    "observedDirectPa": 0,
+    "states": {
+      "IDENTITY_REVIEW_REQUIRED": 2,
+      "SOURCE_FETCH_HOLD": 1
+    },
+    "dbWrites": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "aiApiCalls": 0
+  },
+  "items": [
+    {
+      "brand": "토리든",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "identitySignal": "IDENTITY_UNRESOLVED",
+      "variantStatus": "SIZE_UNKNOWN",
+      "sourceDigest": "87c9e43d24216af9d8cc95e36e4cf47d9d0994067662889fceaef4ee53dcd3e1"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "status": "SOURCE_FETCH_HOLD",
+      "failure": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "에스트라",
+      "status": "IDENTITY_REVIEW_REQUIRED",
+      "identitySignal": "IDENTITY_UNRESOLVED",
+      "variantStatus": "SIZE_UNKNOWN",
+      "sourceDigest": "67cb96fbc54ff138e403824b93ee988045244861d41562b2cbfb0be4c99b4f9e"
+    }
+  ],
+  "notes": "Governed existing source binding does not guarantee present-day exact page identity. All source claim fields UNKNOWN and all fact/subject authority disabled."
+}
