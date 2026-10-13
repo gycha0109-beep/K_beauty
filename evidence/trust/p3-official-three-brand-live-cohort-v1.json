@@ -1,0 +1,55 @@
+{
+  "contract": "trust-p3-three-brand-official-observation-cohort-v1",
+  "baselineDate": "2026-10-13",
+  "purpose": "GOVERNED_EXISTING_EXACT_SUBJECT_SOURCE_EXTRACTION_READ_ONLY",
+  "immutableSource": "Supabase bygrczggxfuisupcevaz read-only join: products, product_evidence_sources, product_evidence_source_subject_bindings; binding_state exact_subject_match and scope_relation equivalent",
+  "targets": [
+    {
+      "productId": "57e4a5ec-115d-4322-85a1-7976db669700",
+      "sourceId": "0faa9a86-8d74-495f-8fcb-ac47cb0529d6",
+      "subjectId": "750c298a-e085-4a29-aa24-2656fa7a5d6f",
+      "brand": "토리든",
+      "name": "다이브인 워터리 모이스처 선크림",
+      "sizeMl": 60,
+      "market": "KR",
+      "officialUrl": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+      "sourceKind": "official_product_page",
+      "bindingState": "exact_subject_match",
+      "scopeRelation": "equivalent"
+    },
+    {
+      "productId": "25b2763f-529f-4b2e0776279c55",
+      "sourceId": "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+      "subjectId": "0865df81-9cd9-438c-8167-380b932c1dc0",
+      "brand": "뷰티오브조선",
+      "name": "맑은쌀 선크림",
+      "nameEn": "Relief Sun: Rice + Probiotics",
+      "sizeMl": 50,
+      "market": "GLOBAL",
+      "officialUrl": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "sourceKind": "official_product_page",
+      "bindingState": "exact_subject_match",
+      "scopeRelation": "equivalent"
+    },
+    {
+      "productId": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "sourceId": "041e11d3-c0de-40a1-9c90-487c4437e96f",
+      "subjectId": "d15f9fbd-8cf4-4513-91e0-1d64d123dbdf",
+      "brand": "에스트라",
+      "name": "더마 UV365 레드 카밍 톤업 선스크린",
+      "sizeMl": 40,
+      "market": "KR",
+      "officialUrl": "https://www.aestura.com/web/product/view.do?prdSeq=1108",
+      "sourceKind": "official_product_page",
+      "bindingState": "exact_subject_match",
+      "scopeRelation": "equivalent"
+    }
+  ],
+  "authority": {
+    "approvedExternalResearchOnly": true,
+    "newSourceBindings": false,
+    "newSubjects": false,
+    "newFacts": false,
+    "autoConfirm": false
+  }
+}
