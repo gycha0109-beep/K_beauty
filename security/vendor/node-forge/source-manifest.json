@@ -19,9 +19,15 @@
   },
   "distributionApproved": false,
   "licenseReviewed": false,
-  "sourceTarballIndependentSha512Verified": false,
+  "sourceTarballIndependentSha512Verified": true,
   "releaseArtifactBuilt": false,
   "bundledDistributionRebuilt": false,
   "securityOwnerApproval": "UNKNOWN",
-  "vulnerabilityRemediated": false
+  "vulnerabilityRemediated": false,
+  "originalTarballEvidence": {
+    "run": "https://github.com/gycha0109-beep/K_beauty/actions/runs/38350884697",
+    "result": "SOURCE_REGISTRY_INTEGRITY_PASS_NOT_A_PATCH_RELEASE",
+    "packFiles": 59,
+    "bundledDistEntries": 6
+  }
 }
