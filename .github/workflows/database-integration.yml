@@ -368,7 +368,7 @@ jobs:
           set -euo pipefail
           psql -v ON_ERROR_STOP=1 -c "create database taxonomy_r16i_d8d"
           PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f tests/fixtures/r16i-d8d/00_minimal_pg17.sql
-          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql
+          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql
           PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f tests/fixtures/r16i-d8d/20_transactional_pg17.sql | tee "${RUNNER_TEMP}/r16i-d8d-pg17.log"
           grep -Fq "R16I_D8D_PG17_APPLY_FAIL_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8d-pg17.log"
           test "$(PGDATABASE=taxonomy_r16i_d8d psql -Atqc "select count(*) from public.admin_r16i_correction_application_events_v1")" = "2"
