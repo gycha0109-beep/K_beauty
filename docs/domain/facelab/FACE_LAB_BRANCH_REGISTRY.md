@@ -1,6 +1,6 @@
 # [Face Lab] GitHub 브랜치·PR 관리 대장
 
-> 작성: 2026-10-13. 최신 `main` 및 당시 **열려 있는** Face Lab PR 12건 기준. PR 상태는 변하므로 실행 전 GitHub를 다시 조회한다.  
+> 작성: 2026-10-13. 작업 시작 당시 Open Face Lab PR 12건 + 신규 로드맵 PR #1277 / 종료된 이전 로드맵 PR #1261 기준. PR 상태는 변하므로 실행 전 GitHub를 다시 조회한다.  
 > 기준: [FACE_LAB_V2_ROADMAP.md](FACE_LAB_V2_ROADMAP.md)  
 > 목표: 프로젝트의 PR/브랜치 식별이 **명백하고**, 오래된 Draft·연구·운영 DB 관련 PR을 제품 main 구현으로 혼동하지 않도록 한다.
 
@@ -16,13 +16,14 @@
 - **main:** 새 브랜치는 우선 최신 main에서 분기. 다른 PR 작업 내용을 전제로 하려면 그 PR의 미병합 상태를 분명히 적는다.
 - **CI:** 브랜치 이름만으로 Gate를 우회하거나 Ready로 올리지 않는다. Draft 유지, 승인 없는 머지 금지.
 
-## 2. 현재 열려 있는 Face Lab 관련 PR (2026-10-13 관찰)
+## 2. Face Lab 관련 PR (2026-10-13 관찰, 종료·대체 포함)
 
 > 아래 기존 브랜치명은 **역사적 ref**이다. 이미 열려 있는 PR의 HEAD를 무심코 rename하면 GitHub가 해당 PR을 **close**할 수 있으므로 **이름 변경 없이 보존**한다. 식별성은 이미 PR 제목 `[Face Lab]`로 먼저 통일했다.
 
 | PR | 트랙/범위 | 기존 브랜치 | 상태/처리 |
 | --- | --- | --- | --- |
-| [#1261](https://github.com/gycha0109-beep/K_beauty/pull/1261) | 구 완결 계획 Draft | `docs/face-research/face-lab-v2-product-roadmap-20261013` | **현재 본 완결 로드맵 PR로 대체 예정**. 새 PR 성립 후 이전 문서는 superseded로 표시·닫기 |
+| [#1277](https://github.com/gycha0109-beep/K_beauty/pull/1277) | **신규 canonical 완결 로드맵** | `face-lab/docs-completion-roadmap-20261013` | Open Draft; 제목·브랜치 모두 새 규칙 준수 |
+| [#1261](https://github.com/gycha0109-beep/K_beauty/pull/1261) | 구 완결 계획 | `docs/face-research/face-lab-v2-product-roadmap-20261013` | **Closed / unmerged**, #1277로 대체, 구 기록만 보존 |
 | [#1264](https://github.com/gycha0109-beep/K_beauty/pull/1264) | **M0** Premium 저장/편집 UX | `feat/face-research/premium-p0-save-recovery-20261013` | Open Draft; 보안/실기기 확인 전 병합 금지 |
 | [#1242](https://github.com/gycha0109-beep/K_beauty/pull/1242) | **M1** Human blind pair | `feat/face-research/human-pairwise-pilot-seal-and-private-reveal-20261012` | Open Draft; 실제 평가자 결과는 별도 |
 | [#1233](https://github.com/gycha0109-beep/K_beauty/pull/1233) | **M3/M4** Subject-Variant Try-On 카탈로그 연결 | `fix/face-research/try-on-catalog-bridge-current-main-20261012` | Open Draft; 운영 identity/권리 미확인 |
