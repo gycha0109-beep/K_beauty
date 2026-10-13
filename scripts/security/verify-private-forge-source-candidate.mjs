@@ -38,7 +38,7 @@ try{
  fs.mkdirSync(localModules);
  fs.symlinkSync(dest,path.join(localModules,"node-forge"),"dir");
  const consumerRequire=createRequire(path.join(consumer,"package.json"));
- assert.equal(fs.realpathSync(consumerRequire.resolve("node-forge")), 
+ assert.equal(fs.realpathSync(consumerRequire.resolve("node-forge")),
    fs.realpathSync(path.join(dest,"lib/index.js")),
    "Expo consumer did not resolve isolated patched node-forge");
  const child=path.join(root,"scripts/security/verify-private-forge-probe-child.mjs");
