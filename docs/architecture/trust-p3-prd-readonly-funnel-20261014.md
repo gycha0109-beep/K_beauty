@@ -30,3 +30,21 @@ PR-A/PR-B/PR-C의 진단 결과를 기존 `scripts/trust-p3-official-locator-rev
 
 ## 종료 게이트
 PR-D0는 **안전한 진단/퍼널 통합**만 완료할 수 있다. 상품 영역 식별 성공률과 선택 옵션 검증률이 실제 공식몰에서 확인되기 전까지 PR-D의 새로운 candidate eligibility/팩트 반영 승인은 **HOLD**. `parse5` 등 새로운 DOM parser는 SCA 보안 복구 및 독립 검토 이후 별도 PR.
+
+
+## 2026-10-14 실제 공식몰 검증
+
+기준 `main` `9d0869005ed45eadba9c628222025aafca62e885`, [PR #1291](https://github.com/gycha0109-beep/K_beauty/pull/1291). [Actions #38498362872](https://github.com/gycha0109-beep/K_beauty/actions/runs/38498362872)의 공식 URL read-only job `115639211199` SUCCESS, artifact `11864164592`. 고정 JSON: `evidence/trust/p3-prd0-funnel-live-20261014.json`.
+
+| 퍼널 단계 | 6개 URL 중 |
+|---|---:|
+| SOURCE_HOLD | 2 (뷰티오브조선 2) |
+| ROOT_PARSER_HOLD | 3 (토리든 기존 1, 에스트라 2) |
+| PRIMARY_ROOT_HOLD | 1 (토리든 대체 1) |
+| OWNED_FORM_HOLD | 0 |
+| SIZE_NOT_EVALUATED/SIZE_SELECTION_HOLD | 0 |
+| SELECTED_SIZE_MATCH_SHADOW_ONLY | 0 |
+
+HTTP HTML 수집 **4/6**, 구조적으로 함께 소속된 제품명+구매 폼 **0/4**, 직접 선택 용량 일치 shadow **0/4**, 기존 P3 검토 후보 **0/6**, Exact SKU/market/formulation 확정 **0**, source binding/Subject/Fact/Recommendation/DB write와 AI API **0**.
+
+**결정:** PR-D0의 진단 통합·분모 분리·실측은 완료. 실제 P3 identity/selected-size 검증 권한 활성화는 **HOLD**. 단순히 오류 파서를 느슨하게 하거나 특정 브랜드/상품 ID로 예외 처리하지 않는다. 타 보안 트랙 B3–B7 승인 및 SCA PASS 후 표준 HTML5 parser를 별도 검증하고 같은 6 URL을 재측정한다. 이전 parser/root/size 단계는 끝났지만 운영 적용 성공률은 검증되지 않았다.
