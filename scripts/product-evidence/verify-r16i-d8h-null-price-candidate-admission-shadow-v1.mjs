@@ -175,7 +175,7 @@ const observed = await compare(
   "STRUCTURAL_166_NOT_ADMISSION_AUTHORIZED", allBefore, allAfter, 166
 );
 const syntheticConservative = await compare(
-  "LEGACY_164_SYNTHETIC_NEW_ROW_DENIAL_NOT_PRODUCTION", 
+  "LEGACY_164_SYNTHETIC_NEW_ROW_DENIAL_NOT_PRODUCTION",
   conservativeBefore, conservativeAfter, 164
 );
 console.log(JSON.stringify({
