@@ -114,6 +114,61 @@ test.describe("Face Lab M0-B synthetic browser persistence", () => {
       .toEqual(before);
   });
 
+  test("requires both partial clarifiers before approving and keeps the saved values", async ({ page }) => {
+    await openSyntheticFaceLab(page);
+    await page.getByRole("button", { name: "대충 있어요", exact: true }).click();
+    await page.getByRole("button", { name: "세련된", exact: true }).click();
+    const next = page.getByRole("button", { name: "다음", exact: true });
+    await expect(next).toBeDisabled();
+
+    await page.getByRole("button", { name: "부드러운 쪽", exact: true }).click();
+    await expect(next).toBeDisabled();
+    await page.getByRole("button", { name: "힘 뺀 쪽", exact: true }).click();
+    await expect(next).toBeEnabled();
+    await next.click();
+
+    await page.getByRole("button", { name: "헤어", exact: true }).click();
+    await page.getByRole("button", { name: "이대로 결과 보기", exact: true }).click();
+    await expect(page.locator('[data-face-lab-persistence-status="pending"]')).toBeVisible();
+    const raw = await getLocalState(page);
+    const stored = JSON.parse(raw?.value || "{}");
+    expect(stored.surveyAnswers.entryMode).toBe("partial");
+    expect(stored.surveyAnswers.clarifiers).toEqual({
+      softSharp: "soft", naturalPolished: "natural"
+    });
+    expect(stored.surveyAnswers.targetSelections).toEqual(["sophisticated"]);
+    expect(stored.syncStatus).toBe("pending");
+  });
+
+  test("handles Finder back and inconclusive choices without inventing a user-approved target", async ({ page }) => {
+    await openSyntheticFaceLab(page);
+    await page.getByRole("button", { name: "잘 모르겠어요", exact: true }).click();
+
+    await expect(page.getByText("1/5", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "둘 다 좋아요", exact: true }).click();
+    await expect(page.getByText("2/5", { exact: true })).toBeVisible();
+    await page.locator('[data-face-lab-finder-back="previous-round"]').click();
+    await expect(page.getByText("1/5", { exact: true })).toBeVisible();
+
+    for (let round = 1; round <= 5; round += 1) {
+      await expect(page.getByText(`${round}/5`, { exact: true })).toBeVisible();
+      await page.getByRole("button", { name: "둘 다 별로예요", exact: true }).click();
+    }
+
+    await expect(page.getByText("선택만으로 한 방향을 정하기 어려웠습니다.", { exact: false })).toBeVisible();
+    await page.getByRole("button", { name: "세련된", exact: true }).click();
+    await page.getByRole("button", { name: "다음", exact: true }).click();
+    await page.getByRole("button", { name: "헤어", exact: true }).click();
+    await page.getByRole("button", { name: "이대로 결과 보기", exact: true }).click();
+
+    await expect(page.locator('[data-face-lab-persistence-status="pending"]')).toBeVisible();
+    const saved = JSON.parse((await getLocalState(page))?.value || "{}");
+    expect(saved.surveyAnswers.entryMode).toBe("known");
+    expect(saved.surveyAnswers.targetSelections).toEqual(["sophisticated"]);
+    expect(saved.targetFinderResult).toBeNull();
+    expect(saved.syncStatus).toBe("pending");
+  });
+
   test("reports storage failure without claiming the draft was saved", async ({ page }) => {
     await openSyntheticFaceLab(page);
     await page.evaluate(() => {
