@@ -88,6 +88,12 @@ test.describe("Face Lab M3 unavailable actual merchandise", () => {
     await approveTarget(page);
 
     const catalog = page.getByTestId("face-lab-catalog-availability");
+    // A default route is only a preview. No execution/SKU state is promoted
+    // until the user commits an actual styling route.
+    await expect(catalog).toHaveCount(0);
+    const selectable = page.locator('button[aria-pressed="false"]');
+    await expect(selectable.first()).toBeVisible();
+    await selectable.first().click();
     await expect(catalog).toBeVisible();
     await expect(catalog).toHaveAttribute("data-catalog-status", "not_ready");
     await expect(catalog).toContainText("실제 상품·색상 연결");
@@ -108,13 +114,16 @@ test.describe("Face Lab M3 unavailable actual merchandise", () => {
     await approveTarget(page);
 
     const catalog = page.getByTestId("face-lab-catalog-availability");
+    await expect(catalog).toHaveCount(0);
+    const selectRoute = page.locator('button[aria-pressed="false"]');
+    await expect(selectRoute.first()).toBeVisible();
+    await selectRoute.first().click();
     await expect(catalog).toHaveAttribute("data-catalog-status", "not_ready");
 
     const alternateRoute = page.locator('button[aria-pressed="false"]').first();
-    if (await alternateRoute.count()) {
-      await alternateRoute.click();
-      await expect(catalog).toHaveAttribute("data-catalog-status", "not_ready");
-    }
+    await expect(alternateRoute).toBeVisible();
+    await alternateRoute.click();
+    await expect(catalog).toHaveAttribute("data-catalog-status", "not_ready");
 
     const bounds = await catalog.boundingBox();
     expect(bounds).not.toBeNull();
