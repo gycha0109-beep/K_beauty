@@ -38,4 +38,4 @@
 | B4 | NOT_STARTED | 두 완전한 후보 승인 후에만 임시 root/nested lock 재결의·installed fingerprint·raw npm audit full/prod HIGH 0 |
 | B5~7 | BLOCKED | patched Android APK/기기/정확 HEAD CI, 감사 정책 v2, 사용자 병합 승인 |
 
-**불변:** 이름/버전을 바꾸어 npm audit가 GHSA를 인식하지 못하게 하는 것만으로 PASS 처리 금지. 실제 취약 코드 교체, raw audit 전체/production HIGH 0, 설치 출처 검증, Android 수락 모두 별도 AND 게이트이다. #1270/#1271/#1282 Draft/HOLD, #1208 OPEN. 
+**불변:** 이름/버전을 바꾸어 npm audit가 GHSA를 인식하지 못하게 하는 것만으로 PASS 처리 금지. 실제 취약 코드 교체, raw audit 전체/production HIGH 0, 설치 출처 검증, Android 수락 모두 별도 AND 게이트이다. #1270/#1271/#1282 Draft/HOLD, #1208 OPEN.
