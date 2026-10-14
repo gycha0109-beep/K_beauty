@@ -15,6 +15,8 @@ import {inspectTrustP3OfficialPageShape}
   from "../lib/trust/official-product-page-shape-p3-v1.mjs";
 import {inspectTrustP3TemplateShape}
   from "../lib/trust/official-template-shape-p3-v1.mjs";
+import {inspectTrustP3StrictPrimaryRoot}
+  from "../lib/trust/official-primary-root-dom-p3-v1.mjs";
 
 export const P3_LOCATOR_VERSION="trust-p3-official-locator-freshness-v1";
 const FROZEN="evidence/trust/p3-official-locator-revalidation-cohort-v1.json";
@@ -53,8 +55,8 @@ export function validateTrustP3LocatorCohort(cohort){
   }
   return true;
 }
-const summarize=(candidate,shape,templateShape)=>({
-  templateShape,
+const summarize=(candidate,shape,templateShape,strictPrimaryRoot)=>({
+  templateShape,strictPrimaryRoot,
   gate:candidate.gate,
   identitySignal:candidate.identitySignal,
   variantStatus:candidate.variantStatus,
@@ -124,7 +126,19 @@ export async function observeTrustP3LocatorFreshness({
               exactSkuVerified:false,subjectCreationAuthorized:false,
               factConfirmationAuthorized:false,dbWrites:0,aiApiCalls:0};
           }
-          row.live=summarize(candidate,shape,templateShape);
+          // Strict nested ownership probe is not an acceptance authority.
+          // A conservative parse HOLD must never relax P3 SKU / Fact gates.
+          let strictPrimaryRoot;
+          try {
+            strictPrimaryRoot=inspectTrustP3StrictPrimaryRoot(page.bytes,product);
+          } catch {
+            strictPrimaryRoot={contract:"trust-p3-strict-primary-root-v1",
+              status:"STRICT_ROOT_DIAGNOSTIC_UNAVAILABLE",parseComplete:false,
+              primaryRootAuthority:false,exactSkuVerified:false,
+              subjectCreationAuthorized:false,sourceBindingAuthorized:false,
+              factConfirmationAuthorized:false,dbWrites:0,aiApiCalls:0};
+          }
+          row.live=summarize(candidate,shape,templateShape,strictPrimaryRoot);
         }catch(error){row.status="SOURCE_FETCH_HOLD";row.failure=fail(error);}
       }
       rows.push(row);
