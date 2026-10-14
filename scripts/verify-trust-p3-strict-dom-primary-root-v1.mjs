@@ -74,6 +74,9 @@ assert.equal(badAttr.status,"AMBIGUOUS_ATTRIBUTES");
 assert.throws(()=>go(""),/INVALID_INPUT/);
 assert.throws(()=>inspect(Buffer.alloc(2*1024*1024+1),p),/INVALID_INPUT/);
 assert.throws(()=>inspect(Buffer.from(wrap(product(title+form))),{...p,id:"invalid"}),/INVALID_INPUT/);
+const many=go(wrap(product(title+form).repeat(130)));
+assert.equal(many.status,"AMBIGUOUS_OR_EXCESSIVE_PRODUCT_NODES");
+assert.equal(many.primaryRootAuthority,false);
 const serialized=JSON.stringify(success);
 for(const secret of [p.name_en,"product-detail","product-name","product-form","40ml","25ml"])
  assert.ok(!serialized.includes(secret),secret);
