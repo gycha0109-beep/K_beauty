@@ -70,6 +70,25 @@ const graphHole=structuredClone(demo);
 graphHole.packages["node_modules/micromatch"].dependencies.unknownVendor="1.0.0";
 const graphResult=assess({lock:graphHole});
 assert.ok(graphResult.blockerCodes.includes("DEPENDENCY_GRAPH_INCOMPLETE"));
+const opaque=structuredClone(demo);
+opaque.packages["node_modules/opaque-fork"]={
+  version:"99.0.0",resolved:"file:/tmp/hidden-vulnerable.tgz"
+};
+const opaqueResult=assess({lock:opaque});
+assert.equal(opaqueResult.unidentifiedLocalArchiveEntries,1);
+assert.ok(opaqueResult.blockerCodes.includes(
+  "UNATTRIBUTED_LOCAL_OR_ALIAS_ARCHIVES_REQUIRE_SOURCE_CENSUS"));
+assert.equal(opaqueResult.securityGatePassed,false);
+const renamedBoth=structuredClone(demo);
+delete renamedBoth.packages["node_modules/braces"];
+delete renamedBoth.packages["node_modules/node-forge"];
+renamedBoth.packages["node_modules/opaque-fork"]=opaque.packages["node_modules/opaque-fork"];
+const renamedBothResult=assess({lock:renamedBoth});
+assert.equal(renamedBothResult.targets.every(t=>t.knownAffectedCopies===0),true);
+assert.equal(renamedBothResult.unidentifiedLocalArchiveEntries,1);
+assert.equal(renamedBothResult.securityGatePassed,false);
+assert.ok(renamedBothResult.blockerCodes.includes(
+  "UNATTRIBUTED_LOCAL_OR_ALIAS_ARCHIVES_REQUIRE_SOURCE_CENSUS"));
 const malformed=assess({lock:{lockfileVersion:2,packages:{}}});
 assert.equal(malformed.status,"HOLD_INVALID_LOCKFILE");
 assert.equal(malformed.securityGatePassed,false);
