@@ -52,6 +52,20 @@ function prepare(name,version,materialize,idx){
  const output=path.join(temp,name+"-output-"+idx);
  fs.mkdirSync(pkg);fs.mkdirSync(output);
  const source=materialize(pkg);
+ // The B2 source-only materializer preserves library provenance but has no
+ // release assets. Include only the unmodified original npm-ci LICENSE in
+ // this disposable packaging experiment; its contents are under lock integrity.
+ if(name==="node-forge"){
+   const from=path.join(root,"node_modules/node-forge/LICENSE");
+   assert.ok(fs.lstatSync(from).isFile()&&!fs.lstatSync(from).isSymbolicLink(),
+     "original npm-ci license file missing");
+   const license=fs.readFileSync(from);
+   assert.ok(license.includes(Buffer.from("BSD License")),
+     "unexpected forge dual-license text; require legal review");
+   fs.writeFileSync(path.join(pkg,"LICENSE"),license);
+   assert.equal(digest(fs.readFileSync(path.join(pkg,"LICENSE"))),digest(license),
+     "copied license bytes mismatch");
+ }
  const manifest=JSON.parse(fs.readFileSync(path.join(pkg,"package.json"),"utf8"));
  assert.equal(manifest.name,name);
  assert.equal(manifest.version,version);
@@ -73,6 +87,8 @@ function prepare(name,version,materialize,idx){
    "package/lib/constants.js"]:
   ["package/package.json","package/lib/index.js","package/lib/rsa.js"];
  for(const f of required)assert.ok(names.includes(f),name+" missing required "+f);
+ assert.ok(names.includes("package/LICENSE"),
+   name+" candidate does not preserve original LICENSE/NOTICE");
  const builtDist=names.filter(s=>s.startsWith("package/dist/"));
  if(name==="node-forge"){
   // Upstream npm package includes six separately generated browser dist files.
