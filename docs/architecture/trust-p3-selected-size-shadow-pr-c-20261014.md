@@ -25,3 +25,16 @@ PR-C는 공급망 보안 트랙의 실제 교체를 우회하지 않고, 이미 
 - PR exact-head TRUST/PIE/CodeQL/Main Health green을 확인한 다음, 기존 `P3-LOCATOR-LIVE-TRIAL`을 한 차례 실행해 고정된 6 공식 URL 중 실제 HTML4/HOLD2 현황과 오류를 재측정한다.
 - PR-C에서 실측 `SELECTED_SIZE_MATCH_SHADOW_ONLY`가 0이어도 구현 자체가 실패라는 의미는 아니다. ROOT HOLD가 선행되면 값은 **not evaluated**다.
 - 표준 HTML5 DOM 지원은 **공급망 보안 게이트 통과 이후** 별도 PR로 진행한다. Actual source/variant/market/formulation authority는 다음 검증 단계에서만 논의한다.
+
+
+## 실측 수용 결과 — 2026-10-14
+
+- 적용 병합 커밋: `e49888b1a27383d9614aeafaa7e9e70a65f178bd`, [PR #1289](https://github.com/gycha0109-beep/K_beauty/pull/1289).
+- [GitHub Actions #38496809777](https://github.com/gycha0109-beep/K_beauty/actions/runs/38496809777), read-only official locator job `115634343918` success, artifact `11863693393`. 비식별 동결 파일 `evidence/trust/p3-selected-size-shadow-live-20261014.json`.
+- 6 official locators/4 origins/3 products. HTML 수집 **4**, 공식 출처 접근 HOLD **2**, P3 review candidates **0**, strict primary product root+owned form candidates **0**, 따라서 selected-size Shadow 실행 **0**, exact SKU/market/formulation verified **0**.
+- 토리든 기존 페이지: `AMBIGUOUS_ATTRIBUTES` (`UNSUPPORTED_ATTRIBUTE_SYNTAX`). 토리든 대체: 파싱은 가능하지만 `PRIMARY_ROOT_NOT_PROVEN`.
+- 에스트라 한국 페이지: `AMBIGUOUS_ATTRIBUTES` (`UNSUPPORTED_ATTRIBUTE_SYNTAX`). 에스트라 국제: `AMBIGUOUS_ATTRIBUTES` (`DUPLICATE_ATTRIBUTE_NAME`). 뷰티오브조선 2개는 `SOURCE_FETCH_HOLD`.
+- 운영 Source/Subject/Fact/Recommendation/DB writes와 AI API calls **전부 0**. 기존 P3 candidate/Fact 게이트는 변경하지 않았다.
+- PR exact-head TRUST, PIE, CodeQL, Main Health 정상 통과. **공급망 보안 실패는 여전히 남아 있으며 우회·예외 연장하지 않음.**
+
+**종료 판정:** PR-C static selected-size shadow 구현·critical negative 테스트·실측 완료. 실제 official selector fidelity는 **상위 strict DOM root HOLDS 때문에 미검증**이다. 파서의 속성 오류를 무시해 통과시키는 변경은 허용하지 않는다. Security B3–B7의 정식 release와 SCA 승인 완료 → 별도 HTML5 parser 통합과 invalid duplicate attribute HOLD → 똑같은 공식 6URL 실측으로 루트 검증 → 그 이후 PR-D의 안전한 candidate eligibility 통합 검토 순서 유지. 품목별 임시 예외/직접 Fact 쓰기는 금지.

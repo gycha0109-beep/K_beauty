@@ -21,6 +21,8 @@ on:
       - "lib/trust/official-template-shape-p3-v1.mjs"
       - "lib/trust/official-primary-root-dom-p3-v1.mjs"
       - "lib/trust/official-selected-size-shadow-p3-v1.mjs"
+      - "lib/trust/official-p3-readonly-funnel-v1.mjs"
+      - "scripts/verify-trust-p3-readonly-funnel-v1.mjs"
       - "scripts/verify-trust-p3-owned-selected-size-shadow-v1.mjs"
       - "scripts/verify-trust-p3-strict-dom-primary-root-v1.mjs"
       - "scripts/verify-trust-p3-template-shape-v1.mjs"
@@ -112,6 +114,8 @@ on:
       - "lib/trust/official-template-shape-p3-v1.mjs"
       - "lib/trust/official-primary-root-dom-p3-v1.mjs"
       - "lib/trust/official-selected-size-shadow-p3-v1.mjs"
+      - "lib/trust/official-p3-readonly-funnel-v1.mjs"
+      - "scripts/verify-trust-p3-readonly-funnel-v1.mjs"
       - "scripts/verify-trust-p3-owned-selected-size-shadow-v1.mjs"
       - "scripts/verify-trust-p3-strict-dom-primary-root-v1.mjs"
       - "scripts/verify-trust-p3-template-shape-v1.mjs"
@@ -250,6 +254,7 @@ jobs:
           node scripts/verify-trust-p3-root-colocation-diagnostic-v1.mjs
           node scripts/verify-trust-p3-strict-dom-primary-root-v1.mjs
           node scripts/verify-trust-p3-owned-selected-size-shadow-v1.mjs
+          node scripts/verify-trust-p3-readonly-funnel-v1.mjs
           node scripts/verify-trust-p3-official-three-brand-pilot.mjs
           node scripts/verify-trust-p3-official-locator-revalidation.mjs
           node scripts/verify-trust-p2c-robots-smoke.mjs
