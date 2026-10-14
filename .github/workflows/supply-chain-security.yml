@@ -11,6 +11,7 @@ on:
       - "apps/**"
       - "packages/**"
       - "tools/**"
+      - "crawler/**"
       - "scripts/**"
       - "package.json"
       - "package-lock.json"
@@ -27,6 +28,7 @@ on:
       - "apps/**"
       - "packages/**"
       - "tools/**"
+      - "crawler/**"
       - "scripts/**"
       - "package.json"
       - "package-lock.json"
@@ -98,6 +100,34 @@ jobs:
           else
             git diff --check HEAD^
           fi
+
+  crawler-official-audit:
+    name: Separate crawler official dependency security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - name: Attest exact crawler candidate HEAD
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - name: Clean crawler installation from committed lock
+        run: npm --prefix crawler ci --ignore-scripts --no-audit --no-fund
+      - name: Trace actual fixed runtime and compiler paths
+        run: npm --prefix crawler ls ws tsx esbuild --all
+      - name: Real localhost WebSocket consumer behavior
+        run: node crawler/test-supply-chain-websocket.mjs
+      - name: Official full and production raw crawler audits
+        run: |
+          npm --prefix crawler audit --json --registry=https://registry.npmjs.org
+          npm --prefix crawler audit --omit=dev --json --registry=https://registry.npmjs.org
+      - run: git diff --exit-code -- crawler/package.json crawler/package-lock.json package.json package-lock.json
 
   codeql:
     name: CodeQL JavaScript and TypeScript
