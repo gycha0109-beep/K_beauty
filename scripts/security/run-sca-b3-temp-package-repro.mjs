@@ -192,9 +192,24 @@ function packOne(name,iteration){
  if(name==="braces"&&iteration===1){
   const fixture=path.join(work,"braces-offline-npm-ci");
   fs.mkdirSync(fixture);
+  // Offline npm does not necessarily cache registry *metadata* from npm ci.
+  // All three unchanged transitives are byte-pinned by the main lock and
+  // linked locally; only braces is physically installed from B3 .tgz.
+  const rootLock=JSON.parse(fs.readFileSync(path.join(root,"package-lock.json"),"utf8"));
+  const transitive=["fill-range","to-regex-range","is-number"];
+  const fixtureDeps={braces:"file:"+archive};
+  for(const dep of transitive){
+   const location=path.join(root,"node_modules",dep);
+   const origPkg=JSON.parse(fs.readFileSync(path.join(location,"package.json"),"utf8"));
+   assert.equal(origPkg.version,rootLock.packages["node_modules/"+dep].version,
+     "original root npm-ci transitive version drift: "+dep);
+   assert.match(rootLock.packages["node_modules/"+dep].integrity,/^sha512-/,
+     "uncertified original transitive lock integrity");
+   fixtureDeps[dep]="file:"+location;
+  }
   fs.writeFileSync(path.join(fixture,"package.json"),JSON.stringify({
    name:"bejewely-b3-braces-quarantined-consumer",version:"0.0.0",
-   private:true,dependencies:{braces:"file:"+archive}
+   private:true,dependencies:fixtureDeps
   },null,2)+"\n");
   run("npm",["install","--package-lock-only","--ignore-scripts","--offline",
    "--no-audit","--no-fund"],fixture,55000);
@@ -222,6 +237,7 @@ function packOne(name,iteration){
    directInstalledPackage:"braces@3.0.3",
    installedFileCount:Object.keys(physical).length,
    installedTarballSha256:sha(archiveBytes),
+   unchangedTransitiveDependenciesLinkedFromOriginalNpmCi:transitive,
    scannerPassClaim:false,appDependencyGraphReplaced:false,
    noProductionPackageLockChange:true,artifactsDeletedOnExit:true
   };
