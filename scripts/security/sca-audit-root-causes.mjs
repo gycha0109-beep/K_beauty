@@ -74,7 +74,7 @@ export function analyzeAuditCauses(payload) {
     const affected=packages.filter(name=>roots.get(name).has(id));
     assert.ok(affected.includes(meta.package),'advisory root not in its package');
     const policy=REVIEWED_HIGH_ADVISORIES[id];
-    const reviewed=meta.severity!=='high'?'NON_HIGH_REVIEW_SEPARATE':policy?.package===meta.package?'REVIEWED_SOURCE_SNAPSHOT':'HIGH_REVIEW_REQUIRED';
+    const reviewed=meta.severity!=='high'?'NON_HIGH_REVIEW_SEPARATE':policy?.package===meta.package && policy.affected===meta.range?'REVIEWED_SOURCE_SNAPSHOT':'HIGH_REVIEW_REQUIRED';
     return {
       ...meta,affectedPackageCount:affected.length,affectedPackages:affected,
       propagatedPackageCount:affected.length-1,
@@ -91,7 +91,7 @@ export function analyzeAuditCauses(payload) {
     informationalOnly:true,
     counts:{affectedVulnerabilityNodes:packages.length,highSeverityNodes:highNodes.length,concreteAdvisoryLeaves:causes.length,highSeverityLeaves:highCauses.length},
     causes,
-    highCauseDisposition:unreviewedHigh.length?'REVIEW_NEW_HIGH_SOURCE':'KNOWN_HIGH_WITHOUT_OFFICIAL_FIX_RELEASE',
+    highCauseDisposition:!highCauses.length?'NO_HIGH_ADVISORY':unreviewedHigh.length?'REVIEW_NEW_HIGH_SOURCE':'KNOWN_HIGH_WITHOUT_OFFICIAL_FIX_RELEASE',
     unreviewedHighIds:unreviewedHigh.map(x=>x.id),
     closureRounds:rounds,
     policySnapshotDate:'2026-10-14'
