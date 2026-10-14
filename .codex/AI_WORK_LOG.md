@@ -2,6 +2,12 @@
 
 ## Entries
 
+### 2026-10-14 / SEC-SCA B3 재현 가능 임시 tarball 및 설치 후 취약 입력 검증
+- [B3 Draft PR #1282](https://github.com/gycha0109-beep/K_beauty/pull/1282) B1/B2 패치 출처 고정 코드를 최신 main 기반으로 격리 조합. `scripts/security/run-private-distribution-preflight.mjs` 및 Supply Chain 기존 trace 호출 추가.
+- [Security CI #38492443214](https://github.com/gycha0109-beep/K_beauty/actions/runs/38492443214) 기준 코드 SHA `44a99440d92b5194bc55a9fa206f7cf6956bd410`: 두 패키지 별도 2회 `npm pack` tarball SHA512 동일, 원본 LICENSE 포함, 별도 임시 npm 설치에서 수정 파일 SHA256 일치, 실제 설치본의 braces 과도한 중첩/AST 거부 및 forge ASN.1·Expo 서명 fixture 모두 PASS.
+- 실제 앱 package/lock 또는 npm audit 정책/프로덕션 변경 없음. 기존 raw audit 만료된 braces 예외로 FAIL 유지. forge 브라우저 dist 6개 미재빌드로 테스트 tarball 제외, 라이선스/출처 Security 리뷰 및 두 패키지 릴리스 승인 미완료. B3 staging PASS이나 정식 교체·Android/B4~B7 HOLD.
+- 기록: `docs/security/sec-sca-20261014-b3-artifact-preflight.md`.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
