@@ -297,8 +297,12 @@ try{
   fs.writeFileSync(pkgJsonFile,JSON.stringify(metadata,null,2)+"\n");
   const candidateFiles=walk(pkgFolder);
   const differences=Object.keys(originalFiles).filter(x=>candidateFiles[x]!==originalFiles[x]).sort();
-  assert.deepEqual(differences,["lib/rsa.js","package.json",...distroNames.map(x=>"dist/"+x)].sort(),
-   "full-dist candidate modified unexpected original package files");
+  // Exact pinned upstream webpack emits byte-identical worker and cheap source
+  // maps; RSA changes must affect the two forged core bundles, *not* worker.
+  // Rebuilt unchanged dist files are still byte-checked against fresh output.
+  assert.deepEqual(differences,[
+   "dist/forge.all.min.js","dist/forge.min.js","lib/rsa.js","package.json"
+  ].sort(),"full-dist candidate modified unexpected original package files");
   assert.deepEqual(Object.keys(candidateFiles).sort(),Object.keys(originalFiles).sort(),
    "full-dist candidate lost/gained source files");
   const output=JSON.parse(run("npm",[
