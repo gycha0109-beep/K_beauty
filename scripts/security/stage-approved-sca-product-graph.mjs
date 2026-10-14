@@ -78,6 +78,7 @@ try{
   run('npm',['ci','--no-audit','--no-fund']);assert.deepEqual(installedGraph(lock),graph);
   assert.equal(digest(fs.readFileSync(path.join(out,'package-lock.json'))),digest(lockBytes));
   fs.rmSync(config);delete env.npm_config_userconfig; // registry credential no longer available to app build
+  env.npm_config_registry='https://registry.npmjs.org'; // authoritative advisory service, never a private mirror's empty feed
   run('npm',['ls','braces','node-forge','--all']);
   run(process.execPath,['scripts/security/verify-private-braces-probe-child.mjs',path.join(out,'node_modules/braces')]);
   run(process.execPath,['scripts/security/verify-private-forge-probe-child.mjs',path.join(out,'node_modules')]);
@@ -87,7 +88,7 @@ try{
   let android='NOT_RUN_NO_SDK';const sdk=process.env.ANDROID_HOME||process.env.ANDROID_SDK_ROOT;
   if(sdk&&fs.existsSync(sdk)){run('bash',['./gradlew',':app:assembleDebug','--no-daemon','--max-workers=2','-Dorg.gradle.jvmargs=-Xmx4g'],path.join(out,'apps/mobile/android'),1800000);android='PASS';}
   const audits={};for(const [label,options]of [['full',[]],['production',['--omit=dev']]]){
-    const p=run('npm',['audit','--json',...options],out,120000,[0,1]),r=JSON.parse(p.stdout);
+    const p=run('npm',['audit','--json','--registry=https://registry.npmjs.org',...options],out,120000,[0,1]),r=JSON.parse(p.stdout);
     assert.ok(!r.error&&r.metadata?.vulnerabilities,'audit service error');fs.writeFileSync(path.join(out,'sca-audit-'+label+'.json'),p.stdout);
     audits[label]={exit:p.status,sha256:digest(p.stdout),counts:r.metadata.vulnerabilities};console.log('SCA_B6_RAW_'+label.toUpperCase()+'_BEGIN\n'+p.stdout+'\nSCA_B6_RAW_AUDIT_END');
   }
