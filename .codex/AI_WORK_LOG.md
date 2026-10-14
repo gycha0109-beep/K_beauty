@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-14 / Face Lab Skin S2 read-only provenance diagnostic
+
+- Type: synthetic evaluation infrastructure, owner face-lab-skin; pinned main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2. S0 #1308 / bounded fix #1309 / S1 #1310 independent.
+- Added standalone read-only `skin-decision-provenance-audit-core.mjs` and fixture verifier checking canonical photo status/fallback, low-confidence/photo-scoring provenance, mixed/conflict loss, critical consistency fallback, unknown-product forced stop; no copied decision policy or new recommendation calculator.
+- Output `NO_FLAGGED_INVARIANT` is not a safe/accurate medical judgment. Signal absence in a 4-observation cap can trigger a cautious finding rather than a confirmed defect.
+- Added one existing Current Main Health verifier hook, no new workflow.
+- Tests: bounded source-based synthetic verifier executed in isolated JS runtime PASS; exact-head CI pending. Human/real photo, survey-product medical causality, 164×12 acceptance and signed activation held independently.
+- No score/Top Pick/API/DB/Auth/RLS/Storage/Provider/Payment/Production/Style changes. #1208 still security-blocked.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
