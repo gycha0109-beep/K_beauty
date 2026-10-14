@@ -71,6 +71,35 @@ const large=go(wrap(product('<div data-blob="'+('x'.repeat(650000))+'"></div>'+t
 assert.equal(large.status,"TAG_SCAN_LIMIT");
 const badAttr=go(wrap(product('<div class="product-name" class="another">'+title+'</div>'+form)));
 assert.equal(badAttr.status,"AMBIGUOUS_ATTRIBUTES");
+assert.deepEqual(badAttr.attributeFailure,{
+  reason:"DUPLICATE_ATTRIBUTE_NAME",tagKind:"DIV",attributeOrdinal:2});
+const unsupported=go(wrap(product('<div @click="PRIVATE_TOKEN" class="product-name">'+
+  title+'</div>'+form)));
+assert.equal(unsupported.status,"AMBIGUOUS_ATTRIBUTES");
+assert.deepEqual(unsupported.attributeFailure,{
+  reason:"UNSUPPORTED_ATTRIBUTE_SYNTAX",tagKind:"DIV",attributeOrdinal:1});
+const emptyValue=go(wrap(product('<section data-name= >'+title+'</section>'+form)));
+assert.equal(emptyValue.status,"AMBIGUOUS_ATTRIBUTES");
+assert.deepEqual(emptyValue.attributeFailure,{
+  reason:"EMPTY_UNQUOTED_VALUE",tagKind:"SECTION",attributeOrdinal:1});
+const tooManyAttrs=go(wrap(product('<article '+Array.from({length:65},
+  (_,i)=>'data-a'+i+'="PRIVATE_SECRET"').join(' ')+'></article>'+title+form)));
+assert.equal(tooManyAttrs.status,"AMBIGUOUS_ATTRIBUTES");
+assert.deepEqual(tooManyAttrs.attributeFailure,{
+  reason:"ATTRIBUTE_COUNT_LIMIT",tagKind:"ARTICLE",attributeOrdinal:65});
+const unsupportedTag=go(wrap(product('<custom-view @click="PRIVATE_SECRET"></custom-view>'+
+  title+form)));
+assert.equal(unsupportedTag.status,"AMBIGUOUS_ATTRIBUTES");
+assert.equal(unsupportedTag.attributeFailure.tagKind,"OTHER");
+const leakProof=JSON.stringify([badAttr,unsupported,emptyValue,tooManyAttrs,unsupportedTag]);
+for(const secret of ["PRIVATE_TOKEN","PRIVATE_SECRET","@click","data-a64",
+  "another","data-name","product-name","<article","<section"]){
+  assert.ok(!leakProof.includes(secret),"raw HTML/attributes must not leak: "+secret);
+}
+assert.ok([badAttr,unsupported,emptyValue,tooManyAttrs,unsupportedTag].every(x=>
+  x.primaryRootAuthority===false&&x.exactSkuVerified===false&&
+  x.factConfirmationAuthorized===false&&x.dbWrites===0&&x.aiApiCalls===0));
+
 assert.throws(()=>go(""),/INVALID_INPUT/);
 assert.throws(()=>inspect(Buffer.alloc(2*1024*1024+1),p),/INVALID_INPUT/);
 assert.throws(()=>inspect(Buffer.from(wrap(product(title+form))),{...p,id:"invalid"}),/INVALID_INPUT/);
