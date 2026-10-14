@@ -13,8 +13,7 @@ globalThis.fetch = async () => {
 const { buildRecommendationProductFromSource } =
   await import("../../lib/product-source.js");
 const { buildSkinMatchDecisionBundle } =
-  await import("../../lib/skin-match-decision.js").catch(async () =>
-    import("../../lib/skin-match-decision-engine.js"));
+  await import("../../lib/skin-match-decision-engine.js");
 const { projectProductWithOfferAuthority } =
   await import("../../lib/product-offer-read-path.js");
 
