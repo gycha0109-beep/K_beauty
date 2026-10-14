@@ -119,3 +119,50 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:javascript-typescript"
+
+  b3-isolated-artifact-provenance:
+    name: B3 isolated private tarball provenance (not a release)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact B3 HEAD
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Confirm exact B3 checked-out SHA
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+
+      - name: Node 22 and immutable original dependencies
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install original graph without scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate both original official npm archives
+        run: |
+          node scripts/security/verify-private-braces-registry-origin.mjs
+          node scripts/security/verify-private-forge-registry-origin.mjs
+
+      - name: Assert B1/B2 isolated source and consumer behavior
+        run: |
+          node scripts/security/verify-private-braces-source-candidate.mjs
+          node scripts/security/verify-private-forge-source-candidate.mjs
+
+      - name: Create twice and verify disposable B3 tarballs and scoped SBOM
+        run: node scripts/security/run-sca-b3-temp-package-repro.mjs
+
+      - name: Verify manifest and lock remain unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
