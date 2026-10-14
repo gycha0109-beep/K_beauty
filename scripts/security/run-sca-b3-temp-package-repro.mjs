@@ -187,6 +187,46 @@ function packOne(name,iteration){
    sha(fs.readFileSync(path.join(source.directory,l))),"license absent from artifact");
  assert.equal(files["lib/rsa.js"]===undefined,name==="braces",
    "forge RSA file not present in packed artifact");
+
+ let npmInstalledBracesConsumer=null;
+ if(name==="braces"&&iteration===1){
+  const fixture=path.join(work,"braces-offline-npm-ci");
+  fs.mkdirSync(fixture);
+  fs.writeFileSync(path.join(fixture,"package.json"),JSON.stringify({
+   name:"bejewely-b3-braces-quarantined-consumer",version:"0.0.0",
+   private:true,dependencies:{braces:"file:"+archive}
+  },null,2)+"\n");
+  run("npm",["install","--package-lock-only","--ignore-scripts","--offline",
+   "--no-audit","--no-fund"],fixture,55000);
+  const resolverLock=JSON.parse(fs.readFileSync(path.join(fixture,"package-lock.json"),"utf8"));
+  assert.equal(resolverLock.lockfileVersion,3);
+  const locked=resolverLock.packages["node_modules/braces"];
+  assert.ok(locked.resolved.startsWith("file:"));
+  assert.equal(path.resolve(fixture,locked.resolved.slice(5)),archive);
+  assert.equal(locked.integrity,sha512(archiveBytes),
+   "npm resolver re-locked unrelated braces tarball");
+  run("npm",["ci","--ignore-scripts","--offline","--no-audit","--no-fund"],fixture,55000);
+  const installed=path.join(fixture,"node_modules","braces");
+  assert.ok(fs.lstatSync(installed).isDirectory()&&!fs.lstatSync(installed).isSymbolicLink());
+  const physical=inventory(installed);
+  assert.deepEqual(physical,files,
+   "actual npm ci-installed braces bytes differ from packed evidence");
+  const child=run(process.execPath,[
+   path.join(root,"scripts/security/verify-private-braces-probe-child.mjs"),installed
+  ],root,35000);
+  assert.match(child,/SCA_B1_BRACES_BEHAVIOR=PASS/,
+   "actual npm-installed braces parser/AST regression failed");
+  npmInstalledBracesConsumer={
+   result:"PASS_OFFLINE_NPM_CI_INSTALLED_BRACES_DEPTH_AST",
+   fixtureOnly:true,lockfileVersion:resolverLock.lockfileVersion,
+   directInstalledPackage:"braces@3.0.3",
+   installedFileCount:Object.keys(physical).length,
+   installedTarballSha256:sha(archiveBytes),
+   scannerPassClaim:false,appDependencyGraphReplaced:false,
+   noProductionPackageLockChange:true,artifactsDeletedOnExit:true
+  };
+ }
+
  const actualPackedForgeConsumer=name==="node-forge"&&iteration===1 ?
    verifyActualPackedForgeConsumer(path.join(unpack,"package"),work) : null;
  const pkg=JSON.parse(fs.readFileSync(path.join(unpack,"package/package.json"),"utf8"));
@@ -199,7 +239,7 @@ function packOne(name,iteration){
    sha512Hex:sha(archiveBytes,"sha512"),
    artifactBytes:archiveBytes.length,files,
    lifecycleHooksRemoved:source.removedLifecycleHooks,
-   actualPackedForgeConsumer,
+   actualPackedForgeConsumer,npmInstalledBracesConsumer,
    licenses:source.licenses,distEntries:paths.filter(x=>x.startsWith("package/dist/")).length,
    provenance:"verified original npm-ci package + pinned minimal source patch",
    privateTempOnly:true,originalAuditStillFailing:true,distributionApproved:false};
