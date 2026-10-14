@@ -17,6 +17,8 @@ import {inspectTrustP3TemplateShape}
   from "../lib/trust/official-template-shape-p3-v1.mjs";
 import {inspectTrustP3StrictPrimaryRoot}
   from "../lib/trust/official-primary-root-dom-p3-v1.mjs";
+import {classifyTrustP3ReadOnlyFunnelRow,summarizeTrustP3ReadOnlyFunnel}
+  from "../lib/trust/official-p3-readonly-funnel-v1.mjs";
 
 export const P3_LOCATOR_VERSION="trust-p3-official-locator-freshness-v1";
 const FROZEN="evidence/trust/p3-official-locator-revalidation-cohort-v1.json";
@@ -145,11 +147,17 @@ export async function observeTrustP3LocatorFreshness({
     }
   }
   const outcomes={};
-  for(const row of rows)outcomes[row.status]=(outcomes[row.status]??0)+1;
+  for(const row of rows){
+    outcomes[row.status]=(outcomes[row.status]??0)+1;
+    // Fixed enum derived from already collected read-only source metadata.
+    row.readOnlyFunnel=classifyTrustP3ReadOnlyFunnelRow(row);
+  }
+  const readOnlyFunnel=summarizeTrustP3ReadOnlyFunnel(rows);
   return {contract:P3_LOCATOR_VERSION,observedAt:new Date().toISOString(),
     mode:execute?"ROBOTS_GUARDED_READ_ONLY":"PLAN_ONLY_NO_NETWORK",
     summary:{targets:3,locators:6,requestedOrigins:4,processed:rows.length,outcomes,
       productCandidates:rows.filter(r=>r.status==="DIRECT_PRODUCT_CANDIDATE_REVIEW_REQUIRED").length,
+      readOnlyFunnel,
       verifiedExactSkuCount:0,verifiedMarketCount:0,verifiedFormulationCount:0,...EMPTY},
     items:rows,readOnly:true,...EMPTY};
 }
