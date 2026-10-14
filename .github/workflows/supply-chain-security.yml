@@ -264,6 +264,8 @@ jobs:
   b3-browser-full-dist-independent-replay:
     name: B3 full browser dist independent clean-runner reproducibility
     needs: [b3-browser-bundle-rebuild-isolation]
+    # Replay proven B3 bytes even when the separate B4 experiment later fails.
+    if: ${{ always() && needs.b3-browser-bundle-rebuild-isolation.outputs.forge_full_dist_sha256 != '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

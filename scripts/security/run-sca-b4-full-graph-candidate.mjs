@@ -42,7 +42,8 @@ function audit(cwd,label,args=[]) {
   const leaves=Object.values(report.vulnerabilities||{}).flatMap(v=>(v.via||[])
     .filter(x=>typeof x==="object").map(x=>({name:x.name,url:x.url,severity:x.severity,range:x.range})));
   return {exit:p.status,rawSha256:hash(p.stdout),counts:report.metadata.vulnerabilities,
-    advisoryLeaves:[...new Map(leaves.map(x=>[x.url,x])).values()]};
+    advisoryLeaves:[...new Map(leaves.map(x=>[x.url,x])).values()],
+    targetScannerCoverage:Object.fromEntries(targets.map(name=>[name,leaves.some(x=>x.name===name)]))};
 }
 
 export async function validateFullGraphCandidate(forgeTarball,forgeReceipt) {
@@ -156,7 +157,11 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt) {
     fs.writeFileSync(consumerProbe,`const assert=require('node:assert/strict');
 const mm=require('micromatch'); const fg=require('fast-glob');
 assert.deepEqual(mm(['src/a.js','src/b.js','other.txt'],'src/{a,b}.js'),['src/a.js','src/b.js']);
-assert.throws(()=>mm.makeRe('{'.repeat(110)+'a,b'+'}'.repeat(110)),/exceeds max depth/);
+// makeRe delegates to picomatch, whereas these APIs invoke the external braces package.
+const deep='{'.repeat(110)+'a,b'+'}'.repeat(110);
+assert.throws(()=>mm.braces(deep),/exceeds max depth/);
+assert.throws(()=>mm.braceExpand(deep),/exceeds max depth/);
+assert.deepEqual(mm.braceExpand('src/{a,b}.js'),['src/a.js','src/b.js']);
 assert.ok(fg.sync('apps/mobile/{app,src}/**/*.{ts,tsx}').length>0);
 console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     run(process.execPath,[consumerProbe],graph);
@@ -164,6 +169,21 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
       baselineFull:audit(root,"BASELINE_FULL"),baselineProduction:audit(root,"BASELINE_PRODUCTION",["--omit=dev"]),
       candidateFull:audit(graph,"CANDIDATE_FULL"),candidateProduction:audit(graph,"CANDIDATE_PRODUCTION",["--omit=dev"])
     };
+    const sbom={bomFormat:"CycloneDX",specVersion:"1.6",version:1,
+      metadata:{component:{type:"application",name:"BEJEWELY-B4-disposable-graph",version:head}},
+      components:Object.entries(candidate.packages).filter(([p,e])=>p&&e.version&&!e.link).map(([p,e])=>{
+        const name=e.name||p.split("node_modules/").at(-1);
+        const patched=installed.find(x=>x.path===p);
+        return {type:"library",name,version:e.version,
+          hashes:e.integrity?.startsWith("sha512-")?[{alg:"SHA-512",content:Buffer.from(e.integrity.slice(7),"base64").toString("hex")}]:[],
+          properties:[{name:"bejewely:lock-path",value:p},
+            {name:"bejewely:status",value:patched?"TEMP_PATCH_NOT_RELEASED":"LOCK_PINNED_DEPENDENCY"},
+            ...(patched?[{name:"bejewely:installed-content-sha256",value:patched.contentSha256}]:[])]};
+      })};
+    console.log("SCA_B4_INSTALLED_SBOM="+JSON.stringify(sbom));
+    console.log("SCA_B4_INSTALL_EVIDENCE="+JSON.stringify({head,originalLockSha256:hash(originalLockBytes),
+      candidateLockSha256:hash(candidateBytes),installed,consumers,audits,
+      fullGraphInstalled:true,acceptance:"HOLD_UNRELEASED_AND_AUDIT_NOT_CLEARED"}));
     // Also exercise ordinary lifecycle installation. This remains inside the disposable graph.
     run("npm",["ci","--no-audit","--no-fund"],graph,300000);
     assert.equal(hash(fs.readFileSync(path.join(graph,"package-lock.json"))),hash(candidateBytes));
@@ -217,7 +237,9 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
       npm:run("npm",["--version"],graph).stdout.trim(),
       originalLockSha256:hash(originalLockBytes),candidateLockSha256:hash(candidateBytes),
       artifacts:{braces:{sha256:hash(fs.readFileSync(bracesTarball)),provenance:bracesProvenance},forge:forgeReceipt},
-      installed,consumers,audits,checks,android,metroBundles,prebuildChangedDisposableMobileManifest:modifiedMobile!==archivedMobile,
+      installed,consumers,audits,checks,android,metroBundles,
+      sbomSha256:hash(JSON.stringify(sbom)),sbomComponents:sbom.components.length,
+      prebuildChangedDisposableMobileManifest:modifiedMobile!==archivedMobile,
       technicalInstallEvidence:"PASS",acceptance:"HOLD_UNRELEASED_SAME_VERSION_PATCH_AND_RAW_AUDIT",
       fullGraphInstalled:true,appSourceGraphChanged:false,auditPolicyChanged:false,
       releaseApproved:false,deviceSmoke:"NOT_RUN_NO_DEVICE_OR_ISOLATED_BACKEND",
