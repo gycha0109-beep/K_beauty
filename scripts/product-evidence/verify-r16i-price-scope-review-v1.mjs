@@ -154,6 +154,21 @@ assert.equal(priceContractSummary.nullApiFieldsPreserved, true);
 assert.equal(priceContractSummary.productWrites, 0);
 assert.equal(priceContractSummary.offerWrites, 0);
 console.log(JSON.stringify(priceContractSummary));
+// D8I is DESIGN SHADOW ONLY: exact two Offer candidates, zero writes/grants.
+const dualOfferPreview = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-r16i-d8i-dual-offer-cutover-preview-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
+assert.equal(dualOfferPreview.status, 0,
+  `R16I D8I dual-Offer design gate failed: ${dualOfferPreview.error?.message || dualOfferPreview.stderr || dualOfferPreview.stdout}`);
+const dualOfferSummary = JSON.parse(dualOfferPreview.stdout.trim().split("\n").at(-1));
+assert.equal(dualOfferSummary.status, "PASS");
+assert.equal(dualOfferSummary.stage, "R16I_D8I_DUAL_OFFER_CUTOVER_DESIGN_SHADOW");
+assert.equal(dualOfferSummary.offerCandidates, 2);
+assert.equal(dualOfferSummary.ownerPricePolicyApproved, false);
+assert.equal(dualOfferSummary.productWrites, 0);
+assert.equal(dualOfferSummary.offerWrites, 0);
+assert.equal(dualOfferSummary.productionReleaseAuthorized, false);
+console.log(JSON.stringify(dualOfferSummary));
 console.log(JSON.stringify({
  status:"PASS",stage:"R16I_PRICE_SCOPE_REVIEW_SHADOW",
  testCases:denied.length+1,
