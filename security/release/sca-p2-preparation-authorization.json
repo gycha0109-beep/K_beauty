@@ -1,0 +1,36 @@
+{
+  "schema": "bejewely.sca-p2-preparation-authorization.v1",
+  "recordedDate": "2026-10-14",
+  "project": "BEJEWELY",
+  "governance": {
+    "mode": "single-owner",
+    "authority": "user-project-owner",
+    "accountableRoles": [
+      "product-planning",
+      "development",
+      "security-review",
+      "license-review",
+      "maintenance",
+      "distribution"
+    ],
+    "separateHumanApproversRequired": false
+  },
+  "approvedNow": [
+    "prepare-private-patch-distribution-path",
+    "review-node-forge-under-BSD-3-Clause-terms",
+    "prepare-offline-CI-and-license-notice-evidence",
+    "design-single-owner-release-authorization"
+  ],
+  "separateOwnerApprovalRequired": [
+    "incur-cost-or-subscribe-to-paid-service",
+    "actually-upload-or-publish-patched-packages",
+    "merge-to-main-or-deploy-to-production",
+    "use-production-or-real-user-data",
+    "waive-or-exempt-required-security-audit"
+  ],
+  "formalReleaseApproval": "NOT_GRANTED",
+  "signingKeyRegistered": false,
+  "privateRegistrySelected": false,
+  "officialAuditStatus": "FAIL_UNRESOLVED",
+  "implementationRule": "User's stated preparation approval is recognized; no fictitious multi-person signoff, no implicit publishing authority."
+}
