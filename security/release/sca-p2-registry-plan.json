@@ -1,0 +1,40 @@
+{
+  "schema": "bejewely.sca-p2-private-registry-plan.v1",
+  "state": "OFFLINE_DESIGN_ONLY",
+  "providerSelected": false,
+  "provider": "UNSELECTED",
+  "candidateArchitecture": "SELF_HOSTED_NPM_COMPATIBLE_PRIVATE_REGISTRY",
+  "candidateExample": "Verdaccio behind independently authenticated HTTPS (not deployed)",
+  "endpoint": null,
+  "credentialsProvisioned": false,
+  "paidServicesAuthorized": false,
+  "actualPackagePublicationAuthorized": false,
+  "packagesPublished": false,
+  "packages": [
+    "braces@3.0.3",
+    "node-forge@1.4.0"
+  ],
+  "packageNamesMustRemainUnscoped": true,
+  "candidateRequirements": {
+    "originalPackageNames": true,
+    "immutableArtifactBytes": true,
+    "authenticatedWrite": true,
+    "anonymousArchiveReadDenied": true,
+    "noPublicNpmShadowing": true,
+    "noRedirectedCredentialDisclosure": true,
+    "separateReadAndPublishTokens": true,
+    "strictRegistryUrlAndTarballPathBinding": true,
+    "officialNpmAuditUnchanged": true
+  },
+  "externalCapabilitiesVerified": false,
+  "evidenceRequiredBeforeActivation": [
+    "actual backend selection with zero unapproved charges",
+    "TLS endpoint and certificate chain",
+    "unscoped braces/node-forge identity support and routing isolation",
+    "immutable version and archive server policy",
+    "401/403/404 anonymous archive readback",
+    "scoped short-lived read and publish credentials outside Git",
+    "separately approved exact candidate upload and owner Ed25519 signed authorization",
+    "canonical mandatory npmjs audit and consumer lock/Android acceptance"
+  ]
+}
