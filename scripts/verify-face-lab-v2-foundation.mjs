@@ -1,3 +1,4 @@
+import "./verify-face-lab-v2-personal-color-research-ui.mjs";
 import assert from "node:assert/strict";
 import "./verify-face-lab-v2-personal-color-observation.mjs";
 import "./verify-face-lab-v2-personal-color-palette.mjs";
