@@ -172,6 +172,27 @@ test.describe("Face Lab M0-B synthetic browser persistence", () => {
     expect(saved.syncStatus).toBe("pending");
   });
 
+  test("restores approved local target and route after a full browser reload", async ({ page }) => {
+    await openSyntheticFaceLab(page);
+    await approveSyntheticTarget(page);
+    await expect(page.locator('[data-face-lab-persistence-status="pending"]')).toBeVisible();
+    const before = await getLocalState(page);
+    expect(before?.value).toContain('"targetSelections":["sophisticated"]');
+
+    await page.reload({ waitUntil: "networkidle" });
+    // A page reload does not restore the input File; users may re-select the
+    // same synthetic file, while the bounded approved local snapshot survives.
+    await page.locator('input[type="file"][accept*="image/png"]').setInputFiles({
+      name: "synthetic-m0-no-person.png",
+      mimeType: "image/png",
+      buffer: PNG_1X1
+    });
+    await expect(page.getByRole("button", { name: "추구미 수정", exact: true })).toBeVisible();
+    await expect(page.locator('[data-face-lab-persistence-status="pending"]')).toBeVisible();
+    expect(await getLocalState(page), "reentry must not silently change an approved pending payload")
+      .toEqual(before);
+  });
+
   test("reports storage failure without claiming the draft was saved", async ({ page }) => {
     await openSyntheticFaceLab(page);
     await page.evaluate(() => {
