@@ -1,0 +1,107 @@
+{
+  "contract": "trust-p3-root-colocation-live-acceptance-v1",
+  "observedAt": "2026-10-13",
+  "provenance": {
+    "mainSha": "383dd10e5ea0c4d3af4a8305674cb68f98c8ab45",
+    "mergedPr": 1278,
+    "workflowRunId": 38355272179,
+    "jobId": 115156575736,
+    "artifactId": 11793090810
+  },
+  "scope": {
+    "products": 3,
+    "officialLocators": 6,
+    "origins": 4,
+    "fetched": 4,
+    "sourceBlocked": 2
+  },
+  "counts": {
+    "officialCandidates": 0,
+    "verifiedExactSku": 0,
+    "verifiedMarket": 0,
+    "verifiedFormulation": 0,
+    "newSourceBindings": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0
+  },
+  "observed": [
+    {
+      "brand": "토리든",
+      "role": "EXISTING_BOUND_SOURCE",
+      "scan": "COMPLETE",
+      "markedRootsTotal": 5,
+      "markedRootFamilies": {
+        "goodsDetail": 2,
+        "itemDetail": 3
+      },
+      "rootsWithTitleMarker": 2,
+      "rootsWithVariantControl": 0,
+      "rootsWithTitleAndVariant": 0,
+      "scopedTitleMarkerCountPage": 1,
+      "pageSelectCount": 1,
+      "explicitSelectedOptionCount": 0,
+      "note": "Two ancestor roots can share one title marker; not two distinct product identities."
+    },
+    {
+      "brand": "토리든",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "scan": "COMPLETE",
+      "markedRootsTotal": 5,
+      "markedRootFamilies": {
+        "goodsDetail": 2,
+        "itemDetail": 3
+      },
+      "rootsWithTitleMarker": 2,
+      "rootsWithVariantControl": 0,
+      "rootsWithTitleAndVariant": 0,
+      "scopedTitleMarkerCountPage": 1,
+      "pageSelectCount": 1,
+      "explicitSelectedOptionCount": 0,
+      "note": "No primary-root co-location to option. Catalog product identity or alternative source equivalence not authorized."
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "EXISTING_BOUND_SOURCE",
+      "fetch": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "fetch": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "에스트라",
+      "role": "EXISTING_BOUND_SOURCE",
+      "scan": "COMPLETE_WITH_SKIPPED_OVERSIZED_TAGS",
+      "countsComplete": false,
+      "markedRootsTotalObserved": 0,
+      "rootsWithTitleAndVariantObserved": 0,
+      "note": "Zero partial counters cannot establish primary-root absence."
+    },
+    {
+      "brand": "에스트라",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "scan": "COMPLETE_WITH_SKIPPED_OVERSIZED_TAGS",
+      "countsComplete": false,
+      "mainCount": 1,
+      "markedRootsTotalObserved": 1,
+      "productDataAttributeRootCountObserved": 1,
+      "rootsWithH1Observed": 1,
+      "rootsWithScopedTitleClassObserved": 0,
+      "rootsWithVariantControlObserved": 0,
+      "rootsWithTitleAndVariantObserved": 0,
+      "note": "Primary heading structural lead, not exact name or selected 40ml variant; first-party global market formulation not proven."
+    }
+  ],
+  "gate": {
+    "rootIdentityAuthorized": false,
+    "variantSelectedAuthorized": false,
+    "automaticFactConfirmation": false,
+    "templateFamilyStillUndetermined": true,
+    "nextStep": "Review nested-DOM-aware first-party template semantics before authorizing a primary root resolver. Distinguish external form ownership from cross-sell and unavailable JavaScript widget.",
+    "blockedSitePolicyBypass": false
+  }
+}

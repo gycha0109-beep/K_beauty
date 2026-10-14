@@ -3185,3 +3185,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - New bounded offline verifier tests reject promotion of publicly indexed official 80ml list/member prices, Hwahae displayed review count 43,652 instead of frozen 41,475 and an Offer URL collision. No checkout, owner verdict, product changes, Offer insertion, Subject write, migration, privileges, env or release gate change. CI on new SHA mandatory.
 - Evidence and owner action: D8F read-only prestate document / D8G gate §7. Production correction never approved.
 
+### 2026-10-14 / R16I private evidence correction UX (UI-only, no Production changes)
+
+- Diagnosed three manually uploaded candidate DB evidence records with two mismatched source/options and no original edit/delete controls. All remained UNVERIFIED; zero prior verdicts.
+- Existing evidence ledger is immutable and admits an OWNER-only REJECTED verdict via the already-shipped `review_evidence` POST; this is exclusion from active review, not physical deletion. Existing `GET /approval` grants `canOwnerDecide`. DB schema constraint fixes evidence_state to UNVERIFIED; no DB UPDATE/DELETE or migration authorized.
+- UI-only correction: lock selected product option to source, clear stale checkout price on source switch, prefill a correction copy with the original capture timestamp, require a new private image upload, then request existing OWNER-only REJECTED verdict for the old record after the new upload succeeds; report partial failure without triggering duplicate uploads. Explicit OWNER-only exclusion and separate collapsed audit history. No server route, authentication, policy, storage, database, catalog, price, ranking or release configuration changes.
+- Correction UI has not been deployed; PR #1255 remains unmerged while independent #1208 supply-chain audit is red. All user-provided checkout captures remain unapproved.

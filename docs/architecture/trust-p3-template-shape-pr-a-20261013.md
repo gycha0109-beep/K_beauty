@@ -52,3 +52,37 @@ Aestura official pages stopped scanning at the original 2,048-character tag limi
 The change touches **only the diagnostic** and its deterministic tests; no source, SKU, Subject, Fact, recommendation or existing P3 review candidate logic is modified. Tests inject fake HTML inside huge quoted attributes and check no secret/HTML/option text leaks, that normal subsequent tags are counted, that long selected options are never inferred as selected, and that both length/count limits terminate safely.
 
 A real robots-gated fixed six-locator run is needed before claiming Aestura template visibility improved; even a structurally complete result does not establish official variant selection or a unique primary product root.
+
+
+## PR-A.2 measured limitation and bounded 512 KiB follow-up
+
+Live [workflow #38354149646](https://github.com/gycha0109-beep/K_beauty/actions/runs/38354149646) on merged PR #1275 (`049a4970b6fc7df170b74c5e8f64ae2da046450e`, artifact `11792306105`) again fetched 4/6 and blocked 2/6, with 0 P3 candidate approvals. **Aestura international** recovered after skipping one oversized tag: `main=1`, `productDataAttribute=1`, `h1WithinMarkedRoot=1`, **selected variants not observed**. This is a *structural lead*, not proof of the displayed product title/variant. **Aestura KR** still hit `TAG_SCAN_LIMIT_REACHED` at a markup tag extending beyond the 128 KiB quote-aware bound. Both Torriden pages remained structurally complete (`main=0`, several goods/item-detail markers), no unique root confirmed.
+
+Because full official page responses are capped at 2 MiB, the follow-up raises the bounded quote-aware **skip-only** tag scan ceiling from 128 to 512 KiB, retaining the same 2 KiB attribute-inspection cutoff, 128 skipped-tag maximum and read-only/no-authority contract. A larger quoted attribute never supplies a product name, option selection or root marker. A 600 KiB long tag must still terminate with `TAG_SCAN_LIMIT_REACHED` and `countsComplete=false`. Re-measure KR to see whether a complete structural diagnostic can be established; do not assume it will pass.
+
+When the template shape is incomplete, its zero counts remain **unknown rather than absent**. Current recommendation, Fact and Subject authority are unchanged.
+
+
+## PR-B0: primary product root co-location **diagnostics only**
+
+Read-only exact-main [trial #38354635933](https://github.com/gycha0109-beep/K_beauty/actions/runs/38354635933) after PR #1276, artifact `11792556121`, showed Aestura KR page scanning to completion **with one skipped >2 KiB tag** (counters still incomplete), international Aestura `main=1`, `productDataAttribute=1`, `h1WithinMarkedRoot=1`, but no `selected` variant control observed. Torriden both pages have `main=0`, 5 marked roots and one scoped title-class marker with no explicitly selected size. Source access remained 4 fetched / 2 blocked, P3 candidates 0. Frozen summary: `evidence/trust/p3-primary-root-colocation-baseline-20261013.json`.
+
+A generic **colocation metric** is now proposed and measured without asserting unique root identity. For each already recognized class/data marker, the bounded lexical scanner tracks whether the **same marked ancestor** encloses (1) a title-class marker, (2) an option/select/radio control, and (3) a form. It also counts in-scope H1. Navigation/header/footer/sidebar, recommendations, related products, reviews, recent and cross-selling subtrees are excluded. The output reports aggregate counts and four fixed marker-family buckets only; not class strings, actual name labels, option values, DOM subtree or product IDs.
+
+This is **not** an HTML5 parser, a primary-root resolver or a proof of selected SKU. Nested root markers might cause multiple co-location counts for the same page, and partially omitted oversized tag attributes can hide root markers. `rootColocation.validatedPrimaryRoot=false` always. **Current `official-product-extraction-p3-v1.mjs` stays untouched**. Hard requirement before true PR-B: verify unique primary product root and exact title content in a trusted, nested-DOM-aware parser with negative fixtures; resolve source/market/variant mismatches independently. The official site access policy, Subject/Fact source binding and recommendation authority stay unchanged.
+
+
+## PR-B0 actual first-party co-location acceptance (2026-10-13)
+
+Main `383dd10e5ea0c4d3af4a8305674cb68f98c8ab45` (merged PR #1278), [TRUST action #38355272179](https://github.com/gycha0109-beep/K_beauty/actions/runs/38355272179), job `115156575736`, artifact `11793090810`, frozen `evidence/trust/p3-root-colocation-live-20261013.json`.
+
+The same governed 6 official source URLs yielded **4 fetched / 2 source blocked**, **0 P3 candidates**, **0 exact SKU/market/formulation confirmations**. **No source binding, Subject, Fact, ranking, recommendation, DB mutation or AI API usage**.
+
+- **Torriden (2 pages):** 5 total categorized marked ancestors (2 `goodsDetail`, 3 `itemDetail`). Exactly **one title-class marker in the page** contributes to **two marked ancestors** with title signals. **Zero** marked ancestors contain a parsed variant control; the page does contain one select and five options **outside the tracked product root(s)**. This means title and option ownership is **NOT** established. An option is present somewhere on the page, but a SKU approval would risk a recommendation/cross-sell mismatch.
+- **Aestura international:** a `productDataAttribute` marked root enclosing H1 exists. No parsed scoped title-class or variant control is co-located. `countsComplete=false` because a long attribute was skipped. Dynamic JS options or alternate markup might exist; no assumption about a selected 40ml variant is justified.
+- **Aestura KR:** the larger tag can now be skipped; no marked product root was observed, but `countsComplete=false`; do **not** infer that a primary product section does not exist.
+- **Beauty of Joseon:** both official locators remain `SOURCE_BLOCKED`. No crawler restriction bypass.
+
+**Decision:** PR-A and PR-B0 metadata diagnostics complete, **actual PR-B authority implementation remains HOLD**. A reviewed nested-DOM-aware template resolver must prove a unique principal product container with a primary name; a separate selected-option adapter must establish actual form ownership and selected variant, excluding unrelated page controls. Script/OG/index evidence alone cannot fill either gap. Continue to use current fail-closed P3 inference and leave every automatic Subject/Fact write disabled.
+
+**Known unrelated gate:** supply-chain `braces` advisory exception failure, not waived or extended.
