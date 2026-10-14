@@ -1,0 +1,16 @@
+{
+  "schema": "bejewely.sca-release-upload-approval.v1",
+  "candidateSha256": "REPLACE_WITH_VERIFIED_CANDIDATE_DIGEST",
+  "registry": "https://private-registry.example.invalid/isolated-reviewed-patches/",
+  "privateRepository": true,
+  "immutableVersions": true,
+  "noUpstreamShadowing": true,
+  "purpose": "UPLOAD_AND_READBACK_ONLY",
+  "auditGateRemainsRequired": true,
+  "auditExceptionApproved": false,
+  "expiresAt": "REPLACE_WITH_APPROVED_EXPIRY_UTC",
+  "tarballUrls": {
+    "braces": "https://private-registry.example.invalid/isolated-reviewed-patches/braces/-/braces-3.0.3.tgz",
+    "node-forge": "https://private-registry.example.invalid/isolated-reviewed-patches/node-forge/-/node-forge-1.4.0.tgz"
+  }
+}

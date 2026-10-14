@@ -455,6 +455,10 @@ try{
   officialAuditBypass:false,distributionApproved:false,onlyTempFiles:true
  };
  console.log("SCA_B3_FORGE_BROWSER_REBUILD="+JSON.stringify(report));
+ if(process.env.SCA_B6_VERIFY_CANDIDATE === "1") {
+  const {validateB6Candidate}=await import("./run-sca-b6-candidate-probe.mjs");
+  validateB6Candidate(tarball);
+ }
  if(process.env.SCA_B4_VALIDATE_FULL_GRAPH === "1") {
   const {validateFullGraphCandidate}=await import("./run-sca-b4-full-graph-candidate.mjs");
   await validateFullGraphCandidate(tarball,fullDistPacks[0]);

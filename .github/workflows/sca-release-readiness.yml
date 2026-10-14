@@ -1,0 +1,113 @@
+name: BEJEWELY SCA Release Readiness (no upload)
+on:
+  pull_request:
+    branches: [main, fix/security/sca-b3-private-pack-validation-20261014]
+    paths:
+      - scripts/security/*sca-release*
+      - scripts/security/sca-release-*
+      - scripts/security/run-sca-b6-*
+      - scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+      - security/release/**
+      - .github/workflows/sca-release-readiness.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  security-events: write
+concurrency:
+  group: sca-release-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  admission-tests:
+    name: Offline release admission and negative controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: node --test scripts/security/sca-release-bundle.test.mjs
+  candidate:
+    name: Clean release candidate structure (not approval)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      digest: ${{ steps.candidate.outputs.b6_candidate_sha256 }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Attest exact HEAD
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Main Health on exact release preparation HEAD
+        run: node scripts/verify-current-main-health.mjs
+      - id: candidate
+        env:
+          SCA_B6_VERIFY_CANDIDATE: '1'
+        run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+      - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+  independent-candidate:
+    name: Independent clean release candidate digest replay
+    needs: candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - env:
+          SCA_B6_VERIFY_CANDIDATE: '1'
+          SCA_B6_EXPECTED_CANDIDATE_SHA256: ${{ needs.candidate.outputs.digest }}
+        run: |
+          test -n "$SCA_B6_EXPECTED_CANDIDATE_SHA256"
+          node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+      - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+  original-security-gate:
+    name: Original security gate (unresolved advisories remain FAIL)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node scripts/verify-supply-chain-audit.mjs
+      - name: Preserve raw full and production responses
+        if: ${{ always() }}
+        run: |
+          node --input-type=module -e 'import {spawnSync} from "node:child_process"; for(const args of [["audit","--json"],["audit","--omit=dev","--json"]]) { const p=spawnSync("npm",args,{encoding:"utf8",timeout:120000}); console.log("SCA_B6_RAW_AUDIT_BEGIN="+args.join(" ")); console.log(p.stdout); const r=JSON.parse(p.stdout); if(p.error||![0,1].includes(p.status)||r.error||!r.metadata?.vulnerabilities)throw Error("audit service failure"); console.log("SCA_B6_RAW_AUDIT_EXIT="+p.status); }'
+  codeql:
+    name: CodeQL release preparation code
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:javascript-typescript
