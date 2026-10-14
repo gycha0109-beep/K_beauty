@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { buildFaceLabV2ResultPresentation } from "@/lib/face-lab-v2/result-presentation";
+import { buildFaceLabCatalogStatusPresentation } from "@/lib/face-lab-v2/catalog-status-presentation";
 
 function List({ items }) {
   const safe = Array.isArray(items) ? items.filter(Boolean) : [];
@@ -83,11 +84,17 @@ export default function FaceLabV2Result({
   locale = "ko",
   photoUrl = "",
   onSelectRoute,
-  onEditTarget
+  onEditTarget,
+  catalogRead = null
 }) {
   const view = useMemo(
     () => buildFaceLabV2ResultPresentation(result, { locale }),
     [result, locale]
+  );
+
+  const catalogStatus = useMemo(
+    () => buildFaceLabCatalogStatusPresentation(catalogRead, { locale }),
+    [catalogRead, locale]
   );
 
   if (view.status === "unavailable") {
@@ -361,6 +368,18 @@ export default function FaceLabV2Result({
               </div>
             ))}
           </div>
+        </section>
+      ) : null}
+
+      {(view.execution.domains.length > 0 || view.productGuides.length > 0) ? (
+        <section
+          data-testid="face-lab-catalog-availability"
+          data-catalog-status={catalogStatus.status}
+          className="ui-card-subtle p-5 sm:p-6"
+          aria-label={catalogStatus.title}
+        >
+          <p className="ui-kicker">{catalogStatus.title}</p>
+          <p className="ui-text-secondary mt-2 text-sm leading-6">{catalogStatus.body}</p>
         </section>
       ) : null}
 
