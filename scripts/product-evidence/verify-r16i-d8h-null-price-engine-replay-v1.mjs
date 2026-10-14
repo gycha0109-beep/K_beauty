@@ -61,7 +61,7 @@ assert.equal(changed.price_max, null);
 assert.equal(changed.buy_link, "");
 // This proves a CURRENT null-price visual incompatibility; it is not accepted
 // as an approved Product price policy or a passing end-user UI result.
-assert.equal(changed.price_range, "$$", "current null price maps to fabricated middle band");
+assert.equal(changed.price_range, "", "unknown Product price has no fabricated band");
 const legacy = beforeProducts.find(row => row.id === ID);
 assert.equal(legacy.price_min, 29900);
 assert.equal(legacy.price_range, "$$");
@@ -143,8 +143,8 @@ console.log(JSON.stringify({
   scope: "FROZEN_164x12_SYNTHETIC_A_OPTION_NOT_APPROVED",
   counters,
   knownBlockers: [
-    "UNKNOWN_PRICE_PROJECTED_AS_DOLLAR_DOLLAR",
-    "PREMIUM_NULL_NUMERIC_COERCION_NOT_RUNTIME_VERIFIED",
+    "UNKNOWN_PRICE_BAND_SUPPRESSED",
+    "PREMIUM_NULL_NUMERIC_COERCION_FIXED_WITH_SHARED_CONTRACT",
     "CANNOT_EQUATE_CHECKOUT_OBSERVATION_TO_CANONICAL_PRODUCT_PRICE"
   ],
   productWrites: 0, offerWrites: 0, rankingPolicyChanged: false,
