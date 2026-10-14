@@ -6,6 +6,7 @@ import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {materializePrivateBracesSource} from './materialize-private-braces-source.mjs';
 import {prepareBundle,verifyBundle,reference} from './sca-release-bundle.mjs';
+import {prepareGithubCarrier,verifyGithubCarrier} from './sca-release-github-carrier.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 function run(exe,a,cwd){const p=spawnSync(exe,a,{cwd,encoding:'utf8',timeout:120000,maxBuffer:8*1024*1024});assert.ok(!p.error&&p.status===0,'B6 command failed: '+exe+' '+a.join(' ')+'\n'+p.stderr);return p.stdout;}
 export function validateB6Candidate(forge){
@@ -32,6 +33,14 @@ export function validateB6Candidate(forge){
     fs.writeFileSync(archive,bytes);
     assert.deepEqual(verifyBundle(output),receipt);
     if(process.env.SCA_B6_EXPECTED_CANDIDATE_SHA256)assert.equal(receipt.candidateSha256,process.env.SCA_B6_EXPECTED_CANDIDATE_SHA256,'candidate differs on independent runner');
+    const carrier=path.join(temp,'github-carrier');
+    prepareGithubCarrier({bundle:output,output:carrier,scope:'gycha0109-beep'});
+    const carrierPack=JSON.parse(run('npm',['pack',carrier,'--ignore-scripts','--offline','--json','--pack-destination',temp],temp));
+    assert.equal(carrierPack.length,1);
+    const carrierBytes=fs.readFileSync(path.join(temp,carrierPack[0].filename));
+    const carrierReceipt=verifyGithubCarrier({archive:carrierBytes,bundle:output,scope:'gycha0109-beep'});
+    assert.throws(()=>verifyGithubCarrier({archive:carrierBytes.subarray(1),bundle:output,scope:'gycha0109-beep'}));
+    console.log('SCA_B6_GITHUB_CARRIER_PROTOTYPE='+JSON.stringify({...carrierReceipt,tamperedArchiveRejected:true}));
     if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'b6_candidate_sha256='+receipt.candidateSha256+'\n');
     console.log('SCA_B6_VERIFIED_RELEASE_STRUCTURE='+JSON.stringify({...receipt,
       reusedFullGraphHead:reference.head,reusedFullGraphRun:38514455251,sourceScopeUnchanged:true,

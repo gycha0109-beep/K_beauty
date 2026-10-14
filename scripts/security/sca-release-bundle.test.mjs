@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
+import {carrierMetadata} from './sca-release-github-carrier.mjs';
 import {spawnSync} from 'node:child_process';
 import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference,browserReference,assertNoLifecycleHooks,assertPrivateReadback} from './sca-release-bundle.mjs';
 
@@ -24,6 +25,18 @@ function tar(name='package/package.json',type='0',body=Buffer.from('{}')){
   return Buffer.concat([h,body,Buffer.alloc((512-body.length%512)%512)]);
 }
 const archive=(...entries)=>gzipSync(Buffer.concat([...entries,Buffer.alloc(1024)]));
+test('GitHub npm cannot admit the existing unscoped bundle, including namespace paths',()=>{
+  for(const url of ['https://npm.pkg.github.com/','https://npm.pkg.github.com/gycha0109-beep/'])assert.throws(()=>registryUrl(url),/requires scoped identities/);
+});
+test('GitHub carrier is a non-installable review envelope; identities and audit stay explicit',()=>{
+  const m=carrierMetadata('gycha0109-beep','a'.repeat(64));
+  assert.equal(m.name,'@gycha0109-beep/bejewely-sca-artifacts');assert.equal(m.private,true);
+  assert.equal(m.bejewely.productInstallable,false);assert.equal(m.bejewely.officialAudit,'FAIL');
+  assert.deepEqual(m.bejewely.originalIdentities,['braces@3.0.3','node-forge@1.4.0']);
+  assert.equal(m.dependencies,undefined);assert.equal(m.scripts,undefined);
+  for(const scope of ['UpperCase','../escape','bad/scope','@owner',''])assert.throws(()=>carrierMetadata(scope,'a'.repeat(64)));
+  assert.throws(()=>carrierMetadata('owner','not-a-digest'));
+});
 test('tar parser accepts a bounded regular metadata entry without filesystem extraction',()=>assert.equal(inspectArchive(archive(tar()))['package.json'].toString(),'{}'));
 test('tar traversal, hard/symbolic links, devices and extended headers are rejected',()=>{
   for(const n of ['package/../package.json','package//package.json','/package/package.json','package/./package.json','package\\package.json'])assert.throws(()=>inspectArchive(archive(tar(n))));

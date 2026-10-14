@@ -132,6 +132,7 @@ export function verifyBundle(dir) {
 export function registryUrl(value){
   const u=new URL(value);assert.equal(u.protocol,'https:','HTTPS registry required');
   assert.ok(!u.username&&!u.password&&!u.search&&!u.hash,'registry credentials/query forbidden');
+  assert.notEqual(u.hostname,'npm.pkg.github.com','GitHub Packages requires scoped identities; this immutable unscoped B6 bundle cannot be directly published or staged there');
   assert.ok(!/(^|\.)(npmjs\.(org|com)|example\.(invalid|com|org)|localhost)$/.test(u.hostname)&&!u.hostname.endsWith('.invalid'),'public npm/placeholder registry forbidden');
   assert.ok(u.pathname.endsWith('/')&&!u.pathname.includes('%'),'registry URL must end with slash and use unambiguous path');return u;
 }
