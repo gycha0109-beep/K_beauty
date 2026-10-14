@@ -6,6 +6,7 @@ import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {materializePrivateBracesSource} from './materialize-private-braces-source.mjs';
 import {prepareBundle,verifyBundle,reference} from './sca-release-bundle.mjs';
+import {reviewP2Bundle} from './sca-p2-offline-readiness.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 function run(exe,a,cwd){const p=spawnSync(exe,a,{cwd,encoding:'utf8',timeout:120000,maxBuffer:8*1024*1024});assert.ok(!p.error&&p.status===0,'B6 command failed: '+exe+' '+a.join(' ')+'\n'+p.stderr);return p.stdout;}
 export function validateB6Candidate(forge){
@@ -23,6 +24,10 @@ export function validateB6Candidate(forge){
     const output=retain?path.resolve(process.env.SCA_B6_CANDIDATE_OUTPUT):path.join(temp,'candidate');
     assert.ok(output!==root&&!output.startsWith(root+path.sep),'private candidate output must be outside checkout');
     const receipt=prepareBundle({braces:path.join(temp,pack[0].filename),forge,output});
+    const p2=reviewP2Bundle({bundleDir:output});
+    assert.equal(p2.decision,'PREPARATION_ONLY_HOLD_ACTUAL_PUBLISH');
+    assert.equal(p2.exactCandidateSha256,receipt.candidateSha256);
+    console.log('SCA_P2_BSD_LICENSE_AND_REGISTRY_PREPARATION='+JSON.stringify(p2));
     assert.deepEqual(verifyBundle(output),receipt);
     const notice=fs.readFileSync(path.join(output,'NOTICE.md'));
     fs.writeFileSync(path.join(output,'NOTICE.md'),'tampered notice');assert.throws(()=>verifyBundle(output),/checksum mismatch/);
