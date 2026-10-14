@@ -80,8 +80,19 @@ jobs:
 
       - name: Trace vulnerable dependency paths without changing audit policy
         run: |
+          node scripts/security/verify-supply-chain-policy-integrity.mjs
           node scripts/security/verify-supply-chain-lock-path-tracer.mjs
           node scripts/security/report-supply-chain-lock-paths.mjs
+          node scripts/security/verify-supply-chain-call-site-scanner.mjs
+          node scripts/security/report-supply-chain-call-sites.mjs
+          node scripts/security/report-supply-chain-runtime-boundaries.mjs
+          node scripts/security/verify-node-forge-upstream-patch-isolation.mjs
+          node scripts/security/verify-braces-upstream-patch-isolation.mjs
+          node scripts/security/verify-sca-candidate-integration-isolation.mjs
+          node scripts/security/run-sca-mobile-baseline-observation.mjs
+          node scripts/security/verify-sca-native-tracked-integrity.mjs
+          node scripts/security/run-sca-native-prebuild-observation.mjs
+          node scripts/security/run-sca-official-expo57-lock-candidate.mjs
 
       - name: Audit dependency vulnerabilities
         run: node scripts/verify-supply-chain-audit.mjs

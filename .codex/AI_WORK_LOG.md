@@ -2,6 +2,50 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA 공식 Expo 57 패치 후보의 실제 lockfile·dual raw audit 실험
+
+- 유형: Security SCA-2/3 격리 호환성 실험. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 영향 N. `package.json`, `package-lock.json` 또는 audit 예외·workflow 보안 강도·배포 대상 변경 없음.
+- `scripts/security/run-sca-official-expo57-lock-candidate.mjs` 및 기존 Supply Chain trace 연결: 임시 manifest + lock 환경에서 공식 `expo@~57.0.28` 후보를 npm resolver로 생성, 중첩 Expo/CLI 정확 배치와 원인 2패키지 버전 조사, raw full/prod npm audit JSON과 exit codes 기록. 임시 후보 파일 삭제, 원본 manifest hash 유지.
+- 구현 테스트 SHA `53f68f680d9cd7014c70886742479240247a6e35` [Security CI #38341157494](https://github.com/gycha0109-beep/K_beauty/actions/runs/38341157494): 모바일 중첩 Expo `57.0.28`/CLI `57.0.29`, 루트 Expo `57.0.21`/CLI `57.0.23` 잔존. braces `3.0.3`, node-forge `1.4.0` 여전. production HIGH19/full HIGH22, 모두 raw exit1. 기존 canonical audit도 만료 braces 예외로 FAIL. 공식 SDK 57 patch update를 **REJECT_FOR_REMEDIATION**.
+- Probe 최초 root 버전만 보고하여 nested workspace의 최신 설치를 놓친 결함 보수 후 exact-head 재실행. 소스 임시 lock SHA256 `d4d40a8a683ae3ff698bac550fb7f6684039a4b9e9587a7ce9db6853b20149f4`. SCA-2 대체/승인 포크 검토는 후속 조건으로 남고 SCA-3 정식 보수 및 SCA-4~7 HOLD. Ledger §14 / candidate review §13.
+
+### 2026-10-13 / SEC-SCA native prebuild 추적 파일 전체 변형 차단
+
+- 분류: 보안 진단/제한 실행. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production N(읽기·수정·배포 없음). Security PR #1240 Draft/HOLD, 기존 package/lock/audit exception 원본 유지.
+- `scripts/security/sca-native-tracked-integrity.mjs` 및 `verify-sca-native-tracked-integrity.mjs` 추가: Git tracked path-only 검사 + 임시 합성 Git fixture 여섯 경계. `run-sca-native-prebuild-observation.mjs`에 dirty baseline 거부·Expo prebuild 후 전체 tracked diff 0건 확인·복원 및 정리 실패 차단을 연결하고 기존 Security CI trace에서 fixture 실행.
+- 정확 테스트 코드 HEAD `6903130d1c054ae27220d98df0873ba20bd3275f`; [Security #38339766608](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339766608): synthetic 6 PASS, Expo 57 prebuild/native shell PASS, 임시 `apps/mobile/package.json` 원본 복원 PASS, whole-tree residual changes 0, CodeQL PASS, 원본 npm audit는 만료 `braces` 고위험 예외로 FAIL 유지. [Main Health #38339766567](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339766567) PASS, [PIE #38339767122](https://github.com/gycha0109-beep/K_beauty/actions/runs/38339767122) PASS.
+- 실행 ledger §13, upstream candidate review §12 갱신. 기존 Gradle 420초 ETIMEDOUT은 재실행하지 않음. 공식 수정 패키지/검증 후보 lockfile/실제 APK·기기/audit HIGH0 미확보: SCA-3 정식 보수~SCA-7 HOLD.
+
+### 2026-10-13 / SEC-SCA Android prebuild 계약 실검증·Gradle 제한 시간 증거
+
+- 유형: Security SCA-3 진단·제한 실행. 브랜치 `fix/security/supply-chain-policy-mutation-guard-20261012`, Draft PR #1240. Production/DB/Auth/RLS/Storage/Secret/Payment/Provider 패치 없음, 의존성/lock/audit 예외/배포 구성 미변경.
+- 신규 `scripts/security/run-sca-native-prebuild-observation.mjs`: disposable CI에서 원본 Expo 57 `prebuild:android`→`verify:mobile-native` 실행. `android/` 기생성 시 덮어쓰기 금지, SHA-256 스냅샷으로 prebuild의 `apps/mobile/package.json` 묵시적 수정을 감지하고 정확한 원본 바이트로 복원, 생성 native 파일 정리.
+- [Supply Chain #38335626887](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335626887): prebuild/native shell PASS, 변경된 package.json 원본 복원 PASS, 원본 감사 만료 braces HIGH로 FAIL 유지. [Supply Chain #38335884865](https://github.com/gycha0109-beep/K_beauty/actions/runs/38335884865): Gradle debug assemble은 7분 후 ETIMEDOUT, APK 없음/검증 불가; cleanup·원본 복원 및 CodeQL PASS. 긴 Gradle stage는 `SCA_ENABLE_GRADLE_DEBUG_OBSERVATION=1` opt-in으로 분리.
+- Ledger §12, patch candidate review §11 갱신. 원본 Android prebuild PASS는 수정 후보 기반 APK/실기기 검증 또는 원본 npm audit HIGH=0의 증거가 아니므로 SCA-3 정식 보수와 SCA-4~7 HOLD, PR Draft/#1208 OPEN.
+
+### 2026-10-13 / SEC-SCA Android JS export 원본 기준선과 sourcemap 패키지 경계 관측
+
+- 유형: Security 진단·제한 구현. 저장소 `gycha0109-beep/K_beauty`, Draft/HOLD PR #1240; Production/Secret/DB/Auth/Payment/원본 lockfile 패키지 변경 없음.
+- 구현: `scripts/security/run-sca-mobile-baseline-observation.mjs` (명령별 명시적 PASS/FAIL 및 자원 상한, 로그·환경변수 본문 미출력), `scripts/security/report-sca-android-bundle-boundary.mjs` (source-map 경로만 검사), 기존 Supply Chain 진단 단계 안에 연결. Canonical audit는 별도 원래 단계 유지.
+- 정확한 검증 코드 HEAD `45db48626fdf110858c524f9fa271f422d3c4fd7`, [Supply Chain #38333569911](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333569911): `verify:mobile-foundation`, `mobile:typecheck`, Android JS export, source-map inventory PASS. Source map 1개/1,307 소스 항목에서 `braces`·`node-forge` 경로 각 0건. 공급망 policy mutation guard PASS; canonical audit는 만료된 `braces` 예외로 의도대로 FAIL. 동일 HEAD [Main Health #38333569865](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333569865), [PIE #38333570547](https://github.com/gycha0109-beep/K_beauty/actions/runs/38333570547) PASS.
+- 시행착오: `always()` 조건이 보안 보호기를 차단하고 prebuild 전 native 검증을 실행한 첫 CI는 폐기. 조건부 단계 제거, native 별도 게이트로 보류, npm nested-script 소스맵 옵션 전달을 workspace 직접 실행으로 정정하여 canonical audit가 반드시 다시 실행됨을 검증.
+- 해석: Android JS export 소스맵 비관측은 APK/native/다른 구성의 부재, 공격자 도달 불가, 취약점 보수의 근거 아님. 정식 source-verified replacement·candidate lockfile·full/native Android·무예외 audit HIGH0 미확보; SCA-3 정식 보수~SCA-7 HOLD. Ledger 11절 및 후보 평가 10절에 증거 기록.
+
+### 2026-10-13 / SEC-SCA 임시 수정 패치 chokidar 실제 watcher 및 Expo 인증서 부정경로 검증
+
+- 유형: 제한적 Security 진단/회귀 테스트 실행. #1240 Draft/HOLD, 실제 npm package/lockfile 변경 및 Production/DB/Auth/Secret/배포 구성 영향 없음.
+- 수정: `scripts/security/verify-sca-candidate-integration-isolation.mjs`에 patched braces 소비자의 disposable `{a,b}.js` glob watcher ready/add/change/unlink와 strict event timeout/close, patched node-forge 소비자의 잘못된 RSA 키·만료 인증서 거부 시나리오 추가.
+- 검증: `65b03d5137c0ea5e521256dffd5a3dcde2c4ca21`의 [Supply Chain #38331934597](https://github.com/gycha0109-beep/K_beauty/actions/runs/38331934597)에서 진단 단계 PASS, live watcher·Expo negative gates PASS. 원본 npm audit는 만료된 braces GHSA 때문에 의도대로 FAIL.
+- 증거: `docs/security/sec-sca-20261012-execution-ledger.md`와 `sec-sca-20261012-upstream-patch-candidate-review.md`; SCA-3 실제 패키지 교체·전체 Android·무예외 audit 및 후속 SCA-4~7 미완료. 미병합 upstream PR 패치 테스트가 릴리스/배포 보안 승인을 대체하지 않음.
+
+### 2026-10-13 / SEC-SCA 격리 패치 provenance 및 실제 소비자 smoke 범위 확장
+
+- 유형: 보안 진단·격리 실험 실행. Security Draft PR #1240; 실제 설치 의존성 변경·Production/DB/Auth/Secret 영향 N. 설계/운영 보안 경계는 Y로 처리해 임시 작업 공간 외 변경을 금지.
+- 변경: `verify-braces-upstream-patch-isolation.mjs`와 `verify-sca-candidate-integration-isolation.mjs`에 검토된 PR #72 패치 바이트 Git blob identity pin, Metro 파일맵 3개 및 `chokidar`의 임시 patched consumer resolve/load smoke 추가.
+- 확인: `85bceaa09e788e6d507fba8e27380bc0ae18134a`의 [Supply Chain #38330955980](https://github.com/gycha0109-beep/K_beauty/actions/runs/38330955980) 진단 단계에서 Expo code-signing, micromatch, fast-glob, Metro 파일맵 3개, chokidar PASS. 기존 npm audit는 만료된 GHSA-vfj7-8cjw-p6xm로 FAIL 유지.
+- 증거: `docs/security/sec-sca-20261012-execution-ledger.md` 및 `sec-sca-20261012-upstream-patch-candidate-review.md`.
+- 미완: 공식 두 패치 배포/무결성 확인, candidate lockfile 생성·full/prod audit HIGH=0, watcher event·모바일/Android 전체 회귀, SCA-4~7; #1208 OPEN, #1240 Draft/HOLD. 테스트 결과를 취약점 해결이나 배포 승인으로 승격하지 않음.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.

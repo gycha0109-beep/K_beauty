@@ -352,6 +352,18 @@ const all = {
   packages: summarizePackages(allResult.report),
 };
 
+// Emit unadjusted audit evidence before validating exceptions. An expired
+// exception must still fail closed, but must not conceal the underlying
+// npm audit results needed to decide and verify an actual remediation.
+for (const result of [production, all]) {
+  console.log(
+    `SUPPLY_CHAIN_AUDIT_RAW_${result.name.toUpperCase()}=${JSON.stringify({
+      vulnerabilities: result.vulnerabilities,
+      packages: result.packages,
+    })}`,
+  );
+}
+
 const productionException = validateTemporaryAdvisoryExceptions(
   "production",
   production.report,

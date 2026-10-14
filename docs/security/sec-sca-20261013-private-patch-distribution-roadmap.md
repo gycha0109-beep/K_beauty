@@ -1,0 +1,178 @@
+# BEJEWELY 공급망 취약점 B안 — 자체 패치 배포본 구현 로드맵
+
+> 작성일: 2026-10-13 KST · Track: security · Watchtower-Track: security
+>
+> **상태: PLAN / NOT IMPLEMENTED.** B안 방향은 사용자 선택사항이며, 패키지 변경·외부 배포·병합 및 보안 해결 완료가 승인된 상태는 아니다. 현행 원본 보안 감사 FAIL/HOLD 유지.
+>
+> [전체 SCA-0~7 로드맵](sec-sca-20261012-remediation-roadmap.md) · [상세 기술 설계](sec-sca-20261012-remediation-technical-design.md) · [업스트림 패치 검토](sec-sca-20261012-upstream-patch-candidate-review.md) · [실행 Ledger](sec-sca-20261012-execution-ledger.md) · [보안 이슈 #1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) · [진단 PR #1240](https://github.com/gycha0109-beep/K_beauty/pull/1240)
+
+## 0. 목표 및 불변식
+
+**목표:** Expo SDK 57 / React Native 0.86.3 및 현행 비주얼리 기능을 유지하면서, braces 3.0.3과 node-forge 1.4.0의 취약한 소스 코드를 직접 보수하고, 소스·라이선스·패키지 무결성이 입증된 자체 배포본 2개로 **모든 설치 경로**를 교체한다.
+
+**종료 정의 (모두 충족):** 두 Advisory 원인 코드가 실제 수정됨 + 정상 기능 보존 + root/nested 설치·번들·Android 산출물에 취약 코드 잔존 없음 + 출처 및 패키징 재현 가능 + 전체/production raw npm audit HIGH=0/CRITICAL=0, MODERATE 각각 13 이하 + Expo/Metro/Android APK 및 기기 회귀 PASS + 정확 HEAD CI와 보안 리뷰 PASS.
+
+**중요:** npm audit는 registry의 패키지명·버전 중심으로 알려진 취약점을 계산한다. 자체 scope/alias/포크로 이름이 달라지면 **실제 취약 코드가 남아 있어도** 원본 GHSA가 빠져 HIGH 0으로 보일 수 있다. 따라서 audit PASS만으로 완료 선언 금지. 실제 설치 파일이 검토된 패치와 일치하고 두 취약 동작을 차단하는지 독립적으로 시험해야 한다. 반대로 원래 취약 버전으로 여전히 감사에 노출된다면 audit 실패를 예외·무시로 지우지 말고 HOLD한다.
+
+**금지 범위:** .env/secret, 운영/Production, DB·migration·RLS, Auth/Storage/Payment/Provider, API 응답/저장 계약, Face Lab·추천 엔진, 기능 PR #1232/#1233 변경. 취약 코드 원형 유지 + 패키지명/버전만 변경, registry 사칭, 수작업 lockfile 값 교체, 무승인 overrides, 감사 예외 연장, audit/codeql skip 또는 continue-on-error, npm audit fix --force, 미검증 운영 배포 모두 금지.
+
+## 1. 기준선 및 확인 사실 — 2026-10-13
+
+| 항목 | 검증된 현 상태 |
+| --- | --- |
+| 저장소 | gycha0109-beep/K_beauty; 조회 당시 main b017fd90e9cf9d624e499f787f06949ad5613d9d, 진단 PR #1240 HEAD d273f6bfc5177ac1c8fd970c0f7babd8133f3296 (Draft). 구현 시작 시 반드시 재조회 |
+| 앱 | 기존 Expo 57.0.21 / CLI 57.0.23, React Native 0.86.3 |
+| braces | 3.0.3, GHSA-vfj7-8cjw-p6xm; [micromatch/braces PR #72](https://github.com/micromatch/braces/pull/72), 수정 SHA 28d440b5dd449dbf1fe6f3506cf94ecca4d02660, closed/unmerged |
+| node-forge | 1.4.0, GHSA-86w9-cpqp-85rv; [digitalbazaar/forge PR #1152](https://github.com/digitalbazaar/forge/pull/1152), 수정 SHA ceba34402e329f0365134f23fe19898756527d65, open/unmerged |
+| 기존 보안 감사 | production HIGH 19 / CRITICAL 0 / MODERATE 11; full HIGH 22 / CRITICAL 0 / MODERATE 13. braces 예외 2026-10-10 만료, canonical gate FAIL |
+| 공식 Expo 57 patch 후보 | 실제 격리 npm lock 실험 [CI #38341377026](https://github.com/gycha0109-beep/K_beauty/actions/runs/38341377026): 최신 Expo/CLI가 중첩 설치되고 취약 라이브러리는 모두 잔존, HIGH 19/22 그대로 → REJECT |
+| 사전 패치 검증 | 두 upstream PR의 코드 변경을 **임시 복사본에만** 적용: braces glob/AST/파일 감시 이벤트, forge RSA ASN.1·Expo 코드서명 smoke 일부 PASS. 공식 릴리스·패키징·실제 후보 lock/APK는 미검증 |
+| Android | 원본 잠금 환경의 Expo prebuild / native shell PASS. Gradle assembleDebug 420초 타임아웃; APK·실기기 검증 NOT_ATTESTED |
+
+여기 기록된 SHA·버전·CI는 **스냅샷**이며, 지속적인 최신 상태나 수정 패키지 승인 근거가 아니다. 실제 진행 시 main / PR / advisory / npm registry / lockfile과 CI를 새로 고정한다.
+
+## 2. 구현 저장소/배포 구조
+
+| 역할 | 예상 대상 | 상태 및 변경 조건 |
+| --- | --- | --- |
+| 패치 소스 | security/vendor/braces/ · security/vendor/node-forge/ | **신규 구현 후보 경로**. 원본 소스 SHA + diff + license/NOTICE + patch manifest 필요 |
+| 보안 검증 스크립트 | scripts/security/ | 기존 patch isolation, consumer integration, watcher/Expo signing fixtures 재사용·확장 |
+| 증거 | docs/security/ 및 임시 CI artifacts | source→patch→tarball→lock→install→앱 산출물 digest 연결 |
+| 실제 의존성 변경 | 루트 package.json / package-lock.json, 필요 시 apps/mobile/package.json | **별도 Security remediation 실험 브랜치**에서만 수행. 기능 브랜치/진단 PR의 패키지 변경 금지 |
+| 감사 정책 | scripts/verify-supply-chain-audit.mjs 및 기존 .github/workflows/supply-chain-security.yml | **취약점 2개가 모두 실제 해결된 이후**에만 임시 예외 제거+fail-closed 정책 v2로 원자적 변경 |
+| 배포본 출처 | 최초 격리 tarball → 승인 뒤 통제된 git SHA·사내 registry·file: 중 1개 선택 | 외부 게시/credential/공개 배포는 별도 명시적 승인 |
+
+npm 공식 문서상 루트 package.json overrides는 다른 패키지·포크·file:·고정 Git 소스로 교체할 수 있으나, 직접 의존성에서 EOVERRIDE 제한이 있다. 이는 **후보 설치 연결 방식 중 하나이지 자동 허용된 우회책이 아니다.** 모든 root/nested 소비자가 실제 수정 설치본을 참조하는지 검증한다. 참고: [npm package.json overrides](https://docs.npmjs.com/files/package.json/) / [npm audit](https://docs.npmjs.com/cli/audit.html/).
+
+## 3. B0~B7 구현 단계 및 통과 게이트
+
+### B0 — 현재 입력·소유권 동결 (SCA-2/3 준비)
+
+**작업**
+1. 최신 main / 진단 PR / 관련 기능 PR, clean checkout, advisory 및 upstream 상태 조회. Node/npm/lock v3와 Expo 버전 기록.
+2. npm ls / npm explain / package-lock 전체 packages 경로로 braces 및 forge 모든 root/nested 복사본, 직접·전이 소비자, 실제 입력 소유자·빌드/런타임 경계 작성. 파일 감시 경로 이름과 glob pattern의 공격 입력을 구분.
+3. raw npm audit --json, npm audit --omit=dev --json 및 현재 audit exception/변형 검사 근거 저장.
+4. 패키지 출처·라이선스 재배포·장기 유지보수 오너·보안 검토자·내부 artifact 저장 위치 결정. 비밀키 사용 없음.
+
+**산출:** baseline 잠금 경로/소스 SHA/Advisory/감사/owner ledger. **PASS:** 두 라이브러리 전체 설치·소비자 경로와 검증 주체가 식별됨. 불명확하면 **HOLD**.
+
+### B1 — braces 재귀 방어 직접 패치 (SCA-2)
+
+**작업**
+1. 공식 braces 3.0.3 소스/배포본 해시를 고정하고 PR #72의 constants, parse, compile, expand, stringify 수정 diff를 리뷰해 최소 수정 반영.
+2. parser의 brace·parenthesis 중첩 상한(기본 100 및 사용자 maxDepth 하향), AST 직접 전달 시 compile/expand/stringify 깊이 검사, 순환 parent chain 거부를 검증.
+3. 취약 패턴 테스트는 격리 자식 프로세스에서 timeout/입력 크기를 제한. 정상 glob/negation/배열/extglob/중첩 정상 입력과 malformed AST를 함께 시험.
+4. micromatch 4.0.8, fast-glob, chokidar(ready/add/change/unlink), Expo/Metro file-map 세 경로, upstream 전체 unit suite, Node 22에서 회귀 테스트.
+
+**산출:** 원본 source SHA, patch diff hash, unit/negative/consumer suite 결과. **PASS:** 공격 경계 거부 + 정상 결과 유지 + 검토 가능 출처. 누락·회귀 시 **B1 FAIL/HOLD**.
+
+### B2 — node-forge 엄격한 RSA/ASN.1 검증 직접 패치 (SCA-2)
+
+**작업**
+1. 원본 forge 1.4.0과 PR #1152의 lib/rsa.js 및 테스트 diff를 정확 SHA로 검토.
+2. PKCS#1 v1.5 DigestInfo의 외부 구조 및 **중첩 DigestAlgorithm ASN.1 child count/OID/허용 parameter 구조** 검증 보강.
+3. 임시 RSA 키만 메모리에서 생성해 정상 서명 수락/다른 메시지 거부/추가 ASN.1 child 거부/잘못된 키·만료 인증서 거부를 검증. 운영 signing private key 사용 금지.
+4. @expo/code-signing-certificates와 Expo CLI의 self-signed 인증서 생성, PEM 왕복, manifest 서명 및 정상·비정상 검증, upstream 전체 suite 실행.
+
+**산출:** 소스·패치 해시, 정상/비정상 RSA fixture, Expo consumer suite. **PASS:** 취약 구조 거부와 정상 서명·Expo 기능 호환성. 실패 시 **B2 FAIL/HOLD**.
+
+### B3 — 검증 가능한 패키지 두 개 제작 (첫 중요 승인 게이트)
+
+**작업**
+1. 공식 원본 tarball SHA-512 및 tag, 각 patch hunk SHA, 라이선스/NOTICE, 제3자 소스, 변경 file list를 manifest로 고정.
+2. 격리 빌드에서 패치 소스로 npm pack 실행, pack 파일 목록/실행 스크립트/credential·.env 혼입 검사. 두 번째 clean 빌드로 재현성 확인. 압축 metadata 차이로 tarball digest가 달라지면 파일별 정규화된 content hash와 압축 차이를 구분하고 별도 승인 전 배포 보류.
+3. 설치 아티팩트 SHA-256/512, producer, source-to-tarball mapping, 통제된 다운로드·보관 방법, 오너 및 업스트림 패치 drift 감시 정책 기록.
+4. 최초에는 OS 임시 파일과 CI artifact로만 검증. npm 공개 registry 발행·외부 권한·credential 준비는 하지 않음.
+
+**산출:** 검토 가능한 braces/forge **각 1개 이상** 수정 tarball + 재현 빌드/출처·라이선스·hash 증거. **PASS:** 두 개 모두 provenance 및 보안 검토 완료. 불명확한 출처/무단 게시가 필요하면 **B3 HOLD**.
+
+### B4 — 임시 lockfile 실제 교체와 이중 보안 감사 (SCA-3)
+
+**작업**
+1. 별도 보안 실험 브랜치·worktree에서만 **승인된** file: tarball, exact Git SHA 또는 통제된 registry와 필요 시 검증된 root overrides 중 방식 선택.
+2. npm resolver로만 package-lock 재생성. npm ci --ignore-scripts --no-audit --no-fund, 필요 lifecycle 포함 재설치를 단계별 분리해 검증; npm override EOVERRIDE/peer dependency/Expo 호환성을 검사.
+3. npm ls braces node-forge --all, npm explain, lock의 모든 node_modules/nested/alias 경로, 실제 설치된 원본 패키지·vendored copy·bundleDependencies를 확인.
+4. **실물 설치 파일**의 AST 깊이 검사와 RSA ASN.1 reject 코드가 B1/B2 검토된 바이트와 일치하는지 해시 및 회귀 테스트.
+5. 후보 lock의 raw npm audit --json 및 npm audit --omit=dev --json을 **둘 다 그대로** 실행하고 전체 HIGH/CRITICAL 0, 기존 moderate 기준 비악화, advisory leaf 여부를 기록.
+6. 이름만 바꾼 패키지는 registry scanner에서 안 잡힐 수 있으므로 SBOM/원본 코드 fingerprint/installed hash/두 CVE 재현 부정 테스트를 **감사와 별도 AND 게이트**로 강제.
+
+**산출:** before/after lock SHA, 후보 설치본 fingerprint, provenance, npm ls/path tree, full+production raw audit. **PASS:** 두 취약 구현 미잔존 + 전체 경로 패치 bytes 일치 + raw audit HIGH 0/CRITICAL 0. 하나라도 미충족 시 **B4 FAIL/HOLD**, B5/B6로 승격 금지.
+
+### B5 — Expo/Android 실제 실행 및 소비자 회귀 (SCA-3)
+
+**작업**
+1. B4의 **패치 적용된 실제 후보 설치본**으로 mobile:typecheck, verify:mobile-foundation, mobile:config, mobile:export:android 및 source map 출처, patched Metro/chokidar 이벤트/코드서명 테스트.
+2. 깨끗한 격리 디렉터리에서 mobile:prebuild:android 및 verify:mobile-native. Expo의 apps/mobile/package.json 임시 변경은 byte-exact 복구하고 Git tracked diff 0 확인.
+3. Gradle은 기존 420초 timeout을 기계적으로 반복하지 않는다. 캐시/JDK/Android SDK와 실행 한도 마련 후 별도 **opt-in** 1회로 assembleDebug 시도, 종료 코드 및 APK SHA-256 기록.
+4. APK 에뮬레이터/실기기 설치: 앱 진입·라우팅, 카메라 권한/촬영, 분석 API 실패 처리, 핵심 결과·Premium 섹터 확인. 실제 운영 API/데이터는 사용하지 않으며 격리 백엔드가 필요하면 별도 승인.
+5. JS source map에서 패키지 이름이 안 보이는 사실은 APK/native 전체 취약 코드 부재가 아님. 실제 빌드 산출물 및 의존 manifest를 별도로 검사.
+
+**산출:** 정확 후보 SHA, 모바일 명령/로그, APK checksum, 기기 smoke, 서명/watcher 검증. **PASS:** 패치된 후보로 Android 앱 동작까지 확인. APK/기기가 없으면 **NOT_ATTESTED/HOLD**.
+
+### B6 — 정식 remediation PR·감사 정책 v2·정확 HEAD CI (SCA-4/5/6)
+
+**작업**
+1. B0~B5를 충족한 source/patch/tarball/lock만 **별도의 Security remediation PR**로 변경한다. 기존 #1240은 보안 진단 PR로 계속 Draft; 이 문서만으로 원본 패키지 변경/병합하지 않음.
+2. 두 취약 원인 제거가 입증된 때에만 scripts/verify-supply-chain-audit.mjs의 만료 exception을 **제거**하고 raw full+production HIGH/CRITICAL=0 검사로 변경. 기존 policy-integrity guard 9건과 함께 새 v2 변형 테스트로 **원자적 교체**.
+3. 원본 취약 코드/패치 hash 변경/중첩 경로 누락, 새로운 HIGH, CI skip, continue-on-error, baseline 상승, scanner 사각지대 후보 주입은 모두 FAIL하는 테스트 추가.
+4. 정확 PR HEAD에서 Supply Chain(Package Integrity+CodeQL), Main Health, Security Boundary, 모바일 typecheck/foundation/native/Android, diff hygiene 및 보안 reviewer 승인 수집.
+
+**산출:** 별도 remediation PR/원시 감사 + v2 mutation 검사 + CI run matrix. **PASS:** 전원 독립 PASS와 승인. 하나라도 누락/FAIL이면 **Draft/HOLD**.
+
+### B7 — 승인 병합·유지보수/복귀 전략 (SCA-7)
+
+**작업**
+1. 명시적인 병합 승인 후 정확 HEAD→main 반영을 재확인하고 #1208 증거 closeout. #1232·#1233은 각 트랙에서 최신 main sync 및 소유 CI 재실행 후 별도 병합 판단.
+2. 포크 유지보수 오너, 공식 upstream patch 신규 릴리스 감시, patch drift 검증, 반기/업데이트 주기, 보안 대응·패키지 폐기 정책을 지정.
+3. 실패 시 **실험 브랜치는 마지막 승인된 lock/source/artifact 상태로 되돌림**. 운영에서 이미 수정본 사용 시 취약 원본 버전으로 자동 rollback은 금지(배포 보류/사고 대응으로 처리).
+
+**산출:** 병합 SHA, maintainer, release/evidence 기록 및 rollback/runbook. **PASS:** 새 main의 모든 보안 조건 유지 + 유지보수 책임 확정.
+
+## 4. 우선순위, 다음 작업, 완료 기준
+
+| 순서 | 구체적 우선 작업 | 합격 조건 |
+| --- | --- | --- |
+| 1 · B0 | advisory/upstream 및 모든 소비자 경로 최신 재조사 | root/nested 원인 패키지 경로 인벤토리 완성 |
+| 2 · B1 | braces PR #72 source-pin·patch 포팅·안전한 depth/AST/glob 테스트 | 공격 입력 거부, 정상 consumer suite PASS |
+| 3 · B2 | forge PR #1152 source-pin·ASN.1 검사·Expo RSA 서명 | 비정상 서명 거부, 정상 Expo 사용 PASS |
+| 4 · B3 | 패치된 tarball 2종/라이선스/해시/재현 빌드 | 두 패키지 출처·재현·review PASS |
+| 5 · B4 | **실제 두 패키지 동시 교체** + 원시 full/prod audit | 잔여 취약 코드 없음, HIGH 0/CRITICAL 0 |
+| 6 · B5 | Expo/Metro/Native/Gradle/APK·기기 smoke | 실제 patched Android PASS |
+| 7 · B6 | 취약점 해결 PR + 무예외 감사 및 policy v2 | 정확 HEAD CI + 보안 리뷰 PASS |
+| 8 · B7 | 승인된 main 병합·#1208 종료·유지보수 | 병합 재확인 후 closeout |
+
+**현재 진척:** B0 일부 경로·원본 감사 증거 확보, B1/B2의 **임시 복사본 한정 테스트 일부**만 완료. 검증된 정식 수정 배포본 **0개**, 자체 패키지 실물 lock/감사·패치 적용 APK/기기 PASS는 **없음**. 구현 단계는 시작되지 않았으며 이 문서 추가는 계획 기록만이다.
+
+## 5. 실패/금지 시나리오와 롤백
+
+| 상황 | 즉시 조치 |
+| --- | --- |
+| braces 재귀/AST guard 결함 또는 glob·watcher 회귀 | B1 FAIL, 패치 수정 후 fixture 재실행 |
+| forge 비정상 서명 수용 또는 정상 Expo 서명 실패 | B2 FAIL, forge 보수 재검토 |
+| license/원본 해시/패키지 재현/아티팩트 오너 미확인 | B3 HOLD, 발행/설치 승인 보류 |
+| 실제 root/nested 경로 한 곳이라도 취약 원본 남음 | B4 FAIL, 후보 lock 폐기·해결책 재선택 |
+| 이름 변경으로 audit만 HIGH0이고 원본 취약 코드 잔존 | **B4 FAIL — scanner blind spot**, 취약점 해결 선언 금지 |
+| raw npm audit HIGH/CRITICAL 잔존 | **B4/B6 HOLD** (예외 갱신/CI 우회 금지) |
+| Gradle 420초 같은 시간제한 발생 | B5 NOT_ATTESTED, 캐시/환경 보강 후 별도 재실행 |
+| APK/기기 오류 | B5 FAIL, 격리 후보 rollback 및 미승인 배포 금지 |
+| 원본 취약 버전으로 운영 rollback 요구 | 배포 HOLD/사고 대응 검토, 취약판 자동 복귀 금지 |
+| upstream 공식 수정 공개 | 두 코드·출처·호환성 비교, 가능하면 자체 포크를 공식 릴리스로 교체 |
+
+## 6. 단계별 증거 양식
+
+각 단계의 실제 검증 결과는 [기존 실행 ledger](sec-sca-20261012-execution-ledger.md) 또는 별도 remediation PR에 남기며 아래 필드가 없으면 UNKNOWN/NOT_RUN으로 표기한다.
+
+| 필드 | 기록값 |
+| --- | --- |
+| stage / owner / approval | B0~B7, 작업/보안 리뷰 오너, 승인·미승인 |
+| main_sha / candidate_sha / PR | 실제 정확 Git SHA와 연결 링크 |
+| originals | 두 패키지 원본 name/version/source SHA/tarball SHA |
+| patch_provenance | 업스트림 PR/commit, patch diff SHA, license/NOTICE |
+| artifacts | 두 수정 배포본 tarball SHA-256/512, 재현 빌드 입력·파일별 해시 |
+| lock/install | 변경 전후 lock SHA, 모든 nested 경로, npm ci, installed code fingerprint |
+| audit | production/full raw npm audit 원문·exit·HIGH/CRITICAL/MODERATE/Advisory leaves |
+| consumer_compat | brace parse/AST/watcher, RSA/Expo code signing, native/Android/APK/device |
+| acceptance | CI URL/SHA, patch security reviewer, decision PASS/FAIL/HOLD |
+| rollback | 취약 구현 복귀 없는 격리 rollback 대상 및 사고 대응 |
+
+**최종 종료 조건:** B1/B2 수정 동작 + B3 출처·재현성 + B4 양쪽 취약점·무예외 감사 해결 + B5 patched Android + B6 CI·review + B7 main/운영 책임을 **모두** 통과해야 #1208 종료. 문서·진단 PR의 개별 PASS로 대체 불가.
