@@ -141,6 +141,33 @@ try{
      patched[entry.name][file]=actual;
    }
  }
+ // Execute the existing independent B1/B2 negative fixtures against the
+ // INSTALLED TAR FILES, not their pre-pack temporary source.
+ const probe=(script,where,limit=45000)=>{
+   const p=spawnSync(process.execPath,[path.join(root,"scripts/security",script),where],{
+     cwd:root,encoding:"utf8",timeout:limit,maxBuffer:1024*1024,
+     env:{...process.env,NODE_OPTIONS:""},
+   });
+   assert.equal(p.error,undefined,"installed archive behavior fixture timed out");
+   assert.equal(p.status,0,"installed archive behavior failure: "+(p.stderr||"").slice(0,1200));
+   return p.stdout;
+ };
+ assert.match(probe("verify-private-braces-probe-child.mjs",
+   path.join(install,"node_modules/braces"),30000),
+   /SCA_B1_BRACES_BEHAVIOR=PASS/);
+ const probeDir=path.join(temp,"installed-forge-expo-probe");
+ fs.mkdirSync(probeDir);
+ const patchedForge=path.join(install,"node_modules/node-forge");
+ fs.symlinkSync(patchedForge,path.join(probeDir,"node-forge"),"dir");
+ fs.mkdirSync(path.join(probeDir,"node_modules"));
+ fs.symlinkSync(patchedForge,path.join(probeDir,"node_modules/node-forge"),"dir");
+ const expoOriginal=path.join(root,"node_modules/@expo/code-signing-certificates");
+ const expoCopy=path.join(probeDir,"@expo/code-signing-certificates");
+ fs.mkdirSync(expoCopy,{recursive:true});
+ fs.copyFileSync(path.join(expoOriginal,"package.json"),path.join(expoCopy,"package.json"));
+ fs.cpSync(path.join(expoOriginal,"build"),path.join(expoCopy,"build"),{recursive:true});
+ assert.match(probe("verify-private-forge-probe-child.mjs",probeDir),
+   /SCA_B2_PRIVATE_FORGE_BEHAVIOR=PASS/);
  const integrity=[a1,f1].map(entry=>{
    assert.equal(locked.packages["node_modules/"+entry.name].version,entry.version);
    return {name:entry.name,version:entry.version,
@@ -149,6 +176,7 @@ try{
      installedPatchedFileSha256:patched[entry.name],
      byteIdenticalAcrossTwoPacks:true,
      patchedSourceVerifiedInIsolatedInstall:true,
+     installedTarballSecurityFixturePass:true,
      missingBrowserDist:entry.name==="node-forge",
    };
  });
