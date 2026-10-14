@@ -154,22 +154,44 @@ export function verifyApproval({candidateSha256,approvalBytes,signatures,trust,n
     assert.ok(!u.pathname.includes('%')&&u.pathname.startsWith(registry.pathname)&&u.pathname.endsWith('/'+filenames[n]),'tarball outside approved repository');
     assert.ok(!u.username&&!u.password&&!u.search&&!u.hash,'unsafe tarball URL');}
   assert.ok(Array.isArray(signatures));
+  // Governance reflects the actual project: one owner may hold all roles.
+  // Preparation permission alone is NOT an upload signature or distribution consent.
+  const ownerMode=a.ownerApprovalMode || 'multi-owner';
+  assert.ok(['multi-owner','single-owner'].includes(ownerMode),'unrecognized owner approval mode');
+  assert.equal(trust.ownerGovernanceMode || 'multi-owner',ownerMode,'trust governance mismatch');
   const roles=new Set(),signers=new Set();
-  for(const s of signatures){
-    assert.ok(requiredRoles.includes(s.role),'unknown approval role');assert.ok(!roles.has(s.role),'duplicate approval role');
-    const k=trust.keys.find(k=>k.id===s.keyId);assert.ok(k&&!trust.revokedKeyIds.includes(k.id),'untrusted or revoked signing key');
-    assert.ok(typeof k.owner==='string'&&k.owner.trim().length>0,'named responsible owner missing');
-    assert.ok(Array.isArray(k.roles)&&k.roles.includes(s.role),'signer not authorized for role');
+  if(ownerMode==='single-owner') {
+    assert.equal(signatures.length,1,'single-owner release requires exactly one signed project-owner decision');
+    const s=signatures[0];
+    assert.equal(s.role,'project-owner','single-owner release requires project-owner signature');
+    const k=trust.keys.find(k=>k.id===s.keyId);
+    assert.ok(k&&!trust.revokedKeyIds.includes(k.id),'untrusted or revoked signing key');
+    assert.ok(typeof k.owner==='string'&&k.owner.trim().length>0,'named sole project owner missing');
+    assert.ok(Array.isArray(k.roles)&&k.roles.includes('project-owner'),'key must be approved for sole owner role');
     assert.ok(Date.parse(k.notBefore)<=now&&Date.parse(k.notAfter)>=expires,'key invalid through approval window');
-    const key=createPublicKey(k.publicKeyPem);assert.equal(key.asymmetricKeyType,'ed25519','Ed25519 approval key required');
-    const sig=Buffer.from(s.signature,'base64');assert.equal(sig.length,64,'invalid approval signature');
-    // Bind the role to the exact document bytes, including registry, digest and expiry.
-    assert.ok(verify(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:'+s.role+'\n'),approvalBytes]),key,sig),'approval signature mismatch');
-    roles.add(s.role);signers.add(k.owner);
+    const key=createPublicKey(k.publicKeyPem);
+    assert.equal(key.asymmetricKeyType,'ed25519','Ed25519 owner key required');
+    const sig=Buffer.from(s.signature,'base64');
+    assert.equal(sig.length,64,'invalid owner approval signature');
+    assert.ok(verify(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:project-owner\n'),approvalBytes]),key,sig),'project-owner approval signature mismatch');
+    roles.add('project-owner');signers.add(k.owner);
+  } else {
+    for(const s of signatures){
+      assert.ok(requiredRoles.includes(s.role),'unknown approval role');assert.ok(!roles.has(s.role),'duplicate approval role');
+      const k=trust.keys.find(k=>k.id===s.keyId);assert.ok(k&&!trust.revokedKeyIds.includes(k.id),'untrusted or revoked signing key');
+      assert.ok(typeof k.owner==='string'&&k.owner.trim().length>0,'named responsible owner missing');
+      assert.ok(Array.isArray(k.roles)&&k.roles.includes(s.role),'signer not authorized for role');
+      assert.ok(Date.parse(k.notBefore)<=now&&Date.parse(k.notAfter)>=expires,'key invalid through approval window');
+      const key=createPublicKey(k.publicKeyPem);assert.equal(key.asymmetricKeyType,'ed25519','Ed25519 approval key required');
+      const sig=Buffer.from(s.signature,'base64');assert.equal(sig.length,64,'invalid approval signature');
+      assert.ok(verify(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:'+s.role+'\n'),approvalBytes]),key,sig),'approval signature mismatch');
+      roles.add(s.role);signers.add(k.owner);
+    }
+    assert.deepEqual([...roles].sort(),requiredRoles.slice().sort(),'all four organizational approvals required');
+    assert.ok(signers.size>=2,'multi-owner release requires at least two named owners');
   }
-  assert.deepEqual([...roles].sort(),requiredRoles.slice().sort(),'all four organizational approvals required');
-  assert.ok(signers.size>=2,'security/redistribution approval requires at least two named owners');
-  return {approval:a,scope:'UPLOAD_AND_READBACK_ONLY',officialAudit:'FAIL',mergeApproved:false,productionApproved:false};
+  // Neither signature scheme bypasses the original external npm audit gate.
+  return {approval:a,ownerApprovalMode:ownerMode,signingOwners:[...signers],scope:'UPLOAD_AND_READBACK_ONLY',officialAudit:'FAIL',mergeApproved:false,productionApproved:false};
 }
 export function loadApprovedBundle({bundle,approval,signatures,trust}) {
   const receipt=verifyBundle(bundle);
