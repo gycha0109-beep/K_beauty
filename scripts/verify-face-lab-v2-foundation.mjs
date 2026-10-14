@@ -1,3 +1,4 @@
+import "./verify-face-lab-v2-catalog-status-presentation.mjs";
 import assert from "node:assert/strict";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
