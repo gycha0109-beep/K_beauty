@@ -221,6 +221,8 @@ jobs:
 
   b3-browser-bundle-rebuild-isolation:
     name: B3 source-pinned forge browser bundle rebuild diagnostic
+    outputs:
+      forge_full_dist_sha256: ${{ steps.fullpack.outputs.forge_full_dist_sha256 }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -247,10 +249,53 @@ jobs:
       - name: Immutable original dependency installation
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Rebuild upstream-pinned webpack bundles and reject malformed RSA
+      - name: Rebuild upstream-pinned webpack bundles, browser RSA, full temp tarball
+        id: fullpack
         run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
 
       - name: Assert original application manifest and lock unmodified
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+
+  b3-browser-full-dist-independent-replay:
+    name: B3 full browser dist independent clean-runner reproducibility
+    needs: [b3-browser-bundle-rebuild-isolation]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout same candidate HEAD in second clean runner
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact HEAD and primary runner digest
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          FORGE_SHA: ${{ needs.b3-browser-bundle-rebuild-isolation.outputs.forge_full_dist_sha256 }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+          [[ "${FORGE_SHA}" =~ ^[a-f0-9]{64}$ ]]
+
+      - name: Node 22 and fresh original dependency graph
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Reinstall original lock graph with no lifecycle
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Independently rebuild and double-pack full browser dist in temp
+        env:
+          SCA_B3_EXPECTED_FORGE_FULL_DIST_SHA256: ${{ needs.b3-browser-bundle-rebuild-isolation.outputs.forge_full_dist_sha256 }}
+        run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+
+      - name: Confirm source manifests remain untouched
         shell: bash
         run: |
           set -euo pipefail
