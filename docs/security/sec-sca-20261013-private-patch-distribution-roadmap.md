@@ -2,7 +2,7 @@
 
 > 작성일: 2026-10-13 KST · Track: security · Watchtower-Track: security
 >
-> **상태: IN_PROGRESS — B0 PARTIAL / B1 SOURCE+904 UNIT PASS / B2 SOURCE+829 UNIT PASS / B3 TEMP DOUBLE-PACK PASS, 배포 승인·B4+ HOLD.** 원본 package/lock·감사 정책 변경, 자체 배포본·병합·보안 해결 완료는 아직 없다. 기존 Supply Chain 감사 FAIL 유지.
+> **상태: IN_PROGRESS — B0 PARTIAL / B1 SOURCE+904 UNIT PASS / B2 SOURCE+829 UNIT PASS / B3 TEMP DOUBLE-PACK + FULL-DIST CHROMIUM RSA + CLEAN-RUNNER REPLAY PASS (배포 승인·B4+ HOLD).** 원본 package/lock·감사 정책 변경, 자체 배포본·병합·보안 해결 완료는 아직 없다. 기존 Supply Chain 감사 FAIL 유지.
 >
 > [전체 SCA-0~7 로드맵](sec-sca-20261012-remediation-roadmap.md) · [상세 기술 설계](sec-sca-20261012-remediation-technical-design.md) · [업스트림 패치 검토](sec-sca-20261012-upstream-patch-candidate-review.md) · [실행 Ledger](sec-sca-20261012-execution-ledger.md) · [보안 이슈 #1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) · [진단 PR #1240](https://github.com/gycha0109-beep/K_beauty/pull/1240)
 
