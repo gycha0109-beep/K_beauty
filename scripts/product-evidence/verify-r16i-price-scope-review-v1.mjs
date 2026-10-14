@@ -124,6 +124,22 @@ assert.equal(nullPriceSummary.productWrites, 0);
 assert.equal(nullPriceSummary.offerWrites, 0);
 assert.equal(nullPriceSummary.productionPricePolicyApproved, false);
 console.log(JSON.stringify(nullPriceSummary));
+// Actual 176-row candidate snapshot replay: 166 projected != 166 authorized.
+// Separately replays synthetic legacy-only 164 negative control.
+const candidateNull = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-r16i-d8h-null-price-candidate-admission-shadow-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 60000 });
+assert.equal(candidateNull.status, 0,
+  `R16I 176-candidate NULL-price shadow failed: ${candidateNull.error?.message || candidateNull.stderr || candidateNull.stdout}`);
+const candidateNullSummary = JSON.parse(candidateNull.stdout.trim().split("\n").at(-1));
+assert.equal(candidateNullSummary.status, "PASS_WITH_BUDGET_CONSUMER_HOLD");
+assert.equal(candidateNullSummary.observed.comparedCandidates, 1992);
+assert.equal(candidateNullSummary.syntheticConservative.comparedCandidates, 1968);
+assert.equal(candidateNullSummary.nonlegacyProductAdmission, "NOT_ATTESTED");
+assert.equal(candidateNullSummary.productWrites, 0);
+assert.equal(candidateNullSummary.offerWrites, 0);
+assert.equal(candidateNullSummary.releaseAuthorized, false);
+console.log(JSON.stringify(candidateNullSummary));
 console.log(JSON.stringify({
  status:"PASS",stage:"R16I_PRICE_SCOPE_REVIEW_SHADOW",
  testCases:denied.length+1,
