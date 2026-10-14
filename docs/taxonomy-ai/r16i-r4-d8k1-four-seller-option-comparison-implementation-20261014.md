@@ -1,7 +1,7 @@
 # D8K-1 — 모든 추천 상품 공통 판매처 가격 비교 기능의 기초 로직
 
-> 기준일 2026-10-14 · 상태: **비교 계산 구현 / 가상 데이터 CI 검증 / 실제 판매처 연동 HOLD**  
-> 관련: [전체 보수 로드맵](r16i-r4-d8k-universal-offer-remediation-roadmap-20261014.md), [활성 추천 화면 조사](r16i-r4-d8k0-active-recommendation-surface-and-price-baseline-20261014.md).  
+> 기준일 2026-10-14 · 상태: **비교 계산 구현 / 가상 데이터 CI 검증 / 실제 판매처 연동 HOLD**
+> 관련: [전체 보수 로드맵](r16i-r4-d8k-universal-offer-remediation-roadmap-20261014.md), [활성 추천 화면 조사](r16i-r4-d8k0-active-recommendation-surface-and-price-baseline-20261014.md).
 > 사용자 확정: 공식몰·쿠팡·올리브영·화해 우선, **모든 추천 상품**에 동일 규칙. 다른 판매처 추가 가능.
 
 ## 1. 쉽게 말해 이번에 구현한 것
