@@ -115,7 +115,8 @@ jobs:
         with:
           name: bejewely-sca-readiness-${{ github.event.pull_request.head.sha || github.sha }}
           retention-days: 7
-          if-no-files-found: warn
+          if-no-files-found: error
+          include-hidden-files: true
           path: .sca-readiness-evidence/*.json
 
   codeql:
