@@ -104,7 +104,7 @@ assert.match(shareLoader, /<ResultShareCard/);
 assert.match(shareCard, /topPick\.name/);
 assert.match(shareCard, /\.\.\.categoryPicks/);
 assert.doesNotMatch(shareCard, /buy_link|click_buy_link/);
-assert.match(myHistory, /savedReportId/);
+assert.match(myHistory, /report\.href/);
 
 console.log(JSON.stringify({
   status: "PASS",
