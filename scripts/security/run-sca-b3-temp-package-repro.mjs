@@ -196,6 +196,7 @@ function packOne(name,iteration){
  return {name,version:pkg.version,sourceSha:source.sourcePin.upstreamPatch.headSha,
    sourceOriginalIntegrity:source.sourcePin.originalLockIntegritySha512,
    sha256:sha(archiveBytes),sha512:sha512(archiveBytes),
+   sha512Hex:sha(archiveBytes,"sha512"),
    artifactBytes:archiveBytes.length,files,
    lifecycleHooksRemoved:source.removedLifecycleHooks,
    actualPackedForgeConsumer,
@@ -218,10 +219,11 @@ try{
   outputs.push(first);
  }
  // B3-scope SBOM: exact archive contents; *not* an installed dependency SBOM.
+ for(const o of outputs)assert.match(o.sha512Hex,/^[a-f0-9]{128}$/);
  const sbom={bomFormat:"CycloneDX",specVersion:"1.6",version:1,
   metadata:{component:{type:"application",name:"BEJEWELY-SCA-B3-isolation",version:"2026-10-14"}},
   components:outputs.map(o=>({type:"library",name:o.name,version:o.version,
-   hashes:[{alg:"SHA-256",content:o.sha256},{alg:"SHA-512",content:o.sha512.slice(7)}],
+   hashes:[{alg:"SHA-256",content:o.sha256},{alg:"SHA-512",content:o.sha512Hex}],
    properties:[{name:"bejewely:source-commit",value:o.sourceSha},
     {name:"bejewely:status",value:"TEMP_ARTIFACT_ONLY_NOT_RELEASED"},
     {name:"bejewely:license-files",value:o.licenses.join(",")},
