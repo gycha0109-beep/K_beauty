@@ -212,11 +212,11 @@ try{
    })();
   `;
   const html=[
-   "<!doctype html><html><head><meta charset="utf-8">",
-   "<script src="jquery.min.js"></script>",
-   "<script src="forge.all.min.js"></script>",
-   "</head><body><div id="b3-output" data-status="NOT_RUN"></div>",
-   "<script type="application/json" id="b3-input">",
+   '<!doctype html><html><head><meta charset="utf-8">',
+   '<script src="jquery.min.js"></script>',
+   '<script src="forge.all.min.js"></script>',
+   '</head><body><div id="b3-output" data-status="NOT_RUN"></div>',
+   '<script type="application/json" id="b3-input">',
    JSON.stringify(input).replace(/</g,"\\u003c"),
    "</script><script>",execJs,"</script></body></html>"
   ].join("");
