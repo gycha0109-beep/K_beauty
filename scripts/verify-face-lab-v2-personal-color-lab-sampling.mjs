@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { buildFaceLabObservationAnalysis } from "../lib/face-lab-observation-contract.js";
 import { buildPersonalColorObservation } from "../lib/face-lab-v2/personal-color/observation.js";
 import { buildPersonalColorCheekMasks } from "../lib/face-lab-v2/personal-color/cheek-mask-geometry.js";
+import { proposePersonalColorCheekRegions } from "../lib/face-lab-v2/personal-color/cheek-landmark-proposal.js";
 import { comparePersonalColorPhotoMeasurements } from "../lib/face-lab-v2/personal-color/photo-capture-comparison.js";
 import {
   PERSONAL_COLOR_LAB_SAMPLING_VERSION,
@@ -294,5 +295,64 @@ for (const invalidPair of [
   assert.equal(held.reason, "measurement_pair_not_eligible");
   assert.equal(held.comparison, null);
 }
+
+
+// Landmark-based ROI is deliberately only a geometric proposal. Synthetic
+// geometry must not silently become an approved skin mask or color match.
+const faceLandmarks = Array.from({ length: 478 }, () => ({ x: 0.5, y: 0.5, z: 0 }));
+const anchors = {
+  234: { x: 0.20, y: 0.50 },
+  454: { x: 0.80, y: 0.50 },
+  1: { x: 0.50, y: 0.48 },
+  33: { x: 0.35, y: 0.32 },
+  263: { x: 0.65, y: 0.32 },
+  61: { x: 0.40, y: 0.68 },
+  291: { x: 0.60, y: 0.68 }
+};
+for (const [index, point] of Object.entries(anchors)) {
+  faceLandmarks[Number(index)] = { ...point, z: 0 };
+}
+const sourceLandmarks = JSON.stringify(faceLandmarks);
+const roiInput = { faceLandmarks, faceCount: 1, coordinateSpace: "original_image" };
+const roi = proposePersonalColorCheekRegions(roiInput);
+assert.equal(roi.status, "proposal_only", JSON.stringify(roi));
+assert.equal(roi.requiresIndependentRoiReview, true);
+assert.equal(roi.mayMeasureSkin, false);
+assert.equal(roi.sourceImagePersisted, false);
+assert.equal(roi.cheekPolygons.leftCheek.length, 12);
+assert.equal(roi.cheekPolygons.rightCheek.length, 12);
+assert.equal(roi.exclusionPolygons.length, 2);
+assert.equal(JSON.stringify(faceLandmarks), sourceLandmarks);
+assert.deepEqual(proposePersonalColorCheekRegions(roiInput), roi);
+const proposedMasks = buildPersonalColorCheekMasks({
+  width: 128, height: 128, cheekPolygons: roi.cheekPolygons,
+  exclusionPolygons: roi.exclusionPolygons
+});
+assert.equal(proposedMasks.status, "masks_ready");
+assert.ok(proposedMasks.sampleCount.leftCheek > 16);
+assert.ok(proposedMasks.sampleCount.rightCheek > 16);
+assert.equal(roi.mayMeasureSkin, false, "a geometry mask cannot approve a skin measurement");
+
+function roiHold(candidate, reason) {
+  const result = proposePersonalColorCheekRegions(candidate);
+  assert.equal(result.status, "insufficient_evidence", reason);
+  assert.equal(result.reason, reason);
+  assert.equal(result.cheekPolygons, null);
+  assert.equal(result.exclusionPolygons, null);
+  assert.equal(result.mayMeasureSkin, false);
+  assert.equal(result.sourceImagePersisted, false);
+}
+roiHold({ ...roiInput, coordinateSpace: "mirrored_preview" }, "image_orientation_unknown");
+roiHold({ ...roiInput, faceCount: 2 }, "single_face_landmarks_unavailable");
+roiHold({ ...roiInput, faceLandmarks: faceLandmarks.slice(0, 20) }, "single_face_landmarks_unavailable");
+const missingEye = structuredClone(faceLandmarks);
+missingEye[33] = { x: null, y: 0.32 };
+roiHold({ ...roiInput, faceLandmarks: missingEye }, "required_face_landmarks_invalid");
+const turnedFace = structuredClone(faceLandmarks);
+turnedFace[263] = { x: 0.65, y: 0.49 };
+roiHold({ ...roiInput, faceLandmarks: turnedFace }, "face_geometry_unreliable");
+const wrongFace = structuredClone(faceLandmarks);
+wrongFace[1] = { x: 0.77, y: 0.48 };
+roiHold({ ...roiInput, faceLandmarks: wrongFace }, "face_geometry_unreliable");
 
 console.log("FACE_LAB_PERSONAL_COLOR_LAB_SAMPLING=PASS");
