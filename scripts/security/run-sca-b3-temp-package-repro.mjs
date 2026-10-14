@@ -196,6 +196,23 @@ try{
    result:"PASS_TEMP_PACK_REPRODUCIBILITY_ONLY",releaseApproved:false,
    fullAuditPassing:false,fullGraphInstalled:false,browserDistCompatibilityProven:false,
    ownerApproval:"HOLD",artifactsDeletedOnExit:true,sbom,outputs};
+ const outByName=Object.fromEntries(outputs.map(p=>[p.name,p]));
+ const bracesDigest=outByName.braces.sha256;
+ const forgeDigest=outByName["node-forge"].sha256;
+ if("SCA_B3_EXPECTED_BRACES_SHA256" in process.env){
+  assert.match(process.env.SCA_B3_EXPECTED_BRACES_SHA256,/^[a-f0-9]{64}$/);
+  assert.equal(bracesDigest,process.env.SCA_B3_EXPECTED_BRACES_SHA256,
+   "independent clean-runner braces package hash drift");
+ }
+ if("SCA_B3_EXPECTED_FORGE_SHA256" in process.env){
+  assert.match(process.env.SCA_B3_EXPECTED_FORGE_SHA256,/^[a-f0-9]{64}$/);
+  assert.equal(forgeDigest,process.env.SCA_B3_EXPECTED_FORGE_SHA256,
+   "independent clean-runner forge package hash drift");
+ }
+ if(process.env.GITHUB_OUTPUT){
+  fs.appendFileSync(process.env.GITHUB_OUTPUT,
+    "braces_sha256="+bracesDigest+"\n"+"node_forge_sha256="+forgeDigest+"\n");
+ }
  console.log("SCA_B3_TEMP_PACKAGE_EVIDENCE="+JSON.stringify(receipt));
 }finally{
  fs.rmSync(tmp,{recursive:true,force:true});
