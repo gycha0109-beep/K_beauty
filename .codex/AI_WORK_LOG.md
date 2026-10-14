@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA B3 수정 패키지 격리 재현·실제 npm 설치 검증
+
+- 소유 Track: security. [Draft PR #1281](https://github.com/gycha0109-beep/K_beauty/pull/1281) (main에서 별도 실험 브랜치), 선행 B1 [#1270](https://github.com/gycha0109-beep/K_beauty/pull/1270), B2 [#1271](https://github.com/gycha0109-beep/K_beauty/pull/1271). 코드 대상: `scripts/security/verify-private-patch-package-integrity.mjs` 및 source-pinned 검증 파일/manifest 6개, 기존 공급망 워크플로 내 bounded B3 진단 호출. 결과 기록: `docs/security/sec-sca-20261013-b3-temp-package-verification.md`.
+- [CI #38357490038](https://github.com/gycha0109-beep/K_beauty/actions/runs/38357490038): braces@3.0.3 (수정 파일 5개), node-forge@1.4.0 (수정 lib/rsa.js) 임시 npm tarball 각 2회 byte-for-byte 동일 SHA256/SHA512, 원본 라이선스 포함, npm 패키지 내 수정 소스 digest 일치, 소스-only forge browser dist 0개, temp 파일 정리 **PASS**.
+- [CI #38357768269](https://github.com/gycha0109-beep/K_beauty/actions/runs/38357768269): 두 로컬 tarball을 임시 npm 소비자에 실제 설치해 물리적 패치 파일 6개 해시와 braces expansion/depth, forge 정상 RSA-SHA256 실행 **PASS**. 원본 루트 package/lock/installed dependency/보안 감사 그대로. 기존 audit 만료 braces GHSA로 FAIL 유지.
+- 차단: node-forge 원본 browser dist 6개 재빌드/호환성 미확인; 법적 라이선스 승인·Security owner·registry provenance 미확정. 실제 app root/nested lock 교체, full/prod raw audit HIGH0, Metro/Android APK, 운영배포·main 병합 NOT_RUN. B3 임시 패키징 증거만 PASS, RELEASE HOLD. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 변경/접근 N.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
