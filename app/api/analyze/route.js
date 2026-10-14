@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeKnownProductPrice } from "@/lib/product-price-read-contract.mjs";
 import { buildFallbackPhotoAnalysis } from "@/lib/photo-evidence";
 import { projectSkinObservation } from "@/lib/skin-observation-projector";
 import { projectFaceLabResult } from "@/lib/face-lab-observation-projector";
@@ -1103,8 +1104,8 @@ function sanitizePremiumReport(report) {
               finish: item?.finish || "",
               use_time: item?.use_time || "",
               price_range: item?.price_range || "",
-              price_min: Number.isFinite(Number(item?.price_min)) ? Number(item.price_min) : null,
-              price_max: Number.isFinite(Number(item?.price_max)) ? Number(item.price_max) : null,
+              price_min: normalizeKnownProductPrice(item?.price_min),
+              price_max: normalizeKnownProductPrice(item?.price_max),
               buy_link: getTrustedDirectPurchaseUrl({
                 buyLink: item?.buy_link,
                 brand: item?.brand,
