@@ -69,12 +69,20 @@ try{
  const mapped=[];
  for(const entry of ["forge.min.js.map","forge.all.min.js.map"]){
   const v=JSON.parse(fs.readFileSync(path.join(dist,entry),"utf8"));
-  assert.ok(Array.isArray(v.sources)&&Array.isArray(v.sourcesContent),"missing source-map provenance");
-  const rsaEntries=v.sources.map((s,i)=>({name:s,content:v.sourcesContent[i]}))
+  assert.ok(Array.isArray(v.sources),"missing browser source-map module inventory");
+  const rsaEntries=v.sources.map((s,i)=>({name:s,
+   content:Array.isArray(v.sourcesContent)?v.sourcesContent[i]:undefined}))
    .filter(x=>/[/\\]lib[/\\]rsa\.js(?:\?.*)?$/.test(x.name));
   assert.equal(rsaEntries.length,1,"exactly one mapped RSA source expected in "+entry);
-  assert.equal(rsaEntries[0].content,rsaCode,"browser bundle source map RSA differs from patched Git blob");
-  mapped.push(entry);
+  if(Array.isArray(v.sourcesContent)){
+   assert.equal(rsaEntries[0].content,rsaCode,
+     "browser source map RSA text differs from patched Git blob");
+  }
+  // Upstream webpack 4 cheap-module-source-map may omit sourcesContent.
+  // A path-only mapping is not evidence of patched bytes: the pinned source
+  // blob and real UMD normal/malformed RSA execution are separate hard gates.
+  mapped.push({file:entry,rsaPath:rsaEntries[0].name,
+   sourceContentAttested:Array.isArray(v.sourcesContent)});
  }
  const message=Buffer.from("bejewely-b3-browser-build-rsa-negative");
  const wrong=Buffer.from("other-message");
@@ -110,7 +118,7 @@ try{
   patchedRsaSha256:hex(Buffer.from(rsaCode)),
   toolchain:pinnedToolchain,nodeVersion:process.version,
   browserBundles:files.map(p=>({path:"dist/"+p,sha256:hex(fs.readFileSync(path.join(dist,p)))})),
-  sourceMapsRsaBytesMatched:mapped,
+  sourceMapRsaModuleMappings:mapped,
   RSAUMDPositiveNegativePassed:tested,
   originalNpmTarballUnmodified:true,candidateTarballUnmodified:true,
   officialAuditBypass:false,distributionApproved:false,onlyTempFiles:true
