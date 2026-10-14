@@ -151,6 +151,9 @@ jobs:
       - name: Install original graph without scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: Inventory forge consumers, browser dist references and license source
+        run: node scripts/security/report-sca-b3-forge-consumer-boundary.mjs
+
       - name: Validate both original official npm archives
         run: |
           node scripts/security/verify-private-braces-registry-origin.mjs
