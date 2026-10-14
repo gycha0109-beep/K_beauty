@@ -110,6 +110,20 @@ assert.equal(consumerSummary.stage, "R16I_D8H_OFFER_CONSUMER_RUNTIME_SHADOW");
 assert.equal(consumerSummary.productWrites, 0);
 assert.equal(consumerSummary.offerWrites, 0);
 console.log(JSON.stringify(consumerSummary));
+// Experimental A-policy null-price replay against the real 164x12 Skin Match
+// engine. This is strictly a what-if: pass does not authorize NULL pricing.
+const nullPriceReplay = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-r16i-d8h-null-price-engine-replay-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 60000 });
+assert.equal(nullPriceReplay.status, 0,
+  `R16I null-price real-engine replay failed: ${nullPriceReplay.error?.message || nullPriceReplay.stderr || nullPriceReplay.stdout}`);
+const nullPriceSummary = JSON.parse(nullPriceReplay.stdout.trim().split("\\n").at(-1));
+assert.equal(nullPriceSummary.status, "PASS_STRUCTURAL_SHADOW_WITH_PRICE_UI_HOLD");
+assert.equal(nullPriceSummary.counters.comparedCandidates, 1968);
+assert.equal(nullPriceSummary.productWrites, 0);
+assert.equal(nullPriceSummary.offerWrites, 0);
+assert.equal(nullPriceSummary.productionPricePolicyApproved, false);
+console.log(JSON.stringify(nullPriceSummary));
 console.log(JSON.stringify({
  status:"PASS",stage:"R16I_PRICE_SCOPE_REVIEW_SHADOW",
  testCases:denied.length+1,
