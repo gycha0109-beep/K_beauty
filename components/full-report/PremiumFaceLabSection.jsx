@@ -16,6 +16,7 @@ import {
   buildFaceLabLocalState,
   isLatestFaceLabSaveRequest,
   normalizeFaceLabRevision,
+  readFaceLabLocalSyncState,
   resolveFaceLabDeferredSaveStatus,
   resolveFaceLabRestore
 } from "@/lib/face-lab-v2/persistence-state";
@@ -1004,7 +1005,15 @@ export default function PremiumFaceLabSection({
         }
       }
 
-      restoreState(localStored);
+      if (restoreState(localStored)) {
+        const recoveredStatus = readFaceLabLocalSyncState(localStored)?.syncStatus;
+        setPersistenceStatus(
+          recoveredStatus === "local_failed" ? "local_failed" :
+          recoveredStatus === "auth_required" ? "auth_required" :
+          recoveredStatus === "conflict" ? "conflict" :
+          recoveredStatus === "synced" ? "synced" : "pending"
+        );
+      }
     };
 
     void load();
