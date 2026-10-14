@@ -109,6 +109,12 @@ try{
   browser.self=browser;
   browser.globalThis=browser;
   browser.navigator={userAgent:"BEJEWELY test browser",appName:"Netscape"};
+  // forge.all includes form/XHR wrappers and refers to window.jQuery during
+  // initialization. This inert dependency stub is only for RSA boundary
+  // testing, never for declaring browser/UI/transport compatibility.
+  const unusedJquery=()=>{throw new Error("jQuery interaction forbidden in RSA-only probe");};
+  browser.jQuery=unusedJquery;
+  browser.$=unusedJquery;
   try{runInNewContext(code,browser,{filename:path.basename(filename),timeout:20000});}
   catch(e){throw new Error("B3_BROWSER_VM_DIAGNOSTIC file="+path.basename(filename)+
     " type="+String(e?.name).slice(0,50)+" message="+String(e?.message).slice(0,280));}
