@@ -218,3 +218,40 @@ jobs:
         run: |
           set -euo pipefail
           git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+
+  b3-browser-bundle-rebuild-isolation:
+    name: B3 source-pinned forge browser bundle rebuild diagnostic
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact HEAD for isolated browser rebuild
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact browser-probe HEAD
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+
+      - name: Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Immutable original dependency installation
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Rebuild upstream-pinned webpack bundles and reject malformed RSA
+        run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+
+      - name: Assert original application manifest and lock unmodified
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
