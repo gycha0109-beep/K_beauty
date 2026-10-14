@@ -19,6 +19,8 @@
 - Additional separate crawler audit found ws HIGH1 (DoS plus moderate memory disclosure leaf) and esbuild LOW1. Real npm resolver updates official ws8.22.0, tsx4.23.15, esbuild0.28.2/platform binaries; removes only tsx's no-longer-needed get-tsconfig/resolve-pkg-maps closure. All unrelated versions/resolved/integrities retained.
 - Local clean install, actual realtime-to-ws resolution, localhost normal echo and bounded fragment rejection, TypeScript and legacy/identity fixture tests PASS. Raw crawler full/production ALL severities0, exit0; this is not app HIGH0. App HIGH22/19 and canonical gate FAIL remain.
 - Existing supply-chain workflow gains crawler path triggers and separate independent install/behavior/original-public-audit job; no new workflow/check retirement, exception or main merge. Exact published HEAD CI follows. Work log entry anchored away from the Next entry and B3/B6 append to preserve merge compatibility.
+- Verified implementation 079066dc55204139fc6f116f957f9802f0faee83 CI38525319187 crawler audit/consumer and CodeQL PASS; Main Health38525319178/Admin38525319204/PIE38525319547 PASS. Root app audit gate FAIL is retained, crawler full/prod ALL0 independently confirmed in clean Linux CI. Pairwise merge rehearsals with Next and B6 are conflict-free; no main merge or live provider operation. Final delta documentation only.
+
 
 ### 2026-10-10 / Face Lab 프로덕션 DB 식별·마이그레이션 이력 해소 설계
 
