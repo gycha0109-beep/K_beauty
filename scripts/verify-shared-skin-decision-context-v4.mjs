@@ -143,6 +143,71 @@ equal(providerUnavailable.context.photo.status, "unavailable", "provider unavail
 equal(providerUnavailable.context.photo.failureClass, "provider_unavailable", "provider failure class remains explicit");
 check(providerUnavailable.context.uncertaintyState.reasons.includes("photo_provider_unavailable"), "provider unavailable caps certainty");
 
+// Skin S0: a provider failure yields an object-shaped survey-only fallback.
+// Presence of that object must not supersede explicit photo availability.
+const fallbackObservations = {
+  summary: "Survey-only fallback",
+  signals: [],
+  surveyAlignment: { status: "unknown", note: "Photo observation unavailable" }
+};
+const failedWithFallbackReport = baseReport({
+  photoEvidenceState: {
+    status: "unavailable",
+    failureReason: "vision_request_failed",
+    failureClass: "provider_failure",
+    source: "vision"
+  },
+  photoObservations: fallbackObservations
+});
+const failedWithFallback = build(failedWithFallbackReport);
+equal(failedWithFallback.context.photo.status, "unavailable", "non-null fallback cannot promote provider failure");
+equal(failedWithFallback.context.photo.evidenceAvailable, false, "fallback is not image evidence");
+equal(failedWithFallback.context.photo.failureClass, "provider_failure", "failure classification must survive");
+check(failedWithFallback.context.uncertaintyState.reasons.includes("photo_provider_unavailable"), "provider failure requires uncertainty");
+check(failedWithFallback.context.uncertaintyState.reasons.includes("photo_analysis_unavailable"), "fallback failure must not disappear");
+
+const failedWithFallbackReplay = build({
+  ...failedWithFallbackReport,
+  decisionBundle: {
+    contextVersion: failedWithFallback.context.version,
+    contextHash: failedWithFallback.contextHash,
+    contextRevision: failedWithFallback.contextRevision,
+    context: failedWithFallback.context
+  }
+});
+equal(failedWithFallbackReplay.context.photo.status, "unavailable", "reentry cannot promote failed photo");
+equal(failedWithFallbackReplay.contextHash, failedWithFallback.contextHash, "failed photo reentry hash must remain stable");
+equal(failedWithFallbackReplay.contextRevision, failedWithFallback.contextRevision, "failed photo reentry revision must remain stable");
+
+const absentWithStaleFallback = build(baseReport({
+  photoEvidenceState: { status: "not_provided" },
+  photoObservations: fallbackObservations
+}));
+equal(absentWithStaleFallback.context.photo.status, "not_provided", "no-photo status is authoritative over stale fallback");
+equal(absentWithStaleFallback.context.photo.evidenceAvailable, false, "stale fallback is not no-photo evidence");
+
+const partialAlignment = build(baseReport({
+  photoEvidenceState: { status: "available", source: "vision" },
+  photoObservations: {
+    summary: "Limited overlap",
+    signals: [{ key: "redness", confidence: "medium" }],
+    surveyAlignment: { status: "mixed" }
+  }
+}));
+equal(partialAlignment.context.photo.status, "available", "valid observation remains available");
+equal(partialAlignment.context.photo.evidenceAvailable, true, "valid observation is evidence");
+equal(partialAlignment.context.concernState.surveyPhotoAlignment, "partial", "projector mixed maps to canonical partial");
+
+const legacyObservation = build(baseReport({
+  photoEvidenceState: null,
+  photoObservations: {
+    signals: [{ key: "redness", confidence: "high" }],
+    surveyAlignment: { status: "aligned" }
+  }
+}));
+equal(legacyObservation.context.photo.status, "available", "legacy observations remain readable");
+equal(legacyObservation.context.concernState.surveyPhotoAlignment, "aligned", "existing aligned mapping unchanged");
+
 const explicitFalse = build(baseReport({
   imageEligibility: {
     status: "insufficient_evidence",
