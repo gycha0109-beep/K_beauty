@@ -85,6 +85,10 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt) {
     fs.writeFileSync(path.join(graph,"package.json"),JSON.stringify(manifest,null,2)+"\n");
     console.log("SCA_B4_STAGE=resolver full root/workspace graph");
     run("npm",["install","--package-lock-only","--ignore-scripts","--no-audit","--no-fund"],graph,240000);
+    // npm may retain same-version node-forge registry resolution after overrides;
+    // refresh through the resolver in this disposable tree, never edit lock bytes.
+    run("npm",["update","node-forge","--package-lock-only","--ignore-scripts",
+      "--no-audit","--no-fund"],graph,240000);
     const candidateBytes=fs.readFileSync(path.join(graph,"package-lock.json"));
     const candidate=JSON.parse(candidateBytes);
     const paths=Object.keys(candidate.packages).filter(p=>targets.some(n=>p.endsWith("node_modules/"+n)));
