@@ -106,7 +106,13 @@ overlap[0] = 1;
 mustHold({ ...input, skinRegionMasks: { leftCheek, rightCheek: overlap } }, "overlapping_face_regions");
 
 const nearlyAllExcluded = Uint8Array.from(exclusionMask);
-for (let index = 0; index < 17; index += 1) nearlyAllExcluded[index] = 1;
+let excludedLeft = 0;
+for (let index = 0; index < pixels && excludedLeft < 17; index += 1) {
+  if (leftCheek[index] === 1) {
+    nearlyAllExcluded[index] = 1;
+    excludedLeft += 1;
+  }
+}
 mustHold({ ...input, exclusionMask: nearlyAllExcluded }, "insufficient_skin_pixels");
 
 const gray = Uint8ClampedArray.from(rgba);
