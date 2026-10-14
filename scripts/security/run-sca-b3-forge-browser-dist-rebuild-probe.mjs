@@ -72,7 +72,11 @@ try{
   assert.ok(Array.isArray(v.sources),"missing browser source-map module inventory");
   const rsaEntries=v.sources.map((s,i)=>({name:s,
    content:Array.isArray(v.sourcesContent)?v.sourcesContent[i]:undefined}))
-   .filter(x=>/[/\\]lib[/\\]rsa\.js(?:\?.*)?$/.test(x.name));
+   .filter(x=>/(?:^|[/\\])rsa\.js(?:\?.*)?$/.test(x.name));
+  console.log("SCA_B3_BROWSER_MAP_RSA_DIAGNOSTIC="+JSON.stringify({file:entry,
+   sourceCount:v.sources.length,matchedCount:rsaEntries.length,
+   rsaCandidates:v.sources.filter(x=>/rsa/i.test(x)).slice(0,15),
+   sourceExamples:v.sources.slice(0,5)}));
   assert.equal(rsaEntries.length,1,"exactly one mapped RSA source expected in "+entry);
   if(Array.isArray(v.sourcesContent)){
    assert.equal(rsaEntries[0].content,rsaCode,
