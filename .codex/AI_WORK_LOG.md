@@ -3212,3 +3212,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Followed prior UX/server/SQL patch with **actual SQL replay coverage** in the existing Database Integration Authority workflow's isolated PostgreSQL 17 service. New rollback fixture tests the predecessor 12-character denial, actual constraint migration, acceptance of short valid text, whitespace and over-limit rejection, existing-row preservation, and untouched proposal/decision guards.
 - One disposable dedicated database is created and destroyed inside CI; zero connected Supabase/Production schema or data mutations. No modifications to supply-chain security gate.
 - Until that new SHA finishes, status is code committed / runtime replay awaiting CI. Security #1208 and deployment identity remain HOLD.
+
+### 2026-10-14 / R16I D8H price-scope shadow
+
+- Execution with DB/Production indirect Y; no protected DB/migration/Auth/CTA mutation. Inspected current Product/Offer schema, D8D SQL, D4 view and verified evidence ledger.
+- Read-only price model splits user screenshot list 35,000 KRW, owner-verified manufacturer 80ml checkout 24,500 KRW, and Hwahae kit 80ml x2 + serum10ml checkout 29,900 KRW. Product price/unit-price/buy-link authority remains null; 80ml Product anchor and two Offer records are candidates only, with no writes.
+- Added admin read-only comparison and offline verifier 17 negative cases through existing D8F CI; evidence doc `docs/evidence/r16i-r4-d8h-price-scope-shadow-20261014.md`. Does not resolve D8D SQL forcing discounted checkout into Product or one-Offer insert. Separate price policy/schema authority, #1208 and runtime identity remain HOLD.

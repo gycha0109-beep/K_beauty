@@ -147,6 +147,7 @@ for (const [name, expectedReason, mutate] of negatives) {
 // Re-run D8C proof-selection and OWNER-decision fail-closed contract in the
 // existing D8F offline CI job. This exercises no database connection or writes.
 await import("./verify-barrier-support-p1-r16i-r4-d8c-correction-approval-v1.mjs");
+await import("./verify-r16i-price-scope-review-v1.mjs");
 
 console.log(JSON.stringify({
   status: "PASS",

@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
+import {buildR16IPriceScopeReview} from "@/lib/product-intelligence/r16i-price-scope-review-v1.mjs";
 
 const API="/api/admin/products/r16i-correction-review/approval";
 const EVIDENCE="/api/admin/products/r16i-correction-review/evidence";
@@ -34,6 +35,9 @@ export default function R16IR4D8CorrectionApproval({review}){
  const verified=evidence.filter(e=>verdictMap.get(e.evidenceId)?.verdict==="VERIFIED");
  const selectedSources=new Set(verified.filter(e=>linked.includes(e.evidenceId)).map(e=>e.sourceKey));
  const twoSellerEvidenceSelected=selectedSources.has("official_single")&&selectedSources.has("hwahae_bundle");
+ const priceScope=buildR16IPriceScopeReview({
+  view:review,evidence,verdicts:ledger?.verdicts||[],nowIso:new Date().toISOString()
+ });
  async function reload(){
   const [a,b]=await Promise.all([load(API),load(EVIDENCE)]);
   if(!a.ledger||!Array.isArray(b.items))throw Error("검토 이력 응답 불완전");
@@ -119,6 +123,30 @@ export default function R16IR4D8CorrectionApproval({review}){
    <section className="rounded-xl border border-[#dbe4ef] p-4 dark:border-[#435369]">
     <h4 className="font-semibold">B. 필드별 정정안 작성</h4>
     <p className={light+" mt-1"}>확인된 근거와 변경할 필드를 연결합니다. 근거 없는 수치는 제안하지 마세요.</p>
+    <div className="mt-3 rounded-xl border border-[#d5dce8] p-3 dark:border-[#526076]" aria-label="정상가 관측/결제금액 분리">
+     <h5 className="text-sm font-semibold">정상가 관측/결제금액 분리 · 읽기 전용</h5>
+     {priceScope.status!=="REVIEW_REQUIRED"?<p className={light+" mt-1"}>
+      가격 출처를 분리해 검토하려면 공식몰·화해의 VERIFIED 원본 2건과 일치하는 상품 사전 상태가 필요합니다.
+     </p>:<>
+      <p className={light+" mt-1"}>
+       공식몰 화면 표시 정상가 {priceScope.officialScreenListPriceKrW.toLocaleString("ko-KR")}원
+       (사용자 캡처 관측값, 현재 판매가 보증 아님) · 화면 할인액 {priceScope.officialDiscountObservedKrW.toLocaleString("ko-KR")}원
+      </p>
+      <div className="mt-2 grid gap-2 md:grid-cols-2">
+       {priceScope.offerCandidates.map(row=><div key={row.sourceKey} className="rounded-lg border p-2 text-xs dark:border-[#526076]">
+        <p className="font-semibold">{row.label}</p>
+        <p>해당 옵션 결제 관측가: {row.checkoutAmountKrW.toLocaleString("ko-KR")}원</p>
+        <p className={light}>크림 {row.creamUnitMl}ml × {row.creamQuantity}개{row.giftSerumMl>0?` · 세럼 ${row.giftSerumMl}ml 사은품`:""}</p>
+        <p className={light}>판매처 Offer 후보 · 실제 등록 아님</p>
+       </div>)}
+      </div>
+      <p className={light+" mt-2"}>
+       Product 기준 용량은 80ml 후보이나 대표가격·10ml당 가격·구매 링크는 미확정입니다.
+       <strong>대표가격 자동 확정 금지.</strong> 기존 D8D 적용 SQL은 공식몰 할인 결제금액을 Product 가격으로 요구하므로,
+       필드별 가격 정책을 확정하기 전에는 실제 정정안을 승인·적용하지 마세요.
+      </p>
+     </>}
+    </div>
     <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
      <label className="text-xs">필드<select className={ctl+" mt-1"} value={field} onChange={e=>{setField(e.target.value);setAfter("");}}>{FIELDS.map(([id,label])=><option value={id} key={id}>{label}</option>)}</select></label>
      <label className="text-xs">제안값<input className={ctl+" mt-1"} value={after} onChange={e=>setAfter(e.target.value)} placeholder={value(beforeMap.get(field))}/></label>

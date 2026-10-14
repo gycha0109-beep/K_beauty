@@ -183,3 +183,10 @@
 - Legacy Product still 160ml/29,900, Offer/Subject collisions 0, one expected binding/intake, **0 proposal/decision/application**, release gate disabled. PR #1255 functional CI PASS including isolated PG17 migration replay, mandatory security audit FAIL.
 - D8D would assign 24,500 KRW *discounted checkout* to Product min/max and change the Product buy link to the manufacturer URL. These are **candidate values** requiring separate canonical-price and CTA policy authorization, not automatic owner approval. See [field decision preflight](../evidence/r16i-r4-d8f-owner-verified-field-proposal-preflight-20261014.md).
 - #1208 security remains OPEN; Draft security PR #1288 is not a completed installed fix. No Production schema, Product/Offer, ranking, release, environment or merge mutations.
+
+### D8H pricing attribution and two Offer candidate shadow — 2026-10-14
+
+- Implemented `r16i-price-scope-review-v1.mjs` as **read-only Product/Offer scope model** with the 35,000 KRW official screenshot display normal price, 24,500 KRW selected single-unit checkout and 29,900 KRW Hwahae 80ml×2 + 10ml serum kit selected checkout **explicitly separated**. No price value automatically approved for `products.price_min/max`.
+- Manager section B now compares both seller-scoped Offer **candidates** (no DB insert) and warns that current D8D SQL still forces the 24,500 KRW discounted checkout into Product price. Product 80ml is only an anchor candidate; canonical Product price, unit price and CTA remain **null/HOLD** in the shadow.
+- Added 17 negative cases + nominal scope test to the existing D8F offline verifier; protected SQL/RPC/schema/auth/purchase allowlist were **not changed**. R16I is not yet a safe Product/Offer migration: owner must decide canonical pricing, representative CTA and whether manufacturer also needs a persisted Offer before separate D8D revision.
+- See [D8H price attribution shadow](../evidence/r16i-r4-d8h-price-scope-shadow-20261014.md). Connected Product remains 160ml/29,900, 0 Offer writes; #1208 mandatory supply chain remains open. No merge or Production deploy.
