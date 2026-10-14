@@ -30,3 +30,14 @@ Tested fake versions or injected caller attestation cannot turn these into appro
 5. B5 Android APK/device smoke; B6 reviewed no-exception CI; B7 explicit merge.
 
 **Never merge this draft as a production security fix or claim the audit passed.** It does not modify Production, Supabase, Subject, Fact, recommendations, or AI API.
+
+
+## Actual exact-branch CI — 2026-10-14
+
+- Tested implementation SHA `2a78517b0738a3f02324e98eda6c52e6cd5537cd`; [Supply Chain run #38504775157](https://github.com/gycha0109-beep/K_beauty/actions/runs/38504775157), job `115659705865`.
+- `SEC_SCA_B4_PREFLIGHT` 9 fixture cases **PASS**. Current lock v3: 5 roots, **0 unresolved dependency edges**; vulnerable current reachable copy count **braces=1, node-forge=1**.
+- Actual `npm ci` installed copies of both original locked packages were read and matched both exact lock paths. SHA256 of the two actual source files (metadata only): braces `e572166565f15fa6ad9865ae49d678218e32aabfd1b3720f6d0d43d39800d310`, node-forge `fd4740238145ec26470eb3f06a627c72039538ce1307dbdce40521f94dfd0a50`. These are **unapproved original source fingerprints**, not patched-source approvals.
+- `SEC_SCA_B4_BASELINE.status=B4_PREFLIGHT_HOLD`, `securityGatePassed=false`, `rawAuditHighZeroAttested=false`; original canonical audit **FAIL** on expired `braces` exception `GHSA-vfj7-8cjw-p6xm` at 2026-10-10 UTC. The same CI step proceeded to raw audit and did NOT skip it.
+- This is only baseline detection. Nothing was replaced, published, committed to the root lock, deployed, or marked remediated. B3 ownership/licensing/private artifact and B4 resolver replacement are still unresolved. B5–B7 all HOLD.
+
+No automatic merge, exemption change, or security-release permission is implied by these isolated fixture PASS results.
