@@ -1,0 +1,43 @@
+{
+  "schema": "bejewely.security.private-patch-source.v1",
+  "stage": "B1_ISOLATED_SOURCE_CANDIDATE_ONLY",
+  "upstreamPackage": "braces",
+  "originalVersion": "3.0.3",
+  "originalRegistryTarball": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+  "originalLockIntegritySha512": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+  "advisory": "GHSA-vfj7-8cjw-p6xm",
+  "upstreamPatch": {
+    "repo": "micromatch/braces",
+    "pullRequest": 72,
+    "headSha": "28d440b5dd449dbf1fe6f3506cf94ecca4d02660",
+    "stateAtReview": "CLOSED_UNMERGED",
+    "reviewedLibraryPatchGitBlobSha1": "b6aa05571a91ec9c6c4bc80ae7c6a26cb5db31af",
+    "existingPatchPath": "scripts/security/candidates/braces-pr72-library.patch.b64",
+    "expectedChangedFiles": [
+      "lib/compile.js",
+      "lib/constants.js",
+      "lib/expand.js",
+      "lib/parse.js",
+      "lib/stringify.js"
+    ]
+  },
+  "distributionApproved": false,
+  "licenseReviewed": false,
+  "sourceTarballIndependentSha512Verified": true,
+  "releaseArtifactBuilt": false,
+  "securityOwnerApproval": "UNKNOWN",
+  "vulnerabilityRemediated": false,
+  "originalTarballEvidence": {
+    "run": "https://github.com/gycha0109-beep/K_beauty/actions/runs/38350267266",
+    "result": "SOURCE_REGISTRY_INTEGRITY_PASS_NOT_A_PATCH_RELEASE",
+    "packFiles": 10
+  },
+  "upstreamFullNodeUnitSuite": {
+    "verified": true,
+    "passingTests": 904,
+    "exactRun": "https://github.com/gycha0109-beep/K_beauty/actions/runs/38356625466",
+    "method": "SHA-pinned upstream test suite with independently pinned five-file patched npm 3.0.3 source; 0 modified source drift files",
+    "candidateOnly": true,
+    "notReleaseAttestation": true
+  }
+}
