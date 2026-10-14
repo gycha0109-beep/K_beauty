@@ -6,6 +6,12 @@ import {
   resolveFaceLabDeferredSaveStatus
 } from "../lib/face-lab-v2/persistence-state.js";
 
+import {
+  TARGET_FINDER_ROUNDS,
+  buildTargetFinderResult,
+  getTargetFinderResumeState
+} from "../lib/face-lab-v2/target-finder.js";
+
 const root = resolve(process.cwd());
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 
@@ -15,6 +21,48 @@ const fullReportPage = read("app/result/full-report/page.js");
 const premiumFaceLab = read("components/full-report/PremiumFaceLabSection.jsx");
 const composer = read("lib/face-lab-v2/canonical-composer.js");
 const styleDelta = read("lib/face-lab-v2/style-delta.js");
+
+
+// Reopening a completed Finder from the Target Setup back button must not
+// discard four valid preference answers or silently approve a new target.
+const finderAnswers = TARGET_FINDER_ROUNDS.map((round, index) => ({
+  roundId: round.roundId,
+  choice: ["a", "b", "both", "neither", "a"][index]
+}));
+const finderCompleted = buildTargetFinderResult(finderAnswers);
+const finderResume = getTargetFinderResumeState(finderCompleted);
+assert.equal(finderResume.roundIndex, 4);
+assert.deepEqual(finderResume.choices, finderAnswers.slice(0, 4));
+const finderEdited = buildTargetFinderResult([
+  ...finderResume.choices,
+  { roundId: TARGET_FINDER_ROUNDS[4].roundId, choice: "b" }
+]);
+assert.equal(finderEdited.rounds.length, 5);
+assert.deepEqual(finderEdited.rounds.slice(0, 4).map((round) => round.choice),
+  finderAnswers.slice(0, 4).map((round) => round.choice));
+assert.equal(finderEdited.rounds[4].choice, "b");
+assert.equal(finderEdited.userApproved, false);
+
+for (const staleFinder of [
+  null,
+  { ...finderCompleted, candidateSetVersion: "unknown" },
+  { ...finderCompleted, rounds: finderCompleted.rounds.slice(0, 4) },
+  { ...finderCompleted, rounds: [finderCompleted.rounds[1], ...finderCompleted.rounds.slice(1)] },
+  { ...finderCompleted, rounds: finderCompleted.rounds.map((round, index) =>
+    index === 2 ? { ...round, choice: "unsupported" } : round) }
+]) {
+  assert.deepEqual(
+    getTargetFinderResumeState(staleFinder),
+    { roundIndex: 0, choices: [] },
+    "stale, incomplete, reordered and invalid Finder history must restart safely"
+  );
+}
+assert.ok(
+  premiumFaceLab.includes("resumeState={getTargetFinderResumeState(finderResult)}") &&
+    premiumFaceLab.includes("useState(() => resumeState?.roundIndex ?? 0)") &&
+    premiumFaceLab.includes("useState(() => resumeState?.choices ?? [])"),
+  "the Finder UI must restore validated answers only when re-entered from setup"
+);
 
 assert.ok(fullReportApi.includes("faceLabAnalysis"), "full report must persist validated Face Lab analysis");
 assert.ok(
