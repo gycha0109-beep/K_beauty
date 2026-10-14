@@ -3199,3 +3199,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Guard D8C proposed field changes against one-seller evidence: require two separate seller keys, canonical seller URLs, verified verdict for every evidence ID; UX button disabled until both sellers selected. Existing D8D owner-decision RPC two-source requirement unchanged. Four new negative cases in D8C focused verifier, called by already scheduled D8F offline CI step.
 - Docs: docs/evidence/r16i-r4-d8f-owner-checkout-evidence-readiness-20261014.md, D8G checkpoint and taxonomy roadmap. No automatic owner VERIFIED verdict, price authority, production reassign, CTA or security green-override.
 - Pending: exact SHA CI, owner inspection and human verdicts, independently attested Production DB identity, supply-chain issue #1208, gift serum SKU, review scope and explicit final APPLY approval.
+
+### 2026-10-14 / R16I OWNER verdict 12-character minimum UX defect
+
+- User reproduced disabled original-accept/reject buttons after opening the signed screenshot, ticking original-confirmation and entering a short legitimate verdict reason. Confirmed the triple minimum-length lock in the OWNER UI, validation and connected candidate DB CHECK.
+- Bounded code fix on taxonomy-ai PR #1255: owner verdict allows trimmed 1..2000 text; whitespace-only denied; explicit remaining-condition status; preserve OWNER authorization, private evidence, RLS, append-only audit and source approval gates. Proposal and decision rationales still require 12..2000.
+- Added isolated, precondition-guarded SQL migration to replace only verdict reason CHECK; not applied to unknown hosted runtime. Negative verifier checks nonblank, whitespace, over-limit and SQL scope in existing D8F CI job.
+- Security #1208 and Production deployment remain HOLD; no production DB, Product/Offer, Auth/roles/RLS or environment changes. Deployment needs independently green safety gate and target DB identity.

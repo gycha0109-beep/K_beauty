@@ -107,9 +107,12 @@ export default function R16IR4D8CorrectionApproval({review}){
      <button type="button" className={btn} disabled={!!busy} onClick={openPreview}>비공개 캡처 열람 링크 발급</button>
      {preview&&<a className="ml-2 text-sm text-[#2767bd] underline" href={preview} target="_blank" rel="noopener noreferrer" onClick={()=>setOpened(true)}>원본 열기 (60초)</a>}
      <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={opened} onChange={e=>setOpened(e.target.checked)}/> 원본을 열어 선택 옵션과 출처를 확인하고 판정 책임을 이해했습니다.</label>
-     <textarea className={ctl} rows={2} maxLength={2000} placeholder="검증 범위 및 판단 근거(12자 이상)" value={verdictReason} onChange={e=>setVerdictReason(e.target.value)}/>
-     <div className="flex gap-2"><button type="button" className={btn} disabled={!opened||verdictReason.trim().length<12||!!busy} onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"VERIFIED",reason:verdictReason})}>원본 인정</button>
-     <button type="button" className={btn} disabled={!opened||verdictReason.trim().length<12||!!busy} onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"REJECTED",reason:verdictReason})}>반려</button></div>
+     <textarea className={ctl} rows={2} maxLength={2000} placeholder="판단 사유를 입력하세요 (공백 제외 1자 이상)" value={verdictReason} onChange={e=>setVerdictReason(e.target.value)}/>
+     <p className={light} role="status" aria-live="polite">
+      {!opened?"원본 확인 체크박스를 선택해 주세요.":!verdictReason.trim()?"판정 사유를 입력하면 인정·반려 버튼이 활성화됩니다.":"판정할 수 있습니다."}
+     </p>
+     <div className="flex gap-2"><button type="button" className={btn} disabled={!opened||!verdictReason.trim()||!!busy} onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"VERIFIED",reason:verdictReason})}>원본 인정</button>
+     <button type="button" className={btn} disabled={!opened||!verdictReason.trim()||!!busy} onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"REJECTED",reason:verdictReason})}>반려</button></div>
      <p className={light}>근거 인정은 실결제 가격 인증이나 상품 수정 승인이 아닙니다.</p>
     </div>}
    </section>
