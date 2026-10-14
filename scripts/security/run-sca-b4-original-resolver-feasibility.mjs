@@ -105,8 +105,18 @@ try{
     const entries=Object.entries(candidateLock.packages)
       .filter(([p])=>p==="node_modules/"+name||p.endsWith("/node_modules/"+name));
     assert.ok(entries.length>0,"CANDIDATE_PACKAGE_MISSING:"+name);
-    for(const [,v] of entries)assert.ok(typeof v.resolved==="string"&&
-      v.resolved.startsWith("file:"),"CANDIDATE_RESOLVER_DID_NOT_USE_TARBALL:"+name);
+    // Emit only fixed scheme kinds and counts: never temp file paths or URLs.
+    const byScheme=Object.fromEntries(["FILE","REGISTRY","OTHER","NONE"].map(x=>[x,0]));
+    for(const [,v] of entries){
+      const u=v.resolved;
+      const kind=typeof u!=="string"?"NONE":u.startsWith("file:")?"FILE":
+        u.startsWith("https:")?"REGISTRY":"OTHER";
+      byScheme[kind]++;
+    }
+    console.log("SEC_SCA_B4_RESOLVER_PACKAGE_SHAPE="+JSON.stringify({
+      package:name,copyCount:entries.length,resolutionKindCounts:byScheme}));
+    assert.ok(byScheme.FILE===entries.length,
+      "CANDIDATE_RESOLVER_DID_NOT_USE_TARBALL:"+name);
     candidateEntries[name]=entries.length;
   }
   // Actually physically install a *known vulnerable* all-workspaces
