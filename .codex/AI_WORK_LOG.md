@@ -3206,3 +3206,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Bounded code fix on taxonomy-ai PR #1255: owner verdict allows trimmed 1..2000 text; whitespace-only denied; explicit remaining-condition status; preserve OWNER authorization, private evidence, RLS, append-only audit and source approval gates. Proposal and decision rationales still require 12..2000.
 - Added isolated, precondition-guarded SQL migration to replace only verdict reason CHECK; not applied to unknown hosted runtime. Negative verifier checks nonblank, whitespace, over-limit and SQL scope in existing D8F CI job.
 - Security #1208 and Production deployment remain HOLD; no production DB, Product/Offer, Auth/roles/RLS or environment changes. Deployment needs independently green safety gate and target DB identity.
+
+### 2026-10-14 / R16I evidence verdict reason isolated PG17 replay
+
+- Followed prior UX/server/SQL patch with **actual SQL replay coverage** in the existing Database Integration Authority workflow's isolated PostgreSQL 17 service. New rollback fixture tests the predecessor 12-character denial, actual constraint migration, acceptance of short valid text, whitespace and over-limit rejection, existing-row preservation, and untouched proposal/decision guards.
+- One disposable dedicated database is created and destroyed inside CI; zero connected Supabase/Production schema or data mutations. No modifications to supply-chain security gate.
+- Until that new SHA finishes, status is code committed / runtime replay awaiting CI. Security #1208 and deployment identity remain HOLD.

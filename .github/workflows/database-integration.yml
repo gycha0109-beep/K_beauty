@@ -393,6 +393,28 @@ jobs:
           psql -v ON_ERROR_STOP=1 -c "drop database taxonomy_r16i_d8d with (force)"
           echo "R16I_D8D_ISOLATED_PG17_PASS"
 
+      - name: Verify R16I D8C verdict reason migration in isolated PG17
+        shell: bash
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "54329"
+          PGUSER: postgres
+          PGPASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "5"
+        run: |
+          set -euo pipefail
+          test -z "${SUPABASE_ACCESS_TOKEN:-}"
+          test -z "${SUPABASE_DB_PASSWORD:-}"
+          psql -v ON_ERROR_STOP=1 -c "create database taxonomy_r16i_d8c_reason"
+          PGDATABASE=taxonomy_r16i_d8c_reason psql -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/r16i-d8d/30_verdict_reason_migration_pg17.sql \
+            | tee "${RUNNER_TEMP}/r16i-d8c-verdict-reason.log"
+          grep -Fq "R16I_D8C_VERDICT_REASON_PG17_PASS" "${RUNNER_TEMP}/r16i-d8c-verdict-reason.log"
+          test "$(PGDATABASE=taxonomy_r16i_d8c_reason psql -Atqc "select coalesce(to_regclass('public.admin_product_correction_evidence_verdicts_v1')::text,'none')")" = "none"
+          psql -v ON_ERROR_STOP=1 -c "drop database taxonomy_r16i_d8c_reason with (force)"
+          echo "R16I_D8C_VERDICT_REASON_ISOLATED_PG17_PASS"
+
       - name: Verify exact-head diff hygiene
         shell: bash
         run: git diff --check HEAD^

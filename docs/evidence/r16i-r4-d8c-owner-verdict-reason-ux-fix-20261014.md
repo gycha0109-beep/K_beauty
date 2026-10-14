@@ -19,3 +19,9 @@ The OWNER had already opened the private original and checked the source-confirm
 This is a source-code/migration artifact change on PR #1255; **not a completed Production rollout**. The connected Supabase candidate has not had its schema modified as part of this patch. The effective deployed server DB identity is still not independently attested; do not assume a GitHub migration file is live.
 
 Mandatory Supply Chain Security #1208 remains an independent blocking red gate. Do **not** merge PR #1255, deploy code or apply an unverified hosted database migration by bypassing this gate. The user can continue using existing hosted screen with a reason of at least 12 characters until the UI+server+DB changes are safely deployed. Do not manufacture an OWNER verdict.
+
+## Isolated SQL execution contract added (not deployed)
+
+- New `tests/fixtures/r16i-d8d/30_verdict_reason_migration_pg17.sql` creates the exact predecessor verdict CHECK, verifies short text was previously blocked, executes the actual migration from disk in one transaction, then checks one-character Korean text, `오너 확인 완료`, and 2000 characters succeed; whitespace-only and 2001 characters fail.
+- The same isolated test verifies the old verdict remains and the independent proposal/decision minimums are not weakened, and ROLLBACK leaves no tables. The database integration workflow runs it in a disposable PG17 database and drops that database afterward.
+- This tests a fixture-compatible migration only. Hosted schema has **not** been changed; a green isolated CI cannot independently authorize Production migration, code deployment or owner-verdict insertion.
