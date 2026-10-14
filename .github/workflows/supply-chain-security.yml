@@ -76,6 +76,7 @@ jobs:
           cache: npm
 
       - name: Verify lockfile install without lifecycle scripts
+        id: install
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Trace vulnerable dependency paths without changing audit policy
@@ -85,6 +86,12 @@ jobs:
 
       - name: Audit dependency vulnerabilities
         run: node scripts/verify-supply-chain-audit.mjs
+
+      - name: Verify official framework patch production build
+        if: ${{ always() && steps.install.outcome == 'success' }}
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: npm run build
 
       - name: Check exact-head diff hygiene
         shell: bash
