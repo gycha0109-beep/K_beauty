@@ -84,11 +84,9 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt) {
     manifest.overrides={...manifest.overrides,braces:"file:"+bracesTarball,"node-forge":"file:"+forgeCopy};
     fs.writeFileSync(path.join(graph,"package.json"),JSON.stringify(manifest,null,2)+"\n");
     console.log("SCA_B4_STAGE=resolver full root/workspace graph");
-    run("npm",["install","--package-lock-only","--ignore-scripts","--no-audit","--no-fund"],graph,240000);
-    // npm may retain same-version node-forge registry resolution after overrides;
-    // refresh through the resolver in this disposable tree, never edit lock bytes.
-    run("npm",["update","node-forge","--package-lock-only","--ignore-scripts",
-      "--no-audit","--no-fund"],graph,240000);
+    // npm install can retain the old same-version integrity despite a new override.
+    // Explicitly update the two target nodes through Arborist; never hand-edit lock entries.
+    run("npm",["update","braces","node-forge","--package-lock-only","--ignore-scripts","--no-audit","--no-fund"],graph,240000);
     const candidateBytes=fs.readFileSync(path.join(graph,"package-lock.json"));
     const candidate=JSON.parse(candidateBytes);
     const paths=Object.keys(candidate.packages).filter(p=>targets.some(n=>p.endsWith("node_modules/"+n)));
@@ -166,6 +164,15 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
       baselineFull:audit(root,"BASELINE_FULL"),baselineProduction:audit(root,"BASELINE_PRODUCTION",["--omit=dev"]),
       candidateFull:audit(graph,"CANDIDATE_FULL"),candidateProduction:audit(graph,"CANDIDATE_PRODUCTION",["--omit=dev"])
     };
+    // Also exercise ordinary lifecycle installation. This remains inside the disposable graph.
+    run("npm",["ci","--no-audit","--no-fund"],graph,300000);
+    assert.equal(hash(fs.readFileSync(path.join(graph,"package-lock.json"))),hash(candidateBytes));
+    for(const p of paths) {
+      const name=targets.find(n=>p.endsWith("node_modules/"+n));
+      assert.deepEqual(inventory(path.join(graph,p)),expected[name],"lifecycle install changed patched bytes: "+p);
+    }
+    run(process.execPath,[path.join(root,"scripts/security/verify-private-forge-probe-child.mjs"),
+      path.join(graph,"node_modules")],root);
     // Compatibility can be measured despite audit HOLD; it never promotes B5/release acceptance.
     const checks=[];
     const commands=["mobile:typecheck","mobile:lint","verify:mobile-foundation","verify:mobile-entry-routing",
@@ -179,14 +186,41 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     }
     const modifiedMobile=hash(fs.readFileSync(path.join(graph,"apps/mobile/package.json")));
     const archivedMobile=hash(fs.readFileSync(path.join(root,"apps/mobile/package.json")));
+    const androidDir=path.join(graph,"apps/mobile/android");
+    let android={status:"NOT_RUN",reason:"Android SDK or JDK unavailable",apkSha256:null};
+    const sdk=process.env.ANDROID_HOME||process.env.ANDROID_SDK_ROOT;
+    const java=spawnSync("java",["-version"],{encoding:"utf8",timeout:10000});
+    if(sdk&&fs.existsSync(sdk)&&java.status===0&&fs.existsSync(path.join(androidDir,"gradlew"))) {
+      console.log("SCA_B4_STAGE=Android debug build (20 minute bounded attempt, 2 workers)");
+      const p=spawnSync("bash",["./gradlew",":app:assembleDebug","--no-daemon","--max-workers=2",
+        "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"],{cwd:androidDir,encoding:"utf8",
+        timeout:1200000,maxBuffer:32*1024*1024,env:{...process.env,CI:"true"}});
+      console.log(`SCA_B4_ANDROID_BUILD_BEGIN\n${p.stdout||""}\n${p.stderr||""}\nSCA_B4_ANDROID_BUILD_END`);
+      const apk=path.join(androidDir,"app/build/outputs/apk/debug/app-debug.apk");
+      android={status:p.status===0&&!p.error&&fs.existsSync(apk)?"PASS":"FAIL",exit:p.status,
+        reason:p.error?.code||null,jdk:java.stderr.trim(),sdkPresent:true,
+        apkSha256:fs.existsSync(apk)?hash(fs.readFileSync(apk)):null};
+      checks.push({name:"Android debug APK",status:android.status,exit:p.status,error:p.error?.code||null});
+    }
+    const exports=path.join(graph,"apps/mobile/.expo-ci-dist");
+    const metroBundles=[];
+    function bundles(dir) {
+      if(!fs.existsSync(dir))return;
+      for(const e of fs.readdirSync(dir,{withFileTypes:true})) {
+        const file=path.join(dir,e.name);
+        if(e.isDirectory())bundles(file);
+        else if(/\.(?:js|hbc|map)$/.test(e.name))metroBundles.push({path:path.relative(exports,file),sha256:hash(fs.readFileSync(file))});
+      }
+    }
+    bundles(exports);
     const receipt={schema:"bejewely.security.sca-b4-full-graph.v1",head,node:process.version,
       npm:run("npm",["--version"],graph).stdout.trim(),
       originalLockSha256:hash(originalLockBytes),candidateLockSha256:hash(candidateBytes),
       artifacts:{braces:{sha256:hash(fs.readFileSync(bracesTarball)),provenance:bracesProvenance},forge:forgeReceipt},
-      installed,consumers,audits,checks,prebuildChangedDisposableMobileManifest:modifiedMobile!==archivedMobile,
+      installed,consumers,audits,checks,android,metroBundles,prebuildChangedDisposableMobileManifest:modifiedMobile!==archivedMobile,
       technicalInstallEvidence:"PASS",acceptance:"HOLD_UNRELEASED_SAME_VERSION_PATCH_AND_RAW_AUDIT",
       fullGraphInstalled:true,appSourceGraphChanged:false,auditPolicyChanged:false,
-      releaseApproved:false,androidApk:"NOT_RUN_NO_SDK_IN_THIS_JOB",deviceSmoke:"NOT_RUN",
+      releaseApproved:false,deviceSmoke:"NOT_RUN_NO_DEVICE_OR_ISOLATED_BACKEND",
       artifactsDeletedOnExit:true};
     console.log("SCA_B4_FULL_GRAPH_EVIDENCE="+JSON.stringify(receipt));
     assert.ok(checks.every(c=>c.status==="PASS"),"candidate compatibility failed; see command logs above");

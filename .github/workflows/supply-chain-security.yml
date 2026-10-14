@@ -224,7 +224,7 @@ jobs:
     outputs:
       forge_full_dist_sha256: ${{ steps.fullpack.outputs.forge_full_dist_sha256 }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 55
     steps:
       - name: Checkout exact HEAD for isolated browser rebuild
         uses: actions/checkout@v7
