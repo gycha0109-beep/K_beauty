@@ -1,6 +1,8 @@
 -- Isolated PostgreSQL 17 only: D8D v2 CAS, true 2-Offer writes and 2-ID rollback.
 -- All values/evidence/approvals are FICTIONAL, NOT a real OWNER decision.
 \set ON_ERROR_STOP on
+-- The isolated 00 fixture predates the existing Product Offer market_code field.
+ALTER TABLE public.product_offers ADD COLUMN market_code text NOT NULL DEFAULT 'KR';
 BEGIN;
 
 DO $setup$
