@@ -119,3 +119,195 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:javascript-typescript"
+
+  b3-isolated-artifact-provenance:
+    name: B3 isolated private tarball provenance (not a release)
+    outputs:
+      braces_sha256: ${{ steps.pack.outputs.braces_sha256 }}
+      node_forge_sha256: ${{ steps.pack.outputs.node_forge_sha256 }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact B3 HEAD
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Confirm exact B3 checked-out SHA
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+
+      - name: Node 22 and immutable original dependencies
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Install original graph without scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Inventory forge consumers, browser dist references and license source
+        run: node scripts/security/report-sca-b3-forge-consumer-boundary.mjs
+
+      - name: Validate both original official npm archives
+        run: |
+          node scripts/security/verify-private-braces-registry-origin.mjs
+          node scripts/security/verify-private-forge-registry-origin.mjs
+
+      - name: Assert B1/B2 isolated source and consumer behavior
+        run: |
+          node scripts/security/verify-private-braces-source-candidate.mjs
+          node scripts/security/verify-private-forge-source-candidate.mjs
+
+      - name: Create twice and verify disposable B3 tarballs and scoped SBOM
+        id: pack
+        run: node scripts/security/run-sca-b3-temp-package-repro.mjs
+
+      - name: Verify manifest and lock remain unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+
+  b3-independent-clean-runner-replay:
+    name: B3 independent clean npm-ci runner replay
+    needs: [b3-isolated-artifact-provenance]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact candidate SHA in separate runner
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify same HEAD and expected digests
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          BRACES_SHA: ${{ needs.b3-isolated-artifact-provenance.outputs.braces_sha256 }}
+          FORGE_SHA: ${{ needs.b3-isolated-artifact-provenance.outputs.node_forge_sha256 }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+          test -n "${BRACES_SHA}"
+          test -n "${FORGE_SHA}"
+
+      - name: Install Node 22 in independent runner
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Reinstall exact original graph from clean npm-ci
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Repack twice and compare independently installed tarballs
+        env:
+          SCA_B3_EXPECTED_BRACES_SHA256: ${{ needs.b3-isolated-artifact-provenance.outputs.braces_sha256 }}
+          SCA_B3_EXPECTED_FORGE_SHA256: ${{ needs.b3-isolated-artifact-provenance.outputs.node_forge_sha256 }}
+        run: node scripts/security/run-sca-b3-temp-package-repro.mjs
+
+      - name: Verify app manifests remain unchanged on both runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+
+  b3-browser-bundle-rebuild-isolation:
+    name: B3 browser provenance and B4 full graph experiment (release HOLD)
+    outputs:
+      forge_full_dist_sha256: ${{ steps.fullpack.outputs.forge_full_dist_sha256 }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact HEAD for isolated browser rebuild
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact browser-probe HEAD
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+
+      - name: Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Immutable original dependency installation
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Use validated JDK 17 for native build
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          verify-signature: true
+
+      - name: Rebuild upstream-pinned webpack bundles, browser RSA, full temp tarball
+        id: fullpack
+        env:
+          SCA_B4_VALIDATE_FULL_GRAPH: "1"
+        run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+
+      - name: Assert original application manifest and lock unmodified
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+
+  b3-browser-full-dist-independent-replay:
+    name: B3 full browser dist independent clean-runner reproducibility
+    needs: [b3-browser-bundle-rebuild-isolation]
+    # Replay proven B3 bytes even when the separate B4 experiment later fails.
+    if: ${{ always() && needs.b3-browser-bundle-rebuild-isolation.outputs.forge_full_dist_sha256 != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout same candidate HEAD in second clean runner
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact HEAD and primary runner digest
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          FORGE_SHA: ${{ needs.b3-browser-bundle-rebuild-isolation.outputs.forge_full_dist_sha256 }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+          [[ "${FORGE_SHA}" =~ ^[a-f0-9]{64}$ ]]
+
+      - name: Node 22 and fresh original dependency graph
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Reinstall original lock graph with no lifecycle
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Independently rebuild and double-pack full browser dist in temp
+        env:
+          SCA_B3_EXPECTED_FORGE_FULL_DIST_SHA256: ${{ needs.b3-browser-bundle-rebuild-isolation.outputs.forge_full_dist_sha256 }}
+        run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+
+      - name: Confirm source manifests remain untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- package.json package-lock.json apps/mobile/package.json

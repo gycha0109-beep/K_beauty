@@ -3146,3 +3146,46 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+## 2026-10-14 — SCA B3 isolated npm package reproducibility
+
+- Type: execution + security verification. Track `security`. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production = N (isolated offline-like dependency artifact workflow only; npm registry reads original public artifacts). No protected runtime mutation.
+- Baseline: `main@f67b10b5`, later synchronized with `main@68225ad2` via non-force merge-parent commit preserving unrelated TRUST files. B1 PR #1270 `4f086760`, B2 PR #1271 `bcd9d4f` unchanged; B3 Draft PR #1288.
+- Implemented: verified source-only B1/B2 file incorporation (17 files), new `scripts/security/run-sca-b3-temp-package-repro.mjs`, isolated B3 job in existing Supply Chain workflow and security execution ledger. No root `package.json`/`package-lock.json` or app/production changes.
+- Actual CI at `fa741358`: B3 isolated job [#38495602311](https://github.com/gycha0109-beep/K_beauty/actions/runs/38495602311) PASS: original source tarball SHA512, 2x npm pack per package, byte-identical tarballs and unpacked file SHA256, LICENSE, lifecycle hook scan, secret/symlink/path scan. braces 10 files SHA256 `d4f1219db19bfeb4e1c3f0354f9269569393f1b8c9f8c0295b80346926d4fa70`; forge 53 files SHA256 `ed30cf67cfa87f097c9f6b9ceadd4187fa3efb9399fd166380fc5ea36f8915e5`, 0 dist, remove known prepublish hook in disposable copy.
+- Existing mandatory npm audit intentionally FAIL (advisories still in original lock). Initial Main Health FAIL due new main base not ancestor, mitigated by non-force main ancestry sync. CI after subsequent documentation commits requires exact-HEAD recheck.
+- Remaining: browser distribution compatibility, owner/license re-distribution review, permanent private artifact location, B4 real full graph install/raw audit, B5 Android, B6 v2 security policy, B7 separate explicit merge approval all HOLD/NOT_RUN. No published or durable tarball.
+
+### 2026-10-14 / B3 separate clean-runner reproducibility follow-up
+
+- On PR #1288 code SHA `b02ec8f941c17e6b179aebe407b5c2d670e421e2`, Supply Chain [#38496534583](https://github.com/gycha0109-beep/K_beauty/actions/runs/38496534583) reported **PASS** for both independent B3 jobs. Each separate GitHub-hosted Ubuntu 24.04 Node 22 runner checked out exact SHA and ran a distinct `npm ci`. The second runner asserted byte-for-byte SHA256 agreement with outputs from the first; two `npm pack` operations per runner and package. Package/lock originals unchanged; temp archives deleted.
+- Status: B3 technical reproducibility PASS; B3 owner/license/private durable artifact approval HOLD; original canonical audit FAIL as required; B4-B7 not attested. Full stage evidence in `docs/security/sec-sca-20261014-b3-temp-package-evidence.md`.
+
+### 2026-10-14 — B3 real tarball/consumer/browser dist closure probe
+
+- Track security, Draft PR #1288; no Auth/DB/RLS/Storage/Payment/Secret/Production writes, no npm policy or app lock changes.
+- Added `report-sca-b3-forge-consumer-boundary.mjs`: original graph consumers @expo/cli and @expo/code-signing-certificates, 1,105 relevant files scanned, zero literal dist imports; dynamic/browser imports not covered.
+- Strengthened actual unpacked temporary forge .tgz RSA/Expo signing probe (valid, wrong-message, malformed nested ASN.1); exact code HEAD #38498280175 B3 isolated job PASS.
+- Added source-pinned disposable browser rebuild with upstream webpack 4.44.1. On #38499853956, all six original browser output names rebuilt; `forge.min.js` UMD core RSA valid/malformed negative control PASS. Full `forge.all.min.js` browser/jQuery runtime is HOLD; no dist shipped to candidate.
+- Corrected CycloneDX SHA512 to hexadecimal; original npm SHA512 integrity stays base64 and is independently compared. No audit allowlist or package alias.
+- Remaining gates: security maintainer, redistribution license approval, private artifact retention, browser full-runtime, B4 installed full graph/raw HIGH0, B5 APK/device, B6 policy, B7 explicit merge remain HOLD/NOT_RUN.
+
+### 2026-10-14 — B3 full-dist Chromium + double clean-runner isolated tarball
+
+- Draft security PR #1288. Direct consumer B3 probe extended with actual Chromium (pinned jquery@3.7.1 SHA512) for original and patched forge.all.min.js RSA; positive/wrong-message/malformed ASN.1 boundaries PASS, negative original reproduces vulnerability.
+- Quarantined full-browser-dist 59-file node-forge tarball created twice per runner and matched across two independent Ubuntu24.04/Node22 clean runners: SHA256 67a51b864d9e483417ff34425a5a09012d333a5184dcc39f966731935463db50. Original license preserved; pack metadata prepublish removed; no artifact uploaded or published, all OS temp deleted.
+- Exact-HEAD Security run #38504941021: B3 isolated, B3 existing independent, browser rebuild and full-dist independent replay PASS. Canonical unmodified audit FAIL (still-original installed app dependency); full Chromium RSA coverage is not general UI/network/browser or Android acceptance. B3 formal owner/legal/artifact distribution HOLD; B4+ NOT_RUN.
+
+### 2026-10-14 — B3.5 dry-run installation acceptance (isolated source)
+- Scope: PR #1288 disposable OS temp fixture; no root dependency changes, no real distribution or B4 promotion.
+- Offline npm resolver-created fixture lockfile and physical npm ci installed source-patched braces@3.0.3; 10-bytefile digest inventory equals packed B3; glob/depth/AST/cycle regression PASS. Three unchanged transitive dependencies locally linked from original lock-pinned npm ci tree to avoid nonexistent offline registry-metadata cache.
+- Same independent full browser-dist build fixture physically npm ci installed patched node-forge@1.4.0 from full 59-file tarball; fixture lock SHA512 and actual installed lib/rsa.js and browser dist hashes verified. Expo code-signing certificate RSA/PEM consumer smoke PASS, original source consumer range ^1.3.3.
+- [B3.5 run #38508164715](https://github.com/gycha0109-beep/K_beauty/actions/runs/38508164715) evidence. Not an app-wide B4 lock replacement, Android acceptance, audit HIGH0 or owner/legal/release approval. Official package audit deliberately unchanged and FAIL.
+
+### 2026-10-14 — B4 full workspace candidate and patched-graph Android APK
+
+- User-authorized security execution/diagnosis, no DB/Auth/RLS/Provider/Payment/Secret/Production writes, no release/main merge. Original product braces/forge manifest and lock unchanged; exact tested code 7b3c77c3, Security #38510868609.
+- Full root/four-workspace npm target resolver refresh, ignore-scripts and ordinary lifecycle ci, all 69 patched package file hashes, physical root/nested census and actual four direct consumer resolutions PASS. Parser/AST/cycle/micromatch/fast-glob and RSA/Expo signing positive/negative controls PASS.
+- Original and patched same-version raw audits byte-identical: full HIGH22/CRITICAL0/MODERATE13, production HIGH19/CRITICAL0/MODERATE11, both exit1 and both target leaves present. Original mandatory audit FAIL retained; raw SHA full d22e604fffe283ccc07648e09eaa9cae6739eb59fda7b9dc79fa4a7c0d14387b and production c55817a769347015a549836e4d94ffc46fa12aa0fd5ab147a3f1ea228b5e6ad6.
+- Mobile typecheck/foundation/routing/config, Metro export, Android prebuild/native shell, Next production build PASS. Clean SDK/JDK17 Gradle debug build PASS in19m31s; APK SHA9771d52c99d759a16ae7f84fcae742edc11d91dcb4d4f5bb222df14aec621205. Device/API/Auth smoke NOT_RUN; requires approved isolated environment, no public values guessed.
+- Final repair: distinguish physical installed SBOM from 720-entry historical lock catalogue; include installed version/license verification, post-lifecycle workspace census and local public-page smoke. Isolate every private file-tarball cache under temp and disable patch jobs' npm cache export; initial job logged cache hit/no save, no private artifact upload observed. No native/app-output cache export.
+- B1/B2/B3 technical PASS; B3 release/owner/legal/maintenance HOLD; B4 full installation PASS but raw audit/release HOLD; B5 APK PASS/device HOLD; B6/B7 HOLD/not authorized. Companion independent Next15.5.27 official patch PR#1294 lowers moderate counts only. Final code/CI revalidation pending. Details docs/security/sec-sca-20261014-b4-full-graph-evidence.md.
