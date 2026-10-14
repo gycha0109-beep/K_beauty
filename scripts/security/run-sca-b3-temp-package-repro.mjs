@@ -119,6 +119,37 @@ function makeSource(name,folder){
  return {directory:target,licenses,removedLifecycleHooks:removedHooks,
   sourcePin:JSON.parse(fs.readFileSync(path.join(root,"security/vendor",name,"source-manifest.json"),"utf8"))};
 }
+function verifyActualPackedForgeConsumer(unpackedPackage,work){
+ const original=path.join(root,"node_modules/@expo/code-signing-certificates");
+ const originalPkg=JSON.parse(fs.readFileSync(path.join(original,"package.json"),"utf8"));
+ assert.equal(originalPkg.version,"0.0.6","Expo signing consumer drift");
+ const fixture=path.join(work,"packed-forge-expo-consumer");
+ const signing=path.join(fixture,"@expo/code-signing-certificates");
+ const modules=path.join(fixture,"node_modules");
+ fs.mkdirSync(signing,{recursive:true});
+ fs.mkdirSync(modules,{recursive:true});
+ fs.symlinkSync(unpackedPackage,path.join(fixture,"node-forge"),"dir");
+ fs.symlinkSync(unpackedPackage,path.join(modules,"node-forge"),"dir");
+ fs.copyFileSync(path.join(original,"package.json"),path.join(signing,"package.json"));
+ fs.cpSync(path.join(original,"build"),path.join(signing,"build"),{recursive:true});
+ // The original B2 child checks the vulnerable original, *then* verifies
+ // normal/wrong-message/malformed DigestInfo + real Expo signing using the
+ // candidate. Here it runs against bytes unpacked from the actual npm .tgz.
+ const output=run(process.execPath,[
+  path.join(root,"scripts/security/verify-private-forge-probe-child.mjs"),fixture
+ ],root,70000);
+ assert.match(output,/SCA_B2_PRIVATE_FORGE_BEHAVIOR=PASS/,
+   "actual packed forge RSA and Expo consumer checks did not pass");
+ const packed=fs.readFileSync(path.join(unpackedPackage,"lib/rsa.js"));
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,
+   "security/vendor/node-forge/source-manifest.json"),"utf8"));
+ const b=createHash("sha1").update(Buffer.concat([Buffer.from("blob "+packed.length+"\\0"),packed])).digest("hex");
+ assert.equal(b,manifest.upstreamPatch.patchedRsaJsGitBlobSha1,
+   "tarball RSA bytes differ from upstream reviewed Git blob");
+ return {result:"PASS_PACKED_RSA_AND_EXPO_CONSUMER",
+   actualTarballBytes:true,expoConsumerVersion:originalPkg.version,
+   rsaSourceGitBlobSha1:b,distBundleNotAttested:true};
+}
 function packOne(name,iteration){
  const work=path.join(tmp,name+"-"+iteration);
  fs.mkdirSync(work);
@@ -156,6 +187,8 @@ function packOne(name,iteration){
    sha(fs.readFileSync(path.join(source.directory,l))),"license absent from artifact");
  assert.equal(files["lib/rsa.js"]===undefined,name==="braces",
    "forge RSA file not present in packed artifact");
+ const actualPackedForgeConsumer=name==="node-forge"&&iteration===1 ?
+   verifyActualPackedForgeConsumer(path.join(unpack,"package"),work) : null;
  const pkg=JSON.parse(fs.readFileSync(path.join(unpack,"package/package.json"),"utf8"));
  assert.equal(pkg.name,name);assert.equal(pkg.version,source.sourcePin.originalVersion);
  assert.deepEqual(Object.keys(pkg.scripts||{}).filter(s=>
@@ -165,6 +198,7 @@ function packOne(name,iteration){
    sha256:sha(archiveBytes),sha512:sha512(archiveBytes),
    artifactBytes:archiveBytes.length,files,
    lifecycleHooksRemoved:source.removedLifecycleHooks,
+   actualPackedForgeConsumer,
    licenses:source.licenses,distEntries:paths.filter(x=>x.startsWith("package/dist/")).length,
    provenance:"verified original npm-ci package + pinned minimal source patch",
    privateTempOnly:true,originalAuditStillFailing:true,distributionApproved:false};
