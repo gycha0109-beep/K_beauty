@@ -345,6 +345,80 @@ try{
  }
  assert.deepEqual(fullDistPacks[0],fullDistPacks[1],
   "B3 browser-complete patch tarballs non-reproducible within same runner");
+
+ // B3.5 non-production install acceptance. The tarball is installed by npm,
+ // not unpacked or symlinked into the application's actual node_modules.
+ // The package+lock are generated ONLY inside OS temp, with offline/no hooks.
+ const tarball=path.join(temp,"full-dist-pack-1","output","node-forge-1.4.0.tgz");
+ assert.ok(fs.lstatSync(tarball).isFile()&&!fs.lstatSync(tarball).isSymbolicLink());
+ assert.equal(hex(fs.readFileSync(tarball)),fullDistPacks[0].sha256);
+ const fixture=path.join(temp,"npm-installed-forge-consumer");
+ fs.mkdirSync(fixture);
+ fs.writeFileSync(path.join(fixture,"package.json"),JSON.stringify({
+  name:"bejewely-b3-quarantined-install-consumer",private:true,version:"0.0.0",
+  dependencies:{"node-forge":"file:"+tarball}
+ },null,2)+"\n");
+ const npmConfig=path.join(temp,"empty-user-npmrc");
+ fs.writeFileSync(npmConfig,"");
+ const isolatedNpmEnv={...process.env,CI:"true",NODE_OPTIONS:"",
+  npm_config_userconfig:npmConfig,npm_config_update_notifier:"false",
+  npm_config_registry:"http://127.0.0.1:9"};
+ run("npm",["install","--package-lock-only","--ignore-scripts","--offline",
+  "--no-audit","--no-fund"],fixture,40000,isolatedNpmEnv);
+ const consumerLock=JSON.parse(fs.readFileSync(path.join(fixture,"package-lock.json"),"utf8"));
+ assert.equal(consumerLock.lockfileVersion,3,"fixture lockfile v3 required");
+ const lockedForge=consumerLock.packages["node_modules/node-forge"];
+ assert.equal(lockedForge.version,"1.4.0");
+ assert.equal(lockedForge.integrity,fullDistPacks[0].sha512,
+  "npm resolver recorded a different node-forge packed SHA512");
+ assert.equal(lockedForge.resolved,"file:"+tarball,
+  "npm resolver did not use local temporary full-dist package");
+ run("npm",["ci","--ignore-scripts","--offline","--no-audit","--no-fund"],fixture,
+   45000,isolatedNpmEnv);
+ const tree=JSON.parse(run("npm",["ls","node-forge","--all","--json",
+   "--offline"],fixture,30000,isolatedNpmEnv));
+ assert.equal(tree.dependencies?.["node-forge"]?.version,"1.4.0");
+ const installed=path.join(fixture,"node_modules","node-forge");
+ assert.ok(fs.lstatSync(installed).isDirectory()&&!fs.lstatSync(installed).isSymbolicLink(),
+  "patched forge must be physically installed by npm ci");
+ const installedFiles=walk(installed);
+ assert.equal(Object.keys(installedFiles).length,59,
+  "npm installed node-forge full-dist file count changed");
+ assert.equal(installedFiles["LICENSE"],approvedLicenseSha);
+ assert.equal(installedFiles["lib/rsa.js"],fullDistPacks[0].rsaSha256);
+ for(const entry of fullDistPacks[0].browserBundleSha256){
+  assert.equal(installedFiles[entry.path],entry.sha256,
+   "actual npm-installed browser dist differs from source-pinned packed bundle");
+ }
+ assert.equal(JSON.parse(fs.readFileSync(path.join(installed,"package.json"),"utf8")).name,
+   "node-forge");
+ const signingSource=path.join(root,"node_modules","@expo","code-signing-certificates");
+ const signingOriginal=JSON.parse(fs.readFileSync(path.join(signingSource,"package.json"),"utf8"));
+ assert.equal(signingOriginal.version,"0.0.6","Expo signing consumer version drift");
+ assert.deepEqual(signingOriginal.dependencies,{"node-forge":"^1.3.0"},
+   "Expo signing direct consumer dependencies changed");
+ const signing=path.join(fixture,"@expo","code-signing-certificates");
+ fs.mkdirSync(signing,{recursive:true});
+ fs.copyFileSync(path.join(signingSource,"package.json"),path.join(signing,"package.json"));
+ fs.cpSync(path.join(signingSource,"build"),path.join(signing,"build"),{recursive:true});
+ const installedEntrypoint=path.join(installed,"lib","index.js");
+ fs.symlinkSync(installed,path.join(fixture,"node-forge"),"dir");
+ const probeSigning=run(process.execPath,[
+   path.join(root,"scripts/security/verify-private-forge-probe-child.mjs"),fixture
+ ],root,70000,isolatedNpmEnv);
+ assert.match(probeSigning,/SCA_B2_PRIVATE_FORGE_BEHAVIOR=PASS/,
+   "real npm-installed patched forge failed Expo signing consumer integration");
+ const npmInstalledConsumer={result:"PASS_OFFLINE_NPM_CI_INSTALLED_FULL_DIST_FORGE_RSA_EXPO",
+  fixtureOnly:true,lockfileVersion:consumerLock.lockfileVersion,
+  physicalInstalledFileCount:Object.keys(installedFiles).length,
+  fullDistTarballSha256:fullDistPacks[0].sha256,
+  installedRsaSha256:installedFiles["lib/rsa.js"],
+  expoSigningVersion:signingOriginal.version,
+  originalAppGraphUnaffected:true,appLockUnchanged:true,
+  localRegistryAccessDisabled:true,
+  npmAuditResult:"NOT_RUN_NOT_AN_AUDIT_PASS",
+  realAppReplacementAuthorized:false};
+
  if("SCA_B3_EXPECTED_FORGE_FULL_DIST_SHA256" in process.env){
   assert.match(process.env.SCA_B3_EXPECTED_FORGE_FULL_DIST_SHA256,/^[a-f0-9]{64}$/);
   assert.equal(fullDistPacks[0].sha256,process.env.SCA_B3_EXPECTED_FORGE_FULL_DIST_SHA256,
@@ -369,6 +443,7 @@ try{
   forgeAllBroaderBrowserBehavior:"NOT_ATTESTED_RSA_ONLY",
   browserCompleteTempPack:fullDistPacks[0],
   browserCompleteTempPackReproducibleWithinRunner:true,
+  npmInstalledConsumer,
   artifactsDeletedOnExit:true,
   actualInstallGraphStillOriginal:true,
   primeWorkerBundleBuiltButRuntime:"NOT_APPLICABLE_TO_RSA_VERIFY",
