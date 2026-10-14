@@ -1,0 +1,14 @@
+{
+  "workflow": "face-lab-m0-capture-browser.yml",
+  "primaryResponsibility": "face-lab",
+  "capabilities": [
+    "face-lab",
+    "browser-e2e",
+    "photo-capture",
+    "mobile-responsive",
+    "mock"
+  ],
+  "watchtowerTrackBinding": "static:face-research",
+  "lifecycleNameClass": "capability",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}
