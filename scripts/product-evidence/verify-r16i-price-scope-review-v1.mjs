@@ -104,7 +104,7 @@ const consumer = spawnSync(process.execPath, [
 ], { cwd: process.cwd(), encoding: "utf8", timeout: 20000 });
 assert.equal(consumer.status, 0,
   `R16I D8H consumer runtime shadow failed: ${consumer.error?.message || consumer.stderr || consumer.stdout}`);
-const consumerSummary = JSON.parse(consumer.stdout.trim().split("\\n").at(-1));
+const consumerSummary = JSON.parse(consumer.stdout.trim().split("\n").at(-1));
 assert.equal(consumerSummary.status, "PASS");
 assert.equal(consumerSummary.stage, "R16I_D8H_OFFER_CONSUMER_RUNTIME_SHADOW");
 assert.equal(consumerSummary.productWrites, 0);
@@ -117,7 +117,7 @@ const nullPriceReplay = spawnSync(process.execPath, [
 ], { cwd: process.cwd(), encoding: "utf8", timeout: 60000 });
 assert.equal(nullPriceReplay.status, 0,
   `R16I null-price real-engine replay failed: ${nullPriceReplay.error?.message || nullPriceReplay.stderr || nullPriceReplay.stdout}`);
-const nullPriceSummary = JSON.parse(nullPriceReplay.stdout.trim().split("\\n").at(-1));
+const nullPriceSummary = JSON.parse(nullPriceReplay.stdout.trim().split("\n").at(-1));
 assert.equal(nullPriceSummary.status, "PASS_STRUCTURAL_SHADOW_WITH_PRICE_UI_HOLD");
 assert.equal(nullPriceSummary.counters.comparedCandidates, 1968);
 assert.equal(nullPriceSummary.productWrites, 0);
