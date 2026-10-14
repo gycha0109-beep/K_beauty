@@ -161,7 +161,7 @@ const d8k0 = spawnSync(process.execPath, [
 ], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
 assert.equal(d8k0.status, 0,
   `D8K-0 active-surface/price baseline failed: ${d8k0.error?.message || d8k0.stderr || d8k0.stdout}`);
-const d8k0Summary = JSON.parse(d8k0.stdout.trim().split("\\n").at(-1));
+const d8k0Summary = JSON.parse(d8k0.stdout.trim().split(String.fromCharCode(10)).at(-1));
 assert.equal(d8k0Summary.status, "PASS");
 assert.equal(d8k0Summary.stage, "D8K0_ACTIVE_SURFACE_NULL_PRICE_BASELINE");
 assert.equal(d8k0Summary.apiFieldsChanged, false);
