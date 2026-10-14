@@ -2,6 +2,11 @@
 
 ## Entries
 
+### 2026-10-13 / SEC-SCA B2 forge 소스 RSA patch 및 원본 registry integrity
+- 신규 Draft [B2 PR #1271](https://github.com/gycha0109-beep/K_beauty/pull/1271)에서 source-pinned `node-forge@1.4.0` `lib/rsa.js`와 unmerged upstream PR #1152의 전체 Git blob 일치 검증 구현. isolated RSA 정상/비정상 ASN.1 및 Expo signing consumer smoke PASS.
+- [CI #38350884697](https://github.com/gycha0109-beep/K_beauty/actions/runs/38350884697) 원본 npm registry tgz SHA512 == 원본 lock PASS, files 59개/브라우저 `dist/` 6개 확인. **dist 사전 빌드본 수정·전체 source suite·포크 출처/라이선스·배포 승인 미완료**, B2 전체 HOLD, B3~7 NOT_RUN.
+- 같은 HEAD의 Main Health diff hygiene에서 trailing whitespace 1건을 발견해 `2f39d96ff5e42cdadebc1850c8244f9745a31f9b`으로 수정. 정확 최종 HEAD 결과 별도 확인. 운영·DB·개인키·package/lock·canonical npm audit 변경 없음.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
