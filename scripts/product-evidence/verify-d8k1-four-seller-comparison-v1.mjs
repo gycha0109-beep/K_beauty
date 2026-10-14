@@ -215,6 +215,8 @@ assert.equal(run([official], { maxAgeMs: 0 }).status, "hold");
 // Duplicate listing/option, duplicated offer IDs and URL collisions all deny all.
 for (const dup of [
   [single(), single({ offer_id: uuid(8) })],
+  [single(), single({ listing_id: "heartleaf", optionIdentity: "different-choice",
+    listing_url: "https://anua.com/products/different-choice", offer_id: uuid(11) })],
   [single(), single({ listing_id: "different", optionIdentity: "new", listing_url: official.listing_url, offer_id: uuid(9) })],
   [single(), single({ listing_id: "different", optionIdentity: "new", listing_url: "https://anua.com/products/alternate", offer_id: uuid(1) })]
 ]) {
