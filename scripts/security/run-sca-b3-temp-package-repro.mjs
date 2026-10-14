@@ -143,7 +143,7 @@ function verifyActualPackedForgeConsumer(unpackedPackage,work){
  const packed=fs.readFileSync(path.join(unpackedPackage,"lib/rsa.js"));
  const manifest=JSON.parse(fs.readFileSync(path.join(root,
    "security/vendor/node-forge/source-manifest.json"),"utf8"));
- const b=createHash("sha1").update(Buffer.concat([Buffer.from("blob "+packed.length+"\\0"),packed])).digest("hex");
+ const b=createHash("sha1").update(Buffer.concat([Buffer.from("blob "+packed.length+"\0"),packed])).digest("hex");
  assert.equal(b,manifest.upstreamPatch.patchedRsaJsGitBlobSha1,
    "tarball RSA bytes differ from upstream reviewed Git blob");
  return {result:"PASS_PACKED_RSA_AND_EXPO_CONSUMER",
