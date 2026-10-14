@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-10-14 / Face Lab Skin Track S0 read-only engine audit
+
+- Type: diagnosis/review + isolated diagnostic; base main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2; Watchtower-Track: face-lab-skin.
+- Source map: unified vision -> normalized skin -> projector -> photo score -> shared context v4 -> effective Functional/Routine/Condition -> Premium; read-only source and baseline evaluation review.
+- Static findings: unsupported/missing/zero collapse in photo numeric score; field confidence does not gate photo points; non-null fallback observations can override explicit photo unavailability in v4; projector mixed alignment is not a v4 recognized token. Additional bounded risks documented, real incidence not asserted.
+- Changed: docs/domain/facelab/face-lab-skin-s0-engine-audit-20261014.md, scripts/facelab/skin/diagnose-s0-photo-evidence.mjs and this log. The diagnostic characterizes known present risks, is not a production correctness gate and is not wired into CI.
+- Validation: source/static reasoning and original roadmap PR checks examined; exact-head diagnostic execution/CI verification pending. Synthetic/historical 31 variants and 462 assertions not treated as freshly executed. No local checkout or user real images were available in this environment.
+- Protection: no recommendation score/response/storage/schema changes; no Provider calls, DB/Auth/RLS/Payment, deployment, Style PR changes, security exception updates or merge. #1208 OPEN remains a separate security release gate.
+- Next: exact-head fixture reproduction, then approved narrow fixes in separate PRs with frozen recommendation invariance and replay checks. S1 Human/device evidence and S5 release gate remain HOLD.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
