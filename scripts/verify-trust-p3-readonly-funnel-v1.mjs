@@ -38,14 +38,18 @@ assert.equal(r.existingP3ReviewCandidates,1);
 assert.deepEqual(r.stageCounts,Object.fromEntries(TRUST_P3_FUNNEL_STAGES.map(x=>
  [x,wanted.filter(k=>k===x).length])));
 assert.equal(Object.values(r.stageCounts).reduce((a,b)=>a+b),10);
-for(const obj of [...rows.map(classify),r]){
-  assert.equal(obj.exactSkuVerified??obj.verifiedExactSkuCount,false,
-    "no verified SKU from preview");
-  assert.equal(obj.factConfirmationAuthorized??obj.factWrites,0,
-    "no fact write/authority from preview");
+for(const obj of rows.map(classify)){
+  assert.equal(obj.exactSkuVerified,false);
+  assert.equal(obj.factConfirmationAuthorized,false);
+  assert.equal(obj.policyEligibilityAuthorized,false);
   assert.equal(obj.aiApiCalls,0);
   assert.equal(obj.dbWrites,0);
 }
+assert.equal(r.verifiedExactSkuCount,0);
+assert.equal(r.factWrites,0);
+assert.equal(r.policyEligibilityAuthorized,false);
+assert.equal(r.aiApiCalls,0);
+assert.equal(r.dbWrites,0);
 const malicious={status:fetched,live:{gate:"EVIDENCE_CANDIDATE_ONLY",
   strictPrimaryRoot:{...okRoot,selectedVariantShadow:{
     status:"SELECTED_SIZE_MATCH_SHADOW_ONLY",catalogSizeMatchShadow:true,
