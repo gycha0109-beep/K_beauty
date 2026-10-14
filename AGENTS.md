@@ -34,6 +34,7 @@ AI 작업 시작 시 `.codex/README.md`를 읽고, 이어서 canonical router인
 - 기존 변경사항은 임의로 덮어쓰거나 되돌리지 않는다.
 - 현재 브랜치가 작업 목적과 맞지 않으면 작업을 시작하지 말고 보고한다.
 - 작업 완료 후 현재 브랜치와 변경 파일 목록을 보고한다.
+- Face Lab (`face-research`/`facelab`) **새 작업 브랜치**는 `face-lab/<type>-<topic>-YYYYMMDD`, PR 제목은 `[Face Lab]` 접두를 사용한다. 기존 열린 PR의 head branch를 즉시 rename하면 PR이 종료될 수 있으므로 ref 변경 대신 [Face Lab 브랜치 관리 대장](docs/domain/facelab/FACE_LAB_BRANCH_REGISTRY.md) 기준으로 별도 이관한다.
 
 ---
 
