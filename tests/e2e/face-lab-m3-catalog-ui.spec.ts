@@ -67,6 +67,8 @@ async function approveTarget(page: Page) {
   });
   const response = await page.goto("/face-lab-test", { waitUntil: "domcontentloaded" });
   expect(response?.status()).toBe(200);
+  // React must be hydrated before the mock file selection event is dispatched.
+  await page.waitForLoadState("networkidle");
   await page.locator('input[type="file"][accept*="image/png"]').setInputFiles({
     name: "synthetic-no-person.png",
     mimeType: "image/png",
