@@ -44,3 +44,14 @@ The existing D8F offline CI invokes `scripts/product-evidence/verify-r16i-price-
 5. Independently resolve mandatory supply-chain #1208 and attest effective Production DB identity. No Production changes or PR merge until verified green.
 
 **State:** Pricing attribution & two-option shadow implemented, actual Product/Offer SQL replacement HOLD. No schema/auth/RLS/API response mutation and no Product/Offer write.
+
+## 5. Additional isolated PG17 schema capability probe
+
+A second **synthetic-only** PostgreSQL 17 replay uses the existing disposable D8D fixture database and runs after the unchanged legacy one-offer transaction regression:
+
+- `tests/fixtures/r16i-d8d/40_price_scope_offer_shadow_pg17.sql` starts a transaction, stages Product 80ml with **NULL canonical Product price_min/max/unit price and NULL buy_link**, and stages **two distinct seller Offer rows** (`snature #151`, `hwahae #45194`) with fabricated fixture prices 24,000 / 29,900 KRW. These are fixture prices, **not production observations**.
+- Verifies offers are seller-specific, remain availability unknown and link-health unchecked, Fact Subjects stay absent, duplicate seller listing INSERT fails, and no Product price is inferred from the two prices.
+- Ends with `ROLLBACK` and explicitly checks legacy Product and 0 Offer rows restored. The surrounding CI destroys the disposable database. No actual Product/Offer rows or D8D SQL, Auth/RLS, CTA trust policy, or production gate are changed.
+- This demonstrates existing **nullable Product price columns and two Offer rows are technically representable**; it does **not** approve or execute a future two-Offer D8D migration, or prove downstream recommendation/UI/null-price compatibility.
+
+The existing Database Integration Authority workflow runs the fixture under PostgreSQL 17, and the D8D static contract checks its expected marker and rollback guard. The exact new SHA result is authoritative; do not label this step PASS before CI reports it.
