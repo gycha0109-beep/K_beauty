@@ -254,6 +254,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          verify-signature: true
 
       - name: Rebuild upstream-pinned webpack bundles, browser RSA, full temp tarball
         id: fullpack

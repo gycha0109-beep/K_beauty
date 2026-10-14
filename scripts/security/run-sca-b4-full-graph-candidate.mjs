@@ -186,9 +186,12 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
         assert.equal(metadata.version,e.version,"SBOM installed version differs from lock: "+p);
         const name=metadata.name;
         assert.ok(typeof name==="string"&&name.length>0,"SBOM package name missing: "+p);
+        const rawLicense=metadata.license||metadata.licenses;
+        const licenseText=typeof rawLicense==="string"?rawLicense:rawLicense?JSON.stringify(rawLicense):null;
         const patched=installed.find(x=>x.path===p);
         return {type:"library",name,version:e.version,
-          ...(metadata.license?{licenses:[{expression:metadata.license}]}:{}),
+          // Preserve legacy npm license text/objects without inventing a valid SPDX expression.
+          ...(licenseText?{licenses:[{license:{name:licenseText}}]}:{}),
           hashes:e.integrity?.startsWith("sha512-")?[{alg:"SHA-512",content:Buffer.from(e.integrity.slice(7),"base64").toString("hex")}]:[],
           properties:[{name:"bejewely:lock-path",value:p},
             {name:"bejewely:status",value:patched?"TEMP_PATCH_NOT_RELEASED":"LOCK_PINNED_DEPENDENCY"},
