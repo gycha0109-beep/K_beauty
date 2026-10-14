@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
 import {spawnSync} from 'node:child_process';
-import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference} from './sca-release-bundle.mjs';
+import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference,assertNoLifecycleHooks} from './sca-release-bundle.mjs';
 
 function fixture(){
   const now=Date.parse('2026-10-14T06:00:00Z'),keys=[],privateKeys=[];
@@ -34,6 +34,10 @@ test('duplicate entries, truncation and corrupt checksum are rejected',()=>{
   const t=tar();t[110]^=1;assert.throws(()=>inspectArchive(archive(t)),/checksum/);
 });
 test('synthetic archives cannot replace real reviewed packages',()=>assert.throws(()=>verifyArchive('braces',archive(tar())),/independently verified/));
+test('upstream non-lifecycle test/benchmark metadata is preserved, install/publish hooks rejected',()=>{
+  assertNoLifecycleHooks({scripts:{test:'mocha',benchmark:'node benchmark'}});
+  for(const name of ['preinstall','install','postinstall','prepublish','prepublishOnly','prepare','prepack','postpack','uninstall'])assert.throws(()=>assertNoLifecycleHooks({scripts:{[name]:'unreviewed hook'}}));
+});
 test('B4 reference retains failing original audit and unreleased provenance',()=>{
   assert.equal(reference.audits.candidateFull.exit,1);assert.equal(reference.audits.candidateProduction.exit,1);
   assert.equal(reference.audits.candidateFull.counts.high,22);assert.equal(reference.audits.candidateProduction.counts.high,19);

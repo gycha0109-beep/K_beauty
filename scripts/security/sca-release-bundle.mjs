@@ -54,11 +54,15 @@ export function verifyArchive(name,bytes) {
   const files=inspectArchive(bytes),inventory=Object.fromEntries(Object.entries(files).map(([n,b])=>[n,digest(b)]).sort(([a],[b])=>a.localeCompare(b)));
   assert.deepEqual(inventory,expected.fileSha256,'source/dist/license byte mismatch');
   const meta=JSON.parse(files['package.json']);assert.equal(meta.name,name);assert.equal(meta.version,expected.version);
-  assert.ok(!meta.scripts||Object.keys(meta.scripts).length===0,'candidate lifecycle scripts not allowed');
+  assertNoLifecycleHooks(meta);
   assert.ok(!meta.bundleDependencies&&!meta.bundledDependencies,'bundled dependency not allowed');
   assert.ok(files.LICENSE,'original LICENSE missing');
   return {name,version:meta.version,filename:filenames[name],sha256:digest(bytes),sha512:'sha512-'+createHash('sha512').update(bytes).digest('base64'),
     license:meta.license,licenseSha256:digest(files.LICENSE),installedContentSha256:expected.contentSha256,fileCount:Object.keys(files).length};
+}
+export function assertNoLifecycleHooks(meta){
+  assert.deepEqual(Object.keys(meta.scripts||{}).filter(n=>/^(?:preinstall|install|postinstall|prepublish|prepublishOnly|prepare|prepack|postpack|preuninstall|uninstall|postuninstall)$/.test(n)),[],
+    'candidate lifecycle scripts not allowed');
 }
 function sbomFor(artifacts) {
   return {bomFormat:'CycloneDX',specVersion:'1.6',version:1,
