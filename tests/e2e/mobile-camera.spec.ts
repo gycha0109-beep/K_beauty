@@ -161,8 +161,16 @@ async function installCameraMock(page: Page, options: CameraMockOptions = {}) {
 }
 
 async function openHydratedHome(page: Page) {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const response = await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle");
+  const count = await page.getByTestId("face-lab-capture-notice").count();
+  if (response?.status() !== 200 || count !== 1) {
+    const body = (await page.locator("body").innerText().catch(() => "unreadable"))
+      .replace(/\\s+/g, " ").slice(0, 900);
+    throw new Error(
+      `M0_HOME_RENDER_NOT_READY status=${response?.status() ?? "none"} noticeCount=${count} url=${page.url()} body=${body}`
+    );
+  }
 }
 
 function getCameraOpenButton(page: Page) {
