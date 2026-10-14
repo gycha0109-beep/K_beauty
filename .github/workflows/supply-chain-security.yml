@@ -82,9 +82,9 @@ jobs:
         run: |
           node scripts/security/verify-supply-chain-lock-path-tracer.mjs
           node scripts/security/report-supply-chain-lock-paths.mjs
-
-      - name: Audit dependency vulnerabilities
-        run: node scripts/verify-supply-chain-audit.mjs
+          node scripts/security/verify-sca-b4-preflight.mjs
+          node scripts/security/report-sca-b4-preflight.mjs
+          node scripts/security/run-sca-b4-original-resolver-feasibility.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
@@ -98,6 +98,9 @@ jobs:
           else
             git diff --check HEAD^
           fi
+
+      - name: Audit dependency vulnerabilities
+        run: node scripts/verify-supply-chain-audit.mjs
 
   codeql:
     name: CodeQL JavaScript and TypeScript
