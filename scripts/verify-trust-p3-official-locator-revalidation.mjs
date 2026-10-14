@@ -18,6 +18,9 @@ const plan=await observeTrustP3LocatorFreshness({cohort});
 assert.equal(plan.mode,"PLAN_ONLY_NO_NETWORK");
 assert.equal(plan.summary.locators,6);
 assert.equal(plan.summary.dbWrites,0);
+assert.equal(plan.summary.readOnlyFunnel.denominators.officialLocators,6);
+assert.equal(plan.summary.readOnlyFunnel.stageCounts.NOT_EXECUTED,6);
+assert.equal(plan.summary.readOnlyFunnel.policyEligibilityAuthorized,false);
 assert.equal(plan.summary.aiApiCalls,0);
 const events=[];
 const live=await observeTrustP3LocatorFreshness({
@@ -47,6 +50,14 @@ assert.equal(live.summary.factWrites,0);
 assert.equal(live.summary.subjectWrites,0);
 assert.equal(live.summary.verifiedExactSkuCount,0);
 assert.equal(live.summary.productCandidates,6);
+assert.equal(live.summary.readOnlyFunnel.denominators.officialLocators,6);
+assert.equal(live.summary.readOnlyFunnel.denominators.htmlFetched,6);
+assert.equal(live.summary.readOnlyFunnel.existingP3ReviewCandidates,6);
+assert.equal(live.summary.readOnlyFunnel.explicitSelectedSizeMatchObserved,0);
+assert.equal(live.summary.readOnlyFunnel.policyEligibilityAuthorized,false);
+assert.equal(live.summary.readOnlyFunnel.factWrites,0);
+assert.ok(live.items.every(x=>x.readOnlyFunnel.exactSkuVerified===false));
+assert.ok(live.items.every(x=>x.readOnlyFunnel.policyEligibilityAuthorized===false));
 assert.ok(live.items.every(x=>x.live.exactSkuVerified===false));
 assert.ok(live.items.every(x=>x.live.templateShape.contract==="trust-p3-template-shape-v1"));
 assert.ok(live.items.every(x=>x.live.templateShape.templateFamily==="UNDETERMINED"));
@@ -63,12 +74,14 @@ const disallowed=await observeTrustP3LocatorFreshness({
   fetchProduct:async()=>{throw Error("ROBOTS_BYPASS");},
 });
 assert.equal(disallowed.summary.outcomes.SOURCE_POLICY_HOLD,6);
+assert.equal(disallowed.summary.readOnlyFunnel.stageCounts.SOURCE_HOLD,6);
 const blocked=await observeTrustP3LocatorFreshness({
   execute:true,cohort,
   fetchRobots:async()=>{throw Error("SOURCE_BLOCKED:policy");},
   fetchProduct:async()=>{throw Error("UNAUTHORIZED");},
 });
 assert.equal(blocked.summary.outcomes.ROBOTS_UNAVAILABLE,6);
+assert.equal(blocked.summary.readOnlyFunnel.stageCounts.SOURCE_HOLD,6);
 const prior=process.env.TRUST_P3_LOCATOR_LIVE_ENABLED;
 delete process.env.TRUST_P3_LOCATOR_LIVE_ENABLED;
 try{await assert.rejects(()=>runTrustP3LocatorCli(["--execute"]),/P3_LOCATOR_LIVE_DISABLED/);}

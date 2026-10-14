@@ -1,0 +1,93 @@
+{
+  "contract": "trust-p3-prd0-funnel-live-acceptance-v1",
+  "observedDate": "2026-10-14",
+  "provenance": {
+    "mainSha": "9d0869005ed45eadba9c628222025aafca62e885",
+    "mergedPr": 1291,
+    "githubRunId": 38498362872,
+    "jobId": 115639211199,
+    "artifactId": 11864164592,
+    "artifactName": "trust-p3-locator-revalidation"
+  },
+  "scope": {
+    "officialUrls": 6,
+    "officialOrigins": 4,
+    "products": 3,
+    "htmlFetched": 4,
+    "sourceHold": 2
+  },
+  "readOnlyFunnel": {
+    "stageCounts": {
+      "NOT_EXECUTED": 0,
+      "SOURCE_HOLD": 2,
+      "ROOT_PARSER_HOLD": 3,
+      "PRIMARY_ROOT_HOLD": 1,
+      "OWNED_FORM_HOLD": 0,
+      "SIZE_NOT_EVALUATED": 0,
+      "SIZE_SELECTION_HOLD": 0,
+      "SELECTED_SIZE_MATCH_SHADOW_ONLY": 0
+    },
+    "primaryNameAndOwnedFormObserved": 0,
+    "explicitSelectedSizeMatchObserved": 0,
+    "existingP3ReviewCandidates": 0,
+    "verifiedExactSkuCount": 0,
+    "verifiedMarketCount": 0,
+    "verifiedFormulationCount": 0,
+    "newSourceBindings": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0
+  },
+  "observations": [
+    {
+      "brand": "토리든",
+      "role": "EXISTING_BOUND_SOURCE",
+      "stage": "ROOT_PARSER_HOLD",
+      "strictRootStatus": "AMBIGUOUS_ATTRIBUTES"
+    },
+    {
+      "brand": "토리든",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "stage": "PRIMARY_ROOT_HOLD",
+      "strictRootStatus": "PRIMARY_ROOT_NOT_PROVEN"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "EXISTING_BOUND_SOURCE",
+      "stage": "SOURCE_HOLD",
+      "sourceStatus": "SOURCE_FETCH_HOLD"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "stage": "SOURCE_HOLD",
+      "sourceStatus": "SOURCE_FETCH_HOLD"
+    },
+    {
+      "brand": "에스트라",
+      "role": "EXISTING_BOUND_SOURCE",
+      "stage": "ROOT_PARSER_HOLD",
+      "strictRootStatus": "AMBIGUOUS_ATTRIBUTES"
+    },
+    {
+      "brand": "에스트라",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "stage": "ROOT_PARSER_HOLD",
+      "strictRootStatus": "AMBIGUOUS_ATTRIBUTES"
+    }
+  ],
+  "decision": {
+    "prD0ReadOnlyDiagnosticsComplete": true,
+    "actualHtml5RootAndSizeEligibilityComplete": false,
+    "automaticPromotionAuthorized": false,
+    "selectedSizeVerified": false,
+    "sourceBindingAuthorized": false,
+    "subjectCreationAuthorized": false,
+    "factConfirmationAuthorized": false,
+    "parserInstallBlockedByIndependentSupplyChainSecurity": true,
+    "next": "Security B3–B7 release/installed graph and SCA first; then separately reviewed HTML5 DOM parser under same robots-first six-source read-only acceptance; no unauthorized SKU/Fact gate expansion."
+  },
+  "readOnly": true
+}

@@ -20,12 +20,12 @@ const review={decision:"REVIEW_REQUIRED",product_id:R16I_PRODUCT_ID,
   collision_free:true,reviewed_fields:fields};
 const digest=r16iBaselineDigest(review);
 assert.match(digest,/^[a-f0-9]{64}$/);
-const evidenceId=randomUUID(),actor=randomUUID(),requestId=randomUUID(),proposalId=randomUUID();
+const evidenceId=randomUUID(),hwahaeEvidenceId=randomUUID(),actor=randomUUID(),requestId=randomUUID(),proposalId=randomUUID();
 const base={
   strategy:"A_PRODUCT_ANCHOR_REUSE_AND_OFFER_SEPARATION",
   baselineSha256:digest,productRevision:rev,
   fieldChanges:[{field:"products.size_ml",before:160,after:80}],
-  evidenceIds:[evidenceId],rationale:"확인된 80ml 단품 원본 기준으로 검토",requestId
+  evidenceIds:[evidenceId,hwahaeEvidenceId],rationale:"확인된 80ml 단품 원본 기준으로 검토",requestId
 };
 assert.equal(validateR16IProposal(base,review).fieldChanges[0].after,80);
 assert.equal(validateR16IVerdict({evidenceId,verdict:"VERIFIED",reason:"현재 캡처 원본에서 옵션 직접 확인",requestId}).verdict,"VERIFIED");
@@ -43,6 +43,7 @@ no("invalid money",()=>validateR16IProposal({...base,fieldChanges:[{field:"produ
 no("duplicate fields",()=>validateR16IProposal({...base,fieldChanges:[base.fieldChanges[0],base.fieldChanges[0]]},review),"FIELD_NOT_AUTHORIZED");
 no("duplicate evidence",()=>validateR16IProposal({...base,evidenceIds:[evidenceId,evidenceId]},review),"INVALID_PROPOSAL");
 no("no evidence",()=>validateR16IProposal({...base,evidenceIds:[]},review),"INVALID_PROPOSAL");
+no("only one seller",()=>validateR16IProposal({...base,evidenceIds:[evidenceId]},review),"INVALID_PROPOSAL");
 no("injected access",()=>validateR16IProposal({...base,productionWriteAuthorized:true},review),"INVALID_PROPOSAL");
 no("unknown offer",()=>validateR16IProposal({...base,fieldChanges:[{field:"product_offers.new_offer",before:null,after:{price:29900}}]},review),"FIELD_NOT_AUTHORIZED");
 no("price order",()=>validateR16IProposal({...base,fieldChanges:[
@@ -56,12 +57,20 @@ no("injected verdict",()=>validateR16IVerdict({evidenceId,verdict:"VERIFIED",rea
 no("invalid decision",()=>validateR16IDecision({proposalId,decision:"APPLY_PRODUCTION",reason:"123456789012",requestId}),"INVALID_DECISION");
 no("short decision",()=>validateR16IDecision({proposalId,decision:"HOLD",reason:"no",requestId}),"INVALID_DECISION");
 const events=[],data={
- "admin_product_correction_evidence_v1":[{evidence_id:evidenceId,product_id:R16I_PRODUCT_ID}],
- "admin_product_correction_evidence_verdicts_v1":[{evidence_id:evidenceId,verdict:"VERIFIED",reason:"원본에서 실제 옵션 확인",reviewed_at:new Date().toISOString()}],
+ "admin_product_correction_evidence_v1":[
+  {evidence_id:evidenceId,product_id:R16I_PRODUCT_ID,source_key:"official_single",
+   source_url:"https://www.snature.kr/product/detail.html?product_no=151"},
+  {evidence_id:hwahaeEvidenceId,product_id:R16I_PRODUCT_ID,source_key:"hwahae_bundle",
+   source_url:"https://www.hwahae.co.kr/goods/45194"}
+ ],
+ "admin_product_correction_evidence_verdicts_v1":[
+  {evidence_id:evidenceId,verdict:"VERIFIED",reason:"원본에서 실제 옵션 확인",reviewed_at:new Date().toISOString()},
+  {evidence_id:hwahaeEvidenceId,verdict:"VERIFIED",reason:"원본에서 기획세트 직접 확인",reviewed_at:new Date().toISOString()}
+ ],
  "admin_product_correction_proposals_v1":[],
  "admin_product_correction_decisions_v1":[]
 };
-function mockClient({verified=true}={}){
+function mockClient({verified=true,sourceOverride=null,urlOverride=null,verifiedOnlyOfficial=false}={}){
  return {
   from(table){
    assert.ok(Object.hasOwn(data,table),"unexpected table "+table);
@@ -72,8 +81,14 @@ function mockClient({verified=true}={}){
     eq(k,v){filter.push(row=>row[k]===v);return chain;},
     in(k,v){filter.push(row=>v.includes(row[k]));return chain;},
     order(){return chain;},
-    limit:async()=>({data:entry.filter(row=>filter.every(test=>test(row))).map(row=>({...row,
-     verdict:verified?row.verdict:"REJECTED"})),error:null}),
+    limit:async()=>({data:entry.filter(row=>filter.every(test=>test(row))).map(row=>({
+      ...row,
+      ...(table==="admin_product_correction_evidence_v1"&&sourceOverride?{source_key:sourceOverride}:{}),
+      ...(table==="admin_product_correction_evidence_v1"&&urlOverride?{source_url:urlOverride}:{}),
+      ...(table==="admin_product_correction_evidence_verdicts_v1"
+        ?{verdict:!verified||(verifiedOnlyOfficial&&row.evidence_id===hwahaeEvidenceId)?"REJECTED":row.verdict}
+        :{})
+    })),error:null}),
     maybeSingle:async()=>({data:entry.filter(row=>filter.every(test=>test(row)))[0]||null,error:null}),
     insert(payload){insertPayload=payload;events.push({table,payload});return chain;},
     single:async()=>{
@@ -112,6 +127,9 @@ const decision=await decideR16IProposal(mockClient(),{
 },actor,review);
 assert.equal(decision.productionWriteAuthorized,false);
 await assert.rejects(()=>createR16IProposal(mockClient({verified:false}),base,actor,review),/EVIDENCE_NOT_VERIFIED/);
+await assert.rejects(()=>createR16IProposal(mockClient({verifiedOnlyOfficial:true}),base,actor,review),/EVIDENCE_NOT_VERIFIED/);
+await assert.rejects(()=>createR16IProposal(mockClient({sourceOverride:"official_single"}),base,actor,review),/TWO_SOURCE_EVIDENCE_REQUIRED/);
+await assert.rejects(()=>createR16IProposal(mockClient({urlOverride:"https://invalid.example"}),base,actor,review),/TWO_SOURCE_EVIDENCE_REQUIRED/);
 const state=await listR16ID8C(mockClient(),review);
 assert.equal(state.writeAuthorized,false);
 assert.equal(state.verdicts[0].verdict,"VERIFIED");
@@ -135,6 +153,8 @@ assert.match(ui,/증빙 검토 → 정정안 작성 → 소유자 결정/);
 assert.match(ui,/검토 이력 새로고침/);
 assert.match(ui,/정정안 제출 \(실제 적용 없음\)/);
 assert.match(ui,/APPROVE_FOR_D8D_REVIEW/);
+assert.match(ui,/twoSellerEvidenceSelected/);
+assert.match(ui,/!twoSellerEvidenceSelected/);
 assert.match(parent,/<R16IR4D8CorrectionApproval review=\{review\} \/>/);
 assert.match(parent,/실제 DB 반영 · D8-D 전까지 불가/);
 assert.match(sql,/ENABLE ROW LEVEL SECURITY/g);
@@ -148,5 +168,5 @@ assert.match(sql,/R16I_PRODUCT_REVISION_DRIFT/);
 assert.match(sql,/R16I_SCOPE_COLLISION/);
 assert.doesNotMatch(sql,/\b(UPDATE|DELETE)\s+(public\.)?(products|product_offers|product_fact_subjects)\b/i);
 console.log(JSON.stringify({status:"PASS",stage:"R16I-R4-D8C",
- invalid_cases:denied,field_level_proposals:true,owner_only_decision:true,
+ invalid_cases:denied,verified_both_sellers_required:true,field_level_proposals:true,owner_only_decision:true,
  immutable_evidence_verdict:true,db_revision_lock:true,catalog_writes:0}));

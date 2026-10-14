@@ -144,6 +144,10 @@ for (const [name, expectedReason, mutate] of negatives) {
   assert.equal(denied.write_set, null, name);
 }
 
+// Re-run D8C proof-selection and OWNER-decision fail-closed contract in the
+// existing D8F offline CI job. This exercises no database connection or writes.
+await import("./verify-barrier-support-p1-r16i-r4-d8c-correction-approval-v1.mjs");
+
 console.log(JSON.stringify({
   status: "PASS",
   stage: "R16I_R4_D8F_CONNECTED_CANDIDATE_DB_PRESTATE_READONLY",

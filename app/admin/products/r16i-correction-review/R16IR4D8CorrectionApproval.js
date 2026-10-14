@@ -32,6 +32,8 @@ export default function R16IR4D8CorrectionApproval({review}){
  const verdictMap=new Map((ledger?.verdicts||[]).map(x=>[x.evidenceId,x]));
  const decisionMap=new Map((ledger?.decisions||[]).map(x=>[x.proposalId,x]));
  const verified=evidence.filter(e=>verdictMap.get(e.evidenceId)?.verdict==="VERIFIED");
+ const selectedSources=new Set(verified.filter(e=>linked.includes(e.evidenceId)).map(e=>e.sourceKey));
+ const twoSellerEvidenceSelected=selectedSources.has("official_single")&&selectedSources.has("hwahae_bundle");
  async function reload(){
   const [a,b]=await Promise.all([load(API),load(EVIDENCE)]);
   if(!a.ledger||!Array.isArray(b.items))throw Error("검토 이력 응답 불완전");
@@ -123,14 +125,17 @@ export default function R16IR4D8CorrectionApproval({review}){
      <span className="break-all">{change.field}: {value(change.before)} → {value(change.after)}</span>
      <button className="underline" type="button" onClick={()=>setChanges(p=>p.filter(f=>f.field!==change.field))}>삭제</button>
     </li>)}</ul>}
-    <p className={light+" mt-3"}>검증된 근거 선택 · 최소 1건</p>
+    <p className={light+" mt-3"}>검증된 근거 선택 · 공식몰과 화해 각각 최소 1건</p>
     {verified.length===0?<p className={light}>VERIFIED 근거가 없습니다. 먼저 캡처 검토를 완료해야 합니다.</p>:
      <div className="mt-2 space-y-1">{verified.map(e=><label key={e.evidenceId} className="flex items-center gap-2 text-xs">
       <input type="checkbox" checked={linked.includes(e.evidenceId)} onChange={ev=>setLinked(p=>ev.target.checked?[...p,e.evidenceId]:p.filter(id=>id!==e.evidenceId))}/>
       {e.sourceKey==="official_single"?"공식몰":"화해"} · {e.selectedOption||"옵션 미입력"} ({e.evidenceId.slice(0,8)})
      </label>)}</div>}
+    {verified.length>0&&!twoSellerEvidenceSelected&&<p role="status" className={light+" mt-2"}>
+      공식몰 80ml 단품과 화해 기획세트의 VERIFIED 근거를 각각 선택해야 정정안을 제출할 수 있습니다.
+    </p>}
     <textarea rows={2} maxLength={2000} className={ctl+" mt-3"} placeholder="정정안 이유 (12자 이상)" value={proposalReason} onChange={e=>setProposalReason(e.target.value)}/>
-    <button type="button" className={btn+" mt-2"} disabled={!!busy||changes.length===0||linked.length===0||proposalReason.trim().length<12} onClick={()=>submit("create_proposal",{
+    <button type="button" className={btn+" mt-2"} disabled={!!busy||changes.length===0||!twoSellerEvidenceSelected||proposalReason.trim().length<12} onClick={()=>submit("create_proposal",{
      strategy:"A_PRODUCT_ANCHOR_REUSE_AND_OFFER_SEPARATION",baselineSha256:ledger.baselineSha256,
      productRevision:ledger.productRevision,fieldChanges:changes,evidenceIds:linked,rationale:proposalReason
     })}>정정안 제출 (실제 적용 없음)</button>

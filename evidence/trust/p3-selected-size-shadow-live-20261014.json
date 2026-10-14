@@ -1,0 +1,93 @@
+{
+  "contract": "trust-p3-selected-size-shadow-live-acceptance-v1",
+  "observedDate": "2026-10-14",
+  "provenance": {
+    "mainSha": "e49888b1a27383d9614aeafaa7e9e70a65f178bd",
+    "pr": 1289,
+    "githubActionRunId": 38496809777,
+    "readOnlyJobId": 115634343918,
+    "artifactId": 11863693393,
+    "artifactName": "trust-p3-locator-revalidation"
+  },
+  "scope": {
+    "products": 3,
+    "originCount": 4,
+    "officialUrls": 6,
+    "htmlFetched": 4,
+    "sourceFetchHold": 2
+  },
+  "summary": {
+    "identityOrVariantReviewRequired": 4,
+    "p3ReviewCandidates": 0,
+    "scopedNameWithOwnedFormCandidates": 0,
+    "selectedSizeShadowEvaluated": 0,
+    "selectedSizeMatchShadowOnly": 0,
+    "verifiedExactSku": 0,
+    "verifiedMarket": 0,
+    "verifiedFormulation": 0,
+    "newSourceBindings": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0
+  },
+  "perSource": [
+    {
+      "brand": "Torriden",
+      "role": "EXISTING_BOUND_SOURCE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "reason": "UNSUPPORTED_ATTRIBUTE_SYNTAX",
+      "selectedSizeShadowStatus": "NOT_EVALUATED_ROOT_HOLD"
+    },
+    {
+      "brand": "Torriden",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "strictStatus": "PRIMARY_ROOT_NOT_PROVEN",
+      "selectedSizeShadowStatus": "NOT_EVALUATED_ROOT_HOLD"
+    },
+    {
+      "brand": "Beauty of Joseon",
+      "role": "EXISTING_BOUND_SOURCE",
+      "sourceStatus": "SOURCE_FETCH_HOLD",
+      "selectedSizeShadowStatus": "NOT_EVALUATED_SOURCE_HOLD"
+    },
+    {
+      "brand": "Beauty of Joseon",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "sourceStatus": "SOURCE_FETCH_HOLD",
+      "selectedSizeShadowStatus": "NOT_EVALUATED_SOURCE_HOLD"
+    },
+    {
+      "brand": "Aestura",
+      "role": "EXISTING_BOUND_SOURCE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "reason": "UNSUPPORTED_ATTRIBUTE_SYNTAX",
+      "selectedSizeShadowStatus": "NOT_EVALUATED_ROOT_HOLD"
+    },
+    {
+      "brand": "Aestura",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "reason": "DUPLICATE_ATTRIBUTE_NAME",
+      "selectedSizeShadowStatus": "NOT_EVALUATED_ROOT_HOLD"
+    }
+  ],
+  "acceptance": {
+    "syntheticNegativeFixturesPassed": true,
+    "canonicalTrustCiPassed": true,
+    "piePassed": true,
+    "currentMainHealthPassed": true,
+    "codeqlPassed": true,
+    "packageIntegrityAndVulnerabilityGatePassed": false,
+    "automaticPromotionAuthorized": false,
+    "selectedSizeVerified": false,
+    "productFactAuthority": false,
+    "sourceBindingAuthorized": false,
+    "subjectCreationAuthorized": false,
+    "rootParserDependsOnHtml5Upgrade": true,
+    "html5DependencyInstalled": false,
+    "nextGate": "Security owner finishes B3–B7 remediation and canonical security audit; only then land separately reviewed HTML5 parser with strict ambiguity/error reporting, repeat official 6 URL root trial, and evaluate selected-size shadow without changing Product Fact authority."
+  },
+  "readOnly": true
+}
