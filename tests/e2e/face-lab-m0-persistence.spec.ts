@@ -68,6 +68,9 @@ async function openSyntheticFaceLab(page: Page) {
   });
   const response = await page.goto("/face-lab-test", { waitUntil: "domcontentloaded" });
   expect(response?.status(), "development-only Face Lab test route must load").toBe(200);
+  // Wait for Next.js hydration before dispatching the synthetic file-input change.
+  // A DOMContentLoaded-only navigation can race React listener attachment in CI.
+  await page.waitForLoadState("networkidle");
   await page.locator('input[type="file"][accept*="image/png"]').setInputFiles({
     name: "synthetic-m0-no-person.png",
     mimeType: "image/png",
