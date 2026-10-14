@@ -100,7 +100,7 @@ for (const products of [allAfter, conservativeAfter]) {
   assert(target);
   assert.equal(target.price_min, null);
   assert.equal(target.price_max, null);
-  assert.equal(target.price_range, "$$", "known Product source null-price UI blocker");
+  assert.equal(target.price_range, "", "unknown Product price must have no inferred price band");
   assert.equal(target.buy_link, "");
   const fromOffers = projectProductWithOfferAuthority(target, dualSellerCandidates);
   assert.equal(fromOffers.price_min, null);
@@ -188,7 +188,7 @@ console.log(JSON.stringify({
   observed, syntheticConservative,
   productWrites: 0, offerWrites: 0,
   canonicalProductPricePolicy: "NOT_APPROVED",
-  priceBandForNull: "KNOWN_FALSE_DOLLAR_DOLLAR",
+  priceBandForNull: "EMPTY_NO_INFERRED_BAND",
   runtimeDbIdentity: "UNATTESTED",
   releaseAuthorized: false
 }));
