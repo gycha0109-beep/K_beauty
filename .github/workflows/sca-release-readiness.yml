@@ -2,11 +2,13 @@ name: BEJEWELY SCA Release Readiness (no upload)
 run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.watchtower_track != '' && format('[WT:{0}] {1}', inputs.watchtower_track, github.workflow) || github.workflow }}
 on:
   pull_request:
-    branches: [main, fix/security/sca-b3-private-pack-validation-20261014, fix/security/sca-b6-release-readiness-20261014, security/sca-trust-roadmap-p0-evidence-20261014, security/sca-p1-causal-advisory-ledger-20261014]
+    branches: [main, fix/security/sca-b3-private-pack-validation-20261014, fix/security/sca-b6-release-readiness-20261014, security/sca-trust-roadmap-p0-evidence-20261014, security/sca-p1-causal-advisory-ledger-20261014, security/sca-p2-single-owner-preparation-20261014]
     paths:
       - scripts/security/*sca-release*
       - scripts/security/sca-release-*
       - scripts/security/run-sca-b6-*
+      - scripts/security/sca-p2-*.mjs
+      - scripts/security/run-sca-b6-candidate-probe.mjs
       - scripts/security/sca-readiness-*.mjs
       - scripts/security/sca-audit-root-causes*.mjs
       - scripts/security/run-sca-readiness-evidence.mjs
@@ -39,7 +41,7 @@ jobs:
         with:
           node-version: 22
           package-manager-cache: false
-      - run: node --test scripts/security/sca-release-bundle.test.mjs scripts/security/sca-readiness-evidence.test.mjs scripts/security/sca-audit-root-causes.test.mjs
+      - run: node --test scripts/security/sca-release-bundle.test.mjs scripts/security/sca-readiness-evidence.test.mjs scripts/security/sca-audit-root-causes.test.mjs scripts/security/sca-p2-offline-readiness.test.mjs
   candidate:
     name: Clean release candidate structure (not approval)
     runs-on: ubuntu-24.04
