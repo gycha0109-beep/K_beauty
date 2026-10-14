@@ -16,6 +16,8 @@ import {materializePrivateForgeSource} from "./materialize-private-forge-source.
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const sha="ceba34402e329f0365134f23fe19898756527d65";
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),"bejewely-b3-browser-rebuild-"));
+const previousNpmCache=process.env.npm_config_cache;
+process.env.npm_config_cache=path.join(temp,"npm-cache");
 const hex=x=>createHash("sha256").update(x).digest("hex");
 function run(exe,args,cwd,timeout=120000,env=process.env){
  const p=spawnSync(exe,args,{cwd,env,encoding:"utf8",timeout,maxBuffer:5*1024*1024});
@@ -459,4 +461,6 @@ try{
  }
 } finally {
  fs.rmSync(temp,{recursive:true,force:true});
+ if(previousNpmCache===undefined)delete process.env.npm_config_cache;
+ else process.env.npm_config_cache=previousNpmCache;
 }

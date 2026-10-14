@@ -17,6 +17,8 @@ import {materializePrivateForgeSource} from "./materialize-private-forge-source.
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"bejewely-sca-b3-"));
+const previousNpmCache=process.env.npm_config_cache;
+process.env.npm_config_cache=path.join(tmp,"npm-cache");
 const sha=(bytes,type="sha256")=>createHash(type).update(bytes).digest("hex");
 const sha512=(bytes)=>"sha512-"+createHash("sha512").update(bytes).digest("base64");
 const run=(exe,args,cwd,limit=120000)=>{
@@ -308,4 +310,6 @@ try{
  console.log("SCA_B3_TEMP_PACKAGE_EVIDENCE="+JSON.stringify(receipt));
 }finally{
  fs.rmSync(tmp,{recursive:true,force:true});
+ if(previousNpmCache===undefined)delete process.env.npm_config_cache;
+ else process.env.npm_config_cache=previousNpmCache;
 }

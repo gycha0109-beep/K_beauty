@@ -16,9 +16,10 @@ import {materializePrivateBracesSource} from "./materialize-private-braces-sourc
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const hash=(bytes,alg="sha256")=>createHash(alg).update(bytes).digest("hex");
 const targets=["braces","node-forge"];
+let candidateCache;
 function run(exe,args,cwd,timeout=120000,allowed=[0]) {
   const p=spawnSync(exe,args,{cwd,encoding:"utf8",timeout,maxBuffer:32*1024*1024,
-    env:{...process.env,CI:"true",NODE_OPTIONS:"",EXPO_NO_TELEMETRY:"1",
+    env:{...process.env,...(candidateCache?{npm_config_cache:candidateCache}:{}),CI:"true",NODE_OPTIONS:"",EXPO_NO_TELEMETRY:"1",
       npm_config_update_notifier:"false"}});
   assert.equal(p.error,undefined,`${exe} ${args.join(" ")}: unavailable/timeout`);
   assert.ok(allowed.includes(p.status),`${exe} ${args.join(" ")}: exit ${p.status}\n${p.stderr}\n${p.stdout}`);
@@ -52,6 +53,7 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt) {
   const originalManifestBytes=fs.readFileSync(path.join(root,"package.json"));
   const baseline=JSON.parse(originalLockBytes);
   const temp=fs.mkdtempSync(path.join(os.tmpdir(),"bejewely-sca-b4-"));
+  candidateCache=path.join(temp,"npm-cache");
   const graph=path.join(temp,"graph"),artifacts=path.join(temp,"artifacts");
   fs.mkdirSync(graph);fs.mkdirSync(artifacts);
   try {
@@ -108,6 +110,10 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt) {
       if(!old||old.version!==entry.version||old.resolved!==entry.resolved||old.integrity!==entry.integrity)
         unrelatedDrift.push(p);
     }
+    for(const p of Object.keys(baseline.packages)) {
+      if(p&&!targets.some(n=>p.endsWith("node_modules/"+n))&&!(p in candidate.packages))
+        unrelatedDrift.push("removed:"+p);
+    }
     assert.deepEqual(unrelatedDrift,[],"unrelated dependency drift requires investigation");
     console.log("SCA_B4_STAGE=npm ci full candidate");
     run("npm",["ci","--ignore-scripts","--no-audit","--no-fund"],graph,240000);
@@ -146,6 +152,9 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt) {
       }
     }
     census(path.join(graph,"node_modules"));
+    const workspacePaths=Object.keys(baseline.packages).filter(p=>p&&!p.includes("node_modules"));
+    for(const p of workspacePaths)if(fs.existsSync(path.join(graph,p,"node_modules")))
+      census(path.join(graph,p,"node_modules"));
     assert.deepEqual(physical.sort(),paths.slice().sort(),"nested/aliased package escaped lock census");
     const tree=run("npm",["ls","braces","node-forge","--all","--json"],graph);
     console.log("SCA_B4_NPM_LS="+tree.stdout);
@@ -171,10 +180,15 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     };
     const sbom={bomFormat:"CycloneDX",specVersion:"1.6",version:1,
       metadata:{component:{type:"application",name:"BEJEWELY-B4-disposable-graph",version:head}},
-      components:Object.entries(candidate.packages).filter(([p,e])=>p&&e.version&&!e.link).map(([p,e])=>{
-        const name=e.name||p.split("node_modules/").at(-1);
+      components:Object.entries(candidate.packages).filter(([p,e])=>p&&e.version&&!e.link&&
+        fs.existsSync(path.join(graph,p,"package.json"))).map(([p,e])=>{
+        const metadata=JSON.parse(fs.readFileSync(path.join(graph,p,"package.json")));
+        assert.equal(metadata.version,e.version,"SBOM installed version differs from lock: "+p);
+        const name=metadata.name;
+        assert.ok(typeof name==="string"&&name.length>0,"SBOM package name missing: "+p);
         const patched=installed.find(x=>x.path===p);
         return {type:"library",name,version:e.version,
+          ...(metadata.license?{licenses:[{expression:metadata.license}]}:{}),
           hashes:e.integrity?.startsWith("sha512-")?[{alg:"SHA-512",content:Buffer.from(e.integrity.slice(7),"base64").toString("hex")}]:[],
           properties:[{name:"bejewely:lock-path",value:p},
             {name:"bejewely:status",value:patched?"TEMP_PATCH_NOT_RELEASED":"LOCK_PINNED_DEPENDENCY"},
@@ -191,6 +205,11 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
       const name=targets.find(n=>p.endsWith("node_modules/"+n));
       assert.deepEqual(inventory(path.join(graph,p)),expected[name],"lifecycle install changed patched bytes: "+p);
     }
+    physical.length=0;
+    census(path.join(graph,"node_modules"));
+    for(const p of workspacePaths)if(fs.existsSync(path.join(graph,p,"node_modules")))
+      census(path.join(graph,p,"node_modules"));
+    assert.deepEqual(physical.sort(),paths.slice().sort(),"lifecycle installed an uninventoried target");
     run(process.execPath,[path.join(root,"scripts/security/verify-private-forge-probe-child.mjs"),
       path.join(graph,"node_modules")],root);
     // Compatibility can be measured despite audit HOLD; it never promotes B5/release acceptance.
@@ -200,9 +219,14 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     for(const name of commands) {
       console.log("SCA_B4_STAGE="+name);
       const p=spawnSync("npm",["run",name],{cwd:graph,encoding:"utf8",timeout:300000,maxBuffer:16*1024*1024,
-        env:{...process.env,CI:"true",NODE_OPTIONS:"",EXPO_NO_TELEMETRY:"1",NEXT_TELEMETRY_DISABLED:"1"}});
+        env:{...process.env,npm_config_cache:candidateCache,CI:"true",NODE_OPTIONS:"",EXPO_NO_TELEMETRY:"1",NEXT_TELEMETRY_DISABLED:"1"}});
       console.log(`SCA_B4_CHECK_${name}_BEGIN\n${p.stdout||""}\n${p.stderr||""}\nSCA_B4_CHECK_${name}_END`);
       checks.push({name,status:p.status===0&&!p.error?"PASS":"FAIL",exit:p.status,error:p.error?.code||null});
+    }
+    if(checks.find(c=>c.name==="build").status==="PASS") {
+      const p=run(process.execPath,[path.join(graph,"scripts/security/verify-local-production-smoke.mjs")],graph,150000);
+      console.log(p.stdout);
+      checks.push({name:"local production page smoke",status:"PASS",exit:0,error:null});
     }
     const modifiedMobile=hash(fs.readFileSync(path.join(graph,"apps/mobile/package.json")));
     const archivedMobile=hash(fs.readFileSync(path.join(root,"apps/mobile/package.json")));
@@ -211,10 +235,10 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     const sdk=process.env.ANDROID_HOME||process.env.ANDROID_SDK_ROOT;
     const java=spawnSync("java",["-version"],{encoding:"utf8",timeout:10000});
     if(sdk&&fs.existsSync(sdk)&&java.status===0&&fs.existsSync(path.join(androidDir,"gradlew"))) {
-      console.log("SCA_B4_STAGE=Android debug build (20 minute bounded attempt, 2 workers)");
+      console.log("SCA_B4_STAGE=Android debug build (30 minute bounded attempt, 2 workers)");
       const p=spawnSync("bash",["./gradlew",":app:assembleDebug","--no-daemon","--max-workers=2",
         "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"],{cwd:androidDir,encoding:"utf8",
-        timeout:1200000,maxBuffer:32*1024*1024,env:{...process.env,CI:"true"}});
+        timeout:1800000,maxBuffer:32*1024*1024,env:{...process.env,npm_config_cache:candidateCache,CI:"true"}});
       console.log(`SCA_B4_ANDROID_BUILD_BEGIN\n${p.stdout||""}\n${p.stderr||""}\nSCA_B4_ANDROID_BUILD_END`);
       const apk=path.join(androidDir,"app/build/outputs/apk/debug/app-debug.apk");
       android={status:p.status===0&&!p.error&&fs.existsSync(apk)?"PASS":"FAIL",exit:p.status,
@@ -251,5 +275,6 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     assert.equal(hash(fs.readFileSync(path.join(root,"package-lock.json"))),hash(originalLockBytes));
     assert.equal(hash(fs.readFileSync(path.join(root,"package.json"))),hash(originalManifestBytes));
     fs.rmSync(temp,{recursive:true,force:true});
+    candidateCache=undefined;
   }
 }

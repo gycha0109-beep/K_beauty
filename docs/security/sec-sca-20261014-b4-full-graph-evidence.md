@@ -41,7 +41,7 @@ Watchtower-Track: security
 6. Run parser-depth/AST/cycle/glob, real micromatch/fast-glob and RSA/Expo signing consumer tests using the physically installed candidate graph. The original graph supplies the vulnerable negative control only.
 7. Preserve verbatim full and production audit JSON and exit status for both baseline and candidate, plus exact stdout SHA256 and advisory leaves. Same-version file patch scanner gaps, if any, are recorded, never promoted to remediation.
 8. Exercise ordinary lifecycle `npm ci`, then recheck lock/installed patched bytes and Expo signing. Run mobile TypeScript, architecture lint, entry routing, config, Metro Android export, Android prebuild/native shell and root Next build.
-9. Where SDK/JDK are present, attempt Android `assembleDebug` with two workers, bounded 20-minute budget and 4 GiB Gradle heap; record raw logs, exact exit and APK SHA256 if produced. This is separate from device acceptance.
+9. Where SDK/JDK are present, attempt Android `assembleDebug` with two workers, bounded 30-minute budget and 4 GiB Gradle heap; record raw logs, exact exit and APK SHA256 if produced. First clean build succeeded in 19m31s inside its original 20-minute limit. This is separate from device acceptance.
 10. Delete all candidate sources, dependencies, archives and candidate lock in `finally`. Root product package/lock/mobile manifest unchanged. Never commit a temporary file path as a released dependency.
 
 The experiment's install/compatibility status is separate from **B4 release acceptance HOLD**. An isolated experiment job can succeed while the mandatory original audit fails. No test failure is converted to success, and no claim of app remediation or audit HIGH0 follows from experiment completion alone.
@@ -73,27 +73,44 @@ First B4 run at `e401a478` ([Security #38510062477](https://github.com/gycha0109
 
 App remediation requires an approved durable artifact distribution path and accountable maintainer/security/distribution review, or compatible official fixed releases. Private patched distribution must address unchanged-name/version audit findings through a reviewable release/advisory process; policy waiver or fake semver is not an acceptable substitute. A physical device/emulator with an isolated backend is also needed for camera/entry/result/Premium smoke. No production API is exercised by this experiment.
 
-## Exact-head Linux CI outcome (2026-10-14)
+## Verified full graph and Android result
 
-Source commit **`7b3c77c31f3adf3d9af410b015ee22f771fdf091`**, immutable run [Supply Chain #38510868609](https://github.com/gycha0109-beep/K_beauty/actions/runs/38510868609); [Main Health #38510868550](https://github.com/gycha0109-beep/K_beauty/actions/runs/38510868550) PASS; [PIE #38510869008](https://github.com/gycha0109-beep/K_beauty/actions/runs/38510869008) PASS. GitHub runner: Node `v22.23.3`, npm `10.9.9`, Java `17.0.20.1`. CodeQL PASS; B3 two private-archive jobs and independent browser full-dist clean-runner replay PASS. **Top-level Supply Chain remains FAIL solely because the mandatory audit remains FAIL**; do not treat a passing isolated job as the required check passing.
+At exact code HEAD `7b3c77c31f3adf3d9af410b015ee22f771fdf091`, [Supply Chain #38510868609](https://github.com/gycha0109-beep/K_beauty/actions/runs/38510868609) B3 browser + B4 full graph experiment **PASS**. Canonical audit **FAIL** remains mandatory. [Main Health #38510868550](https://github.com/gycha0109-beep/K_beauty/actions/runs/38510868550), CodeQL, [PIE #38510869008](https://github.com/gycha0109-beep/K_beauty/actions/runs/38510869008) and both independent original/full-dist B3 replays PASS.
 
-- B3 tarballs: `braces@3.0.3` 10 files, SHA256 `d4f1219db19bfeb4e1c3f0354f9269569393f1b8c9f8c0295b80346926d4fa70`; patched `node-forge@1.4.0` 59 files/six rebuilt dist bundles, SHA256 `67a51b864d9e483417ff34425a5a09012d333a5184dcc39f966731935463db50`. Chromium regression: original accepts malformed ASN.1 RSA signature; patched rejects it; correct signature accepted in both. This covers tested RSA behavior, not general runtime/device security.
-- Complete root + four-workspace disposable resolver, clean `npm ci --ignore-scripts`, lock graph reconciliation, physically installed full-file SHA256 inventories and ordinary lifecycle `npm ci` **PASS**. Original lock SHA256 `f6016eba1c16a5a67df894a389b4449a2723103b7c06824007a14ce9b190a23b`; temporary-only candidate lock SHA256 `10fefaa2f66093402bd57419b9dda6060168a6dc643f64fc223f9889693d94af`.
-- Installed `node_modules/braces`: ten files, inventory SHA256 `6b22eeb1da5bfb46a3911d9b59819962f6ad90eeb240e3345a6b0be6b4d32c6f`. Installed `node_modules/node-forge`: 59 files, inventory SHA256 `4151bdb83226bf167857f73d6888b065d581a2f56ff33a6ca8988a54be5da524`. Every enumerated target package file was byte-compared against the temporary archive. No other target instances in the instrumented lock/physical census.
-- Verified direct real consumers: `chokidar -> braces`, `micromatch -> braces`, `@expo/cli -> node-forge`, `@expo/code-signing-certificates -> node-forge`; actual module resolution reached these two installed patched package paths. Patched parser depth/AST/glob, real micromatch/fast-glob and Expo signing tests PASS.
-- Candidate CycloneDX graph contained **720 components**, explicitly marked `TEMP_PATCH_NOT_RELEASED` for both private patched installs. Candidate graph+SBOM and temporary dependency artifacts were destroyed on exit; these were not released or placed in a trusted persistent private registry.
-- Compatibility: **10/10 PASS**: `mobile:typecheck`, `mobile:lint`, `verify:mobile-foundation`, `verify:mobile-entry-routing`, `mobile:config`, `mobile:export:android`, `mobile:prebuild:android`, `verify:mobile-native`, root Next `build`, and Linux Android Gradle `:app:assembleDebug`. Android APK SHA256 `9771d52c99d759a16ae7f84fcae742edc11d91dcb4d4f5bb222df14aec621205`. The Android artifact remained ephemeral and was deleted; no release APK, signing/publishing, emulator or real-device backend smoke. Expo prebuild modified only the **disposable** mobile manifest (`prebuildChangedDisposableMobileManifest=true`); tracked root/mobile manifests and lock remain unchanged.
-- **Unmodified raw `npm audit --json`**: baseline full exit 1, HIGH 22 / CRITICAL 0 / MODERATE 13, raw stdout SHA256 `d22e604fffe283ccc07648e09eaa9cae6739eb59fda7b9dc79fa4a7c0d14387b`; baseline production exit 1, HIGH 19 / CRITICAL 0 / MODERATE 11, SHA256 `c55817a769347015a549836e4d94ffc46fa12aa0fd5ab147a3f1ea228b5e6ad6`. **Candidate audits are byte-identical in stdout** with the same exits, counts and SHA256s. `braces` and `node-forge` still appear as HIGH advisory roots. Scanner metadata does not inspect private patched bytes and cannot certify their remediation.
-- Canonical `verify-supply-chain-audit.mjs` fails at `production: temporary advisory exception GHSA-vfj7-8cjw-p6xm expired at 2026-10-10T00:00:00.000Z`. No expiry extension, HIGH masking, waiver or fake semver version was applied.
+| Evidence | Actual result |
+| --- | --- |
+| Original lock SHA256 | `f6016eba1c16a5a67df894a389b4449a2723103b7c06824007a14ce9b190a23b` |
+| Disposable candidate lock SHA256 | `10fefaa2f66093402bd57419b9dda6060168a6dc643f64fc223f9889693d94af`; generated by npm, not committed |
+| Installed braces | 10 files, content inventory SHA256 `6b22eeb1da5bfb46a3911d9b59819962f6ad90eeb240e3345a6b0be6b4d32c6f` |
+| Installed forge | 59 files, content inventory SHA256 `4151bdb83226bf167857f73d6888b065d581a2f56ff33a6ca8988a54be5da524`; six dist hashes match producer |
+| Consumer closure | @expo/cli + @expo/code-signing-certificates resolve the same patched forge; chokidar + micromatch resolve the same patched braces; one physical path per target, no extra nested target |
+| Installs | Full workspace npm ci without lifecycle PASS; ordinary lifecycle npm ci PASS; lock and patched bytes rechecked |
+| Regression | Parser/AST/cycle, micromatch braces/braceExpand, fast-glob, malformed RSA negative control and actual Expo signing consumer PASS |
+| Candidate full audit | exit 1, HIGH 22 / CRITICAL 0 / MODERATE 13; raw SHA256 `d22e604fffe283ccc07648e09eaa9cae6739eb59fda7b9dc79fa4a7c0d14387b` |
+| Candidate production audit | exit 1, HIGH 19 / CRITICAL 0 / MODERATE 11; raw SHA256 `c55817a769347015a549836e4d94ffc46fa12aa0fd5ab147a3f1ea228b5e6ad6` |
+| Baseline/candidate scanner | Verbatim JSON SHA is identical; both real target advisory leaves remain present. No scanner blind spot or audit HIGH0 claim |
+| Mobile static/config | typecheck, architecture lint/foundation, entry routing and public Expo config PASS |
+| Metro export | Android Hermes entry SHA256 `7686412dd872bd5f0215cf1cd9ddf9f2e4e1f30f98c9a1ce29a49fb6cfb6ff9f` |
+| Native | Android prebuild and native shell assertions PASS; only disposable mobile manifest modified by prebuild |
+| Root app | Production Next build PASS on the patched graph |
+| Android debug | Gradle exit 0, BUILD SUCCESSFUL in 19m31s, JDK Temurin 17.0.20.1+1; APK SHA256 `9771d52c99d759a16ae7f84fcae742edc11d91dcb4d4f5bb222df14aec621205` |
+| Device/API/Auth | NOT_RUN; no device smoke or approved isolated API/Auth configuration supplied. Mobile runtime requires EXPO_PUBLIC_API_BASE_URL and isolated Supabase public configuration; no production values are used |
 
-### Gate disposition
+This proves candidate build compatibility. A debug native APK and separate Metro export do not prove production/device behavior or that build-only signing dependencies are embedded in the APK. App source manifests and lock remain the original vulnerable targets; this is not released remediation.
 
-| Stage | Technical evidence | Authorization |
-| --- | --- | --- |
-| B3 source/archive reproducibility | PASS, exact-run clean runner and Chromium RSA | HOLD: redistribution/legal, owner and persistent artifact |
-| B4 temporary full-graph consumer/Android compatibility | PASS under disposable isolation | HOLD: no release artifact, official full/prod security audit still fails |
-| B5 physical-device/emulator and isolated-backend end-to-end | NOT_RUN | HOLD |
-| B6 remediation and PR merge readiness | NOT_APPROVED | HOLD |
-| B7 production or dependency rollout | NOT_AUTHORIZED | HOLD |
+The first SBOM emission enumerated 720 **lock catalogue** entries, including platform-optional packages not physically installed. Its SHA `04abeb03bec9b71c69a677a3dec958702b91d94bf4224abffff78d34acabee05` is historical lock-catalogue evidence, not an installed-all-platform attestation. The final implementation filters by actual package.json existence, verifies installed name/version and retains license expressions. No audit JSON or finding is changed by that correction.
 
-Next external decisions: appoint patch maintenance/security approvers, select and approve a durable private distribution channel and redistributed-license/NOTICE obligations, choose a verifiable post-patch security scanning/release route, and execute separate Android device/emulator camera/entry/result/Premium smoke against an isolated backend. Nothing in this run permits npm dependency changes to the deployed app, main merge or Production deployment.
+Cache isolation is a release-boundary repair: file-tarball npm installs can leave byte copies in npm's content cache. The first job explicitly logged an original cache-key hit and **not saving cache**, so no private patch upload was observed. Final B3/B4 producers use their own disposable npm caches, deleted with temporary outputs; all four patch-producing/replay jobs disable setup-node package-manager caching. No Gradle/app-output cache is uploaded. Canonical original-only npm caching is unchanged.
+
+The final delta also rechecks workspace-local target census after lifecycle install, rejects unrelated removals as well as upgrades, and adds bounded unauthenticated local page smoke. Final exact-head CI is required for those changes; previous APK/installed bytes evidence remains attached to its tested code SHA.
+
+## Status and companion official remediation
+
+- B0 input refresh/path/advisory/audit evidence PASS; owner/durable distribution decisions HOLD.
+- B1/B2 source behavior PASS; B3 technical provenance/reproducibility PASS, formal redistribution/maintenance/security approval HOLD.
+- B4 physical full graph/consumer/build experiment PASS; acceptance **HOLD** because raw full/prod audit still FAIL and no approved distributed release exists.
+- B5 export/prebuild/debug APK PASS on the candidate; actual device/API/Auth smoke NOT_RUN, formal runtime acceptance HOLD.
+- B6 merge-ready remediation/policy-v2/security sign-off HOLD; canonical policy is unchanged. B7 main merge/publication NOT_AUTHORIZED.
+- Separate [PR #1294](https://github.com/gycha0109-beep/K_beauty/pull/1294) uses official Next 15.5.27, removes two moderate advisory leaves and lowers moderate vulnerable-package counts from 13/11 to 12/10. Build/local HTML smoke and ordinary CI PASS; genuine braces/forge HIGH 22/19 and mandatory audit FAIL remain. Do not confuse that official patch with private braces/forge release approval.
+
+First-run closeout from concurrent commits `0213c94d` / `2eef0c66` is preserved in the verified table and gate dispositions above. The initial 720-component SBOM statement is explicitly corrected to a lock catalogue; no source/audit/APK evidence from that closeout is dropped. The original mandatory Security failure is solely its audit gate; compatible technical experiments do not authorize a distributed security release.

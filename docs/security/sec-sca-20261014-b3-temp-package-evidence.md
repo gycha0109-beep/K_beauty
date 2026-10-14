@@ -32,8 +32,8 @@
 | B2 unpatched browser bundles quarantined in candidate | PASS_TEMP_ARTIFACT — 0 dist entries; browser compatibility HOLD |
 | B3 two tarballs, double pack, per-file and archive hashes, scoped SBOM | PASS_TWO_CLEAN_RUNNERS — exact `b02ec8f`, run #38496534583, two independent npm-ci installations |
 | B3 legal/security maintainer approval and durable private store | HOLD |
-| B4 candidate installed across root/nested consumers, raw full/prod HIGH 0 | NOT_RUN |
-| B5 Android APK, device and Expo consumer regression | NOT_RUN |
+| B4 candidate installed across root/nested consumers, raw full/prod HIGH 0 | Full graph install/bytes/consumer PASS; raw HIGH 22/19 FAIL, acceptance HOLD; [B4 ledger](sec-sca-20261014-b4-full-graph-evidence.md) |
+| B5 Android APK, device and Expo consumer regression | Candidate export/prebuild/debug APK + Expo signing PASS; device NOT_RUN, formal HOLD; [B4 ledger](sec-sca-20261014-b4-full-graph-evidence.md) |
 | B6 no-exception audit v2 / security review | HOLD |
 | B7 explicit merge/production maintenance approval | HOLD |
 

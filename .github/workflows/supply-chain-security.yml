@@ -146,7 +146,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
+          package-manager-cache: false
 
       - name: Install original graph without scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
@@ -202,7 +202,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
+          package-manager-cache: false
 
       - name: Reinstall exact original graph from clean npm-ci
         run: npm ci --ignore-scripts --no-audit --no-fund
@@ -224,7 +224,7 @@ jobs:
     outputs:
       forge_full_dist_sha256: ${{ steps.fullpack.outputs.forge_full_dist_sha256 }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 55
+    timeout-minutes: 60
     steps:
       - name: Checkout exact HEAD for isolated browser rebuild
         uses: actions/checkout@v7
@@ -244,10 +244,16 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
+          package-manager-cache: false
 
       - name: Immutable original dependency installation
         run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Use validated JDK 17 for native build
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
 
       - name: Rebuild upstream-pinned webpack bundles, browser RSA, full temp tarball
         id: fullpack
@@ -289,7 +295,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
+          package-manager-cache: false
 
       - name: Reinstall original lock graph with no lifecycle
         run: npm ci --ignore-scripts --no-audit --no-fund
