@@ -216,3 +216,10 @@
 - **U10 budget alternative changed 1/12** in both projections (target Product 1→0), so price-null transition is **consumer UX HOLD** despite core ranking parity. FALSE `"$$"` null-price fallback and premium API NULL→0 static finding unresolved; A/B/C owner policy still unselected.
 - Evidence and exact CI provenance: [D8H 176-candidate budget shadow](../evidence/r16i-r4-d8h-offer-consumer-compatibility-and-pricing-policy-20261014.md) §8. Test script now in D8F CI. Initial `56d1d92d` script PASS but whole CI failed whitespace hygiene; fixed in `63812fde`. Verify final HEAD checks independently.
 - No Product/Offer writes, no protected schema/RPC/auth/CTA/score/price/runtime changes; Production DB unattested, #1208 security not resolved, rollout gate remains HOLD.
+
+### D8H nullable-price consumer fix (bounded runtime) — 2026-10-14
+
+- Added pure Product price read-contract and wired actual catalog source, budget cheaper comparison and existing premium API price values: missing Product price → `null`, price band `""`, never `0`/`"$$"`; known valid price thresholds unchanged. Result UI already hides empty price labels.
+- Added explicit NULL/invalid/threshold contract regression to existing D8F CI plus prior 164×12 and 166×12 replays. **U10** budget list difference under hypothetical NULL remains declared; no price invented to preserve prior rank/secondary list.
+- Code paths: `lib/product-price-read-contract.mjs`, `lib/product-source.js`, `lib/skin-match-decision-engine-core.js`, `app/api/analyze/route.js`, `scripts/product-evidence/verify-r16i-d8h-price-consumer-contract-v1.mjs`. Full rationale in [D8H consumer compatibility §9](../evidence/r16i-r4-d8h-offer-consumer-compatibility-and-pricing-policy-20261014.md).
+- Exact HEAD CI recheck required. **No Product/Offer data writes, no schema/RPC/auth/purchase allowlist, API field-name change, ranking policy, pricing-option selection, merge, or deploy.** A/B/C Product price, dual-seller D8D transaction, runtime DB identity and independent supply chain security #1208 remain HOLD.
