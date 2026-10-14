@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import "./verify-face-lab-v2-personal-color-observation.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
