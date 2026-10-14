@@ -28,7 +28,7 @@ function singleOwnerFixture(){
     const approvalBytes=Buffer.from(JSON.stringify(f.approval));
     return {candidateSha256:f.approval.candidateSha256,approvalBytes,trust:f.trust,
       signatures:[{role:'project-owner',keyId:'test-project-owner',signature:sign(null,
-        Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:project-owner\\n'),approvalBytes]),keypair.privateKey).toString('base64')}],
+        Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:project-owner\n'),approvalBytes]),keypair.privateKey).toString('base64')}],
       now:Date.parse('2026-10-14T06:00:00Z')};
   };
   return f;
