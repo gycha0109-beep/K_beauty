@@ -198,3 +198,13 @@
 - ROADMAP status는 **NOT_STARTED → DESIGN_READY → CODE_READY → VERIFIED_ISOLATED → RELEASE_HOLD → RELEASED**만 근거 기반 변경. '설계 완료'와 '운영 데이터 적용'은 절대 같은 완료 상태가 아니다.
 - 연결된 외부 도구·Production 관측이 필요하지만 허가나 접근이 없는 경우, 확인하지 못한 항목을 `UNATTESTED`로 기록하고 다음 차단 조건으로 남긴다.
 - 문서 경로/근거: `AGENTS.md`, `.codex/AI_ROUTER.md`, `.codex/SECURITY_BOUNDARIES.md`, `docs/taxonomy-ai/r16i-r4-d8j-universal-offer-comparison-policy-20261014.md`, 현재 페이지/DB 소스. 이 문서의 숫자 제안(TTL, pilot)은 실측/운영 승인 아님.
+
+## 7. D8K-0 실행 checkpoint (2026-10-14 KST)
+
+- **실제 화면 기준선/데이터 연결표**: [D8K-0 active-surface & null-price baseline](r16i-r4-d8k0-active-recommendation-surface-and-price-baseline-20261014.md). 현재 무료 결과는 `FreeResultV2RecommendationGuideStep`의 Top Pick **1 slot**; 프리미엄 `SkinMatchStepReport`는 AM/PM `step.product` 2 slot + 기능성 주요/보조/예산 3 slot; 공유 결과 Top Pick/category picks 2 slot = **8개 종류의 실제 코드 slot**. 사용자별 상품 수가 8개라는 뜻 아님.
+- **중요한 재분류**: 구형 무료 `ProductDecisionCard`·프리미엄 `TopPickHeroCard`/`SupportingProductCard`/`BudgetAlternativeCard`/`ProductUsageCard` 등은 현재 실제 flow에서 **미호출**. 구현 범위에 잘못 포함하지 않는다. MY 저장 이력은 리포트 링크 목록으로 별도 추천 카드가 아님.
+- **구현 보수**: `lib/product-price-read-contract.mjs::formatKnownProductPriceLabel` 도입, `components/full-report/PremiumFunctionalDecisionSection.jsx`에서 `Number(null)` 가격 오표시 교체. numeric Product 가격만 수정, 임의 입력 `product.priceLabel` 우선 표시 근거는 후속 실사 HOLD.
+- **새 실행 검증**: `scripts/product-evidence/verify-d8k0-active-surface-null-price-baseline-v1.mjs`를 D8F offline verifier에 연결. 18개 비정상 값×2개 언어 등 **160 price assertions**. Database Integration Authority의 실제 D8K0 stage PASS 확인 — [CI run #38533727203](https://github.com/gycha0109-beep/K_beauty/actions/runs/38533727203), 해당 run은 중간 코드 HEAD 4e6d3d24aafdf95026834d896ecdb715e69f921a 기준이다. **최종 문서 HEAD CI 별도 확인 필요.**
+- **엔진**: 기존 D8H 164×12(1,968), 166×12(1,992) replay 재사용. NULL 가격 가정에서 core score/rank/top1/top3 delta 0, U10 budget 대안 1/12 변동은 삭제/무시 금지. D8K-0 자체는 가격 데이터/랭킹을 수정하지 않음.
+- **상태**: D8K-0 **SOURCE_MAPPED + PRICE_FIX_VERIFIED_OFFLINE**, 실제 추천 Product ID per-row attestation·브라우저 E2E 100%·seller Option authority는 후속 단계까지 HOLD. 따라서 범용 Offer UI 기능 완료/Production ready라고 표시하지 않음.
+- **D8K-1 최우선 주의**: `lib/product-offer-read-path.js`에 `selectCurrentProductOffer` / `applyProductOfferReadPath`가 **이미 존재**함. 새 다중 Offer comparator를 만들기 전에 기존 single-offer 선택·link trust를 중복 구현하지 않도록 재사용 차이를 먼저 검토.
