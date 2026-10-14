@@ -169,6 +169,24 @@ assert.equal(d8k0Summary.productWrites, 0);
 assert.equal(d8k0Summary.offerWrites, 0);
 assert.equal(d8k0Summary.productionReleaseAuthorized, false);
 console.log(JSON.stringify(d8k0Summary));
+// D8K-1: offline four-seller option comparison; no live Offer evidence/CTA grants.
+const d8k1 = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-d8k1-four-seller-comparison-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
+assert.equal(d8k1.status, 0,
+  "D8K-1 seller comparison failed: " +
+  (d8k1.error?.message || d8k1.stderr || d8k1.stdout));
+const d8k1Summary = JSON.parse(d8k1.stdout.trim().split(String.fromCharCode(10)).at(-1));
+assert.equal(d8k1Summary.status, "PASS");
+assert.equal(d8k1Summary.stage, "D8K1_FOUR_SELLER_OPTION_COMPARISON_SHADOW");
+assert.equal(d8k1Summary.comparableFourSellerCount, 4);
+assert.equal(d8k1Summary.actualSellerDataAttested, false);
+assert.equal(d8k1Summary.changedApiFields, false);
+assert.equal(d8k1Summary.rankingChanged, false);
+assert.equal(d8k1Summary.productWrites, 0);
+assert.equal(d8k1Summary.offerWrites, 0);
+assert.equal(d8k1Summary.productionReleaseAuthorized, false);
+console.log(JSON.stringify(d8k1Summary));
 // D8I is DESIGN SHADOW ONLY: exact two Offer candidates, zero writes/grants.
 const dualOfferPreview = spawnSync(process.execPath, [
   "scripts/product-evidence/verify-r16i-d8i-dual-offer-cutover-preview-v1.mjs"
