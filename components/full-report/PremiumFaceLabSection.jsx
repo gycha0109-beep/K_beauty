@@ -9,6 +9,7 @@ import { getTargetStyleLabel } from "@/lib/face-lab-v2/target-style-registry";
 import {
   TARGET_FINDER_ROUNDS,
   buildTargetFinderResult,
+  getTargetFinderResumeState,
   getTargetFinderRound
 } from "@/lib/face-lab-v2/target-finder";
 import {
@@ -446,10 +447,10 @@ function LegacyFaceLab({ faceLabSummary, photoUrl, locale }) {
   );
 }
 
-function TargetFinder({ locale, onComplete, onBack }) {
+function TargetFinder({ locale, onComplete, onBack, resumeState }) {
   const copy = getCopy(locale);
-  const [roundIndex, setRoundIndex] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [roundIndex, setRoundIndex] = useState(() => resumeState?.roundIndex ?? 0);
+  const [choices, setChoices] = useState(() => resumeState?.choices ?? []);
   const round = getTargetFinderRound(roundIndex, locale);
 
   if (!round) {
@@ -1234,6 +1235,7 @@ export default function PremiumFaceLabSection({
     return (
       <TargetFinder
         locale={locale}
+        resumeState={getTargetFinderResumeState(finderResult)}
         onBack={() => setStage("mode")}
         onComplete={(value) => {
           const candidateLabels = value.candidateLabels || [];
