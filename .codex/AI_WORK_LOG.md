@@ -3159,3 +3159,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 
 - On PR #1288 code SHA `b02ec8f941c17e6b179aebe407b5c2d670e421e2`, Supply Chain [#38496534583](https://github.com/gycha0109-beep/K_beauty/actions/runs/38496534583) reported **PASS** for both independent B3 jobs. Each separate GitHub-hosted Ubuntu 24.04 Node 22 runner checked out exact SHA and ran a distinct `npm ci`. The second runner asserted byte-for-byte SHA256 agreement with outputs from the first; two `npm pack` operations per runner and package. Package/lock originals unchanged; temp archives deleted.
 - Status: B3 technical reproducibility PASS; B3 owner/license/private durable artifact approval HOLD; original canonical audit FAIL as required; B4-B7 not attested. Full stage evidence in `docs/security/sec-sca-20261014-b3-temp-package-evidence.md`.
+
+### 2026-10-14 — B3 real tarball/consumer/browser dist closure probe
+
+- Track security, Draft PR #1288; no Auth/DB/RLS/Storage/Payment/Secret/Production writes, no npm policy or app lock changes.
+- Added `report-sca-b3-forge-consumer-boundary.mjs`: original graph consumers @expo/cli and @expo/code-signing-certificates, 1,105 relevant files scanned, zero literal dist imports; dynamic/browser imports not covered.
+- Strengthened actual unpacked temporary forge .tgz RSA/Expo signing probe (valid, wrong-message, malformed nested ASN.1); exact code HEAD #38498280175 B3 isolated job PASS.
+- Added source-pinned disposable browser rebuild with upstream webpack 4.44.1. On #38499853956, all six original browser output names rebuilt; `forge.min.js` UMD core RSA valid/malformed negative control PASS. Full `forge.all.min.js` browser/jQuery runtime is HOLD; no dist shipped to candidate.
+- Corrected CycloneDX SHA512 to hexadecimal; original npm SHA512 integrity stays base64 and is independently compared. No audit allowlist or package alias.
+- Remaining gates: security maintainer, redistribution license approval, private artifact retention, browser full-runtime, B4 installed full graph/raw HIGH0, B5 APK/device, B6 policy, B7 explicit merge remain HOLD/NOT_RUN.
