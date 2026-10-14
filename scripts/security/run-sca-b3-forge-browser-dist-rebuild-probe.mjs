@@ -69,24 +69,23 @@ try{
  const mapped=[];
  for(const entry of ["forge.min.js.map","forge.all.min.js.map"]){
   const v=JSON.parse(fs.readFileSync(path.join(dist,entry),"utf8"));
-  assert.ok(Array.isArray(v.sources),"missing browser source-map module inventory");
-  const rsaEntries=v.sources.map((s,i)=>({name:s,
-   content:Array.isArray(v.sourcesContent)?v.sourcesContent[i]:undefined}))
-   .filter(x=>/(?:^|[/\\])rsa\.js(?:\?.*)?$/.test(x.name));
-  console.log("SCA_B3_BROWSER_MAP_RSA_DIAGNOSTIC="+JSON.stringify({file:entry,
-   sourceCount:v.sources.length,matchedCount:rsaEntries.length,
-   rsaCandidates:v.sources.filter(x=>/rsa/i.test(x)).slice(0,15),
-   sourceExamples:v.sources.slice(0,5)}));
-  assert.equal(rsaEntries.length,1,"exactly one mapped RSA source expected in "+entry);
-  if(Array.isArray(v.sourcesContent)){
-   assert.equal(rsaEntries[0].content,rsaCode,
-     "browser source map RSA text differs from patched Git blob");
+  assert.ok(Array.isArray(v.sources)&&v.sources.length>0,
+    "missing compiled browser source map");
+  // Webpack 4's pinned cheap-module-source-map outputs a single minified
+  // bundle source, not the original lib/rsa.js source. Never misstate this
+  // as source-level provenance. Actual RSA acceptance/rejection is below.
+  const matched=v.sources.filter(x=>/(?:^|[/\\])rsa\.js(?:\?.*)?$/.test(x));
+  if(matched.length){
+   assert.equal(matched.length,1,"duplicated RSA source map records");
+   if(Array.isArray(v.sourcesContent)){
+    const idx=v.sources.indexOf(matched[0]);
+    assert.equal(v.sourcesContent[idx],rsaCode,
+      "RSA source-map content differs from independently SHA-pinned RSA");
+   }
   }
-  // Upstream webpack 4 cheap-module-source-map may omit sourcesContent.
-  // A path-only mapping is not evidence of patched bytes: the pinned source
-  // blob and real UMD normal/malformed RSA execution are separate hard gates.
-  mapped.push({file:entry,rsaPath:rsaEntries[0].name,
-   sourceContentAttested:Array.isArray(v.sourcesContent)});
+  mapped.push({file:entry,sourceCount:v.sources.length,
+   containsOriginalRsaBytes:Boolean(matched.length&&Array.isArray(v.sourcesContent)),
+   provenanceAuthority:"LIMITED_CHEAP_MODULE_MAP_NOT_SOURCE_PROOF"});
  }
  const message=Buffer.from("bejewely-b3-browser-build-rsa-negative");
  const wrong=Buffer.from("other-message");
@@ -103,17 +102,23 @@ try{
  const require=createRequire(import.meta.url);
  const tested=[];
  for(const filename of ["forge.min.js","forge.all.min.js"]){
-  const forge=require(path.join(dist,filename));
-  assert.ok(forge?.pki?.publicKeyFromPem,"UMD browser forge RSA API unavailable");
-  const keyFromPem=forge.pki.publicKeyFromPem(pem);
-  const verify=(hash,signature)=>{
-   try{return keyFromPem.verify(hash.toString("binary"),signature.toString("binary"))===true;}
+  const patched=require(path.join(dist,filename));
+  const upstreamOriginal=require(path.join(original,"dist",filename));
+  const verify=(forge,hash,signature)=>{
+   assert.ok(forge?.pki?.publicKeyFromPem,"UMD browser forge RSA API unavailable: "+filename);
+   const pk=forge.pki.publicKeyFromPem(pem);
+   try{return pk.verify(hash.toString("binary"),signature.toString("binary"))===true;}
    catch{return false;}
   };
-  assert.equal(verify(digest,normal),true,"normal RSA rejected by "+filename);
-  assert.equal(verify(createHash("sha256").update(wrong).digest(),normal),false,
-   "wrong message accepted by "+filename);
-  assert.equal(verify(digest,malicious),false,"malformed ASN.1 accepted in "+filename);
+  assert.equal(verify(upstreamOriginal,digest,normal),true,
+    "original browser bundle normal RSA baseline drift");
+  assert.equal(verify(upstreamOriginal,digest,malicious),true,
+    "original browser bundle unexpected ASN.1 rejection, baseline changed");
+  assert.equal(verify(patched,digest,normal),true,"rebuilt browser bundle rejects valid RSA");
+  assert.equal(verify(patched,createHash("sha256").update(wrong).digest(),normal),false,
+   "rebuilt browser bundle accepts wrong message");
+  assert.equal(verify(patched,digest,malicious),false,
+   "rebuilt browser bundle accepts malformed ASN.1 nested child");
   tested.push(filename);
  }
  const report={
@@ -122,7 +127,8 @@ try{
   patchedRsaSha256:hex(Buffer.from(rsaCode)),
   toolchain:pinnedToolchain,nodeVersion:process.version,
   browserBundles:files.map(p=>({path:"dist/"+p,sha256:hex(fs.readFileSync(path.join(dist,p)))})),
-  sourceMapRsaModuleMappings:mapped,
+  sourceMapLimits:mapped,
+  unpatchedBrowserBundleMalformationAcceptedAsNegativeControl:tested.length,
   RSAUMDPositiveNegativePassed:tested,
   originalNpmTarballUnmodified:true,candidateTarballUnmodified:true,
   officialAuditBypass:false,distributionApproved:false,onlyTempFiles:true
