@@ -1,9 +1,9 @@
 # BEJEWELY / taxonomy-ai — D8K 전 추천 상품 구매처 비교 보수·적용 로드맵 v1
 
-> 작성: 2026-10-14 KST · 작업 유형: **설계·보수 계획** · 트랙: `taxonomy-ai` · 상태: **ROADMAP_READY / IMPLEMENTATION_NOT_STARTED / PRODUCTION_HOLD**  
-> 코드 기준: `gycha0109-beep/K_beauty` PR [#1255](https://github.com/gycha0109-beep/K_beauty/pull/1255) head `18cbf755063ecec1edcb1b1df984ad63284f9660` (작성 시작 시 검증한 기준점).  
-> 사용자 확정 정책: [D8J — 모든 추천 상품 구매처 비교](r16i-r4-d8j-universal-offer-comparison-policy-20261014.md).  
-> 별도 상품 정정: [R16I-R4 로드맵](r16i-r4-product-correction-roadmap-v1.md), [D8I/D8D v2](r16i-r4-d8i-representative-price-dual-offer-cutover-design-20261014.md).  
+> 작성: 2026-10-14 KST · 작업 유형: **설계·보수 계획** · 트랙: `taxonomy-ai` · 상태: **ROADMAP_READY / IMPLEMENTATION_NOT_STARTED / PRODUCTION_HOLD**
+> 코드 기준: `gycha0109-beep/K_beauty` PR [#1255](https://github.com/gycha0109-beep/K_beauty/pull/1255) head `18cbf755063ecec1edcb1b1df984ad63284f9660` (작성 시작 시 검증한 기준점).
+> 사용자 확정 정책: [D8J — 모든 추천 상품 구매처 비교](r16i-r4-d8j-universal-offer-comparison-policy-20261014.md).
+> 별도 상품 정정: [R16I-R4 로드맵](r16i-r4-product-correction-roadmap-v1.md), [D8I/D8D v2](r16i-r4-d8i-representative-price-dual-offer-cutover-design-20261014.md).
 > Related: [#1208 Supply Chain](https://github.com/gycha0109-beep/K_beauty/issues/1208), [#1288 security draft](https://github.com/gycha0109-beep/K_beauty/pull/1288).
 
 ## 0. 목적·범위·중단 원칙
@@ -35,10 +35,10 @@
 
 ### 공통 판단 우선순위
 
-1. **Recommendation Product ID & exposure authority** (추천 여부·보류 상태)  
-2. **Seller Offer evidence & exact option identity** (가격 출처·시각·묶음 구성)  
-3. **Offer read + filtering projection** (표시 가능 여부·동일 구성 정렬)  
-4. **Direct CTA trust/health** (링크 클릭 허가 — 가격 표시와 독립)  
+1. **Recommendation Product ID & exposure authority** (추천 여부·보류 상태)
+2. **Seller Offer evidence & exact option identity** (가격 출처·시각·묶음 구성)
+3. **Offer read + filtering projection** (표시 가능 여부·동일 구성 정렬)
+4. **Direct CTA trust/health** (링크 클릭 허가 — 가격 표시와 독립)
 5. **Shared UX/analytics** (동일 컴포넌트·노출 상태·클릭 측정)
 
 누락된 단계를 다음 단계에서 추측으로 보충하지 않는다.
