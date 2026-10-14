@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
 import {spawnSync} from 'node:child_process';
-import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference,assertNoLifecycleHooks,assertPrivateReadback} from './sca-release-bundle.mjs';
+import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference,browserReference,assertNoLifecycleHooks,assertPrivateReadback} from './sca-release-bundle.mjs';
 
 function fixture(){
   const now=Date.parse('2026-10-14T06:00:00Z'),keys=[],privateKeys=[];
@@ -43,6 +43,9 @@ test('B4 reference retains failing original audit and unreleased provenance',()=
   assert.equal(reference.audits.candidateFull.exit,1);assert.equal(reference.audits.candidateProduction.exit,1);
   assert.equal(reference.audits.candidateFull.counts.high,22);assert.equal(reference.audits.candidateProduction.counts.high,19);
   assert.equal(reference.releaseApproved,false);assert.equal(reference.appSourceGraphChanged,false);
+  assert.equal(browserReference.browserCompleteTempPack.sha256,reference.artifacts.forge.sha256);
+  assert.deepEqual(browserReference.toolchain,{webpack:'4.44.1','webpack-cli':'3.3.12'});
+  assert.equal(browserReference.distributionApproved,false);
 });
 test('four signed organization roles admit upload/readback only; no merge/production/audit pass',()=>{
   const r=verifyApproval(fixture().build());assert.equal(r.scope,'UPLOAD_AND_READBACK_ONLY');assert.equal(r.officialAudit,'FAIL');assert.equal(r.mergeApproved,false);assert.equal(r.productionApproved,false);

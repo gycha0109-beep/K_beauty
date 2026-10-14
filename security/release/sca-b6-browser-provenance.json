@@ -1,0 +1,133 @@
+{
+  "status": "PASS_TEMP_FULL_DIST_PACK_AND_CHROMIUM_RSA_NOT_A_RELEASE",
+  "verifiedUpstreamCommit": "ceba34402e329f0365134f23fe19898756527d65",
+  "buildConfigSha256": "5e70f8af959af5edf27b5a42985da607ad4047ba014a0a3da39d83973449f1dd",
+  "patchedRsaSha256": "acc22e5d36e27832c34e02dd3933aad7977d45b047eead5016520735efedc9c5",
+  "toolchain": {
+    "webpack": "4.44.1",
+    "webpack-cli": "3.3.12"
+  },
+  "nodeVersion": "v22.23.3",
+  "browserBundles": [
+    {
+      "path": "dist/forge.all.min.js",
+      "sha256": "baaad7f257463658489c2860eb83da1ab6bf6485557a94a8a5a97f935784a1bb"
+    },
+    {
+      "path": "dist/forge.all.min.js.map",
+      "sha256": "0b21eb8fb1c124e963d564b6462177331027f6e739f48e73184e0f6a81cac3f1"
+    },
+    {
+      "path": "dist/forge.min.js",
+      "sha256": "a1d374dddbfd38635e74c08bddcd55553f9b3e29fa4346ff8ac8cbfa2f21414f"
+    },
+    {
+      "path": "dist/forge.min.js.map",
+      "sha256": "5f11be794b0ad083ce9b2bcee1079e7ee1f0771d37beb90d6f13b2b9a8a0eba3"
+    },
+    {
+      "path": "dist/prime.worker.min.js",
+      "sha256": "877bd31b0cc79ecb9163649034fbafaeec45e8e2861fc4fa9fb11335f28c4ef9"
+    },
+    {
+      "path": "dist/prime.worker.min.js.map",
+      "sha256": "73f786b89ef54b00e0cfb6969b2881e7cffa77b4be3f03e998f70993290716a8"
+    }
+  ],
+  "sourceMapLimits": [
+    {
+      "file": "forge.min.js.map",
+      "sourceCount": 1,
+      "containsOriginalRsaBytes": false,
+      "provenanceAuthority": "LIMITED_CHEAP_MODULE_MAP_NOT_SOURCE_PROOF"
+    },
+    {
+      "file": "forge.all.min.js.map",
+      "sourceCount": 1,
+      "containsOriginalRsaBytes": false,
+      "provenanceAuthority": "LIMITED_CHEAP_MODULE_MAP_NOT_SOURCE_PROOF"
+    }
+  ],
+  "unpatchedBrowserBundleMalformationAcceptedAsNegativeControl": 1,
+  "RSAUMDPositiveNegativePassed": [
+    "forge.min.js"
+  ],
+  "forgeAllChromiumRsaChecks": [
+    {
+      "kind": "original",
+      "status": "PASS",
+      "jquery": "3.7.1",
+      "normal": "true",
+      "wrong": "false",
+      "malformed": "true",
+      "error": ""
+    },
+    {
+      "kind": "patched",
+      "status": "PASS",
+      "jquery": "3.7.1",
+      "normal": "true",
+      "wrong": "false",
+      "malformed": "false",
+      "error": ""
+    }
+  ],
+  "jqueryRegistryIntegrity": "sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==",
+  "forgeAllBroaderBrowserBehavior": "NOT_ATTESTED_RSA_ONLY",
+  "browserCompleteTempPack": {
+    "sha256": "67a51b864d9e483417ff34425a5a09012d333a5184dcc39f966731935463db50",
+    "sha512": "sha512-RFeII25Mu0v0m7RRnbLjsBNezNRR5xmPQxNCCxlFVhY4RKluZlh+z2W/QLD5+NDeUht3J2uh3zMiX1LDkx6+TA==",
+    "files": 59,
+    "distCount": 6,
+    "rsaSha256": "acc22e5d36e27832c34e02dd3933aad7977d45b047eead5016520735efedc9c5",
+    "browserBundleSha256": [
+      {
+        "path": "dist/forge.all.min.js",
+        "sha256": "baaad7f257463658489c2860eb83da1ab6bf6485557a94a8a5a97f935784a1bb"
+      },
+      {
+        "path": "dist/forge.all.min.js.map",
+        "sha256": "0b21eb8fb1c124e963d564b6462177331027f6e739f48e73184e0f6a81cac3f1"
+      },
+      {
+        "path": "dist/forge.min.js",
+        "sha256": "a1d374dddbfd38635e74c08bddcd55553f9b3e29fa4346ff8ac8cbfa2f21414f"
+      },
+      {
+        "path": "dist/forge.min.js.map",
+        "sha256": "5f11be794b0ad083ce9b2bcee1079e7ee1f0771d37beb90d6f13b2b9a8a0eba3"
+      },
+      {
+        "path": "dist/prime.worker.min.js",
+        "sha256": "877bd31b0cc79ecb9163649034fbafaeec45e8e2861fc4fa9fb11335f28c4ef9"
+      },
+      {
+        "path": "dist/prime.worker.min.js.map",
+        "sha256": "73f786b89ef54b00e0cfb6969b2881e7cffa77b4be3f03e998f70993290716a8"
+      }
+    ]
+  },
+  "browserCompleteTempPackReproducibleWithinRunner": true,
+  "npmInstalledConsumer": {
+    "result": "PASS_OFFLINE_NPM_CI_INSTALLED_FULL_DIST_FORGE_RSA_EXPO",
+    "fixtureOnly": true,
+    "lockfileVersion": 3,
+    "physicalInstalledFileCount": 59,
+    "fullDistTarballSha256": "67a51b864d9e483417ff34425a5a09012d333a5184dcc39f966731935463db50",
+    "installedRsaSha256": "acc22e5d36e27832c34e02dd3933aad7977d45b047eead5016520735efedc9c5",
+    "expoSigningVersion": "0.0.6",
+    "originalAppGraphUnaffected": true,
+    "appLockUnchanged": true,
+    "localRegistryAccessDisabled": true,
+    "npmAuditResult": "NOT_RUN_NOT_AN_AUDIT_PASS",
+    "realAppReplacementAuthorized": false
+  },
+  "artifactsDeletedOnExit": true,
+  "actualInstallGraphStillOriginal": true,
+  "primeWorkerBundleBuiltButRuntime": "NOT_APPLICABLE_TO_RSA_VERIFY",
+  "originalNpmTarballUnmodified": true,
+  "candidateTarballUnmodified": true,
+  "officialAuditBypass": false,
+  "distributionApproved": false,
+  "onlyTempFiles": true
+}

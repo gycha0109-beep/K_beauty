@@ -9,6 +9,7 @@ import {gunzipSync} from 'node:zlib';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const digest=(b,algorithm='sha256')=>createHash(algorithm).update(b).digest('hex');
 export const reference=JSON.parse(fs.readFileSync(path.join(root,'security/release/sca-b6-validated-source.json')));
+export const browserReference=JSON.parse(fs.readFileSync(path.join(root,'security/release/sca-b6-browser-provenance.json')));
 const upstream=Object.fromEntries(['braces','node-forge'].map(n=>[n,JSON.parse(fs.readFileSync(path.join(root,'security/vendor',n,'source-manifest.json')))]));
 export const requiredRoles=['security','license-redistribution','maintenance','distribution'];
 const names=['braces','node-forge'];
@@ -83,6 +84,9 @@ export function prepareBundle({braces,forge,output}) {
   assert.ok(!fs.existsSync(output),'output must be new isolated directory');
   const bytes=[read(braces),read(forge)];
   const artifacts=names.map((n,i)=>verifyArchive(n,bytes[i]));
+  assert.equal(browserReference.browserCompleteTempPack.sha256,artifacts[1].sha256,'browser provenance tarball mismatch');
+  requireTrue(browserReference.browserCompleteTempPackReproducibleWithinRunner,'browser reproducibility proof missing');
+  assert.equal(browserReference.npmInstalledConsumer.originalAppGraphUnaffected,true);
   requireTrue(reference.fullGraphInstalled,'full graph proof missing');
   requireTrue(reference.checks.every(c=>c.status==='PASS'),'compatibility proof failed');
   assert.equal(reference.releaseApproved,false,'reference must not claim approval');
@@ -92,6 +96,7 @@ export function prepareBundle({braces,forge,output}) {
     for(let i=0;i<names.length;i++)resources[filenames[names[i]]]=bytes[i];
     resources['validated-source.json']=Buffer.from(JSON.stringify(reference,null,2)+'\n');
     resources['upstream-provenance.json']=Buffer.from(JSON.stringify(upstream,null,2)+'\n');
+    resources['browser-build-provenance.json']=Buffer.from(JSON.stringify(browserReference,null,2)+'\n');
     resources['sbom.json']=Buffer.from(JSON.stringify(sbomFor(artifacts),null,2)+'\n');
     resources['NOTICE.md']=Buffer.from(noticeFor(artifacts));
     const files=Object.fromEntries(Object.entries(resources).map(([n,b])=>[n,{sha256:digest(b),bytes:b.length}]));
@@ -110,11 +115,12 @@ export function verifyBundle(dir) {
   assert.equal(m.schema,'bejewely.sca-release-candidate.v1');assert.equal(m.status,'CANDIDATE_ONLY_NOT_RELEASED');
   assert.equal(m.sourceEvidenceHead,reference.head);assert.equal(m.sourceEvidenceRun,38514455251);
   assert.equal(m.officialAuditPass,false);assert.equal(m.auditPolicyChanged,false);
-  assert.deepEqual(Object.keys(m.files).sort(),['NOTICE.md','braces-3.0.3.tgz','node-forge-1.4.0.tgz','sbom.json','validated-source.json','upstream-provenance.json'].sort());
+  assert.deepEqual(Object.keys(m.files).sort(),['NOTICE.md','braces-3.0.3.tgz','node-forge-1.4.0.tgz','sbom.json','validated-source.json','upstream-provenance.json','browser-build-provenance.json'].sort());
   assert.deepEqual(fs.readdirSync(dir).sort(),[...Object.keys(m.files),'release-candidate.json'].sort(),'unreviewed bundle file');
   for(const [n,h]of Object.entries(m.files)){const b=read(path.join(dir,safeName(n)));assert.equal(digest(b),h.sha256,'bundle checksum mismatch');assert.equal(b.length,h.bytes);}
   assert.deepEqual(JSON.parse(read(path.join(dir,'validated-source.json'))),reference,'substituted compatibility/audit evidence');
   assert.deepEqual(JSON.parse(read(path.join(dir,'upstream-provenance.json'))),upstream,'substituted upstream/patch provenance');
+  assert.deepEqual(JSON.parse(read(path.join(dir,'browser-build-provenance.json'))),browserReference,'substituted browser build/RSA/toolchain provenance');
   const artifacts=names.map(n=>verifyArchive(n,read(path.join(dir,filenames[n]))));
   assert.deepEqual(m.artifacts,artifacts,'substituted artifact metadata');
   assert.deepEqual(JSON.parse(read(path.join(dir,'sbom.json'))),sbomFor(artifacts),'invalid SBOM provenance/license');
