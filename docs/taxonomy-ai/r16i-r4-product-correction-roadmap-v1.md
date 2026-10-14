@@ -244,3 +244,10 @@
 - This is approval of cross-surface purchase UX scope, **not** separate approval for the disputed SNATURE Product identity/reviews, NULL Product migration, direct seller CTA allowlist, Production data writes, new DB/API response fields or deployment.
 - **Implementation pending:** inventory existing Product rendering call sites in `app/result/page.js` and `app/result/full-report/page.js`, establish a verified multi-Offer consumer contract, add one reusable compare component, verify all surfaces and click safety. **Do not** mistake the existing single `buy_link` fallback for an implemented four-channel comparison.
 - Policy and mapping: [D8J universal offer comparison](r16i-r4-d8j-universal-offer-comparison-policy-20261014.md). Separate D8D v2 application is still gate OFF/OWNER_AND_RELEASE_HOLD.
+
+### D8K universal seller Offer remediation roadmap (2026-10-14)
+
+- 사용자 확정 정책 D8J(모든 추천 카탈로그 상품에 공통 구매처 비교, 공식몰·쿠팡·올리브영·화해 우선)를 구현 가능한 **D8K 보수 작업 로드맵**으로 단계화했습니다. 문서: [D8K 전 상품 추천 구매처 비교 보수 로드맵](r16i-r4-d8k-universal-offer-remediation-roadmap-20261014.md).
+- **D8K-0→D8K-1/2→D8K-3→D8K-4→D8K-5→D8K-6→D8K-7**: 실사용 추천 slot/NULL-가격 baseline → Product-ID/선택옵션별 Offer 비교 계약과 read authority → 공통 카드 → 무료·프리미엄·루틴·기능성·예산 전체 연결 → 4채널 근거·가격 갱신 운영 → 보안·회귀 → gated rollout.
+- 우선 보수 후보: `PremiumFunctionalDecisionSection.jsx`의 `Number(null)===0` 가격 표시, 페이지별 단일 `buy_link`, Product ID/옵션 식별·shipping 부재, 현 `product_offers` listing 단위 고유키, 기존 Offer read RPC의 64 Product/256 Offer 제한, 쿠팡·임의 공식몰 direct-link trust 미지원. 세부 source 근거는 D8K 문서 참조.
+- **상태:** ROADMAP_READY. 코드·UI/API·migration·운영 데이터 변경 **없음**. D8D v2 특정 Product 교정은 별도 owner 증빙과 gate OFF 유지, #1208 실패 시 병합/배포 중단. 우선 실행 가능한 작업은 D8K-0 정밀 UI slot/source 매핑 및 null-price regression baseline.
