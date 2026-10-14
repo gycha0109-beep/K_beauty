@@ -86,9 +86,6 @@ jobs:
           node scripts/security/report-sca-b4-preflight.mjs
           node scripts/security/run-sca-b4-original-resolver-feasibility.mjs
 
-      - name: Audit dependency vulnerabilities
-        run: node scripts/verify-supply-chain-audit.mjs
-
       - name: Check exact-head diff hygiene
         shell: bash
         env:
@@ -101,6 +98,9 @@ jobs:
           else
             git diff --check HEAD^
           fi
+
+      - name: Audit dependency vulnerabilities
+        run: node scripts/verify-supply-chain-audit.mjs
 
   codeql:
     name: CodeQL JavaScript and TypeScript
