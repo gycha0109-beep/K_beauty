@@ -161,8 +161,16 @@ async function installCameraMock(page: Page, options: CameraMockOptions = {}) {
 }
 
 async function openHydratedHome(page: Page) {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const response = await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle");
+  const count = await page.getByTestId("face-lab-capture-notice").count();
+  if (response?.status() !== 200 || count !== 1) {
+    const body = (await page.locator("body").innerText().catch(() => "unreadable"))
+      .replace(/\\s+/g, " ").slice(0, 900);
+    throw new Error(
+      `M0_HOME_RENDER_NOT_READY status=${response?.status() ?? "none"} noticeCount=${count} url=${page.url()} body=${body}`
+    );
+  }
 }
 
 function getCameraOpenButton(page: Page) {
@@ -181,6 +189,85 @@ async function setFaceGuideMode(page: Page, mode: FaceGuideMode) {
 
 test.describe("mobile fullscreen camera", () => {
   test.use({ viewport: { width: 390, height: 844 } });
+
+  test("displays the shared Face Lab capture guidance once without blocking photo choices", async ({ page }) => {
+    await installCameraMock(page);
+    await openHydratedHome(page);
+
+    const note = page.getByTestId("face-lab-capture-notice");
+    await expect(note).toHaveCount(1);
+    await expect(note).toBeVisible();
+    await expect(note).toContainText("Face Lab은 사진에 나타난 얼굴 특징과 색감을");
+    await expect(note).toContainText("조명·각도·필터에 따라 결과가 달라질 수 있으니");
+    await expect(getCameraOpenButton(page)).toBeEnabled();
+    await expect(page.getByRole("button", { name: "사진에서 선택", exact: true })).toBeEnabled();
+
+    // Opening the live camera may add an overlay, but never another capture warning.
+    await getCameraOpenButton(page).click();
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "open");
+    await expect(note).toHaveCount(1);
+
+    await page.getByRole("button", { name: "카메라 닫기" }).click();
+    await expect(note).toHaveCount(1);
+    await expect(note).toBeVisible();
+  });
+
+  test("uses the same single non-blocking Face Lab capture notice in English", async ({ page }) => {
+    await page.goto("/en", { waitUntil: "domcontentloaded" });
+    await page.waitForLoadState("networkidle");
+
+    const note = page.getByTestId("face-lab-capture-notice");
+    await expect(note).toHaveCount(1);
+    await expect(note).toContainText("Face Lab analyzes visible facial features and colors");
+    await expect(note).toContainText("Lighting, angles, and filters can affect the result");
+    await expect(page.getByRole("button", { name: "Use Camera", exact: true })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Choose Photo", exact: true })).toBeEnabled();
+  });
+
+
+  test("keeps the notice usable at narrow widths and in dark mode (ko/en)", async ({ page }) => {
+    for (const locale of ["ko", "en"] as const) {
+      for (const width of [320, 390]) {
+        await page.setViewportSize({ width, height: 700 });
+        await page.emulateMedia({ colorScheme: "dark" });
+        await page.goto(locale === "ko" ? "/" : "/en", { waitUntil: "domcontentloaded" });
+        await page.waitForLoadState("networkidle");
+
+        const note = page.getByTestId("face-lab-capture-notice");
+        const camera = page.getByRole("button", {
+          name: locale === "ko" ? "지금 촬영하기" : "Use Camera",
+          exact: true
+        });
+        const gallery = page.getByRole("button", {
+          name: locale === "ko" ? "사진에서 선택" : "Choose Photo",
+          exact: true
+        });
+
+        await expect(note).toHaveCount(1);
+        await expect(note).toBeVisible();
+        await expect(camera).toBeEnabled();
+        await expect(gallery).toBeEnabled();
+
+        const layout = await note.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            left: rect.left,
+            right: rect.right,
+            scrollWidth: element.scrollWidth,
+            clientWidth: element.clientWidth
+          };
+        });
+        expect(layout.left).toBeGreaterThanOrEqual(-1);
+        expect(layout.right).toBeLessThanOrEqual(width + 1);
+        expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth + 1);
+
+        await camera.focus();
+        await expect(camera).toBeFocused();
+        await gallery.focus();
+        await expect(gallery).toBeFocused();
+      }
+    }
+  });
 
   test("prepares the live video invisibly before the fullscreen expansion", async ({ page }) => {
     await installCameraMock(page, { deferFirstFrame: true });
@@ -476,6 +563,7 @@ test.describe("mobile fullscreen camera", () => {
 
     const galleryPreview = page.getByAltText("업로드한 얼굴 사진 미리보기");
     await expect(galleryPreview).toBeVisible();
+    await expect(page.getByTestId("face-lab-capture-notice")).toHaveCount(0);
     await expect(galleryPreview).toHaveAttribute("data-preview-orientation", "original");
     await expect(galleryPreview).not.toHaveClass(/scale-x-\[-1\]/);
     const getUserMediaCalls = await page.evaluate(

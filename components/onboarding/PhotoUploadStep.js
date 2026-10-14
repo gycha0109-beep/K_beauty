@@ -16,6 +16,7 @@ const STEP_COPY = {
     lead: "내 피부에 딱 맞는",
     highlight: "제품을 찾아드려요",
     hint: "사진 신호와 설문 답변을 함께 분석합니다.",
+    faceLabCaptureNotice: "Face Lab은 사진에 나타난 얼굴 특징과 색감을 바탕으로 스타일 방향을 분석합니다. 조명·각도·필터에 따라 결과가 달라질 수 있으니, 가능하면 밝고 고른 빛에서 필터 없이 얼굴이 잘 보이게 촬영해 주세요.",
     guide: "얼굴을 원 안에 맞춰주세요",
     privacy: "JPEG, PNG, WebP · 최대 8MB · 사진은 저장되지 않고 분석에만 사용합니다",
     camera: "지금 촬영하기",
@@ -48,6 +49,7 @@ const STEP_COPY = {
     lead: "Find products",
     highlight: "matched to your skin",
     hint: "We combine photo signals with your survey answers.",
+    faceLabCaptureNotice: "Face Lab analyzes visible facial features and colors in your photo to suggest styling directions. Lighting, angles, and filters can affect the result, so use even lighting, no filters, and a clearly visible face when possible.",
     guide: "Place your face inside the circle",
     privacy: "JPEG, PNG, WebP · up to 8MB · used only for analysis and not saved",
     camera: "Use Camera",
@@ -881,6 +883,15 @@ export default function PhotoUploadStep({
               </div>
 
               <div className="mx-auto mt-5 grid w-full max-w-[360px] grid-cols-1 gap-2.5 sm:mt-6 sm:max-w-[390px] sm:gap-3">
+                {!hasPreview ? (
+                  <p
+                    data-testid="face-lab-capture-notice"
+                    role="note"
+                    className="rounded-lg bg-[#FFF8FA] px-3 py-2.5 text-center text-[11px] leading-[1.7] text-[#666666] dark:bg-[#242029] dark:text-[#C9C5CE] sm:text-xs"
+                  >
+                    {t.faceLabCaptureNotice}
+                  </p>
+                ) : null}
                 <button
                   type="button"
                   onClick={primaryAction}
