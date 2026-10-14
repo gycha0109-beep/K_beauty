@@ -76,6 +76,20 @@ assert.equal(four.groups[0].offers[1].ctaEnabled, true);
 assert.equal(four.groups[0].offers[2].ctaEnabled, true);
 assert.equal(four.groups[0].offers[3].ctaEnabled, true);
 assert.deepEqual(four.excluded, []);
+const oneSeller = run([official]);
+assert.equal(oneSeller.groups[0].offers.length, 1);
+const twoSellers = run([official, olive]);
+assert.equal(twoSellers.groups[0].offers.length, 2);
+const fifth = single({
+  offer_id: uuid(10), seller_key: "otherstore", seller_name: "Other Store",
+  sellerChannel: "other", optionIdentity: "extra-option",
+  listing_id: "EXTRA-5", listing_url: "https://example.org/catalog/5",
+  price_amount: 21000
+});
+const fiveSellers = run([official, olive, hwahae, coupang, fifth]);
+assert.equal(fiveSellers.groups[0].offers.length, 5);
+assert.equal(fiveSellers.groups[0].offers[0].ctaHref, null);
+assert.equal(fiveSellers.groups[0].cheapestBadgeAuthorized, false);
 
 const fullCheckout = run([official, olive, hwahae, {
   ...coupang, shippingAmount: 4000, shippingVerified: true
