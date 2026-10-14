@@ -50,6 +50,8 @@ jobs:
           node-version: 22
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install canonical Main Health crawler toolchain
+        run: npm --prefix crawler ci --ignore-scripts --no-audit --no-fund
       - name: Main Health on exact release preparation HEAD
         run: node scripts/verify-current-main-health.mjs
       - id: candidate
