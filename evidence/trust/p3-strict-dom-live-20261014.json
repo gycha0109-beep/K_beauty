@@ -1,0 +1,96 @@
+{
+  "contract": "trust-p3-strict-dom-live-acceptance-v1",
+  "observedDate": "2026-10-14",
+  "provenance": {
+    "mainSha": "c28661b2453bf33a0afa891cb9d0ece62632063f",
+    "pr": 1284,
+    "actionsRunId": 38492560060,
+    "jobId": 115620952589,
+    "artifactId": 11862735589,
+    "artifactName": "trust-p3-locator-revalidation"
+  },
+  "scope": {
+    "products": 3,
+    "officialLocators": 6,
+    "officialOrigins": 4,
+    "htmlFetched": 4,
+    "sourceBlocked": 2
+  },
+  "summary": {
+    "sourceOutcomes": {
+      "IDENTITY_OR_VARIANT_REVIEW_REQUIRED": 4,
+      "SOURCE_FETCH_HOLD": 2
+    },
+    "priorP3ReviewCandidates": 0,
+    "strictDomRootNameFormCandidates": 0,
+    "verifiedExactSku": 0,
+    "verifiedMarket": 0,
+    "verifiedFormulation": 0,
+    "newSourceBindings": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0
+  },
+  "rows": [
+    {
+      "brand": "Torriden",
+      "role": "EXISTING_BOUND_SOURCE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "parseComplete": false,
+      "scannedTags": 402,
+      "originalP3Gate": "IDENTITY_REVIEW_REQUIRED"
+    },
+    {
+      "brand": "Torriden",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "strictStatus": "PRIMARY_ROOT_NOT_PROVEN",
+      "parseComplete": true,
+      "scannedTags": 1486,
+      "rootMarkers": 6,
+      "matchedRoots": 0,
+      "matchedTitles": 0,
+      "ownedFormCount": 0,
+      "ownedOptionControlCount": 0,
+      "originalP3Gate": "IDENTITY_REVIEW_REQUIRED"
+    },
+    {
+      "brand": "Beauty of Joseon",
+      "role": "EXISTING_BOUND_SOURCE",
+      "fetchStatus": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "Beauty of Joseon",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "fetchStatus": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "Aestura",
+      "role": "EXISTING_BOUND_SOURCE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "parseComplete": false,
+      "scannedTags": 182,
+      "originalP3Gate": "IDENTITY_REVIEW_REQUIRED"
+    },
+    {
+      "brand": "Aestura",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "parseComplete": false,
+      "scannedTags": 563,
+      "originalP3Gate": "VARIANT_REVIEW_REQUIRED"
+    }
+  ],
+  "acceptance": {
+    "testedNestedDomContracts": true,
+    "canonicalTrustAndMainHealthAndPieAndCodeqlPassedOnPr": true,
+    "strictParserIsCompleteHtml5": false,
+    "exactSkuAuthority": false,
+    "primaryRootAuthority": false,
+    "productFactAuthority": false,
+    "browserRepairOrJavaScriptEmulation": false,
+    "nextDecision": "Do not relax ambiguous attributes into product admission. First classify ambiguity causes without persisting source HTML. If standard browser tree semantics are required, evaluate a maintained HTML5 parser dependency with SCA and lockfile review before use. Then independently bind product title and specific selected variant ownership."
+  },
+  "readOnly": true
+}

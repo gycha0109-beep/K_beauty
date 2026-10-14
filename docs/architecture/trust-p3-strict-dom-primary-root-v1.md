@@ -24,3 +24,16 @@
 합성 fixture의 positive/negative는 파서의 제한된 계층 판별만 검증하며 실제 공식몰 검증률 개선의 근거가 아니다. PR checks TRUST, PIE, Main Health, CodeQL 초록색 확인 후 `P3-LOCATOR-LIVE-TRIAL` 1회, 공식 6 URL / 4 origins에 한정해서 실행하고 결과 증거를 동결한다.
 
 실제 HTML에서 `UNBALANCED_HTML`이 발생하면 이를 허용으로 완화하지 말고, 검증된 HTML5 DOM tree parser 도입 여부를 공급망 보안 검토 후 별도 PR로 판단한다. 실제 selected 40ml vs 25ml, URL/시장/제형 동일성은 향후 PR-C 범위다. 기존 공급망 취약점 검사 실패는 우회하지 않는다.
+
+
+## 2026-10-14 실제 6개 공식 URL 수용 결과
+
+[PR #1284](https://github.com/gycha0109-beep/K_beauty/pull/1284) merged `c28661b2453bf33a0afa891cb9d0ece62632063f`; [Actions #38492560060](https://github.com/gycha0109-beep/K_beauty/actions/runs/38492560060), official read-only job `115620952589` succeeded, artifact `11862735589`. Frozen `evidence/trust/p3-strict-dom-live-20261014.json`.
+
+- 6 URLs / 4 origins / 3 products, 4 fetched HTML, 2 `SOURCE_BLOCKED` (Beauty of Joseon).
+- Torriden **bound** URL: `AMBIGUOUS_ATTRIBUTES` after 402 tags, conservative HOLD. Torriden **alternate** URL: strict parse completed (1,486 tags, six root markers) but `PRIMARY_ROOT_NOT_PROVEN`: 0 matching title/root/form pair.
+- Aestura KR `AMBIGUOUS_ATTRIBUTES` after 182 tags; international `AMBIGUOUS_ATTRIBUTES` after 563 tags. Both HOLD; do not interpret these as proof that product title or selected variant are absent.
+- Existing P3 **0/6 candidate**, newly proven scoped name+owned form **0/6**, verified exact SKU / market / formulation **0/6**, no automated Source/Subject/Fact/recommendation/DB writes or AI API usage.
+- Negative fixtures and exact-head TRUST/PIE/Main Health/CodeQL succeeded before merger. Existing independent SCA vulnerability failure was not waived.
+
+**Decision:** strict hierarchy gate implemented and safely fail-closes. **Real-world template coverage is not established**, and PR-C selected-size verification may not be enabled. Investigate `AMBIGUOUS_ATTRIBUTES` causes via *non-content counters only* (duplicate or unsupported attribute syntax, not raw HTML) and verify a maintained HTML5 DOM parser through separate dependency/SCA review if browser-repaired markup is required. No blind conversion of ambiguity to approved product identity; store only bounded metadata. Existing page and source authority remain unchanged.
