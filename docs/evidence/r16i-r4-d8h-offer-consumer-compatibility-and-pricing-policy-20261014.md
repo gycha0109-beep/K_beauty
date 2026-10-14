@@ -80,3 +80,34 @@ GitHub: existing Database Integration Authority calls the D8F verifier (and has 
 - Production Vercel runtime DB identity: **UNATTESTED**; candidate DB state is not substitute evidence.
 - Independent supply-chain security #1208: **OPEN**; Draft PR #1288 is not remediation completion.
 - Current D8D SQL remains **unsafe to execute as the new policy**. No merge/deploy/Production apply authorized.
+
+## 7. D8H actual engine NULL-price policy what-if — 2026-10-14
+
+**Execution:** Added `scripts/product-evidence/verify-r16i-d8h-null-price-engine-replay-v1.mjs` and invoked it from the existing `verify-r16i-price-scope-review-v1.mjs` D8F offline CI. This does **not** select A: Product NULL or authorize live price mutation. Inputs are the frozen 164 Product rows, 12 exact existing user scenarios, one synthetic 80ml/Product-price-null replacement, and two seller-scoped Offer candidates. The same current `buildRecommendationProductFromSource`, `buildSkinMatchDecisionBundle`, `projectProductWithOfferAuthority` functions execute inside the sandbox; external fetch is rejected.
+
+**Exact tested HEAD:** `aea49f54197e6bdc4291421741a0f7c96595fd6b`. [Database Integration Authority #38518123678](https://github.com/gycha0109-beep/K_beauty/actions/runs/38518123678) **SUCCESS** (Database integration authority and isolated PostgreSQL 17 jobs both PASS). The initially attempted `056a3259` failed solely because its verifier parsed multi-line engine diagnostics as one JSON string; updated the verifier's newline split in `aea49f54` and independently reconfirmed PASS. This is a test-harness parser correction, not a recommendation-policy change.
+
+| Actual engine check | Exact result |
+| --- | ---: |
+| Scenarios / candidate-score comparisons | 12 / 1,968 |
+| Score delta | 0 |
+| Ranking delta | 0 |
+| Top Pick delta | 0 |
+| Top 3 delta | 0 |
+| Candidate-count delta | 0 |
+| **Budget alternatives list delta** | **1 scenario** |
+| R16I product present in budget alternatives, before → after | **1 → 0 scenario** |
+| R16I Product selected as topPick | 0 scenarios |
+| DB Product writes / Offer writes | 0 / 0 |
+
+Interpretation: The 80ml/NULL commercial price **does not change core scoring or rank in this frozen 164×12 set**, but **does change a user-facing budget-alternative selection** because that secondary consumer depends on price. This is a measured delta, not necessarily a regression, and must not be described as *complete* recommendation parity, Production price readiness, or evidence that synthetic NULL was approved. New catalog admission, 176-row actual production authority, user purchase/checkout and persisted report compatibility remain separate.
+
+Separately, the current `buildRecommendationProductFromSource` still emits `price_range="$$"` for `price_min/max=null`, so Result can render a false mid-price band. The premium API numeric conversion of NULL is **static-code identified** but **not dynamically exercised by this engine replay**. Offer reader failures can return an original decision; never assume a stale Product buy link has been cleared unless verified. The current Product price policy (A/B/C), Offer seller-link authority, retailer set/SKU attribution, serum identity, Product review population and canonical pricing remain **OWNER HOLD**.
+
+**Remediation/approval sequence:**
+1. Owner defines canonical Product price semantics and review criteria for 80ml single, not merely from screenshot checkout. Explicitly decide whether the official seller persists as the second Offer.
+2. Scope and review unknown-price `price_range` suppression (avoid `$$`), premium NULL numeric serialization, budget-alternative classification/message, and fallback CTA behavior. These are existing **consumer contract changes**; no deployed consumer was modified in this stage.
+3. Test any approved read-path changes against the same 164×12, the candidate 176-row admission/recommendation fixture and result/premium API presentation. Require no **unapproved** scoring or ranking changes, explicit accounting for the one budget-alternative difference, and zero unauthorized purchase link promotion.
+4. Only after approved semantics, review protected two-Offer D8D migration/RPC, CAS rollback and release gate; #1208 security resolution and actual Production DB identity still required.
+
+**Scope check:** Only offline test files and evidence/roadmap; NO schema/migration/RPC, Production DB, Product/Offer, owner judgment, auth, purchase allowlist, package, release gate, ranking policy, API field-name or deployment mutation. Expected production writes = **0**.
