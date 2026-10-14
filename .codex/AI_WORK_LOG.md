@@ -3146,3 +3146,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+### 2026-10-14 — Official Next 15.5.27 security patch
+
+- Execution/diagnosis, security track; official patch upgrade only, no Auth/DB/RLS/Provider/Payment/Secret/Production changes. Separate Draft PR #1294 preserves #1288 private B3/B4 evidence.
+- npm resolver updated exact Next pin and 10 Next/env/SWC entries. Raw full audit HIGH22/CRITICAL0/MODERATE12; production HIGH19/CRITICAL0/MODERATE10. Both exit 1; two Next moderate advisory leaves removed, braces/forge retained. No audit exception changes.
+- Exact 94555471 Security #38511390089: ordinary lock installation and Next production build (42 static pages) PASS; canonical expired braces exception FAIL remains mandatory. Main Health version constant drift identified and updated to 15.5.27 with manifest/lock equality guard; local unauthenticated page smoke added, revalidation pending.
+- B3/B4 distributed release approval, private artifact destination and Android device acceptance remain separate HOLD. No main merge or package publication authorized.

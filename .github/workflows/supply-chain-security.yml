@@ -91,7 +91,9 @@ jobs:
         if: ${{ always() && steps.install.outcome == 'success' }}
         env:
           NEXT_TELEMETRY_DISABLED: "1"
-        run: npm run build
+        run: |
+          npm run build
+          node scripts/security/verify-local-production-smoke.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
