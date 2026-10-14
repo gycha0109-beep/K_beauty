@@ -216,4 +216,29 @@ masksHold({
   }
 }, "insufficient_unexcluded_cheek_pixels");
 
+// Untrusted polygon count/geometry must not cause unbounded raster work.
+masksHold({
+  ...masksInput,
+  exclusionPolygons: Array.from({ length: 13 }, () => rect(0.45, 0.4, 0.55, 0.6))
+}, "exclusion_geometry_unverified");
+masksHold({
+  ...masksInput,
+  cheekPolygons: {
+    leftCheek: Array.from({ length: 17 }, (_, i) => ({
+      x: 0.25 + 0.1 * Math.cos((2 * Math.PI * i) / 17),
+      y: 0.5 + 0.2 * Math.sin((2 * Math.PI * i) / 17)
+    })),
+    rightCheek: right
+  }
+}, "cheek_geometry_unverified");
+masksHold({
+  width: 1024,
+  height: 1024,
+  cheekPolygons: {
+    leftCheek: rect(0, 0, 0.49, 1),
+    rightCheek: rect(0.51, 0, 1, 1)
+  },
+  exclusionPolygons: Array.from({ length: 8 }, () => rect(0, 0, 1, 1))
+}, "geometry_work_budget_exceeded");
+
 console.log("FACE_LAB_PERSONAL_COLOR_LAB_SAMPLING=PASS");
