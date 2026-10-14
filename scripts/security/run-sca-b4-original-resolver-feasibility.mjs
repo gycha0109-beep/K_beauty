@@ -128,17 +128,42 @@ try{
   // application graph in the disposable shadow location.
   mandatory("npm",["ci","--ignore-scripts","--no-audit","--no-fund",
     "--prefer-offline"],shadow,180000);
+  // Enumerate ALL graph paths, including nested copies. A root-only hash
+  // check is insufficient evidence of a complete npm resolver replacement.
   const physical=Object.create(null);
   for(const name of names){
-    const folder=path.join(shadow,"node_modules",name);
-    const pkg=JSON.parse(fs.readFileSync(path.join(folder,"package.json"),"utf8"));
-    assert.equal(pkg.name,name);
-    assert.equal(pkg.version,lock.packages["node_modules/"+name].version);
-    const actual=sha(fs.readFileSync(path.join(folder,
-      name==="braces"?"lib/parse.js":"lib/rsa.js")));
-    assert.equal(actual,originalHashes[name],
-      "candidate original bytes did not match intentionally vulnerable baseline");
-    physical[name]={installed:true,byteIdenticalToOriginal:true,sourceSha256:actual};
+    const paths=Object.entries(candidateLock.packages).filter(([p,pkg])=>
+      p==="node_modules/"+name||p.endsWith("/node_modules/"+name)||
+      pkg?.name===name);
+    assert.equal(paths.length,candidateEntries[name]);
+    const allDigests=[];
+    for(const [lockPath,entry] of paths){
+      assert.ok(!path.isAbsolute(lockPath)&&
+        !lockPath.split("/").some(s=>s==="."||s===".."||s===""),
+        "CANDIDATE_UNSAFE_LOCK_INSTALL_PATH");
+      assert.ok(lockPath==="node_modules/"+name||
+        lockPath.endsWith("/node_modules/"+name),
+        "CANDIDATE_ALIAS_REQUIRES_SEPARATE_SOURCE_ATTESTATION");
+      const location=fs.realpathSync(path.resolve(shadow,lockPath));
+      assert.ok(location.startsWith(shadow+path.sep),
+        "CANDIDATE_INSTALL_ESCAPED_TEMP_ROOT");
+      const pkg=JSON.parse(fs.readFileSync(path.join(location,"package.json"),"utf8"));
+      assert.equal(pkg.name,name,"CANDIDATE_PACKAGE_IDENTITY_MISMATCH");
+      assert.equal(pkg.version,entry.version,"CANDIDATE_INSTALLED_VERSION_MISMATCH");
+      assert.equal(pkg.version,lock.packages["node_modules/"+name].version,
+        "CANDIDATE_UNEXPECTED_ORIGINAL_VERSION");
+      const sourceFile=fs.realpathSync(path.join(location,
+        name==="braces"?"lib/parse.js":"lib/rsa.js"));
+      assert.ok(sourceFile.startsWith(location+path.sep),
+        "CANDIDATE_SOURCE_ESCAPED_PACKAGE");
+      const actual=sha(fs.readFileSync(sourceFile));
+      assert.equal(actual,originalHashes[name],
+        "CANDIDATE_SOURCE_BYTES_DIFFER_FROM_ORIGINAL_NEGATIVE_CONTROL");
+      allDigests.push(actual);
+    }
+    physical[name]={installed:true,installedCopyCount:paths.length,
+      allCopiesByteIdenticalToOriginal:true,
+      sourceSha256:[...new Set(allDigests)].sort()};
   }
   // Independent audit observation, NOT a green security admission gate.
   const full=runAudit(shadow,false),production=runAudit(shadow,true);
