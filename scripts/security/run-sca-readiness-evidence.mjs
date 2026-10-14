@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync,execFileSync} from 'node:child_process';
 import {buildScaReadiness} from './sca-readiness-evidence.mjs';
+import {analyzeAuditCauses} from './sca-audit-root-causes.mjs';
 
 const expectedHead=process.env.SCA_EXPECTED_HEAD_SHA;
 assert.ok(expectedHead,'SCA_EXPECTED_HEAD_SHA is mandatory');
@@ -34,10 +35,23 @@ const snapshot=buildScaReadiness({
     ? process.env.GITHUB_SERVER_URL+'/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID : null,
   full,production
 });
+const rootCauseFull=analyzeAuditCauses(full.payload);
+const rootCauseProduction=analyzeAuditCauses(production.payload);
+assert.equal(rootCauseFull.counts.highSeverityNodes,snapshot.rawAudit.full.counts.high,'full audit HIGH propagation mismatch');
+assert.equal(rootCauseProduction.counts.highSeverityNodes,snapshot.rawAudit.production.counts.high,'production audit HIGH propagation mismatch');
+snapshot.p1RootCauseAnalysis={
+  full:rootCauseFull,
+  production:rootCauseProduction,
+  status:'DIAGNOSTIC_ONLY_NO_RELEASE_AUTHORITY',
+  remediation:'FOLLOW_APPROVED_PATCH_GRAPH_OR_OFFICIAL_FIXED_RELEASE',
+  advisoryReviewRequired:rootCauseFull.unreviewedHighIds.length>0||rootCauseProduction.unreviewedHighIds.length>0
+};
 fs.writeFileSync(path.join(outputDir,'readiness.json'),JSON.stringify(snapshot,null,2)+'\n',{mode:0o600});
 console.log('SCA_READINESS_EVIDENCE='+JSON.stringify({
   head:checkedOutHead,rawAudit: snapshot.rawAudit.gate,
   full:snapshot.rawAudit.full.counts,production:snapshot.rawAudit.production.counts,
-  advisoryLeaves:snapshot.rawAudit.full.advisoryLeaves,decision:snapshot.decision,
+  advisoryLeaves:snapshot.rawAudit.full.advisoryLeaves,
+  p1:{full:rootCauseFull.counts,production:rootCauseProduction.counts,highCauseDisposition:rootCauseFull.highCauseDisposition,reviewRequired:snapshot.p1RootCauseAnalysis.advisoryReviewRequired},
+  decision:snapshot.decision,
   releaseAuthorized:snapshot.releaseAuthorized,outputDir:'.sca-readiness-evidence'
 }));
