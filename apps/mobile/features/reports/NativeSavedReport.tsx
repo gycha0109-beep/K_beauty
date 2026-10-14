@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useMobileShell } from "../../lib/mobile-shell";
 import type { NativeFreeSavedResult, NativeSavedReportRead } from "./saved-report-client";
+import { resolveSkinPhotoDisplayState } from "./skin-photo-evidence-status";
 
 const REPORT_COPY = {
   en: {
@@ -15,6 +16,7 @@ const REPORT_COPY = {
     premiumRoutine: "Premium routine",
     functional: "Functional decisions",
     condition: "Condition guidance",
+    photoEvidence: "Photo evidence",
     version: "Version",
     savedAt: "Saved",
     noDetail: "This saved server snapshot has no additional displayable detail."
@@ -31,6 +33,7 @@ const REPORT_COPY = {
     premiumRoutine: "프리미엄 루틴",
     functional: "기능성 판단",
     condition: "컨디션 대응",
+    photoEvidence: "사진 관찰 근거",
     version: "버전",
     savedAt: "저장",
     noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다."
@@ -159,6 +162,36 @@ function FreeSnapshot({ result }: { result: NativeFreeSavedResult }) {
   );
 }
 
+function getSkinPhotoEvidenceLines(report: Record<string, unknown>, locale: "ko" | "en") {
+  const state = resolveSkinPhotoDisplayState(report);
+  const copy = locale === "en"
+    ? {
+        available: "Photo observations were considered as supporting visual cues, not a skin diagnosis.",
+        not_provided: "There is no photo evidence in this report. Survey and product-use context are primary.",
+        unavailable: "Photo processing did not complete. Do not treat survey-only fallback text as photo evidence.",
+        ineligible: "The image was not suitable for skin observation. Photo-based judgment is on hold.",
+        insufficient_evidence: "The photo did not support a reliable skin observation. Survey evidence is prioritized.",
+        unknown: "Photo evidence status cannot be verified from this saved report.",
+        conflict: "Saved photo-status records disagree. Photo interpretation should be held pending recheck.",
+        limited: "Individual photo cues have insufficient confidence detail for a stronger claim."
+      }
+    : {
+        available: "사진에서 관찰한 시각적 단서는 보조 근거이며 피부 상태를 진단한 결과가 아닙니다.",
+        not_provided: "이 리포트에는 사진 근거가 없습니다. 설문과 현재 사용 정보가 우선입니다.",
+        unavailable: "사진 분석이 완료되지 않았습니다. 설문용 대체 문구를 사진 관찰 결과로 보지 않습니다.",
+        ineligible: "피부를 관찰하기에 적합하지 않은 사진이어서 사진 기반 판단을 보류했습니다.",
+        insufficient_evidence: "사진에서 신뢰할 만한 피부 단서가 부족해 설문 근거를 우선했습니다.",
+        unknown: "이 저장 리포트에서 사진 분석 상태를 확인할 수 없습니다.",
+        conflict: "저장된 사진 상태 기록이 서로 일치하지 않아 사진 판단을 보류하고 재확인해야 합니다.",
+        limited: "개별 피부 관찰 신호의 신뢰도 근거가 부족하므로 단정할 수 없습니다."
+      };
+  if (state.statusConflict) return [copy.conflict];
+  return [
+    copy[state.status],
+    ...(state.status === "available" && state.highOrMediumObservationCount === 0 ? [copy.limited] : [])
+  ];
+}
+
 function PremiumSnapshot({ report }: { report: Record<string, unknown> }) {
   const { locale } = useMobileShell();
   const copy = REPORT_COPY[locale];
@@ -173,6 +206,7 @@ function PremiumSnapshot({ report }: { report: Record<string, unknown> }) {
   return (
     <View style={styles.stack}>
       {freeResult ? <FreeSnapshot result={freeResult} /> : null}
+      <Section title={copy.photoEvidence} lines={getSkinPhotoEvidenceLines(report, locale)} />
       <Section title={copy.premiumRoutine} lines={routineLines} />
       <Section title={copy.functional} lines={functionalLines} />
       <Section title={copy.condition} lines={conditionLines} />
