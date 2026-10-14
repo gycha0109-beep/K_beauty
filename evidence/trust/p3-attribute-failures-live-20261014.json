@@ -1,0 +1,138 @@
+{
+  "contract": "trust-p3-attribute-failure-live-acceptance-v1",
+  "observedDate": "2026-10-14",
+  "provenance": {
+    "mainSha": "e05da389283a340348aa271b6f930bd683a8304b",
+    "mergedPr": 1286,
+    "githubRunId": 38495005152,
+    "jobId": 115628663336,
+    "artifactId": 11863513204,
+    "artifactName": "trust-p3-locator-revalidation"
+  },
+  "cohort": {
+    "officialLocators": 6,
+    "officialOrigins": 4,
+    "products": 3,
+    "htmlFetched": 4,
+    "sourceBlocked": 2
+  },
+  "overview": {
+    "identityOrVariantHolds": 4,
+    "sourceFetchHolds": 2,
+    "reviewCandidates": 0,
+    "exactSkuVerified": 0,
+    "marketVerified": 0,
+    "formulationVerified": 0,
+    "sourceBindingWrites": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "dbWrites": 0,
+    "aiApiCalls": 0
+  },
+  "attributeErrors": {
+    "AMBIGUOUS_ATTRIBUTES": 3,
+    "UNSUPPORTED_ATTRIBUTE_SYNTAX": 2,
+    "DUPLICATE_ATTRIBUTE_NAME": 1
+  },
+  "observations": [
+    {
+      "brand": "토리든",
+      "role": "EXISTING_BOUND_SOURCE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "parseComplete": false,
+      "scannedTags": 402,
+      "attributeError": {
+        "reason": "UNSUPPORTED_ATTRIBUTE_SYNTAX",
+        "tagKind": "DIV",
+        "attributeOrdinal": 4
+      },
+      "productIdentity": "HOLD"
+    },
+    {
+      "brand": "토리든",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "strictStatus": "PRIMARY_ROOT_NOT_PROVEN",
+      "parseComplete": true,
+      "scannedTags": 1486,
+      "rootMarkers": 6,
+      "matchedRoots": 0,
+      "matchedTitles": 0,
+      "ownedOptionControlCount": 0,
+      "productIdentity": "HOLD"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "EXISTING_BOUND_SOURCE",
+      "fetchStatus": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "뷰티오브조선",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "fetchStatus": "SOURCE_BLOCKED"
+    },
+    {
+      "brand": "에스트라",
+      "role": "EXISTING_BOUND_SOURCE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "parseComplete": false,
+      "scannedTags": 182,
+      "attributeError": {
+        "reason": "UNSUPPORTED_ATTRIBUTE_SYNTAX",
+        "tagKind": "OTHER",
+        "attributeOrdinal": 3
+      },
+      "productIdentity": "HOLD"
+    },
+    {
+      "brand": "에스트라",
+      "role": "ALTERNATE_OFFICIAL_CANDIDATE",
+      "strictStatus": "AMBIGUOUS_ATTRIBUTES",
+      "parseComplete": false,
+      "scannedTags": 563,
+      "attributeError": {
+        "reason": "DUPLICATE_ATTRIBUTE_NAME",
+        "tagKind": "OTHER",
+        "attributeOrdinal": 5
+      },
+      "productIdentity": "HOLD"
+    }
+  ],
+  "security": {
+    "lockfileVersion": 3,
+    "parse5Installed": false,
+    "gate": "FAILED_PRE_EXISTING_SUPPLY_CHAIN_VULNERABILITIES",
+    "expiryPolicyChanged": false,
+    "exceptionRenewed": false,
+    "securityGateBypassed": false,
+    "lockedAffected": [
+      {
+        "package": "braces",
+        "version": "3.0.3",
+        "advisory": "GHSA-vfj7-8cjw-p6xm",
+        "patchedVersionAvailable": false,
+        "knownExceptionExpiryUtc": "2026-10-10T00:00:00.000Z"
+      },
+      {
+        "package": "node-forge",
+        "version": "1.4.0",
+        "advisory": "GHSA-86w9-cpqp-85rv",
+        "patchedVersionAvailable": false,
+        "knownExceptionExpiryUtc": "2026-10-16T00:00:00.000Z"
+      }
+    ],
+    "knownChains": [
+      "apps/mobile > expo > @expo/cli > @expo/metro-file-map > micromatch > braces",
+      "apps/mobile > expo > @expo/cli > node-forge"
+    ]
+  },
+  "nextGate": {
+    "html5Parser": "PENDING_SECURITY_GATE_REMEDIATION_AND_ISOLATED_TESTING",
+    "candidate": "parse5@8.0.1",
+    "dependencyAdded": false,
+    "skuApprovalRelaxed": false,
+    "htmlRawRetained": false,
+    "required": "Apply WHATWG HTML5 tree only within bounded, first-party, read-only scope; negative tests for repaired markup, duplicate attrs, unrelated forms, source policy HOLD and zero fact authority. Require passing SCA and reviewed lockfile first."
+  },
+  "readOnly": true
+}
