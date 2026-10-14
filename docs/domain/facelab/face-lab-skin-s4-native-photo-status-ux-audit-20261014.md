@@ -33,6 +33,11 @@
 
 CI: 기존 `scripts/verify-current-main-health.mjs` 내부의 추가 unit verifier. 신규 workflow/Provider/Storage 호출 없음.
 
+## 3.1 PR 최초 CI 장애 원인 판정 (정확 HEAD `ad8e12c28bc367817cf5142625cbc25688d0e09a`)
+
+1. **Current Main Health:** 신규 S4 synthetic verifier가 실제 한국어 보류 문구와 다르게 `피부 판단`을 기대했으나 컴포넌트는 `사진 판단`을 출력한다. 표시 정책이 아니라 **테스트 문자열 불일치**이며, 기대값을 실제 보류 문구에 맞게 좁게 수정했다. 새 HEAD 재검증 필요.
+2. **Mobile CI:** 기존 `scripts/verify-mobile-camera-foundation.mjs:73`는 `.github/workflows/mobile-native-shell.yml` 파일 안의 `-camera-front emulated` 문자열을 요구한다. 그러나 현재 `main`의 실제 mobile-native-shell workflow는 `await-mobile-android-runtime.mjs` 위임 구조이며 요구 문자열이 없다. **기존 main에 존재한 정적 계약/워크플로의 불일치**로서 이번 PR이 수정한 파일과 별개다. Mobile/CI owner가 실제 에뮬레이터 프로비저닝 경로를 확인하기 전까진 Mobile CI PASS를 주장하지 않는다. Verifier assertion/워크플로를 임의로 약화하거나 변경하지 않는다.
+
 ## 4. S4 완료 조건 및 별도 QA/HOLD
 
 - 저장 Premium의 원래 4개 Skin 섹터(현재 루틴 점검/문제 추적/다음 변화 플랜/상황별 대응)와 NativeSavedReport flat rendering 간 정보 동등성은 아직 미검증. 이번 PR로 완성되었다고 표현하지 않는다.
