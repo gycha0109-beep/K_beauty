@@ -1,8 +1,8 @@
 # SEC-SCA B3 — temporary private patched package validation (2026-10-14)
 
-> Track: security · Watchtower-Track: security  
-> Baseline main `f67b10b5b05a8c69097b6019a972aa2b7c1dbcd5`  
-> B1 source PR #1270 `4f086760ebe46daa5b3ff6a4dbdadf4090db4fb7`; B2 source PR #1271 `bcd9d4f6895d463d01e3fcd1ba02a5dd4ed5e509`.  
+> Track: security · Watchtower-Track: security
+> Baseline main `f67b10b5b05a8c69097b6019a972aa2b7c1dbcd5`
+> B1 source PR #1270 `4f086760ebe46daa5b3ff6a4dbdadf4090db4fb7`; B2 source PR #1271 `bcd9d4f6895d463d01e3fcd1ba02a5dd4ed5e509`.
 > Candidate only; owner/distribution/security approval **HOLD**. No main merge, registry publish, app dependency replacement or policy exception.
 
 ## Scope and execution design
@@ -56,4 +56,3 @@
 - `node-forge@1.4.0`: 53 packaged files, 271,579 bytes; SHA256 `ed30cf67cfa87f097c9f6b9ceadd4187fa3efb9399fd166380fc5ea36f8915e5`; SHA512 `sha512-76xW81/A7o+I1/OLw7ZFhOKABqRgD9UbgUAibJM4Tm1GUh1Lzi4oqZDMKXx2bOrQZ9F+XO0TSzweqBAF5H6BKg==`; `LICENSE` preserved, known `prepublish` hook removed from isolated package metadata; 6 original `dist` entries excluded, **0 output dist entries**.
 - The B3 run did **not** prove actual Expo browser bundle consumption, root/nested replacement, Android compatibility or legal/security approval. Retaining original names/versions is intentionally not a scanner bypass or audit remediation.
 - At the same first HEAD, mandatory canonical audit **FAIL** (unresolved advisories) and Main Health **FAIL** because `main` advanced after branch creation: PR base `e05da389` was not yet an ancestor. This is a branch ancestry failure, not a B3 source test failure. Later merge-parent update `f7ed1dbc` includes `main@68225ad2` without overwriting independent TRUST changes. Its CI must be evaluated separately.
-
