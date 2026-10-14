@@ -3146,3 +3146,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+## 2026-10-14 — SCA B3 isolated npm package reproducibility
+
+- Type: execution + security verification. Track `security`. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production = N (isolated offline-like dependency artifact workflow only; npm registry reads original public artifacts). No protected runtime mutation.
+- Baseline: `main@f67b10b5`, later synchronized with `main@68225ad2` via non-force merge-parent commit preserving unrelated TRUST files. B1 PR #1270 `4f086760`, B2 PR #1271 `bcd9d4f` unchanged; B3 Draft PR #1288.
+- Implemented: verified source-only B1/B2 file incorporation (17 files), new `scripts/security/run-sca-b3-temp-package-repro.mjs`, isolated B3 job in existing Supply Chain workflow and security execution ledger. No root `package.json`/`package-lock.json` or app/production changes.
+- Actual CI at `fa741358`: B3 isolated job [#38495602311](https://github.com/gycha0109-beep/K_beauty/actions/runs/38495602311) PASS: original source tarball SHA512, 2x npm pack per package, byte-identical tarballs and unpacked file SHA256, LICENSE, lifecycle hook scan, secret/symlink/path scan. braces 10 files SHA256 `d4f1219db19bfeb4e1c3f0354f9269569393f1b8c9f8c0295b80346926d4fa70`; forge 53 files SHA256 `ed30cf67cfa87f097c9f6b9ceadd4187fa3efb9399fd166380fc5ea36f8915e5`, 0 dist, remove known prepublish hook in disposable copy.
+- Existing mandatory npm audit intentionally FAIL (advisories still in original lock). Initial Main Health FAIL due new main base not ancestor, mitigated by non-force main ancestry sync. CI after subsequent documentation commits requires exact-HEAD recheck.
+- Remaining: browser distribution compatibility, owner/license re-distribution review, permanent private artifact location, B4 real full graph install/raw audit, B5 Android, B6 v2 security policy, B7 separate explicit merge approval all HOLD/NOT_RUN. No published or durable tarball.
