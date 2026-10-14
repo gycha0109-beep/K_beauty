@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { buildFaceLabObservationAnalysis } from "../lib/face-lab-observation-contract.js";
 import { buildPersonalColorObservation } from "../lib/face-lab-v2/personal-color/observation.js";
+import { buildPersonalColorCheekMasks } from "../lib/face-lab-v2/personal-color/cheek-mask-geometry.js";
 import {
   PERSONAL_COLOR_LAB_SAMPLING_VERSION,
   measurePersonalColorPhotoLab
@@ -128,5 +129,91 @@ assert.ok(Math.abs(grayscale.combined.lab.L - 53.585) < 0.2);
 assert.ok(Math.abs(grayscale.combined.lab.a) < 0.02);
 assert.ok(Math.abs(grayscale.combined.lab.b) < 0.02);
 assert.equal(grayscale.combined.lch.h, null, "neutral/near-neutral pixels must have no arbitrary hue");
+
+
+// Synthetic, normalized image-coordinate polygons -> in-memory binary masks
+// -> the same independently gated CIELAB sampler. No face detector, file IO,
+// skin/illumination classifier or user-facing recommendation is involved.
+const rect = (x0, y0, x1, y1) => [
+  { x: x0, y: y0 }, { x: x1, y: y0 },
+  { x: x1, y: y1 }, { x: x0, y: y1 }
+];
+const left = rect(0.1, 0.2, 0.4, 0.8);
+const right = rect(0.6, 0.2, 0.9, 0.8);
+const excluded = [rect(0.1, 0.2, 0.4, 0.35), rect(0.45, 0.45, 0.55, 0.55)];
+const masksInput = {
+  width: 32, height: 32,
+  cheekPolygons: { leftCheek: left, rightCheek: right },
+  exclusionPolygons: excluded
+};
+const masks = buildPersonalColorCheekMasks(masksInput);
+assert.equal(masks.status, "masks_ready");
+assert.equal(masks.sourceImagePersisted, false);
+assert.ok(masks.sampleCount.leftCheek >= 16);
+assert.ok(masks.sampleCount.rightCheek >= 16);
+assert.deepEqual(buildPersonalColorCheekMasks(masksInput), masks);
+assert.equal(masks.skinRegionMasks.leftCheek.length, 1024);
+assert.equal(masks.exclusionMask.length, 1024);
+assert.ok(masks.exclusionMask.some((value) => value === 1));
+const fixturePixels = new Uint8ClampedArray(32 * 32 * 4);
+for (let p = 0; p < 32 * 32; p += 1) {
+  fixturePixels[p * 4] = 128;
+  fixturePixels[p * 4 + 1] = 128;
+  fixturePixels[p * 4 + 2] = 128;
+  fixturePixels[p * 4 + 3] = 255;
+}
+const pipeline = measurePersonalColorPhotoLab({
+  observation: observation(),
+  width: 32, height: 32,
+  rgba: fixturePixels,
+  skinRegionMasks: masks.skinRegionMasks,
+  exclusionMask: masks.exclusionMask
+});
+assert.equal(pipeline.status, "measurement_only");
+assert.equal(pipeline.regions.leftCheek.sampleCount, masks.sampleCount.leftCheek);
+assert.equal(pipeline.regions.rightCheek.sampleCount, masks.sampleCount.rightCheek);
+assert.equal(pipeline.undertone, null);
+assert.equal(pipeline.seasonCandidate, null);
+
+function masksHold(candidate, reason) {
+  const value = buildPersonalColorCheekMasks(candidate);
+  assert.equal(value.status, "insufficient_evidence");
+  assert.equal(value.reason, reason);
+  assert.equal(value.skinRegionMasks, null);
+  assert.equal(value.exclusionMask, null);
+  assert.equal(value.sourceImagePersisted, false);
+}
+masksHold({ ...masksInput, width: 0 }, "invalid_pixel_dimensions");
+masksHold({ ...masksInput, height: 0 }, "invalid_pixel_dimensions");
+masksHold({ ...masksInput, width: 5000, height: 5000 }, "invalid_pixel_dimensions");
+masksHold({ ...masksInput, cheekPolygons: null }, "cheek_geometry_unverified");
+masksHold({ ...masksInput, exclusionPolygons: [] }, "exclusion_geometry_unverified");
+masksHold({
+  ...masksInput, cheekPolygons: {
+    leftCheek: rect(-0.1, 0.2, 0.3, 0.8), rightCheek: right
+  }
+}, "cheek_geometry_unverified");
+masksHold({
+  ...masksInput, cheekPolygons: {
+    leftCheek: [
+      { x: 0.1, y: 0.2 }, { x: 0.4, y: 0.8 },
+      { x: 0.4, y: 0.2 }, { x: 0.1, y: 0.8 }
+    ], rightCheek: right
+  }
+}, "cheek_geometry_unverified");
+masksHold({
+  ...masksInput, cheekPolygons: { leftCheek: right, rightCheek: left }
+}, "cheek_orientation_mismatch");
+masksHold({
+  ...masksInput, cheekPolygons: { leftCheek: rect(0.1, 0.2, 0.66, 0.8), rightCheek: rect(0.6, 0.2, 0.9, 0.8) }
+}, "overlapping_cheek_regions");
+masksHold({
+  ...masksInput, exclusionPolygons: [left, right]
+}, "insufficient_unexcluded_cheek_pixels");
+masksHold({
+  ...masksInput, cheekPolygons: {
+    leftCheek: rect(0.1, 0.2, 0.105, 0.21), rightCheek: right
+  }
+}, "insufficient_unexcluded_cheek_pixels");
 
 console.log("FACE_LAB_PERSONAL_COLOR_LAB_SAMPLING=PASS");
