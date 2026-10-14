@@ -5,6 +5,8 @@ run-name: "[WT:face-research] Face Lab - V2 Foundation"
 on:
   pull_request:
     paths:
+      - "components/onboarding/PhotoUploadStep.js"
+      - "tests/e2e/mobile-camera.spec.ts"
       - "lib/face-lab-v2/**"
       - "lib/server/face-lab-simulation-service.js"
       - "lib/server/face-lab-simulation-authority.js"
@@ -442,3 +444,41 @@ jobs:
           node --check app/api/face-reading/route.js
           node --check app/api/face-reading-test/route.js
           node --check app/api/face-lab-simulation-test/route.js
+
+  m0-browser-capture:
+    name: M0 Capture Browser (Mock, CSP Enforced)
+    if: github.event_name == 'pull_request' && github.head_ref == 'face-lab/feat-shared-capture-notice-20261013'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+      NEXT_PUBLIC_SUPABASE_URL: https://fixture.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Verify checked-out SHA
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Execute isolated Korean/English M0 capture UI scenarios
+        run: npx playwright test tests/e2e/mobile-camera.spec.ts --project=chromium -g "shared Face Lab|narrow widths"
+      - name: Upload failed browser evidence
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: face-lab-m0-capture-failure-${{ github.event.pull_request.head.sha }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
