@@ -371,7 +371,9 @@ try{
  assert.equal(lockedForge.version,"1.4.0");
  assert.equal(lockedForge.integrity,fullDistPacks[0].sha512,
   "npm resolver recorded a different node-forge packed SHA512");
- assert.equal(lockedForge.resolved,"file:"+tarball,
+ assert.ok(lockedForge.resolved.startsWith("file:"),
+  "npm resolver did not record file provenance");
+ assert.equal(path.resolve(fixture,lockedForge.resolved.slice(5)),tarball,
   "npm resolver did not use local temporary full-dist package");
  run("npm",["ci","--ignore-scripts","--offline","--no-audit","--no-fund"],fixture,
    45000,isolatedNpmEnv);
