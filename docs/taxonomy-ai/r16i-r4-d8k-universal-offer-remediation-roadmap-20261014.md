@@ -208,3 +208,13 @@
 - **엔진**: 기존 D8H 164×12(1,968), 166×12(1,992) replay 재사용. NULL 가격 가정에서 core score/rank/top1/top3 delta 0, U10 budget 대안 1/12 변동은 삭제/무시 금지. D8K-0 자체는 가격 데이터/랭킹을 수정하지 않음.
 - **상태**: D8K-0 **SOURCE_MAPPED + PRICE_FIX_VERIFIED_OFFLINE**, 실제 추천 Product ID per-row attestation·브라우저 E2E 100%·seller Option authority는 후속 단계까지 HOLD. 따라서 범용 Offer UI 기능 완료/Production ready라고 표시하지 않음.
 - **D8K-1 최우선 주의**: `lib/product-offer-read-path.js`에 `selectCurrentProductOffer` / `applyProductOfferReadPath`가 **이미 존재**함. 새 다중 Offer comparator를 만들기 전에 기존 single-offer 선택·link trust를 중복 구현하지 않도록 재사용 차이를 먼저 검토.
+
+## 8. D8K-1 판매처 가격 비교 계산기 구현 checkpoint (2026-10-14)
+
+- 상태: **CODE_READY / VERIFIED_OFFLINE WHEN CI GREEN / REAL_DATA_AND_UI_HOLD**. [구현 및 검증 설명](r16i-r4-d8k1-four-seller-option-comparison-implementation-20261014.md).
+- 구현: `lib/commerce/product-offer-comparison-v1.mjs` (순수 read projection, DB/API/추천 점수 무변경). **공식몰·쿠팡·올리브영·화해**를 우선 지원하되 확장 판매처도 검증된 데이터로 표현할 수 있음. 정렬은 같은 SKU/구성/수량/증정 품목의 동일 그룹만 허용.
+- 확인된 선택가격은 관측금액 기준이며 배송비 확인된 그룹만 합산 총 결제금액 기준 정렬. **최저가 배지 기본 비허가**(누락 채널/시점 등 실데이터 불충분). 80ml 단품 vs 80ml×2+세럼 10ml 증정은 분리. 실제 제품 가격·링크 수집/사용자 화면 노출은 아직 연결 안 됨.
+- 보안: 기존 `lib/product-purchase-link.js::resolveProductPurchaseLink`를 재사용. seller/URL 출처 불일치, 미확인 재고·링크·가격 시점, 쿠팡처럼 새 도메인 allowlist 미승인 때 직접 CTA 차단. source data TRUE flag는 DB/근거 authority 대체가 아님.
+- 기존 `public.product_offers`는 한 seller+listing ID에 한 행으로 제한되므로, 같은 listing의 여러 옵션을 서로 다른 실제 Offer로 우회 생성 금지. schema/RPC 보호 영역은 **변경하지 않음**, D8K-2에서 독립 조사/approval.
+- 테스트: `scripts/product-evidence/verify-d8k1-four-seller-comparison-v1.mjs` (0/1/2/4/5 sellers, 다중 옵션·증정 구성·배송비·중복 listing/ID, 악성 직접링크, null/0, 과거/미래 가격), 기존 `verify-r16i-price-scope-review-v1.mjs` CI 체인에서 실행. **운영 데이터 쓰기 0건 / API 변경 0건 / 엔진 랭킹 수정 0건**.
+- D8K-2 다음 단계: 승인된 Product ID, 상품/선택옵션/배송비/판매처/관측시간 근거가 실제 데이터에 존재하는지 읽기-only로 실사; 64 Product/256 Offer RPC 제한 및 서비스 권한 확인; 운영 사용/스키마 변경은 별도 승인. D8K-3 UI 구현 및 D8K-4 무료·프리미엄 전체 활성 카드 연결까지 아직 남음. #1208과 별도 release gate 유지.
