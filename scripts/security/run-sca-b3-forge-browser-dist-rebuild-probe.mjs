@@ -109,12 +109,6 @@ try{
   browser.self=browser;
   browser.globalThis=browser;
   browser.navigator={userAgent:"BEJEWELY test browser",appName:"Netscape"};
-  // forge.all includes form/XHR wrappers and refers to window.jQuery during
-  // initialization. This inert dependency stub is only for RSA boundary
-  // testing, never for declaring browser/UI/transport compatibility.
-  const unusedJquery=()=>{throw new Error("jQuery interaction forbidden in RSA-only probe");};
-  browser.jQuery=unusedJquery;
-  browser.$=unusedJquery;
   try{runInNewContext(code,browser,{filename:path.basename(filename),timeout:20000});}
   catch(e){throw new Error("B3_BROWSER_VM_DIAGNOSTIC file="+path.basename(filename)+
     " type="+String(e?.name).slice(0,50)+" message="+String(e?.message).slice(0,280));}
@@ -123,7 +117,10 @@ try{
   return browser.forge;
  };
  const tested=[];
- for(const filename of ["forge.min.js","forge.all.min.js"]){
+ // forge.all.min.js initializes jQuery form/XHR integrations that require
+ // a real browser. Building its bytes is verified, but behavioral validation
+ // is HOLD until a real browser fixture exists. Do not fake jQuery calls.
+ for(const filename of ["forge.min.js"]){
   const patched=loadUMD(path.join(dist,filename));
   const upstreamOriginal=loadUMD(path.join(original,"dist",filename));
   const verify=(forge,hash,signature)=>{
@@ -144,7 +141,7 @@ try{
   tested.push(filename);
  }
  const report={
-  status:"PASS_DISPOSABLE_BROWSER_BUNDLE_REBUILD_NOT_A_RELEASE",
+  status:"PARTIAL_DISPOSABLE_BROWSER_REBUILD_CORE_RSA_PASS_FORGE_ALL_RUNTIME_HOLD",
   verifiedUpstreamCommit:sha,buildConfigSha256:hex(configBytes),
   patchedRsaSha256:hex(Buffer.from(rsaCode)),
   toolchain:pinnedToolchain,nodeVersion:process.version,
@@ -152,6 +149,8 @@ try{
   sourceMapLimits:mapped,
   unpatchedBrowserBundleMalformationAcceptedAsNegativeControl:tested.length,
   RSAUMDPositiveNegativePassed:tested,
+  forgeAllBundleBuiltButRuntime:"HOLD_REQUIRES_REAL_BROWSER_AND_JQUERY",
+  primeWorkerBundleBuiltButRuntime:"NOT_APPLICABLE_TO_RSA_VERIFY",
   originalNpmTarballUnmodified:true,candidateTarballUnmodified:true,
   officialAuditBypass:false,distributionApproved:false,onlyTempFiles:true
  };
