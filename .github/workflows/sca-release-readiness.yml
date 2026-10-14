@@ -2,7 +2,7 @@ name: BEJEWELY SCA Release Readiness (no upload)
 run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.watchtower_track != '' && format('[WT:{0}] {1}', inputs.watchtower_track, github.workflow) || github.workflow }}
 on:
   pull_request:
-    branches: [main, fix/security/sca-b3-private-pack-validation-20261014]
+    branches: [main, fix/security/sca-b3-private-pack-validation-20261014, fix/security/sca-b6-release-readiness-20261014]
     paths:
       - scripts/security/*sca-release*
       - scripts/security/sca-release-*
