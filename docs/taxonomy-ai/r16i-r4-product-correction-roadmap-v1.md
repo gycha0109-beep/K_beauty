@@ -209,3 +209,10 @@
 - **Observed:** 1,968 candidate-score comparisons; score/rank/Top1/Top3/candidate-count deltas **0**; **budget alternatives changed in 1/12 scenario**, with the target Product appearing 1→0 times in this secondary list. UNKNOWN Product price still falsely projects `"$$"`; premium API NULL→0 remains uncorrected.
 - Compatibility disposition: **STRUCTURAL PASS / CONSUMER PRICE UX HOLD**. Do not claim entire recommendation or premium UI parity and do not change Production Product price/link. Full investigation and future protected-surface change scope: [D8H price-consumer compatibility and replay](../evidence/r16i-r4-d8h-offer-consumer-compatibility-and-pricing-policy-20261014.md).
 - Product / Offer DB writes 0 / 0; no schema/RPC/auth/CTA trust/price policy/ranking changes; Production identity UNATTESTED, #1208 security OPEN, owner price choice and D8G release authorization absent. Next stage requires owner pricing semantics before correcting live consumers or designing the protected two-Offer D8D transaction.
+
+### D8H 176-candidate NULL-price shadow expansion — 2026-10-14
+
+- Added exact current-engine 176-row candidate-snapshot replay: 166 structurally projectable rows ×12 = 1,992 comparisons and synthetic 164 legacy-only negative control ×12 = 1,968 comparisons. **All core scores, rank, Top1/Top3 and candidate counts unchanged.** This is **not** actual Production PF admission.
+- **U10 budget alternative changed 1/12** in both projections (target Product 1→0), so price-null transition is **consumer UX HOLD** despite core ranking parity. FALSE `"$$"` null-price fallback and premium API NULL→0 static finding unresolved; A/B/C owner policy still unselected.
+- Evidence and exact CI provenance: [D8H 176-candidate budget shadow](../evidence/r16i-r4-d8h-offer-consumer-compatibility-and-pricing-policy-20261014.md) §8. Test script now in D8F CI. Initial `56d1d92d` script PASS but whole CI failed whitespace hygiene; fixed in `63812fde`. Verify final HEAD checks independently.
+- No Product/Offer writes, no protected schema/RPC/auth/CTA/score/price/runtime changes; Production DB unattested, #1208 security not resolved, rollout gate remains HOLD.
