@@ -30,7 +30,7 @@
 | B0 complete consumer / owner / redistributable license review | PARTIAL / HOLD |
 | B1 B2 patch source and original tarball integrity | PASS (historical exact HEAD) |
 | B2 unpatched browser bundles quarantined in candidate | PASS_TEMP_ARTIFACT — 0 dist entries; browser compatibility HOLD |
-| B3 two tarballs, double pack, per-file and archive hashes, scoped SBOM | PASS_TEMP_ARTIFACT — original exact HEAD `fa741358`, run #38495602311 |
+| B3 two tarballs, double pack, per-file and archive hashes, scoped SBOM | PASS_TWO_CLEAN_RUNNERS — exact `b02ec8f`, run #38496534583, two independent npm-ci installations |
 | B3 legal/security maintainer approval and durable private store | HOLD |
 | B4 candidate installed across root/nested consumers, raw full/prod HIGH 0 | NOT_RUN |
 | B5 Android APK, device and Expo consumer regression | NOT_RUN |
@@ -56,3 +56,12 @@
 - `node-forge@1.4.0`: 53 packaged files, 271,579 bytes; SHA256 `ed30cf67cfa87f097c9f6b9ceadd4187fa3efb9399fd166380fc5ea36f8915e5`; SHA512 `sha512-76xW81/A7o+I1/OLw7ZFhOKABqRgD9UbgUAibJM4Tm1GUh1Lzi4oqZDMKXx2bOrQZ9F+XO0TSzweqBAF5H6BKg==`; `LICENSE` preserved, known `prepublish` hook removed from isolated package metadata; 6 original `dist` entries excluded, **0 output dist entries**.
 - The B3 run did **not** prove actual Expo browser bundle consumption, root/nested replacement, Android compatibility or legal/security approval. Retaining original names/versions is intentionally not a scanner bypass or audit remediation.
 - At the same first HEAD, mandatory canonical audit **FAIL** (unresolved advisories) and Main Health **FAIL** because `main` advanced after branch creation: PR base `e05da389` was not yet an ancestor. This is a branch ancestry failure, not a B3 source test failure. Later merge-parent update `f7ed1dbc` includes `main@68225ad2` without overwriting independent TRUST changes. Its CI must be evaluated separately.
+
+## Independent clean-runner reproducibility closeout — 2026-10-14
+
+- Exact combined-code HEAD: `b02ec8f941c17e6b179aebe407b5c2d670e421e2` / [Actions #38496534583](https://github.com/gycha0109-beep/K_beauty/actions/runs/38496534583).
+- Initial job `B3 isolated private tarball provenance`: **PASS**, exports braces/node-forge SHA256 from the actual packed tarballs.
+- Separate job `B3 independent clean npm-ci runner replay`: **PASS**, runs on a **different GitHub-hosted Ubuntu 24.04 runner**, independently checks out the same HEAD, runs fresh `npm ci --ignore-scripts --no-audit --no-fund`, materializes both patched sources, and runs two packs per package, with strict equality to first runner's SHA256 outputs. This resolves the previous same-install-only reproducibility limitation.
+- This verifies **two independent runner installs, four temp source builds per package total** in that run. It does not establish reproducibility across different Node/npm/toolchain versions; Node 22 was used in both jobs.
+- B3 tarballs remain runner-temporary and erased; package owner/redistribution approval and durable *private* distribution still **HOLD**. Dist output zero is not browser entrypoint compatibility proof. B4 root/nested graph or Android acceptance cannot be promoted.
+- Mandatory canonical audit still **FAIL** on original vulnerable package lock, intentionally. No scanner bypass. Exact-head Main Health, PIE and CodeQL are tracked separately and must not be inferred from these two jobs.
