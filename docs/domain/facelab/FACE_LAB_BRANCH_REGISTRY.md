@@ -7,7 +7,7 @@
 ## Face Lab 트랙 구분 (2026-10-14)
 
 - **Style Track:** [`FACE_LAB_V2_STYLE_ROADMAP.md`](FACE_LAB_V2_STYLE_ROADMAP.md), 마일스톤 **M0~M6**, 추구미·얼굴 스타일·Personal Color(미용 팔레트)·실제 옵션·Try-On. 관리 PR [#1277](https://github.com/gycha0109-beep/K_beauty/pull/1277) Draft.
-- **Skin Track:** `FACE_LAB_SKIN_ROADMAP.md` (별도 Draft PR에서 신규 작성), 마일스톤 **S0~S5**, 피부 관찰·문제/부담/컨디션 판단·변화 평가. 실제 권위는 현재 `main`의 SharedSkinDecisionContext v4 / Premium decision bundle v5이고, Style 로드맵으로 피부 정책 승격을 승인하지 않는다.
+- **Skin Track:** [`FACE_LAB_SKIN_ROADMAP.md`](https://github.com/gycha0109-beep/K_beauty/blob/face-lab/docs-skin-track-roadmap-20261014/docs/domain/facelab/FACE_LAB_SKIN_ROADMAP.md) ([#1307](https://github.com/gycha0109-beep/K_beauty/pull/1307), 별도 Draft), 마일스톤 **S0~S5**, 피부 관찰·문제/부담/컨디션 판단·변화 평가. 실제 권위는 현재 `main`의 SharedSkinDecisionContext v4 / Premium decision bundle v5이고, Style 로드맵으로 피부 정책 승격을 승인하지 않는다.
 - **공유 기반:** 사진 입력·Eligibility·Unified Vision. 코드나 Provider 호출을 두 개로 복제하지 않는다.
 - **상태:** 이 대장은 2026-10-13 PR 스냅샷이므로 신규 PR은 각 로드맵/PR의 최신 HEAD에서 확인한다.
 
@@ -29,6 +29,7 @@
 
 | PR | 트랙/범위 | 기존 브랜치 | 상태/처리 |
 | --- | --- | --- | --- |
+| [#1307](https://github.com/gycha0109-beep/K_beauty/pull/1307) | **Skin Track S0~S5 신규 로드맵** | `face-lab/docs-skin-track-roadmap-20261014` | Open Draft; 현재 Skin Engine v4 기준, 별도 개발/승인 게이트 |
 | [#1277](https://github.com/gycha0109-beep/K_beauty/pull/1277) | **Style Track M0~M6 canonical 로드맵** | `face-lab/docs-completion-roadmap-20261013` | Open Draft; 제목·브랜치 모두 새 규칙 준수 |
 | [#1261](https://github.com/gycha0109-beep/K_beauty/pull/1261) | 구 완결 계획 | `docs/face-research/face-lab-v2-product-roadmap-20261013` | **Closed / unmerged**, #1277로 대체, 구 기록만 보존 |
 | [#1264](https://github.com/gycha0109-beep/K_beauty/pull/1264) | **M0** Premium 저장/편집 UX | `feat/face-research/premium-p0-save-recovery-20261013` | Open Draft; 보안/실기기 확인 전 병합 금지 |
