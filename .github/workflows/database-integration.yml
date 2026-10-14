@@ -397,6 +397,19 @@ jobs:
             | tee "${RUNNER_TEMP}/r16i-d8h-price-scope.log"
           grep -Fq "R16I_D8H_TWO_SELLER_PRICE_SCOPE_SHADOW_PASS" "${RUNNER_TEMP}/r16i-d8h-price-scope.log"
           grep -Fq "R16I_D8H_TWO_SELLER_PRICE_SCOPE_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8h-price-scope.log"
+          # v2 is installed ONLY into the disposable D8D database. The v2
+          # approval/Gate remain empty/OFF in the fixture until fictional cases
+          # explicitly populate them inside a rollback-only transaction.
+          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20261014150000_taxonomy_ai_r16i_d8d_v2_owner_gated_dual_offer.sql
+          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/r16i-d8d/50_v2_dual_offer_atomic_pg17.sql \
+            | tee "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_DEFAULT_HOLD_OWNER_AND_PREVIEW_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_FAIL_SECOND_INSERT_ALL_ROWS_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_TWO_OFFERS_APPLY_AND_RETRY_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_TWO_OFFER_CAS_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_ISOLATED_PG17_NO_RESIDUAL_WRITES_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
           psql -v ON_ERROR_STOP=1 -c "drop database taxonomy_r16i_d8d with (force)"
           echo "R16I_D8D_ISOLATED_PG17_PASS"
 
