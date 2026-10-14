@@ -3156,3 +3156,4 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added Premium Intake summary to the Full Report Today hub and a dedicated verifier wired into Current Main Health.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
+
