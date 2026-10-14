@@ -122,6 +122,9 @@ jobs:
 
   b3-isolated-artifact-provenance:
     name: B3 isolated private tarball provenance (not a release)
+    outputs:
+      braces_sha256: ${{ steps.pack.outputs.braces_sha256 }}
+      node_forge_sha256: ${{ steps.pack.outputs.node_forge_sha256 }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -159,9 +162,55 @@ jobs:
           node scripts/security/verify-private-forge-source-candidate.mjs
 
       - name: Create twice and verify disposable B3 tarballs and scoped SBOM
+        id: pack
         run: node scripts/security/run-sca-b3-temp-package-repro.mjs
 
       - name: Verify manifest and lock remain unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+
+  b3-independent-clean-runner-replay:
+    name: B3 independent clean npm-ci runner replay
+    needs: [b3-isolated-artifact-provenance]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact candidate SHA in separate runner
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify same HEAD and expected digests
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          BRACES_SHA: ${{ needs.b3-isolated-artifact-provenance.outputs.braces_sha256 }}
+          FORGE_SHA: ${{ needs.b3-isolated-artifact-provenance.outputs.node_forge_sha256 }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+          test -n "${BRACES_SHA}"
+          test -n "${FORGE_SHA}"
+
+      - name: Install Node 22 in independent runner
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Reinstall exact original graph from clean npm-ci
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Repack twice and compare independently installed tarballs
+        env:
+          SCA_B3_EXPECTED_BRACES_SHA256: ${{ needs.b3-isolated-artifact-provenance.outputs.braces_sha256 }}
+          SCA_B3_EXPECTED_FORGE_SHA256: ${{ needs.b3-isolated-artifact-provenance.outputs.node_forge_sha256 }}
+        run: node scripts/security/run-sca-b3-temp-package-repro.mjs
+
+      - name: Verify app manifests remain unchanged on both runs
         shell: bash
         run: |
           set -euo pipefail
