@@ -110,5 +110,5 @@ for(const forbidden of [".writefile", ".rename(", ".unlink(", ".rm(", ".exec(", 
 }
 console.log(JSON.stringify({status:"PASS",stage:"SEC_SCA_B4_PREFLIGHT",
   currentAffectedPackageFamilies:r.targets.filter(t=>t.knownAffectedCopies>0).length,
-  tests:9,rootLockMutation:false,rawAuditBypassed:false,
+  tests:11,rootLockMutation:false,rawAuditBypassed:false,
   securityApprovalGranted:false}));
