@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-14 / Face Lab Skin S4 native Premium photo-evidence status
+
+- Type: bounded UI presentation + pure mapping tests. Base main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2; skin track only.
+- Audited actual mobile `NativeSavedReport`: existing Premium content is flattened from fullRoutine/functionalDecisions/conditionResponses. Added read-only Skin photo-state adapter and Korean/English evidence notice for available/none/unavailable/ineligible/insufficient/unknown and conflict with old v4 fallback.
+- Unknown and legacy canonical available with absent explicit source remain unconfirmed. No suggestion that incomplete photo is diagnosis or safe recommendation; no API fields changed or saved object mutated.
+- Added deterministic pure TypeScript fixture import in existing Current Main Health. S4 actual Android/browser render, accessibility, capture flicker/network and four-sector parity remain HOLD pending device/operator.
+- Provider/photo persistence/auth/RLS/DB/Payment/Style code untouched. SCA #1208 block not bypassed.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
