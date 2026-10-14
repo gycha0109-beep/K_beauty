@@ -2,5 +2,6 @@
   "schema": "bejewely.sca-release-trust.v1",
   "organizationApproved": false,
   "keys": [],
-  "revokedKeyIds": []
+  "revokedKeyIds": [],
+  "ownerGovernanceMode": "single-owner"
 }
