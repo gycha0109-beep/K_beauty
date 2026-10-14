@@ -26,6 +26,7 @@ BEGIN
  THEN RAISE EXCEPTION 'R16I_V2_NONDEFAULT_GATE'; END IF;
  -- Fixture has legacy v1 proposal; replace with the precise v2 null plan.
  UPDATE public.admin_product_correction_proposals_v1 SET
+ product_revision=(SELECT updated_at FROM public.products WHERE id=target),
  field_changes=jsonb_build_array(
   jsonb_build_object('field','products.size_ml','before',160,'after',80),
   jsonb_build_object('field','products.price_min','before',29900,'after',NULL),
