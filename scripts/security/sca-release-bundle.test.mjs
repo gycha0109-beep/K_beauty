@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
 import {spawnSync} from 'node:child_process';
-import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference,assertNoLifecycleHooks} from './sca-release-bundle.mjs';
+import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference,assertNoLifecycleHooks,assertPrivateReadback} from './sca-release-bundle.mjs';
 
 function fixture(){
   const now=Date.parse('2026-10-14T06:00:00Z'),keys=[],privateKeys=[];
@@ -11,6 +11,7 @@ function fixture(){
   const approval={schema:'bejewely.sca-release-upload-approval.v1',candidateSha256:'a'.repeat(64),registry:'https://registry.test.internal/reviewed/',
     privateRepository:true,immutableVersions:true,noUpstreamShadowing:true,purpose:'UPLOAD_AND_READBACK_ONLY',auditGateRemainsRequired:true,auditExceptionApproved:false,
     expiresAt:'2026-10-15T00:00:00Z',tarballUrls:{braces:'https://registry.test.internal/reviewed/braces/-/braces-3.0.3.tgz','node-forge':'https://registry.test.internal/reviewed/node-forge/-/node-forge-1.4.0.tgz'}};
+  approval.licenseElections={braces:'MIT','node-forge':'BSD-3-Clause'};
   const trust={schema:'bejewely.sca-release-trust.v1',organizationApproved:true,keys,revokedKeyIds:[]};
   const build=()=>{const approvalBytes=Buffer.from(JSON.stringify(approval));return {candidateSha256:approval.candidateSha256,approvalBytes,
     signatures:requiredRoles.map((role,i)=>({role,keyId:keys[i].id,signature:sign(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:'+role+'\n'),approvalBytes]),privateKeys[i]).toString('base64')})),trust,now};};
@@ -79,4 +80,14 @@ test('operator upload/staging CLIs fail before execution when approval inputs ar
     const p=spawnSync(process.execPath,[new URL(file,import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],{encoding:'utf8',timeout:5000});
     assert.ok(!p.error&&p.status!==0);assert.ok(!p.stdout.includes('UPLOAD_READBACK')&&!p.stdout.includes('PRIVATE_GRAPH'));
   }
+});
+test('dual-license election is signed and cannot be omitted or invented',()=>{
+  const f=fixture();delete f.approval.licenseElections;assert.throws(()=>verifyApproval(f.build()),/license elections/);
+  f.approval.licenseElections={braces:'MIT','node-forge':'arbitrary-license'};assert.throws(()=>verifyApproval(f.build()),/reviewer decision/);
+});
+test('anonymous private readback denies public access and never attaches credentials',async()=>{
+  for(const status of [401,403,404])await assertPrivateReadback('https://registry.test.internal/archive',async(url,options)=>{
+    assert.equal(options.headers,undefined);assert.equal(options.redirect,'error');return new Response(null,{status});
+  });
+  for(const status of [200,302,500])await assert.rejects(()=>assertPrivateReadback('https://registry.test.internal/archive',async()=>new Response(null,{status})),/anonymous/);
 });

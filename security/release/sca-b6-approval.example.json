@@ -8,6 +8,7 @@
   "purpose": "UPLOAD_AND_READBACK_ONLY",
   "auditGateRemainsRequired": true,
   "auditExceptionApproved": false,
+  "licenseElections": { "braces": "MIT", "node-forge": "REQUIRES_LICENSE_REVIEWER_CHOICE" },
   "expiresAt": "REPLACE_WITH_APPROVED_EXPIRY_UTC",
   "tarballUrls": {
     "braces": "https://private-registry.example.invalid/isolated-reviewed-patches/braces/-/braces-3.0.3.tgz",

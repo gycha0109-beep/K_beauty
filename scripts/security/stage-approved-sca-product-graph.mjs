@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createRequire} from 'node:module';
-import {args,loadApprovedBundle,requirePinnedTrust,registryUrl,digest,reference,verifyArchive} from './sca-release-bundle.mjs';
+import {args,loadApprovedBundle,requirePinnedTrust,registryUrl,digest,reference,verifyArchive,assertPrivateReadback} from './sca-release-bundle.mjs';
 const a=args(process.argv.slice(2),['--source','--bundle','--approval','--signatures','--trust','--output']);
 assert.equal(Object.keys(a).length,6,'all source/bundle/approval/signatures/trust/output options required');
 requirePinnedTrust(a['--trust']);
@@ -57,6 +57,7 @@ try{
     const r=await fetch(approved.approval.tarballUrls[artifact.name],{headers:{Authorization:'Bearer '+token},redirect:'error',signal:AbortSignal.timeout(60000)});
     assert.ok(r.ok,'private candidate readback failed');const chunks=[];let length=0;
     for await(const c of r.body){length+=c.length;assert.ok(length<=24*1024*1024,'private archive too large');chunks.push(c);}verifyArchive(artifact.name,Buffer.concat(chunks));
+    await assertPrivateReadback(approved.approval.tarballUrls[artifact.name]);
   }
   fs.mkdirSync(out,{recursive:true,mode:0o700});
   const head=run('git',['rev-parse','HEAD'],source).stdout.trim(),archive=path.join(privateTemp,'source.tar');

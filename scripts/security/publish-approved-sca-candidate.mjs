@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
-import {args,loadApprovedBundle,verifyArchive,registryUrl,requirePinnedTrust} from './sca-release-bundle.mjs';
+import {args,loadApprovedBundle,verifyArchive,registryUrl,requirePinnedTrust,assertPrivateReadback} from './sca-release-bundle.mjs';
 const raw=process.argv.slice(2),execute=raw.includes('--execute-approved-upload');
 const a=args(raw.filter(x=>x!=='--execute-approved-upload'),['--bundle','--approval','--signatures','--trust']);
 if(Object.keys(a).length!==4)throw Error('Require bundle, approval, signatures and organization-provided trust file');
@@ -38,6 +38,7 @@ else {
       assert.ok(response.ok,'approved private archive readback failed');
       const chunks=[];let size=0;for await(const chunk of response.body){size+=chunk.length;assert.ok(size<=24*1024*1024,'readback too large');chunks.push(chunk);}
       verifyArchive(artifact.name,Buffer.concat(chunks));
+      await assertPrivateReadback(admitted.approval.tarballUrls[artifact.name]);
       console.log('SCA_B6_PRIVATE_UPLOAD_READBACK='+JSON.stringify({name:artifact.name,sha256:artifact.sha256,verified:true}));
     }
     console.log('SCA_B6_UPLOAD_SCOPE_COMPLETE_PRODUCT_AND_AUDIT_STILL_HOLD');

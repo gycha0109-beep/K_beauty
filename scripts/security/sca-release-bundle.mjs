@@ -134,6 +134,9 @@ export function verifyApproval({candidateSha256,approvalBytes,signatures,trust,n
   assert.equal(a.schema,'bejewely.sca-release-upload-approval.v1');assert.equal(a.candidateSha256,candidateSha256);
   assert.equal(a.purpose,'UPLOAD_AND_READBACK_ONLY');requireTrue(a.auditGateRemainsRequired,'audit gate must remain required');
   assert.equal(a.auditExceptionApproved,false,'this interface cannot approve security exceptions');
+  assert.deepEqual(Object.keys(a.licenseElections||{}).sort(),names.slice().sort(),'explicit license elections required');
+  assert.equal(a.licenseElections.braces,'MIT');
+  assert.ok(['BSD-3-Clause','GPL-2.0'].includes(a.licenseElections['node-forge']),'forge dual-license election requires reviewer decision');
   for(const p of ['privateRepository','immutableVersions','noUpstreamShadowing'])requireTrue(a[p],p+' requires organization approval');
   const registry=registryUrl(a.registry);
   const expires=Date.parse(a.expiresAt);assert.ok(Number.isFinite(expires)&&expires>now&&expires-now<=7*24*3600000,'approval expired or exceeds seven-day window');
@@ -169,5 +172,10 @@ export function loadApprovedBundle({bundle,approval,signatures,trust}) {
 export function requirePinnedTrust(file){
   assert.match(process.env.SCA_TRUST_POLICY_SHA256||'',/^[a-f0-9]{64}$/,'organization-pinned SCA_TRUST_POLICY_SHA256 required');
   assert.equal(digest(read(file)),process.env.SCA_TRUST_POLICY_SHA256,'organization trust-policy fingerprint mismatch');
+}
+export async function assertPrivateReadback(url,fetcher=fetch){
+  const r=await fetcher(url,{redirect:'error',signal:AbortSignal.timeout(30000)});
+  try{assert.ok([401,403,404].includes(r.status),'anonymous archive read must be denied; stop product promotion and contact distribution owner');}
+  finally{await r.body?.cancel();}
 }
 export function args(argv,allowed){const a={};for(let i=0;i<argv.length;i+=2){assert.ok(allowed.includes(argv[i])&&argv[i+1]&&!argv[i+1].startsWith('--'),'invalid CLI option');assert.ok(!a[argv[i]],'duplicate CLI option');a[argv[i]]=argv[i+1];}return a;}
