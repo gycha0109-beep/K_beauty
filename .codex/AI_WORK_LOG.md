@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-14 / Face Lab Skin S0→S2 explicit photo-state consistency repair
+
+- Type: bounded execution based on #1308 S0 audit. Baseline main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2; track face-lab-skin.
+- Changes: v4 explicit photo availability precedes non-null fallback observation object; `evidenceAvailable` cannot be true for explicit unavailable; projector `mixed` maps to canonical `partial`. Added exact fixture regression incl. repeated saved context hash/revision and legacy-only available observation.
+- Non-changes: photo score, survey weights, recommendation priority/ranking, provider, API field names, DB/Auth/RLS/Storage, Style Track, payment/production, mobile.
+- Verification: original CI and focused verifier on exact PR HEAD required; no human photo performance claim. Semantics affect newly constructed v4 decision bundle; historical objects lacking original failure marker cannot be auto-corrected and are HOLD.
+- Security: #1208 expired braces advisory remains separate release blocker, not bypassed.
+- Next: gated CI evidence and S1 axis-level confidence evaluation contract, no production scoring activation.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
