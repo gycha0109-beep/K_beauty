@@ -5,6 +5,7 @@
     "data-ai-product-query-static.yml",
     "data-ai29c-protection-shadow.yml",
     "face-lab-v2-provider-pilot-smoke.yml",
+    "sca-release-readiness.yml",
     "taxonomy-ai-r16d-source-capture.yml",
     "trust-gpt-catalog-intake.yml",
     "trust-phase5b-7d-static.yml",
@@ -12,6 +13,18 @@
   ],
   "approvedRetiredWorkflows": [],
   "clusters": {
+    "supply-chain-b6-release-preparation": {
+      "workflow": "sca-release-readiness.yml",
+      "primaryResponsibility": "supply-chain-security",
+      "uniqueCoverage": [
+        "Exact immutable release bundle with LICENSE/NOTICE/SBOM/provenance admission",
+        "Organizational four-role signature, revocation and registry access negative controls",
+        "Independent clean-runner release candidate manifest digest replay without artifact upload"
+      ],
+      "overlapReview": "The PR is stacked on the B3 branch, where main-targeted Current Main Health and supply-chain workflows do not trigger. This preparation workflow runs their unchanged verification commands for that exact HEAD and adds unique release admission/replay coverage. Existing main-required gates are retained. B4/B5 source-compatible evidence is reused after scope equality, avoiding a second native build. No original workflow/check is retired or weakened; no upload or security exception is authorized.",
+      "authority": "User explicitly authorized supply-chain CI repair and separate B6 preparation PR; this workflow inventory entry is development change authorization, not organizational package/legal/release approval.",
+      "preservationPolicy": "preserve-until-equivalence-proven"
+    },
     "taxonomy-ai-data-ai3-5": {
       "canonicalStaticOwner": "data-ai-product-query-static.yml",
       "compatibilityAndRuntimeOwners": [
