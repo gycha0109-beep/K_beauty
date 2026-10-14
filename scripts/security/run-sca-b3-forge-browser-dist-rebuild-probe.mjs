@@ -109,7 +109,9 @@ try{
   browser.self=browser;
   browser.globalThis=browser;
   browser.navigator={userAgent:"BEJEWELY test browser",appName:"Netscape"};
-  runInNewContext(code,browser,{filename:path.basename(filename),timeout:20000});
+  try{runInNewContext(code,browser,{filename:path.basename(filename),timeout:20000});}
+  catch(e){throw new Error("B3_BROWSER_VM_DIAGNOSTIC file="+path.basename(filename)+
+    " type="+String(e?.name).slice(0,50)+" message="+String(e?.message).slice(0,280));}
   assert.ok(browser.forge?.pki?.publicKeyFromPem,
     "browser UMD entry point not registered in isolated browser context");
   return browser.forge;
