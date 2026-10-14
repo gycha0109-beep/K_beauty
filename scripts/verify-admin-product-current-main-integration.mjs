@@ -17,7 +17,7 @@ function check(condition, message) {
 function read(path) {
   const absolute = resolve(ROOT, path);
   check(existsSync(absolute), `missing integration file: ${path}`);
-  return readFileSync(absolute, "utf8");
+  return readFileSync(absolute, "utf8").replace(/\r\n/g, "\n");
 }
 
 const requiredFiles = [
