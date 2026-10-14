@@ -183,5 +183,11 @@ npm 공식 문서상 루트 package.json overrides는 다른 패키지·포크·
 - [실제 CI #38495602311](https://github.com/gycha0109-beep/K_beauty/actions/runs/38495602311): B3 독립 job **PASS**, 패치된 braces/node-forge 각 2회 `npm pack` 후 tarball SHA512/파일 SHA256 일치. 결과 tarball은 보안 검증용 임시 디렉터리에서만 존재하고 외부 registry/공개 artifact로 전송하지 않음.
 - braces: 10개 파일, SHA256 `d4f1219db19bfeb4e1c3f0354f9269569393f1b8c9f8c0295b80346926d4fa70`; forge: 53개 파일, SHA256 `ed30cf67cfa87f097c9f6b9ceadd4187fa3efb9399fd166380fc5ea36f8915e5`, 미패치 dist 6개는 후보에서 제외하여 0개 확인.
 - B1 904 passing / B2 829 passing, 4 pending / 0 failures. 단 실제 재배포 권리·소유자·보안 리뷰·브라우저 번들 의존 consumer를 아직 검증하지 않았으므로 **B3 정식 출시/승인 HOLD**, B4~B7 전부 HOLD. 원본 package-lock과 canonical npm audit는 취약한 원본을 그대로 가리키며 감사 FAIL을 유지.
-- B3의 두 번째 빌드는 독립 임시 빌드 디렉터리를 사용하지만 **같은 최초 npm-ci 원본 설치본을 다시 materialize**한다. 별도 클린 npm-ci 설치로 독립적인 환경까지 검증하는 추가 게이트는 미달성으로 기록한다.
+- 첫 실증은 동일 npm-ci 원본을 사용한 두 임시 빌드 디렉터리였으나, 후속 [#38496534583](https://github.com/gycha0109-beep/K_beauty/actions/runs/38496534583)의 **서로 다른 러너 2개**에서 각각 새로운 `npm ci`를 수행하고 두 tarball SHA256을 교차 비교하여 **별도 clean-runner 재현성 PASS**를 확인했다. 원본 라이선스/오너 승인과 영구 비공개 배포본은 여전히 HOLD다.
 - 정확한 source→tarball SHA 및 잔여 상태: [B3 증거 기록](sec-sca-20261014-b3-temp-package-evidence.md). 최종 승인 결론을 절대 PASS로 승격하지 않는다.
+
+### B3 별도 clean npm-ci 러너 closeout
+
+- PR #1288 `b02ec8f`: [Actions #38496534583](https://github.com/gycha0109-beep/K_beauty/actions/runs/38496534583) 독립 2개 runner job PASS. 두 독립 `npm ci`와 각 2회 `npm pack`, braces/forge 실제 tarball SHA256 완전 일치. 총 각 패키지 4회 임시 소스 빌드.
+- 두 공인 GitHub-hosted 러너 모두 Node 22 / Ubuntu 24.04. 크로스-toolchain, 패치 코드 브라우저 소비자, 보안 오너/법적 재배포 승인과 비공개 artifact 유지 장소는 미검증.
+- 이것은 **B3 재현 빌드 기술검증 PASS / B3 배포 및 유지보수 승인 HOLD**를 뜻하며 B4/B5/B6/B7 승인과 다르다.
