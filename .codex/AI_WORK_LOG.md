@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-14 / Face Lab Skin S1 cue evaluation-only foundation
+
+- Track face-lab-skin, branch research/face-lab-skin/s1-cue-evaluation-foundation-20261014. Base main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2.
+- Scope: isolated metadata-only evaluation core, deterministic synthetic negative tests, CLI to score future approved metadata manifests, and written blind-Human photo cue protocol. Current Main Health reuses one existing verifier entry, no new workflow.
+- Evidence and authority: `synthetic != human_review != production`; reference unassessable/ambiguous retained, absent not inferred from raw score 0; no image bytes, face IDs, provider call, production recomputation, score/recommendation changes.
+- Verification: exact-head PR CI plus unit verifier required; remote Human ground truth, mobile repeatability and S1 actual accuracy DoD explicitly HOLD. Real-photo inputs not requested or stored.
+- Security: no DB/Auth/RLS/Storage/API/Payment/Provider/Secret/Production or Style changes. SCA #1208 remains blocked.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
