@@ -41,3 +41,15 @@ Tested fake versions or injected caller attestation cannot turn these into appro
 - This is only baseline detection. Nothing was replaced, published, committed to the root lock, deployed, or marked remediated. B3 ownership/licensing/private artifact and B4 resolver replacement are still unresolved. B5–B7 all HOLD.
 
 No automatic merge, exemption change, or security-release permission is implied by these isolated fixture PASS results.
+
+
+## Disposable npm resolver / physical install shadow — 2026-10-14
+
+- Experimental code HEAD `304db7776b868cd79e996091bb13d55f5e9ef6c8`; [Supply Chain Actions #38508075092](https://github.com/gycha0109-beep/K_beauty/actions/runs/38508075092), diagnostic job `115670046615`.
+- Both original **unpatched** npm-ci package folders (`braces@3.0.3`, `node-forge@1.4.0`) were repacked without lifecycle hooks into **OS disposable temp**. Root `package.json` / `package-lock.json` and four workspace `package.json` manifests were copied into a separate temporary project; only those *copies* received npm `overrides` with `file:` tarball specs.
+- npm `install --package-lock-only` initially converted **braces** to `file:` but retained **node-forge** as a registry dependency. After an explicit npm `update node-forge --package-lock-only` **in the temporary clone**, both resolved locations became `file:` (one installed lock path each). This is an observed npm resolver behavior; **never hand-edit** the real lock or assume the initial command is sufficient.
+- A separate `npm ci --ignore-scripts --no-audit --no-fund` physically installed that shadow full-workspace graph; exact SHA256 of both installed `lib/parse.js` and `lib/rsa.js` matched the known vulnerable original input bytes. Root source manifests and original lock had identical SHA256 before/after, confirmed in the script; temporary tarballs and installation were deleted on exit.
+- Unmodified raw **shadow** npm audit: full HIGH **22** / CRITICAL 0 / MODERATE 13, production HIGH **19** / CRITICAL 0 / MODERATE 11. Despite `file:` paths, known-vulnerable original code was **still detected** in this particular shadow experiment. This does **not** guarantee that future renamed artifacts cannot mask advisories: actual source/installed digests remain an independent required AND gate.
+- Unchanged canonical audit immediately after the shadow experiment **FAIL** on original expired `braces` advisory at `2026-10-10T00:00:00Z`. Security approval remains `false`; B3 private package delivery, owner and legal approval, approved patched bytes, B4 audited remediation, B5 APK, B6 security review and B7 main merge are all **HOLD**.
+
+**Technical outcome:** B4 npm resolver and isolated physical install *method* is feasible without mutating the actual repository. **Security outcome:** `HOLD`; this run intentionally used the original vulnerable bytes to validate npm resolver semantics. It never installed the proposed B3 patched tarballs, so it cannot support a remediation, security PASS, production deployment or HTML5 parser dependency approval.
