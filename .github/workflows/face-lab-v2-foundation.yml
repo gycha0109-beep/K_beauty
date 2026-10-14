@@ -442,3 +442,29 @@ jobs:
           node --check app/api/face-reading/route.js
           node --check app/api/face-reading-test/route.js
           node --check app/api/face-lab-simulation-test/route.js
+
+  m2-research-ui-build:
+    name: M2 Research UI Production Build (Inactive)
+    if: github.event_name == 'pull_request' && github.head_ref == 'face-lab/feat-personal-color-research-ui-20261014'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Verify checked-out SHA
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Verify Next production compilation with M2 UI not enabled
+        run: npm run build
