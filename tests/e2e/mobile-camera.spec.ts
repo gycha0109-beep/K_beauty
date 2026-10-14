@@ -217,6 +217,50 @@ test.describe("mobile fullscreen camera", () => {
   });
 
 
+  test("keeps the notice usable at narrow widths and in dark mode (ko/en)", async ({ page }) => {
+    for (const locale of ["ko", "en"] as const) {
+      for (const width of [320, 390]) {
+        await page.setViewportSize({ width, height: 700 });
+        await page.emulateMedia({ colorScheme: "dark" });
+        await page.goto(locale === "ko" ? "/" : "/en", { waitUntil: "domcontentloaded" });
+        await page.waitForLoadState("networkidle");
+
+        const note = page.getByTestId("face-lab-capture-notice");
+        const camera = page.getByRole("button", {
+          name: locale === "ko" ? "지금 촬영하기" : "Use Camera",
+          exact: true
+        });
+        const gallery = page.getByRole("button", {
+          name: locale === "ko" ? "사진에서 선택" : "Choose Photo",
+          exact: true
+        });
+
+        await expect(note).toHaveCount(1);
+        await expect(note).toBeVisible();
+        await expect(camera).toBeEnabled();
+        await expect(gallery).toBeEnabled();
+
+        const layout = await note.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            left: rect.left,
+            right: rect.right,
+            scrollWidth: element.scrollWidth,
+            clientWidth: element.clientWidth
+          };
+        });
+        expect(layout.left).toBeGreaterThanOrEqual(-1);
+        expect(layout.right).toBeLessThanOrEqual(width + 1);
+        expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth + 1);
+
+        await camera.focus();
+        await expect(camera).toBeFocused();
+        await gallery.focus();
+        await expect(gallery).toBeFocused();
+      }
+    }
+  });
+
   test("prepares the live video invisibly before the fullscreen expansion", async ({ page }) => {
     await installCameraMock(page, { deferFirstFrame: true });
     await openHydratedHome(page);
