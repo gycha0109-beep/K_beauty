@@ -97,4 +97,3 @@ Source commit **`7b3c77c31f3adf3d9af410b015ee22f771fdf091`**, immutable run [Sup
 | B7 production or dependency rollout | NOT_AUTHORIZED | HOLD |
 
 Next external decisions: appoint patch maintenance/security approvers, select and approve a durable private distribution channel and redistributed-license/NOTICE obligations, choose a verifiable post-patch security scanning/release route, and execute separate Android device/emulator camera/entry/result/Premium smoke against an isolated backend. Nothing in this run permits npm dependency changes to the deployed app, main merge or Production deployment.
-
