@@ -154,6 +154,21 @@ assert.equal(priceContractSummary.nullApiFieldsPreserved, true);
 assert.equal(priceContractSummary.productWrites, 0);
 assert.equal(priceContractSummary.offerWrites, 0);
 console.log(JSON.stringify(priceContractSummary));
+// D8K-0: active source paths and the functional-plan null-price formatter.
+// Offline only: this does not mount any four-seller consumer or change APIs.
+const d8k0 = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-d8k0-active-surface-null-price-baseline-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
+assert.equal(d8k0.status, 0,
+  `D8K-0 active-surface/price baseline failed: ${d8k0.error?.message || d8k0.stderr || d8k0.stdout}`);
+const d8k0Summary = JSON.parse(d8k0.stdout.trim().split("\\n").at(-1));
+assert.equal(d8k0Summary.status, "PASS");
+assert.equal(d8k0Summary.stage, "D8K0_ACTIVE_SURFACE_NULL_PRICE_BASELINE");
+assert.equal(d8k0Summary.apiFieldsChanged, false);
+assert.equal(d8k0Summary.productWrites, 0);
+assert.equal(d8k0Summary.offerWrites, 0);
+assert.equal(d8k0Summary.productionReleaseAuthorized, false);
+console.log(JSON.stringify(d8k0Summary));
 // D8I is DESIGN SHADOW ONLY: exact two Offer candidates, zero writes/grants.
 const dualOfferPreview = spawnSync(process.execPath, [
   "scripts/product-evidence/verify-r16i-d8i-dual-offer-cutover-preview-v1.mjs"
