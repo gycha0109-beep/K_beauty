@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import {
   R16I_PRICE_SCOPE_REVIEW_VERSION,
   R16I_SCREEN_LIST_PRICE_OBSERVATION_KRW,
@@ -95,6 +96,20 @@ assert.match(ui,/buildR16IPriceScopeReview/);
 assert.match(ui,/정상가 관측\/결제금액 분리/);
 assert.match(ui,/대표가격 자동 확정 금지/);
 assert.doesNotMatch(ui,/자동 승인.*D8D/);
+// Reuse the existing D8F offline CI gate. The alias loader executes actual
+// Product Offer/CTA consumer code against in-memory rows, never a hosted DB.
+const consumer = spawnSync(process.execPath, [
+  "--no-warnings", "--experimental-loader", "./scripts/node-alias-loader.mjs",
+  "scripts/product-evidence/verify-r16i-d8h-offer-consumer-runtime-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 20000 });
+assert.equal(consumer.status, 0,
+  `R16I D8H consumer runtime shadow failed: ${consumer.error?.message || consumer.stderr || consumer.stdout}`);
+const consumerSummary = JSON.parse(consumer.stdout.trim().split("\\n").at(-1));
+assert.equal(consumerSummary.status, "PASS");
+assert.equal(consumerSummary.stage, "R16I_D8H_OFFER_CONSUMER_RUNTIME_SHADOW");
+assert.equal(consumerSummary.productWrites, 0);
+assert.equal(consumerSummary.offerWrites, 0);
+console.log(JSON.stringify(consumerSummary));
 console.log(JSON.stringify({
  status:"PASS",stage:"R16I_PRICE_SCOPE_REVIEW_SHADOW",
  testCases:denied.length+1,
