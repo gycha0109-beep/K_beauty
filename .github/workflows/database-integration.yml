@@ -176,6 +176,24 @@ jobs:
       - name: Verify database migration authority and non-production safety
         run: node scripts/verify-database-integration-authority.mjs
 
+      - name: Verify R16I D8E1 164x12 real-engine structural shadow (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-r16i-r4-d8e1-structural-replay.mjs
+
+      - name: Verify R16I D8E2 176-row candidate snapshot and listing-price scenarios (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-r16i-r4-d8e2-readonly-catalog-replay.mjs
+
+      - name: Verify R16I D8F current-candidate D4 exact prestate and drift blockers (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-r16i-r4-d8f-candidate-d4-readonly-prestate.mjs
+
       - name: Verify R4-C-R4 independent SKU identity HOLD and negative cases
         run: node scripts/verify-data-ai29c-filter-r4-c-r4-independent-sku-attestation-gap.mjs
 
@@ -368,12 +386,54 @@ jobs:
           set -euo pipefail
           psql -v ON_ERROR_STOP=1 -c "create database taxonomy_r16i_d8d"
           PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f tests/fixtures/r16i-d8d/00_minimal_pg17.sql
-          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql
+          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql
           PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f tests/fixtures/r16i-d8d/20_transactional_pg17.sql | tee "${RUNNER_TEMP}/r16i-d8d-pg17.log"
           grep -Fq "R16I_D8D_PG17_APPLY_FAIL_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8d-pg17.log"
           test "$(PGDATABASE=taxonomy_r16i_d8d psql -Atqc "select count(*) from public.admin_r16i_correction_application_events_v1")" = "2"
+          # Shadow-only alternative: nullable Product price plus two independent
+          # seller Offers, using fictional fixture values and complete ROLLBACK.
+          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/r16i-d8d/40_price_scope_offer_shadow_pg17.sql \
+            | tee "${RUNNER_TEMP}/r16i-d8h-price-scope.log"
+          grep -Fq "R16I_D8H_TWO_SELLER_PRICE_SCOPE_SHADOW_PASS" "${RUNNER_TEMP}/r16i-d8h-price-scope.log"
+          grep -Fq "R16I_D8H_TWO_SELLER_PRICE_SCOPE_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8h-price-scope.log"
+          # v2 is installed ONLY into the disposable D8D database. The v2
+          # approval/Gate remain empty/OFF in the fixture until fictional cases
+          # explicitly populate them inside a rollback-only transaction.
+          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20261014150000_taxonomy_ai_r16i_d8d_v2_owner_gated_dual_offer.sql
+          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/r16i-d8d/50_v2_dual_offer_atomic_pg17.sql \
+            | tee "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_DEFAULT_HOLD_OWNER_AND_PREVIEW_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_FAIL_SECOND_INSERT_ALL_ROWS_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_TWO_OFFERS_APPLY_AND_RETRY_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_TWO_OFFER_CAS_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
+          grep -Fq "R16I_V2_ISOLATED_PG17_NO_RESIDUAL_WRITES_PASS" "${RUNNER_TEMP}/r16i-d8d-v2-pg17.log"
           psql -v ON_ERROR_STOP=1 -c "drop database taxonomy_r16i_d8d with (force)"
           echo "R16I_D8D_ISOLATED_PG17_PASS"
+
+      - name: Verify R16I D8C verdict reason migration in isolated PG17
+        shell: bash
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "54329"
+          PGUSER: postgres
+          PGPASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "5"
+        run: |
+          set -euo pipefail
+          test -z "${SUPABASE_ACCESS_TOKEN:-}"
+          test -z "${SUPABASE_DB_PASSWORD:-}"
+          psql -v ON_ERROR_STOP=1 -c "create database taxonomy_r16i_d8c_reason"
+          PGDATABASE=taxonomy_r16i_d8c_reason psql -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/r16i-d8d/30_verdict_reason_migration_pg17.sql \
+            | tee "${RUNNER_TEMP}/r16i-d8c-verdict-reason.log"
+          grep -Fq "R16I_D8C_VERDICT_REASON_PG17_PASS" "${RUNNER_TEMP}/r16i-d8c-verdict-reason.log"
+          test "$(PGDATABASE=taxonomy_r16i_d8c_reason psql -Atqc "select coalesce(to_regclass('public.admin_product_correction_evidence_verdicts_v1')::text,'none')")" = "none"
+          psql -v ON_ERROR_STOP=1 -c "drop database taxonomy_r16i_d8c_reason with (force)"
+          echo "R16I_D8C_VERDICT_REASON_ISOLATED_PG17_PASS"
 
       - name: Verify exact-head diff hygiene
         shell: bash

@@ -3146,3 +3146,145 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+## 2026-10-13 — taxonomy-ai R16I-R4 D8E2 candidate-catalog listing-scenario replay
+- Classification: Medium tests / DB read-only Y / Auth N / RLS N / Storage N / Provider N / Payment N / Secret N / Production write N. No protected-surface mutations.
+- SELECT snapshot observed 176 unique rows (164 historical+12 new; 10 category null, 2 newly sunscreen-projectable without admission evidence).
+- Added dated read-only source fixture and true Skin Match runtime comparator for two non-checkout public-listed prices (35,000 ordinary, 24,500 member), structurally 166×12 each. No real checkout amount promoted to Product, Hwahae 29,900 remains set-only.
+- Existing DB Integration CI reused; outcome must be taken from actual PR jobs, not assumed.
+- Holds: deployed DB identity, owner verified screenshots, trusted direct CTA, #1208 Supply Chain Security. Product/Offer writes 0; release gate 0; PR merge HOLD.
+
+## 2026-10-13 — taxonomy-ai D8E2 offline production-admission negative control
+- Read-only RPC for two new sunscreen product IDs returned 42501 permission denied for function under connected integration credentials. No grant changes, retries with privileged identity, or claims about production actual admission.
+- D8E2 verification script extended to use genuine admission core with an explicit synthetic NO_CURRENT_SUBJECT reader (164 legacy admit, 12 nonlegacy reject), fail-closed infrastructure faults, and extra 164×12×2 real engine comparison. Total tested pair assertions will be 7,920 across both structural and conservative synthetic projections; CI evidence required.
+- All Product/Offer writes, schema, permissions, gate flags, owner approvals and deployment config unchanged; #1208 security red, PR merge HOLD.
+
+## 2026-10-13 — taxonomy-ai D8F candidate D4 read-only prestate verification
+- Classification: Medium test/evidence; DB read-only Y, Protected Area writes N. Connected Supabase candidate SELECT observed target Product old revision/160ml/29,900 KRW, Binding 1, Intake 1, Offer/Subject/Application 0, release gate false.
+- Added dated exact D4 read-only snapshot and 15 fail-closed synthetic negative-path tests against existing `buildR16IR4D4LiveReview`. No owner evidence or approvals synthesized. Reuse existing Database Integration Authority workflow.
+- Deployed Vercel runtime database identity unattested, #1208 security issue unresolved, final checkout evidence absent. D8F/G/H and PR merge HOLD, no Production mutations or gate changes.
+
+## 2026-10-13 — taxonomy-ai D8G production-readiness inventory and owner handoff
+- Classification: Medium read-only diagnosis/documentation / DB select Y; Protected Area mutation N. Vercel Production alias READY and deployment SHA identified; deployed effective Supabase URL/DB identity still unattested because Vercel env inventory 403.
+- Candidate Supabase exact-target SELECT confirmed 176 catalog, old Product 160ml/29900, evidence 0, correction proposals 0, applications 0, release gate disabled. Public official 80ml list/member prices and Hwahae bundle public price are not real checkout evidence.
+- Security #1208 open; Draft #1240 unresolved (Expo 57.0.28 genuine candidate keeps braces@3.0.3/node-forge@1.4.0; raw audit fails). No security source changes.
+- Added precise owner-only capture, VERIFIED judgement, runtime DB attestation, future release-gate readiness packet and roadmap pointer. Existing UI/route unchanged; 0 Product/Offer/RLS/env/permission/deployment changes, D8F/G/H HOLD, PR merge HOLD.
+
+### 2026-10-13 / R16I-R4 D8G continuation — main sync and read-only blocker refresh
+
+- 유형: bounded execution + read-only production-gate diagnosis; Watchtower-Track: taxonomy-ai. GitHub PR #1255 old HEAD `e5bf89c2`, `main@697f4004`; no overlapping changed files, verified 3,866 resulting tracked blobs against disjoint merge semantics, merged main via `b44d9826` while preserving TRUST P3 changes.
+- CI on exact synced HEAD: Database Integration/PG17, Main Health, Security Boundary, PIE, CodeQL PASS; mandatory Supply Chain Security FAIL. Security #1208 OPEN and Draft PR #1240 latest mandatory audit FAIL. No bypass or other-track edit.
+- Vercel Production alias READY `dpl_D2cMapWhKCFDsjUPy23yPTspm2az` from `main@697f4004`. Correct project/account metadata known; project env metadata SELECT HTTP 403. Server effective Supabase project and APPLY flag UNATTESTED, not inferred from candidate DB.
+- Connected candidate Supabase read-only SQL: original Product 160ml/29,900, evidence/proposals/applications/offers/subjects 0, DB release gate false. Public prices only, no exact original checkout captures or owner VERIFIED decisions. D8F/G/H remain HOLD. No Product, Offer, Subject, DB schema, RLS, privileges, admin, env, deploy, gate or merge write.
+- Evidence + operator next steps: `docs/evidence/r16i-r4-d8g-production-readiness-gate-20261013.md` §6. Final HEAD CI must be rechecked after this doc commit.
+
+### 2026-10-13 / R16I-R4 public price/review scope negative controls
+
+- Scope: taxonomy-ai PR #1255. Main advanced to `5272378c` with disjoint TRUST P3 change; preserve integration via verified two-parent merge. Production alias `dpl_5MztRfqUfLgTYb9J9CWj5sGdCKVX` at main; effective server DB UNATTESTED.
+- Previously exact-head `c3f62904`: Database Integration/PG17, Main Health, PIE, Security Boundary, CodeQL PASS; Supply Chain canonical vulnerability FAIL (#1208 and security Draft #1240 remain HOLD).
+- New bounded offline verifier tests reject promotion of publicly indexed official 80ml list/member prices, Hwahae displayed review count 43,652 instead of frozen 41,475 and an Offer URL collision. No checkout, owner verdict, product changes, Offer insertion, Subject write, migration, privileges, env or release gate change. CI on new SHA mandatory.
+- Evidence and owner action: D8F read-only prestate document / D8G gate §7. Production correction never approved.
+
+### 2026-10-14 / R16I private evidence correction UX (UI-only, no Production changes)
+
+- Diagnosed three manually uploaded candidate DB evidence records with two mismatched source/options and no original edit/delete controls. All remained UNVERIFIED; zero prior verdicts.
+- Existing evidence ledger is immutable and admits an OWNER-only REJECTED verdict via the already-shipped `review_evidence` POST; this is exclusion from active review, not physical deletion. Existing `GET /approval` grants `canOwnerDecide`. DB schema constraint fixes evidence_state to UNVERIFIED; no DB UPDATE/DELETE or migration authorized.
+- UI-only correction: lock selected product option to source, clear stale checkout price on source switch, prefill a correction copy with the original capture timestamp, require a new private image upload, then request existing OWNER-only REJECTED verdict for the old record after the new upload succeeds; report partial failure without triggering duplicate uploads. Explicit OWNER-only exclusion and separate collapsed audit history. No server route, authentication, policy, storage, database, catalog, price, ranking or release configuration changes.
+- Correction UI has not been deployed; PR #1255 remains unmerged while independent #1208 supply-chain audit is red. All user-provided checkout captures remain unapproved.
+
+### 2026-10-14 / R16I D8F two-source owner review preflight
+
+- Type: bounded correction guard + read-only linked-candidate DB review. Security routing DB/Storage/Owner auth/Production Y; changed **only** R16I approval pure validation, admin UI, offline tests and taxonomy evidence docs. Zero hosted database writes from this task.
+- Two private original screenshot hashes matched locally supplied images, both file pointers remain in private Storage. Connected candidate evidence 2 UNVERIFIED; verdict/proposal/decision/apply 0; Product remains 160ml/29,900, 0 Offer/Subject, release gate false. Never store user images/private IDs/hashes in GitHub.
+- Guard D8C proposed field changes against one-seller evidence: require two separate seller keys, canonical seller URLs, verified verdict for every evidence ID; UX button disabled until both sellers selected. Existing D8D owner-decision RPC two-source requirement unchanged. Four new negative cases in D8C focused verifier, called by already scheduled D8F offline CI step.
+- Docs: docs/evidence/r16i-r4-d8f-owner-checkout-evidence-readiness-20261014.md, D8G checkpoint and taxonomy roadmap. No automatic owner VERIFIED verdict, price authority, production reassign, CTA or security green-override.
+- Pending: exact SHA CI, owner inspection and human verdicts, independently attested Production DB identity, supply-chain issue #1208, gift serum SKU, review scope and explicit final APPLY approval.
+
+### 2026-10-14 / R16I OWNER verdict 12-character minimum UX defect
+
+- User reproduced disabled original-accept/reject buttons after opening the signed screenshot, ticking original-confirmation and entering a short legitimate verdict reason. Confirmed the triple minimum-length lock in the OWNER UI, validation and connected candidate DB CHECK.
+- Bounded code fix on taxonomy-ai PR #1255: owner verdict allows trimmed 1..2000 text; whitespace-only denied; explicit remaining-condition status; preserve OWNER authorization, private evidence, RLS, append-only audit and source approval gates. Proposal and decision rationales still require 12..2000.
+- Added isolated, precondition-guarded SQL migration to replace only verdict reason CHECK; not applied to unknown hosted runtime. Negative verifier checks nonblank, whitespace, over-limit and SQL scope in existing D8F CI job.
+- Security #1208 and Production deployment remain HOLD; no production DB, Product/Offer, Auth/roles/RLS or environment changes. Deployment needs independently green safety gate and target DB identity.
+
+### 2026-10-14 / R16I evidence verdict reason isolated PG17 replay
+
+- Followed prior UX/server/SQL patch with **actual SQL replay coverage** in the existing Database Integration Authority workflow's isolated PostgreSQL 17 service. New rollback fixture tests the predecessor 12-character denial, actual constraint migration, acceptance of short valid text, whitespace and over-limit rejection, existing-row preservation, and untouched proposal/decision guards.
+- One disposable dedicated database is created and destroyed inside CI; zero connected Supabase/Production schema or data mutations. No modifications to supply-chain security gate.
+- Until that new SHA finishes, status is code committed / runtime replay awaiting CI. Security #1208 and deployment identity remain HOLD.
+
+### 2026-10-14 / R16I D8H price-scope shadow
+
+- Execution with DB/Production indirect Y; no protected DB/migration/Auth/CTA mutation. Inspected current Product/Offer schema, D8D SQL, D4 view and verified evidence ledger.
+- Read-only price model splits user screenshot list 35,000 KRW, owner-verified manufacturer 80ml checkout 24,500 KRW, and Hwahae kit 80ml x2 + serum10ml checkout 29,900 KRW. Product price/unit-price/buy-link authority remains null; 80ml Product anchor and two Offer records are candidates only, with no writes.
+- Added admin read-only comparison and offline verifier 17 negative cases through existing D8F CI; evidence doc `docs/evidence/r16i-r4-d8h-price-scope-shadow-20261014.md`. Does not resolve D8D SQL forcing discounted checkout into Product or one-Offer insert. Separate price policy/schema authority, #1208 and runtime identity remain HOLD.
+
+### 2026-10-14 / R16I D8H actual NULL-price 164×12 engine replay
+
+- Type: bounded offline execution/diagnosis; Watchtower-Track: taxonomy-ai. Started from `491687b21bba`; inspected actual product source, real Skin Match decision engine, product-offer read path, Premium serializer and Result price display. DB/Auth/RLS/Storage/Payment/Secret/Production indirect impact Y; no protected mutations.
+- Added offline `verify-r16i-d8h-null-price-engine-replay-v1.mjs`; wired through the existing D8F CI verifier. Test simulates ONE Product changing to 80ml and NULL price/link, with two separate seller-Offer candidates. Prevents external fetch/hosted writes.
+- Exact code `aea49f54` / Database Integration Authority #38518123678 PASS including isolated PG17. Prior `056a3259` had test-output newline JSON parsing defect; fixed without touching product/offer runtime code.
+- Verified 164×12 = 1,968 candidate comparisons. Score, rank, Top Pick, Top 3 and candidate counts unchanged. Premium budget alternative list changed for 1 scenario: R16I target 1→0 inclusion. UNKNOWN price still falsely maps to `"$$"`; premium API NULL→0 identified statically but not live-tested. Separate owner Product pricing/CTA approval required.
+- Evidence: `docs/evidence/r16i-r4-d8h-offer-consumer-compatibility-and-pricing-policy-20261014.md` §7 and taxonomy roadmap. Catalog/Offer/Subject writes 0, no schema/RPC/API field names/ranking/CTA authority/package/security/merge/deploy/release changes. Production DB identity UNATTESTED; #1208 unresolved.
+
+### 2026-10-14 / R16I D8H 176-candidate NULL-price shadow
+
+- Watchtower-Track taxonomy-ai; no work mode. Added isolated offline replay `scripts/product-evidence/verify-r16i-d8h-null-price-candidate-admission-shadow-v1.mjs`, linked to the existing D8F verifier, using candidate DB read-only snapshot from Oct 13 (176 rows), 166 projectable and 164 legacy negative control, 12 frozen scenarios. No currently granted PF admission claim.
+- Observed current real engine: score/rank/Top1/Top3/candidate-count deltas 0 in both 166x12 and 164x12; budget alternatives U10 changed R16I target inclusion 1→0. All seller scoped Offers remain untrusted. No Product price policy selected.
+- The script PASS in DB CI #38519946918 but final exact-head diff hygiene failed on one trailing space; fixed in `63812fde`. Full reference and reproducible evidence: `docs/evidence/r16i-r4-d8h-offer-consumer-compatibility-and-pricing-policy-20261014.md` §8. Check current HEAD CI before declaring overall success.
+- No protected code/DB/CTA/auth/RLS/schema/RPC/recommendation runtime change; Product/Offer writes 0. Next work: owner price semantics, false unknown price band and premium null serializer, U10 budget copy/eligibility, protected two-Offer D8D and security #1208. Production identity unverified.
+
+### 2026-10-14 / R16I D8H Product price read-consumer repair
+
+- Type: bounded execution/verification. Request: fix missing-price display and budget-comparison null semantics, then replay actual engine. Boundaries: DB/Production/Provider impacts potentially Y indirectly, no hosted execution or Product/Offer writes; API response price **values** changed, existing keys retained. No migration/RPC/auth/RLS/payment/secret/deploy/CTA authority changes.
+- Code: added `lib/product-price-read-contract.mjs`; updated `lib/product-source.js` (missing price `price_range=""`), `lib/skin-match-decision-engine-core.js` (only compare two known positive Product min prices), and `app/api/analyze/route.js` (null remains null, no zero coercion); existing Result UI already suppresses blank bands. Added focused tests to D8F offline verifier and updated both 164/166 null-price replay expectations.
+- Price policy A/B/C is still *not selected*; U10 budget alternative selection can legitimately differ when the target Product price is unknown, and must not be artificially pinned back by assuming a cheaper price. Existing commercial evidence never promoted to Product fields.
+- Evidence: `docs/evidence/r16i-r4-d8h-offer-consumer-compatibility-and-pricing-policy-20261014.md` §9. Verify latest exact HEAD CI, not an earlier commit. Remaining: Production runtime DB identity, Price owner approval, dual-Offer guarded D8D, security #1208.
+
+### 2026-10-14 / D8I R16I policy A + dual Offer atomic cutover design
+
+- Task design and bounded shadow implementation. Sources: current AGENTS/.codex router/security, legacy D8D apply and rollback SQL, actual Product Offer schema/read-path, D8F price-review and 164x12/166x12 replay evidence. DB/Production impact potentially Y: no hosted reads or writes, no protected changes.
+- Recommendation at engineering design level: A Product 80ml identity anchor with canonical Product price_min/max/unit_price_per_10ml/buy_link null; 2 seller-scoped selected checkout Offer candidates for official 80ml ×1 and Hwahae 80ml×2 plus serum 10ml. Design **NOT OWNER APPROVAL**, reviewer/source-binding/serum/CTA authority held.
+- Created pure `lib/product-intelligence/r16i-d8i-dual-offer-cutover-preview-v1.mjs`, isolated negative verifier, integrated into D8F offline CI. New design spec: `docs/taxonomy-ai/r16i-r4-d8i-representative-price-dual-offer-cutover-design-20261014.md`. Existing protected D8D SQL still forces official checkout into Product min/max, inserts and rolls back only one Offer; must be versioned separately only after approval.
+- Proposed future guards: immutable two-source evidence read and revision binding, owner gate, two Offer IDs application ledger, idempotent APPLY and all-or-nothing two-offer CAS rollback, review population and Product source-binding reassessment, gated PG17 negative tests; Product/Offer live writes zero, no merge/deploy. Final HEAD CI must be checked. Supply chain #1208 unresolved, Production identity unverified.
+
+### 2026-10-14 / D8D v2 disabled-by-default two-Offer atomic implementation
+
+- User selected D8D v2 migration/rollback implementation (code only; no owner Product price consent or Production APPLY). Created new versioned `supabase/migrations/20261014150000_taxonomy_ai_r16i_d8d_v2_owner_gated_dual_offer.sql`, leaving v1 untouched. Requires independently populated owner attestation with policy A, exact evidence SHA256, and separately enabled OFF-by-default release gate; `service_role` cannot insert/update these tables.
+- New 2-ID immutable Offer ledger, application and rollback event; exact Product-before CAS/price NULL/CTA NULL; 2 Seller Offer INSERT; two-offer rollback with Product and each Offer CAS, no bypass for idempotent retry drift. No admin/client route wired. No hosted execution, Product/Offer live writes, merge or deploy.
+- PG17 verifier `tests/fixtures/r16i-d8d/50_v2_dual_offer_atomic_pg17.sql` wired to existing `.github/workflows/database-integration.yml`. Validates OFF gate, owner-only access, forged approval blocked, partial insert exception all-or-nothing, 2 Offer insert, same-request replay, both offer drift rollback deny, restored Product and 0 Offer rows after verified rollback, outer rollback leaves zero runtime writes.
+- Early PG run failed only because v1 fixture rollback updated Product revision but v2 proposal retained prior revision; synthetic v2 fixture CAS revised to current read. PG17 [#38524568638](https://github.com/gycha0109-beep/K_beauty/actions/runs/38524568638) SUCCESS. Follow-on retry CAS hardening requires final exact-head CI.
+- Remain stop-gated: independent OWNER policy A + Product cohort/review attestation, Production runtime DB identity, seller evidence re-attestation, Service-Role session authentication boundary for new RPC, #1208 Supply Chain Security. New migration is not authorized to be deployed; default gate OFF. Design §6: `docs/taxonomy-ai/r16i-r4-d8i-representative-price-dual-offer-cutover-design-20261014.md`.
+
+### 2026-10-14 / D8J global seller-offer decision
+
+- User explicitly selected **all recommended catalog products** (free and premium, not just premium) for the common purchase-place comparison. Initial preferred sellers: official store, Coupang, Olive Young, Hwahae; sellers optional and model extensible.
+- Scoped repository read confirmed `app/result/page.js` and `app/result/full-report/page.js` contain their own single `buy_link` CTA paths and `lib/product-purchase-link.js` does not currently trust arbitrary official brands or Coupang.
+- Documentation-only change, no UI/API/DB/schema/Auth/allowlist/Provider/Production changes. D8D v2 Product identity/policy approval and production authority not inferred. Recorded canonical decision and separate implementation/acceptance plan: `docs/taxonomy-ai/r16i-r4-d8j-universal-offer-comparison-policy-20261014.md`.
+- Verification: GitHub files inspected, documentation references/paths reviewed; actual build, core scoring and live four-seller data untested because no runtime changes or release requested. Retain existing #1208 HOLD.
+
+### 2026-10-14 / D8K all-recommendations seller Offer remediation roadmap
+
+- Scope: roadmap/design ONLY for owner-confirmed D8J seller-price/link comparison on **every valid recommended catalog Product** across free/premium/routine/functional/budget/shared surface. Prefer official/Coupang/Olive Young/Hwahae, extensible. Product fit rank and same-Product Offer price sort remain separate.
+- Inspected PR #1255 exact starting head `18cbf755063ecec1edcb1b1df984ad63284f9660`, `app/result/page.js`, `app/result/full-report/page.js`, `components/full-report/PremiumFunctionalDecisionSection.jsx` (potential `Number(null)->0`), `PremiumRoutineConsultSection.jsx`, `lib/product-source.js`, `app/api/analyze/route.js`, `lib/product-purchase-link.js`, `lib/commerce/safe-commerce-fetch.mjs`, existing seller Offer schema and `read_product_offer_presentation_authority_v2(uuid[])` (64 Products/256 Offers). #1208 remains OPEN, #1288 DRAFT unmerged, branch security CI failed.
+- Created `docs/taxonomy-ai/r16i-r4-d8k-universal-offer-remediation-roadmap-20261014.md`: D8K-0 source/slot inventory and NULL baseline; D8K-1 fail-closed comparator; D8K-2 Product-ID and option/Seller evidence/read authority; D8K-3 shared UI; D8K-4 full-surface integration; D8K-5 multi-seller data ops; D8K-6 isolated regression/security; D8K-7 independently approved rollout and rollback. Explicit gates, source paths, test matrix, work split and STOP conditions included. Linked from existing R16I correction roadmap.
+- No Product/Offer data reads/writes to hosted DB, Auth/RLS/schema/migration/API/UI code changes, link allowlist expansion, merge or deployment. Design-ready is not operational authority. First executable task D8K-0 (all recommendation slots, Product IDs, price-null regression baseline).
+
+### 2026-10-14 / D8K-0 active recommendation inventory and NULL price consumer fix
+
+- Scope: execute D8K-0 only (actual active recommendation slot/source → current price/CTA mapping, nullable price regression baseline). No protected API response/DB/Auth/RLS/migration/production/deployment/allowlist edits or seller Offer activation.
+- Baseline ref PR #1255 branch `fix/taxonomy-ai/r16i-d8d-ledger-alignment-20261013`; source-read `app/result/page.js`, `app/result/full-report/page.js`, `components/result/free-v2/FreeResultV2RecommendationGuideStep.jsx`, `components/full-report/PremiumFunctionalDecisionSection.jsx`, `PremiumRoutineConsultSection.jsx`, `lib/premium-functional-display-model.js`, `lib/product-source.js`, `lib/product-offer-read-path.js`, `app/api/analyze/route.js`, `app/api/full-report/route.js`, public share read/projection, MY saved-history page, existing Offer schema/RPC/CI. Active free one Top Pick slot; premium AM/PM + functional primary/secondary/budget 5 slot classes; public shared Top/category 2 classes. Legacy rendered function declarations do not equal active mount.
+- Correctness repair: added `formatKnownProductPriceLabel` to `lib/product-price-read-contract.mjs`, wired `PremiumFunctionalDecisionSection.jsx::priceLabel`. Numeric null/blank/zero/NaN no longer falsely becomes zero price; preserve existing text `product.priceLabel` source as an independently unverified compatibility route.
+- New `scripts/product-evidence/verify-d8k0-active-surface-null-price-baseline-v1.mjs`, connected in `verify-r16i-price-scope-review-v1.mjs` under existing Database Integration Authority. Exact intermediate HEAD `4e6d3d24aafdf95026834d896ecdb715e69f921a` DB Integration #38533727203 SUCCESS with stage `D8K0_ACTIVE_SURFACE_NULL_PRICE_BASELINE`, 160 numeric/locale assertions, 0 Product/Offer writes, no API field changes; prior D8H price contract also PASS. Final documentation HEAD CI requires separate check.
+- Wrote `docs/taxonomy-ai/r16i-r4-d8k0-active-recommendation-surface-and-price-baseline-20261014.md` source-based full mapping and updated D8K roadmap checkpoint. 164×12/166×12 engine replay remains existing criterion; no core engine changes. U10 budget alternative 1/12 synthetic change remains documented, NOT masked.
+- Remain HOLD: Product ID per-row/canonical plan attestation, Offer selected-option/ship cost evidence, public share commerce permissions, browser runtime 100% fixture coverage, #1208 supply-chain vulnerability gate, Product D8D v2 owner policy/Production release. **Next D8K-1 must review existing `lib/product-offer-read-path.js` to prevent duplicating single-Offer policy.**
+
+### 2026-10-14 / D8K-1 common seller option comparison (offline)
+
+- Scope/authority: user confirmed common four-preferred-channel price/link comparison on ALL eligible recommended catalog Products. Work executed solely on a pure in-memory, offline comparison module and synthetic tests; **no live Seller scrape, app UI, API, DB schema/migration/RLS, Production data, direct seller allowlist, core ranking, merge or deployment**.
+- Prior read: `lib/product-offer-read-path.js` already selects a single trusted seller Offer to project `buy_link`; `lib/product-purchase-link.js` is the existing strict direct URL resolver; `public.product_offers` unique seller+listing identity and no structured selected option, gifts or shipping fields. Existing direct URL validation is reused, NOT broadened.
+- Added `lib/commerce/product-offer-comparison-v1.mjs`: 4 preferred channels official/Coupang/OliveYoung/Hwahae + extensible 'other'; fail-closed Product admission, market/price/option/evidence, variant/size/quantity/gift comparison groups, date and shipping distinction; no cheapest badge, no direct links unless separately authorized and current safety checks pass; duplicate listing/offerId/url rows deny all collisions.
+- New `scripts/product-evidence/verify-d8k1-four-seller-comparison-v1.mjs` includes 0/1/2/4/5 sellers, known/unknown shipping, product/variant IDs and pack variants, unverified prices, malicious URLs, availability, missing/stale price, duplicates. Wired into existing `scripts/product-evidence/verify-r16i-price-scope-review-v1.mjs` (Database Integration Authority offline chain).
+- Documented user-facing examples (all synthetic) and real data/CTA restrictions in `docs/taxonomy-ai/r16i-r4-d8k1-four-seller-option-comparison-implementation-20261014.md`; updated D8K roadmap. Subsequent D8K-2 needed for seller evidence/option identity/RPC/data schema; D8K-3/4 needed for actual free/premium UI.
+- CI result snapshot: exact intermediate HEAD `0cd96ca1d3e64ebba86c3e6f13f459ec86bf47dd` DB Integration run #38538604479 **SUCCESS**, stage `D8K1_FOUR_SELLER_OPTION_COMPARISON_SHADOW` PASS, 60 scenarios before later expanded seller-count and same-listing negative controls. Final HEAD CI to be checked independently.
+- HOLD: actual checkout prices, link health, Seller option evidence, freshness TTL owner policy, current Product ID/subject identity and public share authorization, package audit #1208; no Product/Offer writes, scoring mutations or production release.

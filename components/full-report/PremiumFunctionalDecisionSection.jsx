@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { resolvePremiumFunctionalDisplayModel } from "@/lib/premium-functional-display-model";
+import { formatKnownProductPriceLabel } from "@/lib/product-price-read-contract.mjs";
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const EMPTY_DEV_SCENARIOS = [];
@@ -72,11 +73,10 @@ function findingEvidence(finding, locale) {
   return en ? "Available structured data is not enough for a stronger judgment." : "현재 구조화 정보만으로는 더 강한 판단이 어렵습니다.";
 }
 function priceLabel(product, locale) {
+  // Preserve independently supplied display copy; numeric Product fields
+  // must not be coerced through Number(null) into a fabricated zero price.
   if (product?.priceLabel) return product.priceLabel;
-  const min = Number(product?.price_min);
-  const max = Number(product?.price_max);
-  if (Number.isFinite(min) || Number.isFinite(max)) return [Number.isFinite(min) ? min.toLocaleString() : "", Number.isFinite(max) ? max.toLocaleString() : ""].filter(Boolean).join("~") + (locale === "en" ? " KRW" : "원");
-  return locale === "en" ? "Price pending" : "가격 정보 확인 중";
+  return formatKnownProductPriceLabel(product?.price_min, product?.price_max, locale);
 }
 
 function SolutionCard({ plan, copy }) {

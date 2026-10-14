@@ -5,10 +5,11 @@ import fs from "node:fs";
 const api=fs.readFileSync("app/api/admin/products/r16i-correction-review/apply/route.js","utf8");
 const ui=fs.readFileSync("app/admin/products/r16i-correction-review/R16IR4D8ApplyWorkspace.js","utf8");
 const parent=fs.readFileSync("app/admin/products/r16i-correction-review/R16ICorrectionEvidenceWorkbench.js","utf8");
-const migration=fs.readFileSync("supabase/migrations/20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql","utf8");
+const migration=fs.readFileSync("supabase/migrations/20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql","utf8");
 const setup=fs.readFileSync("tests/fixtures/r16i-d8d/00_minimal_pg17.sql","utf8");
 const pg=fs.readFileSync("tests/fixtures/r16i-d8d/20_transactional_pg17.sql","utf8");
 const workflow=fs.readFileSync(".github/workflows/database-integration.yml","utf8");
+const priceShadowPg=fs.readFileSync("tests/fixtures/r16i-d8d/40_price_scope_offer_shadow_pg17.sql","utf8");
 let cases=0;
 function req(regex,text,title){assert.match(text,regex,title);cases++;}
 function ban(regex,text,title){assert.doesNotMatch(text,regex,title);cases++;}
@@ -66,6 +67,14 @@ req(/D8D_ROLLBACK_DRIFT_NOT_BLOCKED/,pg,"drift rejection");
 req(/D8D_DUPLICATE_ROLLBACK_ALLOWED/,pg,"duplicate rollback rejection");
 req(/00_minimal_pg17\.sql/,workflow,"fixture in existing job");
 req(/20_transactional_pg17\.sql/,workflow,"atomic runtime in existing job");
+req(/40_price_scope_offer_shadow_pg17\.sql/,workflow,"two-seller scope shadow in existing PG17 job");
+req(/R16I_D8H_TWO_SELLER_PRICE_SCOPE_SHADOW_PASS/,priceShadowPg,"shadow outcome");
+req(/R16I_D8H_TWO_SELLER_PRICE_SCOPE_ROLLBACK_PASS/,priceShadowPg,"shadow rollback outcome");
+req(/price_min=NULL,price_max=NULL/,priceShadowPg,"nullable Product commercial price");
+req(/INSERT INTO public\.product_offers\(/,priceShadowPg,"seller-scoped offer candidates");
+req(/WHEN unique_violation THEN/,priceShadowPg,"same listing duplicate blocked");
+req(/ROLLBACK;/,priceShadowPg,"shadow fixture rolls back");
+ban(/ALTER TABLE public\.products|CREATE TABLE public\.product_offers/,priceShadowPg,"no schema or policy migration in shadow");
 req(/create database taxonomy_r16i_d8d/,workflow,"isolated DB");
 req(/synthetic/i,setup,"no production commercial price assumption");
 ban(/VALUES\('R16I_S_NATURE_PRODUCT_1',true/i,migration,"never release gate in migration");

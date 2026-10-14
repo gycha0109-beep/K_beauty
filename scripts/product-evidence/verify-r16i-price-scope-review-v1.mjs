@@ -1,0 +1,213 @@
+#!/usr/bin/env node
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import {
+  R16I_PRICE_SCOPE_REVIEW_VERSION,
+  R16I_SCREEN_LIST_PRICE_OBSERVATION_KRW,
+  buildR16IPriceScopeReview
+} from "../../lib/product-intelligence/r16i-price-scope-review-v1.mjs";
+import {
+  buildR16IR4D4LiveReview,R16I_PRODUCT_ID
+} from "../../lib/product-offer-r16i-r4-d4-live-review.mjs";
+
+const fixture=JSON.parse(readFileSync(
+  "fixtures/recommendation-metadata/r16i-d8f-candidate-d4-readonly-prestate-20261013.json",
+  "utf8"
+));
+const view=buildR16IR4D4LiveReview(fixture.snapshot);
+assert.equal(view.decision,"REVIEW_REQUIRED");
+const nowIso="2026-10-14T04:00:00.000Z";
+const evidence=[
+  {evidenceId:"00000000-0000-4000-8000-000000000001",sourceKey:"official_single",
+   selectedOption:"수분크림 80ml 1개",claimedCheckoutPrice:24500,
+   capturedAt:"2026-10-14T00:50:00.000Z"},
+  {evidenceId:"00000000-0000-4000-8000-000000000002",sourceKey:"hwahae_bundle",
+   selectedOption:"수분크림 80ml×2 + 세럼 10ml",claimedCheckoutPrice:29900,
+   capturedAt:"2026-10-14T00:50:00.000Z"}
+];
+const verdicts=evidence.map(e=>({evidenceId:e.evidenceId,verdict:"VERIFIED"}));
+const args={view,evidence,verdicts,nowIso};
+const plan=buildR16IPriceScopeReview(args);
+assert.equal(plan.version,R16I_PRICE_SCOPE_REVIEW_VERSION);
+assert.equal(plan.status,"REVIEW_REQUIRED");
+assert.equal(plan.reason,"CANONICAL_PRODUCT_PRICE_AND_CTA_POLICY_UNRESOLVED");
+assert.equal(plan.product.id,R16I_PRODUCT_ID);
+assert.equal(plan.product.existingCreamVolumeMl,160);
+assert.equal(plan.product.singlePresentationCandidateMl,80);
+assert.equal(plan.product.canonicalPriceMinKrW,null);
+assert.equal(plan.product.canonicalPriceMaxKrW,null);
+assert.equal(plan.product.canonicalUnitPricePer10MlKrW,null);
+assert.equal(plan.product.canonicalBuyLink,null);
+assert.equal(plan.product.productWriteAuthorized,false);
+assert.equal(plan.officialScreenListPriceKrW,R16I_SCREEN_LIST_PRICE_OBSERVATION_KRW);
+assert.equal(plan.officialScreenListPriceKrW,35000);
+assert.equal(plan.officialScreenListPriceProvenance,"USER_SCREENSHOT_DISPLAY_ONLY_NOT_LEDGER_FIELD");
+assert.equal(plan.officialDiscountObservedKrW,10500);
+assert.equal(plan.offerCandidates.length,2);
+assert.deepEqual(plan.offerCandidates.map(x=>x.checkoutAmountKrW),[24500,29900]);
+assert.deepEqual(plan.offerCandidates.map(x=>x.creamQuantity),[1,2]);
+assert.deepEqual(plan.offerCandidates.map(x=>x.creamAggregateMl),[80,160]);
+assert.deepEqual(plan.offerCandidates.map(x=>x.giftSerumMl),[0,10]);
+assert(plan.offerCandidates.every(x=>x.offerInsertAuthorized===false&&x.purchaseLinkTrusted===false));
+assert.equal(plan.bundleComponentsAuthority,"SELECTED_OPTION_LABEL_ONLY_NOT_INDEPENDENT_SKU");
+assert.equal(plan.sourceUrlReattestedInThisModel,false);
+assert.equal(plan.canonicalPriceAuthority,false);
+assert.equal(plan.ownerPricePolicyApproved,false);
+assert.equal(plan.productionWritesAuthorized,false);
+assert.equal(plan.executableSql,null);
+assert.equal(plan.product.creamSizeCanBeAppliedIndependently,false);
+
+const denied=[
+ ["UNVERIFIED_OFFICIAL",{...args,verdicts:[{...verdicts[0],verdict:"REJECTED"},verdicts[1]]},"OWNER_VERDICT_REQUIRED"],
+ ["MISSING_OFFICIAL",{...args,evidence:evidence.slice(1)},"MISSING_OR_DUPLICATED_SELLER_EVIDENCE"],
+ ["DUPLICATE_HWAHAE",{...args,evidence:[...evidence,evidence[1]]},"MISSING_OR_DUPLICATED_SELLER_EVIDENCE"],
+ ["WRONG_OPTION",{...args,evidence:[{...evidence[0],selectedOption:"80ml×2"},evidence[1]]},"CHECKOUT_OPTION_PRICE_OR_FRESHNESS_INVALID"],
+ ["WRONG_SELLER_KEY",{...args,evidence:[{...evidence[0],sourceKey:"hwahae_bundle"},evidence[1]]},"MISSING_OR_DUPLICATED_SELLER_EVIDENCE"],
+ ["BLANK_CHECKOUT",{...args,evidence:[{...evidence[0],claimedCheckoutPrice:null},evidence[1]]},"CHECKOUT_OPTION_PRICE_OR_FRESHNESS_INVALID"],
+ ["ZERO_CHECKOUT",{...args,evidence:[{...evidence[0],claimedCheckoutPrice:0},evidence[1]]},"CHECKOUT_OPTION_PRICE_OR_FRESHNESS_INVALID"],
+ ["FRACTIONAL_CHECKOUT",{...args,evidence:[{...evidence[0],claimedCheckoutPrice:24500.1},evidence[1]]},"CHECKOUT_OPTION_PRICE_OR_FRESHNESS_INVALID"],
+ ["STALE_CAPTURE",{...args,evidence:[{...evidence[0],capturedAt:"2026-01-01T00:00:00.000Z"},evidence[1]]},"CHECKOUT_OPTION_PRICE_OR_FRESHNESS_INVALID"],
+ ["FUTURE_CAPTURE",{...args,evidence:[{...evidence[0],capturedAt:"2026-10-15T00:50:00.000Z"},evidence[1]]},"CHECKOUT_OPTION_PRICE_OR_FRESHNESS_INVALID"],
+ ["MISSING_VERDICT",{...args,verdicts:verdicts.slice(1)},"OWNER_VERDICT_REQUIRED"],
+ ["DUPLICATE_VERDICT",{...args,verdicts:[...verdicts,verdicts[0]]},"OWNER_VERDICT_REQUIRED"],
+ ["STALE_PRODUCT_REVISION",{...args,view:{...view,revision_matches:false}},"GUARDED_VIEW_OR_TIME_MISSING"],
+ ["INVALID_VIEW",{...args,view:{...view,decision:"BLOCKED"}},"GUARDED_VIEW_OR_TIME_MISSING"],
+ ["PRODUCT_PRICE_DRIFT",{...args,view:{...view,reviewed_fields:view.reviewed_fields.map(r=>
+   r.entity==="products"&&r.field==="price_min"?{...r,before:24500}:r)}},"PRODUCT_PRESTATE_OR_SCOPE_DRIFT"],
+ ["PRODUCT_SIZE_DRIFT",{...args,view:{...view,reviewed_fields:view.reviewed_fields.map(r=>
+   r.entity==="products"&&r.field==="size_ml"?{...r,before:80}:r)}},"PRODUCT_PRESTATE_OR_SCOPE_DRIFT"],
+ ["TIME_UNDEFINED",{...args,nowIso:null},"GUARDED_VIEW_OR_TIME_MISSING"]
+];
+for(const [name,scenario,reason] of denied){
+ const output=buildR16IPriceScopeReview(scenario);
+ assert.equal(output.status,"BLOCKED",name);
+ assert.equal(output.reason,reason,name);
+ assert.equal(output.canonicalPriceAuthority,false,name);
+ assert.equal(output.productionWritesAuthorized,false,name);
+ assert.equal(output.executableSql,null,name);
+}
+const migration=readFileSync("supabase/migrations/20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql","utf8");
+const ui=readFileSync("app/admin/products/r16i-correction-review/R16IR4D8CorrectionApproval.js","utf8");
+assert.match(migration,/intended_min<>official\.checkout_price_krw/);
+assert.match(migration,/intended_max<>official\.checkout_price_krw/);
+assert.match(migration,/INSERT INTO public\.product_offers\(/);
+assert.match(ui,/buildR16IPriceScopeReview/);
+assert.match(ui,/정상가 관측\/결제금액 분리/);
+assert.match(ui,/대표가격 자동 확정 금지/);
+assert.doesNotMatch(ui,/자동 승인.*D8D/);
+// Reuse the existing D8F offline CI gate. The alias loader executes actual
+// Product Offer/CTA consumer code against in-memory rows, never a hosted DB.
+const consumer = spawnSync(process.execPath, [
+  "--no-warnings", "--experimental-loader", "./scripts/node-alias-loader.mjs",
+  "scripts/product-evidence/verify-r16i-d8h-offer-consumer-runtime-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 20000 });
+assert.equal(consumer.status, 0,
+  `R16I D8H consumer runtime shadow failed: ${consumer.error?.message || consumer.stderr || consumer.stdout}`);
+const consumerSummary = JSON.parse(consumer.stdout.trim().split("\n").at(-1));
+assert.equal(consumerSummary.status, "PASS");
+assert.equal(consumerSummary.stage, "R16I_D8H_OFFER_CONSUMER_RUNTIME_SHADOW");
+assert.equal(consumerSummary.productWrites, 0);
+assert.equal(consumerSummary.offerWrites, 0);
+console.log(JSON.stringify(consumerSummary));
+// Experimental A-policy null-price replay against the real 164x12 Skin Match
+// engine. This is strictly a what-if: pass does not authorize NULL pricing.
+const nullPriceReplay = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-r16i-d8h-null-price-engine-replay-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 60000 });
+assert.equal(nullPriceReplay.status, 0,
+  `R16I null-price real-engine replay failed: ${nullPriceReplay.error?.message || nullPriceReplay.stderr || nullPriceReplay.stdout}`);
+const nullPriceSummary = JSON.parse(nullPriceReplay.stdout.trim().split("\n").at(-1));
+assert.equal(nullPriceSummary.status, "PASS_STRUCTURAL_SHADOW_WITH_PRICE_UI_HOLD");
+assert.equal(nullPriceSummary.counters.comparedCandidates, 1968);
+assert.equal(nullPriceSummary.productWrites, 0);
+assert.equal(nullPriceSummary.offerWrites, 0);
+assert.equal(nullPriceSummary.productionPricePolicyApproved, false);
+console.log(JSON.stringify(nullPriceSummary));
+// Actual 176-row candidate snapshot replay: 166 projected != 166 authorized.
+// Separately replays synthetic legacy-only 164 negative control.
+const candidateNull = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-r16i-d8h-null-price-candidate-admission-shadow-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 60000 });
+assert.equal(candidateNull.status, 0,
+  `R16I 176-candidate NULL-price shadow failed: ${candidateNull.error?.message || candidateNull.stderr || candidateNull.stdout}`);
+const candidateNullSummary = JSON.parse(candidateNull.stdout.trim().split("\n").at(-1));
+assert.equal(candidateNullSummary.status, "PASS_WITH_BUDGET_CONSUMER_HOLD");
+assert.equal(candidateNullSummary.observed.comparedCandidates, 1992);
+assert.equal(candidateNullSummary.syntheticConservative.comparedCandidates, 1968);
+assert.equal(candidateNullSummary.nonlegacyProductAdmission, "NOT_ATTESTED");
+assert.equal(candidateNullSummary.productWrites, 0);
+assert.equal(candidateNullSummary.offerWrites, 0);
+assert.equal(candidateNullSummary.releaseAuthorized, false);
+console.log(JSON.stringify(candidateNullSummary));
+// Always verify nullable price, display bands and budget wording contract.
+const priceContract = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-r16i-d8h-price-consumer-contract-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
+assert.equal(priceContract.status, 0,
+  `R16I price consumer contract failed: ${priceContract.error?.message || priceContract.stderr || priceContract.stdout}`);
+const priceContractSummary = JSON.parse(priceContract.stdout.trim().split("\n").at(-1));
+assert.equal(priceContractSummary.status, "PASS");
+assert.equal(priceContractSummary.stage, "R16I_D8H_PRICE_CONSUMER_CONTRACT");
+assert.equal(priceContractSummary.missingPriceBand, "");
+assert.equal(priceContractSummary.nullApiFieldsPreserved, true);
+assert.equal(priceContractSummary.productWrites, 0);
+assert.equal(priceContractSummary.offerWrites, 0);
+console.log(JSON.stringify(priceContractSummary));
+// D8K-0: active source paths and the functional-plan null-price formatter.
+// Offline only: this does not mount any four-seller consumer or change APIs.
+const d8k0 = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-d8k0-active-surface-null-price-baseline-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
+assert.equal(d8k0.status, 0,
+  `D8K-0 active-surface/price baseline failed: ${d8k0.error?.message || d8k0.stderr || d8k0.stdout}`);
+const d8k0Summary = JSON.parse(d8k0.stdout.trim().split(String.fromCharCode(10)).at(-1));
+assert.equal(d8k0Summary.status, "PASS");
+assert.equal(d8k0Summary.stage, "D8K0_ACTIVE_SURFACE_NULL_PRICE_BASELINE");
+assert.equal(d8k0Summary.apiFieldsChanged, false);
+assert.equal(d8k0Summary.productWrites, 0);
+assert.equal(d8k0Summary.offerWrites, 0);
+assert.equal(d8k0Summary.productionReleaseAuthorized, false);
+console.log(JSON.stringify(d8k0Summary));
+// D8K-1: offline four-seller option comparison; no live Offer evidence/CTA grants.
+const d8k1 = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-d8k1-four-seller-comparison-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
+assert.equal(d8k1.status, 0,
+  "D8K-1 seller comparison failed: " +
+  (d8k1.error?.message || d8k1.stderr || d8k1.stdout));
+const d8k1Summary = JSON.parse(d8k1.stdout.trim().split(String.fromCharCode(10)).at(-1));
+assert.equal(d8k1Summary.status, "PASS");
+assert.equal(d8k1Summary.stage, "D8K1_FOUR_SELLER_OPTION_COMPARISON_SHADOW");
+assert.equal(d8k1Summary.comparableFourSellerCount, 4);
+assert.equal(d8k1Summary.actualSellerDataAttested, false);
+assert.equal(d8k1Summary.changedApiFields, false);
+assert.equal(d8k1Summary.rankingChanged, false);
+assert.equal(d8k1Summary.productWrites, 0);
+assert.equal(d8k1Summary.offerWrites, 0);
+assert.equal(d8k1Summary.productionReleaseAuthorized, false);
+console.log(JSON.stringify(d8k1Summary));
+// D8I is DESIGN SHADOW ONLY: exact two Offer candidates, zero writes/grants.
+const dualOfferPreview = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-r16i-d8i-dual-offer-cutover-preview-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
+assert.equal(dualOfferPreview.status, 0,
+  `R16I D8I dual-Offer design gate failed: ${dualOfferPreview.error?.message || dualOfferPreview.stderr || dualOfferPreview.stdout}`);
+const dualOfferSummary = JSON.parse(dualOfferPreview.stdout.trim().split("\n").at(-1));
+assert.equal(dualOfferSummary.status, "PASS");
+assert.equal(dualOfferSummary.stage, "R16I_D8I_DUAL_OFFER_CUTOVER_DESIGN_SHADOW");
+assert.equal(dualOfferSummary.offerCandidates, 2);
+assert.equal(dualOfferSummary.ownerPricePolicyApproved, false);
+assert.equal(dualOfferSummary.productWrites, 0);
+assert.equal(dualOfferSummary.offerWrites, 0);
+assert.equal(dualOfferSummary.productionReleaseAuthorized, false);
+console.log(JSON.stringify(dualOfferSummary));
+console.log(JSON.stringify({
+ status:"PASS",stage:"R16I_PRICE_SCOPE_REVIEW_SHADOW",
+ testCases:denied.length+1,
+ officialListKrW:plan.officialScreenListPriceKrW,
+ officialSelectedCheckoutKrW:plan.offerCandidates[0].checkoutAmountKrW,
+ hwahaeKitCheckoutKrW:plan.offerCandidates[1].checkoutAmountKrW,
+ canonicalProductPriceApproved:false,offerInserts:0,
+ productWrites:0,releaseAuthorized:false
+}));
