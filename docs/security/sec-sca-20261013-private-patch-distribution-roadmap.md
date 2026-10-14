@@ -2,7 +2,7 @@
 
 > 작성일: 2026-10-13 KST · Track: security · Watchtower-Track: security
 >
-> **상태: IN_PROGRESS — B0 PARTIAL / B1 SOURCE+ORIGINAL-TARBALL PREFLIGHT PASS / B2 ISOLATED SOURCE PREFLIGHT PASS (별도 PR), B1·B2 전체 승인 HOLD.** 원본 package/lock·감사 정책 변경, 자체 배포본·병합·보안 해결 완료는 아직 없다. 기존 Supply Chain 감사 FAIL 유지.
+> **상태: IN_PROGRESS — B0 PARTIAL / B1 SOURCE+904 UNIT PASS / B2 SOURCE+829 UNIT PASS / B3 TEMP DOUBLE-PACK PASS, 배포 승인·B4+ HOLD.** 원본 package/lock·감사 정책 변경, 자체 배포본·병합·보안 해결 완료는 아직 없다. 기존 Supply Chain 감사 FAIL 유지.
 >
 > [전체 SCA-0~7 로드맵](sec-sca-20261012-remediation-roadmap.md) · [상세 기술 설계](sec-sca-20261012-remediation-technical-design.md) · [업스트림 패치 검토](sec-sca-20261012-upstream-patch-candidate-review.md) · [실행 Ledger](sec-sca-20261012-execution-ledger.md) · [보안 이슈 #1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) · [진단 PR #1240](https://github.com/gycha0109-beep/K_beauty/pull/1240)
 
@@ -176,3 +176,12 @@ npm 공식 문서상 루트 package.json overrides는 다른 패키지·포크·
 | rollback | 취약 구현 복귀 없는 격리 rollback 대상 및 사고 대응 |
 
 **최종 종료 조건:** B1/B2 수정 동작 + B3 출처·재현성 + B4 양쪽 취약점·무예외 감사 해결 + B5 patched Android + B6 CI·review + B7 main/운영 책임을 **모두** 통과해야 #1208 종료. 문서·진단 PR의 개별 PASS로 대체 불가.
+
+## 7. 2026-10-14 실물 B3 격리 검증 업데이트
+
+- [B3 Draft PR #1288](https://github.com/gycha0109-beep/K_beauty/pull/1288)는 현재 main에서 출발해 B1/B2 검증된 17개 파일만 선별 수용했다. 이 과정에서 서로 독립적인 B1/B2 PR 전체를 병합하지 않았다.
+- [실제 CI #38495602311](https://github.com/gycha0109-beep/K_beauty/actions/runs/38495602311): B3 독립 job **PASS**, 패치된 braces/node-forge 각 2회 `npm pack` 후 tarball SHA512/파일 SHA256 일치. 결과 tarball은 보안 검증용 임시 디렉터리에서만 존재하고 외부 registry/공개 artifact로 전송하지 않음.
+- braces: 10개 파일, SHA256 `d4f1219db19bfeb4e1c3f0354f9269569393f1b8c9f8c0295b80346926d4fa70`; forge: 53개 파일, SHA256 `ed30cf67cfa87f097c9f6b9ceadd4187fa3efb9399fd166380fc5ea36f8915e5`, 미패치 dist 6개는 후보에서 제외하여 0개 확인.
+- B1 904 passing / B2 829 passing, 4 pending / 0 failures. 단 실제 재배포 권리·소유자·보안 리뷰·브라우저 번들 의존 consumer를 아직 검증하지 않았으므로 **B3 정식 출시/승인 HOLD**, B4~B7 전부 HOLD. 원본 package-lock과 canonical npm audit는 취약한 원본을 그대로 가리키며 감사 FAIL을 유지.
+- B3의 두 번째 빌드는 독립 임시 빌드 디렉터리를 사용하지만 **같은 최초 npm-ci 원본 설치본을 다시 materialize**한다. 별도 클린 npm-ci 설치로 독립적인 환경까지 검증하는 추가 게이트는 미달성으로 기록한다.
+- 정확한 source→tarball SHA 및 잔여 상태: [B3 증거 기록](sec-sca-20261014-b3-temp-package-evidence.md). 최종 승인 결론을 절대 PASS로 승격하지 않는다.
