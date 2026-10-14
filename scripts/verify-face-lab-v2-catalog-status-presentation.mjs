@@ -91,7 +91,8 @@ const adapterSource = readFileSync(
   "utf8"
 );
 assert.ok(adapterSource.includes(READ_VERSION), "browser wire version must track the reader");
-assert.ok(!/from\\s*["']\\.\\/independent-catalog-published-read-core\\.js["']/.test(adapterSource));
+assert.ok(!adapterSource.includes('from "./independent-catalog-published-read-core.js"'));
+assert.ok(!adapterSource.includes("from './independent-catalog-published-read-core.js'"));
 
 const component = readFileSync(
   new URL("../components/full-report/face-lab/FaceLabV2Result.jsx", import.meta.url),
