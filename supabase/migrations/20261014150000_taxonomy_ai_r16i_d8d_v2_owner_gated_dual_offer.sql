@@ -134,9 +134,31 @@ BEGIN
   WHERE apply_request_id=p_request_id FOR UPDATE;
  IF FOUND THEN
    IF existing_app.proposal_id=p_proposal_id AND existing_app.applied_by=p_actor_id
-     AND existing_app.rolled_back_at IS NULL
-   THEN RETURN jsonb_build_object('status','ALREADY_APPLIED','applicationId',existing_app.application_id,
-      'productWrites',0,'offerWrites',0);
+     AND existing_app.rolled_back_at IS NULL THEN
+     -- Idempotent receipt is valid only if both written Offers and the Product
+     -- still match the immutable application ledger. Never hide drift on retry.
+     IF EXISTS(SELECT 1 FROM public.products current_p
+       WHERE current_p.id=existing_app.product_id
+         AND current_p.updated_at=(existing_app.after_values->>'updated_at')::timestamptz
+         AND current_p.size_ml=80 AND current_p.price_min IS NULL
+         AND current_p.price_max IS NULL AND current_p.unit_price_per_10ml IS NULL
+         AND current_p.buy_link IS NULL)
+       AND (SELECT count(*) FROM public.admin_r16i_d8d_v2_application_offers
+          WHERE application_id=existing_app.application_id)=2
+       AND (SELECT count(*) FROM public.admin_r16i_d8d_v2_application_offers child
+          JOIN public.product_offers actual ON actual.offer_id=child.offer_id
+          WHERE child.application_id=existing_app.application_id
+            AND actual.product_id=existing_app.product_id
+            AND actual.seller_key=child.seller_key
+            AND actual.price_amount=(child.offer_values->>'price_amount')::numeric
+            AND actual.listing_url=child.offer_values->>'listing_url'
+            AND actual.offer_state=child.offer_values->>'offer_state'
+            AND actual.product_scope_state=child.offer_values->>'product_scope_state')=2
+     THEN
+       RETURN jsonb_build_object('status','ALREADY_APPLIED',
+          'applicationId',existing_app.application_id,'productWrites',0,'offerWrites',0);
+     END IF;
+     RAISE EXCEPTION 'R16I_D8D_V2_IDEMPOTENT_RECEIPT_DRIFT';
    END IF;
    RAISE EXCEPTION 'R16I_D8D_V2_REPLAY_OR_ROLLBACK_CONFLICT';
  END IF;
