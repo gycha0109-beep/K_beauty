@@ -140,8 +140,112 @@ try{
    "rebuilt browser bundle accepts malformed ASN.1 nested child");
   tested.push(filename);
  }
+
+ // Real Chromium is required for forge.all: jQuery's document initialization
+ // cannot be simulated with a fake function or a Node-only VM.
+ // jQuery tarball source is SHA512-pinned, installed ONLY under tmp.
+ const jqDir=path.join(temp,"jquery-registry");
+ fs.mkdirSync(jqDir);
+ const jqPackText=run("npm",[
+  "pack","jquery@3.7.1","--ignore-scripts","--json","--no-audit","--no-fund",
+  "--pack-destination",jqDir
+ ],root,45000,{...process.env,CI:"true",npm_config_update_notifier:"false"});
+ const jqPack=JSON.parse(jqPackText);
+ assert.ok(Array.isArray(jqPack)&&jqPack.length===1);
+ assert.equal(jqPack[0].filename,"jquery-3.7.1.tgz");
+ const jqArchive=fs.readFileSync(path.join(jqDir,"jquery-3.7.1.tgz"));
+ const jqIntegrity="sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==";
+ assert.equal("sha512-"+createHash("sha512").update(jqArchive).digest("base64"),jqIntegrity,
+  "real browser jQuery dependency registry provenance changed");
+ run("tar",["-xzf",path.join(jqDir,"jquery-3.7.1.tgz"),"-C",jqDir,
+   "--no-same-owner","--no-same-permissions"],root,12000);
+ const jqSource=path.join(jqDir,"package/dist/jquery.min.js");
+ assert.ok(fs.lstatSync(jqSource).isFile());
+ const chromeCandidates=["google-chrome","google-chrome-stable","chromium","chromium-browser"];
+ const chrome=chromeCandidates.find(c=>{
+  const probe=spawnSync("which",[c],{encoding:"utf8",timeout:3000});
+  return probe.status===0;
+ });
+ assert.ok(chrome,"real Google Chrome/Chromium unavailable: forge.all browser test HOLD");
+ const allBrowserChecks=[];
+ for(const [kind,bundle,expectMalformed] of [
+   ["original",path.join(original,"dist/forge.all.min.js"),true],
+   ["patched",path.join(dist,"forge.all.min.js"),false]
+ ]){
+  const page=path.join(temp,"chrome-"+kind);
+  fs.mkdirSync(page);
+  fs.copyFileSync(jqSource,path.join(page,"jquery.min.js"));
+  fs.copyFileSync(bundle,path.join(page,"forge.all.min.js"));
+  const input={
+   publicPem:pem,
+   digest64:digest.toString("base64"),
+   wrongDigest64:createHash("sha256").update(wrong).digest("base64"),
+   normalSignature64:normal.toString("base64"),
+   malformedSignature64:malicious.toString("base64")
+  };
+  const execJs=String.raw`
+   (() => {
+     let outcome={status:"FAIL",jquery:"",bundle:"",normal:null,wrong:null,malformed:null,error:""};
+     try{
+       const data=JSON.parse(document.getElementById("b3-input").textContent);
+       outcome.jquery=window.jQuery?.fn?.jquery||"";
+       if(outcome.jquery!=="3.7.1")throw new Error("real jQuery absent");
+       outcome.bundle=typeof window.forge?.pki?.publicKeyFromPem;
+       if(outcome.bundle!=="function")throw new Error("forge.all browser API unavailable");
+       const pub=window.forge.pki.publicKeyFromPem(data.publicPem);
+       const verify=(hash,sig)=>{
+         try {return pub.verify(atob(hash),atob(sig))===true;}
+         catch {return false;}
+       };
+       outcome.normal=verify(data.digest64,data.normalSignature64);
+       outcome.wrong=verify(data.wrongDigest64,data.normalSignature64);
+       outcome.malformed=verify(data.digest64,data.malformedSignature64);
+       outcome.status="PASS";
+     }catch(e){outcome.error=String(e?.message||e).slice(0,120);}
+     const elem=document.getElementById("b3-output");
+     elem.setAttribute("data-status",outcome.status);
+     elem.setAttribute("data-normal",String(outcome.normal));
+     elem.setAttribute("data-wrong",String(outcome.wrong));
+     elem.setAttribute("data-malformed",String(outcome.malformed));
+     elem.setAttribute("data-jquery",outcome.jquery);
+     elem.setAttribute("data-error",outcome.error);
+   })();
+  `;
+  const html=[
+   "<!doctype html><html><head><meta charset="utf-8">",
+   "<script src="jquery.min.js"></script>",
+   "<script src="forge.all.min.js"></script>",
+   "</head><body><div id="b3-output" data-status="NOT_RUN"></div>",
+   "<script type="application/json" id="b3-input">",
+   JSON.stringify(input).replace(/</g,"\\u003c"),
+   "</script><script>",execJs,"</script></body></html>"
+  ].join("");
+  fs.writeFileSync(path.join(page,"probe.html"),html);
+  const profile=path.join(temp,"chrome-user-"+kind);
+  const dom=run(chrome,[
+   "--headless=new","--no-sandbox","--disable-gpu","--disable-dev-shm-usage",
+   "--disable-extensions","--disable-background-networking","--no-first-run",
+   "--no-default-browser-check","--no-proxy-server","--virtual-time-budget=6000",
+   "--user-data-dir="+profile,"--dump-dom",
+   "file://"+path.join(page,"probe.html")
+  ],page,45000);
+  const element=dom.match(/<div id="b3-output"[^>]*>/)?.[0]||"";
+  const attr=k=>element.match(new RegExp('data-'+k+'="([^"]*)"'))?.[1]||"";
+  const actual={kind,status:attr("status"),jquery:attr("jquery"),
+    normal:attr("normal"),wrong:attr("wrong"),
+    malformed:attr("malformed"),error:attr("error")};
+  console.log("SCA_B3_CHROMIUM_FORGE_ALL_CASE="+JSON.stringify(actual));
+  assert.equal(actual.status,"PASS","real browser forge.all initialization failed: "+actual.error);
+  assert.equal(actual.jquery,"3.7.1");
+  assert.equal(actual.normal,"true","forge.all browser valid RSA rejected");
+  assert.equal(actual.wrong,"false","forge.all browser wrong RSA message accepted");
+  assert.equal(actual.malformed,String(expectMalformed),
+   kind+" forge.all original/patch ASN.1 negative control failed");
+  allBrowserChecks.push(actual);
+ }
+
  const report={
-  status:"PARTIAL_DISPOSABLE_BROWSER_REBUILD_CORE_RSA_PASS_FORGE_ALL_RUNTIME_HOLD",
+  status:"PASS_DISPOSABLE_CORE_AND_FORGE_ALL_CHROMIUM_RSA_ONLY_NOT_RELEASE",
   verifiedUpstreamCommit:sha,buildConfigSha256:hex(configBytes),
   patchedRsaSha256:hex(Buffer.from(rsaCode)),
   toolchain:pinnedToolchain,nodeVersion:process.version,
@@ -149,7 +253,9 @@ try{
   sourceMapLimits:mapped,
   unpatchedBrowserBundleMalformationAcceptedAsNegativeControl:tested.length,
   RSAUMDPositiveNegativePassed:tested,
-  forgeAllBundleBuiltButRuntime:"HOLD_REQUIRES_REAL_BROWSER_AND_JQUERY",
+  forgeAllChromiumRsaChecks:allBrowserChecks,
+  jqueryRegistryIntegrity:jqIntegrity,
+  forgeAllBroaderBrowserBehavior:"NOT_ATTESTED_RSA_ONLY",
   primeWorkerBundleBuiltButRuntime:"NOT_APPLICABLE_TO_RSA_VERIFY",
   originalNpmTarballUnmodified:true,candidateTarballUnmodified:true,
   officialAuditBypass:false,distributionApproved:false,onlyTempFiles:true
