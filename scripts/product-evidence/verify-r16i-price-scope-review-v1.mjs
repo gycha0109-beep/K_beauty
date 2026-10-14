@@ -140,6 +140,20 @@ assert.equal(candidateNullSummary.productWrites, 0);
 assert.equal(candidateNullSummary.offerWrites, 0);
 assert.equal(candidateNullSummary.releaseAuthorized, false);
 console.log(JSON.stringify(candidateNullSummary));
+// Always verify nullable price, display bands and budget wording contract.
+const priceContract = spawnSync(process.execPath, [
+  "scripts/product-evidence/verify-r16i-d8h-price-consumer-contract-v1.mjs"
+], { cwd: process.cwd(), encoding: "utf8", timeout: 30000 });
+assert.equal(priceContract.status, 0,
+  `R16I price consumer contract failed: ${priceContract.error?.message || priceContract.stderr || priceContract.stdout}`);
+const priceContractSummary = JSON.parse(priceContract.stdout.trim().split("\n").at(-1));
+assert.equal(priceContractSummary.status, "PASS");
+assert.equal(priceContractSummary.stage, "R16I_D8H_PRICE_CONSUMER_CONTRACT");
+assert.equal(priceContractSummary.missingPriceBand, "");
+assert.equal(priceContractSummary.nullApiFieldsPreserved, true);
+assert.equal(priceContractSummary.productWrites, 0);
+assert.equal(priceContractSummary.offerWrites, 0);
+console.log(JSON.stringify(priceContractSummary));
 console.log(JSON.stringify({
  status:"PASS",stage:"R16I_PRICE_SCOPE_REVIEW_SHADOW",
  testCases:denied.length+1,
