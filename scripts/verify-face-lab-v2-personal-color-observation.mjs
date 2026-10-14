@@ -139,7 +139,7 @@ assert.deepEqual(none.qualityFlags, ["quality_unknown"]);
 assert.equal(none.seasonCandidate, null);
 assert.equal(none.sourceImagePersisted, false);
 
-const injected = { ...baseline, imageBase64: "should-never-be-persisted" };
+const injected = { ...baseline, base64: "should-never-be-persisted" };
 assert.equal(
   buildPersonalColorObservation(injected).status,
   "insufficient_evidence",
