@@ -220,11 +220,11 @@ jobs:
           git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
 
   b3-browser-bundle-rebuild-isolation:
-    name: B3 source-pinned forge browser bundle rebuild diagnostic
+    name: B3 browser provenance and B4 full graph experiment (release HOLD)
     outputs:
       forge_full_dist_sha256: ${{ steps.fullpack.outputs.forge_full_dist_sha256 }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 35
     steps:
       - name: Checkout exact HEAD for isolated browser rebuild
         uses: actions/checkout@v7
@@ -251,6 +251,8 @@ jobs:
 
       - name: Rebuild upstream-pinned webpack bundles, browser RSA, full temp tarball
         id: fullpack
+        env:
+          SCA_B4_VALIDATE_FULL_GRAPH: "1"
         run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
 
       - name: Assert original application manifest and lock unmodified
