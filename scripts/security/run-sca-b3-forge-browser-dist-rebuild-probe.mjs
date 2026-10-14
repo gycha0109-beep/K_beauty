@@ -6,7 +6,7 @@
 import assert from "node:assert/strict";
 import {createHash,constants,generateKeyPairSync,privateEncrypt,sign} from "node:crypto";
 import {spawnSync} from "node:child_process";
-import {createRequire} from "node:module";
+import {runInNewContext} from "node:vm";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -99,11 +99,25 @@ try{
  const padding=256-digestInfo.length-3;assert.ok(padding>=8);
  const encoded=Buffer.concat([Buffer.from([0,1]),Buffer.alloc(padding,255),Buffer.from([0]),digestInfo]);
  const malicious=privateEncrypt({key:key.privateKey,padding:constants.RSA_NO_PADDING},encoded);
- const require=createRequire(import.meta.url);
+ const loadUMD=(filename)=>{
+  const code=fs.readFileSync(filename,"utf8");
+  assert.ok(code.length>10000&&code.length<15*1024*1024,
+    "unexpected browser bundle size");
+  const browser={Buffer,Uint8Array,ArrayBuffer,TextEncoder,TextDecoder,
+    setTimeout,clearTimeout,console:{log(){},warn(){},error(){}}};
+  browser.window=browser;
+  browser.self=browser;
+  browser.globalThis=browser;
+  browser.navigator={userAgent:"BEJEWELY test browser",appName:"Netscape"};
+  runInNewContext(code,browser,{filename:path.basename(filename),timeout:20000});
+  assert.ok(browser.forge?.pki?.publicKeyFromPem,
+    "browser UMD entry point not registered in isolated browser context");
+  return browser.forge;
+ };
  const tested=[];
  for(const filename of ["forge.min.js","forge.all.min.js"]){
-  const patched=require(path.join(dist,filename));
-  const upstreamOriginal=require(path.join(original,"dist",filename));
+  const patched=loadUMD(path.join(dist,filename));
+  const upstreamOriginal=loadUMD(path.join(original,"dist",filename));
   const verify=(forge,hash,signature)=>{
    assert.ok(forge?.pki?.publicKeyFromPem,"UMD browser forge RSA API unavailable: "+filename);
    const pk=forge.pki.publicKeyFromPem(pem);
