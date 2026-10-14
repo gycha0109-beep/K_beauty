@@ -98,6 +98,11 @@ try{
     path.join(shadow,"package-lock.json"));
   mandatory("npm",["install","--package-lock-only","--ignore-scripts",
     "--no-audit","--no-fund","--prefer-offline"],shadow,165000);
+  // npm may preserve an old transitive registry resolution in the copied
+  // lock when the package version does not change. Retry with npm's resolver
+  // command, without hand-editing lock entries or changing repo manifests.
+  mandatory("npm",["update","node-forge","--package-lock-only",
+    "--ignore-scripts","--no-audit","--no-fund","--prefer-offline"],shadow,165000);
   const candidateLock=JSON.parse(fs.readFileSync(path.join(shadow,"package-lock.json"),"utf8"));
   assert.equal(candidateLock.lockfileVersion,3);
   const candidateEntries=Object.create(null);
