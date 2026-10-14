@@ -216,6 +216,50 @@ mustFail(act(stale,"remove","lip_color"),"look_state_selection_invalid");
 const duplicate=structuredClone(addedLens.state);
 duplicate.selections.push(structuredClone(duplicate.selections[0]));
 mustFail(act(duplicate,"remove","lip_color"),"look_state_selection_invalid");
+// M4 re-entry: a client snapshot with a truncated or scrambled change log
+// cannot be treated as a valid committed look, even when its revision matches.
+const corruptHistory = (change) => {
+  const copy = structuredClone(addedLens.state);
+  change(copy);
+  mustFail(act(copy, "remove", "lip_color"), "look_state_history_invalid");
+};
+corruptHistory((state) => { state.history.pop(); });
+corruptHistory((state) => { state.revision = 3; });
+corruptHistory((state) => { state.history[0].revision = 2; });
+corruptHistory((state) => { state.history[1].revision = 1; });
+corruptHistory((state) => { state.history[1].slotKeys = []; });
+corruptHistory((state) => {
+  state.history[1].slotKeys = ["lip_color", "lip_color"];
+});
+corruptHistory((state) => {
+  state.history[1].slotKeys = ["lip_color", "iris_appearance"];
+});
+const corruptInitial = structuredClone(initialized.state);
+corruptInitial.history.push({
+  revision: 1,
+  action: "add",
+  slotKeys: ["lip_color"]
+});
+mustFail(act(corruptInitial, "add", "lip_color", lip), "look_state_history_invalid");
+
+// Legitimate bounded history rolls forward without ever requiring 33 entries.
+const rolled = structuredClone(addedLip.state);
+rolled.revision = 33;
+rolled.history = Array.from({ length: 32 }, (_, index) => ({
+  revision: index + 2,
+  action: "replace",
+  slotKeys: ["lip_color"],
+  selectedVariantRef: `product_variant:${p1}:coral`
+}));
+const rolledBefore = JSON.stringify(rolled);
+const rolledNext = act(rolled, "remove", "lip_color");
+assert.equal(rolledNext.status, "ready", JSON.stringify(rolledNext));
+assert.equal(rolledNext.state.revision, 34);
+assert.equal(rolledNext.state.history.length, 32);
+assert.equal(rolledNext.state.history[0].revision, 3);
+assert.equal(rolledNext.state.history.at(-1).revision, 34);
+assert.equal(JSON.stringify(rolled), rolledBefore, "re-entry must not mutate prior history");
+
 assert.equal(addedFinish.state.revision,3,
   "a rejected action must never mutate previously committed state");
 assert.equal(addedLip.state.revision,1);
