@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { PERSONAL_COLOR_OBSERVATION_VERSION } from "../lib/face-lab-v2/personal-color/observation.js";
+import { buildFaceLabObservationAnalysis } from "../lib/face-lab-observation-contract.js";
+import {
+  PERSONAL_COLOR_OBSERVATION_VERSION,
+  buildPersonalColorObservation
+} from "../lib/face-lab-v2/personal-color/observation.js";
 import {
   PERSONAL_COLOR_PALETTE_CANDIDATE_VERSION,
   buildPersonalColorPaletteCandidate
@@ -115,5 +119,56 @@ const contaminated = {
 assert.deepEqual(buildPersonalColorPaletteCandidate(contaminated), preview);
 assert.equal(JSON.stringify(buildPersonalColorPaletteCandidate(contaminated)).includes("secret-image-data"), false);
 assert.equal(JSON.stringify(buildPersonalColorPaletteCandidate(contaminated)).includes("spring"), false);
+
+
+// Real module chain: sanitized Face Lab analysis -> M2-A observation -> M2-B
+// exploration. A quality failure must not regain palette authority downstream.
+function chainObservation(qualityOverrides = {}) {
+  const field = (value, key) => ({
+    value, visibility: "clear", evidence: [`fixture:${key}`], unavailableReason: null
+  });
+  const analysis = buildFaceLabObservationAnalysis({
+    quality: {
+      faceVisibility: "clear",
+      faceScale: "adequate",
+      pose: { yaw: "frontal", pitch: "level", roll: "level" },
+      occlusion: { forehead: "none", brows: "none", eyes: "none", cheeks: "none", jawline: "none" },
+      sharpness: "clear", exposure: "balanced", lightingUniformity: "even",
+      whiteBalance: "stable", filterOrEditing: "none_detected",
+      makeupCoverage: "none_or_light", structureSuitability: "suitable",
+      colorSuitability: "suitable", evidence: ["fixture:quality"],
+      ...qualityOverrides
+    },
+    observations: {
+      colorAppearance: {
+        apparentTemperature: field("warm", "temperature"),
+        apparentBrightness: field("medium", "brightness"),
+        apparentSaturation: field("muted", "saturation")
+      },
+      visualLanguage: { featureContrast: field("high", "contrast") }
+    }
+  }, {
+    eligibility: { faceLabEligible: true },
+    provider: "fixture",
+    model: "fixture"
+  });
+  return buildPersonalColorObservation(analysis);
+}
+
+const chainedObservation = chainObservation();
+assert.equal(chainedObservation.status, "available");
+const chainedPalette = buildPersonalColorPaletteCandidate(chainedObservation);
+assert.equal(chainedPalette.status, "exploratory");
+assert.deepEqual(chainedPalette.paletteCandidate.familyTokens, preview.paletteCandidate.familyTokens);
+assert.equal(chainedPalette.styleColorExecution, null);
+assert.equal(chainedPalette.undertone, null);
+
+const castObservation = chainObservation({ whiteBalance: "warm_cast" });
+assert.equal(castObservation.status, "partial");
+shouldHold(castObservation, "observation_not_eligible");
+
+const filterObservation = chainObservation({ filterOrEditing: "heavy" });
+assert.equal(filterObservation.status, "insufficient_evidence");
+shouldHold(filterObservation, "observation_not_eligible");
 
 console.log("FACE_LAB_PERSONAL_COLOR_PALETTE_CONTRACT=PASS");
