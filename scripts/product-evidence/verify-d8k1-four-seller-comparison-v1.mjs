@@ -194,6 +194,8 @@ for (const [override, reason] of [
 const historical = run([single({ last_observed_at: "2026-01-01T00:00:00Z" })],
   { maxAgeMs: null });
 assert.equal(historical.groups[0].offers[0].priceFreshness, "not_assessed");
+assert.equal(historical.groups[0].offers[0].ctaHref, null);
+assert.equal(historical.groups[0].offers[0].ctaBlockedReason, "PRICE_FRESHNESS_NOT_ATTESTED");
 assert.equal(historical.groups[0].cheapestBadgeAuthorized, false);
 assert.equal(run([official], { maxAgeMs: 0 }).status, "hold");
 // Duplicate listing/option, duplicated offer IDs and URL collisions all deny all.
