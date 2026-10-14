@@ -3168,3 +3168,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added source-pinned disposable browser rebuild with upstream webpack 4.44.1. On #38499853956, all six original browser output names rebuilt; `forge.min.js` UMD core RSA valid/malformed negative control PASS. Full `forge.all.min.js` browser/jQuery runtime is HOLD; no dist shipped to candidate.
 - Corrected CycloneDX SHA512 to hexadecimal; original npm SHA512 integrity stays base64 and is independently compared. No audit allowlist or package alias.
 - Remaining gates: security maintainer, redistribution license approval, private artifact retention, browser full-runtime, B4 installed full graph/raw HIGH0, B5 APK/device, B6 policy, B7 explicit merge remain HOLD/NOT_RUN.
+
+### 2026-10-14 — B3 full-dist Chromium + double clean-runner isolated tarball
+
+- Draft security PR #1288. Direct consumer B3 probe extended with actual Chromium (pinned jquery@3.7.1 SHA512) for original and patched forge.all.min.js RSA; positive/wrong-message/malformed ASN.1 boundaries PASS, negative original reproduces vulnerability.
+- Quarantined full-browser-dist 59-file node-forge tarball created twice per runner and matched across two independent Ubuntu24.04/Node22 clean runners: SHA256 67a51b864d9e483417ff34425a5a09012d333a5184dcc39f966731935463db50. Original license preserved; pack metadata prepublish removed; no artifact uploaded or published, all OS temp deleted.
+- Exact-HEAD Security run #38504941021: B3 isolated, B3 existing independent, browser rebuild and full-dist independent replay PASS. Canonical unmodified audit FAIL (still-original installed app dependency); full Chromium RSA coverage is not general UI/network/browser or Android acceptance. B3 formal owner/legal/artifact distribution HOLD; B4+ NOT_RUN.
