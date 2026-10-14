@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { buildFaceLabObservationAnalysis } from "../lib/face-lab-observation-contract.js";
 import { buildPersonalColorObservation } from "../lib/face-lab-v2/personal-color/observation.js";
 import { buildPersonalColorCheekMasks } from "../lib/face-lab-v2/personal-color/cheek-mask-geometry.js";
+import { comparePersonalColorPhotoMeasurements } from "../lib/face-lab-v2/personal-color/photo-capture-comparison.js";
 import {
   PERSONAL_COLOR_LAB_SAMPLING_VERSION,
   measurePersonalColorPhotoLab
@@ -240,5 +241,58 @@ masksHold({
   },
   exclusionPolygons: Array.from({ length: 8 }, () => rect(0, 0, 1, 1))
 }, "geometry_work_budget_exceeded");
+
+// M2-C: numerical capture-to-capture difference is research evidence only.
+// It never certifies skin-color reproducibility or same-subject identity.
+const sameCapture = comparePersonalColorPhotoMeasurements(pipeline, pipeline);
+assert.equal(sameCapture.status, "evaluation_only");
+for (const region of ["combined", "leftCheek", "rightCheek"]) {
+  assert.equal(sameCapture.comparison[region].deltaE76, 0);
+  assert.equal(sameCapture.comparison[region].deltaL, 0);
+}
+const shiftedPixels = Uint8ClampedArray.from(fixturePixels);
+for (let pixel = 0; pixel < 32 * 32; pixel += 1) {
+  shiftedPixels[pixel * 4] = 168;
+  shiftedPixels[pixel * 4 + 1] = 168;
+  shiftedPixels[pixel * 4 + 2] = 168;
+}
+const shiftedMeasurement = measurePersonalColorPhotoLab({
+  observation: observation(),
+  width: 32, height: 32, rgba: shiftedPixels,
+  skinRegionMasks: masks.skinRegionMasks,
+  exclusionMask: masks.exclusionMask
+});
+assert.equal(shiftedMeasurement.status, "measurement_only");
+const shiftedComparison = comparePersonalColorPhotoMeasurements(pipeline, shiftedMeasurement);
+assert.equal(shiftedComparison.status, "evaluation_only");
+assert.ok(shiftedComparison.comparison.combined.deltaE76 > 10);
+assert.ok(shiftedComparison.comparison.combined.deltaL > 10);
+assert.equal(shiftedComparison.sameSubjectVerified, false);
+assert.equal(shiftedComparison.repeatabilityVerdict, null);
+assert.equal(shiftedComparison.calibratedColorAccuracy, null);
+assert.equal(shiftedComparison.undertone, null);
+assert.equal(shiftedComparison.seasonCandidate, null);
+assert.equal(shiftedComparison.suitability, null);
+assert.equal(shiftedComparison.sourceImagePersisted, false);
+assert.deepEqual(
+  shiftedComparison,
+  comparePersonalColorPhotoMeasurements(pipeline, shiftedMeasurement),
+  "two measurement summaries must compare deterministically"
+);
+for (const invalidPair of [
+  null,
+  { ...pipeline, schemaVersion: "stale" },
+  { ...pipeline, status: "insufficient_evidence" },
+  { ...pipeline, sourceImagePersisted: true },
+  { ...pipeline, combined: { lab: { L: NaN, a: 0, b: 0 } } },
+  { ...pipeline, regions: { ...pipeline.regions, leftCheek: {
+    ...pipeline.regions.leftCheek, sampleCount: 0
+  } } }
+]) {
+  const held = comparePersonalColorPhotoMeasurements(pipeline, invalidPair);
+  assert.equal(held.status, "insufficient_evidence");
+  assert.equal(held.reason, "measurement_pair_not_eligible");
+  assert.equal(held.comparison, null);
+}
 
 console.log("FACE_LAB_PERSONAL_COLOR_LAB_SAMPLING=PASS");
