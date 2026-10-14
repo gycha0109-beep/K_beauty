@@ -7,6 +7,9 @@ on:
       - scripts/security/*sca-release*
       - scripts/security/sca-release-*
       - scripts/security/run-sca-b6-*
+      - scripts/security/sca-readiness-*.mjs
+      - scripts/security/run-sca-readiness-evidence.mjs
+      - docs/security/sec-sca-20261013-private-patch-distribution-roadmap.md
       - scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
       - security/release/**
       - .github/workflows/sca-release-readiness.yml
@@ -35,7 +38,7 @@ jobs:
         with:
           node-version: 22
           package-manager-cache: false
-      - run: node --test scripts/security/sca-release-bundle.test.mjs
+      - run: node --test scripts/security/sca-release-bundle.test.mjs scripts/security/sca-readiness-evidence.test.mjs
   candidate:
     name: Clean release candidate structure (not approval)
     runs-on: ubuntu-24.04
@@ -101,10 +104,20 @@ jobs:
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: node scripts/verify-supply-chain-audit.mjs
-      - name: Preserve raw full and production responses
+      - name: Capture exact HEAD raw full and production audit evidence (not a waiver)
         if: ${{ always() }}
-        run: |
-          node --input-type=module -e 'import {spawnSync} from "node:child_process"; for(const args of [["audit","--json"],["audit","--omit=dev","--json"]]) { const p=spawnSync("npm",args,{encoding:"utf8",timeout:120000}); console.log("SCA_B6_RAW_AUDIT_BEGIN="+args.join(" ")); console.log(p.stdout); const r=JSON.parse(p.stdout); if(p.error||![0,1].includes(p.status)||r.error||!r.metadata?.vulnerabilities)throw Error("audit service failure"); console.log("SCA_B6_RAW_AUDIT_EXIT="+p.status); }'
+        env:
+          SCA_EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/security/run-sca-readiness-evidence.mjs
+      - name: Upload separate diagnostic evidence even when mandatory audit fails
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: bejewely-sca-readiness-${{ github.event.pull_request.head.sha || github.sha }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: .sca-readiness-evidence/*.json
+
   codeql:
     name: CodeQL release preparation code
     runs-on: ubuntu-24.04
