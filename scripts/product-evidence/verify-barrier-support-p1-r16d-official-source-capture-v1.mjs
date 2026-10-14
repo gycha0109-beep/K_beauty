@@ -185,7 +185,8 @@ try{
  assert.equal(recapture.terminal,"R16D_RAW_SOURCE_AND_EXACT_HEAD_PROVENANCE_PASS_FORMULATION_REVISION_AND_SEMANTIC_KEY_HOLD");
  const phaseB=JSON.parse(await fs.readFile("docs/ci/consolidation-audits/phase-b-policy.json","utf8"));
  assert.ok(phaseB.approvedAddedWorkflows.includes("taxonomy-ai-r16d-source-capture.yml"));
- assert.equal(phaseB.baselineWorkflowCount+phaseB.approvedAddedWorkflows.length-phaseB.approvedRetiredWorkflows.length,70);
+ const workflowInventory=(await fs.readdir('.github/workflows')).filter(name=>/\.ya?ml$/i.test(name));
+ assert.equal(phaseB.baselineWorkflowCount+phaseB.approvedAddedWorkflows.length-phaseB.approvedRetiredWorkflows.length,workflowInventory.length);
  assert.equal(phaseB.clusters["taxonomy-ai-r16d-p1-official-source"].primaryResponsibility,"catalog-taxonomy");
  assert.equal(phaseB.clusters["taxonomy-ai-r16d-p1-official-source"].watchtowerTrackBinding,"static:taxonomy-ai");
  assert.equal(audit.invariance.production_writes,0);
