@@ -49,8 +49,8 @@
 
 ## 5. 도입 시 필수 구현 계약
 
-1. 순차 파이프라인 고정: 공식 출처/robots/동일 origin/SSR F/바이트 제한 검사 → 2MiB 이하 HTML 메모리 내부 HTML5 파서 → bounded node/depth/attrs → 유일한 대표 상품 영역 → 동일 루트의 정확한 catalog title → 동일 소유 폼의 **명시적 선택된** 용량 검사 → 검토 후보. 각 단계 미확정 시 보류.
-2. DOM tree builder의 HTML5 오류 복구는 HTML root structure만 판단할 수 있게 하며, 중복 attribute/소유 불명/추천 카드/리뉴얼 및 market/formulation은 여전히 HOLD. parse5의 DOM 오류 복구 자체가 SKU authority가 되어서는 안 된다.
+1. 순차 파이프라인 고정: 공식 출처/robots/동일 origin/SSRF/바이트 제한 검사 → 2MiB 이하 HTML 메모리 내부 HTML5 파서 → bounded node/depth/attrs → 유일한 대표 상품 영역 → 동일 루트의 정확한 catalog title → 동일 소유 폼의 **명시적 선택된** 용량 검사 → 검토 후보. 각 단계 미확정 시 보류.
+2. DOM tree builder의 HTML5 오류 복구는 HTML root structure만 판단할 수 있게 하며, **parser error callback에서 중복 attribute 등 허용 대상이 아닌 오류를 명시적으로 기록/보류**한다. 중복 attribute/소유 불명/추천 카드/리뉴얼 및 market/formulation은 여전히 HOLD. parse5의 DOM 오류 복구 자체가 SKU authority가 되어서는 안 된다.
 3. 크로스셀·리뷰·메뉴·related product·script/JSON-LD/OG·다른 폼의 속성이나 선택값을 현재 판매 상품으로 인정하지 않는다. `form=`으로 외부 연결된 요소는 검증된 소유권 경로가 없으면 보류.
 4. 스크립트 실행, headless 브라우저, crawler restriction 회피, HTML 원문 또는 제품 식별값을 artifact에 저장하는 행위는 금지.
 5. CodeQL, TRUST, PIE, Main Health, **Supply Chain Security**, lockfile integrity 모두 성공한 exact-head PR에 한해 실제 공식 URL 6개 read-only trial 진행. 필드 `exactSkuVerified=false`, `factConfirmationAuthorized=false`, `subjectCreationAuthorized=false` 보전.
