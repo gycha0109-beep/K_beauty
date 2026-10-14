@@ -7,7 +7,7 @@ import {digest, inspectArchive, verifyBundle, reference} from './sca-release-bun
 const ownerRoles=['product-planning','development','security-review','license-review','maintenance','distribution'];
 const requiredClaims=['originalPackageNames','immutableArtifactBytes','authenticatedWrite','anonymousArchiveReadDenied','noPublicNpmShadowing','noRedirectedCredentialDisclosure','separateReadAndPublishTokens','strictRegistryUrlAndTarballPathBinding','officialNpmAuditUnchanged'];
 
-export function reviewP2Preparation({authorization,plan,forgeLicense,expectedForgeLicenseSha256}) {
+export function validateP2OfflinePolicy({authorization,plan}) {
   assert.equal(authorization?.schema,'bejewely.sca-p2-preparation-authorization.v1');
   assert.equal(authorization?.project,'BEJEWELY');
   assert.equal(authorization?.governance?.mode,'single-owner');
@@ -38,6 +38,10 @@ export function reviewP2Preparation({authorization,plan,forgeLicense,expectedFor
   assert.equal(plan.externalCapabilitiesVerified,false,'registry is not provisioned or externally tested');
   assert.ok(Array.isArray(plan.evidenceRequiredBeforeActivation)&&plan.evidenceRequiredBeforeActivation.length>=7);
 
+  return {ownerGovernance:'SINGLE_OWNER_PREPARATION_APPROVED',registryState:'OFFLINE_DESIGN_ONLY',actualPublish:false};
+}
+export function reviewP2Preparation({authorization,plan,forgeLicense,expectedForgeLicenseSha256}) {
+  validateP2OfflinePolicy({authorization,plan});
   assert.ok(typeof forgeLicense==='string'&&forgeLicense.length>500,'actual forge upstream license bytes required');
   assert.match(expectedForgeLicenseSha256,/^[a-f0-9]{64}$/,'pinned forge LICENSE SHA256 required');
   assert.equal(digest(Buffer.from(forgeLicense,'utf8')),expectedForgeLicenseSha256,'actual forge LICENSE does not match pinned source bytes');
