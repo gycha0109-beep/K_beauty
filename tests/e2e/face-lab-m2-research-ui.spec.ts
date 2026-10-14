@@ -65,7 +65,15 @@ async function showResearch(page: Page, qualityOverrides: Record<string, string>
     mimeType: "image/png",
     buffer: ONE_PIXEL_IMAGE
   });
-  await expect(page.getByTestId("face-lab-personal-color-research")).toBeVisible();
+  const preview = page.getByTestId("face-lab-personal-color-research");
+  try {
+    await expect(preview).toBeVisible();
+  } catch {
+    const body = await page.locator("body").innerText().catch(() => "BODY_UNAVAILABLE");
+    throw new Error(
+      `M2_RESEARCH_PREVIEW_NOT_RENDERED body=${body.replace(/\\s+/g, " ").slice(0, 1400)}`
+    );
+  }
 }
 
 test.describe("Face Lab M2 developer-only palette exploration", () => {
