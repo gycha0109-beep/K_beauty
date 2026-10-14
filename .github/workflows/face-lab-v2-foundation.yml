@@ -468,3 +468,10 @@ jobs:
         run: npm ci
       - name: Verify Next production compilation with M2 UI not enabled
         run: npm run build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify M2 developer research preview and fail-closed color holds
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://fixture.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
+        run: npx playwright test tests/e2e/face-lab-m2-research-ui.spec.ts --project=chromium
