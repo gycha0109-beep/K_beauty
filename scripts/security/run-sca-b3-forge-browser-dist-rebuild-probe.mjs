@@ -244,8 +244,115 @@ try{
   allBrowserChecks.push(actual);
  }
 
+
+ // A *separate* B3 full-dist candidate: only disposable npm pack, never
+ // overwrites the existing no-dist B3 output or application package-lock.
+ // Restores the six official distribution entrypoints using *patched* builds.
+ const distroNames=["forge.all.min.js","forge.all.min.js.map",
+  "forge.min.js","forge.min.js.map","prime.worker.min.js",
+  "prime.worker.min.js.map"].sort();
+ const approvedLicenseSha="f63ff0e4e239244aa79280da2dd4811a0469e5e201caf5cbc0d97c3a1dff8e82";
+ const walk=(dir)=>{
+  const contents={};
+  const visit=(location,prefix="")=>{
+   for(const e of fs.readdirSync(location,{withFileTypes:true})){
+    const rel=path.posix.join(prefix,e.name),absolute=path.join(location,e.name);
+    assert.ok(!e.isSymbolicLink()&&(e.isDirectory()||e.isFile()),
+      "disallowed symlink/special filesystem candidate: "+rel);
+    assert.ok(!/(?:^|\/)(?:\.env(?:\.|$)|\.npmrc|\.netrc|node_modules|id_rsa|id_ed25519)(?:\/|$)/i.test(rel),
+      "secret-like candidate file path: "+rel);
+    if(e.isDirectory()){visit(absolute,rel);continue;}
+    const size=fs.statSync(absolute).size;
+    assert.ok(size<20*1024*1024,"unexpected candidate file size: "+rel);
+    contents[rel]=hex(fs.readFileSync(absolute));
+    assert.ok(Object.keys(contents).length<1000,"unexpected candidate file count");
+   }
+  };
+  visit(dir);
+  return contents;
+ };
+ const originalFiles=walk(original);
+ assert.equal(originalFiles["LICENSE"],approvedLicenseSha,"original forge LICENSE provenance changed");
+ const originalPkg=JSON.parse(fs.readFileSync(path.join(original,"package.json"),"utf8"));
+ assert.equal(originalPkg.version,"1.4.0");
+ assert.deepEqual(Object.keys(originalPkg.scripts||{}).filter(x=>
+  /^(?:preinstall|install|postinstall|prepublish|prepublishOnly|prepare|prepack|postpack)$/.test(x)),
+  ["prepublish"],"original upstream lifecycle drift, stop before packing");
+ const fullDistPacks=[];
+ for(let iteration=1;iteration<=2;iteration++){
+  const packFolder=path.join(temp,"full-dist-pack-"+iteration);
+  const pkgFolder=path.join(packFolder,"candidate");
+  const outFolder=path.join(packFolder,"output");
+  fs.mkdirSync(packFolder);fs.mkdirSync(outFolder);
+  fs.cpSync(original,pkgFolder,{recursive:true,force:false,errorOnExist:true});
+  fs.copyFileSync(path.join(target,"lib/rsa.js"),path.join(pkgFolder,"lib/rsa.js"));
+  fs.rmSync(path.join(pkgFolder,"dist"),{recursive:true});
+  fs.mkdirSync(path.join(pkgFolder,"dist"));
+  for(const name of distroNames)fs.copyFileSync(path.join(dist,name),path.join(pkgFolder,"dist",name));
+  const pkgJsonFile=path.join(pkgFolder,"package.json");
+  const metadata=JSON.parse(fs.readFileSync(pkgJsonFile,"utf8"));
+  assert.equal(metadata.name,"node-forge");
+  assert.equal(metadata.version,"1.4.0");
+  delete metadata.scripts.prepublish;
+  fs.writeFileSync(pkgJsonFile,JSON.stringify(metadata,null,2)+"\n");
+  const candidateFiles=walk(pkgFolder);
+  const differences=Object.keys(originalFiles).filter(x=>candidateFiles[x]!==originalFiles[x]).sort();
+  assert.deepEqual(differences,["lib/rsa.js","package.json",...distroNames.map(x=>"dist/"+x)].sort(),
+   "full-dist candidate modified unexpected original package files");
+  assert.deepEqual(Object.keys(candidateFiles).sort(),Object.keys(originalFiles).sort(),
+   "full-dist candidate lost/gained source files");
+  const output=JSON.parse(run("npm",[
+   "pack",pkgFolder,"--ignore-scripts","--offline","--json",
+   "--no-audit","--no-fund","--pack-destination",outFolder
+  ],packFolder,55000));
+  assert.equal(output.length,1);
+  assert.equal(output[0].filename,"node-forge-1.4.0.tgz");
+  const tgz=path.join(outFolder,output[0].filename);
+  const bytes=fs.readFileSync(tgz);
+  const archiveSha256=hex(bytes);
+  const names=run("tar",["-tzf",tgz],packFolder,16000).split("\n").filter(Boolean);
+  assert.equal(names.filter(x=>x.startsWith("package/dist/")).length,6,
+   "full-dist archive leaked or omitted browser assets");
+  assert.deepEqual(names.filter(x=>x.startsWith("package/dist/")).map(x=>x.slice(13)).sort(),
+   distroNames,"full-dist archive missing exact browser bundle set");
+  assert.ok(names.every(x=>x.startsWith("package/")&&!x.includes("..")&&!x.includes("\\")),
+   "unsafe full-dist archive member");
+  const unpack=path.join(packFolder,"unpacked");
+  fs.mkdirSync(unpack);
+  run("tar",["-xzf",tgz,"-C",unpack,"--no-same-owner",
+   "--no-same-permissions"],packFolder,15000);
+  const actualDir=path.join(unpack,"package");
+  const artifactFiles=walk(actualDir);
+  assert.equal(Object.keys(artifactFiles).length,59,
+   "original forge 59-file npm browser compatibility surface changed");
+  assert.equal(artifactFiles["LICENSE"],approvedLicenseSha);
+  assert.equal(artifactFiles["lib/rsa.js"],hex(fs.readFileSync(path.join(target,"lib/rsa.js"))));
+  for(const n of distroNames)assert.equal(artifactFiles["dist/"+n],
+   hex(fs.readFileSync(path.join(dist,n))),"packed browser bundle digest mismatch "+n);
+  const packedJson=JSON.parse(fs.readFileSync(path.join(actualDir,"package.json"),"utf8"));
+  assert.equal(packedJson.name,"node-forge");
+  assert.equal(packedJson.version,"1.4.0");
+  assert.ok(!("prepublish" in packedJson.scripts),"packed lifecycle hook reintroduced");
+  fullDistPacks.push({sha256:archiveSha256,sha512:
+   "sha512-"+createHash("sha512").update(bytes).digest("base64"),
+   files:Object.keys(artifactFiles).length,distCount:distroNames.length,
+   rsaSha256:artifactFiles["lib/rsa.js"],browserBundleSha256:
+   distroNames.map(n=>({path:"dist/"+n,sha256:artifactFiles["dist/"+n]}))});
+ }
+ assert.deepEqual(fullDistPacks[0],fullDistPacks[1],
+  "B3 browser-complete patch tarballs non-reproducible within same runner");
+ if("SCA_B3_EXPECTED_FORGE_FULL_DIST_SHA256" in process.env){
+  assert.match(process.env.SCA_B3_EXPECTED_FORGE_FULL_DIST_SHA256,/^[a-f0-9]{64}$/);
+  assert.equal(fullDistPacks[0].sha256,process.env.SCA_B3_EXPECTED_FORGE_FULL_DIST_SHA256,
+   "B3 browser-complete package not reproducible across clean CI runners");
+ }
+ if(process.env.GITHUB_OUTPUT){
+  fs.appendFileSync(process.env.GITHUB_OUTPUT,
+   "forge_full_dist_sha256="+fullDistPacks[0].sha256+"\n");
+ }
+
  const report={
-  status:"PASS_DISPOSABLE_CORE_AND_FORGE_ALL_CHROMIUM_RSA_ONLY_NOT_RELEASE",
+  status:"PASS_TEMP_FULL_DIST_PACK_AND_CHROMIUM_RSA_NOT_A_RELEASE",
   verifiedUpstreamCommit:sha,buildConfigSha256:hex(configBytes),
   patchedRsaSha256:hex(Buffer.from(rsaCode)),
   toolchain:pinnedToolchain,nodeVersion:process.version,
@@ -256,6 +363,10 @@ try{
   forgeAllChromiumRsaChecks:allBrowserChecks,
   jqueryRegistryIntegrity:jqIntegrity,
   forgeAllBroaderBrowserBehavior:"NOT_ATTESTED_RSA_ONLY",
+  browserCompleteTempPack:fullDistPacks[0],
+  browserCompleteTempPackReproducibleWithinRunner:true,
+  artifactsDeletedOnExit:true,
+  actualInstallGraphStillOriginal:true,
   primeWorkerBundleBuiltButRuntime:"NOT_APPLICABLE_TO_RSA_VERIFY",
   originalNpmTarballUnmodified:true,candidateTarballUnmodified:true,
   officialAuditBypass:false,distributionApproved:false,onlyTempFiles:true
