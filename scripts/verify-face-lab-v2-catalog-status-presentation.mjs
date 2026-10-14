@@ -84,6 +84,15 @@ const before = JSON.stringify(base);
 present(base);
 assert.equal(JSON.stringify(base), before, "presentation must not mutate a dry-run source");
 
+// The client-side adapter must never transitively bundle the Node-only
+// independent published reader (it imports node:crypto via the review gate).
+const adapterSource = readFileSync(
+  new URL("../lib/face-lab-v2/catalog-status-presentation.js", import.meta.url),
+  "utf8"
+);
+assert.ok(adapterSource.includes(READ_VERSION), "browser wire version must track the reader");
+assert.ok(!/from\\s*["']\\.\\/independent-catalog-published-read-core\\.js["']/.test(adapterSource));
+
 const component = readFileSync(
   new URL("../components/full-report/face-lab/FaceLabV2Result.jsx", import.meta.url),
   "utf8"
