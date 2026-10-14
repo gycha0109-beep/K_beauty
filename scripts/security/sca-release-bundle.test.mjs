@@ -17,6 +17,22 @@ function fixture(){
     signatures:requiredRoles.map((role,i)=>({role,keyId:keys[i].id,signature:sign(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:'+role+'\n'),approvalBytes]),privateKeys[i]).toString('base64')})),trust,now};};
   return {approval,trust,build};
 }
+function singleOwnerFixture(){
+  const f=fixture(),keypair=generateKeyPairSync('ed25519');
+  f.approval.ownerApprovalMode='single-owner';
+  f.trust.ownerGovernanceMode='single-owner';
+  f.trust.keys=[{id:'test-project-owner',owner:'Sole Test Project Owner',roles:['project-owner'],
+    notBefore:'2026-10-14T00:00:00Z',notAfter:'2026-11-14T00:00:00Z',
+    publicKeyPem:keypair.publicKey.export({type:'spki',format:'pem'})}];
+  f.build=()=>{
+    const approvalBytes=Buffer.from(JSON.stringify(f.approval));
+    return {candidateSha256:f.approval.candidateSha256,approvalBytes,trust:f.trust,
+      signatures:[{role:'project-owner',keyId:'test-project-owner',signature:sign(null,
+        Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:project-owner\\n'),approvalBytes]),keypair.privateKey).toString('base64')}],
+      now:Date.parse('2026-10-14T06:00:00Z')};
+  };
+  return f;
+}
 function tar(name='package/package.json',type='0',body=Buffer.from('{}')){
   const h=Buffer.alloc(512);h.write(name);h.write('0000644\0',100);h.write('0000000\0',108);h.write('0000000\0',116);
   h.write(body.length.toString(8).padStart(11,'0')+'\0',124);h.write('00000000000\0',136);h.fill(32,148,156);h.write(type,156);h.write('ustar\0',257);
@@ -68,7 +84,41 @@ test('expired approvals and keys or excessive approval window are rejected',()=>
   f.approval.expiresAt='2026-10-30T00:00:00Z';assert.throws(()=>verifyApproval(f.build()),/seven-day/);
   f.approval.expiresAt='2026-10-15T00:00:00Z';f.trust.keys[0].notAfter='2026-10-14T08:00:00Z';assert.throws(()=>verifyApproval(f.build()),/key invalid/);
 });
-test('single-owner self approval is rejected',()=>{const f=fixture();f.trust.keys.forEach(k=>k.owner='Test sole owner');assert.throws(()=>verifyApproval(f.build()),/two named owners/);});
+test('legacy multi-owner mode remains strict; same person on four keys is not a project-owner decision',()=>{
+  const f=fixture();f.trust.keys.forEach(k=>k.owner='Test sole owner');
+  assert.throws(()=>verifyApproval(f.build()),/two named owners/);
+});
+test('sole project owner signs once for all responsibilities with no fictitious second person',()=>{
+  const result=verifyApproval(singleOwnerFixture().build());
+  assert.equal(result.ownerApprovalMode,'single-owner');
+  assert.deepEqual(result.signingOwners,['Sole Test Project Owner']);
+  assert.equal(result.scope,'UPLOAD_AND_READBACK_ONLY');
+  assert.equal(result.officialAudit,'FAIL');
+  assert.equal(result.mergeApproved,false);
+  assert.equal(result.productionApproved,false);
+});
+test('sole owner governance does not infer signed upload authorization from build preparation',()=>{
+  const f=singleOwnerFixture(),v=f.build();
+  v.signatures=[];
+  assert.throws(()=>verifyApproval(v),/exactly one signed/);
+  const noKey=singleOwnerFixture();noKey.trust.keys=[];
+  assert.throws(()=>verifyApproval(noKey.build()),/untrusted or revoked/);
+});
+test('sole owner mode rejects wrong roles, revoked keys, tampered scope and governance mismatch',()=>{
+  const wrong=singleOwnerFixture().build();wrong.signatures[0].role='security';
+  assert.throws(()=>verifyApproval(wrong),/project-owner signature/);
+  const extra=singleOwnerFixture().build();extra.signatures.push(extra.signatures[0]);
+  assert.throws(()=>verifyApproval(extra),/exactly one signed/);
+  const revoke=singleOwnerFixture(),v=revoke.build();revoke.trust.revokedKeyIds.push('test-project-owner');
+  assert.throws(()=>verifyApproval(v),/revoked/);
+  const mismatch=singleOwnerFixture();mismatch.trust.ownerGovernanceMode='multi-owner';
+  assert.throws(()=>verifyApproval(mismatch.build()),/governance mismatch/);
+  const tamper=singleOwnerFixture().build();tamper.approvalBytes=Buffer.from(tamper.approvalBytes.toString()+' ');
+  assert.throws(()=>verifyApproval(tamper),/signature mismatch/);
+  const scope=singleOwnerFixture();scope.approval.purpose='PRODUCTION';
+  assert.throws(()=>verifyApproval(scope.build()),/UPLOAD_AND_READBACK_ONLY/);
+});
+
 test('security exception, production permission and mutable/public registry are not admitted',()=>{
   for(const [k,value]of [['auditExceptionApproved',true],['auditGateRemainsRequired',false],['purpose','PRODUCTION'],['immutableVersions',false],['privateRepository',false],['noUpstreamShadowing',false]]){
     const f=fixture();f.approval[k]=value;assert.throws(()=>verifyApproval(f.build()));
