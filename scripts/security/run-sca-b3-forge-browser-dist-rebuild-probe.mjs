@@ -397,7 +397,7 @@ try{
  const signingSource=path.join(root,"node_modules","@expo","code-signing-certificates");
  const signingOriginal=JSON.parse(fs.readFileSync(path.join(signingSource,"package.json"),"utf8"));
  assert.equal(signingOriginal.version,"0.0.6","Expo signing consumer version drift");
- assert.deepEqual(signingOriginal.dependencies,{"node-forge":"^1.3.0"},
+ assert.deepEqual(signingOriginal.dependencies,{"node-forge":"^1.3.3"},
    "Expo signing direct consumer dependencies changed");
  const signing=path.join(fixture,"@expo","code-signing-certificates");
  fs.mkdirSync(signing,{recursive:true});
