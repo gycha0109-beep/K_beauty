@@ -317,3 +317,11 @@
 - Replayed real **historical** `fixtures/recommendation-metadata/r16i-d8f-candidate-d4-readonly-prestate-20261013.json` in synthetic test. R16I `size_ml=160` vs 80ml selected unit holds; if size were hypothetically 80, offers[] absent so parent Offer still not found. No invented parent Offer ID and no inference that 2026-10-13 prestate equals current operational state.
 - `scripts/product-evidence/verify-d8k9-parent-offer-identity-binding-v1.mjs`: fetched-source in-memory V8 **468 assertions PASS**; D8K-8 synthetic regression **407 PASS**. Full native Node CI on exact PR HEAD must be separately confirmed. New test imported into D8F price review chain. No actual Supabase RPC, seller source bytes or browser flow executed.
 - D8K-9 owner/protected gate pending: authenticate current Product/source/formulation and existing parent Offer real IDs with explicitly authorized read-only operator, independent observed screenshot/selected SKU + reviewer, DB role-bound RPC, 100% active recommendation slot E2E; open #1208 continues to block merge/deploy.
+
+### D8K-9 사용자 Native Node 검증 완료 (2026-10-15)
+
+- **USER_REPORTED_NATIVE_NODE_PASS, 468 assertions**: Windows PowerShell에서 정확한 `HEAD c462f2b8`, `D8K9_CANONICAL_PRODUCT_PARENT_OFFER_COLLISION_BINDING_SHADOW` PASS 확인.
+- 기록: [D8K-9 문서 §5](r16i-r4-d8k9-canonical-product-parent-offer-binding-20261015.md). 이전 단독 V8 synthetic 검증에 더해 Windows Native Node 런타임 테스트 완료. `MODULE_TYPELESS_PACKAGE_JSON`은 비차단 경고.
+- 이번 검사는 `offlineSyntheticOnly=true`, 실제 서버 RPC/실제 seller 증빙/Product Fact/live admission/운영 DB 변경·가격/CTA 전부 NOT VERIFIED/NOT AUTHORIZED. **D8K-9 로컬 검증 완료 ≠ 실제 판매 가격 비교 출시 가능.**
+- 별도 Git 오류 `origin/fix/migration-composer-form-disambiguation`는 D8K-9 정상 fetch/check-out 이후 검증 PASS와 무관. 해당 다른 브랜치의 문제는 여기서 임의 수정하지 않음.
+- 다음 실질 게이트는 권한 승인된 **현재 DB 읽기 전용 Product/Offer 3-way 실사** + 실제 선택옵션 캡처·독립 검토다. #1208 OPEN, stacked Draft PR 유지, merge/deploy 금지.
