@@ -152,6 +152,7 @@ export function hasUsablePositiveSkinAxisEvidence(evaluation, axis) {
   if (evaluation?.schemaVersion !== SKIN_AXIS_EVIDENCE_VERSION ||
       evaluation?.photoGate !== "usable" || !AXES.has(axis)) return false;
   const observed = evaluation.axes?.[axis];
-  return observed?.state === "present" &&
-    (observed.confidence === "medium" || observed.confidence === "high");
+  const checked = normalizedRow({ axis, ...observed }, axis);
+  return checked?.state === "present" &&
+    (checked.confidence === "medium" || checked.confidence === "high");
 }
