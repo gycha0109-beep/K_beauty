@@ -1,7 +1,7 @@
 # S1-B nonproduction research. A single synthetic text-only test call.
 # Safe on PR branch push only; changes to application code do not trigger paid calls.
 name: Face Lab Skin - KEY2 Single Synthetic Smoke
-run-name: "[WT:face-lab-skin] KEY2 isolated one-shot smoke"
+run-name: "[WT:face-research] Face Lab Skin KEY2 isolated one-shot smoke"
 
 on:
   push:
