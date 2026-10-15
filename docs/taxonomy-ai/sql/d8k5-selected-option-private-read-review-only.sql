@@ -60,24 +60,48 @@ begin
     join public.product_offers p on p.offer_id = o.offer_id
     where p.product_id = any(p_product_ids)
   ),
+  latest_review as (
+    select
+      r.*,
+      row_number() over (
+        partition by r.observation_id
+        order by r.reviewed_at desc, r.created_at desc, r.review_id desc
+      ) as review_rank
+    from public.product_offer_option_reviews r
+    join ranked ro on ro.observation_id = r.observation_id
+    where ro.option_rank = 1
+  ),
   eligible as (
     select
       ranked.*,
       r.review_id, r.evidence_sha256, r.reviewer_reference, r.reviewed_at
     from ranked
-    join public.product_offer_option_reviews r
+    join latest_review r
       on r.observation_id = ranked.observation_id
     where ranked.option_rank = 1
+      and r.review_rank = 1
       and ranked.offer_state = 'current'
       and ranked.product_scope_state = 'product'
       and ranked.currency_code = 'KRW'
       and ranked.market_code = 'KR'
       and ranked.listing_id is not null
       and r.verdict = 'verified'
+      -- Source evidence must match the specific captured observation.
+      -- Distinct trusted actors required, not simply a "verified" label.
+      and r.evidence_sha256 = ranked.source_evidence_sha256
+      and r.reviewer_actor_key <> ranked.collector_actor_key
       and ranked.observed_at <= pg_catalog.now()
       and ranked.recorded_at <= pg_catalog.now()
       and r.reviewed_at >= ranked.observed_at
       and r.reviewed_at <= pg_catalog.now()
+  ),
+  -- Never materialize an unbounded JSON array before checking the 256-row
+  -- contract. The 257th eligible row is enough to fail the whole read.
+  bounded as (
+    select *
+    from eligible
+    order by product_id, offer_id, seller_option_key
+    limit 257
   )
   select count(*)::integer,
          coalesce(
@@ -99,6 +123,7 @@ begin
                'gifts', gifts,
                'selected_option_price_krw', selected_option_price_krw,
                'shipping_price_krw', shipping_price_krw,
+               'shipping_price_basis', shipping_price_basis,
                'currency_code', currency_code,
                'observed_at', observed_at,
                'reviewed_at', reviewed_at,
@@ -107,7 +132,7 @@ begin
              order by product_id, offer_id, seller_option_key
            ), '[]'::jsonb
          )
-  into v_count, v_options from eligible;
+  into v_count, v_options from bounded;
 
   if v_count > 256 then
     return pg_catalog.jsonb_build_object(
@@ -164,6 +189,12 @@ begin
   end if;
 end $$;
 
+-- SELECT THE MOST RECENT OBSERVATION before filtering any review.
+-- SELECT THE MOST RECENT REVIEW (verified/rejected) before filtering verdict.
+-- A newer rejected review MUST suppress a previous verified review; an
+-- unreviewed newer observation MUST suppress an older verified price.
+-- This SQL alone does not establish collector/reviewer identity separation,
+-- external evidence authenticity, or safe live server execution.
 -- Output does not contain listing_url or direct CTA; it does not re-attest
 -- the underlying screenshot/source, user authorization, or Product admission.
 -- The server must separately verify trust and observation freshness.
