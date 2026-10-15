@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-15 / Face Lab Skin S0→S2 photo-to-survey alignment evidence guard
+
+- Base main `1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2`; track face-lab-skin; isolated from #1309 and Style #1277.
+- Changed Skin projector `buildAlignment` only: require matching concern-axis observation of medium/high confidence plus finite numeric signal before `aligned/mixed/conflict`; otherwise `unknown`. Visual cue and survey conflict not asserted solely from global image eligibility or missing=zero.
+- Added synthetic test invoking original function and existing health test hook. Explicitly no photo score/priority/ranking, provider request, DB, Auth, RLS, payment, image storage or production write change.
+- Actual human photo signal validity and stored historical replay remain unproven. Compare frozen recommendation invariance before approval. SCA #1208 remains blocked.
+- Verification on PR exact HEAD is required and must distinguish synthetic contract check from Human accuracy.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
