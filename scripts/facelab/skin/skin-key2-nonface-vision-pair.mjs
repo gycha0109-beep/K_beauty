@@ -9,6 +9,7 @@ import {
   OPENAI_RUNTIME_IMAGE_DETAIL
 } from "../../../lib/ai-model-policy.js";
 import { createSkinVisionV2CandidatePrompt } from "./skin-vision-v2-candidate-core.mjs";
+import { evaluateSkinVisionV2Candidate } from "./skin-vision-v2-candidate-core.mjs";
 import { inspectSkinVisionTrial, summarizeSkinVisionTrials } from "./skin-vision-v2-provider-evidence-gate.mjs";
 import { summarizeSkinVisionOperationalPairs } from "./skin-vision-v2-operational-metrics.mjs";
 
@@ -137,6 +138,17 @@ export async function runKey2NonfaceVisionPair({
         variant,
         providerEnvelope: response.providerPayload
       });
+      // A generated NONhuman input must be held by eligibility. The existing
+      // eligible-photo evaluation gate calls a blocked Skin state incomplete;
+      // that is NOT evidence of an actual photo-Skin regression in this cohort.
+      const evaluation = evaluateSkinVisionV2Candidate(response.parsed);
+      const eligibilityStatus = evaluation.eligibility?.status || "unknown";
+      const skinAnalysisEligible = evaluation.eligibility?.skinAnalysisEligible === true;
+      const nonfaceAbstentionExpected = eligibilityStatus === "ineligible" && !skinAnalysisEligible;
+      const axisRowsReturned = variant === "v2"
+        ? (Array.isArray(response.parsed?.skin?.axisEvidence)
+          ? response.parsed.skin.axisEvidence.length : null)
+        : null;
       inspected.push(metrics);
       operational.push(operationalRow(variant, metrics.result,
         Number.isSafeInteger(response.durationMs) && response.durationMs >= 0
@@ -154,6 +166,13 @@ export async function runKey2NonfaceVisionPair({
         faceAvailableFieldCount: metrics.faceAvailableFieldCount,
         skinStatus: metrics.skinStatus,
         skinAxisStates: metrics.skinAxisStates,
+        eligibilityStatus,
+        skinAnalysisEligible,
+        nonfaceAbstentionExpected,
+        v2AxisRowsReturned: axisRowsReturned,
+        interpretation: nonfaceAbstentionExpected
+          ? "NONFACE_EXPECTED_ABSTENTION_NOT_ACCURACY_FAILURE"
+          : "NONFACE_ELIGIBILITY_REVIEW_REQUIRED",
         problems: metrics.problems
       });
     } catch (error) {
