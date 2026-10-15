@@ -50,6 +50,7 @@ assert.equal(hasUsablePositiveSkinAxisEvidence(a, "barrier"), true);
 assert.equal(hasUsablePositiveSkinAxisEvidence(a, "redness"), false);
 assert.equal(hasUsablePositiveSkinAxisEvidence(a, "pores"), false);
 assert.equal(hasUsablePositiveSkinAxisEvidence(a, "uv"), false);
+assert.equal(hasUsablePositiveSkinAxisEvidence({ schemaVersion: SKIN_AXIS_EVIDENCE_VERSION, photoGate: "usable", axes: { oiliness: { state: "present", confidence: "high" } } }, "oiliness"), false);
 assert.equal(a.authority.scoringActivated, false);
 assert.equal(a.authority.realPhotoAccuracyVerified, false);
 assert.equal(a.authority.historicalZeroRecovered, false);
@@ -162,4 +163,4 @@ for (const path of [
   assert(!readFileSync(path, "utf8").includes(sourcePath), path + " must not import evaluation-only evidence");
 }
 
-console.log("verify-face-lab-skin-s1-axis-evidence: PASS synthetic_cases=56 provider_calls=0 production_score_changes=0 real_photo_validated=false");
+console.log("verify-face-lab-skin-s1-axis-evidence: PASS synthetic_negative_matrix=covered provider_calls=0 production_score_changes=0 real_photo_validated=false");
