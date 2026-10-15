@@ -169,21 +169,21 @@ function getSkinPhotoEvidenceLines(report: Record<string, unknown>, locale: "ko"
         available: "Photo observations were considered as supporting visual cues, not a skin diagnosis.",
         not_provided: "There is no photo evidence in this report. Survey and product-use context are primary.",
         unavailable: "Photo processing did not complete. Do not treat survey-only fallback text as photo evidence.",
-        ineligible: "The image was not suitable for skin observation. Photo-based judgment is on hold.",
-        insufficient_evidence: "The photo did not support a reliable skin observation. Survey evidence is prioritized.",
+        ineligible: "The image was not suitable for skin observation. Photo-based judgment is on hold. You may try another clear, unfiltered face photo.",
+        insufficient_evidence: "The photo did not support a reliable skin observation. Survey evidence is prioritized. Try again under even lighting without filters.",
         unknown: "Photo evidence status cannot be verified from this saved report.",
         conflict: "Saved photo-status records disagree. Photo interpretation should be held pending recheck.",
-        limited: "Individual photo cues have insufficient confidence detail for a stronger claim."
+        limited: "Individual photo cues are not reliable enough for a stronger claim. You can retake a clear photo under even lighting."
       }
     : {
         available: "사진에서 관찰한 시각적 단서는 보조 근거이며 피부 상태를 진단한 결과가 아닙니다.",
         not_provided: "이 리포트에는 사진 근거가 없습니다. 설문과 현재 사용 정보가 우선입니다.",
         unavailable: "사진 분석이 완료되지 않았습니다. 설문용 대체 문구를 사진 관찰 결과로 보지 않습니다.",
-        ineligible: "피부를 관찰하기에 적합하지 않은 사진이어서 사진 기반 판단을 보류했습니다.",
-        insufficient_evidence: "사진에서 신뢰할 만한 피부 단서가 부족해 설문 근거를 우선했습니다.",
+        ineligible: "피부를 관찰하기에 적합하지 않은 사진이어서 사진 기반 판단을 보류했습니다. 얼굴이 선명히 보이도록 다시 촬영할 수 있습니다.",
+        insufficient_evidence: "사진에서 신뢰할 만한 피부 단서가 부족해 설문 근거를 우선했습니다. 필터 없이 조명이 고른 환경에서 다시 촬영해 볼 수 있습니다.",
         unknown: "이 저장 리포트에서 사진 분석 상태를 확인할 수 없습니다.",
         conflict: "저장된 사진 상태 기록이 서로 일치하지 않아 사진 판단을 보류하고 재확인해야 합니다.",
-        limited: "개별 피부 관찰 신호의 신뢰도 근거가 부족하므로 단정할 수 없습니다."
+        limited: "개별 피부 관찰 신호의 신뢰도 근거가 부족하므로 단정할 수 없습니다. 빛이 고르고 얼굴이 선명한 조건에서 다시 촬영해 볼 수 있습니다."
       };
   if (state.statusConflict) return [copy.conflict];
   // A global available status without trustworthy individual cues is not positive photo evidence.
