@@ -38,7 +38,9 @@ ALTER TABLE public.admin_product_correction_evidence_v1 ENABLE ROW LEVEL SECURIT
 ALTER TABLE public.admin_product_correction_evidence_verdicts_v1 ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.admin_product_correction_evidence_v1,
  public.admin_product_correction_evidence_verdicts_v1 FROM PUBLIC,anon,authenticated;
-GRANT SELECT,INSERT ON public.admin_product_correction_evidence_verdicts_v1 TO service_role;
+-- Mirror the pre-existing hosted table's broad grant so the migration test
+-- catches residual TRUNCATE, REFERENCES and TRIGGER privileges too.
+GRANT ALL ON public.admin_product_correction_evidence_verdicts_v1 TO service_role;
 GRANT SELECT ON public.admin_product_correction_evidence_v1 TO service_role;
 INSERT INTO auth.users(id) VALUES
  ('00000000-0000-4000-8000-000000000011'), -- OWNER 1
