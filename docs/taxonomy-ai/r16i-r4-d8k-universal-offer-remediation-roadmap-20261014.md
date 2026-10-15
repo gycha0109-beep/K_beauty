@@ -218,3 +218,12 @@
 - 기존 `public.product_offers`는 한 seller+listing ID에 한 행으로 제한되므로, 같은 listing의 여러 옵션을 서로 다른 실제 Offer로 우회 생성 금지. schema/RPC 보호 영역은 **변경하지 않음**, D8K-2에서 독립 조사/approval.
 - 테스트: `scripts/product-evidence/verify-d8k1-four-seller-comparison-v1.mjs` (0/1/2/4/5 sellers, 다중 옵션·증정 구성·배송비·중복 listing/ID, 악성 직접링크, null/0, 과거/미래 가격), 기존 `verify-r16i-price-scope-review-v1.mjs` CI 체인에서 실행. **운영 데이터 쓰기 0건 / API 변경 0건 / 엔진 랭킹 수정 0건**.
 - D8K-2 다음 단계: 승인된 Product ID, 상품/선택옵션/배송비/판매처/관측시간 근거가 실제 데이터에 존재하는지 읽기-only로 실사; 64 Product/256 Offer RPC 제한 및 서비스 권한 확인; 운영 사용/스키마 변경은 별도 승인. D8K-3 UI 구현 및 D8K-4 무료·프리미엄 전체 활성 카드 연결까지 아직 남음. #1208과 별도 release gate 유지.
+
+## 9. D8K-2 bounded private Offer transport checkpoint (2026-10-15)
+
+- **Status: CODE_READY / SYNTHETIC_OFFLINE_VERIFIED / AUTHORIZED_REAL_DB_READ_HOLD.** Audit: [D8K-2 private Offer read and evidence audit](r16i-r4-d8k2-private-offer-read-evidence-audit-20261015.md).
+- Existing private RPC has a 64 Product / 256 Offer per-call limit. New read-only module groups explicitly selected, valid recommended Product UUIDs; de-duplicates and splits requests, checks exact returned Product/Offer identities, declines partial/malformed responses and denies total rows >256. No direct database client or new role/privilege is created.
+- **Existing schema insufficient:** selected option ID, unit/quantity/pack, kit gifts, shipping, verified checkout composition and provenance are not represented. Unique seller+listing ID/URL prevents multiple selectable options under one page being persisted as separate Offer records. Do not invent rows or claim verified prices.
+- Current read transport returns seller/offer identifiers as unverified diagnostics only; no raw URL or amount, no price/comparison/CTA authority. Unlike D8K-1 synthetic full-option fixtures this does not establish any actual four-seller Offer.
+- Offline synthetic verifier: scripts/product-evidence/verify-d8k2-offer-authority-read-v1.mjs; linked into existing D8F/DB gate. **Exactly pinned new branch CI is required** before VERIFIED_ISOLATED can be claimed. 23 synthetic cases observed in local Node draft execution; actual RPC, Product IDs, protected API, browser UI and seller evidence remain UNATTESTED.
+- Next no-protection work is D8K-3 reusable mock component. D8K-4 real routing/data/permissions, D8K-5 evidence collection, DB option schema/RLS/API and #1208 safety gate continue independent HOLD. Existing R16I D8D v2 owner approval OFF.
