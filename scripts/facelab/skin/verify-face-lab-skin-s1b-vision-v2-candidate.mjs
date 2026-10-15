@@ -125,7 +125,7 @@ assert.equal(faceOnly.face.status, "available");
 // Valid Skin metadata can survive when Face structure is unobservable.
 const faceIneligible = clone(eligibility);
 faceIneligible.faceLabEligible = false;
-faceIneligible.faceLabFailureReason = "face_quality_insufficient";
+faceIneligible.faceLabFailureReason = "image_quality_insufficient";
 const skinOnly = evaluateSkinVisionV2Candidate(envelope(skin, { eligibility: faceIneligible }));
 assert.equal(skinOnly.skinEvidence.status, "ready");
 assert.equal(skinOnly.face.status, "unavailable");
