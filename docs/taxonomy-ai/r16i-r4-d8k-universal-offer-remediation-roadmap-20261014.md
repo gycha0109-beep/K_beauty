@@ -278,3 +278,10 @@
 - Local fixture uses existing minimal Product/Offer and restricted owner role baseline; checks real PG17 schema/negative role grants/RLS, 65-product and 257-option caps, option revocation, source/actor separation, and shipping CHECK constraints.
 - D8K7 static verifier imported into existing D8F CI: 44 source/harness assertions PASS in isolated JS. Real PG17 test **has not been run by assistant**; user will run locally and return `D8K7_LOCAL_DOCKER_PG17_PASS` or first error.
 - No hosted DB, protected migrations/API/Auth, production data, price display, purchase CTA or deployment modified; #1208 still blocks merge/release.
+
+### D8K-7 실제 로컬 PostgreSQL 17 실행 근거 접수 (2026-10-15)
+
+- **상태 갱신: USER_REPORTED_LOCAL_PG17_PASS / PRODUCTION_RELEASE_HOLD.** 사용자가 Windows Docker Desktop `postgres:17` 격리 컨테이너로 fixture 7/7을 실행한 콘솔 전체 결과를 제공했다. `D8K7_CHECK_FILES_PASS`, `D8K7_PG17_SQL_ACCEPTANCE_PASS`, `D8K7_LOCAL_DOCKER_PG17_PASS`, 거절 검증 7건 및 `Removed disposable local PG17 container.` 관측.
+- 근거 기록: [D8K-7 실행 안내 §7](r16i-r4-d8k7-local-docker-pg17-acceptance-20261015.md). 이는 이전 synthetic/static만에서 **실제 사용자의 격리 PG17 SQL runtime 통과**로 증거 수준이 상승한 것이다. 보낸 로그에 로컬 `git rev-parse HEAD`는 없어 정확한 로컬 체크아웃 SHA까지 independently attested된 것은 아니다.
+- 다음 실질 단계: **D8K-8 진짜 판매처 선택옵션 증거 수집→독립 검토 경계**, 기존 R16I admin read-only 검토 워크벤치 및 Offer source-binding 계약 우선 재사용. 이 단계가 해결되기 전에는 해당 데이터의 display/CTA 권한을 생성하지 않는다.
+- 실제 운영 DB/RLS migration, 브라우저/서버 role binding, 인증된 actor, 실제 제품 가격·구매 링크, #1208 보안 이슈 해결은 미완료. 모든 병합·배포 계속 HOLD.
