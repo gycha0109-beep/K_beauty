@@ -25,15 +25,16 @@ assert.equal(observed.axisRowCount, 7);
 assert.equal(observed.axisShapeValid, true);
 assert.equal(observed.withheldPositiveOrZeroCues, true);
 assert.equal(observed.stateCounts.unknown, 7);
-assert.equal(observed.verdict, "SEVEN_ABSTAINING_AXES_REQUIRES_CONTRACT_DECISION");
+assert.equal(observed.verdict, "SEVEN_ABSTAINING_AXES_NOT_EMPTY_CONTRACT");
 assert.equal(observed.productReady, false);
 assert.equal(observed.releaseReady, false);
+assert.equal(observed.ownerApprovalPending, true);
 assert.equal(observed.actualHumanSkinAccuracyVerified, false);
 
 const empty = clone(fixture); empty.skin.axisEvidence = [];
 const emptyResult = inspect(empty);
-assert.equal(emptyResult.verdict, "EMPTY_AXES_REQUIRES_CONTRACT_DECISION");
-assert.equal(emptyResult.axisShapeValid, false);
+assert.equal(emptyResult.verdict, "EXPECTED_INELIGIBLE_EMPTY_AXES_RESEARCH_ONLY");
+assert.equal(emptyResult.axisShapeValid, true);
 assert.equal(emptyResult.withheldPositiveOrZeroCues, true);
 assert.equal(emptyResult.axisRowCount, 0);
 
@@ -69,7 +70,7 @@ assert.equal(inspect(zero).verdict, "UNSAFE_NONFACE_POSITIVE_OR_OBSERVED_ZERO");
 const unassessable = clone(fixture);
 unassessable.skin.axisEvidence[1] = { axis: "dehydration", state: "unassessable",
   value: null, confidence: "unknown", cue: null, area: null, reason: "unsupported" };
-assert.equal(inspect(unassessable).verdict, "SEVEN_ABSTAINING_AXES_REQUIRES_CONTRACT_DECISION");
+assert.equal(inspect(unassessable).verdict, "SEVEN_ABSTAINING_AXES_NOT_EMPTY_CONTRACT");
 
 const eligible = clone(fixture);
 eligible.eligibility = { ...ineligible, status: "eligible", imageType: "photorealistic_human",
