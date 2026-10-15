@@ -50,9 +50,13 @@ function run(extra=[],expectCode=0){
     encoding:"utf8",timeout:20000,maxBuffer:1000000,windowsHide:true
   });
   if(child.error)throw child.error;
-  assert.equal(child.status,expectCode,child.stderr||child.stdout);
-  const out=(child.stdout||child.stderr).trim();
-  assert.ok(out.startsWith("{")&&out.endsWith("}"));
+  assert.equal(child.status,expectCode,"Unexpected local intake CLI exit status");
+  // stdout owns the stable one-JSON-message protocol for PASS and HOLD.
+  // Node's MODULE_TYPELESS_PACKAGE_JSON warning is on stderr and must not
+  // be interpreted as the CLI's machine-readable rejection payload.
+  const out=child.stdout.trim();
+  assert.ok(out.startsWith("{")&&out.endsWith("}"),
+    "Expected one redacted JSON object on stdout even for a HOLD");
   assert.doesNotMatch(out,/https:\/\/www\.hwahae\.co\.kr|24500|synthetic-cli1/);
   return JSON.parse(out);
 }
