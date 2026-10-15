@@ -114,6 +114,21 @@ try{
       throw error;
   }
 
+  // A path traversing an intermediate symlink/junction must also be blocked.
+  const redirected=path.join(root,"redirected");
+  try {
+    symlinkSync(root,redirected,"dir");
+    const originalSource=files.source;
+    files.source=path.join(redirected,"source.png");
+    out=run([],1);
+    eq(out.reason,"LOCAL_SOURCE_DIRECTORY_SYMLINK_FORBIDDEN");
+    files.source=originalSource;
+  } catch(error) {
+    files.source=path.join(root,"source.png");
+    if(error?.code!=="EPERM"&&error?.code!=="EACCES")
+      throw error;
+  }
+
   const prohibited=path.join(root,".env.local");
   writeFileSync(prohibited,sample);
   const original=files.source;files.source=prohibited;
