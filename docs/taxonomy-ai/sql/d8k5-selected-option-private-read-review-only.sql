@@ -94,6 +94,14 @@ begin
       and ranked.recorded_at <= pg_catalog.now()
       and r.reviewed_at >= ranked.observed_at
       and r.reviewed_at <= pg_catalog.now()
+  ),
+  -- Never materialize an unbounded JSON array before checking the 256-row
+  -- contract. The 257th eligible row is enough to fail the whole read.
+  bounded as (
+    select *
+    from eligible
+    order by product_id, offer_id, seller_option_key
+    limit 257
   )
   select count(*)::integer,
          coalesce(
@@ -124,7 +132,7 @@ begin
              order by product_id, offer_id, seller_option_key
            ), '[]'::jsonb
          )
-  into v_count, v_options from eligible;
+  into v_count, v_options from bounded;
 
   if v_count > 256 then
     return pg_catalog.jsonb_build_object(
