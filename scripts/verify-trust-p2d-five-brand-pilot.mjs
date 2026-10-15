@@ -219,6 +219,77 @@ assert.equal(diagnoseTrustP2DSite(noEligible.sites[0]).reason,
   "NO_ELIGIBLE_OFFICIAL_LOCATOR");
 assert.equal(noEligible.officialProductEvidenceConfirmed,false);
 
+// P2-E5 boundary: Phase8H's 12-result output cap must not discard a
+// catalog-scoped URL just because earlier scored sitemap URLs occupy 12 slots.
+// Offline mocks exercise the REAL rediscovery ranking and final page fetch.
+const makeSitemapXml=urls=>"<urlset>"+urls.map(url=>
+  "<url><loc>"+url+"</loc></url>").join("")+"</urlset>";
+const overTwelveWrong=Array.from({length:16},(_,i)=>
+  "https://neopharmshop.co.kr/product/mle-lotion-300ml/"+(3000+i));
+const rankedLateCalls=[];
+const rankedLate=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from(makeSitemapXml([
+    ...overTwelveWrong,sitemapKit,sitemapCorrect,
+  ])),finalUrl:url}),
+  fetchPage:async url=>{
+    rankedLateCalls.push(url);
+    return {bytes:Buffer.from("<title>MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(rankedLateCalls,[peer,sitemapCorrect]);
+assert.deepEqual(rankedLate.sites[0].pages.map(p=>p.url),[sitemapCorrect]);
+assert.equal(rankedLate.sites[0].homepageIndexStatus,"NOT_NEEDED");
+assert.equal(rankedLate.factWrites,0);
+assert.equal(rankedLate.officialProductEvidenceConfirmed,false);
+
+// Even fourteen eligible but size-unknown entries ahead of explicit 600ml
+// must not consume both page slots. The fallback remains unverified and bounded.
+const overTwelveUnknown=Array.from({length:14},(_,i)=>
+  "https://neopharmshop.co.kr/product/mle-lotion/"+(4000+i));
+const rankedVagueCalls=[];
+const rankedVague=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from(makeSitemapXml([
+    ...overTwelveUnknown,sitemapCorrect,
+  ])),finalUrl:url}),
+  fetchPage:async url=>{
+    rankedVagueCalls.push(url);
+    return {bytes:Buffer.from("<title>MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(rankedVagueCalls,[peer,sitemapCorrect,overTwelveUnknown[0]]);
+assert.deepEqual(rankedVague.sites[0].pages.map(p=>p.url),[
+  sitemapCorrect,overTwelveUnknown[0],
+]);
+assert.equal(rankedVague.sites[0].pages.length,2);
+assert.equal(rankedVague.subjectCreationAuthorized,false);
+
+// More than twelve denied 600ml URLs (and one www alias) must not crowd out
+// the one safe same-origin catalog-size candidate. Robots is checked before
+// ranking, not retroactively after the 12-item rediscovery cap.
+const overTwelveBlocked=Array.from({length:15},(_,i)=>
+  "https://neopharmshop.co.kr/product/mle-lotion-600ml/"+(6000+i));
+const lateAllowed="https://neopharmshop.co.kr/product/mle-lotion-600ml/9900";
+const blockedCalls=[];
+const blockedTrial=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from(
+    "User-agent: *\nDisallow: /product/mle-lotion-600ml/6\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from(makeSitemapXml([
+    ...overTwelveBlocked,
+    "https://www.neopharmshop.co.kr/product/mle-lotion-600ml/9800",
+    lateAllowed,
+  ])),finalUrl:url}),
+  fetchPage:async url=>{
+    blockedCalls.push(url);
+    return {bytes:Buffer.from("<title>MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(blockedCalls,[peer,lateAllowed]);
+assert.deepEqual(blockedTrial.sites[0].pages.map(p=>p.url),[lateAllowed]);
+assert.equal(blockedTrial.recommendationWrites,0);
+assert.equal(blockedTrial.marketVerified,false);
+
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
