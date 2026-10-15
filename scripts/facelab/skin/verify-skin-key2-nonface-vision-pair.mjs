@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createNonfaceGeometricPng, runKey2NonfaceVisionPair } from "./skin-key2-nonface-vision-pair.mjs";
+import { SKIN_VISIBLE_AXES } from "./skin-axis-evidence-contract-core.mjs";
 
 const image = createNonfaceGeometricPng();
 assert.deepEqual([...image.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
@@ -29,9 +30,28 @@ const stub = async (args) => {
   assert.equal(args.body.model, "gpt-5.6-luna");
   calls.push({url, system: args.body.messages[0].content});
   const variant = calls.length === 1 ? "v1" : "v2";
-  const observed = { schemaVersion: variant === "v1" ? "vision-observation-v1" : "vision-observation-v2" };
+  const eligibility = {
+    status: "ineligible", source: "vision", imageType: "other", humanFaceCount: 0,
+    faceLabEligible: false, skinAnalysisEligible: false,
+    faceLabFailureReason: "face_not_detected", skinFailureReason: "face_not_detected",
+    confidence: 0.99, evidence: ["synthetic colored squares; no person"]
+  };
+  const observed = variant === "v1"
+    ? {
+      schemaVersion: "vision-observation-v1", eligibility,
+      skin: { signals: Object.fromEntries([...SKIN_VISIBLE_AXES, "uv"].map(axis => [axis, 0])), observations: [] },
+      face: {}
+    }
+    : {
+      schemaVersion: "vision-observation-v2", eligibility,
+      skin: { axisEvidence: SKIN_VISIBLE_AXES.map(axis => ({
+        axis, state: "unknown", value: null, confidence: "unknown",
+        cue: null, area: null, reason: "missing"
+      })) },
+      face: {}
+    };
   return {
-    status: 200, durationMs: variant === "v1" ? 1100 : 1700,
+    status: 200, parsed: observed, durationMs: variant === "v1" ? 1100 : 1700,
     providerPayload: {
       choices: [{ finish_reason: "stop", message: { content: JSON.stringify(observed) } }],
       usage: { prompt_tokens: 380, completion_tokens: 190 }
@@ -51,6 +71,12 @@ assert.equal(result.providerCallsAttempted, 2);
 assert.equal(result.variants[0].outputTokens, 190);
 assert.equal(result.variants[1].finishReason, "stop");
 assert.equal(result.timingsAndCostAvailability.matchedPairs, 1);
+assert.equal(result.variants[0].eligibilityStatus, "ineligible");
+assert.equal(result.variants[1].eligibilityStatus, "ineligible");
+assert.equal(result.variants[1].skinAnalysisEligible, false);
+assert.equal(result.variants[1].nonfaceAbstentionExpected, true);
+assert.equal(result.variants[1].v2AxisRowsReturned, 7);
+assert.equal(result.variants[1].interpretation, "NONFACE_EXPECTED_ABSTENTION_NOT_ACCURACY_FAILURE");
 assert.equal(result.timingsAndCostAvailability.pairedTimings, 1);
 assert.equal(result.timingsAndCostAvailability.pairedCosts, 0);
 assert.equal(result.trustBoundary.realHumanPhotoTransmitted, false);
