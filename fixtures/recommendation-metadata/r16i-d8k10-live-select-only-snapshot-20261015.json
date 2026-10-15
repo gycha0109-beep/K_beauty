@@ -1,0 +1,136 @@
+{
+  "schema": "r16i-d8k10-live-select-only-snapshot-20261015-v1",
+  "provenance": "CONNECTED_SUPABASE_ACTUAL_DB_SELECT_ONLY",
+  "accessScope": "USER_EXPLICIT_SELECT_ONLY_APPROVAL",
+  "observedAt": "2026-10-15T16:47:04.893494+09:00",
+  "database": {
+    "region": "ap-northeast-2",
+    "pgVersion": "17.6",
+    "identity": "CONNECTED_BEJEWELY_PROJECT",
+    "productionWrites": 0
+  },
+  "product": {
+    "id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+    "brand": "에스네이처",
+    "name": "아쿠아 스쿠알란 수분크림",
+    "category": "moisturizer_cream",
+    "sizeMl": 160,
+    "updatedAt": "2026-09-10T09:32:38.713599+09:00",
+    "attachedRetailSource": "https://www.hwahae.co.kr/goods/45194",
+    "sourceProductFactAuthorityVerified": false,
+    "selectedBaseSku80MlEquivalent": false
+  },
+  "sourceBindings": [
+    {
+      "bindingId": "53155404-5518-4130-825a-8c918588f37a",
+      "source": "hwahae",
+      "externalType": "goods",
+      "externalId": "45194",
+      "bindingState": "resolved",
+      "productScopeState": "product_subject_unresolved",
+      "updatedAt": "2026-09-10T10:10:29.03509+09:00"
+    }
+  ],
+  "trustIntakes": [
+    {
+      "id": "ee3b675d-1b92-4144-88e0-2a984b3d7cec",
+      "identityState": "SUBJECT_CREATION_REQUIRED",
+      "trustState": "REVIEW_REQUIRED",
+      "subjectId": null
+    }
+  ],
+  "factSubjects": [],
+  "parentOffers": {
+    "byProduct": 0,
+    "bySellerListing45194": 0,
+    "bySellerUrl45194": 0,
+    "acrossOtherCandidateListings": {
+      "hwahae35905": 0,
+      "coupang8393759227": 0,
+      "snatureProduct151": 0
+    },
+    "confirmedExistingParentOfferIds": []
+  },
+  "existingR16IEvidence": {
+    "capturedRecords": 2,
+    "verifiedRecords": 0,
+    "unverifiedRecords": 2,
+    "records": [
+      {
+        "evidenceId": "e0feb0e9-69f2-4ebf-bd14-0ccb320b3707",
+        "sourceKey": "hwahae_bundle",
+        "sourceListing": "hwahae:45194",
+        "selectedOptionDescription": "80ml x2 + serum 10ml",
+        "evidenceState": "UNVERIFIED",
+        "archiveReferencePresent": true,
+        "archivedSha256Present": true,
+        "capturedAt": "2026-10-14T09:50:00+09:00",
+        "capturedPricePublicationAuthorized": false
+      },
+      {
+        "evidenceId": "97adb21c-3be4-4654-bce7-54b5dabb2423",
+        "sourceKey": "official_single",
+        "sourceListing": "snature:product_no=151",
+        "selectedOptionDescription": "80ml single",
+        "evidenceState": "UNVERIFIED",
+        "archiveReferencePresent": true,
+        "archivedSha256Present": true,
+        "capturedAt": "2026-10-14T09:50:00+09:00",
+        "capturedPricePublicationAuthorized": false
+      }
+    ]
+  },
+  "correctionWorkflow": {
+    "evidenceRows": 2,
+    "proposals": 0,
+    "decisions": 0,
+    "applications": 0,
+    "releaseGateEnabled": false
+  },
+  "selectedOptionStorage": {
+    "observationTableExists": false,
+    "reviewTableExists": false,
+    "reviewOnlySqlAppliedToHostedProject": false
+  },
+  "existingOfferReadRpc": {
+    "name": "read_product_offer_presentation_authority_v2",
+    "exists": true,
+    "securityDefiner": true,
+    "owner": "product_offer_presentation_reader_owner",
+    "anonExecute": false,
+    "authenticatedExecute": false,
+    "serviceRoleExecute": false,
+    "recommendationRuntimeExecute": true
+  },
+  "allOffers": {
+    "count": 73,
+    "matchingD8K9CurrentInStockHealthyKrKrwGate": 0,
+    "sellerBreakdown": [
+      {
+        "seller": "oliveyoung",
+        "count": 72,
+        "productScopeState": "product_subject_unresolved",
+        "availability": "unknown",
+        "linkHealth": "unknown",
+        "recentlyObserved1d": 0,
+        "recentlyLinkChecked1d": 0
+      },
+      {
+        "seller": "torriden_official",
+        "count": 1,
+        "productScopeState": "product",
+        "availability": "in_stock",
+        "linkHealth": "unchecked",
+        "recentlyObserved1d": 0,
+        "recentlyLinkChecked1d": 0
+      }
+    ]
+  },
+  "status": "HOLD_LIVE_PRODUCT_AND_OFFER_BINDING_UNRESOLVED",
+  "ownerApprovalForSchemaOrWrite": false,
+  "actualMerchantSourceReviewed": false,
+  "actualIndependentReviewerAuthenticated": false,
+  "pricePublicationAuthorized": false,
+  "directCtaAuthorized": false,
+  "outputSanitization": "NO_RAW_IMAGE_BYTES_NO_OBJECT_STORAGE_PATHS_NO_SHA256_SECRETS_NO_PERSONAL_ACTOR_IDS"
+}
