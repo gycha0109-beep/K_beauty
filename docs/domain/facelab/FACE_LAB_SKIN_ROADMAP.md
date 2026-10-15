@@ -176,7 +176,7 @@
 - 과거 `vision-observation-v1`에서 0이 무엇을 의미했는지 **알 수 없다**. 기존 저장 기록과 추천을 소급 변경하지 않는다.
 - #1309/#1316 안전한 사진 상태·설문 충돌 수정은 **미병합**이며 새 계약보다 먼저 적용됐다고 전제하지 않는다. 새로운 구현은 독립 브랜치와 별도 Draft PR로 관리한다.
 
-**2026-10-15 S1-D 비공개 사진 입력 준비:** [Draft #1332](https://github.com/gycha0109-beep/K_beauty/pull/1332)는 사용자 제공 사진 **5장의 로컬 헤더 검증**(5/5 JPEG 파싱, TC-03 짧은 변 273px) 후 개인정보를 내보내지 않는 독립 S1 사진 입력 게이트·합성 음성 검사를 추가했다. TC-05 전체 프레임의 밝기 값 <45/255 비율 약 86.8%는 피부 마스크/정확도 판정이 아님. 사진 원본·파일명은 PR/CI에 미포함; 실제 Provider 0건, 독립 Human 0건, 권리·외부전송 승인 미확인. #1310 Human 단서 평가기는 계속 별도 미병합이며 실사진 정확도·제품 준비도는 HOLD. #1332는 main 기반 독립 Draft, 추천/Score/Style/Provider/DB/운영 불변. Exact-head CI 결과는 #1332에서 별도로 확인한다.\n\n**작업 중단 경계:** 공유 Provider 계약, 실제 점수/ranking/Top Pick, API 공개 형태, DB/Auth/RLS/Storage, 개인정보·실사진, Style, 배포 변경이 필요한 순간 해당 단계만 HOLD. 문서·합성 계약/검사는 계속 가능하다.
+**2026-10-15 S1-D 비공개 사진 입력 준비:** [Draft #1332](https://github.com/gycha0109-beep/K_beauty/pull/1332)는 사용자 제공 사진 **5장의 로컬 헤더 검증**(5/5 JPEG 파싱, TC-03 짧은 변 273px) 후 개인정보를 내보내지 않는 독립 S1 사진 입력 게이트·합성 음성 검사를 추가했다. TC-05 전체 프레임의 밝기 값 <45/255 비율 약 86.8%는 피부 마스크/정확도 판정이 아님. 사진 원본·파일명은 PR/CI에 미포함; 실제 Provider 0건, 독립 Human 0건, 권리·외부전송 승인 미확인. #1310 Human 단서 평가기는 계속 별도 미병합이며 실사진 정확도·제품 준비도는 HOLD. #1332는 main 기반 독립 Draft, 추천/Score/Style/Provider/DB/운영 불변. Exact HEAD `6758ce10a9439031ee0f7062b78d72c9d478228c`: Main Health #38698604951 **PASS**, PIE #38698605800 **PASS**, CodeQL **PASS**, Supply Chain #38698604979 **FAIL**(기존 #1208 `braces` 예외 만료; 예외 변경 없음).\n\n**작업 중단 경계:** 공유 Provider 계약, 실제 점수/ranking/Top Pick, API 공개 형태, DB/Auth/RLS/Storage, 개인정보·실사진, Style, 배포 변경이 필요한 순간 해당 단계만 HOLD. 문서·합성 계약/검사는 계속 가능하다.
 
 ---
 
