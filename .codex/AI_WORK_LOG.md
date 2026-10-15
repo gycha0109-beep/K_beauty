@@ -3199,3 +3199,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Merge-tree detected work-log-only #1288/#1294 conflict; Next entry relocation now preserves original EOF and combined tree merges without conflict. Local SDK/JDK/ADB/emulator absent; no approved mobile API/Auth target established, runtime smoke NOT_RUN.
 
 - B6 closeout: implementation 477aad86fe5e317e239e2cb99fdb6b5be21c3013 / CI38523027022 admission17, npm ci, Main Health, source/browser and real release bundle verification, independent digest replay and CodeQL PASS; PIE38523027758 PASS. Canonical security gate remains FAIL, full22/0/13 and prod19/0/11. Candidate manifest ec607c669b4242ee163b9b23d67c323750646efe4989f324ed544dd4c1eb4deb reproduced independently; no uploaded/retained archives or real approval. Next d937ddc8 final ordinary CI/build/smoke PASS, audit FAIL; combined merge-tree conflict-free. Detailed results/approval commands/remaining external boundaries in B6 runbook and PR #1299. Local broader Windows consolidation invocation was unavailable due existing nested CLI JSON/platform behavior; exact Linux Main Health including consolidation passes. This final delta is documentation only.
+
+## 2026-10-15 — scoped private patch technical validation (release HOLD)
+
+Watchtower-Track: security
+
+사용자 scoped 후보/격리 그래프 기술 승인과 중단 후 재개 지시를 기록. 원본 code/browser/LICENSE 바이트 및 advisory 감사 보존, package.json 네 필드만 명시 변경. 별도 scoped full-graph harness/실제 alias+override resolver/NOTICE+SBOM+SHA 대응/서명 검증 CLI/readback 검사와 기존 readiness CI의 full Android·독립 install replay를 구현. 로컬25 테스트·syntax·diff PASS; 실제 scoped 그래프/Android CI는 새 HEAD에서 PENDING, 기존 B4/B5 PASS로 대체하지 않음. Root/workspace 제품 manifest/lock과 기존 B4 verifier 유지. Original npm audit/security gate FAIL 유지; scoped scanner silence는 해결이 아님. DB/Auth/RLS/Storage/Provider/Payment/Production 실행 N, secret 인터페이스 설계 Y/실제 접근 N. 업로드·비용·법적 최종승인·예외·병합·운영 변경 미승인/미실행. 근거: docs/security/sec-sca-20261015-scoped-graph-validation.md.

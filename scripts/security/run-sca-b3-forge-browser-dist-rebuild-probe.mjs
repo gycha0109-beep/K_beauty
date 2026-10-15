@@ -463,6 +463,10 @@ try{
   const {validateFullGraphCandidate}=await import("./run-sca-b4-full-graph-candidate.mjs");
   await validateFullGraphCandidate(tarball,fullDistPacks[0]);
  }
+ if(process.env.SCA_SCOPED_VALIDATE_FULL_GRAPH === "1") {
+  const {validateFullGraphCandidate}=await import("./run-sca-b6-scoped-full-graph.mjs");
+  await validateFullGraphCandidate(tarball,fullDistPacks[0],{scopedMode:true,installOnly:process.env.SCA_SCOPED_INSTALL_ONLY==='1'});
+ }
 } finally {
  fs.rmSync(temp,{recursive:true,force:true});
  if(previousNpmCache===undefined)delete process.env.npm_config_cache;

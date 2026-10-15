@@ -39,9 +39,10 @@ jobs:
   candidate:
     name: Clean release candidate structure (not approval)
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 60
     outputs:
       digest: ${{ steps.candidate.outputs.b6_candidate_sha256 }}
+      scoped_digest: ${{ steps.candidate.outputs.scoped_candidate_sha256 }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -60,16 +61,24 @@ jobs:
         run: npm --prefix crawler ci --ignore-scripts --no-audit --no-fund
       - name: Main Health on exact release preparation HEAD
         run: node scripts/verify-current-main-health.mjs
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          verify-signature: true
       - id: candidate
         env:
           SCA_B6_VERIFY_CANDIDATE: '1'
+          SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
+          SCA_SCOPED_REQUIRE_ANDROID: '1'
         run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
       - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
   independent-candidate:
     name: Independent clean release candidate digest replay
     needs: candidate
+    if: ${{ always() && needs.candidate.outputs.digest != '' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
         with:
@@ -83,8 +92,12 @@ jobs:
       - env:
           SCA_B6_VERIFY_CANDIDATE: '1'
           SCA_B6_EXPECTED_CANDIDATE_SHA256: ${{ needs.candidate.outputs.digest }}
+          SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
+          SCA_SCOPED_INSTALL_ONLY: '1'
+          SCA_SCOPED_EXPECTED_CANDIDATE_SHA256: ${{ needs.candidate.outputs.scoped_digest }}
         run: |
           test -n "$SCA_B6_EXPECTED_CANDIDATE_SHA256"
+          test -n "$SCA_SCOPED_EXPECTED_CANDIDATE_SHA256"
           node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
       - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
   original-security-gate:
