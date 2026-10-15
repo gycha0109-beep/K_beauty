@@ -5,6 +5,7 @@ import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2Can
 import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
 import { REDISCOVERY_CONTRACT, discoverOfficialSourceCandidates } from "../lib/trust/official-source-rediscovery.mjs";
 import fs from "node:fs";
+import { execFileSync } from "node:child_process";
 import {
   assertTrustP2DCohort,cohortToTrustedDiscoveryRow,
   assessTrustP2DDiscovery,diagnoseTrustP2DSite,runTrustP2DFiveBrandPilot,
@@ -351,6 +352,30 @@ assert.equal(malformedSitemapRun.sites[0].homepageIndexStatus,"NOT_NEEDED");
 assert.equal(malformedSitemapRun.sites[0].observations[0].status,"FETCHED");
 assert.equal(malformedSitemapRun.factWrites,0);
 
+// Official product URL can surface repeatedly in sitemap (including
+// fragment variants) and the governed peer index. None may consume a
+// second scarce target product-page fetch; wrong-volume remains rejected.
+const duplicateP2Calls=[];
+const repeatedLocator=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from("<urlset>"+[
+    sitemapCorrect+"#reviews",sitemapCorrect,sitemapWrong60,sitemapCorrect,
+  ].map(link=>"<url><loc>"+link+"</loc></url>").join("")+
+    "</urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    duplicateP2Calls.push(url);
+    return {bytes:Buffer.from(url===peer
+      ?'<a href="'+sitemapCorrect+'">아토팜 MLE 로션 600ml</a>'
+      :"<title>MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(duplicateP2Calls,[peer,sitemapCorrect]);
+assert.deepEqual(repeatedLocator.sites[0].pages.map(p=>p.url),
+  [sitemapCorrect]);
+assert.equal(repeatedLocator.sites[0].homepageIndexStatus,"NOT_NEEDED");
+assert.equal(repeatedLocator.factWrites,0);
+assert.equal(repeatedLocator.subjectCreationAuthorized,false);
+
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
@@ -535,4 +560,12 @@ for(const forbidden of [".insert(", ".update(", ".upsert(", ".delete(", ".rpc(",
 assert.match(source,/runTrustP2Discovery/);
 assert.match(source,/trustP2LiveFetchers/);
 assert.match(source,/zeroFalsePositiveAssertionNotMade:true/);
+// Execute the original Phase8H verifier in its own Node process. This
+// is a fixed, local, fixture-only test; no live discovery is enabled.
+const phase8hStandaloneOutput=execFileSync(process.execPath,
+  ["scripts/verify-trust-source-rediscovery.mjs"],
+  {encoding:"utf8",timeout:60000});
+assert.match(phase8hStandaloneOutput,
+  /TRUST_PHASE8H_OFFICIAL_SOURCE_REDISCOVERY_VERIFIED/);
+console.log("TRUST_PHASE8H_STANDALONE_VERIFIER_PASS");
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
