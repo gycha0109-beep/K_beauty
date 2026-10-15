@@ -243,3 +243,13 @@ Next phase is *one bounded template-family shape probe* with outputs limited to 
 - Report fetched page count, rejected quantity/bundle links, named candidates, independently verified SKU count and source/policy holds separately with correct denominators. A reduction in false candidates may lower the raw candidate yield without being a regression.
 - P2-E1 is complete only after the candidate filter and negative regression tests run via the **existing** canonical TRUST CI, the branch PR is verified, and the result is documented. Static checks are not real official-site acceptance; P2-E2 live measurement is a separate subsequent gate.
 - No production DB writes, direct Subject/Fact confirmation, AI API, new cron/workflow, external domain search or security-track changes are authorized by this plan.
+
+
+### 2026-10-15 P2-E1 implementation and independent gate readback
+
+- Changed first-party peer/homepage visible-link filtering to apply the existing quantity and bundle discrimination **before** page fetch selection, rather than relying only on the fetched page's title. The 600ml catalog fixture now rejects 60ml/300ml, 1+1, mixed quantities, giveaways and duplicate packs from official index labels; an exact name or matching ml remains an **unverified locator**, not product identity authority.
+- Extended the existing five-brand offline verification to prove the wrong-quantity URLs are never fetched when an exact-size link is available. Existing canonical TRUST validation PASS; PIE and Current Main Health PASS.
+- Three new high CodeQL alerts came only from test URL-array membership assertions. Replaced these with equality against the complete ordered list of fetched URLs; latest GitHub PR-level CodeQL and workflow analysis PASS. This repair stays inside the pipeline-reliability branch.
+- Independent package vulnerability check still FAIL because of the previously expired braces advisory exception. The security track is **not modified** here. Real-site P2/P3 jobs were correctly **SKIPPED** in pull request context; live-effect uplift is **NOT MEASURED**. No automatic source/subject/fact or recommendation writes.
+- This change is held in Draft [PR #1318](https://github.com/gycha0109-beep/K_beauty/pull/1318), **not merged to main**. P2-E1's offline implementation is tested; operational release/real-world acceptance is HOLD. Continue P2-E2 site measurements only after the separate release checks pass and a single controlled, policy-permitted live execution is explicitly prepared. Do not bypass the canonical main-only execution trigger.
+
