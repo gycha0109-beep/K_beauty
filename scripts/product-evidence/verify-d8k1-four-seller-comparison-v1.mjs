@@ -234,6 +234,87 @@ assert.equal(four.rankingChanged, false);
 assert.equal(four.productWrites, 0);
 assert.equal(four.offerWrites, 0);
 assert.equal(four.productionReleaseAuthorized, false);
+// D8K-5: two reviewed selected options may legitimately share one parent
+// Offer, seller listing ID and URL without inventing second listing identity.
+const reviewed = overrides => single({
+  selectedOptionObservationId: uuid(150),
+  selectedOptionReviewId: uuid(151),
+  selectedOptionEvidenceDigest: "a".repeat(64),
+  selectedOptionEvidenceOrigin: "reviewed_selected_option_v1",
+  ...overrides
+});
+const reviewedSingle = reviewed({
+  optionIdentity: "anua-80ml-single",
+  price_amount: 24900, shippingAmount: null, shippingVerified: false
+});
+const reviewedKit = reviewed({
+  selectedOptionObservationId: uuid(152),
+  selectedOptionReviewId: uuid(153),
+  optionIdentity: "anua-80ml-gift-kit", optionKind: "kit", variantId: "anua-serum-kit",
+  packComposition: {
+    unitSize: 80, sizeUnit: "ml", quantity: 2,
+    gifts:[{skuId:"serum_10ml",quantity:1}]
+  }, price_amount: 34900, shippingAmount: 0, shippingVerified: true
+});
+const twoOptionsOneListing = run([reviewedSingle,reviewedKit]);
+assert.equal(twoOptionsOneListing.status,"options_observed");
+assert.equal(twoOptionsOneListing.excluded.length,0);
+assert.deepEqual(twoOptionsOneListing.groups.map(x=>x.optionKind),["single","kit"]);
+assert(twoOptionsOneListing.groups.every(x=>x.offers.length===1));
+assert(twoOptionsOneListing.groups.every(x=>x.offers[0].ctaEnabled===false));
+assert(twoOptionsOneListing.groups.every(x=>
+  x.offers[0].ctaBlockedReason==="SELECTED_OPTION_CTA_NOT_AUTHORIZED"));
+assert.equal(twoOptionsOneListing.groups[0].offers[0].parentOfferId,uuid(1));
+assert.equal(twoOptionsOneListing.groups[1].offers[0].parentOfferId,uuid(1));
+assert.notEqual(twoOptionsOneListing.groups[0].offers[0].optionRowId,
+  twoOptionsOneListing.groups[1].offers[0].optionRowId);
+// Multiple distinct option keys for the same selected composition are allowed,
+// but each option row must have its own immutable observation identity.
+const alternativeSamePack=reviewed({
+  selectedOptionObservationId:uuid(154),selectedOptionReviewId:uuid(155),
+  optionIdentity:"anua-alternative-80",
+  price_amount:23900,shippingAmount:0,shippingVerified:true
+});
+const samePackOptions=run([reviewed({
+  optionIdentity:"anua-main-80",selectedOptionObservationId:uuid(156),
+  selectedOptionReviewId:uuid(157)
+}),alternativeSamePack]);
+assert.equal(samePackOptions.groups.length,1);
+assert.equal(samePackOptions.groups[0].offers.length,2);
+assert.deepEqual(samePackOptions.groups[0].offers.map(x=>x.optionIdentity),
+  ["anua-alternative-80","anua-main-80"]);
+for(const bad of [
+  [reviewedSingle,{...reviewedSingle,
+    selectedOptionObservationId:uuid(154),
+    optionIdentity:reviewedSingle.optionIdentity}],
+  [reviewedSingle,{...reviewedKit,
+    selectedOptionObservationId:reviewedSingle.selectedOptionObservationId}],
+  [reviewedSingle,single({offer_id:uuid(13)})],
+  [reviewedSingle,{...reviewedKit,listing_id:"different-listing"}]
+]) {
+  const x=run(bad);
+  assert.equal(x.groups.length,0);
+  assert.deepEqual(x.excluded.map(row=>row.reason),
+    ["DUPLICATE_LISTING_OR_OPTION","DUPLICATE_LISTING_OR_OPTION"]);
+}
+const forgedChild=run([reviewed({
+  selectedOptionReviewId:null,
+  selectedOptionObservationId:uuid(200)
+})]);
+assert.equal(forgedChild.excluded[0].reason,
+  "SELECTED_OPTION_PROVENANCE_INCOMPLETE");
+const untrustedChild=run([reviewed({
+  selectedOptionEvidenceDigest:"BAD",
+  selectedOptionObservationId:uuid(201)
+})]);
+assert.equal(untrustedChild.excluded[0].reason,
+  "SELECTED_OPTION_PROVENANCE_INCOMPLETE");
+assert.equal(run([reviewed({
+  selectedOptionObservationId:uuid(202),
+  ctaAuthority:"approved",
+  listing_url:"https://anua.com/products/heartleaf-serum"
+})]).groups[0].offers[0].ctaEnabled,false);
+
 // Actual legacy rows have NO option/shipping/source verification fields.
 // They MUST NOT bypass the new Evidence-to-Offer authority step.
 const oldDbShape = run([{
