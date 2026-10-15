@@ -260,3 +260,12 @@
 - Adapted D8K-1 comparator for two independently reviewed child options under same seller listing while preserving collisions/legacy denial and child CTA block; tightened D8K-3 total-with-shipping arithmetic.
 - Added `RecommendedProductOfferSlot` mount to actual F-01, P-01/P-02, P-03/P-04/P-05 components. Live comparison release hardcoded OFF; public share S-01/S-02 not modified. Linked focused tests to existing D8F chain.
 - Hold: SQL/PG17 permission tests, actual seller options/reviewer evidence, live server role/admission, actual browser/checkout, #1208 issue/PR #1288 security, no merge/deploy.
+
+## 14. D8K-6 revocable selected-option review and shipping evidence baseline (2026-10-15)
+
+- **Status: REVIEW_REJECTION_AND_SOURCE_SEPARATION_SHADOW_READY / PG17_NOT_EXECUTED / RELEASE_OFF.** Evidence: [D8K-6 review history + shipping acceptance](r16i-r4-d8k6-review-revocation-shipping-evidence-preflight-20261015.md).
+- Found D8K-5 proposal could not append rejection after initial verification because `observation_id` was unique in reviewer table. Corrected proposal to append-only review events with `unique(observation_id,reviewed_at)` and rank **latest observation then latest review** before verdict/filter. Latest rejection suppresses prior valid price; new unreviewed observation does not silently fall back.
+- Proposed digest/actor separation `source_evidence_sha256`, `collector_actor_key`, `reviewer_actor_key`; private read requires latest review digest == raw source digest and reviewer != collector (actual identity/auth still unproven).
+- Added explicit `shipping_price_basis`: `unknown`→NULL, `seller_published_flat`→non-null integer including 0. DTO rejects inconsistent shipping status.
+- New pure `product-offer-review-history-shadow-v1.mjs` and D8K-6 regression imported into existing CI. Synthetic in-memory tests: 103 assertions D8K-6 PASS, 274 D8K-5 PASS. **No real PostgreSQL execution or release approval.**
+- The existing offer/option/parent schema remains unchanged; SQL only in docs, no migrations/API/Auth/RLS/grants/production mutation. #1208 still blocks merge/deploy.
