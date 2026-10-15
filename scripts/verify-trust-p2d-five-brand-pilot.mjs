@@ -376,6 +376,38 @@ assert.equal(repeatedLocator.sites[0].homepageIndexStatus,"NOT_NEEDED");
 assert.equal(repeatedLocator.factWrites,0);
 assert.equal(repeatedLocator.subjectCreationAuthorized,false);
 
+// RFC3986 unreserved escapes may denote an equivalent URL even though
+// URL().href preserves them. Do not consume two product-page slots for both.
+// Encoded RESERVED characters such as %2F stay distinct (no false merge).
+const percentEncodedSame="https://neopharmshop.co.kr/product/mle%2Dlotion-600ml/9000";
+const percentReservedOther="https://neopharmshop.co.kr/product/mle-lotion-600ml%2Fextra/9000";
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  sitemapCorrect,percentEncodedSame,
+],linkTarget),[sitemapCorrect]);
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  sitemapCorrect,percentReservedOther,
+],linkTarget),[sitemapCorrect,percentReservedOther]);
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  percentEncodedSame,sitemapCorrect,
+],linkTarget),[percentEncodedSame]);
+const equivalentCalls=[];
+const equivalentTrial=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from("<urlset>"+[
+    percentEncodedSame,sitemapCorrect,
+  ].map(x=>"<url><loc>"+x+"</loc></url>").join("")+"</urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    equivalentCalls.push(url);
+    return {bytes:Buffer.from(url===peer
+      ?'<a href="'+sitemapCorrect+'">아토팜 MLE 로션 600ml</a>'
+      :"<title>MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(equivalentCalls,[peer,sitemapCorrect]);
+assert.deepEqual(equivalentTrial.sites[0].pages.map(p=>p.url),[sitemapCorrect]);
+assert.equal(equivalentTrial.recommendationWrites,0);
+assert.equal(equivalentTrial.officialProductEvidenceConfirmed,false);
+
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
