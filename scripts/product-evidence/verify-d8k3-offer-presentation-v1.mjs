@@ -5,9 +5,9 @@ import { readFileSync } from 'node:fs';
 import { buildOfferPresentation } from '../../lib/commerce/product-offer-presentation-v1.mjs';
 const fixture={status:'options_observed',groups:[
   {comparisonGroup:'single',optionKind:'single',packComposition:{unitSize:80,quantity:1,sizeUnit:'ml',gifts:[]},sortBasis:'observed_option_price',offers:[
-    {offerId:'a',sellerName:'Official',observedPrice:24500,totalPrice:24500,observedAt:'2026-10-15T00:00:00Z',ctaEnabled:true,ctaHref:'https://example.com'}]},
+    {offerId:'a',sellerName:'Official',observedPrice:24500,shippingCost:null,totalPrice:null,observedAt:'2026-10-15T00:00:00Z',ctaEnabled:true,ctaHref:'https://example.com'}]},
   {comparisonGroup:'kit',optionKind:'kit',packComposition:{unitSize:80,quantity:2,sizeUnit:'ml',gifts:[{skuId:'serum',quantity:1}]},sortBasis:'known_total_checkout',offers:[
-    {offerId:'b',sellerName:'Hwahae',observedPrice:29900,totalPrice:32900,observedAt:'2026-10-15T00:00:00Z'}]}
+    {offerId:'b',sellerName:'Hwahae',observedPrice:29900,shippingCost:3000,totalPrice:32900,observedAt:'2026-10-15T00:00:00Z'}]}
 ]};
 let cases=0;
 const ko=buildOfferPresentation(fixture,'ko');cases++;
@@ -23,6 +23,7 @@ assert.equal(ko.groups[0].rows[0].href,null);
 assert.equal(ko.groups[0].rows[0].ctaEnabled,false);
 const en=buildOfferPresentation(fixture,'en');cases++;
 assert.equal(en.groups.length,2);
+assert.equal(en.groups[1].rows[0].formattedAmount,'32,900 KRW');
 assert.match(en.groups[1].description,/Gift set.*Includes gift/);
 assert.match(en.groups[0].rows[0].shippingMessage,/Shipping unverified/);
 for (const input of [null,{status:'hold',groups:[]},{status:'checking',groups:[]},{status:'options_observed',groups:[]}]) {
@@ -30,6 +31,25 @@ for (const input of [null,{status:'hold',groups:[]},{status:'checking',groups:[]
   assert.equal(view.groups.length,0);
   assert.equal(view.directCtaEnabled,false);
 }
+const forgedTotal=buildOfferPresentation({...fixture,groups:[{
+  ...fixture.groups[1],offers:[{
+    ...fixture.groups[1].offers[0],shippingCost:null,totalPrice:100
+  }]
+}]},'ko');cases++;
+assert.equal(forgedTotal.groups[0].rows[0].formattedAmount,'29,900원');
+assert.equal(forgedTotal.groups[0].rows[0].shippingUnknown,true);
+const brokenMath=buildOfferPresentation({...fixture,groups:[{
+  ...fixture.groups[1],offers:[{...fixture.groups[1].offers[0],totalPrice:31900}]
+}]},'ko');cases++;
+assert.equal(brokenMath.groups[0].rows[0].formattedAmount,'29,900원');
+const partialShipping=buildOfferPresentation({...fixture,groups:[{
+  ...fixture.groups[0],sortBasis:'observed_option_price',offers:[
+    {...fixture.groups[0].offers[0],shippingCost:0,totalPrice:24500},
+    {...fixture.groups[0].offers[0],offerId:'c',shippingCost:null,totalPrice:null}
+  ]
+}]},'ko');cases++;
+assert.equal(partialShipping.groups[0].rows[0].shippingUnknown,false);
+assert.equal(partialShipping.groups[0].rows[1].shippingUnknown,true);
 const filtered=buildOfferPresentation({...fixture,groups:[{...fixture.groups[0],offers:[
  {...fixture.groups[0].offers[0],observedPrice:0},{...fixture.groups[0].offers[0],observedPrice:null},
  {...fixture.groups[0].offers[0],observedPrice:12000}
