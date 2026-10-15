@@ -3305,3 +3305,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added scripts/product-evidence/verify-d8k3-offer-presentation-v1.mjs and import into existing scripts/product-evidence/verify-r16i-price-scope-review-v1.mjs. Local synthetic draft Node: 14 scenarios PASS; exact SHA GitHub CI and browser E2E remain UNVERIFIED.
 - Document: docs/taxonomy-ai/r16i-r4-d8k3-shared-comparison-mock-ui-20261015.md and D8K roadmap checkpoint. No core recommendation scoring/ranking or protected response/storage change.
 - Remaining: D8K-4 source integration depends on precise actual recommended Product IDs and separately authorized runtime access/evidence/option schema; #1208 release/merge HOLD and D8D v2 independent owner gate OFF.
+
+### 2026-10-15 / D8K-4 active free/premium/share offer source binding (diagnosis + safe boundary)
+
+- Scope: audit actual mounted recommendation slots, commit a source-specific read-candidate identity collector, and add offline source regression. Stacked branch based on D8K-3 PR #1321. No protected DB/API/Auth/RLS/storage/production edits, no network price fetch or unapproved public share Offer read.
+- Reconfirmed current free `FreeResultV2RecommendationGuideStep(preview.product)`, premium AM/PM `PremiumRoutineConsultSection(step.product)` plus functional 3 tab lists, and public `ResultShareCard`; dormant legacy purchase cards excluded. Owned current products/Face Lab/history links excluded.
+- Implemented `lib/commerce/active-recommendation-offer-slots-v1.mjs`: eight source slot categories; UUID-only candidate identity, deduped private candidate IDs, plan HOLD/public share/no ID block. All read/price/option/CTA authority flags false. No admission or selected-option evidence claimed.
+- Added `scripts/product-evidence/verify-d8k4-active-offer-slots-v1.mjs` into existing `verify-r16i-price-scope-review-v1.mjs` chain. Wrote scoped evidence document and D8K roadmap checkpoint. Local runtime/specific commit GitHub CI to be reported separately, not assumed.
+- Remaining: independently authorized Product admission, selected-option/pack/gifts/shipping actual evidence, authorized server RPC, approved DTO/API and public share privacy, actual UI mount + browser coverage, supply-chain issue #1208. Never treat syntactic ID as permission; no merge/deploy.
