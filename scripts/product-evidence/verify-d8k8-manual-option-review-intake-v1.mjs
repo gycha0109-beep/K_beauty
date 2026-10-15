@@ -108,12 +108,12 @@ capture=inspect(mk({shippingPriceKrw:0,shippingPriceBasis:"seller_published_flat
 eq(capture.status,"CAPTURE_METADATA_MATCH_ONLY");
 eq(capture.privateObservationCandidate.shipping_price_krw,0);
 
-for(const [seller,sourceUrl,listingId,brand] of [
- ["oliveyoung","https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000001","A000000001","Synthetic"],
- ["coupang","https://www.coupang.com/vp/products/12345","12345","Synthetic"],
- ["official","https://anua.com/products/heartleaf-serum","heartleaf-serum","Anua"]
+for(const [seller,sourceUrl,listingId,brand,sellerOptionKey] of [
+ ["oliveyoung","https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000001","A000000001","Synthetic","sku80"],
+ ["coupang","https://www.coupang.com/vp/products/8393759227?itemId=16093987610&vendorItemId=89624202743","8393759227","Synthetic","item_16093987610_vendor_89624202743"],
+ ["official","https://anua.com/products/heartleaf-serum","heartleaf-serum","Anua","sku80"]
 ]){
- const v=inspect(mk({sellerKey:seller,sourceUrl,listingId,brand}));
+ const v=inspect(mk({sellerKey:seller,sourceUrl,listingId,brand,sellerOptionKey}));
  eq(v.status,"CAPTURE_METADATA_MATCH_ONLY");
  eq(v.publicPriceAuthorized,false);
  eq(v.directCtaAuthorized,false);
@@ -126,6 +126,9 @@ for(const patch of [
  {sellerKey:"hwahae",sourceUrl:"http://www.hwahae.co.kr/goods/45194"},
  {sellerKey:"hwahae",sourceUrl:"https://user:pw@www.hwahae.co.kr/goods/45194"},
  {sellerKey:"coupang",sourceUrl:"https://www.coupang.com/vp/products/45194",listingId:"12345"},
+ {sellerKey:"coupang",sourceUrl:"https://www.coupang.com/vp/products/8393759227?itemId=16093987610&vendorItemId=89624202743",listingId:"8393759227",sellerOptionKey:"wrong_item_variant"},
+ {sellerKey:"coupang",sourceUrl:"https://www.coupang.com/vp/products/8393759227?itemId=16093987610&vendorItemId=89624202743&utm_source=ad",listingId:"8393759227",sellerOptionKey:"item_16093987610_vendor_89624202743"},
+ {sellerKey:"coupang",sourceUrl:"https://www.coupang.com/vp/products/8393759227?itemId=16093987610&vendorItemId=89624202743&vendorItemId=2",listingId:"8393759227",sellerOptionKey:"item_16093987610_vendor_89624202743"},
  {sellerKey:"coupang",sourceUrl:"https://www.coupang.com/vp/products/12345?itemId=999",listingId:"12345"},
  {sellerKey:"official",sourceUrl:"https://fake-anua.com/products/heartleaf-serum",listingId:"heartleaf-serum",brand:"Anua"},
  {sellerKey:"official",sourceUrl:"https://anua.com/products/heartleaf-serum",listingId:"heartleaf-serum",brand:"Synthetic"},
