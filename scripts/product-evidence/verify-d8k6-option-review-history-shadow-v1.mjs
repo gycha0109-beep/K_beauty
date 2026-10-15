@@ -154,11 +154,15 @@ for(const [txt,pattern] of [
  [sql,/r.evidence_sha256 = ranked.source_evidence_sha256/],
  [sql,/r.reviewer_actor_key <> ranked.collector_actor_key/],
  [sql,/from public, anon, authenticated, service_role/],
+ [sql,/bounded as \(/],
+ [sql,/limit 257/],
+ [sql,/into v_count, v_options from bounded/],
  [source,/pricePublicationAuthorized:false/],
  [source,/serverDbRoleAuthorized:false/]
 ]) {assert.match(txt,pattern);checks++;}
 assert(sql.indexOf("r.review_rank = 1") < sql.indexOf("r.verdict = 'verified'"));checks++;
 assert(sql.indexOf("ranked.option_rank = 1") < sql.indexOf("r.verdict = 'verified'"));checks++;
+assert(sql.indexOf("limit 257") < sql.indexOf("jsonb_agg("));checks++;
 assert.doesNotMatch(source,/fetch\(|\.rpc\(|process.env|createClient\(/);checks++;
 console.log(JSON.stringify({status:"PASS",stage:"D8K6_LATEST_REVIEW_REVOCATION_AND_SOURCE_SEPARATION_SHADOW",
  assertions:checks,latestReviewRevokes:true,oldVerifiedPriceFallback:false,
