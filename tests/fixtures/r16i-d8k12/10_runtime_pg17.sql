@@ -12,6 +12,13 @@ DECLARE
  first_req uuid:='00000000-0000-4000-8000-000000000061';
  revoke_req uuid:='00000000-0000-4000-8000-000000000062';
 BEGIN
+ IF NOT pg_catalog.has_table_privilege('service_role',
+    'public.admin_product_correction_evidence_verdicts_v1','SELECT')
+ OR pg_catalog.has_table_privilege('service_role',
+    'public.admin_product_correction_evidence_verdicts_v1',
+    'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+ THEN RAISE EXCEPTION 'D8K12_LEGACY_DIRECT_MUTATION_PRIVILEGES_REMAIN'; END IF;
+
  IF pg_catalog.has_function_privilege('anon',
     'public.review_r16i_evidence_v2(uuid,text,text,uuid,uuid)','EXECUTE')
  OR pg_catalog.has_function_privilege('authenticated',
