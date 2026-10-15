@@ -75,6 +75,154 @@ assert.equal(discovered.candidates[0].candidate_locator, "https://example.com/pr
 assert.equal(discovered.candidates[0].discovery_method, "official_sitemap");
 assert.equal(discovered.mutation_policy, "READ_ONLY_NO_PRODUCTION_WRITE");
 
+// P2-E6: Phase8H's original consumer sees identical output if the
+// optional P2-only priority is absent or neutral.
+const neutralPriority = await discoverOfficialSourceCandidates(baseDiscovery, {
+  fetchHtml, fetchSitemap, candidatePriority: () => 0,
+});
+const omittedPriority = await discoverOfficialSourceCandidates(baseDiscovery, {
+  fetchHtml, fetchSitemap, candidatePriority: null,
+});
+assert.deepEqual(neutralPriority, discovered);
+assert.deepEqual(omittedPriority, discovered);
+const promotedPriority = await discoverOfficialSourceCandidates(baseDiscovery, {
+  fetchHtml, fetchSitemap,
+  candidatePriority: locator =>
+    locator === "https://example.com/products/relief-sun-aqua-fresh" ? 2 : 1,
+});
+assert.equal(promotedPriority.candidates[0].candidate_locator,
+  "https://example.com/products/relief-sun-aqua-fresh");
+assert.equal(promotedPriority.candidate_count, discovered.candidate_count);
+assert.equal(promotedPriority.authority,
+  "DISCOVERY_CANDIDATES_ONLY_NOT_RELOCATION_AUTHORITY");
+await assert.rejects(() => discoverOfficialSourceCandidates(baseDiscovery, {
+  fetchHtml, fetchSitemap, candidatePriority: true,
+}), /TRUST_PHASE8H_CANDIDATE_PRIORITY_INVALID/);
+await assert.rejects(() => discoverOfficialSourceCandidates(baseDiscovery, {
+  fetchHtml, fetchSitemap, candidatePriority: () => -1,
+}), /TRUST_PHASE8H_CANDIDATE_PRIORITY_INVALID/);
+await assert.rejects(() => discoverOfficialSourceCandidates(baseDiscovery, {
+  fetchHtml, fetchSitemap, candidatePriority: () => NaN,
+}), /TRUST_PHASE8H_CANDIDATE_PRIORITY_INVALID/);
+await assert.rejects(() => discoverOfficialSourceCandidates(baseDiscovery, {
+  fetchHtml, fetchSitemap,
+  candidatePriority: () => { throw Error("PRIORITY_ABORT"); },
+}), /PRIORITY_ABORT/);
+
+// URL() permits malformed %-escapes, but decoded query-score normalization
+// does not. Invalid locators must not mislabel an entire fetched sitemap
+// as SOURCE_BLOCKED or suppress subsequent well-formed candidate URLs.
+const brokenSitemapInput = {
+  ...baseDiscovery, external_search_seeds: [],
+  discovery_surfaces: [{kind: "sitemap", url: "https://example.com/sitemap.xml"}],
+  candidate_limit: 2,
+};
+const brokenSitemapFetch = async url => ({
+  bytes: Buffer.from("<urlset>"+
+    "<url><loc>https://example.com/products/relief-sun-%ZZ</loc></url>"+
+    "<url><loc>https://example.com/products/relief-sun-rice-probiotics</loc></url>"+
+    "</urlset>"),
+  finalUrl: url,
+});
+const afterInvalid = await discoverOfficialSourceCandidates(brokenSitemapInput, {
+  fetchHtml, fetchSitemap: brokenSitemapFetch,
+});
+const afterInvalidPriority = await discoverOfficialSourceCandidates(brokenSitemapInput, {
+  fetchHtml, fetchSitemap: brokenSitemapFetch, candidatePriority: () => 1,
+});
+for (const result of [afterInvalid, afterInvalidPriority]) {
+  assert.deepEqual(result.candidates.map(c => c.candidate_locator),
+    ["https://example.com/products/relief-sun-rice-probiotics"]);
+  assert.equal(result.surface_observations.length, 1);
+  assert.equal(result.surface_observations[0].status, "FETCHED");
+  assert.equal(result.surface_observations[0].locator_count, 2);
+  assert.equal(result.disposition, "CANDIDATES_DISCOVERED");
+}
+// A blocked first sitemap is independently observed; the second
+// permissible sitemap must still yield its valid candidate.
+const partialFailure = await discoverOfficialSourceCandidates({
+  ...brokenSitemapInput, max_sitemaps: 2,
+  discovery_surfaces: [
+    {kind: "sitemap", url: "https://example.com/blocked.xml"},
+    {kind: "sitemap", url: "https://example.com/good.xml"},
+  ],
+}, {
+  fetchHtml,
+  fetchSitemap: async url => {
+    if (url.endsWith("/blocked.xml")) throw Error("SOURCE_BLOCKED:fixture");
+    return brokenSitemapFetch(url);
+  },
+  candidatePriority: () => 1,
+});
+assert.deepEqual(partialFailure.surface_observations.map(o => o.status),
+  ["SOURCE_BLOCKED:fixture", "FETCHED"]);
+assert.deepEqual(partialFailure.candidates.map(c => c.candidate_locator),
+  ["https://example.com/products/relief-sun-rice-probiotics"]);
+assert.equal(partialFailure.mutation_policy, "READ_ONLY_NO_PRODUCTION_WRITE");
+
+// Phase8H query terms are catalog text, not URL strings. Literal percent
+// characters must not make valid sitemap URLs disappear.
+const percentTerm = await discoverOfficialSourceCandidates({
+  ...brokenSitemapInput,
+  query_terms: ["relief sun", "Rice 10%"],
+}, {
+  fetchHtml,
+  fetchSitemap: brokenSitemapFetch,
+});
+assert.deepEqual(percentTerm.candidates.map(c => c.candidate_locator),
+  ["https://example.com/products/relief-sun-rice-probiotics"]);
+assert.equal(percentTerm.surface_observations[0].status, "FETCHED");
+
+// Dedup is by canonical locator after URL parsing/fragment removal, across
+// repeated sitemap locators, the HTML catalog index, and external seed rows.
+// HTML/seed references cannot downgrade an observed official sitemap method.
+const dedupUrl = "https://example.com/products/relief-sun-rice-probiotics";
+const dedupTracked = dedupUrl + "?campaign=brand&ref=home";
+const duplicateTrial = await discoverOfficialSourceCandidates({
+  ...baseDiscovery,
+  max_sitemaps: 1, candidate_limit: 12,
+  external_search_seeds: [dedupUrl, dedupUrl + "#seed"],
+}, {
+  fetchHtml,
+  fetchSitemap: async url => ({
+    bytes: Buffer.from("<urlset>"+
+      "<url><loc>"+dedupUrl+"#primary</loc></url>"+
+      "<url><loc>"+dedupUrl+"</loc></url>"+
+      "<url><loc>"+dedupTracked.replaceAll("&", "&amp;")+"</loc></url>"+
+      "<url><loc>"+dedupTracked+"</loc></url>"+
+      "</urlset>"), finalUrl: url,
+  }),
+});
+assert.equal(duplicateTrial.candidate_count, 3);
+assert.deepEqual(duplicateTrial.candidates.map(c => c.candidate_locator), [
+  dedupUrl, dedupTracked, "https://example.com/products/relief-sun-aqua-fresh",
+]);
+assert.equal(duplicateTrial.candidates[0].discovery_method,"official_sitemap");
+assert.equal(duplicateTrial.candidates[1].discovery_method,"official_sitemap");
+assert.equal(duplicateTrial.candidates[0].discovery_surface,
+  "https://example.com/sitemap.xml");
+assert.equal(duplicateTrial.external_seed_count,0);
+assert.equal(duplicateTrial.mutation_policy,"READ_ONLY_NO_PRODUCTION_WRITE");
+const duplicatePriorityTrial = await discoverOfficialSourceCandidates({
+  ...baseDiscovery,
+  max_sitemaps: 1, candidate_limit: 12,
+  external_search_seeds: [dedupUrl, dedupUrl + "#seed"],
+}, {
+  fetchHtml,
+  fetchSitemap: async url => ({
+    bytes: Buffer.from("<urlset>"+
+      "<url><loc>"+dedupUrl+"#primary</loc></url>"+
+      "<url><loc>"+dedupUrl+"</loc></url>"+
+      "<url><loc>"+dedupTracked.replaceAll("&", "&amp;")+"</loc></url>"+
+      "<url><loc>"+dedupTracked+"</loc></url>"+
+      "</urlset>"), finalUrl: url,
+  }),
+  candidatePriority: url => url === dedupTracked ? 2 : 1,
+});
+assert.equal(duplicatePriorityTrial.candidate_count,3);
+assert.equal(duplicatePriorityTrial.candidates[0].candidate_locator,dedupTracked);
+assert.equal(duplicatePriorityTrial.candidates[1].discovery_method,"official_sitemap");
+
 const externalOnly = await discoverOfficialSourceCandidates({
   ...baseDiscovery,
   discovery_surfaces: [{ kind: "sitemap", url: "https://example.com/other-only.xml" }],
