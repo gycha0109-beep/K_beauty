@@ -23,6 +23,8 @@ export async function runScopedPublication({admit,checkAbsent,publish,readback})
     assert.equal(first.approval.candidateLicensePacketSha256,first.receipt.candidateLicensePacketSha256,'derived candidate license packet mismatch');
   }
   assert.equal(first.receipt.artifacts.length,2);
+  for(const a of first.receipt.artifacts){assert.equal(a.noticeDelivery,'IN_TARBALL_V1','publish requires complete in-tarball notices');
+    assert.match(a.noticeSha256||'',/^[a-f0-9]{64}$/,'verified embedded notice digest required');}
   // Both identities must be absent before the first irreversible operation.
   for(const a of first.receipt.artifacts)await checkAbsent(a);
   const completed=[];

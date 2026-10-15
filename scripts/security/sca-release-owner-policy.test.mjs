@@ -12,7 +12,7 @@ import {runScopedPublication,checkScopedExecutionControls} from './publish-appro
 function scopedOperatorFixture(){
   const approval={schema:'bejewely.scoped-upload-approval.v2',uploadApproved:true,redistributionApproval:{approved:true},operationalChecks:{
     noChargeControlsVerified:true,privateAclReviewed:true,noticeDeliveryReviewed:true,credentialsProvisioned:true,evidenceSha256:'e'.repeat(64)}};
-  const receipt={candidateSha256:'a'.repeat(64),artifacts:[{name:'@gycha0109-beep/braces'},{name:'@gycha0109-beep/node-forge'}]};
+  const receipt={candidateSha256:'a'.repeat(64),artifacts:['braces','node-forge'].map(n=>({name:'@gycha0109-beep/'+n,noticeDelivery:'IN_TARBALL_V1',noticeSha256:'d'.repeat(64)}))};
   const calls=[];return {approval,receipt,calls,operations:{admit:()=>({approval:structuredClone(approval),receipt:structuredClone(receipt)}),
     checkAbsent:async a=>calls.push('absent:'+a.name),publish:async a=>calls.push('publish:'+a.name),readback:async a=>calls.push('readback:'+a.name)}};
 }
@@ -20,6 +20,12 @@ test('dormant scoped operator checks both identities before mutation and reads b
   const f=scopedOperatorFixture(),r=await runScopedPublication(f.operations);
   assert.deepEqual(f.calls.map(x=>x.split(':')[0]),['absent','absent','publish','readback','publish','readback']);
   assert.equal(r.officialAudit,'FAIL_NOT_WAIVED');assert.equal(r.productApplied,false);
+});
+test('operator rejects the historical external-only notice kit before any registry operation',async()=>{
+  for(const change of [a=>delete a.noticeDelivery,a=>a.noticeSha256='missing']){
+    const f=scopedOperatorFixture();change(f.receipt.artifacts[1]);
+    await assert.rejects(()=>runScopedPublication(f.operations));assert.deepEqual(f.calls,[]);
+  }
 });
 test('scoped operator stops before mutation on missing cost/privacy/notice/credential evidence',async()=>{
   for(const key of ['noChargeControlsVerified','privateAclReviewed','noticeDeliveryReviewed','credentialsProvisioned']){

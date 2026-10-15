@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
 import {carrierMetadata} from './sca-release-github-carrier.mjs';
-import {scopedMetadata,verifyScopedApproval,verifyScopedArchive,assertGithubPrivateMetadata,assertScopedAccessDenied} from './sca-release-scoped.mjs';
+import {scopedMetadata,verifyScopedApproval,verifyScopedArchive,assertGithubPrivateMetadata,assertScopedAccessDenied,verifyScopedContents,scopedDeliveryNotices,embeddedNoticePath} from './sca-release-scoped.mjs';
 import {spawnSync} from 'node:child_process';
 import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference,browserReference,assertNoLifecycleHooks,assertPrivateReadback} from './sca-release-bundle.mjs';
 
@@ -82,6 +82,25 @@ test('bootstrap metadata omits automatic source linkage while retaining exact or
   assert.equal(next.bejewelyPatch.originalArchiveSha256,'a'.repeat(64));
   for(const key of ['version','license','main','browser','scripts'])assert.deepEqual(next[key],original[key]);
   assert.equal(next.publishConfig.access,'restricted');assert.throws(()=>scopedMetadata(original,'a'.repeat(64),{linkage:'SILENT_LINK'}));
+});
+
+test('embedded notice delivery preserves original bytes and rejects omission, same-size tampering and extra files',()=>{
+  const original={'package.json':Buffer.from('{}'),'lib/source.js':Buffer.from('original code'),'LICENSE':Buffer.from('original license')};
+  const next={...original,[embeddedNoticePath]:scopedDeliveryNotices()};
+  verifyScopedContents(original,next,{noticeDelivery:true});
+  assert.throws(()=>verifyScopedContents(original,original,{noticeDelivery:true}),/added\/removed/);
+  const changed=Buffer.from(next[embeddedNoticePath]);changed[changed.length-1]^=1;
+  assert.throws(()=>verifyScopedContents(original,{...next,[embeddedNoticePath]:changed},{noticeDelivery:true}),/notice/);
+  assert.throws(()=>verifyScopedContents(original,{...next,'lib/source.js':Buffer.from('changed code')},{noticeDelivery:true}),/drift/);
+  assert.throws(()=>verifyScopedContents(original,{...next,unexpected:Buffer.from('x')},{noticeDelivery:true}),/added\/removed/);
+  assert.throws(()=>verifyScopedContents(original,next),/added\/removed/);
+});
+test('notice packing only extends explicit files allowlist and never changes runtime fields',()=>{
+  const original={name:'braces',version:'3.0.3',files:['index.js','lib'],main:'index.js',dependencies:{'fill-range':'^7.1.1'}};
+  const next=scopedMetadata(original,'a'.repeat(64),{linkage:'UNLINKED_BOOTSTRAP',noticeDelivery:true});
+  assert.deepEqual(next.files,[...original.files,embeddedNoticePath]);assert.deepEqual(next.dependencies,original.dependencies);assert.equal(next.main,original.main);
+  assert.throws(()=>scopedMetadata(original,'a'.repeat(64),{noticeDelivery:true}));
+  assert.deepEqual(scopedMetadata(original,'a'.repeat(64)).files,original.files);
 });
 test('initial private/unlinked proof is not final private/linked noninherited proof',()=>{
   const m={package_type:'npm',visibility:'private',owner:{login:'gycha0109-beep'},name:'braces'};

@@ -21,7 +21,8 @@ export function scopedPublicationPlan(receipt,review){
       privateMetadataUrl:'https://api.github.com/users/gycha0109-beep/packages/npm/'+encodeURIComponent(a.originalName),
       readbackUrl:'REQUIRES_OWNER_APPROVED_EXACT_IMMUTABLE_URL',
       expectedReadbackPrefix:'https://npm.pkg.github.com/download/'+name+'/'+version+'/',
-      expectedVisibility:'private',repository:'gycha0109-beep/K_beauty'};
+      expectedVisibility:'private',repository:'gycha0109-beep/K_beauty',
+      noticeDelivery:a.noticeDelivery||'SEPARATE_PACKET_ONLY_NOT_PUBLISHABLE',noticeSha256:a.noticeSha256||null};
   });
   return {schema:'bejewely.scoped-prepublication-plan.v1',candidateSha256:receipt.candidateSha256,
     publicationLinkage:receipt.publicationLinkage||'PRELINKED',

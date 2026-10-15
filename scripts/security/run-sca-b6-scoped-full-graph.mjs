@@ -90,7 +90,7 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
     assert.equal(Object.keys(expected.braces).length,10);
     assert.equal(Object.keys(expected["node-forge"]).length,59);
     if(scopedMode){
-      scoped=prepareScopedArchives({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped'),linkage:'UNLINKED_BOOTSTRAP'});
+      scoped=prepareScopedArchives({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped'),linkage:'UNLINKED_BOOTSTRAP',noticeDelivery:true});
       const scopedNotice=path.join(temp,'scoped/NOTICE.md'),noticeBytes=fs.readFileSync(scopedNotice);
       fs.writeFileSync(scopedNotice,'tampered');
       assert.throws(()=>verifyScopedCandidate({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped')}),/substitution/);

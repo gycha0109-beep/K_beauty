@@ -109,6 +109,7 @@ export function bootstrapLicenseReviewResources(artifacts,files){
     frozenReviewedPacket:Object.fromEntries(Object.entries(frozen).map(([n,b])=>[n,digest(b)])),
     priorScopedArchives:baseline.artifacts.map(a=>({name:a.name,sha256:a.sha256})),
     candidateScopedArchives:artifacts.map(a=>({name:a.name,sha256:a.sha256})),
-    difference:'Archive/package metadata identities only; original source/browser/LICENSE and complete notice content preserved'
+    difference:artifacts.some(a=>a.noticeDelivery)?'Linkage/packing metadata and verified supplemental notice file added; original source/browser/LICENSE and complete notice content preserved':
+      'Archive/package metadata identities only; original source/browser/LICENSE and complete notice content preserved'
   },null,2)+'\n')};
 }

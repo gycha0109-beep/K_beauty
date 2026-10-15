@@ -12,7 +12,14 @@ import {approvalPolicyContext,checkPolicyOwner,checkPolicySigners,normalizeOwner
 
 export const scope='gycha0109-beep';
 export const scopedName=n=>'@'+scope+'/'+n;
-export function scopedMetadata(original,originalArchiveSha256,{linkage='PRELINKED'}={}){
+export const embeddedNoticePath='BEJEWELY-THIRD-PARTY-NOTICES.md';
+export function scopedDeliveryNotices(){return fs.readFileSync(new URL('../../security/release/license-review/THIRD-PARTY-NOTICES.md',import.meta.url));}
+export function verifyScopedContents(old,next,{noticeDelivery=false}={}){
+  assert.deepEqual(Object.keys(next).sort(),[...Object.keys(old),...(noticeDelivery?[embeddedNoticePath]:[])].sort(),'scoped packaging added/removed files');
+  for(const n of Object.keys(old))if(n!=='package.json')assert.equal(digest(next[n]),digest(old[n]),'scoped source/browser/license drift: '+n);
+  if(noticeDelivery)assert.equal(digest(next[embeddedNoticePath]),digest(scopedDeliveryNotices()),'embedded distribution notice missing/tampered');
+}
+export function scopedMetadata(original,originalArchiveSha256,{linkage='PRELINKED',noticeDelivery=false}={}){
   assert.ok(['braces','node-forge'].includes(original.name),'unknown upstream identity');
   assert.match(originalArchiveSha256,/^[a-f0-9]{64}$/);
   assert.ok(['PRELINKED','UNLINKED_BOOTSTRAP'].includes(linkage),'unknown publication linkage');
@@ -25,21 +32,25 @@ export function scopedMetadata(original,originalArchiveSha256,{linkage='PRELINKE
     metadata.bejewelyPatch.sourceRepository='https://github.com/gycha0109-beep/K_beauty';
     metadata.bejewelyPatch.publicationLinkage='UNLINKED_BOOTSTRAP';
   }
+  if(noticeDelivery){assert.equal(linkage,'UNLINKED_BOOTSTRAP');
+    if(original.files!==undefined){assert.ok(Array.isArray(original.files));metadata.files=[...original.files,embeddedNoticePath];}}
   return metadata;
 }
-export function verifyScopedArchive(originalName,originalBytes,scopedBytes,{linkage='PRELINKED'}={}){
+export function verifyScopedArchive(originalName,originalBytes,scopedBytes,{linkage='PRELINKED',noticeDelivery=false}={}){
   const upstream=verifyArchive(originalName,originalBytes),old=inspectArchive(originalBytes),next=inspectArchive(scopedBytes);
-  assert.deepEqual(Object.keys(next).sort(),Object.keys(old).sort(),'scoped packaging added/removed files');
-  assert.deepEqual(JSON.parse(next['package.json']),scopedMetadata(JSON.parse(old['package.json']),upstream.sha256,{linkage}),'unreviewed metadata changes');
+  assert.ok(typeof noticeDelivery==='boolean');if(noticeDelivery)assert.equal(linkage,'UNLINKED_BOOTSTRAP');
+  verifyScopedContents(old,next,{noticeDelivery});
+  assert.deepEqual(JSON.parse(next['package.json']),scopedMetadata(JSON.parse(old['package.json']),upstream.sha256,{linkage,noticeDelivery}),'unreviewed metadata changes');
   for(const n of Object.keys(old))if(n!=='package.json')assert.equal(digest(next[n]),digest(old[n]),'scoped source/browser/license drift: '+n);
   const fileSha256=Object.fromEntries(Object.entries(next).map(([n,b])=>[n,digest(b)]).sort(([a],[b])=>a.localeCompare(b)));
   return {originalName,originalVersion:upstream.version,name:scopedName(originalName),version:upstream.version,
     originalArchiveSha256:upstream.sha256,originalInstalledSha256:upstream.installedContentSha256,
     sha256:digest(scopedBytes),sha512:'sha512-'+createHash('sha512').update(scopedBytes).digest('base64'),
     originalPackageJsonBytesSha256:digest(old['package.json']),scopedPackageJsonBytesSha256:digest(next['package.json']),
-    metadataChangedFields:['name','repository','publishConfig','bejewelyPatch'],license:upstream.license,
+    metadataChangedFields:['name','repository','publishConfig','bejewelyPatch',...(noticeDelivery&&Object.hasOwn(JSON.parse(old['package.json']),'files')?['files']:[])],license:upstream.license,
     licenseSha256:upstream.licenseSha256,fileSha256,sourceAndBrowserBytesPreserved:true,releaseApproved:false,
-    ...(linkage==='UNLINKED_BOOTSTRAP'?{publicationLinkage:linkage}:{})};
+    ...(linkage==='UNLINKED_BOOTSTRAP'?{publicationLinkage:linkage}:{}),
+    ...(noticeDelivery?{noticeDelivery:'IN_TARBALL_V1',noticeSha256:digest(next[embeddedNoticePath])}:{})};
 }
 function npm(a,cwd){
   const win=process.platform==='win32',binary=win?process.execPath:'npm';
@@ -49,7 +60,8 @@ function npm(a,cwd){
 function scopedResources(artifacts,originals,linkage='PRELINKED'){
   const notice='# BEJEWELY scoped patch candidate\n\nNOT an official upstream release. Redistribution approval pending.\n'+
     artifacts.map(a=>a.name+'@'+a.version+' maps to '+a.originalName+'@'+a.originalVersion+'; original archive SHA256 '+a.originalArchiveSha256+'; original LICENSE SHA256 '+a.licenseSha256+'; '+JSON.stringify(a.license)+'.\n').join('')+
-    '\nOnly package.json metadata changed. Source and all browser bundles remain byte-identical to the verified B6 patch. Original advisory audit is mandatory and remains FAIL; scoped scanner silence is not a fix.\n';
+    (artifacts.some(a=>a.noticeDelivery)?'\nSource and all browser bundles remain byte-identical to the verified B6 patch. Linkage metadata and explicitly recorded supplemental notice delivery differ. Original advisory audit is mandatory and remains FAIL; scoped scanner silence is not a fix.\n':
+    '\nOnly package.json metadata changed. Source and all browser bundles remain byte-identical to the verified B6 patch. Original advisory audit is mandatory and remains FAIL; scoped scanner silence is not a fix.\n');
   const sbom={bomFormat:'CycloneDX',specVersion:'1.6',version:1,components:artifacts.map(a=>({type:'library',name:a.name,version:a.version,
     'bom-ref':a.name+'@'+a.version+'#'+a.sha256,hashes:[{alg:'SHA-256',content:a.sha256}],licenses:[{license:{name:typeof a.license==='string'?a.license:JSON.stringify(a.license)}}],
     properties:[{name:'bejewely:original-name',value:a.originalName},{name:'bejewely:original-version',value:a.originalVersion},
@@ -65,16 +77,22 @@ function scopedManifest(artifacts,files,linkage='PRELINKED'){return {schema:'bej
   originalAuditRequired:true,officialAuditPass:false,productApplied:false,uploadExecuted:false,artifacts,files,
   ...(linkage==='UNLINKED_BOOTSTRAP'?{publicationLinkage:linkage,finalSourceRepository:'gycha0109-beep/K_beauty',liveAclAndLinkage:'NOT_RUN',
     accessPathDecisionSha256:digest(fs.readFileSync(new URL('../../security/release/sca-b6-package-access-path-decision.json',import.meta.url)))}:{})};}
-export function prepareScopedArchives({originals,output,linkage='PRELINKED'}){
+export function prepareScopedArchives({originals,output,linkage='PRELINKED',noticeDelivery=false}){
+  assert.ok(typeof noticeDelivery==='boolean');if(noticeDelivery)assert.equal(linkage,'UNLINKED_BOOTSTRAP');
   assert.ok(!fs.existsSync(output),'new scoped output required');fs.mkdirSync(output,{mode:0o700});
   const artifacts=[];
   for(const name of ['braces','node-forge']){
     const bytes=fs.readFileSync(originals[name]);verifyArchive(name,bytes);const entries=inspectArchive(bytes);
     const source=path.join(output,name);fs.mkdirSync(source);
     for(const [n,b] of Object.entries(entries)){const dest=path.join(source,n);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,b,{flag:'wx',mode:0o600});}
-    fs.writeFileSync(path.join(source,'package.json'),JSON.stringify(scopedMetadata(JSON.parse(entries['package.json']),digest(bytes),{linkage}),null,2)+'\n');
+    fs.writeFileSync(path.join(source,'package.json'),JSON.stringify(scopedMetadata(JSON.parse(entries['package.json']),digest(bytes),{linkage,noticeDelivery}),null,2)+'\n');
+    if(noticeDelivery){
+      fs.writeFileSync(path.join(source,embeddedNoticePath),scopedDeliveryNotices(),{flag:'wx',mode:0o600});
+      // Explicit npm files whitelists do not necessarily include the addendum.
+      // Pack normally, then require the exact resulting inventory; never waive omission.
+    }
     const packed=npm(['pack',source,'--ignore-scripts','--offline','--json','--pack-destination',output],output);assert.equal(packed.length,1);
-    const archive=path.join(output,packed[0].filename),receipt=verifyScopedArchive(name,bytes,fs.readFileSync(archive),{linkage});
+    const archive=path.join(output,packed[0].filename),receipt=verifyScopedArchive(name,bytes,fs.readFileSync(archive),{linkage,noticeDelivery});
     artifacts.push({...receipt,filename:packed[0].filename,archive});
   }
   const resources=scopedResources(artifacts,originals,linkage),files={};
@@ -95,7 +113,9 @@ export function verifyScopedCandidate({originals,output,expectedLinkage}){
   if(expectedLinkage)assert.equal(linkage,expectedLinkage,'candidate linkage mismatch');
   for(const name of ['braces','node-forge']){
     const version=name==='braces'?'3.0.3':'1.4.0',filename=scope+'-'+name+'-'+version+'.tgz';
-    artifacts.push({...verifyScopedArchive(name,fs.readFileSync(originals[name]),read(filename),{linkage}),filename});
+    const noticeDelivery=manifest.artifacts?.find(a=>a.originalName===name)?.noticeDelivery;
+    assert.ok(noticeDelivery===undefined||noticeDelivery==='IN_TARBALL_V1','unknown notice delivery mode');
+    artifacts.push({...verifyScopedArchive(name,fs.readFileSync(originals[name]),read(filename),{linkage,noticeDelivery:noticeDelivery==='IN_TARBALL_V1'}),filename});
   }
   const resources=scopedResources(artifacts,originals,linkage),files={};for(const a of artifacts)resources[a.filename]=read(a.filename);
   for(const [n,b] of Object.entries(resources)){assert.equal(digest(read(n)),digest(b),'scoped NOTICE/SBOM substitution');files[n]={sha256:digest(b),bytes:b.length};}
@@ -185,7 +205,7 @@ export function assertGithubPrivateMetadata(metadata,name,{stage='FINAL_LINKED',
 export function verifyScopedReadbackBytes({metadata,originalName,originalBytes,artifact,bytes,stage='FINAL_LINKED',aclEvidence}){
   if(artifact.publicationLinkage==='UNLINKED_BOOTSTRAP')assert.ok(['INITIAL_UNLINKED','FINAL_LINKED_NONINHERITED'].includes(stage),'bootstrap requires explicit staged proof');
   assertGithubPrivateMetadata(metadata,originalName,{stage,aclEvidence});assert.equal(digest(bytes),artifact.sha256,'authenticated readback hash mismatch');
-  const receipt=verifyScopedArchive(originalName,originalBytes,bytes,{linkage:artifact.publicationLinkage||'PRELINKED'});assert.equal(receipt.sha512,artifact.sha512);return receipt;
+  const receipt=verifyScopedArchive(originalName,originalBytes,bytes,{linkage:artifact.publicationLinkage||'PRELINKED',noticeDelivery:artifact.noticeDelivery==='IN_TARBALL_V1'});assert.equal(receipt.sha512,artifact.sha512);return receipt;
 }
 export async function assertScopedAccessDenied(url,{unauthorizedToken,fetcher=fetch}={}){
   const u=new URL(url);assert.equal(u.origin,'https://npm.pkg.github.com');assert.ok(!u.username&&!u.password&&!u.search&&!u.hash);
