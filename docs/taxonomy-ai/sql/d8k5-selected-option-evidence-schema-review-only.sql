@@ -16,6 +16,7 @@ create table public.product_offer_option_observations (
   gifts jsonb not null default '[]'::jsonb,
   selected_option_price_krw bigint not null,
   shipping_price_krw bigint,
+  shipping_price_basis text not null default 'unknown',
   observed_at timestamptz not null,
   source_name text not null,
   source_record_id text not null,
@@ -44,6 +45,10 @@ create table public.product_offer_option_observations (
   constraint offer_option_price_check check (
     selected_option_price_krw between 1 and 1000000000 and
     (shipping_price_krw is null or shipping_price_krw between 0 and 1000000000)
+  ),
+  constraint offer_option_shipping_basis_check check (
+    (shipping_price_basis = 'unknown' and shipping_price_krw is null)
+    or (shipping_price_basis = 'seller_published_flat' and shipping_price_krw is not null)
   ),
   constraint offer_option_source_check check (
     char_length(btrim(source_name)) between 1 and 80 and
