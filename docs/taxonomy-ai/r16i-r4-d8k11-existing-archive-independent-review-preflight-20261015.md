@@ -129,3 +129,15 @@ node scripts/product-evidence/check-d8k11-local-existing-archives-v1.mjs --metad
 **현재 승인에 포함되지 않는 일:** 운영 Storage 이미지 다운로드/서명 URL 호출, 원본 객체의 실제 내용 확인, `submitted_by`·서명 파일 해시 등 민감 메타데이터 추출, 관리자의 `review_evidence` POST, `VERIFIED/REJECTED` DB 기록, 자체 Auth/API 변경, correction proposal/approval/apply, Product/Offer/Fact 마이그레이션, 구매 CTA/가격 공개, PR 병합·배포.
 
 별도 명시 권한이 확보되면 **이미 보관한 공식몰·화해 두 파일부터** 실제 이미지 확인 및 제출자≠검토자 서버 검증을 완료하고, 그 후 Product 160ml → 80ml base unit 교정안과 상품별 parent Offer 생성 범위를 제안한다. 보안 이슈 #1208가 열린 동안 출시 게이트는 닫는다.
+
+## 7. 사용자 Windows Node.js D8K-11 정확한 HEAD 재검증 — 통과 (2026-10-15)
+
+사용자가 로컬 `D:\cha\K_beauty`에서 D8K-11 원격 브랜치를 가져온 후 **HEAD `ccfef7e8`**으로 detached checkout하여 두 검사를 수행했고, stdout 로그를 이 대화로 제공했다.
+
+- `node scripts/product-evidence/verify-d8k11-existing-archive-review-preflight-v1.mjs`: **PASS, 462 assertions**, `D8K11_EXISTING_ARCHIVE_SOURCE_AND_REVIEWER_GUARD_SHADOW`.
+- `node scripts/product-evidence/verify-d8k11-local-archive-cli-v1.mjs`: **PASS, 21 assertions**, `D8K11_LOCAL_PRIVATE_ARCHIVE_CLI_SMOKE`.
+- 실제 Windows Node.js에서 합성 이미지 파일의 SHA-256 계산·임시 파일·자식 프로세스·거부 경로를 시험했다. 과거 격리 V8의 대체 hash가 아닌 **Native Node 테스트 확인**이다.
+- `MODULE_TYPELESS_PACKAGE_JSON` 경고는 있었으나 두 테스트 판정에 영향을 주지 않았다. `package.json` 설정을 변경하지 않는다.
+- CLI 테스트 출력 `allFileBytesInTestsSynthetic=true`, `actualArchiveBytesReceived=false`, `reviewerIdentityAuthenticated=false`, `legacyOwnerSelfReviewGuard=NOT_ENFORCED`를 유지한다. **운영 Storage 원본 열람 / 독립 검토 / DB 원장 변경 / 실제 판매처 가격 검증은 수행되지 않았다**.
+
+**판정:** D8K-11의 **오프라인 코드·로컬 Node smoke 테스트는 완료**, 원본 진위 및 인증된 서버 검토는 HOLD. 검증 결과를 기록하는 문서 추가 커밋은 `ccfef7e8` 이후 생기지만 해당 실행 소스 코드는 변경하지 않는다. #1208 해결, 별도 Storage 열람·관리자 API 승인 및 실원본 검토 전에는 병합·배포 및 실제 가격 공개 금지.
