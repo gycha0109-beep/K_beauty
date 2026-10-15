@@ -79,7 +79,7 @@ Actual account plan, remaining shared storage/transfer, paid usage, payment meth
 
 - Verdaccio: NOT_APPROVED (explicit user response).
 - GitHub-first review and offline preparation: AUTHORIZED.
-- Real registry acceptance/namespace fork decision: PENDING.
+- GitHub Packages private target selection: OWNER_APPROVED on2026-10-15, scope @gycha0109-beep with K_beauty source linkage. Read-only account preflight authorized; actual account quota/stop-usage/ACL UNKNOWN. See sec-sca-20261015-github-account-preflight.md. No settings/credential/upload authority inferred.
 - Payment/paid usage, license review/election, actual owners/signatures, credential access, upload, security exception, main/prod/issue close: PENDING.
 - Required branch protection: API 403; cannot request bypass or claim merge acceptance.
 
