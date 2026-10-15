@@ -1,6 +1,6 @@
 # Face Lab / Skin S1-B — dedicated test key2 probe (2026-10-15)
 
-> **Research-only; not production.** The operator designated `OPENAI_API_KEY2` as the temporary API key for Face Lab testing. This PR adds a purposefully narrow text-only one-shot credential/provider connectivity test. **No live API request or photo was run while preparing this PR.**
+> **Research-only; not production.** The operator designated `OPENAI_API_KEY2` as the temporary API key for Face Lab testing. A dedicated one-shot test workflow was temporarily committed on a research branch, executed with the GitHub Actions repository secret, then **deleted** (as was its CI registry entry) to avoid permanent secret-bearing workflows and preserve CI inventory count policy. The standalone CLI and mock tests remain. No photo was transmitted.
 
 ## Exact key and authority boundaries
 
@@ -22,6 +22,14 @@ node scripts/facelab/skin/run-skin-key2-smoke.mjs --live-synthetic-text
 ```
 
 The second command fails closed with `dedicated_test_key2_unavailable` if the dedicated key is not injected. The first command exercises a simulated successful provider, response truncation, 429 rate limit, malformed JSON, production-key-only failure, mixed-key priority, and nonleakage. It cannot authenticate to the real OpenAI Provider.
+
+
+## Confirmed GitHub Actions execution (real Provider, text only)
+
+- [Exact branch commit `c0acf1524a840b7879071b26ed1273be065af03f`, run #38702440175](https://github.com/gycha0109-beep/K_beauty/actions/runs/38702440175): **SUCCESS**. Live `OPENAI_API_KEY2` request HTTP **200**, response matched `{"probe":"synthetic_ok"}` (match boolean only logged), model `gpt-5.6-luna`, 38 prompt / 13 completion tokens, `finish_reason=stop`. One billable **text-only** provider call.
+- [Workflow-name correction run #38702819285](https://github.com/gycha0109-beep/K_beauty/actions/runs/38702819285): **SUCCESS** with the same HTTP 200, model, token counts, `finish_reason=stop`. One additional billable **text-only** provider call; total **2** observed real calls. No real or synthetic image sent by this task.
+- The temporary workflow originally caused CI workflow-registry mismatch and then strict overlap-inventory count failure. **The workflow and one-entry registry were deleted** in commits `ad164f8daf6895a6ac711f3ae86060f40b0008a6` and `21e3ac27d20914723b11544f03c83ee1892d901b`; canonical inventory policy was **not** changed, secrets were not printed, and no persistent paid-triggering workflow is part of the PR's final diff.
+- These results confirm the key was securely available in the GitHub Actions job and the pinned model accepted a synthetic text request. They do not confirm image inputs, v1/v2 Face/Skin compatibility, real-photo accuracy, or production readiness. Any later key2 tests require a separate pre-approved bounded research workflow / isolated runner; do not mistake the retired ephemeral workflow for an active scheduler.
 
 ## Scope and next gates
 
