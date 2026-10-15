@@ -600,4 +600,123 @@ const phase8hStandaloneOutput=execFileSync(process.execPath,
 assert.match(phase8hStandaloneOutput,
   /TRUST_PHASE8H_OFFICIAL_SOURCE_REDISCOVERY_VERIFIED/);
 console.log("TRUST_PHASE8H_STANDALONE_VERIFIER_PASS");
+// P2-E8: all five FROZEN v2 targets, independent mocked first-party origins.
+// This is an offline integration matrix, NOT an official-site measurement.
+// Each call is counted, origin/policy-gated, and no outside network is used.
+const fiveTargets=v2.targets;
+const matrixOriginByBrand=new Map(fiveTargets.map(t=>[
+  t.brand,new URL(t.officialPeerUrl).origin,
+]));
+const matrixCalls=[];
+const matrixAtopalmUrl="https://neopharmshop.co.kr/product/mle-lotion-600ml/9955";
+const matrixTorridenUrl="https://www.torriden.com/goods/goods_view.php?goodsNo=999";
+const matrixFetchers={
+  async fetchRobots(url,origin){
+    const brand=fiveTargets.find(t=>matrixOriginByBrand.get(t.brand)===origin)?.brand;
+    assert.ok(brand);
+    assert.equal(url,origin+"/robots.txt");
+    matrixCalls.push({brand,kind:"robots",url});
+    if(brand==="닥터지")throw Error("SOURCE_BLOCKED:robots_fixture_unavailable");
+    if(brand==="비플레인")return {
+      bytes:Buffer.from("User-agent: *\nDisallow: /sitemap\nDisallow: /sitemap_index\n"),
+      finalUrl:url,
+    };
+    if(brand==="이즈앤트리")return {
+      bytes:Buffer.from(
+        "User-agent: *\nDisallow: /\nAllow: /sitemap.xml\nAllow: /sitemap_index.xml\n"),
+      finalUrl:url,
+    };
+    return {bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url};
+  },
+  async fetchSitemap(url,origin,policy){
+    const brand=fiveTargets.find(t=>matrixOriginByBrand.get(t.brand)===origin)?.brand;
+    assert.ok(brand);
+    assert.equal(new URL(url).origin,origin);
+    assert.equal(policy.allowed(url),true);
+    matrixCalls.push({brand,kind:"sitemap",url});
+    if(brand==="이즈앤트리")throw Error("SOURCE_BLOCKED:sitemap_fixture_unavailable");
+    const locators=brand==="아토팜"?[
+      "https://neopharmshop.co.kr/product/mle-lotion-300ml/9956",
+      matrixAtopalmUrl,
+    ]:[];
+    return {bytes:Buffer.from("<urlset>"+locators.map(loc=>
+      "<url><loc>"+loc+"</loc></url>").join("")+"</urlset>"),finalUrl:url};
+  },
+  async fetchPage(url,origin,policy){
+    const target=fiveTargets.find(t=>matrixOriginByBrand.get(t.brand)===origin);
+    assert.ok(target);
+    assert.equal(new URL(url).origin,origin);
+    assert.equal(policy.allowed(url),true);
+    matrixCalls.push({brand:target.brand,kind:"page",url});
+    if(url===target.officialPeerUrl){
+      return {bytes:Buffer.from(target.brand==="토리든"
+        ?'<a href="/goods/goods_view.php?goodsNo=999">토리든 다이브인 저분자 히알루론산 세럼 50ml</a>'
+        :"<title>Governed peer for a different product</title>"),finalUrl:url};
+    }
+    if(url===matrixAtopalmUrl)return {
+      bytes:Buffer.from("<title>아토팜 MLE 로션 600ml</title>"),finalUrl:url,
+    };
+    if(url===matrixTorridenUrl)return {
+      bytes:Buffer.from("<title>토리든 다이브인 저분자 히알루론산 세럼 50ml</title>"),
+      finalUrl:url,
+    };
+    throw Error("UNEXPECTED_PRODUCT_PAGE_MUST_NOT_BE_FETCHED");
+  },
+};
+const fiveMatrix=await runTrustP2DFiveBrandPilot({
+  execute:true,cohort:v2,fetchers:matrixFetchers,
+});
+assert.equal(fiveMatrix.mode,"FIVE_OFFICIAL_BRANDS_NO_WRITES");
+assert.equal(fiveMatrix.items.length,5);
+assert.deepEqual(fiveMatrix.items.map(x=>x.brand),v2.targets.map(x=>x.brand));
+assert.deepEqual(fiveMatrix.items.map(x=>x.assessment.siteStatus[0]),[
+  "ROBOTS_UNAVAILABLE","ROBOTS_DISALLOWED","CANDIDATES_DISCOVERED",
+  "SOURCE_BLOCKED","CANDIDATES_DISCOVERED",
+]);
+assert.deepEqual(fiveMatrix.items.map(x=>x.assessment.sourceDiagnostics[0]
+  .stageDiagnosis.reason),[
+    "ROBOTS_UNAVAILABLE_HOLD","ROBOTS_DISALLOWED_HOLD",
+    "NAME_CANDIDATE_REVIEW_ONLY","SITEMAP_FETCH_HOLD",
+    "NAME_CANDIDATE_REVIEW_ONLY",
+]);
+assert.deepEqual(matrixCalls.map(c=>c.kind),[
+  "robots",                          // Dr.G; no site discovery allowed
+  "robots",                          // Beplain; both sitemaps forbidden
+  "robots","sitemap","sitemap","page","page", // Atopalm: peer and 600ml
+  "robots","sitemap","sitemap",      // Isntree: failed sitemaps, home denied
+  "robots","sitemap","sitemap","page","page", // Torriden numeric goodsNo
+]);
+assert.deepEqual(matrixCalls.filter(c=>c.kind==="page").map(c=>c.url),[
+  fiveTargets[2].officialPeerUrl,matrixAtopalmUrl,
+  fiveTargets[4].officialPeerUrl,matrixTorridenUrl,
+]);
+assert.equal(matrixCalls.some(c=>c.url.includes("/mle-lotion-300ml/")),false);
+assert.equal(matrixCalls.every(c=>c.url.startsWith(matrixOriginByBrand.get(c.brand)+"/")),true);
+assert.equal(fiveMatrix.summary.processedProducts,5);
+assert.equal(fiveMatrix.summary.officialPagesFetched,2);
+assert.equal(fiveMatrix.summary.identityCandidateProducts,2);
+assert.equal(fiveMatrix.summary.confirmedExactSkuCount,0);
+assert.equal(fiveMatrix.summary.factWrites,0);
+assert.equal(fiveMatrix.summary.subjectWrites,0);
+assert.equal(fiveMatrix.summary.recommendationWrites,0);
+assert.equal(fiveMatrix.summary.dbWrites,0);
+assert.equal(fiveMatrix.summary.aiApiCalls,0);
+assert.equal(fiveMatrix.items.every(x=>
+  x.subjectCreationAuthorized===false&&x.factConfirmationAuthorized===false),true);
+assert.equal(fiveMatrix.items.every(x=>x.assessment.sourceDiagnostics.every(s=>
+  s.stageDiagnosis.sourceBindingAuthorized===false)),true);
+assert.equal(JSON.stringify(fiveMatrix).includes("<title>"),false);
+
+// The same frozen cohort in PLAN_ONLY mode must cause ZERO callbacks.
+const failIfFetched=async()=>{throw Error("PLAN_ONLY_MUST_NOT_FETCH");};
+const planMatrix=await runTrustP2DFiveBrandPilot({
+  execute:false,cohort:v2,fetchers:{
+    fetchRobots:failIfFetched,fetchSitemap:failIfFetched,fetchPage:failIfFetched,
+  },
+});
+assert.equal(planMatrix.mode,"PLAN_ONLY_NO_NETWORK");
+assert.equal(planMatrix.summary.officialPagesFetched,0);
+assert.equal(planMatrix.summary.dbWrites,0);
+console.log("TRUST_P2D_OFFLINE_FIVE_BRAND_POLICY_MATRIX_PASS");
+
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
