@@ -165,3 +165,17 @@ node scripts/product-evidence/verify-d8k8-local-file-cli-v1.mjs
 메시지 프로토콜 회귀 4개를 `verify-d8k8-manual-option-review-intake-v1.mjs`에 추가했다. GitHub 원본 JS를 격리 V8으로 직접 실행한 새 순수 계약 검증: **407 synthetic assertions PASS**. **Windows Node native child-process 로컬 파일 검사 재통과는 사용자 재실행 전까지 아직 미확인**이다.
 
 로컬에서 브랜치 최신 버전을 가져온 다음 `node scripts/product-evidence/verify-d8k8-local-file-cli-v1.mjs`를 재실행해야 한다. `[MODULE_TYPELESS_PACKAGE_JSON]` 경고 자체는 있을 수 있으나 PASS/HOLD 판정과 별도로 취급한다. 운영 DB/이력/상품 가격 노출은 변경 없음.
+
+## 7. Windows Native Node v24 재검증 성공 (2026-10-15)
+
+**최종 로컬 판정: USER_REPORTED_D8K8_NATIVE_LOCAL_PASS / REAL_SELLER_PROVENANCE_NOT_VERIFIED.**
+
+사용자가 실제 로컬 `HEAD 40890e5a` (GitHub PR #1331의 수정본)에서 재실행한 stdout 로그를 제공했다.
+
+- `verify-d8k8-manual-option-review-intake-v1.mjs`: `status=PASS`, `stage=D8K8_MANUAL_REAL_SOURCE_INTAKE_SHADOW`, **407 assertions**.
+- `verify-d8k8-local-file-cli-v1.mjs`: `status=PASS`, `stage=D8K8_LOCAL_EVIDENCE_BYTES_AND_REVIEW_CLI`, **21 assertions**.
+- 테스트 판정 그대로: `syntheticOnly=true`, `externalCaptureReceived=false`, `realSellerEvidence=false`, `reviewerIdentityAuthenticated=false`, `productionDbWrites=0`, `pricePublished=false`, `serverReviewAuthority=false`.
+- Node `MODULE_TYPELESS_PACKAGE_JSON` 경고는 여전히 있으나 테스트는 통과. 기존 PNG 오류의 `stderr`/stdout JSON 프로토콜 불일치는 **이번 Windows Node 24 로컬 실행에서 재발하지 않음**.
+- 검증 파일은 임시 폴더 안에 생성·삭제되며 사용자 원본 판매처 캡처는 입력되지 않았다. Assistant는 사용자의 로컬 실행 로그로 결과를 수락하며 직접 파일시스템/소스 진본을 독립 검증한 것은 아니다.
+
+**게이트:** D8K-8 *synthetic metadata + local-file processing* 검증 DONE. 다음 단계 D8K-9에서 실제 merchant/product/parent Offer linkage 및 원본 증거와 독립 reviewer의 진위를 인증해야 한다. protected DB writer/RLS/API/가격·CTA/UI 운영 기능은 여전히 미승인, #1208 open. 추가로 D8K-8 동일 로컬 테스트를 요청할 필요는 없고, 새로운 코드 변경이나 진짜 판매처 자료가 들어올 때 해당 범위만 재검증한다.
