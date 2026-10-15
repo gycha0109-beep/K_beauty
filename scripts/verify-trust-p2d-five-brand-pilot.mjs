@@ -200,6 +200,25 @@ assert.deepEqual(policyRun.sites[0].pages.map(p=>p.url),[sitemapCorrect]);
 assert.equal(policyRun.subjectCreationAuthorized,false);
 assert.equal(policyRun.officialProductEvidenceConfirmed,false);
 
+// Named sitemap URL != eligible product-page locator. When only wrong-size
+// links exist and the optional homepage adds none, record an explicit HOLD.
+const noEligibleCalls=[];
+const noEligible=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from(
+    "<urlset><url><loc>"+sitemapWrong60+"</loc></url></urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    noEligibleCalls.push(url);
+    return {bytes:Buffer.from("<title>Unrelated peer or homepage</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(noEligibleCalls,[peer,"https://neopharmshop.co.kr/"]);
+assert.equal(noEligible.sites[0].status,"NO_ELIGIBLE_OFFICIAL_LOCATOR");
+assert.deepEqual(noEligible.sites[0].pages,[]);
+assert.equal(diagnoseTrustP2DSite(noEligible.sites[0]).reason,
+  "NO_ELIGIBLE_OFFICIAL_LOCATOR");
+assert.equal(noEligible.officialProductEvidenceConfirmed,false);
+
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
