@@ -87,6 +87,7 @@ export function diagnoseTrustP2DSite(site){
   if(sourceStatus==="ROBOTS_UNAVAILABLE")reason="ROBOTS_UNAVAILABLE_HOLD";
   else if(sourceStatus==="ROBOTS_DISALLOWED")reason="ROBOTS_DISALLOWED_HOLD";
   else if(sourceStatus==="CRAWL_DELAY_NOT_SUPPORTED")reason="ROBOTS_PACING_HOLD";
+  else if(sourceStatus==="NO_ELIGIBLE_OFFICIAL_LOCATOR")reason="NO_ELIGIBLE_OFFICIAL_LOCATOR";
   else if(wrongVariantCount>0)reason="WRONG_VARIANT_PAGE_HOLD";
   else if(positiveCandidateCount>0)reason="NAME_CANDIDATE_REVIEW_ONLY";
   else if(pages.some(p=>["SOURCE_BLOCKED","TRANSIENT_FAILURE"].includes(p.status)))
