@@ -300,10 +300,12 @@ const phase8hFixture={
   candidate_limit:2,max_sitemaps:1,external_search_seeds:[],
   discovery_surfaces:[{kind:"sitemap",url:"https://neopharmshop.co.kr/sitemap.xml"}],
 };
+const phase8hVague="https://neopharmshop.co.kr/product/mle-lotion-a/9001";
+const phase8hSized="https://neopharmshop.co.kr/product/mle-lotion-z-600ml/9000";
 const phase8hXml="<urlset><url><loc>"+
   "https://neopharmshop.co.kr/product/mle-lotion-%ZZ/99</loc></url>"+
-  "<url><loc>"+sitemapUnknown+"</loc></url>"+
-  "<url><loc>"+sitemapCorrect+"</loc></url></urlset>";
+  "<url><loc>"+phase8hVague+"</loc></url>"+
+  "<url><loc>"+phase8hSized+"</loc></url></urlset>";
 const phase8hMock={
   fetchHtml:async()=>{throw Error("HTML_INDEX_NOT_ALLOWED");},
   fetchSitemap:async url=>({bytes:Buffer.from(phase8hXml),finalUrl:url}),
@@ -315,14 +317,14 @@ const phase8hNeutral=await discoverOfficialSourceCandidates(phase8hFixture,{
 assert.deepEqual(phase8hNeutral,phase8hDefault);
 assert.equal(phase8hDefault.surface_observations[0].status,"FETCHED");
 assert.deepEqual(phase8hDefault.candidates.map(c=>c.candidate_locator),[
-  sitemapUnknown,sitemapCorrect,
+  phase8hVague,phase8hSized,
 ]);
 const phase8hPromoted=await discoverOfficialSourceCandidates(phase8hFixture,{
   ...phase8hMock,
-  candidatePriority:url=>url===sitemapCorrect?2:1,
+  candidatePriority:url=>url===phase8hSized?2:1,
 });
 assert.deepEqual(phase8hPromoted.candidates.map(c=>c.candidate_locator),[
-  sitemapCorrect,sitemapUnknown,
+  phase8hSized,phase8hVague,
 ]);
 assert.equal(phase8hPromoted.candidate_count,2);
 await assert.rejects(()=>discoverOfficialSourceCandidates(phase8hFixture,{
