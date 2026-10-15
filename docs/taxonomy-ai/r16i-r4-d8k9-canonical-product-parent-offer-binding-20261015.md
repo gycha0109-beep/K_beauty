@@ -94,3 +94,20 @@
 - 공급망 보안 이슈 #1208가 열려 있는 동안 병합·배포는 HOLD.
 
 **완료 범위:** 유효한 상품/리스팅 ID를 조용히 추측하거나 잘못된 판매 페이지를 연결하지 않는 *오프라인 진단 경계*. **미완료:** 실제 판매처 원본의 진정성, 현재 DB live read, 사용자 권한, Product Fact 승인, 서버 저장/조회, 가격/구매 CTA 공개.
+
+## 5. 사용자 Windows Node.js 검증 통과 — 2026-10-15
+
+**판정: USER_REPORTED_D8K9_NATIVE_NODE_PASS / REAL_DB_AND_SELLER_HOLD.**
+
+사용자는 `git fetch origin feat/taxonomy-ai/d8k9-product-offer-source-binding-shadow-20261015` 후 로컬 Windows PowerShell `D:\cha\K_beauty`에서 `git switch --detach FETCH_HEAD`를 실행했고, `HEAD c462f2b8`를 확인했다.
+
+```text
+{"status":"PASS","stage":"D8K9_CANONICAL_PRODUCT_PARENT_OFFER_COLLISION_BINDING_SHADOW","assertions":468,"offlineSyntheticOnly":true,"legacyR16iBlocked":true,"independentGlobalListingProbesRequired":true,"nativeDatabaseRpcInvoked":false,"realSellerCaptureVerified":false,"actualProductFactSubjectAttested":false,"productionWriteAuthorized":false,"pricePublished":false,"directCtaAuthorized":false}
+```
+
+- 이번에는 이전 V8 격리 실행과 별도로 **사용자 실제 Windows Node.js 환경의 468개 테스트 통과**가 확인되었다.
+- `MODULE_TYPELESS_PACKAGE_JSON` 경고는 유지되나 이번 테스트에 영향을 주지 않은 성능 경고다. 프로젝트 전체 `package.json` 모듈 설정 변경은 하지 않는다.
+- 로그 앞부분에 별도 `origin/fix/migration-composer-form-disambiguation` 브랜치를 찾지 못한 오류가 있었으나, 이후 D8K-9 정확한 브랜치 fetch, `c462f2b8` 체크아웃, 테스트가 성공했으므로 **D8K-9 검사 결과를 무효화하지 않는다**. 그 브랜치 에러는 별도 트랙의 Git 상태로 취급한다.
+- **한계:** 검사는 여전히 synthetic only다. 실제 Product/Offer 현재 DB 조회, 진짜 SKU 캡처·영수증, 인증된 독립 검토, 판매처 가격·배송 검증 및 UI/CTA 활성화까지 통과한 것은 아니다.
+- 실행 기록을 이 문서에 추가하는 문서 커밋은 사용자가 테스트한 `c462f2b8`보다 이후의 문서 전용 HEAD가 될 수 있다. **테스트된 실행 코드 자체는 바꾸지 않았다.**
+- **다음 게이트:** 인증된 read-only 운영 스냅샷과 실제 판매처 증거 필요. 사용자 승인 없는 호스팅 DB 조회, RLS/스키마·API 변경·운영 데이터 수정·실제 가격 노출·병합·배포는 하지 않는다. 보안 이슈 #1208 OPEN.
