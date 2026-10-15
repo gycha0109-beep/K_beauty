@@ -63,8 +63,13 @@ CREATE TRIGGER r16i_evidence_review_events_v2_append_only
 -- Existing code used direct INSERT on this table. Revoke that privilege:
 -- after deploying this migration, review writes MUST go through the narrow
 -- owner-checked RPC below. Reads remain available to trusted server code.
-REVOKE INSERT,UPDATE,DELETE ON public.admin_product_correction_evidence_verdicts_v1
+-- Existing hosted service_role has ALL table privileges, including TRUNCATE.
+-- Remove ALL direct grants, then re-grant read-only access. TRUNCATE bypasses
+-- row-level policies and must not remain available as an alternate write path.
+REVOKE ALL ON public.admin_product_correction_evidence_verdicts_v1
  FROM service_role;
+GRANT SELECT ON public.admin_product_correction_evidence_verdicts_v1
+ TO service_role;
 
 CREATE FUNCTION public.review_r16i_evidence_v2(
  p_evidence_id uuid,p_verdict text,p_reason text,p_actor_id uuid,p_request_id uuid
