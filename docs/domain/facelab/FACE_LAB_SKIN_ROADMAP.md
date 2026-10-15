@@ -132,9 +132,24 @@
 
 **기존 단계 배치:** S0 위험 감사 → **S1-A 관찰 상태 계약** → **S1-B 공용 Vision 응답 호환성 검증** → **S2-C 비노출 사진 점수 차이 비교** → S1-D 독립 사진 신뢰도 평가 → S2-E 추천·정책 안전성 승인 → S4/S5 실제 기기·제품 출시 근거. S3 추적과 S4 화면 작업은 이 상태를 '정상 피부'로 변환하지 않는다.
 
+**2026-10-15 실제 작업 기록 (모두 별도 Draft PR·미병합, `main` 미적용)**
+
+| 단계 | 제출한 작업 | 아직 끝나지 않은 부분 |
+| --- | --- | --- |
+| **S0** | [#1308](https://github.com/gycha0109-beep/K_beauty/pull/1308) 사진→판단 코드 감사 | 실제 사진 오판율/정책 영향 실증 |
+| **S0→S2** | [#1309](https://github.com/gycha0109-beep/K_beauty/pull/1309) 분석 실패 표시·일부 일치 상태, [#1316](https://github.com/gycha0109-beep/K_beauty/pull/1316) 근거 없는 설문 충돌 표시 보수 | 병합 전 결과 비교 및 기존 저장 리포트 재진입 |
+| **S1** | [#1310](https://github.com/gycha0109-beep/K_beauty/pull/1310) 피부 신호·사람 평가 계약, [#1317](https://github.com/gycha0109-beep/K_beauty/pull/1317) 0/unknown 분리 설계, **[#1319](https://github.com/gycha0109-beep/K_beauty/pull/1319) 평가 전용 상태·합성 회귀 구현** | #1319 exact-head 자동 검사 확인, 단일 Vision 응답 실제 확장/사람 평가 |
+| **S2** | [#1312](https://github.com/gycha0109-beep/K_beauty/pull/1312) 판단 근거 추적 | 변경 후보/기존 추천의 실제 영향과 독립 승인 |
+| **S3** | [#1311](https://github.com/gycha0109-beep/K_beauty/pull/1311) 반복 사진 비교 계약 | 동의된 실제 반복 사진 및 개인정보/저장 권한 |
+| **S4** | [#1313](https://github.com/gycha0109-beep/K_beauty/pull/1313) Android 저장 리포트의 사진 판단 상태 표시 | 모바일 종합 검사 기존 불일치, 실제 기기/접근성 인수 |
+| **S5** | [#1314](https://github.com/gycha0109-beep/K_beauty/pull/1314) 제품·출시 조건을 별도 구분 | 보안 #1208, 사람 평가, 실기기, 저장/개인정보·운영 승인 |
+
+위 표의 '제출'은 **코드 또는 설계 검토 가능**을 뜻하며, 제품 출시/실사진 정확도 또는 병합 완료가 아니다.
+
+
 | 순서 | 작업과 검증 결과물 | 상태 | 다음 게이트 |
 | --- | --- | --- | --- |
-| **A / Now** | 7개 가시 축 `present(1~5)` / `not_seen(0)` / `unassessable(null)` / `unknown(null)`; confidence/cue/area/reason, 빠진 축·중복·잘못된 값·상충 단서의 거부 또는 보류, 합성 회귀. **서비스 계산·전송·저장 불변** | **진행** — #1317 설계 완료, 독립 순수 계약/검사 구현 예정 | 축별 negative 검사 PASS, v1의 0 소급 복원 금지, Provider 호출 0건 |
+| **A / Now** | 7개 가시 축 `present(1~5)` / `not_seen(0)` / `unassessable(null)` / `unknown(null)`; confidence/cue/area/reason, 빠진 축·중복·잘못된 값·상충 단서의 거부 또는 보류, 합성 회귀. **서비스 계산·전송·저장 불변** | **Draft 구현·검사 중** — #1317 설계, #1319 독립 검증 코드; exact-head CI 확인 필요 | 축별 negative 검사 PASS, v1의 0 소급 복원 금지, Provider 호출 0건 |
 | **B / Next** | 공유 단일 Vision 응답에 명시적 `vision-observation-v2` Skin 계약 추가하는 호환 설계/평가. Style/Face 응답과 기존 1회 Provider 경계 보존 | **HOLD: 공유 Vision 담당자 검토** | 응답 형식·안정성·비용·결측 처리 및 Style 영향 검토 |
 | **C / Next** | 동일 1회 사진 관찰을 입력으로 기존 결과 vs 축별 관찰 증거가 충분할 때만 가산하는 **비노출** 대안 비교 | **HOLD: B + 추천 계산 경계 검토** | 164상품 × 12상황 frozen 검증, priority/Top Pick/점수별 차이와 원인 문서화. 기본 운영 결과 불변 |
 | **D / Later** | 동의된 실제 사진을 사람이 독립 검수해 축별 오탐·미탐·보류·촬영 조건 편차와 판단자 의견 차이 측정 | **HOLD: 개인정보·실사진 평가 승인** | 신뢰도 경계값/판단 안전성 근거 확보, 합성 PASS를 정확도 PASS로 간주 금지 |
