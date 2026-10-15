@@ -3209,3 +3209,12 @@ Watchtower-Track: security
 - Scoped first CI c5932463 /38661347090: two clean runners scoped manifest20abd1ff... identical, original code/browser/LICENSE/NOTICE/SBOM and direct aliases PASS; CodeQL/PIE PASS. Full graph correctly FAILS stale original same-version integrity before ci; Android NOT_RUN. Repair adds explicit root alias edges and $ override references, actual npm install refresh, no hand-written target lock or weakened hash check. Original full22/prod19/C0 audits remain FAIL. Further signer type/normalized-owner controls: local26 tests PASS; fresh resolver/Android CI pending.
 
 - Scoped technical closeout f2f9280d / CI38662014291:26 tests/Main Health/CodeQL/PIE, actual aliases+overrides/69 installed files/4 consumers/683SBOM, all11 checks with Android APK33eeed81 and independent installation/digest20abd1ff PASS. Original HIGH22/19+M13/11+C0/exit1 remains FAIL; scoped HIGH0+M17/14/exit1 is missing original advisory coverage, not remediation. Actual GitHub private readback/ACL/quota, product adoption/device/API/Auth NOT_RUN. Package upload/cost/final legal/exception/main/prod still unapproved; detailed immutable receipt versioned in scoped-graph-evidence.json. This closeout is documentation-only.
+
+
+## 2026-10-15 — B6 MIT / BSD-3-Clause license review packet
+
+- User authorized license review basis only: braces MIT; node-forge BSD-3-Clause. No legal clearance, publication, spend, exception, main merge or production authorization.
+- Preserve original B6 archives and all source/browser/LICENSE bytes; add a hash-bound scoped supplemental NOTICE, embedded-code SBOM and rights-review inventory. Capture 49 source notice files, complete upstream licenses, JSBN custom terms and base-x/PKCS1/DES/AES/TweetNaCl origins.
+- Explicit legal HOLD for OpenSSL origin/version, unspecified DES/OAEP BSD variants, public-domain claims, final standalone browser notice delivery and named independent reviewer. Four roles / two owners remain mandatory.
+- Local tests 29/29 PASS; frozen 49-source notice reconstruction and removed-notice negative control PASS; diff check PASS. New producer/replay CI pending exact commit; prior runtime/APK proof remains f2f9280d /38662014291.
+- Original audit fullHIGH22/prodHIGH19/C0 FAIL; scoped scanner gap is not remediation. DB/Auth/RLS/Storage/Payment/Secret/Production execution N; no hosted app/provider mutation.

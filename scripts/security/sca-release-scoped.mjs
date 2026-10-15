@@ -7,6 +7,7 @@ import {fork,spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {createHash,createPublicKey,verify} from 'node:crypto';
 import {inspectArchive,verifyArchive,digest,requiredRoles,reference} from './sca-release-bundle.mjs';
+import {licenseReviewResources} from './sca-release-license-review.mjs';
 
 export const scope='gycha0109-beep';
 export const scopedName=n=>'@'+scope+'/'+n;
@@ -32,7 +33,7 @@ export function verifyScopedArchive(originalName,originalBytes,scopedBytes){
     licenseSha256:upstream.licenseSha256,fileSha256,sourceAndBrowserBytesPreserved:true,releaseApproved:false};
 }
 function npm(a,cwd){const p=spawnSync('npm',a,{cwd,encoding:'utf8',timeout:120000,maxBuffer:8*1024*1024});assert.ok(!p.error&&p.status===0,'scoped npm packaging failed\n'+p.stdout+'\n'+p.stderr);return JSON.parse(p.stdout);}
-function scopedResources(artifacts){
+function scopedResources(artifacts,originals){
   const notice='# BEJEWELY scoped patch candidate\n\nNOT an official upstream release. Redistribution approval pending.\n'+
     artifacts.map(a=>a.name+'@'+a.version+' maps to '+a.originalName+'@'+a.originalVersion+'; original archive SHA256 '+a.originalArchiveSha256+'; original LICENSE SHA256 '+a.licenseSha256+'; '+JSON.stringify(a.license)+'.\n').join('')+
     '\nOnly package.json metadata changed. Source and all browser bundles remain byte-identical to the verified B6 patch. Original advisory audit is mandatory and remains FAIL; scoped scanner silence is not a fix.\n';
@@ -41,7 +42,9 @@ function scopedResources(artifacts){
     properties:[{name:'bejewely:original-name',value:a.originalName},{name:'bejewely:original-version',value:a.originalVersion},
       {name:'bejewely:original-archive-sha256',value:a.originalArchiveSha256},{name:'bejewely:original-license-sha256',value:a.licenseSha256},
       {name:'bejewely:status',value:'SCOPED_TECHNICAL_CANDIDATE_NOT_RELEASED'}]}))};
-  return {'NOTICE.md':Buffer.from(notice),'sbom.json':Buffer.from(JSON.stringify(sbom,null,2)+'\n')};
+  return {'NOTICE.md':Buffer.from(notice+'\nDistribution must include THIRD-PARTY-NOTICES.md and license-review-sbom.json. Open rights questions are recorded in license-review.json; publication remains HOLD.\n'),
+    'sbom.json':Buffer.from(JSON.stringify(sbom,null,2)+'\n'),
+    ...licenseReviewResources(artifacts,Object.fromEntries(Object.entries(originals).map(([n,p])=>[n,inspectArchive(fs.readFileSync(p))])))};
 }
 function scopedManifest(artifacts,files){return {schema:'bejewely.scoped-candidate.v1',status:'TECHNICAL_CANDIDATE_NOT_RELEASED',
   sourceEvidenceHead:reference.head,sourceEvidenceRun:38514455251,
@@ -59,7 +62,7 @@ export function prepareScopedArchives({originals,output}){
     const archive=path.join(output,packed[0].filename),receipt=verifyScopedArchive(name,bytes,fs.readFileSync(archive));
     artifacts.push({...receipt,filename:packed[0].filename,archive});
   }
-  const resources=scopedResources(artifacts),files={};
+  const resources=scopedResources(artifacts,originals),files={};
   for(const a of artifacts)resources[a.filename]=fs.readFileSync(a.archive);
   for(const [n,b] of Object.entries(resources)){files[n]={sha256:digest(b),bytes:b.length};if(!n.endsWith('.tgz'))fs.writeFileSync(path.join(output,n),b,{flag:'wx',mode:0o600});}
   const manifest=scopedManifest(artifacts.map(({archive,...a})=>a),files);
@@ -76,7 +79,7 @@ export function verifyScopedCandidate({originals,output}){
     const version=name==='braces'?'3.0.3':'1.4.0',filename=scope+'-'+name+'-'+version+'.tgz';
     artifacts.push({...verifyScopedArchive(name,fs.readFileSync(originals[name]),read(filename)),filename});
   }
-  const resources=scopedResources(artifacts),files={};for(const a of artifacts)resources[a.filename]=read(a.filename);
+  const resources=scopedResources(artifacts,originals),files={};for(const a of artifacts)resources[a.filename]=read(a.filename);
   for(const [n,b] of Object.entries(resources)){assert.equal(digest(read(n)),digest(b),'scoped NOTICE/SBOM substitution');files[n]={sha256:digest(b),bytes:b.length};}
   assert.deepEqual(manifest,scopedManifest(artifacts,files),'scoped manifest/provenance substitution');
   return {candidateSha256:digest(manifestBytes),artifacts,originalAuditRequired:true,officialAudit:'FAIL',releaseApproval:'PENDING',productApplied:false};
