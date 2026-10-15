@@ -36,6 +36,8 @@ const component = readFileSync("apps/mobile/features/reports/NativeSavedReport.t
 assert(component.includes('import { resolveSkinPhotoDisplayState } from "./skin-photo-evidence-status";'));
 assert(component.includes('<Section title={copy.photoEvidence} lines={getSkinPhotoEvidenceLines(report, locale)} />'));
 assert(component.includes("if (state.statusConflict) return [copy.conflict];"));
+assert(component.includes('if (state.status === "available" && state.highOrMediumObservationCount === 0) {'));
+assert(component.includes("return [copy.limited];"), "no reliable individual cue must not be called supporting photo evidence");
 assert(component.includes("사진 판단을 보류하고 재확인해야 합니다"));
 assert(!component.includes("photoEvidenceState ="), "render component must not mutate saved photo state");
 console.log("verify-face-lab-skin-s4-native-photo-evidence: PASS (synthetic display states only)");
