@@ -176,6 +176,7 @@ run("DATA-OFFER17 observability module syntax", node, ["--check", "lib/product-o
 run("DATA-OFFER17 offer read service syntax", node, ["--check", "lib/server/product-offer-read-service.js"]);
 run("DATA-OFFER17 controlled Offer RPC diagnostic", node, ["scripts/verify-data-offer17-controlled-offer-rpc-diagnostic-v1.mjs"]);
 
+run("Face Lab Skin dedicated KEY2 mock-only provider smoke", node, ["scripts/facelab/skin/verify-skin-key2-synthetic-provider-smoke.mjs" ]);
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
