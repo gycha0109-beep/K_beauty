@@ -186,10 +186,11 @@ function getSkinPhotoEvidenceLines(report: Record<string, unknown>, locale: "ko"
         limited: "개별 피부 관찰 신호의 신뢰도 근거가 부족하므로 단정할 수 없습니다."
       };
   if (state.statusConflict) return [copy.conflict];
-  return [
-    copy[state.status],
-    ...(state.status === "available" && state.highOrMediumObservationCount === 0 ? [copy.limited] : [])
-  ];
+  // A global available status without trustworthy individual cues is not positive photo evidence.
+  if (state.status === "available" && state.highOrMediumObservationCount === 0) {
+    return [copy.limited];
+  }
+  return [copy[state.status]];
 }
 
 function PremiumSnapshot({ report }: { report: Record<string, unknown> }) {
