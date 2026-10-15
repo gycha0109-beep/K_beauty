@@ -285,3 +285,26 @@
 - 근거 기록: [D8K-7 실행 안내 §7](r16i-r4-d8k7-local-docker-pg17-acceptance-20261015.md). 이는 이전 synthetic/static만에서 **실제 사용자의 격리 PG17 SQL runtime 통과**로 증거 수준이 상승한 것이다. 보낸 로그에 로컬 `git rev-parse HEAD`는 없어 정확한 로컬 체크아웃 SHA까지 independently attested된 것은 아니다.
 - 다음 실질 단계: **D8K-8 진짜 판매처 선택옵션 증거 수집→독립 검토 경계**, 기존 R16I admin read-only 검토 워크벤치 및 Offer source-binding 계약 우선 재사용. 이 단계가 해결되기 전에는 해당 데이터의 display/CTA 권한을 생성하지 않는다.
 - 실제 운영 DB/RLS migration, 브라우저/서버 role binding, 인증된 actor, 실제 제품 가격·구매 링크, #1208 보안 이슈 해결은 미완료. 모든 병합·배포 계속 HOLD.
+
+## 16. D8K-8 real-seller option evidence capture/review intake (2026-10-15)
+
+- **Status: LOCAL_ACTUAL_SOURCE_INPUT_PATH_READY / PUBLIC_SOURCE_DISCOVERY_ONLY / VERIFIED_SELLER_PRICES_ZERO / PRODUCTION_RELEASE_HOLD.** [D8K-8 manual intake review handoff](r16i-r4-d8k8-manual-selected-option-evidence-intake-20261015.md).
+- Located real candidate seller pages for R16I 80ml (official snature.kr product_no=151; Hwahae goods/35905, **distinct** from prior goods/45194; Coupang product 8393759227 selected itemId+vendorItemId), without promoting cached display prices as checkout observations. Exact Olive Young goodsNo and verified parent Offer ID still missing.
+- Reused R16I's existing seven evidence-review questions as contract guidance, existing `resolveProductPurchaseLink` offline official/OliveYoung/Hwahae source URL identity, and D8K-6 latest-review shadow consistency. No generic admin page or new privileged API created; R16I workbench remains a fixed-product route.
+- Added `lib/commerce/product-offer-manual-review-intake-v1.mjs` to fail closed on archive SHA-256 mismatch, SKU/kit/shipping/option/source URL/age mismatch, same collector+reviewer, incomplete seven-field review, source listing crossbind. It produces **private** SQL-compatible observation/review event candidates only; authenticated actor and actual source truth are still unproven.
+- Added local-only `prepare-d8k8-local-option-review-v1.mjs`: reads an operator-provided screenshot/HTML/PDF and capture + separate review JSON, computes SHA-256 from file bytes, prints redacted status only. No network, external seller fetch, database, file write, price or URL output, or CTA.
+- Synthetic V8 direct contract tests **403 assertions PASS** (URL parser shim only for isolated test harness). Node local file smoke verifier is checked into repo; not yet run against an actual local filesystem in this assistant runtime. Real seller capture bytes/independent reviewer evidence have **not** been received.
+- Existing D8F verifier import chain extended for both D8K8 tests. D8K7 owner-reported real PG17 gate remains passed, but DB write/API/Auth/RLS/admission/merge/deploy authorization all HOLD; security #1208 remains open.
+
+### D8K-8 Windows Native Node 24 CLI failure + repair checkpoint (2026-10-15)
+
+- Owner: original HEAD `bf74be69` D8K8 metadata test **403 PASS**; native tempfile CLI fails at intentionally invalid PNG scenario (line 98), before subsequent symlink tests. Root cause: CLI emitted expected redacted `HOLD` JSON to stderr, which contained Node module type warning; verifier parsed combined warning+JSON as one object.
+- Current repair: CLI success and HOLD both emit one JSON object to stdout; HOLD still exits with status 1; verifier reads only stdout and no private path/content is logged. Added four regressions, fetched-source isolated synthetic **407 PASS**.
+- **Owner native Windows/Node rerun STILL PENDING.** Need both D8K8 focus tests after fetching latest branch; prior 403 PASS does not imply fixed native test PASS. No product/offer writes, public prices, CTA, schema/API/migration/secret/production changes; #1208 OPEN.
+
+### D8K-8 Windows Node 24 fixed-head acceptance (2026-10-15)
+
+- **USER_REPORTED_NATIVE_LOCAL_PASS:** Owner updated to `HEAD 40890e5a`, ran both D8K-8 focused verifiers: contract metadata **407 assertions PASS**; tempfile/CLI SHA-256 and review **21 assertions PASS**. Prior intentional invalid PNG / mixed Node warning JSON failure is repaired and locally verified.
+- Evidence recorded in [D8K-8 runbook §7](r16i-r4-d8k8-manual-selected-option-evidence-intake-20261015.md). Node `MODULE_TYPELESS_PACKAGE_JSON` warning persists without test failure; not an excuse to alter project-wide ESM configuration.
+- **D8K-8 implementation complete at synthetic/local-file acceptance grade**, not actual merchant offer evidence grade. CLI says `realSellerEvidence=false`, `sourceVisualContentExamined=false`, `reviewerIdentityAuthenticated=false`, `productionDbWrites=0`, `pricePublished=false`.
+- Remaining D8K-9 real-world operator evidence: authenticated independent capture/reviewer, actual Product + parent Offer lookup/selected-option binding, original source archive and checkout/stock/shipping conditions. No deployment, DB migration/RLS/API/CTA until separately approved; security #1208 open.
