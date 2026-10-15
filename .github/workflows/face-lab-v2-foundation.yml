@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - "tests/e2e/face-lab-m0-persistence.spec.ts"
+      - "scripts/verify-face-lab-v2-route-cas-runtime.mjs"
       - "lib/face-lab-v2/**"
       - "lib/server/face-lab-simulation-service.js"
       - "lib/server/face-lab-simulation-authority.js"
@@ -307,6 +308,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-premium-wiring.mjs
       - name: Verify Face Lab V2 persistence authority
         run: node scripts/verify-face-lab-v2-persistence-authority.mjs
+      - name: Verify Face Lab V2 GET POST revision CAS runtime (offline)
+        run: node scripts/verify-face-lab-v2-route-cas-runtime.mjs
       - name: Verify premium report re-entry race
         run: node scripts/verify-premium-report-reentry-contract.mjs
       - name: Verify Face Lab V2 result presentation
