@@ -3,7 +3,7 @@
 // admin action, image OCR, file write or seller-price publication.
 import { createHash } from "node:crypto";
 import { readFileSync, lstatSync } from "node:fs";
-import { extname, resolve, basename } from "node:path";
+import { extname, resolve, basename, dirname, parse } from "node:path";
 import { inspectManualOptionCapture, prepareIndependentOptionReview }
   from "../../lib/commerce/product-offer-manual-review-intake-v1.mjs";
 
@@ -32,6 +32,13 @@ function localFile(filename,limit,asEvidence=false) {
   if(/^\.env(?:\.|$)/i.test(basename(full))||
     /(?:secret|service.role|private.key)/i.test(basename(full)))
     throw new Error("PRIVATE_CREDENTIAL_FILE_FORBIDDEN");
+  // Reject symlink/junction ancestors as well as the final file to avoid
+  // accidentally ingesting secrets from a redirected private directory.
+  const root=parse(full).root;
+  for(let dir=dirname(full);dir!==root;dir=dirname(dir)) {
+    if(lstatSync(dir).isSymbolicLink())
+      throw new Error("LOCAL_SOURCE_DIRECTORY_SYMLINK_FORBIDDEN");
+  }
   const stat=lstatSync(full);
   if(stat.isSymbolicLink()||!stat.isFile()||stat.size<1||stat.size>limit)
     throw new Error("LOCAL_FILE_TYPE_OR_SIZE_UNSUPPORTED");
