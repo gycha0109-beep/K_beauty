@@ -22,6 +22,10 @@ import "./verify-d8k8-local-file-cli-v1.mjs";
 // D8K-9: exact catalog Product + parent Offer v2 + independent global
 // collision read checks, with legacy 160ml/80ml Product fact HOLD.
 import "./verify-d8k9-parent-offer-identity-binding-v1.mjs";
+// D8K-11: two existing R16I private archived captures, reviewer/collector
+// separation and local sha256 integrity. No signed URL/DB/Auth actions.
+import "./verify-d8k11-existing-archive-review-preflight-v1.mjs";
+import "./verify-d8k11-local-archive-cli-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
