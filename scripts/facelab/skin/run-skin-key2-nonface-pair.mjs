@@ -10,7 +10,7 @@ if (process.argv.length !== 3 || process.argv[2] !== "--live-nonface-pair") {
   try {
     const result = await runKey2NonfaceVisionPair();
     console.log(JSON.stringify(result, null, 2));
-    if (result.verdict !== "NONFACE_PROVIDER_RESPONSE_CAPTURED_REVIEW_ONLY") process.exitCode = 1;
+    if (result.verdict !== "NONFACE_PROVIDER_INELIGIBLE_ABSTENTION_OBSERVED_REVIEW_ONLY") process.exitCode = 1;
   } catch (error) {
     // Never expose arbitrary Provider errors, prompts, bearer tokens or response bodies.
     console.error("skin_key2_nonface_pair_failed: " +
