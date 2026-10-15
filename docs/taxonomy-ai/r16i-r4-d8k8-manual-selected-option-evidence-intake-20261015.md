@@ -24,7 +24,7 @@
 | 에스네이처 공식몰 | `https://snature.kr/product/detail.html?product_no=151` | 80ml 제품 페이지. 현재 `lib/product-purchase-link.js`의 공식 브랜드 도메인 목록에는 **snature.kr이 없음**. 임의 allowlist 확대 금지. 선택 SKU·최종 구매가 미확정 |
 | 화해 | `https://www.hwahae.co.kr/goods/35905` | 80ml 단품 제품 공개 페이지 후보. 이전 R16I 운영 검토의 `goods/45194`와 **서로 다른 listing**으로 취급해야 함. 선택 SKU/옵션·배송 조건 별도 촬영 필요 |
 | 쿠팡 | `https://www.coupang.com/vp/products/8393759227?itemId=16093987610&vendorItemId=89624202743` | 공개 페이지상 **80ml×2 선택 옵션 후보**. itemId와 vendorItemId 조합을 식별해야 함. 판매자·최종 결제·재고·배송 변동 가능; 기존 CTA allowlist 미지원 |
-| 올리브영 | 아직 해당 상품의 정확한 `goodsNo` 미확정 | 상품명 검색 링크를 직접 구매 SKU로 위장하지 않는다. URL·옵션 매칭까지 HOLD |
+| 올리브영 | 80ml 단품의 정확한 `goodsNo` 미확정. 공개 [에스네이처 브랜드 스토어](https://m.oliveyoung.co.kr/m/mtn/brand/A003493)는 **60ml 더블기획** 등을 노출 | 60ml/60ml+증정 옵션을 80ml와 같은 상품이라고 간주하면 안 됨. 검색결과에서 발견된 `stg.oliveyoung.co.kr`은 운영 판매처 링크로 사용하지 않음. 80ml 옵션/정확한 goodsNo 확보까지 HOLD |
 
 위 URL들은 **발견 경로**일 뿐 Product/Offer authority 또는 direct CTA로 승격하지 않는다. 구체적인 상품 선택은 현장 스크린샷과 DB상 canonical `product_id`, 이미 존재하는 `offer_id`를 대조해야 한다. R16I 현재 부모 Offer가 없는 경우 임의 UUID를 만들어 운영 FK를 위조하지 않고 별도 등록 승인까지 중단한다.
 
