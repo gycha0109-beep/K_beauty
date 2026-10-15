@@ -31,6 +31,8 @@ on:
       - "scripts/verify-face-lab-v2-style-delta-refactor-equivalence.mjs"
       - "scripts/verify-face-lab-v2-candidate-foundation.mjs"
       - "scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs"
+      - "scripts/verify-face-lab-v2-style-m1-pairwise-readiness.mjs"
+      - "docs/domain/facelab/face-lab-style-m1-pairwise-comparison-readiness-20261015.md"
       - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-builder.mjs"
       - "scripts/verify-face-lab-v2-target-intent-authority.mjs"
@@ -183,6 +185,8 @@ on:
       - "scripts/verify-face-lab-v2-style-delta-refactor-equivalence.mjs"
       - "scripts/verify-face-lab-v2-candidate-foundation.mjs"
       - "scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs"
+      - "scripts/verify-face-lab-v2-style-m1-pairwise-readiness.mjs"
+      - "docs/domain/facelab/face-lab-style-m1-pairwise-comparison-readiness-20261015.md"
       - "scripts/verify-face-lab-v2-human-pairwise-contract.mjs"
       - "scripts/verify-face-lab-v2-human-pairwise-builder.mjs"
       - "scripts/verify-face-lab-v2-target-intent-authority.mjs"
@@ -322,6 +326,8 @@ jobs:
         run: node scripts/verify-face-lab-v2-candidate-foundation.mjs
       - name: Verify Face Lab V2 candidate personalization evaluation
         run: node scripts/verify-face-lab-v2-candidate-personalization-evaluation.mjs
+      - name: Verify Style M1 reviewer comparison readiness (offline)
+        run: node scripts/verify-face-lab-v2-style-m1-pairwise-readiness.mjs
       - name: Verify Face Lab V2 human pairwise calibration contract
         run: node scripts/verify-face-lab-v2-human-pairwise-contract.mjs
       - name: Verify Face Lab V2 human pairwise review builder
