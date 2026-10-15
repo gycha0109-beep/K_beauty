@@ -14,7 +14,7 @@ export const scope='gycha0109-beep';
 export const scopedName=n=>'@'+scope+'/'+n;
 export function githubScopedPackageMetadataUrl(originalName){
   assert.ok(['braces','node-forge'].includes(originalName),'unreviewed GitHub package identity');
-  return 'https://api.github.com/users/'+scope+'/packages/npm/'+encodeURIComponent(scopedName(originalName));
+  return 'https://api.github.com/user/packages/npm/'+encodeURIComponent(scopedName(originalName));
 }
 export const embeddedNoticePath='BEJEWELY-THIRD-PARTY-NOTICES.md';
 export function scopedDeliveryNotices(){return fs.readFileSync(new URL('../../security/release/license-review/THIRD-PARTY-NOTICES.md',import.meta.url));}
