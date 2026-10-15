@@ -36,7 +36,7 @@ function summariseNumeric(values) {
   return {
     count: sorted.length,
     mean: Math.round(sum / values.length),
-    median: sorted[Math.ceil(sorted.length * 0.5) - 1],
+    median: Math.round((sorted[Math.floor((sorted.length - 1) / 2)] + sorted[Math.ceil((sorted.length - 1) / 2)]) / 2),
     p95: sorted[Math.ceil(sorted.length * 0.95) - 1],
     max: sorted[sorted.length - 1]
   };
