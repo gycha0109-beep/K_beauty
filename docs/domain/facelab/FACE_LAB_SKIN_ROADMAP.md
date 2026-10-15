@@ -146,13 +146,15 @@
 
 위 표의 '제출'은 **코드 또는 설계 검토 가능**을 뜻하며, 제품 출시/실사진 정확도 또는 병합 완료가 아니다.
 
+**S1-B 사전 위험 확인:** 기존 공용 Provider의 기본 출력 한도는 2,200 tokens이고, 미지원 v2 버전/전체 형식 오류 시 Skin뿐 아니라 Face 관찰도 함께 실패할 수 있다. 따라서 새 Skin 증거를 운영 응답에 끼워 넣기 전에 v1/v2 병행 처리·축별 오류 분리·Face/Style 보존·응답 길이/비용 시험이 필요하다. [#1317 설계 8절](https://github.com/gycha0109-beep/K_beauty/pull/1317)에 근거 경로를 정리했다. **실제 v2 배포·Provider 요청 변경은 HOLD.**
+
 **#1319 검증 기록:** 실제 PR HEAD에서 새 축별 계약/음성 사례 검사 **PASS**, `BEJEWELY Current Main Health` **PASS**, 기존 고정 추천 **164상품×12조건 PASS**, Premium 통합 평가 **31변형·462검사 PASS**, `PIE Prospective Shadow` **PASS**. 이 통과는 synthetic/기존 엔진 보존 확인이며 새로운 사진 추론 정확도를 증명하지 않는다. `Supply Chain Security`의 패키지 취약점 검사는 별도 실패(#1208)로 계속 차단; 실사진 검증·Style/공유 Provider 승인·릴리스도 HOLD.
 
 
 | 순서 | 작업과 검증 결과물 | 상태 | 다음 게이트 |
 | --- | --- | --- | --- |
 | **A / Now** | 7개 가시 축 `present(1~5)` / `not_seen(0)` / `unassessable(null)` / `unknown(null)`; confidence/cue/area/reason, 빠진 축·중복·잘못된 값·상충 단서의 거부 또는 보류, 합성 회귀. **서비스 계산·전송·저장 불변** | **S1-A 합성 검사 PASS** — #1317 설계 + #1319 평가 전용 구현, #1319 exact-head `4dae35659e4234e235d848ab4d53c09fb042cbe0` Main Health PASS; 실제 사진 정확도/운영 적용 HOLD | 축별 negative 검사 PASS, v1의 0 소급 복원 금지, Provider 호출 0건 |
-| **B / Next** | 공유 단일 Vision 응답에 명시적 `vision-observation-v2` Skin 계약 추가하는 호환 설계/평가. Style/Face 응답과 기존 1회 Provider 경계 보존 | **HOLD: 공유 Vision 담당자 검토** | 응답 형식·안정성·비용·결측 처리 및 Style 영향 검토 |
+| **B / Next** | 공유 단일 Vision 응답에 명시적 `vision-observation-v2` Skin 계약 추가하는 호환 설계/평가. Style/Face 응답과 기존 1회 Provider 경계 보존 | **사전 코드 영향 점검 완료 / 구현 HOLD:** #1317의 S1-B 호환성 분석 완료. 공유 Vision·Style 담당자 검토 필요 | 응답 형식·안정성·비용·결측 처리 및 Style 영향 검토 |
 | **C / Next** | 동일 1회 사진 관찰을 입력으로 기존 결과 vs 축별 관찰 증거가 충분할 때만 가산하는 **비노출** 대안 비교 | **HOLD: B + 추천 계산 경계 검토** | 164상품 × 12상황 frozen 검증, priority/Top Pick/점수별 차이와 원인 문서화. 기본 운영 결과 불변 |
 | **D / Later** | 동의된 실제 사진을 사람이 독립 검수해 축별 오탐·미탐·보류·촬영 조건 편차와 판단자 의견 차이 측정 | **HOLD: 개인정보·실사진 평가 승인** | 신뢰도 경계값/판단 안전성 근거 확보, 합성 PASS를 정확도 PASS로 간주 금지 |
 | **E / Last** | 실제 가산 규칙·저장/재진입·UX 활성화와 복귀 계획 | **HOLD: 별도 score/privacy/owner 승인 및 S5** | 과거 결과 재계산 금지, 출시 보안 #1208 별도 해결 |
