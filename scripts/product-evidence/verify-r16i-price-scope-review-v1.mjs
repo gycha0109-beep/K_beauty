@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // D8K-2: run synthetic, bounded seller authority-read transport regression in existing CI.
 import "./verify-d8k2-offer-authority-read-v1.mjs";
+// D8K-3: presentation-only mock renderer contract.
+import "./verify-d8k3-offer-presentation-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
