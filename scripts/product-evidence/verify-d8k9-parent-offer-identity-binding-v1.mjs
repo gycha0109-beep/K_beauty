@@ -60,7 +60,9 @@ const parent=(p={})=>({
  listing_id:"12345",listing_url:"https://www.hwahae.co.kr/goods/12345",
  price_amount:25000,currency_code:"KRW",market_code:"KR",
  offer_state:"current",product_scope_state:"product",
- availability_state:"in_stock",link_health_state:"healthy",...p
+ availability_state:"in_stock",link_health_state:"healthy",
+ last_observed_at:"2026-10-15T05:00:00.000Z",
+ link_health_checked_at:"2026-10-15T06:00:00.000Z",...p
 });
 const snapshot=(p={})=>{
  const matched=parent();
@@ -210,6 +212,21 @@ for(const link_health_state of ["unchecked","unknown","suspect","broken"])
  resultHolds({snapshot:snapshot({offerRead:{
   ...snapshot().offerRead,offers:[parent({link_health_state})]
  }})},"PARENT_OFFER_LINK_HEALTH_NOT_CONFIRMED");
+for(const last_observed_at of [
+  null,"2026-09-01T00:00:00.000Z","2026-10-16T00:00:00.000Z"
+]) resultHolds({snapshot:snapshot({offerRead:{
+  ...snapshot().offerRead,offers:[parent({last_observed_at})]
+}})},"PARENT_SELLER_OBSERVATION_STALE");
+for(const link_health_checked_at of [
+  null,"2026-09-01T00:00:00.000Z","2026-10-16T00:00:00.000Z"
+]) resultHolds({snapshot:snapshot({offerRead:{
+  ...snapshot().offerRead,offers:[parent({link_health_checked_at})]
+}})},"PARENT_LINK_CHECK_STALE");
+resultHolds({maxOfferAgeMs:null},"PARENT_OBSERVATION_FRESHNESS_POLICY_INVALID");
+resultHolds({maxLinkAgeMs:2592000001},"PARENT_OBSERVATION_FRESHNESS_POLICY_INVALID");
+resultHolds({maxOfferAgeMs:10},"PARENT_SELLER_OBSERVATION_STALE");
+resultHolds({maxLinkAgeMs:10},"PARENT_LINK_CHECK_STALE");
+
 resultHolds({snapshot:snapshot({bySellerListing:[]})},
  "GLOBAL_SELLER_LISTING_COLLISION_NOT_EXCLUDED");
 resultHolds({snapshot:snapshot({bySellerUrl:[]})},
