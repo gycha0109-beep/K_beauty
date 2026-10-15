@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-15 / Skin S1-B — Provider 응답 완결성·Face 비교 게이트 합성 검증
+
+- 기반 PR #1323 (미병합 S1-A #1319에 의존). 2,200 completion-token 상한과 응답 종료 사유(finish_reason), v2 7축 완전성 및 v1 대비 Face 상태/유효 필드 수 감소 여부를 판단하는 **오프라인** 평가기 추가.
+- scripts/facelab/skin/skin-vision-v2-provider-evidence-gate.mjs는 메모리 Provider 응답을 받아 비식별/숫자 메타만 반환. 잘려도 JSON처럼 보이는 응답, 초과/근접 토큰, 다른 버전/피부 축 누락·중복, Face 저하·짝 누락을 보류한다.
+- scripts/facelab/skin/verify-face-lab-s1b-provider-evidence-gate.mjs 합성 negative suite, Main Health 연결. 실제 Provider 호출/사진/데이터 저장 없음, 실사용 피부 정확도 주장 없음.
+- 90% 출력 사용량은 잠정 위험 경고일 뿐 실제 수용 기준으로 확정하지 않았으며, 동의된 비공개 사진/Provider 측정 및 Human 검증은 외부 승인 전 HOLD.
+- 기존 앱/Provider/공용 Face/Style/추천/DB/Auth/RLS/운영·배포 변경 없음. 보안 #1208 RELEASE HOLD.
+
+
 ### 2026-10-15 / Skin S1-B — 새 사진 관찰 v2 입력·Face 독립성 오프라인 예행 검사
 
 - Skin 트랙 단일 공용 Vision의 **후보 v2 출력 형식만 평가용 코드**로 제작. 주 구현은 scripts/facelab/skin/skin-vision-v2-candidate-core.mjs, 합성 검증은 verify-face-lab-skin-s1b-vision-v2-candidate.mjs.
