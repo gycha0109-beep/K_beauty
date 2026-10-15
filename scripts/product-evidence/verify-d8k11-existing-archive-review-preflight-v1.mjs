@@ -118,6 +118,8 @@ blocked({evidenceRows:[rows()[0],rows()[0]]},"DUPLICATE_OR_WRONG_EVIDENCE_SCOPE"
 blocked({evidenceRows:[rows()[1],rows()[1]]},"DUPLICATE_OR_WRONG_EVIDENCE_SCOPE");
 blocked({evidenceRows:[rows()[0],{...rows()[1],source_key:"official_single"}]},
  "DUPLICATE_OR_WRONG_EVIDENCE_SCOPE");
+blocked({evidenceRows:[{...rows()[0],source_key:"oliveyoung"},rows()[1]]},
+ "DUPLICATE_OR_WRONG_EVIDENCE_SCOPE");
 // Order does not confer any price/subject authority.
 const reordered=preflightExistingR16IEvidence({
  evidenceRows:rows().reverse(),archivedBytesByEvidenceId:bytes(),
@@ -128,7 +130,6 @@ eq(reordered.records[0].sourceKey,"official_single");
 for(const [patch,reason] of [
  [{product_id:"00000000-0000-4000-8000-000000000099"},
   "EVIDENCE_PRODUCT_OR_SOURCE_IDENTITY_UNRESOLVED"],
- [{source_key:"oliveyoung"},"EVIDENCE_PRODUCT_OR_SOURCE_IDENTITY_UNRESOLVED"],
  [{source_url:"https://www.hwahae.co.kr/goods/45194"},
   "SOURCE_OPTION_OR_REVIEW_STATE_MISMATCH"],
  [{selected_option:"수분크림 80ml×2 + 세럼 10ml"},
