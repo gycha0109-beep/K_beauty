@@ -3246,3 +3246,10 @@ Watchtower-Track: security
 - Removed embedded Current Main Health and crawler installation from B6 producer; PIE shadow jobs excluded only for the B6 preparation branch at the owner's explicit request.
 - Added fail-closed runtime scope resolver with exact-head successful producer/replay proof at 9427fc637b8c26a231511671a5560acfe1963c05 (run38689645912). Reuses only unchanged web/Expo/Metro/Android runtime evidence; all current-head install/hash/license/consumer/audit/replay checks and CodeQL remain. Changed or unknown runtime/toolchain inputs or unavailable runner proof require full builds.
 - Local focused tests50 PASS; workflow responsibility-map and overlap checks PASS. New exact-head GitHub CI pending; original full HIGH22/production HIGH19/CRITICAL0 audit FAIL is neither waived nor converted to PASS. No publication, spending, exception, merge or deployment.
+
+
+## 2026-10-15 — SCA-only CI final proof and original OAEP recovery
+
+- Exact implementation729b1b8bcad4eaeaf93915cec19f3bae30be77d1 CI38692991286:50 tests, producer94s, independent replay87s, CodeQL PASS;184s critical path. PIE SKIPPED, no embedded health/crawler install, runtimeRequired=false with authenticated9427 runtime proof. OriginalHIGH22/prodHIGH19/C0 gateFAIL, scopedcoveragegap not remediation; both candidate/noticekitdigests matched.
+- Recovered original WebRSA1.0 archive using correct official path; four HTTPS mirrors match publishedSHA256d64c580201891195236a7942f16a86ee6bc7a053d23abef7d2ffeb63178e9343/28732bytes. Nine file inventory/header preserved. Official CVS snapshot supports original lineage; selected source hashes only, administration files excluded. Both original source and README say BSD but no full variant/conditions; no legal clearance invented. Supplemental docs only; frozen candidate/package/browser/LICENSE bytes unchanged. npm latest remainsbraces3.0.3/forge1.4.0, no official patched release.
+- Documentation delta only, no repeat app/Android run. No external inquiry, upload, cost, exception, merge or deployment. Owner final redistribution decision and actual registry/readback authority remain separate.
