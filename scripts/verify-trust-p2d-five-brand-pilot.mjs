@@ -148,6 +148,58 @@ assert.equal(sitemapRun.officialProductEvidenceConfirmed,false);
 assert.equal(sitemapRun.factWrites,0);
 assert.equal(sitemapRun.subjectCreationAuthorized,false);
 
+// Offline stage-gap regression: wrong-size sitemap locators are not useful
+// candidates and must not prevent the already-budgeted homepage index probe.
+const scopedRow=cohortToTrustedDiscoveryRow({
+  productId:sized.id,
+  intakeId:"ddc5259a-e3d3-44b2-b4b8-ee14ed2dd491",
+  peerProductId:"08b85f37-b1fa-42d7-893a-0d4facb17878",
+  peerSourceId:"f493aa44-75dc-40b8-a179-b7d748bc7989",
+  peerBindingId:"c70aadca-aecb-409a-9995-71016a2ef9d7",
+  peerKind:"official_product_page",
+  officialPeerUrl:peer,
+});
+const scopedProduct={...sized,name_en:"MLE Lotion",normalized_name:"MLE 로션"};
+const indexFallbackCalls=[];
+const indexFallback=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from(
+    "<urlset><url><loc>"+sitemapWrong300+"</loc></url></urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    indexFallbackCalls.push(url);
+    return {bytes:Buffer.from(url===peer?"<title>Official peer</title>":
+      url==="https://neopharmshop.co.kr/"?
+      '<a href="/product/mle-lotion-600ml/9000">아토팜 MLE 로션 600ml</a>':
+      "<title>아토팜 MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(indexFallbackCalls,[peer,"https://neopharmshop.co.kr/",sitemapCorrect]);
+assert.deepEqual(indexFallback.sites[0].pages.map(p=>p.url),[sitemapCorrect]);
+assert.equal(indexFallback.sites[0].homepageIndexStatus,"FETCHED");
+assert.equal(indexFallback.factWrites,0);
+// Two same-origin candidate URLs blocked by robots used to occupy both
+// selection slots ahead of a policy-permitted matching 600ml URL.
+const robotBlocked1="https://neopharmshop.co.kr/product/mle-lotion-600ml/1000";
+const robotBlocked2="https://neopharmshop.co.kr/product/mle-lotion-600ml/2000";
+const policyFetches=[];
+const policyRun=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from(
+    "User-agent: *\nDisallow: /product/mle-lotion-600ml/1000\n"+
+    "Disallow: /product/mle-lotion-600ml/2000\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from("<urlset>"+[
+    robotBlocked1,robotBlocked2,sitemapCorrect,
+  ].map(link=>"<url><loc>"+link+"</loc></url>").join("")+"</urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    policyFetches.push(url);
+    return {bytes:Buffer.from(url===peer?"<title>Official peer</title>":
+      "<title>아토팜 MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(policyFetches,[peer,sitemapCorrect]);
+assert.deepEqual(policyRun.sites[0].pages.map(p=>p.url),[sitemapCorrect]);
+assert.equal(policyRun.subjectCreationAuthorized,false);
+assert.equal(policyRun.officialProductEvidenceConfirmed,false);
+
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
