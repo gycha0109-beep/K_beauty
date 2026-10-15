@@ -3371,3 +3371,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Repaired CLI to print a single redacted JSON object to **stdout** for both PASS and HOLD; exit status on HOLD still 1 and no unsafe raw paths/prices/URLs are printed. Child verifier reads only stdout, no stderr fallback; does not weaken source, provenance, type or review assertions.
 - Added four output-channel regressions to synthetic verifier: latest isolated V8 execution using fetched GitHub source **407 assertions PASS** (compatibility URL shim in V8); native Windows CLI and tempfile tests **pending owner rerun**.
 - Existing `.env`, protected Auth/API/DB/RLS/Prod, price/CTA/live release, package type unchanged. Draft #1331 remains HOLD; supply-chain #1208 open.
+
+### 2026-10-15 / D8K-8 repaired Windows Node 24 acceptance evidence
+
+- Owner re-fetched D8K-8 to exact local `HEAD 40890e5a` and supplied native Windows Node stdout confirming **407 PASS** in `verify-d8k8-manual-option-review-intake-v1.mjs`, **21 PASS** in `verify-d8k8-local-file-cli-v1.mjs`.
+- Earlier failure on the intentionally malformed PNG no longer occurs; redacted HOLD JSON uses stdout, independent of Node `MODULE_TYPELESS_PACKAGE_JSON` warning still on stderr. Actual native tempfile/child process coverage (including file magic and symlink handling) exercised by user's CLI test.
+- Tool output explicitly says synthetic only, no real seller evidence, human identity verification, database write, price publication or authority: D8K-8 local acceptance COMPLETE only for this scope.
+- Recorded without changing SQL, Auth, RLS, API, source harvesting, price/CTA or merge/deploy. Next relevant work is D8K-9 real merchant source+canonical Product/Offer binding with independent reviewer authentication; #1208 open.
