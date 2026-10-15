@@ -99,6 +99,12 @@ test('scoped approvals reject missing roles, self approval, revocation, expiry, 
   const e=scopedFixture();e.approval.auditExceptionApproved=true;assert.throws(()=>verifyScopedApproval(e.build()));
   const g=scopedFixture();g.approval.licenseElections['node-forge']='invented';assert.throws(()=>verifyScopedApproval(g.build()));
 });
+test('scoped approval rejects malformed role lists and same owner hidden by case/whitespace',()=>{
+  const f=scopedFixture();f.trust.keys[0].roles='security-extra';assert.throws(()=>verifyScopedApproval(f.build()),/role authorization/);
+  const g=scopedFixture();for(let i=0;i<g.trust.keys.length;i++)g.trust.keys[i].owner=i%2?' Alice ':'ALICE';
+  assert.throws(()=>verifyScopedApproval(g.build()),/two named/);
+  const v=scopedFixture().build();v.candidateSha256='short';assert.throws(()=>verifyScopedApproval(v),/SHA256/);
+});
 test('scoped readback binding rejects public origins, embedded tokens and identity/version substitutions',()=>{
   for(const url of ['https://registry.npmjs.org/download/@gycha0109-beep/braces/3.0.3/abc',
     'https://token@npm.pkg.github.com/download/@gycha0109-beep/braces/3.0.3/abc',

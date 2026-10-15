@@ -111,6 +111,7 @@ if(process.argv[2]==='--fixture'){
 }
 
 export function verifyScopedApproval({candidateSha256,approvalBytes,signatures,trust,now=Date.now()}){
+  assert.match(candidateSha256,/^[a-f0-9]{64}$/,'verified manifest SHA256 required');
   const a=JSON.parse(approvalBytes);assert.equal(a.schema,'bejewely.scoped-upload-approval.v1');assert.equal(a.candidateSha256,candidateSha256);
   assert.equal(a.purpose,'SCOPED_UPLOAD_READBACK_ONLY');assert.equal(a.originalAuditRequired,true);assert.equal(a.auditExceptionApproved,false);
   assert.equal(a.registry,'https://npm.pkg.github.com/');assert.equal(a.privateRepository,true);assert.equal(a.immutableVersions,true);
@@ -124,13 +125,14 @@ export function verifyScopedApproval({candidateSha256,approvalBytes,signatures,t
   const expiry=Date.parse(a.expiresAt);assert.ok(Number.isFinite(expiry)&&expiry>now&&expiry-now<=7*24*3600000,'approval validity');
   assert.equal(trust.schema,'bejewely.sca-release-trust.v1');assert.equal(trust.organizationApproved,true);
   assert.ok(Array.isArray(trust.keys)&&Array.isArray(trust.revokedKeyIds));assert.equal(new Set(trust.keys.map(k=>k.id)).size,trust.keys.length);
+  assert.ok(Array.isArray(signatures),'signature list required');
   const roles=new Set(),owners=new Set();
   for(const s of signatures){assert.ok(requiredRoles.includes(s.role)&&!roles.has(s.role),'missing/duplicate/unknown role');
     const k=trust.keys.find(k=>k.id===s.keyId);assert.ok(k&&!trust.revokedKeyIds.includes(k.id),'untrusted/revoked key');
-    assert.ok(typeof k.owner==='string'&&k.owner.trim().length>0&&k.roles.includes(s.role),'owner/role authorization');
+    assert.ok(typeof k.owner==='string'&&k.owner.trim().length>0&&Array.isArray(k.roles)&&k.roles.includes(s.role),'owner/role authorization');
     assert.ok(Date.parse(k.notBefore)<=now&&Date.parse(k.notAfter)>=expiry,'key validity');const key=createPublicKey(k.publicKeyPem);assert.equal(key.asymmetricKeyType,'ed25519');
     const sig=Buffer.from(s.signature,'base64');assert.equal(sig.length,64);
-    assert.ok(verify(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-SCOPED-v1:'+s.role+'\n'),approvalBytes]),key,sig),'signature mismatch');roles.add(s.role);owners.add(k.owner);
+    assert.ok(verify(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-SCOPED-v1:'+s.role+'\n'),approvalBytes]),key,sig),'signature mismatch');roles.add(s.role);owners.add(k.owner.trim().toLowerCase());
   }
   assert.deepEqual([...roles].sort(),requiredRoles.slice().sort(),'four independent role signatures required');assert.ok(owners.size>=2,'two named owners required');
   return {scope:'SCOPED_UPLOAD_READBACK_ONLY',officialAudit:'FAIL',mergeApproved:false,productionApproved:false};
@@ -138,6 +140,7 @@ export function verifyScopedApproval({candidateSha256,approvalBytes,signatures,t
 
 // Reusable readback checks; no credential acquisition or network operation runs automatically.
 export function assertGithubPrivateMetadata(metadata,name){
+  assert.ok(['braces','node-forge'].includes(name),'unknown patch identity');
   assert.equal(metadata.package_type,'npm');assert.equal(metadata.visibility,'private','anonymous denial alone cannot establish GitHub npm privacy');
   assert.equal(metadata.owner?.login,scope,'GitHub package owner mismatch');
   assert.ok([name,scopedName(name)].includes(metadata.name),'GitHub package identity mismatch');

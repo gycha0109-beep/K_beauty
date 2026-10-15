@@ -24,7 +24,7 @@ The existing B4 harness is preserved unchanged. A separate scoped harness adapts
 
 A temporary localhost-only read fixture serves exactly two verified scoped npm metadata/archive resources to real npm. It has no upload, external deployment, proxy, credential or audit endpoint. It is an installation experiment, not an approved GitHub registry or production endpoint. npmjs remains the default for ordinary dependencies and every advisory request.
 
-Direct aliases install bare dependency keys using npm:@gycha0109-beep/name@version; root overrides then apply the same specs to the entire application. The actual npm resolver updates the candidate lock. It must pin scoped names, expected versions and SHA512 at every target path and reject unrelated dependency drift. No hand-edited target lock entries, permanent localhost URL or file path is committed.
+Direct aliases install bare dependency keys using npm:@gycha0109-beep/name@version. The disposable full graph declares both target aliases explicitly at the root; overrides reference those root specs with $braces/$node-forge. npm install receives the explicit alias specs to force replacement of the same-version identity instead of retaining stale original lock integrity. The actual npm resolver updates the candidate lock. It must pin scoped names, expected versions and SHA512 at every target path and reject unrelated dependency drift. These two additional root edges are part of this technical candidate, not product manifest changes. No hand-edited target lock entries, permanent localhost URL or file path is committed.
 
 Both npm ci --ignore-scripts and ordinary npm ci must preserve lock bytes and all scoped file hashes. Physical nested/workspace census detects original or scoped packages that escaped the lock. Every original consumer must resolve into inventoried patched paths. npm ls, original braces/RSA behavior, Expo signing and actual micromatch/fast-glob consumers are exercised.
 
@@ -64,5 +64,9 @@ This command never uploads or installs the product and does not accept an audit 
 Rollback for this experiment is deletion of owned temporary graphs/fixtures; source locks stay unchanged. Future uploaded identities are immutable: quarantine a partial release rather than overwrite/unpublish automatically. Product/main/prod operations require their own approval and fresh actual-remote graph verification.
 
 ## CI waiting
+
+First scoped implementation HEAD c593246378dd5fb64baf1d7f69916fe89e5b15fd / run38661347090: both clean runners packed identical scoped manifest20abd1ffde84467fa24e6cb2fd8643a7fbaf3d250f618640d9e531dcd0078cb7. Scoped braces SHA8a772917c9831cb9f82ee5e80f9bc8d7d2649778f8e547d1a0096d6be3f7d891; forge SHA4dc3ebe257c470726236135166d309147ef2c045ed7f170552b518c46084391a. Original code/browser/LICENSE and NOTICE/SBOM validation, direct alias installs, CodeQL and PIE PASS. Full-graph resolver retained old same-version target integrity and correctly failed before installation; Android NOT_RUN. The explicit root alias/install recipe repairs that optimizer path while every integrity check is retained. This is not an install PASS until new CI proves it. Actual original audits remain fullHIGH22/prodHIGH19/C0, both exit1.
+
+Further admission review rejects malformed string role lists and owner identities differing only by case/whitespace; local26 tests PASS. No new real approval or signature is created.
 
 Do not keep a session waiting. The previous equivalent Android producer took22min33sec (one observed sample, not a multi-run average). First scoped run should use that observation plus replay/buffer for scheduled continuation; adjust to observed new durations. Technical failures are repaired automatically and rechecked, never conditionally counted PASS.

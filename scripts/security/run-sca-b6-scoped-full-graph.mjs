@@ -109,14 +109,15 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
       console.log('SCA_SCOPED_CANDIDATE='+JSON.stringify({candidateSha256:scoped.candidateSha256,manifest:scoped.manifest,publication:'NOT_RUN'}));
     }
     const manifest=JSON.parse(originalManifestBytes);
-    manifest.overrides={...manifest.overrides,...(scopedMode?
-      Object.fromEntries(scoped.artifacts.map(a=>[a.originalName,'npm:'+a.name+'@'+a.version])):
-      {braces:"file:"+bracesTarball,"node-forge":"file:"+forgeCopy})};
+    const aliasSpecs=Object.fromEntries(scoped.artifacts.map(a=>[a.originalName,'npm:'+a.name+'@'+a.version]));
+    // Explicit root alias edges force same-version identity replacement; $ references then cover transitives.
+    manifest.dependencies={...manifest.dependencies,...aliasSpecs};
+    manifest.overrides={...manifest.overrides,...Object.fromEntries(targets.map(n=>[n,'$'+n]))};
     fs.writeFileSync(path.join(graph,"package.json"),JSON.stringify(manifest,null,2)+"\n");
     console.log("SCA_B4_STAGE=resolver full root/workspace graph");
     // npm install can retain the old same-version integrity despite a new override.
     // Explicitly update the two target nodes through Arborist; never hand-edit lock entries.
-    run("npm",["update","braces","node-forge","--package-lock-only","--ignore-scripts","--no-audit","--no-fund"],graph,240000);
+    run("npm",["install",...Object.entries(aliasSpecs).map(([n,s])=>n+'@'+s),"--package-lock-only","--ignore-scripts","--no-audit","--no-fund"],graph,240000);
     const candidateBytes=fs.readFileSync(path.join(graph,"package-lock.json"));
     const candidate=JSON.parse(candidateBytes);
     const paths=Object.keys(candidate.packages).filter(p=>targets.some(n=>p.endsWith("node_modules/"+n)));
