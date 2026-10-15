@@ -127,6 +127,7 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
   let bothStructurallyValid = 0;
   let faceStatusDegraded = 0;
   let faceCoverageDegraded = 0;
+  let faceBaselineUnassessable = 0;
   let v2Truncated = 0;
   let v2NearCap = 0;
   let v2Invalid = 0;
@@ -140,6 +141,8 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
     if (FACE_STATUS_RANK[b.faceStatus] < FACE_STATUS_RANK[a.faceStatus]) faceStatusDegraded++;
     if (a.faceAvailableFieldCount !== null && b.faceAvailableFieldCount !== null &&
         b.faceAvailableFieldCount < a.faceAvailableFieldCount) faceCoverageDegraded++;
+    // A pair with no assessable v1 Face baseline cannot prove Face quality was preserved.
+    if (!(a.faceAvailableFieldCount > 0) || !(b.faceAvailableFieldCount > 0)) faceBaselineUnassessable++;
     if (b.finishReason === "length") v2Truncated++;
     if (b.nearTokenCap === true) v2NearCap++;
     if (b.result !== "STRUCTURALLY_VALID") v2Invalid++;
@@ -151,7 +154,7 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
   const allPaired = records.size === paired;
   const structuralCandidatePass = allPaired && paired > 0 &&
     bothStructurallyValid === paired && faceStatusDegraded === 0 &&
-    faceCoverageDegraded === 0 && v2Truncated === 0 && v2Invalid === 0 &&
+    faceCoverageDegraded === 0 && faceBaselineUnassessable === 0 && v2Truncated === 0 && v2Invalid === 0 &&
     v2NearCap === 0 && v2WithUsage === paired;
   return {
     version: SKIN_VISION_V2_PROVIDER_GATE_VERSION,
@@ -161,6 +164,7 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
     bothStructurallyValid,
     faceStatusDegraded,
     faceCoverageDegraded,
+    faceBaselineUnassessable,
     v2Truncated,
     v2Invalid,
     v2NearCap,
