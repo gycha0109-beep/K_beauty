@@ -4,7 +4,17 @@
 
 On 2026-10-15 the owner selected GitHub Packages for BEJEWELY private patch distribution, scope `@gycha0109-beep`, source repository `gycha0109-beep/K_beauty`, and authorized read-only preflight. This selection is not authorization to change settings, issue tokens, pay, publish, redistribute, waive audit findings, merge or deploy. Previous conditional license review remains limited; OAEP exact BSD conditions remain OPEN.
 
-## Actual observations
+## Authenticated follow-up — supersedes the initial access limitation
+
+After the owner completed GitHub sign-in, the same browser session was reused and kept open. All subsequent actions were navigation/filtering only: no Save button, setting toggle, token creation, package publication or payment action was performed. Actual account billing details remain in the local owner receipt; they are not copied into the public PR.
+
+- Current plan and included Packages storage/transfer entitlements are now verified in the authenticated billing UI. The current-month Packages usage filter returns `No usage found`; the owner Packages profile shows the getting-started screen with no packages. A live per-package private ACL, source linkage or Actions grant therefore cannot yet be validated. No placeholder package was created.
+- The existing account Packages budget visibly reports enforced blocked paid usage. This was observed, not configured by Codex. The exact physical remaining shared storage is still not established by the monetary included-discount card; do not manufacture a remaining-byte value.
+- The personal-account default **Inherit access from source repository** is ENABLED. The UI expressly applies it to **new Container, npm, rubygems and NuGet packages**. The proposed next action is to disable that default, subject to distinct owner approval, so new package access can be reviewed individually while preserving source linkage. This is an account-wide future-package setting, not a K_beauty-only switch. Existing packages are not changed by a default for new packages; no packages are listed currently.
+- The current public-repository fork approval/token-default settings were read and recorded locally. Private package isolation has not been demonstrated. The earlier documented public-fork access risk remains a release preparation concern; do not automatically grant the public source repository package Actions access.
+- Scoped installation, package-specific ACL and actual readback remain NOT_RUN. The owner has not approved turning off inheritance, issuing a credential, publishing, final redistribution or changing other repository controls. The browser remains open on the exact default-package setting for review.
+
+## Initial unauthenticated observations (historical; see follow-up above)
 
 | Requested check | Result | Evidence / limitation |
 | --- | --- | --- |

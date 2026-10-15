@@ -3277,3 +3277,10 @@ Watchtower-Track: security
 - OfficialGitHub warning: publicrepository privatepackageActionsaccess may extendtoforks. Repositorylink/privatevisibility/ACL/Actionsgrant distinct; no automaticprivateaccessPASS or broadGITHUB_TOKENgrant. Recorded authentication alternatives and actualrisk for owner assessment before config/publication.
 - Verifiedpair450440bytes,10pairs4504400bytes/1000downloads450440000bytes excludingnotices/otherstorage/retries. $0 onlyifsufficientconfirmedquota+no-spendcontrol; noactualcostguarantee. Docs-onlydiffcheck/arithmeticPASS. Priorimplementation12512c84... CI38696879808 59tests/CodeQL/producer/replayPASS; originalHIGH22/prodHIGH19/C0 FAIL. No unnecessaryfullgraph/APK/PIE rerun. MonitorremainsPAUSED.
 - DB/Auth/RLS/Storage/Production mutationN, externalGitHubaccountreadauthorizedY butblocked; actualcredentialaccessN. No fee, setting, upload, exception, merge, production or upstream inquiry.
+
+
+## 2026-10-15 — Owner-authenticated read-only registry preflight follow-up
+
+- Reused owner's authenticated browser and marked handoff to preserve it. Actual account billing values stored only in local outputs/github-authenticated-account-preflight.json, not the public PR/work log. Plan/entitlements and existing blocked paid-usage budget verified. Exact remaining physical shared storage not inferred from dollar discounts. Current Packages usage filter shows no data and profile has no packages.
+- Personal account Default Package Setting source-permission inheritance is ENABLED, applies to NEW Container/npm/rubygems/NuGet packages. Current public source fork/token controls read locally. Proposed disabling future default inheritance requires separate owner approval; no toggle/Save, token, payment, package publish, ACL grant or repository setting mutation performed. Current UI left on that precise control.
+- Updated prior access-limited docs as historical, retained source/operator proof12512c84... CI38696879808 59tests/CodeQL/producer/replayPASS. Docs-onlydiffPASS, no unnecessaryruntimeCI. OriginalHIGH22/prodHIGH19/C0 FAIL and OAEPopenrights unchanged; actualprivateACL/readback/redistribution NOTRUN.
