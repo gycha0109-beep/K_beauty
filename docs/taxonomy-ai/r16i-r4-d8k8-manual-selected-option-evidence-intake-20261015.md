@@ -149,3 +149,19 @@ node scripts/product-evidence/verify-d8k8-local-file-cli-v1.mjs
 - 판매처 공개 웹 페이지 URL 발견은 **탐색 결과**일 뿐 원본 관측 증거 저장·독립 검토·가격 승인 상태가 아니다.
 
 **Protected boundary**: `supabase/migrations`, Auth/RLS/grants, API response, saved report, production Product/Offer, provider crawler, external fetch policy, payment, feature gate, merge, deploy 미수정.
+
+## 6. Windows Node.js v24 로컬 검사 오류 및 수정 (2026-10-15)
+
+사용자가 실제 실행한 로컬 `HEAD bf74be69`에서 다음을 보고:
+
+- `verify-d8k8-manual-option-review-intake-v1.mjs`: **403 synthetic assertions PASS**
+- `verify-d8k8-local-file-cli-v1.mjs`: **FAIL** at line 98, 고의로 손상된 PNG를 입력한 뒤 `out.startsWith("{")&&out.endsWith("}")` 검사 실패
+- 별도 `[MODULE_TYPELESS_PACKAGE_JSON]` 경고 출력 (Node v24.20.0).
+
+**원인:** 의도된 파일 형식 거부 시 CLI가 JSON `HOLD` 결과를 `stderr`에 출력했다. CLI 검증 스크립트는 `(child.stdout||child.stderr).trim()`를 JSON으로 취급하므로, Node 모듈 유형 경고가 `stderr` 앞에 나타날 때 복수 줄을 단일 JSON 객체로 읽지 못한다. 정상 파일은 먼저 통과했고, 손상된 PNG의 오류 경로에서만 노출된 계약 불일치다. **실제 악성 파일이 수락됐다는 뜻이 아니다.**
+
+**보수:** `prepare-d8k8-local-option-review-v1.mjs`의 `catch`에서 민감정보 제거된 `HOLD` JSON을 정상 결과와 동일하게 `stdout`에 출력하고 종료 코드 `1`을 유지한다. `verify-d8k8-local-file-cli-v1.mjs`는 JSON을 `child.stdout.trim()`에서만 읽도록 변경한다. 구체적인 실패 반환을 덮어쓰거나 PNG 검사를 생략하지 않는다. `package.json`의 module type은 변경하지 않는다.
+
+메시지 프로토콜 회귀 4개를 `verify-d8k8-manual-option-review-intake-v1.mjs`에 추가했다. GitHub 원본 JS를 격리 V8으로 직접 실행한 새 순수 계약 검증: **407 synthetic assertions PASS**. **Windows Node native child-process 로컬 파일 검사 재통과는 사용자 재실행 전까지 아직 미확인**이다.
+
+로컬에서 브랜치 최신 버전을 가져온 다음 `node scripts/product-evidence/verify-d8k8-local-file-cli-v1.mjs`를 재실행해야 한다. `[MODULE_TYPELESS_PACKAGE_JSON]` 경고 자체는 있을 수 있으나 PASS/HOLD 판정과 별도로 취급한다. 운영 DB/이력/상품 가격 노출은 변경 없음.
