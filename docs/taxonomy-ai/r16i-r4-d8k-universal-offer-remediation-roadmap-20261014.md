@@ -250,3 +250,13 @@
 - Read batch sizes are previewed through the existing D8K-2 64-ID bounded planner. Rejection, stale/missing/duplicate/malformed decisions, public share, tampered privileges, over-limit candidates and unexpected authority are HOLD. Synthetic D8K-2 read handoff discards mocked price/URL.
 - Offline test `scripts/product-evidence/verify-d8k4b-active-offer-admission-reconciliation-v1.mjs` imported into the existing D8F chain. Draft in-memory test execution 174 assertions PASS; exact PR HEAD CI remains separately evidenced.
 - Crucial missing protected approvals: verified server read/provenance, `recommendation_admission_runtime` role binding, real selected-option/pack/shipping evidence, additional schema/API fields and public-share safety, blocked release #1208. **No active UI activation or protected edits.**
+
+## 13. D8K-5 selected option evidence storage/read + actual UI OFF-gated mount (2026-10-15)
+
+- **Status: DRAFT_SCHEMA_AND_READER_CONTRACT / SYNTHETIC_TESTED / SQL_NOT_APPLIED / ACTIVE_UI_RELEASE_OFF.** Detailed [D8K-5 evidence & UI checkpoint](r16i-r4-d8k5-selected-option-evidence-storage-read-ui-20261015.md).
+- Reviewed the `product_offers` seller+listing uniqueness; proposed separate append-only selected-option observations plus independent reviewer events under one actual parent Offer. Draft SQL files in `docs/taxonomy-ai/sql/`, **NOT** `supabase/migrations`. No schema, RLS, grants or Product/Offer data writes executed.
+- Proposed bounded private option SQL reader with latest-observation-before-review filtering, 64 Product / 256 options and no broad client permissions/URL/CTA; server read role and protected runtime still await independent approval.
+- Added `lib/commerce/product-offer-selected-option-evidence-v1.mjs`: strict DTO, timestamps, optional shipping, review digest, selected pack and 64-batch/256-total fail-closed transport with all price/CTA authority OFF.
+- Adapted D8K-1 comparator for two independently reviewed child options under same seller listing while preserving collisions/legacy denial and child CTA block; tightened D8K-3 total-with-shipping arithmetic.
+- Added `RecommendedProductOfferSlot` mount to actual F-01, P-01/P-02, P-03/P-04/P-05 components. Live comparison release hardcoded OFF; public share S-01/S-02 not modified. Linked focused tests to existing D8F chain.
+- Hold: SQL/PG17 permission tests, actual seller options/reviewer evidence, live server role/admission, actual browser/checkout, #1208 issue/PR #1288 security, no merge/deploy.
