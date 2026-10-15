@@ -2,6 +2,14 @@
 
 ## Entries
 
+### 2026-10-15 / Face Lab Skin S1 independent reviewer agreement diagnostic
+
+- Added metadata-only inter-reviewer agreement checker and synthetic verifier; disagreement classification and undefined-rate safeguards. No image storage, automatic adjudication, provider calls or asserted Human accuracy.
+- S1 report document updated and existing health suite expanded to check reviewer disagreements separately from model cue confusion metrics. Exact-head CI required.
+- Conservative authority: annotation agreement is not proof of skin accuracy, consensus, blinded protocol or ethics/consent. S1 DoD remains HOLD. Skin-only branch, Style unchanged.
+- Work continues independently of #1208 security release block. No score or saved-report modifications.
+
+
 ### 2026-10-14 / Face Lab Skin S1 cue evaluation-only foundation
 
 - Track face-lab-skin, branch research/face-lab-skin/s1-cue-evaluation-foundation-20261014. Base main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2.
