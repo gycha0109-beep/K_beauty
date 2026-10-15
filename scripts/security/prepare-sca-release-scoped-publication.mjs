@@ -30,7 +30,7 @@ export function scopedPublicationPlan(receipt,review){
       'Separate exact-artifact upload approval, signed four-role v2 admission and externally pinned trust',
       'Account quota/billing/stop-usage review; no unapproved charge',
       'Private package ACL and linked repository permission review; separate publish and read credentials',
-      'Scoped publisher operator implementation and dry-run review; legacy unscoped publisher is incompatible',
+      'Dormant scoped publisher dry-run with actual signed operational evidence; live execution remains NOT_RUN',
       'Authenticated metadata and exact archive readback plus anonymous/unprivileged denial',
       'Final LICENSE/NOTICE/SBOM delivery with installed and standalone browser artifacts',
       'Actual approved-registry product graph, independent installs and unchanged raw original audits'],

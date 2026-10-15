@@ -15,6 +15,13 @@
     "node-forge": "BSD-3-Clause"
   },
   "uploadApproved": false,
+  "operationalChecks": {
+    "noChargeControlsVerified": false,
+    "privateAclReviewed": false,
+    "noticeDeliveryReviewed": false,
+    "credentialsProvisioned": false,
+    "evidenceSha256": "NOT_VERIFIED"
+  },
   "redistributionApproval": {
     "approved": false,
     "decisionSha256": "NOT_APPROVED"

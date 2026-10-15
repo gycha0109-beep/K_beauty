@@ -7,6 +7,38 @@ import {ownerPolicyDecisionSha256,licensePacketSha256} from './sca-release-owner
 import fs from 'node:fs';
 import {verifyConditionalReview} from './sca-release-review-preflight.mjs';
 import {scopedPublicationPlan} from './prepare-sca-release-scoped-publication.mjs';
+import {runScopedPublication,checkScopedExecutionControls} from './publish-approved-sca-scoped-candidate.mjs';
+
+function scopedOperatorFixture(){
+  const approval={schema:'bejewely.scoped-upload-approval.v2',uploadApproved:true,redistributionApproval:{approved:true},operationalChecks:{
+    noChargeControlsVerified:true,privateAclReviewed:true,noticeDeliveryReviewed:true,credentialsProvisioned:true,evidenceSha256:'e'.repeat(64)}};
+  const receipt={candidateSha256:'a'.repeat(64),artifacts:[{name:'@gycha0109-beep/braces'},{name:'@gycha0109-beep/node-forge'}]};
+  const calls=[];return {approval,receipt,calls,operations:{admit:()=>({approval:structuredClone(approval),receipt:structuredClone(receipt)}),
+    checkAbsent:async a=>calls.push('absent:'+a.name),publish:async a=>calls.push('publish:'+a.name),readback:async a=>calls.push('readback:'+a.name)}};
+}
+test('dormant scoped operator checks both identities before mutation and reads back each upload',async()=>{
+  const f=scopedOperatorFixture(),r=await runScopedPublication(f.operations);
+  assert.deepEqual(f.calls.map(x=>x.split(':')[0]),['absent','absent','publish','readback','publish','readback']);
+  assert.equal(r.officialAudit,'FAIL_NOT_WAIVED');assert.equal(r.productApplied,false);
+});
+test('scoped operator stops before mutation on missing cost/privacy/notice/credential evidence',async()=>{
+  for(const key of ['noChargeControlsVerified','privateAclReviewed','noticeDeliveryReviewed','credentialsProvisioned']){
+    const f=scopedOperatorFixture();f.approval.operationalChecks[key]=false;
+    await assert.rejects(runScopedPublication(f.operations));assert.deepEqual(f.calls,[]);
+  }
+  assert.throws(()=>checkScopedExecutionControls(conditionalReview()));
+});
+test('scoped operator refuses existing versions and halts partial publication on readback failure',async()=>{
+  const f=scopedOperatorFixture();f.operations.checkAbsent=async()=>{throw Error('exists');};
+  await assert.rejects(runScopedPublication(f.operations));assert.deepEqual(f.calls,[]);
+  const g=scopedOperatorFixture();g.operations.readback=async()=>{throw Error('readback failed');};
+  await assert.rejects(runScopedPublication(g.operations));assert.equal(g.calls.filter(x=>x.startsWith('publish:')).length,1);
+});
+test('scoped operator revalidates signed candidate and approval before every publication',async()=>{
+  const f=scopedOperatorFixture();let count=0;
+  f.operations.admit=()=>({approval:structuredClone(f.approval),receipt:{...structuredClone(f.receipt),candidateSha256:++count===1?'a'.repeat(64):'b'.repeat(64)}});
+  await assert.rejects(runScopedPublication(f.operations));assert.ok(!f.calls.some(x=>x.startsWith('publish:')));
+});
 
 const conditionalReview=()=>JSON.parse(fs.readFileSync(new URL('../../security/release/sca-b6-conditional-review-decision.json',import.meta.url)));
 test('GitHub prepublication plan preserves scoped/original mapping and never executes or clears audit',()=>{
