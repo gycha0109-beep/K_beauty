@@ -120,7 +120,10 @@ try{main();}
 catch(error){
   // Deliberately do not echo exception text: OS paths, capture URLs and
   // merchant/user content must not end up in public CI or support logs.
-  console.error(JSON.stringify({
+  // Machine-readable CLI protocol: exactly one JSON result on stdout for
+  // both success and expected failure. Node may print module-type warnings
+  // to stderr; they must never be mistaken for result JSON.
+  console.log(JSON.stringify({
     stage:"D8K8_LOCAL_MANUAL_EVIDENCE_INTAKE",status:"HOLD",
     reason:typeof error?.message==="string"&&
       /^[A-Z0-9_: -]{1,110}$/.test(error.message)?
