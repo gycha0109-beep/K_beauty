@@ -159,8 +159,8 @@ test('scoped readback binding rejects public origins, embedded tokens and identi
   }
 });
 test('GitHub npm package REST lookup uses encoded full scoped identity',()=>{
-  assert.equal(githubScopedPackageMetadataUrl('braces'),'https://api.github.com/users/gycha0109-beep/packages/npm/%40gycha0109-beep%2Fbraces');
-  assert.equal(githubScopedPackageMetadataUrl('node-forge'),'https://api.github.com/users/gycha0109-beep/packages/npm/%40gycha0109-beep%2Fnode-forge');
+  assert.equal(githubScopedPackageMetadataUrl('braces'),'https://api.github.com/user/packages/npm/%40gycha0109-beep%2Fbraces');
+  assert.equal(githubScopedPackageMetadataUrl('node-forge'),'https://api.github.com/user/packages/npm/%40gycha0109-beep%2Fnode-forge');
   assert.throws(()=>githubScopedPackageMetadataUrl('../other'),/identity/);
 });
 test('GitHub private metadata must bind owner, identity and repository; auth-only public packages are rejected',()=>{
