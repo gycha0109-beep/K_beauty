@@ -92,8 +92,9 @@ reason({slots:free,admissionResult:snapshot([{...decision(1),contractVersion:"wr
   "ADMISSION_DECISION_IDENTITY_INVALID");
 reason({slots:free,admissionResult:snapshot([{...decision(1),product:{id:"AAAAAAAA-0000-4000-8000-000000000001"}}])},
   "ADMISSION_DECISION_IDENTITY_INVALID");
-reason({slots:free,admissionResult:snapshot([{...decision(1),admissionType:"GRANT_BY_URL"}])},
-  "UNKNOWN_ADMISSION_DECISION");
+const unknownType=snapshot([decision(1,"REJECTED")]);
+unknownType.decisions[0].admissionType="GRANT_BY_URL";
+reason({slots:free,admissionResult:unknownType}, "UNKNOWN_ADMISSION_DECISION");
 reason({slots:free,admissionResult:snapshot([{...decision(1),
  admissionType:"LEGACY_COMPATIBILITY_ADMISSION",reasonCodes:[],g2:null}])},
  "LEGACY_LINEAGE_NOT_ATTESTED_IN_SNAPSHOT");
