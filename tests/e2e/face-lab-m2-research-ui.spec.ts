@@ -60,6 +60,7 @@ async function showResearch(page: Page, qualityOverrides: Record<string, string>
   });
   const response = await page.goto("/face-lab-test", { waitUntil: "domcontentloaded" });
   expect(response?.status()).toBe(200);
+  await page.waitForLoadState("networkidle");
   await page.locator('input[type="file"][accept*="image/png"]').setInputFiles({
     name: "synthetic-m2-no-person.png",
     mimeType: "image/png",
@@ -88,6 +89,24 @@ test.describe("Face Lab M2 developer-only palette exploration", () => {
     await expect(preview.locator("span").filter({ hasText: /Espresso|Rust|Ochre/ })).toHaveCount(3);
     await expect(preview).not.toContainText(/4계절|12유형|상품 구매|정확한 웜톤/);
   });
+
+  const unsupportedCaptures: Array<[string, Record<string, unknown>]> = [
+    ["blurred image", { sharpness: "blurred" }],
+    ["small face", { faceScale: "small" }],
+    ["covered cheeks", {
+      occlusion: { forehead: "none", brows: "none", eyes: "none", cheeks: "heavy", jawline: "none" }
+    }],
+    ["profile view", { pose: { yaw: "profile_left", pitch: "level", roll: "level" } }]
+  ];
+  for (const [label, quality] of unsupportedCaptures) {
+    test(`withholds reference palettes on ${label}`, async ({ page }) => {
+      await showResearch(page, quality as Record<string, string>);
+      const preview = page.getByTestId("face-lab-personal-color-research");
+      await expect(preview).toHaveAttribute("data-palette-status", "insufficient_evidence");
+      await expect(preview).toContainText("색상 후보를 제안할 만큼 확인된 근거가 없습니다.");
+      await expect(preview).not.toContainText(/Espresso|Rust|Ochre|4계절|12유형/);
+    });
+  }
 
   test("withholds palette families when white balance is unstable", async ({ page }) => {
     await showResearch(page, { whiteBalance: "warm_cast" });
