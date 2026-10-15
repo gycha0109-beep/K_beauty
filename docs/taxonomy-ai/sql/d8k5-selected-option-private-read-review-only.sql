@@ -86,6 +86,10 @@ begin
       and ranked.market_code = 'KR'
       and ranked.listing_id is not null
       and r.verdict = 'verified'
+      -- Source evidence must match the specific captured observation.
+      -- Distinct trusted actors required, not simply a "verified" label.
+      and r.evidence_sha256 = ranked.source_evidence_sha256
+      and r.reviewer_actor_key <> ranked.collector_actor_key
       and ranked.observed_at <= pg_catalog.now()
       and ranked.recorded_at <= pg_catalog.now()
       and r.reviewed_at >= ranked.observed_at
