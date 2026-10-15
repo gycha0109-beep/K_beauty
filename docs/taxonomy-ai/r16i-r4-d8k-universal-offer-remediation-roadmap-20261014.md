@@ -235,3 +235,10 @@
 - No live product pages were modified, no operational seller prices were attached, and **purchase buttons are hard-disabled** in this UI stage, even when passed a synthetic fixture with CTA flags. No actual user-facing offer card exists yet.
 - Added synthetic-only presentation verifier, included in existing database integration chain. Local Node draft: 14 scenarios PASS; full browser visual/a11y/keyboard and PR-specific CI pending separate checks.
 - D8K-4 live recommendation wiring remains **not started** because Product IDs/actual seller options/authorized RPC caller and public share boundaries are not attested. Protected DB/API/Auth/RLS changes remain subject to separate approval; #1208 still blocks merge/release.
+
+## 11. D8K-4 active recommendation identity boundary checkpoint (2026-10-15)
+
+- **Status: SOURCE_BOUNDARY_CODE_READY / SYNTHETIC_CI_PENDING / LIVE_WIRING_HOLD.** See [D8K-4 actual slot-to-ID boundary](r16i-r4-d8k4-active-recommendation-offer-wiring-boundary-20261015.md).
+- Added `lib/commerce/active-recommendation-offer-slots-v1.mjs` to enumerate the actual eight source slot types (free F-01, premium routine P-01~02, premium functional P-03~05, public share S-01~02). It only validates/deduplicates syntactic Product UUID candidates; public share, HOLD plan and absent IDs remain blocked.
+- `scripts/product-evidence/verify-d8k4-active-offer-slots-v1.mjs` checks synthetic ID/HOLD/duplicate/share limits and source anchors; imported to the existing read-only D8F CI gate.
+- **Explicit non-completion:** There is no private database caller, per-SKU price/shipping evidence, real Product admission, browser integration, active `ProductOfferComparison` rendering or CTA. API/DB/Auth/RLS/saved results unchanged. #1208 continues to block merge/release; user approval needed before protected server/API/schema changes.

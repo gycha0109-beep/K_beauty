@@ -3,6 +3,8 @@
 import "./verify-d8k2-offer-authority-read-v1.mjs";
 // D8K-3: presentation-only mock renderer contract.
 import "./verify-d8k3-offer-presentation-v1.mjs";
+// D8K-4: actual free/premium/share candidate identity mapping; no UI/data activation.
+import "./verify-d8k4-active-offer-slots-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
