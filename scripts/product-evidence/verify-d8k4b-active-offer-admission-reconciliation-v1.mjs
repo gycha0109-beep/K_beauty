@@ -6,6 +6,8 @@ import { collectActiveRecommendationOfferSlots } from
   "../../lib/commerce/active-recommendation-offer-slots-v1.mjs";
 import { reconcileActiveRecommendationAdmissionForOfferRead as review } from
   "../../lib/commerce/active-offer-admission-reconciliation-v1.mjs";
+import { readProductOfferAuthorityTransport, EXISTING_OFFER_RPC_VERSION } from
+  "../../lib/commerce/product-offer-authority-read-v1.mjs";
 
 const id = n => "00000000-0000-4000-8000-" + n.toString(16).padStart(12,"0");
 const product = n => ({ id:id(n), name:"Product "+n, brand:"Fixture" });
@@ -133,6 +135,36 @@ reason({slots:many513,admissionResult:snapshot(
 const out=JSON.stringify(good);
 check(out.includes("listing_url") || out.includes("observedPrice") ||
  out.includes("href") || out.includes("price_amount"),false);
+
+// Synthetic transport handoff ONLY. Price/URL in the fake SQL-shaped response
+// must be stripped by D8K-2 before any downstream view could consume it.
+let mockedRpcCalls = 0;
+const transport = await readProductOfferAuthorityTransport({
+  productIds: good.admissionAlignedCandidateIds,
+  invokeAuthorizedRead: requestedIds => {
+    mockedRpcCalls++;
+    check(requestedIds,[id(1)]);
+    return {
+      read_contract_version: EXISTING_OFFER_RPC_VERSION,
+      status: "AUTHORITY_RESOLVED",
+      offers:[{
+        offer_id:id(600),product_id:id(1),
+        seller_key:"fixture_seller",seller_name:"Fixture Seller",
+        listing_id:"fixture1",listing_url:"https://example.test/secret-option",
+        price_amount:12345,last_observed_at:"2026-10-15T00:00:00Z"
+      }]
+    };
+  }
+});
+check(mockedRpcCalls,1);
+check(transport.status,"READ_WITH_EVIDENCE_HOLD");
+check(transport.priceAuthority,false);
+check(transport.selectedOptionAuthority,false);
+check(transport.directCtaAuthority,false);
+check(transport.offersByProduct[id(1)].length,1);
+const sanitized=JSON.stringify(transport.offersByProduct);
+check(sanitized.includes("12345") || sanitized.includes("example.test") ||
+  sanitized.includes("listing_url") || sanitized.includes("price_amount"),false);
 
 // Ensure the actual, source-linked admission evaluator and RPC have not been
 // replaced with a fake grant from a UI snapshot.
