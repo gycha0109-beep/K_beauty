@@ -53,6 +53,11 @@ check(all.rows.filter(x=>x.productId===uuidC).length,2);
 const shareOnly = collectActiveRecommendationOfferSlots({publicShare:input.publicShare});
 check(shareOnly.candidateIdsForLaterPrivateAdmission,[]);
 check(shareOnly.rows.length,2);
+const shareOverflow = collectActiveRecommendationOfferSlots({publicShare:{
+  topPick:mock(uuidA),categoryPicks:Array.from({length:12},(_,i)=>mock(uuidB,i+""))
+}});
+check(shareOverflow.rows.length,5);
+check(shareOverflow.rows.filter(row=>row.slot==="S-02").length,4);
 const hold = collectActiveRecommendationOfferSlots({
  functionalPlan:{...input.functionalPlan,planMode:"HOLD"}
 });
