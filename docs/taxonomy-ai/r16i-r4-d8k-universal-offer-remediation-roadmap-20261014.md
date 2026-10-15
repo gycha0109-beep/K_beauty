@@ -301,3 +301,10 @@
 - Owner: original HEAD `bf74be69` D8K8 metadata test **403 PASS**; native tempfile CLI fails at intentionally invalid PNG scenario (line 98), before subsequent symlink tests. Root cause: CLI emitted expected redacted `HOLD` JSON to stderr, which contained Node module type warning; verifier parsed combined warning+JSON as one object.
 - Current repair: CLI success and HOLD both emit one JSON object to stdout; HOLD still exits with status 1; verifier reads only stdout and no private path/content is logged. Added four regressions, fetched-source isolated synthetic **407 PASS**.
 - **Owner native Windows/Node rerun STILL PENDING.** Need both D8K8 focus tests after fetching latest branch; prior 403 PASS does not imply fixed native test PASS. No product/offer writes, public prices, CTA, schema/API/migration/secret/production changes; #1208 OPEN.
+
+### D8K-8 Windows Node 24 fixed-head acceptance (2026-10-15)
+
+- **USER_REPORTED_NATIVE_LOCAL_PASS:** Owner updated to `HEAD 40890e5a`, ran both D8K-8 focused verifiers: contract metadata **407 assertions PASS**; tempfile/CLI SHA-256 and review **21 assertions PASS**. Prior intentional invalid PNG / mixed Node warning JSON failure is repaired and locally verified.
+- Evidence recorded in [D8K-8 runbook §7](r16i-r4-d8k8-manual-selected-option-evidence-intake-20261015.md). Node `MODULE_TYPELESS_PACKAGE_JSON` warning persists without test failure; not an excuse to alter project-wide ESM configuration.
+- **D8K-8 implementation complete at synthetic/local-file acceptance grade**, not actual merchant offer evidence grade. CLI says `realSellerEvidence=false`, `sourceVisualContentExamined=false`, `reviewerIdentityAuthenticated=false`, `productionDbWrites=0`, `pricePublished=false`.
+- Remaining D8K-9 real-world operator evidence: authenticated independent capture/reviewer, actual Product + parent Offer lookup/selected-option binding, original source archive and checkout/stock/shipping conditions. No deployment, DB migration/RLS/API/CTA until separately approved; security #1208 open.
