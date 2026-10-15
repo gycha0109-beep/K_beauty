@@ -96,3 +96,20 @@ D8K-7에서는 해당 파일을 원래 의도대로 2개 테이블/제약/권한
 6. 보안 이슈 #1208 해결 및 별도 병합·배포 승인까지 HOLD
 
 **DO NOT:** `supabase db push`, `supabase db reset`을 기존 프로젝트에서 수행하거나, 개발/운영 DB를 대상으로 SQL 후보를 붙여넣지 않는다. 이 명령은 Docker 컨테이너를 스스로 생성하고 소멸시키는 실행기에서만 허용한다.
+
+## 7. 사용자 로컬 Docker 실행 결과 접수 — 2026-10-15
+
+**판정: USER_REPORTED_LOCAL_PG17_ACCEPTANCE_PASS / PRODUCTION_HOLD**
+
+사용자가 Windows PowerShell `D:\\cha\\K_beauty`에서 실행 후 콘솔 출력을 제공했다.
+
+- `docker pull postgres:17`: 다운로드 완료.
+- `node scripts/product-evidence/run-d8k7-local-pg17.mjs --check-files`: `D8K7_CHECK_FILES_PASS (7 repository SQL files, 2 schema tables)`.
+- `node scripts/product-evidence/run-d8k7-local-pg17.mjs`: fixture 1/7부터 7/7까지 실제 Docker PG17에 적용.
+- 성공 마커: `D8K7_PG17_SQL_ACCEPTANCE_PASS` 및 `D8K7_LOCAL_DOCKER_PG17_PASS`.
+- 접근권한 거절 출력: `PG17_DENIED_AS_EXPECTED` 7회 — anon(2), authenticated(2), service_role(2), recommendation_admission_runtime(1).
+- 최종 정리: `Removed disposable local PG17 container.`
+
+해석: 사용자 제출 콘솔 로그로 **격리 PG17에서 실제 SQL fixture 실행 및 assertion 통과**가 뒷받침된다. Assistant가 Docker를 직접 실행한 것이 아니며, 콘솔 출력만으로 로컬 `git rev-parse HEAD`나 DB 버전/이미지 digest 전체 로그의 독립 진본 검증은 할 수 없다. 이 결과는 원래 D8K-7 실행 명령의 관측이며 **별도 호스팅 DB/RLS/서버 권한/실물 판매처 수집·검토/Next UI E2E의 통과가 아니다**.
+
+**검증 상태 변경:** `LOCAL_RUNNER_READY` → `LOCAL_PG17_RUNTIME_ACCEPTED_BY_OWNER_LOG`. DB 스키마/role의 생산 환경 마이그레이션, 구매 링크·가격 공개, 병합 및 배포는 계속 HOLD. 다음 실질 단계는 판매처별 실제 선택옵션 수집·검토 evidence provenance와 인증된 서버 경계 설계·검증이며, 기존 R16I 운영 증거 검토 경로와 중복 구현하지 않는다.
