@@ -179,6 +179,7 @@ run("DATA-OFFER17 controlled Offer RPC diagnostic", node, ["scripts/verify-data-
 run("Face Lab Skin axis/unknown evidence contract", node, ["scripts/facelab/skin/verify-face-lab-skin-s1-axis-evidence.mjs"]);
 run("Face Lab Skin v2 shared Vision offline preflight", node, ["scripts/facelab/skin/verify-face-lab-skin-s1b-vision-v2-candidate.mjs"]);
 run("Face Lab Skin v2 Provider response evidence gate", node, ["scripts/facelab/skin/verify-face-lab-s1b-provider-evidence-gate.mjs"]);
+run("Face Lab Skin v2 paired operational metrics", node, ["scripts/facelab/skin/verify-face-lab-s1b-operational-metrics.mjs"]);
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
