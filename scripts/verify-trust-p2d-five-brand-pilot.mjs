@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { inspectTrustOfficialVariantScope } from "../lib/trust/official-variant-scope-v1.mjs";
-import { classifyTrustOfficialCandidatePage } from "../lib/trust/official-product-discovery-p2-v1.mjs";
+import { classifyTrustOfficialCandidatePage,runTrustP2Discovery } from "../lib/trust/official-product-discovery-p2-v1.mjs";
 import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
 import fs from "node:fs";
 import {
@@ -53,6 +53,39 @@ assert.equal(findTrustP2BOfficialPeerLinks(linkLabel("아토팜 MLE 로션 60ml"
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
+// Integration-level check: wrong-volume, bonus and kit links may appear on
+// a governed peer page but must NOT consume any actual product-page fetches.
+const atopalm=v2.targets.find(x=>x.brand==="아토팜");
+const fetchedPages=[];
+const correctUrl="https://neopharmshop.co.kr/product/mle-lotion-600ml/9000";
+const wrongUrl="https://neopharmshop.co.kr/product/mle-lotion-60ml/9001";
+const bonusUrl="https://neopharmshop.co.kr/product/mle-lotion-600ml-set/9002";
+const peerFixture=Buffer.from([
+  '<a href="'+wrongUrl+'">아토팜 MLE 로션 60ml</a>',
+  '<a href="'+bonusUrl+'">아토팜 MLE 로션 600ml 1+1</a>',
+  '<a href="'+correctUrl+'">아토팜 MLE 로션 600ml</a>',
+].join(""));
+const prefetch=await runTrustP2Discovery(cohortToTrustedDiscoveryRow(atopalm),{
+  id:atopalm.productId,brand:atopalm.brand,name:atopalm.name,
+  name_en:atopalm.nameEn,normalized_name:atopalm.normalizedName,
+  size_ml:atopalm.sizeMl,
+},{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from("<urlset></urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    fetchedPages.push(url);
+    return {bytes:url===atopalm.officialPeerUrl?peerFixture:
+      Buffer.from("<title>아토팜 MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(prefetch.sites[0].pages.map(p=>p.url),[correctUrl]);
+assert.ok(fetchedPages.includes(atopalm.officialPeerUrl));
+assert.ok(fetchedPages.includes(correctUrl));
+assert.ok(!fetchedPages.includes(wrongUrl));
+assert.ok(!fetchedPages.includes(bonusUrl));
+assert.equal(prefetch.factWrites,0);
+assert.equal(prefetch.subjectCreationAuthorized,false);
+
 assert.equal(assertTrustP2DCohort(cohort),true);
 assert.equal(cohort.targets.length,5);
 assert.equal(new Set(cohort.targets.map(t=>t.brand)).size,5);
