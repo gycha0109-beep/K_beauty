@@ -39,5 +39,7 @@ assert(component.includes("if (state.statusConflict) return [copy.conflict];"));
 assert(component.includes('if (state.status === "available" && state.highOrMediumObservationCount === 0) {'));
 assert(component.includes("return [copy.limited];"), "no reliable individual cue must not be called supporting photo evidence");
 assert(component.includes("사진 판단을 보류하고 재확인해야 합니다"));
+assert(component.includes("필터 없이 조명이 고른 환경에서 다시 촬영해 볼 수 있습니다"), "insufficient evidence must explain how to retry");
+assert(component.includes("You can retake a clear photo under even lighting."), "low confidence needs optional retake guidance");
 assert(!component.includes("photoEvidenceState ="), "render component must not mutate saved photo state");
 console.log("verify-face-lab-skin-s4-native-photo-evidence: PASS (synthetic display states only)");
