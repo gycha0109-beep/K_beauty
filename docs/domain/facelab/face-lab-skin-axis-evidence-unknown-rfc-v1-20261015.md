@@ -198,4 +198,27 @@
 
 **권장 결정:** '기존 0을 모두 null로 바꾸는 수정'은 하지 않는다. 새로운 명시적 상태와 근거/값을 분리 저장하고, v1의 식별 불가능한 0은 그대로 남겨 과거 기록/추천의 의미를 보존한다.
 
+## 8. S1-B 사전 영향 점검 — 실제 공용 Vision 변경 전
+
+**검토한 current-main 실구현:** `lib/vision-observation-contract.js`, `lib/vision-observation-normalizer.js`, `lib/server/vision-observation-service.js`, `app/api/analyze/route.js`, `app/api/face-reading/route.js`, `scripts/verify-unified-vision-pipeline.mjs`, `lib/face-lab-observation-contract.js`. 이 점검 자체는 **Provider를 호출하지 않고 코드만 확인**한 것이다.
+
+| 현재 구현 | S1-B에서 발생할 수 있는 영향 | 필수 방어 조건 |
+| --- | --- | --- |
+| Provider는 `createVisionObservationPrompt()`가 만드는 **단일 Skin + Face bundle**을 반환 | Skin 항목 추가가 전체 모델 답변 길이·정확도에 영향 | Skin·Face 공동 출력 계약의 증분 변화 분석; 사진 요청 경로의 중복 신설 금지 |
+| 서비스 기본 `maxTokens=2200`이고 요청은 단일 JSON object 형식 | 7축 각각 7필드면 Face 관찰 항목이 잘리거나 응답 계약이 깨질 수 있음 | 응답 길이·부족/잘림/형식 오류를 비민감 fixture 및 제한된 승인 시험에서 정량 비교. 한도를 근거 없이 올리지 않음 |
+| `normalizeVisionObservationBundle`는 v1 `schemaVersion` 외를 Provider 실패 형태로 정규화 | v2 버전만 먼저 바꾸면 **정상 Skin/Face 둘 다 실패 처리**될 수 있음 | v1/v2 입력을 명시적으로 구별하는 협상/파서 테스트 선행; v1 역추정 금지 |
+| `analyzeVisionObservation`가 정규화 bundle의 최상위 `status !== 'available'`이면 오류를 던짐 | Skin 축 한 항목이 잘못됐다는 이유로 공용 Face 관찰까지 전부 버릴 위험 | 전체 응답 무효 vs Skin 부분 불충분의 분기 기준을 공유 담당자와 확정. Face 독립성 유지 |
+| `app/api/analyze/route.js`는 관찰 실패 `catch`에서 **Skin fallback + Face unavailable**을 함께 구성 | 위 오류가 실제 무료/Premium/Style 결과의 동시 품질 저하로 연결 | 사진 실패/입력 부적격/축별 정보 부족을 서로 혼동하지 않도록 설계·검증 |
+| `/api/face-reading` 호환 경로가 같은 Vision 서비스를 사용 | 구 경로만 별도 구형 데이터 형식으로 남아 응답 불일치 가능 | 동일 버전 판단 경계 검증, 별도의 이미지 Provider 중복 구현 금지 |
+| `verify-unified-vision-pipeline.mjs`는 현재 `vision-observation-v1` 문자열과 호출 소유자·공통 계약을 검사 | 무심코 버전을 변경하면 CI 실패 또는 검증 무력화 가능 | 신규 v2 계약 승인 후 테스트를 의도적으로 확장. 구 검증을 삭제/완화하지 않음 |
+| Provider 429 오류는 기존 bounded retry 경로(최대 2 attempts) 사용 | 새 Skin 전용 재시도/추가 호출을 만들면 비용·장애 증가 | **현행 공유 retry/비용/로그 정책 유지**, 피부만 재호출하지 않음 |
+
+**S1-B 구현 승인 전에 준비해야 하는 시험 자료**
+1. v1 bundle 그대로 / v2 Skin 정상 + Face 정상 / v2 Skin 일부 누락 + Face 정상 / v2 Skin 부적격 + Face 정상 / v2 전체 schema 불일치의 **분리 결과**.
+2. 기존 사진 Provider 요청 횟수, 리포트 공개 응답·저장 fingerprint, 기존 Face 결과/Style 독립성과 일치하는 회귀.
+3. 모델 응답 길이·처리 시간·형식 오류율과 비용의 기존/후보 비교. 실제 얼굴 사진은 별도 동의·보관·독립 평가 승인 전 사용하지 않는다.
+4. v1 저장 기록의 `0`을 `not_seen`으로 승격하지 않는 재진입 테스트.
+
+**사전 점검 결과:** 이 프로젝트는 Skin/Face를 단일 Provider bundle로 처리하므로, 단순히 기존 프롬프트의 `0`을 `null`로 치환하거나 v1 식별자를 v2로 바꾸는 수정은 위험하다. 실제 공유 Provider/정규화/공개 API 수정은 **공유 Vision/Style 담당 권한 및 승인 전 HOLD**. 이 절의 원인/결과는 코드 경로에서 확인한 위험이며 실시간 Provider 실패율을 측정한 결과가 아니다.
+
 Watchtower-Track: face-lab-skin
