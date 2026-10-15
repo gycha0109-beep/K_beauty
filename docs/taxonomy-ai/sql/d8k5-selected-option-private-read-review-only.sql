@@ -115,6 +115,7 @@ begin
                'gifts', gifts,
                'selected_option_price_krw', selected_option_price_krw,
                'shipping_price_krw', shipping_price_krw,
+               'shipping_price_basis', shipping_price_basis,
                'currency_code', currency_code,
                'observed_at', observed_at,
                'reviewed_at', reviewed_at,
