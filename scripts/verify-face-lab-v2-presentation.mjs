@@ -548,6 +548,16 @@ assert.ok(
   "partial results without an actionable route must explain the bounded state"
 );
 assert.ok(
+  resultUi.includes('view.status === "unavailable"') &&
+    resultUi.includes('result?.targetStyle?.approvedByUser') &&
+    resultUi.includes("data-face-lab-unavailable-edit-target") &&
+    resultUi.includes("onClick={onEditTarget}") &&
+    resultUi.includes('"Edit target settings"') &&
+    resultUi.includes('"추구미 설정 수정"'),
+  "a confirmed but unavailable result must provide a reversible target-edit entry point in both locales"
+);
+
+assert.ok(
   resultUi.includes("view.routes.cards.length"),
   "empty route collections must not render an unexplained blank route card"
 );

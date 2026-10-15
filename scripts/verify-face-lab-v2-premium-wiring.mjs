@@ -1,6 +1,16 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  isLatestFaceLabSaveRequest,
+  resolveFaceLabDeferredSaveStatus
+} from "../lib/face-lab-v2/persistence-state.js";
+
+import {
+  TARGET_FINDER_ROUNDS,
+  buildTargetFinderResult,
+  getTargetFinderResumeState
+} from "../lib/face-lab-v2/target-finder.js";
 
 const root = resolve(process.cwd());
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -11,6 +21,48 @@ const fullReportPage = read("app/result/full-report/page.js");
 const premiumFaceLab = read("components/full-report/PremiumFaceLabSection.jsx");
 const composer = read("lib/face-lab-v2/canonical-composer.js");
 const styleDelta = read("lib/face-lab-v2/style-delta.js");
+
+
+// Reopening a completed Finder from the Target Setup back button must not
+// discard four valid preference answers or silently approve a new target.
+const finderAnswers = TARGET_FINDER_ROUNDS.map((round, index) => ({
+  roundId: round.roundId,
+  choice: ["a", "b", "both", "neither", "a"][index]
+}));
+const finderCompleted = buildTargetFinderResult(finderAnswers);
+const finderResume = getTargetFinderResumeState(finderCompleted);
+assert.equal(finderResume.roundIndex, 4);
+assert.deepEqual(finderResume.choices, finderAnswers.slice(0, 4));
+const finderEdited = buildTargetFinderResult([
+  ...finderResume.choices,
+  { roundId: TARGET_FINDER_ROUNDS[4].roundId, choice: "b" }
+]);
+assert.equal(finderEdited.rounds.length, 5);
+assert.deepEqual(finderEdited.rounds.slice(0, 4).map((round) => round.choice),
+  finderAnswers.slice(0, 4).map((round) => round.choice));
+assert.equal(finderEdited.rounds[4].choice, "b");
+assert.equal(finderEdited.userApproved, false);
+
+for (const staleFinder of [
+  null,
+  { ...finderCompleted, candidateSetVersion: "unknown" },
+  { ...finderCompleted, rounds: finderCompleted.rounds.slice(0, 4) },
+  { ...finderCompleted, rounds: [finderCompleted.rounds[1], ...finderCompleted.rounds.slice(1)] },
+  { ...finderCompleted, rounds: finderCompleted.rounds.map((round, index) =>
+    index === 2 ? { ...round, choice: "unsupported" } : round) }
+]) {
+  assert.deepEqual(
+    getTargetFinderResumeState(staleFinder),
+    { roundIndex: 0, choices: [] },
+    "stale, incomplete, reordered and invalid Finder history must restart safely"
+  );
+}
+assert.ok(
+  premiumFaceLab.includes("resumeState={getTargetFinderResumeState(finderResult)}") &&
+    premiumFaceLab.includes("useState(() => resumeState?.roundIndex ?? 0)") &&
+    premiumFaceLab.includes("useState(() => resumeState?.choices ?? [])"),
+  "the Finder UI must restore validated answers only when re-entered from setup"
+);
 
 assert.ok(fullReportApi.includes("faceLabAnalysis"), "full report must persist validated Face Lab analysis");
 assert.ok(
@@ -247,6 +299,91 @@ for (const forbiddenSetter of [
   );
 }
 
+// P0 target edit cancellation must restore the fully approved UX state.
+assert.ok(
+  premiumFaceLab.includes("const targetEditSnapshotRef = useRef(null)") &&
+    editTargetBlock.includes("targetEditSnapshotRef.current = {") &&
+    editTargetBlock.includes("restoreInteractionRef.current += 1"),
+  "editing a saved result must snapshot the current UI and reject a late initial restore"
+);
+for (const field of [
+  "entryMode",
+  "targets: [...targets]",
+  "softSharpClarifier",
+  "naturalPolishedClarifier",
+  "finderResult",
+  "finderInconclusive",
+  "presentationPreference",
+  "stylingScope: [...stylingScope]",
+  "scopeTouched",
+  "changeTolerance",
+  "recommendationPriority",
+  "makeupIntensity",
+  "dailyMinutes",
+  "budgetBand",
+  "maintenanceTolerance"
+]) {
+  assert.ok(
+    editTargetBlock.includes(field),
+    `target edit snapshot must retain user-visible state: ${field}`
+  );
+}
+const cancelTargetBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf("const cancelTargetEdit = () =>"),
+  premiumFaceLab.indexOf("const choosePresentation = (value) =>")
+);
+assert.ok(cancelTargetBlock.includes("targetEditSnapshotRef.current") &&
+  cancelTargetBlock.includes('setStage("result")') &&
+  cancelTargetBlock.includes("emitSimulationState(") &&
+  cancelTargetBlock.includes("activePersistenceStateRef.current"),
+  "cancelling an edit must restore the previous result and simulation handoff"
+);
+for (const setter of [
+  "setEntryMode(snapshot.entryMode)",
+  "setTargets(snapshot.targets)",
+  "setSoftSharpClarifier(snapshot.softSharpClarifier)",
+  "setNaturalPolishedClarifier(snapshot.naturalPolishedClarifier)",
+  "setFinderResult(snapshot.finderResult)",
+  "setFinderInconclusive(snapshot.finderInconclusive)",
+  "setPresentationPreference(snapshot.presentationPreference)",
+  "setStylingScope(snapshot.stylingScope)",
+  "setScopeTouched(snapshot.scopeTouched)",
+  "setChangeTolerance(snapshot.changeTolerance)",
+  "setRecommendationPriority(snapshot.recommendationPriority)",
+  "setMakeupIntensity(snapshot.makeupIntensity)",
+  "setDailyMinutes(snapshot.dailyMinutes)",
+  "setBudgetBand(snapshot.budgetBand)",
+  "setMaintenanceTolerance(snapshot.maintenanceTolerance)"
+]) {
+  assert.ok(cancelTargetBlock.includes(setter),
+    `cancellation must roll back every edited UI field: ${setter}`);
+}
+assert.equal(
+  cancelTargetBlock.includes("persistServer(") ||
+    cancelTargetBlock.includes("writeLocalState(") ||
+    cancelTargetBlock.includes("buildFaceLabV2Canonical("),
+  false,
+  "cancelling an edit cannot update user authority, storage or recompute a new route"
+);
+assert.ok(
+  premiumFaceLab.includes("targetEditSnapshotRef.current ? cancelTargetEdit") &&
+    premiumFaceLab.includes('data-face-lab-target-back={targetEditSnapshotRef.current ? "cancel-edit" : "initial-setup"}') &&
+    premiumFaceLab.includes("targetEditSnapshotRef.current ? copy.cancelEdit : copy.back") &&
+    premiumFaceLab.includes('cancelEdit: "수정 취소"') &&
+    premiumFaceLab.includes('cancelEdit: "Cancel changes"'),
+  "target editing must offer explicit reversible cancel in both locales"
+);
+const confirmTargetBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf("const confirm = () =>"),
+  premiumFaceLab.indexOf("const selectRoute = (routeId) =>")
+);
+assert.ok(confirmTargetBlock.includes("targetEditSnapshotRef.current = null"),
+  "confirmation must end the editable draft boundary");
+assert.ok(
+  premiumFaceLab.includes("targetEditSnapshotRef.current = null;\n      setCanonical(restored)"),
+  "server/local restores must not retain an obsolete edit draft"
+);
+
 const buildSurveyBlock = premiumFaceLab.slice(
   premiumFaceLab.indexOf("const buildSurveyAnswers = () =>"),
   premiumFaceLab.indexOf("const confirm = () =>")
@@ -402,10 +539,12 @@ assert.ok(
   "each server persistence request must claim latest-request authority before entering the serialized queue"
 );
 assert.ok(
-  premiumFaceLab.includes("const isLatestRequest = () =>") &&
-    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&
+  premiumFaceLab.includes("const latestPersistRequestSequenceRef = useRef(0)") &&
+    premiumFaceLab.includes("const requestSequence = ++latestPersistRequestSequenceRef.current") &&
+    premiumFaceLab.includes("const isLatestRequest = () => isLatestFaceLabSaveRequest({") &&
+    premiumFaceLab.includes("latestSequence: latestPersistRequestSequenceRef.current") &&
     premiumFaceLab.includes("if (!isLatestRequest())"),
-  "an older server acknowledgement must not overwrite newer in-memory user state even when local persistence failed"
+  "an older request with identical payload must not overwrite the newest in-memory state"
 );
 assert.ok(
   premiumFaceLab.includes('syncStatus: "synced"') &&
@@ -419,11 +558,12 @@ assert.ok(
   "a non-stale server acknowledgement must update the active route-selection state to the server-normalized survey/finder payload"
 );
 assert.ok(
-  premiumFaceLab.includes("const isLatestRequest = () =>") &&
-    premiumFaceLab.includes("latestPersistRequestFingerprintRef.current === requestFingerprint") &&
+  premiumFaceLab.includes("const isLatestRequest = () => isLatestFaceLabSaveRequest({") &&
+    premiumFaceLab.includes("latestFingerprint: latestPersistRequestFingerprintRef.current") &&
+    premiumFaceLab.includes("latestSequence: latestPersistRequestSequenceRef.current") &&
     premiumFaceLab.includes("if (!isLatestRequest())") &&
     premiumFaceLab.includes("activePersistenceStateRef.current = {"),
-  "server acknowledgement must only replace active persistence state after the latest-request fingerprint guard passes"
+  "server acknowledgement must only replace active state after latest sequence and fingerprint verification"
 );
 assert.equal(
   premiumFaceLab.includes("persistenceFingerprint(currentStored) !=="),
@@ -434,6 +574,68 @@ assert.equal(
   premiumFaceLab.includes("canonicalV2: stored.canonicalV2"),
   false,
   "refreshing the local fallback must not cache canonical output"
+);
+
+// P0 recovery behavior: storage denial never masquerades as a saved draft.
+assert.equal(resolveFaceLabDeferredSaveStatus({ localSaved: false }), "local_failed");
+assert.equal(resolveFaceLabDeferredSaveStatus({ localSaved: false, authRequired: true }), "local_failed");
+assert.equal(resolveFaceLabDeferredSaveStatus({ localSaved: true }), "pending");
+assert.equal(resolveFaceLabDeferredSaveStatus({ localSaved: true, authRequired: true }), "auth_required");
+assert.equal(resolveFaceLabDeferredSaveStatus({}), "local_failed");
+
+// Identical request content is not proof of freshness after A → B → A or retry.
+assert.equal(isLatestFaceLabSaveRequest({
+  requestFingerprint: "A", latestFingerprint: "A",
+  requestSequence: 1, latestSequence: 3
+}), false);
+assert.equal(isLatestFaceLabSaveRequest({
+  requestFingerprint: "A", latestFingerprint: "B",
+  requestSequence: 3, latestSequence: 3
+}), false);
+assert.equal(isLatestFaceLabSaveRequest({
+  requestFingerprint: "A", latestFingerprint: "A",
+  requestSequence: 3, latestSequence: 3
+}), true);
+assert.equal(isLatestFaceLabSaveRequest({
+  requestFingerprint: "A", latestFingerprint: "A",
+  requestSequence: 0, latestSequence: 0
+}), false);
+
+// Status displays and direct retry must use active approved canonical state.
+assert.ok(
+  premiumFaceLab.includes('saveLocalFailed: "이 기기에 저장하지 못했고 서버 저장도 확인되지 않았습니다.') &&
+    premiumFaceLab.includes('saveLocalFailed: "Changes were not saved on this device') &&
+    premiumFaceLab.includes('data-face-lab-persistence-status={persistenceStatus}') &&
+    premiumFaceLab.includes('persistenceStatus === "local_failed"'),
+  "both locales must warn when the local backup actually failed"
+);
+assert.ok(
+  premiumFaceLab.includes('const locallySaved = writeLocalState(requestState') &&
+    premiumFaceLab.includes('localSaved: locallySaved') &&
+    premiumFaceLab.includes('localSaved: authCached') &&
+    premiumFaceLab.includes('localSaved: fallbackCached'),
+  "every deferred save outcome must check that the local fallback write succeeded"
+);
+assert.ok(
+  premiumFaceLab.includes('["pending", "auth_required", "local_failed"].includes(persistenceStatus)') &&
+    premiumFaceLab.includes('onClick={retrySave}') &&
+    premiumFaceLab.includes('data-face-lab-save-retry={persistenceStatus}') &&
+    premiumFaceLab.includes('committedRouteIdFromResult(canonical)'),
+  "retry must be exposed for unsynced results and retain the committed route"
+);
+const retryBlock = premiumFaceLab.slice(
+  premiumFaceLab.indexOf("const retrySave = () =>"),
+  premiumFaceLab.indexOf("const choosePresentation = (value) =>")
+);
+assert.ok(
+  retryBlock.includes("activePersistenceStateRef.current") &&
+    retryBlock.includes("void persistServer("),
+  "retry must reuse the active, previously approved survey/finder authority"
+);
+assert.equal(
+  retryBlock.includes("buildSurveyAnswers()") || retryBlock.includes("buildFaceLabV2Canonical("),
+  false,
+  "retry must not fabricate new user approval or re-run canonical decisions"
 );
 
 assert.ok(composer.includes("buildStyleDelta"), "canonical V2 must include Style Delta");
