@@ -3349,3 +3349,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added Windows-compatible `run-d8k7-local-pg17.mjs` with local Docker context requirement and strict own-container isolation (`--network none`, no ports, no mounts, ephemeral tmpfs). It NEVER reads `.env.local` or Supabase credentials and never targets running containers or hosted DB.
 - Added D8K7 44-assertion static harness verifier to existing D8F test chain; JS syntax and synthetic static checks passed. **Actual Docker/PostgreSQL syntax, RLS, and SQL behavior are pending the user's local run**, not claimed.
 - Prepared explicit Windows PowerShell/CLI runbook at `docs/taxonomy-ai/r16i-r4-d8k7-local-docker-pg17-acceptance-20261015.md`. Stop on any SQL failure, no merge/deploy, #1208 open.
+
+### 2026-10-15 / D8K-7 owner-provided local Docker PG17 acceptance logs
+
+- Owner ran Windows PowerShell from their K_beauty directory after pulling `postgres:17`. Provided the actual seven-step test output with `D8K7_CHECK_FILES_PASS`, `D8K7_PG17_SQL_ACCEPTANCE_PASS`, seven `PG17_DENIED_AS_EXPECTED` role probes, `D8K7_LOCAL_DOCKER_PG17_PASS` and `Removed disposable local PG17 container.`
+- Accepted as **user-reported real isolated PG17 SQL/runtime acceptance** (not merely synthetic JS). Role negative/positive, reviewer revocation and stale fallback, shipping CHECK, Product/Offer 64/256 limits, no URL projection were all exercised by the fixture. No independent assistant Docker access; local exact git HEAD SHA not supplied in posted log.
+- Result captured in `docs/taxonomy-ai/r16i-r4-d8k7-local-docker-pg17-acceptance-20261015.md` §7. Test is nonproduction only. Next outstanding D8K-8: real seller-specific option/pack/shipping evidence capture, trusted origin and independent review before server contract and actual rendering. No hosted migration, roles/API/production Offer writes, merge or deploy; #1208 open.
