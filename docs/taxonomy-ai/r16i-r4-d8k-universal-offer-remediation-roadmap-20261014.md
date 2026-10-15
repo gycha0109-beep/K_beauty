@@ -353,3 +353,13 @@
 - **USER_REPORTED_NATIVE_NODE_PASS** at exact `HEAD ccfef7e8`. Existing R16I archive/reviewer structural verifier **462 assertions PASS**; local tempfile SHA-256+child-process CLI smoke **21 assertions PASS**. Node typeless-package warning did not block.
 - [D8K-11 audit §7](r16i-r4-d8k11-existing-archive-independent-review-preflight-20261015.md) records result. Native Node execution replaces earlier V8-only hash shimming as the execution-level grade for synthetic tests. Actual private Storage originals / merchant authenticity / authenticated independent reviewer remain NOT TESTED.
 - Existing `reviewR16IEvidence` self-review prevention **NOT ENFORCED** and legacy ledger UNIQUE evidence verdict revocation limitation still need separately approved protected fixes. Two existing R16I evidence records remain UNVERIFIED; don't grant product/offer/price/CTA authority or use D8K-11 PASS as evidence of launch readiness. #1208 open.
+
+## 20. D8K-12 OWNER 자기 승인 차단 + 승인 철회(2026-10-15)
+
+- **상태: 관리자 코드·격리 DB 변경안 준비 / 운영 DB·서비스 미적용 / 릴리스 HOLD.** [D8K-12 보수 설계·검증](r16i-r4-d8k12-owner-review-revocation-20261015.md).
+- OWNER 권한을 가진 제출자라도 본인이 올린 캡처는 승인·반려할 수 없도록 새 보호 DB 함수에서 **제출자 UUID와 로그인 검토자 UUID**를 대조. 데이터 확인·잠금은 상품→원본→현재 판정 순서로 진행하여 기존 D8D 상품 변경과 승인 철회를 직렬화.
+- 증빙 판정은 기존 v1 단일 현재상태를 유지하면서 새로운 RLS 적용의 **변경 불가능한 v2 감사 이력**에 초기 VERIFIED/REJECTED, 후속 REVOKED 사건을 순서대로 기록. 철회 시 현재 VERIFIED→REJECTED를 원자적으로 수행해 기존 D8C/D8D 검증에서 과거 승인이 다시 쓰이지 않도록 함. 반려/철회된 동일 캡처 재승인 불가.
+- 서비스 역할의 기존 verdict INSERT 권한을 철회하고, OWNER·원본 제출자 확인을 수행하는 한정 함수로만 심사 기록을 허용. 일반 로그인/비회원 함수 실행 권한 없음. 기존 관리 화면에 철회 버튼·이유·시각 이력 노출. 고객/가격/상품/Offer API 미변경.
+- **기존 원장에 판정 행이 한 건이라도 있으면 변경 적용을 거절**: 기존 승인 재해석·임의 덮어쓰기를 방지하는 의도적인 사용자 확인 절차. D8K-10 캡처 UNVERIFIED는 별도 원장 0건의 증거가 아님.
+- 기존 D8C, D8K11 검사와 새 D8K12 테스트를 연결. 새 가상 검증과 역할/승인 철회/옛 승인 재사용을 포함한 **로컬 Docker PostgreSQL17 실제 검사**를 준비했으나 로컬 실행과 운영 활성화는 별도 확인 필요.
+- 별도 승인 전 운영 Supabase migration, 리뷰 본문/Storage 열람, 관리자 승인 POST, 상품 교정/Offer 쓰기, 가격 노출, PR 병합·배포 금지. 보안 #1208 미해결.
