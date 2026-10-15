@@ -138,7 +138,7 @@
 | --- | --- | --- |
 | **S0** | [#1308](https://github.com/gycha0109-beep/K_beauty/pull/1308) 사진→판단 코드 감사 | 실제 사진 오판율/정책 영향 실증 |
 | **S0→S2** | [#1309](https://github.com/gycha0109-beep/K_beauty/pull/1309) 분석 실패 표시·일부 일치 상태, [#1316](https://github.com/gycha0109-beep/K_beauty/pull/1316) 근거 없는 설문 충돌 표시 보수 | 병합 전 결과 비교 및 기존 저장 리포트 재진입 |
-| **S1** | [#1310](https://github.com/gycha0109-beep/K_beauty/pull/1310) 피부 신호·사람 평가 계약, [#1317](https://github.com/gycha0109-beep/K_beauty/pull/1317) 0/unknown 분리 설계, **[#1319](https://github.com/gycha0109-beep/K_beauty/pull/1319) 평가 전용 상태·합성 회귀 구현** | 단일 Vision 응답 실제 확장/사람 평가; #1319 합성 검사와 Main Health는 PASS |
+| **S1** | [#1310](https://github.com/gycha0109-beep/K_beauty/pull/1310) 피부 신호·사람 평가 계약, [#1317](https://github.com/gycha0109-beep/K_beauty/pull/1317) 0/unknown 분리 설계, **[#1319](https://github.com/gycha0109-beep/K_beauty/pull/1319) 평가 전용 상태·합성 회귀**, [#1323](https://github.com/gycha0109-beep/K_beauty/pull/1323) v2 단일 Vision 오프라인 출력 계약 및 Face 결과 보호 검증(검사 중) | 실제 1회 Provider 응답 정확성/길이/비용, Style·Face 담당 검토, 독립 Human 평가 |
 | **S2** | [#1312](https://github.com/gycha0109-beep/K_beauty/pull/1312) 판단 근거 추적, [#1322](https://github.com/gycha0109-beep/K_beauty/pull/1322) 실제 추천 엔진의 108쌍 비노출 합성 비교(첫 검증 PASS, 실제 사진 정확도 미확정) | 실사진·독립 정확도 검증, score-policy 승인, 공개 적용 |
 | **S3** | [#1311](https://github.com/gycha0109-beep/K_beauty/pull/1311) 반복 사진 비교 계약 | 동의된 실제 반복 사진 및 개인정보/저장 권한 |
 | **S4** | [#1313](https://github.com/gycha0109-beep/K_beauty/pull/1313) Android 저장 리포트의 사진 판단 상태 표시 | 모바일 종합 검사 기존 불일치, 실제 기기/접근성 인수 |
@@ -148,6 +148,8 @@
 
 **S2-C 진행 기록:** #1322는 #1319 합성 관찰 계약 위에서 **실제 기존 추천 엔진**을 108쌍(9개 가상 사진 조건 × 12설문, 164개 상품)으로 두 번 호출해 사진 점수·고민 1순위·Top Pick·전제품 순위의 변경량을 측정한다. 실제 Provider/사진/저장/운영 적용은 없고, 최종 exact-head `3a7c35be556699c30d95e2ecdd82bedd429ee373` Main Health·PIE **PASS**: 108쌍 중 고민 1순위 10건, Top Pick 17건 변경(이중 의도적 정상 불가능 모순 시험 T09는 각각 3건·4건). **실제 정확도/개선 효과 수치로 전용 금지**. #1319가 미병합이므로 #1322는 기반 변경을 함께 포함한다. 중복 병합 금지.
 
+**S1-B 다음 실제 제출물:** [#1323](https://github.com/gycha0109-beep/K_beauty/pull/1323)에 운영과 완전히 분리된 Skin v2 후보 프롬프트/버전별 변환기/Face v1 parity 및 malformed Skin 부정 사례를 작성했다. 이 작업은 **사진 모델이 실제로 새 형식을 안정적으로 출력한다는 증거는 아니다**. 현행 2,200 출력 토큰 제한과 한 번의 Provider 요청/Face·Style 품질/비용을 실제로 검증하려면 공동 소유자의 승인, 허가된 비공개 평가용 사진 및 측정 절차가 필요하다. #1323은 #1319에 쌓인 검토용이며 #1322와 병렬 의존 관계다. 사용자 추천/저장/배포 불변.
+
 **S1-B 사전 위험 확인:** 기존 공용 Provider의 기본 출력 한도는 2,200 tokens이고, 미지원 v2 버전/전체 형식 오류 시 Skin뿐 아니라 Face 관찰도 함께 실패할 수 있다. 따라서 새 Skin 증거를 운영 응답에 끼워 넣기 전에 v1/v2 병행 처리·축별 오류 분리·Face/Style 보존·응답 길이/비용 시험이 필요하다. [#1317 설계 8절](https://github.com/gycha0109-beep/K_beauty/pull/1317)에 근거 경로를 정리했다. **실제 v2 배포·Provider 요청 변경은 HOLD.**
 
 **#1319 검증 기록:** 실제 PR HEAD에서 새 축별 계약/음성 사례 검사 **PASS**, `BEJEWELY Current Main Health` **PASS**, 기존 고정 추천 **164상품×12조건 PASS**, Premium 통합 평가 **31변형·462검사 PASS**, `PIE Prospective Shadow` **PASS**. 이 통과는 synthetic/기존 엔진 보존 확인이며 새로운 사진 추론 정확도를 증명하지 않는다. `Supply Chain Security`의 패키지 취약점 검사는 별도 실패(#1208)로 계속 차단; 실사진 검증·Style/공유 Provider 승인·릴리스도 HOLD.
@@ -156,7 +158,7 @@
 | 순서 | 작업과 검증 결과물 | 상태 | 다음 게이트 |
 | --- | --- | --- | --- |
 | **A / Now** | 7개 가시 축 `present(1~5)` / `not_seen(0)` / `unassessable(null)` / `unknown(null)`; confidence/cue/area/reason, 빠진 축·중복·잘못된 값·상충 단서의 거부 또는 보류, 합성 회귀. **서비스 계산·전송·저장 불변** | **S1-A 합성 검사 PASS** — #1317 설계 + #1319 평가 전용 구현, #1319 exact-head `4dae35659e4234e235d848ab4d53c09fb042cbe0` Main Health PASS; 실제 사진 정확도/운영 적용 HOLD | 축별 negative 검사 PASS, v1의 0 소급 복원 금지, Provider 호출 0건 |
-| **B / Next** | 공유 단일 Vision 응답에 명시적 `vision-observation-v2` Skin 계약 추가하는 호환 설계/평가. Style/Face 응답과 기존 1회 Provider 경계 보존 | **사전 코드 영향 점검 완료 / 구현 HOLD:** #1317의 S1-B 호환성 분석 완료. 공유 Vision·Style 담당자 검토 필요 | 응답 형식·안정성·비용·결측 처리 및 Style 영향 검토 |
+| **B / Next** | 공유 단일 Vision 응답에 명시적 `vision-observation-v2` Skin 계약 추가하는 호환 설계/평가. Style/Face 응답과 기존 1회 Provider 경계 보존 | **S1-B 오프라인 후보 구현·검사 중** — #1317 영향 분석 + #1323 Skin v2 후보 프롬프트·구형 v1 보호·Face 독립 결과 합성 시험. 실Provider/Style 승인·운영 반영 HOLD | 응답 형식·안정성·비용·결측 처리 및 Style 영향 검토 |
 | **C / Next** | 동일 1회 사진 관찰을 입력으로 기존 결과 vs 축별 관찰 증거가 충분할 때만 가산하는 **비노출** 대안 비교 | **S2-C 합성 비교 PASS** — #1322 최종 HEAD `3a7c35be556699c30d95e2ecdd82bedd429ee373`에서 전체 Main Health/PIE PASS. 164상품×12설문×9합성 사진=108쌍 중 고민 1순위 10건·Top Pick 17건 변화 관찰. 실사진 정확도·운영 적용 HOLD | 164상품 × 12상황 frozen 검증, priority/Top Pick/점수별 차이와 원인 문서화. 기본 운영 결과 불변 |
 | **D / Later** | 동의된 실제 사진을 사람이 독립 검수해 축별 오탐·미탐·보류·촬영 조건 편차와 판단자 의견 차이 측정 | **HOLD: 개인정보·실사진 평가 승인** | 신뢰도 경계값/판단 안전성 근거 확보, 합성 PASS를 정확도 PASS로 간주 금지 |
 | **E / Last** | 실제 가산 규칙·저장/재진입·UX 활성화와 복귀 계획 | **HOLD: 별도 score/privacy/owner 승인 및 S5** | 과거 결과 재계산 금지, 출시 보안 #1208 별도 해결 |
