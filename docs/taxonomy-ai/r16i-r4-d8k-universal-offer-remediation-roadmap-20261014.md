@@ -242,3 +242,11 @@
 - Added `lib/commerce/active-recommendation-offer-slots-v1.mjs` to enumerate the actual eight source slot types (free F-01, premium routine P-01~02, premium functional P-03~05, public share S-01~02). It only validates/deduplicates syntactic Product UUID candidates; public share, HOLD plan and absent IDs remain blocked.
 - `scripts/product-evidence/verify-d8k4-active-offer-slots-v1.mjs` checks synthetic ID/HOLD/duplicate/share limits and source anchors; imported to the existing read-only D8F CI gate.
 - **Explicit non-completion:** There is no private database caller, per-SKU price/shipping evidence, real Product admission, browser integration, active `ProductOfferComparison` rendering or CTA. API/DB/Auth/RLS/saved results unchanged. #1208 continues to block merge/release; user approval needed before protected server/API/schema changes.
+
+## 12. D8K-4B admission-to-Offer server read preflight (2026-10-15)
+
+- **Status: SOURCE_AND_ADMISSION_CONTRACT_RECONCILED_OFFLINE / SERVER_ROLE_AND_OPTION_EVIDENCE_HOLD.** See [D8K-4B guarded admission/Offer boundary](r16i-r4-d8k4b-admission-to-offer-server-read-approval-boundary-20261015.md).
+- Added `lib/commerce/active-offer-admission-reconciliation-v1.mjs`. It checks eight mounted recommendation slot types and candidate UUIDs against the existing recommendation admission decision envelope, decision types, counts and G2/legacy markers. A matched snapshot produces only `DIAGNOSTIC_MATCH_ONLY`; no real admission proof, SQL/RPC caller, seller price or CTA authority.
+- Read batch sizes are previewed through the existing D8K-2 64-ID bounded planner. Rejection, stale/missing/duplicate/malformed decisions, public share, tampered privileges, over-limit candidates and unexpected authority are HOLD. Synthetic D8K-2 read handoff discards mocked price/URL.
+- Offline test `scripts/product-evidence/verify-d8k4b-active-offer-admission-reconciliation-v1.mjs` imported into the existing D8F chain. Draft in-memory test execution 174 assertions PASS; exact PR HEAD CI remains separately evidenced.
+- Crucial missing protected approvals: verified server read/provenance, `recommendation_admission_runtime` role binding, real selected-option/pack/shipping evidence, additional schema/API fields and public-share safety, blocked release #1208. **No active UI activation or protected edits.**

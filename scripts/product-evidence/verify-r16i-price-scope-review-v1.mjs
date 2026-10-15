@@ -5,6 +5,8 @@ import "./verify-d8k2-offer-authority-read-v1.mjs";
 import "./verify-d8k3-offer-presentation-v1.mjs";
 // D8K-4: actual free/premium/share candidate identity mapping; no UI/data activation.
 import "./verify-d8k4-active-offer-slots-v1.mjs";
+// D8K-4B: never promote recommendation decisions into seller price authority.
+import "./verify-d8k4b-active-offer-admission-reconciliation-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
