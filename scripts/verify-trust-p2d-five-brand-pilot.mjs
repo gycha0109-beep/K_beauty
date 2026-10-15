@@ -50,6 +50,42 @@ assert.equal(discoverLabel("아토팜 MLE 로션 600ml","https://other-brand.tes
 assert.equal(findTrustP2BOfficialPeerLinks(linkLabel("아토팜 MLE 로션 60ml"),peer,
   {brand:"아토팜",name:"MLE 로션"}).length,1); // Unknown size is unverified.
 
+// A product-sized link after two vague labels must not lose the two-page
+// network budget. Priority is only a locator ordering, NEVER SKU evidence.
+const sizeFirst=Buffer.from([
+  '<a href="/product/mle-lotion/9100">아토팜 MLE 로션</a>',
+  '<a href="/product/mle-lotion/9200">아토팜 MLE 로션</a>',
+  '<a href="/product/mle-lotion/9300">아토팜 MLE 로션 60ml</a>',
+  '<a href="/product/mle-lotion/9400">아토팜 MLE 로션 600ml 1+1</a>',
+  '<a href="/product/mle-lotion/9500">아토팜 MLE 로션 600ml</a>',
+].join(""));
+assert.deepEqual(findTrustP2BOfficialPeerLinks(sizeFirst,peer,linkTarget),[
+  "https://neopharmshop.co.kr/product/mle-lotion/9500",
+  "https://neopharmshop.co.kr/product/mle-lotion/9100",
+]);
+assert.deepEqual(findTrustP2BOfficialPeerLinks(sizeFirst,peer,
+  {...linkTarget,size_ml:null}),[
+  "https://neopharmshop.co.kr/product/mle-lotion/9100",
+  "https://neopharmshop.co.kr/product/mle-lotion/9200",
+]);
+// An identical URL can be upgraded by a later explicit size label.
+assert.deepEqual(findTrustP2BOfficialPeerLinks(Buffer.from([
+  '<a href="/product/mle-lotion/9200">아토팜 MLE 로션</a>',
+  '<a href="/product/mle-lotion/9100">아토팜 MLE 로션</a>',
+  '<a href="/product/mle-lotion/9200">아토팜 MLE 로션 600ml</a>',
+].join("")),peer,linkTarget,{max:1}),[
+  "https://neopharmshop.co.kr/product/mle-lotion/9200",
+]);
+// Reject promotions and off-site links despite an otherwise matching quantity.
+assert.deepEqual(findTrustP2BOfficialPeerLinks(Buffer.from([
+  '<a href="https://other-brand.test/product/mle-lotion/9300">아토팜 MLE 로션 600ml</a>',
+  '<a href="/product/mle-lotion/9400">아토팜 MLE 로션 600ml 증정</a>',
+  '<a href="/product/mle-lotion/9500">아토팜 MLE 로션 600ml</a>',
+].join("")),peer,linkTarget,{max:1}),[
+  "https://neopharmshop.co.kr/product/mle-lotion/9500",
+]);
+
+
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
