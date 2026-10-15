@@ -142,9 +142,9 @@ const twoBatch=await readSelectedOptionEvidenceTransport({
  invokeAuthorizedRead:batch=>{
    readerCalls.push(batch);
    return envelope(batch.map((pid,i)=>option(i+1,{
-     product_id:pid,offer_id:id(1000+Number(pid.slice(-12))),
-     observation_id:id(2000+Number(pid.slice(-12))),
-     review_id:id(3000+Number(pid.slice(-12)))
+     product_id:pid,offer_id:id(1000+Number.parseInt(pid.slice(-12),16)),
+     observation_id:id(2000+Number.parseInt(pid.slice(-12),16)),
+     review_id:id(3000+Number.parseInt(pid.slice(-12),16))
    })));
  }
 });
@@ -164,10 +164,10 @@ const tooMany=await readSelectedOptionEvidenceTransport({
  invokeAuthorizedRead:batch=>envelope(batch.flatMap((pid,i)=>
    Array.from({length:4},(_,j)=>option(i*4+j+1,{
      product_id:pid,
-     offer_id:id(9000+Number(pid.slice(-12))),
+     offer_id:id(9000+Number.parseInt(pid.slice(-12),16)),
      seller_option_key:"choice"+j,
-     observation_id:id(10000+Number(pid.slice(-12))*4+j),
-     review_id:id(20000+Number(pid.slice(-12))*4+j)
+     observation_id:id(10000+Number.parseInt(pid.slice(-12),16)*4+j),
+     review_id:id(20000+Number.parseInt(pid.slice(-12),16)*4+j)
    }))))
 });
 eq(tooMany.reason,"AGGREGATE_OPTION_CAPACITY_EXCEEDED");
