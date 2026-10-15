@@ -1,0 +1,13 @@
+{
+  "workflow": "face-lab-skin-key2-one-shot.yml",
+  "primaryResponsibility": "face-lab",
+  "capabilities": [
+    "face-lab",
+    "provider-runtime",
+    "synthetic-smoke",
+    "research"
+  ],
+  "watchtowerTrackBinding": "static:face-research",
+  "lifecycleNameClass": "capability",
+  "preservationPolicy": "preserve-until-equivalence-proven"
+}
