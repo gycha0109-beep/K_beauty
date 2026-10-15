@@ -13,6 +13,7 @@ import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {materializePrivateBracesSource} from "./materialize-private-braces-source.mjs";
 import {prepareScopedArchives,verifyScopedCandidate,startScopedFixture,scopedName,scope} from "./sca-release-scoped.mjs";
+import {prepareBrowserNoticeKit,verifyBrowserNoticeKit} from "./sca-release-browser-notices.mjs";
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const hash=(bytes,alg="sha256")=>createHash(alg).update(bytes).digest("hex");
@@ -58,7 +59,7 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
   candidateCache=path.join(temp,"npm-cache");
   const graph=path.join(temp,"graph"),artifacts=path.join(temp,"artifacts");
   fs.mkdirSync(graph);fs.mkdirSync(artifacts);
-  let fixture,scoped;
+  let fixture,scoped,browserNoticeKit;
   try {
     const head=run("git",["rev-parse","HEAD"],root).stdout.trim();
     // Exact committed source, including every workspace; no user/environment files.
@@ -105,6 +106,16 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
         dependencies:Object.fromEntries(scoped.artifacts.map(a=>[a.originalName,'npm:'+a.name+'@'+a.version]))}));
       run('npm',['install','--ignore-scripts','--no-audit','--no-fund'],aliasGraph,120000);
       for(const a of scoped.artifacts)assert.deepEqual(inventory(path.join(aliasGraph,'node_modules',a.originalName)),a.fileSha256,'direct npm alias byte mismatch');
+      const noticeOptions={forgeTarball,candidateSha256:scoped.candidateSha256,output:path.join(temp,'browser-notice-kit')};
+      browserNoticeKit=prepareBrowserNoticeKit(noticeOptions);
+      if(process.env.SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256)assert.equal(browserNoticeKit.manifestSha256,process.env.SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256,'independent browser notice kit differs');
+      // Both missing required notices and a same-size byte mutation must fail.
+      const noticeFile=path.join(noticeOptions.output,'THIRD-PARTY-NOTICES.md'),saved=fs.readFileSync(noticeFile);
+      fs.unlinkSync(noticeFile);assert.throws(()=>verifyBrowserNoticeKit(noticeOptions));fs.writeFileSync(noticeFile,saved);
+      const changed=Buffer.from(saved);changed[0]^=1;fs.writeFileSync(noticeFile,changed);assert.throws(()=>verifyBrowserNoticeKit(noticeOptions));fs.writeFileSync(noticeFile,saved);
+      verifyBrowserNoticeKit(noticeOptions);browserNoticeKit.missingAndTamperNegativeControls='PASS';
+      if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'browser_notice_kit_sha256='+browserNoticeKit.manifestSha256+'\n');
+      console.log('SCA_SCOPED_BROWSER_NOTICE_KIT='+JSON.stringify(browserNoticeKit));
       console.log('SCA_SCOPED_DIRECT_ALIAS=PASS');
       console.log('SCA_SCOPED_CANDIDATE='+JSON.stringify({candidateSha256:scoped.candidateSha256,manifest:scoped.manifest,publication:'NOT_RUN'}));
     }
@@ -259,7 +270,7 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
       path.join(graph,"node_modules")],root);
     if(installOnly){
       const receipt={schema:'bejewely.scoped-install-replay.v1',head,scopedCandidateSha256:scoped.candidateSha256,
-        artifacts:scoped.manifest.artifacts,installed,consumers,audits,ignoreScriptsInstall:'PASS',lifecycleInstall:'PASS',
+        artifacts:scoped.manifest.artifacts,browserNoticeKit,installed,consumers,audits,ignoreScriptsInstall:'PASS',lifecycleInstall:'PASS',
         originalAuditAcceptance:'FAIL',releaseApproved:false,productApplied:false,artifactsDeletedOnExit:true};
       console.log('SCA_SCOPED_INSTALL_REPLAY='+JSON.stringify(receipt));return receipt;
     }
@@ -309,7 +320,7 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     }
     bundles(exports);
     const receipt={schema:"bejewely.security.sca-b4-full-graph.v1",head,node:process.version,
-      scopedMode,scopedCandidateSha256:scoped?.candidateSha256||null,scopedArtifacts:scoped?.manifest.artifacts||null,
+      scopedMode,scopedCandidateSha256:scoped?.candidateSha256||null,scopedArtifacts:scoped?.manifest.artifacts||null,browserNoticeKit,
       officialSecurityAcceptance:scopedMode?'FAIL_ORIGINAL_ADVISORIES':'HOLD',realPrivateReadback:'NOT_RUN',
       npm:run("npm",["--version"],graph).stdout.trim(),
       originalLockSha256:hash(originalLockBytes),candidateLockSha256:hash(candidateBytes),

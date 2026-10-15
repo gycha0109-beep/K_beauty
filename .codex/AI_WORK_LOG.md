@@ -3229,3 +3229,13 @@ Watchtower-Track: security
 - Historical rights research locates AES introduction 521fd6018d350a54c5f3b5ab5258a145bcc613e0 (2010-07-12) and DES introduction 0998bd93337d227be7b30db4b426f05d2e33f5e1 (2012-03-29), both already ambiguous. Ed25519 470793c0ac7217e512ba3775cd75d106e7fb2b64 and TweetNaCl v0.14.5 Unlicense strengthen provenance but do not identify exact copied revision. OpenSSL/DES/OAEP/jscrypto and standalone notice delivery remain HOLD.
 - Prior exact2b9dfb8a CI38667696695 producer/replay/CodeQL/PIE/web/mobile/APK PASS; original fullHIGH22/prodHIGH19/C0 gateFAIL. No audit waiver or app graph adoption.
 - Boundary: DB/Auth/RLS/Storage/Payment/Secret/Production execution N. Protected scope is explicitly user-authorized internal policy implementation, without hosted provider or credential mutation.
+
+
+## 2026-10-15 — Public primary-license findings without upstream reply gate
+
+- Human explicitly refused posting an upstream inquiry. None sent; no author reply or second human is required by the examined license texts. Actual license conditions and separate real redistribution/upload/merge/production approval remain mandatory.
+- Recovered original DES author's public BSD2 clarification/full conditions and existing Forge issue1078. Recovered SJCL initial commit136512284d923390c115a735746b965c12f39fd0 COPYRIGHT/README BSD2 and OpenSSL1.0.0 AES component public-domain declaration, plus TweetNaCl0.14.5Unlicense. Preserve six primary extracts and SHA in public findings, expanded NOTICE and SBOM; distinguish exact-lineage assurance gaps from unmet external conditions. OAEP exact BSD conditions remain owner review OPEN, not falsely cleared.
+- SourceForge WebRSA download returns HTML/nonmatching published archive SHA: rejected before parsing; insecure redirect not followed. No response or missing original was treated as approval or confirmed violation.
+- V2 permits explicitly disclosed informational lineage gaps, rejects unmet external conditions and invented reply gate; separate final legal/upload approvals still absent. Existing owner policy authorization is not broadened.
+- Local45 tests PASS, frozen49-source expanded notice/public-source reconstruction PASS, syntax/diff checks PASS. New real browser notice kit colocates six pinned browser files + LICENSE/NOTICE/SBOM/findings and SHA manifest; omission/tamper/independent-digest controls run in CI, PENDING until exact logs.
+- Product archive/source/browser/LICENSE bytes unchanged; only supplemental licensing resources/candidate manifest change. Original audit fullHIGH22/prodHIGH19/C0 gateFAIL, scoped scanner silence not remediation. No package upload, cost, exception, merge, production or external communication executed.

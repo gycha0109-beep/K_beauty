@@ -16,7 +16,7 @@ function fixture(scoped){
     auditExceptionApproved:false,licenseElections:{braces:'MIT','node-forge':'BSD-3-Clause'},expiresAt:'2026-10-16T00:00:00Z',
     policyDecisionSha256:ownerPolicyDecisionSha256,responsibleOwner:'Test sole owner',licensePacketSha256,
     uploadApproved:true,redistributionApproval:{approved:true,decisionSha256:'b'.repeat(64)},
-    rightsReview:{status:'CLEARED_BY_PROJECT_OWNER',unresolved:[],evidenceSha256:'c'.repeat(64)},mergeApproved:false,productionApproved:false,
+    rightsReview:{status:'CLEARED_BY_PROJECT_OWNER',unresolved:[],informationalGaps:[],upstreamReplyRequired:false,evidenceSha256:'c'.repeat(64)},mergeApproved:false,productionApproved:false,
     tarballUrls:scoped?{braces:'https://npm.pkg.github.com/download/@gycha0109-beep/braces/3.0.3/test',
       'node-forge':'https://npm.pkg.github.com/download/@gycha0109-beep/node-forge/1.4.0/test'}:
       {braces:'https://registry.test.internal/reviewed/braces/-/braces-3.0.3.tgz','node-forge':'https://registry.test.internal/reviewed/node-forge-1.4.0.tgz'}};
@@ -41,6 +41,11 @@ for(const scoped of [false,true]){
       f=>f.a.rightsReview.unresolved.push('OpenSSL origin unknown'),f=>f.a.rightsReview.evidenceSha256='']){
       const f=fixture(scoped);mutate(f);assert.throws(()=>f.verify(f.build()));
     }
+  });
+  test(kind+' v2 permits disclosed internal lineage gaps, never missing external conditions or an invented reply gate',()=>{
+    const f=fixture(scoped);f.a.rightsReview.informationalGaps=['Exact historical copied revision unproven'];f.verify(f.build());
+    f.a.rightsReview.unresolved=['Required BSD conditions not provided'];assert.throws(()=>f.verify(f.build()));
+    const g=fixture(scoped);g.a.rightsReview.upstreamReplyRequired=true;assert.throws(()=>g.verify(g.build()));
   });
   test(kind+' v2 rejects policy, license packet, owner and schema substitution',()=>{
     for(const mutate of [f=>f.a.policyDecisionSha256='0'.repeat(64),f=>f.trust.policyDecisionSha256='0'.repeat(64),

@@ -10,12 +10,33 @@
   "immutableVersions": true,
   "originalAuditRequired": true,
   "auditExceptionApproved": false,
-  "licenseElections": {"braces": "MIT", "node-forge": "BSD-3-Clause"},
+  "licenseElections": {
+    "braces": "MIT",
+    "node-forge": "BSD-3-Clause"
+  },
   "uploadApproved": false,
-  "redistributionApproval": {"approved": false, "decisionSha256": "NOT_APPROVED"},
-  "rightsReview": {"status": "HOLD", "evidenceSha256": "NOT_CLEARED", "unresolved": ["OpenSSL origin and terms", "DES full BSD conditions", "OAEP BSD variant", "TweetNaCl/jscrypto historical origin", "standalone browser notice delivery"]},
+  "redistributionApproval": {
+    "approved": false,
+    "decisionSha256": "NOT_APPROVED"
+  },
+  "rightsReview": {
+    "status": "HOLD",
+    "evidenceSha256": "NOT_CLEARED",
+    "unresolved": [
+      "OAEP applicable full BSD conditions assessment",
+      "Final real distribution/readback notice delivery"
+    ],
+    "upstreamReplyRequired": false,
+    "informationalGaps": [
+      "Exact historical jscrypto/SJCL copied revision",
+      "Exact copied TweetNaCl revision"
+    ]
+  },
   "mergeApproved": false,
   "productionApproved": false,
   "expiresAt": "REQUIRES_EXPLICIT_EXPIRY_WITHIN_7_DAYS",
-  "tarballUrls": {"braces": "REQUIRES_APPROVED_EXACT_READBACK_URL", "node-forge": "REQUIRES_APPROVED_EXACT_READBACK_URL"}
+  "tarballUrls": {
+    "braces": "REQUIRES_APPROVED_EXACT_READBACK_URL",
+    "node-forge": "REQUIRES_APPROVED_EXACT_READBACK_URL"
+  }
 }

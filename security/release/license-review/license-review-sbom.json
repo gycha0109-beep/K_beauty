@@ -159,13 +159,13 @@
       ],
       "licenses": [
         {
-          "expression": "LicenseRef-DES-BSD-Unspecified"
+          "expression": "BSD-2-Clause"
         }
       ],
       "properties": [
         {
           "name": "bejewely:license-review-status",
-          "value": "BSD_VARIANT_AND_COMPLETE_TERMS_REQUIRE_REVIEW"
+          "value": "AUTHOR_PUBLISHED_BSD2_CONDITIONS_PRESERVED"
         },
         {
           "name": "bejewely:embedded-file",
@@ -185,13 +185,13 @@
       ],
       "licenses": [
         {
-          "expression": "LicenseRef-AES-Origin-Review"
+          "expression": "LicenseRef-AES-Permissive-Component-Evidence"
         }
       ],
       "properties": [
         {
           "name": "bejewely:license-review-status",
-          "value": "OPENSSL_ORIGIN_VERSION_AND_TERMS_REQUIRE_REVIEW"
+          "value": "PERMISSIVE_PUBLIC_EVIDENCE_EXACT_LINEAGE_UNCONFIRMED"
         },
         {
           "name": "bejewely:embedded-file",
@@ -211,13 +211,13 @@
       ],
       "licenses": [
         {
-          "expression": "LicenseRef-TweetNaCl-Public-Domain-Claim"
+          "expression": "LicenseRef-TweetNaCl-Unlicense-Support"
         }
       ],
       "properties": [
         {
           "name": "bejewely:license-review-status",
-          "value": "UPSTREAM_PUBLIC_DOMAIN_CLAIM_REQUIRES_RIGHTS_REVIEW"
+          "value": "PUBLIC_UNLICENSE_EVIDENCE_EXACT_REVISION_UNCONFIRMED"
         },
         {
           "name": "bejewely:embedded-file",

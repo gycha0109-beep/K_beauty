@@ -1980,11 +1980,196 @@ Source SHA256: d9abf523180b6d03b2cc99909eef3488a6b4bc1f822d7fb9d1e945abf555cb42
  */
 ```
 
+## Recovered public license evidence
+
+No individual author reply is required by the observed permission texts. Exact historical revision gaps remain disclosed; no final legal or upload approval is conferred.
+
+### des-author-license-statement.txt
+
+```text
+The Javascript version of DES is based on a C version written and copyrighted
+by Eric Young as part of his SSL implementation. I went line by line through
+the C code, also following an in-depth description of the algorithm from 
+another publication, and slowly built up the Javascript version. So as far
+as I am concerned the Javascript, Perl and PHP versions are a new implementation
+and are provided under the 
+BSD 2-Clause "Simplified" License.
+Thank you to Till Jaegar in April 2024 for helping to clarify this.
+
+```
+
+### des-BSD-2-Clause.txt
+
+```text
+//Paul Tero, July 2001
+//http://www.tero.co.uk/des/
+//
+//Optimised for performance with large blocks by Michael Hayworth, November 2001
+//http://www.netdealing.com
+//
+// Licensed as per https://spdx.org/licenses/BSD-2-Clause.html
+// Copyright (c) 2001 Paul Tero.
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer
+//    in the documentation and/or other materials provided with the distribution.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+// INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+// IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+// OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+// OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+//des
+//this takes the key, the message, and whether to encrypt or decrypt
+
+```
+
+### openssl-1.0.0-aes-public-domain.txt
+
+```text
+/* crypto/aes/aes_core.c -*- mode:C; c-file-style: "eay" -*- */
+/**
+ * rijndael-alg-fst.c
+ *
+ * @version 3.0 (December 2000)
+ *
+ * Optimised ANSI C code for the Rijndael cipher (now AES)
+ *
+ * @author Vincent Rijmen <vincent.rijmen@esat.kuleuven.ac.be>
+ * @author Antoon Bosselaers <antoon.bosselaers@esat.kuleuven.ac.be>
+ * @author Paulo Barreto <paulo.barreto@terra.com.br>
+ *
+ * This code is hereby placed in the public domain.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+```
+
+### sjcl-2010-BSD-2-Clause.txt
+
+```text
+Copyright 2009-2010 Emily Stark, Mike Hamburg, Dan Boneh.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   1. Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+
+   2. Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation
+are those of the authors and should not be interpreted as representing
+official policies, either expressed or implied, of the authors.
+
+```
+
+### sjcl-2010-COPYRIGHT.txt
+
+```text
+SJCL used to be in the public domain.  Now it's:
+
+Copyright 2009-2010 Emily Stark, Mike Hamburg, Dan Boneh, Stanford University.
+
+This is for liability reasons.  (Speaking of which, SJCL comes with NO
+WARRANTY WHATSOEVER, express or implied, to the limit of applicable
+law.)
+
+SJCL is dual-licensed under the GNU GPL version 2.0 or higher, and a
+2-clause BSD license.  You may use SJCL under the terms of either of
+these licenses.  For your convenience, the GPL versions 2.0 and 3.0
+and the 2-clause BSD license are included here.  Additionally, you may
+serve "crunched" copies of sjcl (i.e. those with comments removed,
+and other transformations to reduce code size) without any copyright
+notice.
+
+SJCL includes JsDoc toolkit, YUI compressor, Closure compressor,
+JSLint and the CodeView template in its build system.  These programs'
+copyrights are owned by other people.  They are distributed here under
+the MPL, MIT, BSD, Apache and JSLint licenses.  Codeview is "free for
+download" but has no license attached; it is Copyright 2010 Wouter Bos.
+
+The BSD license is (almost?) strictly more permissive, but the
+additionally licensing under the GPL allows us to use OCB 2.0 code
+royalty-free (at least, if OCB 2.0's creator Phil Rogaway has anything
+to say about it).  Note that if you redistribute SJCL under a license
+other than the GPL, you or your users may need to pay patent licensing
+fees for OCB 2.0.
+
+There may be patents which apply to SJCL other than Phil Rogaway's OCB
+patents.  We suggest that you consult legal counsel before using SJCL
+in a commercial project.
+
+```
+
+### tweetnacl-0.14.5-LICENSE.txt
+
+```text
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>
+
+```
+
 ## Unresolved rights review
 
-- OpenSSL AES origin/version and applicable terms
-- DES BSD variant and full conditions
-- RSAES-OAEP BSD variant and full conditions
-- TweetNaCl/jscrypto public-domain claim rights review
+- RSAES-OAEP full applicable BSD conditions assessment
 - Project owner final redistribution authorization
 - Standalone bundle notice delivery and final artifact packaging review
+
+## Internal provenance assurance gaps
+
+- Exact historical jscrypto/SJCL copied revision
+- Exact copied TweetNaCl revision
+- Complete historical line-by-line correspondence

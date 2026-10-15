@@ -1,5 +1,7 @@
 # B6 sole project owner approval policy v2
 
+> Public-source update: sec-sca-20261015-public-license-research.md supersedes earlier unknown-DES and reply-dependent investigation notes. DES BSD2 and historical AES/SJCL/TweetNaCl permission evidence are recovered; exact lineage gaps are disclosed internal assurance issues, while actual unmet external conditions remain separate. No upstream communication is authorized or awaited.
+
 The project owner explicitly authorized the internal policy change: one human owner assumes security, license-redistribution, maintenance and distribution responsibility. The decision is recorded in `security/release/sca-b6-owner-policy-decision.json`. This replaces the assumption that B6 needed a second human as an external license obligation; the original two-person rule was self-designed in e6caa3fd63bcbe7107f22fd933ef0ce9702bdc76. No examined upstream license or GitHub Packages public terms requires that second person; unprovided special contracts or jurisdiction-specific duties are not assessed.
 
 ## Implemented boundary

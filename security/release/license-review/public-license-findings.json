@@ -1,0 +1,90 @@
+{
+  "schema": "bejewely.public-license-findings.v1",
+  "status": "PUBLIC_EVIDENCE_PREPARED_NOT_FINAL_LEGAL_APPROVAL",
+  "upstreamReplyRequired": false,
+  "externalCommunicationAuthorized": false,
+  "packageRedistributionApproved": false,
+  "sources": [
+    {
+      "file": "des-author-license-statement.txt",
+      "url": "https://www.tero.co.uk/des/usage.php",
+      "sha256": "b8bbc67858564b8f216f507119323ca3e1ad391366cfd41817f5f4b932ee1178",
+      "bytes": 516
+    },
+    {
+      "file": "des-BSD-2-Clause.txt",
+      "url": "https://www.tero.co.uk/des/code.php",
+      "sha256": "44bfb8525588bd4180e4687db01723e36a9c27f743ec405f07f021f0fa3066ae",
+      "bytes": 1608
+    },
+    {
+      "file": "openssl-1.0.0-aes-public-domain.txt",
+      "url": "https://raw.githubusercontent.com/openssl/openssl/OpenSSL_1_0_0/crypto/aes/aes_core.c",
+      "sha256": "37e4987c1956871854acb80598c486fae04abe1b4c7c7f52d41425d962a9c878",
+      "bytes": 1194
+    },
+    {
+      "file": "sjcl-2010-BSD-2-Clause.txt",
+      "url": "https://raw.githubusercontent.com/bitwiseshiftleft/sjcl/136512284d923390c115a735746b965c12f39fd0/README/bsd.txt",
+      "sha256": "c3f55e3d49cf2a2dade308bafe063142f26852c69eadc162af50ebfdf945abb1",
+      "bytes": 1525
+    },
+    {
+      "file": "sjcl-2010-COPYRIGHT.txt",
+      "url": "https://raw.githubusercontent.com/bitwiseshiftleft/sjcl/136512284d923390c115a735746b965c12f39fd0/README/COPYRIGHT",
+      "sha256": "d20e1727dbb1059ddfcd9ca1e4a04a44c1e787c1b904820333bbd61c9bcace9e",
+      "bytes": 1575
+    },
+    {
+      "file": "tweetnacl-0.14.5-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/dchest/tweetnacl-js/v0.14.5/LICENSE",
+      "sha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd",
+      "bytes": 1210
+    }
+  ],
+  "findings": [
+    {
+      "id": "des",
+      "fact": "Original author publicly specifies BSD-2-Clause, clarifies independent implementation, and publishes full conditions. Existing Forge issue1078 links this clarification.",
+      "primaryUrls": [
+        "https://www.tero.co.uk/des/usage.php",
+        "https://www.tero.co.uk/des/code.php",
+        "https://github.com/digitalbazaar/forge/issues/1078"
+      ],
+      "externalObligation": "Retain author copyright, both redistribution conditions and disclaimer; keep existing Hayworth/Siegl/Forge notices.",
+      "internalAssuranceGap": "Exact 2001/2012 line-by-line historical mapping; not a license requirement for an individual reply.",
+      "classification": "PUBLIC_PERMISSION_AND_CONDITIONS_FOUND"
+    },
+    {
+      "id": "aes-jscrypto-openssl",
+      "fact": "2010 SJCL initial source and COPYRIGHT say an older implementation was public domain and the newer one is BSD licensed. Historical OpenSSL aes_core.c has its own explicit Rijndael public-domain declaration/disclaimer.",
+      "externalObligation": "Preserve existing Forge/author notices; accompany distribution with recovered BSD2 and public-domain notice texts. Do not apply a whole-toolkit license without component evidence.",
+      "internalAssuranceGap": "Exact copied revision and complete modified-code correspondence remain unproven; the permissive component evidence is supporting evidence, not a final legal finding.",
+      "classification": "PERMISSIVE_PRIMARY_COMPONENT_EVIDENCE_WITH_LINEAGE_GAP"
+    },
+    {
+      "id": "tweetnacl",
+      "fact": "Forge introduction470793c0ac7217e512ba3775cd75d106e7fb2b64 explicitly credits TweetNaCl; version0.14.5 publishes Unlicense permission and public-domain dedication.",
+      "externalObligation": "Preserve existing attribution and the permission/disclaimer in distribution materials; no author reply requirement observed.",
+      "internalAssuranceGap": "Exact copied revision unproven.",
+      "classification": "PUBLIC_PERMISSION_WITH_INTERNAL_REVISION_GAP"
+    },
+    {
+      "id": "oaep",
+      "fact": "Original WebRSA project site identifies Ellis Pritchard/Guardian Unlimited2003 and distribution under BSD. Forge pkcs1.js preserves that statement and complete jsjws MIT text.",
+      "primaryUrls": [
+        "https://webrsa.sourceforge.net/",
+        "https://sourceforge.net/projects/webrsa/files/latest/download"
+      ],
+      "externalObligation": "Preserve copyright and applicable BSD conditions/disclaimer; exact variant/full original conditions must be assessed using recovered evidence.",
+      "unconfirmed": "Precise BSD variant/full original text not independently recovered. SourceForge advertises archive SHA256 d64c580201891195236a7942f16a86ee6bc7a053d23abef7d2ffeb63178e9343; attempted downloads returned HTML/nonmatching SHA and were rejected, never accepted as source.",
+      "classification": "APPLICABLE_TERMS_OWNER_REVIEW_OPEN_NOT_REPLY_DEPENDENT"
+    }
+  ],
+  "gateClassification": {
+    "externalConditions": "Actual redistribution copyright/permission/conditions/disclaimer and no-endorsement requirements must be fulfilled. Missing applicable terms are not automatically cleared.",
+    "internalAssurance": "Exact historical revisions, a second human and direct author replies are not observed license conditions; disclose uncertainty without inventing such legal gates.",
+    "technicalDelivery": "Standalone browser bundles require accompanying complete notices; inspect packaging/readback separately from permission existence.",
+    "ownerAuthority": "Owner internal-policy approval is not final redistribution/upload authority or evidence of missing third-party rights."
+  }
+}

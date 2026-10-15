@@ -1,5 +1,7 @@
 # B6 license and redistribution review packet
 
+> Public-source update: sec-sca-20261015-public-license-research.md supersedes earlier unknown-DES and reply-dependent investigation notes. DES BSD2 and historical AES/SJCL/TweetNaCl permission evidence are recovered; exact lineage gaps are disclosed internal assurance issues, while actual unmet external conditions remain separate. No upstream communication is authorized or awaited.
+
 > Current internal approval policy: owner-authorized sole-owner v2. See sec-sca-20261015-sole-owner-policy.md; earlier two-human statements describe legacy v1. All independent CI and artifact/audit/readback controls remain mandatory.
 
 Status: **TECHNICAL_REVIEW_ONLY_LEGAL_HOLD**. On 2026-10-15 the user authorized review of braces under MIT and node-forge under BSD-3-Clause. This is not final legal approval, an approved release license election, upload authorization, a security exception, cost authorization, merge permission or production permission.

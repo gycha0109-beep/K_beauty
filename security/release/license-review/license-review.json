@@ -52,23 +52,23 @@
     {
       "path": "lib/des.js",
       "name": "Paul Tero DES and Michael Hayworth optimization",
-      "license": "LicenseRef-DES-BSD-Unspecified",
+      "license": "BSD-2-Clause",
       "marker": "Paul Tero",
-      "status": "BSD_VARIANT_AND_COMPLETE_TERMS_REQUIRE_REVIEW"
+      "status": "AUTHOR_PUBLISHED_BSD2_CONDITIONS_PRESERVED"
     },
     {
       "path": "lib/aes.js",
       "name": "jscrypto and OpenSSL derived AES",
-      "license": "LicenseRef-AES-Origin-Review",
+      "license": "LicenseRef-AES-Permissive-Component-Evidence",
       "marker": "OpenSSL",
-      "status": "OPENSSL_ORIGIN_VERSION_AND_TERMS_REQUIRE_REVIEW"
+      "status": "PERMISSIVE_PUBLIC_EVIDENCE_EXACT_LINEAGE_UNCONFIRMED"
     },
     {
       "path": "lib/ed25519.js",
       "name": "TweetNaCl derived Ed25519",
-      "license": "LicenseRef-TweetNaCl-Public-Domain-Claim",
+      "license": "LicenseRef-TweetNaCl-Unlicense-Support",
       "marker": "TweetNaCl",
-      "status": "UPSTREAM_PUBLIC_DOMAIN_CLAIM_REQUIRES_RIGHTS_REVIEW"
+      "status": "PUBLIC_UNLICENSE_EVIDENCE_EXACT_REVISION_UNCONFIRMED"
     }
   ],
   "sourceNotices": [
@@ -396,11 +396,15 @@
   "browserNoticeDelivery": "All source notices and complete original LICENSE texts must accompany every redistributed browser bundle, including standalone copies. Minification is not evidence that notices survived.",
   "buildToolScope": "webpack 4.44.1 and webpack-cli 3.3.12 are build tools, not automatically runtime components; cheap source maps are not a complete module inventory.",
   "unbundledDependencyScope": "braces declares fill-range ^7.1.1; its separately installed transitive dependencies require their own LICENSEs and app SBOM. node-forge declares no runtime npm dependencies.",
+  "publicEvidenceSha256": "55ab4668435c9f1cbd8403a4c25c2dca9f642ada6f7d9a1df114aa76e5f0cdf1",
+  "upstreamReplyRequired": false,
+  "internalAssuranceGaps": [
+    "Exact historical jscrypto/SJCL copied revision",
+    "Exact copied TweetNaCl revision",
+    "Complete historical line-by-line correspondence"
+  ],
   "unresolved": [
-    "OpenSSL AES origin/version and applicable terms",
-    "DES BSD variant and full conditions",
-    "RSAES-OAEP BSD variant and full conditions",
-    "TweetNaCl/jscrypto public-domain claim rights review",
+    "RSAES-OAEP full applicable BSD conditions assessment",
     "Project owner final redistribution authorization",
     "Standalone bundle notice delivery and final artifact packaging review"
   ]

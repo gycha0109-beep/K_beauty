@@ -1,0 +1,8 @@
+The Javascript version of DES is based on a C version written and copyrighted
+by Eric Young as part of his SSL implementation. I went line by line through
+the C code, also following an in-depth description of the algorithm from 
+another publication, and slowly built up the Javascript version. So as far
+as I am concerned the Javascript, Perl and PHP versions are a new implementation
+and are provided under the 
+BSD 2-Clause "Simplified" License.
+Thank you to Till Jaegar in April 2024 for helping to clarify this.

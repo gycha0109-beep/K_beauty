@@ -27,6 +27,8 @@ export function approvalPolicyContext(a,trust,{scoped=false}={}){
   assert.equal(a.redistributionApproval?.approved,true,'separate final redistribution approval required');
   hash(a.redistributionApproval.decisionSha256,'redistribution decision');
   assert.equal(a.rightsReview?.status,'CLEARED_BY_PROJECT_OWNER','rights review remains HOLD');
+  assert.equal(a.rightsReview.upstreamReplyRequired,false,'individual author reply is not a gate for these observed licenses');
+  assert.ok(Array.isArray(a.rightsReview.informationalGaps)&&a.rightsReview.informationalGaps.every(s=>typeof s==='string'&&s.trim().length>0),'informational provenance gaps must be disclosed separately');
   assert.deepEqual(a.rightsReview.unresolved,[],'unresolved rights cannot be waived by policy change');
   hash(a.rightsReview.evidenceSha256,'rights evidence');
   assert.equal(a.mergeApproved,false);assert.equal(a.productionApproved,false);

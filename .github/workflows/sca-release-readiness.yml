@@ -45,6 +45,7 @@ jobs:
     outputs:
       digest: ${{ steps.candidate.outputs.b6_candidate_sha256 }}
       scoped_digest: ${{ steps.candidate.outputs.scoped_candidate_sha256 }}
+      notice_kit_digest: ${{ steps.candidate.outputs.browser_notice_kit_sha256 }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -97,9 +98,11 @@ jobs:
           SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
           SCA_SCOPED_INSTALL_ONLY: '1'
           SCA_SCOPED_EXPECTED_CANDIDATE_SHA256: ${{ needs.candidate.outputs.scoped_digest }}
+          SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256: ${{ needs.candidate.outputs.notice_kit_digest }}
         run: |
           test -n "$SCA_B6_EXPECTED_CANDIDATE_SHA256"
           test -n "$SCA_SCOPED_EXPECTED_CANDIDATE_SHA256"
+          test -n "$SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256"
           node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
       - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
   original-security-gate:
