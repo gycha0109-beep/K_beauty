@@ -58,7 +58,7 @@ create index offer_option_observations_offer_latest_idx
 -- Independent reviewer event. A source observation MUST NOT self-authorize.
 create table public.product_offer_option_reviews (
   review_id uuid primary key default gen_random_uuid(),
-  observation_id uuid not null unique
+  observation_id uuid not null
     references public.product_offer_option_observations(observation_id)
     on delete restrict,
   verdict text not null,
@@ -71,11 +71,16 @@ create table public.product_offer_option_reviews (
     (char_length(btrim(reviewer_reference)) between 1 and 160),
   constraint offer_option_digest_check check
     (evidence_sha256 ~ '^[a-f0-9]{64}$'),
-  constraint offer_option_review_time_check check (reviewed_at <= created_at)
+  constraint offer_option_review_time_check check (reviewed_at <= created_at),
+  constraint offer_option_review_event_unique
+    unique (observation_id, reviewed_at)
 );
-create index offer_option_reviews_verified_idx
-  on public.product_offer_option_reviews (observation_id, reviewed_at desc)
-  where verdict = 'verified';
+-- Append-only review events permit subsequent rejection/revocation of a
+-- prior verified observation without mutating or deleting the audit record.
+-- Index ALL verdicts: latest rejection MUST suppress previous verification.
+create index offer_option_reviews_latest_idx
+  on public.product_offer_option_reviews
+  (observation_id, reviewed_at desc, review_id desc);
 
 -- Defense in depth. No policy grants any UI client access. There is no
 -- ingestion/review writer grant, RPC, or runtime role added in this proposal.
@@ -89,7 +94,7 @@ revoke all on public.product_offer_option_reviews
 comment on table public.product_offer_option_observations is
   'D8K-5 candidate append-only selected option observation history, separate from seller listing identity and product-level prices. No live writer or reader grant.';
 comment on table public.product_offer_option_reviews is
-  'D8K-5 candidate independent option evidence review events. Reviewed status is not Product recommendation admission or direct CTA approval.';
+  'D8K-6 candidate append-only review event history; latest review verdict wins, including rejection/revocation, without exposing Product admission or CTA.';
 
 -- If approved, isolated PG17 tests must prove intended RLS/grant denial
 -- for all client roles, review immutability/authority, and ability of a
