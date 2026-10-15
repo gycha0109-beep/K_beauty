@@ -12,6 +12,7 @@ import { createSkinVisionV2CandidatePrompt } from "./skin-vision-v2-candidate-co
 import { evaluateSkinVisionV2Candidate } from "./skin-vision-v2-candidate-core.mjs";
 import { inspectSkinVisionTrial, summarizeSkinVisionTrials } from "./skin-vision-v2-provider-evidence-gate.mjs";
 import { summarizeSkinVisionOperationalPairs } from "./skin-vision-v2-operational-metrics.mjs";
+import { inspectNonfaceSkinV2Abstention } from "./skin-nonface-v2-abstention-audit.mjs";
 
 export const NONFACE_PAIR_VERSION = "face-lab-skin-key2-nonface-pair-v1";
 const KEY_ENV = "OPENAI_API_KEY2";
@@ -145,10 +146,10 @@ export async function runKey2NonfaceVisionPair({
       const eligibilityStatus = evaluation.eligibility?.status || "unknown";
       const skinAnalysisEligible = evaluation.eligibility?.skinAnalysisEligible === true;
       const nonfaceAbstentionExpected = eligibilityStatus === "ineligible" && !skinAnalysisEligible;
-      const axisRowsReturned = variant === "v2"
-        ? (Array.isArray(response.parsed?.skin?.axisEvidence)
-          ? response.parsed.skin.axisEvidence.length : null)
+      const v2AbstentionAudit = variant === "v2"
+        ? inspectNonfaceSkinV2Abstention(response.parsed)
         : null;
+      const axisRowsReturned = v2AbstentionAudit?.axisRowCount ?? null;
       inspected.push(metrics);
       operational.push(operationalRow(variant, metrics.result,
         Number.isSafeInteger(response.durationMs) && response.durationMs >= 0
@@ -170,9 +171,14 @@ export async function runKey2NonfaceVisionPair({
         skinAnalysisEligible,
         nonfaceAbstentionExpected,
         v2AxisRowsReturned: axisRowsReturned,
-        interpretation: nonfaceAbstentionExpected
-          ? "NONFACE_EXPECTED_ABSTENTION_NOT_ACCURACY_FAILURE"
-          : "NONFACE_ELIGIBILITY_REVIEW_REQUIRED",
+        v2AbstentionAudit,
+        interpretation: variant === "v2"
+          ? (v2AbstentionAudit.nonfaceEligibilityVerified
+            ? v2AbstentionAudit.verdict
+            : "NONFACE_ELIGIBILITY_REVIEW_REQUIRED")
+          : (nonfaceAbstentionExpected
+            ? "NONFACE_EXPECTED_ABSTENTION_NOT_ACCURACY_FAILURE"
+            : "NONFACE_ELIGIBILITY_REVIEW_REQUIRED"),
         problems: metrics.problems
       });
     } catch (error) {
