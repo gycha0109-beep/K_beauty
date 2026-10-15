@@ -154,6 +154,7 @@ async function main() {
       const output = psql(sqlFile(SQL_PATHS[i]));
       if (i === SQL_PATHS.length - 1) {
         assert.match(output, /D8K7_PG17_SQL_ACCEPTANCE_PASS/);
+        console.log("D8K7_PG17_SQL_ACCEPTANCE_PASS");
       }
     }
 
