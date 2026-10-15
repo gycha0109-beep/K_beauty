@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-15 / Face Lab Skin 관찰 신호 0과 판단 불가 분리 — S1-A 합성 검증
+
+- 트랙 `face-lab-skin`; `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2` 기반 독립 Draft PR. 관련 로드맵 #1307, 설계 #1317.
+- `scripts/facelab/skin/skin-axis-evidence-contract-core.mjs`는 7개 시각적 축의 `present/not_seen/unassessable/unknown`을 명시적으로 요구하고, 값/신뢰도/부위·단서/오류 사유의 일관성을 평가 전용으로 점검한다.
+- `verify-face-lab-skin-s1-axis-evidence.mjs`는 v1 0 소급 추론 금지, Provider 실패/사진 부적격/저신뢰, 축 누락/중복/불일치·잘못된 값/불필요 필드, 정상 축 유지, 부분 객체 오용을 합성 데이터로 검사한다. `verify-current-main-health.mjs`에도 연결.
+- 공용 Vision Provider, 원본 사진, 추천 계산·가중치·Top Pick, API, 저장·재진입, UI, Style, DB/Auth/RLS/Storage, 운영·배포 변경 없음. 실제 얼굴 사진/Provider 호출 0건.
+- 정확도, 실기기, 사람 평가, 추천 변동 및 완전한 CI 검증 결과는 별도. S1-B 공유 Vision 계약/Provider 소유자 검토 → S2-C 비노출 점수 비교 → S1-D 실제 사진 Human 평가 → 승인 후 적용. 보안 #1208 독립 HOLD.
+- 검증 명령 `node scripts/facelab/skin/verify-face-lab-skin-s1-axis-evidence.mjs`; 실제 CI 상태는 exact-head 실행 결과로 보완한다.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
