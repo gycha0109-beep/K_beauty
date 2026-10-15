@@ -44,10 +44,7 @@ const stub = async (args) => {
     }
     : {
       schemaVersion: "vision-observation-v2", eligibility,
-      skin: { axisEvidence: SKIN_VISIBLE_AXES.map(axis => ({
-        axis, state: "unknown", value: null, confidence: "unknown",
-        cue: null, area: null, reason: "missing"
-      })) },
+      skin: { axisEvidence: [] },
       face: {}
     };
   return {
@@ -75,12 +72,12 @@ assert.equal(result.variants[0].eligibilityStatus, "ineligible");
 assert.equal(result.variants[1].eligibilityStatus, "ineligible");
 assert.equal(result.variants[1].skinAnalysisEligible, false);
 assert.equal(result.variants[1].nonfaceAbstentionExpected, true);
-assert.equal(result.variants[1].v2AxisRowsReturned, 7);
-assert.equal(result.variants[1].interpretation, "SEVEN_ABSTAINING_AXES_REQUIRES_CONTRACT_DECISION");
+assert.equal(result.variants[1].v2AxisRowsReturned, 0);
+assert.equal(result.variants[1].interpretation, "EXPECTED_INELIGIBLE_EMPTY_AXES_RESEARCH_ONLY");
 assert.equal(result.variants[1].v2AbstentionAudit.nonfaceEligibilityVerified, true);
 assert.equal(result.variants[1].v2AbstentionAudit.withheldPositiveOrZeroCues, true);
 assert.equal(result.variants[1].v2AbstentionAudit.axisShapeValid, true);
-assert.equal(result.variants[1].v2AbstentionAudit.stateCounts.unknown, 7);
+assert.equal(result.variants[1].v2AbstentionAudit.stateCounts.unknown, 0);
 assert.equal(result.variants[1].v2AbstentionAudit.productReady, false);
 assert.equal(result.variants[1].v2AbstentionAudit.releaseReady, false);
 assert.equal(result.timingsAndCostAvailability.pairedTimings, 1);
