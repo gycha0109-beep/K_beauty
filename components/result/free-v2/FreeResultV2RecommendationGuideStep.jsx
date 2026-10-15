@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from "react";
 import SafeProductImage from "@/components/common/SafeProductImage";
+import RecommendedProductOfferSlot from "@/components/commerce/RecommendedProductOfferSlot";
 import FreeResultV2ProductEvidence from "@/components/result/free-v2/FreeResultV2ProductEvidence";
 import {
   FreeResultV2Card,
@@ -191,6 +192,7 @@ export default function FreeResultV2RecommendationGuideStep({ preview, routinePr
         <TopPickFallbackCard copy={copy} locale={locale} />
       )}
 
+      {preview?.product ? <RecommendedProductOfferSlot product={preview.product} locale={locale} /> : null}
       <FreeResultV2ProductEvidence entries={preview?.product?.productEvidencePresentation} locale={locale} />
       <FreeResultV2TabbedRoutinePreview routinePreview={routinePreview} locale={locale} />
       <FreeResultV2Step3PremiumPreview locale={locale} />
