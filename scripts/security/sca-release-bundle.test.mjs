@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
 import {carrierMetadata} from './sca-release-github-carrier.mjs';
-import {scopedMetadata,verifyScopedApproval,verifyScopedArchive,assertGithubPrivateMetadata,assertScopedAccessDenied,verifyScopedContents,scopedDeliveryNotices,embeddedNoticePath} from './sca-release-scoped.mjs';
+import {scopedMetadata,verifyScopedApproval,verifyScopedArchive,assertGithubPrivateMetadata,assertScopedAccessDenied,verifyScopedContents,scopedDeliveryNotices,embeddedNoticePath,githubScopedPackageMetadataUrl} from './sca-release-scoped.mjs';
 import {spawnSync} from 'node:child_process';
 import {inspectArchive,verifyArchive,verifyApproval,registryUrl,requiredRoles,reference,browserReference,assertNoLifecycleHooks,assertPrivateReadback} from './sca-release-bundle.mjs';
 
@@ -157,6 +157,11 @@ test('scoped readback binding rejects public origins, embedded tokens and identi
     'https://npm.pkg.github.com/download/@gycha0109-beep/braces/3.0.3/abc?token=secret']){
     const f=scopedFixture();f.approval.tarballUrls.braces=url;assert.throws(()=>verifyScopedApproval(f.build()));
   }
+});
+test('GitHub npm package REST lookup uses encoded full scoped identity',()=>{
+  assert.equal(githubScopedPackageMetadataUrl('braces'),'https://api.github.com/users/gycha0109-beep/packages/npm/%40gycha0109-beep%2Fbraces');
+  assert.equal(githubScopedPackageMetadataUrl('node-forge'),'https://api.github.com/users/gycha0109-beep/packages/npm/%40gycha0109-beep%2Fnode-forge');
+  assert.throws(()=>githubScopedPackageMetadataUrl('../other'),/identity/);
 });
 test('GitHub private metadata must bind owner, identity and repository; auth-only public packages are rejected',()=>{
   const valid={package_type:'npm',visibility:'private',owner:{login:'gycha0109-beep'},name:'braces',repository:{full_name:'gycha0109-beep/K_beauty'}};
