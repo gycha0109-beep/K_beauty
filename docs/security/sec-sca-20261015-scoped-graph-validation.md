@@ -70,3 +70,14 @@ First scoped implementation HEAD c593246378dd5fb64baf1d7f69916fe89e5b15fd / run3
 Further admission review rejects malformed string role lists and owner identities differing only by case/whitespace; local26 tests PASS. No new real approval or signature is created.
 
 Do not keep a session waiting. The previous equivalent Android producer took22min33sec (one observed sample, not a multi-run average). First scoped run should use that observation plus replay/buffer for scheduled continuation; adjust to observed new durations. Technical failures are repaired automatically and rechecked, never conditionally counted PASS.
+
+
+## Final exact-HEAD technical evidence
+
+Implementation HEAD f2f9280d182ff96c303e37eaeea0d7753bcb1ad2: [CI38662014291](https://github.com/gycha0109-beep/K_beauty/actions/runs/38662014291) producer116185255524 and independent116190877563 PASS.26 admission tests, Main Health, CodeQL, both lifecycle installations, full physical graph/69 files/4 consumers, all11 web/mobile/native checks including Android debug APK PASS. [PIE38662014502](https://github.com/gycha0109-beep/K_beauty/actions/runs/38662014502) PASS. Scoped manifest20abd1ffde84467fa24e6cb2fd8643a7fbaf3d250f618640d9e531dcd0078cb7 and both archive digests reproduced independently. APK33eeed814a946fc3ea34b25e3732fe23769655d157bb1cc1921c63a29a1aeb88; Hermes2f9105df11ec681b9f90c0e6f15f8a722decd13dfa288f4e19469e006db29f97. Installed SBOM683 components. Full receipt is versioned in sec-sca-20261015-scoped-graph-evidence.json.
+
+Original full/prod audits HIGH22/19, MODERATE13/11, CRITICAL0,exit1 retain both target advisory leaves. Scoped raw full/prod audits HIGH0, MODERATE17/14, CRITICAL0,exit1 lack both target advisory leaves: **namespace coverage loss, not official vulnerability resolution**. The moderate increase is severity propagation reclassification in existing Expo/Metro/Tailwind nodes; no new advisory leaf was introduced. Mandatory original security gate FAIL remains, so the overall readiness workflow is FAILURE. Every raw response/exit/SHA and both coverage models are separately retained.
+
+Actual GitHub private ACL, account quota/no-spend controls, tokens/readback and real private-URL product graph, device/API/Auth remain NOT_RUN. #1294/#1303 independent patches are unmerged; this is not their combined runtime proof. B0 organization choicesHOLD, B1~B3 previousPASS, new scoped B4/B5 technicalPASS, B6 technicalPASS/formal releaseHOLD, B7 gateFAIL/mergeHOLD. No upload, payment, final legal/exception/merge/production approval was inferred.
+
+This closeout changes documentation only. The exact executed platform proof belongs to f2f9280d182ff96c303e37eaeea0d7753bcb1ad2; later documentation-head checks must not be described as a newly executed APK build before they finish.
