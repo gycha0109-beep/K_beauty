@@ -19,6 +19,9 @@ import "./verify-d8k7-local-pg17-harness-v1.mjs";
 // independent reviewer packet, all offline without price/CTA publication.
 import "./verify-d8k8-manual-option-review-intake-v1.mjs";
 import "./verify-d8k8-local-file-cli-v1.mjs";
+// D8K-9: exact catalog Product + parent Offer v2 + independent global
+// collision read checks, with legacy 160ml/80ml Product fact HOLD.
+import "./verify-d8k9-parent-offer-identity-binding-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";

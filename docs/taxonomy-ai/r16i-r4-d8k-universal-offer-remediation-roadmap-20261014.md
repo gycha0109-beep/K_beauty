@@ -308,3 +308,20 @@
 - Evidence recorded in [D8K-8 runbook §7](r16i-r4-d8k8-manual-selected-option-evidence-intake-20261015.md). Node `MODULE_TYPELESS_PACKAGE_JSON` warning persists without test failure; not an excuse to alter project-wide ESM configuration.
 - **D8K-8 implementation complete at synthetic/local-file acceptance grade**, not actual merchant offer evidence grade. CLI says `realSellerEvidence=false`, `sourceVisualContentExamined=false`, `reviewerIdentityAuthenticated=false`, `productionDbWrites=0`, `pricePublished=false`.
 - Remaining D8K-9 real-world operator evidence: authenticated independent capture/reviewer, actual Product + parent Offer lookup/selected-option binding, original source archive and checkout/stock/shipping conditions. No deployment, DB migration/RLS/API/CTA until separately approved; security #1208 open.
+
+## 17. D8K-9 canonical Product / parent Offer / seller selected-option binding boundary (2026-10-15)
+
+- **Status: OFFLINE_PARENT_IDENTITY_RECONCILIATION_READY / LIVE_DB_AUTHORITATIVE_ORIGIN_HOLD / PRICE_CTA_OFF.** [D8K-9 Product/parent Offer binding audit](r16i-r4-d8k9-canonical-product-parent-offer-binding-20261015.md).
+- D8K-8 manual capture packet previously lost seller/listing identity after a checksum/metadata match; added an immutable (still untrusted) `sourceLocator` to retain exact seller key/name, listing ID/URL, brand, productName for cross-stage anti-swap checks. No stored schema or API change.
+- New `lib/commerce/product-offer-parent-identity-reconciliation-v1.mjs` requires a Product record, exact product-scoped `read_product_offer_presentation_authority_v2` response plus **independent** seller+listing-ID and seller+listing-URL collision probe rows. Checks one parent UUID, Product ID, brand/name, base unit (not bundle total), current/product-scoped KRW/KR, in-stock and healthy link, selected Coupang item/vendor versus bare parent URL, duplicate/cross-seller collisions and fresh timestamp. No new DB/API/Auth/role changes; raw price or URL never projected.
+- Replayed real **historical** `fixtures/recommendation-metadata/r16i-d8f-candidate-d4-readonly-prestate-20261013.json` in synthetic test. R16I `size_ml=160` vs 80ml selected unit holds; if size were hypothetically 80, offers[] absent so parent Offer still not found. No invented parent Offer ID and no inference that 2026-10-13 prestate equals current operational state.
+- `scripts/product-evidence/verify-d8k9-parent-offer-identity-binding-v1.mjs`: fetched-source in-memory V8 **468 assertions PASS**; D8K-8 synthetic regression **407 PASS**. Full native Node CI on exact PR HEAD must be separately confirmed. New test imported into D8F price review chain. No actual Supabase RPC, seller source bytes or browser flow executed.
+- D8K-9 owner/protected gate pending: authenticate current Product/source/formulation and existing parent Offer real IDs with explicitly authorized read-only operator, independent observed screenshot/selected SKU + reviewer, DB role-bound RPC, 100% active recommendation slot E2E; open #1208 continues to block merge/deploy.
+
+### D8K-9 사용자 Native Node 검증 완료 (2026-10-15)
+
+- **USER_REPORTED_NATIVE_NODE_PASS, 468 assertions**: Windows PowerShell에서 정확한 `HEAD c462f2b8`, `D8K9_CANONICAL_PRODUCT_PARENT_OFFER_COLLISION_BINDING_SHADOW` PASS 확인.
+- 기록: [D8K-9 문서 §5](r16i-r4-d8k9-canonical-product-parent-offer-binding-20261015.md). 이전 단독 V8 synthetic 검증에 더해 Windows Native Node 런타임 테스트 완료. `MODULE_TYPELESS_PACKAGE_JSON`은 비차단 경고.
+- 이번 검사는 `offlineSyntheticOnly=true`, 실제 서버 RPC/실제 seller 증빙/Product Fact/live admission/운영 DB 변경·가격/CTA 전부 NOT VERIFIED/NOT AUTHORIZED. **D8K-9 로컬 검증 완료 ≠ 실제 판매 가격 비교 출시 가능.**
+- 별도 Git 오류 `origin/fix/migration-composer-form-disambiguation`는 D8K-9 정상 fetch/check-out 이후 검증 PASS와 무관. 해당 다른 브랜치의 문제는 여기서 임의 수정하지 않음.
+- 다음 실질 게이트는 권한 승인된 **현재 DB 읽기 전용 Product/Offer 3-way 실사** + 실제 선택옵션 캡처·독립 검토다. #1208 OPEN, stacked Draft PR 유지, merge/deploy 금지.
