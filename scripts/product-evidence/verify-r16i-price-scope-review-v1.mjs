@@ -11,6 +11,8 @@ import "./verify-d8k4b-active-offer-admission-reconciliation-v1.mjs";
 // and actual free/premium UI mount slots with a hard-OFF release gate.
 import "./verify-d8k5-selected-option-evidence-contract-v1.mjs";
 import "./verify-d8k5-active-offer-slot-coverage-v1.mjs";
+// D8K-6: latest-review revocation, source/reviewer separation and old-price no-fallback.
+import "./verify-d8k6-option-review-history-shadow-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
