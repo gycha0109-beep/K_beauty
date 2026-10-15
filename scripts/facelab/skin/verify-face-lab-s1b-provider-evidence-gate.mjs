@@ -153,6 +153,13 @@ const faceLoss = summarizeSkinVisionTrials([a, degradedFace]);
 assert.equal(faceLoss.faceCoverageDegraded, 1);
 assert.equal(faceLoss.structuralCandidatePass, false);
 assert.equal(faceLoss.productReady, false);
+const noBaseline = clone(v1);
+noBaseline.face.quality.evidence = [];
+const emptyBaseline = trial("C01", "v1", noBaseline);
+const unavailablePair = summarizeSkinVisionTrials([emptyBaseline, b]);
+assert.equal(unavailablePair.faceBaselineUnassessable, 1);
+assert.equal(unavailablePair.structuralCandidatePass, false);
+assert.equal(unavailablePair.verdict, "BLOCKED_OR_INCOMPLETE");
 
 // Other cases: incomplete pairs, duplicates, fake/unsafe identifiers rejected.
 assert.equal(summarizeSkinVisionTrials([a]).unmatchedCases, 1);
