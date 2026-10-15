@@ -332,6 +332,25 @@ await assert.rejects(()=>discoverOfficialSourceCandidates(phase8hFixture,{
 }),/TRUST_PHASE8H_CANDIDATE_PRIORITY_INVALID/);
 assert.equal(phase8hPromoted.mutation_policy,"READ_ONLY_NO_PRODUCTION_WRITE");
 
+// P2 must also continue with the safe URL when the official sitemap has a
+// malformed percent-encoded neighbor. No homepage or invalid target fetch.
+const malformedSitemapCalls=[];
+const malformedSitemapRun=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from("<urlset>"+
+    "<url><loc>https://neopharmshop.co.kr/product/mle-lotion-%ZZ/99</loc></url>"+
+    "<url><loc>"+sitemapCorrect+"</loc></url></urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    malformedSitemapCalls.push(url);
+    return {bytes:Buffer.from("<title>MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(malformedSitemapCalls,[peer,sitemapCorrect]);
+assert.deepEqual(malformedSitemapRun.sites[0].pages.map(p=>p.url),[sitemapCorrect]);
+assert.equal(malformedSitemapRun.sites[0].homepageIndexStatus,"NOT_NEEDED");
+assert.equal(malformedSitemapRun.sites[0].observations[0].status,"FETCHED");
+assert.equal(malformedSitemapRun.factWrites,0);
+
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
