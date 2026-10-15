@@ -25,7 +25,31 @@ const index=Buffer.from('<a href="/goods/goods_view.php?goodsNo=58">[NEW] 토리
 assert.deepEqual(findTrustP2BOfficialPeerLinks(index,"https://www.torriden.com/",torrent),[
   "https://www.torriden.com/goods/goods_view.php?goodsNo=58"]);
 const beplain={brand:"비플레인",name:"녹두 모공 클리어링 필터 패드"};
-assert.equal(findTrustP2BOfficialPeerLinks(Buffer.from('<a href="/m/product_detail.html?brand_uid=432">녹두 모공 클리어링 필터 패드 70매+10매</a>'),"https://www.beplain.co.kr/",beplain).length,1);
+// Mixed count and giveaway labels must never be treated as a single product.
+assert.equal(findTrustP2BOfficialPeerLinks(Buffer.from('<a href="/m/product_detail.html?brand_uid=432">녹두 모공 클리어링 필터 패드 70매+10매</a>'),"https://www.beplain.co.kr/",beplain).length,0);
+assert.equal(findTrustP2BOfficialPeerLinks(Buffer.from('<a href="/m/product_detail.html?brand_uid=432">녹두 모공 클리어링 필터 패드 70매</a>'),"https://www.beplain.co.kr/",beplain).length,1);
+// Reject explicit wrong-volume, ambiguous/multipack and offer labels at the
+// visible official-link stage, before consuming scarce page-fetch budget.
+const linkTarget={brand:"아토팜",name:"MLE 로션",size_ml:600};
+const peer="https://neopharmshop.co.kr/product/peer/2166";
+const linkLabel=(label,href="/product/mle-lotion/888")=>
+  Buffer.from('<a href="'+href+'">'+label+'</a>');
+const discoverLabel=(label,href)=>
+  findTrustP2BOfficialPeerLinks(linkLabel(label,href),peer,linkTarget);
+assert.equal(discoverLabel("아토팜 MLE 로션 600ml").length,1);
+assert.equal(discoverLabel("아토팜 MLE 로션").length,1);
+assert.equal(discoverLabel("아토팜 MLE 로션 60ml").length,0);
+assert.equal(discoverLabel("아토팜 MLE 로션 300ml").length,0);
+assert.equal(discoverLabel("아토팜 MLE 로션 300ml 600ml").length,0);
+assert.equal(discoverLabel("아토팜 MLE 로션 600ml x2").length,0);
+assert.equal(discoverLabel("아토팜 MLE 로션 600ml+60ml").length,0);
+assert.equal(discoverLabel("아토팜 MLE 로션 600ml 1+1").length,0);
+assert.equal(discoverLabel("아토팜 MLE 로션 600ml 증정").length,0);
+assert.equal(discoverLabel("아토팜 MLE 크림 600ml").length,0);
+assert.equal(discoverLabel("아토팜 MLE 로션 600ml","https://other-brand.test/product/mle-lotion/888").length,0);
+assert.equal(findTrustP2BOfficialPeerLinks(linkLabel("아토팜 MLE 로션 60ml"),peer,
+  {brand:"아토팜",name:"MLE 로션"}).length,1); // Unknown size is unverified.
+
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
 assert.equal(v2.targets.find(x=>x.brand==="아토팜").sizeMl,600);
