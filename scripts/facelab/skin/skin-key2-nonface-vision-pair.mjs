@@ -211,11 +211,14 @@ export async function runKey2NonfaceVisionPair({
     variants: diagnostic,
     structuralPair: paired,
     timingsAndCostAvailability: operationalSummary,
-    verdict: diagnostic.length === 2 &&
-      diagnostic.every(d => d.outcome === "provider_json_parsed") &&
-      diagnostic.every(d => d.finishReason === "stop")
-        ? "NONFACE_PROVIDER_RESPONSE_CAPTURED_REVIEW_ONLY"
-        : "NONFACE_PROVIDER_RESPONSE_INCOMPLETE",
+    verdict: diagnostic.length !== 2 ||
+      diagnostic.some(d => d.outcome !== "provider_json_parsed" || d.finishReason !== "stop")
+        ? "NONFACE_PROVIDER_RESPONSE_INCOMPLETE"
+        : diagnostic[0].nonfaceAbstentionExpected !== true ||
+          diagnostic[1].nonfaceAbstentionExpected !== true ||
+          diagnostic[1].v2AbstentionAudit?.verdict !== "EXPECTED_INELIGIBLE_EMPTY_AXES_RESEARCH_ONLY"
+          ? "NONFACE_PROVIDER_ABSTENTION_OR_CONTRACT_REVIEW_REQUIRED"
+          : "NONFACE_PROVIDER_INELIGIBLE_ABSTENTION_OBSERVED_REVIEW_ONLY",
     trustBoundary: {
       realHumanPhotoTransmitted: false,
       realFaceOrSkinAccuracyVerified: false,
