@@ -347,3 +347,9 @@
 - D8K-10 SELECT permission cannot be interpreted as permission to download private Storage objects or POST review verdicts. No scope increase, DB schema/Auth/role/production data price updates, merges or deployments. #1208 remains open.
 
 - **Additional protected ledger revocation gap:** `supabase/migrations/20261012172837_taxonomy_ai_r16i_correction_approval_ledger_v1.sql` declares `evidence_id uuid NOT NULL UNIQUE`, so a later append-only REJECTED verdict cannot revoke an earlier VERIFIED verdict on the same original capture. This differs from D8K-6 latest-review revocation. This D8K-11 track only flags it; no DB/role/DDL/API/owner verdict mutation is approved.
+
+### D8K-11 owner Windows native Node acceptance (2026-10-15)
+
+- **USER_REPORTED_NATIVE_NODE_PASS** at exact `HEAD ccfef7e8`. Existing R16I archive/reviewer structural verifier **462 assertions PASS**; local tempfile SHA-256+child-process CLI smoke **21 assertions PASS**. Node typeless-package warning did not block.
+- [D8K-11 audit §7](r16i-r4-d8k11-existing-archive-independent-review-preflight-20261015.md) records result. Native Node execution replaces earlier V8-only hash shimming as the execution-level grade for synthetic tests. Actual private Storage originals / merchant authenticity / authenticated independent reviewer remain NOT TESTED.
+- Existing `reviewR16IEvidence` self-review prevention **NOT ENFORCED** and legacy ledger UNIQUE evidence verdict revocation limitation still need separately approved protected fixes. Two existing R16I evidence records remain UNVERIFIED; don't grant product/offer/price/CTA authority or use D8K-11 PASS as evidence of launch readiness. #1208 open.
