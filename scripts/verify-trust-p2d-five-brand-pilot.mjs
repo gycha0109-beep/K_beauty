@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { inspectTrustOfficialVariantScope } from "../lib/trust/official-variant-scope-v1.mjs";
-import { classifyTrustOfficialCandidatePage,runTrustP2Discovery } from "../lib/trust/official-product-discovery-p2-v1.mjs";
+import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2CandidateLocators } from "../lib/trust/official-product-discovery-p2-v1.mjs";
 import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
 import fs from "node:fs";
 import {
@@ -85,6 +85,62 @@ assert.deepEqual(findTrustP2BOfficialPeerLinks(Buffer.from([
   "https://neopharmshop.co.kr/product/mle-lotion/9500",
 ]);
 
+
+// The frozen 600ml-vs-60/300ml failure also requires URL-scope
+// discrimination on sitemap locators, before the two-page fetch ceiling.
+const sitemapWrong60="https://neopharmshop.co.kr/product/mle-lotion-60ml/5000";
+const sitemapWrong300="https://neopharmshop.co.kr/product/mle-lotion-300ml/3000";
+const sitemapCorrect="https://neopharmshop.co.kr/product/mle-lotion-600ml/9000";
+const sitemapUnknown="https://neopharmshop.co.kr/product/mle-lotion/9001";
+const sitemapKit="https://neopharmshop.co.kr/product/mle-lotion-600ml-kit/9002";
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  sitemapWrong300,sitemapWrong60,sitemapCorrect,sitemapKit,
+],linkTarget),[sitemapCorrect]);
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  sitemapUnknown,sitemapWrong60,sitemapWrong300,sitemapCorrect,
+],linkTarget),[sitemapCorrect,sitemapUnknown]);
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  sitemapWrong300,sitemapWrong60,
+],linkTarget),[]);
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  sitemapWrong300,sitemapCorrect,
+],{...linkTarget,size_ml:null}),[sitemapWrong300,sitemapCorrect]);
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  "https://neopharmshop.co.kr/product/mle-lotion?variant=300ml",
+  sitemapCorrect,
+],linkTarget),[sitemapCorrect]);
+assert.deepEqual(selectTrustP2CandidateLocators(
+  [sitemapUnknown],[sitemapCorrect],linkTarget),[sitemapCorrect,sitemapUnknown]);
+// Full read-only integration: three same-name size variants in a sitemap,
+// including the correct 600ml after two wrong URLs. Broader in-memory
+// consideration (<=12) must not expand network product-page requests (>2).
+const sitemapFetchedPages=[];
+const sitemapRun=await runTrustP2Discovery(cohortToTrustedDiscoveryRow({
+  productId:sized.id,
+  intakeId:"ddc5259a-e3d3-44b2-b4b8-ee14ed2dd491",
+  peerProductId:"08b85f37-b1fa-42d7-893a-0d4facb17878",
+  peerSourceId:"f493aa44-75dc-40b8-a179-b7d748bc7989",
+  peerBindingId:"c70aadca-aecb-409a-9995-71016a2ef9d7",
+  peerKind:"official_product_page",
+  officialPeerUrl:peer,
+}),{
+  ...sized,name_en:"MLE Lotion",normalized_name:"MLE 로션",
+},{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from("<urlset>"+[
+    sitemapWrong300,sitemapWrong60,sitemapCorrect,sitemapKit,
+  ].map(x=>"<url><loc>"+x+"</loc></url>").join("")+"</urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    sitemapFetchedPages.push(url);
+    return {bytes:url===peer?Buffer.from("<title>Official peer</title>"):
+      Buffer.from("<title>MLE 로션 600ml</title>"),finalUrl:url};
+  },
+});
+assert.deepEqual(sitemapFetchedPages,[peer,sitemapCorrect]);
+assert.deepEqual(sitemapRun.sites[0].pages.map(p=>p.url),[sitemapCorrect]);
+assert.equal(sitemapRun.officialProductEvidenceConfirmed,false);
+assert.equal(sitemapRun.factWrites,0);
+assert.equal(sitemapRun.subjectCreationAuthorized,false);
 
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
