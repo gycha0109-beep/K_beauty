@@ -2,6 +2,34 @@
 
 ## Entries
 
+### 2026-10-15 / Skin S1-B — Provider 응답 완결성·Face 비교 게이트 합성 검증
+
+- 기반 PR #1323 (미병합 S1-A #1319에 의존). 2,200 completion-token 상한과 응답 종료 사유(finish_reason), v2 7축 완전성 및 v1 대비 Face 상태/유효 필드 수 감소 여부를 판단하는 **오프라인** 평가기 추가.
+- scripts/facelab/skin/skin-vision-v2-provider-evidence-gate.mjs는 메모리 Provider 응답을 받아 비식별/숫자 메타만 반환. 잘려도 JSON처럼 보이는 응답, 초과/근접 토큰, 다른 버전/피부 축 누락·중복, Face 저하·짝 누락을 보류한다.
+- scripts/facelab/skin/verify-face-lab-s1b-provider-evidence-gate.mjs 합성 negative suite, Main Health 연결. 실제 Provider 호출/사진/데이터 저장 없음, 실사용 피부 정확도 주장 없음.
+- 90% 출력 사용량은 잠정 위험 경고일 뿐 실제 수용 기준으로 확정하지 않았으며, 동의된 비공개 사진/Provider 측정 및 Human 검증은 외부 승인 전 HOLD.
+- 기존 앱/Provider/공용 Face/Style/추천/DB/Auth/RLS/운영·배포 변경 없음. 보안 #1208 RELEASE HOLD.
+
+
+### 2026-10-15 / Skin S1-B — 새 사진 관찰 v2 입력·Face 독립성 오프라인 예행 검사
+
+- Skin 트랙 단일 공용 Vision의 **후보 v2 출력 형식만 평가용 코드**로 제작. 주 구현은 scripts/facelab/skin/skin-vision-v2-candidate-core.mjs, 합성 검증은 verify-face-lab-skin-s1b-vision-v2-candidate.mjs.
+- 현행 Face Lab 계약/이미지 Eligibility/구형 v1 정규화 모듈을 그대로 사용하여 v1 저장 0의 관찰 여부를 절대 소급 판정하지 않는다. 새 Skin 7축의 상태와 Face 결과를 독립 검증하고, 부적격·누락·중복·잘못된 수치/단서를 검사.
+- 서비스·응답·Provider·추천·DB/RLS/Storage/Style/출시 설정 변경 0. 외부 이미지, 모델 호출, 사용자 개인정보 사용 0.
+- 현행 2,200 출력 토큰 상한에서 모델 응답이 실제로 가능한지 **미검증**이며 프롬프트/합성 JSON 문자 길이는 토큰 수를 입증하지 않는다. 실제 Provider·Human·score-policy 승인 전 운영 활성화 HOLD.
+- exact-head CI 검증 결과는 독립 PR 제출 후 로그로 판정. 기존 S1-A #1319에 의존하는 검토 스택으로 등록.
+
+
+### 2026-10-15 / Face Lab Skin 관찰 신호 0과 판단 불가 분리 — S1-A 합성 검증
+
+- 트랙 `face-lab-skin`; `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2` 기반 독립 Draft PR. 관련 로드맵 #1307, 설계 #1317.
+- `scripts/facelab/skin/skin-axis-evidence-contract-core.mjs`는 7개 시각적 축의 `present/not_seen/unassessable/unknown`을 명시적으로 요구하고, 값/신뢰도/부위·단서/오류 사유의 일관성을 평가 전용으로 점검한다.
+- `verify-face-lab-skin-s1-axis-evidence.mjs`는 v1 0 소급 추론 금지, Provider 실패/사진 부적격/저신뢰, 축 누락/중복/불일치·잘못된 값/불필요 필드, 정상 축 유지, 부분 객체 오용을 합성 데이터로 검사한다. `verify-current-main-health.mjs`에도 연결.
+- 공용 Vision Provider, 원본 사진, 추천 계산·가중치·Top Pick, API, 저장·재진입, UI, Style, DB/Auth/RLS/Storage, 운영·배포 변경 없음. 실제 얼굴 사진/Provider 호출 0건.
+- 정확도, 실기기, 사람 평가, 추천 변동 및 완전한 CI 검증 결과는 별도. S1-B 공유 Vision 계약/Provider 소유자 검토 → S2-C 비노출 점수 비교 → S1-D 실제 사진 Human 평가 → 승인 후 적용. 보안 #1208 독립 HOLD.
+- 검증 명령 `node scripts/facelab/skin/verify-face-lab-skin-s1-axis-evidence.mjs`; 실제 CI 상태는 exact-head 실행 결과로 보완한다.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
