@@ -21,8 +21,8 @@
         "Organizational four-role signature, revocation and registry access negative controls",
         "Independent clean-runner release candidate manifest digest replay without artifact upload"
       ],
-      "overlapReview": "The PR is stacked on the B3 branch, where main-targeted Current Main Health and supply-chain workflows do not trigger. This preparation workflow runs their unchanged verification commands for that exact HEAD and adds unique release admission/replay coverage. Existing main-required gates are retained. B4/B5 source-compatible evidence is reused after scope equality, avoiding a second native build. No original workflow/check is retired or weakened; no upload or security exception is authorized.",
-      "authority": "User explicitly authorized supply-chain CI repair and separate B6 preparation PR; this workflow inventory entry is development change authorization, not organizational package/legal/release approval.",
+      "overlapReview": "The owner requested only CI relevant to this SCA release track. Root original audit, admission/negative controls, source/LICENSE/NOTICE/SBOM/archive/browser integrity, exact-head full graph installs and consumers, independent clean-runner replay and CodeQL remain. Embedded Current Main Health and crawler installation are removed. Web/Expo/Metro/Android checks reuse verified reference HEAD9427fc637b8c26a231511671a5560acfe1963c05/run38689645912 only after input/toolchain equality and successful exact-head runtime/replay job proof; changed/unknown inputs, missing ancestry or unavailable proof run full runtime checks. PIE shadow skips this exact preparation branch only. No original security gate or main protection is removed or weakened.",
+      "authority": "User explicitly instructed this track to run only necessary CI; this authorizes scoped CI execution changes, not audit exceptions, legal redistribution, package upload, spending, merge or deployment.",
       "preservationPolicy": "preserve-until-equivalence-proven"
     },
     "taxonomy-ai-data-ai3-5": {

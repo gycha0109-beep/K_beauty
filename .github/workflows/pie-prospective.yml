@@ -21,6 +21,9 @@ concurrency:
 jobs:
   profile-preflight:
     name: PIE profile preflight
+    # Owner requested only SCA checks for this private-release preparation track.
+    # Other PRs retain the existing shadow workflow and check names.
+    if: github.head_ref != 'fix/security/sca-b6-release-readiness-20261014'
     runs-on: ubuntu-latest
     outputs:
       ready: ${{ steps.check.outputs.ready }}

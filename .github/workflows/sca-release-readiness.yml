@@ -18,6 +18,7 @@ on:
         type: string
 permissions:
   contents: read
+  actions: read
   security-events: write
 concurrency:
   group: sca-release-readiness-${{ github.event.pull_request.number || github.ref }}
@@ -38,6 +39,7 @@ jobs:
       - run: node --test scripts/security/sca-release-bundle.test.mjs
       - run: node --test scripts/security/sca-release-license-review.test.mjs
       - run: node --test scripts/security/sca-release-owner-policy.test.mjs
+      - run: node --test scripts/security/sca-release-ci-scope.test.mjs
   candidate:
     name: Clean release candidate structure (not approval)
     runs-on: ubuntu-24.04
@@ -59,12 +61,14 @@ jobs:
         with:
           node-version: 22
           package-manager-cache: false
+      - name: Select runtime checks from changed inputs and verified runner proof
+        id: scope
+        env:
+          SCA_REFERENCE_TOKEN: ${{ github.token }}
+        run: node scripts/security/sca-release-ci-scope.mjs
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Install canonical Main Health crawler toolchain
-        run: npm --prefix crawler ci --ignore-scripts --no-audit --no-fund
-      - name: Main Health on exact release preparation HEAD
-        run: node scripts/verify-current-main-health.mjs
       - uses: actions/setup-java@v5
+        if: steps.scope.outputs.runtime_required == 'true'
         with:
           distribution: temurin
           java-version: '17'
@@ -73,7 +77,8 @@ jobs:
         env:
           SCA_B6_VERIFY_CANDIDATE: '1'
           SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
-          SCA_SCOPED_REQUIRE_ANDROID: '1'
+          SCA_SCOPED_REQUIRE_ANDROID: ${{ steps.scope.outputs.runtime_required == 'true' && '1' || '' }}
+          SCA_SCOPED_INSTALL_ONLY: ${{ steps.scope.outputs.runtime_required == 'false' && '1' || '' }}
         run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
       - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
   independent-candidate:

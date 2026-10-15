@@ -3239,3 +3239,10 @@ Watchtower-Track: security
 - V2 permits explicitly disclosed informational lineage gaps, rejects unmet external conditions and invented reply gate; separate final legal/upload approvals still absent. Existing owner policy authorization is not broadened.
 - Local45 tests PASS, frozen49-source expanded notice/public-source reconstruction PASS, syntax/diff checks PASS. New real browser notice kit colocates six pinned browser files + LICENSE/NOTICE/SBOM/findings and SHA manifest; omission/tamper/independent-digest controls run in CI, PENDING until exact logs.
 - Product archive/source/browser/LICENSE bytes unchanged; only supplemental licensing resources/candidate manifest change. Original audit fullHIGH22/prodHIGH19/C0 gateFAIL, scoped scanner silence not remediation. No package upload, cost, exception, merge, production or external communication executed.
+
+
+## 2026-10-15 — Owner-requested SCA-only CI scope
+
+- Removed embedded Current Main Health and crawler installation from B6 producer; PIE shadow jobs excluded only for the B6 preparation branch at the owner's explicit request.
+- Added fail-closed runtime scope resolver with exact-head successful producer/replay proof at 9427fc637b8c26a231511671a5560acfe1963c05 (run38689645912). Reuses only unchanged web/Expo/Metro/Android runtime evidence; all current-head install/hash/license/consumer/audit/replay checks and CodeQL remain. Changed or unknown runtime/toolchain inputs or unavailable runner proof require full builds.
+- Local focused tests50 PASS; workflow responsibility-map and overlap checks PASS. New exact-head GitHub CI pending; original full HIGH22/production HIGH19/CRITICAL0 audit FAIL is neither waived nor converted to PASS. No publication, spending, exception, merge or deployment.

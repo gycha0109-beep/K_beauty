@@ -1,0 +1,11 @@
+{
+  "schema": "bejewely.sca-runtime-reference.v1",
+  "head": "9427fc637b8c26a231511671a5560acfe1963c05",
+  "run": 38689645912,
+  "producerJob": 116272347751,
+  "replayJob": 116278463635,
+  "nodeVersion": "22.23.3",
+  "apkSha256": "c24e9b83dafd2f2fac03e9240fca59c0a74b6b666811a0b15bfc87763f02175e",
+  "securityGate": "FAIL_NOT_REUSED_OR_WAIVED",
+  "scope": "WEB_EXPO_METRO_ANDROID_ONLY"
+}
