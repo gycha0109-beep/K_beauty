@@ -15,6 +15,7 @@ const option = (n,extras={}) => ({
   seller_option_key:"option"+n,variant_id:"sku80",option_kind:"single",
   unit_size:80,size_unit:"ml",quantity:1,gifts:[],
   selected_option_price_krw:24500,shipping_price_krw:null,
+  shipping_price_basis:extras.shipping_price_krw==null?'unknown':'seller_published_flat',
   currency_code:"KRW",observed_at:"2026-10-15T00:30:00.000Z",
   reviewed_at:"2026-10-15T00:45:00.000Z",evidence_sha256:sha,
   ...extras
@@ -40,6 +41,7 @@ eq(view.status,"STRUCTURALLY_VALID_PRIVATE_CANDIDATES");
 eq(view.optionRowCount,1);
 eq(view.optionsByProduct[id(1)][0].observedPrice,24500);
 eq(view.optionsByProduct[id(1)][0].shippingCost,null);
+eq(view.optionsByProduct[id(1)][0].shippingBasis,'unknown');
 eq(view.optionsByProduct[id(1)][0].ctaEnabled,false);
 eq(view.selectedOptionPriceDisplayAuthorized,false);
 eq(view.authenticatedServerReaderProven,false);
@@ -61,10 +63,12 @@ eq(view.optionsByProduct[id(1)][1].optionKind,"kit");
 eq(view.optionsByProduct[id(1)][1].packComposition.quantity,2);
 eq(view.optionsByProduct[id(1)][1].packComposition.gifts,[{skuId:"serum10",quantity:1}]);
 eq(view.optionsByProduct[id(1)][1].shippingCost,3000);
+eq(view.optionsByProduct[id(1)][1].shippingBasis,'seller_published_flat');
 eq(view.optionsByProduct[id(1)][0].listingId,view.optionsByProduct[id(1)][1].listingId);
 eq(view.selectedOptionPriceDisplayAuthorized,false);
 view=inspectSelectedOptionEvidenceResponse(input([option(1,{shipping_price_krw:0})]));
 eq(view.optionsByProduct[id(1)][0].shippingCost,0);
+eq(view.optionsByProduct[id(1)][0].shippingBasis,'seller_published_flat');
 view=inspectSelectedOptionEvidenceResponse(input([
   option(1,{gifts:[],option_kind:"single"}),
   option(3,{seller_key:"hwahae",listing_id:"listingB",
@@ -88,6 +92,12 @@ held(input([option(1,{gifts:[{skuId:"same",quantity:1},{skuId:"same",quantity:2}
 held(input([option(1,{option_kind:"single",quantity:2})]),"OPTION_IDENTITY_OR_REVIEW_INVALID");
 held(input([option(1,{option_kind:"kit",gifts:[]})]),"OPTION_IDENTITY_OR_REVIEW_INVALID");
 held(input([option(1,{option_kind:"multipack",quantity:1})]),"OPTION_IDENTITY_OR_REVIEW_INVALID");
+for(const wrongShipping of [
+  {shipping_price_basis:'seller_published_flat'},
+  {shipping_price_basis:'estimated'},
+  {shipping_price_krw:0,shipping_price_basis:'unknown'},
+  {shipping_price_krw:3000,shipping_price_basis:null}
+]) held(input([option(1,wrongShipping)]),'SHIPPING_EVIDENCE_BASIS_INVALID');
 for(const price of [null,0,-1,2.5,"24000",Infinity,1000000001]) {
  held(input([option(1,{selected_option_price_krw:price})]),"OPTION_PRICE_INVALID");
 }
@@ -186,6 +196,9 @@ assert.match(schema,/create table public\.product_offer_option_reviews/);checks+
 assert.match(schema,/observation_id uuid not null\s+references public\.product_offer_option_observations/);checks++;
 assert.match(schema,/unique \(observation_id, reviewed_at\)/);checks++;
 assert.match(schema,/offer_option_reviews_latest_idx/);checks++;
+assert.match(schema,/shipping_price_basis text not null default 'unknown'/);checks++;
+assert.match(schema,/offer_option_shipping_basis_check/);checks++;
+assert.match(reader,/'shipping_price_basis', shipping_price_basis/);checks++;
 assert.match(schema,/enable row level security/g);checks++;
 assert.match(schema,/revoke all on public\.product_offer_option_observations/);checks++;
 assert.match(schema,/revoke all on public\.product_offer_option_reviews/);checks++;
