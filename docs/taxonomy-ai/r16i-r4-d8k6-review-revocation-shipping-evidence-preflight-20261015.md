@@ -40,7 +40,9 @@ D8K-5 초안에서 `product_offer_option_reviews.observation_id`는 UNIQUE였다
 - 기존 `verify-d8k5-selected-option-evidence-contract-v1.mjs`: 새 다대일 리뷰 구조 및 배송비 세분화 검사 추가.
 - `scripts/product-evidence/verify-r16i-price-scope-review-v1.mjs`에 D8K-6 검증을 포함.
 
-**이번 환경에서 실행한 검증**: GitHub에서 읽은 최신 JS 구현을 격리 V8으로 실행하여 D8K-6 리뷰 이력 103 assertion PASS, D8K-5 DTO/SQL 정적 274 assertion PASS. 실제 PG17 SQL 실행, SQL AST parse, 역할 전환, 전체 Next 빌드, 브라우저, 라이브 판매처 가격은 확인되지 않았다.
+**추가 한계 보수:** SQL 집계는 적격 결과를 최대 257개만 JSON으로 구성한 뒤 256개 초과를 거부한다. 다만 그 이전 관측·검토 이력을 정렬하는 비용은 여전히 PG17에서 데이터량별 성능 시험이 필요하다.
+
+**이번 환경에서 실행한 검증**: GitHub에서 읽은 최신 JS 구현을 격리 V8으로 실행하여 D8K-6 리뷰 이력 107 assertion PASS, D8K-5 DTO/SQL 정적 274 assertion PASS. 실제 PG17 SQL 실행, SQL AST parse, 역할 전환, 전체 Next 빌드, 브라우저, 라이브 판매처 가격은 확인되지 않았다.
 
 ## 3. 별도 격리 PG17 검증 매트릭스 (아직 미실행)
 
