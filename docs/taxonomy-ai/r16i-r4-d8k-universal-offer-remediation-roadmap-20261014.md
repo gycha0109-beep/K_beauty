@@ -227,3 +227,11 @@
 - Current read transport returns seller/offer identifiers as unverified diagnostics only; no raw URL or amount, no price/comparison/CTA authority. Unlike D8K-1 synthetic full-option fixtures this does not establish any actual four-seller Offer.
 - Offline synthetic verifier: scripts/product-evidence/verify-d8k2-offer-authority-read-v1.mjs; linked into existing D8F/DB gate. **Exactly pinned new branch CI is required** before VERIFIED_ISOLATED can be claimed. 23 synthetic cases observed in local Node draft execution; actual RPC, Product IDs, protected API, browser UI and seller evidence remain UNATTESTED.
 - Next no-protection work is D8K-3 reusable mock component. D8K-4 real routing/data/permissions, D8K-5 evidence collection, DB option schema/RLS/API and #1208 safety gate continue independent HOLD. Existing R16I D8D v2 owner approval OFF.
+
+## 10. D8K-3 shared mock commerce UI checkpoint (2026-10-15)
+
+- **Status: CODE_READY / NODE_SYNTHETIC_VERIFIED / BROWSER_AND_REAL_SELLER_DATA_HOLD.** See [D8K-3 shared mock UI](r16i-r4-d8k3-shared-comparison-mock-ui-20261015.md).
+- Added a shared bilingual renderer and pure, D8K-1-output-only view model at components/commerce/ProductOfferComparison.jsx and lib/commerce/product-offer-presentation-v1.mjs. Visual grouping by single/multipack/kit; explicit shipping status, observation date, no false cheapest badge. Mobile-first 1-column to desktop 2-column, light/dark and accessible status markup.
+- No live product pages were modified, no operational seller prices were attached, and **purchase buttons are hard-disabled** in this UI stage, even when passed a synthetic fixture with CTA flags. No actual user-facing offer card exists yet.
+- Added synthetic-only presentation verifier, included in existing database integration chain. Local Node draft: 14 scenarios PASS; full browser visual/a11y/keyboard and PR-specific CI pending separate checks.
+- D8K-4 live recommendation wiring remains **not started** because Product IDs/actual seller options/authorized RPC caller and public share boundaries are not attested. Protected DB/API/Auth/RLS changes remain subject to separate approval; #1208 still blocks merge/release.
