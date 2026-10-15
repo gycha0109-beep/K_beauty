@@ -3218,3 +3218,14 @@ Watchtower-Track: security
 - Explicit legal HOLD for OpenSSL origin/version, unspecified DES/OAEP BSD variants, public-domain claims, final standalone browser notice delivery and named independent reviewer. Four roles / two owners remain mandatory.
 - Local tests 29/29 PASS; frozen 49-source notice reconstruction and removed-notice negative control PASS; diff check PASS. New producer/replay CI pending exact commit; prior runtime/APK proof remains f2f9280d /38662014291.
 - Original audit fullHIGH22/prodHIGH19/C0 FAIL; scoped scanner gap is not remediation. DB/Auth/RLS/Storage/Payment/Secret/Production execution N; no hosted app/provider mutation.
+
+
+## 2026-10-15 — User-approved sole project owner policy v2
+
+- Human explicitly authorized one owner to assume security/license-redistribution/maintenance/distribution responsibility. This changes internal approval governance only; not real redistribution/upload/cost/exception/merge/production authority.
+- Implement explicit v2 trust and original/scoped approval schemas, pinned human decision and licensing packet, purpose/role-separated Ed25519 signatures. Preserve v1 two-owner legacy admission; reject cross-version trust/domain replay and wrong owners. Maintain four responsibility signatures, key revocation/expiry, all original artifact/provenance/notice/SBOM/CI/readback/audit checks.
+- Require separate future signed upload/final redistribution grants and cleared rights evidence before v2 admission. Checked-in examples remain deliberately blocked. No live keys, credentials or final rights approval created.
+- 39 local tests PASS, 49-source licensing packet reconstruction PASS, diff check PASS. New exact-HEAD producer/replay CI pending. Supplemental licensing responsibility wording changes candidate digest; tarball/source/browser/LICENSE bytes must remain unchanged.
+- Historical rights research locates AES introduction 521fd6018d350a54c5f3b5ab5258a145bcc613e0 (2010-07-12) and DES introduction 0998bd93337d227be7b30db4b426f05d2e33f5e1 (2012-03-29), both already ambiguous. Ed25519 470793c0ac7217e512ba3775cd75d106e7fb2b64 and TweetNaCl v0.14.5 Unlicense strengthen provenance but do not identify exact copied revision. OpenSSL/DES/OAEP/jscrypto and standalone notice delivery remain HOLD.
+- Prior exact2b9dfb8a CI38667696695 producer/replay/CodeQL/PIE/web/mobile/APK PASS; original fullHIGH22/prodHIGH19/C0 gateFAIL. No audit waiver or app graph adoption.
+- Boundary: DB/Auth/RLS/Storage/Payment/Secret/Production execution N. Protected scope is explicitly user-authorized internal policy implementation, without hosted provider or credential mutation.

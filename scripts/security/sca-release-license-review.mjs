@@ -48,7 +48,7 @@ export function licenseReviewResources(artifacts,files){
     buildToolScope:'webpack 4.44.1 and webpack-cli 3.3.12 are build tools, not automatically runtime components; cheap source maps are not a complete module inventory.',
     unbundledDependencyScope:'braces declares fill-range ^7.1.1; its separately installed transitive dependencies require their own LICENSEs and app SBOM. node-forge declares no runtime npm dependencies.',
     unresolved:['OpenSSL AES origin/version and applicable terms','DES BSD variant and full conditions','RSAES-OAEP BSD variant and full conditions',
-      'TweetNaCl/jscrypto public-domain claim rights review','Independent reviewer and final redistribution authorization','Standalone bundle notice delivery and final artifact packaging review']};
+      'TweetNaCl/jscrypto public-domain claim rights review','Project owner final redistribution authorization','Standalone bundle notice delivery and final artifact packaging review']};
   const notice='# Third-party notices — review packet, not release authorization\n\n'+
     'Review basis: braces MIT; node-forge BSD-3-Clause. Original dual-license file is retained intact; selecting a review basis does not relicense embedded works. No legal clearance or publication approval.\n\n'+
     ['braces','node-forge'].map(n=>'## '+n+' original LICENSE\n\n```text\n'+files[n].LICENSE.toString()+'\n```\n').join('\n')+

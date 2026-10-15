@@ -8,6 +8,7 @@ import {fileURLToPath} from 'node:url';
 import {createHash,createPublicKey,verify} from 'node:crypto';
 import {inspectArchive,verifyArchive,digest,requiredRoles,reference} from './sca-release-bundle.mjs';
 import {licenseReviewResources} from './sca-release-license-review.mjs';
+import {approvalPolicyContext,checkPolicyOwner,checkPolicySigners,normalizeOwner} from './sca-release-owner-policy.mjs';
 
 export const scope='gycha0109-beep';
 export const scopedName=n=>'@'+scope+'/'+n;
@@ -115,7 +116,7 @@ if(process.argv[2]==='--fixture'){
 
 export function verifyScopedApproval({candidateSha256,approvalBytes,signatures,trust,now=Date.now()}){
   assert.match(candidateSha256,/^[a-f0-9]{64}$/,'verified manifest SHA256 required');
-  const a=JSON.parse(approvalBytes);assert.equal(a.schema,'bejewely.scoped-upload-approval.v1');assert.equal(a.candidateSha256,candidateSha256);
+  const a=JSON.parse(approvalBytes),policy=approvalPolicyContext(a,trust,{scoped:true});assert.equal(a.candidateSha256,candidateSha256);
   assert.equal(a.purpose,'SCOPED_UPLOAD_READBACK_ONLY');assert.equal(a.originalAuditRequired,true);assert.equal(a.auditExceptionApproved,false);
   assert.equal(a.registry,'https://npm.pkg.github.com/');assert.equal(a.privateRepository,true);assert.equal(a.immutableVersions,true);
   assert.deepEqual(a.licenseElections&&Object.keys(a.licenseElections).sort(),['braces','node-forge']);assert.equal(a.licenseElections.braces,'MIT');
@@ -126,18 +127,19 @@ export function verifyScopedApproval({candidateSha256,approvalBytes,signatures,t
     const decoded=decodeURIComponent(u.pathname),version=n==='braces'?'3.0.3':'1.4.0';
     assert.ok(decoded.startsWith('/download/'+scopedName(n)+'/'+version+'/')&&!decoded.split('/').some(x=>x==='..'||x==='.'),'identity/readback mismatch');}
   const expiry=Date.parse(a.expiresAt);assert.ok(Number.isFinite(expiry)&&expiry>now&&expiry-now<=7*24*3600000,'approval validity');
-  assert.equal(trust.schema,'bejewely.sca-release-trust.v1');assert.equal(trust.organizationApproved,true);
+  assert.equal(trust.organizationApproved,true);
   assert.ok(Array.isArray(trust.keys)&&Array.isArray(trust.revokedKeyIds));assert.equal(new Set(trust.keys.map(k=>k.id)).size,trust.keys.length);
   assert.ok(Array.isArray(signatures),'signature list required');
   const roles=new Set(),owners=new Set();
   for(const s of signatures){assert.ok(requiredRoles.includes(s.role)&&!roles.has(s.role),'missing/duplicate/unknown role');
     const k=trust.keys.find(k=>k.id===s.keyId);assert.ok(k&&!trust.revokedKeyIds.includes(k.id),'untrusted/revoked key');
     assert.ok(typeof k.owner==='string'&&k.owner.trim().length>0&&Array.isArray(k.roles)&&k.roles.includes(s.role),'owner/role authorization');
+    checkPolicyOwner(policy,k.owner);
     assert.ok(Date.parse(k.notBefore)<=now&&Date.parse(k.notAfter)>=expiry,'key validity');const key=createPublicKey(k.publicKeyPem);assert.equal(key.asymmetricKeyType,'ed25519');
     const sig=Buffer.from(s.signature,'base64');assert.equal(sig.length,64);
-    assert.ok(verify(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-SCOPED-v1:'+s.role+'\n'),approvalBytes]),key,sig),'signature mismatch');roles.add(s.role);owners.add(k.owner.trim().toLowerCase());
+    assert.ok(verify(null,Buffer.concat([Buffer.from(policy.prefix+s.role+'\n'),approvalBytes]),key,sig),'signature mismatch');roles.add(s.role);owners.add(normalizeOwner(k.owner));
   }
-  assert.deepEqual([...roles].sort(),requiredRoles.slice().sort(),'four independent role signatures required');assert.ok(owners.size>=2,'two named owners required');
+  assert.deepEqual([...roles].sort(),requiredRoles.slice().sort(),'four responsibility signatures required');checkPolicySigners(policy,owners);
   return {scope:'SCOPED_UPLOAD_READBACK_ONLY',officialAudit:'FAIL',mergeApproved:false,productionApproved:false};
 }
 

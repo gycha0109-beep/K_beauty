@@ -1,5 +1,7 @@
 # B6 release preparation and B7 merge rehearsal — 2026-10-14
 
+> Current internal approval policy: owner-authorized sole-owner v2. See sec-sca-20261015-sole-owner-policy.md; earlier two-human statements describe legacy v1. All independent CI and artifact/audit/readback controls remain mandatory.
+
 Watchtower-Track: security
 
 This is executable release preparation, not release/security/legal approval. Original audit policy and product lock remain unchanged. No upload, production change, security exception or main merge is authorized. The new readiness PR is stacked on #1288; #1294 remains an independent official Next patch.
@@ -121,3 +123,8 @@ Independently reproduced candidate manifest SHA256 `ec607c669b4242ee163b9b23d67c
 #1294 final HEAD `d937ddc82b27b00bd01a858ffa8813ce94aa55d7`: [Security38520333119](https://github.com/gycha0109-beep/K_beauty/actions/runs/38520333119) install, production build/public HTML smoke and CodeQL PASS; original audit gate FAIL. Main Health/Admin/Boundary/Face/PIE all completed PASS. Fresh exact-lock raw audit: full22/0/12, production19/0/10, exit1; both Next advisory leaves absent. Raw SHA256 full `e8f287819b456def9ee545d2464350d7af429a9b3a901042c4955348aade318e`, production `44dcfee183addb7d51f6691d526c6763360d7fbefb25652a93d59ad46e684580`. Offline merge-tree with the B6 implementation and Next final HEAD is conflict-free; no actual branch or main merge is performed. A future combined product/registry graph still requires its own full private-install and platform proof.
 
 This closeout changes documentation only. Implementation source and the immutable bundle resources are unchanged; follow-up exact-HEAD workflow results are attached to the PR. B0 organizational decisions, formal B6 release/security acceptance and B7 merge remain HOLD. Registry/redistribution/upload approval does not make the raw npm audit pass. Device/emulator/mobile API/Auth smoke remains NOT_RUN.
+
+
+## Superseding sole-owner internal policy v2
+
+The project owner explicitly authorized one human owner to assume security, license-redistribution, maintenance and distribution responsibility. The earlier four-role/two-owner requirement was self-designed v1 policy, not an examined upstream license obligation. V1 remains unchanged as legacy admission; explicit v2 schemas, trusted owner identity, pinned decision/license packet and new purpose/role signing domain implement the approved one-owner model. Independent runner verification and all artifact/audit/readback controls remain required. See sec-sca-20261015-sole-owner-policy.md; no actual redistribution/upload/cost/exception/merge/production is authorized.

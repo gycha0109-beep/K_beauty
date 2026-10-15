@@ -1,5 +1,7 @@
 # B6 license and redistribution review packet
 
+> Current internal approval policy: owner-authorized sole-owner v2. See sec-sca-20261015-sole-owner-policy.md; earlier two-human statements describe legacy v1. All independent CI and artifact/audit/readback controls remain mandatory.
+
 Status: **TECHNICAL_REVIEW_ONLY_LEGAL_HOLD**. On 2026-10-15 the user authorized review of braces under MIT and node-forge under BSD-3-Clause. This is not final legal approval, an approved release license election, upload authorization, a security exception, cost authorization, merge permission or production permission.
 
 ## Source and artifact scope
@@ -18,10 +20,10 @@ Scoped archives retain only the previously reviewed four package.json metadata c
 | Forge | BSD-3-Clause OR GPL-2.0 | Review BSD-3-Clause route; preserve copyright, conditions and disclaimer in source and materials for binary distribution; no implied endorsement. Preserve original LICENSE unchanged. |
 | baseN/base-x | Complete MIT text in source | Reproduce entire embedded notice in accompanying materials. |
 | Tom Wu JSBN | Custom permission and disclaimer, additional intact-notice condition | Preserve complete custom text and both copyright periods; do not silently normalize it to MIT. |
-| PKCS#1 | Kenji Urushima/jsjws MIT; Ellis Pritchard/Guardian Unlimited “BSD” | Preserve both notices; exact BSD variant and complete conditions require independent rights review. |
-| DES | Paul Tero “BSD”, Michael Hayworth attribution, Stefan Siegl and Digital Bazaar | Preserve all header text; complete BSD conditions and variant require independent rights review. |
+| PKCS#1 | Kenji Urushima/jsjws MIT; Ellis Pritchard/Guardian Unlimited “BSD” | Preserve both notices; exact BSD variant and complete conditions require documented rights review by the project owner. |
+| DES | Paul Tero “BSD”, Michael Hayworth attribution, Stefan Siegl and Digital Bazaar | Preserve all header text; complete BSD conditions and variant require documented rights review by the project owner. |
 | AES | jscrypto public-domain claim and OpenSSL-derived portions | Preserve attribution; identify originating OpenSSL code/version and applicable terms before clearance. Do not assume current OpenSSL Apache-2.0 terms apply retroactively. |
-| Ed25519 | TweetNaCl public-domain claim | Preserve attribution; independently review the origin and rights claim. |
+| Ed25519 | TweetNaCl public-domain claim | Preserve attribution; review the origin and rights claim. |
 
 Additional Stefan Siegl, Lautaro Cozzani, shellac, Digital Bazaar and other source-header attributions are retained verbatim in the generated notice packet. This is an evidence inventory, not a legal opinion that all rights are cleared.
 
@@ -37,9 +39,9 @@ Forge declares no runtime npm dependencies; braces declares fill-range ^7.1.1, i
 - [x] Original LICENSE SHA256 pinned: braces `35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2`; Forge `f63ff0e4e239244aa79280da2dd4811a0469e5e201caf5cbc0d97c3a1dff8e82`.
 - [x] Full source notices, embedded SBOM entries and open terms questions prepared; omission/substitution checks implemented.
 - [ ] Producer and independent replay on this new packet HEAD complete; record new candidate digest without replacing historical proof.
-- [ ] Named independent legal/redistribution reviewer resolves OpenSSL, DES and OAEP origin/terms and public-domain claims; records scope, decision, evidence and identity.
+- [ ] Project owner, with optional independent advice, resolves OpenSSL, DES and OAEP origin/terms and public-domain claims; records scope, decision, evidence and identity.
 - [ ] Reviewer verifies final browser/standalone notice delivery, complete shipped-content inventory and original license preservation.
-- [ ] Four signed roles / at least two named owners, trusted external key digest, expiration and revocation satisfy existing admission checks; review-route approval alone cannot satisfy them.
+- [ ] Four signed responsibility roles, trusted external key digest, expiration and revocation satisfy admission checks. Explicit owner-authorized v2 permits one project owner; legacy v1 still requires two. Policy-change approval alone cannot authorize redistribution/upload.
 - [ ] Actual GitHub plan/quota/budget/stop-usage, private granular ACL and CI credential access are confirmed without unapproved spending.
 - [ ] Explicit exact-package/version/SHA/target upload approval; authenticated readback plus anonymous and unprivileged denial; no overwrite/unpublish rollback.
 - [ ] Real private-registry product graph, raw original audit and platform checks completed. Device and API/Auth smoke remain NOT_RUN until an authorized environment exists.
@@ -58,3 +60,8 @@ node scripts/security/verify-sca-release-scoped-candidate.mjs --original-bundle 
 The verifier only verifies an existing candidate; the producer builds the new packet through the existing scoped full-graph harness. No publication command is authorized by this document. The final signed approval inputs, registry endpoint and owner credentials must be supplied through the already defined approval interface, never in chat.
 
 Primary sources: [Forge v1.4.0 LICENSE](https://raw.githubusercontent.com/digitalbazaar/forge/v1.4.0/LICENSE), [braces 3.0.3 LICENSE](https://raw.githubusercontent.com/micromatch/braces/3.0.3/LICENSE), [Forge JSBN](https://raw.githubusercontent.com/digitalbazaar/forge/v1.4.0/lib/jsbn.js), [PKCS#1](https://raw.githubusercontent.com/digitalbazaar/forge/v1.4.0/lib/pkcs1.js), [pinned webpack configuration](https://raw.githubusercontent.com/digitalbazaar/forge/ceba34402e329f0365134f23fe19898756527d65/webpack.config.js). Exact source bytes and hashes, rather than current branch prose, bind the packet.
+
+
+## Owner-authorized policy update
+
+The project owner approved an explicit sole-owner internal policy v2, implemented and tested as documented in sec-sca-20261015-sole-owner-policy.md. Human independence is optional unless an actual external obligation requires it; independent CI remains mandatory. Current source/NOTICE/license proofs remain intact. Final redistribution and actual upload are still NOT_APPROVED; open third-party rights questions remain HOLD.

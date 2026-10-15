@@ -5,6 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash, createPublicKey, verify} from 'node:crypto';
 import {gunzipSync} from 'node:zlib';
+import {approvalPolicyContext,checkPolicyOwner,checkPolicySigners,normalizeOwner} from './sca-release-owner-policy.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const digest=(b,algorithm='sha256')=>createHash(algorithm).update(b).digest('hex');
@@ -138,7 +139,7 @@ export function registryUrl(value){
 }
 export function verifyApproval({candidateSha256,approvalBytes,signatures,trust,now=Date.now()}) {
   const a=JSON.parse(approvalBytes);
-  assert.equal(a.schema,'bejewely.sca-release-upload-approval.v1');assert.equal(a.candidateSha256,candidateSha256);
+  const policy=approvalPolicyContext(a,trust);assert.equal(a.candidateSha256,candidateSha256);
   assert.equal(a.purpose,'UPLOAD_AND_READBACK_ONLY');requireTrue(a.auditGateRemainsRequired,'audit gate must remain required');
   assert.equal(a.auditExceptionApproved,false,'this interface cannot approve security exceptions');
   assert.deepEqual(Object.keys(a.licenseElections||{}).sort(),names.slice().sort(),'explicit license elections required');
@@ -147,7 +148,7 @@ export function verifyApproval({candidateSha256,approvalBytes,signatures,trust,n
   for(const p of ['privateRepository','immutableVersions','noUpstreamShadowing'])requireTrue(a[p],p+' requires organization approval');
   const registry=registryUrl(a.registry);
   const expires=Date.parse(a.expiresAt);assert.ok(Number.isFinite(expires)&&expires>now&&expires-now<=7*24*3600000,'approval expired or exceeds seven-day window');
-  assert.equal(trust.schema,'bejewely.sca-release-trust.v1');requireTrue(trust.organizationApproved,'organization trust policy missing');
+  requireTrue(trust.organizationApproved,'organization trust policy missing');
   assert.ok(Array.isArray(trust.keys)&&Array.isArray(trust.revokedKeyIds));
   assert.equal(new Set(trust.keys.map(k=>k.id)).size,trust.keys.length,'duplicate trust key');
   assert.deepEqual(Object.keys(a.tarballUrls).sort(),names.slice().sort());
@@ -160,16 +161,17 @@ export function verifyApproval({candidateSha256,approvalBytes,signatures,trust,n
     assert.ok(requiredRoles.includes(s.role),'unknown approval role');assert.ok(!roles.has(s.role),'duplicate approval role');
     const k=trust.keys.find(k=>k.id===s.keyId);assert.ok(k&&!trust.revokedKeyIds.includes(k.id),'untrusted or revoked signing key');
     assert.ok(typeof k.owner==='string'&&k.owner.trim().length>0,'named responsible owner missing');
+    checkPolicyOwner(policy,k.owner);
     assert.ok(Array.isArray(k.roles)&&k.roles.includes(s.role),'signer not authorized for role');
     assert.ok(Date.parse(k.notBefore)<=now&&Date.parse(k.notAfter)>=expires,'key invalid through approval window');
     const key=createPublicKey(k.publicKeyPem);assert.equal(key.asymmetricKeyType,'ed25519','Ed25519 approval key required');
     const sig=Buffer.from(s.signature,'base64');assert.equal(sig.length,64,'invalid approval signature');
     // Bind the role to the exact document bytes, including registry, digest and expiry.
-    assert.ok(verify(null,Buffer.concat([Buffer.from('BEJEWELY-SCA-UPLOAD-v1:'+s.role+'\n'),approvalBytes]),key,sig),'approval signature mismatch');
-    roles.add(s.role);signers.add(k.owner);
+    assert.ok(verify(null,Buffer.concat([Buffer.from(policy.prefix+s.role+'\n'),approvalBytes]),key,sig),'approval signature mismatch');
+    roles.add(s.role);signers.add(normalizeOwner(k.owner));
   }
   assert.deepEqual([...roles].sort(),requiredRoles.slice().sort(),'all four organizational approvals required');
-  assert.ok(signers.size>=2,'security/redistribution approval requires at least two named owners');
+  checkPolicySigners(policy,signers);
   return {approval:a,scope:'UPLOAD_AND_READBACK_ONLY',officialAudit:'FAIL',mergeApproved:false,productionApproved:false};
 }
 export function loadApprovedBundle({bundle,approval,signatures,trust}) {

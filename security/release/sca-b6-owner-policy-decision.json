@@ -1,0 +1,16 @@
+{
+  "schema": "bejewely.sca-owner-policy-decision.v2",
+  "status": "USER_APPROVED_INTERNAL_POLICY_CHANGE_ONLY",
+  "project": "gycha0109-beep/K_beauty",
+  "approvalModel": "SOLE_PROJECT_OWNER",
+  "responsibilities": ["security", "license-redistribution", "maintenance", "distribution"],
+  "humanInstruction": "BEJEWELY의 내부 승인 체계를 프로젝트 소유자 1인 책임 방식으로 변경하십시오. 보안·라이선스·유지보수·배포 승인 책임은 제가 겸임합니다.",
+  "technicalRequirementsRetained": ["signatures", "source provenance", "LICENSE/NOTICE", "SHA", "SBOM", "patch bytes", "independent CI", "readback", "original npm audit"],
+  "redistributionApproved": false,
+  "uploadApproved": false,
+  "costApproved": false,
+  "auditExceptionApproved": false,
+  "mergeApproved": false,
+  "productionApproved": false,
+  "unresolvedRightsCleared": false
+}

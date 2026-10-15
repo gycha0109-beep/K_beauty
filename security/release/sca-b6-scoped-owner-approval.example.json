@@ -1,0 +1,21 @@
+{
+  "schema": "bejewely.scoped-upload-approval.v2",
+  "purpose": "SCOPED_UPLOAD_READBACK_ONLY",
+  "responsibleOwner": "REQUIRES_EXPLICIT_OWNER_ID",
+  "policyDecisionSha256": "REQUIRES_VERIFIED_POLICY_DECISION_SHA256",
+  "licensePacketSha256": "REQUIRES_VERIFIED_LICENSE_PACKET_SHA256",
+  "candidateSha256": "REQUIRES_FINAL_VERIFIED_CANDIDATE_SHA256",
+  "registry": "https://npm.pkg.github.com/",
+  "privateRepository": true,
+  "immutableVersions": true,
+  "originalAuditRequired": true,
+  "auditExceptionApproved": false,
+  "licenseElections": {"braces": "MIT", "node-forge": "BSD-3-Clause"},
+  "uploadApproved": false,
+  "redistributionApproval": {"approved": false, "decisionSha256": "NOT_APPROVED"},
+  "rightsReview": {"status": "HOLD", "evidenceSha256": "NOT_CLEARED", "unresolved": ["OpenSSL origin and terms", "DES full BSD conditions", "OAEP BSD variant", "TweetNaCl/jscrypto historical origin", "standalone browser notice delivery"]},
+  "mergeApproved": false,
+  "productionApproved": false,
+  "expiresAt": "REQUIRES_EXPLICIT_EXPIRY_WITHIN_7_DAYS",
+  "tarballUrls": {"braces": "REQUIRES_APPROVED_EXACT_READBACK_URL", "node-forge": "REQUIRES_APPROVED_EXACT_READBACK_URL"}
+}

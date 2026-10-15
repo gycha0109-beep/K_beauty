@@ -1,5 +1,7 @@
 # GitHub Packages compatibility and no-spend preparation — 2026-10-14
 
+> Current internal approval policy: owner-authorized sole-owner v2. See sec-sca-20261015-sole-owner-policy.md; earlier two-human statements describe legacy v1. All independent CI and artifact/audit/readback controls remain mandatory.
+
 Watchtower-Track: security
 
 ## Decision and scope
@@ -46,7 +48,7 @@ Recommendation after this review: retain original identity constraints and use t
 
 [GitHub permissions documentation](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages) supports granular npm package visibility/ACL. A future approved upload should use an explicitly private package with independently checked inheritance (K_beauty is public), not rely on linked-repository defaults. Use publisher packages:write only in a separately approved workflow/environment, reader packages:read in installation jobs; minimum contents:read. Grant only reviewed repository Actions access. No new publishing workflow, elevated token permissions or secrets are configured here.
 
-For local access, provision a classic PAT with read:packages only when needed; no broad repo/delete scopes by default. Prefer GITHUB_TOKEN in Actions. No secret value is requested in chat or committed. Protected approvals/signing private keys remain outside runners; the trust SHA is pinned by the organization. Independent two-owner/four-role review remains mandatory even for a one-person project.
+For local access, provision a classic PAT with read:packages only when needed; no broad repo/delete scopes by default. Prefer GITHUB_TOKEN in Actions. No secret value is requested in chat or committed. Protected approvals/signing private keys remain outside runners; the trust SHA is pinned by the organization. This was the original internal v1 rule. The owner-authorized v2 policy now permits one explicitly trusted project owner to assume all four roles; independent clean-runner evidence remains required. See sec-sca-20261015-sole-owner-policy.md.
 
 After explicit upload authorization, require: signed exact outer SHA+original inner SHA+approved endpoint; private visibility via authenticated package metadata/ACL read; successful authorized readback; failure by an authenticated account/repository with no granted access; credential-free deny; outer/inner hashes; fresh clean-runner installation proof on actual approved graph. GitHub npm authenticated public reads make metadata and unprivileged checks necessary. Existing anonymous-only test is retained but is insufficient for a new GitHub adapter. Real visibility/ACL/token/readback/upload checks are NOT_RUN.
 

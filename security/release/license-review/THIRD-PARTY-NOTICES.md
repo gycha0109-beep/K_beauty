@@ -1986,5 +1986,5 @@ Source SHA256: d9abf523180b6d03b2cc99909eef3488a6b4bc1f822d7fb9d1e945abf555cb42
 - DES BSD variant and full conditions
 - RSAES-OAEP BSD variant and full conditions
 - TweetNaCl/jscrypto public-domain claim rights review
-- Independent reviewer and final redistribution authorization
+- Project owner final redistribution authorization
 - Standalone bundle notice delivery and final artifact packaging review
