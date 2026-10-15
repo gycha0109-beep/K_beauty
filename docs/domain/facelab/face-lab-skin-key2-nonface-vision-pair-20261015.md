@@ -39,6 +39,27 @@ The **new, unactivated research candidate** resolves them provisionally:
 4. `verify-skin-nonface-v2-abstention-audit.mjs` adds synthetic negative cases for hallucinated positive/zero, duplicate, truncated, unauthorized extra fields, malformed schema and privacy disclosure. The updated nonface-pair mock expects empty Skin rows for ineligible input.
 5. **This policy is evaluation-only and pending shared Vision/Style owner review.** The already completed paid #38704168643 trial used the earlier candidate prompt; its evidence is not retroactively changed. Additional real paid measurements, if any, must be separately identified with exact SHA/Prompt version. Human photo accuracy, Face parity and 2,200-token stability for eligible faces remain pending.
 
+## Updated candidate prompt — exact-head REAL nonhuman retest
+
+[GitHub Actions #38707623100](https://github.com/gycha0109-beep/K_beauty/actions/runs/38707623100) executed the modified **research-only v2 candidate** at exact trigger SHA `393ddf1d6ffae0bb6d443bb401f511787e5d7c6b` using **`OPENAI_API_KEY2`**. The same deterministic **96×96 NONhuman RGB grid** was supplied to v1 and v2, one separate Provider request for each. The mock-only privacy/contract verifiers ran and passed immediately beforehand. Overall GitHub Actions job **SUCCESS**; both responses were JSON-parsed, `finish_reason=stop`. No human image, raw Provider response or credential persisted.
+
+| Observed one-pair metric | Existing v1 | Clarified research v2 |
+| --- | ---: | ---: |
+| Input tokens | 2,769 | 3,634 |
+| Output tokens | 1,418 | 1,240 |
+| Elapsed request time | 11,076 ms | 8,699 ms |
+| Provider JSON / finish | parsed / stop | parsed / stop |
+| Eligibility | ineligible | ineligible |
+| Face fields | 0 (expected for nonhuman) | 0 (expected for nonhuman) |
+| Skin axes returned | legacy blocked | **0, exactly `skin.axisEvidence: []`** |
+| Explicit v2 abstention audit | not applicable | **`EXPECTED_INELIGIBLE_EMPTY_AXES_RESEARCH_ONLY`**, shape valid, no invented positive/observed-zero |
+
+- Current 2,200-token completion limit is unmodified: the v2 nonhuman output used **1,240 tokens**, leaving **960**. The eligible-human combined Skin+Face worst case and truncation rate remain **untested**.
+- Existing #1326 `STRUCTURALLY_VALID` gate intentionally requires `skinStatus=ready` for **eligible** Skin photos, so v2 nonhuman remains `INVALID_OR_INCOMPLETE` there. The new independent pre-gate audit establishes the **separate ineligible-empty expected outcome** without weakening the eligible-photo gate. Top-level verdict: `NONFACE_PROVIDER_INELIGIBLE_ABSTENTION_OBSERVED_REVIEW_ONLY`; **not** an eligible-photo acceptance PASS.
+- Compared with the prior [#38704168643](https://github.com/gycha0109-beep/K_beauty/actions/runs/38704168643) nonhuman trial (v1 875 output tokens / 8,251 ms, old v2 1,615 output tokens / 12,444 ms), the new single run's v1 **also changed** (1,418 output tokens / 11,076 ms) despite unchanged v1 prompt. Therefore neither speed nor token "improvement" may be attributed causally to the v2 prompt based on these one-off samples; no stability, price, or human performance claim.
+- The temporary paid workflow was **deleted immediately after execution** (commit `e6b063f95e6d3e950e2bc9563a28e7f23eb43015`). The branch's final file inventory has **no** secret-bearing paid auto-run workflow. The working module and mock-only CI tests remain. Actual key2 calls across this track to date: **2 text-only + 4 nonhuman image requests**, **0 human facial photos**, including the earlier #1334 experiments.
+- Candidate-specific empty-array exception and ineligible-axis audit remain **unactivated**; shared Vision owner review, eligible-human v2 schema/Face parity, independent Human labels and SCA release gates are pending. Product Ready / Release Ready **HOLD**.
+
 ## Valid and invalid interpretations
 
 - `NONFACE_PROVIDER_RESPONSE_CAPTURED_REVIEW_ONLY` means both transport calls returned JSON and `finish_reason=stop`. It is **not** structural/Face parity PASS unless each sub-evaluation supports that finding.
