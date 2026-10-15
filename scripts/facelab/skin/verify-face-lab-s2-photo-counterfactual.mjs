@@ -7,8 +7,8 @@ import { SKIN_AXIS_EVIDENCE_VERSION, SKIN_VISIBLE_AXES } from "./skin-axis-evide
 register("../../node-next-alias-loader.mjs", import.meta.url);
 globalThis.fetch = async () => { throw new Error("SKIN_PHOTO_SHADOW_NETWORK_FORBIDDEN"); };
 
-const { buildSkinMatchDecisionBundle } = await import("../../lib/skin-match-decision-engine.js");
-const { buildRecommendationProductFromSource } = await import("../../lib/product-source.js");
+const { buildSkinMatchDecisionBundle } = await import("../../../lib/skin-match-decision-engine.js");
+const { buildRecommendationProductFromSource } = await import("../../../lib/product-source.js");
 const productsSource = JSON.parse(readFileSync("fixtures/recommendation-metadata/products-v1.json", "utf8"));
 const scenarios = JSON.parse(readFileSync("fixtures/recommendation-metadata/user-scenarios-v1.json", "utf8"));
 assert.equal(productsSource.productCount, 164);
