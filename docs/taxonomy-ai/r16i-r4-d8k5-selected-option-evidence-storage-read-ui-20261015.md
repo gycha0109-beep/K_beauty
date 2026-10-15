@@ -13,7 +13,7 @@ D8K-5는 이 제약을 유지하고 자식 테이블 두 개를 **검토용 SQL*
 | 후보 테이블 | 핵심 키와 내용 | 기록 원칙 |
 | --- | --- | --- |
 | `product_offer_option_observations` | `observation_id`, `offer_id` FK, `seller_option_key`, SKU variant, 단품/묶음/기획세트, 용량·수량·증정 구성, 선택옵션 금액, nullable 배송비, 출처·관측일 | **새 가격을 append**. 동일 listing의 다른 선택옵션은 별도 child observation. 이전 가격 보존 |
-| `product_offer_option_reviews` | observation FK(unique), 검토 결론, reviewer reference, 증거 SHA-256, 검토일 | 관측자가 부여한 단일 `verified` 플래그를 독립 검토로 오인하지 않도록 별도 테이블 |
+| `product_offer_option_reviews` | observation FK(1:N 검토 이벤트), 검토 결론, reviewer actor/reference, 원본 증거 SHA-256, 검토일 | 검토 이력을 append-only로 보존하고 최신 검토의 거절/철회가 기존 확인 판정을 덮음. 원본과 다른 검토자·동일 해시 검사 |
 
 SQL 후보:
 - `docs/taxonomy-ai/sql/d8k5-selected-option-evidence-schema-review-only.sql`
@@ -27,6 +27,7 @@ SQL 후보:
 
 - 기존 `recommendation_admission_runtime` 전용 EXECUTE; `anon`, `authenticated`, `service_role` 직접 실행 차단
 - 부모 상품/판매자와 FK로 결합; 선택옵션별 **가장 최근 관측**을 먼저 결정한 뒤 검토 완료인 경우만 반환한다. 최근 기록이 미검토/거부면 오래된 승인 가격으로 조용히 후퇴하지 않는다.
+- 최신 관측을 먼저, 해당 관측의 **최신 검토 이벤트**를 다음으로 선택한다. 최신 검토가 `rejected`이거나 원본 해시 불일치·동일 수집자/검토자라면 오래된 `verified` 결과로 복귀하지 않는다. `reviewer_actor_key`는 향후 인증된 수집·검토 시스템에서 제공해야 하며 텍스트 입력만으로 실제 독립성이 증명되는 것은 아니다.
 - 한번에 64 Product ID/256 option rows; 과다 입력은 NO_AUTHORITY. `listing_url`, raw 구매 URL, 직접 CTA를 반환하지 않는다.
 - 옵션별 `observed_at`, `review_id`, 증거 digest·선택금액·nullable 배송비를 구분한다.
 - 미검토 가격, 선물/증정 구성 불확정, 품절, 타사 option 혼입은 구매 권한이 아니다.
