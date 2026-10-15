@@ -143,14 +143,18 @@ for(const [patch,reason] of [
  [{captured_at:"2025-01-01T00:00:00.000Z"},"CAPTURE_STALE_OR_TIME_MISMATCH"],
  [{captured_at:"2030-01-01T00:00:00.000Z"},"CAPTURE_STALE_OR_TIME_MISMATCH"],
  [{created_at:"2026-10-13T00:00:00.000Z"},"CAPTURE_STALE_OR_TIME_MISMATCH"],
+ [{created_at:"2026-10-16T00:00:00.000Z"},"CAPTURE_STALE_OR_TIME_MISMATCH"],
  [{file_sha256:"z".repeat(64)},"ARCHIVE_METADATA_INCOMPLETE"],
  [{file_sha256:"".padEnd(64,"0")},"ARCHIVE_BYTES_MAGIC_SIZE_OR_SHA_MISMATCH"],
  [{file_bytes:0},"ARCHIVE_METADATA_INCOMPLETE"],
  [{file_bytes:4194305},"ARCHIVE_METADATA_INCOMPLETE"],
  [{object_path:"../../.env.local"},"ARCHIVE_METADATA_INCOMPLETE"],
  [{object_path:"some-other-product/capture.png"},"ARCHIVE_METADATA_INCOMPLETE"],
+ [{object_path:R16I_D8K11_PRODUCT_ID+"/not-a-uuid.png"},"ARCHIVE_METADATA_INCOMPLETE"],
+ [{object_path:R16I_D8K11_PRODUCT_ID+"/"+officialId+".jpg"},"ARCHIVE_METADATA_INCOMPLETE"],
  [{mime_type:"application/pdf"},"ARCHIVE_METADATA_INCOMPLETE"],
- [{mime_type:"image/webp"},"ARCHIVE_BYTES_MAGIC_SIZE_OR_SHA_MISMATCH"],
+ [{mime_type:"image/webp"},"ARCHIVE_METADATA_INCOMPLETE"],
+ [{mime_type:"image/webp",object_path:R16I_D8K11_PRODUCT_ID+"/"+officialId+".webp"},"ARCHIVE_BYTES_MAGIC_SIZE_OR_SHA_MISMATCH"],
  [{file_bytes:fakePng.length+1},"ARCHIVE_BYTES_MAGIC_SIZE_OR_SHA_MISMATCH"]
 ]){
  const x=blocked({evidenceRows:[{...rows()[0],...patch},rows()[1]]});
@@ -178,6 +182,7 @@ for(const patch of [
  {verdict:"REJECTED"},
  {verdict:"HOLD"},
  {reviewed_at:"2026-10-13T00:00:00.000Z"},
+ {reviewed_at:"2026-10-14T01:00:00.000Z"},
  {reviewed_at:"2026-10-16T00:00:00.000Z"},
  {reason:""},
  {reason:"approved"}
