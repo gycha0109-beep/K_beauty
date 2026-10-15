@@ -40,7 +40,8 @@
       // Raw v2 RPC rows from a genuine, separately authorized server read.
       // includes offer_id, product_id, seller_key/name, listing_id/url,
       // offer_state, product_scope_state, currency_code, market_code,
-      // availability_state and link_health_state
+      // last_observed_at and link_health_checked_at,
+      // availability_state, last_observed_at, link_health_state and link_health_checked_at
     ]
   },
   bySellerListing: [
@@ -65,6 +66,7 @@
 | v2 계약·상태 불일치, 과다/혼입·중복 Offer, 부모 Offer ID 미발견 | HOLD; **새 Offer UUID를 제조하지 않음** |
 | 판매처, 정확한 listing ID 또는 URL이 캡처와 다름 | HOLD |
 | 부모 Offer가 retired, unresolved, 시장/통화 다름, 재고 확정 불가 또는 링크 상태 미검증 | HOLD |
+| 캡처·판매처 마지막 관측·링크 상태 확인 시각이 실제로 오래됐거나 없거나 미래 시각 | HOLD. 조회 snapshot만 최근이라고 재고·링크 증거까지 최신이라 간주 금지 |
 | 해당 (판매처, listing ID), (판매처, listing URL) 전역 조회가 빠짐·중복됨·부모와 다름 | HOLD |
 | 쿠팡 itemId·vendorItemId로 특정 선택옵션을 촬영했지만 부모 listing URL이 단순 제품 URL임 | 두 URL의 제품 경로와 판매처가 **정확히 일치할 때만** 진단 가능; 다른 item/vendor 쿼리는 거절 |
 | 모든 진단 항목 형식상 일치 | `PARENT_LISTING_MATCH_DIAGNOSTIC_ONLY` **가격·SKU 원본/DB 실제 출처·인증된 리뷰·생산 write·CTA 권한은 계속 false** |
