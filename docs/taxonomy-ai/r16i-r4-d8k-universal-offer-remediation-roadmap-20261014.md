@@ -295,3 +295,9 @@
 - Added local-only `prepare-d8k8-local-option-review-v1.mjs`: reads an operator-provided screenshot/HTML/PDF and capture + separate review JSON, computes SHA-256 from file bytes, prints redacted status only. No network, external seller fetch, database, file write, price or URL output, or CTA.
 - Synthetic V8 direct contract tests **403 assertions PASS** (URL parser shim only for isolated test harness). Node local file smoke verifier is checked into repo; not yet run against an actual local filesystem in this assistant runtime. Real seller capture bytes/independent reviewer evidence have **not** been received.
 - Existing D8F verifier import chain extended for both D8K8 tests. D8K7 owner-reported real PG17 gate remains passed, but DB write/API/Auth/RLS/admission/merge/deploy authorization all HOLD; security #1208 remains open.
+
+### D8K-8 Windows Native Node 24 CLI failure + repair checkpoint (2026-10-15)
+
+- Owner: original HEAD `bf74be69` D8K8 metadata test **403 PASS**; native tempfile CLI fails at intentionally invalid PNG scenario (line 98), before subsequent symlink tests. Root cause: CLI emitted expected redacted `HOLD` JSON to stderr, which contained Node module type warning; verifier parsed combined warning+JSON as one object.
+- Current repair: CLI success and HOLD both emit one JSON object to stdout; HOLD still exits with status 1; verifier reads only stdout and no private path/content is logged. Added four regressions, fetched-source isolated synthetic **407 PASS**.
+- **Owner native Windows/Node rerun STILL PENDING.** Need both D8K8 focus tests after fetching latest branch; prior 403 PASS does not imply fixed native test PASS. No product/offer writes, public prices, CTA, schema/API/migration/secret/production changes; #1208 OPEN.
