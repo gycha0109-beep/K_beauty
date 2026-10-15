@@ -3331,3 +3331,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added `RecommendedProductOfferSlot.jsx` to F-01 and P-01~05 active component locations, hardcoded OFF; no result-API props or stored output modifications and no share commerce.
 - Added focused D8K-5 DTO/schema and slot coverage tests to existing price review verifier. Local isolated V8 execution of fetched source observed 242 D8K-5 DTO checks, 26 source coverage checks, D8K-1 73 synthetic cases and D8K-3 17 cases PASS. Exact HEAD GitHub CI and real SQL/PG17/Next browser tests separately pending.
 - Remains: finalize reviewed SQL via Supabase migration CLI, independent source/reviewer feed, role-scope approved server RPC, trusted per-result admission and DTO, actual pricing/CTA release; #1208 open prevents merge/deploy. Do not promote mock PASS to actual seller price.
+
+### 2026-10-15 / D8K-6 review rejection and source provenance repair
+
+- Scope: stacked after D8K-5 PR #1327. DB/RLS permission impact potential Y; no protected schema/migration or hosted SQL executed. Read actual prior 20260913052338 offer presentation owner privilege setup and D8K-5 review SQL.
+- Fixed D8K-5 *review-only* schema proposal allowing latest review rejection/revocation event for already verified observation. Preserved full append-only event history, unique observation+review time, non-verified-filtered latest index. SQL reader ranks latest observed option and then latest review BEFORE checking verdict, so no stale verified fallback.
+- Added actor/digest consistency fields and SQL predicate `reviewer_actor_key <> collector_actor_key` and matching source `source_evidence_sha256`; true actor authority remains pending approved authenticated writer/reviewer.
+- Added shipping basis `unknown`↔NULL versus `seller_published_flat`↔non-null incl 0, and DTO strict validation; avoided false free shipping.
+- Implemented `lib/commerce/product-offer-review-history-shadow-v1.mjs` and D8K-6 synthetic test, imported to `verify-r16i-price-scope-review-v1.mjs`. Isolated fetched-source V8 tests: 103 D8K-6 audit assertions PASS and 274 D8K-5 DTO/SQL static assertions PASS. Full SQL parsing/PG17 positive+negative RLS/owner role tests NOT run: executable unavailable in this environment and package endpoint inaccessible. GitHub exact HEAD CI checked separately.
+- Wrote D8K-6 review/PG17 acceptance packet. Actual seller evidence, separate authenticated source and reviewer actors, historical price/stock option truth, server-only role-bound reader, UI gate and release all pending; #1208 open.
