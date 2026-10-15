@@ -3412,3 +3412,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Roadmap & D8K-11 checklist recorded. Hold: explicit Storage original-read authorization; separately approved protected backend self-review guard; actual independent reviewer identity and verified real source; Product Fact/parent Offer correction and price display; #1208 and all merges/deploys.
 
 - **Additional protected ledger revocation gap:** `supabase/migrations/20261012172837_taxonomy_ai_r16i_correction_approval_ledger_v1.sql` declares `evidence_id uuid NOT NULL UNIQUE`, so a later append-only REJECTED verdict cannot revoke an earlier VERIFIED verdict on the same original capture. This differs from D8K-6 latest-review revocation. This D8K-11 track only flags it; no DB/role/DDL/API/owner verdict mutation is approved.
+
+### 2026-10-15 / D8K-11 user Windows Node 24 acceptance
+
+- Owner fetched D8K-11 branch and detached to verified `HEAD ccfef7e8`. Native Windows `verify-d8k11-existing-archive-review-preflight-v1.mjs` returned **PASS / 462**; `verify-d8k11-local-archive-cli-v1.mjs` returned **PASS / 21**; user pasted both exact stdout JSON objects.
+- Native child-process/file/crypto test passed with synthetic bytes. Node `MODULE_TYPELESS_PACKAGE_JSON` warning nonblocking; no package-wide ESM change required.
+- Test metadata explicitly confirms actual Storage archive bytes not received, reviewer untrusted, self-review protection NOT ENFORCED; production DB/Storage untouched and prices/CTA not published. D8K-11 synthetic/local acceptance complete only. Two original R16I captures still need separately authorized private access and legitimate independent review; existing OWNER self-review + nonrevocable verdict ledger are still protected blockers. #1208 OPEN.
