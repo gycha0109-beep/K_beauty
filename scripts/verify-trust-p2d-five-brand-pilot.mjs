@@ -79,10 +79,9 @@ const prefetch=await runTrustP2Discovery(cohortToTrustedDiscoveryRow(atopalm),{
   },
 });
 assert.deepEqual(prefetch.sites[0].pages.map(p=>p.url),[correctUrl]);
-assert.ok(fetchedPages.includes(atopalm.officialPeerUrl));
-assert.ok(fetchedPages.includes(correctUrl));
-assert.ok(!fetchedPages.includes(wrongUrl));
-assert.ok(!fetchedPages.includes(bonusUrl));
+// Exact ordered list: one governed peer read, then the single approved
+// candidate page. Any extra/wrong-origin/wrong-quantity fetch fails.
+assert.deepEqual(fetchedPages,[atopalm.officialPeerUrl,correctUrl]);
 assert.equal(prefetch.factWrites,0);
 assert.equal(prefetch.subjectCreationAuthorized,false);
 
