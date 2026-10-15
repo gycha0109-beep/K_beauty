@@ -80,24 +80,24 @@ begin
     raise exception 'D8K7_INITIAL_THREE_OPTIONS_FAILED: %', output;
   end if;
   if not exists (
-    select 1 from jsonb_array_elements(output->'options') x
-    where x->>'seller_option_key' = 'single80'
-      and x->>'shipping_price_basis' = 'unknown'
-      and x->'shipping_price_krw' = 'null'::jsonb
+    select 1 from jsonb_array_elements(output->'options') as x(value)
+    where x.value->>'seller_option_key' = 'single80'
+      and x.value->>'shipping_price_basis' = 'unknown'
+      and x.value->'shipping_price_krw' = 'null'::jsonb
   ) then
     raise exception 'D8K7_UNKNOWN_SHIPPING_WAS_NOT_NULL';
   end if;
   if not exists (
-    select 1 from jsonb_array_elements(output->'options') x
-    where x->>'seller_option_key' = 'free80'
-      and x->>'shipping_price_basis' = 'seller_published_flat'
-      and (x->>'shipping_price_krw')::integer = 0
+    select 1 from jsonb_array_elements(output->'options') as x(value)
+    where x.value->>'seller_option_key' = 'free80'
+      and x.value->>'shipping_price_basis' = 'seller_published_flat'
+      and (x.value->>'shipping_price_krw')::integer = 0
   ) then
     raise exception 'D8K7_FREE_SHIPPING_WAS_NOT_ZERO';
   end if;
   if exists (
-    select 1 from jsonb_array_elements(output->'options') x
-    where x->>'seller_option_key' in ('self80','digest80')
+    select 1 from jsonb_array_elements(output->'options') as x(value)
+    where x.value->>'seller_option_key' in ('self80','digest80')
   ) then
     raise exception 'D8K7_UNTRUSTED_REVIEW_WAS_RETURNED';
   end if;
@@ -142,8 +142,8 @@ begin
  output := public.read_selected_offer_option_evidence_v1(
    array['93000000-0000-4000-8000-000000000001'::uuid]);
  if jsonb_array_length(output->'options') <> 2 or exists (
-   select 1 from jsonb_array_elements(output->'options') x
-   where x->>'seller_option_key' = 'single80'
+   select 1 from jsonb_array_elements(output->'options') as x(value)
+   where x.value->>'seller_option_key' = 'single80'
  ) then
    raise exception 'D8K7_REVOCATION_OLD_PRICE_FALLBACK: %',output;
  end if;
