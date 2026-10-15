@@ -65,6 +65,7 @@ assert.notEqual(calls[0].system, calls[1].system);
 assert.match(calls[0].system, /vision-observation-v1/);
 assert.match(calls[1].system, /vision-observation-v2/);
 assert.equal(result.providerCallsAttempted, 2);
+assert.equal(result.verdict, "NONFACE_PROVIDER_INELIGIBLE_ABSTENTION_OBSERVED_REVIEW_ONLY");
 assert.equal(result.variants[0].outputTokens, 190);
 assert.equal(result.variants[1].finishReason, "stop");
 assert.equal(result.timingsAndCostAvailability.matchedPairs, 1);
@@ -79,6 +80,7 @@ assert.equal(result.variants[1].v2AbstentionAudit.withheldPositiveOrZeroCues, tr
 assert.equal(result.variants[1].v2AbstentionAudit.axisShapeValid, true);
 assert.equal(result.variants[1].v2AbstentionAudit.stateCounts.unknown, 0);
 assert.equal(result.variants[1].v2AbstentionAudit.productReady, false);
+assert.equal(result.variants[1].v2AbstentionAudit.ownerApprovalPending, true);
 assert.equal(result.variants[1].v2AbstentionAudit.releaseReady, false);
 assert.equal(result.timingsAndCostAvailability.pairedTimings, 1);
 assert.equal(result.timingsAndCostAvailability.pairedCosts, 0);
