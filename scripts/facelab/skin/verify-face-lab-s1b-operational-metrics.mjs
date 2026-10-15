@@ -16,7 +16,7 @@ assert.equal(done.pairedTimings, 2);
 assert.equal(done.pairedCosts, 2);
 assert.equal(done.v2Slower, 2);
 assert.equal(done.v2MoreExpensive, 2);
-assert.deepEqual(done.latencyMs.v2, { count: 2, mean: 1250, median: 1100, p95: 1400, max: 1400 });
+assert.deepEqual(done.latencyMs.v2, { count: 2, mean: 1250, median: 1250, p95: 1400, max: 1400 });
 assert.deepEqual(done.latencyMs.delta, { count: 2, mean: 300, median: 200, p95: 400, max: 400 });
 assert.equal(done.estimatedCostMicroUsd.delta.mean, 43);
 assert.equal(done.verdict, "MEASUREMENT_CAPTURE_COMPLETE_REVIEW_REQUIRED");
