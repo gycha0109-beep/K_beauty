@@ -90,7 +90,7 @@ reason({slots:free,admissionResult:snapshot([{...decision(1),reasonCodes:[]}])},
   "INITIAL_GRANT_SNAPSHOT_INCOMPLETE");
 reason({slots:free,admissionResult:snapshot([{...decision(1),contractVersion:"wrong"}])},
   "ADMISSION_DECISION_IDENTITY_INVALID");
-reason({slots:free,admissionResult:snapshot([{...decision(1),product:{id:id(1).toUpperCase()}}])},
+reason({slots:free,admissionResult:snapshot([{...decision(1),product:{id:"AAAAAAAA-0000-4000-8000-000000000001"}}])},
   "ADMISSION_DECISION_IDENTITY_INVALID");
 reason({slots:free,admissionResult:snapshot([{...decision(1),admissionType:"GRANT_BY_URL"}])},
   "UNKNOWN_ADMISSION_DECISION");
