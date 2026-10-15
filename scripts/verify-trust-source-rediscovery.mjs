@@ -188,7 +188,7 @@ const duplicateTrial = await discoverOfficialSourceCandidates({
     bytes: Buffer.from("<urlset>"+
       "<url><loc>"+dedupUrl+"#primary</loc></url>"+
       "<url><loc>"+dedupUrl+"</loc></url>"+
-      "<url><loc>"+dedupTracked.replace("&", "&amp;")+"</loc></url>"+
+      "<url><loc>"+dedupTracked.replaceAll("&", "&amp;")+"</loc></url>"+
       "<url><loc>"+dedupTracked+"</loc></url>"+
       "</urlset>"), finalUrl: url,
   }),
@@ -213,7 +213,7 @@ const duplicatePriorityTrial = await discoverOfficialSourceCandidates({
     bytes: Buffer.from("<urlset>"+
       "<url><loc>"+dedupUrl+"#primary</loc></url>"+
       "<url><loc>"+dedupUrl+"</loc></url>"+
-      "<url><loc>"+dedupTracked.replace("&", "&amp;")+"</loc></url>"+
+      "<url><loc>"+dedupTracked.replaceAll("&", "&amp;")+"</loc></url>"+
       "<url><loc>"+dedupTracked+"</loc></url>"+
       "</urlset>"), finalUrl: url,
   }),
