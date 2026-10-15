@@ -60,14 +60,26 @@ begin
     join public.product_offers p on p.offer_id = o.offer_id
     where p.product_id = any(p_product_ids)
   ),
+  latest_review as (
+    select
+      r.*,
+      row_number() over (
+        partition by r.observation_id
+        order by r.reviewed_at desc, r.created_at desc, r.review_id desc
+      ) as review_rank
+    from public.product_offer_option_reviews r
+    join ranked ro on ro.observation_id = r.observation_id
+    where ro.option_rank = 1
+  ),
   eligible as (
     select
       ranked.*,
       r.review_id, r.evidence_sha256, r.reviewer_reference, r.reviewed_at
     from ranked
-    join public.product_offer_option_reviews r
+    join latest_review r
       on r.observation_id = ranked.observation_id
     where ranked.option_rank = 1
+      and r.review_rank = 1
       and ranked.offer_state = 'current'
       and ranked.product_scope_state = 'product'
       and ranked.currency_code = 'KRW'
@@ -164,6 +176,12 @@ begin
   end if;
 end $$;
 
+-- SELECT THE MOST RECENT OBSERVATION before filtering any review.
+-- SELECT THE MOST RECENT REVIEW (verified/rejected) before filtering verdict.
+-- A newer rejected review MUST suppress a previous verified review; an
+-- unreviewed newer observation MUST suppress an older verified price.
+-- This SQL alone does not establish collector/reviewer identity separation,
+-- external evidence authenticity, or safe live server execution.
 -- Output does not contain listing_url or direct CTA; it does not re-attest
 -- the underlying screenshot/source, user authorization, or Product admission.
 -- The server must separately verify trust and observation freshness.
