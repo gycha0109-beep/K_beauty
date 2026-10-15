@@ -204,6 +204,8 @@ const cli=readFileSync(
   "scripts/product-evidence/prepare-d8k8-local-option-review-v1.mjs","utf8");
 const workbench=readFileSync(
   "app/admin/products/r16i-correction-review/R16ICorrectionEvidenceWorkbench.js","utf8");
+const cliVerifier=readFileSync(
+  "scripts/product-evidence/verify-d8k8-local-file-cli-v1.mjs","utf8");
 const sql=readFileSync(
   "docs/taxonomy-ai/sql/d8k5-selected-option-evidence-schema-review-only.sql","utf8");
 const scriptSource=readFileSync(
@@ -218,6 +220,8 @@ for(const [s,re] of [
   [cli,/sourceFilePersistedByTool:false/],
   [cli,/dbWrites:0/],
   [cli,/productionReleaseAuthorized:false/],
+  [cli,/console\.log\(JSON\.stringify\(\{\s*stage:"D8K8_LOCAL_MANUAL_EVIDENCE_INTAKE",status:"HOLD"/],
+  [cliVerifier,/const out=child\.stdout\.trim\(\)/],
   [scriptSource,/selectLatestOptionReviewHistoryShadow/],
   [scriptSource,/resolveProductPurchaseLink/],
   [sql,/collector_actor_key text not null/],
@@ -231,6 +235,10 @@ for(const [s,re] of [
   [workbench,/review_scope/],
   [workbench,/capture_origin/]
 ]){assert.match(s,re);assertions++;}
+// Node warns on stderr for typeless ESM dependencies, but the CLI protocol
+// must place BOTH success and expected HOLD JSON on stdout.
+assert.doesNotMatch(cli,/console\.error\(JSON\.stringify\(\{\s*stage:"D8K8_LOCAL_MANUAL_EVIDENCE_INTAKE",status:"HOLD"/);assertions++;
+assert.doesNotMatch(cliVerifier,/child\.stdout\s*\|\|\s*child\.stderr/);assertions++;
 for(const re of [/fetch\(/,/createSupabaseAdminClient/,/\.rpc\(/,/process\.env/]){
  assert.doesNotMatch(scriptSource,re);assertions++;
 }
