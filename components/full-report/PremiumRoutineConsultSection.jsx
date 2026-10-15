@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import CurrentProductSlotNote from "@/components/result/premium/CurrentProductSlotNote";
 import SafeProductImage from "@/components/common/SafeProductImage";
+import RecommendedProductOfferSlot from "@/components/commerce/RecommendedProductOfferSlot";
 import { buildCurrentProductRoutineSlots } from "@/lib/current-products";
 import { getCurrentProductVerdictSlotKey } from "@/lib/current-product-verdicts";
 
@@ -32,6 +33,7 @@ function RoutineConsultProductInline({ product, locale = "ko" }) {
         </p>
         <p className="mt-1 break-words text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{product.name}</p>
         {product.brand ? <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p> : null}
+        <RecommendedProductOfferSlot product={product} locale={locale} />
       </div>
     </div>
   );

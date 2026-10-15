@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { resolvePremiumFunctionalDisplayModel } from "@/lib/premium-functional-display-model";
 import { formatKnownProductPriceLabel } from "@/lib/product-price-read-contract.mjs";
+import RecommendedProductOfferSlot from "@/components/commerce/RecommendedProductOfferSlot";
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const EMPTY_DEV_SCENARIOS = [];
@@ -108,6 +109,7 @@ function ProductOptions({ plan, audit, copy, locale, onCta }) {
           <div className="min-w-0"><span className="ui-chip-compact px-2 py-1">{categoryLabel(product.category, locale)}</span><p className="mt-2 text-xs text-zinc-500">{product.brand}</p><h5 className="break-words text-sm font-semibold text-zinc-900 dark:text-zinc-100">{product.name}</h5><p className="mt-1 text-sm font-semibold">{priceLabel(product, locale)}</p></div>
         </div>
         {product.reason ? <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{product.reason}</p> : null}
+        <RecommendedProductOfferSlot product={product} locale={locale} />
         <button type="button" onClick={onCta} className="ui-button-secondary mt-4 min-h-10 w-full justify-center text-xs font-semibold">{plan.planMode === "HOLD" ? (locale === "en" ? "Review after skin is steady" : "피부 안정 후 검토하기") : audit.status === "CONSOLIDATE" ? (locale === "en" ? "Compare as an alternative" : "대체 후보로 비교하기") : copy.cta}</button>
       </article>) : <p className="rounded-xl border border-white/10 p-3 text-sm text-zinc-700 dark:text-zinc-300">{copy.noProducts}</p>}
     </div>

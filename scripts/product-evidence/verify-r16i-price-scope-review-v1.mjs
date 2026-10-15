@@ -7,6 +7,10 @@ import "./verify-d8k3-offer-presentation-v1.mjs";
 import "./verify-d8k4-active-offer-slots-v1.mjs";
 // D8K-4B: never promote recommendation decisions into seller price authority.
 import "./verify-d8k4b-active-offer-admission-reconciliation-v1.mjs";
+// D8K-5: selected-option storage and private-read proposal, evidence DTO,
+// and actual free/premium UI mount slots with a hard-OFF release gate.
+import "./verify-d8k5-selected-option-evidence-contract-v1.mjs";
+import "./verify-d8k5-active-offer-slot-coverage-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
