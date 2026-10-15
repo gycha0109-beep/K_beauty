@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-15 / Skin S1-B — 새 사진 관찰 v2 입력·Face 독립성 오프라인 예행 검사
+
+- Skin 트랙 단일 공용 Vision의 **후보 v2 출력 형식만 평가용 코드**로 제작. 주 구현은 scripts/facelab/skin/skin-vision-v2-candidate-core.mjs, 합성 검증은 verify-face-lab-skin-s1b-vision-v2-candidate.mjs.
+- 현행 Face Lab 계약/이미지 Eligibility/구형 v1 정규화 모듈을 그대로 사용하여 v1 저장 0의 관찰 여부를 절대 소급 판정하지 않는다. 새 Skin 7축의 상태와 Face 결과를 독립 검증하고, 부적격·누락·중복·잘못된 수치/단서를 검사.
+- 서비스·응답·Provider·추천·DB/RLS/Storage/Style/출시 설정 변경 0. 외부 이미지, 모델 호출, 사용자 개인정보 사용 0.
+- 현행 2,200 출력 토큰 상한에서 모델 응답이 실제로 가능한지 **미검증**이며 프롬프트/합성 JSON 문자 길이는 토큰 수를 입증하지 않는다. 실제 Provider·Human·score-policy 승인 전 운영 활성화 HOLD.
+- exact-head CI 검증 결과는 독립 PR 제출 후 로그로 판정. 기존 S1-A #1319에 의존하는 검토 스택으로 등록.
+
+
 ### 2026-10-15 / Face Lab Skin 관찰 신호 0과 판단 불가 분리 — S1-A 합성 검증
 
 - 트랙 `face-lab-skin`; `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2` 기반 독립 Draft PR. 관련 로드맵 #1307, 설계 #1317.
