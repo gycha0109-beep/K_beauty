@@ -3387,3 +3387,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added focused synthetic test with negative cases for swapped Product/Offer, abandoned/unknown or duplicate listing, stale snapshots, other Product collisions, bundle variant mismatch, and replay of actual saved 2026-10-13 R16I snapshot showing `size_ml=160` and no stored parent Offer, not a current DB claim. Added test to existing D8F price review chain.
 - Exact GitHub source evaluated in isolated V8 with compatibility URL class: D8K-9 **468 assertions PASS** and D8K-8 unchanged baseline **407 assertions PASS**. GitHub native Node PR-head CI and actual DB/server/browser/seller source tests must be reported distinctly when available.
 - Not modified: supabase/migrations, DB schema/RLS, Auth, API response, saved report, env, payment, Product/Offer actual values, shared purchase allowlist, UI release flag, deployment. No merge. Supply-chain issue #1208 open. Next real privileged gate requires owner's separately approved authenticated admin read and source+subject correction, not an invented seller/Offer ID.
+
+### 2026-10-15 / D8K-9 Windows Native Node owner acceptance
+
+- Owner supplied PowerShell output: exact fetched D8K-9 checkout `HEAD c462f2b8`; `node scripts/product-evidence/verify-d8k9-parent-offer-identity-binding-v1.mjs` returned PASS, stage `D8K9_CANONICAL_PRODUCT_PARENT_OFFER_COLLISION_BINDING_SHADOW`, **468 assertions**.
+- Node `MODULE_TYPELESS_PACKAGE_JSON` warning was non-blocking. Earlier `fatal: invalid reference: origin/fix/migration-composer-form-disambiguation` originated from a distinct checkout attempt; D8K-9 subsequent fetch, HEAD switch and test succeeded. Do not modify unrelated branch.
+- Owner Native Node result advances D8K-9 status from synthetic isolated V8 to user-reported local runtime PASS. Actual seller capture, current DB/RPC, authenticated reviewer/real Product Fact and price/CTA remain unverified and unauthorized. All Draft PRs unmerged, #1208 OPEN, no protected changes.
