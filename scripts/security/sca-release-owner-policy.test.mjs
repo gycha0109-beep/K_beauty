@@ -39,6 +39,14 @@ test('scoped operator revalidates signed candidate and approval before every pub
   f.operations.admit=()=>({approval:structuredClone(f.approval),receipt:{...structuredClone(f.receipt),candidateSha256:++count===1?'a'.repeat(64):'b'.repeat(64)}});
   await assert.rejects(runScopedPublication(f.operations));assert.ok(!f.calls.some(x=>x.startsWith('publish:')));
 });
+test('bootstrap publication requires new signed linkage and derived packet authority, and stops before final linkage',async()=>{
+  const f=scopedOperatorFixture();f.receipt.publicationLinkage='UNLINKED_BOOTSTRAP';f.receipt.candidateLicensePacketSha256='f'.repeat(64);
+  await assert.rejects(runScopedPublication(f.operations));assert.deepEqual(f.calls,[]);
+  f.approval.publicationLinkage='UNLINKED_BOOTSTRAP';f.approval.candidateLicensePacketSha256='0'.repeat(64);
+  await assert.rejects(runScopedPublication(f.operations));assert.deepEqual(f.calls,[]);
+  f.approval.candidateLicensePacketSha256='f'.repeat(64);const r=await runScopedPublication(f.operations);
+  assert.equal(r.stage,'PRIVATE_UNLINKED_ONLY');assert.equal(r.finalLinkageAndAcl,'HOLD_OWNER_ACTION_NOT_RUN');assert.equal(r.productApplied,false);
+});
 
 const conditionalReview=()=>JSON.parse(fs.readFileSync(new URL('../../security/release/sca-b6-conditional-review-decision.json',import.meta.url)));
 test('GitHub prepublication plan preserves scoped/original mapping and never executes or clears audit',()=>{

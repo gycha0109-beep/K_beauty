@@ -2,6 +2,8 @@
 
 The owner declined the account-wide default inheritance change. It was not performed. The observed checkbox remains enabled; do not request that global change again unless a package-specific route is demonstrated insufficient. Official documentation supports a package-specific route, so a global change is not established as necessary.
 
+Subsequent owner instruction adopted this ordering and authorized actual metadata-only candidate generation. The new [bootstrap implementation](sec-sca-20261015-unlinked-bootstrap-candidate.md) preserves the historical PRELINKED reference and creates a distinct UNLINKED_BOOTSTRAP candidate with derived report/SBOM identities. New exact-head CI/digests are pending; no live publication/ACL/linkage verification or setting change has occurred. The original investigation below remains the basis, not a claim that the later real candidate is still merely synthetic.
+
 ## Four separate properties
 
 | Property | Meaning / evidence |

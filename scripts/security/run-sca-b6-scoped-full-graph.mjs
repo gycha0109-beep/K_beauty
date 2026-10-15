@@ -90,7 +90,7 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
     assert.equal(Object.keys(expected.braces).length,10);
     assert.equal(Object.keys(expected["node-forge"]).length,59);
     if(scopedMode){
-      scoped=prepareScopedArchives({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped')});
+      scoped=prepareScopedArchives({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped'),linkage:'UNLINKED_BOOTSTRAP'});
       const scopedNotice=path.join(temp,'scoped/NOTICE.md'),noticeBytes=fs.readFileSync(scopedNotice);
       fs.writeFileSync(scopedNotice,'tampered');
       assert.throws(()=>verifyScopedCandidate({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped')}),/substitution/);
@@ -108,7 +108,11 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
         dependencies:Object.fromEntries(scoped.artifacts.map(a=>[a.originalName,'npm:'+a.name+'@'+a.version]))}));
       run('npm',['install','--ignore-scripts','--no-audit','--no-fund'],aliasGraph,120000);
       for(const a of scoped.artifacts)assert.deepEqual(inventory(path.join(aliasGraph,'node_modules',a.originalName)),a.fileSha256,'direct npm alias byte mismatch');
-      const noticeOptions={forgeTarball,candidateSha256:scoped.candidateSha256,output:path.join(temp,'browser-notice-kit')};
+      const packetNames=['THIRD-PARTY-NOTICES.md','license-review-sbom.json','license-review.json','public-license-findings.json','bootstrap-license-lineage.json'];
+      const candidatePacket={candidateSha256:scoped.candidateSha256,
+        resources:Object.fromEntries(packetNames.map(n=>[n,fs.readFileSync(path.join(temp,'scoped',n))])),
+        fileSha256:Object.fromEntries(packetNames.map(n=>[n,scoped.manifest.files[n].sha256]))};
+      const noticeOptions={forgeTarball,candidateSha256:scoped.candidateSha256,output:path.join(temp,'browser-notice-kit'),candidatePacket};
       browserNoticeKit=prepareBrowserNoticeKit(noticeOptions);
       if(process.env.SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256)assert.equal(browserNoticeKit.manifestSha256,process.env.SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256,'independent browser notice kit differs');
       // Both missing required notices and a same-size byte mutation must fail.

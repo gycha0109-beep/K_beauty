@@ -5,6 +5,8 @@
   "policyDecisionSha256": "REQUIRES_VERIFIED_POLICY_DECISION_SHA256",
   "licensePacketSha256": "REQUIRES_VERIFIED_LICENSE_PACKET_SHA256",
   "candidateSha256": "REQUIRES_FINAL_VERIFIED_CANDIDATE_SHA256",
+  "publicationLinkage": "UNLINKED_BOOTSTRAP",
+  "candidateLicensePacketSha256": "REQUIRES_NEW_DERIVED_CANDIDATE_LICENSE_PACKET_SHA256",
   "registry": "https://npm.pkg.github.com/",
   "privateRepository": true,
   "immutableVersions": true,

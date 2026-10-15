@@ -93,3 +93,22 @@ export function licenseReviewResources(artifacts,files){
     'generated license review differs from reviewed packet: '+n);
   return resources;
 }
+
+// New archive identities derive from, but never replace or silently rewrite, the
+// frozen reviewed packet. All original-source/license/public-evidence bytes are
+// rechecked by its normal strict reconstruction before generating a new packet.
+export function bootstrapLicenseReviewResources(artifacts,files){
+  const baseline=JSON.parse(fs.readFileSync(new URL('../../security/release/license-review/license-review.json',import.meta.url)));
+  const frozen=licenseReviewResources(baseline.artifacts,files);
+  for(const a of artifacts){const old=baseline.artifacts.find(x=>x.originalName===a.originalName);assert.ok(old);
+    for(const k of ['name','originalName','version','originalArchiveSha256','licenseSha256'])assert.equal(a[k],old[k],'bootstrap original provenance drift: '+k);}
+  const resources=buildLicenseReviewResources(artifacts,files);
+  assert.equal(digest(resources['THIRD-PARTY-NOTICES.md']),digest(frozen['THIRD-PARTY-NOTICES.md']),'bootstrap notice content drift');
+  return {...resources,'bootstrap-license-lineage.json':Buffer.from(JSON.stringify({
+    schema:'bejewely.bootstrap-license-lineage.v1',legalApproved:false,redistributionApproved:false,
+    frozenReviewedPacket:Object.fromEntries(Object.entries(frozen).map(([n,b])=>[n,digest(b)])),
+    priorScopedArchives:baseline.artifacts.map(a=>({name:a.name,sha256:a.sha256})),
+    candidateScopedArchives:artifacts.map(a=>({name:a.name,sha256:a.sha256})),
+    difference:'Archive/package metadata identities only; original source/browser/LICENSE and complete notice content preserved'
+  },null,2)+'\n')};
+}

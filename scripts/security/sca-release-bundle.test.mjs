@@ -75,6 +75,31 @@ test('scoped metadata changes only four explicit fields; all upstream behavior/l
   assert.deepEqual(restored,original);assert.equal(next.bejewelyPatch.originalArchiveSha256,'b'.repeat(64));
   assert.throws(()=>verifyScopedArchive('braces',archive(tar()),archive(tar())),/independently verified/);
 });
+test('bootstrap metadata omits automatic source linkage while retaining exact origin and runtime fields',()=>{
+  const original={name:'node-forge',version:'1.4.0',repository:{url:'upstream'},license:'(BSD-3-Clause OR GPL-2.0)',main:'lib/index.js',browser:{crypto:false},scripts:{test:'mocha'}};
+  const next=scopedMetadata(original,'a'.repeat(64),{linkage:'UNLINKED_BOOTSTRAP'});
+  assert.ok(!Object.hasOwn(next,'repository'));assert.equal(next.bejewelyPatch.sourceRepository,'https://github.com/gycha0109-beep/K_beauty');
+  assert.equal(next.bejewelyPatch.originalArchiveSha256,'a'.repeat(64));
+  for(const key of ['version','license','main','browser','scripts'])assert.deepEqual(next[key],original[key]);
+  assert.equal(next.publishConfig.access,'restricted');assert.throws(()=>scopedMetadata(original,'a'.repeat(64),{linkage:'SILENT_LINK'}));
+});
+test('initial private/unlinked proof is not final private/linked noninherited proof',()=>{
+  const m={package_type:'npm',visibility:'private',owner:{login:'gycha0109-beep'},name:'braces'};
+  assertGithubPrivateMetadata(m,'braces',{stage:'INITIAL_UNLINKED'});
+  assert.throws(()=>assertGithubPrivateMetadata({...m,repository:{full_name:'gycha0109-beep/K_beauty'}},'braces',{stage:'INITIAL_UNLINKED'}));
+  assert.throws(()=>assertGithubPrivateMetadata({...m,visibility:'public'},'braces',{stage:'INITIAL_UNLINKED'}));
+  assert.throws(()=>assertGithubPrivateMetadata(m,'braces',{stage:'FINAL_LINKED_NONINHERITED'}));
+});
+test('source linkage never proves granular ACL or safe Actions Read access',()=>{
+  const m={package_type:'npm',visibility:'private',owner:{login:'gycha0109-beep'},name:'braces',repository:{full_name:'gycha0109-beep/K_beauty'}};
+  const evidence={packageName:'@gycha0109-beep/braces',visibility:'private',sourceRepository:'gycha0109-beep/K_beauty',inheritsPermissions:false,
+    actionsAccess:[{repository:'gycha0109-beep/K_beauty',role:'read'}],forkIsolationReviewed:true,evidenceSha256:'a'.repeat(64)};
+  assert.throws(()=>assertGithubPrivateMetadata(m,'braces',{stage:'FINAL_LINKED_NONINHERITED'}));
+  assertGithubPrivateMetadata(m,'braces',{stage:'FINAL_LINKED_NONINHERITED',aclEvidence:evidence});
+  for(const change of [e=>e.inheritsPermissions=true,e=>e.actionsAccess[0].role='write',e=>e.actionsAccess[0].repository='other/repo',e=>e.forkIsolationReviewed=false,e=>e.evidenceSha256='']){
+    const e=structuredClone(evidence);change(e);assert.throws(()=>assertGithubPrivateMetadata(m,'braces',{stage:'FINAL_LINKED_NONINHERITED',aclEvidence:e}));
+  }
+});
 function scopedFixture(){
   const f=fixture();f.approval.schema='bejewely.scoped-upload-approval.v1';f.approval.purpose='SCOPED_UPLOAD_READBACK_ONLY';
   f.approval.registry='https://npm.pkg.github.com/';f.approval.originalAuditRequired=true;

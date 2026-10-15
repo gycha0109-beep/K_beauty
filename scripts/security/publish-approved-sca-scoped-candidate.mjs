@@ -18,6 +18,10 @@ export function checkScopedExecutionControls(approval){
 }
 export async function runScopedPublication({admit,checkAbsent,publish,readback}){
   const first=await admit();checkScopedExecutionControls(first.approval);
+  if(first.receipt.publicationLinkage==='UNLINKED_BOOTSTRAP'){
+    assert.equal(first.approval.publicationLinkage,'UNLINKED_BOOTSTRAP','separate bootstrap authorization required');
+    assert.equal(first.approval.candidateLicensePacketSha256,first.receipt.candidateLicensePacketSha256,'derived candidate license packet mismatch');
+  }
   assert.equal(first.receipt.artifacts.length,2);
   // Both identities must be absent before the first irreversible operation.
   for(const a of first.receipt.artifacts)await checkAbsent(a);
@@ -28,7 +32,8 @@ export async function runScopedPublication({admit,checkAbsent,publish,readback})
     assert.deepEqual(current.approval,first.approval,'approval changed during publication');
     await publish(artifact);await readback(artifact,first.approval);completed.push(artifact.name);
   }
-  return {publishedAndReadBack:completed,officialAudit:'FAIL_NOT_WAIVED',productApplied:false,mergeApproved:false,productionApproved:false};
+  return {publishedAndReadBack:completed,officialAudit:'FAIL_NOT_WAIVED',productApplied:false,mergeApproved:false,productionApproved:false,
+    ...(first.receipt.publicationLinkage==='UNLINKED_BOOTSTRAP'?{stage:'PRIVATE_UNLINKED_ONLY',finalLinkageAndAcl:'HOLD_OWNER_ACTION_NOT_RUN'}:{})};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const raw=process.argv.slice(2),execute=raw.includes('--execute-approved-upload');
@@ -42,7 +47,12 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
     const receipt=verifyScopedCandidate({originals,output:a['--candidate']}),approvalBytes=fs.readFileSync(a['--approval']);
     verifyScopedApproval({candidateSha256:receipt.candidateSha256,approvalBytes,
       signatures:JSON.parse(fs.readFileSync(a['--signatures'])),trust:JSON.parse(fs.readFileSync(a['--trust']))});
-    const approval=JSON.parse(approvalBytes);checkScopedExecutionControls(approval);return {receipt,approval};
+    const approval=JSON.parse(approvalBytes);checkScopedExecutionControls(approval);
+    if(receipt.publicationLinkage==='UNLINKED_BOOTSTRAP'){
+      assert.equal(approval.publicationLinkage,'UNLINKED_BOOTSTRAP');
+      assert.equal(approval.candidateLicensePacketSha256,receipt.candidateLicensePacketSha256,'new candidate packet approval required');
+    }
+    return {receipt,approval};
   };
   const admitted=admit();
   if(!execute)console.log('SCA_SCOPED_SIGNED_OPERATOR_DRY_RUN='+JSON.stringify({candidateSha256:admitted.receipt.candidateSha256,uploadExecuted:false,officialAudit:'FAIL_NOT_WAIVED'}));
@@ -73,7 +83,8 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
         readback:async(artifact,approval)=>{
           const metadata=JSON.parse(await get('https://api.github.com/users/gycha0109-beep/packages/npm/'+encodeURIComponent(artifact.originalName),token,1024*1024));
           const bytes=await get(approval.tarballUrls[artifact.originalName],token);
-          verifyScopedReadbackBytes({metadata,originalName:artifact.originalName,originalBytes:fs.readFileSync(originals[artifact.originalName]),artifact,bytes});
+          verifyScopedReadbackBytes({metadata,originalName:artifact.originalName,originalBytes:fs.readFileSync(originals[artifact.originalName]),artifact,bytes,
+            stage:artifact.publicationLinkage==='UNLINKED_BOOTSTRAP'?'INITIAL_UNLINKED':'FINAL_LINKED'});
           await assertScopedAccessDenied(approval.tarballUrls[artifact.originalName]);
           await assertScopedAccessDenied(approval.tarballUrls[artifact.originalName],{unauthorizedToken:other});
         }});

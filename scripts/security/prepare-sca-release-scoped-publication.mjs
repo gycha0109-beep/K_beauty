@@ -24,6 +24,10 @@ export function scopedPublicationPlan(receipt,review){
       expectedVisibility:'private',repository:'gycha0109-beep/K_beauty'};
   });
   return {schema:'bejewely.scoped-prepublication-plan.v1',candidateSha256:receipt.candidateSha256,
+    publicationLinkage:receipt.publicationLinkage||'PRELINKED',
+    ...(receipt.publicationLinkage==='UNLINKED_BOOTSTRAP'?{candidateLicensePacketSha256:receipt.candidateLicensePacketSha256,
+      stages:['PRIVATE_UNLINKED_OWNER_ONLY','OWNER_APPROVED_INDIVIDUAL_ACL','LATER_SOURCE_LINK_WITHOUT_INHERITANCE','SEPARATELY_REVIEWED_INSTALL_ACCESS'],
+      globalInheritanceChangeRequired:false,liveLinkedPrivacyAndActionsRead:'NOT_RUN'}:{}),
     preparation:'OFFLINE_ONLY_NOT_A_SIGNED_PUBLICATION_APPROVAL',uploadExecuted:false,executionReady:false,
     originalAudit:'FAIL_NOT_WAIVED',packages,
     prepublicationRequirements:['Owner final redistribution decision including unresolved OAEP terms',
