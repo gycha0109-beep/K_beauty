@@ -6,7 +6,7 @@ import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-
 import fs from "node:fs";
 import {
   assertTrustP2DCohort,cohortToTrustedDiscoveryRow,
-  assessTrustP2DDiscovery,runTrustP2DFiveBrandPilot,
+  assessTrustP2DDiscovery,diagnoseTrustP2DSite,runTrustP2DFiveBrandPilot,
   summarizeTrustP2D,runTrustP2DCli,
 } from "./trust-p2d-five-brand-pilot.mjs";
 const cohort=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v1.json","utf8"));
@@ -136,6 +136,54 @@ assert.equal(mock.items[0].assessment.sourceDiagnostics.length,1);
 assert.ok(Array.isArray(mock.items[0].assessment.sourceDiagnostics[0].pages));
 assert.equal(JSON.stringify(mock).includes("<title>"),false);
 assert.equal(mock.summary.dbWrites,0);
+// Offline-only stage diagnosis: distinguish source access, sitemap/index
+// discovery, wrong variants and page identity without any network request.
+const diagnosticSite=(overrides={})=>({
+  status:"NO_SAFE_CANDIDATE",pages:[],observations:[],
+  homepageIndexStatus:"NOT_NEEDED",peerIndexCandidateCount:0,...overrides,
+});
+const siteReason=(site)=>diagnoseTrustP2DSite(site).reason;
+assert.equal(siteReason(diagnosticSite({status:"ROBOTS_UNAVAILABLE"})),
+  "ROBOTS_UNAVAILABLE_HOLD");
+assert.equal(siteReason(diagnosticSite({status:"ROBOTS_DISALLOWED"})),
+  "ROBOTS_DISALLOWED_HOLD");
+assert.equal(siteReason(diagnosticSite({status:"CRAWL_DELAY_NOT_SUPPORTED"})),
+  "ROBOTS_PACING_HOLD");
+assert.equal(siteReason(diagnosticSite({observations:[{kind:"sitemap",status:"FETCHED"}],
+  homepageIndexStatus:"FETCHED"})),"NO_ELIGIBLE_OFFICIAL_INDEX_LINK");
+assert.equal(siteReason(diagnosticSite({observations:[{kind:"sitemap",status:"FETCHED"}]})),
+  "NO_MATCHING_SITEMAP_URL");
+assert.equal(siteReason(diagnosticSite({observations:[{kind:"sitemap",status:"SOURCE_BLOCKED"}]})),
+  "SITEMAP_FETCH_HOLD");
+assert.equal(siteReason(diagnosticSite({homepageIndexStatus:"SOURCE_BLOCKED"})),
+  "OFFICIAL_INDEX_FETCH_HOLD");
+assert.equal(siteReason(diagnosticSite({pages:[{status:"SOURCE_BLOCKED"}]})),
+  "PRODUCT_PAGE_FETCH_HOLD");
+assert.equal(siteReason(diagnosticSite({pages:[{status:"IDENTITY_UNRESOLVED",
+  sha256:"a".repeat(64)}]})),"FETCHED_PAGE_IDENTITY_UNRESOLVED");
+assert.equal(siteReason(diagnosticSite({pages:[{status:"CATALOG_SIZE_MISMATCH",
+  sha256:"a".repeat(64)}]})),"WRONG_VARIANT_PAGE_HOLD");
+assert.equal(siteReason(diagnosticSite({pages:[{status:"STRUCTURED_NAME_CANDIDATE",
+  sha256:"a".repeat(64)}]})),"NAME_CANDIDATE_REVIEW_ONLY");
+const counts=diagnoseTrustP2DSite(diagnosticSite({
+  observations:[{kind:"sitemap",status:"FETCHED"},{kind:"sitemap",status:"SOURCE_BLOCKED"}],
+  peerIndexCandidateCount:1,
+  pages:[{status:"CATALOG_SIZE_MISMATCH",sha256:"a".repeat(64)}],
+}));
+assert.equal(counts.sitemapFetchedCount,1);
+assert.equal(counts.sitemapUnavailableCount,1);
+assert.equal(counts.peerLinkCandidateCount,1);
+assert.equal(counts.wrongVariantCount,1);
+assert.equal(counts.pagesFetchedCount,1);
+assert.equal(counts.verifiedExactSkuCount,0);
+assert.equal(counts.sourceBindingAuthorized,false);
+assert.equal(Object.isFrozen(counts),true);
+assert.throws(()=>diagnoseTrustP2DSite({pages:null}),
+  /P2D_INVALID_SITE_DIAGNOSTIC/);
+assert.ok(mock.items.every(item=>item.assessment.sourceDiagnostics.every(site=>
+  site.stageDiagnosis?.sourceBindingAuthorized===false)));
+assert.equal(JSON.stringify(mock).includes("<title>"),false);
+
 assert.equal(assessed("CANDIDATES_DISCOVERED",[page("SCOPED_HEADING_CANDIDATE")]).state,
  "IDENTITY_CANDIDATE_REVIEW_REQUIRED");
 assert.equal(assessed("CANDIDATES_DISCOVERED",[page("BODY_NAME_MENTION_ONLY")]).state,
