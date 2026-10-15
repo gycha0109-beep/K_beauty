@@ -210,8 +210,9 @@ for(const re of [
  /ALTER TABLE\s+public\.products/i,
  /VALUES\('R16I_S_NATURE_PRODUCT_1',true/
 ])lacks(migration,re);
-yes(migration.indexOf("SELECT 1 FROM public.products")<
-    migration.indexOf("SELECT * INTO e FROM public.admin_product_correction_evidence_v1"),
+const productLock=migration.indexOf("PERFORM 1 FROM public.products");
+const evidenceLock=migration.indexOf("SELECT * INTO e FROM public.admin_product_correction_evidence_v1");
+yes(productLock>=0&&evidenceLock>productLock,
  "Product lock precedes evidence lock and current verdict read");
 console.log(JSON.stringify({
  status:"PASS",stage:"D8K12_OWNER_SELF_REVIEW_AND_REVOCATION_CONTRACT",
