@@ -15,6 +15,10 @@ import "./verify-d8k5-active-offer-slot-coverage-v1.mjs";
 import "./verify-d8k6-option-review-history-shadow-v1.mjs";
 // D8K-7: static safety gate for manually run disposable local Docker PG17 tests.
 import "./verify-d8k7-local-pg17-harness-v1.mjs";
+// D8K-8: local artifact SHA256 + seller-specific selected option identity and
+// independent reviewer packet, all offline without price/CTA publication.
+import "./verify-d8k8-manual-option-review-intake-v1.mjs";
+import "./verify-d8k8-local-file-cli-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
