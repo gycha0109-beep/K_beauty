@@ -166,8 +166,9 @@ assert(v1PromptBefore.includes('"face": ' + faceJson));
 assert.equal(candidatePrompt.split('"axisEvidence"').length - 1, 1);
 assert(!candidatePrompt.includes('"signals"'));
 assert(candidatePrompt.includes("Face and Skin are independent"));
-assert(candidatePrompt.includes("exactly seven Skin axes") === false ||
-  candidatePrompt.includes("Exactly seven Skin axes"));
+assert(candidatePrompt.includes("If eligibility.skinAnalysisEligible is true, provide exactly seven Skin axes"));
+assert(candidatePrompt.includes("If eligibility.skinAnalysisEligible is false, set skin.axisEvidence to []"));
+assert(candidatePrompt.includes("overrides the seven-row instruction ONLY when Skin analysis is ineligible"));
 for (const axis of SKIN_VISIBLE_AXES) {
   assert(candidatePrompt.includes('"axis": "' + axis + '"'));
 }
