@@ -269,3 +269,12 @@
 - Added explicit `shipping_price_basis`: `unknown`→NULL, `seller_published_flat`→non-null integer including 0. DTO rejects inconsistent shipping status.
 - New pure `product-offer-review-history-shadow-v1.mjs` and D8K-6 regression imported into existing CI. Synthetic in-memory tests: 107 assertions D8K-6 PASS, 274 D8K-5 PASS. **No real PostgreSQL execution or release approval.**
 - The existing offer/option/parent schema remains unchanged; SQL only in docs, no migrations/API/Auth/RLS/grants/production mutation. #1208 still blocks merge/deploy.
+
+## 15. D8K-7 disposable local Docker PG17 acceptance handoff (2026-10-15)
+
+- **Status: LOCAL_PG17_RUNNER_PREPARED / STATIC_GUARDS_PASS / USER_LOCAL_SQL_RUN_PENDING.** See [D8K-7 Windows Docker runbook](r16i-r4-d8k7-local-docker-pg17-acceptance-20261015.md).
+- Discovered the D8K-6 review-only SQL schema had unexpectedly grown to 19KB with repeated/truncated `collector_actor_key` and reviewer digest CHECK fragments. It was not executable despite prior keyword-based checks. Rebuilt the schema review proposal to ~5KB, exactly 2 tables and 1 transaction.
+- Added `scripts/product-evidence/run-d8k7-local-pg17.mjs`: creates/removes its **own** local Postgres 17 container with `--network=none`, no port/bind/volume, ephemeral tmpfs and no `.env`/Supabase access. Before running, user manually pulls `postgres:17`. On Windows PowerShell: `node scripts/product-evidence/run-d8k7-local-pg17.mjs`.
+- Local fixture uses existing minimal Product/Offer and restricted owner role baseline; checks real PG17 schema/negative role grants/RLS, 65-product and 257-option caps, option revocation, source/actor separation, and shipping CHECK constraints.
+- D8K7 static verifier imported into existing D8F CI: 44 source/harness assertions PASS in isolated JS. Real PG17 test **has not been run by assistant**; user will run locally and return `D8K7_LOCAL_DOCKER_PG17_PASS` or first error.
+- No hosted DB, protected migrations/API/Auth, production data, price display, purchase CTA or deployment modified; #1208 still blocks merge/release.
