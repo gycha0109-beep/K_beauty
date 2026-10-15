@@ -325,3 +325,13 @@
 - 이번 검사는 `offlineSyntheticOnly=true`, 실제 서버 RPC/실제 seller 증빙/Product Fact/live admission/운영 DB 변경·가격/CTA 전부 NOT VERIFIED/NOT AUTHORIZED. **D8K-9 로컬 검증 완료 ≠ 실제 판매 가격 비교 출시 가능.**
 - 별도 Git 오류 `origin/fix/migration-composer-form-disambiguation`는 D8K-9 정상 fetch/check-out 이후 검증 PASS와 무관. 해당 다른 브랜치의 문제는 여기서 임의 수정하지 않음.
 - 다음 실질 게이트는 권한 승인된 **현재 DB 읽기 전용 Product/Offer 3-way 실사** + 실제 선택옵션 캡처·독립 검토다. #1208 OPEN, stacked Draft PR 유지, merge/deploy 금지.
+
+## 18. D8K-10 operational Supabase SELECT-only reality check — 2026-10-15
+
+- **Status: USER_APPROVED_HOSTED_DB_SELECT_COMPLETED / EXISTING_R16I_EVIDENCE_AVAILABLE_BUT_UNVERIFIED / COMMERCE_RELEASE_HOLD.** [D8K-10 operational read-only audit](r16i-r4-d8k10-operational-select-only-audit-20261015.md); [redacted structured snapshot](../../fixtures/recommendation-metadata/r16i-d8k10-live-select-only-snapshot-20261015.json).
+- Actual connected Seoul-region Supabase PG17.6 at 16:47 KST: R16I Product `b639c8b4-6a61-440e-b4db-fac7381593ff` still `size_ml=160`; `product_fact_subjects=[]`, trust intake `SUBJECT_CREATION_REQUIRED/REVIEW_REQUIRED`, `product_source_bindings` `hwahae:45194` `product_subject_unresolved`.
+- **R16I parent product_offers=0; by seller/listing ID=0; by seller/listing URL=0**. No matching Offer for seller candidate `hwahae:35905`, Coupang product 8393759227, or SNATURE product 151. No approved proposal, review decision, application, or enabled R16I release gate.
+- Important positive discovery: **R16I already has 2 archived evidence rows** (official single 80ml and Hwahae 80ml×2+serum10ml). Both have object path and SHA-256 reference but are currently `UNVERIFIED`; no image file/body read. Avoid asking to re-capture everything; independently review existing records first.
+- Across all **73** actual Product Offer rows: 72 OliveYoung are `product_subject_unresolved` with unknown stock/link; 1 Torriden official is product-scoped/in_stock but `link_health_state=unchecked`. D8K-9 current/product-scoped/in-stock/healthy/KR/KRW **0 eligible**, before even checking option evidence.
+- Existing restricted RPC `read_product_offer_presentation_authority_v2(uuid[])` exists with execution restricted to `recommendation_admission_runtime`; new option child tables/RPC do **not** exist on hosted DB. Did **NOT** call RPC or alter data, RLS, role, Auth, Storage, API or migrations.
+- **Next protected hinge:** authorize controlled READ of the two existing restricted Storage originals and independent authenticated owner review (separate from prior SELECT-only approval), then design correction/approval and real parent Offer; schema/DB writes/price display/merge/deploy remain unapproved. Supply-chain #1208 still OPEN.
