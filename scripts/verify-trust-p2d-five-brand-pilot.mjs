@@ -111,6 +111,12 @@ assert.deepEqual(selectTrustP2CandidateLocators([],[
 ],linkTarget),[sitemapCorrect]);
 assert.deepEqual(selectTrustP2CandidateLocators(
   [sitemapUnknown],[sitemapCorrect],linkTarget),[sitemapCorrect,sitemapUnknown]);
+// www and apex can both pass legacy host normalization, but cannot share
+// a same-origin budget. Reject different origin before truncating candidates.
+assert.deepEqual(selectTrustP2CandidateLocators([],[
+  "https://www.neopharmshop.co.kr/product/mle-lotion-600ml/8000",
+  sitemapCorrect,
+],linkTarget,{origin:"https://neopharmshop.co.kr",max:1}),[sitemapCorrect]);
 // Full read-only integration: three same-name size variants in a sitemap,
 // including the correct 600ml after two wrong URLs. Broader in-memory
 // consideration (<=12) must not expand network product-page requests (>2).
