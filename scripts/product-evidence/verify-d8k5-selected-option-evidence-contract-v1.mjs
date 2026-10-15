@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   SELECTED_OPTION_EVIDENCE_READ_VERSION,
-  inspectSelectedOptionEvidenceResponse
+  inspectSelectedOptionEvidenceResponse, readSelectedOptionEvidenceTransport
 } from "../../lib/commerce/product-offer-selected-option-evidence-v1.mjs";
 const id = n => "00000000-0000-4000-8000-" + n.toString(16).padStart(12,"0");
 const sha = "b".repeat(64);
@@ -107,6 +107,75 @@ held(input(Array.from({length:257},(_,i)=>option(i+1))),"OPTION_ROW_LIMIT_OR_SHA
 const empty=inspectSelectedOptionEvidenceResponse(input([]));
 eq(empty.status,"STRUCTURALLY_VALID_PRIVATE_CANDIDATES");
 eq(empty.optionRowCount,0);eq(empty.selectedOptionPriceDisplayAuthorized,false);
+
+// Injected-reader transport is a private shape test, NOT a hosted RPC call.
+let readerCalls=[];
+const transport=await readSelectedOptionEvidenceTransport({
+ productIds:[id(1),id(1).toUpperCase()],
+ invokeAuthorizedRead:batch=>{
+   readerCalls.push(batch);
+   return envelope([option(1)]);
+ },
+ nowIso:now,maxAgeMs:86400000
+});
+eq(readerCalls,[[id(1)]]);
+eq(transport.status,"PRIVATE_OPTION_EVIDENCE_SHADOW");
+eq(transport.optionRowCount,1);
+eq(transport.selectedOptionPriceDisplayAuthorized,false);
+eq(transport.authenticatedServerReaderProven,false);
+eq(transport.optionsByProduct[id(1)][0].observedPrice,24500);
+const missingReader=await readSelectedOptionEvidenceTransport({
+ productIds:[id(1)],nowIso:now,maxAgeMs:86400000
+});
+eq(missingReader.reason,"AUTHORIZED_SERVER_READER_NOT_CONFIGURED");
+const failedReader=await readSelectedOptionEvidenceTransport({
+ productIds:[id(1)],nowIso:now,maxAgeMs:86400000,
+ invokeAuthorizedRead:()=>{throw Error("never reveal secret");}
+});
+eq(failedReader.reason,"PRIVATE_OPTION_READ_FAILED");
+eq(JSON.stringify(failedReader).includes("never reveal secret"),false);
+eq(failedReader.optionsByProduct,{});
+const ids65=Array.from({length:65},(_,i)=>id(i+1));
+readerCalls=[];
+const twoBatch=await readSelectedOptionEvidenceTransport({
+ productIds:ids65,nowIso:now,maxAgeMs:86400000,
+ invokeAuthorizedRead:batch=>{
+   readerCalls.push(batch);
+   return envelope(batch.map((pid,i)=>option(i+1,{
+     product_id:pid,offer_id:id(1000+Number(pid.slice(-12))),
+     observation_id:id(2000+Number(pid.slice(-12))),
+     review_id:id(3000+Number(pid.slice(-12)))
+   })));
+ }
+});
+eq(twoBatch.status,"PRIVATE_OPTION_EVIDENCE_SHADOW");
+eq(readerCalls.map(batch=>batch.length),[64,1]);
+eq(twoBatch.optionRowCount,65);
+eq(twoBatch.rpcBatchCount,2);
+const laterError=await readSelectedOptionEvidenceTransport({
+ productIds:ids65,nowIso:now,maxAgeMs:86400000,
+ invokeAuthorizedRead:batch=>
+   batch.length===1?{...envelope([]),status:"NO_AUTHORITY"}:envelope([option(1)])
+});
+eq(laterError.status,"HOLD");
+eq(laterError.optionsByProduct,{});
+const tooMany=await readSelectedOptionEvidenceTransport({
+ productIds:ids65,nowIso:now,maxAgeMs:86400000,
+ invokeAuthorizedRead:batch=>envelope(batch.flatMap((pid,i)=>
+   Array.from({length:4},(_,j)=>option(i*4+j+1,{
+     product_id:pid,
+     offer_id:id(9000+Number(pid.slice(-12))),
+     seller_option_key:"choice"+j,
+     observation_id:id(10000+Number(pid.slice(-12))*4+j),
+     review_id:id(20000+Number(pid.slice(-12))*4+j)
+   }))))
+});
+eq(tooMany.reason,"AGGREGATE_OPTION_CAPACITY_EXCEEDED");
+eq(tooMany.optionsByProduct,{});
+const noProducts=await readSelectedOptionEvidenceTransport({
+ productIds:[],invokeAuthorizedRead:()=>{throw Error("not called");}
+});
+eq(noProducts.status,"EMPTY");
 
 const schema=readFileSync("docs/taxonomy-ai/sql/d8k5-selected-option-evidence-schema-review-only.sql","utf8");
 const reader=readFileSync("docs/taxonomy-ai/sql/d8k5-selected-option-private-read-review-only.sql","utf8");
