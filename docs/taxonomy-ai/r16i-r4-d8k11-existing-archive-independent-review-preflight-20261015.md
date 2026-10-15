@@ -42,6 +42,8 @@
 
 또한 `reviewR16IEvidence`는 승인 시 원본 Storage 바이트를 내려받아 SHA-256을 다시 계산하거나 reviewer의 7개 항목별 확인 결과를 서버에서 검증하지 않는다. 기존 `VERIFIED`의 의미를 D8K-11이 요구하는 ‘독립 원본 검토 완료’로 자동 치환할 수 없다.
 
+현재 적용된 원장 제안 소스 `supabase/migrations/20261012172837_taxonomy_ai_r16i_correction_approval_ledger_v1.sql`에는 `evidence_id uuid NOT NULL UNIQUE`가 설정돼 있어 **증빙 1건에 두 번째 판정 이벤트를 append하여 최초 VERIFIED를 철회하는 방식도 지원하지 않는다**. 따라서 리뷰어 분리뿐 아니라 승인 철회/감사 이력 모델도 보호 변경 승인 후 재설계가 필요하다.
+
 이는 **새로 발견한 보호 영역 결함**이지만, `Auth/관리자 API/원장 INSERT 동작`은 사용자 승인 없이는 수정하지 않았다. 필요한 후속 보완(별도 승인): 제출자 ≠ 인증된 OWNER 검토자에 대한 서버-side 검사, 원본 해시/7항목 실제 리뷰 근거 결속, 기록 append-only/철회 상태·충돌 안전성. 그러기 전에는 `VERIFIED`가 찍혀도 가격 공개로 자동 승격하면 안 된다.
 
 ## 4. 이번에 구현한 D8K-11 오프라인 검사
