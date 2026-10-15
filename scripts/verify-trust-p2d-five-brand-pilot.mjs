@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { inspectTrustOfficialVariantScope } from "../lib/trust/official-variant-scope-v1.mjs";
 import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2CandidateLocators } from "../lib/trust/official-product-discovery-p2-v1.mjs";
 import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
+import { REDISCOVERY_CONTRACT, discoverOfficialSourceCandidates } from "../lib/trust/official-source-rediscovery.mjs";
 import fs from "node:fs";
 import {
   assertTrustP2DCohort,cohortToTrustedDiscoveryRow,
@@ -289,6 +290,45 @@ assert.deepEqual(blockedCalls,[peer,lateAllowed]);
 assert.deepEqual(blockedTrial.sites[0].pages.map(p=>p.url),[lateAllowed]);
 assert.equal(blockedTrial.recommendationWrites,0);
 assert.equal(blockedTrial.marketVerified,false);
+
+// Phase8H compatibility is verified by the canonical TRUST job as well as
+// its original verifier: default/no-op rank order and bounded error isolation.
+const phase8hFixture={
+  contract:REDISCOVERY_CONTRACT,case_id:"p2-e6-offline-only",
+  allowed_hosts:["neopharmshop.co.kr"],
+  product_path_prefixes:["/product/"],query_terms:["mle lotion"],
+  candidate_limit:2,max_sitemaps:1,external_search_seeds:[],
+  discovery_surfaces:[{kind:"sitemap",url:"https://neopharmshop.co.kr/sitemap.xml"}],
+};
+const phase8hXml="<urlset><url><loc>"+
+  "https://neopharmshop.co.kr/product/mle-lotion-%ZZ/99</loc></url>"+
+  "<url><loc>"+sitemapUnknown+"</loc></url>"+
+  "<url><loc>"+sitemapCorrect+"</loc></url></urlset>";
+const phase8hMock={
+  fetchHtml:async()=>{throw Error("HTML_INDEX_NOT_ALLOWED");},
+  fetchSitemap:async url=>({bytes:Buffer.from(phase8hXml),finalUrl:url}),
+};
+const phase8hDefault=await discoverOfficialSourceCandidates(phase8hFixture,phase8hMock);
+const phase8hNeutral=await discoverOfficialSourceCandidates(phase8hFixture,{
+  ...phase8hMock,candidatePriority:()=>0,
+});
+assert.deepEqual(phase8hNeutral,phase8hDefault);
+assert.equal(phase8hDefault.surface_observations[0].status,"FETCHED");
+assert.deepEqual(phase8hDefault.candidates.map(c=>c.candidate_locator),[
+  sitemapUnknown,sitemapCorrect,
+]);
+const phase8hPromoted=await discoverOfficialSourceCandidates(phase8hFixture,{
+  ...phase8hMock,
+  candidatePriority:url=>url===sitemapCorrect?2:1,
+});
+assert.deepEqual(phase8hPromoted.candidates.map(c=>c.candidate_locator),[
+  sitemapCorrect,sitemapUnknown,
+]);
+assert.equal(phase8hPromoted.candidate_count,2);
+await assert.rejects(()=>discoverOfficialSourceCandidates(phase8hFixture,{
+  ...phase8hMock,candidatePriority:()=>3,
+}),/TRUST_PHASE8H_CANDIDATE_PRIORITY_INVALID/);
+assert.equal(phase8hPromoted.mutation_policy,"READ_ONLY_NO_PRODUCTION_WRITE");
 
 const v2=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v2.json","utf8"));
 assert.equal(assertTrustP2DCohort(v2),true);
