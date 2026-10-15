@@ -27,6 +27,18 @@ This is **not** a skin-accuracy test. Nonhuman geometry is chosen specifically t
 - The one-shot GitHub Actions workflow was **removed immediately after** successful execution (commit `46e8194a54eeee3ba6d736326f43b2e6bf4d19b4`). It is NOT shipped as a persistent paid trigger; this file and the mock-only CI verifier remain. Actual human-photo eligibility and Face/Style parity are still untested, and no images or raw Provider responses are in the repo.
 - The connection-only synthetic text runs #38702440175 and #38702819285 are separately recorded in #1334; combined actual-provider trials so far: **two text calls + two nonhuman image calls**, no human facial photo.
 
+## Subsequent offline remediation — mutually exclusive v2 Skin instructions
+
+The live nonhuman trial reported **v2 output 1,615 tokens, JSON complete but eligibility-blocked Skin**, with the raw axis-row count unmeasured in that earlier run. The original research candidate prompt simultaneously instructed "exactly seven axes" and (via common eligibility rules) "empty downstream arrays on ineligible images." These instructions conflicted.
+
+The **new, unactivated research candidate** resolves them provisionally:
+
+1. If `eligibility.skinAnalysisEligible === true`: produce exactly **seven** explicitly named Skin axis rows, using `present / not_seen / unassessable / unknown`; no UV and no synthesized zero for missing evidence.
+2. If `eligibility.skinAnalysisEligible === false`: produce `skin.axisEvidence: []` and no guessed Skin state, 0, or positive observation. This does **not** disable independently eligible Face observations in the same shared Vision response.
+3. The new `skin-nonface-v2-abstention-audit.mjs` checks **raw rows before the existing eligibility gate blocks them**. It differentiates safe empty arrays, seven non-observational rows (still not the chosen empty contract), partial/duplicate rows, and unsafe `present` / `not_seen` on nonhuman photos. It never exposes raw Provider response, text, evidence or image and **never authorizes scoring or release**.
+4. `verify-skin-nonface-v2-abstention-audit.mjs` adds synthetic negative cases for hallucinated positive/zero, duplicate, truncated, unauthorized extra fields, malformed schema and privacy disclosure. The updated nonface-pair mock expects empty Skin rows for ineligible input.
+5. **This policy is evaluation-only and pending shared Vision/Style owner review.** The already completed paid #38704168643 trial used the earlier candidate prompt; its evidence is not retroactively changed. Additional real paid measurements, if any, must be separately identified with exact SHA/Prompt version. Human photo accuracy, Face parity and 2,200-token stability for eligible faces remain pending.
+
 ## Valid and invalid interpretations
 
 - `NONFACE_PROVIDER_RESPONSE_CAPTURED_REVIEW_ONLY` means both transport calls returned JSON and `finish_reason=stop`. It is **not** structural/Face parity PASS unless each sub-evaluation supports that finding.
