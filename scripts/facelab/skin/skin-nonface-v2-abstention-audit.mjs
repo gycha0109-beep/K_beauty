@@ -33,7 +33,8 @@ export function inspectNonfaceSkinV2Abstention(parsed) {
     shapeIssues: [],
     stateCounts: { present: 0, not_seen: 0, unassessable: 0, unknown: 0 },
     verdict: "INVALID_OR_NOT_V2",
-    contractAmbiguity: "INELIGIBLE_EMPTY_ARRAY_VS_SEVEN_AXIS_REQUIREMENT",
+    contractPolicy: "RESEARCH_CANDIDATE_EMPTY_WHEN_INELIGIBLE_SEVEN_WHEN_ELIGIBLE",
+    ownerApprovalPending: true,
     providerSourcePersisted: false,
     actualHumanSkinAccuracyVerified: false,
     productReady: false,
@@ -59,11 +60,11 @@ export function inspectNonfaceSkinV2Abstention(parsed) {
   const rows = parsed.skin.axisEvidence;
   const rowCount = rows.length;
   if (rowCount === 0) {
-    // Eligibility instructions ask for empty downstream arrays on ineligible
-    // images, while candidate v2 asks for exactly seven Skin rows. Do not
-    // silently claim schema PASS for either interpretation.
+    // Clarified research v2 prompt asks for [] when Skin ineligible.
+    // This is only an offline candidate policy, not the live Provider contract.
     return { ...nonfaceBase, axisRowCount: 0,
-      withheldPositiveOrZeroCues: true, verdict: "EMPTY_AXES_REQUIRES_CONTRACT_DECISION" };
+      axisShapeValid: true, withheldPositiveOrZeroCues: true,
+      verdict: "EXPECTED_INELIGIBLE_EMPTY_AXES_RESEARCH_ONLY" };
   }
   if (rowCount !== SKIN_VISIBLE_AXES.length) {
     return { ...nonfaceBase, axisRowCount: rowCount,
@@ -98,7 +99,7 @@ export function inspectNonfaceSkinV2Abstention(parsed) {
     withheldPositiveOrZeroCues: safeAbstention,
     stateCounts: states,
     verdict: safeAbstention
-      ? "SEVEN_ABSTAINING_AXES_REQUIRES_CONTRACT_DECISION"
+      ? "SEVEN_ABSTAINING_AXES_NOT_EMPTY_CONTRACT"
       : "UNSAFE_NONFACE_POSITIVE_OR_OBSERVED_ZERO"
   };
 }
