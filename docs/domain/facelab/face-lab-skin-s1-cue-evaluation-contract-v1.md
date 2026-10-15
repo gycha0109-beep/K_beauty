@@ -73,6 +73,17 @@ Case: `{caseId, subjectGroupId, captureTags: [...], signals: {axis:{reference:{a
 - Existing Current Main Health 실행 체인에 synthetic-only verifier만 **단일 추가**, 새 CI workflow 없음.
 - 각 사례의 독립 annotation provenance, labeler disagreement, consent/retention 계약 검증은 현재 evaluator 외부의 Human governance gate.
 
+## 6.1 독립 평가자 사이의 판단 일치 확인 (2026-10-15 추가)
+
+사람 두 명이 사진을 보고 다르게 판단하는 경우를 모델의 실패 또는 정답으로 임의 해석하면 평가 자체가 잘못될 수 있다. 따라서 신호별 정확도를 계산하기 **전에** 평가자끼리 어느 정도 일치했는지 따로 확인하는 계산기를 추가한다.
+
+- 구현: `scripts/facelab/skin/skin-human-annotation-agreement.mjs`, 테스트: `verify-face-lab-skin-s1-human-agreement.mjs`.
+- 입력은 `datasetId`와 케이스별 `caseId`, 7개 피부 시각 단서 중 한 축, 독립 평가자 A/B 각각의 관찰 가능 상태 및 보임/안 보임 판정만 허용한다. 이름·사진·의료정보·주소·웹 URL은 허용하지 않는다.
+- 출력: 전체/축별 일치 비율, 평가자 모두 관찰 가능한 상황에서의 시각 단서 일치율, 관찰 가능 여부 불일치 건수, 판정 불일치 목록, 참고용 일치도 지표(계산 불가능 시 null).
+- 두 사람의 결과가 다를 때 **임의 다수결이나 자동 정답 생성은 하지 않는다**. 별도 검수 필요 표시를 출력한다.
+- 평가자들이 실제로 서로의 판단을 모른 채 사진을 확인했는지, 얼굴 사진에 대한 동의가 있었는지, 검수자가 전문성을 갖췄는지는 코드만으로 입증할 수 없다. 따라서 테스트가 모두 통과해도 사진 판독 정확도·전문가 검수 완료를 주장하지 않는다.
+- 기준선에서 테스트는 합성 값으로만 통과할 수 있게 구성되어 있으며, 실제 사진 데이터를 수집하거나 저장하지 않는다.
+
 ## 7. 출시에 필요한 독립 검증 (HOLD)
 
 1. 표본 다양성 및 수집 권리 승인, 독립 평가자/맹검 프로토콜, axis별 구체적 관찰 앵커/부재 정의와 합의 기준.
