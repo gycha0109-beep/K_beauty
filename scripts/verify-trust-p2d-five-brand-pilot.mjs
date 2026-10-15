@@ -126,7 +126,7 @@ const sitemapRun=await runTrustP2Discovery(cohortToTrustedDiscoveryRow({
 }),{
   ...sized,name_en:"MLE Lotion",normalized_name:"MLE 로션",
 },{
-  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url}),
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
   fetchSitemap:async url=>({bytes:Buffer.from("<urlset>"+[
     sitemapWrong300,sitemapWrong60,sitemapCorrect,sitemapKit,
   ].map(x=>"<url><loc>"+x+"</loc></url>").join("")+"</urlset>"),finalUrl:url}),
