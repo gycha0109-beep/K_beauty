@@ -14,6 +14,8 @@ import {fileURLToPath} from "node:url";
 import {materializePrivateBracesSource} from "./materialize-private-braces-source.mjs";
 import {prepareScopedArchives,verifyScopedCandidate,startScopedFixture,scopedName,scope} from "./sca-release-scoped.mjs";
 import {prepareBrowserNoticeKit,verifyBrowserNoticeKit} from "./sca-release-browser-notices.mjs";
+import {verifyConditionalReview} from './sca-release-review-preflight.mjs';
+import {scopedPublicationPlan} from './prepare-sca-release-scoped-publication.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const hash=(bytes,alg="sha256")=>createHash(alg).update(bytes).digest("hex");
@@ -118,6 +120,9 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
       console.log('SCA_SCOPED_BROWSER_NOTICE_KIT='+JSON.stringify(browserNoticeKit));
       console.log('SCA_SCOPED_DIRECT_ALIAS=PASS');
       console.log('SCA_SCOPED_CANDIDATE='+JSON.stringify({candidateSha256:scoped.candidateSha256,manifest:scoped.manifest,publication:'NOT_RUN'}));
+      const review=verifyConditionalReview(JSON.parse(fs.readFileSync(path.join(root,'security/release/sca-b6-conditional-review-decision.json'))));
+      console.log('SCA_CONDITIONAL_REVIEW_PREFLIGHT='+JSON.stringify(review));
+      console.log('SCA_SCOPED_PREPUBLICATION_PLAN='+JSON.stringify(scopedPublicationPlan(scoped,review)));
     }
     const manifest=JSON.parse(originalManifestBytes);
     const aliasSpecs=Object.fromEntries(scoped.artifacts.map(a=>[a.originalName,'npm:'+a.name+'@'+a.version]));

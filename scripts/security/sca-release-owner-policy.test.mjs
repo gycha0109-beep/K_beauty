@@ -4,6 +4,43 @@ import {generateKeyPairSync,sign} from 'node:crypto';
 import {verifyApproval,requiredRoles} from './sca-release-bundle.mjs';
 import {verifyScopedApproval} from './sca-release-scoped.mjs';
 import {ownerPolicyDecisionSha256,licensePacketSha256} from './sca-release-owner-policy.mjs';
+import fs from 'node:fs';
+import {verifyConditionalReview} from './sca-release-review-preflight.mjs';
+import {scopedPublicationPlan} from './prepare-sca-release-scoped-publication.mjs';
+
+const conditionalReview=()=>JSON.parse(fs.readFileSync(new URL('../../security/release/sca-b6-conditional-review-decision.json',import.meta.url)));
+test('GitHub prepublication plan preserves scoped/original mapping and never executes or clears audit',()=>{
+  const receipt={candidateSha256:'a'.repeat(64),artifacts:['braces','node-forge'].map(originalName=>({originalName,
+    name:'@gycha0109-beep/'+originalName,version:originalName==='braces'?'3.0.3':'1.4.0',sourceAndBrowserBytesPreserved:true,
+    sha256:'b'.repeat(64),originalArchiveSha256:'c'.repeat(64),licenseSha256:'d'.repeat(64)}))};
+  const review=verifyConditionalReview(conditionalReview()),p=scopedPublicationPlan(receipt,review);
+  assert.equal(p.uploadExecuted,false);assert.equal(p.executionReady,false);assert.equal(p.originalAudit,'FAIL_NOT_WAIVED');
+  assert.equal(p.packages[0].expectedVisibility,'private');assert.ok(p.packages[1].expectedReadbackPrefix.includes('/@gycha0109-beep/node-forge/1.4.0/'));
+  receipt.artifacts[0].name='braces';assert.throws(()=>scopedPublicationPlan(receipt,review));
+});
+test('actual conditional owner instruction permits only offline review with open OAEP conditions',()=>{
+  const r=verifyConditionalReview(conditionalReview());
+  assert.equal(r.reviewAuthorization,'VALID_LIMITED_REVIEW_ONLY');assert.equal(r.executionReady,false);
+  assert.equal(r.signedReleaseApproval,false);assert.equal(r.originalAudit,'FAIL_NOT_WAIVED');
+});
+test('conditional record rejects every unauthorized execution/legal permission and closed rights',()=>{
+  for(const key of ['legalConformityConfirmed','redistributionApproved','uploadApproved','costApproved','auditExceptionApproved','mergeApproved','productionApproved','unresolvedRightsCleared','upstreamInquiryAuthorized','upstreamReplyRequired','cryptographicallySigned']){
+    const r=conditionalReview();r[key]=true;assert.throws(()=>verifyConditionalReview(r));
+  }
+  const r=conditionalReview();r.unresolved=[];assert.throws(()=>verifyConditionalReview(r));
+});
+test('conditional record rejects altered evidence, notice packet or unapproved review basis',()=>{
+  assert.throws(()=>verifyConditionalReview(conditionalReview(),()=>Buffer.from('tamper')));
+  for(const change of [r=>r.licensePacketSha256='0'.repeat(64),r=>r.policyDecisionSha256='0'.repeat(64),r=>r.reviewBasis['node-forge']='GPL-2.0',r=>r.evidence.pop()]){
+    const r=conditionalReview();change(r);assert.throws(()=>verifyConditionalReview(r));
+  }
+});
+test('conditional review record cannot substitute for final signed upload approval',()=>{
+  for(const scoped of [false,true]){
+    const f=fixture(scoped);f.a=conditionalReview();
+    assert.throws(()=>f.verify({approvalBytes:Buffer.from(JSON.stringify(f.a)),candidateSha256:'a'.repeat(64),signatures:[],trust:f.trust,now:Date.parse('2026-10-15T00:00:00Z')}));
+  }
+});
 
 // Ephemeral synthetic approvals exercise cryptographic admission only. They are NOT
 // real rights findings, owner trust keys, upload permission or legal approval.

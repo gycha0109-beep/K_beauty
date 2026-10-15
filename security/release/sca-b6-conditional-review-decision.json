@@ -1,0 +1,49 @@
+{
+  "schema": "bejewely.conditional-review-authorization.v1",
+  "purpose": "PREPUBLICATION_REVIEW_ONLY",
+  "authority": "PROJECT_OWNER_HUMAN_INSTRUCTION",
+  "cryptographicallySigned": false,
+  "reviewApproved": true,
+  "finalChecksApproved": true,
+  "legalConformityConfirmed": false,
+  "redistributionApproved": false,
+  "uploadApproved": false,
+  "costApproved": false,
+  "auditExceptionApproved": false,
+  "mergeApproved": false,
+  "productionApproved": false,
+  "unresolvedRightsCleared": false,
+  "upstreamInquiryAuthorized": false,
+  "upstreamReplyRequired": false,
+  "reviewBasis": {
+    "braces": "MIT",
+    "node-forge": "BSD-3-Clause"
+  },
+  "policyDecisionSha256": "bf32e7d03753abde8a24e78e99d3f4d8974e140e453ca5e4d7ea00dd837bba4e",
+  "licensePacketSha256": "d6648013ec8713c867c5dd6f8accfecfcfbfdcb20bf0644f4e35432b78ea4d12",
+  "humanInstruction": "조건부 재배포 검토를 승인합니다. 프로젝트 소유자로서 현재 확인된 라이선스 자료와 OAEP의 미확정 사항을 인지한 상태에서, 최종 게시 전 점검 및 승인 기록 준비를 진행하도록 승인합니다. 다만 이번 승인은 법적 적합성 확정이나 실제 재배포 허가가 아닙니다.",
+  "unresolved": [
+    {
+      "id": "OAEP_BSD_TERMS",
+      "status": "OPEN",
+      "detail": "Authentic original source and README grant BSD, but the precise variant and complete conditions are not recovered. Owner acknowledgment does not supply missing third-party terms."
+    },
+    {
+      "id": "REAL_NOTICE_DELIVERY",
+      "status": "NOT_RUN",
+      "detail": "Local notice kit verified; actual final private-registry artifact/readback and recipient delivery remain unperformed."
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/security/sec-sca-20261015-oaep-original-recovery.json",
+      "bytes": 4614,
+      "sha256": "3235890744c92a68761f7ca70848b91660d059be6861b812f593a7394493318c"
+    },
+    {
+      "path": "security/release/sca-b6-public-license-findings.json",
+      "bytes": 5483,
+      "sha256": "55ab4668435c9f1cbd8403a4c25c2dca9f642ada6f7d9a1df114aa76e5f0cdf1"
+    }
+  ]
+}
