@@ -117,6 +117,11 @@ BEGIN
      previous_event.reason IS DISTINCT FROM normalized_reason OR
      previous_event.reviewer_id IS DISTINCT FROM p_actor_id
   THEN RAISE EXCEPTION 'D8K12_REVIEW_REQUEST_REPLAY_CONFLICT'; END IF;
+  IF EXISTS(
+    SELECT 1 FROM public.admin_product_correction_evidence_review_events_v2 later
+    WHERE later.evidence_id=p_evidence_id
+      AND later.event_sequence>previous_event.event_sequence
+  ) THEN RAISE EXCEPTION 'D8K12_SUPERSEDED_REVIEW_CANNOT_REPLAY'; END IF;
   RETURN jsonb_build_object(
    'verdictId',previous_event.current_verdict_id,
    'evidenceId',p_evidence_id,'verdict',p_verdict,
