@@ -2,9 +2,43 @@
 
 > 작성일: 2026-10-13 KST · Track: security · Watchtower-Track: security
 >
-> **상태: IN_PROGRESS — B0 PARTIAL / B1 SOURCE+904 UNIT PASS / B2 SOURCE+829 UNIT PASS / B3 TEMP DOUBLE-PACK + FULL-DIST CHROMIUM RSA + CLEAN-RUNNER REPLAY PASS (배포 승인·B4+ HOLD).** 원본 package/lock·감사 정책 변경, 자체 배포본·병합·보안 해결 완료는 아직 없다. 기존 Supply Chain 감사 FAIL 유지.
+> **2026-10-14 현황: B1/B2 소스·회귀 PASS, B3 패치 파일·브라우저 dist·독립 재현성 PASS, B4 임시 전체 설치 그래프·빌드 PASS / 공식 감사 FAIL, B5 Android 컴파일 PASS·실기기/API/Auth NOT_RUN, B6 패키지 배포 준비·승인 거부 테스트 PASS / 외부 승인 HOLD, B7 병합·운영 배포 금지.** 실제 product package-lock/manifest는 변경되지 않았고 필수 Supply Chain 감사 FAIL을 유지한다. 아래 2026-10-14 실행 보정이 현재 기준이며 역사적 B0~B7 설명은 원문대로 보존한다.
 >
 > [전체 SCA-0~7 로드맵](sec-sca-20261012-remediation-roadmap.md) · [상세 기술 설계](sec-sca-20261012-remediation-technical-design.md) · [업스트림 패치 검토](sec-sca-20261012-upstream-patch-candidate-review.md) · [실행 Ledger](sec-sca-20261012-execution-ledger.md) · [보안 이슈 #1208](https://github.com/gycha0109-beep/K_beauty/issues/1208) · [진단 PR #1240](https://github.com/gycha0109-beep/K_beauty/pull/1240)
+
+## 2026-10-14 실행 보정 — 파이프라인 신뢰도 → 기존 앱 정식 빌드 연결
+
+**방향:** 검증용 별도 APK·별도 배포 수단을 추가하지 않는다. 먼저 승인된 의존성 패키지를 실제 제품 그래프에 연결하고, *기존* Android 빌드 파이프라인에서 생성한 동일 소스/그래프의 앱을 검증한다. 원본 의존성으로 생성했던 [Draft #1297](https://github.com/gycha0109-beep/K_beauty/pull/1297)은 범위 오류로 병합 없이 종료했으며 SCA/B5 증거가 아니다.
+
+**현재 권위 있는 근거 (각기 다른 의미):**
+
+| 증거 | 확인 내용 | 인정하지 않는 것 |
+| --- | --- | --- |
+| [B3/B4 Draft #1288](https://github.com/gycha0109-beep/K_beauty/pull/1288), [CI #38514455251](https://github.com/gycha0109-beep/K_beauty/actions/runs/38514455251), exact head `c8153c359c545141c9176254feb638f3844ba5f1` | 원본 소스/파일 해시, 패치 2종의 격리 installed graph, 두 install lifecycle, browser dist/RSA, Android debug Gradle 빌드 검증. 독립 브라우저 dist 재현성 PASS | 실제 배포된 patched package, 기기 E2E, 보안 감사 PASS, product lock 반영 |
+| [B6 Draft #1299](https://github.com/gycha0109-beep/K_beauty/pull/1299), [CI #38523027022](https://github.com/gycha0109-beep/K_beauty/actions/runs/38523027022), checked head `477aad86fe5e317e239e2cb99fdb6b5be21c3013` | 패키지 후보 구조, 네 역할 서명 정책, 라이선스·SBOM·원본 검증, 독립 clean-runner digest, CodeQL, CI overlap PASS | 실체가 있는 서명자/배포소, 진짜 private readback, 동일 HEAD 후속 커밋의 검증 |
+| canonical raw npm audit, 위 두 CI | full HIGH 22 / MODERATE 13 / CRITICAL 0, production HIGH 19 / MODERATE 11 / CRITICAL 0. HIGH가 전파된 여러 npm 패키지 수는 독립 GHSA 건수가 아니며 주요 원인은 `braces`·`node-forge` | 예외 갱신·패키지 이름 바꿈·임의 감사 PASS 처리 |
+
+**불변식:** 정확 HEAD가 달라지면 최신 HEAD CI를 다시 확인한다. 패치 기술 테스트 PASS와 조직 배포 승인, 원시 npm audit PASS를 **별개**로 유지한다. 필수 감사 정책을 삭제하거나 예외를 연장하지 않는다. 검증용 진단 아티팩트의 PASS는 절대로 릴리스 권한이 아니다.
+
+### 실행 순서 P0 → P5
+
+| 우선순위 | 상태 | 구현 단위 | 확인/승인 게이트 | 다음 조치 |
+| --- | --- | --- | --- | --- |
+| **P0: 진단·승인 구분** | **구현 시작 / CI 확인 필요** | `scripts/security/sca-readiness-evidence.mjs`, negative tests, `run-sca-readiness-evidence.mjs`; 현행 B6 워크플로의 필수 audit 실패는 유지하고 `always()`에서 정확 HEAD의 원시 full/production JSON·GHSA 원인·HOLD를 진단 아티팩트로 별도 보존 | 타 HEAD, 감사 응답 오류, 빈 응답, 불일치 카운트/exit, 거짓 release PASS가 fail-closed. **절대** 독립 B6/공식 감사 PASS를 대체하지 않음 | 새 Draft PR의 exact-HEAD 테스트/CodeQL/진단 artifact 확인 |
+| **P1: 해결 루트 분류** | **검증된 미해결 이슈** | official fixed release/호환 제거 경로를 주기적으로 재검토; 없으면 B3 verified patch route 유지. `Next.js 15.5.27`의 독립 [#1294](https://github.com/gycha0109-beep/K_beauty/pull/1294)는 MODERATE만 경감 | advisory의 고유 GHSA와 전이 노드를 구분; vULN 개수/원시 감사 카운트 보존; 공식 audit HIGH=0 / CRITICAL=0 또는 별도 규정된 실제 보안 결정 필요 | 원인별 버전·consumer 경로·의사결정 장부 갱신 |
+| **P2: 승인된 패치 배포** | **외부 승인 HOLD** | [#1299](https://github.com/gycha0109-beep/K_beauty/pull/1299) 기존 4역할 서명, NOTICE/LICENSE/SBOM, 승인된 immutable private npm registry, readback, 관리자·보안·라이선스 책임 배정 | 조직 승인된 key/fingerprint, forge 라이선스 선택, 업로드/조회 scoped token, 권한 없는 조회 차단 증거가 모두 필요. 승인 없이 `--execute-approved-upload` 금지 | 조직 인프라/권한 담당자 결정 후에만 실제 저장소 읽기·쓰기 |
+| **P3: canonical product graph** | **NOT_RUN / P2 종속** | 기존 `stage-approved-sca-product-graph.mjs`로 임시 그래프·lock diff·중첩 실물 해시·consumer 경로 확인. 승인된 후보만 실제 PR package-lock에 승격 | 무관한 drift 0, 두 npm-ci 모드+재현성 PASS, raw audit 및 기존 필수 gate 통과 전 main/배포/병합 HOLD | P2 완료 후 전체 의존성 후보 스테이징 |
+| **P4: 동일 앱 Android 실기기** | **NOT_RUN / P3 종속** | `mobile-android-runtime.yml`의 기존 Gradle/Expo 경로로 동일 소스+승인된 patched product graph를 빌드; 로그인/카메라/설문/격리 analyze API/결과/프리미엄 경계 회귀 | exact SHA, lock SHA, 설치본 fingerprint, APK SHA, 같은 빌드 구성과 비운영 테스트 환경/기기 기록. apk만 동작하면 B4 승인으로 치지 않음 | 정상 빌드 산출물 1개로 디바이스 검증 |
+| **P5: 운영·감시·복귀** | **HOLD** | 상위 패키지 업스트림 관측, 영향 범위 drift/키 회전, 보수 책임자 및 복구 절차, 권한·롤백 검토 | 원래 취약 패키지로 무조건 자동 롤백 금지; 독립 보안 리뷰+정식 배포 승인 | 운영 소유권 확정 후 결정 |
+
+### 실행 중단 조건 (자동 절차가 넘어가면 안 되는 선)
+
+1. **현재 가능:** P0 코드/CI 보수 및 P1 고유 advisory 영향 분석·공식 출처 확인, B3/B4/B6 재현 검증. 정상 앱/프로덕션 데이터에는 접근하지 않는다.
+2. **승인 없으면 중단:** P2 비공개 패키지 업로드, P3 조직 레지스트리 사용·lockfile 승격, P4 실제 backend/Auth 기기 테스트, P5 main/운영 배포. 테스트 서명 키를 조직 승인으로 대체하지 않는다.
+3. **영구 HOLD:** 공식 audit HIGH/CRITICAL, 만료된 취약점 예외, 설치 파일 출처 불명, registry 익명 읽기 가능, 실제 코드 검증 없는 이름·버전 바꿈, unsigned/일방 승인, 실제 기기·API 테스트 없이 B5 완결 주장.
+4. **CI 판정:** 후보 digest 재현성·CodeQL·negative test PASS라 해도 raw audit FAIL이면 **워크플로 전체 FAIL이 정상**이다. 보류 이유와 검사 근거를 읽기 쉬운 별도 결과로 기록하되 실패 신호는 보존한다.
+
+이 실행 보정은 기존 B0~B7의 필수 검증을 축소하지 않고, 그중 **P0 진단/상태 전달**을 먼저 구현한 후 **P1 공식 수정 경로 → P2 실제 조직 승인 → P3 실제 앱 lock → P4 정상 APK → P5 운영** 순서로 순차 추진한다.
 
 ## 0. 목표 및 불변식
 
