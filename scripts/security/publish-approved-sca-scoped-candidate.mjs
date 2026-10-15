@@ -6,7 +6,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {args,verifyBundle,requirePinnedTrust} from './sca-release-bundle.mjs';
-import {verifyScopedCandidate,verifyScopedApproval,verifyScopedReadbackBytes,assertScopedAccessDenied} from './sca-release-scoped.mjs';
+import {verifyScopedCandidate,verifyScopedApproval,verifyScopedReadbackBytes,assertScopedAccessDenied,githubScopedPackageMetadataUrl} from './sca-release-scoped.mjs';
 
 export function checkScopedExecutionControls(approval){
   assert.equal(approval.schema,'bejewely.scoped-upload-approval.v2');
@@ -83,7 +83,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
           assert.ok(!p.error&&p.status!==0&&error?.code==='E404','identity exists or authenticated registry preflight failed');},
         publish:async artifact=>{const p=npm(['publish',path.resolve(a['--candidate'],artifact.filename),'--registry','https://npm.pkg.github.com/','--access','restricted','--ignore-scripts','--tag','bejewely-reviewed-patch']);assert.ok(!p.error&&p.status===0,'upload failed; quarantine any partial immutable release and do not switch product');},
         readback:async(artifact,approval)=>{
-          const metadata=JSON.parse(await get('https://api.github.com/users/gycha0109-beep/packages/npm/'+encodeURIComponent(artifact.originalName),token,1024*1024));
+          const metadata=JSON.parse(await get(githubScopedPackageMetadataUrl(artifact.originalName),token,1024*1024));
           const bytes=await get(approval.tarballUrls[artifact.originalName],token);
           verifyScopedReadbackBytes({metadata,originalName:artifact.originalName,originalBytes:fs.readFileSync(originals[artifact.originalName]),artifact,bytes,
             stage:artifact.publicationLinkage==='UNLINKED_BOOTSTRAP'?'INITIAL_UNLINKED':'FINAL_LINKED'});
