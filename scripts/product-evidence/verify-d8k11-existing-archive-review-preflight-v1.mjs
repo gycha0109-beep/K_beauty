@@ -227,6 +227,11 @@ const reviewRegion=legacyLedger.split(
 assert.ok(reviewRegion);assertions++;
 matches(reviewRegion,/\.select\("evidence_id,product_id"\)/);
 assert.doesNotMatch(reviewRegion,/submitted_by|COLLECTOR_CANNOT_SELF_REVIEW|SAME_ACTOR/);assertions++;
+const legacyMigration=readFileSync(
+ "supabase/migrations/20261012172837_taxonomy_ai_r16i_correction_approval_ledger_v1.sql","utf8");
+// The current ledger allows one immutable verdict per evidence_id: a later
+// rejection cannot be appended to revoke an earlier VERIFIED judgment.
+matches(legacyMigration,/evidence_id uuid NOT NULL UNIQUE REFERENCES public\.admin_product_correction_evidence_v1/);
 const existingRoute=readFileSync(
  "app/api/admin/products/r16i-correction-review/approval/route.js","utf8");
 matches(existingRoute,/ownerOnly&&a\.access\.role!==ADMIN_ROLES\.OWNER/);
