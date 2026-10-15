@@ -3364,3 +3364,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Created local-only SHA-256 CLI and self-contained temp-file Node CLI test. Static and synthetic V8 source run: D8K8 contract **403 assertions PASS** with URL class shim due isolated tool runtime lacking web URL globals; actual Node shell CLI test on user's machine remains pending. No real capture file was provided or stored. No seller page fetch/provider request was made by the code.
 - Added focused verifier imports to existing D8F review chain, documented actual source *discovery* URLs with explicit candidate-only/checkout HOLD, Windows PowerShell capture/review workflow and missing DB parent/admission.
 - Future protected step requires authenticated collector/reviewer, provenance archive, exact product/parent offer DB binding and a separately approved migration/writer, before private server price DTO and frontend gate. UI remains hard OFF, no merge/deploy, #1208 open.
+
+### 2026-10-15 / D8K-8 local Node 24 failure repro and JSON output-channel repair
+
+- Owner ran native Node v24.20.0 on Windows from D8K8 HEAD `bf74be69`. Metadata synthetic suite 403 PASS; tempfile/child-process script failed at line 98 on intentionally invalid PNG input because expected HOLD JSON was on `stderr` together with `MODULE_TYPELESS_PACKAGE_JSON` warning. No evidence that source format validation incorrectly accepted the invalid PNG.
+- Repaired CLI to print a single redacted JSON object to **stdout** for both PASS and HOLD; exit status on HOLD still 1 and no unsafe raw paths/prices/URLs are printed. Child verifier reads only stdout, no stderr fallback; does not weaken source, provenance, type or review assertions.
+- Added four output-channel regressions to synthetic verifier: latest isolated V8 execution using fetched GitHub source **407 assertions PASS** (compatibility URL shim in V8); native Windows CLI and tempfile tests **pending owner rerun**.
+- Existing `.env`, protected Auth/API/DB/RLS/Prod, price/CTA/live release, package type unchanged. Draft #1331 remains HOLD; supply-chain #1208 open.
