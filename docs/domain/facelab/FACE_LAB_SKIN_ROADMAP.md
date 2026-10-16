@@ -203,3 +203,14 @@
 ---
 
 **완료 보고 규칙:** `확인 완료 / 수정 필요 / 외부 실행·검증 필요`를 구분하고, 합성 PASS를 임상·사용자 정확도 PASS로 표현하지 않는다.
+
+## 2026-10-16 S1-D continuation checkpoint (cross-PR, NOT merged)
+
+- [#1340](https://github.com/gycha0109-beep/K_beauty/pull/1340) remains a **Draft independent research branch**, outside `main` and outside this roadmap PR. The operator-supplied local TC-01 corrected v2 one-call probe showed **7/7 structural axis contract PASS** including 4 valid `not_seen` and **Face 19 available fields**. Token use was **1,972/2,200** with only 228 headroom; actual Skin cue truth and Face value equality are **NOT** established.
+- **Implementation on #1340:** mandatory successful TC-01 probe metadata gate; five-photo preflight; exactly TC-02~TC-05 v2 continuation (maximum four KEY2 attempts, no v1, no TC-01, no retry); local-only 1+4 metadata merge; strict schema/study/case/diagnostic checks; 10-call historical aggregate comparison; private Windows launcher with explicit authorization and attempted-run lock; synthetic-only regression test.
+- **Evidence still due:** actual revised-v2 TC-02~TC-05 KEY2 four-call completion by the local operator, private merge and aggregate comparison, independent two-blinded-reviewer Human reference with consent/governance. No inferred physical photo identity from dimensions alone. Legacy v1 zero remains unverifiable.
+- **P4 output budget:** TC-01 is just 8 tokens below the 90% cap warning; do not raise 2,200 or quietly shorten Skin cue/Face requirements. Preserve frozen candidate prompt for the 4 remaining trial cases; conduct output-size optimization on a separate synthetic branch after the cohort.
+- **Release gates:** Human truth **HOLD**, recommendation score/Top Pick **HOLD**, Face/Style semantic parity **HOLD**, release/merge/deployment **HOLD**; expired `node-forge` supply-chain exception remains independent security **HOLD**.
+- **Evidence distinction:** #1340 synthetic CI PASS (when confirmed at exact head) validates software behavior only; TC-01 probe is real Provider **structure** evidence only; neither is S1 real-person accuracy graduation.
+
+Watchtower-Track: face-lab-skin
