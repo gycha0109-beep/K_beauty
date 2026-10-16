@@ -13,6 +13,7 @@ import {
 import { createSkinVisionV2CandidatePrompt, evaluateSkinVisionV2Candidate } from "./skin-vision-v2-candidate-core.mjs";
 import { inspectSkinVisionTrial, summarizeSkinVisionTrials } from "./skin-vision-v2-provider-evidence-gate.mjs";
 import { SKIN_VISIBLE_AXES } from "./skin-axis-evidence-contract-core.mjs";
+import { inspectPrivateSkinV2AxisContract } from "./skin-private-axis-contract-diagnostics.mjs";
 
 export const PRIVATE_V1V2_VERSION = "skin-private-v1v2-cohort-v1";
 export const PRIVATE_V1V2_MAX_CALLS = 10;
@@ -253,6 +254,10 @@ function sanitizedTrial(caseId,variant,response) {
     v2AxisCount,v2ContractStatus,
     expectedIneligibleAbstention:metrics.expectedIneligibleAbstention===true,
     ...privateAxisMetadata(variant,response.parsed),
+    // Source JSON, cue, area, evidence strings and secrets NEVER leave this
+    // callback; only canonical axis IDs + whitelisted field-failure codes do.
+    privateAxisContractDiagnostics:variant==="v2"
+      ?inspectPrivateSkinV2AxisContract(response.parsed):null,
     metadataOnly:true
   };
 }
