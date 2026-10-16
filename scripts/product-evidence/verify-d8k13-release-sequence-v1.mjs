@@ -64,7 +64,7 @@ const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
  .filter(name=>name.endsWith(".sql"));
 const localItems=migrationFiles.map(file=>{
- const parts=/^(\\d{8}(?:\\d{6})?)_(.+)\\.sql$/.exec(file);
+ const parts=/^(\d{8}(?:\d{6})?)_(.+)\.sql$/.exec(file);
  if(!parts)throw Error("D8K13_UNKNOWN_MIGRATION_FILENAME: "+file);
  return {file,version:parts[1],name:parts[2]};
 });
