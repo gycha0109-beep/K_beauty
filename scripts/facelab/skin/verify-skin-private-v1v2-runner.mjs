@@ -29,6 +29,18 @@ const manifest={
   }))
 };
 const clone=v=>structuredClone(v);
+// Windows file symbolic-link creation often requires Developer Mode or an
+// elevated account. Only SKIP that OS privilege-dependent *fixture creation*
+// when unsupported; the actual private-photo reader still rejects symlinks.
+// In Linux CI the symlink negative test is mandatory.
+const symlinkFixtureDeniedOnWindows=(error,platform=process.platform)=>
+  platform==="win32" && ["EPERM","EACCES","ENOTSUP","ENOSYS"]
+    .includes(error?.code);
+assert.equal(symlinkFixtureDeniedOnWindows({code:"EPERM"},"win32"),true);
+assert.equal(symlinkFixtureDeniedOnWindows({code:"EACCES"},"win32"),true);
+assert.equal(symlinkFixtureDeniedOnWindows({code:"ENOSYS"},"win32"),true);
+assert.equal(symlinkFixtureDeniedOnWindows({code:"EPERM"},"linux"),false);
+assert.equal(symlinkFixtureDeniedOnWindows({code:"ENOENT"},"win32"),false);
 try {
   for(const [i,c] of manifest.cases.entries())writeFileSync(join(tmp,c.filename),makeJpeg(16,16,i));
   // One mock image contains a sensitive JPEG COM segment which must not be
@@ -212,14 +224,28 @@ try {
   assert.equal(exifBlocked.outcome,"HOLD_PRIVATE_PHOTO_INPUT");
   writeFileSync(join(tmp,manifest.cases[1].filename),makeJpeg(16,16,1));
   // Reject symlink to any photo file and consume zero provider calls.
+  // Windows non-admin accounts may not have OS permission to CREATE one.
   unlinkSync(join(tmp,manifest.cases[3].filename));
-  symlinkSync(join(tmp,manifest.cases[0].filename),join(tmp,manifest.cases[3].filename));
-  const symlinkBlocked=await runPrivatePhotoCohort({
-    manifest,photoDir:tmp,live:true,environment:{OPENAI_API_KEY2:fakeSecret},
-    invoke:fakeInvoker
-  });
-  assert.equal(symlinkBlocked.providerCallsAttempted,0);
-  assert.equal(symlinkBlocked.outcome,"HOLD_PRIVATE_PHOTO_INPUT");
+  let linkCreated=false;
+  try {
+    symlinkSync(join(tmp,manifest.cases[0].filename),join(tmp,manifest.cases[3].filename),"file");
+    linkCreated=true;
+  } catch(error) {
+    if(!symlinkFixtureDeniedOnWindows(error))throw error;
+    console.log("MOCK_SYMLINK_FIXTURE: WINDOWS_PRIVILEGE_UNAVAILABLE");
+  }
+  if(linkCreated){
+    const symlinkBlocked=await runPrivatePhotoCohort({
+      manifest,photoDir:tmp,live:true,environment:{OPENAI_API_KEY2:fakeSecret},
+      invoke:fakeInvoker
+    });
+    assert.equal(symlinkBlocked.providerCallsAttempted,0);
+    assert.equal(symlinkBlocked.outcome,"HOLD_PRIVATE_PHOTO_INPUT");
+  } else {
+    // Even without fixture-creation rights on this host, ensure the source
+    // file was NOT recreated by accident and no Provider mock was invoked.
+    assert.equal(attempts,1);
+  }
   console.log("verify-skin-private-v1v2-runner: PASS (mock-only, five paired cases, privacy, no key fallback, zero CI photo calls)");
 }finally{
   rmSync(tmp,{recursive:true,force:true});
