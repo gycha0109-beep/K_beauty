@@ -84,3 +84,18 @@
 매니페스트 `d8k13-hosted-same-version-sql-triage-readonly-20261016.json`의 `multiStatementTokenFollowup`과 `p0DeployedScopeFollowup`에 결과를 기록했고, 오프라인 검증기와 릴리스 HOLD 검사에서 두 결과 집합을 검수한다.
 
 **최종 상태: 레거시 D8K-13 해당 Docker PG17 부분 체인 PASS / 운영 178건 전체 replay 검증 미완료 / 출시 및 migration repair HOLD.**
+
+
+## 7. 반복 가능한 운영 SELECT-only 확인 쿼리 (2026-10-16 16:20 KST)
+
+`scripts/product-evidence/sql/d8k13-historical-drift-readonly-preflight-v1.sql`을 신규 추가한 뒤 실제 운영 Supabase에서 **SELECT-only로 실행해 성공**했다. 함수·스키마 소스 원문이나 실제 Product/Owner 식별자는 응답에 출력되지 않는다.
+
+검증 마커 `D8K13_HISTORICAL_DRIFT_READONLY_PREFLIGHT`, `status=READ_ONLY_HOLD`, `hosted_db_writes=0`, `ready_to_apply_migration=false`.
+
+- `history_observation`은 ranking 31 statements, anonymous grants 37 statements, Taxonomy8 1×64-byte, C5B 1×11,051-byte 기록을 반환한다.
+- Taxonomy8 관련 현재 컬럼 상태·COMMENT·주요 taxonomy 객체가 모두 예상 관측과 일치하나 `historical_git_preflight_execution_attested=false`다.
+- C5B의 `service_role` 실행권한은 활성, `anon/authenticated`는 비활성, `SECURITY DEFINER`를 확인했으나 `historical_pre_and_post_guard_executed_attested=false`다.
+- `ranking_snapshots` 및 `source_rankings`의 RLS ON, 사용자 직접 쓰기 차단, `service_role INSERT` 허용을 확인했다.
+- 현재 `claim_anonymous_write_grant`는 `SECURITY INVOKER`이며 명시적 JTI/resource NULL 조건은 없음. `exploitable_behavior_proven=false`는 **취약점이 없다는 인증이 아니라 악용 가능성 판단을 시도하지 않았다는 상태 표시**다.
+
+**운영 SQL은 이번 추가 조회에서 재실행·수정되지 않았다.** 실서버 스키마·권한·감사 정책의 변경 승인/보안 검토 및 전체 pending migration 재현은 계속 필요하다.
