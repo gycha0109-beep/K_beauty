@@ -179,6 +179,11 @@ for(const re of [/과거 자기 승인 — 효력 격리/,/과거 자기 승인 
 for(const re of [
  /D8K13_D8DV2_REAL_ORDER_CHAIN_ACCEPTANCE_PASS/,
  /D8K13_D8DV2_DRIFT_REFUSAL_AND_ROLLBACK_PASS/,
+ /D8K13_PG17_FINAL_TCP_READY/,
+ /PG17_FINAL_TCP_SERVER_NOT_READY/,
+ /pg_isready","-q","-h","127\.0\.0\.1"/,
+ /PGPASSWORD=disposable-local-only/,
+ /--network=none/,
  /d8k13_v2_gate_on/,
  /d8k13_v2_authorization/,
  /d8k13_v2_column_drift/,
