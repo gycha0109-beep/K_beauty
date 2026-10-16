@@ -1,0 +1,105 @@
+#!/usr/bin/env node
+// D8K-13 historical anonymous-claim/ranking ACL audit.
+// OFFLINE STATIC CONTRACT ONLY: no network, secrets, DB, SQL, or writes.
+// Historical provenance and runtime behavior are NOT certified by this script.
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import path from "node:path";
+import {fileURLToPath} from "node:url";
+
+const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
+const args=process.argv.slice(2);
+assert.ok(args.length<=1&&args.every(x=>x==="--enforce-release"||x==="--help"),
+ "D8K13_UNKNOWN_HISTORICAL_SECURITY_ARG");
+if(args.includes("--help")){
+ console.log("Offline security-lineage contract: --enforce-release always HOLD");
+ process.exit(0);
+}
+function src(relative){return readFileSync(path.join(ROOT,relative),"utf8")}
+function assertOrdered(source,left,right,label){
+ const a=source.indexOf(left),b=source.indexOf(right);
+ assert.ok(a>=0&&b>a,"D8K13_SECURITY_CALL_ORDER_DRIFT: "+label);
+}
+const manifest=JSON.parse(src(
+ "scripts/product-evidence/baselines/d8k13-hosted-same-version-sql-triage-readonly-20261016.json"));
+const p0=manifest.p0DeployedScopeFollowup;
+const auth=p0.anonymousWriteGrant,repair=p0.rankingAclLaterAppliedRepair;
+assert.equal(manifest.status,"RELEASE_HOLD");
+assert.equal(manifest.sourceSqlBodiesPublished,false);
+assert.equal(manifest.multiStatementTokenFollowup.tokenDifference,2);
+assert.equal(manifest.multiStatementTokenFollowup.evaluated,28);
+
+const secCore=src("lib/security/anonymous-write-grant-core.js");
+const secHelper=src("lib/security/anonymous-write-grant.js");
+const results=src("app/api/results/route.js");
+const track=src("app/api/track/route.js");
+const secMigration=src("supabase/migrations/20260711032649_sec_05_anonymous_write_grants.sql");
+const aclRepair=src("supabase/migrations/20260621151304_repair_phase1_ranking_snapshot_ingest_rpc.sql");
+const truncateRepair=src("supabase/migrations/20260621152040_repair_phase1_ranking_snapshots_truncate_privilege.sql");
+const readonlyProbe=src("scripts/product-evidence/sql/d8k13-historical-drift-readonly-preflight-v1.sql");
+
+assert.ok(secHelper.startsWith('import "server-only";'));
+assertOrdered(secCore,"const expectedSignature = createAnonymousWriteGrantTokenSignature",
+ "if (!safeEqual(signature, expectedSignature))","token HMAC verification");
+assertOrdered(secCore,"if (!safeEqual(signature, expectedSignature))",
+ "if (!isValidTokenPayload(payload))","signature precedes claims");
+assert.ok(secCore.includes('isAnonymousWriteGrantHash(payload.principalHash)'));
+assert.ok(secCore.includes('OPAQUE_ID_PATTERN.test(payload.resourceId || "")'));
+assert.ok(secCore.includes('payload.operation !== expectedOperation'));
+assertOrdered(secHelper,"const verification = verifyAnonymousWriteGrantToken(",
+ "const anonymous = resolveExistingAnonymousCookiePayload(request)","HMAC before cookie");
+assertOrdered(secHelper,"const anonymous = resolveExistingAnonymousCookiePayload(request)",
+ "if (principalHash !== verification.payload.principalHash)","signed cookie principal binding");
+assert.ok(secHelper.includes("!grant?.jtiHash || !grant?.principalHash || !requestFingerprintHash"));
+for(const [routeName,route] of [["results",results],["track",track]]){
+ assertOrdered(route,"anonymousGrant = verifyAnonymousWriteGrantForRequest({",
+ "if (body?.analysisRunId !== anonymousGrant.payload.resourceId)","resource constraint "+routeName);
+ assertOrdered(route,"if (body?.analysisRunId !== anonymousGrant.payload.resourceId)",
+ "const claimResult = await claimAnonymousWriteGrant({","verify before service RPC "+routeName);
+}
+assert.ok(secMigration.includes("if p_jti_hash is null"));
+assert.ok(secMigration.includes("or p_principal_hash is null"));
+assert.ok(secMigration.includes("or p_resource_id is null"));
+assert.ok(secMigration.includes("or p_request_fingerprint_hash is null"));
+assert.ok(aclRepair.includes("revoke insert, update, delete on table public.ranking_snapshots from anon, authenticated;"));
+assert.ok(aclRepair.includes("grant select, insert, update on table public.ranking_snapshots to service_role;"));
+assert.ok(truncateRepair.includes("revoke truncate on table public.ranking_snapshots from anon, authenticated;"));
+assert.ok(readonlyProbe.includes("ranking_acl_later_migration_provenance"));
+assert.ok(readonlyProbe.includes("pg_catalog.has_function_privilege('public',p.oid,'EXECUTE')"));
+
+assert.equal(repair.historical_records_readonly_verified,true);
+assert.equal(repair.current_hosted_ranking_rls_and_write_acl_verified,true);
+assert.equal(repair.source_rankings_explicit_acl_origin_not_yet_proven,true);
+assert.equal(auth.runtime_function_execute_role,"service_role_only");
+assert.equal(auth.anonymous_execute_allowed,false);
+assert.equal(auth.authenticated_execute_allowed,false);
+assert.equal(auth.public_execute_allowed,false);
+assert.equal(auth.service_role_execute_allowed,true);
+assert.equal(auth.caller_server_only_module,true);
+assert.equal(auth.caller_requires_jti_principal_and_fingerprint,true);
+assert.equal(auth.validated_token_requires_hmac_signature,true);
+assert.equal(auth.caller_requires_signed_cookie_principal_match,true);
+assert.equal(auth.postgres_null_comparison_returns_unknown,true);
+assert.equal(auth.legacy_sql_explicit_all_six_null_guards_present,false);
+assert.equal(auth.operator_live_rpc_invocation_performed,false);
+assert.equal(auth.exploitabilityProven,false);
+
+console.log(JSON.stringify({
+ stage:"D8K13_HISTORICAL_SECURITY_LINEAGE_OFFLINE_V1",
+ status:"HOLD",
+ contractsPassed:true,
+ noLiveRpcExecution:true,
+ observedServiceRoleOnly:true,
+ authenticatedPublicDirectInvocation:false,
+ signedCookieAndHmacGuardsPresent:true,
+ originalRankAclRepairRecorded:true,
+ sourceRankingsOriginAttested:false,
+ liveAnonymousFunctionExplicitNullChecksAttested:false,
+ exploitabilityProven:false,
+ fullMigrationChainReleaseApproved:false
+}));
+console.log("D8K13_HISTORICAL_SECURITY_LINEAGE_OFFLINE_PASS_HOLD");
+if(args.includes("--enforce-release")){
+ console.error("D8K13_HISTORICAL_SECURITY_LINEAGE_RELEASE_REFUSED");
+ process.exitCode=3;
+}
