@@ -155,6 +155,9 @@ try {
   assert.equal(report.pairedSummary.matchedPairs,5);
   assert.equal(report.pairedSummary.faceBaselineUnassessable,5);
   assert(report.cases.every(c=>c.variants[1].v2AxisCount===7));
+  assert(report.cases.every(c=>c.variants[1].expectedIneligibleAbstention===false));
+  assert.equal(report.pairedSummary.v2ExpectedIneligibleAbstentions,0);
+  assert.equal(report.pairedSummary.v2EligibleStructuralFailures,0);
   assert(report.cases.every(c=>c.variants[1].v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED"));
   // Private-only seven-axis metadata can later be compared to independent
   // Human labels without emitting raw visual descriptions or identity.
@@ -181,6 +184,38 @@ try {
   assert.equal(JSON.stringify(report).includes("face_not_detected"),false);
   assert.equal(JSON.stringify(report).includes("source_shine"),false);
   assert.equal(JSON.stringify(report).includes("cue"),false);
+  // A Skin-ineligible result with zero rows is a safe abstention, not
+  // a Skin-eligible seven-axis validation defect or a scoring release gate.
+  attempts=0;
+  const ineligibleInvoker=async args=>{
+    const reply=await fakeInvoker(args);
+    if(attempts%2===0) {
+      reply.parsed.eligibility={
+        ...elig,skinAnalysisEligible:false,
+        skinFailureReason:"lighting_insufficient"
+      };
+      reply.parsed.skin={axisEvidence:[]};
+      reply.providerPayload.choices[0].message.content=JSON.stringify(reply.parsed);
+    }
+    return reply;
+  };
+  const abstentionCohort=await runPrivatePhotoCohort({
+    manifest,photoDir:tmp,live:true,
+    environment:{OPENAI_API_KEY2:fakeSecret},
+    invoke:ineligibleInvoker
+  });
+  assert.equal(abstentionCohort.providerCallsAttempted,10);
+  assert.equal(abstentionCohort.pairedSummary.v2Invalid,5);
+  assert.equal(abstentionCohort.pairedSummary.v2ExpectedIneligibleAbstentions,5);
+  assert.equal(abstentionCohort.pairedSummary.v2EligibleStructuralFailures,0);
+  assert.equal(abstentionCohort.pairedSummary.structuralCandidatePass,false);
+  assert(abstentionCohort.cases.every(c=>
+    c.verdict==="EXPECTED_SKIN_INELIGIBLE_ABSTENTION_RESEARCH_ONLY" &&
+    c.variants[1].v2AxisCount===0 &&
+    c.variants[1].expectedIneligibleAbstention===true
+  ));
+  assert.equal(abstentionCohort.authority.scoringOrDeploymentAuthorized,false);
+  assert.equal(JSON.stringify(abstentionCohort).includes(fakeSecret),false);
   for(const input of [
     {...manifest,cases:[...manifest.cases.slice(0,4),manifest.cases[0]]},
     {...manifest,cases:manifest.cases.map((c,i)=>i===4?{...c,filename:manifest.cases[0].filename}:c)},
