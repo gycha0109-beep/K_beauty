@@ -18,6 +18,8 @@ DO $d8k12_preflight$
 DECLARE
  legacy_count bigint;
  ticket text:=nullif(btrim(current_setting('app.d8k13_release_ticket',true)),'');
+ expected_manifest text:=nullif(btrim(current_setting('app.d8k13_expected_manifest',true)),'');
+ observed_manifest text;
  r16i_id uuid:='b639c8b4-6a61-440e-b4db-fac7381593ff';
 BEGIN
  IF to_regclass('public.admin_product_correction_evidence_v1') IS NULL
@@ -59,6 +61,17 @@ BEGIN
   public.admin_r16i_correction_application_events_v1,
   public.admin_r16i_correction_release_gate_v1
   IN SHARE ROW EXCLUSIVE MODE;
+ -- Deployment operator must pin both the evidence and verdict identities.
+ -- Do NOT obtain the expected manifest dynamically from the write transaction:
+ -- it must be independently approved from an earlier read-only snapshot.
+ SELECT string_agg(e.source_key||':'||e.evidence_id::text||':'||
+    v.verdict_id::text,';' ORDER BY e.source_key)
+ INTO observed_manifest
+ FROM public.admin_product_correction_evidence_verdicts_v1 v
+ JOIN public.admin_product_correction_evidence_v1 e USING(evidence_id);
+ IF expected_manifest IS NULL OR
+    observed_manifest IS DISTINCT FROM expected_manifest
+ THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_LEGACY_SHAPE'; END IF;
  IF legacy_count<>2 OR
     (SELECT count(*) FROM public.admin_product_correction_evidence_v1)<>2 OR
     (SELECT count(*) FROM public.admin_product_correction_evidence_v1
