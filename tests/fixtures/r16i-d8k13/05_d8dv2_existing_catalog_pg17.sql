@@ -40,3 +40,20 @@ CREATE TABLE public.product_offers (
  first_observed_at timestamptz,last_observed_at timestamptz,
  link_health_state text
 );
+-- Referenced by the original D8D-v2 apply/rollback SQL bodies.
+-- These are synthetic, empty prerequisites, never hosted row copies.
+CREATE TABLE public.product_source_bindings (
+ binding_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ product_id uuid REFERENCES public.products(id),
+ source_name text,external_type text,external_id text,source_url text,
+ binding_state text,product_scope_state text
+);
+CREATE TABLE public.catalog_trust_intake (
+ intake_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ product_id uuid REFERENCES public.products(id),
+ identity_state text,trust_state text,subject_id uuid
+);
+CREATE TABLE public.product_fact_subjects (
+ subject_row_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ product_id uuid REFERENCES public.products(id)
+);
