@@ -96,9 +96,9 @@ export function inspectPrivateSkinV2AxisContract(parsed) {
   // If authoritative validator disagrees with this narrow diagnostic,
   // fail closed and suppress detailed claims instead of making up a cause.
   const localInvalid=out.filter(x=>!x.valid).map(x=>x.axis).sort();
-  const coreInvalid=SKIN_VISIBLE_AXES.filter(axis=>
-    existing.axes?.[axis]?.reason==="invalid_field"||
-    existing.axes?.[axis]?.reason==="missing").sort();
+  const coreInvalid=[...new Set(existing.issues.filter(item=>
+    ["invalid_axis_evidence","missing_axis","duplicate_axis"].includes(item.code)
+  ).map(item=>item.axis))].sort();
   const unexpected=raw.some(row=>!object(row)||!AXES.has(row.axis));
   const contractMismatch=localInvalid.join("|")!==coreInvalid.join("|") ||
     (existing.status==="ready")!==(!localInvalid.length&&!unexpected);
