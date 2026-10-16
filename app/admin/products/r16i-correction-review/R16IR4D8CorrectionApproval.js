@@ -120,7 +120,7 @@ export default function R16IR4D8CorrectionApproval({review}){
        }}>{verdictMap.get(e.evidenceId)?.verdict==="VERIFIED"?"승인 철회":"이 캡처 검토"}</button>}
      </div>)}</div>}
     {(ledger.reviewHistory||[]).length>0&&<details className="mt-3 rounded-lg border border-[#dbe4ef] p-2 text-xs dark:border-[#435369]">
-     <summary className="cursor-pointer font-semibold">승인·반려·철회·레거시 격리 이력</summary>
+     <summary className="cursor-pointer font-semibold">승인·반려·철회 이력 · 레거시 격리 포함</summary>
      <ul className="mt-2 space-y-2">{ledger.reviewHistory.map((h,i)=><li key={h.evidenceId+"-"+i}>
       {h.evidenceId.slice(0,8)} · {h.verdict==="LEGACY_QUARANTINED"?"과거 자기 승인 — 격리":
        h.verdict==="REVOKED"?"승인 철회":
