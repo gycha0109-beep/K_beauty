@@ -263,9 +263,15 @@ function sanitizedTrial(caseId,variant,response) {
 }
 export async function runPrivatePhotoCohort({
   manifest,photoDir,environment=process.env,invoke=executeOpenAiChatJson,live=false,
-  onPrivateProgress=()=>{}
+  studyMode="paired",onPrivateProgress=()=>{}
 }={}) {
   validatePrivateCohortManifest(manifest);
+  // A five-call v2-only correction trial MUST NOT silently repeat old v1
+  // requests. Never permit arbitrary per-caller variants or cap overrides.
+  if(!["paired","v2_only"].includes(studyMode))
+    throw new Error("research_study_mode_invalid");
+  const variants=studyMode==="v2_only"?["v2"]:["v1","v2"];
+  const requestBudget=studyMode==="v2_only"?5:PRIVATE_V1V2_MAX_CALLS;
   const key=assertAllowedEnvironment(environment,live,invoke); // before any photo reads.
   const output=[],summaryRows=[],validated=[];
   const seenImageContent=new Set();
@@ -300,8 +306,8 @@ export async function runPrivatePhotoCohort({
       continue;
     }
     const rows=[];
-    for(const variant of ["v1","v2"]) {
-      if(requests>=PRIVATE_V1V2_MAX_CALLS)throw new Error("call_budget_exceeded");
+    for(const variant of variants) {
+      if(requests>=requestBudget)throw new Error("call_budget_exceeded");
       requests++;
       try{
         const response=await invoke({
@@ -329,7 +335,8 @@ export async function runPrivatePhotoCohort({
         output.push({caseId,verdict:"INCOMPLETE_PROVIDER_PAIR",variants:rows});
         return {
           version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,
-          outcome:"HOLD_INCOMPLETE_PROVIDER_DATA",providerCallsAttempted:requests,
+          outcome:"HOLD_INCOMPLETE_PROVIDER_DATA",studyMode,
+          providerCallsAttempted:requests,
           cases:output,pairedSummary:null,
           privacy:{humanPhotoSentToProvider:true,rawOutputsPersisted:false,
             photosSavedByRunner:false,gitHubActionsUsed:false},
@@ -339,29 +346,58 @@ export async function runPrivatePhotoCohort({
       }
     }
     const trials=summaryRows.filter(row=>row.caseId===caseId);
-    const paired=summarizeSkinVisionTrials(trials,{evidenceOrigin:"operator_review_pending"});
+    const paired=studyMode==="paired"
+      ?summarizeSkinVisionTrials(trials,{evidenceOrigin:"operator_review_pending"})
+      :null;
     const v2=rows.find(x=>x.variant==="v2");
     const expectedAbstention=v2.expectedIneligibleAbstention &&
       v2.v2ContractStatus==="EXPECTED_INELIGIBLE_EMPTY";
+    const structurallyValid=v2.v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED" &&
+      (studyMode==="v2_only" ? v2.structuralResult==="STRUCTURALLY_VALID" &&
+         !v2.nearTokenCap : paired.structuralCandidatePass);
     output.push({caseId,verdict:expectedAbstention
       ?"EXPECTED_SKIN_INELIGIBLE_ABSTENTION_RESEARCH_ONLY"
-      : paired.structuralCandidatePass &&
-        v2.v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED"
+      :structurallyValid
         ?"STRUCTURAL_PREFLIGHT_ONLY":"FACE_OR_SKIN_REVIEW_REQUIRED",
       photoShortSidePx:Math.min(image.width,image.height),variants:rows,
-      faceParityStatus:paired.faceBaselineUnassessable
-        ?"UNVERIFIABLE_FACE_BASELINE"
-        :paired.faceStatusDegraded||paired.faceCoverageDegraded
-          ?"DEGRADATION_REVIEW":"NO_COUNT_OR_STATUS_DEGRADATION_OBSERVED",
-      faceStatusDegraded:paired.faceStatusDegraded>0,
-      faceCoverageDegraded:paired.faceCoverageDegraded>0});
+      // Cross-run Face comparison cannot be certified without the original
+      // independent v1 report; never invent parity from a v2-only response.
+      faceParityStatus:paired
+        ?(paired.faceBaselineUnassessable
+          ?"UNVERIFIABLE_FACE_BASELINE"
+          :paired.faceStatusDegraded||paired.faceCoverageDegraded
+            ?"DEGRADATION_REVIEW":"NO_COUNT_OR_STATUS_DEGRADATION_OBSERVED")
+        :"BASELINE_NOT_INCLUDED_IN_V2_ONLY_REPORT",
+      faceStatusDegraded:paired?paired.faceStatusDegraded>0:null,
+      faceCoverageDegraded:paired?paired.faceCoverageDegraded>0:null});
   }
-  const pairedSummary=summaryRows.length? summarizeSkinVisionTrials(summaryRows,
-    {evidenceOrigin:"operator_review_pending"}):null;
+  const pairedSummary=studyMode==="paired"&&summaryRows.length
+    ?summarizeSkinVisionTrials(summaryRows,
+      {evidenceOrigin:"operator_review_pending"}):null;
+  // Purely descriptive v2-only distribution. This is NOT a success rate
+  // against human truth or a claim of unchanged Face values.
+  const v2OnlySummary=studyMode==="v2_only"&&live
+    ?{
+      cases:output.length,
+      skinEligibleValid:output.filter(c=>c.variants?.[0]?.skinAnalysisEligible===true &&
+        c.variants[0].structuralResult==="STRUCTURALLY_VALID").length,
+      skinEligibleContractHolds:output.filter(c=>c.variants?.[0]?.skinAnalysisEligible===true &&
+        c.variants[0].structuralResult!=="STRUCTURALLY_VALID").length,
+      expectedSkinIneligibleAbstentions:output.filter(c=>
+        c.variants?.[0]?.expectedIneligibleAbstention===true).length,
+      otherOrUnknownHolds:output.filter(c=>
+        c.variants?.[0]?.structuralResult!=="STRUCTURALLY_VALID" &&
+        c.variants[0].skinAnalysisEligible!==true &&
+        c.variants[0].expectedIneligibleAbstention!==true).length,
+      nearOutputCap:output.filter(c=>c.variants?.[0]?.nearTokenCap===true).length,
+      clinicalTruthVerified:false,faceValueParityVerified:false,scoringActivated:false
+    }:null;
   return {
-    version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,
-    outcome:live?"PRIVATE_REAL_PHOTO_STRUCTURAL_REVIEW_ONLY":"PRIVATE_LOCAL_PRECHECK_ONLY",
-    providerCallsAttempted:requests,cases:output,pairedSummary,
+    version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,studyMode,
+    outcome:live?(studyMode==="v2_only"
+      ?"PRIVATE_V2_ONLY_STRUCTURAL_RESEARCH_ONLY"
+      :"PRIVATE_REAL_PHOTO_STRUCTURAL_REVIEW_ONLY"):"PRIVATE_LOCAL_PRECHECK_ONLY",
+    providerCallsAttempted:requests,cases:output,pairedSummary,v2OnlySummary,
     privacy:{humanPhotoSentToProvider:live&&requests>0,
       rawOutputsPersisted:false,photosSavedByRunner:false,gitHubActionsUsed:false},
     authority:{userRightsAndTransferAttested:true,documentsIndependentlyVerified:false,
