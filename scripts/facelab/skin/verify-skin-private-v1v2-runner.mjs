@@ -9,8 +9,9 @@ import { SKIN_VISIBLE_AXES } from "./skin-axis-evidence-contract-core.mjs";
 
 const tmp=mkdtempSync(join(tmpdir(),"skin-private-cohort-mock-"));
 const ids=["TC-01","TC-02","TC-03","TC-04","TC-05"];
-const makeJpeg=(width,height)=>Buffer.from([
-  255,216,255,192,0,17,8,height>>8,height&255,width>>8,width&255,
+const makeJpeg=(width,height,caseIndex=0)=>Buffer.from([
+  // Deliberately fabricated, distinct APP0 payload for each mock case.
+  255,216,255,224,0,4,0,caseIndex,255,192,0,17,8,height>>8,height&255,width>>8,width&255,
   3,1,17,0,2,17,0,3,17,0,255,217
 ]);
 const manifest={
@@ -29,12 +30,12 @@ const manifest={
 };
 const clone=v=>structuredClone(v);
 try {
-  for(const c of manifest.cases)writeFileSync(join(tmp,c.filename),makeJpeg(16,16));
+  for(const [i,c] of manifest.cases.entries())writeFileSync(join(tmp,c.filename),makeJpeg(16,16,i));
   // One mock image contains a sensitive JPEG COM segment which must not be
   // forwarded to OpenAI: the outgoing bytes must exactly match clean JPEG.
   const comment=Buffer.from("SYNTHETIC_PRIVATE_COMMENT_NOT_FOR_PROVIDER");
   const commentLen=Buffer.alloc(2); commentLen.writeUInt16BE(comment.length+2);
-  const clean=makeJpeg(16,16);
+  const clean=makeJpeg(16,16,4);
   const withComment=Buffer.concat([
     clean.subarray(0,2),Buffer.from([255,254]),commentLen,comment,clean.subarray(2)
   ]);
@@ -61,7 +62,7 @@ try {
     assert.match(p.body.messages[1].content[1].image_url.url,/^data:image\/jpeg;base64,/);
     assert.deepEqual(Buffer.from(
       p.body.messages[1].content[1].image_url.url.split(",")[1],"base64"),
-      makeJpeg(16,16));
+      makeJpeg(16,16,Math.floor((attempts-1)/2)));
     const variant=attempts%2===1?"v1":"v2";
     const parsed=variant==="v1"
       ?{schemaVersion:"vision-observation-v1",eligibility:elig,
@@ -99,6 +100,17 @@ try {
     environment:{OPENAI_API_KEY2:fakeSecret,CI:"true"},
     invoke:fakeInvoker
   }),/ci_face_photo_execution_forbidden/);
+  for (const [name,value] of [
+    ["CI","1"], ["CI","True"], ["GITLAB_CI","true"],
+    ["CIRCLECI","true"], ["TF_BUILD","True"], ["BUILDKITE","yes"],
+    ["JENKINS_URL","https://ci.private.invalid"]
+  ]) {
+    await assert.rejects(runPrivatePhotoCohort({
+      manifest,photoDir:tmp,live:true,
+      environment:{OPENAI_API_KEY2:fakeSecret,[name]:value},
+      invoke:fakeInvoker
+    }),/ci_face_photo_execution_forbidden/);
+  }
   assert.equal(attempts,0);
   const missing=clone(manifest);
   missing.cases[4].filename="missing.jpg";
@@ -153,6 +165,16 @@ try {
   assert.equal(failed.outcome,"HOLD_INCOMPLETE_PROVIDER_DATA");
   assert.equal(JSON.stringify(failed).includes("USER_FACE_SOURCE_PRIVATE"),false);
 
+  // Same image bytes under DIFFERENT file basenames must block the entire
+  // cohort preflight, even when the manifest case IDs and names are distinct.
+  writeFileSync(join(tmp,manifest.cases[2].filename),makeJpeg(16,16,0));
+  const duplicateContentBlocked=await runPrivatePhotoCohort({
+    manifest,photoDir:tmp,live:true,
+    environment:{OPENAI_API_KEY2:fakeSecret},invoke:fakeInvoker
+  });
+  assert.equal(duplicateContentBlocked.providerCallsAttempted,0);
+  assert.equal(duplicateContentBlocked.outcome,"HOLD_PRIVATE_PHOTO_INPUT");
+  writeFileSync(join(tmp,manifest.cases[2].filename),makeJpeg(16,16,2));
   // EXIF-bearing JPEGs require explicit orientation review before transfer.
   const exif=Buffer.concat([
     clean.subarray(0,2),
@@ -166,7 +188,7 @@ try {
   });
   assert.equal(exifBlocked.providerCallsAttempted,0);
   assert.equal(exifBlocked.outcome,"HOLD_PRIVATE_PHOTO_INPUT");
-  writeFileSync(join(tmp,manifest.cases[1].filename),makeJpeg(16,16));
+  writeFileSync(join(tmp,manifest.cases[1].filename),makeJpeg(16,16,1));
   // Reject symlink to any photo file and consume zero provider calls.
   unlinkSync(join(tmp,manifest.cases[3].filename));
   symlinkSync(join(tmp,manifest.cases[0].filename),join(tmp,manifest.cases[3].filename));
