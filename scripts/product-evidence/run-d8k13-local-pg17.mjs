@@ -16,7 +16,10 @@ const SQL_PATHS=Object.freeze([
  "supabase/migrations/20261015185000_taxonomy_ai_r16i_d8k12_owner_review_revocation_v1.sql",
  "tests/fixtures/r16i-d8k12/10_runtime_pg17.sql",
  "tests/fixtures/r16i-d8k13/00_legacy_self_review_pg17.sql",
- "tests/fixtures/r16i-d8k13/10_quarantine_runtime_pg17.sql"
+ "tests/fixtures/r16i-d8k13/10_quarantine_runtime_pg17.sql",
+ "tests/fixtures/r16i-d8k13/05_d8dv2_existing_catalog_pg17.sql",
+ "supabase/migrations/20261014150000_taxonomy_ai_r16i_d8d_v2_owner_gated_dual_offer.sql",
+ "tests/fixtures/r16i-d8k13/20_d8dv2_chain_runtime_pg17.sql"
 ]);
 let started=false,cleaning=false;
 function docker(args,{input=null,allowFailure=false,seconds=90}={}){
@@ -87,7 +90,7 @@ async function run(){
  }
  if(args.some(x=>x!=="--check-files")||args.length>1)
   throw Error("UNKNOWN_ARGUMENT");
- const [seed,migration,test,legacySeed,legacyTest]=SQL_PATHS.map(file);
+ const [seed,migration,test,legacySeed,legacyTest,v2Prereq,v2Sql,v2ChainTest]=SQL_PATHS.map(file);
  assert.match(migration,/D8K12_REVIEWER_CANNOT_APPROVE_OWN_CAPTURE/);
  assert.match(migration,/D8K12_EXISTING_VERDICTS_REQUIRE_EXPLICIT_RECONCILIATION/);
  assert.match(migration,/admin_product_correction_evidence_review_events_v2/);
@@ -102,8 +105,16 @@ async function run(){
  assert.match(migration,/observed_manifest IS DISTINCT FROM expected_manifest/);
  assert.match(migration,/LEGACY_QUARANTINED/);
  assert.match(migration,/D8K13_LEGACY_BOOTSTRAP_COUNT_MISMATCH/);
+ assert.match(migration,/D8K13_UNEXPECTED_D8DV2_ACTIVITY/);
+ assert.match(migration,/D8K13_UNEXPECTED_D8DV2_SCHEMA/);
+ assert.match(migration,/pg_catalog\.pg_advisory_xact_lock\(195721,16\)/);
+ assert.match(v2Sql,/CREATE TABLE public\.admin_r16i_d8d_v2_gate/);
+ assert.match(v2Sql,/CREATE FUNCTION public\.r16i_d8d_apply_v2/);
+ assert.match(v2Sql,/CREATE FUNCTION public\.r16i_d8d_rollback_v2/);
+ assert.match(v2Prereq,/CREATE TABLE public\.product_offers/);
+ assert.match(v2ChainTest,/D8K13_D8DV2_REAL_ORDER_CHAIN_ACCEPTANCE_PASS/);
  console.log("D8K12_CHECK_FILES_PASS (3 fixed local SQL files)");
- console.log("D8K13_CHECK_FILES_PASS (2 additional fixed local SQL files)");
+ console.log("D8K13_CHECK_FILES_PASS (5 additional fixed local SQL files; includes unmodified D8D-v2 migration)");
  if(args.length)return;
 
  checkLocal();
@@ -236,7 +247,79 @@ async function run(){
    assert.match(unchanged,/D8K13_SAFE_ROLLBACK/);
   }
   console.log("D8K13_PG17_DRIFT_REFUSAL_AND_ROLLBACK_PASS");
+  // Reproduce ACTUAL migration ordering in a separate synthetic DB:
+  // 1. existing R16I D8C/D8D v1 tables + 2 self-reviewed verdicts,
+  // 2. pre-existing normal Product/Offer row types,
+  // 3. UNMODIFIED pending D8D-v2 migration SQL (gate OFF, all ledgers empty),
+  // 4. exact-manifest D8K12/D8K13 integrated bootstrap and assertions.
+  async function createOrderedV2Db(db,mutation=""){
+   await createLegacyDb(db);
+   psql(v2Prereq,{db});
+   psql(v2Sql,{db});
+   if(mutation)psql(mutation,{db});
+  }
+  await createOrderedV2Db("d8k13_d8dv2_real_order");
+  psql(localTicket+migration,{db:"d8k13_d8dv2_real_order"});
+  const chain=psql(legacyTest+"\n"+v2ChainTest,{
+   db:"d8k13_d8dv2_real_order"
+  });
+  assert.match(chain,/D8K13_D8DV2_REAL_ORDER_CHAIN_ACCEPTANCE_PASS/);
+  console.log("D8K13_D8DV2_REAL_ORDER_CHAIN_ACCEPTANCE_PASS");
+
+  // Without a signed-off release ticket, even an otherwise legitimate
+  // D8D-v2 prior schema must NOT soften the original D8K12 refusal.
+  await createOrderedV2Db("d8k13_v2_no_ticket");
+  psql(migration,{db:"d8k13_v2_no_ticket",
+   expectedError:"D8K12_EXISTING_VERDICTS_REQUIRE_EXPLICIT_RECONCILIATION"});
+
+  // Malformed/active D8D-v2 instances: no snapshots/events and no changes
+  // to original VERIFIED rows, Product, Offers, or D8D-v2 ledgers.
+  const invalidV2=[
+   ["d8k13_v2_gate_on",
+    "UPDATE public.admin_r16i_d8d_v2_gate SET enabled=true,"+
+     "change_ticket='SYNTHETIC_TEST_TICKET';",
+    "D8K13_UNEXPECTED_D8DV2_ACTIVITY"],
+   ["d8k13_v2_authorization",
+    "INSERT INTO public.admin_product_correction_proposals_v1(proposal_id)"+
+     " VALUES('00000000-0000-4000-8000-000000000071');"+
+    "INSERT INTO public.admin_r16i_d8d_v2_owner_authorizations("+
+     "proposal_id,product_id,product_revision,price_policy,"+
+     "evidence_fingerprint,approved_by,expires_at) VALUES ("+
+     "'00000000-0000-4000-8000-000000000071',"+
+     "'b639c8b4-6a61-440e-b4db-fac7381593ff',now(),"+
+     "'A_PRODUCT_PRICE_NULL_SELLER_OFFERS_ONLY',repeat('a',64),"+
+     "'00000000-0000-4000-8000-000000000012',now()+interval '1 day');",
+    "D8K13_UNEXPECTED_D8DV2_ACTIVITY"],
+   ["d8k13_v2_column_drift",
+    "ALTER TABLE public.admin_r16i_d8d_v2_gate ADD COLUMN forged text;",
+    "D8K13_UNEXPECTED_D8DV2_SCHEMA"],
+   ["d8k13_v2_rpc_escalation",
+    "ALTER FUNCTION public.r16i_d8d_apply_v2(uuid,uuid,uuid,text) "+
+     "SECURITY DEFINER;",
+    "D8K13_UNEXPECTED_D8DV2_SECURITY"],
+   ["d8k13_v2_anon_read",
+    "GRANT SELECT ON public.admin_r16i_d8d_v2_gate TO anon;",
+    "D8K13_UNEXPECTED_D8DV2_SECURITY"],
+   ["d8k13_v2_missing_event_table",
+    "DROP TABLE public.admin_r16i_d8d_v2_events;",
+    "D8K13_UNEXPECTED_LEGACY_SCHEMA"]
+  ];
+  for(const [db,mutation,expectedError] of invalidV2){
+   await createOrderedV2Db(db,mutation);
+   psql(localTicket+migration,{db,expectedError});
+   const state=psql(`SELECT CASE WHEN
+    to_regclass('public.admin_product_correction_legacy_verdict_quarantine_v1') IS NULL
+    AND to_regclass('public.admin_product_correction_evidence_review_events_v2') IS NULL
+    AND (SELECT count(*) FROM public.admin_product_correction_evidence_verdicts_v1
+      WHERE verdict='VERIFIED')=2
+    AND (SELECT count(*) FROM public.products)=1
+    AND NOT EXISTS(SELECT 1 FROM public.product_offers)
+    THEN 'D8K13_V2_SAFE_ROLLBACK' ELSE 'UNSAFE' END;`,{db});
+   assert.match(state,/D8K13_V2_SAFE_ROLLBACK/);
+  }
+  console.log("D8K13_D8DV2_DRIFT_REFUSAL_AND_ROLLBACK_PASS");
   console.log("D8K13_LOCAL_DOCKER_PG17_PASS");
+
  }finally{
   cleanup();
   console.log("Removed isolated temporary PG17 container.");
