@@ -104,10 +104,14 @@ function safeSampleSummary(cases,variant) {
 }
 export function comparePrivateSkinV2Correction(baseline,correction) {
   const prior=privateCases(baseline,["v1","v2"],10);
-  const next=privateCases(correction,["v2"],5);
+  const resumed=correction?.studyMode==="v2_resume_merged_five";
+  const next=privateCases(correction,["v2"],resumed?4:5);
+  if(resumed&&(correction.reusedProbeProviderCalls!==1||
+    correction.providerCallsRepresented!==5))requireSafe("private_resume_provenance_invalid");
   if(baseline.studyId!==correction.studyId||
-    correction.studyMode!=="v2_only"||
-    correction.outcome!=="PRIVATE_V2_ONLY_STRUCTURAL_RESEARCH_ONLY"||
+    !(resumed?correction.outcome==="PRIVATE_V2_RESUME_MERGED_STRUCTURAL_RESEARCH_ONLY":
+       correction.studyMode==="v2_only"&&
+       correction.outcome==="PRIVATE_V2_ONLY_STRUCTURAL_RESEARCH_ONLY")||
     baseline.outcome!=="PRIVATE_REAL_PHOTO_STRUCTURAL_REVIEW_ONLY")
     requireSafe("private_study_link_invalid");
   let photoSizeChanged=0,eligibleToIneligible=0,ineligibleToEligible=0;
@@ -138,6 +142,8 @@ export function comparePrivateSkinV2Correction(baseline,correction) {
     version:SKIN_PRIVATE_V2_CORRECTION_AUDIT_VERSION,
     status:"PRIVATE_PAIRED_HISTORICAL_COMPARISON_RESEARCH_ONLY",
     matchedOpaqueCases:5,
+    correctionProviderCallsNew:resumed?4:5,
+    correctionProviderCallsReused:resumed?1:0,
     baseline:safeSampleSummary(prior,"v2"),
     corrected:safeSampleSummary(next,"v2"),
     changes:{
