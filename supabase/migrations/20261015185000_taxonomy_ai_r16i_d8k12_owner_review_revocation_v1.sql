@@ -109,7 +109,7 @@ BEGIN
   -- APPLY is SECURITY INVOKER; ROLLBACK deliberately is SECURITY DEFINER
   -- so it can remove the two offers while retaining the approved audit trail.
   -- ROLLBACK is trusted only when EXECUTE remains service_role-only and
-  -- the source RPC's owner membership, bounded subject and ticket checks
+  -- the source RPC's owner membership, bounded subject and drift checks
   -- remain subject to independent code review. Do NOT change its security
   -- attribute merely to satisfy this migration preflight.
   IF (SELECT p.prosecdef FROM pg_catalog.pg_proc p WHERE p.oid=
