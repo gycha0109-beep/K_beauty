@@ -117,6 +117,8 @@ assert.throws(()=>validateR16IVerdict({
 
 const migration=readFileSync(
  "supabase/migrations/20261015185000_taxonomy_ai_r16i_d8k12_owner_review_revocation_v1.sql","utf8");
+const d8dv2Migration=readFileSync(
+ "supabase/migrations/20261014150000_taxonomy_ai_r16i_d8d_v2_owner_gated_dual_offer.sql","utf8");
 const ledger=readFileSync(
  "lib/product-intelligence/r16i-correction-approval-ledger.mjs","utf8");
 const ui=readFileSync(
@@ -147,6 +149,13 @@ for(const re of [
  /D8K13_LEGACY_RECONCILIATION/,
  /SET verdict='REJECTED'/,
  /D8K13_LEGACY_QUARANTINE_POSTCONDITION_FAILED/,
+ /D8K13_UNEXPECTED_D8DV2_ACTIVITY/,
+ /D8K13_UNEXPECTED_D8DV2_SCHEMA/,
+ /D8K13_UNEXPECTED_D8DV2_SECURITY/,
+ /pg_catalog\.pg_advisory_xact_lock\(195721,16\)/,
+ /LOCK TABLE public\.admin_r16i_d8d_v2_gate/,
+ /actual_columns IS DISTINCT FROM/,
+ /relrowsecurity/,
  /REVOKE ALL ON public\.admin_product_correction_evidence_verdicts_v1/,
  /GRANT SELECT ON public\.admin_product_correction_evidence_verdicts_v1/,
  /e\.submitted_by=p_actor_id/,
@@ -161,6 +170,14 @@ for(const re of [
 ])has(ledger,re);
 for(const re of [/과거 자기 승인 — 효력 격리/,/과거 자기 승인 — 격리/])has(ui,re);
 for(const re of [
+ /D8K13_D8DV2_REAL_ORDER_CHAIN_ACCEPTANCE_PASS/,
+ /D8K13_D8DV2_DRIFT_REFUSAL_AND_ROLLBACK_PASS/,
+ /d8k13_v2_gate_on/,
+ /d8k13_v2_authorization/,
+ /d8k13_v2_column_drift/,
+ /d8k13_v2_rpc_escalation/,
+ /d8k13_v2_anon_read/,
+ /d8k13_v2_missing_event_table/,
  /D8K13_PG17_LEGACY_TWO_ROW_QUARANTINE_PASS/,
  /D8K13_PG17_DRIFT_REFUSAL_AND_ROLLBACK_PASS/,
  /D8K13_LOCAL_DOCKER_PG17_PASS/,
@@ -170,6 +187,12 @@ for(const re of [
  /d8k13_gate_on/,
  /d8k13_v2_schema/
 ])has(runner,re);
+for(const re of [
+ /CREATE TABLE public\.admin_r16i_d8d_v2_gate/,
+ /CREATE TABLE public\.admin_r16i_d8d_v2_events/,
+ /CREATE FUNCTION public\.r16i_d8d_apply_v2/,
+ /CREATE FUNCTION public\.r16i_d8d_rollback_v2/
+])has(d8dv2Migration,re);
 for(const re of [/admin_product_correction_evidence_verdicts_v1/,/000000000101/,/000000000102/])has(seed,re);
 for(const re of [
  /D8K13_ORIGINAL_AUDIT_NOT_PRESERVED/,
