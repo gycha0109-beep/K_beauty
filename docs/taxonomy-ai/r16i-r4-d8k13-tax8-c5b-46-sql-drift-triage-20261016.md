@@ -52,3 +52,12 @@
 - 다음 작업: 28건의 parser-aware statement split 비교, crawler 구분자 합성 PG17 테스트, Taxonomy8 preflight 미실행 증거 처리, C5B migration wrapper 차이에 대한 독립 감사. 전체 보안 #1208 / 실제 백업 복원 / 독립 reviewer / 전체 migration 체인 검증은 별도 HOLD다.
 
 **운영 DDL·DML·schema_migrations repair·PR merge·deploy·관리자 권한 변경·상품 가격/CTA 활성화 모두 금지.**
+
+
+## 5. 복수 statements 재조립 1차 표본 (2026-10-16)
+
+28건 중 **3건을 읽기 전용으로 추가 시험**했다: `safe_review_and_promotion_layer`(39 statements), `add_revisit_core_tables`(80 statements), `product_fact_storage_v1`(95 statements).
+
+운영 `schema_migrations.statements`를 세미콜론으로 재결합하고, 문자열 literal은 보존하면서 SQL 주석·공백을 제외하는 lexer로 GitHub 현재 파일과 비교한 결과 **3건 모두 마지막 세미콜론 한 토큰만 제외하면 정확히 일치**했다. 단순 문자열/Git blob SHA 재조립은 여전히 일치하지 않으므로 이것을 byte-identical이라고 표시하지 않는다. 사용된 PostgreSQL 실제 파서·실행 순서·권한은 별도 검증 대상이다.
+
+**남은 25건은 동일 검증을 완료하지 못했다.** 표본의 결과를 전체 28건으로 확장하지 않는다. 28건 전체에 대한 `PARSER_REASSEMBLY_NOT_PROVEN` 상태 및 릴리스 HOLD는 유지한다.
