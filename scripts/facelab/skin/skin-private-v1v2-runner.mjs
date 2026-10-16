@@ -251,6 +251,7 @@ function sanitizedTrial(caseId,variant,response) {
     eligibilityStatus,skinAnalysisEligible:skinEligible,faceLabEligible:faceEligible,
     skinStatus:metrics.skinStatus,skinAxisStates:metrics.skinAxisStates,
     v2AxisCount,v2ContractStatus,
+    expectedIneligibleAbstention:metrics.expectedIneligibleAbstention===true,
     ...privateAxisMetadata(variant,response.parsed),
     metadataOnly:true
   };
@@ -311,7 +312,8 @@ export async function runPrivatePhotoCohort({
           outputTokens:trial.outputTokens,
           faceStatus:trial.faceStatus,
           faceAvailableFieldCount:trial.faceAvailableFieldCount,
-          nearTokenCap:trial.nearTokenCap
+          nearTokenCap:trial.nearTokenCap,
+          expectedIneligibleAbstention:trial.expectedIneligibleAbstention
         });
         onPrivateProgress({caseId:caseId,variant,completed:true,
           outputTokens:trial.outputTokens,finishReason:trial.finishReason});
@@ -333,9 +335,13 @@ export async function runPrivatePhotoCohort({
     const trials=summaryRows.filter(row=>row.caseId===caseId);
     const paired=summarizeSkinVisionTrials(trials,{evidenceOrigin:"operator_review_pending"});
     const v2=rows.find(x=>x.variant==="v2");
-    output.push({caseId,verdict:paired.structuralCandidatePass &&
-      v2.v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED"
-      ?"STRUCTURAL_PREFLIGHT_ONLY":"FACE_OR_SKIN_REVIEW_REQUIRED",
+    const expectedAbstention=v2.expectedIneligibleAbstention &&
+      v2.v2ContractStatus==="EXPECTED_INELIGIBLE_EMPTY";
+    output.push({caseId,verdict:expectedAbstention
+      ?"EXPECTED_SKIN_INELIGIBLE_ABSTENTION_RESEARCH_ONLY"
+      : paired.structuralCandidatePass &&
+        v2.v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED"
+        ?"STRUCTURAL_PREFLIGHT_ONLY":"FACE_OR_SKIN_REVIEW_REQUIRED",
       photoShortSidePx:Math.min(image.width,image.height),variants:rows,
       faceParityStatus:paired.faceBaselineUnassessable
         ?"UNVERIFIABLE_FACE_BASELINE"
