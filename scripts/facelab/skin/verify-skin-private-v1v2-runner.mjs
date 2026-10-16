@@ -100,6 +100,13 @@ try {
     environment:{OPENAI_API_KEY2:fakeSecret,CI:"true"},
     invoke:fakeInvoker
   }),/ci_face_photo_execution_forbidden/);
+  if(process.env.GITHUB_ACTIONS==="true" || process.env.CI==="true") {
+    // Deliberately omit the key so that this negative test could NEVER make
+    // a real OpenAI request even if a future CI process guard regresses.
+    await assert.rejects(runPrivatePhotoCohort({
+      manifest,photoDir:tmp,live:true,environment:{}
+    }),/ci_face_photo_execution_forbidden/);
+  }
   for (const [name,value] of [
     ["CI","1"], ["CI","True"], ["GITLAB_CI","true"],
     ["CIRCLECI","true"], ["TF_BUILD","True"], ["BUILDKITE","yes"],
