@@ -37,6 +37,11 @@ const secMigration=src("supabase/migrations/20260711032649_sec_05_anonymous_writ
 const aclRepair=src("supabase/migrations/20260621151304_repair_phase1_ranking_snapshot_ingest_rpc.sql");
 const truncateRepair=src("supabase/migrations/20260621152040_repair_phase1_ranking_snapshots_truncate_privilege.sql");
 const readonlyProbe=src("scripts/product-evidence/sql/d8k13-historical-drift-readonly-preflight-v1.sql");
+const isolatedPg17=src("scripts/product-evidence/run-d8k13-sec05-acl-synthetic-pg17.mjs");
+const isolatedSetup=src("tests/fixtures/r16i-d8k13/30_sec05_acl_synthetic_setup_pg17.sql");
+const isolatedLegacy=src("tests/fixtures/r16i-d8k13/31_sec05_legacy_null_behavior_pg17.sql");
+const isolatedHardened=src("tests/fixtures/r16i-d8k13/32_sec05_hardened_null_contract_pg17.sql");
+const isolatedAcl=src("tests/fixtures/r16i-d8k13/33_sec05_ranking_acl_minimal_revoke_pg17.sql");
 
 assert.ok(secHelper.startsWith('import "server-only";'));
 assertOrdered(secCore,"const expectedSignature = createAnonymousWriteGrantTokenSignature",
@@ -70,6 +75,17 @@ for(const privilege of ["REFERENCES","TRIGGER","MAINTAIN"])
  assert.ok(readonlyProbe.includes("'"+privilege+"'"),
   "D8K13_READONLY_ACL_PRIVILEGE_AUDIT_MISSING: "+privilege);
 assert.ok(readonlyProbe.includes("public_schema_create_acl"));
+assert.ok(isolatedPg17.includes('"--network=none"'));
+assert.ok(isolatedPg17.includes('"--pull=never"'));
+assert.ok(isolatedPg17.includes("SEC05_REMOTE_DOCKER_HOST_FORBIDDEN"));
+assert.ok(isolatedPg17.includes("const IMAGE=\"postgres:17\""));
+assert.ok(isolatedPg17.includes("legacyVariant(fn)"));
+assert.ok(isolatedPg17.includes("if(args.length)return;"));
+assert.ok(isolatedSetup.includes("D8K13_SYNTHETIC_ACL_BASELINE_PASS"));
+assert.ok(isolatedLegacy.includes("D8K13_SEC05_LEGACY_NULL_COUNTEREXAMPLE_AND_ROLLBACK_PASS"));
+assert.ok(isolatedHardened.includes("D8K13_SEC05_HARDENED_NULL_MATRIX_ROLE_AND_RETRY_PASS"));
+assert.ok(isolatedAcl.includes("D8K13_SYNTHETIC_RANKING_ACL_REVOKE_ROLLBACK_IDEMPOTENCE_PASS"));
+assert.ok(isolatedAcl.includes("REVOKE REFERENCES,TRIGGER,MAINTAIN ON TABLE public.ranking_snapshots"));
 
 assert.equal(repair.historical_records_readonly_verified,true);
 assert.equal(repair.current_hosted_ranking_rls_and_write_acl_verified,true);
@@ -108,6 +124,8 @@ console.log(JSON.stringify({
  sourceRankingsOriginAttested:false,
  liveAnonymousFunctionExplicitNullChecksAttested:false,
  exploitabilityProven:false,
+ syntheticPg17SecuritySuiteSourcePresent:true,
+ syntheticPg17SecuritySuiteExecutedOnDocker:false,
  fullMigrationChainReleaseApproved:false
 }));
 console.log("D8K13_HISTORICAL_SECURITY_LINEAGE_OFFLINE_PASS_HOLD");
