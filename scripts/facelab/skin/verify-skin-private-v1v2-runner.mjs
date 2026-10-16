@@ -134,6 +134,18 @@ try {
   assert.equal(report.pairedSummary.faceBaselineUnassessable,5);
   assert(report.cases.every(c=>c.variants[1].v2AxisCount===7));
   assert(report.cases.every(c=>c.variants[1].v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED"));
+  // Private-only seven-axis metadata can later be compared to independent
+  // Human labels without emitting raw visual descriptions or identity.
+  assert(report.cases.every(c=>c.variants[0].v1LegacyZeroUnverifiable===true));
+  assert(report.cases.every(c=>Object.keys(c.variants[0].v1LegacyNumeric).length===7));
+  assert(report.cases.every(c=>Object.values(c.variants[0].v1LegacyNumeric).every(x=>x===0)));
+  assert(report.cases.every(c=>c.variants[0].v2Axes===null));
+  assert(report.cases.every(c=>c.variants[1].v1LegacyNumeric===null));
+  assert(report.cases.every(c=>c.variants[1].v2Axes.length===7));
+  assert(report.cases.every(c=>c.variants[1].v2Axes.every(row=>
+    row.state==="unknown" && row.value===null &&
+    row.confidence==="unknown" && SKIN_VISIBLE_AXES.includes(row.axis)
+  )));
   assert(report.cases.every(c=>c.verdict==="FACE_OR_SKIN_REVIEW_REQUIRED"));
   assert.equal(report.authority.independentHumanEvaluationDone,false);
   assert.equal(report.authority.scoringOrDeploymentAuthorized,false);
@@ -144,6 +156,9 @@ try {
   assert.equal(JSON.stringify(report).includes("data:image"),false);
   assert.equal(JSON.stringify(report).includes("synthetic_0.jpg"),false);
   assert.equal(JSON.stringify(report).includes("one face"),false);
+  assert.equal(JSON.stringify(report).includes("face_not_detected"),false);
+  assert.equal(JSON.stringify(report).includes("source_shine"),false);
+  assert.equal(JSON.stringify(report).includes("cue"),false);
   for(const input of [
     {...manifest,cases:[...manifest.cases.slice(0,4),manifest.cases[0]]},
     {...manifest,cases:manifest.cases.map((c,i)=>i===4?{...c,filename:manifest.cases[0].filename}:c)},
