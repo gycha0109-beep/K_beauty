@@ -15,6 +15,7 @@ import { createSkinVisionV2CandidatePrompt, evaluateSkinVisionV2Candidate } from
 import { inspectSkinVisionTrial, summarizeSkinVisionTrials } from "./skin-vision-v2-provider-evidence-gate.mjs";
 import { SKIN_VISIBLE_AXES } from "./skin-axis-evidence-contract-core.mjs";
 import { inspectPrivateSkinV2AxisContract } from "./skin-private-axis-contract-diagnostics.mjs";
+import { validatePrivateV2ProbeMetadata } from "./skin-private-v2-resume-core.mjs";
 
 export const PRIVATE_V1V2_VERSION = "skin-private-v1v2-cohort-v1";
 export const PRIVATE_V1V2_MAX_CALLS = 10;
@@ -265,15 +266,20 @@ function sanitizedTrial(caseId,variant,response) {
 }
 export async function runPrivatePhotoCohort({
   manifest,photoDir,environment=process.env,invoke=executePrivateVisionChatJson,live=false,
-  studyMode="paired",onPrivateProgress=()=>{}
+  studyMode="paired",resumeProbeMetadata=null,onPrivateProgress=()=>{}
 }={}) {
   validatePrivateCohortManifest(manifest);
   // A five-call v2-only correction trial MUST NOT silently repeat old v1
   // requests. Never permit arbitrary per-caller variants or cap overrides.
-  if(!["paired","v2_only","v2_probe_one"].includes(studyMode))
+  if(!["paired","v2_only","v2_probe_one","v2_resume_four"].includes(studyMode))
     throw new Error("research_study_mode_invalid");
   const variants=studyMode==="paired"?["v1","v2"]:["v2"];
-  const requestBudget=studyMode==="v2_probe_one"?1:studyMode==="v2_only"?5:PRIVATE_V1V2_MAX_CALLS;
+  const requestBudget=studyMode==="v2_probe_one"?1:studyMode==="v2_resume_four"?4:studyMode==="v2_only"?5:PRIVATE_V1V2_MAX_CALLS;
+  if(studyMode==="v2_resume_four"){
+    // Before any Provider attempt: TC-01 success must already be validated.
+    validatePrivateV2ProbeMetadata(resumeProbeMetadata,manifest.studyId,
+      manifest.cases.find(c=>c.caseId==="TC-01"));
+  }
   const key=assertAllowedEnvironment(environment,live,invoke); // before any photo reads.
   const output=[],summaryRows=[],validated=[];
   const seenImageContent=new Set();
@@ -300,7 +306,10 @@ export async function runPrivatePhotoCohort({
       };
     }
   }
-  const casesToRun=live&&studyMode==="v2_probe_one"?validated.slice(0,1):validated;
+  const caseById=new Map(validated.map(c=>[c.caseId,c]));
+  const casesToRun=studyMode==="v2_probe_one"?[caseById.get("TC-01")]:
+    studyMode==="v2_resume_four"?EXPECTED_CASE_IDS.slice(1).map(id=>caseById.get(id)):
+    EXPECTED_CASE_IDS.map(id=>caseById.get(id));
   for(const {caseId,image} of casesToRun){
     if(!live){
       output.push({caseId,verdict:"PRIVATE_LOCAL_PRECHECK_ONLY",
@@ -411,7 +420,9 @@ export async function runPrivatePhotoCohort({
       ?"PRIVATE_V2_PROBE_ONE_DIAGNOSTIC_ONLY"
       :studyMode==="v2_only"
         ?"PRIVATE_V2_ONLY_STRUCTURAL_RESEARCH_ONLY"
-        :"PRIVATE_REAL_PHOTO_STRUCTURAL_REVIEW_ONLY"):"PRIVATE_LOCAL_PRECHECK_ONLY",
+        :studyMode==="v2_resume_four"
+          ?"PRIVATE_V2_RESUME_FOUR_STRUCTURAL_RESEARCH_ONLY"
+          :"PRIVATE_REAL_PHOTO_STRUCTURAL_REVIEW_ONLY"):"PRIVATE_LOCAL_PRECHECK_ONLY",
     providerCallsAttempted:requests,cases:output,pairedSummary,v2OnlySummary,
     privacy:{humanPhotoSentToProvider:live&&requests>0,
       rawOutputsPersisted:false,photosSavedByRunner:false,gitHubActionsUsed:false},
