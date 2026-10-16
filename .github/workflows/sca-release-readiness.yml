@@ -45,6 +45,7 @@ jobs:
       - run: node --test scripts/security/sca-release-owner-policy.test.mjs
       - run: node --test scripts/security/sca-release-ci-scope.test.mjs
       - run: node --test scripts/security/sca-release-oaep-operator.test.mjs
+      - run: node --test scripts/security/sca-release-encrypted-artifact.test.mjs
   candidate:
     name: Clean release candidate structure (not approval)
     runs-on: ubuntu-24.04
@@ -82,11 +83,22 @@ jobs:
         env:
           SCA_B6_VERIFY_CANDIDATE: '1'
           SCA_OAEP_REPLACEMENT: '1'
+          SCA_ARCHIVE_RECIPIENT_PUBLIC_KEY_B64: ${{ vars.SCA_ARCHIVE_RECIPIENT_PUBLIC_KEY_B64 }}
           SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
           SCA_SCOPED_REQUIRE_ANDROID: ${{ steps.scope.outputs.runtime_required == 'true' && '1' || '' }}
           SCA_SCOPED_INSTALL_ONLY: ${{ steps.scope.outputs.runtime_required == 'false' && '1' || '' }}
         run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
       - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+      - name: Preserve owner-encrypted candidate evidence (never raw tarballs)
+        if: ${{ success() && steps.candidate.outputs.encrypted_candidate_ready == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sca-b6-owner-encrypted-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/bejewely-sca-owner-artifact/candidate.tar.gz.enc
+            ${{ runner.temp }}/bejewely-sca-owner-artifact/receipt.json
+          if-no-files-found: error
+          retention-days: 3
   independent-candidate:
     name: Independent clean release candidate digest replay
     needs: candidate
