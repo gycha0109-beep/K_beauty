@@ -123,7 +123,7 @@ BEGIN
   -- Guard the *entire observed column/type surface*, not just a list
   -- of table names: schema drift is NOT a release-ticket bypass.
   FOR v2_table,expected_columns IN
-   SELECT name,columns FROM (VALUES
+   SELECT name,cols FROM (VALUES
     ('admin_r16i_d8d_v2_gate',ARRAY[
       'scope:text','enabled:boolean','change_ticket:text',
       'changed_at:timestamp with time zone']::text[]),
@@ -149,7 +149,7 @@ BEGIN
       'event_id:uuid','application_id:uuid','event_type:text',
       'event_by:uuid','request_id:uuid','before_values:jsonb',
       'after_values:jsonb','occurred_at:timestamp with time zone']::text[])
-   ) AS expected(name,columns)
+   ) AS expected(name,cols)
   LOOP
    SELECT array_agg(a.attname||':'||
            pg_catalog.format_type(a.atttypid,a.atttypmod)
