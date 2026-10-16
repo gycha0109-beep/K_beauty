@@ -83,6 +83,51 @@ assert.equal(a.faceAvailableFieldCount, b.faceAvailableFieldCount);
 assert.equal(b.skinStatus, "ready");
 assert.equal(b.skinAxisStates.not_seen, 7);
 assert.equal(b.skinAxisStates.unknown, 0);
+assert.equal(b.expectedIneligibleAbstention,false);
+// The 2026-10-16 real-photo metadata showed all raw not_seen rows
+// landing in validated unknown. Preserve the strict cue/area contract:
+// missing scoped inspected cue MUST NOT silently become a valid negative.
+const invalidNegatives=clone(v2);
+for (const row of invalidNegatives.skin.axisEvidence) {
+  row.cue=null;
+  row.area=null;
+}
+const invalidNegativeTrial=trial("NEG_CUE", "v2", invalidNegatives);
+assert.equal(invalidNegativeTrial.skinStatus,"partial");
+assert.equal(invalidNegativeTrial.skinAxisStates.unknown,7);
+assert.equal(invalidNegativeTrial.skinAxisStates.not_seen,0);
+assert.equal(invalidNegativeTrial.expectedIneligibleAbstention,false);
+// Distinguish legitimately ineligible Skin + empty array from missing rows
+// on an otherwise Skin-eligible person. Both remain non-acceptance.
+const ineligible=clone(v2);
+ineligible.eligibility={
+  ...ineligible.eligibility,status:"ineligible",imageType:"other",
+  humanFaceCount:0,faceLabEligible:false,skinAnalysisEligible:false,
+  faceLabFailureReason:"face_not_detected",
+  skinFailureReason:"face_not_detected",
+  confidence:0.99,evidence:["synthetic nonhuman square"]
+};
+ineligible.skin.axisEvidence=[];
+ineligible.face={};
+const abstention=trial("ABSTAIN", "v2", ineligible);
+assert.equal(abstention.expectedIneligibleAbstention,true);
+assert.equal(abstention.result,"INVALID_OR_INCOMPLETE");
+assert.equal(abstention.skinStatus,"blocked");
+const failedSummarized=summarizeSkinVisionTrials([
+  trial("ABSTAIN","v1",{...v1,eligibility:ineligible.eligibility,face:{}}),
+  abstention
+]);
+assert.equal(failedSummarized.v2Invalid,1);
+assert.equal(failedSummarized.v2ExpectedIneligibleAbstentions,1);
+assert.equal(failedSummarized.v2EligibleStructuralFailures,0);
+assert.equal(failedSummarized.structuralCandidatePass,false);
+assert.equal(failedSummarized.scoringActivationAuthorized,false);
+const eligibleNonempty=trial("ELIGIBLE_MISS","v2",invalidNegatives);
+const eligibleLoss=summarizeSkinVisionTrials([
+  trial("ELIGIBLE_MISS","v1",v1),eligibleNonempty
+]);
+assert.equal(eligibleLoss.v2ExpectedIneligibleAbstentions,0);
+assert.equal(eligibleLoss.v2EligibleStructuralFailures,1);
 assert.equal(b.responseComplete, true);
 assert.equal(b.sensitiveSourcePersisted, false);
 assert.equal(b.realPhotoTruthVerified, false);
