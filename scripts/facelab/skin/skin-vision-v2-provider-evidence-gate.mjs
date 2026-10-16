@@ -69,6 +69,7 @@ export function inspectSkinVisionTrial({ caseId, variant, providerEnvelope, maxC
   // contract failure. This is RESEARCH evidence, not positive acceptance.
   const expectedIneligibleAbstention = variant === "v2" &&
     finishReason === "stop" && schemaMatches && !invalidJson &&
+    evaluation?.classification === "candidate_parsed" &&
     evaluation?.eligibility?.source === "vision" &&
     evaluation?.eligibility?.skinAnalysisEligible === false &&
     Array.isArray(parsed?.skin?.axisEvidence) &&
