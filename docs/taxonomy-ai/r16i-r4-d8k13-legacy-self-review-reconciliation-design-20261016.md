@@ -1,6 +1,6 @@
 # D8K-13 — R16I 기존 자기 승인 2건의 안전한 reconciliation 설계 v1
 
-> 2026-10-16 KST | **설계 전용 / 운영 DB 적용 불가 / Draft PR / 병합·배포 보류**
+> 2026-10-16 KST | **설계 + 코드 전용 구현 / 운영 DB 미적용 / Native PG17 재검증 대기 / Draft PR / 병합·배포 보류**
 >
 > 기준: D8K-12 `2be34cf95d93424d206702bde5068deb6f033de9` (로컬 Node 80 assertions 및 Docker PG17 PASS).
 > 이번 승인은 **설계와 읽기 전용 확인**만 포함한다. 기존 증빙·판정의 UPDATE/DELETE, 역할 변경, 승인 철회 실행, 마이그레이션 실행, PR 머지, 배포, 상품/Offer 수정, 고객 가격·구매 CTA 공개는 **허용되지 않았다**.
@@ -125,3 +125,31 @@ D8K-12 감사 이벤트 계약을 다음과 같이 **호환 확장**하는 방�
 - 유효 상태/관리자 API: `lib/product-intelligence/r16i-correction-approval-ledger.mjs`, `app/api/admin/products/r16i-correction-review/approval/route.js`.
 
 **결론: 두 레거시 판정은 ‘과거에 VERIFIED로 저장되었다’는 기록만 남기고, 실제 승인 효력은 영구히 제외한다. 독립 검토·상품 변경·고객 노출은 전혀 자동 허용하지 않는다.**
+
+
+## 9. D8K-13 후속 코드 구현 (2026-10-16, 코드만 변경)
+
+> 이 절은 앞선 **설계-only 초기 승인 범위**에서 실제 작성된 **미배포 구현 코드의 상태**를 구분한다. 운영 쓰기 또는 릴리스 승인이 아니다.
+
+### 통합 부트스트랩 구현
+- `supabase/migrations/20261015185000_taxonomy_ai_r16i_d8k12_owner_review_revocation_v1.sql`의 **아직 운영에 미적용인 코드**에, 기존 판정이 없는 경우 D8K-12 원래 경로를 유지하면서 두 건의 레거시 판정에 한해 D8K-13 호환 경로를 추가했다.
+- 기존 판정이 있는 경우 **릴리스 티켓**(`app.d8k13_release_ticket`)과 **사전에 확정한 정확한 `source_key:evidence_id:verdict_id` 매니페스트**(`app.d8k13_expected_manifest`)가 필요하다. 매니페스트는 사전 읽기 전용 관측과 배포 승인에서 독립적으로 도출한다. 운영 UUID는 저장소나 로그에 하드코딩하지 않는다. 이 두 설정값 자체가 배포 권한을 부여하는 것은 아니다.
+- Product 행 선행 락, evidence/verdict 및 관련 제안·결정·적용·게이트 테이블 쓰기 충돌 락, 출처·자가 판정·수량·적용·활성 OWNER·게이트·스키마 사전 검증을 구현. 예상과 다르면 `D8K12_EXISTING_VERDICTS_REQUIRE_EXPLICIT_RECONCILIATION`, `D8K13_UNEXPECTED_LEGACY_SCHEMA` 또는 `D8K13_UNEXPECTED_LEGACY_SHAPE`로 중단한다.
+- `admin_product_correction_legacy_verdict_quarantine_v1`에 원승인 판정/사유/검토자/요청 UUID/시각/제출자를 보존하고 새 audit 이벤트를 `LEGACY_QUARANTINED` 및 `D8K13_LEGACY_RECONCILIATION`으로 생성한 후 **기존 v1 판정의 `verdict`만 `REJECTED`로 변경**. 같은 SQL 트랜잭션의 실패는 전부 롤백한다.
+- D8K-12 신규 정상 `VERIFIED/REJECTED/REVOKED` 이벤트에는 `origin=D8K12_HUMAN_REVIEW` 기본값을 유지하고, 레거시 이벤트가 사용자 RPC로 입력되는 것을 금지한다.
+- 기존 권한 제한 유지: `service_role`은 레거시 판정/스냅샷/이벤트에 대해 직접 쓰기 금지. 일반 `anon/authenticated` 역할은 이벤트·스냅샷 읽기 및 판정 RPC 호출 금지. 불변 audit 테이블에는 UPDATE/DELETE 차단 트리거.
+
+### 관리자 호출 경계
+- `lib/product-intelligence/r16i-correction-approval-ledger.mjs`는 레거시의 **최신 이벤트 + snapshot FK + origin**을 확인하고 유효 판정은 `REJECTED`로 투영한다. history/API는 `LEGACY_QUARANTINED`를 보존한다.
+- `app/admin/products/r16i-correction-review/R16IR4D8CorrectionApproval.js`는 **과거 자기 승인 — 격리**로 표시하며 해당 캡처의 재승인 버튼이나 정정안 선택을 제공하지 않는다.
+
+### 코드 전용 수용 테스트
+- `node scripts/product-evidence/verify-d8k13-legacy-quarantine-v1.mjs` — 신규 격리 이력, 위조 provenance, 현재 상태 모순, 정정안 재사용 거부 계약
+- `node scripts/product-evidence/verify-d8k12-owner-review-revocation-v1.mjs` — 기존 D8K-12 회귀
+- `node scripts/product-evidence/run-d8k13-local-pg17.mjs --check-files` — SQL 사전 검사
+- `node scripts/product-evidence/run-d8k13-local-pg17.mjs` — **운영 DB/네트워크/마운트 없는 Docker PG17**에서 기존 D8K-12, 정확한 두 건 격리·원본 보존·권한·새 독립 리뷰, 티켓 누락 및 여러 변형 사례의 전체 롤백을 검사
+- 합격 마커: `D8K13_PG17_LEGACY_TWO_ROW_QUARANTINE_PASS`, `D8K13_PG17_DRIFT_REFUSAL_AND_ROLLBACK_PASS`, `D8K13_LOCAL_DOCKER_PG17_PASS`.
+
+**테스트 증빙 등급:** 이 기록 시점에는 GitHub 소스의 정적 대조까지만 진행했으며, 신규 코드의 실제 Node·PostgreSQL 17 실행 결과는 **아직 확인되지 않았다**. 검증 전에는 코드 안정성 PASS로 표시하지 않는다. PR #1338의 과거 PASS는 **D8K-13 변경 HEAD에 승계되지 않는다**.
+
+**운영 상태:** 실제 기존 판정은 여전히 VERIFIED 2건이며, D8K-12 이벤트와 D8K-13 격리 스냅샷은 운영에 설치되지 않았다. 별도 운영 변경 승인·보안 #1208 해결·출시 게이트 검수 전에는 병합·배포·DB 변경 불가.
