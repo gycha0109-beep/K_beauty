@@ -22,7 +22,7 @@
 
 원본 캡처의 bytes, 저장 경로, `submitted_by`/reviewer 실제 UUID, 기존 판정 사유·요청 ID 등은 공개 저장소와 이 문서에 남기지 않는다. 특정 대상을 확정하는 `source_key:evidence_id:verdict_id` **원문 매니페스트는 접근 통제된 승인 기록에서만** 관리한다. MD5/해시만으로 승인된 매니페스트를 대신하지 않는다.
 
-## 1. 신규 확인된 릴리스 순서 **차단** — P0
+## 1. 릴리스 순서 P0 — 조건부 호환 코드 작성, 실제 순서 검증 대기
 
 | 시점 | 파일/상태 |
 | --- | --- |
@@ -33,15 +33,15 @@
 확정된 모순:
 
 - D8D v2 선행 SQL은 `admin_r16i_d8d_v2_applications`, `admin_r16i_d8d_v2_owner_authorizations`, `admin_r16i_d8d_v2_application_offers`를 **생성한다**.
-- D8K-13 통합 SQL은 위 세 테이블 중 **하나라도 존재하면** `D8K13_UNEXPECTED_LEGACY_SCHEMA`로 중단한다.
-- 공식 Supabase CLI 문서에서 `supabase db push`는 적용되지 않은 **모든 로컬 migration**을 실행하며, `--dry-run`은 적용 대상 목록만 미리 보여 준다. 따라서 현재 분기 전체를 대상으로 한 통상적인 순차 적용은 **D8D v2 선행 설치 후 D8K-13의 의도된 중단**으로 이어질 수 있다. 기존 운영 DB 손상이 확인된 것은 아니며 **호환 릴리스 경로가 아직 없다는 뜻**이다.
+- 최초 검수 시점 D8K-13은 위 세 테이블 중 하나라도 존재하면 `D8K13_UNEXPECTED_LEGACY_SCHEMA`로 중단했다. **현재 Draft 코드에서는 실제 D8D v2 테이블 5개·RPC 2개가 완전 설치되고, 컬럼/타입/RLS/권한이 예상과 동일하며, v2 게이트 OFF·이력 0건인 경우만 호환 후보로 허용한다.** 부분 설치·이력·권한/스키마 drift는 거부한다.
+- 공식 Supabase CLI 문서에서 `supabase db push`는 적용되지 않은 **모든 로컬 migration**을 실행하며, `--dry-run`은 적용 대상 목록만 미리 보여 준다. 조건부 호환 소스를 작성했지만, **실제 PG17 검증과 전체 pending migration 의존성 검수가 끝나기 전에는 릴리스 경로가 확정되지 않았다**. 운영 DB 변경은 없었다.
 
 **안전하게 다음 중 하나의 릴리스 설계를 별도 리뷰/합성 PG17 테스트로 확정해야 한다.**
 
 - **안 A — 정상 순서 호환**: D8D v2가 정확한 예상 스키마로 설치되어 있고 owner authorization/application/offer 등 관련 테이블에 이력이 **전혀 없음**을 검증하는 보호된 경로를 설계한다. D8D v2 SQL 원문 스키마·권한·사이드이펙트와 동시성 로직을 실제로 재현한 PG17 통합 테스트가 필요하며, 미확인 또는 데이터가 한 건이라도 있으면 계속 거부한다. 기존 `VERIFIED` 자가 승인 2건 및 릴리스 게이트 OFF 검증은 절대로 완화하지 않는다.
 - **안 B — 명시적 승인된 별도 적용 순서**: 전수 미적용 migration 목록과 의존성을 확인하고, DBA/운영 승인 아래 통합 부트스트랩을 D8D v2보다 먼저 적용하는 합법적인 절차를 새로 설계한다. 적용 기록을 거짓으로 표시하지 않으며, 타임스탬프를 임의 수정하거나 `supabase migration repair`를 통과 수단으로 악용하지 않는다. 마이그레이션 이력과 이후 표준 적용 순서를 일관성 있게 보장해야 한다.
 
-**현재 어느 안도 구현·운영 승인된 것이 아니다.** 정식 선택 전 `supabase db push`, `supabase migration repair`, 운영에서 SQL 복사 실행을 모두 금지한다.
+**안 A는 Draft 코드 수준에서 구현됐지만 이 기록 당시 신규 HEAD의 실제 PG17 통과 증거가 없다. 안 B는 미구현이다. 어느 안도 운영 적용 승인은 없다.** 별도 승인 전 `supabase db push`, `supabase migration repair`, 운영 SQL 실행을 금지한다.
 
 별도 로컬 파일 진단: `node scripts/product-evidence/verify-d8k13-release-sequence-v1.mjs`. **읽기 전용·네트워크 없음·릴리스 HOLD**만 판정. `--enforce-release` 옵션은 의도적으로 nonzero 종료하며 실제 배포 명령이 아니다. 도구 출력에 `status: HOLD`이면 진단의 목적대로 동작한 것이다.
 
@@ -76,6 +76,17 @@
 ## 5. 2026-10-16 결론
 
 - **확인됨:** 2026-10-16 학원 PC D8C/D8K11/D8K12/D8K13 Node+격리 PG17 합격; 운영 읽기 전용 판정 2건/게이트 OFF; PR #1341 Draft; #1208 OPEN.
-- **새로운 P0:** 미적용 D8D v2 마이그레이션이 D8K-13보다 시간순으로 먼저 실행되고, D8K-13은 D8D v2 설치 사실만으로 거부한다.
+- **P0 대응 중:** D8D v2 선행 설치를 예상하되 **정확한 스키마·RLS·SECURITY INVOKER·권한·게이트 OFF·이력 0건**인 경우만 허용하는 조건부 코드를 작성했다. 신규 실제 순서 PG17 검증 전에는 HOLD.
 - **미확인:** 적용 경로, 운영 백업/PITR 및 복원 시험, 독립 검토자, 공급망 보안 해결, 실제 운영 migration 계획. 운영 데이터는 전혀 변경하지 않았다.
 - **출시/운영 판정: HOLD.** 마이그레이션 일괄 적용, 수동 DB 쓰기, 병합, 배포 모두 금지.
+
+
+## 6. 조건부 D8D v2 호환 코드와 테스트 (2026-10-16)
+
+- 통합 SQL은 **D8D v2 advisory lock (195721,16)을 Product 행 락보다 먼저 확보**해 v2 APPLY와 잠금 순서를 맞춘다. D8D v1은 기존 Product 행 락으로 직렬화한다.
+- D8D v2 테이블 다섯 개(게이트, OWNER 승인, 적용, 적용 Offer, 이벤트)와 보호된 RPC 두 개가 모두 없으면 **기존 v1-only 두 건 경로**, 모두 있으면 **정확한 설치 상태 검증 경로**, 일부만 있으면 **거부**다.
+- v2 스키마가 존재할 때에는 5개 테이블의 컬럼 **이름·타입 정확히 일치**, base table/RLS, RPC가 `SECURITY INVOKER`, service_role 게이트/승인 테이블 직접 쓰기 불가 및 브라우저 읽기 불가를 검증한다. v2 게이트 `false`, 변경 티켓 `NULL`, OWNER 승인·적용·Offer·이벤트 0건을 강제한다.
+- 원문 D8D v2 SQL을 수정하지 않고 합성 PG17에서 먼저 실행하도록 `run-d8k13-local-pg17.mjs`에 순서 재현을 추가했고, v2 게이트 ON, 승인 이력, 컬럼 드리프트, 권한 상승, 익명 SELECT, 테이블 누락을 각각 롤백 검증한다.
+- 합성 fixture: `05_d8dv2_existing_catalog_pg17.sql`, `20_d8dv2_chain_runtime_pg17.sql`. Product/Offer 실제 행 데이터나 운영 계정 정보는 사용하지 않는다.
+- 별도 릴리스 진단기는 조건부 코드 존재를 인식하지만 여전히 `status=HOLD`, `--enforce-release` 실패를 유지한다.
+- **검증 상태:** 소스 작성 및 정적 검수까지 수행했다. 실제 PostgreSQL 테스트의 신규 HEAD 통과 결과는 아직 확인되지 않았다. 보안 #1208, 백업/복원 불명, 독립 OWNER 부재 등도 남아 있다.
