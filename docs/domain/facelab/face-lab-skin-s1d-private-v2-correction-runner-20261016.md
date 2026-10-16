@@ -38,3 +38,11 @@ The user supplied a new **metadata-only** private correction report after explic
 - Even a valid probe cannot establish five-case evaluation, Face semantic parity or Human truth. If a future probe returns a valid result, a separate four-case continuation can be implemented without re-billing the first probe; none is deployed now.
 
 **Security HOLD:** The old `node-forge` supply-chain advisory exception remains expired. Draft PR only; no merge, production score/ranking, Style/Face contract or deployment changes. A new user-authorized private local KEY2 call is necessary to diagnose the original failed response, and no further calls occur automatically.
+
+## 2026-10-16 — TC-01 one-call live probe / 4-case continuation supersession
+
+The earlier section stating "a separate four-case continuation can be implemented" is **historical** and superseded here. User-supplied metadata for the actual local **TC-01** private probe reports `STRUCTURALLY_VALID`, 7/7 valid Skin axes, 4 properly validated `not_seen`, Face available with 19 fields and 1,972/2,200 output tokens. It is **one-case contract evidence only**.
+
+A fail-closed `v2_resume_four` mode, mandatory successful TC-01 probe gate, strict 4-call max, metadata-only 1+4 merger, updated historical audit and mock-only Main Health verifier were added on this Draft branch. The local Windows PowerShell launcher requires operator confirmation and an exclusive persistent attempt lock; no automatic retry/lock removal. See [dedicated protocol](face-lab-skin-s1d-v2-resume-four-20261016.md). Original `v2_only` five-call option remains **unsafe for continuing this cohort** because it would call TC-01 again. Use **only** the new 4-case continuation after CI verifies the exact HEAD.
+
+**Not yet performed:** new TC-02..TC-05 live tests, independent Human accuracy study, Face value parity, production score activation, release. The prior failed 1-call `v2_only` result remains failure evidence, never successful input for the merger.
