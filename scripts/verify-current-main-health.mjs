@@ -182,6 +182,7 @@ run("Face Lab Skin v2 Provider response evidence gate", node, ["scripts/facelab/
 run("Face Lab Skin v2 paired operational metrics", node, ["scripts/facelab/skin/verify-face-lab-s1b-operational-metrics.mjs"]);
 run("Face Lab Skin v2 nonface raw-axis abstention audit", node, ["scripts/facelab/skin/verify-skin-nonface-v2-abstention-audit.mjs"]);
 run("Face Lab Skin KEY2 nonhuman Vision pair mock-only", node, ["scripts/facelab/skin/verify-skin-key2-nonface-vision-pair.mjs"]);
+run("Face Lab Skin S1-D private response classification", node, ["scripts/facelab/skin/verify-skin-private-provider-response-envelope.mjs"]);
 run("Face Lab Skin S1-D private human photo pairing mock-only", node, ["scripts/facelab/skin/verify-skin-private-v1v2-runner.mjs"]);
 run("Face Lab Skin S1-D private closed axis diagnostics mock-only", node, ["scripts/facelab/skin/verify-skin-private-axis-contract-diagnostics.mjs"]);
 run("Face Lab Skin S1-D v2 correction aggregate audit mock-only", node, ["scripts/facelab/skin/verify-skin-private-v2-correction-audit.mjs"]);
