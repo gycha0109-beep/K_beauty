@@ -155,6 +155,10 @@ try {
   assert.equal(report.pairedSummary.matchedPairs,5);
   assert.equal(report.pairedSummary.faceBaselineUnassessable,5);
   assert(report.cases.every(c=>c.variants[1].v2AxisCount===7));
+  assert(report.cases.every(c=>
+    c.variants[1].privateAxisContractDiagnostics.status==="ELIGIBLE_ROWS_CONTRACT_READY"
+    && c.variants[1].privateAxisContractDiagnostics.axisDiagnostics.length===7
+  ));
   assert(report.cases.every(c=>c.variants[1].expectedIneligibleAbstention===false));
   assert.equal(report.pairedSummary.v2ExpectedIneligibleAbstentions,0);
   assert.equal(report.pairedSummary.v2EligibleStructuralFailures,0);
@@ -185,6 +189,64 @@ try {
   assert.equal(JSON.stringify(report).includes("face_not_detected"),false);
   assert.equal(JSON.stringify(report).includes("source_shine"),false);
   assert.equal(JSON.stringify(report).includes("cue"),false);
+  // Five-call v2-only correction: NEVER repeat any old v1 Provider calls.
+  // Mock transport sees strictly the same in-memory sanitized JPEG per case.
+  let correctionCalls=0;
+  const v2OnlyInvoke=async args=>{
+    correctionCalls++;
+    assert.equal(args.apiKey,fakeSecret);
+    assert.match(args.body.messages[0].content,/vision-observation-v2/);
+    assert.doesNotMatch(args.body.messages[0].content,/vision-observation-v1/);
+    const source=Buffer.from(args.body.messages[1].content[1].image_url.url.split(",")[1],"base64");
+    assert.deepEqual(source,makeJpeg(16,16,correctionCalls-1));
+    return {
+      status:200,durationMs:1200,
+      parsed:{schemaVersion:"vision-observation-v2",eligibility:elig,
+        skin:{axisEvidence:SKIN_VISIBLE_AXES.map(axis=>({
+          axis,state:"unknown",value:null,confidence:"unknown",
+          cue:null,area:null,reason:"missing"
+        }))},face:{}},
+      providerPayload:{
+        choices:[{finish_reason:"stop",message:{content:JSON.stringify({
+          schemaVersion:"vision-observation-v2",eligibility:elig,
+          skin:{axisEvidence:SKIN_VISIBLE_AXES.map(axis=>({
+            axis,state:"unknown",value:null,confidence:"unknown",
+            cue:null,area:null,reason:"missing"
+          }))},face:{}
+        })}}],
+        usage:{prompt_tokens:480,completion_tokens:300}
+      }
+    };
+  };
+  const v2Only=await runPrivatePhotoCohort({
+    manifest,photoDir:tmp,live:true,studyMode:"v2_only",
+    environment:{OPENAI_API_KEY2:fakeSecret,OPENAI_API_KEY:prodSecret},
+    invoke:v2OnlyInvoke
+  });
+  assert.equal(correctionCalls,5);
+  assert.equal(v2Only.providerCallsAttempted,5);
+  assert.equal(v2Only.studyMode,"v2_only");
+  assert.equal(v2Only.outcome,"PRIVATE_V2_ONLY_STRUCTURAL_RESEARCH_ONLY");
+  assert.equal(v2Only.pairedSummary,null);
+  assert.equal(v2Only.v2OnlySummary.cases,5);
+  assert.equal(v2Only.v2OnlySummary.skinEligibleValid,5);
+  assert.equal(v2Only.v2OnlySummary.expectedSkinIneligibleAbstentions,0);
+  assert.equal(v2Only.v2OnlySummary.clinicalTruthVerified,false);
+  assert.equal(v2Only.v2OnlySummary.faceValueParityVerified,false);
+  assert(v2Only.cases.every(c=>c.variants.length===1
+    && c.variants[0].variant==="v2"
+    && c.faceParityStatus==="BASELINE_NOT_INCLUDED_IN_V2_ONLY_REPORT"
+    && c.faceStatusDegraded===null
+    && c.variants[0].privateAxisContractDiagnostics.status==="ELIGIBLE_ROWS_CONTRACT_READY"
+  ));
+  assert.equal(v2Only.authority.scoringOrDeploymentAuthorized,false);
+  assert(!JSON.stringify(v2Only).includes(fakeSecret));
+  assert(!JSON.stringify(v2Only).includes(prodSecret));
+  assert(!JSON.stringify(v2Only).includes("data:image"));
+  assert.throws(()=>runPrivatePhotoCohort({
+    manifest,photoDir:tmp,live:false,studyMode:"v1_only",
+    environment:{},invoke:v2OnlyInvoke
+  }),/research_study_mode_invalid/);
   // A Skin-ineligible result with zero rows is a safe abstention, not
   // a Skin-eligible seven-axis validation defect or a scoring release gate.
   attempts=0;
