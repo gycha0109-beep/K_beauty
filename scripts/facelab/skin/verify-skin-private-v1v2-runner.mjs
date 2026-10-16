@@ -134,6 +134,7 @@ try {
   assert.equal(JSON.stringify(report).includes("one face"),false);
   for(const input of [
     {...manifest,cases:[...manifest.cases.slice(0,4),manifest.cases[0]]},
+    {...manifest,cases:manifest.cases.map((c,i)=>i===4?{...c,filename:manifest.cases[0].filename}:c)},
     {...manifest,executionPolicy:{...manifest.executionPolicy,maxCalls:11}},
     {...manifest,attestation:{...manifest.attestation,openAiTransferConsent:"unverified"}},
     {...manifest,cases:[{...manifest.cases[0],filename:"../secret.jpg"},...manifest.cases.slice(1)]},
