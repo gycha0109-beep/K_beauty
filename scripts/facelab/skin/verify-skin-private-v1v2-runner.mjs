@@ -158,6 +158,7 @@ try {
   assert(report.cases.every(c=>c.variants[1].expectedIneligibleAbstention===false));
   assert.equal(report.pairedSummary.v2ExpectedIneligibleAbstentions,0);
   assert.equal(report.pairedSummary.v2EligibleStructuralFailures,0);
+  assert.equal(report.pairedSummary.v2OtherStructuralFailures,0);
   assert(report.cases.every(c=>c.variants[1].v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED"));
   // Private-only seven-axis metadata can later be compared to independent
   // Human labels without emitting raw visual descriptions or identity.
@@ -208,6 +209,7 @@ try {
   assert.equal(abstentionCohort.pairedSummary.v2Invalid,5);
   assert.equal(abstentionCohort.pairedSummary.v2ExpectedIneligibleAbstentions,5);
   assert.equal(abstentionCohort.pairedSummary.v2EligibleStructuralFailures,0);
+  assert.equal(abstentionCohort.pairedSummary.v2OtherStructuralFailures,0);
   assert.equal(abstentionCohort.pairedSummary.structuralCandidatePass,false);
   assert(abstentionCohort.cases.every(c=>
     c.verdict==="EXPECTED_SKIN_INELIGIBLE_ABSTENTION_RESEARCH_ONLY" &&
