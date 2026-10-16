@@ -176,6 +176,17 @@ run("DATA-OFFER17 observability module syntax", node, ["--check", "lib/product-o
 run("DATA-OFFER17 offer read service syntax", node, ["--check", "lib/server/product-offer-read-service.js"]);
 run("DATA-OFFER17 controlled Offer RPC diagnostic", node, ["scripts/verify-data-offer17-controlled-offer-rpc-diagnostic-v1.mjs"]);
 
+run("Face Lab Skin axis/unknown evidence contract", node, ["scripts/facelab/skin/verify-face-lab-skin-s1-axis-evidence.mjs"]);
+run("Face Lab Skin v2 shared Vision offline preflight", node, ["scripts/facelab/skin/verify-face-lab-skin-s1b-vision-v2-candidate.mjs"]);
+run("Face Lab Skin v2 Provider response evidence gate", node, ["scripts/facelab/skin/verify-face-lab-s1b-provider-evidence-gate.mjs"]);
+run("Face Lab Skin v2 paired operational metrics", node, ["scripts/facelab/skin/verify-face-lab-s1b-operational-metrics.mjs"]);
+run("Face Lab Skin v2 nonface raw-axis abstention audit", node, ["scripts/facelab/skin/verify-skin-nonface-v2-abstention-audit.mjs"]);
+run("Face Lab Skin KEY2 nonhuman Vision pair mock-only", node, ["scripts/facelab/skin/verify-skin-key2-nonface-vision-pair.mjs"]);
+run("Face Lab Skin S1-D private response classification", node, ["scripts/facelab/skin/verify-skin-private-provider-response-envelope.mjs"]);
+run("Face Lab Skin S1-D private human photo pairing mock-only", node, ["scripts/facelab/skin/verify-skin-private-v1v2-runner.mjs"]);
+run("Face Lab Skin S1-D private closed axis diagnostics mock-only", node, ["scripts/facelab/skin/verify-skin-private-axis-contract-diagnostics.mjs"]);
+run("Face Lab Skin S1-D v2 correction aggregate audit mock-only", node, ["scripts/facelab/skin/verify-skin-private-v2-correction-audit.mjs"]);
+run("Face Lab Skin S1-D TC02-05 resume and merge mock-only", node, ["scripts/facelab/skin/verify-skin-private-v2-resume.mjs"]);
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);

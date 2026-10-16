@@ -1,0 +1,48 @@
+# Face Lab Skin — S1-D private v2-only correction research follow-up (2026-10-16)
+
+> Research-only, Draft, **NOT a provider real-photo rerun or proof of correction**.
+> 2026-10-16 prior actual user-attested five-photo data: **10 KEY2 calls**, v1 5/5 structurally valid; v2 has three eligible Skin contracts partially invalid, one fully valid eligible Skin photo, one intentionally Skin-ineligible empty-axis abstention; eight raw `not_seen` in eligible cases normalized into `unknown`. See the metadata-only aggregated audit in this research branch. Original cue/area/reason strings were not retained and **cannot** be inferred.
+
+## What is implemented (no new paid calls)
+
+- `skin-private-axis-contract-diagnostics.mjs`: offline validator for a **transient future v2 Provider response**, with only canonical Skin axis IDs and **closed-field failure codes** for `row_shape_invalid`, `value_state_mismatch`, `target_cue_missing_or_invalid`, `inspected_area_missing_or_invalid`, `reason_state_mismatch`, `confidence_state_mismatch` etc. It does **not** save or echo any `cue`, `area`, `reason`, free-text evidence, filename, face features, person, image or Provider JSON. It compares diagnostic validity with the existing unchanged strict S1-A validator and fails closed on any disagreement. The model's confidence enum is not a calibrated probability. All tests use **fabricated synthetic objects**.
+- `runPrivatePhotoCohort` now has an allowlisted `studyMode="v2_only"` in addition to the original default `paired`; the second mode makes **at most FIVE** requests total, one corrected research-only v2 per photo, **never re-runs v1**, never retries, and is not invoked during CI. The local source bytes get the same metadata sanitization, exact dimensions/duplicate checks, CI-process hard ban, KEY2-only authorization and 2,200 completion token cap before any billable call.
+- Explicit `--live-private-v2-only` CLI switch. Preflight-only `--validate-private-cohort` is still zero-cost and keyless; no production route, shared Vision/Face/Style prompt, live scoring, DB, PR CI workflow or existing safety limit changes.
+- **Separate historical comparison:** `compare-skin-private-v2-correction.mjs` takes two private metadata-only reports, original 10-call paired baseline and newly generated 5-call v2-only correction. It rejects different study IDs, wrong/missing cases, incorrect request counts, non-private-storage flags or altered short-side dimensions. Output contains **aggregates only**: Skin eligible structural pass/hold counts, raw vs validated `not_seen` counts, expected ineligible zero-axis abstention count, near cap, Skin-eligibility transitions, Face status/count loss versus original v1/v2. It cannot prove physical image identity between trials; a retained short side is not a unique image fingerprint.
+- The comparison's exact face-value parity, Skin truth and independent Human reviewer consensus are always explicitly `false` or `unverified` regardless of passing structural metrics. Historical v1 data is only used **locally** to compare bounded statistics; no source photos, raw text, hashes or person IDs are placed into GitHub.
+
+## How future authorization should work
+
+1. A future **user-initiated** Windows opt-in (not CI) reuses the already-downloaded private photo/manifest and existing private result file; validates the untouched five-photo set and original same-study 10-call metadata before prompting for a KEY2.
+2. Confirmation must explicitly state **five additional billable OpenAI Vision requests**, not 10, and show that **v1 is not called again**. The Windows launcher should show a secure key prompt on the local machine, never send the key in ChatGPT, and stop without uploads or fees if validation fails.
+3. After five v2 calls, save a private metadata-only JSON locally. Compare it to the original private 10-call report, output only bounded aggregate diagnostic JSON, and review Skin contract failure codes. Any deficits, unexpected ineligibility, near-cap, Face count reductions or incomplete calls remain research **HOLD**.
+4. Ask for additional owner/user action **only once private code and CI validations are complete**, and no human face photo is ever submitted to GitHub/Actions. The user's existing consent is only their attestation; actual photographic rights documentation and permission for separate independent human reviewers remain unverified.
+
+## Permanent boundaries
+
+- A passing v2-only structural result would **NOT** establish accurate Skin observations, patient health condition, Face *value* parity, Style parity or eligibility for personalized score/ranking. The independent two-blinded-rater Human cue reference must be collected and adjudicated separately under appropriate person-specific permission; the existing S1 cue accuracy/evaluation and S2-E score admission gates cannot be bypassed.
+- The production shared Vision model/prompt, Face/Style, recommendation engine, Top Pick, database/API, security advisories and releases remain unchanged. The expired `node-forge` `GHSA-86w9-cpqp-85rv` security exception remains its own blocker. No merge/deploy without owner authorization.
+- **Exact number of new real-photo Provider calls caused by this implementation and CI: zero.** All automated checks are mock/synthetic only.
+
+Watchtower-Track: face-lab-skin
+
+## First Windows correction attempt — error triage (2026-10-16)
+
+The user supplied a new **metadata-only** private correction report after explicit local authorization: `studyMode=v2_only`, `providerCallsAttempted=1`, `outcome=HOLD_INCOMPLETE_PROVIDER_DATA`, first v2 `errorClass=provider_response_invalid`, and **zero subsequent cases attempted**. Runner-reported `humanPhotoSentToProvider=true`, no raw outputs saved. The file cannot establish whether the output ran out of tokens or malformed Provider JSON; the previous shared HTTP adapter collapses Provider-envelope parse failure and model message-content parse failure into the same error class. It does **not** establish actual billing or clinical accuracy.
+
+**Research-only fix, no further real-photo calls in this code work:**
+- Added `skin-private-provider-response-envelope.mjs` around the existing **unchanged production HTTP transport**. The private parser keeps any malformed model content as a transient in-memory sentinel, then examines only allowlisted `finish_reason` and bounded `completion_tokens`. It outputs `provider_output_truncated` for `length`, `provider_output_filtered` for `content_filter` and `provider_content_json_invalid` for malformed model text when otherwise a parseable envelope was returned. Each error may carry only **closed `finishReason`**, bounded `outputTokens` and boolean `nearTokenCap`. Raw model text, face JSON, response body, name, photo, location and secret are not recorded or returned.
+- If the outer Provider-envelope itself is corrupt, it can still produce the prior generic `provider_response_invalid`, which is an honest unresolved classification. No retries, output token cap increase, diagnosis relaxation or production runtime changes were made.
+- Added separate **`--live-private-v2-probe-one`** CLI mode, with a maximum of **one KEY2 billable request**, for the first cohort photo only. The entire five-image cohort is still validated before calling. It stops after one attempt regardless of success or failure, and returns either `PRIVATE_V2_PROBE_ONE_DIAGNOSTIC_ONLY` or `HOLD_INCOMPLETE_PROVIDER_DATA`. Full five-call mode remains available but is **not** the advised next action until the cause is known.
+- Synthetic tests use fake HTTP Responses for `finish_reason=length`, `stop` with invalid model JSON, `content_filter`, outer-envelope corruption and valid JSON. One-call stop behavior is verified with fake photos. No user photo or API key in CI.
+- Even a valid probe cannot establish five-case evaluation, Face semantic parity or Human truth. If a future probe returns a valid result, a separate four-case continuation can be implemented without re-billing the first probe; none is deployed now.
+
+**Security HOLD:** The old `node-forge` supply-chain advisory exception remains expired. Draft PR only; no merge, production score/ranking, Style/Face contract or deployment changes. A new user-authorized private local KEY2 call is necessary to diagnose the original failed response, and no further calls occur automatically.
+
+## 2026-10-16 — TC-01 one-call live probe / 4-case continuation supersession
+
+The earlier section stating "a separate four-case continuation can be implemented" is **historical** and superseded here. User-supplied metadata for the actual local **TC-01** private probe reports `STRUCTURALLY_VALID`, 7/7 valid Skin axes, 4 properly validated `not_seen`, Face available with 19 fields and 1,972/2,200 output tokens. It is **one-case contract evidence only**.
+
+A fail-closed `v2_resume_four` mode, mandatory successful TC-01 probe gate, strict 4-call max, metadata-only 1+4 merger, updated historical audit and mock-only Main Health verifier were added on this Draft branch. The local Windows PowerShell launcher requires operator confirmation and an exclusive persistent attempt lock; no automatic retry/lock removal. See [dedicated protocol](face-lab-skin-s1d-v2-resume-four-20261016.md). Original `v2_only` five-call option remains **unsafe for continuing this cohort** because it would call TC-01 again. Use **only** the new 4-case continuation after CI verifies the exact HEAD.
+
+**Not yet performed:** new TC-02..TC-05 live tests, independent Human accuracy study, Face value parity, production score activation, release. The prior failed 1-call `v2_only` result remains failure evidence, never successful input for the merger.
