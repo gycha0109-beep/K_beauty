@@ -1,0 +1,344 @@
+{
+  "schema": "D8K13_SAME_VERSION_SQL_TRIAGE_READONLY_V1",
+  "snapshotDateKst": "2026-10-16",
+  "githubHeadAtObservation": "d6ad177644aa9abb881ef779adda30f24adb0e7c",
+  "status": "RELEASE_HOLD",
+  "source": "Hosted schema_migrations metadata and single-statement guarded inspection; GitHub exact file blob SHA; no history SQL exported",
+  "metadataOnly": true,
+  "sourceSqlBodiesPublished": false,
+  "caution": "A SQL token comparison ignoring comments and formatting is NOT equal to byte equality and does NOT certify transaction semantics, policy, definer security, or successful production replay. Multi-statement records require a parser-aware comparison.",
+  "summary": {
+    "sameVersionAndNameButBlobNotDirectMatch": 46,
+    "joinReassemblyNotProven": 28,
+    "singleStatementDifferent": 18,
+    "terminalDelimiterOnly": 6,
+    "tokenEquivalentWhitespaceOrComments": 5,
+    "edgeNewlinesTrimGitBlobMatch": 6,
+    "requiresPG17ParserReview": 1,
+    "sourceMigrationExecutedOrFullyEquivalentCertified": false
+  },
+  "entries": [
+    {
+      "local_file": "20260410_safe_review_and_promotion_layer.sql",
+      "git_blob_sha": "f13b9584080209ba9bdfdaff3a66b5984b8748a7",
+      "version": "20260410",
+      "stored_statement_count": 39,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260424_align_analysis_results_share_schema.sql",
+      "git_blob_sha": "9672bcc6c6a372772cb8ea274dca52845d0d7b01",
+      "version": "20260424",
+      "stored_statement_count": 43,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260430_add_products_signal_columns.sql",
+      "git_blob_sha": "b3cf21118f04d4d40f729fb8073edb1837398164",
+      "version": "20260430",
+      "stored_statement_count": 1,
+      "classification": "TERMINAL_SQL_DELIMITER_DIFFERENCE_ONLY"
+    },
+    {
+      "local_file": "20260506070849_create_premium_report_sessions.sql",
+      "git_blob_sha": "5029c47a48824ade87ecb88aa6224249723ab7e6",
+      "version": "20260506070849",
+      "stored_statement_count": 1,
+      "classification": "TERMINAL_SQL_DELIMITER_DIFFERENCE_ONLY"
+    },
+    {
+      "local_file": "20260506092454_set_database_timezone_asia_seoul.sql",
+      "git_blob_sha": "d18c1350453da772a1aba151213f29d4a1600eab",
+      "version": "20260506092454",
+      "stored_statement_count": 1,
+      "classification": "TERMINAL_SQL_DELIMITER_DIFFERENCE_ONLY"
+    },
+    {
+      "local_file": "20260507_restrict_promote_product_candidate_execute.sql",
+      "git_blob_sha": "ecb110e03b69e0255955c2775674ca0c493a3c0f",
+      "version": "20260507",
+      "stored_statement_count": 6,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260520170737_add_revisit_core_tables.sql",
+      "git_blob_sha": "64c0a79cf5bfa1620f47e8912ec560ec32b0e55b",
+      "version": "20260520170737",
+      "stored_statement_count": 80,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260524054039_split_moisturizer_categories.sql",
+      "git_blob_sha": "6a0d841675abd70ac74581b9e18a49d670fb50f6",
+      "version": "20260524054039",
+      "stored_statement_count": 1,
+      "classification": "TERMINAL_SQL_DELIMITER_DIFFERENCE_ONLY"
+    },
+    {
+      "local_file": "20260524054049_reclassify_existing_moisturizers.sql",
+      "git_blob_sha": "d2cfe11d690ddcf0ca75decc1e63cf7e7a0c1bfb",
+      "version": "20260524054049",
+      "stored_statement_count": 1,
+      "classification": "TERMINAL_SQL_DELIMITER_DIFFERENCE_ONLY"
+    },
+    {
+      "local_file": "20260526_moisturizer_lotion_emulsion_insert.sql",
+      "git_blob_sha": "38400aa3cc7282a86f8e5cebd5225b577cdaa8f7",
+      "version": "20260526",
+      "stored_statement_count": 1,
+      "classification": "TERMINAL_SQL_DELIMITER_DIFFERENCE_ONLY"
+    },
+    {
+      "local_file": "20260531123349_restrict_anonymous_user_data_policies.sql",
+      "git_blob_sha": "36798ad2f8bec305119b473b232273fa2de1b111",
+      "version": "20260531123349",
+      "stored_statement_count": 59,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260613025816_add_treatment_product_form.sql",
+      "git_blob_sha": "1a9508556d2ba273c0c6ff679fe90c6a910303eb",
+      "version": "20260613025816",
+      "stored_statement_count": 4,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260613030023_migrate_treatment_product_forms.sql",
+      "git_blob_sha": "48d9ad13c611c2fb5a2c08d5c77f58288577945e",
+      "version": "20260613030023",
+      "stored_statement_count": 3,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260620212309_candidate_product_form_promotion_contract.sql",
+      "git_blob_sha": "b4a7cffe4003a8ea4467831b010b4d902e34ab98",
+      "version": "20260620212309",
+      "stored_statement_count": 1,
+      "classification": "SQL_TOKEN_EQUIVALENT_IGNORE_COMMENTS_WHITESPACE"
+    },
+    {
+      "local_file": "20260620214740_fail_closed_map_product_category.sql",
+      "git_blob_sha": "37f39e581c90f7c239250824d51c872607acd3ab",
+      "version": "20260620214740",
+      "stored_statement_count": 1,
+      "classification": "SQL_TOKEN_EQUIVALENT_IGNORE_COMMENTS_WHITESPACE"
+    },
+    {
+      "local_file": "20260621030000_phase1_ranking_snapshot_pipeline.sql",
+      "git_blob_sha": "9add0e1e90dc75c0ad94a1acdf0ddb863ed42d1a",
+      "version": "20260621030000",
+      "stored_statement_count": 31,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260621151304_repair_phase1_ranking_snapshot_ingest_rpc.sql",
+      "git_blob_sha": "c48d9aff22f6e811b8529c29a5581fcd34ecb2a6",
+      "version": "20260621151304",
+      "stored_statement_count": 18,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260621152040_repair_phase1_ranking_snapshots_truncate_privilege.sql",
+      "git_blob_sha": "242c7bf6aa5b9a3f1e9082d2581af41bc7087cdb",
+      "version": "20260621152040",
+      "stored_statement_count": 4,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260621155819_phase2_candidate_promotion_review_queue.sql",
+      "git_blob_sha": "9e7766b4769f857ff278158fe6cd580acbdc403e",
+      "version": "20260621155819",
+      "stored_statement_count": 28,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260621160633_repair_phase2_snapshot_concern_context.sql",
+      "git_blob_sha": "8233a7275bff499e990a4ffad96d832899e76224",
+      "version": "20260621160633",
+      "stored_statement_count": 6,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260627224615_ranking_review_v2_b_policy.sql",
+      "git_blob_sha": "98b00e9b7dd83d4eb50324967c0c7bda7719d126",
+      "version": "20260627224615",
+      "stored_statement_count": 13,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260704221747_sec_01_analysis_request_guard.sql",
+      "git_blob_sha": "c7b584ce9264c23f678675c89d8192f13de9f5d3",
+      "version": "20260704221747",
+      "stored_statement_count": 37,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260711032649_sec_05_anonymous_write_grants.sql",
+      "git_blob_sha": "bb42c9cade8e310bdba73017ca6d81d211381056",
+      "version": "20260711032649",
+      "stored_statement_count": 37,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260714110252_sec_06_saved_reports_premium_write_boundary.sql",
+      "git_blob_sha": "dcb38c66a32995d2b12ceeb0e0765285343ad54b",
+      "version": "20260714110252",
+      "stored_statement_count": 16,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260715000000_sec_09_result_read_rate_limit.sql",
+      "git_blob_sha": "0c0d13d66be01799d2ff09f7a56b11a4fea6f654",
+      "version": "20260715000000",
+      "stored_statement_count": 10,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260730152900_admin_access_foundation.sql",
+      "git_blob_sha": "3568c5dd9365ed9cdf07c2adb5a14a61f4d97722",
+      "version": "20260730152900",
+      "stored_statement_count": 41,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260804233000_admin_product_candidate_reviews.sql",
+      "git_blob_sha": "d0603dbae85de792777d271d70315bc3f331220b",
+      "version": "20260804233000",
+      "stored_statement_count": 19,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260804233100_admin_product_candidate_reviews_hardening.sql",
+      "git_blob_sha": "bd6aaac68719552df0f904c6d3301b91f6745550",
+      "version": "20260804233100",
+      "stored_statement_count": 15,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260804233200_admin_product_candidate_reviews_security_hardening.sql",
+      "git_blob_sha": "cc36486dc9a95dd035af30ac9688e5c31c62bd51",
+      "version": "20260804233200",
+      "stored_statement_count": 17,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260804233300_admin_product_review_import_confirm.sql",
+      "git_blob_sha": "50ec01882cf66fdc98f9463b249719f9073f8eb0",
+      "version": "20260804233300",
+      "stored_statement_count": 21,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260805220000_admin_product_review_cleanser_metadata_v2.sql",
+      "git_blob_sha": "4cc2e7f2ca3c6dba726cbf344b46214c1bea53b4",
+      "version": "20260805220000",
+      "stored_statement_count": 22,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260805220005_admin_product_review_cleanser_metadata_v2_validate.sql",
+      "git_blob_sha": "18a92b3ca77fa8d2dd41b738a835e656daa4be68",
+      "version": "20260805220005",
+      "stored_statement_count": 4,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260805220010_admin_product_review_cleanser_metadata_v2_confirm.sql",
+      "git_blob_sha": "bb33c36788252453ec4fed8a4c2b108acc89be96",
+      "version": "20260805220010",
+      "stored_statement_count": 7,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260809115932_product_fact_storage_v1.sql",
+      "git_blob_sha": "676afbc56bf90443a1198f93427382f067d19407",
+      "version": "20260809115932",
+      "stored_statement_count": 95,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260810174400_product_fact_controlled_write_v1.sql",
+      "git_blob_sha": "03523a01322170e6b0fca2ff4cc77b8be581f19e",
+      "version": "20260810174400",
+      "stored_statement_count": 39,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260810174410_product_fact_subject_registration_v1.sql",
+      "git_blob_sha": "a08651d4ea5825e33f2dc94fe98c5b7643d32532",
+      "version": "20260810174410",
+      "stored_statement_count": 8,
+      "classification": "MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN"
+    },
+    {
+      "local_file": "20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql",
+      "git_blob_sha": "22af0580f01f0f2fecc1611c9f721e05d606244f",
+      "version": "20260822130309",
+      "stored_statement_count": 1,
+      "classification": "DELIMITER_OR_FUNCTION_BODY_DRIFT_REQUIRES_NATIVE_PG17_REVIEW"
+    },
+    {
+      "local_file": "20260901012653_face_lab_neutral_face_count_intake_v1.sql",
+      "git_blob_sha": "107ed40aaa9861a57d553b4a3a0bc140cabc5c7d",
+      "version": "20260901012653",
+      "stored_statement_count": 1,
+      "classification": "SQL_TOKEN_EQUIVALENT_IGNORE_COMMENTS_WHITESPACE"
+    },
+    {
+      "local_file": "20260922011324_trust_phase8c_revalidation_transition_index_hardening_v1.sql",
+      "git_blob_sha": "196f627e27e90e02b198c2ec89fa4c02b9cb5f24",
+      "version": "20260922011324",
+      "stored_statement_count": 1,
+      "classification": "SQL_TOKEN_EQUIVALENT_IGNORE_COMMENTS_WHITESPACE"
+    },
+    {
+      "local_file": "20260929110902_trust_phase8i4_grouped_relocation_v1.sql",
+      "git_blob_sha": "428c2dda16502787770b35a7d0715d83b1330534",
+      "version": "20260929110902",
+      "stored_statement_count": 1,
+      "classification": "SQL_TOKEN_EQUIVALENT_IGNORE_COMMENTS_WHITESPACE"
+    },
+    {
+      "local_file": "20260930202522_data_ai29c_d5c_bounded_canary_authority_v1.sql",
+      "git_blob_sha": "bea38498122addbbd598b654bf8ce6ec4670b54c",
+      "version": "20260930202522",
+      "stored_statement_count": 1,
+      "classification": "GIT_BLOB_IDENTICAL_AFTER_TRIMMING_EDGE_NEWLINES"
+    },
+    {
+      "local_file": "20260930211137_data_ai29c_d5d_spf_runtime_activation_v1.sql",
+      "git_blob_sha": "2ce6fa9835e0806fef07cb878970579c072d53b6",
+      "version": "20260930211137",
+      "stored_statement_count": 1,
+      "classification": "GIT_BLOB_IDENTICAL_AFTER_TRIMMING_EDGE_NEWLINES"
+    },
+    {
+      "local_file": "20260930212837_data_ai29c_d5d_emergency_rollback_v1.sql",
+      "git_blob_sha": "deae9bd311ce6c1083e875b3b08b0edcbebf7f7d",
+      "version": "20260930212837",
+      "stored_statement_count": 1,
+      "classification": "GIT_BLOB_IDENTICAL_AFTER_TRIMMING_EDGE_NEWLINES"
+    },
+    {
+      "local_file": "20260930213348_data_ai29c_d5d_activation_control_v1.sql",
+      "git_blob_sha": "bb4a18b210a81ddf5359a82896eb9da7a3804ac4",
+      "version": "20260930213348",
+      "stored_statement_count": 1,
+      "classification": "GIT_BLOB_IDENTICAL_AFTER_TRIMMING_EDGE_NEWLINES"
+    },
+    {
+      "local_file": "20260930213448_data_ai29c_d5d_activation_control_acl_fix_v1.sql",
+      "git_blob_sha": "5a90788d3dc2fa4bc520a704d3e9875f51571c6a",
+      "version": "20260930213448",
+      "stored_statement_count": 1,
+      "classification": "GIT_BLOB_IDENTICAL_AFTER_TRIMMING_EDGE_NEWLINES"
+    },
+    {
+      "local_file": "20260930213521_data_ai29c_d5d_activation_control_return_fix_v1.sql",
+      "git_blob_sha": "299c71509fd0841886b3286f869cd83ecd7a4838",
+      "version": "20260930213521",
+      "stored_statement_count": 1,
+      "classification": "GIT_BLOB_IDENTICAL_AFTER_TRIMMING_EDGE_NEWLINES"
+    }
+  ]
+}
