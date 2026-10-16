@@ -61,6 +61,7 @@ no("too long verdict",()=>validateR16IVerdict({evidenceId,verdict:"VERIFIED",rea
 no("injected verdict",()=>validateR16IVerdict({evidenceId,verdict:"VERIFIED",reason:"123456789012",requestId,write:true}),"INVALID_EVIDENCE_REVIEW");
 no("invalid decision",()=>validateR16IDecision({proposalId,decision:"APPLY_PRODUCTION",reason:"123456789012",requestId}),"INVALID_DECISION");
 no("short decision",()=>validateR16IDecision({proposalId,decision:"HOLD",reason:"no",requestId}),"INVALID_DECISION");
+const verdictRowId=randomUUID(),bundleVerdictRowId=randomUUID(),now=new Date().toISOString();
 const events=[],data={
  "admin_product_correction_evidence_v1":[
   {evidence_id:evidenceId,product_id:R16I_PRODUCT_ID,source_key:"official_single",
@@ -69,17 +70,28 @@ const events=[],data={
    source_url:"https://www.hwahae.co.kr/goods/45194"}
  ],
  "admin_product_correction_evidence_verdicts_v1":[
-  {evidence_id:evidenceId,verdict:"VERIFIED",reason:"원본에서 실제 옵션 확인",reviewed_at:new Date().toISOString()},
-  {evidence_id:hwahaeEvidenceId,verdict:"VERIFIED",reason:"원본에서 기획세트 직접 확인",reviewed_at:new Date().toISOString()}
+  {verdict_id:verdictRowId,evidence_id:evidenceId,
+   verdict:"VERIFIED",reason:"원본에서 실제 옵션 확인",reviewed_at:now},
+  {verdict_id:bundleVerdictRowId,evidence_id:hwahaeEvidenceId,
+   verdict:"VERIFIED",reason:"원본에서 기획세트 직접 확인",reviewed_at:now}
+ ],
+ "admin_product_correction_evidence_review_events_v2":[
+  {event_sequence:2,evidence_id:evidenceId,current_verdict_id:verdictRowId,
+   verdict:"VERIFIED",reason:"원본에서 실제 옵션 확인",recorded_at:now},
+  {event_sequence:1,evidence_id:hwahaeEvidenceId,current_verdict_id:bundleVerdictRowId,
+   verdict:"VERIFIED",reason:"원본에서 기획세트 직접 확인",recorded_at:now}
  ],
  "admin_product_correction_proposals_v1":[],
  "admin_product_correction_decisions_v1":[]
 };
-function mockClient({verified=true,sourceOverride=null,urlOverride=null,verifiedOnlyOfficial=false}={}){
+function mockClient({
+ verified=true,sourceOverride=null,urlOverride=null,
+ verifiedOnlyOfficial=false,revoked=false
+}={}){
  return {
   from(table){
    assert.ok(Object.hasOwn(data,table),"unexpected table "+table);
-   const entry=data[table], filter=[];
+   const entry=data[table],filter=[];
    let insertPayload=null;
    const chain={
     select(){return chain;},
@@ -87,35 +99,42 @@ function mockClient({verified=true,sourceOverride=null,urlOverride=null,verified
     in(k,v){filter.push(row=>v.includes(row[k]));return chain;},
     order(){return chain;},
     limit:async()=>({data:entry.filter(row=>filter.every(test=>test(row))).map(row=>({
-      ...row,
-      ...(table==="admin_product_correction_evidence_v1"&&sourceOverride?{source_key:sourceOverride}:{}),
-      ...(table==="admin_product_correction_evidence_v1"&&urlOverride?{source_url:urlOverride}:{}),
-      ...(table==="admin_product_correction_evidence_verdicts_v1"
-        ?{verdict:!verified||(verifiedOnlyOfficial&&row.evidence_id===hwahaeEvidenceId)?"REJECTED":row.verdict}
-        :{})
+     ...row,
+     ...(table==="admin_product_correction_evidence_v1"&&sourceOverride
+       ?{source_key:sourceOverride}:{}),
+     ...(table==="admin_product_correction_evidence_v1"&&urlOverride
+       ?{source_url:urlOverride}:{}),
+     ...(table==="admin_product_correction_evidence_verdicts_v1"
+       ?{verdict:revoked&&row.evidence_id===evidenceId?"REJECTED":
+         !verified||(verifiedOnlyOfficial&&row.evidence_id===hwahaeEvidenceId)
+          ?"REJECTED":row.verdict}:{}),
+     ...(table==="admin_product_correction_evidence_review_events_v2"&&revoked&&
+         row.evidence_id===evidenceId
+       ?{verdict:"REVOKED",reason:"이전 승인에 사용된 자료 신뢰 불가"}:{})
     })),error:null}),
     maybeSingle:async()=>({data:entry.filter(row=>filter.every(test=>test(row)))[0]||null,error:null}),
     insert(payload){insertPayload=payload;events.push({table,payload});return chain;},
     single:async()=>{
-     if(table==="admin_product_correction_evidence_verdicts_v1")return {data:{
-       verdict_id:randomUUID(),evidence_id:insertPayload.evidence_id,
-       verdict:insertPayload.verdict,reviewed_at:new Date().toISOString()
-     },error:null};
-     if(table==="admin_product_correction_proposals_v1")return {data:{
-       proposal_id:proposalId,created_at:new Date().toISOString(),field_changes:insertPayload.field_changes
-     },error:null};
-     return {data:null,error:{message:"unknown"}};
+     if(table==="admin_product_correction_proposals_v1")
+      return {data:{proposal_id:proposalId,created_at:new Date().toISOString(),
+       field_changes:insertPayload.field_changes},error:null};
+     return {data:null,error:{message:"unexpected mock write"}};
     }
    };
    return chain;
   },
   async rpc(name,args){
-   assert.equal(name,"decide_r16i_product_correction_v1");
    assert.equal(args.p_actor_id,actor);
    events.push({rpc:name,args});
+   if(name==="review_r16i_evidence_v2"){
+    return {data:{verdictId:verdictRowId,evidenceId:args.p_evidence_id,
+      verdict:args.p_verdict,reviewedAt:now,productWrites:0,
+      priceApproved:false},error:null};
+   }
+   assert.equal(name,"decide_r16i_product_correction_v1");
    return {data:{proposalId:args.p_proposal_id,decision:args.p_decision,
-     productWrites:0,offerWrites:0,subjectWrites:0,rankingWrites:0,
-     productionWriteAuthorized:false},error:null};
+    productWrites:0,offerWrites:0,subjectWrites:0,rankingWrites:0,
+    productionWriteAuthorized:false},error:null};
   }
  };
 }
@@ -123,7 +142,8 @@ const verdict=await reviewR16IEvidence(mockClient(),{
  evidenceId,verdict:"VERIFIED",reason:"오너 확인 완료",requestId:randomUUID()
 },actor);
 assert.equal(verdict.productWrites,0);
-assert.equal(events[0].table,"admin_product_correction_evidence_verdicts_v1");
+assert.equal(events[0].rpc,"review_r16i_evidence_v2");
+assert.equal(validateR16IVerdict({evidenceId,verdict:"REVOKED",reason:"철회",requestId}).verdict,"REVOKED");
 const proposal=await createR16IProposal(mockClient(),base,actor,review);
 assert.equal(proposal.status,"AWAITING_OWNER_DECISION");
 assert.equal(proposal.productWrites,0);
@@ -138,6 +158,11 @@ await assert.rejects(()=>createR16IProposal(mockClient({urlOverride:"https://inv
 const state=await listR16ID8C(mockClient(),review);
 assert.equal(state.writeAuthorized,false);
 assert.equal(state.verdicts[0].verdict,"VERIFIED");
+assert.equal(state.reviewHistory.length,2);
+const revoked=await listR16ID8C(mockClient({revoked:true}),review);
+assert.equal(revoked.verdicts[0].verdict,"REVOKED");
+await assert.rejects(()=>createR16IProposal(mockClient({revoked:true}),base,actor,review),
+ /EVIDENCE_NOT_VERIFIED/);
 assert.equal(events.filter(x=>x.table==="products").length,0);
 assert.equal(events.filter(x=>x.table==="product_offers").length,0);
 
@@ -159,7 +184,8 @@ assert.match(ui,/증빙 검토 → 정정안 작성 → 소유자 결정/);
 assert.match(ui,/검토 이력 새로고침/);
 assert.match(ui,/정정안 제출 \(실제 적용 없음\)/);
 assert.match(ui,/APPROVE_FOR_D8D_REVIEW/);
-assert.match(ui,/판정 사유를 입력하면 인정·반려 버튼이 활성화됩니다/);
+assert.match(ui,/승인 철회 확정/);
+assert.match(ui,/승인·반려·철회 이력/);
 assert.match(ui,/!opened\|\|!verdictReason\.trim\(\)\|\|!!busy/);
 assert.doesNotMatch(ui,/verdictReason\.trim\(\)\.length\s*<\s*12/);
 assert.match(ui,/twoSellerEvidenceSelected/);
@@ -182,4 +208,4 @@ assert.match(sql,/R16I_SCOPE_COLLISION/);
 assert.doesNotMatch(sql,/\b(UPDATE|DELETE)\s+(public\.)?(products|product_offers|product_fact_subjects)\b/i);
 console.log(JSON.stringify({status:"PASS",stage:"R16I-R4-D8C",
  invalid_cases:denied,verified_both_sellers_required:true,field_level_proposals:true,owner_only_decision:true,
- immutable_evidence_verdict:true,db_revision_lock:true,catalog_writes:0}));
+ immutable_review_events:true,db_revision_lock:true,catalog_writes:0}));

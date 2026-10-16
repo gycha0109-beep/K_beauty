@@ -32,6 +32,7 @@ export default function R16IR4D8CorrectionApproval({review}){
  const beforeMap=new Map((review?.reviewed_fields||[]).map(x=>[x.entity+"."+x.field,x.before]));
  const verdictMap=new Map((ledger?.verdicts||[]).map(x=>[x.evidenceId,x]));
  const decisionMap=new Map((ledger?.decisions||[]).map(x=>[x.proposalId,x]));
+ const isRevocation=verdictMap.get(selected)?.verdict==="VERIFIED";
  const verified=evidence.filter(e=>verdictMap.get(e.evidenceId)?.verdict==="VERIFIED");
  const selectedSources=new Set(verified.filter(e=>linked.includes(e.evidenceId)).map(e=>e.sourceKey));
  const twoSellerEvidenceSelected=selectedSources.has("official_single")&&selectedSources.has("hwahae_bundle");
@@ -59,7 +60,9 @@ export default function R16IR4D8CorrectionApproval({review}){
   try{
    await load(API,{action,payload:{...payload,requestId:crypto.randomUUID()}});
    await reload();
-   setMessage("결정을 저장했습니다. 실제 상품 DB는 변경하지 않았습니다.");
+   setMessage(action==="review_evidence"&&payload.verdict==="REVOKED"
+    ?"기존 승인을 철회했습니다. 상품 정보와 가격은 변경하지 않았습니다."
+    :"결정을 저장했습니다. 실제 상품 DB는 변경하지 않았습니다.");
    if(action==="review_evidence"){setSelected("");setOpened(false);setPreview("");setVerdictReason("");}
    if(action==="create_proposal"){setChanges([]);setLinked([]);setProposalReason("");}
   }catch(e){
@@ -101,24 +104,56 @@ export default function R16IR4D8CorrectionApproval({review}){
   </p>:<>
    <section className="rounded-xl border border-[#dbe4ef] p-4 dark:border-[#435369]">
     <h4 className="font-semibold">A. 캡처 근거 판정</h4>
-    <p className={light+" mt-1"}>업로드된 자료는 미검증입니다. 소유자가 원본 화면을 직접 확인하고 판정 이유를 기록합니다.</p>
-    {evidence.length===0?<p className={light+" mt-3"}>저장된 근거가 없습니다. 위 캡처 저장 영역에 이미지를 먼저 등록해 주세요.</p>:
+    <p className={light+" mt-1"}>자신이 제출한 자료는 본인이 승인할 수 없습니다. 다른 관리자에게 승인받은 자료도 이유를 기록해 철회할 수 있습니다. 철회된 자료는 같은 파일로 다시 승인할 수 없습니다.</p>
+    {evidence.length===0?<p className={light+" mt-3"}>저장된 근거가 없습니다. 캡처 저장 영역의 기존 증빙을 먼저 확인해 주세요.</p>:
      <div className="mt-3 space-y-2">{evidence.map(e=><div key={e.evidenceId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-xs dark:border-[#4b5564]">
-      <span>{e.sourceKey==="official_single"?"제조사 단품":"화해 기획세트"} · {e.selectedOption||"옵션 미기록"} · {verdictMap.get(e.evidenceId)?.verdict||"미검토"}<span className={"block "+light}>캡처 {e.capturedAt} / 입력 금액 {value(e.claimedCheckoutPrice)}원</span></span>
-      {!verdictMap.has(e.evidenceId)&&ledger.owner&&<button className={btn} type="button" onClick={()=>{setSelected(e.evidenceId);setPreview("");setOpened(false);}}>이 캡처 검토</button>}
+      <span>{e.sourceKey==="official_single"?"제조사 단품":"화해 기획세트"} · {e.selectedOption||"옵션 미기록"} · {
+        verdictMap.get(e.evidenceId)?.verdict==="REVOKED"?"승인 철회됨":
+        verdictMap.get(e.evidenceId)?.verdict==="VERIFIED"?"승인됨":
+        verdictMap.get(e.evidenceId)?.verdict==="REJECTED"?"반려됨":"미검토"
+      }<span className={"block "+light}>캡처 {e.capturedAt} / 입력 금액 {value(e.claimedCheckoutPrice)}원</span></span>
+      {ledger.owner&&(!verdictMap.has(e.evidenceId)||
+       verdictMap.get(e.evidenceId)?.verdict==="VERIFIED")&&
+       <button className={btn} type="button" disabled={!!busy} onClick={()=>{
+        setSelected(e.evidenceId);setPreview("");setOpened(false);setVerdictReason("");
+       }}>{verdictMap.get(e.evidenceId)?.verdict==="VERIFIED"?"승인 철회":"이 캡처 검토"}</button>}
      </div>)}</div>}
-    {ledger.owner&&selected&&!verdictMap.has(selected)&&<div className="mt-4 space-y-2 rounded-lg bg-[#f4f7fc] p-3 dark:bg-[#263247]">
-     <button type="button" className={btn} disabled={!!busy} onClick={openPreview}>비공개 캡처 열람 링크 발급</button>
-     {preview&&<a className="ml-2 text-sm text-[#2767bd] underline" href={preview} target="_blank" rel="noopener noreferrer" onClick={()=>setOpened(true)}>원본 열기 (60초)</a>}
-     <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={opened} onChange={e=>setOpened(e.target.checked)}/> 원본을 열어 선택 옵션과 출처를 확인하고 판정 책임을 이해했습니다.</label>
-     <textarea className={ctl} rows={2} maxLength={2000} placeholder="판단 사유를 입력하세요 (공백 제외 1자 이상)" value={verdictReason} onChange={e=>setVerdictReason(e.target.value)}/>
-     <p className={light} role="status" aria-live="polite">
-      {!opened?"원본 확인 체크박스를 선택해 주세요.":!verdictReason.trim()?"판정 사유를 입력하면 인정·반려 버튼이 활성화됩니다.":"판정할 수 있습니다."}
-     </p>
-     <div className="flex gap-2"><button type="button" className={btn} disabled={!opened||!verdictReason.trim()||!!busy} onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"VERIFIED",reason:verdictReason})}>원본 인정</button>
-     <button type="button" className={btn} disabled={!opened||!verdictReason.trim()||!!busy} onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"REJECTED",reason:verdictReason})}>반려</button></div>
-     <p className={light}>근거 인정은 실결제 가격 인증이나 상품 수정 승인이 아닙니다.</p>
-    </div>}
+    {(ledger.reviewHistory||[]).length>0&&<details className="mt-3 rounded-lg border border-[#dbe4ef] p-2 text-xs dark:border-[#435369]">
+     <summary className="cursor-pointer font-semibold">승인·반려·철회 이력</summary>
+     <ul className="mt-2 space-y-2">{ledger.reviewHistory.map((h,i)=><li key={h.evidenceId+"-"+i}>
+      {h.evidenceId.slice(0,8)} · {h.verdict==="REVOKED"?"승인 철회":
+       h.verdict==="VERIFIED"?"승인":"반려"} · {h.reviewedAt} · {h.reason}
+     </li>)}</ul>
+    </details>}
+    {ledger.owner&&selected&&(!verdictMap.has(selected)||isRevocation)&&
+     <div className="mt-4 space-y-2 rounded-lg bg-[#f4f7fc] p-3 dark:bg-[#263247]">
+      {isRevocation
+       ?<p className={light}>이 자료의 기존 승인을 철회합니다. 이유를 기록하면 같은 자료를 재승인할 수 없으며, 상품 수정에 더 이상 사용할 수 없습니다.</p>
+       :<button type="button" className={btn} disabled={!!busy} onClick={openPreview}>비공개 캡처 열람 링크 발급</button>}
+      {!isRevocation&&preview&&<a className="ml-2 text-sm text-[#2767bd] underline"
+       href={preview} target="_blank" rel="noopener noreferrer" onClick={()=>setOpened(true)}>원본 열기 (60초)</a>}
+      {!isRevocation&&<label className="flex items-start gap-2 text-xs">
+       <input type="checkbox" checked={opened} onChange={e=>setOpened(e.target.checked)}/>
+       원본을 열어 선택 옵션과 출처를 확인하고 판정 책임을 이해했습니다.
+      </label>}
+      <textarea className={ctl} rows={2} maxLength={2000}
+       placeholder={isRevocation?"승인 철회 이유를 입력하세요":"판단 사유를 입력하세요 (공백 제외 1자 이상)"}
+       value={verdictReason} onChange={e=>setVerdictReason(e.target.value)}/>
+      <p className={light} role="status" aria-live="polite">
+       {!isRevocation&&!opened?"원본 확인 체크박스를 선택해 주세요.":
+        !verdictReason.trim()?"사유를 입력하면 처리 버튼이 활성화됩니다.":"처리할 수 있습니다."}
+      </p>
+      <div className="flex gap-2">{isRevocation
+       ?<button type="button" className={btn+" text-[#a03737]"} disabled={!verdictReason.trim()||!!busy}
+          onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"REVOKED",reason:verdictReason})}>승인 철회 확정</button>
+       :<>
+        <button type="button" className={btn} disabled={!opened||!verdictReason.trim()||!!busy}
+         onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"VERIFIED",reason:verdictReason})}>원본 인정</button>
+        <button type="button" className={btn} disabled={!opened||!verdictReason.trim()||!!busy}
+         onClick={()=>submit("review_evidence",{evidenceId:selected,verdict:"REJECTED",reason:verdictReason})}>반려</button>
+       </>}</div>
+      <p className={light}>근거 인정은 실결제 가격 인증이나 상품 수정 승인이 아닙니다.</p>
+     </div>}
    </section>
    <section className="rounded-xl border border-[#dbe4ef] p-4 dark:border-[#435369]">
     <h4 className="font-semibold">B. 필드별 정정안 작성</h4>

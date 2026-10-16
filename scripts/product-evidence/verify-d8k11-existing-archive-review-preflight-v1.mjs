@@ -215,23 +215,23 @@ const declared=preflightExistingR16IEvidence({
 eq(declared.status,"TWO_REVIEW_METADATA_PACKETS_READY_NO_WRITE");
 eq(declared.reviewerAccountAuthenticated,false);
 
-// SOURCE-BACKED negative authorization finding: existing R16I Owner route
-// enforces OWNER role, but the called write path fetches evidence_id+
-// product_id only, not the collector's submitted_by. Metadata preflight
-// DOES NOT fix that protected API/Auth ledger code.
+// D8K-11 originally found that only owner role (not independent review)
+// was checked. D8K-12 repairs the server write path through an atomic DB
+// function that rejects an authenticated owner's own submitted capture.
+// The protected migration is code-only and NOT installed in hosted DB yet.
 const legacyLedger=readFileSync(
  "lib/product-intelligence/r16i-correction-approval-ledger.mjs","utf8");
 const reviewRegion=legacyLedger.split(
  "export async function reviewR16IEvidence(client,input,actorId) {")[1]?.split(
  "export async function createR16IProposal(")[0];
 assert.ok(reviewRegion);assertions++;
-matches(reviewRegion,/\.select\("evidence_id,product_id"\)/);
-assert.doesNotMatch(reviewRegion,/submitted_by|COLLECTOR_CANNOT_SELF_REVIEW|SAME_ACTOR/);assertions++;
-const legacyMigration=readFileSync(
- "supabase/migrations/20261012172837_taxonomy_ai_r16i_correction_approval_ledger_v1.sql","utf8");
-// The current ledger allows one immutable verdict per evidence_id: a later
-// rejection cannot be appended to revoke an earlier VERIFIED judgment.
-matches(legacyMigration,/evidence_id uuid NOT NULL UNIQUE REFERENCES public\.admin_product_correction_evidence_v1/);
+matches(reviewRegion,/review_r16i_evidence_v2/);
+assert.doesNotMatch(reviewRegion,/from\(VERDICTS\)\.insert\(/);assertions++;
+const d8k12Schema=readFileSync(
+ "supabase/migrations/20261015185000_taxonomy_ai_r16i_d8k12_owner_review_revocation_v1.sql","utf8");
+matches(d8k12Schema,/e\.submitted_by=p_actor_id/);
+matches(d8k12Schema,/D8K12_REVIEWER_CANNOT_APPROVE_OWN_CAPTURE/);
+matches(d8k12Schema,/D8K12_EXISTING_VERDICTS_REQUIRE_EXPLICIT_RECONCILIATION/);
 const existingRoute=readFileSync(
  "app/api/admin/products/r16i-correction-review/approval/route.js","utf8");
 matches(existingRoute,/ownerOnly&&a\.access\.role!==ADMIN_ROLES\.OWNER/);
@@ -254,7 +254,7 @@ for(const forbidden of [/fetch\(/,/\.rpc\(/,/createSignedUrl\(/,/\.storage\.from
 }
 console.log(JSON.stringify({
  status:"PASS",stage:"D8K11_EXISTING_ARCHIVE_SOURCE_AND_REVIEWER_GUARD_SHADOW",
- assertions,existingEvidenceRows:2,legacyOwnerSelfReviewGuard:"NOT_ENFORCED",
+ assertions,existingEvidenceRows:2,legacyOwnerSelfReviewGuard:"REPAIRED_IN_D8K12_CODE_HOSTED_DB_NOT_MIGRATED",
  privateSourceBytesAccessed:false,
  allFileBytesInTestsSynthetic:true,
  verifiedMerchantSource:false,reviewerAccountAuthenticated:false,

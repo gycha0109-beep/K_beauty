@@ -26,6 +26,8 @@ import "./verify-d8k9-parent-offer-identity-binding-v1.mjs";
 // separation and local sha256 integrity. No signed URL/DB/Auth actions.
 import "./verify-d8k11-existing-archive-review-preflight-v1.mjs";
 import "./verify-d8k11-local-archive-cli-v1.mjs";
+// D8K-12: owner self-review ban and immutable approval withdrawal audit.
+import "./verify-d8k12-owner-review-revocation-v1.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
