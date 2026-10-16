@@ -152,6 +152,10 @@ for(const re of [
  /D8K13_UNEXPECTED_D8DV2_ACTIVITY/,
  /D8K13_UNEXPECTED_D8DV2_SCHEMA/,
  /D8K13_UNEXPECTED_D8DV2_SECURITY/,
+ /r16i_d8d_rollback_v2\(uuid,uuid,uuid\)'\)\) IS DISTINCT FROM true/,
+ /has_function_privilege\('service_role'/,
+ /has_function_privilege\('anon'/,
+ /has_function_privilege\('authenticated'/,
  /pg_catalog\.pg_advisory_xact_lock\(195721,16\)/,
  /LOCK TABLE public\.admin_r16i_d8d_v2_gate/,
  /actual_columns IS DISTINCT FROM/,
@@ -176,6 +180,9 @@ for(const re of [
  /d8k13_v2_authorization/,
  /d8k13_v2_column_drift/,
  /d8k13_v2_rpc_escalation/,
+ /d8k13_v2_rollback_security_drift/,
+ /d8k13_v2_public_rollback_exec/,
+ /d8k13_v2_missing_service_role_exec/,
  /d8k13_v2_anon_read/,
  /d8k13_v2_missing_event_table/,
  /D8K13_PG17_LEGACY_TWO_ROW_QUARANTINE_PASS/,
@@ -190,8 +197,8 @@ for(const re of [
 for(const re of [
  /CREATE TABLE public\.admin_r16i_d8d_v2_gate/,
  /CREATE TABLE public\.admin_r16i_d8d_v2_events/,
- /CREATE FUNCTION public\.r16i_d8d_apply_v2/,
- /CREATE FUNCTION public\.r16i_d8d_rollback_v2/
+ /CREATE FUNCTION public\.r16i_d8d_apply_v2\([\s\S]*?\) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER/,
+ /CREATE FUNCTION public\.r16i_d8d_rollback_v2\([\s\S]*?\) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER/
 ])has(d8dv2Migration,re);
 for(const re of [/admin_product_correction_evidence_verdicts_v1/,/000000000101/,/000000000102/])has(seed,re);
 for(const re of [
