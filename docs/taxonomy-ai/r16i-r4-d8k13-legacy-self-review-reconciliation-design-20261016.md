@@ -1,6 +1,6 @@
 # D8K-13 — R16I 기존 자기 승인 2건의 안전한 reconciliation 설계 v1
 
-> 2026-10-16 KST | **설계 + 코드 전용 구현 / 운영 DB 미적용 / Native PG17 재검증 대기 / Draft PR / 병합·배포 보류**
+> 2026-10-16 KST | **설계 + 코드 전용 구현 / 77c1c4d2 기준 Node·격리 PG17 검증 PASS / 운영 DB 미적용 / Draft PR / 병합·배포 보류**
 >
 > 기준: D8K-12 `2be34cf95d93424d206702bde5068deb6f033de9` (로컬 Node 80 assertions 및 Docker PG17 PASS).
 > 이번 승인은 **설계와 읽기 전용 확인**만 포함한다. 기존 증빙·판정의 UPDATE/DELETE, 역할 변경, 승인 철회 실행, 마이그레이션 실행, PR 머지, 배포, 상품/Offer 수정, 고객 가격·구매 CTA 공개는 **허용되지 않았다**.
@@ -150,6 +150,10 @@ D8K-12 감사 이벤트 계약을 다음과 같이 **호환 확장**하는 방�
 - `node scripts/product-evidence/run-d8k13-local-pg17.mjs` — **운영 DB/네트워크/마운트 없는 Docker PG17**에서 기존 D8K-12, 정확한 두 건 격리·원본 보존·권한·새 독립 리뷰, 티켓 누락 및 여러 변형 사례의 전체 롤백을 검사
 - 합격 마커: `D8K13_PG17_LEGACY_TWO_ROW_QUARANTINE_PASS`, `D8K13_PG17_DRIFT_REFUSAL_AND_ROLLBACK_PASS`, `D8K13_LOCAL_DOCKER_PG17_PASS`.
 
-**테스트 증빙 등급:** 이 기록 시점에는 GitHub 소스의 정적 대조까지만 진행했으며, 신규 코드의 실제 Node·PostgreSQL 17 실행 결과는 **아직 확인되지 않았다**. 검증 전에는 코드 안정성 PASS로 표시하지 않는다. PR #1338의 과거 PASS는 **D8K-13 변경 HEAD에 승계되지 않는다**.
+**테스트 증빙 등급(갱신 2026-10-16):** 학원 PC 격리 worktree에서 **커밋 `77c1c4d23e022dbcb6c45c0674648867eda3006e`** 기준 D8C(23 부정 사례), D8K11(464 assertions), D8K12(80 assertions), D8K13(59 assertions), Docker PostgreSQL 17 D8K12·D8K13 및 rollback·drift 검증을 **모두 PASS**했다. 임시 컨테이너는 정리됐다. 이후 추가한 문서·읽기 전용 사전 점검 SQL·릴리스 순서 진단기 변경은 격리 마이그레이션/런타임 코드를 수정하지 않았으나, 실제 운영 적용을 검증한 것은 아니다.
 
 **운영 상태:** 실제 기존 판정은 여전히 VERIFIED 2건이며, D8K-12 이벤트와 D8K-13 격리 스냅샷은 운영에 설치되지 않았다. 별도 운영 변경 승인·보안 #1208 해결·출시 게이트 검수 전에는 병합·배포·DB 변경 불가.
+
+## 10. 운영 릴리스 순서 신규 P0 (2026-10-16 재점검)
+
+운영 migration 마지막 버전은 `20261012181544`이며, 현재 브랜치에는 **D8D v2(`20261014150000`)가 D8K-12/13 통합 마이그레이션(`20261015185000`)보다 앞선다**. D8D v2가 생성하는 세 테이블은 통합 마이그레이션에서 즉시 거부한다. 따라서 일반적인 `supabase db push`를 운영 DB에 실행하지 않는다. 상세 원인·승인 조건·백업/복원 계획은 [D8K-13 운영 릴리스 준비서](./r16i-r4-d8k13-hosted-release-readiness-20261016.md)와 `verify-d8k13-release-sequence-v1.mjs`에서 관리한다. **운영 적용 HOLD** 유지.
