@@ -158,7 +158,12 @@ async function run(){
   // A distinct throwaway DB can apply exact two-row self-review reconciliation
   // only with a nonempty externally supplied, synthetic test release ticket.
   const localTicket="SELECT set_config('app.d8k13_release_ticket',"+
-   "'D8K13_LOCAL_SYNTHETIC_TICKET',false);\n";
+   "'D8K13_LOCAL_SYNTHETIC_TICKET',false);\n"+
+   "SELECT set_config('app.d8k13_expected_manifest',"+
+   "'hwahae_bundle:00000000-0000-4000-8000-000000000042:"+
+   "00000000-0000-4000-8000-000000000102;"+
+   "official_single:00000000-0000-4000-8000-000000000041:"+
+   "00000000-0000-4000-8000-000000000101',false);\n";
   async function createLegacyDb(db,mutation=""){
    docker(["exec","--user","postgres",CONTAINER,"createdb",
      "-U","postgres",db],{seconds:20});
