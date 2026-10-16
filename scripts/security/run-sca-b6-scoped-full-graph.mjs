@@ -1,3 +1,4 @@
+import {verifyNativeUtilities,cleanupProfile} from './sca-release-lineage.mjs';
 /**
  * Scoped B6 experiment adapted from the proven B4 graph harness; original B4 stays unchanged.
  * Explicit name mapping, same versions, original advisory audit retained, no release or waiver.
@@ -113,6 +114,13 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
       assert.throws(()=>verifyCandidate(scopedOptions),/substitution/);
       fs.writeFileSync(scopedNotice,noticeBytes);
       assert.equal(verifyCandidate(scopedOptions).candidateSha256,scoped.candidateSha256);
+      if(replacement?.build?.sourceLineageCleanup===cleanupProfile){
+        for(const name of ['LICENSE.webpack.txt','source-lineage.json','license-review-sbom.json']){
+          const file=path.join(temp,'scoped',name),saved=fs.readFileSync(file),bad=Buffer.from(saved);bad[0]^=1;fs.writeFileSync(file,bad);
+          assert.throws(()=>verifyCandidate(scopedOptions),'lineage/notice mutation must fail');fs.writeFileSync(file,saved);
+        }
+        console.log('SCA_LINEAGE_REVIEW='+JSON.stringify({status:'VERIFIED_NOT_APPROVAL',assessment:JSON.parse(scoped.resources['source-lineage.json']),extraPacketNegativeControls:3}));
+      }
       if(process.env.SCA_SCOPED_EXPECTED_CANDIDATE_SHA256)assert.equal(scoped.candidateSha256,process.env.SCA_SCOPED_EXPECTED_CANDIDATE_SHA256,'scoped packages differ on independent runner');
       if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'scoped_candidate_sha256='+scoped.candidateSha256+'\n');
       fixture=await startScopedFixture(scoped.artifacts,temp);
@@ -139,6 +147,9 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
       const noticeFile=path.join(noticeOptions.output,'THIRD-PARTY-NOTICES.md'),saved=fs.readFileSync(noticeFile);
       fs.unlinkSync(noticeFile);assert.throws(()=>verifyKit(noticeOptions));fs.writeFileSync(noticeFile,saved);
       const changed=Buffer.from(saved);changed[0]^=1;fs.writeFileSync(noticeFile,changed);assert.throws(()=>verifyKit(noticeOptions));fs.writeFileSync(noticeFile,saved);
+      if(replacement?.build?.sourceLineageCleanup===cleanupProfile)for(const name of ['LICENSE.webpack.txt','source-lineage.json']){
+        const file=path.join(noticeOptions.output,name),bytes=fs.readFileSync(file);fs.unlinkSync(file);assert.throws(()=>verifyKit(noticeOptions));fs.writeFileSync(file,bytes);
+      }
       verifyKit(noticeOptions);browserNoticeKit.missingAndTamperNegativeControls='PASS';
       if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'browser_notice_kit_sha256='+browserNoticeKit.manifestSha256+'\n');
       console.log('SCA_SCOPED_BROWSER_NOTICE_KIT='+JSON.stringify(browserNoticeKit));
@@ -236,7 +247,7 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
     run(process.execPath,[path.join(root,"scripts/security/verify-private-forge-probe-child.mjs"),
       path.join(graph,"node_modules")],root);
     if(replacement){const p=run(process.execPath,[path.join(root,'scripts/security/verify-sca-oaep-installed.mjs'),
-      path.join(graph,'node_modules/node-forge'),originalForgeDirectory],root);console.log(p.stdout);}
+      path.join(graph,'node_modules/node-forge'),originalForgeDirectory],root);console.log(p.stdout);if(replacement.build?.sourceLineageCleanup===cleanupProfile)console.log('SCA_INSTALLED_NATIVE_UTILITIES='+JSON.stringify(verifyNativeUtilities(path.join(graph,'node_modules/node-forge'),originalForgeDirectory)));}
     const consumerProbe=path.join(graph,"sca-b4-consumers.cjs");
     fs.writeFileSync(consumerProbe,`const assert=require('node:assert/strict');
 const mm=require('micromatch'); const fg=require('fast-glob');
@@ -304,7 +315,7 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     run(process.execPath,[path.join(root,"scripts/security/verify-private-forge-probe-child.mjs"),
       path.join(graph,"node_modules")],root);
     if(replacement){const p=run(process.execPath,[path.join(root,'scripts/security/verify-sca-oaep-installed.mjs'),
-      path.join(graph,'node_modules/node-forge'),originalForgeDirectory],root);console.log(p.stdout);}
+      path.join(graph,'node_modules/node-forge'),originalForgeDirectory],root);console.log(p.stdout);if(replacement.build?.sourceLineageCleanup===cleanupProfile)console.log('SCA_INSTALLED_NATIVE_UTILITIES='+JSON.stringify(verifyNativeUtilities(path.join(graph,'node_modules/node-forge'),originalForgeDirectory)));}
     // Both fresh-build and authenticated unchanged-runtime paths retain the same verified bytes.
     const preserveEvidence=()=>{
       if(!replacement)return;

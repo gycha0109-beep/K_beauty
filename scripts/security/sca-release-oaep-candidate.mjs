@@ -8,6 +8,7 @@ import {createHash} from 'node:crypto';
 import {inspectArchive,verifyArchive,digest,browserReference,assertNoLifecycleHooks} from './sca-release-bundle.mjs';
 import {scopedMetadata} from './sca-release-scoped.mjs';
 import {leadingNotices} from './sca-release-license-review.mjs';
+import {cleanupProfile,removedFlash,verifyCleanupFiles,lineageEvidence,lineageAssessment,supplementalNotices} from './sca-release-lineage.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const vendor='security/vendor/node-forge-oaep-replacement/';
@@ -16,7 +17,7 @@ const profiles={
   'lib/bejewely-node-rsa-oaep.js':vendor+'bejewely-node-rsa-oaep.js',
   'LICENSE.node-rsa.txt':vendor+'LICENSE.node-rsa.txt'
 };
-const noticeName='BEJEWELY-THIRD-PARTY-NOTICES.md',sbomName='BEJEWELY-OAEP-SBOM.json';
+const noticeName='BEJEWELY-THIRD-PARTY-NOTICES.md',sbomName='BEJEWELY-OAEP-SBOM.json',lineageName='BEJEWELY-SOURCE-LINEAGE.json';
 const json=b=>Buffer.from(JSON.stringify(b,null,2)+'\n');
 const inventory=files=>Object.fromEntries(Object.entries(files).sort(([a],[b])=>a.localeCompare(b)).map(([n,b])=>[n,digest(b)]));
 const read=file=>{const s=fs.lstatSync(file);assert.ok(s.isFile()&&!s.isSymbolicLink()&&s.size<=24*1024*1024,'bounded physical file required');return fs.readFileSync(file);};
@@ -27,11 +28,14 @@ function validateBuild(old,next,build){
   assert.equal(build.replacementSourcePath,profiles['lib/pkcs1.js']);assert.equal(build.nodeRsaLicensePath,profiles['LICENSE.node-rsa.txt']);
   assert.equal(build.sourceRecipeSha256,digest(asset(vendor+'source-manifest.json')),'recipe resource mismatch');
   const before=inspectArchive(old),after=inspectArchive(next),bundles=browserReference.browserBundles.map(x=>x.path);
-  assert.deepEqual(build.allowedChangedFiles.slice().sort(),['lib/pkcs1.js',...bundles].sort(),'unreviewed change profile');
-  assert.deepEqual(build.addedFiles.slice().sort(),['lib/bejewely-node-rsa-oaep.js','LICENSE.node-rsa.txt'].sort(),'unreviewed added source');
-  assert.deepEqual(Object.keys(after).sort(),[...Object.keys(before),...build.addedFiles].sort(),'replacement archive inventory');
+  const cleanup=build.sourceLineageCleanup===cleanupProfile;
+  if(build.sourceLineageCleanup)assert.ok(cleanup,'unknown lineage cleanup');
+  assert.deepEqual(build.allowedChangedFiles.slice().sort(),['lib/pkcs1.js',...(cleanup?['lib/util.js']:[]),...bundles].sort(),'unreviewed change profile');
+  assert.deepEqual(build.addedFiles.slice().sort(),['lib/bejewely-node-rsa-oaep.js','LICENSE.node-rsa.txt',...(cleanup?['LICENSE.webpack.txt']:[])].sort(),'unreviewed added source');
+  assert.deepEqual(Object.keys(after).sort(),[...Object.keys(before).filter(n=>!cleanup||n!==removedFlash),...build.addedFiles].sort(),'replacement archive inventory');
   assert.deepEqual(inventory(after),build.fileSha256,'replacement file byte mismatch');
-  for(const [n,b] of Object.entries(before))if(!build.allowedChangedFiles.includes(n))assert.equal(digest(after[n]),digest(b),'unreviewed original change: '+n);
+  for(const [n,b] of Object.entries(before))if(!build.allowedChangedFiles.includes(n)&&(!cleanup||n!==removedFlash))assert.equal(digest(after[n]),digest(b),'unreviewed original change: '+n);
+  if(cleanup){verifyCleanupFiles(before,after,build);assert.equal(build.lineageEvidenceSha256,lineageEvidence().manifestSha256);}
   for(const [n,p] of Object.entries(profiles))assert.equal(digest(after[n]),digest(asset(p)),'pinned replacement mismatch: '+n);
   for(const n of bundles){const expected=Array.isArray(build.browserBundleSha256)?build.browserBundleSha256.find(x=>x.path===n)?.sha256:build.browserBundleSha256[n];assert.equal(digest(after[n]),expected,'browser rebuild mismatch: '+n);}
   for(const n of ['lib/pkcs1.js','lib/bejewely-node-rsa-oaep.js',...bundles])assert.ok(!/Ellis Pritchard|webrsa\.cvs|RSAES-OAEP\.js,v/.test(after[n].toString()),'historical OAEP copy remains: '+n);
@@ -39,33 +43,40 @@ function validateBuild(old,next,build){
   assert.match(after['LICENSE.node-rsa.txt'].toString(),/Permission is hereby granted/,'full replacement MIT required');
   return {before,after};
 }
-function reviewResources(originals,build){
+function reviewResources(originals,build,replacementFiles){
+  const cleanup=build.sourceLineageCleanup===cleanupProfile;
   const baseline=JSON.parse(read(path.join(root,'security/release/license-review/license-review.json')));
   const old=Object.fromEntries(Object.entries(originals).map(([n,p])=>{const b=read(p);verifyArchive(n,b);return [n,inspectArchive(b)];}));
   const retained=baseline.sourceNotices.filter(n=>!(n.package==='node-forge'&&n.path==='lib/pkcs1.js'));
-  const sections=retained.map(n=>{const b=old[n.package][n.path],text=leadingNotices(b);assert.equal(digest(b),n.fileSha256);assert.equal(digest(Buffer.from(text)),n.noticeSha256);return '## '+n.package+'/'+n.path+'\n\nSource SHA256: '+n.fileSha256+'\n\n```text\n'+text+'\n```\n';});
+  const sections=retained.map(n=>{const b=old[n.package][n.path],text=leadingNotices(b);assert.equal(digest(b),n.fileSha256);assert.equal(digest(Buffer.from(text)),n.noticeSha256);return '## '+n.package+'/'+n.path+'\n\n'+(cleanup&&n.path==='lib/util.js'?'Original source before native helper changes SHA256: ':'Source SHA256: ')+n.fileSha256+'\n\n```text\n'+text+'\n```\n';});
   const frozen=read(path.join(root,'security/release/license-review/THIRD-PARTY-NOTICES.md')).toString();
   const start=frozen.indexOf('## Recovered public license evidence'),end=frozen.indexOf('## Unresolved rights review');assert.ok(start>=0&&end>start,'frozen public notice section missing');
   const mit=asset(profiles['LICENSE.node-rsa.txt']);
-  const notice=Buffer.from('# BEJEWELY OAEP replacement distribution notices\n\nThis new candidate replaces the complete historical lib/pkcs1.js implementation. It does not clear or relicense the historical WebRSA copy. Original upstream LICENSE and all other source notices remain intact. Final legal and release approval are separate.\n\n'+
+  let notice=Buffer.from('# BEJEWELY OAEP replacement distribution notices\n\nThis new candidate replaces the complete historical lib/pkcs1.js implementation. It does not clear or relicense the historical WebRSA copy. Original upstream LICENSE and all other source notices remain intact. Final legal and release approval are separate.\n\n'+
     ['braces','node-forge'].map(n=>'## '+n+' original LICENSE\n\n```text\n'+old[n].LICENSE.toString()+'\n```\n').join('\n')+sections.join('\n')+'\n## node-rsa replacement — MIT\n\n```text\n'+mit.toString()+'\n```\n\n'+frozen.slice(start,end)+'\n## Internal provenance assurance gaps\n\n'+baseline.internalAssuranceGaps.map(s=>'- '+s).join('\n')+'\n');
+  if(cleanup)notice=Buffer.concat([notice,supplementalNotices()]);
   const recipeBytes=asset(vendor+'source-manifest.json'),recipe=JSON.parse(recipeBytes);
   const report={schema:'bejewely.oaep-replacement-license-review.v1',legalApproval:false,redistributionApproved:false,
     historicalOaepTerms:'UNRESOLVED_FOR_HISTORICAL_IMPLEMENTATION',historicalImplementationDistributed:false,
     removedSource:'lib/pkcs1.js',replacementLicense:'MIT',replacementSourceRecipeSha256:build.sourceRecipeSha256,replacementSourceProvenance:recipe,
     originalFrozenPacketStatus:'UNCHANGED_HISTORICAL_BASELINE_NOT_CLEARED',originalFrozenReviewSha256:digest(read(path.join(root,'security/release/license-review/license-review.json'))),
-    retainedSourceNotices:retained,internalAssuranceGaps:baseline.internalAssuranceGaps,upstreamReplyRequired:false};
+    retainedSourceNotices:retained.map(n=>cleanup&&n.package==='node-forge'?{...n,originalFileSha256:n.fileSha256,fileSha256:digest(replacementFiles[n.path])}:n),internalAssuranceGaps:baseline.internalAssuranceGaps,upstreamReplyRequired:false,
+    ...(cleanup?{sourceLineage:lineageAssessment(build)}:{})};
   const sbom={bomFormat:'CycloneDX',specVersion:'1.6',version:1,components:[{type:'library',name:'braces',version:'3.0.3',licenses:[{license:{id:'MIT'}}]},
     {type:'library',name:'node-forge',version:'1.4.0',licenses:[{expression:'BSD-3-Clause AND MIT'}],properties:[{name:'bejewely:oaep-implementation',value:'node-rsa MIT replacement; original dual LICENSE preserved'}]},
     {type:'library',name:'node-rsa OAEP implementation',licenses:[{license:{id:'MIT'}}],hashes:[{alg:'SHA-256',content:digest(asset(profiles['lib/bejewely-node-rsa-oaep.js']))}]}]};
-  return {'THIRD-PARTY-NOTICES.md':notice,'license-review.json':json(report),'license-review-sbom.json':json(sbom),'LICENSE.node-rsa.txt':mit};
+  if(cleanup){for(const c of report.sourceLineage.components.filter(c=>c.classification!=='D'))sbom.components.push({type:'library',name:c.id,...(c.license?{licenses:[{license:{name:c.license}}]}:{}),properties:[{name:'bejewely:lineage-classification',value:c.classification},{name:'bejewely:source-evidence',value:JSON.stringify(c)}]});}
+  return {'THIRD-PARTY-NOTICES.md':notice,'license-review.json':json(report),'license-review-sbom.json':json(sbom),'LICENSE.node-rsa.txt':mit,
+    ...(cleanup?{'LICENSE.webpack.txt':lineageEvidence().files['webpack-MIT.txt'],'source-lineage.json':json(report.sourceLineage)}:{})};
 }
 function expectedContents(name,base,oldSha,resources,build){
   const out={...base};const metadata=scopedMetadata(JSON.parse(base['package.json']),oldSha,{linkage:'UNLINKED_BOOTSTRAP'});
   if(name==='node-forge')metadata.license='('+metadata.license+' AND MIT)';
   metadata.bejewelyPatch.oaepReplacement='NODE_RSA_MIT_V1';metadata.bejewelyPatch.sourceRecipeSha256=build.sourceRecipeSha256;
-  if(metadata.files!==undefined){assert.ok(Array.isArray(metadata.files));metadata.files=[...new Set([...metadata.files,noticeName,sbomName,...(name==='node-forge'?['LICENSE.node-rsa.txt','lib/bejewely-node-rsa-oaep.js']:[])])];}
-  out['package.json']=json(metadata);out[noticeName]=resources['THIRD-PARTY-NOTICES.md'];out[sbomName]=resources['license-review-sbom.json'];return out;
+  const cleanup=build.sourceLineageCleanup===cleanupProfile;
+  if(cleanup){metadata.bejewelyPatch.sourceLineageCleanup=cleanupProfile;if(name==='node-forge')metadata.bejewelyPatch.flashSupport='NOT_SHIPPED';}
+  if(metadata.files!==undefined){assert.ok(Array.isArray(metadata.files));metadata.files=[...new Set([...metadata.files,noticeName,sbomName,...(cleanup?[lineageName]:[]),...(name==='node-forge'?['LICENSE.node-rsa.txt','lib/bejewely-node-rsa-oaep.js',...(cleanup?['LICENSE.webpack.txt']:[])]:[])])];}
+  out['package.json']=json(metadata);out[noticeName]=resources['THIRD-PARTY-NOTICES.md'];out[sbomName]=resources['license-review-sbom.json'];if(cleanup)out[lineageName]=resources['source-lineage.json'];return out;
 }
 function pack(files,dir,destination){
   fs.mkdirSync(dir);for(const [n,b] of Object.entries(files)){const p=path.join(dir,n);fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,b,{flag:'wx',mode:0o600});}
@@ -76,7 +87,7 @@ function pack(files,dir,destination){
 function contexts({originals,replacementForgeTarball,build}){
   const originalFiles={};for(const n of ['braces','node-forge']){const b=read(originals[n]);verifyArchive(n,b);originalFiles[n]=inspectArchive(b);}
   const replacement=read(replacementForgeTarball);validateBuild(read(originals['node-forge']),replacement,build);
-  const resources=reviewResources(originals,build),expected={};
+  const resources=reviewResources(originals,build,inspectArchive(replacement)),expected={};
   for(const n of ['braces','node-forge'])expected[n]=expectedContents(n,n==='node-forge'?inspectArchive(replacement):originalFiles[n],digest(read(originals[n])),resources,build);
   return {resources,expected,replacementSha256:digest(replacement)};
 }
@@ -123,6 +134,7 @@ function kitExpected(candidate){
   const bytes=read(archive);assert.equal(digest(bytes),a.sha256);const entries=inspectArchive(bytes);assert.deepEqual(inventory(entries),a.fileSha256);
   const files={};for(const {path:p} of browserReference.browserBundles)files[path.basename(p)]=entries[p];
   files['LICENSE.node-forge.txt']=entries.LICENSE;files['LICENSE.node-rsa.txt']=entries['LICENSE.node-rsa.txt'];files['THIRD-PARTY-NOTICES.md']=entries[noticeName];files['license-review-sbom.json']=entries[sbomName];files['license-review.json']=candidate.resources['license-review.json'];
+  if(candidate.manifest.build.sourceLineageCleanup===cleanupProfile){files['LICENSE.webpack.txt']=entries['LICENSE.webpack.txt'];files['source-lineage.json']=candidate.resources['source-lineage.json'];}
   const manifest={schema:'bejewely.oaep-replacement-browser-notice-kit.v1',candidateSha256:candidate.candidateSha256,legalApproved:false,actualDistribution:'NOT_RUN',files:Object.fromEntries(Object.entries(files).sort(([a],[b])=>a.localeCompare(b)).map(([n,b])=>[n,{sha256:digest(b),bytes:b.length}]))};return {files,manifest};
 }
 export function prepareOaepBrowserNoticeKit({candidate,output}){const {files,manifest}=kitExpected(candidate);assert.ok(!fs.existsSync(output));fs.mkdirSync(output,{mode:0o700});for(const [n,b] of Object.entries({...files,'browser-notice-kit.json':json(manifest)}))fs.writeFileSync(path.join(output,n),b,{flag:'wx',mode:0o600});return verifyOaepBrowserNoticeKit({candidate,output});}

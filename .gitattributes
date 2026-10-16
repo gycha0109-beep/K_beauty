@@ -2,3 +2,4 @@
 /security/release/** -text
 /security/vendor/node-forge-oaep-replacement/** -text
 /docs/security/sec-sca-20261015-oaep-original-recovery.json -text
+/security/vendor/node-forge-license-cleanup/** -text

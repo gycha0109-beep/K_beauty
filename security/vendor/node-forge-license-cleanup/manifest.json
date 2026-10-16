@@ -1,0 +1,62 @@
+{
+  "schema": "bejewely.distribution-lineage-cleanup.v1",
+  "profile": "NATIVE_UTIL_NO_FLASH_V1",
+  "removedFile": "flash/swf/SocketPool.swf",
+  "removedSha256": "0ebae322dc751e77e18ceef4960bcda1d1634f53a49e7030fb640cf90f1d8839",
+  "evidence": [
+    {
+      "path": "phpjs-MIT.txt",
+      "url": "https://raw.githubusercontent.com/locutusjs/locutus/458e595f90a82e8d80105c4784defd380222306b/LICENSE.txt",
+      "sha256": "61cd914fad645fe7eb5ee66df80dedbe3365e335f28673a9d1d5e4ed02a22ff3",
+      "bytes": 1144
+    },
+    {
+      "path": "phpjs-number-format.js",
+      "url": "https://raw.githubusercontent.com/locutusjs/locutus/458e595f90a82e8d80105c4784defd380222306b/functions/strings/number_format.js",
+      "sha256": "47b08d9a0c9b6d3bbfa8548fc762db23bc45e5b31c82ef6bb7f1192340643c90",
+      "bytes": 2958
+    },
+    {
+      "path": "webpack-MIT.txt",
+      "url": "https://raw.githubusercontent.com/webpack/webpack/v4.44.1/LICENSE",
+      "sha256": "9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e",
+      "bytes": 1071
+    },
+    {
+      "path": "webpack-global.js",
+      "url": "https://raw.githubusercontent.com/webpack/webpack/v4.44.1/buildin/global.js",
+      "sha256": "a870f8c8c9f0a96a273e497b73e681937511a79b4a8692e9d511a666dce22ce5",
+      "bytes": 472
+    },
+    {
+      "path": "forge-aes-2010.txt",
+      "url": "https://raw.githubusercontent.com/digitalbazaar/forge/521fd6018d350a54c5f3b5ab5258a145bcc613e0/js/aes.js",
+      "sha256": "f8ca7a85d21fe531fe0f66da26f7a2c7e00e2f3e2df1adb65c859b47c5bb46fc",
+      "bytes": 47915
+    },
+    {
+      "path": "tweetnacl-fast-0.14.5.txt",
+      "url": "https://raw.githubusercontent.com/dchest/tweetnacl-js/v0.14.5/nacl-fast.js",
+      "sha256": "432333a18cef679d16c71328fcc18cc547e58d7d1c2b880a581b2d7ee4248027",
+      "bytes": 62257
+    },
+    {
+      "path": "flash-build.json",
+      "url": "https://raw.githubusercontent.com/digitalbazaar/forge/ceba34402e329f0365134f23fe19898756527d65/flash/package.json",
+      "sha256": "9e5e3328ccd7f5fefeaf0d57804d621832bf22338c2ed806f906cd187231966e",
+      "bytes": 1040
+    },
+    {
+      "path": "util-replacements.json",
+      "sha256": "c7102b1785204bd477180508a057f08321697153664ec784b43b671a6e09b779",
+      "bytes": 1549
+    },
+    {
+      "path": "carta-rand31-source.txt",
+      "url": "https://www.firstpr.com.au/dsp/rand31/rand31-park-miller-carta.cc.txt",
+      "sha256": "902cde3250944081a083cbc27ad4251f6ccb68a04b1dbc42efef20adc899d5c7",
+      "bytes": 31109
+    }
+  ],
+  "legalApproval": false
+}

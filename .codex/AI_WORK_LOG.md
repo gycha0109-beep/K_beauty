@@ -3351,3 +3351,11 @@ Watchtower-Track: security
 - v2 authenticates candidate/source metadata with GCM AAD; independent expected SHA and actual archived manifest checked before plaintext write. Legacy unauthenticated receipt rejected. Public-only PEM, bounded physical inventory, checkout-safe key/decrypt destinations, exact two-file upload guard and adversarial valid-envelope test added.
 - Retention called after both full-build and authenticated unchanged-runtime graph paths. Source-changing52e7836 producer/replay verified from GitHub logs; fresh APK and complete platform checks PASS there. Runtime reference advanced to that actual proof without gate waiver or redundant APK rerun.
 - Local79 admission tests PASS; actual configured owner CI encryption/readback NOT_RUN until public variable registered. Candidate code/archives/license packet unchanged; final legal/signature/auth/nocharge/ACL prerequisites remain separate from private publication authority.
+
+### 2026-10-16 / SCA actual-distribution lineage remediation
+
+- 실행형, PR1299 remote720566f4 baseline preserved. Audited actual owner-decrypted800e candidate (75 files) and matched all6 rebuilt baseline browser files; normalized compiler closure recorded.
+- C: opaque Flash/Flex SWF omitted; copied isEmpty/formatSize helpers replaced with native operations/unit table. B crypto AES/SJCL/OpenSSL/TweetNaCl/DES retained; full PHP.js and webpack notices added; 9 pinned primary resources and A/B/D report delivered in new tarballs/kit/SBOM.
+- Local85 admission tests,480 OAEP,2x32 Chromium,157 utility,7 primary full-function matches,8 actual packet/kit negatives PASS; new scoped9feebf17 local, independent CI/full runtime Android PENDING. Old800e still verifies, no old packet repin.
+- Original fullHIGH22/prodHIGH19/C0 FAIL remains; no legal/release approval/signature fabrication, package publication, token/private-key access, payment/ACL/product lock/main/prod changes.
+- Details: docs/security/sec-sca-20261016-distribution-lineage.md and JSON.
