@@ -80,6 +80,13 @@ assert.equal(sameVersionTriage.summary.sameVersionAndNameButBlobNotDirectMatch,
 assert.equal(sameVersionTriage.summary.joinReassemblyNotProven,28);
 assert.equal(sameVersionTriage.summary.singleStatementDifferent,18);
 assert.equal(sameVersionTriage.summary.requiresPG17ParserReview,1);
+assert.equal(sameVersionTriage.multiStatementTokenFollowup.evaluated,28);
+assert.equal(sameVersionTriage.multiStatementTokenFollowup.tokenExact+
+ sameVersionTriage.multiStatementTokenFollowup.tokenSameExceptSingleFinalSemicolon,26);
+assert.equal(sameVersionTriage.multiStatementTokenFollowup.tokenDifference,2);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.taxonomy8.historicalSqlBytes,64);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.c5b.runtimeFunctionTokensMatchGit,1203);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.exploitabilityProven,false);
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
@@ -128,6 +135,10 @@ const result={
  sameVersionSameNameUnverifiedSqlBodies:provenance.summaries.sameVersionNameUnmatched,
  sameVersionSqlDriftTriageStored:true,
  sameVersionMultiStatementParserReassemblyPending:28,
+ sameVersionMultiStatementLexerTokenMatch:26,
+ sameVersionMultiStatementLexerDrift:2,
+ rankingSnapshotHistoricalAclStepMissingInStoredStatements:true,
+ liveAnonymousClaimExplicitNullGuardNotObserved:true,
  sameVersionSingleStatementTerminalDelimiterOnly:6,
  sameVersionSingleStatementTokenMatches:5,
  sameVersionSingleStatementEdgeNewlineBlobMatches:6,
