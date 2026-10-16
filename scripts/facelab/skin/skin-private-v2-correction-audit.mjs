@@ -33,7 +33,8 @@ function privateCases(report,expectedVariants,attempted) {
         typeof v.responseComplete!=="boolean"||
         !["STRUCTURALLY_VALID","INVALID_OR_INCOMPLETE"].includes(v.structuralResult)||
         !["available","partial","insufficient_evidence","unavailable"].includes(v.faceStatus)||
-        !Number.isSafeInteger(v.faceAvailableFieldCount)||v.faceAvailableFieldCount<0||
+        !(v.faceAvailableFieldCount===null ||
+          (Number.isSafeInteger(v.faceAvailableFieldCount)&&v.faceAvailableFieldCount>=0))||
         typeof v.skinAnalysisEligible!=="boolean"||
         !record(v.skinAxisStates)||
         !["ELIGIBLE_SEVEN_VALIDATED","ELIGIBLE_SKIN_EVIDENCE_HOLD",
@@ -107,6 +108,7 @@ export function comparePrivateSkinV2Correction(baseline,correction) {
   let photoSizeChanged=0,eligibleToIneligible=0,ineligibleToEligible=0;
   let faceStatusLossVsPriorV1=0,faceFieldLossVsPriorV1=0;
   let faceStatusLossVsPriorV2=0,faceFieldLossVsPriorV2=0;
+  let faceFieldUnassessable=0;
   let eligibleContractsBecameValid=0,eligibleContractsRegressed=0;
   for(const id of IDS){
     const a=prior.get(id),b=next.get(id);
@@ -116,9 +118,14 @@ export function comparePrivateSkinV2Correction(baseline,correction) {
     if(old.skinAnalysisEligible&&!updated.skinAnalysisEligible)eligibleToIneligible++;
     if(!old.skinAnalysisEligible&&updated.skinAnalysisEligible)ineligibleToEligible++;
     if(FACE_RANK[updated.faceStatus]<FACE_RANK[v1.faceStatus])faceStatusLossVsPriorV1++;
-    if(updated.faceAvailableFieldCount<v1.faceAvailableFieldCount)faceFieldLossVsPriorV1++;
+    if(updated.faceAvailableFieldCount===null||v1.faceAvailableFieldCount===null||
+      old.faceAvailableFieldCount===null){
+      faceFieldUnassessable++;
+    } else {
+      if(updated.faceAvailableFieldCount<v1.faceAvailableFieldCount)faceFieldLossVsPriorV1++;
+      if(updated.faceAvailableFieldCount<old.faceAvailableFieldCount)faceFieldLossVsPriorV2++;
+    }
     if(FACE_RANK[updated.faceStatus]<FACE_RANK[old.faceStatus])faceStatusLossVsPriorV2++;
-    if(updated.faceAvailableFieldCount<old.faceAvailableFieldCount)faceFieldLossVsPriorV2++;
     if(!structurallyEligible(old)&&structurallyEligible(updated))eligibleContractsBecameValid++;
     if(structurallyEligible(old)&&!structurallyEligible(updated))eligibleContractsRegressed++;
   }
@@ -134,7 +141,7 @@ export function comparePrivateSkinV2Correction(baseline,correction) {
       skinIneligibleToEligible:ineligibleToEligible,
       eligibleContractsBecameValid,eligibleContractsRegressed,
       faceStatusLossVsPriorV1,faceFieldLossVsPriorV1,
-      faceStatusLossVsPriorV2,faceFieldLossVsPriorV2
+      faceStatusLossVsPriorV2,faceFieldLossVsPriorV2,faceFieldUnassessable
     },
     caveats:{
       actualImageIdentityAcrossRunsVerified:false,
