@@ -114,6 +114,10 @@ assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.runti
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.public_execute_allowed,false);
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.postgres_null_comparison_returns_unknown,true);
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.legacy_sql_explicit_all_six_null_guards_present,false);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.locally_derived_legacy_function_tokens,747);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.locally_derived_legacy_function_token_equivalent_to_hosted,true);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.synthetic_pg17_native_sql_execution_attested,false);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.rankingAclLaterAppliedRepair.synthetic_pg17_native_sql_execution_attested,false);
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
