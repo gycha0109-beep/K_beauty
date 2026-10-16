@@ -394,7 +394,16 @@
       "postgres_null_comparison_returns_unknown": true,
       "legacy_sql_explicit_all_six_null_guards_present": false,
       "operator_live_rpc_invocation_performed": false,
-      "remediation": "SECURITY_REVIEW_REQUIRED_AND_SEPARATE_APPROVED_MIGRATION; NO_HOSTED_WRITES"
+      "remediation": "SECURITY_REVIEW_REQUIRED_AND_SEPARATE_APPROVED_MIGRATION; NO_HOSTED_WRITES",
+      "hosted_legacy_function_tokens": 747,
+      "locally_derived_legacy_function_tokens": 747,
+      "locally_derived_legacy_function_token_equivalent_to_hosted": true,
+      "derived_legacy_only_strips_six_null_guards": true,
+      "legacy_derivation_js_special_dollar_replacement_fixed": true,
+      "synthetic_pg17_fixture_source_attested": true,
+      "synthetic_pg17_check_files_pass": true,
+      "synthetic_pg17_native_sql_execution_attested": false,
+      "synthetic_pg17_local_scope_only": true
     },
     "rankingAclLaterAppliedRepair": {
       "security_write_revoke_recorded_in": "20260621151304_repair_phase1_ranking_snapshot_ingest_rpc",
@@ -410,7 +419,9 @@
       "source_rankings_public_residual_permissions_absent": true,
       "public_schema_create_anon_authenticated": false,
       "ranking_snapshots_residual_acl_impact_exploitable_proven": false,
-      "remediation_approval_state": "REQUIRES_SEPARATE_SECURITY_REVIEW_AND_SYNTHETIC_PG17_TEST__NO_HOSTED_REVOKE"
+      "remediation_approval_state": "REQUIRES_SEPARATE_SECURITY_REVIEW_AND_SYNTHETIC_PG17_TEST__NO_HOSTED_REVOKE",
+      "synthetic_pg17_minimal_acl_fixture_source_attested": true,
+      "synthetic_pg17_native_sql_execution_attested": false
     }
   }
 }
