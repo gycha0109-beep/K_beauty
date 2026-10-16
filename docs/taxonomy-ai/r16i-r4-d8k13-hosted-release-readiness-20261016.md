@@ -123,3 +123,25 @@
 - **수정:** Docker `--network=none` 격리를 유지한 채 **컨테이너 내부 127.0.0.1 TCP pg_isready + 실제 인증 SELECT(version=17) 성공**을 반드시 확인한다. 임시 socket-only 서버는 이 검사를 만족하지 못한다. 최대 120회/500ms 준비 확인, 실패는 `PG17_FINAL_TCP_SERVER_NOT_READY`로 명시한다. 정식 서버가 검증되면 `D8K13_PG17_FINAL_TCP_READY`를 출력한 뒤 기존 SQL 테스트를 시작한다.
 - 기존 원본 worktree, 운영 DB, Product/Offer/권한/릴리스 게이트 변경 없음. 격리된 throwaway Docker PostgreSQL만 사용한다.
 - **현재 결과:** 수정 코드 작성, 새 HEAD 실제 native PG17 재검증은 아직 미완료. 이후 SQL 스키마 비교가 여전히 실패하면 `D8K13_UNEXPECTED_D8DV2_SCHEMA table=... actual=... expected=...`의 구체적인 값을 근거로 분석한다. 운영 적용·머지·배포는 **HOLD**.
+
+
+
+## 10. 전체 migration 체인 별도 P0 — 153개 vs 운영 178개 (2026-10-16)
+
+D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f7455eb1`)** 이후, 저장소의 **모든** SQL migration 153개와 운영 applied VERSION/NAME 178건을 읽기 전용으로 대조했다. 전체 적용 순서 자체는 아직 승인이 불가능하다.
+
+- 버전·이름 둘 다 일치 **103**; 같은 버전·다른 이름 **1**; 같은 이름·다른 버전 **41**; 로컬 이름이 운영에 없는 SQL **8**; 운영에 적용됐으나 현재 로컬 대응 이름이 없는 SQL **34**.
+- 로컬 버전 자체가 운영 적용 이력에 없는 SQL은 **49**(운영 마지막 버전 이하 **45**, 이후 **4**).
+- **중복 버전 1그룹:** `20260824` 접두사를 두 SQL이 공유. 14자리 migration 버전이 아닌 8자리 파일도 7개.
+- 오래된 5개 이름 미대응 중 영문 이름·Taxonomy2·UVA Registry 객체는 실제 운영에 존재하지만 같은 SQL 본문이 적용됐다고 입증하지는 못함. Bushman 인증 관련 두 SQL의 새 테이블/함수는 운영에 존재하지 않음.
+- 운영 버전 `20261012181544`로 기록된 `trust_p2c_visible_identity_dispositions_v1`는 로컬에서 `20261012190000`; 신규 적용을 자동화하면 안 됨.
+
+**증거·재현 절차**
+- `docs/taxonomy-ai/r16i-r4-d8k13-full-migration-chain-readonly-audit-20261016.md`
+- `scripts/product-evidence/baselines/d8k13-hosted-migrations-readonly-20261016.json` (민감 정보 없는 VERSION/NAME read-only 스냅샷)
+- `node scripts/product-evidence/verify-d8k13-migration-chain-readonly-v1.mjs --full` (로컬 파일 비교·네트워크 없음)
+- `node scripts/product-evidence/verify-d8k13-migration-chain-readonly-v1.mjs --enforce-release` 및 기존 `verify-d8k13-release-sequence-v1.mjs --enforce-release`는 **각각 종료코드 3**, 릴리스 HOLD.
+
+**이력 이름 일치만으로 배포된 SQL 본문의 SHA/논리 동일성을 증명하지 못한다.** 승인된 배포 artifacts로 41개 timestamp 변화와 운영-only 34개를 복원하고, 5개 오래된 미대응 SQL의 의도적 미배포 여부를 결론낸 뒤에야 전체 PostgreSQL 17 history replay 테스트를 설계해야 한다. `supabase db push`, `supabase migration repair` 및 운영 SQL 수동 실행은 계속 금지한다.
+
+검증된 D8K-13 원본 SQL·Node 격리 코드는 **변경하지 않았다**. 신규 검사·보고·이력 snapshot만 Draft PR에 추가했다.
