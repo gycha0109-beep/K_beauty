@@ -276,6 +276,7 @@ export async function runPrivatePhotoCohort({
   const variants=studyMode==="paired"?["v1","v2"]:["v2"];
   const requestBudget=studyMode==="v2_probe_one"?1:studyMode==="v2_resume_four"?4:studyMode==="v2_only"?5:PRIVATE_V1V2_MAX_CALLS;
   if(studyMode==="v2_resume_four"){
+    if(!resumeProbeMetadata)throw new Error("private_resume_probe_required");
     // Before any Provider attempt: TC-01 success must already be validated.
     validatePrivateV2ProbeMetadata(resumeProbeMetadata,manifest.studyId,
       manifest.cases.find(c=>c.caseId==="TC-01"));
