@@ -111,3 +111,15 @@
 - 수정 코드: 위치 민감한 두 배열의 정렬 비교를 **양방향 `EXCEPT` 집합 일치 + 정확한 개수 일치**로 바꾸고, RLS/relkind와 실제·기대 열 목록 실패를 구분하여 안전한 컬럼명/타입 진단을 오류 문자열에 포함한다. 타입 drift 부정 사례도 추가한다. 무조건적인 스키마 허용이나 예상 밖 컬럼 무시는 금지.
 - 기존 보호: 레거시 2건·티켓·사전 승인된 매니페스트, D8D v1/v2 이력 0건·게이트 OFF, 서비스 권한·RPC 호출 제한, 트랜잭션 롤백, 전체 레코드 보존.
 - 새 HEAD의 Node/실제 Docker PG17 재검증 **아직 미완료**. 다음 재검증에서 동일한 오류가 나면 `D8K13_UNEXPECTED_D8DV2_SCHEMA table=... actual=... expected=...` 진단을 근거로 수정한다. 운영 DB 변경·머지·배포는 HOLD.
+
+
+
+## 9. Docker PostgreSQL 임시 서버 기동 경합 (2026-10-16 14:30 로그)
+
+- 증빙 로그: `D8K13-acceptance-20261016-143050.log`; 검증한 HEAD `d18cc672d71b5f5c5cff01e77d245d479f4cdc50`.
+- **PASS:** D8C 23 부정 사례, D8K11 464 assertions, D8K12 80 assertions, D8K13 88 assertions, 릴리스 시퀀스 정적 진단의 의도된 HOLD, SQL 소스 파일 사전 검사.
+- **중단:** PostgreSQL 서버에 대한 첫 실제 연결 시 Unix 소켓 `/var/run/postgresql/.s.PGSQL.5432`를 찾을 수 없다는 오류. 이전 PG17 성공 마커는 이번 로그에 없으며 **신규 D8D-v2 → D8K-13 마이그레이션 SQL은 실행되지 않았다**. 임시 Docker 컨테이너 정리는 출력으로 확인.
+- **원인 후보(강함):** 기존 러너의 소켓 `pg_isready`는 공식 postgres 이미지의 initdb 중 **임시 socket-only PostgreSQL 서버**에도 성공할 수 있고, 그 서버가 종료되어 정식 서버로 재시작되는 사이 첫 `psql`이 소켓 누락으로 실패할 수 있다. 이 로그만으로 Docker의 모든 기동 경합 가능성을 확정할 수는 없다.
+- **수정:** Docker `--network=none` 격리를 유지한 채 **컨테이너 내부 127.0.0.1 TCP pg_isready + 실제 인증 SELECT(version=17) 성공**을 반드시 확인한다. 임시 socket-only 서버는 이 검사를 만족하지 못한다. 최대 120회/500ms 준비 확인, 실패는 `PG17_FINAL_TCP_SERVER_NOT_READY`로 명시한다. 정식 서버가 검증되면 `D8K13_PG17_FINAL_TCP_READY`를 출력한 뒤 기존 SQL 테스트를 시작한다.
+- 기존 원본 worktree, 운영 DB, Product/Offer/권한/릴리스 게이트 변경 없음. 격리된 throwaway Docker PostgreSQL만 사용한다.
+- **현재 결과:** 수정 코드 작성, 새 HEAD 실제 native PG17 재검증은 아직 미완료. 이후 SQL 스키마 비교가 여전히 실패하면 `D8K13_UNEXPECTED_D8DV2_SCHEMA table=... actual=... expected=...`의 구체적인 값을 근거로 분석한다. 운영 적용·머지·배포는 **HOLD**.
