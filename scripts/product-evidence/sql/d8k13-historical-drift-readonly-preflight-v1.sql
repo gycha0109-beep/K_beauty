@@ -41,7 +41,13 @@ WITH history AS (
         pg_catalog.has_table_privilege('authenticated',c.oid,'INSERT') OR
         pg_catalog.has_table_privilege('authenticated',c.oid,'UPDATE') OR
         pg_catalog.has_table_privilege('authenticated',c.oid,'DELETE') AS authenticated_write,
-        pg_catalog.has_table_privilege('service_role',c.oid,'INSERT') AS service_role_insert
+        pg_catalog.has_table_privilege('service_role',c.oid,'INSERT') AS service_role_insert,
+        pg_catalog.has_table_privilege('anon',c.oid,'REFERENCES') AS anon_references,
+        pg_catalog.has_table_privilege('anon',c.oid,'TRIGGER') AS anon_trigger,
+        pg_catalog.has_table_privilege('anon',c.oid,'MAINTAIN') AS anon_maintain,
+        pg_catalog.has_table_privilege('authenticated',c.oid,'REFERENCES') AS authenticated_references,
+        pg_catalog.has_table_privilege('authenticated',c.oid,'TRIGGER') AS authenticated_trigger,
+        pg_catalog.has_table_privilege('authenticated',c.oid,'MAINTAIN') AS authenticated_maintain
  FROM pg_catalog.pg_class c
  WHERE c.oid IN (to_regclass('public.ranking_snapshots'),
                  to_regclass('public.source_rankings'))
@@ -86,10 +92,18 @@ SELECT jsonb_build_object(
    'revoke_rank_truncate_recorded',ranking_truncate_revoke_recorded,
    'source_rankings_revoke_and_grant_from_these_two_repairs_attested',false)
    FROM repair_history),
+ 'public_schema_create_acl',(SELECT jsonb_build_object(
+   'anon_create',pg_catalog.has_schema_privilege('anon','public','CREATE'),
+   'authenticated_create',pg_catalog.has_schema_privilege('authenticated','public','CREATE'))),
  'ranking', (SELECT coalesce(jsonb_agg(jsonb_build_object(
     'table',relname,'rls',rls_on,'anon_write',anon_write,
     'authenticated_write',authenticated_write,
-    'service_role_insert',service_role_insert) ORDER BY relname),'[]'::jsonb)
+    'service_role_insert',service_role_insert,
+    'anon_references',anon_references,
+    'anon_trigger',anon_trigger,'anon_maintain',anon_maintain,
+    'authenticated_references',authenticated_references,
+    'authenticated_trigger',authenticated_trigger,
+    'authenticated_maintain',authenticated_maintain) ORDER BY relname),'[]'::jsonb)
     FROM ranking),
  'c5b', (SELECT jsonb_build_object(
     'present',true,'security_definer',prosecdef,
