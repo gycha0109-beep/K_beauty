@@ -70,6 +70,16 @@ assert.equal(provenance.summaries.byteMatchRaw+
  provenance.summaries.byteMatchWithTrailingLF,34);
 assert.equal(provenance.summaries.differentVersionPairs,7);
 assert.equal(provenance.summaries.remoteOnlySqlStored,34);
+const sameVersionTriage=JSON.parse(content(
+ "scripts/product-evidence/baselines/d8k13-hosted-same-version-sql-triage-readonly-20261016.json"));
+assert.equal(sameVersionTriage.schema,"D8K13_SAME_VERSION_SQL_TRIAGE_READONLY_V1");
+assert.equal(sameVersionTriage.status,"RELEASE_HOLD");
+assert.equal(sameVersionTriage.sourceSqlBodiesPublished,false);
+assert.equal(sameVersionTriage.summary.sameVersionAndNameButBlobNotDirectMatch,
+ provenance.summaries.sameVersionNameUnmatched);
+assert.equal(sameVersionTriage.summary.joinReassemblyNotProven,28);
+assert.equal(sameVersionTriage.summary.singleStatementDifferent,18);
+assert.equal(sameVersionTriage.summary.requiresPG17ParserReview,1);
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
@@ -116,6 +126,14 @@ const result={
  differentVersionPairsWithCurrentSqlDrift:7,
  hostedOnlyAppliedSqlBodiesRecoverableFromRestrictedHistory:34,
  sameVersionSameNameUnverifiedSqlBodies:provenance.summaries.sameVersionNameUnmatched,
+ sameVersionSqlDriftTriageStored:true,
+ sameVersionMultiStatementParserReassemblyPending:28,
+ sameVersionSingleStatementTerminalDelimiterOnly:6,
+ sameVersionSingleStatementTokenMatches:5,
+ sameVersionSingleStatementEdgeNewlineBlobMatches:6,
+ sameVersionCrawlerFunctionParserReviewPending:1,
+ taxonomy8HistoricalPreflightAttested:false,
+ c5bHistoricalMigrationPreAndPostGuardsAttested:false,
  historicalProvenanceAllowsDeployment:false,
  fullHistoricalMigrationChainReleaseApproved:false,
  actualPG17ChainAcceptanceVerifiedByThisScript:false,
