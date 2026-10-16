@@ -154,6 +154,16 @@ D8K-12 감사 이벤트 계약을 다음과 같이 **호환 확장**하는 방�
 
 **운영 상태:** 실제 기존 판정은 여전히 VERIFIED 2건이며, D8K-12 이벤트와 D8K-13 격리 스냅샷은 운영에 설치되지 않았다. 별도 운영 변경 승인·보안 #1208 해결·출시 게이트 검수 전에는 병합·배포·DB 변경 불가.
 
-## 10. 운영 릴리스 순서 신규 P0 (2026-10-16 재점검)
+## 10. 운영 릴리스 순서 P0 후속 조치 (2026-10-16)
 
-운영 migration 마지막 버전은 `20261012181544`이며, 현재 브랜치에는 **D8D v2(`20261014150000`)가 D8K-12/13 통합 마이그레이션(`20261015185000`)보다 앞선다**. D8D v2가 생성하는 세 테이블은 통합 마이그레이션에서 즉시 거부한다. 따라서 일반적인 `supabase db push`를 운영 DB에 실행하지 않는다. 상세 원인·승인 조건·백업/복원 계획은 [D8K-13 운영 릴리스 준비서](./r16i-r4-d8k13-hosted-release-readiness-20261016.md)와 `verify-d8k13-release-sequence-v1.mjs`에서 관리한다. **운영 적용 HOLD** 유지.
+운영 migration 마지막 버전은 `20261012181544`이며, 현재 브랜치에는 **D8D v2(`20261014150000`)가 D8K-12/13 통합 마이그레이션(`20261015185000`)보다 앞선다**. 초기 통합 마이그레이션은 D8D v2 테이블 존재만으로 거부했으나, 최신 Draft 코드에서는 D8D v2의 정확한 테이블 5개·RPC 2개·46개 컬럼/타입·RLS·권한 및 이력 0건/게이트 OFF가 일치할 때만 허용하는 **조건부 호환 경로**를 작성했다. 실제 원문 D8D v2 → 통합 마이그레이션의 새로운 로컬 PG17 검증과 전체 pending chain 검토가 끝나지 않았으므로, 일반적인 `supabase db push` 운영 실행은 여전히 금지한다. 상세 원인·승인 조건·백업/복원 계획은 [D8K-13 운영 릴리스 준비서](./r16i-r4-d8k13-hosted-release-readiness-20261016.md)와 `verify-d8k13-release-sequence-v1.mjs`에서 관리한다. **운영 적용 HOLD** 유지.
+
+
+## 11. D8D v2 정상 순서 호환 후보 (2026-10-16 신규 HEAD)
+
+- 기존 D8K-13의 정확한 자기 승인 2건, 승인된 비공개 evidence/verdict ID 매니페스트, 별도 릴리스 티켓, 후속 제안·결정·적용 0건, v1 출시 게이트 OFF 요구를 **완화하지 않는다**.
+- D8D v2 원문 SQL은 수정하지 않는다. 조건부 호환 경로가 PG17에서 검증할 내용은 **v2 gate false, 4종 ledger 0행, 2개 v2 RPC SECURITY INVOKER, 5개 테이블 RLS/ACL, 46개 컬럼 이름·타입 일치**이다. 부분 설치나 불법 권한이 있으면 실패 및 롤백.
+- D8D v2 APPLY는 advisory lock `(195721,16)` 이후 Proposal → Product를 잠근다. 통합 D8K-13도 advisory lock을 Product보다 먼저 잡아 역순 잠금 교착을 피하도록 작성했다.
+- `tests/fixtures/r16i-d8k13/05_d8dv2_existing_catalog_pg17.sql`, 실제 `supabase/migrations/20261014150000_taxonomy_ai_r16i_d8d_v2_owner_gated_dual_offer.sql`, `tests/fixtures/r16i-d8k13/20_d8dv2_chain_runtime_pg17.sql`을 신규 `run-d8k13-local-pg17.mjs`에 포함했다.
+- 신규 테스트는 이전 v1-only 정상/거부 회귀 외에 정상 v2-first 원문 마이그레이션 적용·자가승인 2건 격리·원본 보존, v2 gate ON/OWNER 승인 존재/컬럼 변형/SECURITY DEFINER 전환/anon 읽기 허용/테이블 누락 각각 거부 및 롤백을 검증한다.
+- **검증 등급:** PostgreSQL 호환 조건의 정적 원문 대조는 완료했으나 새 통합 SQL·runner의 **실제 PG17 결과는 아직 없다**. 이전 `77c1c4d2` 검증 PASS를 신규 HEAD에 승계하지 않는다. 운영 DB·머지·배포·고객 가격/CTA는 HOLD.
