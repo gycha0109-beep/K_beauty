@@ -300,7 +300,8 @@ export async function runPrivatePhotoCohort({
       };
     }
   }
-  for(const {caseId,image} of validated){
+  const casesToRun=live&&studyMode==="v2_probe_one"?validated.slice(0,1):validated;
+  for(const {caseId,image} of casesToRun){
     if(!live){
       output.push({caseId,verdict:"PRIVATE_LOCAL_PRECHECK_ONLY",
         width:image.width,height:image.height,shortSidePx:Math.min(image.width,image.height),
@@ -365,7 +366,7 @@ export async function runPrivatePhotoCohort({
     const expectedAbstention=v2.expectedIneligibleAbstention &&
       v2.v2ContractStatus==="EXPECTED_INELIGIBLE_EMPTY";
     const structurallyValid=v2.v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED" &&
-      (studyMode==="v2_only" ? v2.structuralResult==="STRUCTURALLY_VALID" &&
+      (studyMode!=="paired" ? v2.structuralResult==="STRUCTURALLY_VALID" &&
          !v2.nearTokenCap : paired.structuralCandidatePass);
     output.push({caseId,verdict:expectedAbstention
       ?"EXPECTED_SKIN_INELIGIBLE_ABSTENTION_RESEARCH_ONLY"
@@ -388,7 +389,7 @@ export async function runPrivatePhotoCohort({
       {evidenceOrigin:"operator_review_pending"}):null;
   // Purely descriptive v2-only distribution. This is NOT a success rate
   // against human truth or a claim of unchanged Face values.
-  const v2OnlySummary=studyMode==="v2_only"&&live
+  const v2OnlySummary=studyMode!=="paired"&&live
     ?{
       cases:output.length,
       skinEligibleValid:output.filter(c=>c.variants?.[0]?.skinAnalysisEligible===true &&
