@@ -76,7 +76,7 @@
 
 실제 토큰 차이 2건:
 
-1. `20260621030000_phase1_ranking_snapshot_pipeline.sql` (31 statements) — 원격 기록에 현재 GitHub 파일의 `ranking_snapshots` 쓰기 `REVOKE` 및 `service_role` `GRANT` 구문 일부가 없다. **현재 운영** `ranking_snapshots`·`source_rankings`는 RLS ON, `anon/authenticated` 직접 INSERT/UPDATE/DELETE 불가, `service_role` INSERT 허용을 SELECT-only로 확인했다. 따라서 실제 누출이나 무단 쓰기를 확인한 것은 아니지만, **역사적 접근권한 변경의 출처가 미입증**이다.
+1. `20260621030000_phase1_ranking_snapshot_pipeline.sql` (31 statements) — 원격 기록에 현재 GitHub 파일의 `ranking_snapshots` 쓰기 `REVOKE` 및 `service_role` `GRANT` 구문 일부가 없다. **현재 운영** `ranking_snapshots`·`source_rankings`는 RLS ON, `anon/authenticated` 직접 INSERT/UPDATE/DELETE 불가, `service_role` INSERT 허용을 SELECT-only로 확인했다. 따라서 실제 누출이나 무단 쓰기를 확인한 것은 아니지만, **초기 파일과 운영 이력 사이의 ACL 차이가 있다. 이후 보수 이력에서 일부 출처를 확인했으며 8절에서 구체화한다**.
 2. `20260711032649_sec_05_anonymous_write_grants.sql` (37 statements) — `claim_anonymous_write_grant`의 현재 GitHub 함수에는 명시적인 `p_jti_hash IS NULL`, `p_resource_id IS NULL` 등의 초기 입력 방어가 포함되지만, **실제 운영 `pg_get_functiondef`에는 같은 명시적 NULL 검사가 관측되지 않았다**. 현재 함수는 `SECURITY INVOKER`이고 해시 형식 검사 `!~`는 존재한다. **익스플로잇이나 권한 우회가 입증된 것은 아니므로** 운영 호출 테스트·권한 수정 없이 보안 설계 리뷰 대상으로 남긴다.
 
 다중 statements의 `;` 재결합으로 **26개가 토큰 단계에서 일치**했으나 SQL 원문의 바이트 일치, SQL 파서의 의도한 분할, 중간 트랜잭션·권한·실행 효과 동등성은 보증하지 않는다. 실제 다른 2건은 특히 순위 데이터와 익명 쓰기 권한에 관계하므로 **P0 독립 코드/운영 이력 검수**를 권고한다.
@@ -99,3 +99,14 @@
 - 현재 `claim_anonymous_write_grant`는 `SECURITY INVOKER`이며 명시적 JTI/resource NULL 조건은 없음. `exploitable_behavior_proven=false`는 **취약점이 없다는 인증이 아니라 악용 가능성 판단을 시도하지 않았다는 상태 표시**다.
 
 **운영 SQL은 이번 추가 조회에서 재실행·수정되지 않았다.** 실서버 스키마·권한·감사 정책의 변경 승인/보안 검토 및 전체 pending migration 재현은 계속 필요하다.
+
+
+## 8. Ranking ACL·익명 쓰기 함수 적용 경계 재감사 (2026-10-16 16:34 KST)
+
+후속 실제 운영 `schema_migrations.statements`를 확인하여 `ranking_snapshots`의 `anon/authenticated` 쓰기 권한 회수 및 `service_role` INSERT/UPDATE 부여가 **적용 이력 `20260621151304`**에, 일반 사용자 TRUNCATE 권한 회수가 **`20260621152040`**에 존재함을 확인했다. 이전 `최초 랭킹 이력에 ACL 문구 누락`의 일부는 **후속 repair migration의 역사적 적용으로 설명된다**. `source_rankings`의 해당 ACL provenance까지 완전히 증명한 것은 아니다.
+
+`claim_anonymous_write_grant`는 현재 **service_role 전용 실행**이고 `anon/authenticated/PUBLIC` 직접 실행은 권한으로 차단돼 있다. 기존 SQL에 빠진 `NULL` 입력 검사는 실제 존재하는 방어 결함이지만, 지금 검토한 서버 경로는 HMAC·signed cookie principal·request resourceId·fingerprint를 확인한 뒤 RPC를 호출한다. **공개 API에서 권한 우회가 실증된 것은 아니다**. 서버와 DB 경계의 계약이 바뀔 때를 대비한 심층 방어 보강으로 별도 승인과 합성 PG17 테스트가 필요하다.
+
+재현: `scripts/product-evidence/sql/d8k13-historical-drift-readonly-preflight-v1.sql` (운영 SELECT-only PASS), `scripts/product-evidence/verify-d8k13-historical-security-lineage-v1.mjs` (오프라인 코드 10개 입력으로 PASS/HOLD, 강제 검사 exit 3).
+
+상세 근거: [Ranking ACL / SEC-05 보안 경계 감사](./r16i-r4-d8k13-ranking-acl-anonymous-grant-security-lineage-20261016.md). **실제 DB 변경·RPC 호출·운영 배포는 수행하지 않았다.**
