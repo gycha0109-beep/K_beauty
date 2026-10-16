@@ -44,6 +44,14 @@ Do not place secret contents into chat, code, GitHub, Vercel or a CI script. Exp
 - Synthetic verifier now uses five **distinct invented JPEG byte fixtures** rather than identical byte arrays; separately tests deliberate duplicate-content rejection and CI marker variants.
 - This upgrade changes only the **private evaluation preflight**, not the deployed app or actual face photo/Provider authorization. Actual five-photo paired Provider calls are still **0/10** because the temporary key is inaccessible in the private runtime.
 
+## Metadata-only independent Human evaluation handoff
+
+The private runner now exposes a narrowly whitelisted, private-host-only **per-axis observation** to support a subsequent independent Human reference comparison without retaining model-originated free-text. For v2, each of at most seven returned rows contains **only** a canonical axis name (or null for an unsupported name), closed state `present | not_seen | unassessable | unknown | invalid`, score in `0..5` or null, and closed confidence `low | medium | high | unknown | invalid`. It never emits raw cue strings, face feature measurements, image areas, narrative evidence, identifiers, provider JSON, local file paths or any image base64.
+
+For v1, the seven visible axes expose only bounded legacy numeric scores, with `v1LegacyZeroUnverifiable=true`: **a v1 zero can NOT be interpreted as verified `not_seen`**. These v1 scores are for instrument/contract comparison only, not verified skin truth. Invalid scores are null rather than silently coerced.
+
+This enables an **independent, separately consented/blinded Human label manifest** to be compared by the existing S1 cue evaluator later; the runner does not create, guess or impersonate reference labels. Even if a private run occurs, the result remains research-only, not an assessment of personalized medical conditions. Raw face information is never persisted by the runner.
+
 ## Automated verification
 
 `verify-skin-private-v1v2-runner.mjs` uses *fabricated JPEG headers* inside a disposable temporary directory, and a **mock Provider transport only**. It verifies: five cases/call budget, identical image bytes across v1/v2, key2-only credential, production-key-only rejection, GITHUB_ACTIONS/CI rejection, cohort-wide file-check before traffic, symlink/path/metadata rejection, sanitized error reporting and zero actual Provider calls. This verifier is the only part wired to `verify-current-main-health.mjs`.
