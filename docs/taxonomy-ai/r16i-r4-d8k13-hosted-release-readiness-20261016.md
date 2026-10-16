@@ -100,3 +100,14 @@
 - 보정: 통합 migration이 **서로 다른 원본 보안 속성**을 명시적으로 검사하고, 두 RPC의 `service_role EXECUTE` 허용 / `anon,authenticated EXECUTE` 차단을 추가로 검증한다. 기존 이력·게이트·권한·스키마 mismatch FAIL-CLOSED는 유지한다.
 - 추가 테스트: rollback 함수의 INVOKER 변형, 익명 RPC 실행 허용, service_role RPC 실행 권한 제거를 각각 거부하는 합성 PG17 부정 시나리오 3개.
 - **현재 결론:** 새로운 guard/runner 계약의 source 일치 여부는 검사했으나, 수정된 HEAD의 native PG17 성공은 **아직 확인되지 않았다**. 재검증 전 릴리스 HOLD. 이 수정은 운영 DB나 원본 D8D v2 migration을 건드리지 않았다.
+
+
+## 8. D8D v2 스키마 검사 실패 — 학원 PC 2026-10-16 14:15
+
+- 증빙 로그: `D8K13-acceptance-20261016-141507.log`, HEAD `2b5ee7241a5dbb4887d12d1e0e85b49c4c6fdbbe`.
+- **PASS:** D8C 23 부정 케이스, D8K11 464 assertions, D8K12 80 assertions, D8K13 85 assertions, release-sequence 정적 진단 HOLD, D8K12 PG17, D8K13 기존 자기 승인 2건 격리 및 v1-only drift rollback.
+- **FAIL:** 실제 D8D v2 마이그레이션 원문을 선행 적용한 뒤 D8K-13 통합 SQL에서 `D8K13_UNEXPECTED_D8DV2_SCHEMA`, SQL 입력 223줄 / PLpgSQL 166줄. v2 순서 체인 PASS 마커는 출력되지 않았다. 임시 Docker 컨테이너는 정리.
+- 원본 D8D v2 SQL과의 정적 대조에서는 5개 테이블의 46개 컬럼 이름·타입이 모두 일치했다. `pg_catalog.format_type` 표기와 SQL 이름 정렬 차이 여부를 운영 DB에 **읽기 전용**으로 검토했으나 정적 조회만으로는 정확한 실패 테이블/원인을 확정하지 못했다. **특정 원인으로 단정하지 않는다.**
+- 수정 코드: 위치 민감한 두 배열의 정렬 비교를 **양방향 `EXCEPT` 집합 일치 + 정확한 개수 일치**로 바꾸고, RLS/relkind와 실제·기대 열 목록 실패를 구분하여 안전한 컬럼명/타입 진단을 오류 문자열에 포함한다. 타입 drift 부정 사례도 추가한다. 무조건적인 스키마 허용이나 예상 밖 컬럼 무시는 금지.
+- 기존 보호: 레거시 2건·티켓·사전 승인된 매니페스트, D8D v1/v2 이력 0건·게이트 OFF, 서비스 권한·RPC 호출 제한, 트랜잭션 롤백, 전체 레코드 보존.
+- 새 HEAD의 Node/실제 Docker PG17 재검증 **아직 미완료**. 다음 재검증에서 동일한 오류가 나면 `D8K13_UNEXPECTED_D8DV2_SCHEMA table=... actual=... expected=...` 진단을 근거로 수정한다. 운영 DB 변경·머지·배포는 HOLD.
