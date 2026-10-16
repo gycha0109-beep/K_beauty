@@ -3343,3 +3343,11 @@ Watchtower-Track: security
 - Original B6 archives/RSA patch/LICENSE and non-OAEP source preserved; new backend/MIT license + six browser files rebuilt. Separate candidate/review/SBOM/notice kit and guarded publisher profile implemented.
 - Local70 admission tests,480 OAEP assertions,realChromium2x28,duplicate packs and4 real candidate/kit tamper controls PASS. Source-changing full graph/Android/independent CI PENDING. Exact local hashes recorded in oaep-replacement-local evidence; no new final product PASS.
 - Existing private-publication authorization recognized, credentials/real pinned signatures absent; no fake trust/upload/settings/payment/waiver/main/product/prod change. Original HIGH22/prodHIGH19/C0 FAIL remains.
+
+
+## 2026-10-16 — Review owner-encrypted retention and close identity-binding defects
+
+- Latest remote834dba0 / run38858746189 reviewed; admission+CodeQL PASS, producer still running, original audit FAIL. Read-only UI confirms owner recipient Actions variable absent. No key/variable/token/account setting created.
+- v2 authenticates candidate/source metadata with GCM AAD; independent expected SHA and actual archived manifest checked before plaintext write. Legacy unauthenticated receipt rejected. Public-only PEM, bounded physical inventory, checkout-safe key/decrypt destinations, exact two-file upload guard and adversarial valid-envelope test added.
+- Retention called after both full-build and authenticated unchanged-runtime graph paths. Source-changing52e7836 producer/replay verified from GitHub logs; fresh APK and complete platform checks PASS there. Runtime reference advanced to that actual proof without gate waiver or redundant APK rerun.
+- Local79 admission tests PASS; actual configured owner CI encryption/readback NOT_RUN until public variable registered. Candidate code/archives/license packet unchanged; final legal/signature/auth/nocharge/ACL prerequisites remain separate from private publication authority.

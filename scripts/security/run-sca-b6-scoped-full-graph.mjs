@@ -305,13 +305,27 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
       path.join(graph,"node_modules")],root);
     if(replacement){const p=run(process.execPath,[path.join(root,'scripts/security/verify-sca-oaep-installed.mjs'),
       path.join(graph,'node_modules/node-forge'),originalForgeDirectory],root);console.log(p.stdout);}
+    // Both fresh-build and authenticated unchanged-runtime paths retain the same verified bytes.
+    const preserveEvidence=()=>{
+      if(!replacement)return;
+      const publicKey64=process.env.SCA_ARCHIVE_RECIPIENT_PUBLIC_KEY_B64;
+      if(!publicKey64){console.log('SCA_OWNER_ENCRYPTED_EVIDENCE=NOT_CONFIGURED_NO_ARTIFACT_UPLOADED');return;}
+      assert.ok(process.env.RUNNER_TEMP,'encrypted retention requires a managed CI runner');
+      const bundleDir=path.join(temp,'original-bundle');
+      prepareBundle({braces:bracesTarball,forge:replacement.originalForgeTarball,output:bundleDir});
+      const sealed=sealCandidateEvidence({root:temp,output:path.join(process.env.RUNNER_TEMP,'bejewely-sca-owner-artifact'),
+        recipientPublicKeyPem:Buffer.from(publicKey64,'base64').toString('utf8'),candidateSha256:scoped.candidateSha256,
+        source:{head,runId:process.env.GITHUB_RUN_ID,runAttempt:process.env.GITHUB_RUN_ATTEMPT}});
+      if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'encrypted_candidate_ready=true\n');
+      console.log('SCA_OWNER_ENCRYPTED_EVIDENCE='+JSON.stringify(sealed));
+    };
     if(installOnly){
       const receipt={schema:'bejewely.scoped-install-replay.v1',head,scopedCandidateSha256:scoped.candidateSha256,
         ...(replacement?{profile:'NODE_RSA_MIT_V1',candidateLicensePacketSha256:scoped.candidateLicensePacketSha256,
           oaepInstalledCompatibility:'PASS_BOTH_LIFECYCLES',runtimeBuilds:'NOT_RUN_IN_INSTALL_REPLAY'}:{}),
         artifacts:scoped.manifest.artifacts,browserNoticeKit,installed,consumers,audits,ignoreScriptsInstall:'PASS',lifecycleInstall:'PASS',
         originalAuditAcceptance:'FAIL',releaseApproved:false,productApplied:false,artifactsDeletedOnExit:true};
-      console.log('SCA_SCOPED_INSTALL_REPLAY='+JSON.stringify(receipt));return receipt;
+      console.log('SCA_SCOPED_INSTALL_REPLAY='+JSON.stringify(receipt));preserveEvidence();return receipt;
     }
     // Compatibility can be measured despite audit HOLD; it never promotes B5/release acceptance.
     const checks=[];
@@ -378,20 +392,7 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     assert.ok(checks.every(c=>c.status==="PASS"),"candidate compatibility failed; see command logs above");
     // Public-repo Actions artifacts must never contain raw patched package bytes.
     // Only the owner-public-key encrypted bundle is exported; no key means no upload.
-    if(replacement){
-      const publicKey64=process.env.SCA_ARCHIVE_RECIPIENT_PUBLIC_KEY_B64;
-      if(publicKey64){
-        assert.ok(process.env.RUNNER_TEMP,'encrypted retention requires a managed CI runner');
-        const bundleDir=path.join(temp,'original-bundle');
-        prepareBundle({braces:bracesTarball,forge:replacement.originalForgeTarball,output:bundleDir});
-        const output=path.join(process.env.RUNNER_TEMP,'bejewely-sca-owner-artifact');
-        const sealed=sealCandidateEvidence({root:temp,output,
-          recipientPublicKeyPem:Buffer.from(publicKey64,'base64').toString('utf8'),
-          candidateSha256:scoped.candidateSha256});
-        if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'encrypted_candidate_ready=true\n');
-        console.log('SCA_OWNER_ENCRYPTED_EVIDENCE='+JSON.stringify(sealed));
-      }else console.log('SCA_OWNER_ENCRYPTED_EVIDENCE=NOT_CONFIGURED_NO_ARTIFACT_UPLOADED');
-    }
+    preserveEvidence();
     return receipt;
   } finally {
     fixture?.stop();

@@ -1,0 +1,178 @@
+{
+  "schema": "bejewely.owner-encrypted-retention-review.v2",
+  "reviewedHead": "834dba03cc9be867b84536c8be31452b7045ddfe",
+  "reviewedRun": 38858746189,
+  "jobs": {
+    "producer": 116836083174,
+    "replay": 116843172336,
+    "admission": 116836083337,
+    "codeql": 116836083288,
+    "originalGate": 116836083269
+  },
+  "technicalJobs": "PASS",
+  "workflow": "FAIL_ORIGINAL_AUDIT",
+  "candidateSha256": "800e6663b937d4f7ba8908e1c4e52bba3313bed9862eb9b0f85449680205548b",
+  "candidateLicensePacketSha256": "cfefa730436f6f3f7c85ff9412086f7802dc757a5281928766da8e6c62611995",
+  "browserNoticeKitSha256": "4829bed1bf8bf9cdae29f839dece1ed0c1bd22a804eb363f9c812855775af144",
+  "android": {
+    "status": "PASS",
+    "exit": 0,
+    "reason": null,
+    "jdk": "openjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)\nOpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)",
+    "sdkPresent": true,
+    "apkSha256": "1af774a060a689c491aa2820a52a7d7260e9260d9e88ca675c3a7cc7de495503"
+  },
+  "originalAudit": {
+    "full": {
+      "exit": 1,
+      "rawSha256": "785938ad12a78306552c18c4c8682924a879bdb31f5b69f031cb5edf3529b135",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 13,
+        "high": 22,
+        "critical": 0,
+        "total": 35
+      },
+      "advisoryLeaves": [
+        {
+          "name": "braces",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "range": "<=3.0.3"
+        },
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "node-forge",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "range": "<=1.4.0"
+        },
+        {
+          "name": "postcss-selector-parser",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "range": "<7.1.6"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": true,
+        "node-forge": true
+      }
+    },
+    "production": {
+      "exit": 1,
+      "rawSha256": "7d58d17c713f4682bab0fb26abf00f78b0a554cb5c9d09da93f0ceb8a689dd16",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 11,
+        "high": 19,
+        "critical": 0,
+        "total": 30
+      },
+      "advisoryLeaves": [
+        {
+          "name": "braces",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "range": "<=3.0.3"
+        },
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "node-forge",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "range": "<=1.4.0"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": true,
+        "node-forge": true
+      }
+    }
+  },
+  "installed": [
+    {
+      "path": "node_modules/braces",
+      "files": 12
+    },
+    {
+      "path": "node_modules/node-forge",
+      "files": 63
+    }
+  ],
+  "retention": "NOT_CONFIGURED_NO_ARTIFACT_UPLOADED",
+  "actionsArtifacts": [],
+  "ownerPublicVariable": "NOT_REGISTERED_READONLY_UI",
+  "logReview": {
+    "producerAndReplayAndGate": {
+      "privatePemDetected": false,
+      "base64GzipDetected": false
+    },
+    "limits": "Pattern checks plus source/upload-path review; not a general secret-scanner proof"
+  },
+  "newV2": {
+    "localTests": 79,
+    "ci": "PENDING",
+    "changes": [
+      "GCM-authenticated candidate/source binding",
+      "trusted CI receipt hash required",
+      "actual archived manifest independently pinned",
+      "public-only recipient, safe key/output path and physical inventory",
+      "retention on verified unchanged-runtime path"
+    ],
+    "actualOwnerEncryptedArtifact": "NOT_RUN"
+  },
+  "publication": "NOT_RUN",
+  "rightsReview": "NO_NEW_FINAL_APPROVAL",
+  "genuineSignatures": "NOT_PROVISIONED",
+  "credentials": "NOT_PROVISIONED",
+  "deviceApiAuth": "NOT_RUN"
+}
