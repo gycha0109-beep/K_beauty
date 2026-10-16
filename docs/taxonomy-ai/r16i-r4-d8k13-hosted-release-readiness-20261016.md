@@ -160,3 +160,20 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 근거 보고서: [운영 SQL 본문 지문 감사](./r16i-r4-d8k13-hosted-sql-provenance-hash-audit-20261016.md). 증빙용 개인/비밀번호/운영 SQL 원문은 PR에 기록하지 않음. 읽기 전용 해시 일치는 **운영 적용 이력의 파일 출처**에 관한 증거이지 배포 승인·DB 복원 성공을 의미하지 않는다.
 
 **현 판정: 격리 Docker PG17 부분 체인 PASS / 역사적 SQL provenance 일부 복원 / 전체 migration history·보안·복원·독립 OWNER HOLD.**
+
+
+## 12. Taxonomy8/C5B·46건 추가 검증 (2026-10-16)
+
+운영 SQL stored body와 실제 함수/권한을 SELECT-only로 확인한 후, 전체 이력의 동일 버전·이름인데 body가 미입증이던 **46건**을 재분류했다. 세부 자료: [Taxonomy8/C5B/46건 심층 감사](./r16i-r4-d8k13-tax8-c5b-46-sql-drift-triage-20261016.md).
+
+- **Taxonomy8:** 실제 적용 이력은 `products.category DROP NOT NULL` 64-byte DDL 1건. 현재 파일의 사전 보호 DO와 COMMENT 등은 migration 당시 실행 증거가 없다. 현재 운영 category는 nullable이고 COMMENT 및 관련 taxonomy 객체는 존재. 전체 파일 반복 실행은 금지한다.
+- **DATA-AI29C C5B:** migration 하네스의 preflight/ACL postcheck는 실제 적용 원문과 다르지만, **과거 저장된 함수 body와 현재 GitHub, 현재 live 함수 body는 1,203개 SQL 토큰 모두 일치**. 현재 service_role만 실행 가능. 과거 pre/post guard 실제 적용 여부는 별도 미확인.
+- **동일 버전·이름 해시 불일치 46건:** 단일 statement 18건은 양끝 개행 정리 후 Git blob 일치 6, SQL 토큰 일치 5, 말미 세미콜론 차이 6, crawler PLpgSQL delimiter 이슈 1로 분류.
+- **복수 statements 28건은 모두 토큰 재조립 검증 수행:** 1건 완전 일치, 25건 말미 세미콜론만 다름, **2건 실제 토큰 차이**. 단순 blob 동일성 또는 역사적 실행권한 동등성은 주장하지 않는다.
+- **P0 #1 랭킹:** 과거 SQL에 현재 파일의 명시적 권한 변경 구문 일부 없음. 현재 운영 ranking_snapshots/source_rankings는 RLS ON, anon/authenticated 직접 쓰기 DENY.
+- **P0 #2 익명 쓰기 grant:** 현재 운영 `claim_anonymous_write_grant` 함수 정의에서 현재 GitHub SQL의 `IS NULL` 초기 검사 부재. 현재는 SECURITY INVOKER이고 해시 형식 검사는 존재하나 악용 여부 불명. 별도 보안 리뷰 필요.
+- P0 crawler delimiter 차이도 별도 native PG17 파서 검수 대상으로 유지한다.
+
+새 evidence JSON `d8k13-hosted-same-version-sql-triage-readonly-20261016.json`은 SQL 원문을 게시하지 않고 결과·Git blob SHA만 저장한다. 오프라인 provenance verifier와 release gate의 manifest count guards에 연결했다.
+
+**여전히 전체 178 migrations의 parser/DB rollback equivalence, 백업/PITR 복원, 독립 검토자, supply-chain #1208, 실제 배포 승인 미충족. PR Draft/운영 migration·DDL·DML·머지·배포 HOLD.**
