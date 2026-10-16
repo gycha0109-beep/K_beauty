@@ -199,3 +199,18 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 [Ranking ACL·SEC-05 독립 감사 보고서](./r16i-r4-d8k13-ranking-acl-anonymous-grant-security-lineage-20261016.md)에 실제 ACL의 효과 범위, 앞선 후속 repair 적용 이력, 익명 쓰기 RPC의 server-only/HMAC 경계, 승인 전 PG17 보수 테스트 요구사항을 기록했다.
 
 **운영 GRANT/REVOKE, claim RPC 수정, migration repair 및 배포는 명시적 승인 전까지 금지**한다. D8K-13 기존 합성 PostgreSQL acceptance는 변함없이 통과했고, 전체 운영 역사 정합성/보안 `#1208`/독립 OWNER/복원 증명은 계속 HOLD다.
+
+
+## 15. SEC-05 NULL 입력·Ranking 최소 권한 격리 PG17 검증 준비 (2026-10-16 후속)
+
+[SEC-05 / Ranking ACL 격리 PostgreSQL17 테스트 계획](./r16i-r4-d8k13-sec05-ranking-acl-synthetic-pg17-acceptance-20261016.md)에 **운영 SQL이 아닌** 실행 가능한 4개 합성 fixture와 로컬 Docker runner를 추가했다.
+
+- 기존 SEC-05 함수의 필수 `p_* IS NULL` 검사 6개만 제거한 **합성 과거 함수**와 운영 `pg_get_functiondef`의 SQL body를 주석/공백 제외 토큰 비교한 결과 **747개 모두 일치**했다. JS의 `$'` special replacement escape 문제를 고쳐, 재구성 문자열이 오염되면 즉시 실패하도록 고정했다.
+- 테스트용 SQL은 합성 grant row만 사용하여 legacy NULL resource claim 동작을 트랜잭션 ROLLBACK과 함께 재현한 뒤, hardened 함수의 6개 NULL 인자에 대한 `22023` 에러, 정상 claim/retry/idempotency, anon/authenticated 실제 RPC 직접 거부를 검사하도록 구성했다.
+- 별도 ranking table에서는 공개 역할의 `REFERENCES/TRIGGER/MAINTAIN` 권한만 REVOKE하고 transaction ROLLBACK·재적용·idempotency·`SELECT/service_role` 권한 보존을 검증한다.
+- Docker 컨테이너 `postgres:17`은 **LOCAL context만 허용**, `--pull=never`, `--network=none`, tmpfs, volume/port 없음. 기존 dirty original worktree 및 hosted Supabase URL을 사용하지 않는다.
+- **이번 세션에서 실제 실행 완료:** repository source 6개를 통한 new runner `--check-files` PASS, historical security verifier/overall release checker 모두 실제 소스를 입력한 격리 JS 검증 **PASS/HOLD**, 두 `--enforce-release` 종료코드 **3**. 운영 함수와 synthetic legacy body의 747-token source equivalence도 SELECT-only로 입증.
+- **아직 미실행:** 새 Docker PostgreSQL17 fixture 전체 SQL; 이 실행 환경에는 Docker engine·postgres server binary가 없으므로 native PG17의 성공 마커가 존재하지 않는다. 이전 D8K13 core 부분체인 PG17 합격과 혼동 금지.
+- `--check-files` 실행 명령: `node scripts/product-evidence/run-d8k13-sec05-acl-synthetic-pg17.mjs --check-files`. Native 합성 PG17 실행은 로컬 Docker Linux engine 및 사전 pull된 postgres:17이 있는 별도 깨끗한 Git worktree에서 **`--check-files` 없이** 실행한다.
+
+**SEC-05 보강과 공개 ACL REVOKE는 운영 migration으로 작성·적용되지 않았다.** 실제 PostgreSQL 합성 acceptance, 전체 역사적 migration 복원, PITR 복원, #1208, 독립 OWNER, 명시적 운영 승인 전까지 `D8K13_RELEASE_HOLD` 유지.
