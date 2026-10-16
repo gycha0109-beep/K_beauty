@@ -1307,5 +1307,14 @@
     "receipt": "sec-sca-20261016-distribution-lineage-final-ci.json",
     "independent": "PASS",
     "finalRightsApproval": false
+  },
+  "ownerFinalRightsDecision": {
+    "reference": "sec-sca-20261016-owner-final-rights-approval.json",
+    "status": "APPROVED_BY_PROJECT_OWNER_LIMITED_RIGHTS_REVIEW",
+    "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+    "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+    "scope": "Final rights review of this exact candidate and this exact review packet only",
+    "automaticTransfer": false,
+    "cryptographicallySigned": false
   }
 }
