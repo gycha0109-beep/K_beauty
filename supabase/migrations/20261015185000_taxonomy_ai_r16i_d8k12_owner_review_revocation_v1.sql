@@ -20,6 +20,9 @@ DECLARE
  ticket text:=nullif(btrim(current_setting('app.d8k13_release_ticket',true)),'');
  expected_manifest text:=nullif(btrim(current_setting('app.d8k13_expected_manifest',true)),'');
  observed_manifest text;
+ v2_table text;
+ expected_columns text[];
+ actual_columns text[];
  r16i_id uuid:='b639c8b4-6a61-440e-b4db-fac7381593ff';
 BEGIN
  IF to_regclass('public.admin_product_correction_evidence_v1') IS NULL
@@ -27,7 +30,11 @@ BEGIN
     OR to_regclass('public.admin_memberships') IS NULL
     OR to_regclass('public.products') IS NULL
  THEN RAISE EXCEPTION 'D8K12_REQUIRED_R16I_SCHEMA_MISSING'; END IF;
- -- Product lock first: D8D applies lock the same Product before verdict reads.
+ -- D8D v2 acquires this advisory lock BEFORE locking the proposal and
+ -- Product. Acquire it first to avoid a D8K13 Product-vs-v2-proposal cycle.
+ -- D8D v1 is serialized by the subsequent Product row lock.
+ PERFORM pg_catalog.pg_advisory_xact_lock(195721,16);
+ -- Product row before evidence/verdict and downstream ledger table locks.
  PERFORM 1 FROM public.products WHERE id=r16i_id FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'D8K13_PRODUCT_MISSING'; END IF;
  -- Prevent concurrent evidence/verdict changes between exact-shape verification
@@ -50,9 +57,6 @@ BEGIN
     OR to_regclass('public.admin_r16i_correction_release_gate_v1') IS NULL
     OR to_regclass('public.admin_product_correction_evidence_review_events_v2') IS NOT NULL
     OR to_regclass('public.admin_product_correction_legacy_verdict_quarantine_v1') IS NOT NULL
-    OR to_regclass('public.admin_r16i_d8d_v2_applications') IS NOT NULL
-    OR to_regclass('public.admin_r16i_d8d_v2_owner_authorizations') IS NOT NULL
-    OR to_regclass('public.admin_r16i_d8d_v2_application_offers') IS NOT NULL
     OR to_regprocedure('public.review_r16i_evidence_v2(uuid,text,text,uuid,uuid)') IS NOT NULL
  THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_LEGACY_SCHEMA'; END IF;
  LOCK TABLE public.admin_product_correction_proposals_v1,
@@ -61,6 +65,110 @@ BEGIN
   public.admin_r16i_correction_application_events_v1,
   public.admin_r16i_correction_release_gate_v1
   IN SHARE ROW EXCLUSIVE MODE;
+
+ -- A normally ordered pending migration chain installs D8D v2 first
+ -- (20261014150000). Permit ONLY the complete, exact inert v2 schema;
+ -- any partial install, unexpected columns/permissions or activity fails shut.
+ IF to_regclass('public.admin_r16i_d8d_v2_gate') IS NOT NULL OR
+    to_regclass('public.admin_r16i_d8d_v2_owner_authorizations') IS NOT NULL OR
+    to_regclass('public.admin_r16i_d8d_v2_applications') IS NOT NULL OR
+    to_regclass('public.admin_r16i_d8d_v2_application_offers') IS NOT NULL OR
+    to_regclass('public.admin_r16i_d8d_v2_events') IS NOT NULL OR
+    to_regprocedure('public.r16i_d8d_apply_v2(uuid,uuid,uuid,text)') IS NOT NULL OR
+    to_regprocedure('public.r16i_d8d_rollback_v2(uuid,uuid,uuid)') IS NOT NULL
+ THEN
+  IF to_regclass('public.admin_r16i_d8d_v2_gate') IS NULL OR
+     to_regclass('public.admin_r16i_d8d_v2_owner_authorizations') IS NULL OR
+     to_regclass('public.admin_r16i_d8d_v2_applications') IS NULL OR
+     to_regclass('public.admin_r16i_d8d_v2_application_offers') IS NULL OR
+     to_regclass('public.admin_r16i_d8d_v2_events') IS NULL OR
+     to_regprocedure('public.r16i_d8d_apply_v2(uuid,uuid,uuid,text)') IS NULL OR
+     to_regprocedure('public.r16i_d8d_rollback_v2(uuid,uuid,uuid)') IS NULL
+  THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_LEGACY_SCHEMA'; END IF;
+
+  -- This serializes against writes to all v2 ledgers/gate while validating.
+  LOCK TABLE public.admin_r16i_d8d_v2_gate,
+   public.admin_r16i_d8d_v2_owner_authorizations,
+   public.admin_r16i_d8d_v2_applications,
+   public.admin_r16i_d8d_v2_application_offers,
+   public.admin_r16i_d8d_v2_events IN SHARE ROW EXCLUSIVE MODE;
+
+  -- An actual authorization, application, offer or event is NEVER
+  -- automatically reconciled. Both v1 and v2 gates must remain disabled.
+  IF (SELECT count(*) FROM public.admin_r16i_d8d_v2_gate)<>1 OR
+     (SELECT count(*) FROM public.admin_r16i_d8d_v2_gate
+       WHERE scope='R16I_S_NATURE_PRODUCT_1' AND enabled=false
+         AND change_ticket IS NULL)<>1 OR
+     EXISTS(SELECT 1 FROM public.admin_r16i_d8d_v2_owner_authorizations) OR
+     EXISTS(SELECT 1 FROM public.admin_r16i_d8d_v2_applications) OR
+     EXISTS(SELECT 1 FROM public.admin_r16i_d8d_v2_application_offers) OR
+     EXISTS(SELECT 1 FROM public.admin_r16i_d8d_v2_events)
+  THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_ACTIVITY'; END IF;
+
+  -- Both v2 entrypoints must remain SECURITY INVOKER, never a new
+  -- SECURITY DEFINER escalation path.
+  IF (SELECT p.prosecdef FROM pg_catalog.pg_proc p WHERE p.oid=
+       to_regprocedure('public.r16i_d8d_apply_v2(uuid,uuid,uuid,text)')) IS DISTINCT FROM false OR
+     (SELECT p.prosecdef FROM pg_catalog.pg_proc p WHERE p.oid=
+       to_regprocedure('public.r16i_d8d_rollback_v2(uuid,uuid,uuid)')) IS DISTINCT FROM false OR
+     NOT pg_catalog.has_table_privilege('service_role',
+       'public.admin_r16i_d8d_v2_gate','SELECT') OR
+     pg_catalog.has_table_privilege('service_role',
+       'public.admin_r16i_d8d_v2_gate','INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') OR
+     pg_catalog.has_table_privilege('service_role',
+       'public.admin_r16i_d8d_v2_owner_authorizations',
+       'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+  THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_SECURITY'; END IF;
+
+  -- Guard the *entire observed column/type surface*, not just a list
+  -- of table names: schema drift is NOT a release-ticket bypass.
+  FOR v2_table,expected_columns IN
+   SELECT name,columns FROM (VALUES
+    ('admin_r16i_d8d_v2_gate',ARRAY[
+      'scope:text','enabled:boolean','change_ticket:text',
+      'changed_at:timestamp with time zone']::text[]),
+    ('admin_r16i_d8d_v2_owner_authorizations',ARRAY[
+      'authorization_id:uuid','proposal_id:uuid','product_id:uuid',
+      'product_revision:timestamp with time zone','price_policy:text',
+      'evidence_fingerprint:text','approved_by:uuid',
+      'product_identity_attested:boolean','review_population_attested:boolean',
+      'source_binding_attested:boolean','seller_option_scopes_attested:boolean',
+      'approved_at:timestamp with time zone','expires_at:timestamp with time zone',
+      'revoked_at:timestamp with time zone']::text[]),
+    ('admin_r16i_d8d_v2_applications',ARRAY[
+      'application_id:uuid','proposal_id:uuid','decision_id:uuid',
+      'authorization_id:uuid','product_id:uuid',
+      'before_values:jsonb','after_values:jsonb','evidence_fingerprint:text',
+      'applied_by:uuid','apply_request_id:uuid',
+      'applied_at:timestamp with time zone','rolled_back_at:timestamp with time zone',
+      'rolled_back_by:uuid','rollback_request_id:uuid']::text[]),
+    ('admin_r16i_d8d_v2_application_offers',ARRAY[
+      'application_id:uuid','ordinal:smallint','offer_id:uuid',
+      'seller_key:text','evidence_id:uuid','offer_values:jsonb']::text[]),
+    ('admin_r16i_d8d_v2_events',ARRAY[
+      'event_id:uuid','application_id:uuid','event_type:text',
+      'event_by:uuid','request_id:uuid','before_values:jsonb',
+      'after_values:jsonb','occurred_at:timestamp with time zone']::text[])
+   ) AS expected(name,columns)
+  LOOP
+   SELECT array_agg(a.attname||':'||
+           pg_catalog.format_type(a.atttypid,a.atttypmod)
+           ORDER BY a.attname) INTO actual_columns
+   FROM pg_catalog.pg_attribute a
+   WHERE a.attrelid=to_regclass('public.'||v2_table)
+     AND a.attnum>0 AND NOT a.attisdropped;
+   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_class c
+      WHERE c.oid=to_regclass('public.'||v2_table)
+        AND c.relkind='r' AND c.relrowsecurity) OR
+      actual_columns IS DISTINCT FROM
+      (SELECT array_agg(c ORDER BY c) FROM unnest(expected_columns) AS x(c))
+   THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_SCHEMA'; END IF;
+   IF pg_catalog.has_table_privilege('anon','public.'||v2_table,'SELECT') OR
+      pg_catalog.has_table_privilege('authenticated','public.'||v2_table,'SELECT')
+   THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_SECURITY'; END IF;
+  END LOOP;
+ END IF;
+
  -- Deployment operator must pin both the evidence and verdict identities.
  -- Do NOT obtain the expected manifest dynamically from the write transaction:
  -- it must be independently approved from an earlier read-only snapshot.
