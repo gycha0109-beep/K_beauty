@@ -301,6 +301,31 @@ try {
   assert.equal(failed.providerCallsAttempted,1);
   assert.equal(failed.outcome,"HOLD_INCOMPLETE_PROVIDER_DATA");
   assert.equal(JSON.stringify(failed).includes("USER_FACE_SOURCE_PRIVATE"),false);
+  // A real Provider's content JSON may be cut short at the 2,200-token
+  // limit. Only the safe error code, closed finish reason, bounded count
+  // and near-cap boolean may be recorded; still stop after ONE request.
+  const truncatedError=new Error("provider_output_truncated");
+  Object.defineProperty(truncatedError,"privateSafeDiagnostic",{
+    value:Object.freeze({
+      finishReason:"length",outputTokens:2200,nearTokenCap:true,
+      leakedRaw:"PRIVATE_RAW_FACE_DO_NOT_PERSIST"
+    })
+  });
+  let truncatedRequests=0;
+  const truncatedTrial=await runPrivatePhotoCohort({
+    manifest,photoDir:tmp,live:true,studyMode:"v2_only",
+    environment:{OPENAI_API_KEY2:fakeSecret},
+    invoke:async()=>{truncatedRequests++;throw truncatedError;}
+  });
+  assert.equal(truncatedRequests,1);
+  assert.equal(truncatedTrial.providerCallsAttempted,1);
+  assert.equal(truncatedTrial.outcome,"HOLD_INCOMPLETE_PROVIDER_DATA");
+  assert.equal(truncatedTrial.cases[0].variants[0].errorClass,"provider_output_truncated");
+  assert.deepEqual(truncatedTrial.cases[0].variants[0].providerSafeDiagnostic,{
+    finishReason:"length",outputTokens:2200,nearTokenCap:true
+  });
+  assert(!JSON.stringify(truncatedTrial).includes("PRIVATE_RAW_FACE_DO_NOT_PERSIST"));
+  assert(!JSON.stringify(truncatedTrial).includes(fakeSecret));
 
   // Same image bytes under DIFFERENT file basenames must block the entire
   // cohort preflight, even when the manifest case IDs and names are distinct.
