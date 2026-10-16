@@ -59,7 +59,7 @@ export function validatePrivateCohortManifest(input) {
     throw new Error("execution_policy_rejected");
   if (!Array.isArray(input.cases)||input.cases.length!==EXPECTED_CASE_IDS.length)
     throw new Error("five_cases_required");
-  const seen=new Set();
+  const seen=new Set(),seenFiles=new Set();
   for (const c of input.cases) {
     exactKeys(c,["caseId","filename","expectedWidth","expectedHeight"],"case_shape_invalid");
     if (!EXPECTED_CASE_IDS.includes(c.caseId)||seen.has(c.caseId)) throw new Error("case_id_invalid");
@@ -70,6 +70,8 @@ export function validatePrivateCohortManifest(input) {
         basename(c.filename)!==c.filename || c.filename.includes("\0") ||
         !/\.jpe?g$/i.test(c.filename))
       throw new Error("private_filename_invalid");
+    if(seenFiles.has(c.filename))throw new Error("duplicate_private_source_file");
+    seenFiles.add(c.filename);
     if (![c.expectedWidth,c.expectedHeight].every(n=>Number.isSafeInteger(n)&&n>=1&&n<=8192))
       throw new Error("case_dimensions_invalid");
   }
