@@ -16,20 +16,21 @@ function safeError(error){
   return allowed.has(error?.message)?error.message:"private_cohort_preflight_failed";
 }
 const [flag,manifestFlag,manifestPath,dirFlag,privateDir]=process.argv.slice(2);
-const permitted=new Set(["--validate-private-cohort","--live-private-cohort"]);
+const permitted=new Set(["--validate-private-cohort","--live-private-cohort","--live-private-v2-only"]);
 if(!permitted.has(flag)||manifestFlag!=="--manifest"||!manifestPath||
   dirFlag!=="--photo-dir"||!privateDir||process.argv.length!==7){
-  console.error("Usage: node scripts/facelab/skin/run-skin-private-v1v2.mjs --validate-private-cohort|--live-private-cohort --manifest /PRIVATE/cohort.json --photo-dir /PRIVATE/photos");
+  console.error("Usage: node scripts/facelab/skin/run-skin-private-v1v2.mjs --validate-private-cohort|--live-private-cohort|--live-private-v2-only --manifest /PRIVATE/cohort.json --photo-dir /PRIVATE/photos");
   process.exitCode=2;
 }else{
   try{
-    if(flag==="--live-private-cohort"&&process.env.GITHUB_ACTIONS==="true")
+    if(flag!=="--validate-private-cohort"&&process.env.GITHUB_ACTIONS==="true")
       throw new Error("ci_face_photo_execution_forbidden");
     // The manifest is a local private file, never embedded in a git revision.
     const data=JSON.parse(readFileSync(resolve(manifestPath),"utf8"));
     const result=await runPrivatePhotoCohort({
       manifest:data,photoDir:resolve(privateDir),
-      live:flag==="--live-private-cohort"
+      live:flag!=="--validate-private-cohort",
+      studyMode:flag==="--live-private-v2-only"?"v2_only":"paired"
     });
     console.log(JSON.stringify(result,null,2));
     if(result.outcome==="HOLD_INCOMPLETE_PROVIDER_DATA" ||
