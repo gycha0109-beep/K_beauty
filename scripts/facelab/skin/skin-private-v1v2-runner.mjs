@@ -270,10 +270,10 @@ export async function runPrivatePhotoCohort({
   validatePrivateCohortManifest(manifest);
   // A five-call v2-only correction trial MUST NOT silently repeat old v1
   // requests. Never permit arbitrary per-caller variants or cap overrides.
-  if(!["paired","v2_only"].includes(studyMode))
+  if(!["paired","v2_only","v2_probe_one"].includes(studyMode))
     throw new Error("research_study_mode_invalid");
-  const variants=studyMode==="v2_only"?["v2"]:["v1","v2"];
-  const requestBudget=studyMode==="v2_only"?5:PRIVATE_V1V2_MAX_CALLS;
+  const variants=studyMode==="paired"?["v1","v2"]:["v2"];
+  const requestBudget=studyMode==="v2_probe_one"?1:studyMode==="v2_only"?5:PRIVATE_V1V2_MAX_CALLS;
   const key=assertAllowedEnvironment(environment,live,invoke); // before any photo reads.
   const output=[],summaryRows=[],validated=[];
   const seenImageContent=new Set();
