@@ -58,7 +58,8 @@ const makeResponse=()=>{
     schemaVersion:"vision-observation-v2",
     eligibility:{status:"eligible",source:"vision",imageType:"photorealistic_human",
       humanFaceCount:1,faceLabEligible:true,skinAnalysisEligible:true,
-      faceLabFailureReason:null,skinFailureReason:null,confidence:0.9,evidence:[]},
+      faceLabFailureReason:null,skinFailureReason:null,confidence:0.9,
+      evidence:["synthetic fixture: single mock face"]},
     skin:{axisEvidence:SKIN_VISIBLE_AXES.map(axis=>({
       axis,state:"unknown",value:null,confidence:"unknown",cue:null,area:null,reason:"missing"
     }))},face:{}
