@@ -74,7 +74,9 @@ const matchedVersions=localFiles.filter(x=>byVersion.has(x.version));
 
 assert.equal(localFiles.length,exact.length+versionCollision.length+
  nameMoved.length+localUnmatched.length);
-assert.equal(baseline.migrations.length,exact.length+versionCollision.length+
+// Different-name version collisions are already represented in appliedOnly:
+// counting them here would double-count the hosted applied record.
+assert.equal(baseline.migrations.length,exact.length+
  nameMoved.length+appliedOnly.length);
 
 const summary={
