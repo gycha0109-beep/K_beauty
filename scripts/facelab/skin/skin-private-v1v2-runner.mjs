@@ -171,19 +171,32 @@ export async function runPrivatePhotoCohort({
 }={}) {
   validatePrivateCohortManifest(manifest);
   const key=assertAllowedEnvironment(environment,live); // before any photo reads.
-  const output=[],summaryRows=[];
+  const output=[],summaryRows=[],validated=[];
   let requests=0;
-  for(const item of manifest.cases){
-    let image;
+  // Preflight the ENTIRE 5-photo cohort before sending the first Provider
+  // request; malformed/missing files never cause a partial live send.
+  for(const item of manifest.cases) {
     try {
-      image=readPrivatePhoto(photoDir,item.filename,item.expectedWidth,item.expectedHeight);
+      validated.push({
+        caseId,
+        image:readPrivatePhoto(photoDir,item.filename,item.expectedWidth,item.expectedHeight)
+      });
     } catch {
-      output.push({caseId:item.caseId,verdict:"PRIVATE_PHOTO_INPUT_HOLD"});
-      if(live)break; // untrusted cohort path must not allow partial live processing.
-      continue;
+      return {
+        version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,
+        outcome:"HOLD_PRIVATE_PHOTO_INPUT",providerCallsAttempted:0,
+        cases:[{caseId,verdict:"PRIVATE_PHOTO_INPUT_HOLD"}],
+        pairedSummary:null,
+        privacy:{humanPhotoSentToProvider:false,rawOutputsPersisted:false,
+          photosSavedByRunner:false,gitHubActionsUsed:false},
+        authority:{independentHumanEvaluationDone:false,photoAccuracyCertified:false,
+          scoringOrDeploymentAuthorized:false,productReady:false,releaseReady:false}
+      };
     }
+  }
+  for(const {caseId,image} of validated){
     if(!live){
-      output.push({caseId:item.caseId,verdict:"PRIVATE_LOCAL_PRECHECK_ONLY",
+      output.push({caseId,verdict:"PRIVATE_LOCAL_PRECHECK_ONLY",
         width:image.width,height:image.height,shortSidePx:Math.min(image.width,image.height),
         inputLowResolution:Math.min(image.width,image.height)<320});
       continue;
@@ -198,22 +211,22 @@ export async function runPrivatePhotoCohort({
           stage:"vision-observation",timeoutMs:120000,
           maxResponseBytes:256*1024,logEvent:()=>{}
         });
-        const trial=sanitizedTrial(item.caseId,variant,response);
+        const trial=sanitizedTrial(caseId,variant,response);
         rows.push(trial);
         summaryRows.push({
-          caseId:item.caseId,variant,
+          caseId:caseId,variant,
           result:trial.structuralResult,finishReason:trial.finishReason,
           outputTokens:trial.outputTokens,
           faceStatus:trial.faceStatus,
           faceAvailableFieldCount:trial.faceAvailableFieldCount,
           nearTokenCap:trial.nearTokenCap
         });
-        onPrivateProgress({caseId:item.caseId,variant,completed:true,
+        onPrivateProgress({caseId:caseId,variant,completed:true,
           outputTokens:trial.outputTokens,finishReason:trial.finishReason});
       } catch(e) {
-        rows.push({caseId:item.caseId,variant,verdict:"PROVIDER_ERROR_HOLD",
+        rows.push({caseId:caseId,variant,verdict:"PROVIDER_ERROR_HOLD",
           errorClass:safeFailure(e)});
-        output.push({caseId:item.caseId,verdict:"INCOMPLETE_PROVIDER_PAIR",variants:rows});
+        output.push({caseId,verdict:"INCOMPLETE_PROVIDER_PAIR",variants:rows});
         return {
           version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,
           outcome:"HOLD_INCOMPLETE_PROVIDER_DATA",providerCallsAttempted:requests,
@@ -228,7 +241,7 @@ export async function runPrivatePhotoCohort({
     const trials=summaryRows.filter(row=>row.caseId===item.caseId);
     const paired=summarizeSkinVisionTrials(trials,{evidenceOrigin:"operator_review_pending"});
     const v2=rows.find(x=>x.variant==="v2");
-    output.push({caseId:item.caseId,verdict:paired.structuralCandidatePass &&
+    output.push({caseId,verdict:paired.structuralCandidatePass &&
       v2.v2ContractStatus==="ELIGIBLE_SEVEN_VALIDATED"
       ?"STRUCTURAL_PREFLIGHT_ONLY":"FACE_OR_SKIN_REVIEW_REQUIRED",
       photoShortSidePx:Math.min(image.width,image.height),variants:rows,
