@@ -23,6 +23,16 @@ if(args.includes("--help")){
 assert.equal(provenance.schema,"D8K13_HOSTED_MIGRATION_SOURCE_PROVENANCE_V1");
 assert.equal(provenance.status,"RELEASE_HOLD");
 assert.equal(provenance.sourceSqlBodiesPublished,false);
+const sameVersionTriage=JSON.parse(readFileSync(join(ROOT,
+ "scripts/product-evidence/baselines/d8k13-hosted-same-version-sql-triage-readonly-20261016.json"),"utf8"));
+assert.equal(sameVersionTriage.schema,"D8K13_SAME_VERSION_SQL_TRIAGE_READONLY_V1");
+assert.equal(sameVersionTriage.status,"RELEASE_HOLD");
+assert.equal(sameVersionTriage.sourceSqlBodiesPublished,false);
+assert.equal(sameVersionTriage.summary.sameVersionAndNameButBlobNotDirectMatch,
+ provenance.summaries.sameVersionNameUnmatched);
+assert.equal(sameVersionTriage.summary.joinReassemblyNotProven,28);
+assert.equal(sameVersionTriage.summary.singleStatementDifferent,18);
+assert.equal(sameVersionTriage.entries.length,46);
 const entries=readdirSync(migrationsDir).filter(x=>x.endsWith(".sql"));
 const unique=new Set(entries);
 assert.equal(unique.size,entries.length);
@@ -34,6 +44,30 @@ function gitBlobSha(buffer){
   .update(Buffer.from("blob "+buffer.length+"\0","utf8"))
   .update(buffer).digest("hex");
 }
+const triageCategories=new Map();
+const triageFiles=new Set();
+for(const entry of sameVersionTriage.entries){
+ assert.ok(unique.has(entry.local_file),
+  "D8K13_TRIAGE_SOURCE_FILE_MISSING: "+entry.local_file);
+ assert.ok(!triageFiles.has(entry.local_file),
+  "D8K13_TRIAGE_DUPLICATE_SOURCE_FILE: "+entry.local_file);
+ triageFiles.add(entry.local_file);
+ assert.ok(entry.local_file.startsWith(entry.version+"_"));
+ assert.equal(gitBlobSha(readFileSync(join(migrationsDir,entry.local_file))),
+  entry.git_blob_sha,
+  "D8K13_TRIAGE_SOURCE_CHANGED: "+entry.local_file);
+ triageCategories.set(entry.classification,
+  (triageCategories.get(entry.classification)??0)+1);
+}
+for(const [classification,count] of [
+ ["MULTI_STATEMENT_SPLIT_REASSEMBLY_NOT_PROVEN",28],
+ ["TERMINAL_SQL_DELIMITER_DIFFERENCE_ONLY",6],
+ ["SQL_TOKEN_EQUIVALENT_IGNORE_COMMENTS_WHITESPACE",5],
+ ["GIT_BLOB_IDENTICAL_AFTER_TRIMMING_EDGE_NEWLINES",6],
+ ["DELIMITER_OR_FUNCTION_BODY_DRIFT_REQUIRES_NATIVE_PG17_REVIEW",1]
+])assert.equal(triageCategories.get(classification),count,
+ "D8K13_TRIAGE_CLASSIFICATION_COUNT_CHANGED: "+classification);
+assert.equal(triageCategories.size,5);
 const categories={BYTE_IDENTICAL:0,IDENTICAL_PLUS_FINAL_LF:0,DIFFERENT:0};
 const historicalRecovery=[];
 for(const entry of provenance.versionChanged){
@@ -68,9 +102,16 @@ const result={
  appliedOnlyHistoryRows:provenance.remoteOnly.length,
  appliedOnlyHistoryRowsWithStoredSql:provenance.remoteOnly.filter(x=>x.statement_count>0).length,
  nameAndVersionSameButCurrentSqlBodyNotProven:provenance.summaries.sameVersionNameUnmatched,
+ sameVersionTriage:{
+  splitMultiStatementsNeedsParser:28,
+  oneStatementTrailingDelimiterOnly:6,
+  oneStatementSqlTokenEquivalent:5,
+  oneStatementEdgeNewlinesOnly:6,
+  requiresNativePg17ParserReview:1
+ },
  sourceSqlBodyEquivalentForEntireHistory:false,
  releaseAuthorized:false,
- next:"Investigate 7 current-file drifts and 46 same-version mismatches; securely reconcile 34 hosted-only bodies (never publicly export secret-bearing SQL), then full-chain PG17 + independent backup/reviewer/security approval."
+ next:"Review Taxonomy8 migration-scope mismatch and the crawler function delimiter; validate parser-aware equivalence of 28 split-statement history rows and 12 one-statement differences (6 terminal delimiter + 5 SQL token equivalents + 1 crawler), then restore and approve the full chain independently."
 };
 if(args[0]==="--full")
  result.currentFileDrifts=provenance.versionChanged.filter(x=>x.comparison==="DIFFERENT")
