@@ -89,7 +89,8 @@ async function run(){
  assert.match(migration,/D8K12_REVIEWER_CANNOT_APPROVE_OWN_CAPTURE/);
  assert.match(migration,/D8K12_EXISTING_VERDICTS_REQUIRE_EXPLICIT_RECONCILIATION/);
  assert.match(migration,/admin_product_correction_evidence_review_events_v2/);
- assert.match(migration,/REVOKE INSERT,UPDATE,DELETE ON public\.admin_product_correction_evidence_verdicts_v1/);
+ assert.match(migration,/REVOKE ALL ON public\.admin_product_correction_evidence_verdicts_v1\s+FROM service_role/);
+ assert.match(migration,/GRANT SELECT ON public\.admin_product_correction_evidence_verdicts_v1\s+TO service_role/);
  assert.match(test,/D8K12_PG17_SQL_ACCEPTANCE_PASS/);
  assert.match(seed,/CREATE TABLE auth\.users/);
  console.log("D8K12_CHECK_FILES_PASS (3 fixed local SQL files)");
