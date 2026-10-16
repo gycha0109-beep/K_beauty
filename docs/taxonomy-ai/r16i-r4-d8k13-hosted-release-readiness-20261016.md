@@ -145,3 +145,18 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 **이력 이름 일치만으로 배포된 SQL 본문의 SHA/논리 동일성을 증명하지 못한다.** 승인된 배포 artifacts로 41개 timestamp 변화와 운영-only 34개를 복원하고, 5개 오래된 미대응 SQL의 의도적 미배포 여부를 결론낸 뒤에야 전체 PostgreSQL 17 history replay 테스트를 설계해야 한다. `supabase db push`, `supabase migration repair` 및 운영 SQL 수동 실행은 계속 금지한다.
 
 검증된 D8K-13 원본 SQL·Node 격리 코드는 **변경하지 않았다**. 신규 검사·보고·이력 snapshot만 Draft PR에 추가했다.
+
+
+## 11. Git Blob 지문 기반 운영 migration SQL 실증 (2026-10-16 후속)
+
+운영 DB의 `supabase_migrations.schema_migrations.statements` 배열이 178건 전부 SQL 본문을 보존함을 확인했다. 본문은 공개 저장소에 노출하지 않고 PostgreSQL `extensions.digest`로 Git blob SHA를 직접 계산했다.
+
+- 서로 다른 버전이나 같은 이름으로 운영에 기록된 41개 중 **34개 현재 GitHub 파일과 정확히 일치**(원문 29 / 마지막 LF 보정 5). **7개는 원문 바이트 불일치**.
+- 7개 중 `data_ai29c_shadow_transport_fallback`은 배포 당시 Git 커밋 `9c562c54101f` SHA와 일치하므로 실재했던 버전을 복원했다. `face_lab_v2_persistence_revision`은 앞 LF 하나의 차이, `data_taxonomy3_product_exact_equivalence_v1`은 SQL 트랜잭션 래퍼의 차이다.
+- **주요 P0:** `data_taxonomy8_nullable_legacy_category_projection_v1`의 운영 기록은 `products.category DROP NOT NULL` 한 문장(64 bytes)만 보유하며 현 저장소 SQL과 범위가 다르다. `data_ai29c_c5b_subject_presentation_identity_correction_v1`도 적용된 SQL 본문과 현 파일이 단순 줄바꿈 수준을 넘어 다르다.
+- 34개의 운영 이력-only migration SQL 내용은 모두 복원 가능하게 보존되어 있으나 GitHub 공개 복원은 하지 않았다. credential 폐기 관련 `v21_admission_g3a_emergency_revoke_exposed_runtime_password`는 보안 검수 이전 원문 출력/공개 금지.
+- **추가 발견:** 버전·이름 모두 일치하는 103건에서도 현 파일과 Git blob 일치는 57건뿐이다. 나머지 46건 가운데 SQL이 복수 statement로 저장된 28건 및 단일 statement인데도 일치하지 않은 18건을 별도 분석해야 한다.
+
+근거 보고서: [운영 SQL 본문 지문 감사](./r16i-r4-d8k13-hosted-sql-provenance-hash-audit-20261016.md). 증빙용 개인/비밀번호/운영 SQL 원문은 PR에 기록하지 않음. 읽기 전용 해시 일치는 **운영 적용 이력의 파일 출처**에 관한 증거이지 배포 승인·DB 복원 성공을 의미하지 않는다.
+
+**현 판정: 격리 Docker PG17 부분 체인 PASS / 역사적 SQL provenance 일부 복원 / 전체 migration history·보안·복원·독립 OWNER HOLD.**
