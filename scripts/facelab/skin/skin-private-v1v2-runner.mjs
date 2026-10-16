@@ -12,6 +12,7 @@ import {
 } from "../../../lib/ai-model-policy.js";
 import { createSkinVisionV2CandidatePrompt, evaluateSkinVisionV2Candidate } from "./skin-vision-v2-candidate-core.mjs";
 import { inspectSkinVisionTrial, summarizeSkinVisionTrials } from "./skin-vision-v2-provider-evidence-gate.mjs";
+import { SKIN_VISIBLE_AXES } from "./skin-axis-evidence-contract-core.mjs";
 
 export const PRIVATE_V1V2_VERSION = "skin-private-v1v2-cohort-v1";
 export const PRIVATE_V1V2_MAX_CALLS = 10;
@@ -183,6 +184,41 @@ function requestBody(variant,imageUrl){
 function safeFailure(error) {
   return ALLOWED_ERRORS.has(error?.message)?error.message:"provider_request_failed";
 }
+const SKIN_AXIS_SET=new Set(SKIN_VISIBLE_AXES);
+const SKIN_STATES=new Set(["present","not_seen","unassessable","unknown"]);
+const SKIN_CONFIDENCE=new Set(["low","medium","high","unknown"]);
+function boundedPhotoScore(x) {
+  return Number.isInteger(x) && x>=0 && x<=5 ? x : null;
+}
+/** Only a fixed set of numeric/closed-enum observations may leave the
+ * transient Provider response. These values remain private and are NOT
+ * reviewer truth, clinical findings or an approval for recommendation score.
+ */
+function privateAxisMetadata(variant,parsed) {
+  if(variant==="v1") {
+    // v1 zero is an ambiguous legacy signal, NEVER a verified absent cue.
+    const scores=parsed?.skin?.signals;
+    return {
+      v1LegacyZeroUnverifiable:true,
+      v1LegacyNumeric:Object.fromEntries(
+        SKIN_VISIBLE_AXES.map(axis=>[axis,boundedPhotoScore(scores?.[axis])])
+      ),
+      v2Axes:null
+    };
+  }
+  const raw=parsed?.skin?.axisEvidence;
+  return {
+    v1LegacyZeroUnverifiable:null,
+    v1LegacyNumeric:null,
+    // Upper bound prevents malicious provider arrays becoming a data leak.
+    v2Axes:Array.isArray(raw)?raw.slice(0,SKIN_VISIBLE_AXES.length).map(row=>({
+      axis:SKIN_AXIS_SET.has(row?.axis)?row.axis:null,
+      state:SKIN_STATES.has(row?.state)?row.state:"invalid",
+      value:boundedPhotoScore(row?.value),
+      confidence:SKIN_CONFIDENCE.has(row?.confidence)?row.confidence:"invalid"
+    })):null
+  };
+}
 function sanitizedTrial(caseId,variant,response) {
   const metrics=inspectSkinVisionTrial({
     caseId,variant,providerEnvelope:response.providerPayload
@@ -212,6 +248,7 @@ function sanitizedTrial(caseId,variant,response) {
     eligibilityStatus,skinAnalysisEligible:skinEligible,faceLabEligible:faceEligible,
     skinStatus:metrics.skinStatus,skinAxisStates:metrics.skinAxisStates,
     v2AxisCount,v2ContractStatus,
+    ...privateAxisMetadata(variant,response.parsed),
     metadataOnly:true
   };
 }
