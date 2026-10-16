@@ -3,6 +3,7 @@
 // save raw Provider responses, repeat requests, or deploy this into the app.
 // The source and output contain only bounded metadata; the manifest lives off-repo.
 import { readFileSync, lstatSync, realpathSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolve, basename, sep } from "node:path";
 import { executeOpenAiChatJson } from "../../../lib/server/openai-chat-runtime.js";
 import { createVisionObservationPrompt } from "../../../lib/vision-observation-contract.js";
@@ -36,7 +37,14 @@ function exactKeys(obj,expected,code) {
 function assertAllowedEnvironment(env, live) {
   if (!live) return null;
   // Fail closed in CI, including inadvertent secret injection through GitHub Actions.
-  if (env.GITHUB_ACTIONS === "true" || env.CI === "true") throw new Error("ci_face_photo_execution_forbidden");
+  const CI_MARKERS = [
+    "GITHUB_ACTIONS", "CI", "GITLAB_CI", "CIRCLECI", "TRAVIS",
+    "TF_BUILD", "BUILD_BUILDID", "BUILDKITE", "JENKINS_URL", "TEAMCITY_VERSION"
+  ];
+  const isActive = value => value !== undefined && value !== null &&
+    !["", "0", "false", "off", "no"].includes(String(value).trim().toLowerCase());
+  if (CI_MARKERS.some(name => isActive(env[name])))
+    throw new Error("ci_face_photo_execution_forbidden");
   const key = env[EXPECTED_KEY];
   if (typeof key !== "string" || !key.trim()) throw new Error("key2_not_available");
   return key.trim();
@@ -150,7 +158,10 @@ function readPrivatePhoto(photoDir,filename,w,h){
   const dimensions=jpegDimensions(data);
   if(dimensions.width!==w||dimensions.height!==h)throw new Error("photo_dimensions_changed");
   const stripped=stripJpegPrivateMetadata(data);
-  return {imageUrl:"data:image/jpeg;base64,"+stripped.toString("base64"),bytes:stripped.length,
+  const contentFingerprint = createHash("sha256").update(stripped).digest("hex");
+  // Fingerprint is for same-content exclusion only; NEVER return it to callers.
+  return {imageUrl:"data:image/jpeg;base64,"+stripped.toString("base64"),
+    contentFingerprint,bytes:stripped.length,
     width:dimensions.width,height:dimensions.height};
 }
 const safeNumber=n=>Number.isSafeInteger(n)&&n>=0?n:null;
@@ -211,15 +222,17 @@ export async function runPrivatePhotoCohort({
   validatePrivateCohortManifest(manifest);
   const key=assertAllowedEnvironment(environment,live); // before any photo reads.
   const output=[],summaryRows=[],validated=[];
+  const seenImageContent=new Set();
   let requests=0;
   // Preflight the ENTIRE 5-photo cohort before sending the first Provider
   // request; malformed/missing files never cause a partial live send.
   for(const item of manifest.cases) {
     try {
-      validated.push({
-        caseId:item.caseId,
-        image:readPrivatePhoto(photoDir,item.filename,item.expectedWidth,item.expectedHeight)
-      });
+      const image=readPrivatePhoto(photoDir,item.filename,item.expectedWidth,item.expectedHeight);
+      if(seenImageContent.has(image.contentFingerprint))
+        throw new Error("duplicate_private_photo_content");
+      seenImageContent.add(image.contentFingerprint);
+      validated.push({caseId:item.caseId,image});
     } catch {
       return {
         version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,
