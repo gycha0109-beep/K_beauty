@@ -10,8 +10,23 @@ WITH history AS (
    '20260914153348',
    '20260929181051',
    '20260621030000',
-   '20260711032649'
+   '20260711032649',
+   '20260621151304',
+   '20260621152040'
  )
+), repair_history AS (
+ SELECT
+  coalesce(bool_or(version='20260621151304' AND
+    position('revoke insert, update, delete on table public.ranking_snapshots from anon, authenticated' IN lower(array_to_string(statements,E'\n')))>0),false)
+    AS ranking_direct_write_revoke_recorded,
+  coalesce(bool_or(version='20260621151304' AND
+    position('grant select, insert, update on table public.ranking_snapshots to service_role' IN lower(array_to_string(statements,E'\n')))>0),false)
+    AS ranking_service_role_grant_recorded,
+  coalesce(bool_or(version='20260621152040' AND
+    position('revoke truncate on table public.ranking_snapshots from anon, authenticated' IN lower(array_to_string(statements,E'\n')))>0),false)
+    AS ranking_truncate_revoke_recorded
+ FROM supabase_migrations.schema_migrations
+ WHERE version IN('20260621151304','20260621152040')
 ), category AS (
  SELECT is_nullable,udt_name,
         col_description('public.products'::regclass,ordinal_position::integer) AS comment_text
@@ -35,6 +50,7 @@ WITH history AS (
         pg_catalog.has_function_privilege('service_role',p.oid,'EXECUTE') AS service_role_execute,
         pg_catalog.has_function_privilege('anon',p.oid,'EXECUTE') AS anon_execute,
         pg_catalog.has_function_privilege('authenticated',p.oid,'EXECUTE') AS authenticated_execute,
+        pg_catalog.has_function_privilege('public',p.oid,'EXECUTE') AS public_execute,
         pg_catalog.pg_get_functiondef(p.oid) ~* 'p_jti_hash[[:space:]]+is[[:space:]]+null'
            AS explicit_jti_null_guard,
         pg_catalog.pg_get_functiondef(p.oid) ~* 'p_resource_id[[:space:]]+is[[:space:]]+null'
@@ -64,6 +80,12 @@ SELECT jsonb_build_object(
     'historical_scope_is_single_64_byte_statement',(SELECT statement_count=1 AND first_statement_bytes=64 FROM history WHERE version='20260914153348'),
     'historical_git_preflight_execution_attested',false
  ),
+ 'ranking_acl_later_migration_provenance',(SELECT jsonb_build_object(
+   'revoke_rank_writes_recorded',ranking_direct_write_revoke_recorded,
+   'grant_rank_service_role_recorded',ranking_service_role_grant_recorded,
+   'revoke_rank_truncate_recorded',ranking_truncate_revoke_recorded,
+   'source_rankings_revoke_and_grant_from_these_two_repairs_attested',false)
+   FROM repair_history),
  'ranking', (SELECT coalesce(jsonb_agg(jsonb_build_object(
     'table',relname,'rls',rls_on,'anon_write',anon_write,
     'authenticated_write',authenticated_write,
@@ -77,8 +99,14 @@ SELECT jsonb_build_object(
     FROM functions WHERE proname='admin_correct_product_fact_subject_presentation_variant_v1'),
  'anonymous_write_grant', (SELECT jsonb_build_object(
     'present',true,'security_definer',prosecdef,
+    'service_role_execute',service_role_execute,
+    'anon_execute',anon_execute,
+    'authenticated_execute',authenticated_execute,
+    'public_execute',public_execute,
     'explicit_jti_null_guard',explicit_jti_null_guard,
     'explicit_resource_null_guard',explicit_resource_null_guard,
+    'null_comparison_is_unknown',(('test'::text <> NULL::text) IS NULL),
+    'live_rpc_invocation_performed',false,
     'exploitable_behavior_proven',false)
     FROM functions WHERE proname='claim_anonymous_write_grant'),
  'ready_to_apply_migration',false
