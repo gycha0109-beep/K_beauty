@@ -243,7 +243,7 @@ try {
   assert(!JSON.stringify(v2Only).includes(fakeSecret));
   assert(!JSON.stringify(v2Only).includes(prodSecret));
   assert(!JSON.stringify(v2Only).includes("data:image"));
-  assert.throws(()=>runPrivatePhotoCohort({
+  await assert.rejects(runPrivatePhotoCohort({
     manifest,photoDir:tmp,live:false,studyMode:"v1_only",
     environment:{},invoke:v2OnlyInvoke
   }),/research_study_mode_invalid/);
