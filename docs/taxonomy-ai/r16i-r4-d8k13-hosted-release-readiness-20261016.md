@@ -170,10 +170,21 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 - **DATA-AI29C C5B:** migration 하네스의 preflight/ACL postcheck는 실제 적용 원문과 다르지만, **과거 저장된 함수 body와 현재 GitHub, 현재 live 함수 body는 1,203개 SQL 토큰 모두 일치**. 현재 service_role만 실행 가능. 과거 pre/post guard 실제 적용 여부는 별도 미확인.
 - **동일 버전·이름 해시 불일치 46건:** 단일 statement 18건은 양끝 개행 정리 후 Git blob 일치 6, SQL 토큰 일치 5, 말미 세미콜론 차이 6, crawler PLpgSQL delimiter 이슈 1로 분류.
 - **복수 statements 28건은 모두 토큰 재조립 검증 수행:** 1건 완전 일치, 25건 말미 세미콜론만 다름, **2건 실제 토큰 차이**. 단순 blob 동일성 또는 역사적 실행권한 동등성은 주장하지 않는다.
-- **P0 #1 랭킹:** 과거 SQL에 현재 파일의 명시적 권한 변경 구문 일부 없음. 현재 운영 ranking_snapshots/source_rankings는 RLS ON, anon/authenticated 직접 쓰기 DENY.
+- **랭킹 계보 추적:** 최초 SQL에 빠진 ranking_snapshots 명시적 ACL은 후속 운영 적용 이력 `20260621151304`(REVOKE/GRANT), `20260621152040`(TRUNCATE REVOKE)에서 확인. 현재 ranking_snapshots/source_rankings는 RLS ON, anon/authenticated 직접 쓰기 DENY. **source_rankings 명시적 ACL 출처는 일부 미확인**.
 - **P0 #2 익명 쓰기 grant:** 현재 운영 `claim_anonymous_write_grant` 함수 정의에서 현재 GitHub SQL의 `IS NULL` 초기 검사 부재. 현재는 SECURITY INVOKER이고 해시 형식 검사는 존재하나 악용 여부 불명. 별도 보안 리뷰 필요.
 - P0 crawler delimiter 차이도 별도 native PG17 파서 검수 대상으로 유지한다.
 
 새 evidence JSON `d8k13-hosted-same-version-sql-triage-readonly-20261016.json`은 SQL 원문을 게시하지 않고 결과·Git blob SHA만 저장한다. 오프라인 provenance verifier와 release gate의 manifest count guards에 연결했다.
 
 **여전히 전체 178 migrations의 parser/DB rollback equivalence, 백업/PITR 복원, 독립 검토자, supply-chain #1208, 실제 배포 승인 미충족. PR Draft/운영 migration·DDL·DML·머지·배포 HOLD.**
+
+
+## 13. 랭킹 ACL 후속 복구 이력 및 익명 쓰기 server-only 검증 (2026-10-16 16:34 KST)
+
+실제 운영 `schema_migrations.statements`를 SELECT-only로 다시 검토해 `ranking_snapshots`의 일반 사용자 쓰기 REVOKE 및 service_role GRANT가 **후속 이력 `20260621151304`**에서, TRUNCATE REVOKE가 **`20260621152040`**에서 시행된 증거를 확인했다. 해당 테이블의 현재 RLS/권한은 보호 상태이며 초기 이력의 ACL 누락은 적어도 일부 후속 repair로 설명된다. `source_rankings`의 모든 명시적 ACL 이력은 아직 확정되지 않았다.
+
+익명 쓰기 `claim_anonymous_write_grant`는 운영에서 **SECURITY INVOKER / service_role 전용 EXECUTE / PUBLIC·anon·authenticated EXECUTE 거부**다. 현재 서버 소스는 HMAC 서명, anonymous cookie principal 결속, 리소스 경계, fingerprint 및 필수 입력 검사 후 claim RPC를 호출한다. 다만 운영 DB 함수에 현재 GitHub migration의 명시적 `p_* IS NULL` 검사가 없고 PostgreSQL의 UNKNOWN 논리가 적용된다. **공개 호출 우회가 확인된 것이 아니라 DB 함수 레벨의 defense-in-depth 보강 필요 항목**이며 사용자 영향·악용 여부는 검증되지 않았다.
+
+근거: `docs/taxonomy-ai/r16i-r4-d8k13-ranking-acl-anonymous-grant-security-lineage-20261016.md`; 운영 SELECT-only 사전 점검 `d8k13-historical-drift-readonly-preflight-v1.sql` 재실행 PASS, 오프라인 `verify-d8k13-historical-security-lineage-v1.mjs` 실제 코드 10개를 입력으로 검증 PASS/HOLD(일반 exit 0, enforce-release exit 3).
+
+**D8K-13 합성 Docker PG17 부분체인은 기존 PASS 유지.** 전체 178건 history 복원, crawler 파서, 백업/PITR, 독립 reviewer, 보안 #1208, NULL 방어에 대한 별도 승인·격리 PG17 테스트 전 운영 SQL/DDL/DML/repair/머지/배포 전부 HOLD.
