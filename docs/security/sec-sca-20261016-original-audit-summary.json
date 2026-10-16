@@ -1,0 +1,34 @@
+{
+  "full": {
+    "exit": 1,
+    "rawSha256": "6e85101b07bda2fb036c6974c65acee06711904a93026c3f1bda959dd7ad7663",
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 13,
+      "high": 22,
+      "critical": 0,
+      "total": 35
+    }
+  },
+  "production": {
+    "exit": 1,
+    "rawSha256": "2dd0322b58021709085625f4f1d86878a1cfeaf1533dcddc9b846dc055426f4f",
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 11,
+      "high": 19,
+      "critical": 0,
+      "total": 30
+    }
+  },
+  "date": "2026-10-16",
+  "sourceHead": "21a804623eb2b3ea5dedcb4b7a941740fd2b9a21",
+  "verifiedGitBlobs": {
+    "package.json": "74ecc02cc74a7e0f7ed5bf7d43cf1b004162d6e0",
+    "package-lock.json": "37dfa247a664593440667b35d9af96d604d7949b"
+  },
+  "freshNpmCi": false,
+  "mode": "LIVE_ORIGINAL_NAME_LOCKFILE_AUDIT_NOT_A_NEW_INSTALL"
+}

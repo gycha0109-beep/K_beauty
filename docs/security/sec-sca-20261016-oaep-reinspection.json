@@ -1,0 +1,66 @@
+{
+  "schema": "bejewely.oaep-original-reinspection.v1",
+  "date": "2026-10-16",
+  "source": "https://netix.dl.sourceforge.net/project/webrsa/webrsa/webrsa-1.0/webrsa-1.0.tar.gz",
+  "archiveSha256": "d64c580201891195236a7942f16a86ee6bc7a053d23abef7d2ffeb63178e9343",
+  "bytes": 28732,
+  "regularFiles": 9,
+  "inventoryMatchesPreviouslyRecoveredOriginal": true,
+  "freshDownloadMatchesPublishedDigest": true,
+  "files": [
+    {
+      "path": "webrsa-1.0/Client/README.additionalJS",
+      "bytes": 264,
+      "sha256": "144c1470c0d0bcb4e11f194fc6fd330cd1340285c3ab3a15dac642a8f3925b9f"
+    },
+    {
+      "path": "webrsa-1.0/Client/RSAES-OAEP.js",
+      "bytes": 5053,
+      "sha256": "01519446cd70e357baf7d084ab0377e43524cde87c8ee88f8a283b9e1c90e19f"
+    },
+    {
+      "path": "webrsa-1.0/KeyGeneration/primes-128.cal",
+      "bytes": 735,
+      "sha256": "7371fcbceead5a86f83f2b59e7fa986100020138e5cff60fd9b29ae0b0e71b76"
+    },
+    {
+      "path": "webrsa-1.0/Server/Calc/RSAES-OAEP.cal",
+      "bytes": 8325,
+      "sha256": "3567da29f4cce8f2f6d14af71a4b3a567bd855e281b6510eb0b3a14130856206"
+    },
+    {
+      "path": "webrsa-1.0/Server/Tcl/Mpexpr1.1/mpexpr.c",
+      "bytes": 79964,
+      "sha256": "eef309fa999f7a2ce0c8748f6263fe22d81639fddecd5ea7835e461ff05d24f9"
+    },
+    {
+      "path": "webrsa-1.0/Server/Tcl/Mpexpr1.1/mpexpr.c.pch",
+      "bytes": 1808,
+      "sha256": "661eb311b677c924b40b2721dfdfe472d36af2e3cea9d51f1dc8fa080bd1e9e5"
+    },
+    {
+      "path": "webrsa-1.0/Server/Tcl/RSAES-OAEP.tcl",
+      "bytes": 6753,
+      "sha256": "12c981fdccc8c2ff78104ab22ba744b3529d022de15c4a454a4bc3ddcc198d73"
+    },
+    {
+      "path": "webrsa-1.0/WebRSA-README",
+      "bytes": 4199,
+      "sha256": "86e562ae83af7524d160c02e66329d82b3221fd029abb06d401d66ec55d023f5"
+    },
+    {
+      "path": "webrsa-1.0/htdocs/WebRSA-README.html",
+      "bytes": 5324,
+      "sha256": "e2b1a4aa78dae994d113db84c4fc14021e2e19b4702f559a38996c05785e1fc7"
+    }
+  ],
+  "oaepHeader": "/* RSAES-OAEP.js\n * $Id: RSAES-OAEP.js,v 1.1.1.1 2003/03/19 15:37:20 ellispritchard Exp $\n * JavaScript Implementation of PKCS #1 v2.1 RSA CRYPTOGRAPHY STANDARD (RSA Laboratories, June 14, 2002)\n * Copyright (C) Ellis Pritchard, Guardian Unlimited 2003.\n * Contact: ellis@nukinetics.com\n * Distributed under the BSD License.\n */",
+  "readmeLicenseSection": "Distributed under BSD licence.",
+  "standaloneFullLicenseFound": false,
+  "exactBsdVariant": "UNRESOLVED",
+  "knownGrant": "Original author explicitly states BSD; complete applicable conditions not reproduced",
+  "rightsCleared": false,
+  "redistributionTermsWaived": false,
+  "packageUploaded": false,
+  "finding": "Archive acquisition is resolved and was already resolved in prior evidence; exact applicable BSD conditions are not. No source executed or extracted to filesystem."
+}

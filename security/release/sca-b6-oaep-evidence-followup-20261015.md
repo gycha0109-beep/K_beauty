@@ -1,40 +1,48 @@
-# OAEP / WebRSA redistribution evidence follow-up — 2026-10-15
+# OAEP / WebRSA redistribution evidence follow-up — corrected 2026-10-16
 
-**Status: PARTIAL_PUBLIC_EVIDENCE; THIRD_PARTY_TERMS_UNRESOLVED; RELEASE_HOLD.**
-This is an evidence memo, not legal clearance, upload approval, a substitute for the immutable reviewed license packet, or a change to any admission predicate.
+**Status: AUTHENTIC_ORIGINAL_ARCHIVE_VERIFIED; PRECISE_BSD_TERMS_UNRESOLVED; FORGE_PUBLICATION_HOLD.**
 
-## Narrow question
+This corrects the earlier statement that the original archive had not been recovered. Prior recovery was already recorded in `docs/security/sec-sca-20261015-oaep-original-recovery.json`. Repeating “obtain the archive” as an unresolved task was stale. On 2026-10-16 a fresh download from the official netix SourceForge mirror again matched that exact original, before any inspection. Archive acquisition is resolved; complete applicable OAEP BSD conditions are not.
 
-The `node-forge/lib/pkcs1.js` source incorporates / derives from Ellis Pritchard's historical `WebRSA/Client/RSAES-OAEP.js`. The embedded source header credits "Copyright (C) Ellis Pritchard, Guardian Unlimited 2003" and says **"Distributed under the BSD License."** Which *complete* original BSD conditions apply, and have those conditions been delivered with a new binary/standalone-browser package?
+## Original release actually inspected
 
-## Evidence, independently located
+- [Official file listing](https://sourceforge.net/projects/webrsa/files/webrsa/webrsa-1.0/).
+- [Official mirror bytes](https://netix.dl.sourceforge.net/project/webrsa/webrsa/webrsa-1.0/webrsa-1.0.tar.gz).
+- Size **28,732 bytes**, SHA256 **d64c580201891195236a7942f16a86ee6bc7a053d23abef7d2ffeb63178e9343**.
+- Gzip magic, pinned published digest, all nine regular-file sizes and SHA256 values match prior recovered evidence. HTML/nonmatching bytes cannot satisfy these checks. No source was executed or extracted onto the filesystem.
+- `Client/RSAES-OAEP.js` credits Ellis Pritchard / Guardian Unlimited 2003 and states “Distributed under the BSD License.”
+- `WebRSA-README` says “Distributed under BSD licence.” The original HTML README and project page have the same generic declaration.
+- No standalone LICENSE/COPYING/NOTICE file occurs in the nine regular release files. OAEP header and README licence section do not contain the complete redistribution conditions or disclaimer. The associated historical category187 link is not a recovered operative license text.
+- [Fresh file inventory and findings](../../docs/security/sec-sca-20261016-oaep-reinspection.json). The earlier official CVS evidence corroborates origin/grant but did not recover full conditions either.
 
-| Class | Source | Observed | Limit |
-| --- | --- | --- | --- |
-| Primary project catalog | https://sourceforge.net/projects/webrsa/files/webrsa/webrsa-1.0/ | 2003-07-02 `webrsa-1.0.tar.gz` (28.7 kB) offered | Listing does not expose the embedded original copyright/license text. Historical downloads in the frozen research were HTML or failed archive SHA verification. |
-| Project license declaration | https://sourceforge.net/projects/webrsa/ | WebRSA categorized as **BSD License** | Generic label does not establish 2-, 3-, or 4-clause variant, complete disclaimers, or attribution conditions. |
-| Preserved derived source header | https://github.com/digitalbazaar/forge/blob/main/lib/pkcs1.js | Original author/date/contact and "Distributed under the BSD License" retained alongside jsjws MIT text | Header alone does not contain the complete original BSD conditions. |
-| Upstream Forge license | https://github.com/digitalbazaar/forge/blob/main/LICENSE | Project offers BSD-3-Clause or GPL-2.0; full BSD-3 conditions present | Forge's license does not automatically replace an embedded third party's own terms. |
-| Secondary distributor review | https://sources.debian.org/src/node-node-forge/0.8.1~dfsg-1%2Bdeb10u1/debian/copyright | Debian package's `Files: lib/pkcs1.js` section attributes Ellis Pritchard and labels the combined file **BSD-3-Clause and Expat~Intact** | Meaningful corroborating downstream assessment, **not** the original 2003 WebRSA license and not independent proof of precise original BSD variant. |
-| Frozen BEJEWELY evidence | `security/release/sca-b6-public-license-findings.json`, `security/release/license-review/license-review.json`, `security/release/license-review/THIRD-PARTY-NOTICES.md` | Original SOURCE/LICENSE/NOTICE entries and SHA-reviewed packet are retained; OAEP marked `BSD_VARIANT_AND_COMPLETE_TERMS_REQUIRE_REVIEW` | Their hold is intentional; this memo does not change their content, checksums or legal status. |
+## Findings, not assumptions
 
-### Differentiating rights from provenance
+| Question | Result |
+| --- | --- |
+| Does the rightsholder declare BSD distribution? | Yes, original author/source/README establish a real BSD grant statement. This is stronger than a downstream label alone. |
+| Which complete BSD variant/conditions apply? | **UNRESOLVED**. Do not invent BSD2/BSD3/BSD4 text as the recovered original. |
+| Author attribution | Present in original/Forge source and frozen combined notice packet; retained inside the new npm tarballs and accompanying browser review kit. |
+| Full conditions/disclaimer sufficiency | Cannot attest for OAEP from the incomplete declaration. Other complete MIT/BSD notices do not replace an embedded work's missing terms. |
+| Missing notice material known today | All recovered text is retained. No further authenticated full OAEP license text was found to add. Adding guessed conditions would not resolve this finding. |
+| Debian's BSD3 and Expat classification | Corroborating distributor interpretation, not the original 2003 operative conditions. |
+| Exact historical jscrypto/TweetNaCl line mapping | Disclosed provenance assurance gaps, distinct from missing applicable OAEP terms. |
+| Need an author's reply, second reviewer, paid counsel? | None is an observed condition in the examined permission texts. No such new prerequisite is imposed. No external inquiry is sent or awaited. |
+| Can a user approval cure missing third-party terms? | No. Human permission to publish does not supply or waive unverified third-party obligations. |
 
-- The copyright owner's declaration of *BSD permission* is real evidence of permissive intent, corroborated by Forge redistribution and Debian's packaged assessment; it is **not** the original full grant/conditions text.
-- Exact copied revisions and line-by-line historical mapping for other permissive components are disclosed as *provenance assurance gaps*; they do not automatically require an author email or paid legal counsel.
-- The **OAEP full applicable terms** are an open external condition, distinct from those provenance gaps. Conservatively preserving BSD-3-Clause and the original author header is good hygiene but cannot truthfully be marked a proved substitute for terms that have not been recovered.
-- No observed text requires individual author reply before redistribution, but absence of a reply requirement does not extinguish notice/conditions obligations.
+Forge's project-level BSD3 review basis, braces MIT, DES author's complete BSD2 text, historical SJCL/OpenSSL component notices and TweetNaCl evidence remain preserved. No frozen LICENSE/NOTICE/SBOM resource, source/browser byte, candidate digest, rights flag or signed-admission predicate is changed by this correction.
 
-## Controlled closure path (no new owner decision required just for research)
+## Current implementation and actual audit
 
-1. From an execution environment that can download actual SourceForge binary archives, obtain original `webrsa-1.0.tar.gz`, reject redirects/HTML, and compare with the previously recorded archive SHA-256 `d64c580201891195236a7942f16a86ee6bc7a053d23abef7d2ffeb63178e9343`. Never treat a project webpage as a tarball.
-2. Inspect original `LICENSE`, `COPYING`, `README`, file headers, and preserved revision history for complete operative BSD conditions. Record exact bytes, source path, digests and excerpts only as permitted. If no operative text is found, keep hold; do not invent a 2-/3-/4-clause election.
-3. If complete terms are recovered, compare them against the existing `THIRD-PARTY-NOTICES.md`, embedded source/header, browser standalone distribution policy and candidate tarball readback. Correct missing notices with a new reviewed **versioned candidate/packet**; never edit frozen packet in place or break pinned digests without re-review.
-4. Re-run the actual rights evidence/notice audit and get the project's real signed upload approval/trust for the exact candidate. `CLEARED_BY_PROJECT_OWNER` and `rightsReview.unresolved=[]` must reflect supported facts, not flags set merely because the owner said "proceed".
-5. If operative terms cannot be recovered or matched, retain `HOLD` and consider a different implementation/dependency that avoids the uncertain derived component. Do not publish the modified `node-forge` package as though its embedded-license risk disappeared.
+Remote implementation HEAD `21a804623eb2b3ea5dedcb4b7a941740fd2b9a21`, [CI38724954981](https://github.com/gycha0109-beep/K_beauty/actions/runs/38724954981): **67 tests, CodeQL, producer and independent replay PASS**. Overall workflow FAIL comes from the unchanged original-name audit gate. Both runners retained notice-containing candidate **b2f6965a4d05a30790cbf3f0a954c27cd8261e6a1bddc19bd5f13f36eb27b816** and browser kit **94026dc9d62d8a48cdb80820568c1267d9bb2c4e83439ce5a27632d4e003f947**; original source/LICENSE/browser bytes and real root/workspace installation remain verified.
 
-## Scope of owner instruction
+Fresh 2026-10-16 audits were run against package.json/lockfile bytes matching that exact remote tree: full **HIGH22/MODERATE13/CRITICAL0**, production **HIGH19/MODERATE11/CRITICAL0**, both exit1. This was a current original-name lockfile audit, **not a fresh npm ci or device build**. [Raw-response hashes and exact Git blobs](../../docs/security/sec-sca-20261016-original-audit-summary.json). Raw JSON is retained in the task outputs. Both latest npm versions remain braces3.0.3/Forge1.4.0; official advisories still list no patched release. Scoped scanner silence is not remediation.
 
-On 2026-10-15 the owner authorized proceeding with **private GitHub Packages publication** when executable prerequisites are satisfied, and declined paid counsel, author contact or an OAEP rewrite at this time. No payment, broad visibility change, source/NOTICE excision, license-policy waiver, merge, production release, or unresolved-rights falsification was authorized.
+## Owner authority and publication blockers
 
-**Outcome of this follow-up: the public evidence is stronger because of the independently identified Debian review, but the original operative OAEP BSD conditions have still not been obtained. Retain the explicit legal hold.**
+The owner's latest direct instruction authorizes actual **private GitHub Packages publication once license and executable release prerequisites are satisfied**. Do not request that same general publication approval again. It does not waive unverified terms, permit public visibility, paid services, global inheritance changes, audit exceptions, product dependency adoption, merge or production.
+
+The current process has no provisioned publisher token, independent unprivileged token or pinned trust environment value; no real signed release material was supplied or admitted. Existing GitHub browser login is not an npm publishing credential. Account read-only inspection reconfirmed existing Packages paid-usage blocking and no published packages in the owner's package view; no setting was changed. Exact available shared-storage bytes remain unverified.
+
+The two-package operator remains blocked by OAEP's unresolved applicable terms and unprovisioned executable credentials/trust. Nothing was uploaded; readback/anonymous and valid-unprivileged denial/post-link ACL/product-registry install remain NOT_RUN. Publication authority is acknowledged, but neither blocker is silently passed. Do not mint a “cleared” record, strip the OAEP header or publish a component-excised Forge package as if compatible. No rewrite is undertaken merely to relabel the review.
+
+[Minimum credential setup and staged operations](../../docs/security/sec-sca-20261016-publication-prerequisites.md) are prepared for when applicable rights can be supported. No paid legal review or upstream response is a default gate; no additional general approval cycle is introduced.

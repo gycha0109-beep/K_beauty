@@ -3326,3 +3326,12 @@ Watchtower-Track: security
 - Newcandidate b2f6965a4d05a30790cbf3f0a954c27cd8261e6a1bddc19bd5f13f36eb27b816, packet c2c930f35197243a8dd3317e08358d0fb3983423c98652f82bad5b612df8e116, kit94026dc9d62d8a48cdb80820568c1267d9bb2c4e83439ce5a27632d4e003f947 match bothrunners; completearchiveSHAs in finalprepublicationreview. Originalcode/browser/LICENSE/sourcearchive hashes unchanged. Runtime9427proof reused; nofreshAPK/deviceclaim.
 - OriginalfullHIGH22/MOD13/C0,productionHIGH19/MOD11/C0 rawaudit exit1; overallworkflowFAIL unchanged. ScopedHIGH0blindspot notremediation. Actualupload/readback/postlinkACL/Actions/device/APIAuthNOTRUN. No tokens/settings/cost/merge/deploy.
 - Independent technical preparation complete; automationPAUSED. OAEP preciseBSDterms remainmateriallyOPEN; ownercall needed for narrowed resolution choice beforeForgepublication. No mandatoryauthorreply/secondhuman/lawyer licensecondition invented. No realredistribution or finallegalapproval inferred.
+
+
+## 2026-10-16 — Original OAEP release revalidated; publication authority acknowledged
+
+- Latest remote21a804623eb2b3ea5dedcb4b7a941740fd2b9a21 CI38724954981:67tests/CodeQL/producer/replayPASS, originalauditgateFAIL; existing notice-containing candidate/kit unchanged. No redundant runtime build.
+- Fresh netix official WebRSA archive28732bytes SHA d64c580201891195236a7942f16a86ee6bc7a053d23abef7d2ffeb63178e9343; all9fileSHA match earlier authenticated recovery. Corrected stale followup memo that incorrectly still described archive acquisition as open. Originalheader/README only genericBSD; fullconditions/variant NOTrecovered. No fakeclearance or frozenpacket changes.
+- Fresh live original-name audits after exactremote package/lockblob equality:fullHIGH22/MOD13/C0,prodHIGH19/MOD11/C0,exit1; rawJSON outputs retained and SHA summary committed. Audit-only refresh, notnewnpmci. Latestofficialregistry3.0.3/1.4.0, advisories nofixedversion.
+- Existing loggedinUI read-only:Packages paidusageblocked, profile no packages, globalinheritanceunchanged. Current operator credentials/trust env absent, no credentials printed/issued. MinimalclassicPAT setup guide prepared, not prematurely requested while rightsremainblocked. No upload/ACL/config/payment/main/product/prod change.
+- Ownerprivatepublicationauthority acknowledged conditionalonactuallicense/executableprerequisites. No renewed generalapproval request, paidcounsel gate or authorreply gate. ActualForge applicableterms remainHOLD; realreadback/productinstall/device/APIAuthNOTRUN.
