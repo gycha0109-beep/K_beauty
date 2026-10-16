@@ -131,16 +131,32 @@ async function run(){
    "--label","bejewely.local-test=d8k13",
    "--env","POSTGRES_PASSWORD=disposable-local-only",IMAGE],{seconds:60});
   started=true;
+  // The official PostgreSQL image starts a TEMPORARY socket-only server
+  // during initdb, stops it, and then launches the FINAL TCP server.
+  // Unix-socket pg_isready can return 0 during the temporary phase,
+  // causing the first psql command to hit a missing socket mid-restart.
+  // Require an actual authenticated query over loopback TCP: the temporary
+  // server does not listen on TCP. Docker --network=none still provides its
+  // own isolated loopback interface; no ports or hosted DB are exposed.
   let ready=false;
-  for(let i=0;i<80;i++){
-   const p=docker(["exec","--user","postgres",CONTAINER,
-    "pg_isready","-q","-U","postgres","-d","postgres"],{
+  for(let i=0;i<120;i++){
+   const portReady=docker(["exec","--user","postgres",CONTAINER,
+    "pg_isready","-q","-h","127.0.0.1","-U","postgres","-d","postgres"],{
     allowFailure:true,seconds:10
    });
-   if(p.status===0){ready=true;break}
+   if(portReady.status===0){
+    const probe=docker(["exec","--user","postgres",
+     "--env","PGPASSWORD=disposable-local-only",CONTAINER,
+     "psql","-X","-A","-t","-v","ON_ERROR_STOP=1",
+     "-h","127.0.0.1","-U","postgres","-d","postgres",
+     "-c","SELECT current_setting('server_version_num')::integer/10000;"
+    ],{allowFailure:true,seconds:10});
+    if(probe.status===0&&probe.stdout.trim()==="17"){ready=true;break}
+   }
    await new Promise(resolve=>setTimeout(resolve,500));
   }
-  if(!ready)throw Error("PG17_CONTAINER_NOT_READY");
+  if(!ready)throw Error("PG17_FINAL_TCP_SERVER_NOT_READY");
+  console.log("D8K13_PG17_FINAL_TCP_READY");
   assert.match(psql("select current_setting('server_version_num')::integer/10000;"),/\b17\b/);
 
   console.log("PG17 isolated fixture 1/3: initial roles and synthetic records");
