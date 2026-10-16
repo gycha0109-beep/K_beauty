@@ -65,6 +65,16 @@ export function inspectSkinVisionTrial({ caseId, variant, providerEnvelope, maxC
   const atTokenCap = outputTokens !== null && outputTokens >= maxCompletionTokens;
   // Provisional, NON-ACCEPTANCE warning; not a calibrated budget threshold.
   const nearTokenCap = outputTokens !== null && outputTokens * 10 >= maxCompletionTokens * 9;
+  // Separate expected ineligible-photo abstention from eligible-photo Skin
+  // contract failure. This is RESEARCH evidence, not positive acceptance.
+  const expectedIneligibleAbstention = variant === "v2" &&
+    finishReason === "stop" && schemaMatches && !invalidJson &&
+    evaluation?.eligibility?.source === "vision" &&
+    evaluation?.eligibility?.skinAnalysisEligible === false &&
+    Array.isArray(parsed?.skin?.axisEvidence) &&
+    parsed.skin.axisEvidence.length === 0 &&
+    evaluation?.skinEvidence?.photoGate === "blocked" &&
+    outputTokens !== null && !atTokenCap && !outputExceeded;
   const structurallyValid = finishReason === "stop" &&
     schemaMatches && evaluation?.classification === expectedClassification &&
     (variant === "v1" || skinStatus === "ready") &&
@@ -94,6 +104,7 @@ export function inspectSkinVisionTrial({ caseId, variant, providerEnvelope, maxC
     inputTokens,
     maxCompletionTokens,
     nearTokenCap,
+    expectedIneligibleAbstention,
     faceStatus,
     faceAvailableFieldCount: faceFieldCount,
     skinStatus,
@@ -131,6 +142,8 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
   let v2Truncated = 0;
   let v2NearCap = 0;
   let v2Invalid = 0;
+  let v2ExpectedIneligibleAbstentions = 0;
+  let v2EligibleStructuralFailures = 0;
   let maxObservedV2OutputTokens = 0;
   let v2WithUsage = 0;
   for (const pair of records.values()) {
@@ -145,7 +158,14 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
     if (!(a.faceAvailableFieldCount > 0) || !(b.faceAvailableFieldCount > 0)) faceBaselineUnassessable++;
     if (b.finishReason === "length") v2Truncated++;
     if (b.nearTokenCap === true) v2NearCap++;
-    if (b.result !== "STRUCTURALLY_VALID") v2Invalid++;
+    if (b.result !== "STRUCTURALLY_VALID") {
+      v2Invalid++; // Backward-compatible count; includes abstentions.
+      if (b.expectedIneligibleAbstention === true) {
+        v2ExpectedIneligibleAbstentions++;
+      } else {
+        v2EligibleStructuralFailures++;
+      }
+    }
     if (Number.isSafeInteger(b.outputTokens)) {
       maxObservedV2OutputTokens = Math.max(maxObservedV2OutputTokens, b.outputTokens);
       v2WithUsage++;
@@ -167,6 +187,8 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
     faceBaselineUnassessable,
     v2Truncated,
     v2Invalid,
+    v2ExpectedIneligibleAbstentions,
+    v2EligibleStructuralFailures,
     v2NearCap,
     maxObservedV2OutputTokens: v2WithUsage ? maxObservedV2OutputTokens : null,
     structuralCandidatePass,
