@@ -17,6 +17,8 @@ import {prepareBrowserNoticeKit,verifyBrowserNoticeKit} from "./sca-release-brow
 import {verifyConditionalReview} from './sca-release-review-preflight.mjs';
 import {scopedPublicationPlan} from './prepare-sca-release-scoped-publication.mjs';
 import {prepareOaepReplacementCandidate,verifyOaepReplacementCandidate,prepareOaepBrowserNoticeKit,verifyOaepBrowserNoticeKit} from './sca-release-oaep-candidate.mjs';
+import {prepareBundle} from './sca-release-bundle.mjs';
+import {sealCandidateEvidence} from './sca-release-encrypted-artifact.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const hash=(bytes,alg="sha256")=>createHash(alg).update(bytes).digest("hex");
@@ -374,6 +376,22 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     console.log("SCA_B4_FULL_GRAPH_EVIDENCE="+JSON.stringify(receipt));
     if(replacement||process.env.SCA_SCOPED_REQUIRE_ANDROID==='1')assert.equal(android.status,'PASS','scoped Android debug build is required; NOT_RUN is not PASS');
     assert.ok(checks.every(c=>c.status==="PASS"),"candidate compatibility failed; see command logs above");
+    // Public-repo Actions artifacts must never contain raw patched package bytes.
+    // Only the owner-public-key encrypted bundle is exported; no key means no upload.
+    if(replacement){
+      const publicKey64=process.env.SCA_ARCHIVE_RECIPIENT_PUBLIC_KEY_B64;
+      if(publicKey64){
+        assert.ok(process.env.RUNNER_TEMP,'encrypted retention requires a managed CI runner');
+        const bundleDir=path.join(temp,'original-bundle');
+        prepareBundle({braces:bracesTarball,forge:replacement.originalForgeTarball,output:bundleDir});
+        const output=path.join(process.env.RUNNER_TEMP,'bejewely-sca-owner-artifact');
+        const sealed=sealCandidateEvidence({root:temp,output,
+          recipientPublicKeyPem:Buffer.from(publicKey64,'base64').toString('utf8'),
+          candidateSha256:scoped.candidateSha256});
+        if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'encrypted_candidate_ready=true\n');
+        console.log('SCA_OWNER_ENCRYPTED_EVIDENCE='+JSON.stringify(sealed));
+      }else console.log('SCA_OWNER_ENCRYPTED_EVIDENCE=NOT_CONFIGURED_NO_ARTIFACT_UPLOADED');
+    }
     return receipt;
   } finally {
     fixture?.stop();
