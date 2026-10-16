@@ -54,6 +54,16 @@ Docker runner는 `--pull=never`, `--network=none`, `--tmpfs`, 랜덤 이름, 호
 
 **이번 세션에서 실제 완료:** 새 runner와 4 fixture GitHub 반영, `--check-files`를 실제 저장소 파일 6개로 격리 JS 실행해 PASS. 별도의 `verify-d8k13-historical-security-lineage-v1.mjs`와 `verify-d8k13-release-sequence-v1.mjs`도 실제 GitHub 입력으로 offline PASS/HOLD, `--enforce-release` exit 3. **현재 컨테이너는 Docker 엔진·PostgreSQL 서버 바이너리가 없어 native SQL 단계는 실행되지 않았다.** 따라서 위 모든 SQL 결과 마커는 아직 `NOT_RUN`으로 관리한다.
 
+### Windows clean-worktree 실행 도우미
+
+별도 Windows 검증 worktree를 재사용하는 경우 `scripts/product-evidence/run-d8k13-sec05-acl-local-windows.ps1`에서 GitHub origin, dirty 여부, 허용된 별도 경로를 검사하고 **기능 테스트 코드가 고정된 커밋 `3a59bb2bae80c1ac033325ec536f973abb0eabb0`**을 체크아웃한 뒤 `node --check`, `--check-files`, Docker PG17 테스트를 순서대로 실행한다.
+
+```powershell
+powershell -NoProfile -File .\scripts\product-evidence\run-d8k13-sec05-acl-local-windows.ps1
+```
+
+기본 대상은 `D:\cha\K-beauty-D8K13-verify`이며 원본 `D:\cha\K_beauty`와 dirty 검사 worktree는 실행을 거부한다. 로컬 로그 파일 경로는 종료 후 `D8K13_SEC05_ACCEPTANCE_LOG=...`로 출력된다. 도우미의 Git fetch/clean verify 체크아웃은 **로컬 합성 검증 준비 작업**일 뿐 hosted DB 및 운영 배포 작업이 아니다. 현재 서버에서는 PowerShell·Docker 실행 환경이 없어 **도우미 실제 Windows 실행은 NOT_RUN**이다.
+
 ## 4. 보안·승인 경계
 
 - 과거 SQL에서 NULL 매개변수 수용이 실제로 성공했다는 사실을 운영 DB에서 호출해 증명한 적은 없다. 현재 747-token 동등성은 코드 출처 증빙, 합성 PG17 테스트는 후속 실행 대상이다.
