@@ -109,6 +109,14 @@ assert.equal(auth.postgres_null_comparison_returns_unknown,true);
 assert.equal(auth.legacy_sql_explicit_all_six_null_guards_present,false);
 assert.equal(auth.operator_live_rpc_invocation_performed,false);
 assert.equal(auth.exploitabilityProven,false);
+assert.equal(auth.hosted_legacy_function_tokens,747);
+assert.equal(auth.locally_derived_legacy_function_tokens,747);
+assert.equal(auth.locally_derived_legacy_function_token_equivalent_to_hosted,true);
+assert.equal(auth.derived_legacy_only_strips_six_null_guards,true);
+assert.equal(auth.legacy_derivation_js_special_dollar_replacement_fixed,true);
+assert.equal(auth.synthetic_pg17_check_files_pass,true);
+assert.equal(auth.synthetic_pg17_native_sql_execution_attested,false);
+assert.equal(repair.synthetic_pg17_native_sql_execution_attested,false);
 
 console.log(JSON.stringify({
  stage:"D8K13_HISTORICAL_SECURITY_LINEAGE_OFFLINE_V1",
