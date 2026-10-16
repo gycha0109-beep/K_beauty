@@ -41,7 +41,9 @@ const inertV2CompatibilityCandidate=[
  "D8K13_UNEXPECTED_D8DV2_SECURITY",
  "pg_catalog.pg_advisory_xact_lock(195721,16)",
  "LOCK TABLE public.admin_r16i_d8d_v2_gate",
- "actual_columns IS DISTINCT FROM",
+ "pg_catalog.cardinality(actual_columns)",
+ "SELECT x.val FROM unnest(actual_columns)",
+ "SELECT y.val FROM unnest(expected_columns)",
  "enabled=false"
 ].every(s=>migration.includes(s));
 const actualV2ChainTest=content(
