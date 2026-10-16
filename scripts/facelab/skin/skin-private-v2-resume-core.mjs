@@ -36,7 +36,8 @@ function safeVariant(v,id){
      !STRUCT.includes(v.structuralResult)||!FACE.includes(v.faceStatus)||
      !int(v.inputTokens)||!int(v.outputTokens,0,2200)||
      !(v.elapsedMs===null||int(v.elapsedMs,0,600000))||
-     typeof v.nearTokenCap!=="boolean"||
+     typeof v.nearTokenCap!=="boolean"||v.nearTokenCap!==(v.outputTokens>=1980)||
+     v.metadataOnly!==true||
      !(v.faceAvailableFieldCount===null||int(v.faceAvailableFieldCount,0,100))||
      typeof v.skinAnalysisEligible!=="boolean"||
      !STATUS.includes(v.v2ContractStatus)||!int(v.v2AxisCount,0,7)||
@@ -50,8 +51,13 @@ function safeVariant(v,id){
       fail("private_v2_axis_invalid");
     if((row.state==="unknown"||row.state==="unassessable")&&row.value!==null)
       fail("private_v2_unknown_must_not_be_zero");
-    if(row.state==="not_seen"&&row.value!==0)fail("private_v2_not_seen_invalid");
-    if(row.state==="present"&&!(row.value>=1&&row.value<=5))
+    if(row.state==="not_seen"&&
+       (row.value!==0||!["medium","high"].includes(row.confidence)))
+      fail("private_v2_not_seen_invalid");
+    if(["unknown","unassessable"].includes(row.state)&&row.confidence!=="unknown")
+      fail("private_v2_unknown_confidence_invalid");
+    if(row.state==="present"&&
+       (!(row.value>=1&&row.value<=5)||!["low","medium","high"].includes(row.confidence)))
       fail("private_v2_present_invalid");
     return {axis:row.axis,state:row.state,value:row.value,confidence:row.confidence};
   });
@@ -85,8 +91,12 @@ function safeVariant(v,id){
        d.status!=="ELIGIBLE_ROWS_CONTRACT_READY"||d.issues.length||
        v.skinStatus!=="ready"||stateCount!==7)
       fail("private_v2_seven_contract_invalid");
-    for(const a of AXES)if(!rows.some(r=>r.axis===a))
-      fail("private_v2_missing_axis");
+    for(const a of AXES){
+      const row=rows.find(r=>r.axis===a);
+      const diagnosis=axesDiagnostics.find(d=>d.axis===a);
+      if(!row||!diagnosis||diagnosis.state!==row.state)
+        fail("private_v2_diagnostic_state_mismatch");
+    }
   } else if(!v.skinAnalysisEligible) {
     if(v.v2ContractStatus!=="EXPECTED_INELIGIBLE_EMPTY"||rows.length!==0||
        d.status!=="SKIN_INELIGIBLE_ZERO_AXES"||
@@ -129,7 +139,7 @@ function safeCase(c,id){
      fail("private_v2_case_invalid");
   const v=safeVariant(c.variants[0],id);
   if(c.verdict==="STRUCTURAL_PREFLIGHT_ONLY"&&
-     v.v2ContractStatus!=="ELIGIBLE_SEVEN_VALIDATED")fail("private_v2_case_verdict_invalid");
+     (v.v2ContractStatus!=="ELIGIBLE_SEVEN_VALIDATED"||v.nearTokenCap))fail("private_v2_case_verdict_invalid");
   if(c.verdict==="EXPECTED_SKIN_INELIGIBLE_ABSTENTION_RESEARCH_ONLY"&&
      v.v2ContractStatus!=="EXPECTED_INELIGIBLE_EMPTY")fail("private_v2_case_verdict_invalid");
   return {
