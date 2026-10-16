@@ -340,5 +340,47 @@
       "stored_statement_count": 1,
       "classification": "GIT_BLOB_IDENTICAL_AFTER_TRIMMING_EDGE_NEWLINES"
     }
-  ]
+  ],
+  "multiStatementTokenFollowup": {
+    "method": "READ_ONLY_HOSTED_STATEMENTS_JOINED_WITH_SEMICOLON_PLUS_QUOTED_LITERAL_PRESERVING_SQL_TOKENIZER",
+    "evaluated": 28,
+    "tokenExact": 1,
+    "tokenSameExceptSingleFinalSemicolon": 25,
+    "tokenDifference": 2,
+    "mismatchedFiles": [
+      "20260621030000_phase1_ranking_snapshot_pipeline.sql",
+      "20260711032649_sec_05_anonymous_write_grants.sql"
+    ],
+    "status": "TOKEN_COMPARISON_ONLY__NOT_BYTE_EQUIVALENCE_OR_NATIVE_PG17_REPLAY",
+    "note": "All 28 simple byte/string joins remain unverified. Historical statements are split at SQL statement boundaries; parser token equivalence does not prove every original execution precondition or authorization."
+  },
+  "p0DeployedScopeFollowup": {
+    "taxonomy8": {
+      "status": "HISTORICAL_SINGLE_ALTER_ONLY__PRECONDITIONS_NOT_ATTESTED",
+      "historicalSqlBytes": 64,
+      "hostedCategoryNullable": true,
+      "hostedColumnCommentMatchesCurrentGit": true
+    },
+    "c5b": {
+      "status": "FUNCTION_BODY_TOKENS_MATCH__PRE_POST_MIGRATION_GUARDS_NOT_ATTESTED",
+      "historicalFunctionTokensMatchGit": 1203,
+      "runtimeFunctionTokensMatchGit": 1203,
+      "hostedServiceRoleExec": true,
+      "hostedAnonExec": false,
+      "hostedAuthenticatedExec": false
+    },
+    "ranking": {
+      "status": "CURRENT_HOSTED_RLS_AND_WRITE_RESTRICTIONS_OBSERVED",
+      "hostedRankingSnapshotsRls": true,
+      "hostedSourceRankingsRls": true,
+      "anonAndAuthenticatedDirectWrites": false
+    },
+    "anonymousWriteGrant": {
+      "status": "CURRENT_LIVE_FUNCTION_EXPLICIT_NULL_GUARD_NOT_FOUND__FURTHER_SECURITY_REVIEW",
+      "hostedFunctionSecurityDefiner": false,
+      "explicitJtiNullCheckObserved": false,
+      "explicitResourceNullCheckObserved": false,
+      "exploitabilityProven": false
+    }
+  }
 }
