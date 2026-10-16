@@ -107,6 +107,9 @@ async function run(){
  assert.match(migration,/D8K13_LEGACY_BOOTSTRAP_COUNT_MISMATCH/);
  assert.match(migration,/D8K13_UNEXPECTED_D8DV2_ACTIVITY/);
  assert.match(migration,/D8K13_UNEXPECTED_D8DV2_SCHEMA/);
+ assert.match(migration,/pg_catalog\.cardinality\(actual_columns\)/);
+ assert.match(migration,/SELECT x\.val FROM unnest\(actual_columns\)/);
+ assert.match(migration,/SELECT y\.val FROM unnest\(expected_columns\)/);
  assert.match(migration,/has_function_privilege\('service_role'/);
  assert.match(migration,/has_function_privilege\('anon'/);
  assert.match(migration,/r16i_d8d_rollback_v2\(uuid,uuid,uuid\)'\)\) IS DISTINCT FROM true/);
@@ -295,6 +298,10 @@ async function run(){
     "D8K13_UNEXPECTED_D8DV2_ACTIVITY"],
    ["d8k13_v2_column_drift",
     "ALTER TABLE public.admin_r16i_d8d_v2_gate ADD COLUMN forged text;",
+    "D8K13_UNEXPECTED_D8DV2_SCHEMA"],
+   ["d8k13_v2_column_type_drift",
+    "ALTER TABLE public.admin_r16i_d8d_v2_gate "+
+     "ALTER COLUMN change_ticket TYPE varchar(64);",
     "D8K13_UNEXPECTED_D8DV2_SCHEMA"],
    ["d8k13_v2_rpc_escalation",
     "ALTER FUNCTION public.r16i_d8d_apply_v2(uuid,uuid,uuid,text) "+
