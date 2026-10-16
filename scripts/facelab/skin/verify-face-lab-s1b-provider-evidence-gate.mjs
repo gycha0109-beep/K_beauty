@@ -120,6 +120,7 @@ const failedSummarized=summarizeSkinVisionTrials([
 assert.equal(failedSummarized.v2Invalid,1);
 assert.equal(failedSummarized.v2ExpectedIneligibleAbstentions,1);
 assert.equal(failedSummarized.v2EligibleStructuralFailures,0);
+assert.equal(failedSummarized.v2OtherStructuralFailures,0);
 assert.equal(failedSummarized.structuralCandidatePass,false);
 assert.equal(failedSummarized.scoringActivationAuthorized,false);
 const eligibleNonempty=trial("ELIGIBLE_MISS","v2",invalidNegatives);
@@ -128,6 +129,18 @@ const eligibleLoss=summarizeSkinVisionTrials([
 ]);
 assert.equal(eligibleLoss.v2ExpectedIneligibleAbstentions,0);
 assert.equal(eligibleLoss.v2EligibleStructuralFailures,1);
+assert.equal(eligibleLoss.v2OtherStructuralFailures,0);
+const malformedAbstention=clone(ineligible);
+malformedAbstention.unexpected="synthetic";
+const rejected=trial("BAD_INELIGIBLE","v2",malformedAbstention);
+assert.equal(rejected.expectedIneligibleAbstention,false);
+const malformedPair=summarizeSkinVisionTrials([
+  trial("BAD_INELIGIBLE","v1",{...v1,eligibility:ineligible.eligibility,face:{}}),
+  rejected
+]);
+assert.equal(malformedPair.v2ExpectedIneligibleAbstentions,0);
+assert.equal(malformedPair.v2EligibleStructuralFailures,0);
+assert.equal(malformedPair.v2OtherStructuralFailures,1);
 assert.equal(b.responseComplete, true);
 assert.equal(b.sensitiveSourcePersisted, false);
 assert.equal(b.realPhotoTruthVerified, false);
