@@ -29,7 +29,7 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 | 위 49개 중 마지막 운영 버전 이후 | **4** | 그중 1개는 운영에 이미 같은 이름으로 다른 버전 적용 |
 | 현재 운영 마지막 적용 버전 | `20261012181544` | 이후 상태는 실시간 재확인 필요 |
 
-운영 이력의 **이름·버전이 같은 것만으로도 원래 실행한 SQL bytes가 저장소 SQL과 같다고 말할 수 없다.** DB migration history에 과거 파일 본문 해시가 없으므로 원본 배포 산출물·Git SHA·승인 기록 등 독립 근거가 필요하다.
+운영 이력의 **이름·버전이 같은 것만으로도 원래 실행한 SQL bytes가 저장소 SQL과 같다고 말할 수 없다.** **추가 감사로 확인한 바, `supabase_migrations.schema_migrations.statements`에 실제 SQL 원문이 모두 존재한다.** 읽기 전용으로 원문 Git blob SHA를 계산해 41개 버전 변경 파일 중 **34개가 현 GitHub SQL과 일치**함을 입증했다. 남은 7개와 동일 이름·버전 46개의 추가 검증 및 적용 실행 증거·승인 기록은 여전히 필요하다.
 
 ### 추가 버전 충돌 (자동 migration 추적 불가)
 
@@ -82,7 +82,7 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 
 ### 단계 B — 과거 승인 배포 artifacts 복원 (미수행)
 - 41개 이름 매칭 버전 차이에 대해 **배포 당시 Git commit / migration 원문 SHA256 / 원격 승인 이벤트 / 적용 작업 증거**를 재구성한다. 단지 이름이나 현재 함수를 보고 "같음" 체크 금지.
-- 34개 운영 전용 적용 SQL의 **독립 증빙 저장소/히스토리** 확보; 없으면 schema object/state에 대해 더 엄격한 복구 계획이 필요하다.
+- 운영-only 34개의 SQL 원문은 **운영 migration history `statements`에 모두 존재**함을 확인했다. credential·민감 내용 검수 없이 공개 저장소로 추출하지 말고, 운영자의 통제된 비공개 복원 절차와 원본 배포 실행 증거를 별도 확보한다.
 - 5개 오래된 로컬-only migration의 **의도적 미배포 vs 다른 버전 수동 반영**을 구분하고, 데이터 UPDATE/INSERT의 반복 실행 영향을 평가한다. 개별 운영 승인 전에는 임의 적용 금지.
 
 ### 단계 C — 최종 체인 재현 (미수행)
@@ -98,7 +98,8 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 ## 5. 증거 등급
 
 - **확인됨:** 운영 migration 178개, 저장소 SQL 153개, 버전·이름 조합 차이 및 read-only 주요 객체 존재 여부. 이미 검증한 D8K-13 부분 PG17 PASS는 **커밋 f7455eb1의 합성 fixture**에 대해서만 성립한다.
-- **확인되지 않음:** 실제 과거 migration SQL 원문 및 SHA equivalence, 전체 과거 schema 재구축, 백업/복원, 브라우저/서버 독립 검토자, 고객 가격·Offer·CTA.
+- **추가로 확인됨:** 운영 적용 이력 178건 모두 SQL 원문 보존; 같은 이름·다른 버전 41건 중 34건의 byte-equivalence, 과거 Git SHA 복원 1건. 자세한 현황: [운영 SQL 원문 지문 감사](./r16i-r4-d8k13-hosted-sql-provenance-hash-audit-20261016.md).
+- **미확인:** 다른 7건의 완전 동일성(일부는 실제 적용 범위가 다름), 동일 버전·이름 103건 중 46건, 전체 historical replay, 복원·백업, 독립 검토자 및 가격·Offer·CTA.
 - **결론:** 전체 pending migration 체인 **배포 준비 불가(P0/HOLD)**. 다음 진행은 먼저 migration 역사적 출처·동일성 조사의 기록화이지, 운영 DB 적용이 아니다.
 
 
@@ -109,3 +110,16 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 - 일반 실행: `D8K13_FULL_MIGRATION_CHAIN_READONLY_HOLD` 마커 출력, 종료코드 0(조회 자체 성공).
 - `--enforce-release` 실행: `D8K13_FULL_CHAIN_RELEASE_REFUSED` 출력, **종료코드 3**, DB 접속/파일 쓰기 없음.
 - **참고:** 이 검증은 실제 코드/메타데이터 비교 로직을 실행한 것이며, 과거 SQL 본문의 byte-equivalence 검증이나 PostgreSQL 전체 migration 실행이 아니다. 운영 변경 승인으로 승격해서는 안 된다.
+
+## 7. 본문 기반 출처 검증 완료분 (2026-10-16, 후속 조사)
+
+초기 `VERSION/NAME` 감사 이후 실제 Supabase migration `statements` 배열을 확인했다. 178건 모두 본문이 있으며(1문장 150건, 복수문장 28건), DB 내부에서 `pgcrypto SHA-1` Git blob 지문을 계산한 뒤 GitHub blob과 비교했다. **원문 SQL이나 credential은 공개 저장소로 복사하지 않았다.**
+
+- **같은 이름·다른 버전 41건:** 29건 Git blob 완전 일치, 5건 마지막 LF 하나만 달랐음. 나머지 7건 현재 파일과 다름.
+- **7건 중 한 건**은 과거 Git 커밋 `9c562c54101f`의 파일이 운영 기록과 정확히 일치. `face_lab_v2_persistence_revision`은 앞에 LF 하나만 더 있음. `data_taxonomy3_product_exact_equivalence_v1`은 트랜잭션 BEGIN/COMMIT 래퍼 차이.
+- `data_taxonomy8_nullable_legacy_category_projection_v1`은 **운영에서 실행된 DDL 단 64 bytes**, 반면 현재 GitHub 파일은 더 넓은 마이그레이션. `data_ai29c_c5b_subject_presentation_identity_correction_v1`도 원문과 파일 분량/내용이 다르므로 수동 재검토 P0.
+- **운영-only 34건:** 원문 복원 가능한 history row 모두 확인. 특히 `20260622093000_repair_review_queue_distinct_observed_dates`는 과거 rename commit `2095c14aff46`과 blob SHA로 복원 가능.
+- **기존에 둘 다 일치하던 이름·버전 103건:** 57건 해시 일치, 46건 미입증(복수 statements 28, 1개 statements 18). 단일 내용의 일치가 확인되지 않았다고 모두 다른 SQL이라고 단정하지 않는다.
+- JSON 감사 매니페스트 및 오프라인 검증기: `scripts/product-evidence/baselines/d8k13-hosted-migration-provenance-readonly-20261016.json`, `node scripts/product-evidence/verify-d8k13-hosted-provenance-v1.mjs --full`.
+
+**기존 결론 `운영 릴리스 HOLD`는 변경 없다.** 본문이 보존된 사실은 **사용할 수 있는 안전한 복구 이력**을 제공하지만, 외부 승인/재실행·migration repair·운영 배포의 근거가 아니다.
