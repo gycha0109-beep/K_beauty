@@ -3,7 +3,7 @@
 // no SQL, no secrets, no remote state, no mutation. This gate is intentionally
 // a HOLD until the chronology conflict and operational approvals are resolved.
 import assert from "node:assert/strict";
-import {readFileSync,existsSync} from "node:fs";
+import {readFileSync,existsSync,readdirSync} from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -55,6 +55,28 @@ const realChainFixtureIncluded=[
 ].every(s=>actualV2ChainTest.includes(s));
 const unresolvedStaticConflict=v2First&&createsV2&&d8k13RefusesV2&&
  !inertV2CompatibilityCandidate;
+const appliedSnapshot=JSON.parse(content(
+ "scripts/product-evidence/baselines/d8k13-hosted-migrations-readonly-20261016.json"));
+assert.equal(appliedSnapshot.schema,"D8K13_HOSTED_MIGRATION_HISTORY_READONLY_V1");
+assert.equal(appliedSnapshot.migrations.length,appliedSnapshot.observed_count);
+const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
+const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
+const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
+ .filter(name=>name.endsWith(".sql"));
+const localItems=migrationFiles.map(file=>{
+ const parts=/^(\\d{8}(?:\\d{6})?)_(.+)\\.sql$/.exec(file);
+ if(!parts)throw Error("D8K13_UNKNOWN_MIGRATION_FILENAME: "+file);
+ return {file,version:parts[1],name:parts[2]};
+});
+const unmatchedLocalVersions=localItems.filter(x=>!historicalVersions.has(x.version));
+const unmatchedLocalNames=localItems.filter(x=>!historicalNames.has(x.name));
+const historicalOnlyNames=appliedSnapshot.migrations
+ .filter(x=>!localItems.some(y=>y.name===x.name));
+const duplicateLocalVersions=localItems
+ .filter((x,i)=>localItems.findIndex(y=>y.version===x.version)!==i);
+const historyDrift=unmatchedLocalVersions.length>0||
+ unmatchedLocalNames.length>0||
+ historicalOnlyNames.length>0||duplicateLocalVersions.length>0;
 
 assert.ok(defaultLegacyRefusal&&exactManifest,
  "D8K13_PRECONDITION_OR_MANIFEST_GUARD_MISSING");
@@ -70,13 +92,23 @@ const result={
  conditionalInertV2CompatibilityCandidate:inertV2CompatibilityCandidate,
  actualV2MigrationChainTestPresent:realChainFixtureIncluded,
  unresolvedStaticSequenceConflict:unresolvedStaticConflict,
+ pinnedReadOnlyMigrationSnapshotDate:appliedSnapshot.observed_date_kst,
+ pinnedLastAppliedMigrationVersion:appliedSnapshot.last_applied_version,
+ localMigrationFileCount:localItems.length,
+ pinnedAppliedMigrationCount:appliedSnapshot.migrations.length,
+ localVersionsMissingFromPinnedAppliedHistory:unmatchedLocalVersions.length,
+ localNamesMissingFromPinnedAppliedHistory:unmatchedLocalNames.length,
+ pinnedAppliedNamesMissingLocally:historicalOnlyNames.length,
+ duplicateLocalMigrationVersionOccurrences:duplicateLocalVersions.length,
+ fullHistoricalMigrationChainDriftDetected:historyDrift,
+ fullHistoricalMigrationChainReleaseApproved:false,
  actualPG17ChainAcceptanceVerifiedByThisScript:false,
  currentHostedLastAppliedVersion:"NOT_CHECKED_BY_THIS_SCRIPT",
  backupsAndRestoreVerified:false,
  securityIssue1208Resolved:false,
  independentReviewerValidated:false,
  productionReleaseAuthorized:false,
- next:"Run synthetic native PG17 actual D8D-v2-before-D8K13 acceptance; then verify hosted dry-run, recoverable backup, manifest, independent reviewer and security issue 1208 before separate operational approval"
+ next:"Reconcile 153 local / 178 pinned applied history, 49 unmatched versions and 34 applied-only names, then separately review hosted dry-run, backup/restore, reviewer, supply-chain #1208 and full-chain PG17 before any release"
 };
 console.log(JSON.stringify(result));
 if(args[0]==="--enforce-release"){
