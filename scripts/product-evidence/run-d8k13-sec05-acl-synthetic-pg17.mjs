@@ -103,7 +103,7 @@ function legacyVariant(hardened){
  const after="  if p_jti_hash !~ '^[0-9a-f]{64}$'";
  assert.equal(hardened.split(before).length,2,
   "SEC05_EXACT_HARDENED_SIX_NULL_GUARDS_MISSING");
- return hardened.replace(before,after);
+ return hardened.replace(before,()=>after);
 }
 async function startDocker(){
  checkLocal();
