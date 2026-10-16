@@ -6,7 +6,28 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {args,verifyBundle,requirePinnedTrust} from './sca-release-bundle.mjs';
-import {verifyScopedCandidate,verifyScopedApproval,verifyScopedReadbackBytes,assertScopedAccessDenied,githubScopedPackageMetadataUrl} from './sca-release-scoped.mjs';
+import {verifyScopedCandidate,verifyScopedApproval,verifyScopedReadbackBytes,assertScopedAccessDenied,githubScopedPackageMetadataUrl,assertGithubPrivateMetadata} from './sca-release-scoped.mjs';
+import {verifyFromCandidate,verifyOaepReplacementArchive} from './sca-release-oaep-candidate.mjs';
+
+const oaepSchema='bejewely.oaep-replacement-scoped-candidate.v1';
+export function verifyPublicationCandidate({originals,output}){
+  const file=path.join(output,'scoped-candidate.json'),stat=fs.lstatSync(file);
+  assert.ok(stat.isFile()&&!stat.isSymbolicLink()&&stat.size<=4*1024*1024,'bounded physical candidate manifest required');
+  const schema=JSON.parse(fs.readFileSync(file)).schema;
+  if(schema===oaepSchema)return verifyFromCandidate({originals,output});
+  assert.equal(schema,'bejewely.scoped-candidate.v1','unknown publication candidate profile');
+  return verifyScopedCandidate({originals,output});
+}
+export function verifyPublicationReadback({receipt,metadata,originalName,originalBytes,artifact,bytes}){
+  if(receipt.manifest?.schema===oaepSchema){
+    assert.equal(receipt.publicationLinkage,'UNLINKED_BOOTSTRAP');assert.equal(artifact.originalName,originalName);
+    assert.deepEqual(artifact,receipt.artifacts.find(a=>a.originalName===originalName),'readback artifact not admitted');
+    assertGithubPrivateMetadata(metadata,originalName,{stage:'INITIAL_UNLINKED'});
+    return verifyOaepReplacementArchive(originalBytes,bytes,artifact,receipt.manifest.build);
+  }
+  return verifyScopedReadbackBytes({metadata,originalName,originalBytes,artifact,bytes,
+    stage:artifact.publicationLinkage==='UNLINKED_BOOTSTRAP'?'INITIAL_UNLINKED':'FINAL_LINKED'});
+}
 
 export function checkScopedExecutionControls(approval){
   assert.equal(approval.schema,'bejewely.scoped-upload-approval.v2');
@@ -46,7 +67,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
   const admit=()=>{
     requirePinnedTrust(a['--trust']);
     verifyBundle(a['--original-bundle']);
-    const receipt=verifyScopedCandidate({originals,output:a['--candidate']}),approvalBytes=fs.readFileSync(a['--approval']);
+    const receipt=verifyPublicationCandidate({originals,output:a['--candidate']}),approvalBytes=fs.readFileSync(a['--approval']);
     verifyScopedApproval({candidateSha256:receipt.candidateSha256,approvalBytes,
       signatures:JSON.parse(fs.readFileSync(a['--signatures'])),trust:JSON.parse(fs.readFileSync(a['--trust']))});
     const approval=JSON.parse(approvalBytes);checkScopedExecutionControls(approval);
@@ -85,8 +106,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
         readback:async(artifact,approval)=>{
           const metadata=JSON.parse(await get(githubScopedPackageMetadataUrl(artifact.originalName),token,1024*1024));
           const bytes=await get(approval.tarballUrls[artifact.originalName],token);
-          verifyScopedReadbackBytes({metadata,originalName:artifact.originalName,originalBytes:fs.readFileSync(originals[artifact.originalName]),artifact,bytes,
-            stage:artifact.publicationLinkage==='UNLINKED_BOOTSTRAP'?'INITIAL_UNLINKED':'FINAL_LINKED'});
+          verifyPublicationReadback({receipt:admitted.receipt,metadata,originalName:artifact.originalName,originalBytes:fs.readFileSync(originals[artifact.originalName]),artifact,bytes});
           await assertScopedAccessDenied(approval.tarballUrls[artifact.originalName]);
           await assertScopedAccessDenied(approval.tarballUrls[artifact.originalName],{unauthorizedToken:other});
         }});

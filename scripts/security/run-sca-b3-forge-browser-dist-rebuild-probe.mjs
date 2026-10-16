@@ -48,7 +48,7 @@ try{
  const pinnedToolchain={webpack:"4.44.1","webpack-cli":"3.3.12"};
  fs.writeFileSync(path.join(harness,"package.json"),JSON.stringify({
   name:"bejewely-sca-b3-browser-rebuild-only",private:true,version:"0.0.0",
-  dependencies:pinnedToolchain
+  dependencies:{...pinnedToolchain,...(process.env.SCA_OAEP_REPLACEMENT==='1'?{typescript:'5.9.3'}:{})}
  },null,2)+"\n");
  run("npm",["install","--ignore-scripts","--no-audit","--no-fund","--package-lock=false","--no-save"],harness,190000,
   {...process.env,CI:"true",npm_config_update_notifier:"false",NODE_OPTIONS:""});
@@ -455,7 +455,7 @@ try{
   officialAuditBypass:false,distributionApproved:false,onlyTempFiles:true
  };
  console.log("SCA_B3_FORGE_BROWSER_REBUILD="+JSON.stringify(report));
- if(process.env.SCA_B6_VERIFY_CANDIDATE === "1") {
+ if(process.env.SCA_B6_VERIFY_CANDIDATE === "1" && process.env.SCA_OAEP_REPLACEMENT !== '1') {
   const {validateB6Candidate}=await import("./run-sca-b6-candidate-probe.mjs");
   validateB6Candidate(tarball);
  }
@@ -463,7 +463,16 @@ try{
   const {validateFullGraphCandidate}=await import("./run-sca-b4-full-graph-candidate.mjs");
   await validateFullGraphCandidate(tarball,fullDistPacks[0]);
  }
- if(process.env.SCA_SCOPED_VALIDATE_FULL_GRAPH === "1") {
+ if(process.env.SCA_OAEP_REPLACEMENT === '1') {
+  const {buildOaepReplacement}=await import('./sca-release-oaep-build.mjs');
+  const {createRequire}=await import('node:module');
+  const builderRequire=createRequire(path.join(harness,'package.json'));
+  const replacement=buildOaepReplacement({originalForgeTarball:tarball,webpackCli:cli,webpackConfig:upstreamConfig,
+    typescript:builderRequire('typescript'),jquerySource:jqSource,chrome,temp});
+  const {validateFullGraphCandidate}=await import('./run-sca-b6-scoped-full-graph.mjs');
+  await validateFullGraphCandidate(replacement.tarball,replacement.receipt,{scopedMode:true,
+    installOnly:process.env.SCA_SCOPED_INSTALL_ONLY==='1',replacement:{originalForgeTarball:tarball,build:replacement.build}});
+ } else if(process.env.SCA_SCOPED_VALIDATE_FULL_GRAPH === "1") {
   const {validateFullGraphCandidate}=await import("./run-sca-b6-scoped-full-graph.mjs");
   await validateFullGraphCandidate(tarball,fullDistPacks[0],{scopedMode:true,installOnly:process.env.SCA_SCOPED_INSTALL_ONLY==='1'});
  }

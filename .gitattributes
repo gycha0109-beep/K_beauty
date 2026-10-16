@@ -1,0 +1,4 @@
+# Preserve byte-pinned release evidence and primary-source originals across checkouts.
+/security/release/** -text
+/security/vendor/node-forge-oaep-replacement/** -text
+/docs/security/sec-sca-20261015-oaep-original-recovery.json -text

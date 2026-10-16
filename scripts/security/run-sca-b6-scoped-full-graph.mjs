@@ -16,6 +16,7 @@ import {prepareScopedArchives,verifyScopedCandidate,startScopedFixture,scopedNam
 import {prepareBrowserNoticeKit,verifyBrowserNoticeKit} from "./sca-release-browser-notices.mjs";
 import {verifyConditionalReview} from './sca-release-review-preflight.mjs';
 import {scopedPublicationPlan} from './prepare-sca-release-scoped-publication.mjs';
+import {prepareOaepReplacementCandidate,verifyOaepReplacementCandidate,prepareOaepBrowserNoticeKit,verifyOaepBrowserNoticeKit} from './sca-release-oaep-candidate.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const hash=(bytes,alg="sha256")=>createHash(alg).update(bytes).digest("hex");
@@ -51,7 +52,7 @@ function audit(cwd,label,args=[]) {
     targetScannerCoverage:Object.fromEntries(targets.map(name=>[name,leaves.some(x=>x.name===name)]))};
 }
 
-export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scopedMode=true,installOnly=false}={}) {
+export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scopedMode=true,installOnly=false,replacement=null}={}) {
   assert.equal(scopedMode,true,'this separate harness must preserve scoped audit separation');
   assert.equal(process.platform,"linux","B4 clean install requires Linux runner; Windows sandbox denies workspace symlinks");
   const originalLockBytes=fs.readFileSync(path.join(root,"package-lock.json"));
@@ -88,14 +89,28 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
       assert.ok(!metadata.bundleDependencies&&!metadata.bundledDependencies,"unreviewed bundled dependencies");
     }
     assert.equal(Object.keys(expected.braces).length,10);
-    assert.equal(Object.keys(expected["node-forge"]).length,59);
+    assert.equal(Object.keys(expected["node-forge"]).length,replacement?61:59);
+    let originalForgeDirectory;
+    if(replacement){
+      assert.ok(replacement.originalForgeTarball&&replacement.build,'complete OAEP replacement provenance required');
+      originalForgeDirectory=path.join(temp,'original-forge');fs.mkdirSync(originalForgeDirectory);
+      run('tar',['-xzf',replacement.originalForgeTarball,'-C',originalForgeDirectory],temp);
+      originalForgeDirectory=path.join(originalForgeDirectory,'package');
+      console.log('SCA_OAEP_RUNTIME_SCOPE='+JSON.stringify({runtimeRequired:!installOnly,
+        reason:installOnly?'independent install replay; producer performs fresh builds':'OAEP implementation and browser bytes changed; fresh web/Expo/Metro/Android required',runtimeProofReused:false}));
+    }
     if(scopedMode){
-      scoped=prepareScopedArchives({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped'),linkage:'UNLINKED_BOOTSTRAP',noticeDelivery:true});
-      const scopedNotice=path.join(temp,'scoped/NOTICE.md'),noticeBytes=fs.readFileSync(scopedNotice);
+      const scopedOptions=replacement?{originals:{braces:bracesTarball,'node-forge':replacement.originalForgeTarball},
+        replacementForgeTarball:forgeCopy,build:replacement.build,output:path.join(temp,'scoped')}:
+        {originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped'),linkage:'UNLINKED_BOOTSTRAP',noticeDelivery:true};
+      const prepareCandidate=replacement?prepareOaepReplacementCandidate:prepareScopedArchives;
+      const verifyCandidate=replacement?verifyOaepReplacementCandidate:verifyScopedCandidate;
+      scoped=prepareCandidate(scopedOptions);
+      const scopedNotice=path.join(temp,'scoped',replacement?'THIRD-PARTY-NOTICES.md':'NOTICE.md'),noticeBytes=fs.readFileSync(scopedNotice);
       fs.writeFileSync(scopedNotice,'tampered');
-      assert.throws(()=>verifyScopedCandidate({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped')}),/substitution/);
+      assert.throws(()=>verifyCandidate(scopedOptions),/substitution/);
       fs.writeFileSync(scopedNotice,noticeBytes);
-      assert.equal(verifyScopedCandidate({originals:{braces:bracesTarball,'node-forge':forgeCopy},output:path.join(temp,'scoped')}).candidateSha256,scoped.candidateSha256);
+      assert.equal(verifyCandidate(scopedOptions).candidateSha256,scoped.candidateSha256);
       if(process.env.SCA_SCOPED_EXPECTED_CANDIDATE_SHA256)assert.equal(scoped.candidateSha256,process.env.SCA_SCOPED_EXPECTED_CANDIDATE_SHA256,'scoped packages differ on independent runner');
       if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'scoped_candidate_sha256='+scoped.candidateSha256+'\n');
       fixture=await startScopedFixture(scoped.artifacts,temp);
@@ -108,25 +123,32 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
         dependencies:Object.fromEntries(scoped.artifacts.map(a=>[a.originalName,'npm:'+a.name+'@'+a.version]))}));
       run('npm',['install','--ignore-scripts','--no-audit','--no-fund'],aliasGraph,120000);
       for(const a of scoped.artifacts)assert.deepEqual(inventory(path.join(aliasGraph,'node_modules',a.originalName)),a.fileSha256,'direct npm alias byte mismatch');
-      const packetNames=['THIRD-PARTY-NOTICES.md','license-review-sbom.json','license-review.json','public-license-findings.json','bootstrap-license-lineage.json'];
+      const packetNames=replacement?Object.keys(scoped.resources):['THIRD-PARTY-NOTICES.md','license-review-sbom.json','license-review.json','public-license-findings.json','bootstrap-license-lineage.json'];
       const candidatePacket={candidateSha256:scoped.candidateSha256,
         resources:Object.fromEntries(packetNames.map(n=>[n,fs.readFileSync(path.join(temp,'scoped',n))])),
         fileSha256:Object.fromEntries(packetNames.map(n=>[n,scoped.manifest.files[n].sha256]))};
-      const noticeOptions={forgeTarball,candidateSha256:scoped.candidateSha256,output:path.join(temp,'browser-notice-kit'),candidatePacket};
-      browserNoticeKit=prepareBrowserNoticeKit(noticeOptions);
+      const noticeOptions=replacement?{candidate:scoped,output:path.join(temp,'browser-notice-kit')}:
+        {forgeTarball,candidateSha256:scoped.candidateSha256,output:path.join(temp,'browser-notice-kit'),candidatePacket};
+      const prepareKit=replacement?prepareOaepBrowserNoticeKit:prepareBrowserNoticeKit;
+      const verifyKit=replacement?verifyOaepBrowserNoticeKit:verifyBrowserNoticeKit;
+      browserNoticeKit=prepareKit(noticeOptions);
       if(process.env.SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256)assert.equal(browserNoticeKit.manifestSha256,process.env.SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256,'independent browser notice kit differs');
       // Both missing required notices and a same-size byte mutation must fail.
       const noticeFile=path.join(noticeOptions.output,'THIRD-PARTY-NOTICES.md'),saved=fs.readFileSync(noticeFile);
-      fs.unlinkSync(noticeFile);assert.throws(()=>verifyBrowserNoticeKit(noticeOptions));fs.writeFileSync(noticeFile,saved);
-      const changed=Buffer.from(saved);changed[0]^=1;fs.writeFileSync(noticeFile,changed);assert.throws(()=>verifyBrowserNoticeKit(noticeOptions));fs.writeFileSync(noticeFile,saved);
-      verifyBrowserNoticeKit(noticeOptions);browserNoticeKit.missingAndTamperNegativeControls='PASS';
+      fs.unlinkSync(noticeFile);assert.throws(()=>verifyKit(noticeOptions));fs.writeFileSync(noticeFile,saved);
+      const changed=Buffer.from(saved);changed[0]^=1;fs.writeFileSync(noticeFile,changed);assert.throws(()=>verifyKit(noticeOptions));fs.writeFileSync(noticeFile,saved);
+      verifyKit(noticeOptions);browserNoticeKit.missingAndTamperNegativeControls='PASS';
       if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'browser_notice_kit_sha256='+browserNoticeKit.manifestSha256+'\n');
       console.log('SCA_SCOPED_BROWSER_NOTICE_KIT='+JSON.stringify(browserNoticeKit));
       console.log('SCA_SCOPED_DIRECT_ALIAS=PASS');
-      console.log('SCA_SCOPED_CANDIDATE='+JSON.stringify({candidateSha256:scoped.candidateSha256,manifest:scoped.manifest,publication:'NOT_RUN'}));
+      console.log('SCA_SCOPED_CANDIDATE='+JSON.stringify({candidateSha256:scoped.candidateSha256,candidateLicensePacketSha256:scoped.candidateLicensePacketSha256,manifest:scoped.manifest,publication:'NOT_RUN'}));
       const review=verifyConditionalReview(JSON.parse(fs.readFileSync(path.join(root,'security/release/sca-b6-conditional-review-decision.json'))));
-      console.log('SCA_CONDITIONAL_REVIEW_PREFLIGHT='+JSON.stringify(review));
-      console.log('SCA_SCOPED_PREPUBLICATION_PLAN='+JSON.stringify(scopedPublicationPlan(scoped,review)));
+      console.log('SCA_CONDITIONAL_REVIEW_PREFLIGHT='+JSON.stringify(replacement?{...review,applicability:'HISTORICAL_BASELINE_ONLY',replacementApproval:false}:review));
+      console.log('SCA_SCOPED_PREPUBLICATION_PLAN='+JSON.stringify(replacement?{
+        profile:'NODE_RSA_MIT_V1',candidateSha256:scoped.candidateSha256,candidateLicensePacketSha256:scoped.candidateLicensePacketSha256,
+        replacementReview:JSON.parse(scoped.resources['license-review.json']),publicationLinkage:'UNLINKED_BOOTSTRAP',
+        upload:'NOT_RUN',actualRegistryReadback:'NOT_RUN',finalLegalApproval:false,productApplied:false,
+        originalAdvisoryAuditRequired:true}:scopedPublicationPlan(scoped,review)));
     }
     const manifest=JSON.parse(originalManifestBytes);
     const aliasSpecs=Object.fromEntries(scoped.artifacts.map(a=>[a.originalName,'npm:'+a.name+'@'+a.version]));
@@ -211,6 +233,8 @@ export async function validateFullGraphCandidate(forgeTarball,forgeReceipt,{scop
       path.join(graph,"node_modules/braces")],root);
     run(process.execPath,[path.join(root,"scripts/security/verify-private-forge-probe-child.mjs"),
       path.join(graph,"node_modules")],root);
+    if(replacement){const p=run(process.execPath,[path.join(root,'scripts/security/verify-sca-oaep-installed.mjs'),
+      path.join(graph,'node_modules/node-forge'),originalForgeDirectory],root);console.log(p.stdout);}
     const consumerProbe=path.join(graph,"sca-b4-consumers.cjs");
     fs.writeFileSync(consumerProbe,`const assert=require('node:assert/strict');
 const mm=require('micromatch'); const fg=require('fast-glob');
@@ -277,8 +301,12 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     assert.deepEqual(physical.sort(),paths.slice().sort(),"lifecycle installed an uninventoried target");
     run(process.execPath,[path.join(root,"scripts/security/verify-private-forge-probe-child.mjs"),
       path.join(graph,"node_modules")],root);
+    if(replacement){const p=run(process.execPath,[path.join(root,'scripts/security/verify-sca-oaep-installed.mjs'),
+      path.join(graph,'node_modules/node-forge'),originalForgeDirectory],root);console.log(p.stdout);}
     if(installOnly){
       const receipt={schema:'bejewely.scoped-install-replay.v1',head,scopedCandidateSha256:scoped.candidateSha256,
+        ...(replacement?{profile:'NODE_RSA_MIT_V1',candidateLicensePacketSha256:scoped.candidateLicensePacketSha256,
+          oaepInstalledCompatibility:'PASS_BOTH_LIFECYCLES',runtimeBuilds:'NOT_RUN_IN_INSTALL_REPLAY'}:{}),
         artifacts:scoped.manifest.artifacts,browserNoticeKit,installed,consumers,audits,ignoreScriptsInstall:'PASS',lifecycleInstall:'PASS',
         originalAuditAcceptance:'FAIL',releaseApproved:false,productApplied:false,artifactsDeletedOnExit:true};
       console.log('SCA_SCOPED_INSTALL_REPLAY='+JSON.stringify(receipt));return receipt;
@@ -330,6 +358,8 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
     bundles(exports);
     const receipt={schema:"bejewely.security.sca-b4-full-graph.v1",head,node:process.version,
       scopedMode,scopedCandidateSha256:scoped?.candidateSha256||null,scopedArtifacts:scoped?.manifest.artifacts||null,browserNoticeKit,
+      ...(replacement?{profile:'NODE_RSA_MIT_V1',runtimeProofReused:false,
+        candidateLicensePacketSha256:scoped.candidateLicensePacketSha256,oaepInstalledCompatibility:'PASS_BOTH_LIFECYCLES'}:{}),
       officialSecurityAcceptance:scopedMode?'FAIL_ORIGINAL_ADVISORIES':'HOLD',realPrivateReadback:'NOT_RUN',
       npm:run("npm",["--version"],graph).stdout.trim(),
       originalLockSha256:hash(originalLockBytes),candidateLockSha256:hash(candidateBytes),
@@ -342,7 +372,7 @@ console.log('SCA_B4_REAL_CONSUMERS=PASS');\n`);
       releaseApproved:false,deviceSmoke:"NOT_RUN_NO_DEVICE_OR_ISOLATED_BACKEND",
       artifactsDeletedOnExit:true};
     console.log("SCA_B4_FULL_GRAPH_EVIDENCE="+JSON.stringify(receipt));
-    if(process.env.SCA_SCOPED_REQUIRE_ANDROID==='1')assert.equal(android.status,'PASS','scoped Android debug build is required; NOT_RUN is not PASS');
+    if(replacement||process.env.SCA_SCOPED_REQUIRE_ANDROID==='1')assert.equal(android.status,'PASS','scoped Android debug build is required; NOT_RUN is not PASS');
     assert.ok(checks.every(c=>c.status==="PASS"),"candidate compatibility failed; see command logs above");
     return receipt;
   } finally {

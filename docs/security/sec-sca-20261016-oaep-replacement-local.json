@@ -1,0 +1,50 @@
+{
+  "schema": "bejewely.oaep-replacement-local-evidence.v1",
+  "baselineHead": "d52f5b198b35c8f68490e54996835ac96b0c86e4",
+  "profile": "NODE_RSA_MIT_V1",
+  "localOnly": true,
+  "unscopedForgeSha256": "0f4bc25897a9f7427a55e0b1a0ebf65d7d39a085cad696bd548e5a16355b9e4c",
+  "sourceRecipeSha256": "287847389c47c44d21c3f6ed6dc31608f8a0e45335f08334294230630f64aac5",
+  "candidateSha256": "16f57a7987962285fc942cb9e16ae29314edaeeca60539b6ef9db21853e2c674",
+  "candidateLicensePacketSha256": "cfefa730436f6f3f7c85ff9412086f7802dc757a5281928766da8e6c62611995",
+  "browserNoticeKitSha256": "2150c8c466ef5ba89a05afb3d0862df75d3705613a5ee024bc2f08222541a4f7",
+  "artifacts": [
+    {
+      "name": "@gycha0109-beep/braces",
+      "version": "3.0.3",
+      "sha256": "96f8f2ee6331584b39d2899b251e1b17f6e1ad9848569858dd0dcfc61af245a8",
+      "files": 12,
+      "noticeSha256": "5877e6d31d775df099683d410ef0fab5f8c94e780f892cd424fc71daab4ccade"
+    },
+    {
+      "name": "@gycha0109-beep/node-forge",
+      "version": "1.4.0",
+      "sha256": "bd9c1813971c50af398b5796576ad0c9df676cead8e371a9e1254a98f1b62bdc",
+      "files": 63,
+      "noticeSha256": "5877e6d31d775df099683d410ef0fab5f8c94e780f892cd424fc71daab4ccade"
+    }
+  ],
+  "tests": {
+    "offlineAdmission": 70,
+    "installedOaepAssertions": 480,
+    "realChromium": {
+      "forge.min.js": 28,
+      "forge.all.min.js": 28
+    },
+    "noticeTamperNegativeControls": 4,
+    "withinRunnerDuplicatePack": "PASS"
+  },
+  "freshFullGraph": "PENDING_CI",
+  "freshAndroid": "PENDING_CI",
+  "independentRunner": "PENDING_CI",
+  "originalAudit": {
+    "fullHigh": 22,
+    "productionHigh": 19,
+    "critical": 0,
+    "status": "FAIL_NOT_WAIVED"
+  },
+  "publication": "NOT_RUN",
+  "actualRegistryReadback": "NOT_RUN",
+  "deviceAndApiAuth": "NOT_RUN",
+  "historicalWebRsaTerms": "OPEN_FOR_REMOVED_HISTORICAL_IMPLEMENTATION"
+}

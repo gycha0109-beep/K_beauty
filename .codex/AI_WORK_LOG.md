@@ -3335,3 +3335,11 @@ Watchtower-Track: security
 - Fresh live original-name audits after exactremote package/lockblob equality:fullHIGH22/MOD13/C0,prodHIGH19/MOD11/C0,exit1; rawJSON outputs retained and SHA summary committed. Audit-only refresh, notnewnpmci. Latestofficialregistry3.0.3/1.4.0, advisories nofixedversion.
 - Existing loggedinUI read-only:Packages paidusageblocked, profile no packages, globalinheritanceunchanged. Current operator credentials/trust env absent, no credentials printed/issued. MinimalclassicPAT setup guide prepared, not prematurely requested while rightsremainblocked. No upload/ACL/config/payment/main/product/prod change.
 - Ownerprivatepublicationauthority acknowledged conditionalonactuallicense/executableprerequisites. No renewed generalapproval request, paidcounsel gate or authorreply gate. ActualForge applicableterms remainHOLD; realreadback/productinstall/device/APIAuthNOTRUN.
+
+
+## 2026-10-16 — OAEP implementation replacement
+
+- User-authorized parallel A/B/C resolution selected B: complete pinned MIT node-rsa OAEP + Forge synchronous adapter; historical WebRSA terms not falsely cleared. A exhausted and full Expo Forge replacement wider.
+- Original B6 archives/RSA patch/LICENSE and non-OAEP source preserved; new backend/MIT license + six browser files rebuilt. Separate candidate/review/SBOM/notice kit and guarded publisher profile implemented.
+- Local70 admission tests,480 OAEP assertions,realChromium2x28,duplicate packs and4 real candidate/kit tamper controls PASS. Source-changing full graph/Android/independent CI PENDING. Exact local hashes recorded in oaep-replacement-local evidence; no new final product PASS.
+- Existing private-publication authorization recognized, credentials/real pinned signatures absent; no fake trust/upload/settings/payment/waiver/main/product/prod change. Original HIGH22/prodHIGH19/C0 FAIL remains.

@@ -10,6 +10,8 @@ on:
       - scripts/security/publish-approved-sca-*
       - scripts/security/stage-approved-sca-*
       - scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+      - scripts/security/verify-sca-oaep-installed.mjs
+      - security/vendor/node-forge-oaep-replacement/**
       - security/release/**
       - .github/workflows/sca-release-readiness.yml
   workflow_dispatch:
@@ -42,6 +44,7 @@ jobs:
       - run: node --test scripts/security/sca-release-license-review.test.mjs
       - run: node --test scripts/security/sca-release-owner-policy.test.mjs
       - run: node --test scripts/security/sca-release-ci-scope.test.mjs
+      - run: node --test scripts/security/sca-release-oaep-operator.test.mjs
   candidate:
     name: Clean release candidate structure (not approval)
     runs-on: ubuntu-24.04
@@ -78,6 +81,7 @@ jobs:
       - id: candidate
         env:
           SCA_B6_VERIFY_CANDIDATE: '1'
+          SCA_OAEP_REPLACEMENT: '1'
           SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
           SCA_SCOPED_REQUIRE_ANDROID: ${{ steps.scope.outputs.runtime_required == 'true' && '1' || '' }}
           SCA_SCOPED_INSTALL_ONLY: ${{ steps.scope.outputs.runtime_required == 'false' && '1' || '' }}
@@ -101,6 +105,7 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - env:
           SCA_B6_VERIFY_CANDIDATE: '1'
+          SCA_OAEP_REPLACEMENT: '1'
           SCA_B6_EXPECTED_CANDIDATE_SHA256: ${{ needs.candidate.outputs.digest }}
           SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
           SCA_SCOPED_INSTALL_ONLY: '1'
