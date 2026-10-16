@@ -76,7 +76,7 @@
 ## 5. 2026-10-16 결론
 
 - **확인됨:** 2026-10-16 학원 PC D8C/D8K11/D8K12/D8K13 Node+격리 PG17 합격; 운영 읽기 전용 판정 2건/게이트 OFF; PR #1341 Draft; #1208 OPEN.
-- **P0 대응 중:** D8D v2 선행 설치를 예상하되 **정확한 스키마·RLS·SECURITY INVOKER·권한·게이트 OFF·이력 0건**인 경우만 허용하는 조건부 코드를 작성했다. 신규 실제 순서 PG17 검증 전에는 HOLD.
+- **P0 대응 중:** D8D v2 선행 설치를 예상하되 **정확한 스키마·RLS·APPLY INVOKER/ROLLBACK DEFINER·제한된 실행 권한·게이트 OFF·이력 0건**인 경우만 허용하는 조건부 코드를 작성했다. 신규 실제 순서 PG17 검증 전에는 HOLD.
 - **미확인:** 적용 경로, 운영 백업/PITR 및 복원 시험, 독립 검토자, 공급망 보안 해결, 실제 운영 migration 계획. 운영 데이터는 전혀 변경하지 않았다.
 - **출시/운영 판정: HOLD.** 마이그레이션 일괄 적용, 수동 DB 쓰기, 병합, 배포 모두 금지.
 
@@ -85,8 +85,18 @@
 
 - 통합 SQL은 **D8D v2 advisory lock (195721,16)을 Product 행 락보다 먼저 확보**해 v2 APPLY와 잠금 순서를 맞춘다. D8D v1은 기존 Product 행 락으로 직렬화한다.
 - D8D v2 테이블 다섯 개(게이트, OWNER 승인, 적용, 적용 Offer, 이벤트)와 보호된 RPC 두 개가 모두 없으면 **기존 v1-only 두 건 경로**, 모두 있으면 **정확한 설치 상태 검증 경로**, 일부만 있으면 **거부**다.
-- v2 스키마가 존재할 때에는 5개 테이블의 컬럼 **이름·타입 정확히 일치**, base table/RLS, RPC가 `SECURITY INVOKER`, service_role 게이트/승인 테이블 직접 쓰기 불가 및 브라우저 읽기 불가를 검증한다. v2 게이트 `false`, 변경 티켓 `NULL`, OWNER 승인·적용·Offer·이벤트 0건을 강제한다.
+- v2 스키마가 존재할 때에는 5개 테이블의 컬럼 **이름·타입 정확히 일치**, base table/RLS, RPC는 **APPLY=`SECURITY INVOKER`, ROLLBACK=`SECURITY DEFINER`**로 각각 원본 계약과 일치하고, **두 함수 모두 `service_role`만 EXECUTE 가능**하며 `anon`·`authenticated`에는 실행 권한이 없어야 한다. service_role 게이트/승인 테이블 직접 쓰기 불가 및 브라우저 읽기 불가를 검증한다. v2 게이트 `false`, 변경 티켓 `NULL`, OWNER 승인·적용·Offer·이벤트 0건을 강제한다.
 - 원문 D8D v2 SQL을 수정하지 않고 합성 PG17에서 먼저 실행하도록 `run-d8k13-local-pg17.mjs`에 순서 재현을 추가했고, v2 게이트 ON, 승인 이력, 컬럼 드리프트, 권한 상승, 익명 SELECT, 테이블 누락을 각각 롤백 검증한다.
 - 합성 fixture: `05_d8dv2_existing_catalog_pg17.sql`, `20_d8dv2_chain_runtime_pg17.sql`. Product/Offer 실제 행 데이터나 운영 계정 정보는 사용하지 않는다.
 - 별도 릴리스 진단기는 조건부 코드 존재를 인식하지만 여전히 `status=HOLD`, `--enforce-release` 실패를 유지한다.
 - **검증 상태:** 소스 작성 및 정적 검수까지 수행했다. 실제 PostgreSQL 테스트의 신규 HEAD 통과 결과는 아직 확인되지 않았다. 보안 #1208, 백업/복원 불명, 독립 OWNER 부재 등도 남아 있다.
+
+
+## 7. 2026-10-16 학원 실제 PG17 실패 및 수정 (재검증 전)
+
+- 로그: `D8K13-acceptance-20261016-134623.log`, HEAD `3d447fc560ff4c306be4fe762cdcb0cb414532ca`. D8C(23), D8K11(464), D8K12(80), D8K13(78) Node 계약, D8K12 PG17, D8K13 v1-only 2건 격리 및 drift/rollback은 **PASS**.
+- 이어서 수행한 **D8D v2 실제 SQL → 통합 마이그레이션**은 `D8K13_UNEXPECTED_D8DV2_SECURITY`로 중단, 새 ordered-chain PASS 마커는 없음. 임시 컨테이너 정리는 완료.
+- 원인 확정: 기존 D8D v2 원본 SQL은 `r16i_d8d_apply_v2(...): SECURITY INVOKER`, `r16i_d8d_rollback_v2(...): SECURITY DEFINER`. 반면 기존 D8K-13 guard는 두 RPC가 모두 INVOKER라고 잘못 가정해 정상 원문 설치를 거부했다. 운영 DB의 실제 권한 이상이 아니다.
+- 보정: 통합 migration이 **서로 다른 원본 보안 속성**을 명시적으로 검사하고, 두 RPC의 `service_role EXECUTE` 허용 / `anon,authenticated EXECUTE` 차단을 추가로 검증한다. 기존 이력·게이트·권한·스키마 mismatch FAIL-CLOSED는 유지한다.
+- 추가 테스트: rollback 함수의 INVOKER 변형, 익명 RPC 실행 허용, service_role RPC 실행 권한 제거를 각각 거부하는 합성 PG17 부정 시나리오 3개.
+- **현재 결론:** 새로운 guard/runner 계약의 source 일치 여부는 검사했으나, 수정된 HEAD의 native PG17 성공은 **아직 확인되지 않았다**. 재검증 전 릴리스 HOLD. 이 수정은 운영 DB나 원본 D8D v2 migration을 건드리지 않았다.
