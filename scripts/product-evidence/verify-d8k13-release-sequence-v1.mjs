@@ -87,6 +87,12 @@ assert.equal(sameVersionTriage.multiStatementTokenFollowup.tokenDifference,2);
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.taxonomy8.historicalSqlBytes,64);
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.c5b.runtimeFunctionTokensMatchGit,1203);
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.exploitabilityProven,false);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.rankingAclLaterAppliedRepair.historical_records_readonly_verified,true);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.rankingAclLaterAppliedRepair.source_rankings_explicit_acl_origin_not_yet_proven,true);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.runtime_function_execute_role,"service_role_only");
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.public_execute_allowed,false);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.postgres_null_comparison_returns_unknown,true);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.legacy_sql_explicit_all_six_null_guards_present,false);
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
@@ -139,6 +145,10 @@ const result={
  sameVersionMultiStatementLexerDrift:2,
  rankingSnapshotHistoricalAclStepMissingInStoredStatements:true,
  liveAnonymousClaimExplicitNullGuardNotObserved:true,
+ laterRankingSnapshotAclRepairAppliedAndObserved:true,
+ anonymousClaimOnlyServiceRoleExecutable:true,
+ anonymousServerTokenHmacAndCookieBindingStaticallyVerified:true,
+ anonymousClaimNullGuardRemediationNotAuthorized:true,
  sameVersionSingleStatementTerminalDelimiterOnly:6,
  sameVersionSingleStatementTokenMatches:5,
  sameVersionSingleStatementEdgeNewlineBlobMatches:6,
