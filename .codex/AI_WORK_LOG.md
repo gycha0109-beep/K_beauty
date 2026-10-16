@@ -2,6 +2,25 @@
 
 ## Entries
 
+### 2026-10-15 / Skin S2-C 기존 추천과 사진 근거 기준 가상 비교 — 비노출 검증
+
+- 기반 S1-A #1319의 상태 계약. 현행 164제품 × 12설문 fixture에서 실제 `buildSkinMatchDecisionBundle`를 두 번 실행: 기존 numeric 사진, 증거로 뒷받침되는 사진 신호만 유지한 가상 numeric 입력.
+- `scripts/facelab/skin/skin-photo-counterfactual-core.mjs`에서 사진 상태 실패/저신뢰/누락/수치 불일치/직접 UV cue 부재 시 **오직 가상 입력**의 사진 가산 근거를 보류하고, 기존 입력은 보존한다.
+- `verify-face-lab-s2-photo-counterfactual.mjs`의 합성 9사진 상태×12설문=108쌍에서 고민 우선순위, Top Pick, Top3/전체 상품 순위, 설문/환경 점수 보존, 후보 집합 불변성, 가상 점수 비증가를 검증하도록 구현하고 Main Health에 연결.
+- 외부 Provider, 실제 사진, 사용자 정보, 네트워크/DB, 새 후보/정책, API 응답/저장, 제품 추천 계산기, Style, 운영/배포 **수정 없음**.
+- 보고 수치는 해당 브랜치 exact-head 검사 실행을 통해 확인. 이 합성 연구만으로 유효한 실사진 피부 판단, 공개 추천 score 변경 또는 출시를 승인할 수 없음. 공유 Vision v2/Style owner 및 보안 #1208 차단 유지.
+
+
+### 2026-10-15 / Face Lab Skin 관찰 신호 0과 판단 불가 분리 — S1-A 합성 검증
+
+- 트랙 `face-lab-skin`; `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2` 기반 독립 Draft PR. 관련 로드맵 #1307, 설계 #1317.
+- `scripts/facelab/skin/skin-axis-evidence-contract-core.mjs`는 7개 시각적 축의 `present/not_seen/unassessable/unknown`을 명시적으로 요구하고, 값/신뢰도/부위·단서/오류 사유의 일관성을 평가 전용으로 점검한다.
+- `verify-face-lab-skin-s1-axis-evidence.mjs`는 v1 0 소급 추론 금지, Provider 실패/사진 부적격/저신뢰, 축 누락/중복/불일치·잘못된 값/불필요 필드, 정상 축 유지, 부분 객체 오용을 합성 데이터로 검사한다. `verify-current-main-health.mjs`에도 연결.
+- 공용 Vision Provider, 원본 사진, 추천 계산·가중치·Top Pick, API, 저장·재진입, UI, Style, DB/Auth/RLS/Storage, 운영·배포 변경 없음. 실제 얼굴 사진/Provider 호출 0건.
+- 정확도, 실기기, 사람 평가, 추천 변동 및 완전한 CI 검증 결과는 별도. S1-B 공유 Vision 계약/Provider 소유자 검토 → S2-C 비노출 점수 비교 → S1-D 실제 사진 Human 평가 → 승인 후 적용. 보안 #1208 독립 HOLD.
+- 검증 명령 `node scripts/facelab/skin/verify-face-lab-skin-s1-axis-evidence.mjs`; 실제 CI 상태는 exact-head 실행 결과로 보완한다.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
