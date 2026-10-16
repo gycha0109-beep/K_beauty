@@ -35,7 +35,7 @@ function exactKeys(obj,expected,code) {
       OWN_KEYS(obj).length !== expected.length ||
       !expected.every(key=>Object.hasOwn(obj,key))) throw new Error(code);
 }
-function assertAllowedEnvironment(env, live) {
+function assertAllowedEnvironment(env, live, invoke) {
   if (!live) return null;
   // Fail closed in CI, including inadvertent secret injection through GitHub Actions.
   const CI_MARKERS = [
@@ -44,7 +44,10 @@ function assertAllowedEnvironment(env, live) {
   ];
   const isActive = value => value !== undefined && value !== null &&
     !["", "0", "false", "off", "no"].includes(String(value).trim().toLowerCase());
-  if (CI_MARKERS.some(name => isActive(env[name])))
+  // The actual Provider transport must also respect the REAL process
+  // environment; a caller-supplied object cannot hide a running CI job.
+  if (CI_MARKERS.some(name => isActive(env[name]) ||
+      (invoke===executeOpenAiChatJson && isActive(process.env[name]))))
     throw new Error("ci_face_photo_execution_forbidden");
   const key = env[EXPECTED_KEY];
   if (typeof key !== "string" || !key.trim()) throw new Error("key2_not_available");
@@ -257,7 +260,7 @@ export async function runPrivatePhotoCohort({
   onPrivateProgress=()=>{}
 }={}) {
   validatePrivateCohortManifest(manifest);
-  const key=assertAllowedEnvironment(environment,live); // before any photo reads.
+  const key=assertAllowedEnvironment(environment,live,invoke); // before any photo reads.
   const output=[],summaryRows=[],validated=[];
   const seenImageContent=new Set();
   let requests=0;
