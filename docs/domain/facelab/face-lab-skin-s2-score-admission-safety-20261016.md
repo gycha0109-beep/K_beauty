@@ -25,6 +25,25 @@ The capture/evidence cases are:
 
 The labels are **invented synthetic scenarios**, not dermatological interpretations of the user-supplied pictures TC-01…TC-05, not independently human-labeled reference truth and not evidence that a real user photo has a given condition. 10 cases ×12 scenarios = 120 pairs; counts describe **risk sensitivity**, not population accuracy or expected conversion/revenue changes. No person identifiers, original photos, Provider raw JSON, or face images enter GitHub or CI.
 
+## Actual exact-head regression results — 2026-10-16 (synthetic only)
+
+[Current Main Health #38832800571](https://github.com/gycha0109-beep/K_beauty/actions/runs/38832800571) passed on exact SHA `eadc255461ba6eb53ab0d18fee938d9341d2735c` and printed `verify-face-lab-s2-score-admission-safety: PASS`. [PIE #38832801098](https://github.com/gycha0109-beep/K_beauty/actions/runs/38832801098) passed. [Supply Chain #38832800598](https://github.com/gycha0109-beep/K_beauty/actions/runs/38832800598) failed **independently**, because the existing temporary `node-forge` advisory `GHSA-86w9-cpqp-85rv` exemption expired on 2026-10-16; CodeQL was PASS. The SCA failure is not suppressed.
+
+| Frozen 164-product × 12-survey × 10 synthetic-photo-case comparisons | Count |
+| --- | ---: |
+| Total paired comparisons | 120 |
+| Cases where hypothetical photo contribution decreased | 96 |
+| Top skin concern priority changed | 17 |
+| Top Pick changed | 28 |
+| Top 3 ranking changed | 36 |
+| Full product ranking changed | 84 |
+| Provider calls / real photos | 0 / 0 |
+| Actual recommendation code or scoring activation | 0 |
+
+Specific synthetic conditions with changes in Top Pick among their 12 survey pairs: low-resolution redness **4**, severe shadows **5**, partial-face missing pores **3**, filter-invalid acne **2**, conflicting numeric/evidence acne **2**, scoped observed-zero disagreement **4**, low confidence **4**, and unknown photo status **4**. Two controls — confirmed matching positive evidence and Skin-ineligible input — had **0** Top Pick/priority/ranking changes. These are *induced risk-sensitivity cases*, not real-user recommendation error rates or positive claims about the proposed rule.
+
+No frozen-product candidate changed; the code enforces survey/environment conservation and shadow photo score nonincrease for every paired comparison. The unchanged actual recommender was used; no revised recommendation formula was deployed.
+
 ## Expected controls and outstanding authority
 
 - The existing `skin-photo-counterfactual-core.mjs` allows a Skin axis photo bonus only if it has explicitly validated `present`, medium/high model confidence and consistent v1 numeric score. The shadow uses zero as **no hypothetical photo contribution**, not as a claim of clinical normality.
