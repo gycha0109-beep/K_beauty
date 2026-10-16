@@ -1,0 +1,27 @@
+{
+  "schema": "bejewely.owner-public-signing-identity.v1",
+  "algorithm": "ed25519",
+  "spkiDerSha256": "8d09ade272fe502989c607502358a456d8bbc8b90e0c91c96be7e563ddcb5231",
+  "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAb8hHTzAKd3YqlAhPQ9mrQZAaHqQFIoyDdL7Ef5EVmng=\n-----END PUBLIC KEY-----\n",
+  "publicFileMatchedOwnerReportedFingerprint": true,
+  "authority": "Owner supplied the public result in this conversation; exact public file independently read and fingerprint matched",
+  "privateKeyAccessed": false,
+  "privateKeyPossessionCryptographicallyProven": false,
+  "realReleaseSignatures": "NOT_RUN",
+  "trustStatus": "DRAFT_ONLY_NOT_EXTERNALLY_PINNED",
+  "trustDraftSha256": "e73b6f5bf3d7089a42afa185c0ef3b5f0645951c3b810df20c83cd0abbab25a6",
+  "trustDraftFile": "sec-sca-20261016-owner-trust.draft.json",
+  "organizationApproved": false,
+  "candidateRightsApprovalScope": {
+    "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+    "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+    "rightsReviewApproved": true,
+    "automaticallyInheritedToOtherCandidates": false
+  },
+  "ownerNewCandidateDecryption": "PASS",
+  "tokenIssuedByAgent": false,
+  "credentialsProvisioned": false,
+  "packageUploadExecuted": false,
+  "releaseApproved": false,
+  "originalAudit": "FAIL_NOT_WAIVED"
+}
