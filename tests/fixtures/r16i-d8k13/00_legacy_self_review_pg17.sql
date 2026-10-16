@@ -14,14 +14,16 @@ UPDATE public.admin_memberships SET is_active=false
  WHERE user_id IN ('00000000-0000-4000-8000-000000000011',
                    '00000000-0000-4000-8000-000000000014');
 INSERT INTO public.admin_product_correction_evidence_verdicts_v1(
- evidence_id,verdict,reason,reviewer_id,request_id,reviewed_at
+ verdict_id,evidence_id,verdict,reason,reviewer_id,request_id,reviewed_at
 ) VALUES
- ('00000000-0000-4000-8000-000000000041',
+ ('00000000-0000-4000-8000-000000000101',
+  '00000000-0000-4000-8000-000000000041',
   'VERIFIED','Original self review: official single',
   '00000000-0000-4000-8000-000000000012',
   '00000000-0000-4000-8000-000000000091',
   '2026-10-14T12:14:30+09:00'),
- ('00000000-0000-4000-8000-000000000042',
+ ('00000000-0000-4000-8000-000000000102',
+  '00000000-0000-4000-8000-000000000042',
   'VERIFIED','Original self review: hwahae bundle',
   '00000000-0000-4000-8000-000000000011',
   '00000000-0000-4000-8000-000000000092',
