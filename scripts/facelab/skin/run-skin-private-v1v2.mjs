@@ -15,11 +15,13 @@ function safeError(error){
   ]);
   return allowed.has(error?.message)?error.message:"private_cohort_preflight_failed";
 }
-const [flag,manifestFlag,manifestPath,dirFlag,privateDir]=process.argv.slice(2);
-const permitted=new Set(["--validate-private-cohort","--live-private-cohort","--live-private-v2-only","--live-private-v2-probe-one"]);
+const [flag,manifestFlag,manifestPath,dirFlag,privateDir,probeFlag,probePath]=process.argv.slice(2);
+const resuming=flag==="--live-private-v2-resume-four";
+const permitted=new Set(["--validate-private-cohort","--live-private-cohort","--live-private-v2-only","--live-private-v2-probe-one","--live-private-v2-resume-four"]);
 if(!permitted.has(flag)||manifestFlag!=="--manifest"||!manifestPath||
-  dirFlag!=="--photo-dir"||!privateDir||process.argv.length!==7){
-  console.error("Usage: node scripts/facelab/skin/run-skin-private-v1v2.mjs --validate-private-cohort|--live-private-cohort|--live-private-v2-only|--live-private-v2-probe-one --manifest /PRIVATE/cohort.json --photo-dir /PRIVATE/photos");
+  dirFlag!=="--photo-dir"||!privateDir||
+  (resuming?(process.argv.length!==9||probeFlag!=="--resume-probe"||!probePath):process.argv.length!==7)){
+  console.error("Usage: node scripts/facelab/skin/run-skin-private-v1v2.mjs --validate-private-cohort|--live-private-cohort|--live-private-v2-only|--live-private-v2-probe-one|--live-private-v2-resume-four --manifest /PRIVATE/cohort.json --photo-dir /PRIVATE/photos [--resume-probe /PRIVATE/tc01_metadata.json]");
   process.exitCode=2;
 }else{
   try{
@@ -27,10 +29,13 @@ if(!permitted.has(flag)||manifestFlag!=="--manifest"||!manifestPath||
       throw new Error("ci_face_photo_execution_forbidden");
     // The manifest is a local private file, never embedded in a git revision.
     const data=JSON.parse(readFileSync(resolve(manifestPath),"utf8"));
+    const probeRaw=resuming?readFileSync(resolve(probePath)):null;
+    if(probeRaw&&probeRaw.length>2*1024*1024)throw new Error("private_probe_too_large");
+    const resumeProbeMetadata=probeRaw?JSON.parse(probeRaw.toString("utf8")):null;
     const result=await runPrivatePhotoCohort({
-      manifest:data,photoDir:resolve(privateDir),
+      manifest:data,photoDir:resolve(privateDir),resumeProbeMetadata,
       live:flag!=="--validate-private-cohort",
-      studyMode:flag==="--live-private-v2-probe-one"?"v2_probe_one":flag==="--live-private-v2-only"?"v2_only":"paired"
+      studyMode:resuming?"v2_resume_four":flag==="--live-private-v2-probe-one"?"v2_probe_one":flag==="--live-private-v2-only"?"v2_only":"paired"
     });
     console.log(JSON.stringify(result,null,2));
     if(result.outcome==="HOLD_INCOMPLETE_PROVIDER_DATA" ||
