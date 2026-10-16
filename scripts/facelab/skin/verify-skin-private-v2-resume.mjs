@@ -95,7 +95,15 @@ try {
     const image=Buffer.from(args.body.messages[1].content[1].image_url.url.split(",")[1],"base64");
     const expected=++calls;
     assert.deepEqual(image,img(expected),"Only TC-02,03,04,05, in that order");
-    return makeResponse();
+    const response=makeResponse();
+    if(expected===4){
+      // TC-05 has independently Face-eligible but Skin-ineligible photo.
+      response.parsed.eligibility.skinAnalysisEligible=false;
+      response.parsed.eligibility.skinFailureReason="lighting_insufficient";
+      response.parsed.skin.axisEvidence=[];
+      response.providerPayload.choices[0].message.content=JSON.stringify(response.parsed);
+    }
+    return response;
   };
   await assert.rejects(runPrivatePhotoCohort({manifest,photoDir:dir,
     live:true,studyMode:"v2_resume_four",
@@ -108,9 +116,12 @@ try {
   assert.equal(continuation.providerCallsAttempted,4);
   assert.equal(continuation.outcome,"PRIVATE_V2_RESUME_FOUR_STRUCTURAL_RESEARCH_ONLY");
   assert.deepEqual(continuation.cases.map(c=>c.caseId),ids.slice(1));
-  assert(continuation.cases.every(c=>c.variants.length===1 &&
-    c.variants[0].variant==="v2"&&c.variants[0].privateAxisContractDiagnostics.status===
-      "ELIGIBLE_ROWS_CONTRACT_READY"));
+  assert(continuation.cases.every(c=>c.variants.length===1 &&c.variants[0].variant==="v2"));
+  assert(continuation.cases.slice(0,3).every(c=>
+    c.variants[0].privateAxisContractDiagnostics.status==="ELIGIBLE_ROWS_CONTRACT_READY"));
+  assert.equal(continuation.cases[3].variants[0].v2AxisCount,0);
+  assert.equal(continuation.cases[3].variants[0].v2ContractStatus,"EXPECTED_INELIGIBLE_EMPTY");
+  assert.equal(continuation.cases[3].verdict,"EXPECTED_SKIN_INELIGIBLE_ABSTENTION_RESEARCH_ONLY");
   // No raw provider or source fingerprint may escape from the continuation.
   assert(!JSON.stringify(continuation).includes(fakeSecret));
   assert(!JSON.stringify(continuation).includes("data:image"));
