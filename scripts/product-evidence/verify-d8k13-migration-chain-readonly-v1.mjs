@@ -44,12 +44,19 @@ for(const entry of baseline.migrations){
 }
 const latest=[...byVersion.keys()].sort().at(-1);
 assert.equal(latest,baseline.last_applied_version);
-const localVersions=new Set(),localNames=new Set();
+const localVersions=new Map(),localNames=new Set();
 for(const entry of localFiles){
- if(localVersions.has(entry.version))throw Error("D8K13_DUPLICATE_LOCAL_VERSION");
+ const earlier=localVersions.get(entry.version)??[];
+ earlier.push(entry.file);
+ localVersions.set(entry.version,earlier);
  if(localNames.has(entry.name))throw Error("D8K13_DUPLICATE_LOCAL_NAME");
- localVersions.add(entry.version);localNames.add(entry.name);
+ localNames.add(entry.name);
 }
+const duplicateLocalVersions=[...localVersions]
+ .filter(([_,files])=>files.length>1)
+ .map(([version,files])=>({version,files}));
+const non14DigitLocalVersions=localFiles
+ .filter(x=>x.version.length!==14).map(x=>x.file);
 
 const exact=[],versionCollision=[],nameMoved=[],localUnmatched=[];
 for(const f of localFiles){
@@ -94,6 +101,8 @@ const summary={
  exactVersionAndName:exact.length,
  sameVersionDifferentName:versionCollision.length,
  sameNameDifferentVersion:nameMoved.length,
+ duplicateLocalVersionGroups:duplicateLocalVersions.length,
+ non14DigitLocalMigrationFiles:non14DigitLocalVersions.length,
  localNoMatchingAppliedName:localUnmatched.length,
  appliedNameWithoutLocalFile:appliedOnly.length,
  localVersionNotInAppliedHistory:localWithoutVersion.length,
@@ -106,6 +115,8 @@ const summary={
 const result={...summary,
  localUnmatched,
  versionCollision,
+ duplicateLocalVersions,
+ non14DigitLocalVersions,
  remoteOnlyCount:appliedOnly.length,
  // Emit bounded high-value examples by default; --full shows all 41+34.
  nameMoved:args.includes("--full")?nameMoved:nameMoved.slice(-8),
