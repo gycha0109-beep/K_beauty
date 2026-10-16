@@ -106,6 +106,8 @@ export function inspectSkinVisionTrial({ caseId, variant, providerEnvelope, maxC
     maxCompletionTokens,
     nearTokenCap,
     expectedIneligibleAbstention,
+    skinAnalysisEligible: evaluation?.eligibility?.source === "vision"
+      ? evaluation.eligibility.skinAnalysisEligible === true : null,
     faceStatus,
     faceAvailableFieldCount: faceFieldCount,
     skinStatus,
@@ -145,6 +147,7 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
   let v2Invalid = 0;
   let v2ExpectedIneligibleAbstentions = 0;
   let v2EligibleStructuralFailures = 0;
+  let v2OtherStructuralFailures = 0;
   let maxObservedV2OutputTokens = 0;
   let v2WithUsage = 0;
   for (const pair of records.values()) {
@@ -163,8 +166,12 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
       v2Invalid++; // Backward-compatible count; includes abstentions.
       if (b.expectedIneligibleAbstention === true) {
         v2ExpectedIneligibleAbstentions++;
-      } else {
+      } else if (b.skinAnalysisEligible === true) {
         v2EligibleStructuralFailures++;
+      } else {
+        // Includes malformed or unknown-eligibility replies; never
+        // mislabel an ineligible failure as an eligible seven-axis defect.
+        v2OtherStructuralFailures++;
       }
     }
     if (Number.isSafeInteger(b.outputTokens)) {
@@ -190,6 +197,7 @@ export function summarizeSkinVisionTrials(rows, { evidenceOrigin = "synthetic" }
     v2Invalid,
     v2ExpectedIneligibleAbstentions,
     v2EligibleStructuralFailures,
+    v2OtherStructuralFailures,
     v2NearCap,
     maxObservedV2OutputTokens: v2WithUsage ? maxObservedV2OutputTokens : null,
     structuralCandidatePass,
