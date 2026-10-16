@@ -4,7 +4,7 @@
 
 The project owner approved final rights review ONLY for candidate **17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d** / packet **859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87**. [Actual human decision](sec-sca-20261016-owner-final-rights-approval.json), SHA256 **70c4200b850d936eaf5078499066c905a4cdb8ab5858169c393f4841562860e5**. No other candidate inherits approval. B-level exact historical copying versions remain unknown; verified grants and all notice conditions stay intact.
 
-This is not a legal conformity guarantee, security audit PASS, cryptographic signature, upload/actual redistribution/spending/ACL/product/merge/production approval. Frozen packet generation-time approval flags remain unchanged; this separate owner decision binds its exact hash. [Prepared public interfaces](sec-sca-20261016-signing-preparation.json) contain no secrets and are deliberately non-executable. Original audit fullHIGH22/prodHIGH19/C0 FAIL remains. New-candidate owner decryption, release signatures and trusted key provisioning are NOT_RUN.
+This is not a legal conformity guarantee, security audit PASS, cryptographic signature, upload/actual redistribution/spending/ACL/product/merge/production approval. Frozen packet generation-time approval flags remain unchanged; this separate owner decision binds its exact hash. [Prepared public interfaces](sec-sca-20261016-signing-preparation.json) contain no secrets and are deliberately non-executable. Original audit fullHIGH22/prodHIGH19/C0 FAIL remains. New-candidate owner decryption is now PASS (see update below). Release signatures and trusted key provisioning remain NOT_RUN.
 
 ## 1. Decrypt the NEW retained candidate locally
 
@@ -66,3 +66,9 @@ Authentication is preparation only; no token issuance requested now:
 - Genuine public trust plus externally pinned SCA_TRUST_POLICY_SHA256, current no-charge/quota proof, reviewed private ACL/notice delivery and actual authenticated/anonymous/unprivileged readback remain required. Package linking and Actions access retain their separate permission boundaries.
 
 Next owner action is local cryptographic preparation, reporting only nonsecret results. Actual release signing waits for its exact authorized final document; publishing/account/ACL/payment/product/main/production remain untouched.
+
+## Owner decryption completed and independently checked
+
+The owner executed decryption of candidate17119/packet8594 successfully. Agent then read ONLY the resulting plaintext archive, verified its expected SHA bf5e25f5012b7ab5e0672dfafdbce19b3b6fdafff506d06ee6c306f7c9ccd97b, checked all117 TAR entries for safe bounded paths/types/checksums/duplicates/parents BEFORE extraction, and ran existing verifyBundle, verifyPublicationCandidate and verifyOaepBrowserNoticeKit: all PASS. Candidate/packet/kit and13+64 installed package inventories match the canonical independent CI proof. [Receipt](sec-sca-20261016-owner-decryption-verified.json). No private key/PAT accessed. This supersedes historical NOT_RUN decryption statements for this exact candidate only.
+
+Step1 is COMPLETE; do not repeat decryption or recipient registration. Next is step2 owner-held Ed25519 public identity preparation, using an existing suitable key if available. Actual release signing/trust/authentication/publication remain NOT_RUN and owner rights approval remains exact-pair-only. Original audit fullHIGH22/prodHIGH19/C0 FAIL remains.
