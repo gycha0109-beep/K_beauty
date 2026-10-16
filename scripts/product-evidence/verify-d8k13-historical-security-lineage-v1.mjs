@@ -66,10 +66,20 @@ assert.ok(aclRepair.includes("grant select, insert, update on table public.ranki
 assert.ok(truncateRepair.includes("revoke truncate on table public.ranking_snapshots from anon, authenticated;"));
 assert.ok(readonlyProbe.includes("ranking_acl_later_migration_provenance"));
 assert.ok(readonlyProbe.includes("pg_catalog.has_function_privilege('public',p.oid,'EXECUTE')"));
+for(const privilege of ["REFERENCES","TRIGGER","MAINTAIN"])
+ assert.ok(readonlyProbe.includes("'"+privilege+"'"),
+  "D8K13_READONLY_ACL_PRIVILEGE_AUDIT_MISSING: "+privilege);
+assert.ok(readonlyProbe.includes("public_schema_create_acl"));
 
 assert.equal(repair.historical_records_readonly_verified,true);
 assert.equal(repair.current_hosted_ranking_rls_and_write_acl_verified,true);
 assert.equal(repair.source_rankings_explicit_acl_origin_not_yet_proven,true);
+assert.equal(repair.ranking_snapshots_residual_references_anon_authenticated,true);
+assert.equal(repair.ranking_snapshots_residual_trigger_anon_authenticated,true);
+assert.equal(repair.ranking_snapshots_residual_maintain_anon_authenticated,true);
+assert.equal(repair.source_rankings_public_residual_permissions_absent,true);
+assert.equal(repair.public_schema_create_anon_authenticated,false);
+assert.equal(repair.ranking_snapshots_residual_acl_impact_exploitable_proven,false);
 assert.equal(auth.runtime_function_execute_role,"service_role_only");
 assert.equal(auth.anonymous_execute_allowed,false);
 assert.equal(auth.authenticated_execute_allowed,false);
@@ -93,6 +103,8 @@ console.log(JSON.stringify({
  authenticatedPublicDirectInvocation:false,
  signedCookieAndHmacGuardsPresent:true,
  originalRankAclRepairRecorded:true,
+ residualRankingReferencesTriggerMaintainDetected:true,
+ publicSchemaCreateDenied:true,
  sourceRankingsOriginAttested:false,
  liveAnonymousFunctionExplicitNullChecksAttested:false,
  exploitabilityProven:false,
