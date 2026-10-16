@@ -6,6 +6,7 @@ import { readFileSync, lstatSync, realpathSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve, basename, sep } from "node:path";
 import { executeOpenAiChatJson } from "../../../lib/server/openai-chat-runtime.js";
+import { executePrivateVisionChatJson } from "./skin-private-provider-response-envelope.mjs";
 import { createVisionObservationPrompt } from "../../../lib/vision-observation-contract.js";
 import {
   OPENAI_RUNTIME_MODEL, OPENAI_RUNTIME_REASONING_EFFORT, OPENAI_RUNTIME_IMAGE_DETAIL
@@ -28,6 +29,7 @@ const ALLOWED_ERRORS = new Set([
   "provider_http_408","provider_http_409","provider_http_422","provider_http_429",
   "provider_http_500","provider_http_502","provider_http_503","provider_http_504",
   "provider_response_invalid","provider_response_empty","provider_redirect_rejected",
+  "provider_output_truncated","provider_output_filtered","provider_content_json_invalid",
   "response_too_large","key2_not_available"
 ]);
 const OWN_KEYS = o => o && typeof o === "object" && !Array.isArray(o) ? Object.keys(o) : [];
@@ -48,7 +50,7 @@ function assertAllowedEnvironment(env, live, invoke) {
   // The actual Provider transport must also respect the REAL process
   // environment; a caller-supplied object cannot hide a running CI job.
   if (CI_MARKERS.some(name => isActive(env[name]) ||
-      (invoke===executeOpenAiChatJson && isActive(process.env[name]))))
+      ( (invoke===executePrivateVisionChatJson || invoke===executeOpenAiChatJson) && isActive(process.env[name]))))
     throw new Error("ci_face_photo_execution_forbidden");
   const key = env[EXPECTED_KEY];
   if (typeof key !== "string" || !key.trim()) throw new Error("key2_not_available");
@@ -262,7 +264,7 @@ function sanitizedTrial(caseId,variant,response) {
   };
 }
 export async function runPrivatePhotoCohort({
-  manifest,photoDir,environment=process.env,invoke=executeOpenAiChatJson,live=false,
+  manifest,photoDir,environment=process.env,invoke=executePrivateVisionChatJson,live=false,
   studyMode="paired",onPrivateProgress=()=>{}
 }={}) {
   validatePrivateCohortManifest(manifest);
@@ -330,8 +332,18 @@ export async function runPrivatePhotoCohort({
         onPrivateProgress({caseId:caseId,variant,completed:true,
           outputTokens:trial.outputTokens,finishReason:trial.finishReason});
       } catch(e) {
+        // Never serialize the error object or raw provider data. Only three
+        // fixed finish/usage fields from the private adapter are permitted.
+        const m=e?.privateSafeDiagnostic;
+        const safeM=m && ["stop","length","content_filter","tool_calls","function_call","unknown"].includes(m.finishReason)
+          ?{
+            finishReason:m.finishReason,
+            outputTokens:Number.isSafeInteger(m.outputTokens)&&m.outputTokens>=0?m.outputTokens:null,
+            nearTokenCap:m.nearTokenCap===true
+          }:null;
         rows.push({caseId:caseId,variant,verdict:"PROVIDER_ERROR_HOLD",
-          errorClass:safeFailure(e)});
+          errorClass:safeFailure(e),
+          ...(safeM?{providerSafeDiagnostic:safeM}:{})});
         output.push({caseId,verdict:"INCOMPLETE_PROVIDER_PAIR",variants:rows});
         return {
           version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,
