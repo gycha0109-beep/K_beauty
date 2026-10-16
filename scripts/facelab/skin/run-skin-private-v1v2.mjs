@@ -16,10 +16,10 @@ function safeError(error){
   return allowed.has(error?.message)?error.message:"private_cohort_preflight_failed";
 }
 const [flag,manifestFlag,manifestPath,dirFlag,privateDir]=process.argv.slice(2);
-const permitted=new Set(["--validate-private-cohort","--live-private-cohort","--live-private-v2-only"]);
+const permitted=new Set(["--validate-private-cohort","--live-private-cohort","--live-private-v2-only","--live-private-v2-probe-one"]);
 if(!permitted.has(flag)||manifestFlag!=="--manifest"||!manifestPath||
   dirFlag!=="--photo-dir"||!privateDir||process.argv.length!==7){
-  console.error("Usage: node scripts/facelab/skin/run-skin-private-v1v2.mjs --validate-private-cohort|--live-private-cohort|--live-private-v2-only --manifest /PRIVATE/cohort.json --photo-dir /PRIVATE/photos");
+  console.error("Usage: node scripts/facelab/skin/run-skin-private-v1v2.mjs --validate-private-cohort|--live-private-cohort|--live-private-v2-only|--live-private-v2-probe-one --manifest /PRIVATE/cohort.json --photo-dir /PRIVATE/photos");
   process.exitCode=2;
 }else{
   try{
@@ -30,7 +30,7 @@ if(!permitted.has(flag)||manifestFlag!=="--manifest"||!manifestPath||
     const result=await runPrivatePhotoCohort({
       manifest:data,photoDir:resolve(privateDir),
       live:flag!=="--validate-private-cohort",
-      studyMode:flag==="--live-private-v2-only"?"v2_only":"paired"
+      studyMode:flag==="--live-private-v2-probe-one"?"v2_probe_one":flag==="--live-private-v2-only"?"v2_only":"paired"
     });
     console.log(JSON.stringify(result,null,2));
     if(result.outcome==="HOLD_INCOMPLETE_PROVIDER_DATA" ||
