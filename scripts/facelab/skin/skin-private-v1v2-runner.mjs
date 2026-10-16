@@ -122,7 +122,7 @@ function stripJpegPrivateMetadata(buffer) {
     if(len<2||at+len>buffer.length)throw new Error("jpeg_segment_overrun");
     const segment=buffer.subarray(at+2,at+len);
     const isExif=marker===225 &&
-      segment.length>=6 && segment.subarray(0,6).equals(Buffer.from("Exif\\0\\0"));
+      segment.length>=6 && segment.subarray(0,6).equals(Buffer.from([69,120,105,102,0,0]));
     if(isExif)throw new Error("jpeg_exif_orientation_requires_review");
     const isMetadata=marker===254 ||
       (marker>=225&&marker<=239 &&
