@@ -61,3 +61,26 @@
 운영 `schema_migrations.statements`를 세미콜론으로 재결합하고, 문자열 literal은 보존하면서 SQL 주석·공백을 제외하는 lexer로 GitHub 현재 파일과 비교한 결과 **3건 모두 마지막 세미콜론 한 토큰만 제외하면 정확히 일치**했다. 단순 문자열/Git blob SHA 재조립은 여전히 일치하지 않으므로 이것을 byte-identical이라고 표시하지 않는다. 사용된 PostgreSQL 실제 파서·실행 순서·권한은 별도 검증 대상이다.
 
 **남은 25건은 동일 검증을 완료하지 못했다.** 표본의 결과를 전체 28건으로 확장하지 않는다. 28건 전체에 대한 `PARSER_REASSEMBLY_NOT_PROVEN` 상태 및 릴리스 HOLD는 유지한다.
+
+
+## 6. 다중 문장 28건 전체 lexer 대조 결과 (2026-10-16 추가)
+
+앞선 3건 표본 검증을 **동일한 절차로 28건 전체에 확대**했다. 운영 `schema_migrations.statements` 배열을 `;`로 재결합하고, SQL quoted literal은 정확히 보존하며 외부 공백·주석을 제외하고, dollar-quoted 함수 body도 토큰화했다.
+
+| 비교 결과 | 건수 |
+| --- | ---: |
+| 현재 GitHub와 SQL 토큰 완전 일치 | **1** |
+| 맨 끝 `;` 하나를 제외하면 SQL 토큰 일치 | **25** |
+| 구조적 토큰 차이 | **2** |
+| **전체** | **28** |
+
+실제 토큰 차이 2건:
+
+1. `20260621030000_phase1_ranking_snapshot_pipeline.sql` (31 statements) — 원격 기록에 현재 GitHub 파일의 `ranking_snapshots` 쓰기 `REVOKE` 및 `service_role` `GRANT` 구문 일부가 없다. **현재 운영** `ranking_snapshots`·`source_rankings`는 RLS ON, `anon/authenticated` 직접 INSERT/UPDATE/DELETE 불가, `service_role` INSERT 허용을 SELECT-only로 확인했다. 따라서 실제 누출이나 무단 쓰기를 확인한 것은 아니지만, **역사적 접근권한 변경의 출처가 미입증**이다.
+2. `20260711032649_sec_05_anonymous_write_grants.sql` (37 statements) — `claim_anonymous_write_grant`의 현재 GitHub 함수에는 명시적인 `p_jti_hash IS NULL`, `p_resource_id IS NULL` 등의 초기 입력 방어가 포함되지만, **실제 운영 `pg_get_functiondef`에는 같은 명시적 NULL 검사가 관측되지 않았다**. 현재 함수는 `SECURITY INVOKER`이고 해시 형식 검사 `!~`는 존재한다. **익스플로잇이나 권한 우회가 입증된 것은 아니므로** 운영 호출 테스트·권한 수정 없이 보안 설계 리뷰 대상으로 남긴다.
+
+다중 statements의 `;` 재결합으로 **26개가 토큰 단계에서 일치**했으나 SQL 원문의 바이트 일치, SQL 파서의 의도한 분할, 중간 트랜잭션·권한·실행 효과 동등성은 보증하지 않는다. 실제 다른 2건은 특히 순위 데이터와 익명 쓰기 권한에 관계하므로 **P0 독립 코드/운영 이력 검수**를 권고한다.
+
+매니페스트 `d8k13-hosted-same-version-sql-triage-readonly-20261016.json`의 `multiStatementTokenFollowup`과 `p0DeployedScopeFollowup`에 결과를 기록했고, 오프라인 검증기와 릴리스 HOLD 검사에서 두 결과 집합을 검수한다.
+
+**최종 상태: 레거시 D8K-13 해당 Docker PG17 부분 체인 PASS / 운영 178건 전체 replay 검증 미완료 / 출시 및 migration repair HOLD.**
