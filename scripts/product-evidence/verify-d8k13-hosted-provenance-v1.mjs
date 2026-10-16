@@ -33,6 +33,22 @@ assert.equal(sameVersionTriage.summary.sameVersionAndNameButBlobNotDirectMatch,
 assert.equal(sameVersionTriage.summary.joinReassemblyNotProven,28);
 assert.equal(sameVersionTriage.summary.singleStatementDifferent,18);
 assert.equal(sameVersionTriage.entries.length,46);
+const multiFollowup=sameVersionTriage.multiStatementTokenFollowup;
+assert.equal(multiFollowup.evaluated,28);
+assert.equal(multiFollowup.tokenExact,1);
+assert.equal(multiFollowup.tokenSameExceptSingleFinalSemicolon,25);
+assert.equal(multiFollowup.tokenDifference,2);
+assert.deepEqual([...multiFollowup.mismatchedFiles].sort(),[
+ "20260621030000_phase1_ranking_snapshot_pipeline.sql",
+ "20260711032649_sec_05_anonymous_write_grants.sql"
+]);
+const p0=sameVersionTriage.p0DeployedScopeFollowup;
+assert.equal(p0.taxonomy8.historicalSqlBytes,64);
+assert.equal(p0.taxonomy8.hostedCategoryNullable,true);
+assert.equal(p0.c5b.historicalFunctionTokensMatchGit,1203);
+assert.equal(p0.c5b.runtimeFunctionTokensMatchGit,1203);
+assert.equal(p0.ranking.anonAndAuthenticatedDirectWrites,false);
+assert.equal(p0.anonymousWriteGrant.exploitabilityProven,false);
 const entries=readdirSync(migrationsDir).filter(x=>x.endsWith(".sql"));
 const unique=new Set(entries);
 assert.equal(unique.size,entries.length);
@@ -107,7 +123,11 @@ const result={
   oneStatementTrailingDelimiterOnly:6,
   oneStatementSqlTokenEquivalent:5,
   oneStatementEdgeNewlinesOnly:6,
-  requiresNativePg17ParserReview:1
+  requiresNativePg17ParserReview:1,
+  multiStatementLexerExact:multiFollowup.tokenExact,
+  multiStatementLexerTerminalDelimiterOnly:multiFollowup.tokenSameExceptSingleFinalSemicolon,
+  multiStatementLexerDifferent:multiFollowup.tokenDifference,
+  liveAnonymousGrantNullGuardsNotAttested:true
  },
  sourceSqlBodyEquivalentForEntireHistory:false,
  releaseAuthorized:false,
