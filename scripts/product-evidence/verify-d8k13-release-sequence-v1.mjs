@@ -48,6 +48,23 @@ const inertV2CompatibilityCandidate=[
 ].every(s=>migration.includes(s));
 const actualV2ChainTest=content(
  "scripts/product-evidence/run-d8k13-local-pg17.mjs");
+const sec05SyntheticRunner=content(
+ "scripts/product-evidence/run-d8k13-sec05-acl-synthetic-pg17.mjs");
+const sec05SyntheticFixtures=[
+ "tests/fixtures/r16i-d8k13/30_sec05_acl_synthetic_setup_pg17.sql",
+ "tests/fixtures/r16i-d8k13/31_sec05_legacy_null_behavior_pg17.sql",
+ "tests/fixtures/r16i-d8k13/32_sec05_hardened_null_contract_pg17.sql",
+ "tests/fixtures/r16i-d8k13/33_sec05_ranking_acl_minimal_revoke_pg17.sql"
+].map(content);
+assert.ok(sec05SyntheticRunner.includes('"--network=none"'));
+assert.ok(sec05SyntheticRunner.includes('"--pull=never"'));
+assert.ok(sec05SyntheticRunner.includes("SEC05_REMOTE_DOCKER_HOST_FORBIDDEN"));
+assert.ok(sec05SyntheticRunner.includes("legacyVariant(fn)"));
+assert.ok(sec05SyntheticRunner.includes("D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS"));
+assert.ok(sec05SyntheticFixtures[0].includes("D8K13_SYNTHETIC_ACL_BASELINE_PASS"));
+assert.ok(sec05SyntheticFixtures[1].includes("D8K13_SEC05_LEGACY_NULL_COUNTEREXAMPLE_AND_ROLLBACK_PASS"));
+assert.ok(sec05SyntheticFixtures[2].includes("D8K13_SEC05_HARDENED_NULL_MATRIX_ROLE_AND_RETRY_PASS"));
+assert.ok(sec05SyntheticFixtures[3].includes("D8K13_SYNTHETIC_RANKING_ACL_REVOKE_ROLLBACK_IDEMPOTENCE_PASS"));
 const realChainFixtureIncluded=[
  "supabase/migrations/20261014150000_taxonomy_ai_r16i_d8d_v2_owner_gated_dual_offer.sql",
  "D8K13_D8DV2_REAL_ORDER_CHAIN_ACCEPTANCE_PASS",
@@ -152,6 +169,9 @@ const result={
  laterRankingSnapshotAclRepairAppliedAndObserved:true,
  rankingSnapshotPublicResidualReferencesTriggerMaintainUnresolved:true,
  rankingSnapshotPublicResidualAclRemediationNotAuthorized:true,
+ sec05AndRankingSecuritySyntheticPg17FixtureReady:true,
+ sec05AndRankingSecurityNativePg17RunAttested:false,
+ sec05AndRankingSecurityHostedMigrationAuthorized:false,
  anonymousClaimOnlyServiceRoleExecutable:true,
  anonymousServerTokenHmacAndCookieBindingStaticallyVerified:true,
  anonymousClaimNullGuardRemediationNotAuthorized:true,
