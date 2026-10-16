@@ -407,9 +407,11 @@ export async function runPrivatePhotoCohort({
     }:null;
   return {
     version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,studyMode,
-    outcome:live?(studyMode==="v2_only"
-      ?"PRIVATE_V2_ONLY_STRUCTURAL_RESEARCH_ONLY"
-      :"PRIVATE_REAL_PHOTO_STRUCTURAL_REVIEW_ONLY"):"PRIVATE_LOCAL_PRECHECK_ONLY",
+    outcome:live?(studyMode==="v2_probe_one"
+      ?"PRIVATE_V2_PROBE_ONE_DIAGNOSTIC_ONLY"
+      :studyMode==="v2_only"
+        ?"PRIVATE_V2_ONLY_STRUCTURAL_RESEARCH_ONLY"
+        :"PRIVATE_REAL_PHOTO_STRUCTURAL_REVIEW_ONLY"):"PRIVATE_LOCAL_PRECHECK_ONLY",
     providerCallsAttempted:requests,cases:output,pairedSummary,v2OnlySummary,
     privacy:{humanPhotoSentToProvider:live&&requests>0,
       rawOutputsPersisted:false,photosSavedByRunner:false,gitHubActionsUsed:false},
