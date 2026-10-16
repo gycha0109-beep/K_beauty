@@ -25,3 +25,16 @@
 - **Exact number of new real-photo Provider calls caused by this implementation and CI: zero.** All automated checks are mock/synthetic only.
 
 Watchtower-Track: face-lab-skin
+
+## First Windows correction attempt — error triage (2026-10-16)
+
+The user supplied a new **metadata-only** private correction report after explicit local authorization: `studyMode=v2_only`, `providerCallsAttempted=1`, `outcome=HOLD_INCOMPLETE_PROVIDER_DATA`, first v2 `errorClass=provider_response_invalid`, and **zero subsequent cases attempted**. Runner-reported `humanPhotoSentToProvider=true`, no raw outputs saved. The file cannot establish whether the output ran out of tokens or malformed Provider JSON; the previous shared HTTP adapter collapses Provider-envelope parse failure and model message-content parse failure into the same error class. It does **not** establish actual billing or clinical accuracy.
+
+**Research-only fix, no further real-photo calls in this code work:**
+- Added `skin-private-provider-response-envelope.mjs` around the existing **unchanged production HTTP transport**. The private parser keeps any malformed model content as a transient in-memory sentinel, then examines only allowlisted `finish_reason` and bounded `completion_tokens`. It outputs `provider_output_truncated` for `length`, `provider_output_filtered` for `content_filter` and `provider_content_json_invalid` for malformed model text when otherwise a parseable envelope was returned. Each error may carry only **closed `finishReason`**, bounded `outputTokens` and boolean `nearTokenCap`. Raw model text, face JSON, response body, name, photo, location and secret are not recorded or returned.
+- If the outer Provider-envelope itself is corrupt, it can still produce the prior generic `provider_response_invalid`, which is an honest unresolved classification. No retries, output token cap increase, diagnosis relaxation or production runtime changes were made.
+- Added separate **`--live-private-v2-probe-one`** CLI mode, with a maximum of **one KEY2 billable request**, for the first cohort photo only. The entire five-image cohort is still validated before calling. It stops after one attempt regardless of success or failure, and returns either `PRIVATE_V2_PROBE_ONE_DIAGNOSTIC_ONLY` or `HOLD_INCOMPLETE_PROVIDER_DATA`. Full five-call mode remains available but is **not** the advised next action until the cause is known.
+- Synthetic tests use fake HTTP Responses for `finish_reason=length`, `stop` with invalid model JSON, `content_filter`, outer-envelope corruption and valid JSON. One-call stop behavior is verified with fake photos. No user photo or API key in CI.
+- Even a valid probe cannot establish five-case evaluation, Face semantic parity or Human truth. If a future probe returns a valid result, a separate four-case continuation can be implemented without re-billing the first probe; none is deployed now.
+
+**Security HOLD:** The old `node-forge` supply-chain advisory exception remains expired. Draft PR only; no merge, production score/ranking, Style/Face contract or deployment changes. A new user-authorized private local KEY2 call is necessary to diagnose the original failed response, and no further calls occur automatically.
