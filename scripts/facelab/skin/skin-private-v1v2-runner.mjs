@@ -313,7 +313,8 @@ export async function runPrivatePhotoCohort({
           faceStatus:trial.faceStatus,
           faceAvailableFieldCount:trial.faceAvailableFieldCount,
           nearTokenCap:trial.nearTokenCap,
-          expectedIneligibleAbstention:trial.expectedIneligibleAbstention
+          expectedIneligibleAbstention:trial.expectedIneligibleAbstention,
+          skinAnalysisEligible:trial.skinAnalysisEligible
         });
         onPrivateProgress({caseId:caseId,variant,completed:true,
           outputTokens:trial.outputTokens,finishReason:trial.finishReason});
