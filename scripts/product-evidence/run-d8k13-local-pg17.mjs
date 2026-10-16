@@ -98,6 +98,8 @@ async function run(){
  assert.match(legacySeed,/admin_product_correction_evidence_verdicts_v1/);
  assert.match(legacyTest,/D8K13_PG17_LEGACY_TWO_ROW_QUARANTINE_PASS/);
  assert.match(migration,/D8K13_UNEXPECTED_LEGACY_SHAPE/);
+ assert.match(migration,/app\.d8k13_expected_manifest/);
+ assert.match(migration,/observed_manifest IS DISTINCT FROM expected_manifest/);
  assert.match(migration,/LEGACY_QUARANTINED/);
  assert.match(migration,/D8K13_LEGACY_BOOTSTRAP_COUNT_MISMATCH/);
  console.log("D8K12_CHECK_FILES_PASS (3 fixed local SQL files)");
@@ -193,6 +195,23 @@ async function run(){
    ["d8k13_one_verdict",
     "DELETE FROM public.admin_product_correction_evidence_verdicts_v1 "+
      "WHERE evidence_id='00000000-0000-4000-8000-000000000042';",
+    "D8K13_UNEXPECTED_LEGACY_SHAPE"],
+   ["d8k13_wrong_verdict_identity",
+    "UPDATE public.admin_product_correction_evidence_verdicts_v1 "+
+     "SET verdict_id='00000000-0000-4000-8000-000000000103' "+
+     "WHERE evidence_id='00000000-0000-4000-8000-000000000042';",
+    "D8K13_UNEXPECTED_LEGACY_SHAPE"],
+   ["d8k13_not_self_review",
+    "UPDATE public.admin_product_correction_evidence_verdicts_v1 "+
+     "SET reviewer_id='00000000-0000-4000-8000-000000000012' "+
+     "WHERE evidence_id='00000000-0000-4000-8000-000000000042';",
+    "D8K13_UNEXPECTED_LEGACY_SHAPE"],
+   ["d8k13_extra_evidence",
+    "INSERT INTO public.admin_product_correction_evidence_v1"+
+     "(evidence_id,product_id,evidence_state,submitted_by,source_key) "+
+     "VALUES('00000000-0000-4000-8000-000000000043',"+
+     "'b639c8b4-6a61-440e-b4db-fac7381593ff','UNVERIFIED',"+
+     "'00000000-0000-4000-8000-000000000012','official_single');",
     "D8K13_UNEXPECTED_LEGACY_SHAPE"],
    ["d8k13_existing_proposal",
     "INSERT INTO public.admin_product_correction_proposals_v1"+
