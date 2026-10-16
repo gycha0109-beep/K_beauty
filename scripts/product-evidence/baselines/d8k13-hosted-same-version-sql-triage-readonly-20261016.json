@@ -403,7 +403,14 @@
       "historical_records_readonly_verified": true,
       "current_hosted_ranking_rls_and_write_acl_verified": true,
       "source_rankings_explicit_acl_origin_not_yet_proven": true,
-      "original_phase1_stored_sql_still_differs_from_current_file": true
+      "original_phase1_stored_sql_still_differs_from_current_file": true,
+      "ranking_snapshots_residual_references_anon_authenticated": true,
+      "ranking_snapshots_residual_trigger_anon_authenticated": true,
+      "ranking_snapshots_residual_maintain_anon_authenticated": true,
+      "source_rankings_public_residual_permissions_absent": true,
+      "public_schema_create_anon_authenticated": false,
+      "ranking_snapshots_residual_acl_impact_exploitable_proven": false,
+      "remediation_approval_state": "REQUIRES_SEPARATE_SECURITY_REVIEW_AND_SYNTHETIC_PG17_TEST__NO_HOSTED_REVOKE"
     }
   }
 }
