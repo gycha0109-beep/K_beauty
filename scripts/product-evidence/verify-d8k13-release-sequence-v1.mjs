@@ -59,6 +59,17 @@ const appliedSnapshot=JSON.parse(content(
  "scripts/product-evidence/baselines/d8k13-hosted-migrations-readonly-20261016.json"));
 assert.equal(appliedSnapshot.schema,"D8K13_HOSTED_MIGRATION_HISTORY_READONLY_V1");
 assert.equal(appliedSnapshot.migrations.length,appliedSnapshot.observed_count);
+const provenance=JSON.parse(content(
+ "scripts/product-evidence/baselines/d8k13-hosted-migration-provenance-readonly-20261016.json"));
+assert.equal(provenance.schema,"D8K13_HOSTED_MIGRATION_SOURCE_PROVENANCE_V1");
+assert.equal(provenance.status,"RELEASE_HOLD");
+assert.equal(provenance.sourceSqlBodiesPublished,false);
+assert.equal(provenance.summaries.applied,appliedSnapshot.observed_count);
+assert.equal(provenance.summaries.sameNameDifferentVersion,41);
+assert.equal(provenance.summaries.byteMatchRaw+
+ provenance.summaries.byteMatchWithTrailingLF,34);
+assert.equal(provenance.summaries.differentVersionPairs,7);
+assert.equal(provenance.summaries.remoteOnlySqlStored,34);
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
@@ -101,6 +112,11 @@ const result={
  pinnedAppliedNamesMissingLocally:historicalOnlyNames.length,
  duplicateLocalMigrationVersionOccurrences:duplicateLocalVersions.length,
  fullHistoricalMigrationChainDriftDetected:historyDrift,
+ verifiedDifferentVersionSqlBodyMatches:34,
+ differentVersionPairsWithCurrentSqlDrift:7,
+ hostedOnlyAppliedSqlBodiesRecoverableFromRestrictedHistory:34,
+ sameVersionSameNameUnverifiedSqlBodies:provenance.summaries.sameVersionNameUnmatched,
+ historicalProvenanceAllowsDeployment:false,
  fullHistoricalMigrationChainReleaseApproved:false,
  actualPG17ChainAcceptanceVerifiedByThisScript:false,
  currentHostedLastAppliedVersion:"NOT_CHECKED_BY_THIS_SCRIPT",
