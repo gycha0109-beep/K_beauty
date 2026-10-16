@@ -44,7 +44,7 @@ function safeVariant(v,id){
      !obj(v.skinAxisStates)||!obj(v.privateAxisContractDiagnostics))
        fail("private_v2_variant_invalid");
   const rows=v.v2Axes.map(row=>{
-    if(!obj(row)||!AXES.includes(row.axis)||!STATES.includes(row.state)||
+    if(!obj(row)||!AXES.includes(row.axis)||![...STATES,"invalid"].includes(row.state)||
        !(row.value===null||int(row.value,0,5))||
        !["low","medium","high","unknown"].includes(row.confidence))
       fail("private_v2_axis_invalid");
