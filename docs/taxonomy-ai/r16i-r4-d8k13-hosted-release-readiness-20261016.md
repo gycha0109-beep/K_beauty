@@ -188,3 +188,14 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 근거: `docs/taxonomy-ai/r16i-r4-d8k13-ranking-acl-anonymous-grant-security-lineage-20261016.md`; 운영 SELECT-only 사전 점검 `d8k13-historical-drift-readonly-preflight-v1.sql` 재실행 PASS, 오프라인 `verify-d8k13-historical-security-lineage-v1.mjs` 실제 코드 10개를 입력으로 검증 PASS/HOLD(일반 exit 0, enforce-release exit 3).
 
 **D8K-13 합성 Docker PG17 부분체인은 기존 PASS 유지.** 전체 178건 history 복원, crawler 파서, 백업/PITR, 독립 reviewer, 보안 #1208, NULL 방어에 대한 별도 승인·격리 PG17 테스트 전 운영 SQL/DDL/DML/repair/머지/배포 전부 HOLD.
+
+
+## 14. PG17 공개 역할 잔여 권한 — 보안 승인 별도 차단 (2026-10-16 16:43 KST)
+
+운영 `ranking_snapshots`는 `anon/authenticated` INSERT/UPDATE/DELETE/TRUNCATE가 차단돼 있으나 **REFERENCES / TRIGGER / MAINTAIN** 권한이 여전히 있는 것을 `relacl`과 `has_table_privilege`로 확인했다. 두 역할의 `public` schema CREATE 권한은 없으며, `source_rankings`에는 같은 공개 권한이 없다. 두 테이블 RLS ON. **침해·실질 악용 가능성은 미확인**이지만 최소 권한 검토가 추가로 필요하다.
+
+현재 읽기 전용 SQL `d8k13-historical-drift-readonly-preflight-v1.sql`은 2026-10-16 16:43:50 KST에 정상 실행·`READ_ONLY_HOLD`를 반환했다. 메타데이터 snapshot과 `verify-d8k13-historical-security-lineage-v1.mjs`·`verify-d8k13-release-sequence-v1.mjs`도 해당 위험을 릴리스 차단 입력으로 반영한다.
+
+[Ranking ACL·SEC-05 독립 감사 보고서](./r16i-r4-d8k13-ranking-acl-anonymous-grant-security-lineage-20261016.md)에 실제 ACL의 효과 범위, 앞선 후속 repair 적용 이력, 익명 쓰기 RPC의 server-only/HMAC 경계, 승인 전 PG17 보수 테스트 요구사항을 기록했다.
+
+**운영 GRANT/REVOKE, claim RPC 수정, migration repair 및 배포는 명시적 승인 전까지 금지**한다. D8K-13 기존 합성 PostgreSQL acceptance는 변함없이 통과했고, 전체 운영 역사 정합성/보안 `#1208`/독립 OWNER/복원 증명은 계속 HOLD다.
