@@ -105,12 +105,29 @@ BEGIN
      EXISTS(SELECT 1 FROM public.admin_r16i_d8d_v2_events)
   THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_ACTIVITY'; END IF;
 
-  -- Both v2 entrypoints must remain SECURITY INVOKER, never a new
-  -- SECURITY DEFINER escalation path.
+  -- PIN the actual unmodified D8D-v2 function contract:
+  -- APPLY is SECURITY INVOKER; ROLLBACK deliberately is SECURITY DEFINER
+  -- so it can remove the two offers while retaining the approved audit trail.
+  -- ROLLBACK is trusted only when EXECUTE remains service_role-only and
+  -- the source RPC's owner membership, bounded subject and ticket checks
+  -- remain subject to independent code review. Do NOT change its security
+  -- attribute merely to satisfy this migration preflight.
   IF (SELECT p.prosecdef FROM pg_catalog.pg_proc p WHERE p.oid=
        to_regprocedure('public.r16i_d8d_apply_v2(uuid,uuid,uuid,text)')) IS DISTINCT FROM false OR
      (SELECT p.prosecdef FROM pg_catalog.pg_proc p WHERE p.oid=
-       to_regprocedure('public.r16i_d8d_rollback_v2(uuid,uuid,uuid)')) IS DISTINCT FROM false OR
+       to_regprocedure('public.r16i_d8d_rollback_v2(uuid,uuid,uuid)')) IS DISTINCT FROM true OR
+     NOT pg_catalog.has_function_privilege('service_role',
+       'public.r16i_d8d_apply_v2(uuid,uuid,uuid,text)','EXECUTE') OR
+     NOT pg_catalog.has_function_privilege('service_role',
+       'public.r16i_d8d_rollback_v2(uuid,uuid,uuid)','EXECUTE') OR
+     pg_catalog.has_function_privilege('anon',
+       'public.r16i_d8d_apply_v2(uuid,uuid,uuid,text)','EXECUTE') OR
+     pg_catalog.has_function_privilege('authenticated',
+       'public.r16i_d8d_apply_v2(uuid,uuid,uuid,text)','EXECUTE') OR
+     pg_catalog.has_function_privilege('anon',
+       'public.r16i_d8d_rollback_v2(uuid,uuid,uuid)','EXECUTE') OR
+     pg_catalog.has_function_privilege('authenticated',
+       'public.r16i_d8d_rollback_v2(uuid,uuid,uuid)','EXECUTE') OR
      NOT pg_catalog.has_table_privilege('service_role',
        'public.admin_r16i_d8d_v2_gate','SELECT') OR
      pg_catalog.has_table_privilege('service_role',
