@@ -16,6 +16,7 @@ function privateCases(report,expectedVariants,attempted) {
     report.providerCallsAttempted!==attempted||
     !record(report.privacy)||
     report.privacy.gitHubActionsUsed!==false||
+    report.privacy.humanPhotoSentToProvider!==true||
     report.privacy.rawOutputsPersisted!==false||
     report.privacy.photosSavedByRunner!==false)
     requireSafe("private_cohort_invalid");
@@ -85,8 +86,12 @@ function safeSampleSummary(cases,variant) {
       rawNotSeen+=countRaw(v,"not_seen");
       validatedNotSeen+=countValidated(v,"not_seen");
       if(v.nearTokenCap===true)outputNearCap++;
-      if(!v.skinAnalysisEligible&&v.v2AxisCount===0&&
-        v.v2ContractStatus==="EXPECTED_INELIGIBLE_EMPTY")expectedIneligibleEmpty++;
+      const reportedAbstention=Object.hasOwn(v,"expectedIneligibleAbstention")
+        ?v.expectedIneligibleAbstention===true
+        :!v.skinAnalysisEligible&&v.responseComplete===true&&
+          v.finishReason==="stop"&&v.v2AxisCount===0&&
+          v.v2ContractStatus==="EXPECTED_INELIGIBLE_EMPTY";
+      if(!v.skinAnalysisEligible&&reportedAbstention)expectedIneligibleEmpty++;
     }
   }
   return {
