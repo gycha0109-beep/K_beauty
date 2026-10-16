@@ -104,10 +104,11 @@ export default function R16IR4D8CorrectionApproval({review}){
   </p>:<>
    <section className="rounded-xl border border-[#dbe4ef] p-4 dark:border-[#435369]">
     <h4 className="font-semibold">A. 캡처 근거 판정</h4>
-    <p className={light+" mt-1"}>자신이 제출한 자료는 본인이 승인할 수 없습니다. 다른 관리자에게 승인받은 자료도 이유를 기록해 철회할 수 있습니다. 철회된 자료는 같은 파일로 다시 승인할 수 없습니다.</p>
+    <p className={light+" mt-1"}>자신이 제출한 자료는 본인이 승인할 수 없습니다. 다른 관리자에게 승인받은 자료도 이유를 기록해 철회할 수 있습니다. 철회된 자료는 같은 파일로 다시 승인할 수 없습니다. 이전 자기 승인 기록이 격리된 경우 원래 판정은 보존하지만 유효한 승인으로 사용할 수 없습니다.</p>
     {evidence.length===0?<p className={light+" mt-3"}>저장된 근거가 없습니다. 캡처 저장 영역의 기존 증빙을 먼저 확인해 주세요.</p>:
      <div className="mt-3 space-y-2">{evidence.map(e=><div key={e.evidenceId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-xs dark:border-[#4b5564]">
       <span>{e.sourceKey==="official_single"?"제조사 단품":"화해 기획세트"} · {e.selectedOption||"옵션 미기록"} · {
+        verdictMap.get(e.evidenceId)?.verdict==="LEGACY_QUARANTINED"?"과거 자기 승인 — 효력 격리":
         verdictMap.get(e.evidenceId)?.verdict==="REVOKED"?"승인 철회됨":
         verdictMap.get(e.evidenceId)?.verdict==="VERIFIED"?"승인됨":
         verdictMap.get(e.evidenceId)?.verdict==="REJECTED"?"반려됨":"미검토"
@@ -119,9 +120,10 @@ export default function R16IR4D8CorrectionApproval({review}){
        }}>{verdictMap.get(e.evidenceId)?.verdict==="VERIFIED"?"승인 철회":"이 캡처 검토"}</button>}
      </div>)}</div>}
     {(ledger.reviewHistory||[]).length>0&&<details className="mt-3 rounded-lg border border-[#dbe4ef] p-2 text-xs dark:border-[#435369]">
-     <summary className="cursor-pointer font-semibold">승인·반려·철회 이력</summary>
+     <summary className="cursor-pointer font-semibold">승인·반려·철회·레거시 격리 이력</summary>
      <ul className="mt-2 space-y-2">{ledger.reviewHistory.map((h,i)=><li key={h.evidenceId+"-"+i}>
-      {h.evidenceId.slice(0,8)} · {h.verdict==="REVOKED"?"승인 철회":
+      {h.evidenceId.slice(0,8)} · {h.verdict==="LEGACY_QUARANTINED"?"과거 자기 승인 — 격리":
+       h.verdict==="REVOKED"?"승인 철회":
        h.verdict==="VERIFIED"?"승인":"반려"} · {h.reviewedAt} · {h.reason}
      </li>)}</ul>
     </details>}
