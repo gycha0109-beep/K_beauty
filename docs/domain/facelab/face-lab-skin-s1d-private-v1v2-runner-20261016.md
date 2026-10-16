@@ -60,3 +60,11 @@ This enables an **independent, separately consented/blinded Human label manifest
 Success means **research infrastructure mock PASS**, not real-human accuracy/Face parity or ability to retrieve GitHub Secrets. Until the actual live private Provider outputs and two independent Human assessments are acquired, S1-D remains **EXECUTION_BLOCKED_PENDING_PRIVATE_KEY_PROVISIONING**, S2-E scoring activation/S5 Product Ready/Release Ready remain **HOLD**. Security #1208 and any currently expired advisory exceptions remain an independent blocker. No merge/deploy without approval.
 
 Watchtower-Track: face-lab-skin
+
+## 2026-10-16 Windows non-admin mock acceptance fix
+
+The first Windows package halted at `MOCK_CONTRACT_FAILED` before user key entry. Static review of its exact mock script found a platform-dependent test: `symlinkSync(..., "file")` requires elevated privileges or Developer Mode on many Windows installations. Since the launcher swallowed the Node process stderr, its specific failure was not visible. **Treat this as a strongly supported root-cause hypothesis, not verified Windows exception evidence.**
+
+The synthetic-only verifier now treats Windows `EPERM`, `EACCES`, `ENOTSUP` or `ENOSYS` when *creating the disposable test symlink* as an explicit fixture capability skip. If symlink creation succeeds (or on Linux CI, where it must succeed), the real runner's symlink rejection is still asserted. The production PRIVATE photo intake code is **unchanged and continues to reject actual symlink photos**. Other errors, duplicate-content checks and all Provider-mock assertions still fail closed. This is not a disabling of security validation.
+
+On failure, the synthetic verifier also emits only `MOCK_SAFE_FAILURE: <fixed-stage> <fixed-class>` on stdout, not source paths, photos, provider strings or keys; the Windows launcher may expose this sanitized diagnostic so future startup errors can be located without collecting secrets. The updated Windows package must pin its source checkout to the exact new GitHub commit and refresh a clean, package-managed old checkout automatically, rather than failing at a stale previous pinned SHA. No actual human OpenAI requests are made by these fixes.
