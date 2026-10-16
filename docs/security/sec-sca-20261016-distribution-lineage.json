@@ -1266,7 +1266,7 @@
     "finalOwnerDecision": "PENDING_NOT_AUTOMATIC_APPROVAL"
   },
   "localChecks": {
-    "admissionTests": 85,
+    "admissionTests": 86,
     "oaepAssertions": 480,
     "chromiumChecksPerBundle": 32,
     "nativeUtilitiesAssertions": 157,
@@ -1278,5 +1278,22 @@
   },
   "approval": false,
   "actualPublication": "NOT_RUN",
-  "originalAudit": "BASELINE_FULL_HIGH22_PRODUCTION_HIGH19_CRITICAL0_FAIL; fresh CI responses PENDING"
+  "originalAudit": "BASELINE_FULL_HIGH22_PRODUCTION_HIGH19_CRITICAL0_FAIL; fresh CI responses PENDING",
+  "ciFollowup": {
+    "failedHead": "6367e5cb8d245ceadd624c93920e69fb2cd3dbb6",
+    "run": 38868077216,
+    "codeql": "PASS",
+    "admission": "PASS_85",
+    "producer": "FAIL_LINUX_WEBPACK_NAME_NORMALIZATION",
+    "independent": "SKIPPED",
+    "freshRuntimeAndroid": "NOT_RUN",
+    "originalAudit": {
+      "fullHigh": 22,
+      "productionHigh": 19,
+      "critical": 0,
+      "status": "FAIL"
+    },
+    "repair": "Normalize known webpack global path only after pinned4.44.1 and byte checks; Linux/wrong-byte/wrong-version regression PASS",
+    "newCi": "PENDING"
+  }
 }

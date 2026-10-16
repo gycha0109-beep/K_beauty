@@ -32,7 +32,7 @@ export function bundleModuleInventory(stats,dir){
   const evidence=lineageEvidence(),output=[];
   for(const child of stats.children||[stats]){assert.deepEqual(child.errors,[]);const asset=(child.assets||[]).find(a=>/^(forge(?:\.all)?|prime\.worker)\.min\.js$/.test(a.name));if(!asset)continue;
     const modules=[];for(const m of child.modules||[]){let n=m.name;if(n.startsWith('multi ')||n==='crypto (ignored)')continue;
-      if(n==='(webpack)/buildin/global.js'){assert.equal(digest(fs.readFileSync(m.identifier)),digest(evidence.files['webpack-global.js']));modules.push({path:'webpack/buildin/global.js',sha256:pins['webpack-global.js'],component:'webpack@4.44.1'});}
+      if(n==='(webpack)/buildin/global.js'||/(?:^|\/)node_modules\/webpack\/buildin\/global\.js$/.test(n)){assert.equal(JSON.parse(fs.readFileSync(path.resolve(m.identifier,'../../package.json'))).version,'4.44.1','unreviewed webpack runtime version');assert.equal(digest(fs.readFileSync(m.identifier)),digest(evidence.files['webpack-global.js']));modules.push({path:'webpack/buildin/global.js',sha256:pins['webpack-global.js'],component:'webpack@4.44.1'});}
       else {assert.match(n,/^\.\/lib\/[A-Za-z0-9_.-]+\.js$/,'unreviewed runtime module');n=n.slice(2);modules.push({path:n,sha256:digest(fs.readFileSync(path.join(dir,n))),component:n==='lib/bejewely-node-rsa-oaep.js'?'node-rsa OAEP':'node-forge'});}}
     output.push({bundle:'dist/'+asset.name,modules:modules.sort((a,b)=>a.path.localeCompare(b.path))});
   }

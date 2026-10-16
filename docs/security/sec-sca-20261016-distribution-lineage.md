@@ -59,7 +59,7 @@ LOCAL proof only until independent CI finishes:
 | New scoped braces archive (13 files) | b95adba98ca7e06ac9a320d3877503b5cc19beb307e6ca595ba7aa32e1e87939 |
 | New scoped Forge archive (64 files) | 76e9688cb72d105026e5bd48df62b54e49abd2fa46bacc0687f0f309cadb3201 |
 
-Local: **85 admission/negative-control tests PASS**, OAEP480 assertions PASS, real Chromium+jQuery both forge/forge.all **32 checks each PASS**, native utility157 assertions PASS, seven complete TweetNaCl function correspondences PASS, two npm pack outputs identical, eight actual packet/kit tamper/omission controls PASS. Old candidate800e, old packet and kit still verify unchanged.
+Local: **86 admission/negative-control tests PASS**, OAEP480 assertions PASS, real Chromium+jQuery both forge/forge.all **32 checks each PASS**, native utility157 assertions PASS, seven complete TweetNaCl function correspondences PASS, two npm pack outputs identical, eight actual packet/kit tamper/omission controls PASS. Old candidate800e, old packet and kit still verify unchanged.
 
 New exact-head CI/CodeQL/full graph/fresh Android/independent replay: **PENDING**. Baseline fullHIGH22/prodHIGH19/CRITICAL0 original-name audit FAIL remains; fresh raw responses are required, no audit PASS inferred from scoped HIGH0. Device/API/Auth/live registry readback/ACL remain NOT_RUN.
 
@@ -68,3 +68,9 @@ New exact-head CI/CodeQL/full graph/fresh Android/independent replay: **PENDING*
 B-level exact version/line-by-line gaps remain disclosed; no evidence-based C component is intentionally shipped in this new profile. This does not prove a universal negative or confer legal clearance. After fresh CI, the owner can review the **new exact** rights packet; old pending/signed templates cannot authorize a new digest. Do not introduce author replies, paid legal engagement or a second human as mandatory gates.
 
 Actual publication still requires genuine owner rights/release records and signatures/pinned trust, credentials and independent denied-access identity, current quota/no-charge evidence and private-unlinked readback checks. No secrets requested in chat, no new general publication permission requested. User's current instruction forbids unapproved upload/ACL/payment/product/main/production changes. Existing security gates remain intact and unrelated feature development may proceed in isolation.
+
+## Linux CI follow-up
+
+Exact HEAD6367e5cb8d245ceadd624c93920e69fb2cd3dbb6/run38868077216: CodeQL and85 admission tests PASS; producer failed before the new candidate/full graph/Android at module-inventory normalization: Linux names the byte-pinned webpack global shim as ../webpack-harness/node_modules/webpack/buildin/global.js instead of (webpack)/buildin/global.js. Independent replay SKIPPED. Original audit gate raw fullHIGH22/prodHIGH19/C0 FAIL. This was a verifier portability failure, not an unreviewed dependency or source/license failure.
+
+Normalize only the exact webpack/global path suffix; require actual package version4.44.1 and the unchanged primary shim SHA before accepting it. Added Linux layout acceptance plus wrong-byte/wrong-version rejection regression; full local86 tests PASS. Normalized inventory, candidate/archive/packet/kit bytes are unchanged. Fresh exact-head CI/full runtime/independent replay remains required; no earlier PASS is substituted.

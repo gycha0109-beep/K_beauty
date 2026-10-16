@@ -36,3 +36,15 @@ test('lineage B uncertainties remain disclosed and removed code is not cleared',
   for(const id of ['historical-oaep','legacy-flash-flex','stackoverflow-isempty','snipplr-size-formatter'])assert.equal(result.components.find(c=>c.id===id).classification,'D');
   assert.throws(()=>lineageAssessment({sourceLineageCleanup:'UNREVIEWED',moduleInventory:[]}));
 });
+
+test('Linux external webpack harness is normalized only after version and byte checks',()=>{
+  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'lineage-webpack-'));
+  try{
+    const pkg=path.join(temp,'webpack-harness/node_modules/webpack'),file=path.join(pkg,'buildin/global.js'),dir=path.join(temp,'forge');
+    fs.mkdirSync(path.dirname(file),{recursive:true});fs.mkdirSync(dir);fs.writeFileSync(file,lineageEvidence().files['webpack-global.js']);fs.writeFileSync(path.join(pkg,'package.json'),JSON.stringify({version:'4.44.1'}));
+    const stats={children:['forge.min.js','forge.all.min.js','prime.worker.min.js'].map(name=>({errors:[],assets:[{name}],modules:[{name:'../webpack-harness/node_modules/webpack/buildin/global.js',identifier:file}]}))};
+    const result=bundleModuleInventory(stats,dir);assert.equal(result.length,3);assert.ok(result.every(b=>b.modules[0].path==='webpack/buildin/global.js'));
+    fs.writeFileSync(file,'substituted runtime');assert.throws(()=>bundleModuleInventory(stats,dir));
+    fs.writeFileSync(file,lineageEvidence().files['webpack-global.js']);fs.writeFileSync(path.join(pkg,'package.json'),JSON.stringify({version:'4.44.2'}));assert.throws(()=>bundleModuleInventory(stats,dir),/unreviewed webpack runtime version/);
+  }finally{fs.rmSync(temp,{recursive:true,force:true});}
+});
