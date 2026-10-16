@@ -97,6 +97,42 @@ function jpegDimensions(buffer) {
   }
   throw new Error("photo_dimensions_missing");
 }
+function stripJpegPrivateMetadata(buffer) {
+  // Retain image compression, JFIF, ICC profile and Adobe color transform.
+  // Remove free-text COM and application markers carrying side-channel metadata.
+  // Avoid silently altering orientation when an Exif metadata source exists.
+  let at=2;
+  const pieces=[buffer.subarray(0,2)];
+  while(at<buffer.length){
+    const start=at;
+    if(buffer[at]!==255)throw new Error("jpeg_segment_invalid");
+    while(buffer[at]===255)at++;
+    if(at>=buffer.length)throw new Error("jpeg_marker_truncated");
+    const marker=buffer[at++];
+    if(marker===218 || marker===217) {
+      pieces.push(buffer.subarray(start));
+      return Buffer.concat(pieces);
+    }
+    if(marker===1 || (marker>=208&&marker<=215)) {
+      pieces.push(buffer.subarray(start,at));
+      continue;
+    }
+    if(at+2>buffer.length)throw new Error("jpeg_segment_truncated");
+    const len=buffer.readUInt16BE(at);
+    if(len<2||at+len>buffer.length)throw new Error("jpeg_segment_overrun");
+    const segment=buffer.subarray(at+2,at+len);
+    const isExif=marker===225 &&
+      segment.length>=6 && segment.subarray(0,6).equals(Buffer.from("Exif\\0\\0"));
+    if(isExif)throw new Error("jpeg_exif_orientation_requires_review");
+    const isMetadata=marker===254 ||
+      (marker>=225&&marker<=239 &&
+        !(marker===226 && segment.subarray(0,11).toString("latin1")==="ICC_PROFILE") &&
+        marker!==238);
+    if(!isMetadata)pieces.push(buffer.subarray(start,at+len));
+    at+=len;
+  }
+  throw new Error("jpeg_scan_missing");
+}
 function readPrivatePhoto(photoDir,filename,w,h){
   const root=realpathSync(resolve(photoDir));
   const rootStat=lstatSync(root);
@@ -111,7 +147,8 @@ function readPrivatePhoto(photoDir,filename,w,h){
   if(data.length!==stat.size)throw new Error("photo_size_changed");
   const dimensions=jpegDimensions(data);
   if(dimensions.width!==w||dimensions.height!==h)throw new Error("photo_dimensions_changed");
-  return {imageUrl:"data:image/jpeg;base64,"+data.toString("base64"),bytes:data.length,
+  const stripped=stripJpegPrivateMetadata(data);
+  return {imageUrl:"data:image/jpeg;base64,"+stripped.toString("base64"),bytes:stripped.length,
     width:dimensions.width,height:dimensions.height};
 }
 const safeNumber=n=>Number.isSafeInteger(n)&&n>=0?n:null;
