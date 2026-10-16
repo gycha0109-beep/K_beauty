@@ -1295,5 +1295,17 @@
     },
     "repair": "Normalize known webpack global path only after pinned4.44.1 and byte checks; Linux/wrong-byte/wrong-version regression PASS",
     "newCi": "PENDING"
+  },
+  "finalSourceCi": {
+    "head": "ba12b646f89f2f5eab610b4ed79c2cd45a4758ee",
+    "run": 38869911393,
+    "status": "TECHNICAL_PASS_ORIGINAL_GATE_FAIL",
+    "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+    "packetSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+    "kitSha256": "2330e347ff66295865cb056237a6157d8a55b303c1100cdef01b2ff566e802e9",
+    "apkSha256": "5f5db368829e91214a0c1a8cb8234a822a9b959dd75ace2428e1a1b7a002ec41",
+    "receipt": "sec-sca-20261016-distribution-lineage-final-ci.json",
+    "independent": "PASS",
+    "finalRightsApproval": false
   }
 }

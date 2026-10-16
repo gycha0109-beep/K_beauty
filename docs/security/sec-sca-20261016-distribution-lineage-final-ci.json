@@ -1,0 +1,438 @@
+{
+  "head": "ba12b646f89f2f5eab610b4ed79c2cd45a4758ee",
+  "run": 38869911393,
+  "attempt": 1,
+  "jobs": [
+    {
+      "id": 116871316567,
+      "name": "Original security gate (unresolved advisories remain FAIL)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 116871316781,
+      "name": "CodeQL release preparation code",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 116871316799,
+      "name": "Clean release candidate structure (not approval)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 116871316840,
+      "name": "Offline release admission and negative controls",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 116878120553,
+      "name": "Independent clean release candidate digest replay",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "originalGate": "FAIL_NOT_WAIVED",
+  "overallWorkflow": "FAIL",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "packetSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+  "kitSha256": "2330e347ff66295865cb056237a6157d8a55b303c1100cdef01b2ff566e802e9",
+  "unscopedForgeSha256": "d514b22708d7602f845df8492f86bb5300419a265a46aed9eddaf047deb635e1",
+  "artifacts": [
+    {
+      "name": "@gycha0109-beep/braces",
+      "version": "3.0.3",
+      "sha256": "37d2604f280a0274cc26b7251e059111d36819430bc5bad578c2bdcba718b351",
+      "files": 13
+    },
+    {
+      "name": "@gycha0109-beep/node-forge",
+      "version": "1.4.0",
+      "sha256": "353690e06c92704162c7b622fca9a2e0d4007c6bdbec6603f6906b58a02dae34",
+      "files": 64
+    }
+  ],
+  "independentReplay": "PASS_MATCH_ALL_DIGESTS_BOTH_LIFECYCLES",
+  "admissionTests": 86,
+  "codeql": "PASS",
+  "runtimeRequired": true,
+  "runtimeReused": false,
+  "checks": [
+    {
+      "name": "mobile:typecheck",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "mobile:lint",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "verify:mobile-foundation",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "verify:mobile-entry-routing",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "mobile:config",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "mobile:export:android",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "mobile:prebuild:android",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "verify:mobile-native",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "build",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "local production page smoke",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "Android debug APK",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    }
+  ],
+  "android": {
+    "status": "PASS",
+    "exit": 0,
+    "reason": null,
+    "jdk": "openjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)\nOpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)",
+    "sdkPresent": true,
+    "apkSha256": "5f5db368829e91214a0c1a8cb8234a822a9b959dd75ace2428e1a1b7a002ec41"
+  },
+  "audits": {
+    "baselineFull": {
+      "exit": 1,
+      "rawSha256": "d97fc5bba43cffe887c02ff87d550095bf17115bf25742df223ec52843be3134",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 13,
+        "high": 22,
+        "critical": 0,
+        "total": 35
+      },
+      "advisoryLeaves": [
+        {
+          "name": "braces",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "range": "<=3.0.3"
+        },
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "node-forge",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "range": "<=1.4.0"
+        },
+        {
+          "name": "postcss-selector-parser",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "range": "<7.1.6"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": true,
+        "node-forge": true
+      }
+    },
+    "baselineProduction": {
+      "exit": 1,
+      "rawSha256": "de9f25456a428d46de74813f34c2de75ad52e005abdc6ea5fb41fbedca2e541d",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 11,
+        "high": 19,
+        "critical": 0,
+        "total": 30
+      },
+      "advisoryLeaves": [
+        {
+          "name": "braces",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "range": "<=3.0.3"
+        },
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "node-forge",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "range": "<=1.4.0"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": true,
+        "node-forge": true
+      }
+    },
+    "candidateFull": {
+      "exit": 1,
+      "rawSha256": "e9b461e81f501cc2e316e34ddf179cf85a2864513829e6945b5fbcf6b40f790b",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 17,
+        "high": 0,
+        "critical": 0,
+        "total": 17
+      },
+      "advisoryLeaves": [
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "postcss-selector-parser",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "range": "<7.1.6"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": false,
+        "node-forge": false
+      }
+    },
+    "candidateProduction": {
+      "exit": 1,
+      "rawSha256": "5d2a5b9672cb233a3c5538d26b4ba045ca750f98164d753bee4c67fb1cb23cea",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 14,
+        "high": 0,
+        "critical": 0,
+        "total": 14
+      },
+      "advisoryLeaves": [
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": false,
+        "node-forge": false
+      }
+    }
+  },
+  "cryptographicChecks": {
+    "oaepAssertions": 480,
+    "browser": [
+      {
+        "file": "forge.min.js",
+        "status": "PASS",
+        "checks": 32,
+        "nativeInteroperability": true,
+        "rsaMalformationRejected": true
+      },
+      {
+        "file": "forge.all.min.js",
+        "status": "PASS",
+        "checks": 32,
+        "nativeInteroperability": true,
+        "rsaMalformationRejected": true
+      }
+    ],
+    "utilities": {
+      "status": "PASS",
+      "assertions": 157,
+      "cryptoPrimitivesChanged": false,
+      "retainedNumberFormatterUnchanged": true,
+      "flashSupport": "NOT_SHIPPED"
+    },
+    "correspondence": {
+      "tweetNaClWholeFunctionMatches": [
+        {
+          "name": "add",
+          "tokenSha256": "4f92e0ab841972842c2f84ead58dfad3ea13d404a465fdd17bb5622460330f0c"
+        },
+        {
+          "name": "pack",
+          "tokenSha256": "d07bcf2b0921bbab5fdec54df3812629243e19f41bded06f5b48e0528995c12a"
+        },
+        {
+          "name": "crypto_verify_32",
+          "tokenSha256": "088315d55f7ee0f19dde51b7aba3fc3c5ec350a2472c4c5178b693fdb9693f1a"
+        },
+        {
+          "name": "scalarmult",
+          "tokenSha256": "faa71a8e2e3f5020ff7ad1ed14c8e64632c137e39312e3c2b254ac920891dd8b"
+        },
+        {
+          "name": "scalarbase",
+          "tokenSha256": "db0c10832214bd3e07fd982b6fa73636c2f061ca39e0c48b502c8c61b196b3e8"
+        },
+        {
+          "name": "S",
+          "tokenSha256": "223bf2630dad6daefc639254255f686d9d5d5bcb1571f6611c3c98289bb4bd4e"
+        },
+        {
+          "name": "M",
+          "tokenSha256": "c9ee8caf535da5a16af8756aac2969b6c0ba164c7a94fb8cbdb2c2d157cf8a18"
+        }
+      ],
+      "uniqueCopiedVersionEstablished": false,
+      "numberFormatterPrimaryContributors": "MATCH",
+      "aesInitialHistoryAttribution": "MATCH"
+    }
+  },
+  "crossPlatform": {
+    "localNode": "24.20.0",
+    "localNpm": "11.19.0",
+    "ciNode": "22.23.3",
+    "ciNpm": "10.9.9",
+    "all61FileHashesEqual": true,
+    "buildRecordsEqual": true,
+    "tarballHashesEqual": false,
+    "reason": "Archive bytes differ across these OS/toolchain environments; no archive-header cause asserted without plaintext CI comparison. Source/browser/LICENSE/added notices are identical. Both independent Linux runners reproduce archive bytes; choose their retained candidate, not local Windows archive."
+  },
+  "encryptedArtifact": {
+    "id": 12033259971,
+    "name": "sca-b6-owner-encrypted-38869911393-1",
+    "zipSha256": "6bc2aeed1ee203c3e51d46be3e4fed57566542e702bd3b97666ac3ec12cff092",
+    "ciphertextSha256": "f4915edebce74e8dd967860518f568181be058531e448f4b5bf0dbc6c37e76df",
+    "receiptSha256": "9330b0522ea248a3de1e671ea8aae33952ddf06d6917356f4c2033d1107e5a1f",
+    "exactEntries": [
+      "candidate.tar.gz.enc",
+      "receipt.json"
+    ],
+    "cipherBytes": 2129546,
+    "receiptBytes": 1386,
+    "actualZipVerified": true,
+    "ownerKeyFingerprint": "d0c4d0e7a7c7984760b36bcb6358410479681f92acb20b8adde260a01dc4b8b4",
+    "ownerDecryptionNewCandidate": "NOT_RUN",
+    "privateKeyAccessed": false
+  },
+  "finalOwnerRightsApproval": false,
+  "releaseSignature": "NOT_RUN",
+  "privatePublish": "NOT_RUN",
+  "liveReadbackAcl": "NOT_RUN",
+  "productApplied": false,
+  "deviceApiAuth": "NOT_RUN"
+}
