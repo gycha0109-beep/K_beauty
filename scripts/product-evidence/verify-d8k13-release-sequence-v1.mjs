@@ -35,7 +35,25 @@ const defaultLegacyRefusal=migration.includes(
  "D8K12_EXISTING_VERDICTS_REQUIRE_EXPLICIT_RECONCILIATION");
 const exactManifest=migration.includes(
  "observed_manifest IS DISTINCT FROM expected_manifest");
-const conflict=v2First&&createsV2&&d8k13RefusesV2;
+const inertV2CompatibilityCandidate=[
+ "D8K13_UNEXPECTED_D8DV2_ACTIVITY",
+ "D8K13_UNEXPECTED_D8DV2_SCHEMA",
+ "D8K13_UNEXPECTED_D8DV2_SECURITY",
+ "pg_catalog.pg_advisory_xact_lock(195721,16)",
+ "LOCK TABLE public.admin_r16i_d8d_v2_gate",
+ "actual_columns IS DISTINCT FROM",
+ "enabled=false"
+].every(s=>migration.includes(s));
+const actualV2ChainTest=content(
+ "scripts/product-evidence/run-d8k13-local-pg17.mjs");
+const realChainFixtureIncluded=[
+ "supabase/migrations/20261014150000_taxonomy_ai_r16i_d8d_v2_owner_gated_dual_offer.sql",
+ "D8K13_D8DV2_REAL_ORDER_CHAIN_ACCEPTANCE_PASS",
+ "D8K13_D8DV2_DRIFT_REFUSAL_AND_ROLLBACK_PASS"
+].every(s=>actualV2ChainTest.includes(s));
+const unresolvedStaticConflict=v2First&&createsV2&&d8k13RefusesV2&&
+ !inertV2CompatibilityCandidate;
+
 assert.ok(defaultLegacyRefusal&&exactManifest,
  "D8K13_PRECONDITION_OR_MANIFEST_GUARD_MISSING");
 const result={
@@ -45,18 +63,21 @@ const result={
  hostedDatabaseQueried:false,
  hostedDatabaseWrites:0,
  v2BeforeD8K13:v2First,
- v2CreatesBlockedTables:createsV2,
- d8k13RefusesV2Tables:d8k13RefusesV2,
- standardSequentialMigrationConflict:conflict,
+ v2CreatesGuardedTables:createsV2,
+ d8k13RecognizesV2Objects:d8k13RefusesV2,
+ conditionalInertV2CompatibilityCandidate:inertV2CompatibilityCandidate,
+ actualV2MigrationChainTestPresent:realChainFixtureIncluded,
+ unresolvedStaticSequenceConflict:unresolvedStaticConflict,
+ actualPG17ChainAcceptanceVerifiedByThisScript:false,
  currentHostedLastAppliedVersion:"NOT_CHECKED_BY_THIS_SCRIPT",
  backupsAndRestoreVerified:false,
  securityIssue1208Resolved:false,
  independentReviewerValidated:false,
  productionReleaseAuthorized:false,
- next:"Read-only remote supabase db push --dry-run review, choose and test an authorized sequence; verify recoverable backup, manifest, reviewer and security gates separately"
+ next:"Run synthetic native PG17 actual D8D-v2-before-D8K13 acceptance; then verify hosted dry-run, recoverable backup, manifest, independent reviewer and security issue 1208 before separate operational approval"
 };
 console.log(JSON.stringify(result));
 if(args[0]==="--enforce-release"){
- console.error("D8K13_RELEASE_HOLD: pending-migration chronology and external approvals require independent verification");
+ console.error("D8K13_RELEASE_HOLD: native PG17 ordered chain, independent backup/reviewer/security and deployment approval not attested here");
  process.exitCode=3;
 }
