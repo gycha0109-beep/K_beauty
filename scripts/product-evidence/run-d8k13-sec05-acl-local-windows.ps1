@@ -12,6 +12,9 @@ $Root = [System.IO.Path]::GetFullPath($VerifyWorktree).TrimEnd('\')
 if ($Root -ieq $OriginalWorktree) {
   throw 'D8K13_SEC05_ORIGINAL_DIRTY_WORKTREE_FORBIDDEN'
 }
+if ($Root -notmatch '(?i)[\\/]K-beauty-D8K13-verify$') {
+  throw 'D8K13_SEC05_ONLY_SEPARATE_NAMED_VERIFY_WORKTREE_ALLOWED'
+}
 if (-not (Test-Path -LiteralPath $Root -PathType Container)) {
   throw "D8K13_SEC05_CLEAN_VERIFY_WORKTREE_MISSING: $Root"
 }
@@ -27,7 +30,14 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
 
 function Assert-NativeSuccess {
   param([string]$CommandName,[string[]]$Arguments)
-  & $CommandName @Arguments
+  $SavedErrorPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    & $CommandName @Arguments
+  }
+  finally {
+    $ErrorActionPreference = $SavedErrorPreference
+  }
   if ($LASTEXITCODE -ne 0) {
     throw "D8K13_SEC05_NATIVE_COMMAND_FAILED: $CommandName $($Arguments -join ' ') exit=$LASTEXITCODE"
   }
