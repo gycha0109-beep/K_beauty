@@ -107,6 +107,9 @@ async function run(){
  assert.match(migration,/D8K13_LEGACY_BOOTSTRAP_COUNT_MISMATCH/);
  assert.match(migration,/D8K13_UNEXPECTED_D8DV2_ACTIVITY/);
  assert.match(migration,/D8K13_UNEXPECTED_D8DV2_SCHEMA/);
+ assert.match(migration,/has_function_privilege\('service_role'/);
+ assert.match(migration,/has_function_privilege\('anon'/);
+ assert.match(migration,/r16i_d8d_rollback_v2\(uuid,uuid,uuid\)'\) IS DISTINCT FROM true/);
  assert.match(migration,/pg_catalog\.pg_advisory_xact_lock\(195721,16\)/);
  assert.match(v2Sql,/CREATE TABLE public\.admin_r16i_d8d_v2_gate/);
  assert.match(v2Sql,/CREATE FUNCTION public\.r16i_d8d_apply_v2/);
@@ -296,6 +299,18 @@ async function run(){
    ["d8k13_v2_rpc_escalation",
     "ALTER FUNCTION public.r16i_d8d_apply_v2(uuid,uuid,uuid,text) "+
      "SECURITY DEFINER;",
+    "D8K13_UNEXPECTED_D8DV2_SECURITY"],
+   ["d8k13_v2_rollback_security_drift",
+    "ALTER FUNCTION public.r16i_d8d_rollback_v2(uuid,uuid,uuid) "+
+     "SECURITY INVOKER;",
+    "D8K13_UNEXPECTED_D8DV2_SECURITY"],
+   ["d8k13_v2_public_rollback_exec",
+    "GRANT EXECUTE ON FUNCTION "+
+     "public.r16i_d8d_rollback_v2(uuid,uuid,uuid) TO anon;",
+    "D8K13_UNEXPECTED_D8DV2_SECURITY"],
+   ["d8k13_v2_missing_service_role_exec",
+    "REVOKE EXECUTE ON FUNCTION "+
+     "public.r16i_d8d_apply_v2(uuid,uuid,uuid,text) FROM service_role;",
     "D8K13_UNEXPECTED_D8DV2_SECURITY"],
    ["d8k13_v2_anon_read",
     "GRANT SELECT ON public.admin_r16i_d8d_v2_gate TO anon;",
