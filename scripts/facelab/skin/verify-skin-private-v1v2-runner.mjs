@@ -41,6 +41,7 @@ assert.equal(symlinkFixtureDeniedOnWindows({code:"EACCES"},"win32"),true);
 assert.equal(symlinkFixtureDeniedOnWindows({code:"ENOSYS"},"win32"),true);
 assert.equal(symlinkFixtureDeniedOnWindows({code:"EPERM"},"linux"),false);
 assert.equal(symlinkFixtureDeniedOnWindows({code:"ENOENT"},"win32"),false);
+let phase="SETUP";
 try {
   for(const [i,c] of manifest.cases.entries())writeFileSync(join(tmp,c.filename),makeJpeg(16,16,i));
   // One mock image contains a sensitive JPEG COM segment which must not be
@@ -90,6 +91,7 @@ try {
         usage:{prompt_tokens:350,completion_tokens:200}
       }};
   };
+  phase="LOCAL_PRECHECK";
   const precheck=await runPrivatePhotoCohort({
     manifest,photoDir:tmp,live:false,environment:{}
   });
@@ -141,6 +143,7 @@ try {
   assert.equal(blocked.providerCallsAttempted,0);
   assert.equal(blocked.privacy.humanPhotoSentToProvider,false);
   assert.equal(attempts,0);
+  phase="MOCKED_PROVIDER_PAIR";
   const report=await runPrivatePhotoCohort({
     manifest,photoDir:tmp,live:true,
     environment:{OPENAI_API_KEY2:fakeSecret,OPENAI_API_KEY:prodSecret},
@@ -187,6 +190,7 @@ try {
     {...manifest,cases:[{...manifest.cases[0],imageUrl:"https://example.com/x.jpg"},...manifest.cases.slice(1)]}
   ])assert.throws(()=>validatePrivateCohortManifest(input));
 
+  phase="NEGATIVE_CASES";
   // Provider errors must stop immediately; no raw data even if error carries it.
   attempts=0;
   const failed=await runPrivatePhotoCohort({
@@ -223,6 +227,7 @@ try {
   assert.equal(exifBlocked.providerCallsAttempted,0);
   assert.equal(exifBlocked.outcome,"HOLD_PRIVATE_PHOTO_INPUT");
   writeFileSync(join(tmp,manifest.cases[1].filename),makeJpeg(16,16,1));
+  phase="SYMLINK_FIXTURE";
   // Reject symlink to any photo file and consume zero provider calls.
   // Windows non-admin accounts may not have OS permission to CREATE one.
   unlinkSync(join(tmp,manifest.cases[3].filename));
@@ -247,6 +252,12 @@ try {
     assert.equal(attempts,1);
   }
   console.log("verify-skin-private-v1v2-runner: PASS (mock-only, five paired cases, privacy, no key fallback, zero CI photo calls)");
+}catch(error){
+  const safeCode=["EPERM","EACCES","ENOTSUP","ENOSYS"].includes(error?.code)
+    ? error.code : error?.name==="AssertionError" ? "ASSERTION" : "OTHER";
+  // A fixed category only, never an exception message/path/photo/key.
+  console.log("MOCK_SAFE_FAILURE: "+phase+" "+safeCode);
+  throw error;
 }finally{
   rmSync(tmp,{recursive:true,force:true});
 }
