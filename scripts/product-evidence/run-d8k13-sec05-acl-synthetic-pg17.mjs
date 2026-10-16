@@ -144,6 +144,14 @@ async function main(){
  const [seed,legacyCheck,hardenedCheck,aclCheck]=FIXTURES.map(read);
  const source=read(SOURCE);
  const fn=extractClaimFunction(source),oldFn=legacyVariant(fn);
+ assert.equal(fn.length,5240,"SEC05_HARDENED_SOURCE_SIZE_DRIFT_REVIEW_REQUIRED");
+ assert.equal(oldFn.length,5047,"SEC05_SYNTHETIC_LEGACY_FUNCTION_SIZE_DRIFT");
+ assert.ok(!oldFn.includes("  if p_jti_hash is null"),
+  "SEC05_SYNTHETIC_LEGACY_STILL_HAS_NULL_GUARDS");
+ assert.equal(oldFn.split("create or replace function public.claim_anonymous_write_grant(").length,2,
+  "SEC05_SYNTHETIC_LEGACY_DUPLICATED_FUNCTION");
+ assert.equal((oldFn.match(/\n\$\$;/g)||[]).length,1,
+  "SEC05_SYNTHETIC_LEGACY_HAS_MULTIPLE_TERMINATORS");
  const tableBoundary="alter table public.recommendation_logs";
  const until=source.indexOf(tableBoundary);
  assert.ok(source.startsWith("begin;")&&until>0,
@@ -185,6 +193,17 @@ async function main(){
   const fixed=psql(hardenedCheck);
   assert.match(fixed,/D8K13_SEC05_HARDENED_NULL_MATRIX_ROLE_AND_RETRY_PASS/);
   console.log("D8K13_SEC05_HARDENED_NULL_MATRIX_AND_RETRY_PASS");
+  for(const role of ["anon","authenticated"]){
+   const denied=psql("SET ROLE "+role+";\n"+
+    "SELECT public.claim_anonymous_write_grant("+
+    "repeat('a',64),repeat('b',64),'analysis-run',"+
+    "'synthetic_run_id_123456789012345678',"+
+    "'result:create',repeat('c',64));",{
+     expectedError:"permission denied for function claim_anonymous_write_grant"
+    });
+   assert.match(denied,/permission denied for function claim_anonymous_write_grant/);
+  }
+  console.log("D8K13_SEC05_PUBLIC_RPC_DIRECT_EXECUTE_DENIED_PASS");
   const acl=psql(aclCheck);
   assert.match(acl,/D8K13_SYNTHETIC_RANKING_ACL_REVOKE_ROLLBACK_IDEMPOTENCE_PASS/);
   console.log("D8K13_SEC05_RANKING_MINIMAL_ACL_ROLLBACK_PASS");
