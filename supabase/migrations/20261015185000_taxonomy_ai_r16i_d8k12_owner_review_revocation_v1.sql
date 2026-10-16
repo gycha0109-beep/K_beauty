@@ -174,12 +174,28 @@ BEGIN
    FROM pg_catalog.pg_attribute a
    WHERE a.attrelid=to_regclass('public.'||v2_table)
      AND a.attnum>0 AND NOT a.attisdropped;
+   -- Column-array order and the text/name collation of identifiers are
+   -- not schema authority. Compare exact sets plus cardinality instead.
+   -- On failure, report ONLY synthetic-safe schema names/types (no row data).
    IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_class c
       WHERE c.oid=to_regclass('public.'||v2_table)
-        AND c.relkind='r' AND c.relrowsecurity) OR
-      actual_columns IS DISTINCT FROM
-      (SELECT array_agg(c ORDER BY c) FROM unnest(expected_columns) AS x(c))
-   THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_SCHEMA'; END IF;
+        AND c.relkind='r' AND c.relrowsecurity)
+   THEN
+    RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_SCHEMA table=% relation_kind_or_rls',
+      v2_table;
+   END IF;
+   IF actual_columns IS NULL OR
+      pg_catalog.cardinality(actual_columns)<>pg_catalog.cardinality(expected_columns) OR
+      EXISTS(SELECT x.val FROM unnest(actual_columns) AS x(val)
+             EXCEPT
+             SELECT y.val FROM unnest(expected_columns) AS y(val)) OR
+      EXISTS(SELECT y.val FROM unnest(expected_columns) AS y(val)
+             EXCEPT
+             SELECT x.val FROM unnest(actual_columns) AS x(val))
+   THEN
+    RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_SCHEMA table=% actual=% expected=%',
+      v2_table,actual_columns,expected_columns;
+   END IF;
    IF pg_catalog.has_table_privilege('anon','public.'||v2_table,'SELECT') OR
       pg_catalog.has_table_privilege('authenticated','public.'||v2_table,'SELECT')
    THEN RAISE EXCEPTION 'D8K13_UNEXPECTED_D8DV2_SECURITY'; END IF;
