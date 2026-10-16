@@ -260,7 +260,7 @@ async function run(){
   }
   await createOrderedV2Db("d8k13_d8dv2_real_order");
   psql(localTicket+migration,{db:"d8k13_d8dv2_real_order"});
-  const chain=psql(legacyTest+"\n"+v2ChainTest,{
+  const chain=psql(v2ChainTest+"\n"+legacyTest,{
    db:"d8k13_d8dv2_real_order"
   });
   assert.match(chain,/D8K13_D8DV2_REAL_ORDER_CHAIN_ACCEPTANCE_PASS/);
