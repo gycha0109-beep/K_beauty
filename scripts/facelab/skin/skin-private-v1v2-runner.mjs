@@ -178,14 +178,14 @@ export async function runPrivatePhotoCohort({
   for(const item of manifest.cases) {
     try {
       validated.push({
-        caseId,
+        caseId:item.caseId,
         image:readPrivatePhoto(photoDir,item.filename,item.expectedWidth,item.expectedHeight)
       });
     } catch {
       return {
         version:PRIVATE_V1V2_VERSION,studyId:manifest.studyId,
         outcome:"HOLD_PRIVATE_PHOTO_INPUT",providerCallsAttempted:0,
-        cases:[{caseId,verdict:"PRIVATE_PHOTO_INPUT_HOLD"}],
+        cases:[{caseId:item.caseId,verdict:"PRIVATE_PHOTO_INPUT_HOLD"}],
         pairedSummary:null,
         privacy:{humanPhotoSentToProvider:false,rawOutputsPersisted:false,
           photosSavedByRunner:false,gitHubActionsUsed:false},
@@ -238,7 +238,7 @@ export async function runPrivatePhotoCohort({
         };
       }
     }
-    const trials=summaryRows.filter(row=>row.caseId===item.caseId);
+    const trials=summaryRows.filter(row=>row.caseId===caseId);
     const paired=summarizeSkinVisionTrials(trials,{evidenceOrigin:"operator_review_pending"});
     const v2=rows.find(x=>x.variant==="v2");
     output.push({caseId,verdict:paired.structuralCandidatePass &&
