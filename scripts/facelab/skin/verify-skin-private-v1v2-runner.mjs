@@ -30,6 +30,15 @@ const manifest={
 const clone=v=>structuredClone(v);
 try {
   for(const c of manifest.cases)writeFileSync(join(tmp,c.filename),makeJpeg(16,16));
+  // One mock image contains a sensitive JPEG COM segment which must not be
+  // forwarded to OpenAI: the outgoing bytes must exactly match clean JPEG.
+  const comment=Buffer.from("SYNTHETIC_PRIVATE_COMMENT_NOT_FOR_PROVIDER");
+  const commentLen=Buffer.alloc(2); commentLen.writeUInt16BE(comment.length+2);
+  const clean=makeJpeg(16,16);
+  const withComment=Buffer.concat([
+    clean.subarray(0,2),Buffer.from([255,254]),commentLen,comment,clean.subarray(2)
+  ]);
+  writeFileSync(join(tmp,manifest.cases[4].filename),withComment);
   assert.equal(validatePrivateCohortManifest(manifest).cases.length,5);
   let attempts=0;
   const fakeSecret="KEY2_SENTINEL_SHOULD_NOT_LEAK";
@@ -143,6 +152,20 @@ try {
   assert.equal(failed.outcome,"HOLD_INCOMPLETE_PROVIDER_DATA");
   assert.equal(JSON.stringify(failed).includes("USER_FACE_SOURCE_PRIVATE"),false);
 
+  // EXIF-bearing JPEGs require explicit orientation review before transfer.
+  const exif=Buffer.concat([
+    clean.subarray(0,2),
+    Buffer.from([255,225,0,8,69,120,105,102,0,0]),
+    clean.subarray(2)
+  ]);
+  writeFileSync(join(tmp,manifest.cases[1].filename),exif);
+  const exifBlocked=await runPrivatePhotoCohort({
+    manifest,photoDir:tmp,live:true,environment:{OPENAI_API_KEY2:fakeSecret},
+    invoke:fakeInvoker
+  });
+  assert.equal(exifBlocked.providerCallsAttempted,0);
+  assert.equal(exifBlocked.outcome,"HOLD_PRIVATE_PHOTO_INPUT");
+  writeFileSync(join(tmp,manifest.cases[1].filename),makeJpeg(16,16));
   // Reject symlink to any photo file and consume zero provider calls.
   unlinkSync(join(tmp,manifest.cases[3].filename));
   symlinkSync(join(tmp,manifest.cases[0].filename),join(tmp,manifest.cases[3].filename));
