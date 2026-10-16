@@ -184,6 +184,7 @@ run("Face Lab Skin v2 nonface raw-axis abstention audit", node, ["scripts/facela
 run("Face Lab Skin KEY2 nonhuman Vision pair mock-only", node, ["scripts/facelab/skin/verify-skin-key2-nonface-vision-pair.mjs"]);
 run("Face Lab Skin S1-D private human photo pairing mock-only", node, ["scripts/facelab/skin/verify-skin-private-v1v2-runner.mjs"]);
 run("Face Lab Skin S1-D private closed axis diagnostics mock-only", node, ["scripts/facelab/skin/verify-skin-private-axis-contract-diagnostics.mjs"]);
+run("Face Lab Skin S1-D v2 correction aggregate audit mock-only", node, ["scripts/facelab/skin/verify-skin-private-v2-correction-audit.mjs"]);
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
 run("Face Lab independent Human cue protocol", npm, ["run", "verify:face-lab-independent-human-cue-protocol"]);
