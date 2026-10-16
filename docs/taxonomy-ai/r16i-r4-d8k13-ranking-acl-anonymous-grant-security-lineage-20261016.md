@@ -41,3 +41,21 @@
 - `claim_anonymous_write_grant`의 명시적인 필수 입력 IS NULL 방어를 **별도 승인된 migration**으로 설계하고, 6가지 NULL 입력·정상 입력·role ACL·retry/rollback을 **격리된 PG17 합성 DB**에서 먼저 검증한다. 운영 DB 직접 교체는 금지.
 - `source_rankings` ACL provenance, Crawler 구분자, Taxonomy8 과거 preflight, 전체 178건 migration history 정합성은 별도 확인해야 한다.
 - 공급망 보안 `#1208`, 독립 reviewer/OWNER, 백업/PITR 복원, 전체 migration chain 재현과 운영자 명시 승인 전에는 **merge / deployment / migration repair / DDL / DML / 상품 가격·CTA 모두 HOLD**.
+
+
+## 5. PostgreSQL 17.6 잔여 공개 ACL 발견 (2026-10-16 16:43 KST)
+
+운영 `pg_class.relacl`과 각 `has_table_privilege`를 **SELECT-only**로 추가 재검증했다.
+
+| 운영 테이블·역할 | DML INSERT/UPDATE/DELETE/TRUNCATE | SELECT | REFERENCES | TRIGGER | MAINTAIN |
+| --- | --- | --- | --- | --- | --- |
+| `ranking_snapshots / anon` | 모두 DENY | 허용 | **허용** | **허용** | **허용** |
+| `ranking_snapshots / authenticated` | 모두 DENY | 허용 | **허용** | **허용** | **허용** |
+| `source_rankings / anon` | 모두 DENY | DENY | DENY | DENY | DENY |
+| `source_rankings / authenticated` | 모두 DENY | DENY | DENY | DENY | DENY |
+
+추가로 `anon`과 `authenticated` 모두 `public` schema `CREATE` 권한은 없다. 두 테이블은 RLS ON이다. 이것이 **TRIGGER/MAINTAIN 기능이 인터넷에서 악용 가능함을 의미하지는 않지만**, `ranking_snapshots`의 최소 권한 원칙(특히 공개 역할의 REFERENCES/TRIGGER/MAINTAIN)은 별도 검토해야 한다. 원래 ACL repair의 REVOKE는 주로 데이터 DML과 TRUNCATE에만 적용됐다.
+
+**심층 방어 후보(실행 금지):** 독립 권한 리뷰 후 해당 테이블 공개 역할에 남은 불필요한 `REFERENCES`·`TRIGGER`·`MAINTAIN` 권한 회수를 합성 PG17에서 검증한다. 필요한 SQL migration은 전체 이력 정합성과 별도 운영 승인 이후에만 작성/적용한다. 현재 운영 REVOKE/GRANT는 수행하지 않았다.
+
+`d8k13-historical-drift-readonly-preflight-v1.sql`은 위 권한을 각각 조회하도록 확장한 뒤 운영 DB에서 **2026-10-16 16:43:50 KST** 재실행 PASS(`READ_ONLY_HOLD`). 대응 snapshot·offline 진단/릴리스 차단 스크립트에도 적용 결과를 기록했다.
