@@ -380,7 +380,30 @@
       "hostedFunctionSecurityDefiner": false,
       "explicitJtiNullCheckObserved": false,
       "explicitResourceNullCheckObserved": false,
-      "exploitabilityProven": false
+      "exploitabilityProven": false,
+      "runtime_function_execute_role": "service_role_only",
+      "anonymous_execute_allowed": false,
+      "authenticated_execute_allowed": false,
+      "public_execute_allowed": false,
+      "service_role_execute_allowed": true,
+      "caller_server_only_module": true,
+      "caller_requires_jti_principal_and_fingerprint": true,
+      "validated_token_requires_hmac_signature": true,
+      "caller_requires_signed_cookie_principal_match": true,
+      "results_and_track_routes_verify_before_claim": true,
+      "postgres_null_comparison_returns_unknown": true,
+      "legacy_sql_explicit_all_six_null_guards_present": false,
+      "operator_live_rpc_invocation_performed": false,
+      "remediation": "SECURITY_REVIEW_REQUIRED_AND_SEPARATE_APPROVED_MIGRATION; NO_HOSTED_WRITES"
+    },
+    "rankingAclLaterAppliedRepair": {
+      "security_write_revoke_recorded_in": "20260621151304_repair_phase1_ranking_snapshot_ingest_rpc",
+      "security_service_role_grant_recorded_in": "20260621151304_repair_phase1_ranking_snapshot_ingest_rpc",
+      "security_truncate_revoke_recorded_in": "20260621152040_repair_phase1_ranking_snapshots_truncate_privilege",
+      "historical_records_readonly_verified": true,
+      "current_hosted_ranking_rls_and_write_acl_verified": true,
+      "source_rankings_explicit_acl_origin_not_yet_proven": true,
+      "original_phase1_stored_sql_still_differs_from_current_file": true
     }
   }
 }
