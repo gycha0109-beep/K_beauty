@@ -36,6 +36,14 @@ node scripts/facelab/skin/run-skin-private-v1v2.mjs --live-private-cohort \
 
 Do not place secret contents into chat, code, GitHub, Vercel or a CI script. Explicit command examples are for a **separately authorized private host**, not an instruction to bypass the runtime's missing-key gate.
 
+## 2026-10-16 S1-D hardening follow-up
+
+- Metadata-stripped photo bytes now get a **transient SHA-256 content fingerprint** within the private process. Every one of the five photos must have a **different content fingerprint** even when case IDs and filenames differ. Fingerprints are **never** printed, persisted, committed or forwarded to the Provider. This prevents accidentally reusing the same JPEG under two case IDs and incorrectly reporting an independent five-image cohort.
+- Local private-only duplicate scan of the **actual five uploaded JPEG files**: **5/5 unique sanitized-content images**, **1 nonessential metadata segment removed**, **0 Provider calls**. The file bytes, names and fingerprints were not published.
+- CI denial checks now include active `GITHUB_ACTIONS`, `CI=1`, `GITLAB_CI`, `CIRCLECI`, `TRAVIS`, `TF_BUILD`, `BUILDKITE`, `JENKINS_URL` and related runner markers. Tests supply fake environment flags only and never read the real repository Secret.
+- Synthetic verifier now uses five **distinct invented JPEG byte fixtures** rather than identical byte arrays; separately tests deliberate duplicate-content rejection and CI marker variants.
+- This upgrade changes only the **private evaluation preflight**, not the deployed app or actual face photo/Provider authorization. Actual five-photo paired Provider calls are still **0/10** because the temporary key is inaccessible in the private runtime.
+
 ## Automated verification
 
 `verify-skin-private-v1v2-runner.mjs` uses *fabricated JPEG headers* inside a disposable temporary directory, and a **mock Provider transport only**. It verifies: five cases/call budget, identical image bytes across v1/v2, key2-only credential, production-key-only rejection, GITHUB_ACTIONS/CI rejection, cohort-wide file-check before traffic, symlink/path/metadata rejection, sanitized error reporting and zero actual Provider calls. This verifier is the only part wired to `verify-current-main-health.mjs`.
