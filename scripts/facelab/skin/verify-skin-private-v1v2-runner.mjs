@@ -243,6 +243,25 @@ try {
   assert(!JSON.stringify(v2Only).includes(fakeSecret));
   assert(!JSON.stringify(v2Only).includes(prodSecret));
   assert(!JSON.stringify(v2Only).includes("data:image"));
+  // Explicit TC-01 private probe permits ONE, never five requests, even
+  // when mock Provider returns structurally valid data.
+  correctionCalls=0;
+  const probe=await runPrivatePhotoCohort({
+    manifest,photoDir:tmp,live:true,studyMode:"v2_probe_one",
+    environment:{OPENAI_API_KEY2:fakeSecret},invoke:v2OnlyInvoke
+  });
+  assert.equal(correctionCalls,1);
+  assert.equal(probe.providerCallsAttempted,1);
+  assert.equal(probe.studyMode,"v2_probe_one");
+  assert.equal(probe.outcome,"PRIVATE_V2_PROBE_ONE_DIAGNOSTIC_ONLY");
+  assert.equal(probe.cases.length,1);
+  assert.equal(probe.cases[0].caseId,"TC-01");
+  assert.equal(probe.cases[0].variants.length,1);
+  assert.equal(probe.pairedSummary,null);
+  assert.equal(probe.v2OnlySummary.cases,1);
+  assert.equal(probe.authority.productReady,false);
+  assert.equal(probe.authority.releaseReady,false);
+  assert(!JSON.stringify(probe).includes(fakeSecret));
   await assert.rejects(runPrivatePhotoCohort({
     manifest,photoDir:tmp,live:false,studyMode:"v1_only",
     environment:{},invoke:v2OnlyInvoke
