@@ -29,6 +29,16 @@ SELECT jsonb_build_object(
  'target_evidence_total',shape.target_count,
  'all_evidence_total',(SELECT count(*) FROM public.admin_product_correction_evidence_v1),
  'legacy_verdict_total',(SELECT count(*) FROM public.admin_product_correction_evidence_verdicts_v1),
+ 'last_applied_migration',(SELECT max(version) FROM supabase_migrations.schema_migrations),
+ 'last_applied_migration_matches_observed',
+   (SELECT max(version)='20261012181544' FROM supabase_migrations.schema_migrations),
+ -- Diagnostic only; a digest of source/evidence/verdict IDs does not
+ -- substitute for an independently approved private raw-ID manifest.
+ 'manifest_fingerprint_md5',(SELECT md5(string_agg(
+   e.source_key||':'||e.evidence_id::text||':'||v.verdict_id::text,
+   ';' ORDER BY e.source_key))
+   FROM public.admin_product_correction_evidence_v1 e
+   JOIN public.admin_product_correction_evidence_verdicts_v1 v USING(evidence_id)),
  'source_counts',jsonb_build_object('official_single',shape.official_count,'hwahae_bundle',shape.hwahae_count),
  'self_reviewed_verified_unverified_count',shape.invalid_legacy_count,
  'proposal_total',(SELECT count(*) FROM public.admin_product_correction_proposals_v1),
@@ -47,6 +57,7 @@ SELECT jsonb_build_object(
     AND shape.official_count=1 AND shape.hwahae_count=1
     AND shape.invalid_legacy_count=2
     AND (SELECT count(*) FROM public.admin_product_correction_evidence_verdicts_v1)=2
+    AND (SELECT max(version) FROM supabase_migrations.schema_migrations)='20261012181544'
     AND (SELECT count(*) FROM public.admin_product_correction_proposals_v1)=0
     AND (SELECT count(*) FROM public.admin_product_correction_decisions_v1)=0
     AND (SELECT count(*) FROM public.admin_r16i_correction_applications_v1)=0
