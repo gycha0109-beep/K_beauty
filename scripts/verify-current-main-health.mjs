@@ -73,6 +73,7 @@ run("TRUST Phase 8A revalidation contract", node, ["scripts/verify-trust-phase8a
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Face Lab Skin S5 evidence-readiness HOLD contract", node, ["scripts/facelab/skin/verify-face-lab-skin-s5-readiness.mjs"]);
+run("Face Lab Skin S5 dated HOLD/BLOCKED snapshot", node, ["scripts/facelab/skin/verify-face-lab-skin-s5-current-snapshot.mjs"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);
 run("Skin decision persistence and reentry", npm, ["run", "verify:skin-decision-persistence-reentry"]);
 run("Canonical 164x12 current Recommendation semantic health", node, ["scripts/verify-current-recommendation-health.mjs"]);
