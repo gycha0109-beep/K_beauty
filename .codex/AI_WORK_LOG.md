@@ -3426,3 +3426,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Fail-closed migration precondition when ANY old verdict exists. Reason: D8K10 SELECT found 2 UNVERIFIED uploads but did not actually prove an empty original verdict table; don't silently certify old approvals. Prior approval event migration must be separately reconciled if count>0.
 - Updated existing owner UI with explicit revoke and preserved audit history; one new history field on authenticated admin GET, unchanged review POST payload name (REVOKED permitted). D8C and D8K11 regression mocks updated. New isolated PG17 self-review / revoke / permissions / old-ledger-roll-back test script only; no real hosted data.
 - Private risk: prior approval's actual screenshot/source authenticity/7-check proof remains unverified, and revocation of already APPLIED catalog edits cannot substitute separate correction rollback. R16I Product160ml, parent Offer0, two stored captures UNVERIFIED, price/CTA OFF. #1208 blocks deployment.
+
+
+### 2026-10-17 — taxonomy-ai D8K-13 P0 historical table provenance / Taxonomy8 exception (SELECT-only)
+
+- Route: diagnosis → bounded documentation/offline verifier; DB/ACL/production protected Y, **actual hosted access SELECT-only**, no DDL/DML/migration/role/merge/deploy.
+- Applied history 178; earliest `20260410` SQL alters preexisting `product_candidates` and joins `source_rankings` without creating either. Stored ledger does not establish initial CREATE/ACL origin; current both RLS ON, public read/write denied, service_role INSERT allowed.
+- Post-migration sunscreen exception 1: structural `crawler-canonical-product-structural-adoption-v1` action `inserted`, candidate `active_shadow/manual_legacy_projection_v1`, product canonical assignment 0. Current structural writer omits Product assignment, catalog-only writer includes it. No Product INSERT taxonomy-writer trigger. Policy intent not yet approved, no repair.
+- New SELECT-only SQL executed successfully in linked Supabase PostgreSQL17; metadata-only baseline and Git blob pinned fail-closed offline verifier added and linked to existing provenance checker. Node verifier native execution/full clean replay/PITR restore not completed in this environment.
+- `#1208`/OWNER/security/source bootstrap/full 178 replay and restoration remain blocking; `--enforce-release` continues to set exit 3; PR #1341 remains Draft/HOLD. Watchtower-Track: taxonomy-ai.
