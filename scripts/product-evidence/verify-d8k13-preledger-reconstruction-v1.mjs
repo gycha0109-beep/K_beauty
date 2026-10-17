@@ -104,6 +104,38 @@ export function verifyD8k13PreledgerReconstruction(root=ROOT){
  assert.equal(nativeEvidence.anyHostedSqlApplied,false);
  assert.equal(nativeEvidence.productionWrites,0);
  assert.equal(nativeEvidence.releaseAuthorized,false);
+ const synthetic=JSON.parse(readFileSync(join(root,
+  "scripts/product-evidence/baselines/d8k13-preledger-synthetic-positive-pg17-20261018.json"),"utf8"));
+ assert.equal(synthetic.schema,"D8K13_PRELEDGER_SYNTHETIC_POSITIVE_PG17_V1");
+ assert.equal(synthetic.scope,"ISOLATED_NONHISTORICAL_SYNTHETIC_FIRST_MIGRATION_ONLY");
+ assert.equal(synthetic.originalDbBootstrapRecovered,false);
+ assert.equal(synthetic.originalOwnerAndAclEvidenceRecovered,false);
+ assert.equal(synthetic.workflowRunId,39062707665);
+ assert.equal(synthetic.testedHead,"fae0e1857d95e17f3ef3cc57b3c3b6450353287e");
+ assert.equal(synthetic.pg17JobId,117483803947);
+ assert.equal(synthetic.pg17JobConclusion,"success");
+ assert.equal(synthetic.pgMajor,17);
+ assert.equal(synthetic.assertions.emptyDatabaseExpectedFailureAndRollback,"D8K13_PRELEDGER_ISOLATED_PG17_EXPECTED_FAILURE_PASS");
+ assert.equal(synthetic.assertions.syntheticFirstMigrationFullyApplied,"D8K13_PRELEDGER_SYNTHETIC_FIRST_MIGRATION_PG17_PASS");
+ for(const key of ["isolatedLocalhostAndExactDisposableDatabase",
+  "syntheticFixtureCreated3TablesAnd3Rows","productCategoryEnumConverted","textureEnumConverted",
+  "finishEnumConverted","skinTypeConvertedToArray","canonicalNameAndBrandNormalized",
+  "candidateReviewStatusNew","candidateMatchedProductFkPresent","originalFirstMigrationSourceUnchanged"])
+  assert.equal(synthetic.assertions[key],true,"D8K13_SYNTHETIC_CLAIM_DRIFT: "+key);
+ assert.equal(synthetic.pinnedFiles.length,3);
+ for(const item of synthetic.pinnedFiles){
+  const raw=readFileSync(join(root,item.file));
+  const pinnedBlob=createHash("sha1").update(Buffer.from("blob "+raw.length+String.fromCharCode(0),"utf8"))
+   .update(raw).digest("hex");
+  assert.equal(pinnedBlob,item.gitBlobSha,"D8K13_SYNTHETIC_SOURCE_BLOB_DRIFT: "+item.file);
+ }
+ assert.equal(synthetic.syntheticSchemaIsHistoricalAuthority,false);
+ assert.equal(synthetic.firstMigrationCompatibilityProvenForSyntheticFixture,true);
+ assert.equal(synthetic.historicalFirstSchemaReconstructed,false);
+ assert.equal(synthetic.full178AppliedMigrationChainReplayed,false);
+ assert.equal(synthetic.realBackupPitrRestored,false);
+ assert.equal(synthetic.productionDbWrites,0);
+ assert.equal(synthetic.releaseAuthorized,false);
  return {status:"HOLD",offlineOnly:true,foundationalSchemaOriginAttested:false,
   currentSchemaOnly:true,blockingPrerequisites:flags.length,
   full178MigrationReplayApproved:false,hostedWrites:0};
