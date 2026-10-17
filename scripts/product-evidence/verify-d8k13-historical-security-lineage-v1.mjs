@@ -115,8 +115,22 @@ assert.equal(auth.locally_derived_legacy_function_token_equivalent_to_hosted,tru
 assert.equal(auth.derived_legacy_only_strips_six_null_guards,true);
 assert.equal(auth.legacy_derivation_js_special_dollar_replacement_fixed,true);
 assert.equal(auth.synthetic_pg17_check_files_pass,true);
-assert.equal(auth.synthetic_pg17_native_sql_execution_attested,false);
-assert.equal(repair.synthetic_pg17_native_sql_execution_attested,false);
+assert.equal(auth.synthetic_pg17_native_sql_execution_attested,true);
+assert.equal(repair.synthetic_pg17_native_sql_execution_attested,true);
+const acceptance=manifest.syntheticPg17HomeAcceptance;
+assert.equal(acceptance.status,"SCOPED_SEC05_AND_RANKING_ACL_SYNTHETIC_DOCKER_PG17_PASS");
+assert.equal(acceptance.pinnedGithubCommit,"0832a7f964cb68aa7fb057eba654343f46214cfa");
+assert.equal(acceptance.userSuppliedTranscriptSha256.length,64);
+assert.equal(acceptance.sixPinnedGitBlobsChecksumPass,true);
+assert.equal(acceptance.postgreSQL17RunnerFinalMarker,true);
+assert.equal(acceptance.sixNullInputAndRetryPass,true);
+assert.equal(acceptance.publicRpcPermissionDenialPass,true);
+assert.equal(acceptance.rankingAclRevokeRollbackPass,true);
+assert.equal(acceptance.legacyNullCheckDirectMarkerPresentInTranscript,false);
+assert.equal(acceptance.legacySqlTestIndirectlySupportedByGatedRunnerFinalPass,true);
+assert.equal(acceptance.entire178RowMigrationHistoryReplayed,false);
+assert.equal(acceptance.hostedReleaseAuthorized,false);
+assert.ok(src(acceptance.evidenceDocument).includes("D8K13_HOME_PG17_TEST_PASS"));
 
 console.log(JSON.stringify({
  stage:"D8K13_HISTORICAL_SECURITY_LINEAGE_OFFLINE_V1",
@@ -133,7 +147,8 @@ console.log(JSON.stringify({
  liveAnonymousFunctionExplicitNullChecksAttested:false,
  exploitabilityProven:false,
  syntheticPg17SecuritySuiteSourcePresent:true,
- syntheticPg17SecuritySuiteExecutedOnDocker:false,
+ syntheticPg17SecuritySuiteExecutedOnDocker:true,
+ syntheticPg17FullMigrationHistoryAccepted:false,
  fullMigrationChainReleaseApproved:false
 }));
 console.log("D8K13_HISTORICAL_SECURITY_LINEAGE_OFFLINE_PASS_HOLD");
