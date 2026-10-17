@@ -282,3 +282,9 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 운영 Supabase의 현재 `source_rankings` / `product_candidates` 객체 구성과 RLS/ACL을 SELECT-only로 재확인하고, 초기 2026-04-08 Git tree 및 2026-04-10 당시 최초 migration의 선행객체 의존성을 검토했다. **최초 CREATE/ACL 원본은 미확보**로 유지한다. 기존의 전체 178-row clean replay HOLD는 이제 독립 `preledger-reconstruction-readiness` baseline **11개 게이트 모두 false** 및 fail-closed 오프라인 검증기에 연결했다. 현재 SQL 집계 검사 PASS와 정적 소스 계약 PASS를 얻었으나 새 검증기 실제 Node 실행/전체 복원/PITR 실증은 하지 않았다.
 
 상세: [전체 마이그레이션 감사 §9](./r16i-r4-d8k13-full-migration-chain-readonly-audit-20261016.md). Crawler PG17 parser와 Taxonomy8 structural writer 보강 정책을 비롯한 별도 P0는 남는다. 운영 SQL/ACL/Auth/RLS/상품/가격/CTA 변경, migration repair, gate 활성화, 병합·배포 금지. **RELEASE HOLD / PR #1341 DRAFT.**
+
+## 22. 2026-10-18 D8K-13 isolated PG17 첫 migration 실패·롤백 수락
+
+[실제 GitHub Actions #39059702566](https://github.com/gycha0109-beep/K_beauty/actions/runs/39059702566)에서 Node 22 오프라인 preledger+Taxonomy8 증거 검사/릴리스 차단(exit 3) **PASS**, `postgres:17.6` 임시 DB에서 첫 applied migration `20260410` 원문을 실행하여 **선행 `public.products` 부재에 따른 예상 실패와 트랜잭션 롤백 PASS**를 확인했다. 작업은 GitHub 임시 데이터베이스에서만 수행됐으며 **운영 스키마/migration/권한 변경이 아니다**.
+
+이 결과는 **negative-path acceptance**이며 전체 178건 successful clean replay로 분류하지 않는다. 기록: `baselines/d8k13-preledger-native-node-pg17-negative-acceptance-20261018.json`, 전체 이력 감사 §10. 원본 최초 schema/ACL, 보안 #1208, 복구/PITR, 독립 검토가 없으므로 **PR #1341 Draft·release HOLD 유지**.
