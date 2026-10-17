@@ -61,3 +61,9 @@
 기존 `run-d8k13-sec05-acl-synthetic-pg17.mjs`에 정확한 역사적 함수 변종 생성 및 테스트 실행 순서를 추가했고 8개 소스 파일에 대한 `--check-files` **PASS**를 확인했다. **신규 두 fixture native Docker PG17 통과 로그는 없다**. 이전 집 PC `0832a7f9` 합격은 정확히 이전 **claim + ranking ACL** 범위만 인증한다. 새로운 `complete/fail` 범위는 별도 고정 HEAD Docker 로그가 필요하다.
 
 **승인 경계:** 원래 SQL migration 파일을 수정하지 않았고, 새 두 SQL 파일은 `tests/fixtures` 아래에만 있다. hosted 함수 변경, RPC 호출, 권한 REVOKE, 보안 예외 갱신, 배포는 시행하지 않았다.
+
+## 5. 2026-10-17 21:16 KST 후속 complete/fail native 합성 검증 갱신
+
+위 §4의 `native Docker PG17 NOT_RUN`은 **확장 fixture 작성 직후**의 역사적 상태다. 이후 사용자 제공 Windows 결과는 HEAD `303a94af096f6b4b8fa0784e8920bc39843a4edd`의 **8개 소스 blob 고정**, `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS` 및 `D8K13_SEC05_EXTENDED_HOME_PG17_TEST_PASS`를 보고했다. 이 고정 러너는 34/35 SQL 픽스처의 legacy NULL/rollback 및 hardened NULL·wrong-principal·정상·retry·role 경계 검사를 완료해야 최종 PASS 마커를 출력한다.
+
+**현재 판정: `SEC05_COMPLETE_FAIL_EXTENDED_SYNTHETIC_PG17_PASS` (user-reported pinned runner completion).** 원시 Windows 로그 바이트가 본 세션에 없으므로 SHA256은 사용자 제공값만 기록하며, 중간 SQL statement 출력의 독립 검증은 하지 않았다. 운영 함수는 여전히 역사적 구형 코드이고 운영 SQL 변경 승인은 없다. 메타데이터 증거: `scripts/product-evidence/baselines/d8k13-sec05-extended-home-pg17-acceptance-20261017.json`; 통합 릴리스 HOLD 유지.
