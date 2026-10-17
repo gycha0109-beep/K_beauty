@@ -144,3 +144,23 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 **검증 등급:** GitHub blob pin/경계 소스/스냅샷 및 차단 코드의 정적 확인 PASS, 운영 SELECT 실행 PASS. **새 Node 검증기 실제 프로세스 실행과 실제 전체 PostgreSQL17 복원은 별도 미검증**. 이 사실을 synthetic schema 원본의 발견이나 실제 backup/PITR 검증이라고 기록하지 않는다.
 
 **다음 실제 순서:** 별도 통제된 초기 스키마/백업/배포 artifact 확보 → 최초 두 테이블 생성·owner/ACL 출처 증빙 → 전체 178 applied SQL의 비공개 원본·순서 검증 → 격리 PG17 replay와 실제 복원 리허설 → OWNER·Security Advisor·#1208 및 운영 승인. 어떤 단계도 migration repair, hosted DDL, 릴리스 또는 PR merge 권한을 부여하지 않는다.
+
+## 10. 2026-10-18 실제 Node 22 + 격리 PostgreSQL17 시작점 실패·롤백 실증
+
+**자동 실검증 완료:** [GitHub Actions run #39059702566](https://github.com/gycha0109-beep/K_beauty/actions/runs/39059702566) — 테스트 시점 HEAD `4b0a50d4dea04514757e512f1e54cd2fb7ed0125`, 전용 workflow `.github/workflows/taxonomy-ai-d8k13-preledger-isolated.yml`은 **feature-branch push에만 반응**, production secret 없이 `postgres:17.6` 일회성 서비스 컨테이너와 별도 로그인·DB를 생성한다.
+
+| 실제 테스트 | 증거 | 판정 |
+| --- | --- | --- |
+| Node 22 오프라인 preledger/HOLD baseline | Job `117474947581`의 `D8K13_PRELEDGER_RECONSTRUCTION_CONTRACT_PASS_HOLD` | PASS |
+| Node 22 Taxonomy8 writer/ACL pin | 동일 Job `D8K13_P0_ACL_TAXONOMY_CONTRACT_PASS_HOLD` | PASS |
+| 현재 migration 체인 분석기 및 독립 사전 단계 `--enforce-release` | 두 실행의 **exit=3** 검증, `D8K13_PRELEDGER_NATIVE_NODE_RELEASE_HOLD_PASS` | PASS (릴리스 거절 정상) |
+| Disposable PostgreSQL17 **빈 DB**에서 진짜 `20260410_safe_review_and_promotion_layer.sql` 실행 | Job `117474947437`의 `D8K13_PRELEDGER_ISOLATED_PG17_EXPECTED_FAILURE_PASS` | **의도된 실패**: 선행 `public.products` 부재 |
+| 실패 후 DB 상태 | 동일 Job에서 `products`, `product_candidates`, `source_rankings`, `product_review_status`가 모두 존재하지 않음 확인 | **트랜잭션 롤백 PASS** |
+
+첫 migration은 PostgreSQL17에서 `relation "public.products" does not exist`를 반환했다. 이것은 **초기 스키마 없이 178건 적용 이력을 그대로 실행할 수 없음을 입증한 실패 경로 테스트**다. **전체 178건 정상 완료, 진짜 처음 bootstrap, 과거 ACL, 실제 복원/PITR에 대한 성공 증거는 없다.** 원래 D8K-13 synthetic ACL/SEC-05 부분 PASS와 구분한다.
+
+초기 Git `934762c805e910a946bb23b09f2c4634e47468f0`의 `crawler/README.md`(historical blob `6d9e42b801a5e4d6fe183742f4feab21eb52b030`)에서 `source_rankings`, `product_candidates`, `crawl_jobs`를 저장 대상이라고 명시하나 초기 CREATE/GRANT SQL은 없다. 이것은 테이블 사용 의도/코드 참조를 증명할 뿐 최초 SQL 배포 로그는 아니다.
+
+영속 증거: `scripts/product-evidence/baselines/d8k13-preledger-native-node-pg17-negative-acceptance-20261018.json`; 코드 `scripts/product-evidence/run-d8k13-preledger-negative-pg17.mjs`; 오프라인 baseline 검증기에 workflow/job 결과·rollback 진술을 **source-pin 및 release HOLD와 함께** 검사하도록 연결했다. 검증기는 과거 실제 GitHub Action 결과가 적힌 manifest를 검사하므로, 새 시점의 PG17 재실행 자체와 동일하지 않다. 새 commit의 CI 결과는 각 GitHub workflow run에서 별도 확인한다.
+
+**다음 필수 선행:** DB 최초 스키마 SQL 또는 신뢰 가능한 최초 backup dump, 해당 시점의 role/ACL 및 PostgreSQL/Supabase dependency, 178건 applied 원문 SQL과 버전·순서 정합성, 별도 비공개 복원 환경, 실제 restore drill. 이 증거들이 없는 동안 **HOLD**, 어떤 임의 DDL bootstrap이나 `migration repair`도 실제 역사를 재구성했다고 주장하지 않는다.
