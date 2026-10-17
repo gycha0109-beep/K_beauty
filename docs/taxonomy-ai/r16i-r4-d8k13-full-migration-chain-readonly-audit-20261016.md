@@ -179,3 +179,29 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 이로써 **첫 SQL의 문법 자체가 무조건 실패하는 것은 아니고, 기초 스키마가 전혀 없으면 적용할 수 없다는 구분**을 실제 PG17에서 검증했다. 이것은 오직 합성 첫 migration의 호환성 실증이다. **178건 전체 migration replay, 실 운영 초기 DB schema/ACL 동일성, 최초 bootstrap 출처, PITR 실제 restore는 여전히 모두 미인증**이다.
 
 영속 증거: `scripts/product-evidence/baselines/d8k13-preledger-synthetic-positive-pg17-20261018.json`(실제 CI run/job, commit 및 소스 Git SHA 고정). 진단기 `verify-d8k13-preledger-reconstruction-v1.mjs`는 합성 원본 3개 blob을 검사하고 `releaseAuthorized=false`, `full178AppliedMigrationChainReplayed=false`를 강제한다. release gate `--enforce-release` **exit 3**, DB writes 0, PR #1341 Draft / **HOLD**.
+
+## 12. 최초 실제 bootstrap 원본 입수 경로 조사 및 안전 인수 계약 (2026-10-18)
+
+**운영 프로젝트의 실제 `created_at`은 2026-03-21T11:54:08Z**(KST 3월 21일 20:54)다. 처음 확인되는 K_beauty Git commit `934762c8`은 2026-04-08T15:54:56Z(KST 4월 9일 00:54)이므로 **DB 프로젝트가 코드 저장소보다 18일가량 앞서 생성됐다**. 이는 이전에 수동 또는 다른 위치에서 기초 스키마를 설치했을 *가능성*을 높이는 시간차이지만, 실제 CREATE/GRANT 실행 위치나 실행자를 밝혀내지는 못한다.
+
+이번에 살핀 원본 경로:
+- GitHub 첫 커밋/2026-04-10 이전 변경 이력과 초기 SQL 부재, K_beauty 현재 tree의 backup/schema 관련 경로, 연결된 다른 GitHub repository 및 검색 가능한 코드, GitHub 릴리스: **신뢰할 최초 스키마 원본 발견 없음**. 별도의 `ranking` repo는 2026-04-09에 생성됐으나 현재 본류에서 확인된 첫 migration은 `20260520000000_p0_core_schema.sql`로 목적·시기가 맞지 않는다.
+- 연결된 Google Drive에서 `K_beauty`, `BEJEWELY`, `supabase`, `backup`, `schema`, `product_candidates` 검색: 원본 SQL/관련 2026년 3월 백업 확보 안 됨. 일부 `backup` 단어 검색 결과는 관련 없는 2023년 폴더 등으로 분류했다. 검색 결과 없음이 개인 저장소 전체·삭제 기록 없음의 증명은 아니다.
+- Supabase project 조회는 생성일·PG17 상태를 확인했고 기존 개발 branch **0개**. 연결된 Supabase 도구에는 **백업 목록 조회/다운로드 기능이 없으므로 실제 backup 열람·존재 확인도 못 했다**. **사용자의 실제 Supabase 요금제 및 PITR 보존 설정은 확인하지 않았음**.
+- 공식 [Supabase Database Backups 문서](https://supabase.com/docs/guides/platform/backups)에 따르면 현재 표준 자동 daily backup 보존은 Pro 7일, Team 14일, Enterprise 최대 30일이며 통상 PITR도 제한된 기간이다. 2026-03/04 당시 복원은 **별도 장기보관 SQL dump, 사용자가 내려받은 논리 백업, 당시 배포 artifact 또는 특별 보존 계약**이 없다면 현재 자동 롤링 백업만으로는 기대하기 어렵다. 특정 프로젝트에 실제 백업이 없다고 결론 내리지 않는다.
+
+**결과:** 원본 bootstrap/ACL/Owner SQL, 원본 SHA 및 생성·배포 증명 **NOT RECOVERED**. 검색 경로/추론/미조사 경계를 `scripts/product-evidence/baselines/d8k13-original-bootstrap-source-discovery-20261018.json`으로 기록했다.
+
+### 원본이 발견됐을 때 — 비공개 intake (실 SQL 실행 금지)
+
+새 `scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs`는 외부 보관된 SQL 및 비공개 evidence JSON을 **SHA-256/파일 크기로만** 우선 검증하며, 3개 선행 테이블(`products`, `product_candidates`, `source_rankings`)의 `CREATE TABLE` 문구 존재를 얕게 확인한다. 원본 내용을 콘솔에 출력하거나 SQL을 실행·업로드·DB에 접속하지 않는다. **저장소 내부 경로·임의 프로젝트·검증되지 않은 SHA·테스트 전용 fixture·셀프 승인 주장은 거절한다.** 준비된 아카이브가 없다면 다음과 같이 원본 미확보 상태만 출력한다.
+
+```sh
+node scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs
+node scripts/product-evidence/test-d8k13-private-bootstrap-intake-v1.mjs
+node scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs --enforce-release
+```
+
+실 원본 확보 시 `--artifact <PRIVATE_SQL_FILE_OUTSIDE_GIT> --manifest <PRIVATE_MANIFEST_JSON_OUTSIDE_GIT>` 쌍으로만 입력하고, 외부 manifest는 `schema=D8K13_PRIVATE_BOOTSTRAP_CANDIDATE_V1`, `targetProjectRef`, `sourceKind`, `custodyLocation=PRIVATE_EXTERNAL_NOT_REPOSITORY`, `firstAppliedMigrationVersion=20260410`, `preFirstMigrationSchemaClaim=true`, `independentlyApprovedForReplay=false`, `releaseAuthorized=false`, `rawArtifactUploadedToGit=false`, `byteLength`, `sha256` 필수. 출력은 **CANDIDATE_ONLY_NOT_ATTESTED**일 뿐 원본 입증, 과거 ACL 감사, 실제 178건 replay 허가는 아니다. dump에 민감정보가 있으면 경로와 파일은 비공개 보관하고 별도 검토를 받아야 한다.
+
+**진행 차단:** 후보를 받아도 당시 시간·환경·OWNER/ACL·DDL 실행 로그에 대한 독립 사실확인과 비공개 PG17 격리 환경이 필요하다. 현재 기존 11개 게이트는 전부 false. production migration/repair/SQL writes, 백업 복원, GitHub 파일 공개, release/merge 금지.
