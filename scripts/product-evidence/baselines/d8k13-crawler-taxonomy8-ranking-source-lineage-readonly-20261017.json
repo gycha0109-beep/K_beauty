@@ -79,7 +79,10 @@
     "currentNonExactNonNullCategoryCreatedDate": "2026-10-01",
     "historicalMigrationFailureProven": false,
     "dataQualityReviewRequiredForPostMigrationNonNullUnprojectedProduct": true,
-    "migrationReplayAuthorized": false
+    "migrationReplayAuthorized": false,
+    "currentNonExactNonNullWithoutCanonicalAssignment": 1,
+    "currentNonExactNonNullLegacyCategory": "sunscreen",
+    "currentNonExactNonNullOriginType": "official_product_page"
   },
   "securityIssue1208StateAtCheck": "OPEN",
   "whole178RowMigrationReplayAccepted": false,
