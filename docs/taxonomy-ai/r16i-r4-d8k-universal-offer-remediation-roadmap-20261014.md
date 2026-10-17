@@ -384,3 +384,9 @@
 - 운영 SELECT-only 스키마 프로필 검사 PASS. 적용 SQL 178건 복원 전 11개 prerequisite를 JSON 증거 및 fail-closed 분석기로 고정했고 전체 마이그레이션 진단기에 연결했다. 인증되지 않은 초기 schema를 임의 생성하거나 `migration repair`를 통한 거짓 정상화 금지.
 - 다음은 **초기 bootstrap/배포 artifact 독립 확보 → SQL 순서·이력 정합 인증 → 격리 PG17 clean replay → backup/PITR 실복원과 독립 보안 승인**이다. Taxonomy8 structural writer는 발견된 불일치 경로의 의도 확인 및 별도 검토 승인 전 유지한다.
 - 보안 #1208 OPEN / D8D v2 OFF / Product·Offer·가격·CTA 변경 0 / PR #1341 Draft / 릴리스 HOLD 지속.
+
+## 24. D8K-13 PG17 시작점 경계 실제 재현 (2026-10-18)
+
+- 실제 GitHub Actions #39059702566: Native Node 22 preledger/ACL/Taxonomy8 source pin 및 릴리스 exit 3 PASS. 별도 PostgreSQL17.6 임시 DB에서 초기 applied migration `20260410`은 **원본 `public.products`가 없어 예상대로 실패**, transaction rollback PASS.
+- 초기 Git README는 최초부터 `source_rankings`, `product_candidates`, `crawl_jobs` 저장을 전제로 하나 원본 DDL/GRANT 자체는 없다. 기존 178개 migration history가 이를 생성하지 않는다는 진단과 결합하면 **초기 bootstrap artifact 미확보가 재현 가능한 진짜 선행 차단 조건**이다.
+- 실증 결과를 날짜·원본 tested SHA·workflow run/job IDs·범위/제한까지 비식별 JSON에 고정. **전체 replay PASS와 혼동 금지**; #1208, OWNER, 초기 ACL, restore drill 미확인. 운영 DB write 0 / 보정·머지·배포 HOLD.
