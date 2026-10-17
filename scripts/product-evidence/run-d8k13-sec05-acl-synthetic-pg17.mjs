@@ -16,7 +16,9 @@ const FIXTURES=Object.freeze([
  "tests/fixtures/r16i-d8k13/30_sec05_acl_synthetic_setup_pg17.sql",
  "tests/fixtures/r16i-d8k13/31_sec05_legacy_null_behavior_pg17.sql",
  "tests/fixtures/r16i-d8k13/32_sec05_hardened_null_contract_pg17.sql",
- "tests/fixtures/r16i-d8k13/33_sec05_ranking_acl_minimal_revoke_pg17.sql"
+ "tests/fixtures/r16i-d8k13/33_sec05_ranking_acl_minimal_revoke_pg17.sql",
+ "tests/fixtures/r16i-d8k13/34_sec05_legacy_completion_failure_null_pg17.sql",
+ "tests/fixtures/r16i-d8k13/35_sec05_hardened_completion_failure_pg17.sql"
 ]);
 const ALLOWLIST=Object.freeze([SOURCE,...FIXTURES]);
 let running=false,cleaning=false;
@@ -105,6 +107,45 @@ function legacyVariant(hardened){
   "SEC05_EXACT_HARDENED_SIX_NULL_GUARDS_MISSING");
  return hardened.replace(before,()=>after);
 }
+
+function extractCompletionFunction(source,name){
+ assert.ok(["complete_anonymous_write_grant","fail_anonymous_write_grant"].includes(name),
+  "SEC05_COMPLETION_FUNCTION_NAME_NOT_ALLOWED");
+ const marker="create or replace function public."+name+"(";
+ const start=source.indexOf(marker);
+ assert.ok(start>0,"SEC05_EXTENDED_FUNCTION_MISSING: "+name);
+ assert.equal(source.indexOf(marker,start+marker.length),-1,
+  "SEC05_DUPLICATE_EXTENDED_FUNCTION: "+name);
+ const end=source.indexOf("\n$$;",start);
+ assert.ok(end>start,"SEC05_EXTENDED_FUNCTION_TERMINATOR_NOT_FOUND: "+name);
+ const text=source.slice(start,end+4);
+ assert.match(text,/returns jsonb[\s\S]+language plpgsql[\s\S]+as \$\$/);
+ assert.match(text,/v_grant\.principal_hash is distinct from p_principal_hash/);
+ return text;
+}
+function completionLegacyVariant(hardened,name){
+ const validation=/(\bbegin\s*\n)\s*if p_jti_hash is null[\s\S]*?end if;\s*\n(?=\s*select \*)/g;
+ const matches=[...hardened.matchAll(validation)];
+ assert.equal(matches.length,1,"SEC05_EXTENDED_INPUT_VALIDATION_SHAPE_CHANGED: "+name);
+ let legacy=hardened.replace(validation,(_,begin)=>begin);
+ const comparisonCount=(legacy.match(/\bis distinct from\b/g)||[]).length;
+ assert.equal(comparisonCount,4,"SEC05_EXTENDED_NULL_SAFE_COMPARISON_DRIFT: "+name);
+ legacy=legacy.replace(/\bis distinct from\b/g,()=>"<>");
+ assert.ok(!legacy.includes("p_jti_hash is null"),
+  "SEC05_EXTENDED_LEGACY_STILL_HAS_INPUT_NULL_GUARDS: "+name);
+ assert.ok(!legacy.includes("is distinct from"),
+  "SEC05_EXTENDED_LEGACY_STILL_HAS_NULL_SAFE_COMPARISON: "+name);
+ return legacy;
+}
+function sqlBodyTokenCount(fn){
+ const start=fn.indexOf("as $$"),end=fn.indexOf("\n$$;",start);
+ assert.ok(start>0&&end>start,"SEC05_SQL_BODY_TOKENIZER_ANCHORS_MISSING");
+ const text=fn.slice(start+5,end);
+ const tokens=(text.match(/--[^\n]*|\/\*[\s\S]*?\*\/|'(?:''|[^'])*'|"(?:[^"]|"")*"|[A-Za-z0-9_]+|[^\s]/g)||[])
+  .filter(x=>!x.startsWith("--")&&!x.startsWith("/*"));
+ return tokens.length;
+}
+
 async function startDocker(){
  checkLocal();
  docker(["run","--detach","--rm","--pull=never","--network=none",
@@ -141,9 +182,16 @@ async function main(){
  }
  assert.ok(args.length<=1&&args.every(x=>x==="--check-files"),
   "SEC05_UNKNOWN_ARG");
- const [seed,legacyCheck,hardenedCheck,aclCheck]=FIXTURES.map(read);
+ const [seed,legacyCheck,hardenedCheck,aclCheck,
+        legacyCompletionCheck,hardenedCompletionCheck]=FIXTURES.map(read);
  const source=read(SOURCE);
  const fn=extractClaimFunction(source),oldFn=legacyVariant(fn);
+ const complete=extractCompletionFunction(source,"complete_anonymous_write_grant");
+ const fail=extractCompletionFunction(source,"fail_anonymous_write_grant");
+ const oldComplete=completionLegacyVariant(complete,"complete_anonymous_write_grant");
+ const oldFail=completionLegacyVariant(fail,"fail_anonymous_write_grant");
+ assert.equal(sqlBodyTokenCount(oldComplete),224,"SEC05_LEGACY_COMPLETE_BODY_TOKEN_DRIFT");
+ assert.equal(sqlBodyTokenCount(oldFail),207,"SEC05_LEGACY_FAIL_BODY_TOKEN_DRIFT");
  assert.equal(fn.length,5240,"SEC05_HARDENED_SOURCE_SIZE_DRIFT_REVIEW_REQUIRED");
  assert.equal(oldFn.length,5047,"SEC05_SYNTHETIC_LEGACY_FUNCTION_SIZE_DRIFT");
  assert.ok(!oldFn.includes("  if p_jti_hash is null"),
@@ -165,6 +213,10 @@ async function main(){
  assert.match(legacyCheck,/D8K13_SEC05_LEGACY_NULL_COUNTEREXAMPLE_AND_ROLLBACK_PASS/);
  assert.match(hardenedCheck,/D8K13_SEC05_HARDENED_NULL_MATRIX_ROLE_AND_RETRY_PASS/);
  assert.match(aclCheck,/D8K13_SYNTHETIC_RANKING_ACL_REVOKE_ROLLBACK_IDEMPOTENCE_PASS/);
+ assert.match(legacyCompletionCheck,
+  /D8K13_SEC05_COMPLETE_FAIL_LEGACY_NULL_BYPASS_ROLLBACK_PASS/);
+ assert.match(hardenedCompletionCheck,
+  /D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_MATRIX_RETRY_ROLLBACK_PASS/);
  assert.notEqual(fn,oldFn);
  console.log("D8K13_SEC05_ACL_SYNTHETIC_CHECK_FILES_PASS");
  if(args.length)return;
@@ -207,6 +259,36 @@ async function main(){
   const acl=psql(aclCheck);
   assert.match(acl,/D8K13_SYNTHETIC_RANKING_ACL_REVOKE_ROLLBACK_IDEMPOTENCE_PASS/);
   console.log("D8K13_SEC05_RANKING_MINIMAL_ACL_ROLLBACK_PASS");
+  psql(oldComplete+"\n"+oldFail);
+  const completeIdentity=
+   "public.complete_anonymous_write_grant(text,text,text,text,text,text,jsonb)";
+  const failIdentity=
+   "public.fail_anonymous_write_grant(text,text,text,text,text,text)";
+  psql("REVOKE ALL ON FUNCTION "+completeIdentity+" FROM PUBLIC,anon,authenticated;\n"+
+       "REVOKE ALL ON FUNCTION "+failIdentity+" FROM PUBLIC,anon,authenticated;\n"+
+       "GRANT EXECUTE ON FUNCTION "+completeIdentity+" TO service_role;\n"+
+       "GRANT EXECUTE ON FUNCTION "+failIdentity+" TO service_role;\n");
+  const legacyExtended=psql(legacyCompletionCheck);
+  assert.match(legacyExtended,/D8K13_SEC05_COMPLETE_FAIL_LEGACY_NULL_BYPASS_ROLLBACK_PASS/);
+  console.log("D8K13_SEC05_COMPLETE_FAIL_LEGACY_NULL_AND_ROLLBACK_PASS");
+  psql(complete+"\n"+fail);
+  const hardenedExtended=psql(hardenedCompletionCheck);
+  assert.match(hardenedExtended,
+   /D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_MATRIX_RETRY_ROLLBACK_PASS/);
+  console.log("D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_RETRY_ROLLBACK_PASS");
+  for(const role of ["anon","authenticated"]){
+   for(const name of ["complete_anonymous_write_grant","fail_anonymous_write_grant"]){
+    const args=name.startsWith("complete")
+      ? "repeat('a',64),repeat('b',64),'analysis-run',"+
+        "'synthetic_run_id_123456789012345678','result:create',repeat('c',64),NULL"
+      : "repeat('a',64),repeat('b',64),'analysis-run',"+
+        "'synthetic_run_id_123456789012345678','result:create',repeat('c',64)";
+    psql("SET ROLE "+role+";\nSELECT public."+name+"("+args+");",{
+      expectedError:"permission denied for function "+name
+    });
+   }
+  }
+  console.log("D8K13_SEC05_COMPLETE_FAIL_PUBLIC_RPC_DENIED_PASS");
   console.log("D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS");
  }finally{cleanup()}
 }
