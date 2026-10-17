@@ -22,6 +22,10 @@ const nativeShellWorkflowSource = readFileSync(
   join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"),
   "utf8"
 );
+const androidRuntimeWorkflowSource = readFileSync(
+  join(repoRoot, ".github", "workflows", "mobile-android-runtime.yml"),
+  "utf8"
+);
 
 assert.deepEqual(moduleConfig.platforms, ["android"], "MOBILE-6 native guidance must remain Android-only in this slice");
 assert.deepEqual(
@@ -125,15 +129,22 @@ assert.match(
   /npm run mobile:typecheck/,
   "Consolidated Mobile CI must typecheck the mobile client"
 );
+// Native Shell delegates to the canonical Android Runtime, which owns prebuild
+// and generated-shell checks. Do not weaken either native autolinking requirement.
 assert.match(
   nativeShellWorkflowSource,
-  /npm run mobile:prebuild:android/,
-  "Native Shell CI must exercise Expo native autolinking for MOBILE-6"
+  /node scripts\/await-mobile-android-runtime\.mjs/,
+  "Native Shell must await the canonical exact-SHA Android Runtime"
 );
 assert.match(
-  nativeShellWorkflowSource,
+  androidRuntimeWorkflowSource,
+  /npm run mobile:prebuild:android/,
+  "Canonical Android Runtime must exercise Expo autolinking for MOBILE-6"
+);
+assert.match(
+  androidRuntimeWorkflowSource,
   /npm run verify:mobile-native/,
-  "Native Shell CI must verify the generated Android shell for MOBILE-6"
+  "Canonical Android Runtime must verify the generated Android shell"
 );
 
 console.log("MOBILE_FACE_GUIDANCE_NATIVE_MODULE=PASS");
