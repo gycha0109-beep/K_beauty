@@ -123,3 +123,9 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 - JSON 감사 매니페스트 및 오프라인 검증기: `scripts/product-evidence/baselines/d8k13-hosted-migration-provenance-readonly-20261016.json`, `node scripts/product-evidence/verify-d8k13-hosted-provenance-v1.mjs --full`.
 
 **기존 결론 `운영 릴리스 HOLD`는 변경 없다.** 본문이 보존된 사실은 **사용할 수 있는 안전한 복구 이력**을 제공하지만, 외부 승인/재실행·migration repair·운영 배포의 근거가 아니다.
+
+## 8. 최초 적용 이력보다 이전의 스키마 의존성 경계 (2026-10-17 후속)
+
+운영에서 **최초** applied version `20260410`(이전 ledger row 0건)을 읽기 전용으로 확인했다. 본문은 `product_candidates`를 ALTER하고 `source_rankings` 참조 뷰를 만들지만 두 테이블의 직접 CREATE가 없다. 현재 저장된 178건의 SQL에서 직접 CREATE 및 ACL GRANT/REVOKE 좁은 구문 패턴은 양쪽 모두 0건이며, 명칭 언급은 각각 product_candidates 40건, source_rankings 6건이다. **최초 DDL이 없었다고 주장하지 않는다**: 이전 bootstrap/별도 provisioning/동적 SQL/과거 artifact는 현 이력 외부일 수 있다. 현재 RLS+ACL이 차단 상태라는 사실도 초기 생성 때의 권한을 인증하지 않는다.
+
+관련 P0 읽기 전용 스냅샷: `scripts/product-evidence/baselines/d8k13-p0-acl-taxonomy-provenance-followup-20261017.json`. 178건의 안전한 clean replay/rollback 및 실백업 복원은 그대로 **NOT ATTESTED / RELEASE HOLD**.
