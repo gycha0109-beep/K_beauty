@@ -42,7 +42,7 @@ No Provider/API key/photo bytes are required by this evaluator. Raw files stay o
 node scripts/facelab/skin/verify-face-lab-skin-s1d-blind-bridge.mjs
 ```
 
-Synthetic negative cases cover missing/duplicate/extra cases, unexpected image/path fields, malformed abstain `null`, conflicting Human labels, TC-05 inclusion, unverified tags, all-disagreement and no observed Human cues. The new script is **not wired to current-main CI or production until this Draft PR receives independent verification**. Existing #1310 tests remain authoritative for rates and agreement formulas; the bridge deliberately does not reimplement them.
+Synthetic negative cases cover missing/duplicate/extra cases, unexpected image/path fields, malformed abstain `null`, conflicting Human labels, TC-05 inclusion, unverified tags, all-disagreement and no observed Human cues. The synthetic-only verifier is wired into the existing `scripts/verify-current-main-health.mjs` (no new workflow). **CI at this exact PR head still requires confirmation.** No runtime, Provider or production path is wired. Existing #1310 tests remain authoritative for rates and agreement formulas; the bridge deliberately does not reimplement them.
 
 **Research gates:** S1 real-photo reliability **HOLD** until true separate raters and relevant permissions; S2-E actual score admission **HOLD**; Provider/Face/Style/recommendation engine/API/DB/Auth/RLS/storage unchanged; merge/release/SCA #1208 **HOLD**. Research PR is stacked on unmerged #1310 and must not merge separately.
 
