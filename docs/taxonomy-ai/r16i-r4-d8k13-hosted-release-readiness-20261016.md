@@ -288,3 +288,9 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 [실제 GitHub Actions #39059702566](https://github.com/gycha0109-beep/K_beauty/actions/runs/39059702566)에서 Node 22 오프라인 preledger+Taxonomy8 증거 검사/릴리스 차단(exit 3) **PASS**, `postgres:17.6` 임시 DB에서 첫 applied migration `20260410` 원문을 실행하여 **선행 `public.products` 부재에 따른 예상 실패와 트랜잭션 롤백 PASS**를 확인했다. 작업은 GitHub 임시 데이터베이스에서만 수행됐으며 **운영 스키마/migration/권한 변경이 아니다**.
 
 이 결과는 **negative-path acceptance**이며 전체 178건 successful clean replay로 분류하지 않는다. 기록: `baselines/d8k13-preledger-native-node-pg17-negative-acceptance-20261018.json`, 전체 이력 감사 §10. 원본 최초 schema/ACL, 보안 #1208, 복구/PITR, 독립 검토가 없으므로 **PR #1341 Draft·release HOLD 유지**.
+
+## 23. 2026-10-18 최초 migration 합성 bootstrap 양성 대조 — 출고 판단 미변경
+
+기존 [#39059702566](https://github.com/gycha0109-beep/K_beauty/actions/runs/39059702566)에서 입증한 빈 PG17 실패·롤백(negative)을 보완해, [#39062707665](https://github.com/gycha0109-beep/K_beauty/actions/runs/39062707665)에서 **별도의 합성 DB** 위 첫 SQL `20260410` 적용 성공과 category/texture/finish enum, skin_types array, normalize backfill, 후보-랭킹 증거 뷰, FK를 실제로 검사했다. 이 fixture는 새로 작성한 합성 schema이며 원래 운영 기초 DDL의 복구본이 아니다. 기존 local-shadow bootstrap도 ID 타입 차이로 역사적 원본 대용 불가.
+
+완료 범위는 **synthetic first-migration runtime contract PASS**까지만. 178개 실역사 체인·운영 ACL 출처·백업/PITR 복원·#1208·독립 OWNER 서명은 그대로 **NOT ATTESTED**. 코드/증거 `d8k13-preledger-synthetic-positive-pg17-20261018.json` 및 전체 이력 감사 §11 참조. 릴리스 HOLD/PR Draft 유지.
