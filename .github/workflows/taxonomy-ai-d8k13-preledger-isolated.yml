@@ -9,6 +9,8 @@ on:
       - scripts/product-evidence/verify-d8k13-p0-acl-taxonomy-provenance-v1.mjs
       - scripts/product-evidence/verify-d8k13-migration-chain-readonly-v1.mjs
       - scripts/product-evidence/run-d8k13-preledger-negative-pg17.mjs
+      - scripts/product-evidence/run-d8k13-preledger-synthetic-positive-pg17.mjs
+      - tests/fixtures/r16i-d8k13/36_preledger_synthetic_base_pg17.sql
       - scripts/product-evidence/baselines/d8k13-preledger-reconstruction-readiness-20261017.json
       - scripts/product-evidence/baselines/d8k13-p0-acl-taxonomy-provenance-followup-20261017.json
       - scripts/product-evidence/baselines/d8k13-hosted-migrations-readonly-20261016.json
@@ -89,6 +91,7 @@ jobs:
           set -euo pipefail
           psql -X -v ON_ERROR_STOP=1 -c "CREATE ROLE d8k13_fixture LOGIN PASSWORD 'd8k13_disposable_fixture_only'"
           psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE d8k13_preledger_disposable OWNER d8k13_fixture"
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE d8k13_preledger_synthetic OWNER d8k13_fixture"
       - name: Reproduce first migration failure on empty PG17 and verify transactional rollback
         env:
           PGHOST: 127.0.0.1
@@ -99,3 +102,13 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/product-evidence/run-d8k13-preledger-negative-pg17.mjs --isolated-pg17
+      - name: Verify one original migration against explicitly synthetic disposable bootstrap
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGDATABASE: d8k13_preledger_synthetic
+          PGUSER: d8k13_fixture
+          PGPASSWORD: d8k13_disposable_fixture_only
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/run-d8k13-preledger-synthetic-positive-pg17.mjs --isolated-pg17
