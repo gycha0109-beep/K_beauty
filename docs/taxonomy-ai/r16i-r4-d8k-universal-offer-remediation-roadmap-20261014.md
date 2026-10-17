@@ -390,3 +390,9 @@
 - 실제 GitHub Actions #39059702566: Native Node 22 preledger/ACL/Taxonomy8 source pin 및 릴리스 exit 3 PASS. 별도 PostgreSQL17.6 임시 DB에서 초기 applied migration `20260410`은 **원본 `public.products`가 없어 예상대로 실패**, transaction rollback PASS.
 - 초기 Git README는 최초부터 `source_rankings`, `product_candidates`, `crawl_jobs` 저장을 전제로 하나 원본 DDL/GRANT 자체는 없다. 기존 178개 migration history가 이를 생성하지 않는다는 진단과 결합하면 **초기 bootstrap artifact 미확보가 재현 가능한 진짜 선행 차단 조건**이다.
 - 실증 결과를 날짜·원본 tested SHA·workflow run/job IDs·범위/제한까지 비식별 JSON에 고정. **전체 replay PASS와 혼동 금지**; #1208, OWNER, 초기 ACL, restore drill 미확인. 운영 DB write 0 / 보정·머지·배포 HOLD.
+
+## 25. D8K-13 synthetic PG17 첫 단계 양방향 검증 (2026-10-18)
+
+- **추가 실증:** 별도 PostgreSQL17.6 synthetic DB에서 설계된 테스트 전용 기초 테이블 `products`, `product_candidates`, `source_rankings`와 각 1행을 먼저 넣고 최초 `20260410` SQL의 타입 변환/뷰/FK/backfill 성공을 확인. 병렬 음성 대조에서는 빈 DB의 예상 실패·롤백 확인. 둘 다 실제 GitHub Actions #39062707665.
+- **결정 경계:** 이는 첫 이력 SQL의 최소 호환성 입증이지, **실제 초기 스키마 CREATE/GRANT 출처 확보도 전체 178건 replay 완료도 아니다**. `local-shadow` bootstrap의 `products.id text`는 초기 migration 요구 UUID FK와 달라 역사적 출처 증명이 될 수 없다.
+- 첫 단계 양성/음성 증거와 고정 Git blob을 재검증기에 연결. 다음 항목은 실제 초기 schema/ACL 및 과거 178건 원문 승인된 추출·복원, isolated real-history replay, 실제 restore drill, OWNER/security #1208. **HOLD 유지, 운영 DB write 0.**
