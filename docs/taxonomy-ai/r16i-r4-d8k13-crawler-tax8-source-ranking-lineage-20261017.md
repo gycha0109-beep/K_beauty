@@ -66,3 +66,17 @@
 - 기존 D8K-13 PG17 부분 체인 및 2026-10-17 SEC-05/Ranking ACL 합성 Docker PG17 **개별 PASS는 유지**하지만, 전체 178개 운영 적용 이력의 원자적 clean-replay/backup restore/OWNER 독립 검토가 인증됐다는 뜻이 아니다.
 
 **결론: Crawler 차이는 6개 종료 세미콜론으로 격리, source_rankings의 현재 공개 권한은 차단, Taxonomy8 현재 미일치 11건은 모두 후발 생성. 운영 전체 릴리스와 자동 데이터·스키마 보정은 여전히 HOLD.**
+
+
+## 5. Supabase 보안 Advisor 읽기 전용 확인
+
+2026-10-17 실제 Supabase `security advisors`를 **조회만** 했다. 총 5개 lint 유형 / 82개 findings(`INFO 77`, `WARN 5`)이다. **82개가 실증된 취약점이라는 뜻은 아니다.**
+
+- `rls_enabled_no_policy` **INFO 77개**: RLS ON에 정책이 없는 서버 전용 테이블이 다수 포함된다. 실제 권한/사용 목적 확인 없이 SELECT 정책을 자동 추가하면 오히려 노출 위험이 생기므로 조치 금지. <https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy>
+- `authenticated_security_definer_function_executable` **WARN 2개**: `public.admin_has_capability(text)`과 `public.get_current_admin_role()`. 두 함수는 authenticated가 호출할 수 있는 `SECURITY DEFINER`지만, 실제 함수 코드에서 `auth.uid()`와 **활성 admin_memberships** 검사 및 role capability 비교를 확인했다. `anon/PUBLIC` 직접 실행은 거부된다. **권한 우회가 입증된 것은 아니며**, 관리자 RPC 공개 범위에 대한 독립 보안 검토가 필요하다. <https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable>
+- `auth_allow_anonymous_sign_ins` **WARN 2개**: `admin_audit_logs`의 SELECT 정책은 `admin_has_capability('admin.audit.read')` 조건, `admin_memberships`의 SELECT 정책은 `user_id=auth.uid()` 및 `is_active=true` 조건이 있다. 익명 로그인 사용자도 PostgreSQL `authenticated` 역할을 가질 수 있으므로 실제 멤버십/권한 정책에 대해 따로 검토하되, 이 경고만으로 데이터 유출이 실증됐다고 판단하지 않는다. <https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0012_auth_allow_anonymous_sign_ins>
+- `auth_leaked_password_protection` **WARN 1개**: 유출 비밀번호 방지 기능 비활성화. 인증 관리자에게 별도 설정·사용자 영향·배포 권한 승인 요청이 필요하며 이번 작업에서 Auth 설정을 변경하지 않았다. <https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection>
+
+저장된 advisor metadata-only snapshot: `scripts/product-evidence/baselines/d8k13-hosted-security-advisors-readonly-20261017.json`. 운영 자격 증명, user membership rows, function 내부 비밀값 및 실제 사용자/상품 식별자는 저장하지 않았다.
+
+**보안 리뷰/운영 Auth 설정 승인/공급망 `#1208`/백업 복원/독립 OWNER 미완료이므로 릴리스 HOLD.**
