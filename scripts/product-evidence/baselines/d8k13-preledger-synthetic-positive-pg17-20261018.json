@@ -1,0 +1,69 @@
+{
+  "schema": "D8K13_PRELEDGER_SYNTHETIC_POSITIVE_PG17_V1",
+  "observedDateKst": "2026-10-18",
+  "scope": "ISOLATED_NONHISTORICAL_SYNTHETIC_FIRST_MIGRATION_ONLY",
+  "originalDbBootstrapRecovered": false,
+  "originalOwnerAndAclEvidenceRecovered": false,
+  "workflowRunId": 39062707665,
+  "testedHead": "fae0e1857d95e17f3ef3cc57b3c3b6450353287e",
+  "workflowName": "[WT:taxonomy-ai] D8K13 Pre-Ledger Isolated PG17 Evidence",
+  "workflowUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39062707665",
+  "pg17JobId": 117483803947,
+  "pg17JobConclusion": "success",
+  "offlineNodeJobId": 117483804229,
+  "pgMajor": 17,
+  "pgImage": "postgres:17.6",
+  "assertions": {
+    "isolatedLocalhostAndExactDisposableDatabase": true,
+    "emptyDatabaseExpectedFailureAndRollback": "D8K13_PRELEDGER_ISOLATED_PG17_EXPECTED_FAILURE_PASS",
+    "syntheticFixtureCreated3TablesAnd3Rows": true,
+    "syntheticFirstMigrationFullyApplied": "D8K13_PRELEDGER_SYNTHETIC_FIRST_MIGRATION_PG17_PASS",
+    "postAppliedProductRows": 1,
+    "postAppliedCandidateRows": 1,
+    "postAppliedRankingRows": 1,
+    "productCandidateEvidenceViewRows": 1,
+    "viewEvidenceCount": 1,
+    "bestRankPosition": 1,
+    "productCategoryEnumConverted": true,
+    "textureEnumConverted": true,
+    "finishEnumConverted": true,
+    "skinTypeConvertedToArray": true,
+    "canonicalNameAndBrandNormalized": true,
+    "candidateReviewStatusNew": true,
+    "candidateMatchedProductFkPresent": true,
+    "originalFirstMigrationSourceUnchanged": true
+  },
+  "pinnedFiles": [
+    {
+      "file": "supabase/migrations/20260410_safe_review_and_promotion_layer.sql",
+      "gitBlobSha": "f13b9584080209ba9bdfdaff3a66b5984b8748a7"
+    },
+    {
+      "file": "tests/fixtures/r16i-d8k13/36_preledger_synthetic_base_pg17.sql",
+      "gitBlobSha": "74a008663de54b1e965a83ef51d13353615a5422"
+    },
+    {
+      "file": "scripts/product-evidence/run-d8k13-preledger-synthetic-positive-pg17.mjs",
+      "gitBlobSha": "0fd091c2fb8a2629628fefda728f1790b5a23bc0"
+    }
+  ],
+  "expectedErrorEmptyDb": "relation public.products does not exist",
+  "syntheticSchemaIsHistoricalAuthority": false,
+  "reconstructsFirstOriginalMigrationEnvironment": false,
+  "firstMigrationCompatibilityProvenForSyntheticFixture": true,
+  "historicalFirstSchemaReconstructed": false,
+  "full178AppliedMigrationChainReplayed": false,
+  "historicalProductCandidatesAndSourceRankingsAclProven": false,
+  "realBackupPitrRestored": false,
+  "sourceRankingApiPublicExposureRuledOutHistorically": false,
+  "tax8PolicyApproved": false,
+  "issue1208Resolved": false,
+  "productionDbWrites": 0,
+  "releaseAuthorized": false,
+  "limitations": [
+    "The synthetic fixture was specifically designed against the first checked-in 20260410 migration and must not be treated as historical CREATE TABLE SQL.",
+    "The positive-path result proves one pinned SQL script against one synthetic fixture, not the historical 178-statement chain or production schema equivalence.",
+    "The negative and positive fixtures run in different disposable databases under a local-only test role.",
+    "No original backup, ACL history, migration SQL archive export or production release approval is supplied."
+  ]
+}
