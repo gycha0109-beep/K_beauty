@@ -1,11 +1,11 @@
 # BEJEWELY product dependency remediation — 2026-10-18
 
-Status: **IMPLEMENTED_UNVERIFIED for hosted CI / production rollout**. Required local Windows/Linux checks, Android x86_64 debug/release builds and device smoke passed. New-head GitHub CI, iOS native verification, merge and deployment have not run.
+Status: **IMPLEMENTED_UNVERIFIED for the final follow-up HEAD CI / production rollout**. Hosted security, CodeQL, Current Main Health, Android and iOS Simulator checks passed on `d0474bfb`; its existing DB filename collision failed the authority check. The explicitly approved filename-only follow-up below passes local checks and awaits its own hosted CI. Main merge and deployment have not run.
 
 Source baseline: `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2`.
 Product branch: `codex/security/sca-product-remediation-20261017`.
 PR #1299 remains the separate B6 publication record; publication was not repeated.
-Condensed observed results: [`product-remediation-verification.json`](../../security/product-remediation-verification.json).
+Initial local verification snapshot, before hosted CI: [`product-remediation-verification.json`](../../security/product-remediation-verification.json). Current exact-HEAD CI results are maintained in PR #1343 rather than generating result-only commits.
 
 ## Actual causes and changes
 
@@ -66,3 +66,18 @@ Bounded device diagnosis found Windows Metro listening only on IPv6 `::1`: local
 ## Next gate
 
 Local verification and final diff/content review are complete. The user explicitly authorized product commit/push/PR creation and hosted CI after reviewing this scope, satisfying `.codex/AI_EXECUTION_RULES.md`. Run new-head CI before merge consideration. Deployment and main merge remain separate unapproved actions. Credential expiry and production installer configuration remain rollout prerequisites.
+
+## Approved DB migration filename reconciliation
+
+The first product HEAD `d0474bfb` ended with 53 successful checks and one failure: two pre-existing repository migration filenames shared `20261012190000`. No dependency-security check failed. The user separately approved reconciling only these filenames and one verifier reference, including commit/push/CI; no hosted DB mutation was approved.
+
+Read-only metadata and SQL-digest queries on the project matching the configured local public URL confirmed both migrations were already applied. Each stored SQL SHA256 exactly matched its Git source. This establishes the connected project's history, not the production deployment's project identity.
+
+| Source filename | Correct applied-history filename |
+| --- | --- |
+| `20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql` | `20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql` |
+| `20261012190000_trust_p2c_visible_identity_dispositions_v1.sql` | `20261012181544_trust_p2c_visible_identity_dispositions_v1.sql` |
+
+The SQL bytes remain identical (Git and working-file comparisons); each predecessor still sorts before its dependent migration. The R16I verifier's source filename reference changes. Final consumer scanning additionally found two direct `psql -f` references in the existing isolated database CI workflow; those literals are updated to the same approved filenames so runtime tests can open the renamed sources. No command, database target, job topology or execution authority changes. Database authority verification, all 57 R16I guards, workflow semantic comparison and SQL fixture-path existence checks pass. A separate-copy negative control proves a newly introduced version collision still fails; the initial proposed patch also passed `git apply --check` before approval.
+
+No authority expectation, known legacy collision, schema, permission, production record or hosted migration ledger was changed. No migration apply/repair command was run. `fullRepositoryReplayReady=false` remains in force. Existing historical `20260824` collisions and unrelated historical timestamp mappings are not expanded or waived. The new filename-only commit requires fresh exact-HEAD CI; earlier passes are not attributed to it.

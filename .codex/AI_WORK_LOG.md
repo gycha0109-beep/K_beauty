@@ -2,6 +2,14 @@
 
 ## Entries
 
+### 2026-10-18 / Approved existing DB filename collision reconciliation
+
+- 기준: 제품 PR #1343 / `d0474bfbe43a1240a04b446418c4db608857edfe`. 해당 HEAD의 보안·CodeQL·Current Main Health·Android·iOS Simulator 포함 53개 검사 통과, 기존 migration 파일번호 중복 검사 1개 실패 확인.
+- 읽기 전용 근거: 로컬 공개 설정과 일치하는 연결 프로젝트에서 두 migration의 실제 적용 번호 `20261012181320` / `20261012181544` 및 SQL SHA256가 Git 소스와 각각 정확히 일치. Production 배포 프로젝트 동일성을 주장하지 않음. 사용자에게 검증된 3개 파일 변경안을 제시하고 파일번호 수정·커밋·푸시·자동검사 명시 승인 확보.
+- 변경: 두 SQL 파일을 실제 적용 번호로 rename, R16I 검증기 파일 경로 1곳 갱신. 최종 direct-consumer 검색에서 기존 DB CI의 psql 파일 참조 2곳도 발견되어 동일 rename 경로에 연결(직접 caller 근거로 범위 확장). 명령·target·job 구조 변경 없음. SQL bytes/스키마/권한/DB 데이터/hosted ledger/검사 기대값 변경 0. 기존 `20260824` 이력 충돌 및 blank replay HOLD 유지.
+- 검증: 승인 전 별도 복사본의 authority/R16I57 guards/추가 충돌 차단 negative control 및 patch apply check PASS. 실제 작업실 적용 후 SQL 원본 bytes 비교·authority/R16I57 guards·diff check PASS. 최종 새 HEAD의 GitHub CI는 별도 확인 예정; 이전 HEAD 결과를 새 HEAD PASS로 간주하지 않음.
+- 구조: API/DB 스키마·저장 계약 변경 없음; 이미 적용된 이력과 소스 파일 식별자 정합만 수정. 직접 consumer 검증 경로 연결 유지. main 병합·production 배포·migration apply/repair 미실행. 상세는 `docs/security/sec-sca-20261018-product-remediation.md`.
+
 ### 2026-10-18 / Product SCA remediation after B6 private publication
 
 - 유형: 진단 후 제한 실행. 기준 `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2`, 브랜치 `codex/security/sca-product-remediation-20261017`; 기존 #1299와 두 기존 작업실 보존.
