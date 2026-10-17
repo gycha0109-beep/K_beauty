@@ -1,6 +1,6 @@
 # BEJEWELY product dependency remediation — 2026-10-18
 
-Status: **IMPLEMENTED_UNVERIFIED for the final follow-up HEAD CI / production rollout**. Hosted security, CodeQL, Current Main Health, Android and iOS Simulator checks passed on `d0474bfb`; its existing DB filename collision failed the authority check. The explicitly approved filename-only follow-up below passes local checks and awaits its own hosted CI. Main merge and deployment have not run.
+Status: **Product fixes VERIFIED on `cb1d9379`; production installation IMPLEMENTED_UNVERIFIED**. That exact HEAD passed hosted security, CodeQL, Current Main Health, DB authority, Android, iOS Simulator and GitGuardian checks. The separately approved production-only Secret registration and repository install-command connection below require fresh CI for their new HEAD. Actual Vercel installation, main merge and deployment have not run.
 
 Source baseline: `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2`.
 Product branch: `codex/security/sca-product-remediation-20261017`.
@@ -40,7 +40,19 @@ The source `.npmrc` contains public registry routing only. `install-product-depe
 
 The owner read-only classic credential is stored in the repository Actions secret `SCA_PACKAGES_READ_TOKEN`; only its existence/expiry metadata was checked. It expires **2026-10-24T15:17:16Z**. Forty-three root install sites in 31 semantically changed workflows use the authenticated installer; six standalone crawler installs retain their original independent install flow. Job IDs, job-level topology/needs, action references and step counts were checked unchanged. Security workflow triggers additionally cover the inventory, registry routing and crawler locks; its audit step runs the three credential-isolation tests.
 
-Local installs use an owner-controlled environment/secret bridge, never a committed token. Outside Actions, any build service must explicitly provide the same owner read-only secret and run `node scripts/security/install-product-dependencies.mjs`; default unauthenticated `npm ci` will fail closed. No production build-service secret or install setting was changed. A future production rollout is blocked until its authorized operator configures and verifies this install path. Fork PRs without repository secrets cannot install these private dependencies; access is not broadened to bypass that boundary.
+Local installs use an owner-controlled environment/secret bridge, never a committed token. Outside Actions, any build service must explicitly provide an owner read-only secret and run `node scripts/security/install-product-dependencies.mjs`; default unauthenticated `npm ci` will fail closed. The user separately authorized the production-only Vercel Secret registration and repository install-command connection below. A future production rollout still requires an actual authorized Vercel build to verify this path. Fork PRs without repository secrets cannot install these private dependencies; access is not broadened to bypass that boundary.
+
+### Approved production installation connection
+
+Read-only preflight identified the repository's Vercel project, a default/null install command and no package-read credential in production. The connector's environment-metadata query was denied (403); the existing authenticated CLI confirmed the same project/scope and read the metadata successfully. No credential or environment value was fetched.
+
+The owner entered the existing classic PAT through a local hidden prompt. A direct GitHub identity/scope/expiry check confirmed owner `gycha0109-beep`, exactly `read:packages`, and expiry **2026-10-24T15:17:16Z**. Vercel accepted `SCA_PACKAGES_READ_TOKEN` as a **production-only Secret**, and a subsequent metadata-only listing confirmed the key, target and Secret type. It was not added to preview/development or Git; no existing secret was overwritten. No PAT/private key/DPAPI credential file was read by the agent.
+
+`vercel.json` now adds only `installCommand: node scripts/security/install-product-dependencies.mjs`; all previous Git deployment, runtime-flag and cron settings are unchanged. This versioned setting becomes active when this source is built. The hosted project-wide install command remains unchanged, so the old main source is not told to run a file it may lack. Non-main automatic deployments remain denied. Node `22.x` in `package.json` takes precedence over the project's default `24.x`, per the [Vercel version contract](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions); no hosted Node setting was changed. The actual build's Node/npm versions must still be checked before rollout.
+
+Vercel supplies environment Secrets to build and runtime; removal from the installer process does not remove a platform-provided runtime variable. The key is not public-prefixed or deliberately copied into outputs. This bounded setup does not establish that a new Vercel deployment is free of embedded credentials: actual hosted build/output verification is **NOT_RUN**. Existing artifact scans belong to the earlier builds.
+
+Actual production/private installation and preview/production deployment remain **NOT_RUN**. The two settings were explicitly approved; main merge and deployment were excluded. Revocation/renewal before expiry and actual hosted installation remain rollout conditions. A rollback, if later authorized before deployment, restores only the added JSON field and removes the newly registered Secret; no rollback or secret removal has run.
 
 Architecture Check:
 

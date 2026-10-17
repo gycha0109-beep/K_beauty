@@ -2,6 +2,24 @@
 
 ## Entries
 
+### 2026-10-18 / Approved production private-install connection
+
+- 승인: 사용자가 기존 주 계정 read:packages 전용 PAT의 Vercel production 전용 Secret 등록, 준비한 설치 명령 한 줄의 PR #1343 반영·커밋·푸시·자동검사를 명시 승인. main 병합·실제 배포는 제외. Secret/Production 설정 영향 Y, DB/RLS/Storage/Provider/Payment 실행 N.
+- 실행: 소유자 로컬 숨김 입력에서 기존 PAT 재사용. GitHub가 owner gycha0109-beep / scopes read:packages 단독 / 만료 2026-10-24T15:17:16Z를 확인. Vercel CLI가 production 전용 SCA_PACKAGES_READ_TOKEN Secret 등록 성공; 별도 메타데이터 조회로 키·Production·Secret 확인. preview/development 추가·기존 Secret 덮어쓰기 0. agent의 PAT/개인키/DPAPI 읽기·출력 0. 외부 도우미/결과파일은 커밋 제외.
+- 변경: vercel.json installCommand만 기존 안전 설치기로 연결. 기존 Git 자동 배포 제한/flags/cron 동일. 프로젝트 전역 설치명령/Node 설정은 그대로 두고 소스 버전 설정만 사용. canonical deployment 문서의 non-main 자동 preview 설명을 실제 차단 설정과 일치시키고 설치 계약·활성 시점 추가; 보안 문서에 실제 등록과 미실행 경계 기록. API/DB/도메인/저장 계약 변경 0, 새 인증 fallback 없음.
+- 검증: 기존 설정과 단일 JSON delta 동일성 PASS, repository hygiene PASS(673 runtime files, secret/shortcut 0), admin current-main integration 126 assertions PASS, 설치 인증격리 3개 테스트 PASS(로컬 Node24.14.0, 합성 fixture). git diff check와 변경 문서 비밀/소유자경로 검사 PASS. Node22/npm10 실제 설치/내용/악성입력은 cb1d9379의 기존 검증과 구분하고 새 HEAD CI를 예약 확인.
+- 상태: Secret 등록 VERIFIED; 소스 설치명령 IMPLEMENTED, 새 HEAD CI/실제 Vercel private install은 별도 미검증. Vercel 환경 Secret은 build/runtime 양쪽에 제공되며 설치기 자식 환경 정리는 플랫폼의 runtime 변수 제거를 뜻하지 않음. 실제 hosted 산출물 비밀정보 검사는 새 배포 전 필요. 실제 설치·preview/production 배포·main 병합·package/ACL/결제/DB 변경 0. 토큰 만료 전 갱신 필요.
+- 후속: 동일 PR 새 HEAD의 자동검사만 확인하고 결과를 PR에 기록; 장기 CI는 예약하고 열린 세션에서 기다리지 않음. 실제 Vercel 빌드·배포는 별도 승인 필요. AI_CONTEXT 승격 제안 없음.
+
+### 2026-10-18 / Production private-install preflight (read-only)
+
+- 유형: 진단. 기준 제품 PR #1343 / `cb1d9379b9a0b3d4f8d45300fe12ecbd5c44bd4e`. Secret/Production 영향 Y; DB/RLS/Storage/Provider/Payment 실행 N. 사용자는 운영 설치 인증 검증 재개를 요청했으며 main 병합·배포·운영 설정 변경은 미승인.
+- 실제 확인: 저장소와 연결된 Vercel `k-beauty` 프로젝트를 식별. connector 환경 메타데이터 조회 403은 기존 로그인 CLI의 동일 project/team 읽기 전용 조회로 대체 성공. production 환경 목록에 SCA_PACKAGES_READ_TOKEN/NODE_AUTH_TOKEN/NPM_TOKEN 없음. 프로젝트 installCommand/buildCommand/rootDirectory 모두 기본값(null). 비밀값·PAT·개인키·DPAPI 파일 읽기/출력 0.
+- 준비: 저장소 밖에 vercel.json의 installCommand 한 필드만 기존 안전 설치기로 연결하는 제안 patch와 비밀 없는 preflight 작성. git apply --check 및 나머지 JSON 동일성 PASS. 실제 저장소 배포 설정/hosted 설정 변경 0. 운영 프로젝트 installCommand를 먼저 바꾸면 구 main에 없는 설치기를 호출할 수 있으므로 저장소 버전 설정을 제안.
+- runtime: 프로젝트 기본 Node24.x와 제품 package.json engines22.x를 구분. Vercel 공식 계약상 engines가 우선하므로 프로젝트 Node 변경은 제안하지 않음; 실제 hosted build 버전은 NOT_RUN. 원래 Node22/npm10 설치·격리 검증은 반복하지 않음.
+- blocker: production 전용 read:packages Secret 등록 및 저장소 설치 명령 연결은 AGENTS.md 보호영역과 배포 계약에 따라 명시 승인 필요. 기존 적합한 읽기 전용 PAT 우선 재사용, 알려진 Actions credential 만료 2026-10-24T15:17:16Z. 실제 Vercel 설치 검증은 설정 연결 후 별도 승인된 빌드/배포에서만 확인 가능. main 병합·preview/production 배포·기존 ACL/계정/결제 변경 없음.
+- 문서 충돌: canonical deployment 문서는 non-main 자동 preview를 설명하지만 실제 vercel.json은 main 외 자동 배포를 끔. 실제 설정을 우선하고 변경하지 않음. 구조/API/DB/저장 계약 변경 없음; AI_CONTEXT 승격 없음.
+
 ### 2026-10-18 / Approved existing DB filename collision reconciliation
 
 - 기준: 제품 PR #1343 / `d0474bfbe43a1240a04b446418c4db608857edfe`. 해당 HEAD의 보안·CodeQL·Current Main Health·Android·iOS Simulator 포함 53개 검사 통과, 기존 migration 파일번호 중복 검사 1개 실패 확인.
