@@ -2,12 +2,14 @@
 // D8K-13 historical anonymous-claim/ranking ACL audit.
 // OFFLINE STATIC CONTRACT ONLY: no network, secrets, DB, SQL, or writes.
 // Historical provenance and runtime behavior are NOT certified by this script.
+import {verifyD8k13ExtendedHomeEvidence} from "./verify-d8k13-sec05-extended-home-evidence-v1.mjs";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
+const extendedSec05Home=verifyD8k13ExtendedHomeEvidence(ROOT);
 const args=process.argv.slice(2);
 assert.ok(args.length<=1&&args.every(x=>x==="--enforce-release"||x==="--help"),
  "D8K13_UNKNOWN_HISTORICAL_SECURITY_ARG");
@@ -148,6 +150,9 @@ console.log(JSON.stringify({
  exploitabilityProven:false,
  syntheticPg17SecuritySuiteSourcePresent:true,
  syntheticPg17SecuritySuiteExecutedOnDocker:true,
+  syntheticPg17CompleteFailExtendedUserReportedPass:extendedSec05Home.scopedSec05CompleteFailNativePg17UserReportedPass,
+  syntheticPg17EightPinnedSourceFilesVerified:extendedSec05Home.sourceCount===8,
+  transcriptIndependentlyRehashedHere:false,
  syntheticPg17FullMigrationHistoryAccepted:false,
  fullMigrationChainReleaseApproved:false
 }));
