@@ -16,7 +16,7 @@
 - 운영 이력 `20260621030000`: 31 statements, **2,482 tokens**. 현재 repo `20260621030000_phase1_ranking_snapshot_pipeline.sql`: **2,593 tokens** (Git blob `9add0e1e90dc75c0ad94a1acdf0ddb863ed42d1a`).
 - 정확한 차이는 **위 110개 토큰 + 최종 세미콜론 1개**. 나머지는 값 보존 토큰 비교로 일치했다.
 - 중요: `status='ingested'` 검사는 **후속 적용 이력 `20260621151304`에서 별도로 확인**했으며, **현재 `ingest_ranking_snapshot(text,jsonb)`에도 존재**한다. 따라서 해당 가드가 현재 운영에 없다고 주장하면 틀리다.
-- `ranking_snapshots` 일반 역할 쓰기 차단은 후속 권한 repair `20260621151304`/`20260621152040`에서 확인했다. 반면 `source_rankings` 명시적 ACL의 생성·변경 출처는 적용 기록 178건에서 확인되지 않았다. 현재 공개 권한은 **차단**돼 있다. `product_candidates`도 이 audit만으로 전체 ACL 역사 복원 완료를 주장하지 않는다.
+- `ranking_snapshots` 일반 역할 쓰기 차단은 후속 권한 repair `20260621151304`/`20260621152040`에서 확인했다. 반면 `source_rankings`와 **`product_candidates`**에 대한 명시적 ACL `REVOKE/GRANT` 출처는 적용 기록 178건에서 확인되지 않았다. 현재 두 테이블 모두 **RLS ON / anon·authenticated 읽기·쓰기 차단 / service_role INSERT 허용**이다. `product_candidates`의 service_role UPDATE도 허용된다. 현재 차단 상태만으로 과거 권한 변경 경로의 증명이 완료되지는 않는다.
 
 **판정:** `RANKING_GIT_ORIGINAL_HAS_ACL_AND_STATUS_GUARDS_MISSING_FROM_ORIGINAL_APPLIED_HISTORY__STATUS_AND_RANKING_SNAPSHOT_ACL_LATER_REPAIRED__SOURCE_RANKINGS_ACL_ORIGIN_UNPROVEN`.
 
