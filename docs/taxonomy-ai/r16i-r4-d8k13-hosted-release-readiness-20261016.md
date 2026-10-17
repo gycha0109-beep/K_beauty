@@ -261,3 +261,11 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 `tests/fixtures/r16i-d8k13/34_sec05_legacy_completion_failure_null_pg17.sql`과 `35_sec05_hardened_completion_failure_pg17.sql` 및 기존 격리 Docker17 runner를 확장했다. 기대 증명: 과거 NULL principal complete/fail가 진행 상태를 변경할 수 있었는지 트랜잭션 롤백으로 관찰, 보강 코드에서 12개 NULL 인자 거부·wrong-principal 실패·정상 complete/fail·재시도·역할 차단. **정적 소스 검사 PASS**, 그러나 신규 2개 SQL의 **실제 Docker17 실행은 NOT_RUN**. 이전 SEC-05 claim/ranking PASS와 합쳐 전체 SEC-05 보강 승인을 주장하지 않는다.
 
 추가 근거: [두 다중 SQL 이력/운영 함수 감사](./r16i-r4-d8k13-two-multistatement-runtime-drift-audit-20261017.md). `#1208`/독립 보안 소유자/whole-history-PG17/backup-PITR/본인 승인 전 PR #1341은 계속 Draft/HOLD. 원본 9개 D8D/D8K 핵심 코드 및 운영 DB, Product/Offer/CTA는 **변경하지 않았다**.
+
+## 19. 2026-10-17 21:16 KST 확장 SEC-05 Windows PG17 수락 — 운영 승인과 분리
+
+현재 PR의 이전 `complete/fail native NOT_RUN` 문구는 증거 접수 이전 상태를 나타낸다. 사용자 보고 로그 `D8K13_HOME_RESULT_20261017_211649.log`는 pinned HEAD `303a94af096f6b4b8fa0784e8920bc39843a4edd`의 8개 소스 검사와 `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS` 및 `D8K13_SEC05_EXTENDED_HOME_PG17_TEST_PASS`를 포함했다. 고정 러너 상 legacy NULL/rollback·hardened NULL·principal·normal/retry·role rejection assertions가 모두 최종 PASS의 선행조건이므로 **범위 제한 확장 합성 PG17 PASS**로 판단한다. 개별 SQL 로그는 별도 독립 검증되지 않았다. SHA256 `1dadd3a9ba3fcde39e03dbf0c94b3b824a8014ccee445f2334c54db7dce52006`은 제출된 지문이며 이 세션의 직접 재해시 결과는 아니다.
+
+추가된 메타데이터 전용 manifest와 offline 검증기는 소스 변경을 fail-closed로 판정한다. 기존 두 다중 SQL drift, 178건 full clean-replay, ranking 이력 ACL 출처, Crawler parser, Taxonomy8 단일 분류 누락, Supabase Security Advisor, backup/PITR 실제 복원, 독립 OWNER 및 공급망 #1208은 **미해결**이다. `--enforce-release`는 계속 exit 3이며 hosted DDL/DML/GRANT/RLS/Auth, migration repair, Product/Offer/price/CTA, gate 변경, PR 병합/배포는 하지 않는다.
+
+**D8K13_HOSTED_RELEASE_HOLD / PR #1341 DRAFT.**
