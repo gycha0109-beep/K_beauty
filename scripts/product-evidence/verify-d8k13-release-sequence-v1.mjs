@@ -116,8 +116,17 @@ assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.postg
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.legacy_sql_explicit_all_six_null_guards_present,false);
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.locally_derived_legacy_function_tokens,747);
 assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.locally_derived_legacy_function_token_equivalent_to_hosted,true);
-assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.synthetic_pg17_native_sql_execution_attested,false);
-assert.equal(sameVersionTriage.p0DeployedScopeFollowup.rankingAclLaterAppliedRepair.synthetic_pg17_native_sql_execution_attested,false);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.anonymousWriteGrant.synthetic_pg17_native_sql_execution_attested,true);
+assert.equal(sameVersionTriage.p0DeployedScopeFollowup.rankingAclLaterAppliedRepair.synthetic_pg17_native_sql_execution_attested,true);
+const sec05HomeAcceptance=sameVersionTriage.syntheticPg17HomeAcceptance;
+assert.equal(sec05HomeAcceptance.status,"SCOPED_SEC05_AND_RANKING_ACL_SYNTHETIC_DOCKER_PG17_PASS");
+assert.equal(sec05HomeAcceptance.pinnedGithubCommit,"0832a7f964cb68aa7fb057eba654343f46214cfa");
+assert.equal(sec05HomeAcceptance.postgreSQL17RunnerFinalMarker,true);
+assert.equal(sec05HomeAcceptance.rankingAclRevokeRollbackPass,true);
+assert.equal(sec05HomeAcceptance.legacyNullCheckDirectMarkerPresentInTranscript,false);
+assert.equal(sec05HomeAcceptance.entire178RowMigrationHistoryReplayed,false);
+assert.equal(sec05HomeAcceptance.hostedReleaseAuthorized,false);
+assert.ok(content(sec05HomeAcceptance.evidenceDocument).includes("D8K13_HOME_PG17_TEST_PASS"));
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
@@ -174,7 +183,8 @@ const result={
  rankingSnapshotPublicResidualReferencesTriggerMaintainUnresolved:true,
  rankingSnapshotPublicResidualAclRemediationNotAuthorized:true,
  sec05AndRankingSecuritySyntheticPg17FixtureReady:true,
- sec05AndRankingSecurityNativePg17RunAttested:false,
+ sec05AndRankingSecurityNativePg17RunAttested:true,
+ sec05AndRankingSecurityFullHistoryAccepted:false,
  sec05AndRankingSecurityHostedMigrationAuthorized:false,
  anonymousClaimOnlyServiceRoleExecutable:true,
  anonymousServerTokenHmacAndCookieBindingStaticallyVerified:true,
