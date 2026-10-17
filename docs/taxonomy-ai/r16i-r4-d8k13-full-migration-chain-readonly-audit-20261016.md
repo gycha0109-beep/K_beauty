@@ -164,3 +164,18 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 영속 증거: `scripts/product-evidence/baselines/d8k13-preledger-native-node-pg17-negative-acceptance-20261018.json`; 코드 `scripts/product-evidence/run-d8k13-preledger-negative-pg17.mjs`; 오프라인 baseline 검증기에 workflow/job 결과·rollback 진술을 **source-pin 및 release HOLD와 함께** 검사하도록 연결했다. 검증기는 과거 실제 GitHub Action 결과가 적힌 manifest를 검사하므로, 새 시점의 PG17 재실행 자체와 동일하지 않다. 새 commit의 CI 결과는 각 GitHub workflow run에서 별도 확인한다.
 
 **다음 필수 선행:** DB 최초 스키마 SQL 또는 신뢰 가능한 최초 backup dump, 해당 시점의 role/ACL 및 PostgreSQL/Supabase dependency, 178건 applied 원문 SQL과 버전·순서 정합성, 별도 비공개 복원 환경, 실제 restore drill. 이 증거들이 없는 동안 **HOLD**, 어떤 임의 DDL bootstrap이나 `migration repair`도 실제 역사를 재구성했다고 주장하지 않는다.
+
+## 11. 2026-10-18 실제 PG17 초기 기초계약 양방향 검증 — 합성 범위 한정
+
+먼저 **원본 없음**을 다시 확인했다. `supabase/local-shadow-test/supabase/migrations/00000000000000_local_shadow_bootstrap.sql`은 스스로 `test-only`/synthetic을 명시하며, `products.id`를 `text` PK로 정의한다. 반면 실제 첫 적용 migration `20260410`은 `product_candidates.matched_product_id`를 `uuid`로 만들고 `products(id)`를 참조한다. 따라서 이 로컬 shadow fixture를 최초 운영 스키마로 사칭하거나 직접 재활용하는 것은 안전하지 않다.
+
+이 한계를 분리하기 위해 `tests/fixtures/r16i-d8k13/36_preledger_synthetic_base_pg17.sql`을 작성했다. **새로 만든 합성 세 테이블** `products`, `product_candidates`, `source_rankings`와 각 1개의 테스트용 행만 구성하며, 과거 실제 초기 DDL/ACL·정상 migration history로 취급할 근거가 없다.
+
+[GitHub Actions #39062707665](https://github.com/gycha0109-beep/K_beauty/actions/runs/39062707665)의 PostgreSQL17.6 격리 job `117483803947`은 다음 두 실험을 **서로 다른 새 임시 DB**에서 실행하여 SUCCESS 기록을 남겼다.
+
+1. **음성 대조:** 빈 DB에 원래 `20260410_safe_review_and_promotion_layer.sql`을 적용 → `public.products` 부재로 예상 실패, transaction rollback PASS.
+2. **합성 양성 대조:** 위 최소 synthetic schema+행을 먼저 생성하고 **변경하지 않은 최초 SQL**을 실행 → `D8K13_PRELEDGER_SYNTHETIC_FIRST_MIGRATION_PG17_PASS`. 실제 SQL 처리 이후 Product category/texture/finish enum 변환, skin_types array 변환, normalized name/brand, candidate `new` 상태, `product_candidate_evidence_summary` 뷰에서 1개 evidence 및 best rank=1, `product_candidates_matched_product_id_fkey`를 검사해 PASS.
+
+이로써 **첫 SQL의 문법 자체가 무조건 실패하는 것은 아니고, 기초 스키마가 전혀 없으면 적용할 수 없다는 구분**을 실제 PG17에서 검증했다. 이것은 오직 합성 첫 migration의 호환성 실증이다. **178건 전체 migration replay, 실 운영 초기 DB schema/ACL 동일성, 최초 bootstrap 출처, PITR 실제 restore는 여전히 모두 미인증**이다.
+
+영속 증거: `scripts/product-evidence/baselines/d8k13-preledger-synthetic-positive-pg17-20261018.json`(실제 CI run/job, commit 및 소스 Git SHA 고정). 진단기 `verify-d8k13-preledger-reconstruction-v1.mjs`는 합성 원본 3개 blob을 검사하고 `releaseAuthorized=false`, `full178AppliedMigrationChainReplayed=false`를 강제한다. release gate `--enforce-release` **exit 3**, DB writes 0, PR #1341 Draft / **HOLD**.
