@@ -276,3 +276,9 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 - 2026-10-01 후발 `sunscreen` 예외는 promoted/resolved candidate의 `crawler-canonical-product-structural-adoption-v1` **inserted** action으로 연결된다. 후보 shadow 분류는 있지만 Product assignment는 0. 현재 structural writer는 category를 기록하면서 Product taxonomy assignment를 삽입하지 않고, 별도의 catalog-only writer만 taxonomy assignment를 삽입한다. Product 테이블에 이를 메우는 INSERT trigger는 없다. **정확한 writer 계약 차이 발견 / 정책적 보수 승인 미완료**.
 - 신규 `d8k13-p0-acl-taxonomy-provenance-followup-20261017.json`, 반복 `SELECT` 검사 SQL, source pin fail-closed verifier를 기존 오프라인 provenance 진단기에 연결했다. 모든 SQL은 원문/상품 식별자/사용자 데이터 출력 없이 메타데이터만 반환한다. [상세 감사](./r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md) §8.
 - **`--enforce-release` 종료코드 3, 운영 릴리스 HOLD는 변경 없음.** 전체 178건 migration clean replay/실제 PITR 복원·Crawler parser·초기 SQL 원점·정책 결정·독립 보안 #1208·명시적 배포 승인 필요.
+
+## 21. 2026-10-17 추가 초기 스키마·복원 진입조건
+
+운영 Supabase의 현재 `source_rankings` / `product_candidates` 객체 구성과 RLS/ACL을 SELECT-only로 재확인하고, 초기 2026-04-08 Git tree 및 2026-04-10 당시 최초 migration의 선행객체 의존성을 검토했다. **최초 CREATE/ACL 원본은 미확보**로 유지한다. 기존의 전체 178-row clean replay HOLD는 이제 독립 `preledger-reconstruction-readiness` baseline **11개 게이트 모두 false** 및 fail-closed 오프라인 검증기에 연결했다. 현재 SQL 집계 검사 PASS와 정적 소스 계약 PASS를 얻었으나 새 검증기 실제 Node 실행/전체 복원/PITR 실증은 하지 않았다.
+
+상세: [전체 마이그레이션 감사 §9](./r16i-r4-d8k13-full-migration-chain-readonly-audit-20261016.md). Crawler PG17 parser와 Taxonomy8 structural writer 보강 정책을 비롯한 별도 P0는 남는다. 운영 SQL/ACL/Auth/RLS/상품/가격/CTA 변경, migration repair, gate 활성화, 병합·배포 금지. **RELEASE HOLD / PR #1341 DRAFT.**
