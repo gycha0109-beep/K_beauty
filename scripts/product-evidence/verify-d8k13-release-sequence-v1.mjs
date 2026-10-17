@@ -2,6 +2,7 @@
 // D8K-13 deployment-sequence diagnostic. LOCAL FILES ONLY; no network,
 // no SQL, no secrets, no remote state, no mutation. This gate is intentionally
 // a HOLD until the chronology conflict and operational approvals are resolved.
+import {verifyD8k13ExtendedHomeEvidence} from "./verify-d8k13-sec05-extended-home-evidence-v1.mjs";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {readFileSync,existsSync,readdirSync} from "node:fs";
@@ -20,6 +21,7 @@ function basenameVersion(rel){return Number(path.basename(rel).slice(0,14))}
 const args=process.argv.slice(2);
 if(args.length>1||args.some(x=>x!=="--enforce-release"))
  throw Error("D8K13_UNKNOWN_RELEASE_DIAGNOSTIC_ARGUMENT");
+const extendedSec05Home=verifyD8k13ExtendedHomeEvidence(ROOT);
 const v2=content(D8DV2),migration=content(D8K13);
 const v2First=basenameVersion(D8DV2)<basenameVersion(D8K13);
 const createsV2=[
@@ -293,7 +295,10 @@ const result={
  rankingOriginalRevokeGrantAndStatusGuardsMissingFromFirstAppliedHistory:true,
  rankingStatusGuardLaterAppliedAndCurrentlyPresent:true,
  sec05LegacyRpcFunctionsNotHardenedInHosted:3,
- sec05CompleteFailNativeNegativeContractRunPending:true,
+ sec05CompleteFailNativeNegativeContractRunPending:false,
+ sec05CompleteFailScopedNativePg17UserReportedPass:extendedSec05Home.scopedSec05CompleteFailNativePg17UserReportedPass,
+ sec05EightPinnedSourceFilesVerified:extendedSec05Home.sourceCount===8,
+ sec05PrivateTranscriptIndependentlyRehashed:false,
  rankingSnapshotHistoricalAclStepMissingInStoredStatements:true,
  liveAnonymousClaimExplicitNullGuardNotObserved:true,
  laterRankingSnapshotAclRepairAppliedAndObserved:true,
