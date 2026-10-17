@@ -76,7 +76,7 @@ assert.equal(crawler.differencesAreOnlySixEndSemicolonInsertions,true);
 assert.equal(crawler.historicalLexerTokens,5072);
 assert.equal(crawler.repoLexerTokens,5078);
 assert.equal(crawler.fullNativePg17ReplayAttested,false);
-const crawlerEndLines=[...crawlerSource.toString("utf8").matchAll(/\\bend;\\s*\\$\\$/gi)]
+const crawlerEndLines=[...crawlerSource.toString("utf8").matchAll(/\bend;\s*\$\$/gi)]
  .map(m=>crawlerSource.toString("utf8").slice(0,m.index).split("\n").length);
 assert.deepEqual(crawlerEndLines,crawler.expectedRepositorySourceLines,
  "D8K13_CRAWLER_EXPECTED_SIX_END_SEMICOLONS_CHANGED");
