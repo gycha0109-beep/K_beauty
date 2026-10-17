@@ -80,13 +80,15 @@ export function verifyD8k13PreledgerReconstruction(root=ROOT){
   currentSchemaOnly:true,blockingPrerequisites:flags.length,
   full178MigrationReplayApproved:false,hostedWrites:0};
 }
-const args=process.argv.slice(2);
-if(args.length>1||args.some(x=>x!=="--enforce-release"))
- throw Error("D8K13_UNKNOWN_PRELEDGER_RECONSTRUCTION_ARGUMENT");
-const summary=verifyD8k13PreledgerReconstruction(ROOT);
-console.log(JSON.stringify(summary));
-console.log("D8K13_PRELEDGER_RECONSTRUCTION_CONTRACT_PASS_HOLD");
-if(args.includes("--enforce-release")){
- console.error("D8K13_PRELEDGER_RECONSTRUCTION_RELEASE_REFUSED");
- process.exitCode=3;
+if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+ const args=process.argv.slice(2);
+ if(args.length>1||args.some(x=>x!=="--enforce-release"))
+  throw Error("D8K13_UNKNOWN_PRELEDGER_RECONSTRUCTION_ARGUMENT");
+ const summary=verifyD8k13PreledgerReconstruction(ROOT);
+ console.log(JSON.stringify(summary));
+ console.log("D8K13_PRELEDGER_RECONSTRUCTION_CONTRACT_PASS_HOLD");
+ if(args.includes("--enforce-release")){
+  console.error("D8K13_PRELEDGER_RECONSTRUCTION_RELEASE_REFUSED");
+  process.exitCode=3;
+ }
 }
