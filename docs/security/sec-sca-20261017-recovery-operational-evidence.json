@@ -1,0 +1,28 @@
+{
+  "schema": "bejewely.sca-private-publication-operational-evidence.v1",
+  "observedAtUtc": "2026-10-17T11:46:09.311944+00:00",
+  "scope": "SIGNED_PARTIAL_RECOVERY_FORGE_ONLY",
+  "maximumCharge": 0,
+  "billingRecheckSha256": "a1fcf5981d5aac38cd2bdd162bea9ba45b2f14e2a3b1963f32ef76597da3a0a2",
+  "executionSnapshotSha256": "feb5d46e16ea2354eab3f65419b82887f93519fe2a706c5da1a7040fc195a2f4",
+  "authorizationSha256": "f9645509e0bde6412bb9f725b733461af58c6dbee5f96e8e803cc188d2e6ac89",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+  "privateAclReview": {
+    "retainedPackage": "OWNER_ONLY_PRIVATE_UNLINKED_RECHECKED",
+    "pendingPackage": "INITIAL_PRIVATE_UNLINKED_PLAN_REVIEWED",
+    "existingAclChangesApproved": false
+  },
+  "noticeDeliveryReview": {
+    "retainedActualReadback": "PASS",
+    "pendingArchiveNotices": "PREVIOUSLY_VERIFIED_UNCHANGED"
+  },
+  "credentials": {
+    "publisher": "gycha0109-beep",
+    "reader": "jwcha01-lab",
+    "storage": "Windows-DPAPI-CurrentUser same user and machine",
+    "operatorIdentityRecheck": "REQUIRED_BEFORE_WRITE"
+  },
+  "partialFailure": "STOP_NO_AUTOMATIC_RETRY_DELETE_OVERWRITE_OR_PROMOTION",
+  "originalAudit": "FAIL_NOT_WAIVED"
+}

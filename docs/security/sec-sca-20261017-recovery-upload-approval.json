@@ -1,0 +1,72 @@
+{
+  "schema": "bejewely.scoped-upload-approval.v4",
+  "purpose": "SCOPED_UPLOAD_READBACK_ONLY",
+  "responsibleOwner": "gycha0109-beep",
+  "policyDecisionSha256": "bf32e7d03753abde8a24e78e99d3f4d8974e140e453ca5e4d7ea00dd837bba4e",
+  "licensePacketSha256": "d6648013ec8713c867c5dd6f8accfecfcfbfdcb20bf0644f4e35432b78ea4d12",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "publicationLinkage": "UNLINKED_BOOTSTRAP",
+  "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+  "registry": "https://npm.pkg.github.com/",
+  "privateRepository": true,
+  "immutableVersions": true,
+  "originalAuditRequired": true,
+  "auditExceptionApproved": false,
+  "licenseElections": {
+    "braces": "MIT",
+    "node-forge": "BSD-3-Clause"
+  },
+  "uploadApproved": true,
+  "operationalChecks": {
+    "noChargeControlsVerified": true,
+    "privateAclReviewed": true,
+    "noticeDeliveryReviewed": true,
+    "credentialsProvisioned": true,
+    "evidenceSha256": "418dcb36b27eeb048f00d11ded9d12703ad7264d5102d1c56a5f424f6cb388f8"
+  },
+  "redistributionApproval": {
+    "approved": true,
+    "decisionSha256": "1bcb2f279beb2fcfd786900215bdb27ab6fac91fe900c5affe71ef11aae09665"
+  },
+  "rightsReview": {
+    "status": "CLEARED_BY_PROJECT_OWNER",
+    "evidenceSha256": "70c4200b850d936eaf5078499066c905a4cdb8ab5858169c393f4841562860e5",
+    "unresolved": [],
+    "upstreamReplyRequired": false,
+    "informationalGaps": [
+      "Disclose that exact historic copied versions of B-level SJCL, TweetNaCl and other recorded components remain unidentified"
+    ]
+  },
+  "mergeApproved": false,
+  "productionApproved": false,
+  "expiresAt": "2026-10-17T20:19:28Z",
+  "readbackTargets": {
+    "braces": {
+      "name": "@gycha0109-beep/braces",
+      "version": "3.0.3",
+      "sha256": "37d2604f280a0274cc26b7251e059111d36819430bc5bad578c2bdcba718b351",
+      "sha512": "sha512-WOTPNyziSBWllIVOCNrwLkyPknqTv+YZ7kpi+xeIuIs6S+Tv11O2m46QKBUnilkpw3bodnvVL02DTvKW4gbMnw=="
+    },
+    "node-forge": {
+      "name": "@gycha0109-beep/node-forge",
+      "version": "1.4.0",
+      "sha256": "353690e06c92704162c7b622fca9a2e0d4007c6bdbec6603f6906b58a02dae34",
+      "sha512": "sha512-kvIyL6GE6L1BmFmoskRYpbIAF7cJDiio1g9SWBKPqwl4J6SP/UBJPYVnkOjhRD7k50fwh0ZlIE0FYwCAMAo+KA=="
+    }
+  },
+  "downloadTransport": {
+    "profile": "GITHUB_NPM_SINGLE_BLOB_REDIRECT_V1",
+    "maximumRedirects": 1,
+    "forwardAuthorization": false
+  },
+  "recovery": {
+    "retainedOriginalName": "braces",
+    "pendingOriginalName": "node-forge",
+    "previousApprovalSha256": "c33eb13067ec0b8781181b84da4bf7689ef77e0a15998a2e8845f2f3ec2cec2a",
+    "previousSignaturesSha256": "8e78c687b92b689b27f703c81d871f69ac8dc98841f4c26748de0e4bca9e0669",
+    "previousSnapshotSha256": "22098b93a46a97d8a71b1cc4c6c24f9f02d08723b84396d4dc2034e3db113eb5",
+    "retainedReadbackEvidenceSha256": "6f11c00a29af320c9eded7a6f722a64c68adad4a8f8cfcd54aabbfe1629d294a",
+    "executionSnapshotSha256": "feb5d46e16ea2354eab3f65419b82887f93519fe2a706c5da1a7040fc195a2f4",
+    "authorizationSha256": "f9645509e0bde6412bb9f725b733461af58c6dbee5f96e8e803cc188d2e6ac89"
+  }
+}

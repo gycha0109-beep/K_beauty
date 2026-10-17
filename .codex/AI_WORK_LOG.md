@@ -3189,3 +3189,173 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Mobile typecheck/foundation/routing/config, Metro export, Android prebuild/native shell, Next production build PASS. Clean SDK/JDK17 Gradle debug build PASS in19m31s; APK SHA9771d52c99d759a16ae7f84fcae742edc11d91dcb4d4f5bb222df14aec621205. Device/API/Auth smoke NOT_RUN; requires approved isolated environment, no public values guessed.
 - Final repair: distinguish physical installed SBOM from 720-entry historical lock catalogue; include installed version/license verification, post-lifecycle workspace census and local public-page smoke. Isolate every private file-tarball cache under temp and disable patch jobs' npm cache export; initial job logged cache hit/no save, no private artifact upload observed. No native/app-output cache export.
 - B1/B2/B3 technical PASS; B3 release/owner/legal/maintenance HOLD; B4 full installation PASS but raw audit/release HOLD; B5 APK PASS/device HOLD; B6/B7 HOLD/not authorized. Companion independent Next15.5.27 official patch PR#1294 lowers moderate counts only. Final code/CI revalidation pending. Details docs/security/sec-sca-20261014-b4-full-graph-evidence.md.
+
+### 2026-10-14 — B6 executable release readiness and B7 rehearsal
+
+- Execution/diagnosis, security track; separate stacked B6 PR preserves #1288 validated graph and independent official Next #1294. Product/package/patch sources unchanged; B4/B5 exact c8153c35 evidence reused with automated scope equality check.
+- Implemented immutable candidate archive/source/dist/LICENSE/NOTICE/SBOM/provenance verification, four-role Ed25519 admission with organization-pinned trust, private publish/readback interface and disposable product graph staging. No upload, secret provisioning, audit exception, main merge or production execution.
+- Local offline admission/negative tests PASS (14); new clean runner + independent replay and CodeQL validation pending exact published HEAD. Original raw audit stays HIGH22/19, CRITICAL0, FAIL.
+- Fresh official registry/advisory/consumer triage: no corrected target release; latest Expo signing and micromatch still require affected packages. Partial chokidar/file-map removal does not remove all paths. Required registry/legal/maintenance/security decisions and operator commands documented in B6 release readiness runbook.
+- Merge-tree detected work-log-only #1288/#1294 conflict; Next entry relocation now preserves original EOF and combined tree merges without conflict. Local SDK/JDK/ADB/emulator absent; no approved mobile API/Auth target established, runtime smoke NOT_RUN.
+
+- B6 closeout: implementation 477aad86fe5e317e239e2cb99fdb6b5be21c3013 / CI38523027022 admission17, npm ci, Main Health, source/browser and real release bundle verification, independent digest replay and CodeQL PASS; PIE38523027758 PASS. Canonical security gate remains FAIL, full22/0/13 and prod19/0/11. Candidate manifest ec607c669b4242ee163b9b23d67c323750646efe4989f324ed544dd4c1eb4deb reproduced independently; no uploaded/retained archives or real approval. Next d937ddc8 final ordinary CI/build/smoke PASS, audit FAIL; combined merge-tree conflict-free. Detailed results/approval commands/remaining external boundaries in B6 runbook and PR #1299. Local broader Windows consolidation invocation was unavailable due existing nested CLI JSON/platform behavior; exact Linux Main Health including consolidation passes. This final delta is documentation only.
+
+## 2026-10-15 — scoped private patch technical validation (release HOLD)
+
+Watchtower-Track: security
+
+사용자 scoped 후보/격리 그래프 기술 승인과 중단 후 재개 지시를 기록. 원본 code/browser/LICENSE 바이트 및 advisory 감사 보존, package.json 네 필드만 명시 변경. 별도 scoped full-graph harness/실제 alias+override resolver/NOTICE+SBOM+SHA 대응/서명 검증 CLI/readback 검사와 기존 readiness CI의 full Android·독립 install replay를 구현. 로컬25 테스트·syntax·diff PASS; 실제 scoped 그래프/Android CI는 새 HEAD에서 PENDING, 기존 B4/B5 PASS로 대체하지 않음. Root/workspace 제품 manifest/lock과 기존 B4 verifier 유지. Original npm audit/security gate FAIL 유지; scoped scanner silence는 해결이 아님. DB/Auth/RLS/Storage/Provider/Payment/Production 실행 N, secret 인터페이스 설계 Y/실제 접근 N. 업로드·비용·법적 최종승인·예외·병합·운영 변경 미승인/미실행. 근거: docs/security/sec-sca-20261015-scoped-graph-validation.md.
+
+- Scoped first CI c5932463 /38661347090: two clean runners scoped manifest20abd1ff... identical, original code/browser/LICENSE/NOTICE/SBOM and direct aliases PASS; CodeQL/PIE PASS. Full graph correctly FAILS stale original same-version integrity before ci; Android NOT_RUN. Repair adds explicit root alias edges and $ override references, actual npm install refresh, no hand-written target lock or weakened hash check. Original full22/prod19/C0 audits remain FAIL. Further signer type/normalized-owner controls: local26 tests PASS; fresh resolver/Android CI pending.
+
+- Scoped technical closeout f2f9280d / CI38662014291:26 tests/Main Health/CodeQL/PIE, actual aliases+overrides/69 installed files/4 consumers/683SBOM, all11 checks with Android APK33eeed81 and independent installation/digest20abd1ff PASS. Original HIGH22/19+M13/11+C0/exit1 remains FAIL; scoped HIGH0+M17/14/exit1 is missing original advisory coverage, not remediation. Actual GitHub private readback/ACL/quota, product adoption/device/API/Auth NOT_RUN. Package upload/cost/final legal/exception/main/prod still unapproved; detailed immutable receipt versioned in scoped-graph-evidence.json. This closeout is documentation-only.
+
+
+## 2026-10-15 — B6 MIT / BSD-3-Clause license review packet
+
+- User authorized license review basis only: braces MIT; node-forge BSD-3-Clause. No legal clearance, publication, spend, exception, main merge or production authorization.
+- Preserve original B6 archives and all source/browser/LICENSE bytes; add a hash-bound scoped supplemental NOTICE, embedded-code SBOM and rights-review inventory. Capture 49 source notice files, complete upstream licenses, JSBN custom terms and base-x/PKCS1/DES/AES/TweetNaCl origins.
+- Explicit legal HOLD for OpenSSL origin/version, unspecified DES/OAEP BSD variants, public-domain claims, final standalone browser notice delivery and named independent reviewer. Four roles / two owners remain mandatory.
+- Local tests 29/29 PASS; frozen 49-source notice reconstruction and removed-notice negative control PASS; diff check PASS. New producer/replay CI pending exact commit; prior runtime/APK proof remains f2f9280d /38662014291.
+- Original audit fullHIGH22/prodHIGH19/C0 FAIL; scoped scanner gap is not remediation. DB/Auth/RLS/Storage/Payment/Secret/Production execution N; no hosted app/provider mutation.
+
+
+## 2026-10-15 — User-approved sole project owner policy v2
+
+- Human explicitly authorized one owner to assume security/license-redistribution/maintenance/distribution responsibility. This changes internal approval governance only; not real redistribution/upload/cost/exception/merge/production authority.
+- Implement explicit v2 trust and original/scoped approval schemas, pinned human decision and licensing packet, purpose/role-separated Ed25519 signatures. Preserve v1 two-owner legacy admission; reject cross-version trust/domain replay and wrong owners. Maintain four responsibility signatures, key revocation/expiry, all original artifact/provenance/notice/SBOM/CI/readback/audit checks.
+- Require separate future signed upload/final redistribution grants and cleared rights evidence before v2 admission. Checked-in examples remain deliberately blocked. No live keys, credentials or final rights approval created.
+- 39 local tests PASS, 49-source licensing packet reconstruction PASS, diff check PASS. New exact-HEAD producer/replay CI pending. Supplemental licensing responsibility wording changes candidate digest; tarball/source/browser/LICENSE bytes must remain unchanged.
+- Historical rights research locates AES introduction 521fd6018d350a54c5f3b5ab5258a145bcc613e0 (2010-07-12) and DES introduction 0998bd93337d227be7b30db4b426f05d2e33f5e1 (2012-03-29), both already ambiguous. Ed25519 470793c0ac7217e512ba3775cd75d106e7fb2b64 and TweetNaCl v0.14.5 Unlicense strengthen provenance but do not identify exact copied revision. OpenSSL/DES/OAEP/jscrypto and standalone notice delivery remain HOLD.
+- Prior exact2b9dfb8a CI38667696695 producer/replay/CodeQL/PIE/web/mobile/APK PASS; original fullHIGH22/prodHIGH19/C0 gateFAIL. No audit waiver or app graph adoption.
+- Boundary: DB/Auth/RLS/Storage/Payment/Secret/Production execution N. Protected scope is explicitly user-authorized internal policy implementation, without hosted provider or credential mutation.
+
+
+## 2026-10-15 — Public primary-license findings without upstream reply gate
+
+- Human explicitly refused posting an upstream inquiry. None sent; no author reply or second human is required by the examined license texts. Actual license conditions and separate real redistribution/upload/merge/production approval remain mandatory.
+- Recovered original DES author's public BSD2 clarification/full conditions and existing Forge issue1078. Recovered SJCL initial commit136512284d923390c115a735746b965c12f39fd0 COPYRIGHT/README BSD2 and OpenSSL1.0.0 AES component public-domain declaration, plus TweetNaCl0.14.5Unlicense. Preserve six primary extracts and SHA in public findings, expanded NOTICE and SBOM; distinguish exact-lineage assurance gaps from unmet external conditions. OAEP exact BSD conditions remain owner review OPEN, not falsely cleared.
+- SourceForge WebRSA download returns HTML/nonmatching published archive SHA: rejected before parsing; insecure redirect not followed. No response or missing original was treated as approval or confirmed violation.
+- V2 permits explicitly disclosed informational lineage gaps, rejects unmet external conditions and invented reply gate; separate final legal/upload approvals still absent. Existing owner policy authorization is not broadened.
+- Local45 tests PASS, frozen49-source expanded notice/public-source reconstruction PASS, syntax/diff checks PASS. New real browser notice kit colocates six pinned browser files + LICENSE/NOTICE/SBOM/findings and SHA manifest; omission/tamper/independent-digest controls run in CI, PENDING until exact logs.
+- Product archive/source/browser/LICENSE bytes unchanged; only supplemental licensing resources/candidate manifest change. Original audit fullHIGH22/prodHIGH19/C0 gateFAIL, scoped scanner silence not remediation. No package upload, cost, exception, merge, production or external communication executed.
+
+
+## 2026-10-15 — Owner-requested SCA-only CI scope
+
+- Removed embedded Current Main Health and crawler installation from B6 producer; PIE shadow jobs excluded only for the B6 preparation branch at the owner's explicit request.
+- Added fail-closed runtime scope resolver with exact-head successful producer/replay proof at 9427fc637b8c26a231511671a5560acfe1963c05 (run38689645912). Reuses only unchanged web/Expo/Metro/Android runtime evidence; all current-head install/hash/license/consumer/audit/replay checks and CodeQL remain. Changed or unknown runtime/toolchain inputs or unavailable runner proof require full builds.
+- Local focused tests50 PASS; workflow responsibility-map and overlap checks PASS. New exact-head GitHub CI pending; original full HIGH22/production HIGH19/CRITICAL0 audit FAIL is neither waived nor converted to PASS. No publication, spending, exception, merge or deployment.
+
+
+## 2026-10-15 — SCA-only CI final proof and original OAEP recovery
+
+- Exact implementation729b1b8bcad4eaeaf93915cec19f3bae30be77d1 CI38692991286:50 tests, producer94s, independent replay87s, CodeQL PASS;184s critical path. PIE SKIPPED, no embedded health/crawler install, runtimeRequired=false with authenticated9427 runtime proof. OriginalHIGH22/prodHIGH19/C0 gateFAIL, scopedcoveragegap not remediation; both candidate/noticekitdigests matched.
+- Recovered original WebRSA1.0 archive using correct official path; four HTTPS mirrors match publishedSHA256d64c580201891195236a7942f16a86ee6bc7a053d23abef7d2ffeb63178e9343/28732bytes. Nine file inventory/header preserved. Official CVS snapshot supports original lineage; selected source hashes only, administration files excluded. Both original source and README say BSD but no full variant/conditions; no legal clearance invented. Supplemental docs only; frozen candidate/package/browser/LICENSE bytes unchanged. npm latest remainsbraces3.0.3/forge1.4.0, no official patched release.
+- Documentation delta only, no repeat app/Android run. No external inquiry, upload, cost, exception, merge or deployment. Owner final redistribution decision and actual registry/readback authority remain separate.
+
+
+## 2026-10-15 — Conditional review authorization, not redistribution
+
+- Human owner authorized prepublication checks/approval-record preparation ONLY and expressly withheld legal conformity, actual redistribution/upload/cost/exception/merge/production. Recorded exact instruction separately from unchanged signed policy; no fabricated signature or legal clearance.
+- Added offline conditional review verifier with SHA-bound original OAEP/public-license evidence and unchanged frozen packet. Negative controls reject unauthorized flags, closed rights, reply/contact requirements and substitution into upload admission. Added scoped prepublication identity/SHA/private-metadata/readback plan emitted on both actual candidate runners; no network/upload option. Legacy unscoped publisher is not usable on GitHub npm; scoped final operator and real notice delivery remain explicitly unperformed.
+- Local55focusedtestsPASS, syntax/diffchecksPASS. Candidate/source/browser/LICENSE/NOTICE/SBOM digests unchanged. New exactHEAD relevant CI pending; no PIE/generalhealth/crawler or unnecessary Android run. OriginalHIGH22/prodHIGH19/C0 FAIL preserved; no scoped scanner silence equals remediation.
+- DB/Auth/RLS/Storage/Payment/Production executionN; credential accessN. No upstream inquiry sent, re-requested or awaited.
+
+
+## 2026-10-15 — Conditional CI closure and dormant scoped operator
+
+- HEAD3f92a11eb32c294226c4a0d4bc3c379c3857807d CI38695726629:55tests,producer,replay,CodeQLPASS; both emit VALID_LIMITED_REVIEW_ONLY/executionReadyfalse and unchanged candidate907b4229.../noticekit17b89c16...; original fullHIGH22/prodHIGH19/C0 FAIL. No actual registry operation.
+- Implemented separate dormant scoped publication operator; not called by CI. Existing actual final signed v2 admission and pinned trust plus signed quota/nocharge/privateACL/noticedelivery/credential evidence required, all current template fieldsfalse. Default signed dry-run has no credential/network use; execution additionally requires explicit flag and isolated Linux. Checks both identities before mutation, revalidates admission/trust before each publish, exact scoped/original bytes, GitHub private metadata/linkage and anonymous+valid-unprivileged denial; failure stops without unpublish/overwrite/product promotion, disposable credentials cleaned. Actual operator network path remains NOT_RUN.
+- Local59focusedtestsPASS (four synthetic orchestration controls), workflowmap/overlapauditPASS, syntax/diffPASS. Added relevant operator path filters only, all original security checks retained; unchanged runtime proof reused. No upload, spend, credential access, legal clearance, exception, merge, production or author inquiry.
+
+
+## 2026-10-15 — Approved GitHub private target, read-only account preflight
+
+- Owner selected GitHub Packages scope@gycha0109-beep/K_beauty source linkage and authorized READONLY preflight only. No settings/payment/token/publication permission granted.
+- Repository API verified PUBLIC, ownerUser. Package/accountbilling/Actions-settings endpoints blocked by connector allowlist, not empty or0usage; IAB billing unauthenticated404/sign-in, no logged-inbrowser session or ghCLI. No credentials sought/provisioned. Actualplan/quota/budget/hardstop/packageACL UNKNOWN; exactowner read-onlypaths documented.
+- OfficialGitHub warning: publicrepository privatepackageActionsaccess may extendtoforks. Repositorylink/privatevisibility/ACL/Actionsgrant distinct; no automaticprivateaccessPASS or broadGITHUB_TOKENgrant. Recorded authentication alternatives and actualrisk for owner assessment before config/publication.
+- Verifiedpair450440bytes,10pairs4504400bytes/1000downloads450440000bytes excludingnotices/otherstorage/retries. $0 onlyifsufficientconfirmedquota+no-spendcontrol; noactualcostguarantee. Docs-onlydiffcheck/arithmeticPASS. Priorimplementation12512c84... CI38696879808 59tests/CodeQL/producer/replayPASS; originalHIGH22/prodHIGH19/C0 FAIL. No unnecessaryfullgraph/APK/PIE rerun. MonitorremainsPAUSED.
+- DB/Auth/RLS/Storage/Production mutationN, externalGitHubaccountreadauthorizedY butblocked; actualcredentialaccessN. No fee, setting, upload, exception, merge, production or upstream inquiry.
+
+
+## 2026-10-15 — Owner-authenticated read-only registry preflight follow-up
+
+- Reused owner's authenticated browser and marked handoff to preserve it. Actual account billing values stored only in local outputs/github-authenticated-account-preflight.json, not the public PR/work log. Plan/entitlements and existing blocked paid-usage budget verified. Exact remaining physical shared storage not inferred from dollar discounts. Current Packages usage filter shows no data and profile has no packages.
+- Personal account Default Package Setting source-permission inheritance is ENABLED, applies to NEW Container/npm/rubygems/NuGet packages. Current public source fork/token controls read locally. Proposed disabling future default inheritance requires separate owner approval; no toggle/Save, token, payment, package publish, ACL grant or repository setting mutation performed. Current UI left on that precise control.
+- Updated prior access-limited docs as historical, retained source/operator proof12512c84... CI38696879808 59tests/CodeQL/producer/replayPASS. Docs-onlydiffPASS, no unnecessaryruntimeCI. OriginalHIGH22/prodHIGH19/C0 FAIL and OAEPopenrights unchanged; actualprivateACL/readback/redistribution NOTRUN.
+
+
+## 2026-10-15 — Package-specific access investigation; global change declined
+
+- Owner refused account-wide inheritance change. Checkbox remainsenabled; loginbrowserkeptopen. Earlier global-change recommendation withdrawn; no future request unless specificrouteinsufficient.
+- OfficialGitHubprimarydocs distinguish privatevisibility/sourceconnection/ACLinheritance/Actionsgrant. Documented publishunlinked-private then UIconnect retainsACLwithoutautomaticinheritance. No globalsettingrequired bythis documentedroute. Publicsource→privatepackage supported; grantingpublicrepoActionsRead stillhasforkrisk, notprivateisolationproof.
+- Staticcandidate inspection confirms existingrepositoryK_beauty prelinkedmetadata, so cannot silently call originalcandidate unlinked. Realbootstraprequiresnewreviewedhashes/metadataonlysourceequality/stagedinitialvsfinalreadback; currentcandidate/source/browser/LICENSE/notices notchanged.
+- Syntheticnonpublishablenpmpack--offline--ignorescripts probePASS: repositoryabsent, customsourceprovenancekept, JSbytesidentical, private:trueblocksprobeupload. SHA c4af055208f21026e55d174534b4fb53e7852ab91a5e7a88733342b94c47a0ce/913bytes. LocalmetadataevidenceONLY; noGitHubprivateACL/liveinstallationclaim. Docs/diffPASS, noextraneousCI/runtimeAPKloop.
+- No settings/token/fees/upload/exception/merge/prod/authorinquiry. ActualOAEPtermsOPEN, originalauditHIGH22/prodHIGH19/C0FAIL. All prior source/independentcontrolsretained. Ownerlocalreceiptsstaylocal.
+
+
+## 2026-10-15 — Owner-adopted unlinked bootstrap candidate implementation
+
+- Owner explicitly adopted unlinked-private→individualACL→laterK_beautylink, allowed metadata-only real candidate generation/CI, forbade globalsettings/upload/token/cost/merge/prod. Recorded limited decision and pinned its SHA into newmode manifest.
+- Added UNLINKED_BOOTSTRAP metadata mode: top-level repository removed, source URL retained in custom provenance; exact inventory/non-package.json patchedsource/browser/LICENSE bytes enforced. Preserved legacy PRELINKED verifier and historical archives. New derived license-review/SBOM rebuilds frozen packet first, preserves complete notice text and original provenance, records old/newarchiveSHAlineage. Browser notice kit now takes checked newcandidate packet/digests. No pinned original patch hash or original audit relaxed.
+- Current graph producer+independent replay generate newmode realpackages, install lifecyclemodes/allworkspace aliases and compare newcandidate/kit hashes. Local63testsPASS/syntax/diffPASS. Local upstream archive accidentally selected for a preliminary pack was correctly rejected by oldpatcharchiveSHA; nonewlocalarchivePASSclaimed. LinuxCI realcandidate/SHA pending.
+- Added staged privacy metadata checks: initial mustbeprivate+unlinked; final requiresK_beautyprivate and separate reviewed noninheritance/Read-onlygrant/fork evidence. Semantic tests are synthetic NOTliveACLproof. Dormantoperator requiresnew signedcandidate+derivedpacket+bootstrap authority and returnsPRIVATE_UNLINKED_ONLY/HOLD_OWNER_ACTION_NOT_RUN after initialstage, noautoACL/link/product. Actualservice upload/link/readback NOTRUN.
+- All externalexecution authorities remainfalse; OAEPtermsOPEN; fullHIGH22/prodHIGH19/C0 FAIL remains. Runtime reuseonlyunderunchangedcode/input/runnerproof, noPIE/generalhealth/crawlerloop. No environment/credential/settings/main changes.
+
+
+## 2026-10-15 — Unlinked bootstrap exact-head CI closeout
+
+- Tested implementation640d607b0e48bbdb1488836e931efd0298d6cfe7, run38703130197: admission63tests/CodeQL/producer/independent replay PASS. Overall workflow FAIL from original advisory gate, fullHIGH22/MOD13/C0 and productionHIGH19/MOD11/C0, exit1. Scoped HIGH0 is scanner namespace blind spot, not remediation.
+- Independent candidate615d90ccf1b35a36d7f02a974741789d7be164fa85236139920fb059e5a56bae, derivedpacket6855a6f1fd6cd2345a5a9e2e5a7171516051456428a4d2534965d1d1ffd85529, browserkit a6ead593b28ebe679493660973a907145384e0b0f49e09599c14ca5659903981 match. Exact archive identities and 69-file/consumer/notice-negative-control evidence recorded in docs/security/sec-sca-20261015-unlinked-bootstrap-candidate.md.
+- Runtime9427/run38689645912 reused through input-proof resolver; no new APK/device claim. PIE skipped, unrelated general checks excluded. Documentation-only closeout does not rerun unchanged runtime builds.
+- Original patched source/browser/LICENSE/full notices unchanged. Global inheritance/account/package settings unchanged; upload, token issuance, actual registry readback, post-link ACL/privacy/Actions proof, final rights clearance/exception/merge/prod NOT_RUN or unapproved. OAEP exact terms OPEN. Independent technical preparation complete; pause automated CI follow-up.
+
+
+## 2026-10-15 — Final prepublication review and in-tarball notice delivery
+
+- Requeried main and PR1288/1294/1303/1299: heads unchanged, none merged. Exact05b02/run38704414426 complete63tests/CodeQL/producer/replayPASS; originalHIGH22/prodHIGH19/C0 gateFAIL and independent newcandidate/packet/kit match. Source/runtime proof reused, no fresh APK/device claim.
+- Found npm publisher transmits tarballs, not separate full-notice kit. Added explicit bootstrap noticeDelivery mode with frozen full third-party notice inside both tarballs; only allowlist addendum and metadata change, strict original source/browser/LICENSE equality. Legacy candidate preserved, new publication SHA/packet/kit must be reconstructed and signed. Operator rejects external-only-notice candidates before registry operations. No actual upload.
+- Local66 focusedtestsPASS (notice omission/same-size mutation/extra/source drift, metadata allowlist, early operator rejection), syntax/diffPASS. New independent CI pending. No security gate disabled; no unrelated workflow introduced.
+- Rechecked official GitHub later-link ACL retention and publicrepository Actions fork warning. Broad repo grant is not admitted as fork isolation; actual ACL/readback NOT_RUN. Narrow OAEP applicable-terms uncertainty still material/open; separate from informational history gaps/internal one-owner policy. No upstream contact or mandatory reply/lawyer requirement invented. Final review documents exact decision and no external execution authority.
+
+
+## 2026-10-15 — Final prepublication notice-delivery CI completed
+
+- Implementationef16f680ee956be36720d63a1574b1f42802047f run38707274666:66tests,CodeQL,producer116329688896 and independent116331157810 PASS. Both installed71files(11+60) incl identical embedded fullnotice1cdb4fdd793e5789f57293280ab2af3e88dde1c7a849c7da10dc2754c87ca714; lifecyclemodes/4consumers/RSA/Expo/kitnegativecontrolsPASS.
+- Newcandidate b2f6965a4d05a30790cbf3f0a954c27cd8261e6a1bddc19bd5f13f36eb27b816, packet c2c930f35197243a8dd3317e08358d0fb3983423c98652f82bad5b612df8e116, kit94026dc9d62d8a48cdb80820568c1267d9bb2c4e83439ce5a27632d4e003f947 match bothrunners; completearchiveSHAs in finalprepublicationreview. Originalcode/browser/LICENSE/sourcearchive hashes unchanged. Runtime9427proof reused; nofreshAPK/deviceclaim.
+- OriginalfullHIGH22/MOD13/C0,productionHIGH19/MOD11/C0 rawaudit exit1; overallworkflowFAIL unchanged. ScopedHIGH0blindspot notremediation. Actualupload/readback/postlinkACL/Actions/device/APIAuthNOTRUN. No tokens/settings/cost/merge/deploy.
+- Independent technical preparation complete; automationPAUSED. OAEP preciseBSDterms remainmateriallyOPEN; ownercall needed for narrowed resolution choice beforeForgepublication. No mandatoryauthorreply/secondhuman/lawyer licensecondition invented. No realredistribution or finallegalapproval inferred.
+
+
+## 2026-10-16 — Original OAEP release revalidated; publication authority acknowledged
+
+- Latest remote21a804623eb2b3ea5dedcb4b7a941740fd2b9a21 CI38724954981:67tests/CodeQL/producer/replayPASS, originalauditgateFAIL; existing notice-containing candidate/kit unchanged. No redundant runtime build.
+- Fresh netix official WebRSA archive28732bytes SHA d64c580201891195236a7942f16a86ee6bc7a053d23abef7d2ffeb63178e9343; all9fileSHA match earlier authenticated recovery. Corrected stale followup memo that incorrectly still described archive acquisition as open. Originalheader/README only genericBSD; fullconditions/variant NOTrecovered. No fakeclearance or frozenpacket changes.
+- Fresh live original-name audits after exactremote package/lockblob equality:fullHIGH22/MOD13/C0,prodHIGH19/MOD11/C0,exit1; rawJSON outputs retained and SHA summary committed. Audit-only refresh, notnewnpmci. Latestofficialregistry3.0.3/1.4.0, advisories nofixedversion.
+- Existing loggedinUI read-only:Packages paidusageblocked, profile no packages, globalinheritanceunchanged. Current operator credentials/trust env absent, no credentials printed/issued. MinimalclassicPAT setup guide prepared, not prematurely requested while rightsremainblocked. No upload/ACL/config/payment/main/product/prod change.
+- Ownerprivatepublicationauthority acknowledged conditionalonactuallicense/executableprerequisites. No renewed generalapproval request, paidcounsel gate or authorreply gate. ActualForge applicableterms remainHOLD; realreadback/productinstall/device/APIAuthNOTRUN.
+
+
+## 2026-10-16 — OAEP implementation replacement
+
+- User-authorized parallel A/B/C resolution selected B: complete pinned MIT node-rsa OAEP + Forge synchronous adapter; historical WebRSA terms not falsely cleared. A exhausted and full Expo Forge replacement wider.
+- Original B6 archives/RSA patch/LICENSE and non-OAEP source preserved; new backend/MIT license + six browser files rebuilt. Separate candidate/review/SBOM/notice kit and guarded publisher profile implemented.
+- Local70 admission tests,480 OAEP assertions,realChromium2x28,duplicate packs and4 real candidate/kit tamper controls PASS. Source-changing full graph/Android/independent CI PENDING. Exact local hashes recorded in oaep-replacement-local evidence; no new final product PASS.
+- Existing private-publication authorization recognized, credentials/real pinned signatures absent; no fake trust/upload/settings/payment/waiver/main/product/prod change. Original HIGH22/prodHIGH19/C0 FAIL remains.
+
+
+## 2026-10-16 — Review owner-encrypted retention and close identity-binding defects
+
+- Latest remote834dba0 / run38858746189 reviewed; admission+CodeQL PASS, producer still running, original audit FAIL. Read-only UI confirms owner recipient Actions variable absent. No key/variable/token/account setting created.
+- v2 authenticates candidate/source metadata with GCM AAD; independent expected SHA and actual archived manifest checked before plaintext write. Legacy unauthenticated receipt rejected. Public-only PEM, bounded physical inventory, checkout-safe key/decrypt destinations, exact two-file upload guard and adversarial valid-envelope test added.
+- Retention called after both full-build and authenticated unchanged-runtime graph paths. Source-changing52e7836 producer/replay verified from GitHub logs; fresh APK and complete platform checks PASS there. Runtime reference advanced to that actual proof without gate waiver or redundant APK rerun.
+- Local79 admission tests PASS; actual configured owner CI encryption/readback NOT_RUN until public variable registered. Candidate code/archives/license packet unchanged; final legal/signature/auth/nocharge/ACL prerequisites remain separate from private publication authority.
+
+### 2026-10-16 / SCA actual-distribution lineage remediation
+
+- 실행형, PR1299 remote720566f4 baseline preserved. Audited actual owner-decrypted800e candidate (75 files) and matched all6 rebuilt baseline browser files; normalized compiler closure recorded.
+- C: opaque Flash/Flex SWF omitted; copied isEmpty/formatSize helpers replaced with native operations/unit table. B crypto AES/SJCL/OpenSSL/TweetNaCl/DES retained; full PHP.js and webpack notices added; 9 pinned primary resources and A/B/D report delivered in new tarballs/kit/SBOM.
+- Local85 admission tests,480 OAEP,2x32 Chromium,157 utility,7 primary full-function matches,8 actual packet/kit negatives PASS; new scoped9feebf17 local, independent CI/full runtime Android PENDING. Old800e still verifies, no old packet repin.
+- Original fullHIGH22/prodHIGH19/C0 FAIL remains; no legal/release approval/signature fabrication, package publication, token/private-key access, payment/ACL/product lock/main/prod changes.
+- Details: docs/security/sec-sca-20261016-distribution-lineage.md and JSON.

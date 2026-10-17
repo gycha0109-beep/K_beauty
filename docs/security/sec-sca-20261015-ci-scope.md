@@ -1,0 +1,15 @@
+# CI scope for the private SCA release preparation track
+
+The owner explicitly requested only CI needed for this track.
+
+Always execute on the current exact HEAD: original full/production security audit and gate (FAIL remains FAIL), release admission/negative controls, source/patch/browser/archive/LICENSE/NOTICE/SBOM verification, real full root/workspace install and consumer regressions, browser-notice omission/tamper checks, independent clean-runner digest/install replay and CodeQL. No package publication or exception is enabled.
+
+Removed from the SCA producer: canonical Current Main Health and the crawler dependency installation used solely by that health suite. Other tracks and main-push health workflows remain unchanged. PIE profile-preflight has an explicit job condition excluding only `fix/security/sca-b6-release-readiness-20261014`; its reusable shadow job consequently does not execute for this track. Check names remain present as skipped, not forged successful validations; security gates and branch-protection settings are unchanged.
+
+Web/Expo/Metro/Android runtime builds are conditional. For release policy/notice/CI-only changes, reuse actual completed runtime evidence at HEAD `9427fc637b8c26a231511671a5560acfe1963c05`, run38689645912, APK `c24e9b83dafd2f2fac03e9240fca59c0a74b6b666811a0b15bfc87763f02175e`. The scope resolver checks reference ancestry, changed paths, actual Node version, Node/JDK configuration and authenticated GitHub proof of both exact-head successful producer/replay jobs. The reference workflow's overall audit failure is not treated as a success or reused audit result.
+
+App/workspace/lock/vendor/source/browser-provenance changes, unclassified inputs, changed toolchain or unavailable/denied runner proof require a fresh full runtime build. Current source manifests and installed bytes are always reverified. Only the expensive runtime suite is reused: both current-HEAD isolated graph installs, raw audits, consumers, source hashes and independent artifacts still execute. A reused build is logged as `SCA_CI_RUNTIME_SCOPE` with its actual tested reference SHA, run and APK; no current-HEAD Android PASS is invented.
+
+The producer installs JDK and sets Android-required mode only when full runtime validation is needed. Otherwise its existing install-only mode returns an install receipt before build commands; independent replay is unchanged. The new token permission is read-only Actions access for verifying the old runner proof; no additional secret or credential provisioning is introduced, no token is logged, redirects are forbidden, API errors fail closed to full runtime execution.
+
+Focused tests cover release-only reuse, every relevant runtime input family, unknown paths, missing/non-ancestor references, denied API evidence, Node/JDK changes and failed/wrong-head reference jobs. Local tests50 PASS; workflow registry and overlap audit PASS. Exact GitHub execution still needs confirmation on the new commit; the expected routine critical path is the two clean candidate/replay runs instead of another full Android build.

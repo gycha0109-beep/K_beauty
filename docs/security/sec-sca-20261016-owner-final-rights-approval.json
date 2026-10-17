@@ -1,0 +1,74 @@
+{
+  "schema": "bejewely.owner-final-rights-decision.v1",
+  "purpose": "RIGHTS_REVIEW_FOR_EXACT_REPLACEMENT_CANDIDATE",
+  "status": "APPROVED_BY_PROJECT_OWNER_LIMITED_RIGHTS_REVIEW",
+  "responsibleOwner": "gycha0109-beep",
+  "recordedClientDate": "2026-10-16",
+  "authority": "Explicit project owner instruction in this conversation; a human approval record, not a cryptographic signature",
+  "ownerStatement": "BEJEWELY SCA B6의 최종 권리 검토를 프로젝트 소유자로서 승인한다.",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+  "scope": "Final rights review of this exact candidate and this exact review packet only",
+  "automaticTransferToOtherCandidates": false,
+  "conditions": [
+    "Preserve all verified license and copyright notices",
+    "Disclose that exact historic copied versions of B-level SJCL, TweetNaCl and other recorded components remain unidentified",
+    "Do not interpret as a legal conformity guarantee or security audit PASS",
+    "Apply only to the candidate and review packet identified by these exact SHA256 values"
+  ],
+  "artifacts": [
+    {
+      "name": "@gycha0109-beep/braces",
+      "version": "3.0.3",
+      "sha256": "37d2604f280a0274cc26b7251e059111d36819430bc5bad578c2bdcba718b351",
+      "files": 13
+    },
+    {
+      "name": "@gycha0109-beep/node-forge",
+      "version": "1.4.0",
+      "sha256": "353690e06c92704162c7b622fca9a2e0d4007c6bdbec6603f6906b58a02dae34",
+      "files": 64
+    }
+  ],
+  "retainedBCodes": [
+    "AES jscrypto/SJCL",
+    "OpenSSL AES",
+    "TweetNaCl Ed25519",
+    "DES",
+    "PHP.js number formatter",
+    "Carta PRNG fallback"
+  ],
+  "licenseElections": {
+    "braces": "MIT",
+    "node-forge": "BSD-3-Clause",
+    "node-rsa OAEP replacement": "MIT"
+  },
+  "technicalEvidence": {
+    "sourceHead": "ba12b646f89f2f5eab610b4ed79c2cd45a4758ee",
+    "run": 38869911393,
+    "producer": 116871316799,
+    "independent": 116878120553,
+    "apkSha256": "5f5db368829e91214a0c1a8cb8234a822a9b959dd75ace2428e1a1b7a002ec41"
+  },
+  "ownerFinalRightsApproval": true,
+  "legalConformityGuaranteed": false,
+  "officialAuditPass": false,
+  "originalAudit": {
+    "fullHigh": 22,
+    "productionHigh": 19,
+    "critical": 0,
+    "status": "FAIL_NOT_WAIVED"
+  },
+  "newCandidateOwnerDecryption": "NOT_RUN",
+  "cryptographicallySigned": false,
+  "releaseTrustProvisioned": false,
+  "packageUploadApprovedByThisDecision": false,
+  "redistributionExecutionApprovedByThisDecision": false,
+  "feesApproved": false,
+  "aclChangesApproved": false,
+  "productAdoptionApproved": false,
+  "auditExceptionApproved": false,
+  "mergeApproved": false,
+  "productionApproved": false,
+  "upstreamReplyRequired": false
+}

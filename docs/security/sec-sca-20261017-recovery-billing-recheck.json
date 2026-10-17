@@ -1,0 +1,13 @@
+{
+  "status": "VERIFIED",
+  "observedAtUtc": "2026-10-17T11:46:09.311944+00:00",
+  "account": "gycha0109-beep",
+  "source": "https://github.com/settings/billing/budgets",
+  "product": "Packages",
+  "spentUsd": 0,
+  "budgetUsd": 0,
+  "usageBlocked": true,
+  "settingsChanged": false,
+  "exactRemainingSharedBytes": "UNVERIFIED",
+  "maximumCharge": 0
+}

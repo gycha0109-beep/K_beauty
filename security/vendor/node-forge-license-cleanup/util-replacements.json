@@ -1,0 +1,22 @@
+{
+  "schema": "bejewely.native-util-replacements.v1",
+  "basis": "New implementations from Object.keys and a binary-unit table; no cryptographic algorithm change",
+  "originalSha256": "a05620c922303dd687e9447754ebde42878f37e51c390a9a3aedb592434795bc",
+  "resultSha256": "f153d402a0c9b737aff65def188c785acbf86132c08a168425a9a317093cef3c",
+  "hunks": [
+    {
+      "name": "isEmpty",
+      "start": 59107,
+      "end": 59460,
+      "beforeSha256": "1dc8c3847f9c97e80ba719afb53d589e45040f3f162071eeaf1626f6064ba0a9",
+      "after": "/**\n * BEJEWELY: use the standard own-enumerable-key operation, without copied snippets.\n */\nutil.isEmpty = function(object) {\n  return Object.keys(Object(object)).length === 0;\n};\n\n"
+    },
+    {
+      "name": "formatSize",
+      "start": 61958,
+      "end": 62481,
+      "beforeSha256": "0a675339088429c598901a8a4e2afbc2cc5e85f7570862c2e29346848b973c8b",
+      "after": "/**\n * BEJEWELY: binary-size presentation using a unit table and the retained formatter.\n */\nutil.formatSize = function(bytes) {\n  var units = [[1073741824, 2, '.', '', ' GiB'],\n    [1048576, 2, '.', '', ' MiB'], [1024, 0, undefined, undefined, ' KiB'],\n    [-Infinity, 0, undefined, undefined, ' bytes']];\n  for(var index = 0; index < units.length; ++index) {\n    var unit = units[index];\n    if(bytes >= unit[0] || index === units.length - 1) {\n      var value = index === units.length - 1 ? bytes : bytes / unit[0];\n      return util.formatNumber(value, unit[1], unit[2], unit[3]) + unit[4];\n    }\n  }\n};\n\n"
+    }
+  ]
+}

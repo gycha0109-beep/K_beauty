@@ -1,0 +1,246 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "@gycha0109-beep/braces@3.0.3",
+      "name": "@gycha0109-beep/braces",
+      "version": "3.0.3",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8a772917c9831cb9f82ee5e80f9bc8d7d2649778f8e547d1a0096d6be3f7d891"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "bejewely:license-status",
+          "value": "USER_AUTHORIZED_REVIEW_BASIS_NOT_FINAL_LEGAL_ELECTION"
+        },
+        {
+          "name": "bejewely:original-name",
+          "value": "braces"
+        },
+        {
+          "name": "bejewely:original-license-sha256",
+          "value": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "@gycha0109-beep/node-forge@1.4.0",
+      "name": "@gycha0109-beep/node-forge",
+      "version": "1.4.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4dc3ebe257c470726236135166d309147ef2c045ed7f170552b518c46084391a"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "name": "bejewely:license-status",
+          "value": "USER_AUTHORIZED_REVIEW_BASIS_NOT_FINAL_LEGAL_ELECTION"
+        },
+        {
+          "name": "bejewely:original-name",
+          "value": "node-forge"
+        },
+        {
+          "name": "bejewely:original-license-sha256",
+          "value": "f63ff0e4e239244aa79280da2dd4811a0469e5e201caf5cbc0d97c3a1dff8e82"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "embedded:node-forge/lib/baseN.js",
+      "name": "base-x derived encoding",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "08175e677127132340002bdb63dd19ba41c0baae546936032c7d6a6335e219b6"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bejewely:license-review-status",
+          "value": "FULL_PERMISSION_TEXT_PRESERVED"
+        },
+        {
+          "name": "bejewely:embedded-file",
+          "value": "lib/baseN.js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "embedded:node-forge/lib/jsbn.js",
+      "name": "Tom Wu JSBN",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9d2cd4ad90eadf84b0110d9e1fc02512fc89e7ad64d0fee2d578fa51af28e48d"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "LicenseRef-Tom-Wu-JSBN"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bejewely:license-review-status",
+          "value": "FULL_CUSTOM_PERMISSION_TEXT_PRESERVED"
+        },
+        {
+          "name": "bejewely:embedded-file",
+          "value": "lib/jsbn.js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "embedded:node-forge/lib/pkcs1.js",
+      "name": "jsjws and RSAES-OAEP derived implementation",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c43cf348520a3f6adc4769a3c3410cde502a6bc7a768d5a71a575fa72d19acc7"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "MIT AND LicenseRef-OAEP-BSD-Unspecified"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bejewely:license-review-status",
+          "value": "BSD_VARIANT_AND_COMPLETE_TERMS_REQUIRE_REVIEW"
+        },
+        {
+          "name": "bejewely:embedded-file",
+          "value": "lib/pkcs1.js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "embedded:node-forge/lib/des.js",
+      "name": "Paul Tero DES and Michael Hayworth optimization",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cb0ae63c8477e61be95c3948bf52f1b7ed02d8522791d9ed1704b6b8b8517734"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "BSD-2-Clause"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bejewely:license-review-status",
+          "value": "AUTHOR_PUBLISHED_BSD2_CONDITIONS_PRESERVED"
+        },
+        {
+          "name": "bejewely:embedded-file",
+          "value": "lib/des.js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "embedded:node-forge/lib/aes.js",
+      "name": "jscrypto and OpenSSL derived AES",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "be13b617cfff1d583f616c0ce97147cebd9bf101cf893f027cc18c3a54bd3a2f"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "LicenseRef-AES-Permissive-Component-Evidence"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bejewely:license-review-status",
+          "value": "PERMISSIVE_PUBLIC_EVIDENCE_EXACT_LINEAGE_UNCONFIRMED"
+        },
+        {
+          "name": "bejewely:embedded-file",
+          "value": "lib/aes.js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "embedded:node-forge/lib/ed25519.js",
+      "name": "TweetNaCl derived Ed25519",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b0d15f1e11168a3a6de9914cdff9bf1be0c5c2fc313499e44dfeb164f5202849"
+        }
+      ],
+      "licenses": [
+        {
+          "expression": "LicenseRef-TweetNaCl-Unlicense-Support"
+        }
+      ],
+      "properties": [
+        {
+          "name": "bejewely:license-review-status",
+          "value": "PUBLIC_UNLICENSE_EVIDENCE_EXACT_REVISION_UNCONFIRMED"
+        },
+        {
+          "name": "bejewely:embedded-file",
+          "value": "lib/ed25519.js"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "@gycha0109-beep/braces@3.0.3",
+      "dependsOn": []
+    },
+    {
+      "ref": "@gycha0109-beep/node-forge@1.4.0",
+      "dependsOn": [
+        "embedded:node-forge/lib/baseN.js",
+        "embedded:node-forge/lib/jsbn.js",
+        "embedded:node-forge/lib/pkcs1.js",
+        "embedded:node-forge/lib/des.js",
+        "embedded:node-forge/lib/aes.js",
+        "embedded:node-forge/lib/ed25519.js"
+      ]
+    }
+  ]
+}

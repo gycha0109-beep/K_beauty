@@ -1,0 +1,23 @@
+{
+  "schema": "bejewely.sca-release-trust.v2",
+  "organizationApproved": true,
+  "approvalModel": "SOLE_PROJECT_OWNER",
+  "responsibleOwner": "gycha0109-beep",
+  "policyDecisionSha256": "bf32e7d03753abde8a24e78e99d3f4d8974e140e453ca5e4d7ea00dd837bba4e",
+  "keys": [
+    {
+      "id": "bejewely-owner-ed25519-8d09ade272fe",
+      "owner": "gycha0109-beep",
+      "roles": [
+        "security",
+        "license-redistribution",
+        "maintenance",
+        "distribution"
+      ],
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAb8hHTzAKd3YqlAhPQ9mrQZAaHqQFIoyDdL7Ef5EVmng=\n-----END PUBLIC KEY-----\n",
+      "notBefore": "2026-10-17T08:14:28Z",
+      "notAfter": "2026-10-17T20:19:28Z"
+    }
+  ],
+  "revokedKeyIds": []
+}

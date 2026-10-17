@@ -1,0 +1,63 @@
+{
+  "status": "VERIFIED",
+  "scope": "EXISTING_BRACES_READ_ONLY_DIAGNOSIS",
+  "observedAtUtc": "2026-10-17T11:38:02.480Z",
+  "remoteHead": "e280fe67865ad69529480ff4f2edd124d67b303d",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "name": "@gycha0109-beep/braces",
+  "version": "3.0.3",
+  "sha256": "37d2604f280a0274cc26b7251e059111d36819430bc5bad578c2bdcba718b351",
+  "sha512": "sha512-WOTPNyziSBWllIVOCNrwLkyPknqTv+YZ7kpi+xeIuIs6S+Tv11O2m46QKBUnilkpw3bodnvVL02DTvKW4gbMnw==",
+  "genuineFourRoleSignatures": "PASS",
+  "signedLinuxDryRun": "PASS",
+  "privateVisibility": "PASS",
+  "repositoryLinked": false,
+  "actualOwnerDownload": "PASS",
+  "archiveInventoryAndNotices": "PASS",
+  "tarballUrl": "https://npm.pkg.github.com/download/@gycha0109-beep/braces/3.0.3/87dfc455e199b79a8222d7ad68afd204d73a49c2",
+  "downloadTransport": {
+    "initialHttpStatus": 302,
+    "redirectOrigin": "https://pkg-npm.githubusercontent.com",
+    "finalHttpStatus": 200,
+    "maximumHops": 1,
+    "authorizationForwarded": false,
+    "signedQueryPersisted": false,
+    "diagnosticOnly": true,
+    "publicationOperatorRedirectContract": "UNRESOLVED"
+  },
+  "anonymousSameTarballHttpStatus": 401,
+  "distinctReader": "jwcha01-lab",
+  "distinctReaderIdentity": "PASS",
+  "distinctReaderSameTarballHttpStatus": 403,
+  "effectiveAclUi": {
+    "url": "https://github.com/users/gycha0109-beep/packages/npm/braces/settings",
+    "visibility": "private",
+    "humanMembers": [
+      {
+        "login": "gycha0109-beep",
+        "role": "Admin"
+      }
+    ],
+    "actionsRepositories": [],
+    "codespacesRepositories": [],
+    "settingsChanged": false,
+    "observedAtUtc": "2026-10-17T11:46:09.311944+00:00",
+    "recoveryRechecked": true
+  },
+  "nodeForge": {
+    "version": "1.4.0",
+    "ownerRegistryMetadataStatus": 404,
+    "publication": "NOT_RUN"
+  },
+  "originalAttempt": "PARTIAL_STOPPED_BRACES_ONLY",
+  "publicationRetry": "NOT_RUN",
+  "diagnosticPackageMutation": "NOT_RUN",
+  "originalAudit": "FAIL_NOT_WAIVED",
+  "productApplied": false,
+  "mainMerged": false,
+  "productionDeployed": false,
+  "diagnosticScripts": {
+    "readOnlyDownloadSha256": "1642117ec56e3f7be83bdefec3155529af0f95fe5d0af2c849da9207178684db",
+    "verifyReadbackSha256": "e729040cf638b1a7f47e715b5d3cfbce6b0dd8a186986b0ad636c8413869f8d2"
+  }
+}

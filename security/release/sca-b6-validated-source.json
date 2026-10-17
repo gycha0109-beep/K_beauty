@@ -1,0 +1,507 @@
+{
+  "schema": "bejewely.security.sca-b4-full-graph.v1",
+  "head": "c8153c359c545141c9176254feb638f3844ba5f1",
+  "node": "v22.23.3",
+  "npm": "10.9.9",
+  "originalLockSha256": "f6016eba1c16a5a67df894a389b4449a2723103b7c06824007a14ce9b190a23b",
+  "candidateLockSha256": "10fefaa2f66093402bd57419b9dda6060168a6dc643f64fc223f9889693d94af",
+  "artifacts": {
+    "braces": {
+      "sha256": "d4f1219db19bfeb4e1c3f0354f9269569393f1b8c9f8c0295b80346926d4fa70",
+      "provenance": {
+        "mode": "B1_TEMPORARY_SOURCE_ONLY",
+        "advisory": "GHSA-vfj7-8cjw-p6xm",
+        "sourceVersion": "3.0.3",
+        "upstreamCommit": "28d440b5dd449dbf1fe6f3506cf94ecca4d02660",
+        "originalLockIntegrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+        "reviewedPatchGitBlobSha1": "b6aa05571a91ec9c6c4bc80ae7c6a26cb5db31af",
+        "reviewedPatchSha256": "151f67f199c0dd13f6c4e99b27b8519bbba4504266223722230ebbf142056190",
+        "quoteCompatibilityUpstreamParseJsGitBlobSha1": "99cfb63528ff0124989d4c280e87888236a02be8",
+        "modifiedFiles": [
+          "lib/compile.js",
+          "lib/constants.js",
+          "lib/expand.js",
+          "lib/parse.js",
+          "lib/stringify.js"
+        ],
+        "modifiedFileSha256": {
+          "lib/compile.js": "b651f7715e6db8942ce61d3394357b4d81c8ece88240aa31a458ea1165edd195",
+          "lib/constants.js": "f9fb688959232eee3e6ad7906a5b0e3234815db49ee857ef86983d65b917dc7c",
+          "lib/expand.js": "7ea3e14c2b2b256ef244fd3d83b8fcaa20aa2232b4e6d768c3bb6ab567f66cf5",
+          "lib/parse.js": "b1bf766fba6a62035f78ecbda8a5fd94e921aa1c1ec0cdf3f467e9c836abed55",
+          "lib/stringify.js": "49dc2d8bafa74f34715a18a845bcb82ce66caaf3bab4cf117998e06b1f9a50a9"
+        },
+        "installedSourceUntouched": true,
+        "releaseArtifact": false,
+        "independentRegistryTarballAttested": false
+      }
+    },
+    "forge": {
+      "sha256": "67a51b864d9e483417ff34425a5a09012d333a5184dcc39f966731935463db50",
+      "sha512": "sha512-RFeII25Mu0v0m7RRnbLjsBNezNRR5xmPQxNCCxlFVhY4RKluZlh+z2W/QLD5+NDeUht3J2uh3zMiX1LDkx6+TA==",
+      "files": 59,
+      "distCount": 6,
+      "rsaSha256": "acc22e5d36e27832c34e02dd3933aad7977d45b047eead5016520735efedc9c5",
+      "browserBundleSha256": [
+        {
+          "path": "dist/forge.all.min.js",
+          "sha256": "baaad7f257463658489c2860eb83da1ab6bf6485557a94a8a5a97f935784a1bb"
+        },
+        {
+          "path": "dist/forge.all.min.js.map",
+          "sha256": "0b21eb8fb1c124e963d564b6462177331027f6e739f48e73184e0f6a81cac3f1"
+        },
+        {
+          "path": "dist/forge.min.js",
+          "sha256": "a1d374dddbfd38635e74c08bddcd55553f9b3e29fa4346ff8ac8cbfa2f21414f"
+        },
+        {
+          "path": "dist/forge.min.js.map",
+          "sha256": "5f11be794b0ad083ce9b2bcee1079e7ee1f0771d37beb90d6f13b2b9a8a0eba3"
+        },
+        {
+          "path": "dist/prime.worker.min.js",
+          "sha256": "877bd31b0cc79ecb9163649034fbafaeec45e8e2861fc4fa9fb11335f28c4ef9"
+        },
+        {
+          "path": "dist/prime.worker.min.js.map",
+          "sha256": "73f786b89ef54b00e0cfb6969b2881e7cffa77b4be3f03e998f70993290716a8"
+        }
+      ]
+    }
+  },
+  "installed": [
+    {
+      "path": "node_modules/braces",
+      "name": "braces",
+      "version": "3.0.3",
+      "files": 10,
+      "contentSha256": "6b22eeb1da5bfb46a3911d9b59819962f6ad90eeb240e3345a6b0be6b4d32c6f",
+      "fileSha256": {
+        "index.js": "332ea07c7b006361aad12aa994ca75dc1db8e8382b884909e2f38f10b85c88a4",
+        "lib/compile.js": "b651f7715e6db8942ce61d3394357b4d81c8ece88240aa31a458ea1165edd195",
+        "lib/constants.js": "f9fb688959232eee3e6ad7906a5b0e3234815db49ee857ef86983d65b917dc7c",
+        "lib/expand.js": "7ea3e14c2b2b256ef244fd3d83b8fcaa20aa2232b4e6d768c3bb6ab567f66cf5",
+        "lib/parse.js": "b1bf766fba6a62035f78ecbda8a5fd94e921aa1c1ec0cdf3f467e9c836abed55",
+        "lib/stringify.js": "49dc2d8bafa74f34715a18a845bcb82ce66caaf3bab4cf117998e06b1f9a50a9",
+        "lib/utils.js": "b5a7596aa67730412b3c029ef09e84e6b67b8e445cffd35d1d295549c89066c7",
+        "LICENSE": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2",
+        "package.json": "56f08b888a4f30dc7cf8a7dbb36ffe92b737912ba36abe9d069d32167c957ac7",
+        "README.md": "947b0fc3cc12eaaa070207126213fbdf9ab2bf8cd13dcc6e4007b36b79309866"
+      }
+    },
+    {
+      "path": "node_modules/node-forge",
+      "name": "node-forge",
+      "version": "1.4.0",
+      "files": 59,
+      "contentSha256": "4151bdb83226bf167857f73d6888b065d581a2f56ff33a6ca8988a54be5da524",
+      "fileSha256": {
+        "dist/forge.all.min.js": "baaad7f257463658489c2860eb83da1ab6bf6485557a94a8a5a97f935784a1bb",
+        "dist/forge.all.min.js.map": "0b21eb8fb1c124e963d564b6462177331027f6e739f48e73184e0f6a81cac3f1",
+        "dist/forge.min.js": "a1d374dddbfd38635e74c08bddcd55553f9b3e29fa4346ff8ac8cbfa2f21414f",
+        "dist/forge.min.js.map": "5f11be794b0ad083ce9b2bcee1079e7ee1f0771d37beb90d6f13b2b9a8a0eba3",
+        "dist/prime.worker.min.js": "877bd31b0cc79ecb9163649034fbafaeec45e8e2861fc4fa9fb11335f28c4ef9",
+        "dist/prime.worker.min.js.map": "73f786b89ef54b00e0cfb6969b2881e7cffa77b4be3f03e998f70993290716a8",
+        "flash/swf/SocketPool.swf": "0ebae322dc751e77e18ceef4960bcda1d1634f53a49e7030fb640cf90f1d8839",
+        "lib/aes.js": "be13b617cfff1d583f616c0ce97147cebd9bf101cf893f027cc18c3a54bd3a2f",
+        "lib/aesCipherSuites.js": "bdc5762c0d6edee74e469a59e0157555463d7abeadf34c4377121673dacc2360",
+        "lib/asn1-validator.js": "6f206656ab557712c2a09f3b8bba69004dd41b2b37cee0cb836d44ea8034004b",
+        "lib/asn1.js": "271047be6eab614060ef361cce2c8a92abf066c40fb329f44cfac3269214b912",
+        "lib/baseN.js": "08175e677127132340002bdb63dd19ba41c0baae546936032c7d6a6335e219b6",
+        "lib/cipher.js": "67e3547ac39aaa8862d9519f55571dc0deef6e1d3d6a48ea6d6b653fb7a35a3f",
+        "lib/cipherModes.js": "79d74191887706cd5e14bbbcd1ff49472aa1f2baa9154e45f7578c17c3ffefbb",
+        "lib/des.js": "cb0ae63c8477e61be95c3948bf52f1b7ed02d8522791d9ed1704b6b8b8517734",
+        "lib/ed25519.js": "b0d15f1e11168a3a6de9914cdff9bf1be0c5c2fc313499e44dfeb164f5202849",
+        "lib/forge.js": "4300955cc75f3cb5b71287b0fa37ec07d3a6bb721a9f6f8b7db19328801046bf",
+        "lib/form.js": "a2f6e0fbab87d5acb02e08c8f92ea8269445f9f35ee1706fb82246ba8f5aba12",
+        "lib/hmac.js": "bab6d0f322458186f6d123cfdd208ab1298a64ab6925b478968a0dfb446a8fa9",
+        "lib/http.js": "3ad8ec7eb451c173b5980265f30f7b3d84268a1cc9b3e0e86337bc55facbc658",
+        "lib/index.all.js": "48fa7454923f3baa3dd5a5bf9475892aa5f272c4cc8b5a0ec4f3d6c2370ac631",
+        "lib/index.js": "c231851a9d065df1fae045d6e6fb17cf5688b260f9ee0db4965fe1ef3c0607ab",
+        "lib/jsbn.js": "9d2cd4ad90eadf84b0110d9e1fc02512fc89e7ad64d0fee2d578fa51af28e48d",
+        "lib/kem.js": "6552b048e05b92278f70b2810317e1505d521ee9e2ec5496047d927f5f7d1f70",
+        "lib/log.js": "9453eeba574a617225c8f54cfd2c11f1bade2e6a39f73d6e1a9da142db1afaeb",
+        "lib/md.all.js": "6a10918cc8f727cc8cec20fee5e13f55c11e30b3f03b8800108cabb299211d4d",
+        "lib/md.js": "ebfc33ed52d3c8cf2d584310fe0f45b23d911f532deef8044844bf2271b04402",
+        "lib/md5.js": "ed58ce89d124a276a083280bd7003b09c294c4063e6925d83fe422664a51f810",
+        "lib/mgf.js": "2d6d851d6791d0cc1697342edf275993e745fd8c33ef13ad7201026d8a0eea54",
+        "lib/mgf1.js": "9a4acd26ee423034995a811c357e69a6c2368480664b62862982f5c404cfcc0e",
+        "lib/oids.js": "13e31fe08ccb431fefe44f9d2285891b846e65b17b24329bf14eed04de584015",
+        "lib/pbe.js": "2b5c931e1549f5b98478a5b7b014fd3b62260a20db0704f72612dbe64540e25c",
+        "lib/pbkdf2.js": "1cd2f133c60cf860f23d05313a39a5dc060389adcca8423c2143ee904db9f627",
+        "lib/pem.js": "c6509f3aae5ad5e9286da727ea4cbf3b748ad7deff407e76b226f7a6a3b6a120",
+        "lib/pkcs1.js": "c43cf348520a3f6adc4769a3c3410cde502a6bc7a768d5a71a575fa72d19acc7",
+        "lib/pkcs12.js": "d0f9693ff8b6e755031566139f0e23a762c9a7af6a1b08a27d522810019906d3",
+        "lib/pkcs7.js": "f5cc5a89b093262cdcf8f7e01615dddcdb87907228a1c56b5fe73db8cc4160a2",
+        "lib/pkcs7asn1.js": "9a00faef7bff964e3c983eb4a435e8218bdd631b0f0217807b1b2bff895ab76a",
+        "lib/pki.js": "43f1b98dbd39a0c8277b7c0d44325a851712ce5434146ca2a2587a2a7ae1bb1e",
+        "lib/prime.js": "5c63550c13aa4351c210b0766a8ad4a1f23101e1968c6244be7aad8f008e4073",
+        "lib/prime.worker.js": "c2fc7777c7a07c7bc3909d400f9f65dabd6c484a11840e1ef71b2b67236ffd9d",
+        "lib/prng.js": "fc70051ea878498be4d7473ba6b0982f3e2522962e3deee558b393ac4fb18cf9",
+        "lib/pss.js": "c9e83c50451bd90735030cf3fe3d2a68403f678853a6d300cfa3e59b813e7f9b",
+        "lib/random.js": "13daf47db350648ebb98cc0d694f246ae7be508aa03a0d7b9c9f2dbdf127add0",
+        "lib/rc2.js": "d2eb78b77441d9784f5edfced1ad2f49cb35c2a956687ce9d754cf40bbd1b3c3",
+        "lib/rsa.js": "acc22e5d36e27832c34e02dd3933aad7977d45b047eead5016520735efedc9c5",
+        "lib/sha1.js": "0792cc13fa342fd9d8c213c4ffd0d697fc019144258e383dd0ac985bd717564c",
+        "lib/sha256.js": "54b2f4c0ee9d4a561b6d18b1713fddeb815ea1c9d50537f7cbb4fc4474ab732d",
+        "lib/sha512.js": "d600f189d7bd22630b9301a5dea0fd49bb0ac3687f2c8feb7ecdcccd3d21c092",
+        "lib/socket.js": "689715cdeeba3274d6763ab92716a8a3dc1d24a684ea88fee9e2aca72e2dade0",
+        "lib/ssh.js": "6f27454e3fc028c8a6b1c02ae98969aace558ee0c1b6784e8fb12d4419e46d24",
+        "lib/tls.js": "ceee226d32c623bbae290d76b5950be0c06880310ec26dc289f66bd631de4916",
+        "lib/tlssocket.js": "99728e72301548ee5233c16bc0417f07892022d24fd178dfb9c0a40aff541a47",
+        "lib/util.js": "a05620c922303dd687e9447754ebde42878f37e51c390a9a3aedb592434795bc",
+        "lib/x509.js": "cce5b00838c8c08486964c1f62cb8ae3491365509b26a27cfe1917f73dee3be9",
+        "lib/xhr.js": "d9abf523180b6d03b2cc99909eef3488a6b4bc1f822d7fb9d1e945abf555cb42",
+        "LICENSE": "f63ff0e4e239244aa79280da2dd4811a0469e5e201caf5cbc0d97c3a1dff8e82",
+        "package.json": "063f887c0969622527096ea548208de9cb178041dde1f327dabca94993f6c3fd",
+        "README.md": "4ea0e2db410fd5d87c3c9b21912b9ed3fe6c57b3107fa92e2c90b1e618121a49"
+      }
+    }
+  ],
+  "consumers": [
+    {
+      "path": "node_modules/@expo/cli",
+      "name": "node-forge",
+      "resolved": "node_modules/node-forge"
+    },
+    {
+      "path": "node_modules/@expo/code-signing-certificates",
+      "name": "node-forge",
+      "resolved": "node_modules/node-forge"
+    },
+    {
+      "path": "node_modules/chokidar",
+      "name": "braces",
+      "resolved": "node_modules/braces"
+    },
+    {
+      "path": "node_modules/micromatch",
+      "name": "braces",
+      "resolved": "node_modules/braces"
+    }
+  ],
+  "audits": {
+    "baselineFull": {
+      "exit": 1,
+      "rawSha256": "d22e604fffe283ccc07648e09eaa9cae6739eb59fda7b9dc79fa4a7c0d14387b",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 13,
+        "high": 22,
+        "critical": 0,
+        "total": 35
+      },
+      "advisoryLeaves": [
+        {
+          "name": "braces",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "range": "<=3.0.3"
+        },
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "node-forge",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "range": "<=1.4.0"
+        },
+        {
+          "name": "postcss-selector-parser",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "range": "<7.1.6"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": true,
+        "node-forge": true
+      }
+    },
+    "baselineProduction": {
+      "exit": 1,
+      "rawSha256": "c55817a769347015a549836e4d94ffc46fa12aa0fd5ab147a3f1ea228b5e6ad6",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 11,
+        "high": 19,
+        "critical": 0,
+        "total": 30
+      },
+      "advisoryLeaves": [
+        {
+          "name": "braces",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "range": "<=3.0.3"
+        },
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "node-forge",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "range": "<=1.4.0"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": true,
+        "node-forge": true
+      }
+    },
+    "candidateFull": {
+      "exit": 1,
+      "rawSha256": "a9153a20e1998e22c60ad063aee09a9798884849cc51d178e2b47021f9c4ee76",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 13,
+        "high": 22,
+        "critical": 0,
+        "total": 35
+      },
+      "advisoryLeaves": [
+        {
+          "name": "braces",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "range": "<=3.0.3"
+        },
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "node-forge",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "range": "<=1.4.0"
+        },
+        {
+          "name": "postcss-selector-parser",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "range": "<7.1.6"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": true,
+        "node-forge": true
+      }
+    },
+    "candidateProduction": {
+      "exit": 1,
+      "rawSha256": "ae7e8f91b253222645e33829de4c0bd65d3ff3644fdf07c9c83d9fc428a61cc6",
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 11,
+        "high": 19,
+        "critical": 0,
+        "total": 30
+      },
+      "advisoryLeaves": [
+        {
+          "name": "braces",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "range": "<=3.0.3"
+        },
+        {
+          "name": "decode-uri-component",
+          "url": "https://github.com/advisories/GHSA-vcc3-ghjq-m6fr",
+          "severity": "moderate",
+          "range": "<=0.4.2"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "next",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "range": ">=15.0.0 <15.5.27"
+        },
+        {
+          "name": "node-forge",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "range": "<=1.4.0"
+        },
+        {
+          "name": "uuid",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "range": "<11.1.1"
+        }
+      ],
+      "targetScannerCoverage": {
+        "braces": true,
+        "node-forge": true
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "mobile:typecheck",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "mobile:lint",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "verify:mobile-foundation",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "verify:mobile-entry-routing",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "mobile:config",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "mobile:export:android",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "mobile:prebuild:android",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "verify:mobile-native",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "build",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "local production page smoke",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    },
+    {
+      "name": "Android debug APK",
+      "status": "PASS",
+      "exit": 0,
+      "error": null
+    }
+  ],
+  "android": {
+    "status": "PASS",
+    "exit": 0,
+    "reason": null,
+    "jdk": "openjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)\nOpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)",
+    "sdkPresent": true,
+    "apkSha256": "ad016fd9faa6b717a25a662a12e6185d60403544b6ec33a2eb1ab4f00c3f75e6"
+  },
+  "metroBundles": [
+    {
+      "path": "_expo/static/js/android/entry-f052a95751bf427704c9930f8b6cbf6d.hbc",
+      "sha256": "59eb38fd6190dcedb794a91e5da1e2ea99a78dab9082a9db70b2f4f5f9029677"
+    }
+  ],
+  "sbomSha256": "0e4aed9bdf8f915f7ad993502087e6bb832bd07949d5f5a012875fc263dc7feb",
+  "sbomComponents": 683,
+  "prebuildChangedDisposableMobileManifest": true,
+  "technicalInstallEvidence": "PASS",
+  "acceptance": "HOLD_UNRELEASED_SAME_VERSION_PATCH_AND_RAW_AUDIT",
+  "fullGraphInstalled": true,
+  "appSourceGraphChanged": false,
+  "auditPolicyChanged": false,
+  "releaseApproved": false,
+  "deviceSmoke": "NOT_RUN_NO_DEVICE_OR_ISOLATED_BACKEND",
+  "artifactsDeletedOnExit": true
+}

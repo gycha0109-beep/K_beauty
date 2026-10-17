@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/rzcoder/node-rsa",
+  "commit": "54798624ba5b15521763c6d1ca69b93115a61d67",
+  "license": "MIT",
+  "tool": "v24.20.0",
+  "compiler": "typescript@5.9.3",
+  "target": "ES5",
+  "generatedSha256": "8a5e5d1a8c55d8d09a8d5d14c01bd94e2928bf617ddb067e0db2eda819044144",
+  "transformation": "TypeScript ES5 lowering, complete needed helper selection and import/export wiring only; unchanged upstream OAEP/MGF1 logic",
+  "files": [
+    {
+      "path": "src/crypto/bytes.ts",
+      "url": "https://raw.githubusercontent.com/rzcoder/node-rsa/54798624ba5b15521763c6d1ca69b93115a61d67/src/crypto/bytes.ts",
+      "sha256": "446c963b6d06949964ab068b0601f3f8600865494633bccd920cd5e526cd773d",
+      "bytes": 4009
+    },
+    {
+      "path": "src/crypto/digest-length.ts",
+      "url": "https://raw.githubusercontent.com/rzcoder/node-rsa/54798624ba5b15521763c6d1ca69b93115a61d67/src/crypto/digest-length.ts",
+      "sha256": "857c1e2145d59de432f17bd7aefdaf612e85c09a375dcda9534facdd492cb90f",
+      "bytes": 253
+    },
+    {
+      "path": "src/schemes/oaep.ts",
+      "url": "https://raw.githubusercontent.com/rzcoder/node-rsa/54798624ba5b15521763c6d1ca69b93115a61d67/src/schemes/oaep.ts",
+      "sha256": "6c63a66bb11c810c553aa054b3ed2e21add571b7c03bf505def6f606b13494b1",
+      "bytes": 5792
+    },
+    {
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/rzcoder/node-rsa/54798624ba5b15521763c6d1ca69b93115a61d67/LICENSE",
+      "sha256": "81bcc8d1055ee4af1f7e78241cdf5d768a3bcb98d59666b65bee120ff69a175d",
+      "bytes": 1171
+    }
+  ]
+}

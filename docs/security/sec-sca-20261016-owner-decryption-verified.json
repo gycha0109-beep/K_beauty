@@ -1,0 +1,38 @@
+{
+  "head": "ba12b646f89f2f5eab610b4ed79c2cd45a4758ee",
+  "run": 38869911393,
+  "attempt": 1,
+  "plaintextSha256": "bf5e25f5012b7ab5e0672dfafdbce19b3b6fdafff506d06ee6c306f7c9ccd97b",
+  "archiveEntries": 117,
+  "safeInventory": "PASS",
+  "originalBundle": "PASS",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+  "browserNoticeKitSha256": "2330e347ff66295865cb056237a6157d8a55b303c1100cdef01b2ff566e802e9",
+  "artifacts": [
+    {
+      "name": "@gycha0109-beep/braces",
+      "version": "3.0.3",
+      "sha256": "37d2604f280a0274cc26b7251e059111d36819430bc5bad578c2bdcba718b351",
+      "files": 13,
+      "license": "MIT",
+      "originalLicense": "MIT"
+    },
+    {
+      "name": "@gycha0109-beep/node-forge",
+      "version": "1.4.0",
+      "sha256": "353690e06c92704162c7b622fca9a2e0d4007c6bdbec6603f6906b58a02dae34",
+      "files": 64,
+      "license": "((BSD-3-Clause OR GPL-2.0) AND MIT)",
+      "originalLicense": "(BSD-3-Clause OR GPL-2.0)"
+    }
+  ],
+  "ownerLocalDecryption": "PASS_USER_OUTPUT_AND_LOCAL_ARCHIVE_VERIFIED",
+  "actualPublication": "NOT_RUN",
+  "actualRegistryReadback": "NOT_RUN",
+  "finalRightsApproval": true,
+  "rightsApprovalScope": "EXACT_PAIR_ONLY_HUMAN_RECORD_NOT_SIGNATURE",
+  "realSignedAdmission": "NOT_RUN",
+  "temporaryPlaintextRemovedOnExit": false,
+  "temporaryPlaintextDisposition": "Retained in local projectless outputs for verification; not tracked/published. No cleanup bypass attempted."
+}

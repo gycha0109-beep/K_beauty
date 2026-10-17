@@ -1,0 +1,49 @@
+{
+  "schema": "bejewely.sca-signing-preparation.v1",
+  "executable": false,
+  "rightsDecision": {
+    "file": "sec-sca-20261016-owner-final-rights-approval.json",
+    "sha256": "70c4200b850d936eaf5078499066c905a4cdb8ab5858169c393f4841562860e5",
+    "status": "APPROVED_BY_PROJECT_OWNER_LIMITED_RIGHTS_REVIEW",
+    "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+    "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87"
+  },
+  "ownerPolicyDecisionSha256": "bf32e7d03753abde8a24e78e99d3f4d8974e140e453ca5e4d7ea00dd837bba4e",
+  "legacyFrozenLicensePacketSha256": "d6648013ec8713c867c5dd6f8accfecfcfbfdcb20bf0644f4e35432b78ea4d12",
+  "requiredRoles": [
+    "security",
+    "license-redistribution",
+    "maintenance",
+    "distribution"
+  ],
+  "responsibleOwner": "gycha0109-beep",
+  "releaseKeyType": "Ed25519",
+  "releaseKeyProvisioned": false,
+  "releaseTrustProvisioned": false,
+  "encryptedArchiveRecipientIsReleaseSigningKey": false,
+  "signatureDomain": "BEJEWELY-SCA-OWNER-v2:SCOPED_UPLOAD_READBACK_ONLY:<role>\\n followed by exact approval.json bytes",
+  "signedUploadApprovalReady": false,
+  "uploadApproved": false,
+  "redistributionExecutionApproved": false,
+  "operationalChecks": {
+    "noChargeControlsVerified": false,
+    "privateAclReviewed": false,
+    "noticeDeliveryReviewed": false,
+    "credentialsProvisioned": false
+  },
+  "readbackBase": "https://npm.pkg.github.com/download/@gycha0109-beep/",
+  "credentials": {
+    "publisherEnvironmentName": "NODE_AUTH_TOKEN",
+    "denialProbeEnvironmentName": "SCA_UNPRIVILEGED_TOKEN",
+    "valuesPresent": false,
+    "minimumPublisherScopes": [
+      "write:packages",
+      "read:packages"
+    ],
+    "denialIdentity": "Valid distinct unauthorized identity; not a second legal reviewer",
+    "tokenIssuanceApproved": false
+  },
+  "newCandidateOwnerDecryption": "NOT_RUN",
+  "originalAudit": "FAIL_NOT_WAIVED",
+  "packageUploadExecuted": false
+}

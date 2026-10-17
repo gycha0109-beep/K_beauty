@@ -1,0 +1,411 @@
+{
+  "schema": "bejewely.license-review.v1",
+  "status": "TECHNICAL_REVIEW_ONLY_LEGAL_HOLD",
+  "userAuthorizedReviewBasis": {
+    "braces": "MIT",
+    "node-forge": "BSD-3-Clause"
+  },
+  "legalApproval": false,
+  "redistributionApproved": false,
+  "securityExceptionApproved": false,
+  "sourceEvidenceHead": "c8153c359c545141c9176254feb638f3844ba5f1",
+  "artifacts": [
+    {
+      "name": "@gycha0109-beep/braces",
+      "originalName": "braces",
+      "version": "3.0.3",
+      "sha256": "8a772917c9831cb9f82ee5e80f9bc8d7d2649778f8e547d1a0096d6be3f7d891",
+      "originalArchiveSha256": "d4f1219db19bfeb4e1c3f0354f9269569393f1b8c9f8c0295b80346926d4fa70",
+      "licenseSha256": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2"
+    },
+    {
+      "name": "@gycha0109-beep/node-forge",
+      "originalName": "node-forge",
+      "version": "1.4.0",
+      "sha256": "4dc3ebe257c470726236135166d309147ef2c045ed7f170552b518c46084391a",
+      "originalArchiveSha256": "67a51b864d9e483417ff34425a5a09012d333a5184dcc39f966731935463db50",
+      "licenseSha256": "f63ff0e4e239244aa79280da2dd4811a0469e5e201caf5cbc0d97c3a1dff8e82"
+    }
+  ],
+  "embeddedReview": [
+    {
+      "path": "lib/baseN.js",
+      "name": "base-x derived encoding",
+      "license": "MIT",
+      "marker": "Copyright base-x contributors",
+      "status": "FULL_PERMISSION_TEXT_PRESERVED"
+    },
+    {
+      "path": "lib/jsbn.js",
+      "name": "Tom Wu JSBN",
+      "license": "LicenseRef-Tom-Wu-JSBN",
+      "marker": "All redistributions must retain an intact copy",
+      "status": "FULL_CUSTOM_PERMISSION_TEXT_PRESERVED"
+    },
+    {
+      "path": "lib/pkcs1.js",
+      "name": "jsjws and RSAES-OAEP derived implementation",
+      "license": "MIT AND LicenseRef-OAEP-BSD-Unspecified",
+      "marker": "Ellis Pritchard",
+      "status": "BSD_VARIANT_AND_COMPLETE_TERMS_REQUIRE_REVIEW"
+    },
+    {
+      "path": "lib/des.js",
+      "name": "Paul Tero DES and Michael Hayworth optimization",
+      "license": "BSD-2-Clause",
+      "marker": "Paul Tero",
+      "status": "AUTHOR_PUBLISHED_BSD2_CONDITIONS_PRESERVED"
+    },
+    {
+      "path": "lib/aes.js",
+      "name": "jscrypto and OpenSSL derived AES",
+      "license": "LicenseRef-AES-Permissive-Component-Evidence",
+      "marker": "OpenSSL",
+      "status": "PERMISSIVE_PUBLIC_EVIDENCE_EXACT_LINEAGE_UNCONFIRMED"
+    },
+    {
+      "path": "lib/ed25519.js",
+      "name": "TweetNaCl derived Ed25519",
+      "license": "LicenseRef-TweetNaCl-Unlicense-Support",
+      "marker": "TweetNaCl",
+      "status": "PUBLIC_UNLICENSE_EVIDENCE_EXACT_REVISION_UNCONFIRMED"
+    }
+  ],
+  "sourceNotices": [
+    {
+      "package": "node-forge",
+      "path": "lib/aes.js",
+      "fileSha256": "be13b617cfff1d583f616c0ce97147cebd9bf101cf893f027cc18c3a54bd3a2f",
+      "noticeSha256": "3da3f945ff59c3994c0791263163d578ed2a8d016ba4072821552437a9edc9eb"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/aesCipherSuites.js",
+      "fileSha256": "bdc5762c0d6edee74e469a59e0157555463d7abeadf34c4377121673dacc2360",
+      "noticeSha256": "57f836f2147e0c5e30b1f6e94586e524b20d1a696f6b7ff5d2e8c55322031657"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/asn1-validator.js",
+      "fileSha256": "6f206656ab557712c2a09f3b8bba69004dd41b2b37cee0cb836d44ea8034004b",
+      "noticeSha256": "91427bf0e030ad3434914b2403fbc754dc58de012107b9f149683d4f9ff72651"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/asn1.js",
+      "fileSha256": "271047be6eab614060ef361cce2c8a92abf066c40fb329f44cfac3269214b912",
+      "noticeSha256": "9d2dccbdf1f706eb15bd8d9975660f5aa0288723a2d571d4d7a2d964eef4a9d0"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/baseN.js",
+      "fileSha256": "08175e677127132340002bdb63dd19ba41c0baae546936032c7d6a6335e219b6",
+      "noticeSha256": "85b188c81cd8752cf2f2a344cdda3d8db3c082a13e04ba70ec27296ce3f3b56f"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/cipher.js",
+      "fileSha256": "67e3547ac39aaa8862d9519f55571dc0deef6e1d3d6a48ea6d6b653fb7a35a3f",
+      "noticeSha256": "e4a8c4771b7f8ec19fe80aa4f388269b307f4d05cf9e484d0f5d29986553c6f2"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/cipherModes.js",
+      "fileSha256": "79d74191887706cd5e14bbbcd1ff49472aa1f2baa9154e45f7578c17c3ffefbb",
+      "noticeSha256": "8e863fe1af02c01aee597bf8eaa057eafcbe5c3227fa5531cc81c72517e3dab4"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/des.js",
+      "fileSha256": "cb0ae63c8477e61be95c3948bf52f1b7ed02d8522791d9ed1704b6b8b8517734",
+      "noticeSha256": "58a667e0db6cb123e668ad571fc02ed317022a4ef79653869aa7cc7cd6865051"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/ed25519.js",
+      "fileSha256": "b0d15f1e11168a3a6de9914cdff9bf1be0c5c2fc313499e44dfeb164f5202849",
+      "noticeSha256": "66356d20d9cdaf5d8027c7cac94f53a1274f1f5e6dfa9faddeb5b04ece991107"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/forge.js",
+      "fileSha256": "4300955cc75f3cb5b71287b0fa37ec07d3a6bb721a9f6f8b7db19328801046bf",
+      "noticeSha256": "c2be612fa0fb72ad3d5c911b1d9bd24020b42a3c344b6f229c66d35814bd3950"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/form.js",
+      "fileSha256": "a2f6e0fbab87d5acb02e08c8f92ea8269445f9f35ee1706fb82246ba8f5aba12",
+      "noticeSha256": "f79b965a70258a15776758b25fcc9b69052f7ce582ec37baff8b5ee420156080"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/hmac.js",
+      "fileSha256": "bab6d0f322458186f6d123cfdd208ab1298a64ab6925b478968a0dfb446a8fa9",
+      "noticeSha256": "42a3f43dc2408165a536fa54e802804942ea48bfb8a248b19bb0a3962e678501"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/http.js",
+      "fileSha256": "3ad8ec7eb451c173b5980265f30f7b3d84268a1cc9b3e0e86337bc55facbc658",
+      "noticeSha256": "b18ec44a178da1b0448907c7e582d69e3624fc40c17423199d85f6d62a798a36"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/index.all.js",
+      "fileSha256": "48fa7454923f3baa3dd5a5bf9475892aa5f272c4cc8b5a0ec4f3d6c2370ac631",
+      "noticeSha256": "2876130c8ce32d502a354672a9ee86138611370f2455067bb2e0ae6a95a42eaa"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/index.js",
+      "fileSha256": "c231851a9d065df1fae045d6e6fb17cf5688b260f9ee0db4965fe1ef3c0607ab",
+      "noticeSha256": "c2be612fa0fb72ad3d5c911b1d9bd24020b42a3c344b6f229c66d35814bd3950"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/jsbn.js",
+      "fileSha256": "9d2cd4ad90eadf84b0110d9e1fc02512fc89e7ad64d0fee2d578fa51af28e48d",
+      "noticeSha256": "f083503cef159cc8f46f699cf2aa2005882c3781f407db3b58f7eb441f5527b8"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/kem.js",
+      "fileSha256": "6552b048e05b92278f70b2810317e1505d521ee9e2ec5496047d927f5f7d1f70",
+      "noticeSha256": "fa9c7836f91972382bdcdfc01777fcb1c326f8c7d4e58ff4936a47335abb7fa8"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/log.js",
+      "fileSha256": "9453eeba574a617225c8f54cfd2c11f1bade2e6a39f73d6e1a9da142db1afaeb",
+      "noticeSha256": "a9bf12a35a059471997ead76b27c5bcf003f22b327f2ed04ac9fa55750991d2e"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/md.all.js",
+      "fileSha256": "6a10918cc8f727cc8cec20fee5e13f55c11e30b3f03b8800108cabb299211d4d",
+      "noticeSha256": "3a37ba810aea38211077c16bb0950e2f208790859a8c4d9c238e42be6a141a0b"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/md.js",
+      "fileSha256": "ebfc33ed52d3c8cf2d584310fe0f45b23d911f532deef8044844bf2271b04402",
+      "noticeSha256": "d0f88a6f9d72ff26e4cb1ba9d308c732a23702f3f517deb9188f74c15cd76879"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/md5.js",
+      "fileSha256": "ed58ce89d124a276a083280bd7003b09c294c4063e6925d83fe422664a51f810",
+      "noticeSha256": "92df0a31cf15dd61f495ee777ab18c374d6caeacfc642f837a62d3edbd430e76"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/mgf.js",
+      "fileSha256": "2d6d851d6791d0cc1697342edf275993e745fd8c33ef13ad7201026d8a0eea54",
+      "noticeSha256": "5c778163221a0ba01fbd70642f73b65d5982ea47301222778aaf71182ac5b584"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/mgf1.js",
+      "fileSha256": "9a4acd26ee423034995a811c357e69a6c2368480664b62862982f5c404cfcc0e",
+      "noticeSha256": "3fb47f23ac8a78e81e1774f58a2e14504a2cc87185f33134f35140e4a1bdf5a0"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/oids.js",
+      "fileSha256": "13e31fe08ccb431fefe44f9d2285891b846e65b17b24329bf14eed04de584015",
+      "noticeSha256": "246c02e123637d579f623e070968c8cf2b10465e17238c3d7b852ebd92e52e02"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pbe.js",
+      "fileSha256": "2b5c931e1549f5b98478a5b7b014fd3b62260a20db0704f72612dbe64540e25c",
+      "noticeSha256": "ebad0a3b9e645f535f570f2c06d840f563f4877b2d10f3c4b4fa8472a799a4aa"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pbkdf2.js",
+      "fileSha256": "1cd2f133c60cf860f23d05313a39a5dc060389adcca8423c2143ee904db9f627",
+      "noticeSha256": "018c6b78bf6e0de6b48c42c7b559a3a9bbc1c1f47ad55106046d602045b20931"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pem.js",
+      "fileSha256": "c6509f3aae5ad5e9286da727ea4cbf3b748ad7deff407e76b226f7a6a3b6a120",
+      "noticeSha256": "a27a984d1ca76564fac3c8b8e5201398b27984bc35f7145405ab9c512dd3b510"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pkcs1.js",
+      "fileSha256": "c43cf348520a3f6adc4769a3c3410cde502a6bc7a768d5a71a575fa72d19acc7",
+      "noticeSha256": "572e55eb8777a9da9a48ce25b9767c24185370176692e47f7e9455c393d4a05d"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pkcs12.js",
+      "fileSha256": "d0f9693ff8b6e755031566139f0e23a762c9a7af6a1b08a27d522810019906d3",
+      "noticeSha256": "dc7a294be3cf919f86749b35d6bc28ad74aa3155619abf3e04eeec2a1a6a65a8"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pkcs7.js",
+      "fileSha256": "f5cc5a89b093262cdcf8f7e01615dddcdb87907228a1c56b5fe73db8cc4160a2",
+      "noticeSha256": "25802856614405afc482bf5033405d06d969a094411dee97bac1be2517629814"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pkcs7asn1.js",
+      "fileSha256": "9a00faef7bff964e3c983eb4a435e8218bdd631b0f0217807b1b2bff895ab76a",
+      "noticeSha256": "4cf306f443b282680a463f06734b619d85a1ba9e1e1dff2a5a0c75b1b13f7adf"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pki.js",
+      "fileSha256": "43f1b98dbd39a0c8277b7c0d44325a851712ce5434146ca2a2587a2a7ae1bb1e",
+      "noticeSha256": "f7c43be91522379fe101e6cea0e19985f047b417dd6d31ac3982e4eee29d43ef"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/prime.js",
+      "fileSha256": "5c63550c13aa4351c210b0766a8ad4a1f23101e1968c6244be7aad8f008e4073",
+      "noticeSha256": "0314e5dfc650b412b2cbe12a42d745b7f68dfb8401a9c351ebf4535afd42d552"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/prime.worker.js",
+      "fileSha256": "c2fc7777c7a07c7bc3909d400f9f65dabd6c484a11840e1ef71b2b67236ffd9d",
+      "noticeSha256": "570996bc5fbcc805c2fa3f01bc8c7991c6b377199586bd8ee539fa4473306664"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/prng.js",
+      "fileSha256": "fc70051ea878498be4d7473ba6b0982f3e2522962e3deee558b393ac4fb18cf9",
+      "noticeSha256": "d2883f902488fbe0bed1b43681a6bd89c5c0789806110b7b59bd96c5ef2100fb"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/pss.js",
+      "fileSha256": "c9e83c50451bd90735030cf3fe3d2a68403f678853a6d300cfa3e59b813e7f9b",
+      "noticeSha256": "53f13c05fbb11ebcdce1d3f2263a549209b4724ee3c3e6793488247f68c17218"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/random.js",
+      "fileSha256": "13daf47db350648ebb98cc0d694f246ae7be508aa03a0d7b9c9f2dbdf127add0",
+      "noticeSha256": "ac6f4c48165fbc273a609a5b5481a855f927e4e26c1b27f6c245fdbe55feef82"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/rc2.js",
+      "fileSha256": "d2eb78b77441d9784f5edfced1ad2f49cb35c2a956687ce9d754cf40bbd1b3c3",
+      "noticeSha256": "348ea4321df8a59137701716543cbca1ea7d31d33ffb559f3f4fe09e8a152dd0"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/rsa.js",
+      "fileSha256": "acc22e5d36e27832c34e02dd3933aad7977d45b047eead5016520735efedc9c5",
+      "noticeSha256": "f2fe21cd8dbc2a7f9e69239dab61f8520a891a2660ce6907aec689fb7622b04d"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/sha1.js",
+      "fileSha256": "0792cc13fa342fd9d8c213c4ffd0d697fc019144258e383dd0ac985bd717564c",
+      "noticeSha256": "14a63e9c1f95c85d3747b1885c2384a866aba672520d9fbfd47226b303536fac"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/sha256.js",
+      "fileSha256": "54b2f4c0ee9d4a561b6d18b1713fddeb815ea1c9d50537f7cbb4fc4474ab732d",
+      "noticeSha256": "a27bb9f4d7046f9fc63dfe1229c9aea6e6ce3f106286c24126260f3f50f850a1"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/sha512.js",
+      "fileSha256": "d600f189d7bd22630b9301a5dea0fd49bb0ac3687f2c8feb7ecdcccd3d21c092",
+      "noticeSha256": "9518184fea9ffde3cc52d0994813e09cd19660f2c2d18003d7004aa4986bd7ff"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/socket.js",
+      "fileSha256": "689715cdeeba3274d6763ab92716a8a3dc1d24a684ea88fee9e2aca72e2dade0",
+      "noticeSha256": "d7b8933c724bd1e6380a887d182c2e2c953a26c4b1abd5ecfaef4650a8b17c86"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/ssh.js",
+      "fileSha256": "6f27454e3fc028c8a6b1c02ae98969aace558ee0c1b6784e8fb12d4419e46d24",
+      "noticeSha256": "cf5ac5a027154addae345a063924d4b9390319f508918e326cc5de0fce88164d"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/tls.js",
+      "fileSha256": "ceee226d32c623bbae290d76b5950be0c06880310ec26dc289f66bd631de4916",
+      "noticeSha256": "a6ddbdf167723c207c6355ae79b51e0f0bdea90b75a34f41094e73da2679cff9"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/tlssocket.js",
+      "fileSha256": "99728e72301548ee5233c16bc0417f07892022d24fd178dfb9c0a40aff541a47",
+      "noticeSha256": "6639c129cd5f2a5a8cdaa71c3ce0d5da9cfacfeb1af37e367988aba3a94a7b52"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/util.js",
+      "fileSha256": "a05620c922303dd687e9447754ebde42878f37e51c390a9a3aedb592434795bc",
+      "noticeSha256": "07639145655876d1bf077db52b1a8242c6ee01c1f99a8cfa6c0ace5cc330510e"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/x509.js",
+      "fileSha256": "cce5b00838c8c08486964c1f62cb8ae3491365509b26a27cfe1917f73dee3be9",
+      "noticeSha256": "39a638608723e234de060569334b8ef57b15c20dea56d40059c12363fa66fc01"
+    },
+    {
+      "package": "node-forge",
+      "path": "lib/xhr.js",
+      "fileSha256": "d9abf523180b6d03b2cc99909eef3488a6b4bc1f822d7fb9d1e945abf555cb42",
+      "noticeSha256": "4f17f76e305b4519925cca8b3c6a2035f52bfe537a1717d5fcad64b9932166ce"
+    }
+  ],
+  "browserFiles": [
+    {
+      "path": "dist/forge.all.min.js",
+      "sha256": "baaad7f257463658489c2860eb83da1ab6bf6485557a94a8a5a97f935784a1bb"
+    },
+    {
+      "path": "dist/forge.all.min.js.map",
+      "sha256": "0b21eb8fb1c124e963d564b6462177331027f6e739f48e73184e0f6a81cac3f1"
+    },
+    {
+      "path": "dist/forge.min.js",
+      "sha256": "a1d374dddbfd38635e74c08bddcd55553f9b3e29fa4346ff8ac8cbfa2f21414f"
+    },
+    {
+      "path": "dist/forge.min.js.map",
+      "sha256": "5f11be794b0ad083ce9b2bcee1079e7ee1f0771d37beb90d6f13b2b9a8a0eba3"
+    },
+    {
+      "path": "dist/prime.worker.min.js",
+      "sha256": "877bd31b0cc79ecb9163649034fbafaeec45e8e2861fc4fa9fb11335f28c4ef9"
+    },
+    {
+      "path": "dist/prime.worker.min.js.map",
+      "sha256": "73f786b89ef54b00e0cfb6969b2881e7cffa77b4be3f03e998f70993290716a8"
+    }
+  ],
+  "browserNoticeDelivery": "All source notices and complete original LICENSE texts must accompany every redistributed browser bundle, including standalone copies. Minification is not evidence that notices survived.",
+  "buildToolScope": "webpack 4.44.1 and webpack-cli 3.3.12 are build tools, not automatically runtime components; cheap source maps are not a complete module inventory.",
+  "unbundledDependencyScope": "braces declares fill-range ^7.1.1; its separately installed transitive dependencies require their own LICENSEs and app SBOM. node-forge declares no runtime npm dependencies.",
+  "publicEvidenceSha256": "55ab4668435c9f1cbd8403a4c25c2dca9f642ada6f7d9a1df114aa76e5f0cdf1",
+  "upstreamReplyRequired": false,
+  "internalAssuranceGaps": [
+    "Exact historical jscrypto/SJCL copied revision",
+    "Exact copied TweetNaCl revision",
+    "Complete historical line-by-line correspondence"
+  ],
+  "unresolved": [
+    "RSAES-OAEP full applicable BSD conditions assessment",
+    "Project owner final redistribution authorization",
+    "Standalone bundle notice delivery and final artifact packaging review"
+  ]
+}

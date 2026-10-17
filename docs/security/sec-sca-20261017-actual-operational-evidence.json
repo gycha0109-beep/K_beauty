@@ -1,0 +1,31 @@
+{
+  "schema": "bejewely.sca-private-publication-operational-evidence.v1",
+  "observedAtUtc": "2026-10-17T08:19:28Z",
+  "scope": "EXACT_PRIVATE_UNLINKED_PUBLICATION_ONLY",
+  "maximumCharge": 0,
+  "billingRecheckSha256": "0608a617ba6430c534812edcb24c72a7c97110910802d6d48ef43e3ff3b973df",
+  "executionSnapshotSha256": "22098b93a46a97d8a71b1cc4c6c24f9f02d08723b84396d4dc2034e3db113eb5",
+  "authorizationSha256": "1bcb2f279beb2fcfd786900215bdb27ab6fac91fe900c5affe71ef11aae09665",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+  "privateAclReview": {
+    "status": "INITIAL_PRIVATE_UNLINKED_PLAN_REVIEWED",
+    "livePerPackageAcl": "NOT_RUN",
+    "existingAclChangesApproved": false,
+    "sourceLinkingApproved": false
+  },
+  "noticeDeliveryReview": {
+    "status": "VERIFIED_IN_APPROVED_ARCHIVES",
+    "actualRecipientReadback": "NOT_RUN"
+  },
+  "credentials": {
+    "status": "SAME_PC_DPAPI_AVAILABLE_AND_ACTUAL_LINUX_IDENTITIES_VERIFIED",
+    "publisher": "gycha0109-beep",
+    "reader": "jwcha01-lab",
+    "receiptSha256": "f86be75559ec830860de000be817559632e4258dc1e23c7446d4dec594385b20",
+    "publicationOperatorInjection": "ONLY_DURING_AUTHORIZED_EXECUTION_NOT_YET_RUN"
+  },
+  "bothVersionsAbsence": "REQUIRED_BY_EXISTING_OPERATOR_BEFORE_FIRST_WRITE",
+  "partialFailure": "STOP_QUARANTINE_NO_DELETE_OVERWRITE_OR_PROMOTION",
+  "originalAudit": "FAIL_NOT_WAIVED"
+}

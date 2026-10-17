@@ -1,0 +1,19 @@
+{
+  "schema": "bejewely.package-access-path-decision.v1",
+  "authority": "PROJECT_OWNER_HUMAN_INSTRUCTION",
+  "path": "UNLINKED_PRIVATE_THEN_INDIVIDUAL_ACL_THEN_SOURCE_LINK",
+  "scope": "@gycha0109-beep",
+  "finalSourceRepository": "gycha0109-beep/K_beauty",
+  "candidateMetadataPreparationApproved": true,
+  "globalInheritanceChangeApproved": false,
+  "accountOrPackageSettingsChangeApproved": false,
+  "legalConformityConfirmed": false,
+  "redistributionApproved": false,
+  "uploadApproved": false,
+  "tokenIssuanceApproved": false,
+  "costApproved": false,
+  "auditExceptionApproved": false,
+  "mergeApproved": false,
+  "productionApproved": false,
+  "humanInstruction": "확인된 '미연결 private 패키지 생성 → 개별 ACL 설정 → K_beauty 저장소 연결' 경로를 채택합니다. 기존 검증된 패치 코드는 유지하고, 저장소 연결 메타데이터만 필요한 범위에서 변경하여 새로운 후보 패키지를 생성하십시오."
+}

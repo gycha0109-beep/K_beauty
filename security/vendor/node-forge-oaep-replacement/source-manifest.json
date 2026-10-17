@@ -1,0 +1,69 @@
+{
+  "schema": "BEJEWELY_OAEP_SOURCE_V1",
+  "repository": "https://github.com/rzcoder/node-rsa",
+  "commit": "54798624ba5b15521763c6d1ca69b93115a61d67",
+  "license": "MIT",
+  "compiler": "typescript@5.9.3",
+  "target": "ES5",
+  "files": [
+    {
+      "path": "upstream/src/crypto/bytes.ts",
+      "sha256": "446c963b6d06949964ab068b0601f3f8600865494633bccd920cd5e526cd773d",
+      "bytes": 4009
+    },
+    {
+      "path": "upstream/src/crypto/digest-length.ts",
+      "sha256": "857c1e2145d59de432f17bd7aefdaf612e85c09a375dcda9534facdd492cb90f",
+      "bytes": 253
+    },
+    {
+      "path": "upstream/src/schemes/oaep.ts",
+      "sha256": "6c63a66bb11c810c553aa054b3ed2e21add571b7c03bf505def6f606b13494b1",
+      "bytes": 5792
+    },
+    {
+      "path": "upstream/LICENSE",
+      "sha256": "81bcc8d1055ee4af1f7e78241cdf5d768a3bcb98d59666b65bee120ff69a175d",
+      "bytes": 1171
+    },
+    {
+      "path": "adapter.cjs",
+      "sha256": "8924ea6640a0c3b2a12d0d604e0b7eec8041315c23eadb4ac2faa8ef50bd69b8",
+      "bytes": 3064
+    },
+    {
+      "path": "bejewely-node-rsa-oaep.js",
+      "sha256": "8a5e5d1a8c55d8d09a8d5d14c01bd94e2928bf617ddb067e0db2eda819044144",
+      "bytes": 7644
+    },
+    {
+      "path": "pkcs1.js",
+      "sha256": "810ca3452050c7cd591b48d977ad3fe9aa5d1a5c5e2615588f82f843cb16ae4c",
+      "bytes": 3938
+    },
+    {
+      "path": "provenance.json",
+      "sha256": "e8f195f8335292712480673f961eab9a850b5a0b0bf68bec0da1bd9db294be54",
+      "bytes": 1581
+    },
+    {
+      "path": "LICENSE.node-rsa.txt",
+      "sha256": "81bcc8d1055ee4af1f7e78241cdf5d768a3bcb98d59666b65bee120ff69a175d",
+      "bytes": 1171
+    }
+  ],
+  "mappings": [
+    {
+      "source": "pkcs1.js",
+      "target": "lib/pkcs1.js"
+    },
+    {
+      "source": "bejewely-node-rsa-oaep.js",
+      "target": "lib/bejewely-node-rsa-oaep.js"
+    },
+    {
+      "source": "LICENSE.node-rsa.txt",
+      "target": "LICENSE.node-rsa.txt"
+    }
+  ]
+}

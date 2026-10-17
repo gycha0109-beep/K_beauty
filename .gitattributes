@@ -1,0 +1,25 @@
+# Preserve byte-pinned release evidence and primary-source originals across checkouts.
+/security/release/** -text
+/security/vendor/node-forge-oaep-replacement/** -text
+/docs/security/sec-sca-20261015-oaep-original-recovery.json -text
+/security/vendor/node-forge-license-cleanup/** -text
+
+# Preserve exact public B6 publication evidence bytes (including signed CRLF JSON).
+/docs/security/sec-sca-20261017-actual-execution-authorization.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-actual-operational-evidence.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-actual-release-signatures.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-actual-release-trust.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-actual-signature-verification.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-actual-upload-approval.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-execution-billing-recheck.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-linux-credential-preflight.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-initial-execution-snapshot.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-recovery-authorization.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-recovery-billing-recheck.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-recovery-execution-snapshot.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-recovery-operational-evidence.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-recovery-release-signatures.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-recovery-retained-braces-evidence.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-recovery-upload-approval.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-private-publication-verification.json -text whitespace=cr-at-eol
+/docs/security/sec-sca-20261017-publication-evidence-index.json -text whitespace=cr-at-eol

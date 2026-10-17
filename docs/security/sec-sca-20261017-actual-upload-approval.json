@@ -1,0 +1,57 @@
+{
+  "schema": "bejewely.scoped-upload-approval.v3",
+  "purpose": "SCOPED_UPLOAD_READBACK_ONLY",
+  "responsibleOwner": "gycha0109-beep",
+  "policyDecisionSha256": "bf32e7d03753abde8a24e78e99d3f4d8974e140e453ca5e4d7ea00dd837bba4e",
+  "licensePacketSha256": "d6648013ec8713c867c5dd6f8accfecfcfbfdcb20bf0644f4e35432b78ea4d12",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "publicationLinkage": "UNLINKED_BOOTSTRAP",
+  "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+  "registry": "https://npm.pkg.github.com/",
+  "privateRepository": true,
+  "immutableVersions": true,
+  "originalAuditRequired": true,
+  "auditExceptionApproved": false,
+  "licenseElections": {
+    "braces": "MIT",
+    "node-forge": "BSD-3-Clause"
+  },
+  "uploadApproved": true,
+  "operationalChecks": {
+    "noChargeControlsVerified": true,
+    "privateAclReviewed": true,
+    "noticeDeliveryReviewed": true,
+    "credentialsProvisioned": true,
+    "evidenceSha256": "f9549bd751a6f6f5e9f9176df818309f4d61d668a42f42ad517f29e5cf1c4912"
+  },
+  "redistributionApproval": {
+    "approved": true,
+    "decisionSha256": "1bcb2f279beb2fcfd786900215bdb27ab6fac91fe900c5affe71ef11aae09665"
+  },
+  "rightsReview": {
+    "status": "CLEARED_BY_PROJECT_OWNER",
+    "evidenceSha256": "70c4200b850d936eaf5078499066c905a4cdb8ab5858169c393f4841562860e5",
+    "unresolved": [],
+    "upstreamReplyRequired": false,
+    "informationalGaps": [
+      "Disclose that exact historic copied versions of B-level SJCL, TweetNaCl and other recorded components remain unidentified"
+    ]
+  },
+  "mergeApproved": false,
+  "productionApproved": false,
+  "expiresAt": "2026-10-17T20:19:28Z",
+  "readbackTargets": {
+    "braces": {
+      "name": "@gycha0109-beep/braces",
+      "version": "3.0.3",
+      "sha256": "37d2604f280a0274cc26b7251e059111d36819430bc5bad578c2bdcba718b351",
+      "sha512": "sha512-WOTPNyziSBWllIVOCNrwLkyPknqTv+YZ7kpi+xeIuIs6S+Tv11O2m46QKBUnilkpw3bodnvVL02DTvKW4gbMnw=="
+    },
+    "node-forge": {
+      "name": "@gycha0109-beep/node-forge",
+      "version": "1.4.0",
+      "sha256": "353690e06c92704162c7b622fca9a2e0d4007c6bdbec6603f6906b58a02dae34",
+      "sha512": "sha512-kvIyL6GE6L1BmFmoskRYpbIAF7cJDiio1g9SWBKPqwl4J6SP/UBJPYVnkOjhRD7k50fwh0ZlIE0FYwCAMAo+KA=="
+    }
+  }
+}

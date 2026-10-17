@@ -1,0 +1,165 @@
+name: BEJEWELY SCA Release Readiness (no upload)
+run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.watchtower_track != '' && format('[WT:{0}] {1}', inputs.watchtower_track, github.workflow) || github.workflow }}
+on:
+  pull_request:
+    branches: [main, fix/security/sca-b3-private-pack-validation-20261014]
+    paths:
+      - scripts/security/*sca-release*
+      - scripts/security/sca-release-*
+      - scripts/security/run-sca-b6-*
+      - scripts/security/publish-approved-sca-*
+      - scripts/security/stage-approved-sca-*
+      - scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+      - scripts/security/verify-sca-oaep-installed.mjs
+      - security/vendor/node-forge-oaep-replacement/**
+      - security/vendor/node-forge-license-cleanup/**
+      - security/release/**
+      - .github/workflows/sca-release-readiness.yml
+  workflow_dispatch:
+    inputs:
+      watchtower_track:
+        description: CI Watchtower Track Key
+        required: false
+        type: string
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+concurrency:
+  group: sca-release-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  admission-tests:
+    name: Offline release admission and negative controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: node --test scripts/security/sca-release-bundle.test.mjs
+      - run: node --test scripts/security/sca-release-license-review.test.mjs
+      - run: node --test scripts/security/sca-release-owner-policy.test.mjs
+      - run: node --test scripts/security/sca-release-ci-scope.test.mjs
+      - run: node --test scripts/security/sca-release-oaep-operator.test.mjs
+      - run: node --test scripts/security/sca-release-encrypted-artifact.test.mjs
+      - run: node --test scripts/security/sca-release-lineage.test.mjs
+  candidate:
+    name: Clean release candidate structure (not approval)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      digest: ${{ steps.candidate.outputs.b6_candidate_sha256 }}
+      scoped_digest: ${{ steps.candidate.outputs.scoped_candidate_sha256 }}
+      notice_kit_digest: ${{ steps.candidate.outputs.browser_notice_kit_sha256 }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Attest exact HEAD
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - name: Select runtime checks from changed inputs and verified runner proof
+        id: scope
+        env:
+          SCA_REFERENCE_TOKEN: ${{ github.token }}
+        run: node scripts/security/sca-release-ci-scope.mjs
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/setup-java@v5
+        if: steps.scope.outputs.runtime_required == 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+          verify-signature: true
+      - id: candidate
+        env:
+          SCA_B6_VERIFY_CANDIDATE: '1'
+          SCA_OAEP_REPLACEMENT: '1'
+          SCA_ARCHIVE_RECIPIENT_PUBLIC_KEY_B64: ${{ vars.SCA_ARCHIVE_RECIPIENT_PUBLIC_KEY_B64 }}
+          SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
+          SCA_SCOPED_REQUIRE_ANDROID: ${{ steps.scope.outputs.runtime_required == 'true' && '1' || '' }}
+          SCA_SCOPED_INSTALL_ONLY: ${{ steps.scope.outputs.runtime_required == 'false' && '1' || '' }}
+        run: node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+      - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+      - name: Preserve owner-encrypted candidate evidence (never raw tarballs)
+        if: ${{ success() && steps.candidate.outputs.encrypted_candidate_ready == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sca-b6-owner-encrypted-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/bejewely-sca-owner-artifact/candidate.tar.gz.enc
+            ${{ runner.temp }}/bejewely-sca-owner-artifact/receipt.json
+          if-no-files-found: error
+          retention-days: 3
+  independent-candidate:
+    name: Independent clean release candidate digest replay
+    needs: candidate
+    if: ${{ always() && needs.candidate.outputs.digest != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - env:
+          SCA_B6_VERIFY_CANDIDATE: '1'
+          SCA_OAEP_REPLACEMENT: '1'
+          SCA_B6_EXPECTED_CANDIDATE_SHA256: ${{ needs.candidate.outputs.digest }}
+          SCA_SCOPED_VALIDATE_FULL_GRAPH: '1'
+          SCA_SCOPED_INSTALL_ONLY: '1'
+          SCA_SCOPED_EXPECTED_CANDIDATE_SHA256: ${{ needs.candidate.outputs.scoped_digest }}
+          SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256: ${{ needs.candidate.outputs.notice_kit_digest }}
+        run: |
+          test -n "$SCA_B6_EXPECTED_CANDIDATE_SHA256"
+          test -n "$SCA_SCOPED_EXPECTED_CANDIDATE_SHA256"
+          test -n "$SCA_SCOPED_EXPECTED_NOTICE_KIT_SHA256"
+          node scripts/security/run-sca-b3-forge-browser-dist-rebuild-probe.mjs
+      - run: git diff --exit-code -- package.json package-lock.json apps/mobile/package.json
+  original-security-gate:
+    name: Original security gate (unresolved advisories remain FAIL)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node scripts/verify-supply-chain-audit.mjs
+      - name: Preserve raw full and production responses
+        if: ${{ always() }}
+        run: |
+          node --input-type=module -e 'import {spawnSync} from "node:child_process"; for(const args of [["audit","--json"],["audit","--omit=dev","--json"]]) { const p=spawnSync("npm",args,{encoding:"utf8",timeout:120000}); console.log("SCA_B6_RAW_AUDIT_BEGIN="+args.join(" ")); console.log(p.stdout); const r=JSON.parse(p.stdout); if(p.error||![0,1].includes(p.status)||r.error||!r.metadata?.vulnerabilities)throw Error("audit service failure"); console.log("SCA_B6_RAW_AUDIT_EXIT="+p.status); }'
+  codeql:
+    name: CodeQL release preparation code
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:javascript-typescript

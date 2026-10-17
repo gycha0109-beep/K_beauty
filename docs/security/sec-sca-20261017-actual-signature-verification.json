@@ -1,0 +1,16 @@
+{
+  "status": "VERIFIED",
+  "observedAtUtc": "2026-10-17T08:27:24.7325203+00:00",
+  "approvalSha256": "c33eb13067ec0b8781181b84da4bf7689ef77e0a15998a2e8845f2f3ec2cec2a",
+  "trustSha256": "57aa445d148fa5771fdf10c3d530b46dfaf66848362eef04064625d09d1c12bc",
+  "signaturesSha256": "8e78c687b92b689b27f703c81d871f69ac8dc98841f4c26748de0e4bca9e0669",
+  "operatorSnapshotSha256": "22098b93a46a97d8a71b1cc4c6c24f9f02d08723b84396d4dc2034e3db113eb5",
+  "keyFingerprint": "8d09ade272fe502989c607502358a456d8bbc8b90e0c91c96be7e563ddcb5231",
+  "roles": 4,
+  "privateKeyExported": false,
+  "signedLinuxDryRun": "PASS",
+  "actualPublication": "PRIVATE_PAIR_VERIFIED_AFTER_SIGNED_RECOVERY",
+  "initialPublicationAttempt": "PARTIAL_STOPPED_BRACES_ONLY",
+  "currentPublicationEvidence": "sec-sca-20261017-private-publication-verification.json",
+  "originalAudit": "FAIL_NOT_WAIVED"
+}

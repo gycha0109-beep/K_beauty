@@ -1,0 +1,9 @@
+{
+  "schema": "bejewely.sca-release-trust.v2",
+  "organizationApproved": false,
+  "approvalModel": "SOLE_PROJECT_OWNER",
+  "responsibleOwner": "REQUIRES_EXPLICIT_OWNER_ID",
+  "policyDecisionSha256": "REQUIRES_VERIFIED_POLICY_DECISION_SHA256",
+  "keys": [],
+  "revokedKeyIds": []
+}
