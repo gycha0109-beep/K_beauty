@@ -47,13 +47,15 @@
 | 11건 중 2026-09-14 이전 생성 | **0** |
 | 11건 중 2026-09-14 이후 생성 | **11** |
 | 카테고리 있으나 projection 없는 한 건의 생성일 | **2026-10-01** |
+| 이 1건의 canonical taxonomy assignment | **0건** |
+| 이 1건의 legacy 카테고리 / 수집 원천 유형 | **sunscreen / official_product_page** |
 
 과거 `data_taxonomy8_nullable_legacy_category_projection_v1`은 운영에서 `products.category DROP NOT NULL` 단일 **64-byte DDL**만 기록돼 있다. 현재 GitHub의 더 넓은 선행 DO 검사는 적용 이력에 없다.
 
 **의미 구분:**
 - 현재 11건의 비정확 투영은 **모두 마이그레이션 버전 날짜 이후 생성**되었다. 이것이 2026-09-14 당시 preflight가 실패했음을 뜻하지 않는다. 과거 시점의 실제 데이터 스냅샷은 아직 없다.
 - `shadow_only` 10건의 NULL legacy projection은 구조적 상품 수집과 추천 진실 분리라는 설계상 예상 상태일 가능성이 높다. **실제 Recommendation admission 판정은 별도의 기존 엔진 기준으로 확인**해야 하며, `NULL`이 추천 승인이라는 뜻은 아니다.
-- 나머지 **category non-NULL인데 projection 없는 1건**은 운영 상품 데이터 품질/Taxonomy assignment 출처의 **별도 읽기 전용 조사 대상**이다. 자동 보정·상품/Offer/가격/CTA 변경 없이, 독립적으로 원인을 확인한다.
+- 나머지 **category non-NULL인데 projection 없는 1건**을 추가 조회한 결과, **sunscreen + official_product_page** 출처이며 **canonical taxonomy assignment가 0건**이다. 이는 shadow-only 10건과 구별되는 실제 정합성 검토 대상이다. 원본 상품 ID·상품명은 공개 PR에 게시하지 않으며 자동 보정·상품/Offer/가격/CTA 변경 없이 독립적으로 원인을 확인한다.
 
 **판정:** `HISTORICAL_TAXONOMY8_PREFLIGHT_NOT_ATTESTED / POST_MIGRATION_PROJECTION_DATA_QUALITY_REVIEW_REQUIRED`. 이 결과로 이미 nullable인 category를 과거처럼 강제 NOT NULL로 만들거나 선행 migration을 재실행하면 안 된다.
 
