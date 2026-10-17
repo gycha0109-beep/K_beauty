@@ -219,6 +219,25 @@ assert.ok(sec05MultiGap.liveRoutines.every(x=>
  x.serviceRoleExecute===true&&x.anonExecute===false&&
  x.authenticatedExecute===false));
 assert.equal(sec05MultiGap.homeDockerPg17CompleteAndFailInputContractNativeAttested,false);
+
+assert.equal(sec05MultiGap.completeLegacyInstalledTokenCount,224);
+assert.equal(sec05MultiGap.failLegacyInstalledTokenCount,207);
+assert.equal(sec05MultiGap.completeLegacyDerivedTokensEqualLivePgFunctionBody,true);
+assert.equal(sec05MultiGap.failLegacyDerivedTokensEqualLivePgFunctionBody,true);
+assert.equal(sec05MultiGap.completeFailLegacyNullBypassPg17FixtureAuthored,true);
+assert.equal(sec05MultiGap.completeFailHardenedNullMatrixPg17FixtureAuthored,true);
+assert.equal(sec05MultiGap.completeFailNewNativePg17AcceptanceMarkerPresent,false);
+assert.equal(sec05MultiGap.extendedFixtureFiles.length,2);
+const extendedSec05Runner=content(sec05MultiGap.extendedRunnerFile);
+assert.ok(extendedSec05Runner.includes("completionLegacyVariant"));
+assert.ok(extendedSec05Runner.includes("sqlBodyTokenCount(oldComplete),224"));
+assert.ok(extendedSec05Runner.includes("sqlBodyTokenCount(oldFail),207"));
+assert.ok(extendedSec05Runner.includes("D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_RETRY_ROLLBACK_PASS"));
+const extendedLegacyFixture=content(sec05MultiGap.extendedFixtureFiles[0]);
+const extendedHardenedFixture=content(sec05MultiGap.extendedFixtureFiles[1]);
+assert.ok(extendedLegacyFixture.includes("D8K13_SEC05_COMPLETE_FAIL_LEGACY_NULL_BYPASS_ROLLBACK_PASS"));
+assert.ok(extendedHardenedFixture.includes("D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_MATRIX_RETRY_ROLLBACK_PASS"));
+
 assert.ok(content(multiSourceGap.docs).includes("두 SQL 이력의 실제 비구분자 차이"));
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
