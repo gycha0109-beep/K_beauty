@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-14 / Face Lab Skin S3 metadata-only capture comparison preflight
+
+- Type: independent synthetic evaluation-only prototype. Base main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2; track face-lab-skin.
+- Implemented `skin-photo-comparability-core.mjs` with comparable/limited/not_comparable, explicit gating on subject/time/eligibility/filter/makeup/white balance/lighting and per-axis confidence; improvement authorization stays false. Added deterministic negative fixtures and one existing Current Main Health hook, no new workflow.
+- No image bytes, Provider, source photo persistence, new DB/Auth/RLS/Storage/API, signed Human evidence, production recommendation or Style mutation. Raw score delta is internal diagnostic only when metadata preflight passes, never interpreted as actual skin improvement.
+- Verification: isolated actual-source unit reproduction observed PASS; exact PR HEAD CI pending. S1 real-image calibration, S3 Human repeated camera trial, consent and retention policies HOLD.
+- SCA #1208 release block untouched.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
