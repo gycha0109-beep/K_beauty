@@ -3,6 +3,7 @@
 // no SQL, no secrets, no remote state, no mutation. This gate is intentionally
 // a HOLD until the chronology conflict and operational approvals are resolved.
 import assert from "node:assert/strict";
+import {createHash} from "node:crypto";
 import {readFileSync,existsSync,readdirSync} from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
@@ -127,6 +128,40 @@ assert.equal(sec05HomeAcceptance.legacyNullCheckDirectMarkerPresentInTranscript,
 assert.equal(sec05HomeAcceptance.entire178RowMigrationHistoryReplayed,false);
 assert.equal(sec05HomeAcceptance.hostedReleaseAuthorized,false);
 assert.ok(content(sec05HomeAcceptance.evidenceDocument).includes("D8K13_HOME_PG17_TEST_PASS"));
+const crawlerTax8RankAudit=JSON.parse(content(
+ "scripts/product-evidence/baselines/d8k13-crawler-taxonomy8-ranking-source-lineage-readonly-20261017.json"));
+assert.equal(crawlerTax8RankAudit.schema,"D8K13_CRAWLER_TAX8_RANKING_LINEAGE_READONLY_V1");
+assert.equal(crawlerTax8RankAudit.status,"RELEASE_HOLD");
+assert.equal(crawlerTax8RankAudit.rawHostedSqlIncluded,false);
+assert.equal(crawlerTax8RankAudit.hostedDbWrites,0);
+assert.equal(crawlerTax8RankAudit.productionReleaseAuthorized,false);
+assert.equal(crawlerTax8RankAudit.whole178RowMigrationReplayAccepted,false);
+const crawlerHistory=crawlerTax8RankAudit.crawler;
+const crawlerSqlSource=content(crawlerHistory.currentRepoFile);
+const crawlerBytes=Buffer.from(crawlerSqlSource,"utf8");
+const crawlerBlobSha=createHash("sha1").update(
+ Buffer.from("blob "+crawlerBytes.length+"\0","utf8")).update(crawlerBytes).digest("hex");
+assert.equal(crawlerBlobSha,crawlerHistory.currentRepoGitBlobSha,
+ "D8K13_CRAWLER_SOURCE_BLOB_SHA_CHANGED");
+assert.equal(crawlerHistory.differencesAreOnlySixEndSemicolonInsertions,true);
+assert.equal(crawlerHistory.repoLexerTokens-crawlerHistory.historicalLexerTokens,6);
+const crawlerEndLines=[...crawlerSqlSource.matchAll(/\bend;\s*\$\$/gi)]
+ .map(m=>crawlerSqlSource.slice(0,m.index).split("\n").length);
+assert.deepEqual(crawlerEndLines,crawlerHistory.expectedRepositorySourceLines);
+assert.equal(crawlerEndLines.length,6);
+assert.equal(crawlerHistory.fullNativePg17ReplayAttested,false);
+assert.equal(crawlerTax8RankAudit.sourceRankings.sourceRankingsGrantExplicitHistoryRows,0);
+assert.equal(crawlerTax8RankAudit.sourceRankings.sourceRankingsRevokeExplicitHistoryRows,0);
+assert.equal(crawlerTax8RankAudit.sourceRankings.historicalExplicitAclProvenanceResolved,false);
+assert.equal(crawlerTax8RankAudit.sourceRankings.currentAnonWrite,false);
+assert.equal(crawlerTax8RankAudit.sourceRankings.currentRlsEnabled,true);
+assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactProjectionCount,11);
+assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactShadowOnly,10);
+assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactNonNullCategory,1);
+assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactCreatedBefore20260914,0);
+assert.equal(crawlerTax8RankAudit.taxonomy8.historicalPreflightExecutedAttested,false);
+assert.ok(content(crawlerTax8RankAudit.repeatableSelectOnlySql)
+ .includes("D8K13_CRAWLER_TAX8_RANKING_HISTORY_READONLY_V1"));
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
@@ -193,6 +228,13 @@ const result={
  sameVersionSingleStatementTokenMatches:5,
  sameVersionSingleStatementEdgeNewlineBlobMatches:6,
  sameVersionCrawlerFunctionParserReviewPending:1,
+ pinnedCrawlerSixTerminalSemicolonsLexicallyIsolated:true,
+ crawlerFullNativeHistoricalReplayAccepted:false,
+ sourceRankingsCurrentPublicWriteDenied:true,
+ sourceRankingsHistoricalAclOriginStillUnverified:true,
+ pinnedTaxonomy8NonExactPostMigrationProducts:11,
+ pinnedTaxonomy8NonExactPreMigrationProducts:0,
+ pinnedTaxonomy8NonNullProjectionFollowupCount:1,
  taxonomy8HistoricalPreflightAttested:false,
  c5bHistoricalMigrationPreAndPostGuardsAttested:false,
  historicalProvenanceAllowsDeployment:false,
