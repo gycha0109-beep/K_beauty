@@ -95,3 +95,9 @@ powershell -NoProfile -File .\scripts\product-evidence\run-d8k13-sec05-acl-local
 예상 마커: `D8K13_SEC05_COMPLETE_FAIL_LEGACY_NULL_AND_ROLLBACK_PASS` / `D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_RETRY_ROLLBACK_PASS` / `D8K13_SEC05_COMPLETE_FAIL_PUBLIC_RPC_DENIED_PASS`. **아직 이 마커가 찍힌 native PG17 로그는 제출·검증되지 않았다.** 현재 검증 결과는 신규 8개 소스 파일을 통한 러너 `--check-files` PASS와 실제 운영 정의의 224/207 SQL 토큰 일치까지다.
 
 테스트는 기존 `postgres:17` 합성 컨테이너에 이어서 수행하며 Docker의 네트워크/포트/외부 DB·운영 DB 접근 차단, 임시 컨테이너 삭제 및 원본 작업 폴더 불변 조건을 유지한다. 전체 178 migration 재생, 운영 repair 권한, 독립 보안 승인, 백업 복원은 계속 HOLD다.
+
+## 6. 2026-10-17 후속 확장 8소스 Windows PG17 PASS
+
+위 §5의 신규 `complete/fail` 픽스처 `NOT_RUN`은 2026-10-17 21:16 KST **이전** 상태이다. 고정 커밋 `303a94af096f6b4b8fa0784e8920bc39843a4edd`에서 사용자 보고 로그가 소스 8개 검증과 `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS` 및 `D8K13_SEC05_EXTENDED_HOME_PG17_TEST_PASS`를 나타낸다. 이는 해당 러너가 신규 34/35 fixture의 legacy rollback, hardened NULL/retry 및 공개 역할 실행 거부를 순서대로 통과한 **간접 제어 흐름 검증 증거**이다. 개별 중간 마커 및 psql 원문 로그는 직접 확인된 것이 아니다.
+
+현재 판정 `SEC05_CLAIM_COMPLETE_FAIL_AND_RANKING_ACL_SCOPED_SYNTHETIC_PG17_PASS`; 운영 함수/ACL 보강 및 release permission은 여전히 HOLD. 정확한 최신 증거 한계와 지문은 [home PG17 후속 §5](./r16i-r4-d8k13-home-sec05-acl-pg17-acceptance-20261017.md)에 기록한다.
