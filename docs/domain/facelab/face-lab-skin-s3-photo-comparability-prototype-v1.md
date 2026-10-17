@@ -53,3 +53,13 @@
 **S3 상태:** 메모리 기반 비교 계약 및 synthetic negative-case 구축, 사용자 타임라인 저장/실제 변화 검증 **HOLD**.
 
 Watchtower-Track: face-lab-skin
+
+## 2026-10-17 Skin v2 explicit-state bridge (research-only)
+
+- The private S1-D **normal-path structural** experiment was closed for TC-01..04 (4/4 corrected-v2 cases, 28/28 axis contracts valid). TC-05 was an intentionally Skin-ineligible exception and excluded from that normal-path denominator; the truncated attempt remains recorded separately. These are **not a same-person, two-timepoint sequence**. Do not pass TC-01..04 as a longitudinal before/after study and do not infer a change in an individual's skin.
+- New `scripts/facelab/skin/skin-photo-v2-session-adapter.mjs` accepts only `vision-observation-v2` **explicit** 7-axis states, independently recorded capture metadata and Skin eligibility, then passes bounded metadata into the existing `compareSkinPhotoSessions()`. It does not call Provider, read photos, store history, infer subject identity, check Face geometry or change service policy.
+- An explicit `not_seen` with **value 0** is the only way this bridge accepts a zero as a visible-cue absent observation. `unknown` and `unassessable` require null and always block comparison for that axis; legacy v1 numeric zero and untagged model scores are rejected. A `present` requires 1–5. Ineligible Skin accepts **0 rows** only, never creates fake seven-axis zeroes. Duplicate/missing axes, confidence/state contradictions, unexpected free-text and image URL fields fail closed.
+- Separate Skin eligibility is intentionally not inferred from Face eligibility. A partially visible face can have valid Skin surface observations while Face shape observations are unavailable (e.g., private TC-04); no Face field is an input to this comparator.
+- Added pure-synthetic verifier `verify-face-lab-skin-s3-v2-adapter.mjs` and existing Main Health hook; test cases include explicit absent→present delta, abstention, low confidence, different subject, filter, ineligible, v1 version rejection, duplicate/missing axis, unexpected photo URL. A passing test validates **code behavior only**, not accuracy or real skin changes.
+- `rawScoreDeltaForAudit` is research-only and never an improvement claim. `sameSubjectAndCaptureConditionsIndependentlyVerified=false`, `actualRepeatPhotoStudyCompleted=false` and `improvementClaimAuthorized=false` remain explicit. Actual same-person repeat photos, independent Human assessment, photo retention/withdrawal approval and mobile S4/S5 gate **HOLD**.
+- All PRs remain **Draft/unmerged**, no production route, scoring/ranking, DB/Auth/RLS/Storage, Provider, Style or deployment change. Security issue #1208 remains independent.
