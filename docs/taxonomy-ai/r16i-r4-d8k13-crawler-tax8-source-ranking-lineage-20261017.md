@@ -82,3 +82,17 @@
 저장된 advisor metadata-only snapshot: `scripts/product-evidence/baselines/d8k13-hosted-security-advisors-readonly-20261017.json`. 운영 자격 증명, user membership rows, function 내부 비밀값 및 실제 사용자/상품 식별자는 저장하지 않았다.
 
 **보안 리뷰/운영 Auth 설정 승인/공급망 `#1208`/백업 복원/독립 OWNER 미완료이므로 릴리스 HOLD.**
+
+## 6. 후속 P0 읽기 전용 조사 계약 및 아직 결론 내릴 수 없는 부분
+
+최신 8소스 SEC-05 확장 PG17 PASS는 **역사적 ACL/마이그레이션 계보**를 입증하지 않는다. 다음은 본 2026-10-17 SELECT-only 스냅샷으로 확인된 범위와 아직 필요한 독립 근거다.
+
+| P0 항목 | 현재 확인 | 남은 증명 |
+| --- | --- | --- |
+| `source_rankings` | 운영 RLS ON, 공개 역할 직접 읽기·쓰기 차단. 저장 178건 SQL에서 명시적 CREATE/GRANT/REVOKE 이력 0 | 최초 객체 생성·소유자·default ACL 및 변경 시점의 별도 초기 백업/릴리스 artifact |
+| `product_candidates` | 현재 RLS ON, anon/authenticated 접근 거부, service_role INSERT/UPDATE; 명시적 ACL 변경 적용 본문 확인 불가 | 원시 CREATE 경로와 이후 GRANT/REVOKE 이력의 독립 attestation |
+| Crawler | 현재 SQL과 저장 SQL의 비구분자 5,072 토큰 일치, 종료 세미콜론 여섯 곳 차이 | 과거 serialization 원인 및 격리 PG17 parser/function replay. 구분자 외 변경으로 단정 금지 |
+| Taxonomy8 | 176건 중 정확 projection 165, shadow_only 10, 후발 `sunscreen`/공식 페이지 1건 canonical assignment 누락 | 특정 행 식별자는 비공개 read-only 검토 후 taxonomy assignment 근거, 생성/승격 경로 및 revision 정합 확인 |
+| 178건 전체 | 일부 body·이름/버전 provenance와 후속 ranking repair 입증 | 독립 deployed artifact 복원, 실행 순서·데이터 의존성·clean replay 및 실백업 복원 |
+
+이 체크포인트는 새로운 운영 조회를 실시했다고 주장하지 않는다. 사용자/상품 식별자 및 실제 `schema_migrations.statements` 본문은 공개 GitHub에 올리지 않는다. 별도 안전한 read-only 접근과 확인 가능한 외부 출처가 확보될 때까지 `PROVENANCE_UNATTESTED` / **HOLD** 유지한다.
