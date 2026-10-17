@@ -363,3 +363,10 @@
 - **기존 원장에 판정 행이 한 건이라도 있으면 변경 적용을 거절**: 기존 승인 재해석·임의 덮어쓰기를 방지하는 의도적인 사용자 확인 절차. D8K-10 캡처 UNVERIFIED는 별도 원장 0건의 증거가 아님.
 - 기존 D8C, D8K11 검사와 새 D8K12 테스트를 연결. 새 가상 검증과 역할/승인 철회/옛 승인 재사용을 포함한 **로컬 Docker PostgreSQL17 실제 검사**를 준비했으나 로컬 실행과 운영 활성화는 별도 확인 필요.
 - 별도 승인 전 운영 Supabase migration, 리뷰 본문/Storage 열람, 관리자 승인 POST, 상품 교정/Offer 쓰기, 가격 노출, PR 병합·배포 금지. 보안 #1208 미해결.
+
+## 21. D8K-13 최신 이관 checkpoint — 2026-10-17
+
+- **현재 단계:** `SEC05_CLAIM_COMPLETE_FAIL_RANKING_SCOPED_SYNTHETIC_PG17_PASS / HISTORICAL_PROVENANCE_P0_OPEN / PRODUCTION_HOLD`. 2026-10-17 21:16 KST 사용자가 전달한 8개 Git blob 고정 Windows PostgreSQL17 러너 최종 PASS를 후속 증거로 수락했다. 기록된 원시 로그가 이 채팅에 없어 독립 로그 재해시 및 SQL statement별 증명은 하지 않았다. [최신 SEC-05 home 결과](r16i-r4-d8k13-home-sec05-acl-pg17-acceptance-20261017.md).
+- **신규 metadata-only 증거 및 오프라인 보강:** `d8k13-sec05-extended-home-pg17-acceptance-20261017.json`, fail-closed Git blob 검증 모듈, D8K-13 3개 HOLD verifier. 테스트 고정 8개 코드 SHA 모두 GitHub 현 blob과 대조됨. 이후 metadata/docs/verifier 변경은 과거 Windows 시험의 코드 핀을 변경하지 않는다.
+- **P0 READ-only 재확인:** 연결된 PostgreSQL17의 178건 applied history, `source_rankings` 언급 6건, `product_candidates` 언급 40건. 직접 `CREATE TABLE` 및 `GRANT/REVOKE` 좁은 패턴은 둘 다 0건이나 전체 최초 출처의 부재 증명이 아니다. 현재 두 테이블의 RLS/일반 역할 직접 접근 차단은 확인. Taxonomy8의 예외 1건은 `promoted`·`resolved` 후보 한 건과 연결됐지만 canonical assignment 0건이고 product_form도 NULL이다. [P0 감사](r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md).
+- **차단 게이트:** 전체 migration clean replay, historical ACL 생성 출처, Crawler native parser, taxonomy8 누락 원인, 실제 백업/PITR 복원, 독립 OWNER·Security Advisor, 보안 #1208 및 owner 별도 적용 승인. D8K-5~7 구매처 UX/운영 자동화가 릴리스된 것으로 해석하지 않는다. **D8D v2 게이트 OFF / Product·Offer·가격·CTA 적용 0 / PR #1341 Draft / `--enforce-release` 코드 3 / RELEASE HOLD.**
