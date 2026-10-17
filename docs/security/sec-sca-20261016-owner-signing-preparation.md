@@ -1,5 +1,13 @@
 # Owner-local cryptographic preparation — 2026-10-16
 
+## Current result — 2026-10-17
+
+Actual owner signing and the exact private package publications are VERIFIED: retained braces3.0.3 and newly published node-forge1.4.0 match the approved candidate17119/packet8594, including full files/notices and owner/anonymous/distinct-reader access checks. Both packages are private/unlinked, owner-only, without Actions/Codespaces grants. The observed Packages billable display remains0 with paid usage blocked. [Final closeout](sec-sca-20261017-private-publication-closeout.md) and [public evidence index](sec-sca-20261017-publication-evidence-index.json) supersede all pending/execution-withheld statements below.
+
+This documentation-only commit preserves public approval/signature/snapshot bytes. It does not include local runtime helpers/tests, credentials, private keys, archives or local absolute paths. The original audit remains FAIL_NOT_WAIVED; product adoption, source linkage/ACL changes, main merge and production deployment remain unexecuted. Historical trust/rights drafts are not current execution authority and must not be reused for another publication.
+
+## Historical preparation — superseded by the verified closeout above
+
 ## Actual rights approval and remaining boundary
 
 The project owner approved final rights review ONLY for candidate **17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d** / packet **859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87**. [Actual human decision](sec-sca-20261016-owner-final-rights-approval.json), SHA256 **70c4200b850d936eaf5078499066c905a4cdb8ab5858169c393f4841562860e5**. No other candidate inherits approval. B-level exact historical copying versions remain unknown; verified grants and all notice conditions stay intact.
@@ -8,7 +16,7 @@ This is not a legal conformity guarantee, security audit PASS, cryptographic sig
 
 ## 1. Decrypt the NEW retained candidate locally
 
-Old800e decryption and RSA recipient registration are already complete; do not repeat them. [Download new artifact12033259971](https://github.com/gycha0109-beep/K_beauty/actions/runs/38869911393/artifacts/12033259971). Keep the private key on the owner machine. Update the same feature branch, preserving local changes, and run from **D:\cha\K_beauty_sca**. Destinations below must be NEW and outside Git.
+Old800e decryption and RSA recipient registration are already complete; do not repeat them. [Download new artifact12033259971](https://github.com/gycha0109-beep/K_beauty/actions/runs/38869911393/artifacts/12033259971). Keep the private key on the owner machine. Update the same feature branch, preserving local changes, and run from **<OWNER_LOCAL_PATH>
 
 ```powershell
 $ErrorActionPreference = 'Stop'

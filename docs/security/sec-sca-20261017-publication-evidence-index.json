@@ -1,0 +1,33 @@
+{
+  "schema": "bejewely.sca-private-publication-public-evidence-index.v1",
+  "scope": "DOCUMENTS_AND_PUBLIC_PROOFS_ONLY",
+  "publicationEvidence": "sec-sca-20261017-private-publication-verification.json",
+  "privateArtifactsIncluded": false,
+  "credentialsIncluded": false,
+  "privateKeysIncluded": false,
+  "sensitiveLocalPathsIncluded": false,
+  "runtimeCodeIncludedInThisCommit": false,
+  "originalAudit": "FAIL_NOT_WAIVED",
+  "files": {
+    "sec-sca-20261017-actual-execution-authorization.json": "1bcb2f279beb2fcfd786900215bdb27ab6fac91fe900c5affe71ef11aae09665",
+    "sec-sca-20261017-actual-operational-evidence.json": "f9549bd751a6f6f5e9f9176df818309f4d61d668a42f42ad517f29e5cf1c4912",
+    "sec-sca-20261017-actual-release-signatures.json": "8e78c687b92b689b27f703c81d871f69ac8dc98841f4c26748de0e4bca9e0669",
+    "sec-sca-20261017-actual-release-trust.json": "57aa445d148fa5771fdf10c3d530b46dfaf66848362eef04064625d09d1c12bc",
+    "sec-sca-20261017-actual-signature-verification.json": "369cc40b61bbd331963ab734536abdada4a28c7150d4e125d5848fd64195ad7c",
+    "sec-sca-20261017-actual-upload-approval.json": "c33eb13067ec0b8781181b84da4bf7689ef77e0a15998a2e8845f2f3ec2cec2a",
+    "sec-sca-20261017-execution-billing-recheck.json": "0608a617ba6430c534812edcb24c72a7c97110910802d6d48ef43e3ff3b973df",
+    "sec-sca-20261017-linux-credential-preflight.json": "f86be75559ec830860de000be817559632e4258dc1e23c7446d4dec594385b20",
+    "sec-sca-20261017-initial-execution-snapshot.json": "22098b93a46a97d8a71b1cc4c6c24f9f02d08723b84396d4dc2034e3db113eb5",
+    "sec-sca-20261017-recovery-authorization.json": "f9645509e0bde6412bb9f725b733461af58c6dbee5f96e8e803cc188d2e6ac89",
+    "sec-sca-20261017-recovery-billing-recheck.json": "a1fcf5981d5aac38cd2bdd162bea9ba45b2f14e2a3b1963f32ef76597da3a0a2",
+    "sec-sca-20261017-recovery-execution-snapshot.json": "feb5d46e16ea2354eab3f65419b82887f93519fe2a706c5da1a7040fc195a2f4",
+    "sec-sca-20261017-recovery-operational-evidence.json": "418dcb36b27eeb048f00d11ded9d12703ad7264d5102d1c56a5f424f6cb388f8",
+    "sec-sca-20261017-recovery-release-signatures.json": "bc276cbfa10b9b4aac92b10c6185ae4fad69a9895563fcb8ce3222779417df9e",
+    "sec-sca-20261017-recovery-retained-braces-evidence.json": "6f11c00a29af320c9eded7a6f722a64c68adad4a8f8cfcd54aabbfe1629d294a",
+    "sec-sca-20261017-recovery-upload-approval.json": "b1fe35d0f2206053e638830f45d0e2fc0745273ba8e0086becf48a7620d6cd4e",
+    "sec-sca-20261017-private-publication-verification.json": "1337d54480fd60f3385a54266b6adddd85eca776b5edac3d7e4ab9c131477dc1"
+  },
+  "historicalReceiptsArePointInTime": true,
+  "futureExecutionAuthority": "NOT_GRANTED",
+  "newHeadCi": "CHECK_GITHUB_PR_DO_NOT_INHERIT_OLD_HEAD_RESULTS"
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "bejewely.sca-execution-billing-recheck.v1",
+  "status": "PASS",
+  "observedAtUtc": "2026-10-17T08:19:28Z",
+  "owner": "gycha0109-beep",
+  "authenticatedAccountMatched": true,
+  "accountPackagesBudget": {
+    "limitUSD": 0,
+    "spentUSD": 0,
+    "usageBlocked": true
+  },
+  "packages": {
+    "billableUSD": 0,
+    "transferDisplayed": "0 GB used / 1 GB included",
+    "storageDisplayed": "0 GB used / 0.5 GB included"
+  },
+  "sharedActionsStorage": {
+    "displayed": "0 GB used / 0.5 GB included",
+    "progressPercent": 9
+  },
+  "exactRemainingSharedBytes": "UNVERIFIED_DISPLAY_LEVEL_ONLY",
+  "billingSettingsChanged": false,
+  "permittedCharge": 0,
+  "packageUpload": "NOT_RUN"
+}

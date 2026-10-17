@@ -1,0 +1,22 @@
+[
+  {
+    "role": "security",
+    "keyId": "bejewely-owner-ed25519-8d09ade272fe",
+    "signature": "JJRURAnLpDzOItH4zn2qdWzvZL7P5Jb9cVWbCZfp3P0JzIiAL1Tg6vn7Kl1NVp6w93VPDXnLOi4kWfwXWZg7BQ=="
+  },
+  {
+    "role": "license-redistribution",
+    "keyId": "bejewely-owner-ed25519-8d09ade272fe",
+    "signature": "M2/19yivtnoCU0mXl6OLPV9Dqs66SB5qRkJ+i+i7v6bJWaPvekI+7knfJA5T11n4VPfm6qp3rBYnGv+dGBiTAA=="
+  },
+  {
+    "role": "maintenance",
+    "keyId": "bejewely-owner-ed25519-8d09ade272fe",
+    "signature": "kB7V7wstGKCYo4dsYHqej8BPNtX6MIUkf6S2uiyQH0D52pDlDD7RJ/k/5VaKhlCgCSFZ2/db41vK7ct7uw0fDA=="
+  },
+  {
+    "role": "distribution",
+    "keyId": "bejewely-owner-ed25519-8d09ade272fe",
+    "signature": "cbOIePZRK8neBUZ6a77Cm2QNLdRikjhsBPYED2zOnW8XUzOnHpZwqioyvMCXRiOMpyEDb9h3fZOEh72pi5R5BA=="
+  }
+]

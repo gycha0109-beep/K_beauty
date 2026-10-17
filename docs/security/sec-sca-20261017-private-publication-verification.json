@@ -1,0 +1,112 @@
+{
+  "status": "VERIFIED",
+  "observedAtUtc": "2026-10-17T11:48:31.207904+00:00",
+  "scope": "PRIVATE_UNLINKED_PUBLICATION_AND_ACCESS_VERIFICATION_ONLY",
+  "candidateSha256": "17119d9a264faba07951e8db3519a8ef23452504e30212b6a18c34994980621d",
+  "candidateLicensePacketSha256": "859448143dbd676ad549f0abb9e1e63a4439c12ee58859b75dd12f2382ac7e87",
+  "remoteHead": "e280fe67865ad69529480ff4f2edd124d67b303d",
+  "recoveryApprovalSha256": "b1fe35d0f2206053e638830f45d0e2fc0745273ba8e0086becf48a7620d6cd4e",
+  "trustSha256": "57aa445d148fa5771fdf10c3d530b46dfaf66848362eef04064625d09d1c12bc",
+  "sourceSnapshotSha256": "feb5d46e16ea2354eab3f65419b82887f93519fe2a706c5da1a7040fc195a2f4",
+  "recoverySignaturesSha256": "bc276cbfa10b9b4aac92b10c6185ae4fad69a9895563fcb8ce3222779417df9e",
+  "genuineOwnerSigning": {
+    "status": "PASS",
+    "observedAtUtc": "2026-10-17T11:46:53.7241791+00:00",
+    "packageUpload": "NOT_RUN",
+    "originalAudit": "FAIL_NOT_WAIVED",
+    "approvalSha256": "b1fe35d0f2206053e638830f45d0e2fc0745273ba8e0086becf48a7620d6cd4e",
+    "trustSha256": "57aa445d148fa5771fdf10c3d530b46dfaf66848362eef04064625d09d1c12bc",
+    "signaturesSha256": "bc276cbfa10b9b4aac92b10c6185ae4fad69a9895563fcb8ce3222779417df9e",
+    "keyFingerprint": "8d09ade272fe502989c607502358a456d8bbc8b90e0c91c96be7e563ddcb5231",
+    "privateKeyExported": false,
+    "roles": 4
+  },
+  "signedLinuxDryRun": "PASS",
+  "focusedTests": {
+    "runtime": "pinned isolated Linux Node22.23.3",
+    "passed": 81,
+    "failed": 0,
+    "publicInputTamperCasesRejected": 7
+  },
+  "operatorResult": {
+    "retainedAndReadBack": [
+      "@gycha0109-beep/braces"
+    ],
+    "publishedAndReadBack": [
+      "@gycha0109-beep/node-forge"
+    ],
+    "officialAudit": "FAIL_NOT_WAIVED",
+    "productApplied": false,
+    "mergeApproved": false,
+    "productionApproved": false,
+    "stage": "PRIVATE_UNLINKED_ONLY",
+    "finalLinkageAndAcl": "HOLD_OWNER_ACTION_NOT_RUN",
+    "readbacks": [
+      {
+        "name": "@gycha0109-beep/braces",
+        "version": "3.0.3",
+        "tarballUrl": "https://npm.pkg.github.com/download/@gycha0109-beep/braces/3.0.3/87dfc455e199b79a8222d7ad68afd204d73a49c2",
+        "sha256": "37d2604f280a0274cc26b7251e059111d36819430bc5bad578c2bdcba718b351"
+      },
+      {
+        "name": "@gycha0109-beep/node-forge",
+        "version": "1.4.0",
+        "tarballUrl": "https://npm.pkg.github.com/download/@gycha0109-beep/node-forge/1.4.0/e00d47ae0504696ed42d8b74c4a0cc5de7d799be",
+        "sha256": "353690e06c92704162c7b622fca9a2e0d4007c6bdbec6603f6906b58a02dae34"
+      }
+    ]
+  },
+  "liveReadback": {
+    "exactArchiveAndNotices": "PASS_BOTH",
+    "ownerRead": "PASS_BOTH",
+    "anonymousDenied": "PASS_BOTH_401_403_OR_404",
+    "validDistinctReaderDenied": "PASS_BOTH_401_403_OR_404",
+    "reader": "jwcha01-lab",
+    "redirectPolicy": "EXACT_SERVICE_SINGLE_HOP_NO_AUTH_FORWARDING",
+    "signedQueryPersisted": false
+  },
+  "effectiveAclUi": {
+    "braces": {
+      "visibility": "private",
+      "humanMembers": [
+        {
+          "login": "gycha0109-beep",
+          "role": "Admin"
+        }
+      ],
+      "actionsRepositories": [],
+      "codespacesRepositories": [],
+      "repositoryLinked": false
+    },
+    "node-forge": {
+      "url": "https://github.com/users/gycha0109-beep/packages/npm/node-forge/settings",
+      "version": "1.4.0",
+      "visibility": "private",
+      "humanMembers": [
+        {
+          "login": "gycha0109-beep",
+          "role": "Admin"
+        }
+      ],
+      "actionsRepositories": [],
+      "codespacesRepositories": [],
+      "repositoryLinked": false
+    }
+  },
+  "postPublicationBilling": {
+    "account": "gycha0109-beep",
+    "product": "Packages",
+    "displayedSpentUsd": 0,
+    "budgetUsd": 0,
+    "usageBlocked": true,
+    "settingsChanged": false,
+    "exactRemainingSharedBytes": "UNVERIFIED"
+  },
+  "sourceRepositoryConnection": "NOT_RUN_OUTSIDE_APPROVED_SCOPE",
+  "existingAclChanged": false,
+  "productApplied": false,
+  "mainMerged": false,
+  "productionDeployed": false,
+  "originalAudit": "FAIL_NOT_WAIVED",
+  "commitAndPush": "NOT_RUN"
+}
