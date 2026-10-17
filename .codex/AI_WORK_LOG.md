@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-15 / Face Lab Skin S5 independent product and release readiness gate
+
+- Base main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2. Track face-lab-skin. Separate S5 synthetic-only evaluator, tests and written S0–S5 evidence/HOLD table.
+- `skin-s5-readiness-gate.mjs` reads explicit status and evidence family for S0–S4 and security/privacy/ownership/CI/rollback signoff; missing evidence HOLD; failed mandatory gate BLOCKED; even all fields declared pass requires independent verification and NEVER self-authorizes product release.
+- Diagnostic unit tests reproduced from actual source in isolated JS: PASS; exact-head repository checks pending. No real-photo, Human, mobile testing, production access, authorization, or shipping claim.
+- Existing #1208 security block remains active. S4 unresolved mobile-camera workflow contract tracked separately; Style Track untouched. No DB/Auth/RLS/Storage/Payment/Provider/API or production writes.
+- Next: verify S5 exact-head PR, update evidence ledger; external independent photos/owners only when authorized. Do not merge or deploy.
+
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.
