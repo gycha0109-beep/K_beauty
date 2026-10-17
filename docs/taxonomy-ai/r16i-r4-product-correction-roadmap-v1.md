@@ -257,3 +257,9 @@
 - 사용자의 고정 HEAD `303a94af096f6b4b8fa0784e8920bc39843a4edd` Windows 확장 PG17 러너 결과에서 8개 소스 검증과 최종 `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS`가 보고됨. 이전 `complete/fail NOT_RUN`은 해당 시점 기록이며 **현재 scoped synthetic PASS**로 별도 후속 기록. 독립 statement-by-statement 로그나 운영 함수 보강 적용 근거는 아님.
 - 운영 178 applied migration 재확인, `source_rankings`·`product_candidates`의 현재 공개 역할 차단과 과거 CREATE/ACL 출처 미확인을 구분했다. Taxonomy8 예외 1건은 `promoted/resolved` 후보와 연결된 상태지만 canonical assignment가 없어 원인 조사 HOLD. 자세한 비식별 스냅샷과 증거 한계는 [D8K-13 이력 조사](r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md).
 - 가장 높은 미완료 P0는 **역사적 생성/수정 provenance와 전체 migration 실행·복구 가능성 인증**. Crawler 6 종료 구분자 격리 PG17 파서, 실백업/PITR 복원, 독립 권한/보안 검토와 공급망 이슈 #1208 해소 전 운영 migration repair/SQL·Auth·RLS/권한 변경, Product/Offer/CTA 출시, PR 병합·배포를 승인하지 않는다. 계속 `D8K13_HOSTED_RELEASE_HOLD`.
+
+### 2026-10-17 D8K-13 P0 원점·Taxonomy8 후속 조사 결과
+
+- 운영 178건 적용 이력의 가장 이른 `20260410` SQL 자체가 `product_candidates` ALTER 및 `source_rankings` 참조 뷰를 사용한다. 기록 내 두 테이블의 직접 초기 CREATE/GRANT/REVOKE를 입증하지 못했고, **최초 스키마/권한 계보는 기록보다 앞선 별도 bootstrap 증거가 있어야 한다**는 의존성 경계를 확인했다.
+- Product taxonomy 예외 1건은 `crawler-canonical-product-structural-adoption-v1`의 `inserted` promotion으로 축소됐다. 현재 structural writer가 Product category를 보존하면서 assignment를 쓰지 않고, catalog-only writer만 assignment를 동시 기록하는 계약 차이를 확인. **보수 정책 승인 전 자동 assignment DML 금지**, 추천 admission 및 가격/Offer 권한과 분리.
+- 관련 SELECT-only SQL/metadata-only baseline + offline verifier를 Git에 기록. 운영 이력 최초 증거·실제 백업 복원·전체 migration replay·Security #1208·독립 OWNER 검토 미확인 상태. R4-D8D-R1 P0는 **진행, 출시 HOLD**.
