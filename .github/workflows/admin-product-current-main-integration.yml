@@ -135,7 +135,9 @@ jobs:
           cache: npm
 
       - name: Install application dependencies
-        run: npm ci --no-audit --no-fund
+        run: node scripts/security/install-product-dependencies.mjs --no-audit --no-fund
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Install crawler dependencies
         working-directory: crawler

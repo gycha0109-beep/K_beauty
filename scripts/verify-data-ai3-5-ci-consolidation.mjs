@@ -202,7 +202,8 @@ for (const script of consolidatedOnlyScripts) {
   );
 }
 
-assert.equal(count(canonical, "npm ci --no-audit --no-fund"), 1, "canonical npm ci must execute exactly once");
+assert.equal(count(canonical, "node scripts/security/install-product-dependencies.mjs --no-audit --no-fund"), 1, "canonical authenticated npm ci must execute exactly once");
+assert.equal(count(canonical, "npm ci --no-audit --no-fund"), 0, "canonical install must use credential-isolated npm ci");
 assert.equal(count(canonical, "npm run architecture:guard"), 1, "canonical architecture guard must execute exactly once");
 assert.equal(count(canonical, "npm run build"), 1, "canonical production build must execute exactly once");
 assert.ok(canonical.includes("node --check scripts/validate-data-ai4-provider-shadow-runtime-response.mjs"));

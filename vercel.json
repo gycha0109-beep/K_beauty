@@ -19,5 +19,6 @@
       "path": "/api/internal/automatic-evidence-daily",
       "schedule": "0 2 * * *"
     }
-  ]
+  ],
+  "installCommand": "node scripts/security/install-product-dependencies.mjs"
 }

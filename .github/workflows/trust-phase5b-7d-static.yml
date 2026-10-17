@@ -236,7 +236,9 @@ jobs:
         run: node scripts/verify-trust-5b-7d-ci-responsibility.mjs
 
       - name: Install dependencies once
-        run: npm ci --no-audit --no-fund
+        run: node scripts/security/install-product-dependencies.mjs --no-audit --no-fund
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify TRUST 5B-7D static prerequisites once
         shell: bash

@@ -5,7 +5,7 @@ import fs from "node:fs";
 const api=fs.readFileSync("app/api/admin/products/r16i-correction-review/apply/route.js","utf8");
 const ui=fs.readFileSync("app/admin/products/r16i-correction-review/R16IR4D8ApplyWorkspace.js","utf8");
 const parent=fs.readFileSync("app/admin/products/r16i-correction-review/R16ICorrectionEvidenceWorkbench.js","utf8");
-const migration=fs.readFileSync("supabase/migrations/20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql","utf8");
+const migration=fs.readFileSync("supabase/migrations/20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql","utf8");
 const setup=fs.readFileSync("tests/fixtures/r16i-d8d/00_minimal_pg17.sql","utf8");
 const pg=fs.readFileSync("tests/fixtures/r16i-d8d/20_transactional_pg17.sql","utf8");
 const workflow=fs.readFileSync(".github/workflows/database-integration.yml","utf8");
