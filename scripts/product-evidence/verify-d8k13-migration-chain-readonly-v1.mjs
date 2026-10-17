@@ -2,6 +2,7 @@
 // D8K-13 migration-chain audit. Filesystem + checked-in read-only migration
 // metadata ONLY. No network, env/secrets, DB, subprocess, or filesystem writes.
 // Source version/name equality is NOT proof of SQL-body equality.
+import {verifyD8k13PreledgerReconstruction} from "./verify-d8k13-preledger-reconstruction-v1.mjs";
 import assert from "node:assert/strict";
 import {readFileSync,readdirSync} from "node:fs";
 import {dirname,join,resolve} from "node:path";
@@ -20,6 +21,9 @@ if(args.includes("--help")){
  process.exit(0);
 }
 
+const preledger=verifyD8k13PreledgerReconstruction(root);
+assert.equal(preledger.foundationalSchemaOriginAttested,false);
+assert.equal(preledger.full178MigrationReplayApproved,false);
 const baseline=JSON.parse(readFileSync(baselinePath,"utf8"));
 assert.equal(baseline.schema,"D8K13_HOSTED_MIGRATION_HISTORY_READONLY_V1");
 assert.ok(Array.isArray(baseline.migrations)&&baseline.migrations.length>0);
@@ -110,6 +114,11 @@ const summary={
  localVersionAbsentAfterWatermark:afterWatermark.length,
  sourceSqlBodyEquivalentVerified:false,
  migrationRepairAuthorized:false,
+ preledgerFoundationalSchemaOriginAttested:preledger.foundationalSchemaOriginAttested,
+ preledgerHistoricalBootstrapReconstructionAccepted:false,
+ preledgerCurrentSchemaOnly:preledger.currentSchemaOnly,
+ preledgerBlockingPrerequisites:preledger.blockingPrerequisites,
+ historicalFullReplayCannotStartWithoutIndependentBootstrap:true,
  recommendedAction:"Do NOT run db push or migration repair; reconcile exact versions, historical SQL bodies, deployed schema, older unmatched scripts and full dependency chain under independent review."
 };
 const result={...summary,
