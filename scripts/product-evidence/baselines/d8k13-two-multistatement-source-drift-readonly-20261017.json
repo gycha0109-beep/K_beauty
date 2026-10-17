@@ -136,7 +136,22 @@
       "homeDockerPg17CompleteAndFailInputContractNativeAttested": false,
       "publicPathExploitDemonstrated": false,
       "hostedSecurityFunctionMigrationAuthorized": false,
-      "conclusion": "NONTRIVIAL_GIT_ONLY_SEC05_VALIDATION__THREE_HOSTED_SERVICE_ROLE_FUNCTIONS_STILL_LEGACY__COMPLETE_FAIL_NEGATIVE_PG17_PENDING"
+      "conclusion": "NONTRIVIAL_GIT_ONLY_SEC05_VALIDATION__THREE_HOSTED_SERVICE_ROLE_FUNCTIONS_STILL_LEGACY__COMPLETE_FAIL_NEGATIVE_PG17_PENDING",
+      "completeLegacyInstalledTokenCount": 224,
+      "completeDerivedLegacyFromGitTokenCount": 224,
+      "completeLegacyDerivedTokensEqualLivePgFunctionBody": true,
+      "failLegacyInstalledTokenCount": 207,
+      "failDerivedLegacyFromGitTokenCount": 207,
+      "failLegacyDerivedTokensEqualLivePgFunctionBody": true,
+      "exactDerivationRemovesFullAddedInputGuardBlockAndRestoresFourLegacyComparisonsPerFunction": true,
+      "completeFailLegacyNullBypassPg17FixtureAuthored": true,
+      "completeFailHardenedNullMatrixPg17FixtureAuthored": true,
+      "completeFailNewNativePg17AcceptanceMarkerPresent": false,
+      "extendedRunnerFile": "scripts/product-evidence/run-d8k13-sec05-acl-synthetic-pg17.mjs",
+      "extendedFixtureFiles": [
+        "tests/fixtures/r16i-d8k13/34_sec05_legacy_completion_failure_null_pg17.sql",
+        "tests/fixtures/r16i-d8k13/35_sec05_hardened_completion_failure_pg17.sql"
+      ]
     }
   ],
   "allNonDelimiterTokenEditsExplained": true,
