@@ -2,6 +2,18 @@
 
 ## Entries
 
+### 2026-10-18 / Product SCA remediation after B6 private publication
+
+- 유형: 진단 후 제한 실행. 기준 `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2`, 브랜치 `codex/security/sca-product-remediation-20261017`; 기존 #1299와 두 기존 작업실 보존.
+- 변경: 승인된 braces/forge 실제 제품 설치 연결, Next/selector-parser/uuid 공식 안전 버전, CommonJS 호환 선형 URL decoder 교체 및 정확한 lock 고정. canonical verifier의 별도 crawler 의존 관계로 범위를 확장하여 ws/esbuild도 수정. 원래 root 35건(22 high/13 moderate), production 30건과 별도 crawler 2건을 각각 재검사 0건으로 확인.
+- 보안: 설치된 수정 파일·consumer·숨은 중첩 복사본 census 및 악성 입력 검사. 원래 패키지 이름의 추가 metadata-only 검사 FAIL(전체 25/production 22)을 그대로 보존하고 정확히 수정·검증된 3개 원인만 별도 근거로 대응; 새 advisory는 차단. 예외 연장·숫자 차감·검사 비활성화 없음.
+- 인증 설치: 소유자 read:packages Actions secret 연결, root 43곳과 crawler 독립 설치 6곳 구분, 임시 인증 삭제 후 코드 검증·lifecycle 실행. 기존 workflow job/needs/action/step 수 유지. 토큰·개인키·인증 헤더·소유자 절대 경로·비공개 패키지 내용 미포함.
+- 실행: Linux Node22/npm10 canonical current-main health/Next production build와 recommendation 164×12 replay PASS. Windows/Linux credential 격리 3개 테스트 PASS. 웹 실제 Google 로그인·기존 결과 조회와 익명/잘못된 bearer 차단, 공개 Supabase 연결 확인. 실제 provider 분석/유료 호출/레코드 변경 미실행.
+- 모바일: 최종 x86_64 debug/release APK 빌드와 양쪽 카메라·설문·접근 차단·링크·언어/테마 smoke PASS. Windows 개발 실행 실패는 Metro가 IPv6에만 바인딩된 증거로 한정 진단; 임시 검증 harness에 IPv4 DNS 순서를 지정. 잘못 의심했던 앱 템플릿 변경과 관련 테스트는 제거하고 기존 생성 소스 보존. 원래 앱 템플릿으로 IPv4 Metro 연결·전체 smoke 통과. 최종 웹/Expo/APK 3,214개 파일 비밀정보 패턴 검사 0건.
+- 외부 경고: GitGuardian 38321889의 SHA256 inventory 오탐을 정식 사건 검토에서 Not a secret으로 처리하고 근거 기록; 과거 GitHub check 실패는 PASS로 바꾸지 않음.
+- 상태/잔여: 로컬 검증 후 사용자가 제품 커밋/푸시/새 PR·자동검사를 명시 승인. 새 제품 HEAD의 CI·iOS native·실기기 인증·ARM native는 현재 증거 작성 시 미실행; main 병합·프로덕션 배포는 별도 미승인. 운영 설치 서비스의 read-only 인증 경로 확정 및 2026-10-24 토큰 만료 전 갱신 필요. 재게시/ACL/결제/DB 정책 변경 0.
+- 상세: `docs/security/sec-sca-20261018-product-remediation.md`, `security/product-remediation-verification.json`. 구조 영향: 안전한 private install 경로와 수정 코드 inventory 단일 기준 추가; API/DB/도메인 저장 계약 변경 없음. AI_CONTEXT 승격 제안 없음.
+
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
 - 유형: 범위 제한 실행(실제 DB/운영 환경 미접근). 기준 `main@22fb2addc4a09283b6c07effe2790f4b06f0aa56`, 트랙 `face-research`.

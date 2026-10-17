@@ -171,7 +171,9 @@ jobs:
           cache: npm
 
       - name: Install verifier dependencies without lifecycle scripts
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: node scripts/security/install-product-dependencies.mjs --ignore-scripts --no-audit --no-fund
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify database migration authority and non-production safety
         run: node scripts/verify-database-integration-authority.mjs

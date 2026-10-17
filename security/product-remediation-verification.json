@@ -1,0 +1,83 @@
+{
+  "schema": "bejewely.product-security-verification.v1",
+  "observedDate": "2026-10-18",
+  "baselineSourceCommit": "1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2",
+  "rootLockSha256": "bb97d8355cbca12067d812937c472a1225c04bb7f46218db8df7db1a1f10f5b2",
+  "crawlerLockSha256": "5dd15acdb9d5b63aa23a40c00201ecc0fb6dec4d0b61dd51a130dda554fb39aa",
+  "baselineAudit": {
+    "status": "FAIL_NOT_WAIVED",
+    "rootAll": { "high": 22, "moderate": 13, "critical": 0, "total": 35 },
+    "rootProduction": { "high": 19, "moderate": 11, "critical": 0, "total": 30 },
+    "crawlerAll": { "high": 1, "low": 1, "total": 2 },
+    "uniqueRootLeafAdvisories": 7,
+    "uniqueCrawlerLeafAdvisories": 3
+  },
+  "currentRegistryAudit": {
+    "rootAll": { "high": 0, "moderate": 0, "critical": 0, "total": 0 },
+    "rootProduction": { "high": 0, "moderate": 0, "critical": 0, "total": 0 },
+    "crawlerAll": { "high": 0, "low": 0, "total": 0 },
+    "crawlerProduction": { "high": 0, "low": 0, "total": 0 },
+    "namespaceChangeAloneIsRemediation": false
+  },
+  "originalIdentityShadowAudit": {
+    "status": "FAIL",
+    "installsPerformed": 0,
+    "countsAdjusted": false,
+    "all": { "high": 22, "moderate": 3, "critical": 0, "total": 25 },
+    "production": { "high": 19, "moderate": 3, "critical": 0, "total": 22 },
+    "leafAdvisories": [ "GHSA-vfj7-8cjw-p6xm", "GHSA-86w9-cpqp-85rv", "GHSA-vcc3-ghjq-m6fr" ],
+    "installedContentAndBehaviorForTheseAdvisories": "VERIFIED",
+    "uncoveredLeafAdvisories": 0
+  },
+  "verification": {
+    "linuxRuntime": { "node": "22.23.3", "npm": "10.9.9" },
+    "installedContentAndConsumersWindowsLinux": "PASS",
+    "adversarialBehaviorWindowsLinux": "PASS",
+    "contentLockAndHiddenCopyNegativeControls": { "rejected": 3 },
+    "installerCredentialIsolationWindowsLinux": { "passed": 3, "failed": 0 },
+    "linuxCanonicalCurrentMainHealth": "PASS",
+    "webProductionBuild": "PASS",
+    "mobileTypesLintContractsHermesExport": "PASS",
+    "recommendationDeterministicReplay": { "cases": 164, "repeats": 12, "status": "PASS" },
+    "webPublicRouteResponses": "PASS",
+    "webAnonymousAndInvalidBearerDenied": "PASS",
+    "ownerGoogleLoginAndExistingReportReads": "PASS",
+    "publicSupabaseHealthAndSettings": "PASS",
+    "androidX8664NativeDebugBuild": "PASS",
+    "androidX8664NativeReleaseBuild": "PASS",
+    "androidEmbeddedReleaseDeviceSmoke": "PASS",
+    "androidFinalDebugDeviceSmoke": "PASS",
+    "androidApplicationTemplateChanged": false,
+    "changedFileSecretAndOwnerPathScan": "PASS",
+    "artifactTokenAndPrivatePemScan": "PASS_DEBUG_RELEASE_NEXT_EXPO",
+    "artifactFilesScanned": 3214,
+    "artifactCredentialDetections": 0,
+    "hostedNewHeadCi": "NOT_RUN"
+  },
+  "ciInstallation": {
+    "secretName": "SCA_PACKAGES_READ_TOKEN",
+    "owner": "gycha0109-beep",
+    "scopes": "read:packages",
+    "expiresAt": "2026-10-24T15:17:16Z",
+    "secretValueIncluded": false,
+    "changedWorkflowFiles": 31,
+    "authenticatedRootInstallSites": 43,
+    "unchangedCrawlerInstallSites": 6,
+    "workflowTopology": "PASS",
+    "productionInstallServiceConfigured": false
+  },
+  "gitGuardian": {
+    "incident": 38321889,
+    "reviewDisposition": "IGNORED_NOT_A_SECRET_FALSE_POSITIVE",
+    "reason": "SHA256 source-file inventory entry in B6 execution snapshots",
+    "scanningDisabled": false,
+    "oldCheckId": 117394847341,
+    "oldCheckConclusion": "FAILURE"
+  },
+  "notRun": [ "ios-native-device", "android-arm-native", "mobile-authenticated-provider-login", "paid-analysis-provider", "new-product-head-ci", "main-merge", "production-deployment" ],
+  "packagePublicationRepeated": false,
+  "packageAclChanged": false,
+  "billingChanged": false,
+  "privateKeysIncluded": false,
+  "credentialsIncluded": false
+}
