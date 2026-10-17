@@ -11,6 +11,8 @@ WITH h AS (
  FROM h WHERE txt ILIKE '%source_rankings%'
 ), per_product AS (
  SELECT p.id,p.category IS NULL AS null_cat,p.created_at,
+ NOT EXISTS(SELECT 1 FROM public.product_catalog_taxonomy_assignments a WHERE a.product_id=p.id)
+   AS lacks_canonical_assignment,
  count(e.product_id) AS n,
  coalesce(bool_and(e.exact_equivalent),false) AS exact,
  coalesce(bool_and(e.assignment_state='shadow' AND e.taxonomy_authority_mode='shadow_only'),false) AS shadow
@@ -22,6 +24,8 @@ WITH h AS (
  count(*) FILTER(WHERE n<>1 OR exact IS NOT TRUE) invalid,
  count(*) FILTER(WHERE (n<>1 OR exact IS NOT TRUE) AND null_cat) invalid_null,
  count(*) FILTER(WHERE (n<>1 OR exact IS NOT TRUE) AND NOT null_cat) invalid_nonnull,
+ count(*) FILTER(WHERE (n<>1 OR exact IS NOT TRUE) AND NOT null_cat AND lacks_canonical_assignment)
+   invalid_nonnull_missing_assignment,
  count(*) FILTER(WHERE (n<>1 OR exact IS NOT TRUE) AND shadow) shadow_invalid,
  count(*) FILTER(WHERE (n<>1 OR exact IS NOT TRUE) AND created_at < '2026-09-14'::timestamp) invalid_before_cutoff,
  count(*) FILTER(WHERE (n<>1 OR exact IS NOT TRUE) AND created_at >= '2026-09-14'::timestamp) invalid_after_cutoff
@@ -53,6 +57,7 @@ SELECT jsonb_build_object(
  WHERE d.defaclobjtype='r' AND n.nspname='public' AND pg_get_userbyid(d.defaclrole)='postgres'),
  'taxonomy8_current',(SELECT jsonb_build_object('total',total,'non_exact',invalid,
  'non_exact_null_category',invalid_null,'non_exact_nonnull_category',invalid_nonnull,
+ 'non_exact_nonnull_missing_canonical_assignment',invalid_nonnull_missing_assignment,
  'non_exact_shadow_only',shadow_invalid,
  'non_exact_created_before_20260914',invalid_before_cutoff,
  'non_exact_created_after_20260914',invalid_after_cutoff)
