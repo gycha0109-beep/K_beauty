@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // D8K13 pre-ledger reconstruction gate. OFFLINE read-only proof review.
+import {verifyD8k13OriginalSourceInventory} from "./verify-d8k13-private-bootstrap-intake-v1.mjs";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {readFileSync} from "node:fs";
@@ -23,6 +24,10 @@ const flags=[
  "explicitProductionReleaseAuthorization"
 ];
 export function verifyD8k13PreledgerReconstruction(root=ROOT){
+ const discovery=verifyD8k13OriginalSourceInventory(root);
+ assert.equal(discovery.originalBootstrapFound,false);
+ assert.equal(discovery.originalBackupAttested,false);
+ assert.equal(discovery.releaseAuthorized,false);
  const b=JSON.parse(readFileSync(join(root,baselinePath),"utf8"));
  assert.equal(b.schema,"D8K13_PRELEDGER_RECONSTRUCTION_READINESS_V1");
  assert.equal(b.status,"RELEASE_HOLD");
@@ -138,6 +143,7 @@ export function verifyD8k13PreledgerReconstruction(root=ROOT){
  assert.equal(synthetic.releaseAuthorized,false);
  return {status:"HOLD",offlineOnly:true,foundationalSchemaOriginAttested:false,
   currentSchemaOnly:true,blockingPrerequisites:flags.length,
+  originalSourceDiscovery:"NO_AUTHENTIC_PRELEDGER_ARTIFACT_RECOVERED",
   full178MigrationReplayApproved:false,hostedWrites:0};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
