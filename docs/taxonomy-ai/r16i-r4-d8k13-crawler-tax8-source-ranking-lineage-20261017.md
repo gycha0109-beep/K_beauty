@@ -106,3 +106,36 @@
 - Taxonomy8의 예외 한 건: 기존 `sunscreen` category를 가진 2026-10-01 생성 상품이며 `product_form`은 NULL, canonical assignment **0건**. 이 Product에 결합된 Candidate **1건**의 `review_status=promoted`, `identity_resolution_state=resolved`를 확인. **승격 후보가 있다는 사실은 taxonomy assignment 반영이나 추천 승인·판매 승인과 동의어가 아니다.**
 
 증거: `scripts/product-evidence/baselines/d8k13-p0-targeted-hosted-readonly-20261017.json` (aggregate-only, 식별자 제외). 정규식 매칭은 완전한 SQL parser가 아니고 178개 적용 기록 바깥 초기 스키마/동적 SQL/다른 명명·인용 방식을 증명하거나 배제할 수 없다. **최초 ACL 출처와 단일 상품 assignment 누락 원인은 여전히 미확인**이며, 독립 초기 배포 artifact 및 상품 승격·taxonomy 작성 이벤트의 승인된 감사 근거를 확보하기 전까지 자동 SQL 보정 금지. 전체 `HOLD` 유지.
+
+## 8. 2026-10-17 추가 P0 결론 — 초기 적용 이력 경계 및 Taxonomy8 누락 경로 확인
+
+**운영 PostgreSQL17 SELECT-only 실조회 + 현재 Git 고정 함수 본문 비교**를 수행했다. SQL 본문이나 제품/사용자 식별자 자체는 공개하지 않았고, 원시 이력 SQL의 재적용도 없다. 반복 조회: `scripts/product-evidence/sql/d8k13-p0-acl-taxonomy-provenance-readonly-v1.sql`; 비식별 스냅샷: `scripts/product-evidence/baselines/d8k13-p0-acl-taxonomy-provenance-followup-20261017.json`.
+
+### A. `source_rankings` / `product_candidates` 최초 스키마 원점
+
+- 운영 `schema_migrations`의 **최초** 기록은 `20260410_safe_review_and_promotion_layer`이며, **그 이전 기록은 0건**이다. 이 최초 운영 적용 SQL은 `product_candidates`를 `ALTER TABLE` 하고, `source_rankings`를 JOIN하는 뷰를 생성한다. **두 테이블에 대한 `CREATE TABLE`은 최초 기록에 없다.** 따라서 정상 실행을 전제로 하면 두 테이블은 해당 첫 기록 이전 또는 ledger 외부의 사전 스키마에 존재해야 한다. 이는 *최초 생성일/DDL/ACL 변천* 자체를 증명하지 않는다.
+- 전체 **178건** applied statements에서 `source_rankings` 언급 6건, `product_candidates` 언급 40건. 두 테이블의 좁은 직접 `CREATE TABLE` 및 `GRANT/REVOKE` 구문 패턴은 모두 0건이다. 정규식은 동적 SQL·식별자 인용·탐색 경로·외부 provisioning 증거를 놓칠 수 있으므로 **초기 생성/ACL 기원은 `UNATTESTED`**.
+- 현재 두 테이블은 RLS ON, anon/authenticated 직접 SELECT/INSERT 불가, service_role INSERT 허용을 재검증했다. 현재 접근 차단과 과거 ACL 출처 미확인은 **양립**하며, 이력 복원 없이 초기 권한이 안전했다고 인증하지 않는다.
+
+### B. 2026-10-01 후발 sunscreen 1건 — 누락의 실제 코드 경로
+
+해당 상품의 비식별 결합 증거는 다음과 같다.
+
+| 검증 | 실제 관측 |
+| --- | --- |
+| Product category / form | `sunscreen` / `NULL` |
+| 연계 candidate | 1건 / `promoted`, `resolved` |
+| Candidate taxonomy 분류 | `active_shadow`, `manual_legacy_projection_v1`, legacy projection key 및 category term 존재 |
+| Promotion version / action | `crawler-canonical-product-structural-adoption-v1` / `inserted` |
+| Product canonical assignments | **0건** |
+| 현재 structural writer | 기존 category로 Product INSERT, **taxonomy assignment INSERT 없음** |
+| 현재 catalog-only writer | 별도 Product 및 canonical assignment 동시 INSERT |
+| Product INSERT 트리거 | 2개 활성 경로 중 taxonomy assignment 기록 없음; candidate에는 별도 shadow 분류 sync 트리거 존재 |
+
+저장된 `promotion_payload.structural_adoption` 계약, 실제 `pg_proc.prosrc` 및 고정 Git SQL이 일치하는 범위에서, **structural 승격 경로가 Product에는 legacy category를 기록하지만 canonical assignment를 작성하지 않는 계약 차이**가 이번 누락을 설명한다. 분류가 후보 테이블에 존재하는 것과 Product용 assignment를 저장하는 것은 별개다. 원본 변경 트랜잭션 로그를 재생하지 않았으므로 과거 모든 중간 상태나 작성자에 대한 단정은 하지 않는다.
+
+**판정:** `TAXONOMY8_EXCEPTION_STRUCTURAL_WRITER_GAP_IDENTIFIED / POLICY_INTENT_NOT_APPROVED`. 이것을 과거 2026-09-14 Taxonomy8 preflight 실패로 소급하지 않으며, 코드 경로 발견만으로 분류를 자동 INSERT하거나 기존 category를 NULL화하지 않는다. 필요한 후속 승인은 (1) structural Product에 canonical assignment를 동기화해야 하는지의 도메인/권한 결정, (2) 보강할 경우 source classification·term·Product revision 불변 조건과 별도 승인된 롤백, (3) 추천 admission/실제 상품 판매 권한과의 독립 검증이다.
+
+### C. 남은 P0
+
+초기 schema bootstrap·별도 배포 artifact/DB backup 이력을 확보하지 못해 source_rankings/product_candidates **최초 CREATE/ACL**은 여전히 미인증. Crawler 종료 구분자 6곳의 원시 적용 파서 재현, 전체 178건 clean replay, backup/PITR 실제 복원, 독립 OWNER·보안 #1208도 미완료. **운영 GRANT/REVOKE, SQL migration repair, taxonomy 상품 보정 및 D8D v2/CTA/가격 활성화 없이 PR #1341 Draft/HOLD**.
