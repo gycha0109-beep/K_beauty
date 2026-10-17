@@ -396,3 +396,10 @@
 - **추가 실증:** 별도 PostgreSQL17.6 synthetic DB에서 설계된 테스트 전용 기초 테이블 `products`, `product_candidates`, `source_rankings`와 각 1행을 먼저 넣고 최초 `20260410` SQL의 타입 변환/뷰/FK/backfill 성공을 확인. 병렬 음성 대조에서는 빈 DB의 예상 실패·롤백 확인. 둘 다 실제 GitHub Actions #39062707665.
 - **결정 경계:** 이는 첫 이력 SQL의 최소 호환성 입증이지, **실제 초기 스키마 CREATE/GRANT 출처 확보도 전체 178건 replay 완료도 아니다**. `local-shadow` bootstrap의 `products.id text`는 초기 migration 요구 UUID FK와 달라 역사적 출처 증명이 될 수 없다.
 - 첫 단계 양성/음성 증거와 고정 Git blob을 재검증기에 연결. 다음 항목은 실제 초기 schema/ACL 및 과거 178건 원문 승인된 추출·복원, isolated real-history replay, 실제 restore drill, OWNER/security #1208. **HOLD 유지, 운영 DB write 0.**
+
+## 26. D8K-13 최초 bootstrap 원본 확보 전용 intake (2026-10-18)
+
+- 최초 프로젝트 생성일 **2026-03-21 UTC** 확인: 최초 GitHub commit(2026-04-08 UTC)보다 앞서므로 원본 CREATE/GRANT 출처는 Git 초기 이전 수동 설치 또는 별도 archive 가능성. GitHub 검색/타 repository / Google Drive / Supabase 메타데이터 조사에서 **인증 가능한 원본 SQL·백업 미확보**.
+- 공식 Supabase 일반 백업/통상 PITR 보존기간은 수개월 전 초기 상태의 자동 복원을 보장하지 않는다. 조직의 요금제·백업 실제 목록은 **미조회**이며 독립 장기보관 아카이브 확인 필요.
+- 외부 비공개 SQL을 SHA-256/size 확인 후에도 **CANDIDATE_ONLY_NOT_ATTESTED**로 판정하는 오프라인 intake 및 9개 자기검증을 CI에 추가. SQL 덤프 Git commit, 민감값 출력, 자동 replay는 금지. 기존 11개 preledger gate 계속 false, #1208 OPEN, PR #1341 Draft/HOLD.
+- 후속 의사결정: 실제 원본 archive + timestamp/execution evidence + ACL/Owner provenance 확보 시에만 독립 전문가 검토 후 합성 fixture를 보조 비교로 유지하며 **별도 격리 PostgreSQL17 전체 이력 복원**에 착수. 운영 변경은 별도 승인 전 금지.
