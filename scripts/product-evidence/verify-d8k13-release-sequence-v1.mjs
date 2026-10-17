@@ -162,6 +162,23 @@ assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactCreatedBefore20260914
 assert.equal(crawlerTax8RankAudit.taxonomy8.historicalPreflightExecutedAttested,false);
 assert.ok(content(crawlerTax8RankAudit.repeatableSelectOnlySql)
  .includes("D8K13_CRAWLER_TAX8_RANKING_HISTORY_READONLY_V1"));
+const securityAdvisors=JSON.parse(content(
+ "scripts/product-evidence/baselines/d8k13-hosted-security-advisors-readonly-20261017.json"));
+assert.equal(securityAdvisors.schema,"D8K13_HOSTED_SECURITY_ADVISORS_READONLY_V1");
+assert.equal(securityAdvisors.status,"SECURITY_REVIEW_HOLD");
+assert.equal(securityAdvisors.productionSecuritySettingsChanged,false);
+assert.equal(securityAdvisors.lintTypes,5);
+assert.equal(securityAdvisors.totalFindings,82);
+assert.equal(securityAdvisors.lints.filter(x=>x.level==="WARN")
+ .reduce((sum,x)=>sum+x.count,0),5);
+assert.equal(securityAdvisors.adminHelperBoundaries.length,2);
+assert.ok(securityAdvisors.adminHelperBoundaries.every(x=>
+ x.securityDefiner===true&&x.authenticatedExecute===true&&
+ x.anonExecute===false&&x.publicExecute===false&&
+ x.escalationDemonstrated===false));
+assert.equal(securityAdvisors.securityOwnerReviewCompleted,false);
+assert.equal(securityAdvisors.backupsAndPitrRestorabilityVerified,false);
+assert.equal(securityAdvisors.productionReleaseAuthorized,false);
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
@@ -235,6 +252,10 @@ const result={
  pinnedTaxonomy8NonExactPostMigrationProducts:11,
  pinnedTaxonomy8NonExactPreMigrationProducts:0,
  pinnedTaxonomy8NonNullProjectionFollowupCount:1,
+ pinnedSecurityAdvisorWarnFindings:5,
+ authenticatedSecurityDefinerAdminHelpersReviewPending:2,
+ leakedPasswordProtectionSettingReviewPending:true,
+ securityAdvisorFindingIsNotAutomaticExploitProof:true,
  taxonomy8HistoricalPreflightAttested:false,
  c5bHistoricalMigrationPreAndPostGuardsAttested:false,
  historicalProvenanceAllowsDeployment:false,
