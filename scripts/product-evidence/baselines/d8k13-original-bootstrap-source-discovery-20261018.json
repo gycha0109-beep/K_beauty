@@ -1,0 +1,99 @@
+{
+  "schema": "D8K13_ORIGINAL_BOOTSTRAP_DISCOVERY_V1",
+  "observedDateKst": "2026-10-18",
+  "stage": "P0_PRELEDGER_ORIGINAL_SOURCE_RECOVERY",
+  "status": "RELEASE_HOLD",
+  "productionProject": {
+    "ref": "bygrczggxfuisupcevaz",
+    "createdAtUtc": "2026-03-21T11:54:08.277807Z",
+    "region": "ap-northeast-2",
+    "currentPostgresMajor": 17,
+    "managementMetadataSource": "Supabase get_project read-only",
+    "managementMetadataIsHistoricalBootstrapSql": false,
+    "developmentBranchesObserved": 0,
+    "backupsEnumerationAvailableThroughConnectedSupabaseTools": false,
+    "projectBackupListQueried": false,
+    "backupExistenceAttested": false,
+    "historicalPitrWindowAttested": false,
+    "backupsDownloaded": false,
+    "restoresExecuted": false
+  },
+  "earliestGitCommit": {
+    "repository": "gycha0109-beep/K_beauty",
+    "sha": "934762c805e910a946bb23b09f2c4634e47468f0",
+    "authorTimestampUtc": "2026-04-08T15:54:56Z",
+    "treeFileCountIncludingDirs": 41,
+    "sqlFileCount": 0,
+    "preExistingSupabaseProjectDaysApprox": 18,
+    "firstReadmeMentions": [
+      "source_rankings",
+      "product_candidates",
+      "crawl_jobs"
+    ],
+    "earliestMigrationAddedRevision": "4e221df671483802274a64b1484b19e683c8f521",
+    "firstRecordedMigrationVersion": "20260410",
+    "firstMigrationAssumesPreviousProductsCandidatesRankings": true,
+    "originalBootstrapFoundInEarlyGitTree": false,
+    "allDeletedOrUnreachableHistoryRuledOut": false
+  },
+  "otherConnectedRepositories": {
+    "accessibleUserRepositoriesListed": 31,
+    "rankingRepositoryCreatedAtUtc": "2026-04-09T08:11:46Z",
+    "rankingEarliestCurrentMainMigration": "20260520000000_p0_core_schema.sql",
+    "crossRepoCodeSearchResultsMatchingOriginalCreateTable": 0,
+    "note": "Repository content searches are limited by the provider's current/default-branch index, not an exhaustive deleted/history search.",
+    "matchingAuthenticFoundationalSqlFound": false
+  },
+  "connectedGoogleDrive": {
+    "namesAndTermsSearched": [
+      "K_beauty",
+      "BEJEWELY",
+      "supabase",
+      "backup",
+      "schema",
+      "product_candidates"
+    ],
+    "relevantOriginalSqlOrBackupFound": false,
+    "queriesNotAnExhaustiveAllFileBinaryInspection": true,
+    "unrelatedBackupNamedItemObserved": true,
+    "unrelatedDriveFilesNotPublished": true
+  },
+  "connectedGitHub": {
+    "earlyInitialRevisionTreeInspected": true,
+    "releasesObserved": 0,
+    "defaultBranchCodeSearchOriginalTableCreateMatches": 0,
+    "archivedActionArtifactsAvailableForOriginAttestation": false,
+    "earlyActionArtifactsEntireHistoryExhaustivelyVerified": false
+  },
+  "officialBackupPolicyAtObservation": {
+    "source": "https://supabase.com/docs/guides/platform/backups",
+    "typicalAutomaticDailyRetentionByPlanDays": {
+      "Pro": 7,
+      "Team": 14,
+      "EnterpriseUpperBound": 30
+    },
+    "typicalPitrDaysValues": [
+      7,
+      14,
+      28
+    ],
+    "march2026PreledgerArchiveWouldNeedIndependentOffsiteRetentionEvidence": true,
+    "projectActualPlanRead": false,
+    "projectActualBackupRetentionAttested": false,
+    "planSpecificBackupEligibilityAttested": false,
+    "doNotRunProductionRestore": true
+  },
+  "artifactIntake": {
+    "realPreFirstMigrationSqlBytesRecovered": false,
+    "verifiedOriginAndApprovedCustody": false,
+    "independentOwnerSignature": false,
+    "sqlOrBackupSha256Attested": false,
+    "originalDdlAclForProductsCandidatesRankingsAttested": false,
+    "historicalFull178ReplayVerified": false
+  },
+  "releaseAuthorized": false,
+  "migrationHistoryRepairAuthorized": false,
+  "productionDbWrites": 0,
+  "noSecretsOrSqlDumpContentsInThisManifest": true,
+  "nextAllowedStep": "If real original SQL/export is found, keep it outside the repository and verify hash/byte count with a private candidate intake; independently establish creation/execution timestamp and historical ACL before any isolated replay."
+}
