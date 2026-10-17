@@ -253,3 +253,11 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 증거: `scripts/product-evidence/baselines/d8k13-two-multistatement-source-drift-readonly-20261017.json`, [2건의 완전한 비구분자 diff/운영 RPC 분석](./r16i-r4-d8k13-two-multistatement-runtime-drift-audit-20261017.md). `verify-d8k13-hosted-provenance-v1.mjs`, `verify-d8k13-release-sequence-v1.mjs`에 Git blob/9개 구간/3개 RPC/ACL provenance/미실행 native 테스트 불변식을 고정.
 
 **결론: 증거의 설명력이 개선됐을 뿐 운영 승인 없음.** 핵심 9개 D8K13/ D8D PG17 실행 파일의 수정을 수행하지 않았으며, 전체 178건 migration clean-replay, 데이터 복원, 독립 관리자/보안 심사, #1208, 명시적 배포 승인은 여전히 HOLD.
+
+## 18. SEC-05 complete/fail exact-source 재구성·추가 PG17 테스트 코드 상태 (2026-10-17)
+
+`complete_anonymous_write_grant`와 `fail_anonymous_write_grant`에서 현재 Git에만 있는 명시적 NULL 검증과 `IS DISTINCT FROM` 변환을 제거해 과거 variant를 만들고 운영 DB의 실제 함수 본문과 비교했다. **224/224** 및 **207/207 SQL 토큰 정확히 일치**. 운영 함수는 기존대로 SECURITY INVOKER/service_role-only이고 실제 hosted 변경은 없다.
+
+`tests/fixtures/r16i-d8k13/34_sec05_legacy_completion_failure_null_pg17.sql`과 `35_sec05_hardened_completion_failure_pg17.sql` 및 기존 격리 Docker17 runner를 확장했다. 기대 증명: 과거 NULL principal complete/fail가 진행 상태를 변경할 수 있었는지 트랜잭션 롤백으로 관찰, 보강 코드에서 12개 NULL 인자 거부·wrong-principal 실패·정상 complete/fail·재시도·역할 차단. **정적 소스 검사 PASS**, 그러나 신규 2개 SQL의 **실제 Docker17 실행은 NOT_RUN**. 이전 SEC-05 claim/ranking PASS와 합쳐 전체 SEC-05 보강 승인을 주장하지 않는다.
+
+추가 근거: [두 다중 SQL 이력/운영 함수 감사](./r16i-r4-d8k13-two-multistatement-runtime-drift-audit-20261017.md). `#1208`/독립 보안 소유자/whole-history-PG17/backup-PITR/본인 승인 전 PR #1341은 계속 Draft/HOLD. 원본 9개 D8D/D8K 핵심 코드 및 운영 DB, Product/Offer/CTA는 **변경하지 않았다**.
