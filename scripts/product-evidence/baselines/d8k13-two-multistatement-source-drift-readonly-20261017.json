@@ -1,0 +1,139 @@
+{
+  "schema": "D8K13_TWO_MULTISTATEMENT_SOURCE_GAP_READONLY_V1",
+  "observedDateKst": "2026-10-17",
+  "status": "RELEASE_HOLD",
+  "method": "Read-only hosted schema_migrations.statements joined by semicolon and compared to exact current Git SQL with SQL lexer preserving every quoted string, double-quoted identifier and dollar tag, ignoring whitespace/comments. Bounded eight-token resynchronization reports full scoped edits.",
+  "hostedRawSqlPublished": false,
+  "hostedDbWrites": 0,
+  "full178MigrationReplayCertified": false,
+  "totalEvaluatedMultiStatementFilesInPriorTriage": 28,
+  "previouslyUnresolvedMultiStatementFiles": 2,
+  "files": [
+    {
+      "migrationVersion": "20260621030000",
+      "name": "phase1_ranking_snapshot_pipeline",
+      "sourceFile": "supabase/migrations/20260621030000_phase1_ranking_snapshot_pipeline.sql",
+      "gitBlobSha": "9add0e1e90dc75c0ad94a1acdf0ddb863ed42d1a",
+      "storedStatementCount": 31,
+      "hostedLexerTokens": 2482,
+      "gitLexerTokens": 2593,
+      "tokenDeltaGitMinusHosted": 111,
+      "gitOnlyChangeRegions": 4,
+      "gitOnlyRegions": [
+        {
+          "line": 48,
+          "kind": "EXPLICIT_RANKING_SNAPSHOTS_WRITE_REVOKE_AND_SERVICE_ROLE_GRANT",
+          "gitOnlyTokenCount": 30
+        },
+        {
+          "line": 71,
+          "kind": "EXPLICIT_SOURCE_RANKINGS_WRITE_REVOKE_AND_SERVICE_ROLE_GRANT",
+          "gitOnlyTokenCount": 28
+        },
+        {
+          "line": 119,
+          "kind": "EXPLICIT_PRODUCT_CANDIDATES_WRITE_REVOKE_AND_SERVICE_ROLE_GRANT",
+          "gitOnlyTokenCount": 30
+        },
+        {
+          "line": 338,
+          "kind": "EXISTING_RANKING_SNAPSHOT_INGESTED_STATUS_GUARD",
+          "gitOnlyTokenCount": 22
+        }
+      ],
+      "localOnlyTerminalSemicolonTokens": 1,
+      "appliedRepairVersionForIngestedStatusGuard": "20260621151304",
+      "appliedRepairStatusGuardObserved": true,
+      "liveIngestRankingSnapshotStatusGuardPresent": true,
+      "liveDirectAnonExecuteAllowed": false,
+      "liveDirectAuthenticatedExecuteAllowed": false,
+      "historicalSourceRankingsAclCreationAndRevocationProven": false,
+      "automaticHistoricalSqlRepairAuthorized": false,
+      "conclusion": "NONTRIVIAL_GIT_ONLY_ACL_AND_STATUS_GUARDS__STATUS_GUARD_LATER_APPLIED__SOURCE_RANKINGS_ACL_LINEAGE_UNPROVEN"
+    },
+    {
+      "migrationVersion": "20260711032649",
+      "name": "sec_05_anonymous_write_grants",
+      "sourceFile": "supabase/migrations/20260711032649_sec_05_anonymous_write_grants.sql",
+      "gitBlobSha": "bb42c9cade8e310bdba73017ca6d81d211381056",
+      "storedStatementCount": 37,
+      "hostedLexerTokens": 2917,
+      "gitLexerTokens": 3096,
+      "tokenDeltaGitMinusHosted": 179,
+      "gitOnlyChangeRegions": 5,
+      "gitOnlyRegions": [
+        {
+          "line": 220,
+          "kind": "CLAIM_SIX_INPUT_IS_NULL_GUARDS_ADDED",
+          "gitOnlyTokenCount": 24
+        },
+        {
+          "line": 391,
+          "kind": "COMPLETE_FULL_INPUT_VALIDATION_ADDED",
+          "gitOnlyTokenCount": 73
+        },
+        {
+          "line": 413,
+          "kind": "COMPLETE_NULL_UNSAFE_NOT_EQUAL_REPLACED_WITH_IS_DISTINCT_FROM",
+          "removedHistoricalTokens": 23,
+          "addedRepoTokens": 27
+        },
+        {
+          "line": 472,
+          "kind": "FAIL_FULL_INPUT_VALIDATION_ADDED",
+          "gitOnlyTokenCount": 73
+        },
+        {
+          "line": 494,
+          "kind": "FAIL_NULL_UNSAFE_NOT_EQUAL_REPLACED_WITH_IS_DISTINCT_FROM",
+          "removedHistoricalTokens": 23,
+          "addedRepoTokens": 27
+        }
+      ],
+      "localOnlyTerminalSemicolonTokens": 1,
+      "liveRoutines": [
+        {
+          "name": "claim_anonymous_write_grant",
+          "argumentCount": 6,
+          "hasAllSixExplicitNullGuards": false,
+          "usesIsDistinctFrom": false,
+          "serviceRoleExecute": true,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "securityDefiner": false
+        },
+        {
+          "name": "complete_anonymous_write_grant",
+          "argumentCount": 7,
+          "hasAllSixExplicitNullGuards": false,
+          "usesIsDistinctFrom": false,
+          "serviceRoleExecute": true,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "securityDefiner": false
+        },
+        {
+          "name": "fail_anonymous_write_grant",
+          "argumentCount": 6,
+          "hasAllSixExplicitNullGuards": false,
+          "usesIsDistinctFrom": false,
+          "serviceRoleExecute": true,
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "securityDefiner": false
+        }
+      ],
+      "homeDockerPg17SyntheticClaimNullRejectionAttested": true,
+      "homeDockerPg17CompleteAndFailInputContractNativeAttested": false,
+      "publicPathExploitDemonstrated": false,
+      "hostedSecurityFunctionMigrationAuthorized": false,
+      "conclusion": "NONTRIVIAL_GIT_ONLY_SEC05_VALIDATION__THREE_HOSTED_SERVICE_ROLE_FUNCTIONS_STILL_LEGACY__COMPLETE_FAIL_NEGATIVE_PG17_PENDING"
+    }
+  ],
+  "allNonDelimiterTokenEditsExplained": true,
+  "nativePg17HistoricalSqlReplayAttested": false,
+  "securityIssue1208Resolved": false,
+  "independentSecurityOwnerApproved": false,
+  "productionReleaseAuthorized": false,
+  "docs": "docs/taxonomy-ai/r16i-r4-d8k13-two-multistatement-runtime-drift-audit-20261017.md"
+}
