@@ -12,6 +12,7 @@ const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "Native
 const analyzeSource = readFileSync(join(mobileRoot, "app", "analyze.tsx"), "utf8");
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
 const nativeShellWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"), "utf8");
+const androidRuntimeWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-android-runtime.yml"), "utf8");
 const mobileCiWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ci.yml"), "utf8");
 const androidSmokeSource = readFileSync(join(repoRoot, "scripts", "verify-mobile-android-smoke.sh"), "utf8");
 
@@ -70,15 +71,22 @@ assert.match(copySource, /Position your face inside the oval/, "English static o
 assert.match(copySource, /이 기기에만 보관/, "Korean pre-analysis local capture disclosure is missing");
 assert.match(copySource, /stays on this device/i, "English pre-analysis local capture disclosure is missing");
 
+// Native Shell now delegates the emulator smoke to the canonical Android Runtime.
+// Keep testing the actual front camera launch and the AVD pre-boot configuration.
 assert.match(
   nativeShellWorkflow,
-  /-camera-front emulated/,
-  "Android native smoke must boot with an emulated front camera"
+  /node scripts\/await-mobile-android-runtime\.mjs/,
+  "Native Shell must await the canonical Android Runtime for the same SHA"
 );
 assert.match(
-  nativeShellWorkflow,
+  androidRuntimeWorkflow,
+  /emulator-options:[^\n]*-camera-front emulated(?:\s|$)/m,
+  "Canonical Android Runtime must boot with an emulated front camera"
+);
+assert.match(
+  androidRuntimeWorkflow,
   /pre-emulator-launch-script: \|\n\s+config=.*; test -f "\$config";.*hw\.camera\.front=emulated.*MOBILE_ANDROID_FRONT_CAMERA_AVD_CONFIG=PASS/,
-  "Android native smoke must configure the AVD front camera in one pre-launch shell command"
+  "Canonical Android Runtime must configure the AVD front camera before boot"
 );
 assert.match(
   mobileCiWorkflow,
