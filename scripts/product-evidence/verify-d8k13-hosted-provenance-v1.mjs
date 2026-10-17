@@ -4,6 +4,7 @@
 // and GitHub source blob IDs on 2026-10-16. This program does NOT query
 // hosted DB, read credentials, export historic SQL, or authorize a release.
 import {verifyD8k13ExtendedHomeEvidence} from "./verify-d8k13-sec05-extended-home-evidence-v1.mjs";
+import {verifyD8k13P0AclTaxonomyProvenance} from "./verify-d8k13-p0-acl-taxonomy-provenance-v1.mjs";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {readFileSync,readdirSync} from "node:fs";
@@ -12,6 +13,8 @@ import {fileURLToPath} from "node:url";
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"../..");
 const migrationsDir=join(ROOT,"supabase/migrations");
+const taxP0Followup=verifyD8k13P0AclTaxonomyProvenance(ROOT);
+assert.equal(taxP0Followup.releaseAuthorized,false);
 const extendedSec05Home=verifyD8k13ExtendedHomeEvidence(ROOT);
 const provenance=JSON.parse(readFileSync(join(ROOT,
  "scripts/product-evidence/baselines/d8k13-hosted-migration-provenance-readonly-20261016.json"),"utf8"));
@@ -260,6 +263,10 @@ const result={
  sourceRankingsHistoricalAclOriginUnproven:true,
  taxonomy8NonExactAllCreatedAfterOriginalMigrationCutoff:11,
  taxonomy8CurrentLegacyProjectionDataQualityReviewCount:1,
+ preLedgerCoreTableCreationProvenanceStillUnattested:true,
+ sourceAndCandidateCurrentPublicReadWriteDenied:true,
+ taxonomy8StructuralPromotionMissingProductCanonicalAssignment:taxP0Followup.taxonomyStructuralWriterGapObserved,
+ taxonomy8PolicyOrDirectRepairAuthorized:false,
  pinnedNonNullSunscreenWithoutCanonicalAssignmentCount:1,
  releaseAuthorized:false,
  next:"Crawler historical comparison narrowed to exactly six ending semicolons (native replay not attested); audit source_rankings unrecorded historical ACL origin and one post-migration non-NULL product without exact taxonomy projection. Full 178-row replay/backup/security/reviewer approval remains blocked."
