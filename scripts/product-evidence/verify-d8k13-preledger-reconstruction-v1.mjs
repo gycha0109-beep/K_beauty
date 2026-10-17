@@ -76,6 +76,34 @@ export function verifyD8k13PreledgerReconstruction(root=ROOT){
  assert.equal(b.releaseAuthorized,false);
  assert.equal(b.migrationHistoryRepairAuthorized,false);
  assert.equal(b.v2GateEnabled,false);
+ const nativeEvidence=JSON.parse(readFileSync(join(root,
+  "scripts/product-evidence/baselines/d8k13-preledger-native-node-pg17-negative-acceptance-20261018.json"),"utf8"));
+ assert.equal(nativeEvidence.schema,"D8K13_PRELEDGER_NATIVE_NODE_PG17_NEGATIVE_ACCEPTANCE_V1");
+ assert.equal(nativeEvidence.workflowCommitSha,"4b0a50d4dea04514757e512f1e54cd2fb7ed0125");
+ assert.equal(nativeEvidence.workflowRunId,39059702566);
+ assert.equal(nativeEvidence.workflowConclusion,"success");
+ assert.equal(nativeEvidence.offlineJob.conclusion,"success");
+ assert.equal(nativeEvidence.offlineJob.nativeNodeMajor,22);
+ assert.equal(nativeEvidence.offlineJob.bothReleaseGateExitCodes,3);
+ assert.equal(nativeEvidence.isolatedPg17Job.conclusion,"success");
+ assert.equal(nativeEvidence.isolatedPg17Job.pgMajor,17);
+ assert.equal(nativeEvidence.isolatedPg17Job.database,"d8k13_preledger_disposable");
+ assert.equal(nativeEvidence.isolatedPg17Job.syntheticLocalOnly,true);
+ assert.equal(nativeEvidence.isolatedPg17Job.pinnedMigrationGitBlob,b.earliestRecordedAppliedMigrationBlob);
+ assert.equal(nativeEvidence.isolatedPg17Job.expectedFailureStatus,"EXPECTED_FAILURE_PASS");
+ assert.equal(nativeEvidence.isolatedPg17Job.transactionRollbackObserved,true);
+ assert.equal(nativeEvidence.isolatedPg17Job.firstMigrationSuccessfullyApplied,false);
+ assert.equal(nativeEvidence.isolatedPg17Job.marker,"D8K13_PRELEDGER_ISOLATED_PG17_EXPECTED_FAILURE_PASS");
+ assert.equal(nativeEvidence.earliestHistoryReadme.repoFirstCommit,b.firstRepoCommit);
+ assert.equal(nativeEvidence.earliestHistoryReadme.actualBootstrapSqlPresent,false);
+ assert.equal(nativeEvidence.earliestHistoryReadme.alternateOriginalBootstrapRuledOut,false);
+ assert.equal(nativeEvidence.firstPreledgerSchemaRecovered,false);
+ assert.equal(nativeEvidence.full178MigrationReplayPassed,false);
+ assert.equal(nativeEvidence.originalDdlAndAclHistoryVerified,false);
+ assert.equal(nativeEvidence.backupsRestored,false);
+ assert.equal(nativeEvidence.anyHostedSqlApplied,false);
+ assert.equal(nativeEvidence.productionWrites,0);
+ assert.equal(nativeEvidence.releaseAuthorized,false);
  return {status:"HOLD",offlineOnly:true,foundationalSchemaOriginAttested:false,
   currentSchemaOnly:true,blockingPrerequisites:flags.length,
   full178MigrationReplayApproved:false,hostedWrites:0};
