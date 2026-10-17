@@ -7,7 +7,7 @@ import {readFileSync} from "node:fs";
 import {join} from "node:path";
 const MANIFEST="scripts/product-evidence/baselines/d8k13-p0-acl-taxonomy-provenance-followup-20261017.json";
 function blobSha(bytes){
- return createHash("sha1").update(Buffer.from("blob "+bytes.length+"\\0","utf8")).update(bytes).digest("hex");
+ return createHash("sha1").update(Buffer.from("blob "+bytes.length+String.fromCharCode(0),"utf8")).update(bytes).digest("hex");
 }
 export function verifyD8k13P0AclTaxonomyProvenance(root){
  const m=JSON.parse(readFileSync(join(root,MANIFEST),"utf8"));
@@ -63,7 +63,7 @@ export function verifyD8k13P0AclTaxonomyProvenance(root){
  const sql=readFileSync(join(root,m.queryFile),"utf8");
  assert.ok(sql.includes("D8K13_P0_ACL_TAXONOMY_PROVENANCE_FOLLOWUP_V1"));
  assert.ok(sql.includes("SELECT jsonb_build_object("));
- assert.ok(!/^\\s*(INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|GRANT|REVOKE|TRUNCATE)\\s/im.test(sql),"D8K13_P0_SQL_NOT_SELECT_ONLY");
+ assert.ok(!sql.split(String.fromCharCode(10)).some(line=>["insert","update","delete","create","alter","drop","grant","revoke","truncate"].includes(line.trim().split(" ")[0].toLowerCase())),"D8K13_P0_SQL_NOT_SELECT_ONLY");
  assert.equal(m.wholeMigrationHistoryReplayed,false);
  assert.equal(m.backupPitrRestored,false);
  assert.equal(m.securityIssue1208Resolved,false);
