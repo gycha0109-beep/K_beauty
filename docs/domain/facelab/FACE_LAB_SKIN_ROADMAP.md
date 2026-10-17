@@ -228,3 +228,9 @@ Watchtower-Track: face-lab-skin
 - **S2-E / S3 / S4 / S5:** existing synthetic research remains reviewable in parallel; real-photo recommendation scoring, Top Pick, Face/Style model changes, operational Provider prompt, new persistence and release still HOLD pending distinct approvals, Face owners, Human evidence and supply-chain/security #1208 remediation. Do not waive expired `node-forge` advisory exception or merge stacked PRs independently.
 
 Watchtower-Track: face-lab-skin
+
+### 2026-10-17 S1-D blind reviewer bridge implementation checkpoint
+
+- [Draft #1342](https://github.com/gycha0109-beep/K_beauty/pull/1342) (stacked on unmerged #1310) adds a **research-only, offline** strict bridge between private corrected-v2 four-case metadata and independently collected reviewer A/B annotations; an explicit source-verified capture-tag record is required. Only exact two-reviewer agreement is eligible for provisional cue comparison; disagreements and unassessable references are not silently inferred from model output. `not_seen(0)` mapping is allowed **only for explicit v2 states**, never legacy v1 zero.
+- Local synthetic **4×7** mapping verifier `PASS` and syntax checks `PASS`; Main Health adds the synthetic verifier, but **exact-HEAD CI verdict remains separate and is not implied by local PASS**. The code and tests contain no actual photos, private model output, human labels, subject identifiers or keys. No new Provider attempts.
+- **Remaining user/owner-dependent gate:** genuinely independent two-rater visible-cue labels and capture condition metadata with consent for reviewer access. Until then S1 actual model accuracy, Face semantic parity, production score/ranking changes, S5 readiness and release **HOLD**. No merge/deployment.
