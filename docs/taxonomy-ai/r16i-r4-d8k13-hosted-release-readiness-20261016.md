@@ -225,3 +225,18 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 독립 근거: [2026-10-17 home Windows 로컬 PG17 acceptance](./r16i-r4-d8k13-home-sec05-acl-pg17-acceptance-20261017.md). 사용자 로그 SHA256 `72ad32e76230dc0859ed4ce446269fa9d0fd7cf123d540a443094d0fa99c52fe`. 원본 로그와 PC 사용자명/경로는 공개 저장소로 업로드하지 않았다.
 
 **이번 테스트의 결론은 `SEC05_RANKING_SCOPED_SYNTHETIC_PG17_PASS`이다. `D8K13_HOSTED_RELEASE_HOLD`는 그대로 유지**된다. 전체 178개 migration replay, Crawler parser, backup/PITR 복원, independent OWNER, #1208, 그리고 운영 권한/함수 수정에 대한 명시적 승인은 미완료다. 이 문서 상단의 "Native PG17 NOT_RUN" 기록은 **2026-10-16 당시 상태**이며 이 2026-10-17 후속 증거가 해당 부분만 갱신한다. 실제 운영 DB는 변경하지 않았다.
+
+
+## 16. 2026-10-17 Crawler·Taxonomy8·source_rankings 적용 이력 및 Supabase Security Advisor
+
+**Crawler drift 격리:** 운영 `20260822130309` 저장 SQL 5,072 tokens vs 현 GitHub 파일 5,078 tokens, **끝 `END;` 직후의 세미콜론 6개만 다름**. 문서에서 함수 로직 변경이라고 단정하지 말 것. 관련 함수 이름 6개 현재 운영에 존재하고 `anon/authenticated` 실행 권한 없음. 하지만 이전 178건 전체 SQL clean replay, 저장 serialization의 원인 및 과거 실제 실행 재현은 별도 미인증.
+
+**`source_rankings` 권한 출처:** 운영 적용 이력 178건에서 해당 테이블 이름을 포함한 6개 적용 기록에 명시적 `CREATE TABLE`, `GRANT`, `REVOKE` 본문이 확인되지 않았다. 현재 테이블 `RLS ON`, `anon/authenticated` 직접 읽기·쓰기 불가, `service_role` INSERT 허용. 현재 `postgres`→`public` 새 테이블 default ACL에는 anon 권한이 있어 과거 ACL 적용·회수 경로의 근거가 추가로 필요하다. **현재 공개 접근이 가능하다고 주장하지 않는다**. 기존 `ranking_snapshots`의 후속 ACL repair provenance는 별도로 확인 완료.
+
+**Taxonomy8 데이터 현황:** 현재 176 products 중 **165 정확한 legacy projection**, 11 비정확(10 `shadow_only` + category NULL, **1 sunscreen + official_product_page / category 존재하지만 canonical taxonomy assignment 0**). 11개 모두 2026-09-14 이후 생성됐으므로 이 사실만으로 이전 Taxonomy8 preflight 실패를 소급 증명할 수는 없다. 상품 ID/명칭을 공개하지 않았으며 **해당 1건의 분류 누락**은 데이터 품질 독립 리뷰 대상이다.
+
+**보안 Advisor:** 2026-10-17 snapshot, `INFO 77`(RLS enabled/no policy), `WARN 5`(authenticated 가능한 관리자용 SECURITY DEFINER 2, 관리자 RLS의 anonymous sign-in role 경고 2, 유출 비밀번호 보호 미설정 1). 관리자 helper는 현재 활성 멤버십과 `auth.uid()`를 검사하고 `anon` 직접 EXECUTE를 허용하지 않지만, 승인된 독립 security-review와 Auth 설정 검증은 미완료. **82개가 실증된 보안 취약점이라는 의미 아님**. Supabase 보안 Advisor: <https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable>. 비밀번호 방지 설정: <https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection>.
+
+읽기 전용 실증 SQL **PASS**: `scripts/product-evidence/sql/d8k13-crawler-taxonomy8-source-ranking-readonly-audit-v1.sql`. 메타데이터 매니페스트 2개: `d8k13-crawler-taxonomy8-ranking-source-lineage-readonly-20261017.json`, `d8k13-hosted-security-advisors-readonly-20261017.json`. 상세: [2026-10-17 운영 이력·보안 감사](./r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md). 원본 SQL·상품 ID·사용자명·토큰/credential은 PR에 공개하지 않았다.
+
+**릴리스 조건은 변경되지 않았다:** D8K13 Core PG17 PARTIAL PASS / SEC-05+Ranking ACL 합성 PG17 PASS / source_rankings 역사 ACL 불일치·Taxonomy8 단일 분류 검토·전체 178건 migration clean replay·독립 OWNER·보안 #1208·PITR/실제 백업 복원·명시적 승인 **전부 별도 HOLD**. hosted DB DDL/DML, Auth 설정, 역할 권한, Product/Offer/CTA, PR merge/deploy를 실행하지 않았다.
