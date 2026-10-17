@@ -92,6 +92,9 @@ assert.equal(focusedHistory.taxonomy8.currentProductTotal,176);
 assert.equal(focusedHistory.taxonomy8.currentNonExactProjectionCount,11);
 assert.equal(focusedHistory.taxonomy8.currentNonExactShadowOnly,10);
 assert.equal(focusedHistory.taxonomy8.currentNonExactNonNullCategory,1);
+assert.equal(focusedHistory.taxonomy8.currentNonExactNonNullWithoutCanonicalAssignment,1);
+assert.equal(focusedHistory.taxonomy8.currentNonExactNonNullLegacyCategory,"sunscreen");
+assert.equal(focusedHistory.taxonomy8.currentNonExactNonNullOriginType,"official_product_page");
 assert.equal(focusedHistory.taxonomy8.currentNonExactCreatedBefore20260914,0);
 assert.equal(focusedHistory.taxonomy8.historicalPreflightExecutedAttested,false);
 const focusedQuery=readFileSync(join(ROOT,focusedHistory.repeatableSelectOnlySql),"utf8");
@@ -174,6 +177,7 @@ const result={
  sourceRankingsHistoricalAclOriginUnproven:true,
  taxonomy8NonExactAllCreatedAfterOriginalMigrationCutoff:11,
  taxonomy8CurrentLegacyProjectionDataQualityReviewCount:1,
+ pinnedNonNullSunscreenWithoutCanonicalAssignmentCount:1,
  releaseAuthorized:false,
  next:"Crawler historical comparison narrowed to exactly six ending semicolons (native replay not attested); audit source_rankings unrecorded historical ACL origin and one post-migration non-NULL product without exact taxonomy projection. Full 178-row replay/backup/security/reviewer approval remains blocked."
 };
