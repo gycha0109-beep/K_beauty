@@ -240,3 +240,16 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 읽기 전용 실증 SQL **PASS**: `scripts/product-evidence/sql/d8k13-crawler-taxonomy8-source-ranking-readonly-audit-v1.sql`. 메타데이터 매니페스트 2개: `d8k13-crawler-taxonomy8-ranking-source-lineage-readonly-20261017.json`, `d8k13-hosted-security-advisors-readonly-20261017.json`. 상세: [2026-10-17 운영 이력·보안 감사](./r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md). 원본 SQL·상품 ID·사용자명·토큰/credential은 PR에 공개하지 않았다.
 
 **릴리스 조건은 변경되지 않았다:** D8K13 Core PG17 PARTIAL PASS / SEC-05+Ranking ACL 합성 PG17 PASS / source_rankings 역사 ACL 불일치·Taxonomy8 단일 분류 검토·전체 178건 migration clean replay·독립 OWNER·보안 #1208·PITR/실제 백업 복원·명시적 승인 **전부 별도 HOLD**. hosted DB DDL/DML, Auth 설정, 역할 권한, Product/Offer/CTA, PR merge/deploy를 실행하지 않았다.
+
+
+## 17. 두 다중 SQL 버전의 비구분자 차이 완전 분해 및 SEC-05 운영 적용 공백 (2026-10-17)
+
+2026-10-17 운영 `supabase_migrations.schema_migrations.statements` 원문과 현재 Git 파일을 **문자열 literal을 보존한 SQL lexer**로 전체 대조했다. 기존 28개 다중 statement 불일치 가운데 이미 lexer 동등/최종 세미콜론으로 분리된 26개와 별개로 남았던 **2건의 비구분자 차이를 9개 변경 구간으로 모두 분리**했다. SQL 본문·사용자 데이터는 공개 저장소에 게시하지 않았다.
+
+- `20260621030000_phase1_ranking_snapshot_pipeline.sql`: 현 Git에만 ranking_snapshots ACL REVOKE/GRANT, source_rankings ACL REVOKE/GRANT, product_candidates ACL REVOKE/GRANT, 기존 스냅샷 `status='ingested'` 검사가 각각 추가되어 있다. 31개 applied statements **2,482 tokens** vs 현 Git **2,593 tokens**, 차이 110개 새 토큰과 최종 세미콜론 1개. **랭킹 status 검사는 후속 `20260621151304` 적용 이력과 현 함수에서 확인됨**. `ranking_snapshots` 후속 ACL repair도 확인됐으나, **source_rankings 및 product_candidates의 명시적 ACL 변경 출처는 178개 저장 이력에 없음**. 현재 두 테이블 모두 RLS ON, anon/authenticated 직접 접근 거부, service_role INSERT 허용.
+- `20260711032649_sec_05_anonymous_write_grants.sql`: 현재 Git에는 claim의 필수 인자 6개 NULL 검증과 complete/fail 각각의 전체 입력 검증 및 `<>` → `IS DISTINCT FROM` 차이가 포함돼 있다. 37개 applied statements **2,917 tokens** vs 현 Git **3,096 tokens**; **다섯 코드 변경 구간+최종 세미콜론 하나**. **실제 운영 claim/complete/fail 세 함수는 여전히 NULL 거부 및 `IS DISTINCT FROM` 보강이 없는 구형 버전**이며, 전부 SECURITY INVOKER·service_role 전용 실행, anon/authenticated 실행 불가다. 실서버 권한 우회가 입증된 것은 아니다.
+- 2026-10-17 사용자 집 PC PG17 PASS는 **합성 claim의 NULL 입력 및 ranking ACL 복구 테스트** 범위만 증명한다. complete/fail **실제 PG17 음성 테스트 및 운영 후속 보강 승인**은 별도로 미완료. 원래 2026년 저장 적용 SQL을 현 Git 내용으로 **재실행하거나 migration history를 수정하지 않는다**.
+
+증거: `scripts/product-evidence/baselines/d8k13-two-multistatement-source-drift-readonly-20261017.json`, [2건의 완전한 비구분자 diff/운영 RPC 분석](./r16i-r4-d8k13-two-multistatement-runtime-drift-audit-20261017.md). `verify-d8k13-hosted-provenance-v1.mjs`, `verify-d8k13-release-sequence-v1.mjs`에 Git blob/9개 구간/3개 RPC/ACL provenance/미실행 native 테스트 불변식을 고정.
+
+**결론: 증거의 설명력이 개선됐을 뿐 운영 승인 없음.** 핵심 9개 D8K13/ D8D PG17 실행 파일의 수정을 수행하지 않았으며, 전체 178건 migration clean-replay, 데이터 복원, 독립 관리자/보안 심사, #1208, 명시적 배포 승인은 여전히 HOLD.
