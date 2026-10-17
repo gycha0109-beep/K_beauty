@@ -269,3 +269,10 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 추가된 메타데이터 전용 manifest와 offline 검증기는 소스 변경을 fail-closed로 판정한다. 기존 두 다중 SQL drift, 178건 full clean-replay, ranking 이력 ACL 출처, Crawler parser, Taxonomy8 단일 분류 누락, Supabase Security Advisor, backup/PITR 실제 복원, 독립 OWNER 및 공급망 #1208은 **미해결**이다. `--enforce-release`는 계속 exit 3이며 hosted DDL/DML/GRANT/RLS/Auth, migration repair, Product/Offer/price/CTA, gate 변경, PR 병합/배포는 하지 않는다.
 
 **D8K13_HOSTED_RELEASE_HOLD / PR #1341 DRAFT.**
+
+## 20. 2026-10-17 추가 P0 SELECT-only — 최초 DB 원점 및 Taxonomy8 structural 경로
+
+- 최초 applied migration `20260410`은 `product_candidates` ALTER와 `source_rankings` JOIN 뷰를 포함하지만 두 테이블을 생성하지 않는다. 현재 178개 SQL history 안에는 두 테이블의 명시적 초기 CREATE·ACL 출처가 없으며, 이전 ledger 기록도 0건이다. **초기 bootstrap/사전 배포/백업 artifact 필요**. 현재 RLS/GRANT 보호 상태는 별도로 재검증했고 과거 생성 경로의 인증으로 승격하지 않는다.
+- 2026-10-01 후발 `sunscreen` 예외는 promoted/resolved candidate의 `crawler-canonical-product-structural-adoption-v1` **inserted** action으로 연결된다. 후보 shadow 분류는 있지만 Product assignment는 0. 현재 structural writer는 category를 기록하면서 Product taxonomy assignment를 삽입하지 않고, 별도의 catalog-only writer만 taxonomy assignment를 삽입한다. Product 테이블에 이를 메우는 INSERT trigger는 없다. **정확한 writer 계약 차이 발견 / 정책적 보수 승인 미완료**.
+- 신규 `d8k13-p0-acl-taxonomy-provenance-followup-20261017.json`, 반복 `SELECT` 검사 SQL, source pin fail-closed verifier를 기존 오프라인 provenance 진단기에 연결했다. 모든 SQL은 원문/상품 식별자/사용자 데이터 출력 없이 메타데이터만 반환한다. [상세 감사](./r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md) §8.
+- **`--enforce-release` 종료코드 3, 운영 릴리스 HOLD는 변경 없음.** 전체 178건 migration clean replay/실제 PITR 복원·Crawler parser·초기 SQL 원점·정책 결정·독립 보안 #1208·명시적 배포 승인 필요.
