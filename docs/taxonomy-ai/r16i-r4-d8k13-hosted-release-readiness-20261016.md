@@ -294,3 +294,9 @@ D8D v2 → 통합 D8K-13 **부분 체인의 실제 합성 PG17 PASS(커밋 `f745
 기존 [#39059702566](https://github.com/gycha0109-beep/K_beauty/actions/runs/39059702566)에서 입증한 빈 PG17 실패·롤백(negative)을 보완해, [#39062707665](https://github.com/gycha0109-beep/K_beauty/actions/runs/39062707665)에서 **별도의 합성 DB** 위 첫 SQL `20260410` 적용 성공과 category/texture/finish enum, skin_types array, normalize backfill, 후보-랭킹 증거 뷰, FK를 실제로 검사했다. 이 fixture는 새로 작성한 합성 schema이며 원래 운영 기초 DDL의 복구본이 아니다. 기존 local-shadow bootstrap도 ID 타입 차이로 역사적 원본 대용 불가.
 
 완료 범위는 **synthetic first-migration runtime contract PASS**까지만. 178개 실역사 체인·운영 ACL 출처·백업/PITR 복원·#1208·독립 OWNER 서명은 그대로 **NOT ATTESTED**. 코드/증거 `d8k13-preledger-synthetic-positive-pg17-20261018.json` 및 전체 이력 감사 §11 참조. 릴리스 HOLD/PR Draft 유지.
+
+## 24. 2026-10-18 초기 스키마 원본 경로 조사 — 실제 recovery source 미확보
+
+운영 프로젝트 생성일은 2026-03-21T11:54:08Z로 최초 K_beauty Git commit(2026-04-08T15:54:56Z) 이전이다. 초기 외부 SQL 설치/배포 가능성을 조사했으나 연결 GitHub/Drive 검색과 Supabase 프로젝트/branch 읽기 전용 API에는 최초 CREATE/GRANT SQL·원본 백업이 없다. 현재 사용 가능한 Supabase 연동에는 백업 목록 조회 액션이 없으므로 백업 존재 여부 자체는 **NOT ATTESTED**로 유지한다. 일반적인 Supabase backup/PITR 기간은 지난 3~4월까지 보존한다고 가정하면 안 된다([공식 문서](https://supabase.com/docs/guides/platform/backups)).
+
+비식별 P0 출처 기록 `d8k13-original-bootstrap-source-discovery-20261018.json` 및 **비공개 원본 SHA/size만 검증하는 intake 도구** `verify-d8k13-private-bootstrap-intake-v1.mjs`를 추가했다. 검증에 합격한 외부 SQL도 승인/역사성 증명이 아니라 `CANDIDATE_ONLY_NOT_ATTESTED`로만 분류하며, 원본 SQL을 GitHub에 올리거나 DB에 실행하지 않는다. 전체 replay/PITR/Owner Security #1208 미승인 → **DRAFT / RELEASE HOLD 유지**.
