@@ -100,6 +100,53 @@ assert.equal(focusedHistory.taxonomy8.historicalPreflightExecutedAttested,false)
 const focusedQuery=readFileSync(join(ROOT,focusedHistory.repeatableSelectOnlySql),"utf8");
 assert.ok(focusedQuery.includes("D8K13_CRAWLER_TAX8_RANKING_HISTORY_READONLY_V1"));
 assert.ok(focusedQuery.includes("release_authorized',false"));
+const twoGaps=JSON.parse(readFileSync(join(ROOT,
+ "scripts/product-evidence/baselines/d8k13-two-multistatement-source-drift-readonly-20261017.json"),"utf8"));
+assert.equal(twoGaps.schema,"D8K13_TWO_MULTISTATEMENT_SOURCE_GAP_READONLY_V1");
+assert.equal(twoGaps.status,"RELEASE_HOLD");
+assert.equal(twoGaps.hostedRawSqlPublished,false);
+assert.equal(twoGaps.hostedDbWrites,0);
+assert.equal(twoGaps.previouslyUnresolvedMultiStatementFiles,2);
+assert.equal(twoGaps.files.length,2);
+assert.equal(twoGaps.allNonDelimiterTokenEditsExplained,true);
+assert.equal(twoGaps.nativePg17HistoricalSqlReplayAttested,false);
+assert.equal(twoGaps.productionReleaseAuthorized,false);
+const rankGap=twoGaps.files.find(x=>x.migrationVersion==="20260621030000");
+const sec05Gap=twoGaps.files.find(x=>x.migrationVersion==="20260711032649");
+assert.ok(rankGap&&sec05Gap,"D8K13_TWO_HISTORIC_DRIFT_FILES_MISSING");
+for(const item of [rankGap,sec05Gap]){
+ assert.equal(gitBlobSha(readFileSync(join(ROOT,item.sourceFile))),item.gitBlobSha,
+  "D8K13_HISTORIC_SQL_DIFF_SOURCE_SHA_DRIFT_"+item.name);
+ assert.equal(item.gitLexerTokens-item.hostedLexerTokens,item.tokenDeltaGitMinusHosted);
+ assert.equal(item.gitOnlyChangeRegions,item.gitOnlyRegions.length);
+ assert.equal(item.localOnlyTerminalSemicolonTokens,1);
+}
+assert.equal(rankGap.gitOnlyChangeRegions,4);
+assert.deepEqual(rankGap.gitOnlyRegions.map(x=>x.line),[48,71,119,338]);
+assert.equal(rankGap.appliedRepairStatusGuardObserved,true);
+assert.equal(rankGap.liveIngestRankingSnapshotStatusGuardPresent,true);
+assert.equal(rankGap.historicalSourceRankingsAclCreationAndRevocationProven,false);
+assert.equal(sec05Gap.gitOnlyChangeRegions,5);
+assert.deepEqual(sec05Gap.gitOnlyRegions.map(x=>x.line),[220,391,413,472,494]);
+assert.equal(sec05Gap.liveRoutines.length,3);
+assert.ok(sec05Gap.liveRoutines.every(x=>
+ x.hasAllSixExplicitNullGuards===false&&x.usesIsDistinctFrom===false
+ &&x.serviceRoleExecute===true&&x.anonExecute===false
+ &&x.authenticatedExecute===false&&x.securityDefiner===false));
+assert.equal(sec05Gap.homeDockerPg17SyntheticClaimNullRejectionAttested,true);
+assert.equal(sec05Gap.homeDockerPg17CompleteAndFailInputContractNativeAttested,false);
+assert.equal(twoGaps.independentSecurityOwnerApproved,false);
+const rankOriginal=readFileSync(join(ROOT,rankGap.sourceFile),"utf8");
+const sec05Original=readFileSync(join(ROOT,sec05Gap.sourceFile),"utf8");
+for(const name of ["ranking_snapshots","source_rankings","product_candidates"]){
+ assert.ok(new RegExp("revoke\\s+insert,\\s*update,\\s*delete\\s+on\\s+table\\s+public\\."+name,"i")
+  .test(rankOriginal),"D8K13_RANKING_GIT_ONLY_PUBLIC_REVOKE_MISSING_"+name);
+}
+assert.ok(rankOriginal.includes("ranking_ingest_existing_snapshot_not_ingested"));
+for(const name of ["complete_anonymous_write_grant","fail_anonymous_write_grant"])
+ assert.ok(sec05Original.includes("function public."+name+"("));
+assert.equal((sec05Original.match(/p_jti_hash is null/g)||[]).length,3);
+assert.ok((sec05Original.match(/is distinct from p_principal_hash/g)||[]).length>=2);
 const triageCategories=new Map();
 const triageFiles=new Set();
 for(const entry of sameVersionTriage.entries){
@@ -170,6 +217,12 @@ const result={
   multiStatementLexerExact:multiFollowup.tokenExact,
   multiStatementLexerTerminalDelimiterOnly:multiFollowup.tokenSameExceptSingleFinalSemicolon,
   multiStatementLexerDifferent:multiFollowup.tokenDifference,
+  storedGitMultiStatementDriftRegionsReconciled:9,
+  twoRemainingMultiSqlDiffsNotMerelyDelimiters:true,
+  rankingOriginalSecurityPatchMissingFromOriginalHostedHistory:true,
+  rankingIngestStatusGuardRecoveredInLaterAppliedMigration:true,
+  sec05ClaimCompleteFailCurrentExplicitNullGuardsMissing:3,
+  sec05CompleteFailNativeNegativeTestsStillPending:true,
   liveAnonymousGrantNullGuardsNotAttested:true
  },
  sourceSqlBodyEquivalentForEntireHistory:false,
