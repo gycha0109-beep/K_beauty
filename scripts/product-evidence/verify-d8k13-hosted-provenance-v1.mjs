@@ -3,6 +3,7 @@
 // Provenance was established from read-only hosted statement fingerprints
 // and GitHub source blob IDs on 2026-10-16. This program does NOT query
 // hosted DB, read credentials, export historic SQL, or authorize a release.
+import {verifyD8k13ExtendedHomeEvidence} from "./verify-d8k13-sec05-extended-home-evidence-v1.mjs";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {readFileSync,readdirSync} from "node:fs";
@@ -11,6 +12,7 @@ import {fileURLToPath} from "node:url";
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"../..");
 const migrationsDir=join(ROOT,"supabase/migrations");
+const extendedSec05Home=verifyD8k13ExtendedHomeEvidence(ROOT);
 const provenance=JSON.parse(readFileSync(join(ROOT,
  "scripts/product-evidence/baselines/d8k13-hosted-migration-provenance-readonly-20261016.json"),"utf8"));
 const args=process.argv.slice(2);
@@ -247,7 +249,10 @@ const result={
   rankingOriginalSecurityPatchMissingFromOriginalHostedHistory:true,
   rankingIngestStatusGuardRecoveredInLaterAppliedMigration:true,
   sec05ClaimCompleteFailCurrentExplicitNullGuardsMissing:3,
-  sec05CompleteFailNativeNegativeTestsStillPending:true,
+  sec05CompleteFailNativeNegativeTestsStillPending:false,
+  sec05CompleteFailScopedNativePg17UserReportedPass:extendedSec05Home.scopedSec05CompleteFailNativePg17UserReportedPass,
+  sec05PinnedEightBlobCheckPass:extendedSec05Home.sourceCount===8,
+  sec05PrivateTranscriptIndependentlyRehashed:false,
   liveAnonymousGrantNullGuardsNotAttested:true
  },
  sourceSqlBodyEquivalentForEntireHistory:false,
