@@ -48,3 +48,16 @@
 3. 전체 178개 migration 이력의 복원/재생·실제 백업/PITR 복원·독립 OWNER 검토·공급망 `#1208` 해결·명시적 운영 승인 이전에는 SECURITY DEFINER/RLS/데이터/권한/함수 보강을 운영에 적용하지 않는다.
 
 **이 단계 완료: 두 SQL 이력의 실제 비구분자 차이를 모두 분해해 증거 고정. 운영 배포는 HOLD.**
+
+## 4. SEC-05 complete/fail 정확한 운영 함수 재구성 및 확장 PG17 테스트 코드 (2026-10-17)
+
+현재 Git `complete_anonymous_write_grant`와 `fail_anonymous_write_grant`에서 새로 추가된 입력 검증 1블록을 제거하고, 각각 네 번의 `IS DISTINCT FROM` 비교를 역사적 `<>`로 환원한 합성 legacy 함수 본문이 **운영 `pg_get_functiondef`와 SQL 토큰 단위 완전 일치**함을 재검증했다. `complete`는 **224/224 tokens**, `fail`은 **207/207 tokens**; 주석/공백 제외, SQL literal 원문 보존. **실제 운영 함수를 호출하거나 수정하지 않았다.**
+
+실행 준비로 별도 격리 PG17 SQL fixture 두 개를 작성했다.
+
+- `34_sec05_legacy_completion_failure_null_pg17.sql`: 합성 grant/use 1쌍의 `in_progress` 상태에서 **NULL principal로 잘못된 complete/fail가 성공하는 구형 SQL 동작**을 각각 BEGIN–ROLLBACK으로 검증하며, 최종 grant/use 상태 복원을 확인.
+- `35_sec05_hardened_completion_failure_pg17.sql`: 두 보강 함수 각각 6개 NULL 인자에 대해 오류 `22023`, 다른 principal의 반환 `updated=false`, 유효한 complete/fail 및 재시도 idempotency, RLS/`service_role`-only 함수 권한·롤백을 검증.
+
+기존 `run-d8k13-sec05-acl-synthetic-pg17.mjs`에 정확한 역사적 함수 변종 생성 및 테스트 실행 순서를 추가했고 8개 소스 파일에 대한 `--check-files` **PASS**를 확인했다. **신규 두 fixture native Docker PG17 통과 로그는 없다**. 이전 집 PC `0832a7f9` 합격은 정확히 이전 **claim + ranking ACL** 범위만 인증한다. 새로운 `complete/fail` 범위는 별도 고정 HEAD Docker 로그가 필요하다.
+
+**승인 경계:** 원래 SQL migration 파일을 수정하지 않았고, 새 두 SQL 파일은 `tests/fixtures` 아래에만 있다. hosted 함수 변경, RPC 호출, 권한 REVOKE, 보안 예외 갱신, 배포는 시행하지 않았다.
