@@ -206,6 +206,12 @@ for(const file of [rankingMultiGap,sec05MultiGap]){
 assert.deepEqual(rankingMultiGap.gitOnlyRegions.map(x=>x.line),[48,71,119,338]);
 assert.equal(rankingMultiGap.appliedRepairStatusGuardObserved,true);
 assert.equal(rankingMultiGap.historicalSourceRankingsAclCreationAndRevocationProven,false);
+assert.equal(rankingMultiGap.productCandidatesExplicitAclHistoryRows,0);
+assert.equal(rankingMultiGap.productCandidatesCurrentRlsEnabled,true);
+assert.equal(rankingMultiGap.productCandidatesCurrentPublicSelect,false);
+assert.equal(rankingMultiGap.productCandidatesCurrentPublicInsert,false);
+assert.equal(rankingMultiGap.productCandidatesCurrentServiceRoleInsertAndUpdate,true);
+assert.equal(rankingMultiGap.productCandidatesExplicitAclCreationOriginProven,false);
 assert.deepEqual(sec05MultiGap.gitOnlyRegions.map(x=>x.line),[220,391,413,472,494]);
 assert.equal(sec05MultiGap.liveRoutines.length,3);
 assert.ok(sec05MultiGap.liveRoutines.every(x=>
