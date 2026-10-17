@@ -71,3 +71,14 @@ powershell -NoProfile -File .\scripts\product-evidence\run-d8k13-sec05-acl-local
 - 공급망 보안 `#1208`, 독립 OWNER/검토자, 전체 178건의 마이그레이션 재현, Crawler delimiter/Taxonomy8 history 및 운영 릴리스 승인 미충족. D8K-13 PR은 Draft/HOLD다.
 
 **최종 판정: `SEC05_RANKING_PG17_TEST_FIXTURES_READY / LOCAL_CHECK_FILES_PASS / NATIVE_PG17_NOT_RUN / HOSTED_RELEASE_HOLD`.**
+
+
+## 2026-10-17 집 PC 실제 SEC-05/Ranking ACL PG17 결과 — 부분 시험 PASS
+
+사용자가 2026-10-17 16:52–16:53 KST Windows에서 직접 실행한 **독립 Docker PostgreSQL17 합성 테스트가 종료코드 0 및 `D8K13_HOME_PG17_TEST_PASS`로 완료**됐다. 고정 코드 버전 `0832a7f964cb68aa7fb057eba654343f46214cfa`의 소스 6개 Git blob 검증을 통과했다. 읽기 가능한 최종 마커에 `D8K13_SEC05_HARDENED_NULL_MATRIX_AND_RETRY_PASS`, `D8K13_SEC05_PUBLIC_RPC_DIRECT_EXECUTE_DENIED_PASS`, `D8K13_SEC05_RANKING_MINIMAL_ACL_ROLLBACK_PASS`, `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS`가 모두 있었다.
+
+**로그의 제한:** `D8K13_SEC05_LOCAL_PG17_READY`와 `D8K13_SEC05_LEGACY_NULL_REPRODUCED_AND_ROLLBACK_PASS` 표시는 제출된 PowerShell transcript에 직접 남지 않았다. 고정된 러너의 제어 흐름상 두 단계가 통과하지 않았다면 최종 마커에 도달할 수 없으므로 **러너 전체 성공의 간접 근거**로 수용했다. 원시 `psql` statement별 출력이나 hosted에서의 실제 NULL 호출 성공을 검증했다고 주장하지 않는다.
+
+독립 근거: [2026-10-17 home Windows 로컬 PG17 acceptance](./r16i-r4-d8k13-home-sec05-acl-pg17-acceptance-20261017.md). 사용자 로그 SHA256 `72ad32e76230dc0859ed4ce446269fa9d0fd7cf123d540a443094d0fa99c52fe`. 원본 로그와 PC 사용자명/경로는 공개 저장소로 업로드하지 않았다.
+
+**이번 테스트의 결론은 `SEC05_RANKING_SCOPED_SYNTHETIC_PG17_PASS`이다. `D8K13_HOSTED_RELEASE_HOLD`는 그대로 유지**된다. 전체 178개 migration replay, Crawler parser, backup/PITR 복원, independent OWNER, #1208, 그리고 운영 권한/함수 수정에 대한 명시적 승인은 미완료다. 이 문서 상단의 "Native PG17 NOT_RUN" 기록은 **2026-10-16 당시 상태**이며 이 2026-10-17 후속 증거가 해당 부분만 갱신한다. 실제 운영 DB는 변경하지 않았다.
