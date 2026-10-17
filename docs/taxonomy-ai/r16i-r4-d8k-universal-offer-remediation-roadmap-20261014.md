@@ -377,3 +377,10 @@
 - **Taxonomy8 단일 누락의 경로:** 후발 상품 1건은 `crawler-canonical-product-structural-adoption-v1`의 `inserted` Product이다. Candidate에는 shadow manual legacy 분류가 있지만 Product assignment가 0. 현재 structural writer는 category만 쓰며 assignment를 만들지 않는 반면 catalog-only writer는 assignment를 쓴다. Product INSERT의 활성 트리거도 assignment를 생성하지 않는다. 원인 경로는 구체화됐지만, **structural writer의 정책 수정/자동 보정은 승인되지 않았다.**
 - **검증 자료:** `scripts/product-evidence/sql/d8k13-p0-acl-taxonomy-provenance-readonly-v1.sql`은 운영 SELECT-only로 성공했으며, 비식별 JSON baseline과 source-pin fail-closed verifier를 `verify-d8k13-hosted-provenance-v1.mjs`에 연결했다. [P0 상세](r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md) §8.
 - **순서 유지:** D8K-13 운영 migration lineage·보안·백업 복원 P0가 우선이며, 모든 구매처 비교 D8K-5~7 또는 D8D v2 판매 UI 적용을 출시 승인으로 오해하지 않는다. #1208 OPEN / 백업·독립 OWNER·배포 DB 동일성 등 미입증 / **PR #1341 Draft·HOLD / 운영 DB write 0 / `--enforce-release` exit 3**.
+
+## 23. D8K-13 pre-ledger 기반 복원 준비 게이트 (2026-10-17)
+
+- 조사 추가: 초기 Git 트리(2026-04-08)에는 bootstrap SQL이 없으며 2026-04-10 초기 migration SQL은 기초 테이블을 사전 존재 객체로 간주한다. 현재 운영의 두 기본 테이블/ACL 집계 증거만으로는 과거 권한 또는 migration replay의 시작 상태를 인증할 수 없다.
+- 운영 SELECT-only 스키마 프로필 검사 PASS. 적용 SQL 178건 복원 전 11개 prerequisite를 JSON 증거 및 fail-closed 분석기로 고정했고 전체 마이그레이션 진단기에 연결했다. 인증되지 않은 초기 schema를 임의 생성하거나 `migration repair`를 통한 거짓 정상화 금지.
+- 다음은 **초기 bootstrap/배포 artifact 독립 확보 → SQL 순서·이력 정합 인증 → 격리 PG17 clean replay → backup/PITR 실복원과 독립 보안 승인**이다. Taxonomy8 structural writer는 발견된 불일치 경로의 의도 확인 및 별도 검토 승인 전 유지한다.
+- 보안 #1208 OPEN / D8D v2 OFF / Product·Offer·가격·CTA 변경 0 / PR #1341 Draft / 릴리스 HOLD 지속.
