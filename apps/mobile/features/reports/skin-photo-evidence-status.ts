@@ -55,7 +55,14 @@ export function resolveSkinPhotoDisplayState(report: unknown): SkinPhotoDisplayS
   const highOrMediumObservationCount = status === "available"
     ? cues.filter((value) => {
         const item = asRecord(value);
-        return item && ["high", "medium"].includes(String(item.confidence));
+        if (!item || !["high", "medium"].includes(String(item.confidence))) return false;
+        // Legacy signals without a state keep their current compatibility behavior.
+        // If a v2 state is present, unknown/unassessable is not supporting photo evidence,
+        // regardless of the confidence value. Explicit not_seen is valid visual absence,
+        // not a clinical claim of healthy skin.
+        const evidenceState = typeof item.state === "string" ? item.state : null;
+        return evidenceState === null ||
+          ["present", "not_seen", "observed"].includes(evidenceState);
       }).length
     : 0;
   return { status, statusConflict, highOrMediumObservationCount };
