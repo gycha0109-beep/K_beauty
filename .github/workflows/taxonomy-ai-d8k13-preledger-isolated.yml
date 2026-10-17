@@ -12,6 +12,7 @@ on:
       - scripts/product-evidence/run-d8k13-preledger-synthetic-positive-pg17.mjs
       - tests/fixtures/r16i-d8k13/36_preledger_synthetic_base_pg17.sql
       - scripts/product-evidence/baselines/d8k13-preledger-reconstruction-readiness-20261017.json
+      - scripts/product-evidence/baselines/d8k13-preledger-synthetic-positive-pg17-20261018.json
       - scripts/product-evidence/baselines/d8k13-p0-acl-taxonomy-provenance-followup-20261017.json
       - scripts/product-evidence/baselines/d8k13-hosted-migrations-readonly-20261016.json
       - scripts/product-evidence/sql/d8k13-preledger-schema-profile-readonly-v1.sql
