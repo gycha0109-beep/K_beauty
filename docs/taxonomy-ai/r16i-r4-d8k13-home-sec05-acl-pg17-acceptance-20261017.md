@@ -40,3 +40,22 @@
 실행 원본 스크립트: `scripts/product-evidence/run-d8k13-sec05-acl-synthetic-pg17.mjs`와 `tests/fixtures/r16i-d8k13/30…33`. 릴리스 차단 검사 `verify-d8k13-release-sequence-v1.mjs`는 합성 네이티브 테스트 PASS 여부와 관계없이 전체 178건 migration 이력의 검증 부족으로 `--enforce-release`에서 exit code 3을 반환해야 한다.
 
 **최종 결과: `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS` / `D8K13_HOSTED_RELEASE_HOLD`.**
+
+## 5. 2026-10-17 21:16 KST 후속 Windows PG17 확장 PASS — 8개 소스
+
+앞선 16:52 **6개 소스** 시험과 별도로, 사용자가 21:16:50–21:17:02 KST에 제공한 `D8K13_HOME_RESULT_20261017_211649.log` 결과에서는 고정 커밋 `303a94af096f6b4b8fa0784e8920bc39843a4edd` 및 **8개 Git blob checksum PASS**가 보고됐다. 전달된 로그 SHA256 `1dadd3a9ba3fcde39e03dbf0c94b3b824a8014ccee445f2334c54db7dce52006`은 *사용자 보고 지문*이며, 이 이관 세션은 원본 로그 바이트를 전달받지 않았으므로 재해시했다고 주장하지 않는다.
+
+사용자가 제공한 직접 표시 마커:
+
+- `D8K13_HOME_SOURCE_EIGHT_GIT_BLOB_CHECKSUMS_PASS`
+- `D8K13_HOME_POSTGRES17_IMAGE_READY`
+- `D8K13_SEC05_ACL_SYNTHETIC_CHECK_FILES_PASS`
+- `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS`
+- `D8K13_HOME_PG17_TEST_PASS`
+- `D8K13_SEC05_EXTENDED_HOME_PG17_TEST_PASS`
+
+고정 러너는 이전 claim·ranking 검증에 더하여 `34_sec05_legacy_completion_failure_null_pg17.sql` 및 `35_sec05_hardened_completion_failure_pg17.sql`을 차례로 실행하고 legacy NULL 상태 변경·rollback, hardened complete/fail의 인자 NULL 거부 및 정상·실패·재시도·역할 차단을 assert한 뒤 `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS`를 출력한다. 따라서 이 결과는 **고정 러너의 확장 합성 Docker PostgreSQL17 성공**으로 수락한다. 개별 complete/fail 중간 마커나 원시 SQL statement별 출력은 제시된 요약에 직접 표시되지 않았으며 독립적으로 확인했다고 주장하지 않는다.
+
+새 증거 매니페스트: `scripts/product-evidence/baselines/d8k13-sec05-extended-home-pg17-acceptance-20261017.json`. 관련 오프라인 검증기는 현재 코드에서 8개 소스 Git blob checksum 및 러너 종료 조건을 fail-closed로 검사한다. 예전 `NOT_RUN` 기록은 그 **이전 시점**의 사실로 유지되지만 **현재 후속 판정은 scoped extended PG17 PASS**이다.
+
+**운영 DB의 세 SEC-05 RPC는 여전히 보강 전 상태**이며, 전체 178건 migration replay, Crawler native parser 검증, 역사적 ACL 출처, Taxonomy8 단일 상품 점검, 백업/PITR 실제 복원, 독립 보안 오너, #1208 및 명시적 배포 승인이 미완료다. **Draft / RELEASE HOLD.**
