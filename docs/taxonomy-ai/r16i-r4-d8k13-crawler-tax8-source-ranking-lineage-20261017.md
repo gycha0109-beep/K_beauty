@@ -96,3 +96,13 @@
 | 178건 전체 | 일부 body·이름/버전 provenance와 후속 ranking repair 입증 | 독립 deployed artifact 복원, 실행 순서·데이터 의존성·clean replay 및 실백업 복원 |
 
 이 체크포인트는 새로운 운영 조회를 실시했다고 주장하지 않는다. 사용자/상품 식별자 및 실제 `schema_migrations.statements` 본문은 공개 GitHub에 올리지 않는다. 별도 안전한 read-only 접근과 확인 가능한 외부 출처가 확보될 때까지 `PROVENANCE_UNATTESTED` / **HOLD** 유지한다.
+
+## 7. 2026-10-17 후속 운영 SELECT-only P0 재조회 (식별자 비공개)
+
+실제 연결된 Supabase PostgreSQL17에서 SQL 본문을 밖으로 출력하지 않는 **SELECT-only** 쿼리로 178개 applied statements 및 현재 `pg_catalog`를 재확인했다. 식별자·개별 제품명·원시 상품 데이터·SQL 원문은 이 증거에 포함하지 않았다.
+
+- `source_rankings`: 저장 적용 SQL 텍스트 포함 기록 6건. 명시적인 직접 `CREATE TABLE` / `GRANT/REVOKE` 좁은 패턴 매칭은 각 **0건**. 현재 RLS ON, `anon/authenticated` SELECT/INSERT=false, `service_role` INSERT=true.
+- `product_candidates`: 저장 SQL 텍스트 포함 기록 **40건**. 같은 직접 `CREATE TABLE` / `GRANT/REVOKE` 좁은 패턴 매칭은 각 **0건**. 현재 RLS ON, `anon/authenticated` SELECT/INSERT=false, `service_role` INSERT=true.
+- Taxonomy8의 예외 한 건: 기존 `sunscreen` category를 가진 2026-10-01 생성 상품이며 `product_form`은 NULL, canonical assignment **0건**. 이 Product에 결합된 Candidate **1건**의 `review_status=promoted`, `identity_resolution_state=resolved`를 확인. **승격 후보가 있다는 사실은 taxonomy assignment 반영이나 추천 승인·판매 승인과 동의어가 아니다.**
+
+증거: `scripts/product-evidence/baselines/d8k13-p0-targeted-hosted-readonly-20261017.json` (aggregate-only, 식별자 제외). 정규식 매칭은 완전한 SQL parser가 아니고 178개 적용 기록 바깥 초기 스키마/동적 SQL/다른 명명·인용 방식을 증명하거나 배제할 수 없다. **최초 ACL 출처와 단일 상품 assignment 누락 원인은 여전히 미확인**이며, 독립 초기 배포 artifact 및 상품 승격·taxonomy 작성 이벤트의 승인된 감사 근거를 확보하기 전까지 자동 SQL 보정 금지. 전체 `HOLD` 유지.
