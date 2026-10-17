@@ -141,6 +141,25 @@ assert.ok(sec05Gap.liveRoutines.every(x=>
  &&x.authenticatedExecute===false&&x.securityDefiner===false));
 assert.equal(sec05Gap.homeDockerPg17SyntheticClaimNullRejectionAttested,true);
 assert.equal(sec05Gap.homeDockerPg17CompleteAndFailInputContractNativeAttested,false);
+
+assert.equal(sec05Gap.completeLegacyInstalledTokenCount,224);
+assert.equal(sec05Gap.failLegacyInstalledTokenCount,207);
+assert.equal(sec05Gap.completeLegacyDerivedTokensEqualLivePgFunctionBody,true);
+assert.equal(sec05Gap.failLegacyDerivedTokensEqualLivePgFunctionBody,true);
+assert.equal(sec05Gap.completeFailLegacyNullBypassPg17FixtureAuthored,true);
+assert.equal(sec05Gap.completeFailHardenedNullMatrixPg17FixtureAuthored,true);
+assert.equal(sec05Gap.completeFailNewNativePg17AcceptanceMarkerPresent,false);
+assert.equal(sec05Gap.extendedFixtureFiles.length,2);
+const extendedSec05Runner=readFileSync(join(ROOT,sec05Gap.extendedRunnerFile),"utf8");
+assert.ok(extendedSec05Runner.includes("completionLegacyVariant"));
+assert.ok(extendedSec05Runner.includes("sqlBodyTokenCount(oldComplete),224"));
+assert.ok(extendedSec05Runner.includes("sqlBodyTokenCount(oldFail),207"));
+assert.ok(extendedSec05Runner.includes("D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_RETRY_ROLLBACK_PASS"));
+const extendedLegacyFixture=readFileSync(join(ROOT,sec05Gap.extendedFixtureFiles[0]),"utf8");
+const extendedHardenedFixture=readFileSync(join(ROOT,sec05Gap.extendedFixtureFiles[1]),"utf8");
+assert.ok(extendedLegacyFixture.includes("D8K13_SEC05_COMPLETE_FAIL_LEGACY_NULL_BYPASS_ROLLBACK_PASS"));
+assert.ok(extendedHardenedFixture.includes("D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_MATRIX_RETRY_ROLLBACK_PASS"));
+
 assert.equal(twoGaps.independentSecurityOwnerApproved,false);
 const rankOriginal=readFileSync(join(ROOT,rankGap.sourceFile),"utf8");
 const sec05Original=readFileSync(join(ROOT,sec05Gap.sourceFile),"utf8");
