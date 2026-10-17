@@ -82,3 +82,16 @@ powershell -NoProfile -File .\scripts\product-evidence\run-d8k13-sec05-acl-local
 독립 근거: [2026-10-17 home Windows 로컬 PG17 acceptance](./r16i-r4-d8k13-home-sec05-acl-pg17-acceptance-20261017.md). 사용자 로그 SHA256 `72ad32e76230dc0859ed4ce446269fa9d0fd7cf123d540a443094d0fa99c52fe`. 원본 로그와 PC 사용자명/경로는 공개 저장소로 업로드하지 않았다.
 
 **이번 테스트의 결론은 `SEC05_RANKING_SCOPED_SYNTHETIC_PG17_PASS`이다. `D8K13_HOSTED_RELEASE_HOLD`는 그대로 유지**된다. 전체 178개 migration replay, Crawler parser, backup/PITR 복원, independent OWNER, #1208, 그리고 운영 권한/함수 수정에 대한 명시적 승인은 미완료다. 이 문서 상단의 "Native PG17 NOT_RUN" 기록은 **2026-10-16 당시 상태**이며 이 2026-10-17 후속 증거가 해당 부분만 갱신한다. 실제 운영 DB는 변경하지 않았다.
+
+## 5. 신규 SEC-05 complete/fail 합성 PG17 확장 검증 (2026-10-17)
+
+기존 `claim + ranking ACL` 합성 PG17 독립 테스트의 **2026-10-17 실험 PASS**는 변경하지 않는다. 이어서 `complete_anonymous_write_grant`(224 토큰), `fail_anonymous_write_grant`(207 토큰) 함수를 **현재 운영 본문과 정확히 같은 legacy 형태로 재구성하는 로직** 및 두 개의 신규 SQL negative/rollback fixture를 추가했다.
+
+새 픽스처:
+
+- `tests/fixtures/r16i-d8k13/34_sec05_legacy_completion_failure_null_pg17.sql`
+- `tests/fixtures/r16i-d8k13/35_sec05_hardened_completion_failure_pg17.sql`
+
+예상 마커: `D8K13_SEC05_COMPLETE_FAIL_LEGACY_NULL_AND_ROLLBACK_PASS` / `D8K13_SEC05_COMPLETE_FAIL_HARDENED_NULL_RETRY_ROLLBACK_PASS` / `D8K13_SEC05_COMPLETE_FAIL_PUBLIC_RPC_DENIED_PASS`. **아직 이 마커가 찍힌 native PG17 로그는 제출·검증되지 않았다.** 현재 검증 결과는 신규 8개 소스 파일을 통한 러너 `--check-files` PASS와 실제 운영 정의의 224/207 SQL 토큰 일치까지다.
+
+테스트는 기존 `postgres:17` 합성 컨테이너에 이어서 수행하며 Docker의 네트워크/포트/외부 DB·운영 DB 접근 차단, 임시 컨테이너 삭제 및 원본 작업 폴더 불변 조건을 유지한다. 전체 178 migration 재생, 운영 repair 권한, 독립 보안 승인, 백업 복원은 계속 HOLD다.
