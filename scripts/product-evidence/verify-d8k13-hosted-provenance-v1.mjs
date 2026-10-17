@@ -60,6 +60,43 @@ function gitBlobSha(buffer){
   .update(Buffer.from("blob "+buffer.length+"\0","utf8"))
   .update(buffer).digest("hex");
 }
+const focusedHistory=JSON.parse(readFileSync(join(ROOT,
+ "scripts/product-evidence/baselines/d8k13-crawler-taxonomy8-ranking-source-lineage-readonly-20261017.json"),"utf8"));
+assert.equal(focusedHistory.schema,"D8K13_CRAWLER_TAX8_RANKING_LINEAGE_READONLY_V1");
+assert.equal(focusedHistory.status,"RELEASE_HOLD");
+assert.equal(focusedHistory.rawHostedSqlIncluded,false);
+assert.equal(focusedHistory.hostedDbWrites,0);
+assert.equal(focusedHistory.productionReleaseAuthorized,false);
+assert.equal(focusedHistory.whole178RowMigrationReplayAccepted,false);
+const crawler=focusedHistory.crawler;
+const crawlerSource=readFileSync(join(ROOT,crawler.currentRepoFile));
+assert.equal(gitBlobSha(crawlerSource),crawler.currentRepoGitBlobSha,
+ "D8K13_CRAWLER_SOURCE_CHANGED_SINCE_HOSTED_LEXER_AUDIT");
+assert.equal(crawler.differencesAreOnlySixEndSemicolonInsertions,true);
+assert.equal(crawler.historicalLexerTokens,5072);
+assert.equal(crawler.repoLexerTokens,5078);
+assert.equal(crawler.fullNativePg17ReplayAttested,false);
+const crawlerEndLines=[...crawlerSource.toString("utf8").matchAll(/\\bend;\\s*\\$\\$/gi)]
+ .map(m=>crawlerSource.toString("utf8").slice(0,m.index).split("\n").length);
+assert.deepEqual(crawlerEndLines,crawler.expectedRepositorySourceLines,
+ "D8K13_CRAWLER_EXPECTED_SIX_END_SEMICOLONS_CHANGED");
+assert.equal(crawlerEndLines.length,6);
+assert.equal(focusedHistory.sourceRankings.hostedHistoryRowCount,178);
+assert.equal(focusedHistory.sourceRankings.sourceRankingsGrantExplicitHistoryRows,0);
+assert.equal(focusedHistory.sourceRankings.sourceRankingsRevokeExplicitHistoryRows,0);
+assert.equal(focusedHistory.sourceRankings.sourceRankingsCreateTableExplicitHistoryRows,0);
+assert.equal(focusedHistory.sourceRankings.historicalExplicitAclProvenanceResolved,false);
+assert.equal(focusedHistory.sourceRankings.currentAnonWrite,false);
+assert.equal(focusedHistory.sourceRankings.currentRlsEnabled,true);
+assert.equal(focusedHistory.taxonomy8.currentProductTotal,176);
+assert.equal(focusedHistory.taxonomy8.currentNonExactProjectionCount,11);
+assert.equal(focusedHistory.taxonomy8.currentNonExactShadowOnly,10);
+assert.equal(focusedHistory.taxonomy8.currentNonExactNonNullCategory,1);
+assert.equal(focusedHistory.taxonomy8.currentNonExactCreatedBefore20260914,0);
+assert.equal(focusedHistory.taxonomy8.historicalPreflightExecutedAttested,false);
+const focusedQuery=readFileSync(join(ROOT,focusedHistory.repeatableSelectOnlySql),"utf8");
+assert.ok(focusedQuery.includes("D8K13_CRAWLER_TAX8_RANKING_HISTORY_READONLY_V1"));
+assert.ok(focusedQuery.includes("release_authorized',false"));
 const triageCategories=new Map();
 const triageFiles=new Set();
 for(const entry of sameVersionTriage.entries){
@@ -124,14 +161,21 @@ const result={
   oneStatementSqlTokenEquivalent:5,
   oneStatementEdgeNewlinesOnly:6,
   requiresNativePg17ParserReview:1,
+  crawlerStoredSourceOnlySixTerminalSemicolonsDifferent:true,
+  crawlerNonDelimiterTokensMatched:5072,
+  crawlerHistoricalNativeFullReplayAccepted:false,
   multiStatementLexerExact:multiFollowup.tokenExact,
   multiStatementLexerTerminalDelimiterOnly:multiFollowup.tokenSameExceptSingleFinalSemicolon,
   multiStatementLexerDifferent:multiFollowup.tokenDifference,
   liveAnonymousGrantNullGuardsNotAttested:true
  },
  sourceSqlBodyEquivalentForEntireHistory:false,
+ sourceRankingsEffectivePublicWritesDenied:true,
+ sourceRankingsHistoricalAclOriginUnproven:true,
+ taxonomy8NonExactAllCreatedAfterOriginalMigrationCutoff:11,
+ taxonomy8CurrentLegacyProjectionDataQualityReviewCount:1,
  releaseAuthorized:false,
- next:"Review Taxonomy8 migration-scope mismatch and the crawler function delimiter; validate parser-aware equivalence of 28 split-statement history rows and 12 one-statement differences (6 terminal delimiter + 5 SQL token equivalents + 1 crawler), then restore and approve the full chain independently."
+ next:"Crawler historical comparison narrowed to exactly six ending semicolons (native replay not attested); audit source_rankings unrecorded historical ACL origin and one post-migration non-NULL product without exact taxonomy projection. Full 178-row replay/backup/security/reviewer approval remains blocked."
 };
 if(args[0]==="--full")
  result.currentFileDrifts=provenance.versionChanged.filter(x=>x.comparison==="DIFFERENT")
