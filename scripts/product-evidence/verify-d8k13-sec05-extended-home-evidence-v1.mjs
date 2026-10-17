@@ -27,7 +27,7 @@ const EXPECTED_MARKERS=[
   "D8K13_SEC05_EXTENDED_HOME_PG17_TEST_PASS"
 ];
 function gitBlobSha(bytes){
- return createHash("sha1").update(Buffer.from("blob "+bytes.length+"\\0","utf8")).update(bytes).digest("hex");
+ return createHash("sha1").update(Buffer.from("blob "+bytes.length+String.fromCharCode(0),"utf8")).update(bytes).digest("hex");
 }
 export function verifyD8k13ExtendedHomeEvidence(root){
  const m=JSON.parse(readFileSync(join(root,MANIFEST),"utf8"));
