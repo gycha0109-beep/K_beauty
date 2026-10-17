@@ -182,6 +182,38 @@ assert.ok(securityAdvisors.adminHelperBoundaries.every(x=>
 assert.equal(securityAdvisors.securityOwnerReviewCompleted,false);
 assert.equal(securityAdvisors.backupsAndPitrRestorabilityVerified,false);
 assert.equal(securityAdvisors.productionReleaseAuthorized,false);
+const multiSourceGap=JSON.parse(content(
+ "scripts/product-evidence/baselines/d8k13-two-multistatement-source-drift-readonly-20261017.json"));
+assert.equal(multiSourceGap.schema,"D8K13_TWO_MULTISTATEMENT_SOURCE_GAP_READONLY_V1");
+assert.equal(multiSourceGap.status,"RELEASE_HOLD");
+assert.equal(multiSourceGap.hostedRawSqlPublished,false);
+assert.equal(multiSourceGap.hostedDbWrites,0);
+assert.equal(multiSourceGap.previouslyUnresolvedMultiStatementFiles,2);
+assert.equal(multiSourceGap.allNonDelimiterTokenEditsExplained,true);
+assert.equal(multiSourceGap.nativePg17HistoricalSqlReplayAttested,false);
+assert.equal(multiSourceGap.productionReleaseAuthorized,false);
+const rankingMultiGap=multiSourceGap.files.find(x=>x.migrationVersion==="20260621030000");
+const sec05MultiGap=multiSourceGap.files.find(x=>x.migrationVersion==="20260711032649");
+assert.ok(rankingMultiGap&&sec05MultiGap);
+for(const file of [rankingMultiGap,sec05MultiGap]){
+ const raw=Buffer.from(content(file.sourceFile),"utf8");
+ const sha=createHash("sha1").update(Buffer.from("blob "+raw.length+"\0","utf8"))
+  .update(raw).digest("hex");
+ assert.equal(sha,file.gitBlobSha,"D8K13_TWO_MULTISTATEMENT_CURRENT_GIT_SOURCE_CHANGED");
+ assert.equal(file.gitLexerTokens-file.hostedLexerTokens,file.tokenDeltaGitMinusHosted);
+ assert.equal(file.gitOnlyChangeRegions,file.gitOnlyRegions.length);
+}
+assert.deepEqual(rankingMultiGap.gitOnlyRegions.map(x=>x.line),[48,71,119,338]);
+assert.equal(rankingMultiGap.appliedRepairStatusGuardObserved,true);
+assert.equal(rankingMultiGap.historicalSourceRankingsAclCreationAndRevocationProven,false);
+assert.deepEqual(sec05MultiGap.gitOnlyRegions.map(x=>x.line),[220,391,413,472,494]);
+assert.equal(sec05MultiGap.liveRoutines.length,3);
+assert.ok(sec05MultiGap.liveRoutines.every(x=>
+ x.hasAllSixExplicitNullGuards===false&&x.usesIsDistinctFrom===false&&
+ x.serviceRoleExecute===true&&x.anonExecute===false&&
+ x.authenticatedExecute===false));
+assert.equal(sec05MultiGap.homeDockerPg17CompleteAndFailInputContractNativeAttested,false);
+assert.ok(content(multiSourceGap.docs).includes("두 SQL 이력의 실제 비구분자 차이"));
 const historicalNames=new Set(appliedSnapshot.migrations.map(x=>x.name));
 const historicalVersions=new Set(appliedSnapshot.migrations.map(x=>x.version));
 const migrationFiles=readdirSync(path.join(ROOT,"supabase/migrations"))
@@ -232,6 +264,11 @@ const result={
  sameVersionMultiStatementParserReassemblyPending:28,
  sameVersionMultiStatementLexerTokenMatch:26,
  sameVersionMultiStatementLexerDrift:2,
+ sameVersionMultiStatementDriftRegionsAccountedFor:9,
+ rankingOriginalRevokeGrantAndStatusGuardsMissingFromFirstAppliedHistory:true,
+ rankingStatusGuardLaterAppliedAndCurrentlyPresent:true,
+ sec05LegacyRpcFunctionsNotHardenedInHosted:3,
+ sec05CompleteFailNativeNegativeContractRunPending:true,
  rankingSnapshotHistoricalAclStepMissingInStoredStatements:true,
  liveAnonymousClaimExplicitNullGuardNotObserved:true,
  laterRankingSnapshotAclRepairAppliedAndObserved:true,
