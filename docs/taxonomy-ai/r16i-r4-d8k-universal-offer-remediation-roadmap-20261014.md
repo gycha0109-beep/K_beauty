@@ -363,3 +363,43 @@
 - **기존 원장에 판정 행이 한 건이라도 있으면 변경 적용을 거절**: 기존 승인 재해석·임의 덮어쓰기를 방지하는 의도적인 사용자 확인 절차. D8K-10 캡처 UNVERIFIED는 별도 원장 0건의 증거가 아님.
 - 기존 D8C, D8K11 검사와 새 D8K12 테스트를 연결. 새 가상 검증과 역할/승인 철회/옛 승인 재사용을 포함한 **로컬 Docker PostgreSQL17 실제 검사**를 준비했으나 로컬 실행과 운영 활성화는 별도 확인 필요.
 - 별도 승인 전 운영 Supabase migration, 리뷰 본문/Storage 열람, 관리자 승인 POST, 상품 교정/Offer 쓰기, 가격 노출, PR 병합·배포 금지. 보안 #1208 미해결.
+
+## 21. D8K-13 최신 이관 checkpoint — 2026-10-17
+
+- **현재 단계:** `SEC05_CLAIM_COMPLETE_FAIL_RANKING_SCOPED_SYNTHETIC_PG17_PASS / HISTORICAL_PROVENANCE_P0_OPEN / PRODUCTION_HOLD`. 2026-10-17 21:16 KST 사용자가 전달한 8개 Git blob 고정 Windows PostgreSQL17 러너 최종 PASS를 후속 증거로 수락했다. 기록된 원시 로그가 이 채팅에 없어 독립 로그 재해시 및 SQL statement별 증명은 하지 않았다. [최신 SEC-05 home 결과](r16i-r4-d8k13-home-sec05-acl-pg17-acceptance-20261017.md).
+- **신규 metadata-only 증거 및 오프라인 보강:** `d8k13-sec05-extended-home-pg17-acceptance-20261017.json`, fail-closed Git blob 검증 모듈, D8K-13 3개 HOLD verifier. 테스트 고정 8개 코드 SHA 모두 GitHub 현 blob과 대조됨. 이후 metadata/docs/verifier 변경은 과거 Windows 시험의 코드 핀을 변경하지 않는다.
+- **P0 READ-only 재확인:** 연결된 PostgreSQL17의 178건 applied history, `source_rankings` 언급 6건, `product_candidates` 언급 40건. 직접 `CREATE TABLE` 및 `GRANT/REVOKE` 좁은 패턴은 둘 다 0건이나 전체 최초 출처의 부재 증명이 아니다. 현재 두 테이블의 RLS/일반 역할 직접 접근 차단은 확인. Taxonomy8의 예외 1건은 `promoted`·`resolved` 후보 한 건과 연결됐지만 canonical assignment 0건이고 product_form도 NULL이다. [P0 감사](r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md).
+- **차단 게이트:** 전체 migration clean replay, historical ACL 생성 출처, Crawler native parser, taxonomy8 누락 원인, 실제 백업/PITR 복원, 독립 OWNER·Security Advisor, 보안 #1208 및 owner 별도 적용 승인. D8K-5~7 구매처 UX/운영 자동화가 릴리스된 것으로 해석하지 않는다. **D8D v2 게이트 OFF / Product·Offer·가격·CTA 적용 0 / PR #1341 Draft / `--enforce-release` 코드 3 / RELEASE HOLD.**
+
+## 22. D8K-13 P0 최초 스키마 출처·Taxonomy8 writer 경계 (2026-10-17 후속)
+
+- **추가 SELECT-only 실증:** 최초 운영 적용 migration `20260410`에 `product_candidates` ALTER, `source_rankings` 참조 view가 존재하지만 두 테이블 최초 CREATE가 없다. 178개 저장 이력의 명시적 직접 CREATE/ACL REVOKE·GRANT 패턴도 미확인. 따라서 **기록 이전/외부 bootstrap provenance를 독립 복원해야 한다**. 현재 공개 역할 SELECT/INSERT는 차단되고 RLS ON; 이것을 초기 보안 이력 증명으로 해석하지 않는다.
+- **Taxonomy8 단일 누락의 경로:** 후발 상품 1건은 `crawler-canonical-product-structural-adoption-v1`의 `inserted` Product이다. Candidate에는 shadow manual legacy 분류가 있지만 Product assignment가 0. 현재 structural writer는 category만 쓰며 assignment를 만들지 않는 반면 catalog-only writer는 assignment를 쓴다. Product INSERT의 활성 트리거도 assignment를 생성하지 않는다. 원인 경로는 구체화됐지만, **structural writer의 정책 수정/자동 보정은 승인되지 않았다.**
+- **검증 자료:** `scripts/product-evidence/sql/d8k13-p0-acl-taxonomy-provenance-readonly-v1.sql`은 운영 SELECT-only로 성공했으며, 비식별 JSON baseline과 source-pin fail-closed verifier를 `verify-d8k13-hosted-provenance-v1.mjs`에 연결했다. [P0 상세](r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md) §8.
+- **순서 유지:** D8K-13 운영 migration lineage·보안·백업 복원 P0가 우선이며, 모든 구매처 비교 D8K-5~7 또는 D8D v2 판매 UI 적용을 출시 승인으로 오해하지 않는다. #1208 OPEN / 백업·독립 OWNER·배포 DB 동일성 등 미입증 / **PR #1341 Draft·HOLD / 운영 DB write 0 / `--enforce-release` exit 3**.
+
+## 23. D8K-13 pre-ledger 기반 복원 준비 게이트 (2026-10-17)
+
+- 조사 추가: 초기 Git 트리(2026-04-08)에는 bootstrap SQL이 없으며 2026-04-10 초기 migration SQL은 기초 테이블을 사전 존재 객체로 간주한다. 현재 운영의 두 기본 테이블/ACL 집계 증거만으로는 과거 권한 또는 migration replay의 시작 상태를 인증할 수 없다.
+- 운영 SELECT-only 스키마 프로필 검사 PASS. 적용 SQL 178건 복원 전 11개 prerequisite를 JSON 증거 및 fail-closed 분석기로 고정했고 전체 마이그레이션 진단기에 연결했다. 인증되지 않은 초기 schema를 임의 생성하거나 `migration repair`를 통한 거짓 정상화 금지.
+- 다음은 **초기 bootstrap/배포 artifact 독립 확보 → SQL 순서·이력 정합 인증 → 격리 PG17 clean replay → backup/PITR 실복원과 독립 보안 승인**이다. Taxonomy8 structural writer는 발견된 불일치 경로의 의도 확인 및 별도 검토 승인 전 유지한다.
+- 보안 #1208 OPEN / D8D v2 OFF / Product·Offer·가격·CTA 변경 0 / PR #1341 Draft / 릴리스 HOLD 지속.
+
+## 24. D8K-13 PG17 시작점 경계 실제 재현 (2026-10-18)
+
+- 실제 GitHub Actions #39059702566: Native Node 22 preledger/ACL/Taxonomy8 source pin 및 릴리스 exit 3 PASS. 별도 PostgreSQL17.6 임시 DB에서 초기 applied migration `20260410`은 **원본 `public.products`가 없어 예상대로 실패**, transaction rollback PASS.
+- 초기 Git README는 최초부터 `source_rankings`, `product_candidates`, `crawl_jobs` 저장을 전제로 하나 원본 DDL/GRANT 자체는 없다. 기존 178개 migration history가 이를 생성하지 않는다는 진단과 결합하면 **초기 bootstrap artifact 미확보가 재현 가능한 진짜 선행 차단 조건**이다.
+- 실증 결과를 날짜·원본 tested SHA·workflow run/job IDs·범위/제한까지 비식별 JSON에 고정. **전체 replay PASS와 혼동 금지**; #1208, OWNER, 초기 ACL, restore drill 미확인. 운영 DB write 0 / 보정·머지·배포 HOLD.
+
+## 25. D8K-13 synthetic PG17 첫 단계 양방향 검증 (2026-10-18)
+
+- **추가 실증:** 별도 PostgreSQL17.6 synthetic DB에서 설계된 테스트 전용 기초 테이블 `products`, `product_candidates`, `source_rankings`와 각 1행을 먼저 넣고 최초 `20260410` SQL의 타입 변환/뷰/FK/backfill 성공을 확인. 병렬 음성 대조에서는 빈 DB의 예상 실패·롤백 확인. 둘 다 실제 GitHub Actions #39062707665.
+- **결정 경계:** 이는 첫 이력 SQL의 최소 호환성 입증이지, **실제 초기 스키마 CREATE/GRANT 출처 확보도 전체 178건 replay 완료도 아니다**. `local-shadow` bootstrap의 `products.id text`는 초기 migration 요구 UUID FK와 달라 역사적 출처 증명이 될 수 없다.
+- 첫 단계 양성/음성 증거와 고정 Git blob을 재검증기에 연결. 다음 항목은 실제 초기 schema/ACL 및 과거 178건 원문 승인된 추출·복원, isolated real-history replay, 실제 restore drill, OWNER/security #1208. **HOLD 유지, 운영 DB write 0.**
+
+## 26. D8K-13 최초 bootstrap 원본 확보 전용 intake (2026-10-18)
+
+- 최초 프로젝트 생성일 **2026-03-21 UTC** 확인: 최초 GitHub commit(2026-04-08 UTC)보다 앞서므로 원본 CREATE/GRANT 출처는 Git 초기 이전 수동 설치 또는 별도 archive 가능성. GitHub 검색/타 repository / Google Drive / Supabase 메타데이터 조사에서 **인증 가능한 원본 SQL·백업 미확보**.
+- 공식 Supabase 일반 백업/통상 PITR 보존기간은 수개월 전 초기 상태의 자동 복원을 보장하지 않는다. 조직의 요금제·백업 실제 목록은 **미조회**이며 독립 장기보관 아카이브 확인 필요.
+- 외부 비공개 SQL을 SHA-256/size 확인 후에도 **CANDIDATE_ONLY_NOT_ATTESTED**로 판정하는 오프라인 intake 및 9개 자기검증을 CI에 추가. SQL 덤프 Git commit, 민감값 출력, 자동 replay는 금지. 기존 11개 preledger gate 계속 false, #1208 OPEN, PR #1341 Draft/HOLD.
+- 후속 의사결정: 실제 원본 archive + timestamp/execution evidence + ACL/Owner provenance 확보 시에만 독립 전문가 검토 후 합성 fixture를 보조 비교로 유지하며 **별도 격리 PostgreSQL17 전체 이력 복원**에 착수. 운영 변경은 별도 승인 전 금지.

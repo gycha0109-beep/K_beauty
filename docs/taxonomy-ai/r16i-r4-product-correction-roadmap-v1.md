@@ -251,3 +251,19 @@
 - **D8K-0→D8K-1/2→D8K-3→D8K-4→D8K-5→D8K-6→D8K-7**: 실사용 추천 slot/NULL-가격 baseline → Product-ID/선택옵션별 Offer 비교 계약과 read authority → 공통 카드 → 무료·프리미엄·루틴·기능성·예산 전체 연결 → 4채널 근거·가격 갱신 운영 → 보안·회귀 → gated rollout.
 - 우선 보수 후보: `PremiumFunctionalDecisionSection.jsx`의 `Number(null)===0` 가격 표시, 페이지별 단일 `buy_link`, Product ID/옵션 식별·shipping 부재, 현 `product_offers` listing 단위 고유키, 기존 Offer read RPC의 64 Product/256 Offer 제한, 쿠팡·임의 공식몰 direct-link trust 미지원. 세부 source 근거는 D8K 문서 참조.
 - **상태:** ROADMAP_READY. 코드·UI/API·migration·운영 데이터 변경 **없음**. D8D v2 특정 Product 교정은 별도 owner 증빙과 gate OFF 유지, #1208 실패 시 병합/배포 중단. 우선 실행 가능한 작업은 D8K-0 정밀 UI slot/source 매핑 및 null-price regression baseline.
+
+### 2026-10-17 D8K-13 보안·이력 우선 P0 진행 (운영 릴리스 HOLD)
+
+- 사용자의 고정 HEAD `303a94af096f6b4b8fa0784e8920bc39843a4edd` Windows 확장 PG17 러너 결과에서 8개 소스 검증과 최종 `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS`가 보고됨. 이전 `complete/fail NOT_RUN`은 해당 시점 기록이며 **현재 scoped synthetic PASS**로 별도 후속 기록. 독립 statement-by-statement 로그나 운영 함수 보강 적용 근거는 아님.
+- 운영 178 applied migration 재확인, `source_rankings`·`product_candidates`의 현재 공개 역할 차단과 과거 CREATE/ACL 출처 미확인을 구분했다. Taxonomy8 예외 1건은 `promoted/resolved` 후보와 연결된 상태지만 canonical assignment가 없어 원인 조사 HOLD. 자세한 비식별 스냅샷과 증거 한계는 [D8K-13 이력 조사](r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md).
+- 가장 높은 미완료 P0는 **역사적 생성/수정 provenance와 전체 migration 실행·복구 가능성 인증**. Crawler 6 종료 구분자 격리 PG17 파서, 실백업/PITR 복원, 독립 권한/보안 검토와 공급망 이슈 #1208 해소 전 운영 migration repair/SQL·Auth·RLS/권한 변경, Product/Offer/CTA 출시, PR 병합·배포를 승인하지 않는다. 계속 `D8K13_HOSTED_RELEASE_HOLD`.
+
+### 2026-10-17 D8K-13 P0 원점·Taxonomy8 후속 조사 결과
+
+- 운영 178건 적용 이력의 가장 이른 `20260410` SQL 자체가 `product_candidates` ALTER 및 `source_rankings` 참조 뷰를 사용한다. 기록 내 두 테이블의 직접 초기 CREATE/GRANT/REVOKE를 입증하지 못했고, **최초 스키마/권한 계보는 기록보다 앞선 별도 bootstrap 증거가 있어야 한다**는 의존성 경계를 확인했다.
+- Product taxonomy 예외 1건은 `crawler-canonical-product-structural-adoption-v1`의 `inserted` promotion으로 축소됐다. 현재 structural writer가 Product category를 보존하면서 assignment를 쓰지 않고, catalog-only writer만 assignment를 동시 기록하는 계약 차이를 확인. **보수 정책 승인 전 자동 assignment DML 금지**, 추천 admission 및 가격/Offer 권한과 분리.
+- 관련 SELECT-only SQL/metadata-only baseline + offline verifier를 Git에 기록. 운영 이력 최초 증거·실제 백업 복원·전체 migration replay·Security #1208·독립 OWNER 검토 미확인 상태. R4-D8D-R1 P0는 **진행, 출시 HOLD**.
+
+### 2026-10-17 D8K-13 초기 스키마 복원 선행조건
+
+현재 운영의 기초 테이블 구조를 SELECT-only로 재확인하고, 초기 2026-04-08 Git history부터 2026-04-10 최초 applied migration까지 확인했으나 원본 CREATE/ACL bootstrap은 확보하지 못했다. 초기 객체가 확인되지 않으면 전체 178건 replay를 시작할 수 없으므로 **필수 검증 11개를 모두 HOLD로 고정**한 metadata-only `d8k13-preledger-reconstruction-readiness-20261017.json` 및 오프라인 검증기를 migration history audit에 연결했다. 실제 Node/전체 PG17 실행·PITR 리허설 미수행. 추후 소스/복원 증거와 독립 OWNER 승인이 확보될 때만 적용 단계를 재검토한다. [상세 경계](r16i-r4-d8k13-full-migration-chain-readonly-audit-20261016.md) §9.

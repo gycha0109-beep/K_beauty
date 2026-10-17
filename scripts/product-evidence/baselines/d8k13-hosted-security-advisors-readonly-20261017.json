@@ -1,0 +1,92 @@
+{
+  "schema": "D8K13_HOSTED_SECURITY_ADVISORS_READONLY_V1",
+  "observationDateKst": "2026-10-17",
+  "status": "SECURITY_REVIEW_HOLD",
+  "projectPostgresMajor": 17,
+  "hostedSecurityAdvisorsReadOnly": true,
+  "productionSecuritySettingsChanged": false,
+  "lintTypes": 5,
+  "totalFindings": 82,
+  "lints": [
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "count": 77,
+      "decision": "REVIEW_INTENDED_SERVER_ONLY_TABLE_DENY; NOT 77 PROVEN VULNERABILITIES",
+      "docs": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "count": 2,
+      "decision": "ADMIN_HELPER_FUNCTIONS_REQUIRE_INDEPENDENT_ROLE_BOUNDARY_REVIEW",
+      "docs": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "auth_allow_anonymous_sign_ins",
+      "level": "WARN",
+      "count": 1,
+      "table": "admin_audit_logs",
+      "decision": "POLICY_CALLS_ADMIN_HAS_CAPABILITY; SIGNED_IN_ANONYMOUS_ROLE_SEMANTICS_REQUIRE_REVIEW",
+      "docs": "https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0012_auth_allow_anonymous_sign_ins"
+    },
+    {
+      "name": "auth_allow_anonymous_sign_ins",
+      "level": "WARN",
+      "count": 1,
+      "table": "admin_memberships",
+      "decision": "SELECT_RESTRICTED_TO_OWN_AUTH_UID_AND_ACTIVE_MEMBERSHIP; ANONYMOUS_SIGNIN_REVIEW",
+      "docs": "https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0012_auth_allow_anonymous_sign_ins"
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "level": "WARN",
+      "count": 1,
+      "decision": "AUTH_SETTING_DISABLED; USER_ADMINISTRATOR_APPROVAL_REQUIRED",
+      "docs": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+    }
+  ],
+  "adminHelperBoundaries": [
+    {
+      "function": "public.get_current_admin_role()",
+      "securityDefiner": true,
+      "authenticatedExecute": true,
+      "anonExecute": false,
+      "publicExecute": false,
+      "usesAuthUid": true,
+      "requiresActiveAdminMembership": true,
+      "escalationDemonstrated": false
+    },
+    {
+      "function": "public.admin_has_capability(text)",
+      "securityDefiner": true,
+      "authenticatedExecute": true,
+      "anonExecute": false,
+      "publicExecute": false,
+      "delegatesToCurrentAdminRole": true,
+      "capabilityComparedToRoleCapabilities": true,
+      "escalationDemonstrated": false
+    }
+  ],
+  "rlsWarnings": [
+    {
+      "table": "public.admin_audit_logs",
+      "policy": "Owners can read admin audit logs",
+      "selectUses": "admin_has_capability('admin.audit.read')",
+      "authorizationBypassProven": false
+    },
+    {
+      "table": "public.admin_memberships",
+      "policy": "Admins can read own active membership",
+      "requiresAuthUidEquality": true,
+      "requiresActive": true,
+      "authorizationBypassProven": false
+    }
+  ],
+  "productionVulnerabilityExploitableProven": false,
+  "securityOwnerReviewCompleted": false,
+  "backupsAndPitrRestorabilityVerified": false,
+  "independentOwnerReviewerVerified": false,
+  "productionReleaseAuthorized": false,
+  "docs": "docs/taxonomy-ai/r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md"
+}
