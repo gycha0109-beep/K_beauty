@@ -49,7 +49,16 @@
       "liveDirectAuthenticatedExecuteAllowed": false,
       "historicalSourceRankingsAclCreationAndRevocationProven": false,
       "automaticHistoricalSqlRepairAuthorized": false,
-      "conclusion": "NONTRIVIAL_GIT_ONLY_ACL_AND_STATUS_GUARDS__STATUS_GUARD_LATER_APPLIED__SOURCE_RANKINGS_ACL_LINEAGE_UNPROVEN"
+      "conclusion": "NONTRIVIAL_GIT_ONLY_ACL_AND_STATUS_GUARDS__STATUS_GUARD_LATER_APPLIED__SOURCE_RANKINGS_ACL_LINEAGE_UNPROVEN",
+      "productCandidatesExplicitAclHistoryRows": 0,
+      "productCandidatesCurrentRlsEnabled": true,
+      "productCandidatesCurrentPublicSelect": false,
+      "productCandidatesCurrentPublicInsert": false,
+      "productCandidatesCurrentServiceRoleInsertAndUpdate": true,
+      "productCandidatesExplicitAclCreationOriginProven": false,
+      "currentRankingSnapshotsAnonInsert": false,
+      "currentRankingSnapshotsAnonSelect": true,
+      "currentRankingSnapshotsResidualReferencesTriggerMaintain": true
     },
     {
       "migrationVersion": "20260711032649",
@@ -135,5 +144,6 @@
   "securityIssue1208Resolved": false,
   "independentSecurityOwnerApproved": false,
   "productionReleaseAuthorized": false,
-  "docs": "docs/taxonomy-ai/r16i-r4-d8k13-two-multistatement-runtime-drift-audit-20261017.md"
+  "docs": "docs/taxonomy-ai/r16i-r4-d8k13-two-multistatement-runtime-drift-audit-20261017.md",
+  "whole178MigrationReplayCertified": false
 }
