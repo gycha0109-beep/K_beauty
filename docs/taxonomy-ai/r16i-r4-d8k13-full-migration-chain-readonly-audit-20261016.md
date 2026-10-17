@@ -129,3 +129,18 @@ D8K-13의 `D8D v2 원문 → D8K-12/13` 부분 체인은 **격리된 합성 Post
 운영에서 **최초** applied version `20260410`(이전 ledger row 0건)을 읽기 전용으로 확인했다. 본문은 `product_candidates`를 ALTER하고 `source_rankings` 참조 뷰를 만들지만 두 테이블의 직접 CREATE가 없다. 현재 저장된 178건의 SQL에서 직접 CREATE 및 ACL GRANT/REVOKE 좁은 구문 패턴은 양쪽 모두 0건이며, 명칭 언급은 각각 product_candidates 40건, source_rankings 6건이다. **최초 DDL이 없었다고 주장하지 않는다**: 이전 bootstrap/별도 provisioning/동적 SQL/과거 artifact는 현 이력 외부일 수 있다. 현재 RLS+ACL이 차단 상태라는 사실도 초기 생성 때의 권한을 인증하지 않는다.
 
 관련 P0 읽기 전용 스냅샷: `scripts/product-evidence/baselines/d8k13-p0-acl-taxonomy-provenance-followup-20261017.json`. 178건의 안전한 clean replay/rollback 및 실백업 복원은 그대로 **NOT ATTESTED / RELEASE HOLD**.
+
+## 9. 최초 스키마 원본 수색 및 재현 차단 조건 고정 (2026-10-17)
+
+**별도 SELECT-only 운영 검사를 완료했다.** PostgreSQL17의 현재 `product_candidates`는 36개 컬럼, 8개 제약조건, 외래키 2개, RLS ON / policy 0; `source_rankings`는 14개 컬럼, 3개 제약조건, 외래키 2개, RLS ON / policy 0이다. 두 객체 모두 현재 `postgres` 소유 일반 테이블이며 Extension-owned가 아니다. 두 테이블의 anon/authenticated 직접 SELECT·INSERT는 차단, service_role INSERT는 허용. **현재 스키마 프로필은 과거 초기 schema/ACL의 사본이 아니다.**
+
+별도 Git 이력 조사에서는 K_beauty 초기 커밋 `934762c805e910a946bb23b09f2c4634e47468f0`(2026-04-08, 41개 파일)의 트리에 SQL 파일이 없었고, 초기 2026-04-10 커밋 `4e221df671483802274a64b1484b19e683c8f521`(61개 엔트리)의 SQL은 `20260410_safe_review_and_promotion_layer.sql` 하나였다. 운영 최초 migration이 바로 그 파일에서 `product_candidates`를 ALTER하고 `source_rankings`를 뷰에서 JOIN하므로 **현재 확인한 초기 Git 트리와 운영 migration ledger 중 어느 쪽에서도 두 테이블 최초 CREATE·GRANT 출처는 발견되지 않았다.** 다른 비공개 bootstrap, 수동 프로비저닝, 삭제된 Git 경로 또는 역사적 배포 artifact가 없다고 주장하지 않는다.
+
+새 차단 계약:
+- `scripts/product-evidence/baselines/d8k13-preledger-reconstruction-readiness-20261017.json`: 원본 기초 schema·ACL 증거, 전체 178건 SQL·순서, isolated PG17 replay, Crawler parser, PITR 복원, 독립 보안 및 공급망 승인 등 **11개 필수 게이트 모두 아직 false**. 증거가 없는 상태를 임의로 true로 만들면 오프라인 검사에서 즉시 중단하도록 설계했다.
+- `scripts/product-evidence/sql/d8k13-preledger-schema-profile-readonly-v1.sql`: 운영에서 **SELECT-only 실행 PASS**. 현재 객체의 집계 메타데이터만 출력하고 사용자·상품·SQL 원문·비밀값은 출력하지 않는다.
+- `scripts/product-evidence/verify-d8k13-preledger-reconstruction-v1.mjs`: 원본 Git blob, 스냅샷, 11개 HOLD 게이트를 fail-closed 검사. 단독 `--enforce-release` 및 연동된 `verify-d8k13-migration-chain-readonly-v1.mjs --enforce-release`는 릴리스 거절 코드 3을 유지하도록 작성.
+
+**검증 등급:** GitHub blob pin/경계 소스/스냅샷 및 차단 코드의 정적 확인 PASS, 운영 SELECT 실행 PASS. **새 Node 검증기 실제 프로세스 실행과 실제 전체 PostgreSQL17 복원은 별도 미검증**. 이 사실을 synthetic schema 원본의 발견이나 실제 backup/PITR 검증이라고 기록하지 않는다.
+
+**다음 실제 순서:** 별도 통제된 초기 스키마/백업/배포 artifact 확보 → 최초 두 테이블 생성·owner/ACL 출처 증빙 → 전체 178 applied SQL의 비공개 원본·순서 검증 → 격리 PG17 replay와 실제 복원 리허설 → OWNER·Security Advisor·#1208 및 운영 승인. 어떤 단계도 migration repair, hosted DDL, 릴리스 또는 PR merge 권한을 부여하지 않는다.
