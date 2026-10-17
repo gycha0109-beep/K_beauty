@@ -49,3 +49,11 @@ CI: 기존 `scripts/verify-current-main-health.mjs` 내부의 추가 unit verifi
 **S4 상태:** 사진 실패 및 불확실성의 모바일 표시 계약 구축 / UI·기기 acceptance **HOLD**.
 
 Watchtower-Track: face-lab-skin
+
+## 2026-10-17 — v2 축 상태를 반영한 저장 리포트 사진 근거 표시 보수
+
+- 기존 Premium 저장 리포트 컴포넌트는 유지한다. **새 UI나 사진 평가 화면을 생성하지 않는다.**
+- 기존 `available`인 사진에서 `confidence=high|medium`만으로 개인 신호를 신뢰 가능하게 집계하는 경로를 보수적으로 조정했다. 명시적 Skin-v2 `state=unknown|unassessable`는 confidence 값이 잘못 높아도 **근거 개수에 포함하지 않는다**. `present|not_seen`와 기존 정규화된 `observed`는 검증된 관찰 상태로 허용하며, 명시적 state가 없는 legacy shape는 호환성을 유지한다.
+- `not_seen`은 그 사진에서 단서가 보이지 않는다는 의미일 뿐, 피부가 정상·안전·무질환이라는 의미가 아니다. 신뢰할 만한 축이 0개면 이미 존재하는 **사진 근거 제한/재촬영 문구**를 보여준다. Skin과 Face 적격성은 독립적이며, TC-04의 부분 얼굴에서 Skin 신호가 있다고 Face 전체 분석을 강제로 가능하다고 표시하지 않는다.
+- 합성 부정 검사: `unknown/high`와 `unassessable/medium`은 0개, `present/high`와 `not_seen/medium`은 각각 1개, 비허용 state/high는 0개. 기존 FAIL/HOLD/legacy/status conflict 검증 유지. 기존 Main Health 체인에서 실행되지만 **exact-head CI 결과와 실제 Android UAT는 별도 확인**.
+- 운영 Provider, 점수/Top Pick, API/DB/저장 스키마, 사진 데이터, Style, 배포 변경 없음. S4 제품 수용 및 S5 릴리스/보안 #1208 계속 HOLD. PR은 Draft로 유지한다.
