@@ -158,6 +158,9 @@ assert.equal(crawlerTax8RankAudit.sourceRankings.currentRlsEnabled,true);
 assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactProjectionCount,11);
 assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactShadowOnly,10);
 assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactNonNullCategory,1);
+assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactNonNullWithoutCanonicalAssignment,1);
+assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactNonNullLegacyCategory,"sunscreen");
+assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactNonNullOriginType,"official_product_page");
 assert.equal(crawlerTax8RankAudit.taxonomy8.currentNonExactCreatedBefore20260914,0);
 assert.equal(crawlerTax8RankAudit.taxonomy8.historicalPreflightExecutedAttested,false);
 assert.ok(content(crawlerTax8RankAudit.repeatableSelectOnlySql)
@@ -252,6 +255,7 @@ const result={
  pinnedTaxonomy8NonExactPostMigrationProducts:11,
  pinnedTaxonomy8NonExactPreMigrationProducts:0,
  pinnedTaxonomy8NonNullProjectionFollowupCount:1,
+ pinnedNonNullSunscreenWithoutCanonicalAssignmentCount:1,
  pinnedSecurityAdvisorWarnFindings:5,
  authenticatedSecurityDefinerAdminHelpersReviewPending:2,
  leakedPasswordProtectionSettingReviewPending:true,
