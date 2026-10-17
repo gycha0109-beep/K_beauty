@@ -251,3 +251,9 @@
 - **D8K-0→D8K-1/2→D8K-3→D8K-4→D8K-5→D8K-6→D8K-7**: 실사용 추천 slot/NULL-가격 baseline → Product-ID/선택옵션별 Offer 비교 계약과 read authority → 공통 카드 → 무료·프리미엄·루틴·기능성·예산 전체 연결 → 4채널 근거·가격 갱신 운영 → 보안·회귀 → gated rollout.
 - 우선 보수 후보: `PremiumFunctionalDecisionSection.jsx`의 `Number(null)===0` 가격 표시, 페이지별 단일 `buy_link`, Product ID/옵션 식별·shipping 부재, 현 `product_offers` listing 단위 고유키, 기존 Offer read RPC의 64 Product/256 Offer 제한, 쿠팡·임의 공식몰 direct-link trust 미지원. 세부 source 근거는 D8K 문서 참조.
 - **상태:** ROADMAP_READY. 코드·UI/API·migration·운영 데이터 변경 **없음**. D8D v2 특정 Product 교정은 별도 owner 증빙과 gate OFF 유지, #1208 실패 시 병합/배포 중단. 우선 실행 가능한 작업은 D8K-0 정밀 UI slot/source 매핑 및 null-price regression baseline.
+
+### 2026-10-17 D8K-13 보안·이력 우선 P0 진행 (운영 릴리스 HOLD)
+
+- 사용자의 고정 HEAD `303a94af096f6b4b8fa0784e8920bc39843a4edd` Windows 확장 PG17 러너 결과에서 8개 소스 검증과 최종 `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS`가 보고됨. 이전 `complete/fail NOT_RUN`은 해당 시점 기록이며 **현재 scoped synthetic PASS**로 별도 후속 기록. 독립 statement-by-statement 로그나 운영 함수 보강 적용 근거는 아님.
+- 운영 178 applied migration 재확인, `source_rankings`·`product_candidates`의 현재 공개 역할 차단과 과거 CREATE/ACL 출처 미확인을 구분했다. Taxonomy8 예외 1건은 `promoted/resolved` 후보와 연결된 상태지만 canonical assignment가 없어 원인 조사 HOLD. 자세한 비식별 스냅샷과 증거 한계는 [D8K-13 이력 조사](r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md).
+- 가장 높은 미완료 P0는 **역사적 생성/수정 provenance와 전체 migration 실행·복구 가능성 인증**. Crawler 6 종료 구분자 격리 PG17 파서, 실백업/PITR 복원, 독립 권한/보안 검토와 공급망 이슈 #1208 해소 전 운영 migration repair/SQL·Auth·RLS/권한 변경, Product/Offer/CTA 출시, PR 병합·배포를 승인하지 않는다. 계속 `D8K13_HOSTED_RELEASE_HOLD`.
