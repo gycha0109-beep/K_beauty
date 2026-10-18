@@ -211,7 +211,7 @@ try {
     if ($used -and -not $declares) {
       Run-Docker ('PREPARE_SCHEMA_' + $schemaName.ToUpperInvariant()) @('exec','-u','postgres',
         $container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres',
-        '-c',('CREATE SCHEMA IF NOT EXISTS "' + $schemaName + '"'))
+        '-c',('CREATE SCHEMA IF NOT EXISTS ' + $schemaName))
       Write-Output ('D8K13_LOCAL_ISOLATED_NAMESPACE_READY_' + $schemaName.ToUpperInvariant())
     }
   }
