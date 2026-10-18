@@ -53,15 +53,15 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $output = & ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes ([long]$env:ZIP_BYTES) -Mode Inspect
-          if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_INSPECTION_FAILED' }
+          $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes ([long]$env:ZIP_BYTES) -Mode Inspect
+          if ($LASTEXITCODE -ne 0) { Write-Host ($output -join "`n"); throw 'D8K13_SYNTHETIC_INSPECTION_FAILED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ZIP_INSPECTION_PASS')) { throw 'D8K13_SYNTHETIC_INSPECTION_MARKER_MISSING' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_INSPECTION_PASS'
       - name: Restore synthetic backup in no-network disposable PostgreSQL 17
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $output = & ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes ([long]$env:ZIP_BYTES) -Mode Restore
+          $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes ([long]$env:ZIP_BYTES) -Mode Restore
           if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_RESTORE_FAILED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_SYNTHETIC_RESTORE_MARKER_MISSING' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_PG17_RESTORE_PASS_HOLD'
@@ -70,6 +70,6 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'
           $wrong = [long]$env:ZIP_BYTES + 1
-          $output = & ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes $wrong -Mode Inspect 2>&1
+          $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes $wrong -Mode Inspect 2>&1
           if ($LASTEXITCODE -ne 3) { throw 'D8K13_BAD_SIZE_MUST_EXIT_3' }
           Write-Host 'D8K13_LOCAL_ZIP_FAIL_CLOSED_WRONG_SIZE_PASS'
