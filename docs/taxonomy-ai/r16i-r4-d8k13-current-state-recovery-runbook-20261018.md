@@ -70,3 +70,31 @@ Supabase 공식 참고:
 | 서비스 릴리스 승인 | **HOLD** |
 
 기존 178 migration 이력 복구 문제는 여기서 해결하려 하지 않는다. **서비스 현상태 복구의 독립적 통과경로**로 사용할지를 최종 결정하는 것은 사용자의 별도 운영 승인이고, 그 승인 전에는 이전 release HOLD를 해제하지 않는다.
+
+## 6. 사용자 Windows ZIP 백업 후속검증 (2026-10-18)
+
+사용자가 \`BEJEWELY_DB_Backup_20261018_181006.zip\` **7,323,679 bytes**를 로컬에서 생성하고 \`roles.sql\`, \`schema.sql\`, \`data.sql\` 내부 항목 검사를 통과했으며 Google Drive에 넣었다고 보고했다. 그러나 현재 연결된 Google Drive 검색에서는 **정확히 일치하는 ZIP을 찾지 못했다**. 따라서 *원격 파일 접근·무결성·실제 SQL 내용·운영 DB 재복원은 확인되지 않았다*. **파일을 채팅이나 GitHub로 가져오지 않는다.** user-reported 경계: \`scripts/product-evidence/baselines/d8k13-owner-local-backup-intake-20261018.json\`.
+
+소스 저장소의 다음 로컬 실행 스크립트를 추가함:
+
+\`scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1\`
+
+Windows PC에서 저장소의 해당 기능 브랜치를 동기화한 후, PowerShell에서 다음 명령을 실행한다. 기본 ZIP 경로는 \`$HOME\BEJEWELY_Private_DB_Backups\BEJEWELY_DB_Backup_20261018_181006.zip\`. Drive 동기화 위치에만 있는 경우 \`-BackupZip "실제 ZIP 경로"\`로 변경한다.
+
+~~~powershell
+# 순수 검사 (기본값): 압축 항목 3개, 실제 크기, 추출, SHA-256 검증
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\product-evidence\verify-d8k13-private-backup-zip-local.ps1" -Mode Inspect
+
+# 복원 리허설: Docker Desktop 필수. 임시 PG17.6, 네트워크 없음, 포트 미개방, 볼륨 미마운트
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\product-evidence\verify-d8k13-private-backup-zip-local.ps1" -Mode Restore
+~~~
+
+- 실 ZIP의 압축 항목은 정해진 **루트 SQL 3개 외 전부 거부**하고, 예상 ZIP 크기는 사용자 보고값 7,323,679 bytes이다. 반환값에는 ZIP SHA-256과 SQL 바이트수만 표시하고 데이터·SQL·자격증명은 표시하지 않는다.
+- \`-Mode Inspect\`의 정상값 \`D8K13_LOCAL_ZIP_INSPECTION_PASS\`는 ZIP 압축 검증에 한정된다.
+- \`-Mode Restore\`는 새로 생성한 Docker \`postgres:17.6\` 컨테이너에 **네트워크 없는 환경**에서 ZIP 안의 roles, schema, data 순서대로 로컬 SQL을 복원한다. 종료 시 컨테이너와 임시 추출 파일은 삭제한다. 모든 SQL이 적용되고 public 테이블이 1개 이상이면 \`D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED\`와 집계 메타데이터만 출력한다.
+- **현재 실제 백업은 Supabase CLI가 관리형 auth/storage 및 extension 스키마 일부를 제외한 형태다.** 완전한 Supabase baseline이 아닌 *순수 PostgreSQL 컨테이너*에서 roles/schema 복원이 실패할 수 있다. 이 경우 **복원은 미완료**이며 ZIP이 망가졌다는 증거가 아니다. 호환 로컬 Supabase 인스턴스나 누락 의존성 검토가 후속 필요하다.
+- Docker에서 운영 Supabase로 DB 연결하는 부분이 없고 컨테이너 네트워크 자체가 차단되어 있다. 원본 ZIP과 실제 SQL은 CI, 원격 채팅, PR, 저장소에 저장하지 않는다.
+- CI [#39132129352](https://github.com/gycha0109-beep/K_beauty/actions/runs/39132129352)에서 실제 사용자의 ZIP이 아닌 **synthetic ZIP**의 Inspect, 격리 PG17 restore, 잘못된 파일 크기 fail-closed 세 경로 모두 PASS. 이것은 사용자의 실 ZIP 복원을 검증한 것이 아니다.
+- CLI 백업은 Supabase Auth/Storage 관리 객체, 실제 Storage 바이너리, Vault 암호화 키, 전체 migration ledger를 자동 보존하지 않는다. **서비스 전체 재해복구 PASS로 확대 해석 금지**. RLS/ACL/SECURITY DEFINER·데이터 무결성 대조와 독립 OWNER/Security 승인이 여전히 필요하다.
+
+상태: **ZIP user-reported; 실 ZIP independent inspection NOT DONE; 실 ZIP Docker restore NOT DONE; release HOLD**.
