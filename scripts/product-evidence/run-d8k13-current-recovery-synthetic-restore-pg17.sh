@@ -41,9 +41,9 @@ client pg_dump -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$source_db" \
   --no-subscriptions --file /dev/stdout > "$workdir/data.sql"
 test -s "$workdir/schema.sql" && test -s "$workdir/data.sql"
 # Refuse silent/empty dumps before attempting any restoration.
-grep -Eq '^CREATE TABLE public\\.products[[:space:]]*\\(' "$workdir/schema.sql"
-grep -Eq '^CREATE TABLE public\\.product_candidates[[:space:]]*\\(' "$workdir/schema.sql"
-grep -Eq '^CREATE TABLE public\\.source_rankings[[:space:]]*\\(' "$workdir/schema.sql"
+grep -Fq 'CREATE TABLE public.products (' "$workdir/schema.sql"
+grep -Fq 'CREATE TABLE public.product_candidates (' "$workdir/schema.sql"
+grep -Fq 'CREATE TABLE public.source_rankings (' "$workdir/schema.sql"
 client psql -X -q -v ON_ERROR_STOP=1 --single-transaction \
   -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$target_db" < "$workdir/schema.sql" >/dev/null
 # Ensure PostgreSQL parsed input instead of quietly accepting empty stdin.
