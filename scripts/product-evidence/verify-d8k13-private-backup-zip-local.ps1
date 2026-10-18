@@ -41,7 +41,18 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
     if (Test-Path -LiteralPath $stderrLog) {
       $details = Get-Content -LiteralPath $stderrLog -Raw -ErrorAction SilentlyContinue
       if ($details -match 'role .{0,180} does not exist') { $reason = 'MISSING_ROLE' }
-      elseif ($details -match 'schema .{0,180} does not exist') { $reason = 'MISSING_SCHEMA' }
+      elseif ($details -match 'schema .{0,180} does not exist') {
+        $reason = 'MISSING_SCHEMA'
+        # Only allow preapproved non-sensitive namespace names in error output.
+        if ($details -match '(?i)schema ["' + "'" + ']?([a-z_]+)["' + "'" + ']? does not exist') {
+          $reported = $Matches[1].ToLowerInvariant()
+          if (@('private','recommendation_shadow','supabase_migrations','auth',
+              'storage','vault','extensions','realtime','graphql','graphql_public',
+              'pgbouncer') -contains $reported) {
+            $reason = 'MISSING_SCHEMA_' + $reported.ToUpperInvariant()
+          }
+        }
+      }
       elseif ($details -match 'extension .{0,180} (is not available|does not exist)') { $reason = 'MISSING_EXTENSION' }
       elseif ($details -match 'function .{0,180} does not exist') { $reason = 'MISSING_FUNCTION' }
       elseif ($details -match 'relation .{0,180} does not exist') { $reason = 'MISSING_RELATION' }
