@@ -756,7 +756,7 @@ assert.equal(fourPlan.items.filter(x=>x.assessment.state==="PLAN_ONLY").length,4
 assert.equal(fourPlan.items.filter(x=>x.assessment.state==="RETIRED_ORIGIN_HOLD").length,1);
 assert.equal((await runTrustP2DCli(["--plan-four"])).mode,
   "FOUR_PLAN_ONLY_DRG_HOLD_NO_NETWORK");
-assert.throws(()=>runTrustP2DFiveBrandPilot({execute:false,
+await assert.rejects(()=>runTrustP2DFiveBrandPilot({execute:false,
   cohort:v2,holdRetiredDrG:"false"}),/P2D_FOUR_HOLD_MODE_INVALID/);
 
 const fourPolicy=JSON.parse(fs.readFileSync(
