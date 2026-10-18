@@ -29,6 +29,10 @@ jobs:
           -- Synthetic, not copied from production.
           CREATE ROLE d8k13_local_fixture_role NOLOGIN;
           SQL
+          # Synthetic entropy, so compressed ZIP resembles a real nontrivial archive.
+          printf '%s' '-- ' >> "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql"
+          head -c 4096 /dev/urandom | base64 -w0 >> "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql"
+          printf '\n' >> "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql"
           cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/schema.sql" <<'SQL'
           -- Synthetic, not copied from production.
           CREATE SCHEMA public;
