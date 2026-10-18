@@ -76,8 +76,8 @@ export function assertTrustP2DFourBrandLiveAuthorization(approval,cohort,{now=Da
   if(operator?.approved!==true||
     typeof operator.approver!=="string"||!operator.approver.trim()||
     typeof operator.approvalReference!=="string"||!operator.approvalReference.trim()||
-    !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$/.test(operator.executionWindowStartUtc??"")||
-    !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$/.test(operator.executionWindowEndUtc??""))
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(operator.executionWindowStartUtc??"")||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(operator.executionWindowEndUtc??""))
     throw Error("P2D_FOUR_OPERATOR_APPROVAL_REQUIRED");
   const start=Date.parse(operator.executionWindowStartUtc);
   const end=Date.parse(operator.executionWindowEndUtc);
@@ -316,14 +316,14 @@ export async function runTrustP2DCli(args=process.argv.slice(2)){
       "- Official pages fetched: "+result.summary.officialPagesFetched,
       "- Outcome counts: "+JSON.stringify(result.summary.statusCounts),
       "- Market/formulation/Subject/Product Fact/recommendation writes: 0"];
-    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\\n")+"\\n");
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\n")+"\n");
   }
   if(execute){
     const filename=executeFour
       ?"artifacts/trust-p2d-four-brand-result.json"
       :"artifacts/trust-p2d-five-brand-result.json";
     fs.mkdirSync(path.dirname(filename),{recursive:true});
-    fs.writeFileSync(filename,JSON.stringify(result,null,2)+"\\n");
+    fs.writeFileSync(filename,JSON.stringify(result,null,2)+"\n");
   }
   return result;
 }
