@@ -71,7 +71,7 @@ export function verifyD8k13CurrentRecoveryReadiness(dir=root){
   "D8K13_CURRENT_RECOVERY_SYNTHETIC_SCHEMA_DATA_RESTORE_PASS");
  const drillBytes=readFileSync(join(dir,drill.script.path));
  const scriptBlob=createHash("sha1")
-  .update(Buffer.from("blob "+drillBytes.length+"\\u0000")).update(drillBytes).digest("hex");
+  .update(Buffer.from("blob "+drillBytes.length+"\u0000")).update(drillBytes).digest("hex");
  assert.equal(scriptBlob,drill.script.gitBlobSha,"D8K13_CURRENT_RESTORE_SCRIPT_BLOB_DRIFT");
  assert.equal(drill.doesNotExportHostedDatabase,true);
  assert.equal(drill.productionProjectFullBackupExistsInThisEvidence,false);
