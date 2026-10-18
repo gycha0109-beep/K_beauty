@@ -32,6 +32,13 @@ test "$major" = 17
 target_initial="$(client psql -X -Atqc "select to_regclass('public.products') is null" \
   -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$target_db")"
 test "$target_initial" = t
+# A fresh PostgreSQL database already has an empty public schema; pg_dump emits CREATE SCHEMA.
+# Remove only that empty schema in this explicit isolated disposable target, never source/prod.
+target_objects="$(client psql -X -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p','v','m','f','S')" \\
+  -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$target_db")"
+test "$target_objects" = 0
+client psql -X -q -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE' \\
+  -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$target_db" >/dev/null
 # Only container-local fixture -> temporary runner filesystem. No hosted connections.
 client pg_dump -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$source_db" \
   --schema=public --schema-only --no-owner --no-privileges \
