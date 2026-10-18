@@ -85,16 +85,16 @@ Windows PC에서 저장소의 해당 기능 브랜치를 동기화한 후, Power
 # 순수 검사 (기본값): 압축 항목 3개, 실제 크기, 추출, SHA-256 검증
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\product-evidence\verify-d8k13-private-backup-zip-local.ps1" -Mode Inspect
 
-# 복원 리허설: Docker Desktop 필수. 임시 PG17.6, 네트워크 없음, 포트 미개방, 볼륨 미마운트
+# 복원 리허설: Docker Desktop 필수. 임시 Supabase/Postgres17.6.1.136, 네트워크/포트/볼륨 없음
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\product-evidence\verify-d8k13-private-backup-zip-local.ps1" -Mode Restore
 ~~~
 
 - 실 ZIP의 압축 항목은 정해진 **루트 SQL 3개 외 전부 거부**하고, 예상 ZIP 크기는 사용자 보고값 7,323,679 bytes이다. 반환값에는 ZIP SHA-256과 SQL 바이트수만 표시하고 데이터·SQL·자격증명은 표시하지 않는다.
 - `-Mode Inspect`의 정상값 `D8K13_LOCAL_ZIP_INSPECTION_PASS`는 ZIP 압축 검증에 한정된다.
-- `-Mode Restore`는 새로 생성한 Docker `postgres:17.6` 컨테이너에 **네트워크 없는 환경**에서 ZIP 안의 roles, schema, data 순서대로 로컬 SQL을 복원한다. 종료 시 컨테이너와 임시 추출 파일은 삭제한다. 모든 SQL이 적용되고 public 테이블이 1개 이상이면 `D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED`와 집계 메타데이터만 출력한다.
-- **현재 실제 백업은 Supabase CLI가 관리형 auth/storage 및 extension 스키마 일부를 제외한 형태다.** 완전한 Supabase baseline이 아닌 *순수 PostgreSQL 컨테이너*에서 roles/schema 복원이 실패할 수 있다. 이 경우 **복원은 미완료**이며 ZIP이 망가졌다는 증거가 아니다. 호환 로컬 Supabase 인스턴스나 누락 의존성 검토가 후속 필요하다.
+- `-Mode Restore`는 새로 생성한 Docker `supabase/postgres:17.6.1.136` 컨테이너에 **네트워크 없는 환경**에서 ZIP 안의 roles, schema, data 순서대로 로컬 SQL을 복원한다. 종료 시 컨테이너와 임시 추출 파일은 삭제한다. 모든 SQL이 적용되고 public 테이블이 1개 이상이면 `D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED`와 집계 메타데이터만 출력한다.
+- **2026-10-18 실제 최초 실행에서** 이전 스크립트가 사용한 일반 PostgreSQL 17.6 이미지에 `anon` Supabase 역할이 없어 `roles.sql:22` 단계에서 중단됐다. 이는 백업 자체가 손상됐다는 증거가 아니다. 수정본은 `supabase/postgres:17.6.1.136`으로 전환하고 `anon`, `authenticated`, `service_role`, `supabase_admin` 존재를 복원 전 검사한다. 다만 프로젝트별 auth/storage/migrations/extension 차이로 실제 ZIP 복원이 실패할 수 있다. 이 경우 **미완료**이고 오류는 raw SQL 없이 단계별 범주 코드로 제공한다.
 - Docker에서 운영 Supabase로 DB 연결하는 부분이 없고 컨테이너 네트워크 자체가 차단되어 있다. 원본 ZIP과 실제 SQL은 CI, 원격 채팅, PR, 저장소에 저장하지 않는다.
-- CI [#39132129352](https://github.com/gycha0109-beep/K_beauty/actions/runs/39132129352)에서 실제 사용자의 ZIP이 아닌 **synthetic ZIP**의 Inspect, 격리 PG17 restore, 잘못된 파일 크기 fail-closed 세 경로 모두 PASS. 이것은 사용자의 실 ZIP 복원을 검증한 것이 아니다.
+- CI [#39133409278](https://github.com/gycha0109-beep/K_beauty/actions/runs/39133409278)에서 사용자 실제 ZIP이 아닌 **합성 ZIP**의 Inspect, Supabase 역할 `anon/authenticated` GRANT, `auth.users` FK 및 `auth.uid()` RLS 정책을 포함한 **격리 Supabase/Postgres17 SQL 복원**, 잘못된 크기의 ZIP fail-closed 경로 모두 PASS. 실제 사용자 ZIP 복원 성공을 입증하지 않는다.
 - CLI 백업은 Supabase Auth/Storage 관리 객체, 실제 Storage 바이너리, Vault 암호화 키, 전체 migration ledger를 자동 보존하지 않는다. **서비스 전체 재해복구 PASS로 확대 해석 금지**. RLS/ACL/SECURITY DEFINER·데이터 무결성 대조와 독립 OWNER/Security 승인이 여전히 필요하다.
 
-상태: **ZIP user-reported; 실 ZIP independent inspection NOT DONE; 실 ZIP Docker restore NOT DONE; release HOLD**.
+상태: **사용자 PC 실 ZIP Inspect PASS** (7,323,679 bytes; SHA-256 A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6). **구버전 일반 PG17에서 실 ZIP restore FAILED** (`anon` 역할 누락). 새 Supabase/Postgres 이미지로 교체 후 **실 ZIP 재실행 NOT DONE**, release HOLD.
