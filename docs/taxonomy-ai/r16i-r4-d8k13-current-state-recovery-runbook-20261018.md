@@ -138,3 +138,18 @@ CI [#39134449424](https://github.com/gycha0109-beep/K_beauty/actions/runs/391344
 
 **현재 판정:** 합성 ZIP 복원 성공, 실사용자 ZIP 복원 **미검증**, `auth`·`storage` 관리 객체와 바이너리/키, 전체 역사 이력 검증 **미완료**, PR #1341 DRAFT/HOLD / issue #1208 OPEN / production DML/DDL 0.
 
+### 6.3. 반복된 MISSING_SCHEMA 재현과 public 삭제 결함 수정 (2026-10-19)
+
+사용자가 동일한 로컬 ZIP (7,323,679 bytes / SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6`)으로 재검증했지만 `D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_FAILED_EXIT_3`이 **다시 발생했다**. 종전의 `private`/`recommendation_shadow` 후보 보완만으로 원인을 해결했다고 주장할 수 없다.
+
+구현을 재검수해 **확인된 복원 스크립트 자체의 결함**을 발견함. 이전 `Run-Docker 'DROP_EMPTY_PUBLIC'`은 `schema.sql`의 구성과 무관하게 대상의 초기 `public` 스키마를 항상 삭제했다. 공식 `supabase db dump`는 경우에 따라 `CREATE SCHEMA public;`을 포함하지 않으므로, 해당 백업에서는 추후 `public` 스키마가 없어서 실패할 수 있다. **실제 owner ZIP의 public CREATE 유무나 최초 실패의 스키마 이름은 아직 직접 확인하지 못했다.** 원인 후보를 정확한 실측으로 단정하지 않는다.
+
+수정된 `scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1`:
+1. ZIP을 로컬에만 해제한 뒤 `schema.sql`에 명시적 `CREATE SCHEMA public;`이 있을 때만, 기존 **빈** `public`을 제거한다. SQL에 생성문이 없다면 기본 `public`을 **보존**한다. `IF NOT EXISTS` 생성문도 보존. 사용자 정의 스키마 `private`/ `recommendation_shadow`은 기존의 고정 허용목록 검사 유지.
+2. 오류 메시지에서 실패한 schema가 일반 안전한 PostgreSQL 식별자 `[a-z_][a-z0-9_]{0,62}`일 경우, 민감 SQL 전문/행/문맥을 보여주지 않고 **스키마 이름과 SQL 원본 줄 번호만** 출력한다. 예시: `D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_EXAMPLE_LINE_123_FAILED_EXIT_3` (예시이며 실 사용자 오류가 아님).
+3. ZIP 내용이나 로컬 SQL을 GitHub·CI·채팅에 업로드하지 않으며, 운영 DB 접속을 하지 않는다. 변경은 네트워크 없는 임시 Docker의 테스트 대상만 적용.
+
+**통과 검증:** [GitHub Actions #39148634432](https://github.com/gycha0109-beep/K_beauty/actions/runs/39148634432), Synthetic-only. PowerShell 문법 검사, `public`이 생성되는 백업 복원, `CREATE SCHEMA public`이 **없는 백업** 복원, 의도적으로 누락된 `d8k13_missing_fixture` 스키마의 **이름·줄 번호만 안전하게 진단** 및 종료 코드 3, 잘못된 ZIP 크기 거부 모두 PASS. 이 CI에는 실제 운영 ZIP이 사용되지 않았다.
+
+**다음 단계:** 사용자 PC에 있는 `restore-local.ps1`을 기능 브랜치 최신 버전으로 다시 복사해 동일 ZIP으로 `-Mode Restore` 재검증. 실패한다면 `D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_<NAME>_LINE_<N>_FAILED_EXIT_3`와 같이 출력된 비민감 코드만 공유. 실제 데이터 복원·권한·Auth/Storage 바이너리·Vault·migration ledger 최종 복구는 모두 미검증. PR DRAFT / release HOLD / production writes 0.
+
