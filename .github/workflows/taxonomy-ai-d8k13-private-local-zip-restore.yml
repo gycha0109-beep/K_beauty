@@ -70,6 +70,6 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'
           $wrong = [long]$env:ZIP_BYTES + 1
-          $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes $wrong -Mode Inspect 2>&1
+          $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes $wrong -Mode Inspect 2>$null
           if ($LASTEXITCODE -ne 3) { throw 'D8K13_BAD_SIZE_MUST_EXIT_3' }
           Write-Host 'D8K13_LOCAL_ZIP_FAIL_CLOSED_WRONG_SIZE_PASS'
