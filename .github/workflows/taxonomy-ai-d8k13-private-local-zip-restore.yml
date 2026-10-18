@@ -15,7 +15,7 @@ jobs:
   synthetic-only:
     runs-on: ubuntu-24.04
     name: "Synthetic ZIP: inspect / isolated PG17 restore / reject bad archive"
-    timeout-minutes: 22
+    timeout-minutes: 32
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -135,7 +135,43 @@ jobs:
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_PASS')) { throw 'D8K13_COLD_IMAGE_PULL_NOT_TESTED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_PRIVATE')) { throw 'D8K13_CUSTOM_PRIVATE_SCHEMA_NOT_RESTORED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_RECOMMENDATION_SHADOW')) { throw 'D8K13_CUSTOM_SHADOW_SCHEMA_NOT_RESTORED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_RECREATED_FROM_DUMP')) { throw 'D8K13_EXPLICIT_PUBLIC_DUMP_RESTORE_NOT_TESTED' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_PG17_RESTORE_PASS_HOLD'
+      - name: Build variant omitting CREATE SCHEMA public and missing-schema negative ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/d8k13-no-public/sql" "$RUNNER_TEMP/d8k13-missing-schema/sql"
+          cp "$RUNNER_TEMP/d8k13-local-fixture/sql/"{roles.sql,data.sql} "$RUNNER_TEMP/d8k13-no-public/sql/"
+          sed '/^CREATE SCHEMA public;$/d' "$RUNNER_TEMP/d8k13-local-fixture/sql/schema.sql" > "$RUNNER_TEMP/d8k13-no-public/sql/schema.sql"
+          cp "$RUNNER_TEMP/d8k13-no-public/sql/"*.sql "$RUNNER_TEMP/d8k13-missing-schema/sql/"
+          printf '\nGRANT USAGE ON SCHEMA d8k13_missing_fixture TO authenticated;\n' >> "$RUNNER_TEMP/d8k13-missing-schema/sql/schema.sql"
+          pwsh -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-no-public/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-no-public/variant.zip")); [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-missing-schema/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-missing-schema/variant.zip"))'
+          echo "D8K13_NO_PUBLIC_ZIP=$RUNNER_TEMP/d8k13-no-public/variant.zip" >> "$GITHUB_ENV"
+          echo "D8K13_MISSING_SCHEMA_ZIP=$RUNNER_TEMP/d8k13-missing-schema/variant.zip" >> "$GITHUB_ENV"
+      - name: Verify owner-style schema dump lacking CREATE SCHEMA public restores
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bytes = [long](Get-Item -LiteralPath $env:D8K13_NO_PUBLIC_ZIP).Length
+          $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:D8K13_NO_PUBLIC_ZIP -ExpectedZipBytes $bytes -Mode Restore
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_NO_PUBLIC_RESTORE_FAILED' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP')) { throw 'D8K13_NO_PUBLIC_PRESERVED_MARKER_MISSING' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_NO_PUBLIC_RESTORE_PASS_MARKER_MISSING' }
+          Write-Host 'D8K13_SYNTHETIC_NO_CREATE_PUBLIC_RESTORE_PASS'
+      - name: Refuse missing unknown schema and print name only without SQL content
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bytes = [long](Get-Item -LiteralPath $env:D8K13_MISSING_SCHEMA_ZIP).Length
+          $err = Join-Path $env:RUNNER_TEMP 'd8k13-missing-schema-error.txt'
+          $out = Join-Path $env:RUNNER_TEMP 'd8k13-missing-schema-out.txt'
+          $proc = Start-Process -FilePath 'pwsh' -ArgumentList @('-NoProfile','-File','./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1','-BackupZip',$env:D8K13_MISSING_SCHEMA_ZIP,'-ExpectedZipBytes',"$bytes",'-Mode','Restore') -Wait -PassThru -RedirectStandardOutput $out -RedirectStandardError $err
+          if ($proc.ExitCode -ne 3) { throw 'D8K13_UNKNOWN_MISSING_SCHEMA_EXIT_MUST_BE_3' }
+          $stderr = Get-Content -LiteralPath $err -Raw
+          if ($stderr -notmatch 'D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_D8K13_MISSING_FIXTURE_LINE_[0-9]+_FAILED_EXIT_3') { throw 'D8K13_MISSING_SCHEMA_NAME_LINE_NOT_REPORTED' }
+          if ($stderr -match 'GRANT USAGE ON SCHEMA|COPY public\.products|CREATE TABLE') { throw 'D8K13_SQL_CONTENT_LEAKED' }
+          Write-Host 'D8K13_SYNTHETIC_MISSING_SCHEMA_NAME_ONLY_FAIL_CLOSED_PASS'
       - name: Reject wrong-size archive, no backups in CI artifacts
         shell: pwsh
         run: |
