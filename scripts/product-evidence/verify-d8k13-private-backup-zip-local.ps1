@@ -39,6 +39,28 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
     throw ('D8K13_LOCAL_RESTORE_' + $stage + '_' + $reason + '_FAILED_EXIT_' + $code)
   }
 }
+# Docker pull may print routine status to stderr even on exit 0.
+# Start-Process reads the actual exit code, avoiding Windows PowerShell 5.1
+# NativeCommandError under ErrorActionPreference=Stop.
+function Invoke-DockerLifecycle([string]$stage,[string[]]$arguments,[bool]$allowNonzero = $false) {
+  $stdoutLog = Join-Path $unpacked ('docker-lifecycle-' + $stage + '-out.log')
+  $stderrLog = Join-Path $unpacked ('docker-lifecycle-' + $stage + '-err.log')
+  $binary = (Get-Command docker -ErrorAction Stop).Source
+  $process = Start-Process -FilePath $binary -ArgumentList $arguments -Wait -PassThru -NoNewWindow -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog
+  $exitCode = [int]$process.ExitCode
+  if ($exitCode -ne 0 -and -not $allowNonzero) {
+    $category = 'FAILED'
+    if (Test-Path -LiteralPath $stderrLog) {
+      $diagnostic = Get-Content -LiteralPath $stderrLog -Raw -ErrorAction SilentlyContinue
+      if ($diagnostic -match '(?i)(manifest unknown|not found|no such image)') { $category = 'IMAGE_UNAVAILABLE' }
+      elseif ($diagnostic -match '(?i)(cannot connect to the docker daemon|docker daemon is not running|open //./pipe/docker_engine)') { $category = 'DOCKER_DAEMON_UNAVAILABLE' }
+      elseif ($diagnostic -match '(?i)(timeout|TLS handshake|connection refused|no such host|network is unreachable)') { $category = 'NETWORK_UNAVAILABLE' }
+      elseif ($diagnostic -match '(?i)(unauthorized|denied|toomanyrequests|rate limit)') { $category = 'REGISTRY_ACCESS_DENIED' }
+    }
+    throw ('D8K13_LOCAL_DOCKER_' + $stage + '_' + $category + '_EXIT_' + $exitCode)
+  }
+  return $exitCode
+}
 function Get-PublicInventory([string]$name) {
   $probe = @'
 select json_build_object(
@@ -111,9 +133,21 @@ try {
   $container = 'bejewely-restore-' + [guid]::NewGuid().ToString('N').Substring(0,12)
   # Official Supabase/Postgres 17 image, local disposable container. No network/ports/volumes.
   $password = ([guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N'))
-  $startLog = Join-Path $unpacked 'docker-run.log'
-  & docker run --detach --rm --name $container --network none --pids-limit 192 --memory 2g --cpus 2 -e ('POSTGRES_PASSWORD=' + $password) -e 'POSTGRES_DB=postgres' -e 'POSTGRES_HOST=/var/run/postgresql' -e 'PGPORT=5432' -e 'POSTGRES_PORT=5432' -e ('PGPASSWORD=' + $password) -e ('JWT_SECRET=' + $password) -e 'JWT_EXP=3600' supabase/postgres:17.6.1.136 postgres -c 'config_file=/etc/postgresql/postgresql.conf' 1> $startLog 2>&1
-  if ($LASTEXITCODE -ne 0) { throw 'D8K13_LOCAL_RESTORE_CONTAINER_START_FAILED' }
+  $image = 'supabase/postgres:17.6.1.136'
+  $localImageCode = Invoke-DockerLifecycle 'IMAGE_INSPECT' @('image','inspect','--format={{.Id}}',$image) $true
+  if ($localImageCode -ne 0) {
+    Write-Output 'D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_START'
+    [void](Invoke-DockerLifecycle 'IMAGE_PULL' @('pull',$image))
+    Write-Output 'D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_PASS'
+  }
+  [void](Invoke-DockerLifecycle 'CONTAINER_START' @('run','--detach','--rm',
+    '--name',$container,'--network','none','--pids-limit','192',
+    '--memory','2g','--cpus','2',
+    '-e',('POSTGRES_PASSWORD=' + $password),'-e','POSTGRES_DB=postgres',
+    '-e','POSTGRES_HOST=/var/run/postgresql','-e','PGPORT=5432',
+    '-e','POSTGRES_PORT=5432','-e',('PGPASSWORD=' + $password),
+    '-e',('JWT_SECRET=' + $password),'-e','JWT_EXP=3600',
+    $image,'postgres','-c','config_file=/etc/postgresql/postgresql.conf'))
   $containerStarted = $true
   $ready = $false
   for ($i = 0; $i -lt 90; $i++) {
