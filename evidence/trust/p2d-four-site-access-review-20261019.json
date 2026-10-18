@@ -1,0 +1,161 @@
+{
+  "contract": "trust-p2d-four-site-access-review-v1",
+  "researchDate": "2026-10-19",
+  "mainSha": "1717765ac30b264fed9feb7a11567ae245b511b4",
+  "cohortPath": "evidence/trust/p2d-five-brand-cohort-v2.json",
+  "totalFrozenDenominator": 5,
+  "retiredSiteHoldBrand": "닥터지",
+  "eligibleFourBrands": 4,
+  "reviewedOfficialOrigins": 4,
+  "officialOriginApprovalsGranted": 0,
+  "officialOriginLiveRobotsReadbacks": 0,
+  "trialRequests": 0,
+  "siteReviews": [
+    {
+      "brand": "비플레인",
+      "productId": "9b81da7a-649e-41ec-a22b-7e367c05afe4",
+      "catalogSizeMl": 340,
+      "origin": "https://www.beplain.co.kr",
+      "baselinePeerUrl": "https://www.beplain.co.kr/m/product_detail.html?brand_uid=43",
+      "terms": {
+        "url": "https://beplain.co.kr/m/contract.html",
+        "observation": "PUBLIC_SITE_TERMS_INDEXED",
+        "relevantClauseSummary": "제23조 ②: mall-owned copyrighted material requires prior consent for commercial reproduction/transmission/publication/distribution; not an explicit automation license",
+        "automatedFetchingPermission": "NOT_ESTABLISHED",
+        "commercialContentReusePermission": "NOT_ESTABLISHED",
+        "legalInterpretation": "NO_CATEGORICAL_SCRAPING_PROHIBITION_INFERRED_FROM_COPYRIGHT_CLAUSE_ALONE"
+      },
+      "robots": {
+        "url": "https://www.beplain.co.kr/robots.txt",
+        "directReadback": "WEB_TOOL_CANNOT_ACCESS_ROBOTS_CONTENT",
+        "liveAllowedPaths": "UNKNOWN",
+        "userAgent": "NOT_EVALUATED",
+        "crawlDelay": "UNKNOWN",
+        "requestPacing": "UNAPPROVED"
+      },
+      "contact": {
+        "email": "contact@momentsco.com",
+        "officialSourceUrl": "https://www.beplain.co.kr/",
+        "roleCaveat": "Company contact, not confirmed data-licensing officer",
+        "approvalRequest": "NOT_SENT",
+        "reply": "NOT_RECEIVED",
+        "termsConsent": false,
+        "robotsPreflightAuthorized": false,
+        "pacingReviewed": false
+      },
+      "result": "HOLD"
+    },
+    {
+      "brand": "아토팜",
+      "productId": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "catalogSizeMl": 600,
+      "origin": "https://neopharmshop.co.kr",
+      "baselinePeerUrl": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%ED%81%AC%EB%A6%BC-%EC%8A%A4%ED%8B%B1-%EB%B0%A4-10g/2166",
+      "terms": {
+        "url": "https://neopharmshop.co.kr/member/mall_agreement.html",
+        "observation": "UNVERIFIED_WEB_FETCH_CACHE_MISS",
+        "relevantClauseSummary": "UNVERIFIED; cannot assume permission or copy another Cafe24 shop's employee terms",
+        "automatedFetchingPermission": "NOT_ESTABLISHED",
+        "commercialContentReusePermission": "NOT_ESTABLISHED",
+        "legalInterpretation": "NO_CATEGORICAL_SCRAPING_PROHIBITION_INFERRED_FROM_COPYRIGHT_CLAUSE_ALONE"
+      },
+      "robots": {
+        "url": "https://neopharmshop.co.kr/robots.txt",
+        "directReadback": "WEB_TOOL_CANNOT_ACCESS_ROBOTS_CONTENT",
+        "liveAllowedPaths": "UNKNOWN",
+        "userAgent": "NOT_EVALUATED",
+        "crawlDelay": "UNKNOWN",
+        "requestPacing": "UNAPPROVED"
+      },
+      "contact": {
+        "email": "neoshop@neopharm.co.kr",
+        "officialSourceUrl": "https://www.neopharmshop.co.kr/",
+        "roleCaveat": "Official shop customer service; redirect to website rights/policy owner if necessary",
+        "approvalRequest": "NOT_SENT",
+        "reply": "NOT_RECEIVED",
+        "termsConsent": false,
+        "robotsPreflightAuthorized": false,
+        "pacingReviewed": false
+      },
+      "result": "HOLD"
+    },
+    {
+      "brand": "이즈앤트리",
+      "productId": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
+      "catalogSizeMl": 300,
+      "origin": "https://isntree.com",
+      "baselinePeerUrl": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "terms": {
+        "url": "https://isntree.com/member/agreement.html",
+        "observation": "PUBLIC_SITE_TERMS_READ",
+        "relevantClauseSummary": "제22조 ②: mall-owned copyrighted material requires prior consent for commercial reproduction/transmission/publication/distribution; not an explicit automation license",
+        "automatedFetchingPermission": "NOT_ESTABLISHED",
+        "commercialContentReusePermission": "NOT_ESTABLISHED",
+        "legalInterpretation": "NO_CATEGORICAL_SCRAPING_PROHIBITION_INFERRED_FROM_COPYRIGHT_CLAUSE_ALONE"
+      },
+      "robots": {
+        "url": "https://isntree.com/robots.txt",
+        "directReadback": "WEB_TOOL_CANNOT_ACCESS_ROBOTS_CONTENT",
+        "liveAllowedPaths": "UNKNOWN",
+        "userAgent": "NOT_EVALUATED",
+        "crawlDelay": "UNKNOWN",
+        "requestPacing": "UNAPPROVED"
+      },
+      "contact": {
+        "email": "marketing@isntree.com",
+        "officialSourceUrl": "https://www.isntree.com/",
+        "roleCaveat": "Official shop lists this for partnership/inquiries; rights contact unconfirmed",
+        "approvalRequest": "NOT_SENT",
+        "reply": "NOT_RECEIVED",
+        "termsConsent": false,
+        "robotsPreflightAuthorized": false,
+        "pacingReviewed": false
+      },
+      "result": "HOLD"
+    },
+    {
+      "brand": "토리든",
+      "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+      "catalogSizeMl": 50,
+      "origin": "https://www.torriden.com",
+      "baselinePeerUrl": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "terms": {
+        "url": "https://www.torriden.com/service/agreement.php",
+        "observation": "PUBLIC_SITE_TERMS_READ",
+        "relevantClauseSummary": "제22조 ②: mall-owned copyrighted material requires prior consent for commercial reproduction/transmission/publication/distribution; not an explicit automation license",
+        "automatedFetchingPermission": "NOT_ESTABLISHED",
+        "commercialContentReusePermission": "NOT_ESTABLISHED",
+        "legalInterpretation": "NO_CATEGORICAL_SCRAPING_PROHIBITION_INFERRED_FROM_COPYRIGHT_CLAUSE_ALONE"
+      },
+      "robots": {
+        "url": "https://www.torriden.com/robots.txt",
+        "directReadback": "WEB_TOOL_CANNOT_ACCESS_ROBOTS_CONTENT",
+        "liveAllowedPaths": "UNKNOWN",
+        "userAgent": "NOT_EVALUATED",
+        "crawlDelay": "UNKNOWN",
+        "requestPacing": "UNAPPROVED"
+      },
+      "contact": {
+        "email": "info@torriden.com",
+        "officialSourceUrl": "https://www.torriden.com/service/agreement.php",
+        "roleCaveat": "Official shop customer service; rights contact unconfirmed",
+        "approvalRequest": "NOT_SENT",
+        "reply": "NOT_RECEIVED",
+        "termsConsent": false,
+        "robotsPreflightAuthorized": false,
+        "pacingReviewed": false
+      },
+      "result": "HOLD"
+    }
+  ],
+  "decision": "HOLD_UNVERIFIED_ROBOTS_AND_SEPARATE_SITE_TERMS_AND_OWNER_APPROVAL",
+  "nextStep": "OWNER_REVIEW_AND_SEND_FOUR_SITE_PERMISSION_INQUIRIES; RECORD_EXPLICIT_RESPONSES; RUN_GOVERNED_ROBOTS_PRECHECK_ONLY_AFTER_APPROVAL; DO_NOT_TRIGGER_LIVE_TRIAL",
+  "limitations": [
+    "A cached/indexed terms page may not be current on execution day.",
+    "robots.txt cannot be verified via the available web lookup, which does not imply robots absent or permissive.",
+    "Copyright/terms provisions concern commercial use of protected works; they do not automatically establish that a narrowly limited metadata diagnostic is prohibited or licensed.",
+    "Official inquiry email addresses are public business contacts, not verified permission grantors.",
+    "No outreach was sent and no policy approval may be inferred from this research.",
+    "No source/product/Subject/Fact/DB changes and no live source discovery occurred."
+  ]
+}
