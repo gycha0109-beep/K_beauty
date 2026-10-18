@@ -1,0 +1,52 @@
+{
+  "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
+  "observedDateKst": "2026-10-18",
+  "state": "USER_REPORTED_ZIP_CREATED_REMOTE_CONTENT_NOT_VERIFIED",
+  "ownerReported": {
+    "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
+    "archiveBytes": 7323679,
+    "zipFileListCheckedByOwner": [
+      "roles.sql",
+      "schema.sql",
+      "data.sql"
+    ],
+    "ownerStatedUploadedToGoogleDrive": true
+  },
+  "connectorEvidence": {
+    "driveExactNameSearchReturned": 0,
+    "driveKeywordSearchReturnedExactMatch": 0,
+    "driveFileIdResolved": false,
+    "driveFileContentAccessed": false
+  },
+  "security": {
+    "rawBackupAddedToRepository": false,
+    "rawBackupAddedToCi": false,
+    "originalArchiveSentToAssistant": false,
+    "zipEntriesIndependentlyVerified": false,
+    "productionDatabaseWrites": 0
+  },
+  "localValidation": {
+    "script": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+    "modes": [
+      "Inspect",
+      "Restore"
+    ],
+    "restoreTarget": "isolated_no_network_postgres_17_6_docker",
+    "actualOwnerBackupInspectRunObserved": false,
+    "actualOwnerBackupRestoreRunObserved": false
+  },
+  "syntheticCi": {
+    "runId": 39132129352,
+    "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39132129352",
+    "jobId": 117689270404,
+    "conclusion": "success",
+    "provenFor": "synthetic_fixture_only"
+  },
+  "notIncludedInCurrentDump": [
+    "managed_supabase_schemas_as_excluded_by_CLI",
+    "storage_object_binary",
+    "project_secrets_or_encryption_root_key",
+    "complete_migration_history"
+  ],
+  "releaseAuthorized": false
+}
