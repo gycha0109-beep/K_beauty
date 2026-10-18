@@ -19,7 +19,7 @@ const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "Native
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
 const mobileCiWorkflowSource = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ci.yml"), "utf8");
 const nativeShellWorkflowSource = readFileSync(
-  join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"),
+  join(repoRoot, ".github", "workflows", "mobile-android-runtime.yml"),
   "utf8"
 );
 
