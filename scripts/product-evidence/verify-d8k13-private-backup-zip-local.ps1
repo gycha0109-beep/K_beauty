@@ -1,5 +1,5 @@
-# D8K13 owner-side backup ZIP inspection and OPTIONAL isolated PostgreSQL 17 restore.
-# No Supabase connection, network port, bind mount, raw SQL output or GitHub upload.
+# D8K13 owner-side backup ZIP inspection and isolated Supabase/Postgres 17 restore.
+# No hosted Supabase connection, network port, bind mount, raw SQL output or GitHub upload.
 # Intended for Windows PowerShell 5.1+ / PowerShell 7 with Docker Desktop.
 [CmdletBinding()]
 param(
@@ -96,19 +96,23 @@ try {
   if ($Mode -eq 'Inspect') { return }
   Assert-Drill ($null -ne (Get-Command docker -ErrorAction SilentlyContinue)) 'D8K13_DOCKER_NOT_INSTALLED'
   $container = 'bejewely-restore-' + [guid]::NewGuid().ToString('N').Substring(0,12)
-  # Disposable PostgreSQL 17, no network, no ports, no host-mounted volumes.
+  # Official Supabase/Postgres 17 image, local disposable container. No network/ports/volumes.
   $password = ([guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N'))
   $startLog = Join-Path $unpacked 'docker-run.log'
-  & docker run --detach --rm --name $container --network none --pids-limit 128 --memory 1g --cpus 2 -e ('POSTGRES_PASSWORD=' + $password) postgres:17.6 1> $startLog 2>&1
+  & docker run --detach --rm --name $container --network none --pids-limit 192 --memory 2g --cpus 2 -e ('POSTGRES_PASSWORD=' + $password) -e 'POSTGRES_DB=postgres' -e 'POSTGRES_HOST=/var/run/postgresql' -e 'PGPORT=5432' -e 'POSTGRES_PORT=5432' -e ('PGPASSWORD=' + $password) -e ('JWT_SECRET=' + $password) -e 'JWT_EXP=3600' supabase/postgres:17.6.1.136 postgres -c 'config_file=/etc/postgresql/postgresql.conf' 1> $startLog 2>&1
   if ($LASTEXITCODE -ne 0) { throw 'D8K13_LOCAL_RESTORE_CONTAINER_START_FAILED' }
   $containerStarted = $true
   $ready = $false
-  for ($i = 0; $i -lt 40; $i++) {
+  for ($i = 0; $i -lt 90; $i++) {
     & docker exec -u postgres $container pg_isready -q -U postgres -d postgres *> $null
     if ($LASTEXITCODE -eq 0) { $ready = $true; break }
     Start-Sleep -Seconds 1
   }
   Assert-Drill $ready 'D8K13_LOCAL_RESTORE_POSTGRES_NOT_READY'
+  # Fail before executing backup SQL unless Supabase-provisioned roles exist.
+  # A plain postgres image lacks anon/authenticated/service_role and must not be used.
+  $rolesReady = & docker exec -u postgres $container psql -X -A -t -v ON_ERROR_STOP=1 -d postgres -c "select count(*) from pg_roles where rolname in ('anon','authenticated','service_role','supabase_admin')"
+  Assert-Drill ($LASTEXITCODE -eq 0 -and ("$rolesReady".Trim() -eq '4')) 'D8K13_LOCAL_RESTORE_SUPABASE_BASE_ROLES_MISSING'
   $empty = & docker exec -u postgres $container psql -X -A -t -d postgres -v ON_ERROR_STOP=1 -c "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p','v','m','f','S')"
   Assert-Drill ($LASTEXITCODE -eq 0 -and ("$empty".Trim() -eq '0')) 'D8K13_LOCAL_RESTORE_DESTINATION_NOT_EMPTY'
   Run-Docker 'DROP_EMPTY_PUBLIC' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c','DROP SCHEMA IF EXISTS public CASCADE')
@@ -126,6 +130,7 @@ try {
     status='D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED'
     inventory=$inventory
     postgresNetworkDisabled=$true
+    isolatedRuntime='supabase/postgres:17.6.1.136'
     rawSQLUploaded=$false
     realBackupRowContentsReturned=$false
     original178MigrationsReplayed=$false
@@ -136,7 +141,7 @@ try {
   } | ConvertTo-Json -Compress -Depth 5)
 }
 catch {
-  [Console]::Error.WriteLine(('D8K13_LOCAL_BACKUP_DRILL_FAILED: ' + $_.Exception.Message + '. A bare PostgreSQL image may lack Supabase-managed roles/schemas/extensions; treat any failed restore as INCOMPLETE, not as a corrupted backup.'))
+  [Console]::Error.WriteLine(('D8K13_LOCAL_BACKUP_DRILL_FAILED: ' + $_.Exception.Message + '. Supabase database image can still lack managed schemas, migrations, or project-specific extensions; restore status is INCOMPLETE, not evidence of backup corruption.'))
   exit 3
 }
 finally {
