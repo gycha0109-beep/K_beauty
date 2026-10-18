@@ -15,7 +15,7 @@ jobs:
   synthetic-only:
     runs-on: ubuntu-24.04
     name: "Synthetic ZIP: inspect / isolated PG17 restore / reject bad archive"
-    timeout-minutes: 12
+    timeout-minutes: 16
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -28,6 +28,8 @@ jobs:
           cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql" <<'SQL'
           -- Synthetic, not copied from production.
           CREATE ROLE d8k13_local_fixture_role NOLOGIN;
+          GRANT anon TO d8k13_local_fixture_role;
+          GRANT authenticated TO d8k13_local_fixture_role;
           SQL
           # Synthetic entropy, so compressed ZIP resembles a real nontrivial archive.
           printf '%s' '-- ' >> "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql"
@@ -36,9 +38,10 @@ jobs:
           cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/schema.sql" <<'SQL'
           -- Synthetic, not copied from production.
           CREATE SCHEMA public;
-          CREATE TABLE public.products(id integer PRIMARY KEY, name text NOT NULL);
+          CREATE TABLE public.products(id integer PRIMARY KEY, name text NOT NULL, owner_id uuid REFERENCES auth.users(id));
           CREATE VIEW public.product_names AS SELECT name FROM public.products;
           ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+          CREATE POLICY fixture_select ON public.products FOR SELECT TO authenticated USING (owner_id = (select auth.uid()));
           SQL
           cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/data.sql" <<'SQL'
           -- Synthetic, not copied from production.
@@ -57,7 +60,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host ($output -join "`n"); throw 'D8K13_SYNTHETIC_INSPECTION_FAILED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ZIP_INSPECTION_PASS')) { throw 'D8K13_SYNTHETIC_INSPECTION_MARKER_MISSING' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_INSPECTION_PASS'
-      - name: Restore synthetic backup in no-network disposable PostgreSQL 17
+      - name: Restore synthetic backup with built-in Supabase auth roles in no-network PostgreSQL 17
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
