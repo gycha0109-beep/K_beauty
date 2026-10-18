@@ -421,3 +421,12 @@
 `scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1` 추가. Windows 로컬의 원본 ZIP을 `Inspect`로 검사하고, `Restore`시 컨테이너를 별도 생성하여 **네트워크 없는 PostgreSQL17.6**에 `roles → schema → data`를 적용한 뒤 결과를 metadata-only 출력하고 임시 파일 및 컨테이너를 삭제. CI [#39132129352](https://github.com/gycha0109-beep/K_beauty/actions/runs/39132129352)에서 **합성 ZIP만 이용한 Inspect / restore / invalid-size 거부 성공**. 실제 ZIP을 복원했다는 의미가 아니다. Supabase-managed dependencies가 순수 PostgreSQL 이미지에 없으면 본 복원은 fail-closed다.
 
 다음 우선순위: **사용자 PC에서 로컬 실 ZIP을 검증하는 단 1회 실행**, 해당 출력의 stage/error code를 바탕으로 순수 PG17 호환성 문제 또는 필요한 Supabase-local 복원 기반 확인. Vault/Auth/Storage/DDL 권한 parity, 독립 OWNER 검수 미완료. 기존 PR #1341 Draft/HOLD, #1208 OPEN, production writes 0 유지. 세부 runbook §6 및 user-reported evidence manifest 참조.
+
+## 29. 실제 백업 ZIP 스키마 복원 오류 및 격리 기준선 보강 (2026-10-19)
+
+사용자 실 ZIP `BEJEWELY_DB_Backup_20261018_181006.zip` 검증은 PASS (7,323,679 bytes, SHA-256 A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6). 공식 Supabase/Postgres 이미지 cold-pull PASS. 그러나 실 ZIP의 `schema.sql` 적용은 `D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_FAILED_EXIT_3`으로 **실패**했고 `data.sql`은 미적용. 파일 손상은 확인되지 않음.
+
+운영 Supabase에는 있지만 격리 이미지에는 없는 스키마를 **pg_catalog SELECT-only**로 비교: `private` (함수 2), `recommendation_shadow` (함수 2), `supabase_migrations` (운영 마이그레이션 이력). 고정 허용 목록의 사용자 정의 스키마 두 개만 `schema.sql` 참조 여부를 검사한 뒤 **격리 컨테이너에 한해** 필요 시 생성; 덤프가 CREATE SCHEMA를 선언하면 중복 생성 금지. Supabase initdb의 임시 서버 재시작에 대응해 role/auth/storage/extension 상태와 안정적인 postmaster 확인을 추가. 빈 migration 원장 복원은 하지 않음.
+
+합성 ZIP에서 위 사용자 정의 스키마가 빠진 상태를 재현하여 PostgreSQL17 roles/schema/data 복원 성공: [CI #39141611642](https://github.com/gycha0109-beep/K_beauty/actions/runs/39141611642). PowerShell parse → cold boot stable init → synthetic restore → wrong-size negative 전체 검사 [CI #39141655146](https://github.com/gycha0109-beep/K_beauty/actions/runs/39141655146) SUCCESS. **실 ZIP의 수정본 재실행은 아직 하지 않았음.** 다음은 사용자 PC의 `restore-local.ps1` 최신 버전으로 갱신하고 `-Mode Restore` 실 ZIP 실행; 데이터·Auth/Storage/Vault parity 및 독립 Owner/Security 검증 후 판단. #1208 OPEN / PR #1341 Draft/HOLD / prod writes 0.
+
