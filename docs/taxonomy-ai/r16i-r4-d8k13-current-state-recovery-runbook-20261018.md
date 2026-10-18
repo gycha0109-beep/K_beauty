@@ -111,3 +111,30 @@ CI [#39134449424](https://github.com/gycha0109-beep/K_beauty/actions/runs/391344
 
 실패 시 `D8K13_LOCAL_DOCKER_IMAGE_PULL_<범주>_EXIT_<정수>` 또는 `D8K13_LOCAL_RESTORE_<단계>_<범주>_FAILED_EXIT_<정수>` 등 **비민감 오류 코드만 수집**한다. 네트워크가 끊겼거나 Docker Desktop이 꺼진 경우 다운로드/컨테이너 동작은 실패할 수 있으며, 그 실패 역시 운영 DB와는 무관하다. Release HOLD.
 
+### 6.2. 운영자 실 ZIP schema 단계 누락 스키마 및 초기화 경합 진단 (2026-10-19)
+
+실제 사용자 Windows ZIP 재실행 출력:
+- ZIP 정밀 검사 PASS, 7,323,679 bytes, SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6`. 세 SQL 원본 크기 1,446 / 1,623,596 / 20,857,133 bytes.
+- Supabase/Postgres Docker image 다운로드 START/PASS.
+- `D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_FAILED_EXIT_3` — **실제 schema.sql 복원 실패**, data.sql 적용 전 중지. 오류를 비식별화했으므로 해당 오류만으로 누락된 *정확한 스키마 이름*은 미확인. **백업 손상으로 결론내릴 근거는 없음.**
+
+운영 DB에서 추가로 `pg_catalog` 메타데이터를 **SELECT-only** 조회하여 격리된 Supabase/Postgres 17.6.1.136 이미지의 실제 네임스페이스 및 extension 목록과 비교했다.
+
+| 스키마 | 현재 운영 DB | Supabase PG 17 기본 이미지 |
+| --- | --- | --- |
+| `private` | 존재, 함수 2개 | 없음 |
+| `recommendation_shadow` | 존재, 함수 2개 | 없음 |
+| `supabase_migrations` | 존재, 적용 이력 테이블 1개 | 없음 |
+| `auth`, `storage`, `extensions`, `vault` | 존재 | 존재 |
+
+검증한 Supabase 이미지의 `pgcrypto`, `pg_stat_statements`, `supabase_vault`, `uuid-ossp` 확장도 존재. 위 차이는 **실제 누락된 네임스페이스 후보**이지 원본 SQL 오류의 정확한 식별 결과는 아니다.
+
+보수:
+1. `schema.sql`을 **로컬 임시 디렉터리에서만 읽어**, `private` / `recommendation_shadow`에 대한 참조가 있지만 덤프 자체에 `CREATE SCHEMA`가 없는 경우에 한하여, 네트워크 없는 일회용 DB에 해당 스키마를 준비한다. 이미 덤프가 생성하는 경우에는 **중복 생성하지 않는다**. 고정 허용 목록 밖의 네임스페이스는 자동 생성하지 않는다. `supabase_migrations`를 빈 가짜 적용 이력으로 임의 복원하지 않는다.
+2. Supabase Docker entrypoint는 임시 PostgreSQL 프로세스로 초기 SQL을 실행한 뒤 최종 서버를 시작할 수 있다. `pg_isready`나 단 한 번의 query 성공 대신, 필수 역할/스키마/확장 확인과 `pg_postmaster_start_time()`의 **연속 동일성**을 기다린다.
+3. 이미지 부족 및 SQL 복원 stderr는 운영 SQL/사용자 행을 출력하지 않고 미리 정의된 범주의 오류 코드만 알려준다. `docker run --network none`, 무포트/무볼륨, 임시 SQL/container 종료 시 삭제 경계 유지.
+
+**실제 CI** [#39141611642](https://github.com/gycha0109-beep/K_beauty/actions/runs/39141611642)에서 의도적으로 `private`, `recommendation_shadow` 네임스페이스가 없는데 이를 참조하는 합성 SQL fixture로 **role restore → namespace preparation → schema restore → data restore 성공**을 확인했다. 잘못된 크기 ZIP 거부도 PASS. 재사용할 PowerShell 소스는 `scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1`; 사용자가 `restore-local.ps1` 로컬 복사본을 다시 최신 기능 브랜치로 갱신해야 수정이 반영된다.
+
+**현재 판정:** 합성 ZIP 복원 성공, 실사용자 ZIP 복원 **미검증**, `auth`·`storage` 관리 객체와 바이너리/키, 전체 역사 이력 검증 **미완료**, PR #1341 DRAFT/HOLD / issue #1208 OPEN / production DML/DDL 0.
+
