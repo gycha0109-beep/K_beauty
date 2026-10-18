@@ -51,7 +51,15 @@
       "termsPageDiscovery": "PUBLIC_TERMS_REVIEW_INCOMPLETE",
       "robotsStatus": "NOT_VERIFIED_IN_CONTROLLED_SOURCE_RUN",
       "termsAndLicensingApproval": "PENDING_OWNER_REVIEW",
-      "autoFetchAuthorized": false
+      "autoFetchAuthorized": false,
+      "siteContinuityRisk": {
+        "status": "OFFICIAL_WEBSITE_CLOSURE_ANNOUNCED_UNVERIFIED_LIVE_ORIGIN",
+        "announcedClosureDate": "2026-06-30",
+        "officialNoticeUrl": "https://www.dr-g.co.kr/cs/notice/1034/form?pageNo=1&searchKeyword=",
+        "publishedDate": "2026-04-20",
+        "observedFrom": "PUBLIC_OFFICIAL_NOTICE_AND_INDEX_NOT_CONTROLLED_SITE_FETCH",
+        "effect": "NO_AUTOMATIC_NAVER_STORE_OR_ALT_ORIGIN_SUBSTITUTION; STOP_UNTIL_COHORT_REVISION_APPROVED"
+      }
     },
     {
       "brand": "비플레인",
@@ -77,8 +85,8 @@
       "brand": "이즈앤트리",
       "origin": "https://isntree.com",
       "targetSizeMl": 300,
-      "termsUrl": null,
-      "termsPageDiscovery": "PUBLIC_TERMS_REVIEW_INCOMPLETE",
+      "termsUrl": "https://isntree.com/member/agreement.html",
+      "termsPageDiscovery": "PUBLIC_TERMS_PAGE_LOCATED_NOT_LICENSE_CLEARED",
       "robotsStatus": "NOT_VERIFIED_IN_CONTROLLED_SOURCE_RUN",
       "termsAndLicensingApproval": "PENDING_OWNER_REVIEW",
       "autoFetchAuthorized": false
@@ -97,7 +105,8 @@
   "unmetPrerequisites": [
     "PER_SITE_TERMS_LICENSING_APPROVAL_FOR_FIVE_OFFICIAL_ORIGINS",
     "CONTROLLED_ROBOTS_AND_PACING_READBACK_PER_SITE",
-    "EXPLICIT_OWNER_AUTHORIZATION_OF_A_ONE_TIME_RUN_AND_EXECUTION_WINDOW"
+    "EXPLICIT_OWNER_AUTHORIZATION_OF_A_ONE_TIME_RUN_AND_EXECUTION_WINDOW",
+    "DR_G_RETIRED_ORIGIN_HANDLING_WITHOUT_SILENT_COHORT_SUBSTITUTION"
   ],
   "executionPath": {
     "workflow": ".github/workflows/trust-phase5b-7d-static.yml",
@@ -125,5 +134,5 @@
     "verifiedExactSkuCount": 0,
     "independentFalsePositiveRateMeasured": false
   },
-  "interpretation": "Database identity/lineage matching and CI success do not prove target SKU or grant scraping/license or write authority. Web text lookup did not establish robots.txt access for any origin. Do not trigger live job without all missing approvals."
+  "interpretation": "Database identity/lineage matching and CI success do not prove target SKU or grant scraping/license or write authority. Web text lookup did not establish robots.txt access for any origin. Do not trigger live job without all missing approvals. Dr.G official dated notice says the legacy website terminates June 30, 2026; treat the official peer origin as a potential historical/retired site and HOLD rather than implicitly replacing it with a separate marketplace."
 }
