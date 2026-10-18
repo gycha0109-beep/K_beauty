@@ -403,3 +403,13 @@
 - 공식 Supabase 일반 백업/통상 PITR 보존기간은 수개월 전 초기 상태의 자동 복원을 보장하지 않는다. 조직의 요금제·백업 실제 목록은 **미조회**이며 독립 장기보관 아카이브 확인 필요.
 - 외부 비공개 SQL을 SHA-256/size 확인 후에도 **CANDIDATE_ONLY_NOT_ATTESTED**로 판정하는 오프라인 intake 및 9개 자기검증을 CI에 추가. SQL 덤프 Git commit, 민감값 출력, 자동 replay는 금지. 기존 11개 preledger gate 계속 false, #1208 OPEN, PR #1341 Draft/HOLD.
 - 후속 의사결정: 실제 원본 archive + timestamp/execution evidence + ACL/Owner provenance 확보 시에만 독립 전문가 검토 후 합성 fixture를 보조 비교로 유지하며 **별도 격리 PostgreSQL17 전체 이력 복원**에 착수. 운영 변경은 별도 승인 전 금지.
+
+## 27. D8K-13 현재 운영 DB 기준 복구 우선순위 전환 (2026-10-18)
+
+**사용자 지시로 운영 복구 목표의 우선순위를 변경한다.** 초기 2026년 bootstrap SQL 추적 및 178 migration 원문 복구는 별도의 역사성 감사 과제로 유지하되, **서비스 재해 복구**는 현재 실제 운영 DB의 승인된 시점 기준 스냅샷·덤프를 활용한다. 원본 178 재현을 완료해야만 현상태 복구를 검증할 수 있다는 가정은 폐기한다. 이것은 이력 결함의 삭제나 release gate 자동 통과를 의미하지 않는다.
+
+실제 운영 DB에서 SELECT-only로 관측한 `public` 메타데이터: PostgreSQL 17, 테이블 101, 뷰 6, 컬럼 1,425, 기본키 101, 외래키 233, 함수 187(SECURITY DEFINER 135), RLS enabled 101/forced 4, 정책 58, 트리거 23, enum 5. 기록: `d8k13-current-public-recovery-inventory-20261018.json`. **이는 메타데이터 기준선이지 스키마 SQL/행 백업이 아니다.**
+
+실제 CI [#39109843279](https://github.com/gycha0109-beep/K_beauty/actions/runs/39109843279)에서 PostgreSQL17.6 합성 3개 테이블/3개 테스트 행을 **schema-only+data-only dump**하고 새 격리 DB에 트랜잭션 복원, catalog와 synthetic data/view 값을 비교해 PASS. `d8k13-current-recovery-synthetic-restore-drill-20261018.json`으로 고정. 임시 dump는 종료 시 삭제하고 운영 DB는 접근하지 않았다.
+
+**다음 P0:** 승인된 비공개 장소에서 실제 현재 schema/roles/data dump를 획득(원문·자격증명을 저장소/CI에 노출하지 않음), object storage/Auth/암호화 의존성 포함 여부 검토, 격리 PG17에 복원, 구조·데이터·ACL/RLS 동등성 검증, Owner/Security 독립 승인. **운영 DB writes 0, #1208 OPEN, PR Draft, release HOLD**. 실행 절차: `docs/taxonomy-ai/r16i-r4-d8k13-current-state-recovery-runbook-20261018.md`.
