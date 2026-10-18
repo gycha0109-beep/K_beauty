@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Session } from "@supabase/auth-js";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ScreenShell } from "../components/ScreenShell";
 import { NativeCurrentProductsSelector } from "../features/premium/NativeCurrentProductsSelector";
+import { createPremiumViewGate } from "../features/premium/premium-view-gate";
 import {
   createNativePremiumReport,
   loadNativePremiumAccess,
@@ -12,7 +13,7 @@ import {
   type NativeCurrentProductSelection,
   type NativePremiumAccess
 } from "../features/premium/premium-client";
-import { getNativeSession } from "../lib/auth";
+import { getNativeSession, subscribeNativeAuth } from "../lib/auth";
 import { useMobileShell } from "../lib/mobile-shell";
 
 const COPY = {
@@ -93,57 +94,113 @@ export default function PremiumScreen() {
   const [currentProducts, setCurrentProducts] = useState<NativeCurrentProductSelection[]>([]);
   const [creating, setCreating] = useState(false);
   const [createErrorCode, setCreateErrorCode] = useState("");
+  const activeSessionRef = useRef<Session | null>(null);
+  const viewGate = useRef(createPremiumViewGate());
 
   const checkAccess = useCallback(async (session: Session) => {
+    const ticket = viewGate.current.begin(session.user.id);
     setState({ status: "checking", session });
     try {
       const access = await loadNativePremiumAccess(session);
-      setState(mapAccessState(session, access));
+      if (!viewGate.current.isCurrent(ticket)) return;
+      const currentSession = activeSessionRef.current;
+      if (!currentSession || currentSession.user.id !== ticket.userId) return;
+      setState(mapAccessState(currentSession, access));
     } catch {
-      setState({ status: "error", session });
+      if (!viewGate.current.isCurrent(ticket)) return;
+      const currentSession = activeSessionRef.current;
+      if (currentSession?.user.id === ticket.userId) {
+        setState({ status: "error", session: currentSession });
+      }
     }
   }, []);
 
   useEffect(() => {
     let active = true;
-    getNativeSession()
-      .then((session) => {
-        if (!active) return;
-        if (!session) {
-          setState({ status: "signed-out", session: null });
-          return;
-        }
-        void checkAccess(session);
+    let authEventSeen = false;
+    viewGate.current.invalidate();
+    activeSessionRef.current = null;
+    setState({ status: "loading", session: null });
+
+    const applySession = (nextSession: Session | null) => {
+      if (!active) return;
+      const previousUserId = activeSessionRef.current?.user.id ?? null;
+      const nextUserId = nextSession?.user.id ?? null;
+      if (nextSession && previousUserId === nextUserId) {
+        // Token refresh / duplicate INITIAL_SESSION for the same account must
+        // not discard product selections or a pending access check.
+        activeSessionRef.current = nextSession;
+        setState(previous => previous.session?.user.id === nextUserId
+          ? { ...previous, session: nextSession }
+          : previous);
+        return;
+      }
+
+      activeSessionRef.current = nextSession;
+      viewGate.current.invalidate();
+      setCurrentProducts([]);
+      setCreating(false);
+      setCreateErrorCode("");
+      if (!nextSession) {
+        setState({ status: "signed-out", session: null });
+        return;
+      }
+      void checkAccess(nextSession);
+    };
+
+    const subscription = subscribeNativeAuth((nextSession) => {
+      authEventSeen = true;
+      applySession(nextSession);
+    });
+    // A late getSession result cannot override a newer auth-state event.
+    void getNativeSession()
+      .then((nextSession) => {
+        if (active && !authEventSeen) applySession(nextSession);
       })
       .catch(() => {
-        if (active) setState({ status: "error", session: null });
+        if (!active || authEventSeen) return;
+        viewGate.current.invalidate();
+        activeSessionRef.current = null;
+        setState({ status: "error", session: null });
       });
 
     return () => {
       active = false;
+      viewGate.current.invalidate();
+      activeSessionRef.current = null;
+      subscription?.unsubscribe();
     };
   }, [checkAccess]);
 
   const finalize = useCallback(async () => {
     if (state.status !== "ready" || creating) return;
+    const currentSession = activeSessionRef.current;
+    const ticket = viewGate.current.snapshot();
+    if (!currentSession || currentSession.user.id !== state.session.user.id ||
+        ticket?.userId !== currentSession.user.id ||
+        !viewGate.current.tryBeginFinalize(ticket)) return;
 
     setCreating(true);
     setCreateErrorCode("");
     try {
       await createNativePremiumReport({
-        session: state.session,
+        session: currentSession,
         locale,
         currentProducts
       });
-      router.replace("/saved-report");
+      // A request already sent cannot be undone, but a stale completion must
+      // never navigate or display success for a different logged-in account.
+      if (viewGate.current.isCurrent(ticket)) router.replace("/saved-report");
     } catch (error) {
-      setCreateErrorCode(
-        error instanceof NativePremiumRequestError
-          ? error.code
-          : "mobile_premium_finalize_failed"
-      );
+      if (viewGate.current.isCurrent(ticket)) {
+        setCreateErrorCode(
+          error instanceof NativePremiumRequestError
+            ? error.code
+            : "mobile_premium_finalize_failed"
+        );
+      }
     } finally {
-      setCreating(false);
+      if (viewGate.current.finishFinalize(ticket)) setCreating(false);
     }
   }, [creating, currentProducts, locale, router, state]);
 
