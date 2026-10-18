@@ -20,6 +20,14 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+      - name: Parse local owner PowerShell script before any Docker work
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile('./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1',[ref]$tokens,[ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -ne 0) { throw 'D8K13_LOCAL_RESTORE_SCRIPT_PARSER_FAILED' }
+          Write-Host 'D8K13_LOCAL_RESTORE_SCRIPT_PARSE_PASS'
       - name: Generate non-sensitive synthetic Supabase-shaped ZIP
         shell: bash
         run: |
