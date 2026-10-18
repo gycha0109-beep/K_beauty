@@ -512,7 +512,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
                     {isCheckingGuidance ? copy.guidance.loading : copy.checkGuidance}
                   </Text>
                 </Pressable>
-              ) : null>
+              ) : null}
               {capturedPhoto ? (
                 <View style={styles.captureActions}>
                   <Pressable
