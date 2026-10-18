@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "USER_REPORTED_ZIP_CREATED_REMOTE_CONTENT_NOT_VERIFIED",
+  "state": "OWNER_PROVIDED_LOCAL_INSPECT_OUTPUT_PASS_AND_BARE_PG17_RESTORE_FAILURE",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -10,7 +10,15 @@
       "schema.sql",
       "data.sql"
     ],
-    "ownerStatedUploadedToGoogleDrive": true
+    "ownerStatedUploadedToGoogleDrive": true,
+    "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+    "uncompressedSqlBytes": {
+      "roles.sql": 1446,
+      "schema.sql": 1623596,
+      "data.sql": 20857133
+    },
+    "inspectOutputStatus": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+    "restoreFailure": "roles.sql:22 role anon does not exist"
   },
   "connectorEvidence": {
     "driveExactNameSearchReturned": 0,
@@ -33,14 +41,20 @@
     ],
     "restoreTarget": "isolated_no_network_postgres_17_6_docker",
     "actualOwnerBackupInspectRunObserved": false,
-    "actualOwnerBackupRestoreRunObserved": false
+    "actualOwnerBackupRestoreRunObserved": false,
+    "ownerSentInspectOutput": true,
+    "ownerSentRestoreFailure": true,
+    "previousRestoreEnvironment": "postgres:17.6_bare_image",
+    "previousRestoreSucceeded": false,
+    "correctedIsolatedRestoreImage": "supabase/postgres:17.6.1.136",
+    "correctedImageRealBackupRestoreSucceeded": false
   },
   "syntheticCi": {
-    "runId": 39132129352,
-    "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39132129352",
-    "jobId": 117689270404,
+    "runId": 39133409278,
+    "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39133409278",
+    "jobId": 117692996073,
     "conclusion": "success",
-    "provenFor": "synthetic_fixture_only"
+    "provenFor": "synthetic_fixture_only_including_supabase_anon_authenticated_grants_auth_users_fk_rls"
   },
   "notIncludedInCurrentDump": [
     "managed_supabase_schemas_as_excluded_by_CLI",
