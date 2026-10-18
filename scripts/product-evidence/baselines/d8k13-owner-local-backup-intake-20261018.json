@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_LOCAL_ZIP_INSPECT_PASS_SCHEMA_MISSING_REPEATED_DIAGNOSTICS_BEING_ENHANCED",
+  "state": "OWNER_ZIP_RESTORE_MISSING_SCHEMA_REPEATED_SCRIPT_PUBLIC_DEFECT_FIXED_SYNTHETIC_ONLY",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -110,7 +110,20 @@
     "publicCreateSchemaPresenceInActualOwnerSqlUnverified": true,
     "conditionalPublicNamespaceDropFixed": true,
     "sanitizedExactIdentifierAndSqlLineDiagnosticAdded": true,
-    "actualOwnerBackupWithFourthFixRetested": false
+    "actualOwnerBackupWithFourthFixRetested": false,
+    "conditionalPublicDropSyntheticCIFinished": {
+      "runId": 39148634432,
+      "jobId": 117737642121,
+      "result": "success",
+      "tested": [
+        "dump with CREATE SCHEMA public",
+        "dump without CREATE SCHEMA public",
+        "safe exact missing unknown namespace and psql line diagnostic",
+        "wrong-sized backup ZIP rejection"
+      ]
+    },
+    "realZipAfterConditionalPublicDropExecuted": false,
+    "exactMissingOwnerNamespaceStillUnknown": true
   },
   "syntheticCi": {
     "runId": 39133409278,
