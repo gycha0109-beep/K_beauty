@@ -14,6 +14,9 @@ on:
       - "scripts/**"
       - "package.json"
       - "package-lock.json"
+      - "crawler/package*.json"
+      - "security/**"
+      - ".npmrc"
       - ".github/dependabot.yml"
       - ".github/workflows/supply-chain-security.yml"
       - "docs/ci/workflow-responsibility-map.json"
@@ -30,6 +33,9 @@ on:
       - "scripts/**"
       - "package.json"
       - "package-lock.json"
+      - "crawler/package*.json"
+      - "security/**"
+      - ".npmrc"
       - ".github/dependabot.yml"
       - ".github/workflows/supply-chain-security.yml"
       - "docs/ci/workflow-responsibility-map.json"
@@ -76,7 +82,9 @@ jobs:
           cache: npm
 
       - name: Verify lockfile install without lifecycle scripts
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: node scripts/security/install-product-dependencies.mjs --ignore-scripts --no-audit --no-fund
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Trace vulnerable dependency paths without changing audit policy
         run: |
@@ -84,7 +92,9 @@ jobs:
           node scripts/security/report-supply-chain-lock-paths.mjs
 
       - name: Audit dependency vulnerabilities
-        run: node scripts/verify-supply-chain-audit.mjs
+        run: |
+          node --test scripts/security/install-product-dependencies.test.mjs
+          node scripts/verify-supply-chain-audit.mjs
 
       - name: Check exact-head diff hygiene
         shell: bash
