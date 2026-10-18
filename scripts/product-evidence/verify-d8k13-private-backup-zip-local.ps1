@@ -17,15 +17,29 @@ $containerStarted = $false
 function Assert-Drill([bool]$test,[string]$code) {
   if (-not $test) { throw $code }
 }
+# WinPS 5.1 Start-Process joins ArgumentList; explicitly quote whitespace.
+# None of the static restore arguments contain untrusted shell execution syntax.
+function Format-DockerArguments([string[]]$items) {
+  $parts = foreach ($item in $items) {
+    if ($item -match '[\s"]') {
+      '"' + $item.Replace('"', '\\"') + '"'
+    } else {
+      $item
+    }
+  }
+  return ($parts -join ' ')
+}
 function Run-Docker([string]$stage,[string[]]$arguments) {
-  $log = Join-Path $unpacked ('docker-' + $stage + '.log')
-  & docker @arguments 1> $log 2>&1
-  $code = $LASTEXITCODE
+  $stdoutLog = Join-Path $unpacked ('docker-' + $stage + '-stdout.log')
+  $stderrLog = Join-Path $unpacked ('docker-' + $stage + '-stderr.log')
+  $dockerExe = (Get-Command docker -ErrorAction Stop).Source
+  $process = Start-Process -FilePath $dockerExe -ArgumentList (Format-DockerArguments $arguments) -Wait -PassThru -NoNewWindow -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog
+  $code = [int]$process.ExitCode
   if ($code -ne 0) {
     # Classify failure without exposing SQL, row values, file contents or raw stderr.
     $reason = 'OTHER'
-    if (Test-Path -LiteralPath $log) {
-      $details = Get-Content -LiteralPath $log -Raw -ErrorAction SilentlyContinue
+    if (Test-Path -LiteralPath $stderrLog) {
+      $details = Get-Content -LiteralPath $stderrLog -Raw -ErrorAction SilentlyContinue
       if ($details -match 'role .{0,180} does not exist') { $reason = 'MISSING_ROLE' }
       elseif ($details -match 'schema .{0,180} does not exist') { $reason = 'MISSING_SCHEMA' }
       elseif ($details -match 'extension .{0,180} (is not available|does not exist)') { $reason = 'MISSING_EXTENSION' }
@@ -46,7 +60,7 @@ function Invoke-DockerLifecycle([string]$stage,[string[]]$arguments,[bool]$allow
   $stdoutLog = Join-Path $unpacked ('docker-lifecycle-' + $stage + '-out.log')
   $stderrLog = Join-Path $unpacked ('docker-lifecycle-' + $stage + '-err.log')
   $binary = (Get-Command docker -ErrorAction Stop).Source
-  $process = Start-Process -FilePath $binary -ArgumentList $arguments -Wait -PassThru -NoNewWindow -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog
+  $process = Start-Process -FilePath $binary -ArgumentList (Format-DockerArguments $arguments) -Wait -PassThru -NoNewWindow -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog
   $exitCode = [int]$process.ExitCode
   if ($exitCode -ne 0 -and -not $allowNonzero) {
     $category = 'FAILED'
