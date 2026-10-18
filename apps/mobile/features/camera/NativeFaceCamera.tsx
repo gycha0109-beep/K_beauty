@@ -289,7 +289,8 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
       if (guidanceGenerationRef.current === generation) {
         guidanceGenerationRef.current += 1;
       }
-      guidanceReadySamplesRef.current = 0;
+      // Preserve the previous manual sample for a second requested check.
+      // Session changes/resetGuidance still clear it independently.
     };
   }, [capturedPhoto, guidanceRequestRevision, isCameraReady, isCapturing, isFocused, isFullscreenOpen, permission?.granted]);
 
@@ -431,9 +432,13 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
               mode="picture"
               mirror
               onCameraReady={() => {
-                setIsCameraReady(true);
-                setCameraError(null);
-                resetGuidance();
+                // Expo may signal ready again after a still capture. Do not
+                // erase a manual two-sample result when preview resumes.
+                if (!isCameraReady) {
+                  setIsCameraReady(true);
+                  setCameraError(null);
+                  resetGuidance();
+                }
               }}
               onMountError={() => {
                 setIsCameraReady(false);
