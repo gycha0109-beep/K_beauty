@@ -1,0 +1,60 @@
+{
+  "contract": "trust-p2d-four-brand-live-authorizations-v1",
+  "decision": "HOLD",
+  "frozenCohort": "evidence/trust/p2d-five-brand-cohort-v2.json",
+  "denominator": 5,
+  "eligibleBrands": 4,
+  "excludedBrand": "닥터지",
+  "excludedReason": "LEGACY_OFFICIAL_STORE_CLOSURE_NOTICE_REQUIRES_SEPARATE_SOURCE_REVISION",
+  "sites": [
+    {
+      "brand": "비플레인",
+      "origin": "https://www.beplain.co.kr",
+      "productId": "9b81da7a-649e-41ec-a22b-7e367c05afe4",
+      "termsAndLicensingApproved": false,
+      "robotsFirstPreflightAuthorized": false,
+      "pacingReviewed": false,
+      "reviewer": null,
+      "reviewEvidence": null
+    },
+    {
+      "brand": "아토팜",
+      "origin": "https://neopharmshop.co.kr",
+      "productId": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "termsAndLicensingApproved": false,
+      "robotsFirstPreflightAuthorized": false,
+      "pacingReviewed": false,
+      "reviewer": null,
+      "reviewEvidence": null
+    },
+    {
+      "brand": "이즈앤트리",
+      "origin": "https://isntree.com",
+      "productId": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
+      "termsAndLicensingApproved": false,
+      "robotsFirstPreflightAuthorized": false,
+      "pacingReviewed": false,
+      "reviewer": null,
+      "reviewEvidence": null
+    },
+    {
+      "brand": "토리든",
+      "origin": "https://www.torriden.com",
+      "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+      "termsAndLicensingApproved": false,
+      "robotsFirstPreflightAuthorized": false,
+      "pacingReviewed": false,
+      "reviewer": null,
+      "reviewEvidence": null
+    }
+  ],
+  "operatorApproval": {
+    "approved": false,
+    "approver": null,
+    "executionWindowStartUtc": null,
+    "executionWindowEndUtc": null,
+    "approvalReference": null
+  },
+  "provenance": "DRAFT_TEMPLATE_ONLY_NOT_SITE_PERMISSION",
+  "writesAllowed": 0
+}
