@@ -177,7 +177,7 @@ try {
   # pg_isready can say "accepting connections" while Supabase image initdb
   # scripts are still setting up auth/storage/extensions/grants.
   # Wait for final bootstrap state, not only socket availability.
-  $readyQuery = "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin')) = 4 AND to_regclass('auth.users') IS NOT NULL AND to_regclass('storage.objects') IS NOT NULL AND EXISTS (SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN 1 ELSE 0 END"
+  $readyQuery = "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin')) = 4 AND to_regclass('auth.users') IS NOT NULL AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='storage') AND EXISTS (SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN 1 ELSE 0 END"
   $ready = $false
   for ($i = 0; $i -lt 90; $i++) {
     $readyExit = Invoke-DockerLifecycle 'SUPABASE_BOOTSTRAP_READY' @('exec','-u','postgres',
