@@ -1,0 +1,138 @@
+{
+  "contract": "trust-p2d-five-brand-live-preflight-v1",
+  "recordedAtUtc": "2026-10-18T14:06:28.484872Z",
+  "mode": "NO_NETWORK_TRIAL_NO_PRODUCTION_WRITE",
+  "decision": "HOLD_SITE_POLICY_AND_EXPLICIT_OPERATOR_EXECUTION_APPROVAL",
+  "baselineMainSha": "e2cef4105568078e7fb37b443b435692d89ef5af",
+  "mergedPipelinePr": 1318,
+  "cohortSource": {
+    "path": "evidence/trust/p2d-five-brand-cohort-v2.json",
+    "blobSha": "20912132f772f0a109cd43f762a349c8cb99cf35",
+    "frozenAt": "2026-10-13",
+    "targets": 5,
+    "brands": 5
+  },
+  "validatedPrerequisites": {
+    "securityRemediationMerged": true,
+    "mainExactHeadChecks": {
+      "supplyChain": "PASS",
+      "trustCanonical": "PASS",
+      "phase8hContract": "PASS",
+      "currentMainHealth": "PASS",
+      "codeqlJavaScriptTypeScript": "PASS"
+    },
+    "liveJobsOnMergeMain": {
+      "p2dFiveBrand": "SKIPPED",
+      "p3ThreeBrand": "SKIPPED",
+      "p3FixedLocator": "SKIPPED"
+    },
+    "productionReadOnlyAudit": {
+      "sampleSize": 5,
+      "foundTargetProducts": 5,
+      "foundIntakes": 5,
+      "brandNameNormalizedNameAndSizeMatches": 5,
+      "intakeLineageMatches": 5,
+      "sameBrandOtherSkuPeerProductMatches": 5,
+      "peerBindingLineageAndSourceMatches": 5,
+      "peerBindingStateExactSubjectMatch": 5,
+      "peerScopeRelationEquivalent": 5,
+      "peerSourceKindAndLocatorMatches": 5,
+      "identityStateSubjectCreationRequired": 5,
+      "targetsWithSubject": 0,
+      "mutations": 0
+    }
+  },
+  "sitePolicyPreflight": [
+    {
+      "brand": "닥터지",
+      "origin": "https://www.dr-g.co.kr",
+      "targetSizeMl": 70,
+      "termsUrl": null,
+      "termsPageDiscovery": "PUBLIC_TERMS_REVIEW_INCOMPLETE",
+      "robotsStatus": "NOT_VERIFIED_IN_CONTROLLED_SOURCE_RUN",
+      "termsAndLicensingApproval": "PENDING_OWNER_REVIEW",
+      "autoFetchAuthorized": false,
+      "siteContinuityRisk": {
+        "status": "OFFICIAL_WEBSITE_CLOSURE_ANNOUNCED_UNVERIFIED_LIVE_ORIGIN",
+        "announcedClosureDate": "2026-06-30",
+        "officialNoticeUrl": "https://www.dr-g.co.kr/cs/notice/1034/form?pageNo=1&searchKeyword=",
+        "publishedDate": "2026-04-20",
+        "observedFrom": "PUBLIC_OFFICIAL_NOTICE_AND_INDEX_NOT_CONTROLLED_SITE_FETCH",
+        "effect": "NO_AUTOMATIC_NAVER_STORE_OR_ALT_ORIGIN_SUBSTITUTION; STOP_UNTIL_COHORT_REVISION_APPROVED"
+      }
+    },
+    {
+      "brand": "비플레인",
+      "origin": "https://www.beplain.co.kr",
+      "targetSizeMl": 340,
+      "termsUrl": "https://www.beplain.co.kr/m/contract.html",
+      "termsPageDiscovery": "PUBLIC_TERMS_PAGE_LOCATED_NOT_LICENSE_CLEARED",
+      "robotsStatus": "NOT_VERIFIED_IN_CONTROLLED_SOURCE_RUN",
+      "termsAndLicensingApproval": "PENDING_OWNER_REVIEW",
+      "autoFetchAuthorized": false
+    },
+    {
+      "brand": "아토팜",
+      "origin": "https://neopharmshop.co.kr",
+      "targetSizeMl": 600,
+      "termsUrl": null,
+      "termsPageDiscovery": "PUBLIC_TERMS_REVIEW_INCOMPLETE",
+      "robotsStatus": "NOT_VERIFIED_IN_CONTROLLED_SOURCE_RUN",
+      "termsAndLicensingApproval": "PENDING_OWNER_REVIEW",
+      "autoFetchAuthorized": false
+    },
+    {
+      "brand": "이즈앤트리",
+      "origin": "https://isntree.com",
+      "targetSizeMl": 300,
+      "termsUrl": "https://isntree.com/member/agreement.html",
+      "termsPageDiscovery": "PUBLIC_TERMS_PAGE_LOCATED_NOT_LICENSE_CLEARED",
+      "robotsStatus": "NOT_VERIFIED_IN_CONTROLLED_SOURCE_RUN",
+      "termsAndLicensingApproval": "PENDING_OWNER_REVIEW",
+      "autoFetchAuthorized": false
+    },
+    {
+      "brand": "토리든",
+      "origin": "https://www.torriden.com",
+      "targetSizeMl": 50,
+      "termsUrl": "https://www.torriden.com/service/agreement.php",
+      "termsPageDiscovery": "PUBLIC_TERMS_PAGE_LOCATED_NOT_LICENSE_CLEARED",
+      "robotsStatus": "NOT_VERIFIED_IN_CONTROLLED_SOURCE_RUN",
+      "termsAndLicensingApproval": "PENDING_OWNER_REVIEW",
+      "autoFetchAuthorized": false
+    }
+  ],
+  "unmetPrerequisites": [
+    "PER_SITE_TERMS_LICENSING_APPROVAL_FOR_FIVE_OFFICIAL_ORIGINS",
+    "CONTROLLED_ROBOTS_AND_PACING_READBACK_PER_SITE",
+    "EXPLICIT_OWNER_AUTHORIZATION_OF_A_ONE_TIME_RUN_AND_EXECUTION_WINDOW",
+    "DR_G_RETIRED_ORIGIN_HANDLING_WITHOUT_SILENT_COHORT_SUBSTITUTION"
+  ],
+  "executionPath": {
+    "workflow": ".github/workflows/trust-phase5b-7d-static.yml",
+    "trigger": "MAIN_PUSH_WITH_EXPLICIT_P2D-LIVE-TRIAL_MARKER_ONLY_AFTER_ALL_PRECONDITIONS",
+    "boundedTransport": "ROBOTS_FIRST_SAME_ORIGIN_NO_REDIRECT_SSRF_SAFE",
+    "maximumPerOrigin": {
+      "robotsBeforeOtherRequests": true,
+      "sitemaps": 2,
+      "peerPages": 1,
+      "optionalHomepageIndex": 1,
+      "targetProductPages": 2
+    },
+    "productionWrites": 0,
+    "sourceBindingsWrites": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "aiApiCalls": 0,
+    "liveTrialExecuted": false
+  },
+  "historicalRealBaseline": {
+    "observedDate": "2026-10-13",
+    "fetchedProductHtmlPages": 2,
+    "candidateYieldProducts": 1,
+    "verifiedExactSkuCount": 0,
+    "independentFalsePositiveRateMeasured": false
+  },
+  "interpretation": "Database identity/lineage matching and CI success do not prove target SKU or grant scraping/license or write authority. Web text lookup did not establish robots.txt access for any origin. Do not trigger live job without all missing approvals. Dr.G official dated notice says the legacy website terminates June 30, 2026; treat the official peer origin as a potential historical/retired site and HOLD rather than implicitly replacing it with a separate marketplace."
+}
