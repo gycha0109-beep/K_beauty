@@ -44,7 +44,7 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
       elseif ($details -match 'schema .{0,180} does not exist') {
         $reason = 'MISSING_SCHEMA'
         # Only allow preapproved non-sensitive namespace names in error output.
-        if ($details -match '(?i)schema ["' + "'" + ']?([a-z_]+)["' + "'" + ']? does not exist') {
+        if ($details -match '(?i)schema ["'']?([a-z_]+)["'']? does not exist') {
           $reported = $Matches[1].ToLowerInvariant()
           if (@('private','recommendation_shadow','supabase_migrations','auth',
               'storage','vault','extensions','realtime','graphql','graphql_public',
