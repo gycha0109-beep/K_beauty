@@ -98,3 +98,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\product-evidence\
 - CLI 백업은 Supabase Auth/Storage 관리 객체, 실제 Storage 바이너리, Vault 암호화 키, 전체 migration ledger를 자동 보존하지 않는다. **서비스 전체 재해복구 PASS로 확대 해석 금지**. RLS/ACL/SECURITY DEFINER·데이터 무결성 대조와 독립 OWNER/Security 승인이 여전히 필요하다.
 
 상태: **사용자 PC 실 ZIP Inspect PASS** (7,323,679 bytes; SHA-256 A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6). **구버전 일반 PG17에서 실 ZIP restore FAILED** (`anon` 역할 누락). 새 Supabase/Postgres 이미지로 교체 후 **실 ZIP 재실행 NOT DONE**, release HOLD.
+
+### 6.1. Windows PowerShell 초기 Docker 이미지 다운로드 실패 조치 (2026-10-18)
+
+운영자 두 번째 실 ZIP 실행에서는 `D8K13_LOCAL_ZIP_INSPECTION_PASS` 출력 뒤 `Unable to find image 'supabase/postgres:17.6.1.136' locally`만 표시되고 중단되었다. 이 문장은 **Docker가 호스트의 이미지 캐시에 없음을 알려주는 일반적인 첫 다운로드 안내**다. 해당 안내만으로 원격 레지스트리의 태그가 없거나 pull에 실패했다고 판단할 수 없다. 이전 PowerShell 5.1 스크립트가 `$ErrorActionPreference='Stop'`와 네이티브 명령 `stderr` 리다이렉션을 결합해 상태 메시지를 `NativeCommandError`처럼 처리하면서 **실제 종료 코드·pull 완료까지 기다리지 않고 종료**한 것이 유력한 원인이다. 따라서 이는 실 DB 백업 불량의 증거가 아니다.
+
+수정: `Invoke-DockerLifecycle`은 `Start-Process -Wait -PassThru`로 Docker 명령의 **실제 exit code**를 판정하고 표준출력/표준에러를 로컬 임시 로그로 각각 분리한다. `docker image inspect`를 실행해 캐시가 없을 때만 `docker pull supabase/postgres:17.6.1.136`을 별도 단계로 수행한다. pull 정상완료를 확인한 이후에만 `docker run --network none`으로 테스트 컨테이너를 생성한다. `Run-Docker` SQL 복원 명령도 원시 에러가 사용자 화면에 출력되는 것을 피하기 위해 `Start-Process`와 별도 stderr 로그, 오류 종류만 반환하도록 변경했다.
+
+CI [#39134449424](https://github.com/gycha0109-beep/K_beauty/actions/runs/39134449424): 실제 runner의 Docker 이미지 캐시에서 해당 tag를 강제 제거하고 **cold-pull → synthetic schema/roles/data restore → reject wrong-sized ZIP** 모두 SUCCESS. CI [#39134664951](https://github.com/gycha0109-beep/K_beauty/actions/runs/39134664951): `Run-Docker`를 stderr 분리·종료코드 방식으로 수정한 후 **전체 synthetic restore 성공**.
+
+운영자 재실행 방법: feature branch의 `scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1`를 다시 내려받고 기존 ZIP(7,323,679 bytes)은 그대로 둔다. `-Mode Restore` 실행. 정상 cold pull은 `D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_START` 뒤 `..._PASS`를 출력한다. 이미지 다운로드에는 수 분이 걸릴 수 있다. 이미지만 받은 상태를 복원 완료로 표기하지 않는다. **실제 사용자 ZIP에 대한 새 환경의 schema/data restore는 아직 미검증**이다.
+
+실패 시 `D8K13_LOCAL_DOCKER_IMAGE_PULL_<범주>_EXIT_<정수>` 또는 `D8K13_LOCAL_RESTORE_<단계>_<범주>_FAILED_EXIT_<정수>` 등 **비민감 오류 코드만 수집**한다. 네트워크가 끊겼거나 Docker Desktop이 꺼진 경우 다운로드/컨테이너 동작은 실패할 수 있으며, 그 실패 역시 운영 DB와는 무관하다. Release HOLD.
+
