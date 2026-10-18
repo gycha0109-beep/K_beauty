@@ -181,6 +181,25 @@ try {
     Run-Docker ('COPY_' + $name) @('cp',(Join-Path $unpacked $name),($container + ':/tmp/' + $name))
   }
   Run-Docker 'ROLES' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-f','/tmp/roles.sql')
+  # A CLI dump omits Supabase-managed schemas. The official image lacks some
+  # custom *empty* namespaces; functions/GRANTs may reference them.
+  # Create only a fixed allowlist, only if referenced by the extracted schema,
+  # and never if the dump itself has CREATE SCHEMA for the same name.
+  # Changes below affect this --network none disposable container exclusively.
+  $schemaText = [System.IO.File]::ReadAllText((Join-Path $unpacked 'schema.sql'))
+  foreach ($schemaName in @('private','recommendation_shadow')) {
+    $escapedName = [regex]::Escape($schemaName)
+    $declares = [regex]::IsMatch($schemaText, ('(?im)^\s*CREATE\s+SCHEMA\s+(?:IF\s+NOT\s+EXISTS\s+)?"?' + $escapedName + '"?\s*;'))
+    $used = [regex]::IsMatch($schemaText, ('(?i)"?' + $escapedName + '"?\s*\.')) -or
+      [regex]::IsMatch($schemaText, ('(?i)\b(?:ON|IN)\s+SCHEMA\s+"?' + $escapedName + '"?\b'))
+    if ($used -and -not $declares) {
+      Run-Docker ('PREPARE_SCHEMA_' + $schemaName.ToUpperInvariant()) @('exec','-u','postgres',
+        $container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres',
+        '-c',('CREATE SCHEMA IF NOT EXISTS "' + $schemaName + '"'))
+      Write-Output ('D8K13_LOCAL_ISOLATED_NAMESPACE_READY_' + $schemaName.ToUpperInvariant())
+    }
+  }
+  $schemaText = $null
   Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-f','/tmp/schema.sql')
   Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
   $inventory = Get-PublicInventory $container
