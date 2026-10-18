@@ -264,3 +264,10 @@ Watchtower-Track: face-lab-skin
 - Skin S5 [Draft #1314](https://github.com/gycha0109-beep/K_beauty/pull/1314)에 **2026-10-18 신규 날짜별 스냅샷**과 테스트 추가: `sca_security=pass` (정확한 병합·검사 근거), 다른 제품 게이트 **5 HOLD**, 나머지 릴리스 게이트 **5 HOLD**. 따라서 `PRODUCT=HOLD`, `RELEASE=HOLD`. 과거 2026-10-17 `SCA FAIL/RELEASE BLOCKED` 스냅샷은 역사 기록으로 보존.
 - **남은 독립 승인:** S0 현재 코드 감사, S1 독립 Human 정확도, S2 실제 의사결정 안전성, S3 동일 사용자 반복 촬영 신뢰도, S4 Android/Web 실사용 UAT, Skin 개인정보·동의·보존, Auth/RLS/Storage, Skin 기능 통합 CI, Skin 기능 롤백/모니터링, 책임자 제품/출시 승인. S1-D 4건 구조 실험은 사용자의 기존 마감 지시대로 다시 수행하지 않는다.
 - 공통 보안 해제 ≠ Skin 제품 출시 승인. Skin 관련 PR은 Draft/미병합, 실제 기기/개인정보 검증과 Skin 기능 배포는 아직 미실행. 이 변경에서 신규 평가 UI·Provider 호출·사진·DB/운영 쓰기·병합·배포 없음.
+
+### 2026-10-18 S4 native Premium account and duplicate-finalize hardening
+
+- 기존 `main`의 Android/Expo `apps/mobile/app/premium.tsx` 실코드에서 **로그아웃·계정 전환·화면 이탈 후 늦게 끝난 Premium access/생성 요청이 UI 상태 또는 저장 리포트 이동을 덮어쓸 수 있는 비동기 경합**, 그리고 React 리렌더 전에 생성 버튼 연타 시 **중복 POST 가능성**을 확인했다. 서버 RLS 유출/실제 중복 생성이 관측됐다는 주장은 아님.
+- [신규 독립 Draft #1345](https://github.com/gycha0109-beep/K_beauty/pull/1345)는 승인된 보안 패치가 반영된 **최신 main 기반**으로 Premium account+generation gate, synchronous single-flight finalize, Auth subscription + initial-session race guard, 이전 계정 제품 선택/오류/권한 상태 초기화, 같은 계정 token refresh 시 선택값 보존을 구현했다. 오래된 #1313 브랜치와 다른 파일만 변경하여 병합 충돌 가능성을 줄임.
+- 로그인 A→B, 늦은 access 성공/실패, 중복 버튼, 오래된 finalize 완료가 새 계정 화면/lock에 영향 주지 않는 **합성 비동기 부정 테스트**를 기존 Current Main Health에 추가. 실제 계정/Provider/사진/결제/DB/서버 권한/배포 호출 없음. 서버에 이미 전달된 POST의 취소·중복 저장 방지는 보장하지 않으며 서버 측 idempotency는 별도 검증 필요.
+- **S4 완료/제품 승인 아님:** exact-head CI, Android 실기기 2계정 전환/로그아웃, 실제 느린 네트워크와 인증 갱신, 결제·Premium 접근 경계 UAT는 독립적으로 남음. S1-D 4건 구조 실험은 재개하지 않음. SCA 해제 상태는 #1343 증거로 유지하며 다른 Skin 게이트는 HOLD.
