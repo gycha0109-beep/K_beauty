@@ -42,7 +42,7 @@ jobs:
           1	synthetic only
           \.
           SQL
-          pwsh -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory($args[0],$args[1])' "$RUNNER_TEMP/d8k13-local-fixture/sql" "$RUNNER_TEMP/d8k13-local-fixture/synthetic.zip"
+          pwsh -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-local-fixture/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-local-fixture/synthetic.zip"))'
           echo "ZIP_PATH=$RUNNER_TEMP/d8k13-local-fixture/synthetic.zip" >> "$GITHUB_ENV"
           echo "ZIP_BYTES=$(stat -c%s "$RUNNER_TEMP/d8k13-local-fixture/synthetic.zip")" >> "$GITHUB_ENV"
       - name: Inspect three-file synthetic archive
