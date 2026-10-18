@@ -74,6 +74,7 @@ run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Face Lab Skin S4 native saved photo-state projection", node, ["--experimental-strip-types", "scripts/facelab/skin/verify-face-lab-skin-s4-native-photo-evidence.mjs"]);
 run("Face Lab Skin S4 saved report auth/race safety", node, ["--experimental-strip-types", "scripts/facelab/skin/verify-face-lab-skin-s4-saved-report-view-gate.mjs"]);
+run("Face Lab Skin S4 canonical saved Premium projection", node, ["--experimental-strip-types", "scripts/facelab/skin/verify-face-lab-skin-s4-canonical-saved-projection.mjs"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);
 run("Skin decision persistence and reentry", npm, ["run", "verify:skin-decision-persistence-reentry"]);
 run("Canonical 164x12 current Recommendation semantic health", node, ["scripts/verify-current-recommendation-health.mjs"]);
