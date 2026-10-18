@@ -9,7 +9,7 @@ import { execFileSync } from "node:child_process";
 import {
   assertTrustP2DCohort,cohortToTrustedDiscoveryRow,
   assessTrustP2DDiscovery,diagnoseTrustP2DSite,runTrustP2DFiveBrandPilot,
-  summarizeTrustP2D,runTrustP2DCli,
+  summarizeTrustP2D,runTrustP2DCli,assertTrustP2DFourBrandLiveAuthorization,
 } from "./trust-p2d-five-brand-pilot.mjs";
 const cohort=JSON.parse(fs.readFileSync("evidence/trust/p2d-five-brand-cohort-v1.json","utf8"));
 const sized={id:"bd98f785-15c8-4800-af64-d39c3ad873a0",brand:"아토팜",name:"MLE 로션",size_ml:600};
@@ -718,5 +718,105 @@ assert.equal(planMatrix.mode,"PLAN_ONLY_NO_NETWORK");
 assert.equal(planMatrix.summary.officialPagesFetched,0);
 assert.equal(planMatrix.summary.dbWrites,0);
 console.log("TRUST_P2D_OFFLINE_FIVE_BRAND_POLICY_MATRIX_PASS");
+
+// P2-F1: Retired Dr.G remains one of five fixed-denominator products but
+// must NEVER invoke a robots/sitemap/peer/page fetch when 4-brand mode runs.
+matrixCalls.length=0;
+const fourMatrix=await runTrustP2DFiveBrandPilot({
+  execute:true,cohort:v2,fetchers:matrixFetchers,holdRetiredDrG:true,
+});
+assert.equal(fourMatrix.mode,"FOUR_OFFICIAL_BRANDS_DRG_HOLD_NO_WRITES");
+assert.equal(fourMatrix.summary.selectedProducts,5);
+assert.equal(fourMatrix.summary.processedProducts,5);
+assert.equal(fourMatrix.summary.eligibleProducts,4);
+assert.equal(fourMatrix.summary.attemptedProducts,4);
+assert.equal(fourMatrix.summary.retiredOriginHoldProducts,1);
+assert.equal(fourMatrix.summary.denominatorUnchanged,5);
+assert.equal(fourMatrix.items.length,5);
+assert.deepEqual(fourMatrix.items.map(x=>x.brand),v2.targets.map(x=>x.brand));
+assert.equal(fourMatrix.items.find(x=>x.brand==="닥터지").assessment.state,
+  "RETIRED_ORIGIN_HOLD");
+assert.equal(matrixCalls.some(call=>call.brand==="닥터지"),false);
+assert.equal(matrixCalls.filter(call=>call.kind==="robots").length,4);
+assert.equal(fourMatrix.summary.officialPagesFetched,2); // mocked, not real
+assert.equal(fourMatrix.summary.confirmedExactSkuCount,0);
+assert.equal(fourMatrix.summary.dbWrites,0);
+assert.equal(fourMatrix.summary.aiApiCalls,0);
+assert.equal(JSON.stringify(fourMatrix).includes("<title>"),false);
+const fourFailIfFetched=async()=>{throw Error("FOUR_PLAN_MUST_NOT_FETCH");};
+const fourPlan=await runTrustP2DFiveBrandPilot({
+  execute:false,cohort:v2,holdRetiredDrG:true,
+  fetchers:{fetchRobots:fourFailIfFetched,
+    fetchSitemap:fourFailIfFetched,fetchPage:fourFailIfFetched},
+});
+assert.equal(fourPlan.mode,"FOUR_PLAN_ONLY_DRG_HOLD_NO_NETWORK");
+assert.equal(fourPlan.summary.officialPagesFetched,0);
+assert.equal(fourPlan.summary.attemptedProducts,0);
+assert.equal(fourPlan.items.filter(x=>x.assessment.state==="PLAN_ONLY").length,4);
+assert.equal(fourPlan.items.filter(x=>x.assessment.state==="RETIRED_ORIGIN_HOLD").length,1);
+assert.equal((await runTrustP2DCli(["--plan-four"])).mode,
+  "FOUR_PLAN_ONLY_DRG_HOLD_NO_NETWORK");
+await assert.rejects(()=>runTrustP2DFiveBrandPilot({execute:false,
+  cohort:v2,holdRetiredDrG:"false"}),/P2D_FOUR_HOLD_MODE_INVALID/);
+
+const fourPolicy=JSON.parse(fs.readFileSync(
+  "evidence/trust/p2d-four-brand-live-authorizations-v1.json","utf8"));
+assert.equal(fourPolicy.decision,"HOLD");
+assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(fourPolicy,v2),
+  /P2D_FOUR_SITE_POLICY_HOLD/);
+// A real 4-brand execution needs a reviewed license/pacing record for
+// every original origin AND a time-limited operator authorization.
+const approvedPolicy=structuredClone(fourPolicy);
+approvedPolicy.decision="APPROVED";
+for(const site of approvedPolicy.sites){
+  site.termsAndLicensingApproved=true;
+  site.robotsFirstPreflightAuthorized=true;
+  site.pacingReviewed=true;
+  site.reviewer="offline-test-reviewer";
+  site.reviewEvidence="offline-fixture-only";
+}
+approvedPolicy.operatorApproval={
+  approved:true,approver:"offline-test-operator",
+  approvalReference:"fixture-not-real-approval",
+  executionWindowStartUtc:"2026-10-19T00:00:00Z",
+  executionWindowEndUtc:"2026-10-19T01:00:00Z",
+};
+const fixtureNow=Date.parse("2026-10-19T00:30:00Z");
+assert.equal(assertTrustP2DFourBrandLiveAuthorization(
+  approvedPolicy,v2,{now:fixtureNow}),true);
+assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
+  approvedPolicy,v2,{now:Date.parse("2026-10-19T03:00:00Z")}),
+  /P2D_FOUR_EXECUTION_WINDOW_CLOSED/);
+const forgedOrigin=structuredClone(approvedPolicy);
+forgedOrigin.sites[0].origin="https://other-brand.example";
+assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
+  forgedOrigin,v2,{now:fixtureNow}),/P2D_FOUR_SITE_POLICY_HOLD/);
+const noTerms=structuredClone(approvedPolicy);
+noTerms.sites[1].termsAndLicensingApproved=false;
+assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
+  noTerms,v2,{now:fixtureNow}),/P2D_FOUR_SITE_POLICY_HOLD/);
+const repeatedSite=structuredClone(approvedPolicy);
+repeatedSite.sites[1]=repeatedSite.sites[0];
+assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
+  repeatedSite,v2,{now:fixtureNow}),/P2D_FOUR_SITE_POLICY_HOLD/);
+const missingApproval=structuredClone(approvedPolicy);
+missingApproval.operatorApproval.approved=false;
+assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
+  missingApproval,v2,{now:fixtureNow}),/P2D_FOUR_OPERATOR_APPROVAL_REQUIRED/);
+const envFour=process.env.TRUST_P2D_FOUR_BRAND_LIVE_ENABLED;
+try{
+  delete process.env.TRUST_P2D_FOUR_BRAND_LIVE_ENABLED;
+  await assert.rejects(()=>runTrustP2DCli(["--execute-four"]),
+    /P2D_FOUR_LIVE_DISABLED/);
+  process.env.TRUST_P2D_FOUR_BRAND_LIVE_ENABLED="true";
+  await assert.rejects(()=>runTrustP2DCli(["--execute-four"]),
+    /P2D_FOUR_SITE_POLICY_HOLD/);
+}finally{
+  if(envFour===undefined)delete process.env.TRUST_P2D_FOUR_BRAND_LIVE_ENABLED;
+  else process.env.TRUST_P2D_FOUR_BRAND_LIVE_ENABLED=envFour;
+}
+await assert.rejects(()=>runTrustP2DCli(["--execute","--execute-four"]),
+  /P2D_UNSUPPORTED_CLI_FLAG/);
+console.log("TRUST_P2D_FOUR_BRAND_HOLD_AND_AUTHORIZATION_PASS");
 
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");

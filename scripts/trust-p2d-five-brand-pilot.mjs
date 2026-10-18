@@ -17,6 +17,8 @@ const GOOD=new Set(["STRUCTURED_NAME_CANDIDATE","TITLE_NAME_CANDIDATE","SCOPED_H
 const WEAK=new Set(["BODY_NAME_MENTION_ONLY"]);
 const KINDS=new Set(["official_product_page","brand_official_product_page","official_brand_product_page","official_brand_owner_product_page"]);
 const COHORT_FILE="evidence/trust/p2d-five-brand-cohort-v2.json";
+const FOUR_AUTH_FILE="evidence/trust/p2d-four-brand-live-authorizations-v1.json";
+const RETIRED_ORIGIN_BRAND="닥터지";
 
 export function assertTrustP2DCohort(cohort){
   if(!["trust-p2d-five-brand-live-cohort-v1","trust-p2d-five-brand-live-cohort-v2"].includes(cohort?.contract)||
@@ -41,6 +43,50 @@ export function assertTrustP2DCohort(cohort){
   }
   return true;
 }
+/**
+ * Operator and per-origin authorization are independent from robots.txt.
+ * Even an APPROVED manifest cannot override a live robots/redirect/SSRF HOLD.
+ * A template with HOLD or a changed cohort must fail before any HTTP fetch.
+ */
+export function assertTrustP2DFourBrandLiveAuthorization(approval,cohort,{now=Date.now()}={}){
+  assertTrustP2DCohort(cohort);
+  const targets=cohort.targets.filter(x=>x.brand!==RETIRED_ORIGIN_BRAND);
+  if(targets.length!==4||cohort.targets.filter(x=>x.brand===RETIRED_ORIGIN_BRAND).length!==1||
+    approval?.contract!=="trust-p2d-four-brand-live-authorizations-v1"||
+    approval.decision!=="APPROVED"||approval.denominator!==5||
+    approval.eligibleBrands!==4||approval.excludedBrand!==RETIRED_ORIGIN_BRAND||
+    approval.writesAllowed!==0||
+    !Array.isArray(approval.sites)||approval.sites.length!==4)
+    throw Error("P2D_FOUR_SITE_POLICY_HOLD");
+  const matched=new Set();
+  for(const record of approval.sites){
+    const item=targets.find(t=>t.brand===record?.brand);
+    if(!item||matched.has(record.brand)||
+      record.origin!==new URL(item.officialPeerUrl).origin||
+      record.productId!==item.productId||
+      record.termsAndLicensingApproved!==true||
+      record.robotsFirstPreflightAuthorized!==true||
+      record.pacingReviewed!==true||
+      typeof record.reviewer!=="string"||!record.reviewer.trim()||
+      typeof record.reviewEvidence!=="string"||!record.reviewEvidence.trim())
+      throw Error("P2D_FOUR_SITE_POLICY_HOLD");
+    matched.add(record.brand);
+  }
+  const operator=approval.operatorApproval;
+  if(operator?.approved!==true||
+    typeof operator.approver!=="string"||!operator.approver.trim()||
+    typeof operator.approvalReference!=="string"||!operator.approvalReference.trim()||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(operator.executionWindowStartUtc??"")||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(operator.executionWindowEndUtc??""))
+    throw Error("P2D_FOUR_OPERATOR_APPROVAL_REQUIRED");
+  const start=Date.parse(operator.executionWindowStartUtc);
+  const end=Date.parse(operator.executionWindowEndUtc);
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||
+    end-start>6*60*60*1000||!Number.isFinite(now)||now<start||now>end)
+    throw Error("P2D_FOUR_EXECUTION_WINDOW_CLOSED");
+  return true;
+}
+
 export function cohortToTrustedDiscoveryRow(item){
   const origin=new URL(item.officialPeerUrl).origin;
   return {
@@ -168,8 +214,12 @@ export function summarizeTrustP2D(rows){
 export async function runTrustP2DFiveBrandPilot({
  execute=false,fetchers=trustP2LiveFetchers(),
  cohort=JSON.parse(fs.readFileSync(COHORT_FILE,"utf8")),
+ holdRetiredDrG=false,
 }={}){
   assertTrustP2DCohort(cohort);
+  if(typeof holdRetiredDrG!=="boolean"||
+    (holdRetiredDrG&&cohort.targets.filter(t=>t.brand===RETIRED_ORIGIN_BRAND).length!==1))
+    throw Error("P2D_FOUR_HOLD_MODE_INVALID");
   const rows=[];
   for(const target of cohort.targets){
     const row=cohortToTrustedDiscoveryRow(target);
@@ -178,7 +228,12 @@ export async function runTrustP2DFiveBrandPilot({
       name_en:target.nameEn,normalized_name:target.normalizedName,
     };
     let assessment;
-    if(!execute){
+    if(holdRetiredDrG&&target.brand===RETIRED_ORIGIN_BRAND){
+      // Retained in the five-product denominator, but no robots/site/page fetch.
+      assessment={state:"RETIRED_ORIGIN_HOLD",reason:"OFFICIAL_STOREFRONT_CLOSED_REVIEW_REQUIRED",
+        pagesFetched:0,scopedCandidates:0,bodyOnlyMentions:0,siteStatus:[],
+        verifiedSourceBindings:0};
+    }else if(!execute){
       assessment={state:"PLAN_ONLY",pagesFetched:0,scopedCandidates:0,
         bodyOnlyMentions:0,siteStatus:[],verifiedSourceBindings:0};
     }else {
@@ -222,20 +277,41 @@ export async function runTrustP2DFiveBrandPilot({
   }
   return {
     contract:P2D_CONTRACT,observedAt:new Date().toISOString(),
-    mode:execute?"FIVE_OFFICIAL_BRANDS_NO_WRITES":"PLAN_ONLY_NO_NETWORK",
+    mode:holdRetiredDrG
+      ?execute?"FOUR_OFFICIAL_BRANDS_DRG_HOLD_NO_WRITES":"FOUR_PLAN_ONLY_DRG_HOLD_NO_NETWORK"
+      :execute?"FIVE_OFFICIAL_BRANDS_NO_WRITES":"PLAN_ONLY_NO_NETWORK",
     officialCohortSource:cohort.baselineDate,
-    summary:summarizeTrustP2D(rows),items:rows,
+    summary:holdRetiredDrG?{
+      ...summarizeTrustP2D(rows),eligibleProducts:4,
+      attemptedProducts:execute?4:0,retiredOriginHoldProducts:1,
+      heldBrand:RETIRED_ORIGIN_BRAND,denominatorUnchanged:5,
+    }:summarizeTrustP2D(rows),
+    items:rows,
   };
 }
 export async function runTrustP2DCli(args=process.argv.slice(2)){
-  if(args.some(a=>a!=="--execute"))throw Error("P2D_UNSUPPORTED_CLI_FLAG");
-  const execute=args.includes("--execute");
-  if(execute&&process.env.TRUST_P2D_FIVE_BRAND_LIVE_ENABLED!=="true")
+  const recognized=new Set(["--execute","--plan-four","--execute-four"]);
+  if(args.some(a=>!recognized.has(a))||new Set(args).size!==args.length||
+    args.length>1)throw Error("P2D_UNSUPPORTED_CLI_FLAG");
+  const executeFive=args.includes("--execute");
+  const executeFour=args.includes("--execute-four");
+  const fourMode=executeFour||args.includes("--plan-four");
+  const execute=executeFive||executeFour;
+  if(executeFive&&process.env.TRUST_P2D_FIVE_BRAND_LIVE_ENABLED!=="true")
     throw Error("P2D_LIVE_DISABLED");
-  const result=await runTrustP2DFiveBrandPilot({execute});
+  if(executeFour){
+    if(process.env.TRUST_P2D_FOUR_BRAND_LIVE_ENABLED!=="true")
+      throw Error("P2D_FOUR_LIVE_DISABLED");
+    // Mandatory approval is loaded and verified BEFORE constructing fetchers.
+    const approval=JSON.parse(fs.readFileSync(FOUR_AUTH_FILE,"utf8"));
+    const cohort=JSON.parse(fs.readFileSync(COHORT_FILE,"utf8"));
+    assertTrustP2DFourBrandLiveAuthorization(approval,cohort);
+  }
+  const result=await runTrustP2DFiveBrandPilot({execute,holdRetiredDrG:fourMode});
   if(process.env.GITHUB_STEP_SUMMARY){
-    const lines=["### TRUST P2-D five-brand independent official-source measurement",
-      "- Products: "+result.summary.processedProducts+" / 5",
+    const lines=["### TRUST P2-D five-product baseline / bounded official-source measurement",
+      "- Products in frozen denominator: "+result.summary.processedProducts+" / 5",
+      "- Actual eligible products: "+(result.summary.eligibleProducts??5),
       "- Identity candidate products (not verified SKUs): "+result.summary.identityCandidateProducts,
       "- Official pages fetched: "+result.summary.officialPagesFetched,
       "- Outcome counts: "+JSON.stringify(result.summary.statusCounts),
@@ -243,7 +319,9 @@ export async function runTrustP2DCli(args=process.argv.slice(2)){
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\n")+"\n");
   }
   if(execute){
-    const filename="artifacts/trust-p2d-five-brand-result.json";
+    const filename=executeFour
+      ?"artifacts/trust-p2d-four-brand-result.json"
+      :"artifacts/trust-p2d-five-brand-result.json";
     fs.mkdirSync(path.dirname(filename),{recursive:true});
     fs.writeFileSync(filename,JSON.stringify(result,null,2)+"\n");
   }

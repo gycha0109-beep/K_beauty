@@ -35,6 +35,7 @@ on:
       - "evidence/trust/p3-official-locator-revalidation-cohort-v1.json"
       - "evidence/trust/p3-official-three-brand-live-cohort-v1.json"
       - "evidence/trust/p2d-five-brand-cohort-v1.json"
+      - "evidence/trust/p2d-four-brand-live-authorizations-v1.json"
       - "scripts/trust-p2-official-discovery.mjs"
       - "scripts/verify-trust-p2-official-discovery-v1.mjs"
       - "scripts/trust-p2c-robots-smoke.mjs"
@@ -128,6 +129,7 @@ on:
       - "evidence/trust/p3-official-locator-revalidation-cohort-v1.json"
       - "evidence/trust/p3-official-three-brand-live-cohort-v1.json"
       - "evidence/trust/p2d-five-brand-cohort-v1.json"
+      - "evidence/trust/p2d-four-brand-live-authorizations-v1.json"
       - ".github/workflows/catalog-official-five-brand-pilot.yml"
       - "scripts/trust-p2-official-discovery.mjs"
       - "scripts/verify-trust-p2-official-discovery-v1.mjs"
@@ -308,6 +310,35 @@ jobs:
         with:
           name: trust-p2d-five-brand-results
           path: artifacts/trust-p2d-five-brand-result.json
+          if-no-files-found: error
+          retention-days: 30
+
+  p2d_four_brand_live:
+    name: P2D guarded four-brand live trial (DrG origin HOLD)
+    # Explicit independent one-time marker; never overlaps P2D-LIVE-TRIAL.
+    # The CLI also requires all four policy reviews AND a current approval window.
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'P2D-FOUR-LIVE-TRIAL')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact merged main
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Run four-origin guarded read-only trial with DrG never fetched
+        env:
+          TRUST_P2D_FOUR_BRAND_LIVE_ENABLED: "true"
+        run: node scripts/trust-p2d-five-brand-pilot.mjs --execute-four
+      - name: Preserve bounded metadata-only four-origin result
+        uses: actions/upload-artifact@v6
+        with:
+          name: trust-p2d-four-brand-results
+          path: artifacts/trust-p2d-four-brand-result.json
           if-no-files-found: error
           retention-days: 30
 
