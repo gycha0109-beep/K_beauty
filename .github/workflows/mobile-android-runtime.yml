@@ -126,7 +126,9 @@ jobs:
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
 
       - name: Install monorepo dependencies
-        run: npm ci
+        run: node scripts/security/install-product-dependencies.mjs
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify shared Android build contracts
         shell: bash
@@ -182,7 +184,9 @@ jobs:
           packages: ""
 
       - name: Install monorepo dependencies
-        run: npm ci
+        run: node scripts/security/install-product-dependencies.mjs
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Restore canonical debug APK
         uses: actions/download-artifact@v7
@@ -252,7 +256,9 @@ jobs:
           packages: ""
 
       - name: Install monorepo dependencies
-        run: npm ci
+        run: node scripts/security/install-product-dependencies.mjs
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify MOBILE-20A store capture contract
         shell: bash
@@ -336,7 +342,9 @@ jobs:
           packages: ""
 
       - name: Install monorepo dependencies
-        run: npm ci
+        run: node scripts/security/install-product-dependencies.mjs
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify MOBILE-20B source contract
         shell: bash

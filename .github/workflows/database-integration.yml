@@ -171,7 +171,9 @@ jobs:
           cache: npm
 
       - name: Install verifier dependencies without lifecycle scripts
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: node scripts/security/install-product-dependencies.mjs --ignore-scripts --no-audit --no-fund
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify database migration authority and non-production safety
         run: node scripts/verify-database-integration-authority.mjs
@@ -346,7 +348,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -c "create database trust_p2b_discovery"
           PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f tests/fixtures/trust-p2b-discovery/00_minimal_pg17.sql
           PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012110000_trust_p2b_official_discovery_observations_v1.sql
-          PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012190000_trust_p2c_visible_identity_dispositions_v1.sql
+          PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012181544_trust_p2c_visible_identity_dispositions_v1.sql
           PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f tests/fixtures/trust-p2b-discovery/20_runtime_rollback_pg17.sql | tee "${RUNNER_TEMP}/trust-p2b.log"
           grep -Fq "TRUST_P2B_OBSERVATIONS_PG17_ROLLBACK_PASS" "${RUNNER_TEMP}/trust-p2b.log"
           PGDATABASE=trust_p2b_discovery psql -v ON_ERROR_STOP=1 -f tests/fixtures/trust-p2b-discovery/30_visible_identity_pg17.sql | tee "${RUNNER_TEMP}/trust-p2c.log"
@@ -368,7 +370,7 @@ jobs:
           set -euo pipefail
           psql -v ON_ERROR_STOP=1 -c "create database taxonomy_r16i_d8d"
           PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f tests/fixtures/r16i-d8d/00_minimal_pg17.sql
-          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012190000_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql
+          PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261012181320_taxonomy_ai_r16i_d8d_transactional_apply_v1.sql
           PGDATABASE=taxonomy_r16i_d8d psql -v ON_ERROR_STOP=1 -f tests/fixtures/r16i-d8d/20_transactional_pg17.sql | tee "${RUNNER_TEMP}/r16i-d8d-pg17.log"
           grep -Fq "R16I_D8D_PG17_APPLY_FAIL_ROLLBACK_PASS" "${RUNNER_TEMP}/r16i-d8d-pg17.log"
           test "$(PGDATABASE=taxonomy_r16i_d8d psql -Atqc "select count(*) from public.admin_r16i_correction_application_events_v1")" = "2"

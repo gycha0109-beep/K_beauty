@@ -95,7 +95,9 @@ jobs:
 
       - name: Install dependencies for manual fallback
         if: github.event_name == 'workflow_dispatch'
-        run: npm ci --no-audit --no-fund
+        run: node scripts/security/install-product-dependencies.mjs --no-audit --no-fund
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify DATA-AI1 intent boundary manually
         if: github.event_name == 'workflow_dispatch'

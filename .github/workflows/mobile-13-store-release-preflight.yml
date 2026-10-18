@@ -62,7 +62,9 @@ jobs:
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
 
       - name: Install monorepo dependencies
-        run: npm ci
+        run: node scripts/security/install-product-dependencies.mjs
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify mobile regression boundary
         shell: bash
@@ -214,7 +216,9 @@ jobs:
           cache: npm
 
       - name: Install monorepo dependencies
-        run: npm ci
+        run: node scripts/security/install-product-dependencies.mjs
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Apply bounded Expo Modules JSI compatibility shim
         run: node scripts/apply-expo-modules-jsi-xcode26-compat.mjs

@@ -55,7 +55,9 @@ jobs:
           cache: npm
 
       - name: Install monorepo dependencies
-        run: npm ci
+        run: node scripts/security/install-product-dependencies.mjs
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Sync MOBILE-20C generated authority on candidate branch
         id: authority
