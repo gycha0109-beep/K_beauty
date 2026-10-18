@@ -136,7 +136,7 @@ try {
   } | ConvertTo-Json -Compress -Depth 5)
 }
 catch {
-  Write-Error ('D8K13_LOCAL_BACKUP_DRILL_FAILED: ' + $_.Exception.Message + '. A bare PostgreSQL image may lack Supabase-managed roles/schemas/extensions; treat any failed restore as INCOMPLETE, not as a corrupted backup.')
+  [Console]::Error.WriteLine(('D8K13_LOCAL_BACKUP_DRILL_FAILED: ' + $_.Exception.Message + '. A bare PostgreSQL image may lack Supabase-managed roles/schemas/extensions; treat any failed restore as INCOMPLETE, not as a corrupted backup.'))
   exit 3
 }
 finally {
