@@ -41,16 +41,14 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
     if (Test-Path -LiteralPath $stderrLog) {
       $details = Get-Content -LiteralPath $stderrLog -Raw -ErrorAction SilentlyContinue
       if ($details -match 'role .{0,180} does not exist') { $reason = 'MISSING_ROLE' }
-      elseif ($details -match 'schema .{0,180} does not exist') {
+      elseif ($details -match '(?i)schema .{0,180} does not exist') {
         $reason = 'MISSING_SCHEMA'
-        # Only allow preapproved non-sensitive namespace names in error output.
-        if ($details -match '(?i)schema ["'']?([a-z_]+)["'']? does not exist') {
-          $reported = $Matches[1].ToLowerInvariant()
-          if (@('private','recommendation_shadow','supabase_migrations','auth',
-              'storage','vault','extensions','realtime','graphql','graphql_public',
-              'pgbouncer') -contains $reported) {
-            $reason = 'MISSING_SCHEMA_' + $reported.ToUpperInvariant()
-          }
+        # A schema identifier is not an SQL body or row value. Emit ONLY a
+        # bounded PostgreSQL identifier from the ERROR line, never the line text.
+        if ($details -match '(?im)^psql:/tmp/(?:roles|schema|data)\.sql:([0-9]{1,7}):\s*ERROR:\s*schema\s+["'']?([a-z_][a-z0-9_]{0,62})["'']?\s+does\s+not\s+exist') {
+          $reason = 'MISSING_SCHEMA_' + $Matches[2].ToUpperInvariant() + '_LINE_' + $Matches[1]
+        } elseif ($details -match '(?im)^ERROR:\s*schema\s+["'']?([a-z_][a-z0-9_]{0,62})["'']?\s+does\s+not\s+exist') {
+          $reason = 'MISSING_SCHEMA_' + $Matches[1].ToUpperInvariant()
         }
       }
       elseif ($details -match 'extension .{0,180} (is not available|does not exist)') { $reason = 'MISSING_EXTENSION' }
@@ -202,9 +200,21 @@ try {
     Start-Sleep -Seconds 2
   }
   Assert-Drill $ready 'D8K13_LOCAL_RESTORE_SUPABASE_BOOTSTRAP_NOT_READY'
+  $schemaText = [System.IO.File]::ReadAllText((Join-Path $unpacked 'schema.sql'))
+  # Supabase CLI may OMIT CREATE SCHEMA public; do not drop default public
+  # unless the source dump explicitly recreates it.
+  $publicCreation = [regex]::IsMatch($schemaText,
+    '(?im)^\s*CREATE\s+SCHEMA\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:"public"|public)\s*;')
+  $publicCreationConditional = [regex]::IsMatch($schemaText,
+    '(?im)^\s*CREATE\s+SCHEMA\s+IF\s+NOT\s+EXISTS\s+(?:"public"|public)\s*;')
   $empty = & docker exec -u postgres $container psql -X -A -t -d postgres -v ON_ERROR_STOP=1 -c "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p','v','m','f','S')"
   Assert-Drill ($LASTEXITCODE -eq 0 -and ("$empty".Trim() -eq '0')) 'D8K13_LOCAL_RESTORE_DESTINATION_NOT_EMPTY'
-  Run-Docker 'DROP_EMPTY_PUBLIC' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c','DROP SCHEMA IF EXISTS public CASCADE')
+  if ($publicCreation -and -not $publicCreationConditional) {
+    Run-Docker 'DROP_EMPTY_PUBLIC' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c','DROP SCHEMA IF EXISTS public CASCADE')
+    Write-Output 'D8K13_LOCAL_PUBLIC_SCHEMA_RECREATED_FROM_DUMP'
+  } else {
+    Write-Output 'D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP'
+  }
   foreach ($name in $required) {
     Run-Docker ('COPY_' + $name) @('cp',(Join-Path $unpacked $name),($container + ':/tmp/' + $name))
   }
@@ -214,7 +224,6 @@ try {
   # Create only a fixed allowlist, only if referenced by the extracted schema,
   # and never if the dump itself has CREATE SCHEMA for the same name.
   # Changes below affect this --network none disposable container exclusively.
-  $schemaText = [System.IO.File]::ReadAllText((Join-Path $unpacked 'schema.sql'))
   foreach ($schemaName in @('private','recommendation_shadow')) {
     $escapedName = [regex]::Escape($schemaName)
     $declares = [regex]::IsMatch($schemaText, ('(?im)^\s*CREATE\s+SCHEMA\s+(?:IF\s+NOT\s+EXISTS\s+)?"?' + $escapedName + '"?\s*;'))
