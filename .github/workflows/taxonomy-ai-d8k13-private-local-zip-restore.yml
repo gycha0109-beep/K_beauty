@@ -1,0 +1,71 @@
+name: "[WT:taxonomy-ai] D8K13 Private Local ZIP Restore Contract"
+on:
+  push:
+    branches:
+      - feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
+    paths:
+      - scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1
+      - .github/workflows/taxonomy-ai-d8k13-private-local-zip-restore.yml
+permissions:
+  contents: read
+concurrency:
+  group: d8k13-private-local-zip-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  synthetic-only:
+    runs-on: ubuntu-24.04
+    name: "Synthetic ZIP: inspect / isolated PG17 restore / reject bad archive"
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Generate non-sensitive synthetic Supabase-shaped ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/d8k13-local-fixture/sql"
+          cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql" <<'SQL'
+          -- Synthetic, not copied from production.
+          CREATE ROLE d8k13_local_fixture_role NOLOGIN;
+          SQL
+          cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/schema.sql" <<'SQL'
+          -- Synthetic, not copied from production.
+          CREATE SCHEMA public;
+          CREATE TABLE public.products(id integer PRIMARY KEY, name text NOT NULL);
+          CREATE VIEW public.product_names AS SELECT name FROM public.products;
+          ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+          SQL
+          cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/data.sql" <<'SQL'
+          -- Synthetic, not copied from production.
+          COPY public.products (id, name) FROM stdin;
+          1	synthetic only
+          \.
+          SQL
+          pwsh -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory($args[0],$args[1])' "$RUNNER_TEMP/d8k13-local-fixture/sql" "$RUNNER_TEMP/d8k13-local-fixture/synthetic.zip"
+          echo "ZIP_PATH=$RUNNER_TEMP/d8k13-local-fixture/synthetic.zip" >> "$GITHUB_ENV"
+          echo "ZIP_BYTES=$(stat -c%s "$RUNNER_TEMP/d8k13-local-fixture/synthetic.zip")" >> "$GITHUB_ENV"
+      - name: Inspect three-file synthetic archive
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = & ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes ([long]$env:ZIP_BYTES) -Mode Inspect
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_INSPECTION_FAILED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ZIP_INSPECTION_PASS')) { throw 'D8K13_SYNTHETIC_INSPECTION_MARKER_MISSING' }
+          Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_INSPECTION_PASS'
+      - name: Restore synthetic backup in no-network disposable PostgreSQL 17
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = & ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes ([long]$env:ZIP_BYTES) -Mode Restore
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_RESTORE_FAILED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_SYNTHETIC_RESTORE_MARKER_MISSING' }
+          Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_PG17_RESTORE_PASS_HOLD'
+      - name: Reject wrong-size archive, no backups in CI artifacts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $wrong = [long]$env:ZIP_BYTES + 1
+          $output = & ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes $wrong -Mode Inspect 2>&1
+          if ($LASTEXITCODE -ne 3) { throw 'D8K13_BAD_SIZE_MUST_EXIT_3' }
+          Write-Host 'D8K13_LOCAL_ZIP_FAIL_CLOSED_WRONG_SIZE_PASS'
