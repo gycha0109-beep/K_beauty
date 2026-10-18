@@ -722,14 +722,19 @@ console.log("TRUST_P2D_OFFLINE_FIVE_BRAND_POLICY_MATRIX_PASS");
 // P2-F1: Retired Dr.G remains one of five fixed-denominator products but
 // must NEVER invoke a robots/sitemap/peer/page fetch when 4-brand mode runs.
 matrixCalls.length=0;
+const allFourApprovedBrands=new Set(v2.targets
+  .filter(t=>t.brand!=="닥터지").map(t=>t.brand));
 const fourMatrix=await runTrustP2DFiveBrandPilot({
   execute:true,cohort:v2,fetchers:matrixFetchers,holdRetiredDrG:true,
+  approvedBrands:allFourApprovedBrands,
 });
 assert.equal(fourMatrix.mode,"FOUR_OFFICIAL_BRANDS_DRG_HOLD_NO_WRITES");
 assert.equal(fourMatrix.summary.selectedProducts,5);
 assert.equal(fourMatrix.summary.processedProducts,5);
 assert.equal(fourMatrix.summary.eligibleProducts,4);
 assert.equal(fourMatrix.summary.attemptedProducts,4);
+assert.equal(fourMatrix.summary.approvedOriginProducts,4);
+assert.equal(fourMatrix.summary.sitePolicyHoldProducts,0);
 assert.equal(fourMatrix.summary.retiredOriginHoldProducts,1);
 assert.equal(fourMatrix.summary.denominatorUnchanged,5);
 assert.equal(fourMatrix.items.length,5);
@@ -782,8 +787,8 @@ approvedPolicy.operatorApproval={
   executionWindowEndUtc:"2026-10-19T01:00:00Z",
 };
 const fixtureNow=Date.parse("2026-10-19T00:30:00Z");
-assert.equal(assertTrustP2DFourBrandLiveAuthorization(
-  approvedPolicy,v2,{now:fixtureNow}),true);
+assert.deepEqual([...assertTrustP2DFourBrandLiveAuthorization(
+  approvedPolicy,v2,{now:fixtureNow})],v2.targets.slice(1).map(t=>t.brand));
 assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
   approvedPolicy,v2,{now:Date.parse("2026-10-19T03:00:00Z")}),
   /P2D_FOUR_EXECUTION_WINDOW_CLOSED/);
@@ -793,8 +798,49 @@ assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
   forgedOrigin,v2,{now:fixtureNow}),/P2D_FOUR_SITE_POLICY_HOLD/);
 const noTerms=structuredClone(approvedPolicy);
 noTerms.sites[1].termsAndLicensingApproved=false;
+const partialApproved=assertTrustP2DFourBrandLiveAuthorization(
+  noTerms,v2,{now:fixtureNow});
+assert.equal(partialApproved.size,3);
+assert.equal(partialApproved.has("아토팜"),false);
+matrixCalls.length=0;
+const partialRun=await runTrustP2DFiveBrandPilot({
+  execute:true,cohort:v2,fetchers:matrixFetchers,
+  holdRetiredDrG:true,approvedBrands:partialApproved,
+});
+assert.equal(partialRun.summary.selectedProducts,5);
+assert.equal(partialRun.summary.eligibleProducts,4);
+assert.equal(partialRun.summary.attemptedProducts,3);
+assert.equal(partialRun.summary.sitePolicyHoldProducts,1);
+assert.equal(partialRun.summary.retiredOriginHoldProducts,1);
+assert.equal(partialRun.items.find(x=>x.brand==="아토팜").assessment.state,
+  "SITE_POLICY_HOLD");
+assert.equal(matrixCalls.filter(x=>x.kind==="robots").length,3);
+assert.equal(matrixCalls.some(x=>["아토팜","닥터지"].includes(x.brand)),false);
+assert.equal(partialRun.summary.officialPagesFetched,1); // Torriden synthetic
+assert.equal(partialRun.summary.dbWrites,0);
+assert.equal(partialRun.summary.confirmedExactSkuCount,0);
+const noSiteApproved=structuredClone(approvedPolicy);
+for(const site of noSiteApproved.sites){
+  site.termsAndLicensingApproved=false;
+  site.robotsFirstPreflightAuthorized=false;
+  site.pacingReviewed=false;
+}
 assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
-  noTerms,v2,{now:fixtureNow}),/P2D_FOUR_SITE_POLICY_HOLD/);
+  noSiteApproved,v2,{now:fixtureNow}),/P2D_FOUR_SITE_POLICY_HOLD/);
+const missingEvidence=structuredClone(approvedPolicy);
+missingEvidence.sites[0].reviewEvidence=null;
+assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
+  missingEvidence,v2,{now:fixtureNow}),/P2D_FOUR_SITE_POLICY_HOLD/);
+matrixCalls.length=0;
+await assert.rejects(()=>runTrustP2DFiveBrandPilot({
+  execute:true,cohort:v2,fetchers:matrixFetchers,holdRetiredDrG:true,
+}),/P2D_FOUR_APPROVED_ORIGINS_REQUIRED/);
+assert.equal(matrixCalls.length,0);
+await assert.rejects(()=>runTrustP2DFiveBrandPilot({
+  execute:true,cohort:v2,fetchers:matrixFetchers,holdRetiredDrG:true,
+  approvedBrands:new Set(["닥터지"]),
+}),/P2D_FOUR_APPROVED_ORIGINS_REQUIRED/);
+assert.equal(matrixCalls.length,0);
 const repeatedSite=structuredClone(approvedPolicy);
 repeatedSite.sites[1]=repeatedSite.sites[0];
 assert.throws(()=>assertTrustP2DFourBrandLiveAuthorization(
