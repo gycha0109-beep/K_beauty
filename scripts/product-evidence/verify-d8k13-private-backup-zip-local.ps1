@@ -192,7 +192,16 @@ try {
       $readyText = Get-Content -LiteralPath (Join-Path $unpacked 'docker-lifecycle-SUPABASE_BOOTSTRAP_READY-out.log') -Raw -ErrorAction SilentlyContinue
       if ($readyText) { $signal = $readyText.Trim() }
     }
-    if ($signal -match '^\d{10}
+    if ($signal -match '^[0-9]{10}' -and $signal -eq $previousPostmaster) {
+      $stableProbes++
+    } else {
+      $stableProbes = 0
+    }
+    $previousPostmaster = $signal
+    if ($stableProbes -ge 6) { $ready = $true; break }
+    Start-Sleep -Seconds 2
+  }
+  Assert-Drill $ready 'D8K13_LOCAL_RESTORE_SUPABASE_BOOTSTRAP_NOT_READY'
   $empty = & docker exec -u postgres $container psql -X -A -t -d postgres -v ON_ERROR_STOP=1 -c "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p','v','m','f','S')"
   Assert-Drill ($LASTEXITCODE -eq 0 -and ("$empty".Trim() -eq '0')) 'D8K13_LOCAL_RESTORE_DESTINATION_NOT_EMPTY'
   Run-Docker 'DROP_EMPTY_PUBLIC' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c','DROP SCHEMA IF EXISTS public CASCADE')
