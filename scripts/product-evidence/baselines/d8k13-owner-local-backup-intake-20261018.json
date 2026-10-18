@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_LOCAL_ZIP_INSPECT_PASS_REAL_SCHEMA_RESTORE_MISSING_SCHEMA_PENDING_RETEST",
+  "state": "OWNER_LOCAL_ZIP_INSPECT_PASS_SCHEMA_MISSING_REPEATED_DIAGNOSTICS_BEING_ENHANCED",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -28,6 +28,14 @@
       "roleRestored": true,
       "dataRestoreAttempted": false,
       "completeRestore": false
+    },
+    "fourthRestoreAttempt": {
+      "archiveSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "sizeBytes": 7323679,
+      "inspection": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "failure": "D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_FAILED_EXIT_3",
+      "exactSchemaNameUnknown": true,
+      "actualDataRestored": false
     }
   },
   "connectorEvidence": {
@@ -97,7 +105,12 @@
       "conclusion": "success",
       "scope": "synthetic_only_missing_private_recommendation_shadow"
     },
-    "ownerRealZipNewRemediationRetested": false
+    "ownerRealZipNewRemediationRetested": false,
+    "publicNamespacePreviousScriptDroppedUnconditionally": true,
+    "publicCreateSchemaPresenceInActualOwnerSqlUnverified": true,
+    "conditionalPublicNamespaceDropFixed": true,
+    "sanitizedExactIdentifierAndSqlLineDiagnosticAdded": true,
+    "actualOwnerBackupWithFourthFixRetested": false
   },
   "syntheticCi": {
     "runId": 39133409278,
