@@ -585,7 +585,9 @@ jobs:
         run: node scripts/verify-data-ai3-5-ci-consolidation.mjs
 
       - name: Install dependencies once
-        run: npm ci --no-audit --no-fund
+        run: node scripts/security/install-product-dependencies.mjs --no-audit --no-fund
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify DATA-AI1 intent boundary
         run: node scripts/verify-data-ai1-product-query-intent.mjs

@@ -129,7 +129,9 @@ jobs:
           cache: npm
 
       - name: Install dependencies once
-        run: npm ci
+        run: node scripts/security/install-product-dependencies.mjs
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify shared mobile baseline once
         shell: bash

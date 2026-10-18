@@ -99,7 +99,8 @@ assert.equal(canonicalScripts.length, 15, "TRUST canonical static script invento
 for (const script of canonicalScripts) {
   assert.equal(count(canonical, `node ${script}`), 1, `${script}: canonical automatic execution must be exactly once`);
 }
-assert.equal(count(canonical, "npm ci --no-audit --no-fund"), 1, "TRUST canonical npm ci must execute exactly once");
+assert.equal(count(canonical, "node scripts/security/install-product-dependencies.mjs --no-audit --no-fund"), 1, "TRUST canonical authenticated npm ci must execute exactly once");
+assert.equal(count(canonical, "npm ci --no-audit --no-fund"), 0, "TRUST canonical install must isolate registry credentials");
 assert.ok(canonical.includes("actions/checkout@v7"));
 assert.ok(canonical.includes("actions/setup-node@v7"));
 assert.ok(canonical.includes("node-version: 22"));
