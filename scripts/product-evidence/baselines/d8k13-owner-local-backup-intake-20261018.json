@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_PROVIDED_LOCAL_INSPECT_OUTPUT_PASS_AND_BARE_PG17_RESTORE_FAILURE",
+  "state": "OWNER_LOCAL_ZIP_INSPECT_PASS_REAL_SCHEMA_RESTORE_MISSING_SCHEMA_PENDING_RETEST",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -20,7 +20,15 @@
     "inspectOutputStatus": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
     "restoreFailure": "roles.sql:22 role anon does not exist",
     "secondRestoreFailure": "Unable to find image 'supabase/postgres:17.6.1.136' locally",
-    "secondRestoreFailureWasPrePullStatusMessage": true
+    "secondRestoreFailureWasPrePullStatusMessage": true,
+    "thirdRestoreAttempt": {
+      "inspection": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "imagePull": "D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_PASS",
+      "failure": "D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_FAILED_EXIT_3",
+      "roleRestored": true,
+      "dataRestoreAttempted": false,
+      "completeRestore": false
+    }
   },
   "connectorEvidence": {
     "driveExactNameSearchReturned": 0,
@@ -62,7 +70,34 @@
     "stderrSafeSyntheticCI": {
       "runId": 39134664951,
       "conclusion": "success"
-    }
+    },
+    "productionMetadataOnlySchemaQueryDateKst": "2026-10-19",
+    "productionSchemasOnlyComparedToIsolatedImage": {
+      "missingInIsolatedImage": [
+        "private",
+        "recommendation_shadow",
+        "supabase_migrations"
+      ],
+      "presentInBoth": [
+        "auth",
+        "storage",
+        "vault",
+        "extensions"
+      ],
+      "knownCustomRoutineCounts": {
+        "private": 2,
+        "recommendation_shadow": 2
+      },
+      "exactFailedSchemaNotEstablished": true
+    },
+    "referencedCustomNamespacePreflightAdded": true,
+    "stablePostmasterReadinessAdded": true,
+    "fixedFixtureRestoreCI": {
+      "runId": 39141611642,
+      "conclusion": "success",
+      "scope": "synthetic_only_missing_private_recommendation_shadow"
+    },
+    "ownerRealZipNewRemediationRetested": false
   },
   "syntheticCi": {
     "runId": 39133409278,
