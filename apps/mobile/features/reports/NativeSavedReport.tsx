@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useMobileShell } from "../../lib/mobile-shell";
 import type { NativeFreeSavedResult, NativeSavedReportRead } from "./saved-report-client";
 import { resolveSkinPhotoDisplayState } from "./skin-photo-evidence-status";
+import { projectSavedPremiumCanonicalSections } from "./saved-premium-canonical-projection";
 
 const REPORT_COPY = {
   en: {
@@ -19,7 +20,8 @@ const REPORT_COPY = {
     photoEvidence: "Photo evidence",
     version: "Version",
     savedAt: "Saved",
-    noDetail: "This saved server snapshot has no additional displayable detail."
+    noDetail: "This saved server snapshot has no additional displayable detail.",
+    canonicalUnavailable: "This saved plan has no displayable details; no guidance has been inferred."
   },
   ko: {
     free: "무료 리포트",
@@ -36,7 +38,8 @@ const REPORT_COPY = {
     photoEvidence: "사진 관찰 근거",
     version: "버전",
     savedAt: "저장",
-    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다."
+    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다.",
+    canonicalUnavailable: "저장된 판단에서 표시 가능한 상세 내용이 없어 새 안내를 추론하지 않았습니다."
   }
 } as const;
 
@@ -199,18 +202,30 @@ function PremiumSnapshot({ report }: { report: Record<string, unknown> }) {
   const freeResult = report.freeResult && typeof report.freeResult === "object" && !Array.isArray(report.freeResult)
     ? report.freeResult as NativeFreeSavedResult
     : null;
-  const routineLines = collectDisplayLines(report.fullRoutine, 10);
-  const functionalLines = collectDisplayLines(report.functionalDecisions, 10);
-  const conditionLines = collectDisplayLines(report.conditionResponses, 10);
-  const hasPremiumDetail = routineLines.length || functionalLines.length || conditionLines.length;
+  // Canonical report fields are the same saved data used by the web Full Report.
+  // Legacy fields are used only if this section lacks an explicit canonical plan.
+  const canonical = projectSavedPremiumCanonicalSections(report, locale);
+  const routineLines = canonical.routine.canonicalPresent
+    ? [...canonical.routine.lines]
+    : collectDisplayLines(report.fullRoutine, 10);
+  const functionalLines = canonical.functional.canonicalPresent
+    ? [...canonical.functional.lines]
+    : collectDisplayLines(report.functionalDecisions, 10);
+  const conditionLines = canonical.condition.canonicalPresent
+    ? [...canonical.condition.lines]
+    : collectDisplayLines(report.conditionResponses, 10);
+  const displayOrHold = (lines: string[], canonicalPresent: boolean) =>
+    lines.length ? lines : canonicalPresent ? [copy.canonicalUnavailable] : [];
+  const hasPremiumDetail = routineLines.length || functionalLines.length || conditionLines.length ||
+    canonical.routine.canonicalPresent || canonical.functional.canonicalPresent || canonical.condition.canonicalPresent;
 
   return (
     <View style={styles.stack}>
       {freeResult ? <FreeSnapshot result={freeResult} /> : null}
       <Section title={copy.photoEvidence} lines={getSkinPhotoEvidenceLines(report, locale)} />
-      <Section title={copy.premiumRoutine} lines={routineLines} />
-      <Section title={copy.functional} lines={functionalLines} />
-      <Section title={copy.condition} lines={conditionLines} />
+      <Section title={copy.premiumRoutine} lines={displayOrHold(routineLines, canonical.routine.canonicalPresent)} />
+      <Section title={copy.functional} lines={displayOrHold(functionalLines, canonical.functional.canonicalPresent)} />
+      <Section title={copy.condition} lines={displayOrHold(conditionLines, canonical.condition.canonicalPresent)} />
       {!freeResult && !hasPremiumDetail ? <Section title={copy.premium} lines={[copy.noDetail]} /> : null}
     </View>
   );
