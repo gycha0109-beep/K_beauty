@@ -60,6 +60,35 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host ($output -join "`n"); throw 'D8K13_SYNTHETIC_INSPECTION_FAILED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ZIP_INSPECTION_PASS')) { throw 'D8K13_SYNTHETIC_INSPECTION_MARKER_MISSING' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_INSPECTION_PASS'
+      - name: Check clean Supabase/Postgres image schema prerequisites (no owner ZIP)
+        shell: bash
+        run: |
+          set -euo pipefail
+          c="d8k13-schema-doctor-$RANDOM"
+          trap 'docker rm -f "$c" >/dev/null 2>&1 || true' EXIT
+          docker run --detach --rm --name "$c" --network none \
+            -e POSTGRES_PASSWORD=d8k13_ci_fixture_only \
+            -e POSTGRES_DB=postgres \
+            -e POSTGRES_HOST=/var/run/postgresql \
+            -e PGPORT=5432 \
+            -e POSTGRES_PORT=5432 \
+            -e PGPASSWORD=d8k13_ci_fixture_only \
+            -e JWT_SECRET=d8k13_ci_fixture_only_long_test_string \
+            -e JWT_EXP=3600 \
+            supabase/postgres:17.6.1.136 postgres \
+            -c config_file=/etc/postgresql/postgresql.conf >/dev/null
+          for n in {1..100}; do
+            if docker exec -u postgres "$c" pg_isready -q -U postgres -d postgres; then break; fi
+            sleep 1
+          done
+          docker exec -u postgres "$c" psql -X -q -t -A \
+            -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "SELECT 'D8K13_SUPABASE_IMAGE_BASELINE_SCHEMA_' || x.name || '_' || CASE WHEN n.oid IS NULL THEN 'MISSING' ELSE 'PRESENT' END FROM (VALUES('auth'),('storage'),('vault'),('extensions'),('private'),('recommendation_shadow'),('realtime'),('graphql'),('graphql_public'),('pgbouncer'),('supabase_migrations')) AS x(name) LEFT JOIN pg_namespace n ON n.nspname=x.name ORDER BY x.name;" \
+            | tee "$RUNNER_TEMP/d8k13-image-schemas.txt"
+          test -s "$RUNNER_TEMP/d8k13-image-schemas.txt"
+          docker exec -u postgres "$c" psql -X -q -t -A \
+            -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "SELECT 'D8K13_SUPABASE_IMAGE_BASELINE_EXTENSION_' || x.name || '_' || CASE WHEN e.oid IS NULL THEN 'MISSING' ELSE 'PRESENT' END FROM (VALUES('supabase_vault'),('pgcrypto'),('pg_stat_statements'),('uuid-ossp')) AS x(name) LEFT JOIN pg_extension e ON e.extname=x.name ORDER BY x.name;"
       - name: Simulate first-run host with no cached Supabase PostgreSQL image
         shell: bash
         run: |
