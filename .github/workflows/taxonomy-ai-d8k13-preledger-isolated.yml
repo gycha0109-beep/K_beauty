@@ -8,6 +8,7 @@ on:
       - scripts/product-evidence/verify-d8k13-preledger-reconstruction-v1.mjs
       - scripts/product-evidence/verify-d8k13-current-recovery-readiness-v1.mjs
       - scripts/product-evidence/baselines/d8k13-current-public-recovery-inventory-20261018.json
+      - scripts/product-evidence/baselines/d8k13-current-recovery-synthetic-restore-drill-20261018.json
       - scripts/product-evidence/sql/d8k13-current-public-recovery-inventory-readonly-v1.sql
       - scripts/product-evidence/run-d8k13-current-recovery-synthetic-restore-pg17.sh
       - scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs
