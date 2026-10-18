@@ -82,10 +82,15 @@ jobs:
             -e JWT_EXP=3600 \
             supabase/postgres:17.6.1.136 postgres \
             -c config_file=/etc/postgresql/postgresql.conf >/dev/null
-          for n in {1..100}; do
-            if docker exec -u postgres "$c" pg_isready -q -U postgres -d postgres; then break; fi
-            sleep 1
+          # pg_isready succeeds before Supabase's init SQL finishes.
+          # Wait for its managed roles/schemas/extension prerequisites.
+          ready=""
+          for n in {1..90}; do
+            probe="$(docker exec -u postgres "$c" psql -X -q -t -A -U postgres -d postgres -v ON_ERROR_STOP=1               -c "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin'))=4 AND to_regclass('auth.users') IS NOT NULL AND to_regclass('storage.objects') IS NOT NULL AND EXISTS(SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS(SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN 1 ELSE 0 END" 2>/dev/null || true)"
+            if [ "$probe" = "1" ]; then ready=1; break; fi
+            sleep 2
           done
+          test "$ready" = 1
           docker exec -u postgres "$c" psql -X -q -t -A \
             -U postgres -d postgres -v ON_ERROR_STOP=1 \
             -c "SELECT 'D8K13_SUPABASE_IMAGE_BASELINE_SCHEMA_' || x.name || '_' || CASE WHEN n.oid IS NULL THEN 'MISSING' ELSE 'PRESENT' END FROM (VALUES('auth'),('storage'),('vault'),('extensions'),('private'),('recommendation_shadow'),('realtime'),('graphql'),('graphql_public'),('pgbouncer'),('supabase_migrations')) AS x(name) LEFT JOIN pg_namespace n ON n.nspname=x.name ORDER BY x.name;" \
