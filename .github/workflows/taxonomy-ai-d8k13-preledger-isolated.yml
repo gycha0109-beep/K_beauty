@@ -6,6 +6,10 @@ on:
     paths:
       - .github/workflows/taxonomy-ai-d8k13-preledger-isolated.yml
       - scripts/product-evidence/verify-d8k13-preledger-reconstruction-v1.mjs
+      - scripts/product-evidence/verify-d8k13-current-recovery-readiness-v1.mjs
+      - scripts/product-evidence/baselines/d8k13-current-public-recovery-inventory-20261018.json
+      - scripts/product-evidence/sql/d8k13-current-public-recovery-inventory-readonly-v1.sql
+      - scripts/product-evidence/run-d8k13-current-recovery-synthetic-restore-pg17.sh
       - scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs
       - scripts/product-evidence/test-d8k13-private-bootstrap-intake-v1.mjs
       - scripts/product-evidence/baselines/d8k13-original-bootstrap-source-discovery-20261018.json
@@ -44,6 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/product-evidence/verify-d8k13-preledger-reconstruction-v1.mjs
+          node scripts/product-evidence/verify-d8k13-current-recovery-readiness-v1.mjs
           node scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs
           node scripts/product-evidence/test-d8k13-private-bootstrap-intake-v1.mjs
           node --input-type=module -e 'import {verifyD8k13P0AclTaxonomyProvenance} from "./scripts/product-evidence/verify-d8k13-p0-acl-taxonomy-provenance-v1.mjs"; import {resolve} from "node:path"; const x=verifyD8k13P0AclTaxonomyProvenance(resolve(".")); if(x.releaseAuthorized!==false||x.status!=="HOLD")process.exit(8); console.log("D8K13_P0_ACL_TAXONOMY_CONTRACT_PASS_HOLD");'
@@ -55,15 +60,19 @@ jobs:
           set +e
           node scripts/product-evidence/verify-d8k13-preledger-reconstruction-v1.mjs --enforce-release >/tmp/d8k13-preledger-denied.log 2>&1
           preledger_status=$?
+          node scripts/product-evidence/verify-d8k13-current-recovery-readiness-v1.mjs --enforce-release >/tmp/d8k13-current-recovery-denied.log 2>&1
+          current_recovery_status=$?
           node scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs --enforce-release >/tmp/d8k13-private-intake-denied.log 2>&1
           private_intake_status=$?
           node scripts/product-evidence/verify-d8k13-migration-chain-readonly-v1.mjs --enforce-release >/tmp/d8k13-chain-denied.log 2>&1
           chain_status=$?
           set -e
           test "$preledger_status" -eq 3
+          test "$current_recovery_status" -eq 3
           test "$private_intake_status" -eq 3
           test "$chain_status" -eq 3
           grep -Fq D8K13_PRELEDGER_RECONSTRUCTION_RELEASE_REFUSED /tmp/d8k13-preledger-denied.log
+          grep -Fq D8K13_CURRENT_RECOVERY_RELEASE_REFUSED /tmp/d8k13-current-recovery-denied.log
           grep -Fq D8K13_PRIVATE_BOOTSTRAP_RELEASE_REFUSED /tmp/d8k13-private-intake-denied.log
           grep -Fq D8K13_FULL_CHAIN_RELEASE_REFUSED /tmp/d8k13-chain-denied.log
           echo D8K13_PRELEDGER_NATIVE_NODE_RELEASE_HOLD_PASS
@@ -102,6 +111,7 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -c "CREATE ROLE d8k13_fixture LOGIN PASSWORD 'd8k13_disposable_fixture_only'"
           psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE d8k13_preledger_disposable OWNER d8k13_fixture"
           psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE d8k13_preledger_synthetic OWNER d8k13_fixture"
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE d8k13_current_restore_disposable OWNER d8k13_fixture"
       - name: Reproduce first migration failure on empty PG17 and verify transactional rollback
         env:
           PGHOST: 127.0.0.1
@@ -122,3 +132,14 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/product-evidence/run-d8k13-preledger-synthetic-positive-pg17.mjs --isolated-pg17
+      - name: Restore disposable fixture through PostgreSQL 17 schema and data dumps
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGDATABASE: d8k13_current_restore_disposable
+          PGUSER: d8k13_fixture
+          PGPASSWORD: d8k13_disposable_fixture_only
+          D8K13_PG17_SERVICE_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          bash scripts/product-evidence/run-d8k13-current-recovery-synthetic-restore-pg17.sh --isolated-pg17
