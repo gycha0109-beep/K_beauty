@@ -86,19 +86,26 @@ assert.match(
 
 const migrationFiles = (await readdir(new URL("../supabase/migrations/", import.meta.url)))
   .filter((name) => name.endsWith(".sql"));
-const relocationMigrations = [];
+// Later migrations may REFERENCE these objects: only CREATE definitions
+// are new deployments. Check table and privileged RPC owners separately.
+const definesRelocationTable = (sql) =>
+  /^\s*create\s+table\s+(?:if\s+not\s+exists\s+)?public\.trust_official_source_relocations\s*\(/im.test(sql);
+const definesConfirmationRpc = (sql) =>
+  /^\s*create\s+(?:or\s+replace\s+)?function\s+public\.admin_confirm_trust_official_source_relocation_v1\s*\(/im.test(sql);
+assert.equal(definesRelocationTable("select * from public.trust_official_source_relocations"), false);
+assert.equal(definesConfirmationRpc("select public.admin_confirm_trust_official_source_relocation_v1()"), false);
+const tableDefinitions = [];
+const rpcDefinitions = [];
 for (const name of migrationFiles) {
   const sql = await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), "utf8");
-  if (
-    sql.includes("admin_confirm_trust_official_source_relocation_v1")
-    || sql.includes("trust_official_source_relocations")
-  ) {
-    relocationMigrations.push({ name, sql });
-  }
+  if (definesRelocationTable(sql)) tableDefinitions.push({ name, sql });
+  if (definesConfirmationRpc(sql)) rpcDefinitions.push({ name, sql });
 }
-
-assert.equal(relocationMigrations.length, 1, "expected exactly one Phase 8H-2B deployable migration");
-assert.equal(relocationMigrations[0].name, provenance.production_migration_filename);
+assert.equal(tableDefinitions.length, 1, "expected exactly one Phase 8H-2B relocation table definition");
+assert.equal(rpcDefinitions.length, 1, "expected exactly one Phase 8H-2B confirmation RPC definition");
+assert.equal(tableDefinitions[0].name, provenance.production_migration_filename);
+assert.equal(rpcDefinitions[0].name, provenance.production_migration_filename);
+const relocationMigrations = tableDefinitions;
 const sql = relocationMigrations[0].sql;
 const lower = sql.toLowerCase();
 
