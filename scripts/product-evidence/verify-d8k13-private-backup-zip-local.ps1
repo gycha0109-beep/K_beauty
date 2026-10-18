@@ -177,16 +177,88 @@ try {
   # pg_isready can say "accepting connections" while Supabase image initdb
   # scripts are still setting up auth/storage/extensions/grants.
   # Wait for final bootstrap state, not only socket availability.
-  $readyQuery = "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin')) = 4 AND to_regclass('auth.users') IS NOT NULL AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='storage') AND EXISTS (SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN 1 ELSE 0 END"
+  # Require a stable postmaster identity across several checks. Initdb
+  # uses a temporary PostgreSQL server before its final restart.
+  $readyQuery = "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin')) = 4 AND to_regclass('auth.users') IS NOT NULL AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='storage') AND EXISTS (SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN floor(extract(epoch FROM pg_postmaster_start_time()))::bigint::text ELSE '0' END"
   $ready = $false
+  $previousPostmaster = ''
+  $stableProbes = 0
   for ($i = 0; $i -lt 90; $i++) {
     $readyExit = Invoke-DockerLifecycle 'SUPABASE_BOOTSTRAP_READY' @('exec','-u','postgres',
       $container,'psql','-X','-A','-t','-v','ON_ERROR_STOP=1','-d','postgres',
       '-c',$readyQuery) $true
+    $signal = ''
     if ($readyExit -eq 0) {
       $readyText = Get-Content -LiteralPath (Join-Path $unpacked 'docker-lifecycle-SUPABASE_BOOTSTRAP_READY-out.log') -Raw -ErrorAction SilentlyContinue
-      if ($readyText -and $readyText.Trim() -eq '1') { $ready = $true; break }
+      if ($readyText) { $signal = $readyText.Trim() }
     }
+    if ($signal -match '^\d{10}
+  $empty = & docker exec -u postgres $container psql -X -A -t -d postgres -v ON_ERROR_STOP=1 -c "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p','v','m','f','S')"
+  Assert-Drill ($LASTEXITCODE -eq 0 -and ("$empty".Trim() -eq '0')) 'D8K13_LOCAL_RESTORE_DESTINATION_NOT_EMPTY'
+  Run-Docker 'DROP_EMPTY_PUBLIC' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c','DROP SCHEMA IF EXISTS public CASCADE')
+  foreach ($name in $required) {
+    Run-Docker ('COPY_' + $name) @('cp',(Join-Path $unpacked $name),($container + ':/tmp/' + $name))
+  }
+  Run-Docker 'ROLES' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-f','/tmp/roles.sql')
+  # A CLI dump omits Supabase-managed schemas. The official image lacks some
+  # custom *empty* namespaces; functions/GRANTs may reference them.
+  # Create only a fixed allowlist, only if referenced by the extracted schema,
+  # and never if the dump itself has CREATE SCHEMA for the same name.
+  # Changes below affect this --network none disposable container exclusively.
+  $schemaText = [System.IO.File]::ReadAllText((Join-Path $unpacked 'schema.sql'))
+  foreach ($schemaName in @('private','recommendation_shadow')) {
+    $escapedName = [regex]::Escape($schemaName)
+    $declares = [regex]::IsMatch($schemaText, ('(?im)^\s*CREATE\s+SCHEMA\s+(?:IF\s+NOT\s+EXISTS\s+)?"?' + $escapedName + '"?\s*;'))
+    $used = [regex]::IsMatch($schemaText, ('(?i)"?' + $escapedName + '"?\s*\.')) -or
+      [regex]::IsMatch($schemaText, ('(?i)\b(?:ON|IN)\s+SCHEMA\s+"?' + $escapedName + '"?\b'))
+    if ($used -and -not $declares) {
+      Run-Docker ('PREPARE_SCHEMA_' + $schemaName.ToUpperInvariant()) @('exec','-u','postgres',
+        $container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres',
+        '-c',('CREATE SCHEMA IF NOT EXISTS ' + $schemaName))
+      Write-Output ('D8K13_LOCAL_ISOLATED_NAMESPACE_READY_' + $schemaName.ToUpperInvariant())
+    }
+  }
+  $schemaText = $null
+  Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-f','/tmp/schema.sql')
+  Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
+  $inventory = Get-PublicInventory $container
+  Assert-Drill ([int]$inventory.pg_major -eq 17) 'D8K13_LOCAL_RESTORE_WRONG_PG_MAJOR'
+  Assert-Drill ([int]$inventory.tables -ge 1) 'D8K13_LOCAL_RESTORE_NO_TABLES'
+  # Successful SQL application is not proof of Supabase Auth/Storage/Vault/ACL parity.
+  Write-Output ([ordered]@{
+    status='D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED'
+    inventory=$inventory
+    postgresNetworkDisabled=$true
+    isolatedRuntime='supabase/postgres:17.6.1.136'
+    rawSQLUploaded=$false
+    realBackupRowContentsReturned=$false
+    original178MigrationsReplayed=$false
+    managedAuthStorageVaultRestored=$false
+    aclParityVerified=$false
+    productionDatabaseConnections=0
+    releaseAuthorized=$false
+  } | ConvertTo-Json -Compress -Depth 5)
+}
+catch {
+  [Console]::Error.WriteLine(('D8K13_LOCAL_BACKUP_DRILL_FAILED: ' + $_.Exception.Message + '. Supabase database image can still lack managed schemas, migrations, or project-specific extensions; restore status is INCOMPLETE, not evidence of backup corruption.'))
+  exit 3
+}
+finally {
+  if ($zipReader) { $zipReader.Dispose() }
+  if ($containerStarted -and $container) {
+    & docker rm --force $container *> $null
+  }
+  if ($unpacked -and (Test-Path -LiteralPath $unpacked)) {
+    Remove-Item -LiteralPath $unpacked -Force -Recurse -ErrorAction SilentlyContinue
+  }
+}
+ -and $signal -eq $previousPostmaster) {
+      $stableProbes++
+    } else {
+      $stableProbes = 0
+    }
+    $previousPostmaster = $signal
+    if ($stableProbes -ge 6) { $ready = $true; break }
     Start-Sleep -Seconds 2
   }
   Assert-Drill $ready 'D8K13_LOCAL_RESTORE_SUPABASE_BOOTSTRAP_NOT_READY'
