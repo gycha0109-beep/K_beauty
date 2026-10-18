@@ -86,7 +86,7 @@ jobs:
           # Wait for its managed roles/schemas/extension prerequisites.
           ready=""
           for n in {1..90}; do
-            probe="$(docker exec -u postgres "$c" psql -X -q -t -A -U postgres -d postgres -v ON_ERROR_STOP=1               -c "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin'))=4 AND to_regclass('auth.users') IS NOT NULL AND to_regclass('storage.objects') IS NOT NULL AND EXISTS(SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS(SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN 1 ELSE 0 END" 2>/dev/null || true)"
+            probe="$(docker exec -u postgres "$c" psql -X -q -t -A -U postgres -d postgres -v ON_ERROR_STOP=1               -c "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin'))=4 AND to_regclass('auth.users') IS NOT NULL AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='storage') AND EXISTS(SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS(SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN 1 ELSE 0 END" 2>/dev/null || true)"
             if [ "$probe" = "1" ]; then ready=1; break; fi
             sleep 2
           done
