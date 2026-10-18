@@ -58,20 +58,29 @@ export function assertTrustP2DFourBrandLiveAuthorization(approval,cohort,{now=Da
     approval.writesAllowed!==0||
     !Array.isArray(approval.sites)||approval.sites.length!==4)
     throw Error("P2D_FOUR_SITE_POLICY_HOLD");
-  const matched=new Set();
+  const matched=new Set(),approvedBrands=new Set();
   for(const record of approval.sites){
     const item=targets.find(t=>t.brand===record?.brand);
     if(!item||matched.has(record.brand)||
       record.origin!==new URL(item.officialPeerUrl).origin||
       record.productId!==item.productId||
-      record.termsAndLicensingApproved!==true||
-      record.robotsFirstPreflightAuthorized!==true||
-      record.pacingReviewed!==true||
-      typeof record.reviewer!=="string"||!record.reviewer.trim()||
-      typeof record.reviewEvidence!=="string"||!record.reviewEvidence.trim())
+      !["boolean"].includes(typeof record.termsAndLicensingApproved)||
+      !["boolean"].includes(typeof record.robotsFirstPreflightAuthorized)||
+      !["boolean"].includes(typeof record.pacingReviewed))
       throw Error("P2D_FOUR_SITE_POLICY_HOLD");
     matched.add(record.brand);
+    const fullyReviewed=record.termsAndLicensingApproved&&
+      record.robotsFirstPreflightAuthorized&&record.pacingReviewed;
+    if(fullyReviewed){
+      if(typeof record.reviewer!=="string"||!record.reviewer.trim()||
+        typeof record.reviewEvidence!=="string"||!record.reviewEvidence.trim())
+        throw Error("P2D_FOUR_SITE_POLICY_HOLD");
+      approvedBrands.add(record.brand);
+    }
+    // Partially reviewed or denied origins remain held, never contacted.
   }
+  if(matched.size!==4||approvedBrands.size===0)
+    throw Error("P2D_FOUR_SITE_POLICY_HOLD");
   const operator=approval.operatorApproval;
   if(operator?.approved!==true||
     typeof operator.approver!=="string"||!operator.approver.trim()||
@@ -84,7 +93,7 @@ export function assertTrustP2DFourBrandLiveAuthorization(approval,cohort,{now=Da
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||
     end-start>6*60*60*1000||!Number.isFinite(now)||now<start||now>end)
     throw Error("P2D_FOUR_EXECUTION_WINDOW_CLOSED");
-  return true;
+  return approvedBrands;
 }
 
 export function cohortToTrustedDiscoveryRow(item){
@@ -214,9 +223,14 @@ export function summarizeTrustP2D(rows){
 export async function runTrustP2DFiveBrandPilot({
  execute=false,fetchers=trustP2LiveFetchers(),
  cohort=JSON.parse(fs.readFileSync(COHORT_FILE,"utf8")),
- holdRetiredDrG=false,
+ holdRetiredDrG=false,approvedBrands=null,
 }={}){
   assertTrustP2DCohort(cohort);
+  if(holdRetiredDrG&&execute&&
+    (!(approvedBrands instanceof Set)||approvedBrands.size===0||
+      [...approvedBrands].some(brand=>brand===RETIRED_ORIGIN_BRAND||
+        !cohort.targets.some(t=>t.brand===brand))))
+    throw Error("P2D_FOUR_APPROVED_ORIGINS_REQUIRED");
   if(typeof holdRetiredDrG!=="boolean"||
     (holdRetiredDrG&&cohort.targets.filter(t=>t.brand===RETIRED_ORIGIN_BRAND).length!==1))
     throw Error("P2D_FOUR_HOLD_MODE_INVALID");
@@ -236,6 +250,10 @@ export async function runTrustP2DFiveBrandPilot({
     }else if(!execute){
       assessment={state:"PLAN_ONLY",pagesFetched:0,scopedCandidates:0,
         bodyOnlyMentions:0,siteStatus:[],verifiedSourceBindings:0};
+    }else if(holdRetiredDrG&&!approvedBrands.has(target.brand)){
+      assessment={state:"SITE_POLICY_HOLD",reason:"NO_SITE_SPECIFIC_APPROVAL",
+        pagesFetched:0,scopedCandidates:0,bodyOnlyMentions:0,siteStatus:[],
+        verifiedSourceBindings:0};
     }else {
       try {
         // Existing P2 owns robots, same-origin safety, per-site URL limits,
@@ -283,7 +301,10 @@ export async function runTrustP2DFiveBrandPilot({
     officialCohortSource:cohort.baselineDate,
     summary:holdRetiredDrG?{
       ...summarizeTrustP2D(rows),eligibleProducts:4,
-      attemptedProducts:execute?4:0,retiredOriginHoldProducts:1,
+      attemptedProducts:execute?approvedBrands.size:0,
+      approvedOriginProducts:execute?approvedBrands.size:0,
+      sitePolicyHoldProducts:execute?4-approvedBrands.size:0,
+      retiredOriginHoldProducts:1,
       heldBrand:RETIRED_ORIGIN_BRAND,denominatorUnchanged:5,
     }:summarizeTrustP2D(rows),
     items:rows,
@@ -299,15 +320,18 @@ export async function runTrustP2DCli(args=process.argv.slice(2)){
   const execute=executeFive||executeFour;
   if(executeFive&&process.env.TRUST_P2D_FIVE_BRAND_LIVE_ENABLED!=="true")
     throw Error("P2D_LIVE_DISABLED");
+  let approvedBrands=null;
   if(executeFour){
     if(process.env.TRUST_P2D_FOUR_BRAND_LIVE_ENABLED!=="true")
       throw Error("P2D_FOUR_LIVE_DISABLED");
     // Mandatory approval is loaded and verified BEFORE constructing fetchers.
     const approval=JSON.parse(fs.readFileSync(FOUR_AUTH_FILE,"utf8"));
     const cohort=JSON.parse(fs.readFileSync(COHORT_FILE,"utf8"));
-    assertTrustP2DFourBrandLiveAuthorization(approval,cohort);
+    approvedBrands=assertTrustP2DFourBrandLiveAuthorization(approval,cohort);
   }
-  const result=await runTrustP2DFiveBrandPilot({execute,holdRetiredDrG:fourMode});
+  const result=await runTrustP2DFiveBrandPilot({
+    execute,holdRetiredDrG:fourMode,approvedBrands,
+  });
   if(process.env.GITHUB_STEP_SUMMARY){
     const lines=["### TRUST P2-D five-product baseline / bounded official-source measurement",
       "- Products in frozen denominator: "+result.summary.processedProducts+" / 5",
