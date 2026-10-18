@@ -42,6 +42,11 @@ jobs:
           CREATE VIEW public.product_names AS SELECT name FROM public.products;
           ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
           CREATE POLICY fixture_select ON public.products FOR SELECT TO authenticated USING (owner_id = (select auth.uid()));
+          -- Both custom namespaces intentionally omitted from CREATE SCHEMA.
+          -- This reproduces references in real dumps to schemas absent in bare image.
+          CREATE FUNCTION private.fixture_probe() RETURNS boolean LANGUAGE sql AS 'SELECT true';
+          CREATE FUNCTION recommendation_shadow.fixture_probe() RETURNS integer LANGUAGE sql AS 'SELECT 42';
+          ALTER DEFAULT PRIVILEGES IN SCHEMA private GRANT SELECT ON TABLES TO authenticated;
           SQL
           cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/data.sql" <<'SQL'
           -- Synthetic, not copied from production.
@@ -107,6 +112,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_RESTORE_FAILED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_SYNTHETIC_RESTORE_MARKER_MISSING' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_PASS')) { throw 'D8K13_COLD_IMAGE_PULL_NOT_TESTED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_PRIVATE')) { throw 'D8K13_CUSTOM_PRIVATE_SCHEMA_NOT_RESTORED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_RECOMMENDATION_SHADOW')) { throw 'D8K13_CUSTOM_SHADOW_SCHEMA_NOT_RESTORED' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_PG17_RESTORE_PASS_HOLD'
       - name: Reject wrong-size archive, no backups in CI artifacts
         shell: pwsh
