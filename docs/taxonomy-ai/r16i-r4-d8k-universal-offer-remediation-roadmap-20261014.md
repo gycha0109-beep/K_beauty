@@ -413,3 +413,11 @@
 실제 CI [#39109843279](https://github.com/gycha0109-beep/K_beauty/actions/runs/39109843279)에서 PostgreSQL17.6 합성 3개 테이블/3개 테스트 행을 **schema-only+data-only dump**하고 새 격리 DB에 트랜잭션 복원, catalog와 synthetic data/view 값을 비교해 PASS. `d8k13-current-recovery-synthetic-restore-drill-20261018.json`으로 고정. 임시 dump는 종료 시 삭제하고 운영 DB는 접근하지 않았다.
 
 **다음 P0:** 승인된 비공개 장소에서 실제 현재 schema/roles/data dump를 획득(원문·자격증명을 저장소/CI에 노출하지 않음), object storage/Auth/암호화 의존성 포함 여부 검토, 격리 PG17에 복원, 구조·데이터·ACL/RLS 동등성 검증, Owner/Security 독립 승인. **운영 DB writes 0, #1208 OPEN, PR Draft, release HOLD**. 실행 절차: `docs/taxonomy-ai/r16i-r4-d8k13-current-state-recovery-runbook-20261018.md`.
+
+## 28. 소유자 PC 백업 ZIP 확보 보고 및 실복원 경로 준비 (2026-10-18)
+
+운영자 보고: `BEJEWELY_DB_Backup_20261018_181006.zip` (7,323,679 bytes)을 만들고 ZIP 루트의 `roles.sql`, `schema.sql`, `data.sql` 존재 검사를 통과한 후 Google Drive에 업로드했다. 연결된 Drive 검색으로 **파일을 찾지 못했으므로**, 실제 바이트·내용·무결성·복원은 **미검증**. 원문·PII·비밀번호를 Git/CI/채팅에 수집하지 않음.
+
+`scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1` 추가. Windows 로컬의 원본 ZIP을 `Inspect`로 검사하고, `Restore`시 컨테이너를 별도 생성하여 **네트워크 없는 PostgreSQL17.6**에 `roles → schema → data`를 적용한 뒤 결과를 metadata-only 출력하고 임시 파일 및 컨테이너를 삭제. CI [#39132129352](https://github.com/gycha0109-beep/K_beauty/actions/runs/39132129352)에서 **합성 ZIP만 이용한 Inspect / restore / invalid-size 거부 성공**. 실제 ZIP을 복원했다는 의미가 아니다. Supabase-managed dependencies가 순수 PostgreSQL 이미지에 없으면 본 복원은 fail-closed다.
+
+다음 우선순위: **사용자 PC에서 로컬 실 ZIP을 검증하는 단 1회 실행**, 해당 출력의 stage/error code를 바탕으로 순수 PG17 호환성 문제 또는 필요한 Supabase-local 복원 기반 확인. Vault/Auth/Storage/DDL 권한 parity, 독립 OWNER 검수 미완료. 기존 PR #1341 Draft/HOLD, #1208 OPEN, production writes 0 유지. 세부 runbook §6 및 user-reported evidence manifest 참조.
