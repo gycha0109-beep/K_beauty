@@ -73,3 +73,4 @@ jobs:
           $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes $wrong -Mode Inspect 2>$null
           if ($LASTEXITCODE -ne 3) { throw 'D8K13_BAD_SIZE_MUST_EXIT_3' }
           Write-Host 'D8K13_LOCAL_ZIP_FAIL_CLOSED_WRONG_SIZE_PASS'
+          exit 0 # The deliberate child exit=3 must not fail the test step.
