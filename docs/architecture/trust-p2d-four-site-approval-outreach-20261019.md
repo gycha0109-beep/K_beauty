@@ -8,11 +8,11 @@
 
 ### 1. 비플레인
 
-**문의 대상(공식 사이트 공개 연락처):** `contact@momentsco.com`  
-**문의 상태:** 미발송 · 답변 없음 · 승인 아님  
-**고정 대상:** 비플레인 / 제품 ID `9b81da7a-649e-41ec-a22b-7e367c05afe4` / 카탈로그 용량 340ml  
-**해당 출처:** `https://www.beplain.co.kr` (공식몰 타상품 URL은 탐색 출발점일 뿐 대상 제품 증명이 아님)  
-**확인할 약관:** https://beplain.co.kr/m/contract.html  
+**문의 대상(공식 사이트 공개 연락처):** `contact@momentsco.com`
+**문의 상태:** 미발송 · 답변 없음 · 승인 아님
+**고정 대상:** 비플레인 / 제품 ID `9b81da7a-649e-41ec-a22b-7e367c05afe4` / 카탈로그 용량 340ml
+**해당 출처:** `https://www.beplain.co.kr` (공식몰 타상품 URL은 탐색 출발점일 뿐 대상 제품 증명이 아님)
+**확인할 약관:** https://beplain.co.kr/m/contract.html
 **`robots.txt` 확인 주소:** https://www.beplain.co.kr/robots.txt
 
 **메일 제목:** [BEJEWELY] 비플레인 공식몰 공개 상품정보의 1회성 기술 검증 허용 범위 문의
@@ -36,11 +36,11 @@
 
 ### 2. 아토팜
 
-**문의 대상(공식 사이트 공개 연락처):** `neoshop@neopharm.co.kr`  
-**문의 상태:** 미발송 · 답변 없음 · 승인 아님  
-**고정 대상:** 아토팜 / 제품 ID `bd98f785-15c8-4800-af64-d39c3ad873a0` / 카탈로그 용량 600ml  
-**해당 출처:** `https://neopharmshop.co.kr` (공식몰 타상품 URL은 탐색 출발점일 뿐 대상 제품 증명이 아님)  
-**확인할 약관:** https://neopharmshop.co.kr/member/mall_agreement.html  
+**문의 대상(공식 사이트 공개 연락처):** `neoshop@neopharm.co.kr`
+**문의 상태:** 미발송 · 답변 없음 · 승인 아님
+**고정 대상:** 아토팜 / 제품 ID `bd98f785-15c8-4800-af64-d39c3ad873a0` / 카탈로그 용량 600ml
+**해당 출처:** `https://neopharmshop.co.kr` (공식몰 타상품 URL은 탐색 출발점일 뿐 대상 제품 증명이 아님)
+**확인할 약관:** https://neopharmshop.co.kr/member/mall_agreement.html
 **`robots.txt` 확인 주소:** https://neopharmshop.co.kr/robots.txt
 
 **메일 제목:** [BEJEWELY] 아토팜 공식몰 공개 상품정보의 1회성 기술 검증 허용 범위 문의
@@ -64,11 +64,11 @@
 
 ### 3. 이즈앤트리
 
-**문의 대상(공식 사이트 공개 연락처):** `marketing@isntree.com`  
-**문의 상태:** 미발송 · 답변 없음 · 승인 아님  
-**고정 대상:** 이즈앤트리 / 제품 ID `fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978` / 카탈로그 용량 300ml  
-**해당 출처:** `https://isntree.com` (공식몰 타상품 URL은 탐색 출발점일 뿐 대상 제품 증명이 아님)  
-**확인할 약관:** https://isntree.com/member/agreement.html  
+**문의 대상(공식 사이트 공개 연락처):** `marketing@isntree.com`
+**문의 상태:** 미발송 · 답변 없음 · 승인 아님
+**고정 대상:** 이즈앤트리 / 제품 ID `fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978` / 카탈로그 용량 300ml
+**해당 출처:** `https://isntree.com` (공식몰 타상품 URL은 탐색 출발점일 뿐 대상 제품 증명이 아님)
+**확인할 약관:** https://isntree.com/member/agreement.html
 **`robots.txt` 확인 주소:** https://isntree.com/robots.txt
 
 **메일 제목:** [BEJEWELY] 이즈앤트리 공식몰 공개 상품정보의 1회성 기술 검증 허용 범위 문의
@@ -92,11 +92,11 @@
 
 ### 4. 토리든
 
-**문의 대상(공식 사이트 공개 연락처):** `info@torriden.com`  
-**문의 상태:** 미발송 · 답변 없음 · 승인 아님  
-**고정 대상:** 토리든 / 제품 ID `31015762-2741-4211-a553-3ceb7fdf32e8` / 카탈로그 용량 50ml  
-**해당 출처:** `https://www.torriden.com` (공식몰 타상품 URL은 탐색 출발점일 뿐 대상 제품 증명이 아님)  
-**확인할 약관:** https://www.torriden.com/service/agreement.php  
+**문의 대상(공식 사이트 공개 연락처):** `info@torriden.com`
+**문의 상태:** 미발송 · 답변 없음 · 승인 아님
+**고정 대상:** 토리든 / 제품 ID `31015762-2741-4211-a553-3ceb7fdf32e8` / 카탈로그 용량 50ml
+**해당 출처:** `https://www.torriden.com` (공식몰 타상품 URL은 탐색 출발점일 뿐 대상 제품 증명이 아님)
+**확인할 약관:** https://www.torriden.com/service/agreement.php
 **`robots.txt` 확인 주소:** https://www.torriden.com/robots.txt
 
 **메일 제목:** [BEJEWELY] 토리든 공식몰 공개 상품정보의 1회성 기술 검증 허용 범위 문의
