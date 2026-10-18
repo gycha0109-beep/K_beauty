@@ -24,7 +24,7 @@ trap 'rm -rf -- "$workdir"' EXIT
 source_db=d8k13_preledger_synthetic
 target_db=d8k13_current_restore_disposable
 client() {
- docker exec -e "PGPASSWORD=$PGPASSWORD" "$container" "$@"
+ docker exec -i -e "PGPASSWORD=$PGPASSWORD" "$container" "$@"
 }
 major="$(client psql -X -Atqc "select current_setting('server_version_num')::int / 10000" \
   -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$source_db")"
@@ -40,8 +40,16 @@ client pg_dump -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$source_db" \
   --schema=public --data-only --no-owner --no-privileges \
   --no-subscriptions --file /dev/stdout > "$workdir/data.sql"
 test -s "$workdir/schema.sql" && test -s "$workdir/data.sql"
+# Refuse silent/empty dumps before attempting any restoration.
+grep -Eq '^CREATE TABLE public\\.products[[:space:]]*\\(' "$workdir/schema.sql"
+grep -Eq '^CREATE TABLE public\\.product_candidates[[:space:]]*\\(' "$workdir/schema.sql"
+grep -Eq '^CREATE TABLE public\\.source_rankings[[:space:]]*\\(' "$workdir/schema.sql"
 client psql -X -q -v ON_ERROR_STOP=1 --single-transaction \
   -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$target_db" < "$workdir/schema.sql" >/dev/null
+# Ensure PostgreSQL parsed input instead of quietly accepting empty stdin.
+restored_schema="$(client psql -X -Atqc "select to_regclass('public.products') is not null and to_regclass('public.product_candidates') is not null and to_regclass('public.source_rankings') is not null" \\
+  -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$target_db")"
+test "$restored_schema" = t
 client psql -X -q -v ON_ERROR_STOP=1 --single-transaction \
   -h 127.0.0.1 -p 5432 -U d8k13_fixture -d "$target_db" < "$workdir/data.sql" >/dev/null
 # Compare current structure and synthetic user-data facts, never disclose raw SQL/data.
