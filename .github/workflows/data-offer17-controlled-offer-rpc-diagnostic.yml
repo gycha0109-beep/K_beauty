@@ -52,7 +52,9 @@ jobs:
           package-manager-cache: false
 
       - name: Install verifier dependencies
-        run: npm ci --ignore-scripts
+        run: node scripts/security/install-product-dependencies.mjs --ignore-scripts
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
 
       - name: Verify exact head
         shell: bash

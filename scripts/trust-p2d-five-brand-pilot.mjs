@@ -60,6 +60,58 @@ function safePublicFailure(err){
   if(reason.startsWith("SOURCE_BLOCKED:"))return "POLICY_OR_SOURCE_BLOCKED";
   return "RUN_FAILED_CLOSED";
 }
+/**
+ * Compact, read-only diagnosis of a single already-completed official-source
+ * exploration. No new fetches and no elevation of unverified candidates.
+ * Statuses describe the observed failure stage, not the website's true cause.
+ */
+export function diagnoseTrustP2DSite(site){
+  if(!site||!Array.isArray(site.pages)||
+    (site.observations!==undefined&&!Array.isArray(site.observations)))
+    throw Error("P2D_INVALID_SITE_DIAGNOSTIC");
+  const observations=site.observations??[];
+  const pages=site.pages;
+  const sitemapFetchedCount=observations.filter(o=>
+    o?.kind==="sitemap"&&o.status==="FETCHED").length;
+  const sitemapUnavailableCount=observations.filter(o=>
+    o?.kind==="sitemap"&&o.status!=="FETCHED").length;
+  const pagesFetchedCount=pages.filter(p=>typeof p.sha256==="string").length;
+  const wrongVariantCount=pages.filter(p=>[
+    "CATALOG_SIZE_MISMATCH","BUNDLE_VARIANT_REVIEW_REQUIRED",
+    "SIZE_CONFLICT_REVIEW_REQUIRED",
+  ].includes(p.status)).length;
+  const positiveCandidateCount=pages.filter(p=>GOOD.has(p.status)).length;
+  const sourceStatus=String(site.status??"");
+  const indexStatus=String(site.homepageIndexStatus??"NOT_RECORDED");
+  let reason;
+  if(sourceStatus==="ROBOTS_UNAVAILABLE")reason="ROBOTS_UNAVAILABLE_HOLD";
+  else if(sourceStatus==="ROBOTS_DISALLOWED")reason="ROBOTS_DISALLOWED_HOLD";
+  else if(sourceStatus==="CRAWL_DELAY_NOT_SUPPORTED")reason="ROBOTS_PACING_HOLD";
+  else if(sourceStatus==="NO_ELIGIBLE_OFFICIAL_LOCATOR")reason="NO_ELIGIBLE_OFFICIAL_LOCATOR";
+  else if(wrongVariantCount>0)reason="WRONG_VARIANT_PAGE_HOLD";
+  else if(positiveCandidateCount>0)reason="NAME_CANDIDATE_REVIEW_ONLY";
+  else if(pages.some(p=>["SOURCE_BLOCKED","TRANSIENT_FAILURE"].includes(p.status)))
+    reason="PRODUCT_PAGE_FETCH_HOLD";
+  else if(pagesFetchedCount>0)reason="FETCHED_PAGE_IDENTITY_UNRESOLVED";
+  else if(pages.length>0)reason="PRODUCT_PAGE_NOT_CONFIRMED";
+  else if(indexStatus==="FETCHED")reason="NO_ELIGIBLE_OFFICIAL_INDEX_LINK";
+  else if(sitemapFetchedCount>0)reason="NO_MATCHING_SITEMAP_URL";
+  else if(indexStatus==="SOURCE_BLOCKED"||
+    indexStatus==="TRANSIENT_FAILURE")reason="OFFICIAL_INDEX_FETCH_HOLD";
+  else if(sitemapUnavailableCount>0)reason="SITEMAP_FETCH_HOLD";
+  else reason="NO_USABLE_DISCOVERY_EVIDENCE";
+  return Object.freeze({
+    reason,sourceStatus,
+    sitemapFetchedCount,sitemapUnavailableCount,
+    indexStatus,
+    peerLinkCandidateCount:Math.max(0,Math.min(2,
+      Number.isInteger(site.peerIndexCandidateCount)?site.peerIndexCandidateCount:0)),
+    candidatePageCount:pages.length,
+    pagesFetchedCount,wrongVariantCount,positiveCandidateCount,
+    verifiedExactSkuCount:0,sourceBindingAuthorized:false,
+  });
+}
+
 /** Every non-empty identity signal is an unverified candidate, never a Fact. */
 export function assessTrustP2DDiscovery(run){
   if(!run||run.readOnly!==true||run.subjectCreationAuthorized!==false||
@@ -142,6 +194,7 @@ export async function runTrustP2DFiveBrandPilot({
           peerIndexCandidateCount:site.peerIndexCandidateCount??0,
           candidateCount:site.candidateCount??0,
           homepageIndexStatus:site.homepageIndexStatus??"NOT_RECORDED",
+          stageDiagnosis:diagnoseTrustP2DSite(site),
           observations:(site.observations??[]).map(o=>({
             kind:o.kind,status:o.status,fetched:o.fetched,
           })),

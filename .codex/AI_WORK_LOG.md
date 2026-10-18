@@ -2,14 +2,50 @@
 
 ## Entries
 
-### 2026-10-14 / Face Lab Skin S4 native Premium photo-evidence status
+### 2026-10-18 / Face Lab Skin S4 saved Premium canonical display and account isolation (Draft)
 
-- Type: bounded UI presentation + pure mapping tests. Base main 1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2; skin track only.
-- Audited actual mobile `NativeSavedReport`: existing Premium content is flattened from fullRoutine/functionalDecisions/conditionResponses. Added read-only Skin photo-state adapter and Korean/English evidence notice for available/none/unavailable/ineligible/insufficient/unknown and conflict with old v4 fallback.
-- Unknown and legacy canonical available with absent explicit source remain unconfirmed. No suggestion that incomplete photo is diagnosis or safe recommendation; no API fields changed or saved object mutated.
-- Added deterministic pure TypeScript fixture import in existing Current Main Health. S4 actual Android/browser render, accessibility, capture flicker/network and four-sector parity remain HOLD pending device/operator.
-- Provider/photo persistence/auth/RLS/DB/Payment/Style code untouched. SCA #1208 block not bypassed.
+- S4 Draft reconciles the client-only canonical saved report projection with the already patched shared security baseline. It displays saved routinePlan, functionalPlan, and conditionPlan ahead of legacy flat display, without new scoring or diagnosis.
+- Account-scoped request epochs and auth subscription guard prevent previously loaded report and share-sheet UI from reviving after logout, retry, or account change. Pure synthetic tests added.
+- Camera/ML Kit verifiers check the actual Android Runtime executor and Native Shell delegation, never drop the required emulator/prebuild assertions.
+- Still HOLD: real-device UAT, independent Skin judgment evidence, privacy/Auth/RLS acceptance, and Skin-specific release. No paid calls, images, main merge, or deployment.
 
+### 2026-10-18 / Approved production private-install connection
+
+- 승인: 사용자가 기존 주 계정 read:packages 전용 PAT의 Vercel production 전용 Secret 등록, 준비한 설치 명령 한 줄의 PR #1343 반영·커밋·푸시·자동검사를 명시 승인. main 병합·실제 배포는 제외. Secret/Production 설정 영향 Y, DB/RLS/Storage/Provider/Payment 실행 N.
+- 실행: 소유자 로컬 숨김 입력에서 기존 PAT 재사용. GitHub가 owner gycha0109-beep / scopes read:packages 단독 / 만료 2026-10-24T15:17:16Z를 확인. Vercel CLI가 production 전용 SCA_PACKAGES_READ_TOKEN Secret 등록 성공; 별도 메타데이터 조회로 키·Production·Secret 확인. preview/development 추가·기존 Secret 덮어쓰기 0. agent의 PAT/개인키/DPAPI 읽기·출력 0. 외부 도우미/결과파일은 커밋 제외.
+- 변경: vercel.json installCommand만 기존 안전 설치기로 연결. 기존 Git 자동 배포 제한/flags/cron 동일. 프로젝트 전역 설치명령/Node 설정은 그대로 두고 소스 버전 설정만 사용. canonical deployment 문서의 non-main 자동 preview 설명을 실제 차단 설정과 일치시키고 설치 계약·활성 시점 추가; 보안 문서에 실제 등록과 미실행 경계 기록. API/DB/도메인/저장 계약 변경 0, 새 인증 fallback 없음.
+- 검증: 기존 설정과 단일 JSON delta 동일성 PASS, repository hygiene PASS(673 runtime files, secret/shortcut 0), admin current-main integration 126 assertions PASS, 설치 인증격리 3개 테스트 PASS(로컬 Node24.14.0, 합성 fixture). git diff check와 변경 문서 비밀/소유자경로 검사 PASS. Node22/npm10 실제 설치/내용/악성입력은 cb1d9379의 기존 검증과 구분하고 새 HEAD CI를 예약 확인.
+- 상태: Secret 등록 VERIFIED; 소스 설치명령 IMPLEMENTED, 새 HEAD CI/실제 Vercel private install은 별도 미검증. Vercel 환경 Secret은 build/runtime 양쪽에 제공되며 설치기 자식 환경 정리는 플랫폼의 runtime 변수 제거를 뜻하지 않음. 실제 hosted 산출물 비밀정보 검사는 새 배포 전 필요. 실제 설치·preview/production 배포·main 병합·package/ACL/결제/DB 변경 0. 토큰 만료 전 갱신 필요.
+- 후속: 동일 PR 새 HEAD의 자동검사만 확인하고 결과를 PR에 기록; 장기 CI는 예약하고 열린 세션에서 기다리지 않음. 실제 Vercel 빌드·배포는 별도 승인 필요. AI_CONTEXT 승격 제안 없음.
+
+### 2026-10-18 / Production private-install preflight (read-only)
+
+- 유형: 진단. 기준 제품 PR #1343 / `cb1d9379b9a0b3d4f8d45300fe12ecbd5c44bd4e`. Secret/Production 영향 Y; DB/RLS/Storage/Provider/Payment 실행 N. 사용자는 운영 설치 인증 검증 재개를 요청했으며 main 병합·배포·운영 설정 변경은 미승인.
+- 실제 확인: 저장소와 연결된 Vercel `k-beauty` 프로젝트를 식별. connector 환경 메타데이터 조회 403은 기존 로그인 CLI의 동일 project/team 읽기 전용 조회로 대체 성공. production 환경 목록에 SCA_PACKAGES_READ_TOKEN/NODE_AUTH_TOKEN/NPM_TOKEN 없음. 프로젝트 installCommand/buildCommand/rootDirectory 모두 기본값(null). 비밀값·PAT·개인키·DPAPI 파일 읽기/출력 0.
+- 준비: 저장소 밖에 vercel.json의 installCommand 한 필드만 기존 안전 설치기로 연결하는 제안 patch와 비밀 없는 preflight 작성. git apply --check 및 나머지 JSON 동일성 PASS. 실제 저장소 배포 설정/hosted 설정 변경 0. 운영 프로젝트 installCommand를 먼저 바꾸면 구 main에 없는 설치기를 호출할 수 있으므로 저장소 버전 설정을 제안.
+- runtime: 프로젝트 기본 Node24.x와 제품 package.json engines22.x를 구분. Vercel 공식 계약상 engines가 우선하므로 프로젝트 Node 변경은 제안하지 않음; 실제 hosted build 버전은 NOT_RUN. 원래 Node22/npm10 설치·격리 검증은 반복하지 않음.
+- blocker: production 전용 read:packages Secret 등록 및 저장소 설치 명령 연결은 AGENTS.md 보호영역과 배포 계약에 따라 명시 승인 필요. 기존 적합한 읽기 전용 PAT 우선 재사용, 알려진 Actions credential 만료 2026-10-24T15:17:16Z. 실제 Vercel 설치 검증은 설정 연결 후 별도 승인된 빌드/배포에서만 확인 가능. main 병합·preview/production 배포·기존 ACL/계정/결제 변경 없음.
+- 문서 충돌: canonical deployment 문서는 non-main 자동 preview를 설명하지만 실제 vercel.json은 main 외 자동 배포를 끔. 실제 설정을 우선하고 변경하지 않음. 구조/API/DB/저장 계약 변경 없음; AI_CONTEXT 승격 없음.
+
+### 2026-10-18 / Approved existing DB filename collision reconciliation
+
+- 기준: 제품 PR #1343 / `d0474bfbe43a1240a04b446418c4db608857edfe`. 해당 HEAD의 보안·CodeQL·Current Main Health·Android·iOS Simulator 포함 53개 검사 통과, 기존 migration 파일번호 중복 검사 1개 실패 확인.
+- 읽기 전용 근거: 로컬 공개 설정과 일치하는 연결 프로젝트에서 두 migration의 실제 적용 번호 `20261012181320` / `20261012181544` 및 SQL SHA256가 Git 소스와 각각 정확히 일치. Production 배포 프로젝트 동일성을 주장하지 않음. 사용자에게 검증된 3개 파일 변경안을 제시하고 파일번호 수정·커밋·푸시·자동검사 명시 승인 확보.
+- 변경: 두 SQL 파일을 실제 적용 번호로 rename, R16I 검증기 파일 경로 1곳 갱신. 최종 direct-consumer 검색에서 기존 DB CI의 psql 파일 참조 2곳도 발견되어 동일 rename 경로에 연결(직접 caller 근거로 범위 확장). 명령·target·job 구조 변경 없음. SQL bytes/스키마/권한/DB 데이터/hosted ledger/검사 기대값 변경 0. 기존 `20260824` 이력 충돌 및 blank replay HOLD 유지.
+- 검증: 승인 전 별도 복사본의 authority/R16I57 guards/추가 충돌 차단 negative control 및 patch apply check PASS. 실제 작업실 적용 후 SQL 원본 bytes 비교·authority/R16I57 guards·diff check PASS. 최종 새 HEAD의 GitHub CI는 별도 확인 예정; 이전 HEAD 결과를 새 HEAD PASS로 간주하지 않음.
+- 구조: API/DB 스키마·저장 계약 변경 없음; 이미 적용된 이력과 소스 파일 식별자 정합만 수정. 직접 consumer 검증 경로 연결 유지. main 병합·production 배포·migration apply/repair 미실행. 상세는 `docs/security/sec-sca-20261018-product-remediation.md`.
+
+### 2026-10-18 / Product SCA remediation after B6 private publication
+
+- 유형: 진단 후 제한 실행. 기준 `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2`, 브랜치 `codex/security/sca-product-remediation-20261017`; 기존 #1299와 두 기존 작업실 보존.
+- 변경: 승인된 braces/forge 실제 제품 설치 연결, Next/selector-parser/uuid 공식 안전 버전, CommonJS 호환 선형 URL decoder 교체 및 정확한 lock 고정. canonical verifier의 별도 crawler 의존 관계로 범위를 확장하여 ws/esbuild도 수정. 원래 root 35건(22 high/13 moderate), production 30건과 별도 crawler 2건을 각각 재검사 0건으로 확인.
+- 보안: 설치된 수정 파일·consumer·숨은 중첩 복사본 census 및 악성 입력 검사. 원래 패키지 이름의 추가 metadata-only 검사 FAIL(전체 25/production 22)을 그대로 보존하고 정확히 수정·검증된 3개 원인만 별도 근거로 대응; 새 advisory는 차단. 예외 연장·숫자 차감·검사 비활성화 없음.
+- 인증 설치: 소유자 read:packages Actions secret 연결, root 43곳과 crawler 독립 설치 6곳 구분, 임시 인증 삭제 후 코드 검증·lifecycle 실행. 기존 workflow job/needs/action/step 수 유지. 토큰·개인키·인증 헤더·소유자 절대 경로·비공개 패키지 내용 미포함.
+- 실행: Linux Node22/npm10 canonical current-main health/Next production build와 recommendation 164×12 replay PASS. Windows/Linux credential 격리 3개 테스트 PASS. 웹 실제 Google 로그인·기존 결과 조회와 익명/잘못된 bearer 차단, 공개 Supabase 연결 확인. 실제 provider 분석/유료 호출/레코드 변경 미실행.
+- 모바일: 최종 x86_64 debug/release APK 빌드와 양쪽 카메라·설문·접근 차단·링크·언어/테마 smoke PASS. Windows 개발 실행 실패는 Metro가 IPv6에만 바인딩된 증거로 한정 진단; 임시 검증 harness에 IPv4 DNS 순서를 지정. 잘못 의심했던 앱 템플릿 변경과 관련 테스트는 제거하고 기존 생성 소스 보존. 원래 앱 템플릿으로 IPv4 Metro 연결·전체 smoke 통과. 최종 웹/Expo/APK 3,214개 파일 비밀정보 패턴 검사 0건.
+- 외부 경고: GitGuardian 38321889의 SHA256 inventory 오탐을 정식 사건 검토에서 Not a secret으로 처리하고 근거 기록; 과거 GitHub check 실패는 PASS로 바꾸지 않음.
+- 상태/잔여: 로컬 검증 후 사용자가 제품 커밋/푸시/새 PR·자동검사를 명시 승인. 새 제품 HEAD의 CI·iOS native·실기기 인증·ARM native는 현재 증거 작성 시 미실행; main 병합·프로덕션 배포는 별도 미승인. 운영 설치 서비스의 read-only 인증 경로 확정 및 2026-10-24 토큰 만료 전 갱신 필요. 재게시/ACL/결제/DB 정책 변경 0.
+- 상세: `docs/security/sec-sca-20261018-product-remediation.md`, `security/product-remediation-verification.json`. 구조 영향: 안전한 private install 경로와 수정 코드 inventory 단일 기준 추가; API/DB/도메인 저장 계약 변경 없음. AI_CONTEXT 승격 제안 없음.
 
 ### 2026-10-10 / Face Lab 마이그레이션 이력 오프라인 비교기 구현
 
