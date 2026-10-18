@@ -22,8 +22,21 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
   & docker @arguments 1> $log 2>&1
   $code = $LASTEXITCODE
   if ($code -ne 0) {
-    # Do not print raw restore logs: PostgreSQL errors may contain sensitive SQL values.
-    throw ('D8K13_LOCAL_RESTORE_' + $stage + '_FAILED_EXIT_' + $code)
+    # Classify failure without exposing SQL, row values, file contents or raw stderr.
+    $reason = 'OTHER'
+    if (Test-Path -LiteralPath $log) {
+      $details = Get-Content -LiteralPath $log -Raw -ErrorAction SilentlyContinue
+      if ($details -match 'role .{0,180} does not exist') { $reason = 'MISSING_ROLE' }
+      elseif ($details -match 'schema .{0,180} does not exist') { $reason = 'MISSING_SCHEMA' }
+      elseif ($details -match 'extension .{0,180} (is not available|does not exist)') { $reason = 'MISSING_EXTENSION' }
+      elseif ($details -match 'function .{0,180} does not exist') { $reason = 'MISSING_FUNCTION' }
+      elseif ($details -match 'relation .{0,180} does not exist') { $reason = 'MISSING_RELATION' }
+      elseif ($details -match 'type .{0,180} does not exist') { $reason = 'MISSING_TYPE' }
+      elseif ($details -match 'permission denied') { $reason = 'PERMISSION_DENIED' }
+      elseif ($details -match '(already exists|duplicate key)') { $reason = 'ALREADY_EXISTS' }
+      elseif ($details -match 'syntax error') { $reason = 'SYNTAX_ERROR' }
+    }
+    throw ('D8K13_LOCAL_RESTORE_' + $stage + '_' + $reason + '_FAILED_EXIT_' + $code)
   }
 }
 function Get-PublicInventory([string]$name) {
