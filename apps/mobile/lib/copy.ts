@@ -149,7 +149,7 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
           tooClose: "Move a little farther away.",
           offCenter: "Center your face inside the oval.",
           notFrontal: "Face the camera straight.",
-          stabilizing: "Hold still for a moment.",
+          stabilizing: "Hold still, then tap Check face position again to confirm.",
           ready: "Framing looks good. Hold still or take the photo.",
           unavailable: "Face guidance is unavailable. You can still take the photo manually."
         }
@@ -240,7 +240,7 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
           tooClose: "조금 더 멀리 떨어져 주세요.",
           offCenter: "얼굴을 타원 중앙에 맞춰 주세요.",
           notFrontal: "카메라를 정면으로 바라봐 주세요.",
-          stabilizing: "잠시 그대로 유지해 주세요.",
+          stabilizing: "자세를 유지한 채 얼굴 위치 확인을 한 번 더 누르세요.",
           ready: "정렬이 좋습니다. 그대로 유지하거나 사진을 촬영하세요.",
           unavailable: "얼굴 가이드를 사용할 수 없습니다. 사진은 수동으로 계속 촬영할 수 있습니다."
         }
