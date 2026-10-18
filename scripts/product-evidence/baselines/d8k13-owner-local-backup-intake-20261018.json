@@ -18,7 +18,9 @@
       "data.sql": 20857133
     },
     "inspectOutputStatus": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
-    "restoreFailure": "roles.sql:22 role anon does not exist"
+    "restoreFailure": "roles.sql:22 role anon does not exist",
+    "secondRestoreFailure": "Unable to find image 'supabase/postgres:17.6.1.136' locally",
+    "secondRestoreFailureWasPrePullStatusMessage": true
   },
   "connectorEvidence": {
     "driveExactNameSearchReturned": 0,
@@ -47,7 +49,20 @@
     "previousRestoreEnvironment": "postgres:17.6_bare_image",
     "previousRestoreSucceeded": false,
     "correctedIsolatedRestoreImage": "supabase/postgres:17.6.1.136",
-    "correctedImageRealBackupRestoreSucceeded": false
+    "correctedImageRealBackupRestoreSucceeded": false,
+    "secondOwnerAttemptRestoredRows": false,
+    "secondOwnerAttemptImagePulledNotProven": true,
+    "powerShellNativeStderrHandlingFixed": true,
+    "coldImagePullHandledWithStartProcess": true,
+    "realBackupRestoreWithPullFixObserved": false,
+    "coldImageSyntheticCI": {
+      "runId": 39134449424,
+      "conclusion": "success"
+    },
+    "stderrSafeSyntheticCI": {
+      "runId": 39134664951,
+      "conclusion": "success"
+    }
   },
   "syntheticCi": {
     "runId": 39133409278,
