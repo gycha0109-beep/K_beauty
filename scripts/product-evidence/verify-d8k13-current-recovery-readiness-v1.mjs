@@ -56,6 +56,30 @@ export function verifyD8k13CurrentRecoveryReadiness(dir=root){
  assert.equal(b.currentProductionBaselineMayChangeAfterObservation,true);
  assert.equal(b.productionWrites,0);
  assert.equal(b.releaseAuthorized,false);
+ const drill=JSON.parse(readFileSync(join(dir,
+  "scripts/product-evidence/baselines/d8k13-current-recovery-synthetic-restore-drill-20261018.json"),"utf8"));
+ assert.equal(drill.schema,"D8K13_CURRENT_RECOVERY_SYNTHETIC_RESTORE_DRILL_V1");
+ assert.equal(drill.scope,"SYNTHETIC_SCHEMA_AND_DATA_DISPOSABLE_PG17");
+ assert.equal(drill.workflowRunId,39109843279);
+ assert.equal(drill.testedHead,"72abd7589ee08573aea5b0e71f97fff62741d829");
+ assert.equal(drill.jobs.nativeNode.id,117623396627);
+ assert.equal(drill.jobs.nativeNode.result,"success");
+ assert.equal(drill.jobs.nativeNode.marker,"D8K13_CURRENT_RECOVERY_INVENTORY_PASS_HOLD");
+ assert.equal(drill.jobs.postgres17.id,117623396756);
+ assert.equal(drill.jobs.postgres17.result,"success");
+ assert.equal(drill.jobs.postgres17.marker,
+  "D8K13_CURRENT_RECOVERY_SYNTHETIC_SCHEMA_DATA_RESTORE_PASS");
+ const drillBytes=readFileSync(join(dir,drill.script.path));
+ const scriptBlob=createHash("sha1")
+  .update(Buffer.from("blob "+drillBytes.length+"\\u0000")).update(drillBytes).digest("hex");
+ assert.equal(scriptBlob,drill.script.gitBlobSha,"D8K13_CURRENT_RESTORE_SCRIPT_BLOB_DRIFT");
+ assert.equal(drill.doesNotExportHostedDatabase,true);
+ assert.equal(drill.productionProjectFullBackupExistsInThisEvidence,false);
+ assert.equal(drill.productionProjectRestoreTestPassed,false);
+ assert.equal(drill.aclGrantEquivalenceVerified,false);
+ assert.equal(drill.authStorageObjectRecoveryVerified,false);
+ assert.equal(drill.productionWrites,0);
+ assert.equal(drill.releaseAuthorized,false);
  return {status:"HOLD",scope:"PUBLIC_METADATA_ONLY",counts:b.counts,
   currentStructureObserved:true,privateFullBackupAvailable:false,
   actualCurrentDbRestorePassed:false,releaseAuthorized:false,productionWrites:0};
