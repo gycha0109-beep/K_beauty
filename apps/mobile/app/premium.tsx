@@ -130,9 +130,11 @@ export default function PremiumScreen() {
         // Token refresh / duplicate INITIAL_SESSION for the same account must
         // not discard product selections or a pending access check.
         activeSessionRef.current = nextSession;
-        setState(previous => previous.session?.user.id === nextUserId
-          ? { ...previous, session: nextSession }
-          : previous);
+        setState(previous => {
+          if (previous.status === "loading" || previous.status === "signed-out" ||
+              previous.session?.user.id !== nextUserId) return previous;
+          return { ...previous, session: nextSession };
+        });
         return;
       }
 
