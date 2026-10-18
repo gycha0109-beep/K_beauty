@@ -163,17 +163,22 @@ try {
     '-e',('JWT_SECRET=' + $password),'-e','JWT_EXP=3600',
     $image,'postgres','-c','config_file=/etc/postgresql/postgresql.conf'))
   $containerStarted = $true
+  # pg_isready can say "accepting connections" while Supabase image initdb
+  # scripts are still setting up auth/storage/extensions/grants.
+  # Wait for final bootstrap state, not only socket availability.
+  $readyQuery = "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin')) = 4 AND to_regclass('auth.users') IS NOT NULL AND to_regclass('storage.objects') IS NOT NULL AND EXISTS (SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN 1 ELSE 0 END"
   $ready = $false
   for ($i = 0; $i -lt 90; $i++) {
-    & docker exec -u postgres $container pg_isready -q -U postgres -d postgres *> $null
-    if ($LASTEXITCODE -eq 0) { $ready = $true; break }
-    Start-Sleep -Seconds 1
+    $readyExit = Invoke-DockerLifecycle 'SUPABASE_BOOTSTRAP_READY' @('exec','-u','postgres',
+      $container,'psql','-X','-A','-t','-v','ON_ERROR_STOP=1','-d','postgres',
+      '-c',$readyQuery) $true
+    if ($readyExit -eq 0) {
+      $readyText = Get-Content -LiteralPath (Join-Path $unpacked 'docker-lifecycle-SUPABASE_BOOTSTRAP_READY-out.log') -Raw -ErrorAction SilentlyContinue
+      if ($readyText -and $readyText.Trim() -eq '1') { $ready = $true; break }
+    }
+    Start-Sleep -Seconds 2
   }
-  Assert-Drill $ready 'D8K13_LOCAL_RESTORE_POSTGRES_NOT_READY'
-  # Fail before executing backup SQL unless Supabase-provisioned roles exist.
-  # A plain postgres image lacks anon/authenticated/service_role and must not be used.
-  $rolesReady = & docker exec -u postgres $container psql -X -A -t -v ON_ERROR_STOP=1 -d postgres -c "select count(*) from pg_roles where rolname in ('anon','authenticated','service_role','supabase_admin')"
-  Assert-Drill ($LASTEXITCODE -eq 0 -and ("$rolesReady".Trim() -eq '4')) 'D8K13_LOCAL_RESTORE_SUPABASE_BASE_ROLES_MISSING'
+  Assert-Drill $ready 'D8K13_LOCAL_RESTORE_SUPABASE_BOOTSTRAP_NOT_READY'
   $empty = & docker exec -u postgres $container psql -X -A -t -d postgres -v ON_ERROR_STOP=1 -c "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p','v','m','f','S')"
   Assert-Drill ($LASTEXITCODE -eq 0 -and ("$empty".Trim() -eq '0')) 'D8K13_LOCAL_RESTORE_DESTINATION_NOT_EMPTY'
   Run-Docker 'DROP_EMPTY_PUBLIC' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c','DROP SCHEMA IF EXISTS public CASCADE')
