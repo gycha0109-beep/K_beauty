@@ -41,7 +41,7 @@ function projectRoutine(source: Record<string, unknown> | null, locale: Locale):
   for (const [key, label] of [
     ["morningSteps", locale === "en" ? "Morning" : "아침"],
     ["nightSteps", locale === "en" ? "Evening" : "저녁"]
-  ]) {
+  ] as const) {
     const steps = source[key];
     if (!Array.isArray(steps)) continue;
     for (const item of steps.slice(0, 6)) {
