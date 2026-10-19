@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_OTHER_REPEATED_SQLSTATE_LOCAL_DIAGNOSTIC_TESTED_PENDING_OWNER_RERUN",
+  "state": "OWNER_REAL_SCHEMA_SQLSTATE_42501_FUNCTION_OWNER_FIXED_IN_SYNTHETIC_PENDING_OWNER_REAL_ZIP_RERUN",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -43,6 +43,25 @@
       "failure": "D8K13_LOCAL_RESTORE_SCHEMA_OTHER_FAILED_EXIT_3",
       "actualBackupDataRestorePassed": false,
       "exactSqlStateStillUnknown": true
+    },
+    "latestSchemaOwnerFailure": {
+      "archiveSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "zipInspectPass": true,
+      "publicPreserved": true,
+      "stage": "schema",
+      "sqlstate": "42501",
+      "sqlLine": 474,
+      "statementClass": "ALTER FUNCTION OWNER TO",
+      "functionSchema": "private",
+      "newOwnerRole": "product_offer_link_health_recorder_owner",
+      "ownerRoleDefinedInRolesSql": true,
+      "ownerRolePropertiesFromOwnerReport": {
+        "superuser": false,
+        "login": false,
+        "createRole": false
+      },
+      "dataSqlRestored": false,
+      "actualSqlContentsShared": false
     }
   },
   "connectorEvidence": {
@@ -139,7 +158,30 @@
       "expectedMissingSchema": "3F000",
       "formerlyOther": "22012"
     },
-    "realOwnerSqlstateRerunObserved": false
+    "realOwnerSqlstateRerunObserved": true,
+    "knownPrivateFunctionOwnerFix": {
+      "issue": "private function OWNER TO privilege SQLSTATE 42501",
+      "wrongRegexEscapingInPriorFix": true,
+      "restoreOnlyDockerGrants": true,
+      "targetRole": "product_offer_link_health_recorder_owner",
+      "namespace": "private",
+      "actualOwnerZipAfterFinalPatchRetested": false,
+      "ci": {
+        "runId": 39223627159,
+        "jobId": 117964525037,
+        "conclusion": "success",
+        "fixtureOnly": true,
+        "covered": [
+          "NOLOGIN owner role creation and alteration",
+          "private function CREATE and ALTER OWNER TO",
+          "restore schema/data",
+          "public namespace variants",
+          "SQLSTATE sanitization",
+          "cold Docker image",
+          "wrong-sized ZIP rejection"
+        ]
+      }
+    }
   },
   "syntheticCi": {
     "runId": 39133409278,
