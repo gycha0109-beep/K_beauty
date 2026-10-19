@@ -865,4 +865,146 @@ await assert.rejects(()=>runTrustP2DCli(["--execute","--execute-four"]),
   /P2D_UNSUPPORTED_CLI_FLAG/);
 console.log("TRUST_P2D_FOUR_BRAND_HOLD_AND_AUTHORIZATION_PASS");
 
+
+/**
+ * P2-F6 A: typed pre-resolved first-party candidate URL, NOT proof of SKU.
+ * All cases are deterministic mocks: no public-site request, DB or AI call.
+ */
+const directEntry=(url,more={})=>({
+  kind:"PRE_RESOLVED_OFFICIAL_PRODUCT_URL",
+  source:"OPERATOR_SUPPLIED_PUBLIC_URL",
+  productId:scopedProduct.id,
+  origin:"https://neopharmshop.co.kr",
+  url,...more,
+});
+const directCalls=[];
+const directFetchers={
+  fetchRobots:async url=>{
+    directCalls.push(["robots",url]);
+    return {bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url};
+  },
+  fetchSitemap:async()=>{throw Error("PRE_RESOLVED_MUST_SKIP_SITEMAPS");},
+  fetchPage:async url=>{
+    directCalls.push(["page",url]);
+    if(url!==sitemapCorrect)throw Error("PRE_RESOLVED_MUST_SKIP_PEER_INDEX");
+    return {bytes:Buffer.from("<title>아토팜 MLE 로션 600ml</title>"),finalUrl:url};
+  },
+};
+const typedRun=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  ...directFetchers,preResolvedLocators:[directEntry(sitemapCorrect)],
+});
+assert.deepEqual(directCalls.map(x=>x[0]),["robots","page"]);
+assert.deepEqual(typedRun.sites[0].observations,[]);
+assert.equal(typedRun.sites[0].locatorMode,"PRE_RESOLVED");
+assert.equal(typedRun.sites[0].homepageIndexStatus,"NOT_USED_PRE_RESOLVED");
+assert.deepEqual(typedRun.sites[0].pages.map(x=>x.url),[sitemapCorrect]);
+assert.equal(typedRun.sites[0].pages[0].locatorMode,"PRE_RESOLVED");
+assert.equal(typedRun.sites[0].pages[0].status,"TITLE_NAME_CANDIDATE");
+assert.equal(typedRun.sites[0].pages[0].variantScope.status,"SIZE_MATCH_CANDIDATE");
+assert.equal(typedRun.sites[0].pages[0].factConfirmationAuthorized,false);
+assert.equal(typedRun.officialProductEvidenceConfirmed,false);
+assert.equal(typedRun.subjectCreationAuthorized,false);
+assert.equal(typedRun.factWrites,0);
+assert.equal(typedRun.recommendationWrites,0);
+assert.equal(JSON.stringify(typedRun).includes("<title>"),false);
+for(const bad of [
+  directEntry("https://evil.example/product/mle-lotion-600ml"),
+  directEntry("http://neopharmshop.co.kr/product/mle-lotion-600ml"),
+  directEntry("https://neopharmshop.co.kr@evil.example/product/mle-lotion-600ml"),
+  directEntry("https://neopharmshop.co.kr/product/invalid%ZZ"),
+  directEntry("https://neopharmshop.co.kr/product/mle-lotion-600ml#fragment"),
+  directEntry("https://neopharmshop.co.kr/product/mle-lotion-600ml",{
+    productId:"e019ec75-4de9-460f-96e9-9ea0665422c5"}),
+  directEntry(sitemapCorrect,{kind:"UNTRUSTED_URL"}),
+  directEntry(sitemapCorrect,{source:"SEARCH_RESULT_ASSUMED_OFFICIAL"}),
+]){
+  let attempted=0;
+  await assert.rejects(()=>runTrustP2Discovery(scopedRow,scopedProduct,{
+    fetchRobots:async()=>{attempted++;throw Error("SHOULD_NOT_FETCH");},
+    fetchSitemap:async()=>{attempted++;throw Error("SHOULD_NOT_FETCH");},
+    fetchPage:async()=>{attempted++;throw Error("SHOULD_NOT_FETCH");},
+    preResolvedLocators:[bad],
+  }),/TRUST_P2_PRE_RESOLVED_/);
+  assert.equal(attempted,0);
+}
+await assert.rejects(()=>runTrustP2Discovery(scopedRow,scopedProduct,{
+  ...directFetchers,preResolvedLocators:[
+    directEntry(sitemapCorrect),directEntry(sitemapCorrect),
+  ],
+}),/TRUST_P2_PRE_RESOLVED_ORIGIN_OR_DUPLICATE/);
+await assert.rejects(()=>runTrustP2Discovery(scopedRow,scopedProduct,{
+  ...directFetchers,preResolvedLocators:[...Array(3)].map((_,i)=>
+    directEntry(sitemapCorrect+"?x="+i)),
+}),/TRUST_P2_PRE_RESOLVED_INPUT_INVALID/);
+// Robots disallow is always checked BEFORE the page request; never bypass it.
+const deniedCalls=[];
+const denied=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapCorrect)],
+  fetchRobots:async url=>{
+    deniedCalls.push("robots");
+    return {bytes:Buffer.from("User-agent: *\\nDisallow: /product/\\n"),
+      finalUrl:url};
+  },
+  fetchSitemap:async()=>{deniedCalls.push("sitemap");throw Error("NO");},
+  fetchPage:async()=>{deniedCalls.push("page");throw Error("NO");},
+});
+assert.deepEqual(deniedCalls,["robots"]);
+assert.equal(denied.sites[0].status,"NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
+assert.equal(diagnoseTrustP2DSite(denied.sites[0]).reason,
+  "NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
+// Explicit wrong catalog volume never uses a product-page fetch slot.
+const wrongDirectCalls=[];
+const wrongDirect=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapWrong300)],
+  fetchRobots:async url=>{
+    wrongDirectCalls.push("robots");
+    return {bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url};
+  },
+  fetchSitemap:async()=>{wrongDirectCalls.push("sitemap");throw Error("NO");},
+  fetchPage:async()=>{wrongDirectCalls.push("page");throw Error("NO");},
+});
+assert.deepEqual(wrongDirectCalls,["robots"]);
+assert.equal(wrongDirect.sites[0].candidateCount,0);
+assert.equal(wrongDirect.factWrites,0);
+// Even a fetched page cannot be promoted from generic title/body mention.
+const generic=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapCorrect)],
+  fetchRobots:directFetchers.fetchRobots,
+  fetchSitemap:directFetchers.fetchSitemap,
+  fetchPage:async url=>({bytes:Buffer.from(
+    "<title>아토팜 공식몰</title><p>MLE 로션이 인기입니다</p>"),finalUrl:url}),
+});
+assert.equal(generic.officialProductEvidenceConfirmed,false);
+assert.equal(generic.sites[0].pages[0].factConfirmationAuthorized,false);
+// Redirected final URL is rejected even when a mock provides page bytes.
+const redirected=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapCorrect)],
+  fetchRobots:directFetchers.fetchRobots,
+  fetchSitemap:directFetchers.fetchSitemap,
+  fetchPage:async url=>({bytes:Buffer.from("<title>MLE 로션 600ml</title>"),
+    finalUrl:"https://untrusted.example/redirected"}),
+});
+assert.equal(redirected.sites[0].pages[0].status,"SOURCE_BLOCKED");
+assert.equal(redirected.officialProductEvidenceConfirmed,false);
+// Runner-level preflight rejects an unknown product or retired Dr.G even in
+// PLAN_ONLY mode, and does so with no callbacks/network requests.
+let preflightCallbacks=0;
+const noNetwork={
+  fetchRobots:async()=>{preflightCallbacks++;throw Error("NO_NETWORK");},
+  fetchSitemap:async()=>{preflightCallbacks++;throw Error("NO_NETWORK");},
+  fetchPage:async()=>{preflightCallbacks++;throw Error("NO_NETWORK");},
+};
+await assert.rejects(()=>runTrustP2DFiveBrandPilot({
+  execute:false,cohort:v2,fetchers:noNetwork,
+  preResolvedLocators:[directEntry(sitemapCorrect,{
+    productId:"e019ec75-4de9-460f-96e9-9ea0665422c5"})],
+}),/P2D_PRE_RESOLVED_COHORT_SCOPE_INVALID/);
+const drg=v2.targets.find(x=>x.brand==="닥터지");
+await assert.rejects(()=>runTrustP2DFiveBrandPilot({
+  execute:false,cohort:v2,fetchers:noNetwork,
+  preResolvedLocators:[directEntry(sitemapCorrect,{productId:drg.productId})],
+}),/P2D_PRE_RESOLVED_COHORT_SCOPE_INVALID/);
+assert.equal(preflightCallbacks,0);
+console.log("TRUST_P2F6_PRE_RESOLVED_OFFLINE_GUARDS_PASS");
+
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
