@@ -40,7 +40,13 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
     $reason = 'OTHER'
     if (Test-Path -LiteralPath $stderrLog) {
       $details = Get-Content -LiteralPath $stderrLog -Raw -ErrorAction SilentlyContinue
-      if ($details -match 'role .{0,180} does not exist') { $reason = 'MISSING_ROLE' }
+      # With psql VERBOSITY=sqlstate, PostgreSQL prints only SQLSTATE and
+      # the originating SQL file/line, never a SQL body or data value.
+      # Keep diagnostic output independent of private backup content.
+      if ($details -match '(?im)^psql:/tmp/(?:roles|schema|data)\.sql:([0-9]{1,7}):\s*ERROR:\s*([0-9A-Z]{5})\b') {
+        $reason = 'SQLSTATE_' + $Matches[2].ToUpperInvariant() + '_LINE_' + $Matches[1]
+      }
+      elseif ($details -match 'role .{0,180} does not exist') { $reason = 'MISSING_ROLE' }
       elseif ($details -match '(?i)schema .{0,180} does not exist') {
         $reason = 'MISSING_SCHEMA'
         # A schema identifier is not an SQL body or row value. Emit ONLY a
@@ -218,7 +224,7 @@ try {
   foreach ($name in $required) {
     Run-Docker ('COPY_' + $name) @('cp',(Join-Path $unpacked $name),($container + ':/tmp/' + $name))
   }
-  Run-Docker 'ROLES' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-f','/tmp/roles.sql')
+  Run-Docker 'ROLES' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/roles.sql')
   # A CLI dump omits Supabase-managed schemas. The official image lacks some
   # custom *empty* namespaces; functions/GRANTs may reference them.
   # Create only a fixed allowlist, only if referenced by the extracted schema,
@@ -237,8 +243,8 @@ try {
     }
   }
   $schemaText = $null
-  Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-f','/tmp/schema.sql')
-  Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
+  Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/schema.sql')
+  Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
   $inventory = Get-PublicInventory $container
   Assert-Drill ([int]$inventory.pg_major -eq 17) 'D8K13_LOCAL_RESTORE_WRONG_PG_MAJOR'
   Assert-Drill ([int]$inventory.tables -ge 1) 'D8K13_LOCAL_RESTORE_NO_TABLES'
