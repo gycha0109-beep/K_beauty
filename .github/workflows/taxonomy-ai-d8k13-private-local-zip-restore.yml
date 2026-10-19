@@ -37,7 +37,7 @@ jobs:
           -- Synthetic, not copied from production.
           CREATE ROLE d8k13_local_fixture_role NOLOGIN;
           CREATE ROLE "product_offer_link_health_recorder_owner";
-          ALTER ROLE "product_offer_link_health_recorder_owner" WITH NOSUPERUSER NOCREATEROLE NOLOGIN;
+          ALTER ROLE "product_offer_link_health_recorder_owner" WITH NOLOGIN;
           GRANT anon TO d8k13_local_fixture_role;
           GRANT authenticated TO d8k13_local_fixture_role;
           SQL
