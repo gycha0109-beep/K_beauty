@@ -242,6 +242,26 @@ try {
       Write-Output ('D8K13_LOCAL_ISOLATED_NAMESPACE_READY_' + $schemaName.ToUpperInvariant())
     }
   }
+  # Isolated restore-only accommodation for a known owner role in the private
+  # namespace. PostgreSQL requires the new function owner to have CREATE on
+  # its schema, and the executing role to be allowed to SET ROLE to that owner.
+  # Never alter source roles.sql or hosted database privileges.
+  $ownerRole = 'product_offer_link_health_recorder_owner'
+  $rolesText = [System.IO.File]::ReadAllText((Join-Path $unpacked 'roles.sql'))
+  $ownerDeclared = [regex]::IsMatch($rolesText,
+    '(?im)^\\s*CREATE\\s+ROLE\\s+"?' + [regex]::Escape($ownerRole) + '"?\\s*;')
+  $ownerReferenced = [regex]::IsMatch($schemaText,
+    '(?im)^\\s*ALTER\\s+FUNCTION\\s+"?private"?\\s*\\.[^\\r\\n;]+\\s+OWNER\\s+TO\\s+"?' + [regex]::Escape($ownerRole) + '"?\\s*;')
+  if ($ownerDeclared -and $ownerReferenced) {
+    $preflightSql = "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'postgres' AND rolsuper) THEN 'SUPERUSER' ELSE 'NON_SUPERUSER' END"
+    Run-Docker 'OWNER_PREFLIGHT' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c',$preflightSql)
+    # Scoped grants are limited to the disposable container. The target role
+    # remains NOLOGIN/NOSUPERUSER; the original OWNER TO SQL still executes.
+    Run-Docker 'PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c',('GRANT CREATE ON SCHEMA private TO "' + $ownerRole + '"'))
+    Run-Docker 'PRIVATE_FUNCTION_OWNER_MEMBERSHIP' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-d','postgres','-c',('GRANT "' + $ownerRole + '" TO postgres'))
+    Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
+  }
+  $rolesText = $null
   $schemaText = $null
   Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/schema.sql')
   Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
