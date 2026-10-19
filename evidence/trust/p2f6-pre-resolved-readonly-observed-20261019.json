@@ -1,0 +1,117 @@
+{
+  "contract": "trust-p2f6-public-pre-resolved-readonly-evidence-v1",
+  "observedAtUtc": "2026-10-19T08:40:51.461Z",
+  "exactMainSha": "d0e8096a73705a84b95ee703ca1f697fecfbcefb",
+  "originatingFeaturePr": 1357,
+  "ownerApprovalPr": 1359,
+  "workflowRunId": 39224461064,
+  "workflowRunUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39224461064",
+  "liveJobId": 117967258064,
+  "liveJobStatus": "SUCCESS",
+  "canonicalTrustJobStatus": "SUCCESS",
+  "currentMainHealthRunId": 39224461065,
+  "currentMainHealthStatus": "SUCCESS",
+  "artifactName": "trust-p2f6-pre-resolved-readonly-result",
+  "artifactId": 12173061790,
+  "artifactZipDigestSha256": "8c517e5d14781c80e61c51f336fa64e2297ca46649e469bca1a337a31ac11b48",
+  "artifactExpiresAtUtc": "2026-11-18T08:40:51Z",
+  "sourceClassification": "GOVERNED_PUBLIC_ROBOTS_FIRST_READONLY",
+  "frozenDenominator": 5,
+  "eligibleOrigins": 2,
+  "excludedBrands": [
+    "닥터지",
+    "비플레인",
+    "아토팜"
+  ],
+  "observedRequests": 4,
+  "robotsRequests": 2,
+  "productPageRequests": 2,
+  "sitemapRequests": 0,
+  "successfulProductPageDownloads": 2,
+  "identityNameAndSizeCandidateProducts": 1,
+  "bodyMentionOnlyProducts": 1,
+  "independentlyVerifiedExactSkuCount": 0,
+  "prospectiveVerifiedExactSkuRate": "0/5",
+  "marketVerifiedCount": 0,
+  "formulationVerifiedCount": 0,
+  "sideEffectCount": {
+    "dbWrites": 0,
+    "sourceBindingWrites": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "recommendationWrites": 0,
+    "aiApiCalls": 0,
+    "brandOutreach": 0
+  },
+  "requestsByOfficialOrigin": [
+    {
+      "brand": "이즈앤트리",
+      "origin": "https://isntree.com",
+      "robotsRequests": 1,
+      "productPageRequests": 1,
+      "sitemapRequests": 0
+    },
+    {
+      "brand": "토리든",
+      "origin": "https://www.torriden.com",
+      "robotsRequests": 1,
+      "productPageRequests": 1,
+      "sitemapRequests": 0
+    }
+  ],
+  "outcomes": [
+    {
+      "brand": "닥터지",
+      "state": "RETIRED_ORIGIN_HOLD",
+      "requests": 0,
+      "exactSkuVerified": false
+    },
+    {
+      "brand": "비플레인",
+      "state": "SITE_POLICY_HOLD",
+      "reason": "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED",
+      "requests": 0,
+      "exactSkuVerified": false
+    },
+    {
+      "brand": "아토팜",
+      "state": "SITE_POLICY_HOLD",
+      "reason": "WRONG_SIZE_300ML_NOT_600ML",
+      "requests": 0,
+      "exactSkuVerified": false
+    },
+    {
+      "brand": "이즈앤트리",
+      "state": "IDENTITY_CANDIDATE_REVIEW_REQUIRED",
+      "pageStatus": "TITLE_NAME_CANDIDATE",
+      "catalogSizeMl": 300,
+      "variantStatus": "SIZE_MATCH_CANDIDATE",
+      "unitOfferStatus": "SIZE_MATCH_CANDIDATE",
+      "identitySurface": "page_title",
+      "pageSha256": "82aa38952d98e25590e850b437e685b9b1b611d2933de0f6e2b937c7026b46bc",
+      "exactSkuVerified": false
+    },
+    {
+      "brand": "토리든",
+      "state": "BODY_MENTION_REVIEW_REQUIRED",
+      "pageStatus": "BODY_NAME_MENTION_ONLY",
+      "catalogSizeMl": 50,
+      "variantStatus": "SIZE_UNKNOWN",
+      "unitOfferStatus": "QUANTITY_SCOPE_REVIEW_REQUIRED",
+      "identitySurface": "unverified_generic_brand_title",
+      "primaryRootStatus": "PRIMARY_ROOT_NOT_PROVEN",
+      "pageSha256": "b080e94060bdd93a8f6090190c0f74ce02f601532b8f426a133b58209e899fd6",
+      "exactSkuVerified": false
+    }
+  ],
+  "priorCombinedActualBenchmark": {
+    "totalHttpRequests": 28,
+    "productPagesFetched": 2,
+    "nameAndSizeCandidateProducts": 1,
+    "bodyMentionOnlyProducts": 1,
+    "independentlyVerifiedExactSkuCount": 0
+  },
+  "comparison": "The direct pre-resolved path reproduces two downloaded pages and one name-and-size candidate with only four calls. It does not improve independently verified exact SKU coverage (0/5), prove formulation or establish commercial reuse rights; historical 28 calls and fresh 4 calls are separate runs, not a single pooled trial.",
+  "evidenceBoundary": "Derived from workflow job logs and uploaded status-only JSON artifact. No raw HTML persisted. The current classifier may not mark an exact SKU verified without separate independent adjudication.",
+  "remainingProblem": "Torriden's brand-only title had body name mention but no proven strict product root plus selected size. beplain pad units and ATOPALM capacity remain held; Dr.G origin remains retired."
+}
