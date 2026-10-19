@@ -342,6 +342,103 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  p2d_owner_public_one_time:
+    name: P2D user-authorized four-origin public robots-first observation
+    # This is an independent owner-requested, one-off public-data observation.
+    # Not the policy-manifest-controlled commercial ingestion trial.
+    # It performs no source registration, database write, or SKU attestation.
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'P2D-PUBLIC-ROBOTS-FIRST-ONCE-20261019')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact merged main
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: One-time read-only robots-first observation, 4 public origins
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { assertTrustP2DCohort,runTrustP2DFiveBrandPilot } from './scripts/trust-p2d-five-brand-pilot.mjs';
+          import { trustP2LiveFetchers } from './lib/trust/official-product-discovery-p2-v1.mjs';
+          const cohort=JSON.parse(fs.readFileSync('evidence/trust/p2d-five-brand-cohort-v2.json','utf8'));
+          assertTrustP2DCohort(cohort);
+          const targetBrands=['비플레인','아토팜','이즈앤트리','토리든'];
+          const origins=new Map(cohort.targets.filter(t=>t.brand!=='닥터지').map(t=>[new URL(t.officialPeerUrl).origin,t.brand]));
+          if(cohort.targets.length!==5||origins.size!==4||
+            [...origins.values()].some(x=>!targetBrands.includes(x))||
+            cohort.targets.filter(t=>t.brand==='닥터지').length!==1)
+            throw Error('P2D_ONE_TIME_INVALID_COHORT');
+          // 1 robots, 2 sitemaps, <=4 HTML requests (peer, homepage, 2 candidates).
+          // Never allow new domains, fallback crawling, or unbounded retries.
+          const limits={fetchRobots:1,fetchSitemap:2,fetchPage:4};
+          const counters=new Map([...origins.keys()].map(origin=>[origin,{fetchRobots:0,fetchSitemap:0,fetchPage:0}]));
+          const original=trustP2LiveFetchers();
+          let lastAt=0;
+          const safe={};
+          for(const kind of Object.keys(limits)){
+            safe[kind]=async (url,origin,...rest)=>{
+              if(!origins.has(origin)||new URL(url).origin!==origin)throw Error('P2D_ONE_TIME_ORIGIN_BLOCKED');
+              const count=counters.get(origin);
+              if(++count[kind]>limits[kind])throw Error('P2D_ONE_TIME_REQUEST_LIMIT');
+              const wait=Math.max(0,1200-(Date.now()-lastAt));
+              if(wait)await new Promise(resolve=>setTimeout(resolve,wait));
+              lastAt=Date.now();
+              return original[kind](url,origin,...rest);
+            };
+          }
+          const result=await runTrustP2DFiveBrandPilot({
+            execute:true,cohort,holdRetiredDrG:true,
+            approvedBrands:new Set(targetBrands),fetchers:safe,
+          });
+          if(result.items.length!==5||result.items[0].assessment.state!=='RETIRED_ORIGIN_HOLD'||
+            result.summary.factWrites!==0||result.summary.dbWrites!==0||
+            result.summary.confirmedExactSkuCount!==0||
+            [...counters.values()].reduce((n,x)=>n+x.fetchRobots+x.fetchSitemap+x.fetchPage,0)>28)
+            throw Error('P2D_ONE_TIME_RESULT_GUARD');
+          const publicResult={
+            observedAt:result.observedAt,mode:'ONE_TIME_PUBLIC_ROBOTS_FIRST_NO_WRITES',
+            frozenDenominator:5,eligibleOrigins:4,
+            counts:result.summary,items:result.items,
+            requestCounts:[...origins.entries()].map(([origin,brand])=>({
+              brand,origin,...counters.get(origin)
+            })),
+            externalConsentInferred:false,authoritativeSkuEvidence:false,
+            sourceBindingAuthorized:false,
+          };
+          fs.mkdirSync('artifacts',{recursive:true});
+          fs.writeFileSync('artifacts/trust-p2d-one-time-public-observation.json',
+            JSON.stringify(publicResult,null,2)+'\n');
+          console.log('TRUST_P2D_OWNER_PUBLIC_ROBOTS_FIRST_RESULT='+JSON.stringify({
+            mode:publicResult.mode,summary:publicResult.counts,
+            items:publicResult.items.map(x=>({
+              brand:x.brand,assessment:x.assessment.state,
+              reason:x.assessment.reason??null,
+              site:x.assessment.sourceDiagnostics?.map(s=>({
+                status:s.status,stage:s.stageDiagnosis?.reason,
+                pages:s.pages?.map(p=>({status:p.status,url:p.url}))
+              }))??[]
+            })),
+            requestCounts:publicResult.requestCounts,
+          }));
+          NODE
+      - name: Preserve status-only one-time observation
+        uses: actions/upload-artifact@v6
+        with:
+          name: trust-p2d-one-time-public-observation
+          path: artifacts/trust-p2d-one-time-public-observation.json
+          if-no-files-found: error
+          retention-days: 30
+
   p3_official_three_brand_live:
     name: P3 guarded existing-source 3-brand live observation
     if: github.event_name == 'push' && contains(github.event.head_commit.message, 'P3-LIVE-TRIAL')
