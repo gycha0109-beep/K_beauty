@@ -153,3 +153,14 @@ CI [#39134449424](https://github.com/gycha0109-beep/K_beauty/actions/runs/391344
 
 **다음 단계:** 사용자 PC에 있는 `restore-local.ps1`을 기능 브랜치 최신 버전으로 다시 복사해 동일 ZIP으로 `-Mode Restore` 재검증. 실패한다면 `D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_<NAME>_LINE_<N>_FAILED_EXIT_3`와 같이 출력된 비민감 코드만 공유. 실제 데이터 복원·권한·Auth/Storage 바이너리·Vault·migration ledger 최종 복구는 모두 미검증. PR DRAFT / release HOLD / production writes 0.
 
+### 6.4. 반복된 실제 schema OTHER 오류의 SQLSTATE·줄 번호 비식별 진단 (2026-10-19)
+
+사용자가 동일한 로컬 운영 ZIP을 사용하여 재시도했으며 ZIP 검사 PASS, `D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP` 후 `D8K13_LOCAL_RESTORE_SCHEMA_OTHER_FAILED_EXIT_3`로 **schema.sql 복원이 실패했다**. `data.sql`은 실행되지 않았다. public 보존 후에도 실패했으므로 앞서 추정한 누락된 `public`이 실제 오류의 유일한 원인이라고 할 수 없다. 실제 owner SQL을 GitHub/연결 앱/채팅으로 전송하지 않았다.
+
+**변경:** `scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1`에서 `psql -v VERBOSITY=sqlstate -v SHOW_CONTEXT=never`을 `roles.sql`, `schema.sql`, `data.sql` 복원 호출에 적용. 실패 시 Docker stderr를 **임시 로컬 파일**로만 수집하고, `psql:/tmp/schema.sql:<line>: ERROR: <SQLSTATE>`에서 숫자/영문 다섯 글자의 표준 PostgreSQL SQLSTATE와 숫자 줄 번호만 추출하여 `D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_<CODE>_LINE_<N>_FAILED_EXIT_3`처럼 출력한다. 전체 SQL/쿼리/개인정보/DB 자격증명/임시 stderr 내용은 출력·업로드하지 않는다. 스크립트 종료 후 임시 폴더/컨테이너를 제거한다.
+
+**검증:** 합성 ZIP만 사용한 [CI #39183076360](https://github.com/gycha0109-beep/K_beauty/actions/runs/39183076360) job `117840075100` **SUCCESS**. Parser 검사 / 정상 full schema dump / `CREATE SCHEMA public` 없는 dump / 의도적 누락 schema SQLSTATE `3F000` 및 줄 번호 추출 / 기존엔 OTHER로 표시됐을 0 나누기 SQLSTATE `22012` 및 줄 번호 추출 / 유효하지 않은 ZIP 크기 거부 모두 PASS. 오류 코드와 줄 번호 이외의 SQL 텍스트가 stderr에 노출되지 않는다는 부정 검사도 통과.
+
+**현재 상태:** 사용자 실 ZIP의 정확한 SQLSTATE / 실패 줄은 아직 보고되지 않았다. 실제 DB 복원 PASS로 간주하지 않으며 운영 Supabase는 읽기 전용, PR #1341 OPEN/DRAFT/HOLD, 보안 #1208 OPEN.
+
+**다음 오너 로컬 조치:** 기능 브랜치에서 최신 `restore-local.ps1`을 갱신하고, 이전과 동일한 ZIP에 `-Mode Restore`을 1회 실행하여 마지막 `D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_..._LINE_..._FAILED_EXIT_3` 코드 또는 성공 상태만 전달. 실패 줄의 실제 SQL 내용은 공유 불필요. 이 값으로 정확한 원인분석 후 **새 복구 환경 변경 여부를 결정**한다.
