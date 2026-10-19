@@ -428,7 +428,7 @@ const prefetch=await runTrustP2Discovery(cohortToTrustedDiscoveryRow(atopalm),{
   name_en:atopalm.nameEn,normalized_name:atopalm.normalizedName,
   size_ml:atopalm.sizeMl,
 },{
-  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url}),
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
   fetchSitemap:async url=>({bytes:Buffer.from("<urlset></urlset>"),finalUrl:url}),
   fetchPage:async url=>{
     fetchedPages.push(url);
@@ -479,7 +479,7 @@ assert.equal(assessed("ROBOTS_DISALLOWED",[]).state,"SOURCE_POLICY_HOLD");
 assert.equal(assessed("NO_SAFE_CANDIDATE",[]).state,"NO_PRODUCT_PAGE");
 // The live diagnostic path preserves only locator/status/title/digest; no raw pages.
 const diagnosticMock={
-  fetchRobots:async()=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n")}),
+  fetchRobots:async()=>({bytes:Buffer.from("User-agent: *\nAllow: /\n")}),
   fetchSitemap:async url=>({bytes:Buffer.from(url.endsWith("sitemap.xml")?
     '<urlset><url><loc>https://neopharmshop.co.kr/product/mle-%EB%A1%9C%EC%85%98/3000</loc></url></urlset>':
     "<urlset></urlset>"),finalUrl:url}),
@@ -881,7 +881,7 @@ const directCalls=[];
 const directFetchers={
   fetchRobots:async url=>{
     directCalls.push(["robots",url]);
-    return {bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url};
+    return {bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url};
   },
   fetchSitemap:async()=>{throw Error("PRE_RESOLVED_MUST_SKIP_SITEMAPS");},
   fetchPage:async url=>{
@@ -942,7 +942,7 @@ const denied=await runTrustP2Discovery(scopedRow,scopedProduct,{
   preResolvedLocators:[directEntry(sitemapCorrect)],
   fetchRobots:async url=>{
     deniedCalls.push("robots");
-    return {bytes:Buffer.from("User-agent: *\\nDisallow: /product/\\n"),
+    return {bytes:Buffer.from("User-agent: *\nDisallow: /product/\n"),
       finalUrl:url};
   },
   fetchSitemap:async()=>{deniedCalls.push("sitemap");throw Error("NO");},
@@ -958,7 +958,7 @@ const wrongDirect=await runTrustP2Discovery(scopedRow,scopedProduct,{
   preResolvedLocators:[directEntry(sitemapWrong300)],
   fetchRobots:async url=>{
     wrongDirectCalls.push("robots");
-    return {bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url};
+    return {bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url};
   },
   fetchSitemap:async()=>{wrongDirectCalls.push("sitemap");throw Error("NO");},
   fetchPage:async()=>{wrongDirectCalls.push("page");throw Error("NO");},
