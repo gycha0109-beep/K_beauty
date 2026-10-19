@@ -46,6 +46,10 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
       if ($details -match '(?im)^psql:/tmp/(?:roles|schema|data)\.sql:([0-9]{1,7}):\s*ERROR:\s*([0-9A-Z]{5})\b') {
         $reason = 'SQLSTATE_' + $Matches[2].ToUpperInvariant() + '_LINE_' + $Matches[1]
       }
+      elseif ($details -match '(?im)^\s*ERROR:\s*([0-9A-Z]{5})\b') {
+        # psql -c prints SQLSTATE without a source file/line; emit code only.
+        $reason = 'SQLSTATE_' + $Matches[1].ToUpperInvariant()
+      }
       elseif ($details -match 'role .{0,180} does not exist') { $reason = 'MISSING_ROLE' }
       elseif ($details -match '(?i)schema .{0,180} does not exist') {
         $reason = 'MISSING_SCHEMA'
@@ -255,8 +259,8 @@ try {
   # Fail closed when the owner assignment exists without a role declaration.
   Assert-Drill (-not $ownerReferenced -or $ownerDeclared) 'D8K13_LOCAL_FUNCTION_OWNER_ROLE_UNDECLARED'
   if ($ownerDeclared -and $ownerReferenced) {
-    Run-Docker 'PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c',('GRANT CREATE ON SCHEMA private TO "' + $ownerRole + '"'))
-    Run-Docker 'PRIVATE_FUNCTION_OWNER_MEMBERSHIP' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c',('GRANT "' + $ownerRole + '" TO postgres'))
+    Run-Docker 'PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c',('GRANT CREATE ON SCHEMA private TO ' + $ownerRole))
+    Run-Docker 'PRIVATE_FUNCTION_OWNER_MEMBERSHIP' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c',('GRANT ' + $ownerRole + ' TO postgres'))
     Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
   } else {
     Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_NOT_APPLICABLE'
