@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { inspectTrustOfficialVariantScope } from "../lib/trust/official-variant-scope-v1.mjs";
+import { inspectTrustP2CatalogUnitOfferScope } from "../lib/trust/official-catalog-unit-offer-scope-v1.mjs";
 import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2CandidateLocators } from "../lib/trust/official-product-discovery-p2-v1.mjs";
 import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
 import { REDISCOVERY_CONTRACT, discoverOfficialSourceCandidates } from "../lib/trust/official-source-rediscovery.mjs";
@@ -864,5 +865,72 @@ try{
 await assert.rejects(()=>runTrustP2DCli(["--execute","--execute-four"]),
   /P2D_UNSUPPORTED_CLI_FLAG/);
 console.log("TRUST_P2D_FOUR_BRAND_HOLD_AND_AUTHORIZATION_PASS");
+
+
+/** P2-F6 D: frozen catalog ml is not pad sheet-count or gift-pack truth. */
+const frozenPad=v2.targets.find(x=>x.brand==="비플레인");
+const padCatalog={id:frozenPad.productId,brand:frozenPad.brand,
+  name:frozenPad.name,normalized_name:frozenPad.normalizedName,
+  size_ml:frozenPad.sizeMl};
+const observeOffer=(label,product=padCatalog)=>
+  inspectTrustP2CatalogUnitOfferScope(label,product);
+const padGift=observeOffer("녹두 모공 클리어링 필터 패드 70매+10매");
+assert.equal(padGift.status,"UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED");
+assert.equal(padGift.unitRelation,"INCOMPARABLE_UNIT_FAMILY");
+assert.equal(padGift.offerRelation,"MULTI_COMPONENT_OR_PROMOTION_REVIEW");
+assert.equal(padGift.catalogUnit,"ml");
+assert.deepEqual(padGift.observedUnitFamilies,["sheet"]);
+assert.equal(padGift.catalogCorrectionAuthorized,false);
+assert.equal(padGift.exactSkuVerified,false);
+const sheetOnly=observeOffer("녹두 모공 클리어링 필터 패드 70매");
+assert.equal(sheetOnly.status,"UNIT_MISMATCH_REVIEW_REQUIRED");
+assert.equal(sheetOnly.offerRelation,"SINGLE_OR_UNSPECIFIED");
+assert.equal(observeOffer("녹두 모공 클리어링 필터 패드 70개").status,
+  "UNIT_MISMATCH_REVIEW_REQUIRED");
+assert.equal(observeOffer("녹두 모공 클리어링 필터 패드 100g").status,
+  "UNIT_MISMATCH_REVIEW_REQUIRED");
+assert.equal(observeOffer("녹두 모공 클리어링 필터 패드 기획세트 70매+10매").status,
+  "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED");
+assert.equal(observeOffer("녹두 모공 클리어링 필터 패드").status,
+  "QUANTITY_SCOPE_REVIEW_REQUIRED");
+// A title label is evidence only of observed offer presentation, never a
+// reason to update frozen 340ml or mark 80 sheets as equal to 340ml.
+const padTitle=classifyTrustOfficialCandidatePage(Buffer.from(
+  "<title>녹두 모공 클리어링 필터 패드 70매+10매</title>"),padCatalog);
+assert.equal(padTitle.nameSignalStatus,"TITLE_NAME_CANDIDATE");
+assert.equal(padTitle.status,"UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED");
+assert.equal(padTitle.variantScope.status,"SIZE_UNKNOWN");
+assert.equal(padTitle.unitOfferScope.unitRelation,"INCOMPARABLE_UNIT_FAMILY");
+assert.equal(padTitle.factConfirmationAuthorized,false);
+assert.equal(padTitle.subjectCreationAuthorized,false);
+const mlMismatch=observeOffer("아토팜 MLE 로션 300ml",sized);
+assert.equal(mlMismatch.status,"CATALOG_SIZE_MISMATCH");
+assert.equal(mlMismatch.unitRelation,"ML_CAPACITY_MISMATCH");
+assert.equal(mlMismatch.offerRelation,"SINGLE_OR_UNSPECIFIED");
+assert.equal(observeOffer("아토팜 MLE 로션 600ml",sized).status,
+  "SIZE_MATCH_CANDIDATE");
+assert.equal(observeOffer("아토팜 MLE 로션 600ml+50ml 증정",sized).status,
+  "OFFER_COMPOSITION_REVIEW_REQUIRED");
+assert.equal(observeOffer("아토팜 MLE 로션 600ml x2",sized).status,
+  "OFFER_COMPOSITION_REVIEW_REQUIRED");
+const mixed=observeOffer("아토팜 MLE 로션 600ml + 1개");
+assert.equal(mixed.status,"UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED");
+assert.equal(observeOffer("아토팜 MLE 로션 600ml",{
+  size_ml:null}).status,"QUANTITY_SCOPE_REVIEW_REQUIRED");
+const syntheticReadOnly={
+  readOnly:true,subjectCreationAuthorized:false,
+  officialProductEvidenceConfirmed:false,factWrites:0,
+  recommendationWrites:0,aiApiCalls:0,
+  marketVerified:false,formulationVerified:false,
+  sites:[{origin:"https://www.beplain.co.kr",status:"CANDIDATES_DISCOVERED",
+    pages:[{url:"https://www.beplain.co.kr/product/fake-fixture",
+      ...padTitle}],observations:[]}],
+};
+const unresolved=assessTrustP2DDiscovery(syntheticReadOnly);
+assert.equal(unresolved.state,"VARIANT_REVIEW_REQUIRED");
+assert.equal(unresolved.variantMismatchPages,1);
+assert.equal(unresolved.verifiedSourceBindings,0);
+assert.equal(syntheticReadOnly.sites[0].pages[0].unitOfferScope.exactSkuVerified,false);
+console.log("TRUST_P2F6_UNIT_OFFER_FROZEN_CATALOG_REVIEW_ONLY_PASS");
 
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
