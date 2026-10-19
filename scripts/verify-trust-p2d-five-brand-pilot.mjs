@@ -1231,7 +1231,7 @@ for(const indexed of allowedIndexed){
     preResolvedLocators:[entry],
     fetchRobots:async url=>{
       indexedCalls.push({brand:indexed.brand,kind:"robots",url});
-      return {bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url};
+      return {bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url};
     },
     fetchSitemap:async()=>{throw Error("INDEXED_READINESS_NO_SITEMAP");},
     fetchPage:async url=>{
