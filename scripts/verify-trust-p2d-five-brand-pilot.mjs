@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { inspectTrustOfficialVariantScope } from "../lib/trust/official-variant-scope-v1.mjs";
-import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2CandidateLocators } from "../lib/trust/official-product-discovery-p2-v1.mjs";
+import { diagnoseTrustP2FetchFailure } from "../lib/trust/official-fetch-failure-diagnostic-v1.mjs";
+import { inspectTrustP2CatalogUnitOfferScope } from "../lib/trust/official-catalog-unit-offer-scope-v1.mjs";
+import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2CandidateLocators,strictOriginTransport } from "../lib/trust/official-product-discovery-p2-v1.mjs";
 import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
 import { REDISCOVERY_CONTRACT, discoverOfficialSourceCandidates } from "../lib/trust/official-source-rediscovery.mjs";
+import { runTrustP2F6Remeasure,validateTrustP2F6RemeasureScope,runTrustP2F6RemeasureCli } from "./trust-p2f6-pre-resolved-readonly-once.mjs";
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import {
@@ -428,7 +431,7 @@ const prefetch=await runTrustP2Discovery(cohortToTrustedDiscoveryRow(atopalm),{
   name_en:atopalm.nameEn,normalized_name:atopalm.normalizedName,
   size_ml:atopalm.sizeMl,
 },{
-  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url}),
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url}),
   fetchSitemap:async url=>({bytes:Buffer.from("<urlset></urlset>"),finalUrl:url}),
   fetchPage:async url=>{
     fetchedPages.push(url);
@@ -479,7 +482,7 @@ assert.equal(assessed("ROBOTS_DISALLOWED",[]).state,"SOURCE_POLICY_HOLD");
 assert.equal(assessed("NO_SAFE_CANDIDATE",[]).state,"NO_PRODUCT_PAGE");
 // The live diagnostic path preserves only locator/status/title/digest; no raw pages.
 const diagnosticMock={
-  fetchRobots:async()=>({bytes:Buffer.from("User-agent: *\\nAllow: /\\n")}),
+  fetchRobots:async()=>({bytes:Buffer.from("User-agent: *\nAllow: /\n")}),
   fetchSitemap:async url=>({bytes:Buffer.from(url.endsWith("sitemap.xml")?
     '<urlset><url><loc>https://neopharmshop.co.kr/product/mle-%EB%A1%9C%EC%85%98/3000</loc></url></urlset>':
     "<urlset></urlset>"),finalUrl:url}),
@@ -864,5 +867,470 @@ try{
 await assert.rejects(()=>runTrustP2DCli(["--execute","--execute-four"]),
   /P2D_UNSUPPORTED_CLI_FLAG/);
 console.log("TRUST_P2D_FOUR_BRAND_HOLD_AND_AUTHORIZATION_PASS");
+
+
+/**
+ * P2-F6 A: typed pre-resolved first-party candidate URL, NOT proof of SKU.
+ * All cases are deterministic mocks: no public-site request, DB or AI call.
+ */
+const directEntry=(url,more={})=>({
+  kind:"PRE_RESOLVED_OFFICIAL_PRODUCT_URL",
+  source:"OPERATOR_SUPPLIED_PUBLIC_URL",
+  productId:scopedProduct.id,
+  origin:"https://neopharmshop.co.kr",
+  url,...more,
+});
+const directCalls=[];
+const directFetchers={
+  fetchRobots:async url=>{
+    directCalls.push(["robots",url]);
+    return {bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url};
+  },
+  fetchSitemap:async()=>{throw Error("PRE_RESOLVED_MUST_SKIP_SITEMAPS");},
+  fetchPage:async url=>{
+    directCalls.push(["page",url]);
+    if(url!==sitemapCorrect)throw Error("PRE_RESOLVED_MUST_SKIP_PEER_INDEX");
+    return {bytes:Buffer.from("<title>아토팜 MLE 로션 600ml</title>"),finalUrl:url};
+  },
+};
+const typedRun=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  ...directFetchers,preResolvedLocators:[directEntry(sitemapCorrect)],
+});
+assert.deepEqual(directCalls.map(x=>x[0]),["robots","page"]);
+assert.deepEqual(typedRun.sites[0].observations,[]);
+assert.equal(typedRun.sites[0].locatorMode,"PRE_RESOLVED");
+assert.equal(typedRun.sites[0].homepageIndexStatus,"NOT_USED_PRE_RESOLVED");
+assert.deepEqual(typedRun.sites[0].pages.map(x=>x.url),[sitemapCorrect]);
+assert.equal(typedRun.sites[0].pages[0].locatorMode,"PRE_RESOLVED");
+assert.equal(typedRun.sites[0].pages[0].status,"TITLE_NAME_CANDIDATE");
+assert.equal(typedRun.sites[0].pages[0].variantScope.status,"SIZE_MATCH_CANDIDATE");
+assert.equal(typedRun.sites[0].pages[0].factConfirmationAuthorized,false);
+assert.equal(typedRun.officialProductEvidenceConfirmed,false);
+assert.equal(typedRun.subjectCreationAuthorized,false);
+assert.equal(typedRun.factWrites,0);
+assert.equal(typedRun.recommendationWrites,0);
+assert.equal(JSON.stringify(typedRun).includes("<title>"),false);
+for(const bad of [
+  directEntry("https://evil.example/product/mle-lotion-600ml"),
+  directEntry("http://neopharmshop.co.kr/product/mle-lotion-600ml"),
+  directEntry("https://neopharmshop.co.kr@evil.example/product/mle-lotion-600ml"),
+  directEntry("https://neopharmshop.co.kr/product/invalid%ZZ"),
+  directEntry("https://neopharmshop.co.kr/product/mle-lotion-600ml#fragment"),
+  directEntry("https://neopharmshop.co.kr/product/mle-lotion-600ml",{
+    productId:"e019ec75-4de9-460f-96e9-9ea0665422c5"}),
+  directEntry(sitemapCorrect,{kind:"UNTRUSTED_URL"}),
+  directEntry(sitemapCorrect,{source:"SEARCH_RESULT_ASSUMED_OFFICIAL"}),
+]){
+  let attempted=0;
+  await assert.rejects(()=>runTrustP2Discovery(scopedRow,scopedProduct,{
+    fetchRobots:async()=>{attempted++;throw Error("SHOULD_NOT_FETCH");},
+    fetchSitemap:async()=>{attempted++;throw Error("SHOULD_NOT_FETCH");},
+    fetchPage:async()=>{attempted++;throw Error("SHOULD_NOT_FETCH");},
+    preResolvedLocators:[bad],
+  }),/TRUST_P2_PRE_RESOLVED_/);
+  assert.equal(attempted,0);
+}
+await assert.rejects(()=>runTrustP2Discovery(scopedRow,scopedProduct,{
+  ...directFetchers,preResolvedLocators:[
+    directEntry(sitemapCorrect),directEntry(sitemapCorrect),
+  ],
+}),/TRUST_P2_PRE_RESOLVED_ORIGIN_OR_DUPLICATE/);
+await assert.rejects(()=>runTrustP2Discovery(scopedRow,scopedProduct,{
+  ...directFetchers,preResolvedLocators:[...Array(3)].map((_,i)=>
+    directEntry(sitemapCorrect+"?x="+i)),
+}),/TRUST_P2_PRE_RESOLVED_INPUT_INVALID/);
+// Robots disallow is always checked BEFORE the page request; never bypass it.
+const deniedCalls=[];
+const denied=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapCorrect)],
+  fetchRobots:async url=>{
+    deniedCalls.push("robots");
+    return {bytes:Buffer.from("User-agent: *\nDisallow: /product/\n"),
+      finalUrl:url};
+  },
+  fetchSitemap:async()=>{deniedCalls.push("sitemap");throw Error("NO");},
+  fetchPage:async()=>{deniedCalls.push("page");throw Error("NO");},
+});
+assert.deepEqual(deniedCalls,["robots"]);
+assert.equal(denied.sites[0].status,"NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
+assert.equal(diagnoseTrustP2DSite(denied.sites[0]).reason,
+  "NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
+// Explicit wrong catalog volume never uses a product-page fetch slot.
+const wrongDirectCalls=[];
+const wrongDirect=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapWrong300)],
+  fetchRobots:async url=>{
+    wrongDirectCalls.push("robots");
+    return {bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url};
+  },
+  fetchSitemap:async()=>{wrongDirectCalls.push("sitemap");throw Error("NO");},
+  fetchPage:async()=>{wrongDirectCalls.push("page");throw Error("NO");},
+});
+assert.deepEqual(wrongDirectCalls,["robots"]);
+assert.equal(wrongDirect.sites[0].candidateCount,0);
+assert.equal(wrongDirect.factWrites,0);
+// Even a fetched page cannot be promoted from generic title/body mention.
+const generic=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapCorrect)],
+  fetchRobots:directFetchers.fetchRobots,
+  fetchSitemap:directFetchers.fetchSitemap,
+  fetchPage:async url=>({bytes:Buffer.from(
+    "<title>아토팜 공식몰</title><p>MLE 로션이 인기입니다</p>"),finalUrl:url}),
+});
+assert.equal(generic.officialProductEvidenceConfirmed,false);
+assert.equal(generic.sites[0].pages[0].factConfirmationAuthorized,false);
+// Redirected final URL is rejected even when a mock provides page bytes.
+const redirected=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapCorrect)],
+  fetchRobots:directFetchers.fetchRobots,
+  fetchSitemap:directFetchers.fetchSitemap,
+  fetchPage:async url=>({bytes:Buffer.from("<title>MLE 로션 600ml</title>"),
+    finalUrl:"https://untrusted.example/redirected"}),
+});
+assert.equal(redirected.sites[0].pages[0].status,"SOURCE_BLOCKED");
+assert.equal(redirected.officialProductEvidenceConfirmed,false);
+// Runner-level preflight rejects an unknown product or retired Dr.G even in
+// PLAN_ONLY mode, and does so with no callbacks/network requests.
+let preflightCallbacks=0;
+const noNetwork={
+  fetchRobots:async()=>{preflightCallbacks++;throw Error("NO_NETWORK");},
+  fetchSitemap:async()=>{preflightCallbacks++;throw Error("NO_NETWORK");},
+  fetchPage:async()=>{preflightCallbacks++;throw Error("NO_NETWORK");},
+};
+await assert.rejects(()=>runTrustP2DFiveBrandPilot({
+  execute:false,cohort:v2,fetchers:noNetwork,
+  preResolvedLocators:[directEntry(sitemapCorrect,{
+    productId:"e019ec75-4de9-460f-96e9-9ea0665422c5"})],
+}),/P2D_PRE_RESOLVED_COHORT_SCOPE_INVALID/);
+const drg=v2.targets.find(x=>x.brand==="닥터지");
+await assert.rejects(()=>runTrustP2DFiveBrandPilot({
+  execute:false,cohort:v2,fetchers:noNetwork,
+  preResolvedLocators:[directEntry(sitemapCorrect,{productId:drg.productId})],
+}),/P2D_PRE_RESOLVED_COHORT_SCOPE_INVALID/);
+assert.equal(preflightCallbacks,0);
+console.log("TRUST_P2F6_PRE_RESOLVED_OFFLINE_GUARDS_PASS");
+
+/** P2-F6 B: generic brand titles require P3 strict root AND selected size.
+ * Synthetic fixtures only; never independent exact SKU identity evidence. */
+const torridenTarget=v2.targets.find(x=>x.brand==="토리든");
+const genericProduct={
+  id:torridenTarget.productId,name:torridenTarget.name,
+  normalized_name:torridenTarget.normalizedName,
+  name_en:torridenTarget.nameEn,brand:torridenTarget.brand,
+  size_ml:torridenTarget.sizeMl,
+};
+const titleGeneric="<title>토리든 Torriden</title>";
+const coreName="<h1>다이브인 저분자 히알루론산 세럼</h1>";
+const ownedForm=selected=>'<form id="goods-form"><select name="size">'+
+  '<option value="50ml" '+(selected==="50"?"selected":"")+'>50ml</option>'+
+  '<option value="100ml" '+(selected==="100"?"selected":"")+'>100ml</option>'+
+  '</select></form>';
+const productRoot=body=>'<section class="product-detail">'+body+'</section>';
+const genericHtml=body=>Buffer.from("<html><head>"+titleGeneric+
+  "</head><body>"+body+"</body></html>");
+const classifiedGeneric=body=>classifyTrustOfficialCandidatePage(
+  genericHtml(body),genericProduct);
+const matchedRoot=classifiedGeneric(productRoot(coreName+ownedForm("50")));
+assert.equal(matchedRoot.status,"SCOPED_HEADING_CANDIDATE");
+assert.equal(matchedRoot.identitySurface,"p3_primary_root_selected_size_shadow");
+assert.equal(matchedRoot.primaryRootDiagnostic.status,"SCOPED_NAME_AND_FORM_CANDIDATE");
+assert.equal(matchedRoot.primaryRootDiagnostic.selectedSizeStatus,
+  "SELECTED_SIZE_MATCH_SHADOW_ONLY");
+assert.equal(matchedRoot.primaryRootDiagnostic.scopedNameAndSizeCandidate,true);
+assert.equal(matchedRoot.variantScope.status,"SIZE_UNKNOWN"); // title remains generic
+assert.equal(matchedRoot.marketVerified,false);
+assert.equal(matchedRoot.subjectCreationAuthorized,false);
+assert.equal(matchedRoot.factConfirmationAuthorized,false);
+assert.equal(matchedRoot.primaryRootDiagnostic.exactSkuVerified,false);
+assert.equal(JSON.stringify(matchedRoot).includes("<form"),false);
+const genericNegatives=[
+  ["wrong selected size",productRoot(coreName+ownedForm("100"))],
+  ["no selected option",productRoot(coreName+ownedForm("none"))],
+  ["title without owner form",productRoot(coreName)],
+  ["selected size in unrelated form",productRoot(coreName)+
+    productRoot('<h1>다른 상품</h1>'+ownedForm("50"))],
+  ["recommendation only",'<aside class="related-products">'+
+    productRoot(coreName+ownedForm("50"))+"</aside>"],
+  ["two candidate roots",productRoot(coreName+ownedForm("50"))+
+    productRoot(coreName+ownedForm("50"))],
+  ["advertised product name only",productRoot(
+    '<h1>타사 추천 제품</h1>'+ownedForm("50"))+
+    '<div class="recommended-products"><p>'+genericProduct.name+'</p></div>'],
+  ["selected size in related block",productRoot(coreName+
+    '<div class="recommended-products">'+ownedForm("50")+'</div>')],
+  ["unbalanced markup",'<section class="product-detail">'+coreName+
+    ownedForm("50")],
+];
+for(const [name,body] of genericNegatives){
+  const result=classifiedGeneric(body);
+  assert.notEqual(result.status,"SCOPED_HEADING_CANDIDATE",name);
+  assert.notEqual(result.status,"TITLE_NAME_CANDIDATE",name);
+  assert.equal(result.primaryRootDiagnostic?.scopedNameAndSizeCandidate,false,name);
+  assert.equal(result.subjectCreationAuthorized,false,name);
+  assert.equal(result.factConfirmationAuthorized,false,name);
+}
+const explicitDocumentTitle=classifyTrustOfficialCandidatePage(Buffer.from(
+  '<title>다이브인 저분자 히알루론산 세럼 50ml - 토리든</title>'),
+  genericProduct);
+assert.equal(explicitDocumentTitle.status,"TITLE_NAME_CANDIDATE");
+assert.equal(explicitDocumentTitle.primaryRootDiagnostic,undefined);
+console.log("TRUST_P2F6_GENERIC_TITLE_STRICT_PRIMARY_ROOT_PASS");
+
+/** P2-F6 C: no-body/no-raw-error deterministic failure diagnosis. */
+const failReason=(message,cause=null)=>diagnoseTrustP2FetchFailure(
+  Object.assign(new Error(message),cause===null?{}:{cause}));
+const statuses=[
+  ["SOURCE_BLOCKED:http_403","HTTP_ACCESS_REJECTED",403],
+  ["SOURCE_BLOCKED:http_404","HTTP_NOT_FOUND",404],
+  ["SOURCE_BLOCKED:http_410","HTTP_NOT_FOUND",410],
+  ["TRANSIENT_FAILURE:http_429","HTTP_RATE_LIMIT",429],
+  ["TRANSIENT_FAILURE:http_503","HTTP_SERVER_FAILURE",503],
+  ["SOURCE_BLOCKED:redirect_response","REDIRECT_REJECTED",null],
+  ["SOURCE_BLOCKED:redirect_limit","REDIRECT_REJECTED",null],
+  ["SOURCE_BLOCKED:response_too_large","BYTE_LIMIT_REJECTED",null],
+  ["SOURCE_BLOCKED:unsupported_content_type","CONTENT_TYPE_REJECTED",null],
+  ["SOURCE_BLOCKED:private_dns_resolution","SOURCE_POLICY_OR_SAFETY_BLOCKED",null],
+  ["TRANSIENT_FAILURE:fetch_error","NETWORK_FAILURE_UNCLASSIFIED",null],
+];
+for(const [code,reason,httpStatus] of statuses){
+  const v=failReason(code);
+  assert.equal(v.reason,reason,code);
+  assert.equal(v.httpStatus,httpStatus,code);
+}
+assert.equal(failReason("TRANSIENT_FAILURE:fetch_error",{
+  name:"AbortError"}).reason,"REQUEST_TIMEOUT");
+assert.equal(failReason("TRANSIENT_FAILURE:fetch_error",{
+  cause:{code:"ENOTFOUND"}}).reason,"NETWORK_CONNECTION_FAILURE");
+const sensitive=failReason("secret-key-or-html-body-should-never-appear");
+assert.equal(sensitive.reason,"UNCLASSIFIED_FAILURE");
+assert.equal(JSON.stringify(sensitive).includes("secret-key"),false);
+const sentinel="https://neopharmshop.co.kr/product/mle-lotion-600ml/9000";
+await assert.rejects(()=>strictOriginTransport(async()=>new Response("",{
+  status:302,headers:{location:"https://unknown.example/hijack"},
+}),"https://neopharmshop.co.kr",null,{diagnoseRedirect:true})(sentinel,{}),
+/SOURCE_BLOCKED:redirect_response/);
+const oldSafe=await strictOriginTransport(async()=>new Response("",{
+  status:301,headers:{location:"https://unknown.example/hijack"},
+}),"https://neopharmshop.co.kr")(sentinel,{});
+assert.equal(oldSafe.status,403); // Backward-compatible default.
+const failurePages=[];
+const failureRun=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),
+    finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from(
+    "<urlset><url><loc>"+sentinel+"</loc></url></urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    failurePages.push(url);
+    throw Error("SOURCE_BLOCKED:http_403");
+  },
+});
+// Existing bounded peer-index fetch may precede the product URL.
+// Verify exact URL equality, not a substring, and enforce the two-page budget.
+assert.equal(failurePages.filter(url=>url===sentinel).length,1);
+assert.ok(failurePages.length<=2);
+const rejectedPage=failureRun.sites[0].pages.find(x=>x.url===sentinel);
+assert.equal(rejectedPage.status,"SOURCE_BLOCKED");
+assert.equal(rejectedPage.fetchFailure.reason,"HTTP_ACCESS_REJECTED");
+assert.equal(rejectedPage.fetchFailure.httpStatus,403);
+assert.equal(failureRun.factWrites,0);
+assert.equal(failureRun.subjectCreationAuthorized,false);
+assert.equal(JSON.stringify(failureRun).includes("<html"),false);
+console.log("TRUST_P2F6_FETCH_FAILURE_ENUM_DIAGNOSTICS_PASS");
+
+/** P2-F6 D: frozen catalog ml is not pad sheet-count or gift-pack truth. */
+const frozenPad=v2.targets.find(x=>x.brand==="비플레인");
+const padCatalog={id:frozenPad.productId,brand:frozenPad.brand,
+  name:frozenPad.name,normalized_name:frozenPad.normalizedName,
+  size_ml:frozenPad.sizeMl};
+const observeOffer=(label,product=padCatalog)=>
+  inspectTrustP2CatalogUnitOfferScope(label,product);
+const padGift=observeOffer("녹두 모공 클리어링 필터 패드 70매+10매");
+assert.equal(padGift.status,"UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED");
+assert.equal(padGift.unitRelation,"INCOMPARABLE_UNIT_FAMILY");
+assert.equal(padGift.offerRelation,"MULTI_COMPONENT_OR_PROMOTION_REVIEW");
+assert.equal(padGift.catalogUnit,"ml");
+assert.deepEqual(padGift.observedUnitFamilies,["sheet"]);
+assert.equal(padGift.catalogCorrectionAuthorized,false);
+assert.equal(padGift.exactSkuVerified,false);
+const sheetOnly=observeOffer("녹두 모공 클리어링 필터 패드 70매");
+assert.equal(sheetOnly.status,"UNIT_MISMATCH_REVIEW_REQUIRED");
+assert.equal(sheetOnly.offerRelation,"SINGLE_OR_UNSPECIFIED");
+assert.equal(observeOffer("녹두 모공 클리어링 필터 패드 70개").status,
+  "UNIT_MISMATCH_REVIEW_REQUIRED");
+assert.equal(observeOffer("녹두 모공 클리어링 필터 패드 100g").status,
+  "UNIT_MISMATCH_REVIEW_REQUIRED");
+assert.equal(observeOffer("녹두 모공 클리어링 필터 패드 기획세트 70매+10매").status,
+  "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED");
+assert.equal(observeOffer("녹두 모공 클리어링 필터 패드").status,
+  "QUANTITY_SCOPE_REVIEW_REQUIRED");
+// A title label is evidence only of observed offer presentation, never a
+// reason to update frozen 340ml or mark 80 sheets as equal to 340ml.
+const padTitle=classifyTrustOfficialCandidatePage(Buffer.from(
+  "<title>녹두 모공 클리어링 필터 패드 70매+10매</title>"),padCatalog);
+assert.equal(padTitle.nameSignalStatus,"TITLE_NAME_CANDIDATE");
+assert.equal(padTitle.status,"UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED");
+assert.equal(padTitle.variantScope.status,"SIZE_UNKNOWN");
+assert.equal(padTitle.unitOfferScope.unitRelation,"INCOMPARABLE_UNIT_FAMILY");
+assert.equal(padTitle.factConfirmationAuthorized,false);
+assert.equal(padTitle.subjectCreationAuthorized,false);
+const mlMismatch=observeOffer("아토팜 MLE 로션 300ml",sized);
+assert.equal(mlMismatch.status,"CATALOG_SIZE_MISMATCH");
+assert.equal(mlMismatch.unitRelation,"ML_CAPACITY_MISMATCH");
+assert.equal(mlMismatch.offerRelation,"SINGLE_OR_UNSPECIFIED");
+assert.equal(observeOffer("아토팜 MLE 로션 600ml",sized).status,
+  "SIZE_MATCH_CANDIDATE");
+assert.equal(observeOffer("아토팜 MLE 로션 600ml+50ml 증정",sized).status,
+  "OFFER_COMPOSITION_REVIEW_REQUIRED");
+assert.equal(observeOffer("아토팜 MLE 로션 600ml x2",sized).status,
+  "OFFER_COMPOSITION_REVIEW_REQUIRED");
+const mixed=observeOffer("아토팜 MLE 로션 600ml + 1개");
+assert.equal(mixed.status,"UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED");
+assert.equal(observeOffer("아토팜 MLE 로션 600ml",{
+  size_ml:null}).status,"QUANTITY_SCOPE_REVIEW_REQUIRED");
+const syntheticReadOnly={
+  readOnly:true,subjectCreationAuthorized:false,
+  officialProductEvidenceConfirmed:false,factWrites:0,
+  recommendationWrites:0,aiApiCalls:0,
+  marketVerified:false,formulationVerified:false,
+  sites:[{origin:"https://www.beplain.co.kr",status:"CANDIDATES_DISCOVERED",
+    pages:[{url:"https://www.beplain.co.kr/product/fake-fixture",
+      ...padTitle}],observations:[]}],
+};
+const unresolved=assessTrustP2DDiscovery(syntheticReadOnly);
+assert.equal(unresolved.state,"VARIANT_REVIEW_REQUIRED");
+assert.equal(unresolved.variantMismatchPages,1);
+assert.equal(unresolved.verifiedSourceBindings,0);
+assert.equal(syntheticReadOnly.sites[0].pages[0].unitOfferScope.exactSkuVerified,false);
+console.log("TRUST_P2F6_UNIT_OFFER_FROZEN_CATALOG_REVIEW_ONLY_PASS");
+
+/** Public-index-only readiness: two frozen, same-origin typed locators.
+ * These mocks test eligibility and URL routing, not actual source reachability.
+ * No commercial ingestion authorization or live requests are asserted. */
+const indexedReadiness=JSON.parse(fs.readFileSync(
+  "evidence/trust/p2f6-ad-remeasurement-readiness-20261019.json","utf8"));
+assert.equal(indexedReadiness.disposition,"NO_NEW_GOVERNED_LIVE_MEASUREMENT");
+assert.equal(indexedReadiness.cohort.denominator,5);
+assert.equal(indexedReadiness.historicalControlledBenchmark.confirmedExactSkuCount,0);
+const allowedIndexed=indexedReadiness.publicIndexReview
+  .filter(x=>x.eligibleForDirectProbe);
+assert.deepEqual(allowedIndexed.map(x=>x.brand),["이즈앤트리","토리든"]);
+const indexedCalls=[];
+for(const indexed of allowedIndexed){
+  const original=v2.targets.find(x=>x.productId===indexed.productId);
+  assert.ok(original);
+  assert.equal(indexed.catalogSizeMl,original.sizeMl);
+  const row=cohortToTrustedDiscoveryRow(original);
+  const origin=new URL(original.officialPeerUrl).origin;
+  assert.equal(new URL(indexed.sourceUrl).origin,origin);
+  const product={id:original.productId,name:original.name,
+    name_en:original.nameEn,normalized_name:original.normalizedName,
+    brand:original.brand,size_ml:original.sizeMl};
+  const entry={kind:"PRE_RESOLVED_OFFICIAL_PRODUCT_URL",
+    source:"OPERATOR_SUPPLIED_PUBLIC_URL",productId:product.id,
+    origin,url:indexed.sourceUrl};
+  const result=await runTrustP2Discovery(row,product,{
+    preResolvedLocators:[entry],
+    fetchRobots:async url=>{
+      indexedCalls.push({brand:indexed.brand,kind:"robots",url});
+      return {bytes:Buffer.from("User-agent: *\nAllow: /\n"),finalUrl:url};
+    },
+    fetchSitemap:async()=>{throw Error("INDEXED_READINESS_NO_SITEMAP");},
+    fetchPage:async url=>{
+      indexedCalls.push({brand:indexed.brand,kind:"page",url});
+      throw Error("SOURCE_BLOCKED:http_403");
+    },
+  });
+  assert.equal(result.sites[0].locatorMode,"PRE_RESOLVED");
+  assert.equal(result.sites[0].candidateCount,1);
+  assert.equal(result.sites[0].pages[0].fetchFailure.reason,"HTTP_ACCESS_REJECTED");
+  assert.equal(result.officialProductEvidenceConfirmed,false);
+  assert.equal(result.subjectCreationAuthorized,false);
+  assert.equal(result.factWrites,0);
+}
+assert.deepEqual(indexedCalls.map(x=>x.kind),["robots","page","robots","page"]);
+assert.deepEqual(indexedCalls.filter(x=>x.kind==="page").map(x=>x.url),
+  allowedIndexed.map(x=>new URL(x.sourceUrl).href));
+assert.equal(indexedReadiness.metricSeparation.newGovHTTPRequests,0);
+assert.equal(indexedReadiness.metricSeparation.newGovVerifiedExactSkuCount,null);
+console.log("TRUST_P2F6_INDEXED_LOCATOR_PLAN_OFFLINE_ONLY_PASS");
+
+/** One-time real-site run prerequisites are exercised offline with mock callbacks.
+ * This test does NOT contact official sites or turn indexed URLs into proof. */
+const p2f6Manifest=JSON.parse(fs.readFileSync(
+  "evidence/trust/p2f6-ad-remeasurement-readiness-20261019.json","utf8"));
+const permitted=validateTrustP2F6RemeasureScope(v2,p2f6Manifest);
+assert.equal(permitted.length,2);
+assert.deepEqual(permitted.map(x=>x.productId),[
+  v2.targets.find(x=>x.brand==="이즈앤트리").productId,
+  v2.targets.find(x=>x.brand==="토리든").productId,
+]);
+const frozenAltered=structuredClone(p2f6Manifest);
+frozenAltered.publicIndexReview.find(x=>x.brand==="아토팜").eligibleForDirectProbe=true;
+assert.throws(()=>validateTrustP2F6RemeasureScope(v2,frozenAltered),
+  /P2F6_READONLY_HELD_PRODUCT_NOT_FROZEN/);
+const scopeAltered=structuredClone(p2f6Manifest);
+scopeAltered.publicIndexReview.find(x=>x.brand==="토리든").sourceUrl=
+  "https://www.torriden.com/goods/goods_view.php?goodsNo=136";
+assert.throws(()=>validateTrustP2F6RemeasureScope(v2,scopeAltered),
+  /P2F6_READONLY_LOCATOR_NOT_FROZEN/);
+const oneTimeCallbacks=[];
+const oneTimeMocks={
+  fetchRobots:async url=>{
+    oneTimeCallbacks.push(["robots",url]);
+    return {bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url};
+  },
+  fetchSitemap:async()=>{throw Error("P2F6_NO_SITEMAP_SHOULD_RUN");},
+  fetchPage:async url=>{
+    oneTimeCallbacks.push(["page",url]);
+    const isIsntree=url.startsWith("https://isntree.com/");
+    return {bytes:Buffer.from(isIsntree?
+      "<title>초저분자 히아루론산 토너 300ml - 이즈앤트리</title>":
+      "<title>토리든 Torriden</title><p>다이브인 저분자 히알루론산 세럼</p>"),
+      finalUrl:url};
+  },
+};
+const planOnly=await runTrustP2F6Remeasure({
+  execute:false,cohort:v2,manifest:p2f6Manifest,fetchers:oneTimeMocks,paceMs:0,
+});
+assert.equal(planOnly.requestAttempts,0);
+assert.equal(planOnly.summary.confirmedExactSkuCount,0);
+assert.equal(oneTimeCallbacks.length,0);
+const oneTimeMocked=await runTrustP2F6Remeasure({
+  execute:true,cohort:v2,manifest:p2f6Manifest,fetchers:oneTimeMocks,paceMs:0,
+});
+assert.equal(oneTimeMocked.executionMode,"LIVE_ROBOTS_FIRST_READONLY");
+assert.equal(oneTimeMocked.requestAttempts,4);
+assert.deepEqual(oneTimeCallbacks.map(x=>x[0]),["robots","page","robots","page"]);
+assert.equal(oneTimeMocked.summary.officialPagesFetched,2);
+assert.equal(oneTimeMocked.summary.eligibleProducts,4);
+assert.equal(oneTimeMocked.summary.attemptedProducts,2);
+assert.equal(oneTimeMocked.summary.sitePolicyHoldProducts,2);
+assert.equal(oneTimeMocked.summary.retiredOriginHoldProducts,1);
+assert.equal(oneTimeMocked.summary.confirmedExactSkuCount,0);
+assert.equal(oneTimeMocked.summary.dbWrites,0);
+assert.equal(oneTimeMocked.newIndependentExactSkuVerifications,0);
+assert.equal(oneTimeMocked.items.find(x=>x.brand==="닥터지").assessment.state,
+  "RETIRED_ORIGIN_HOLD");
+assert.equal(oneTimeMocked.items.find(x=>x.brand==="비플레인").assessment.state,
+  "SITE_POLICY_HOLD");
+assert.equal(oneTimeMocked.items.find(x=>x.brand==="아토팜").assessment.state,
+  "SITE_POLICY_HOLD");
+// CLI cannot execute without main-only workflow gate.
+const originalLiveFlag=process.env.TRUST_P2F6_ONE_TIME_LIVE_ENABLED;
+const originalEvent=process.env.GITHUB_EVENT_NAME;
+const originalRef=process.env.GITHUB_REF;
+try {
+  delete process.env.TRUST_P2F6_ONE_TIME_LIVE_ENABLED;
+  await assert.rejects(()=>runTrustP2F6RemeasureCli(["--execute"]),
+    /P2F6_READONLY_MAIN_ONE_TIME_AUTHORIZATION_REQUIRED/);
+}finally{
+  if(originalLiveFlag===undefined)delete process.env.TRUST_P2F6_ONE_TIME_LIVE_ENABLED;
+  else process.env.TRUST_P2F6_ONE_TIME_LIVE_ENABLED=originalLiveFlag;
+  if(originalEvent===undefined)delete process.env.GITHUB_EVENT_NAME;
+  else process.env.GITHUB_EVENT_NAME=originalEvent;
+  if(originalRef===undefined)delete process.env.GITHUB_REF;
+  else process.env.GITHUB_REF=originalRef;
+}
+console.log("TRUST_P2F6_READONLY_TWO_ORIGIN_ONE_TIME_GUARDS_PASS");
 
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");

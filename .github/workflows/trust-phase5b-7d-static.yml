@@ -443,7 +443,7 @@ jobs:
     name: P2D owner-authorized four fixed-locator robots-gated check
     # Follow-up single-page checks at four index-discovered FIRST-PARTY locators.
     # Never a source binding, authoritative SKU decision or recurring crawl.
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019')
+    if: github.event_name == 'push' && ((contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019') && !contains(github.event.head_commit.message, 'P2F6-PRE-RESOLVED-READONLY-ONCE-20261019')) || (!contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019') && contains(github.event.head_commit.message, 'P2F6-PRE-RESOLVED-READONLY-ONCE-20261019')))
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     permissions:
@@ -459,6 +459,7 @@ jobs:
         with:
           node-version: "22"
       - name: One-time first-party fixed URL identity/size observation
+        if: contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019')
         shell: bash
         run: |
           set -euo pipefail
@@ -535,7 +536,23 @@ jobs:
           fs.writeFileSync('artifacts/trust-p2d-fixed-public-observation.json',JSON.stringify(data,null,2)+'\n');
           console.log('TRUST_P2D_FIXED_PUBLIC_RESULT='+JSON.stringify(data));
           NODE
+      - name: Pre-resolved read-only two-origin remeasurement
+        if: contains(github.event.head_commit.message, 'P2F6-PRE-RESOLVED-READONLY-ONCE-20261019')
+        env:
+          TRUST_P2F6_ONE_TIME_LIVE_ENABLED: "true"
+        run: node scripts/trust-p2f6-pre-resolved-readonly-once.mjs --execute
+
+      - name: Preserve frozen-cohort P2-F6 status-only remeasurement
+        if: contains(github.event.head_commit.message, 'P2F6-PRE-RESOLVED-READONLY-ONCE-20261019')
+        uses: actions/upload-artifact@v6
+        with:
+          name: trust-p2f6-pre-resolved-readonly-result
+          path: artifacts/trust-p2f6-pre-resolved-readonly-result.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Preserve fixed-locator status-only artifact
+        if: contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019')
         uses: actions/upload-artifact@v6
         with:
           name: trust-p2d-fixed-public-observation

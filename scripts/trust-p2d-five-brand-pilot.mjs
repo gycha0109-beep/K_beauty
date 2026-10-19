@@ -8,7 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { runTrustP2Discovery,trustP2LiveFetchers } from "../lib/trust/official-product-discovery-p2-v1.mjs";
+import { runTrustP2Discovery,trustP2LiveFetchers,validateTrustP2PreResolvedLocators } from "../lib/trust/official-product-discovery-p2-v1.mjs";
 
 export const P2D_CONTRACT="trust-p2d-five-brand-live-validation-v1";
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -134,6 +134,9 @@ export function diagnoseTrustP2DSite(site){
   const wrongVariantCount=pages.filter(p=>[
     "CATALOG_SIZE_MISMATCH","BUNDLE_VARIANT_REVIEW_REQUIRED",
     "SIZE_CONFLICT_REVIEW_REQUIRED",
+    "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED",
+    "UNIT_MISMATCH_REVIEW_REQUIRED",
+    "OFFER_COMPOSITION_REVIEW_REQUIRED",
   ].includes(p.status)).length;
   const positiveCandidateCount=pages.filter(p=>GOOD.has(p.status)).length;
   const sourceStatus=String(site.status??"");
@@ -143,6 +146,7 @@ export function diagnoseTrustP2DSite(site){
   else if(sourceStatus==="ROBOTS_DISALLOWED")reason="ROBOTS_DISALLOWED_HOLD";
   else if(sourceStatus==="CRAWL_DELAY_NOT_SUPPORTED")reason="ROBOTS_PACING_HOLD";
   else if(sourceStatus==="NO_ELIGIBLE_OFFICIAL_LOCATOR")reason="NO_ELIGIBLE_OFFICIAL_LOCATOR";
+  else if(sourceStatus==="NO_ELIGIBLE_PRE_RESOLVED_LOCATOR")reason="NO_ELIGIBLE_PRE_RESOLVED_LOCATOR";
   else if(wrongVariantCount>0)reason="WRONG_VARIANT_PAGE_HOLD";
   else if(positiveCandidateCount>0)reason="NAME_CANDIDATE_REVIEW_ONLY";
   else if(pages.some(p=>["SOURCE_BLOCKED","TRANSIENT_FAILURE"].includes(p.status)))
@@ -177,7 +181,13 @@ export function assessTrustP2DDiscovery(run){
   const pages=run.sites.flatMap(s=>s.pages??[]);
   const good=pages.filter(p=>GOOD.has(p.status));
   const weak=pages.filter(p=>WEAK.has(p.status));
-  const mismatched=pages.filter(p=>p.status==="CATALOG_SIZE_MISMATCH"||p.status==="BUNDLE_VARIANT_REVIEW_REQUIRED"||p.status==="SIZE_CONFLICT_REVIEW_REQUIRED");
+  const mismatched=pages.filter(p=>[
+    "CATALOG_SIZE_MISMATCH","BUNDLE_VARIANT_REVIEW_REQUIRED",
+    "SIZE_CONFLICT_REVIEW_REQUIRED",
+    "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED",
+    "UNIT_MISMATCH_REVIEW_REQUIRED",
+    "OFFER_COMPOSITION_REVIEW_REQUIRED",
+  ].includes(p.status));
   const candidateResult=good.length?"IDENTITY_CANDIDATE_REVIEW_REQUIRED":
     mismatched.length?"VARIANT_REVIEW_REQUIRED":
     weak.length?"BODY_MENTION_REVIEW_REQUIRED":
@@ -223,9 +233,19 @@ export function summarizeTrustP2D(rows){
 export async function runTrustP2DFiveBrandPilot({
  execute=false,fetchers=trustP2LiveFetchers(),
  cohort=JSON.parse(fs.readFileSync(COHORT_FILE,"utf8")),
- holdRetiredDrG=false,approvedBrands=null,
+ holdRetiredDrG=false,approvedBrands=null,preResolvedLocators=[],
 }={}){
   assertTrustP2DCohort(cohort);
+  // Validate all entries, including those for held origins, before any network.
+  if(!Array.isArray(preResolvedLocators)||preResolvedLocators.length>8||
+    preResolvedLocators.some(x=>!cohort.targets.some(t=>
+      t.productId===x?.productId&&t.brand!==RETIRED_ORIGIN_BRAND)))
+    throw Error("P2D_PRE_RESOLVED_COHORT_SCOPE_INVALID");
+  for(const target of cohort.targets){
+    validateTrustP2PreResolvedLocators(
+      preResolvedLocators.filter(x=>x.productId===target.productId),
+      cohortToTrustedDiscoveryRow(target),{id:target.productId});
+  }
   if(holdRetiredDrG&&execute&&
     (!(approvedBrands instanceof Set)||approvedBrands.size===0||
       [...approvedBrands].some(brand=>brand===RETIRED_ORIGIN_BRAND||
@@ -258,12 +278,16 @@ export async function runTrustP2DFiveBrandPilot({
       try {
         // Existing P2 owns robots, same-origin safety, per-site URL limits,
         // sitemap/peer discovery, and exact product heading candidate checks.
-        const discovery=await runTrustP2Discovery(row,product,fetchers);
+        const discovery=await runTrustP2Discovery(row,product,{
+          ...fetchers,preResolvedLocators:preResolvedLocators.filter(x=>
+            x.productId===target.productId),
+        });
         assessment=assessTrustP2DDiscovery(discovery);
         // Diagnostic-only provenance. The source HTML is never persisted.
         // These locators are unverified and cannot authorize a Subject or Fact.
         assessment.sourceDiagnostics=discovery.sites.map(site=>({
           origin:site.origin,status:site.status,
+          locatorMode:site.locatorMode??"AUTO_DISCOVERED",
           peerIndexCandidateCount:site.peerIndexCandidateCount??0,
           candidateCount:site.candidateCount??0,
           homepageIndexStatus:site.homepageIndexStatus??"NOT_RECORDED",
@@ -273,10 +297,14 @@ export async function runTrustP2DFiveBrandPilot({
           })),
           pages:(site.pages??[]).map(page=>({
             url:page.url,status:page.status,
+            locatorMode:page.locatorMode??"AUTO_DISCOVERED",
+            fetchFailure:page.fetchFailure??null,
             title:page.title??null,identitySurface:page.identitySurface??null,
             sha256:page.sha256??null,
             nameSignalStatus:page.nameSignalStatus??null,
             variantScope:page.variantScope??null,
+            unitOfferScope:page.unitOfferScope??null,
+            primaryRootDiagnostic:page.primaryRootDiagnostic??null,
           })),
         }));
       }catch(e){
