@@ -1,0 +1,107 @@
+{
+  "contract": "trust-p2f6-ad-remeasurement-readiness-v1",
+  "reviewedDate": "2026-10-19",
+  "disposition": "NO_NEW_GOVERNED_LIVE_MEASUREMENT",
+  "reason": "PR_NOT_MAIN_INTEGRATED_AND_MAIN_ONLY_ONE_TIME_LIVE_JOB_NOT_AUTHORIZED_OR_TRIGGERED",
+  "sourceMode": "PUBLIC_SEARCH_INDEX_RECHECK_ONLY_NOT_GOVERNED_FETCH",
+  "ownerRequest": "Continue work on real official-store exact-SKU identification measurement; do not infer commercial ingestion permission or authorize main deployment",
+  "featurePullRequest": 1357,
+  "featureBranch": "feat/pipeline-reliability/p2f6-integrated-a-d",
+  "prerequisiteStatus": {
+    "exactHeadOfflineCi": "PASS_AT_1549bb78ddfe52408651cbe3e1ff48e6e2cab283",
+    "mainContainsFeature": false,
+    "actualGovRobotsAndProductProbeExecuted": false,
+    "commercialIngestionManifest": "HOLD",
+    "brandContactMade": false,
+    "dbWrites": 0,
+    "sourceBindingsWritten": 0,
+    "subjectsWritten": 0,
+    "factsWritten": 0,
+    "recommendationsWritten": 0,
+    "aiApiCalls": 0
+  },
+  "cohort": {
+    "source": "evidence/trust/p2d-five-brand-cohort-v2.json",
+    "denominator": 5,
+    "eligibleOrigins": 4,
+    "retiredOrigin": "https://www.dr-g.co.kr",
+    "retiredBrand": "닥터지"
+  },
+  "historicalControlledBenchmark": {
+    "requests": 28,
+    "productPagesFetched": 2,
+    "identityNameCandidateProducts": 1,
+    "bodyOnlyProducts": 1,
+    "confirmedExactSkuCount": 0,
+    "evidence": [
+      "evidence/trust/p2d-owner-public-observation-20261019.json",
+      "evidence/trust/p2d-fixed-public-product-result-20261019.json"
+    ]
+  },
+  "publicIndexReview": [
+    {
+      "brand": "닥터지",
+      "productId": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "catalogSizeMl": 70,
+      "decision": "RETIRED_ORIGIN_HOLD",
+      "publicIndexOnly": true,
+      "eligibleForDirectProbe": false
+    },
+    {
+      "brand": "비플레인",
+      "productId": "9b81da7a-649e-41ec-a22b-7e367c05afe4",
+      "catalogSizeMl": 340,
+      "observedPublicListing": "녹두 모공 클리어링 필터 패드 70매+10매",
+      "sourceUrl": "https://www.beplain.co.kr/m/product_list.html?mcode=003&type=N&xcode=016",
+      "decision": "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED",
+      "publicIndexOnly": true,
+      "eligibleForDirectProbe": false
+    },
+    {
+      "brand": "아토팜",
+      "productId": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "catalogSizeMl": 600,
+      "observedPublicListing": "아토팜 MLE 로션 300ml",
+      "sourceUrl": "https://www.neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%EB%A1%9C%EC%85%98-300ml/2184/",
+      "decision": "WRONG_SIZE_300ML_NOT_600ML",
+      "publicIndexOnly": true,
+      "eligibleForDirectProbe": false
+    },
+    {
+      "brand": "이즈앤트리",
+      "productId": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
+      "catalogSizeMl": 300,
+      "observedPublicListing": "초저분자 히아루론산 토너 300ml",
+      "sourceUrl": "https://isntree.com/product/%ED%99%94%ED%95%B4-1%EB%93%B1-%EC%B4%88%EC%A0%80%EB%B6%84%EC%9E%90-%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%ED%86%A0%EB%84%88-300ml/56/category/112/display/1/",
+      "decision": "UNVERIFIED_NAME_AND_SIZE_LOCATOR_CANDIDATE",
+      "publicIndexOnly": true,
+      "eligibleForDirectProbe": true,
+      "preResolvedInputAllowedOnlyAfterGovApproval": true
+    },
+    {
+      "brand": "토리든",
+      "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+      "catalogSizeMl": 50,
+      "observedPublicListing": "다이브인 저분자 히알루론산 세럼 50ml",
+      "sourceUrl": "https://www.torriden.com/goods/goods_view.php?goodsNo=58",
+      "decision": "UNVERIFIED_NAME_AND_SIZE_LOCATOR_CANDIDATE",
+      "publicIndexOnly": true,
+      "eligibleForDirectProbe": true,
+      "preResolvedInputAllowedOnlyAfterGovApproval": true
+    }
+  ],
+  "metricSeparation": {
+    "newGovHTTPRequests": 0,
+    "newGovFetchedProductPages": 0,
+    "newGovIdentityCandidateProducts": null,
+    "newGovVerifiedExactSkuCount": null,
+    "newGovIdentificationRate": null,
+    "safeClaim": "Historical 0/5 remains last controlled actual measurement; search-index candidates are neither pipeline output nor independent SKU confirmations."
+  },
+  "blockingGate": [
+    "PR #1357 still Draft and unmerged; all A-D improvements are not in main",
+    "Existing one-time live marker jobs are main-push only; do not weaken/force them on pull_request or create an alternative ungoverned runner",
+    "Separate executable one-time authorization including original-origin robots-first, pacing, redirect, SSRF and bounded request accounting",
+    "No production source-binding/Subject/Product Fact/DB writes; maintain 5-product denominator and Dr.G HOLD"
+  ]
+}
