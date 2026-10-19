@@ -6,6 +6,7 @@ import { inspectTrustP2CatalogUnitOfferScope } from "../lib/trust/official-catal
 import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2CandidateLocators,strictOriginTransport } from "../lib/trust/official-product-discovery-p2-v1.mjs";
 import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
 import { REDISCOVERY_CONTRACT, discoverOfficialSourceCandidates } from "../lib/trust/official-source-rediscovery.mjs";
+import { runTrustP2F6Remeasure,validateTrustP2F6RemeasureScope,runTrustP2F6RemeasureCli } from "./trust-p2f6-pre-resolved-readonly-once.mjs";
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import {
@@ -1252,5 +1253,84 @@ assert.deepEqual(indexedCalls.filter(x=>x.kind==="page").map(x=>x.url),
 assert.equal(indexedReadiness.metricSeparation.newGovHTTPRequests,0);
 assert.equal(indexedReadiness.metricSeparation.newGovVerifiedExactSkuCount,null);
 console.log("TRUST_P2F6_INDEXED_LOCATOR_PLAN_OFFLINE_ONLY_PASS");
+
+/** One-time real-site run prerequisites are exercised offline with mock callbacks.
+ * This test does NOT contact official sites or turn indexed URLs into proof. */
+const p2f6Manifest=JSON.parse(fs.readFileSync(
+  "evidence/trust/p2f6-ad-remeasurement-readiness-20261019.json","utf8"));
+const permitted=validateTrustP2F6RemeasureScope(v2,p2f6Manifest);
+assert.equal(permitted.length,2);
+assert.deepEqual(permitted.map(x=>x.productId),[
+  v2.targets.find(x=>x.brand==="이즈앤트리").productId,
+  v2.targets.find(x=>x.brand==="토리든").productId,
+]);
+const frozenAltered=structuredClone(p2f6Manifest);
+frozenAltered.publicIndexReview.find(x=>x.brand==="아토팜").eligibleForDirectProbe=true;
+assert.throws(()=>validateTrustP2F6RemeasureScope(v2,frozenAltered),
+  /P2F6_READONLY_HELD_PRODUCT_NOT_FROZEN/);
+const scopeAltered=structuredClone(p2f6Manifest);
+scopeAltered.publicIndexReview.find(x=>x.brand==="토리든").sourceUrl=
+  "https://www.torriden.com/goods/goods_view.php?goodsNo=136";
+assert.throws(()=>validateTrustP2F6RemeasureScope(v2,scopeAltered),
+  /P2F6_READONLY_LOCATOR_NOT_FROZEN/);
+const oneTimeCallbacks=[];
+const oneTimeMocks={
+  fetchRobots:async url=>{
+    oneTimeCallbacks.push(["robots",url]);
+    return {bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url};
+  },
+  fetchSitemap:async()=>{throw Error("P2F6_NO_SITEMAP_SHOULD_RUN");},
+  fetchPage:async url=>{
+    oneTimeCallbacks.push(["page",url]);
+    const isIsntree=url.startsWith("https://isntree.com/");
+    return {bytes:Buffer.from(isIsntree?
+      "<title>초저분자 히아루론산 토너 300ml - 이즈앤트리</title>":
+      "<title>토리든 Torriden</title><p>다이브인 저분자 히알루론산 세럼</p>"),
+      finalUrl:url};
+  },
+};
+const planOnly=await runTrustP2F6Remeasure({
+  execute:false,cohort:v2,manifest:p2f6Manifest,fetchers:oneTimeMocks,paceMs:0,
+});
+assert.equal(planOnly.requestAttempts,0);
+assert.equal(planOnly.summary.confirmedExactSkuCount,0);
+assert.equal(oneTimeCallbacks.length,0);
+const oneTimeMocked=await runTrustP2F6Remeasure({
+  execute:true,cohort:v2,manifest:p2f6Manifest,fetchers:oneTimeMocks,paceMs:0,
+});
+assert.equal(oneTimeMocked.executionMode,"LIVE_ROBOTS_FIRST_READONLY");
+assert.equal(oneTimeMocked.requestAttempts,4);
+assert.deepEqual(oneTimeCallbacks.map(x=>x[0]),["robots","page","robots","page"]);
+assert.equal(oneTimeMocked.summary.officialPagesFetched,2);
+assert.equal(oneTimeMocked.summary.eligibleProducts,4);
+assert.equal(oneTimeMocked.summary.attemptedProducts,2);
+assert.equal(oneTimeMocked.summary.sitePolicyHoldProducts,2);
+assert.equal(oneTimeMocked.summary.retiredOriginHoldProducts,1);
+assert.equal(oneTimeMocked.summary.confirmedExactSkuCount,0);
+assert.equal(oneTimeMocked.summary.dbWrites,0);
+assert.equal(oneTimeMocked.newIndependentExactSkuVerifications,0);
+assert.equal(oneTimeMocked.items.find(x=>x.brand==="닥터지").assessment.state,
+  "RETIRED_ORIGIN_HOLD");
+assert.equal(oneTimeMocked.items.find(x=>x.brand==="비플레인").assessment.state,
+  "SITE_POLICY_HOLD");
+assert.equal(oneTimeMocked.items.find(x=>x.brand==="아토팜").assessment.state,
+  "SITE_POLICY_HOLD");
+// CLI cannot execute without main-only workflow gate.
+const originalLiveFlag=process.env.TRUST_P2F6_ONE_TIME_LIVE_ENABLED;
+const originalEvent=process.env.GITHUB_EVENT_NAME;
+const originalRef=process.env.GITHUB_REF;
+try {
+  delete process.env.TRUST_P2F6_ONE_TIME_LIVE_ENABLED;
+  await assert.rejects(()=>runTrustP2F6RemeasureCli(["--execute"]),
+    /P2F6_READONLY_MAIN_ONE_TIME_AUTHORIZATION_REQUIRED/);
+}finally{
+  if(originalLiveFlag===undefined)delete process.env.TRUST_P2F6_ONE_TIME_LIVE_ENABLED;
+  else process.env.TRUST_P2F6_ONE_TIME_LIVE_ENABLED=originalLiveFlag;
+  if(originalEvent===undefined)delete process.env.GITHUB_EVENT_NAME;
+  else process.env.GITHUB_EVENT_NAME=originalEvent;
+  if(originalRef===undefined)delete process.env.GITHUB_REF;
+  else process.env.GITHUB_REF=originalRef;
+}
+console.log("TRUST_P2F6_READONLY_TWO_ORIGIN_ONE_TIME_GUARDS_PASS");
 
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
