@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src blob: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'; object-src 'none'">
+<title>Skin Track 사진 판별기 | BEJEWELY</title>
+<style>
+:root{font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans KR",sans-serif;color-scheme:light dark;--bg:#f8f6f7;--card:#fff;--line:#eee4e7;--ink:#27212a;--sub:#81757c;--soft:#faf0f3;--accent:#bb5278}
+@media(prefers-color-scheme:dark){:root{--bg:#121114;--card:#211c22;--line:#40323b;--ink:#f7f1f5;--sub:#ad9da7;--soft:#382832;--accent:#ed90b2}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink)}button{font:inherit;cursor:pointer;border:0}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.wrap{max-width:1190px;margin:auto;padding:36px 19px 65px}
+.top{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:24px}.kicker{font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--accent)}h1{font-size:clamp(25px,3vw,32px);margin:8px 0 7px;letter-spacing:-.045em}h1 small{font-size:12px;color:var(--sub);font-weight:600;letter-spacing:0}.subtitle{font-size:13px;color:var(--sub);margin:0}.actions,.load-actions{display:flex;gap:8px;flex-wrap:wrap}.btn{padding:11px 14px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);font-size:12px;font-weight:650}.btn:hover{background:var(--soft)}.primary{background:#ba537a;color:white;border-color:#ba537a;font-weight:760}.primary:hover{background:#a7456b}.bar{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px 20px;margin-bottom:15px}.bar-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}.muted{color:var(--sub);font-size:12px}.track{height:7px;border-radius:40px;background:var(--soft);margin-top:13px;overflow:hidden}.fill{height:100%;background:var(--accent);width:0;transition:width .2s}
+.empty{background:var(--card);border:1px dashed var(--accent);border-radius:18px;padding:80px 20px;min-height:420px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}.gem{border-radius:24px;background:var(--soft);color:var(--accent);font-size:35px;width:78px;height:78px;display:grid;place-items:center}.empty h2{font-size:22px;margin:20px 0 8px}.empty p{color:var(--sub);font-size:13px;line-height:1.7;margin:0 0 20px}.empty .muted{max-width:410px;margin:20px 0 0}.work{display:grid;grid-template-columns:minmax(0,.96fr) minmax(0,1.04fr);gap:16px;align-items:start}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}.photo{position:sticky;top:14px}.photo-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:14px}.tag{font-size:11px;background:var(--soft);color:var(--accent);padding:6px 11px;border-radius:30px}.stage{display:grid;place-items:center;background:#ece6e9;border-radius:13px;overflow:hidden;height:clamp(280px,40vw,520px)}@media(prefers-color-scheme:dark){.stage{background:#2d2830}}.stage img{width:100%;height:100%;object-fit:contain}.filename{font-size:12px;color:var(--sub);padding:13px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.photo-nav{display:flex;gap:8px}.photo-nav button{flex:1}.head{display:flex;justify-content:space-between;align-items:start;gap:8px}.head h2{font-size:21px;margin:7px 0;letter-spacing:-.04em}.head p{font-size:12px;color:var(--sub);margin:0 0 20px}.reset{background:transparent;color:var(--sub);text-decoration:underline;font-size:12px}.clean{width:100%;display:flex;justify-content:space-between;gap:8px;align-items:center;text-align:left;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 13px;color:var(--ink);font-size:13px}.clean[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}.field-name{font-size:13px;font-weight:710}.hint{display:block;font-size:11px;color:var(--sub);margin-top:4px}.levels{display:flex;gap:5px}.level{min-width:51px;padding:9px 10px;border:1px solid var(--line);background:var(--card);border-radius:9px;font-size:12px;color:var(--sub)}.level[aria-pressed=true]{background:var(--soft);border-color:var(--accent);color:var(--accent);font-weight:800}.expand{background:transparent;color:var(--accent);font-size:13px;font-weight:740;padding:15px 0}.summary{background:var(--soft);border-radius:10px;color:var(--sub);font-size:12px;padding:13px;margin:5px 0 12px}.bottom{display:grid;grid-template-columns:1fr 1.15fr;gap:9px}.bottom button{padding:15px 9px}.tools{display:flex;justify-content:space-between;gap:10px;margin-top:17px}.tools button{background:none;color:var(--sub);font-size:12px;text-decoration:underline}.note{font-size:11px;text-align:center;color:var(--sub);line-height:1.7;margin:25px 0 0}.notice{font-size:12px;background:var(--soft);color:var(--accent);padding:10px 14px;border-radius:11px;margin:12px 0}.hidden{display:none!important}
+@media(max-width:850px){.work{grid-template-columns:1fr}.photo{position:static}.stage{height:min(65vw,450px)}}@media(max-width:540px){.wrap{padding:23px 12px 45px}.actions{width:100%}.actions button{flex:1}.card{padding:16px}.row{grid-template-columns:1fr;gap:9px}.levels{display:grid;grid-template-columns:repeat(3,1fr)}.stage{height:85vw;min-height:210px}.empty{min-height:390px;padding:45px 16px}.bottom{grid-template-columns:1fr}.top{margin-bottom:17px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="top"><div><div class="kicker">BEJEWELY · FACE LAB</div><h1>피부 사진 판별기 <small>SKIN TRACK</small></h1><p class="subtitle">사진을 보고 피부 특징과 강도만 선택하세요. 자동으로 기록됩니다.</p></div><div class="actions"><button type="button" class="btn" id="csv">CSV 저장</button><button type="button" class="btn" id="json">JSON 백업</button><button type="button" class="btn" id="restore">기록 불러오기</button></div></header>
+<section class="bar" aria-label="작업 진행률"><div class="bar-top"><strong id="counter">사진을 선택하면 시작됩니다</strong><span class="muted" id="counts">사진은 서버로 전송되지 않습니다</span></div><div class="track"><div class="fill" id="fill"></div></div></section>
+<section class="empty" id="empty"><div class="gem">✦</div><h2>분류할 피부 사진을 선택하세요</h2><p>사진 폴더를 통째로 선택하거나<br>여러 장을 한 번에 열 수 있어요.</p><div class="load-actions"><button type="button" class="btn primary" id="folderOpen">사진 폴더 선택</button><button type="button" class="btn" id="filesOpen">사진 여러 장 선택</button></div><p class="muted">브라우저에 분류 기록이 저장됩니다. 다시 열 때 같은 폴더를 선택하면 이어서 작업할 수 있습니다.</p></section>
+<div class="work hidden" id="workspace">
+<section class="card photo" aria-label="현재 피부 사진"><div class="photo-top"><strong id="photoCount"></strong><span class="tag" id="state">미분류</span></div><div class="stage"><img id="image" alt="분류할 사진"></div><div class="filename" id="filename"></div><div class="photo-nav"><button class="btn" id="previous" type="button">← 이전 사진</button><button class="btn" id="next" type="button">다음 사진 →</button></div></section>
+<section class="card" aria-label="피부 특징 선택"><div class="head"><div><div class="kicker">STEP 01 · 특징 선택</div><h2>사진에서 무엇이 보이나요?</h2><p>여러 개를 선택할 수 있어요. 선택한 강도를 다시 누르면 해제됩니다.</p></div><button type="button" id="reset" class="reset">초기화</button></div>
+<button type="button" id="clean" class="clean" aria-pressed="false"><strong>✨ 특징 없음 · 깨끗한 피부</strong><span id="cleanState">선택</span></button>
+<div id="fields"></div><button type="button" id="expand" class="expand" aria-expanded="false">추가 항목 4개 펼치기 +</button><div class="hidden" id="moreFields"></div>
+<div id="summary" class="summary" aria-live="polite">아직 선택한 특징이 없습니다</div><p id="notice" class="notice hidden" role="status"></p>
+<div class="bottom"><button class="btn" id="skip" type="button">판별 어려움 · 보류</button><button class="btn primary" id="save" type="button">저장하고 다음 →</button></div>
+<div class="tools"><button type="button" id="pending">미분류 사진으로 이동 ↗</button><button type="button" id="switch">다른 폴더 열기</button></div>
+</section></div>
+<p class="note">사진은 브라우저에서만 열리며 업로드되지 않습니다. 분류 기록은 로컬에 자동 저장됩니다.<br>주기적으로 JSON 백업을 내려받으세요. 1~3등급은 임시 시각적 가시성 기준입니다.</p>
+<input id="folderInput" type="file" webkitdirectory directory multiple hidden><input id="filesInput" type="file" accept="image/*" multiple hidden><input id="importInput" type="file" accept=".json,application/json" hidden>
+</main>
+<script>
+(function () {
+'use strict';
+var VERSION='skin-track-image-labels-v1';
+var KEY='bejewely-skin-track-local-labels-v1';
+var FIELDS=[
+ ['acne','여드름·트러블','좁쌀, 구진, 농포, 블랙헤드'],
+ ['pores','모공','코·볼 등의 가시적인 모공'],
+ ['redness','홍조·붉은기','붉은 영역과 분포'],
+ ['uneven_tone','톤 불균일·색소','잡티, 흔적, 얼룩덜룩함'],
+ ['flaking','각질·들뜸','표면에 보이는 각질'],
+ ['shine','유분·광택','빛에 반사되는 표면 광택'],
+ ['texture','피부결·요철','거칠기와 미세한 요철'],
+ ['wrinkles','주름·잔주름','이마, 눈가, 입가의 주름'],
+ ['under_eye','눈가·다크서클','눈 밑의 색 변화와 그림자'],
+ ['irritation_appearance','자극으로 보이는 흔적','붉은 반점, 표면 벗겨짐']
+];
+var files=[],index=0,records={},labels={},clean=false,preview=null,showMore=false;
+var $=function(id){return document.getElementById(id);};
+var fieldKeys={}; FIELDS.forEach(function(f){fieldKeys[f[0]]=true;});
+function key(file){return [file.webkitRelativePath||file.name,file.size,file.lastModified].join('::');}
+function message(str){$('notice').textContent=str||'';$('notice').classList.toggle('hidden',!str);}
+function scrub(input) {
+ var output={};
+ if(!input||typeof input!=='object'||Array.isArray(input))return output;
+ Object.keys(input).forEach(function(k){
+  if(k.length>500||!input[k]||typeof input[k]!=='object')return;
+  var r=input[k];if(r.status!=='done'&&r.status!=='skipped')return;
+  var lbl={};Object.keys(r.labels||{}).forEach(function(a){var v=r.labels[a];if(fieldKeys[a]&&Number.isInteger(v)&&v>=1&&v<=3)lbl[a]=v;});
+  var isClean=r.status==='done'&&r.clean===true&&Object.keys(lbl).length===0;
+  if(r.status==='done'&&!isClean&&!Object.keys(lbl).length)return;
+  output[k]={status:r.status,labels:r.status==='done'?lbl:{},clean:isClean,updatedAt:typeof r.updatedAt==='string'?r.updatedAt:null};
+ });
+ return output;
+}
+try{var saved=JSON.parse(localStorage.getItem(KEY)||'null');records=scrub(saved&&saved.records);}catch(e){}
+function persist(){
+ try{localStorage.setItem(KEY,JSON.stringify({version:VERSION,records:records}));return true;}
+ catch(e){message('브라우저 저장 공간이 부족할 수 있습니다. 지금 JSON 백업을 받아주세요.');return false;}
+}
+function buildFields(parent,subset) {
+ subset.forEach(function(f){
+  var row=document.createElement('div');row.className='row';
+  var name=document.createElement('div'),label=document.createElement('div'),hint=document.createElement('small');
+  label.className='field-name';label.textContent=f[1];hint.className='hint';hint.textContent=f[2];
+  name.append(label,hint);row.append(name);
+  var levels=document.createElement('div');levels.className='levels';levels.setAttribute('role','group');levels.setAttribute('aria-label',f[1]+' 강도');
+  [['약함',1],['보통',2],['강함',3]].forEach(function(l){
+   var btn=document.createElement('button');btn.type='button';btn.className='level';btn.textContent=l[0];btn.dataset.axis=f[0];btn.dataset.level=String(l[1]);btn.setAttribute('aria-pressed','false');levels.appendChild(btn);
+  });row.appendChild(levels);parent.appendChild(row);
+ });
+}
+buildFields($('fields'),FIELDS.slice(0,6));buildFields($('moreFields'),FIELDS.slice(6));
+function refreshSelection(){
+ document.querySelectorAll('button[data-axis]').forEach(function(btn){
+  btn.setAttribute('aria-pressed',String(labels[btn.dataset.axis]===Number(btn.dataset.level)));
+ });
+ $('clean').setAttribute('aria-pressed',String(clean));$('cleanState').textContent=clean?'✓ 선택됨':'선택';
+ var n=Object.keys(labels).length;
+ $('summary').textContent=clean?'특징 없음 선택':n?(n+'개 특징 선택'+(n>1?' · 복합 상태 자동 분류':'')):'아직 선택한 특징이 없습니다';
+}
+function refreshProgress(){
+ var done=0,skipped=0;
+ files.forEach(function(f){var r=records[key(f)];if(r&&r.status==='done')done++;else if(r&&r.status==='skipped')skipped++;});
+ $('counter').textContent=files.length?(done+skipped)+' / '+files.length+'장 처리':'사진을 선택하면 시작됩니다';
+ $('counts').textContent=files.length?('완료 '+done+' · 보류 '+skipped+' · 남음 '+(files.length-done-skipped)):'사진은 서버로 전송되지 않습니다';
+ $('fill').style.width=(files.length?Math.round((done+skipped)*100/files.length):0)+'%';
+}
+function view(){
+ if(preview){URL.revokeObjectURL(preview);preview=null;}
+ var file=files[index];if(!file){$('workspace').classList.add('hidden');$('empty').classList.remove('hidden');refreshProgress();return;}
+ $('workspace').classList.remove('hidden');$('empty').classList.add('hidden');
+ preview=URL.createObjectURL(file);$('image').src=preview;$('image').alt='분류할 사진: '+file.name;
+ $('photoCount').textContent='사진 '+(index+1)+' / '+files.length;
+ $('filename').textContent=file.webkitRelativePath||file.name;
+ var r=records[key(file)];labels=r&&r.status==='done'?Object.assign({},r.labels):{};
+ clean=!!(r&&r.status==='done'&&r.clean);
+ $('state').textContent=r?(r.status==='done'?'저장됨':'보류됨'):'미분류';
+ $('previous').disabled=index===0;$('next').disabled=index===files.length-1;
+ message('');refreshSelection();refreshProgress();
+}
+function select(event){
+ var list=Array.prototype.slice.call(event.target.files||[]).filter(function(f){return f.type.indexOf('image/')===0||/\.(jpe?g|png|webp|gif|bmp|avif)$/i.test(f.name);});
+ list.sort(function(a,b){return (a.webkitRelativePath||a.name).localeCompare(b.webkitRelativePath||b.name,'ko',{numeric:true});});
+ var seen={};files=list.filter(function(f){var k=key(f);if(seen[k])return false;seen[k]=true;return true;});
+ index=Math.max(0,files.findIndex(function(f){return !records[key(f)];}));view();
+ if(!files.length)message('이미지 파일이 없습니다. 사진이 포함된 폴더를 선택하세요.');
+ event.target.value='';
+}
+function save(status){
+ var file=files[index];if(!file)return;
+ if(status==='done'&&!clean&&!Object.keys(labels).length){message('특징을 선택하거나 ‘특징 없음’을 눌러주세요.');return;}
+ records[key(file)]={status:status,labels:status==='done'&&!clean?Object.assign({},labels):{},clean:status==='done'&&clean,updatedAt:new Date().toISOString()};
+ var saved=persist();
+ if(index<files.length-1){index++;view();if(!saved)message('저장 공간이 부족합니다. JSON 백업을 받아주세요.');}
+ else{view();message('마지막 사진입니다. CSV 또는 JSON으로 내보내세요.');}
+}
+function download(name,text,type){
+ var url=URL.createObjectURL(new Blob([text],{type:type}));var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+}
+function csvCell(v){var s=String(v==null?'':v);if(/^\s*[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
+$('fields').addEventListener('click',fieldClicked);$('moreFields').addEventListener('click',fieldClicked);
+function fieldClicked(e){var btn=e.target.closest('button[data-axis]');if(!btn)return;var a=btn.dataset.axis,v=Number(btn.dataset.level);if(labels[a]===v)delete labels[a];else labels[a]=v;clean=false;refreshSelection();message('');}
+$('clean').onclick=function(){clean=true;labels={};refreshSelection();message('');};
+$('reset').onclick=function(){labels={};clean=false;refreshSelection();message('');};
+$('expand').onclick=function(){showMore=!showMore;$('moreFields').classList.toggle('hidden',!showMore);$('expand').textContent=showMore?'추가 항목 접기 −':'추가 항목 4개 펼치기 +';$('expand').setAttribute('aria-expanded',String(showMore));};
+$('save').onclick=function(){save('done');};$('skip').onclick=function(){save('skipped');};
+$('previous').onclick=function(){if(index>0){index--;view();}};$('next').onclick=function(){if(index<files.length-1){index++;view();}};
+$('pending').onclick=function(){var pos=files.findIndex(function(f){return !records[key(f)];});if(pos<0)message('모든 사진을 처리했습니다.');else{index=pos;view();}};
+$('switch').onclick=function(){files=[];index=0;view();};
+$('folderOpen').onclick=function(){$('folderInput').click();};$('filesOpen').onclick=function(){$('filesInput').click();};
+$('folderInput').onchange=select;$('filesInput').onchange=select;
+$('json').onclick=function(){if(!Object.keys(records).length){message('내보낼 기록이 없습니다.');return;}download('bejewely-skin-labels.json',JSON.stringify({version:VERSION,exportedAt:new Date().toISOString(),records:records},null,2),'application/json');};
+$('csv').onclick=function(){if(!Object.keys(records).length){message('내보낼 기록이 없습니다.');return;}var header=['image_key','status','clean','mixed'].concat(FIELDS.map(function(f){return f[0];}),['updated_at']);var rows=[header.map(csvCell).join(',')];Object.keys(records).forEach(function(k){var r=records[k],multi=Object.keys(r.labels||{}).length>1;rows.push([k,r.status,r.clean?1:0,multi?1:0].concat(FIELDS.map(function(f){return r.labels[f[0]]||'';}),[r.updatedAt]).map(csvCell).join(','));});download('bejewely-skin-labels.csv','\uFEFF'+rows.join('\r\n'),'text/csv;charset=utf-8');};
+$('restore').onclick=function(){$('importInput').click();};$('importInput').onchange=async function(e){var file=e.target.files&&e.target.files[0];if(!file)return;try{if(file.size>15*1024*1024)throw Error('백업이 너무 큽니다.');var data=JSON.parse(await file.text());if(data.version!==VERSION||!data.records||typeof data.records!=='object'||Array.isArray(data.records))throw Error('Skin Track JSON 백업 형식이 아닙니다.');var incoming=scrub(data.records);records=Object.assign(records,incoming);persist();view();message(Object.keys(incoming).length+'개의 기록을 불러왔습니다.');}catch(err){message(err.message||'기록을 읽을 수 없습니다.');}e.target.value='';};
+refreshProgress();
+})();
+</script></body></html>
