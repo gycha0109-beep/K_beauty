@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { inspectTrustOfficialVariantScope } from "../lib/trust/official-variant-scope-v1.mjs";
-import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2CandidateLocators } from "../lib/trust/official-product-discovery-p2-v1.mjs";
+import { classifyTrustOfficialCandidatePage,runTrustP2Discovery,selectTrustP2CandidateLocators,strictOriginTransport } from "../lib/trust/official-product-discovery-p2-v1.mjs";
+import { diagnoseTrustP2FetchFailure } from "../lib/trust/official-fetch-failure-diagnostic-v1.mjs";
 import { findTrustP2BOfficialPeerLinks } from "../lib/trust/official-peer-index-links-v1.mjs";
 import { REDISCOVERY_CONTRACT, discoverOfficialSourceCandidates } from "../lib/trust/official-source-rediscovery.mjs";
 import fs from "node:fs";
@@ -864,5 +865,64 @@ try{
 await assert.rejects(()=>runTrustP2DCli(["--execute","--execute-four"]),
   /P2D_UNSUPPORTED_CLI_FLAG/);
 console.log("TRUST_P2D_FOUR_BRAND_HOLD_AND_AUTHORIZATION_PASS");
+
+
+/** P2-F6 C: no-body/no-raw-error deterministic failure diagnosis. */
+const failReason=(message,cause=null)=>diagnoseTrustP2FetchFailure(
+  Object.assign(new Error(message),cause===null?{}:{cause}));
+const statuses=[
+  ["SOURCE_BLOCKED:http_403","HTTP_ACCESS_REJECTED",403],
+  ["SOURCE_BLOCKED:http_404","HTTP_NOT_FOUND",404],
+  ["SOURCE_BLOCKED:http_410","HTTP_NOT_FOUND",410],
+  ["TRANSIENT_FAILURE:http_429","HTTP_RATE_LIMIT",429],
+  ["TRANSIENT_FAILURE:http_503","HTTP_SERVER_FAILURE",503],
+  ["SOURCE_BLOCKED:redirect_response","REDIRECT_REJECTED",null],
+  ["SOURCE_BLOCKED:redirect_limit","REDIRECT_REJECTED",null],
+  ["SOURCE_BLOCKED:response_too_large","BYTE_LIMIT_REJECTED",null],
+  ["SOURCE_BLOCKED:unsupported_content_type","CONTENT_TYPE_REJECTED",null],
+  ["SOURCE_BLOCKED:private_dns_resolution","SOURCE_POLICY_OR_SAFETY_BLOCKED",null],
+  ["TRANSIENT_FAILURE:fetch_error","NETWORK_FAILURE_UNCLASSIFIED",null],
+];
+for(const [code,reason,httpStatus] of statuses){
+  const v=failReason(code);
+  assert.equal(v.reason,reason,code);
+  assert.equal(v.httpStatus,httpStatus,code);
+}
+assert.equal(failReason("TRANSIENT_FAILURE:fetch_error",{
+  name:"AbortError"}).reason,"REQUEST_TIMEOUT");
+assert.equal(failReason("TRANSIENT_FAILURE:fetch_error",{
+  cause:{code:"ENOTFOUND"}}).reason,"NETWORK_CONNECTION_FAILURE");
+const sensitive=failReason("secret-key-or-html-body-should-never-appear");
+assert.equal(sensitive.reason,"UNCLASSIFIED_FAILURE");
+assert.equal(JSON.stringify(sensitive).includes("secret-key"),false);
+const sentinel="https://neopharmshop.co.kr/product/mle-lotion-600ml/9000";
+await assert.rejects(()=>strictOriginTransport(async()=>new Response("",{
+  status:302,headers:{location:"https://unknown.example/hijack"},
+}),"https://neopharmshop.co.kr",null,{diagnoseRedirect:true})(sentinel,{}),
+/SOURCE_BLOCKED:redirect_response/);
+const oldSafe=await strictOriginTransport(async()=>new Response("",{
+  status:301,headers:{location:"https://unknown.example/hijack"},
+}),"https://neopharmshop.co.kr")(sentinel,{});
+assert.equal(oldSafe.status,403); // Backward-compatible default.
+const failurePages=[];
+const failureRun=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  fetchRobots:async url=>({bytes:Buffer.from("User-agent: *\nAllow: /\n"),
+    finalUrl:url}),
+  fetchSitemap:async url=>({bytes:Buffer.from(
+    "<urlset><url><loc>"+sentinel+"</loc></url></urlset>"),finalUrl:url}),
+  fetchPage:async url=>{
+    failurePages.push(url);
+    throw Error("SOURCE_BLOCKED:http_403");
+  },
+});
+assert.ok(failurePages.includes(sentinel));
+const rejectedPage=failureRun.sites[0].pages.find(x=>x.url===sentinel);
+assert.equal(rejectedPage.status,"SOURCE_BLOCKED");
+assert.equal(rejectedPage.fetchFailure.reason,"HTTP_ACCESS_REJECTED");
+assert.equal(rejectedPage.fetchFailure.httpStatus,403);
+assert.equal(failureRun.factWrites,0);
+assert.equal(failureRun.subjectCreationAuthorized,false);
+assert.equal(JSON.stringify(failureRun).includes("<html"),false);
+console.log("TRUST_P2F6_FETCH_FAILURE_ENUM_DIAGNOSTICS_PASS");
 
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
