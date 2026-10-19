@@ -273,6 +273,7 @@ export async function runTrustP2DFiveBrandPilot({
           })),
           pages:(site.pages??[]).map(page=>({
             url:page.url,status:page.status,
+            fetchFailure:page.fetchFailure??null,
             title:page.title??null,identitySurface:page.identitySurface??null,
             sha256:page.sha256??null,
             nameSignalStatus:page.nameSignalStatus??null,
