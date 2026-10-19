@@ -134,6 +134,9 @@ export function diagnoseTrustP2DSite(site){
   const wrongVariantCount=pages.filter(p=>[
     "CATALOG_SIZE_MISMATCH","BUNDLE_VARIANT_REVIEW_REQUIRED",
     "SIZE_CONFLICT_REVIEW_REQUIRED",
+    "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED",
+    "UNIT_MISMATCH_REVIEW_REQUIRED",
+    "OFFER_COMPOSITION_REVIEW_REQUIRED",
   ].includes(p.status)).length;
   const positiveCandidateCount=pages.filter(p=>GOOD.has(p.status)).length;
   const sourceStatus=String(site.status??"");
@@ -177,7 +180,13 @@ export function assessTrustP2DDiscovery(run){
   const pages=run.sites.flatMap(s=>s.pages??[]);
   const good=pages.filter(p=>GOOD.has(p.status));
   const weak=pages.filter(p=>WEAK.has(p.status));
-  const mismatched=pages.filter(p=>p.status==="CATALOG_SIZE_MISMATCH"||p.status==="BUNDLE_VARIANT_REVIEW_REQUIRED"||p.status==="SIZE_CONFLICT_REVIEW_REQUIRED");
+  const mismatched=pages.filter(p=>[
+    "CATALOG_SIZE_MISMATCH","BUNDLE_VARIANT_REVIEW_REQUIRED",
+    "SIZE_CONFLICT_REVIEW_REQUIRED",
+    "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED",
+    "UNIT_MISMATCH_REVIEW_REQUIRED",
+    "OFFER_COMPOSITION_REVIEW_REQUIRED",
+  ].includes(p.status));
   const candidateResult=good.length?"IDENTITY_CANDIDATE_REVIEW_REQUIRED":
     mismatched.length?"VARIANT_REVIEW_REQUIRED":
     weak.length?"BODY_MENTION_REVIEW_REQUIRED":
@@ -277,6 +286,7 @@ export async function runTrustP2DFiveBrandPilot({
             sha256:page.sha256??null,
             nameSignalStatus:page.nameSignalStatus??null,
             variantScope:page.variantScope??null,
+            unitOfferScope:page.unitOfferScope??null,
           })),
         }));
       }catch(e){
