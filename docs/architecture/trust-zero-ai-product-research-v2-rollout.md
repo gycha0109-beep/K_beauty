@@ -453,3 +453,13 @@ The independent direct-public-URL run [GitHub #39189031591](https://github.com/g
 - A, B, C and D are now combined on a dedicated integration branch with one canonical P2D offline verifier and the existing TRUST CI; **the isolated branches are historical implementation probes, not separately authorized merge candidates**.
 - Integration verification must be checked at the exact combined PR head. Passing A/B/C/D in isolation does not prove their composition; keep this entry as a pending test statement until linked CI completes.
 - Original real-site evidence and all five-product identity/authority limits remain unchanged. No new live request, supplier contact, operation DB/Fact write, or recommendation activation was conducted.
+
+## 2026-10-19 P2-F6 A–D combined CI evidence
+
+- **Verified functional baseline SHA:** `796c38f1c7f4cd27f6f16a7e936e23249e1533e7` (6 changed files, four safety improvements combined; main base `90f9e4857dd334d1d9dd16eecdb614cc50775303`).
+- **Canonical TRUST offline fixtures:** [run 39196960676](https://github.com/gycha0109-beep/K_beauty/actions/runs/39196960676) SUCCESS, including combined original P2/P3 plus A–D P2D regression and exact-head diff hygiene.
+- **Main Health:** [run 39196960679](https://github.com/gycha0109-beep/K_beauty/actions/runs/39196960679) SUCCESS.
+- **Supply Chain Security / CodeQL:** [run 39196960649](https://github.com/gycha0109-beep/K_beauty/actions/runs/39196960649) SUCCESS for both jobs.
+- **PIE shadow:** [run 39196960940](https://github.com/gycha0109-beep/K_beauty/actions/runs/39196960940) SUCCESS.
+- **Interpretation:** This is **deterministic offline code acceptance**, not a new real-site accuracy improvement. Original 28 real HTTP requests / two product pages downloaded / exact SKU 0 of 5 remains the only held real benchmark. Source, Subject, Fact, recommendation, DB writes 0; no emails, AI calls or live fetches.
+- **Release boundary:** all A–D modifications remain PR-only and unmerged. This document-only evidence update advances the PR SHA; the exact final PR head must be rechecked before declaring the combined PR review-ready. No deployment, public batch rerun or operation data correction authorized.
