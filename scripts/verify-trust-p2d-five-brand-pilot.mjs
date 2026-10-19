@@ -1202,4 +1202,55 @@ assert.equal(unresolved.verifiedSourceBindings,0);
 assert.equal(syntheticReadOnly.sites[0].pages[0].unitOfferScope.exactSkuVerified,false);
 console.log("TRUST_P2F6_UNIT_OFFER_FROZEN_CATALOG_REVIEW_ONLY_PASS");
 
+/** Public-index-only readiness: two frozen, same-origin typed locators.
+ * These mocks test eligibility and URL routing, not actual source reachability.
+ * No commercial ingestion authorization or live requests are asserted. */
+const indexedReadiness=JSON.parse(fs.readFileSync(
+  "evidence/trust/p2f6-ad-remeasurement-readiness-20261019.json","utf8"));
+assert.equal(indexedReadiness.disposition,"NO_NEW_GOVERNED_LIVE_MEASUREMENT");
+assert.equal(indexedReadiness.cohort.denominator,5);
+assert.equal(indexedReadiness.historicalControlledBenchmark.confirmedExactSkuCount,0);
+const allowedIndexed=indexedReadiness.publicIndexReview
+  .filter(x=>x.eligibleForDirectProbe);
+assert.deepEqual(allowedIndexed.map(x=>x.brand),["이즈앤트리","토리든"]);
+const indexedCalls=[];
+for(const indexed of allowedIndexed){
+  const original=v2.targets.find(x=>x.productId===indexed.productId);
+  assert.ok(original);
+  assert.equal(indexed.catalogSizeMl,original.sizeMl);
+  const row=cohortToTrustedDiscoveryRow(original);
+  const origin=new URL(original.officialPeerUrl).origin;
+  assert.equal(new URL(indexed.sourceUrl).origin,origin);
+  const product={id:original.productId,name:original.name,
+    name_en:original.nameEn,normalized_name:original.normalizedName,
+    brand:original.brand,size_ml:original.sizeMl};
+  const entry={kind:"PRE_RESOLVED_OFFICIAL_PRODUCT_URL",
+    source:"OPERATOR_SUPPLIED_PUBLIC_URL",productId:product.id,
+    origin,url:indexed.sourceUrl};
+  const result=await runTrustP2Discovery(row,product,{
+    preResolvedLocators:[entry],
+    fetchRobots:async url=>{
+      indexedCalls.push({brand:indexed.brand,kind:"robots",url});
+      return {bytes:Buffer.from("User-agent: *\\nAllow: /\\n"),finalUrl:url};
+    },
+    fetchSitemap:async()=>{throw Error("INDEXED_READINESS_NO_SITEMAP");},
+    fetchPage:async url=>{
+      indexedCalls.push({brand:indexed.brand,kind:"page",url});
+      throw Error("SOURCE_BLOCKED:http_403");
+    },
+  });
+  assert.equal(result.sites[0].locatorMode,"PRE_RESOLVED");
+  assert.equal(result.sites[0].candidateCount,1);
+  assert.equal(result.sites[0].pages[0].fetchFailure.reason,"HTTP_ACCESS_REJECTED");
+  assert.equal(result.officialProductEvidenceConfirmed,false);
+  assert.equal(result.subjectCreationAuthorized,false);
+  assert.equal(result.factWrites,0);
+}
+assert.deepEqual(indexedCalls.map(x=>x.kind),["robots","page","robots","page"]);
+assert.deepEqual(indexedCalls.filter(x=>x.kind==="page").map(x=>x.url),
+  allowedIndexed.map(x=>new URL(x.sourceUrl).href));
+assert.equal(indexedReadiness.metricSeparation.newGovHTTPRequests,0);
+assert.equal(indexedReadiness.metricSeparation.newGovVerifiedExactSkuCount,null);
+console.log("TRUST_P2F6_INDEXED_LOCATOR_PLAN_OFFLINE_ONLY_PASS");
+
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
