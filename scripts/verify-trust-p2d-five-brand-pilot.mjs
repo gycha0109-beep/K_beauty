@@ -865,4 +865,71 @@ await assert.rejects(()=>runTrustP2DCli(["--execute","--execute-four"]),
   /P2D_UNSUPPORTED_CLI_FLAG/);
 console.log("TRUST_P2D_FOUR_BRAND_HOLD_AND_AUTHORIZATION_PASS");
 
+
+/** P2-F6 B: generic brand titles require P3 strict root AND selected size.
+ * Synthetic fixtures only; never independent exact SKU identity evidence. */
+const torridenTarget=v2.targets.find(x=>x.brand==="토리든");
+const genericProduct={
+  id:torridenTarget.productId,name:torridenTarget.name,
+  normalized_name:torridenTarget.normalizedName,
+  name_en:torridenTarget.nameEn,brand:torridenTarget.brand,
+  size_ml:torridenTarget.sizeMl,
+};
+const titleGeneric="<title>토리든 Torriden</title>";
+const coreName="<h1>다이브인 저분자 히알루론산 세럼</h1>";
+const ownedForm=selected=>'<form id="goods-form"><select name="size">'+
+  '<option value="50ml" '+(selected==="50"?"selected":"")+'>50ml</option>'+
+  '<option value="100ml" '+(selected==="100"?"selected":"")+'>100ml</option>'+
+  '</select></form>';
+const productRoot=body=>'<section class="product-detail">'+body+'</section>';
+const genericHtml=body=>Buffer.from("<html><head>"+titleGeneric+
+  "</head><body>"+body+"</body></html>");
+const classifiedGeneric=body=>classifyTrustOfficialCandidatePage(
+  genericHtml(body),genericProduct);
+const matchedRoot=classifiedGeneric(productRoot(coreName+ownedForm("50")));
+assert.equal(matchedRoot.status,"SCOPED_HEADING_CANDIDATE");
+assert.equal(matchedRoot.identitySurface,"p3_primary_root_selected_size_shadow");
+assert.equal(matchedRoot.primaryRootDiagnostic.status,"SCOPED_NAME_AND_FORM_CANDIDATE");
+assert.equal(matchedRoot.primaryRootDiagnostic.selectedSizeStatus,
+  "SELECTED_SIZE_MATCH_SHADOW_ONLY");
+assert.equal(matchedRoot.primaryRootDiagnostic.scopedNameAndSizeCandidate,true);
+assert.equal(matchedRoot.variantScope.status,"SIZE_UNKNOWN"); // title remains generic
+assert.equal(matchedRoot.marketVerified,false);
+assert.equal(matchedRoot.subjectCreationAuthorized,false);
+assert.equal(matchedRoot.factConfirmationAuthorized,false);
+assert.equal(matchedRoot.primaryRootDiagnostic.exactSkuVerified,false);
+assert.equal(JSON.stringify(matchedRoot).includes("<form"),false);
+const genericNegatives=[
+  ["wrong selected size",productRoot(coreName+ownedForm("100"))],
+  ["no selected option",productRoot(coreName+ownedForm("none"))],
+  ["title without owner form",productRoot(coreName)],
+  ["selected size in unrelated form",productRoot(coreName)+
+    productRoot('<h1>다른 상품</h1>'+ownedForm("50"))],
+  ["recommendation only",'<aside class="related-products">'+
+    productRoot(coreName+ownedForm("50"))+"</aside>"],
+  ["two candidate roots",productRoot(coreName+ownedForm("50"))+
+    productRoot(coreName+ownedForm("50"))],
+  ["advertised product name only",productRoot(
+    '<h1>타사 추천 제품</h1>'+ownedForm("50"))+
+    '<div class="recommended-products"><p>'+genericProduct.name+'</p></div>'],
+  ["selected size in related block",productRoot(coreName+
+    '<div class="recommended-products">'+ownedForm("50")+'</div>')],
+  ["unbalanced markup",'<section class="product-detail">'+coreName+
+    ownedForm("50")],
+];
+for(const [name,body] of genericNegatives){
+  const result=classifiedGeneric(body);
+  assert.notEqual(result.status,"SCOPED_HEADING_CANDIDATE",name);
+  assert.notEqual(result.status,"TITLE_NAME_CANDIDATE",name);
+  assert.equal(result.primaryRootDiagnostic?.scopedNameAndSizeCandidate,false,name);
+  assert.equal(result.subjectCreationAuthorized,false,name);
+  assert.equal(result.factConfirmationAuthorized,false,name);
+}
+const explicitDocumentTitle=classifyTrustOfficialCandidatePage(Buffer.from(
+  '<title>다이브인 저분자 히알루론산 세럼 50ml - 토리든</title>'),
+  genericProduct);
+assert.equal(explicitDocumentTitle.status,"TITLE_NAME_CANDIDATE");
+assert.equal(explicitDocumentTitle.primaryRootDiagnostic,undefined);
+console.log("TRUST_P2F6_GENERIC_TITLE_STRICT_PRIMARY_ROOT_PASS");
+
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
