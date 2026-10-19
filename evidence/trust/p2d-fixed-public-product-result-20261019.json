@@ -1,0 +1,89 @@
+{
+  "contract": "trust-p2d-fixed-locator-public-observation-v1",
+  "observedAt": "2026-10-19T02:14:56.391Z",
+  "referenceRunId": 39189031591,
+  "referenceJobId": 117857524343,
+  "referenceArtifactId": 12158538760,
+  "triggerHead": "1357d653ef38fd97de3c54c10e3b2a9ab974c091",
+  "frozenDenominator": 5,
+  "eligibleOrigins": 4,
+  "retiredDrGZeroRequests": true,
+  "oneTimeHttpRequests": 8,
+  "robotsRequests": 4,
+  "productRequests": 4,
+  "productPagesFetched": 2,
+  "verifiedExactSkuCount": 0,
+  "factWrites": 0,
+  "subjectWrites": 0,
+  "recommendationWrites": 0,
+  "dbWrites": 0,
+  "aiApiCalls": 0,
+  "sourceBindingAuthorized": false,
+  "results": [
+    {
+      "brand": "비플레인",
+      "productId": "9b81da7a-649e-41ec-a22b-7e367c05afe4",
+      "catalogSizeMl": 340,
+      "url": "https://www.beplain.co.kr/shop/shopdetail.html?GfDT=a2p3UQ%3D%3D&branduid=10739162&mcode=001&special=3&xcode=012",
+      "status": "PAGE_FETCH_BLOCKED_OR_FAILED",
+      "pageFetched": false,
+      "reasonUnverified": true,
+      "independentPublicIndexedLabel": "녹두 모공 클리어링 필터 패드 70매+10매",
+      "identityDecision": "UNIT_AND_OFFER_MISMATCH_REVIEW_REQUIRED",
+      "exactSkuVerified": false
+    },
+    {
+      "brand": "아토팜",
+      "productId": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "catalogSizeMl": 600,
+      "url": "https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%EB%A1%9C%EC%85%98-300ml/2184",
+      "status": "PAGE_FETCH_BLOCKED_OR_FAILED",
+      "pageFetched": false,
+      "reasonUnverified": true,
+      "independentPublicIndexedLabel": "아토팜 MLE 로션 300ml",
+      "identityDecision": "CATALOG_SIZE_MISMATCH_REVIEW_REQUIRED",
+      "exactSkuVerified": false
+    },
+    {
+      "brand": "이즈앤트리",
+      "productId": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
+      "catalogSizeMl": 300,
+      "url": "https://isntree.com/product/%ED%99%94%ED%95%B4-1%EB%93%B1-%EC%B4%88%EC%A0%80%EB%B6%84%EC%9E%90-%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%ED%86%A0%EB%84%88-300ml/56/category/112/display/1/",
+      "status": "TITLE_NAME_CANDIDATE",
+      "pageFetched": true,
+      "title": "초저분자 히아루론산 토너 300ml - (주)이즈앤트리",
+      "identitySurface": "page_title",
+      "variantStatus": "SIZE_MATCH_CANDIDATE",
+      "explicitTitleSizesMl": [
+        300
+      ],
+      "pageSha256": "c49d21b272962e74625f479bb0d8ee5aefb9aa83bf5601f81ddb765375e81f36",
+      "exactSkuVerified": false
+    },
+    {
+      "brand": "토리든",
+      "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+      "catalogSizeMl": 50,
+      "url": "https://www.torriden.com/goods/goods_view.php?goodsNo=58",
+      "status": "BODY_NAME_MENTION_ONLY",
+      "pageFetched": true,
+      "title": "토리든 Torriden",
+      "identitySurface": "visible_body_mention",
+      "variantStatus": "SIZE_UNKNOWN",
+      "explicitTitleSizesMl": [],
+      "pageSha256": "022a171e895b6981f7310f01c620485f678ad852863a29b687b7c7ae84737f5b",
+      "exactSkuVerified": false
+    }
+  ],
+  "safeInterpretation": [
+    "Every site allowed robots preflight and proceeded to exactly one governed fixed URL request, but two product page GETs were blocked or failed with no specific HTTP explanation recorded.",
+    "Isntree exposed target product title and 300ml in page head; this remains a name-and-size candidate, not independent SKU binding.",
+    "Torriden showed brand-only HTML document title; target name was detected only in body so exact-identity confidence must NOT be elevated.",
+    "beplain's indexed 70+10-sheet offer does not justify silently treating the catalog's 340ml quantity as equivalent.",
+    "ATOPALM's known official 300ml page does not verify the frozen 600ml target.",
+    "Existing first-pass sitemap/peer/index workflow fetched zero target product pages despite all four robots documents being accessible."
+  ],
+  "crossRunPreviousEvidencePath": "evidence/trust/p2d-owner-public-observation-20261019.json",
+  "totalActualRequestsBothRuns": 28,
+  "constraints": "First-party official origins only; robots preflight, no redirects, bounded bytes/time and pacing, no raw HTML retained, zero production writes"
+}
