@@ -400,3 +400,7 @@ All result data are **diagnostics** only: per-brand stage reason, number of publ
 ## 2026-10-19 P2-F4 one-time bounded public observation execution
 
 Owner requested one small official product information check; this commit triggers the separately guarded robots-first, four-origin **read-only** diagnostic once. Fixed 5-product denominator and retired Dr.G HOLD remain unchanged. Brand emails are not sent. The commercial/production authorization manifest remains HOLD. A separate report records the execution status; do not infer verified SKUs or content reuse rights from public query candidates.
+
+## 2026-10-19 P2-F5 one-off official fixed locator execution
+
+Following the approved bounded public official-source measurement, this separate owner-requested diagnostic reads up to four **fixed** public product page URLs (one per original source origin) after each live robots.txt preflight. The two known wrong-size/unit candidates remain review-only; none of the four candidate locators prove exact SKU identity. Maximum 8 HTTP requests (one robots and at most one product page per origin), pacing 1.3 seconds, zero production writes, zero external brand contacts. The authoritative ingestion manifest remains HOLD.
