@@ -439,6 +439,110 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  p2d_owner_fixed_locator_one_time:
+    name: P2D owner-authorized four fixed-locator robots-gated check
+    # Follow-up single-page checks at four index-discovered FIRST-PARTY locators.
+    # Never a source binding, authoritative SKU decision or recurring crawl.
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact merged main
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: One-time first-party fixed URL identity/size observation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import {fetchOfficialBytes} from './lib/trust/official-source-fetch.mjs';
+          import {strictOriginTransport,createTrustRobotsPolicy,
+            classifyTrustOfficialCandidatePage} from './lib/trust/official-product-discovery-p2-v1.mjs';
+          import {assertTrustP2DCohort} from './scripts/trust-p2d-five-brand-pilot.mjs';
+          const cohort=JSON.parse(fs.readFileSync('evidence/trust/p2d-five-brand-cohort-v2.json','utf8'));
+          assertTrustP2DCohort(cohort);
+          const locators=[
+            {brand:'비플레인',url:'https://www.beplain.co.kr/shop/shopdetail.html?GfDT=a2p3UQ%3D%3D&branduid=10739162&mcode=001&special=3&xcode=012'},
+            {brand:'아토팜',url:'https://neopharmshop.co.kr/product/%EC%95%84%ED%86%A0%ED%8C%9C-mle-%EB%A1%9C%EC%85%98-300ml/2184'},
+            {brand:'이즈앤트리',url:'https://isntree.com/product/%ED%99%94%ED%95%B4-1%EB%93%B1-%EC%B4%88%EC%A0%80%EB%B6%84%EC%9E%90-%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%ED%86%A0%EB%84%88-300ml/56/category/112/display/1/'},
+            {brand:'토리든',url:'https://www.torriden.com/goods/goods_view.php?goodsNo=58'},
+          ];
+          if(cohort.targets.length!==5||locators.length!==4||
+            cohort.targets.filter(x=>x.brand==='닥터지').length!==1||
+            new Set(locators.map(x=>x.brand)).size!==4)
+            throw Error('P2D_FIXED_INVALID_COHORT');
+          let lastAt=0,total=0;
+          const pace=async()=>{
+            const delay=Math.max(0,1300-(Date.now()-lastAt));
+            if(delay)await new Promise(resolve=>setTimeout(resolve,delay));
+            lastAt=Date.now();
+          };
+          const out=[];
+          for(const entry of locators){
+            const target=cohort.targets.find(x=>x.brand===entry.brand);
+            const origin=new URL(target?.officialPeerUrl??'').origin;
+            if(!target||new URL(entry.url).origin!==origin||
+              new URL(entry.url).protocol!=='https:')throw Error('P2D_FIXED_ORIGIN_MISMATCH');
+            const report={brand:entry.brand,origin,productId:target.productId,
+              expectedCatalogSizeMl:target.sizeMl,url:entry.url,
+              robotsRequests:0,pageRequests:0,status:'NOT_STARTED',
+              sourceBindingAuthorized:false,exactSkuVerified:false};
+            out.push(report);
+            let robots,policy;
+            try{
+              await pace();report.robotsRequests++;total++;
+              robots=await fetchOfficialBytes(origin+'/robots.txt',strictOriginTransport(fetch,origin));
+              policy=createTrustRobotsPolicy(robots.bytes);
+            }catch{report.status='ROBOTS_UNAVAILABLE_HOLD';continue;}
+            if(policy.delayBlocked){report.status='ROBOTS_PACING_HOLD';continue;}
+            if(!policy.allowed(entry.url)){report.status='ROBOTS_DISALLOWED_HOLD';continue;}
+            try{
+              await pace();report.pageRequests++;total++;
+              const page=await fetchOfficialBytes(entry.url,strictOriginTransport(fetch,origin,policy));
+              if(new URL(page.finalUrl).origin!==origin||!policy.allowed(page.finalUrl))
+                throw Error('P2D_FIXED_UNSAFE_REDIRECT');
+              const product={id:target.productId,brand:target.brand,
+                name:target.name,name_en:target.nameEn,
+                normalized_name:target.normalizedName,size_ml:target.sizeMl};
+              const classification=classifyTrustOfficialCandidatePage(page.bytes,product);
+              report.status=classification.status;
+              report.title=classification.title;
+              report.identitySurface=classification.identitySurface;
+              report.variantScope=classification.variantScope;
+              report.sha256=classification.sha256;
+              // Classified matches remain review-only, NEVER exact SKU evidence.
+            }catch{report.status='PAGE_FETCH_BLOCKED_OR_FAILED';}
+          }
+          const data={contract:'trust-p2d-fixed-locator-public-observation-v1',
+            observedAt:new Date().toISOString(),baselineProducts:5,checkedOrigins:4,
+            retiredDrGNoRequests:true,requests:total,maxRequests:8,
+            pageFetches:out.filter(x=>typeof x.sha256==='string').length,
+            officialSkuVerifiedCount:0,subjectWrites:0,factWrites:0,dbWrites:0,
+            originOutcomes:out};
+          if(total>8||out.some(x=>x.robotsRequests>1||x.pageRequests>1||
+            x.sourceBindingAuthorized!==false||x.exactSkuVerified!==false))
+            throw Error('P2D_FIXED_RESULT_UNSAFE');
+          fs.mkdirSync('artifacts',{recursive:true});
+          fs.writeFileSync('artifacts/trust-p2d-fixed-public-observation.json',JSON.stringify(data,null,2)+'\n');
+          console.log('TRUST_P2D_FIXED_PUBLIC_RESULT='+JSON.stringify(data));
+          NODE
+      - name: Preserve fixed-locator status-only artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: trust-p2d-fixed-public-observation
+          path: artifacts/trust-p2d-fixed-public-observation.json
+          if-no-files-found: error
+          retention-days: 30
+
   p3_official_three_brand_live:
     name: P3 guarded existing-source 3-brand live observation
     if: github.event_name == 'push' && contains(github.event.head_commit.message, 'P3-LIVE-TRIAL')
