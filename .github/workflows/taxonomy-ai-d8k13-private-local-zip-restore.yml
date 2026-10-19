@@ -36,6 +36,8 @@ jobs:
           cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql" <<'SQL'
           -- Synthetic, not copied from production.
           CREATE ROLE d8k13_local_fixture_role NOLOGIN;
+          CREATE ROLE "product_offer_link_health_recorder_owner";
+          ALTER ROLE "product_offer_link_health_recorder_owner" WITH NOSUPERUSER NOCREATEROLE NOLOGIN;
           GRANT anon TO d8k13_local_fixture_role;
           GRANT authenticated TO d8k13_local_fixture_role;
           SQL
@@ -53,6 +55,7 @@ jobs:
           -- Both custom namespaces intentionally omitted from CREATE SCHEMA.
           -- This reproduces references in real dumps to schemas absent in bare image.
           CREATE FUNCTION private.fixture_probe() RETURNS boolean LANGUAGE sql AS 'SELECT true';
+          ALTER FUNCTION private.fixture_probe() OWNER TO "product_offer_link_health_recorder_owner";
           CREATE FUNCTION recommendation_shadow.fixture_probe() RETURNS integer LANGUAGE sql AS 'SELECT 42';
           ALTER DEFAULT PRIVILEGES IN SCHEMA private GRANT SELECT ON TABLES TO authenticated;
           SQL
@@ -134,6 +137,7 @@ jobs:
           if (-not ($output | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_SYNTHETIC_RESTORE_MARKER_MISSING' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_PASS')) { throw 'D8K13_COLD_IMAGE_PULL_NOT_TESTED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_PRIVATE')) { throw 'D8K13_CUSTOM_PRIVATE_SCHEMA_NOT_RESTORED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_PRIVATE_FUNCTION_OWNER_PREP_NOT_EXECUTED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_RECOMMENDATION_SHADOW')) { throw 'D8K13_CUSTOM_SHADOW_SCHEMA_NOT_RESTORED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_RECREATED_FROM_DUMP')) { throw 'D8K13_EXPLICIT_PUBLIC_DUMP_RESTORE_NOT_TESTED' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_PG17_RESTORE_PASS_HOLD'
@@ -160,6 +164,7 @@ jobs:
           $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:D8K13_NO_PUBLIC_ZIP -ExpectedZipBytes $bytes -Mode Restore
           if ($LASTEXITCODE -ne 0) { throw 'D8K13_NO_PUBLIC_RESTORE_FAILED' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP')) { throw 'D8K13_NO_PUBLIC_PRESERVED_MARKER_MISSING' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_NO_PUBLIC_OWNER_GRANTS_NOT_APPLIED' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_NO_PUBLIC_RESTORE_PASS_MARKER_MISSING' }
           Write-Host 'D8K13_SYNTHETIC_NO_CREATE_PUBLIC_RESTORE_PASS'
       - name: Refuse missing unknown schema and print name only without SQL content
