@@ -164,3 +164,18 @@ CI [#39134449424](https://github.com/gycha0109-beep/K_beauty/actions/runs/391344
 **현재 상태:** 사용자 실 ZIP의 정확한 SQLSTATE / 실패 줄은 아직 보고되지 않았다. 실제 DB 복원 PASS로 간주하지 않으며 운영 Supabase는 읽기 전용, PR #1341 OPEN/DRAFT/HOLD, 보안 #1208 OPEN.
 
 **다음 오너 로컬 조치:** 기능 브랜치에서 최신 `restore-local.ps1`을 갱신하고, 이전과 동일한 ZIP에 `-Mode Restore`을 1회 실행하여 마지막 `D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_..._LINE_..._FAILED_EXIT_3` 코드 또는 성공 상태만 전달. 실패 줄의 실제 SQL 내용은 공유 불필요. 이 값으로 정확한 원인분석 후 **새 복구 환경 변경 여부를 결정**한다.
+
+### 6.5. 운영자 실 ZIP의 private 함수 OWNER 권한 실패 및 제한적 격리 복원 보완 (2026-10-19)
+
+운영자가 동일한 SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6` ZIP을 학원 Windows PC에서 실행했고 `D8K13_LOCAL_ZIP_INSPECTION_PASS`, `D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP` 다음에 `D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_42501_LINE_474_FAILED_EXIT_3`가 출력됐다. 원본 SQL을 전송하지 않은 상태에서 **로컬 메타데이터 전용 명령**으로 해당 문장이 `ALTER FUNCTION`, `OWNER TO`, schema `private`, owner role `product_offer_link_health_recorder_owner`임을 확인했다. 로컬 ZIP의 `roles.sql`에서 이 role의 CREATE/ALTER 정의가 있음도 확인했고, 속성 검출값은 NOLOGIN·NOSUPERUSER·NOCREATEROLE에 해당했다. 단, 이는 raw SQL 또는 ZIP의 외부 검증이 아니다.
+
+PostgreSQL 17 공식 `ALTER FUNCTION` 문서에 따르면 함수 소유권 이전자는 대상을 `SET ROLE` 할 권한이 있어야 하고, 새로운 owner는 함수 스키마에 CREATE 권한이 있어야 한다. 운영 DB나 백업 SQL/역할 자체는 변경하지 않고 `--network none` 일회용 Supabase/Postgres 대상에서만 다음을 실행하도록 로컬 스크립트를 제한적으로 보완했다.
+
+1. 백업의 `roles.sql`에 해당 role의 `CREATE ROLE` 선언이 있고 `schema.sql`에 `ALTER FUNCTION private.... OWNER TO ...`가 있을 때만 적용. 소유권 변경이 있는데 role 정의가 없다면 fail closed.
+2. 일회용 `private` namespace의 CREATE 권한을 대상 NOLOGIN role에 부여하고 해당 역할로 SET ROLE 가능한 postgres 멤버십을 준비. 백업의 원래 `OWNER TO` SQL 자체는 그대로 적용하여 소유권을 건너뛰지 않는다.
+3. 초기 구현은 PowerShell 정규식에서 과다 이스케이프된 백슬래시 때문에 실제 owner ZIP에서 보완 분기가 실행되지 않았다. `D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY`가 없는 실행 결과로 이를 식별했고 패턴을 수정, 적용/비적용 마커를 명시했다.
+4. 로컬 `psql -c` 단계 오류도 원본 SQL 노출 없이 `SQLSTATE`만 분류. quoted identifier 인수 전달 위험을 제거하기 위해 소문자 고정 대상 역할은 SQL 식별자로 직접 사용한다.
+
+**검증:** [GitHub Actions #39223627159](https://github.com/gycha0109-beep/K_beauty/actions/runs/39223627159), job `117964525037` **SUCCESS**, 합성-only. 기존 파서·ZIP 점검, Cold image, 관리 역할/스키마 초기화, `CREATE ROLE` / `ALTER ROLE` NOLOGIN, `private.fixture_probe()` 함수의 실제 `OWNER TO product_offer_link_health_recorder_owner` 변경, 역할 스코프 권한 준비 마커, 정상 roles/schema/data 복원, `public` 생성문 없는 경우, SQLSTATE 3F000/22012 오작동 방지, 잘못된 ZIP 크기 거부 전부 통과했다. 초기 합성 fixture에서 슈퍼유저 전용 `ALTER ROLE NOSUPERUSER`를 넣은 테스트 오류와 SQL `-c` 인수 전달 오류를 해결한 뒤 최종 통과한 결과다. **실 ZIP이 CI에 사용된 적은 없다.**
+
+**현재 판정:** 실제 ZIP 재실행은 위 최종 수정 이후 **아직 없음**. 따라서 실 사용자 데이터 복원 PASS/서비스 전체 복구 승인 모두 미확인. PR #1341 DRAFT / unmerged / release HOLD, 보안 이슈 #1208 OPEN, 운영 DB write 0. 사용자는 최신 branch의 PowerShell 스크립트를 재복사하고 같은 ZIP으로 `-Mode Restore`를 재실행하여 성공 마커 또는 민감정보 없는 최종 오류 코드만 공유해야 한다.
