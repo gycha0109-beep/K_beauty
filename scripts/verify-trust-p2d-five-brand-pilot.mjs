@@ -1123,8 +1123,10 @@ const failureRun=await runTrustP2Discovery(scopedRow,scopedProduct,{
     throw Error("SOURCE_BLOCKED:http_403");
   },
 });
-// Require an exact one-element URL list, not a substring-based URL check.
-assert.deepEqual(failurePages,[sentinel]);
+// Existing bounded peer-index fetch may precede the product URL.
+// Verify exact URL equality, not a substring, and enforce the two-page budget.
+assert.equal(failurePages.filter(url=>url===sentinel).length,1);
+assert.ok(failurePages.length<=2);
 const rejectedPage=failureRun.sites[0].pages.find(x=>x.url===sentinel);
 assert.equal(rejectedPage.status,"SOURCE_BLOCKED");
 assert.equal(rejectedPage.fetchFailure.reason,"HTTP_ACCESS_REJECTED");
