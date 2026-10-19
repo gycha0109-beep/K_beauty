@@ -2,6 +2,12 @@
 
 ## Entries
 
+### 2026-10-18 / Face Lab Skin S5 security-unblocked readiness (Draft)
+
+- Security #1343 merged to approved main and deployed; exact merge Supply Chain Security passed verified patched installed-code/advisory coverage. Original-name raw audit findings remain separately documented.
+- S5 dated snapshot now marks sca_security=pass with exact reference, but all Skin Human/device/privacy/integration/operational/owner gates retain HOLD. Historical 2026-10-17 SCA failure remains immutable.
+- Fail-closed tests assert PRODUCT=HOLD/RELEASE=HOLD with no automatic authorization, plus historical RELEASE=BLOCKED. No Skin feature activation, production write, merge-to-main or deployment.
+
 ### 2026-10-18 / Approved production private-install connection
 
 - 승인: 사용자가 기존 주 계정 read:packages 전용 PAT의 Vercel production 전용 Secret 등록, 준비한 설치 명령 한 줄의 PR #1343 반영·커밋·푸시·자동검사를 명시 승인. main 병합·실제 배포는 제외. Secret/Production 설정 영향 Y, DB/RLS/Storage/Provider/Payment 실행 N.

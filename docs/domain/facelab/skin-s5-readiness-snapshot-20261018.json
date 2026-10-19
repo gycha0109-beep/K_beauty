@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "face-lab-skin-readiness-v1",
+  "gateEvidence": {
+    "s0_current_code_audit": {
+      "status": "hold",
+      "family": "repository"
+    },
+    "s1_independent_human_accuracy": {
+      "status": "hold",
+      "family": "human"
+    },
+    "s2_human_decision_safety": {
+      "status": "hold",
+      "family": "human"
+    },
+    "s3_real_capture_repeatability": {
+      "status": "hold",
+      "family": "device"
+    },
+    "s4_mobile_web_uat": {
+      "status": "hold",
+      "family": "device"
+    },
+    "sca_security": {
+      "status": "pass",
+      "family": "security",
+      "reference": "PR1343_fc61d592_SCA_39112482805"
+    },
+    "privacy_consent_retention": {
+      "status": "hold",
+      "family": "privacy"
+    },
+    "auth_rls_storage_review": {
+      "status": "hold",
+      "family": "security"
+    },
+    "production_ci_regression": {
+      "status": "hold",
+      "family": "ci"
+    },
+    "rollback_and_monitoring": {
+      "status": "hold",
+      "family": "operations"
+    },
+    "responsible_owner_approval": {
+      "status": "hold",
+      "family": "governance"
+    }
+  }
+}
