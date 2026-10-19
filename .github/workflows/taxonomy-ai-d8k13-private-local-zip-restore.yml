@@ -15,7 +15,7 @@ jobs:
   synthetic-only:
     runs-on: ubuntu-24.04
     name: "Synthetic ZIP: inspect / isolated PG17 restore / reject bad archive"
-    timeout-minutes: 32
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -141,14 +141,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/d8k13-no-public/sql" "$RUNNER_TEMP/d8k13-missing-schema/sql"
+          mkdir -p "$RUNNER_TEMP/d8k13-no-public/sql" "$RUNNER_TEMP/d8k13-missing-schema/sql" "$RUNNER_TEMP/d8k13-unknown-sqlstate/sql"
           cp "$RUNNER_TEMP/d8k13-local-fixture/sql/"{roles.sql,data.sql} "$RUNNER_TEMP/d8k13-no-public/sql/"
           sed '/^CREATE SCHEMA public;$/d' "$RUNNER_TEMP/d8k13-local-fixture/sql/schema.sql" > "$RUNNER_TEMP/d8k13-no-public/sql/schema.sql"
           cp "$RUNNER_TEMP/d8k13-no-public/sql/"*.sql "$RUNNER_TEMP/d8k13-missing-schema/sql/"
           printf '\nGRANT USAGE ON SCHEMA d8k13_missing_fixture TO authenticated;\n' >> "$RUNNER_TEMP/d8k13-missing-schema/sql/schema.sql"
-          pwsh -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-no-public/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-no-public/variant.zip")); [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-missing-schema/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-missing-schema/variant.zip"))'
+          cp "$RUNNER_TEMP/d8k13-no-public/sql/"*.sql "$RUNNER_TEMP/d8k13-unknown-sqlstate/sql/"
+          printf '\nSELECT 1/0;\n' >> "$RUNNER_TEMP/d8k13-unknown-sqlstate/sql/schema.sql"
+          pwsh -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-no-public/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-no-public/variant.zip")); [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-missing-schema/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-missing-schema/variant.zip")); [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-unknown-sqlstate/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-unknown-sqlstate/variant.zip"))'
           echo "D8K13_NO_PUBLIC_ZIP=$RUNNER_TEMP/d8k13-no-public/variant.zip" >> "$GITHUB_ENV"
           echo "D8K13_MISSING_SCHEMA_ZIP=$RUNNER_TEMP/d8k13-missing-schema/variant.zip" >> "$GITHUB_ENV"
+          echo "D8K13_UNEXPECTED_SQLSTATE_ZIP=$RUNNER_TEMP/d8k13-unknown-sqlstate/variant.zip" >> "$GITHUB_ENV"
       - name: Verify owner-style schema dump lacking CREATE SCHEMA public restores
         shell: pwsh
         run: |
@@ -169,9 +172,22 @@ jobs:
           $proc = Start-Process -FilePath 'pwsh' -ArgumentList @('-NoProfile','-File','./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1','-BackupZip',$env:D8K13_MISSING_SCHEMA_ZIP,'-ExpectedZipBytes',"$bytes",'-Mode','Restore') -Wait -PassThru -RedirectStandardOutput $out -RedirectStandardError $err
           if ($proc.ExitCode -ne 3) { throw 'D8K13_UNKNOWN_MISSING_SCHEMA_EXIT_MUST_BE_3' }
           $stderr = Get-Content -LiteralPath $err -Raw
-          if ($stderr -notmatch 'D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_D8K13_MISSING_FIXTURE_LINE_[0-9]+_FAILED_EXIT_3') { throw 'D8K13_MISSING_SCHEMA_NAME_LINE_NOT_REPORTED' }
+          if ($stderr -notmatch 'D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_3F000_LINE_[0-9]+_FAILED_EXIT_3') { throw 'D8K13_MISSING_SCHEMA_SQLSTATE_LINE_NOT_REPORTED' }
           if ($stderr -match 'GRANT USAGE ON SCHEMA|COPY public\.products|CREATE TABLE') { throw 'D8K13_SQL_CONTENT_LEAKED' }
           Write-Host 'D8K13_SYNTHETIC_MISSING_SCHEMA_NAME_ONLY_FAIL_CLOSED_PASS'
+      - name: Convert formerly-OTHER SQL error to safe SQLSTATE and exact line
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bytes = [long](Get-Item -LiteralPath $env:D8K13_UNEXPECTED_SQLSTATE_ZIP).Length
+          $err = Join-Path $env:RUNNER_TEMP 'd8k13-unknown-error.txt'
+          $out = Join-Path $env:RUNNER_TEMP 'd8k13-unknown-out.txt'
+          $proc = Start-Process -FilePath 'pwsh' -ArgumentList @('-NoProfile','-File','./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1','-BackupZip',$env:D8K13_UNEXPECTED_SQLSTATE_ZIP,'-ExpectedZipBytes',"$bytes",'-Mode','Restore') -Wait -PassThru -RedirectStandardOutput $out -RedirectStandardError $err
+          if ($proc.ExitCode -ne 3) { throw 'D8K13_OTHER_SQLSTATE_EXIT_MUST_BE_3' }
+          $stderr = Get-Content -LiteralPath $err -Raw
+          if ($stderr -notmatch 'D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_22012_LINE_[0-9]+_FAILED_EXIT_3') { throw 'D8K13_OTHER_SQLSTATE_LINE_NOT_REPORTED' }
+          if ($stderr -match 'SELECT 1/0|COPY public\.products|CREATE TABLE') { throw 'D8K13_SQL_CONTENT_LEAKED' }
+          Write-Host 'D8K13_SYNTHETIC_OTHER_SQLSTATE_SAFE_DIAGNOSTIC_PASS'
       - name: Reject wrong-size archive, no backups in CI artifacts
         shell: pwsh
         run: |
