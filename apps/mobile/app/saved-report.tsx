@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Session } from "@supabase/auth-js";
 import { useRouter } from "expo-router";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
@@ -12,7 +12,8 @@ import {
   loadLatestNativeSavedReport,
   type NativeSavedReportLoadResult
 } from "../features/reports/saved-report-client";
-import { getNativeSession } from "../lib/auth";
+import { createSavedReportViewGate } from "../features/reports/saved-report-view-gate";
+import { getNativeSession, subscribeNativeAuth } from "../lib/auth";
 import { useMobileShell } from "../lib/mobile-shell";
 
 const SAVED_REPORT_COPY = {
@@ -76,31 +77,37 @@ export default function SavedReportScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [state, setState] = useState<ScreenState>({ status: "loading" });
   const [publicShareState, setPublicShareState] = useState<PublicShareState>({ status: "idle" });
+  const viewGate = useRef(createSavedReportViewGate());
 
   const load = useCallback(async (activeSession: Session) => {
+    const ticket = viewGate.current.begin(activeSession.user.id);
     setState({ status: "loading" });
     setPublicShareState({ status: "idle" });
     try {
       const result = await loadLatestNativeSavedReport(activeSession, locale);
+      if (!viewGate.current.isCurrent(ticket)) return;
       setState(result.status === "loaded"
         ? { status: "loaded", value: result.value }
         : { status: "empty" });
     } catch {
-      setState({ status: "error" });
+      if (viewGate.current.isCurrent(ticket)) setState({ status: "error" });
     }
   }, [locale]);
 
   const publishAndShare = useCallback(async () => {
     if (!session || state.status !== "loaded" || state.value.kind !== "free") return;
+    const ticket = viewGate.current.snapshot();
+    if (!viewGate.current.isCurrent(ticket) || ticket?.userId !== session.user.id) return;
 
     setPublicShareState({ status: "publishing" });
     let published: NativePublicShare;
     try {
       published = await publishNativeFreeSavedReport(session, state.value.shareId);
     } catch {
-      setPublicShareState({ status: "publish-error" });
+      if (viewGate.current.isCurrent(ticket)) setPublicShareState({ status: "publish-error" });
       return;
     }
+    if (!viewGate.current.isCurrent(ticket)) return;
 
     try {
       await Share.share({
@@ -108,28 +115,52 @@ export default function SavedReportScreen() {
         message: `${copy.shareMessage}\n${published.shareUrl}`,
         url: published.shareUrl
       });
-      setPublicShareState({ status: "idle" });
+      if (viewGate.current.isCurrent(ticket)) setPublicShareState({ status: "idle" });
     } catch {
-      setPublicShareState({ status: "share-sheet-error" });
+      if (viewGate.current.isCurrent(ticket)) setPublicShareState({ status: "share-sheet-error" });
     }
   }, [copy.shareMessage, copy.shareTitle, session, state]);
 
   useEffect(() => {
     let active = true;
-    getNativeSession()
+    let authEventSeen = false;
+    // On locale changes or unmount, revoke any previous request's right to display data.
+    viewGate.current.invalidate();
+    setState({ status: "loading" });
+    setPublicShareState({ status: "idle" });
+
+    const applySession = (nextSession: Session | null) => {
+      if (!active) return;
+      setSession(nextSession);
+      if (!nextSession) {
+        viewGate.current.invalidate();
+        setState({ status: "signed-out" });
+        setPublicShareState({ status: "idle" });
+        return;
+      }
+      void load(nextSession);
+    };
+    const subscription = subscribeNativeAuth((nextSession) => {
+      authEventSeen = true;
+      applySession(nextSession);
+    });
+    // INITIAL_SESSION and the explicit session read may race. Once the auth
+    // observer fires, a late initial read must not overwrite a newer login.
+    void getNativeSession()
       .then((nextSession) => {
-        if (!active) return;
-        setSession(nextSession);
-        if (!nextSession) {
-          setState({ status: "signed-out" });
-          return;
-        }
-        void load(nextSession);
+        if (active && !authEventSeen) applySession(nextSession);
       })
-      .catch(() => active && setState({ status: "error" }));
+      .catch(() => {
+        if (!active || authEventSeen) return;
+        viewGate.current.invalidate();
+        setSession(null);
+        setState({ status: "error" });
+      });
 
     return () => {
       active = false;
+      viewGate.current.invalidate();
+      subscription?.unsubscribe();
     };
   }, [load]);
 

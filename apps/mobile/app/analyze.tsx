@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { ScreenShell } from "../components/ScreenShell";
 import {
   isNativeAnalyzeFormReady,
+  isNativeAnalyzeApiConfigured,
   NativeAnalyzeRequestError,
   submitNativeAnalyze,
   type NativeAnalyzeResult
@@ -31,6 +32,7 @@ export default function AnalyzeScreen() {
   const router = useRouter();
   const { locale, palette } = useMobileShell();
   const copy = MOBILE_COPY[locale].analyze;
+  const apiConfigured = isNativeAnalyzeApiConfigured();
   const [cameraRevision, setCameraRevision] = useState(0);
   const [capturedPhoto, setCapturedPhoto] = useState<NativeCameraPhoto | null>(null);
   const [survey, setSurvey] = useState<SurveyFormInput>(createInitialSurvey);
@@ -56,7 +58,7 @@ export default function AnalyzeScreen() {
   }, []);
 
   const handleAnalyze = useCallback(async () => {
-    if (!capturedPhoto || submitting || !isNativeAnalyzeFormReady(survey)) return;
+    if (!capturedPhoto || submitting || !apiConfigured || !isNativeAnalyzeFormReady(survey)) return;
 
     setSubmitting(true);
     setErrorMessage("");
@@ -78,11 +80,18 @@ export default function AnalyzeScreen() {
     } finally {
       setSubmitting(false);
     }
-  }, [capturedPhoto, locale, submitting, survey]);
+  }, [apiConfigured, capturedPhoto, locale, submitting, survey]);
 
   return (
     <ScreenShell eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
       <Text style={[styles.notice, { color: palette.textMuted }]}>{copy.notice}</Text>
+      {!apiConfigured ? (
+        <Text testID="native-analyze-build-unconfigured" accessibilityLiveRegion="polite" style={[styles.error, { color: palette.text }]}>
+          {locale === "ko"
+            ? "이 테스트 앱에는 분석 서버 주소가 없어 사진 분석을 전송할 수 없습니다. 카메라와 설문은 점검할 수 있습니다."
+            : "This test build has no analysis server address. You can still check camera and survey, but analysis submission is disabled."}
+        </Text>
+      ) : null}
 
       {result ? (
         <NativeAnalyzeResultView
@@ -129,15 +138,15 @@ export default function AnalyzeScreen() {
                 testID="native-analyze-submit"
                 accessibilityRole="button"
                 accessibilityState={{
-                  disabled: submitting || !isNativeAnalyzeFormReady(survey)
+                  disabled: submitting || !apiConfigured || !isNativeAnalyzeFormReady(survey)
                 }}
-                disabled={submitting || !isNativeAnalyzeFormReady(survey)}
+                disabled={submitting || !apiConfigured || !isNativeAnalyzeFormReady(survey)}
                 onPress={handleAnalyze}
                 style={({ pressed }) => [
                   styles.submitButton,
                   {
                     backgroundColor: palette.accent,
-                    opacity: submitting || !isNativeAnalyzeFormReady(survey)
+                    opacity: submitting || !apiConfigured || !isNativeAnalyzeFormReady(survey)
                       ? 0.42
                       : pressed
                         ? 0.72

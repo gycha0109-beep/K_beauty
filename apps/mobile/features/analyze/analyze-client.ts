@@ -157,6 +157,16 @@ async function readResponseJson(response: Response) {
   return response.json().catch(() => null) as Promise<Record<string, any> | null>;
 }
 
+// Fails locally before attempting any image upload. Read-only, no endpoint probe.
+export function isNativeAnalyzeApiConfigured(): boolean {
+  try {
+    getMobileApiBaseUrl();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function submitNativeAnalyze(input: {
   photo: NativeCameraPhoto;
   form: SurveyFormInput;
@@ -173,6 +183,17 @@ export async function submitNativeAnalyze(input: {
 
   if (session?.access_token) {
     headers.Authorization = `Bearer ${session.access_token}`;
+  }
+
+  // A missing/invalid compile-time EXPO_PUBLIC_API_BASE_URL is not a server
+  // outage. Report configuration failure without sending the selected photo.
+  if (!isNativeAnalyzeApiConfigured()) {
+    throw new NativeAnalyzeRequestError(
+      "mobile_analyze_build_unconfigured",
+      input.locale === "ko"
+        ? "테스트 앱에 분석 서버 주소가 설정되지 않았습니다. 앱 빌드 구성을 확인해 주세요."
+        : "This test build has no valid analysis server address. Check the app build configuration."
+    );
   }
 
   let response: Response;

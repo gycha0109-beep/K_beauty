@@ -1,0 +1,68 @@
+# [Face Lab / Skin] S4 Premium 모바일 저장 리포트 — 사진 근거 상태 감사·보강
+
+> 상태: 모바일 **부분 UX 보강**, 실기기 인수 및 S4 전체 완료 **HOLD**. 기준 `main@1a82cf9961f4fbba30d1d59f1ec2de1a3c6dd7e2`, Skin Track 전용. Style/Face Lab 추천 영역 별도 소유. 일자 2026-10-14.
+
+## 1. Current-main 진입 경로
+
+| 경로 | 실제 코드 | 감사 판정 |
+| --- | --- | --- |
+| 웹 Full Report | `app/result/full-report/page.js` + `components/full-report/PremiumRoutineConsultSection.jsx`, `PremiumFunctionalDecisionSection.jsx`, `PremiumConditionResponseSection.jsx` | 루틴·기능성·컨디션 섹터 구분 및 근거 일부 표시. 실제 render, 320px, 다크모드, 이해도 평가 미실시 |
+| 모바일 Premium 생성 | `apps/mobile/app/premium.tsx` → `features/premium/premium-client.ts` | 서버 Premium session/entitlement 사용, 결제/권한 수정 없음 |
+| 모바일 저장 리포트 | `apps/mobile/app/saved-report.tsx` → `features/reports/NativeSavedReport.tsx` | 현재 `fullRoutine/functionalDecisions/conditionResponses`를 일반 텍스트로 flatten. canonical 상태/HOLD의 의미 보존, 4개 스킨 섹터의 완전한 동등 표현은 미검증 |
+| 모바일 촬영 | `apps/mobile/features/camera/NativeFaceCamera.tsx` | CameraView, 로컬 촬영·재촬영·사진 수락 UI 존재. 실기기에서 품질·네트워크·프레임 깜빡임·권한 오류 확인 미실시 |
+
+## 2. 이번 범위 — 저장 Premium 사진 상태 노출만
+
+- `apps/mobile/features/reports/skin-photo-evidence-status.ts`: 저장된 `photoEvidenceState`, `freeResult.photoEvidenceState`, `decisionBundle.context.photo.status`, 관찰 `confidence`를 **읽기만** 한다.
+- Explicit `unavailable/ineligible/insufficient_evidence/not_provided`와 canonical `available`가 충돌하면 이를 숨기지 않는다. **보수적인 상태·보류 문구**를 먼저 표시한다.
+- `available`을 표기하더라도 사용 가능성을 뒷받침하는 중간/높은 confidence observation이 없으면 **단정할 수 없다는 안내**를 추가한다.
+- 과거 리포트에 canonical `available`만 있고 명시적인 사진 근거 상태가 없으면 **unknown**을 유지한다. 부족한 데이터를 안전/관찰 성공으로 승격하지 않는다.
+- `NativeSavedReport.tsx`에 한국어/영어 '사진 관찰 근거 / Photo evidence' 문구를 추가한다. 기능성·루틴·제품 추천·컨디션 상태는 수정하지 않는다.
+
+## 3. 새 synthetic 회귀
+
+`scripts/facelab/skin/verify-face-lab-skin-s4-native-photo-evidence.mjs`:
+
+- 명시적 available와 confidence가 있는 관찰
+- provider unavailable vs 기존 v4 available 상태 충돌
+- ineligible/insufficient/no photo
+- 구형 canonical available만 존재하는 snapshot → unknown
+- 관찰 confidence low/빈 관찰 배열
+- 저장 리포트 원본 필드 mutation 금지
+- 상태 불일치 한국어 보류 문구와 컴포넌트 연결
+
+CI: 기존 `scripts/verify-current-main-health.mjs` 내부의 추가 unit verifier. 신규 workflow/Provider/Storage 호출 없음.
+
+## 3.1 PR 최초 CI 장애 원인 판정 (정확 HEAD `ad8e12c28bc367817cf5142625cbc25688d0e09a`)
+
+1. **Current Main Health:** 신규 S4 synthetic verifier가 실제 한국어 보류 문구와 다르게 `피부 판단`을 기대했으나 컴포넌트는 `사진 판단`을 출력한다. 표시 정책이 아니라 **테스트 문자열 불일치**이며, 기대값을 실제 보류 문구에 맞게 좁게 수정했다. 새 HEAD 재검증 필요.
+2. **Mobile CI:** 기존 `scripts/verify-mobile-camera-foundation.mjs:73`는 `.github/workflows/mobile-native-shell.yml` 파일 안의 `-camera-front emulated` 문자열을 요구한다. 그러나 현재 `main`의 실제 mobile-native-shell workflow는 `await-mobile-android-runtime.mjs` 위임 구조이며 요구 문자열이 없다. **기존 main에 존재한 정적 계약/워크플로의 불일치**로서 이번 PR이 수정한 파일과 별개다. Mobile/CI owner가 실제 에뮬레이터 프로비저닝 경로를 확인하기 전까진 Mobile CI PASS를 주장하지 않는다. Verifier assertion/워크플로를 임의로 약화하거나 변경하지 않는다.
+
+## 4. S4 완료 조건 및 별도 QA/HOLD
+
+- 저장 Premium의 원래 4개 Skin 섹터(현재 루틴 점검/문제 추적/다음 변화 플랜/상황별 대응)와 NativeSavedReport flat rendering 간 정보 동등성은 아직 미검증. 이번 PR로 완성되었다고 표현하지 않는다.
+- 웹 320px/큰 글자/VoiceOver/TalkBack/스크린리더, 다크모드, 섹터 링크, 제품 미확인/UNKNOWN/HOLD, 재진입/동일성, iOS/Android 실기기 UAT 필요.
+- 촬영 중 플래시/반복 노출, 방향/회전, 백엔드 연결 오류, 오프라인 재시도, 권한 취소·회복, 계정별 리포트 격리는 실기기·운영환경 필요.
+- S1의 사진 정확도, S2의 실제 Human safety, S3 시간축 데이터/동의/보관 정책, #1208 security block은 S4 UI 구현으로 해소되지 않는다.
+- **반영 권한:** 기존 리포트 필드 추가·변경 없음, DB/Auth/RLS/Storage/Payment/Provider/Style/배포 수정 없음, merge/deploy 금지.
+
+**S4 상태:** 사진 실패 및 불확실성의 모바일 표시 계약 구축 / UI·기기 acceptance **HOLD**.
+
+Watchtower-Track: face-lab-skin
+
+## 2026-10-17 — v2 축 상태를 반영한 저장 리포트 사진 근거 표시 보수
+
+- 기존 Premium 저장 리포트 컴포넌트는 유지한다. **새 UI나 사진 평가 화면을 생성하지 않는다.**
+- 기존 `available`인 사진에서 `confidence=high|medium`만으로 개인 신호를 신뢰 가능하게 집계하는 경로를 보수적으로 조정했다. 명시적 Skin-v2 `state=unknown|unassessable`는 confidence 값이 잘못 높아도 **근거 개수에 포함하지 않는다**. `present|not_seen`와 기존 정규화된 `observed`는 검증된 관찰 상태로 허용하며, 명시적 state가 없는 legacy shape는 호환성을 유지한다.
+- `not_seen`은 그 사진에서 단서가 보이지 않는다는 의미일 뿐, 피부가 정상·안전·무질환이라는 의미가 아니다. 신뢰할 만한 축이 0개면 이미 존재하는 **사진 근거 제한/재촬영 문구**를 보여준다. Skin과 Face 적격성은 독립적이며, TC-04의 부분 얼굴에서 Skin 신호가 있다고 Face 전체 분석을 강제로 가능하다고 표시하지 않는다.
+- 합성 부정 검사: `unknown/high`와 `unassessable/medium`은 0개, `present/high`와 `not_seen/medium`은 각각 1개, 비허용 state/high는 0개. 기존 FAIL/HOLD/legacy/status conflict 검증 유지. 기존 Main Health 체인에서 실행되지만 **exact-head CI 결과와 실제 Android UAT는 별도 확인**.
+- 운영 Provider, 점수/Top Pick, API/DB/저장 스키마, 사진 데이터, Style, 배포 변경 없음. S4 제품 수용 및 S5 릴리스/보안 #1208 계속 HOLD. PR은 Draft로 유지한다.
+
+## 2026-10-18 S4 canonical saved Premium section display
+
+- **Measured current-source gap:** web `PremiumRoutineConsultSection.jsx` reads `report.routinePlan || report.decisionBundle.routinePlan`; `lib/premium-functional-display-model.js` reads `report.functionalPlan || report.decisionBundle.functionalPlan`; `PremiumConditionResponseSection.jsx` reads `report.conditionPlan || report.decisionBundle.conditionPlan`. Previously native `NativeSavedReport.tsx` read only `fullRoutine`, `functionalDecisions` and `conditionResponses` and flattened arbitrary display-key strings, so modern canonical saved section content was omitted.
+- Added `saved-premium-canonical-projection.ts` in S4 existing Draft #1313, **presentation-only**: routine morning/night steps with declared status, action/adjustment; functional primaryConcern/planSummary/direction/whyPriority/baseApproach + explicit START/HOLD; condition `maintain/reduce/avoid_for_now` response summary, reasons, temporary adjustment and global notice. It never infers an unstored skin judgment, condition, step, score or clinical meaning.
+- Section-wise precedence **canonical source first; legacy fallback only when canonical section does not exist**. Malformed/incomplete canonical data renders a neutral "no displayable details" message, never silently promotes contradictory legacy advice. All text and counts bounded; null/invalid shape ignored and report object left immutable. Korean/English copy and current palette/dark mode respected.
+- New synthetic-only `verify-face-lab-skin-s4-canonical-saved-projection.mjs` verifies direct/nested canonical, legacy, missing/unknown, explicit HOLD, action/notice, bounded text, read-only projection and renderer wiring, in **existing Main Health** (no new CI workflow). TypeScript strict mode initially detected a missing tuple inference (`TS2538`), corrected with typed `as const` tuple; exact-head rerun pending.
+- Branch synchronization: after shared Security #1343 and main update, original S4 Draft was conflicting. Reconciled latest main into the **S4 feature branch only**, preserving patched dependency/installer and unrelated main content. No Skin PR merged into main; no deployment or user data persisted.
+- **Not yet equivalent to the entire four-sector hub:** "현재 루틴 점검/문제 추적/다음 변화 플랜/상황별 대응" internal UX/content and actual device screen-reader/320px/dark-mode acceptance remain independent HOLD. Android/auth two-account acceptance is not established by synthetic checks; security fix does not authorize Skin release.

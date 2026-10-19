@@ -37,6 +37,7 @@ export type NativeFaceCameraCopy = {
   ready: string;
   preparing: string;
   alignFace: string;
+  checkGuidance: string;
   capture: string;
   capturing: string;
   captureFailed: string;
@@ -114,6 +115,8 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
   const guidanceInFlightRef = useRef<Promise<void> | null>(null);
   const guidanceGenerationRef = useRef(0);
   const guidanceReadySamplesRef = useRef(0);
+  const lastReadySampleAtRef = useRef(0);
+  const lastGuidanceRequestAtRef = useRef(0);
   const finalCaptureLockRef = useRef(false);
   const previewRectRef = useRef<NativeFaceGuidanceRect | null>(null);
   const guideRectRef = useRef<NativeFaceGuidanceRect | null>(null);
@@ -125,10 +128,16 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
   const [capturedPhoto, setCapturedPhoto] = useState<NativeCameraPhoto | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [guidanceState, setGuidanceState] = useState<NativeFaceGuidanceState>("loading");
+  const [guidanceRequestRevision, setGuidanceRequestRevision] = useState(0);
+  const [isCheckingGuidance, setIsCheckingGuidance] = useState(false);
 
   const resetGuidance = useCallback(() => {
     guidanceGenerationRef.current += 1;
     guidanceReadySamplesRef.current = 0;
+    lastReadySampleAtRef.current = 0;
+    lastGuidanceRequestAtRef.current = 0;
+    setGuidanceRequestRevision(0);
+    setIsCheckingGuidance(false);
     setGuidanceState("loading");
   }, []);
 
@@ -166,6 +175,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
   useEffect(() => {
     if (
       !permission?.granted ||
+      guidanceRequestRevision === 0 ||
       !isFocused ||
       !isFullscreenOpen ||
       capturedPhoto ||
@@ -197,6 +207,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
         return;
       }
 
+      setIsCheckingGuidance(true);
       let currentTask: Promise<void>;
       currentTask = (async () => {
         try {
@@ -229,7 +240,14 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
           });
 
           if (evaluation.state === "ready") {
-            guidanceReadySamplesRef.current += 1;
+            const now = Date.now();
+            // Two intentionally requested snapshots within one short framing
+            // session are required. Do not reuse stale samples after a pause.
+            guidanceReadySamplesRef.current =
+              now - lastReadySampleAtRef.current <= 8_000
+                ? guidanceReadySamplesRef.current + 1
+                : 1;
+            lastReadySampleAtRef.current = now;
             setGuidanceState(
               guidanceReadySamplesRef.current >= NATIVE_FACE_GUIDANCE_STABLE_SAMPLES
                 ? "ready"
@@ -237,6 +255,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
             );
           } else {
             guidanceReadySamplesRef.current = 0;
+            lastReadySampleAtRef.current = 0;
             setGuidanceState(evaluation.state);
           }
         } catch {
@@ -254,23 +273,36 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
         if (guidanceInFlightRef.current === currentTask) {
           guidanceInFlightRef.current = null;
         }
+        if (!cancelled && generation === guidanceGenerationRef.current) {
+          setIsCheckingGuidance(false);
+        }
       }
     };
 
+    // A CameraView.takePictureAsync call can interrupt/flash the live preview,
+    // even with shutterSound=false. Never poll it automatically every 1.4 s.
+    // Perform only an explicit user-requested bounded on-device sample.
     void sampleGuidance();
-    const interval = setInterval(() => {
-      void sampleGuidance();
-    }, NATIVE_FACE_GUIDANCE_SAMPLE_INTERVAL_MS);
 
     return () => {
       cancelled = true;
-      clearInterval(interval);
       if (guidanceGenerationRef.current === generation) {
         guidanceGenerationRef.current += 1;
       }
-      guidanceReadySamplesRef.current = 0;
+      // Preserve the previous manual sample for a second requested check.
+      // Session changes/resetGuidance still clear it independently.
     };
-  }, [capturedPhoto, isCameraReady, isCapturing, isFocused, isFullscreenOpen, permission?.granted]);
+  }, [capturedPhoto, guidanceRequestRevision, isCameraReady, isCapturing, isFocused, isFullscreenOpen, permission?.granted]);
+
+  const checkGuidance = useCallback(() => {
+    if (!isNativeFaceGuideAvailable || !isCameraReady || isCapturing || isCheckingGuidance || capturedPhoto ||
+      finalCaptureLockRef.current || guidanceInFlightRef.current) return;
+    const now = Date.now();
+    // Debounce repeated taps as well as in-flight camera snapshots.
+    if (now - lastGuidanceRequestAtRef.current < NATIVE_FACE_GUIDANCE_SAMPLE_INTERVAL_MS) return;
+    lastGuidanceRequestAtRef.current = now;
+    setGuidanceRequestRevision((value) => value + 1);
+  }, [capturedPhoto, isCameraReady, isCapturing, isCheckingGuidance]);
 
   const capturePhoto = useCallback(async () => {
     if (!cameraRef.current || !isCameraReady || isCapturing) {
@@ -350,7 +382,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
     );
   }
 
-  const guidanceText = resolveGuidanceCopy(copy, guidanceState);
+  const guidanceText = guidanceRequestRevision === 0 ? copy.alignFace : resolveGuidanceCopy(copy, guidanceState);
 
   return (
     <>
@@ -400,9 +432,13 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
               mode="picture"
               mirror
               onCameraReady={() => {
-                setIsCameraReady(true);
-                setCameraError(null);
-                resetGuidance();
+                // Expo may signal ready again after a still capture. Do not
+                // erase a manual two-sample result when preview resumes.
+                if (!isCameraReady) {
+                  setIsCameraReady(true);
+                  setCameraError(null);
+                  resetGuidance();
+                }
               }}
               onMountError={() => {
                 setIsCameraReady(false);
@@ -458,6 +494,25 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
               <Text style={[styles.cameraStatus, cameraError ? styles.errorStatus : null]}>
                 {cameraError ?? (capturedPhoto ? copy.localOnly : isCameraReady ? copy.ready : copy.preparing)}
               </Text>
+              {!capturedPhoto && isCameraReady && isNativeFaceGuideAvailable ? (
+                <Pressable
+                  testID="native-face-guidance-check"
+                  accessibilityRole="button"
+                  accessibilityLabel={copy.checkGuidance}
+                  accessibilityState={{ disabled: isCheckingGuidance || isCapturing }}
+                  disabled={isCheckingGuidance || isCapturing}
+                  onPress={checkGuidance}
+                  style={({ pressed }) => [
+                    styles.guidanceCheckButton,
+                    isCheckingGuidance || isCapturing ? styles.disabledButton : null,
+                    pressed ? styles.pressedButton : null
+                  ]}
+                >
+                  <Text style={styles.guidanceCheckText}>
+                    {isCheckingGuidance ? copy.guidance.loading : copy.checkGuidance}
+                  </Text>
+                </Pressable>
+              ) : null}
               {capturedPhoto ? (
                 <View style={styles.captureActions}>
                   <Pressable
@@ -544,6 +599,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#09070A"
   },
+  guidanceCheckButton: {
+    minHeight: 44,
+    alignSelf: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.55)",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    marginBottom: 8
+  },
+  guidanceCheckText: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
   fullscreenMedia: {
     ...StyleSheet.absoluteFill,
     width: "100%",

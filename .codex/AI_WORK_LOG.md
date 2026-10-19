@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-18 / Face Lab Skin S4 saved Premium canonical display and account isolation (Draft)
+
+- S4 Draft reconciles the client-only canonical saved report projection with the already patched shared security baseline. It displays saved routinePlan, functionalPlan, and conditionPlan ahead of legacy flat display, without new scoring or diagnosis.
+- Account-scoped request epochs and auth subscription guard prevent previously loaded report and share-sheet UI from reviving after logout, retry, or account change. Pure synthetic tests added.
+- Camera/ML Kit verifiers check the actual Android Runtime executor and Native Shell delegation, never drop the required emulator/prebuild assertions.
+- Still HOLD: real-device UAT, independent Skin judgment evidence, privacy/Auth/RLS acceptance, and Skin-specific release. No paid calls, images, main merge, or deployment.
+
 ### 2026-10-18 / Approved production private-install connection
 
 - 승인: 사용자가 기존 주 계정 read:packages 전용 PAT의 Vercel production 전용 Secret 등록, 준비한 설치 명령 한 줄의 PR #1343 반영·커밋·푸시·자동검사를 명시 승인. main 병합·실제 배포는 제외. Secret/Production 설정 영향 Y, DB/RLS/Storage/Provider/Payment 실행 N.

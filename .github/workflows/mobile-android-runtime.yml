@@ -13,6 +13,11 @@ on:
       - "apps/mobile/app/store-capture.tsx"
       - "apps/mobile/app/my.tsx"
       - "apps/mobile/features/analyze/NativeAnalyzeResult.tsx"
+      - "apps/mobile/features/analyze/analyze-client.ts"
+      - "apps/mobile/features/camera/**"
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/lib/copy.ts"
+      - "apps/mobile/lib/env.ts"
       - "apps/mobile/features/my/NativeMyDiaryView.tsx"
       - "apps/mobile/features/store-capture/**"
       - "apps/mobile/lib/mobile-shell.tsx"
@@ -29,6 +34,7 @@ on:
       - "scripts/verify-mobile-20b-store-capture.mjs"
       - "scripts/verify-mobile-18-store-listing.mjs"
       - "scripts/verify-mobile-analyze-integration.mjs"
+      - "scripts/facelab/skin/verify-face-lab-skin-s4-mobile-capture-network-preflight.mjs"
       - "scripts/await-mobile-android-runtime.mjs"
       - ".github/workflows/mobile-android-runtime.yml"
       - ".github/workflows/mobile-native-shell.yml"
@@ -47,6 +53,11 @@ on:
       - "apps/mobile/app/store-capture.tsx"
       - "apps/mobile/app/my.tsx"
       - "apps/mobile/features/analyze/NativeAnalyzeResult.tsx"
+      - "apps/mobile/features/analyze/analyze-client.ts"
+      - "apps/mobile/features/camera/**"
+      - "apps/mobile/app/analyze.tsx"
+      - "apps/mobile/lib/copy.ts"
+      - "apps/mobile/lib/env.ts"
       - "apps/mobile/features/my/NativeMyDiaryView.tsx"
       - "apps/mobile/features/store-capture/**"
       - "apps/mobile/lib/mobile-shell.tsx"
@@ -63,6 +74,7 @@ on:
       - "scripts/verify-mobile-20b-store-capture.mjs"
       - "scripts/verify-mobile-18-store-listing.mjs"
       - "scripts/verify-mobile-analyze-integration.mjs"
+      - "scripts/facelab/skin/verify-face-lab-skin-s4-mobile-capture-network-preflight.mjs"
       - "scripts/await-mobile-android-runtime.mjs"
       - ".github/workflows/mobile-android-runtime.yml"
       - ".github/workflows/mobile-native-shell.yml"
@@ -88,7 +100,7 @@ jobs:
   android-debug-apk:
     name: Android Debug APK Build
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 55
     env:
       EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
@@ -154,6 +166,37 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+
+      # Standalone device smoke on Face Lab / Skin PRs only. The canonical
+      # debug APK above still requires Metro; this release-variant APK embeds JS.
+      # No backend/Supabase keys are supplied, so native analyze is disabled
+      # by the explicit build-readiness guard. Not a production-signed build.
+      - name: Confirm standalone QA build is offline
+        if: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'Face Lab / Skin') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in EXPO_PUBLIC_API_BASE_URL EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY; do
+            if test -n "${!key:-}"; then
+              echo "::error::Offline QA APK must not embed $key"
+              exit 1
+            fi
+          done
+
+      - name: Build standalone offline Skin QA APK
+        if: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'Face Lab / Skin') }}
+        run: |
+          cd apps/mobile/android
+          ./gradlew :app:assembleRelease --no-daemon
+
+      - name: Upload offline Skin QA APK
+        if: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'Face Lab / Skin') }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: bejewely-mobile-skin-offline-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: error
+          retention-days: 14
+          path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
 
   native-shell-smoke:
     name: Android Native Shell Smoke

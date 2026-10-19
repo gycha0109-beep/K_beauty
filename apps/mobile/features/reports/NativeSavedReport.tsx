@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useMobileShell } from "../../lib/mobile-shell";
 import type { NativeFreeSavedResult, NativeSavedReportRead } from "./saved-report-client";
+import { resolveSkinPhotoDisplayState } from "./skin-photo-evidence-status";
+import { projectSavedPremiumCanonicalSections } from "./saved-premium-canonical-projection";
 
 const REPORT_COPY = {
   en: {
@@ -15,9 +17,11 @@ const REPORT_COPY = {
     premiumRoutine: "Premium routine",
     functional: "Functional decisions",
     condition: "Condition guidance",
+    photoEvidence: "Photo evidence",
     version: "Version",
     savedAt: "Saved",
-    noDetail: "This saved server snapshot has no additional displayable detail."
+    noDetail: "This saved server snapshot has no additional displayable detail.",
+    canonicalUnavailable: "This saved plan has no displayable details; no guidance has been inferred."
   },
   ko: {
     free: "무료 리포트",
@@ -31,9 +35,11 @@ const REPORT_COPY = {
     premiumRoutine: "프리미엄 루틴",
     functional: "기능성 판단",
     condition: "컨디션 대응",
+    photoEvidence: "사진 관찰 근거",
     version: "버전",
     savedAt: "저장",
-    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다."
+    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다.",
+    canonicalUnavailable: "저장된 판단에서 표시 가능한 상세 내용이 없어 새 안내를 추론하지 않았습니다."
   }
 } as const;
 
@@ -159,23 +165,67 @@ function FreeSnapshot({ result }: { result: NativeFreeSavedResult }) {
   );
 }
 
+function getSkinPhotoEvidenceLines(report: Record<string, unknown>, locale: "ko" | "en") {
+  const state = resolveSkinPhotoDisplayState(report);
+  const copy = locale === "en"
+    ? {
+        available: "Photo observations were considered as supporting visual cues, not a skin diagnosis.",
+        not_provided: "There is no photo evidence in this report. Survey and product-use context are primary.",
+        unavailable: "Photo processing did not complete. Do not treat survey-only fallback text as photo evidence.",
+        ineligible: "The image was not suitable for skin observation. Photo-based judgment is on hold. You may try another clear, unfiltered face photo.",
+        insufficient_evidence: "The photo did not support a reliable skin observation. Survey evidence is prioritized. Try again under even lighting without filters.",
+        unknown: "Photo evidence status cannot be verified from this saved report.",
+        conflict: "Saved photo-status records disagree. Photo interpretation should be held pending recheck.",
+        limited: "Individual photo cues are not reliable enough for a stronger claim. You can retake a clear photo under even lighting."
+      }
+    : {
+        available: "사진에서 관찰한 시각적 단서는 보조 근거이며 피부 상태를 진단한 결과가 아닙니다.",
+        not_provided: "이 리포트에는 사진 근거가 없습니다. 설문과 현재 사용 정보가 우선입니다.",
+        unavailable: "사진 분석이 완료되지 않았습니다. 설문용 대체 문구를 사진 관찰 결과로 보지 않습니다.",
+        ineligible: "피부를 관찰하기에 적합하지 않은 사진이어서 사진 기반 판단을 보류했습니다. 얼굴이 선명히 보이도록 다시 촬영할 수 있습니다.",
+        insufficient_evidence: "사진에서 신뢰할 만한 피부 단서가 부족해 설문 근거를 우선했습니다. 필터 없이 조명이 고른 환경에서 다시 촬영해 볼 수 있습니다.",
+        unknown: "이 저장 리포트에서 사진 분석 상태를 확인할 수 없습니다.",
+        conflict: "저장된 사진 상태 기록이 서로 일치하지 않아 사진 판단을 보류하고 재확인해야 합니다.",
+        limited: "개별 피부 관찰 신호의 신뢰도 근거가 부족하므로 단정할 수 없습니다. 빛이 고르고 얼굴이 선명한 조건에서 다시 촬영해 볼 수 있습니다."
+      };
+  if (state.statusConflict) return [copy.conflict];
+  // A global available status without trustworthy individual cues is not positive photo evidence.
+  if (state.status === "available" && state.highOrMediumObservationCount === 0) {
+    return [copy.limited];
+  }
+  return [copy[state.status]];
+}
+
 function PremiumSnapshot({ report }: { report: Record<string, unknown> }) {
   const { locale } = useMobileShell();
   const copy = REPORT_COPY[locale];
   const freeResult = report.freeResult && typeof report.freeResult === "object" && !Array.isArray(report.freeResult)
     ? report.freeResult as NativeFreeSavedResult
     : null;
-  const routineLines = collectDisplayLines(report.fullRoutine, 10);
-  const functionalLines = collectDisplayLines(report.functionalDecisions, 10);
-  const conditionLines = collectDisplayLines(report.conditionResponses, 10);
-  const hasPremiumDetail = routineLines.length || functionalLines.length || conditionLines.length;
+  // Canonical report fields are the same saved data used by the web Full Report.
+  // Legacy fields are used only if this section lacks an explicit canonical plan.
+  const canonical = projectSavedPremiumCanonicalSections(report, locale);
+  const routineLines = canonical.routine.canonicalPresent
+    ? [...canonical.routine.lines]
+    : collectDisplayLines(report.fullRoutine, 10);
+  const functionalLines = canonical.functional.canonicalPresent
+    ? [...canonical.functional.lines]
+    : collectDisplayLines(report.functionalDecisions, 10);
+  const conditionLines = canonical.condition.canonicalPresent
+    ? [...canonical.condition.lines]
+    : collectDisplayLines(report.conditionResponses, 10);
+  const displayOrHold = (lines: string[], canonicalPresent: boolean) =>
+    lines.length ? lines : canonicalPresent ? [copy.canonicalUnavailable] : [];
+  const hasPremiumDetail = routineLines.length || functionalLines.length || conditionLines.length ||
+    canonical.routine.canonicalPresent || canonical.functional.canonicalPresent || canonical.condition.canonicalPresent;
 
   return (
     <View style={styles.stack}>
       {freeResult ? <FreeSnapshot result={freeResult} /> : null}
-      <Section title={copy.premiumRoutine} lines={routineLines} />
-      <Section title={copy.functional} lines={functionalLines} />
-      <Section title={copy.condition} lines={conditionLines} />
+      <Section title={copy.photoEvidence} lines={getSkinPhotoEvidenceLines(report, locale)} />
+      <Section title={copy.premiumRoutine} lines={displayOrHold(routineLines, canonical.routine.canonicalPresent)} />
+      <Section title={copy.functional} lines={displayOrHold(functionalLines, canonical.functional.canonicalPresent)} />
+      <Section title={copy.condition} lines={displayOrHold(conditionLines, canonical.condition.canonicalPresent)} />
       {!freeResult && !hasPremiumDetail ? <Section title={copy.premium} lines={[copy.noDetail]} /> : null}
     </View>
   );
