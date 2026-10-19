@@ -1,0 +1,78 @@
+{
+  "contract": "trust-p2d-owner-public-one-time-observation-v1",
+  "githubRunId": 39188220898,
+  "githubJobId": 117855065400,
+  "githubArtifactId": 12159295305,
+  "observedAtUtc": "2026-10-19T02:06:06Z",
+  "exactTriggerHead": "daaa9dbcd90861596e06b07c804a9e67f483c66e",
+  "evidenceMode": "REAL_BOUNDED_READONLY_OFFICIAL_HOST_ROBOTS_FIRST",
+  "frozenDenominator": 5,
+  "retiredOriginHold": "닥터지",
+  "eligibleOrigins": 4,
+  "networkRequestsAttempted": 20,
+  "robotsRequests": 4,
+  "sitemapRequests": 8,
+  "peerOrIndexPageRequests": 8,
+  "productPageFetches": 0,
+  "officialNameCandidateProducts": 0,
+  "verifiedExactSkuCount": 0,
+  "factWrites": 0,
+  "subjectWrites": 0,
+  "recommendationWrites": 0,
+  "dbWrites": 0,
+  "aiApiCalls": 0,
+  "brands": [
+    {
+      "brand": "닥터지",
+      "state": "RETIRED_ORIGIN_HOLD",
+      "robots": 0,
+      "sitemaps": 0,
+      "pages": 0,
+      "sourceStatus": "NOT_CONTACTED"
+    },
+    {
+      "brand": "비플레인",
+      "state": "NO_PRODUCT_PAGE",
+      "robots": 1,
+      "sitemaps": 2,
+      "pages": 2,
+      "sourceStatus": "NO_SAFE_CANDIDATE",
+      "stageDiagnosis": "NO_ELIGIBLE_OFFICIAL_INDEX_LINK"
+    },
+    {
+      "brand": "아토팜",
+      "state": "NO_PRODUCT_PAGE",
+      "robots": 1,
+      "sitemaps": 2,
+      "pages": 2,
+      "sourceStatus": "NO_ELIGIBLE_OFFICIAL_LOCATOR",
+      "stageDiagnosis": "NO_ELIGIBLE_OFFICIAL_LOCATOR"
+    },
+    {
+      "brand": "이즈앤트리",
+      "state": "NO_PRODUCT_PAGE",
+      "robots": 1,
+      "sitemaps": 2,
+      "pages": 2,
+      "sourceStatus": "SOURCE_BLOCKED",
+      "stageDiagnosis": "NO_ELIGIBLE_OFFICIAL_INDEX_LINK"
+    },
+    {
+      "brand": "토리든",
+      "state": "NO_PRODUCT_PAGE",
+      "robots": 1,
+      "sitemaps": 2,
+      "pages": 2,
+      "sourceStatus": "NO_SAFE_CANDIDATE",
+      "stageDiagnosis": "NO_ELIGIBLE_OFFICIAL_INDEX_LINK"
+    }
+  ],
+  "conclusions": [
+    "All four original official origins' robots.txt were fetched successfully; the source-status block for Isntree occurred at a later discovery stage, not at robots preflight.",
+    "The bounded sitemap/peer/index approach returned no eligible target product page on any of four origins.",
+    "This is a discovery reachability failure, not evidence that products or official URLs are absent.",
+    "Independent official-product-page URLs can be tested in a separately bounded robots-first fixed-locator observation; none of this trial confirms exact SKU identities."
+  ],
+  "liveTrialMarker": "P2D-PUBLIC-ROBOTS-FIRST-ONCE-20261019",
+  "source": "GitHub Actions logs and metadata-only artifact; no raw site HTML stored"
+}
