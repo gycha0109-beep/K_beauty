@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -339,6 +339,78 @@ try {
   $rolesText = $null
   $stagedSchema = $null
   $schemaText = $null
+  if ($Mode -eq 'AuditSchema') {
+    # Diagnostic-only, isolated no-network container; continue past schema errors
+    # to enumerate independent failures in one pass. NEVER execute data.sql.
+    # Deliberately no single transaction: psql would stay aborted after error 1.
+    # A partial schema in the throwaway DB is destroyed by finally().
+    $auditExit = Invoke-DockerLifecycle 'SCHEMA_AUDIT' @('exec','-u','postgres',
+      $container,'psql','-X','-q','-v','ON_ERROR_STOP=0',
+      '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
+      '-d','postgres','-f','/tmp/schema.sql') $true
+    $auditStderr = Join-Path $unpacked 'docker-lifecycle-SCHEMA_AUDIT-err.log'
+    $auditRaw = ''
+    if (Test-Path -LiteralPath $auditStderr) {
+      $auditRaw = [System.IO.File]::ReadAllText($auditStderr)
+    }
+    # Only line numbers and PostgreSQL SQLSTATE are emitted. No exception,
+    # object name, source SQL, row content, paths or raw stderr leave this PC.
+    $auditRx = [regex]'(?im)^psql:/tmp/schema\.sql:(?<line>[0-9]{1,7}):\s*ERROR:\s*(?<sqlstate>[0-9A-Z]{5})\b'
+    $auditMatches = $auditRx.Matches($auditRaw)
+    $sqlLines = [System.IO.File]::ReadAllLines($tempSchemaFile)
+    $total = $auditMatches.Count
+    $entries = New-Object 'System.Collections.Generic.List[object]'
+    $counts = @{}
+    $limit = [Math]::Min($total,80)
+    for ($a = 0; $a -lt $total; $a++) {
+      $errorCode = $auditMatches[$a].Groups['sqlstate'].Value.ToUpperInvariant()
+      if (-not $counts.ContainsKey($errorCode)) { $counts[$errorCode] = 0 }
+      $counts[$errorCode]++
+      if ($a -ge $limit) { continue }
+      $at = [int]$auditMatches[$a].Groups['line'].Value
+      $verb = 'UNKNOWN'
+      $objectKind = 'UNKNOWN'
+      if ($at -ge 1 -and $at -le $sqlLines.Length) {
+        $first = [Math]::Max(0,$at - 121)
+        for ($z = $at - 1; $z -ge $first; $z--) {
+          $header = $sqlLines[$z]
+          if ($header -match '^(ALTER|CREATE|DROP|COMMENT|GRANT|REVOKE|SELECT|DO|SET|RESET)\b') {
+            $verb = $Matches[1].ToUpperInvariant()
+            if ($header -match '^(?:ALTER|CREATE|DROP|COMMENT\s+ON)\s+(?:OR\s+REPLACE\s+)?(FUNCTION|PROCEDURE|TRIGGER|OPERATOR|TABLE|VIEW|INDEX|EXTENSION|TYPE|SCHEMA|POLICY)\b') {
+              $objectKind = $Matches[1].ToUpperInvariant()
+            } elseif ($header -match '^(?:GRANT|REVOKE)\b.*\bON\s+(FUNCTION|PROCEDURE|SCHEMA|TABLE|SEQUENCE|TYPE)\b') {
+              $objectKind = $Matches[1].ToUpperInvariant()
+            }
+            break
+          }
+        }
+      }
+      $entries.Add([ordered]@{ line=$at; sqlstate=$errorCode; verb=$verb; objectKind=$objectKind })
+    }
+    $codeCounts = @($counts.Keys | Sort-Object | ForEach-Object {
+      [ordered]@{ sqlstate=$_; count=[int]$counts[$_] }
+    })
+    [ordered]@{
+      status='D8K13_DISPOSABLE_PG17_SCHEMA_AUDIT_ONLY_NOT_RESTORE'
+      schemaErrorCount=$total
+      sampledErrors=$entries.ToArray()
+      sampleLimit=80
+      errorsTruncated=($total -gt 80)
+      sqlstateCounts=$codeCounts
+      psqlExitCode=[int]$auditExit
+      classificationConfidence='LEXICAL_HEURISTIC_NOT_SQL_PARSER'
+      dataSqlExecuted=$false
+      originalZipModified=$false
+      schemaObjectsNotValidated=$true
+      aclParityVerified=$false
+      ownerSecurityReviewComplete=$false
+      productionDatabaseConnections=0
+      rawSqlOrRowsReturned=$false
+      networkDisabled=$true
+      releaseAuthorized=$false
+    } | ConvertTo-Json -Compress -Depth 8 | Write-Output
+    return
+  }
   Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/schema.sql')
   if ($grantDeferredIntoSchema) {
     Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
