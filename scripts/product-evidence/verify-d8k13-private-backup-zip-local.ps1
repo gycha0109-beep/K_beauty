@@ -348,6 +348,9 @@ try {
       $container,'psql','-X','-q','-v','ON_ERROR_STOP=0',
       '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
       '-d','postgres','-f','/tmp/schema.sql') $true
+    # A nonzero psql process exit indicates an incomplete audit/transport error,
+    # not SQL errors (ON_ERROR_STOP=0 continues after ordinary SQL errors).
+    Assert-Drill ([int]$auditExit -eq 0) 'D8K13_SCHEMA_AUDIT_PSQL_EXECUTION_INCOMPLETE'
     $auditStderr = Join-Path $unpacked 'docker-lifecycle-SCHEMA_AUDIT-err.log'
     $auditRaw = ''
     if (Test-Path -LiteralPath $auditStderr) {
@@ -357,6 +360,8 @@ try {
     # object name, source SQL, row content, paths or raw stderr leave this PC.
     $auditRx = [regex]'(?im)^psql:/tmp/schema\.sql:(?<line>[0-9]{1,7}):\s*ERROR:\s*(?<sqlstate>[0-9A-Z]{5})\b'
     $auditMatches = $auditRx.Matches($auditRaw)
+    $allSqlstateErrorCount = ([regex]::Matches($auditRaw,'(?im)\bERROR:\s*[0-9A-Z]{5}\b')).Count
+    Assert-Drill ($auditMatches.Count -eq $allSqlstateErrorCount) 'D8K13_SCHEMA_AUDIT_UNPARSED_SQLSTATE_FAIL_CLOSED'
     $sqlLines = [System.IO.File]::ReadAllLines($tempSchemaFile)
     $total = $auditMatches.Count
     $entries = New-Object 'System.Collections.Generic.List[object]'
