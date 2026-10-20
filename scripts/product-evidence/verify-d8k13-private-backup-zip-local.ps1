@@ -780,7 +780,23 @@ SELECT json_build_object(
         # Preserve, rather than silently discard, pg_dump session settings
         # that affect COPY interpretation. Explicit allowlist blocks arbitrary
         # SQL and privileged changes such as SET ROLE/replication_role.
-        if ($line -match '(?i)^[ \t]*SET[ \t]+(?:statement_timeout|lock_timeout|idle_in_transaction_session_timeout|transaction_timeout|client_encoding|standard_conforming_strings|check_function_bodies|xmloption|client_min_messages|row_security|DateStyle|TimeZone|default_table_access_method|default_with_oids|default_tablespace|escape_string_warning|bytea_output)[ \t]*=[ \t]*[^;\r\n]{1,128};[ \t]*
+        if ($line -match '^[ \t]*SET[ \t]+(?<name>[a-zA-Z_][a-zA-Z0-9_]*)[ \t]*=[ \t]*[^;\r\n]{1,128};[ \t]*$') {
+          $safeSetting = $Matches['name'].ToLowerInvariant()
+          $allowedSettings = @(
+            'statement_timeout','lock_timeout','idle_in_transaction_session_timeout',
+            'transaction_timeout','client_encoding','standard_conforming_strings',
+            'check_function_bodies','xmloption','client_min_messages','row_security',
+            'datestyle','timezone','default_table_access_method','default_with_oids',
+            'default_tablespace','escape_string_warning','bytea_output'
+          )
+          Assert-Drill ($safeSetting -in $allowedSettings) ('D8K13_PUBLIC_DATA_UNSUPPORTED_SET_LINE_' + $lineNumber)
+          $publicWriter.WriteLine($line)
+          continue
+        }
+        if ($line -match '^[ \t]*SELECT[ \t]+pg_catalog\.set_config\(''search_path'',[ \t]*'''',[ \t]*false\);[ \t]*$') {
+          $publicWriter.WriteLine($line)
+          continue
+        }
         if ($line -match '^[ \t]*\\(?:restrict|unrestrict)[ \t]+[A-Za-z0-9]+[ \t]*$') { continue }
         Assert-Drill $false ('D8K13_PUBLIC_DATA_UNEXPECTED_SOURCE_COMMAND_LINE_' + $lineNumber)
       }
