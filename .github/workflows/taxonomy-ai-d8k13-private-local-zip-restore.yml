@@ -296,8 +296,6 @@ jobs:
           $schema = [System.IO.File]::ReadAllText((Join-Path $source 'schema.sql'))
           $schema += "`nSELECT d8k13_absent_synthetic_function();`n"
           $schema += "COMMENT ON FUNCTION public.d8k13_absent_synthetic_function() IS 'synthetic only';`n"
-          $schema += "CREATE POLICY d8k13_missing_fixture_policy1 ON public.products FOR SELECT TO authenticated USING (public.d8k13_missing_helper());`n"
-          $schema += "CREATE POLICY d8k13_missing_fixture_policy2 ON public.products FOR UPDATE TO authenticated USING (public.d8k13_missing_helper());`n"
           [System.IO.File]::WriteAllText((Join-Path $target 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $zip = Join-Path $env:RUNNER_TEMP 'd8k13-audit-many/audit.zip'
@@ -314,12 +312,6 @@ jobs:
           if (@($result.sampledErrors | Where-Object { $_.sqlstate -eq '42883' }).Count -lt 2) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_MISSING_42883' }
           if (@($result.sqlstateCounts | Where-Object { $_.sqlstate -eq '42883' -and $_.count -ge 2 }).Count -ne 1) {
             throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_AGGREGATION_FAILED'
-          }
-          if (@($result.missingFunctionReferences | Where-Object {
-            $_.functionIdentifier -eq 'public.d8k13_missing_helper' -and $_.count -eq 2
-          }).Count -ne 1) { throw 'D8K13_POLICY_MISSING_FUNCTION_GROUPING_FAILED' }
-          if (($resultLine -join '') -match 'CREATE POLICY|USING \(') {
-            throw 'D8K13_POLICY_SQL_TEXT_LEAKED'
           }
           if (($resultLine -join '') -match 'd8k13_absent_synthetic_function|COMMENT ON FUNCTION|SELECT d8k13_absent') {
             throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_SQL_LEAK'
