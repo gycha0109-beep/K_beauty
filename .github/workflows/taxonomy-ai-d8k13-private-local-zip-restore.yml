@@ -537,6 +537,8 @@ jobs:
             throw 'D8K13_PUBLIC_UNSUPPORTED_COMMAND_SOURCE_LEAKED'
           }
           Write-Host 'D8K13_SYNTHETIC_PUBLIC_UNSUPPORTED_SQL_FAIL_CLOSED_PASS'
+          # GitHub pwsh wrapper propagates the last native exit code even after an expected rejection.
+          $global:LASTEXITCODE=0
       - name: Aggregate multiple undefined functions in one privacy-safe isolated schema audit
         shell: pwsh
         run: |
