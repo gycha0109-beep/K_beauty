@@ -1037,6 +1037,16 @@ assert.equal(matchedRoot.primaryRootDiagnostic.status,"SCOPED_NAME_AND_FORM_CAND
 assert.equal(matchedRoot.primaryRootDiagnostic.selectedSizeStatus,
   "SELECTED_SIZE_MATCH_SHADOW_ONLY");
 assert.equal(matchedRoot.primaryRootDiagnostic.scopedNameAndSizeCandidate,true);
+assert.equal(matchedRoot.primaryRootDiagnostic.holdStage,
+  "SCOPED_SELECTED_SIZE_SHADOW_ONLY");
+assert.equal(matchedRoot.primaryRootDiagnostic.parseComplete,true);
+assert.equal(matchedRoot.primaryRootDiagnostic.rootMarkerCount,1);
+assert.equal(matchedRoot.primaryRootDiagnostic.titleMarkerCount,1);
+assert.equal(matchedRoot.primaryRootDiagnostic.matchedTitleCount,1);
+assert.equal(matchedRoot.primaryRootDiagnostic.matchedRootCount,1);
+assert.equal(matchedRoot.primaryRootDiagnostic.ownedFormCount,1);
+assert.equal(matchedRoot.primaryRootDiagnostic.ownedOptionControlCount,1);
+assert.equal(matchedRoot.primaryRootDiagnostic.rootBodyNameMentionCount,1);
 assert.equal(matchedRoot.variantScope.status,"SIZE_UNKNOWN"); // title remains generic
 assert.equal(matchedRoot.marketVerified,false);
 assert.equal(matchedRoot.subjectCreationAuthorized,false);
@@ -1069,6 +1079,69 @@ for(const [name,body] of genericNegatives){
   assert.equal(result.subjectCreationAuthorized,false,name);
   assert.equal(result.factConfirmationAuthorized,false,name);
 }
+// Read-only P2-F7 diagnostic: the actual archived Torriden page had
+// PRIMARY_ROOT_NOT_PROVEN, not a verified selected size. Synthetic fixtures
+// distinguish recognized strict-root headings from body-only copies WITHOUT
+// assuming what elements occur in that archived HTML.
+const titleAsParagraph=classifiedGeneric(productRoot(
+  '<p class="goods-name">'+genericProduct.name+'</p>'+ownedForm("50")));
+assert.equal(titleAsParagraph.status,"SCOPED_HEADING_CANDIDATE");
+assert.equal(titleAsParagraph.identitySurface,"p3_primary_root_selected_size_shadow");
+assert.equal(titleAsParagraph.primaryRootDiagnostic.holdStage,
+  "SCOPED_SELECTED_SIZE_SHADOW_ONLY");
+assert.equal(titleAsParagraph.primaryRootDiagnostic.matchedTitleCount,1);
+assert.equal(titleAsParagraph.factConfirmationAuthorized,false);
+const titleAsH3=classifiedGeneric(productRoot(
+  '<h3 class="item-name">'+genericProduct.name+'</h3>'+ownedForm("50")));
+assert.equal(titleAsH3.status,"SCOPED_HEADING_CANDIDATE");
+assert.equal(titleAsH3.primaryRootDiagnostic.matchedRootCount,1);
+const unmarkedParagraph=classifiedGeneric(productRoot(
+  '<p class="description">'+genericProduct.name+'</p>'+ownedForm("50")));
+assert.equal(unmarkedParagraph.status,"BODY_NAME_MENTION_ONLY");
+assert.equal(unmarkedParagraph.primaryRootDiagnostic.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(unmarkedParagraph.primaryRootDiagnostic.holdStage,
+  "ROOT_BODY_NAME_WITHOUT_SCOPED_TITLE_HOLD");
+assert.equal(unmarkedParagraph.primaryRootDiagnostic.rootMarkerCount,1);
+assert.equal(unmarkedParagraph.primaryRootDiagnostic.titleMarkerCount,0);
+assert.equal(unmarkedParagraph.primaryRootDiagnostic.rootBodyNameMentionCount,1);
+assert.equal(unmarkedParagraph.primaryRootDiagnostic.matchedTitleCount,0);
+assert.equal(unmarkedParagraph.primaryRootDiagnostic.scopedNameAndSizeCandidate,false);
+const unselectedH3=classifiedGeneric(productRoot(
+  '<h3 class="goods-name">'+genericProduct.name+'</h3>'+ownedForm("none")));
+assert.notEqual(unselectedH3.status,"SCOPED_HEADING_CANDIDATE");
+assert.equal(unselectedH3.primaryRootDiagnostic.holdStage,
+  "SELECTED_SIZE_SHADOW_NOT_MATCHED_HOLD");
+assert.equal(unselectedH3.primaryRootDiagnostic.selectedSizeStatus,
+  "NO_EXPLICIT_SELECTED_SIZE_HOLD");
+const unrelatedH3=classifiedGeneric(productRoot(
+  '<h3 class="goods-name">다른 상품</h3>'+ownedForm("50"))+
+  '<a href="/recommend">'+genericProduct.name+'</a>');
+assert.notEqual(unrelatedH3.status,"SCOPED_HEADING_CANDIDATE");
+assert.equal(unrelatedH3.primaryRootDiagnostic.holdStage,
+  "NO_MATCHING_SCOPED_TITLE");
+assert.equal(unrelatedH3.primaryRootDiagnostic.matchedRootCount,0);
+const crossSellH3=classifiedGeneric(productRoot(
+  '<div class="related-products"><h3 class="goods-name">'+genericProduct.name+
+  '</h3></div>'+ownedForm("50")));
+assert.notEqual(crossSellH3.status,"SCOPED_HEADING_CANDIDATE");
+assert.equal(crossSellH3.primaryRootDiagnostic.holdStage,
+  "NO_MATCHING_SCOPED_TITLE");
+const parserHold=classifiedGeneric('<section class="product-detail">'+coreName+
+  ownedForm("50"));
+assert.equal(parserHold.primaryRootDiagnostic.holdStage,"STRICT_DOM_PARSER_HOLD");
+assert.equal(parserHold.primaryRootDiagnostic.parseComplete,false);
+for(const result of [titleAsParagraph,titleAsH3,unmarkedParagraph,
+  unselectedH3,unrelatedH3,crossSellH3,parserHold]){
+  assert.equal(result.primaryRootDiagnostic.exactSkuVerified,false);
+  assert.equal(result.subjectCreationAuthorized,false);
+  assert.equal(result.factConfirmationAuthorized,false);
+  assert.equal(result.marketVerified,false);
+  assert.equal(result.formulationVerified,false);
+  assert.equal(JSON.stringify(result).includes("<h3"),false);
+  assert.equal(JSON.stringify(result).includes("goods-name"),false);
+}
+console.log("TRUST_P2F7_GENERIC_TITLE_ROOT_DIAGNOSTIC_HOLDS_PASS");
+
 const explicitDocumentTitle=classifyTrustOfficialCandidatePage(Buffer.from(
   '<title>다이브인 저분자 히알루론산 세럼 50ml - 토리든</title>'),
   genericProduct);
