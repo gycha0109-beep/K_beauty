@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_20_POLICY_42883_SUPABASE_AUTH_JWT_UID_DEPENDENCY_ISOLATED_BASELINE_CI_PENDING",
+  "state": "OWNER_REAL_20_POLICY_42883_SUPABASE_AUTH_DISPOSABLE_PRESEED_SYNTHETIC_PG17_CI_PASS_REAL_RESTORE_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -537,11 +537,29 @@
       "strategy": "create only missing auth.uid() / auth.jwt() from Supabase Auth migrations in no-network disposable PG17; validate uuid/jsonb stable security-invoker signatures and leave preexisting functions unchanged",
       "doesNotModifySourceZip": true,
       "doesNotBypassRLSPolicies": true,
-      "syntheticCiRunId": 39391138295,
-      "syntheticCiPass": false,
+      "syntheticCiRunId": 39391834303,
+      "syntheticCiPass": true,
       "ownerRealZipRestoreAttemptedAfterPatch": false,
       "productionDatabaseConnections": 0,
-      "releaseAuthorized": false
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "runId": 39391834303,
+        "jobId": 118524957615,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39391834303",
+        "conclusion": "success",
+        "codeCommit": "b11d59c0c32234cbe8d83c6f9a38e73b8acc9350",
+        "scope": "synthetic only; owner private ZIP unavailable in CI",
+        "coverage": [
+          "Supabase Auth JWT/UID RLS policy compilation",
+          "isolated missing managed function conditional seed with official function signatures",
+          "isolated managed auth bootstrap runs as supabase_admin after demoted postgres 42501",
+          "public/private function ownership grants",
+          "public schema creation/preservation",
+          "schema-only 42883 aggregate audit",
+          "negative archive tests",
+          "data.sql synthetic restore"
+        ]
+      }
     }
   },
   "syntheticCi": {
