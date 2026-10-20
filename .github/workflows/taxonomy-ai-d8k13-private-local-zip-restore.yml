@@ -41,6 +41,11 @@ jobs:
           $sqlDir = Join-Path $root 'sql'
           New-Item -ItemType Directory -Path $sqlDir -Force | Out-Null
           [System.IO.File]::WriteAllText((Join-Path $sqlDir 'roles.sql'),"CREATE ROLE synthetic_role NOLOGIN;",[System.Text.UTF8Encoding]::new($false))
+          # Satisfy the real-backup archive minimum size using SYNTHETIC entropy only.
+          $entropy = New-Object byte[] 4096
+          $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+          try { $rng.GetBytes($entropy) } finally { $rng.Dispose() }
+          [System.IO.File]::AppendAllText((Join-Path $sqlDir 'roles.sql'),("`n-- " + [Convert]::ToBase64String($entropy) + "`n"))
           [System.IO.File]::WriteAllText((Join-Path $sqlDir 'data.sql'),"SELECT 1;",[System.Text.UTF8Encoding]::new($false))
           $fixtureSql = @'
           -- SECRET_CANARY_NEVER_OUTPUT fake
