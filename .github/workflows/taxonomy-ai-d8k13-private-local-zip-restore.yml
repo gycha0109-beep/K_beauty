@@ -116,6 +116,57 @@ jobs:
           }
           Write-Host 'D8K13_LOCAL_SCHEMA_LINE_METADATA_ONLY_SYNTHETIC_PASS'
           exit 0 # Deliberate negative child exit=3 must not fail the parent step.
+      - name: Test offline policy reference inventory on 20 synthetic policies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = './scripts/product-evidence/diagnose-d8k13-policy-dependencies-local.ps1'
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -ne 0) { throw 'D8K13_POLICY_INVENTORY_PARSE_FAILED' }
+          $root = Join-Path $env:RUNNER_TEMP 'policy-reference-synthetic'
+          $sql = Join-Path $root 'sql'
+          New-Item -ItemType Directory -Path $sql -Force | Out-Null
+          $lines = New-Object 'System.Collections.Generic.List[string]'
+          $lines.Add("CREATE FUNCTION public.my_helper() RETURNS boolean LANGUAGE sql AS 'SELECT true';")
+          $lines.Add('CREATE TABLE public.products(id integer);')
+          for ($i=1; $i -le 20; $i++) {
+            $lines.Add("CREATE POLICY fixture_$i")
+            $lines.Add('  ON public.products')
+            $lines.Add('  FOR SELECT')
+            $lines.Add('  USING (auth.uid() IS NOT NULL AND public.my_helper());')
+          }
+          [System.IO.File]::WriteAllLines((Join-Path $sql 'schema.sql'),$lines,[System.Text.UTF8Encoding]::new($false))
+          $entropy = New-Object byte[] 4096
+          $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+          try { $rng.GetBytes($entropy) } finally { $rng.Dispose() }
+          [System.IO.File]::WriteAllText((Join-Path $sql 'roles.sql'),[Convert]::ToBase64String($entropy))
+          [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),'SELECT 1;')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = Join-Path $root 'synthetic.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$archive)
+          $bytes = [long](Get-Item -LiteralPath $archive).Length
+          $sha = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
+          $out = & pwsh -NoProfile -File $script -BackupZip $archive -ExpectedZipBytes $bytes -ExpectedSha256 $sha -FirstErrorLine 6 -ErrorCount 20 -ErrorLineStep 4
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_POLICY_INVENTORY_EXEC_FAILED' }
+          $result = $out | ConvertFrom-Json
+          if ($result.inspectedPolicyCount -ne 20 -or $result.rawSqlReturned -ne $false -or
+              $result.dataSqlExecuted -ne $false -or $result.functionExistsInIsolatedRuntimeVerified -ne $false) {
+            throw 'D8K13_POLICY_INVENTORY_SAFETY_FAILED'
+          }
+          if (@($result.references | Where-Object { $_.functionIdentifier -eq 'auth.uid' -and
+            $_.referencedByPolicies -eq 20 -and -not $_.declaredInSourceSchemaDump }).Count -ne 1) {
+            throw 'D8K13_POLICY_INVENTORY_AUTH_REFERENCE_FAILED'
+          }
+          if (@($result.references | Where-Object { $_.functionIdentifier -eq 'public.my_helper' -and
+            $_.referencedByPolicies -eq 20 -and $_.declaredInSourceSchemaDump }).Count -ne 1) {
+            throw 'D8K13_POLICY_INVENTORY_DECLARED_HELPER_FAILED'
+          }
+          if (($out -join '') -match 'CREATE POLICY|USING \(|CREATE TABLE|SELECT true') {
+            throw 'D8K13_POLICY_INVENTORY_SOURCE_SQL_LEAKED'
+          }
+          Write-Host 'D8K13_SYNTHETIC_POLICY_REFERENCE_INVENTORY_PASS'
       - name: Generate non-sensitive synthetic Supabase-shaped ZIP
         shell: bash
         run: |
