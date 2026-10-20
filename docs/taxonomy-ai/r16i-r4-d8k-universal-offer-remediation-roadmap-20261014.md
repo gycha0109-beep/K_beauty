@@ -455,3 +455,9 @@
 - 사용자 실 ZIP SHA/size 불변, `public` 보존 PASS, `private` 소유권 GRANT 지연 준비 마커 PASS; **이후 schema.sql 22086행에서 권한 부족 `42501`** 발생. 최신 script가 실 ZIP schema/data restore를 완료했다는 증거는 없음.
 - 새 권한 오류가 474행 기존 함수 owner와 같다는 증거가 없으므로 복원 권한을 추가하지 않는다. 로컬 ZIP 내 해당 물리행의 구문 종류만 반환하는 PowerShell 오프라인 진단기 및 합성 CI 테스트를 작성. raw SQL/백업·실데이터·연결 비밀 Git/CI/Chat 업로드 금지.
 - 의존성: 소유자 PC의 **비식별 명령 분류** → 필요한 격리 환경 준비 정책 검토 → 합성 PG17 재검증 → 실 ZIP 복원 재시도 → 독립 데이터/권한/Auth/Storage/Vault parity. 그전에는 병합·배포·운영 Supabase DDL/DML·D8D v2·판매처 가격/CTA 금지. #1341 Draft, #1208 OPEN, release HOLD.
+
+## 34. D8K-13 SQLSTATE 42501: 비식별 로컬 문장 분류기 수락 (2026-10-20)
+
+- 동일 실 ZIP에서 schema.sql 22086행 SQLSTATE 42501; 실 데이터 복원 미완료. `private` owner grant staging 성공 출력은 SQL 전체 복원 성공 마커가 아님.
+- 소유자 ZIP 원문을 Git/CI/채팅에 전달하지 않고 해당 행의 SQL 문장 종류만 확인하도록 `diagnose-d8k13-private-backup-schema-line-local.ps1` 오프라인 진단기 작성. **CI #39359659800 / job 118422589377 SUCCESS**, synthetic line classification + privacy negatives + 기존 PG17 restore 전체 통과. 초기 시험은 ZIP 최소 크기 및 의도적 child exit3 처리 문제로 실패했으며 수정됨.
+- 실제 분류 결과 `NOT ATTESTED`: 오너 PC 메타데이터-only JSON 확보 → 원인별 격리 보수 검토/합성 검증 → 실 ZIP 재시도 → 무결성/ACL/RLS/Auth/Storage/Vault parity. 원본 178 migration history, SEC-05/Taxonomy8, D8D v2/Offer/CTA, 독립 승인 및 #1208은 별도 HOLD. 운영 SQL/배포/merge 불허.
