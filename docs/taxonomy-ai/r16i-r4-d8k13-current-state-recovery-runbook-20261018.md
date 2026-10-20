@@ -267,3 +267,11 @@ git show "FETCH_HEAD:scripts/product-evidence/verify-d8k13-private-backup-zip-lo
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.ps1" -Mode Restore
 ~~~
 - 기대 진단 마커: `D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_<N>` 후 `D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED`; 또는 안전한 SQLSTATE/원본 줄 번호. 실 ZIP 성공으로 표시하려면 실제 schema.sql/data.sql이 모두 완주해야 함. 이후 RLS/ACL/role/owner/데이터 무결성 및 Auth·Storage·Vault 동등성/미포함 범위를 독립 검증. 역사적 178 migration replay 별도 HOLD. PR #1341 DRAFT, #1208 OPEN, release HOLD, 운영 DB 변경/배포/merge 금지.
+
+### 6.14. Owner real ZIP 42883 at schema.sql 36502 after owner-grants, one-pass schema audit (2026-10-20)
+
+- 운영자 실제 동일 ZIP 크기/해시/three SQL PASS, `D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP`, `D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_GRANT_STAGED_FOR_IN_DUMP_SCHEMA`, **`D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_9`** 이후 **`D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_42883_LINE_36502_FAILED_EXIT_3`**. `42883=undefined_function` ([PostgreSQL 17 SQLSTATE](https://www.postgresql.org/docs/17/errcodes-appendix.html)); 실제 함수명/연산자/SQL 종류는 아직 불명. 실 schema 트랜잭션 실패, data 미실행, 실 ZIP 복원 미완료. 이번 실패는 이전 42501 권한 문제를 넘어 진행한 지점.
+- 원본 SQL 없이 기능을 자의적으로 생성하거나 누락된 함수에 대한 COMMENT/GRANT/트리거를 주석 처리하여 복원 성공이라고 보고하면 **백업 정합성 및 ACL 소유권 보증 불가**. 오류를 무시하는 옵션을 일반 Restore에 넣지 않는다.
+- **새 모드 `-Mode AuditSchema`:** 같은 엄격한 ZIP fingerprint, 가상 격리 `supabase/postgres:17.6.1.136` `--network none`, 동일 사전 roles/namespace/owner staging을 거쳐 **schema.sql 전체를 오류 발생 시 중단하지 않고 한 번 실행하는 감사 전용 모드**. 여러 독립 SQLSTATE/물리 라인 및 제한된 어휘상 `verb`/`objectKind`를 최대 80건 수집하며 전체 코드별 발생 개수 집계. 원문/함수명/역할명/데이터/서버 파일경로는 출력하지 않는다. data.sql **실행 금지**, 부분 schema는 finally에서 폐기, `D8K13_DISPOSABLE_PG17_SCHEMA_AUDIT_ONLY_NOT_RESTORE` 반환. 이 결과는 절대 복원 성공으로 취급하지 않는다.
+- 감사 mode는 독립 실패를 한 번에 드러내는 데 도움 되나, 앞선 실패의 연쇄 오류가 섞일 수 있으며 오류 위치 근처 SQL의 타입 분류는 SQL 파서가 아닌 lexical heuristic. psql 중단/미분류 오류 발생 시 fail closed.
+- owner PC에서는 합성 PG17 CI 통과 후 최신 feature branch 복원 스크립트로 **AuditSchema를 1회 실행**하고 고정 구조 JSON만 가져온다. 실패 그룹별로 원인별 보수/합성 수락 후 Restore 재시도. 178 migration replay, Supabase Auth/Storage/Vault, ACL/RLS/owner parity, #1208 보안, PR #1341 draft/릴리스 HOLD 모두 별도 미해결.
