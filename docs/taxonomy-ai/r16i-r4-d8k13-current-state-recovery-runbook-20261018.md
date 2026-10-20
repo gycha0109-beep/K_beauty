@@ -239,3 +239,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\diagnose-line-l
 ~~~
 - 출력의 `D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY` JSON에서 `verb / objectKind / operation / mentionsKnownPrivateSchema / mentionsKnownFunctionOwnerRole`의 **고정된 분류만** 확보한다. SQL 텍스트·원본 ZIP·비밀키·개인정보 업로드 금지. 분류 결과는 SQL 파서가 아닌 휴리스틱이므로 모호하면 독립적인 비식별 재확인 설계. 무단 GRANT/owner 우회/SQL 주석 처리나 이미 실패한 `-Mode Restore` 반복 금지.
 - 원본 ZIP에 대한 실제 성공 미검증, data.sql NOT RUN, RLS/ACL/Auth/Storage/Vault parity 미인증. #1341 Draft 미병합 / #1208 OPEN / 운영 DB write 0 / RELEASE HOLD.
+
+### 6.11. owner 실제 ZIP line 22086이 ALTER FUNCTION OWNER TO임을 확인 (2026-10-20)
+
+- **실제 사용자 PC 비식별 분류:** `D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY`, `inspectedPhysicalLine=22086`, `nearestTopLevelCommandLine=22086`, `verb=ALTER`, `objectKind=FUNCTION`, `operation=OWNER_TO`. `mentionsKnownPrivateSchema=false`, `mentionsKnownFunctionOwnerRole=false`. `classificationConfidence=LEXICAL_HEURISTIC_NOT_SQL_PARSER`. 실제 ZIP/SQL/비밀번호/개인 데이터 외부 전송 없음. 이 결과가 입증하는 것은 **권한 오류 문장 유형 및 기존 known private owner 보수와의 구분**이지, 새 역할 이름·스키마·누락 권한의 판정이 아니다.
+- PostgreSQL 17 `ALTER FUNCTION OWNER` 요구 조건: 기존 객체 소유권과 함께 새 소유자 역할로의 `SET ROLE` 가능 및 대상 역할의 함수 스키마 `CREATE` 권한. 서버 postgres가 superuser라고 가정하지 않는다. 대상 역할이 `roles.sql`에 선언됐는지/ Supabase 이미지 managed role인지/ 스키마 종류가 public/custom/managed인지 불명 상태에서 임의 `GRANT`를 추가하면 안 된다. 레퍼런스: https://www.postgresql.org/docs/17/sql-alterfunction.html.
+- **신규 제한적 진단:** `diagnose-d8k13-private-backup-schema-line-local.ps1` 에 메타데이터-only `ownerTransferStatementShape`, `ownerRoleSourceClass`, `functionSchemaClass` 3개 고정 enum을 추가; 대상 role/schema 이름 및 SQL 원문은 출력하지 않는다. 이름 인용/복잡문 등 매칭 불가 시 `UNPARSEABLE/UNDETERMINED`으로 fail closed. 오너 PC 실제 `-LineNumber 22086` 재분류 전에 합성 CI 확인이 필요. 재실행할 작업은 **로컬 분류기만**, `-Mode Restore` 반복 아님.
+- `data.sql` 미실행, SQL 복원 미완료, baseline 역할/ACL/RLS/Auth/Storage/Vault parity 미인증, 역할 신규 부여 승인 없음. PR #1341 Draft, #1208 OPEN, release HOLD, production connection/write 0.
