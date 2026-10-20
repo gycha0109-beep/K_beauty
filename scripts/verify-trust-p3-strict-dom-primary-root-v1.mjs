@@ -293,6 +293,23 @@ checkP2F9("sale or gift title",
   torridenRoot('<h3 class="goods-name">사은품 증정 | '+
     torriden.name+' | 안내</h3>'+owned50),
   "OFFER_OR_BUNDLE_TITLE_HOLD");
+
+for(const [kind,prefix,suffix] of [
+  ["ascii 1+1 offer","1+1 | "," | 안내"],
+  ["fullwidth 1＋1 offer","1＋1 | "," | 안내"],
+  ["two 50ml units","50ml + 50ml | "," | 안내"],
+  ["multiplication offer","2×50ml | "," | 안내"],
+  ["unit followed by quantity","50ml × 2 | "," | 안내"],
+  ["ascii quantity multiplier","2x50ml | "," | 안내"],
+]){
+  const r=checkP2F9("punctuation bundle "+kind,
+    torridenRoot('<h3 class="goods-name">'+prefix+
+      torriden.name+suffix+'</h3>'+owned50),
+    "OFFER_OR_BUNDLE_TITLE_HOLD");
+  assert.equal(r.embeddedTitleReviewShadow.reviewCandidate,false,kind);
+  assert.equal(r.exactSkuVerified,false,kind);
+}
+
 checkP2F9("hidden product title",
   torridenRoot('<h3 class="goods-name" hidden>'+
     '공식 스토어 | '+torriden.name+' | 안내</h3>'+owned50),
