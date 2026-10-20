@@ -952,9 +952,11 @@ const denied=await runTrustP2Discovery(scopedRow,scopedProduct,{
   fetchPage:async()=>{deniedCalls.push("page");throw Error("NO");},
 });
 assert.deepEqual(deniedCalls,["robots"]);
-assert.equal(denied.sites[0].status,"NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
+assert.equal(denied.sites[0].status,"ROBOTS_DISALLOWED");
 assert.equal(diagnoseTrustP2DSite(denied.sites[0]).reason,
-  "NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
+  "ROBOTS_DISALLOWED_HOLD");
+assert.equal(assessTrustP2DDiscovery(denied).state,"SOURCE_POLICY_HOLD");
+assert.equal(denied.officialProductEvidenceConfirmed,false);
 // Explicit wrong catalog volume never uses a product-page fetch slot.
 const wrongDirectCalls=[];
 const wrongDirect=await runTrustP2Discovery(scopedRow,scopedProduct,{
@@ -968,7 +970,26 @@ const wrongDirect=await runTrustP2Discovery(scopedRow,scopedProduct,{
 });
 assert.deepEqual(wrongDirectCalls,["robots"]);
 assert.equal(wrongDirect.sites[0].candidateCount,0);
+assert.equal(wrongDirect.sites[0].status,"NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
+assert.equal(diagnoseTrustP2DSite(wrongDirect.sites[0]).reason,
+  "NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
 assert.equal(wrongDirect.factWrites,0);
+// A mixed pair (one robots-blocked, one wrong-size) must not be mislabeled
+// as an all-robots HOLD. Neither URL may consume a page-fetch slot.
+const mixedDirectCalls=[];
+const mixedDirect=await runTrustP2Discovery(scopedRow,scopedProduct,{
+  preResolvedLocators:[directEntry(sitemapCorrect),directEntry(sitemapWrong300)],
+  fetchRobots:async()=>{
+    mixedDirectCalls.push("robots");
+    return {bytes:Buffer.from(
+      "User-agent: *\\nDisallow: /product/mle-lotion-600ml/\\nAllow: /\\n")};
+  },
+  fetchSitemap:async()=>{mixedDirectCalls.push("sitemap");throw Error("NO");},
+  fetchPage:async()=>{mixedDirectCalls.push("page");throw Error("NO");},
+});
+assert.deepEqual(mixedDirectCalls,["robots"]);
+assert.equal(mixedDirect.sites[0].status,"NO_ELIGIBLE_PRE_RESOLVED_LOCATOR");
+assert.equal(mixedDirect.officialProductEvidenceConfirmed,false);
 // Even a fetched page cannot be promoted from generic title/body mention.
 const generic=await runTrustP2Discovery(scopedRow,scopedProduct,{
   preResolvedLocators:[directEntry(sitemapCorrect)],
