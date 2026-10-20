@@ -43,7 +43,7 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
       # With psql VERBOSITY=sqlstate, PostgreSQL prints only SQLSTATE and
       # the originating SQL file/line, never a SQL body or data value.
       # Keep diagnostic output independent of private backup content.
-      if ($details -match '(?im)^psql:/tmp/(?:roles|schema|data)\.sql:([0-9]{1,7}):\s*ERROR:\s*([0-9A-Z]{5})\b') {
+      if ($details -match '(?im)^psql:/tmp/(?:roles|schema|data|d8k13-disposable-auth-baseline)\.sql:([0-9]{1,7}):\s*ERROR:\s*([0-9A-Z]{5})\b') {
         $reason = 'SQLSTATE_' + $Matches[2].ToUpperInvariant() + '_LINE_' + $Matches[1]
       }
       elseif ($details -match '(?im)^\s*ERROR:\s*([0-9A-Z]{5})\b') {
@@ -55,7 +55,7 @@ function Run-Docker([string]$stage,[string[]]$arguments) {
         $reason = 'MISSING_SCHEMA'
         # A schema identifier is not an SQL body or row value. Emit ONLY a
         # bounded PostgreSQL identifier from the ERROR line, never the line text.
-        if ($details -match '(?im)^psql:/tmp/(?:roles|schema|data)\.sql:([0-9]{1,7}):\s*ERROR:\s*schema\s+["'']?([a-z_][a-z0-9_]{0,62})["'']?\s+does\s+not\s+exist') {
+        if ($details -match '(?im)^psql:/tmp/(?:roles|schema|data|d8k13-disposable-auth-baseline)\.sql:([0-9]{1,7}):\s*ERROR:\s*schema\s+["'']?([a-z_][a-z0-9_]{0,62})["'']?\s+does\s+not\s+exist') {
           $reason = 'MISSING_SCHEMA_' + $Matches[2].ToUpperInvariant() + '_LINE_' + $Matches[1]
         } elseif ($details -match '(?im)^ERROR:\s*schema\s+["'']?([a-z_][a-z0-9_]{0,62})["'']?\s+does\s+not\s+exist') {
           $reason = 'MISSING_SCHEMA_' + $Matches[1].ToUpperInvariant()
