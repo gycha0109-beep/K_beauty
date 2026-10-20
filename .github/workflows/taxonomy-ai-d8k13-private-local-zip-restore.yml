@@ -135,7 +135,7 @@ jobs:
             $lines.Add("CREATE POLICY fixture_$i")
             $lines.Add('  ON public.products')
             $lines.Add('  FOR SELECT')
-            $lines.Add('  USING (auth.uid() IS NOT NULL AND public.my_helper());')
+            $lines.Add('  USING ("auth"."uid"() IS NOT NULL AND "public"."my_helper"() AND missing_local_helper());')
           }
           [System.IO.File]::WriteAllLines((Join-Path $sql 'schema.sql'),$lines,[System.Text.UTF8Encoding]::new($false))
           $entropy = New-Object byte[] 4096
@@ -163,6 +163,17 @@ jobs:
             $_.referencedByPolicies -eq 20 -and $_.declaredInSourceSchemaDump }).Count -ne 1) {
             throw 'D8K13_POLICY_INVENTORY_DECLARED_HELPER_FAILED'
           }
+          if ($result.uniqueQualifiedReferenceCount -ne 2 -or
+              $result.uniqueUnqualifiedReferenceCount -ne 1 -or
+              $result.quotedIdentifiersObserved -ne $true -or
+              $result.lexicalReferencesAreNotProofOfMissingFunctions -ne $true) {
+            throw 'D8K13_POLICY_QUOTED_UNQUALIFIED_REFERENCE_CLASSIFICATION_FAILED'
+          }
+          if (@($result.references | Where-Object {
+            $_.functionIdentifier -eq 'missing_local_helper' -and
+            $_.referencedByPolicies -eq 20 -and -not $_.declaredInSourceSchemaDump -and
+            $_.namespaceFamily -eq 'UNQUALIFIED_OR_SEARCH_PATH'
+          }).Count -ne 1) { throw 'D8K13_POLICY_UNQUALIFIED_HELPER_INVENTORY_FAILED' }
           if (($out -join '') -match 'CREATE POLICY|USING \(|CREATE TABLE|SELECT true') {
             throw 'D8K13_POLICY_INVENTORY_SOURCE_SQL_LEAKED'
           }
