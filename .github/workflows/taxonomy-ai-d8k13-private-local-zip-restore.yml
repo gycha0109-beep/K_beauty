@@ -89,6 +89,7 @@ jobs:
             throw 'D8K13_LINE_CLASSIFIER_BAD_HASH_NOT_REJECTED'
           }
           Write-Host 'D8K13_LOCAL_SCHEMA_LINE_METADATA_ONLY_SYNTHETIC_PASS'
+          exit 0 # Deliberate negative child exit=3 must not fail the parent step.
       - name: Generate non-sensitive synthetic Supabase-shaped ZIP
         shell: bash
         run: |
