@@ -5,6 +5,7 @@ on:
       - feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
     paths:
       - scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1
+      - scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1
       - .github/workflows/taxonomy-ai-d8k13-private-local-zip-restore.yml
 permissions:
   contents: read
@@ -28,6 +29,61 @@ jobs:
           [System.Management.Automation.Language.Parser]::ParseFile('./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1',[ref]$tokens,[ref]$parseErrors) | Out-Null
           if ($parseErrors.Count -ne 0) { throw 'D8K13_LOCAL_RESTORE_SCRIPT_PARSER_FAILED' }
           Write-Host 'D8K13_LOCAL_RESTORE_SCRIPT_PARSE_PASS'
+      - name: Validate metadata-only schema source-line classifier with synthetic ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile('./scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1',[ref]$tokens,[ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) { throw 'D8K13_LINE_CLASSIFIER_PARSE_FAILED' }
+          $root = Join-Path $env:RUNNER_TEMP 'd8k13-lexical-fixture'
+          $sqlDir = Join-Path $root 'sql'
+          New-Item -ItemType Directory -Path $sqlDir -Force | Out-Null
+          [System.IO.File]::WriteAllText((Join-Path $sqlDir 'roles.sql'),"CREATE ROLE synthetic_role NOLOGIN;",[System.Text.UTF8Encoding]::new($false))
+          [System.IO.File]::WriteAllText((Join-Path $sqlDir 'data.sql'),"SELECT 1;",[System.Text.UTF8Encoding]::new($false))
+          $fixtureSql = @'
+          -- SECRET_CANARY_NEVER_OUTPUT fake
+          CREATE SCHEMA private;
+          CREATE FUNCTION private.fixture() RETURNS boolean LANGUAGE sql AS 'SELECT true';
+          ALTER FUNCTION private.fixture() OWNER TO product_offer_link_health_recorder_owner;
+          GRANT EXECUTE ON FUNCTION private.fixture() TO authenticated;
+          ALTER TABLE public.fake
+            OWNER TO postgres;
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $sqlDir 'schema.sql'),$fixtureSql,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = Join-Path $root 'synthetic.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sqlDir,$zip)
+          $bytes = [long](Get-Item -LiteralPath $zip).Length
+          $sha = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
+          $script = './scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1'
+          $result = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 4
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_LINE_CLASSIFIER_EXEC_FAILED' }
+          $json = $result | ConvertFrom-Json
+          if ($json.status -ne 'D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY' -or
+              $json.verb -ne 'ALTER' -or $json.objectKind -ne 'FUNCTION' -or
+              $json.operation -ne 'OWNER_TO' -or -not $json.mentionsKnownPrivateSchema -or
+              -not $json.mentionsKnownFunctionOwnerRole) { throw 'D8K13_LINE_CLASSIFIER_FUNCTION_OWNER_RESULT_WRONG' }
+          if (($result -join '') -match 'SECRET_CANARY|fixture|synthetic_role|CREATE FUNCTION|ALTER FUNCTION|product_offer_link_health_recorder_owner') {
+            throw 'D8K13_LINE_CLASSIFIER_SOURCE_CONTENT_LEAKED'
+          }
+          $grantResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 5
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_LINE_CLASSIFIER_GRANT_FAILED' }
+          $grant = $grantResult | ConvertFrom-Json
+          if ($grant.verb -ne 'GRANT' -or $grant.operation -ne 'GRANT' -or $grant.objectKind -ne 'FUNCTION') {
+            throw 'D8K13_LINE_CLASSIFIER_GRANT_WRONG'
+          }
+          $ownerResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 7
+          $owner = $ownerResult | ConvertFrom-Json
+          if ($owner.objectKind -ne 'TABLE' -or $owner.operation -ne 'OWNER_TO') {
+            throw 'D8K13_LINE_CLASSIFIER_MULTILINE_OWNER_WRONG'
+          }
+          $bad = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 ('0'*64) -LineNumber 4 2>&1
+          if ($LASTEXITCODE -ne 3 -or (($bad -join '') -notmatch 'D8K13_LOCAL_SCHEMA_LINE_CLASSIFICATION_FAILED')) {
+            throw 'D8K13_LINE_CLASSIFIER_BAD_HASH_NOT_REJECTED'
+          }
+          Write-Host 'D8K13_LOCAL_SCHEMA_LINE_METADATA_ONLY_SYNTHETIC_PASS'
       - name: Generate non-sensitive synthetic Supabase-shaped ZIP
         shell: bash
         run: |
