@@ -179,3 +179,23 @@ PostgreSQL 17 공식 `ALTER FUNCTION` 문서에 따르면 함수 소유권 이�
 **검증:** [GitHub Actions #39223627159](https://github.com/gycha0109-beep/K_beauty/actions/runs/39223627159), job `117964525037` **SUCCESS**, 합성-only. 기존 파서·ZIP 점검, Cold image, 관리 역할/스키마 초기화, `CREATE ROLE` / `ALTER ROLE` NOLOGIN, `private.fixture_probe()` 함수의 실제 `OWNER TO product_offer_link_health_recorder_owner` 변경, 역할 스코프 권한 준비 마커, 정상 roles/schema/data 복원, `public` 생성문 없는 경우, SQLSTATE 3F000/22012 오작동 방지, 잘못된 ZIP 크기 거부 전부 통과했다. 초기 합성 fixture에서 슈퍼유저 전용 `ALTER ROLE NOSUPERUSER`를 넣은 테스트 오류와 SQL `-c` 인수 전달 오류를 해결한 뒤 최종 통과한 결과다. **실 ZIP이 CI에 사용된 적은 없다.**
 
 **현재 판정:** 실제 ZIP 재실행은 위 최종 수정 이후 **아직 없음**. 따라서 실 사용자 데이터 복원 PASS/서비스 전체 복구 승인 모두 미확인. PR #1341 DRAFT / unmerged / release HOLD, 보안 이슈 #1208 OPEN, 운영 DB write 0. 사용자는 최신 branch의 PowerShell 스크립트를 재복사하고 같은 ZIP으로 `-Mode Restore`를 재실행하여 성공 마커 또는 민감정보 없는 최종 오류 코드만 공유해야 한다.
+
+### 6.6. 2026-10-20 GitHub 검증 및 운영자 재실행 대기
+
+현재 [PR #1341](https://github.com/gycha0109-beep/K_beauty/pull/1341) HEAD `31dbd50b942b26757b5364b3c431bb3c8d2df358` 확인: 함수 owner 보완 코드 `0d615aa95931c20e8fee9f140a8246fddd421b47` 뒤 두 커밋은 이 runbook 및 owner ZIP 비식별 증거 JSON만 변경하였다. 따라서 [CI #39223627159](https://github.com/gycha0109-beep/K_beauty/actions/runs/39223627159)의 **합성 복원 SUCCESS**는 현 스크립트 버전에 유효하다. 이것을 실제 owner ZIP의 schema/data restore PASS로 승격하지 않는다. 마지막 실 ZIP 실패는 `SQLSTATE_42501_LINE_474`이며 데이터 복원은 시도·완료 확인이 없다.
+
+현재 코드의 owner-role 검출 조건과 회복 경계 재확인: `roles.sql`의 `CREATE ROLE product_offer_link_health_recorder_owner` 및 `schema.sql`의 `ALTER FUNCTION private.... OWNER TO`가 함께 있는 경우에 한하여, `--network none` / 포트·볼륨 미사용 임시 컨테이너 안에서만 `private` CREATE privilege와 역할 membership을 사전 준비한다. `D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY`가 정상 분기의 식별 마커다. 원래 소유자 변경문은 생략하거나 원본을 바꾸지 않는다. 실제 권한·소유권 동등성은 **독립 검증 전까지 미확인**이다.
+
+동일 운영자 PC, 동일 기존 ZIP을 유지하여 다음을 Windows PowerShell에서 수행한다. 저장소에서 실행하며 GitHub 재인증 및 Docker Desktop 사용 가능 상태는 로컬 사전조건이다.
+
+~~~powershell
+git fetch origin feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
+$folder = "$HOME\BEJEWELY_Private_DB_Backups"
+git show "FETCH_HEAD:scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1" |
+    Set-Content "$folder\restore-local.ps1" -Encoding UTF8
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.ps1" -Mode Restore
+~~~
+
+수집 범위: 위 READY 마커/격리 복원 성공 메타데이터 또는 `D8K13_LOCAL_RESTORE_<STAGE>_SQLSTATE_<CODE>_LINE_<N>_FAILED_EXIT_<N>` 형태의 안전한 실패 코드만. SQL/행/스크린샷/원본 ZIP/비밀번호를 요청하지 않는다.
+
+**다음 판정 순서:** (1) 실제 schema/data 모두 성공했는지, (2) 복원 전후 객체·행수·무결성·FK·인덱스·트리거·RLS/정책·역할/소유권/ACL 비교, (3) Auth·Storage·Vault 관리 영역과 SQL 외부 storage binaries/암호화 키·비밀의 누락 경계, (4) 재현성 및 독립 Owner/Security 승인. `--single-transaction` restore 중 session_replication_role 사용은 모든 FK/트리거가 정상 검증됐다는 의미가 아니므로 (2)를 생략할 수 없다. 운영 Supabase 변경/원본 178 migration history 고치는 작업/PR 병합/배포/릴리스 게이트 변경을 승인하지 않는다. 보안 #1208 OPEN, PR Draft, RELEASE HOLD 유지.
