@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_LOCAL_RESTORE_OWNER_SCHEMA_GRANT_3F000_FAILED_STAGED_CODE_FIX_CI_PENDING",
+  "state": "OWNER_REAL_LOCAL_GRANT_3F000_FAIL_SYNTHETIC_FIX_PG17_PASS_OWNER_RERUN_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -201,10 +201,26 @@
       "exactOriginalCreateSchemaPrivateStatementPresenceUnconfirmed": true,
       "adjustment": "pregrant only for absent-in-dump schema; when schema declared in dump, stage grant adjacent to ALTER FUNCTION OWNER within disposable temp copy; ZIP unchanged",
       "syntheticFixtureAdded": "dump_includes_CREATE_SCHEMA_private_then_ALTER_FUNCTION_OWNER",
-      "correctedScriptNewCiVerified": false,
+      "correctedScriptNewCiVerified": true,
       "actualOwnerZipAfterThisPatchRetested": false,
       "aclParityVerified": false,
-      "releaseAuthorized": false
+      "releaseAuthorized": false,
+      "correctedScriptGitSha": "e3b7353f06ece27a52583dc4314894de6e62fcd2",
+      "syntheticCi": {
+        "runId": 39355259890,
+        "jobId": 118408838387,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39355259890",
+        "conclusion": "success",
+        "scope": "synthetic only, no actual ZIP",
+        "tested": [
+          "PowerShell parser",
+          "no-network Supabase/Postgres17 roles/schema/data ZIP",
+          "private schema CREATE before owner ALTER and deferred CREATE GRANT",
+          "public schema dump variants",
+          "SQLSTATE 3F000/22012 sanitized negative",
+          "invalid size ZIP refused"
+        ]
+      }
     }
   },
   "syntheticCi": {
