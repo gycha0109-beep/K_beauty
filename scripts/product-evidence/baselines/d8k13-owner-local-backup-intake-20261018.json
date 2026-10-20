@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_42501_LINE_22086_OWNER_TRANSFER_CONFIRMED_ROLE_PROVENANCE_PENDING",
+  "state": "OWNER_REAL_SCHEMA_OWNER_TO_42501_LINE_22086_EXPANDED_CLASSIFIER_CI_PASS_OWNER_RECLASSIFICATION_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -275,12 +275,28 @@
       },
       "nextGate": {
         "diagnosticScript": "scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1",
-        "pendingCiPass": true,
+        "pendingCiPass": false,
         "roleSourceClassFromOwner": null,
         "functionSchemaClassFromOwner": null,
         "ownerTransferStatementShapeFromOwner": null,
         "restoreMustNotRerunYet": true,
-        "blindRoleOrCreateGrantsProhibited": true
+        "blindRoleOrCreateGrantsProhibited": true,
+        "syntheticCiVerified": true,
+        "syntheticCi": {
+          "runId": 39364883648,
+          "jobId": 118439895100,
+          "conclusion": "success",
+          "sourceCommit": "79fbd1e3754dab2109b8aed77b24791a6c773082",
+          "scope": "synthetic only, no owner ZIP",
+          "testCases": [
+            "qualified private function owner transfer not in roles dump",
+            "public owner declared in roles dump",
+            "other custom schema known Supabase role",
+            "unsupported role identifier fail-closed",
+            "wrong hash rejects",
+            "previous no-network PostgreSQL17 restore regression"
+          ]
+        }
       }
     }
   },
