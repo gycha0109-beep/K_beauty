@@ -17,6 +17,8 @@ const success=go(wrap(product('<div class="product-name">'+title+'</div>'+form))
 assert.equal(success.status,"SCOPED_NAME_AND_FORM_CANDIDATE");
 assert.equal(success.parseComplete,true);
 assert.equal(success.rootScopedNameCandidate,true);
+assert.equal(success.titleMarkerCount,1);
+assert.equal(success.rootBodyNameMentionCount,1);
 assert.equal(success.matchedRoots,1);
 assert.equal(success.matchedTitles,1);
 assert.equal(success.ownedFormCount,1);
@@ -29,6 +31,59 @@ assert.equal(success.factConfirmationAuthorized,false);
 assert.equal(success.sourceBindingAuthorized,false);
 assert.equal(success.dbWrites,0);
 assert.equal(success.aiApiCalls,0);
+// P2-F7 title vocabulary: only marked p/h3 containers are added. None of
+// these page-level candidate signals can verify SKU or bypass selected size.
+const markedTitleCases=[
+  ["p with goods-name",'<p class="goods-name">'+p.name_en+'</p>'],
+  ["h3 with item-name",'<h3 class="item-name">'+p.name_en+'</h3>'],
+  ["p with goods-title",'<p class="goods-title">'+p.name_en+'</p>'],
+  ["h3 with item-title",'<h3 class="item-title">'+p.name_en+'</h3>'],
+];
+for(const [name,markedTitle] of markedTitleCases){
+  const result=go(wrap(product(markedTitle+form)));
+  assert.equal(result.status,"SCOPED_NAME_AND_FORM_CANDIDATE",name);
+  assert.equal(result.matchedTitles,1,name);
+  assert.equal(result.titleMarkerCount,1,name);
+  assert.equal(result.rootBodyNameMentionCount,1,name);
+  assert.equal(result.selectedVariantShadow.status,
+    "SELECTED_SIZE_MATCH_SHADOW_ONLY",name);
+  assert.equal(result.exactSkuVerified,false,name);
+  assert.equal(result.sourceBindingAuthorized,false,name);
+}
+const plainParagraph=go(wrap(product('<p class="detail-copy">'+p.name_en+'</p>'+form)));
+assert.equal(plainParagraph.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(plainParagraph.titleMarkerCount,0);
+assert.equal(plainParagraph.matchedTitles,0);
+assert.equal(plainParagraph.rootBodyNameMentionCount,1);
+const unrelatedParagraph=go(wrap(product('<p class="goods-name">Other item</p>'+form)));
+assert.equal(unrelatedParagraph.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(unrelatedParagraph.titleMarkerCount,1);
+assert.equal(unrelatedParagraph.matchedTitles,0);
+assert.equal(unrelatedParagraph.rootBodyNameMentionCount,0);
+const anchorTitle=go(wrap(product(
+  '<a href="/unrelated"><p class="goods-name">'+p.name_en+'</p></a>'+form)));
+assert.equal(anchorTitle.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(anchorTitle.matchedTitles,0);
+assert.equal(anchorTitle.rootBodyNameMentionCount,0);
+const relatedParagraph=go(wrap(product(
+  '<div class="related-products"><h3 class="goods-name">'+p.name_en+
+    '</h3></div>'+form)));
+assert.equal(relatedParagraph.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(relatedParagraph.matchedTitles,0);
+assert.equal(relatedParagraph.rootBodyNameMentionCount,0);
+const outsideRoot=go(wrap(product(form)+
+  '<h3 class="goods-name">'+p.name_en+'</h3>'));
+assert.equal(outsideRoot.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(outsideRoot.matchedTitles,1);
+assert.equal(outsideRoot.matchedRoots,0);
+assert.equal(outsideRoot.rootBodyNameMentionCount,0);
+const wrongSelected=go(wrap(product('<h3 class="goods-name">'+p.name_en+
+  '</h3><form><select name="size"><option value="25ml" selected>25ml</option>'+
+  '<option value="40ml">40ml</option></select></form>')));
+assert.equal(wrongSelected.status,"SCOPED_NAME_AND_FORM_CANDIDATE");
+assert.equal(wrongSelected.selectedVariantShadow.status,"SELECTED_SIZE_MISMATCH_HOLD");
+assert.equal(wrongSelected.exactSkuVerified,false);
+
 const cases=[
  ["form owned by unrelated root",wrap(product(title)+product(form)),"OWNER_FORM_UNPROVEN"],
  ["related product form",wrap(product(title)+'<aside>'+form+'</aside>'),"OWNER_FORM_UNPROVEN"],
