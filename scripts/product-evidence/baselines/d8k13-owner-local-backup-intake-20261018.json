@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_20_POLICY_42883_COMMON_ROUTINE_SUSPECT_LOCAL_REFERENCE_INVENTORY_CI_PENDING",
+  "state": "OWNER_REAL_20_POLICY_42883_LOCAL_REFERENCE_INVENTORY_SYNTHETIC_CI_PASS_OWNER_OFFLINE_RUN_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -418,9 +418,24 @@
       "file": "scripts/product-evidence/diagnose-d8k13-policy-dependencies-local.ps1",
       "purpose": "one offline local ZIP pass for 20 error policies, group function object identifiers and source CREATE FUNCTION declarations",
       "syntheticCiRun": 39380504583,
-      "syntheticCiVerified": false,
+      "syntheticCiVerified": true,
       "ownerZipAnalyzedWithThisTool": false,
-      "releaseAuthorized": false
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "id": 39380504583,
+        "jobId": 118488301385,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39380504583",
+        "conclusion": "success",
+        "syntheticOnly": true,
+        "covers": [
+          "20 four-line CREATE POLICY references",
+          "common auth.uid and public helper grouping",
+          "declaration in schema check",
+          "source SQL redaction",
+          "hash mismatch fail closed previously covered",
+          "full no-network Supabase PG17 restore regression"
+        ]
+      }
     }
   },
   "syntheticCi": {
