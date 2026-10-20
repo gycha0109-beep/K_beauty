@@ -5,7 +5,7 @@
  * Subject, Fact, source binding, recommendation or catalog writes.
  *
  * The GitHub workflow is the only authorized live caller: main push with
- * explicit once-only marker, 1 official robots + at most 1 exact product URL.
+ * explicit once-only marker, 1 official robots + at most 1 exact product TARGET_URL.
  */
 import fs from "node:fs";
 import {pathToFileURL} from "node:url";
@@ -19,7 +19,7 @@ export const P2F7_CONTRACT="trust-p2f7-torriden-root-failure-observation-v1";
 const TARGET="토리든";
 const PRODUCT_ID="31015762-2741-4211-a553-3ceb7fdf32e8";
 const ORIGIN="https://www.torriden.com";
-const URL="https://www.torriden.com/goods/goods_view.php?goodsNo=58";
+const TARGET_URL="https://www.torriden.com/goods/goods_view.php?goodsNo=58";
 const COHORT="evidence/trust/p2d-five-brand-cohort-v2.json";
 const READINESS="evidence/trust/p2f6-ad-remeasurement-readiness-20261019.json";
 const PRIOR="evidence/trust/p2f6-pre-resolved-readonly-observed-20261019.json";
@@ -61,7 +61,7 @@ export function validateTrustP2F7TorridenScope(cohort,readiness,prior){
     new URL(target.officialPeerUrl).origin!==ORIGIN||
     indexed.productId!==target.productId||indexed.catalogSizeMl!==50||
     indexed.eligibleForDirectProbe!==true||
-    indexed.publicIndexOnly!==true||indexed.sourceUrl!==URL||
+    indexed.publicIndexOnly!==true||indexed.sourceUrl!==TARGET_URL||
     observed.state!=="BODY_MENTION_REVIEW_REQUIRED"||
     observed.pageStatus!=="BODY_NAME_MENTION_ONLY"||
     observed.primaryRootStatus!=="PRIMARY_ROOT_NOT_PROVEN"||
@@ -80,13 +80,13 @@ export function validateTrustP2F7TorridenScope(cohort,readiness,prior){
   return Object.freeze([Object.freeze({
     kind:"PRE_RESOLVED_OFFICIAL_PRODUCT_URL",
     source:"OPERATOR_SUPPLIED_PUBLIC_URL",productId:PRODUCT_ID,
-    origin:ORIGIN,url:URL,
+    origin:ORIGIN,url:TARGET_URL,
   })]);
 }
 
 function sanitizedPage(page){
   if(!page)return null;
-  if(page.url!==URL)fail("P2F7_TORRIDEN_UNEXPECTED_PAGE_URL");
+  if(page.url!==TARGET_URL)fail("P2F7_TORRIDEN_UNEXPECTED_PAGE_URL");
   const root=page.primaryRootDiagnostic;
   const countKeys=[
     "rootMarkerCount","titleMarkerCount","rootBodyNameMentionCount",
@@ -149,7 +149,7 @@ export async function runTrustP2F7TorridenDiagnostic({
   };
   const guard=(kind,url,origin)=>{
     if(origin!==ORIGIN||
-      (kind==="robots"?url!==ORIGIN+"/robots.txt":url!==URL))
+      (kind==="robots"?url!==ORIGIN+"/robots.txt":url!==TARGET_URL))
       fail("P2F7_TORRIDEN_ORIGIN_OR_LOCATOR_HOLD");
     if(counts[kind]>=1)fail("P2F7_TORRIDEN_REQUEST_BUDGET_HOLD");
     counts[kind]++;
@@ -194,14 +194,14 @@ export async function runTrustP2F7TorridenDiagnostic({
   if(diagnostics.length>1)fail("P2F7_TORRIDEN_EXTRA_SITE_FORBIDDEN");
   const site=diagnostics[0]??null;
   if(site&&(site.origin!==ORIGIN||site.pages?.length>1||
-    (site.pages??[]).some(x=>x.url!==URL)))
+    (site.pages??[]).some(x=>x.url!==TARGET_URL)))
     fail("P2F7_TORRIDEN_UNEXPECTED_SITE");
   const observedPage=sanitizedPage(site?.pages?.[0]??null);
   const output=Object.freeze({
     contract:P2F7_CONTRACT,observedAt:result.observedAt,
     executionMode:execute?"GOVERNED_FIRST_PARTY_READONLY":"OFFLINE_PLAN_ONLY",
     frozenDenominator:5,scopedBrand:TARGET,expectedCatalogSizeMl:50,
-    scopedOrigin:ORIGIN,scopedUrl:URL,retiredDrGNoRequests:true,
+    scopedOrigin:ORIGIN,scopedUrl:TARGET_URL,retiredDrGNoRequests:true,
     excludedProductBrands:["닥터지","비플레인","아토팜","이즈앤트리"],
     requestBudget:2,requestAttempts:count,
     requests:{robots:counts.robots,product:counts.page,sitemap:0},
