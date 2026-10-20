@@ -289,8 +289,11 @@ $d8k13_auth$;
     $authBaselineFile = Join-Path $unpacked 'd8k13-disposable-auth-baseline.sql'
     [System.IO.File]::WriteAllText($authBaselineFile,$authBaselineSql,[System.Text.UTF8Encoding]::new($false))
     Run-Docker 'COPY_AUTH_BASELINE' @('cp',$authBaselineFile,($container + ':/tmp/d8k13-disposable-auth-baseline.sql'))
+    # The image's postgres role is deliberately demoted and can lack CREATE
+    # on managed auth; use the image's supabase_admin bootstrap role only here.
+    # -U selects the SQL role while -u keeps the same local Unix socket user.
     Run-Docker 'PREPARE_AUTH_BASELINE' @('exec','-u','postgres',$container,'psql',
-      '-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate',
+      '-U','supabase_admin','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate',
       '-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/d8k13-disposable-auth-baseline.sql')
     Write-Output 'D8K13_LOCAL_DISPOSABLE_AUTH_CLAIMS_HELPERS_VERIFIED'
   }
