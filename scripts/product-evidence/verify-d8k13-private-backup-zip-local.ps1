@@ -253,12 +253,25 @@ try {
   $ownerRole = 'product_offer_link_health_recorder_owner'
   $rolesText = [System.IO.File]::ReadAllText((Join-Path $unpacked 'roles.sql'))
   $rolePattern = '(?im)^\s*CREATE\s+ROLE\s+"?' + [regex]::Escape($ownerRole) + '"?(?=\s|;)'
-  $functionPattern = '(?im)^\s*ALTER\s+FUNCTION\s+(?:"private"|private)\s*\.[^\r\n;]+?\s+OWNER\s+TO\s+"?' + [regex]::Escape($ownerRole) + '"?\s*;'
+  $functionPattern = '(?im)^[ \t]*ALTER\s+FUNCTION\s+(?:"private"|private)\s*\.[^\r\n;]+?\s+OWNER\s+TO\s+"?' + [regex]::Escape($ownerRole) + '"?\s*;'
   $ownerDeclared = [regex]::IsMatch($rolesText, $rolePattern)
   $ownerReferenced = [regex]::IsMatch($schemaText, $functionPattern)
   # Fail closed when the owner assignment exists without a role declaration.
   Assert-Drill (-not $ownerReferenced -or $ownerDeclared) 'D8K13_LOCAL_FUNCTION_OWNER_ROLE_UNDECLARED'
+  $grantDeferredIntoSchema = $false
   if ($ownerDeclared -and $ownerReferenced) {
+    # Role membership is independent of schema creation and can be prepared now.
+    Run-Docker 'PRIVATE_FUNCTION_OWNER_MEMBERSHIP' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c',('GRANT ' + $ownerRole + ' TO postgres'))
+    $privateCreatedByDump = [regex]::IsMatch($schemaText,
+      '(?im)^[ \t]*CREATE\s+SCHEMA\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:"private"|private)(?=\s|;)')
+    if ($privateCreatedByDump) {
+      # The dump creates private only DURING schema.sql. A pre-restore GRANT
+      # produces SQLSTATE 3F000. Stage this known grant directly before the
+      # exact ALTER FUNCTION OWNER statement in a TEMPORARY extracted copy.
+      # Inserting on the same line preserves original psql line numbers.
+      # The original ZIP and original ALTER OWNER statement remain untouched.
+      $stagedSchema = [regex]::Replace($schemaText, $functionPattern,
+        ('GRANT CREATE ON SCHEMA private TO ' + $ownerRole + ';   if ($ownerDeclared -and $ownerReferenced) {
     Run-Docker 'PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c',('GRANT CREATE ON SCHEMA private TO ' + $ownerRole))
     Run-Docker 'PRIVATE_FUNCTION_OWNER_MEMBERSHIP' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c',('GRANT ' + $ownerRole + ' TO postgres'))
     Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
@@ -267,7 +280,34 @@ try {
   }
   $rolesText = $null
   $schemaText = $null
+  Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/schema.sql')'))
+      Assert-Drill ($stagedSchema -ne $schemaText) 'D8K13_LOCAL_FUNCTION_OWNER_GRANT_STAGING_FAILED'
+      [System.IO.File]::WriteAllText((Join-Path $unpacked 'schema.sql'),
+        $stagedSchema, [System.Text.UTF8Encoding]::new($false))
+      Run-Docker 'COPY_STAGED_SCHEMA' @('cp',(Join-Path $unpacked 'schema.sql'),($container + ':/tmp/schema.sql'))
+      $grantDeferredIntoSchema = $true
+      Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_GRANT_STAGED_FOR_IN_DUMP_SCHEMA'
+    } else {
+      # The dump does not declare private. Only this disposable DB may get the
+      # missing known schema; never silently synthesize unrelated namespaces.
+      Run-Docker 'PRIVATE_FUNCTION_OWNER_PREPARE_SCHEMA' @('exec','-u','postgres',$container,
+        'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
+        '-d','postgres','-c','CREATE SCHEMA IF NOT EXISTS private')
+      Run-Docker 'PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE' @('exec','-u','postgres',$container,
+        'psql','-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
+        '-d','postgres','-c',('GRANT CREATE ON SCHEMA private TO ' + $ownerRole))
+      Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
+    }
+  } else {
+    Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_NOT_APPLICABLE'
+  }
+  $rolesText = $null
+  $stagedSchema = $null
+  $schemaText = $null
   Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/schema.sql')
+  if ($grantDeferredIntoSchema) {
+    Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
+  }
   Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
   $inventory = Get-PublicInventory $container
   Assert-Drill ([int]$inventory.pg_major -eq 17) 'D8K13_LOCAL_RESTORE_WRONG_PG_MAJOR'
