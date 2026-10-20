@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_42501_LINE_22086_CLASSIFIER_SYNTHETIC_CI_PASS_OWNER_LOCAL_CLASSIFICATION_PENDING",
+  "state": "OWNER_REAL_SCHEMA_42501_LINE_22086_OWNER_TRANSFER_CONFIRMED_ROLE_PROVENANCE_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -241,7 +241,7 @@
       "scriptedPath": "scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1",
       "scope": "offline ZIP reading only, metadata line classification, no Docker/network/production DB",
       "lineNumber": 22086,
-      "classificationObtainedFromOwner": false,
+      "classificationObtainedFromOwner": true,
       "syntheticCiVerified": true,
       "blindGrantOrBypassProhibited": true,
       "privateBackupFileUploaded": false,
@@ -255,6 +255,32 @@
         "classifierAndPrivacyTests": true,
         "existingIsolatedPg17RestoreTests": true,
         "ownerRawZipIncluded": false
+      },
+      "ownerResult": {
+        "status": "D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY",
+        "inspectedPhysicalLine": 22086,
+        "nearestTopLevelCommandLine": 22086,
+        "verb": "ALTER",
+        "objectKind": "FUNCTION",
+        "operation": "OWNER_TO",
+        "mentionsKnownPrivateSchema": false,
+        "mentionsKnownFunctionOwnerRole": false,
+        "classificationConfidence": "LEXICAL_HEURISTIC_NOT_SQL_PARSER",
+        "rawSqlReturned": false,
+        "rawZipUploaded": false,
+        "productionConnections": 0,
+        "restoreCompleted": false,
+        "permissionsAuthorizedToChange": false,
+        "releaseAuthorized": false
+      },
+      "nextGate": {
+        "diagnosticScript": "scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1",
+        "pendingCiPass": true,
+        "roleSourceClassFromOwner": null,
+        "functionSchemaClassFromOwner": null,
+        "ownerTransferStatementShapeFromOwner": null,
+        "restoreMustNotRerunYet": true,
+        "blindRoleOrCreateGrantsProhibited": true
       }
     }
   },
