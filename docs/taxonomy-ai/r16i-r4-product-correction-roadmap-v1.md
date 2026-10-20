@@ -284,3 +284,9 @@
 
 - [CI #39355259890](https://github.com/gycha0109-beep/K_beauty/actions/runs/39355259890) `e3b7353f` PostgreSQL17 합성 ZIP schema+data 복원 성공. `private` 스키마 선언 선행과 이후 함수 소유권 변경을 포함한 회귀 시나리오 성공. 이전 위 섹션의 CI 미확인 경계는 이후 실제 GitHub 검증으로 갱신되었음.
 - 실사용자 ZIP을 CI에서 사용하지 않았고 최종 스크립트에 대한 실제 owner ZIP 복원도 아직 관측하지 못함. 독립 권한 동등성/관리 스키마/Storage 바이너리/비밀키 보존은 별도 확인. 현재는 Windows 로컬 재시도만 허용, 운영 DDL/DML·D8D v2·Offer/가격·CTA·배포·PR 병합 금지, #1208 OPEN/HOLD.
+
+### 2026-10-20 D8K-13 schema 22086행 비식별 분류 우선
+
+- 실제 로컬 ZIP: 검증된 size/hash, `public` 보존, `private` owner 권한 지연 준비 이후 `schema.sql:22086` SQLSTATE 42501. 원본 schema/data restore NOT COMPLETE. 이전 474행 권한 오류와 같은 SQL 종류라고 단정하지 않는다.
+- 변경: 소유자 PC ZIP 전용 metadata-only SQL 명령 분류기 및 기존 private ZIP restore workflow의 합성 수용 테스트; [CI #39359659800](https://github.com/gycha0109-beep/K_beauty/actions/runs/39359659800) SUCCESS. 소유자 자료 미접근, 추가 DDL/GRANT 변경 없음.
+- 필요한 다음 근거는 고정 분류값만 기록한 local JSON; 복원 재시도·권한 우회는 보류. D8K-13 current-state 복구와 178 migration 역사성 분리, #1341 Draft, #1208 OPEN, 출시 HOLD.
