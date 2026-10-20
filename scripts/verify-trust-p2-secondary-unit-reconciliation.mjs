@@ -12,6 +12,9 @@ assert.equal(result.frozenDenominator,5);
 assert.equal(result.secondaryCorroborationReviewProducts,1);
 assert.equal(result.catalogSingleContainerConflictReviewProducts,2);
 assert.equal(result.independentlyVerifiedOfficialExactSkuCount,0);
+assert.equal(result.catalogSourceOfferMismatchReviewProducts,1);
+assert.equal(result.items.find(x=>x.brand==="이즈앤트리").catalogSourceOfferStatus,
+  "CATALOG_SOURCE_POINTS_TO_300ML_PLUS_200ML_REFILL_PUMP_BUNDLE");
 assert.equal(result.items.length,5);
 assert.deepEqual(result.items.map(x=>x.stage),[
   "NO_SECONDARY_LISTING_EVIDENCE",
@@ -47,6 +50,11 @@ invalidAudit(x=>pathFor("이즈앤트리")(x).sources[0].listingEvidence=
   "GOVERNED_OFFICIAL_SOURCE",/INVALID_SECONDARY_LISTING/);
 invalidAudit(x=>x.cases.push(clone(x.cases[0])),/INVALID_MANIFEST/);
 invalidAudit(x=>x.safety.dbWrites=1,/INVALID_MANIFEST/);
+invalidAudit(x=>x.catalogReadOnlyCheck.writes=1,/CATALOG_SNAPSHOT_NOT_READONLY/);
+invalidAudit(x=>pathFor("이즈앤트리")(x).catalogReadOnly.sourceUrl=
+  "https://isntree.com/product/56",/CATALOG_SOURCE_AUDIT_INVALID/);
+invalidAudit(x=>pathFor("아토팜")(x).catalogReadOnly.sourceUrl=
+  "https://www.hwahae.co.kr/goods/74200",/CATALOG_SOURCE_AUDIT_INVALID/);
 const brokenCohort=clone(cohort);
 brokenCohort.targets.find(x=>x.brand==="아토팜").sizeMl=300;
 assert.throws(()=>summarizeTrustP2SecondaryListingUnits(brokenCohort,audit),
