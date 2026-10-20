@@ -7,7 +7,7 @@
 - 유형: 실행형, Medium. 직접 영향 DB/Auth/RLS/Storage/Provider/Payment/Secret/Production N. P2 discovery status 분류와 기존 오프라인 verifier만 수정; Source/Subject/Fact/recommendation 권한과 외부 요청 경로는 변경 없음.
 - 원인: P2 사전 지정 공식 상품 URL 전체가 robots 정책상 차단되면, 페이지를 읽지 않았음에도 `NO_ELIGIBLE_PRE_RESOLVED_LOCATOR`로 집계되어 source-policy HOLD와 실제 상품 후보/용량 불일치가 혼동될 수 있었음.
 - 변경: 모든 직접 URL이 robots 차단된 경우 기존 `ROBOTS_DISALLOWED`와 P2D `SOURCE_POLICY_HOLD`을 재사용. 접근은 가능하지만 용량이 어긋난 경우 기존 locator HOLD 유지. 정상 후보의 본 판정과 권한을 변경하지 않음.
-- 검증 범위: 기존 canonical TRUST P2D mock verifier의 단일 차단·잘못된 용량·혼합 조건과 P2-F7 토리든 robots 차단 회귀 테스트를 함께 갱신. 실제 페이지 요청 0회와 상태 분류를 확인하는 범위로 제한. 정확한 PR HEAD와 병합 후 main CI 확인은 별도 기록.
+- 검증 범위: 기존 canonical TRUST P2D mock verifier의 단일 차단·잘못된 용량·혼합 조건과 P2-F7/P2-F8 토리든 robots 차단 회귀 테스트를 함께 갱신. 실제 페이지 요청 0회와 상태 분류를 확인하는 범위로 제한. 정확한 PR HEAD와 병합 후 main CI 확인은 별도 기록.
 - 외부 공식몰 요청·robots 재조회·AI API·Production DB/Subject/Fact/source binding/추천 변경/배포 0. 다섯 고정 상품의 독립 검증 정확 SKU 수 0/5에서 변함없음. 실제 공식몰의 selected-size/form 소유 관계 검증은 별도 승인 필요.
 
 ### 2026-10-18 / Approved production private-install connection
