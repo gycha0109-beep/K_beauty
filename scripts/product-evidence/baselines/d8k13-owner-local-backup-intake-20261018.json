@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_DATA_42703_LINE_28_AFTER_SCHEMA_RESTORE_AUDITDATA_SYNTHETIC_PG17_PASS_OWNER_AUDIT_PENDING",
+  "state": "OWNER_REAL_DATA_MANAGED_SCHEMA_COPY_DRIFT_32_HEADERS_DETAIL_MODE_ADDED_SYNTHETIC_CI_PENDING_OWNER_METADATA_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -604,6 +604,36 @@
           "all prior PG17 owner grant, auth baseline, schema audit and negative restore tests"
         ]
       }
+    },
+    "latestOwnerDataHeaderAudit20261020": {
+      "source": "owner-reported local private ZIP AuditData output on 2026-10-20",
+      "zipBytes": 7323679,
+      "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "strictSchemaRestoreCompleted": true,
+      "copyHeaders": 134,
+      "sourceCopyColumns": 1680,
+      "missingDestinationColumns": 18,
+      "missingTableColumnReferences": 280,
+      "affectedCopyHeaders": 32,
+      "allAffectedInClass": "SUPABASE_MANAGED",
+      "unparsedCopyHeaders": 0,
+      "copyRowsImported": false,
+      "originalZipModified": false,
+      "productionDatabaseConnections": 0,
+      "actualFullRestoreCompleted": false
+    },
+    "localNamedDataDriftDetailMode20261020": {
+      "mode": "AuditDataDetail",
+      "codeCommit": "7c2ac92420cf3ea1004c7e78c1c81700371776b1",
+      "repoPath": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "functionality": "strict isolated no-network schema.sql replay followed by COPY-only metadata diff; JSON file with exact schema, table, missing column names saved exclusively beside original ZIP on owner PC; console emits only aggregate schema classifications and detail file path",
+      "syntheticCiRun": 39431867966,
+      "syntheticCiStatus": "PENDING",
+      "ownerExecuted": false,
+      "originalZipModified": false,
+      "copyRowsImported": false,
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false
     }
   },
   "syntheticCi": {
