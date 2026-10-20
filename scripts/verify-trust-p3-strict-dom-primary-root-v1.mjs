@@ -254,8 +254,21 @@ checkP2F9("related card's form excluded",
 checkP2F9("multiple purchase forms",
   torridenRoot(embeddedNameTitle+owned50+owned50),
   "UNIQUE_OWNED_FORM_NOT_PROVEN_HOLD");
+checkP2F9("hidden otherwise owned purchase form",
+  torridenRoot(embeddedNameTitle+owned50.replace(
+    'id="purchase-form"','id="purchase-form" hidden')),
+  "HIDDEN_OWNED_PURCHASE_FORM_HOLD");
+checkP2F9("form with size selector is not a purchase form",
+  torridenRoot(embeddedNameTitle+owned50.replace(
+    'id="purchase-form"','id="profile-feedback"')),
+  "PURCHASE_FORM_MARKER_MISSING_HOLD");
+checkP2F9("another independent product root has its own purchase form",
+  torridenRoot(embeddedNameTitle+owned50)+torridenRoot(
+    '<div>다른 상품 구역</div>'+owned50),
+  "COMPETING_PURCHASABLE_ROOT_HOLD");
+
 checkP2F9("only button, no size control",
-  torridenRoot(embeddedNameTitle+'<form><button>구매</button></form>'),
+  torridenRoot(embeddedNameTitle+'<form id="purchase-form"><button>구매</button></form>'),
   "OWNED_OPTION_CONTROL_MISSING_HOLD");
 checkP2F9("no explicit selected option",
   torridenRoot(embeddedNameTitle+owned50.replace(' selected','')),
