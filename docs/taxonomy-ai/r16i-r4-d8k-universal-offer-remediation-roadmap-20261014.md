@@ -449,3 +449,9 @@
 - [GitHub Actions #39355259890](https://github.com/gycha0109-beep/K_beauty/actions/runs/39355259890) job `118408838387` SUCCESS, commit `e3b7353f06ece27a52583dc4314894de6e62fcd2`. 새 `CREATE SCHEMA private` 선행→함수 `ALTER OWNER` 테스트 포함 전체 PowerShell parse/isolated PG17 schema+data restore 및 negative fixture 성공. 이전 일시적 소스 치환 오류 두 판은 CI FAILED이며 최종판 검증과 분리.
 - §31의 최신 CI 미확인/재실행 보류는 **해당 시점 역사 기록**. 현재는 사용자 Windows의 동일한 private ZIP으로 최신 검증 스크립트 1회 재실행 단계. 같은 ZIP의 직전 결과는 pre-restore GRANT의 `SQLSTATE 3F000`; 실제 schema/data restore **미완료**.
 - 성공하더라도 PostgreSQL SQL 적용 범위 한정, 추가 ACL/schema/role/RLS/외래키/트리거/Auth/Storage/Vault 검증 필수. 178개 migration 역사성·원본 bootstrap, D8K-12/13 자기 승인 처리, D8D v2, Taxonomy8, 보안 #1208, 판매처 정보·가격·CTA 권한은 여전히 별도 보류. PR #1341 Draft/unmerged / RELEASE HOLD / 운영 DB 쓰기 금지.
+
+## 33. D8K-13 실 ZIP schema.sql 22086행 SQLSTATE 42501 — 소유권 추정 금지 (2026-10-20)
+
+- 사용자 실 ZIP SHA/size 불변, `public` 보존 PASS, `private` 소유권 GRANT 지연 준비 마커 PASS; **이후 schema.sql 22086행에서 권한 부족 `42501`** 발생. 최신 script가 실 ZIP schema/data restore를 완료했다는 증거는 없음.
+- 새 권한 오류가 474행 기존 함수 owner와 같다는 증거가 없으므로 복원 권한을 추가하지 않는다. 로컬 ZIP 내 해당 물리행의 구문 종류만 반환하는 PowerShell 오프라인 진단기 및 합성 CI 테스트를 작성. raw SQL/백업·실데이터·연결 비밀 Git/CI/Chat 업로드 금지.
+- 의존성: 소유자 PC의 **비식별 명령 분류** → 필요한 격리 환경 준비 정책 검토 → 합성 PG17 재검증 → 실 ZIP 복원 재시도 → 독립 데이터/권한/Auth/Storage/Vault parity. 그전에는 병합·배포·운영 Supabase DDL/DML·D8D v2·판매처 가격/CTA 금지. #1341 Draft, #1208 OPEN, release HOLD.
