@@ -183,6 +183,29 @@ assert.equal(diagSuccess.recognizedTitlesOutsideRootCount,0);
 assert.equal(diagSuccess.catalogRelation,"MARKED_TITLE_CATALOG_NAME_MATCH");
 assert.equal(diagSuccess.unmarkedCatalogNameHeadingCount,0);
 assert.equal(diagSuccess.unmarkedCatalogNameInlineCount,0);
+
+// Large but strictly balanced templates must not trigger unbounded probes or
+// silently return zero counts that look like a completed name-location search.
+const oversizedDiagnostic=inspectTorriden(torridenRoot(
+  '<h3 class="goods-name">TORRIDEN</h3>'+
+  '<span>안내</span>'.repeat(4100)+bodyMention));
+assert.equal(oversizedDiagnostic.parseComplete,true);
+assert.equal(oversizedDiagnostic.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(oversizedDiagnostic.titleMismatchFingerprint.unmarkedNameProbeComplete,false);
+assert.equal(oversizedDiagnostic.titleMismatchFingerprint.unmarkedCatalogNameHeadingCount,null);
+assert.equal(oversizedDiagnostic.titleMismatchFingerprint.unmarkedCatalogNameInlineCount,null);
+assert.equal(oversizedDiagnostic.exactSkuVerified,false);
+// Do not count linked, related, or hidden-looking nested headings as a
+// primary root's unmarked catalog-name location.
+const excludedName=inspectTorriden(torridenRoot(
+  '<h3 class="goods-name">TORRIDEN</h3>'+
+  '<div class="related-products"><h4>'+torriden.name+'</h4></div>'+
+  '<a href="/recommend"><h3>'+torriden.name+'</h3></a>')+
+  torridenRoot(bodyMention));
+assert.equal(excludedName.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(excludedName.titleMismatchFingerprint.unmarkedCatalogNameHeadingCount,0);
+assert.equal(excludedName.titleMismatchFingerprint.unmarkedCatalogNameInlineCount,1);
+assert.equal(excludedName.exactSkuVerified,false);
 console.log("TRUST_P2F8_TORRIDEN_DIAGNOSTIC_UNDERDETERMINATION_PASS");
 
 const cases=[
