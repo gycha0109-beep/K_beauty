@@ -246,3 +246,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\diagnose-line-l
 - PostgreSQL 17 `ALTER FUNCTION OWNER` 요구 조건: 기존 객체 소유권과 함께 새 소유자 역할로의 `SET ROLE` 가능 및 대상 역할의 함수 스키마 `CREATE` 권한. 서버 postgres가 superuser라고 가정하지 않는다. 대상 역할이 `roles.sql`에 선언됐는지/ Supabase 이미지 managed role인지/ 스키마 종류가 public/custom/managed인지 불명 상태에서 임의 `GRANT`를 추가하면 안 된다. 레퍼런스: https://www.postgresql.org/docs/17/sql-alterfunction.html.
 - **신규 제한적 진단:** `diagnose-d8k13-private-backup-schema-line-local.ps1` 에 메타데이터-only `ownerTransferStatementShape`, `ownerRoleSourceClass`, `functionSchemaClass` 3개 고정 enum을 추가; 대상 role/schema 이름 및 SQL 원문은 출력하지 않는다. 이름 인용/복잡문 등 매칭 불가 시 `UNPARSEABLE/UNDETERMINED`으로 fail closed. 오너 PC 실제 `-LineNumber 22086` 재분류 전에 합성 CI 확인이 필요. 재실행할 작업은 **로컬 분류기만**, `-Mode Restore` 반복 아님.
 - `data.sql` 미실행, SQL 복원 미완료, baseline 역할/ACL/RLS/Auth/Storage/Vault parity 미인증, 역할 신규 부여 승인 없음. PR #1341 Draft, #1208 OPEN, release HOLD, production connection/write 0.
+
+### 6.12. role provenance 분류 확장 합성 CI 수락 (2026-10-20)
+
+- **합성 수락:** GitHub Actions [#39364883648](https://github.com/gycha0109-beep/K_beauty/actions/runs/39364883648), job `118439895100`, code commit `79fbd1e3754dab2109b8aed77b24791a6c773082`, SUCCESS. 추가한 역할 출처/스키마 종류 비식별 분류기의 인용 식별자·roles.sql 선언·managed baseline·미지원 식별자 fail-closed·ZIP SHA 거절 검증과 이전 격리 PG17 SQL restore 회귀 모두 통과. **실 ZIP을 CI에 업로드하지 않음**.
+- 이제 동일 Windows 로컬 ZIP을 변경하지 말고 최신 `diagnose-d8k13-private-backup-schema-line-local.ps1`을 GitHub 기능 브랜치에서 다시 받아 `-LineNumber 22086`로만 실행. 기존 분류 필드에 `ownerTransferStatementShape`, `ownerRoleSourceClass`, `functionSchemaClass`가 추가된다. 해당 세 고정값만 받아 역할이 백업에 있는지, 대상 스키마가 기본/managed/custom인지 구분; role/schema 식별자·원문·ZIP 업로드 금지.
+- 이 절차는 복원 재실행이 아니며, 사용자 측 실제 역할 출처 분류가 오기 전에는 자동 역할 멤버십·CREATE 부여를 하지 않는다. `schema.sql/data.sql` 복원 및 권한·RLS/Auth/Storage/Vault 동등성은 계속 미확인, PR Draft/보안 #1208 OPEN/RELEASE HOLD.
