@@ -71,6 +71,63 @@ try {
   # source line text, SQL fragments, hash of a line, or any contents of the ZIP.
   $isPrivate = [bool](($head -match '(?i)\bprivate\b') -or ($targetText -match '(?i)\bprivate\b'))
   $isKnownRole = [bool](($head -match '(?i)\bproduct_offer_link_health_recorder_owner\b') -or ($targetText -match '(?i)\bproduct_offer_link_health_recorder_owner\b'))
+  # Parse only a single-line, schema-qualified PostgreSQL ALTER FUNCTION
+  # OWNER TO statement with conservative identifier syntax. Never export it.
+  # Unsupported SQL shapes stay UNPARSEABLE; no guesses or privilege grants.
+  $ownerShape = 'UNPARSEABLE'
+  $ownerRoleSource = 'UNDETERMINED'
+  $functionSchemaClass = 'UNDETERMINED'
+  if ($verb -eq 'ALTER' -and $object -eq 'FUNCTION' -and $operation -eq 'OWNER_TO') {
+    $ident = '(?:"[a-z_][a-z_0-9]{0,62}"|[a-z_][a-z_0-9]{0,62})'
+    $pattern = '(?i)^ALTER\s+FUNCTION\s+(?<schema>' + $ident + ')\s*\.\s*' + $ident +
+      '\s*\(.*\)\s+OWNER\s+TO\s+(?<role>' + $ident + ')\s*;\s*$'
+    $match = [regex]::Match($head, $pattern)
+    if ($match.Success) {
+      $ownerShape = 'QUALIFIED_SINGLE_LINE'
+      $namespace = $match.Groups['schema'].Value.Trim('"').ToLowerInvariant()
+      switch ($namespace) {
+        'public'  { $functionSchemaClass = 'PUBLIC'; break }
+        'private' { $functionSchemaClass = 'PRIVATE'; break }
+        { $_ -in @('auth','storage','vault','extensions','realtime','graphql','graphql_public','supabase_migrations') } {
+          $functionSchemaClass = 'SUPABASE_MANAGED'; break
+        }
+        default { $functionSchemaClass = 'OTHER_CUSTOM' }
+      }
+      $ownerName = $match.Groups['role'].Value.Trim('"')
+      if ($ownerName -eq 'postgres') {
+        $ownerRoleSource = 'POSTGRES'
+      } elseif ($ownerName -in @('anon','authenticated','service_role','supabase_admin',
+          'authenticator','supabase_auth_admin','supabase_storage_admin','dashboard_user')) {
+        $ownerRoleSource = 'KNOWN_SUPABASE_BASELINE'
+      } else {
+        # The dump-supplied roles.sql is read only on the owner's own PC.
+        # Output neither the target role identifier nor roles.sql SQL text.
+        $roleEntry = $archive.Entries | Where-Object { $_.FullName -ceq 'roles.sql' } | Select-Object -First 1
+        $roleStream = $null
+        $roleReader = $null
+        $foundDeclaration = $false
+        try {
+          $roleStream = $roleEntry.Open()
+          $roleReader = [System.IO.StreamReader]::new($roleStream,[System.Text.UTF8Encoding]::new($false),$true)
+          $rolePattern = '(?i)^[ \t]*CREATE\s+ROLE\s+"?' + [regex]::Escape($ownerName) + '"?(?=\s|;)'
+          while (($roleLine = $roleReader.ReadLine()) -ne $null) {
+            if ([regex]::IsMatch($roleLine,$rolePattern)) {
+              $foundDeclaration = $true
+              break
+            }
+          }
+        } finally {
+          if ($roleReader) { $roleReader.Dispose() }
+          elseif ($roleStream) { $roleStream.Dispose() }
+        }
+        if ($foundDeclaration) {
+          $ownerRoleSource = 'DECLARED_IN_ROLES_SQL'
+        } else {
+          $ownerRoleSource = 'NOT_DECLARED_OR_EXTERNALLY_MANAGED'
+        }
+      }
+    }
+  }
   [ordered]@{
     status = 'D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY'
     inspectedPhysicalLine = $LineNumber
@@ -80,6 +137,9 @@ try {
     operation = $operation
     mentionsKnownPrivateSchema = $isPrivate
     mentionsKnownFunctionOwnerRole = $isKnownRole
+    ownerTransferStatementShape = $ownerShape
+    ownerRoleSourceClass = $ownerRoleSource
+    functionSchemaClass = $functionSchemaClass
     classificationConfidence = 'LEXICAL_HEURISTIC_NOT_SQL_PARSER'
     rawSqlReturned = $false
     rawZipUploaded = $false
