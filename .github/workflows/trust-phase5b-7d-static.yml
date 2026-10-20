@@ -443,7 +443,7 @@ jobs:
     name: P2D owner-authorized four fixed-locator robots-gated check
     # Follow-up single-page checks at four index-discovered FIRST-PARTY locators.
     # Never a source binding, authoritative SKU decision or recurring crawl.
-    if: github.event_name == 'push' && (((contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019') && !contains(github.event.head_commit.message, 'P2F6-PRE-RESOLVED-READONLY-ONCE-20261019')) || (!contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019') && contains(github.event.head_commit.message, 'P2F6-PRE-RESOLVED-READONLY-ONCE-20261019'))) || contains(github.event.head_commit.message, 'P2F7-TORRIDEN-ROOT-DIAGNOSTIC-ONCE-20261020'))
+    if: github.event_name == 'push' && ((((contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019') && !contains(github.event.head_commit.message, 'P2F6-PRE-RESOLVED-READONLY-ONCE-20261019')) || (!contains(github.event.head_commit.message, 'P2D-FIXED-URL-ROBOTS-ONCE-20261019') && contains(github.event.head_commit.message, 'P2F6-PRE-RESOLVED-READONLY-ONCE-20261019'))) || contains(github.event.head_commit.message, 'P2F7-TORRIDEN-ROOT-DIAGNOSTIC-ONCE-20261020')) || contains(github.event.head_commit.message, 'P2F8-TORRIDEN-TITLE-FINGERPRINT-ONCE-20261020'))
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     permissions:
@@ -564,6 +564,22 @@ jobs:
         with:
           name: trust-p2f7-torriden-root-diagnostic
           path: artifacts/trust-p2f7-torriden-root-diagnostic.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: One-time Torriden title mismatch fingerprint (robots then one exact page)
+        if: contains(github.event.head_commit.message, 'P2F8-TORRIDEN-TITLE-FINGERPRINT-ONCE-20261020')
+        env:
+          TRUST_P2F8_TORRIDEN_ONE_TIME_LIVE_ENABLED: "true"
+          TRUST_P2F8_MAIN_PUSH_MARKER: "P2F8-TORRIDEN-TITLE-FINGERPRINT-ONCE-20261020"
+        run: node scripts/trust-p2f8-torriden-title-fingerprint-once.mjs --execute
+
+      - name: Preserve bounded Torriden P2-F8 title fingerprint only
+        if: contains(github.event.head_commit.message, 'P2F8-TORRIDEN-TITLE-FINGERPRINT-ONCE-20261020')
+        uses: actions/upload-artifact@v6
+        with:
+          name: trust-p2f8-torriden-title-fingerprint
+          path: artifacts/trust-p2f8-torriden-title-fingerprint.json
           if-no-files-found: error
           retention-days: 30
 
