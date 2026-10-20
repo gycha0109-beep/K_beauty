@@ -621,14 +621,18 @@ SELECT json_build_object(
       # Exact named object metadata stays only on the owner's PC.
       $items = @($probe.detailProblems)
       Assert-Drill ($items.Count -eq [int]$probe.affectedCopyHeaders) 'D8K13_LOCAL_DATA_DETAIL_COUNT_MISMATCH'
-      $grouped = @($items | Group-Object -Property schema | Sort-Object Name | ForEach-Object {
+      $classified = @($items | ForEach-Object {
+        $schemaClass = if ($_.schema -eq 'public') { 'PUBLIC' }
+          elseif ($_.schema -in @('auth','storage','vault','realtime','extensions','supabase_migrations')) { 'SUPABASE_MANAGED' }
+          else { 'OTHER_SCHEMA' }
+        [pscustomobject]@{ schemaClass=$schemaClass; issueType=$_.issueType }
+      })
+      $summaryClasses = @($classified | Group-Object -Property schemaClass | ForEach-Object {
         [ordered]@{
-          schemaClass=if ($_.Name -eq 'public') { 'PUBLIC' }
-            elseif ($_.Name -in @('auth','storage','vault','realtime','extensions','supabase_migrations')) { 'SUPABASE_MANAGED' }
-            else { 'OTHER_SCHEMA' }
+          schemaClass=$_.Name
+          mismatchedCopyHeaders=[int]$_.Count
           missingTables=@($_.Group | Where-Object { $_.issueType -eq 'MISSING_TABLE' }).Count
           tablesWithMissingColumns=@($_.Group | Where-Object { $_.issueType -eq 'MISSING_COLUMNS' }).Count
-          mismatchedCopyHeaders=[int]$_.Count
         }
       })
       $privateDir = [System.IO.Path]::GetDirectoryName($file.FullName)
@@ -662,14 +666,7 @@ SELECT json_build_object(
         affectedCopyHeaders=[int]$probe.affectedCopyHeaders
         missingDestinationColumns=[int]$probe.missingColumns
         missingTableColumnReferences=[int]$probe.missingTableColumnReferences
-        schemaClassCounts=@($grouped | Group-Object -Property schemaClass | ForEach-Object {
-          [ordered]@{
-            schemaClass=$_.Name
-            mismatchedCopyHeaders=[int](($_.Group | Measure-Object -Property mismatchedCopyHeaders -Sum).Sum)
-            missingTables=[int](($_.Group | Measure-Object -Property missingTables -Sum).Sum)
-            tablesWithMissingColumns=[int](($_.Group | Measure-Object -Property tablesWithMissingColumns -Sum).Sum)
-          }
-        })
+        schemaClassCounts=$summaryClasses
         namedMetadataPath=$detailPath
         namedMetadataRemainsOnOwnerPC=$true
         sourceSqlOrRowDataPrinted=$false
