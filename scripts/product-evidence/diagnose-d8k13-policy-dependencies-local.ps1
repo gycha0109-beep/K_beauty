@@ -33,7 +33,13 @@ try {
   $lines = New-Object 'System.Collections.Generic.List[string]'
   while (($line = $reader.ReadLine()) -ne $null) { $lines.Add($line) }
   $heads = [regex]'(?i)^[ \t]*CREATE\s+POLICY\b'
-  $refPattern = [regex]'(?i)(?<ns>[a-z_][a-z0-9_]{0,62})\s*\.\s*(?<routine>[a-z_][a-z0-9_]{0,62})\s*\('
+  $refPattern = [regex]'(?i)(?<![a-z0-9_])(?:(?<ns>"[a-z_][a-z0-9_]{0,62}"|[a-z_][a-z0-9_]{0,62})\s*\.\s*)?(?<routine>"[a-z_][a-z0-9_]{0,62}"|[a-z_][a-z0-9_]{0,62})\s*\('
+  # PostgreSQL pg_dump emits quoted identifiers such as "auth"."uid"().
+  # Also include unqualified routine calls; exclude lexical SQL constructs.
+  $syntaxWords = @('using','check','exists','any','all','some','in','values','select',
+    'case','when','then','else','as','on','where','over','filter','by',
+    'array','row','cast','extract','collate','not','and','or','grant','policy')
+  $sawQuotedRoutineIdentifier = $false
   $declarationPrefix = '(?im)^[ \t]*CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+'
   $schemaText = [string]::Join([Environment]::NewLine, $lines)
   $counts = @{}
@@ -48,11 +54,20 @@ try {
     }
     if ($head -lt 0 -or -not $policyHeadPositions.Add($head)) { throw 'CREATE_POLICY_BOUNDARY_UNVERIFIED' }
     $statement = [string]::Join([Environment]::NewLine,@($lines.GetRange($head,$target-$head)))
+    # Remove single-quoted SQL string constants and comments before lexical
+    # matching. Never return any literal, policy text or argument/signature.
+    $lexicalText = [regex]::Replace($statement,"'(?:''|[^'])*'", "''")
+    $lexicalText = [regex]::Replace($lexicalText,'(?m)--[^\r\n]*','')
+    $lexicalText = [regex]::Replace($lexicalText,'(?s)/\*.*?\*/','')
     $seen = @{}
-    foreach ($m in $refPattern.Matches($statement)) {
-      $schema = $m.Groups['ns'].Value.ToLowerInvariant()
-      $routine = $m.Groups['routine'].Value.ToLowerInvariant()
-      $name = $schema + '.' + $routine
+    foreach ($m in $refPattern.Matches($lexicalText)) {
+      $routine = $m.Groups['routine'].Value.Trim('"').ToLowerInvariant()
+      if ($routine -in $syntaxWords) { continue }
+      $schema = $m.Groups['ns'].Value.Trim('"').ToLowerInvariant()
+      if ($m.Groups['routine'].Value -match '"' -or $m.Groups['ns'].Value -match '"') {
+        $sawQuotedRoutineIdentifier = $true
+      }
+      $name = if ($schema) { $schema + '.' + $routine } else { $routine }
       if (-not $seen.ContainsKey($name)) {
         $seen[$name]=$true
         if (-not $counts.ContainsKey($name)) { $counts[$name]=0 }
@@ -65,14 +80,25 @@ try {
   $references = @($counts.Keys | Sort-Object | ForEach-Object {
     $identifier = $_
     $segments = $identifier.Split('.')
-    $routineDeclarationPattern = $declarationPrefix + '"?' +
-      [regex]::Escape($segments[0]) + '"?\s*\.\s*"?'+
-      [regex]::Escape($segments[1]) + '"?\s*\('
+    $qualified = ($segments.Count -eq 2)
+    $routine = $segments[$segments.Count-1]
+    if ($qualified) {
+      $routineDeclarationPattern = $declarationPrefix + '"?' +
+        [regex]::Escape($segments[0]) + '"?\s*\.\s*"?' +
+        [regex]::Escape($routine) + '"?\s*\('
+    } else {
+      $routineDeclarationPattern = $declarationPrefix +
+        '(?:(?:"?[a-z_][a-z0-9_]{0,62}"?)\s*\.\s*)?"?' +
+        [regex]::Escape($routine) + '"?\s*\('
+    }
     $sourceDeclaration = [regex]::IsMatch($schemaText,$routineDeclarationPattern)
-    $family = 'OTHER_OR_CUSTOM'
-    if ($segments[0] -eq 'auth') { $family='SUPABASE_AUTH' }
-    elseif ($segments[0] -eq 'public') { $family='PUBLIC' }
-    elseif ($segments[0] -in @('extensions','vault','storage','realtime','graphql')) { $family='SUPABASE_MANAGED_OR_EXTENSION' }
+    $family = 'UNQUALIFIED_OR_SEARCH_PATH' 
+    if ($qualified) {
+      $family = 'OTHER_OR_CUSTOM'
+      if ($segments[0] -eq 'auth') { $family='SUPABASE_AUTH' }
+      elseif ($segments[0] -eq 'public') { $family='PUBLIC' }
+      elseif ($segments[0] -in @('extensions','vault','storage','realtime','graphql')) { $family='SUPABASE_MANAGED_OR_EXTENSION' }
+    }
     [ordered]@{
       functionIdentifier=$identifier
       referencedByPolicies=[int]$counts[$identifier]
@@ -87,10 +113,13 @@ try {
     inspectedPolicyCount=$ErrorCount
     firstErrorLine=$FirstErrorLine
     lastErrorLine=($FirstErrorLine+($ErrorCount-1)*$ErrorLineStep)
-    uniqueQualifiedReferenceCount=$counts.Count
+    uniqueQualifiedReferenceCount=@($counts.Keys | Where-Object { $_.Contains('.') }).Count
+    uniqueUnqualifiedReferenceCount=@($counts.Keys | Where-Object { -not $_.Contains('.') }).Count
+    quotedIdentifiersObserved=$sawQuotedRoutineIdentifier
     references=$references
     sharedAcrossAllPolicies=$common
     unresolvedUnqualifiedOrDynamicReferencesPossible=$unqualifiedOrDynamicPossible
+    lexicalReferencesAreNotProofOfMissingFunctions=$true
     declarationCheckIsLexicalOnly=$true
     functionExistsInIsolatedRuntimeVerified=$false
     rawSqlReturned=$false
