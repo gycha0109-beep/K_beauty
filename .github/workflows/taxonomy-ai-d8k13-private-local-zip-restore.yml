@@ -284,6 +284,39 @@ jobs:
           if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_EXPLICIT_PRIVATE_PUBLIC_OWNER_GRANT_MISSING' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_EXPLICIT_PRIVATE_SCHEMA_DATA_NOT_RESTORED' }
           Write-Host 'D8K13_SYNTHETIC_EXPLICIT_PRIVATE_SCHEMA_OWNER_RESTORE_PASS'
+      - name: Aggregate multiple undefined functions in one privacy-safe isolated schema audit
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $source = Join-Path $env:RUNNER_TEMP 'd8k13-no-public/sql'
+          $target = Join-Path $env:RUNNER_TEMP 'd8k13-audit-many/sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          Copy-Item (Join-Path $source 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $source 'data.sql') (Join-Path $target 'data.sql')
+          $schema = [System.IO.File]::ReadAllText((Join-Path $source 'schema.sql'))
+          $schema += "`nSELECT d8k13_absent_synthetic_function();`n"
+          $schema += "COMMENT ON FUNCTION public.d8k13_absent_synthetic_function() IS 'synthetic only';`n"
+          [System.IO.File]::WriteAllText((Join-Path $target 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = Join-Path $env:RUNNER_TEMP 'd8k13-audit-many/audit.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $bytes = [long](Get-Item -LiteralPath $zip).Length
+          $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $bytes -Mode AuditSchema
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_EXEC_FAILED' }
+          $resultLine = @($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_SCHEMA_AUDIT_ONLY_NOT_RESTORE"' })
+          if ($resultLine.Count -ne 1) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_MISSING_RESULT' }
+          $result = $resultLine[0] | ConvertFrom-Json
+          if ($result.schemaErrorCount -lt 2 -or $result.dataSqlExecuted -ne $false -or
+              $result.releaseAuthorized -ne $false -or $result.rawSqlOrRowsReturned -ne $false -or
+              $result.networkDisabled -ne $true) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_SAFETY_FAILED' }
+          if (@($result.sampledErrors | Where-Object { $_.sqlstate -eq '42883' }).Count -lt 2) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_MISSING_42883' }
+          if (@($result.sqlstateCounts | Where-Object { $_.sqlstate -eq '42883' -and $_.count -ge 2 }).Count -ne 1) {
+            throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_AGGREGATION_FAILED'
+          }
+          if (($resultLine -join '') -match 'd8k13_absent_synthetic_function|COMMENT ON FUNCTION|SELECT d8k13_absent') {
+            throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_SQL_LEAK'
+          }
+          Write-Host 'D8K13_SYNTHETIC_SCHEMA_AUDIT_MULTI_ERROR_PRIVACY_PASS'
       - name: Refuse missing unknown schema and print name only without SQL content
         shell: pwsh
         run: |
