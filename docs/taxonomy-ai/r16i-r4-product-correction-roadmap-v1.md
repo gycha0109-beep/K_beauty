@@ -279,3 +279,8 @@
 - 사용자 실제 ZIP 재실행: Inspect PASS, `public` schema 보존 PASS 후 `PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE` 단계 SQLSTATE 3F000 / exit1. 스키마 적용 전 환경 권한 부여 오류이며 실백업 schema/data 복원 성공은 아님.
 - `private` schema 생성과 함수 owner 권한 부여의 순서를 격리 스크립트에서 수정하고, 덤프가 명시적으로 `CREATE SCHEMA private`를 선언하는 합성 케이스를 추가. 원본 백업·운영 DB 무변경; **새 CI PASS 미확인 상태에서는 실 ZIP 재요청/릴리스 승격 금지**.
 - 관련 runbook §6.7, D8K 상위 로드맵 §31. 최초 178 migration history, 운영 D8D v2, 실제 판매처 증거, RLS/ACL/Auth/Storage/Vault·#1208 모두 별도 HOLD.
+
+### 2026-10-20 D8K-13 합성 3F000 복원 수정 CI 실제 PASS
+
+- [CI #39355259890](https://github.com/gycha0109-beep/K_beauty/actions/runs/39355259890) `e3b7353f` PostgreSQL17 합성 ZIP schema+data 복원 성공. `private` 스키마 선언 선행과 이후 함수 소유권 변경을 포함한 회귀 시나리오 성공. 이전 위 섹션의 CI 미확인 경계는 이후 실제 GitHub 검증으로 갱신되었음.
+- 실사용자 ZIP을 CI에서 사용하지 않았고 최종 스크립트에 대한 실제 owner ZIP 복원도 아직 관측하지 못함. 독립 권한 동등성/관리 스키마/Storage 바이너리/비밀키 보존은 별도 확인. 현재는 Windows 로컬 재시도만 허용, 운영 DDL/DML·D8D v2·Offer/가격·CTA·배포·PR 병합 금지, #1208 OPEN/HOLD.
