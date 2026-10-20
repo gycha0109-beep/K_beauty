@@ -290,6 +290,52 @@ try {
   } else {
     Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_NOT_APPLICABLE'
   }
+  # Owner ZIP schema.sql includes public ALTER FUNCTION ... OWNER TO statements
+  # targeting NOLOGIN roles already declared in its roles.sql. PG17 requires the
+  # target to have CREATE on public and the restorer to be a member of it.
+  # Stage both requirements for *all matching declared owners in one pass*
+  # inside this disposable --network none database, not one failure at a time.
+  # The source ZIP remains immutable; any extra ACLs are DRILL-ONLY and never
+  # constitute ACL parity evidence.
+  $tempSchemaFile = Join-Path $unpacked 'schema.sql'
+  $tempSchemaText = [System.IO.File]::ReadAllText($tempSchemaFile)
+  $publicFunctionOwnerPattern = '(?im)^[ \t]*ALTER\s+FUNCTION\s+(?:"public"|public)\s*\.[^\r\n;]+?\s+OWNER\s+TO\s+(?<owner>"?[a-z_][a-z0-9_]{0,62}"?)\s*;'
+  $publicOwnerChanges = [regex]::Matches($tempSchemaText, $publicFunctionOwnerPattern)
+  $roleMembershipReady = @{}
+  $preparedPublicOwners = 0
+  if ($publicOwnerChanges.Count -gt 0) {
+    # Reverse edit order keeps .NET regex offsets stable and psql physical line
+    # numbers unchanged. Insert only literal, allowlisted, quoted identifiers.
+    for ($k = $publicOwnerChanges.Count - 1; $k -ge 0; $k--) {
+      $change = $publicOwnerChanges[$k]
+      $roleName = $change.Groups['owner'].Value.Trim('"')
+      $declaration = '(?im)^[ \t]*CREATE\s+ROLE\s+"?' + [regex]::Escape($roleName) + '"?(?=\s|;)'
+      if (-not [regex]::IsMatch($rolesText, $declaration)) {
+        # Unknown or Supabase-managed owners are never granted blindly.
+        continue
+      }
+      Assert-Drill ($roleName -cmatch '^[a-z_][a-z0-9_]{0,62}$') 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_UNSAFE_IDENTIFIER'
+      if (-not $roleMembershipReady.ContainsKey($roleName)) {
+        Run-Docker 'PUBLIC_FUNCTION_OWNER_MEMBERSHIP' @('exec','-u','postgres',
+          $container,'psql','-X','-q','-v','ON_ERROR_STOP=1',
+          '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres',
+          '-c',('GRANT "' + $roleName + '" TO postgres'))
+        $roleMembershipReady[$roleName] = $true
+      }
+      $grant = 'GRANT CREATE ON SCHEMA public TO "' + $roleName + '"; '
+      $tempSchemaText = $tempSchemaText.Insert($change.Index, $grant)
+      $preparedPublicOwners++
+    }
+    if ($preparedPublicOwners -gt 0) {
+      [System.IO.File]::WriteAllText($tempSchemaFile, $tempSchemaText,
+        [System.Text.UTF8Encoding]::new($false))
+      Run-Docker 'COPY_STAGED_PUBLIC_OWNER_SCHEMA' @('cp',$tempSchemaFile,
+        ($container + ':/tmp/schema.sql'))
+      Write-Output ('D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_' + $preparedPublicOwners)
+    }
+  }
+  $tempSchemaText = $null
+  $roleMembershipReady = $null
   $rolesText = $null
   $stagedSchema = $null
   $schemaText = $null
