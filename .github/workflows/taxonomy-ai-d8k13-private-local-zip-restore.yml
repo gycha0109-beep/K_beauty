@@ -347,6 +347,42 @@ jobs:
           if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_EXPLICIT_PRIVATE_PUBLIC_OWNER_GRANT_MISSING' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_EXPLICIT_PRIVATE_SCHEMA_DATA_NOT_RESTORED' }
           Write-Host 'D8K13_SYNTHETIC_EXPLICIT_PRIVATE_SCHEMA_OWNER_RESTORE_PASS'
+      - name: Audit synthetic data COPY missing-column mismatch after strict schema restore
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $target=Join-Path $env:RUNNER_TEMP 'd8k13-data-copy-invalid/sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $target 'schema.sql')
+          $copyData = @'
+          COPY public.products (id, name, missing_archive_column) FROM stdin;
+          8	synthetic	synthetic
+          \.
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $target 'data.sql'),$copyData,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $env:RUNNER_TEMP 'd8k13-data-copy-invalid/fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode AuditData
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_DATA_COPY_AUDIT_EXEC_FAILED' }
+          $line=@($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_DATA_COPY_HEADER_AUDIT_ONLY_NOT_RESTORE"' })
+          if ($line.Count -ne 1) { throw 'D8K13_DATA_COPY_AUDIT_RESULT_MISSING' }
+          $result=$line[0] | ConvertFrom-Json
+          if ($result.missingDestinationColumns -ne 1 -or $result.affectedCopyHeaders -ne 1 -or
+            $result.copyHeaders -ne 1 -or $result.copyDataImported -ne $false -or
+            $result.strictSchemaRestoreCompleted -ne $true -or
+            $result.originalZipModified -ne $false -or $result.releaseAuthorized -ne $false) {
+            throw 'D8K13_DATA_COPY_AUDIT_CONTRACT_FAILED'
+          }
+          if (@($result.problemSamples | Where-Object { $_.line -eq 1 -and $_.schemaClass -eq 'PUBLIC' -and
+             $_.absentColumns -eq 1 }).Count -ne 1) { throw 'D8K13_DATA_COPY_AUDIT_MISMATCH_CLASS_FAILED' }
+          if ($line[0] -match 'missing_archive_column|COPY public|synthetic') {
+            throw 'D8K13_DATA_COPY_AUDIT_SOURCE_LEAKED'
+          }
+          Write-Host 'D8K13_SYNTHETIC_DATA_COPY_MISSING_COLUMN_AUDIT_PASS'
       - name: Aggregate multiple undefined functions in one privacy-safe isolated schema audit
         shell: pwsh
         run: |
