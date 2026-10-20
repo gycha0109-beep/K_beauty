@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_RESTORE_COMPLETE_DATA_SQLSTATE_42703_LINE_28_AUDIT_COPY_COLUMNS_CI_PENDING",
+  "state": "OWNER_REAL_DATA_42703_LINE_28_AFTER_SCHEMA_RESTORE_AUDITDATA_SYNTHETIC_PG17_PASS_OWNER_AUDIT_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -586,10 +586,24 @@
       "explicitlyDoesNotImportData": true,
       "sourceBackupImmutable": true,
       "syntheticCiRun": 39394837449,
-      "syntheticCiSuccess": false,
+      "syntheticCiSuccess": true,
       "ownerRealZipAuditRun": false,
       "productionDatabaseConnections": 0,
-      "releaseAuthorized": false
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "id": 39394837449,
+        "jobId": 118535862856,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39394837449",
+        "codeCommit": "07ecba9b22cfecca773d5daf53688d252aaae30d",
+        "conclusion": "success",
+        "scope": "synthetic only; real owner ZIP remains on Windows",
+        "accepted": [
+          "restore synthetic schema strictly before inspecting data COPY headers",
+          "detect exactly one intentionally missing destination column and classify header source line",
+          "do not run data.sql or emit raw rows/SQL/column names",
+          "all prior PG17 owner grant, auth baseline, schema audit and negative restore tests"
+        ]
+      }
     }
   },
   "syntheticCi": {
