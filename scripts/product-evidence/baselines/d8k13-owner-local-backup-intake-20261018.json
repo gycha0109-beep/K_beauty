@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_SCHEMA_42501_LINE_22086_PUBLIC_FUNCTION_OWNER_REMEDIATION_SYNTHETIC_PG17_PASS_REAL_RESTORE_PENDING",
+  "state": "OWNER_REAL_SCHEMA_SQLSTATE_42883_LINE_36502_AFTER_PUBLIC_OWNER_GRANTS_9_SCHEMA_BATCH_AUDIT_CI_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -326,6 +326,50 @@
       "schemaSqlRestoredInRealOwnerZip": false,
       "dataSqlRestoredInRealOwnerZip": false,
       "restoredAclParityVerified": false,
+      "releaseAuthorized": false
+    },
+    "latestRealZipAttempt20261020": {
+      "inspect": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "zipBytes": 7323679,
+      "sha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "sqlBytes": {
+        "data.sql": 20857133,
+        "roles.sql": 1446,
+        "schema.sql": 1623596
+      },
+      "publicSchemaPreserved": true,
+      "privateFunctionOwnerGrantStaged": true,
+      "publicFunctionOwnerGrantsStagedCount": 9,
+      "stage": "SCHEMA",
+      "sqlstate": "42883",
+      "physicalLine": 36502,
+      "failedExit": 3,
+      "actualRestoreCompleted": false,
+      "dataSqlRun": false,
+      "sqlstateCondition": "undefined_function; exact function/operator or target command not established",
+      "rawSqlUploaded": false,
+      "productionDatabaseConnections": 0,
+      "repairAuthorized": false,
+      "releaseAuthorized": false
+    },
+    "schemaBatchAudit20261020": {
+      "implementedIn": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "mode": "AuditSchema",
+      "purpose": "one owner-local disposable no-network PG17 dry diagnostic execution; aggregate all source SQLSTATE and line/verb/object-type; do not import data",
+      "sourceZipNeverModified": true,
+      "hostOperatingDbUnaffected": true,
+      "allowlistReturned": [
+        "line",
+        "sqlstate",
+        "verb",
+        "objectKind"
+      ],
+      "ignoresSchemaErrorsOnlyForAuditEnumeration": true,
+      "strictRestoreModeUnchanged": true,
+      "syntheticCiVerified": false,
+      "rawSqlNeverOutput": true,
+      "runOnOwnerPcAfterCiOnly": true,
+      "productionDatabaseConnections": 0,
       "releaseAuthorized": false
     }
   },
