@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-20 / pipeline-reliability — secondary listing unit and offer reconciliation
+
+- 유형: 진단→제한 구현(Medium). DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 직접 변경 N; public secondary retailer index sources examined for read-only SKU triage, no first-party robot/page live request or direct production access.
+- 발견: frozen 5개 중 비플레인 340ml vs 타 판매처 70매/180ml 용량 차이, 아토팜 600ml vs 300ml 단품·300ml×2 묶음, 이즈앤트리 300ml 단품이 2개의 개별 판매처에 표시됨. 패드 매수, 단일 물리 용기 용량, 다중 용기 총량은 같은 필드로 비교하면 안 됨. 제3자 상품 표시는 원본 공식 SKU 권한이 아니고 변경·오표기 가능성 있음.
+- 작업: 영구 5개 분모와 frozen cohort 기준만 비교하는 단위/구성 triage 파일·순수 리포터·negative verifier 추가, 기존 P2D canonical에 연결. 정합 확인 후보 Isntree 1/5는 *2차 시장 보조 검토* 수치로만 보고하며 independently verified official exact SKU **0/5**와 혼합 금지.
+- 추가 구조 한계: 10/19 공식몰 페이지는 SHA만 존재하고 실제 표시 HTML은 저장되지 않아 옛 page SHA에 붙인 2명의 서류만으로 원문에 있었던 선택 옵션을 검증할 수 없음. 승인된 새 공식 소스 또는 적법한 제조사 증거 자료 필요.
+- 변경 금지: catalog/DB/Subject/Fact/Source Binding, API output field, robots/official requests, AI, deploy; 현재 0/5 불변. tests/CI outcome separately tracked.
+
+
 ### 2026-10-20 / pipeline-reliability — independently adjudicated SKU review path
 
 - 유형: 진단→설계→제한 실행 (Medium). DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 직접 변경 N; 표준 P2D canonical verifier에 오프라인 검토 검증만 추가.
