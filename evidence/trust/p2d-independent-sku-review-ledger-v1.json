@@ -1,0 +1,6 @@
+{
+  "contract": "trust-p2d-independent-sku-review-v1",
+  "cohortContract": "trust-p2d-five-brand-live-cohort-v2",
+  "observationContract": "trust-p2f6-public-pre-resolved-readonly-evidence-v1",
+  "records": []
+}

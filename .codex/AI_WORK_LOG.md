@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-20 / pipeline-reliability — independently adjudicated SKU review path
+
+- 유형: 진단→설계→제한 실행 (Medium). DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 직접 변경 N; 표준 P2D canonical verifier에 오프라인 검토 검증만 추가.
+- 원인: 현재 자동 discovery의 0 고정 수치는 외부 독립 검토의 후속 경로가 아니며, 파서 튜닝만으로 0/5에서 벗어날 수 없었다. 기존 집계 계약/API 필드와 권한은 그대로 둔다.
+- 조치: 5개 불변 cohort+10/19 실제 관측에 고정된 독립 SKU 검토 ledgers/검증기/리포터 추가. 서로 다른 2인 검토, 이름/용량/단위/구매 옵션 소유권/증정 제외, 정확한 URL+SHA 및 증빙 JSON 실파일 SHA가 없으면 positive review 불가능. 실제 ledger는 빈 상태. 이즈앤트리 후보와 비플레인 단위·아토팜 300/600 문제 및 토리든 옵션 미입증을 분리해 표시.
+- 검증: 기존 P2D canonical과 standalone offline verifier에 합성 positive 1/5 가능 경로, 실제 0/5, 불일치·정책·리뷰 증빙 누락 negative 회귀 연결. 합성 성공은 실제 제품 정확성의 증거가 아니다. 정확 HEAD CI 및 병합 후 main 결과는 별도 확인.
+- 비대상: 공식 사이트/robots 재방문, AI API, 생산 DB, 상품/Subject/Fact/Source Binding, 리포트 API 응답 구조, 계약 변경, 상품/권한 변경, 배포 없음. 실제 SKU metric은 독립 사람 검토 없이는 0/5 유지. 외부 증빙 내용의 실제 진실성은 코드로 보장 불가.
+
+
 ### 2026-10-20 / pipeline-reliability — robots-blocked direct URL classification
 
 - 유형: 실행형, Medium. 직접 영향 DB/Auth/RLS/Storage/Provider/Payment/Secret/Production N. P2 discovery status 분류와 기존 오프라인 verifier만 수정; Source/Subject/Fact/recommendation 권한과 외부 요청 경로는 변경 없음.

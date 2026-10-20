@@ -1572,4 +1572,5 @@ console.log("TRUST_P2F6_READONLY_TWO_ORIGIN_ONE_TIME_GUARDS_PASS");
 
 await import("./verify-trust-p2f7-torriden-root-one-time.mjs");
 await import("./verify-trust-p2f8-torriden-title-fingerprint-once.mjs");
+await import("./verify-trust-p2d-independent-sku-review.mjs");
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");
