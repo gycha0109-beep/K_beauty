@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_DATA_MANAGED_SCHEMA_COPY_DRIFT_32_HEADERS_DETAIL_MODE_ADDED_SYNTHETIC_CI_PENDING_OWNER_METADATA_PENDING",
+  "state": "OWNER_MANAGED_COPY_DRIFT_32_HEADERS_NAMED_METADATA_DETAIL_SYNTHETIC_CI_PASS_OWNER_RUN_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -624,16 +624,24 @@
     },
     "localNamedDataDriftDetailMode20261020": {
       "mode": "AuditDataDetail",
-      "codeCommit": "7c2ac92420cf3ea1004c7e78c1c81700371776b1",
+      "codeCommit": "957204c52b38e2e278bf62fd700f31da349967be",
       "repoPath": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
       "functionality": "strict isolated no-network schema.sql replay followed by COPY-only metadata diff; JSON file with exact schema, table, missing column names saved exclusively beside original ZIP on owner PC; console emits only aggregate schema classifications and detail file path",
-      "syntheticCiRun": 39431867966,
-      "syntheticCiStatus": "PENDING",
+      "syntheticCiRun": 39432716615,
+      "syntheticCiStatus": "SUCCESS",
       "ownerExecuted": false,
       "originalZipModified": false,
       "copyRowsImported": false,
       "productionDatabaseConnections": 0,
-      "releaseAuthorized": false
+      "releaseAuthorized": false,
+      "ciUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39432716615",
+      "ciCoverage": [
+        "strict schema restore before metadata comparison",
+        "missing managed table and existing table absent column identified together",
+        "named details saved to owner-private file, never console",
+        "ZIP SHA256 unchanged and data.sql row COPY never executed",
+        "all previous isolated PG17 synthetic regression stages PASS"
+      ]
     }
   },
   "syntheticCi": {
