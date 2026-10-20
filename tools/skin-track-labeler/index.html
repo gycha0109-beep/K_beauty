@@ -103,8 +103,8 @@ function sanitizeOne(r){
     if(r.status==="done"&&Number.isInteger(legacy.acne))decision="positive";
     else if(r.status==="done"&&legacyClean)decision="negative";
     else if(r.status==="skipped")decision="unsure";
-    else if(r.status!=="done")return null;
-    // A legacy "done" label for pores, etc. is NOT a known acne negative.
+    else if(r.status!=="done" && !(r.decision===null && r.legacyLabels&&typeof r.legacyLabels==="object" && Object.keys(r.legacyLabels).length))return null;
+    // Legacy records with only other axes remain pending, never inferred as acne negative.
   }
   return {
     decision:decision,
