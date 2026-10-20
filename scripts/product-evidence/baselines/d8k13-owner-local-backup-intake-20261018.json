@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_AUTH_STORAGE_MANAGED_BASELINE_INCOMPLETE_PUBLIC_DATA_ISOLATED_RESTORE_SYNTHETIC_PENDING",
+  "state": "D8K13_MANAGED_AUTH_STORAGE_DATA_RESTORE_BLOCKED_PUBLIC_COPY_ISOLATED_SYNTHETIC_CI_PASS_OWNER_RUN_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -698,10 +698,20 @@
       "authOrStorageDataRestored": false,
       "foreignKeyAndAuthParityVerified": false,
       "sourceRealOwnerZipExecuted": false,
-      "syntheticCiRun": 39445606962,
-      "syntheticCiStatus": "PENDING",
+      "syntheticCiRun": 39446671276,
+      "syntheticCiStatus": "SUCCESS",
       "fullyRestored": false,
-      "releaseAuthorized": false
+      "releaseAuthorized": false,
+      "ciUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39446671276",
+      "codeCommit": "7599f54ddb5a1de951f599eac6e1443b09231358",
+      "verifiedBehaviors": [
+        "transactionally restore two public COPY blocks and one public sequence reset in no-network PG17",
+        "verify actual public table row counts equal synthetic COPY line counts",
+        "exclude synthetic auth and storage COPY blocks",
+        "reject unsupported SQL before applying public data",
+        "all prior PG17 isolated schema, audit and restore regressions PASS"
+      ],
+      "validatedScope": "public COPY row counts and supported public sequence reset only; not source session settings, row-value parity, Auth/Storage service parity or full restore"
     }
   },
   "syntheticCi": {
