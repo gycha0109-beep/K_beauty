@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -699,6 +699,160 @@ SELECT json_build_object(
       productionDatabaseConnections=0
       releaseAuthorized=$false
     } | ConvertTo-Json -Compress -Depth 7 | Write-Output
+    return
+  }
+  if ($Mode -eq 'RestorePublicData') {
+    # LIMITED, EXPLICITLY PARTIAL RESTORE. Never pretend Supabase Auth/Storage
+    # tables or data have been recovered. Only public COPY and public sequence
+    # setval commands are replayed in this no-network disposable DB.
+    # Unknown source command formats fail closed before any data is applied.
+    $dataFile = Join-Path $unpacked 'data.sql'
+    $publicDataFile = Join-Path $unpacked 'd8k13-public-copy.sql'
+    $copyHeaderRx = [regex]'(?i)^[ \t]*COPY\s+(?<schema>"?[a-z_][a-z0-9_]{0,62}"?)\s*\.\s*(?<table>"?[a-z_][a-z0-9_]{0,62}"?)\s*\((?<cols>[^)\r\n]{1,16384})\)\s+FROM\s+stdin\s*;[ \t]*$'
+    $columnRx = [regex]'^(?:"[a-z_][a-z0-9_]{0,62}"|[a-z_][a-z0-9_]{0,62})$'
+    $setvalRx = [regex]'(?i)^[ \t]*SELECT\s+pg_catalog\.setval\(\s*''(?<schema>"?[a-z_][a-z0-9_]{0,62}"?)\.(?<seq>"?[a-z_][a-z0-9_]{0,62}"?)''::regclass\s*,\s*-?[0-9]{1,20}\s*,\s*(?:true|false)\s*\)\s*;[ \t]*$'
+    $publicCounts = @{}
+    $totalCopies = 0
+    $publicCopies = 0
+    $skippedManagedCopies = 0
+    $skippedOtherCopies = 0
+    $publicSequenceResets = 0
+    $skippedSequenceResets = 0
+    $sourceRows = 0L
+    $insideCopy = $false
+    $keepCopy = $false
+    $activeTable = ''
+    $lineNumber = 0
+    $input = [System.IO.StreamReader]::new($dataFile,[System.Text.UTF8Encoding]::new($false),$true)
+    $output = [System.IO.StreamWriter]::new($publicDataFile,$false,[System.Text.UTF8Encoding]::new($false))
+    try {
+      while (($line = $input.ReadLine()) -ne $null) {
+        $lineNumber++
+        if ($insideCopy) {
+          if ($line -ceq '\.') {
+            if ($keepCopy) { $output.WriteLine($line) }
+            $insideCopy = $false
+            $keepCopy = $false
+          } elseif ($keepCopy) {
+            $output.WriteLine($line)
+            $publicCounts[$activeTable] = [long]$publicCounts[$activeTable] + 1L
+            $sourceRows++
+          }
+          continue
+        }
+        if ($line -match '^[ \t]*COPY\b') {
+          $m = $copyHeaderRx.Match($line)
+          Assert-Drill $m.Success ('D8K13_PUBLIC_DATA_COPY_HEADER_UNSUPPORTED_LINE_' + $lineNumber)
+          $cols = @($m.Groups['cols'].Value.Split(',') | ForEach-Object { $_.Trim() })
+          Assert-Drill ($cols.Count -gt 0 -and $cols.Count -le 1000 -and
+            @($cols | Where-Object { -not $columnRx.IsMatch($_) }).Count -eq 0) ('D8K13_PUBLIC_DATA_COLUMNS_UNSUPPORTED_LINE_' + $lineNumber)
+          $ns = $m.Groups['schema'].Value.Trim('"').ToLowerInvariant()
+          $tbl = $m.Groups['table'].Value.Trim('"').ToLowerInvariant()
+          $insideCopy = $true
+          $totalCopies++
+          if ($ns -eq 'public') {
+            $keepCopy = $true
+            $activeTable = $tbl
+            if (-not $publicCounts.ContainsKey($tbl)) { $publicCounts[$tbl] = 0L }
+            $publicCopies++
+            $output.WriteLine($line)
+          } elseif ($ns -in @('auth','storage','vault','realtime','extensions','supabase_migrations')) {
+            $skippedManagedCopies++
+          } else {
+            $skippedOtherCopies++
+          }
+          continue
+        }
+        if ($line -match '^[ \t]*SELECT\s+pg_catalog\.setval\b') {
+          $m = $setvalRx.Match($line)
+          Assert-Drill $m.Success ('D8K13_PUBLIC_DATA_SEQUENCE_FORMAT_UNSUPPORTED_LINE_' + $lineNumber)
+          if ($m.Groups['schema'].Value.Trim('"').ToLowerInvariant() -eq 'public') {
+            $output.WriteLine($line)
+            $publicSequenceResets++
+          } else {
+            $skippedSequenceResets++
+          }
+          continue
+        }
+        # pg_dump session configuration: qualify COPY names explicitly so
+        # search_path is never required for data import.
+        if ($line -match '^[ \t]*(?:$|--)') { continue }
+        if ($line -match '^[ \t]*SET[ \t]+[a-z_][a-z0-9_]*[ \t]*=' -and $line -match ';[ \t]*$') { continue }
+        if ($line -match '^[ \t]*SELECT[ \t]+pg_catalog\.set_config\(''search_path'',[ \t]*'''',[ \t]*false\);[ \t]*$') { continue }
+        if ($line -match '^[ \t]*\\(?:restrict|unrestrict)[ \t]+[A-Za-z0-9]+[ \t]*$') { continue }
+        Assert-Drill $false ('D8K13_PUBLIC_DATA_UNEXPECTED_SOURCE_COMMAND_LINE_' + $lineNumber)
+      }
+      Assert-Drill (-not $insideCopy) 'D8K13_PUBLIC_DATA_UNTERMINATED_COPY_FAIL_CLOSED'
+    } finally {
+      $output.Dispose()
+      $input.Dispose()
+    }
+    Assert-Drill ($publicCopies -gt 0) 'D8K13_PUBLIC_DATA_NO_PUBLIC_COPY'
+    Assert-Drill ($totalCopies -eq ($publicCopies + $skippedManagedCopies + $skippedOtherCopies)) 'D8K13_PUBLIC_DATA_COPY_SCOPE_MISMATCH'
+    # Source SQL statements for public tables only are now in a private tmp
+    # extraction folder. Validate row counts in the disposable DB before
+    # printing a result. Disallow rerunning any partial recovery to production.
+    Run-Docker 'COPY_PUBLIC_DATA' @('cp',$publicDataFile,($container + ':/tmp/d8k13-public-copy.sql'))
+    Run-Docker 'PUBLIC_DATA' @('exec','-u','postgres',$container,
+      'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction',
+      '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
+      '-d','postgres','-c','SET session_replication_role = replica',
+      '-f','/tmp/d8k13-public-copy.sql','-c','RESET session_replication_role')
+    $expectedRows = @($publicCounts.Keys | Sort-Object | ForEach-Object {
+      '(''' + $_ + ''',' + [string]$publicCounts[$_] + '::bigint)'
+    })
+    $validationSql = @'
+DO $d8k13_public$
+DECLARE r record;
+DECLARE actual bigint;
+BEGIN
+  FOR r IN
+    SELECT v.tbl,v.expected FROM (VALUES
+__D8K13_PUBLIC_EXPECTED_ROWS__
+    ) AS v(tbl,expected)
+  LOOP
+    EXECUTE format('SELECT count(*) FROM public.%I',r.tbl) INTO actual;
+    IF actual <> r.expected THEN
+      RAISE EXCEPTION USING ERRCODE = 'P0001', MESSAGE = 'public COPY row count mismatch';
+    END IF;
+  END LOOP;
+END
+$d8k13_public$;
+'@
+    $validationSql = $validationSql.Replace('__D8K13_PUBLIC_EXPECTED_ROWS__',($expectedRows -join (',' + [Environment]::NewLine)))
+    $validationFile = Join-Path $unpacked 'd8k13-public-copy-row-validation.sql'
+    [System.IO.File]::WriteAllText($validationFile,$validationSql,[System.Text.UTF8Encoding]::new($false))
+    Run-Docker 'COPY_PUBLIC_ROW_VALIDATION' @('cp',$validationFile,($container + ':/tmp/d8k13-public-copy-row-validation.sql'))
+    Run-Docker 'PUBLIC_ROW_VALIDATION' @('exec','-u','postgres',$container,
+      'psql','-X','-q','-v','ON_ERROR_STOP=1',
+      '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
+      '-d','postgres','-f','/tmp/d8k13-public-copy-row-validation.sql')
+    $inventory = Get-PublicInventory $container
+    Assert-Drill ([int]$inventory.pg_major -eq 17 -and [int]$inventory.tables -ge 1) 'D8K13_PUBLIC_DATA_INVALID_PG17_INVENTORY'
+    [ordered]@{
+      status='D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED'
+      sourceCopyHeaders=$totalCopies
+      publicCopyHeadersExecuted=$publicCopies
+      publicSourceRowsAppliedAndCountVerified=$sourceRows
+      publicCopyTablesVerified=$publicCounts.Count
+      publicSequenceResetsApplied=$publicSequenceResets
+      skippedManagedCopyHeaders=$skippedManagedCopies
+      skippedOtherSchemaCopyHeaders=$skippedOtherCopies
+      skippedNonpublicSequenceResets=$skippedSequenceResets
+      strictSchemaRestoreCompleted=$true
+      publicDataRowsVerified=$true
+      foreignKeyReferentialParityVerified=$false
+      authDataRestored=$false
+      storageMetadataRestored=$false
+      storageObjectBytesRestored=$false
+      allDataRestored=$false
+      original178MigrationsReplayed=$false
+      originalZipModified=$false
+      networkDisabled=$true
+      productionDatabaseConnections=0
+      rawSqlOrRowContentsReturned=$false
+      releaseAuthorized=$false
+    } | ConvertTo-Json -Compress -Depth 6 | Write-Output
     return
   }
   Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
