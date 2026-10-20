@@ -242,7 +242,7 @@ checkP2F9("no owned form",torridenRoot(embeddedNameTitle),
   "UNIQUE_OWNED_FORM_NOT_PROVEN_HOLD");
 checkP2F9("unrelated sibling root owns purchase form",
   torridenRoot(embeddedNameTitle)+torridenRoot(owned50),
-  "UNIQUE_OWNED_FORM_NOT_PROVEN_HOLD");
+  "COMPETING_PURCHASABLE_ROOT_HOLD");
 checkP2F9("separate nested product owns purchase form",
   torridenRoot(embeddedNameTitle+
     '<div class="item-detail">'+owned50+'</div>'),
