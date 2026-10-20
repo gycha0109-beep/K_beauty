@@ -275,3 +275,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **새 모드 `-Mode AuditSchema`:** 같은 엄격한 ZIP fingerprint, 가상 격리 `supabase/postgres:17.6.1.136` `--network none`, 동일 사전 roles/namespace/owner staging을 거쳐 **schema.sql 전체를 오류 발생 시 중단하지 않고 한 번 실행하는 감사 전용 모드**. 여러 독립 SQLSTATE/물리 라인 및 제한된 어휘상 `verb`/`objectKind`를 최대 80건 수집하며 전체 코드별 발생 개수 집계. 원문/함수명/역할명/데이터/서버 파일경로는 출력하지 않는다. data.sql **실행 금지**, 부분 schema는 finally에서 폐기, `D8K13_DISPOSABLE_PG17_SCHEMA_AUDIT_ONLY_NOT_RESTORE` 반환. 이 결과는 절대 복원 성공으로 취급하지 않는다.
 - 감사 mode는 독립 실패를 한 번에 드러내는 데 도움 되나, 앞선 실패의 연쇄 오류가 섞일 수 있으며 오류 위치 근처 SQL의 타입 분류는 SQL 파서가 아닌 lexical heuristic. psql 중단/미분류 오류 발생 시 fail closed.
 - owner PC에서는 합성 PG17 CI 통과 후 최신 feature branch 복원 스크립트로 **AuditSchema를 1회 실행**하고 고정 구조 JSON만 가져온다. 실패 그룹별로 원인별 보수/합성 수락 후 Restore 재시도. 178 migration replay, Supabase Auth/Storage/Vault, ACL/RLS/owner parity, #1208 보안, PR #1341 draft/릴리스 HOLD 모두 별도 미해결.
+
+### 6.15. D8K13 전체 스키마 일괄 감사 CI 수락 (2026-10-20)
+
+- **합성 CI 수락:** [GitHub Actions #39375433292](https://github.com/gycha0109-beep/K_beauty/actions/runs/39375433292) job `118472411060` SUCCESS, 코드 `2104abbdd87c6891aa231373854616882c9911dd`. 실 ZIP 미사용. 합성 schema 에서 서로 다른 2개의 `42883` 함수 참조 오류를 `AuditSchema` 한 번으로 집계, SQL 내용/함수 식별자 비노출, data.sql 미실행, 기존 엄격한 `Restore` 회귀 테스트/negative 결과 정상. `42883` 원인의 실제 함수/연산자 이름은 모름. 권한 부여/유실 객체 생성/주석 처리 및 운영 DB 접근 없음.
+- **소유자 로컬에서 단 1회 실행:**
+~~~powershell
+git fetch origin feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
+$folder = "$HOME\BEJEWELY_Private_DB_Backups"
+git show "FETCH_HEAD:scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1" |
+  Set-Content "$folder\restore-local.ps1" -Encoding UTF8
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.ps1" -Mode AuditSchema
+~~~
+- 결과 `D8K13_DISPOSABLE_PG17_SCHEMA_AUDIT_ONLY_NOT_RESTORE` JSON **한 덩어리만** 받아 오류 SQLSTATE 빈도/라인/문장 종류를 함께 검토해 원인을 묶어서 수정. 이전 `-Mode Restore`를 반복하지 않으며, `AuditSchema` 결과는 schema/data 복원 성공으로 보지 않는다. `ERROR` 출력이 raw SQL 포함하는 경우 업로드 불허. #1341 DRAFT, #1208 OPEN, release HOLD, 178 migration replay 별도 보류.
