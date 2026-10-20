@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore','AuditSchema')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema','AuditData')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -488,6 +488,145 @@ $d8k13_auth$;
   Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/schema.sql')
   if ($grantDeferredIntoSchema) {
     Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
+  }
+  if ($Mode -eq 'AuditData') {
+    # The strict schema restore above must succeed first. Inspect COPY headers,
+    # never import rows. Compare every source column with the actual isolated
+    # destination catalog in ONE query to avoid line-by-line user roundtrips.
+    $dataFile = Join-Path $unpacked 'data.sql'
+    $copyHeadPattern = [regex]'(?i)^[ \t]*COPY\s+(?<schema>"?[a-z_][a-z0-9_]{0,62}"?)\s*\.\s*(?<table>"?[a-z_][a-z0-9_]{0,62}"?)\s*\((?<cols>[^)\r\n]{1,16384})\)\s+FROM\s+stdin\s*;[ \t]*$'
+    $safeIdent = [regex]'^(?:"[a-z_][a-z0-9_]{0,62}"|[a-z_][a-z0-9_]{0,62})$'
+    $copyItems = New-Object 'System.Collections.Generic.List[object]'
+    $copyLines = New-Object 'System.Collections.Generic.List[int]'
+    $unsupportedCopies = 0
+    $physicalLine = 0
+    $failedLineCommand = 'UNKNOWN'
+    $reader = [System.IO.StreamReader]::new($dataFile,[System.Text.UTF8Encoding]::new($false),$true)
+    try {
+      $insideCopy = $false
+      while (($line = $reader.ReadLine()) -ne $null) {
+        $physicalLine++
+        if ($physicalLine -eq 28) {
+          if ($line -match '^\s*(COPY|INSERT|SELECT|SET|UPDATE|ALTER|DELETE)\b') {
+            $failedLineCommand = $Matches[1].ToUpperInvariant()
+          } elseif ($insideCopy) { $failedLineCommand = 'COPY_DATA' }
+        }
+        if ($insideCopy) {
+          if ($line -ceq '\.') { $insideCopy = $false }
+          continue
+        }
+        if ($line -match '^\s*COPY\b') {
+          $insideCopy = $true
+          $m = $copyHeadPattern.Match($line)
+          if (-not $m.Success) {
+            $unsupportedCopies++
+            continue
+          }
+          $schemaName = $m.Groups['schema'].Value.Trim('"').ToLowerInvariant()
+          $tableName = $m.Groups['table'].Value.Trim('"').ToLowerInvariant()
+          $cols = @($m.Groups['cols'].Value.Split(',') | ForEach-Object { $_.Trim() })
+          if ($cols.Count -eq 0 -or $cols.Count -gt 1000 -or
+              (@($cols | Where-Object { -not $safeIdent.IsMatch($_) })).Count -gt 0) {
+            $unsupportedCopies++
+            continue
+          }
+          $copyLines.Add($physicalLine)
+          foreach ($col in $cols) {
+            $copyItems.Add([ordered]@{
+              sourceLine=$physicalLine
+              sourceSchema=$schemaName
+              sourceTable=$tableName
+              sourceColumn=$col.Trim('"').ToLowerInvariant()
+            })
+          }
+        }
+      }
+    } finally { $reader.Dispose() }
+    Assert-Drill (-not $insideCopy) 'D8K13_LOCAL_DATA_AUDIT_UNTERMINATED_COPY_FAIL_CLOSED'
+    Assert-Drill ($unsupportedCopies -eq 0 -and $copyItems.Count -gt 0 -and
+      $copyItems.Count -le 60000) 'D8K13_LOCAL_DATA_AUDIT_UNSUPPORTED_COPY_FAIL_CLOSED'
+    # All identifiers below satisfy the lowercase PostgreSQL identifier
+    # allowlist; the strings are constructed locally and never printed.
+    $rows = @($copyItems | ForEach-Object {
+      '(' + $_.sourceLine + ',''' + $_.sourceSchema + ''',''' +
+        $_.sourceTable + ''',''' + $_.sourceColumn + ''')'
+    })
+    $sourceRows = $rows -join (',' + [Environment]::NewLine)
+    $catalogQuery = @'
+WITH source(line, ns, tbl, col) AS (
+ VALUES
+__D8K13_SOURCE_ROWS__
+), checks AS (
+ SELECT s.line, s.ns, s.tbl, s.col,
+        EXISTS (
+          SELECT 1 FROM pg_namespace n JOIN pg_class c ON c.relnamespace=n.oid
+          WHERE n.nspname=s.ns AND c.relname=s.tbl AND c.relkind IN ('r','p','f')
+        ) AS table_exists,
+        EXISTS (
+          SELECT 1 FROM pg_namespace n JOIN pg_class c ON c.relnamespace=n.oid
+          JOIN pg_attribute a ON a.attrelid=c.oid
+          WHERE n.nspname=s.ns AND c.relname=s.tbl AND c.relkind IN ('r','p','f')
+            AND a.attname=s.col AND a.attnum>0 AND NOT a.attisdropped
+        ) AS column_exists
+ FROM source s
+), problems AS (
+ SELECT line, ns,
+        count(*) FILTER (WHERE NOT table_exists) AS absent_table_columns,
+        count(*) FILTER (WHERE table_exists AND NOT column_exists) AS absent_columns
+ FROM checks
+ WHERE NOT table_exists OR NOT column_exists
+ GROUP BY line,ns
+)
+SELECT json_build_object(
+ 'totalCopyHeaders',(SELECT count(DISTINCT line) FROM source),
+ 'totalSourceColumns',(SELECT count(*) FROM source),
+ 'missingColumns',(SELECT count(*) FROM checks WHERE table_exists AND NOT column_exists),
+ 'missingTableColumnReferences',(SELECT count(*) FROM checks WHERE NOT table_exists),
+ 'affectedCopyHeaders',(SELECT count(*) FROM problems),
+ 'problemSamples',coalesce((SELECT json_agg(json_build_object(
+    'line',p.line,
+    'schemaClass',CASE WHEN p.ns='public' THEN 'PUBLIC'
+       WHEN p.ns IN ('auth','storage','vault','realtime','extensions','supabase_migrations') THEN 'SUPABASE_MANAGED'
+       ELSE 'OTHER_SCHEMA' END,
+    'absentColumns',p.absent_columns,
+    'missingTableColumnReferences',p.absent_table_columns
+ ) ORDER BY p.line) FROM (SELECT * FROM problems ORDER BY line LIMIT 60) p),'[]'::json)
+)::text
+'@
+    $catalogQuery = $catalogQuery.Replace('__D8K13_SOURCE_ROWS__',$sourceRows)
+    $catalogFile = Join-Path $unpacked 'd8k13-copy-header-contract.sql'
+    [System.IO.File]::WriteAllText($catalogFile,$catalogQuery,[System.Text.UTF8Encoding]::new($false))
+    Run-Docker 'COPY_DATA_CATALOG_CHECK' @('cp',$catalogFile,($container + ':/tmp/d8k13-copy-header-contract.sql'))
+    Run-Docker 'DATA_CATALOG_CHECK' @('exec','-u','postgres',$container,
+      'psql','-X','-A','-t','-v','ON_ERROR_STOP=1',
+      '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
+      '-d','postgres','-f','/tmp/d8k13-copy-header-contract.sql')
+    $probeFile = Join-Path $unpacked 'docker-DATA_CATALOG_CHECK-stdout.log'
+    $probeText = [System.IO.File]::ReadAllText($probeFile)
+    Assert-Drill ($probeText.Trim().StartsWith('{')) 'D8K13_LOCAL_DATA_AUDIT_BAD_CATALOG_RESULT'
+    $probe = $probeText.Trim() | ConvertFrom-Json
+    [ordered]@{
+      status='D8K13_DISPOSABLE_PG17_DATA_COPY_HEADER_AUDIT_ONLY_NOT_RESTORE'
+      observedErrorCode='42703'
+      reportedDataSqlFailureLine=28
+      dataLine28CommandClass=$failedLineCommand
+      copyHeaders=[int]$probe.totalCopyHeaders
+      sourceCopyColumns=[int]$probe.totalSourceColumns
+      missingDestinationColumns=[int]$probe.missingColumns
+      missingTableColumnReferences=[int]$probe.missingTableColumnReferences
+      affectedCopyHeaders=[int]$probe.affectedCopyHeaders
+      problemSamples=@($probe.problemSamples)
+      sampleLimit=60
+      unparsedCopyHeaders=[int]$unsupportedCopies
+      copyDataImported=$false
+      strictSchemaRestoreCompleted=$true
+      catalogSnapshotIsDisposable=$true
+      originalZipModified=$false
+      rawSqlOrRowsReturned=$false
+      productionDatabaseConnections=0
+      releaseAuthorized=$false
+    } | ConvertTo-Json -Compress -Depth 7 | Write-Output
+    return
   }
   Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
   $inventory = Get-PublicInventory $container
