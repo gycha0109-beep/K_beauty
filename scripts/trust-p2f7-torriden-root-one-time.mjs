@@ -206,6 +206,13 @@ export async function runTrustP2F7TorridenDiagnostic({
     requestBudget:2,requestAttempts:count,
     requests:{robots:counts.robots,product:counts.page,sitemap:0},
     productPagesFetched:target.assessment.pagesFetched??0,
+    // A pre-resolved page held by robots policy can be reported as
+    // NO_PRODUCT_PAGE by the canonical P2 assessor. Preserve that original
+    // classification, but make the network-attempt distinction explicit.
+    requestDisposition:!execute?"PLAN_ONLY":
+      counts.robots===0?"ROBOTS_NOT_REQUESTED_HOLD":
+      counts.page===0?"PAGE_NOT_REQUESTED_POLICY_HOLD":
+      observedPage?.digest?"PAGE_FETCHED_REVIEW_ONLY":"PAGE_FETCH_FAILED_HOLD",
     targetState:safeEnum(target.assessment.state),
     stageDiagnosis:site?{
       reason:safeEnum(site.stageDiagnosis?.reason),
