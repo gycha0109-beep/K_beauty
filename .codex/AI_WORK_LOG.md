@@ -3539,3 +3539,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - No production DDL/DML, roles/RLS/Auth/Storage/Product/Offer/prices/CTA write; no migration repair, merge, deploy, security #1208 bypass. PR #1341 remains Draft; release HOLD.
 - Watchtower-Track: taxonomy-ai.
 
+### 2026-10-20 — D8K13 3F000 synthetic CI verified; owner private restore pending
+
+- GitHub Actions [#39355259890](https://github.com/gycha0109-beep/K_beauty/actions/runs/39355259890), job `118408838387`, code SHA `e3b7353f06ece27a52583dc4314894de6e62fcd2`: SUCCESS. All steps checked, including PowerShell parse, cold no-network Supabase/Postgres17, synthetic ZIP, private schema CREATE before ALTER FUNCTION OWNER and deferred GRANT, public-dump variants, SQLSTATE-only failures and invalid ZIP refusal.
+- Distinguish intermediate failed CI [#39354920719](https://github.com/gycha0109-beep/K_beauty/actions/runs/39354920719) and [#39354992135](https://github.com/gycha0109-beep/K_beauty/actions/runs/39354992135) from final actual PASS. A code-generation replacement error had been detected and repaired before passing CI.
+- User's actual ZIP still only Inspect PASS and real pre-restore `PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE_SQLSTATE_3F000` FAILED. Neither `schema.sql` nor `data.sql` verified restored. CI used entirely synthetic ZIP. Owner PC allowed to retry exactly once with new branch script, without backup upload. New success must be categorized `D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED`, not full service disaster-recovery acceptance; check post-restore ACL/RLS/roles/Auth/Storage/Vault parity and data integrity independently.
+- Existing #1341 Draft/unmerged, #1208 OPEN, release HOLD, no prod mutations/merge/deploy. Watchtower-Track: taxonomy-ai.
