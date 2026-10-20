@@ -35,7 +35,8 @@ function invalidAudit(mutate,re){
 const pathFor=brand=>x=>x.cases.find(t=>t.brand===brand);
 invalidAudit(x=>pathFor("이즈앤트리")(x).catalogSizeMl=500,/CATALOG_SCOPE_DRIFT/);
 invalidAudit(x=>pathFor("비플레인")(x).sources[0].unitVolumeMl=0,/INVALID_SECONDARY_LISTING/);
-invalidAudit(x=>pathFor("비플레인")(x).sources[0].unitVolumeMl=null,/INVALID_SECONDARY_LISTING/);
+invalidAudit(x=>{pathFor("비플레인")(x).sources[0].unitVolumeMl=null;
+  pathFor("비플레인")(x).sources[0].sheetCount=null;},/INVALID_SECONDARY_LISTING/);
 invalidAudit(x=>pathFor("아토팜")(x).sources[1].physicalContainerCount=0,/INVALID_SECONDARY_LISTING/);
 invalidAudit(x=>pathFor("이즈앤트리")(x).sources[0].url=
   "https://isntree.com/product/56",/INVALID_SECONDARY_LISTING/);
