@@ -2,6 +2,12 @@
 
 ## Entries
 
+### 2026-10-20 / pipeline-reliability — frozen catalog intake source-candidate lineage review
+
+- 추가 제한 SELECT: \`catalog_trust_intake\` 세 제품의 \`source_candidate_id\`는 전부 NULL; \`product_candidates.matched_product_id\` 세 UUID 조회도 결과 0건. 이 테이블에서 확인되는 직접 provenance가 비어 있다는 뜻이지 모든 과거 출처가 없었다는 뜻은 아님.
+- 결과: source_url의 판매 기획 구성과 원래 단품 SKU의 관계를 증명할 재료가 현재 intake/candidate 연결에서 확보되지 않음. 카탈로그 실제 수정 또는 source binding 승격 없이 문서상 재검증 필요 조건으로 고정.
+
+
 ### 2026-10-20 / pipeline-reliability — source URL to offer mismatch exposed by read-only catalog recheck
 
 - 대상: public.products frozen 3개 UUID의 id/name/brand/size_ml/source_url만 read-only SELECT (Supabase 연결된 비주얼리 계정). 값은 비플레인 340ml/Hwahae products/2140507, 아토팜 600ml/source_url NULL, 이즈앤트리 300ml/Hwahae goods/62479.
