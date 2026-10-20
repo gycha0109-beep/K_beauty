@@ -273,3 +273,9 @@
 - 상위 D8K 로드맵 §30 / recovery runbook §6.5 및 owner ZIP 비식별 intake를 현재 코드와 대조. PR #1341 HEAD `31dbd50b942b26757b5364b3c431bb3c8d2df358`는 마지막 복원 코드 `0d615aa95931c20e8fee9f140a8246fddd421b47` 이후 문서 전용 2커밋이 추가된 상태. PR OPEN/DRAFT·미병합, 보안 #1208 OPEN.
 - 실제 ZIP은 `schema.sql:474`에서 `ALTER FUNCTION private ... OWNER TO`의 SQLSTATE 42501 실패. 로컬 컨테이너 전용 schema CREATE·role membership 보완 및 정규식 수정의 합성 PG17 복원 CI [#39223627159](https://github.com/gycha0109-beep/K_beauty/actions/runs/39223627159) 성공. 사용자 실제 ZIP으로 재실행 및 `data.sql` 성공은 여전히 **미확인**.
 - 사용자 PC ZIP 복원 성공·객체/ACL/RLS/Auth/Storage/Vault 동등성 확인이 복구 검증 과제; 178건 최초 이력·bootstrap 출처의 역사성은 독립 HOLD. D8K-12/13 승인, D8D v2, Crawler/Taxonomy8, SEC-05, 구매처 검증 및 #1208은 별도 차단 조건 유지. 무승인 운영 SQL/Product/Offer/CTA/배포/PR 병합 금지.
+
+### 2026-10-20 D8K-13 로컬 복원 GRANT 3F000 후속
+
+- 사용자 실제 ZIP 재실행: Inspect PASS, `public` schema 보존 PASS 후 `PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE` 단계 SQLSTATE 3F000 / exit1. 스키마 적용 전 환경 권한 부여 오류이며 실백업 schema/data 복원 성공은 아님.
+- `private` schema 생성과 함수 owner 권한 부여의 순서를 격리 스크립트에서 수정하고, 덤프가 명시적으로 `CREATE SCHEMA private`를 선언하는 합성 케이스를 추가. 원본 백업·운영 DB 무변경; **새 CI PASS 미확인 상태에서는 실 ZIP 재요청/릴리스 승격 금지**.
+- 관련 runbook §6.7, D8K 상위 로드맵 §31. 최초 178 migration history, 운영 D8D v2, 실제 판매처 증거, RLS/ACL/Auth/Storage/Vault·#1208 모두 별도 HOLD.
