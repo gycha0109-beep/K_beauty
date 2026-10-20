@@ -17,7 +17,9 @@ const success=go(wrap(product('<div class="product-name">'+title+'</div>'+form))
 assert.equal(success.status,"SCOPED_NAME_AND_FORM_CANDIDATE");
 assert.equal(success.parseComplete,true);
 assert.equal(success.rootScopedNameCandidate,true);
-assert.equal(success.titleMarkerCount,1);
+// The product-name wrapper and its nested h1 are two recognized markers;
+// only the terminal matching title is counted toward root identity.
+assert.equal(success.titleMarkerCount,2);
 assert.equal(success.rootBodyNameMentionCount,1);
 assert.equal(success.matchedRoots,1);
 assert.equal(success.matchedTitles,1);
