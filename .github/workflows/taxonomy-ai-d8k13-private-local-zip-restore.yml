@@ -204,7 +204,7 @@ jobs:
           ALTER FUNCTION public.d8k13_public_fixture() OWNER TO d8k13_public_fixture_owner;
           CREATE VIEW public.product_names AS SELECT name FROM public.products;
           ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-          CREATE POLICY fixture_select ON public.products FOR SELECT TO authenticated USING (owner_id = (select auth.uid()));
+          CREATE POLICY fixture_select ON public.products FOR SELECT TO authenticated USING (owner_id = (select auth.uid()) AND coalesce((auth.jwt() ->> 'role'), 'authenticated') = 'authenticated');
           -- Both custom namespaces intentionally omitted from CREATE SCHEMA.
           -- This reproduces references in real dumps to schemas absent in bare image.
           CREATE FUNCTION private.fixture_probe() RETURNS boolean LANGUAGE sql AS 'SELECT true';
@@ -292,6 +292,7 @@ jobs:
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_PRIVATE')) { throw 'D8K13_CUSTOM_PRIVATE_SCHEMA_NOT_RESTORED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_PRIVATE_FUNCTION_OWNER_PREP_NOT_EXECUTED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_PUBLIC_DECLARED_FUNCTION_OWNER_GRANTS_NOT_STAGED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_DISPOSABLE_AUTH_CLAIMS_HELPERS_VERIFIED')) { throw 'D8K13_MANAGED_AUTH_HELPER_BOOTSTRAP_NOT_TESTED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_RECOMMENDATION_SHADOW')) { throw 'D8K13_CUSTOM_SHADOW_SCHEMA_NOT_RESTORED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_RECREATED_FROM_DUMP')) { throw 'D8K13_EXPLICIT_PUBLIC_DUMP_RESTORE_NOT_TESTED' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_PG17_RESTORE_PASS_HOLD'
