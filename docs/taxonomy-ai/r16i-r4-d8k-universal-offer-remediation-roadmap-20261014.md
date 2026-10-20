@@ -443,3 +443,9 @@
 - **새 실측 실패:** 동일한 사용자 로컬 ZIP 검사 PASS, public 보존 PASS 후 `PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE` 단계 SQLSTATE `3F000`(격리 컨테이너의 `private` 스키마 없음)으로 실패. 직전 실측 `ALTER FUNCTION OWNER`의 SQLSTATE 42501과 다른 단계이다. `schema.sql` / `data.sql` 실제 성공 미확인.
 - **코드-only 보수:** 원본 ZIP을 건드리지 않고 추출된 임시 SQL에서 `private` 스키마가 덤프 내에 생성될 때만 GRANT를 원본 함수 소유권 이전 문장 직전으로 지연, 선언되지 않은 경우에만 격리 컨테이너의 지정 schema 준비. 해당 합성 fixture 회귀 CI 보강. 실행 전 권한 GRANT 실패를 SQL 및 개인정보 공개 없이 분리.
 - **수락 범위:** 원인 가설은 합성 검증 대상이며 최신 실제 ZIP 성공이나 완전 ACL parity 주장 불가. 최신 합성 CI 확인 전까지 실 ZIP 재실행 요청 보류. D8K-13 current-state recovery와 178 migration historical clean replay 독립; 원본 bootstrap·ACL, D8K-12/13 승인, Taxonomy8, D8D v2, SEC-05, merchant evidence 및 #1208 별도 HOLD. PR #1341 Draft·미병합 / release HOLD / 운영 DB write 금지.
+
+## 32. D8K-13 실 ZIP 3F000 합성 보수 PASS — 운영자 로컬 재검증 재개 (2026-10-20)
+
+- [GitHub Actions #39355259890](https://github.com/gycha0109-beep/K_beauty/actions/runs/39355259890) job `118408838387` SUCCESS, commit `e3b7353f06ece27a52583dc4314894de6e62fcd2`. 새 `CREATE SCHEMA private` 선행→함수 `ALTER OWNER` 테스트 포함 전체 PowerShell parse/isolated PG17 schema+data restore 및 negative fixture 성공. 이전 일시적 소스 치환 오류 두 판은 CI FAILED이며 최종판 검증과 분리.
+- §31의 최신 CI 미확인/재실행 보류는 **해당 시점 역사 기록**. 현재는 사용자 Windows의 동일한 private ZIP으로 최신 검증 스크립트 1회 재실행 단계. 같은 ZIP의 직전 결과는 pre-restore GRANT의 `SQLSTATE 3F000`; 실제 schema/data restore **미완료**.
+- 성공하더라도 PostgreSQL SQL 적용 범위 한정, 추가 ACL/schema/role/RLS/외래키/트리거/Auth/Storage/Vault 검증 필수. 178개 migration 역사성·원본 bootstrap, D8K-12/13 자기 승인 처리, D8D v2, Taxonomy8, 보안 #1208, 판매처 정보·가격·CTA 권한은 여전히 별도 보류. PR #1341 Draft/unmerged / RELEASE HOLD / 운영 DB 쓰기 금지.
