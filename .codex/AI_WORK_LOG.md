@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-20 / pipeline-reliability — source URL to offer mismatch exposed by read-only catalog recheck
+
+- 대상: public.products frozen 3개 UUID의 id/name/brand/size_ml/source_url만 read-only SELECT (Supabase 연결된 비주얼리 계정). 값은 비플레인 340ml/Hwahae products/2140507, 아토팜 600ml/source_url NULL, 이즈앤트리 300ml/Hwahae goods/62479.
+- 별도 public index 확인: 이즈앤트리 source_url=Hwahae goods/62479는 300ml+200ml 리필+펌프 *기획 구성*이고, Hwahae goods/47650은 별도 300ml 단품 판매 페이지. 공식몰 대상 URL 확인/selected form 증명으로 사용 불가.
+- 조치: 2차 판매처 단위 감사에서 source URL offer mismatch를 별도 비권한 분류, 리포트 및 회귀 테스트에 추가. 운영 DB와 상품 필드 일절 수정 없음. Catalog correction 전 source lineage와 책임자의 승인 필요.
+
+
 ### 2026-10-20 / pipeline-reliability — secondary listing unit and offer reconciliation
 
 - 유형: 진단→제한 구현(Medium). DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 직접 변경 N; public secondary retailer index sources examined for read-only SKU triage, no first-party robot/page live request or direct production access.
