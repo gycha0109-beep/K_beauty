@@ -199,3 +199,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 수집 범위: 위 READY 마커/격리 복원 성공 메타데이터 또는 `D8K13_LOCAL_RESTORE_<STAGE>_SQLSTATE_<CODE>_LINE_<N>_FAILED_EXIT_<N>` 형태의 안전한 실패 코드만. SQL/행/스크린샷/원본 ZIP/비밀번호를 요청하지 않는다.
 
 **다음 판정 순서:** (1) 실제 schema/data 모두 성공했는지, (2) 복원 전후 객체·행수·무결성·FK·인덱스·트리거·RLS/정책·역할/소유권/ACL 비교, (3) Auth·Storage·Vault 관리 영역과 SQL 외부 storage binaries/암호화 키·비밀의 누락 경계, (4) 재현성 및 독립 Owner/Security 승인. `--single-transaction` restore 중 session_replication_role 사용은 모든 FK/트리거가 정상 검증됐다는 의미가 아니므로 (2)를 생략할 수 없다. 운영 Supabase 변경/원본 178 migration history 고치는 작업/PR 병합/배포/릴리스 게이트 변경을 승인하지 않는다. 보안 #1208 OPEN, PR Draft, RELEASE HOLD 유지.
+
+### 6.7. 운영자 ZIP schema 생성 이전 GRANT 3F000 및 순서 보완 (2026-10-20)
+
+**새 사용자 PC 실 ZIP 결과:** `D8K13_LOCAL_ZIP_INSPECTION_PASS` (7,323,679 bytes / 동일 SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6`), `D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP` 다음에 **`D8K13_LOCAL_RESTORE_PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE_SQLSTATE_3F000_FAILED_EXIT_1`**. `schema.sql` 적용 및 `data.sql` 복원은 **미완료**. 원본 ZIP/SQL은 공유하거나 업로드하지 않았다.
+
+**진단:** 새 오류는 원래 함수 `ALTER FUNCTION ... OWNER TO`에서 발생한 `42501`이 아니라, 복원 스크립트가 사전 수행한 `GRANT CREATE ON SCHEMA private`에서의 `3F000`(스키마 없음)이다. 당시 `private`가 아직 생성되지 않았다는 사실이 입증되었지만, 실제 원본 `schema.sql`에 `CREATE SCHEMA private`가 있는지는 원본을 직접 읽지 않았으므로 **추정**이다. `private` 생성 시점이 늦는 백업을 합성으로 재현하는 새 검증 케이스를 추가하였다.
+
+**코드 수정 (운영 무변경):** `verify-d8k13-private-backup-zip-local.ps1`은 역할과 실제 `ALTER FUNCTION private.... OWNER TO product_offer_link_health_recorder_owner`가 함께 있을 때만 준비한다. 백업이 `CREATE SCHEMA private`를 선언하면 미리 GRANT하지 않고, ZIP에서 추출한 **임시 schema.sql 복제본의 해당 ALTER 앞 동일 줄**에 지정 역할의 `GRANT CREATE`를 단계적으로 추가한다. 원본 ZIP·원래 ALTER 문은 변경하지 않으며 기존 `--network none` 컨테이너에서만 실행된다. 백업에 `CREATE SCHEMA private`가 없으면 격리 DB에서 해당 스키마를 제한적으로 생성한 후 권한을 준비한다. PostgreSQL17 함수 소유권 이전의 CREATE/SET ROLE 요건은 유지한다. 임시 부여 권한이 남을 수 있으므로 원본 DB와 ACL parity를 달성했다고 선언하지 않는다.
+
+**검증 등급:** 합성 테스트에 *덤프가 명시적으로 private 스키마를 만드는 경우*를 추가했다. 최신 CI가 실제로 성공하기 전까지 **CODE_CHANGED / SYNTHETIC_CI_UNVERIFIED** 상태이며, 운영자 실 ZIP에 새 버전 재실행을 요청하지 않는다. 안정적으로 검증되면 이전과 같은 로컬 ZIP, 최신 스크립트로만 1회 재검증할 것. 실패하면 최종 단계/SQLSTATE/줄 번호만 사용하며, 백업·SQL·자격증명은 요청하지 않는다. PR #1341 Draft/미병합, issue #1208 OPEN, 출시 HOLD, 운영 데이터 변경 없음.
