@@ -125,6 +125,7 @@ jobs:
           -- Synthetic, not copied from production.
           CREATE ROLE d8k13_local_fixture_role NOLOGIN;
           CREATE ROLE "product_offer_link_health_recorder_owner";
+          CREATE ROLE d8k13_public_fixture_owner NOLOGIN;
           ALTER ROLE "product_offer_link_health_recorder_owner" WITH NOLOGIN;
           GRANT anon TO d8k13_local_fixture_role;
           GRANT authenticated TO d8k13_local_fixture_role;
@@ -137,6 +138,8 @@ jobs:
           -- Synthetic, not copied from production.
           CREATE SCHEMA public;
           CREATE TABLE public.products(id integer PRIMARY KEY, name text NOT NULL, owner_id uuid REFERENCES auth.users(id));
+          CREATE FUNCTION public.d8k13_public_fixture() RETURNS boolean LANGUAGE sql AS 'SELECT true';
+          ALTER FUNCTION public.d8k13_public_fixture() OWNER TO d8k13_public_fixture_owner;
           CREATE VIEW public.product_names AS SELECT name FROM public.products;
           ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
           CREATE POLICY fixture_select ON public.products FOR SELECT TO authenticated USING (owner_id = (select auth.uid()));
@@ -226,6 +229,7 @@ jobs:
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_PASS')) { throw 'D8K13_COLD_IMAGE_PULL_NOT_TESTED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_PRIVATE')) { throw 'D8K13_CUSTOM_PRIVATE_SCHEMA_NOT_RESTORED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_PRIVATE_FUNCTION_OWNER_PREP_NOT_EXECUTED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_PUBLIC_DECLARED_FUNCTION_OWNER_GRANTS_NOT_STAGED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_RECOMMENDATION_SHADOW')) { throw 'D8K13_CUSTOM_SHADOW_SCHEMA_NOT_RESTORED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_RECREATED_FROM_DUMP')) { throw 'D8K13_EXPLICIT_PUBLIC_DUMP_RESTORE_NOT_TESTED' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_PG17_RESTORE_PASS_HOLD'
@@ -253,6 +257,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'D8K13_NO_PUBLIC_RESTORE_FAILED' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP')) { throw 'D8K13_NO_PUBLIC_PRESERVED_MARKER_MISSING' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_NO_PUBLIC_OWNER_GRANTS_NOT_APPLIED' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_NO_PUBLIC_FUNCTION_OWNER_GRANT_MISSING' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_NO_PUBLIC_RESTORE_PASS_MARKER_MISSING' }
           Write-Host 'D8K13_SYNTHETIC_NO_CREATE_PUBLIC_RESTORE_PASS'
       - name: Restore synthetic dump that explicitly declares private schema before function owner transfer
@@ -276,6 +281,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'D8K13_EXPLICIT_PRIVATE_RESTORE_FAILED' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_GRANT_STAGED_FOR_IN_DUMP_SCHEMA')) { throw 'D8K13_EXPLICIT_PRIVATE_GRANT_NOT_DEFERRED' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_EXPLICIT_PRIVATE_OWNER_GRANT_NOT_READY' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_EXPLICIT_PRIVATE_PUBLIC_OWNER_GRANT_MISSING' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_EXPLICIT_PRIVATE_SCHEMA_DATA_NOT_RESTORED' }
           Write-Host 'D8K13_SYNTHETIC_EXPLICIT_PRIVATE_SCHEMA_OWNER_RESTORE_PASS'
       - name: Refuse missing unknown schema and print name only without SQL content
