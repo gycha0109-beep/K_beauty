@@ -1176,6 +1176,74 @@ for(const result of [titleAsParagraph,titleAsH3,unmarkedParagraph,
   assert.equal(JSON.stringify(result).includes("<h3"),false);
   assert.equal(JSON.stringify(result).includes("goods-name"),false);
 }
+// P2-F9: P3's new embedded-title signal is safe metadata, not an admitted
+// P2 product-name candidate. This stays BODY_NAME_MENTION_ONLY even with a
+// completely owned, explicitly selected 50ml form.
+const extendedTitle='<h3 class="goods-name">공식 스토어 | '+
+  genericProduct.name+' | 상품 상세 안내</h3>';
+const reviewFixture=classifiedGeneric(productRoot(extendedTitle+ownedForm("50")));
+assert.equal(reviewFixture.status,"BODY_NAME_MENTION_ONLY");
+assert.equal(reviewFixture.nameSignalStatus,"BODY_NAME_MENTION_ONLY");
+assert.equal(reviewFixture.identitySurface,"unverified_generic_brand_title");
+assert.equal(reviewFixture.identityAuthority,"NONE");
+assert.equal(reviewFixture.primaryRootDiagnostic.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(reviewFixture.primaryRootDiagnostic.holdStage,
+  "ROOT_BODY_NAME_WITHOUT_SCOPED_TITLE_HOLD");
+assert.equal(reviewFixture.primaryRootDiagnostic.matchedTitleCount,0);
+assert.equal(reviewFixture.primaryRootDiagnostic.matchedRootCount,0);
+assert.equal(reviewFixture.primaryRootDiagnostic.ownedFormCount,0);
+assert.equal(reviewFixture.primaryRootDiagnostic.ownedOptionControlCount,0);
+assert.equal(reviewFixture.primaryRootDiagnostic.scopedNameAndSizeCandidate,false);
+assert.deepEqual(reviewFixture.primaryRootDiagnostic.embeddedTitleReviewShadow,{
+  status:"EMBEDDED_TITLE_OWNED_SELECTED_SIZE_REVIEW_ONLY",
+  reviewCandidate:true,
+  embeddedTitleCount:1,matchedRootCount:1,ownedFormCount:1,
+  ownedOptionControlCount:1,
+  selectedSizeStatus:"SELECTED_SIZE_MATCH_SHADOW_ONLY",
+  exactSkuVerified:false,
+});
+assert.equal(reviewFixture.factConfirmationAuthorized,false);
+assert.equal(reviewFixture.subjectCreationAuthorized,false);
+assert.equal(reviewFixture.marketVerified,false);
+assert.equal(reviewFixture.formulationVerified,false);
+const extendedButWrong=classifiedGeneric(productRoot(
+  extendedTitle+ownedForm("100")));
+assert.equal(extendedButWrong.status,"BODY_NAME_MENTION_ONLY");
+assert.equal(extendedButWrong.primaryRootDiagnostic.embeddedTitleReviewShadow.status,
+  "SELECTED_CATALOG_SIZE_NOT_MATCHED_HOLD");
+assert.equal(extendedButWrong.primaryRootDiagnostic.embeddedTitleReviewShadow.selectedSizeStatus,
+  "SELECTED_SIZE_MISMATCH_HOLD");
+assert.equal(extendedButWrong.primaryRootDiagnostic.embeddedTitleReviewShadow.reviewCandidate,false);
+const extendedNoForm=classifiedGeneric(productRoot(extendedTitle));
+assert.equal(extendedNoForm.primaryRootDiagnostic.embeddedTitleReviewShadow.status,
+  "UNIQUE_OWNED_FORM_NOT_PROVEN_HOLD");
+const extendedGift=classifiedGeneric(productRoot(
+  '<h3 class="goods-name">1+1 사은품 | '+genericProduct.name+
+  ' | 상품 상세</h3>'+ownedForm("50")));
+assert.equal(extendedGift.primaryRootDiagnostic.embeddedTitleReviewShadow.status,
+  "OFFER_OR_BUNDLE_TITLE_HOLD");
+const extendedMultipleTitles=classifiedGeneric(productRoot(
+  extendedTitle+'<h3 class="goods-name">다른 제품</h3>'+ownedForm("50")));
+assert.equal(extendedMultipleTitles.primaryRootDiagnostic.embeddedTitleReviewShadow.status,
+  "MULTIPLE_MARKED_TITLE_NODES_HOLD");
+assert.equal(parserHold.primaryRootDiagnostic.embeddedTitleReviewShadow,null);
+assert.equal(matchedRoot.primaryRootDiagnostic.embeddedTitleReviewShadow.status,
+  "STRICT_MATCH_TITLE_PRESENT_HOLD");
+assert.equal(matchedRoot.primaryRootDiagnostic.embeddedTitleReviewShadow.reviewCandidate,false);
+for(const result of [reviewFixture,extendedButWrong,extendedNoForm,
+  extendedGift,extendedMultipleTitles]){
+  const serialized=JSON.stringify(result.primaryRootDiagnostic.embeddedTitleReviewShadow);
+  for(const secret of [genericProduct.name,"공식 스토어","goods-name","50ml",
+    "<option","<form","<h3"]){
+    assert.ok(!serialized.includes(secret),
+      "P2-F9 review-only shadow must never serialize source content "+secret);
+  }
+  assert.equal(result.primaryRootDiagnostic.exactSkuVerified,false);
+  assert.equal(result.subjectCreationAuthorized,false);
+  assert.equal(result.factConfirmationAuthorized,false);
+  assert.equal(result.identityAuthority,"NONE");
+}
+console.log("TRUST_P2F9_EMBEDDED_TITLE_REVIEW_ONLY_P2_PASS");
 console.log("TRUST_P2F8_NONAUTHORITATIVE_TITLE_FINGERPRINT_PASS");
 console.log("TRUST_P2F7_GENERIC_TITLE_ROOT_DIAGNOSTIC_HOLDS_PASS");
 

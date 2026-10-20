@@ -177,6 +177,163 @@ for(const v of mismatchFixtures){
     assert.ok(!serialized.includes(needle),"raw source leaked "+needle);
   }
 }
+// P2-F9: a full catalog name embedded INSIDE a longer marked title is
+// review-only even when one deep root, one owned form, and an explicitly
+// selected 50ml control agree. It must NOT change P3's strict identity status.
+const embeddedNameTitle='<h3 class="goods-name">공식 스토어 | '+
+  torriden.name+' | 안내</h3>';
+const owned50='<form id="purchase-form"><select name="size">'+
+  '<option value="50ml" selected>50ml</option>'+
+  '<option value="100ml">100ml</option></select></form>';
+const owned25=owned50.replace('value="50ml" selected',
+  'value="50ml"')
+  .replace('value="100ml">100ml','value="25ml" selected>25ml');
+const checkP2F9=(label,html,status,selectedSizeStatus=null)=>{
+  const r=inspectTorriden(html);
+  const shadow=r.embeddedTitleReviewShadow;
+  assert.equal(r.parseComplete,true,label);
+  assert.equal(r.primaryRootAuthority,false,label);
+  assert.equal(r.exactSkuVerified,false,label);
+  assert.equal(r.sourceBindingAuthorized,false,label);
+  assert.equal(r.subjectCreationAuthorized,false,label);
+  assert.equal(r.factConfirmationAuthorized,false,label);
+  assert.equal(r.dbWrites,0,label);
+  assert.equal(r.aiApiCalls,0,label);
+  assert.ok(shadow,label+" must expose review-only shadow");
+  assert.equal(shadow.status,status,label);
+  assert.equal(shadow.reviewCandidate,
+    status==="EMBEDDED_TITLE_OWNED_SELECTED_SIZE_REVIEW_ONLY",label);
+  assert.equal(shadow.exactSkuVerified,false,label);
+  assert.equal(shadow.selectedSizeStatus,selectedSizeStatus,label);
+  const serialized=JSON.stringify(r);
+  for(const secret of [torriden.name,
+    "공식 스토어","공식몰 추천","goods-name","product-detail",
+    "<h3","<form","<section","50ml","100ml","25ml"]){
+    assert.ok(!serialized.includes(secret),
+      label+" raw title, product, options or HTML leaked: "+secret);
+  }
+  return r;
+};
+const embeddedPositive=checkP2F9(
+  "marked extended name with explicit owned 50ml",
+  torridenRoot(embeddedNameTitle+owned50),
+  "EMBEDDED_TITLE_OWNED_SELECTED_SIZE_REVIEW_ONLY",
+  "SELECTED_SIZE_MATCH_SHADOW_ONLY");
+assert.equal(embeddedPositive.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(embeddedPositive.matchedTitles,0);
+assert.equal(embeddedPositive.matchedRoots,0);
+assert.equal(embeddedPositive.ownedFormCount,0);
+assert.equal(embeddedPositive.selectedVariantShadow,undefined);
+assert.equal(embeddedPositive.rootScopedNameCandidate,false);
+assert.equal(embeddedPositive.embeddedTitleReviewShadow.ownedFormCount,1);
+assert.equal(embeddedPositive.embeddedTitleReviewShadow.ownedOptionControlCount,1);
+const embeddedMultiRoot=checkP2F9(
+  "one marked target within six unrelated marked roots",
+  torridenRoot(embeddedNameTitle+owned50)+
+    torridenRoot(bodyMention)+fourEmptyRoots,
+  "EMBEDDED_TITLE_OWNED_SELECTED_SIZE_REVIEW_ONLY",
+  "SELECTED_SIZE_MATCH_SHADOW_ONLY");
+assert.equal(embeddedMultiRoot.rootMarkers,6);
+assert.equal(embeddedMultiRoot.titleMarkerCount,1);
+assert.equal(embeddedMultiRoot.matchedTitles,0);
+assert.equal(embeddedMultiRoot.titleMismatchFingerprint.catalogRelation,
+  "MARKED_TITLE_EMBEDS_CATALOG_NAME_BUT_FAILS_MATCH");
+checkP2F9("no owned form",torridenRoot(embeddedNameTitle),
+  "UNIQUE_OWNED_FORM_NOT_PROVEN_HOLD");
+checkP2F9("unrelated sibling root owns purchase form",
+  torridenRoot(embeddedNameTitle)+torridenRoot(owned50),
+  "COMPETING_PURCHASABLE_ROOT_HOLD");
+checkP2F9("separate nested product owns purchase form",
+  torridenRoot(embeddedNameTitle+
+    '<div class="item-detail">'+owned50+'</div>'),
+  "CROSS_PRODUCT_FORM_HOLD");
+checkP2F9("related card's form excluded",
+  torridenRoot(embeddedNameTitle+
+    '<div class="related-products">'+owned50+'</div>'),
+  "UNIQUE_OWNED_FORM_NOT_PROVEN_HOLD");
+checkP2F9("multiple purchase forms",
+  torridenRoot(embeddedNameTitle+owned50+owned50),
+  "UNIQUE_OWNED_FORM_NOT_PROVEN_HOLD");
+checkP2F9("hidden otherwise owned purchase form",
+  torridenRoot(embeddedNameTitle+owned50.replace(
+    'id="purchase-form"','id="purchase-form" hidden')),
+  "HIDDEN_OWNED_PURCHASE_FORM_HOLD");
+checkP2F9("form with size selector is not a purchase form",
+  torridenRoot(embeddedNameTitle+owned50.replace(
+    'id="purchase-form"','id="profile-feedback"')),
+  "PURCHASE_FORM_MARKER_MISSING_HOLD");
+checkP2F9("another independent product root has its own purchase form",
+  torridenRoot(embeddedNameTitle+owned50)+torridenRoot(
+    '<div>다른 상품 구역</div>'+owned50),
+  "COMPETING_PURCHASABLE_ROOT_HOLD");
+
+checkP2F9("only button, no size control",
+  torridenRoot(embeddedNameTitle+'<form id="purchase-form"><button>구매</button></form>'),
+  "OWNED_OPTION_CONTROL_MISSING_HOLD");
+checkP2F9("no explicit selected option",
+  torridenRoot(embeddedNameTitle+owned50.replace(' selected','')),
+  "SELECTED_CATALOG_SIZE_NOT_MATCHED_HOLD",
+  "NO_EXPLICIT_SELECTED_SIZE_HOLD");
+checkP2F9("wrong 25ml explicitly selected",
+  torridenRoot(embeddedNameTitle+owned25),
+  "SELECTED_CATALOG_SIZE_NOT_MATCHED_HOLD",
+  "SELECTED_SIZE_MISMATCH_HOLD");
+checkP2F9("selected 50ml disabled",
+  torridenRoot(embeddedNameTitle+
+    owned50.replace('value="50ml" selected','value="50ml" disabled selected')),
+  "SELECTED_CATALOG_SIZE_NOT_MATCHED_HOLD",
+  "SELECTED_CONTROL_DISABLED_HOLD");
+checkP2F9("selected 50ml 1+1 bundle",
+  torridenRoot(embeddedNameTitle+
+    owned50.replace('value="50ml" selected>50ml',
+      'value="50ml 1+1" selected>50ml 1+1')),
+  "SELECTED_CATALOG_SIZE_NOT_MATCHED_HOLD",
+  "BUNDLE_OR_SET_HOLD");
+checkP2F9("sale or gift title",
+  torridenRoot('<h3 class="goods-name">사은품 증정 | '+
+    torriden.name+' | 안내</h3>'+owned50),
+  "OFFER_OR_BUNDLE_TITLE_HOLD");
+checkP2F9("hidden product title",
+  torridenRoot('<h3 class="goods-name" hidden>'+
+    '공식 스토어 | '+torriden.name+' | 안내</h3>'+owned50),
+  "HIDDEN_MARKED_TITLE_HOLD");
+checkP2F9("aria-hidden marked title",
+  torridenRoot('<h3 class="goods-name" aria-hidden="true">'+
+    '공식 스토어 | '+torriden.name+' | 안내</h3>'+owned50),
+  "HIDDEN_MARKED_TITLE_HOLD");
+checkP2F9("related/upsell title not primary",
+  torridenRoot('<div class="related-products">'+embeddedNameTitle+
+    '</div>'+owned50),
+  "NO_MARKED_TITLE_HOLD");
+checkP2F9("marked title outside recognized product root",
+  embeddedNameTitle+torridenRoot(owned50),
+  "TITLE_OUTSIDE_PRODUCT_ROOT_HOLD");
+checkP2F9("two independent marked titles, one relevant",
+  torridenRoot(embeddedNameTitle+'<h3 class="goods-name">Other Item</h3>'+owned50),
+  "MULTIPLE_MARKED_TITLE_NODES_HOLD");
+checkP2F9("other marked product root may compete",
+  torridenRoot(embeddedNameTitle+owned50)+
+    torridenRoot('<h3 class="goods-name">Different product</h3>'),
+  "MULTIPLE_MARKED_TITLE_NODES_HOLD");
+checkP2F9("incomplete catalog name only",
+  torridenRoot('<h3 class="goods-name">공식몰 | 다이브인 저분자</h3>'+owned50),
+  "NO_FULL_CATALOG_NAME_EMBED_HOLD");
+checkP2F9("catalog name fused into a longer token",
+  torridenRoot('<h3 class="goods-name">공식몰 | '+torriden.name+
+    'ExtraSku</h3>'+owned50),
+  "NO_FULL_CATALOG_NAME_EMBED_HOLD");
+const alreadyStrict=checkP2F9("strict exact title untouched",
+  torridenRoot('<h3 class="goods-name">'+torriden.name+'</h3>'+owned50),
+  "STRICT_MATCH_TITLE_PRESENT_HOLD");
+assert.equal(alreadyStrict.status,"SCOPED_NAME_AND_FORM_CANDIDATE");
+assert.equal(alreadyStrict.selectedVariantShadow.status,
+  "SELECTED_SIZE_MATCH_SHADOW_ONLY");
+const hugeP2F9=checkP2F9("over 4096 HTML nodes: shadow stays HOLD",
+  torridenRoot(embeddedNameTitle+owned50+'<span>표기</span>'.repeat(4098)),
+  "REVIEW_SCAN_BUDGET_HOLD");
+assert.equal(hugeP2F9.status,"PRIMARY_ROOT_NOT_PROVEN");
+console.log("TRUST_P2F9_EMBEDDED_TITLE_SHADOW_HOLDS_PASS");
+
 const diagSuccess=success.titleMismatchFingerprint;
 assert.equal(diagSuccess.recognizedTitlesWithinRootCount,2);
 assert.equal(diagSuccess.recognizedTitlesOutsideRootCount,0);
