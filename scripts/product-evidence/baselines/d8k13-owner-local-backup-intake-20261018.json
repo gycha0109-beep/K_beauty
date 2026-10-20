@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_OWNER_TO_42501_LINE_22086_EXPANDED_CLASSIFIER_CI_PASS_OWNER_RECLASSIFICATION_PENDING",
+  "state": "OWNER_SCHEMA_42501_LINE_22086_PUBLIC_FUNCTION_OWNER_REMEDIATION_SYNTHETIC_PG17_PASS_REAL_RESTORE_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -297,7 +297,36 @@
             "previous no-network PostgreSQL17 restore regression"
           ]
         }
+      },
+      "ownerTransferEvidence20261020": {
+        "statement": "ALTER FUNCTION ... OWNER TO",
+        "objectSchemaClass": "PUBLIC",
+        "ownerRoleClass": "DECLARED_IN_ROLES_SQL",
+        "physicalLine": 22086,
+        "postgresSqlstate": "42501",
+        "source": "owner-PC-allowlisted-metadata-only",
+        "originalSqlUploaded": false
       }
+    },
+    "publicFunctionOwnerRestoreFix20261020": {
+      "scope": "disposable no-network Supabase/Postgres17 restore container only",
+      "sourceZipUnchanged": true,
+      "stagedTempSchemaOnly": true,
+      "eligibleSchema": "public",
+      "targetRoles": "allowlisted lowercase PostgreSQL identifiers with CREATE ROLE declaration in roles.sql only",
+      "privilegeFix": "GRANT role TO postgres and GRANT CREATE ON SCHEMA public TO role only inside disposable restore, before every matching public ALTER FUNCTION OWNER",
+      "actualOwnerZipRerunAfterFix": false,
+      "syntheticCI": {
+        "runId": 39368088218,
+        "jobId": 118449431599,
+        "commit": "fa6fbbbf62291e33b26c7a84eb03a47bb42830ec",
+        "conclusion": "success",
+        "realZipIncluded": false
+      },
+      "schemaSqlRestoredInRealOwnerZip": false,
+      "dataSqlRestoredInRealOwnerZip": false,
+      "restoredAclParityVerified": false,
+      "releaseAuthorized": false
     }
   },
   "syntheticCi": {
