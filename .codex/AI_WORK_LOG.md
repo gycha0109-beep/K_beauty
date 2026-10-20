@@ -3528,3 +3528,14 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - **Next protected local hinge:** owner refreshes only `restore-local.ps1` from branch and runs `-Mode Restore` against unchanged local ZIP. Accept only `D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY`, limited success metadata or sanitized stage/SQLSTATE/line; never request backup SQL, rows, ZIP or credentials. Successful SQL import triggers **additional** parity checks before any disaster-recovery approval.
 - **Remaining:** historical bootstrap/ACL and 178 migration chain; D8K-12/13 independent review; D8D v2 ordering and gate OFF; Crawler/Taxonomy8 structural assignment; SEC-05 history; merchant evidence, Offer/price/CTA governance; security #1208. No production DDL/DML or live catalog/Offer changes, no merge/deploy; RELEASE HOLD.
 - Watchtower-Track: taxonomy-ai.
+
+### 2026-10-20 — D8K13 owner ZIP 3F000 private schema grant timing (latest)
+
+- Owner's real immutable local backup `BEJEWELY_DB_Backup_20261018_181006.zip` inspection PASS with previous size/hash. `D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP` PASS, then `D8K13_LOCAL_RESTORE_PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE_SQLSTATE_3F000_FAILED_EXIT_1`: isolated schema CREATE grant was invoked before the `private` namespace existed; `schema.sql` and `data.sql` real restore NOT COMPLETED. Raw ZIP/SQL/secrets remain private.
+- Previous known `42501` at ALTER FUNCTION ... OWNER TO is distinct from the new `3F000` at preparatory GRANT. Root of latest failure is premature GRANT; whether the private original SQL declares the namespace is inferred, not directly verified from raw owner SQL. Consult recovery runbook §6.7.
+- Implemented code-only PowerShell correction: if schema.sql declares `CREATE SCHEMA private`, stage `GRANT CREATE` just before the exact owner change inside the temporary local extracted SQL; else prepare only the known private schema and grant inside no-network Docker. Original ZIP unchanged, no prod DB contact. Also adjusted schema declaration recognition for `AUTHORIZATION` clauses and staged same-line SQL for preserved error line numbers.
+- Added synthetic CI fixture with `CREATE SCHEMA private` preceding owner migration, retaining previous no-CREATE and sanitized error tests. During source review discovered and fixed an intermediate JavaScript-based source replacement corruption prior to declaring success; fresh exact branch script was re-read after repair. **New synthetic CI runtime PASS NOT YET VERIFIED**, and owner real ZIP has NOT been rerun against this patch.
+- Updated both roadmaps, current-state runbook, metadata-only owner intake, this work log. Do not treat staged-grant restoration as ACL parity; verify original ownership and permissions independently if SQL restore ever passes.
+- No production DDL/DML, roles/RLS/Auth/Storage/Product/Offer/prices/CTA write; no migration repair, merge, deploy, security #1208 bypass. PR #1341 remains Draft; release HOLD.
+- Watchtower-Track: taxonomy-ai.
+
