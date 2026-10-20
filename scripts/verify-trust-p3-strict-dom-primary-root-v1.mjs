@@ -86,6 +86,128 @@ assert.equal(wrongSelected.status,"SCOPED_NAME_AND_FORM_CANDIDATE");
 assert.equal(wrongSelected.selectedVariantShadow.status,"SELECTED_SIZE_MISMATCH_HOLD");
 assert.equal(wrongSelected.exactSkuVerified,false);
 
+// P2-F8: the *observed* Torriden signal vector (6 roots, 1 title
+// marker, 2 marked-root mentions, 0 matching titles) does NOT reveal the
+// actual HTML cause. Distinct synthetic templates reproduce those counters.
+// The new title fingerprint is diagnostic only, not a rescue/acceptance rule.
+const torriden={
+  id:"31015762-2741-4211-a553-3ceb7fdf32e8",
+  name:"다이브인 저분자 히알루론산 세럼",
+  name_en:"DIVE IN Low Molecular Hyaluronic Acid Serum",
+  normalized_name:"다이브인 저분자 히알루론산 세럼",
+  size_ml:50,
+};
+const inspectTorriden=body=>inspect(Buffer.from(
+  '<html><head><title>토리든 Torriden</title></head><body>'+body+
+  '</body></html>'),torriden);
+const torridenRoot=body=>'<section class="product-detail">'+body+'</section>';
+const fourEmptyRoots=Array.from({length:4},()=>torridenRoot(
+  '<p>이벤트 및 배송 안내</p>')).join("");
+const bodyMention='<p class="detail-copy">'+torriden.name+'</p>';
+function fixtureWithTwoRootMentions(firstRoot,outerTitle=""){
+  return inspectTorriden(outerTitle+torridenRoot(firstRoot)+
+    torridenRoot(bodyMention)+fourEmptyRoots);
+}
+const mismatchFixtures=[
+  {
+    label:"marked title exists but is unrelated to the catalog name",
+    observation:fixtureWithTwoRootMentions(
+      '<h3 class="goods-name">TORRIDEN</h3>'+bodyMention),
+    inside:1,outside:0,relation:"MARKED_TITLE_NO_CATALOG_NAME_RELATION",
+    unmarkedHeading:0,unmarkedInline:2,
+  },
+  {
+    label:"marked title is outside all recognized product roots",
+    observation:fixtureWithTwoRootMentions(bodyMention,
+      '<h1>TORRIDEN</h1>'),
+    inside:0,outside:1,relation:"NO_MARKED_TITLE_IN_ROOT",
+    unmarkedHeading:0,unmarkedInline:2,
+  },
+  {
+    label:"marked title embeds full catalog name but is not an exact title",
+    observation:fixtureWithTwoRootMentions(
+      '<h3 class="goods-name">이번주 한정 행사 '+torriden.name+
+      ' 증정품 및 할인 안내</h3>'),
+    inside:1,outside:0,
+    relation:"MARKED_TITLE_EMBEDS_CATALOG_NAME_BUT_FAILS_MATCH",
+    unmarkedHeading:0,unmarkedInline:1,
+  },
+  {
+    label:"marked title has only partial catalog tokens",
+    observation:fixtureWithTwoRootMentions(
+      '<h3 class="goods-name">다이브인 저분자</h3>'+bodyMention),
+    inside:1,outside:0,
+    relation:"MARKED_TITLE_PARTIAL_CATALOG_TOKEN_OVERLAP",
+    unmarkedHeading:0,unmarkedInline:2,
+  },
+  {
+    label:"full catalog name appears in an unmarked root-owned heading",
+    observation:fixtureWithTwoRootMentions(
+      '<div class="goods-name">TORRIDEN</div>'+
+      '<h3 class="detail-copy">'+torriden.name+'</h3>'),
+    inside:1,outside:0,
+    relation:"MARKED_TITLE_NO_CATALOG_NAME_RELATION",
+    unmarkedHeading:1,unmarkedInline:1,
+  },
+];
+for(const v of mismatchFixtures){
+  const result=v.observation,diag=result.titleMismatchFingerprint;
+  // This exactly matches the status-only, non-HTML observation shape.
+  assert.equal(result.status,"PRIMARY_ROOT_NOT_PROVEN",v.label);
+  assert.equal(result.parseComplete,true,v.label);
+  assert.equal(result.rootMarkers,6,v.label);
+  assert.equal(result.titleMarkerCount,1,v.label);
+  assert.equal(result.rootBodyNameMentionCount,2,v.label);
+  assert.equal(result.matchedTitles,0,v.label);
+  assert.equal(result.matchedRoots,0,v.label);
+  assert.equal(diag.recognizedTitlesWithinRootCount,v.inside,v.label);
+  assert.equal(diag.recognizedTitlesOutsideRootCount,v.outside,v.label);
+  assert.equal(diag.catalogRelation,v.relation,v.label);
+  assert.equal(diag.unmarkedNameProbeComplete,true,v.label);
+  assert.equal(diag.unmarkedCatalogNameHeadingCount,v.unmarkedHeading,v.label);
+  assert.equal(diag.unmarkedCatalogNameInlineCount,v.unmarkedInline,v.label);
+  for(const flag of ["primaryRootAuthority","exactSkuVerified",
+    "marketVerified","formulationVerified","sourceBindingAuthorized",
+    "subjectCreationAuthorized","factConfirmationAuthorized"]){
+    assert.equal(result[flag],false,v.label+" "+flag);
+  }
+  const serialized=JSON.stringify(result);
+  for(const needle of ["TORRIDEN",torriden.name,
+    "이번주","detail-copy","goods-name","<h3","<section","50ml"]){
+    assert.ok(!serialized.includes(needle),"raw source leaked "+needle);
+  }
+}
+const diagSuccess=success.titleMismatchFingerprint;
+assert.equal(diagSuccess.recognizedTitlesWithinRootCount,2);
+assert.equal(diagSuccess.recognizedTitlesOutsideRootCount,0);
+assert.equal(diagSuccess.catalogRelation,"MARKED_TITLE_CATALOG_NAME_MATCH");
+assert.equal(diagSuccess.unmarkedCatalogNameHeadingCount,0);
+assert.equal(diagSuccess.unmarkedCatalogNameInlineCount,0);
+
+// Large but strictly balanced templates must not trigger unbounded probes or
+// silently return zero counts that look like a completed name-location search.
+const oversizedDiagnostic=inspectTorriden(torridenRoot(
+  '<h3 class="goods-name">TORRIDEN</h3>'+
+  '<span>안내</span>'.repeat(4100)+bodyMention));
+assert.equal(oversizedDiagnostic.parseComplete,true);
+assert.equal(oversizedDiagnostic.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(oversizedDiagnostic.titleMismatchFingerprint.unmarkedNameProbeComplete,false);
+assert.equal(oversizedDiagnostic.titleMismatchFingerprint.unmarkedCatalogNameHeadingCount,null);
+assert.equal(oversizedDiagnostic.titleMismatchFingerprint.unmarkedCatalogNameInlineCount,null);
+assert.equal(oversizedDiagnostic.exactSkuVerified,false);
+// Do not count linked, related, or hidden-looking nested headings as a
+// primary root's unmarked catalog-name location.
+const excludedName=inspectTorriden(torridenRoot(
+  '<h3 class="goods-name">TORRIDEN</h3>'+
+  '<div class="related-products"><h4>'+torriden.name+'</h4></div>'+
+  '<a href="/recommend"><h3>'+torriden.name+'</h3></a>')+
+  torridenRoot(bodyMention));
+assert.equal(excludedName.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(excludedName.titleMismatchFingerprint.unmarkedCatalogNameHeadingCount,0);
+assert.equal(excludedName.titleMismatchFingerprint.unmarkedCatalogNameInlineCount,1);
+assert.equal(excludedName.exactSkuVerified,false);
+console.log("TRUST_P2F8_TORRIDEN_DIAGNOSTIC_UNDERDETERMINATION_PASS");
+
 const cases=[
  ["form owned by unrelated root",wrap(product(title)+product(form)),"OWNER_FORM_UNPROVEN"],
  ["related product form",wrap(product(title)+'<aside>'+form+'</aside>'),"OWNER_FORM_UNPROVEN"],
