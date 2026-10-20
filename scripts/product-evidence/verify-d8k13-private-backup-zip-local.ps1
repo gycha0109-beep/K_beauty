@@ -371,7 +371,7 @@ try {
     # Emit only bounded ASCII schema/function identifiers, never arguments,
     # source SQL, role names, user rows, stderr context, or full signatures.
     $missingFunctionRefs = @{}
-    $missingFunctionRx = [regex]'(?im)^psql:/tmp/schema\.sql:[0-9]{1,7}:\s*ERROR:\s*42883:\s*function\s+(?:(?<schema>[a-z_][a-z0-9_]{0,62})\.)?(?<routine>[a-z_][a-z0-9_]{0,62})\([^\r\n)]{0,256}\)\s+does not exist\s*
+    $missingFunctionRx = [regex]'(?im)^psql:/tmp/schema\.sql:[0-9]{1,7}:\s*ERROR:\s*42883:\s*function\s+(?:(?<schema>[a-z_][a-z0-9_]{0,62})\.)?(?<routine>[a-z_][a-z0-9_]{0,62})\([^\r\n)]{0,256}\)\s+does not exist\s*'
     $limit = [Math]::Min($total,80)
     for ($a = 0; $a -lt $total; $a++) {
       $errorCode = $auditMatches[$a].Groups['sqlstate'].Value.ToUpperInvariant()
