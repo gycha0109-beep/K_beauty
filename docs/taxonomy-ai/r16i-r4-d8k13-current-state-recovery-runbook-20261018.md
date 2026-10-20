@@ -224,3 +224,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **안전한 다음 진단:** `scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1`는 소유자 PC ZIP의 고정 size/SHA/파일 집합을 로컬에서 확인하고 `schema.sql` 물리적 22086행의 가장 가까운 top-level SQL **문장 종류/객체 종류/OWNER·GRANT 분류**만 제한된 어휘값으로 반환한다. DB/네트워크/Docker 미접근, 원문·식별자·행·ZIP 내용/비밀번호/파일 경로 출력 없음. **SQL 파서가 아닌 어휘상 휴리스틱**이므로 불명확하면 추가 로컬 검증을 설계. 원본 SQL/ZIP은 절대 외부 전송하지 않는다.
 - 사용자는 새 진단 스크립트의 합성 CI가 PASS한 뒤에만, GitHub feature branch 파일을 로컬 백업 폴더에 복사하여 `-LineNumber 22086` 한 번 실행한다. 성공 시 `D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY` JSON만 기록하고 이에 근거해 **정확한 격리 복원 단계의 보수 범위**를 결정한다. 실 ZIP으로 동일 `-Mode Restore` 반복 재시도는 이 분류 결과가 나올 때까지 중단.
 - 이 진단은 백업의 실제 복원 성공, OWNER·ACL/RLS 동등성 또는 보안 승인 아님. 원본 178 migration replay 및 bootstrap 출처는 독립 HOLD. #1341 Draft/미병합, #1208 OPEN, 운영 변경 없음, release HOLD 유지.
+
+### 6.10. 22086행 비식별 분류기 CI 수락 — 실제 SQL 분류 대기 (2026-10-20)
+
+- [GitHub Actions #39359659800](https://github.com/gycha0109-beep/K_beauty/actions/runs/39359659800), job `118422589377`, source commit `4875873afeacb8b21d80bd323522e8080d2970c2` **SUCCESS**. PowerShell parser, synthetic ZIP 출처 줄 분류(ALTER FUNCTION OWNER / GRANT FUNCTION / 다중행 ALTER TABLE OWNER), SQL 원문 유출 방지, 잘못된 SHA 거절, 기존 no-network Supabase PG17 합성 schema/data restore 및 negative 검사 모두 통과.
+- 중간 CI #39359225144는 테스트용 ZIP이 1024 bytes 미만이어서 실패했다. #39359534484는 의도적 child exit3이 parent step 결과로 남는 테스트 하네스 문제 때문에 실패; 분류기 정상 출력 자체는 관측했다. 최종 통과는 #39359659800으로만 인정한다.
+- **다음 PC 작업(복원 재시도 아님):**
+~~~powershell
+git fetch origin feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
+$folder = "$HOME\BEJEWELY_Private_DB_Backups"
+git show "FETCH_HEAD:scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1" |
+  Set-Content "$folder\diagnose-line-local.ps1" -Encoding UTF8
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\diagnose-line-local.ps1" -LineNumber 22086
+~~~
+- 출력의 `D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY` JSON에서 `verb / objectKind / operation / mentionsKnownPrivateSchema / mentionsKnownFunctionOwnerRole`의 **고정된 분류만** 확보한다. SQL 텍스트·원본 ZIP·비밀키·개인정보 업로드 금지. 분류 결과는 SQL 파서가 아닌 휴리스틱이므로 모호하면 독립적인 비식별 재확인 설계. 무단 GRANT/owner 우회/SQL 주석 처리나 이미 실패한 `-Mode Restore` 반복 금지.
+- 원본 ZIP에 대한 실제 성공 미검증, data.sql NOT RUN, RLS/ACL/Auth/Storage/Vault parity 미인증. #1341 Draft 미병합 / #1208 OPEN / 운영 DB write 0 / RELEASE HOLD.
