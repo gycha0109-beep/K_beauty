@@ -267,3 +267,9 @@
 ### 2026-10-17 D8K-13 초기 스키마 복원 선행조건
 
 현재 운영의 기초 테이블 구조를 SELECT-only로 재확인하고, 초기 2026-04-08 Git history부터 2026-04-10 최초 applied migration까지 확인했으나 원본 CREATE/ACL bootstrap은 확보하지 못했다. 초기 객체가 확인되지 않으면 전체 178건 replay를 시작할 수 없으므로 **필수 검증 11개를 모두 HOLD로 고정**한 metadata-only `d8k13-preledger-reconstruction-readiness-20261017.json` 및 오프라인 검증기를 migration history audit에 연결했다. 실제 Node/전체 PG17 실행·PITR 리허설 미수행. 추후 소스/복원 증거와 독립 OWNER 승인이 확보될 때만 적용 단계를 재검토한다. [상세 경계](r16i-r4-d8k13-full-migration-chain-readonly-audit-20261016.md) §9.
+
+### 2026-10-20 D8K-13 실제 백업 복원 재검증 대기
+
+- 상위 D8K 로드맵 §30 / recovery runbook §6.5 및 owner ZIP 비식별 intake를 현재 코드와 대조. PR #1341 HEAD `31dbd50b942b26757b5364b3c431bb3c8d2df358`는 마지막 복원 코드 `0d615aa95931c20e8fee9f140a8246fddd421b47` 이후 문서 전용 2커밋이 추가된 상태. PR OPEN/DRAFT·미병합, 보안 #1208 OPEN.
+- 실제 ZIP은 `schema.sql:474`에서 `ALTER FUNCTION private ... OWNER TO`의 SQLSTATE 42501 실패. 로컬 컨테이너 전용 schema CREATE·role membership 보완 및 정규식 수정의 합성 PG17 복원 CI [#39223627159](https://github.com/gycha0109-beep/K_beauty/actions/runs/39223627159) 성공. 사용자 실제 ZIP으로 재실행 및 `data.sql` 성공은 여전히 **미확인**.
+- 사용자 PC ZIP 복원 성공·객체/ACL/RLS/Auth/Storage/Vault 동등성 확인이 복구 검증 과제; 178건 최초 이력·bootstrap 출처의 역사성은 독립 HOLD. D8K-12/13 승인, D8D v2, Crawler/Taxonomy8, SEC-05, 구매처 검증 및 #1208은 별도 차단 조건 유지. 무승인 운영 SQL/Product/Offer/CTA/배포/PR 병합 금지.
