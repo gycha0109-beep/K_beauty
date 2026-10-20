@@ -345,6 +345,48 @@ const alreadyStrict=checkP2F9("strict exact title untouched",
 assert.equal(alreadyStrict.status,"SCOPED_NAME_AND_FORM_CANDIDATE");
 assert.equal(alreadyStrict.selectedVariantShadow.status,
   "SELECTED_SIZE_MATCH_SHADOW_ONLY");
+// P2-F10: the older strict helper clips title text at 600 characters;
+// P2-F9 must not accept a truncated prefix when an offer or competing SKU
+// might appear later in the very same text node or later nested text nodes.
+const longTitleBase='공식 스토어 | '+torriden.name+' | ';
+const cleanExactLength=longTitleBase+'안내'.repeat(
+  Math.floor((600-longTitleBase.length)/2))+
+  'x'.repeat((600-longTitleBase.length)%2);
+assert.equal(cleanExactLength.length,600);
+checkP2F9("exactly 600 complete title characters remains review only",
+  torridenRoot('<h3 class="goods-name">'+cleanExactLength+'</h3>'+owned50),
+  "EMBEDDED_TITLE_OWNED_SELECTED_SIZE_REVIEW_ONLY",
+  "SELECTED_SIZE_MATCH_SHADOW_ONLY");
+checkP2F9("long same-text title clips trailing offer words",
+  torridenRoot('<h3 class="goods-name">'+longTitleBase+
+    '안내'.repeat(295)+' 사은품 증정</h3>'+owned50),
+  "MARKED_TITLE_TEXT_TRUNCATED_HOLD");
+checkP2F9("long same-text title clips alternate 100ml size",
+  torridenRoot('<h3 class="goods-name">'+longTitleBase+
+    '안내'.repeat(295)+' 100ml</h3>'+owned50),
+  "MARKED_TITLE_TEXT_TRUNCATED_HOLD");
+checkP2F9("nested child after first 600 characters not silently skipped",
+  torridenRoot('<h3 class="goods-name">'+longTitleBase+
+    '<span>'+('안내'.repeat(300))+'</span>'+
+    '<span> 100ml 사은품</span></h3>'+owned50),
+  "MARKED_TITLE_TEXT_TRUNCATED_HOLD");
+checkP2F9("otherwise matching 50ml selection but title says 100ml",
+  torridenRoot('<h3 class="goods-name">공식몰 | '+torriden.name+
+    ' 100ml | 상세</h3>'+owned50),
+  "TITLE_EXPLICIT_SIZE_CONFLICT_HOLD");
+checkP2F9("title explicitly lists 50ml and 100ml variants",
+  torridenRoot('<h3 class="goods-name">공식몰 | '+torriden.name+
+    ' 50ml / 100ml | 상세</h3>'+owned50),
+  "TITLE_MULTIPLE_SIZE_CLAIMS_HOLD");
+checkP2F9("title says non-ml 50g while selected control says 50ml",
+  torridenRoot('<h3 class="goods-name">공식몰 | '+torriden.name+
+    ' 50g | 상세</h3>'+owned50),
+  "TITLE_EXPLICIT_SIZE_CONFLICT_HOLD");
+checkP2F9("single consistent title 50ml remains review only",
+  torridenRoot('<h3 class="goods-name">공식몰 | '+torriden.name+
+    ' 50ml | 상세</h3>'+owned50),
+  "EMBEDDED_TITLE_OWNED_SELECTED_SIZE_REVIEW_ONLY",
+  "SELECTED_SIZE_MATCH_SHADOW_ONLY");
 const hugeP2F9=checkP2F9("over 4096 HTML nodes: shadow stays HOLD",
   torridenRoot(embeddedNameTitle+owned50+'<span>표기</span>'.repeat(4098)),
   "REVIEW_SCAN_BUDGET_HOLD");
