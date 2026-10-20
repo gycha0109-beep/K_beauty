@@ -346,7 +346,7 @@ try {
     # A partial schema in the throwaway DB is destroyed by finally().
     $auditExit = Invoke-DockerLifecycle 'SCHEMA_AUDIT' @('exec','-u','postgres',
       $container,'psql','-X','-q','-v','ON_ERROR_STOP=0',
-      '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
+      '-v','VERBOSITY=verbose','-v','SHOW_CONTEXT=never',
       '-d','postgres','-f','/tmp/schema.sql') $true
     # A nonzero psql process exit indicates an incomplete audit/transport error,
     # not SQL errors (ON_ERROR_STOP=0 continues after ordinary SQL errors).
@@ -366,6 +366,119 @@ try {
     $total = $auditMatches.Count
     $entries = New-Object 'System.Collections.Generic.List[object]'
     $counts = @{}
+    # A missing function is a PostgreSQL object name, not a SQL statement.
+    # The quoted raw error stays in the disposable temporary directory.
+    # Emit only bounded ASCII schema/function identifiers, never arguments,
+    # source SQL, role names, user rows, stderr context, or full signatures.
+    $missingFunctionRefs = @{}
+    $missingFunctionRx = [regex]'(?im)^psql:/tmp/schema\.sql:[0-9]{1,7}:\s*ERROR:\s*42883:\s*function\s+(?:(?<schema>[a-z_][a-z0-9_]{0,62})\.)?(?<routine>[a-z_][a-z0-9_]{0,62})\([^\r\n)]{0,256}\)\s+does not exist\s*
+    $limit = [Math]::Min($total,80)
+    for ($a = 0; $a -lt $total; $a++) {
+      $errorCode = $auditMatches[$a].Groups['sqlstate'].Value.ToUpperInvariant()
+      if ($errorCode -eq '42883') {
+        $fullLine = $auditMatches[$a].Value.Trim()
+        $signatureMatch = $missingFunctionRx.Match($fullLine)
+        if ($signatureMatch.Success) {
+          $ns = $signatureMatch.Groups['schema'].Value.ToLowerInvariant()
+          $routine = $signatureMatch.Groups['routine'].Value.ToLowerInvariant()
+          $refKey = if ($ns) { $ns + '.' + $routine } else { $routine }
+          if (-not $missingFunctionRefs.ContainsKey($refKey)) {
+            $missingFunctionRefs[$refKey] = 0
+          }
+          $missingFunctionRefs[$refKey]++
+        }
+      }
+      if (-not $counts.ContainsKey($errorCode)) { $counts[$errorCode] = 0 }
+      $counts[$errorCode]++
+      if ($a -ge $limit) { continue }
+      $at = [int]$auditMatches[$a].Groups['line'].Value
+      $verb = 'UNKNOWN'
+      $objectKind = 'UNKNOWN'
+      if ($at -ge 1 -and $at -le $sqlLines.Length) {
+        $first = [Math]::Max(0,$at - 121)
+        for ($z = $at - 1; $z -ge $first; $z--) {
+          $header = $sqlLines[$z]
+          if ($header -match '^(ALTER|CREATE|DROP|COMMENT|GRANT|REVOKE|SELECT|DO|SET|RESET)\b') {
+            $verb = $Matches[1].ToUpperInvariant()
+            if ($header -match '^(?:ALTER|CREATE|DROP|COMMENT\s+ON)\s+(?:OR\s+REPLACE\s+)?(FUNCTION|PROCEDURE|TRIGGER|OPERATOR|TABLE|VIEW|INDEX|EXTENSION|TYPE|SCHEMA|POLICY)\b') {
+              $objectKind = $Matches[1].ToUpperInvariant()
+            } elseif ($header -match '^(?:GRANT|REVOKE)\b.*\bON\s+(FUNCTION|PROCEDURE|SCHEMA|TABLE|SEQUENCE|TYPE)\b') {
+              $objectKind = $Matches[1].ToUpperInvariant()
+            }
+            break
+          }
+        }
+      }
+      $entries.Add([ordered]@{ line=$at; sqlstate=$errorCode; verb=$verb; objectKind=$objectKind })
+    }
+    $codeCounts = @($counts.Keys | Sort-Object | ForEach-Object {
+      [ordered]@{ sqlstate=$_; count=[int]$counts[$_] }
+    })
+    $missingSummary = @($missingFunctionRefs.Keys | Sort-Object | Select-Object -First 20 | ForEach-Object {
+      [ordered]@{ functionIdentifier=$_; count=[int]$missingFunctionRefs[$_] }
+    })
+    [ordered]@{
+      status='D8K13_DISPOSABLE_PG17_SCHEMA_AUDIT_ONLY_NOT_RESTORE'
+      schemaErrorCount=$total
+      sampledErrors=$entries.ToArray()
+      sampleLimit=80
+      errorsTruncated=($total -gt 80)
+      sqlstateCounts=$codeCounts
+      missingFunctionReferences=$missingSummary
+      missingFunctionReferenceLimit=20
+      functionIdentifierIsObjectMetadataOnly=$true
+      missingFunctionNamesMayBeUnknownIfSignatureIsUnparseable=$true
+      psqlExitCode=[int]$auditExit
+      classificationConfidence='LEXICAL_HEURISTIC_NOT_SQL_PARSER'
+      dataSqlExecuted=$false
+      originalZipModified=$false
+      schemaObjectsNotValidated=$true
+      aclParityVerified=$false
+      ownerSecurityReviewComplete=$false
+      productionDatabaseConnections=0
+      rawSqlOrRowsReturned=$false
+      networkDisabled=$true
+      releaseAuthorized=$false
+    } | ConvertTo-Json -Compress -Depth 8 | Write-Output
+    return
+  }
+  Run-Docker 'SCHEMA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/schema.sql')
+  if ($grantDeferredIntoSchema) {
+    Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
+  }
+  Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
+  $inventory = Get-PublicInventory $container
+  Assert-Drill ([int]$inventory.pg_major -eq 17) 'D8K13_LOCAL_RESTORE_WRONG_PG_MAJOR'
+  Assert-Drill ([int]$inventory.tables -ge 1) 'D8K13_LOCAL_RESTORE_NO_TABLES'
+  # Successful SQL application is not proof of Supabase Auth/Storage/Vault/ACL parity.
+  Write-Output ([ordered]@{
+    status='D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED'
+    inventory=$inventory
+    postgresNetworkDisabled=$true
+    isolatedRuntime='supabase/postgres:17.6.1.136'
+    rawSQLUploaded=$false
+    realBackupRowContentsReturned=$false
+    original178MigrationsReplayed=$false
+    managedAuthStorageVaultRestored=$false
+    aclParityVerified=$false
+    productionDatabaseConnections=0
+    releaseAuthorized=$false
+  } | ConvertTo-Json -Compress -Depth 5)
+}
+catch {
+  [Console]::Error.WriteLine(('D8K13_LOCAL_BACKUP_DRILL_FAILED: ' + $_.Exception.Message + '. Supabase database image can still lack managed schemas, migrations, or project-specific extensions; restore status is INCOMPLETE, not evidence of backup corruption.'))
+  exit 3
+}
+finally {
+  if ($zipReader) { $zipReader.Dispose() }
+  if ($containerStarted -and $container) {
+    & docker rm --force $container *> $null
+  }
+  if ($unpacked -and (Test-Path -LiteralPath $unpacked)) {
+    Remove-Item -LiteralPath $unpacked -Force -Recurse -ErrorAction SilentlyContinue
+  }
+}
+
     $limit = [Math]::Min($total,80)
     for ($a = 0; $a -lt $total; $a++) {
       $errorCode = $auditMatches[$a].Groups['sqlstate'].Value.ToUpperInvariant()
