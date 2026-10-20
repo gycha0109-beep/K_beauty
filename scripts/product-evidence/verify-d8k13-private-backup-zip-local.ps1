@@ -319,10 +319,10 @@ try {
         Run-Docker 'PUBLIC_FUNCTION_OWNER_MEMBERSHIP' @('exec','-u','postgres',
           $container,'psql','-X','-q','-v','ON_ERROR_STOP=1',
           '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres',
-          '-c',('GRANT "' + $roleName + '" TO postgres'))
+          '-c',('GRANT ' + $roleName + ' TO postgres'))
         $roleMembershipReady[$roleName] = $true
       }
-      $grant = 'GRANT CREATE ON SCHEMA public TO "' + $roleName + '"; '
+      $grant = 'GRANT CREATE ON SCHEMA public TO ' + $roleName + '; '
       $tempSchemaText = $tempSchemaText.Insert($change.Index, $grant)
       $preparedPublicOwners++
     }
