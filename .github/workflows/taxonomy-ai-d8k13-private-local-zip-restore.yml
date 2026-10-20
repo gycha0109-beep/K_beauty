@@ -383,6 +383,72 @@ jobs:
             throw 'D8K13_DATA_COPY_AUDIT_SOURCE_LEAKED'
           }
           Write-Host 'D8K13_SYNTHETIC_DATA_COPY_MISSING_COLUMN_AUDIT_PASS'
+      - name: Audit named COPY drift from synthetic ZIP into local-only metadata file
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'd8k13-data-copy-detail'
+          $target=Join-Path $dir 'sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $target 'schema.sql')
+          $copyData = @'
+          COPY public.products (id, name, missing_archive_column) FROM stdin;
+          8	synthetic	synthetic
+          \.
+          COPY auth.__d8k13_synthetic_absent (id, path) FROM stdin;
+          9	synthetic
+          \.
+          COPY public.products (id, name) FROM stdin;
+          10	synthetic
+          \.
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $target 'data.sql'),$copyData,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $dir 'fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $before=(Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash
+          $out=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode AuditDataDetail
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_NAMED_COPY_AUDIT_EXEC_FAILED' }
+          $line=@($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_DATA_NAMED_DETAIL_LOCAL_FILE_CREATED"' })
+          if ($line.Count -ne 1) { throw 'D8K13_NAMED_COPY_AUDIT_RESULT_MISSING' }
+          $result=$line[0] | ConvertFrom-Json
+          if ($result.copyHeaders -ne 3 -or $result.affectedCopyHeaders -ne 2 -or
+              $result.missingDestinationColumns -ne 1 -or $result.missingTableColumnReferences -ne 2 -or
+              $result.copyDataImported -ne $false -or $result.strictSchemaRestoreCompleted -ne $true -or
+              $result.releaseAuthorized -ne $false -or $result.namedMetadataRemainsOnOwnerPC -ne $true) {
+            throw 'D8K13_NAMED_COPY_AUDIT_COUNT_FAILED'
+          }
+          if ($line[0] -match 'missing_archive_column|__d8k13_synthetic_absent|COPY public|synthetic') {
+            throw 'D8K13_NAMED_COPY_AUDIT_PRIVATE_NAMES_LEAKED'
+          }
+          $detailPath=$result.namedMetadataPath
+          if (-not (Test-Path -LiteralPath $detailPath)) { throw 'D8K13_NAMED_COPY_AUDIT_FILE_MISSING' }
+          if ([System.IO.Path]::GetDirectoryName($detailPath) -ne [System.IO.Path]::GetDirectoryName($zip)) {
+            throw 'D8K13_NAMED_COPY_AUDIT_FILE_ESCAPED_PRIVATE_DIR'
+          }
+          $private=Get-Content -LiteralPath $detailPath -Raw | ConvertFrom-Json
+          if (@($private.detailProblems).Count -ne 2 -or $private.copyRowsImported -ne $false) {
+            throw 'D8K13_NAMED_COPY_AUDIT_PRIVATE_SHAPE_FAILED'
+          }
+          if (@($private.detailProblems | Where-Object {
+                $_.schema -eq 'public' -and $_.table -eq 'products' -and
+                $_.issueType -eq 'MISSING_COLUMNS' -and
+                @($_.missingColumns).Count -eq 1 -and
+                $_.missingColumns[0] -eq 'missing_archive_column'
+              }).Count -ne 1) { throw 'D8K13_NAMED_COPY_AUDIT_MISSING_COLUMN_WRONG' }
+          if (@($private.detailProblems | Where-Object {
+                $_.schema -eq 'auth' -and $_.table -eq '__d8k13_synthetic_absent' -and
+                $_.issueType -eq 'MISSING_TABLE' -and
+                $_.missingTableColumnReferences -eq 2
+              }).Count -ne 1) { throw 'D8K13_NAMED_COPY_AUDIT_MISSING_TABLE_WRONG' }
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash -ne $before) {
+            throw 'D8K13_NAMED_COPY_AUDIT_ZIP_MUTATED'
+          }
+          Remove-Item -LiteralPath $detailPath -Force
+          Write-Host 'D8K13_SYNTHETIC_NAMED_COPY_DRIFT_LOCAL_ONLY_PASS'
       - name: Aggregate multiple undefined functions in one privacy-safe isolated schema audit
         shell: pwsh
         run: |
