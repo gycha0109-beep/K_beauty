@@ -40,7 +40,7 @@ jobs:
           $root = Join-Path $env:RUNNER_TEMP 'd8k13-lexical-fixture'
           $sqlDir = Join-Path $root 'sql'
           New-Item -ItemType Directory -Path $sqlDir -Force | Out-Null
-          [System.IO.File]::WriteAllText((Join-Path $sqlDir 'roles.sql'),"CREATE ROLE synthetic_role NOLOGIN;",[System.Text.UTF8Encoding]::new($false))
+          [System.IO.File]::WriteAllText((Join-Path $sqlDir 'roles.sql'),"CREATE ROLE synthetic_role NOLOGIN;`nCREATE ROLE local_fixture_role NOLOGIN;",[System.Text.UTF8Encoding]::new($false))
           # Satisfy the real-backup archive minimum size using SYNTHETIC entropy only.
           $entropy = New-Object byte[] 4096
           $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -55,6 +55,9 @@ jobs:
           GRANT EXECUTE ON FUNCTION private.fixture() TO authenticated;
           ALTER TABLE public.fake
             OWNER TO postgres;
+          ALTER FUNCTION public.more() OWNER TO "local_fixture_role";
+          ALTER FUNCTION recommendation_shadow.more() OWNER TO authenticated;
+          ALTER FUNCTION public.more() OWNER TO "bad-role";
           '@
           [System.IO.File]::WriteAllText((Join-Path $sqlDir 'schema.sql'),$fixtureSql,[System.Text.UTF8Encoding]::new($false))
           Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -83,6 +86,29 @@ jobs:
           $owner = $ownerResult | ConvertFrom-Json
           if ($owner.objectKind -ne 'TABLE' -or $owner.operation -ne 'OWNER_TO') {
             throw 'D8K13_LINE_CLASSIFIER_MULTILINE_OWNER_WRONG'
+          }
+          if ($json.ownerTransferStatementShape -ne 'QUALIFIED_SINGLE_LINE' -or
+              $json.ownerRoleSourceClass -ne 'NOT_DECLARED_OR_EXTERNALLY_MANAGED' -or
+              $json.functionSchemaClass -ne 'PRIVATE') { throw 'D8K13_OWNER_CLASSIFIER_PRIVATE_PROVENANCE_WRONG' }
+          $declaredResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 8
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_OWNER_CLASSIFIER_DECLARED_ROLE_EXEC_FAILED' }
+          $declared = $declaredResult | ConvertFrom-Json
+          if ($declared.ownerRoleSourceClass -ne 'DECLARED_IN_ROLES_SQL' -or
+              $declared.functionSchemaClass -ne 'PUBLIC' -or
+              $declared.ownerTransferStatementShape -ne 'QUALIFIED_SINGLE_LINE') { throw 'D8K13_OWNER_CLASSIFIER_DECLARED_ROLE_WRONG' }
+          $managedResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 9
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_OWNER_CLASSIFIER_MANAGED_ROLE_EXEC_FAILED' }
+          $managed = $managedResult | ConvertFrom-Json
+          if ($managed.ownerRoleSourceClass -ne 'KNOWN_SUPABASE_BASELINE' -or
+              $managed.functionSchemaClass -ne 'OTHER_CUSTOM') { throw 'D8K13_OWNER_CLASSIFIER_MANAGED_ROLE_WRONG' }
+          $unsupportedResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 10
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_OWNER_CLASSIFIER_UNSUPPORTED_EXEC_FAILED' }
+          $unsupported = $unsupportedResult | ConvertFrom-Json
+          if ($unsupported.ownerTransferStatementShape -ne 'UNPARSEABLE' -or
+              $unsupported.ownerRoleSourceClass -ne 'UNDETERMINED') { throw 'D8K13_OWNER_CLASSIFIER_UNSUPPORTED_DID_NOT_FAIL_CLOSED' }
+          $allClassifications = @($result,$declaredResult,$managedResult,$unsupportedResult) -join ' '
+          if ($allClassifications -match 'SECRET_CANARY|fixture|synthetic_role|local_fixture_role|product_offer_link_health_recorder_owner|CREATE FUNCTION|ALTER FUNCTION|bad-role') {
+            throw 'D8K13_OWNER_CLASSIFIER_ROLE_OR_RAW_SQL_LEAKED'
           }
           $bad = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 ('0'*64) -LineNumber 4 2>&1
           if ($LASTEXITCODE -ne 3 -or (($bad -join '') -notmatch 'D8K13_LOCAL_SCHEMA_LINE_CLASSIFICATION_FAILED')) {
