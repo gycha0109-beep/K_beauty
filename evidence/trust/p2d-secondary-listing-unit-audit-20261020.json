@@ -32,7 +32,11 @@
           "physicalContainerCount": 1,
           "sheetCount": 70
         }
-      ]
+      ],
+      "catalogReadOnly": {
+        "sourceUrl": "https://www.hwahae.co.kr/products/2140507",
+        "sourceOfferStatus": "SOURCE_OFFER_NOT_INDEPENDENTLY_RESOLVED"
+      }
     },
     {
       "productId": "bd98f785-15c8-4800-af64-d39c3ad873a0",
@@ -55,7 +59,11 @@
           "physicalContainerCount": 2,
           "sheetCount": null
         }
-      ]
+      ],
+      "catalogReadOnly": {
+        "sourceUrl": null,
+        "sourceOfferStatus": "NO_CATALOG_SOURCE_URL"
+      }
     },
     {
       "productId": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
@@ -78,7 +86,11 @@
           "physicalContainerCount": 1,
           "sheetCount": null
         }
-      ]
+      ],
+      "catalogReadOnly": {
+        "sourceUrl": "https://www.hwahae.co.kr/goods/62479",
+        "sourceOfferStatus": "CATALOG_SOURCE_POINTS_TO_300ML_PLUS_200ML_REFILL_PUMP_BUNDLE"
+      }
     },
     {
       "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
@@ -97,5 +109,12 @@
     "factWrites": 0,
     "aiApiCalls": 0,
     "confirmedExactSkuCount": 0
+  },
+  "catalogReadOnlyCheck": {
+    "observedDate": "2026-10-20",
+    "accessMode": "READ_ONLY_SELECT_BY_FROZEN_PRODUCT_IDS",
+    "table": "public.products",
+    "writes": 0,
+    "note": "Existing product.source_url is a secondary marketplace link, not official SKU proof. Source listing text identified only from public web-index results; no direct manufacturer fetch."
   }
 }
