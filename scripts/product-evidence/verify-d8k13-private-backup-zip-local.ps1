@@ -236,7 +236,7 @@ try {
   # Changes below affect this --network none disposable container exclusively.
   foreach ($schemaName in @('private','recommendation_shadow')) {
     $escapedName = [regex]::Escape($schemaName)
-    $declares = [regex]::IsMatch($schemaText, ('(?im)^\s*CREATE\s+SCHEMA\s+(?:IF\s+NOT\s+EXISTS\s+)?"?' + $escapedName + '"?\s*;'))
+    $declares = [regex]::IsMatch($schemaText, ('(?im)^[ \t]*CREATE\s+SCHEMA\s+(?:IF\s+NOT\s+EXISTS\s+)?"?' + $escapedName + '"?(?=\s|;)'))
     $used = [regex]::IsMatch($schemaText, ('(?i)"?' + $escapedName + '"?\s*\.')) -or
       [regex]::IsMatch($schemaText, ('(?i)\b(?:ON|IN)\s+SCHEMA\s+"?' + $escapedName + '"?\b'))
     if ($used -and -not $declares) {
