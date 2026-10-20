@@ -107,5 +107,13 @@
     "visibility": "Private dependency install output intentionally withheld. Whether token access or lockfile/network caused the failure was not proven.",
     "noRelationToTrustMeasurement": true
   },
-  "authorizedOneShotConsumed": true
+  "authorizedOneShotConsumed": true,
+  "currentMainHealthRerun": {
+    "runId": 39362275512,
+    "attempt": 2,
+    "jobId": 118431684401,
+    "conclusion": "success",
+    "scope": "Rerun only the originally failed Main Health job. No official source-site requests or TRUST live job replay.",
+    "note": "The first attempt was a protected/private package install failure. Successful rerun does not reveal the first attempt's hidden underlying cause."
+  }
 }
