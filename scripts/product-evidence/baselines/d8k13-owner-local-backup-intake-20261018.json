@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_SQLSTATE_42883_LINE_36502_AFTER_PUBLIC_OWNER_GRANTS_9_SCHEMA_BATCH_AUDIT_CI_PENDING",
+  "state": "OWNER_REAL_SCHEMA_42883_LINE_36502_BATCH_SCHEMA_AUDIT_PG17_CI_PASS_OWNER_RUN_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -366,11 +366,29 @@
       ],
       "ignoresSchemaErrorsOnlyForAuditEnumeration": true,
       "strictRestoreModeUnchanged": true,
-      "syntheticCiVerified": false,
+      "syntheticCiVerified": true,
       "rawSqlNeverOutput": true,
       "runOnOwnerPcAfterCiOnly": true,
       "productionDatabaseConnections": 0,
-      "releaseAuthorized": false
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "runId": 39375433292,
+        "jobId": 118472411060,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39375433292",
+        "conclusion": "success",
+        "testedCommit": "2104abbdd87c6891aa231373854616882c9911dd",
+        "scope": "synthetic only, no owner ZIP",
+        "covered": [
+          "first-run cold-image",
+          "public and private owner staging",
+          "multiple undefined_function errors collected in one isolated schema audit",
+          "raw SQL/identifiers not emitted",
+          "data.sql not executed",
+          "negative and strict restore regressions",
+          "unparsed SQLSTATE or psql fatal fail-closed"
+        ]
+      },
+      "actualOwnerZipBatchAuditRun": false
     }
   },
   "syntheticCi": {
