@@ -1106,6 +1106,21 @@ assert.equal(unmarkedParagraph.primaryRootDiagnostic.titleMarkerCount,0);
 assert.equal(unmarkedParagraph.primaryRootDiagnostic.rootBodyNameMentionCount,1);
 assert.equal(unmarkedParagraph.primaryRootDiagnostic.matchedTitleCount,0);
 assert.equal(unmarkedParagraph.primaryRootDiagnostic.scopedNameAndSizeCandidate,false);
+// P2-F8: strict-root title-location and candidate-text mismatch fingerprint.
+// None of these observations changes the generic-title IDENTITY hold.
+const fullTitleDiag=titleAsParagraph.primaryRootDiagnostic.titleMismatchFingerprint;
+assert.equal(fullTitleDiag.recognizedTitlesWithinRootCount,1);
+assert.equal(fullTitleDiag.recognizedTitlesOutsideRootCount,0);
+assert.equal(fullTitleDiag.catalogRelation,"MARKED_TITLE_CATALOG_NAME_MATCH");
+assert.equal(fullTitleDiag.unmarkedNameProbeComplete,true);
+assert.equal(fullTitleDiag.unmarkedCatalogNameHeadingCount,0);
+assert.equal(fullTitleDiag.unmarkedCatalogNameInlineCount,0);
+const plainDiag=unmarkedParagraph.primaryRootDiagnostic.titleMismatchFingerprint;
+assert.equal(plainDiag.recognizedTitlesWithinRootCount,0);
+assert.equal(plainDiag.catalogRelation,"NO_MARKED_TITLE_IN_ROOT");
+assert.equal(plainDiag.unmarkedCatalogNameHeadingCount,0);
+assert.equal(plainDiag.unmarkedCatalogNameInlineCount,1);
+
 const unselectedH3=classifiedGeneric(productRoot(
   '<h3 class="goods-name">'+genericProduct.name+'</h3>'+ownedForm("none")));
 assert.notEqual(unselectedH3.status,"SCOPED_HEADING_CANDIDATE");
@@ -1120,6 +1135,8 @@ assert.notEqual(unrelatedH3.status,"SCOPED_HEADING_CANDIDATE");
 assert.equal(unrelatedH3.primaryRootDiagnostic.holdStage,
   "NO_MATCHING_SCOPED_TITLE");
 assert.equal(unrelatedH3.primaryRootDiagnostic.matchedRootCount,0);
+assert.equal(unrelatedH3.primaryRootDiagnostic.titleMismatchFingerprint.catalogRelation,
+  "MARKED_TITLE_NO_CATALOG_NAME_RELATION");
 const crossSellH3=classifiedGeneric(productRoot(
   '<div class="related-products"><h3 class="goods-name">'+genericProduct.name+
   '</h3></div>'+ownedForm("50")));
@@ -1130,6 +1147,25 @@ const parserHold=classifiedGeneric('<section class="product-detail">'+coreName+
   ownedForm("50"));
 assert.equal(parserHold.primaryRootDiagnostic.holdStage,"STRICT_DOM_PARSER_HOLD");
 assert.equal(parserHold.primaryRootDiagnostic.parseComplete,false);
+assert.equal(parserHold.primaryRootDiagnostic.titleMismatchFingerprint,null);
+const outsideMarkerDiag=classifiedGeneric(productRoot(
+  '<p class="detail-copy">'+genericProduct.name+'</p>')+
+  '<h1>토리든 Torriden</h1>');
+assert.equal(outsideMarkerDiag.status,"BODY_NAME_MENTION_ONLY");
+assert.equal(
+  outsideMarkerDiag.primaryRootDiagnostic.titleMismatchFingerprint.recognizedTitlesWithinRootCount,0);
+assert.equal(
+  outsideMarkerDiag.primaryRootDiagnostic.titleMismatchFingerprint.recognizedTitlesOutsideRootCount,1);
+assert.equal(
+  outsideMarkerDiag.primaryRootDiagnostic.titleMismatchFingerprint.catalogRelation,
+  "NO_MARKED_TITLE_IN_ROOT");
+for(const diag of [fullTitleDiag,plainDiag,
+  unrelatedH3.primaryRootDiagnostic.titleMismatchFingerprint,
+  outsideMarkerDiag.primaryRootDiagnostic.titleMismatchFingerprint]){
+  const safe=JSON.stringify(diag);
+  for(const secret of [genericProduct.name,"goods-name","detail-copy","<h1","<p"])
+    assert.ok(!safe.includes(secret),"no untrusted text in mismatch fingerprint");
+}
 for(const result of [titleAsParagraph,titleAsH3,unmarkedParagraph,
   unselectedH3,unrelatedH3,crossSellH3,parserHold]){
   assert.equal(result.primaryRootDiagnostic.exactSkuVerified,false);
@@ -1140,6 +1176,7 @@ for(const result of [titleAsParagraph,titleAsH3,unmarkedParagraph,
   assert.equal(JSON.stringify(result).includes("<h3"),false);
   assert.equal(JSON.stringify(result).includes("goods-name"),false);
 }
+console.log("TRUST_P2F8_NONAUTHORITATIVE_TITLE_FINGERPRINT_PASS");
 console.log("TRUST_P2F7_GENERIC_TITLE_ROOT_DIAGNOSTIC_HOLDS_PASS");
 
 const explicitDocumentTitle=classifyTrustOfficialCandidatePage(Buffer.from(
