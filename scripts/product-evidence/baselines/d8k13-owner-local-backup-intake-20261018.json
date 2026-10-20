@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_20_POLICY_42883_LOCAL_REFERENCE_INVENTORY_SYNTHETIC_CI_PASS_OWNER_OFFLINE_RUN_PENDING",
+  "state": "OWNER_REAL_20_POLICY_42883_UNQUALIFIED_OR_QUOTED_ROUTINE_INVENTORY_FIX_CI_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -435,6 +435,31 @@
           "hash mismatch fail closed previously covered",
           "full no-network Supabase PG17 restore regression"
         ]
+      },
+      "ownerFirstResult20261020": {
+        "status": "D8K13_POLICY_REFERENCE_INVENTORY_LOCAL_ONLY",
+        "inspectedPolicyCount": 20,
+        "firstErrorLine": 36502,
+        "lastErrorLine": 36578,
+        "uniqueQualifiedReferenceCount": 0,
+        "references": [],
+        "sharedAcrossAllPolicies": [],
+        "unresolvedUnqualifiedOrDynamicReferencesPossible": true,
+        "rawSqlReturned": false,
+        "originalZipModified": false,
+        "productionDatabaseConnections": 0,
+        "releaseAuthorized": false,
+        "interpretation": "The original detector matched only unquoted qualified routines; zero does NOT establish there are no function calls or that one is missing."
+      },
+      "expandedClassifier20261020": {
+        "quotedAndUnqualifiedFunctionCalls": true,
+        "stripsStringLiteralsAndComments": true,
+        "stillLexicalOnly": true,
+        "syntheticCiRunId": 39382818032,
+        "syntheticCiPassed": false,
+        "ownerExpandedRerunPending": true,
+        "authRlsModifications": false,
+        "releaseAuthorized": false
       }
     }
   },
