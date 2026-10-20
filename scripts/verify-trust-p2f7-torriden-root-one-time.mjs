@@ -133,7 +133,7 @@ assert.deepEqual(disallowedCalls,[ORIGIN+"/robots.txt"]);
 assert.equal(disallowed.requestAttempts,1);
 assert.equal(disallowed.productPagesFetched,0);
 assert.equal(disallowed.page,null);
-assert.equal(disallowed.targetState,"NO_PRODUCT_PAGE");
+assert.equal(disallowed.targetState,"SOURCE_POLICY_HOLD");
 assert.equal(disallowed.requestDisposition,"PAGE_NOT_REQUESTED_POLICY_HOLD");
 
 const blocked=await runTrustP2F7TorridenDiagnostic({
