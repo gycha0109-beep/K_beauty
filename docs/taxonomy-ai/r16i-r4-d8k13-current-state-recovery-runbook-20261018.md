@@ -252,3 +252,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\diagnose-line-l
 - **합성 수락:** GitHub Actions [#39364883648](https://github.com/gycha0109-beep/K_beauty/actions/runs/39364883648), job `118439895100`, code commit `79fbd1e3754dab2109b8aed77b24791a6c773082`, SUCCESS. 추가한 역할 출처/스키마 종류 비식별 분류기의 인용 식별자·roles.sql 선언·managed baseline·미지원 식별자 fail-closed·ZIP SHA 거절 검증과 이전 격리 PG17 SQL restore 회귀 모두 통과. **실 ZIP을 CI에 업로드하지 않음**.
 - 이제 동일 Windows 로컬 ZIP을 변경하지 말고 최신 `diagnose-d8k13-private-backup-schema-line-local.ps1`을 GitHub 기능 브랜치에서 다시 받아 `-LineNumber 22086`로만 실행. 기존 분류 필드에 `ownerTransferStatementShape`, `ownerRoleSourceClass`, `functionSchemaClass`가 추가된다. 해당 세 고정값만 받아 역할이 백업에 있는지, 대상 스키마가 기본/managed/custom인지 구분; role/schema 식별자·원문·ZIP 업로드 금지.
 - 이 절차는 복원 재실행이 아니며, 사용자 측 실제 역할 출처 분류가 오기 전에는 자동 역할 멤버십·CREATE 부여를 하지 않는다. `schema.sql/data.sql` 복원 및 권한·RLS/Auth/Storage/Vault 동등성은 계속 미확인, PR Draft/보안 #1208 OPEN/RELEASE HOLD.
+
+### 6.13. Owner 22086 public 함수 소유권 복원 코딩 및 PG17 합성 수락 (2026-10-20)
+
+- **실 ZIP 사용자의 증거(비식별):** `schema.sql:22086`에서 `ALTER FUNCTION … OWNER TO`, `functionSchemaClass=PUBLIC`, `ownerRoleSourceClass=DECLARED_IN_ROLES_SQL`, SQLSTATE 42501. 기존 `private` 함수·소유자와 다름. 실제 schema/data 복원 미완료.
+- **실제 코드 수정:** `scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1`에서 `ALTER FUNCTION public.<function> OWNER TO <role>` 중 roles.sql의 `CREATE ROLE`로 확인된 안전한 소문자 식별자에 대해서만 `GRANT <role> TO postgres` 및 `GRANT CREATE ON SCHEMA public TO <role>`를 임시 `--network none` PG17 컨테이너에서 준비. 같은 역할 여러 함수는 일괄 처리. `schema.sql`은 로컬 임시 추출본에 원본 줄 번호를 보존하는 방식으로만 권한 SQL을 선행 배치. ZIP/함수 소유권 변경 원문, 운영 Supabase 역할·ACL은 건드리지 않음. 임시 GRANT가 잔류하므로 restore 성공만으로 **권한 동등성 보증 불가**.
+- **테스트:** `CREATE ROLE d8k13_public_fixture_owner NOLOGIN` + `CREATE FUNCTION public...` + `ALTER FUNCTION ... OWNER TO` 합성 fixture 추가. CI 최초 #39367681125 는 인용 부호와 Docker ArgumentList 충돌로 42601 실패했고, 검증된 식별자의 불필요한 중첩 SQL 쌍따옴표를 제거. **[CI #39368088218](https://github.com/gycha0109-beep/K_beauty/actions/runs/39368088218) job `118449431599` SUCCESS**; code `fa6fbbbf62291e33b26c7a84eb03a47bb42830ec`. 새 public fixture, 기존 private owner, schema variants, 오류 비식별, ZIP 검증 전체 합성 성공. 실제 ZIP CI 업로드/사용 없음.
+- **다음 유일한 owner 절차:** 기존 동일 로컬 ZIP을 바꾸지 않고 아래 최신 기능 브랜치의 검증된 복원 스크립트만 갱신하여 1회 격리 복원. 사용자 PC에 설치된 Docker Desktop / 복원 리포지터리에서 실행한다.
+~~~powershell
+git fetch origin feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
+$folder = "$HOME\BEJEWELY_Private_DB_Backups"
+git show "FETCH_HEAD:scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1" |
+    Set-Content "$folder\restore-local.ps1" -Encoding UTF8
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.ps1" -Mode Restore
+~~~
+- 기대 진단 마커: `D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_<N>` 후 `D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED`; 또는 안전한 SQLSTATE/원본 줄 번호. 실 ZIP 성공으로 표시하려면 실제 schema.sql/data.sql이 모두 완주해야 함. 이후 RLS/ACL/role/owner/데이터 무결성 및 Auth·Storage·Vault 동등성/미포함 범위를 독립 검증. 역사적 178 migration replay 별도 HOLD. PR #1341 DRAFT, #1208 OPEN, release HOLD, 운영 DB 변경/배포/merge 금지.
