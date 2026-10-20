@@ -1243,6 +1243,44 @@ for(const result of [reviewFixture,extendedButWrong,extendedNoForm,
   assert.equal(result.factConfirmationAuthorized,false);
   assert.equal(result.identityAuthority,"NONE");
 }
+// P2-F10: rejected title prefixes / contradictory size strings must retain
+// BODY_NAME_MENTION_ONLY and never become upstream SKU evidence.
+const clippedTitle=classifiedGeneric(productRoot(
+  '<h3 class="goods-name">공식 스토어 | '+genericProduct.name+
+  ' | '+('안내'.repeat(315))+' 사은품 증정</h3>'+ownedForm("50")));
+assert.equal(clippedTitle.status,"BODY_NAME_MENTION_ONLY");
+assert.equal(clippedTitle.nameSignalStatus,"BODY_NAME_MENTION_ONLY");
+assert.equal(clippedTitle.identityAuthority,"NONE");
+assert.equal(clippedTitle.primaryRootDiagnostic.status,"PRIMARY_ROOT_NOT_PROVEN");
+assert.equal(clippedTitle.primaryRootDiagnostic.embeddedTitleReviewShadow.status,
+  "MARKED_TITLE_TEXT_TRUNCATED_HOLD");
+assert.equal(clippedTitle.primaryRootDiagnostic.embeddedTitleReviewShadow.reviewCandidate,false);
+const contradictoryTitle=classifiedGeneric(productRoot(
+  '<h3 class="goods-name">공식 스토어 | '+genericProduct.name+
+  ' | 100ml 상세</h3>'+ownedForm("50")));
+assert.equal(contradictoryTitle.status,"BODY_NAME_MENTION_ONLY");
+assert.equal(contradictoryTitle.identityAuthority,"NONE");
+assert.equal(contradictoryTitle.primaryRootDiagnostic.embeddedTitleReviewShadow.status,
+  "TITLE_EXPLICIT_SIZE_CONFLICT_HOLD");
+assert.equal(contradictoryTitle.primaryRootDiagnostic.embeddedTitleReviewShadow.reviewCandidate,false);
+const ambiguousTitle=classifiedGeneric(productRoot(
+  '<h3 class="goods-name">공식 스토어 | '+genericProduct.name+
+  ' | 50ml / 100ml 상세</h3>'+ownedForm("50")));
+assert.equal(ambiguousTitle.status,"BODY_NAME_MENTION_ONLY");
+assert.equal(ambiguousTitle.primaryRootDiagnostic.embeddedTitleReviewShadow.status,
+  "TITLE_MULTIPLE_SIZE_CLAIMS_HOLD");
+for(const tested of [clippedTitle,contradictoryTitle,ambiguousTitle]){
+  assert.equal(tested.primaryRootDiagnostic.embeddedTitleReviewShadow.exactSkuVerified,false);
+  assert.equal(tested.subjectCreationAuthorized,false);
+  assert.equal(tested.factConfirmationAuthorized,false);
+  assert.equal(tested.marketVerified,false);
+  assert.equal(tested.formulationVerified,false);
+  const serialized=JSON.stringify(tested.primaryRootDiagnostic.embeddedTitleReviewShadow);
+  for(const secret of [genericProduct.name,"사은품 증정","100ml","goods-name","<h3"]){
+    assert.ok(!serialized.includes(secret),"P2-F10 no title/HTML leaked "+secret);
+  }
+}
+console.log("TRUST_P2F10_MARKED_TITLE_TRUNCATION_AND_SIZE_HOLDS_PASS");
 console.log("TRUST_P2F9_EMBEDDED_TITLE_REVIEW_ONLY_P2_PASS");
 console.log("TRUST_P2F8_NONAUTHORITATIVE_TITLE_FINGERPRINT_PASS");
 console.log("TRUST_P2F7_GENERIC_TITLE_ROOT_DIAGNOSTIC_HOLDS_PASS");
