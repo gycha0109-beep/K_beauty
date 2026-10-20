@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore','AuditSchema','AuditData')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -489,7 +489,7 @@ $d8k13_auth$;
   if ($grantDeferredIntoSchema) {
     Write-Output 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY'
   }
-  if ($Mode -eq 'AuditData') {
+  if ($Mode -in @('AuditData','AuditDataDetail')) {
     # The strict schema restore above must succeed first. Inspect COPY headers,
     # never import rows. Compare every source column with the actual isolated
     # destination catalog in ONE query to avoid line-by-line user roundtrips.
@@ -570,12 +570,12 @@ __D8K13_SOURCE_ROWS__
         ) AS column_exists
  FROM source s
 ), problems AS (
- SELECT line, ns,
+ SELECT line, ns, tbl,
         count(*) FILTER (WHERE NOT table_exists) AS absent_table_columns,
         count(*) FILTER (WHERE table_exists AND NOT column_exists) AS absent_columns
  FROM checks
  WHERE NOT table_exists OR NOT column_exists
- GROUP BY line,ns
+ GROUP BY line,ns,tbl
 )
 SELECT json_build_object(
  'totalCopyHeaders',(SELECT count(DISTINCT line) FROM source),
@@ -590,7 +590,19 @@ SELECT json_build_object(
        ELSE 'OTHER_SCHEMA' END,
     'absentColumns',p.absent_columns,
     'missingTableColumnReferences',p.absent_table_columns
- ) ORDER BY p.line) FROM (SELECT * FROM problems ORDER BY line LIMIT 60) p),'[]'::json)
+ ) ORDER BY p.line) FROM (SELECT * FROM problems ORDER BY line LIMIT 60) p),'[]'::json),
+ 'detailProblems',coalesce((SELECT json_agg(json_build_object(
+    'line',p.line,
+    'schema',p.ns,
+    'table',p.tbl,
+    'issueType',CASE WHEN p.absent_table_columns>0 THEN 'MISSING_TABLE' ELSE 'MISSING_COLUMNS' END,
+    'sourceColumns',(SELECT count(*) FROM checks c
+      WHERE c.line=p.line AND c.ns=p.ns AND c.tbl=p.tbl),
+    'missingTableColumnReferences',p.absent_table_columns,
+    'missingColumns',coalesce((SELECT json_agg(c.col ORDER BY c.col) FROM checks c
+      WHERE c.line=p.line AND c.ns=p.ns AND c.tbl=p.tbl
+        AND c.table_exists AND NOT c.column_exists),'[]'::json)
+  ) ORDER BY p.line,p.ns,p.tbl) FROM problems p),'[]'::json)
 )::text
 '@
     $catalogQuery = $catalogQuery.Replace('__D8K13_SOURCE_ROWS__',$sourceRows)
@@ -605,6 +617,70 @@ SELECT json_build_object(
     $probeText = [System.IO.File]::ReadAllText($probeFile)
     Assert-Drill ($probeText.Trim().StartsWith('{')) 'D8K13_LOCAL_DATA_AUDIT_BAD_CATALOG_RESULT'
     $probe = $probeText.Trim() | ConvertFrom-Json
+    if ($Mode -eq 'AuditDataDetail') {
+      # Exact named object metadata stays only on the owner's PC.
+      $items = @($probe.detailProblems)
+      Assert-Drill ($items.Count -eq [int]$probe.affectedCopyHeaders) 'D8K13_LOCAL_DATA_DETAIL_COUNT_MISMATCH'
+      $grouped = @($items | Group-Object -Property schema | Sort-Object Name | ForEach-Object {
+        [ordered]@{
+          schemaClass=if ($_.Name -eq 'public') { 'PUBLIC' }
+            elseif ($_.Name -in @('auth','storage','vault','realtime','extensions','supabase_migrations')) { 'SUPABASE_MANAGED' }
+            else { 'OTHER_SCHEMA' }
+          missingTables=@($_.Group | Where-Object { $_.issueType -eq 'MISSING_TABLE' }).Count
+          tablesWithMissingColumns=@($_.Group | Where-Object { $_.issueType -eq 'MISSING_COLUMNS' }).Count
+          mismatchedCopyHeaders=[int]$_.Count
+        }
+      })
+      $privateDir = [System.IO.Path]::GetDirectoryName($file.FullName)
+      $detailPath = Join-Path $privateDir ('D8K13_LOCAL_COPY_DRIFT_DETAILS_' +
+        [DateTime]::UtcNow.ToString('yyyyMMdd_HHmmss') + '_' +
+        [guid]::NewGuid().ToString('N').Substring(0,8) + '.json')
+      $privateDetail = [ordered]@{
+        status='D8K13_LOCAL_COPY_DRIFT_NAMED_METADATA_PRIVATE_ONLY'
+        backupSha256=$digest
+        inspectedCopyHeaders=[int]$probe.totalCopyHeaders
+        affectedCopyHeaders=[int]$probe.affectedCopyHeaders
+        missingDestinationColumns=[int]$probe.missingColumns
+        missingTableColumnReferences=[int]$probe.missingTableColumnReferences
+        detailProblems=$items
+        note='Metadata: COPY line, schema, table, missing column names. No source SQL, row data or credentials.'
+        copyRowsImported=$false
+        originalZipModified=$false
+        productionDatabaseConnections=0
+        releaseAuthorized=$false
+      }
+      $privateJson = $privateDetail | ConvertTo-Json -Depth 8
+      $utf8 = [System.Text.UTF8Encoding]::new($false)
+      $stream = [System.IO.File]::Open($detailPath,[System.IO.FileMode]::CreateNew,[System.IO.FileAccess]::Write,[System.IO.FileShare]::None)
+      try {
+        $payload = $utf8.GetBytes($privateJson)
+        $stream.Write($payload,0,$payload.Length)
+      } finally { $stream.Dispose() }
+      [ordered]@{
+        status='D8K13_DISPOSABLE_PG17_DATA_NAMED_DETAIL_LOCAL_FILE_CREATED'
+        copyHeaders=[int]$probe.totalCopyHeaders
+        affectedCopyHeaders=[int]$probe.affectedCopyHeaders
+        missingDestinationColumns=[int]$probe.missingColumns
+        missingTableColumnReferences=[int]$probe.missingTableColumnReferences
+        schemaClassCounts=@($grouped | Group-Object -Property schemaClass | ForEach-Object {
+          [ordered]@{
+            schemaClass=$_.Name
+            mismatchedCopyHeaders=[int](($_.Group | Measure-Object -Property mismatchedCopyHeaders -Sum).Sum)
+            missingTables=[int](($_.Group | Measure-Object -Property missingTables -Sum).Sum)
+            tablesWithMissingColumns=[int](($_.Group | Measure-Object -Property tablesWithMissingColumns -Sum).Sum)
+          }
+        })
+        namedMetadataPath=$detailPath
+        namedMetadataRemainsOnOwnerPC=$true
+        sourceSqlOrRowDataPrinted=$false
+        copyDataImported=$false
+        strictSchemaRestoreCompleted=$true
+        originalZipModified=$false
+        productionDatabaseConnections=0
+        releaseAuthorized=$false
+      } | ConvertTo-Json -Compress -Depth 6 | Write-Output
+      return
+    }
     [ordered]@{
       status='D8K13_DISPOSABLE_PG17_DATA_COPY_HEADER_AUDIT_ONLY_NOT_RESTORE'
       observedErrorCode='42703'
