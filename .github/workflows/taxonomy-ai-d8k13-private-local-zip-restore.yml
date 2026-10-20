@@ -167,6 +167,29 @@ jobs:
           if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_NO_PUBLIC_OWNER_GRANTS_NOT_APPLIED' }
           if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_NO_PUBLIC_RESTORE_PASS_MARKER_MISSING' }
           Write-Host 'D8K13_SYNTHETIC_NO_CREATE_PUBLIC_RESTORE_PASS'
+      - name: Restore synthetic dump that explicitly declares private schema before function owner transfer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $source = Join-Path $env:RUNNER_TEMP 'd8k13-no-public/sql'
+          $target = Join-Path $env:RUNNER_TEMP 'd8k13-explicit-private/sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          Copy-Item (Join-Path $source 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $source 'data.sql') (Join-Path $target 'data.sql')
+          $schema = [System.IO.File]::ReadAllText((Join-Path $source 'schema.sql'))
+          if ($schema -notmatch '(?m)^CREATE FUNCTION private\.') { throw 'D8K13_EXPLICIT_PRIVATE_FIXTURE_MISSING_OWNER_FUNCTION' }
+          $schema = $schema -replace '(?m)^CREATE FUNCTION private\.', ("CREATE SCHEMA private;`nCREATE FUNCTION private.")
+          [System.IO.File]::WriteAllText((Join-Path $target 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
+          $zip = Join-Path $env:RUNNER_TEMP 'd8k13-explicit-private/fixture.zip'
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $bytes = [long](Get-Item -LiteralPath $zip).Length
+          $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $bytes -Mode Restore
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_EXPLICIT_PRIVATE_RESTORE_FAILED' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_GRANT_STAGED_FOR_IN_DUMP_SCHEMA')) { throw 'D8K13_EXPLICIT_PRIVATE_GRANT_NOT_DEFERRED' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_EXPLICIT_PRIVATE_OWNER_GRANT_NOT_READY' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_EXPLICIT_PRIVATE_SCHEMA_DATA_NOT_RESTORED' }
+          Write-Host 'D8K13_SYNTHETIC_EXPLICIT_PRIVATE_SCHEMA_OWNER_RESTORE_PASS'
       - name: Refuse missing unknown schema and print name only without SQL content
         shell: pwsh
         run: |
