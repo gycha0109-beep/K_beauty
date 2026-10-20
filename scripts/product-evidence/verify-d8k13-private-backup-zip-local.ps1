@@ -229,6 +229,72 @@ try {
     Run-Docker ('COPY_' + $name) @('cp',(Join-Path $unpacked $name),($container + ':/tmp/' + $name))
   }
   Run-Docker 'ROLES' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/roles.sql')
+
+  # A Supabase CLI public-schema dump can reference auth.jwt()/auth.uid()
+  # without containing these Supabase-managed helper function definitions.
+  # This is an isolated restore *test runtime*, not a production migration.
+  # Use the definitions from Supabase Auth's upstream SQL migrations, add
+  # ONLY missing 0-argument functions, and check the resulting signatures.
+  # Do not replace installed managed helpers, weaken RLS, or touch data.
+  $usesAuthClaimsHelpers = [regex]::IsMatch($schemaText,
+    '(?i)(?:"auth"|auth)\s*\.\s*(?:"jwt"|"uid"|jwt|uid)\s*\(')
+  if ($usesAuthClaimsHelpers) {
+    # If the source dump defines these helpers, a preseed would hide an
+    # incomplete source/runtime contract. Never silently override dump SQL.
+    $sourceCreatesHelpers = [regex]::IsMatch($schemaText,
+      '(?im)^[ \t]*CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+(?:"auth"|auth)\s*\.\s*(?:"jwt"|"uid"|jwt|uid)\s*\(')
+    Assert-Drill (-not $sourceCreatesHelpers) 'D8K13_AUTH_HELPERS_DECLARED_IN_DUMP_UNSUPPORTED'
+    $authBaselineSql = @'
+DO $d8k13_auth$
+BEGIN
+  IF to_regnamespace('auth') IS NULL THEN
+    RAISE EXCEPTION USING ERRCODE = '3F000', MESSAGE = 'D8K13_AUTH_MANAGED_SCHEMA_ABSENT';
+  END IF;
+  IF to_regprocedure('auth.uid()') IS NULL THEN
+    EXECUTE $definition$
+      CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE
+      AS $body$
+        SELECT coalesce(
+          nullif(current_setting('request.jwt.claim.sub', true), ''),
+          (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')
+        )::uuid
+      $body$
+    $definition$;
+  END IF;
+  IF to_regprocedure('auth.jwt()') IS NULL THEN
+    EXECUTE $definition$
+      CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE
+      AS $body$
+        SELECT coalesce(
+          nullif(current_setting('request.jwt.claim', true), ''),
+          nullif(current_setting('request.jwt.claims', true), '')
+        )::jsonb
+      $body$
+    $definition$;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_proc p WHERE p.oid = to_regprocedure('auth.uid()')
+      AND p.prorettype = 'uuid'::regtype AND p.provolatile = 's'
+      AND p.prosecdef = false AND p.pronargs = 0
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_proc p WHERE p.oid = to_regprocedure('auth.jwt()')
+      AND p.prorettype = 'jsonb'::regtype AND p.provolatile = 's'
+      AND p.prosecdef = false AND p.pronargs = 0
+  ) THEN
+    RAISE EXCEPTION USING ERRCODE = 'P0001', MESSAGE = 'D8K13_AUTH_HELPER_SIGNATURE_MISMATCH';
+  END IF;
+END
+$d8k13_auth$;
+'@
+    $authBaselineFile = Join-Path $unpacked 'd8k13-disposable-auth-baseline.sql'
+    [System.IO.File]::WriteAllText($authBaselineFile,$authBaselineSql,[System.Text.UTF8Encoding]::new($false))
+    Run-Docker 'COPY_AUTH_BASELINE' @('cp',$authBaselineFile,($container + ':/tmp/d8k13-disposable-auth-baseline.sql'))
+    Run-Docker 'PREPARE_AUTH_BASELINE' @('exec','-u','postgres',$container,'psql',
+      '-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate',
+      '-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/d8k13-disposable-auth-baseline.sql')
+    Write-Output 'D8K13_LOCAL_DISPOSABLE_AUTH_CLAIMS_HELPERS_VERIFIED'
+  }
+
   # A CLI dump omits Supabase-managed schemas. The official image lacks some
   # custom *empty* namespaces; functions/GRANTs may reference them.
   # Create only a fixed allowlist, only if referenced by the extracted schema,
