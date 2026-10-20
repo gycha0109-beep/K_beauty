@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_MANAGED_COPY_DRIFT_32_HEADERS_NAMED_METADATA_DETAIL_SYNTHETIC_CI_PASS_OWNER_RUN_PENDING",
+  "state": "OWNER_REAL_MANAGED_COPY_NAMED_DETAIL_GENERATED_32_HEADERS_CLASSIFIED_OWNER_PRIVATE_JSON_REVIEW_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -629,7 +629,7 @@
       "functionality": "strict isolated no-network schema.sql replay followed by COPY-only metadata diff; JSON file with exact schema, table, missing column names saved exclusively beside original ZIP on owner PC; console emits only aggregate schema classifications and detail file path",
       "syntheticCiRun": 39432716615,
       "syntheticCiStatus": "SUCCESS",
-      "ownerExecuted": false,
+      "ownerExecuted": true,
       "originalZipModified": false,
       "copyRowsImported": false,
       "productionDatabaseConnections": 0,
@@ -641,7 +641,31 @@
         "named details saved to owner-private file, never console",
         "ZIP SHA256 unchanged and data.sql row COPY never executed",
         "all previous isolated PG17 synthetic regression stages PASS"
-      ]
+      ],
+      "ownerLatestResult": {
+        "status": "D8K13_DISPOSABLE_PG17_DATA_NAMED_DETAIL_LOCAL_FILE_CREATED",
+        "copyHeaders": 134,
+        "affectedCopyHeaders": 32,
+        "missingDestinationColumns": 18,
+        "missingTableColumnReferences": 280,
+        "classCounts": [
+          {
+            "schemaClass": "SUPABASE_MANAGED",
+            "mismatchedCopyHeaders": 32,
+            "missingTables": 29,
+            "tablesWithMissingColumns": 3
+          }
+        ],
+        "privateDetailsOnlyOnOwnerPc": true,
+        "sourceSqlOrRowDataPrinted": false,
+        "copyDataImported": false,
+        "strictSchemaRestoreCompleted": true,
+        "originalZipModified": false,
+        "productionDatabaseConnections": 0,
+        "releaseAuthorized": false,
+        "detailNamesNotYetReviewed": true,
+        "localPrivatePathOmittedIntentionally": true
+      }
     }
   },
   "syntheticCi": {
