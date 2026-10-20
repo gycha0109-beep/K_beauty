@@ -723,18 +723,18 @@ SELECT json_build_object(
     $keepCopy = $false
     $activeTable = ''
     $lineNumber = 0
-    $input = [System.IO.StreamReader]::new($dataFile,[System.Text.UTF8Encoding]::new($false),$true)
-    $output = [System.IO.StreamWriter]::new($publicDataFile,$false,[System.Text.UTF8Encoding]::new($false))
+    $sourceReader = [System.IO.StreamReader]::new($dataFile,[System.Text.UTF8Encoding]::new($false),$true)
+    $publicWriter = [System.IO.StreamWriter]::new($publicDataFile,$false,[System.Text.UTF8Encoding]::new($false))
     try {
-      while (($line = $input.ReadLine()) -ne $null) {
+      while (($line = $sourceReader.ReadLine()) -ne $null) {
         $lineNumber++
         if ($insideCopy) {
           if ($line -ceq '\.') {
-            if ($keepCopy) { $output.WriteLine($line) }
+            if ($keepCopy) { $publicWriter.WriteLine($line) }
             $insideCopy = $false
             $keepCopy = $false
           } elseif ($keepCopy) {
-            $output.WriteLine($line)
+            $publicWriter.WriteLine($line)
             $publicCounts[$activeTable] = [long]$publicCounts[$activeTable] + 1L
             $sourceRows++
           }
@@ -755,7 +755,7 @@ SELECT json_build_object(
             $activeTable = $tbl
             if (-not $publicCounts.ContainsKey($tbl)) { $publicCounts[$tbl] = 0L }
             $publicCopies++
-            $output.WriteLine($line)
+            $publicWriter.WriteLine($line)
           } elseif ($ns -in @('auth','storage','vault','realtime','extensions','supabase_migrations')) {
             $skippedManagedCopies++
           } else {
@@ -767,7 +767,7 @@ SELECT json_build_object(
           $m = $setvalRx.Match($line)
           Assert-Drill $m.Success ('D8K13_PUBLIC_DATA_SEQUENCE_FORMAT_UNSUPPORTED_LINE_' + $lineNumber)
           if ($m.Groups['schema'].Value.Trim('"').ToLowerInvariant() -eq 'public') {
-            $output.WriteLine($line)
+            $publicWriter.WriteLine($line)
             $publicSequenceResets++
           } else {
             $skippedSequenceResets++
@@ -784,8 +784,8 @@ SELECT json_build_object(
       }
       Assert-Drill (-not $insideCopy) 'D8K13_PUBLIC_DATA_UNTERMINATED_COPY_FAIL_CLOSED'
     } finally {
-      $output.Dispose()
-      $input.Dispose()
+      $publicWriter.Dispose()
+      $sourceReader.Dispose()
     }
     Assert-Drill ($publicCopies -gt 0) 'D8K13_PUBLIC_DATA_NO_PUBLIC_COPY'
     Assert-Drill ($totalCopies -eq ($publicCopies + $skippedManagedCopies + $skippedOtherCopies)) 'D8K13_PUBLIC_DATA_COPY_SCOPE_MISMATCH'
