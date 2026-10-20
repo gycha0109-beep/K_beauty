@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_20_POLICY_42883_SUPABASE_AUTH_DISPOSABLE_PRESEED_SYNTHETIC_PG17_CI_PASS_REAL_RESTORE_PENDING",
+  "state": "OWNER_REAL_SCHEMA_RESTORE_COMPLETE_DATA_SQLSTATE_42703_LINE_28_AUDIT_COPY_COLUMNS_CI_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -560,6 +560,36 @@
           "data.sql synthetic restore"
         ]
       }
+    },
+    "latestOwnerDataRestoreAttempt20261020": {
+      "zipBytes": 7323679,
+      "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "zipInspected": true,
+      "managedAuthClaimsHelpersPrepared": true,
+      "privateFunctionOwnerGrantStaged": true,
+      "publicFunctionOwnerGrantsStaged": 9,
+      "privateFunctionOwnerReady": true,
+      "strictSchemaRestoreCompleted": true,
+      "dataSqlstate": "42703",
+      "dataSourcePhysicalLine": 28,
+      "restoreExit": 3,
+      "dataRestoreCompleted": false,
+      "allRowsImported": false,
+      "productionDatabaseConnections": 0,
+      "rawSqlUploaded": false,
+      "securityOrReleaseAuthorized": false
+    },
+    "dataCopyHeaderAudit20261020": {
+      "mode": "AuditData",
+      "codePath": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "strategy": "strictly restore schema into disposable no-network PostgreSQL 17; enumerate source data.sql COPY headers without importing row contents; compare against catalog attributes in one query; emit only line, schema classification, mismatch counts",
+      "explicitlyDoesNotImportData": true,
+      "sourceBackupImmutable": true,
+      "syntheticCiRun": 39394837449,
+      "syntheticCiSuccess": false,
+      "ownerRealZipAuditRun": false,
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false
     }
   },
   "syntheticCi": {
