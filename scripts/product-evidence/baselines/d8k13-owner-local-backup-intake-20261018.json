@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_LOCAL_GRANT_3F000_FAIL_SYNTHETIC_FIX_PG17_PASS_OWNER_RERUN_PENDING",
+  "state": "OWNER_REAL_SCHEMA_SQLSTATE_42501_LINE_22086_LOCAL_CLASSIFICATION_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -73,6 +73,21 @@
       "dataSqlRestoreCompleted": false,
       "backupCorruptionInferred": false,
       "originalSqlOrBackupUploaded": false
+    },
+    "latestSchemaRestoreAttempt": {
+      "zipBytes": 7323679,
+      "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "inspect": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "publicHandling": "D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP",
+      "privateOwnerGrantStaged": "D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_GRANT_STAGED_FOR_IN_DUMP_SCHEMA",
+      "failure": "D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_42501_LINE_22086_FAILED_EXIT_3",
+      "stage": "schema.sql",
+      "sqlstate": "42501",
+      "physicalSqlLine": 22086,
+      "statementType": "NOT_ATTESTED_NO_RAW_SQL_READ",
+      "dataSqlRestoreAttempted": false,
+      "rawSqlOrBackupShared": false,
+      "actualSchemaAndDataRestorePassed": false
     }
   },
   "connectorEvidence": {
@@ -221,6 +236,16 @@
           "invalid size ZIP refused"
         ]
       }
+    },
+    "latestSchemaPrivilegeClassification20261020": {
+      "scriptedPath": "scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1",
+      "scope": "offline ZIP reading only, metadata line classification, no Docker/network/production DB",
+      "lineNumber": 22086,
+      "classificationObtainedFromOwner": false,
+      "syntheticCiVerified": false,
+      "blindGrantOrBypassProhibited": true,
+      "privateBackupFileUploaded": false,
+      "releaseAuthorized": false
     }
   },
   "syntheticCi": {
