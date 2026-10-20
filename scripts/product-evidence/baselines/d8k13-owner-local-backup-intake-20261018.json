@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_SQLSTATE_42501_FUNCTION_OWNER_FIXED_IN_SYNTHETIC_PENDING_OWNER_REAL_ZIP_RERUN",
+  "state": "OWNER_REAL_LOCAL_RESTORE_OWNER_SCHEMA_GRANT_3F000_FAILED_STAGED_CODE_FIX_CI_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -62,6 +62,17 @@
       },
       "dataSqlRestored": false,
       "actualSqlContentsShared": false
+    },
+    "latestRestoreAttempt20261020": {
+      "zipInspect": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "publicNamespace": "D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP",
+      "failure": "D8K13_LOCAL_RESTORE_PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE_SQLSTATE_3F000_FAILED_EXIT_1",
+      "failureStage": "pre_restore_private_function_owner_schema_grant",
+      "schemaSqlRestoreCompleted": false,
+      "dataSqlRestoreCompleted": false,
+      "backupCorruptionInferred": false,
+      "originalSqlOrBackupUploaded": false
     }
   },
   "connectorEvidence": {
@@ -181,6 +192,19 @@
           "wrong-sized ZIP rejection"
         ]
       }
+    },
+    "lastOwnerAttemptAfterPriorFixObserved": true,
+    "latestAttemptCodeFix": {
+      "identifiedCause": "GRANT CREATE ON SCHEMA private occurs before namespace exists in isolated image",
+      "sqlstate": "3F000",
+      "originalZipContentsInspectedByAssistant": false,
+      "exactOriginalCreateSchemaPrivateStatementPresenceUnconfirmed": true,
+      "adjustment": "pregrant only for absent-in-dump schema; when schema declared in dump, stage grant adjacent to ALTER FUNCTION OWNER within disposable temp copy; ZIP unchanged",
+      "syntheticFixtureAdded": "dump_includes_CREATE_SCHEMA_private_then_ALTER_FUNCTION_OWNER",
+      "correctedScriptNewCiVerified": false,
+      "actualOwnerZipAfterThisPatchRetested": false,
+      "aclParityVerified": false,
+      "releaseAuthorized": false
     }
   },
   "syntheticCi": {
@@ -225,7 +249,7 @@
       "issue": 1208,
       "state": "open"
     },
-    "latestOwnerRealBackupRetestAfterFixObserved": false,
+    "latestOwnerRealBackupRetestAfterFixObserved": true,
     "actualSchemaAndDataRestoreVerified": false,
     "managedAreaAndAclParityVerified": false,
     "releaseAuthorized": false
