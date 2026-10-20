@@ -1,0 +1,103 @@
+{
+  "contract": "trust-p2f7-torriden-root-observation-archive-v1",
+  "observedAtUtc": "2026-10-20T01:56:59.843Z",
+  "sourceClassification": "GOVERNED_FIRST_PARTY_ROBOTS_FIRST_READONLY",
+  "lineage": {
+    "featurePr": 1362,
+    "operatorActivationPr": 1363,
+    "functionalMainSha": "41dec7e424bd12aff54d09c09e855cd26ca2693d",
+    "exactExecutionMainSha": "9bd6bc5194e6a4b7cf46b32dd3563d4317ec612a",
+    "actionRunId": 39356211944,
+    "actionRunUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39356211944",
+    "liveJobId": 118411475951,
+    "liveJobStatus": "SUCCESS",
+    "canonicalTrustStatus": "SUCCESS",
+    "currentMainHealthRunId": 39356211928,
+    "currentMainHealthStatus": "SUCCESS",
+    "artifactName": "trust-p2f7-torriden-root-diagnostic",
+    "artifactId": 12235008622,
+    "artifactSha256": "ce79a273c1c431ff767393a9bb6fa280d188da81a8b051f8cdf531d202444a88",
+    "artifactExpiresAtUtc": "2026-11-19T01:57:00Z"
+  },
+  "immutableCohort": {
+    "products": 5,
+    "scopedBrand": "토리든",
+    "scopedProductId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+    "catalogSizeMl": 50,
+    "excludedBrands": [
+      "닥터지",
+      "비플레인",
+      "아토팜",
+      "이즈앤트리"
+    ],
+    "retiredDrGNoRequests": true
+  },
+  "exactOfficialSource": {
+    "origin": "https://www.torriden.com",
+    "url": "https://www.torriden.com/goods/goods_view.php?goodsNo=58"
+  },
+  "requestBounds": {
+    "maxHttpAttempts": 2,
+    "actualHttpAttempts": 2,
+    "robots": 1,
+    "product": 1,
+    "sitemap": 0,
+    "peer": 0,
+    "homepage": 0,
+    "otherOrigins": 0,
+    "retries": 0
+  },
+  "outcome": {
+    "job": "SUCCESS",
+    "productPagesFetched": 1,
+    "requestDisposition": "PAGE_FETCHED_REVIEW_ONLY",
+    "assessmentState": "BODY_MENTION_REVIEW_REQUIRED",
+    "pageStatus": "BODY_NAME_MENTION_ONLY",
+    "identitySurface": "unverified_generic_brand_title",
+    "variantStatus": "SIZE_UNKNOWN",
+    "unitOfferStatus": "QUANTITY_SCOPE_REVIEW_REQUIRED",
+    "primaryRootStatus": "PRIMARY_ROOT_NOT_PROVEN",
+    "holdStage": "ROOT_BODY_NAME_WITHOUT_SCOPED_TITLE_HOLD",
+    "parseComplete": true,
+    "primaryRootMarkerCount": 6,
+    "recognizedTitleMarkerCount": 1,
+    "rootBodyNameMentionCount": 2,
+    "catalogNameMatchedTitleCount": 0,
+    "catalogNameMatchedRootCount": 0,
+    "verifiedOwnedPurchaseForms": 0,
+    "verifiedOwnedOptionControls": 0,
+    "selectedSizeStatus": null,
+    "scopedNameAndSizeCandidate": false,
+    "officialHtmlSha256": "cacf3f3ecbb2b3dbe0b581f47ef1c4e1c0298de3ae7c09d4f1a7faf50c7d00a6",
+    "independentlyVerifiedExactSkuCount": 0,
+    "prospectiveExactSkuCoverage": "0/5",
+    "marketVerified": false,
+    "formulationVerified": false
+  },
+  "previousControlledP2F6": {
+    "actionRunId": 39224461064,
+    "actualHttpAttempts": 4,
+    "productPagesFetched": 2,
+    "torridenState": "BODY_MENTION_REVIEW_REQUIRED",
+    "torridenRoot": "PRIMARY_ROOT_NOT_PROVEN",
+    "torridenPageSha256": "b080e94060bdd93a8f6090190c0f74ce02f601532b8f426a133b58209e899fd6",
+    "independentlyVerifiedExactSkuCount": 0
+  },
+  "comparison": "Direct diagnostic fetch accessed the exact previously measured Torriden page, but even after P2-F7 parser changes its recognized title marker did not match the frozen catalog product name. Two marked root bodies contain a name mention, but no selected purchase form/size was proven. Compared with the previous separate controlled P2-F6 run, the precise root-title gate remains unproven and independent SKU verification stays 0/5. The changed page digest is a byte-change observation, not proof of the cause or a changed formulation.",
+  "authorityCeiling": {
+    "productWrites": 0,
+    "sourceBindings": 0,
+    "subjectWrites": 0,
+    "factWrites": 0,
+    "dbWrites": 0,
+    "recommendationWrites": 0,
+    "aiApiCalls": 0,
+    "brandOutreach": 0,
+    "skuConfirmationAuthorized": false,
+    "marketConfirmationAuthorized": false,
+    "formulationConfirmationAuthorized": false,
+    "siteReuseOrCommercialIngestionAuthorized": false
+  },
+  "securityAndDataMinimization": "Only metadata enums, bounded counts, official URL, and page digest were captured. The source HTML and raw errors were not persisted, redirects/robots bypass and extra requests were not authorized.",
+  "nextGate": "Do not add guessed title/DOM heuristics or promote body-name text. Acquire a separately owner-approved, site-policy-compliant minimal structural observation or permitted fixture evidence to identify why the marked title fails catalog-name equality; require independently reviewed catalog/market/formulation identity for any SKU verification. The one-time authorization is spent; no automatic rerun."
+}
