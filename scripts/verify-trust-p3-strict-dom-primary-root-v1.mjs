@@ -186,7 +186,7 @@ const owned50='<form id="purchase-form"><select name="size">'+
   '<option value="50ml" selected>50ml</option>'+
   '<option value="100ml">100ml</option></select></form>';
 const owned25=owned50.replace('value="50ml" selected',
-  'value="50ml"').replace('value="100ml">','value="100ml">')
+  'value="50ml"')
   .replace('value="100ml">100ml','value="25ml" selected>25ml');
 const checkP2F9=(label,html,status,selectedSizeStatus=null)=>{
   const r=inspectTorriden(html);
