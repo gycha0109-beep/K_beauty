@@ -196,5 +196,38 @@
     "project_secrets_or_encryption_root_key",
     "complete_migration_history"
   ],
-  "releaseAuthorized": false
+  "releaseAuthorized": false,
+  "repositoryVerification20261020": {
+    "verificationSource": "connected GitHub read-only metadata and source file comparison",
+    "verifiedDateKst": "2026-10-20",
+    "branchHeadBeforeDocumentationReconciliation": "31dbd50b942b26757b5364b3c431bb3c8d2df358",
+    "correctedRestoreScriptCommit": "0d615aa95931c20e8fee9f140a8246fddd421b47",
+    "subsequentTwoCommitsChangedCode": false,
+    "subsequentChangedPaths": [
+      "docs/taxonomy-ai/r16i-r4-d8k13-current-state-recovery-runbook-20261018.md",
+      "scripts/product-evidence/baselines/d8k13-owner-local-backup-intake-20261018.json"
+    ],
+    "privateFunctionOwnerRestoreGrantsGatedByRoleAndFunctionOwnerChange": true,
+    "permissionScope": "disposable_no_network_docker_only",
+    "syntheticCi": {
+      "runId": 39223627159,
+      "jobId": 117964525037,
+      "conclusion": "success",
+      "realOwnerZipUsed": false
+    },
+    "pullRequest": {
+      "number": 1341,
+      "state": "open",
+      "draft": true,
+      "merged": false
+    },
+    "supplyChainBlocker": {
+      "issue": 1208,
+      "state": "open"
+    },
+    "latestOwnerRealBackupRetestAfterFixObserved": false,
+    "actualSchemaAndDataRestoreVerified": false,
+    "managedAreaAndAclParityVerified": false,
+    "releaseAuthorized": false
+  }
 }
