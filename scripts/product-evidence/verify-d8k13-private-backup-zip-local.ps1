@@ -376,7 +376,7 @@ try {
     for ($a = 0; $a -lt $total; $a++) {
       $errorCode = $auditMatches[$a].Groups['sqlstate'].Value.ToUpperInvariant()
       if ($errorCode -eq '42883') {
-        $fullLine = $auditMatches[$a].Value.Trim()
+        $fullLine = ($auditRaw.Substring($auditMatches[$a].Index) -split '[\r\n]',2)[0].Trim()
         $signatureMatch = $missingFunctionRx.Match($fullLine)
         if ($signatureMatch.Success) {
           $ns = $signatureMatch.Groups['schema'].Value.ToLowerInvariant()
