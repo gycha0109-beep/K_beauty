@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_20_POLICY_42883_UNQUALIFIED_OR_QUOTED_ROUTINE_INVENTORY_FIX_CI_PENDING",
+  "state": "OWNER_REAL_20_POLICY_42883_EXPANDED_REFERENCE_CLASSIFIER_SYNTHETIC_CI_PASS_OWNER_RERUN_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -456,10 +456,25 @@
         "stripsStringLiteralsAndComments": true,
         "stillLexicalOnly": true,
         "syntheticCiRunId": 39382818032,
-        "syntheticCiPassed": false,
+        "syntheticCiPassed": true,
         "ownerExpandedRerunPending": true,
         "authRlsModifications": false,
-        "releaseAuthorized": false
+        "releaseAuthorized": false,
+        "syntheticCi": {
+          "runId": 39382818032,
+          "jobId": 118495596109,
+          "conclusion": "success",
+          "codeCommit": "dfb65e16d75fe18ec542af8884fe07ea057b5e6f",
+          "scope": "synthetic only, owner ZIP not present in CI",
+          "tested": [
+            "quoted schema and routine identifiers in 20 policies",
+            "unqualified helper call grouped across 20 policies",
+            "function declaration lexical check",
+            "no raw SQL leakage",
+            "old PG17 no-network ZIP restore regression",
+            "strict SQLSTATE refusal"
+          ]
+        }
       }
     }
   },
