@@ -982,7 +982,7 @@ const mixedDirect=await runTrustP2Discovery(scopedRow,scopedProduct,{
   fetchRobots:async()=>{
     mixedDirectCalls.push("robots");
     return {bytes:Buffer.from(
-      "User-agent: *\\nDisallow: /product/mle-lotion-600ml/\\nAllow: /\\n")};
+      "User-agent: *\nDisallow: /product/mle-lotion-600ml/\nAllow: /\n")};
   },
   fetchSitemap:async()=>{mixedDirectCalls.push("sitemap");throw Error("NO");},
   fetchPage:async()=>{mixedDirectCalls.push("page");throw Error("NO");},
