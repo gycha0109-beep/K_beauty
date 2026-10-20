@@ -449,6 +449,94 @@ jobs:
           }
           Remove-Item -LiteralPath $detailPath -Force
           Write-Host 'D8K13_SYNTHETIC_NAMED_COPY_DRIFT_LOCAL_ONLY_PASS'
+      - name: Restore only synthetic public data and validate actual per-table row counts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'd8k13-public-only'
+          $sql=Join-Path $dir 'sql'
+          New-Item -ItemType Directory -Path $sql -Force | Out-Null
+          $source=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $source 'roles.sql') (Join-Path $sql 'roles.sql')
+          $schema=[System.IO.File]::ReadAllText((Join-Path $source 'schema.sql'))
+          $schema += [Environment]::NewLine + 'CREATE SEQUENCE public.d8k13_fixture_sequence;' + [Environment]::NewLine
+          [System.IO.File]::WriteAllText((Join-Path $sql 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
+          $data=@'
+          -- Synthetic data: never from an owner ZIP.
+          SET client_encoding = 'UTF8';
+          SELECT pg_catalog.set_config('search_path', '', false);
+          COPY public.products (id, name) FROM stdin;
+          71	owned synthetic public row
+          \.
+          COPY auth.__d8k13_absent_managed (id, metadata) FROM stdin;
+          81	synthetic managed skipped
+          \.
+          COPY storage.__d8k13_absent_storage (id, metadata) FROM stdin;
+          91	synthetic storage skipped
+          \.
+          COPY public.products (id, name) FROM stdin;
+          72	second public row
+          73	third public row
+          \.
+          SELECT pg_catalog.setval('public.d8k13_fixture_sequence'::regclass, 78, true);
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $dir 'fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $sha=(Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash
+          $out=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicData
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_PUBLIC_RESTORE_FAILED' }
+          $line=@($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED"' })
+          if ($line.Count -ne 1) { throw 'D8K13_PUBLIC_DATA_RESULT_MISSING' }
+          $r=$line[0] | ConvertFrom-Json
+          if ($r.sourceCopyHeaders -ne 4 -or $r.publicCopyHeadersExecuted -ne 2 -or
+            $r.publicSourceRowsAppliedAndCountVerified -ne 3 -or $r.publicCopyTablesVerified -ne 1 -or
+            $r.publicSequenceResetsApplied -ne 1 -or $r.skippedManagedCopyHeaders -ne 2 -or
+            $r.skippedOtherSchemaCopyHeaders -ne 0 -or $r.skippedNonpublicSequenceResets -ne 0 -or
+            $r.publicDataRowsVerified -ne $true -or $r.authDataRestored -ne $false -or
+            $r.storageMetadataRestored -ne $false -or $r.allDataRestored -ne $false -or
+            $r.originalZipModified -ne $false -or $r.networkDisabled -ne $true -or
+            $r.releaseAuthorized -ne $false) { throw 'D8K13_PUBLIC_RESTORE_CONTRACT_FAILED' }
+          if ($line[0] -match 'owned synthetic public row|second public row|synthetic managed skipped|d8k13_fixture_sequence|COPY public') {
+            throw 'D8K13_PUBLIC_RESTORE_SOURCE_SQL_OR_ROWS_LEAKED'
+          }
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash -ne $sha) {
+            throw 'D8K13_PUBLIC_RESTORE_SOURCE_ZIP_CHANGED'
+          }
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_COPY_ROWS_AND_SEQUENCE_RESTORED_PASS'
+      - name: Reject unsupported SQL data commands before isolated partial restore
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'd8k13-public-reject'
+          $sql=Join-Path $dir 'sql'
+          New-Item -ItemType Directory -Path $sql -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $sql 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $sql 'schema.sql')
+          $data=@'
+          COPY public.products (id, name) FROM stdin;
+          74	synthetic
+          \.
+          INSERT INTO public.products VALUES (75, 'unsupported_command');
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $dir 'fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $out=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicData 2>&1
+          if ($LASTEXITCODE -eq 0) { throw 'D8K13_PUBLIC_UNSUPPORTED_COMMAND_ACCEPTED' }
+          $safeText=$out -join [Environment]::NewLine
+          if (-not $safeText.Contains('D8K13_PUBLIC_DATA_UNEXPECTED_SOURCE_COMMAND_LINE_4')) {
+            throw 'D8K13_PUBLIC_UNSUPPORTED_COMMAND_WRONG_FAILURE'
+          }
+          if ($safeText -match 'unsupported_command|INSERT INTO|synthetic') {
+            throw 'D8K13_PUBLIC_UNSUPPORTED_COMMAND_SOURCE_LEAKED'
+          }
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_UNSUPPORTED_SQL_FAIL_CLOSED_PASS'
       - name: Aggregate multiple undefined functions in one privacy-safe isolated schema audit
         shell: pwsh
         run: |
