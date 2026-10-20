@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "OWNER_REAL_SCHEMA_SQLSTATE_42501_LINE_22086_LOCAL_CLASSIFICATION_PENDING",
+  "state": "OWNER_REAL_SCHEMA_42501_LINE_22086_CLASSIFIER_SYNTHETIC_CI_PASS_OWNER_LOCAL_CLASSIFICATION_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -242,10 +242,20 @@
       "scope": "offline ZIP reading only, metadata line classification, no Docker/network/production DB",
       "lineNumber": 22086,
       "classificationObtainedFromOwner": false,
-      "syntheticCiVerified": false,
+      "syntheticCiVerified": true,
       "blindGrantOrBypassProhibited": true,
       "privateBackupFileUploaded": false,
-      "releaseAuthorized": false
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "id": 39359659800,
+        "jobId": 118422589377,
+        "conclusion": "success",
+        "testedCodeCommit": "4875873afeacb8b21d80bd323522e8080d2970c2",
+        "contentType": "synthetic_zip_only",
+        "classifierAndPrivacyTests": true,
+        "existingIsolatedPg17RestoreTests": true,
+        "ownerRawZipIncluded": false
+      }
     }
   },
   "syntheticCi": {
