@@ -14,7 +14,7 @@ export async function GET(request) {
   if (rawCategory && isLegacyCurrentProductCategory(rawCategory)) {
     return NextResponse.json({
       success: true,
-      fields: ["id", "brand", "name", "category", "product_form", "image_url"],
+      fields: ["id", "brand", "name", "brand_en", "name_en", "category", "product_form", "image_url"],
       categories: CANONICAL_CURRENT_PRODUCT_CATEGORIES,
       products: []
     });
@@ -34,7 +34,7 @@ export async function GET(request) {
 
   return NextResponse.json({
     success: true,
-    fields: ["id", "brand", "name", "category", "product_form", "image_url"],
+    fields: ["id", "brand", "name", "brand_en", "name_en", "category", "product_form", "image_url"],
     categories: CANONICAL_CURRENT_PRODUCT_CATEGORIES,
     products
   });
