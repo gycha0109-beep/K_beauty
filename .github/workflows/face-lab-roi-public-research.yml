@@ -31,8 +31,10 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - name: Install exact locked dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install exact locked dependencies with scoped registry credential
+        run: node scripts/security/install-product-dependencies.mjs --ignore-scripts
+        env:
+          SCA_PACKAGES_READ_TOKEN: ${{ secrets.SCA_PACKAGES_READ_TOKEN }}
       - name: Verify route security and ROI comparison
         run: node scripts/verify-face-lab-roi-public-research-route.mjs
       - name: Compile production application
