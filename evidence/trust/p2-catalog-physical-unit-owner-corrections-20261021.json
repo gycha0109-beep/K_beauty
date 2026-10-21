@@ -1,0 +1,96 @@
+{
+  "contract": "trust-p2-catalog-physical-unit-price-owner-verified-v1",
+  "checkedDate": "2026-10-21",
+  "mainAtStart": "c1e6ee12c076165a05d72889057e111bbba3674c",
+  "sourceScope": "public.products; manufacturer direct product pages; independent web lookup",
+  "normalCatalogReview": "SINGLE_OWNER_CITED_BASIC_FACTS",
+  "frozen20Panel": "evidence/trust/p2v3-real-catalog-evaluation-panel-20261021.json",
+  "originalSevenRowsChecked": 7,
+  "panelRowsLiveInspected": 20,
+  "changes": [
+    {
+      "productId": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "brand": "메디힐",
+      "name": "더마 크림 팩 클렌저 마데카소사이드",
+      "inFrozenPanel": true,
+      "before": {
+        "size_ml": 255,
+        "price_min": 33900,
+        "price_max": 33900,
+        "unit_price_per_10ml": 1329.41,
+        "source_url": "https://www.hwahae.co.kr/goods/75341"
+      },
+      "after": {
+        "size_ml": 120,
+        "price_min": 16400,
+        "price_max": 16400,
+        "unit_price_per_10ml": 1366.67,
+        "source_url": "https://medihealshop.com/product/%EB%8D%94%EB%A7%88-%ED%81%AC%EB%A6%BC-%ED%8C%A9-%ED%81%B4%EB%A0%8C%EC%A0%80%EB%A7%88%EB%8D%B0%EC%B9%B4%EC%86%8C%EC%82%AC%EC%9D%B4%EB%93%9C-%EC%A7%84%EC%A0%95-%EC%9E%A5%EB%B2%BD/1659"
+      },
+      "physicalBasis": "Official single bottle 120ml; old Hwahae 120ml x2 + 5ml x3 was a different offer",
+      "otherPreserved": "existing hwahae_url",
+      "verifiedBy": "conditional UPDATE RETURNING + separate SELECT"
+    },
+    {
+      "productId": "358bb655-d0e8-4bbf-93c0-58eea5b5d7ae",
+      "brand": "일리윤",
+      "name": "세라마이드 아토 수딩젤",
+      "inFrozenPanel": true,
+      "before": {
+        "size_ml": 175,
+        "price_min": 13200,
+        "price_max": 13200,
+        "unit_price_per_10ml": 730,
+        "source_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000218528"
+      },
+      "after": {
+        "size_ml": 175,
+        "price_min": 13200,
+        "price_max": 13200,
+        "unit_price_per_10ml": 754.29,
+        "source_url": "https://www.amoremall.com/kr/ko/product/detail?onlineProdCode=111270000207&onlineProdSn=24772"
+      },
+      "physicalBasis": "Manufacturer's single 175ml at displayed ₩13,200, separate from 175ml x2 / x3 offers",
+      "otherPreserved": "existing hwahae_url and buy_link",
+      "verifiedBy": "conditional UPDATE RETURNING + separate SELECT"
+    },
+    {
+      "productId": "25e68245-aa63-4440-b4ab-09db91741cce",
+      "brand": "유이크",
+      "name": "바이옴 베리어 파하 결 앰플",
+      "inFrozenPanel": false,
+      "before": {
+        "size_ml": 30,
+        "price_min": 32000,
+        "price_max": 32000,
+        "unit_price_per_10ml": 1060
+      },
+      "after": {
+        "size_ml": 30,
+        "price_min": 32000,
+        "price_max": 32000,
+        "unit_price_per_10ml": 10666.67
+      },
+      "physicalBasis": "First-party theuiq.com product no.777 30ml, listed regular price ₩32,000; promotional mini gifts are not physical container volume",
+      "sourceUrl": "https://m.theuiq.com/product/%EB%B0%94%EC%9D%B4%EC%98%B4-%EB%B2%A0%EB%A6%AC%EC%96%B4-%ED%8C%8C%ED%95%98-%EA%B2%B0-%EC%95%B0%ED%94%8C-30ml-%ED%8C%90%ED%85%90%EC%8B%9C%EB%B8%8C-%ED%81%AC%EB%A6%BC-1ml-%EA%B2%B0-%EC%95%B0%ED%94%8C-1ml-%EC%A6%9D%EC%A0%95/777/category/1/display/3/?icid=MAIN.product_listmain_2",
+      "otherPreserved": "existing official source_url, hwahae_url and buy_link",
+      "verifiedBy": "conditional UPDATE RETURNING + separate SELECT"
+    }
+  ],
+  "catalogArithmeticMismatch": {
+    "before": 12,
+    "after": 10,
+    "thresholdKrwPer10Ml": 0.1,
+    "remaining": "Physical capacity, chosen offer and price must be independently reconciled before changing the other ten; mathematical mismatch alone is not authority to override catalog facts."
+  },
+  "pipelineFindings": {
+    "candidatePromotion": "promote_product_candidate_structural_v1 and promote_product_candidate_catalog_only_v1 do not write size_ml or price_min on existing products",
+    "manualPriceEnrichment": "crawler/lib/supabase.ts updateProductDetailsIfMissing lacked unit price synchronization for newly filled price_min",
+    "scope": "No Product Fact/Subject, schema, RLS, auth, recommendation, or offer lineage modifications"
+  },
+  "limits": {
+    "exactOfferGoldClaims": 0,
+    "benchmarkLabelsCreated": 0,
+    "generalCatalogFactUpdatesOnly": true
+  }
+}
