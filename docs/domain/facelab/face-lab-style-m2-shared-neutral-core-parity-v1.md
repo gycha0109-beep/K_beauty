@@ -17,7 +17,7 @@ Saju now owns `packages/neutral-face-observation`:
 - `outerImageLeft/Right` are image pixel-order proxies, not anatomical left/right, verified zygion or cutaneous region masks. Saju FR195 and MESH5.1 research cannot justify automatic bare-skin approval.
 - No MediaPipe model/WASM loader, dermatology inference, pose-normalized metric 3D, morphological or face-reading classification in this package.
 
-Because the upstream package is still in a **draft feature branch** and has not been published, K_beauty consumes an **exact vendored copy as a local npm workspace**. The upstream source snapshot is pinned by the Saju commit and verified using Git blob SHA-1 for `index.js`, `package.json`, `README.md` in `verify-face-lab-v2-saju-neutral-core-upstream.mjs`. npm lockfile records the workspace link. Runtime source is locally bundled; it does not fetch Saju files or user images from the network. This is real package code reuse in a pinned vendored mode, **not an npm registry release or automated cross-repository dependency update**.
+Because the upstream package is still in a **draft feature branch** and has not been published, K_beauty consumes an **exact vendored copy as a local npm workspace**. The upstream source snapshot is pinned by the Saju commit and verified using Git blob SHA-1 for `index.js`, `package.json`, `README.md`, and `test/contract.check.mjs` in `verify-face-lab-v2-saju-neutral-core-upstream.mjs`. npm lockfile records the workspace link. Runtime source is locally bundled; it does not fetch Saju files or user images from the network. This is real package code reuse in a pinned vendored mode, **not an npm registry release or automated cross-repository dependency update**.
 
 ## Two genuinely different ROI paths
 
@@ -31,7 +31,7 @@ The development-only UI gives matched/diverged/held. Existing independent-skin-r
 ## Evidence gates
 
 - **Synthetic test**: full 478-point provider frame, no second detector call, independent proposals overlap but differ; fail-closed multi-face/invalid geometry/unverified orientation/NaN and producer callback exceptions.
-- **Source provenance**: Saju commit and three upstream Git blobs pinned, npm workspace lock asserted.
+- **Source provenance**: Saju commit and four upstream Git blobs pinned, npm workspace lock asserted.
 - **CI**: Saju standalone tests/lint/pack, K_beauty Foundation + Next build + Playwright dev UI.
 - **NOT YET**: controlled real-browser MediaPipe model/WASM parity on consented images, manual independent cheek segmentation benchmark IoU/precision/recall, device/lighting/EXIF mirror calibration, producer release integrity proof. All remain **HOLD** until separately verified.
 - FE030 canonical JPEG encoding from MyeongHa is **not** adopted for colour photometry; RGB roundtrip/invariance would need independent validation.
