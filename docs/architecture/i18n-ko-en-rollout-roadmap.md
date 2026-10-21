@@ -23,15 +23,18 @@
 
 **승인 기준:** API 필드와 데이터 계약이 맞고, KO/EN 상품 선택 모두 동일 `productId`를 제출하며, 저장 결과 언어 전환은 동일 `savedReportId`를 참조해야 한다.
 
-## M2. 분석·프리미엄·Face Lab 판단 의미 보존 (다음 단계)
+## M2. 분석·프리미엄·Face Lab 판단 의미 보존 (안전성 보수 진행 중)
 
-- [ ] `app/result/full-report/page.js`의 `localizeFullReportForLocale` 전수 점검. 현재 `fullRoutine.morning/night`, `routineVariants`, `avoidCombinations`이 영문 정형 문구로 대체될 수 있다.
-- [ ] `localizeRoutineStepsForEnglish`의 `frequency`를 일괄 `Every morning/night`로 바꾸는 동작 제거. 주 2회/보류/미사용 등의 제약을 원본과 동등하게 보존한다.
-- [ ] `buildEnglishTopPickDetailedReason`, `localizeSupportingProductsForEnglish` 등 템플릿 대체 로직을 원본 판단 구조 및 언어별 정식 문구에 연결.
+- [x] `localizeFullReportForLocale`가 `fullRoutine.morning/night`, `routineVariants`, `avoidCombinations`을 영문 정형 문구로 덮어쓰지 않도록 차단. 원문 내러티브 또는 명시된 이중 언어 데이터만 사용.
+- [x] `localizeRoutineStepsForEnglish`의 강제 `Every morning/night` 및 새 instruction/caution 생성 제거. 원문 빈도·주의사항·조건을 유지하며, 명시된 `en` 번역만 사용.
+- [x] 영어 Top Pick·지원 상품의 원문 근거를 일반 템플릿으로 치환하지 않도록 차단. 기존 자유서술의 검증된 영문 번역 생성은 M3 이후 과제로 유지.
 - [ ] 무료·프리미엄·Face Lab 각 섹터에서 한국어/영어로 동일한 추천·결정/보류·강도·횟수·경고 표시 확인.
-- [ ] 한국어 누출 탐지뿐 아니라 **의미/빈도/주의사항/제품 ID 불변 검증** 추가.
+- [x] `scripts/verify-i18n-m2-fidelity.mjs`에 대표 사례(주 2회·상태 조건·중단 경고·원문 보존) 및 구조적 치환 금지 검증 추가.
+- [ ] 전체 저장 페이로드·Face Lab·실사용자의 한국어/영어 의미 동등성 검증 완료.
 
 **승인 기준:** 같은 canonical 판단을 두 언어로 표시할 때 결정 상태·순위·일정·주의사항이 같고, 원래 없던 지시를 추가하지 않아야 한다.
+
+**M2 남은 일:** 기존 원문을 보존하는 것은 안전성 보수이지 완전 영어화가 아니다. 저장 당시 한국어 전용 안내는 현재 영어 화면에도 원문으로 남는다. 원어 안내/검증 번역 정책, 루틴과 Face Lab 실제 결과 페이로드의 의미 동등성은 별도 통과가 필요하다.
 
 ## M3. 저장 및 공유 데이터 다국어 처리
 
@@ -54,7 +57,7 @@
 
 - [ ] 기존 모바일 `npm run mobile:typecheck`, `npm run verify:mobile-foundation` 및 관련 CI 확인
 - [ ] 기존 `npm run verify:premium-browser-journey-contract` 및 회귀 검사 확인
-- [ ] 신규 정적 보완 검증 `npm run verify:i18n-m1` 확인
+- [ ] 신규 검증 `npm run verify:i18n-m1` 및 `npm run verify:i18n-m2` 실행 확인
 - [ ] 웹 KO→EN→KO, `savedReportId`, 로그인/권한/프리미엄 저장·재진입 실사용 확인
 - [ ] Android/iOS 신규 설치와 재실행, 네이티브 영어 저장 결과/상품 선택 흐름 확인
 - [ ] CI, 코드 리뷰 후 병합·배포·실기기 수락 테스트를 각각 별도 기록
