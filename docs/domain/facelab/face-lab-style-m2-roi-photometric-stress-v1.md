@@ -10,7 +10,7 @@
 - 폴리곤/마스크 생성: `buildPersonalColorCheekMasks` (기존). 좌우 볼 중첩, 좌우 스왑, 픽셀 수, 제외 영역 검증.
 - **보강된 승인 경계:** `measurePersonalColorReviewedCheekRoi`. 독립 검수 4항목(피부 ROI·제외 마스크·조명 안정성·원본 방향), 별도 피부 영역 이진 마스크 2개, 추가 제외 폴리곤이 모두 제공되어야 함. 제안 ROI의 사용 픽셀이 독립 마스크 범위 밖이면 보류.
 - **측정:** 승인 경계에 도달해도 결과는 `measurement_only`, 계절/undertone/색상 적합성은 null. 원본, 얼굴 좌표, 마스크, 화장품 상품정보는 저장/반환하지 않음.
-- **합성 스트레스:** `scripts/verify-face-lab-v2-personal-color-roi-photometric-stress.mjs`에서 동일 모의 픽셀에 채널 가중치(warm/cool), 밝기(증가/감소), 좌우 볼 외부 배경 오염, 제외 마스크 주입을 적용해 CIELAB 색차와 방향성, HOLD 응답을 검증.
+- **합성 스트레스:** `scripts/verify-face-lab-v2-personal-color-roi-photometric-stress.mjs`에서 동일 모의 픽셀에 채널 가중치(warm/cool), 밝기(증가/감소), 채도(증가/감소), 좌우 비균일 조명, 랜드마크 이동, 좌우 볼 외부 배경 오염, 제외 마스크 주입을 적용해 CIELAB 색차와 방향성, HOLD 응답을 검증.
 - **CI:** `scripts/verify-face-lab-v2-foundation.mjs`에서 회귀 스크립트 import. `.github/workflows/face-lab-v2-foundation.yml`의 PR/push paths가 관련 변경을 트리거.
 
 ## 스트레스 결과의 해석 기준
@@ -20,6 +20,9 @@
 | 동일 RGB/동일 ROI | ΔE76 = 0, 결정론성 | 실기기 반복 정확도 PASS |
 | 합성 웜/쿨 조명 | Lab b* 변화, ΔE76 증가 | 단일 사진의 실제 조명 자동 판별 |
 | 합성 노출 +/− | Lab L* 변화, ΔE76 증가 | 피부가 실제 밝아지거나 어두워짐 |
+| 합성 채도 +/− | Lab chroma 변화, ΔE76 증가 | 원래 피부 undertone/계절형 |
+| 좌우 조명 비균일 | 두 볼 L*가 다른 방향으로 변함 | 실사진의 그림자 자동 정확 검출 |
+| FaceMesh 제안 영역 이동 | 독립 피부 마스크 밖이면 HOLD | 랜드마크만으로 자동 진위 판단 |
 | 피부 영역 밖 RGB 교란 | 독립 마스크 안의 볼 측정 유지 | 자동 피부 세그먼트 성공 |
 | 독립 ROI 없이 제안만 존재 | 측정 보류 | 랜드마크만으로 피부색 확정 |
 | 원본 방향 불명·미러 프리뷰 | 측정 보류 | 좌우 볼 자동 매핑 승인 |
