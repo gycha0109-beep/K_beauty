@@ -1,0 +1,39 @@
+name: Face Lab ROI Research Public Route
+run-name: "[WT:face-research] Isolated ROI Route"
+on:
+  pull_request:
+    paths:
+      - "app/face-lab-roi-test/**"
+      - "lib/face-lab-v2/personal-color/**"
+      - "lib/security/security-headers.js"
+      - "middleware.js"
+      - "scripts/verify-face-lab-roi-public-research-route.mjs"
+      - ".github/workflows/face-lab-roi-public-research.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/face-lab-roi-test/**"
+      - "lib/face-lab-v2/personal-color/**"
+      - "lib/security/security-headers.js"
+      - "middleware.js"
+      - "scripts/verify-face-lab-roi-public-research-route.mjs"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  research-verified:
+    name: Isolated ROI route unit and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install exact locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify route security and ROI comparison
+        run: node scripts/verify-face-lab-roi-public-research-route.mjs
+      - name: Compile production application
+        run: npm run build
