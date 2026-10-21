@@ -2,6 +2,14 @@
 
 ## Entries
 
+### 2026-10-21 / TRUST followup — ATOPALM official 300ml single price + Dr.G EX family
+
+- PR #1381 main CI check TRUST/Main Health/CodeQL/package integrity **PASS**. Confirmed manufacturer `neopharmshop.co.kr` ATOPALM single 300ml ₩34,500 (2184) vs 300ml×2 ₩64,500 (2182), prices as of 2026-10-21.
+- SQL exactly one ATOPALM row: `price_min=price_max=34500`, `unit_price_per_10ml=1150` (34,500/300×10), keep 300ml, 2184 URL and buy link. RETURNING verified. No product_offers record for this product. Prices are observation-dated, not real-time stock claims.
+- Dr.G EX 70ml: `shinsegaemall.ssg.com` 본사직영 표시 seller listings for jar and tube separate; official brand social public reference says EX tube launch. Product packaging designation absent, so source_url kept exact-name Hwahae; never switch to non-EX or arbitrary SSG variant.
+- Added dated followup evidence and negative regressions to canonical TRUST test. Single owner reviews public product facts, no second reviewer required, no new schema/offer/recommendation/Fact promotion.
+
+
 ### 2026-10-21 / TRUST 5 diagnostic catalog rows and solo-owner fact verification
 
 - 실운영 DB `public.products` 5개 정정: 비플레인 340→180ml, 아토팜 600→300ml(잘못된 10ml당 단가 NULL), 이즈앤트리 공식 상품 56 URL, 토리든 단품 58 URL, 닥터지 EX 정확한 제품 70ml 화해 URL. 기존 화해 링크 보존. 각 `UPDATE RETURNING` 및 5건 `SELECT` 확인. 추가로 BOJ 50ml 공식몰 locale URL 갱신 확인.
