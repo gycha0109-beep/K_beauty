@@ -125,7 +125,7 @@ export default function FaceLabM2MediaPipeRoiResearch({ sourceImageFile }) {
           data-testid="face-lab-m2-core-parity-status">
           공통 관측 계약 후보 병렬 비교 · {state.parity?.status === "comparison_only"
             ? state.parity.parity === "matched"
-              ? "ROI 마스크 일치 (동일 입력·동일 알고리즘)"
+              ? "ROI 마스크 일치 (서로 다른 연구 후보)"
               : "ROI 마스크 불일치 — 추가 검토 필요"
             : "비교 보류"}
           . 실제 피부 ROI 정확도 검증은 별도입니다.

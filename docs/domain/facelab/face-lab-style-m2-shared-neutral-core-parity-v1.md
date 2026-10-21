@@ -1,53 +1,70 @@
-# Face Lab Style M2 — Shared Neutral Observation Core Contract Candidate / Parity v1
+# Face Lab Style M2 — Saju Neutral Core Package A/B Migration (research v2)
 
 - Date: 2026-10-21
 - Track: face-research
-- Baseline: K_beauty PR #1301 @ da8dd970bf3f4901aacdd20b6e9a156b5dae53d6
-- Authority: development-only / research-only / not production activated
-- Source audit: Saju main FR26/FR61/FR77/FR194/FR195/MESH5.1; MyeongHa feat/face-reading/fe041e-candidate-mapping-consumer FE029/FE030/FE031/FE033/FE037
-- This branch is **not** a production Saju package import or a completed cross-repository shared SDK.
+- Source/producer: Saju Draft PR #2617, commit `a00c3e2e1c3be1711068e5d35e696a6c9c7d0b8a`
+- Downstream: K_beauty stacked on Draft PR #1380 (stacked on #1301)
+- Authority: **research/development only**; no merge, deployment, user-facing scoring, or provider activation
+- Distinguish **neutral image geometry** from **cheek/skin-color interpretation**. These are different domains.
 
-## Implemented boundaries
+## Real package boundary
 
-`shared-neutral-face-core-candidate.js` defines a deliberately narrow, synchronous, transient FaceLandmarker frame contract:
-- Exactly one face and supported provider landmark count (468/478).
-- Full provider array finite x/y/z validation; x/y in [0,1].
-- Original unmirrored, EXIF-oriented **image** coordinates only; no CSS preview mirror, no metric 3D substitution.
-- Expose only the first 468 x/y landmarks through a local synchronous callback; exclude iris 10 and depth, visibility, blendshape data.
-- No anatomical left/right or provider-to-zygion assertions; indexes remain provider ordering.
-- No image, crop, landmarks, skin masks, direct geometry, identity, raw provider output in its return receipt.
-- Always `productionAuthorized: false` and `independentlyReviewedSkin: false`. A callback is not a persistent privacy boundary: callers must not retain/retransmit the temporary frame.
+Saju now owns `packages/neutral-face-observation`:
+- npm package name: `@myeongha/neutral-face-observation`, version `0.1.0-research.0`, `private: true`
+- ESM `exports`, explicit contract, standalone `node --test` tests and `npm pack --dry-run` CI
+- Handles **already obtained** one-face MediaPipe 468/478 observations; validates all provider points and original-image orientation.
+- Emits an ephemeral, frozen 468-point x/y frame plus image-space eye/mouth/face-span anchor geometry **only** inside a synchronous callback; return receipt contains no geometry. Provider z/visibility, iris ten points, blendshapes and source images do not leave it.
+- `outerImageLeft/Right` are image pixel-order proxies, not anatomical left/right, verified zygion or cutaneous region masks. Saju FR195 and MESH5.1 research cannot justify automatic bare-skin approval.
+- No MediaPipe model/WASM loader, dermatology inference, pose-normalized metric 3D, morphological or face-reading classification in this package.
 
-`shared-core-roi-parity.js` compares:
-1. The existing 7-anchor cheek geometry proposal;
-2. The same exact proposal after the above neutral full-landmark normalization;
-3. Geometry masks and exclusion masks on the same bounded raster grid.
+Because the upstream package is still in a **draft feature branch** and has not been published, K_beauty consumes an **exact vendored copy as a local npm workspace**. The upstream source snapshot is pinned by the Saju commit and verified using Git blob SHA-1 for `index.js`, `package.json`, `README.md`, and `test/contract.check.mjs` in `verify-face-lab-v2-saju-neutral-core-upstream.mjs`. npm lockfile records the workspace link. Runtime source is locally bundled; it does not fetch Saju files or user images from the network. This is real package code reuse in a pinned vendored mode, **not an npm registry release or automated cross-repository dependency update**.
 
-The comparison uses one already-detected MediaPipe result. No second model execution. Pixel parity (mask IoU) detects migration/normalization regressions; **the equal algorithms make this a contract parity regression, not independent algorithm validation**. No skin pixels, color measurement, or real-photo anatomical accuracy claim is made.
+## Two genuinely different ROI paths
 
-`mediapipe-roi-proposal.js` accepts optional `onParity` only after the existing geometry candidate is ready. The existing proposal/result remain unchanged if no callback is supplied. The development-only UI displays only match/diverge/hold, never landmarks, polygons or image data in the parity state.
+1. Legacy `proposePersonalColorCheekRegions` (seven direct MediaPipe anchors): 12-vertex ellipses with parameters y=0.55, x-radius=0.075 face-width, y-radius=0.180 eye-to-mouth span, outer-anchor weight 0.46.
+2. Saju product-neutral `consumeNeutralFaceObservation` -> `anchorGeometry` -> Face Lab-only `proposeSajuNeutralCheekResearchRegions`: independent 16-vertex ellipses with y=0.52, x-radius=0.070, y-radius=0.160, outer weight 0.43. These are **ad hoc research configurations**, not reviewed anatomical presets or a predicted improvement.
 
-## Existing authority preserved
+Both paths use the **same one** MediaPipe detection result from `mediapipe-roi-proposal.js` and the same raster-grid mask builder for fair geometric comparison. They calculate per cheek and exclusion: overlap, union, effective sample count, IoU, and exact equality. **Differences are expected**, not a failure by themselves; they demonstrate two implementations differ. Neither path proves which masks are correct, which pixels are bare skin, or that color measurements are stable. A/B output is aggregate-only.
 
-- Current Face Lab ROI proposal remains the baseline; `cheek-landmark-proposal.js` and `cheek-mask-geometry.js` are **not replaced**.
-- Existing independent skin-review boundary (`reviewed-roi-sampling.js`), Lab calculation and lighting drift holds are unchanged.
-- MESH5.1 is offline region authoring, not validated 2D skin segmentation; FR195 explicitly blocks anatomical zygion claims for 234/454.
-- MyeongHa FE030 JPEG re-encoding is not adopted for color measurement. Any later common image-intake must separately prove RGB/CIELAB invariance.
-- Saju FE035B consumer-safe metrics deliberately omit raw geometry, so a separate ephemeral producer-side contract is needed to consume the full frame.
-- Existing MediaPipe 0.10.35 pin is retained for parity with MyeongHa/Saju. Upgrading to 1.x requires separate behavioral, model, supply-chain and versioned contract review.
+The development-only UI gives matched/diverged/held. Existing independent-skin-review gate, photo-quality eligibility, CIELAB calculations, API and persisted reports remain unchanged.
 
-## Current evidence
+## Evidence gates
 
-- Deterministic synthetic full-landmark validation and same-algorithm mask parity with exclusions.
-- Invalid topology, orientation, non-anchor contamination, NaN depth, wrong face count and callback failure fail closed.
-- Foundation verifier imports the test and existing fake-MediaPipe detector checks callback behavior.
-- Actual MediaPipe/WASM browser execution in this new comparison was **not** performed by the synthetic contract test.
-- Real human annotated cheek ROI IoU/precision/recall, calibrated RGB photometry, real lighting repeatability and actual production preview remain **HOLD**.
+- **Synthetic test**: full 478-point provider frame, no second detector call, independent proposals overlap but differ; fail-closed multi-face/invalid geometry/unverified orientation/NaN and producer callback exceptions.
+- **Source provenance**: Saju commit and four upstream Git blobs pinned, npm workspace lock asserted.
+- **CI**: Saju standalone tests/lint/pack, K_beauty Foundation + Next build + Playwright dev UI.
+- **NOT YET**: controlled real-browser MediaPipe model/WASM parity on consented images, manual independent cheek segmentation benchmark IoU/precision/recall, device/lighting/EXIF mirror calibration, producer release integrity proof. All remain **HOLD** until separately verified.
+- FE030 canonical JPEG encoding from MyeongHa is **not** adopted for colour photometry; RGB roundtrip/invariance would need independent validation.
 
-## Next, subject to explicit separate approval
+## Future release policy
 
-1. Extract a genuine product-neutral producer package from governed Saju/MyeongHa code; own stable export, adapter release, digest, changelog and source/version lock.
-2. Characterize model/WASM network byte integrity and browser bundle size using the pinned version; compare canonical intake and color-preserving pixel intake independently.
-3. Replace this Face Lab candidate frame parser with an actual released neutral core behind identical callback contract; keep old/new parallel parity until regression tests pass.
-4. Conduct independent real-image mask benchmarks with authorized, non-user or explicitly consented materials; avoid adding user photos to Git or CI artifacts.
-5. Production activation requires separate approval after all evidence/privacy/supply-chain gates; this stage neither merges nor deploys.
+Only after Saju PR review/merge/release governance may the consuming vendored source become a separately distributed immutable package (registry or signed artifact). This migration explicitly does not publish, merge or activate the Saju code, nor does it upgrade MediaPipe `0.10.35`.
+
+
+## Optional independent-mask benchmark (research protocol only)
+
+`benchmarkCheekRoiCandidatesAgainstReview` in
+`independent-cheek-roi-benchmark.js` compares **both** ROI proposals
+against the **same independently annotated** image-left/right binary
+reference masks (caller-provided). It reuses the existing
+`compareCheekRoiProposalToReview` validator for each algorithm and
+returns each cheek's IoU, precision, recall, pixel counts and signed
+candidate-minus-legacy differences.
+
+- Human `independent_manual_review` provenance is **declared** by the
+  caller; the code cannot independently attest reviewer independence,
+  skin eligibility or reference correctness.
+- Missing provenance, unsupported orientation/topology, invalid masks,
+  overlapping reference cheeks and inadequate pixels **fail closed**.
+- The synthetic test fixture uses hand-authored rectangular masks, **not**
+  face photos or human review. It is a software protocol/quality test
+  and does **not** validate either algorithm's anatomical accuracy.
+- Output is redacted aggregate statistics only, with
+  `roiAccuracyApproved: false`,
+  `referenceIndependenceExternallyAudited: false` and
+  `productionAuthorized: false`. It is not wired to the consumer
+  score/palette path.
+- Real-image use requires explicitly authorized non-user or consented
+  photographs and reference masks outside Git, CI logs, and public
+  build artifacts. Independent reviewer records and controlled capture
+  conditions must be collected before interpreting any performance result.

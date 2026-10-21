@@ -24,6 +24,9 @@ on:
       - "scripts/verify-face-lab-v2-personal-color-roi-photometric-stress.mjs"
       - "scripts/verify-face-lab-v2-personal-color-mediapipe-roi.mjs"
       - "scripts/verify-face-lab-v2-shared-neutral-face-core.mjs"
+      - "scripts/verify-face-lab-v2-saju-neutral-core-upstream.mjs"
+      - "packages/neutral-face-observation/**"
+      - "package-lock.json"
       - "scripts/verify-face-lab-v2-personal-color-capture-repeatability.mjs"
       - "docs/domain/facelab/face-lab-style-m2-*"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
@@ -306,9 +309,17 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked workspace dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify Saju neutral core standalone contract
+        run: npm test --prefix packages/neutral-face-observation
       - name: Verify Face Lab V2 foundation
         run: node scripts/verify-face-lab-v2-foundation.mjs
       - name: Verify Face Lab V2 premium wiring
@@ -454,7 +465,7 @@ jobs:
 
   m2-research-ui-build:
     name: M2 Research UI Production Build (Inactive)
-    if: github.event_name == 'pull_request' && (github.head_ref == 'face-lab/feat-personal-color-research-ui-20261014' || github.head_ref == 'feat/face-research/shared-neutral-observation-m2-parity-20261021')
+    if: github.event_name == 'pull_request' && (github.head_ref == 'face-lab/feat-personal-color-research-ui-20261014' || github.head_ref == 'feat/face-research/shared-neutral-observation-m2-parity-20261021' || github.head_ref == 'feat/face-research/saju-neutral-core-integration-20261021')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
