@@ -16,6 +16,8 @@ const saved = read("apps/mobile/features/reports/NativeSavedReport.tsx");
 const shared = read("apps/mobile/features/reports/NativePublicResult.tsx");
 const premiumApi = read("app/api/full-report/route.js");
 const webReport = read("app/result/full-report/page.js");
+const webShared = read("components/result/SharedResultLoader.jsx");
+const resultSerializer = read("lib/analysis-results.js");
 
 assert.match(dictionary, /function getLocalizedSkinState\(/);
 assert.match(dictionary, /return lookup\[canonical\] \|\| text/);
@@ -90,4 +92,15 @@ const publicShape = Object.keys(unknown).sort();
 assert.deepEqual(Object.keys(serializeOwnerAnalysisResult({ ...sample, is_public: false })).sort(), [...publicShape, "isPublic"].sort());
 assert.ok(!publicShape.includes("user_id"), "public response must not expose owner identifiers");
 
+// The shared-result language switch is a presentation operation, not a new read
+// or result-generation request. Verify original share access remains guarded.
+assert.match(resultSerializer, /sourceLocale: getAnalysisResultSourceLocale\(row\)/);
+assert.match(resultSerializer, /return stored === "ko" \|\| stored === "en" \? stored : null/);
+assert.match(webShared, /const displayLocale = requestedDisplayLocale \|\| result\.locale/);
+assert.match(webShared, /const sourceNoteVisible = displayLocale === "en"/);
+assert.match(webShared, /locale=\{displayLocale\}/);
+assert.match(webShared, /onClick=\{\(\) => setRequestedDisplayLocale\(option\)\}/);
+assert.match(webShared, /\}, \[shareId\]\)/);
+assert.equal((webShared.match(/fetch\(\`\/api\/results\//g) || []).length, 1, "shared locale switch must not create extra API reads");
+assert.match(webShared, /Original advice is preserved/);
 console.log("I18N_KO_EN_M3_PROFILE=PASS");
