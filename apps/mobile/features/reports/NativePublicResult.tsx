@@ -7,6 +7,7 @@ const COPY = {
   en: {
     kicker: "SHARED · MOBILE-10",
     title: "Shared result",
+    sourceNote: "This analysis was originally saved in Korean. Some guidance remains in the original language.",
     summary: "Shared summary",
     skinType: "Skin type",
     concerns: "Main concerns",
@@ -17,6 +18,7 @@ const COPY = {
   ko: {
     kicker: "공유 · MOBILE-10",
     title: "공유 결과",
+    sourceNote: "이 분석은 한국어로 저장되어 일부 안내가 원문으로 표시됩니다.",
     summary: "공유된 요약",
     skinType: "피부 타입",
     concerns: "주요 고민",
@@ -72,6 +74,9 @@ export function NativePublicResult({ result }: { result: NativeFreeSavedResult }
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: palette.accent }]}>{copy.kicker}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{copy.title}</Text>
+        {locale === "en" && result.locale === "ko" ? (
+          <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sourceNote}</Text>
+        ) : null}
       </View>
 
       {summary ? (
