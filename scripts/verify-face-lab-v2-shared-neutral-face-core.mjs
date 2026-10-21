@@ -35,13 +35,15 @@ const arg = { faceLandmarks: landmarks, faceCount: 1,
   coordinateSpace: "original_image", width, height };
 const paired = compareSharedNeutralFaceCoreRoiParity(arg);
 assert.equal(paired.status, "comparison_only", JSON.stringify(paired));
-assert.equal(paired.parity, "matched");
+assert.equal(paired.parity, "diverged");
+assert.match(paired.neutralCoreVersion,/myeongha-neutral-face-observation/);
+assert.equal(paired.reference, "same_detector_different_research_roi_algorithms_not_human_accuracy");
 assert.equal(paired.independentlyReviewedSkin, false);
 assert.equal(paired.skinMeasurement, null);
 assert.equal(paired.productionAuthorized, false);
 for (const region of ["leftCheek", "rightCheek", "exclusion"]) {
-  assert.equal(paired.metrics[region].samePixels, true);
-  assert.equal(paired.metrics[region].iou, 1);
+  assert.equal(paired.metrics[region].samePixels, false);
+  assert.ok(paired.metrics[region].iou > 0 && paired.metrics[region].iou < 1);
   assert.ok(paired.metrics[region].intersectionPixels > 0);
 }
 assert.deepEqual(compareSharedNeutralFaceCoreRoiParity(arg), paired);
@@ -96,7 +98,7 @@ for (const receipt of [inspected, paired, refused]) {
 console.log(JSON.stringify({
   ok: true,
   suite: "face_lab_m2_shared_neutral_core_contract_parity",
-  implementation: "facelab_candidate_adapter_not_saju_package_import",
+  implementation: "vendored_pinned_saju_package_and_independent_facelab_roi_algorithm",
   parity: paired.parity,
   detectedByMediaPipeInThisTest: false,
   independentHumanRoiAccuracyValidated: false,
