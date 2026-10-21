@@ -1,0 +1,160 @@
+{
+  "contract": "trust-p2v3-two-brand-public-index-offer-audit-v1",
+  "observedAtDate": "2026-10-21",
+  "scope": "TWO_USER_AUTHORIZED_FIRST_PARTY_ORIGINS_INDEXED_PUBLIC_OBSERVATIONS_ONLY",
+  "sourceAccess": {
+    "userAuthorizedReadOnlyScope": [
+      "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+      "https://beautyofjoseon.com/products/relief-sun-rice-probiotics"
+    ],
+    "directRobotsStatus": "UNAVAILABLE_FROM_AVAILABLE_TOOLS",
+    "directProductFetchAttemptsAuthorized": 0,
+    "directProductFetchesSucceeded": 0,
+    "firstPartyOriginalHtmlBytesRetained": 0,
+    "sourceUseLicenseGrantedByBrand": false,
+    "rights": "UNKNOWN_FOR_SIDMOOL_RESTRICTED_BOJ_COMMERCIAL_REUSE",
+    "commercialTermsFinding": "Beauty of Joseon official Terms article 23 restricts commercial information reuse without prior company permission. User approval is not that company permission.",
+    "status": "NO_DIRECT_LIVE_CRAWL_OR_LICENSED_SOURCE_ARTIFACT",
+    "robotsUrls": [
+      {
+        "url": "https://www.sidmool.com/robots.txt",
+        "status": "UNAVAILABLE_NO_ACCESS_DECISION"
+      },
+      {
+        "url": "https://beautyofjoseon.com/robots.txt",
+        "status": "UNAVAILABLE_NO_ACCESS_DECISION"
+      }
+    ]
+  },
+  "findings": [
+    {
+      "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "brand": "SIDMOOL",
+      "catalogName": "Physical Daily Sunmilk",
+      "catalogSizeMl": null,
+      "officialRecordedLocator": "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+      "indexedPrimaryPageUrl": "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+      "indexedPageAge": "CRAWLED_ABOUT_TWO_MONTHS_BEFORE_2026_10_21",
+      "observedAtDate": "2026-10-21",
+      "proofChannel": "PUBLIC_SEARCH_ENGINE_CACHED_OFFICIAL_PAGE_NOT_DIRECT_LIVE_FETCH",
+      "typedObservedClaims": [
+        {
+          "scope": "PRODUCT_FAMILY",
+          "dimension": "NAME",
+          "value": "무기자차 데일리 썬밀크",
+          "confidenceKind": "INDEXED_OFFICIAL_PAGE_CANDIDATE"
+        },
+        {
+          "scope": "PHYSICAL_UNIT",
+          "dimension": "CAPACITY_ML",
+          "value": 75,
+          "confidenceKind": "INDEXED_OFFICIAL_PAGE_CANDIDATE"
+        },
+        {
+          "scope": "PRODUCT_FAMILY",
+          "dimension": "SPF",
+          "value": 20,
+          "confidenceKind": "INDEXED_OFFICIAL_PAGE_CANDIDATE"
+        },
+        {
+          "scope": "PRODUCT_FAMILY",
+          "dimension": "PA",
+          "value": "PA++",
+          "confidenceKind": "INDEXED_OFFICIAL_PAGE_CANDIDATE"
+        },
+        {
+          "scope": "SALE_OFFER",
+          "dimension": "MULTI_QUANTITY_DISCOUNT",
+          "value": "BUY_TWO_10_PERCENT_DISCOUNT_LISTED",
+          "confidenceKind": "INDEXED_OFFICIAL_PAGE_CANDIDATE"
+        }
+      ],
+      "selectedPurchaseOption": "NOT_PROVEN_INPUT_SELECT_OPTIONS_UNREADABLE",
+      "commercialOfferResolution": "75ML_PHYSICAL_UNIT_LISTED_AND_TWO_UNIT_DISCOUNT_DISTINGUISHED_SELECTED_OPTION_NOT_PROVEN",
+      "catalogQuantityReconciliation": "CATALOG_NULL_NO_MATCH_OR_CONFLICT_DECISION",
+      "support": "Cached official product page lines 555-575 and 603-609; claim excerpts only, no official HTML bytes archived.",
+      "firstPartyCanonicalOwnershipConfirmed": false,
+      "independentGoldReviewCount": 0,
+      "exactSkuVerified": false
+    },
+    {
+      "productId": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "brand": "뷰티오브조선",
+      "catalogName": "맑은쌀 선크림",
+      "catalogSizeMl": 50,
+      "officialRecordedLocator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "indexedPrimaryPageUrl": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics?country=PH&currency=PHP",
+      "otherIndexedSinglePackSource": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics-spf50-pa-uk?country=GB&currency=GBP&variant=52419610673524",
+      "indexedPageAge": "INDEX_RECENCY_ONE_WEEK_TO_ONE_MONTH_BEFORE_2026_10_21",
+      "observedAtDate": "2026-10-21",
+      "proofChannel": "PUBLIC_SEARCH_ENGINE_INDEX_OFFICIAL_LOCALE_PAGE_NOT_DIRECT_LIVE_FETCH",
+      "typedObservedClaims": [
+        {
+          "scope": "PRODUCT_FAMILY",
+          "dimension": "NEW_DISPLAY_NAME",
+          "value": "Relief Sun : Rice + Niacinamide",
+          "confidenceKind": "INDEXED_OFFICIAL_PAGE_CANDIDATE"
+        },
+        {
+          "scope": "PRODUCT_FAMILY",
+          "dimension": "OLD_DISPLAY_NAME",
+          "value": "Relief Sun : Rice + Probiotics",
+          "confidenceKind": "OFFICIAL_FAQ_RENAMING_CLAIM"
+        },
+        {
+          "scope": "PRODUCT_FAMILY",
+          "dimension": "FORMULA_UNCHANGED_CLAIM",
+          "value": "BRAND_FAQ_SAYS_UNCHANGED",
+          "confidenceKind": "OFFICIAL_FAQ_ASSERTION_NOT_INDEPENDENT_FORMULATION_PROOF"
+        },
+        {
+          "scope": "PHYSICAL_UNIT",
+          "dimension": "CAPACITY_ML",
+          "value": 50,
+          "confidenceKind": "INDEXED_OFFICIAL_PAGE_CANDIDATE"
+        },
+        {
+          "scope": "SALE_OFFER",
+          "dimension": "PACKAGE_OPTIONS",
+          "value": [
+            "1-Pack",
+            "2-Pack"
+          ],
+          "confidenceKind": "INDEXED_OFFICIAL_PAGE_CANDIDATE"
+        }
+      ],
+      "selectedPurchaseOption": "INDEX_SHOWS_1_PACK_FOR_ONE_LOCALE_VARIANT_NOT_INDEPENDENTLY_REPLAYABLE",
+      "commercialOfferResolution": "50ML_UNIT_AND_1_PACK_2_PACK_DISTINGUISHED_EXACT_VARIANT_MAPPING_NOT_VERIFIED",
+      "catalogQuantityReconciliation": "INDEXED_UNIT_CAPACITY_MATCHES_CATALOG_50ML_CANDIDATE_ONLY",
+      "support": "Indexed official Philippines and UK locale pages display 50ml unit and Type 1-Pack / 2-Pack; official FAQ says Probiotics renamed Niacinamide, without formula/size change. Bare stored source URL returned 404 from page fetch tool; locale query variant indexed, current redirect mapping unknown.",
+      "firstPartyCanonicalOwnershipConfirmed": false,
+      "independentGoldReviewCount": 0,
+      "exactSkuVerified": false
+    }
+  ],
+  "holdReasons": [
+    "ROBOTS_PREFLIGHT_NOT_CONFIRMED",
+    "RAW_ORIGINAL_PRODUCT_PAGE_UNRETAINED",
+    "OFFICIAL_SOURCE_COMMERCIAL_REUSE_NOT_AUTHORIZED",
+    "INDEPENDENT_HUMAN_GOLD_REVIEWS_ABSENT",
+    "EXACT_PURCHASE_VARIANT_MAPPING_NOT_PROVEN"
+  ],
+  "accuracy": {
+    "panelCandidateCount": 20,
+    "newIndependentlyVerifiedGoldClaims": 0,
+    "historicalExactOfficialSkuNumerator": 0,
+    "historicalExactOfficialSkuDenominator": 5,
+    "sourceIndexedFamilyCapacityLeads": 2,
+    "actualRealWorldAccuracy": null
+  },
+  "safety": {
+    "officialSiteLiveFetches": 0,
+    "dbWrites": 0,
+    "catalogWrites": 0,
+    "factWrites": 0,
+    "subjectWrites": 0,
+    "sourceBindingWrites": 0,
+    "recommendationWrites": 0,
+    "aiApiCalls": 0
+  }
+}
