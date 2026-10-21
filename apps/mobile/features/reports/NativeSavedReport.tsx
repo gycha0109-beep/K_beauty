@@ -203,7 +203,7 @@ export function NativeSavedReport({ value }: { value: NativeSavedReportRead }) {
     ? value.report.meta as Record<string, unknown>
     : null;
   const reportLocale = value.kind === "free"
-    ? value.result.locale
+    ? value.result.sourceLocale ?? value.result.locale
     : typeof premiumMeta?.sourceLocale === "string"
       ? premiumMeta.sourceLocale
       : typeof premiumMeta?.locale === "string"
