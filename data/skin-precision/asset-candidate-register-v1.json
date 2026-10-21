@@ -113,6 +113,45 @@
       "sourceOwnerVerified": false,
       "artifactDigestVerified": false,
       "notes": "30 KEEP is suitability, not clinical gold; exact project/version URL, creator permission, subject grouping and original rights required. No commercial training or evaluation."
+    },
+    {
+      "id": "aihub-korean-skin-measurement-71645",
+      "kind": "dataset",
+      "name": "AI-Hub 한국인 피부상태 측정 데이터 (2023, final 2024-10-30)",
+      "sourceUrl": "https://aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=120&dataSetSn=71645&topMenu=",
+      "licenseUrl": "https://www.aihub.or.kr/aihubnews/faq/list.do",
+      "declaredLicense": "AI-Hub permits commercial model/service outputs with dataset attribution; source redistribution prohibited; dataset-specific access and rights still to verify",
+      "status": "review",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": true,
+      "artifactDigestVerified": false,
+      "notes": "Official count: 13,936 face photos, 84,688 instrument measurements, 125,424 annotation records, includes face boxes and moisture/pore/pigmentation. Annotation records not equivalent independent faces or lesion boxes. Applicant must obtain authorized data; check if safe-zone restrictions apply and exact terms. Validate ID linkage, capture angles and subject-level splitting. No acne lesion coordinates/redness masks confirmed."
+    },
+    {
+      "id": "aihub-skincare-cot-71886",
+      "kind": "dataset",
+      "name": "AI-Hub 스킨케어 성분-효능 추천 데이터 (2025, final 2026-06-30)",
+      "sourceUrl": "https://aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=71886&topMenu=100",
+      "licenseUrl": "https://www.aihub.or.kr/aihubnews/faq/list.do",
+      "declaredLicense": "AI-Hub general derivative model/service commercial-use policy, dataset-specific privacy/access conditions must be checked",
+      "status": "review",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": true,
+      "artifactDigestVerified": false,
+      "notes": "Official: 10,000 face images, 10,000 surveys, 10,000 CoT response pairs; NOT dermatologist-confirmed lesion positions or pore measurements. Only for supplementary concern/context exploration after rights and labels review."
+    },
+    {
+      "id": "grandaid-consumer-skin-study",
+      "kind": "dataset",
+      "name": "GRANDAID / 2026 consumer selfie skin profiling dataset",
+      "sourceUrl": "https://www.nature.com/articles/s41598-026-65514-4",
+      "licenseUrl": "https://github.com/frankkramer-lab/GRANDAID",
+      "declaredLicense": "Code Apache-2.0; raw face photographs NOT publicly distributable under GDPR",
+      "status": "restricted",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": true,
+      "artifactDigestVerified": false,
+      "notes": "3203 selfies scored across acne, redness, pores, pigment, shine etc., but authors prohibit public sharing of raw images. Research paper and code may guide rubric only; no commercial photo acquisition by download."
     }
   ]
 }
