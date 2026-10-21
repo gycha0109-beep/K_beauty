@@ -24,4 +24,9 @@ assert.match(shared, /getLocalizedSkinState\(text\(result\.skinType\), "skinType
 assert.match(shared, /getLocalizedSkinState\(value, "concerns", locale\)/);
 assert.match(diary, /checkin\.memo \|\|/);
 assert.ok(!diary.includes("getLocalizedSkinState(checkin.memo"), "user-authored diary text must stay untouched");
+assert.match(saved, /locale === "en" && reportLocale === "ko"/);
+assert.match(shared, /locale === "en" && result\.locale === "ko"/);
+assert.match(saved, /Some guidance remains in the original language/);
+assert.match(shared, /Some guidance remains in the original language/);
+
 console.log("I18N_KO_EN_M3_PROFILE=PASS");
