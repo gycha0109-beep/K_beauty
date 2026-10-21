@@ -7085,7 +7085,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
                 <p className="ui-kicker">FULL REPORT</p>
                 <h1 className="ui-title mt-2 text-[26px] leading-[1.18] sm:text-2xl sm:leading-tight">{copy.title}</h1>
                 <p className="ui-text-secondary mt-3 text-sm leading-6">{copy.body}</p>
-                {isEnglish && report?.meta?.locale === "ko" ? (
+                {isEnglish && (report?.meta?.sourceLocale || report?.meta?.locale) === "ko" ? (
                   <p role="note" className="ui-text-secondary mt-2 text-xs leading-5">
                     This report was originally saved in Korean. Some guidance is shown in its original language to preserve the original decision.
                   </p>
