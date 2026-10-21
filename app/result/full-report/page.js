@@ -24,6 +24,7 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
+import { preserveReportNarrative, preserveReportRoutineSteps } from "@/lib/full-report-locale-fidelity.mjs";
 import {
   getFaceLabObservationAnalysis,
   isFaceLabResultEnvelope
@@ -2312,24 +2313,16 @@ function buildEnglishSupportingUsage(role) {
   return "Swap it in when the primary product role is right but the finish or texture does not fit the day.";
 }
 
-function localizeSupportingProductsForEnglish(items = [], result = {}) {
+function localizeSupportingProductsForEnglish(items = []) {
   return items.map((item) => {
     const product = unwrapSupportingProductItem(item);
     const role = item?.role || "same_concern_alternative";
 
-    if (item?.product) {
-      return {
-        ...item,
-        label: getEnglishRoleLabel(role, product),
-        reason: hasKoreanText(item.reason) || !item.reason ? buildEnglishSupportingReason(role, result) : item.reason,
-        usage: hasKoreanText(item.usage) || !item.usage ? buildEnglishSupportingUsage(role) : item.usage,
-        relationToTopPick: hasKoreanText(item.relationToTopPick) || !item.relationToTopPick
-          ? getDefaultRelationToTopPick(role, "en")
-          : item.relationToTopPick
-      };
-    }
-
-    return product;
+    // Labels can be localized from canonical role codes. Evidence, usage and
+    // relation text must remain source-faithful, even when the source is Korean.
+    return item?.product
+      ? { ...item, label: getEnglishRoleLabel(role, product) }
+      : product;
   });
 }
 
@@ -2425,23 +2418,14 @@ function buildKoreanRoutineCaution(step, slot, result = {}) {
   return "피부가 안정될 때까지 주변 단계는 단순하게 둡니다.";
 }
 
-function localizeRoutineStepsForEnglish(steps = [], fallbackItems = [], slot = "morning", result = {}) {
-  const source = Array.isArray(steps) && steps.length
-    ? steps
-    : (Array.isArray(fallbackItems) ? fallbackItems : []).map((item, index) => ({
-      order: index + 1,
-      instruction: String(item || "").trim()
-    }));
-
-  return source.map((step, index) => ({
-    ...step,
-    order: Number.isFinite(Number(step.order)) ? Number(step.order) : index + 1,
-    stepName: `${slot === "morning" ? "Morning" : "Night"} Step ${index + 1}`,
-    productRole: step.product ? getReportStepLabel(step.product, "en") : "",
-    instruction: buildEnglishRoutineInstruction(step, slot, result),
-    frequency: slot === "morning" ? "Every morning" : "Every night",
-    caution: buildEnglishRoutineCaution(step, slot, result)
-  }));
+function localizeRoutineStepsForEnglish(steps = [], fallbackItems = [], slot = "morning") {
+  return preserveReportRoutineSteps(
+    steps,
+    fallbackItems,
+    slot,
+    "en",
+    (product) => getReportStepLabel(product, "en")
+  );
 }
 
 function localizeRoutineStepsForKorean(steps = [], fallbackItems = [], slot = "morning", result = {}) {
@@ -2811,31 +2795,26 @@ function localizeFullReportForLocale(report, result, locale = "ko") {
     };
   }
 
+  // Never synthesize different advice merely because the display language changed.
+  // Explicit bilingual fields may change language; legacy monolingual narratives
+  // remain exactly as stored until a verified translation is available.
+  const sourceNarrative = preserveReportNarrative(report, "en");
   const localizedReport = {
-    ...report,
-    topPickDetailedReason: hasKoreanText(report.topPickDetailedReason) || !report.topPickDetailedReason
-      ? buildEnglishTopPickDetailedReason(result)
-      : report.topPickDetailedReason,
-    supportingProducts: localizeSupportingProductsForEnglish(report.supportingProducts || [], result),
+    ...sourceNarrative,
+    supportingProducts: localizeSupportingProductsForEnglish(report.supportingProducts || []),
     fullRoutine: {
-      ...report.fullRoutine,
-      morning: ["Start with a light, repeatable morning routine around the Top Pick."],
-      night: ["Use the evening routine to reset residue and lower burden without stacking too much."],
+      ...sourceNarrative.fullRoutine,
       morningSteps: localizeRoutineStepsForEnglish(
         report.fullRoutine?.morningSteps || [],
         report.fullRoutine?.morning || [],
-        "morning",
-        result
+        "morning"
       ),
       nightSteps: localizeRoutineStepsForEnglish(
         report.fullRoutine?.nightSteps || [],
         report.fullRoutine?.night || [],
-        "night",
-        result
+        "night"
       )
     },
-    routineVariants: buildEnglishRoutineVariants(result),
-    avoidCombinations: buildEnglishAvoidCombinations(result),
     budgetAlternatives: localizeBudgetAlternativesForEnglish(report.budgetAlternatives || [], result)
   };
 
