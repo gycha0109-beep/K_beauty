@@ -117,7 +117,8 @@ export function MobileShellProvider({ children }: { children: ReactNode }) {
     [locale, palette, setLocale, themeMode, toggleLocale]
   );
 
-  return <MobileShellContext.Provider value={value}>{localeLoaded ? children : null}</MobileShellContext.Provider>;
+  // Expo Router needs its navigator mounted immediately; hydrate the saved locale without blocking routing.
+  return <MobileShellContext.Provider value={value}>{children}</MobileShellContext.Provider>;
 }
 
 export function useMobileShell() {
