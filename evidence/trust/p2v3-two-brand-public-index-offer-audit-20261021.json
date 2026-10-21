@@ -8,7 +8,7 @@
       "https://beautyofjoseon.com/products/relief-sun-rice-probiotics"
     ],
     "directRobotsStatus": "UNAVAILABLE_FROM_AVAILABLE_TOOLS",
-    "directProductFetchAttemptsPerformed": 0,
+    "repositoryGovernedLiveProductFetchAttempts": 0,
     "directProductFetchesSucceeded": 0,
     "firstPartyOriginalHtmlBytesRetained": 0,
     "sourceUseLicenseGrantedByBrand": false,
