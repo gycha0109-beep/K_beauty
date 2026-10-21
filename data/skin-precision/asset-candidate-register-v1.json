@@ -6,7 +6,8 @@
     "candidate": "source-level license appears permissive; exact artifact provenance and obligations are unverified",
     "hold": "commercial or personal-image rights not established; no ingestion",
     "restricted": "explicit noncommercial/research-only terms; commercial use prohibited unless separately authorized",
-    "review": "bespoke data-use terms or unclear downstream rights; human/legal review needed"
+    "review": "bespoke data-use terms or unclear downstream rights; human/legal review needed",
+    "approved": "requires a separately signed/recorded specific-source commercial rights review, verified source-image rights and privacy/personality rights; not asserted for any asset currently"
   },
   "assets": [
     {
