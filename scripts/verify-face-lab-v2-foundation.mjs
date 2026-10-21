@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+// Browser-only ROI preview regression: validates masked rendering source contract.
+import "./verify-face-lab-roi-public-research-route.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
