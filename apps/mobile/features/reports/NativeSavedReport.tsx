@@ -96,12 +96,12 @@ function collectDisplayLines(value: unknown, limit = 8, depth = 0): string[] {
   return [...new Set(lines)].slice(0, limit);
 }
 
-function getProduct(result: NativeFreeSavedResult | Record<string, unknown> | null | undefined) {
+function getProduct(result: NativeFreeSavedResult | Record<string, unknown> | null | undefined, locale: "ko" | "en") {
   const raw = result && typeof result === "object" ? (result as Record<string, unknown>).topPick : null;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const product = raw as Record<string, unknown>;
-  const name = normalizeText(product.name);
-  const brand = normalizeText(product.brand);
+  const name = (locale === "en" ? normalizeText(product.name_en) || normalizeText(product.nameEn) : null) || normalizeText(product.name);
+  const brand = (locale === "en" ? normalizeText(product.brand_en) || normalizeText(product.brandEn) : null) || normalizeText(product.brand);
   const reason = normalizeText(product.reason);
   if (!name && !brand && !reason) return null;
   return { name, brand, reason };
@@ -134,7 +134,7 @@ function Section({ title, lines }: { title: string; lines: string[] }) {
 function FreeSnapshot({ result }: { result: NativeFreeSavedResult }) {
   const { locale, palette } = useMobileShell();
   const copy = REPORT_COPY[locale];
-  const topPick = getProduct(result);
+  const topPick = getProduct(result, locale);
   const am = normalizeTextArray(result.routineAm);
   const pm = normalizeTextArray(result.routinePm);
   const concerns = normalizeTextArray(result.mainConcerns, 5).map((value) => getLocalizedSkinState(value, "concerns", locale));
