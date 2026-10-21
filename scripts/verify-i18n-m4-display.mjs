@@ -33,4 +33,37 @@ assert.match(diary, /formatNativeCalendarDate\(report\.created_at\.slice\(0, 10\
 assert.match(shared, /aria-label=\{displayLocale === "en" \? "Display language" : "표시 언어"\}/);
 assert.match(shared, /aria-pressed=\{displayLocale === option\}/);
 
+// The home page must pass its actual pathname locale to Google sign-in.
+// An implicit AuthNav default silently displayed Korean on /en.
+const home = read("app/page.js");
+const auth = read("components/auth/AuthNav.jsx");
+const login = read("components/auth/LoginButtons.jsx");
+assert.match(home, /<AuthNav locale=\{locale\} \/>/);
+assert.doesNotMatch(home, /<AuthNav \/>/);
+assert.match(auth, /label=\{copy\.signInGoogle\}/);
+assert.match(auth, /locale=\{locale\}/);
+assert.match(login, /const copy = getCommonCopy\(locale\)\.auth/);
+assert.equal(read("lib/ui/i18n.js").includes('signInGoogle: "Sign in with Google"'), true);
+
+// The My KO/EN switch is presentational: no second server render, database
+// query, dashboard API refresh, or saved-history remount on language change.
+const my = read("components/my/MyDashboard.jsx");
+const myMenu = read("components/my/MyDashboardMenu.jsx");
+const appMenu = read("components/navigation/AppHamburgerMenu.jsx");
+assert.match(my, /const \[displayLocale, setDisplayLocale\] = useState\(locale\)/);
+assert.match(my, /window\.history\.pushState\(null, "", targetPath\)/);
+assert.match(my, /setDisplayLocale\(nextLocale\)/);
+assert.match(my, /<MyDashboardMenu locale=\{displayLocale\} onLocaleChange=\{handleLocaleChange\} \/>/);
+assert.match(my, /getReportHref\(latestSharePath, displayLocale\)/);
+assert.match(my, /<SavedReportHistory locale=\{displayLocale\} \/>/);
+assert.match(myMenu, /event\.preventDefault\(\); onLocaleChange\("en"\)/);
+assert.match(myMenu, /event\.preventDefault\(\); onLocaleChange\("ko"\)/);
+assert.match(appMenu, /item\.onClick\?\.\(event\)/);
+assert.equal((my.match(/refreshDashboard\(\);/g) || []).length, 1,
+  "date-context dashboard reconciliation must only run on mount");
+const history = read("components/my/SavedReportHistory.jsx");
+assert.match(history, /void loadInitialHistory\(\);[\s\S]*?\}, \[\]\);/);
+const documentLocale = read("components/i18n/DocumentLocaleSync.jsx");
+assert.match(documentLocale, /resolveDocumentLocale\(pathname\)/);
+
 console.log("I18N_KO_EN_M4_DISPLAY=PASS");
