@@ -17,6 +17,6 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test ./test/*.test.mjs"
+    "test": "node --test ./test/*.check.mjs"
   }
 }
