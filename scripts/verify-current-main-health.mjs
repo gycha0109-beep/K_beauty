@@ -46,6 +46,7 @@ run("KO/EN M1 display contract", node, ["scripts/verify-i18n-m1.mjs"]);
 run("KO/EN M2 report fidelity contract", node, ["scripts/verify-i18n-m2-fidelity.mjs"]);
 run("KO/EN M3 native profile display contract", node, ["scripts/verify-i18n-m3-profile.mjs"]);
 run("KO/EN M4 date/share display contract", node, ["scripts/verify-i18n-m4-display.mjs"]);
+run("KO/EN Face Lab canonical status parity", node, ["--experimental-default-type=module", "scripts/verify-i18n-face-lab-canonical.mjs"]);
 run("Shared survey input contract", node, ["--experimental-default-type=module", "scripts/verify-shared-survey-contract.mjs"]);
 run("Free survey decision intake", node, ["--experimental-default-type=module", "scripts/verify-free-survey-decision-intake.mjs"]);
 run("Premium intake v1", node, ["--experimental-default-type=module", "scripts/verify-premium-intake-v1.mjs"]);
