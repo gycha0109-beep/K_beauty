@@ -1,0 +1,126 @@
+{
+  "contract": "trust-p2v3-two-primary-legacy-evidence-triage-v1",
+  "checkedAtDate": "2026-10-21",
+  "scope": "EXISTING_RECORDED_EVIDENCE_ONLY_NO_LIVE_OFFICIAL_SITE_ACCESS",
+  "catalogPanel": "evidence/trust/p2v3-real-catalog-evaluation-panel-20261021.json",
+  "legacyGoldLedger": "evidence/trust/p2v3-independent-gold-ledger-v1.json",
+  "provenance": "Supabase SELECT-only public.products, trust_source_observations, trust_evidence_candidates, product_evidence_sources and source-verification profile metadata; bounded GitHub evidence/trust path listing. Verified claims refer to recorded metadata, not external site truth. Sidmool product_candidates.id dd651007-a91c-49ad-a1aa-92977c6a8d8a matched_product_id and latest_raw_source keys inspected separately.",
+  "reviewTargets": [
+    {
+      "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "brand": "SIDMOOL",
+      "catalogName": "Physical Daily Sunmilk",
+      "catalogSizeMl": null,
+      "category": "uncategorized",
+      "officialLocator": "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+      "originalPageRetainedInInspectedStores": false,
+      "historicalSourceRecordId": "99d6e309-aee5-49f5-b991-9bf19eba7d72",
+      "sourceRecordFinding": "presentation_size=75ml;size_semantics=presentation_only;source product name Korean. Catalog size_ml NULL, so cannot infer catalog match or mismatch.",
+      "historicalObservations": [
+        {
+          "observationId": "a37c3ec1-97ef-4e5d-9129-029a56c79ec8",
+          "factKey": "spf_value",
+          "recordedClaim": "SPF20",
+          "excerptContains": "75ml"
+        },
+        {
+          "observationId": "cad80015-0cb7-4194-a30b-649c49c46d86",
+          "factKey": "uva_label",
+          "recordedClaim": "PA++",
+          "excerptContains": "75ml"
+        },
+        {
+          "observationId": "59278f55-e469-44dc-8a96-38ab222edba4",
+          "factKey": "uv_filter_type",
+          "recordedClaim": "무기자차",
+          "excerptContains": null
+        }
+      ],
+      "candidateReviewClaims": [
+        "PHYSICAL_UNIT_CAPACITY_ML",
+        "FAMILY_IDENTITY",
+        "OFFER_COMPOSITION"
+      ],
+      "trustObservationDigestBasis": "frozen-first-party-observation-v1-not-live-page-bytes",
+      "status": "HISTORICAL_EXCERPT_PRESENT_EXTERNAL_PRIMARY_SOURCE_NOT_INDEPENDENTLY_REVALIDATED",
+      "nextRequiredEvidence": "Source-owned exact product name, physical 75ml unit, distinct offer selection and lawful inspectable manufacturer excerpt/photo; verify version/region; obtain two independent blinded reviewers.",
+      "catalogSizeCorrectionProposed": false,
+      "catalogCandidateLineage": {
+        "sourceCandidateId": "dd651007-a91c-49ad-a1aa-92977c6a8d8a",
+        "sourceName": "hwahae",
+        "matchedProductId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+        "productNameRaw": "Physical daily sunmilk [SPF20/PA++]",
+        "officialIdentityAnchor": "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+        "discriminationLead": {
+          "authority": false,
+          "spf_value": 20,
+          "uva_label": "PA++"
+        },
+        "productWriteAllowed": false,
+        "productFactWriteAllowed": false,
+        "productionCutoverAuthorized": false,
+        "recommendationAdmissionAllowed": false,
+        "interpretation": "An existing Hwahae-sourced matched candidate links to a same-URL official identity anchor; all stored authority flags explicitly deny promotion. This is lineage, NOT original manufacturer bytes or an authorized SKU."
+      }
+    },
+    {
+      "productId": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "brand": "뷰티오브조선",
+      "catalogName": "맑은쌀 선크림",
+      "catalogSizeMl": 50,
+      "category": "sunscreen",
+      "officialLocator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "originalPageRetainedInInspectedStores": false,
+      "historicalSourceRecordIds": [
+        "4f74de41-9515-495c-8c93-19ab1cd3cf6d",
+        "60a55f19-a71d-4063-9ea5-13775193c940"
+      ],
+      "sourceRecordFinding": "Existing official-source metadata records possible name transition Relief Sun : Rice + Probiotics → Relief Sun : Rice + Niacinamide with a same-formula claim. This is historical metadata, not independent confirmation of identical version/formulation.",
+      "historicalObservations": [
+        {
+          "observationId": "b67bf57b-198e-4f6e-92cd-1112c8d22e8e",
+          "factKey": "uv_filter_type",
+          "recordedClaim": "organic",
+          "excerptContains": null
+        }
+      ],
+      "candidateReviewClaims": [
+        "FAMILY_IDENTITY",
+        "PHYSICAL_UNIT_CAPACITY_ML",
+        "OFFER_COMPOSITION"
+      ],
+      "trustObservationDigestBasis": "frozen-first-party-observation-v1-not-live-page-bytes",
+      "status": "HISTORICAL_IDENTITY_AND_NAME_TRANSITION_METADATA_ONLY",
+      "nextRequiredEvidence": "Inspect lawful manufacturer naming history, chosen 50ml physical container and selected sale offer, distinguish formula/version renaming; obtain separately inspectable source and two independent blinded reviewers.",
+      "catalogSizeCorrectionProposed": false
+    }
+  ],
+  "sourceRecordVerification": {
+    "matchingSourceVerificationProfileCount": 0,
+    "matchingSourceVerificationRunCount": 0,
+    "externalSnapshotReferenceCount": 0,
+    "historicalObservationCount": 4
+  },
+  "limitations": [
+    "Original live HTML/photo bytes were not found in the inspected TRUST observation/source tables or evidence/trust repository directory; this does not prove no evidence exists elsewhere.",
+    "Short excerpt text recorded in observed_claim is an archived human/machine claim and is not an independently authenticated manufacturer artifact.",
+    "Site-access, content storage and commercial reuse permissions are not established by a source URL, publisher label or SHA.",
+    "No reviewer signatures, reviews, real gold labels, verified exact SKU, catalog size changes or Product Fact authority can be inferred."
+  ],
+  "metrics": {
+    "reviewTargets": 2,
+    "historicalObservations": 4,
+    "retainedOriginalPrimaryArtifactsConfirmed": 0,
+    "independentGoldClaimsAdded": 0,
+    "confirmedExactOfficialSkuAdded": 0,
+    "siteRequests": 0,
+    "robotsRequests": 0,
+    "dbReadsOnly": true,
+    "dbWrites": 0,
+    "productWrites": 0,
+    "factWrites": 0,
+    "subjectWrites": 0,
+    "sourceBindingWrites": 0,
+    "aiApiCalls": 0
+  }
+}

@@ -1575,5 +1575,7 @@ await import("./verify-trust-p2f8-torriden-title-fingerprint-once.mjs");
 await import("./verify-trust-p2d-independent-sku-review.mjs");
 await import("./verify-trust-p2-secondary-unit-reconciliation.mjs");
 await import("./verify-trust-p2-evidence-first-shadow.mjs");
+// P2 v3 evaluator also verifies actual Sidmool/BOJ legacy-source triage and
+// numeric 75ml unit claims independent of NULL catalog size (synthetic gold only).
 await import("./verify-trust-p2-v3-gold-evaluation.mjs");
 console.log("TRUST_P2D_FIVE_BRAND_COHORT_AND_ASSESSMENT_PASS");

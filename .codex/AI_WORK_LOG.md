@@ -2,6 +2,14 @@
 
 ## Entries
 
+### 2026-10-21 / pipeline-reliability — two-product old source excerpt audit and numeric capacity gate
+
+- 타입: 실측 데이터 READ-ONLY 검수 + offline P2 v3 제한 구현(Medium). 기존 main@02c9c0a8 병합 후 TRUST/Main Health/CodeQL/package integrity PASS 확인.
+- 검사: `public.trust_source_observations` SIDMOOL 3건+뷰티오브조선 1건, `product_evidence_sources` 7건, 해당 source profile/verification 0건, `external_snapshot_reference` NULL. SIDMOOL historical claim snippet 75ml/SPF20/PA++; BOJ 상품명 Probiotics→Niacinamide 변경과 same-formula 주장은 과거 출처 metadata일 뿐 재검증 아님.
+- 발견: SIDMOOL catalog size_ml=NULL이라 기존 PHYSICAL_UNIT_CAPACITY의 CATALOG_MATCH/CONFLICT만으로는 실제 제조사 표시 용량을 gold dimension으로 표현할 수 없는 설계 결함. 새 typed `PHYSICAL_UNIT_CAPACITY_ML` (numeric) 추가, 카탈로그 NULL에 대한 compare label 차단. 테스트는 synthetic in-memory만, 실제 gold 0/20 보존.
+- 산출물: 2개 제품 진단 manifest, real observations reference, review-gate 보완과 regression, v3 설계에 실제 조사 결과 기록. 공식몰/robots/프로덕션 DB UPDATE/Fact/Subject/Source binding/AI/deploy 없음. 향후 공식몰 사이트 GET은 별도 좁은 범위 정책 승인 필요.
+
+
 ### 2026-10-21 / pipeline-reliability — TRUST P2 v3 real catalog evaluation intake
 
 - 유형: Design→bounded offline implementation(Medium). 영향: product IDs and category/date/size snapshots from public.products **SELECT only**. DB/Auth/RLS/schema/Storage/Provider/Payment/Secret/production mutations N. New official-site web or robots calls N.
