@@ -119,4 +119,18 @@ const functionalView = readFileSync(join(root, "components/full-report/PremiumFu
 assert.ok(functionalView.includes("buildFunctionalRoutineGuideLines(plan, locale)"));
 assert.ok(!functionalView.includes("overlapping actives"));
 
+// Condition-plan detail reads explicit {ko,en} narrative pairs; source fallback
+// must not cause loss of original summary, reasons or hold instruction.
+assert.equal(reportDisplayText({ ko: "자극 시 중단", en: "Stop if irritation occurs" }, "en"), "Stop if irritation occurs");
+assert.equal(reportDisplayText({ ko: "강도 낮추기", en: "" }, "en"), "강도 낮추기");
+const conditionView = readFileSync(join(root, "components/full-report/PremiumConditionResponseSection.jsx"), "utf8");
+assert.match(conditionView, /reportDisplayText\(item\.title, locale\)/);
+assert.match(conditionView, /reportDisplayText\(item\.summary, locale\)/);
+assert.match(conditionView, /reportDisplayText\(reason, locale\)/);
+assert.match(conditionView, /reportDisplayText\(item\.action, locale\)/);
+assert.match(conditionView, /reportDisplayText\(conditionPlan\?\.globalNotice, locale\)/);
+assert.match(conditionView, /containsOriginalKorean/);
+const functionalSection = readFileSync(join(root, "components/full-report/PremiumFunctionalDecisionSection.jsx"), "utf8");
+assert.match(functionalSection, /hasOriginalKoreanText/);
+assert.match(functionalSection, /buildFunctionalRoutineGuideLines\(plan, locale\)/);
 console.log("I18N_KO_EN_M2_FIDELITY=PASS");
