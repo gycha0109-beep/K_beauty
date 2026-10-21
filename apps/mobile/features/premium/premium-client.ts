@@ -22,6 +22,8 @@ export type NativeCurrentProductOption = Readonly<{
   id: string;
   brand: string;
   name: string;
+  brandEn: string;
+  nameEn: string;
   category: string;
   productForm: string;
 }>;
@@ -131,6 +133,8 @@ function toProductOption(value: unknown): NativeCurrentProductOption | null {
     id,
     brand: typeof product.brand === "string" ? product.brand.trim() : "",
     name,
+    brandEn: typeof product.brand_en === "string" ? product.brand_en.trim() : "",
+    nameEn: typeof product.name_en === "string" ? product.name_en.trim() : "",
     category,
     productForm:
       typeof product.product_form === "string"
