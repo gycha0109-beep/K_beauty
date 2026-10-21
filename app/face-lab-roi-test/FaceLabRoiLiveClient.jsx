@@ -2,7 +2,7 @@
 
 import {useEffect,useRef,useState} from "react";
 import {detectMediaPipeCheekRoiProposal} from "@/lib/face-lab-v2/personal-color/mediapipe-roi-proposal";
-import {buildPersonalColorCheekMasks} from "@/lib/face-lab-v2/personal-color/cheek-mask-geometry";
+import {buildRoiPreviewMasks} from "@/lib/face-lab-v2/personal-color/roi-render-mask-adapter";
 
 const FORMATS=new Set(["image/jpeg","image/png","image/webp"]);
 const MAX_FILE_BYTES=10*1024*1024;
@@ -22,17 +22,6 @@ const MESSAGE={
   image_orientation_unknown:"원본 이미지 좌표를 확인하지 못했습니다."
 };
 const percent=(value)=>Number.isFinite(value)?(value*100).toFixed(1)+"%":"—";
-function maskFor(proposal,size){
-  if(proposal?.status==="insufficient_evidence"||
-    proposal?.requiresIndependentRoiReview!==true||
-    proposal?.mayMeasureSkin!==false)return null;
-  const masks=buildPersonalColorCheekMasks({
-    ...size,
-    cheekPolygons:proposal?.cheekPolygons,
-    exclusionPolygons:proposal?.exclusionPolygons
-  });
-  return masks.status==="masks_ready"?masks:null;
-}
 function outputSize(bitmap){
   const scale=Math.min(1,720/bitmap.width,Math.sqrt(850000/(bitmap.width*bitmap.height)));
   return {width:Math.max(1,Math.floor(bitmap.width*scale)),
@@ -137,11 +126,12 @@ export default function FaceLabRoiLiveClient(){
       const sourceCtx=source.getContext("2d");
       if(!sourceCtx)throw Error("canvas_unavailable");
       sourceCtx.drawImage(bitmap,0,0,size.width,size.height);
-      const first=maskFor(baseline,size),second=maskFor(candidate,size);
-      if(!first||!second){
-        setError("볼 후보 또는 제외 영역이 유효하지 않아 표시를 보류했습니다.");
+      const preview=buildRoiPreviewMasks({baseline,candidate,size});
+      if(preview.status!=="preview_only"){
+        setError("화면 렌더링 보류: "+(preview.reason||"roi_mask_unavailable"));
         setStatus("done");return;
       }
+      const first=preview.baseline,second=preview.candidate;
       const crop=cropRegion(baseline,candidate,size);
       paint(firstCanvas.current,source,first,second,crop,"baseline");
       paint(secondCanvas.current,source,first,second,crop,"candidate");
