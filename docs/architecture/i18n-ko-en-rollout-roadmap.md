@@ -29,6 +29,8 @@
 - [x] `localizeRoutineStepsForEnglish`의 강제 `Every morning/night` 및 새 instruction/caution 생성 제거. 원문 빈도·주의사항·조건을 유지하며, 명시된 `en` 번역만 사용.
 - [x] 영어 Top Pick·지원 상품의 원문 근거를 일반 템플릿으로 치환하지 않도록 차단. 기존 자유서술의 검증된 영문 번역 생성은 M3 이후 과제로 유지.
 - [ ] 무료·프리미엄·Face Lab 각 섹터에서 한국어/영어로 동일한 추천·결정/보류·강도·횟수·경고 표시 확인.
+- [x] `scripts/verify-i18n-face-lab-canonical.mjs`에 실제 Face Lab V2 생성 함수 KO/EN 대조 회귀 테스트 추가 (전체 상태, 목표 상태·키, 경로 ID·선택 상태, 도메인 상태, product handoff ID).
+- [x] 기존 Face Lab 결과가 한국어로 저장되어 영어 UI에 노출되면 원문 언어 안내 표시 (`PremiumFaceLabSection.jsx`), 원본 판단·문장 재생성 없음.
 - [x] `scripts/verify-i18n-m2-fidelity.mjs`에 대표 사례(주 2회·상태 조건·중단 경고·원문 보존) 및 구조적 치환 금지 검증 추가.
 - [ ] 전체 저장 페이로드·Face Lab·실사용자의 한국어/영어 의미 동등성 검증 완료.
 
@@ -70,7 +72,7 @@
 
 - [ ] 기존 모바일 `npm run mobile:typecheck`, `npm run verify:mobile-foundation` 및 관련 CI 확인
 - [ ] 기존 `npm run verify:premium-browser-journey-contract` 및 회귀 검사 확인
-- [ ] 신규 검증 `npm run verify:i18n-m1`, `npm run verify:i18n-m2`, `npm run verify:i18n-m3`, `npm run verify:i18n-m4` 최신 커밋 기준 통과 확인 (기존 current-main health CI에 연결; 이전 커밋에서는 통과).
+- [ ] 신규 검증 `npm run verify:i18n-m1`, `npm run verify:i18n-m2`, `npm run verify:i18n-m3`, `npm run verify:i18n-m4`, `npm run verify:i18n-face-lab` 최신 커밋 기준 통과 확인 (기존 current-main health CI에 연결; 이전 커밋에서는 통과).
 - [ ] 웹 KO→EN→KO, `savedReportId`, 로그인/권한/프리미엄 저장·재진입 실사용 확인
 - [ ] Android/iOS 신규 설치와 재실행, 네이티브 영어 저장 결과/상품 선택 흐름 확인
 - [ ] CI, 코드 리뷰 후 병합·배포·실기기 수락 테스트를 각각 별도 기록
