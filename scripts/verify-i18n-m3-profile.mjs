@@ -17,8 +17,9 @@ assert.match(dictionary, /return lookup\[canonical\] \|\| text/);
 assert.match(dictionary, /LEGACY_KO_ALIASES\[group\]\[text\] \|\| text\.toLowerCase\(\)/);
 assert.match(dictionary, /"복합성": "combination"/);
 assert.match(dictionary, /"트러블": "acne"/);
+const localeLabels = dictionary.split("const LEGACY_KO_ALIASES")[0];
 for (const group of ["skinTypes", "sensitivities", "concerns"]) {
-  assert.equal((dictionary.match(new RegExp(`\\b${group}:\\s*\\{`, "g")) || []).length, 2, `${group} must have ko/en values`);
+  assert.equal((localeLabels.match(new RegExp(`\\b${group}:\\s*\\{`, "g")) || []).length, 2, `${group} must have ko/en values`);
 }
 assert.match(diary, /getLocalizedSkinState\(profile\?\.skin_type, "skinTypes", locale\)/);
 assert.match(diary, /getLocalizedSkinState\(concern, "concerns", locale\)/);
