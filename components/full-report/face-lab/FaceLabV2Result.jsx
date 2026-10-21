@@ -89,6 +89,10 @@ export default function FaceLabV2Result({
     () => buildFaceLabV2ResultPresentation(result, { locale }),
     [result, locale]
   );
+  // Localized presentation never fabricates evidence when a legacy narrative
+  // has no verified translation. Make source-language fallbacks explicit.
+  const hasOriginalLanguageText = locale === "en" &&
+    /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(JSON.stringify(view));
 
   if (view.status === "unavailable") {
     return (
@@ -102,6 +106,11 @@ export default function FaceLabV2Result({
 
   return (
     <section className="space-y-4">
+      {hasOriginalLanguageText ? (
+        <p role="note" className="ui-text-secondary rounded-xl border border-current/10 px-4 py-3 text-xs leading-5">
+          Some original Face Lab descriptions remain in Korean because an exact English translation is unavailable. The underlying assessment has not changed.
+        </p>
+      ) : null}
       <section className="ui-card p-5 sm:p-6">
         <div className="flex items-start gap-4 sm:gap-5">
           {photoUrl ? (
