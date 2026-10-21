@@ -454,7 +454,7 @@ jobs:
 
   m2-research-ui-build:
     name: M2 Research UI Production Build (Inactive)
-    if: github.event_name == 'pull_request' && github.head_ref == 'face-lab/feat-personal-color-research-ui-20261014'
+    if: github.event_name == 'pull_request' && (github.head_ref == 'face-lab/feat-personal-color-research-ui-20261014' || github.head_ref == 'feat/face-research/shared-neutral-observation-m2-parity-20261021')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
