@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-21 / pipeline-reliability — two-site scoped public indexed evidence / site-access HOLD
+
+- 작업: 사용자 명시 승인된 Sidmool·Beauty of Joseon 2개 공식 출처의 제한적 재검증. 읽기 전용. Old main`af68681c` postmerge TRUST/Main Health/CodeQL/package security PASS.
+- 관측: web indexed Sidmool 공식 page 75ml, SPF20 PA++, 2개 구매 할인; option select 상세 미노출. BOJ 공식 indexed global locale 50ml/1-Pack/2-Pack + Probiotics→Niacinamide 명칭 변경에 대한 FAQ 주장. 1-Pack/2-Pack을 하나의 100ml 용기로 취급하지 않음.
+- 정책 및 실제 실행: robots.txt 두 origins 모두 현재 도구에서 직접 조회 실패. 로컬 네트워크 DNS 실패. 직접 official page GET 0, HTML bytes 저장 0. BOJ 공식 약관 Article 23 회사 사전 허가 없는 영리 정보 재사용 제한 확인; 사이트 권리를 사용자가 부여할 수 없음. Licensed primary/independent gold 0 유지.
+- 증거/테스트: `evidence/trust/p2v3-two-brand-public-index-offer-audit-20261021.json` typed source-index leads/rights Hold; 별도 verifier에서 unit/offer/false-gold 경계 테스트, canonical TRUST 연계. DB/catalog/Fact/Subject/binding/API/추천/배포/AI 쓰기 0.
+- 다음 의존성: 제조사 허락 하에 사용 가능한 출처 원문 확보, robots/이용약관 재검증, 실제 판매 선택값/옵션 증명, 독립 리뷰어 2명. 기존 골드 0/20, 과거 exact SKU 0/5.
+
+
 ### 2026-10-21 / pipeline-reliability — two-product old source excerpt audit and numeric capacity gate
 
 - 타입: 실측 데이터 READ-ONLY 검수 + offline P2 v3 제한 구현(Medium). 기존 main@02c9c0a8 병합 후 TRUST/Main Health/CodeQL/package integrity PASS 확인.
