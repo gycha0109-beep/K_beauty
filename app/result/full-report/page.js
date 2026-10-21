@@ -658,13 +658,12 @@ function getLocaleFromPathname(pathname = "") {
   return pathname.startsWith("/en") ? "en" : "ko";
 }
 
-function getLocalePath(pathname, nextLocale) {
-  if (!pathname) {
-    return nextLocale === "en" ? "/en/result/full-report" : "/result/full-report";
-  }
-
-  const normalized = pathname.replace(/^\/en(?=\/|$)/, "") || "/";
-  return nextLocale === "en" ? `/en${normalized === "/" ? "" : normalized}` : normalized;
+function getLocalePath(pathname, nextLocale, savedReportId = null) {
+  const normalized = (pathname || "/result/full-report").replace(/^\/en(?=\/|$)/, "") || "/";
+  const targetPath = nextLocale === "en" ? `/en${normalized === "/" ? "" : normalized}` : normalized;
+  return savedReportId
+    ? `${targetPath}?savedReportId=${encodeURIComponent(savedReportId)}`
+    : targetPath;
 }
 
 function getResultPath(locale = "ko") {
@@ -7068,8 +7067,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
               <AppHamburgerMenu
                 locale={locale}
                 languageOptions={[
-                  { code: "ko", label: "한국어", href: getLocalePath(pathname, "ko") },
-                  { code: "en", label: "English", href: getLocalePath(pathname, "en") }
+                  { code: "ko", label: "한국어", href: getLocalePath(pathname, "ko", savedReportId) },
+                  { code: "en", label: "English", href: getLocalePath(pathname, "en", savedReportId) }
                 ]}
                 actions={[
                   {
