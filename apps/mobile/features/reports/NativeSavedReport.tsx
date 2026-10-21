@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useMobileShell } from "../../lib/mobile-shell";
+import { getLocalizedSkinState } from "../../lib/skin-state-i18n";
 import type { NativeFreeSavedResult, NativeSavedReportRead } from "./saved-report-client";
 
 const REPORT_COPY = {
@@ -134,7 +135,7 @@ function FreeSnapshot({ result }: { result: NativeFreeSavedResult }) {
   const topPick = getProduct(result);
   const am = normalizeTextArray(result.routineAm);
   const pm = normalizeTextArray(result.routinePm);
-  const concerns = normalizeTextArray(result.mainConcerns, 5);
+  const concerns = normalizeTextArray(result.mainConcerns, 5).map((value) => getLocalizedSkinState(value, "concerns", locale));
 
   return (
     <View style={styles.stack}>
@@ -144,7 +145,7 @@ function FreeSnapshot({ result }: { result: NativeFreeSavedResult }) {
           <Text style={[styles.body, { color: palette.textMuted }]}>{normalizeText(result.summary)}</Text>
         </View>
       ) : null}
-      {normalizeText(result.skinType) ? <Section title={copy.skinType} lines={[normalizeText(result.skinType)!]} /> : null}
+      {normalizeText(result.skinType) ? <Section title={copy.skinType} lines={[getLocalizedSkinState(result.skinType, "skinTypes", locale)]} /> : null}
       <Section title={copy.concerns} lines={concerns} />
       {topPick ? (
         <View style={styles.section} testID="native-saved-report-top-pick">
