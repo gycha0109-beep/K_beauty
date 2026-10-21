@@ -116,11 +116,27 @@ function ProductOptions({ plan, audit, copy, locale, onCta }) {
 
 function RoutineGuide({ plan, copy, locale }) {
   const guide = plan.routineGuide || {};
-  const hold = plan.planMode === "HOLD";
-  const text = locale === "en"
-    ? `${hold ? "Do not add a new active for now." : `Use this in the ${guide.time || "selected routine"}.`}\n${guide.order || ""}\n\n${guide.frequency || ""}. Avoid or adjust ${guide.avoid || "overlapping actives"}.\n\n${guide.review || plan.reviewCondition || ""}`
-    : `${hold ? "이번 기간에는 새 기능성을 추가하지 마세요." : `${guide.time || "선택한 루틴"}에서 사용하세요.`}\n${guide.order || ""}\n\n${guide.frequency || ""}. 같은 날에는 ${guide.avoid || "기능성 중첩"}을 피하거나 조절하세요.\n\n${guide.review || plan.reviewCondition || ""}`;
-  return <article className="rounded-[1rem] border border-white/10 bg-white/5 p-4"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">ROUTINE GUIDE</p><h4 className="mt-2 font-semibold text-zinc-900 dark:text-zinc-100">{copy.routine}</h4><p className="mt-3 whitespace-pre-line text-sm leading-6 text-zinc-700 dark:text-zinc-300">{text}</p></article>;
+  const en = locale === "en";
+  const lines = [
+    plan.planMode === "HOLD"
+      ? (en ? "Hold: do not add a new active for now." : "보류: 현재 새 기능성을 추가하지 마세요.")
+      : null,
+    guide.time ? `${en ? "Timing" : "사용 시간"} · ${guide.time}` : null,
+    guide.order || null,
+    guide.frequency ? `${en ? "Frequency" : "사용 빈도"} · ${guide.frequency}` : null,
+    guide.avoid ? `${en ? "Avoid or adjust" : "피하거나 조정"} · ${guide.avoid}` : null,
+    guide.review || plan.reviewCondition || null
+  ].filter((value) => typeof value === "string" && value.trim());
+  const text = lines.join("\n\n");
+  const showOriginalLanguageNote = en && /[가-힣]/.test(text);
+  return <article className="rounded-[1rem] border border-white/10 bg-white/5 p-4">
+    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">ROUTINE GUIDE</p>
+    <h4 className="mt-2 font-semibold text-zinc-900 dark:text-zinc-100">{copy.routine}</h4>
+    {text ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-zinc-700 dark:text-zinc-300">{text}</p> : null}
+    {showOriginalLanguageNote ? (
+      <p role="note" className="mt-2 text-xs leading-5 text-zinc-500">Some saved routine instructions are shown in Korean to preserve the original guidance.</p>
+    ) : null}
+  </article>;
 }
 
 function RoutineAudit({ audit, copy, locale }) {
