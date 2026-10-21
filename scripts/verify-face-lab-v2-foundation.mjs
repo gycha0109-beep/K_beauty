@@ -5,6 +5,7 @@ import "./verify-face-lab-v2-personal-color-palette.mjs";
 import "./verify-face-lab-v2-personal-color-lab-sampling.mjs";
 import "./verify-face-lab-v2-personal-color-capture-repeatability.mjs";
 import "./verify-face-lab-v2-personal-color-roi-photometric-stress.mjs";
+import "./verify-face-lab-v2-personal-color-mediapipe-roi.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
