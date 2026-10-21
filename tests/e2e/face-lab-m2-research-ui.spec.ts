@@ -90,6 +90,24 @@ test.describe("Face Lab M2 developer-only palette exploration", () => {
     await expect(preview).not.toContainText(/4계절|12유형|상품 구매|정확한 웜톤/);
   });
 
+  test("MediaPipe ROI probe remains opt-in and never fetches model assets automatically", async ({ page }) => {
+    const assetRequests: string[] = [];
+    page.on("request", (request) => {
+      if (/mediapipe-models\/face_landmarker|@mediapipe\/tasks-vision@0\.10\.35\/wasm/.test(request.url())) {
+        assetRequests.push(request.url());
+      }
+    });
+    await showResearch(page);
+    const panel = page.getByTestId("face-lab-m2-mediapipe-roi-research");
+    await expect(panel).toBeVisible();
+    const button = panel.getByTestId("face-lab-m2-mediapipe-run");
+    await expect(button).toBeDisabled();
+    await expect(panel).toContainText("자동 피부 분할");
+    await panel.locator('input[type="checkbox"]').check();
+    await expect(button).toBeEnabled();
+    expect(assetRequests).toHaveLength(0);
+  });
+
   const unsupportedCaptures: Array<[string, Record<string, unknown>]> = [
     ["blurred image", { sharpness: "blurred" }],
     ["small face", { faceScale: "small" }],
