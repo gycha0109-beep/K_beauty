@@ -49,6 +49,8 @@ assert.match(shared, /text\(product\.brand_en\)/);
 assert.match(saved, /const containsKoreanGuidance = guidanceLines\.some/);
 assert.match(saved, /Object\.hasOwn\(record, "ko"\) \|\| Object\.hasOwn\(record, "en"\)/);
 assert.match(saved, /return collectDisplayLines\(localized, limit, depth \+ 1, locale\)/);
+assert.match(saved, /hasDisplayText\(preferred\) \? preferred : fallback/);
+assert.match(dictionary, /barrier: "Barrier support"/);
 assert.match(saved, /collectDisplayLines\(report\.fullRoutine, 10, 0, locale\)/);
 assert.match(saved, /collectDisplayLines\(report\.functionalDecisions, 10, 0, locale\)/);
 
