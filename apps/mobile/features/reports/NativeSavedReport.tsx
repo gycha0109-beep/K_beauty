@@ -18,7 +18,8 @@ const REPORT_COPY = {
     condition: "Condition guidance",
     version: "Version",
     savedAt: "Saved",
-    noDetail: "This saved server snapshot has no additional displayable detail."
+    noDetail: "This saved server snapshot has no additional displayable detail.",
+    sourceNote: "This report was originally saved in Korean. Some guidance remains in the original language."
   },
   ko: {
     free: "무료 리포트",
@@ -34,7 +35,8 @@ const REPORT_COPY = {
     condition: "컨디션 대응",
     version: "버전",
     savedAt: "저장",
-    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다."
+    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다.",
+    sourceNote: "이 리포트는 한국어로 저장되어 일부 안내가 원문으로 표시됩니다."
   }
 } as const;
 
@@ -187,12 +189,22 @@ export function NativeSavedReport({ value }: { value: NativeSavedReportRead }) {
   const copy = REPORT_COPY[locale];
   const savedDate = formatDate(value.metadata.createdAt, locale);
   const reportLabel = value.kind === "premium" ? copy.premium : copy.free;
+  const reportLocale = value.kind === "free"
+    ? value.result.locale
+    : typeof value.report.locale === "string"
+      ? value.report.locale
+      : value.report.meta && typeof value.report.meta === "object"
+        ? (value.report.meta as Record<string, unknown>).locale
+        : null;
 
   return (
     <View testID="native-saved-report" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: palette.accent }]}>{reportLabel}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{value.metadata.title || reportLabel}</Text>
+        {locale === "en" && reportLocale === "ko" ? (
+          <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sourceNote}</Text>
+        ) : null}
         <View style={styles.metaRow}>
           {value.metadata.reportVersion ? <Text style={[styles.meta, { color: palette.textMuted }]}>{copy.version} · {value.metadata.reportVersion}</Text> : null}
           {savedDate ? <Text style={[styles.meta, { color: palette.textMuted }]}>{copy.savedAt} · {savedDate}</Text> : null}
