@@ -13,7 +13,10 @@ const premiumApi = read("app/api/full-report/route.js");
 const webReport = read("app/result/full-report/page.js");
 
 assert.match(dictionary, /function getLocalizedSkinState\(/);
-assert.match(dictionary, /return lookup\[text\.toLowerCase\(\)\] \|\| text/);
+assert.match(dictionary, /return lookup\[canonical\] \|\| text/);
+assert.match(dictionary, /LEGACY_KO_ALIASES\[group\]\[text\] \|\| text\.toLowerCase\(\)/);
+assert.match(dictionary, /"복합성": "combination"/);
+assert.match(dictionary, /"트러블": "acne"/);
 for (const group of ["skinTypes", "sensitivities", "concerns"]) {
   assert.equal((dictionary.match(new RegExp(`\\b${group}:\\s*\\{`, "g")) || []).length, 2, `${group} must have ko/en values`);
 }
