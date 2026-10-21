@@ -1,0 +1,203 @@
+{
+  "contract": "trust-p2-v3-real-catalog-candidate-panel-v1",
+  "snapshotDate": "2026-10-21",
+  "source": "Supabase SELECT-only public.products (brand,name,category,size_ml,source_url existence, product ID)",
+  "selection": "From public.products excluding the five frozen P2D stress product IDs, ROW_NUMBER() OVER (PARTITION BY COALESCE(category::text,'uncategorized') ORDER BY md5(id::text)), rn<=2.",
+  "scoringScope": "NON_GOLD_CANDIDATES_ONLY_NOT_REPRESENTATIVE_POPULATION_ACCURACY",
+  "evaluationGroup": "STRATIFIED_CATEGORY_CANDIDATES",
+  "diagnosticHoldout": "evidence/trust/p2d-five-brand-cohort-v2.json",
+  "selectionQuotas": {
+    "categoryCount": 10,
+    "perCategory": 2
+  },
+  "records": [
+    {
+      "productId": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "brand": "메디힐",
+      "name": "더마 크림 팩 클렌저 마데카소사이드",
+      "category": "cleanser",
+      "catalogSizeMl": 255,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "9d47de96-3227-494b-a8aa-2a4a3b7959d8",
+      "brand": "이니스프리",
+      "name": "화산송이 모공 클렌징폼",
+      "category": "cleanser",
+      "catalogSizeMl": 150,
+      "catalogSourceUrlPresent": false,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "4c7af697-1413-4b7d-a89e-6edd2bd5f40c",
+      "brand": "키엘",
+      "name": "울트라 훼이셜 베리어 스틱 밤",
+      "category": "moisturizer_balm",
+      "catalogSizeMl": null,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "7b4a237c-7f6e-4f18-a581-9d6fcad8f92e",
+      "brand": "달바",
+      "name": "더블 세럼 올인원 멀티밤",
+      "category": "moisturizer_balm",
+      "catalogSizeMl": null,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "976c13ef-8ebd-4b69-acae-0d070f6cd590",
+      "brand": "아누아",
+      "name": "피디알엔 히알루론산캡슐 100 수분크림",
+      "category": "moisturizer_cream",
+      "catalogSizeMl": 60,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "fd00be48-42e4-4db5-8838-e0820f147254",
+      "brand": "에코미니멀",
+      "name": "데일리 페이셜 크림",
+      "category": "moisturizer_cream",
+      "catalogSizeMl": 250,
+      "catalogSourceUrlPresent": false,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "358bb655-d0e8-4bbf-93c0-58eea5b5d7ae",
+      "brand": "일리윤",
+      "name": "세라마이드 아토 수딩젤",
+      "category": "moisturizer_gel",
+      "catalogSizeMl": 175,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "name": "아쿠아 오아시스 수분 젤크림",
+      "category": "moisturizer_gel",
+      "catalogSizeMl": 80,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "brand": "러베",
+      "name": "5중 세라마이드 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "catalogSizeMl": 200,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "brand": "싸이닉",
+      "name": "더 심플 데일리 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "catalogSizeMl": 300,
+      "catalogSourceUrlPresent": false,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "brand": "뷰티오브조선",
+      "name": "맑은쌀 선크림",
+      "category": "sunscreen",
+      "catalogSizeMl": 50,
+      "catalogSourceUrlPresent": false,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "brand": "뷰티오브조선",
+      "name": "맑은쌀 선크림 아쿠아프레쉬",
+      "category": "sunscreen",
+      "catalogSizeMl": 50,
+      "catalogSourceUrlPresent": false,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "41bef2ab-f40b-4467-9932-2d0bc5e1e525",
+      "brand": "로티",
+      "name": "리프루미 하이드레이팅 토너",
+      "category": "toner_essence",
+      "catalogSizeMl": 500,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "a75acd31-3256-4040-95a1-7df13c622958",
+      "brand": "아비브",
+      "name": "어성초 카밍 토너 스킨부스터",
+      "category": "toner_essence",
+      "catalogSizeMl": 200,
+      "catalogSourceUrlPresent": false,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "8ab512e6-4401-40e4-907b-bbcf50b4a1ae",
+      "brand": "토리든",
+      "name": "밸런스풀 시카 토너 패드",
+      "category": "toner_pad",
+      "catalogSizeMl": 380,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "b5a38d1c-1c57-42a2-a5c7-60f7bbe3132e",
+      "brand": "스킨푸드",
+      "name": "포테이토 마데카소사이드 수딩패드",
+      "category": "toner_pad",
+      "catalogSizeMl": 430,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+      "brand": "디오디너리",
+      "name": "만델릭 애시드 10% + HA 세럼",
+      "category": "treatment",
+      "catalogSizeMl": 30,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "e96296f1-0186-4263-b185-c12374178546",
+      "brand": "트루스오브뷰티",
+      "name": "갈락토 씨씨 결 세럼",
+      "category": "treatment",
+      "catalogSizeMl": 30,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "brand": "SIDMOOL",
+      "name": "Physical Daily Sunmilk",
+      "category": "uncategorized",
+      "catalogSizeMl": null,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    },
+    {
+      "productId": "df32d800-2f16-4511-8efa-dc353ea1c2ef",
+      "brand": "FULLY",
+      "name": "Rice Ceramide Moisture Sun Cream",
+      "category": "uncategorized",
+      "catalogSizeMl": null,
+      "catalogSourceUrlPresent": true,
+      "catalogAssertionUnverified": true
+    }
+  ],
+  "provenanceLimits": "Catalog fields are unverified claims. source_url presence does not mean primary proof, licensability, or a selected physical SKU. No external product pages were fetched for this selection.",
+  "operationalSafety": {
+    "databaseReadOnly": true,
+    "dbWrites": 0,
+    "firstPartyNetworkRequests": 0,
+    "officialExactSkuConfirmed": 0,
+    "manualGoldLabelsConfirmed": 0
+  }
+}

@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-21 / pipeline-reliability — TRUST P2 v3 real catalog evaluation intake
+
+- 유형: Design→bounded offline implementation(Medium). 영향: product IDs and category/date/size snapshots from public.products **SELECT only**. DB/Auth/RLS/schema/Storage/Provider/Payment/Secret/production mutations N. New official-site web or robots calls N.
+- 확인: 기존 PR #1375 merged main @921fc833, merged-commit TRUST/Main Health/CodeQL/package integrity all PASS. 5 legacy stress samples remain 0/5 official exact SKUs.
+- 10개 category에 각 2개를 frozen 5와 중복 없이 deterministic md5(UUID)로 선정하여 **실제 catalog evaluation 후보 20건** 추가. source_url present 14, null 6, size_ml null 4. 카탈로그 값/링크는 참값 아님; 20건 모두 독립 gold 미확정.
+- 제출: real panel manifest, empty gold ledger, two-blind-review+source excerpt SHA verification evaluator, reporter, synthetic test only, canonical TRUST wiring. 골드 0 → 분모 0 → accuracy/coverage null; 20/20 unlabeled, static verdict 0 official exact SKU. No product corrections.
+- 한계: reviewer JSON 두 장만으로 외부 진실/출처 권한/실질적 독립성을 보증하지 않음; 승인된 reviewable 실제 원본, 상용 사용권, gold 평가 확보 뒤 측정 가능. 20개 category-balanced 후보는 전체 정확도의 통계적 대표 표본이 아님.
+
+
 ### 2026-10-21 / pipeline-reliability — TRUST P2 v3 evidence-first redesign (SHADOW)
 
 - 유형: 설계 + 제한 오프라인 실행 모델(Medium). 영향 라우팅 DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 직접 변경 N. 기존 API/스키마/카탈로그/추천/Subject/Fact/바인딩 코드 변경 N.

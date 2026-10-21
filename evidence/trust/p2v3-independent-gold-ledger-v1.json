@@ -1,0 +1,7 @@
+{
+  "contract": "trust-p2-v3-independent-gold-ledger-v1",
+  "panelContract": "trust-p2-v3-real-catalog-candidate-panel-v1",
+  "reviewStatus": "NOT_STARTED_NO_SOURCE_ARTIFACTS_OR_INDEPENDENT_LABELS",
+  "records": [],
+  "policy": "Only individually reviewable, rights-cleared source evidence and two independent blind reviewer documents may be recorded. No synthetic fixtures or metadata-only page SHA may be treated as gold."
+}
