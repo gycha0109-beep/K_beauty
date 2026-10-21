@@ -13,7 +13,6 @@ const NON_EMPTY = (value) => typeof value === "string" && value.length > 0 && va
 const NUMBER = (value) => typeof value === "number" && Number.isFinite(value);
 const ID = (value) => NON_EMPTY(value) && /^[a-z0-9][a-z0-9._:-]{1,127}$/i.test(value);
 const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-const b = (value) => value === true;
 
 function validateRegistry(registry) {
   const errors = [];
@@ -57,8 +56,8 @@ function checkGeometry(ann, errors, pos) {
   } else if (ann.type === "mask") {
     if (!ID(geom.maskEvidenceId)) errors.push(pos + ": mask requires opaque maskEvidenceId");
   } else if (ann.type === "zone_grade") {
-    if (!ID(geom.zoneId) || !Number.isInteger(geom.grade) || geom.grade < 0 || geom.grade > 4 || !ID(ann.rubricVersion)) {
-      errors.push(pos + ": zone_grade needs zoneId, ordinal 0-4 and rubricVersion");
+    if (!ID(geom.zoneId) || !Number.isInteger(geom.grade) || geom.grade < 1 || geom.grade > 4 || !ID(ann.rubricVersion)) {
+      errors.push(pos + ": positive zone_grade needs zoneId, ordinal 1-4 and rubricVersion");
     }
   } else {
     errors.push(pos + ": unsupported positive geometry type");
@@ -71,8 +70,10 @@ function validateEvidenceManifest(manifest, registry) {
   if (manifest?.schemaVersion !== "skin-precision-evidence-v1" || !Array.isArray(manifest.samples) || !ID(manifest.corpusId)) {
     return { ok: false, errors: [...errors, "manifest schemaVersion/corpusId/samples invalid"], report };
   }
+  if (manifest.samples.length === 0) errors.push("manifest: zero samples cannot establish evidence readiness");
   const seenIds = new Set();
   const groupOwners = { subjectGroupId: new Map(), originalGroupId: new Map(), sha256: new Map() };
+  const imageHashes = new Set();
   for (const [i, sample] of manifest.samples.entries()) {
     const at = "samples[" + i + "]";
     report.total++;
@@ -91,6 +92,8 @@ function validateEvidenceManifest(manifest, registry) {
     }
     if (!HEX_SHA.test(sample?.sha256 || "")) errors.push(at + ": missing/invalid image sha256");
     else {
+      if (imageHashes.has(sample.sha256)) errors.push(at + ": duplicate exact image sha256, not an independent observation");
+      imageHashes.add(sample.sha256);
       const first = groupOwners.sha256.get(sample.sha256);
       if (first && first !== sample.split) errors.push(at + ": exact image sha256 leaks across splits");
       else groupOwners.sha256.set(sample.sha256, sample.split);
@@ -121,7 +124,10 @@ function validateEvidenceManifest(manifest, registry) {
         errors.push(pos + ": invalid annotation object");
         continue;
       }
-      if (!CONCERNS.has(annotation?.concern)) errors.push(pos + ": invalid concern");
+      if (!CONCERNS.has(annotation.concern)) {
+        errors.push(pos + ": invalid concern");
+        continue;
+      }
       if (tasks.has(annotation?.concern)) errors.push(pos + ": duplicate concern annotation; aggregate instances under one annotation task");
       tasks.add(annotation?.concern);
       if (!STATUSES.has(annotation?.status)) errors.push(pos + ": invalid label status");
