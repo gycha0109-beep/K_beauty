@@ -7,6 +7,7 @@ import {
   preserveReportRoutineSteps,
   reportDisplayText
 } from "../lib/full-report-locale-fidelity.mjs";
+import { buildFunctionalRoutineGuideLines } from "../lib/premium-functional-routine-locale.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const web = readFileSync(join(root, "app/result/full-report/page.js"), "utf8");
@@ -85,5 +86,37 @@ assert.ok(!reasonBlocks.includes('locale !== "en" || !hasKoreanText(block.body)'
 const budgetMapping = web.split("function buildDisplayBudgetAlternatives(")[1]?.split("function hasConcretePriceComparison(")[0] || "";
 assert.ok(budgetMapping.includes('summary: locale === "en"'));
 assert.ok(budgetMapping.includes("item?.summary || product.summary || item?.reason || product.reason"));
+
+
+// Functional-plan cadence is sourced only from the authoritative report.
+// There is no global "Every day" or assumed active stacking instruction.
+const bounded = {
+  planMode: "HOLD",
+  routineGuide: {
+    frequency: "주 2회",
+    review: "자극이 가라앉을 때 다시 평가"
+  }
+};
+const sourceBefore = structuredClone(bounded);
+const holdEnglish = buildFunctionalRoutineGuideLines(bounded, "en");
+assert.ok(holdEnglish.includes("Hold: do not add a new active for now."));
+assert.ok(holdEnglish.some(s => s.includes("주 2회")));
+assert.ok(holdEnglish.some(s => s.includes("자극이 가라앉을 때 다시 평가")));
+assert.ok(!holdEnglish.join(" ").includes("Every day"));
+assert.ok(!holdEnglish.join(" ").includes("overlapping actives"));
+assert.deepEqual(bounded, sourceBefore, "display cannot mutate functional plan");
+const missing = buildFunctionalRoutineGuideLines({ planMode: "USE" }, "en");
+assert.deepEqual(missing, [], "unknown cadence and combination constraints must not be invented");
+const explicitAvoid = buildFunctionalRoutineGuideLines(
+  { planMode: "USE", routineGuide: { time: "저녁", frequency: "주 2회", avoid: "레티놀 중복" } },
+  "en"
+);
+assert.equal(explicitAvoid.length, 3);
+assert.ok(explicitAvoid[0].includes("저녁"));
+assert.ok(explicitAvoid[1].includes("주 2회"));
+assert.ok(explicitAvoid[2].includes("레티놀 중복"));
+const functionalView = readFileSync(join(root, "components/full-report/PremiumFunctionalDecisionSection.jsx"), "utf8");
+assert.ok(functionalView.includes("buildFunctionalRoutineGuideLines(plan, locale)"));
+assert.ok(!functionalView.includes("overlapping actives"));
 
 console.log("I18N_KO_EN_M2_FIDELITY=PASS");
