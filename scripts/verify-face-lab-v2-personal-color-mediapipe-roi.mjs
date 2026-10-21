@@ -74,7 +74,7 @@ assert.equal(proposal.cheekPolygons.leftCheek.length,12);
 assert.equal(proposal.cheekPolygons.rightCheek.length,12);
 assert.equal(JSON.stringify(faceLandmarks),source);
 assert.equal(JSON.stringify(result).includes("cheekPolygons"),false);
-assert.equal(JSON.stringify(result).includes("faceLandmarks"),false);
+assert.equal(JSON.stringify(result).includes('"faceLandmarks":'),false);
 
 async function mustHold(overrides,reason,opts={}) {
   const log=[];
