@@ -9,6 +9,8 @@ const dictionary = read("apps/mobile/lib/skin-state-i18n.ts");
 const diary = read("apps/mobile/features/my/NativeMyDiaryView.tsx");
 const saved = read("apps/mobile/features/reports/NativeSavedReport.tsx");
 const shared = read("apps/mobile/features/reports/NativePublicResult.tsx");
+const premiumApi = read("app/api/full-report/route.js");
+const webReport = read("app/result/full-report/page.js");
 
 assert.match(dictionary, /function getLocalizedSkinState\(/);
 assert.match(dictionary, /return lookup\[text\.toLowerCase\(\)\] \|\| text/);
@@ -29,4 +31,16 @@ assert.match(shared, /locale === "en" && result\.locale === "ko"/);
 assert.match(saved, /Some guidance remains in the original language/);
 assert.match(shared, /Some guidance remains in the original language/);
 
+assert.match(premiumApi, /sourceLocale: locale/);
+assert.match(premiumApi, /displayLocale: locale/);
+assert.match(premiumApi, /displayLocale: displayLocale === "en" \? "en" : "ko"/);
+assert.match(premiumApi, /const savedLocale = resolvePremiumReportLocale\(savedPremiumReport\)/);
+assert.match(premiumApi, /"saved-report"/);
+assert.match(premiumApi, /buildPremiumReportSnapshot\(savedPremiumReport\)/);
+assert.match(webReport, /report\?\.meta\?\.sourceLocale \|\| report\?\.meta\?\.locale/);
+assert.match(saved, /premiumMeta\?\.sourceLocale/);
+assert.match(saved, /normalizeText\(product\.name_en\)/);
+assert.match(saved, /normalizeText\(product\.brand_en\)/);
+assert.match(shared, /text\(product\.name_en\)/);
+assert.match(shared, /text\(product\.brand_en\)/);
 console.log("I18N_KO_EN_M3_PROFILE=PASS");
