@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  getAnalysisResultSourceLocale,
+  serializePublicAnalysisResult,
+  serializeOwnerAnalysisResult
+} from "../lib/analysis-results.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (path) => readFileSync(join(root, path), "utf8");
@@ -31,7 +36,7 @@ assert.match(shared, /getLocalizedSkinState\(value, "concerns", locale\)/);
 assert.match(diary, /checkin\.memo \|\|/);
 assert.ok(!diary.includes("getLocalizedSkinState(checkin.memo"), "user-authored diary text must stay untouched");
 assert.match(saved, /locale === "en" && \(reportLocale === "ko" \|\| containsKoreanGuidance\)/);
-assert.match(shared, /locale === "en" && \(result\.locale === "ko" \|\| containsKoreanGuidance\)/);
+assert.match(shared, /locale === "en" && \(result\.sourceLocale === "ko" \|\| containsKoreanGuidance\)/);
 assert.match(saved, /Some saved guidance is shown in Korean/);
 assert.match(shared, /Some saved guidance is shown in Korean/);
 
@@ -43,6 +48,7 @@ assert.match(premiumApi, /"saved-report"/);
 assert.match(premiumApi, /buildPremiumReportSnapshot\(savedPremiumReport\)/);
 assert.match(webReport, /report\?\.meta\?\.sourceLocale \|\| report\?\.meta\?\.locale/);
 assert.match(saved, /premiumMeta\?\.sourceLocale/);
+assert.match(saved, /\? value\.result\.sourceLocale/);
 assert.match(saved, /normalizeText\(product\.name_en\)/);
 assert.match(saved, /normalizeText\(product\.brand_en\)/);
 assert.match(shared, /text\(product\.name_en\)/);
@@ -56,4 +62,32 @@ assert.match(saved, /collectDisplayLines\(report\.fullRoutine, 10, 0, locale\)/)
 assert.match(saved, /collectDisplayLines\(report\.functionalDecisions, 10, 0, locale\)/);
 
 assert.match(shared, /const containsKoreanGuidance = \[summary, product\?\.reason, \.\.\.am, \.\.\.pm\]/);
+// Runtime DTO regression: legacy locale compatibility is retained, while source
+// provenance is null when the original language was never recorded.
+const sample = Object.freeze({
+  share_id: "AbCdEfGhIjKlMnOpQrStUv",
+  is_public: true,
+  skin_type: "dry",
+  summary: "원문 설명",
+  routine_am: ["주 2회"],
+  routine_pm: [],
+  recommended_products: [],
+  main_concerns: ["acne"],
+  result_json: { result: { summary: "원문 설명" } }
+});
+assert.equal(getAnalysisResultSourceLocale(sample), null);
+const unknown = serializePublicAnalysisResult(sample);
+assert.equal(unknown.locale, "ko", "legacy display fallback remains unchanged");
+assert.equal(unknown.sourceLocale, null, "an unknown source language is not claimed to be KO");
+assert.equal(unknown.summary, "원문 설명");
+assert.equal(unknown.topPick, null);
+assert.equal(serializeOwnerAnalysisResult({ ...sample, is_public: false }).sourceLocale, null);
+assert.equal(getAnalysisResultSourceLocale({ ...sample, locale: "en" }), "en");
+assert.equal(getAnalysisResultSourceLocale({ ...sample, result_json: { locale: "ko" }, locale: "en" }), "ko");
+assert.equal(getAnalysisResultSourceLocale({ ...sample, result_json: { locale: "fr" }, locale: "en" }), null);
+assert.equal(serializePublicAnalysisResult({ ...sample, result_json: { locale: "en", result: { summary: "Hello" } } }).sourceLocale, "en");
+const publicShape = Object.keys(unknown).sort();
+assert.deepEqual(Object.keys(serializeOwnerAnalysisResult({ ...sample, is_public: false })).sort(), [...publicShape, "isPublic"].sort());
+assert.ok(!publicShape.includes("user_id"), "public response must not expose owner identifiers");
+
 console.log("I18N_KO_EN_M3_PROFILE=PASS");
