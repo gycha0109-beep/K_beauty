@@ -143,3 +143,45 @@ This is a vocabulary and separation sketch, NOT a drop-in modification to the ex
 
 - 2026-10-21: v1 scoped to genuine skin detection; rights and gold-data first, overlay later; old scan-only prototype not accepted as delivery.
 - P0 rights inventory + P1 preflight checks tracked separately; no production feature activated in this commit.
+
+
+## 8. P0 concrete acquisition plan — verified public leads (2026-10-21)
+
+### Source A — priority: AI-Hub Korean Skin Status Measurement Data (dataSetSn=71645)
+
+- Official page: https://aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=120&dataSetSn=71645&topMenu=
+- Official counts: **13,936 original face photos, 84,688 skin measurement observations, 125,424 annotation entries** (the last count is **not** an independent image count).
+- Published columns: image filename, subject/record ID, dimensions, camera/device, angle, face region & \`face_box\`, measured moisture/pore/pigmentation/elasticity and optional expert score. Verify exact join coverage and original-subject grouping in acquired CSV/JSON before assuming uniqueness.
+- **Acquire**: applicant completes AI-Hub login and dataset access request; access may be reviewed/approved or restricted to safe-zone for sensitive content. The public web page cannot be treated as already-downloaded or pre-authorized. Confirm the exact access arrangement, required consents and use terms in the approval.
+- General AI-Hub FAQ explicitly permits commercial uses of derived AI models/services with source attribution, while prohibiting raw source re-sharing; dataset-specific terms, privacy and safe-zone restrictions prevail.
+- **Fit**: first priority for calibrated skin-state baseline (pore prominence, pigmentation and moisture measured with instruments) and spatial face/region supervision.
+- **Gap**: \`face_box\` is a face bounding box, not acne lesion bbox. No acne-by-acne boxes or pixel-level redness masks are advertised. No universal gold for the three requested spatial outputs.
+- **Immediate bounded audit after authorized access**: inspect 20 metadata/image pairs (no photos in Git), validate image↔measure IDs, units, missingness, device/angle distribution, eligibility, original-group count and per-concern available label types; report any unfilled gaps explicitly.
+
+### Source B — secondary: AI-Hub Skincare Ingredient–Effect Recommendation (dataSetSn=71886)
+
+- Official page: https://aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=71886&topMenu=
+- Official: 10,000 face images + 10,000 surveys + 10,000 CoT entries. Consent-based de-identified facial sources are stated, but annotations are **survey/recommendation**, not dermatology-verified lesion positions or region-mask ground truth.
+- **Use only as supplementary domain/context/capture distribution study after rights approval**, not substitute for expert per-pixel labels.
+
+### Source C — study methods, not raw face acquisition
+
+- 2026 Scientific Reports 3,203 selfie study: https://www.nature.com/articles/s41598-026-65514-4
+- GitHub Apache code: https://github.com/frankkramer-lab/GRANDAID
+- The paper explicitly states public/raw face distribution is prohibited due to GDPR. **Do not download/redistribute training images from this study.** Methodology may inform a multi-label rubric, but independent expert correctness must be assessed.
+
+### P1 targeted independent annotation: how to create real localization gold
+
+1. From Source A (only if permitted to create further annotations), select an initial independent-face pilot of **roughly 100–200 distinct subjects** balanced across visible concerns, negatives, ambiguous lookalikes, lighting and camera. This is a **workflow pilot target, not an asserted sufficient training or accuracy sample size**. Include eligible users recruited separately under explicit training/evaluation permission if Source A lacks relevant positives.
+2. Write a short visual rubric for dermatologists: acne lesions require a point/bbox per actual distinguishable lesion, uncertain comedones and lookalikes explicitly separated; redness/pigment require polygons or masks; pores require coarse *visibility grade per qualified cheek/nose patch*. Instrument measures/clinical assessment cannot be replaced by RGB pixel contrast. Dehydration/UV/barrier never become measured physical quantities from one RGB image.
+3. Assign two independent human reviewers for **locked evaluation subjects** and a stratified proportion of pilot positives, negatives and borderline cases. Add a third adjudicator for disputes; record each independent label and consensus rather than modifying original labels in place.
+4. Use the existing Draft PR #1358 labeler only if it supports the final multi-concern spatial schema and isolated storage; otherwise use a mature locally/self-hosted MIT/Apache annotation tool (CVAT or Label Studio) in a non-production secure environment. Do not send identifying face images to public workspace.
+5. Enforce same-subject/near-duplicate/augmentation-family segregation **before** train/validation/holdout. Published counts of images, angles and per-region records must not be multiplied into independent person counts.
+6. Gate: after first 100–200-subject annotation feasibility test, inspect inter-rater agreement and missed class coverage. Only then calculate acquisition/training sample requirements from pilot variance and target confidence intervals. If insufficient quality, revise photography protocol or annotation rubric rather than blindly collecting thousands of images.
+
+### How to contact/acquire/verify without inventing cleared rights
+
+- Applicant: open the source A page → login → dataset sample/guide → click download and complete data access request → retain approval/license record; use safe-zone only if the platform requires it. Raw data stay within approved environment.
+- Source A publicly lists the construction consortium: KairosLab (data lead), IEC Korea (collection), Dankook University (expert assessment/model). Contact them through the official dataset page if specific annotation provenance and permitted derivative labeling are unclear; do not assume their implementation weights are ready for commercial production.
+- This task has **not** logged in, accepted terms, retrieved restricted images, obtained personal consent, or contracted a physician. No dataset/model can be promoted to commercial approval by this document alone.
+
