@@ -2,7 +2,7 @@
 
 - Date: 2026-10-21
 - Track: face-research
-- Source/producer: Saju Draft PR #2617, commit `35bf2a483ebe5db6f315ba503f7862bb3b17d745`
+- Source/producer: Saju Draft PR #2617, commit `a00c3e2e1c3be1711068e5d35e696a6c9c7d0b8a`
 - Downstream: K_beauty stacked on Draft PR #1380 (stacked on #1301)
 - Authority: **research/development only**; no merge, deployment, user-facing scoring, or provider activation
 - Distinguish **neutral image geometry** from **cheek/skin-color interpretation**. These are different domains.
