@@ -125,4 +125,98 @@ changed.blindToModelOutput=false;
 alternateFiles.set(two[1].ref,Buffer.from(JSON.stringify(changed)));
 assert.throws(()=>evalGold(panel,stress,ledger,{
   readBytes:p=>alternateFiles.get(p)}),/REVIEW_ARTIFACT_HASH_MISMATCH/);
+// Two *real historical observation records* are audited without treating
+// them as authenticated official page bytes or independently reviewed gold.
+const triage=read("evidence/trust/p2v3-two-primary-legacy-evidence-triage-20261021.json");
+assert.equal(triage.contract,"trust-p2v3-two-primary-legacy-evidence-triage-v1");
+assert.equal(triage.reviewTargets.length,2);
+assert.deepEqual(triage.metrics,{
+  reviewTargets:2,historicalObservations:4,
+  retainedOriginalPrimaryArtifactsConfirmed:0,
+  independentGoldClaimsAdded:0,confirmedExactOfficialSkuAdded:0,
+  siteRequests:0,robotsRequests:0,dbReadsOnly:true,dbWrites:0,
+  productWrites:0,factWrites:0,subjectWrites:0,
+  sourceBindingWrites:0,aiApiCalls:0,
+});
+const sidmoolId="a6994fcd-302f-4e63-acbe-91a3f17a5a65";
+const bojId="25b2763f-529f-4b2e-a436-2e0776279c55";
+assert.deepEqual(new Set(triage.reviewTargets.map(x=>x.productId)),
+  new Set([sidmoolId,bojId]));
+for(const item of triage.reviewTargets){
+  const originalCandidate=panel.records.find(x=>x.productId===item.productId);
+  assert.ok(originalCandidate);
+  assert.equal(originalCandidate.brand,item.brand);
+  assert.equal(originalCandidate.catalogSizeMl,item.catalogSizeMl);
+  assert.equal(item.originalPageRetainedInInspectedStores,false);
+  assert.equal(item.catalogSizeCorrectionProposed,false);
+  assert.ok(item.historicalObservations.length>0);
+  assert.equal(item.trustObservationDigestBasis,
+    "frozen-first-party-observation-v1-not-live-page-bytes");
+}
+const sidmool=triage.reviewTargets.find(x=>x.productId===sidmoolId);
+assert.equal(sidmool.catalogSizeMl,null);
+assert.match(sidmool.sourceRecordFinding,/75ml/);
+assert.equal(sidmool.historicalObservations.length,3);
+assert.deepEqual(sidmool.historicalObservations.map(x=>x.recordedClaim).sort(),
+  ["PA++","SPF20","무기자차"].sort());
+const boj=triage.reviewTargets.find(x=>x.productId===bojId);
+assert.match(boj.sourceRecordFinding,/Niacinamide/);
+assert.equal(boj.historicalObservations.length,1);
+
+// Unit-size gold must be NUMERIC, independent of unknown legacy catalog
+// size_ml. The following bytes and reviewers are SIMULATED IN MEMORY ONLY.
+const numericDimension="PHYSICAL_UNIT_CAPACITY_ML",numericValue=75;
+const numericSource=store("evidence/trust/p2v3-review/synthetic-numeric-source.json",{
+  contract:"trust-p2-v3-reviewable-source-excerpt-v1",
+  productId:sidmoolId,dimension:numericDimension,
+  sourceKind:"LICENSED_FIRST_PARTY_EXCERPT",
+  sourceUrl:"https://example.test/synthetic-sunmilk-75",
+  reviewScope:"simulated unit-capacity source; not actual Sidmool evidence",
+  observedClaim:"SIMULATED 75ml physical container",
+});
+function numericReviewer(id){
+  return {reviewerId:id,...store(
+    "evidence/trust/p2v3-review/synthetic-numeric-"+id+".json",{
+      contract:"trust-p2-v3-human-claim-review-v1",
+      reviewerId:id,productId:sidmoolId,
+      dimension:numericDimension,adjudicatedValue:numericValue,
+      sourceSha256:numericSource.sha256,blindToModelOutput:true,
+    })};
+}
+const numericRecord={
+  productId:sidmoolId,dimension:numericDimension,goldValue:numericValue,
+  source:numericSource,reviewers:[
+    numericReviewer("test_numeric_a"),numericReviewer("test_numeric_b")],
+};
+const numericLedger={...empty,records:[numericRecord]};
+assert.equal(evalGold(panel,stress,numericLedger,{readBytes})
+  .scorableIndependentlyAttestedClaims,1);
+const numPred=value=>[{
+  productId:sidmoolId,dimension:numericDimension,value,
+}];
+assert.equal(evalGold(panel,stress,numericLedger,{
+  readBytes,predictions:numPred(75)}).claimAccuracyOnAttempted,1);
+assert.equal(evalGold(panel,stress,numericLedger,{
+  readBytes,predictions:numPred(80)}).claimAccuracyOnAttempted,0);
+assert.equal(evalGold(panel,stress,numericLedger,{
+  readBytes,predictions:numPred("ABSTAIN")}).claimAccuracyOnAttempted,null);
+assert.throws(()=>evalGold(panel,stress,numericLedger,{
+  readBytes,predictions:numPred("75")}),/INVALID_PREDICTION/);
+assert.throws(()=>evalGold(panel,stress,numericLedger,{
+  readBytes,predictions:numPred(-1)}),/INVALID_PREDICTION/);
+const noUnit=copy(numericLedger);
+noUnit.records[0].goldValue=0;
+assert.throws(()=>evalGold(panel,stress,noUnit,{readBytes}),
+  /INVALID_ADJUDICATION_RECORD/);
+// Catalog MATCH/CONFLICT is NOT a valid gold dimension on a NULL catalog size.
+const impossibleCatalogGold=copy(numericLedger);
+impossibleCatalogGold.records[0].dimension="PHYSICAL_UNIT_CAPACITY";
+impossibleCatalogGold.records[0].goldValue="CATALOG_MATCH";
+assert.throws(()=>evalGold(panel,stress,impossibleCatalogGold,{readBytes}),
+  /INVALID_ADJUDICATION_RECORD/);
+assert.throws(()=>evalGold(panel,stress,empty,{
+  predictions:[{productId:sidmoolId,dimension:"PHYSICAL_UNIT_CAPACITY",
+    value:"CATALOG_MATCH"}]}),/INVALID_PREDICTION/);
+console.log("TRUST_P2_V3_TWO_REAL_LEGACY_EVIDENCE_CASES_NUMERIC_NULL_SIZE_OFFLINE_PASS");
+
 console.log("TRUST_P2_V3_REAL_20_CANDIDATES_5_DIAGNOSTICS_GOLD_GATE_OFFLINE_PASS");
