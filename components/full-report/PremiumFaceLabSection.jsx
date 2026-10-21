@@ -412,6 +412,9 @@ function LegacyFaceLab({ faceLabSummary, photoUrl, locale }) {
         <p className="ui-kicker">FACE LAB</p>
         <h2 className="ui-title mt-2 text-xl leading-tight">{copy.title}</h2>
         <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.legacyBody}</p>
+        {showOriginalLanguageNote ? (
+          <p role="note" className="ui-text-secondary mt-2 text-xs leading-5">{copy.originalLanguageNote}</p>
+        ) : null}
       </section>
       <section className="ui-card-subtle p-5 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-[150px_1fr]">
