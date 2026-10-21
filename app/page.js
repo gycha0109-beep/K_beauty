@@ -538,7 +538,7 @@ export default function HomePage() {
           </div>
 
           <div className="relative flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
-            <AuthNav />
+            <AuthNav locale={locale} />
             <ThemeToggle locale={locale} compact />
             {isDevMode ? (
               <button
