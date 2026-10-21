@@ -1,193 +1,271 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { detectMediaPipeCheekRoiProposal } from "@/lib/face-lab-v2/personal-color/mediapipe-roi-proposal";
+import {useEffect,useRef,useState} from "react";
+import {detectMediaPipeCheekRoiProposal} from "@/lib/face-lab-v2/personal-color/mediapipe-roi-proposal";
+import {buildPersonalColorCheekMasks} from "@/lib/face-lab-v2/personal-color/cheek-mask-geometry";
 
-const ACCEPTED_TYPES = new Set(["image/jpeg","image/png","image/webp"]);
-const MAX_BYTES = 10 * 1024 * 1024;
-const SIDE_NAMES = {leftCheek:"화면 왼쪽 볼",rightCheek:"화면 오른쪽 볼",exclusion:"눈·입 제외 영역"};
-const MESSAGE = {
-  original_image_orientation_unverified:"좌우 반전 여부 확인이 필요합니다.",
-  source_image_dimensions_invalid:"이미지가 너무 크거나 크기를 읽을 수 없습니다.",
-  vision_runtime_unavailable:"얼굴 검출 런타임을 준비할 수 없습니다.",
-  vision_runtime_or_model_failed:"모델 다운로드 또는 얼굴 검출에 실패했습니다. 연결 상태를 확인해 주세요.",
-  single_face_not_detected:"얼굴 한 명을 검출하지 못했습니다.",
-  multiple_faces_detected:"얼굴이 여러 명 검출되었습니다. 한 명의 정면 사진으로 다시 시도해 주세요.",
-  cheek_geometry_unreliable:"볼 영역을 신뢰할 수 없는 자세·각도입니다.",
-  roi_not_comparable:"두 ROI 후보 중 하나가 기하 조건을 충족하지 못했습니다."
+const FORMATS=new Set(["image/jpeg","image/png","image/webp"]);
+const MAX_FILE_BYTES=10*1024*1024;
+const COLORS={
+  baseline:[0,221,235,137],
+  candidate:[255,88,180,145],
+  overlap:[72,232,169,140]
 };
-function percent(value) {
-  return Number.isFinite(value) ? (100 * value).toFixed(1) + "%" : "비교 불가";
+const MESSAGE={
+  source_image_dimensions_invalid:"이미지 크기를 확인할 수 없습니다. 다른 JPG/PNG/WebP 사진을 선택해 주세요.",
+  single_face_not_detected:"얼굴을 찾지 못했습니다. 정면 사진을 선택해 주세요.",
+  multiple_faces_detected:"얼굴이 여러 명입니다. 얼굴 한 명이 나오는 사진으로 다시 시도해 주세요.",
+  cheek_geometry_unreliable:"현재 사진에서는 볼 영역을 안정적으로 제안하기 어렵습니다.",
+  vision_runtime_or_model_failed:"얼굴 모델 로딩 또는 검출에 실패했습니다. 연결 상태를 확인해 주세요.",
+  vision_runtime_unavailable:"얼굴 인식 런타임을 불러오지 못했습니다.",
+  roi_not_comparable:"한쪽 연구 ROI가 유효한 기하 후보를 만들지 못했습니다.",
+  image_orientation_unknown:"원본 이미지 좌표를 확인하지 못했습니다."
+};
+const percent=(value)=>Number.isFinite(value)?(value*100).toFixed(1)+"%":"—";
+function maskFor(proposal,size){
+  if(proposal?.status==="insufficient_evidence"||
+    proposal?.requiresIndependentRoiReview!==true||
+    proposal?.mayMeasureSkin!==false)return null;
+  const masks=buildPersonalColorCheekMasks({
+    ...size,
+    cheekPolygons:proposal?.cheekPolygons,
+    exclusionPolygons:proposal?.exclusionPolygons
+  });
+  return masks.status==="masks_ready"?masks:null;
 }
-function drawPolygon(ctx, points, w, h, stroke, dashed = false) {
-  if (!Array.isArray(points) || points.length < 3) return;
-  ctx.save();
-  ctx.strokeStyle=stroke;ctx.lineWidth=2.5;
-  if(dashed)ctx.setLineDash([6,5]);
-  ctx.beginPath();
-  points.forEach((p,i)=>i===0?ctx.moveTo(p.x*w,p.y*h):ctx.lineTo(p.x*w,p.y*h));
-  ctx.closePath();ctx.stroke();ctx.restore();
+function outputSize(bitmap){
+  const scale=Math.min(1,720/bitmap.width,Math.sqrt(850000/(bitmap.width*bitmap.height)));
+  return {width:Math.max(1,Math.floor(bitmap.width*scale)),
+    height:Math.max(1,Math.floor(bitmap.height*scale))};
 }
-function paint(canvas, bitmap, baseline, candidate) {
-  if(!canvas)return;
-  const scale=Math.min(1,800/bitmap.width);
-  const width=Math.max(1,Math.round(bitmap.width*scale));
-  const height=Math.max(1,Math.round(bitmap.height*scale));
-  canvas.width=width;canvas.height=height;
-  const ctx=canvas.getContext("2d");
+function cropRegion(baseline,candidate,size){
+  const points=[...Object.values(baseline.cheekPolygons).flat(),
+    ...Object.values(candidate.cheekPolygons).flat()];
+  const xs=points.map(v=>v.x),ys=points.map(v=>v.y);
+  const minX=Math.min(...xs),maxX=Math.max(...xs);
+  const minY=Math.min(...ys),maxY=Math.max(...ys);
+  const width=Math.min(1,Math.max(.35,(maxX-minX)*2.3));
+  const height=Math.min(1,Math.max(.35,(maxY-minY)*3.8));
+  const x=Math.max(0,Math.min(1-width,(minX+maxX-width)/2));
+  const y=Math.max(0,Math.min(1-height,(minY+maxY-height)/2));
+  return {x:Math.floor(x*size.width),y:Math.floor(y*size.height),
+    width:Math.max(1,Math.min(size.width-Math.floor(x*size.width),Math.ceil(width*size.width))),
+    height:Math.max(1,Math.min(size.height-Math.floor(y*size.height),Math.ceil(height*size.height)))};
+}
+function paint(canvas,photo,first,second,region,mode){
+  const imageWidth=photo.width,imageHeight=photo.height;
+  const overlay=document.createElement("canvas");
+  overlay.width=imageWidth;overlay.height=imageHeight;
+  const ctx=overlay.getContext("2d");
   if(!ctx)return;
-  ctx.drawImage(bitmap,0,0,width,height);
-  for(const p of Object.values(baseline?.cheekPolygons||{}))
-    drawPolygon(ctx,p,width,height,"#00d4db");
-  for(const p of Object.values(candidate?.cheekPolygons||{}))
-    drawPolygon(ctx,p,width,height,"#ff54b8",true);
-  for(const p of baseline?.exclusionPolygons||[])
-    drawPolygon(ctx,p,width,height,"#ffad33");
+  ctx.drawImage(photo,0,0);
+  const tint=document.createElement("canvas");
+  tint.width=imageWidth;tint.height=imageHeight;
+  const overlayCtx=tint.getContext("2d");
+  if(!overlayCtx)return;
+  const pixels=overlayCtx.createImageData(imageWidth,imageHeight);
+  for(let i=0;i<imageWidth*imageHeight;i++){
+    const a=(first.skinRegionMasks.leftCheek[i]===1||first.skinRegionMasks.rightCheek[i]===1)
+      &&first.exclusionMask[i]===0;
+    const b=(second.skinRegionMasks.leftCheek[i]===1||second.skinRegionMasks.rightCheek[i]===1)
+      &&second.exclusionMask[i]===0;
+    const color=mode==="baseline"?(a?COLORS.baseline:null):
+      mode==="candidate"?(b?COLORS.candidate:null):
+      a&&b?COLORS.overlap:a?COLORS.baseline:b?COLORS.candidate:null;
+    if(!color)continue;
+    const n=i*4;
+    pixels.data[n]=color[0];pixels.data[n+1]=color[1];
+    pixels.data[n+2]=color[2];pixels.data[n+3]=color[3];
+  }
+  overlayCtx.putImageData(pixels,0,0);
+  ctx.drawImage(tint,0,0);
+  const canvasWidth=480;
+  const canvasHeight=Math.max(180,Math.round(canvasWidth*region.height/region.width));
+  canvas.width=canvasWidth;canvas.height=canvasHeight;
+  const dest=canvas.getContext("2d");
+  if(!dest)return;
+  dest.drawImage(overlay,region.x,region.y,region.width,region.height,
+    0,0,canvasWidth,canvasHeight);
 }
-export default function FaceLabRoiLiveClient() {
+function emptyCanvases(refs){
+  for(const ref of refs){if(ref.current){ref.current.width=0;ref.current.height=0;}}
+}
+export default function FaceLabRoiLiveClient(){
   const fileRef=useRef(null);
-  const canvasRef=useRef(null);
-  const requestId=useRef(0);
-  const [selected,setSelected]=useState("");
-  const [orientationConfirmed,setOrientationConfirmed]=useState(false);
+  const request=useRef(0);
+  const firstCanvas=useRef(null),secondCanvas=useRef(null),diffCanvas=useRef(null);
+  const canvases=[firstCanvas,secondCanvas,diffCanvas];
+  const [filename,setFilename]=useState("");
   const [status,setStatus]=useState("idle");
   const [result,setResult]=useState(null);
-  const [comparison,setComparison]=useState(null);
+  const [stats,setStats]=useState(null);
   const [error,setError]=useState("");
+  const [viewReady,setViewReady]=useState(false);
 
-  useEffect(()=>()=>{requestId.current+=1;},[]);
-  function choose(event) {
-    requestId.current+=1;
-    setStatus("idle");setResult(null);setComparison(null);setError("");
-    setOrientationConfirmed(false);
-    const canvas=canvasRef.current;
-    if(canvas){canvas.width=0;canvas.height=0;}
-    const file=event.target.files?.[0]||null;
-    fileRef.current=null;setSelected("");
-    if(!file)return;
-    if(!ACCEPTED_TYPES.has(file.type)){setError("JPG, PNG, WebP만 지원합니다.");return;}
-    if(file.size>MAX_BYTES){setError("10MB 이하 사진만 사용할 수 있습니다.");return;}
-    fileRef.current=file;setSelected(file.name.slice(0,80));
-  }
-
-  async function analyze() {
-    if(!fileRef.current||!orientationConfirmed||status==="loading")return;
-    const id=++requestId.current;
-    const input=fileRef.current;
-    setStatus("loading");setResult(null);setComparison(null);setError("");
+  useEffect(()=>()=>{request.current++;},[]);
+  async function analyze(file){
+    const current=++request.current;
+    setStatus("loading");setResult(null);setStats(null);setError("");setViewReady(false);
+    emptyCanvases(canvases);
     let bitmap;
-    try {
-      bitmap=await createImageBitmap(input,{imageOrientation:"from-image"});
-      if(id!==requestId.current)return;
-      let first=null,second=null,paired=null;
-      const output=await detectMediaPipeCheekRoiProposal({
+    try{
+      // EXIF-oriented, unmirrored image pixel space: image-left/right only.
+      // Mirrored originals cannot be independently detected here.
+      bitmap=await createImageBitmap(file,{imageOrientation:"from-image"});
+      if(request.current!==current)return;
+      let baseline=null,candidate=null,comparison=null;
+      const inspected=await detectMediaPipeCheekRoiProposal({
         image:bitmap,width:bitmap.width,height:bitmap.height,
         originalImageOrientationVerified:true,
-        onProposal(geometry){first=geometry;},
-        onCandidateGeometry(geometry){second=geometry;},
-        onParity(value){paired=value;}
+        onProposal(value){baseline=value;},
+        onCandidateGeometry(value){candidate=value;},
+        onParity(value){comparison=value;}
       });
-      if(id!==requestId.current)return;
-      if(output.status==="proposal_only"){
-        paint(canvasRef.current,bitmap,first,second);
+      if(request.current!==current)return;
+      if(inspected.status!=="proposal_only"){
+        setResult(inspected);setStatus("done");return;
       }
-      setResult(output);
-      setComparison(paired);
-      setStatus("done");
+      setResult(inspected);
+      setStats(comparison);
+      if(!baseline||!candidate||comparison?.status!=="comparison_only"){
+        setError("두 후보를 같은 조건으로 시각화할 수 없어 비교를 보류했습니다.");
+        setStatus("done");return;
+      }
+      const size=outputSize(bitmap);
+      const source=document.createElement("canvas");
+      source.width=size.width;source.height=size.height;
+      const sourceCtx=source.getContext("2d");
+      if(!sourceCtx)throw Error("canvas_unavailable");
+      sourceCtx.drawImage(bitmap,0,0,size.width,size.height);
+      const first=maskFor(baseline,size),second=maskFor(candidate,size);
+      if(!first||!second){
+        setError("볼 후보 또는 제외 영역이 유효하지 않아 표시를 보류했습니다.");
+        setStatus("done");return;
+      }
+      const crop=cropRegion(baseline,candidate,size);
+      paint(firstCanvas.current,source,first,second,crop,"baseline");
+      paint(secondCanvas.current,source,first,second,crop,"candidate");
+      paint(diffCanvas.current,source,first,second,crop,"difference");
+      setViewReady(true);setStatus("done");
     }catch{
-      if(id===requestId.current){setStatus("done");setError("사진 디코딩 또는 검출에 실패했습니다.");}
-    }finally{
-      try{bitmap?.close?.();}catch{}
-    }
+      if(request.current===current){
+        setError("사진을 읽거나 브라우저에서 얼굴을 검출하지 못했습니다.");
+        setStatus("done");
+      }
+    }finally{try{bitmap?.close?.();}catch{}}
   }
-
+  function selectFile(event){
+    const file=event.target.files?.[0];
+    ++request.current;
+    fileRef.current=null;setFilename("");setStatus("idle");
+    setResult(null);setStats(null);setError("");setViewReady(false);
+    emptyCanvases(canvases);
+    if(!file)return;
+    if(!FORMATS.has(file.type)){setError("JPG, PNG, WebP 파일만 지원합니다.");return;}
+    if(file.size>MAX_FILE_BYTES){setError("10MB 이하 사진만 사용할 수 있습니다.");return;}
+    fileRef.current=file;setFilename(file.name.slice(0,100));
+    void analyze(file);
+  }
+  const canCompare=stats?.status==="comparison_only";
+  const pixelCount=canCompare?stats.maskDimensions.width*stats.maskDimensions.height:0;
+  const tiny=canCompare&&["leftCheek","rightCheek"].some(side=>
+    Math.max(stats.metrics?.[side]?.baselinePixels||0,
+      stats.metrics?.[side]?.candidatePixels||0)/pixelCount<.002
+  );
   return (
-    <main className="min-h-screen bg-[#0b101a] px-4 py-10 text-slate-50 sm:px-8">
-      <div className="mx-auto max-w-4xl">
-        <a href="/" className="text-sm text-slate-400 hover:text-white">← BEJEWELY 홈</a>
-        <div className="mt-7 flex flex-wrap items-center gap-3">
-          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300">RESEARCH ONLY · 정확도 미검증</span>
-          <span className="text-xs text-slate-400">Face Lab M2 · 공통 관측 코어 병렬 비교</span>
+    <main className="min-h-screen bg-[#0b101a] px-4 py-9 text-slate-50 sm:px-7">
+      <div className="mx-auto max-w-6xl">
+        <a className="text-sm text-slate-400 hover:text-white" href="/">← BEJEWELY 홈</a>
+        <div className="mt-7 flex flex-wrap items-center gap-2 text-xs">
+          <span className="rounded-full bg-slate-800 px-3 py-1 text-slate-200">Face Lab / ROI 실험</span>
+          <span className="text-amber-300">피부 정확도 미검증 · 연구용</span>
         </div>
-        <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">볼 ROI 연구 비교</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
-          기존 Face Lab 방식과 Saju 공통 코어 기반 연구 후보를 같은 얼굴 검출 결과에 적용합니다.
-          실제 피부 영역의 정답이나 퍼스널 컬러를 판정하는 화면이 아닙니다.
+        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">두 방식이 볼을 어디로 잡는가?</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+          기존 Face Lab ROI와 Saju 공통 관측 코어 기반 ROI를 같은 사진에 표시합니다.
+          <strong className="text-white"> 화면의 색칠된 부분은 피부의 정답이 아니라 컴퓨터가 제안한 후보입니다.</strong>
         </p>
-        <section className="mt-7 rounded-3xl border border-slate-700 bg-slate-900/80 p-5 sm:p-7">
-          <h2 className="text-lg font-semibold">1. 사진 선택</h2>
-          <p className="mt-2 text-xs leading-6 text-slate-400">
-            사진은 이 테스트에서 서버로 업로드하지 않습니다. 버튼을 누를 때 MediaPipe WASM·모델만 공개 CDN에서 불러옵니다.
-            본인이 소유하거나 사용 허락을 받은 얼굴 사진만 선택해 주세요.
-          </p>
-          <input aria-label="ROI 테스트 사진" type="file" accept="image/jpeg,image/png,image/webp" onChange={choose}
-            className="mt-4 block w-full rounded-xl border border-slate-600 bg-slate-950 p-3 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-cyan-700 file:px-3 file:py-2 file:text-white"/>
-          {selected&&<p className="mt-2 text-xs text-slate-300">선택: {selected}</p>}
-          <label className="mt-5 flex items-start gap-3 text-sm text-slate-300">
-            <input type="checkbox" checked={orientationConfirmed}
-              onChange={e=>setOrientationConfirmed(e.target.checked)}
-              className="mt-1 h-4 w-4 accent-cyan-400"/>
-            <span>이 사진은 좌우 반전된 미러 이미지가 아니며, 얼굴이 한 명 나옵니다.</span>
-          </label>
-          <button onClick={analyze} disabled={!selected||!orientationConfirmed||status==="loading"}
-            className="mt-5 w-full rounded-xl bg-cyan-600 px-6 py-3 font-semibold text-white hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-40">
-            {status==="loading"?"브라우저에서 얼굴 검출 중…":"2개 ROI 비교 실행"}
-          </button>
-          {(error||result?.status==="insufficient_evidence")&&
-            <p role="status" className="mt-4 text-sm text-amber-300">
-              {error||MESSAGE[result?.reason]||`분석 보류: ${result?.reason}`}
-            </p>}
-        </section>
 
-        <section className="mt-6 rounded-3xl border border-slate-700 bg-slate-900/80 p-5 sm:p-7">
-          <h2 className="text-lg font-semibold">2. 겹쳐 보기</h2>
-          <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-300">
-            <span><span className="mr-2 text-cyan-300">━━</span> 기존 ROI</span>
-            <span><span className="mr-2 text-pink-400">┄┄</span> 공통 코어 연구 ROI</span>
-            <span><span className="mr-2 text-amber-400">━━</span> 제외 영역</span>
+        <section className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">사진 선택</h2>
+              <p className="mt-1 text-xs leading-5 text-slate-400">
+                선택하면 자동 비교합니다. 사진은 서버로 전송하거나 저장하지 않습니다.
+                얼굴 모델과 WASM만 외부 CDN에서 내려받습니다.
+              </p>
+            </div>
+            <span className="text-xs text-slate-400">{filename||"JPG · PNG · WebP / 최대 10MB"}</span>
           </div>
-          {result?.status!=="proposal_only"&&
-            <div className="mt-4 rounded-xl border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500">
-              분석 후 이곳에 ROI 겹침 결과가 나타납니다.
-            </div>}
-          <canvas ref={canvasRef} aria-label="기존 및 Saju 공통 코어 기반 볼 ROI 오버레이"
-            className={`mt-4 max-h-[600px] w-full rounded-xl object-contain ${result?.status==="proposal_only"?"":"hidden"}`}/>
+          <input aria-label="ROI 비교 사진" type="file" accept="image/jpeg,image/png,image/webp"
+            onChange={selectFile}
+            className="mt-4 block w-full rounded-xl border border-slate-600 bg-slate-950 p-2 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-cyan-700 file:px-4 file:py-2 file:text-white"/>
+          {status==="loading"&&<p role="status" className="mt-3 text-sm text-cyan-300">얼굴을 검출하고 두 ROI를 계산하고 있습니다…</p>}
+          {(error||result?.status==="insufficient_evidence")&&
+            <p role="alert" className="mt-3 text-sm text-amber-300">
+              {error||MESSAGE[result?.reason]||`이 사진은 비교할 수 없습니다: ${result?.reason}`}
+            </p>}
         </section>
 
-        {result?.status==="proposal_only"&&(
-          <section className="mt-6 rounded-3xl border border-slate-700 bg-slate-900/80 p-5 sm:p-7">
-            <h2 className="text-lg font-semibold">3. 픽셀 수준 차이</h2>
-            <p className="mt-2 text-sm text-slate-400">
-              동일 얼굴 검출 기반의 두 가지 서로 다른 연구 알고리즘 비교입니다.
-              겹침률이 높거나 낮아도 피부 영역 정확도를 의미하지 않습니다.
-            </p>
-            {comparison?.status==="comparison_only"?(
-              <>
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  {Object.entries(SIDE_NAMES).map(([key,label])=>{
-                    const metric=comparison.metrics?.[key];
-                    return <article key={key} className="rounded-xl border border-slate-700 bg-slate-950 p-4">
-                      <h3 className="text-sm font-semibold">{label}</h3>
-                      <p className="mt-3 text-2xl font-bold text-cyan-300">{percent(metric?.iou)}</p>
-                      <p className="mt-1 text-xs text-slate-400">공통 영역 / 합집합 (IoU)</p>
-                      <p className="mt-3 text-xs text-slate-400">기존: {metric?.baselinePixels??"-"}px</p>
-                      <p className="mt-1 text-xs text-slate-400">연구: {metric?.candidatePixels??"-"}px</p>
-                    </article>;
-                  })}
+        <section className="mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold">1. 같은 얼굴, 서로 다른 위치</h2>
+            <span className="text-xs text-slate-400">얼굴 중앙부 확대 · 후보 영역만 반투명 표시</span>
+          </div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+            {[
+              {name:"기존 Face Lab",desc:"청록색: 기존 볼 후보",ref:firstCanvas},
+              {name:"Saju 기반 연구",desc:"분홍색: 새 연구 후보",ref:secondCanvas},
+              {name:"두 후보의 차이",desc:"초록: 공통 / 청록: 기존만 / 분홍: 연구만",ref:diffCanvas}
+            ].map((item,i)=>(
+              <article key={i} className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-900">
+                <div className="px-4 py-3">
+                  <h3 className="font-semibold">{item.name}</h3>
+                  <p className="mt-1 text-xs text-slate-400">{item.desc}</p>
                 </div>
-                <p className="mt-4 text-xs text-amber-300">
-                  기하 후보 {comparison.parity==="matched"?"일치":"불일치"} · 독립 검수 피부 마스크 없음 · 색상 측정 비활성화
+                {!viewReady&&<div className="flex aspect-square items-center justify-center bg-slate-950 px-5 text-center text-sm text-slate-500">
+                  {status==="loading"?"분석 중…":"사진을 고르면 확대 비교가 표시됩니다."}
+                </div>}
+                <canvas ref={item.ref} aria-label={item.name+" 볼 영역 확대 시각화"}
+                  className={`w-full bg-slate-950 ${viewReady?"block":"hidden"}`}/>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/80 p-5 sm:p-6">
+          <h2 className="text-lg font-semibold">2. 지금 이 결과로 알 수 있는 것</h2>
+          {!canCompare?
+            <p className="mt-3 text-sm text-slate-400">사진 비교 후 후보의 겹침 정도와 평가 보류 사유가 표시됩니다.</p>:
+            <>
+              {tiny&&<div role="status" className="mt-4 rounded-xl border border-amber-700/50 bg-amber-950/30 p-4">
+                <p className="font-semibold text-amber-300">볼 후보가 사진에서 매우 작게 생성되었습니다.</p>
+                <p className="mt-2 text-sm leading-6 text-slate-200">
+                  기존·연구 알고리즘 모두 볼 전체가 아닌 좁은 지점만 잡을 수 있습니다.
+                  겹침률이 높아도 영역 위치가 타당하다는 뜻은 아닙니다.
+                  <strong> 이 사진에서는 실제 피부 측정에 사용하지 않습니다.</strong>
                 </p>
-              </>
-            ):<p role="status" className="mt-4 text-sm text-amber-300">
-              병렬 비교 보류: {comparison?.reason||"비교 결과가 준비되지 않았습니다."}
-            </p>}
-          </section>
-        )}
-        <p className="mt-7 text-xs leading-6 text-slate-500">
-          테스트 결과는 브라우저 화면에서만 표시됩니다. 이 화면에는 계정·서버 API·DB 저장·피부색 측정·판매 기능이 없습니다.
-          새로고침하면 결과가 사라집니다.
-        </p>
+              </div>}
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {["leftCheek","rightCheek"].map((key,i)=>{
+                  const metric=stats.metrics?.[key];
+                  return <div key={key} className="rounded-xl border border-slate-700 bg-slate-950 p-4">
+                    <p className="text-xs text-slate-400">화면 {i===0?"왼쪽":"오른쪽"} 볼</p>
+                    <p className="mt-1 text-xl font-semibold">{percent(metric?.iou)} <span className="text-xs font-normal text-slate-400">두 후보의 겹침률</span></p>
+                    <p className="mt-2 text-xs text-slate-400">기존 {metric?.baselinePixels??"—"}px · 연구 {metric?.candidatePixels??"—"}px</p>
+                  </div>;
+                })}
+              </div>
+              <p className="mt-4 text-sm leading-6 text-slate-300">
+                이것은 <strong>기존 방식과 연구 방식이 얼마나 비슷한지</strong>만 보여줍니다.
+                누가 더 정확한지는 독립적으로 검수된 피부 영역 기준이 없어 판단할 수 없습니다.
+              </p>
+            </>}
+          <p className="mt-3 text-xs leading-6 text-slate-400">
+            좌·우는 사진 기준입니다. 미러 이미지 여부와 화장·그림자·가려진 피부는
+            자동 검증하지 않습니다. 퍼스널 컬러·피부색 측정도 수행하지 않습니다.
+          </p>
+        </section>
       </div>
     </main>
   );
