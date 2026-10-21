@@ -3267,3 +3267,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+## 2026-10-21 — Skin Scan Lab browser-only feasibility prototype
+
+- Classification: Medium experimental implementation. DB/Auth/RLS/Storage/Provider API/Payment/Secret/Production mutations: N. External Google/jsDelivr asset loading exists only in local loopback prototype.
+- Branch: experiment/skin-scan-browser-prototype-20261021; scope: public/skin-scan-lab/* and scripts/run-skin-scan-lab.mjs.
+- Implemented: real MediaPipe face landmarks, semantic face-skin segmentation, pixel-derived redness/shine/dot/tone/blemish/texture candidate overlays; clearly no clinical claims, no image upload, no saved photos.
+- Verification: JavaScript syntax and DOM reference static checks PASS; synthetic pixel-map test PASS (red patch highlighted; out-of-mask pixels not colored). Real browser/model loading and cross-skin-tone validity NOT VERIFIED.
+- Hosted path NOT SUPPORTED because production CSP intentionally blocks external model loading; loopback-only runner added instead. Existing API, middleware, DB, deployment and package configuration untouched.
+- Next: actual local browser acceptance, pinned self-hosted WASM/model assets, license manifests, expert-reviewed observations before product integration.
