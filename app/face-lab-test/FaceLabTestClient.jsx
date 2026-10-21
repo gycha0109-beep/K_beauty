@@ -876,11 +876,13 @@ export default function FaceLabTestClient() {
         {status === "ready" && faceLabAnalysis ? (
           <div className="space-y-4">
             {process.env.NODE_ENV === "development" ? (
-              <FaceLabPersonalColorResearchPreview
-                analysis={faceLabAnalysis}
-                locale="ko"
-              />
-              <FaceLabM2MediaPipeRoiResearch sourceImageFile={sourceImageFile} />
+              <>
+                <FaceLabPersonalColorResearchPreview
+                  analysis={faceLabAnalysis}
+                  locale="ko"
+                />
+                <FaceLabM2MediaPipeRoiResearch sourceImageFile={sourceImageFile} />
+              </>
             ) : null}
 
             <PremiumFaceLabSection
