@@ -58,6 +58,9 @@ function buildFullReportMeta(locale, source = "premium-session", persistence = n
     schemaVersion: FULL_REPORT_RESPONSE_SCHEMA_VERSION,
     source,
     locale,
+    // Additive display metadata: meta.locale retains its original persisted/source meaning.
+    sourceLocale: locale,
+    displayLocale: locale,
     generatedAt: new Date().toISOString(),
     ...(persistence ? { persistence } : {}),
     ...(snapshot
@@ -246,9 +249,9 @@ async function loadSavedPremiumReportForSession({ supabase, userId, sessionId })
     .maybeSingle();
 }
 
-function buildSavedPremiumReportResponse(savedReport, fallbackLocale = "ko") {
+function buildSavedPremiumReportResponse(savedReport, displayLocale = "ko") {
   const savedPremiumReport = sanitizePremiumReportForBoundary(savedReport?.premium_report || {});
-  const savedLocale = resolvePremiumReportLocale(savedPremiumReport, fallbackLocale);
+  const savedLocale = resolvePremiumReportLocale(savedPremiumReport);
   const savedFreeResult =
     savedPremiumReport?.freeResult && typeof savedPremiumReport.freeResult === "object"
       ? savedPremiumReport.freeResult
@@ -260,12 +263,15 @@ function buildSavedPremiumReportResponse(savedReport, fallbackLocale = "ko") {
   return sensitiveJsonResponse({
     ...savedPremiumReport,
     topPickFitGauges,
-    meta: buildFullReportMeta(
-      savedLocale,
-      "saved-report",
-      { status: "existing", savedReportId: savedReport.id },
-      buildPremiumReportSnapshot(savedPremiumReport)
-    )
+    meta: {
+      ...buildFullReportMeta(
+        savedLocale,
+        "saved-report",
+        { status: "existing", savedReportId: savedReport.id },
+        buildPremiumReportSnapshot(savedPremiumReport)
+      ),
+      displayLocale: displayLocale === "en" ? "en" : "ko"
+    }
   });
 }
 
