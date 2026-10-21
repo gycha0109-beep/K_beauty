@@ -66,13 +66,13 @@ function normalizeTextArray(value: unknown, limit = 8) {
   return value.map(normalizeText).filter((item): item is string => Boolean(item)).slice(0, limit);
 }
 
-function collectDisplayLines(value: unknown, limit = 8, depth = 0): string[] {
+function collectDisplayLines(value: unknown, limit = 8, depth = 0, locale: "ko" | "en" = "ko"): string[] {
   if (depth > 5 || limit <= 0 || value == null) return [];
   if (typeof value === "string") return value.trim() ? [value.trim()] : [];
   if (Array.isArray(value)) {
     const lines: string[] = [];
     for (const item of value) {
-      lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1));
+      lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1, locale));
       if (lines.length >= limit) break;
     }
     return [...new Set(lines)].slice(0, limit);
@@ -80,17 +80,24 @@ function collectDisplayLines(value: unknown, limit = 8, depth = 0): string[] {
   if (typeof value !== "object") return [];
 
   const record = value as Record<string, unknown>;
+  // Bilingual report fields carry display text, not two independent statements.
+  if (Object.hasOwn(record, "ko") || Object.hasOwn(record, "en")) {
+    const localized = locale === "en"
+      ? record.en ?? record.ko
+      : record.ko ?? record.en;
+    return collectDisplayLines(localized, limit, depth + 1, locale);
+  }
   const lines: string[] = [];
   for (const [key, item] of Object.entries(record)) {
     if (!DISPLAY_KEYS.has(key)) continue;
-    lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1));
+    lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1, locale));
     if (lines.length >= limit) break;
   }
   if (lines.length) return [...new Set(lines)].slice(0, limit);
 
   for (const item of Object.values(record)) {
     if (!item || typeof item !== "object") continue;
-    lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1));
+    lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1, locale));
     if (lines.length >= limit) break;
   }
   return [...new Set(lines)].slice(0, limit);
@@ -168,9 +175,9 @@ function PremiumSnapshot({ report }: { report: Record<string, unknown> }) {
   const freeResult = report.freeResult && typeof report.freeResult === "object" && !Array.isArray(report.freeResult)
     ? report.freeResult as NativeFreeSavedResult
     : null;
-  const routineLines = collectDisplayLines(report.fullRoutine, 10);
-  const functionalLines = collectDisplayLines(report.functionalDecisions, 10);
-  const conditionLines = collectDisplayLines(report.conditionResponses, 10);
+  const routineLines = collectDisplayLines(report.fullRoutine, 10, 0, locale);
+  const functionalLines = collectDisplayLines(report.functionalDecisions, 10, 0, locale);
+  const conditionLines = collectDisplayLines(report.conditionResponses, 10, 0, locale);
   const hasPremiumDetail = routineLines.length || functionalLines.length || conditionLines.length;
 
   return (
@@ -208,7 +215,7 @@ export function NativeSavedReport({ value }: { value: NativeSavedReportRead }) {
         fullRoutine: value.report.fullRoutine,
         functionalDecisions: value.report.functionalDecisions,
         conditionResponses: value.report.conditionResponses
-      }, 24);
+      }, 24, 0, locale);
   const containsKoreanGuidance = guidanceLines.some((line) => typeof line === "string" && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(line));
 
   return (
