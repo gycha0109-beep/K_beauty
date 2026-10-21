@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PremiumFaceLabSection from "@/components/full-report/PremiumFaceLabSection";
 import FaceLabPersonalColorResearchPreview from "@/components/face-lab-test/FaceLabPersonalColorResearchPreview";
+import FaceLabM2MediaPipeRoiResearch from "@/components/face-lab-test/FaceLabM2MediaPipeRoiResearch";
 import FaceLabSimulationReviewPanel from "@/components/face-lab-test/FaceLabSimulationReviewPanel";
 import {
   getFaceLabObservationAnalysis,
@@ -879,6 +880,7 @@ export default function FaceLabTestClient() {
                 analysis={faceLabAnalysis}
                 locale="ko"
               />
+              <FaceLabM2MediaPipeRoiResearch sourceImageFile={sourceImageFile} />
             ) : null}
 
             <PremiumFaceLabSection
