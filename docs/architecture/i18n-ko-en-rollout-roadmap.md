@@ -62,14 +62,15 @@
 - [ ] 웹·모바일 온보딩, 설문, 카메라, 무료 결과, 풀 리포트 허브, Face Lab, My, 다이어리, 공유, 계정, 동의, 에러·비활성 상태 문구 점검.
 - [x] 영문 컬럼 누락 12개 제품(2026-10-21 점검 당시 176개 중 164개 영문명 보유) DB 실측·분류 및 공식 제조사 영문 표기 2건 확인: `docs/architecture/i18n-product-name-backfill-review-20261021.md`.
 - [ ] 공식 표기 확인이 필요한 10건 추가 검토 후 운영 제품 파이프라인을 통한 조건부 display-only backfill 승인·실행·재검증. `category IS NULL` 10건은 번역과 별도로 검수.
-- [ ] 날짜·시간·숫자 표기 및 작은 화면의 줄바꿈/오버플로 검사.
+- [x] 모바일 My·다이어리·최근 리포트의 캘린더 날짜/월 표기를 KO/EN 형식으로 전환. 날짜 키·정렬·체크인 조회에는 원래 값 사용, UTC 기반 날짜 밀림 방지 (`apps/mobile/lib/date-display-i18n.ts`).
+- [ ] 나머지 화면의 날짜·시간·숫자 형식과 실기기 화면의 줄바꿈/오버플로 검사.
 - [ ] 구매 링크/판매처 이름이 실제 지역 지원 여부를 허위로 암시하지 않도록 점검.
 
 ## M5. 릴리스 게이트
 
 - [ ] 기존 모바일 `npm run mobile:typecheck`, `npm run verify:mobile-foundation` 및 관련 CI 확인
 - [ ] 기존 `npm run verify:premium-browser-journey-contract` 및 회귀 검사 확인
-- [ ] 신규 검증 `npm run verify:i18n-m1`, `npm run verify:i18n-m2`, `npm run verify:i18n-m3` 최신 커밋 기준 통과 확인 (기존 current-main health CI에 연결; 이전 커밋에서는 통과).
+- [ ] 신규 검증 `npm run verify:i18n-m1`, `npm run verify:i18n-m2`, `npm run verify:i18n-m3`, `npm run verify:i18n-m4` 최신 커밋 기준 통과 확인 (기존 current-main health CI에 연결; 이전 커밋에서는 통과).
 - [ ] 웹 KO→EN→KO, `savedReportId`, 로그인/권한/프리미엄 저장·재진입 실사용 확인
 - [ ] Android/iOS 신규 설치와 재실행, 네이티브 영어 저장 결과/상품 선택 흐름 확인
 - [ ] CI, 코드 리뷰 후 병합·배포·실기기 수락 테스트를 각각 별도 기록
