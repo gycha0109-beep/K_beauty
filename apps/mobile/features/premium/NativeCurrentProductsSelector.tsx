@@ -258,7 +258,10 @@ export function NativeCurrentProductsSelector({
                         ]}
                       >
                         <Text style={[styles.productName, { color: palette.text }]}>
-                          {[product.brand, product.name].filter(Boolean).join(" · ")}
+                          {[
+                            locale === "en" ? product.brandEn || product.brand : product.brand,
+                            locale === "en" ? product.nameEn || product.name : product.name
+                          ].filter(Boolean).join(" · ")}
                         </Text>
                       </Pressable>
                     );
