@@ -26,10 +26,10 @@ assert.match(shared, /getLocalizedSkinState\(text\(result\.skinType\), "skinType
 assert.match(shared, /getLocalizedSkinState\(value, "concerns", locale\)/);
 assert.match(diary, /checkin\.memo \|\|/);
 assert.ok(!diary.includes("getLocalizedSkinState(checkin.memo"), "user-authored diary text must stay untouched");
-assert.match(saved, /locale === "en" && reportLocale === "ko"/);
-assert.match(shared, /locale === "en" && result\.locale === "ko"/);
-assert.match(saved, /Some guidance remains in the original language/);
-assert.match(shared, /Some guidance remains in the original language/);
+assert.match(saved, /locale === "en" && \(reportLocale === "ko" \|\| containsKoreanGuidance\)/);
+assert.match(shared, /locale === "en" && \(result\.locale === "ko" \|\| containsKoreanGuidance\)/);
+assert.match(saved, /Some saved guidance is shown in Korean/);
+assert.match(shared, /Some saved guidance is shown in Korean/);
 
 assert.match(premiumApi, /sourceLocale: locale/);
 assert.match(premiumApi, /displayLocale: locale/);
@@ -43,4 +43,6 @@ assert.match(saved, /normalizeText\(product\.name_en\)/);
 assert.match(saved, /normalizeText\(product\.brand_en\)/);
 assert.match(shared, /text\(product\.name_en\)/);
 assert.match(shared, /text\(product\.brand_en\)/);
+assert.match(saved, /const containsKoreanGuidance = guidanceLines\.some/);
+assert.match(shared, /const containsKoreanGuidance = \[summary, product\?\.reason, \.\.\.am, \.\.\.pm\]/);
 console.log("I18N_KO_EN_M3_PROFILE=PASS");
