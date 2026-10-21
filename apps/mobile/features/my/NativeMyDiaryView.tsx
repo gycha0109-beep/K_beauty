@@ -2,6 +2,7 @@ import type { SupportedLocale } from "@bejewely/shared";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { NativeMyDashboard } from "../../lib/my";
+import { getLocalizedSkinState } from "../../lib/skin-state-i18n";
 
 type Palette = Readonly<{
   surface: string;
@@ -44,9 +45,9 @@ export function NativeMyDiaryView({ locale, dashboard, palette, showSignedInStat
       {showSignedInState ? <View style={[styles.statusPill, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}><Text style={[styles.statusText, { color: palette.accent }]}>{copy.signedIn}</Text></View> : null}
       <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
         <Text style={[styles.sectionTitle, { color: palette.text }]}>{copy.profile}</Text>
-        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.skinType} · {profile?.skin_type || copy.noValue}</Text>
-        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.concerns} · {profile?.concerns?.filter(Boolean).join(", ") || copy.noValue}</Text>
-        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sensitivity} · {profile?.sensitivity_level || copy.noValue}</Text>
+        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.skinType} · {getLocalizedSkinState(profile?.skin_type, "skinTypes", locale) || copy.noValue}</Text>
+        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.concerns} · {profile?.concerns?.map((concern) => getLocalizedSkinState(concern, "concerns", locale)).filter(Boolean).join(", ") || copy.noValue}</Text>
+        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sensitivity} · {getLocalizedSkinState(profile?.sensitivity_level, "sensitivities", locale) || copy.noValue}</Text>
       </View>
       <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
         <Text style={[styles.sectionTitle, { color: palette.text }]}>{copy.recent}</Text>
