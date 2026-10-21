@@ -3275,3 +3275,13 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+## 2026-10-21 — Skin Precision evidence-first roadmap and P1 preflight
+
+- Classification: design → bounded documentation + read-only verifier. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production mutation: N.
+- New canonical task-scoped planning reference: `docs/architecture/skin-precision-localization-roadmap-v1.md` (P0–P7; avoids style Face Lab duplication; spatial detection is not existing Vision score).
+- P0 progress: 8 rights candidates recorded in `data/skin-precision/asset-candidate-register-v1.json`: candidate 4, restricted 2, review 1, hold 1; commercial-cleared source images 0. Acne04/Fitzpatrick17k not allowed to enter commercial pipeline, older Roboflow photo selections are not clinical ground truth.
+- P1 progress: `scripts/verify-skin-precision-evidence-manifest.mjs` rejects nonapproved rights, cross-split subject/original/hash leakage, duplicate images, missing real coordinates for positives, poor holdout reviewer coverage and missing unknown/not_assessed distinctions; synthetic self-tests 5/5 passed using in-session V8 execution of the same verifier logic (not actual Node runtime).
+- Current Vision schema and skin projector read; no API, package, recommendation, security policy, database or production changes. PR #1384 stays separate Draft; PR #1358 browser labeler remains a reconciliation candidate, not approved training intake.
+- Not verified: Node execution in actual repo, build/CI, real photos/model inference, professional labels, rights agreements, mobile overlay, commercial launch readiness.
+- Next bounded gate: obtain original-source commercial rights evidence and at least one independently labeled consented real image; validate full manifest and human reviewer protocol before model fine-tuning.
