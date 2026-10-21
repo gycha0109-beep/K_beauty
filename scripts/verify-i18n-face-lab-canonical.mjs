@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { buildFaceLabV2Canonical } from "../lib/face-lab-v2/canonical-composer.js";
 import { isFaceLabObservationAnalysis } from "../lib/face-lab-analysis-bundle.js";
+import { buildFaceLabV2ResultPresentation } from "../lib/face-lab-v2/result-presentation.js";
 
 const observed = (value) => ({
   status: "available",
@@ -112,6 +113,16 @@ compare("domain status", x => ({
 compare("failure reason", x => x.failureReason);
 compare("product handoff identity", x => (x.productHandoff?.specifications || []).map(p => p.id));
 
+// A historical KO canonical result opened in an English UI must retain the
+// actual source narrative rather than silently replacing it with generic copy.
+const historicalView = buildFaceLabV2ResultPresentation(ko, { locale: "en" });
+assert.equal(historicalView.current.summary, ko.currentFaceProfile.summary);
+assert.equal(historicalView.current.features[0].body, ko.currentFaceProfile.keyFeatures[0].explanation);
+assert.equal(historicalView.routes.cards[0].routeId, ko.routes.routes[0].routeId);
+assert.equal(historicalView.routes.cards[0].summary, ko.routes.routes[0].whyThisRoute);
+const englishView = buildFaceLabV2ResultPresentation(en, { locale: "en" });
+assert.equal(englishView.current.summary, en.currentFaceProfile.summary);
+
 const noConfirmation = { ...survey, approvedAt: null };
 const holdKo = buildFaceLabV2Canonical({ ...options, surveyAnswers: noConfirmation, locale: "ko" });
 const holdEn = buildFaceLabV2Canonical({ ...options, surveyAnswers: noConfirmation, locale: "en" });
@@ -127,6 +138,13 @@ assert.match(legacyFaceLabUI, /showOriginalLanguageNote = locale === "en"/);
 assert.match(legacyFaceLabUI, /summary\.caution,/);
 assert.match(legacyFaceLabUI, /\.\.\.summary\.styleDirections\.flatMap/);
 assert.match(legacyFaceLabUI, /originalLanguageNote/);
+const v2ViewSource = readFileSync(
+  new URL("../components/full-report/face-lab/FaceLabV2Result.jsx", import.meta.url),
+  "utf8"
+);
+assert.match(v2ViewSource, /hasOriginalLanguageText = locale === "en"/);
+assert.match(v2ViewSource, /underlying assessment has not changed/);
+
 assert.equal(
   (legacyFaceLabUI.match(/\{showOriginalLanguageNote \? \(/g) || []).length,
   2,
