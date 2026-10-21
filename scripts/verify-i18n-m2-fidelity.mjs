@@ -58,6 +58,7 @@ assert.equal(nightStep.caution, "Stop if redness appears");
 assert.equal(nightStep.order, 2);
 assert.equal(reportDisplayText({ ko: "보류", en: "Hold" }, "en"), "Hold");
 assert.equal(reportDisplayText({ ko: "보류" }, "en"), "보류");
+assert.equal(reportDisplayText({ ko: "주 2회", en: "" }, "en"), "주 2회");
 assert.equal(reportDisplayText("주 2회", "en"), "주 2회");
 assert.deepEqual(source, before, "nested source step data must remain unchanged");
 
