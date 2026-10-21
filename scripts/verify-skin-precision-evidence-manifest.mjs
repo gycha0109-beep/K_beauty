@@ -22,7 +22,11 @@ function validateRegistry(registry) {
     return { byId, errors: ["asset-register schemaVersion/assets invalid"] };
   }
   for (const [i, item] of registry.assets.entries()) {
-    if (!ID(item?.id)) errors.push("assets[" + i + "]: invalid id");
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      errors.push("assets[" + i + "]: invalid asset object");
+      continue;
+    }
+    if (!ID(item.id)) errors.push("assets[" + i + "]: invalid id");
     if (byId.has(item?.id)) errors.push("assets[" + i + "]: duplicate id");
     if (!["candidate", "hold", "restricted", "review", "approved"].includes(item?.status)) errors.push("assets[" + i + "]: invalid status");
     if (!NON_EMPTY(item?.sourceUrl)) errors.push("assets[" + i + "]: missing source URL");
@@ -40,8 +44,8 @@ function checkGeometry(ann, errors, pos) {
     errors.push(pos + ": positive must carry explicit geometry");
     return;
   }
-  if (ann.type === "point" && !(within01(geom.x) && within01(geom.y))) {
-    errors.push(pos + ": normalized point x/y outside [0,1]");
+  if (ann.type === "point") {
+    if (!(within01(geom.x) && within01(geom.y))) errors.push(pos + ": normalized point x/y outside [0,1]");
   } else if (ann.type === "bbox") {
     if (![geom.x,geom.y,geom.w,geom.h].every(within01) || geom.w <= 0 || geom.h <= 0 || geom.x + geom.w > 1.000001 || geom.y + geom.h > 1.000001) {
       errors.push(pos + ": invalid normalized bbox");
@@ -113,6 +117,10 @@ function validateEvidenceManifest(manifest, registry) {
     const tasks = new Set();
     for (const [j, annotation] of sample.annotations.entries()) {
       const pos = at + ".annotations[" + j + "]";
+      if (!annotation || typeof annotation !== "object" || Array.isArray(annotation)) {
+        errors.push(pos + ": invalid annotation object");
+        continue;
+      }
       if (!CONCERNS.has(annotation?.concern)) errors.push(pos + ": invalid concern");
       if (tasks.has(annotation?.concern)) errors.push(pos + ": duplicate concern annotation; aggregate instances under one annotation task");
       tasks.add(annotation?.concern);
