@@ -189,13 +189,18 @@ export function NativeSavedReport({ value }: { value: NativeSavedReportRead }) {
   const copy = REPORT_COPY[locale];
   const savedDate = formatDate(value.metadata.createdAt, locale);
   const reportLabel = value.kind === "premium" ? copy.premium : copy.free;
+  const premiumMeta = value.kind === "premium" && value.report.meta && typeof value.report.meta === "object"
+    ? value.report.meta as Record<string, unknown>
+    : null;
   const reportLocale = value.kind === "free"
     ? value.result.locale
-    : typeof value.report.locale === "string"
-      ? value.report.locale
-      : value.report.meta && typeof value.report.meta === "object"
-        ? (value.report.meta as Record<string, unknown>).locale
-        : null;
+    : typeof premiumMeta?.sourceLocale === "string"
+      ? premiumMeta.sourceLocale
+      : typeof premiumMeta?.locale === "string"
+        ? premiumMeta.locale
+        : value.kind === "premium" && typeof value.report.locale === "string"
+          ? value.report.locale
+          : null;
 
   return (
     <View testID="native-saved-report" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
