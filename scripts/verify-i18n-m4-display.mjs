@@ -17,7 +17,7 @@ const { formatNativeCalendarDate } = await import(`data:text/javascript;base64,$
 
 // Reading a saved diary day must not shift that calendar date in any timezone.
 assert.equal(formatNativeCalendarDate("2026-10-21", "en"), "Oct 21, 2026");
-assert.equal(formatNativeCalendarDate("2026-10-21", "ko"), "2026. 10. 21.");
+assert.equal(formatNativeCalendarDate("2026-10-21", "ko"), "2026년 10월 21일");
 assert.equal(formatNativeCalendarDate("2026-10", "en", true), "Oct 2026");
 assert.equal(formatNativeCalendarDate("2026-10", "ko", true), "2026년 10월");
 assert.equal(formatNativeCalendarDate("2024-02-29", "en"), "Feb 29, 2024");
