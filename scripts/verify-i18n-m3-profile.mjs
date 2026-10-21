@@ -44,5 +44,10 @@ assert.match(saved, /normalizeText\(product\.brand_en\)/);
 assert.match(shared, /text\(product\.name_en\)/);
 assert.match(shared, /text\(product\.brand_en\)/);
 assert.match(saved, /const containsKoreanGuidance = guidanceLines\.some/);
+assert.match(saved, /Object\.hasOwn\(record, "ko"\) \|\| Object\.hasOwn\(record, "en"\)/);
+assert.match(saved, /return collectDisplayLines\(localized, limit, depth \+ 1, locale\)/);
+assert.match(saved, /collectDisplayLines\(report\.fullRoutine, 10, 0, locale\)/);
+assert.match(saved, /collectDisplayLines\(report\.functionalDecisions, 10, 0, locale\)/);
+
 assert.match(shared, /const containsKoreanGuidance = \[summary, product\?\.reason, \.\.\.am, \.\.\.pm\]/);
 console.log("I18N_KO_EN_M3_PROFILE=PASS");
