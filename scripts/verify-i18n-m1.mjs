@@ -26,7 +26,7 @@ assert.match(nativeSelector, /selection\.productId === product\.id/);
 assert.match(nativeShell, /SecureStore\.getItemAsync\(LOCALE_PREFERENCE_KEY\)/);
 assert.match(nativeShell, /SecureStore\.setItemAsync\(LOCALE_PREFERENCE_KEY, locale\)/);
 assert.match(nativeShell, /userSelectedLocale\.current = true/);
-assert.match(nativeShell, /localeLoaded \? children : null/);
+assert.match(nativeShell, /<MobileShellContext\.Provider value=\{value\}>\{children\}<\/MobileShellContext\.Provider>/);
 assert.match(premiumWeb, /function getLocalePath\(pathname, nextLocale, savedReportId = null\)/);
 assert.match(premiumWeb, /encodeURIComponent\(savedReportId\)/);
 assert.match(premiumWeb, /getLocalePath\(pathname, "ko", savedReportId\)/);
