@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { resolvePremiumFunctionalDisplayModel } from "@/lib/premium-functional-display-model";
+import { buildFunctionalRoutineGuideLines } from "@/lib/premium-functional-routine-locale.mjs";
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const EMPTY_DEV_SCENARIOS = [];
@@ -115,18 +116,8 @@ function ProductOptions({ plan, audit, copy, locale, onCta }) {
 }
 
 function RoutineGuide({ plan, copy, locale }) {
-  const guide = plan.routineGuide || {};
   const en = locale === "en";
-  const lines = [
-    plan.planMode === "HOLD"
-      ? (en ? "Hold: do not add a new active for now." : "보류: 현재 새 기능성을 추가하지 마세요.")
-      : null,
-    guide.time ? `${en ? "Timing" : "사용 시간"} · ${guide.time}` : null,
-    guide.order || null,
-    guide.frequency ? `${en ? "Frequency" : "사용 빈도"} · ${guide.frequency}` : null,
-    guide.avoid ? `${en ? "Avoid or adjust" : "피하거나 조정"} · ${guide.avoid}` : null,
-    guide.review || plan.reviewCondition || null
-  ].filter((value) => typeof value === "string" && value.trim());
+  const lines = buildFunctionalRoutineGuideLines(plan, locale);
   const text = lines.join("\n\n");
   const showOriginalLanguageNote = en && /[가-힣]/.test(text);
   return <article className="rounded-[1rem] border border-white/10 bg-white/5 p-4">
