@@ -318,6 +318,8 @@ jobs:
           cache: npm
       - name: Install locked workspace dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify Saju neutral core standalone contract
+        run: npm test --prefix packages/neutral-face-observation
       - name: Verify Face Lab V2 foundation
         run: node scripts/verify-face-lab-v2-foundation.mjs
       - name: Verify Face Lab V2 premium wiring
