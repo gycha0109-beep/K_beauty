@@ -57,6 +57,7 @@ export default function FaceLabM2MediaPipeRoiResearch({ sourceImageFile }) {
     const canvas = canvasRef.current;
     if (canvas) { canvas.width = 0; canvas.height = 0; }
     let bitmap;
+    let parity = null;
     try {
       bitmap = await createImageBitmap(sourceImageFile, { imageOrientation: "from-image" });
       if (request !== requestRef.current) return;
@@ -65,11 +66,14 @@ export default function FaceLabM2MediaPipeRoiResearch({ sourceImageFile }) {
         // Decoded, EXIF-oriented ImageBitmap is analyzed in its unmirrored
         // pixel coordinate system. User confirms it is not mirrored upstream.
         originalImageOrientationVerified: orientationAcknowledged,
+        onParity: (comparison) => {
+          if (request === requestRef.current) parity = comparison;
+        },
         onProposal: (proposal) => {
           if (request === requestRef.current) drawProposal(canvasRef.current, bitmap, proposal);
         }
       });
-      if (request === requestRef.current) setState({ status: "complete", result });
+      if (request === requestRef.current) setState({ status: "complete", result, parity });
     } catch {
       if (request === requestRef.current) {
         setState({ status: "complete", result: {
@@ -114,6 +118,17 @@ export default function FaceLabM2MediaPipeRoiResearch({ sourceImageFile }) {
         <p className="ui-text-secondary mt-3 text-sm" data-testid="face-lab-m2-mediapipe-status">
           ROI 보류 · {state.result?.reason || "insufficient_evidence"}.
           네트워크 모델 자산이나 얼굴·원본 좌표 조건을 확인해 주세요.
+        </p>
+      ) : null}
+      {state.status === "complete" && state.result?.status === "proposal_only" ? (
+        <p className="ui-text-secondary mt-2 text-xs"
+          data-testid="face-lab-m2-core-parity-status">
+          공통 관측 계약 후보 병렬 비교 · {state.parity?.status === "comparison_only"
+            ? state.parity.parity === "matched"
+              ? "ROI 마스크 일치 (동일 입력·동일 알고리즘)"
+              : "ROI 마스크 불일치 — 추가 검토 필요"
+            : "비교 보류"}
+          . 실제 피부 ROI 정확도 검증은 별도입니다.
         </p>
       ) : null}
       <canvas ref={canvasRef} data-testid="face-lab-m2-mediapipe-overlay"

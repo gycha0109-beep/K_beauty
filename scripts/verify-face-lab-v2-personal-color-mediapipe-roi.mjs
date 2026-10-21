@@ -55,10 +55,12 @@ function fakeRuntime({ faces=[faceLandmarks], fail="", calls=[] }={}) {
 
 const calls=[];
 let proposal;
+let parity;
 const result=await detectMediaPipeCheekRoiProposal({
   image,width,height,originalImageOrientationVerified:true,
   loadVisionTasks:fakeRuntime({calls}),
-  onProposal(value){ proposal=value; }
+  onProposal(value){ proposal=value; },
+  onParity(value){ parity=value; }
 });
 assert.equal(result.status,"proposal_only",JSON.stringify(result));
 assert.equal(result.faceCount,1);
@@ -70,6 +72,12 @@ assert.equal(result.faceLandmarksPersisted,false);
 assert.equal(result.sourceImagePersisted,false);
 assert.deepEqual(calls,["wasm","create","detect","close"]);
 assert.deepEqual(proposal.coordinateSpace,"original_image");
+assert.equal(parity.status,"comparison_only");
+assert.equal(parity.parity,"matched");
+assert.equal(parity.skinMeasurement,null);
+assert.equal(parity.faceLandmarksPersisted,false);
+assert.equal(parity.sourceImagePersisted,false);
+assert.ok(!JSON.stringify(parity).includes('"cheekPolygons":'));
 assert.equal(proposal.cheekPolygons.leftCheek.length,12);
 assert.equal(proposal.cheekPolygons.rightCheek.length,12);
 assert.equal(JSON.stringify(faceLandmarks),source);
@@ -184,6 +192,8 @@ assert.ok(ui.includes('process.env.NODE_ENV !== "development"'));
 assert.ok(ui.includes("onClick={() => void runLocalInference()}"));
 assert.ok(ui.includes('data-testid="face-lab-m2-mediapipe-overlay"'));
 assert.ok(ui.includes("detectMediaPipeCheekRoiProposal"));
+assert.ok(ui.includes('data-testid="face-lab-m2-core-parity-status"'));
+assert.ok(ui.includes("onParity: (comparison)"));
 assert.ok(route.includes('process.env.NODE_ENV === "development" ? ('));
 assert.ok(route.includes("FaceLabM2MediaPipeRoiResearch"));
 assert.ok(!ui.includes("fetch("));
