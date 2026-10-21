@@ -24,6 +24,7 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
+import { preserveReportNarrative, preserveReportRoutineSteps } from "@/lib/full-report-locale-fidelity.mjs";
 import {
   getFaceLabObservationAnalysis,
   isFaceLabResultEnvelope
@@ -658,13 +659,12 @@ function getLocaleFromPathname(pathname = "") {
   return pathname.startsWith("/en") ? "en" : "ko";
 }
 
-function getLocalePath(pathname, nextLocale) {
-  if (!pathname) {
-    return nextLocale === "en" ? "/en/result/full-report" : "/result/full-report";
-  }
-
-  const normalized = pathname.replace(/^\/en(?=\/|$)/, "") || "/";
-  return nextLocale === "en" ? `/en${normalized === "/" ? "" : normalized}` : normalized;
+function getLocalePath(pathname, nextLocale, savedReportId = null) {
+  const normalized = (pathname || "/result/full-report").replace(/^\/en(?=\/|$)/, "") || "/";
+  const targetPath = nextLocale === "en" ? `/en${normalized === "/" ? "" : normalized}` : normalized;
+  return savedReportId
+    ? `${targetPath}?savedReportId=${encodeURIComponent(savedReportId)}`
+    : targetPath;
 }
 
 function getResultPath(locale = "ko") {
@@ -1622,7 +1622,7 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
         label: labels[block?.key] || compactLocalizedText(block?.label, locale) || compactLocalizedText(block?.key, locale),
         body: compactLocalizedText(block?.body, locale)
       }))
-      .filter((block) => block.body && (locale !== "en" || !hasKoreanText(block.body)))
+      .filter((block) => Boolean(block.body))
     : [];
 
   if (explicitBlocks.length) {
@@ -1681,6 +1681,16 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
     seenBodies.add(bodyKey);
     blocks.push({ key, label: labels[key], body: text });
   };
+
+  if (locale === "en") {
+    // Older records may only contain Korean evidence. Show that evidence in its
+    // original language instead of manufacturing a new English explanation.
+    addBlock("why", whySentences.join(" "));
+    addBlock("evidence", evidenceSentences.join(" "));
+    addBlock("usage", usageSentences.join(" "));
+    addBlock("review", reviewSentences.join(" "));
+    return blocks;
+  }
 
   addBlock("why", whySentences.join(" ") || buildTopPickWhyText(product, result, locale));
   addBlock("evidence", evidenceSentences.join(" ") || buildTopPickEvidenceText(result, locale));
@@ -2313,24 +2323,16 @@ function buildEnglishSupportingUsage(role) {
   return "Swap it in when the primary product role is right but the finish or texture does not fit the day.";
 }
 
-function localizeSupportingProductsForEnglish(items = [], result = {}) {
+function localizeSupportingProductsForEnglish(items = []) {
   return items.map((item) => {
     const product = unwrapSupportingProductItem(item);
     const role = item?.role || "same_concern_alternative";
 
-    if (item?.product) {
-      return {
-        ...item,
-        label: getEnglishRoleLabel(role, product),
-        reason: hasKoreanText(item.reason) || !item.reason ? buildEnglishSupportingReason(role, result) : item.reason,
-        usage: hasKoreanText(item.usage) || !item.usage ? buildEnglishSupportingUsage(role) : item.usage,
-        relationToTopPick: hasKoreanText(item.relationToTopPick) || !item.relationToTopPick
-          ? getDefaultRelationToTopPick(role, "en")
-          : item.relationToTopPick
-      };
-    }
-
-    return product;
+    // Labels can be localized from canonical role codes. Evidence, usage and
+    // relation text must remain source-faithful, even when the source is Korean.
+    return item?.product
+      ? { ...item, label: getEnglishRoleLabel(role, product) }
+      : product;
   });
 }
 
@@ -2426,23 +2428,14 @@ function buildKoreanRoutineCaution(step, slot, result = {}) {
   return "피부가 안정될 때까지 주변 단계는 단순하게 둡니다.";
 }
 
-function localizeRoutineStepsForEnglish(steps = [], fallbackItems = [], slot = "morning", result = {}) {
-  const source = Array.isArray(steps) && steps.length
-    ? steps
-    : (Array.isArray(fallbackItems) ? fallbackItems : []).map((item, index) => ({
-      order: index + 1,
-      instruction: String(item || "").trim()
-    }));
-
-  return source.map((step, index) => ({
-    ...step,
-    order: Number.isFinite(Number(step.order)) ? Number(step.order) : index + 1,
-    stepName: `${slot === "morning" ? "Morning" : "Night"} Step ${index + 1}`,
-    productRole: step.product ? getReportStepLabel(step.product, "en") : "",
-    instruction: buildEnglishRoutineInstruction(step, slot, result),
-    frequency: slot === "morning" ? "Every morning" : "Every night",
-    caution: buildEnglishRoutineCaution(step, slot, result)
-  }));
+function localizeRoutineStepsForEnglish(steps = [], fallbackItems = [], slot = "morning") {
+  return preserveReportRoutineSteps(
+    steps,
+    fallbackItems,
+    slot,
+    "en",
+    (product) => getReportStepLabel(product, "en")
+  );
 }
 
 function localizeRoutineStepsForKorean(steps = [], fallbackItems = [], slot = "morning", result = {}) {
@@ -2755,7 +2748,11 @@ function buildDisplayBudgetAlternatives(items = [], result = {}, locale = "ko") 
         name: item?.name || product.name || "",
         brand: item?.brand || product.brand || "",
         price_range: item?.price_range || product.price_range || "",
-        summary: chooseBudgetAlternativeSummary(product, locale, usedSummaries)
+        // English display must not replace a stored alternative's reasoning
+        // with a generic category-based recommendation.
+        summary: locale === "en"
+          ? compactLocalizedText(item?.summary || product.summary || item?.reason || product.reason || "", locale)
+          : chooseBudgetAlternativeSummary(product, locale, usedSummaries)
       };
     })
     .filter((item) => {
@@ -2812,31 +2809,26 @@ function localizeFullReportForLocale(report, result, locale = "ko") {
     };
   }
 
+  // Never synthesize different advice merely because the display language changed.
+  // Explicit bilingual fields may change language; legacy monolingual narratives
+  // remain exactly as stored until a verified translation is available.
+  const sourceNarrative = preserveReportNarrative(report, "en");
   const localizedReport = {
-    ...report,
-    topPickDetailedReason: hasKoreanText(report.topPickDetailedReason) || !report.topPickDetailedReason
-      ? buildEnglishTopPickDetailedReason(result)
-      : report.topPickDetailedReason,
-    supportingProducts: localizeSupportingProductsForEnglish(report.supportingProducts || [], result),
+    ...sourceNarrative,
+    supportingProducts: localizeSupportingProductsForEnglish(report.supportingProducts || []),
     fullRoutine: {
-      ...report.fullRoutine,
-      morning: ["Start with a light, repeatable morning routine around the Top Pick."],
-      night: ["Use the evening routine to reset residue and lower burden without stacking too much."],
+      ...sourceNarrative.fullRoutine,
       morningSteps: localizeRoutineStepsForEnglish(
         report.fullRoutine?.morningSteps || [],
         report.fullRoutine?.morning || [],
-        "morning",
-        result
+        "morning"
       ),
       nightSteps: localizeRoutineStepsForEnglish(
         report.fullRoutine?.nightSteps || [],
         report.fullRoutine?.night || [],
-        "night",
-        result
+        "night"
       )
     },
-    routineVariants: buildEnglishRoutineVariants(result),
-    avoidCombinations: buildEnglishAvoidCombinations(result),
     budgetAlternatives: localizeBudgetAlternativesForEnglish(report.budgetAlternatives || [], result)
   };
 
@@ -7068,8 +7060,8 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
               <AppHamburgerMenu
                 locale={locale}
                 languageOptions={[
-                  { code: "ko", label: "한국어", href: getLocalePath(pathname, "ko") },
-                  { code: "en", label: "English", href: getLocalePath(pathname, "en") }
+                  { code: "ko", label: "한국어", href: getLocalePath(pathname, "ko", savedReportId) },
+                  { code: "en", label: "English", href: getLocalePath(pathname, "en", savedReportId) }
                 ]}
                 actions={[
                   {
@@ -7093,6 +7085,11 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
                 <p className="ui-kicker">FULL REPORT</p>
                 <h1 className="ui-title mt-2 text-[26px] leading-[1.18] sm:text-2xl sm:leading-tight">{copy.title}</h1>
                 <p className="ui-text-secondary mt-3 text-sm leading-6">{copy.body}</p>
+                {isEnglish && (report?.meta?.sourceLocale || report?.meta?.locale) === "ko" ? (
+                  <p role="note" className="ui-text-secondary mt-2 text-xs leading-5">
+                    This report was originally saved in Korean. Some guidance is shown in its original language to preserve the original decision.
+                  </p>
+                ) : null}
                 {locale === "ko" ? (
                   <p className="ui-text-secondary mt-1 text-xs font-medium leading-5">Full Report</p>
                 ) : null}

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useMobileShell } from "../../lib/mobile-shell";
+import { getLocalizedSkinState } from "../../lib/skin-state-i18n";
 import type { NativeFreeSavedResult, NativeSavedReportRead } from "./saved-report-client";
 
 const REPORT_COPY = {
@@ -17,7 +18,8 @@ const REPORT_COPY = {
     condition: "Condition guidance",
     version: "Version",
     savedAt: "Saved",
-    noDetail: "This saved server snapshot has no additional displayable detail."
+    noDetail: "This saved server snapshot has no additional displayable detail.",
+    sourceNote: "Some saved guidance is shown in Korean to preserve the original result."
   },
   ko: {
     free: "무료 리포트",
@@ -33,7 +35,8 @@ const REPORT_COPY = {
     condition: "컨디션 대응",
     version: "버전",
     savedAt: "저장",
-    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다."
+    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다.",
+    sourceNote: "이 리포트는 한국어로 저장되어 일부 안내가 원문으로 표시됩니다."
   }
 } as const;
 
@@ -63,13 +66,13 @@ function normalizeTextArray(value: unknown, limit = 8) {
   return value.map(normalizeText).filter((item): item is string => Boolean(item)).slice(0, limit);
 }
 
-function collectDisplayLines(value: unknown, limit = 8, depth = 0): string[] {
+function collectDisplayLines(value: unknown, limit = 8, depth = 0, locale: "ko" | "en" = "ko"): string[] {
   if (depth > 5 || limit <= 0 || value == null) return [];
   if (typeof value === "string") return value.trim() ? [value.trim()] : [];
   if (Array.isArray(value)) {
     const lines: string[] = [];
     for (const item of value) {
-      lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1));
+      lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1, locale));
       if (lines.length >= limit) break;
     }
     return [...new Set(lines)].slice(0, limit);
@@ -77,28 +80,38 @@ function collectDisplayLines(value: unknown, limit = 8, depth = 0): string[] {
   if (typeof value !== "object") return [];
 
   const record = value as Record<string, unknown>;
+  // Bilingual report fields carry display text, not two independent statements.
+  if (Object.hasOwn(record, "ko") || Object.hasOwn(record, "en")) {
+    const preferred = locale === "en" ? record.en : record.ko;
+    const fallback = locale === "en" ? record.ko : record.en;
+    const hasDisplayText = (item: unknown) =>
+      (typeof item === "string" && item.trim().length > 0)
+      || (Array.isArray(item) && item.length > 0);
+    const localized = hasDisplayText(preferred) ? preferred : fallback;
+    return collectDisplayLines(localized, limit, depth + 1, locale);
+  }
   const lines: string[] = [];
   for (const [key, item] of Object.entries(record)) {
     if (!DISPLAY_KEYS.has(key)) continue;
-    lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1));
+    lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1, locale));
     if (lines.length >= limit) break;
   }
   if (lines.length) return [...new Set(lines)].slice(0, limit);
 
   for (const item of Object.values(record)) {
     if (!item || typeof item !== "object") continue;
-    lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1));
+    lines.push(...collectDisplayLines(item, limit - lines.length, depth + 1, locale));
     if (lines.length >= limit) break;
   }
   return [...new Set(lines)].slice(0, limit);
 }
 
-function getProduct(result: NativeFreeSavedResult | Record<string, unknown> | null | undefined) {
+function getProduct(result: NativeFreeSavedResult | Record<string, unknown> | null | undefined, locale: "ko" | "en") {
   const raw = result && typeof result === "object" ? (result as Record<string, unknown>).topPick : null;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const product = raw as Record<string, unknown>;
-  const name = normalizeText(product.name);
-  const brand = normalizeText(product.brand);
+  const name = (locale === "en" ? normalizeText(product.name_en) || normalizeText(product.nameEn) : null) || normalizeText(product.name);
+  const brand = (locale === "en" ? normalizeText(product.brand_en) || normalizeText(product.brandEn) : null) || normalizeText(product.brand);
   const reason = normalizeText(product.reason);
   if (!name && !brand && !reason) return null;
   return { name, brand, reason };
@@ -131,10 +144,10 @@ function Section({ title, lines }: { title: string; lines: string[] }) {
 function FreeSnapshot({ result }: { result: NativeFreeSavedResult }) {
   const { locale, palette } = useMobileShell();
   const copy = REPORT_COPY[locale];
-  const topPick = getProduct(result);
+  const topPick = getProduct(result, locale);
   const am = normalizeTextArray(result.routineAm);
   const pm = normalizeTextArray(result.routinePm);
-  const concerns = normalizeTextArray(result.mainConcerns, 5);
+  const concerns = normalizeTextArray(result.mainConcerns, 5).map((value) => getLocalizedSkinState(value, "concerns", locale));
 
   return (
     <View style={styles.stack}>
@@ -144,7 +157,7 @@ function FreeSnapshot({ result }: { result: NativeFreeSavedResult }) {
           <Text style={[styles.body, { color: palette.textMuted }]}>{normalizeText(result.summary)}</Text>
         </View>
       ) : null}
-      {normalizeText(result.skinType) ? <Section title={copy.skinType} lines={[normalizeText(result.skinType)!]} /> : null}
+      {normalizeText(result.skinType) ? <Section title={copy.skinType} lines={[getLocalizedSkinState(result.skinType, "skinTypes", locale)]} /> : null}
       <Section title={copy.concerns} lines={concerns} />
       {topPick ? (
         <View style={styles.section} testID="native-saved-report-top-pick">
@@ -165,9 +178,9 @@ function PremiumSnapshot({ report }: { report: Record<string, unknown> }) {
   const freeResult = report.freeResult && typeof report.freeResult === "object" && !Array.isArray(report.freeResult)
     ? report.freeResult as NativeFreeSavedResult
     : null;
-  const routineLines = collectDisplayLines(report.fullRoutine, 10);
-  const functionalLines = collectDisplayLines(report.functionalDecisions, 10);
-  const conditionLines = collectDisplayLines(report.conditionResponses, 10);
+  const routineLines = collectDisplayLines(report.fullRoutine, 10, 0, locale);
+  const functionalLines = collectDisplayLines(report.functionalDecisions, 10, 0, locale);
+  const conditionLines = collectDisplayLines(report.conditionResponses, 10, 0, locale);
   const hasPremiumDetail = routineLines.length || functionalLines.length || conditionLines.length;
 
   return (
@@ -186,12 +199,36 @@ export function NativeSavedReport({ value }: { value: NativeSavedReportRead }) {
   const copy = REPORT_COPY[locale];
   const savedDate = formatDate(value.metadata.createdAt, locale);
   const reportLabel = value.kind === "premium" ? copy.premium : copy.free;
+  const premiumMeta = value.kind === "premium" && value.report.meta && typeof value.report.meta === "object"
+    ? value.report.meta as Record<string, unknown>
+    : null;
+  const reportLocale = value.kind === "free"
+    ? value.result.sourceLocale
+    : typeof premiumMeta?.sourceLocale === "string"
+      ? premiumMeta.sourceLocale
+      : typeof premiumMeta?.locale === "string"
+        ? premiumMeta.locale
+        : value.kind === "premium" && typeof value.report.locale === "string"
+          ? value.report.locale
+          : null;
+
+  const guidanceLines = value.kind === "free"
+    ? [value.result.summary, ...(value.result.routineAm || []), ...(value.result.routinePm || [])]
+    : collectDisplayLines({
+        fullRoutine: value.report.fullRoutine,
+        functionalDecisions: value.report.functionalDecisions,
+        conditionResponses: value.report.conditionResponses
+      }, 24, 0, locale);
+  const containsKoreanGuidance = guidanceLines.some((line) => typeof line === "string" && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(line));
 
   return (
     <View testID="native-saved-report" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: palette.accent }]}>{reportLabel}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{value.metadata.title || reportLabel}</Text>
+        {locale === "en" && (reportLocale === "ko" || containsKoreanGuidance) ? (
+          <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sourceNote}</Text>
+        ) : null}
         <View style={styles.metaRow}>
           {value.metadata.reportVersion ? <Text style={[styles.meta, { color: palette.textMuted }]}>{copy.version} · {value.metadata.reportVersion}</Text> : null}
           {savedDate ? <Text style={[styles.meta, { color: palette.textMuted }]}>{copy.savedAt} · {savedDate}</Text> : null}

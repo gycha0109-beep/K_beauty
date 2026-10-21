@@ -14,6 +14,7 @@ export type NativeFreeSavedResult = Readonly<{
   shareId?: string;
   schemaVersion?: number | null;
   locale?: string;
+  sourceLocale?: "ko" | "en" | null;
   skinType?: string;
   mainConcerns?: string[];
   summary?: string;

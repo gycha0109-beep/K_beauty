@@ -1,5 +1,7 @@
 "use client";
 
+import { reportDisplayText } from "@/lib/full-report-locale-fidelity.mjs";
+
 const STATUS_COPY = {
   ko: {
     maintain: {
@@ -55,15 +57,15 @@ function statusRank(status) {
   return { maintain: 0, reduce: 1, avoid_for_now: 2 }[status] ?? 1;
 }
 
-function sanitizeResponse(item) {
+function sanitizeResponse(item, locale = "ko") {
   if (!item || typeof item !== "object") {
     return null;
   }
 
   const responseKey = String(item.responseKey || "").trim();
   const status = String(item.status || "").trim();
-  const title = typeof item.title === "string" ? item.title.trim() : "";
-  const summary = typeof item.summary === "string" ? item.summary.trim() : "";
+  const title = reportDisplayText(item.title, locale).trim();
+  const summary = reportDisplayText(item.summary, locale).trim();
 
   if (!responseKey || !["maintain", "reduce", "avoid_for_now"].includes(status) || !title || !summary) {
     return null;
@@ -76,11 +78,11 @@ function sanitizeResponse(item) {
     summary,
     reasons: Array.isArray(item.reasons)
       ? item.reasons
-          .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
+          .map((reason) => reportDisplayText(reason, locale).trim())
           .filter(Boolean)
           .slice(0, 2)
       : [],
-    action: typeof item.action === "string" && item.action.trim() ? item.action.trim() : null
+    action: reportDisplayText(item.action, locale).trim() || null
   };
 }
 
@@ -89,10 +91,16 @@ export default function PremiumConditionResponseSection({ conditionPlan = null, 
   const canonicalResponses = Array.isArray(conditionPlan?.responses) ? conditionPlan.responses : null;
   const source = canonicalResponses ? "canonical" : "legacy_adapter";
   const items = (canonicalResponses || (Array.isArray(responses) ? responses : []))
-    .map(sanitizeResponse)
+    .map((item) => sanitizeResponse(item, locale))
     .filter(Boolean)
     .sort((left, right) => statusRank(left.status) - statusRank(right.status))
     .slice(0, 5);
+
+  const globalNotice = reportDisplayText(conditionPlan?.globalNotice, locale);
+  const containsOriginalKorean = locale === "en" && [
+    ...items.flatMap((item) => [item.title, item.summary, ...item.reasons, item.action]),
+    globalNotice
+  ].some((item) => typeof item === "string" && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(item));
 
   return (
     <section className="ui-card p-5 sm:p-6" data-condition-source={source}>
@@ -100,6 +108,11 @@ export default function PremiumConditionResponseSection({ conditionPlan = null, 
         <p className="ui-kicker">{copy.kicker}</p>
         <h3 className="ui-title mt-2 text-xl leading-tight">{copy.title}</h3>
         <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.body}</p>
+        {containsOriginalKorean ? (
+          <p role="note" className="ui-text-secondary mt-2 text-xs leading-5">
+            Some condition guidance is shown in its original Korean because no verified English wording is available.
+          </p>
+        ) : null}
       </div>
 
       {items.length ? (
@@ -152,9 +165,9 @@ export default function PremiumConditionResponseSection({ conditionPlan = null, 
         </div>
       )}
 
-      {conditionPlan?.globalNotice ? (
+      {globalNotice ? (
         <p className="mt-4 rounded-[0.85rem] border border-amber-300/20 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-700 dark:text-amber-200">
-          {conditionPlan.globalNotice}
+          {globalNotice}
         </p>
       ) : null}
 

@@ -117,7 +117,10 @@ export default function AppHamburgerMenu({
                     <Link
                       key={item.code}
                       href={item.href}
-                      onClick={closeMenu}
+                      onClick={(event) => {
+                        item.onClick?.(event);
+                        closeMenu();
+                      }}
                       className={cx(
                         "inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-[11px] font-semibold transition",
                         active

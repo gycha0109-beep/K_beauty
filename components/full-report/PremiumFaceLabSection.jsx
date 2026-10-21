@@ -147,6 +147,7 @@ const COPY = {
   en: {
     title: "Face Lab",
     legacyBody: "Impression and style direction read from the uploaded photo.",
+    originalLanguageNote: "Some earlier Face Lab findings are shown in Korean to keep the original analysis unchanged.",
     fallbackTitle: "Photo-based Face Lab results are not ready.",
     fallbackBody: "Add a photo in your next analysis to unlock Face Lab.",
     imageAlt: "Face Lab analysis image",
@@ -371,6 +372,15 @@ function LegacyFaceLab({ faceLabSummary, photoUrl, locale }) {
     faceLabSummary || buildUnavailablePremiumFaceLab(photoUrl, copy.imageAlt)
   );
   const imageUrl = summary.imageUrl || photoUrl || null;
+  const legacyNarrative = [
+    summary.impressionTitle,
+    summary.impressionSummary,
+    summary.caution,
+    ...summary.keywords,
+    ...summary.styleDirections.flatMap((item) => [item.title, item.summary])
+  ];
+  const showOriginalLanguageNote = locale === "en" &&
+    legacyNarrative.some((value) => typeof value === "string" && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(value));
 
   if (summary.status !== "available") {
     return (
@@ -379,6 +389,9 @@ function LegacyFaceLab({ faceLabSummary, photoUrl, locale }) {
           <p className="ui-kicker">FACE LAB</p>
           <h2 className="ui-title mt-2 text-xl leading-tight">{copy.title}</h2>
           <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.legacyBody}</p>
+          {showOriginalLanguageNote ? (
+            <p role="note" className="ui-text-secondary mt-2 text-xs leading-5">{copy.originalLanguageNote}</p>
+          ) : null}
         </section>
         <section className="ui-card-subtle p-5 sm:p-6">
           <div className="grid gap-4 sm:grid-cols-[140px_1fr] sm:items-center">
@@ -399,6 +412,9 @@ function LegacyFaceLab({ faceLabSummary, photoUrl, locale }) {
         <p className="ui-kicker">FACE LAB</p>
         <h2 className="ui-title mt-2 text-xl leading-tight">{copy.title}</h2>
         <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.legacyBody}</p>
+        {showOriginalLanguageNote ? (
+          <p role="note" className="ui-text-secondary mt-2 text-xs leading-5">{copy.originalLanguageNote}</p>
+        ) : null}
       </section>
       <section className="ui-card-subtle p-5 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-[150px_1fr]">

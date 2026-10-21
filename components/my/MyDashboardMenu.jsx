@@ -3,15 +3,15 @@
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
 import { getMyCopy } from "@/lib/my/i18n";
 
-export default function MyDashboardMenu({ locale = "ko" }) {
+export default function MyDashboardMenu({ locale = "ko", onLocaleChange }) {
   const copy = getMyCopy(locale);
 
   return (
     <AppHamburgerMenu
       locale={locale}
       languageOptions={[
-        { code: "ko", label: copy.menu.languages.ko, href: "/my", active: locale !== "en" },
-        { code: "en", label: copy.menu.languages.en, href: "/en/my", active: locale === "en" }
+        { code: "ko", label: copy.menu.languages.ko, href: "/my", active: locale !== "en", onClick: onLocaleChange ? (event) => { event.preventDefault(); onLocaleChange("ko"); } : undefined },
+        { code: "en", label: copy.menu.languages.en, href: "/en/my", active: locale === "en", onClick: onLocaleChange ? (event) => { event.preventDefault(); onLocaleChange("en"); } : undefined }
       ]}
       showAccountIdentity
       actions={[

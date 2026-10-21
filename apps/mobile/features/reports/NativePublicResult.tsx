@@ -1,11 +1,13 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useMobileShell } from "../../lib/mobile-shell";
+import { getLocalizedSkinState } from "../../lib/skin-state-i18n";
 import type { NativeFreeSavedResult } from "./saved-report-client";
 
 const COPY = {
   en: {
     kicker: "SHARED · MOBILE-10",
     title: "Shared result",
+    sourceNote: "Some saved guidance is shown in Korean to preserve the original result.",
     summary: "Shared summary",
     skinType: "Skin type",
     concerns: "Main concerns",
@@ -16,6 +18,7 @@ const COPY = {
   ko: {
     kicker: "공유 · MOBILE-10",
     title: "공유 결과",
+    sourceNote: "이 분석은 한국어로 저장되어 일부 안내가 원문으로 표시됩니다.",
     summary: "공유된 요약",
     skinType: "피부 타입",
     concerns: "주요 고민",
@@ -34,11 +37,11 @@ function lines(value: unknown, limit = 8) {
   return value.map(text).filter((item): item is string => Boolean(item)).slice(0, limit);
 }
 
-function topPick(value: unknown) {
+function topPick(value: unknown, locale: "ko" | "en") {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const product = value as Record<string, unknown>;
-  const name = text(product.name);
-  const brand = text(product.brand);
+  const name = (locale === "en" ? text(product.name_en) || text(product.nameEn) : null) || text(product.name);
+  const brand = (locale === "en" ? text(product.brand_en) || text(product.brandEn) : null) || text(product.brand);
   const reason = text(product.reason);
   return name || brand || reason ? { name, brand, reason } : null;
 }
@@ -60,17 +63,22 @@ export function NativePublicResult({ result }: { result: NativeFreeSavedResult }
   const { locale, palette } = useMobileShell();
   const copy = COPY[locale];
   const summary = text(result.summary);
-  const skinType = text(result.skinType);
-  const concerns = lines(result.mainConcerns, 5);
-  const product = topPick(result.topPick);
+  const skinType = getLocalizedSkinState(text(result.skinType), "skinTypes", locale);
+  const concerns = lines(result.mainConcerns, 5).map((value) => getLocalizedSkinState(value, "concerns", locale));
+  const product = topPick(result.topPick, locale);
   const am = lines(result.routineAm);
   const pm = lines(result.routinePm);
+  const containsKoreanGuidance = [summary, product?.reason, ...am, ...pm]
+    .some((value) => typeof value === "string" && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(value));
 
   return (
     <View testID="native-public-result" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: palette.accent }]}>{copy.kicker}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{copy.title}</Text>
+        {locale === "en" && (result.sourceLocale === "ko" || containsKoreanGuidance) ? (
+          <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sourceNote}</Text>
+        ) : null}
       </View>
 
       {summary ? (

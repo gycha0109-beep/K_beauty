@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { buildFaceLabV2ResultPresentation } from "@/lib/face-lab-v2/result-presentation";
+import { collectFaceLabOriginalKoreanText } from "@/lib/face-lab-v2/source-narrative";
 
 function List({ items }) {
   const safe = Array.isArray(items) ? items.filter(Boolean) : [];
@@ -89,6 +90,13 @@ export default function FaceLabV2Result({
     () => buildFaceLabV2ResultPresentation(result, { locale }),
     [result, locale]
   );
+  // Keep exact source evidence separately: the English presentation contract
+  // cannot contain Korean engine copy, but users must not lose original claims.
+  const originalKoreanLines = useMemo(
+    () => locale === "en" ? collectFaceLabOriginalKoreanText(result) : [],
+    [result, locale]
+  );
+  const hasOriginalLanguageText = originalKoreanLines.length > 0;
 
   if (view.status === "unavailable") {
     return (
@@ -102,6 +110,19 @@ export default function FaceLabV2Result({
 
   return (
     <section className="space-y-4">
+      {hasOriginalLanguageText ? (
+        <details className="ui-card-subtle rounded-xl p-4">
+          <summary className="cursor-pointer text-sm font-semibold">Original Korean findings — expand to verify the source</summary>
+          <p role="note" className="ui-text-secondary mt-2 text-xs leading-5">
+            English display copy may be abbreviated. The following original findings are shown without reinterpretation; the underlying assessment has not changed.
+          </p>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-xs leading-5">
+            {originalKoreanLines.map((line, index) => (
+              <li key={index} className="break-words">{line}</li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       <section className="ui-card p-5 sm:p-6">
         <div className="flex items-start gap-4 sm:gap-5">
           {photoUrl ? (

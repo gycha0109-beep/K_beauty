@@ -82,7 +82,9 @@ assert.match(uiSource, /href\.startsWith\("\/r\/"\)/);
 assert.match(uiSource, /sm:grid-cols-\[minmax\(0,1fr\)_auto\]/);
 
 assert.match(dashboardSource, /SavedReportHistory/);
-assert.match(dashboardSource, /<SavedReportHistory locale=\{locale\} \/>/);
+assert.match(dashboardSource, /<SavedReportHistory locale=\{displayLocale\} \/>/);
+assert.match(dashboardSource, /const \[displayLocale, setDisplayLocale\] = useState\(locale\)/);
+assert.match(dashboardSource, /window\.history\.pushState\(null, "", targetPath\)/);
 
 assert.match(migrationSource, /alter table public\.saved_reports enable row level security/);
 assert.match(migrationSource, /saved_reports_authenticated_select_own/);

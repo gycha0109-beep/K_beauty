@@ -2,6 +2,8 @@ import type { SupportedLocale } from "@bejewely/shared";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { NativeMyDashboard } from "../../lib/my";
+import { getLocalizedSkinState } from "../../lib/skin-state-i18n";
+import { formatNativeCalendarDate } from "../../lib/date-display-i18n";
 
 type Palette = Readonly<{
   surface: string;
@@ -34,7 +36,7 @@ export function NativeMyDiaryView({ locale, dashboard, palette, showSignedInStat
   const report = dashboard.latestSavedReport;
   const diaryRow = (checkin: NativeMyDashboard["monthlyDiaryCheckins"][number]) => (
     <View style={[styles.diaryRow, { borderColor: palette.border }]}>
-      <Text style={[styles.diaryDate, { color: palette.text }]}>{checkin.checkin_date}</Text>
+      <Text style={[styles.diaryDate, { color: palette.text }]}>{formatNativeCalendarDate(checkin.checkin_date, locale)}</Text>
       <Text style={[styles.body, { color: palette.textMuted }]}>{checkin.memo || `${copy.dryness} ${checkin.dryness_level} · ${copy.redness} ${checkin.redness_level}`}</Text>
     </View>
   );
@@ -44,23 +46,23 @@ export function NativeMyDiaryView({ locale, dashboard, palette, showSignedInStat
       {showSignedInState ? <View style={[styles.statusPill, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}><Text style={[styles.statusText, { color: palette.accent }]}>{copy.signedIn}</Text></View> : null}
       <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
         <Text style={[styles.sectionTitle, { color: palette.text }]}>{copy.profile}</Text>
-        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.skinType} · {profile?.skin_type || copy.noValue}</Text>
-        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.concerns} · {profile?.concerns?.filter(Boolean).join(", ") || copy.noValue}</Text>
-        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sensitivity} · {profile?.sensitivity_level || copy.noValue}</Text>
+        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.skinType} · {getLocalizedSkinState(profile?.skin_type, "skinTypes", locale) || copy.noValue}</Text>
+        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.concerns} · {profile?.concerns?.map((concern) => getLocalizedSkinState(concern, "concerns", locale)).filter(Boolean).join(", ") || copy.noValue}</Text>
+        <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sensitivity} · {getLocalizedSkinState(profile?.sensitivity_level, "sensitivities", locale) || copy.noValue}</Text>
       </View>
       <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
         <Text style={[styles.sectionTitle, { color: palette.text }]}>{copy.recent}</Text>
-        {recent.length ? recent.map((checkin) => <Text key={checkin.id} style={[styles.body, { color: palette.textMuted }]}>{checkin.checkin_date} · {copy.dryness} {checkin.dryness_level} · {copy.redness} {checkin.redness_level} · {copy.breakout} {checkin.breakout_level}</Text>) : <Text style={[styles.body, { color: palette.textMuted }]}>{copy.noEntries}</Text>}
+        {recent.length ? recent.map((checkin) => <Text key={checkin.id} style={[styles.body, { color: palette.textMuted }]}>{formatNativeCalendarDate(checkin.checkin_date, locale)} · {copy.dryness} {checkin.dryness_level} · {copy.redness} {checkin.redness_level} · {copy.breakout} {checkin.breakout_level}</Text>) : <Text style={[styles.body, { color: palette.textMuted }]}>{copy.noEntries}</Text>}
       </View>
       <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
-        <View style={styles.rowBetween}><Text style={[styles.sectionTitle, { color: palette.text }]}>{copy.diary}</Text><Text style={[styles.meta, { color: palette.textMuted }]}>{dashboard.diaryMonth}</Text></View>
+        <View style={styles.rowBetween}><Text style={[styles.sectionTitle, { color: palette.text }]}>{copy.diary}</Text><Text style={[styles.meta, { color: palette.textMuted }]}>{formatNativeCalendarDate(dashboard.diaryMonth, locale, true)}</Text></View>
         {onPreviousMonth || onNextMonth ? <View style={styles.monthControls}>
           <Pressable disabled={!onPreviousMonth} onPress={onPreviousMonth} style={[styles.monthButton, { borderColor: palette.border }]}><Text style={[styles.buttonText, { color: palette.text }]}>{copy.previous}</Text></Pressable>
           <Pressable disabled={!onNextMonth || !canNextMonth} onPress={onNextMonth} style={[styles.monthButton, { borderColor: palette.border, opacity: canNextMonth ? 1 : 0.4 }]}><Text style={[styles.buttonText, { color: palette.text }]}>{copy.next}</Text></Pressable>
         </View> : null}
         {diary.length ? diary.map((checkin) => onDiaryDay ? <Pressable key={checkin.id} onPress={() => onDiaryDay(checkin.checkin_date)}>{diaryRow(checkin)}</Pressable> : <View key={checkin.id}>{diaryRow(checkin)}</View>) : <Text style={[styles.body, { color: palette.textMuted }]}>{copy.noEntries}</Text>}
       </View>
-      {report ? <View testID="native-my-latest-saved-report" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}><Text style={[styles.sectionTitle, { color: palette.text }]}>{copy.saved}</Text><Text style={[styles.reportTitle, { color: palette.text }]}>{report.title || report.report_type || "Skin Match"}</Text>{report.created_at ? <Text style={[styles.meta, { color: palette.textMuted }]}>{report.created_at.slice(0, 10)}</Text> : null}</View> : null}
+      {report ? <View testID="native-my-latest-saved-report" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}><Text style={[styles.sectionTitle, { color: palette.text }]}>{copy.saved}</Text><Text style={[styles.reportTitle, { color: palette.text }]}>{report.title || report.report_type || "Skin Match"}</Text>{report.created_at ? <Text style={[styles.meta, { color: palette.textMuted }]}>{formatNativeCalendarDate(report.created_at.slice(0, 10), locale)}</Text> : null}</View> : null}
     </View>
   );
 }
