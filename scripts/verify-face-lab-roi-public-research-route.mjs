@@ -5,6 +5,7 @@ import securityHeaders from "../lib/security/security-headers.js";
 import {consumeNeutralFaceObservation} from "../lib/face-lab-v2/personal-color/saju-neutral-observation.js";
 import {compareSharedNeutralFaceCoreRoiParity} from "../lib/face-lab-v2/personal-color/shared-core-roi-parity.js";
 import {detectMediaPipeCheekRoiProposal} from "../lib/face-lab-v2/personal-color/mediapipe-roi-proposal.js";
+import {buildRoiPreviewMasks} from "../lib/face-lab-v2/personal-color/roi-render-mask-adapter.js";
 
 const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const root="lib/face-lab-v2/personal-color/";
@@ -19,6 +20,8 @@ const middleware=read("middleware.js");
 assert.match(page,/robots:\s*\{\s*index:\s*false/);
 assert.match(ui,/detectMediaPipeCheekRoiProposal/);
 assert.match(ui,/onCandidateGeometry/);
+assert.match(ui,/buildRoiPreviewMasks/);
+assert.doesNotMatch(ui,/function maskFor\(/);
 assert.doesNotMatch(ui,/<input[^>]+type="checkbox"|orientationConfirmed|동의 체크/);
 assert.match(ui,/기존 Face Lab/);
 assert.match(ui,/Saju 기반 연구/);
@@ -69,6 +72,7 @@ for(const metric of Object.values(stats.metrics)){
   assert.ok(metric.iou>0&&metric.iou<1);
 }
 let detectorCalls=0,candidates=0,legacy=0,parity=0;
+let baselineGeometry=null,experimentalGeometry=null;
 const mocked={
  FilesetResolver:{forVisionTasks:async()=>({})},
  FaceLandmarker:{createFromOptions:async()=>({
@@ -79,15 +83,31 @@ const mocked={
 const result=await detectMediaPipeCheekRoiProposal({
  image:{},width:128,height:128,originalImageOrientationVerified:true,
  loadVisionTasks:async()=>mocked,
- onCandidateGeometry(candidate){candidates++;assert.equal(candidate.status,"proposal_only");},
- onProposal(candidate){legacy++;assert.ok(candidate.cheekPolygons.leftCheek.length===12);},
+ onCandidateGeometry(candidate){candidates++;experimentalGeometry=candidate;assert.equal(candidate.status,"proposal_only");},
+ onProposal(candidate){legacy++;baselineGeometry=candidate;assert.ok(candidate.cheekPolygons.leftCheek.length===12);},
  onParity(comparison){parity++;assert.equal(comparison.parity,"diverged");}
 });
 assert.equal(result.status,"proposal_only",JSON.stringify(result));
 assert.deepEqual({detectorCalls,candidates,legacy,parity},{detectorCalls:1,candidates:1,legacy:1,parity:1});
 assert.equal(result.skinMeasurement,null);
 assert.equal(result.faceLandmarksPersisted,false);
+assert.equal(Object.hasOwn(baselineGeometry,"status"),false,
+  "detector deliberately redacts baseline proposal flags");
+const preview=buildRoiPreviewMasks({
+  baseline:baselineGeometry,candidate:experimentalGeometry,
+  size:{width:128,height:128}
+});
+assert.equal(preview.status,"preview_only",JSON.stringify(preview));
+assert.equal(preview.skinMeasurementAuthorized,false);
+assert.equal(preview.skinAccuracyVerified,false);
+assert.ok(preview.baseline.sampleCount.leftCheek>0);
+assert.ok(preview.candidate.sampleCount.rightCheek>0);
+assert.equal(buildRoiPreviewMasks({
+  baseline:{...baselineGeometry,cheekPolygons:null},
+  candidate:experimentalGeometry,size:{width:128,height:128}
+}).status,"insufficient_evidence");
+
 console.log(JSON.stringify({ok:true,suite:"isolated_roi_research_public_route",tests:[
 "unchanged_normal_csp","route_scoped_remote_model_csp","saju_source_hash",
-"single_inference_two_distinct_roi_paths","privacy_no_upload","no_skin_accuracy_claims"
+"single_inference_two_distinct_roi_paths","redacted_baseline_callback_rasterizes","privacy_no_upload","no_skin_accuracy_claims"
 ],realPhotoValidated:false,modelDownloadedInTest:false,productionReleaseAuthorizedByThisTest:false}));
