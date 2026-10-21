@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import MyDashboardMenu from "@/components/my/MyDashboardMenu";
 import ProductQueryBetaCard from "@/components/my/ProductQueryBetaCard";
 import SavedReportHistory from "@/components/my/SavedReportHistory";
@@ -273,7 +274,25 @@ function getReportHref(path, locale = "ko") {
 }
 
 export default function MyDashboard({ dashboard, locale = "ko" }) {
-  const copy = getMyCopy(locale);
+  // My is already hydrated with the same canonical dashboard payload in KO/EN.
+  // Local language changes must not navigate away and redo server/database work.
+  const pathname = usePathname();
+  const [displayLocale, setDisplayLocale] = useState(locale);
+  const copy = getMyCopy(displayLocale);
+
+  useEffect(() => {
+    setDisplayLocale(pathname?.startsWith("/en/my") ? "en" : "ko");
+  }, [pathname]);
+
+  function handleLocaleChange(nextLocale) {
+    if (nextLocale !== "ko" && nextLocale !== "en") return;
+    if (nextLocale === displayLocale) return;
+    const targetPath = nextLocale === "en" ? "/en/my" : "/my";
+    setDisplayLocale(nextLocale);
+    // Next.js App Router observes native pushState; unlike <Link>, this does
+    // not request a new RSC payload and preserves the dashboard and scroll.
+    window.history.pushState(null, "", targetPath);
+  }
   const [clientDashboard, setClientDashboard] = useState(null);
   const [isDiaryLoading, setIsDiaryLoading] = useState(false);
   const browserDateContextRef = useRef(null);
@@ -371,7 +390,7 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
     hasProfile,
     needsCheckIn
   } = activeDashboard;
-  const latestReportHref = getReportHref(latestSharePath, locale);
+  const latestReportHref = getReportHref(latestSharePath, displayLocale);
   const trendCheckins = recentTrendCheckins || recentCheckins || [];
 
   return (
@@ -391,7 +410,7 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
                 {copy.savedReport.cta}
               </Link>
             ) : null}
-            <MyDashboardMenu locale={locale} />
+            <MyDashboardMenu locale={displayLocale} onLocaleChange={handleLocaleChange} />
           </div>
         </header>
 
@@ -403,14 +422,14 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
           {!hasProfile ? (
             <div className="space-y-4 sm:space-y-5">
               <EmptyProfileState copy={copy} />
-              <SavedReportHistory locale={locale} />
+              <SavedReportHistory locale={displayLocale} />
             </div>
           ) : (
             <div className="space-y-4 sm:space-y-5">
               {needsCheckIn ? (
                 <TodayCheckInPrompt copy={copy} />
               ) : (
-                <TodayCheckInDone checkin={todayCheckin} copy={copy} locale={locale} />
+                <TodayCheckInDone checkin={todayCheckin} copy={copy} locale={displayLocale} />
               )}
 
               {todayRoutine ? (
@@ -419,24 +438,24 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
                 <RoutinePendingNotice copy={copy} />
               ) : null}
 
-              <SkinTrendPreview checkins={trendCheckins} copy={copy} locale={locale} />
+              <SkinTrendPreview checkins={trendCheckins} copy={copy} locale={displayLocale} />
 
               <SkinDiaryCalendar
                 checkins={monthlyDiaryCheckins}
                 copy={copy}
-                locale={locale}
+                locale={displayLocale}
                 diaryMonth={diaryMonth}
                 currentDiaryMonth={currentDiaryMonth}
                 loading={isDiaryLoading}
                 onMonthChange={handleDiaryMonthChange}
               />
 
-              <SavedReportHistory locale={locale} />
+              <SavedReportHistory locale={displayLocale} />
 
               <SkinProfileSummaryCard
                 profile={latestSkinProfile}
                 copy={copy}
-                locale={locale}
+                locale={displayLocale}
               />
             </div>
           )}
