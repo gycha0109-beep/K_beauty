@@ -1,7 +1,8 @@
 import type { SupportedLocale } from "@bejewely/shared";
 import { getLocales } from "expo-localization";
+import * as SecureStore from "expo-secure-store";
 import type { ReactNode } from "react";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useColorScheme } from "react-native";
 
 type ThemeMode = "light" | "dark";
@@ -50,6 +51,7 @@ const DARK_PALETTE: MobilePalette = {
 };
 
 const MobileShellContext = createContext<MobileShellValue | null>(null);
+const LOCALE_PREFERENCE_KEY = "bejewely:locale:v1";
 
 function resolveInitialLocale(): SupportedLocale {
   try {
@@ -61,7 +63,46 @@ function resolveInitialLocale(): SupportedLocale {
 
 export function MobileShellProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme();
-  const [locale, setLocale] = useState<SupportedLocale>(resolveInitialLocale);
+  const [locale, setLocaleValue] = useState<SupportedLocale>(resolveInitialLocale);
+  const [localeLoaded, setLocaleLoaded] = useState(false);
+  const userSelectedLocale = useRef(false);
+
+  useEffect(() => {
+    let active = true;
+    void SecureStore.getItemAsync(LOCALE_PREFERENCE_KEY)
+      .then((stored) => {
+        if (active && !userSelectedLocale.current && (stored === "ko" || stored === "en")) {
+          setLocaleValue(stored);
+        }
+      })
+      .catch(() => {
+        // The device locale remains a safe fallback if persistent storage is unavailable.
+      })
+      .finally(() => {
+        if (active) setLocaleLoaded(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!localeLoaded) return;
+    void SecureStore.setItemAsync(LOCALE_PREFERENCE_KEY, locale).catch(() => {
+      // Keep the selected language active for the current session.
+    });
+  }, [locale, localeLoaded]);
+
+  const setLocale = useCallback((nextLocale: SupportedLocale) => {
+    userSelectedLocale.current = true;
+    setLocaleValue(nextLocale);
+  }, []);
+  const toggleLocale = useCallback(() => {
+    userSelectedLocale.current = true;
+    setLocaleValue((current) => (current === "ko" ? "en" : "ko"));
+  }, []);
+
   const themeMode: ThemeMode = systemScheme === "dark" ? "dark" : "light";
   const palette = themeMode === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
 
@@ -69,14 +110,14 @@ export function MobileShellProvider({ children }: { children: ReactNode }) {
     () => ({
       locale,
       setLocale,
-      toggleLocale: () => setLocale((current) => (current === "ko" ? "en" : "ko")),
+      toggleLocale,
       themeMode,
       palette
     }),
-    [locale, palette, themeMode]
+    [locale, palette, setLocale, themeMode, toggleLocale]
   );
 
-  return <MobileShellContext.Provider value={value}>{children}</MobileShellContext.Provider>;
+  return <MobileShellContext.Provider value={value}>{localeLoaded ? children : null}</MobileShellContext.Provider>;
 }
 
 export function useMobileShell() {
