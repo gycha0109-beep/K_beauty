@@ -91,6 +91,16 @@ assert.equal(evalGold(panel,stress,ledger,{
 assert.equal(evalGold(panel,stress,ledger,{
   readBytes,predictions:pred("ABSTAIN")}).claimAccuracyOnAttempted,null);
 assert.throws(()=>evalGold(panel,stress,ledger),/REVIEW_ARTIFACT_UNAVAILABLE/);
+const unretainedFiles=new Map(files);
+const unretainedSource=JSON.parse(unretainedFiles.get(source.ref).toString("utf8"));
+unretainedSource.sourceKind="REVIEWER_AUTHORIZED_PACKAGING_PHOTO_NOT_STORED";
+const unretainedBytes=Buffer.from(JSON.stringify(unretainedSource));
+unretainedFiles.set(source.ref,unretainedBytes);
+const unretainedLedger=copy(ledger);
+unretainedLedger.records[0].source.sha256=
+  createHash("sha256").update(unretainedBytes).digest("hex");
+assert.throws(()=>evalGold(panel,stress,unretainedLedger,{
+  readBytes:p=>unretainedFiles.get(p)}),/SOURCE_ARTIFACT_SCOPE_INVALID/);
 const badLedger=(fn,reason)=>{
   const l=copy(ledger);fn(l);
   assert.throws(()=>evalGold(panel,stress,l,{readBytes}),reason);
