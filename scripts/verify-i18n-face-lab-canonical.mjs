@@ -102,4 +102,18 @@ const holdEn = buildFaceLabV2Canonical({ ...options, surveyAnswers: noConfirmati
 assert.equal(holdKo.targetStyle?.status, holdEn.targetStyle?.status);
 assert.equal(holdKo.failureReason, holdEn.failureReason);
 
+import { readFileSync } from "node:fs";
+const legacyFaceLabUI = readFileSync(
+  new URL("../components/full-report/PremiumFaceLabSection.jsx", import.meta.url),
+  "utf8"
+);
+assert.match(legacyFaceLabUI, /showOriginalLanguageNote = locale === "en"/);
+assert.match(legacyFaceLabUI, /summary\.caution,/);
+assert.match(legacyFaceLabUI, /\.\.\.summary\.styleDirections\.flatMap/);
+assert.match(legacyFaceLabUI, /originalLanguageNote/);
+assert.equal(
+  (legacyFaceLabUI.match(/\{showOriginalLanguageNote \? \(/g) || []).length,
+  2,
+  "legacy Face Lab source-language disclosure must cover available and unavailable states"
+);
 console.log("I18N_KO_EN_FACE_LAB_CANONICAL=PASS");
