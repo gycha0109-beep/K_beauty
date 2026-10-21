@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start -p 3001",
     "verify:current": "node scripts/verify-current-main-health.mjs",
+    "verify:i18n-m1": "node scripts/verify-i18n-m1.mjs",
     "verify:current-repository-hygiene": "node scripts/verify-current-repository-hygiene.mjs",
     "verify:candidate-exposure-policy-shadow": "node scripts/verify-candidate-exposure-policy-shadow-runtime.mjs",
     "verify:candidate-exposure-policy-shadow-evaluation": "node scripts/verify-candidate-exposure-policy-shadow-evaluation.mjs",
