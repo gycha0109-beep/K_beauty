@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { inspectSharedNeutralFaceCoreCandidate } from "../lib/face-lab-v2/personal-color/shared-neutral-face-core-candidate.js";
+import { consumeNeutralFaceObservation } from "@myeongha/neutral-face-observation";
 import { compareSharedNeutralFaceCoreRoiParity } from "../lib/face-lab-v2/personal-color/shared-core-roi-parity.js";
 
 const width = 128, height = 128;
@@ -12,16 +12,16 @@ for (const [index, [x, y]] of Object.entries({
 
 const source = JSON.stringify(landmarks);
 let frameSeen = 0;
-const inspected = inspectSharedNeutralFaceCoreCandidate({
+const inspected = consumeNeutralFaceObservation({
   faceLandmarks: landmarks, faceCount: 1, coordinateSpace: "original_image",
   onFrame(frame) {
     frameSeen++;
     assert.equal(frame.coordinateSpace, "original_image");
-    assert.equal(frame.semanticSideAuthority, false);
-    assert.equal(frame.landmarks.length, 468);
-    assert.ok(Object.isFrozen(frame.landmarks));
-    assert.deepEqual(frame.landmarks[234], {x: 0.2, y: 0.5});
-    assert.equal("z" in frame.landmarks[234], false);
+    assert.equal(frame.anatomicalLateralityResolved, false);
+    assert.equal(frame.frame.length, 468);
+    assert.ok(Object.isFrozen(frame.frame));
+    assert.deepEqual(frame.frame[234], {x: 0.2, y: 0.5});
+    assert.equal("z" in frame.frame[234], false);
   }
 });
 assert.equal(inspected.status, "candidate_only");
@@ -69,13 +69,13 @@ const badDepth = structuredClone(landmarks);
 badDepth[101].z = NaN;
 rejected({faceLandmarks: badDepth}, "neutral_landmarks_invalid");
 let callbackCount = 0;
-const refused = inspectSharedNeutralFaceCoreCandidate({
+const refused = consumeNeutralFaceObservation({
   faceLandmarks: invalidNonAnchor, faceCount: 1,
   coordinateSpace: "original_image", onFrame() { callbackCount++; }
 });
 assert.equal(refused.status, "insufficient_evidence");
 assert.equal(callbackCount, 0);
-const callbackFailure = inspectSharedNeutralFaceCoreCandidate({
+const callbackFailure = consumeNeutralFaceObservation({
   faceLandmarks: landmarks, faceCount: 1,
   coordinateSpace: "original_image", onFrame() { throw new Error("private"); }
 });
