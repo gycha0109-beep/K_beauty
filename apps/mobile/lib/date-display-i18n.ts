@@ -27,7 +27,7 @@ export function formatNativeCalendarDate(
   return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
     timeZone: "UTC",
     year: "numeric",
-    month: monthOnly ? "short" : "short",
+    month: "short",
     ...(monthOnly ? {} : { day: "numeric" })
   }).format(date);
 }
