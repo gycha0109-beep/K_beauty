@@ -12,7 +12,8 @@ const upstream = Object.freeze({
   files: Object.freeze({
     "index.js": "90a6359da4aea4e9d6a1ff8e7be5c9a60910e3a0",
     "package.json": "cc916dd1ff9e3bb8f5c70ef4c610fc43facd27e0",
-    "README.md": "38b0947ada0e8170b2456883fdff71752151eefe"
+    "README.md": "38b0947ada0e8170b2456883fdff71752151eefe",
+    "test/contract.check.mjs": "ec90d20ac64a69d9e1a1022eb492ff77299370b8"
   })
 });
 function gitBlobSha(content) {
