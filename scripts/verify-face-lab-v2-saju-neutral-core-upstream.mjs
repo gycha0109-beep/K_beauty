@@ -8,7 +8,7 @@ import {consumeNeutralFaceObservation, NEUTRAL_FACE_OBSERVATION_VERSION} from "@
 // registry release or an HTTP dependency fetched at build/runtime.
 const upstream = Object.freeze({
   repo: "gycha0109-beep/Saju",
-  commit: "35bf2a483ebe5db6f315ba503f7862bb3b17d745",
+  commit: "a00c3e2e1c3be1711068e5d35e696a6c9c7d0b8a",
   files: Object.freeze({
     "index.js": "90a6359da4aea4e9d6a1ff8e7be5c9a60910e3a0",
     "package.json": "97b9228f2dbc83abf7002f64942b912ccdca84b6",
