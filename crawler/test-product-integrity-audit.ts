@@ -1,3 +1,4 @@
+import { calculatePhysicalUnitPricePer10Ml } from "./lib/catalog-unit-price.js";
 import assert from "node:assert/strict";
 
 import {
@@ -175,6 +176,31 @@ function fact(overrides: Partial<IntegrityCurrentFact> = {}): IntegrityCurrentFa
   });
   assert.equal(audit.issueCounts.CURRENT_OFFER_DUPLICATE_SELLER_LISTING, 2);
   assert.equal(audit.severityCounts.blocker, 2);
+}
+
+{
+  // Official one-container examples: promo 120ml x2 + minis must not become 255ml.
+  assert.equal(calculatePhysicalUnitPricePer10Ml({
+    priceMin: 16400, sizeMl: 120, category: "cleanser",
+  }), 1366.67);
+  assert.equal(calculatePhysicalUnitPricePer10Ml({
+    priceMin: 34500, sizeMl: 300, category: "moisturizer_lotion_emulsion",
+  }), 1150);
+  assert.equal(calculatePhysicalUnitPricePer10Ml({
+    priceMin: 23000, sizeMl: 190, category: "toner_pad",
+  }), null);
+  assert.equal(calculatePhysicalUnitPricePer10Ml({
+    priceMin: 18000, sizeMl: null, category: "sunscreen",
+  }), null);
+  assert.equal(calculatePhysicalUnitPricePer10Ml({
+    priceMin: null, sizeMl: 50, category: "sunscreen",
+  }), null);
+  assert.equal(calculatePhysicalUnitPricePer10Ml({
+    priceMin: 10000, sizeMl: 0, category: "cleanser",
+  }), null);
+  assert.equal(calculatePhysicalUnitPricePer10Ml({
+    priceMin: 10000, sizeMl: 50, category: "moisturizer_cream",
+  }), 2000);
 }
 
 console.log("Product integrity audit verifier: PASS");
