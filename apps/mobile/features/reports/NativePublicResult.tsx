@@ -37,11 +37,11 @@ function lines(value: unknown, limit = 8) {
   return value.map(text).filter((item): item is string => Boolean(item)).slice(0, limit);
 }
 
-function topPick(value: unknown) {
+function topPick(value: unknown, locale: "ko" | "en") {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const product = value as Record<string, unknown>;
-  const name = text(product.name);
-  const brand = text(product.brand);
+  const name = (locale === "en" ? text(product.name_en) || text(product.nameEn) : null) || text(product.name);
+  const brand = (locale === "en" ? text(product.brand_en) || text(product.brandEn) : null) || text(product.brand);
   const reason = text(product.reason);
   return name || brand || reason ? { name, brand, reason } : null;
 }
@@ -65,7 +65,7 @@ export function NativePublicResult({ result }: { result: NativeFreeSavedResult }
   const summary = text(result.summary);
   const skinType = getLocalizedSkinState(text(result.skinType), "skinTypes", locale);
   const concerns = lines(result.mainConcerns, 5).map((value) => getLocalizedSkinState(value, "concerns", locale));
-  const product = topPick(result.topPick);
+  const product = topPick(result.topPick, locale);
   const am = lines(result.routineAm);
   const pm = lines(result.routinePm);
 
