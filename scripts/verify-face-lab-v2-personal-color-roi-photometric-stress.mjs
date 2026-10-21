@@ -4,6 +4,7 @@ import { buildPersonalColorObservation } from "../lib/face-lab-v2/personal-color
 import { proposePersonalColorCheekRegions } from "../lib/face-lab-v2/personal-color/cheek-landmark-proposal.js";
 import { buildPersonalColorCheekMasks } from "../lib/face-lab-v2/personal-color/cheek-mask-geometry.js";
 import { comparePersonalColorPhotoMeasurements } from "../lib/face-lab-v2/personal-color/photo-capture-comparison.js";
+import { evaluatePersonalColorCapturePair } from "../lib/face-lab-v2/personal-color/capture-repeatability-audit.js";
 import { measurePersonalColorReviewedCheekRoi } from "../lib/face-lab-v2/personal-color/reviewed-roi-sampling.js";
 
 const WIDTH = 128;
@@ -236,6 +237,30 @@ assert.ok(Math.hypot(results.saturation_down.lab.a,results.saturation_down.lab.b
 const uneven=sample(perturb("uneven_left_right"));
 assert.ok(uneven.measurement.regions.leftCheek.lab.L < base.measurement.regions.leftCheek.lab.L);
 assert.ok(uneven.measurement.regions.rightCheek.lab.L > base.measurement.regions.rightCheek.lab.L);
+const baselinePair = { observation: observation(), measurement: base.measurement };
+const reviewContext = {
+  subjectReview:"independently_reviewed_same_subject",
+  roiReview:"both_independently_approved",
+  orientation:"both_original_image",
+  lightingRelation:"changed_controlled_light",
+  deviceRelation:"same_device"
+};
+const uniformAudit=evaluatePersonalColorCapturePair({
+  baseline:baselinePair,
+  followup:{observation:observation(),measurement:sample(perturb("warm_cast")).measurement},
+  context:reviewContext
+});
+assert.equal(uniformAudit.status,"evaluation_only");
+const spatialAudit=evaluatePersonalColorCapturePair({
+  baseline:baselinePair,
+  followup:{observation:observation(),measurement:uneven.measurement},
+  context:reviewContext
+});
+assert.equal(spatialAudit.status,"insufficient_evidence");
+assert.equal(spatialAudit.reason,"opposing_cheek_lightness_drift");
+assert.equal(spatialAudit.colorDifference,null);
+assert.equal(spatialAudit.repeatabilityVerdict,null);
+assert.equal(spatialAudit.calibratedColorAccuracy,null);
 
 // The original M2 observation/measurement cannot *infer* a digital color cast
 // if the upstream quality observer falsely marks white balance as stable.
@@ -264,6 +289,7 @@ console.log(JSON.stringify({
   roi:"landmark_proposal_plus_independent_mask_research_only",
   syntheticCases:Object.keys(results),
   deltas: Object.fromEntries(Object.entries(results).map(([k,v])=>[k,v.deltaE76])),
+  opposingCheekLightnessDriftHeld:true,
   sourceImagePersisted:false,
   realFaceDetectorIntegrated:false,
   automaticColorCastDetectionValidated:false,
