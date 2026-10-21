@@ -257,7 +257,8 @@ function buildSavedPremiumReportResponse(savedReport, displayLocale = "ko") {
       ? savedPremiumReport.freeResult
       : null;
   const topPickFitGauges = buildProductFitGauges(savedFreeResult?.topPick || null, {
-    locale: savedLocale
+    // Gauge scores use the same product; only labels/reasons follow display language.
+    locale: displayLocale
   });
 
   return sensitiveJsonResponse({
