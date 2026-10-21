@@ -39,3 +39,32 @@ The development-only UI gives matched/diverged/held. Existing independent-skin-r
 ## Future release policy
 
 Only after Saju PR review/merge/release governance may the consuming vendored source become a separately distributed immutable package (registry or signed artifact). This migration explicitly does not publish, merge or activate the Saju code, nor does it upgrade MediaPipe `0.10.35`.
+
+
+## Optional independent-mask benchmark (research protocol only)
+
+`benchmarkCheekRoiCandidatesAgainstReview` in
+`independent-cheek-roi-benchmark.js` compares **both** ROI proposals
+against the **same independently annotated** image-left/right binary
+reference masks (caller-provided). It reuses the existing
+`compareCheekRoiProposalToReview` validator for each algorithm and
+returns each cheek's IoU, precision, recall, pixel counts and signed
+candidate-minus-legacy differences.
+
+- Human `independent_manual_review` provenance is **declared** by the
+  caller; the code cannot independently attest reviewer independence,
+  skin eligibility or reference correctness.
+- Missing provenance, unsupported orientation/topology, invalid masks,
+  overlapping reference cheeks and inadequate pixels **fail closed**.
+- The synthetic test fixture uses hand-authored rectangular masks, **not**
+  face photos or human review. It is a software protocol/quality test
+  and does **not** validate either algorithm's anatomical accuracy.
+- Output is redacted aggregate statistics only, with
+  `roiAccuracyApproved: false`,
+  `referenceIndependenceExternallyAudited: false` and
+  `productionAuthorized: false`. It is not wired to the consumer
+  score/palette path.
+- Real-image use requires explicitly authorized non-user or consented
+  photographs and reference masks outside Git, CI logs, and public
+  build artifacts. Independent reviewer records and controlled capture
+  conditions must be collected before interpreting any performance result.
