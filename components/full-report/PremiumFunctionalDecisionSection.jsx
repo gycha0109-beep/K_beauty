@@ -157,8 +157,26 @@ export default function PremiumFunctionalDecisionSection({ decisions = [], repor
   const model = useMemo(() => resolvePremiumFunctionalDisplayModel({ report, decisions, locale, devScenario: activeDevScenario }), [activeDevScenario, decisions, locale, report]);
   const plan = model.functionalPlan;
   const audit = model.routineAudit;
+  const originalNarratives = [
+    plan?.planSummary,
+    plan?.direction,
+    plan?.routineGuide?.order,
+    plan?.routineGuide?.frequency,
+    plan?.routineGuide?.avoid,
+    plan?.reviewCondition,
+    audit?.title,
+    audit?.message,
+    audit?.actionMessage
+  ];
+  const hasOriginalKoreanText = locale === "en" &&
+    originalNarratives.some((value) => typeof value === "string" && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(value));
 
   return <section className="space-y-4">
+    {hasOriginalKoreanText ? (
+      <p role="note" className="ui-text-secondary rounded-xl border border-current/10 p-3 text-xs leading-5">
+        Some saved functional guidance remains in Korean. Its original frequency and cautions are preserved rather than replaced with generic advice.
+      </p>
+    ) : null}
     {canUseDev && devScenarios.length ? <div className="rounded-[1rem] border border-amber-300/50 bg-amber-50/70 p-3 text-amber-900"><p className="text-xs font-semibold">{copy.devBanner}</p><div className="mt-2 flex gap-2 overflow-x-auto">{devScenarios.map((scenario) => <button key={scenario.id} type="button" onClick={() => setDevScenarioId(scenario.id)} className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${scenario.id === model.id ? "bg-rose-500 text-white" : "bg-white/70"}`}>{scenario.label}</button>)}</div></div> : null}
     <article className="rounded-[1rem] border border-white/10 bg-white/5 p-5"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{copy.kicker}</p><h3 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{copy.title}</h3><p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{copy.body}</p><div className="mt-4 flex gap-2"><span className="rounded-full border border-violet-300/40 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-700 dark:text-violet-200">{plan.planMode}</span>{plan.allowedIntensity ? <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold">{plan.allowedIntensity}</span> : null}</div><div className="mt-4 rounded-[1rem] bg-violet-500/10 p-4"><p className="text-xs font-semibold text-violet-700 dark:text-violet-200">{copy.focus}</p><h4 className="mt-2 text-xl font-semibold">{plan.primaryConcern}</h4>{plan.secondaryConcern ? <p className="mt-1 text-sm text-zinc-500">{copy.secondary} · {plan.secondaryConcern}</p> : null}<p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{plan.planSummary}</p></div></article>
     <SolutionCard plan={plan} copy={copy} />
