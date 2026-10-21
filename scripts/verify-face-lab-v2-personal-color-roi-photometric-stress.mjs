@@ -152,6 +152,12 @@ const offMask={
 offMask.leftCheek.fill(0);
 mustHold({independentlyReviewedSkinMasks:offMask},
   "roi_outside_independently_reviewed_skin");
+const shiftedLandmarks=structuredClone(landmarks);
+for(const index of [234,454,1,33,263,61,291]) {
+  shiftedLandmarks[index].x += 0.08;
+}
+mustHold({faceLandmarks:shiftedLandmarks},
+  "roi_outside_independently_reviewed_skin");
 const nonBinary={
   leftCheek:Uint8Array.from(independentlyReviewedSkinMasks.leftCheek),
   rightCheek:Uint8Array.from(independentlyReviewedSkinMasks.rightCheek)
@@ -178,21 +184,31 @@ function perturb(name) {
     warm_cast:[1.25,1.01,0.78],
     cool_cast:[0.78,1.00,1.25],
     bright:[1.19,1.19,1.19],
-    dark:[0.76,0.76,0.76]
+    dark:[0.76,0.76,0.76],
+    saturation_up:[1,1,1],
+    saturation_down:[1,1,1],
+    uneven_left_right:[1,1,1]
   };
   const rgb=values[name];
   if(!rgb) throw Error("unrecognized deterministic fixture");
   const out=Uint8ClampedArray.from(baselineImage);
   for(let i=0;i<PIXELS;i++) {
     for(let channel=0;channel<3;channel++) {
-      out[i*4+channel]=Math.min(255,Math.max(0,
-        Math.round(baselineImage[i*4+channel]*rgb[channel])));
+      const r=baselineImage[i*4], g=baselineImage[i*4+1], b=baselineImage[i*4+2];
+      const gray=0.2126*r+0.7152*g+0.0722*b;
+      const factor=name==="saturation_up" ? 1.5 :
+        name==="saturation_down" ? 0.55 : 1;
+      const lateralGain=name==="uneven_left_right"
+        ? (i % WIDTH < WIDTH / 2 ? 0.78 : 1.17) : 1;
+      const transformed=(gray+(baselineImage[i*4+channel]-gray)*factor)*
+        rgb[channel]*lateralGain;
+      out[i*4+channel]=Math.min(255,Math.max(0,Math.round(transformed)));
     }
   }
   return out;
 }
 const results={};
-for(const scenario of ["identical","warm_cast","cool_cast","bright","dark"]) {
+for(const scenario of ["identical","warm_cast","cool_cast","bright","dark","saturation_up","saturation_down","uneven_left_right"]) {
   const image=perturb(scenario);
   const measurement=sample(image);
   assert.equal(measurement.status,"measurement_only");
@@ -207,13 +223,19 @@ for(const scenario of ["identical","warm_cast","cool_cast","bright","dark"]) {
   assert.deepEqual(perturb(scenario),image);
 }
 assert.equal(results.identical.deltaE76,0);
-for(const name of ["warm_cast","cool_cast","bright","dark"]) {
+for(const name of ["warm_cast","cool_cast","bright","dark","saturation_up","saturation_down","uneven_left_right"]) {
   assert.ok(results[name].deltaE76>0);
 }
 assert.ok(results.warm_cast.lab.b>results.identical.lab.b);
 assert.ok(results.cool_cast.lab.b<results.identical.lab.b);
 assert.ok(results.bright.lab.L>results.identical.lab.L);
 assert.ok(results.dark.lab.L<results.identical.lab.L);
+const baseChroma=Math.hypot(results.identical.lab.a,results.identical.lab.b);
+assert.ok(Math.hypot(results.saturation_up.lab.a,results.saturation_up.lab.b)>baseChroma);
+assert.ok(Math.hypot(results.saturation_down.lab.a,results.saturation_down.lab.b)<baseChroma);
+const uneven=sample(perturb("uneven_left_right"));
+assert.ok(uneven.measurement.regions.leftCheek.lab.L < base.measurement.regions.leftCheek.lab.L);
+assert.ok(uneven.measurement.regions.rightCheek.lab.L > base.measurement.regions.rightCheek.lab.L);
 
 // The original M2 observation/measurement cannot *infer* a digital color cast
 // if the upstream quality observer falsely marks white balance as stable.
