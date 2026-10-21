@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "skin-precision-asset-register-v1",
+  "reviewedAt": "2026-10-21",
+  "meaning": "Research candidate rights register; NOT an authorization to use any image or weight in a commercial product.",
+  "statusVocabulary": {
+    "candidate": "source-level license appears permissive; exact artifact provenance and obligations are unverified",
+    "hold": "commercial or personal-image rights not established; no ingestion",
+    "restricted": "explicit noncommercial/research-only terms; commercial use prohibited unless separately authorized",
+    "review": "bespoke data-use terms or unclear downstream rights; human/legal review needed"
+  },
+  "assets": [
+    {
+      "id": "rfdetr-apache-detection",
+      "kind": "code_weights",
+      "name": "RF-DETR Nano/Small/Medium/Large detection, Apache-designated",
+      "sourceUrl": "https://github.com/roboflow/rf-detr",
+      "licenseUrl": "https://roboflow.com/licensing",
+      "declaredLicense": "Apache-2.0 (only Apache-designated checkpoints)",
+      "status": "candidate",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": true,
+      "artifactDigestVerified": false,
+      "notes": "Obtain the exact release, model card, weights hash, NOTICE and dependency SBOM. Plus/PML and XL/2XL detection are not in this candidate."
+    },
+    {
+      "id": "rfdetr-seg",
+      "kind": "code_weights",
+      "name": "RF-DETR segmentation Apache-designated checkpoint",
+      "sourceUrl": "https://github.com/roboflow/rf-detr",
+      "licenseUrl": "https://roboflow.com/licensing",
+      "declaredLicense": "Apache-2.0 for designated segmentation assets; check exact version",
+      "status": "candidate",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": true,
+      "artifactDigestVerified": false,
+      "notes": "Third-party pages disagree about Seg XL/2XL conditions. Require model-specific license file and publisher confirmation before choosing a larger segmentation checkpoint."
+    },
+    {
+      "id": "mediapipe-face",
+      "kind": "code_weights",
+      "name": "MediaPipe Face Landmarker",
+      "sourceUrl": "https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker",
+      "licenseUrl": "https://github.com/google-ai-edge/mediapipe/blob/master/LICENSE",
+      "declaredLicense": "Apache-2.0 code; exact model-card asset review required",
+      "status": "candidate",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": true,
+      "artifactDigestVerified": false,
+      "notes": "Geometry baseline only; shared styling stage reuse check before any integration."
+    },
+    {
+      "id": "mediapipe-skin",
+      "kind": "code_weights",
+      "name": "MediaPipe SelfieMulticlass",
+      "sourceUrl": "https://developers.google.com/edge/mediapipe/solutions/vision/image_segmenter",
+      "licenseUrl": "https://github.com/google-ai-edge/mediapipe/blob/master/LICENSE",
+      "declaredLicense": "Apache-2.0 code; exact model-card asset review required",
+      "status": "candidate",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": true,
+      "artifactDigestVerified": false,
+      "notes": "Class 3 is face skin; cannot detect acne/erythema by itself."
+    },
+    {
+      "id": "acne04",
+      "kind": "dataset",
+      "name": "Original ACNE04 and repackaged lesion annotations",
+      "sourceUrl": "https://huggingface.co/datasets/Layered-Labs/ACNE04",
+      "licenseUrl": "https://huggingface.co/datasets/Layered-Labs/ACNE04",
+      "declaredLicense": "Original author: academic/research-only",
+      "status": "restricted",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "Do not promote into commercial training/evaluation. Separate written rights from original author necessary."
+    },
+    {
+      "id": "fitzpatrick17k",
+      "kind": "dataset",
+      "name": "Fitzpatrick17k",
+      "sourceUrl": "https://github.com/mattgroh/fitzpatrick17k",
+      "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/3.0/",
+      "declaredLicense": "CC BY-NC-SA 3.0",
+      "status": "restricted",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "Noncommercial original dataset, mostly clinical disease; also inadequate as pixel-level cosmetic concern gold."
+    },
+    {
+      "id": "scin",
+      "kind": "dataset",
+      "name": "SCIN",
+      "sourceUrl": "https://github.com/google-research-datasets/scin",
+      "licenseUrl": "https://github.com/google-research-datasets/scin/blob/main/LICENSE",
+      "declaredLicense": "SCIN Data Use License",
+      "status": "review",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": true,
+      "artifactDigestVerified": false,
+      "notes": "Special terms including no reidentification; dataset labels not automatically acne lesion/pores/redness localization gold."
+    },
+    {
+      "id": "roboflow-acneclassification2",
+      "kind": "dataset",
+      "name": "Previously screened acneClassification2 pool (~1500 augmented images)",
+      "sourceUrl": "https://universe.roboflow.com/",
+      "licenseUrl": "",
+      "declaredLicense": "Original upload/project and source-photo license not established",
+      "status": "hold",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "30 KEEP is suitability, not clinical gold; exact project/version URL, creator permission, subject grouping and original rights required. No commercial training or evaluation."
+    }
+  ]
+}
