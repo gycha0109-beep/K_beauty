@@ -156,6 +156,13 @@ for(const item of triage.reviewTargets){
 const sidmool=triage.reviewTargets.find(x=>x.productId===sidmoolId);
 assert.equal(sidmool.catalogSizeMl,null);
 assert.match(sidmool.sourceRecordFinding,/75ml/);
+assert.equal(sidmool.catalogCandidateLineage.sourceName,"hwahae");
+assert.equal(sidmool.catalogCandidateLineage.matchedProductId,sidmoolId);
+assert.equal(sidmool.catalogCandidateLineage.discriminationLead.authority,false);
+assert.equal(sidmool.catalogCandidateLineage.productWriteAllowed,false);
+assert.equal(sidmool.catalogCandidateLineage.productFactWriteAllowed,false);
+assert.equal(sidmool.catalogCandidateLineage.productionCutoverAuthorized,false);
+assert.equal(sidmool.catalogCandidateLineage.recommendationAdmissionAllowed,false);
 assert.equal(sidmool.historicalObservations.length,3);
 assert.deepEqual(sidmool.historicalObservations.map(x=>x.recordedClaim).sort(),
   ["PA++","SPF20","무기자차"].sort());
