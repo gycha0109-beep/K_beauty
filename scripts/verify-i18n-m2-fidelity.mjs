@@ -81,4 +81,8 @@ assert.ok(!stepAdapter.includes("buildEnglishRoutineCaution"));
 assert.ok(reasonBlocks.includes('if (locale === "en")'));
 assert.ok(reasonBlocks.includes('addBlock("why", whySentences.join(" "));'));
 assert.ok(!reasonBlocks.includes('locale !== "en" || !hasKoreanText(block.body)'));
+const budgetMapping = web.split("function buildDisplayBudgetAlternatives(")[1]?.split("function hasConcretePriceComparison(")[0] || "";
+assert.ok(budgetMapping.includes('summary: locale === "en"'));
+assert.ok(budgetMapping.includes("item?.summary || product.summary || item?.reason || product.reason"));
+
 console.log("I18N_KO_EN_M2_FIDELITY=PASS");
