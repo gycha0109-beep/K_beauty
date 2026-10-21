@@ -1577,6 +1577,7 @@ await import("./verify-trust-p2-secondary-unit-reconciliation.mjs");
 await import("./verify-trust-p2-evidence-first-shadow.mjs");
 // P2 v3 evaluator also verifies actual Sidmool/BOJ legacy-source triage and
 // numeric 75ml unit claims independent of NULL catalog size (synthetic gold only).
+// Includes dated ATOPALM single-price and Dr.G EX jar/tube regression audit.
 await import("./verify-trust-p2d-five-catalog-owner-corrections.mjs");
 await import("./verify-trust-p2-v3-gold-evaluation.mjs");
 await import("./verify-trust-p2-v3-two-brand-public-index-offer.mjs");
