@@ -1622,7 +1622,7 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
         label: labels[block?.key] || compactLocalizedText(block?.label, locale) || compactLocalizedText(block?.key, locale),
         body: compactLocalizedText(block?.body, locale)
       }))
-      .filter((block) => block.body && (locale !== "en" || !hasKoreanText(block.body)))
+      .filter((block) => Boolean(block.body))
     : [];
 
   if (explicitBlocks.length) {
@@ -1681,6 +1681,16 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
     seenBodies.add(bodyKey);
     blocks.push({ key, label: labels[key], body: text });
   };
+
+  if (locale === "en") {
+    // Older records may only contain Korean evidence. Show that evidence in its
+    // original language instead of manufacturing a new English explanation.
+    addBlock("why", whySentences.join(" "));
+    addBlock("evidence", evidenceSentences.join(" "));
+    addBlock("usage", usageSentences.join(" "));
+    addBlock("review", reviewSentences.join(" "));
+    return blocks;
+  }
 
   addBlock("why", whySentences.join(" ") || buildTopPickWhyText(product, result, locale));
   addBlock("evidence", evidenceSentences.join(" ") || buildTopPickEvidenceText(result, locale));
