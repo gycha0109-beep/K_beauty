@@ -7,7 +7,7 @@ const COPY = {
   en: {
     kicker: "SHARED · MOBILE-10",
     title: "Shared result",
-    sourceNote: "This analysis was originally saved in Korean. Some guidance remains in the original language.",
+    sourceNote: "Some saved guidance is shown in Korean to preserve the original result.",
     summary: "Shared summary",
     skinType: "Skin type",
     concerns: "Main concerns",
@@ -68,13 +68,15 @@ export function NativePublicResult({ result }: { result: NativeFreeSavedResult }
   const product = topPick(result.topPick, locale);
   const am = lines(result.routineAm);
   const pm = lines(result.routinePm);
+  const containsKoreanGuidance = [summary, product?.reason, ...am, ...pm]
+    .some((value) => typeof value === "string" && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(value));
 
   return (
     <View testID="native-public-result" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: palette.accent }]}>{copy.kicker}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{copy.title}</Text>
-        {locale === "en" && result.locale === "ko" ? (
+        {locale === "en" && (result.locale === "ko" || containsKoreanGuidance) ? (
           <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sourceNote}</Text>
         ) : null}
       </View>
