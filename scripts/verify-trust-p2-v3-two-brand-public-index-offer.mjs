@@ -14,7 +14,7 @@ function verify(panel,triage,audit){
   assert.equal(a.directRobotsStatus,"UNAVAILABLE_FROM_AVAILABLE_TOOLS");
   assert.equal(a.robotsUrls.length,2);
   assert.ok(a.robotsUrls.every(x=>x.status==="UNAVAILABLE_NO_ACCESS_DECISION"));
-  assert.equal(a.directProductFetchAttemptsPerformed,0);
+  assert.equal(a.repositoryGovernedLiveProductFetchAttempts,0);
   assert.equal(a.directProductFetchesSucceeded,0);
   assert.equal(a.firstPartyOriginalHtmlBytesRetained,0);
   assert.equal(a.sourceUseLicenseGrantedByBrand,false);
