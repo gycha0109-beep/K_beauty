@@ -11,7 +11,7 @@ const upstream = Object.freeze({
   commit: "a00c3e2e1c3be1711068e5d35e696a6c9c7d0b8a",
   files: Object.freeze({
     "index.js": "90a6359da4aea4e9d6a1ff8e7be5c9a60910e3a0",
-    "package.json": "97b9228f2dbc83abf7002f64942b912ccdca84b6",
+    "package.json": "cc916dd1ff9e3bb8f5c70ef4c610fc43facd27e0",
     "README.md": "38b0947ada0e8170b2456883fdff71752151eefe"
   })
 });
