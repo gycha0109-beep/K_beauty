@@ -76,7 +76,7 @@ export function NativePublicResult({ result }: { result: NativeFreeSavedResult }
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: palette.accent }]}>{copy.kicker}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{copy.title}</Text>
-        {locale === "en" && (result.locale === "ko" || containsKoreanGuidance) ? (
+        {locale === "en" && ((result.sourceLocale ?? result.locale) === "ko" || containsKoreanGuidance) ? (
           <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sourceNote}</Text>
         ) : null}
       </View>
