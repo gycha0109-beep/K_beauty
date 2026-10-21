@@ -41,10 +41,13 @@
 - [ ] 저장 결과 조회 시 `sourceLocale`과 `displayLocale`을 명확히 구분.
 - [ ] `app/api/full-report/route.js`의 `buildSavedPremiumReportResponse`는 현재 저장 언어를 우선하므로 표시 언어 별도 계약과 표시단 projection 필요. 저장 snapshot 재작성/재판단 금지.
 - [ ] 모바일 `NativeSavedReport.tsx` 및 `NativePublicResult.tsx`의 자유서술/피부타입/제품명 표시 정책 통일.
-- [ ] `NativeMyDiaryView.tsx`의 피부타입·고민·민감도 등 코드형 상태값 번역. 사용자 자유입력 `memo`는 번역하지 않음.
+- [x] `NativeMyDiaryView.tsx`의 피부타입·고민·민감도 코드형 상태값을 검증된 KO/EN 레이블로 현지화. 사용자 자유입력 `memo`는 번역하지 않음.
+- [x] `NativeSavedReport.tsx`/`NativePublicResult.tsx`의 코드형 피부타입·고민 표시값 KO/EN 현지화 (원문 자유서술은 그대로 유지).
 - [ ] 기존 저장 기록/신규 EN 저장/공유 링크/비로그인·타인 접근 제한 회귀 테스트.
 
 **승인 기준:** 데이터 무결성/조회 권한 불변, 정확히 현지화할 수 없는 기존 기록은 원어 원문을 보존한다.
+
+**M3 남은 일:** 저장 결과 API의 `sourceLocale`/`displayLocale` 분리, 원어 안내 정책, 영문 상품명·기존 자유서술·프로필 이외 모든 진단 항목의 표시 통일, 보안·공유 권한 회귀 검증은 미완료.
 
 ## M4. 전 화면 번역 품질
 
@@ -57,7 +60,7 @@
 
 - [ ] 기존 모바일 `npm run mobile:typecheck`, `npm run verify:mobile-foundation` 및 관련 CI 확인
 - [ ] 기존 `npm run verify:premium-browser-journey-contract` 및 회귀 검사 확인
-- [ ] 신규 검증 `npm run verify:i18n-m1` 및 `npm run verify:i18n-m2` 실행 확인
+- [ ] 신규 검증 `npm run verify:i18n-m1`, `npm run verify:i18n-m2`, `npm run verify:i18n-m3` 실행 확인 (기존 current-main health CI에 연결).
 - [ ] 웹 KO→EN→KO, `savedReportId`, 로그인/권한/프리미엄 저장·재진입 실사용 확인
 - [ ] Android/iOS 신규 설치와 재실행, 네이티브 영어 저장 결과/상품 선택 흐름 확인
 - [ ] CI, 코드 리뷰 후 병합·배포·실기기 수락 테스트를 각각 별도 기록
