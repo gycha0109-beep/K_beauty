@@ -2748,7 +2748,11 @@ function buildDisplayBudgetAlternatives(items = [], result = {}, locale = "ko") 
         name: item?.name || product.name || "",
         brand: item?.brand || product.brand || "",
         price_range: item?.price_range || product.price_range || "",
-        summary: chooseBudgetAlternativeSummary(product, locale, usedSummaries)
+        // English display must not replace a stored alternative's reasoning
+        // with a generic category-based recommendation.
+        summary: locale === "en"
+          ? compactLocalizedText(item?.summary || product.summary || item?.reason || product.reason || "", locale)
+          : chooseBudgetAlternativeSummary(product, locale, usedSummaries)
       };
     })
     .filter((item) => {
