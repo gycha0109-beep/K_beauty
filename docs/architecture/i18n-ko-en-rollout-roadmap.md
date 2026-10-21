@@ -69,6 +69,13 @@
 - [ ] 나머지 화면의 날짜·시간·숫자 형식과 실기기 화면의 줄바꿈/오버플로 검사.
 - [ ] 구매 링크/판매처 이름이 실제 지역 지원 여부를 허위로 암시하지 않도록 점검.
 
+### M4.1 추가 보수 — 근거 문장과 지시 보존
+
+- [x] 기능성 플랜 루틴에서 미기록 빈도·제품 조합 제한을 임의로 생성하는 템플릿 제거. `lib/premium-functional-routine-locale.mjs`은 기록된 `time/order/frequency/avoid/review`만 표시.
+- [x] 컨디션 대응의 `title/summary/reasons/action/globalNotice`에서 명시적 `{ko,en}` 내용 선택, 빈 번역 원문 fallback, 원어 문구 안내 표시.
+- [x] Face Lab V2의 기존 영어 전용 presentation 계약 유지. 과거 한국어 분석 근거는 별도 접이식 원문 증거 패널에 표시, canonical과 route ID/상태/우선순위 불변.
+- [ ] 완전 영문 자유서술 번역: 기존 단일 언어 원문에는 인증된 1:1 영어 대응 데이터가 없어 일괄 번역 완료 처리 금지. 원문과 출처 안내 제공은 보수적 대체 수단이며 완전한 번역은 아님.
+
 ## M5. 릴리스 게이트
 
 - [ ] 기존 모바일 `npm run mobile:typecheck`, `npm run verify:mobile-foundation` 및 관련 CI 확인
