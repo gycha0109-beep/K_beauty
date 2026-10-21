@@ -12,6 +12,7 @@ const nativeClient = read("apps/mobile/features/premium/premium-client.ts");
 const nativeSelector = read("apps/mobile/features/premium/NativeCurrentProductsSelector.tsx");
 const nativeShell = read("apps/mobile/lib/mobile-shell.tsx");
 const premiumWeb = read("app/result/full-report/page.js");
+const webSelector = read("components/current-products/CurrentProductsSelector.jsx");
 
 assert.match(productSource, /const CURRENT_PRODUCT_OPTION_FIELDS\s*=\s*"[^"]*brand_en, name_en[^"]*"/);
 assert.match(productSource, /\.\.\.mapCurrentProductOption\(product\)/);
@@ -32,4 +33,8 @@ assert.match(premiumWeb, /encodeURIComponent\(savedReportId\)/);
 assert.match(premiumWeb, /getLocalePath\(pathname, "ko", savedReportId\)/);
 assert.match(premiumWeb, /getLocalePath\(pathname, "en", savedReportId\)/);
 
+assert.match(webSelector, /locale === "en" \? product\.brand_en \|\| product\.brand : product\.brand/);
+assert.match(webSelector, /locale === "en" \? product\.name_en \|\| product\.name : product\.name/);
+assert.ok(!webSelector.includes("createBrowserSupabaseClient"), "current-products API already provides display names");
+assert.ok(!webSelector.includes("localizeProductsForEnglish"), "no duplicate product name fetch");
 console.log("I18N_KO_EN_M1_STATIC=PASS");
