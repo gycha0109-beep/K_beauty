@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://storage.googleapis.com; worker-src 'self' blob:; font-src 'self';">
+  <title>Skin Scan Lab | BEJEWELY</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div class="brand"><span class="symbol">✦</span><span>BEJEWELY <small>/ SKIN LAB</small></span></div>
+      <span class="experiment">독립 실험 · 의료 진단 아님</span>
+    </header>
+    <section class="intro">
+      <p class="eyebrow">SKIN SCAN / BROWSER PROTOTYPE</p>
+      <h1>피부를 <em>보여주는</em> 분석.</h1>
+      <p class="lead">얼굴 한 장으로 피부 영역을 찾아 영상 특징을 시각화합니다. 검증된 여드름 진단·피지량·수분량 측정 기능은 아닙니다.</p>
+    </section>
+    <div class="workspace">
+      <section class="stage-card" aria-label="스캔 이미지">
+        <div class="stage-top"><span><i class="led"></i> VISUAL ANALYSIS</span><span id="imageDimension">NO IMAGE</span></div>
+        <div class="stage" id="stage">
+          <div class="empty" id="empty">
+            <div class="face-illustration" aria-hidden="true">
+              <div class="head-line"></div><div class="guide-ring"></div><div class="guide-bar"></div>
+            </div>
+            <strong>사진 한 장으로 시작하세요</strong>
+            <span>정면에 가까운 얼굴 사진을 추천합니다</span>
+          </div>
+          <div class="photo-wrap hidden" id="photoWrap">
+            <img id="photo" alt="사용자가 직접 선택한 얼굴 사진">
+            <canvas id="overlay" aria-label="사진과 동일한 위치에 표시한 영상 특징 오버레이"></canvas>
+            <div class="scan-beam" id="scanBeam" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="stage-footer">
+          <span id="status" role="status" aria-live="polite">분석 대기 중</span>
+          <span id="faceStatus">얼굴 좌표 대기</span>
+        </div>
+        <div class="privacy">사진 파일은 이 실험 코드에서 서버로 업로드하거나 저장하지 않습니다. 다만 AI 실행에 필요한 공개 라이브러리와 모델은 외부 호스트에서 불러옵니다. 실제 서비스 도입 전에는 자산 자체 호스팅과 권리 검토가 필요합니다.</div>
+      </section>
+      <aside class="control-card">
+        <div class="panel-heading">
+          <div><p class="eyebrow">01 / IMAGE INPUT</p><h2>얼굴 사진 선택</h2></div>
+          <span class="status-pill" id="statePill">READY</span>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn primary" id="chooseButton">사진 불러오기 <span>↗</span></button>
+          <button type="button" class="btn ghost" id="cameraButton">카메라로 촬영</button>
+          <input id="photoInput" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp">
+          <input id="cameraInput" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp" capture="user">
+        </div>
+        <p class="microcopy">사진이 선택되면 Google MediaPipe로 얼굴 윤곽과 피부 영역을 찾습니다. 모델 로딩에는 네트워크가 필요합니다.</p>
+        <div class="divider"></div>
+        <div class="panel-heading"><div><p class="eyebrow">02 / SURFACE MAP</p><h2>표시할 영상 특징</h2></div></div>
+        <div class="mode-list" role="group" aria-label="시각화 모드 선택">
+          <button class="mode selected" data-mode="mesh" type="button"><span class="mode-dot mint"></span><span class="mode-text"><strong>얼굴 스캔</strong><small>실제 얼굴 랜드마크 표시</small></span><span class="mode-arrow">→</span></button>
+          <button class="mode" data-mode="redness" type="button"><span class="mode-dot rose"></span><span class="mode-text"><strong>붉은색 분포</strong><small>상대적 색상 패턴 · 홍조 진단 아님</small></span><span class="mode-arrow">→</span></button>
+          <button class="mode" data-mode="shine" type="button"><span class="mode-dot amber"></span><span class="mode-text"><strong>광택 분포</strong><small>밝은 반사 패턴 · 유분 측정 아님</small></span><span class="mode-arrow">→</span></button>
+          <button class="mode" data-mode="pores" type="button"><span class="mode-dot lavender"></span><span class="mode-text"><strong>미세 점 패턴</strong><small>모공 후보 질감 · 실제 모공 검출 아님</small></span><span class="mode-arrow">→</span></button>
+          <button class="mode" data-mode="tone" type="button"><span class="mode-dot blue"></span><span class="mode-text"><strong>색상 편차</strong><small>국소 밝기 차이 · 색소 질환 아님</small></span><span class="mode-arrow">→</span></button>
+          <button class="mode" data-mode="blemish" type="button"><span class="mode-dot coral"></span><span class="mode-text"><strong>트러블 유사 패턴</strong><small>색상·질감 기반 후보 · 여드름 검출 아님</small></span><span class="mode-arrow">→</span></button>
+          <button class="mode" data-mode="texture" type="button"><span class="mode-dot slate"></span><span class="mode-text"><strong>피부결 변화</strong><small>미세 명암 변화 · 건조함 측정 아님</small></span><span class="mode-arrow">→</span></button>
+        </div>
+        <div class="range-wrap">
+          <label for="threshold">시각화 민감도 <output id="thresholdText">보통</output></label>
+          <input id="threshold" type="range" min="20" max="85" step="5" value="55">
+        </div>
+        <div class="divider"></div>
+        <div class="finding">
+          <p class="eyebrow">03 / CURRENT VIEW</p>
+          <strong id="findingTitle">사진을 선택해 주세요</strong>
+          <p id="findingCopy">스캔 결과는 피부 상태의 의학적 판정이 아니라 영상 처리 결과입니다.</p>
+        </div>
+        <div class="unsupported">
+          <strong>이번 실험에서 의도적으로 제외</strong>
+          <p>수분량 · 피부 장벽 기능 · UV 손상 · 정확한 여드름 개수/유형 · 의료적 심각도 등급</p>
+        </div>
+      </aside>
+    </div>
+    <footer class="foot"><span>BEJEWELY / Skin Scan Research Prototype</span><span>MediaPipe · Apache 2.0 · 외부 모델·CDN 로딩 · 배포 전 법적 검토 필요</span></footer>
+  </main>
+</body>
+</html>
