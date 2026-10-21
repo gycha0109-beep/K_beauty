@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-21 / pipeline-reliability — TRUST P2 v3 evidence-first redesign (SHADOW)
+
+- 유형: 설계 + 제한 오프라인 실행 모델(Medium). 영향 라우팅 DB/Auth/RLS/Storage/Provider/Payment/Secret/Production 직접 변경 N. 기존 API/스키마/카탈로그/추천/Subject/Fact/바인딩 코드 변경 N.
+- 원인 확정: 기존 카탈로그 `name/size_ml/source_url`을 비교 기준의 진실로 놓아 단일 용기·기획 묶음·패드 매수를 혼동했고, 과거 공식몰 page SHA만 남아 실제 selected offer를 재확인할 수 없음. frozen 5는 실패 편향 cohort로 정확도 평가에 사용할 수 없음.
+- 설계: `docs/architecture/trust-p2-evidence-first-redesign-v3.md`. Catalog assertion, product family, physical unit, commercial offer, claim evidence, authority 분리. 검증의 단위는 상품 전체가 아니라 명시적 주장/범위이며 증거 없는 사용 승격 금지.
+- 실행 shadow: `lib/trust/p2-evidence-first-shadow-v1.mjs`, `scripts/report-trust-p2-evidence-first-shadow.mjs`, `scripts/verify-trust-p2-evidence-first-shadow.mjs` + 기존 canonical TRUST 검사에 연결. 이미 보관된 real 5건과 출처별 2차 목록만 사용; 단위/묶음 원자적 관측 분리, 음성/counterfactual 회귀. 실제 정확도 분모 0 → null, 공식 exact SKU 확인 0/5.
+- 차기 절차: 적법한 검토 가능 원문과 별도의 독립 라벨 세트 확보 → 상품/용기/오퍼별 정확도·자동화율·근거 추적성 측정 → 생산 연동 승인은 별도. 공식몰 live/robots/AI/DB 쓰기/배포 0회. 구 v2 파일 삭제·반전 없음.
+
+
 ### 2026-10-20 / pipeline-reliability — frozen catalog intake source-candidate lineage review
 
 - 추가 제한 SELECT: \`catalog_trust_intake\` 세 제품의 \`source_candidate_id\`는 전부 NULL; \`product_candidates.matched_product_id\` 세 UUID 조회도 결과 0건. 이 테이블에서 확인되는 직접 provenance가 비어 있다는 뜻이지 모든 과거 출처가 없었다는 뜻은 아님.
