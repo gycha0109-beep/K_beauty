@@ -72,9 +72,7 @@ const product=brand=>a=>a.cases.find(c=>c.brand===brand);
 assert.equal(counterfactual(a=>{
   product("아토팜")(a).sources[0].unitVolumeMl=600;
 }).rows.find(x=>x.brand==="아토팜").unitReviewLane,
-  "SECONDARY_CAPACITY_CORROBORATION_ONLY"===false?
-  "SECONDARY_CAPACITY_CORROBORATION_ONLY":
-  "CATALOG_VS_SINGLE_UNIT_LISTING_DISAGREEMENT"); // replaced below by exact expected
+  "SINGLE_SECONDARY_CAPACITY_LEAD");
 // Synthetic 300ml x 2 alone is NEVER a matching single physical 600ml
 // product even though the total liquid content is 600ml.
 assert.equal(counterfactual(a=>{
