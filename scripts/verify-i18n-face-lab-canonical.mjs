@@ -65,6 +65,22 @@ const survey = {
 const options = { analysis, surveyAnswers: survey, resultId: "i18n-fixture" };
 const ko = buildFaceLabV2Canonical({ ...options, locale: "ko" });
 const en = buildFaceLabV2Canonical({ ...options, locale: "en" });
+assert.equal(ko.targetStyle?.status, "available", "fixture must exercise a confirmed style target");
+assert.equal(en.targetStyle?.status, "available");
+assert.equal(ko.currentFaceProfile?.status, "available", "fixture must exercise actual style projection");
+assert.equal(en.currentFaceProfile?.status, "available");
+assert.ok((ko.routes?.routes || []).length > 0, "fixture must generate at least one real styling route");
+assert.ok((en.routes?.routes || []).length > 0);
+assert.ok(ko.styleDelta?.summary, "style delta must exist");
+assert.ok(en.styleDelta?.summary);
+assert.match(ko.styleDelta.summary, /[가-힣]/);
+assert.doesNotMatch(en.styleDelta.summary, /[가-힣]/);
+assert.deepEqual(
+  ko.styleDelta?.priorities?.map(p => ({ domain: p.domain, parameter: p.parameter, rank: p.rank, constraintState: p.constraintState })),
+  en.styleDelta?.priorities?.map(p => ({ domain: p.domain, parameter: p.parameter, rank: p.rank, constraintState: p.constraintState })),
+  "translated style delta must keep canonical action identity and ranking"
+);
+
 const compare = (label, choose) => {
   assert.deepEqual(choose(ko), choose(en), `KO/EN should preserve ${label}`);
 };
