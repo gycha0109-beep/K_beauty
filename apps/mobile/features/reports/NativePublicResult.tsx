@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useMobileShell } from "../../lib/mobile-shell";
+import { getLocalizedSkinState } from "../../lib/skin-state-i18n";
 import type { NativeFreeSavedResult } from "./saved-report-client";
 
 const COPY = {
@@ -60,8 +61,8 @@ export function NativePublicResult({ result }: { result: NativeFreeSavedResult }
   const { locale, palette } = useMobileShell();
   const copy = COPY[locale];
   const summary = text(result.summary);
-  const skinType = text(result.skinType);
-  const concerns = lines(result.mainConcerns, 5);
+  const skinType = getLocalizedSkinState(text(result.skinType), "skinTypes", locale);
+  const concerns = lines(result.mainConcerns, 5).map((value) => getLocalizedSkinState(value, "concerns", locale));
   const product = topPick(result.topPick);
   const am = lines(result.routineAm);
   const pm = lines(result.routinePm);
