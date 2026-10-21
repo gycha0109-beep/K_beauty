@@ -82,9 +82,12 @@ function collectDisplayLines(value: unknown, limit = 8, depth = 0, locale: "ko" 
   const record = value as Record<string, unknown>;
   // Bilingual report fields carry display text, not two independent statements.
   if (Object.hasOwn(record, "ko") || Object.hasOwn(record, "en")) {
-    const localized = locale === "en"
-      ? record.en ?? record.ko
-      : record.ko ?? record.en;
+    const preferred = locale === "en" ? record.en : record.ko;
+    const fallback = locale === "en" ? record.ko : record.en;
+    const hasDisplayText = (item: unknown) =>
+      (typeof item === "string" && item.trim().length > 0)
+      || (Array.isArray(item) && item.length > 0);
+    const localized = hasDisplayText(preferred) ? preferred : fallback;
     return collectDisplayLines(localized, limit, depth + 1, locale);
   }
   const lines: string[] = [];
