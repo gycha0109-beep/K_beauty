@@ -15,6 +15,7 @@
     "verify:i18n-m1": "node scripts/verify-i18n-m1.mjs",
     "verify:i18n-m2": "node scripts/verify-i18n-m2-fidelity.mjs",
     "verify:i18n-m3": "node scripts/verify-i18n-m3-profile.mjs",
+    "verify:i18n-m4": "node scripts/verify-i18n-m4-display.mjs",
     "verify:current-repository-hygiene": "node scripts/verify-current-repository-hygiene.mjs",
     "verify:candidate-exposure-policy-shadow": "node scripts/verify-candidate-exposure-policy-shadow-runtime.mjs",
     "verify:candidate-exposure-policy-shadow-evaluation": "node scripts/verify-candidate-exposure-policy-shadow-evaluation.mjs",
