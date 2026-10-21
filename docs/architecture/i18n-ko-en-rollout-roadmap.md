@@ -38,9 +38,12 @@
 
 ## M3. 저장 및 공유 데이터 다국어 처리
 
-- [ ] 저장 결과 조회 시 `sourceLocale`과 `displayLocale`을 명확히 구분.
-- [ ] `app/api/full-report/route.js`의 `buildSavedPremiumReportResponse`는 현재 저장 언어를 우선하므로 표시 언어 별도 계약과 표시단 projection 필요. 저장 snapshot 재작성/재판단 금지.
-- [ ] 모바일 `NativeSavedReport.tsx` 및 `NativePublicResult.tsx`의 자유서술/피부타입/제품명 표시 정책 통일.
+- [x] 저장 프리미엄 응답 `meta.sourceLocale`·`meta.displayLocale` 추가 (`meta.locale` 호환 유지). 저장 스냅샷은 수정하지 않음.
+- [ ] 무료 저장·공유 결과에도 소스 언어 provenance 일관화 (기존 빈 locale 기록 검수 포함).
+- [x] `app/api/full-report/route.js`의 저장 응답에서 sourceLocale과 요청 displayLocale을 구분하고, 저장 Top Pick 적합도 라벨은 표시 언어를 적용. 원본 판단·fingerprint/스냅샷 불변.
+- [ ] 전체 리포트 중 언어에 따라 새 문장을 만드는 다른 표시 경로와 legacy 자유서술 번역 품질은 별도 검증.
+- [x] 모바일 `NativeSavedReport.tsx` 및 `NativePublicResult.tsx`의 피부타입·코드형 고민·포함된 영문 상품명 우선 표시 구현. 자유서술은 원문 유지 및 안내 노출.
+- [x] 모바일 Premium 상세의 `{ko,en}` 내러티브 필드를 선택 언어 우선으로 읽고 중복된 언어 텍스트를 나열하지 않도록 보완.
 - [x] `NativeMyDiaryView.tsx`의 피부타입·고민·민감도 코드형 상태값을 검증된 KO/EN 레이블로 현지화. 사용자 자유입력 `memo`는 번역하지 않음.
 - [x] `NativeSavedReport.tsx`/`NativePublicResult.tsx`의 코드형 피부타입·고민 표시값 KO/EN 현지화 (원문 자유서술은 그대로 유지).
 - [x] 저장 당시 한국어가 확인되는 웹 프리미엄·모바일 저장/공유 리포트의 영어 화면에 원문 언어 안내 표시.
@@ -48,9 +51,11 @@
 
 **승인 기준:** 데이터 무결성/조회 권한 불변, 정확히 현지화할 수 없는 기존 기록은 원어 원문을 보존한다.
 
-**M3 남은 일:** 저장 결과 API의 `sourceLocale`/`displayLocale` 명시적 분리, 영문 상품명·기존 자유서술·프로필 이외 진단 항목의 표시 통일, 저장 locale 누락 기록의 원문 안내 판정, 보안·공유 권한 회귀 검증은 미완료.
+**M3 남은 일:** 무료 저장/공유 API의 sourceLocale provenance 통일, 영어 제품명 DB 미포함 payload 대응, legacy 자유서술 영문 재표시 품질, 프로필 이외 진단 항목과 보안·공유 권한 실사용 회귀 검증은 미완료.
 
 ## M4. 전 화면 번역 품질
+
+- [x] 웹 현재 제품 선택의 KO에서 영문명 노출되는 문제 수정; EN에서만 공식 `brand_en`/`name_en` 우선. 이미 API가 제공하는 영문명에 대해 별도 브라우저 Supabase 재조회 제거.
 
 - [ ] 웹·모바일 온보딩, 설문, 카메라, 무료 결과, 풀 리포트 허브, Face Lab, My, 다이어리, 공유, 계정, 동의, 에러·비활성 상태 문구 점검.
 - [ ] 영문 상품명 없는 12개 제품(2026-10-21 점검 당시 176개 중 164개 영문명 보유) 공식 표기와 카테고리 검수 후 보완. 무근거 기계 번역 금지.
@@ -61,7 +66,7 @@
 
 - [ ] 기존 모바일 `npm run mobile:typecheck`, `npm run verify:mobile-foundation` 및 관련 CI 확인
 - [ ] 기존 `npm run verify:premium-browser-journey-contract` 및 회귀 검사 확인
-- [ ] 신규 검증 `npm run verify:i18n-m1`, `npm run verify:i18n-m2`, `npm run verify:i18n-m3` 실행 확인 (기존 current-main health CI에 연결).
+- [ ] 신규 검증 `npm run verify:i18n-m1`, `npm run verify:i18n-m2`, `npm run verify:i18n-m3` 최신 커밋 기준 통과 확인 (기존 current-main health CI에 연결; 이전 커밋에서는 통과).
 - [ ] 웹 KO→EN→KO, `savedReportId`, 로그인/권한/프리미엄 저장·재진입 실사용 확인
 - [ ] Android/iOS 신규 설치와 재실행, 네이티브 영어 저장 결과/상품 선택 흐름 확인
 - [ ] CI, 코드 리뷰 후 병합·배포·실기기 수락 테스트를 각각 별도 기록
