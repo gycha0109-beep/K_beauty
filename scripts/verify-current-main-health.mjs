@@ -42,6 +42,8 @@ run("Current verifier syntax", node, ["--check", "scripts/verify-current-main-he
 run("Current Recommendation verifier syntax", node, ["--check", "scripts/verify-current-recommendation-health.mjs"]);
 run("Repository hygiene verifier syntax", node, ["--check", "scripts/verify-current-repository-hygiene.mjs"]);
 run("Document locale contract", node, ["--experimental-default-type=module", "scripts/verify-document-locale-contract.mjs"]);
+run("KO/EN M1 display contract", node, ["scripts/verify-i18n-m1.mjs"]);
+run("KO/EN M2 report fidelity contract", node, ["scripts/verify-i18n-m2-fidelity.mjs"]);
 run("Shared survey input contract", node, ["--experimental-default-type=module", "scripts/verify-shared-survey-contract.mjs"]);
 run("Free survey decision intake", node, ["--experimental-default-type=module", "scripts/verify-free-survey-decision-intake.mjs"]);
 run("Premium intake v1", node, ["--experimental-default-type=module", "scripts/verify-premium-intake-v1.mjs"]);
