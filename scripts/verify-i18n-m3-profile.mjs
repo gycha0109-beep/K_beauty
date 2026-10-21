@@ -4,6 +4,8 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   getAnalysisResultSourceLocale,
+  getConcernLabels,
+  getSkinTypeLabel,
   serializePublicAnalysisResult,
   serializeOwnerAnalysisResult
 } from "../lib/analysis-results.js";
@@ -82,6 +84,11 @@ const unknown = serializePublicAnalysisResult(sample);
 assert.equal(unknown.locale, "ko", "legacy display fallback remains unchanged");
 assert.equal(unknown.sourceLocale, null, "an unknown source language is not claimed to be KO");
 assert.equal(unknown.summary, "원문 설명");
+assert.equal(getSkinTypeLabel("복합성", "en"), "Combination");
+assert.equal(getSkinTypeLabel("dry", "en"), "Dry");
+assert.deepEqual(getConcernLabels(["트러블", "붉은기", "unknown"], "en"), ["Breakouts", "Redness", "unknown"]);
+assert.deepEqual(getConcernLabels(["acne"], "ko"), ["트러블"]);
+
 assert.equal(unknown.topPick, null);
 assert.equal(serializeOwnerAnalysisResult({ ...sample, is_public: false }).sourceLocale, null);
 assert.equal(getAnalysisResultSourceLocale({ ...sample, locale: "en" }), "en");
