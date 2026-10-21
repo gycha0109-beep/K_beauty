@@ -19,7 +19,7 @@ const REPORT_COPY = {
     version: "Version",
     savedAt: "Saved",
     noDetail: "This saved server snapshot has no additional displayable detail.",
-    sourceNote: "This report was originally saved in Korean. Some guidance remains in the original language."
+    sourceNote: "Some saved guidance is shown in Korean to preserve the original result."
   },
   ko: {
     free: "무료 리포트",
@@ -202,12 +202,21 @@ export function NativeSavedReport({ value }: { value: NativeSavedReportRead }) {
           ? value.report.locale
           : null;
 
+  const guidanceLines = value.kind === "free"
+    ? [value.result.summary, ...(value.result.routineAm || []), ...(value.result.routinePm || [])]
+    : collectDisplayLines({
+        fullRoutine: value.report.fullRoutine,
+        functionalDecisions: value.report.functionalDecisions,
+        conditionResponses: value.report.conditionResponses
+      }, 24);
+  const containsKoreanGuidance = guidanceLines.some((line) => typeof line === "string" && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(line));
+
   return (
     <View testID="native-saved-report" style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: palette.accent }]}>{reportLabel}</Text>
         <Text style={[styles.title, { color: palette.text }]}>{value.metadata.title || reportLabel}</Text>
-        {locale === "en" && reportLocale === "ko" ? (
+        {locale === "en" && (reportLocale === "ko" || containsKoreanGuidance) ? (
           <Text style={[styles.body, { color: palette.textMuted }]}>{copy.sourceNote}</Text>
         ) : null}
         <View style={styles.metaRow}>
