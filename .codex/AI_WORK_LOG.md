@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-21 / TRUST 5 diagnostic catalog rows and solo-owner fact verification
+
+- 실운영 DB `public.products` 5개 정정: 비플레인 340→180ml, 아토팜 600→300ml(잘못된 10ml당 단가 NULL), 이즈앤트리 공식 상품 56 URL, 토리든 단품 58 URL, 닥터지 EX 정확한 제품 70ml 화해 URL. 기존 화해 링크 보존. 각 `UPDATE RETURNING` 및 5건 `SELECT` 확인. 추가로 BOJ 50ml 공식몰 locale URL 갱신 확인.
+- 사용자 1인 운영·검토·승인 체계 반영: 일반 제품명/용량/출처 URL 기본 사실 기록에 2인 리뷰, 원문 통째 보존, 제조사 사전 허가를 필수 조건으로 두지 않음. 다만 정확한 판매 옵션/처방까지 보증하는 건 별개.
+- 5/5는 기본 DB 출처 연결 완료, 공식 단품 제조사 페이지는 4/5, Dr.G **EX**는 비EX와 혼동 금지. 독립 Gold Accuracy 시험은 별도이며 기존 0/5 숫자를 무조건 성공으로 승격하지 않음.
+- 산출: `evidence/trust/p2d-five-catalog-owner-sourced-corrections-20261021.json`, `scripts/verify-trust-p2d-five-catalog-owner-corrections.mjs`, canonical TRUST import, architecture boundary correction.
+- 남은 리스크: 아토팜의 기존 판매가격이 화해 300+300 행사 정보를 반영할 수 있음. 새 300ml 단품 물리 용량과 가격 의미를 뒤섞지 않도록 가격 재검증 별도 필요.
+
+
 ### 2026-10-21 / pipeline-reliability — two-site scoped public indexed evidence / site-access HOLD
 
 - 작업: 사용자 명시 승인된 Sidmool·Beauty of Joseon 2개 공식 출처의 제한적 재검증. 읽기 전용. Old main`af68681c` postmerge TRUST/Main Health/CodeQL/package security PASS.

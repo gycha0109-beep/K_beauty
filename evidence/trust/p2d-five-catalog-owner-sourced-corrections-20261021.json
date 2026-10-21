@@ -1,0 +1,159 @@
+{
+  "contract": "trust-p2d-five-brand-catalog-facts-owner-review-v1",
+  "date": "2026-10-21",
+  "purpose": "Record performed narrowly-scoped, directly verified production catalog corrections for five legacy P2 diagnostic products. Does not represent a separate exact-selected-offer SKU or independent accuracy gold adjudication.",
+  "reviewModel": {
+    "basicProductFacts": "SINGLE_OWNER_REVIEW",
+    "secondReviewerRequired": false,
+    "officialProductFactsCanBeRecordedFrom": "PUBLISHED_PRODUCT_FACT_AND_SOURCE_URL",
+    "requiresOriginalHtmlCopy": false,
+    "requiresManufacturerPermissionToCiteFactsAndLinks": false,
+    "requiresTwoBlindReviewersForNormalCatalogUpdates": false,
+    "selectedOfferSkuGoldIndependentOfFactWrite": true
+  },
+  "dataScope": {
+    "table": "public.products",
+    "readAndUpdateByExactProductId": true,
+    "dbSchemaChanged": false,
+    "newPurchaseOptionRowsCreated": false,
+    "subjectFactAuthorityPromoted": false,
+    "recommendationAdmissionChanged": false
+  },
+  "corrections": [
+    {
+      "productId": "9b81da7a-649e-41ec-a22b-7e367c05afe4",
+      "brand": "비플레인",
+      "name": "녹두 모공 클리어링 필터 패드",
+      "before": {
+        "sizeMl": 340,
+        "sourceUrl": "https://www.hwahae.co.kr/products/2140507"
+      },
+      "after": {
+        "sizeMl": 180,
+        "sourceUrl": "https://www.beplain.co.kr/m/product_detail.html?brand_uid=10739162"
+      },
+      "sourceKind": "BRAND_OFFICIAL_PRODUCT_PAGE",
+      "sourceClaim": "70 sheets and 180ml liquid per main pad container, separately advertised +10 promotional sheets",
+      "commercialOfferScope": "70매+10매 promotional listing; never infer 340ml from sheet count or bonus",
+      "hwahaeUrlPreserved": true,
+      "pricePer10MlSetNull": false,
+      "officialSelectedOfferSkuFullyAdjudicated": false
+    },
+    {
+      "productId": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "brand": "아토팜",
+      "name": "MLE 로션",
+      "before": {
+        "sizeMl": 600,
+        "sourceUrl": null,
+        "unitPricePer10Ml": 1016.67
+      },
+      "after": {
+        "sizeMl": 300,
+        "sourceUrl": "https://neopharmshop.co.kr/product/detail.html?product_no=2184",
+        "unitPricePer10Ml": null
+      },
+      "sourceKind": "BRAND_OFFICIAL_PRODUCT_PAGE",
+      "sourceClaim": "300ml single bottle; brand separately sells 300ml x2 commercial set",
+      "commercialOfferScope": "Old 600ml was 300ml+300ml retail composition, not one 600ml bottle; retained older 300+300 Hwahae listing only as secondary link",
+      "hwahaeUrlPreserved": true,
+      "pricePer10MlSetNull": true,
+      "pricingFollowupNeeded": true,
+      "officialSelectedOfferSkuFullyAdjudicated": false
+    },
+    {
+      "productId": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
+      "brand": "이즈앤트리",
+      "name": "초저분자 히아루론산 토너",
+      "before": {
+        "sizeMl": 300,
+        "sourceUrl": "https://www.hwahae.co.kr/goods/62479"
+      },
+      "after": {
+        "sizeMl": 300,
+        "sourceUrl": "https://www.isntree.com/product/%EC%B4%88%EC%A0%80%EB%B6%84%EC%9E%90-%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%ED%86%A0%EB%84%88-300ml/56/"
+      },
+      "sourceKind": "BRAND_OFFICIAL_PRODUCT_PAGE",
+      "sourceClaim": "300ml manufacturer single-product listing (product 56) distinct from old retailer promotional bundle",
+      "commercialOfferScope": "300ml physical unit, no implied refill or promotional pump in canonical source",
+      "hwahaeUrlPreserved": true,
+      "pricePer10MlSetNull": false,
+      "officialSelectedOfferSkuFullyAdjudicated": false
+    },
+    {
+      "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+      "brand": "토리든",
+      "name": "다이브인 저분자 히알루론산 세럼",
+      "before": {
+        "sizeMl": 50,
+        "sourceUrl": null
+      },
+      "after": {
+        "sizeMl": 50,
+        "sourceUrl": "https://www.torriden.com/goods/goods_view.php?goodsNo=58"
+      },
+      "sourceKind": "BRAND_OFFICIAL_PRODUCT_PAGE",
+      "sourceClaim": "50ml single serum page product 58, separate 50mlx2 listing product 76",
+      "commercialOfferScope": "Single bottle only; not two-pack",
+      "hwahaeUrlPreserved": false,
+      "pricePer10MlSetNull": false,
+      "officialSelectedOfferSkuFullyAdjudicated": false
+    },
+    {
+      "productId": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "brand": "닥터지",
+      "name": "레드 블레미쉬 클리어 수딩 크림 EX",
+      "before": {
+        "sizeMl": 70,
+        "sourceUrl": null
+      },
+      "after": {
+        "sizeMl": 70,
+        "sourceUrl": "https://www.hwahae.co.kr/products/2195805"
+      },
+      "sourceKind": "SECONDARY_HWAHAE_EXACT_NAME_CAPACITY",
+      "sourceClaim": "Hwahae lists exact EX product title 70ml. Manufacturer official site pages found were non-EX siblings.",
+      "commercialOfferScope": "DO NOT equate EX product with non-EX Dr.G 70ml or 1+1 products",
+      "hwahaeUrlPreserved": false,
+      "secondaryHwahaeUrlAlsoSet": true,
+      "pricePer10MlSetNull": false,
+      "officialSelectedOfferSkuFullyAdjudicated": false
+    }
+  ],
+  "otherSourceFollowups": [
+    {
+      "productId": "a6994fcd-302f-4e63-acbe-91a3f17a5a65",
+      "brand": "SIDMOOL",
+      "sourceUrl": "https://www.sidmool.com/shop/shopdetail.html?branduid=76777",
+      "physicalSizeMl": 75,
+      "hwahaeLinkPreserved": true,
+      "priorTurnCompleted": true
+    },
+    {
+      "productId": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "brand": "뷰티오브조선",
+      "sourceUrl": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics?country=PH&currency=PHP",
+      "physicalSizeMl": 50,
+      "sourceLinkedInThisTurn": true,
+      "priorSourceWasNull": true
+    }
+  ],
+  "outcome": {
+    "legacyFiveCatalogRowsSourceLinked": 5,
+    "legacyFiveOfficialBrandSourcesLinked": 4,
+    "legacyFiveExactNameSecondaryOnly": 1,
+    "legacyFivePhysicalUnitCapacityCorrections": 2,
+    "additionalTwoSourceLinked": 2,
+    "originalFiveExactSelectedOfferSkuIndependentGoldClaimsAdded": 0,
+    "schemaChanges": 0,
+    "productFactAuthorityWrites": 0,
+    "wholeWebpageCopies": 0
+  },
+  "limitations": [
+    "Historical five cases are not a statistically representative sample; 5/5 linked references does not establish 5/5 exact manufacturer SKU verification.",
+    "Price fields may retain seller/sale-offer semantics; Atopalm prior derived price per 10ml was cleared rather than incorrectly retained after 600->300ml.",
+    "Stored source links and user-reviewed product facts do not establish formulation identity for same-brand EX/non-EX variants.",
+    "Brand official product 2184 follows indexed manufacturer product number; its short alternative direct URL was not independently retrievable with this web client.",
+    "One owner manages catalog factual review; independent gold-label evaluation is a separate optional methodology, not a mandatory approval gate for a product-name/size/link edit."
+  ]
+}
