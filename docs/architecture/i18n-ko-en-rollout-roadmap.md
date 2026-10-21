@@ -39,7 +39,8 @@
 ## M3. 저장 및 공유 데이터 다국어 처리
 
 - [x] 저장 프리미엄 응답 `meta.sourceLocale`·`meta.displayLocale` 추가 (`meta.locale` 호환 유지). 저장 스냅샷은 수정하지 않음.
-- [ ] 무료 저장·공유 결과에도 소스 언어 provenance 일관화 (기존 빈 locale 기록 검수 포함).
+- [x] 무료 저장·공유 결과 DTO에 엄격한 `sourceLocale` 추가 (`ko`/`en`/`null`). 원본 locale이 없는 기록은 출처를 추측하지 않고 `null`로 전달하며 기존 `locale` fallback은 호환 유지 (`lib/analysis-results.js`).
+- [x] 모바일 저장/공유 원문 안내는 무료 응답 `sourceLocale` 및 실제 한글 안내 감지 사용. 표시값만 바뀌며 공유 권한·기존 API 읽기 가드는 그대로 유지.
 - [x] `app/api/full-report/route.js`의 저장 응답에서 sourceLocale과 요청 displayLocale을 구분하고, 저장 Top Pick 적합도 라벨은 표시 언어를 적용. 원본 판단·fingerprint/스냅샷 불변.
 - [ ] 전체 리포트 중 언어에 따라 새 문장을 만드는 다른 표시 경로와 legacy 자유서술 번역 품질은 별도 검증.
 - [x] 모바일 `NativeSavedReport.tsx` 및 `NativePublicResult.tsx`의 피부타입·코드형 고민·포함된 영문 상품명 우선 표시 구현. 자유서술은 원문 유지 및 안내 노출.
@@ -51,11 +52,12 @@
 
 **승인 기준:** 데이터 무결성/조회 권한 불변, 정확히 현지화할 수 없는 기존 기록은 원어 원문을 보존한다.
 
-**M3 남은 일:** 무료 저장/공유 API의 sourceLocale provenance 통일, DB에 영문명 미포함 legacy 제품 처리, 자유서술 영문 재표시 품질, 프로필 이외 진단 항목과 보안·공유 권한 실사용 회귀 검증은 미완료. 진행된 보완: 구형 결과의 한국어 안내 감지, 레거시 한국어 피부 타입·고민 코드 정규화, 빈 번역 필드 원문 fallback.
+**M3 남은 일:** DB에 영문명 미포함 legacy 제품의 화면 처리, 기존 자유서술 영문 재표시 품질, 프로필 이외 진단 항목과 보안·공유 권한 실사용 회귀 검증은 미완료. 완료된 기반: 저장/공유 `sourceLocale` provenance, 구형 결과 한글 안내 감지, 레거시 한국어 피부 타입·고민 코드 정규화, 빈 번역 필드 원문 fallback.
 
 ## M4. 전 화면 번역 품질
 
 - [x] 웹 현재 제품 선택의 KO에서 영문명 노출되는 문제 수정; EN에서만 공식 `brand_en`/`name_en` 우선. 이미 API가 제공하는 영문명에 대해 별도 브라우저 Supabase 재조회 제거.
+- [x] 웹 무료 공유 리포트의 KO/EN 언어 전환(표시 UI만 변경·재조회/재분석 없음), 원문 한국어 분석 서술 안내 및 검증된 한국어 레거시 상태 레이블 번역.
 
 - [ ] 웹·모바일 온보딩, 설문, 카메라, 무료 결과, 풀 리포트 허브, Face Lab, My, 다이어리, 공유, 계정, 동의, 에러·비활성 상태 문구 점검.
 - [x] 영문 컬럼 누락 12개 제품(2026-10-21 점검 당시 176개 중 164개 영문명 보유) DB 실측·분류 및 공식 제조사 영문 표기 2건 확인: `docs/architecture/i18n-product-name-backfill-review-20261021.md`.
