@@ -63,6 +63,7 @@ const cases = [
   ["missing_hwahae",x=>{x.product.hwahae_url=null},"HWAHAE_PRODUCT_CAPTURE_BINDING_REQUIRED"],
   ["captured_different_item",x=>{x.product.market_signals.hwahae_review_page="https://www.hwahae.co.kr/products/987654"},"HWAHAE_PRODUCT_CAPTURE_BINDING_REQUIRED"],
   ["unsafe_hwahae",x=>{x.product.hwahae_url="http://www.hwahae.co.kr/products/246810"},"HWAHAE_PRODUCT_CAPTURE_BINDING_REQUIRED"],
+  ["fake_hwahae",x=>{x.product.hwahae_url="https://fake.example/products/246810";x.product.market_signals.hwahae_review_page=x.product.hwahae_url},"HWAHAE_PRODUCT_CAPTURE_BINDING_REQUIRED"],
   ["invalid_rating",x=>{x.product.market_signals.rating=6},"CURRENT_MARKET_SIGNALS_REQUIRED"],
   ["fake_review",x=>{x.product.review_signals.source="unknown"},"CURRENT_REVIEW_SIGNALS_REQUIRED"],
   ["stale_review",x=>{x.product.review_signals.updated_at="2025-01-01"},"CURRENT_REVIEW_SIGNALS_REQUIRED"],
@@ -80,6 +81,8 @@ for(const [name,mutate,expected] of cases){
   assert.ok(result.blockers.includes(expected),name+" missing "+expected);
   assert.equal(result.admissionGranted,false,name);
 }
+const alternateOfficial=fixture();alternateOfficial.officialBindings[0].source_name="lagom_official";
+assert.equal(evaluate(alternateOfficial).state,"AUTO_ADMISSION_PREFLIGHT_PASS");
 const duplicate=fixture();duplicate.catalogProducts.push({
   id:"88888888-8888-4888-8888-888888888888",
   normalized_brand:"Test Brand",normalized_name:"cleanser"
