@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-22 / 공식 제조사 후보 리드와 올리브영 기존 URL 분리 검사 (TRUST pending cohort)
+
+- 직전 HEAD `e3e7c96` GitHub Actions 11/11 success (중복 PIE 취소 1 제외). 운영 DB 신규 클렌저 10건 TRUST intake 및 20개 `low_ph/deep_cleansing` 태스크는 `SUBJECT_CREATION_REQUIRED`/`REVIEW_REQUIRED`, Product Fact/Subject/G2 grant 0 상태 유지.
+- 원인: `existing-cleanser-official-capture-v1`는 `products.source_url`과 정확히 일치하는 공식 URL만 수용해 올리브영 주소 3개(제로이드 1/라곰 2)의 제조사 증거 후보 수집을 구조적으로 막았음.
+- 대응: 기본 `CATALOG_SOURCE_ONLY`는 유지, `ALTERNATE_UNVERIFIED_CANDIDATE`를 **명시적으로** 고른 경우에만 별도 공식 페이지 검토 허용. 리테일 도메인·미승인 호스트·서로 다른 최종 path/query SKU 리다이렉트 등 fail closed. 결과는 오직 `RESEARCH_CANDIDATE_ONLY`, alternate 원본 `catalogSourceAgreement=false`와 manual binding required 표시, 공식 권위 결코 부여하지 않음.
+- 라이브 official fetch에는 먼저 같은 origin `robots.txt` 수집/파싱·Disallow/Crawl-delay 차단 후 지정 상품 URL에 제한 요청하는 보수적 안전 경로 추가; robots를 읽을 수 없거나 사이트 사용권 미확인 시 HOLD. 공식 출처 사용 허가를 받은 사례 없이 **실제 사이트 fetch 또는 원본 캡처를 실행하지 않음**.
+- 단일 official capture CLI에 `--alternate-source-research=true` 옵션, 기존 배치 CLI에 `--official-source-leads-file` 기반 명시적 UUID/호스트 허용 URL 입력, 기본 최대 3개/최대 10개 제한, 읽기 전용 결과. `validateExistingCleanserOfficialResearchLeads`를 공통 입력 검증기로 배치 연계 및 반례 테스트 추가.
+- `evidence/trust/cleanser-official-research-leads-20261022-v1.json`에 제로이드 본사 포밍 클렌저 URL, 라곰 150ml 및 220ml 공식 URL을 **비권위 공개 검색 후보**로 수록. DB는 각각 제로이드 240ml(공식 페이지의 실물 용량 미확인), 라곰 120/170ml(공식 최신 150/220ml): 반드시 variant review HOLD, 자동 수정 금지.
+- 기존 cleanser registry의 low_ph/deep_cleansing은 boolean Fact 정의이므로 둘 모두 true라고 추정하지 말 것. 공식 브랜드 자료에 따르면 마녀공장 소이빈 폼 160ml는 약알칼리성 안내. Source/Subject/Fact authority, 원본 digest, G2, user-facing recommendation, schema/Auth/RLS 및 기존 164개 전부 변경 없음. Github Draft PR #1390만 갱신.
+
 ### 2026-10-22 / 신규 클렌저 TRUST 연구 대기열 실제 등록 및 진단 연결
 
 - PR #1390 이전 HEAD `ceb86e5`: GitHub Actions 11 success + 중복 PIE cancel 1, merge 전 draft. 본 턴 Desktop Commander 미사용.
