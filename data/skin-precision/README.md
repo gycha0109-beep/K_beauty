@@ -33,3 +33,10 @@ No samples have been promoted. This is a blocking intake tool and documentation,
 - Public source advertises 13,936 images and 125,424 label rows, but cross-tabulated camera-angle counts appear inconsistent. Distinct photos and distinct people must be resolved from the **authorized source files** before evaluation or split.
 - AI-Hub usage FAQ allows commercial derived models but raw source images may not be redistributed or provided to external reviewers without separate authorization. Never infer third-party labeling permission from commercial model permission.
 - No account login, use approval, original JSON, independent model results or clinician gold were obtained by adding these tools.
+
+## Validation raw-image inventory and offline visual QA (2026-10-22)
+
+- [VS 1,391-JPEG raw inventory and local acne lesion review instructions](aihub-71645-visual-review-v1.md)
+- `node scripts/review-aihub-71645-acne-local.mjs --self-test` tests parsing and image-coordinate matching with synthetic data. Local end-to-end Node and actual VS/VL images are **not** tested yet.
+- Local-only usage: unzip **VS.zip/VL.zip on the authorized Windows PC**; run script with `--labels`, `--images`, and `--out` arguments to create an offline HTML page with photo-linked acne-point overlays. The HTML has local file URLs and **must not be shared**.
+- Subject identifier equivalence (107 groups) is not proof of 107 medically independent human participants; confirm label/guide provenance before training/holdout claims.
