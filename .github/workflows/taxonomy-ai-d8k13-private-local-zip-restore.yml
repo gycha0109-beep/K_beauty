@@ -460,6 +460,7 @@ jobs:
           Copy-Item (Join-Path $source 'roles.sql') (Join-Path $sql 'roles.sql')
           $schema=[System.IO.File]::ReadAllText((Join-Path $source 'schema.sql'))
           $schema += [Environment]::NewLine + 'CREATE SEQUENCE public.d8k13_fixture_sequence;' + [Environment]::NewLine
+          $schema += 'CREATE SEQUENCE public.d8k13_fixture_seq_uncast;' + [Environment]::NewLine
           [System.IO.File]::WriteAllText((Join-Path $sql 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
           $data=@'
           -- Synthetic data: never from an owner ZIP.
@@ -479,6 +480,8 @@ jobs:
           73	third public row
           \.
           SELECT pg_catalog.setval('public.d8k13_fixture_sequence'::regclass, 78, true);
+          SELECT pg_catalog.setval('public.d8k13_fixture_seq_uncast', 87, false);
+          SELECT pg_catalog.setval('auth.__d8k13_managed_seq_not_present', 1, false);
           '@
           [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
           Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -493,8 +496,8 @@ jobs:
           $r=$line[0] | ConvertFrom-Json
           if ($r.sourceCopyHeaders -ne 4 -or $r.publicCopyHeadersExecuted -ne 2 -or
             $r.publicSourceRowsAppliedAndCountVerified -ne 3 -or $r.publicCopyTablesVerified -ne 1 -or
-            $r.publicSequenceResetsApplied -ne 1 -or $r.skippedManagedCopyHeaders -ne 2 -or
-            $r.skippedOtherSchemaCopyHeaders -ne 0 -or $r.skippedNonpublicSequenceResets -ne 0 -or
+            $r.publicSequenceResetsApplied -ne 2 -or $r.skippedManagedCopyHeaders -ne 2 -or
+            $r.skippedOtherSchemaCopyHeaders -ne 0 -or $r.skippedNonpublicSequenceResets -ne 1 -or
             $r.publicDataRowsVerified -ne $true -or $r.authDataRestored -ne $false -or
             $r.storageMetadataRestored -ne $false -or $r.allDataRestored -ne $false -or
             $r.originalZipModified -ne $false -or $r.networkDisabled -ne $true -or
@@ -505,7 +508,7 @@ jobs:
           if ((Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash -ne $sha) {
             throw 'D8K13_PUBLIC_RESTORE_SOURCE_ZIP_CHANGED'
           }
-          Write-Host 'D8K13_SYNTHETIC_PUBLIC_COPY_ROWS_AND_SEQUENCE_RESTORED_PASS'
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_COPY_ROWS_AND_BOTH_PGDUMP_SETVAL_FORMS_PASS'
       - name: Reject unsupported SQL data commands before isolated partial restore
         shell: pwsh
         run: |
