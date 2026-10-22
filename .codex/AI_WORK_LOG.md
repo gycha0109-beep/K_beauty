@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-22 / cleanser admission continuation — existing product TRUST backfill plan
+
+- Desktop Commander 미사용. Github 작업 브랜치와 Supabase SELECT만 이용. PR #1390 Stage 1에 기존 GPT intake duplicate-block 동작 반영. `ingest_gpt_catalog_product_v1`은 이미 존재하는 `normalized_brand + normalized_name`을 `BLOCKED_DUPLICATE` 처리하므로 신규 10건에 재실행 금지.
+- 독립 계획기 `lib/existing-cleanser-trust-backfill-plan-v1.mjs` 및 READ ONLY `scripts/run-cleanser-initial-admission-preflight-v1.mjs` 연계: 공식 출처 검증 / 현재 KR Subject / 제품별 용량 확인 관측 / Hwahae 리뷰 캡처 / 추천 필드 / governed Confirmed Fact를 누락 원인별 분리. 원본 `source_url`에 공식처럼 보이는 URL이 있어도 확정 Fact로 승격하지 않음.
+- 기존 preflight의 UUID 존재만 보는 Fact 게이트를 실제 `product_fact_current`, `product_fact_instances`, `product_fact_confirmations` JOIN 결과의 `supported`, `product_specific_primary`, registry, proposition, confirmed status, 유효기간 확인으로 강화. 로컬 synthetic 회귀 사례 확대 및 `scripts/verify-current-main-health.mjs`에 연계. 최신 CI Current Main Health / TRUST canonical PASS 확인, 나머지 checks 별도 확인.
+- 운영 DB 읽기 전용 조회로 신규 클렌저 10건 Subject/binding/confirmed current Fact 0건 확인. Production schema/RLS/DB writes 0, G2/live recommendation grants 0, legacy 164/scorer 변경 0. 이 단계는 PASS여도 실제 신규 cleanser 자동 승인이 아니라 향후 governed G2 category extension 필요.
+
 ### 2026-10-22 / cleanser initial admission evidence preflight (bounded implementation)
 
 - 유형: 사용자 승인된 자동 추천 후보 승인 기준의 Stage 1 실행형(Medium/High design boundary). 신규 클렌저에 대해 정합 식별, 정확한 ml/g 용량, KR resolved Subject, 공식 Source binding + 최근 digest observation, 화해 리뷰·성분 signal, Current Fact 및 중복 검증을 fail-closed 순수 정책으로 구현.
