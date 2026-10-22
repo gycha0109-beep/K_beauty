@@ -51,3 +51,14 @@
 - synthetic JSON 6개 표식 중 정상 2개를 유지하고, 거부 class/중복/이미지 범위 밖/모호한 다중 점을 각각 집계하며 JPEG 치수 매칭 성공 확인.
 - Node CLI 실제 명령, 수천 JSON 실제 로컬 파싱, 원본 JPG open의 성공 여부는 이 대화 세션의 컨테이너/PC 실행 환경이 닫혀 **미검증**. 결과를 PASS로 보고하지 않음.
 - 사용자 PC의 Remote Desktop Commander 장치는 현재 **오프라인**이므로 원본 이미지를 그 PC에서 대신 열거나 실행하지 않았음.
+
+## 2026-10-22 Google Drive actual-bytes verification (supersedes earlier metadata-only status)
+
+**Direct Google Drive connector reads now succeeded; no Desktop Commander is required.**
+- Streamed source JPEG image bytes and decoded/displayed actual **1081_01_F.jpg** (digital camera, SOF dimensions **2136×3216**) and **1081_02_F.jpg** (tablet). Both contain real front-face images with an eye anonymization strip; illumination/perspective differ. This is a **limited visual sample**, not full image QA.
+- Read actual **VL.zip** file bytes through the Drive connector and decoded its ZIP directory plus compressed JSON members in a self-contained V8 validator. ZIP: **12,843 entries**. For all **1,391** camera/tablet/phone `_*_00.json` lesion-region entries: **1,391/1,391 parsed; 0 parse failures**.
+- Exact observed schema: `info.filename`, `images`, `annotations.acne`. Lesions carry `{name: "comedone" | "papule" | "pustule" | "nodule" | "cyst", points: [x,y]}`. Previous script version assumed a flat `filename` + `type` and would **not** parse the real VL.zip; corrected in `scripts/review-aihub-71645-acne-local.mjs` and augmented source-schema tests.
+- **Annotation findings**: 58 positive camera frontal images, **375 source points**; papule 208, comedone 129, pustule 30, nodule 5, cyst 3. **All 375 source acne points are in digital-camera frontal images.** The remaining camera views and all 321 tablet / 321 smartphone photos have `acne` null/not assessed; these must **not** become negative training examples.
+- Each of the 375 points is a 2D integer coordinate; no missing, malformed or out-of-bounds locations under dataset expected 2136×3216 coordinate system (label-to-actual size must still be checked per photo).
+- Offline inspector **synthetic** tests now 12 PASS in isolated JS. ZIP member parser audit is real-source verification performed via Drive; the Node CLI is not yet run against extracted local files. Pictorial point-to-visible-lesion accuracy has **not** been measured. Do not claim gold-grade localization accuracy or smartphone-domain performance from this inspection.
+- Practical conclusion: usable for **initial camera-frontal acne-point research** after rights review and spot visual adjudication; **not sufficient standalone** for deployable smartphone lesion detection, segmentation masks, or acne-negative classification. Other skin measurement/grade fields require separate domain/quality validation.
