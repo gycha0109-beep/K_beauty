@@ -6,7 +6,7 @@
  * node scripts/audit-aihub-71645-metadata.mjs --self-test
  * node scripts/audit-aihub-71645-metadata.mjs /private/aihub/label_json [--max-files=200]
  */
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, lstatSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 
 const EXPECTED = Object.freeze({
@@ -78,7 +78,8 @@ function aggregate(rows, summary) {
     if (typeof row.filename === "string" && row.filename.trim()) {
       const filename = row.filename.trim().replaceAll("\\", "/").split("/").at(-1);
       summary.imageNames.add(filename.toLowerCase());
-      count(summary.imageRecordCounts, filename.toLowerCase());
+      const name = filename.toLowerCase();
+      summary.imageRecordCounts.set(name, (summary.imageRecordCounts.get(name) || 0) + 1);
     } else summary.recordsMissingImage++;
     if (present(row.id)) summary.candidateIds.add(String(row.id));
     else summary.recordsMissingId++;
@@ -101,7 +102,7 @@ function emptySummary() {
     filesScanned: 0, filesSkippedByLimit: 0, fileErrors: 0, jsonParseErrors: 0,
     unrecognizedStructureFiles: 0, skippedNonObject: 0, records: 0,
     recordsMissingImage: 0, recordsMissingId: 0,
-    imageNames: new Set(), candidateIds: new Set(), imageRecordCounts: {},
+    imageNames: new Set(), candidateIds: new Set(), imageRecordCounts: new Map(),
     fieldCoverage: Object.fromEntries(FIELDS.map(key => [key, 0])),
     sensitivePresent: Object.fromEntries(SENSITIVE.map(key => [key, 0])),
     measureCoverage: Object.fromEntries(MEASURES.map(key => [key, { present: 0, missing: 0, nonNumeric: 0 }])),
@@ -111,7 +112,7 @@ function emptySummary() {
 function report(summary) {
   // Never include file paths, filenames, original IDs or individual human metadata in output.
   const unique = summary.imageNames.size;
-  const duplicatedImageRowGroups = Object.values(summary.imageRecordCounts).filter(n => n > 1).length;
+  const duplicatedImageRowGroups = [...summary.imageRecordCounts.values()].filter(n => n > 1).length;
   return {
     schemaVersion: "aihub-71645-metadata-audit-v1",
     groundTruthAvailable: false,
@@ -145,7 +146,7 @@ function collectJsonFiles(path, maxFiles) {
   let excess = 0;
   function walk(at, depth) {
     if (depth > 12) throw new Error("Directory nesting exceeds allowed depth");
-    const stat = statSync(at, { throwIfNoEntry: false });
+    const stat = lstatSync(at, { throwIfNoEntry: false });
     if (!stat || stat.isSymbolicLink()) throw new Error("Invalid or symlink input path");
     if (stat.isFile()) {
       if (extname(at).toLowerCase() !== ".json") return;
@@ -169,7 +170,7 @@ function auditDirectory(path, maxFiles = 200) {
   summary.filesSkippedByLimit = excess;
   for (const file of files) {
     try {
-      if (statSync(file).size > 25 * 1024 * 1024) { summary.fileErrors++; continue; }
+      if (lstatSync(file).size > 25 * 1024 * 1024) { summary.fileErrors++; continue; }
       let data;
       try { data = JSON.parse(readFileSync(file, "utf8")); }
       catch { summary.jsonParseErrors++; continue; }
@@ -198,7 +199,8 @@ function selfTest() {
   assert(records.length === 3, "expected all nested annotation rows");
   assert(result.uniqueImageFilenameCandidates === 2, "image records must be deduplicated");
   assert(result.repeatedImageFilenameGroups === 1, "same image can have multiple face parts");
-  assert(result.measures.pore.present === 2 && result.measures.pore.missing === 1,
+  assert(result.measures.pore.present === 1 && result.measures.pore.missing === 2 &&
+    result.measures.pigmentation.present === 1,
     "zero is a valid measured value, null is missing");
   assert(result.faceBoxAudit.out_of_bounds === 1, "invalid face box must be reported");
   assert(!JSON.stringify(result).includes("960129") &&
