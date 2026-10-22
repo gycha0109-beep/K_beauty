@@ -266,7 +266,7 @@ try {
       recognizedClasses=$recognizedCounts
       unexpectedCommandCount=[int](($unknownKinds.Values | Measure-Object -Sum).Sum)
       unexpectedClasses=$byClass
-      unexpectedSamples=@($unknownSamples)
+      unexpectedSamples=$unknownSamples.ToArray()
       sampleLimit=200
       allUnknownCommandsClassified=$true
       noDockerStarted=$true
