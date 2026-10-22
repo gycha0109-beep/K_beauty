@@ -8,6 +8,7 @@ import {
 } from "../lib/cleanser-initial-admission-preflight-v1.mjs";
 import { buildExistingCleanserTrustBackfillPlan } from "../lib/existing-cleanser-trust-backfill-plan-v1.mjs";
 import { collectExistingCleanserOfficialCapture } from "../lib/existing-cleanser-official-capture-v1.mjs";
+import { evaluateCleanserGovernedAdmissionShadow } from "../lib/cleanser-governed-admission-shadow-v1.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const idsArg = process.argv.find((value) => value.startsWith("--ids="))?.slice(6) || "";
@@ -70,18 +71,30 @@ const confirmedFacts = currentFactRows.map((row)=>{
   return { ...instance, confirmation_id:row.confirmation_id, confirmation:confirmationsById.get(row.confirmation_id) };
 });
 
+const metadataReviews = await rows(supabase.from("product_metadata_field_reviews")
+  .select("product_id,field_name,field_value,review_state,confidence,evidence_refs,evidence_records,evidence_digest,reviewed_by,reviewed_at")
+  .in("product_id",ids).in("field_name",["skin_types","concerns"]).limit(200),"metadata_reviews");
+if (metadataReviews.length >= 200) throw new Error("METADATA_REVIEW_SCOPE_LIMIT_REACHED");
+
 const results = products.map((product) => {
   const matchedSubjects = subjects.filter((row) => row.product_id === product.id && row.current_state === "current");
   const subject = matchedSubjects.length === 1 ? matchedSubjects[0] : null;
-  const result = evaluateCleanserInitialAdmissionPreflight({
+  const snapshot = {
     product,subject,
     officialBindings:bindings.filter((row)=>row.product_id===product.id),
     observations:observations.filter((row)=>row.product_id===product.id),
     confirmedFacts:confirmedFacts.filter((row)=>row.subject_id===subject?.subject_id),
     catalogProducts,
-  });
+    metadataReviews:metadataReviews.filter((row)=>row.product_id===product.id),
+    // The current DB has no governed source-bound Hwahae envelope or KR
+    // Subject attestation materializer. Missing is NEVER synthesized as proof.
+    hwahaeCaptureEnvelope:null,
+    subjectScopeAttestation:null,
+  };
+  const result = evaluateCleanserInitialAdmissionPreflight(snapshot);
+  const admissionShadow = evaluateCleanserGovernedAdmissionShadow(snapshot);
   const backfill = buildExistingCleanserTrustBackfillPlan(product, result);
-  return { brand:product.brand,name:product.name,...result,backfill };
+  return { brand:product.brand,name:product.name,...result,admissionShadow,backfill };
 });
 // No external fetch by default. Explicit site-use authorization plus a
 // pre-reviewed origin allowlist are both mandatory for optional bounded intake.
@@ -133,5 +146,6 @@ console.log(JSON.stringify({
   version:CLEANSER_ADMISSION_PREFLIGHT_VERSION,total:results.length,summary,
   workItems,sourceKinds,
   officialResearchExecuted:requestCapture,officialResearch,
+  shadowEligibleCount:results.filter(x=>x.admissionShadow.shadowEligible).length,
   productionWrites:0,admissionGranted:0,results
 },null,2));
