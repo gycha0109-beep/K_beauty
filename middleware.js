@@ -44,7 +44,10 @@ export async function middleware(request) {
         requestHeaders: localeRequestHeaders,
         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
         isDevelopment: process.env.NODE_ENV === "development",
-        requestUrl: request.url
+        requestUrl: request.url,
+        // Allow pinned MediaPipe WASM/model fetch only on this research
+        // route. Do not widen the content policy for normal users.
+        researchRoiTest: request.nextUrl.pathname === "/face-lab-roi-test"
       });
     } catch {
       return createSecurityPolicyUnavailableResponse();
