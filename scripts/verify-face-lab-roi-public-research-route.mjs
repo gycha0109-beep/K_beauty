@@ -25,7 +25,7 @@ assert.match(ui,/buildRoiPreviewMasks/);
 assert.doesNotMatch(ui,/function maskFor\(/);
 assert.doesNotMatch(ui,/<input[^>]+type="checkbox"|orientationConfirmed|동의 체크/);
 assert.match(ui,/기존 Face Lab/);
-assert.match(ui,/Saju 기반 연구/);
+assert.match(ui,/Face Lab 윤곽형 v2/);
 assert.match(ui,/두 후보의 차이/);
 assert.match(ui,/선택하면 자동 비교합니다/);
 assert.match(ui,/볼 후보가 사진에서 매우 작게 생성되었습니다/);
