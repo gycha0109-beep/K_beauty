@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_TERMINAL_RESET_ALL_GUARD_SYNTHETIC_PG17_CI_PASS_REAL_ZIP_RESTOREPUBLICDATA_PENDING",
+  "state": "D8K13_OWNER_REAL_ZIP_PUBLIC_DATA_RESTORE_PASS_LIMITED_FURTHER_INTEGRITY_GATES_HOLD",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -746,7 +746,7 @@
         "ciStatus": "SUCCESS",
         "ciUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39780628115",
         "sourceLastLineKnownOnlyAs": "OTHER_SQL_KEYWORD",
-        "sourceLineMatchesResetAllConfirmed": false,
+        "sourceLineMatchesResetAllConfirmed": true,
         "supportedHypothesis": "The user's one terminal OTHER_SQL_KEYWORD is exactly RESET ALL; as emitted by Supabase CLI data-only backups. Not established without owner rerun.",
         "acceptance": "Limited RestorePublicData ignores exact terminal RESET ALL; (allow trailing comments/blank lines), rejects nonterminal or arbitrary SQL and retains no-network only public COPY",
         "syntheticCoverage": [
@@ -754,7 +754,7 @@
           "nonterminal RESET ALL before another public COPY rejected without row import",
           "all existing PG17 schema restore, managed COPY audit and fail-closed regressions succeed"
         ],
-        "actualOwnerZipRerun": false,
+        "actualOwnerZipRerun": true,
         "releaseAuthorized": false
       }
     },
@@ -809,6 +809,64 @@
         "releaseAuthorized": false
       },
       "ownerActualSqlLastLineIdentityConfirmed": false
+    },
+    "ownerActualPublicDataRestore20261023": {
+      "evidenceOrigin": "owner pasted two privacy-safe JSON outputs and verification marker in ChatGPT; not independently executed by connected remote PC",
+      "observedDateKst": "2026-10-23",
+      "inspectedGitHead": "b2d62f19144741f7ddef5c8c0af2558746931d29",
+      "restoreScriptGitBlob": "2af909e93b1b85f99936d34e98b5fd6accdc4529",
+      "syntheticAcceptedCommit": "f6030298f6c2ca73cf825c0f633a679d27399453",
+      "syntheticWorkflowRunId": 39780628115,
+      "syntheticWorkflowConclusion": "success",
+      "ownerPrivateZipBytes": 7323679,
+      "ownerReportedZipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "commandAudit": {
+        "status": "D8K13_LOCAL_DATA_COMMAND_FAMILY_AUDIT_ONLY_NO_RESTORE",
+        "sourceLines": 18291,
+        "copyHeaders": 134,
+        "copyPayloadLinesNotInspected": 17168,
+        "recognizedClasses": {
+          "COMMENT_OR_BLANK": 839,
+          "COPY_VALID": 134,
+          "RESET_ALL_SYNTAX_RECOGNIZED": 1,
+          "SET_CONFIG_VALID": 1,
+          "SET_VALID": 11,
+          "SETVAL_VALID": 3
+        },
+        "unexpectedCommandCount": 0,
+        "noDockerStarted": true
+      },
+      "isolatedPublicRestore": {
+        "status": "D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED",
+        "finalOwnerMarker": "D8K13_OWNER_PUBLIC_RESTORE_VERIFIED",
+        "strictSchemaRestoreCompleted": true,
+        "sourceCopyHeaders": 134,
+        "publicCopyHeadersExecuted": 101,
+        "publicCopyTablesVerified": 101,
+        "publicSourceRowsAppliedAndCountVerified": 12220,
+        "publicSequenceResetsApplied": 2,
+        "skippedManagedCopyHeaders": 33,
+        "skippedOtherSchemaCopyHeaders": 0,
+        "skippedNonpublicSequenceResets": 1,
+        "terminalResetAllSkipped": true,
+        "publicDataRowsVerified": true,
+        "foreignKeyReferentialParityVerified": false,
+        "authDataRestored": false,
+        "storageMetadataRestored": false,
+        "storageObjectBytesRestored": false,
+        "allDataRestored": false,
+        "original178MigrationsReplayed": false,
+        "originalZipModified": false,
+        "networkDisabled": true,
+        "productionDatabaseConnections": 0,
+        "rawSqlOrRowContentsReturned": false,
+        "releaseAuthorized": false
+      },
+      "originalZipPostRestoreHashVerifiedByOwnerCommand": true,
+      "currentStateRecoveryReadiness": "LIMITED_PUBLIC_COPY_ROWS_VERIFIED_NOT_COMPLETE_SUPABASE_DISASTER_RECOVERY",
+      "outstanding": "FK/reference integrity, sequence value parity/nextval, RLS and ACL owner parity, Auth/Storage/Vault, deployed DB identity, migration provenance, independent owner, security #1208",
+      "privateSqlOrRowsUploaded": false,
+      "releaseAuthorized": false
     }
   },
   "syntheticCi": {
