@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_PUBLIC_RESTORE_SEQUENCE_PGDUMP_FORMAT_GATE_FIXED_SYNTHETIC_CI_PASS_OWNER_RERUN_PENDING",
+  "state": "D8K13_OWNER_PUBLIC_RESTORE_AFTER_SETVAL_FIX_BLOCKED_AT_UNEXPECTED_DATA_COMMAND_LINE_18291_COMMAND_FAMILY_AUDIT_ADDED",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -716,8 +716,9 @@
         "dateKst": "2026-10-22",
         "zipFingerprintVerified": true,
         "strictSchemaRestoreCompleted": true,
-        "errorCode": "D8K13_PUBLIC_DATA_SEQUENCE_FORMAT_UNSUPPORTED_LINE_18268",
-        "failurePhase": "local fail-closed sequence SETVAL grammar validation prior to public row import",
+        "latestErrorCode": "D8K13_PUBLIC_DATA_UNEXPECTED_SOURCE_COMMAND_LINE_18291",
+        "precedingSequenceFormatErrorLine18268NoLongerObserved": true,
+        "failurePhase": "public-only source data.sql lexical preflight, prior to any COPY row import",
         "actualOwnerPublicRestorePass": false,
         "originalZipModified": false,
         "productionDatabaseConnections": 0
@@ -739,6 +740,22 @@
         "realBackupSqlOrRowsUploaded": false,
         "releaseAuthorized": false
       }
+    },
+    "dataCommandFamilyAudit20261022": {
+      "mode": "AuditDataCommands",
+      "codeCommit": "fd4d9db1a6ca37f00642c2c8d479165af9e69ffe",
+      "syntheticCiRun": 39775067827,
+      "syntheticCiStatus": "PENDING",
+      "intent": "One owner-only scan of all data.sql commands outside COPY payload, returning only enum classifications, line numbers, and counts; no Docker started, SQL output, row data or production connections",
+      "ownerRunStatus": "NOT_RUN",
+      "privacy": {
+        "namedObjectMetadataReturned": false,
+        "rawSqlOrRowsReturned": false,
+        "originalZipModified": false,
+        "ciUsesOnlySyntheticData": true
+      },
+      "evidenceNeeded": "All unusual command classes and line samples to repair restrictive grammar in one bounded change rather than sequential new restore attempts",
+      "releaseAuthorized": false
     }
   },
   "syntheticCi": {
