@@ -72,7 +72,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 
 **완료 게이트** observation key coverage ledger, hold reason coverage, baseline compatibility, 불가능한 영역에 추천 근거 생성 0.
 
-### W3 — 추천의 목표 적합·다양성 [P1–P2; SC-04 착수 / PR #1395]
+### W3 — 추천의 목표 적합·다양성 [P1–P2; SC-04 코드·Foundation/PIE 통과 / PR #1395]
 
 - 동일 관찰 × 다른 Target/priority/scope/time/budget 및 같은 Target × 다른 구조 관찰로 반사실 테스트
 - target_forward와 face_harmony의 이유 추적, hard exclusion 위반 0
@@ -108,7 +108,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-01 | 2 | **착수** | SC-00, 실제 main | 근거·상태 재감사 | provenance 누락 |
 | SC-02 | 3 | **코드·CI 검증 완료 / PR #1393, 미병합** | SC-01 병행 가능 | read-only lineage auditor + mutation CI | canonical 의미 변경 |
 | SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
-| SC-04 | 5 | **반사실적 추천 비교 구현 / PR #1395, CI 확인 중** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
+| SC-04 | 5 | **반사실적 추천 비교 구현·Foundation/PIE 통과 / PR #1395, 미병합** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | 미착수 | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
 | SC-06 | 7 | 미착수 | SC-03/04/05 승인 | Style Check UX/제품 연결 | 미확정 품질의 production 승격 |
 
@@ -126,6 +126,15 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - **검증 포인트:** 얼굴만 변경해도 Target 벡터는 불변, Target Forward의 Action/Route 의미는 불변, 적용 가능한 Face Harmony action은 수정·근거 추적, `hair_disabled/makeup_disabled`는 모든 Route action 및 도메인 실행을 차단한다.
 - PR #1395는 #1394 위에 쌓인 Draft. SC-02/03/04 전부 비침습 evaluation-only이며 서로 선행 병합·재검증 없이 운영 릴리스하지 않는다.
 - 실제 사용자 얼굴과 헤어·메이크업 스타일의 적합성 및 추천 유용성 판정은 다음 SC-05에서 독립 human protocol로만 수행한다.
+
+### SC-04 첫 CI 계측치 (2026-10-22; 합성 fixture만)
+
+- Commit `21a4c8a4`, Face Lab Foundation [39768586364](https://github.com/gycha0109-beep/K_beauty/actions/runs/39768586364)와 PIE [39768586638](https://github.com/gycha0109-beep/K_beauty/actions/runs/39768586638) **성공**.
+- `syntheticInputCases=24`, `currentFaceRelations=4`, `faceModifiersTriggered=11`, `hardExclusionChecks=31`.
+- `targetSwitchComparisons=12` 중 `targetSwitchChangedStyleDeltas=11`. 비교에 포함된 동일 Target 자기 비교 1건은 차이가 나면 오히려 오류다.
+- 세부 applicability: `eyeDirection 3/24`, `featureContrast 2/24`, `contourDefinition 2/24`, `straightCurveBalance 4/24`. 각 applicable 건에서 face evidence와 실제 modifier 변화가 모두 확인됐고 `target_forward`는 각 24쌍에서 불변.
+- **제품상 주의:** 이것은 네 가지 Current Contract 규칙의 실행 여부만 추적한 것이다. 얼굴 전체 22개 관찰 필드가 각각 스타일 추천을 개인화한다는 근거가 아니다. 해당 코호트에서 총 96개의 변경 기회 중 11개가 실제 적용 조건을 충족했지만, 이를 모집단 개인화율이나 스타일 만족도라고 해석하지 않는다.
+- SC-05에서는 원본 사진 근거/실사용성 및 추천 다양성을 사람 평가로 확인해야 한다. 이 CI 기록으로 `validated_real` 또는 `production_authorized`를 올리지 않는다.
 
 ## 5. 체크리스트/실행 운영
 
