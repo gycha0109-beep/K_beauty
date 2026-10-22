@@ -95,3 +95,16 @@
 - 순차 최대 10개, 기본 3개, 페이지 요청 실패 시 해당 제품을 보류. 전체 배치 결과에 `officialResearch` 배열로 후보/보류 상태 및 해시 기록을 출력.
 - 이 기능은 `source binding/subject` 또는 `product_fact_confirmation` 자동 작성 기능이 아니다. `--site-use-authorized=true`는 사용자 측의 사이트 권리 확인을 전제로 하며 법적 허가를 대체하지 않는다.
 - 이번 구현 및 CI에서는 실제 브랜드 사이트 fetch를 실행하지 않았으며, 다음 라이브 연구 진행 전에 사이트별 사용 권한·robots를 확인해야 한다.
+
+## 9. 운영 DB 권위 정보 읽기 경로 (추가 구현)
+
+기존 진단 CLI에서 임의의 attestation이나 리뷰 캡처를 생성하지 않고, 다음 기존 DB 기록을 대조한다.
+
+- `catalog_trust_intake.identity_resolution_detail.identity_authority`의 **관리자 상품 신원 확정**이 정확한 `product_id/subject_id/KR` 조합이고, `product_source_bindings`의 resolved 공식 페이지 및 `trust_source_observations`의 동일 SHA-256과 일치해야 `subjectScopeAttestation` 생성. 하나라도 누락·중복·오매칭 시 null.
+- `product_evidence_sources`의 Hwahae `product_review_aggregate` 원본 봉투가 검증 가능하고, `product_evidence_source_subject_bindings`의 `exact_subject_match/equivalent` 상태이며 원본 스냅샷 경로·URL·날짜·다이제스트가 맞아야 `hwahaeCaptureEnvelope` 생성. `products.review_signals`를 다시 직렬화해 가짜 원본을 만들어서는 안 됨.
+- 이 두 독립 경로는 각각 `lib/cleanser-existing-subject-attestation-v1.mjs`와 `lib/cleanser-hwahae-governed-capture-reader-v1.mjs`의 **순수 함수**로 구현됨. `scripts/run-cleanser-initial-admission-preflight-v1.mjs`에서 실제 테이블을 읽어 materialize한 값을 G2 shadow에 전달한다.
+- 각각의 위조/기록 불일치/변형 사례와 **두 출처를 동시에 통과하는 통합 적격성 평가**를 정식 CI에서 검증한다.
+
+**현실적 장애:** 2026-10-22 등록 신규 클렌저 10건에는 관리자 Subject/official binding/current Fact 등 governed 증빙이 없어 현재 승인 대상은 0이다. 또한 DB에서 `publisher='hwahae'`인 `product_evidence_sources` 원본 봉투 행은 조회 당시 0건이었다. 7개 리뷰 집계만으로 그 빈 공간을 메우면 출처 증명을 위조하게 되므로 금지한다.
+
+따라서 **운영 전환 전 필수 단계**는 저작권 및 데이터 사용권이 확인된 Hwahae 원본 캡처 저장, 제조사 공식 증거와 Subject/Fact 확정, 필드별 출처 근거를 TRUST 권한을 통해 수립하고, 최종 read RPC/G2 승인 정책과 안전한 초기 롤아웃을 별도로 검증하는 것이다.
