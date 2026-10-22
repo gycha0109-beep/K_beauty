@@ -108,3 +108,14 @@
 **현실적 장애:** 2026-10-22 등록 신규 클렌저 10건에는 관리자 Subject/official binding/current Fact 등 governed 증빙이 없어 현재 승인 대상은 0이다. 또한 DB에서 `publisher='hwahae'`인 `product_evidence_sources` 원본 봉투 행은 조회 당시 0건이었다. 7개 리뷰 집계만으로 그 빈 공간을 메우면 출처 증명을 위조하게 되므로 금지한다.
 
 따라서 **운영 전환 전 필수 단계**는 저작권 및 데이터 사용권이 확인된 Hwahae 원본 캡처 저장, 제조사 공식 증거와 Subject/Fact 확정, 필드별 출처 근거를 TRUST 권한을 통해 수립하고, 최종 read RPC/G2 승인 정책과 안전한 초기 롤아웃을 별도로 검증하는 것이다.
+
+## 10. 기존 상품 TRUST 연구 접수 제안 (진단기 연결, 운영 등록 미실행)
+
+운영 조회 기준 신규 클렌저 10개 모두 `products`에는 존재하지만 `catalog_trust_intake` 및 `product_fact_subjects` 0건이고, 같은 정규화 브랜드/상품명으로 등록된 충돌 제품도 0건이다.
+
+- 추가 `lib/existing-cleanser-trust-enrollment-plan-v1.mjs`: 기존 UUID 보존, 중복·기존 intake·상품 식별 오류 차단, TRU​​ST required facts `low_ph`/`deep_cleansing`와 **현재 registry의 신규 lineage 쓰기 정책**을 확인한 경우에만 `TRUST_INTAKE_ENROLLMENT_PROPOSED` 상태를 출력한다.
+- `scripts/run-cleanser-initial-admission-preflight-v1.mjs --ids=...`는 현재 `catalog_trust_intake` 목록과 두 READ-ONLY DB RPC(`catalog_required_product_facts_v1`, `product_fact_controlled_registry_write_admissibility_v2`)를 조회하여 `proposedResearchIntakes`와 `proposedResearchIntakeCount`를 출력한다.
+- 각 `proposal`은 `catalog_revision = existing-cleanser-trust-research-v1:<기존UUID>`, `category=cleanser`, `market=KR`, `subject_id=null`, `identity_state=PENDING`, `trust_state=PENDING`인 **운영자 검토용 접수안**이다. 아직 insert하거나 `process_catalog_trust_product_v3`을 호출하지 않는다.
+- `scripts/verify-existing-cleanser-trust-enrollment-plan-v1.mjs`에서 기존 등록 충돌/정책 불일치/재실행 상황을 포함한 순수 함수 검증 후 canonical CI에 편입했다.
+
+운영 등록과 v3 processing은 실서비스 `catalog_trust_intake`·`product_fact_research_tasks`를 쓰는 중요 변경이므로, **DB 변경 실행 권한과 검증/롤백 계획이 확인된 별도 protected execution**이 필요하다. 연구 접수는 상품 추천 승인이 아니며 원본 출처/Subject/Fact를 자동으로 확정해주지 않는다.
