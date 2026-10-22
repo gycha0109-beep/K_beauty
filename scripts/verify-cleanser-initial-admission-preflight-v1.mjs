@@ -7,6 +7,8 @@ import {
 import {buildExistingCleanserTrustBackfillPlan} from "../lib/existing-cleanser-trust-backfill-plan-v1.mjs";
 import {evaluateCleanserGovernedAdmissionShadow} from "../lib/cleanser-governed-admission-shadow-v1.mjs";
 import {buildHwahaeReviewCaptureEnvelope} from "../lib/hwahae-review-capture-provenance.js";
+import {materializeExistingCleanserSubjectAttestation} from "../lib/cleanser-existing-subject-attestation-v1.mjs";
+import {materializeGovernedCleanserHwahaeCapture} from "../lib/cleanser-hwahae-governed-capture-reader-v1.mjs";
 
 const PRODUCT_ID = "11111111-1111-4111-8111-111111111111";
 const SUBJECT_ID = "22222222-2222-4222-8222-222222222222";
@@ -194,17 +196,47 @@ assert.ok(shadowDefault.reasons.includes("GOVERNED_RECOMMENDATION_METADATA_REQUI
 assert.ok(shadowDefault.reasons.includes("VERIFIED_HWAHAE_CAPTURE_ENVELOPE_REQUIRED"));
 assert.ok(shadowDefault.reasons.includes("CURRENT_SUBJECT_ATTESTATION_REQUIRED"));
 const shadowInput=fixture();
-shadowInput.hwahaeCaptureEnvelope=buildHwahaeReviewCaptureEnvelope({
+const actualCapture=buildHwahaeReviewCaptureEnvelope({
   productId:PRODUCT_ID,
   canonicalLocator:hwahaeUrl,
   observedAt:"2026-10-21T00:00:00Z",
   payload:{review_raw:{positive:[{label:"자극없는",count:1}],negative:[]}},
 });
-shadowInput.subjectScopeAttestation={
-  product_id:PRODUCT_ID,subject_id:SUBJECT_ID,current_state:"current",
-  identity_status:"resolved",market:"KR",evidence_digest:"c".repeat(64),
-  authority:"governed_exact_subject_identity",
+shadowInput.hwahaeCaptureEnvelope=materializeGovernedCleanserHwahaeCapture({
+  product:shadowInput.product,subject:shadowInput.subject,now,
+  evidenceSources:[{
+    source_id:"99999999-9999-4999-8999-999999999999",
+    publisher:"hwahae",source_kind:"product_review_aggregate",
+    market:"KR",canonical_locator:hwahaeUrl,
+    content_digest:actualCapture.capture_source.content_digest,
+    observed_at:"2026-10-21T00:00:00.000Z",
+    external_snapshot_reference:"trusted://capture/246810",
+    source_metadata:{capture_envelope:actualCapture},
+  }],
+  sourceSubjectBindings:[{
+    source_id:"99999999-9999-4999-8999-999999999999",
+    product_id:PRODUCT_ID,subject_id:SUBJECT_ID,
+    binding_state:"exact_subject_match",scope_relation:"equivalent",
+  }],
+});
+const intakeAuthority={
+  authority_kind:"admin_identity_authority",
+  market:"KR",authority_resolution_version:"admin-official-identity-v1",
+  official_source_locator:officialUrl,source_content_digest:"a".repeat(64),
 };
+shadowInput.observations[0].observation_id="10101010-1010-4010-8010-101010101010";
+shadowInput.subjectScopeAttestation=materializeExistingCleanserSubjectAttestation({
+  product:shadowInput.product,subject:shadowInput.subject,now,
+  trustIntakes:[{
+    id:"12121212-1212-4212-8212-121212121212",
+    product_id:PRODUCT_ID,subject_id:SUBJECT_ID,identity_state:"EXACT_SUBJECT_FOUND",
+    market:"KR",identity_resolution_detail:{identity_authority:intakeAuthority},
+  }],
+  officialBindings:shadowInput.officialBindings,
+  observations:shadowInput.observations,
+});
+assert.ok(shadowInput.hwahaeCaptureEnvelope,"governed Hwahae source must materialize");
+assert.ok(shadowInput.subjectScopeAttestation,"governed admin identity must materialize");
 const reviewedAt="2026-10-21T00:00:00Z";
 shadowInput.metadataReviews=["skin_types","concerns"].map((field)=>({
   product_id:PRODUCT_ID,field_name:field,field_value:JSON.stringify(shadowInput.product[field]),
