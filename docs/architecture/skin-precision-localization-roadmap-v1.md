@@ -193,3 +193,10 @@ This is a vocabulary and separation sketch, NOT a drop-in modification to the ex
 - Added approved-access workflow and source-rights inquiry template in `data/skin-precision/aihub-71645-acquisition-runbook-v1.md`.
 - Added JSON-only, no-photo read metadata audit `scripts/audit-aihub-71645-metadata.mjs`. Its synthetic V8 self-test covers repeated image filenames, missing measures and invalid face bounds; Node repo runtime and real downloaded JSON are still untested.
 - **Next human dependency:** AI-Hub login / phone verification / exact dataset approval; these have not occurred. No training, real skin annotations, or model evaluation should start before permission and actual schema audit.
+
+## 10. 2026-10-22 actual validation image metadata and review tooling
+
+- From connected Google Drive: 107 matching identifier groups across validation DSLR / tablet / smartphone image folders; all expected filenames present, total **749+321+321=1,391 JPEG file entries**. A duplicate tablet folder `0659` is empty; do not auto-delete. Several imported phone/camera filenames end with ` (1)` suffix and require canonical filename matching.
+- Previous actual VL parsing reported 375 acne source points and 58 annotated validation frontal images, not dermatologist independently gold-verified lesion polygons or bounding boxes. The larger `3,226` is train+validation *source point count*, not 3,226 independent photographs. Source `acne:null` means unknown until verified, never a negative.
+- Added `scripts/review-aihub-71645-acne-local.mjs` as a **local/offline, fail-closed annotation overlay + per-point assessment tool** with no face byte uploads. Synthetic JS parser, coordinate validator, JPEG dimension parser tested in isolated V8.
+- End-to-end image display correctness and expert labels **not yet verified**. Connected Windows device is offline, and moving identifiable source face image bytes into an external service could violate AI-Hub's third-party and foreign-transfer terms absent authorization. Complete real-image QA on an approved local machine, then report aggregate red/yellow/green annotation findings.
