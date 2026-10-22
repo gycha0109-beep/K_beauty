@@ -710,7 +710,10 @@ SELECT json_build_object(
     $publicDataFile = Join-Path $unpacked 'd8k13-public-copy.sql'
     $copyHeaderRx = [regex]'(?i)^[ \t]*COPY\s+(?<schema>"?[a-z_][a-z0-9_]{0,62}"?)\s*\.\s*(?<table>"?[a-z_][a-z0-9_]{0,62}"?)\s*\((?<cols>[^)\r\n]{1,16384})\)\s+FROM\s+stdin\s*;[ \t]*$'
     $columnRx = [regex]'^(?:"[a-z_][a-z0-9_]{0,62}"|[a-z_][a-z0-9_]{0,62})$'
-    $setvalRx = [regex]'(?i)^[ \t]*SELECT\s+pg_catalog\.setval\(\s*''(?<schema>"?[a-z_][a-z0-9_]{0,62}"?)\.(?<seq>"?[a-z_][a-z0-9_]{0,62}"?)''::regclass\s*,\s*-?[0-9]{1,20}\s*,\s*(?:true|false)\s*\)\s*;[ \t]*$'
+    # Native pg_dump data-only emits setval('public.seq', n, true) without a cast;
+    # the optional ::regclass form remains supported for compatibility.
+    # Keep both variants identifier-allowlisted, schema-qualified and fail-closed.
+    $setvalRx = [regex]'(?i)^[ \t]*SELECT\s+pg_catalog\.setval\(\s*''(?<schema>"?[a-z_][a-z0-9_]{0,62}"?)\.(?<seq>"?[a-z_][a-z0-9_]{0,62}"?)''(?:\s*::\s*(?:pg_catalog\.)?regclass)?\s*,\s*-?[0-9]{1,20}\s*,\s*(?:true|false)\s*\)\s*;[ \t]*$'
     $publicCounts = @{}
     $totalCopies = 0
     $publicCopies = 0
