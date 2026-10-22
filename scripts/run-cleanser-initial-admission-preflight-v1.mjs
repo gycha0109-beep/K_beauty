@@ -13,7 +13,7 @@ import { evaluateCleanserGovernedAdmissionShadow } from "../lib/cleanser-governe
 import { materializeExistingCleanserSubjectAttestation } from "../lib/cleanser-existing-subject-attestation-v1.mjs";
 import { materializeGovernedCleanserHwahaeCapture } from "../lib/cleanser-hwahae-governed-capture-reader-v1.mjs";
 import {planExistingCleanserTrustResearchEnrollment,CLEANSER_REGISTRY_VERSION} from "../lib/existing-cleanser-trust-enrollment-plan-v1.mjs";
-import { OFFICIAL_RESEARCH_SOURCE_MODE } from "../lib/existing-cleanser-official-capture-v1.mjs";
+import { OFFICIAL_RESEARCH_SOURCE_MODE, validateExistingCleanserOfficialResearchLeads } from "../lib/existing-cleanser-official-capture-v1.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const idsArg = process.argv.find((value) => value.startsWith("--ids="))?.slice(6) || "";
@@ -189,27 +189,10 @@ if (!Number.isInteger(captureLimit)||captureLimit<1||captureLimit>10) {
 const leadsFile=process.argv.find(x=>x.startsWith("--official-source-leads-file="))
   ?.slice("--official-source-leads-file=".length).trim()||null;
 if(leadsFile&&!requestCapture)throw new Error("OFFICIAL_LEADS_REQUIRE_AUTHORIZED_HOSTS");
-const leadMap=new Map();
-if(leadsFile){
-  const input=JSON.parse(await readFile(leadsFile,"utf8"));
-  if(input?.version!=="cleanser-official-research-leads-v1" ||
-    !Array.isArray(input.items) || input.items.length>25){
-    throw new Error("OFFICIAL_LEADS_FILE_INVALID");
-  }
-  for(const row of input.items){
-    if(!UUID.test(String(row?.productId||"")) ||
-      !ids.includes(row.productId) || typeof row.officialUrl!=="string" ||
-      row.officialUrl.length>2048 || leadMap.has(row.productId)){
-      throw new Error("OFFICIAL_LEAD_SCOPE_OR_DUPLICATE");
-    }
-    const parsed=new URL(row.officialUrl);
-    if(parsed.protocol!=="https:" || parsed.username || parsed.password || parsed.hash ||
-      !allowlistedHosts.includes(parsed.hostname.toLowerCase())){
-      throw new Error("OFFICIAL_LEAD_HOST_OR_URL_NOT_APPROVED");
-    }
-    leadMap.set(row.productId,parsed.toString());
-  }
-}
+const leadMap=leadsFile?validateExistingCleanserOfficialResearchLeads(
+  JSON.parse(await readFile(leadsFile,"utf8")),
+  {productIds:ids,approvedBrandHosts:allowlistedHosts},
+):new Map();
 const officialResearch=[];
 if(requestCapture){
   const scoped=products.filter(product=>{
@@ -219,7 +202,7 @@ if(requestCapture){
     if(plan?.sourceUrlClassification!=="OFFICIAL_SOURCE_CANDIDATE_UNVERIFIED")return false;
     try{return allowlistedHosts.includes(new URL(product.source_url).hostname.toLowerCase())}
     catch{return false}
-  }).slice(0,captureLimit);
+  }).sort((a,b)=>a.id.localeCompare(b.id)).slice(0,captureLimit);
   for(const product of scoped){
     try{
       const alternate=leadMap.get(product.id);
