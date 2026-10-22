@@ -3,6 +3,7 @@
 import {useEffect,useRef,useState} from "react";
 import {detectMediaPipeCheekRoiProposal} from "@/lib/face-lab-v2/personal-color/mediapipe-roi-proposal";
 import {buildRoiPreviewMasks} from "@/lib/face-lab-v2/personal-color/roi-render-mask-adapter";
+import {describeRoiPhotoEvidence} from "@/lib/face-lab-v2/personal-color/roi-photo-quality-research";
 
 const FORMATS=new Set(["image/jpeg","image/png","image/webp"]);
 const MAX_FILE_BYTES=10*1024*1024;
@@ -90,11 +91,12 @@ export default function FaceLabRoiLiveClient(){
   const [stats,setStats]=useState(null);
   const [error,setError]=useState("");
   const [viewReady,setViewReady]=useState(false);
+  const [photoEvidence,setPhotoEvidence]=useState(null);
 
   useEffect(()=>()=>{request.current++;},[]);
   async function analyze(file){
     const current=++request.current;
-    setStatus("loading");setResult(null);setStats(null);setError("");setViewReady(false);
+    setStatus("loading");setResult(null);setStats(null);setError("");setViewReady(false);setPhotoEvidence(null);
     emptyCanvases(canvases);
     let bitmap;
     try{
@@ -117,7 +119,7 @@ export default function FaceLabRoiLiveClient(){
       setResult(inspected);
       setStats(comparison);
       if(!baseline||!candidate||comparison?.status!=="comparison_only"){
-        setError("두 후보를 같은 조건으로 시각화할 수 없어 비교를 보류했습니다.");
+        setError("비교 보류: "+(comparison?.reason||"후보 영역을 생성하지 못했습니다."));
         setStatus("done");return;
       }
       const size=outputSize(bitmap);
@@ -132,6 +134,12 @@ export default function FaceLabRoiLiveClient(){
         setStatus("done");return;
       }
       const first=preview.baseline,second=preview.candidate;
+      const pixelData=sourceCtx.getImageData(0,0,size.width,size.height);
+      const quality=describeRoiPhotoEvidence({rgba:pixelData.data,...size,
+        leftMask:second.skinRegionMasks.leftCheek,
+        rightMask:second.skinRegionMasks.rightCheek,
+        exclusionMask:second.exclusionMask});
+      setPhotoEvidence(quality);
       const crop=cropRegion(baseline,candidate,size);
       paint(firstCanvas.current,source,first,second,crop,"baseline");
       paint(secondCanvas.current,source,first,second,crop,"candidate");
@@ -148,7 +156,7 @@ export default function FaceLabRoiLiveClient(){
     const file=event.target.files?.[0];
     ++request.current;
     fileRef.current=null;setFilename("");setStatus("idle");
-    setResult(null);setStats(null);setError("");setViewReady(false);
+    setResult(null);setStats(null);setError("");setViewReady(false);setPhotoEvidence(null);
     emptyCanvases(canvases);
     if(!file)return;
     if(!FORMATS.has(file.type)){setError("JPG, PNG, WebP 파일만 지원합니다.");return;}
@@ -172,7 +180,7 @@ export default function FaceLabRoiLiveClient(){
         </div>
         <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">두 방식이 볼을 어디로 잡는가?</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-          기존 Face Lab ROI와 Saju 중립 랜드마크를 이용한 Face Lab 윤곽형 ROI를 같은 사진에 표시합니다.
+          기존 Face Lab ROI와 Saju 중립 관측 프레임의 볼 내부 메시 랜드마크로 만든 v3 후보를 같은 사진에서 비교합니다.
           <strong className="text-white"> 화면의 색칠된 부분은 피부의 정답이 아니라 컴퓨터가 제안한 후보입니다.</strong>
         </p>
 
@@ -205,7 +213,7 @@ export default function FaceLabRoiLiveClient(){
           <div className="mt-4 grid gap-4 lg:grid-cols-3">
             {[
               {name:"기존 Face Lab",desc:"청록색: 기존 볼 후보",ref:firstCanvas},
-              {name:"Face Lab 윤곽형 v2",desc:"분홍색: 새 연구 후보",ref:secondCanvas},
+              {name:"Face Lab 볼 메시 v3",desc:"분홍색: 내부 볼 표면 메시 후보",ref:secondCanvas},
               {name:"두 후보의 차이",desc:"초록: 공통 / 청록: 기존만 / 분홍: 연구만",ref:diffCanvas}
             ].map((item,i)=>(
               <article key={i} className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-900">
@@ -255,6 +263,40 @@ export default function FaceLabRoiLiveClient(){
             좌·우는 사진 기준입니다. 미러 이미지 여부와 화장·그림자·가려진 피부는
             자동 검증하지 않습니다. 퍼스널 컬러·피부색 측정도 수행하지 않습니다.
           </p>
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/80 p-5 sm:p-6">
+          <h2 className="text-lg font-semibold">3. 사진의 밝기·세부 묘사 참고 지표</h2>
+          <p className="mt-2 text-xs leading-6 text-slate-400">
+            연구용 ROI 후보 내부 픽셀만 사용합니다. 사진의 초점·화장·그림자 또는 피부색 정확도를 판정하는 검사가 아닙니다.
+          </p>
+          {photoEvidence?.status==="descriptive_only"?(
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {[
+                {label:"화면 왼쪽 볼",values:photoEvidence.imageLeft},
+                {label:"화면 오른쪽 볼",values:photoEvidence.imageRight}
+              ].map(item=>(
+                <div key={item.label} className="rounded-xl border border-slate-700 bg-slate-950 p-4">
+                  <p className="text-sm font-semibold">{item.label}</p>
+                  <p className="mt-2 text-xs text-slate-300">
+                    평균 밝기: {item.values.meanLuma.toFixed(1)} / 255
+                  </p>
+                  <p className="mt-1 text-xs text-slate-300">
+                    극단적으로 어둡거나 밝은 픽셀: {(item.values.clippedFraction*100).toFixed(1)}%
+                  </p>
+                  <p className="mt-1 text-xs text-slate-300">
+                    국소 고주파 신호: {item.values.detailSignal.toFixed(4)}
+                  </p>
+                </div>
+              ))}
+              <p className="sm:col-span-2 text-xs leading-6 text-amber-300">
+                좌우 밝기 차이: {(photoEvidence.meanLumaGap*100).toFixed(1)}%p (0–255 정규화 기준).
+                이 수치에 검증된 합격 임계값은 없습니다. 특히 고주파 신호는 피부 질감, JPEG 압축, 조명에도 달라집니다.
+              </p>
+            </div>
+          ):(
+            <p className="mt-3 text-sm text-slate-500">ROI가 유효하게 생성되면 참고 지표가 표시됩니다.</p>
+          )}
         </section>
       </div>
     </main>
