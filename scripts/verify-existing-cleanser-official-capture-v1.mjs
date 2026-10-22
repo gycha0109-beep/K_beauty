@@ -5,6 +5,7 @@ import {
   evaluateExistingCleanserOfficialCapture,
   EXISTING_CLEANSER_OFFICIAL_CAPTURE_VERSION,
   OFFICIAL_RESEARCH_SOURCE_MODE,
+  validateExistingCleanserOfficialResearchLeads,
 } from "../lib/existing-cleanser-official-capture-v1.mjs";
 const UUID="11111111-1111-4111-8111-111111111111";
 function item(overrides={}) {
@@ -108,6 +109,27 @@ for (const [name,change,code] of cases) {
   assert.ok(out.reasons.includes(code),name+" "+out.reasons);
   assert.equal(out.grantIssued,false,name);
 }
+const leadOne={version:"cleanser-official-research-leads-v1",
+  items:[{productId:UUID,officialUrl:"https://brand.example/products/calm"}]};
+const leadConfig={productIds:[UUID],approvedBrandHosts:["brand.example"]};
+assert.equal(validateExistingCleanserOfficialResearchLeads(leadOne,leadConfig)
+  .get(UUID),"https://brand.example/products/calm");
+const invalidLeads=[
+  ["wrong_product",x=>{x.items[0].productId="22222222-2222-4222-8222-222222222222"}],
+  ["repeated_product",x=>{x.items.push({...x.items[0]})}],
+  ["unsafe_scheme",x=>{x.items[0].officialUrl="http://brand.example/products/calm"}],
+  ["unknown_host",x=>{x.items[0].officialUrl="https://notbrand.example/products/calm"}],
+  ["retailer_host",x=>{x.items[0].officialUrl="https://www.oliveyoung.co.kr/store/goods/1"}],
+  ["credentials",x=>{x.items[0].officialUrl="https://user:pass@brand.example/products/calm"}],
+  ["fragment",x=>{x.items[0].officialUrl="https://brand.example/products/calm#other-variant"}],
+  ["port",x=>{x.items[0].officialUrl="https://brand.example:444/products/calm"}],
+  ["version",x=>{x.version="unknown"}],
+  ["too_many",x=>{x.items=Array.from({length:26},()=>({...x.items[0]}))}],
+];
+for(const [name,mutate] of invalidLeads){
+  const x=structuredClone(leadOne);mutate(x);
+  assert.throws(()=>validateExistingCleanserOfficialResearchLeads(x,leadConfig),undefined,name);
+}
 let requested=false;
 const denied=await collectExistingCleanserOfficialCapture({
   product:item(),approvedBrandHosts:["brand.example"],siteUseAuthorized:false,
@@ -123,5 +145,5 @@ const unapproved=await collectExistingCleanserOfficialCapture({
 assert.deepEqual(unapproved.reasons,["OFFICIAL_SOURCE_NOT_APPROVED"]);
 assert.equal(requested,false);
 console.log(JSON.stringify({status:"PASS",version:EXISTING_CLEANSER_OFFICIAL_CAPTURE_VERSION,
-  positiveCases:5,negativeCases:cases.length+4,
+  positiveCases:6,negativeCases:cases.length+4+invalidLeads.length,
   actualWebCalls:0,actualApprovals:0,productionWrites:0},null,2));
