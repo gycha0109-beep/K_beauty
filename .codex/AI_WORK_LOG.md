@@ -2,6 +2,13 @@
 
 ## Entries
 
+### 2026-10-22 / cleanser initial admission evidence preflight (bounded implementation)
+
+- 유형: 사용자 승인된 자동 추천 후보 승인 기준의 Stage 1 실행형(Medium/High design boundary). 신규 클렌저에 대해 정합 식별, 정확한 ml/g 용량, KR resolved Subject, 공식 Source binding + 최근 digest observation, 화해 리뷰·성분 signal, Current Fact 및 중복 검증을 fail-closed 순수 정책으로 구현.
+- 파일: `lib/cleanser-initial-admission-preflight-v1.mjs`, `scripts/run-cleanser-initial-admission-preflight-v1.mjs`, `scripts/verify-cleanser-initial-admission-preflight-v1.mjs`, `docs/architecture/cleanser-initial-admission-preflight-v1.md`; PR #1390 (draft branch). Read-only SQL live inspection: 2026-10-22 신규 10개 모두 Subject/binding/Fact 0; 신호가 있는 7개도 권위 기반 자동 admission은 불가.
+- 독립 오프라인 Node 테스트 PASS: 유효 샘플, review 0/1개와 130g 처리, 변조/누락/중복 25 사례. Auth/RLS/DB schema/data/Product Fact/admin confirmation, `G2` grant logic, legacy 164, recommendation scorer, production activation 모두 변경 0. Hosted runner의 Supabase 연결 및 PR CI는 별도 확인.
+- 남은 게이트: TRUST Subject/official binding 및 product identity capacity observation 처리, 최신 화해 capture provenance, required governed Fact, G2 cleanser initial-grant 확장/검증, 독립 회귀·canary. 현재 preflight PASS는 grant가 아니며 `admissionGranted=false` 고정.
+
 ### 2026-10-21 / TRUST followup — ATOPALM official 300ml single price + Dr.G EX family
 
 - PR #1381 main CI check TRUST/Main Health/CodeQL/package integrity **PASS**. Confirmed manufacturer `neopharmshop.co.kr` ATOPALM single 300ml ₩34,500 (2184) vs 300ml×2 ₩64,500 (2182), prices as of 2026-10-21.
