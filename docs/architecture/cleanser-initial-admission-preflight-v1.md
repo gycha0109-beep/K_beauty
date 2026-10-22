@@ -157,3 +157,24 @@
 신규 10개는 이미 TRUST `catalog_trust_intake` 10건과 `product_fact_research_tasks` 20건(`low_ph`/`deep_cleansing`)으로 실제 연구 대기열에 등록되어 있다. 이 작업들은 모두 `SUBJECT_CREATION_REQUIRED`로 멈춰 있다. 필수 Fact가 `low_ph`라고 해서 **모든 클렌저가 약산성이라는 뜻은 아니며**, `deep_cleansing`도 모든 제품이 딥클렌징이라는 뜻이 아니다. 해당 제품에 대해 근거 있는 불리언 판단을 기록해야 하며 판단 근거가 없으면 계속 보류해야 한다.
 
 공개 제조사 웹페이지를 찾은 것만으로 governed identity certificate, 원본 bytes digest, formulation/variant 권위 또는 Skin Match 추천 승격을 인정하지 않는다.
+
+## 13. 기존 TRUST 연구 실행기의 클렌저 Fact 추출 누락 보완 (2026-10-22)
+
+운영 DB의 `catalog_required_product_facts_v1('cleanser')`는 `low_ph`·`deep_cleansing` boolean 근거를 요구한다. 그러나 `scripts/trust-research-worker.mjs`의 원래 `extractStrictFactCandidate`에는 두 키에 대한 추출 분기가 없어 **Subject를 확정하더라도 모든 클렌저가 `EVIDENCE_INSUFFICIENT`로 막히는 구조적 병목**이 있었다.
+
+이번 PR에서 다음을 구현함.
+
+- `lib/trust/cleanser-official-claim-extractor-v1.mjs`: 공식 제품의 제목/동일 상품 제목에 연결된 메타 설명에 **명시된** 약산성(`low_ph=true`), 약알칼리성(`low_ph=false`), 딥클렌징(`deep_cleansing=true`)을 boolean `product_claim` 후보로 추출. `저자극`, 전성분, pH-balanced, 제품 후기, 홈페이지 FAQ, 연관상품 텍스트, 일반 세정력, 선크림 세정률을 추론 근거로 사용하지 않음. 모순·부정문은 HOLD.
+- `scripts/trust-research-worker.mjs`: 기존 연구 작업 처리 분기에서 이 extractor를 호출. 원본 `record_trust_research_result_v1` 계약은 boolean normalized_value와 `product_claim`을 허용하므로 DB schema/RPC 수정 필요 없음. **Product Fact confirmation은 이 함수에서 자동 생성하지 않는다.**
+- 공식 source fetch 후 최종 `finalUrl`이 지정된 `source_binding.canonical_locator`와 완전히 같지 않으면 다른 SKU·시장·브랜드로 이동한 것으로 간주하여 `SOURCE_BLOCKED` 처리. 기존 provenance 오결합 가능성도 감소함.
+- `scripts/verify-cleanser-official-claim-extractor-v1.mjs`에서 직접/반대 주장, 제품 본문 연관상품 오염, 모순/부정문, 불충분한 약산성 추론을 검증.
+- `scripts/verify-cleanser-trust-research-worker-integration-v1.mjs`에서 외부 네트워크나 DB 호출 없이 실제 `processClaimedTask`로 후보 Boolean payload, 원본 해시, `source_binding_id`, exact SKU redirect HOLD, 부족한 근거 처리 확인. `scripts/verify-current-main-health.mjs`에 모두 포함.
+
+**공개 공식몰 사전 탐색 (웹 자료, TRUST 승인 아님):**
+
+- 닥터지 약산성 클렌징 젤 폼 **200ml**: 공식 제품명에 약산성 명시 (`https://www.dr-g.co.kr/item/4009`).
+- 마녀공장 퓨어 소이빈 클렌징 폼 **160ml**: 공식 제품 설명의 **약알칼리성**은 `low_ph=false` 증거 후보가 될 수 있으나 검토 전 CONFIRMED 아님 (`https://m.manyo.co.kr/goods/goods_view.php?goodsNo=1000000396`).
+- 라로슈포제 에빠끌라 딥 클렌징 포밍 크림 **125ml**: 공식 제품명에 딥 클렌징 명시 (`https://www.larocheposay.co.kr/product/view/4397.do`).
+- 휩드 130g 팩클렌저 3종·블랑네이처 150ml 제품은 공식몰의 제품명/규격이 카탈로그와 대체로 일치하지만, 해당 공식 제목에 약산성 또는 딥클렌징이 **명시되지 않았다는 이유로 false를 생성하지 않음**.
+
+**중요:** 20개 연구 태스크는 아직 `SUBJECT_CREATION_REQUIRED`이고, 공식 Source Binding·원본 Product Identity/품번·용량·제형 확정이 없어 이 추출기를 실서비스 대상에 실행할 수 없다. 예시 웹 검색·CI synthetic payload는 확정된 제조사 증거가 아니다. 다음은 기존 권한으로 Subject 및 official binding을 검증한 뒤 bounded claim research worker를 실행하고 관리자 확인을 거쳐 Fact와 G2 SHADOW로 전파한다.
