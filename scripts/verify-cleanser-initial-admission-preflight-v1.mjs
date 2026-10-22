@@ -4,6 +4,7 @@ import {
   evaluateCleanserInitialAdmissionPreflight,
   CLEANSER_ADMISSION_PREFLIGHT_VERSION,
 } from "../lib/cleanser-initial-admission-preflight-v1.mjs";
+import {buildExistingCleanserTrustBackfillPlan} from "../lib/existing-cleanser-trust-backfill-plan-v1.mjs";
 
 const PRODUCT_ID = "11111111-1111-4111-8111-111111111111";
 const SUBJECT_ID = "22222222-2222-4222-8222-222222222222";
@@ -121,6 +122,44 @@ const duplicateResult=evaluate(duplicate);
 assert.equal(duplicateResult.state,"MANUAL_REVIEW_REQUIRED");
 assert.deepEqual(duplicateResult.conflicts,["CANONICAL_DUPLICATE_OR_VARIANT_COLLISION"]);
 assert.deepEqual(evaluate(fixture()),good);
+const readyPlan = buildExistingCleanserTrustBackfillPlan(fixture().product,good);
+assert.equal(readyPlan.tasks.length,0);
+assert.equal(readyPlan.nextTask,"EXTEND_GOVERNED_CLEANSER_G2_INITIAL_ADMISSION");
+assert.equal(readyPlan.recommendationAdmissionGranted,false);
+assert.equal(readyPlan.runtimeCutover,false);
+const incomplete=fixture();
+incomplete.subject=null;
+incomplete.officialBindings=[];
+incomplete.observations=[];
+incomplete.confirmedFacts=[];
+incomplete.product.review_signals=null;
+incomplete.product.ingredient_signals={};
+incomplete.product.market_signals={};
+incomplete.product.hwahae_url=null;
+incomplete.product.skin_types=null;
+incomplete.product.concerns=null;
+const plan=buildExistingCleanserTrustBackfillPlan(incomplete.product,evaluate(incomplete));
+assert.equal(plan.sourceUrlClassification,"OFFICIAL_SOURCE_CANDIDATE_UNVERIFIED");
+assert.equal(plan.researchLocatorCandidate,officialUrl);
+assert.deepEqual(plan.tasks.map(x=>x.code),[
+  "VALIDATE_OFFICIAL_PRODUCT_SOURCE",
+  "RESOLVE_EXISTING_PRODUCT_SUBJECT",
+  "CAPTURE_EXACT_OFFICIAL_VARIANT",
+  "LINK_AND_REVALIDATE_HWAHAE_CAPTURE",
+  "ESTABLISH_RECOMMENDATION_SEMANTICS",
+  "CONFIRM_GOVERNED_CLEANSER_FACT"
+]);
+assert.equal(plan.productionWrites,0);
+assert.equal(plan.recommendationAdmissionGranted,false);
+const retailer=structuredClone(incomplete);
+retailer.product.source_url="https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=TEST";
+const retailPlan=buildExistingCleanserTrustBackfillPlan(retailer.product,evaluate(retailer));
+assert.equal(retailPlan.sourceUrlClassification,"RETAILER_OR_SECONDARY");
+assert.equal(retailPlan.researchLocatorCandidate,null);
+const collided=buildExistingCleanserTrustBackfillPlan(duplicate.product,duplicateResult);
+assert.equal(collided.nextTask,"RECONCILE_CANONICAL_IDENTITY");
+assert.equal(collided.automaticConfirmation,false);
+assert.throws(()=>buildExistingCleanserTrustBackfillPlan({},good),/INVALID_INPUT/);
 console.log(JSON.stringify({
   status:"PASS",version:CLEANSER_ADMISSION_PREFLIGHT_VERSION,
   adversarialCases:cases.length+1,validLowReview:true,validGrams:true,
