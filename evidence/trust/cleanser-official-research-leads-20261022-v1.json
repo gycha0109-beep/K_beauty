@@ -1,0 +1,31 @@
+{
+  "version": "cleanser-official-research-leads-v1",
+  "purpose": "PUBLIC_MANUFACTURER_URL_LEADS_FOR_IDENTITY_RESEARCH_ONLY",
+  "capturedResearchDate": "2026-10-22",
+  "safety": {
+    "officialHostAuthorizationNotGranted": true,
+    "siteUseRightsNotGranted": true,
+    "fullPageSnapshotNotPreserved": true,
+    "exactSkuConfirmed": false,
+    "trustedSourceBindingCreated": false,
+    "productFactConfirmed": false,
+    "recommendationGrantCreated": false
+  },
+  "items": [
+    {
+      "productId": "fb7ca4ea-9ebb-4a63-bb43-aba6edd0bf95",
+      "officialUrl": "https://www.zeroid.co.kr/web/product/product_detail.asp?idx=325",
+      "note": "Official ZEROID foaming cleanser product name and ingredients; 240ml physical unit not verified in indexed page. HOLD until exact package quantity is verified."
+    },
+    {
+      "productId": "fa793e6b-9fa6-441d-9b24-9bcc9a111e8c",
+      "officialUrl": "https://lagom.kr/product/detail.html?cate_no=50&display_group=1&product_no=9",
+      "note": "Manufacturer page lists 150ml; canonical record is 120ml. Treat as variant mismatch / historical version until independently reconciled."
+    },
+    {
+      "productId": "e3ebe3ff-8fe8-4aa7-9d6f-2fb6af5069bf",
+      "officialUrl": "https://lagom.kr/product/%EC%A0%A4-%ED%88%AC-%EC%9B%8C%ED%84%B0-%ED%81%B4%EB%A0%8C%EC%A0%80/10/",
+      "note": "Manufacturer page lists 220ml; canonical record is 170ml. Treat as variant mismatch / historical version until independently reconciled."
+    }
+  ]
+}
