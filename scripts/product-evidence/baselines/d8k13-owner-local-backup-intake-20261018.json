@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_MANAGED_AUTH_STORAGE_DATA_RESTORE_BLOCKED_PUBLIC_COPY_ISOLATED_SYNTHETIC_CI_PASS_OWNER_RUN_PENDING",
+  "state": "D8K13_OWNER_PUBLIC_RESTORE_SEQUENCE_PGDUMP_FORMAT_GATE_FIXED_SYNTHETIC_CI_PASS_OWNER_RERUN_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -697,7 +697,7 @@
       "productionConnections": 0,
       "authOrStorageDataRestored": false,
       "foreignKeyAndAuthParityVerified": false,
-      "sourceRealOwnerZipExecuted": false,
+      "sourceRealOwnerZipExecuted": true,
       "syntheticCiRun": 39446671276,
       "syntheticCiStatus": "SUCCESS",
       "fullyRestored": false,
@@ -711,7 +711,34 @@
         "reject unsupported SQL before applying public data",
         "all prior PG17 isolated schema, audit and restore regressions PASS"
       ],
-      "validatedScope": "public COPY row counts and supported public sequence reset only; not source session settings, row-value parity, Auth/Storage service parity or full restore"
+      "validatedScope": "public COPY row counts and supported public sequence reset only; not source session settings, row-value parity, Auth/Storage service parity or full restore",
+      "ownerLastObserved": {
+        "dateKst": "2026-10-22",
+        "zipFingerprintVerified": true,
+        "strictSchemaRestoreCompleted": true,
+        "errorCode": "D8K13_PUBLIC_DATA_SEQUENCE_FORMAT_UNSUPPORTED_LINE_18268",
+        "failurePhase": "local fail-closed sequence SETVAL grammar validation prior to public row import",
+        "actualOwnerPublicRestorePass": false,
+        "originalZipModified": false,
+        "productionDatabaseConnections": 0
+      },
+      "pgDumpSequenceSyntaxFix": {
+        "commit": "1ce5532c82fb950d891ab0f583ef305e74d9a972",
+        "syntheticCiRun": 39766727882,
+        "syntheticCiConclusion": "success",
+        "expands": "strictly allow either standard uncast pg_catalog.setval('schema.seq', integer, bool) or optional ::regclass (including pg_catalog.regclass), without allowing unqualified names or arbitrary SQL",
+        "verifiedFixtures": [
+          "public setval with regclass cast",
+          "public setval without regclass cast",
+          "non-public managed setval without regclass skipped",
+          "public COPY row counts unchanged",
+          "unsupported SQL fails closed",
+          "prior synthetic restore/audit regression suite"
+        ],
+        "ownerActualBackupRerun": false,
+        "realBackupSqlOrRowsUploaded": false,
+        "releaseAuthorized": false
+      }
     }
   },
   "syntheticCi": {
