@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 // Browser-only ROI preview regression: validates masked rendering source contract.
 import "./verify-face-lab-roi-public-research-route.mjs";
+// P0 Style Check: non-mutating canonical evidence lineage + mutation regression.
+import "./verify-face-lab-style-check-lineage-p0.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
