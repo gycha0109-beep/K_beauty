@@ -110,7 +110,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
 | SC-04 | 5 | **반사실적 추천 비교 구현·Foundation/PIE 통과 / PR #1395, 미병합** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | **평가 계획 검증·Human 권한 게이트 구현 / PR #1396, 실제 사진·사람 평가는 미실시** | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
-| SC-06 | 7 | 미착수 | SC-03/04/05 승인 | Style Check UX/제품 연결 | 미확정 품질의 production 승격 |
+| SC-06 | 7 | **22개 관찰 필드 실제 영향도 전수 비교 구현 / PR #1397, CI 확인 중** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
 
 ### 2026-10-22 진행 상태 (SC-03)
 
@@ -142,6 +142,16 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - **이번 추가**: `evaluation/style-check-real-study-readiness.js` (PR #1396)은 sample-plan의 연구 목적 동의·이용 권한 **operator attestation**, 철회·삭제 프로세스 버전, subject/derivation-family dev/holdout 분리, 6개 얼굴 관찰 그룹 및 촬영조건 범위, locked holdout 과제당 독립 평가자 최소 2명 배정, blind contract/역할 매핑 비공개를 검사.
 - **중요한 HOLD**: operator attestation JSON은 실제 법적 동의의 입증이 아니며, 예정된 reviewer assignment는 sealed Human judgment가 아니다. 원본 사진 접근 및 개인 연구자료 수집을 자동 수행하지 않는다. 새 계약은 `pilotExecutionAuthorized=false`, `productionAuthorization=false`.
 - 상세 프로토콜: `FACE_LAB_STYLE_CHECK_SC05_REAL_PERSON_EVALUATION_PROTOCOL_20261022.md` (PR #1396). 실사진 수집·권리·독립 판정·locked holdout·평가 수치 사전등록·실서비스 승격은 각각 별도 실행/승인 과제다.
+
+### 2026-10-23 진행 상태 (SC-06) — 전체 필드 영향도 분리
+
+- **개정 이유:** SC-04의 `4개 Current-Contract face modifier`는 Style Delta의 action 보정에 관한 것이다. 별도 `domain/hair.js::buildStructuralModeration`은 `faceShape`, `jawWidthVsCheek`, `featureConcentration`, `faceLengthBalance`, `foreheadHeight`를 직접 참조한다. 따라서 기존 4개만 집계하면 최종 Hair 권고에 나타나는 일부 개인화를 누락한다.
+- SC-06: 22개 필드의 정규화된 enum 값들을 하나씩 변경하여 **Current Face Profile Key + Structural → allowed Style Delta → Route → Domain 실행(Hair·Makeup·Color·Grooming·Eyewear·Accessories·Look)**에 전파되는지 각각 검사한다. 동일 얼굴 2개 × 12개 고정 Target = 24개 synthetic baseline. 가능한 대체 enum은 모두 순회하고, 각 필드별 실제 비교 건수·영향 건수를 기록한다.
+- `candidate-style-delta.js`의 기존 `productionActive:false` Face Fit 후보는 현재 엔진과 구분해 **shadow-only** 병렬 검사한다. 기존 후보를 임의 활성화하지 않고 새 face-fit 규칙도 만들지 않는다.
+- 사진상 `colorAppearance`는 현재 CurrentFaceProfile로 전달되지 않는 사실을 명시한다. 이 사실만으로 Color UX나 사진 측정 전체가 부재한다고 단정하지 않는다.
+- **중요:** 민감도 0 = 해당 synthetic 구성에서 관찰 변경의 추적 가능한 downstream 영향 0. 반드시 불필요한 관찰이라는 의미는 아니다. 민감도 양성 = 변경 탐지이지 미적 적합성/정확도 통과가 아니다.
+- 연구 파일: `lib/face-lab-v2/evaluation/style-check-field-impact-audit.js`; PR #1397는 #1396 위의 read-only 테스트 PR이다.
+- 기존 `SC-06` 제품 연결·승격 과제는 **SC-07**로 이월한다. 기존 P3 제품 구현 착수는 Human 평가와 별도 release authorization 전까지 보류한다.
 
 ## 5. 체크리스트/실행 운영
 
