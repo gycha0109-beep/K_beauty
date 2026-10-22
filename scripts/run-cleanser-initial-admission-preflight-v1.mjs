@@ -11,6 +11,7 @@ import { collectExistingCleanserOfficialCapture } from "../lib/existing-cleanser
 import { evaluateCleanserGovernedAdmissionShadow } from "../lib/cleanser-governed-admission-shadow-v1.mjs";
 import { materializeExistingCleanserSubjectAttestation } from "../lib/cleanser-existing-subject-attestation-v1.mjs";
 import { materializeGovernedCleanserHwahaeCapture } from "../lib/cleanser-hwahae-governed-capture-reader-v1.mjs";
+import {planExistingCleanserTrustResearchEnrollment,CLEANSER_REGISTRY_VERSION} from "../lib/existing-cleanser-trust-enrollment-plan-v1.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const idsArg = process.argv.find((value) => value.startsWith("--ids="))?.slice(6) || "";
@@ -52,6 +53,26 @@ const intakes = await rows(supabase.from("catalog_trust_intake")
   .select("id,product_id,subject_id,identity_state,market,identity_resolution_detail")
   .in("product_id",ids).limit(150),"catalog_trust_intake");
 if (intakes.length >= 150) throw new Error("TRUST_INTAKE_SCOPE_LIMIT_REACHED");
+// These are READ-ONLY governed RPC lookups. No intake, Fact, or grant writes.
+const requiredFacts=await rows(supabase.rpc("catalog_required_product_facts_v1",
+  {p_category:"cleanser"}),"cleanser_required_facts");
+const registryReviews=[];
+for(const fact of requiredFacts){
+  if(typeof fact.fact_key!=="string")throw new Error("INVALID_REGISTRY_FACT_KEY");
+  const {data,error}=await supabase.rpc("product_fact_controlled_registry_write_admissibility_v2",{
+    p_registry_version:CLEANSER_REGISTRY_VERSION,p_fact_key:fact.fact_key,p_lineage_kind:"new"
+  });
+  if(error||!data||typeof data!=="object")throw new Error("REGISTRY_GOVERNANCE_READ_FAILED");
+  registryReviews.push({fact_key:fact.fact_key,allowed:data.allowed===true,
+    registryVersion:data.registry_version,reason:data.reason});
+}
+const intakeEnrollmentPolicy={
+  registryVersion:CLEANSER_REGISTRY_VERSION,
+  requiredFactKeys:requiredFacts.map(row=>row.fact_key),
+  allNewLineageAllowed:registryReviews.length===2 &&
+    registryReviews.every(row=>row.allowed===true &&
+      row.registryVersion===CLEANSER_REGISTRY_VERSION),
+};
 const subjectIds = subjects.map((row) => row.subject_id);
 const currentFactRows = subjectIds.length ? await rows(supabase.from("product_fact_current")
   .select("subject_id,confirmation_id,fact_instance_id,proposition_key").in("subject_id",subjectIds).limit(500),"current_facts") : [];
@@ -122,7 +143,10 @@ const results = products.map((product) => {
   const result = evaluateCleanserInitialAdmissionPreflight(snapshot);
   const admissionShadow = evaluateCleanserGovernedAdmissionShadow(snapshot);
   const backfill = buildExistingCleanserTrustBackfillPlan(product, result);
-  return { brand:product.brand,name:product.name,...result,admissionShadow,backfill };
+  const trustEnrollment = planExistingCleanserTrustResearchEnrollment({
+    product,catalogProducts,existingIntakes:intakes,policy:intakeEnrollmentPolicy
+  });
+  return { brand:product.brand,name:product.name,...result,admissionShadow,backfill,trustEnrollment };
 });
 // No external fetch by default. Explicit site-use authorization plus a
 // pre-reviewed origin allowlist are both mandatory for optional bounded intake.
@@ -175,5 +199,8 @@ console.log(JSON.stringify({
   workItems,sourceKinds,
   officialResearchExecuted:requestCapture,officialResearch,
   shadowEligibleCount:results.filter(x=>x.admissionShadow.shadowEligible).length,
+  governedRegistryReadiness:intakeEnrollmentPolicy,
+  proposedResearchIntakeCount:results.filter(x=>x.trustEnrollment.proposal!==null).length,
+  proposedResearchIntakes:results.map(x=>x.trustEnrollment.proposal).filter(Boolean),
   productionWrites:0,admissionGranted:0,results
 },null,2));
