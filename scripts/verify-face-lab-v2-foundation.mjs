@@ -7,6 +7,8 @@ import "./verify-face-lab-style-check-lineage-p0.mjs";
 import "./verify-face-lab-style-check-observation-coverage-sc03.mjs";
 // SC-04: fixed-target face contrast, target_forward and hard exclusions.
 import "./verify-face-lab-style-check-contrasts-sc04.mjs";
+// SC-05: human evaluation is gated on real-person rights and sealed blind review.
+import "./verify-face-lab-style-check-sc05-study-preflight.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
