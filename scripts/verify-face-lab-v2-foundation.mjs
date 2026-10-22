@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import "./verify-face-lab-roi-public-research-route.mjs";
 // P0 Style Check: non-mutating canonical evidence lineage + mutation regression.
 import "./verify-face-lab-style-check-lineage-p0.mjs";
+// SC-03: whole-face observation coverage and unsupported-field fail-closed.
+import "./verify-face-lab-style-check-observation-coverage-sc03.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
