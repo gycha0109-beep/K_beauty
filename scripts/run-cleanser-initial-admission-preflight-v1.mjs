@@ -6,6 +6,7 @@ import {
   CLEANSER_ADMISSION_PREFLIGHT_VERSION,
   evaluateCleanserInitialAdmissionPreflight,
 } from "../lib/cleanser-initial-admission-preflight-v1.mjs";
+import { buildExistingCleanserTrustBackfillPlan } from "../lib/existing-cleanser-trust-backfill-plan-v1.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const idsArg = process.argv.find((value) => value.startsWith("--ids="))?.slice(6) || "";
@@ -78,11 +79,21 @@ const results = products.map((product) => {
     confirmedFacts:confirmedFacts.filter((row)=>row.subject_id===subject?.subject_id),
     catalogProducts,
   });
-  return { brand:product.brand,name:product.name,...result };
+  const backfill = buildExistingCleanserTrustBackfillPlan(product, result);
+  return { brand:product.brand,name:product.name,...result,backfill };
 });
 const summary = Object.fromEntries([...new Set(results.map((result) => result.state))]
   .sort().map((state) => [state, results.filter((result)=>result.state===state).length]));
+const workItems = Object.fromEntries(
+  [...new Set(results.flatMap((result)=>result.backfill.tasks.map((item)=>item.code)))]
+    .sort().map((code)=>[code,results.filter((result)=>result.backfill.tasks.some((item)=>item.code===code)).length])
+);
+const sourceKinds = Object.fromEntries(
+  [...new Set(results.map((result)=>result.backfill.sourceUrlClassification))]
+    .sort().map((kind)=>[kind,results.filter((result)=>result.backfill.sourceUrlClassification===kind).length])
+);
 console.log(JSON.stringify({
   version:CLEANSER_ADMISSION_PREFLIGHT_VERSION,total:results.length,summary,
+  workItems,sourceKinds,
   productionWrites:0,admissionGranted:0,results
 },null,2));
