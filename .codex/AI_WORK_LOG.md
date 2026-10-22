@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-22 / 클렌저 TRUST 연구 실행기의 실제 누락 보완 (low_ph / deep_cleansing)
+
+- 본 작업은 PR #1390 Draft feature branch에만 코드 반영, Desktop Commander 접근/실서비스 Fact/Subject/G2/상품 수정/DB write/merge/deploy **모두 하지 않음**.
+- 운영 신규 cleanser 10건 TRUST intake 10 + `SUBJECT_CREATION_REQUIRED` / `REVIEW_REQUIRED` 연구 태스크 20건 확인. 원인 진단: 기존 `scripts/trust-research-worker.mjs`에 필수 두 boolean Fact key의 추출 분기가 없어 향후 exact Subject/official binding 확정 후에도 근거 후보를 생성하지 못했음.
+- 신규 `lib/trust/cleanser-official-claim-extractor-v1.mjs`: 신뢰할 수 있는 official binding으로 받은 제품별 제목/연결된 메타에서만 저pH true·알칼리성 false·딥클렌징 true **명시적** claim 추출. body, review, ingredient 단독 추론 금지; 누락된 주장=false 금지. worker 기존 `extractStrictFactCandidate`에 연결.
+- worker가 fetched.finalUrl과 bound source URL을 정확히 비교하도록 강화하여 다른 상품 SKU/검색 query/host redirect는 SOURCE_BLOCKED로 처리. 안전한 injected fetcher로 기존 `processClaimedTask`의 실제 Evidence Candidate boolean payload, digest, binding, insufficient result, redirect block를 DB/네트워크 없는 오프라인 통합 테스트.
+- 이 코드는 **Product Fact 확인/승인/추천 활성화가 아닌** 공식 출처별 연구 근거 후보만 생성한다. 실제 Subject/Binding 0이므로 신규 10개는 runtime 진입하지 않음.
+- 공개 브랜드 자료로 닥터지 200ml 약산성, 마녀공장 160ml 약알칼리성, 라로슈포제 125ml 딥클렌징 명시 발견. 원본 캡처·관리자 권위로 승격하지 않음.
+- 변경된 CI는 `scripts/verify-current-main-health.mjs`에 extractor/worker integration 검증을 추가. 마무리 시 최신 HEAD의 실제 결과를 확인할 것.
+
 ### 2026-10-22 / 공식 제조사 후보 리드와 올리브영 기존 URL 분리 검사 (TRUST pending cohort)
 
 - 직전 HEAD `e3e7c96` GitHub Actions 11/11 success (중복 PIE 취소 1 제외). 운영 DB 신규 클렌저 10건 TRUST intake 및 20개 `low_ph/deep_cleansing` 태스크는 `SUBJECT_CREATION_REQUIRED`/`REVIEW_REQUIRED`, Product Fact/Subject/G2 grant 0 상태 유지.
