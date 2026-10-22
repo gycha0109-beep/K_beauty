@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   collectExistingCleanserOfficialCapture,
   evaluateExistingCleanserOfficialCapture,
+  OFFICIAL_RESEARCH_SOURCE_MODE,
 } from "../lib/existing-cleanser-official-capture-v1.mjs";
 
 function valueOf(name) {
@@ -24,6 +25,13 @@ export async function runExistingCleanserOfficialCaptureCli() {
   const captureFile=valueOf("captured-html");
   const permitLive=valueOf("permit-live-fetch");
   const siteAuthorized=valueOf("site-use-authorized");
+  const alternateMode=valueOf("alternate-source-research");
+  if(alternateMode && alternateMode!=="true")throw new Error("INVALID_ALTERNATE_SOURCE_MODE");
+  const researchSourceMode=alternateMode==="true"?
+    OFFICIAL_RESEARCH_SOURCE_MODE.ALTERNATE:OFFICIAL_RESEARCH_SOURCE_MODE.CATALOG_ONLY;
+  const officialUrl=alternateMode==="true"?required("official-url"):
+    valueOf("official-url")||product.source_url;
+
   if ((captureFile && permitLive) || (!captureFile && permitLive!=="true")) {
     throw new Error("SELECT_EXACTLY_ONE_CAPTURE_METHOD");
   }
@@ -32,10 +40,10 @@ export async function runExistingCleanserOfficialCaptureCli() {
     // Authorized existing bytes supplied separately; no live website requests.
     const bytes=await readFile(captureFile);
     output=evaluateExistingCleanserOfficialCapture({
-      product,officialUrl:required("official-url"),
-      finalUrl:valueOf("final-url")||required("official-url"),
+      product,officialUrl,
+      finalUrl:valueOf("final-url")||officialUrl,
       htmlBytes:bytes,approvedBrandHosts:hosts,
-      capturedAt:required("captured-at"),
+      capturedAt:required("captured-at"),researchSourceMode,
     });
   } else {
     // Website use/robots and copyright rights must already be checked.
@@ -44,7 +52,8 @@ export async function runExistingCleanserOfficialCaptureCli() {
       throw new Error("EXPLICIT_SITE_USE_AUTHORIZATION_REQUIRED");
     }
     output=await collectExistingCleanserOfficialCapture({
-      product,approvedBrandHosts:hosts,siteUseAuthorized:true,
+      product,officialUrl,researchSourceMode,
+      approvedBrandHosts:hosts,siteUseAuthorized:true,
     });
   }
   return output;
