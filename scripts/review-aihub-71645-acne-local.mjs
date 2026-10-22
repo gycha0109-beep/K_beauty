@@ -44,6 +44,19 @@ function lesionPoint(lesion) {
   return {error: "ambiguous_geometry"};
 }
 function collectAcne(json) {
+  // AI-Hub 71645 real VL layout:
+  // { info:{filename}, images:{width,height,...}, annotations:{acne:[{name,points:[x,y]}]} }
+  // Do not treat a missing/null annotations.acne as a verified negative.
+  if (json && typeof json === "object" && !Array.isArray(json) &&
+      json.info && json.annotations && Array.isArray(json.annotations.acne)) {
+    const filename = json.info.filename ?? json.images?.filename;
+    return [{
+      image: filename,
+      width: safeNumber(json.images?.width) ?? safeNumber(json.images?.imgsize?.width) ?? null,
+      height: safeNumber(json.images?.height) ?? safeNumber(json.images?.imgsize?.height) ?? null,
+      acne: json.annotations.acne
+    }];
+  }
   const rows = [];
   const seen = new WeakSet();
   function walk(node, context, depth) {
@@ -123,7 +136,7 @@ function parseLabels(files) {
         counters.rejectedGeometry+=r.acne.length;continue;
       }
       for(const entry of r.acne) {
-        const type=String(entry?.type??entry?.acne_type??entry?.label??"").toLowerCase();
+        const type=String(entry?.type??entry?.acne_type??entry?.label??entry?.name??"").toLowerCase();
         if(!TYPES.has(type)){counters.rejectedType++;continue;}
         const p=lesionPoint(entry);
         if(!p.point){counters.rejectedGeometry++;continue;}
@@ -210,6 +223,9 @@ function selfTest(){
     {type:"papule",points:[[900,200]]},{type:"pustule",points:[[1,2],[3,4]]}]};
   const rows=collectAcne({annotations:[one]});
   yes(rows.length===1,"nested JSON parse");
+  const real=collectAcne({info:{filename:"1081_01_F.jpg"},images:{width:2136,height:3216},annotations:{acne:[{name:"comedone",points:[879,1039]}]}});
+  yes(real.length===1 && real[0].image==="1081_01_F.jpg" && real[0].width===2136 && real[0].acne[0].name==="comedone","actual AI-Hub VL schema");
+  yes(lesionPoint(real[0].acne[0]).point.x===879,"actual AI-Hub VL center point");
   yes(rows[0].image==="0990_01_F.jpg","image inheritance");
   yes(xyPoint([100,200]).x===100,"array point parse");
   yes(lesionPoint({points:[{x:10,y:22}]}).point.y===22,"object point");
@@ -221,7 +237,7 @@ function selfTest(){
   const jpeg=Buffer.from([255,216,255,192,0,17,8,2,88,3,32,3,1,17,0,2,17,1,3,17,1,255,217]);
   yes(imageDimensions(jpeg)?.height===600 && imageDimensions(jpeg)?.width===800,"jpeg dimensions");
   yes(!htmlReport([],{imageCandidates:0,validImageMatches:0,counters:{},skipped:{}}).includes("0990_01_F.jpg"),"no sample leak");
-  return {checks:10,pass:true};
+  return {checks:12,pass:true};
 }
 const args=process.argv.slice(2);
 if(args.includes("--self-test")) {
