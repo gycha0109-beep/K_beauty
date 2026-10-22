@@ -3294,3 +3294,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added `scripts/audit-aihub-71645-metadata.mjs` (JSON-only, metadata aggregated without image bytes and without raw PII output). In-session V8 synthetic test PASS: 3 input rows, 2 unique image candidates, repeated-file and malformed bbox detection, missing/zero measurements distinction, no raw identifiers output.
 - No actual AI-Hub login, approval, sample or raw data obtained; no real file structure or trained detector validated. Node CLI execution and full project build were unavailable in this connector-only environment.
 - Next gate: applicant verification/download terms, then approved JSON sample audit and consented specialist label feasibility. PR #1387 remains Draft.
+
+## 2026-10-22 — Validation source-image tree recon and offline point-overlay checker
+- Classification: bounded nonproduction execution + safety review; DB/Auth/RLS/Storage/Provider/Payment/Secrets/Production impact N.
+- Connected Drive validation source file metadata: DSLR 107×7=749; tablet 107×3=321; smartphone 107×3=321, all three same 107 participant IDs. Tablet duplicate folder 0659 empty; camera/smartphone filename clone suffix ` (1)`.
+- Added `scripts/review-aihub-71645-acne-local.mjs` (local-only offline HTML overlay showing actual source point locations, per-lesion judgment, aggregate export without photographs or filenames), with 10 synthetic self-tests + synthetic JSON/JPEG combined parser test PASS in V8.
+- Added `data/skin-precision/aihub-71645-visual-review-v1.md` and linked README/roadmap.
+- Validation caveats: no actual photo bytes inspected, no actual VS/VL local file run because remote Windows device OFFLINE and runtime unavailable; no expert review or model evaluation. Source label is not clinical gold and `acne:null` cannot be negative. No raw data posted to GitHub.
+- AI-Hub terms restrict third-party review/foreign transfer; off-device image access was intentionally not performed.
