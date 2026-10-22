@@ -55,6 +55,7 @@ run("TRUST Phase 1 intake contract", node, ["scripts/verify-trust-intake-foundat
 run("Cleanser admission evidence preflight and existing-product backfill contract", node, ["scripts/verify-cleanser-initial-admission-preflight-v1.mjs"]);
 run("Existing cleanser official evidence capture boundary", node, ["scripts/verify-existing-cleanser-official-capture-v1.mjs"]);
 run("Existing cleanser TRUST subject authority attestation", node, ["scripts/verify-existing-cleanser-subject-attestation-v1.mjs"]);
+run("Governed exact-subject Hwahae capture reader", node, ["scripts/verify-cleanser-hwahae-governed-capture-reader-v1.mjs"]);
 runDelegated("trust-phase2-subject-resolution", "TRUST Phase 2 subject resolution contract", node, ["scripts/verify-trust-subject-resolution.mjs"]);
 runDelegated("trust-phase2-presentation-hardening", "TRUST Phase 2 presentation hardening", node, ["scripts/verify-trust-subject-resolution-presentation-hardening.mjs"]);
 runDelegated("trust-phase3-research-worker", "TRUST Phase 3 research worker contract", node, ["scripts/verify-trust-research-worker.mjs"]);
