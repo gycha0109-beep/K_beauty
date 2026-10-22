@@ -5,6 +5,8 @@ import {
   CLEANSER_ADMISSION_PREFLIGHT_VERSION,
 } from "../lib/cleanser-initial-admission-preflight-v1.mjs";
 import {buildExistingCleanserTrustBackfillPlan} from "../lib/existing-cleanser-trust-backfill-plan-v1.mjs";
+import {evaluateCleanserGovernedAdmissionShadow} from "../lib/cleanser-governed-admission-shadow-v1.mjs";
+import {buildHwahaeReviewCaptureEnvelope} from "../lib/hwahae-review-capture-provenance.js";
 
 const PRODUCT_ID = "11111111-1111-4111-8111-111111111111";
 const SUBJECT_ID = "22222222-2222-4222-8222-222222222222";
@@ -186,6 +188,49 @@ const collided=buildExistingCleanserTrustBackfillPlan(duplicate.product,duplicat
 assert.equal(collided.nextTask,"RECONCILE_CANONICAL_IDENTITY");
 assert.equal(collided.automaticConfirmation,false);
 assert.throws(()=>buildExistingCleanserTrustBackfillPlan({},good),/INVALID_INPUT/);
+const shadowDefault=evaluateCleanserGovernedAdmissionShadow(fixture(),{now});
+assert.equal(shadowDefault.shadowEligible,false,"bare preflight must NOT auto grant");
+assert.ok(shadowDefault.reasons.includes("GOVERNED_RECOMMENDATION_METADATA_REQUIRED:skin_types"));
+assert.ok(shadowDefault.reasons.includes("VERIFIED_HWAHAE_CAPTURE_ENVELOPE_REQUIRED"));
+assert.ok(shadowDefault.reasons.includes("CURRENT_SUBJECT_ATTESTATION_REQUIRED"));
+const shadowInput=fixture();
+shadowInput.hwahaeCaptureEnvelope=buildHwahaeReviewCaptureEnvelope({
+  productId:PRODUCT_ID,
+  canonicalLocator:hwahaeUrl,
+  observedAt:"2026-10-21T00:00:00Z",
+  payload:{review_raw:{positive:[{label:"자극없는",count:1}],negative:[]}},
+});
+shadowInput.subjectScopeAttestation={
+  product_id:PRODUCT_ID,subject_id:SUBJECT_ID,current_state:"current",
+  identity_status:"resolved",market:"KR",evidence_digest:"c".repeat(64),
+  authority:"governed_exact_subject_identity",
+};
+const reviewedAt="2026-10-21T00:00:00Z";
+shadowInput.metadataReviews=["skin_types","concerns"].map((field)=>({
+  product_id:PRODUCT_ID,field_name:field,field_value:JSON.stringify(shadowInput.product[field]),
+  review_state:"confirmed",confidence:"high",
+  reviewed_by:"88888888-8888-4888-8888-888888888888",reviewed_at:reviewedAt,
+  evidence_digest:"d".repeat(64),evidence_refs:["https://brand.example/products/cleanser"],
+  evidence_records:[{product_id:PRODUCT_ID,source_authority:"product_specific_primary",
+    content_digest:"e".repeat(64),official_source_url:"https://brand.example/products/cleanser"}],
+}));
+const shadowPositive=evaluateCleanserGovernedAdmissionShadow(shadowInput,{now});
+assert.equal(shadowPositive.shadowEligible,true);
+assert.equal(shadowPositive.decision,"SHADOW_ELIGIBLE_FOR_INITIAL_ADMISSION");
+assert.deepEqual(shadowPositive.reasons,[]);
+assert.equal(shadowPositive.actualAdmissionGranted,false);
+assert.equal(shadowPositive.governedG2GrantIssued,false);
+assert.equal(shadowPositive.liveRankingChanged,false);
+const corruptedShadow=structuredClone(shadowInput);
+corruptedShadow.metadataReviews[0].field_value=JSON.stringify(["oily"]);
+assert.equal(evaluateCleanserGovernedAdmissionShadow(corruptedShadow,{now}).shadowEligible,false);
+const wrongCapture=structuredClone(shadowInput);
+wrongCapture.hwahaeCaptureEnvelope.raw.review_raw.positive.push({label:"fake",count:1000});
+assert.ok(evaluateCleanserGovernedAdmissionShadow(wrongCapture,{now}).reasons.includes("VERIFIED_HWAHAE_CAPTURE_ENVELOPE_REQUIRED"));
+const wrongSubject=structuredClone(shadowInput);
+wrongSubject.subjectScopeAttestation.subject_id="99999999-9999-4999-8999-999999999999";
+assert.ok(evaluateCleanserGovernedAdmissionShadow(wrongSubject,{now}).reasons.includes("CURRENT_SUBJECT_ATTESTATION_REQUIRED"));
+
 console.log(JSON.stringify({
   status:"PASS",version:CLEANSER_ADMISSION_PREFLIGHT_VERSION,
   adversarialCases:cases.length+1,validLowReview:true,validGrams:true,
