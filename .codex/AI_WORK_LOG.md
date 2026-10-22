@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-22 / cleanser official capture candidate and governed shadow grant readiness
+
+- 신규 기존 상품 공식 페이지 연구 후보 수집기: `lib/existing-cleanser-official-capture-v1.mjs`, CLI, verifier. 별도 허용 호스트/사이트 사용 허가와 안전한 TRUST official fetch helper 필요; 브랜드·상품명·정확한 g/ml 용량 확인 시에도 `RESEARCH_CANDIDATE_ONLY`, 1+1/복수 용량/소매처/브랜드 불일치는 HOLD. GitHub/CI synthetic-only: 실제 사이트 fetch 0.
+- 강화: 기존 cleanser preflight는 TRUST required facts 실조회 `catalog_required_product_facts_v1('cleanser')`와 일치하는 `low_ph` + `deep_cleansing` **둘 다** supported/product_specific_primary confirmed/current 요구.
+- `lib/cleanser-governed-admission-shadow-v1.mjs` 에 별도 G2 카테고리용 shadow 적격성 평가기. 신뢰도 근거가 없는 skin_types/concerns 수치만으로 승인 불가; 독립 메타데이터 검토·화해 Capture Envelope digest·현행 KR Subject attestation 요구. Shadow 출력은 production G2 grant / runtime activated / DB writes 모두 false.
+- `scripts/verify-current-main-health.mjs`에서 official-capture 및 shadow+preflight synthetic 회귀 실행하도록 편입. 현재 PR #1390 draft, 기존 164개/생산 점수식/DB/RLS/Auth 변경 0.
+- 보안 CI 선행 실패 원인 GitHub Actions npm audit 외부 registry ETIMEDOUT 확인. 보안 정책 완화/예외 날짜 변경 없음, 해당 job 재시도 요청함. 재실행 결과와 최신 HEAD CI는 별도 확인 대상.
+- 운영 신규 10개는 official binding/Subject/Fact/structured metadata 0건. 실상품 자동 승인 0 유지. 다음은 라이선스 허용 공식 bytes 확보 및 기존 제품 ID 기반 TRUST Source Binding/Subject/Fact 등록의 관리자/기계 권한 모델 확정.
+
 ### 2026-10-22 / cleanser admission continuation — existing product TRUST backfill plan
 
 - Desktop Commander 미사용. Github 작업 브랜치와 Supabase SELECT만 이용. PR #1390 Stage 1에 기존 GPT intake duplicate-block 동작 반영. `ingest_gpt_catalog_product_v1`은 이미 존재하는 `normalized_brand + normalized_name`을 `BLOCKED_DUPLICATE` 처리하므로 신규 10건에 재실행 금지.
