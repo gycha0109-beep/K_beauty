@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {buildFaceLabV2EvaluationCohort} from "../lib/face-lab-v2/evaluation/harness.js";
 import {buildFaceLabV2Canonical} from "../lib/face-lab-v2/canonical-composer.js";
+import {buildCurrentFaceProfile} from "../lib/face-lab-v2/current-face-profile.js";
 import {
   auditFaceLabStyleCheckObservationCoverage,
   PROFILE_KEY_FEATURE_SOURCES,
@@ -103,6 +104,42 @@ rejects(corrupt(({analysis})=>{
   analysis.quality.value.structureSuitability="unsuitable";
 }),"unusable_photo_exposes_structural_observations");
 
+// Positive partial upstream: missing eye evidence must suppress only that
+// key feature while retaining other usable observations.
+const partialAnalysis=structuredClone(item.analysis);
+partialAnalysis.status="partial";
+partialAnalysis.observations.eyes.eyeDirection={
+  status:"insufficient_evidence",source:null,confidence:null,evidence:[],
+  unavailableReason:"occluded",value:null
+};
+const partialProfile=buildCurrentFaceProfile(partialAnalysis);
+const partialReport=auditFaceLabStyleCheckObservationCoverage({
+  analysis:partialAnalysis,currentFaceProfile:partialProfile
+});
+assert.equal(partialReport.status,"verified_wiring_only",
+  JSON.stringify(partialReport.issues));
+assert.equal(partialReport.ledger.find(x=>x.fieldPath==="eyes.eyeDirection").status,
+  "insufficient_evidence");
+assert.equal(partialProfile.keyFeatures.some(x=>x.key==="eyeDirection"),false);
+
+// Positive colour-only hold: other face structure remains usable, but
+// photographic colour cues MUST NOT be resurrected into the profile.
+const colorHoldAnalysis=structuredClone(item.analysis);
+colorHoldAnalysis.quality.value.colorSuitability="unsuitable";
+for(const field of Object.values(colorHoldAnalysis.observations.colorAppearance)){
+  Object.assign(field,{
+    status:"unavailable",source:null,confidence:null,
+    evidence:[],value:null,unavailableReason:"quality_insufficient"
+  });
+}
+const colorHoldProfile=buildCurrentFaceProfile(colorHoldAnalysis);
+const colorHoldReport=auditFaceLabStyleCheckObservationCoverage({
+  analysis:colorHoldAnalysis,currentFaceProfile:colorHoldProfile
+});
+assert.equal(colorHoldReport.status,"verified_wiring_only",
+  JSON.stringify(colorHoldReport.issues));
+assert.equal(colorHoldReport.summary.colorAppearanceAvailable,0);
+
 const held=corrupt(({analysis,profile})=>{
   analysis.status="unavailable";
   profile.status="unavailable";profile.keyFeatures=[];
@@ -115,7 +152,7 @@ console.log(JSON.stringify({
   availableFieldObservations:totalAvailable,definedGroups:6,
   keyFeatureMappings:8,structuralMappings:16,
   schemaExtensionRequiresReview:true,
-  mutationChecks:10,
+  mutationChecks:10,positiveHoldCases:2,
   realFacesReviewed:0,styleAccuracyClaimsAuthorized:false,
   canonicalProductionChanges:0
 }));
