@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-10-22 / 신규 클렌저 TRUST 연구 대기열 실제 등록 및 진단 연결
+
+- PR #1390 이전 HEAD `ceb86e5`: GitHub Actions 11 success + 중복 PIE cancel 1, merge 전 draft. 본 턴 Desktop Commander 미사용.
+- Supabase 운영 대상 기존 cleanser UUID 10건에 대해 READ-ONLY 원자 preflight: 제품 10/10 존재, canonical 이름 충돌/기존 TRUST Intake/Subject/Task 각 0, registry v1 active, low_ph+deep_cleansing 정의/신규 lineage policy ALLOWED.
+- 명시적 "계속 진행" 지시에 따라 단일 트랜잭션 블록으로 **운영 TRUST Intake 10건 신규 INSERT** 및 기존 `process_catalog_trust_product_v3` 10회 호출. 모든 제품 UUID/market/category/정책 검증과 최종 10 intake/20 research task 상태 확인을 SQL 내부에 포함, 실패 시 전체 rollback. 성공 후 독립 SELECT로 10건 `SUBJECT_CREATION_REQUIRED` + `REVIEW_REQUIRED`, 각 2개 `low_ph/deep_cleansing` 리뷰 태스크 20건 확인.
+- products/기존 category/용량/skin_types/concerns/legacy 164/Fact Subject/Current/G2/Recommender/score 변경 없음. 실상품 신원 인증과 추천 승인 0건. 남은 단계는 공식 제조사 증거 수집·출처/상품 규격 매칭·governed Subject 및 Fact Confirmations, Hwahae 원본 출처, G2 cleanser 특화 reader 및 정책 연동.
+- 기존 진단 CLI에 신규 `trustQueue.researchTasks/identityStates` 및 총 등록/Task 수 READ-ONLY 출력 반영. 공식 외부 리서치로 제로이드 본사 제품 페이지와 라곰 공식몰 용량(150ml/220ml) 대 현재 DB 규격(120ml/170ml) 차이 및 마녀공장 160ml/120ml 약알칼리성 설명 후보 확인: 이 외부 검색 결과는 TRUST 원본/상품별 Fact로 자동 승격하지 않음.
+- 권한이 걸린 `read_recommendation_admission_authority_v1` 직접 호출은 permission denied로 실패: 보호 경계 우회/role elevation 시도 없이 중단; DB Subject 0/Current Fact 0으로 현재 신규 제품 authority 부재가 별도로 확인됨. 변경 커밋 CI 결과 확인 필요.
+- 운영 DB schema/RLS/Auth/배포설정/추천 코드 직접 변경 없음; GitHub work log 및 doc, read-only CLI 수정. 새로운 가입/구매/민감 사용자 데이터 건드리지 않음.
+
 ### 2026-10-22 / existing cleanser TRUST intake enrollment proposal (bounded, read-only)
 
 - 기존 PR #1390의 PIE Shadow 포함 GitHub Actions 11/11 PASS를 확인한 뒤, 최초 병목을 운영 DB SELECT로 재검증: 신규 클렌저 10개 canonical 제품 존재, 같은 normalized brand+name 타 제품 충돌 0, catalog_trust_intake/Subject 각각 0.
