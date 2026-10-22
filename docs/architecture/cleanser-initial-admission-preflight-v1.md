@@ -84,3 +84,14 @@
 **SHADOW_ELIGIBLE**는 운영 `INITIAL_ADMISSION_GRANT`가 아니다. 해당 정책의 `actualAdmissionGranted`, `governedG2GrantIssued`, `runtimeCandidateIncluded` 등은 항상 false로 반환된다.
 
 현재 10개 제품은 Subject/Source Binding/Current Fact 및 metadata 검토·capture envelope가 없어 **이 shadow 기준도 0개 통과**다. 새 근거를 정확하게 채우지 않은 채 legacy 164개 목록에 편입하거나 G2 category 지원값만 변경하는 방식은 금지한다.
+
+## 8. 배치 수집 연동 (기본 OFF)
+
+운영 진단 CLI에 기존 상품 ID만 입력하면 검증 미완료 근거와 후속 작업을 확인한다. 별도의 공식 사이트 fetch는 **기본 실행하지 않음**.
+
+- 기본 진단: `node scripts/run-cleanser-initial-admission-preflight-v1.mjs --ids=<uuid1>,<uuid2>`
+- 사전에 제조사 콘텐츠 접근/상용 재사용이 허용된 경우에 한해서만: 위 명령에 `--official-hosts=brand.example --site-use-authorized=true --official-capture-limit=3` 추가.
+- URL을 임의 추측하지 않고 각 canonical `products.source_url`을 사용한다. `sourceUrlClassification=OFFICIAL_SOURCE_CANDIDATE_UNVERIFIED`인 제품 중 **승인 도메인과 일치하는 제품만** 조회한다.
+- 순차 최대 10개, 기본 3개, 페이지 요청 실패 시 해당 제품을 보류. 전체 배치 결과에 `officialResearch` 배열로 후보/보류 상태 및 해시 기록을 출력.
+- 이 기능은 `source binding/subject` 또는 `product_fact_confirmation` 자동 작성 기능이 아니다. `--site-use-authorized=true`는 사용자 측의 사이트 권리 확인을 전제로 하며 법적 허가를 대체하지 않는다.
+- 이번 구현 및 CI에서는 실제 브랜드 사이트 fetch를 실행하지 않았으며, 다음 라이브 연구 진행 전에 사이트별 사용 권한·robots를 확인해야 한다.
