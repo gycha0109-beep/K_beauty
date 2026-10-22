@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_PUBLIC_RESTORE_ALL_COMMANDS_IDENTIFIED_ONE_TERMINAL_UNKNOWN_POSSIBLE_RESET_ALL_COMPAT_CI_PENDING",
+  "state": "D8K13_TERMINAL_RESET_ALL_GUARD_SYNTHETIC_PG17_CI_PASS_REAL_ZIP_RESTOREPUBLICDATA_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -741,12 +741,19 @@
       },
       "terminalResetAllFix20261022": {
         "codeCommit": "10595e296294f7a1ed4ec95b045c41072563297b",
+        "finalSyntheticTestCommit": "f6030298f6c2ca73cf825c0f633a679d27399453",
         "ciRun": 39780628115,
-        "ciStatus": "PENDING",
+        "ciStatus": "SUCCESS",
+        "ciUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39780628115",
         "sourceLastLineKnownOnlyAs": "OTHER_SQL_KEYWORD",
         "sourceLineMatchesResetAllConfirmed": false,
-        "rationale": "Supabase CLI backup data-only scripts can finish with RESET ALL; supported by external Supabase restore runbook, not by user ZIP content inspection.",
-        "acceptance": "Recognize exact terminal RESET ALL; and ignore in limited public COPY replay; reject nonterminal RESET ALL; and other unrecognized commands. Keep operation disposable, no production writes.",
+        "supportedHypothesis": "The user's one terminal OTHER_SQL_KEYWORD is exactly RESET ALL; as emitted by Supabase CLI data-only backups. Not established without owner rerun.",
+        "acceptance": "Limited RestorePublicData ignores exact terminal RESET ALL; (allow trailing comments/blank lines), rejects nonterminal or arbitrary SQL and retains no-network only public COPY",
+        "syntheticCoverage": [
+          "terminal RESET ALL followed by EOF: public COPY row counts and both setval forms pass",
+          "nonterminal RESET ALL before another public COPY rejected without row import",
+          "all existing PG17 schema restore, managed COPY audit and fail-closed regressions succeed"
+        ],
         "actualOwnerZipRerun": false,
         "releaseAuthorized": false
       }
