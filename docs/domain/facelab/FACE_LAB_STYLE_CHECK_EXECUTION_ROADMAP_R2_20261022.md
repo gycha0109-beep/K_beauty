@@ -62,7 +62,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 **완료 게이트** synthetic cohort 전수 0 contract violation, mutation detection 통과, 기존 canonical/Free/Premium snapshot 결과 변경 없음, CI 전부 정상.
 **한계** action provenance 계약 검증 = 미적 품질 검증 아님.
 
-### W2 — 관찰값 coverage & 권한 보류 [P1; W1 이후]
+### W2 — 관찰값 coverage & 권한 보류 [P1; SC-03 구현 착수 / PR #1394]
 
 - field/area별 source evidence + quality/pose/occlusion 필터의 가용성 매트릭스 구축
 - 눈썹/입술/하관 상세 필드는 observation contract에 실제 존재하는지 검증하고, 미지원이면 `unavailable`
@@ -106,11 +106,18 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 |---|---|---|---|---|---|
 | SC-00 | 1 | 개정 설계 작성 | 기존 V2 정의 | 전체 책임 경계 | 없음 |
 | SC-01 | 2 | **착수** | SC-00, 실제 main | 근거·상태 재감사 | provenance 누락 |
-| SC-02 | 3 | **착수** | SC-01 병행 가능 | read-only lineage auditor + mutation CI | canonical 의미 변경 |
-| SC-03 | 4 | 미착수 | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
+| SC-02 | 3 | **코드·CI 검증 완료 / PR #1393, 미병합** | SC-01 병행 가능 | read-only lineage auditor + mutation CI | canonical 의미 변경 |
+| SC-03 | 4 | **읽기 전용 coverage 감사 구현 / PR #1394, CI 확인 중** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
 | SC-04 | 5 | 미착수 | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | 미착수 | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
 | SC-06 | 7 | 미착수 | SC-03/04/05 승인 | Style Check UX/제품 연결 | 미확정 품질의 production 승격 |
+
+### 2026-10-22 진행 상태 (SC-03)
+
+- `FACE_LAB_OBSERVATION_DEFINITIONS`에서 실제로 정의된 필드는 **6개 그룹/22개**. Current Face Profile 대표 Key Feature는 **8개**, Structural Profile 값은 **16개**이며, 사진 색상 3개 항목은 프로필의 대표 특징·구조 필드로 소비되지 않는다. 이는 미구현 전체 진단이 아니라 **현재 제공/소비 범위의 구분**이다.
+- 눈썹 구체적 형태/두께, 입술 윤곽/볼륨, 모발 상태, 보정된 피부 톤은 현재 독립 관찰 계약이 아니다. Style Check가 이를 이미 측정했다고 서술하지 않는다.
+- SC-03 read-only 검사에는 수신 보류/누락, source evidence, key-feature 및 structural projection, 미등록 스키마 주입, pose/quality 별도 hold, 사진색 부적합 시 color 누락을 포함한다.
+- PR #1393 (SC-02)은 base `main`, PR #1394 (SC-03)은 base `SC-02 branch`에 쌓인 상태. **CI green 전 적용·배포 불가**. 보고서의 회귀 성공은 실제 사진·스타일 적합성의 증거가 아니다.
 
 ## 5. 체크리스트/실행 운영
 
