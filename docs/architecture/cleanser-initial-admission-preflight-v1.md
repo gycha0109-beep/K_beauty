@@ -140,3 +140,20 @@
 공식 제조사 사이트·Hwahae의 이용 권한/robots 및 원본 캡처 증빙을 별도 검증해야 한다. 기존 TRUST subject registration/official binding/product-specific Fact confirmation과 검증된 `skin_types`/`concerns`이 없으면 신규 제품의 SHADOW 적격성도 G2 grant도 생성되지 않는다.
 
 현재 `read_recommendation_admission_authority_v1`의 권한 계약은 `contains_active` 계열로 제한된다. cleanser에 대한 최종 런타임 initial admission을 추가하려면 별도 **카테고리별 authority reader + G2 확장 + 회귀 테스트**가 필요하며, 개발/릴리즈 전 DB/Auth/RLS 통제와 canary/rollback 계약이 확인돼야 한다. 공개 추천 activation은 여기서 하지 않는다.
+
+## 12. 판매처에 등록된 기존 상품의 별도 제조사 URL 검토 경로 (2026-10-22)
+
+기존 수집기는 `products.source_url`과 같은 주소만 검사했으므로 올리브영 주소를 가진 제로이드/라곰 3개는 정확한 제조사 페이지를 찾아도 검사를 실행할 수 없었다. **기존 상품 URL은 수정하지 않고 별도 공식 페이지를 출처 검토 후보로 검사하는 경로**를 다음과 같이 연결했다.
+
+- `lib/existing-cleanser-official-capture-v1.mjs`: 기본 `CATALOG_SOURCE_ONLY` 유지. `ALTERNATE_UNVERIFIED_CANDIDATE`를 명시한 경우에만 원래 구매 URL과 다른 제조사 URL을 입력받고, 올리브영/화해 등의 2차 유통 도메인을 거부한다. 결과 `catalogSourceAgreement=false` 및 `ALTERNATE_OFFICIAL_SOURCE_PENDING_MANUAL_BINDING` 표시. **인증된 Official Source Binding은 생성되지 않는다.**
+- `collectExistingCleanserOfficialCapture` 라이브 경로는 허용된 도메인·사이트 사용 권한 확인에 더해, 같은 origin의 `robots.txt`를 먼저 읽고 `Crawl-delay`/경로 Disallow가 있거나 robots를 읽을 수 없으면 보류한다. 리다이렉트와 query SKU 변경도 보류한다. 단, robots 허용과 별개로 **사이트 콘텐츠 사용권 확인이 선행**되어야 한다.
+- 단일 캡처 CLI의 별도 공식 주소 사용: `--official-url=https://brand.example/products/calm --alternate-source-research=true --approved-hosts=brand.example`. 오프라인에서는 `--captured-html=<기존에 적법하게 확보한 파일> --captured-at=<원본 수집시각>`, 라이브에서는 `--permit-live-fetch=true --site-use-authorized=true`가 필요하다.
+- 배치 진단 CLI에 `--official-source-leads-file=evidence/trust/cleanser-official-research-leads-20261022-v1.json` 추가. 파일 내 `productId`는 실행 `--ids`의 하위 집합, URL의 host는 `--official-hosts`의 명시 허용 목록과 정확히 일치해야 하며, 범위 밖 제품·중복·URL credential·비표준 포트·hash·소매처는 실패로 처리한다. 외부 fetch 기본 OFF, 기본 최대 3개/상한 10개, **비권위 연구 후보만** 출력한다.
+- JSON 연구 리드는 **웹 검색을 통해 찾은 제조사 공개 링크 후보**이며, 제품별 권한/원본 snapshot/robots 조회가 수행됐다는 뜻이 아니다. 저장된 3개: 제로이드 공식 포밍 클렌저 페이지(240ml 실물 용량 미확정), 라곰 폼 클렌저 공식몰 150ml vs DB 120ml 충돌, 젤 투 워터 공식몰 220ml vs DB 170ml 충돌. 동일 상품·과거 규격 여부 확인 전 **Subject/Fact/추천 등록 금지**.
+- `scripts/verify-existing-cleanser-official-capture-v1.mjs`에 별도 URL 옵트인, SKU query 불일치, 구매처, 도메인, duplicate/가짜 리드 등 오프라인 반례 추가.
+
+### 입고된 20개 연구 작업의 의미
+
+신규 10개는 이미 TRUST `catalog_trust_intake` 10건과 `product_fact_research_tasks` 20건(`low_ph`/`deep_cleansing`)으로 실제 연구 대기열에 등록되어 있다. 이 작업들은 모두 `SUBJECT_CREATION_REQUIRED`로 멈춰 있다. 필수 Fact가 `low_ph`라고 해서 **모든 클렌저가 약산성이라는 뜻은 아니며**, `deep_cleansing`도 모든 제품이 딥클렌징이라는 뜻이 아니다. 해당 제품에 대해 근거 있는 불리언 판단을 기록해야 하며 판단 근거가 없으면 계속 보류해야 한다.
+
+공개 제조사 웹페이지를 찾은 것만으로 governed identity certificate, 원본 bytes digest, formulation/variant 권위 또는 Skin Match 추천 승격을 인정하지 않는다.
