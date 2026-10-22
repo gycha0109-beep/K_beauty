@@ -10,6 +10,7 @@ import { buildExistingCleanserTrustBackfillPlan } from "../lib/existing-cleanser
 import { collectExistingCleanserOfficialCapture } from "../lib/existing-cleanser-official-capture-v1.mjs";
 import { evaluateCleanserGovernedAdmissionShadow } from "../lib/cleanser-governed-admission-shadow-v1.mjs";
 import { materializeExistingCleanserSubjectAttestation } from "../lib/cleanser-existing-subject-attestation-v1.mjs";
+import { materializeGovernedCleanserHwahaeCapture } from "../lib/cleanser-hwahae-governed-capture-reader-v1.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const idsArg = process.argv.find((value) => value.startsWith("--ids="))?.slice(6) || "";
@@ -81,6 +82,19 @@ const metadataReviews = await rows(supabase.from("product_metadata_field_reviews
   .in("product_id",ids).in("field_name",["skin_types","concerns"]).limit(200),"metadata_reviews");
 if (metadataReviews.length >= 200) throw new Error("METADATA_REVIEW_SCOPE_LIMIT_REACHED");
 
+const hwahaeEvidenceSources = await rows(supabase.from("product_evidence_sources")
+  .select("source_id,publisher,source_kind,market,canonical_locator,content_digest,observed_at,external_snapshot_reference,source_metadata")
+  .eq("publisher","hwahae").eq("source_kind","product_review_aggregate").limit(200),
+  "governed_hwahae_sources");
+if(hwahaeEvidenceSources.length>=200)throw new Error("HWAHAE_CAPTURE_SOURCE_SCOPE_LIMIT_REACHED");
+const hwahaeSourceIds=hwahaeEvidenceSources.map(row=>row.source_id);
+const hwahaeSourceBindings=hwahaeSourceIds.length ? await rows(
+  supabase.from("product_evidence_source_subject_bindings")
+    .select("source_id,product_id,subject_id,binding_state,scope_relation")
+    .in("product_id",ids).in("source_id",hwahaeSourceIds).limit(200),
+  "governed_hwahae_subject_bindings") : [];
+if(hwahaeSourceBindings.length>=200)throw new Error("HWAHAE_CAPTURE_BINDING_SCOPE_LIMIT_REACHED");
+
 const results = products.map((product) => {
   const matchedSubjects = subjects.filter((row) => row.product_id === product.id && row.current_state === "current");
   const subject = matchedSubjects.length === 1 ? matchedSubjects[0] : null;
@@ -91,9 +105,13 @@ const results = products.map((product) => {
     confirmedFacts:confirmedFacts.filter((row)=>row.subject_id===subject?.subject_id),
     catalogProducts,
     metadataReviews:metadataReviews.filter((row)=>row.product_id===product.id),
-    // A Hwahae signal snapshot is NOT a verified publisher capture envelope.
-    // Pending dedicated trusted capture provenance: no synthetic envelopes.
-    hwahaeCaptureEnvelope:null,
+    // Only an existing governed publisher source + exact subject binding may
+    // provide a capture. Product review_signals alone never create an envelope.
+    hwahaeCaptureEnvelope:materializeGovernedCleanserHwahaeCapture({
+      product,subject,
+      evidenceSources:hwahaeEvidenceSources,
+      sourceSubjectBindings:hwahaeSourceBindings.filter(row=>row.product_id===product.id),
+    }),
     subjectScopeAttestation:materializeExistingCleanserSubjectAttestation({
       product,subject,
       trustIntakes:intakes.filter(row=>row.product_id===product.id),
