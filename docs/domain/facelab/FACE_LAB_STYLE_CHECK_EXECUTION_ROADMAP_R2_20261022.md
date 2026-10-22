@@ -81,7 +81,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 
 **완료 게이트** route collision/원인 설명 누락/미지원 도메인 거짓 생성 0 (정책 invariant), 미학적 유용성 평가는 W4로 분리.
 
-### W4 — 실제 사진·사람 평가 [P2; W3 이후, 별도 승인된 표본만]
+### W4 — 실제 사진·사람 평가 [P2; SC-05 평가 사전검증 착수 / PR #1396, 실사진 평가는 미착수]
 
 - 인물 동의·사용 권한이 확인된 사진의 서로 다른 조명·촬영각도·헤어/메이크업/필터·가림을 구조화한 cohort
 - 2인 이상 독립 평가자, blinded 구조 cue 검토 및 action/route pairwise 유용성 평가
@@ -109,7 +109,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-02 | 3 | **코드·CI 검증 완료 / PR #1393, 미병합** | SC-01 병행 가능 | read-only lineage auditor + mutation CI | canonical 의미 변경 |
 | SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
 | SC-04 | 5 | **반사실적 추천 비교 구현·Foundation/PIE 통과 / PR #1395, 미병합** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
-| SC-05 | 6 | 미착수 | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
+| SC-05 | 6 | **평가 계획 검증·Human 권한 게이트 구현 / PR #1396, 실제 사진·사람 평가는 미실시** | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
 | SC-06 | 7 | 미착수 | SC-03/04/05 승인 | Style Check UX/제품 연결 | 미확정 품질의 production 승격 |
 
 ### 2026-10-22 진행 상태 (SC-03)
@@ -135,6 +135,13 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - 세부 applicability: `eyeDirection 3/24`, `featureContrast 2/24`, `contourDefinition 2/24`, `straightCurveBalance 4/24`. 각 applicable 건에서 face evidence와 실제 modifier 변화가 모두 확인됐고 `target_forward`는 각 24쌍에서 불변.
 - **제품상 주의:** 이것은 네 가지 Current Contract 규칙의 실행 여부만 추적한 것이다. 얼굴 전체 22개 관찰 필드가 각각 스타일 추천을 개인화한다는 근거가 아니다. 해당 코호트에서 총 96개의 변경 기회 중 11개가 실제 적용 조건을 충족했지만, 이를 모집단 개인화율이나 스타일 만족도라고 해석하지 않는다.
 - SC-05에서는 원본 사진 근거/실사용성 및 추천 다양성을 사람 평가로 확인해야 한다. 이 CI 기록으로 `validated_real` 또는 `production_authorized`를 올리지 않는다.
+
+### 2026-10-22 진행 상태 (SC-05)
+
+- **이미 존재**: `human-pairwise-contract.js`의 `target_fit / specificity / evidence_action_linkage`, uncertainty/hold, sealed Human response, operator-only A/B role reveal; 14개 synthetic pair reviewer packet builder.
+- **이번 추가**: `evaluation/style-check-real-study-readiness.js` (PR #1396)은 sample-plan의 연구 목적 동의·이용 권한 **operator attestation**, 철회·삭제 프로세스 버전, subject/derivation-family dev/holdout 분리, 6개 얼굴 관찰 그룹 및 촬영조건 범위, locked holdout 과제당 독립 평가자 최소 2명 배정, blind contract/역할 매핑 비공개를 검사.
+- **중요한 HOLD**: operator attestation JSON은 실제 법적 동의의 입증이 아니며, 예정된 reviewer assignment는 sealed Human judgment가 아니다. 원본 사진 접근 및 개인 연구자료 수집을 자동 수행하지 않는다. 새 계약은 `pilotExecutionAuthorized=false`, `productionAuthorization=false`.
+- 상세 프로토콜: `FACE_LAB_STYLE_CHECK_SC05_REAL_PERSON_EVALUATION_PROTOCOL_20261022.md` (PR #1396). 실사진 수집·권리·독립 판정·locked holdout·평가 수치 사전등록·실서비스 승격은 각각 별도 실행/승인 과제다.
 
 ## 5. 체크리스트/실행 운영
 
