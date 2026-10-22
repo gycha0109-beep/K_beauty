@@ -208,7 +208,7 @@ async function rpcOrThrow(client, name, args) {
   return data;
 }
 
-export async function processClaimedTask(client, task, fetchImpl = fetch) {
+export async function processClaimedTask(client, task, fetchImpl = fetch, {fetchOfficialPage=fetchOfficialBytes}={}) {
   const seeds = Array.isArray(task.official_source_seeds) ? task.official_source_seeds : [];
   if (!seeds.length) {
     return rpcOrThrow(client, "record_trust_research_result_v1", {
@@ -224,7 +224,12 @@ export async function processClaimedTask(client, task, fetchImpl = fetch) {
   for (const seed of seeds) {
     let fetched;
     try {
-      fetched = await fetchOfficialBytes(seed.canonical_locator, fetchImpl);
+      fetched = await fetchOfficialPage(seed.canonical_locator, fetchImpl);
+      // A redirect can silently switch to another SKU, market or provider.
+      // Candidate evidence must originate from the exact governed binding.
+      if (!fetched?.finalUrl || new URL(fetched.finalUrl).href !== new URL(seed.canonical_locator).href) {
+        throw new Error("SOURCE_BLOCKED:exact_bound_source_redirect_mismatch");
+      }
       hadReadableOfficialSource = true;
     } catch (error) {
       const classified = classifyWorkerError(error);
