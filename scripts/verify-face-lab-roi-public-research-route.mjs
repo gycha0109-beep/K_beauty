@@ -6,6 +6,8 @@ import {consumeNeutralFaceObservation} from "../lib/face-lab-v2/personal-color/s
 import {compareSharedNeutralFaceCoreRoiParity} from "../lib/face-lab-v2/personal-color/shared-core-roi-parity.js";
 import {detectMediaPipeCheekRoiProposal} from "../lib/face-lab-v2/personal-color/mediapipe-roi-proposal.js";
 import {buildRoiPreviewMasks} from "../lib/face-lab-v2/personal-color/roi-render-mask-adapter.js";
+import { FACE_OVAL_INDICES, proposeSajuNeutralCheekResearchRegions } from "../lib/face-lab-v2/personal-color/saju-neutral-cheek-research-proposal.js";
+import {buildPersonalColorCheekMasks} from "../lib/face-lab-v2/personal-color/cheek-mask-geometry.js";
 
 const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const root="lib/face-lab-v2/personal-color/";
@@ -24,7 +26,7 @@ assert.match(ui,/buildRoiPreviewMasks/);
 assert.doesNotMatch(ui,/function maskFor\(/);
 assert.doesNotMatch(ui,/<input[^>]+type="checkbox"|orientationConfirmed|동의 체크/);
 assert.match(ui,/기존 Face Lab/);
-assert.match(ui,/Saju 기반 연구/);
+assert.match(ui,/Face Lab 윤곽형 v2/);
 assert.match(ui,/두 후보의 차이/);
 assert.match(ui,/선택하면 자동 비교합니다/);
 assert.match(ui,/볼 후보가 사진에서 매우 작게 생성되었습니다/);
@@ -46,9 +48,17 @@ assert.match(research,/wasm-unsafe-eval/);
 assert.match(research,/worker-src 'none'/);
 
 const landmarks=Array.from({length:478},()=>({x:.5,y:.5,z:0}));
+// A realistic closed contour is required; a seven-anchor fixture is no
+// longer sufficient to justify the new full-face search band.
+for(let i=0;i<FACE_OVAL_INDICES.length;i++){
+  const theta=-Math.PI/2+2*Math.PI*i/FACE_OVAL_INDICES.length;
+  landmarks[FACE_OVAL_INDICES[i]]={
+    x:.5+.31*Math.cos(theta),y:.52+.40*Math.sin(theta),z:0
+  };
+}
 for(const [index,[x,y]] of Object.entries({
-234:[.2,.5],454:[.8,.5],1:[.5,.48],33:[.35,.32],
-263:[.65,.32],61:[.4,.68],291:[.6,.68]
+1:[.5,.48],33:[.35,.32],263:[.65,.32],
+61:[.4,.68],291:[.6,.68]
 }))landmarks[Number(index)]={x,y,z:0};
 let used=0;
 const neutral=consumeNeutralFaceObservation({
@@ -61,6 +71,21 @@ const neutral=consumeNeutralFaceObservation({
 });
 assert.equal(used,1);
 assert.equal(neutral.status,"candidate_only");
+let researchProposal=null;
+const researchReceipt=consumeNeutralFaceObservation({
+  faceLandmarks:landmarks,faceCount:1,coordinateSpace:"original_image",
+  onFrame({anchorGeometry,frame}) {
+    researchProposal=proposeSajuNeutralCheekResearchRegions(anchorGeometry,frame);
+  }
+});
+assert.equal(researchReceipt.status,"candidate_only");
+assert.equal(researchProposal?.status,"proposal_only",JSON.stringify(researchProposal));
+const candidateMask=buildPersonalColorCheekMasks({
+  width:128,height:128,
+  cheekPolygons:researchProposal.cheekPolygons,
+  exclusionPolygons:researchProposal.exclusionPolygons
+});
+assert.equal(candidateMask.status,"masks_ready",JSON.stringify(candidateMask).slice(0,400));
 const stats=compareSharedNeutralFaceCoreRoiParity({
   faceLandmarks:landmarks,faceCount:1,coordinateSpace:"original_image",
   width:128,height:128
@@ -68,6 +93,12 @@ const stats=compareSharedNeutralFaceCoreRoiParity({
 assert.equal(stats.status,"comparison_only",JSON.stringify(stats));
 assert.equal(stats.parity,"diverged");
 assert.equal(stats.productionAuthorized,false);
+assert.equal(stats.reference,"same_detector_different_research_roi_algorithms_not_human_accuracy");
+assert.ok(stats.metrics.leftCheek.candidatePixels>stats.metrics.leftCheek.baselinePixels*1.4,
+  "candidate should be a meaningfully broader area, not a retuned dot");
+assert.ok(stats.metrics.rightCheek.candidatePixels>stats.metrics.rightCheek.baselinePixels*1.4);
+assert.ok(stats.metrics.leftCheek.iou<.8,
+  "full-outline candidate must differ structurally from seven-point ellipse");
 for(const metric of Object.values(stats.metrics)){
   assert.ok(metric.iou>0&&metric.iou<1);
 }
@@ -102,6 +133,23 @@ assert.equal(preview.skinMeasurementAuthorized,false);
 assert.equal(preview.skinAccuracyVerified,false);
 assert.ok(preview.baseline.sampleCount.leftCheek>0);
 assert.ok(preview.candidate.sampleCount.rightCheek>0);
+assert.equal(experimentalGeometry.method,"mediapipe_face_oval_scanlines_v2");
+assert.equal(experimentalGeometry.cheekPolygons.leftCheek.length,10);
+assert.ok(preview.candidate.sampleCount.leftCheek > preview.baseline.sampleCount.leftCheek*1.4);
+let callCount=0;
+const malformed=consumeNeutralFaceObservation({
+  faceLandmarks:landmarks.map((p,i)=>FACE_OVAL_INDICES.includes(i)&&i!==234&&i!==454
+    ? {x:.5,y:.5,z:0}:p),
+  faceCount:1,coordinateSpace:"original_image",
+  onFrame({anchorGeometry,frame}){
+    callCount++;
+    const checked=proposeSajuNeutralCheekResearchRegions(anchorGeometry,frame);
+    assert.equal(checked.status,"insufficient_evidence",
+      "partial seven-anchor topology must fail closed, not fabricate an oval");
+  }
+});
+assert.equal(malformed.status,"candidate_only");
+assert.equal(callCount,1);
 assert.equal(buildRoiPreviewMasks({
   baseline:{...baselineGeometry,cheekPolygons:null},
   candidate:experimentalGeometry,size:{width:128,height:128}
@@ -109,5 +157,5 @@ assert.equal(buildRoiPreviewMasks({
 
 console.log(JSON.stringify({ok:true,suite:"isolated_roi_research_public_route",tests:[
 "unchanged_normal_csp","route_scoped_remote_model_csp","saju_source_hash",
-"single_inference_two_distinct_roi_paths","redacted_baseline_callback_rasterizes","privacy_no_upload","no_skin_accuracy_claims"
+"single_inference_full_face_oval_roi","missing_oval_fails_closed","redacted_baseline_callback_rasterizes","privacy_no_upload","no_skin_accuracy_claims"
 ],realPhotoValidated:false,modelDownloadedInTest:false,productionReleaseAuthorizedByThisTest:false}));

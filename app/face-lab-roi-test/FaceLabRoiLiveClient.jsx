@@ -172,7 +172,7 @@ export default function FaceLabRoiLiveClient(){
         </div>
         <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">두 방식이 볼을 어디로 잡는가?</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-          기존 Face Lab ROI와 Saju 공통 관측 코어 기반 ROI를 같은 사진에 표시합니다.
+          기존 Face Lab ROI와 Saju 중립 랜드마크를 이용한 Face Lab 윤곽형 ROI를 같은 사진에 표시합니다.
           <strong className="text-white"> 화면의 색칠된 부분은 피부의 정답이 아니라 컴퓨터가 제안한 후보입니다.</strong>
         </p>
 
@@ -205,7 +205,7 @@ export default function FaceLabRoiLiveClient(){
           <div className="mt-4 grid gap-4 lg:grid-cols-3">
             {[
               {name:"기존 Face Lab",desc:"청록색: 기존 볼 후보",ref:firstCanvas},
-              {name:"Saju 기반 연구",desc:"분홍색: 새 연구 후보",ref:secondCanvas},
+              {name:"Face Lab 윤곽형 v2",desc:"분홍색: 새 연구 후보",ref:secondCanvas},
               {name:"두 후보의 차이",desc:"초록: 공통 / 청록: 기존만 / 분홍: 연구만",ref:diffCanvas}
             ].map((item,i)=>(
               <article key={i} className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-900">
