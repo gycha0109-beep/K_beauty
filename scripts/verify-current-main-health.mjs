@@ -58,6 +58,7 @@ run("Existing cleanser TRUST subject authority attestation", node, ["scripts/ver
 run("Governed exact-subject Hwahae capture reader", node, ["scripts/verify-cleanser-hwahae-governed-capture-reader-v1.mjs"]);
 run("Existing cleanser guarded TRUST research enrollment proposal", node, ["scripts/verify-existing-cleanser-trust-enrollment-plan-v1.mjs"]);
 run("Bounded cleanser first-party Fact claim extraction", node, ["scripts/verify-cleanser-official-claim-extractor-v1.mjs"]);
+run("Cleanser TRUST research worker offline payload and redirect boundary", node, ["scripts/verify-cleanser-trust-research-worker-integration-v1.mjs"]);
 runDelegated("trust-phase2-subject-resolution", "TRUST Phase 2 subject resolution contract", node, ["scripts/verify-trust-subject-resolution.mjs"]);
 runDelegated("trust-phase2-presentation-hardening", "TRUST Phase 2 presentation hardening", node, ["scripts/verify-trust-subject-resolution-presentation-hardening.mjs"]);
 runDelegated("trust-phase3-research-worker", "TRUST Phase 3 research worker contract", node, ["scripts/verify-trust-research-worker.mjs"]);
