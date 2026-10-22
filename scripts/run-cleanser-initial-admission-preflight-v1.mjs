@@ -56,6 +56,15 @@ if (intakes.length >= 150) throw new Error("TRUST_INTAKE_SCOPE_LIMIT_REACHED");
 // These are READ-ONLY governed RPC lookups. No intake, Fact, or grant writes.
 const requiredFacts=await rows(supabase.rpc("catalog_required_product_facts_v1",
   {p_category:"cleanser"}),"cleanser_required_facts");
+const registryDefinitions=await rows(supabase.from("product_fact_definition_snapshots")
+  .select("fact_key,registry_version,deprecated,definition")
+  .eq("registry_version",CLEANSER_REGISTRY_VERSION)
+  .in("fact_key",requiredFacts.map(row=>row.fact_key)).limit(20),
+  "cleanser_registry_definitions");
+const definitionsReady=requiredFacts.length===2&&registryDefinitions.length===2&&
+  requiredFacts.every(row=>registryDefinitions.some(def=>def.fact_key===row.fact_key &&
+    def.deprecated===false && Array.isArray(def.definition?.domain_scope) &&
+    def.definition.domain_scope.includes("cleanser")));
 const registryReviews=[];
 for(const fact of requiredFacts){
   if(typeof fact.fact_key!=="string")throw new Error("INVALID_REGISTRY_FACT_KEY");
@@ -69,7 +78,7 @@ for(const fact of requiredFacts){
 const intakeEnrollmentPolicy={
   registryVersion:CLEANSER_REGISTRY_VERSION,
   requiredFactKeys:requiredFacts.map(row=>row.fact_key),
-  allNewLineageAllowed:registryReviews.length===2 &&
+  allNewLineageAllowed:definitionsReady && registryReviews.length===2 &&
     registryReviews.every(row=>row.allowed===true &&
       row.registryVersion===CLEANSER_REGISTRY_VERSION),
 };
