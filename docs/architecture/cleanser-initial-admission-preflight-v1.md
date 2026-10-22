@@ -119,3 +119,24 @@
 - `scripts/verify-existing-cleanser-trust-enrollment-plan-v1.mjs`에서 기존 등록 충돌/정책 불일치/재실행 상황을 포함한 순수 함수 검증 후 canonical CI에 편입했다.
 
 운영 등록과 v3 processing은 실서비스 `catalog_trust_intake`·`product_fact_research_tasks`를 쓰는 중요 변경이므로, **DB 변경 실행 권한과 검증/롤백 계획이 확인된 별도 protected execution**이 필요하다. 연구 접수는 상품 추천 승인이 아니며 원본 출처/Subject/Fact를 자동으로 확정해주지 않는다.
+
+## 11. 실제 기존 클렌저 10건 TRUST 등록·연구 작업 결과 (2026-10-22)
+
+**운영 상태 변경 수행 완료** (Supabase 프로젝트의 기존 governed `public.catalog_trust_intake`와 `public.product_fact_research_tasks`에만 변경; 기존 products / Subject / Fact / G2 / score / legacy 164 변경 없음).
+
+- 변경 전 동일 트랜잭션에서 검증: 정확한 10개 기존 canonical 제품, normalized 중복 0, Subject/Intake/Task 0, `product-fact-registry-cross-category-v1` 활성, cleanser `low_ph`/`deep_cleansing` 정의 및 신규 lineage write policy 모두 허용.
+- 단일 `DO` 원자적 실행: 전체 10건에 기존 제품 ID를 보존한 `catalog_revision=existing-cleanser-trust-research-v1:<UUID>`, `market=KR`, `source_candidate_id=NULL`, `PENDING` intake를 삽입; 각 제품에 기존 `process_catalog_trust_product_v3(id,registry)` 실행. 실행 후 10 intake + 20 Fact 연구 태스크와 예상 상태를 트랜잭션 내 확인; 실패 시 전체 자동 취소하도록 설계.
+- **사후 SELECT 검증**: 10 intake / `SUBJECT_CREATION_REQUIRED` 10 / `REVIEW_REQUIRED` 10 / 필수 두 Fact 연구 태스크 20(`REVIEW_REQUIRED`) / Subject 생성 0 / Current Fact 확정 0.
+- 이 프로세스의 범위는 *TRUST 검증 대기열 등록*이지, 정확한 제품/용량·전성분·pH·세정 효능 또는 추천 후보 승인에 대한 근거/허가가 아니다.
+- `scripts/run-cleanser-initial-admission-preflight-v1.mjs`에 `trustQueue.identityStates`, `trustQueue.researchTasks`, `existingResearchIntakeCount`, `existingResearchTaskCount` READ-ONLY 진단 출력 추가. 재실행 시 기존 intake를 감지하여 새로운 등록 제안은 HOLD된다.
+
+**선행 조사가 필요한 공식 출처 단서 (리서치 메모, TRUST 확정 근거 아님):**
+- 제로이드 공식 브랜드 페이지: `https://www.zeroid.co.kr/web/product/product_detail.asp?idx=325` — 상품명·성분, `https://www.zeroid.co.kr/web/community/faq_list.asp` — 약산성/피부 타입 설명 후보. DB source_url은 현재 올리브영이며 자동 치환하지 않음.
+- 라곰 공식몰: `https://lagom.kr/product/%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml/9/` (공식 표기 150ml), `https://lagom.kr/product/detail.html?cate_no=1&display_group=2&product_no=10` (공식 표기 220ml). 기존 카탈로그는 각각 120ml/170ml이므로 **제품 버전·규격 충돌 가능성**, 과거 상품 여부 포함 검증이 필요. 기존 값/규격 임의 변경 금지.
+- 마녀공장 브랜드몰 `https://www.manyo.co.kr/goods/goods_list.php?cateCd=007002` — 소이빈 폼 160ml와 120ml 모두 존재하고 약알칼리성으로 표기. `low_ph=true` 자동 추론 금지. 정확한 단품/버전 확인 필요.
+
+### 남은 보호 단계
+
+공식 제조사 사이트·Hwahae의 이용 권한/robots 및 원본 캡처 증빙을 별도 검증해야 한다. 기존 TRUST subject registration/official binding/product-specific Fact confirmation과 검증된 `skin_types`/`concerns`이 없으면 신규 제품의 SHADOW 적격성도 G2 grant도 생성되지 않는다.
+
+현재 `read_recommendation_admission_authority_v1`의 권한 계약은 `contains_active` 계열로 제한된다. cleanser에 대한 최종 런타임 initial admission을 추가하려면 별도 **카테고리별 authority reader + G2 확장 + 회귀 테스트**가 필요하며, 개발/릴리즈 전 DB/Auth/RLS 통제와 canary/rollback 계약이 확인돼야 한다. 공개 추천 activation은 여기서 하지 않는다.
