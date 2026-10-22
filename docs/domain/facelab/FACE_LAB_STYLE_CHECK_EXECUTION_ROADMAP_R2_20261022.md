@@ -72,7 +72,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 
 **완료 게이트** observation key coverage ledger, hold reason coverage, baseline compatibility, 불가능한 영역에 추천 근거 생성 0.
 
-### W3 — 추천의 목표 적합·다양성 [P1–P2; W1/W2]
+### W3 — 추천의 목표 적합·다양성 [P1–P2; SC-04 착수 / PR #1395]
 
 - 동일 관찰 × 다른 Target/priority/scope/time/budget 및 같은 Target × 다른 구조 관찰로 반사실 테스트
 - target_forward와 face_harmony의 이유 추적, hard exclusion 위반 0
@@ -107,8 +107,8 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-00 | 1 | 개정 설계 작성 | 기존 V2 정의 | 전체 책임 경계 | 없음 |
 | SC-01 | 2 | **착수** | SC-00, 실제 main | 근거·상태 재감사 | provenance 누락 |
 | SC-02 | 3 | **코드·CI 검증 완료 / PR #1393, 미병합** | SC-01 병행 가능 | read-only lineage auditor + mutation CI | canonical 의미 변경 |
-| SC-03 | 4 | **읽기 전용 coverage 감사 구현 / PR #1394, CI 확인 중** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
-| SC-04 | 5 | 미착수 | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
+| SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
+| SC-04 | 5 | **반사실적 추천 비교 구현 / PR #1395, CI 확인 중** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | 미착수 | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
 | SC-06 | 7 | 미착수 | SC-03/04/05 승인 | Style Check UX/제품 연결 | 미확정 품질의 production 승격 |
 
@@ -118,6 +118,14 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - 눈썹 구체적 형태/두께, 입술 윤곽/볼륨, 모발 상태, 보정된 피부 톤은 현재 독립 관찰 계약이 아니다. Style Check가 이를 이미 측정했다고 서술하지 않는다.
 - SC-03 read-only 검사에는 수신 보류/누락, source evidence, key-feature 및 structural projection, 미등록 스키마 주입, pose/quality 별도 hold, 사진색 부적합 시 color 누락을 포함한다.
 - PR #1393 (SC-02)은 base `main`, PR #1394 (SC-03)은 base `SC-02 branch`에 쌓인 상태. **CI green 전 적용·배포 불가**. 보고서의 회귀 성공은 실제 사진·스타일 적합성의 증거가 아니다.
+
+### 2026-10-22 진행 상태 (SC-04)
+
+- 기존 `target-responsiveness.js`는 **같은 얼굴에서 Target만 바꾸는 E3 비교**를 이미 실행하고, `axis-consumption.js`는 6개 Target 축 소비를 검사한다. 이를 재구현하거나 기존 통과 수치를 '스타일 품질'로 주장하지 않는다.
+- 새 SC-04 (`evaluation/style-check-contrast-audit.js`)는 기존 Current-Contract 얼굴 modifier **4개**의 관찰 필드만 하나씩 바꿔 Face Harmony 경로와 Target Forward 경로의 차이를 확인한다. 적용할 action이 없는 경우에는 억지로 차이를 만들어내지 않고 **applicable=0**으로 기록한다.
+- **검증 포인트:** 얼굴만 변경해도 Target 벡터는 불변, Target Forward의 Action/Route 의미는 불변, 적용 가능한 Face Harmony action은 수정·근거 추적, `hair_disabled/makeup_disabled`는 모든 Route action 및 도메인 실행을 차단한다.
+- PR #1395는 #1394 위에 쌓인 Draft. SC-02/03/04 전부 비침습 evaluation-only이며 서로 선행 병합·재검증 없이 운영 릴리스하지 않는다.
+- 실제 사용자 얼굴과 헤어·메이크업 스타일의 적합성 및 추천 유용성 판정은 다음 SC-05에서 독립 human protocol로만 수행한다.
 
 ## 5. 체크리스트/실행 운영
 
