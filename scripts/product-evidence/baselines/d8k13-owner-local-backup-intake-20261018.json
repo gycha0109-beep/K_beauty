@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_PUBLIC_RESTORE_UNKNOWN_COMMAND_LINE_18291_FULL_SOURCE_ONLY_COMMAND_AUDIT_CI_PASS_OWNER_AUDIT_PENDING",
+  "state": "D8K13_OWNER_PUBLIC_RESTORE_ALL_COMMANDS_IDENTIFIED_ONE_TERMINAL_UNKNOWN_POSSIBLE_RESET_ALL_COMPAT_CI_PENDING",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -717,8 +717,7 @@
         "zipFingerprintVerified": true,
         "strictSchemaRestoreCompleted": true,
         "latestErrorCode": "D8K13_PUBLIC_DATA_UNEXPECTED_SOURCE_COMMAND_LINE_18291",
-        "precedingSequenceFormatErrorLine18268NoLongerObserved": true,
-        "failurePhase": "public-only source data.sql lexical preflight, prior to any COPY row import",
+        "failurePhase": "public-only source data.sql preflight, no COPY data imported",
         "actualOwnerPublicRestorePass": false,
         "originalZipModified": false,
         "productionDatabaseConnections": 0
@@ -739,6 +738,17 @@
         "ownerActualBackupRerun": false,
         "realBackupSqlOrRowsUploaded": false,
         "releaseAuthorized": false
+      },
+      "terminalResetAllFix20261022": {
+        "codeCommit": "10595e296294f7a1ed4ec95b045c41072563297b",
+        "ciRun": 39780628115,
+        "ciStatus": "PENDING",
+        "sourceLastLineKnownOnlyAs": "OTHER_SQL_KEYWORD",
+        "sourceLineMatchesResetAllConfirmed": false,
+        "rationale": "Supabase CLI backup data-only scripts can finish with RESET ALL; supported by external Supabase restore runbook, not by user ZIP content inspection.",
+        "acceptance": "Recognize exact terminal RESET ALL; and ignore in limited public COPY replay; reject nonterminal RESET ALL; and other unrecognized commands. Keep operation disposable, no production writes.",
+        "actualOwnerZipRerun": false,
+        "releaseAuthorized": false
       }
     },
     "dataCommandFamilyAudit20261022": {
@@ -747,7 +757,7 @@
       "syntheticCiRun": 39775759787,
       "syntheticCiStatus": "SUCCESS",
       "intent": "One owner-only scan of all data.sql commands outside COPY payload, returning only enum classifications, line numbers, and counts; no Docker started, SQL output, row data or production connections",
-      "ownerRunStatus": "NOT_RUN",
+      "ownerRunStatus": "PASS",
       "privacy": {
         "namedObjectMetadataReturned": false,
         "rawSqlOrRowsReturned": false,
@@ -763,7 +773,35 @@
         "both standard pg_dump setval forms recognized",
         "ZIP SHA unchanged, no Docker, no import or source SQL/rows returned",
         "full original synthetic PG17 restore/audit security regression PASS"
-      ]
+      ],
+      "ownerObserved": {
+        "status": "D8K13_LOCAL_DATA_COMMAND_FAMILY_AUDIT_ONLY_NO_RESTORE",
+        "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+        "sourceLines": 18291,
+        "copyHeaders": 134,
+        "copyPayloadLinesNotInspected": 17168,
+        "recognizedClasses": {
+          "COMMENT_OR_BLANK": 839,
+          "COPY_VALID": 134,
+          "SET_CONFIG_VALID": 1,
+          "SET_VALID": 11,
+          "SETVAL_VALID": 3
+        },
+        "unexpectedCommandCount": 1,
+        "unexpectedSamples": [
+          {
+            "line": 18291,
+            "commandClass": "OTHER_SQL_KEYWORD"
+          }
+        ],
+        "noDockerStarted": true,
+        "dataRowsImported": false,
+        "originalZipModified": false,
+        "rawSqlOrDataReturned": false,
+        "productionDatabaseConnections": 0,
+        "releaseAuthorized": false
+      },
+      "ownerActualSqlLastLineIdentityConfirmed": false
     }
   },
   "syntheticCi": {
