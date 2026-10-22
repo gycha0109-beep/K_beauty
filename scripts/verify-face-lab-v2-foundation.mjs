@@ -5,6 +5,8 @@ import "./verify-face-lab-roi-public-research-route.mjs";
 import "./verify-face-lab-style-check-lineage-p0.mjs";
 // SC-03: whole-face observation coverage and unsupported-field fail-closed.
 import "./verify-face-lab-style-check-observation-coverage-sc03.mjs";
+// SC-04: fixed-target face contrast, target_forward and hard exclusions.
+import "./verify-face-lab-style-check-contrasts-sc04.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
