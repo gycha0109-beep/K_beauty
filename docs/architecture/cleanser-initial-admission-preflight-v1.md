@@ -113,7 +113,7 @@
 
 운영 조회 기준 신규 클렌저 10개 모두 `products`에는 존재하지만 `catalog_trust_intake` 및 `product_fact_subjects` 0건이고, 같은 정규화 브랜드/상품명으로 등록된 충돌 제품도 0건이다.
 
-- 추가 `lib/existing-cleanser-trust-enrollment-plan-v1.mjs`: 기존 UUID 보존, 중복·기존 intake·상품 식별 오류 차단, TRU​​ST required facts `low_ph`/`deep_cleansing`와 **현재 registry의 신규 lineage 쓰기 정책**을 확인한 경우에만 `TRUST_INTAKE_ENROLLMENT_PROPOSED` 상태를 출력한다.
+- 추가 `lib/existing-cleanser-trust-enrollment-plan-v1.mjs`: 기존 UUID 보존, 중복·기존 intake·상품 식별 오류 차단, **활성 Registry 정의에 cleanser 범위가 존재하는지** 검증, TRUST required facts `low_ph`/`deep_cleansing`와 **현재 registry의 신규 lineage 쓰기 정책**을 확인한 경우에만 `TRUST_INTAKE_ENROLLMENT_PROPOSED` 상태를 출력한다.
 - `scripts/run-cleanser-initial-admission-preflight-v1.mjs --ids=...`는 현재 `catalog_trust_intake` 목록과 두 READ-ONLY DB RPC(`catalog_required_product_facts_v1`, `product_fact_controlled_registry_write_admissibility_v2`)를 조회하여 `proposedResearchIntakes`와 `proposedResearchIntakeCount`를 출력한다.
 - 각 `proposal`은 `catalog_revision = existing-cleanser-trust-research-v1:<기존UUID>`, `category=cleanser`, `market=KR`, `subject_id=null`, `identity_state=PENDING`, `trust_state=PENDING`인 **운영자 검토용 접수안**이다. 아직 insert하거나 `process_catalog_trust_product_v3`을 호출하지 않는다.
 - `scripts/verify-existing-cleanser-trust-enrollment-plan-v1.mjs`에서 기존 등록 충돌/정책 불일치/재실행 상황을 포함한 순수 함수 검증 후 canonical CI에 편입했다.
