@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /** Read-only hosted inventory audit. This command never grants admission. */
 import { createClient } from "@supabase/supabase-js";
+import { readFile } from "node:fs/promises";
 import dotenv from "dotenv";
 import {
   CLEANSER_ADMISSION_PREFLIGHT_VERSION,
@@ -12,6 +13,7 @@ import { evaluateCleanserGovernedAdmissionShadow } from "../lib/cleanser-governe
 import { materializeExistingCleanserSubjectAttestation } from "../lib/cleanser-existing-subject-attestation-v1.mjs";
 import { materializeGovernedCleanserHwahaeCapture } from "../lib/cleanser-hwahae-governed-capture-reader-v1.mjs";
 import {planExistingCleanserTrustResearchEnrollment,CLEANSER_REGISTRY_VERSION} from "../lib/existing-cleanser-trust-enrollment-plan-v1.mjs";
+import { OFFICIAL_RESEARCH_SOURCE_MODE } from "../lib/existing-cleanser-official-capture-v1.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const idsArg = process.argv.find((value) => value.startsWith("--ids="))?.slice(6) || "";
@@ -184,9 +186,35 @@ const captureLimit=limitArg==null?3:Number(limitArg);
 if (!Number.isInteger(captureLimit)||captureLimit<1||captureLimit>10) {
   throw new Error("INVALID_OFFICIAL_CAPTURE_LIMIT");
 }
+const leadsFile=process.argv.find(x=>x.startsWith("--official-source-leads-file="))
+  ?.slice("--official-source-leads-file=".length).trim()||null;
+if(leadsFile&&!requestCapture)throw new Error("OFFICIAL_LEADS_REQUIRE_AUTHORIZED_HOSTS");
+const leadMap=new Map();
+if(leadsFile){
+  const input=JSON.parse(await readFile(leadsFile,"utf8"));
+  if(input?.version!=="cleanser-official-research-leads-v1" ||
+    !Array.isArray(input.items) || input.items.length>25){
+    throw new Error("OFFICIAL_LEADS_FILE_INVALID");
+  }
+  for(const row of input.items){
+    if(!UUID.test(String(row?.productId||"")) ||
+      !ids.includes(row.productId) || typeof row.officialUrl!=="string" ||
+      row.officialUrl.length>2048 || leadMap.has(row.productId)){
+      throw new Error("OFFICIAL_LEAD_SCOPE_OR_DUPLICATE");
+    }
+    const parsed=new URL(row.officialUrl);
+    if(parsed.protocol!=="https:" || parsed.username || parsed.password || parsed.hash ||
+      !allowlistedHosts.includes(parsed.hostname.toLowerCase())){
+      throw new Error("OFFICIAL_LEAD_HOST_OR_URL_NOT_APPROVED");
+    }
+    leadMap.set(row.productId,parsed.toString());
+  }
+}
 const officialResearch=[];
 if(requestCapture){
   const scoped=products.filter(product=>{
+    const lead=leadMap.get(product.id);
+    if(lead)return true;
     const plan=results.find(result=>result.productId===product.id)?.backfill;
     if(plan?.sourceUrlClassification!=="OFFICIAL_SOURCE_CANDIDATE_UNVERIFIED")return false;
     try{return allowlistedHosts.includes(new URL(product.source_url).hostname.toLowerCase())}
@@ -194,12 +222,15 @@ if(requestCapture){
   }).slice(0,captureLimit);
   for(const product of scoped){
     try{
+      const alternate=leadMap.get(product.id);
       const candidate=await collectExistingCleanserOfficialCapture({
-        product,approvedBrandHosts:allowlistedHosts,siteUseAuthorized:true
+        product,officialUrl:alternate||product.source_url,
+        researchSourceMode:alternate?OFFICIAL_RESEARCH_SOURCE_MODE.ALTERNATE:
+          OFFICIAL_RESEARCH_SOURCE_MODE.CATALOG_ONLY,
+        approvedBrandHosts:allowlistedHosts,siteUseAuthorized:true,
       });
       officialResearch.push({productId:product.id,...candidate});
     }catch(error){
-      // Do not leak DNS, auth or fetched content from a provider error.
       officialResearch.push({productId:product.id,state:"HOLD",
         reasons:["OFFICIAL_FETCH_FAILED_OR_SOURCE_BLOCKED"],
         grantIssued:false,productionWrites:0});
@@ -219,7 +250,8 @@ const sourceKinds = Object.fromEntries(
 console.log(JSON.stringify({
   version:CLEANSER_ADMISSION_PREFLIGHT_VERSION,total:results.length,summary,
   workItems,sourceKinds,
-  officialResearchExecuted:requestCapture,officialResearch,
+  officialResearchExecuted:requestCapture,
+  officialLeadCount:leadMap.size,officialResearch,
   shadowEligibleCount:results.filter(x=>x.admissionShadow.shadowEligible).length,
   governedRegistryReadiness:intakeEnrollmentPolicy,
   proposedResearchIntakeCount:results.filter(x=>x.trustEnrollment.proposal!==null).length,
