@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-22 / cleanser governed DB source materialization Stage 2
+
+- 승인 흐름 연결 작업을 PR #1390 Draft 브랜치에서 계속 진행. Desktop Commander 미사용, Github 코드+Supabase 운영 DB **SELECT만** 사용; Auth/RLS/DB schema/production products/legacy 164/ranking runtime 쓰기 0.
+- 신설: `lib/cleanser-existing-subject-attestation-v1.mjs`, `scripts/verify-existing-cleanser-subject-attestation-v1.mjs`; 공식 `catalog_trust_intake` 관리자 신원 확정, `product_source_bindings` resolved 공식 출처, `trust_source_observations` 같은 제품/Subject/KR/원본 SHA-256/정확한 URL을 대조해 현행 attestation을 **읽기 전용 생성**한다. 누락/충돌/오래된 observation이면 NULL.
+- 신설: `lib/cleanser-hwahae-governed-capture-reader-v1.mjs`, `scripts/verify-cleanser-hwahae-governed-capture-reader-v1.mjs`; `product_evidence_sources`에 보관된 Hwahae 원본 capture envelope와 `product_evidence_source_subject_bindings`의 exact/equivalent 연결을 검증해 동일 제품 Subject에 한정된 캡처만 이용한다. 제품 리뷰 요약으로 가짜 SHA/캡처를 만들지 않는다.
+- `scripts/run-cleanser-initial-admission-preflight-v1.mjs`에 기존 운영 테이블의 admin identity/원본 publisher 캡처 read-only join 연동, 이전 하드코딩 NULL을 provenance 확인된 경우에만 대체. `scripts/verify-current-main-health.mjs`에 두 테스트 포함, 기존 G2 synthetic shadow 통합 테스트도 두 진짜 materializer를 통과하도록 변경.
+- 운영 조회 당시 신규 10개 TRUST Subject/공식 Binding/Current Fact 0, `product_evidence_sources`의 Hwahae publisher capture 0. 현재 통과/추천 활성화 0 유지. 다음 작업: 정식 공급자 원본 캡처 보관 권한과 기존 제품 전용 TRUST controlled intake/Fact governance, 신규 cleanser G2 reader+grant activation의 DB/Auth 보안 경계 해결.
+- 마지막 커밋 CI 검증 확인 전에는 overall PASS로 보고하지 않는다.
+
 ### 2026-10-22 / cleanser official capture candidate and governed shadow grant readiness
 
 - 신규 기존 상품 공식 페이지 연구 후보 수집기: `lib/existing-cleanser-official-capture-v1.mjs`, CLI, verifier. 별도 허용 호스트/사이트 사용 허가와 안전한 TRUST official fetch helper 필요; 브랜드·상품명·정확한 g/ml 용량 확인 시에도 `RESEARCH_CANDIDATE_ONLY`, 1+1/복수 용량/소매처/브랜드 불일치는 HOLD. GitHub/CI synthetic-only: 실제 사이트 fetch 0.
