@@ -229,6 +229,61 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host ($output -join "`n"); throw 'D8K13_SYNTHETIC_INSPECTION_FAILED' }
           if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ZIP_INSPECTION_PASS')) { throw 'D8K13_SYNTHETIC_INSPECTION_MARKER_MISSING' }
           Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_INSPECTION_PASS'
+      - name: Classify all synthetic data commands without Docker or source text output
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $target=Join-Path $env:RUNNER_TEMP 'd8k13-command-families/sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $target 'schema.sql')
+          $data=@'
+          -- No real backup SQL is included.
+          SET client_encoding = 'UTF8';
+          COPY public.products (id, name) FROM stdin;
+          21	SELECT value only inside COPY, never executable
+          \.
+          SELECT pg_catalog.setval('public.local_dummy_sequence', 5, true);
+          SELECT pg_catalog.setval('public.local_dummy_sequence'::regclass, 5, true);
+          SELECT something_synthetic_and_unexpected();
+          ALTER TABLE public.products ENABLE TRIGGER ALL;
+          \unexpected_guard synthetic-only
+          COPY auth.synthetic_service_object (id, value) FROM stdin;
+          22	synthetic managed payload
+          \.
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $target 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $env:RUNNER_TEMP 'd8k13-command-families/fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $bytes=[long](Get-Item -LiteralPath $zip).Length
+          $original=(Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash
+          $output=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $bytes -Mode AuditDataCommands
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_DATA_COMMAND_FAMILIES_AUDIT_SCRIPT_FAILED' }
+          $match=@($output | Where-Object { $_ -match '"status":"D8K13_LOCAL_DATA_COMMAND_FAMILY_AUDIT_ONLY_NO_RESTORE"' })
+          if ($match.Count -ne 1) { throw 'D8K13_DATA_COMMAND_FAMILIES_AUDIT_MISSING' }
+          $result=$match[0] | ConvertFrom-Json
+          if ($result.copyHeaders -ne 2 -or $result.unexpectedCommandCount -ne 3 -or
+              @($result.unexpectedSamples).Count -ne 3 -or
+              $result.copyPayloadLinesNotInspected -ne 2 -or
+              $result.noDockerStarted -ne $true -or $result.dataRowsImported -ne $false -or
+              $result.originalZipModified -ne $false -or $result.rawSqlOrDataReturned -ne $false -or
+              $result.productionDatabaseConnections -ne 0 -or $result.releaseAuthorized -ne $false) {
+            throw 'D8K13_DATA_COMMAND_FAMILIES_AUDIT_CONTRACT_FAILED'
+          }
+          foreach($klass in @('SELECT_OTHER','ALTER_OTHER','PSQL_META_OTHER')) {
+            if (@($result.unexpectedSamples | Where-Object { $_.commandClass -eq $klass }).Count -ne 1) {
+              throw 'D8K13_DATA_COMMAND_CLASS_UNEXPECTED_OR_MISSING'
+            }
+          }
+          if ($match[0] -match 'SELECT something_synthetic|ALTER TABLE public|synthetic managed payload|unexpected_guard|COPY auth') {
+            throw 'D8K13_DATA_COMMAND_AUDIT_LEAKED_SQL_OR_ROW'
+          }
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash -ne $original) {
+            throw 'D8K13_DATA_COMMAND_AUDIT_MODIFIED_ZIP'
+          }
+          Write-Host 'D8K13_SYNTHETIC_ALL_DATA_COMMAND_CLASSES_NO_DOCKER_PASS'
       - name: Check clean Supabase/Postgres image schema prerequisites (no owner ZIP)
         shell: bash
         run: |
