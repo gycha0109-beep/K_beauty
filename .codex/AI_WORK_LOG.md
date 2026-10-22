@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-10-22 / existing cleanser TRUST intake enrollment proposal (bounded, read-only)
+
+- 기존 PR #1390의 PIE Shadow 포함 GitHub Actions 11/11 PASS를 확인한 뒤, 최초 병목을 운영 DB SELECT로 재검증: 신규 클렌저 10개 canonical 제품 존재, 같은 normalized brand+name 타 제품 충돌 0, catalog_trust_intake/Subject 각각 0.
+- 현행 `catalog_required_product_facts_v1('cleanser')` = low_ph + deep_cleansing, 두 항목 모두 registry v1 신규 lineage write policy ALLOWED라는 **읽기 전용** 결과 확인. `process_catalog_trust_product_v3`는 기존 Intake 레코드를 기반으로 research task를 생성하므로, intake 0이면 해당 경로에 상품이 진입하지 못한다.
+- `lib/existing-cleanser-trust-enrollment-plan-v1.mjs`와 `scripts/verify-existing-cleanser-trust-enrollment-plan-v1.mjs` 추가. 기존 UUID 기준 deterministic PENDING intake 제안을 생성; existing intake/normalized name 충돌/정책 불일치면 HOLD. DB write/Fact confirmation/grant 0.
+- 운영 진단 CLI에 governed policy RPC 2종(읽기 전용) 및 `proposedResearchIntakes` 집계 추가. 정식 `scripts/verify-current-main-health.mjs` 테스트 편입. 운영 DB 등록 및 v3 process 호출, RLS/권한/스키마/추천 점수식, legacy 164 변경 없음.
+- 별도 외부 공개 출처 확인: 올리브영 라곰 제품 120ml/170ml은 판매처 확인 수준. 마녀공장 공식몰은 160ml/120ml 둘 다 있고 약알칼리성 상품이라, 모든 cleanser에 low_ph=true를 추정해서는 안 됨. 웹 자료는 governed official digest/권한이 아님.
+- 최신 CI 결과는 새 커밋 기준 재확인 대상. 실제 등록/처리에는 protected production data 변경 권한·계획·검증이 필요함.
+
 ### 2026-10-22 / cleanser governed DB source materialization Stage 2
 
 - 승인 흐름 연결 작업을 PR #1390 Draft 브랜치에서 계속 진행. Desktop Commander 미사용, Github 코드+Supabase 운영 DB **SELECT만** 사용; Auth/RLS/DB schema/production products/legacy 164/ranking runtime 쓰기 0.
