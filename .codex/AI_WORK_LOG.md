@@ -3285,3 +3285,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Current Vision schema and skin projector read; no API, package, recommendation, security policy, database or production changes. PR #1384 stays separate Draft; PR #1358 browser labeler remains a reconciliation candidate, not approved training intake.
 - Not verified: Node execution in actual repo, build/CI, real photos/model inference, professional labels, rights agreements, mobile overlay, commercial launch readiness.
 - Next bounded gate: obtain original-source commercial rights evidence and at least one independently labeled consented real image; validate full manifest and human reviewer protocol before model fine-tuning.
+
+## 2026-10-22 — AI-Hub 71645 access preflight and JSON metadata audit
+- Classification: bounded research, documentation and read-only audit utility; DB/Auth/RLS/Storage/Provider/Payment/Secret/Production mutation N.
+- Official dataset page/FAQ/usage policy verified: domestic download application, phone identity verification, conditional automatic approval; derived commercial model/service generally permitted but source data redistribution, third-party review and international transfer are separately restricted.
+- Dataset counts are 13,936 photos / 84,688 measurements / 125,424 labels; angle table appears inconsistent and no independent subject count is supported. Face bbox != acne lesion bbox or redness mask.
+- Added `data/skin-precision/aihub-71645-acquisition-runbook-v1.md`: applicant instructions, safe usage purpose, source contacts and license/annotation permission inquiry; no message sent.
+- Added `scripts/audit-aihub-71645-metadata.mjs` (JSON-only, metadata aggregated without image bytes and without raw PII output). In-session V8 synthetic test PASS: 3 input rows, 2 unique image candidates, repeated-file and malformed bbox detection, missing/zero measurements distinction, no raw identifiers output.
+- No actual AI-Hub login, approval, sample or raw data obtained; no real file structure or trained detector validated. Node CLI execution and full project build were unavailable in this connector-only environment.
+- Next gate: applicant verification/download terms, then approved JSON sample audit and consented specialist label feasibility. PR #1387 remains Draft.
