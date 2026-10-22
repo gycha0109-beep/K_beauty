@@ -206,6 +206,8 @@ Archetype Fun/비활성 Shadow Scorer는 별도 sidebar 기능이며 Style Delta
 - 원본 사진, crop, 생얼/피부 마스크, raw provider response를 canonical·Premium snapshot·Route Choice Evidence에 저장하지 않는다. 연구용 사진/주석은 별도 권리/목적 경계가 필요하다.
 - `candidate-style-delta.js` / uncalibrated Face Fit relations / Archetype shadow는 `productionActive:false`를 유지한다.
 
+> 실행 단위·게이트·실제 착수 상태는 `FACE_LAB_STYLE_CHECK_EXECUTION_ROADMAP_R2_20261022.md`를 우선한다. 이 절은 상위 단계 요약이다.
+
 ## 10. 개선 로드맵 (중복 구현 방지)
 
 ### P0 — 현재 동작·권한·UI 슬롯 재감사 (즉시)
