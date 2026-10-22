@@ -53,6 +53,10 @@ const intakes = await rows(supabase.from("catalog_trust_intake")
   .select("id,product_id,subject_id,identity_state,market,identity_resolution_detail")
   .in("product_id",ids).limit(150),"catalog_trust_intake");
 if (intakes.length >= 150) throw new Error("TRUST_INTAKE_SCOPE_LIMIT_REACHED");
+const trustResearchTasks = await rows(supabase.from("product_fact_research_tasks")
+  .select("id,product_id,subject_id,fact_key,registry_version,research_policy_version,state,blocker_code")
+  .in("product_id",ids).limit(150),"trust_research_tasks");
+if (trustResearchTasks.length >= 150) throw new Error("TRUST_TASK_SCOPE_LIMIT_REACHED");
 // These are READ-ONLY governed RPC lookups. No intake, Fact, or grant writes.
 const requiredFacts=await rows(supabase.rpc("catalog_required_product_facts_v1",
   {p_category:"cleanser"}),"cleanser_required_facts");
@@ -155,7 +159,16 @@ const results = products.map((product) => {
   const trustEnrollment = planExistingCleanserTrustResearchEnrollment({
     product,catalogProducts,existingIntakes:intakes,policy:intakeEnrollmentPolicy
   });
-  return { brand:product.brand,name:product.name,...result,admissionShadow,backfill,trustEnrollment };
+  const trustQueue = {
+    intakeCount:intakes.filter(row=>row.product_id===product.id).length,
+    identityStates:[...new Set(intakes.filter(row=>row.product_id===product.id)
+      .map(row=>row.identity_state))].sort(),
+    researchTasks:trustResearchTasks.filter(row=>row.product_id===product.id)
+      .map(({id,subject_id,fact_key,registry_version,research_policy_version,state,blocker_code})=>({
+        id,subject_id,fact_key,registry_version,research_policy_version,state,blocker_code,
+      })),
+  };
+  return { brand:product.brand,name:product.name,...result,admissionShadow,backfill,trustEnrollment,trustQueue };
 });
 // No external fetch by default. Explicit site-use authorization plus a
 // pre-reviewed origin allowlist are both mandatory for optional bounded intake.
@@ -210,6 +223,8 @@ console.log(JSON.stringify({
   shadowEligibleCount:results.filter(x=>x.admissionShadow.shadowEligible).length,
   governedRegistryReadiness:intakeEnrollmentPolicy,
   proposedResearchIntakeCount:results.filter(x=>x.trustEnrollment.proposal!==null).length,
+  existingResearchIntakeCount:results.reduce((sum,x)=>sum+x.trustQueue.intakeCount,0),
+  existingResearchTaskCount:results.reduce((sum,x)=>sum+x.trustQueue.researchTasks.length,0),
   proposedResearchIntakes:results.map(x=>x.trustEnrollment.proposal).filter(Boolean),
   productionWrites:0,admissionGranted:0,results
 },null,2));
