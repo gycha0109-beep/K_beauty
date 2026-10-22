@@ -9,6 +9,7 @@ import {
 import { buildExistingCleanserTrustBackfillPlan } from "../lib/existing-cleanser-trust-backfill-plan-v1.mjs";
 import { collectExistingCleanserOfficialCapture } from "../lib/existing-cleanser-official-capture-v1.mjs";
 import { evaluateCleanserGovernedAdmissionShadow } from "../lib/cleanser-governed-admission-shadow-v1.mjs";
+import { materializeExistingCleanserSubjectAttestation } from "../lib/cleanser-existing-subject-attestation-v1.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const idsArg = process.argv.find((value) => value.startsWith("--ids="))?.slice(6) || "";
@@ -44,8 +45,12 @@ const bindings = await rows(supabase.from("product_source_bindings")
   .select("binding_id,product_id,source_name,source_url,binding_state,product_scope_state")
   .in("product_id",ids).limit(200), "source_bindings");
 const observations = await rows(supabase.from("trust_source_observations")
-  .select("product_id,subject_id,source_binding_id,canonical_locator,market,source_kind,source_content_digest,fetched_at,product_identity_observation")
+  .select("observation_id,product_id,subject_id,source_binding_id,canonical_locator,market,source_kind,source_content_digest,fetched_at,product_identity_observation")
   .in("product_id",ids).limit(500), "source_observations");
+const intakes = await rows(supabase.from("catalog_trust_intake")
+  .select("id,product_id,subject_id,identity_state,market,identity_resolution_detail")
+  .in("product_id",ids).limit(150),"catalog_trust_intake");
+if (intakes.length >= 150) throw new Error("TRUST_INTAKE_SCOPE_LIMIT_REACHED");
 const subjectIds = subjects.map((row) => row.subject_id);
 const currentFactRows = subjectIds.length ? await rows(supabase.from("product_fact_current")
   .select("subject_id,confirmation_id,fact_instance_id,proposition_key").in("subject_id",subjectIds).limit(500),"current_facts") : [];
@@ -86,10 +91,15 @@ const results = products.map((product) => {
     confirmedFacts:confirmedFacts.filter((row)=>row.subject_id===subject?.subject_id),
     catalogProducts,
     metadataReviews:metadataReviews.filter((row)=>row.product_id===product.id),
-    // The current DB has no governed source-bound Hwahae envelope or KR
-    // Subject attestation materializer. Missing is NEVER synthesized as proof.
+    // A Hwahae signal snapshot is NOT a verified publisher capture envelope.
+    // Pending dedicated trusted capture provenance: no synthetic envelopes.
     hwahaeCaptureEnvelope:null,
-    subjectScopeAttestation:null,
+    subjectScopeAttestation:materializeExistingCleanserSubjectAttestation({
+      product,subject,
+      trustIntakes:intakes.filter(row=>row.product_id===product.id),
+      officialBindings:bindings.filter(row=>row.product_id===product.id),
+      observations:observations.filter(row=>row.product_id===product.id),
+    }),
   };
   const result = evaluateCleanserInitialAdmissionPreflight(snapshot);
   const admissionShadow = evaluateCleanserGovernedAdmissionShadow(snapshot);
