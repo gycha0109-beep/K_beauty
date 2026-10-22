@@ -6,7 +6,7 @@ import {consumeNeutralFaceObservation} from "../lib/face-lab-v2/personal-color/s
 import {compareSharedNeutralFaceCoreRoiParity} from "../lib/face-lab-v2/personal-color/shared-core-roi-parity.js";
 import {detectMediaPipeCheekRoiProposal} from "../lib/face-lab-v2/personal-color/mediapipe-roi-proposal.js";
 import {buildRoiPreviewMasks} from "../lib/face-lab-v2/personal-color/roi-render-mask-adapter.js";
-import { FACE_OVAL_INDICES, proposeSajuNeutralCheekResearchRegions } from "../lib/face-lab-v2/personal-color/saju-neutral-cheek-research-proposal.js";
+import { CHEEK_SURFACE_RINGS, proposeSajuNeutralCheekResearchRegions } from "../lib/face-lab-v2/personal-color/saju-neutral-cheek-research-proposal.js";
 import {buildPersonalColorCheekMasks} from "../lib/face-lab-v2/personal-color/cheek-mask-geometry.js";
 
 const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
@@ -47,19 +47,13 @@ assert.match(connect,/https:\/\/storage\.googleapis\.com/);
 assert.match(research,/wasm-unsafe-eval/);
 assert.match(research,/worker-src 'none'/);
 
+// Selected 2-D vertices from the public MediaPipe canonical face model OBJ.
+// This is a synthetic, front-facing mesh fixture: NOT any real photo label.
+const canonicalSubset={"1":[0,-1.126865],"33":[-4.445859,2.663991],"36":[-2.844939,-0.720868],"61":[-2.456206,-4.342621],"98":[-1.405627,-1.714196],"100":[-2.34234,0.572222],"101":[-3.327324,0.104863],"117":[-5.258659,0.945811],"118":[-4.432338,0.722096],"123":[-6.338145,-0.529279],"145":[-3.177186,2.294265],"147":[-6.234883,-1.94443],"187":[-5.278538,-2.238942],"205":[-3.832928,-1.537326],"206":[-2.96186,-2.274215],"207":[-4.386901,-2.683286],"234":[-7.664182,0.673132],"263":[4.445859,2.663991],"266":[2.844939,-0.720868],"291":[2.456206,-4.342621],"327":[1.405627,-1.714196],"329":[2.34234,0.572222],"330":[3.327324,0.104863],"346":[5.258659,0.945811],"347":[4.432338,0.722096],"352":[6.338145,-0.529279],"374":[3.177186,2.294265],"376":[6.234883,-1.94443],"411":[5.278538,-2.238942],"425":[3.832928,-1.537326],"426":[2.96186,-2.274215],"427":[4.386901,-2.683286],"454":[7.664182,0.673132]};
 const landmarks=Array.from({length:478},()=>({x:.5,y:.5,z:0}));
-// A realistic closed contour is required; a seven-anchor fixture is no
-// longer sufficient to justify the new full-face search band.
-for(let i=0;i<FACE_OVAL_INDICES.length;i++){
-  const theta=-Math.PI/2+2*Math.PI*i/FACE_OVAL_INDICES.length;
-  landmarks[FACE_OVAL_INDICES[i]]={
-    x:.5+.31*Math.cos(theta),y:.52+.40*Math.sin(theta),z:0
-  };
+for(const [index,[x,y]] of Object.entries(canonicalSubset)){
+  landmarks[Number(index)]={x:(x+9)/18,y:(9-y)/20,z:0};
 }
-for(const [index,[x,y]] of Object.entries({
-1:[.5,.48],33:[.35,.32],263:[.65,.32],
-61:[.4,.68],291:[.6,.68]
-}))landmarks[Number(index)]={x,y,z:0};
 let used=0;
 const neutral=consumeNeutralFaceObservation({
   faceLandmarks:landmarks,faceCount:1,coordinateSpace:"original_image",
@@ -98,7 +92,7 @@ assert.ok(stats.metrics.leftCheek.candidatePixels>stats.metrics.leftCheek.baseli
   "candidate should be a meaningfully broader area, not a retuned dot");
 assert.ok(stats.metrics.rightCheek.candidatePixels>stats.metrics.rightCheek.baselinePixels*1.4);
 assert.ok(stats.metrics.leftCheek.iou<.8,
-  "full-outline candidate must differ structurally from seven-point ellipse");
+  "inner-mesh candidate must differ structurally from seven-point ellipse");
 for(const metric of Object.values(stats.metrics)){
   assert.ok(metric.iou>0&&metric.iou<1);
 }
@@ -133,23 +127,41 @@ assert.equal(preview.skinMeasurementAuthorized,false);
 assert.equal(preview.skinAccuracyVerified,false);
 assert.ok(preview.baseline.sampleCount.leftCheek>0);
 assert.ok(preview.candidate.sampleCount.rightCheek>0);
-assert.equal(experimentalGeometry.method,"mediapipe_face_oval_scanlines_v2");
-assert.equal(experimentalGeometry.cheekPolygons.leftCheek.length,10);
+assert.equal(experimentalGeometry.method,"mediapipe_inner_cheek_mesh_v3");
+assert.equal(experimentalGeometry.cheekPolygons.leftCheek.length,11);
+assert.ok(new Set(experimentalGeometry.cheekPolygons.leftCheek.map(p=>p.x.toFixed(3))).size>6,
+ "v3 must not collapse into straight vertical sides");
+assert.ok(new Set(experimentalGeometry.cheekPolygons.leftCheek.map(p=>p.y.toFixed(3))).size>6,
+ "v3 must follow mesh curvature rather than flat scanline rows");
 assert.ok(preview.candidate.sampleCount.leftCheek > preview.baseline.sampleCount.leftCheek*1.4);
 let callCount=0;
 const malformed=consumeNeutralFaceObservation({
-  faceLandmarks:landmarks.map((p,i)=>FACE_OVAL_INDICES.includes(i)&&i!==234&&i!==454
+  faceLandmarks:landmarks.map((p,i)=>CHEEK_SURFACE_RINGS.flat().includes(i)&&i!==234&&i!==454
     ? {x:.5,y:.5,z:0}:p),
   faceCount:1,coordinateSpace:"original_image",
   onFrame({anchorGeometry,frame}){
     callCount++;
     const checked=proposeSajuNeutralCheekResearchRegions(anchorGeometry,frame);
     assert.equal(checked.status,"insufficient_evidence",
-      "partial seven-anchor topology must fail closed, not fabricate an oval");
+      "partial seven-anchor topology must fail closed, not fabricate a cheek surface");
   }
 });
 assert.equal(malformed.status,"candidate_only");
 assert.equal(callCount,1);
+const mirrored=landmarks.map(p=>({...p,x:1-p.x}));
+let mirroredCandidate=null;
+const mirroredReceipt=consumeNeutralFaceObservation({
+  faceLandmarks:mirrored,faceCount:1,coordinateSpace:"original_image",
+  onFrame({anchorGeometry,frame}){
+    mirroredCandidate=proposeSajuNeutralCheekResearchRegions(anchorGeometry,frame);
+  }
+});
+assert.equal(mirroredReceipt.status,"candidate_only");
+assert.equal(mirroredCandidate.status,"proposal_only",
+  "geometric IMAGE-left/right assignment should remain valid when mirrored");
+assert.ok(mirroredCandidate.cheekPolygons.leftCheek.every(p=>p.x<.5));
+assert.ok(mirroredCandidate.cheekPolygons.rightCheek.every(p=>p.x>.5));
+
 assert.equal(buildRoiPreviewMasks({
   baseline:{...baselineGeometry,cheekPolygons:null},
   candidate:experimentalGeometry,size:{width:128,height:128}
@@ -157,5 +169,5 @@ assert.equal(buildRoiPreviewMasks({
 
 console.log(JSON.stringify({ok:true,suite:"isolated_roi_research_public_route",tests:[
 "unchanged_normal_csp","route_scoped_remote_model_csp","saju_source_hash",
-"single_inference_full_face_oval_roi","missing_oval_fails_closed","redacted_baseline_callback_rasterizes","privacy_no_upload","no_skin_accuracy_claims"
+"single_inference_inner_cheek_mesh_v3","degenerate_cheek_mesh_fails_closed","redacted_baseline_callback_rasterizes","privacy_no_upload","no_skin_accuracy_claims"
 ],realPhotoValidated:false,modelDownloadedInTest:false,productionReleaseAuthorizedByThisTest:false}));
