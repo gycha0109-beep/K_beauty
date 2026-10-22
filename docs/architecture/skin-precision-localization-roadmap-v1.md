@@ -185,3 +185,11 @@ This is a vocabulary and separation sketch, NOT a drop-in modification to the ex
 - Source A publicly lists the construction consortium: KairosLab (data lead), IEC Korea (collection), Dankook University (expert assessment/model). Contact them through the official dataset page if specific annotation provenance and permitted derivative labeling are unclear; do not assume their implementation weights are ready for commercial production.
 - This task has **not** logged in, accepted terms, retrieved restricted images, obtained personal consent, or contracted a physician. No dataset/model can be promoted to commercial approval by this document alone.
 
+
+## 9. Acquisition work executed 2026-10-22
+
+- Official AI-Hub data page (71645), download FAQ and published dataset usage policy verified. Consumer-facing commercial derivative model usage is not permission to share source photographs with an external annotator; domestic-only application and separate outbound transfer constraints recorded.
+- Cross-tab camera angles/facepart publication totals appear mixed; no independent subject count established. Official face_box is a face rectangle, not a lesion box.
+- Added approved-access workflow and source-rights inquiry template in `data/skin-precision/aihub-71645-acquisition-runbook-v1.md`.
+- Added JSON-only, no-photo read metadata audit `scripts/audit-aihub-71645-metadata.mjs`. Its synthetic V8 self-test covers repeated image filenames, missing measures and invalid face bounds; Node repo runtime and real downloaded JSON are still untested.
+- **Next human dependency:** AI-Hub login / phone verification / exact dataset approval; these have not occurred. No training, real skin annotations, or model evaluation should start before permission and actual schema audit.
