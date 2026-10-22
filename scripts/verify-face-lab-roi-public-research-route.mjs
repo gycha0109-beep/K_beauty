@@ -7,6 +7,7 @@ import {compareSharedNeutralFaceCoreRoiParity} from "../lib/face-lab-v2/personal
 import {detectMediaPipeCheekRoiProposal} from "../lib/face-lab-v2/personal-color/mediapipe-roi-proposal.js";
 import {buildRoiPreviewMasks} from "../lib/face-lab-v2/personal-color/roi-render-mask-adapter.js";
 import { FACE_OVAL_INDICES, proposeSajuNeutralCheekResearchRegions } from "../lib/face-lab-v2/personal-color/saju-neutral-cheek-research-proposal.js";
+import {buildPersonalColorCheekMasks} from "../lib/face-lab-v2/personal-color/cheek-mask-geometry.js";
 
 const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const root="lib/face-lab-v2/personal-color/";
@@ -70,6 +71,21 @@ const neutral=consumeNeutralFaceObservation({
 });
 assert.equal(used,1);
 assert.equal(neutral.status,"candidate_only");
+let researchProposal=null;
+const researchReceipt=consumeNeutralFaceObservation({
+  faceLandmarks:landmarks,faceCount:1,coordinateSpace:"original_image",
+  onFrame({anchorGeometry,frame}) {
+    researchProposal=proposeSajuNeutralCheekResearchRegions(anchorGeometry,frame);
+  }
+});
+assert.equal(researchReceipt.status,"candidate_only");
+assert.equal(researchProposal?.status,"proposal_only",JSON.stringify(researchProposal));
+const candidateMask=buildPersonalColorCheekMasks({
+  width:128,height:128,
+  cheekPolygons:researchProposal.cheekPolygons,
+  exclusionPolygons:researchProposal.exclusionPolygons
+});
+assert.equal(candidateMask.status,"masks_ready",JSON.stringify(candidateMask).slice(0,400));
 const stats=compareSharedNeutralFaceCoreRoiParity({
   faceLandmarks:landmarks,faceCount:1,coordinateSpace:"original_image",
   width:128,height:128
