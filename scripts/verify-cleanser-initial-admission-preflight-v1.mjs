@@ -108,6 +108,7 @@ const cases = [
   ["retired_binding",x=>{x.officialBindings[0].binding_state="retired"},"RESOLVED_OFFICIAL_SOURCE_BINDING_REQUIRED"],
   ["retailer_binding",x=>{x.officialBindings[0].source_name="oliveyoung"},"RESOLVED_OFFICIAL_SOURCE_BINDING_REQUIRED"],
   ["wrong_observation_binding",x=>{x.observations[0].source_binding_id="77777777-7777-4777-8777-777777777777"},"CURRENT_OFFICIAL_IDENTITY_OBSERVATION_REQUIRED"],
+  ["wrong_official_variant_query",x=>{x.officialBindings[0].source_url=officialUrl+"?sku=A";x.observations[0].canonical_locator=officialUrl+"?sku=B"},"CURRENT_OFFICIAL_IDENTITY_OBSERVATION_REQUIRED"],
   ["wrong_market",x=>{x.observations[0].market="US"},"CURRENT_OFFICIAL_IDENTITY_OBSERVATION_REQUIRED"],
   ["stale_fetch",x=>{x.observations[0].fetched_at="2025-01-01T00:00:00Z"},"CURRENT_OFFICIAL_IDENTITY_OBSERVATION_REQUIRED"],
   ["fake_digest",x=>{x.observations[0].source_content_digest="not-a-sha"},"CURRENT_OFFICIAL_IDENTITY_OBSERVATION_REQUIRED"],
