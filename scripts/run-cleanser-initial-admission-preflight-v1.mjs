@@ -44,8 +44,29 @@ const observations = await rows(supabase.from("trust_source_observations")
   .select("product_id,subject_id,source_binding_id,canonical_locator,market,source_kind,source_content_digest,fetched_at,product_identity_observation")
   .in("product_id",ids).limit(500), "source_observations");
 const subjectIds = subjects.map((row) => row.subject_id);
-const confirmedFacts = subjectIds.length ? await rows(supabase.from("product_fact_current")
-  .select("subject_id,confirmation_id,fact_instance_id").in("subject_id",subjectIds).limit(500),"current_facts") : [];
+const currentFactRows = subjectIds.length ? await rows(supabase.from("product_fact_current")
+  .select("subject_id,confirmation_id,fact_instance_id,proposition_key").in("subject_id",subjectIds).limit(500),"current_facts") : [];
+if (currentFactRows.length >= 500) throw new Error("CURRENT_FACT_SCOPE_LIMIT_REACHED");
+const factIds = [...new Set(currentFactRows.map((row)=>row.fact_instance_id))];
+const confirmationIds = [...new Set(currentFactRows.map((row)=>row.confirmation_id))];
+const factInstances = factIds.length ? await rows(supabase.from("product_fact_instances")
+  .select("subject_id,fact_instance_id,fact_key,proposition_key,semantic_status,authority_ceiling,fused_confidence,registry_version,valid_from,valid_to")
+  .in("fact_instance_id",factIds).limit(500),"fact_instances") : [];
+const confirmations = confirmationIds.length ? await rows(supabase.from("product_fact_confirmations")
+  .select("confirmation_id,result").in("confirmation_id",confirmationIds).limit(500),"fact_confirmations") : [];
+if (factInstances.length !== factIds.length || confirmations.length !== confirmationIds.length) {
+  throw new Error("CURRENT_FACT_AUTHORITY_JOIN_INCOMPLETE");
+}
+const instancesById = new Map(factInstances.map((row)=>[row.fact_instance_id,row]));
+const confirmationsById = new Map(confirmations.map((row)=>[row.confirmation_id,row.result]));
+const confirmedFacts = currentFactRows.map((row)=>{
+  const instance = instancesById.get(row.fact_instance_id);
+  if (!instance || instance.subject_id !== row.subject_id ||
+      instance.proposition_key !== row.proposition_key) {
+    throw new Error("CURRENT_FACT_SUBJECT_OR_PROPOSITION_MISMATCH");
+  }
+  return { ...instance, confirmation_id:row.confirmation_id, confirmation:confirmationsById.get(row.confirmation_id) };
+});
 
 const results = products.map((product) => {
   const matchedSubjects = subjects.filter((row) => row.product_id === product.id && row.current_state === "current");
