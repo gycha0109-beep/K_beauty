@@ -252,6 +252,7 @@ jobs:
           COPY auth.synthetic_service_object (id, value) FROM stdin;
           22	synthetic managed payload
           \.
+          RESET ALL;
           '@
           [System.IO.File]::WriteAllText((Join-Path $target 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
           Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -271,6 +272,9 @@ jobs:
               $result.originalZipModified -ne $false -or $result.rawSqlOrDataReturned -ne $false -or
               $result.productionDatabaseConnections -ne 0 -or $result.releaseAuthorized -ne $false) {
             throw 'D8K13_DATA_COMMAND_FAMILIES_AUDIT_CONTRACT_FAILED'
+          }
+          if (@($result.recognizedClasses | Where-Object { $_.commandClass -eq 'RESET_ALL_SYNTAX_RECOGNIZED' -and $_.count -eq 1 }).Count -ne 1) {
+            throw 'D8K13_COMMAND_AUDIT_RESET_ALL_TRAILER_MISSING'
           }
           foreach($klass in @('SELECT_OTHER','ALTER_OTHER','PSQL_META_OTHER')) {
             if (@($result.unexpectedSamples | Where-Object { $_.commandClass -eq $klass }).Count -ne 1) {
@@ -537,6 +541,7 @@ jobs:
           SELECT pg_catalog.setval('public.d8k13_fixture_sequence'::regclass, 78, true);
           SELECT pg_catalog.setval('public.d8k13_fixture_seq_uncast', 87, false);
           SELECT pg_catalog.setval('auth.__d8k13_managed_seq_not_present', 1, false);
+          RESET ALL;
           '@
           [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
           Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -553,7 +558,7 @@ jobs:
             $r.publicSourceRowsAppliedAndCountVerified -ne 3 -or $r.publicCopyTablesVerified -ne 1 -or
             $r.publicSequenceResetsApplied -ne 2 -or $r.skippedManagedCopyHeaders -ne 2 -or
             $r.skippedOtherSchemaCopyHeaders -ne 0 -or $r.skippedNonpublicSequenceResets -ne 1 -or
-            $r.publicDataRowsVerified -ne $true -or $r.authDataRestored -ne $false -or
+            $r.publicDataRowsVerified -ne $true -or $r.terminalResetAllSkipped -ne $true -or $r.authDataRestored -ne $false -or
             $r.storageMetadataRestored -ne $false -or $r.allDataRestored -ne $false -or
             $r.originalZipModified -ne $false -or $r.networkDisabled -ne $true -or
             $r.releaseAuthorized -ne $false) { throw 'D8K13_PUBLIC_RESTORE_CONTRACT_FAILED' }
@@ -563,7 +568,7 @@ jobs:
           if ((Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash -ne $sha) {
             throw 'D8K13_PUBLIC_RESTORE_SOURCE_ZIP_CHANGED'
           }
-          Write-Host 'D8K13_SYNTHETIC_PUBLIC_COPY_ROWS_AND_BOTH_PGDUMP_SETVAL_FORMS_PASS'
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_COPY_ROWS_SETVAL_AND_RESET_ALL_TRAILER_PASS'
       - name: Reject unsupported SQL data commands before isolated partial restore
         shell: pwsh
         run: |
@@ -597,6 +602,41 @@ jobs:
           Write-Host 'D8K13_SYNTHETIC_PUBLIC_UNSUPPORTED_SQL_FAIL_CLOSED_PASS'
           # GitHub pwsh wrapper propagates the last native exit code even after an expected rejection.
           $global:LASTEXITCODE=0
+      - name: Reject nonterminal RESET ALL before any synthetic public import
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'd8k13-public-reset-nonterminal'
+          $sql=Join-Path $dir 'sql'
+          New-Item -ItemType Directory -Path $sql -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $sql 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $sql 'schema.sql')
+          $data=@'
+          COPY public.products (id, name) FROM stdin;
+          101	synthetic
+          \.
+          RESET ALL;
+          COPY public.products (id, name) FROM stdin;
+          102	synthetic
+          \.
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $dir 'fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $out=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicData 2>&1
+          if ($LASTEXITCODE -eq 0) { throw 'D8K13_NONTERMINAL_RESET_ALL_ACCEPTED' }
+          $safeText=$out -join [Environment]::NewLine
+          if (-not $safeText.Contains('D8K13_PUBLIC_DATA_COMMAND_AFTER_RESET_ALL_LINE_5')) {
+            throw 'D8K13_NONTERMINAL_RESET_ALL_WRONG_FAILURE'
+          }
+          if ($safeText -match 'COPY public|101|102|synthetic') {
+            throw 'D8K13_NONTERMINAL_RESET_ALL_SOURCE_LEAKED'
+          }
+          $global:LASTEXITCODE=0
+          Write-Host 'D8K13_SYNTHETIC_NONTERMINAL_RESET_ALL_REJECTED_PASS'
       - name: Aggregate multiple undefined functions in one privacy-safe isolated schema audit
         shell: pwsh
         run: |
