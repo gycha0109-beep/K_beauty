@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','AuditDataCommands')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -162,6 +162,122 @@ try {
     actualRestoreCompleted = $false
   } | ConvertTo-Json -Compress -Depth 5)
   if ($Mode -eq 'Inspect') { return }
+  if ($Mode -eq 'AuditDataCommands') {
+    # Source-only diagnostic: NO Docker/SQL execution, copies or rows printed.
+    # Scan *all* non-COPY lines rather than stopping at the first unknown
+    # statement, so one owner-side run characterizes the entire data.sql.
+    $sourceFile = Join-Path $unpacked 'data.sql'
+    $copyHeaderRx = [regex]'(?i)^[ \t]*COPY\s+(?<schema>"?[a-z_][a-z0-9_]{0,62}"?)\s*\.\s*(?<table>"?[a-z_][a-z0-9_]{0,62}"?)\s*\((?<cols>[^)\r\n]{1,16384})\)\s+FROM\s+stdin\s*;[ \t]*$'
+    $columnRx = [regex]'^(?:"[a-z_][a-z0-9_]{0,62}"|[a-z_][a-z0-9_]{0,62})$'
+    $setvalRx = [regex]'(?i)^[ \t]*SELECT\s+pg_catalog\.setval\(\s*''(?<schema>"?[a-z_][a-z0-9_]{0,62}"?)\.(?<seq>"?[a-z_][a-z0-9_]{0,62}"?)''(?:\s*::\s*(?:pg_catalog\.)?regclass)?\s*,\s*-?[0-9]{1,20}\s*,\s*(?:true|false)\s*\)\s*;[ \t]*$'
+    $unknownKinds = @{}
+    $unknownSamples = New-Object 'System.Collections.Generic.List[object]'
+    $recognized = @{}
+    $sourceLineCount = 0
+    $copyHeaders = 0
+    $copyDataLinesSkipped = 0L
+    $insideCopy = $false
+    $reader = [System.IO.StreamReader]::new($sourceFile,[System.Text.UTF8Encoding]::new($false),$true)
+    try {
+      while (($line = $reader.ReadLine()) -ne $null) {
+        $sourceLineCount++
+        if ($insideCopy) {
+          if ($line -ceq '\.') { $insideCopy = $false }
+          else { $copyDataLinesSkipped++ }
+          continue
+        }
+        if ($line -match '^[ \t]*COPY\b') {
+          $copyHeaders++
+          $m = $copyHeaderRx.Match($line)
+          if ($m.Success) {
+            $cols = @($m.Groups['cols'].Value.Split(',') | ForEach-Object { $_.Trim() })
+            if ($cols.Count -lt 1 -or $cols.Count -gt 1000 -or
+                @($cols | Where-Object { -not $columnRx.IsMatch($_) }).Count -gt 0) {
+              $kind = 'COPY_UNSUPPORTED_COLUMNS'
+            } else {
+              $kind = 'COPY_VALID'
+            }
+          } else {
+            $kind = 'COPY_UNSUPPORTED_HEADER'
+          }
+          $insideCopy = $true
+        } elseif ($line -match '^[ \t]*(?:$|--)') {
+          $kind = 'COMMENT_OR_BLANK'
+        } elseif ($line -match '^[ \t]*SELECT\s+pg_catalog\.setval\b') {
+          if ($setvalRx.IsMatch($line)) { $kind = 'SETVAL_VALID' }
+          else { $kind = 'SETVAL_UNSUPPORTED' }
+        } elseif ($line -match '^[ \t]*SET[ \t]+[a-z_][a-z0-9_]*[ \t]*=' -and $line -match ';[ \t]*$') {
+          $kind = 'SET_VALID'
+        } elseif ($line -match '^[ \t]*SELECT[ \t]+pg_catalog\.set_config\(''search_path'',[ \t]*'''',[ \t]*false\);[ \t]*$') {
+          $kind = 'SET_CONFIG_VALID'
+        } elseif ($line -match '^[ \t]*\\(?:restrict|unrestrict)[ \t]+[A-Za-z0-9]+[ \t]*$') {
+          $kind = 'PSQL_GUARD_VALID'
+        } elseif ($line -match '^[ \t]*SELECT\s+pg_catalog\.set_config\b') {
+          $kind = 'SET_CONFIG_OTHER'
+        } elseif ($line -match '^[ \t]*SELECT\s+pg_catalog\.') {
+          $kind = 'SELECT_PG_CATALOG_OTHER'
+        } elseif ($line -match '^[ \t]*SELECT\b') {
+          $kind = 'SELECT_OTHER'
+        } elseif ($line -match '^[ \t]*INSERT\b') {
+          $kind = 'INSERT_OTHER'
+        } elseif ($line -match '^[ \t]*ALTER\b') {
+          $kind = 'ALTER_OTHER'
+        } elseif ($line -match '^[ \t]*CREATE\b') {
+          $kind = 'CREATE_OTHER'
+        } elseif ($line -match '^[ \t]*GRANT\b') {
+          $kind = 'GRANT_OTHER'
+        } elseif ($line -match '^[ \t]*REVOKE\b') {
+          $kind = 'REVOKE_OTHER'
+        } elseif ($line -match '^[ \t]*SET\b') {
+          $kind = 'SET_UNSUPPORTED'
+        } elseif ($line -match '^[ \t]*\\') {
+          $kind = 'PSQL_META_OTHER'
+        } elseif ($line -match '^[ \t]*(?:WITH|DO|UPDATE|DELETE|TRUNCATE|COMMENT|LOCK|RESET|BEGIN|COMMIT|ROLLBACK)\b') {
+          $kind = 'OTHER_SQL_KEYWORD'
+        } else {
+          $kind = 'UNCLASSIFIED'
+        }
+        if ($kind -in @('COPY_VALID','COMMENT_OR_BLANK','SETVAL_VALID','SET_VALID','SET_CONFIG_VALID','PSQL_GUARD_VALID')) {
+          if (-not $recognized.ContainsKey($kind)) { $recognized[$kind] = 0 }
+          $recognized[$kind]++
+        } else {
+          if (-not $unknownKinds.ContainsKey($kind)) { $unknownKinds[$kind] = 0 }
+          $unknownKinds[$kind]++
+          if ($unknownSamples.Count -lt 200) {
+            $unknownSamples.Add([ordered]@{ line=$sourceLineCount; commandClass=$kind })
+          }
+        }
+      }
+    } finally { $reader.Dispose() }
+    Assert-Drill (-not $insideCopy) 'D8K13_DATA_COMMAND_AUDIT_UNTERMINATED_COPY'
+    Assert-Drill ($copyHeaders -gt 0 -and $copyHeaders -le 60000) 'D8K13_DATA_COMMAND_AUDIT_COPY_COUNT_INVALID'
+    $byClass = @($unknownKinds.Keys | Sort-Object | ForEach-Object {
+      [ordered]@{ commandClass=$_; count=[int]$unknownKinds[$_] }
+    })
+    $recognizedCounts = @($recognized.Keys | Sort-Object | ForEach-Object {
+      [ordered]@{ commandClass=$_; count=[int]$recognized[$_] }
+    })
+    [ordered]@{
+      status='D8K13_LOCAL_DATA_COMMAND_FAMILY_AUDIT_ONLY_NO_RESTORE'
+      zipSha256=$digest
+      sourceLines=$sourceLineCount
+      copyHeaders=$copyHeaders
+      copyPayloadLinesNotInspected=$copyDataLinesSkipped
+      recognizedClasses=$recognizedCounts
+      unexpectedCommandCount=[int](($unknownKinds.Values | Measure-Object -Sum).Sum)
+      unexpectedClasses=$byClass
+      unexpectedSamples=@($unknownSamples)
+      sampleLimit=200
+      allUnknownCommandsClassified=$true
+      noDockerStarted=$true
+      dataRowsImported=$false
+      originalZipModified=$false
+      rawSqlOrDataReturned=$false
+      productionDatabaseConnections=0
+      releaseAuthorized=$false
+    } | ConvertTo-Json -Compress -Depth 6 | Write-Output
+    return
+  }
   Assert-Drill ($null -ne (Get-Command docker -ErrorAction SilentlyContinue)) 'D8K13_DOCKER_NOT_INSTALLED'
   $container = 'bejewely-restore-' + [guid]::NewGuid().ToString('N').Substring(0,12)
   # Official Supabase/Postgres 17 image, local disposable container. No network/ports/volumes.
