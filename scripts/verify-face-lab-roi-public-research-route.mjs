@@ -8,6 +8,7 @@ import {detectMediaPipeCheekRoiProposal} from "../lib/face-lab-v2/personal-color
 import {buildRoiPreviewMasks} from "../lib/face-lab-v2/personal-color/roi-render-mask-adapter.js";
 import { CHEEK_SURFACE_RINGS, proposeSajuNeutralCheekResearchRegions } from "../lib/face-lab-v2/personal-color/saju-neutral-cheek-research-proposal.js";
 import {buildPersonalColorCheekMasks} from "../lib/face-lab-v2/personal-color/cheek-mask-geometry.js";
+import {describeRoiPhotoEvidence} from "../lib/face-lab-v2/personal-color/roi-photo-quality-research.js";
 
 const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const root="lib/face-lab-v2/personal-color/";
@@ -26,8 +27,9 @@ assert.match(ui,/buildRoiPreviewMasks/);
 assert.doesNotMatch(ui,/function maskFor\(/);
 assert.doesNotMatch(ui,/<input[^>]+type="checkbox"|orientationConfirmed|동의 체크/);
 assert.match(ui,/기존 Face Lab/);
-assert.match(ui,/Face Lab 윤곽형 v2/);
+assert.match(ui,/Face Lab 볼 메시 v3/);
 assert.match(ui,/두 후보의 차이/);
+assert.match(ui,/describeRoiPhotoEvidence/);
 assert.match(ui,/선택하면 자동 비교합니다/);
 assert.match(ui,/볼 후보가 사진에서 매우 작게 생성되었습니다/);
 assert.match(ui,/onChange={selectFile}/);
@@ -167,7 +169,35 @@ assert.equal(buildRoiPreviewMasks({
   candidate:experimentalGeometry,size:{width:128,height:128}
 }).status,"insufficient_evidence");
 
+// Boundary conditions: quality signals are scalar, local-only and never
+// automatically label photo focus, bare skin or colour eligibility.
+const testW=24,testH=24,testN=testW*testH;
+const allMask=new Uint8Array(testN).fill(1);
+const noneMask=new Uint8Array(testN);
+const flat=new Uint8ClampedArray(testN*4);
+const checker=new Uint8ClampedArray(testN*4);
+for(let i=0;i<testN;i++){
+  flat.set([128,128,128,255],i*4);
+  const n=((i%testW)+Math.floor(i/testW))%2===0?0:255;
+  checker.set([n,n,n,255],i*4);
+}
+const argumentsFor=(rgba)=>({rgba,width:testW,height:testH,
+  leftMask:allMask,rightMask:allMask,exclusionMask:noneMask});
+const flatEvidence=describeRoiPhotoEvidence(argumentsFor(flat));
+const checkerEvidence=describeRoiPhotoEvidence(argumentsFor(checker));
+assert.equal(flatEvidence.status,"descriptive_only");
+assert.equal(flatEvidence.imageLeft.detailSignal,0);
+assert.equal(checkerEvidence.status,"descriptive_only");
+assert.ok(checkerEvidence.imageLeft.detailSignal>flatEvidence.imageLeft.detailSignal);
+assert.equal(checkerEvidence.imageLeft.clippedFraction,1);
+assert.equal(checkerEvidence.focusVerified,false);
+assert.equal(checkerEvidence.measurementAuthorized,false);
+assert.equal(checkerEvidence.photoColorCalibrated,false);
+assert.ok(!JSON.stringify(checkerEvidence).includes("rgba"));
+assert.equal(describeRoiPhotoEvidence({...argumentsFor(flat),
+  rgba:new Uint8ClampedArray(1)}).status,"insufficient_evidence");
+
 console.log(JSON.stringify({ok:true,suite:"isolated_roi_research_public_route",tests:[
 "unchanged_normal_csp","route_scoped_remote_model_csp","saju_source_hash",
-"single_inference_inner_cheek_mesh_v3","degenerate_cheek_mesh_fails_closed","redacted_baseline_callback_rasterizes","privacy_no_upload","no_skin_accuracy_claims"
+"single_inference_inner_cheek_mesh_v3","degenerate_cheek_mesh_fails_closed","redacted_baseline_callback_rasterizes","quality_signals_local_and_not_photo_approval","privacy_no_upload","no_skin_accuracy_claims"
 ],realPhotoValidated:false,modelDownloadedInTest:false,productionReleaseAuthorizedByThisTest:false}));
