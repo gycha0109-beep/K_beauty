@@ -20,7 +20,7 @@ function fixture(){
       market:"KR",content_digest:capture.capture_source.content_digest,
       canonical_locator:URL,observed_at:"2026-10-21T08:00:00.000Z",
       external_snapshot_reference:"trusted://frozen-hwahae-capture/246810",
-      source_metadata:{capture_envelope:capture}}],
+      source_metadata:{capture_envelope:structuredClone(capture)}}],
     sourceSubjectBindings:[{source_id:SOURCE,product_id:PRODUCT,subject_id:SUBJECT,
       binding_state:"exact_subject_match",scope_relation:"equivalent"}],
   };
