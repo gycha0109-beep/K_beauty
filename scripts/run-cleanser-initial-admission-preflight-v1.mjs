@@ -7,6 +7,7 @@ import {
   evaluateCleanserInitialAdmissionPreflight,
 } from "../lib/cleanser-initial-admission-preflight-v1.mjs";
 import { buildExistingCleanserTrustBackfillPlan } from "../lib/existing-cleanser-trust-backfill-plan-v1.mjs";
+import { collectExistingCleanserOfficialCapture } from "../lib/existing-cleanser-official-capture-v1.mjs";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const idsArg = process.argv.find((value) => value.startsWith("--ids="))?.slice(6) || "";
@@ -82,6 +83,42 @@ const results = products.map((product) => {
   const backfill = buildExistingCleanserTrustBackfillPlan(product, result);
   return { brand:product.brand,name:product.name,...result,backfill };
 });
+// No external fetch by default. Explicit site-use authorization plus a
+// pre-reviewed origin allowlist are both mandatory for optional bounded intake.
+const officialArg=process.argv.find(arg=>arg.startsWith("--official-hosts="))?.slice("--official-hosts=".length)||"";
+const allowlistedHosts=[...new Set(officialArg.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean))];
+const siteUseAuthorized=process.argv.includes("--site-use-authorized=true");
+const requestCapture=allowlistedHosts.length>0;
+if ((requestCapture&&!siteUseAuthorized) || (!requestCapture&&siteUseAuthorized)) {
+  throw new Error("EXPLICIT_HOST_AND_SITE_USE_AUTHORIZATION_REQUIRED");
+}
+const limitArg=process.argv.find(arg=>arg.startsWith("--official-capture-limit="))?.split("=")[1];
+const captureLimit=limitArg==null?3:Number(limitArg);
+if (!Number.isInteger(captureLimit)||captureLimit<1||captureLimit>10) {
+  throw new Error("INVALID_OFFICIAL_CAPTURE_LIMIT");
+}
+const officialResearch=[];
+if(requestCapture){
+  const scoped=products.filter(product=>{
+    const plan=results.find(result=>result.productId===product.id)?.backfill;
+    if(plan?.sourceUrlClassification!=="OFFICIAL_SOURCE_CANDIDATE_UNVERIFIED")return false;
+    try{return allowlistedHosts.includes(new URL(product.source_url).hostname.toLowerCase())}
+    catch{return false}
+  }).slice(0,captureLimit);
+  for(const product of scoped){
+    try{
+      const candidate=await collectExistingCleanserOfficialCapture({
+        product,approvedBrandHosts:allowlistedHosts,siteUseAuthorized:true
+      });
+      officialResearch.push({productId:product.id,...candidate});
+    }catch(error){
+      // Do not leak DNS, auth or fetched content from a provider error.
+      officialResearch.push({productId:product.id,state:"HOLD",
+        reasons:["OFFICIAL_FETCH_FAILED_OR_SOURCE_BLOCKED"],
+        grantIssued:false,productionWrites:0});
+    }
+  }
+}
 const summary = Object.fromEntries([...new Set(results.map((result) => result.state))]
   .sort().map((state) => [state, results.filter((result)=>result.state===state).length]));
 const workItems = Object.fromEntries(
@@ -95,5 +132,6 @@ const sourceKinds = Object.fromEntries(
 console.log(JSON.stringify({
   version:CLEANSER_ADMISSION_PREFLIGHT_VERSION,total:results.length,summary,
   workItems,sourceKinds,
+  officialResearchExecuted:requestCapture,officialResearch,
   productionWrites:0,admissionGranted:0,results
 },null,2));
