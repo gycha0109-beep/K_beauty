@@ -2,6 +2,7 @@ import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { fetchOfficialBytes, sha256Hex } from "../lib/trust/official-source-fetch.mjs";
 import { inspectOfficialProductSemanticSurfacesV1, normalizeSemanticTextV1 } from "../lib/trust/official-source-semantic-adapter.mjs";
+import { extractStrictCleanserOfficialClaim } from "../lib/trust/cleanser-official-claim-extractor-v1.mjs";
 export { assertSafeOfficialUrl } from "../lib/trust/official-source-fetch.mjs";
 
 const OBSERVATION_VERSION = "trust-research-observation-v1";
@@ -67,6 +68,9 @@ function extractExpectedContainsActive(currentFactContext, semanticSurfaces) {
 }
 
 export function extractStrictFactCandidate(factKey, text, parentPropositions = [], context = {}) {
+  if (factKey==="low_ph" || factKey==="deep_cleansing") {
+    return extractStrictCleanserOfficialClaim(factKey,context.semanticSurfaces);
+  }
   if (factKey === "contains_active") {
     return extractExpectedContainsActive(context.currentFactContext, context.semanticSurfaces);
   }
