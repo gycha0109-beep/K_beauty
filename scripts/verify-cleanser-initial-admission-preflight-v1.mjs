@@ -212,7 +212,7 @@ shadowInput.metadataReviews=["skin_types","concerns"].map((field)=>({
   reviewed_by:"88888888-8888-4888-8888-888888888888",reviewed_at:reviewedAt,
   evidence_digest:"d".repeat(64),evidence_refs:["https://brand.example/products/cleanser"],
   evidence_records:[{product_id:PRODUCT_ID,source_authority:"product_specific_primary",
-    content_digest:"e".repeat(64),official_source_url:"https://brand.example/products/cleanser"}],
+    content_digest:"a".repeat(64),official_source_url:"https://brand.example/products/cleanser"}],
 }));
 const shadowPositive=evaluateCleanserGovernedAdmissionShadow(shadowInput,{now});
 assert.equal(shadowPositive.shadowEligible,true);
@@ -227,6 +227,9 @@ assert.equal(evaluateCleanserGovernedAdmissionShadow(corruptedShadow,{now}).shad
 const wrongCapture=structuredClone(shadowInput);
 wrongCapture.hwahaeCaptureEnvelope.raw.review_raw.positive.push({label:"fake",count:1000});
 assert.ok(evaluateCleanserGovernedAdmissionShadow(wrongCapture,{now}).reasons.includes("VERIFIED_HWAHAE_CAPTURE_ENVELOPE_REQUIRED"));
+const wrongEvidenceLineage=structuredClone(shadowInput);
+wrongEvidenceLineage.metadataReviews[0].evidence_records[0].content_digest="f".repeat(64);
+assert.ok(evaluateCleanserGovernedAdmissionShadow(wrongEvidenceLineage,{now}).reasons.includes("GOVERNED_RECOMMENDATION_METADATA_REQUIRED:skin_types"));
 const wrongSubject=structuredClone(shadowInput);
 wrongSubject.subjectScopeAttestation.subject_id="99999999-9999-4999-8999-999999999999";
 assert.ok(evaluateCleanserGovernedAdmissionShadow(wrongSubject,{now}).reasons.includes("CURRENT_SUBJECT_ATTESTATION_REQUIRED"));
