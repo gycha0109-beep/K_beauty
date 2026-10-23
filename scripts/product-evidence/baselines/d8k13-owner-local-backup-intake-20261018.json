@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_SECURITY_DEFINER_BODY_LEXICAL_TRIAGE_COLLECTED_AUTH_PATH_DYNAMIC_SQL_REVIEW_REQUIRED_RELEASE_HOLD",
+  "state": "D8K13_OWNER_THREE_ANONYMOUS_DYNAMIC_SQL_CANDIDATES_TRIAGED_CANDIDATE_2_PRIORITY_RELEASE_HOLD",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -1061,6 +1061,51 @@
       },
       "originalZipUnchangedSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
       "productionDatabaseConnections": 0,
+      "releaseAuthorized": false
+    },
+    "ownerAnonymousDynamicSqlCandidateTriage20261023": {
+      "observedDateKst": "2026-10-23",
+      "source": "authorized owner PC isolated PG17 no-network local backup; no source body or names returned",
+      "toolScriptCommit": "a2d4c5e05ff64182cdf7cbf1b7962661bf0578d3",
+      "syntheticCiRunId": 39907969193,
+      "syntheticCiConclusion": "success",
+      "marker": "D8K13_OWNER_ANONYMOUS_DYNAMIC_SQL_CANDIDATE_TRIAGE_PASS",
+      "candidateCount": 3,
+      "allPostgresOwned": true,
+      "allUsingKeyword": true,
+      "allNoDirectAuthHelperLexicalSignal": true,
+      "executeCandidatesWithPercentIdentifier": 1,
+      "executeCandidatesWithPercentRaw": 1,
+      "executeCandidatesWithQuoteIdent": 0,
+      "executeCandidatesWithQuoteLiteral": 0,
+      "anonymousCases": [
+        {
+          "ordinal": 1,
+          "argumentCount": 3,
+          "mentionsUsing": true,
+          "percentIdentifier": false,
+          "percentRaw": false
+        },
+        {
+          "ordinal": 2,
+          "argumentCount": 2,
+          "mentionsUsing": true,
+          "percentIdentifier": true,
+          "percentRaw": true,
+          "priority": "REVIEW_FIRST"
+        },
+        {
+          "ordinal": 3,
+          "argumentCount": 3,
+          "mentionsUsing": true,
+          "percentIdentifier": false,
+          "percentRaw": false
+        }
+      ],
+      "limitations": "Case ordinals are ephemeral and not stable function identifiers. Matches occur anywhere in source, including comments or strings. USING presence and %I/%s presence do not prove safety or vulnerability. Requires private on-PC individual code/AST review of dynamic SQL assembly, guards and EXECUTE dataflow.",
+      "sourceZipSha256Reverified": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "securityBugsConfirmed": 0,
+      "meaning": "zero confirmed, not proven zero bugs",
       "releaseAuthorized": false
     }
   },
