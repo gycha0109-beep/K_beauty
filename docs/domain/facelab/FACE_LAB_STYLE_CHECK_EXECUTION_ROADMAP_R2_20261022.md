@@ -110,7 +110,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
 | SC-04 | 5 | **반사실적 추천 비교 구현·Foundation/PIE 통과 / PR #1395, 미병합** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | **평가 계획 검증·Human 권한 게이트 구현 / PR #1396, 실제 사진·사람 평가는 미실시** | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
-| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-06B | 7b | **3개 구조 후보 Shadow 실험·96건 Foundation PASS / PR #1398, 미병합** | SC-06 필드 영향 분석 | 실험용 후보 3개와 96-case feasibility / 개인화 가설 평가 | 사람 검증 전 운영 추천으로 전파 |\n| SC-06C | 7c | **구조 후보 Reviewer A/B 패킷 구현 / PR #1399, CI 검증 중** | SC-06B | 기존 Human 계약, 기본 미리보기 7개 비교쌍, 운영자 매핑 분리 | 평가자·후보 역할 노출, 무허가 인물 수집 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
+| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-06B | 7b | **3개 구조 후보 Shadow 실험·96건 Foundation PASS / PR #1398, 미병합** | SC-06 필드 영향 분석 | 실험용 후보 3개와 96-case feasibility / 개인화 가설 평가 | 사람 검증 전 운영 추천으로 전파 |\n| SC-06C | 7c | **블라인드 A/B 7쌍·분리 내보내기 구현 / PR #1399, Foundation PASS·PIE 확인 중** | SC-06B | 기존 Human 계약, 기본 미리보기 7개 비교쌍, 운영자 매핑 분리 | 평가자·후보 역할 노출, 무허가 인물 수집 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
 
 ### 2026-10-22 진행 상태 (SC-03)
 
@@ -186,8 +186,15 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - **9건 Route 차이 ≠ 9개 reviewer-visible 비교쌍**. SC-06B의 14건 candidate 변화 중 **기본 선택 Route의 A/B 추천이 다른 7쌍**만 blind packet에 포함; 나머지 7건은 선택 경로가 같으므로 평가 왜곡 방지를 위해 제외.
 - 리뷰어 packet과 operator manifest에 각각 SHA-256 digest 적용. 후보 relation ID, 실험용 설명과 `current/candidate` 매핑은 reviewer 측에서 제거; current 역할 A/B 배치는 균형을 맞춤.
 - `SC-STRUCT-003`은 기존 96건 코호트 활성화 0이므로 별도 긍정 통제 테스트에서 기술적 실행 가능성만 확인. **사람 평가 표본으로 위장하지 않음**.
-- CI에서 일부 후보 설명 문자열 누출을 탐지했고 필터를 강화하는 중. **검증 PASS 전 완료 선언 금지**.
+- **실제 Foundation #39884553269 PASS**: Reviewer 7쌍(턱선 각도 5·눈 개방감 2), 역할 A current 4개/B current 3개, SHA-256 무결성·변조·역할 누출 검사 통과. `SC-STRUCT-003` 활성화 표본 0건은 포함하지 않음. 최종 PIE는 별도 확인한다.
 - 실사진·Human judgment는 0건. 실사진 연구 동의/권리·sealed 판단·실사용 적합성/효용 검증은 미실행. SC-07 운영 릴리스 보류.
+
+### SC-06C 두 결과물의 실행 가능 계약
+
+- `scripts/export-face-lab-style-check-structural-human-packets-sc06c.mjs`: CLI로 합성 reviewer packet / confidential operator mapping을 서로 다른 **저장소 밖** 디렉터리에 `wx` write-once 생성, 기존 파일 덮어쓰기 금지, 같은 폴더/저장소 내부 출력 금지, 부분 실패 시 reviewer 파일 삭제.
+- 두 JSON을 평가자에게 함께 전달하면 blinding 무효. CLI의 분리는 안전한 **파일 생성 가드**일 뿐 연구자/평가자 실제 권한 통제를 대신하지 않는다.
+- 기존 Human 판단·sealed review·role reveal·real photo validation은 미실시. **이 항목은 7쌍의 평가자료 준비 완료**이며 Human 선호도 점수는 0건.
+- 구현 PR: [#1399](https://github.com/gycha0109-beep/K_beauty/pull/1399), 상세 문서 `FACE_LAB_STYLE_CHECK_SC06C_BLIND_HUMAN_PACKET_20261023.md`.
 
 ## 5. 체크리스트/실행 운영
 
