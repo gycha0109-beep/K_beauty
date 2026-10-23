@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_CASE_B_EXECUTE_FORMAT_PERCENT_S_LEXICAL_CORRELATION_REVIEW_REQUIRED_HOLD",
+  "state": "D8K13_ONE_EXECUTE_FORMAT_NONCONSTANT_PERCENT_S_CONFIRMED_BY_OWNER_TOKENIZER_SECURITY_HOLD",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -1142,6 +1142,30 @@
       "inputTaintOrControlFlowAnalyzed": false,
       "exploitabilityProven": false,
       "productionDatabaseConnections": 0,
+      "releaseAuthorized": false
+    },
+    "ownerLexicalSqlFormatParser20261023": {
+      "script": "scripts/product-evidence/audit-d8k13-definer-format-owner-local.py",
+      "scriptCommit": "234b1bd1173e786db7de6494c5e2ecadc8af8725",
+      "syntheticCiFirstSuccess": 39915596958,
+      "latestCiRun": 39918021305,
+      "latestCiStatusAtRecording": "in_progress",
+      "actualOwnerPrivateZipExecuted": true,
+      "localSelfTest": "PASS",
+      "ownerZipUnchanged": true,
+      "plpgsqlDefinerBodiesParsed": 115,
+      "parsedExecuteFormatCandidateFunctions": 1,
+      "formatSpecifiers": [
+        {
+          "specifier": "%s",
+          "argumentClass": "BARE_IDENTIFIER_OR_PARAMETER_UNRESOLVED"
+        }
+      ],
+      "usingInStatement": true,
+      "hasUnresolvedRawSubstitution": true,
+      "sourceOrIdentifiersReturned": false,
+      "securityVulnerabilityConfirmed": false,
+      "limitations": "owner ZIP schema extraction is approximate; catalog separately lists 113 restored PLpgSQL SECURITY DEFINER functions and prior lexical scan 3 EXECUTE matches; this AST-lite tokenizer confirms one executable-format candidate but does not resolve complete dataflow or prove other two safe.",
       "releaseAuthorized": false
     }
   },
