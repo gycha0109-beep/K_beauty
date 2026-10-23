@@ -7,7 +7,7 @@ for(const target of ["natural","chic"]){
  const item=cohort.find(x=>x.targetKey===target);
  const canonical=buildFaceLabV2Canonical({analysis:item.analysis,surveyAnswers:item.surveyAnswers,locale:"ko"});
  const result=explain({canonical,targetKey:target});
- if(target==="natural"){assert.equal(result.status,"held");assert.equal(result.reason,"no_traceable_actions");continue;}assert.equal(result.status,"research_copy_ready");
+ assert.equal(result.status,"research_copy_ready");
  assert.ok(result.headline.length>5);
  assert.ok(result.cards.length>0);
  assert.equal(result.productionActive,false);
