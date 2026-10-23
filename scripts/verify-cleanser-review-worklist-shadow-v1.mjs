@@ -66,6 +66,16 @@ assert.equal(human.summary.official_sku_formulation_review,10);
 assert.equal(human.summary.hwahae_product_capture_review,3);
 assert.equal(human.summary.recommendation_metadata_review,10);
 assert.equal(human.summary.admission_grants,0);
+assert.equal(human.summary.public_manufacturer_display_matches,7);
+assert.equal(human.summary.public_manufacturer_display_differs,2);
+assert.equal(human.summary.public_manufacturer_quantity_unknown,1);
+assert.ok(human.products.every(x=>x.manufacturer_public_research?.approved_formulation===false));
+assert.ok(human.products.every(x=>x.manufacturer_public_research?.research_only_not_reviewed===true));
+assert.deepEqual(
+  human.products.filter(x=>x.manufacturer_public_research.status==="MANUFACTURER_QUANTITY_DIFFERS_FROM_CATALOG_HINT")
+    .map(x=>[x.manufacturer_public_research.db_display.amount,x.manufacturer_public_research.manufacturer_display.amount]),
+  [[170,220],[120,150]]
+);
 assert.ok(human.products.every(x=>x.next_step.includes("제조사 원본")));
 const cliDenied=spawnSync(process.execPath,["scripts/run-cleanser-review-worklist-v1.mjs","--allow-production"],
   {encoding:"utf8",maxBuffer:1024*1024});
