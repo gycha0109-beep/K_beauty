@@ -45,3 +45,9 @@ No samples have been promoted. This is a blocking intake tool and documentation,
 
 - [Supplementary datasets for pores, pigmentation/freckles, shine/sebum, texture, flaking](supplementary-dataset-research-2026-10-23.md) — actual official sources, class/annotation granularity, sample-access paths, reported rights and gaps. All external acquisitions remain pending; no commercial-cleared asset in [candidate register](asset-candidate-register-v1.json).
 - [Skin Precision roadmap](../../docs/architecture/skin-precision-localization-roadmap-v1.md#11-confidence-aware-nonblocking-scan-ux--product-decision-2026-10-23) now specifies **nonblocking best-effort scoring**, photo-level + concern-level qualitative reliability, explanations and optional recapture. Do not confuse confidence output with calibrated correctness and do not fabricate unsupported scores.
+
+## Dataset acquisition tool (2026-10-23)
+
+- `node scripts/acquire-skin-open-dataset.mjs --inspect`: publisher Figshare API **metadata only** (no face-image download). See `supplementary-dataset-research-2026-10-23.md` for current status and licensing gates.
+- After examining source/face photo terms on a permitted local computer, `node scripts/acquire-skin-open-dataset.mjs --download --license-reviewed --out "D:\\private\\skin-datasets\\memi-ds"` stores raw bytes and checksum **locally**. GitHub and connected cloud tools must not be raw-image destinations without explicit rights.
+- The script was added to the draft research PR and read back via repository API; **Node runtime / live Figshare API / downloaded file hashes have NOT been executed or verified here**.
