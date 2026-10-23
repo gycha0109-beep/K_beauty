@@ -71,9 +71,23 @@ for(const update of [
 await assert.rejects(compare({cohort:snapshot(),evaluateV1:()=>({
   ...v1({product:{id:ids[0]}}),admissionGranted:true
 })}),TypeError);
-// This branch intentionally has no imported upstream v1. Refuse a fabricated v1 diff.
+// Standalone #1401 intentionally blocks the missing upstream v1.
+// This isolated integration branch instead verifies the byte-identical v1 runs.
 const cmd=spawnSync(process.execPath,["scripts/run-cleanser-ten-preflight-v1-v2-diff-v1.mjs","--stdin"],
   {input:JSON.stringify(snapshot()),encoding:"utf8"});
-assert.notEqual(cmd.status,0);
-assert.match(cmd.stderr,/UPSTREAM_PR_1390_V1_MUST_BE_INTEGRATED_BEFORE_REAL_COMPARISON/);
+let upstreamPresent=false;
+try{
+  const mod=await import("../lib/cleanser-initial-admission-preflight-v1.mjs");
+  upstreamPresent=typeof mod.evaluateCleanserInitialAdmissionPreflight==="function";
+}catch{}
+if(upstreamPresent){
+  assert.equal(cmd.status,0,cmd.stderr);
+  const integrated=JSON.parse(cmd.stdout);
+  assert.equal(integrated.total,10);
+  assert.equal(integrated.v2_capacity_scope_reconciled_count,0);
+  assert.equal(integrated.admission_grants,0);
+}else{
+  assert.notEqual(cmd.status,0);
+  assert.match(cmd.stderr,/UPSTREAM_PR_1390_V1_MUST_BE_INTEGRATED_BEFORE_REAL_COMPARISON/);
+}
 console.log("C4 exact-ten actual-v1 integration bridge contract: PASS (synthetic wrapper only; unmerged v1 BLOCKED)");
