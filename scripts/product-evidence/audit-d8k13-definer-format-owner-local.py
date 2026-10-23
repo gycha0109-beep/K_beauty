@@ -144,8 +144,10 @@ def expression_class(tokens):
         "quote_literal", "quote_nullable", "quote_ident"
     ):
         return "QUOTE_HELPER_CALL"
-    if len(tokens) == 1 and tokens[0][0] in ("WORD", "IDENT"):
+    if len(tokens) == 1 and tokens[0][0] == "WORD":
         return "BARE_IDENTIFIER_OR_PARAMETER_UNRESOLVED"
+    if len(tokens) == 1 and tokens[0][0] == "IDENT":
+        return "QUOTED_IDENTIFIER_UNRESOLVED"
     return "EXPRESSION_UNRESOLVED"
 
 
@@ -314,6 +316,9 @@ def self_test():
     assert local[0]["bindings"][0]["priorAssignmentSignal"] == "ASSIGNMENT_MENTIONS_FUNCTION_PARAMETER"
     direct = body_findings("BEGIN EXECUTE format('select %s', p_input); END;", formal)
     assert direct[0]["bindings"][0]["originSignal"] == "FORMAL_FUNCTION_PARAMETER_POSSIBLE"
+    unknown = body_findings("BEGIN EXECUTE format('select %s', suspicious); END;", set())
+    assert unknown[0]["bindings"][0]["originSignal"] == "UNKNOWN_IDENTIFIER_OR_PARAMETER"
+    assert unknown[0]["bindings"][0]["originOrInputSafetyProven"] is False
     fixture = """CREATE FUNCTION public.synthetic(p_input text) RETURNS void
     LANGUAGE 'plpgsql' SECURITY DEFINER AS $function$
     DECLARE temp_sql text;
