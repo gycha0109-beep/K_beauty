@@ -1,0 +1,142 @@
+{
+  "version": "lagom-cross-market-formulation-research-v1",
+  "as_of": "2026-10-23",
+  "source_type": "PUBLIC_BRAND_RESEARCH_ONLY",
+  "precision": "PUBLIC_PAGE_CANDIDATE_NOT_GOVERNED_SNAPSHOT",
+  "manufacturer_contact_confirmed": false,
+  "full_inci_transcribed": false,
+  "scope_note": "Published net quantity and selected ingredient markers only; market and formulation equivalence cannot be inferred from public pages.",
+  "records": [
+    {
+      "product_id": "e3ebe3ff-8fe8-4aa7-9d6f-2fb6af5069bf",
+      "name": "라곰 셀럽 젤 투 워터 클렌저",
+      "catalog": {
+        "amount": 170,
+        "unit": "ml"
+      },
+      "domestic": {
+        "amount": 220,
+        "unit": "ml"
+      },
+      "sources": [
+        {
+          "url": "https://lagom.kr/product/detail.html?cate_no=1&display_group=2&product_no=10",
+          "market": "KR",
+          "quantity_ml": 220,
+          "source_status": "PUBLIC_BRAND_PAGE_UNREVIEWED",
+          "selected_ingredient_markers": [
+            "폴리글리세릴-6카프릴레이트",
+            "하이드록시아세토페논"
+          ],
+          "source_role": "CURRENT_DOMESTIC_DISPLAY"
+        },
+        {
+          "url": "https://www.lagom-global.com/product/gel-to-water-cleanser/503/",
+          "market": "GLOBAL_UNSPECIFIED",
+          "quantity_ml": 170,
+          "source_status": "PUBLIC_BRAND_PAGE_UNREVIEWED",
+          "selected_ingredient_markers": [
+            "Polyglyceryl-6 Caprylate",
+            "Hydroxyacetophenone"
+          ],
+          "source_role": "GLOBAL_170_ALTERNATE"
+        },
+        {
+          "url": "https://www.lagom-global.com/product/gel-to-water-cleanser/10/",
+          "market": "GLOBAL_UNSPECIFIED",
+          "quantity_ml": 170,
+          "source_status": "PUBLIC_BRAND_PAGE_UNREVIEWED",
+          "selected_ingredient_markers": [
+            "Dimethicone",
+            "PEG-60 Hydrogenated Castor Oil"
+          ],
+          "source_role": "GLOBAL_170_DIFFERENT_DISCLOSURE"
+        },
+        {
+          "url": "https://lagom-usa.com/products/cellup-gel-to-water-cleanser-170ml",
+          "market": "US",
+          "quantity_ml": 170,
+          "source_status": "PUBLIC_REGION_BRAND_PAGE_UNREVIEWED",
+          "selected_ingredient_markers": [
+            "PEG-60 Hydrogenated Castor Oil",
+            "Dimethicone"
+          ],
+          "source_role": "US_170_ALTERNATE"
+        }
+      ],
+      "research_observation": "Brand-hosted/global pages show a legitimate 170ml size alongside KR 220ml; global 170 page variations contain distinct disclosed ingredient markers. Neither cross-market nor historical equivalence is established.",
+      "review_needed": [
+        "EXACT_KR_AND_GLOBAL_SKU_OR_GTIN",
+        "DISPENSER_PACKAGING_BATCH_AND_SELLING_WINDOW",
+        "FULL_INCI_VERSION_AND_MARKET_COMPARISON",
+        "MANUFACTURER_SAME_FORMULA_ATTESTATION"
+      ],
+      "exact_sku_confirmed": false,
+      "source_snapshot_digest": null,
+      "governed_source_subject_binding_id": null,
+      "current_fact_reuse": false,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "recommendation_granted": false
+    },
+    {
+      "product_id": "fa793e6b-9fa6-441d-9b24-9bcc9a111e8c",
+      "name": "라곰 셀럽 마이크로 폼 클렌저",
+      "catalog": {
+        "amount": 120,
+        "unit": "ml"
+      },
+      "domestic": {
+        "amount": 150,
+        "unit": "ml"
+      },
+      "sources": [
+        {
+          "url": "https://lagom.kr/product/%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml/9/",
+          "market": "KR",
+          "quantity_ml": 150,
+          "source_status": "PUBLIC_BRAND_PAGE_UNREVIEWED",
+          "selected_ingredient_markers": [
+            "코카미도프로필베타인",
+            "리날룰"
+          ],
+          "source_role": "CURRENT_DOMESTIC_DISPLAY"
+        },
+        {
+          "url": "https://www.lagom-global.com/product/cellup-micro-foam-cleanser/121/",
+          "market": "GLOBAL_UNSPECIFIED",
+          "quantity_ml": 120,
+          "source_status": "PUBLIC_BRAND_PAGE_UNREVIEWED",
+          "selected_ingredient_markers": [
+            "Cocamidopropyl Betaine",
+            "Potassium Cocoyl Glycinate"
+          ],
+          "source_role": "GLOBAL_120_ALTERNATE"
+        },
+        {
+          "url": "https://lagom-usa.com/products/cellup-micro-foam-cleanser-120ml",
+          "market": "US",
+          "quantity_ml": 120,
+          "source_status": "PUBLIC_REGION_BRAND_PAGE_UNREVIEWED",
+          "selected_ingredient_markers": [
+            "Cocamidopropyl Betaine",
+            "Hydroxyethyl Urea"
+          ],
+          "source_role": "US_120_ALTERNATE"
+        }
+      ],
+      "research_observation": "Official branded 120ml regional/global pages exist; KR domestic shows 150ml. Ingredient listings differ in expression/order in some sources, but available pages do not attest the same manufacturing revision.",
+      "review_needed": [
+        "EXACT_KR_AND_GLOBAL_SKU_OR_GTIN",
+        "DISPENSER_PACKAGING_BATCH_AND_SELLING_WINDOW",
+        "FULL_INCI_VERSION_AND_MARKET_COMPARISON",
+        "MANUFACTURER_SAME_FORMULA_ATTESTATION"
+      ],
+      "exact_sku_confirmed": false,
+      "source_snapshot_digest": null,
+      "governed_source_subject_binding_id": null,
+      "current_fact_reuse": false,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "recommendation_granted": false
+    }
+  ]
+}
