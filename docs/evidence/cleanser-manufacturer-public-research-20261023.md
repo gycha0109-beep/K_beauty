@@ -11,7 +11,7 @@
 | 기존 Product UUID 앞 8자리 | 제품 | DB 힌트 | 제조사 공개 표시 | 상태 | 공개 페이지 |
 | --- | --- | --- | --- | --- | --- |
 | `11322a66` | 닥터지 약산성 클렌징 젤 폼 | 200ml | 200ml | 표시 일치 | [닥터지 공식 200ml](https://www.dr-g.co.kr/item/4009) |
-| `4d5b22c7` | 휩드 머그트리 비건 팩클렌저 | 130g (이름) | 130g | 표시 일치 (용량 ml 환산 금지) | [휩드 공개 검색 결과](https://whipped.co.kr/product/%ED%9C%A9%EB%93%9C-%EB%A8%B8%EA%B7%B8%ED%8A%B8%EB%A6%AC-%EB%B9%84%EA%B1%B4-%ED%8C%A9%ED%81%B4%EB%A0%8C%EC%A0%80-130g/53/%7B) — 유효 URL 재확인 필요 |
+| `4d5b22c7` | 휩드 머그트리 비건 팩클렌저 | 130g (이름) | 130g | 표시 일치 (용량 ml 환산 금지) | [휩드 공개 검색 결과](https://whipped.co.kr/product/%ED%9C%A9%EB%93%9C-%EB%A8%B8%EA%B7%B8%ED%8A%B8%EB%A6%AC-%EB%B9%84%EA%B1%B4-%ED%8C%A9%ED%81%B4%EB%A0%8C%EC%A0%80-130g/53) — 공개 검색 결과에서 유효 제품 경로 재확인 |
 | `4f918d80` | 마녀공장 퓨어 소이빈 클렌징 폼 | 160ml | 160ml (120ml 별도 열거) | 표시 일치 | [마녀공장 공식 카탈로그](https://m.manyo.co.kr/goods/goods_list.php?cateCd=006094) |
 | `63a958c4` | 라로슈포제 에빠끌라 딥 클렌징 포밍 크림 | 125ml | 125ml, 전성분 | 표시 일치 | [라로슈포제 공식](https://www.larocheposay.co.kr/product/view/4397.do) |
 | `c24a599b` | 블랑네이처 아크네 클렌징 폼 | 150ml | 150ml | 표시 일치 | [블랑네이처 공식](https://m.blancnature.co.kr/product/best-%EC%95%84%ED%81%AC%EB%84%A4-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-150ml/13/category/1/display/12/) |
