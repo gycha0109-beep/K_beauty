@@ -60,6 +60,8 @@ run("R4/C4 cleanser preflight v2 shadow", node, ["scripts/verify-cleanser-prefli
 run("C4 upstream v1 exact-ten comparison integration gate", node, ["scripts/verify-cleanser-ten-preflight-v1-v2-diff-v1.mjs"]);
 run("C4 original upstream v1-v2 isolated integration", node, ["scripts/verify-cleanser-upstream-v1-v2-isolated-integration-v1.mjs"]);
 run("C4 live cleanser SELECT-only transport guard", node, ["scripts/verify-cleanser-hosted-select-only-audit-v1.mjs"]);
+run("R5 existing ten cleanser next-actions ledger", node, ["scripts/verify-cleanser-review-worklist-shadow-v1.mjs"]);
+run("R6 cleanser no-activation checklist gate", node, ["scripts/verify-cleanser-r6-release-review-v1.mjs"]);
 run("R5 164-product live scoring offer-variation shadow", node, ["scripts/verify-catalog-offer-runtime-invariance-v1.mjs"]);
 run("TRUST Phase 1 intake contract", node, ["scripts/verify-trust-intake-foundation.mjs"]);
 runDelegated("trust-phase2-subject-resolution", "TRUST Phase 2 subject resolution contract", node, ["scripts/verify-trust-subject-resolution.mjs"]);
