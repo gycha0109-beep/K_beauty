@@ -318,7 +318,7 @@ def body_findings(body, parameter_names=None):
                     detail["templateHasPositionalOrUnsupportedFormatDirectives"] = bool(
                         re.search(r"%(?!%|[sIL])", template))
                     detail["templateHasDynamicSqlBindSlot"] = bool(
-                        re.search(r"\\$[1-9][0-9]*\\b", template))
+                        re.search(r"\$[1-9][0-9]*\b", template))
                     for j, spec in enumerate(specs):
                         argclass = expression_class(args[j + 1]) if j + 1 < len(args) else "MISSING"
                         binding = {"specifier": "%" + spec, "argumentClass": argclass}
