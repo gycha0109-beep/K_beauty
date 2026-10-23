@@ -49,3 +49,13 @@
 - 출력: 상품 이름/UUID와 **원본 v1 차단 코드, v2 보류 코드, 건수만**. 외부 링크·성분 배열·리뷰 본문·서비스 자격증명 저장/표시하지 않음
 - 제한: v2의 양쪽 공식 SKU→Subject 관계를 근거 있는 reviewed pair로 만드는 별도 권한 Reader는 아직 연결되지 않음. 따라서 공식 처방 동일성 비교는 `NOT_EVALUATED_NO_INDEPENDENT_EXACT_SKU_PAIR_READER`라고 명시하며 cross-size 재사용 불가
 - GitHub CI에서는 권한·비밀번호 없이 **읽기 전용 전송 가드와 실패 차단만 테스트**. 이 코드를 GitHub CI에서 실제 원격 DB에 실행하거나 비밀번호를 저장하지 않음
+
+## 2026-10-23 R5 → R6 읽기 전용 작업표 및 활성화 금지 게이트
+
+- 기존 10개 상품 기준: `evidence/trust/cleanser-authority-next-actions-20261023.json`은 승인된 Supabase **SELECT-only** 출력에서 상품명/ID와 `bool`/건수만 골라 만든 검증 자료다. 원본 URL, 리뷰/성분 신호 전체, 개인 데이터, 크롤링 결과, 사용자 메타데이터, credentials 없음.
+- `lib/trust/cleanser-review-worklist-shadow-v1.mjs`: 정확한 기존 10개 상품 UUID를 재검증하여 **무엇부터 확인해야 하는지** 정렬한다. **P1** 공식 SKU/처방/원본 증거 10건, **P2** 정확한 화해 매핑 검토 3건(마녀공장 1 + 라곰 2), **P3** 기존 피부 타입/고민 승인 메타데이터 검토 10건, **P4** 기존 20개 Task의 실제 Current Fact 검토(Subject/official source 승인 후) 10건이다.
+- 현재 10건 모두 Current Subject=0, official source binding=0, Trust observation=0, `skin_types` / `concerns` 승인 메타데이터=0. 7건에 기존 화해 신호가 있다고 해서 **상품·처방 또는 구매 SKU 승인된 것은 아니다**. 모든 제품 생성, Fact 권한, 신규 연구 큐, admission, DB writes=0.
+- `lib/trust/cleanser-r6-release-review-v1.mjs`: **12개 사전 확인 항목** 중 R0 기존 ID 보호 및 R5 164×12 추천 불변 테스트만 충족된 것으로 보수적으로 표시해 **2/12**, 나머지 **10/12 미검증**. R1 독립 goldset/실제 상품 구성, R2 원본 관측과 권한, R3 Subject/Fact, R4 실데이터 완전 비교, R5 독립 오결합률, R6 보안 심사/제한 Canary/kill switch/rollback/명시적 G2 승인을 요구한다.
+- 이 실행기는 어떤 값이 들어오더라도 Production 승인을 **직접 내릴 수 없다**. 모든 검증항목이 충족되었다는 외부 입력을 넣어도 결과는 `INDEPENDENT_PROTECTED_REVIEW_REQUIRED`이고 `deployment_authorized:false`, `production_grant_authorized:false`로 고정된다.
+- **로드맵 상태**(검증/운영 구분): R0 읽기 전용 감사 완료. R1 정규화 Shadow와 synthetic tests 구현 (DB 스키마·실제 판매 데이터 미승인). R2 증거 바인딩 검증기 구현 (클렌저 실물 근거 부족). R3 검토 handoff만 구현, 승인 기능 미실행. R4 독립 v1/v2 테스트 구현, 원본 전체 운영 자료 재실행 미완료. R5 164×12와 판매 변화·위험 상황 회귀 통과, 독립 goldset 미승인. R6 활성화/롤백 **미시행 및 차단**.
+- 다음 실제 진입점은 기존 10개를 보존하고 **공식 출처/정확한 SKU/처방 정본의 적법한 증거를 관리자 검토로 넘기는 일**이다. 용량 충돌(라곰 120↔150ml, 170↔220ml)이나 휩드 130g을 임의로 수정·환산하거나 dummy Subject/Offer를 INSERT하지 않는다.
