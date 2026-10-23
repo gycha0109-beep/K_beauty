@@ -499,6 +499,103 @@ def repo_migration_coverage(sql_sources):
     }
 
 
+# Local-only identity hints for historical migrations. Never return the
+# extracted name, SQL, argument list, function body, or any hash.
+_SQL_IDENT = r'(?:"(?:[^"]|"")*"|[A-Za-z_][A-Za-z_0-9$]*)'
+_DEF_NAME_RX = re.compile(
+    r'^\s*CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+'
+    r'(?P<name>' + _SQL_IDENT + r'(?:\s*\.\s*' + _SQL_IDENT + r')?)'
+    r'\s*\(', re.I | re.S
+)
+
+
+def private_name_and_arity(header):
+    match = _DEF_NAME_RX.search(header)
+    if not match:
+        return None
+    parts = re.findall(_SQL_IDENT, match.group("name"))
+    if not parts:
+        return None
+    normalized = tuple(
+        part[1:-1].replace('""', '"') if part.startswith('"') else part.lower()
+        for part in parts
+    )
+    tokens = tokenize(header)
+    opening = next(
+        (i for i, token in enumerate(tokens) if token == ("SYM", "(")), None)
+    if opening is None:
+        return None
+    groups = format_arguments(tokens, opening)
+    if groups is None:
+        return None
+    arity = 0 if len(groups) == 1 and not groups[0] else len(groups)
+    return normalized, arity
+
+
+def owner_local_candidate_repo_match(owner_schema, migrations):
+    """Compare names/arity and *exact* source bodies in volatile local memory.
+
+    Migration matches are historical and can be superseded. Overloads with the
+    same arity or bodies formatted differently may be ambiguous. Never report
+    the actual function identity, signature, SQL, hash, or private source.
+    """
+    candidates = []
+    for body, header in functions_from_dump(owner_schema):
+        findings = body_findings(body, function_parameter_names(header))
+        if any(
+            stmt["formatDirectlyAfterExecute"]
+            and any(b["specifier"] == "%s" for b in stmt["bindings"])
+            for stmt in findings
+        ):
+            candidates.append((body, header))
+    if len(candidates) != 1:
+        return {
+            "status": "D8K13_LOCAL_CANDIDATE_IDENTITY_INCONCLUSIVE",
+            "candidateCount": len(candidates),
+            "candidateNameOrBodyReturned": False,
+            "ownerRepoFunctionIdentityProven": False,
+            "releaseAuthorized": False,
+        }
+    candidate_body, candidate_header = candidates[0]
+    key = private_name_and_arity(candidate_header)
+    same_name_arity = 0
+    exact_body = 0
+    repo_scanned = 0
+    repo_functions = 0
+    owner_bytes = candidate_body.replace("\r\n", "\n").strip().encode("utf-8")
+    owner_digest = hashlib.sha256(owner_bytes).digest()
+    if key is not None:
+        for migration in migrations:
+            repo_scanned += 1
+            for body, header in functions_from_dump(migration):
+                repo_functions += 1
+                if private_name_and_arity(header) != key:
+                    continue
+                same_name_arity += 1
+                digest = hashlib.sha256(
+                    body.replace("\r\n", "\n").strip().encode("utf-8")
+                ).digest()
+                if digest == owner_digest:
+                    exact_body += 1
+    return {
+        "status": "D8K13_LOCAL_CANDIDATE_REPO_TEXT_COMPARISON",
+        "candidateCount": 1,
+        "candidateNameParsed": key is not None,
+        "repoMigrationsScanned": repo_scanned,
+        "repoHistoricalDefinerDeclarationsScanned": repo_functions,
+        "repoSameNameArityDefinitionOccurrences": same_name_arity,
+        "repoSameNameArityExactBodyOccurrences": exact_body,
+        "ownerCandidateExactTextSeenInRepoHistory": exact_body > 0,
+        "onlyNameAndArgumentCountCompared": True,
+        "sourceBodyComparisonIgnoresOnlyOuterWhitespaceAndLineEndings": True,
+        "fullOverloadIdentityOrLatestVersionProven": False,
+        "ownerRepoFunctionIdentityProven": False,
+        "ownerZipSchemaParityVerified": False,
+        "functionNamesSignaturesBodiesOrHashesReturned": False,
+        "releaseAuthorized": False,
+    }
+
+
 def self_test():
     example = """-- EXECUTE format('bad %s', unsafe);
     PERFORM 'EXECUTE format(''bad %s'')';
@@ -662,6 +759,31 @@ def self_test():
     assert coverage["rawPercentSFormatStatements"] == 1
     assert coverage["ownerCandidateBIdentifiedInRepo"] is False
     assert coverage["ownerZipSchemaParityVerified"] is False
+
+    # Verify positive/negative matches without disclosing real function names.
+    private_fixture = (
+        "CREATE FUNCTION public.synthetic_example(p_input text) RETURNS void "
+        "LANGUAGE 'plpgsql' SECURITY DEFINER AS $fn$ "
+        "BEGIN EXECUTE format('SELECT %s', p_input); END; $fn$;"
+    )
+    positive = owner_local_candidate_repo_match(
+        private_fixture, [private_fixture])
+    assert positive["candidateCount"] == 1
+    assert positive["candidateNameParsed"] is True
+    assert positive["repoSameNameArityExactBodyOccurrences"] == 1
+    assert positive["ownerCandidateExactTextSeenInRepoHistory"] is True
+    assert positive["ownerRepoFunctionIdentityProven"] is False
+    assert positive["functionNamesSignaturesBodiesOrHashesReturned"] is False
+    renamed = private_fixture.replace(
+        "public.synthetic_example", "public.unrelated")
+    negative = owner_local_candidate_repo_match(private_fixture, [renamed])
+    assert negative["repoSameNameArityExactBodyOccurrences"] == 0
+    changed_body = private_fixture.replace("SELECT %s", "SELECT %I")
+    drift = owner_local_candidate_repo_match(
+        private_fixture, [changed_body])
+    assert drift["repoSameNameArityDefinitionOccurrences"] == 1
+    assert drift["repoSameNameArityExactBodyOccurrences"] == 0
+
     print(json.dumps({"status": "D8K13_PYTHON_LEXER_SELF_TEST_PASS", "rawSourceReturned": False}))
 
 
@@ -669,11 +791,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--scan-repo-migrations", type=Path)
+    parser.add_argument("--compare-repo-migrations", type=Path)
     parser.add_argument("--zip", type=Path)
     args = parser.parse_args()
     if args.self_test:
         self_test()
         return
+    if args.scan_repo_migrations is not None and args.compare_repo_migrations is not None:
+        raise SystemExit("D8K13_CONFLICTING_SCAN_OPTIONS")
     if args.scan_repo_migrations is not None:
         root = args.scan_repo_migrations
         files = sorted(root.glob("*.sql")) if root.is_dir() else []
@@ -698,6 +823,22 @@ def main():
         if len(candidates) != 1:
             raise SystemExit("D8K13_LOCAL_SCHEMA_NOT_UNIQUE")
         source = z.read(candidates[0]).decode("utf-8")
+    if args.compare_repo_migrations is not None:
+        root = args.compare_repo_migrations
+        paths = sorted(root.glob("*.sql")) if root.is_dir() else []
+        if not paths:
+            raise SystemExit("D8K13_REPO_MIGRATIONS_NOT_FOUND")
+        comparison = owner_local_candidate_repo_match(
+            source, (p.read_text(encoding="utf-8") for p in paths)
+        )
+        if comparison["candidateCount"] != 1 or not comparison["candidateNameParsed"]:
+            raise SystemExit("D8K13_OWNER_REPO_COMPARISON_INCOMPLETE")
+        comparison["originalOwnerZipUnmodified"] = (
+            hashlib.sha256(args.zip.read_bytes()).hexdigest().upper()
+            == EXPECTED_SHA
+        )
+        print(json.dumps(comparison, separators=(",", ":")))
+        return
     result = inspect_source(source)
     if result["plpgsqlDefinerBodiesParsed"] < 110 or result["candidateFunctions"] < 1:
         raise SystemExit("D8K13_LOCAL_SOURCE_COVERAGE_BLOCKED")
