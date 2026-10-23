@@ -591,6 +591,12 @@ jobs:
             CONSTRAINT fk_pair_full FOREIGN KEY(a,b) REFERENCES public.fk_parent_pair(a,b) MATCH FULL);
           CREATE SEQUENCE public.d8k13_seq_called;
           CREATE SEQUENCE public.d8k13_seq_uncalled;
+          CREATE FUNCTION public.d8k13_definer_default() RETURNS boolean
+            LANGUAGE sql SECURITY DEFINER AS 'SELECT true';
+          CREATE FUNCTION public.d8k13_definer_locked() RETURNS boolean
+            LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog AS 'SELECT true';
+          REVOKE ALL ON FUNCTION public.d8k13_definer_locked() FROM PUBLIC;
+          GRANT EXECUTE ON FUNCTION public.d8k13_definer_locked() TO authenticated;
           '@
             [System.IO.File]::WriteAllText((Join-Path $sql 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
             $single = if ($kind -eq 'orphan') { '11' + [char]9 + '999' } else { '11' + [char]9 + '1' }
@@ -638,9 +644,18 @@ jobs:
                   $r.publicSecurityCatalogInventory.rlsEnabledTables -ne 1 -or
                   $r.publicSecurityCatalogInventory.rlsDisabledTables -ne 4 -or
                   $r.publicSecurityCatalogInventory.publicPolicies -ne 1 -or
-                  $r.publicSecurityCatalogInventory.publicFunctions -ne 1 -or
+                  $r.publicSecurityCatalogInventory.publicFunctions -ne 3 -or
                   $r.publicSecurityCatalogInventory.publicViews -ne 1 -or
-                  $r.publicSecurityCatalogInventory.securityDefinerFunctions -ne 0 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerFunctions -ne 2 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerNullAclDefaults -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitAcl -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerDefaultPublicExecute -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitPublicExecute -ne 0 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitAuthenticatedExecute -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerEffectivePublicExecute -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitSearchPath -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerNoExplicitSearchPath -ne 1 -or
+                  $r.publicSecurityCatalogInventory.executePrivilegeProvenanceClassified -ne $true -or
                   $r.publicSecurityCatalogInventory.productionParityVerified -ne $false -or
                   $r.rlsPolicyParityVerified -ne $false -or
                   $r.ownerAndAclParityVerified -ne $false -or
