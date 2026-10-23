@@ -2,6 +2,14 @@
 
 ## Entries
 
+### 2026-10-23 / TRUST P2 v3·클렌저 10개: 처방/규격/판매 구성 분리 로드맵 갱신
+
+- 사용자 확정 방향: 빈번한 용량·패키지·1+1·증정품 변화를 제형 신원이나 새 화장품으로 혼동하지 않되, **처방 동일성을 근거 없이 가정하지 않는다**.
+- 운영 READ ONLY 기준: 기존 `products` 186건, `product_fact_subjects` 51건, `product_offers` 73건; 클렌저 10건 offer 0, Subject 0, 연구 intake 10/태스크 20. `product_evidence_source_subject_bindings.presentation_metadata`와 `equivalent_presentation_match`가 이미 존재.
+- 기존 PF-1 D1/D5/D9/D11 frozen 원칙 및 TRUST P2 v3 evidence-first 설계를 우선: 새 formulation 테이블이나 중복 처방 권위 경로 금지. `product_presentations`, `offer_components`는 schema 설계 후보; `presentation_formulation_links`는 기존 binding으로 충족 불가할 때만 별도 판단.
+- `docs/architecture/trust-p2-evidence-first-redesign-v3.md`에 R0~R6 단계·이행 순서·독립 검증/권한/롤백 조건 반영, `docs/architecture/cleanser-initial-admission-preflight-v1.md`에 C0~C5의 클렌저 10개 적용 순서·현행 용량 게이트 대비 차이·cross-size 신원 보류 기준을 기록.
+- 코드/DB schema/RLS/API/Source/Subject/Fact/G2/runtime/추천 164개·배포 작업 0. 문서 상태는 설계만 반영, 구현/운영 승인 아님. Draft PR #1390 유지.
+
 ### 2026-10-22 / 클렌저 TRUST 연구 실행기의 실제 누락 보완 (low_ph / deep_cleansing)
 
 - 본 작업은 PR #1390 Draft feature branch에만 코드 반영, Desktop Commander 접근/실서비스 Fact/Subject/G2/상품 수정/DB write/merge/deploy **모두 하지 않음**.
