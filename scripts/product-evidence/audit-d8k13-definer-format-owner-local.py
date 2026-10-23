@@ -314,6 +314,22 @@ def self_test():
     assert local[0]["bindings"][0]["priorAssignmentSignal"] == "ASSIGNMENT_MENTIONS_FUNCTION_PARAMETER"
     direct = body_findings("BEGIN EXECUTE format('select %s', p_input); END;", formal)
     assert direct[0]["bindings"][0]["originSignal"] == "FORMAL_FUNCTION_PARAMETER_POSSIBLE"
+    fixture = """CREATE FUNCTION public.synthetic(p_input text) RETURNS void
+    LANGUAGE 'plpgsql' SECURITY DEFINER AS $function$
+    DECLARE temp_sql text;
+    BEGIN
+      -- EXECUTE format('ignore %s', commented);
+      temp_sql := p_input;
+      EXECUTE format('SELECT %s', temp_sql) USING 1;
+    END;
+    $function$;"""
+    scan = inspect_source(fixture)
+    assert scan["plpgsqlDefinerBodiesParsed"] == 1
+    assert scan["candidateFunctions"] == 1
+    binding = scan["cases"][0]["statements"][0]["bindings"][0]
+    assert binding["originSignal"] == "LOCALLY_DECLARED_VARIABLE_POSSIBLE"
+    assert binding["priorAssignmentSignal"] == "ASSIGNMENT_MENTIONS_FUNCTION_PARAMETER"
+    assert binding["originOrInputSafetyProven"] is False
     print(json.dumps({"status": "D8K13_PYTHON_LEXER_SELF_TEST_PASS", "rawSourceReturned": False}))
 
 
@@ -339,6 +355,8 @@ def main():
             raise SystemExit("D8K13_LOCAL_SCHEMA_NOT_UNIQUE")
         source = z.read(candidates[0]).decode("utf-8")
     result = inspect_source(source)
+    if result["plpgsqlDefinerBodiesParsed"] < 110 or result["candidateFunctions"] < 1:
+        raise SystemExit("D8K13_LOCAL_SOURCE_COVERAGE_BLOCKED")
     result["ownerZipHashPreserved"] = hashlib.sha256(args.zip.read_bytes()).hexdigest().upper() == EXPECTED_SHA
     print(json.dumps(result, separators=(",", ":")))
 
