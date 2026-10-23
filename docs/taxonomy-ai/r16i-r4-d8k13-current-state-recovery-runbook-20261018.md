@@ -455,3 +455,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **안전한 한계:** `authorizationGuardProven=false` 및 `privilegedExecutionSemanticsVerified=false` 고정. 인증 함수 호출 또는 조건문이 있다는 것만으로 인가 guard 존재, 실행 경로 안전성, SQL injection 여부를 입증하지 않는다. 함수 이름·서명·원문 SQL·사용자 데이터 출력 없음.
 - **검증:** 합성 self-test에서 인증 함수 호출/조건문·예외 발생 단서 및 주석·문자열 안의 가짜 호출을 구분. 기존 PostgreSQL 격리 백업 복원 CI의 핵심 Python 단계 통과를 확인했으며, 비공개 운영자 ZIP 실제 재실행은 시행하지 않았다. 소스 정밀 분석·hosted 데이터 비교가 완료되기 전에는 RELEASE HOLD 유지.
 - **차단/승인:** 관리형 parent FK 34개, 178 migration history, issue #1208 및 SECURITY DEFINER 135개의 권한 정합성 검증은 미해결. 운영 DB SQL·역할 변경, PR #1341 병합 또는 배포는 승인되지 않았다.
+
+
+### 6.35. 동적 SQL 입력값 alias 복사 시점 추적 오류 수정 (2026-10-24)
+
+- **원인:** 원래 `possible_parameter_flow`는 함수 실행 시점에서 각 alias의 마지막 `:=`를 찾았다. `a := p_input; b := a; a := 'fixed'; EXECUTE format('%s', b)`에서 `b`의 복사 시점 이전 `a` 원본 대신 실행 직전 덮어쓴 상수를 선택해, 입력 전파 단서를 놓칠 수 있었다. `b := a; a := p_input`의 역순에서는 존재하지 않았던 과거 전파를 잘못 추론할 수도 있었다.
+- **수정:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py`에서 alias를 거슬러 갈 때마다 검색 범위를 **그 alias 대입 이전 시점으로 제한**(`cutoff`). 별도 합성 테스트로 (1) 값 복사 후 원본 변수 덮어쓰기, (2) 복사 이후에 원본 값 할당, (3) 복사된 변수 자체의 덮어쓰기 등을 검사했다. 코드 커밋 `e8d80b85ce002658f159d82e3514eaad31edb720`; GitHub Actions [#40000315238](https://github.com/gycha0109-beep/K_beauty/actions/runs/40000315238)에서 핵심 Python self-test SUCCESS를 확인.
+- **범위:** 이 검사는 정적 lexical alias 단서이며 조건문, 반복문, SELECT INTO, 데이터 유효성, 실제 사용자 입력 오염, function-call graph, 보안성은 **증명하지 않는다**. 해당 경우 fail-closed 미확정 유지. 운영자 원본 ZIP 비공개 검사는 재실행하지 않았고 운영 DB·네트워크 접근·배포·병합 없음.
+- **상태:** `ALIAS_ASSIGNMENT_TIME_FIXED`, `B_INPUT_ORIGIN_STILL_UNVERIFIED`, `RELEASE HOLD`, PR #1341 Draft 미병합, D8D v2 OFF. 관리형 parent FK 34개, hosted parity, 178 migration provenance 및 issue #1208는 릴리스 차단 유지.
