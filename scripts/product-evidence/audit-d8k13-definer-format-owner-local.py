@@ -236,6 +236,18 @@ def last_assignment_signal(prior_tokens, expr, parameters):
     return match or "NO_PRIOR_ASSIGNMENT_LEXICAL"
 
 
+def has_unresolved_control_flow(tokens):
+    """Fail closed for possible branch/loop-dependent assignments.
+
+    This is intentionally conservative. It does not parse a CFG or claim
+    every statement is reachable; it only blocks a misleading linear trace.
+    """
+    markers = {"if", "elsif", "else", "case", "when", "loop",
+               "while", "for", "exception"}
+    return any(kind == "WORD" and value.lower() in markers
+               for kind, value in tokens)
+
+
 def possible_parameter_flow(prior_tokens, expr, parameters, max_hops=3):
     """Best-effort lexical alias hints, not control-flow or sanitization proof.
 
@@ -247,6 +259,13 @@ def possible_parameter_flow(prior_tokens, expr, parameters, max_hops=3):
     if len(expr) != 1 or expr[0][0] != "WORD":
         return "EXPRESSION_NOT_TRACEABLE", False
     current = expr[0][1].lower()
+    # Direct reference to a formal argument needs no alias resolution.
+    if current in parameters:
+        return "DIRECT_PARAMETER_POSSIBLE", True
+    # The last textual ':=' may be in an IF/LOOP arm that never runs.
+    # Never treat it as the effective assignment without a real CFG.
+    if has_unresolved_control_flow(prior_tokens):
+        return "BRANCH_OR_LOOP_ASSIGNMENT_UNRESOLVED", False
     seen = set()
     for depth in range(max_hops + 1):
         if current in parameters:
@@ -346,6 +365,8 @@ def body_findings(body, parameter_names=None):
                   "usingDoesNotBindFormatInterpolations": True,
                   "formatArgumentSafetyProven": False,
                   "authorizationSignals": dict(auth_signals),
+                  "authorizationSignalsBeforeExecute": body_authorization_signals(tokens[:i]),
+                  "authorizationGuardOccursBeforeExecutionProven": False,
                   "staticReviewPriority": "UNRESOLVED",
                   "privilegedExecutionSemanticsVerified": False}
         if len(segment) >= 2 and segment[0][0] == "WORD" and segment[0][1].lower() == "format":
@@ -372,6 +393,10 @@ def body_findings(body, parameter_names=None):
                             flow, possible = possible_parameter_flow(tokens[:i], expr, parameter_names)
                             binding["possibleParameterFlowSignal"] = flow
                             binding["possibleParameterFlowLexical"] = possible
+                            binding["controlFlowAssignmentUnresolved"] = (
+                                has_unresolved_control_flow(tokens[:i])
+                                and not (len(expr) == 1 and expr[0][0] == "WORD"
+                                         and expr[0][1].lower() in parameter_names))
                             binding["originOrInputSafetyProven"] = False
                             binding["interpolationMechanism"] = "FORMAT_PERCENT_S_NOT_USING_BOUND"
                             binding["sourceReviewRequired"] = True
@@ -453,6 +478,18 @@ def self_test():
         "\n EXECUTE format('SELECT %s', 1); END;")
     assert decoy[0]["authorizationSignals"]["directAuthHelperCallLexical"] is False
 
+    # Auth checks after dynamic SQL cannot justify earlier execution.
+    auth_after = body_findings(
+        "BEGIN EXECUTE format('SELECT %s', p_input); "
+        "IF auth.uid() IS NULL THEN RAISE EXCEPTION 'denied'; END IF; END;",
+        {"p_input"})
+    assert auth_after[0]["authorizationSignals"]["directAuthHelperCallLexical"] is True
+    assert auth_after[0]["authorizationSignalsBeforeExecute"]["directAuthHelperCallLexical"] is False
+    assert auth_after[0]["authorizationGuardOccursBeforeExecutionProven"] is False
+    assert guarded[0]["authorizationSignalsBeforeExecute"]["directAuthHelperCallLexical"] is True
+    assert guarded[0]["authorizationGuardOccursBeforeExecutionProven"] is False
+
+
     numbered = body_findings("BEGIN EXECUTE format('SELECT %2$s', ignored, input_expr); END;")
     assert numbered[0]["templateHasPositionalOrUnsupportedFormatDirectives"] is True
 
@@ -496,6 +533,24 @@ def self_test():
         "DECLARE a text; BEGIN a := p_input; a := 'fixed'; EXECUTE format('SELECT %s', a); END;",
         {"p_input"})
     assert overwritten[0]["bindings"][0]["possibleParameterFlowSignal"] == "LATEST_LEXICAL_ASSIGNMENT_CONSTANT"
+
+    # A branch's last textual assignment is not a proven runtime assignment.
+    conditional = body_findings(
+        "DECLARE a text; BEGIN a := p_input; IF flag THEN a := 'safe'; END IF; "
+        "EXECUTE format('SELECT %s', a); END;", {"p_input"})
+    cb = conditional[0]["bindings"][0]
+    assert cb["possibleParameterFlowSignal"] == "BRANCH_OR_LOOP_ASSIGNMENT_UNRESOLVED"
+    assert cb["possibleParameterFlowLexical"] is False
+    assert cb["controlFlowAssignmentUnresolved"] is True
+    # A direct formal argument is still a possible input regardless of IF blocks.
+    direct_branch = body_findings(
+        "BEGIN IF flag THEN PERFORM 1; END IF; "
+        "EXECUTE format('SELECT %s', p_input); END;", {"p_input"})
+    db = direct_branch[0]["bindings"][0]
+    assert db["possibleParameterFlowSignal"] == "DIRECT_PARAMETER_POSSIBLE"
+    assert db["possibleParameterFlowLexical"] is True
+    assert db["controlFlowAssignmentUnresolved"] is False
+
     unknown_flow = body_findings("BEGIN EXECUTE format('SELECT %s', nothing); END;", set())
     assert unknown_flow[0]["bindings"][0]["possibleParameterFlowLexical"] is False
 
