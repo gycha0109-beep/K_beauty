@@ -236,6 +236,54 @@ def last_assignment_signal(prior_tokens, expr, parameters):
     return match or "NO_PRIOR_ASSIGNMENT_LEXICAL"
 
 
+def possible_parameter_flow(prior_tokens, expr, parameters, max_hops=3):
+    """Best-effort lexical alias hints, not control-flow or sanitization proof.
+
+    Ignore comments and quoted SQL as statements (tokenizer already excludes them).
+    Examine only the latest lexical := assignment at each hop. Branches, SELECT
+    INTO, shadowing, callbacks and dynamically constructed expressions remain
+    unresolved. Never return private variable names or source.
+    """
+    if len(expr) != 1 or expr[0][0] != "WORD":
+        return "EXPRESSION_NOT_TRACEABLE", False
+    current = expr[0][1].lower()
+    seen = set()
+    for depth in range(max_hops + 1):
+        if current in parameters:
+            if depth == 0:
+                return "DIRECT_PARAMETER_POSSIBLE", True
+            if depth == 1:
+                return "ONE_ASSIGNMENT_PARAMETER_POSSIBLE", True
+            return "MULTI_ASSIGNMENT_PARAMETER_POSSIBLE", True
+        if current in seen:
+            return "ALIAS_CYCLE_UNRESOLVED", False
+        seen.add(current)
+        rhs = None
+        for i in range(len(prior_tokens) - 3, -1, -1):
+            if (prior_tokens[i][0] == "WORD"
+                    and prior_tokens[i][1].lower() == current
+                    and prior_tokens[i + 1] == ("SYM", ":")
+                    and prior_tokens[i + 2] == ("SYM", "=")):
+                candidate = []
+                for t in prior_tokens[i + 3:]:
+                    if t == ("SYM", ";"):
+                        break
+                    candidate.append(t)
+                rhs = candidate
+                break
+        if rhs is None:
+            return "ASSIGNMENT_NOT_FOUND_UNRESOLVED", False
+        if len(rhs) == 1 and rhs[0][0] in ("NUMBER", "STRING"):
+            return "LATEST_LEXICAL_ASSIGNMENT_CONSTANT", False
+        if len(rhs) == 1 and rhs[0][0] == "WORD":
+            current = rhs[0][1].lower()
+            continue
+        if any(k == "WORD" and v.lower() in parameters for k, v in rhs):
+            return "COMPLEX_ASSIGNMENT_MENTIONS_PARAMETER", True
+        return "COMPLEX_ASSIGNMENT_UNRESOLVED", False
+    return "ALIAS_CHAIN_LIMIT_REACHED", False
+
+
 def body_findings(body, parameter_names=None):
     tokens = tokenize(body)
     parameter_names = parameter_names or set()
@@ -271,6 +319,9 @@ def body_findings(body, parameter_names=None):
                             expr = args[j + 1] if j + 1 < len(args) else []
                             binding["originSignal"] = expression_origin(expr, parameter_names, local_names)
                             binding["priorAssignmentSignal"] = last_assignment_signal(tokens[:i], expr, parameter_names)
+                            flow, possible = possible_parameter_flow(tokens[:i], expr, parameter_names)
+                            binding["possibleParameterFlowSignal"] = flow
+                            binding["possibleParameterFlowLexical"] = possible
                             binding["originOrInputSafetyProven"] = False
                         detail["bindings"].append(binding)
                         if spec == "s" and argclass not in ("CONSTANT", "QUOTE_HELPER_CALL"):
@@ -335,6 +386,20 @@ def self_test():
     assert binding["originSignal"] == "LOCALLY_DECLARED_VARIABLE_POSSIBLE"
     assert binding["priorAssignmentSignal"] == "ASSIGNMENT_MENTIONS_FUNCTION_PARAMETER"
     assert binding["originOrInputSafetyProven"] is False
+    assert binding["possibleParameterFlowSignal"] == "ONE_ASSIGNMENT_PARAMETER_POSSIBLE"
+    alias = body_findings(
+        "DECLARE a text; b text; BEGIN a := p_input; b := a; EXECUTE format('SELECT %s', b); END;",
+        {"p_input"})
+    ab = alias[0]["bindings"][0]
+    assert ab["possibleParameterFlowSignal"] == "MULTI_ASSIGNMENT_PARAMETER_POSSIBLE"
+    assert ab["possibleParameterFlowLexical"] is True
+    overwritten = body_findings(
+        "DECLARE a text; BEGIN a := p_input; a := 'fixed'; EXECUTE format('SELECT %s', a); END;",
+        {"p_input"})
+    assert overwritten[0]["bindings"][0]["possibleParameterFlowSignal"] == "LATEST_LEXICAL_ASSIGNMENT_CONSTANT"
+    unknown_flow = body_findings("BEGIN EXECUTE format('SELECT %s', nothing); END;", set())
+    assert unknown_flow[0]["bindings"][0]["possibleParameterFlowLexical"] is False
+
     print(json.dumps({"status": "D8K13_PYTHON_LEXER_SELF_TEST_PASS", "rawSourceReturned": False}))
 
 
