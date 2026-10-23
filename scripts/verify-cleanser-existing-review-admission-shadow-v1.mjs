@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import {spawnSync} from "node:child_process";
 import {readFile} from "node:fs/promises";
 import {
  evaluateCleanserReviewAdmissionShadowV1 as evaluate
@@ -102,6 +103,23 @@ for(const mutate of [
 }
 assert.deepEqual(run({expectedIds:[...ids].reverse()}).context_classification_totals,
  result.context_classification_totals);
+const cli=spawnSync(process.execPath,["scripts/run-cleanser-existing-review-admission-shadow-v1.mjs"],{encoding:"utf8",maxBuffer:1024*1024});
+assert.equal(cli.status,0,cli.stderr);
+const readable=JSON.parse(cli.stdout);
+assert.equal(readable.summary.existing_products,10);
+assert.equal(readable.summary.skin_contexts,3);
+assert.equal(readable.summary.review_signal_input_candidates,6);
+assert.equal(readable.summary.actual_new_recommendation_admissions,0);
+assert.equal(readable.summary.g2_grants,0);
+assert.equal(readable.summary.score_changes,0);
+assert.equal(readable.summary.production_writes,0);
+assert.equal(readable.product_reviews.length,10);
+assert.ok(readable.product_reviews.every(x=>x.by_context.length===3&&
+ x.by_context.every(c=>c.actually_recommended===false&&c.added_as_new_score===false)));
+const noFlags=spawnSync(process.execPath,
+ ["scripts/run-cleanser-existing-review-admission-shadow-v1.mjs","--approve"],
+ {encoding:"utf8",maxBuffer:1024*1024});
+assert.notEqual(noFlags.status,0);
 console.log("R3/R4 cleanser non-Fact admission shadow: PASS real 10x3 profiles, "+
  "positive=4 caution=9 neutral=5 unmapped=3 missing=9, "+
  "strict production G2 cleanser NO_GRANT, zero actual admissions/writes");
