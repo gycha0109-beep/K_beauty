@@ -569,6 +569,86 @@ jobs:
             throw 'D8K13_PUBLIC_RESTORE_SOURCE_ZIP_CHANGED'
           }
           Write-Host 'D8K13_SYNTHETIC_PUBLIC_COPY_ROWS_SETVAL_AND_RESET_ALL_TRAILER_PASS'
+      - name: Verify public-to-public FK integrity opt-in and reject orphan/partial-MATCH-FULL rows
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'd8k13-public-fk-audit'
+          $src = Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          $script = './scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1'
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          foreach ($kind in @('valid','orphan','partial-null')) {
+            $dir = Join-Path $root $kind
+            $sql = Join-Path $dir 'sql'
+            New-Item -ItemType Directory -Path $sql -Force | Out-Null
+            Copy-Item (Join-Path $src 'roles.sql') (Join-Path $sql 'roles.sql')
+            $schema = [System.IO.File]::ReadAllText((Join-Path $src 'schema.sql'))
+            $schema += @'
+          CREATE TABLE public.fk_parent(id integer PRIMARY KEY);
+          CREATE TABLE public.fk_child(id integer PRIMARY KEY, parent_id integer REFERENCES public.fk_parent(id));
+          CREATE TABLE public.fk_parent_pair(a integer, b integer, PRIMARY KEY(a,b));
+          CREATE TABLE public.fk_child_pair(id integer PRIMARY KEY, a integer, b integer,
+            CONSTRAINT fk_pair_full FOREIGN KEY(a,b) REFERENCES public.fk_parent_pair(a,b) MATCH FULL);
+          '@
+            [System.IO.File]::WriteAllText((Join-Path $sql 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
+            $single = if ($kind -eq 'orphan') { '11' + [char]9 + '999' } else { '11' + [char]9 + '1' }
+            $pair = if ($kind -eq 'partial-null') { '22' + [char]9 + '\N' + [char]9 + '2' } else { '22' + [char]9 + '\N' + [char]9 + '\N' }
+            $data = @"
+          COPY public.products (id, name) FROM stdin;
+          73	synthetic only
+          \.
+          COPY public.fk_parent (id) FROM stdin;
+          1
+          \.
+          COPY public.fk_child (id, parent_id) FROM stdin;
+          $single
+          \.
+          COPY public.fk_parent_pair (a, b) FROM stdin;
+          1	2
+          \.
+          COPY public.fk_child_pair (id, a, b) FROM stdin;
+          21	1	2
+          $pair
+          \.
+          RESET ALL;
+          "@
+            [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+            $zip = Join-Path $dir 'fixture.zip'
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
+            $size = [long](Get-Item -LiteralPath $zip).Length
+            $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
+            $out = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicDataWithPublicFkAudit 2>&1
+            $exit = $LASTEXITCODE
+            $safeText = (($out | Out-String) -join '')
+            if ($kind -eq 'valid') {
+              if ($exit -ne 0) { throw 'D8K13_PUBLIC_FK_VALID_FIXTURE_FAILED' }
+              $line = @($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED"' })
+              if ($line.Count -ne 1) { throw 'D8K13_PUBLIC_FK_PASS_JSON_MISSING' }
+              $r = $line[0] | ConvertFrom-Json
+              if ($r.publicToPublicForeignKeyRowsVerified -ne $true -or
+                  $r.publicToPublicForeignKeyAudit.publicFkConstraintsChecked -ne 2 -or
+                  $r.publicToPublicForeignKeyAudit.publicFkViolatingConstraints -ne 0 -or
+                  $r.publicToPublicForeignKeyAudit.publicFkViolatingRows -ne 0 -or
+                  $r.publicToPublicForeignKeyAudit.nonPublicParentConstraintsSkipped -ne 1 -or
+                  $r.publicToPublicForeignKeyAudit.unsupportedConstraints -ne 0 -or
+                  $r.foreignKeyReferentialParityVerified -ne $false -or
+                  $r.authDataRestored -ne $false -or $r.releaseAuthorized -ne $false) {
+                throw 'D8K13_PUBLIC_FK_PASS_CONTRACT_MISMATCH'
+              }
+            } else {
+              if ($exit -eq 0 -or -not $safeText.Contains('D8K13_PUBLIC_FK_REFERENTIAL_VIOLATIONS')) {
+                throw 'D8K13_PUBLIC_FK_BAD_REFERENCE_NOT_REJECTED'
+              }
+            }
+            if ($safeText -match 'synthetic only|COPY public|fk_child|fk_parent|MATCH FULL') {
+              throw 'D8K13_PUBLIC_FK_SOURCE_SQL_OR_ROWS_LEAKED'
+            }
+            if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash -ne $hash) {
+              throw 'D8K13_PUBLIC_FK_SOURCE_ZIP_CHANGED'
+            }
+          }
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_TO_PUBLIC_FK_AND_MANAGED_SKIP_PASS'
+
       - name: Reject unsupported SQL data commands before isolated partial restore
         shell: pwsh
         run: |
