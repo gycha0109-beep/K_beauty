@@ -414,3 +414,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **소유:** postgres 소유 SECURITY DEFINER 126개, postgres 소유 함수 중 EXECUTE lexical 감지 3개. 기존 명시적 anon/authenticated EXECUTE 135개 및 관리형-parent FK 34개 미검증 분리 유지.
 - **다음 게이트:** 우선 동적 SQL 단서 3개에 대해 owner-local·출력 차단된 개별 리뷰, 역할/인증 guard와 SQL 문자열·identifier quoting·SET search_path·함수 간 호출 그래프·권한 상속 평가. 전체 135개 함수의 실행 권한 필요성/최소권한, hosted parity, 178 migration provenance 및 보안 이슈 #1208도 별도 차단 요소.
 - **판정:** `BODY_SIGNAL_LEXICAL_TRIAGE_COLLECTED`, `3_DYNAMIC_SQL_LEXICAL_REVIEW_PRIORITY`, `FUNCTION_AUTH_SEMANTICS_NOT_VERIFIED`, **RELEASE HOLD**, PR #1341 Draft·미병합, D8D v2 OFF. 운영 SQL/권한 조정/병합/배포 미승인.
+
+
+### 6.30. 동적 SQL 후보 3개 익명 개별 정적 분류 (2026-10-23)
+
+- **작업:** 원본 운영자 PC 백업 ZIP을 로컬 disposable `supabase/postgres:17.6.1.136`, `--network none`에서 다시 복원하여 `public`의 `SECURITY DEFINER` PL/pgSQL `EXECUTE` lexical 후보 3개만 분류. 원본 ZIP 불변, 원본 SQL/함수명/서명/본문/사용자행 반환 없음. 검증 소스 commit `a2d4c5e05ff64182cdf7cbf1b7962661bf0578d3`; 합성 CI [#39907969193](https://github.com/gycha0109-beep/K_beauty/actions/runs/39907969193) SUCCESS. 운영 DB 연결 0.
+- **결과:** 후보 3개 모두 `postgres` 소유, `EXECUTE` 및 `USING` lexical 단서 있고 함수 인자 존재. 모두 직접 `auth.uid()/auth.jwt()/auth.role()` lexical 표현 미감지. 익명 후보 A(인자 3개): `%I/%L/%s` lexical 단서 없음; B(인자 2개): `%I`, `%s` 감지, `%L` 없음; C(인자 3개): `%I/%L/%s` 없음. `quote_ident/quote_literal` 표현 3개 후보에서 미감지. 익명 순번은 해당 격리 DB 안에서만 유효하고 재사용 가능한 함수 식별자 아님.
+- **판정:** **후보 B 우선 검사**. `%s`는 그 인자의 타입·값·기존 quoting 경로에 따라 동적 SQL 삽입 위험이 달라지며, `%I` 존재만으로 B를 안전/취약 확정 불가. `USING` 존재도 동적 SQL의 모든 값이 바인딩됐다는 증거 아님. 표현은 주석/리터럴에서도 감지될 수 있는 *단순 문자열 검사*로 실제 명령·SQL 삽입·권한 우회는 **확인되지 않음**. 3개 모두 본문/control flow/call graph/객체 소유자·검색 경로에 대한 깊이 있는 승인된 비공개 검사 필요.
+- **잔여 차단:** 135개 definer 함수 전체의 브라우저 역할 EXECUTE 정당성, 관리형 parent FK 34개, hosted ACL/RLS/OWNER parity, migration 이력 178개, security #1208. **RELEASE HOLD / D8D v2 OFF / PR #1341 Draft·미병합**; 배포·운영 권한 및 데이터 변경 없음.
