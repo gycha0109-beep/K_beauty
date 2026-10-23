@@ -471,3 +471,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **구현:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py` 커밋 `fc7a820687f728783e9ab2d4c7c5d7a16708aaca`. 함수 호출 형태의 `quote_ident()`와 `quote_literal()/quote_nullable()`를 다른 **미검증 클래스**로 분리. 해당 표현이 `%s`에 연결되면 `RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST` 유지, `percentSQuotationContextVerified=false`로 표기. 함수 이름만 변수로 나온 경우는 quote helper 호출로 분류하지 않는다. 상수 `%s`도 실제 SQL 의미·인가 안전성은 미검증.
 - **합성 테스트:** 안전한 치환으로 오판할 수 있는 `quote_ident(p_col)`, `quote_literal(p_value)`, `quote_nullable(p_value)`, 일반 `quote_ident` 식별자 사례를 추가. GitHub Actions [#40009253752](https://github.com/gycha0109-beep/K_beauty/actions/runs/40009253752) 확인 대상으로 둠.
 - **검증 한계:** 함수 B의 실제 원본 SQL, 값의 출처, 쿼리 실행 경로, 권한 guard를 추가로 검증한 것은 아니다. 기존 실제 백업의 데이터·FK·sequence 검증 상태만 유지하고, 소유자 백업 ZIP 재실행은 시행하지 않았다. PR #1341 Draft, D8D v2 OFF, security issue #1208 및 **RELEASE HOLD** 유지. 운영 DB·권한·병합·배포 없음.
+
+
+### 6.37. B 후보 저장소 소스 존재 여부: 비공개 ZIP과 독립적인 커버리지 검사 (2026-10-24)
+
+- **배경:** 실제 소유자 백업의 anonymous B 후보는 `SECURITY DEFINER`, `EXECUTE format(... %s ...)`, SQL `USING` 및 두 개의 함수 인자라는 정적 단서까지 확인되었다. 하지만 저장소 153개 체크인 SQL 마이그레이션과 소유자 백업의 178개 원본 migration 이력은 동일하다고 입증되지 않았으며, 기존 차이(이력 누락/수정)가 별도 릴리스 차단이다. 익명 B와 저장소 특정 함수의 동일성은 아직 **미입증**이다.
+- **추가 기능:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py --scan-repo-migrations supabase/migrations` 모드(코드 `ea5e1fb539c58b6ffa6488c509e07387d16c1204`). GitHub Actions가 체크아웃한 `supabase/migrations/*.sql`에서 PL/pgSQL SECURITY DEFINER 함수 선언 횟수, EXECUTE 키워드 선언 횟수, EXECUTE format 호출 및 `%s` 사용 횟수만 집계한다. 함수별 이름·서명·본문·파일명·원본 행을 출력하지 않는다. 마이그레이션에서 같은 함수를 여러 번 정의하면 중복 집계하며, 이 집계는 현재 운영 DB의 기능 목록이 아니다.
+- **CI:** `.github/workflows/taxonomy-ai-d8k13-private-local-zip-restore.yml`에서 합성 파서 self-test와 함께 저장소 소스 집계를 자동 실행하도록 추가(커밋 `3c709d7befa03ea8bc68262e4537e1542d7d5bb4`, Actions [#40010683239](https://github.com/gycha0109-beep/K_beauty/actions/runs/40010683239)). 결과 수치 및 최종 CI 상태는 실행 로그 확인 후 확정한다. 원본 소유자 ZIP은 CI에 올리지 않았다.
+- **경계:** `ownerCandidateBIdentifiedInRepo=false`, `ownerZipSchemaParityVerified=false`는 *정체를 증명하지 못했다*는 의미이지 *해당 코드가 저장소에 없다*는 뜻은 아니다. 이 작업만으로 실제 B를 안전/취약하다고 판정하거나 권한을 수정하지 않는다. 소유자 백업 PC `DESKTOP-6C3L8O4`는 검사 시점 오프라인, 별도 등록 기기의 연결 상태로 개인 ZIP 접근 가능성을 추정하지 않는다.
+- **다음:** CI 집계 확인 → 저장소 버전과 원본 ZIP의 함수 식별자·정의 해시를 비반출/비공개 방식으로 대조하는 안전한 수락 기준 수립 → 오프라인 원본 검토를 재개할 수 있을 때 실제 B의 데이터플로·인가 경로 리뷰. **RELEASE HOLD / PR #1341 Draft·미병합 / D8D v2 OFF**, 운영 SQL·롤·병합·배포 미승인.
