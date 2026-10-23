@@ -126,13 +126,13 @@ def self_test():
         photo = np.full((24,36,3), 175, dtype=np.uint8)
         photo[:, 0:8] = 33
         photo[:, 16:20] = 255
-        p = Image.fromarray(photo, mode="RGB")
+        p = Image.fromarray(photo)
         p.save(root/"p.png")
         reg = lighting_signals(p, [0,0,1,1],decoded)
         assert reg["specularCandidateFraction"] > 0
         assert reg["darkCandidateFraction"] > 0
         assert reg["uninterpretedNonzeroIndexPixels"] == 12
-        assert "false" not in str(reg).lower()
+        assert reg["meaning"].startswith("Capture-condition indicators ONLY")
         (root/"regions.json").write_text(json.dumps({"schemaVersion":"memi-roi-v1","reviewStatus":"human_defined","regions":{"test":[0,0,1,1]}}),encoding="utf-8")
         actual = audit(root/"m.png",root/"p.png",root/"regions.json")
         assert actual["trainingAllowed"] is False and "test" in actual["regions"]
