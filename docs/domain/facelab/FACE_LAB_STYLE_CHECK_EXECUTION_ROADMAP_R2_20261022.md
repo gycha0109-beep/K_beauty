@@ -113,7 +113,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |
 | SC-06B | 7b | **3개 구조 후보 Shadow 실험·96건 Foundation PASS / PR #1398, 미병합** | SC-06 필드 영향 분석 | 실험용 후보 3개와 96-case feasibility / 개인화 가설 평가 | 사람 검증 전 운영 추천으로 전파 |
 | SC-06C | 7c | **블라인드 A/B 7쌍·분리 내보내기 구현 / PR #1399, Foundation PASS·PIE 확인 중** | SC-06B | 기존 Human 계약, 기본 미리보기 7개 비교쌍, 운영자 매핑 분리 | 평가자·후보 역할 노출, 무허가 인물 수집 |
-| SC-06D | 7d | **로컬 사진+스타일 A/B 오프라인 평가 UI 구현 / PR #1402, CI 검증 중** | SC-06C 블라인드 패킷 | 7쌍 reviewer-only, 동일인 원본+A+B 파일 입력, 4항목 응답 로컬 초안 | 실제 이미지·권리·가설-사진 대응 확인 없이 Human 합격 금지 |
+| SC-06D | 7d | **7쌍 3-image 로컬 UI·Foundation/PIE CI PASS / PR #1402, 미병합** | SC-06C 블라인드 패킷 | 7쌍 reviewer-only, 동일인 원본+A+B 파일 입력, 4항목 응답 로컬 초안 | 실제 이미지·권리·가설-사진 대응 확인 없이 Human 합격 금지 |
 | SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
 
 ### 2026-10-22 진행 상태 (SC-03)
@@ -208,6 +208,14 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - 결과는 **unsealed local draft JSON**. 검증된 실제 사진, 이미 생성된 스타일 렌더, 실제 참가자·봉인 응답이 존재한다고 가정하지 않는다. 실사진 권리/철회 확인, 독립 리뷰어, 현재·후보 정답 공개는 별도 보안 단계.
 - **로드맵 진척도 표시 규칙:** 구현·CI(기술 준비) / 사진·사람 품질 평가 / 운영 승격 및 배포를 각각 구분. 기술 도구 완성 ≠ 실제 만족도 ≠ PR 병합.
 - 세부 계약: `FACE_LAB_STYLE_CHECK_SC06D_VISUAL_REVIEW_20261023.md` (PR #1402). 운영 `SC-07` 경로는 현재 보류.
+
+### SC-06D 첫 코드 검증 (2026-10-23)
+
+- 구현 커밋 `4f1262738bec375e3516310553071ab89af74e04` 기준 Foundation [#39897744201](https://github.com/gycha0109-beep/K_beauty/actions/runs/39897744201) 및 PIE [#39897744465](https://github.com/gycha0109-beep/K_beauty/actions/runs/39897744465) **PASS**.
+- 7개 reviewer-safe 합성 비교 패킷 내장 확인, `visualInputsPerPair=3`, 판정 4차원, 텍스트/CSP/HTML 런타임 JS 구문·쓰기 제한 검증 성공.
+- **브라우저 직접 상호작용 검증은 아직 별도 미실행**(`proofOfActualBrowserInteraction=false`); 원본 실사진/실제 A/B 스타일 적용 이미지/실제 Human 판단 모두 0건. UI 코드 통과를 실제 스타일 적합성으로 승격하지 않는다.
+- 사진 3장과 동일인·이용권한 확인 없이 답안을 완료하도록 허용하지 않으며, 내려받는 결과는 `unsealed local draft`이다. PR #1402와 기존 로드맵 PR #1392 모두 운영 브랜치 미병합.
+- 운영 권한/사진 활용 허가 및 실사진과 합성 관찰값 대응 검증은 외부 작업이며, 사용자에게 존재하지 않는 실제 스타일 이미지가 준비됐다고 안내하지 않는다.
 
 ## 5. 체크리스트/실행 운영
 
