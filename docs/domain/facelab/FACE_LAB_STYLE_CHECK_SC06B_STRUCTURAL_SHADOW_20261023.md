@@ -48,6 +48,16 @@
 - 원본 `currentFaceProfile`, `targetStyle`, Canonical V2·현재 Style Delta·기존 플로우/보고서에 side effect 0.
 - 이미 존재하는 `human-pairwise-contract.js`를 차기 블라인드 리뷰에 그대로 활용. 기존 14쌍은 **다른 vCandidate**에 대한 비교이므로 이 새 세 가설에 대한 사람 평가로 재포장하지 않는다.
 
+## 3.1. 첫 CI 계측 결과 — synthetic 96건 (2026-10-23)
+
+- 커밋 `b1ac85a89df4f2d40b310153b69e61f99def31f0`, [Foundation #39882857476](https://github.com/gycha0109-beep/K_beauty/actions/runs/39882857476): **PASS**
+- `baselineCases=96`, `activatedCases=14`, `routeChangedCases=9`, `targetForwardHeldCases=96`.
+- `SC-STRUCT-001` 턱선 각도: matching + changed action **10건**, Route 변화 **5건**.
+- `SC-STRUCT-002` 눈 개방감: matching + changed action **4건**, Route 변화 **4건**.
+- `SC-STRUCT-003` 특징 크기: matching + changed action **0건**, Route 변화 **0건**. **별도 통제 테스트에서는 동작을 확인**했으나 이번 synthetic 기저 코호트에 실제 동시 조건 충족 사례가 없었으므로 개인화 유용성 결론 금지.
+- 위 수치는 합성 입력에서 action strength를 바꿀 *기회*와 추천 경로의 조건부 변화 건수. **추천이 더 좋아졌다는 의미가 아니다.**
+- `humanJudgments=0`, `realPhotoReviewed=0`, `productionAuthorization=false` 유지.
+
 ## 4. 결과 해석/출시 조건
 
 - Candidate 활성화 건수 > 0은 **코드 실행 및 비교 가능성**만 증명한다. 스타일 효용·얼굴 관찰 신뢰성은 미검증.
