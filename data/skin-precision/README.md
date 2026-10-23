@@ -62,3 +62,17 @@ No samples have been promoted. This is a blocking intake tool and documentation,
 - **Hard gate:** publisher annotation class mapping 0–5 not authenticated, no binary pigment segmentation decoder or model training is enabled. Image-mask overlap is not labelled false positives or missed lesions until independent corrected gold and class meaning exist.
 - Synthetic Node and Python self-tests both passed on a separate Windows machine on 2026-10-24. **The user's `C:\Users\M\Downloads\Figshare` 131 original image/mask pairs were NOT accessible from that online machine.** No real-image lighting estimates, mask decoded semantics, real model training or accuracy metrics have been measured.
 - Source user review was read in a private Library view (131 rows, 79/51/1, directional counts consistent with prior report). Full JSON source was not copied into GitHub or public artifacts. New QC CLI has not been run against its source bytes on the data-holding computer.
+
+
+## Academy-PC MEMI original-pair batch audit (2026-10-24)
+
+New local-only script: `scripts/audit-memi-dataset-local.py` (requires Python 3.10+, Pillow, NumPy). On the computer that actually stores the 131 original image/mask pairs:
+
+1. `node scripts/audit-memi-review-qc.mjs --input "C:\\Users\\M\\Downloads\\Figshare\\_bejeweIy_audit\\MEMI-DS_review_2026-10-23.json" --out "C:\\Users\\M\\Downloads\\MEMI-QC-v1.json" --expect-131` (correct the `--input` path to the already-saved original reviewer JSON if stored elsewhere).
+2. `python scripts/audit-memi-dataset-local.py --root "C:\\Users\\M\\Downloads\\Figshare" --qc "C:\\Users\\M\\Downloads\\MEMI-QC-v1.json" --out "C:\\Users\\M\\Downloads\\MEMI-batch-audit-v1.json" --expect-131`.
+3. No transfer to home PC/GitHub required. Output is private, generated with exclusive-create, and contains per-sample source hashes, palette index frequencies, review flags, sizes, and any independently provided human ROIs **but no face pixels**. Do not upload the private audit, file hashes, per-image reviewer records or raw photos to a public PR.
+4. Before running against original data, confirm actual source filenames and directories. The script requires each sample to be named like `15_L` and distinguishes paletted PNG masks from photos. It **fails closed** on ambiguity, duplicates and unexpected extra/missing samples rather than guessing or silently mapping. If the original publication has different filenames the layout mapping needs a bounded adjustment verified against real directory metadata first.
+5. `--roi-json` is optional and must use a separately human-defined `memi-roi-by-sample-v1` file; if omitted, no anatomical forehead/shadow region is inferred. Lighting numbers are only capture proxies, not clinical measures or segmentation correctness.
+6. `python scripts/audit-memi-dataset-local.py --self-test` completed successfully on a different authorized Windows machine using **synthetic** 2-pair source images and masks (matching, duplicate detection, ROI gate). The actual academic-PC MEMI originals were not present and remain **UNTESTED**.
+
+Do not infer a subject-level split from numeric filename tokens; they are tentative family references. The official palette index/class meanings, portrait rights, image use, corrected independent gold and any real-world Dice/IoU are still unknown; commercial training and production overlay are blocked.
