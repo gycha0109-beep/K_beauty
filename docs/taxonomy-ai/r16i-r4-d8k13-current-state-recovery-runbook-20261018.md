@@ -422,3 +422,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **결과:** 후보 3개 모두 `postgres` 소유, `EXECUTE` 및 `USING` lexical 단서 있고 함수 인자 존재. 모두 직접 `auth.uid()/auth.jwt()/auth.role()` lexical 표현 미감지. 익명 후보 A(인자 3개): `%I/%L/%s` lexical 단서 없음; B(인자 2개): `%I`, `%s` 감지, `%L` 없음; C(인자 3개): `%I/%L/%s` 없음. `quote_ident/quote_literal` 표현 3개 후보에서 미감지. 익명 순번은 해당 격리 DB 안에서만 유효하고 재사용 가능한 함수 식별자 아님.
 - **판정:** **후보 B 우선 검사**. `%s`는 그 인자의 타입·값·기존 quoting 경로에 따라 동적 SQL 삽입 위험이 달라지며, `%I` 존재만으로 B를 안전/취약 확정 불가. `USING` 존재도 동적 SQL의 모든 값이 바인딩됐다는 증거 아님. 표현은 주석/리터럴에서도 감지될 수 있는 *단순 문자열 검사*로 실제 명령·SQL 삽입·권한 우회는 **확인되지 않음**. 3개 모두 본문/control flow/call graph/객체 소유자·검색 경로에 대한 깊이 있는 승인된 비공개 검사 필요.
 - **잔여 차단:** 135개 definer 함수 전체의 브라우저 역할 EXECUTE 정당성, 관리형 parent FK 34개, hosted ACL/RLS/OWNER parity, migration 이력 178개, security #1208. **RELEASE HOLD / D8D v2 OFF / PR #1341 Draft·미병합**; 배포·운영 권한 및 데이터 변경 없음.
+
+
+### 6.31. B 후보 EXECUTE format(%s) 근접 신호 교차 검사 (2026-10-23)
+
+- **실행:** 합성 CI [#39910646365](https://github.com/gycha0109-beep/K_beauty/actions/runs/39910646365) SUCCESS; 스크립트 커밋 `fd4e5416c0ebd3f0e5163b19ba888d73be65641f`. 운영자 Windows PC의 원본 ZIP SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6` 실행 전후 일치. 네트워크 없는 disposable PG17; 운영 연결·원문 SQL/행 출력 없음.
+- **후보별:** 익명 A·C는 `EXECUTE format(...)` 인접 패턴 및 동일 SQL 구간의 `%s` 패턴 미감지. 익명 B(인자 2개)는 `EXECUTE format(...)` 인접, `%s` 동일 구간 및 `EXECUTE ... USING` lexical 감지. 이 정규식 검사에서 `EXECUTE ... ||` 표현은 미감지. `%I`는 본문 어디엔가 감지되지만 같은 format window에서는 미감지.
+- **해석:** B를 우선 검토. `%s`는 정밀한 데이터 흐름 검사 없이는 입력값 오염 여부가 확인되지 않는다. `USING` 존재 역시 모든 동적 SQL 인자가 안전하게 바인딩되었음을 보증하지 않는다. 검사는 주석·인용 문자열/세미콜론에도 반응할 수 있으며 SQL injection 또는 권한 우회 취약점을 *확정하지 못한다*. B 함수 원문·개별 식별자는 GitHub에 올리지 않음.
+- **다음:** PC 안에서 B의 실제 `EXECUTE` 문, `format` 인자 출처, 값/식별자 escaping 및 `USING` 연결, 인증·권한 guard와 `search_path`를 소스 비반출 방식으로 검토. A·C 및 다른 SECURITY DEFINER 함수들도 이후 위험 기반 평가. **RELEASE HOLD / D8D v2 OFF / PR #1341 Draft·미병합** 유지.
