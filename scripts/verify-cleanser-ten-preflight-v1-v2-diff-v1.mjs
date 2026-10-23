@@ -28,6 +28,21 @@ assert.ok(r.results.every(x=>x.v2_remaining_blockers.includes("CURRENT_EXACT_SUB
 assert.ok(r.results.every(x=>x.formula_decision==="FORMULA_UNRESOLVED"));
 assert.equal(r.admission_grants,0);
 assert.equal(r.production_writes,0);
+const scopedFacts=snapshot();
+const subjectId="22222222-2222-4222-8222-222222222222";
+scopedFacts.subjects.push({product_id:ids[0],subject_id:subjectId,
+ current_state:"current",identity_status:"resolved",market_applicability:"KR",formulation_revision_key:"reviewed"});
+scopedFacts.confirmed_facts.push({subject_id:subjectId,fact_key:"low_ph",semantic_status:"supported"});
+const factReads=[];
+await compare({cohort:scopedFacts,evaluateV1:input=>{
+  factReads.push([input.product.id,input.confirmedFacts.length]);
+  return v1(input);
+}});
+assert.deepEqual(factReads.find(x=>x[0]===ids[0]),[ids[0],1]);
+assert.ok(factReads.slice(1).every(x=>x[1]===0));
+const rejectedFact=snapshot();
+rejectedFact.confirmed_facts.push({subject_id:subjectId,fact_key:"low_ph"});
+await assert.rejects(compare({cohort:rejectedFact,evaluateV1:v1}),TypeError);
 const reordered=snapshot();
 reordered.products.reverse();
 assert.deepEqual(await compare({cohort:reordered,evaluateV1:v1}),r);
