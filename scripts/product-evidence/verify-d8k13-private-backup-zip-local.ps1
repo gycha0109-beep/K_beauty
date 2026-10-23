@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','RestorePublicDataWithPublicFkAudit','AuditDataCommands')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','AuditDataCommands')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -819,7 +819,7 @@ SELECT json_build_object(
     } | ConvertTo-Json -Compress -Depth 7 | Write-Output
     return
   }
-  if ($Mode -in @('RestorePublicData','RestorePublicDataWithPublicFkAudit')) {
+  if ($Mode -in @('RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit')) {
     # LIMITED, EXPLICITLY PARTIAL RESTORE. Never pretend Supabase Auth/Storage
     # tables or data have been recovered. Only public COPY and public sequence
     # setval commands are replayed in this no-network disposable DB.
@@ -838,6 +838,8 @@ SELECT json_build_object(
     $skippedManagedCopies = 0
     $skippedOtherCopies = 0
     $publicSequenceResets = 0
+    $publicSequenceExpectations = [System.Collections.Generic.List[string]]::new()
+    $publicSequenceSeen = @{}
     $skippedSequenceResets = 0
     $sourceRows = 0L
     $resetAllTrailerLine = 0
@@ -894,6 +896,17 @@ SELECT json_build_object(
           $m = $setvalRx.Match($line)
           Assert-Drill $m.Success ('D8K13_PUBLIC_DATA_SEQUENCE_FORMAT_UNSUPPORTED_LINE_' + $lineNumber)
           if ($m.Groups['schema'].Value.Trim('"').ToLowerInvariant() -eq 'public') {
+            if ($Mode -eq 'RestorePublicDataWithIntegrityAudit') {
+              $seqName = $m.Groups['seq'].Value.Trim('"').ToLowerInvariant()
+              Assert-Drill (-not $publicSequenceSeen.ContainsKey($seqName)) 'D8K13_PUBLIC_SEQUENCE_DUPLICATE_SOURCE_SETVAL'
+              $publicSequenceSeen[$seqName] = $true
+              $state = [regex]::Match($line,'(?i),\s*(?<last>-?[0-9]{1,20})\s*,\s*(?<called>true|false)\s*\)\s*;[ \t]*$')
+              Assert-Drill $state.Success 'D8K13_PUBLIC_SEQUENCE_SOURCE_STATE_INVALID'
+              $value = [long]0
+              Assert-Drill ([long]::TryParse($state.Groups['last'].Value,[ref]$value)) 'D8K13_PUBLIC_SEQUENCE_SOURCE_OUT_OF_BIGINT_RANGE'
+              $called = $state.Groups['called'].Value.ToLowerInvariant()
+              $publicSequenceExpectations.Add("('" + $seqName + "'," + $value.ToString([Globalization.CultureInfo]::InvariantCulture) + '::bigint,' + $called + ')')
+            }
             $publicWriter.WriteLine($line)
             $publicSequenceResets++
           } else {
@@ -966,7 +979,7 @@ $d8k13_public$;
     # public->public references explicitly. Managed-schema parents stay excluded.
     # Read-only SELECT on a --network none, disposable, superuser-owned PG17 DB.
     $publicFkAudit = $null
-    if ($Mode -eq 'RestorePublicDataWithPublicFkAudit') {
+    if ($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit')) {
       $fkSql = @'
 SET row_security = off;
 CREATE TEMP TABLE d8k13_fk_result (status text NOT NULL, violating_rows bigint NOT NULL);
@@ -1035,6 +1048,77 @@ SELECT json_build_object(
                     [int]$publicFkAudit.publicFkViolatingConstraints -eq 0) 'D8K13_PUBLIC_FK_REFERENTIAL_VIOLATIONS'
     }
 
+
+    # Strict, opt-in public setval state comparison. Do not call nextval,
+    # as it changes sequence values; calculate possible exhaustion only.
+    $publicSequenceAudit = $null
+    if ($Mode -eq 'RestorePublicDataWithIntegrityAudit') {
+      Assert-Drill ($publicSequenceExpectations.Count -eq $publicSequenceResets -and
+                    $publicSequenceResets -gt 0) 'D8K13_PUBLIC_SEQUENCE_SOURCE_COUNT_MISMATCH'
+      $seqSql = @'
+SET row_security = off;
+CREATE TEMP TABLE d8k13_seq_checked (would_exhaust boolean);
+DO $d8k13_seq$
+DECLARE r record; actual_last bigint; actual_called boolean;
+        inc bigint; seq_min bigint; seq_max bigint; seq_cycles boolean;
+        arithmetic_next numeric;
+BEGIN
+  FOR r IN
+    SELECT x.seq_name,x.expected_last,x.expected_called
+    FROM (VALUES __D8K13_SEQUENCE_EXPECTATIONS__) AS x(seq_name,expected_last,expected_called)
+  LOOP
+    IF NOT EXISTS(
+      SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+      WHERE n.nspname='public' AND c.relname=r.seq_name AND c.relkind='S'
+    ) THEN
+      RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='source public sequence absent';
+    END IF;
+    EXECUTE format('SELECT last_value, is_called FROM public.%I',r.seq_name)
+      INTO actual_last,actual_called;
+    IF actual_last IS DISTINCT FROM r.expected_last OR
+       actual_called IS DISTINCT FROM r.expected_called THEN
+      RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='public setval state mismatch';
+    END IF;
+    SELECT q.seqincrement,q.seqmin,q.seqmax,q.seqcycle
+    INTO inc,seq_min,seq_max,seq_cycles FROM pg_sequence q
+    JOIN pg_class c ON c.oid=q.seqrelid
+    JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND c.relname=r.seq_name;
+    IF inc IS NULL OR inc=0 THEN
+      RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='public sequence increment absent';
+    END IF;
+    arithmetic_next := actual_last::numeric + CASE WHEN actual_called THEN inc ELSE 0 END;
+    INSERT INTO d8k13_seq_checked VALUES
+       (NOT seq_cycles AND (arithmetic_next<seq_min OR arithmetic_next>seq_max));
+  END LOOP;
+END
+$d8k13_seq$;
+SELECT json_build_object(
+  'sourceSetvalsChecked',(SELECT count(*) FROM d8k13_seq_checked),
+  'catalogPublicSequences',(SELECT count(*) FROM pg_class c
+    JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND c.relkind='S'),
+  'nextvalWouldExhaustCount',(SELECT count(*) FROM d8k13_seq_checked WHERE would_exhaust),
+  'nextvalActuallyCalled',false,
+  'sourceLastValueAndIsCalledMatch',true
+)::text;
+'@
+      $seqSql = $seqSql.Replace('__D8K13_SEQUENCE_EXPECTATIONS__',($publicSequenceExpectations.ToArray() -join (',' + [Environment]::NewLine)))
+      $seqFile = Join-Path $unpacked 'd8k13-public-sequence-audit.sql'
+      [System.IO.File]::WriteAllText($seqFile,$seqSql,[System.Text.UTF8Encoding]::new($false))
+      Run-Docker 'COPY_PUBLIC_SEQUENCE_AUDIT' @('cp',$seqFile,($container + ':/tmp/d8k13-public-sequence-audit.sql'))
+      Run-Docker 'PUBLIC_SEQUENCE_AUDIT' @('exec','-u','postgres',$container,'psql',
+        '-X','-q','-A','-t','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate',
+        '-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/d8k13-public-sequence-audit.sql')
+      $seqLog = @(Get-Content -LiteralPath (Join-Path $unpacked 'docker-PUBLIC_SEQUENCE_AUDIT-stdout.log'))
+      $seqLines = @($seqLog | Where-Object { $_ -match '^\{.*\}$' })
+      Assert-Drill ($seqLines.Count -eq 1) 'D8K13_PUBLIC_SEQUENCE_AUDIT_SUMMARY_MISSING'
+      $publicSequenceAudit = $seqLines[0] | ConvertFrom-Json
+      Assert-Drill ([int]$publicSequenceAudit.sourceSetvalsChecked -eq $publicSequenceResets -and
+                    $publicSequenceAudit.sourceLastValueAndIsCalledMatch -eq $true -and
+                    $publicSequenceAudit.nextvalActuallyCalled -eq $false) 'D8K13_PUBLIC_SEQUENCE_SOURCE_STATE_MISMATCH'
+    }
+
     $inventory = Get-PublicInventory $container
     Assert-Drill ([int]$inventory.pg_major -eq 17 -and [int]$inventory.tables -ge 1) 'D8K13_PUBLIC_DATA_INVALID_PG17_INVENTORY'
     [ordered]@{
@@ -1051,8 +1135,10 @@ SELECT json_build_object(
       strictSchemaRestoreCompleted=$true
       publicDataRowsVerified=$true
       foreignKeyReferentialParityVerified=$false
-      publicToPublicForeignKeyRowsVerified=($Mode -eq 'RestorePublicDataWithPublicFkAudit')
+      publicToPublicForeignKeyRowsVerified=($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit'))
       publicToPublicForeignKeyAudit=$publicFkAudit
+      publicSequenceSourceStateVerified=($Mode -eq 'RestorePublicDataWithIntegrityAudit')
+      publicSequenceSourceStateAudit=$publicSequenceAudit
       authDataRestored=$false
       storageMetadataRestored=$false
       storageObjectBytesRestored=$false
