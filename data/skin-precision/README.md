@@ -40,3 +40,8 @@ No samples have been promoted. This is a blocking intake tool and documentation,
 - `node scripts/review-aihub-71645-acne-local.mjs --self-test` tests parsing and image-coordinate matching with synthetic data. Local end-to-end Node and actual VS/VL images are **not** tested yet.
 - Local-only usage: unzip **VS.zip/VL.zip on the authorized Windows PC**; run script with `--labels`, `--images`, and `--out` arguments to create an offline HTML page with photo-linked acne-point overlays. The HTML has local file URLs and **must not be shared**.
 - Subject identifier equivalence (107 groups) is not proof of 107 medically independent human participants; confirm label/guide provenance before training/holdout claims.
+
+## Additional dataset leads and reliability UX (2026-10-23)
+
+- [Supplementary datasets for pores, pigmentation/freckles, shine/sebum, texture, flaking](supplementary-dataset-research-2026-10-23.md) — actual official sources, class/annotation granularity, sample-access paths, reported rights and gaps. All external acquisitions remain pending; no commercial-cleared asset in [candidate register](asset-candidate-register-v1.json).
+- [Skin Precision roadmap](../../docs/architecture/skin-precision-localization-roadmap-v1.md#11-confidence-aware-nonblocking-scan-ux--product-decision-2026-10-23) now specifies **nonblocking best-effort scoring**, photo-level + concern-level qualitative reliability, explanations and optional recapture. Do not confuse confidence output with calibrated correctness and do not fabricate unsupported scores.
