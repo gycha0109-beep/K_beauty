@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import {spawnSync} from "node:child_process";
 import {readFile} from "node:fs/promises";
 import {buildCleanserReviewWorklistV1 as build}
   from "../lib/trust/cleanser-review-worklist-shadow-v1.mjs";
@@ -56,4 +57,17 @@ for(const update of [
   const x=structuredClone(input);update(x);
   assert.throws(()=>build(x),TypeError);
 }
+const cli=spawnSync(process.execPath,["scripts/run-cleanser-review-worklist-v1.mjs"],
+  {encoding:"utf8",maxBuffer:1024*1024});
+assert.equal(cli.status,0,cli.stderr);
+const human=JSON.parse(cli.stdout);
+assert.equal(human.total,10);
+assert.equal(human.summary.official_sku_formulation_review,10);
+assert.equal(human.summary.hwahae_product_capture_review,3);
+assert.equal(human.summary.recommendation_metadata_review,10);
+assert.equal(human.summary.admission_grants,0);
+assert.ok(human.products.every(x=>x.next_step.includes("제조사 원본")));
+const cliDenied=spawnSync(process.execPath,["scripts/run-cleanser-review-worklist-v1.mjs","--allow-production"],
+  {encoding:"utf8",maxBuffer:1024*1024});
+assert.notEqual(cliDenied.status,0);
 console.log("Cleanser exact-ten authorized next-actions Shadow: PASS (real redacted SELECT flags, 10 source reviews / 3 Hwahae / 10 metadata, grants=0)");
