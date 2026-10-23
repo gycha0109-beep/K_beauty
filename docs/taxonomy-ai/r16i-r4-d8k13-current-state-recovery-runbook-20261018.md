@@ -447,3 +447,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **출력 의미:** `FORMAT_PERCENT_S_NOT_USING_BOUND`, `RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST` 등은 우선 검토를 위한 **정적 신호**. 함수/변수명·원문 SQL·개인정보는 출력하지 않고 `formatArgumentSafetyProven=false`를 유지. 실제 taint/dataflow·취약점 증명으로 취급하지 않음.
 - **검증:** 첫 커밋 `971060cdeeb6912fc7ff7162a9e538bf8a2e869b`의 합성 테스트에서 SQL `$1` 탐지 정규식 이스케이프 오류로 실패(#39983551803). `87519e20b4ece1f98e10cf94cbc57c9e62ffba77`에서 수정했고, 합성 CI #39983938563의 Python self-test 단계 통과를 확인함. 실제 원본 ZIP 재실행은 하지 않음.
 - **남은 것:** B 함수 `%s` 인자의 입력 출처·안전한 변환·인증/인가 검사 및 전체 함수 실행 경로 확인 전 `SAFE`/취약점 확정 불가. A/C 및 기타 SECURITY DEFINER 135개, hosted/관리형 Auth·Storage 및 migration 불일치는 독립 릴리스 차단. **PR #1341 Draft, D8D v2 OFF, RELEASE HOLD 유지**; 운영 SQL/권한/배포/병합 없음.
+
+
+### 6.34. B 함수 정적 인증·인가 단서와 SQL 입력값 연결 분류 (2026-10-24)
+
+- **구현:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py` (commit `7f7a55543df280e05740bbb7020531a72218c337`). `auth.uid/jwt/role()`, JWT 설정 접근, privilege helper, `IF`, `RAISE EXCEPTION` 표현을 비식별 lexical evidence로만 집계. `EXECUTE format('%s', ...)`의 인자가 함수 입력에서 직접·alias를 거쳐 흘러갈 가능성이 있으면 `possibleCallerInputIntoRawFormat`를 표시하고, `manualAuthorizationReviewRequired=true`를 유지한다.
+- **안전한 한계:** `authorizationGuardProven=false` 및 `privilegedExecutionSemanticsVerified=false` 고정. 인증 함수 호출 또는 조건문이 있다는 것만으로 인가 guard 존재, 실행 경로 안전성, SQL injection 여부를 입증하지 않는다. 함수 이름·서명·원문 SQL·사용자 데이터 출력 없음.
+- **검증:** 합성 self-test에서 인증 함수 호출/조건문·예외 발생 단서 및 주석·문자열 안의 가짜 호출을 구분. 기존 PostgreSQL 격리 백업 복원 CI의 핵심 Python 단계 통과를 확인했으며, 비공개 운영자 ZIP 실제 재실행은 시행하지 않았다. 소스 정밀 분석·hosted 데이터 비교가 완료되기 전에는 RELEASE HOLD 유지.
+- **차단/승인:** 관리형 parent FK 34개, 178 migration history, issue #1208 및 SECURITY DEFINER 135개의 권한 정합성 검증은 미해결. 운영 DB SQL·역할 변경, PR #1341 병합 또는 배포는 승인되지 않았다.
