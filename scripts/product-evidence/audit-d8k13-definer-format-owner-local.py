@@ -458,6 +458,47 @@ def inspect_source(sql):
             "releaseAuthorized": False}
 
 
+def repo_migration_coverage(sql_sources):
+    """Aggregate historical migration declarations, never infer owner ZIP parity.
+
+    The same function can be replaced across many migrations; these counts are
+    occurrences, NOT distinct restored functions. Do not return filenames,
+    function names/signatures, snippets, or bodies.
+    """
+    counts = {
+        "migrationSourcesScanned": 0,
+        "plpgsqlDefinerDeclarationsParsed": 0,
+        "executeKeywordDeclarations": 0,
+        "executeFormatStatements": 0,
+        "rawPercentSFormatStatements": 0,
+        "unresolvedRawPercentSStatements": 0,
+    }
+    for sql in sql_sources:
+        counts["migrationSourcesScanned"] += 1
+        for body, header in functions_from_dump(sql):
+            counts["plpgsqlDefinerDeclarationsParsed"] += 1
+            statements = body_findings(body, function_parameter_names(header))
+            if statements:
+                counts["executeKeywordDeclarations"] += 1
+            for stmt in statements:
+                if stmt["formatDirectlyAfterExecute"]:
+                    counts["executeFormatStatements"] += 1
+                    if any(x["specifier"] == "%s" for x in stmt["bindings"]):
+                        counts["rawPercentSFormatStatements"] += 1
+                        if stmt["hasUnresolvedRawSubstitution"]:
+                            counts["unresolvedRawPercentSStatements"] += 1
+    return {
+        "status": "D8K13_REPO_MIGRATION_DEFINER_SOURCE_COVERAGE",
+        **counts,
+        "countsMayIncludeSupersededFunctionDefinitions": True,
+        "ownerCandidateBIdentifiedInRepo": False,
+        "ownerZipSchemaParityVerified": False,
+        "privateZipAccessed": False,
+        "rawSqlOrIdentifiersReturned": False,
+        "releaseAuthorized": False,
+    }
+
+
 def self_test():
     example = """-- EXECUTE format('bad %s', unsafe);
     PERFORM 'EXECUTE format(''bad %s'')';
@@ -615,16 +656,34 @@ def self_test():
     unknown_flow = body_findings("BEGIN EXECUTE format('SELECT %s', nothing); END;", set())
     assert unknown_flow[0]["bindings"][0]["possibleParameterFlowLexical"] is False
 
+    coverage = repo_migration_coverage([fixture])
+    assert coverage["plpgsqlDefinerDeclarationsParsed"] == 1
+    assert coverage["executeFormatStatements"] == 1
+    assert coverage["rawPercentSFormatStatements"] == 1
+    assert coverage["ownerCandidateBIdentifiedInRepo"] is False
+    assert coverage["ownerZipSchemaParityVerified"] is False
     print(json.dumps({"status": "D8K13_PYTHON_LEXER_SELF_TEST_PASS", "rawSourceReturned": False}))
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--scan-repo-migrations", type=Path)
     parser.add_argument("--zip", type=Path)
     args = parser.parse_args()
     if args.self_test:
         self_test()
+        return
+    if args.scan_repo_migrations is not None:
+        root = args.scan_repo_migrations
+        files = sorted(root.glob("*.sql")) if root.is_dir() else []
+        if not files:
+            raise SystemExit("D8K13_REPO_MIGRATIONS_NOT_FOUND")
+        summary = repo_migration_coverage(
+            path.read_text(encoding="utf-8") for path in files)
+        if summary["migrationSourcesScanned"] != len(files):
+            raise SystemExit("D8K13_REPO_MIGRATION_SCAN_INCOMPLETE")
+        print(json.dumps(summary, separators=(",", ":")))
         return
     if not args.zip or not args.zip.is_file() or args.zip.stat().st_size != 7323679:
         raise SystemExit("D8K13_LOCAL_ZIP_METADATA_MISMATCH")
