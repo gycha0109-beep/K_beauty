@@ -47,7 +47,7 @@
 | **R5** 실제 10건 검증·추천 회귀 | **164×12 회귀 PASS, 제한 경로 실증 미완료** | 독립 골드셋(제품 매칭·오결합·선호 신뢰도·보류) 설계. 7개 리뷰 신호 원본·검토 메타데이터 연결 | 실제 KR 검토 사례로 B 적합성/오판 판정. 기존 점수·164 후보 불변 |
 | **R6** 승인된 제한 canary | **차단 / 미착수** | B 전용 category permission, 사용자에게 신뢰도 안내, feature flag/kill switch/rollback, 보안·권한·부하 테스트, 명시적 운영 승인 | 실제 G2/서버/DB/화면 변경 전에 별도 승인, 취소·롤백 검증 통과 |
 
-**기존 R6 공식 Fact 전체 경로의 12항목 체크리스트는 그대로 유지**한다. 제한 B 경로의 별도 실험/전환 조건은 추가 설계하며, 기존 G2의 `cleanser: INITIAL_ADMISSION_AUTHORITY_INSUFFICIENT`를 **이번 PR에서 바꾸지 않는다**.
+**기존 R6 공식 Fact 전체 경로의 12항목 체크리스트는 그대로 유지**한다. 제한 B 경로의 별도 12항목 출시 사전평가는 `lib/trust/cleanser-limited-release-review-v1.mjs`에 Shadow로 구현했다. 공식 제조사 직접 회신과 확정 Fact를 제한 B 출시의 필요 조건으로 되살리지 않는다. 다만 소스 사용권, 독립 비교, 사용자 고지, 통제된 canary와 별도 G2 인가가 필수이며 전 항목을 통과해도 자동 승인되지 않는다. 기존 G2의 `cleanser: INITIAL_ADMISSION_AUTHORITY_INSUFFICIENT`를 **이번 PR에서 바꾸지 않는다**.
 
 ## 5. 현재 실제 클렌저 10개 — 결정적 사실
 
