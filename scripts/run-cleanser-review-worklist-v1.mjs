@@ -28,6 +28,19 @@ if(leads.authority!=="RESEARCH_LEAD_ONLY_NOT_OFFICIAL_EVIDENCE"||
   throw new Error("PUBLIC_LEADS_CANNOT_BECOME_TRUST_AUTHORITY");
 const publicByProduct=new Map(leads.records.map(x=>[x.product_id,x]));
 if(publicByProduct.size!==10)throw new Error("EXACT_TEN_PUBLIC_LEADS_REQUIRED");
+const lagom=JSON.parse(await readFile(
+  "evidence/trust/lagom-cross-market-formulation-research-20261023-v1.json","utf8"
+));
+if(lagom.version!=="lagom-cross-market-formulation-research-v1"||
+   lagom.source_type!=="PUBLIC_BRAND_RESEARCH_ONLY"||
+   lagom.records?.length!==2||
+   lagom.records.some(x=>!snapshot.expected_product_ids.includes(x.product_id)||
+     x.formulation_equivalence!=="FORMULA_UNRESOLVED"||
+     x.current_fact_reuse!==false||x.recommendation_granted!==false||
+     x.exact_sku_confirmed!==false||x.source_snapshot_digest!==null))
+  throw new Error("LAGOM_PUBLIC_SOURCE_CANNOT_BECOME_GOVERNED_PROOF");
+const lagomById=new Map(lagom.records.map(x=>[x.product_id,x]));
+if(lagomById.size!==2)throw new Error("TWO_UNIQUE_LAGOM_RECORDS_REQUIRED");
 const labels={
   P0_RECONCILE_EXISTING_RESEARCH_TASKS:"기존 연구 작업 확인",
   P1_VERIFY_OFFICIAL_SKU_SUBJECT_SOURCE:"제조사 원본·본품 규격·처방 신원 검토",
@@ -52,6 +65,13 @@ const result={
     next_step:labels[p.next_action]||p.next_action,
     remaining_steps:p.actions.map(x=>labels[x]||x),
     sizing_warnings:p.special_size_review,
+    lagom_regional_variants:lagomById.has(p.product_id)?{
+      global_brand_lists_catalog_size:true,
+      markets_have_separate_public_listings:true,
+      official_formula_equivalence_confirmed:false,
+      formulation_status:"FORMULA_UNRESOLVED",
+      action:"라곰에 국가별 제조 처방·전성분 버전·상품 식별코드 직접 확인 필요"
+    }:null,
     manufacturer_public_research:{
       status:publicByProduct.get(p.product_id).quantity_comparison,
       db_display:publicByProduct.get(p.product_id).catalog_quantity_hint,
