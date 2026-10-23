@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_PUBLIC_SECURITY_CATALOG_COLLECTED_EFFECTIVE_FUNCTION_EXECUTE_REVIEW_REQUIRED_RELEASE_HOLD",
+  "state": "D8K13_OWNER_135_SECURITY_DEFINER_EXPLICIT_BROWSER_EXECUTE_SEARCH_PATH_REVIEW_REQUIRED_RELEASE_HOLD",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -984,6 +984,43 @@
       "networkDisabled": true,
       "rawSqlOrRowContentsReturned": false,
       "releaseAuthorized": false
+    },
+    "ownerSecurityDefinerPrivilegeProvenance20261023": {
+      "observedDateKst": "2026-10-23",
+      "evidenceOrigin": "authorized Windows owner-private ZIP isolated PG17 no network; aggregate metadata only",
+      "mode": "RestorePublicDataWithSecurityInventory",
+      "testedScriptCommit": "8349c169a6fe3a77b0556e43c2ad3a7ea76a833c",
+      "syntheticCiRunId": 39898675361,
+      "syntheticCiConclusion": "success",
+      "ownerMarker": "D8K13_OWNER_SECURITY_PRIVILEGE_PROVENANCE_COLLECTED",
+      "securityDefinerFunctions": 135,
+      "securityDefinerNullAclDefaults": 0,
+      "securityDefinerExplicitAcl": 135,
+      "securityDefinerDefaultPublicExecute": 0,
+      "securityDefinerExplicitPublicExecute": 0,
+      "securityDefinerExplicitAnonExecute": 135,
+      "securityDefinerExplicitAuthenticatedExecute": 135,
+      "securityDefinerEffectivePublicExecute": 0,
+      "securityDefinerExplicitSearchPath": 135,
+      "securityDefinerNoExplicitSearchPath": 0,
+      "securityDefinerSearchPathMentionsPublic": 69,
+      "anonBypassRls": false,
+      "authenticatedBypassRls": false,
+      "securityDefinerFunctionBodyReviewed": false,
+      "securityDefinerSemanticsAudited": false,
+      "productionParityVerified": false,
+      "releaseAuthorized": false,
+      "interpretation": "explicit EXECUTE grants to both browser roles exist on all 135 SECURITY DEFINER functions in disposable schema; potential authorization exposure requires per-function body/role/check/search_path review, but this inventory alone does not confirm an exploitable vulnerability",
+      "priorDataStillVerified": {
+        "publicCopyRows": 12220,
+        "publicFkChecked": 199,
+        "publicFkViolatingRows": 0,
+        "publicSequenceSetvals": 2
+      },
+      "backupSha256Unchanged": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "productionDatabaseConnections": 0,
+      "networkDisabled": true,
+      "rawSqlOrUserRowContentsReturned": false
     }
   },
   "syntheticCi": {
