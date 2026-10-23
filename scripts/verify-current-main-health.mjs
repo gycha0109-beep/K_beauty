@@ -53,6 +53,8 @@ run("My account/session UX contract", node, ["--experimental-default-type=module
 run("My adversarial E2E harness contract", node, ["--experimental-default-type=module", "scripts/verify-my-adversarial-e2e-contract.mjs"]);
 run("R1/C1 physical presentation and offer composition shadow", node, ["scripts/verify-catalog-presentation-offer-shadow-v1.mjs"]);
 run("R2/C2 governed formulation equivalence shadow", node, ["scripts/verify-formulation-equivalence-shadow-v1.mjs"]);
+run("C1 ten existing cleanser presentation cohort", node, ["scripts/verify-cleanser-cohort-presentation-shadow-v1.mjs"]);
+run("R2 PF-1 exact source binding adapter", node, ["scripts/verify-formula-governed-binding-adapter-v1.mjs"]);
 run("TRUST Phase 1 intake contract", node, ["scripts/verify-trust-intake-foundation.mjs"]);
 runDelegated("trust-phase2-subject-resolution", "TRUST Phase 2 subject resolution contract", node, ["scripts/verify-trust-subject-resolution.mjs"]);
 runDelegated("trust-phase2-presentation-hardening", "TRUST Phase 2 presentation hardening", node, ["scripts/verify-trust-subject-resolution-presentation-hardening.mjs"]);
