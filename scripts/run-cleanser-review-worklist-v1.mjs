@@ -68,6 +68,9 @@ const result={
     lagom_regional_variants:lagomById.has(p.product_id)?{
       global_brand_lists_catalog_size:true,
       markets_have_separate_public_listings:true,
+      same_global_volume_has_disclosure_conflict:
+        lagomById.get(p.product_id).sources.filter(s=>s.market==="GLOBAL_UNSPECIFIED"&&
+          s.quantity_ml===lagomById.get(p.product_id).catalog.amount).length>1,
       official_formula_equivalence_confirmed:false,
       formulation_status:"FORMULA_UNRESOLVED",
       action:"라곰에 국가별 제조 처방·전성분 버전·상품 식별코드 직접 확인 필요"
