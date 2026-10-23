@@ -41,3 +41,25 @@
 **운영 상태:** Product 재등록 0, official Source Binding 승인 0, Subject/Fact 변경 0, G2 admission 0, DB/RLS/API/추천 점수 변경 0.
 
 기계 판정 가능한 축약 집계는 [연구 리드 JSON](../../evidence/trust/cleanser-public-official-research-leads-20261023-v1.json)에 기록했다. 상위 로드맵 정본은 #1390의 `docs/architecture/trust-p2-evidence-first-redesign-v3.md` §14이다.
+
+## 2026-10-23 추가 검증: 라곰 글로벌 공식 사이트에도 170ml / 120ml가 존재
+
+앞선 표의 "제조사 표시와 DB가 다르다"는 **국내 공식몰(`lagom.kr`) 표시 대비**의 의미다. 브랜드 글로벌(`lagom-global.com`)과 미국(`lagom-usa.com`)의 공개 페이지를 확인하면 DB 수치가 실재하는 판매 규격일 가능성을 뒷받침한다. 국내 DB 수치를 오기로 단정해 정정하는 것은 부정확하다.
+
+| 제품 | DB | 브랜드 글로벌/미국 | 국내 공식몰 | 현재 결론 |
+| --- | ---: | --- | --- | --- |
+| 젤 투 워터 | 170ml | [글로벌 170ml](https://www.lagom-global.com/product/gel-to-water-cleanser/503/), [다른 글로벌 170ml 설명](https://www.lagom-global.com/product/gel-to-water-cleanser/10/), [미국 170ml](https://lagom-usa.com/products/cellup-gel-to-water-cleanser-170ml) | [국내 220ml](https://lagom.kr/product/detail.html?cate_no=1&display_group=2&product_no=10) | **두 용량 모두 브랜드 출처에 등장하나 처방 동등성 미확정** |
+| 마이크로 폼 | 120ml | [글로벌 120ml](https://www.lagom-global.com/product/cellup-micro-foam-cleanser/121/), [미국 120ml](https://lagom-usa.com/products/cellup-micro-foam-cleanser-120ml) | [국내 150ml](https://lagom.kr/product/%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml/9/) | **두 용량 모두 브랜드 출처에 등장하나 처방 동등성 미확정** |
+
+**중대한 원본 충돌 단서**: 젤 투 워터의 같은 글로벌 브랜드 도메인 170ml 페이지 두 개에서 공개 전성분 마커가 서로 다르다.
+- 글로벌 `/503/` : Polyglyceryl-6 Caprylate, Hydroxyacetophenone 표기가 보인다.
+- 글로벌 `/10/` : Dimethicone, PEG-60 Hydrogenated Castor Oil 표기가 보인다.
+- 국내 220ml: 폴리글리세릴-6카프릴레이트, 하이드록시아세토페논 등이 표시된다.
+
+**해석 한계:** 두 글로벌 페이지의 게시·개정 시각, 생산 배치, 국가별 판매 SKU, 표현 언어·성분명 표준화 및 리뉴얼 내역을 확인하지 못했다. 일부 성분이 비슷하다고 동일 처방을 확정할 수 없고, 성분 목록에 차이가 보인다고 모든 170ml를 별도 처방이라고 확정할 수도 없다. 마이크로 폼 120ml 글로벌/미국 및 국내 150ml도 마찬가지로 국가별 원본 정합성 확인이 필요하다. **현재 두 상품의 결정은 모두 `FORMULA_UNRESOLVED`다.**
+
+### TRUST로 넘기기 위한 정확한 추가 질문
+
+브랜드에 요청할 확인 대상은 **국내 170ml↔220ml / 120ml↔150ml 각각의** (1) EAN/GTIN·제조사 상품코드와 판매 국가, (2) 제조/출시 기간과 리뉴얼·배치 적용 시점, (3) 각 용량별 규격·동일 제조 버전의 전성분 원본, (4) 두 용량의 제조 처방 자체가 동일하다는 공식 확인(또는 명시적 차이), (5) 공식 페이지의 서로 다른 성분 표기 차이 설명이다. 브랜드 회신 없이 스크린샷이나 공개 웹 문구만으로 Subject를 결합하지 않는다.
+
+본 조사 단서는 [별도 라곰 글로벌·국내 근거 비교 JSON](../../evidence/trust/lagom-cross-market-formulation-research-20261023-v1.json)에 **URL과 소량의 식별 마커**만 보관한다. 페이지 전체 전성분 복사, 웹 크롤러, 공식 동결 스냅샷, Source Binding 승인/Fact 생성/G2 연결을 수행한 것이 아니다.
