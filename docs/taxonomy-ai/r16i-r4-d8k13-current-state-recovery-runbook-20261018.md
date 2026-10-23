@@ -430,3 +430,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **후보별:** 익명 A·C는 `EXECUTE format(...)` 인접 패턴 및 동일 SQL 구간의 `%s` 패턴 미감지. 익명 B(인자 2개)는 `EXECUTE format(...)` 인접, `%s` 동일 구간 및 `EXECUTE ... USING` lexical 감지. 이 정규식 검사에서 `EXECUTE ... ||` 표현은 미감지. `%I`는 본문 어디엔가 감지되지만 같은 format window에서는 미감지.
 - **해석:** B를 우선 검토. `%s`는 정밀한 데이터 흐름 검사 없이는 입력값 오염 여부가 확인되지 않는다. `USING` 존재 역시 모든 동적 SQL 인자가 안전하게 바인딩되었음을 보증하지 않는다. 검사는 주석·인용 문자열/세미콜론에도 반응할 수 있으며 SQL injection 또는 권한 우회 취약점을 *확정하지 못한다*. B 함수 원문·개별 식별자는 GitHub에 올리지 않음.
 - **다음:** PC 안에서 B의 실제 `EXECUTE` 문, `format` 인자 출처, 값/식별자 escaping 및 `USING` 연결, 인증·권한 guard와 `search_path`를 소스 비반출 방식으로 검토. A·C 및 다른 SECURITY DEFINER 함수들도 이후 위험 기반 평가. **RELEASE HOLD / D8D v2 OFF / PR #1341 Draft·미병합** 유지.
+
+
+### 6.32. 보안 함수 %s 입력값 출처 추적의 fail-closed 테스트 보강 (2026-10-23)
+
+- **완료한 구현:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py`에 PL/pgSQL 함수의 선언형 입력 인자, 로컬 변수, `EXECUTE format()` 자리표시자, 해당 변수의 직전 대입 텍스트 단서를 구분하는 비식별 메타데이터 검사를 추가한 상태. 커밋 `313e6cb5659b49cb0ad55d4b207e18d9c19f63ba`의 합성 CI [#39919005596](https://github.com/gycha0109-beep/K_beauty/actions/runs/39919005596) 전체 SUCCESS. 이 검사는 **실제 데이터플로 증명/동작 테스트가 아니라 정적 단서 분류**이다.
+- **이번 보강:** `bbe0ba49a37919a36206fa7a274a8c89f9c2f290`에서 원본 백업 ZIP의 `schema.sql` 함수 추출 수가 110 미만이거나 `EXECUTE format` 후보가 1개도 추출되지 않으면 즉시 `D8K13_LOCAL_SOURCE_COVERAGE_BLOCKED`로 실패하도록 했다. 이전 오류처럼 0개를 정상으로 오인하는 일이 없도록 보호한다. 합성 테스트는 주석 속 가짜 EXECUTE를 무시하고, `LANGUAGE 'plpgsql'`로 작성된 함수의 로컬 변수에 함수 인자가 대입된 경우를 문자열 단서로 분류하는지 확인한다.
+- **실행 제한:** 새로운 보강 버전에 대해 실제 소유자 ZIP 검증은 **미실시**. 연결된 Windows PC로 검사 파일을 쓰거나 원격 URL에서 스크립트를 가져오는 작업이 실행 도구의 안전 검사에서 차단되었다. 우회 실행이나 비밀 데이터/원본 SQL을 GitHub로 가져오는 조치는 하지 않았다. 따라서 마지막으로 확인된 실제 ZIP 결과는 이전 커밋 `234b1bd1173e786db7de6494c5e2ecadc8af8725` 수준의 `plpgsqlDefinerBodiesParsed=115`, `candidateFunctions=1`, `%s`의 `BARE_IDENTIFIER_OR_PARAMETER_UNRESOLVED` 분류로 유지한다.
+- **안전한 판정:** B 후보의 `%s`가 외부 입력을 그대로 받는다는 점, 적절히 escape/quote 되었는지, `USING`으로 해당 값이 보호되었는지, 인증 우회 가능성이 있는지는 **모두 미확정**. 로컬 파서 출력은 익명 집계만 사용하고, 기존 security issue #1208, 관리형 FK 34개, hosted parity, 178 migration history 등의 릴리스 차단은 해제하지 않는다.
+- **다음 완료 게이트:** 합성 CI 성공 확인 후, 사용자 승인 및 연결 보안 정책이 허용하는 소유자 로컬 실행 환경에서 새 버전의 비식별 출력만 검증. 이후 함수 B의 실제 원본 코드 내부에서 `format` 인자·대입 경로·권한 guard를 소스 비반출 방식으로 분석. **RELEASE HOLD / D8D v2 OFF / PR #1341 Draft·미병합**.
