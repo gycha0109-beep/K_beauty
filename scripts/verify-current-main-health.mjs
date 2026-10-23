@@ -66,6 +66,7 @@ run("C2 Lagom regional 120/150 and 170/220 formula HOLD", node, ["scripts/verify
 run("R2-R5 evidence-tiered cleanser limited-fit SHADOW", node, ["scripts/verify-cleanser-evidence-tier-shadow-v1.mjs"]);
 run("R2 real existing Hwahae 6/1/3 and canonical scorer reuse", node, ["scripts/verify-cleanser-hwahae-existing-score-shadow-v1.mjs"]);
 run("R3-R4 cleanser review-vs-Fact and protected G2 admission shadow", node, ["scripts/verify-cleanser-existing-review-admission-shadow-v1.mjs"]);
+run("R5 original Skin Match engine with actual cleanser missing-metadata safety guard", node, ["scripts/verify-cleanser-r5-full-engine-redacted-shadow-v1.mjs"]);
 run("R6 cleanser no-activation checklist gate", node, ["scripts/verify-cleanser-r6-release-review-v1.mjs"]);
 run("R6 separate limited-fit cleanser release firewall", node, ["scripts/verify-cleanser-limited-release-review-v1.mjs"]);
 run("R5 164-product live scoring offer-variation shadow", node, ["scripts/verify-catalog-offer-runtime-invariance-v1.mjs"]);
