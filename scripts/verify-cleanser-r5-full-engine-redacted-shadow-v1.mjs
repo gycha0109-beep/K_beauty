@@ -153,7 +153,7 @@ const injected=await buildSkinMatchDecisionBundle(syntheticContext.answers,{
   locale:"ko",includeCandidateSourceDiagnostics:true,
   products:[...corpus,syntheticFullInput]
 });
-const scored=getRows(injected).find(x=>x.id===syntheticFullInput.id);
+const scored=fromDiagnostics(injected).find(x=>x.id===syntheticFullInput.id);
 assert.ok(scored);
 verifyCleanserEngineComponentSumV1(scored);
 verifyCleanserReviewAxisParityV1(scored,originalReview.total);
