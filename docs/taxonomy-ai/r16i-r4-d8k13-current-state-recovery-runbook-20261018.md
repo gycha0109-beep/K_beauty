@@ -392,3 +392,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **테이블/뷰:** `publicTablesExplicitSelectForBrowserRoles=101`은 카탈로그 relacl/acldefault에서 grantee 0/PUBLIC 또는 anon/authenticated로 직접 표기된 SELECT 항목이 있는 테이블을 센 값이며, 실제 RLS 적용 후 행 열람 가능을 뜻하지 않는다. public view 6개 모두 `security_invoker=true`; security_barrier=true 뷰 0개.
 - **한계/다음:** 스냅샷 자체 집계 결과이며 hosted ACL/role membership 비교, schema `GRANT/REVOKE` 유래 교차 검증, 135 SECURITY DEFINER의 function-level authorization/SET search_path/호출 그래프 리뷰, 정책별 접근 기능 테스트는 미실시. 관리형 Auth/Storage 미복원, 178 migrations provenance 및 issue #1208 OPEN은 독립 릴리스 차단.
 - **상태:** `PUBLIC_SECURITY_CATALOG_COLLECTED` / `SECURITY_DEFINER_EXECUTE_REVIEW_REQUIRED` / `RLS_ACL_OWNER_PARITY_NOT_ATTESTED` / **RELEASE HOLD**, D8D v2 OFF, PR #1341 Draft·미병합. 운영 SQL·권한 변경·병합·배포 없음.
+
+
+### 6.28. SECURITY DEFINER 135개: EXECUTE 권한 출처·함수별 search_path 카탈로그 조사 (2026-10-23)
+
+- **검증:** 소유자 Windows PC 원본 ZIP SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6` 전후 무변경. `RestorePublicDataWithSecurityInventory` 격리 PG17/no-network 실행, 원문 SQL·사용자 행·함수명은 출력하지 않음. 스크립트 `8349c169a6fe3a77b0556e43c2ad3a7ea76a833c`; 합성 CI [#39898675361](https://github.com/gycha0109-beep/K_beauty/actions/runs/39898675361) SUCCESS. 인증/운영 DB 연결 0.
+- **135개 SECURITY DEFINER EXECUTE 출처:** NULL `proacl` 기본값 0개, 명시적 `proacl` 135개. default `PUBLIC EXECUTE` 0개, explicit `PUBLIC EXECUTE` 0개, 실효 `PUBLIC EXECUTE` 0개. 대신 **135개 모두 anon·authenticated에 각각 explicit EXECUTE GRANT 존재** (`aclexplode(proacl)`), 양 역할 모두 `rolbypassrls=false`. 함수의 고권한 실행 자체와 RLS 우회 여부는 함수 소유자 및 내부 구현에 좌우된다.
+- **검색 경로:** 모든 SECURITY DEFINER 함수 135개에 함수별 `proconfig`의 명시적 `search_path` 존재, 미설정 0개. 그중 **69개는 `public` 경로를 포함**. `public` 포함 여부 자체만으로 취약성 확정 불가; 경로 순서, 객체 이름 해석, 변조 가능한 객체와 접근권한, 모든 SQL 문맥 및 SECURITY DEFINER 본문 확인 필요.
+- **기존 public 무결성 유지:** 101 테이블/12,220행, public-parent FK 199개 위반 0, 관리형-parent FK 34개 미검증, public sequence 2개 복원 상태 일치.
+- **위험 판정:** `SECURITY_DEFINER_AUTHZ_REVIEW_REQUIRED`, `SEARCH_PATH_REVIEW_REQUIRED`. 위 결과는 isolated snapshot의 사실이지 hosted 시스템에 동일한 GRANT/OWNER/함수 정의가 있다고 보증하지 않음. 취약점 건수로 환산 금지; 권한 임의 REVOKE, 정책 해제, 릴리스 승인 금지.
+- **다음 게이트:** 135개 함수 중 웹역할 직접 호출 가능 함수에 대해 소유권/인자·RETURNS/SECURITY DEFINER 본문과 `search_path` 조합, 내부 `auth.uid()/auth.jwt()`·서비스 권한 검사 여부를 비밀 데이터 유출 없이 감사. hosted `pg_proc/proacl` 동등성 비교 및 승인 경로 확보 전 **RELEASE HOLD**, PR #1341 Draft·미병합, D8D v2 OFF, issue #1208 OPEN.
