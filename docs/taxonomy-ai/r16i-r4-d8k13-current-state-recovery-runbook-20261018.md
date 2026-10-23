@@ -371,3 +371,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **안전:** disposable PG17 `--network none`, Docker 컨테이너 종료 후 정리, 원본 ZIP 불변, 운영 DB 연결 0, 원문 SQL/행·민감한 이름 출력 0. 출력은 카운트 및 상태만 포함. `foreignKeyReferentialParityVerified=false`는 관리형 관계 미검증을 정확히 보존; `publicToPublicForeignKeyRowsVerified=true`.
 - **다음 범위:** 격리된 시퀀스 source setval 정확성 및 `nextval` semantics 별도 점검; ACL/OWNER/SECURITY DEFINER/RLS 및 view/trigger parity 평가; 관리형 Auth/Storage 의존 참조 34개는 관리형 베이스라인 없이 강제 검사 금지. 178 migration provenance 불일치와 security issue #1208 OPEN은 **독립 RELEASE BLOCKER**.
 - **상태:** `PUBLIC_FK_199_PASS_ZERO_VIOLATIONS`, `MANAGED_PARENT_34_BLOCKED`, `FULL_SUPABASE_RECOVERY_NOT_ATTESTED`, **RELEASE HOLD** / D8D v2 OFF / PR #1341 Draft·미병합 / 어떠한 운영 SQL·병합·배포 승인도 아님.
+
+
+### 6.26. 실제 백업 public 시퀀스 setval 상태의 격리 검증 PASS (2026-10-23)
+
+- **운영자 PC 직접 실행:** 승인된 Windows Desktop Commander의 원본 ZIP `BEJEWELY_DB_Backup_20261018_181006.zip`(7,323,679 bytes, SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6`)을 로컬에서 검사; 원본 변경 없음. GitHub HEAD `51742466feb51005ecb6441ed78bf2cf155f7239` 기준 스크립트 `-Mode RestorePublicDataWithIntegrityAudit`, `supabase/postgres:17.6.1.136`, Docker `--network none`, 운영 DB 연결 0.
+- **합성 수락:** [워크플로 #39891138819](https://github.com/gycha0109-beep/K_beauty/actions/runs/39891138819) SUCCESS. 원본 아카이브 미제공 합성 소스에서 `setval`의 `is_called=true/false` 상태를 검증하고 기존 public COPY/FK 및 차단 회귀 PASS.
+- **운영자 ZIP 결과:** `D8K13_OWNER_PUBLIC_INTEGRITY_SEQUENCE_VERIFIED_LIMITED`. public COPY/테이블 101개, 총 행 수 12,220개 일치. public-parent FK 199개 검사·위반 제약 0개·위반 행 0개·비-public-parent 34개 미검증 분리. public source `setval` 2개와 복원된 실제 sequence last_value/is_called **2/2 일치**, 카탈로그 public sequence 2개, 산술상 nextval 범위 초과 예상 0개. `nextval()`은 호출하지 않아 시퀀스 상태를 변경하지 않음.
+- **범위 제한:** 시퀀스 수치 검증은 백업 명시적 `setval` 대상에 한정. `nextval` 실제 실행·동시성·운영 트래픽 또는 `RLS/ACL/OWNER` 동등성을 입증하지 않는다. 관리형 Auth/Storage/Vault 원본 데이터 및 부모 FK 34개, 전체 마이그레이션 이력 178개, security issue #1208는 독립 차단이다.
+- **다음 게이트:** 격리 DB의 `public` 권한·소유권·RLS 정책 카탈로그를 비식별·집계 형태로 점검하고 실제 운영 hosted baseline과의 비교 가능 여부를 따로 판정할 것. 원본 SQL/행/역할명·민감한 grant 본문을 GitHub 또는 외부 응답에 노출하지 말 것.
+- **상태:** `PUBLIC_SEQUENCE_2_OF_2_STATE_PASS` / `PUBLIC_FK_199_PASS` / `FULL_RECOVERY_NOT_ATTESTED` / **RELEASE HOLD**, PR #1341 Draft·미병합, D8D v2 OFF. 운영 데이터/권한 변경, SQL, 병합, 배포 미승인.
