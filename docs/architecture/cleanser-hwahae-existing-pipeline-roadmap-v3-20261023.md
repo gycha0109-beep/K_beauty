@@ -141,3 +141,12 @@
 - [R5 기존 근거 재사용 실측 보고](../evidence/cleanser-r5-existing-source-reuse-20261024.md) 및 `lib/trust/cleanser-r5-existing-source-evidence-routing-v1.mjs` 구현. 별도 reviewer 필드·수집 파이프라인 신설 없음.
 - 원본 화해 AI 요약 문구를 GitHub에 적재하지 않고 전체 엔진을 재실행하는 **GET-only 비공개 실행 도구** `scripts/run-cleanser-r5-private-full-engine-readonly-v1.mjs` 추가. 현재는 아직 운영 인증정보로 실행하지 않았으며 실행 전용 권한과 비공개 환경이 필요함.
 - **R5 잔여:** 실제 원본 기반 164+10 엔진 검증; 정본 메타데이터 출처 확인/품질 판단; 정확한 판매 SKU 교차 확인. **R6:** 별도 G2 정책 승인 및 canary/rollback 전까지 활성화 불가.
+
+
+## 2026-10-24 R5 전체 엔진 리뷰 점수 축 독립 검증
+
+- **실제 원본 보존:** 신규 클렌저 화해 AI 요약 문구/URL/성분 원본은 공개 PR에 넣지 않는다. 기존 6개 × 3 피부 조건의 원본 `computeReviewSignalScore` 실측 결과를 독립 비교 기준으로 둔다.
+- **R5 실제 원본 검증기 강화:** `scripts/run-cleanser-r5-private-full-engine-readonly-v1.mjs`는 별도 허가된 비공개 서버에서만 작동하며, 기존 164개/신규 10개 × 12 시나리오의 점수 불변·세부 합계를 확인한다. 추가로 피부 맥락 3개를 직접 전체 엔진에 적용해 **원본 리뷰 점수 18건 완전일치 + 리뷰 미매핑/캡처 미존재 12건은 리뷰 기여 0**을 검증하도록 구현했다.
+- **공용 CI 안전 회귀:** `lib/trust/cleanser-r5-score-reconciliation-v1.mjs`에서 점수 합계와 리뷰 축을 독립 검증하며, `scripts/verify-cleanser-r5-full-engine-redacted-shadow-v1.mjs`에서 **서로 다른 점수 항목을 상쇄해 합계만 맞춘 위조**도 FAIL하도록 테스트한다. CI 데이터는 원문이 제거된 합성·축약 자료이며 실상품 전체 점수의 정답이 아니다.
+- **실증 경계:** 비공개 전체 엔진 재실행 도구는 아직 실제 운영 키를 사용해 실행하지 않았다. 18건의 독립 원본 리뷰 수치 자체는 이전 SELECT-only 별도 계산에서 확보했다. 향후 비공개 실행 시 이를 **전체 엔진 결과와 대조**하는 것이 다음 결정적 단계다.
+- **R6:** 기존 G2는 클렌저 NO_GRANT 유지. 승인·DB 쓰기·배포·정식 추천 노출 모두 0건.
