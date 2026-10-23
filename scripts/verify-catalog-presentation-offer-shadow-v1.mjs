@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   PRESENTATION_OFFER_SHADOW_VERSION,
   PresentationOfferContractError,
+  comparePresentationOfferObservationsV1 as compare,
   classifyPresentationOfferShadowV1 as classify
 } from "../lib/catalog-presentation-offer-shadow-v1.mjs";
 
@@ -94,6 +95,18 @@ const urlOnlyMoved=classify({product,components:[primary(ml(150))],
   prior_listing:{seller_key:"example",listing_id:null,listing_url:"https://shop.example/items/A"}});
 assert.notEqual(urlOnlyA.offer_key,urlOnlyMoved.offer_key);
 assert.ok(urlOnlyMoved.reasons.includes("URL_CHANGE_WITHOUT_STABLE_SKU_REVIEW_REQUIRED"));
+const compositionChange=compare(old,changed);
+assert.equal(compositionChange.same_offer_key,true);
+assert.equal(compositionChange.classification,"REVIEW_REQUIRED");
+assert.ok(compositionChange.reasons.includes("SAME_LISTING_COMPOSITION_CHANGED_REVIEW_REQUIRED"));
+assert.ok(compare(old,moved).reasons.includes("LISTING_URL_CHANGED_REVALIDATION_REQUIRED"));
+const sameUrlDifferentSku=classify({product,components:[primary(ml(150))],
+  listing:listing("B","https://shop.example/items/A")});
+assert.ok(compare(old,sameUrlDifferentSku).reasons.includes("LISTING_ID_ALIAS_REVIEW_REQUIRED"));
+assert.equal(compare(old,old).classification,"NO_ADDITIONAL_CONFLICT");
+// The comparison is diagnostic only, never permission for a sales or formulation write.
+assert.equal(compositionChange.fact_reuse_authorized,false);
+assert.equal(compositionChange.offer_write_authorized,false);
 // Unverified promo or gift identity must hold and must never contaminate the primary Product.
 const unknownGift=read([primary(ml(150)),{role:"UNKNOWN",product_id:null,sku:null,unit:null,
   quantity:1,evidence_refs:[]}]);
