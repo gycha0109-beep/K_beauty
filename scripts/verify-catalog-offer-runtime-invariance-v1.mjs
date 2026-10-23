@@ -58,7 +58,24 @@ function offer(id,n,price=10000,seller="oliveyoung"){
     link_health_state:"healthy",last_observed_at:"2026-10-23T00:00:00Z"
   };
 }
-let scenarios=0,comparedPublicProductSlots=0;
+
+function commerceSnapshot(bundle) {
+  const entries=[];
+  const seen=new WeakSet();
+  const visit=(value,depth=0,key="")=>{
+    if(!value||typeof value!=="object"||depth>24||key==="diagnostics"||seen.has(value))return;
+    seen.add(value);
+    if(Array.isArray(value)){value.forEach(x=>visit(x,depth+1));return}
+    if(typeof value.id==="string"&&typeof value.brand==="string"&&
+       typeof value.name==="string"&&Object.hasOwn(value,"buy_link"))
+      entries.push([value.id,value.buy_link,value.price_min,value.price_max,value.price_range]);
+    for(const [k,v] of Object.entries(value))visit(v,depth+1,k);
+  };
+  visit(bundle);
+  return entries;
+}
+
+let scenarios=0,comparedPublicProductSlots=0, verifiedCommerceProjections=0;
 for (const item of [...scenariosFixture.scenarios].sort((a,b)=>a.id.localeCompare(b.id,"en"))){
   const bundle=await buildSkinMatchDecisionBundle(item.answers,{
     products,locale:"ko",includeCandidateSourceDiagnostics:true
@@ -80,13 +97,37 @@ for (const item of [...scenariosFixture.scenarios].sort((a,b)=>a.id.localeCompar
       {role:"GIFT",product_id:null,quantity:1,unit:{amount:10,unit:"ml"}}
     ]}))
   ];
+  const originalCommerce=commerceSnapshot(bundle);
+  assert.ok(originalCommerce.length>0,item.id+": no commerce nodes to verify");
+  const allProjected=[];
   for(const offers of cases) {
     const projected=projectRecommendationDecisionWithOffers(bundle,offers);
     assert.equal(semanticSnapshot(projected),before,item.id+": seller offer changed skin semantics");
     assert.equal(projected?.diagnostics,bundle?.diagnostics);
+    const rows=commerceSnapshot(projected);
+    assert.equal(rows.length,originalCommerce.length,item.id+": commerce nodes lost");
+    // Existing policy does not authorize synthetic offer prices as catalog prices.
+    rows.forEach((r,n)=>assert.deepEqual(r.slice(2),originalCommerce[n].slice(2),
+      item.id+": untrusted offer price contaminated product prices"));
+    allProjected.push(rows);
   }
+  // Positive control: the trusted seller offer must be accepted, not simply ignored.
+  const active=allProjected[0], differentSeller=allProjected[2];
+  assert.ok(active.some((r,n)=>r[1]!==originalCommerce[n][1]),
+    item.id+": valid offer never reached the commerce projection");
+  assert.ok(active.some(r=>typeof r[1]==="string"&&r[1].includes("www.oliveyoung.co.kr/store/goods/getGoodsDetail")),
+    item.id+": no valid direct seller URL projected");
+  assert.ok(differentSeller.every(r=>r[1]===""),
+    item.id+": untrusted seller's offer should suppress stale direct links");
+  assert.deepEqual(allProjected[0],allProjected[1],
+    item.id+": unsupported seller price authority changed display unexpectedly");
+  assert.deepEqual(allProjected[0],allProjected[3],
+    item.id+": BOGO composition leaked into commerce projection without validation");
+  assert.deepEqual(allProjected[0],allProjected[4],
+    item.id+": gift composition leaked into commerce projection without validation");
+  verifiedCommerceProjections+=active.length;
   comparedPublicProductSlots+=ids.length;
   scenarios++;
 }
 assert.equal(scenarios,12);
-console.log("R5 actual Skin Match runtime offers shadow: PASS products=164 scenarios=12 variants=5 compared_public_slots="+comparedPublicProductSlots+" (synthetic offers, zero DB writes)");
+console.log("R5 actual Skin Match runtime offers shadow: PASS products=164 scenarios=12 variants=5 compared_public_slots="+comparedPublicProductSlots+" verified_commerce_projections="+verifiedCommerceProjections+" (synthetic offers, zero DB writes)");
