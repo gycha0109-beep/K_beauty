@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_REAL_ZIP_PUBLIC_DATA_RESTORE_PASS_LIMITED_FURTHER_INTEGRITY_GATES_HOLD",
+  "state": "D8K13_OWNER_PUBLIC_COPY_12220_ROWS_AND_PUBLIC_FK_199_PASS_MANAGED_EXTERNAL_DEPENDENCIES_HOLD",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -867,6 +867,53 @@
       "outstanding": "FK/reference integrity, sequence value parity/nextval, RLS and ACL owner parity, Auth/Storage/Vault, deployed DB identity, migration provenance, independent owner, security #1208",
       "privateSqlOrRowsUploaded": false,
       "releaseAuthorized": false
+    },
+    "ownerPublicFkIntegrity20261023": {
+      "observedDateKst": "2026-10-23",
+      "evidenceOrigin": "connected authorized Windows Desktop Commander executed approved script on owner PC; output metadata-only JSON (no ZIP, SQL or row contents transferred)",
+      "scriptCommit": "ac95fc58dda5952b45b6dffa807590b2e831a3f4",
+      "scriptPath": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "mode": "RestorePublicDataWithPublicFkAudit",
+      "zipSha256VerifiedBeforeAndAfter": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "syntheticCiRun": 39882815706,
+      "syntheticCiConclusion": "success",
+      "status": "D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED",
+      "finalOwnerMarker": "D8K13_OWNER_PUBLIC_FK_INTEGRITY_VERIFIED_LIMITED",
+      "sourceCopyHeaders": 134,
+      "publicCopyHeadersExecuted": 101,
+      "publicSourceRowsAppliedAndCountVerified": 12220,
+      "publicCopyTablesVerified": 101,
+      "publicSequenceResetsApplied": 2,
+      "skippedManagedCopyHeaders": 33,
+      "skippedNonpublicSequenceResets": 1,
+      "strictSchemaRestoreCompleted": true,
+      "publicDataRowsVerified": true,
+      "publicToPublicForeignKeyRowsVerified": true,
+      "publicToPublicForeignKeyAudit": {
+        "publicFkConstraintsChecked": 199,
+        "publicFkViolatingConstraints": 0,
+        "publicFkViolatingRows": 0,
+        "nonPublicParentConstraintsSkipped": 34,
+        "unsupportedConstraints": 0
+      },
+      "foreignKeyReferentialParityVerified": false,
+      "authDataRestored": false,
+      "storageMetadataRestored": false,
+      "storageObjectBytesRestored": false,
+      "original178MigrationsReplayed": false,
+      "allDataRestored": false,
+      "originalZipModified": false,
+      "networkDisabled": true,
+      "productionDatabaseConnections": 0,
+      "rawSqlOrRowContentsReturned": false,
+      "releaseAuthorized": false,
+      "nextGates": [
+        "34 non-public parent FK references cannot be asserted without managed Auth and other parents",
+        "sequence values vs source and nextval semantics",
+        "RLS/ACL/role owner and security definer semantic parity",
+        "managed Auth/Storage/service recovery",
+        "178 migration history provenance and security #1208"
+      ]
     }
   },
   "syntheticCi": {
