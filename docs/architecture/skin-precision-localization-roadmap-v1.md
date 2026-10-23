@@ -234,3 +234,15 @@ This is a vocabulary and separation sketch, NOT a drop-in modification to the ex
 | Low-confidence freckle vs PIH | Show \`색소 반점\` or \`주근깨 유사 반점\`, not confident diagnosis |
 | Multiple low confidence concerns | Single global nonblocking warning, per-concern reasons, optional reshoot; other scores accessible |
 
+
+## 12. Targeted dataset sourcing 2026-10-23 — verified candidates, NO commercial approval
+
+- The source-by-source research and access/license/label comparison are recorded in [supplementary-dataset-research-2026-10-23.md](../../data/skin-precision/supplementary-dataset-research-2026-10-23.md).
+- **Most immediate pixel-mask lead (pigment):** MEMI-DS / figshare, 716 melasma images with segmentation annotations, CC BY 4.0 displayed; verify human face consent/commercial derivatives before model training. Melasma masks are not all freckles/spots.
+- **Most immediate spot-position lead:** Nexdata 7,262 smartphone images, 2,499,771 box labels including freckles/speckles; commercial paid license required. Boxes are not masks; ask for samples first.
+- **Most immediate shine-vs-sebum lead:** FaceSkin-Q and 2026 SGA-UNet team, dual-illumination, glossiness/moisture/sebum/elasticity targets; download requested via author Google Form; commercial rights unverified. Their loader reports malformed labels; do not convert invalid target fields into zeros.
+- **Multi-concern ordinal alternative:** Rupam Bharatiya 50k+ images/14 attributes with explicit separate paid commercial license. No verified localization masks.
+- **Pore pixels still a gap:** PS-Net 3,750 400x400 cheek patches from only 18 subjects, **not publicly available**, request author permission. Weak pseudo-pore masks are not clinician gold.
+- **Flaking/roughness still a gap:** SKINCON `scale` dermatology concept and FFHQ-Wrinkle are not face micro-flaking masks; FFHQ source is CC BY-NC-SA 4.0. Need consented cosmetic close-up samples with expert/manual local annotations.
+- **Quantitative distinction:** Available global or zone *severity grades* must not be advertised as individual pore, flake or spot coordinates. Device/illumination and evaluator calibration should be reported per concern.
+- No raw face photos, vendor demos, or third-party weights were copied into this repo. No candidates promoted to approved.
