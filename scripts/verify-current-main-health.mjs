@@ -57,6 +57,7 @@ run("C1 ten existing cleanser presentation cohort", node, ["scripts/verify-clean
 run("R2 PF-1 exact source binding adapter", node, ["scripts/verify-formula-governed-binding-adapter-v1.mjs"]);
 run("R3/C3 cleanser TRUST review handoff", node, ["scripts/verify-cleanser-trust-review-handoff-v1.mjs"]);
 run("R4/C4 cleanser preflight v2 shadow", node, ["scripts/verify-cleanser-preflight-v2-shadow-v1.mjs"]);
+run("C4 upstream v1 exact-ten comparison integration gate", node, ["scripts/verify-cleanser-ten-preflight-v1-v2-diff-v1.mjs"]);
 run("R5 164-product live scoring offer-variation shadow", node, ["scripts/verify-catalog-offer-runtime-invariance-v1.mjs"]);
 run("TRUST Phase 1 intake contract", node, ["scripts/verify-trust-intake-foundation.mjs"]);
 runDelegated("trust-phase2-subject-resolution", "TRUST Phase 2 subject resolution contract", node, ["scripts/verify-trust-subject-resolution.mjs"]);
