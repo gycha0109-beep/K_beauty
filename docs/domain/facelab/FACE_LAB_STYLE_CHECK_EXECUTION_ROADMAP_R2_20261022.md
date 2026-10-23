@@ -110,7 +110,11 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
 | SC-04 | 5 | **반사실적 추천 비교 구현·Foundation/PIE 통과 / PR #1395, 미병합** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | **평가 계획 검증·Human 권한 게이트 구현 / PR #1396, 실제 사진·사람 평가는 미실시** | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
-| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-06B | 7b | **3개 구조 후보 Shadow 실험·96건 Foundation PASS / PR #1398, 미병합** | SC-06 필드 영향 분석 | 실험용 후보 3개와 96-case feasibility / 개인화 가설 평가 | 사람 검증 전 운영 추천으로 전파 |\n| SC-06C | 7c | **블라인드 A/B 7쌍·분리 내보내기 구현 / PR #1399, Foundation PASS·PIE 확인 중** | SC-06B | 기존 Human 계약, 기본 미리보기 7개 비교쌍, 운영자 매핑 분리 | 평가자·후보 역할 노출, 무허가 인물 수집 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
+| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |
+| SC-06B | 7b | **3개 구조 후보 Shadow 실험·96건 Foundation PASS / PR #1398, 미병합** | SC-06 필드 영향 분석 | 실험용 후보 3개와 96-case feasibility / 개인화 가설 평가 | 사람 검증 전 운영 추천으로 전파 |
+| SC-06C | 7c | **블라인드 A/B 7쌍·분리 내보내기 구현 / PR #1399, Foundation PASS·PIE 확인 중** | SC-06B | 기존 Human 계약, 기본 미리보기 7개 비교쌍, 운영자 매핑 분리 | 평가자·후보 역할 노출, 무허가 인물 수집 |
+| SC-06D | 7d | **로컬 사진+스타일 A/B 오프라인 평가 UI 구현 / PR #1402, CI 검증 중** | SC-06C 블라인드 패킷 | 7쌍 reviewer-only, 동일인 원본+A+B 파일 입력, 4항목 응답 로컬 초안 | 실제 이미지·권리·가설-사진 대응 확인 없이 Human 합격 금지 |
+| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
 
 ### 2026-10-22 진행 상태 (SC-03)
 
@@ -195,6 +199,15 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - 두 JSON을 평가자에게 함께 전달하면 blinding 무효. CLI의 분리는 안전한 **파일 생성 가드**일 뿐 연구자/평가자 실제 권한 통제를 대신하지 않는다.
 - 기존 Human 판단·sealed review·role reveal·real photo validation은 미실시. **이 항목은 7쌍의 평가자료 준비 완료**이며 Human 선호도 점수는 0건.
 - 구현 PR: [#1399](https://github.com/gycha0109-beep/K_beauty/pull/1399), 상세 문서 `FACE_LAB_STYLE_CHECK_SC06C_BLIND_HUMAN_PACKET_20261023.md`.
+
+### 2026-10-23 SC-06D — 실제 얼굴·스타일 시각 비교 UI
+
+- 텍스트만 보고 스타일 추천의 미적 적합성을 단정할 수 없으므로 **7쌍 A/B + 동일인 원본 얼굴사진 + A 스타일 적용 이미지 + B 스타일 적용 이미지**의 오프라인 평가 화면을 추가.
+- 실행: `node scripts/build-face-lab-style-check-visual-review-ui-sc06d.mjs --output-file=/absolute/private/visual-review.html`, 생성한 HTML을 로컬 브라우저에서 연다. 사진 파일은 각 문항에서 사용자가 직접 선택, 브라우저 탭 내 Blob URL만 사용, 서버 전송 및 사진 파일 저장 없음.
+- 원본+A+B 이미지 3개·동일인/권리 확인·4개 판정 없이 완료/초안 출력에 포함될 수 없음. 기존 3개 Human Pairwise rubric에 **visual_fit 실험 추가 차원**을 분리해 제공.
+- 결과는 **unsealed local draft JSON**. 검증된 실제 사진, 이미 생성된 스타일 렌더, 실제 참가자·봉인 응답이 존재한다고 가정하지 않는다. 실사진 권리/철회 확인, 독립 리뷰어, 현재·후보 정답 공개는 별도 보안 단계.
+- **로드맵 진척도 표시 규칙:** 구현·CI(기술 준비) / 사진·사람 품질 평가 / 운영 승격 및 배포를 각각 구분. 기술 도구 완성 ≠ 실제 만족도 ≠ PR 병합.
+- 세부 계약: `FACE_LAB_STYLE_CHECK_SC06D_VISUAL_REVIEW_20261023.md` (PR #1402). 운영 `SC-07` 경로는 현재 보류.
 
 ## 5. 체크리스트/실행 운영
 
