@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','AuditDataCommands')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','AuditDataCommands')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -819,7 +819,7 @@ SELECT json_build_object(
     } | ConvertTo-Json -Compress -Depth 7 | Write-Output
     return
   }
-  if ($Mode -in @('RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit')) {
+  if ($Mode -in @('RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory')) {
     # LIMITED, EXPLICITLY PARTIAL RESTORE. Never pretend Supabase Auth/Storage
     # tables or data have been recovered. Only public COPY and public sequence
     # setval commands are replayed in this no-network disposable DB.
@@ -896,7 +896,7 @@ SELECT json_build_object(
           $m = $setvalRx.Match($line)
           Assert-Drill $m.Success ('D8K13_PUBLIC_DATA_SEQUENCE_FORMAT_UNSUPPORTED_LINE_' + $lineNumber)
           if ($m.Groups['schema'].Value.Trim('"').ToLowerInvariant() -eq 'public') {
-            if ($Mode -eq 'RestorePublicDataWithIntegrityAudit') {
+            if ($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory')) {
               $seqName = $m.Groups['seq'].Value.Trim('"').ToLowerInvariant()
               Assert-Drill (-not $publicSequenceSeen.ContainsKey($seqName)) 'D8K13_PUBLIC_SEQUENCE_DUPLICATE_SOURCE_SETVAL'
               $publicSequenceSeen[$seqName] = $true
@@ -979,7 +979,7 @@ $d8k13_public$;
     # public->public references explicitly. Managed-schema parents stay excluded.
     # Read-only SELECT on a --network none, disposable, superuser-owned PG17 DB.
     $publicFkAudit = $null
-    if ($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit')) {
+    if ($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory')) {
       $fkSql = @'
 SET row_security = off;
 CREATE TEMP TABLE d8k13_fk_result (status text NOT NULL, violating_rows bigint NOT NULL);
@@ -1052,7 +1052,7 @@ SELECT json_build_object(
     # Strict, opt-in public setval state comparison. Do not call nextval,
     # as it changes sequence values; calculate possible exhaustion only.
     $publicSequenceAudit = $null
-    if ($Mode -eq 'RestorePublicDataWithIntegrityAudit') {
+    if ($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory')) {
       Assert-Drill ($publicSequenceExpectations.Count -eq $publicSequenceResets -and
                     $publicSequenceResets -gt 0) 'D8K13_PUBLIC_SEQUENCE_SOURCE_COUNT_MISMATCH'
       $seqSql = @'
@@ -1121,6 +1121,95 @@ SELECT json_build_object(
 
     $inventory = Get-PublicInventory $container
     Assert-Drill ([int]$inventory.pg_major -eq 17 -and [int]$inventory.tables -ge 1) 'D8K13_PUBLIC_DATA_INVALID_PG17_INVENTORY'
+
+    # Read-only catalog inventory only. These aggregates are a snapshot of
+    # the disposable DB, NOT proof of hosted Auth/Storage, effective ACL
+    # equivalence, owner parity or secure behavior of individual policies.
+    $securityInventory = $null
+    if ($Mode -eq 'RestorePublicDataWithSecurityInventory') {
+      $securitySql = @'
+WITH
+ rel AS (
+   SELECT c.oid,c.relowner,c.relacl,c.relrowsecurity,c.relforcerowsecurity
+   FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+   WHERE n.nspname='public' AND c.relkind IN ('r','p')
+ ),
+ policies AS (
+   SELECT p.oid,p.polpermissive,p.polcmd
+   FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid
+   JOIN pg_namespace n ON n.oid=c.relnamespace
+   WHERE n.nspname='public'
+ ),
+ fn AS (
+   SELECT p.oid,p.proowner,p.proacl,p.prosecdef
+   FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public'
+ ),
+ views AS (
+   SELECT c.oid,c.reloptions FROM pg_class c
+   JOIN pg_namespace n ON n.oid=c.relnamespace
+   WHERE n.nspname='public' AND c.relkind='v'
+ )
+SELECT json_build_object(
+ 'publicTables',(SELECT count(*) FROM rel),
+ 'rlsEnabledTables',(SELECT count(*) FROM rel WHERE relrowsecurity),
+ 'rlsForcedTables',(SELECT count(*) FROM rel WHERE relforcerowsecurity),
+ 'rlsDisabledTables',(SELECT count(*) FROM rel WHERE NOT relrowsecurity),
+ 'rlsEnabledTablesWithZeroPolicies',(SELECT count(*) FROM rel r WHERE r.relrowsecurity
+   AND NOT EXISTS(SELECT 1 FROM pg_policy p WHERE p.polrelid=r.oid)),
+ 'publicPolicies',(SELECT count(*) FROM policies),
+ 'permissivePolicies',(SELECT count(*) FROM policies WHERE polpermissive),
+ 'restrictivePolicies',(SELECT count(*) FROM policies WHERE NOT polpermissive),
+ 'publicFunctions',(SELECT count(*) FROM fn),
+ 'securityDefinerFunctions',(SELECT count(*) FROM fn WHERE prosecdef),
+ 'publicFunctionsOwnedByPostgres',(SELECT count(*) FROM fn
+   WHERE proowner=(SELECT oid FROM pg_roles WHERE rolname='postgres')),
+ 'publicFunctionsOwnedByOtherRoles',(SELECT count(*) FROM fn
+   WHERE proowner<>(SELECT oid FROM pg_roles WHERE rolname='postgres')),
+ 'publicFunctionsExecutableByAnon',(SELECT count(*) FROM fn
+   WHERE has_function_privilege('anon',oid,'EXECUTE')),
+ 'publicFunctionsExecutableByAuthenticated',(SELECT count(*) FROM fn
+   WHERE has_function_privilege('authenticated',oid,'EXECUTE')),
+ 'securityDefinerExecutableByAnon',(SELECT count(*) FROM fn
+   WHERE prosecdef AND has_function_privilege('anon',oid,'EXECUTE')),
+ 'securityDefinerExecutableByAuthenticated',(SELECT count(*) FROM fn
+   WHERE prosecdef AND has_function_privilege('authenticated',oid,'EXECUTE')),
+ 'publicTablesExplicitSelectForBrowserRoles',(SELECT count(*) FROM rel r
+   WHERE EXISTS(
+     SELECT 1 FROM aclexplode(COALESCE(r.relacl,acldefault('r',r.relowner))) a
+     WHERE a.privilege_type='SELECT' AND
+       (a.grantee=0 OR a.grantee IN (
+         SELECT oid FROM pg_roles WHERE rolname IN ('anon','authenticated')
+       ))
+   )),
+ 'publicViews',(SELECT count(*) FROM views),
+ 'publicViewsWithSecurityInvoker',(SELECT count(*) FROM views
+   WHERE COALESCE(reloptions,ARRAY[]::text[]) @> ARRAY['security_invoker=true']),
+ 'publicViewsWithSecurityBarrier',(SELECT count(*) FROM views
+   WHERE COALESCE(reloptions,ARRAY[]::text[]) @> ARRAY['security_barrier=true']),
+ 'productionParityVerified',false,
+ 'managedParentDataPresent',false,
+ 'securityDefinerSemanticsAudited',false
+)::text;
+'@
+      $securityFile = Join-Path $unpacked 'd8k13-public-security-catalog.sql'
+      [System.IO.File]::WriteAllText($securityFile,$securitySql,[System.Text.UTF8Encoding]::new($false))
+      Run-Docker 'COPY_PUBLIC_SECURITY_INVENTORY' @('cp',$securityFile,($container + ':/tmp/d8k13-public-security-catalog.sql'))
+      Run-Docker 'PUBLIC_SECURITY_INVENTORY' @('exec','-u','postgres',$container,'psql',
+        '-X','-q','-A','-t','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate',
+        '-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/d8k13-public-security-catalog.sql')
+      $securityLog = @(Get-Content -LiteralPath (Join-Path $unpacked 'docker-PUBLIC_SECURITY_INVENTORY-stdout.log'))
+      $securityLines = @($securityLog | Where-Object { $_ -match '^\{.*\}$' })
+      Assert-Drill ($securityLines.Count -eq 1) 'D8K13_PUBLIC_SECURITY_METADATA_SUMMARY_MISSING'
+      $securityInventory = $securityLines[0] | ConvertFrom-Json
+      Assert-Drill ([int]$securityInventory.publicTables -eq [int]$inventory.tables) 'D8K13_PUBLIC_SECURITY_TABLE_COUNT_INCONSISTENT'
+      Assert-Drill ([int]$securityInventory.rlsEnabledTables + [int]$securityInventory.rlsDisabledTables -eq [int]$securityInventory.publicTables) 'D8K13_PUBLIC_SECURITY_RLS_COUNT_INCONSISTENT'
+      Assert-Drill ([int]$securityInventory.permissivePolicies + [int]$securityInventory.restrictivePolicies -eq [int]$securityInventory.publicPolicies) 'D8K13_PUBLIC_SECURITY_POLICY_COUNT_INCONSISTENT'
+      Assert-Drill ([int]$securityInventory.publicFunctions -eq [int]$inventory.routines -and
+                    [int]$securityInventory.publicPolicies -eq [int]$inventory.policies -and
+                    [int]$securityInventory.rlsEnabledTables -eq [int]$inventory.rls_enabled) 'D8K13_PUBLIC_SECURITY_INVENTORY_MISMATCH'
+    }
+
     [ordered]@{
       status='D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED'
       sourceCopyHeaders=$totalCopies
@@ -1135,10 +1224,14 @@ SELECT json_build_object(
       strictSchemaRestoreCompleted=$true
       publicDataRowsVerified=$true
       foreignKeyReferentialParityVerified=$false
-      publicToPublicForeignKeyRowsVerified=($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit'))
+      publicToPublicForeignKeyRowsVerified=($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory'))
       publicToPublicForeignKeyAudit=$publicFkAudit
-      publicSequenceSourceStateVerified=($Mode -eq 'RestorePublicDataWithIntegrityAudit')
+      publicSequenceSourceStateVerified=($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory'))
       publicSequenceSourceStateAudit=$publicSequenceAudit
+      publicSecurityCatalogInventory=$securityInventory
+      publicSecurityCatalogInventoryCollected=($Mode -eq 'RestorePublicDataWithSecurityInventory')
+      rlsPolicyParityVerified=$false
+      ownerAndAclParityVerified=$false
       authDataRestored=$false
       storageMetadataRestored=$false
       storageObjectBytesRestored=$false
