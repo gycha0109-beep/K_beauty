@@ -117,7 +117,8 @@ def self_test():
         mask.putpalette(palette + [0]*(768-len(palette)))
         px = np.zeros((24,36), dtype=np.uint8)
         px[1:4, 1:5] = 2
-        Image.fromarray(px, mode="P").save(root/"m.png")
+        mask.putdata(px.flatten().tolist())
+        mask.save(root/"m.png")
         a, decoded = palette_info(root/"m.png")
         assert a["indices"]["2"] == 12
         assert a["semanticMapping"] == "UNVERIFIED"
@@ -140,7 +141,8 @@ def self_test():
             raise AssertionError("Invalid ROI should fail")
         except ValueError: pass
         px[5,5] = 6
-        Image.fromarray(px,mode="P").save(root/"bad.png")
+        mask.putdata(px.flatten().tolist())
+        mask.save(root/"bad.png")
         try:
             palette_info(root/"bad.png")
             raise AssertionError("Unknown index should fail")
