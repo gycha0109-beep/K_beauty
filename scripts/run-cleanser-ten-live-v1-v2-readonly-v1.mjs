@@ -116,12 +116,29 @@ const cohort={
 const v=await compareExistingTenCleanserPreflightsV1({
   cohort,evaluateV1:evaluateCleanserInitialAdmissionPreflight
 });
+const humanActions=blockers=>{
+  const codes=new Set(blockers);
+  const result=[];
+  if(["CURRENT_EXACT_SUBJECT_REQUIRED","RESOLVED_OFFICIAL_SOURCE_BINDING_REQUIRED",
+      "CURRENT_OFFICIAL_IDENTITY_OBSERVATION_REQUIRED"].some(x=>codes.has(x)))
+    result.push("공식 제조사 원본과 정확한 SKU·처방을 검증하고 TRUST 관리자에게 전달");
+  if(codes.has("VERIFIED_EXACT_CAPACITY_REQUIRED"))
+    result.push("실제 본품 용량·단위·기획 세트 구성을 공식 출처로 대조");
+  if(["HWAHAE_PRODUCT_CAPTURE_BINDING_REQUIRED","CURRENT_MARKET_SIGNALS_REQUIRED",
+      "CURRENT_REVIEW_SIGNALS_REQUIRED","VALID_CURRENT_INGREDIENT_SIGNALS_REQUIRED"].some(x=>codes.has(x)))
+    result.push("정확한 화해 상품 연결과 리뷰·성분 관측을 확인");
+  if(codes.has("VERIFIED_RECOMMENDATION_SEMANTICS_REQUIRED"))
+    result.push("피부 타입과 피부 고민 메타데이터를 근거로 검토");
+  if(codes.has("GOVERNED_CURRENT_FACT_REQUIRED"))
+    result.push("low_ph·deep_cleansing 근거를 별도 Fact 심사로 확인");
+  return result;
+};
 const indexed=new Map(products.map(x=>[x.id,x]));
 const report={
   version:VERSION,read_only:true,scope:"EXISTING_TEN_CLEANSERS",
   raw_sources_exported:false,external_manufacturer_pages_fetched:false,
   governance:{
-    subjects:subjects.length,official_bindings:official_bindings.filter(x=>x.binding_state==="resolved").length,
+    subjects:subjects.length,official_bindings:official_bindings.filter(x=>x.binding_state==="resolved"&&x.product_scope_state==="product"&&/^[a-z0-9_]+_official$/.test(String(x.source_name||""))).length,
     observations:observations.length,confirmed_facts:confirmed_facts.length,
     preexisting_intakes:intakes.length,preexisting_research_tasks:tasks.length
   },
@@ -138,6 +155,7 @@ const report={
       product_id:r.product_id,product_name:p.brand+" "+p.name,
       v1_state:r.v1_state,v1_blockers:r.v1_blockers,
       v1_conflicts:r.v1_conflicts,
+      what_to_do:humanActions(r.v1_blockers),
       v2_state:r.v2_state,v2_blockers:r.v2_remaining_blockers,
       formula_decision:r.formula_decision,
       fact_reuse_approved:false,admission_granted:false
