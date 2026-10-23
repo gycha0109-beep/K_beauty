@@ -3318,3 +3318,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added `scripts/audit-memi-palette-and-lighting.py`: P-mode raw index counter (0..5, semantics UNVERIFIED), local brightness/specular/dark capture proxy, human-defined ROI optional; Python 3.14 + NumPy + Pillow synthetic self-test PASS after fixing fixture palette preservation and assertion.
 - Unverified: MEMI publisher exact palette index definition; 131 source image/mask execution; real photo quality and any Dice/IoU/model metrics; original portrait/commercial-use permissions. All remain blocked as training/evaluation authority.
 - Next: run local QC on verified private input machine, independently verify upstream class definition and rights; only then implement guarded class semantic decoder / corrected gold comparison; retain PR draft.
+
+## 2026-10-24 — MEMI original batch audit prepared while academy PC offline
+- Scope: read-only/private dataset integrity and capture-condition diagnostics, no production, DB, API, authorization or source-image changes. Online home PC `sun`; offline academy PC `DESKTOP-6C3L8O4`, originals stay only on academy computer.
+- Added `scripts/audit-memi-dataset-local.py`: exact source image/paletted mask pair matching, 131-QC linkage, source integrity, per-index count, camera/pose and reviewer QC metadata, exact duplicate rejection, opt-in independently human-defined ROI brightness proxies; no mask class inference, no invented anatomical region.
+- Runtime: Windows Python 3.14 synthetic test **PASS** (two unrelated artificial pairs, wrong duplicate detection, reviewer-QC count, optional ROI). Fixed synthetic fixture collisions before successful rerun. No actual academy file processing possible while disconnected.
+- Documented private local execution and gates in `data/skin-precision/README.md`; original face rights and numeric mask index semantics still unverified; no training/performance claims.
+- Next: on academy machine inspect file tree and run read-only 131-pair audit, repair only justified layout mismatches in code, independently establish upstream index mapping/rights before segmentation. PR #1387 remains Draft.
