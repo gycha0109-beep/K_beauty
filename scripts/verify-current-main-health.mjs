@@ -62,6 +62,7 @@ run("C4 original upstream v1-v2 isolated integration", node, ["scripts/verify-cl
 run("C4 live cleanser SELECT-only transport guard", node, ["scripts/verify-cleanser-hosted-select-only-audit-v1.mjs"]);
 run("R5 existing ten cleanser next-actions ledger", node, ["scripts/verify-cleanser-review-worklist-shadow-v1.mjs"]);
 run("C1/C2 public manufacturer leads, no Fact authority", node, ["scripts/verify-cleanser-public-official-research-leads-v1.mjs"]);
+run("C2 Lagom regional 120/150 and 170/220 formula HOLD", node, ["scripts/verify-lagom-cross-market-formulation-hold-v1.mjs"]);
 run("R6 cleanser no-activation checklist gate", node, ["scripts/verify-cleanser-r6-release-review-v1.mjs"]);
 run("R5 164-product live scoring offer-variation shadow", node, ["scripts/verify-catalog-offer-runtime-invariance-v1.mjs"]);
 run("TRUST Phase 1 intake contract", node, ["scripts/verify-trust-intake-foundation.mjs"]);
