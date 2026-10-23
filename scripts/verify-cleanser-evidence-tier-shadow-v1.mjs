@@ -88,8 +88,8 @@ assert.equal(reviewCase({conflictSignals:["PRODUCT_IDENTITY_COLLISION"]})
   .tier,TIER.REVIEW_HOLD);
 assert.equal(reviewCase({conflictSignals:["EXACT_PRODUCT_CAPTURE_MISMATCH"]})
   .tier,TIER.REVIEW_HOLD);
-assert.equal(reviewCase({prod:{...p,category:"sunscreen"}}).tier,TIER.REVIEW_HOLD);
-assert.equal(reviewCase({prod:{...p,id:"invalid"}}).tier,TIER.REVIEW_HOLD);
+assert.equal(reviewCase({product:{...p,category:"sunscreen"}}).tier,TIER.REVIEW_HOLD);
+assert.equal(reviewCase({product:{...p,id:"invalid"}}).tier,TIER.REVIEW_HOLD);
 // A retailer description with a verified exact product match may inform
 // a texture preference, but never a claim about measured cleansing strength.
 const description={...signal,key:"texture",value:"foam",
