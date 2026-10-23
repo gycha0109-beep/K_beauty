@@ -17,6 +17,8 @@ import {createClient} from "@supabase/supabase-js";
 import {createCleanserSelectOnlyFetchV1} from "../lib/trust/cleanser-hosted-select-only-transport-v1.mjs";
 
 if(process.argv.length!==2)throw new Error("R5_NO_FLAGS_OR_AUTHORITY_OVERRIDE_ALLOWED");
+if(process.env.GITHUB_ACTIONS==="true"||process.env.CI==="true")
+  throw new Error("R5_PRIVATE_FULL_SOURCE_RUN_FORBIDDEN_IN_CI");
 const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
 if(!url||!key)throw new Error("AUTHORIZED_PRIVATE_SERVER_CREDENTIALS_REQUIRED");
 register("./node-next-alias-loader.mjs",import.meta.url);
