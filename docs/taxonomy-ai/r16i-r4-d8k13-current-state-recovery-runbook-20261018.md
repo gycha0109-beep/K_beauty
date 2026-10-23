@@ -402,3 +402,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **기존 public 무결성 유지:** 101 테이블/12,220행, public-parent FK 199개 위반 0, 관리형-parent FK 34개 미검증, public sequence 2개 복원 상태 일치.
 - **위험 판정:** `SECURITY_DEFINER_AUTHZ_REVIEW_REQUIRED`, `SEARCH_PATH_REVIEW_REQUIRED`. 위 결과는 isolated snapshot의 사실이지 hosted 시스템에 동일한 GRANT/OWNER/함수 정의가 있다고 보증하지 않음. 취약점 건수로 환산 금지; 권한 임의 REVOKE, 정책 해제, 릴리스 승인 금지.
 - **다음 게이트:** 135개 함수 중 웹역할 직접 호출 가능 함수에 대해 소유권/인자·RETURNS/SECURITY DEFINER 본문과 `search_path` 조합, 내부 `auth.uid()/auth.jwt()`·서비스 권한 검사 여부를 비밀 데이터 유출 없이 감사. hosted `pg_proc/proacl` 동등성 비교 및 승인 경로 확보 전 **RELEASE HOLD**, PR #1341 Draft·미병합, D8D v2 OFF, issue #1208 OPEN.
+
+
+### 6.29. SECURITY DEFINER 135개 함수 본문 lexical signal 격리 분류 (2026-10-23)
+
+- **출처:** 운영자 Windows PC의 원본 ZIP SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6` 실행 전후 동일. 합성 CI [#39903567164](https://github.com/gycha0109-beep/K_beauty/actions/runs/39903567164) SUCCESS, 스크립트 `fcc8b9c7699f67c253c3ab221ef03bb492a1228d`, `RestorePublicDataWithSecurityBodySignals`. Disposable PG17 `--network none`, 생산 연결 0, 함수 이름/본문/인자/원문 SQL/사용자 행 출력 0. 101 public 테이블·12,220행, FK 199개 위반 0개, sequence 2개 재검증 유지.
+- **범위:** 공개 스키마 `SECURITY DEFINER` 함수 135개: PL/pgSQL 113개, SQL 22개, 타 언어 0. 정규식에 의한 함수 본문 문자열 분석만 수행; 주석·SQL 문자열·간접 호출이 혼재할 수 있어 *인증 부재나 취약성 확정 아님*.
+- **인증 단서:** `auth.uid/auth.jwt/auth.role` 또는 request JWT 설정 접근 관련 직접 lexical 표현 1개, 표현 미감지 134개. 이 수치는 함수 간 호출·별도 정책·역할 검사·컨트롤 플로를 평가하지 않는다.
+- **동적 SQL 단서:** PL/pgSQL 함수 중 `EXECUTE` 표현 감지 3개, 그중 `format()`도 감지 1개. EXECUTE lexical 감지 3개 모두 직접 인증 표현 미감지. `RAISE EXCEPTION` 표현 감지 94개. 우선순위 평가에만 사용; 함수별 명칭/내용이나 row data는 외부로 전달하지 않음.
+- **경로:** 함수별 `search_path` 중 public 포함 69개, pg_temp 포함 68개(68개 전부 설정 경로 끝에 pg_temp 표시), pg_temp 미명시 67개. PostgreSQL의 임시 스키마 해석 및 위험성은 객체 유형·사용자 CREATE 권한·스키마 순서/정규식 오탐 여부·실제 함수 본문을 함께 평가해야 함.
+- **소유:** postgres 소유 SECURITY DEFINER 126개, postgres 소유 함수 중 EXECUTE lexical 감지 3개. 기존 명시적 anon/authenticated EXECUTE 135개 및 관리형-parent FK 34개 미검증 분리 유지.
+- **다음 게이트:** 우선 동적 SQL 단서 3개에 대해 owner-local·출력 차단된 개별 리뷰, 역할/인증 guard와 SQL 문자열·identifier quoting·SET search_path·함수 간 호출 그래프·권한 상속 평가. 전체 135개 함수의 실행 권한 필요성/최소권한, hosted parity, 178 migration provenance 및 보안 이슈 #1208도 별도 차단 요소.
+- **판정:** `BODY_SIGNAL_LEXICAL_TRIAGE_COLLECTED`, `3_DYNAMIC_SQL_LEXICAL_REVIEW_PRIORITY`, `FUNCTION_AUTH_SEMANTICS_NOT_VERIFIED`, **RELEASE HOLD**, PR #1341 Draft·미병합, D8D v2 OFF. 운영 SQL/권한 조정/병합/배포 미승인.
