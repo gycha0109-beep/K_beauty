@@ -15,6 +15,7 @@ import {readFile} from "node:fs/promises";
 import {register} from "node:module";
 import {createClient} from "@supabase/supabase-js";
 import {createCleanserSelectOnlyFetchV1} from "../lib/trust/cleanser-hosted-select-only-transport-v1.mjs";
+import {verifyCleanserEngineComponentSumV1,verifyCleanserReviewAxisParityV1} from "../lib/trust/cleanser-r5-score-reconciliation-v1.mjs";
 
 if(process.argv.length!==2)throw new Error("R5_NO_FLAGS_OR_AUTHORITY_OVERRIDE_ALLOWED");
 if(process.env.GITHUB_ACTIONS==="true"||process.env.CI==="true")
@@ -110,16 +111,7 @@ for(const item of scenariosFixture.scenarios){
   }
   for(const p of newRows.filter(p=>ids.includes(p.id))){
     const b=p.score_breakdown;
-    if(!b||!Number.isFinite(p.engine_score)||b.engineScore!==p.engine_score||
-       !["baseScore","environmentAdjustment","heroBoost","reviewSignalScore",
-         "ingredientSignalScore","marketConfidenceScore","hardPenalty"].every(
-           k=>Number.isFinite(b[k])))
-      throw new Error("R5_NONFINITE_COMPONENT_OR_SCORE_DRIFT");
-    const total=b.baseScore+b.environmentAdjustment+b.heroBoost+
-      b.reviewSignalScore+b.ingredientSignalScore+b.marketConfidenceScore+
-      b.hardPenalty;
-    if(Math.abs(Math.round(total*10)/10-p.engine_score)>0.05)
-      throw new Error("R5_SCORE_COMPONENT_DOUBLE_COUNT_OR_SUM_DRIFT");
+    verifyCleanserEngineComponentSumV1(p);
     if(b.reviewSignalScore!==0)reviewNonzeroCells++;
     if(b.ingredientSignalScore!==0)ingredientNonzeroCells++;
     if(b.marketConfidenceScore!==0)marketNonzeroCells++;
@@ -149,8 +141,7 @@ for(const context of expectedScores.contexts){
     // A missing/unmapped capture is held as a review contribution of zero,
     // not an invented positive or an official efficacy Fact.
     const expectedComponent=recorded?.review_signal_score??0;
-    if(scored.score_breakdown.reviewSignalScore!==expectedComponent)
-      throw new Error("R5_FULL_ENGINE_REVIEW_AXIS_DRIFT:"+expected.product_id+":"+context.id);
+    verifyCleanserReviewAxisParityV1(scored,expectedComponent);
     if(recorded)reviewAxisExactMatches++;
     else heldReviewAxisZeroMatches++;
   }
