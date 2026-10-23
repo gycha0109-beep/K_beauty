@@ -301,7 +301,10 @@ def body_findings(body, parameter_names=None):
         using = any(k == "WORD" and v.upper() == "USING" for k, v in segment)
         detail = {"executeLexical": True, "usingInStatement": using,
                   "formatDirectlyAfterExecute": False, "bindings": [],
-                  "hasUnresolvedRawSubstitution": False}
+                  "hasUnresolvedRawSubstitution": False,
+                  "usingDoesNotBindFormatInterpolations": True,
+                  "formatArgumentSafetyProven": False,
+                  "staticReviewPriority": "UNRESOLVED"}
         if len(segment) >= 2 and segment[0][0] == "WORD" and segment[0][1].lower() == "format":
             args = format_arguments(segment, 1)
             if args:
@@ -312,6 +315,10 @@ def body_findings(body, parameter_names=None):
                 else:
                     detail["templateKind"] = "STRING_LITERAL"
                     specs = [m.group(1) for m in PLACEHOLDER.finditer(template) if m.group(1)]
+                    detail["templateHasPositionalOrUnsupportedFormatDirectives"] = bool(
+                        re.search(r"%(?!%|[sIL])", template))
+                    detail["templateHasDynamicSqlBindSlot"] = bool(
+                        re.search(r"\\$[1-9][0-9]*\\b", template))
                     for j, spec in enumerate(specs):
                         argclass = expression_class(args[j + 1]) if j + 1 < len(args) else "MISSING"
                         binding = {"specifier": "%" + spec, "argumentClass": argclass}
@@ -323,9 +330,19 @@ def body_findings(body, parameter_names=None):
                             binding["possibleParameterFlowSignal"] = flow
                             binding["possibleParameterFlowLexical"] = possible
                             binding["originOrInputSafetyProven"] = False
+                            binding["interpolationMechanism"] = "FORMAT_PERCENT_S_NOT_USING_BOUND"
+                            binding["sourceReviewRequired"] = True
                         detail["bindings"].append(binding)
                         if spec == "s" and argclass not in ("CONSTANT", "QUOTE_HELPER_CALL"):
                             detail["hasUnresolvedRawSubstitution"] = True
+                    if detail["hasUnresolvedRawSubstitution"]:
+                        detail["staticReviewPriority"] = "RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST"
+                    elif any(binding["specifier"] == "%s" for binding in detail["bindings"]):
+                        detail["staticReviewPriority"] = "RAW_FORMAT_SUBSTITUTION_SOURCE_REVIEW"
+                    elif detail["templateHasPositionalOrUnsupportedFormatDirectives"]:
+                        detail["staticReviewPriority"] = "UNSUPPORTED_FORMAT_DIRECTIVES_REVIEW"
+                    else:
+                        detail["staticReviewPriority"] = "NO_RAW_PERCENT_S_FOUND_NOT_A_SAFETY_VERDICT"
         findings.append(detail)
     return findings
 
@@ -357,6 +374,18 @@ def self_test():
     assert [x["specifier"] for x in r[0]["bindings"]] == ["%I", "%s"]
     assert r[0]["hasUnresolvedRawSubstitution"]
     assert r[0]["usingInStatement"]
+    assert r[0]["usingDoesNotBindFormatInterpolations"] is True
+    assert r[0]["staticReviewPriority"] == "RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST"
+    assert r[0]["formatArgumentSafetyProven"] is False
+    bound = body_findings("BEGIN EXECUTE format('SELECT %s WHERE id = $1', input_expr) USING 42; END;")
+    assert bound[0]["templateHasDynamicSqlBindSlot"] is True
+    assert bound[0]["bindings"][0]["interpolationMechanism"] == "FORMAT_PERCENT_S_NOT_USING_BOUND"
+    assert bound[0]["staticReviewPriority"] == "RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST"
+    no_directive = body_findings("BEGIN EXECUTE format('SELECT %I', column_name); END;")
+    assert no_directive[0]["staticReviewPriority"] == "NO_RAW_PERCENT_S_FOUND_NOT_A_SAFETY_VERDICT"
+    numbered = body_findings("BEGIN EXECUTE format('SELECT %2$s', ignored, input_expr); END;")
+    assert numbered[0]["templateHasPositionalOrUnsupportedFormatDirectives"] is True
+
     safe = body_findings("BEGIN EXECUTE format('select %s', 7); END;")
     assert len(safe) == 1 and not safe[0]["hasUnresolvedRawSubstitution"]
     assert len(body_findings("BEGIN /* EXECUTE fake; */ RETURN 1; END;")) == 0
