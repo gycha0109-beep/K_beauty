@@ -3302,3 +3302,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added `data/skin-precision/aihub-71645-visual-review-v1.md` and linked README/roadmap.
 - Validation caveats: no actual photo bytes inspected, no actual VS/VL local file run because remote Windows device OFFLINE and runtime unavailable; no expert review or model evaluation. Source label is not clinical gold and `acne:null` cannot be negative. No raw data posted to GitHub.
 - AI-Hub terms restrict third-party review/foreign transfer; off-device image access was intentionally not performed.
+
+
+## 2026-10-23 — Nonblocking scan confidence + targeted skin dataset sourcing
+- Type: bounded documentation execution + source review. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production impact **N**; no protected code or raw images modified or downloaded.
+- Roadmap section 11 added: photo-level and concern-level reliability, best-effort scoring with caution, no forced recapture for isolated low confidence, honest no-data/not-assessed, calibration and test cases. Section 12 links researched sources.
+- New `data/skin-precision/supplementary-dataset-research-2026-10-23.md`: provenance and usage precision for MEMI-DS, Nexdata 7,262, FaceSkin-Q, Rupam 50k+, Nexdata 26,090/21,302 discrepancy, PS-Net embargo, SKINCON NC, FFHQ-Wrinkle NC, Kaggle category data, NIA author checkpoints.
+- Candidate register extended with nine assets; no `commercialUseCleared=true`, paid datasets not purchased, no imported face images or weights. Dataset marketing counts are vendor claims, and paper-level data does not imply redistribution permission.
+- Relevant user-visible deliverables: commit on draft PR #1387 only; no production functionality changed. Verification performed with GitHub readback and JSON no-duplicate/no-approved checks.
