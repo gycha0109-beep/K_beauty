@@ -1,5 +1,6 @@
 import {isAbsolute,extname,resolve,relative,sep,dirname} from "node:path";
 import {existsSync,realpathSync,writeFileSync} from "node:fs";
+import {fileURLToPath} from "node:url";
 import {
   buildStyleCheckStructuralHumanReviewPacket
 } from "../lib/face-lab-v2/evaluation/style-check-structural-human-pairwise-builder.js";
@@ -15,7 +16,7 @@ export function buildFaceLabSC06DVisualReviewHtml(){
   const content=JSON.stringify(packet).replace(/</g,"\\u003c");
   return HTML.replace("__REVIEW_PACKET_JSON__",content);
 }
-if(process.argv[1] && import.meta.url===new URL("file://"+resolve(process.argv[1])).href){
+if(process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const arg=process.argv.find(x=>x.startsWith("--output-file="));
   const requested=arg?.slice("--output-file=".length);
   if(!requested||!isAbsolute(requested)||extname(requested)!==".html")
