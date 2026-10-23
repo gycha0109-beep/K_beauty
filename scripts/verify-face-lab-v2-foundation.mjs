@@ -15,6 +15,8 @@ import "./verify-face-lab-style-check-field-impact-sc06.mjs";
 import "./verify-face-lab-style-check-structural-shadow-sc06b.mjs";
 // SC-06C: blinded synthetic human review packets and sealed operator role separation.
 import "./verify-face-lab-style-check-structural-human-packets-sc06c.mjs";
+// SC-06D: offline 3-image visual reviewer; never binds photos to synthetic observations automatically.
+import "./verify-face-lab-style-check-visual-review-ui-sc06d.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
