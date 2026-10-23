@@ -439,3 +439,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **실행 제한:** 새로운 보강 버전에 대해 실제 소유자 ZIP 검증은 **미실시**. 연결된 Windows PC로 검사 파일을 쓰거나 원격 URL에서 스크립트를 가져오는 작업이 실행 도구의 안전 검사에서 차단되었다. 우회 실행이나 비밀 데이터/원본 SQL을 GitHub로 가져오는 조치는 하지 않았다. 따라서 마지막으로 확인된 실제 ZIP 결과는 이전 커밋 `234b1bd1173e786db7de6494c5e2ecadc8af8725` 수준의 `plpgsqlDefinerBodiesParsed=115`, `candidateFunctions=1`, `%s`의 `BARE_IDENTIFIER_OR_PARAMETER_UNRESOLVED` 분류로 유지한다.
 - **안전한 판정:** B 후보의 `%s`가 외부 입력을 그대로 받는다는 점, 적절히 escape/quote 되었는지, `USING`으로 해당 값이 보호되었는지, 인증 우회 가능성이 있는지는 **모두 미확정**. 로컬 파서 출력은 익명 집계만 사용하고, 기존 security issue #1208, 관리형 FK 34개, hosted parity, 178 migration history 등의 릴리스 차단은 해제하지 않는다.
 - **다음 완료 게이트:** 합성 CI 성공 확인 후, 사용자 승인 및 연결 보안 정책이 허용하는 소유자 로컬 실행 환경에서 새 버전의 비식별 출력만 검증. 이후 함수 B의 실제 원본 코드 내부에서 `format` 인자·대입 경로·권한 guard를 소스 비반출 방식으로 분석. **RELEASE HOLD / D8D v2 OFF / PR #1341 Draft·미병합**.
+
+
+### 6.33. 동적 SQL `EXECUTE USING` 과 `format('%s')` 보호 범위 구분 (2026-10-24)
+
+- **구현:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py`에서 PL/pgSQL `EXECUTE format()`의 `%s` 문자열 치환과 명령문의 `USING` 데이터 바인딩을 **별개**로 표시. `USING`이 있어도 `format('%s', value)`에서 문자열로 치환된 부분이 자동으로 안전해지는 것은 아님. 익명 합성 입력으로 `%s`, `%I`, `$1` 및 `USING`, 번호 붙은 `%2$s` 등 구분 검사.
+- **출력 의미:** `FORMAT_PERCENT_S_NOT_USING_BOUND`, `RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST` 등은 우선 검토를 위한 **정적 신호**. 함수/변수명·원문 SQL·개인정보는 출력하지 않고 `formatArgumentSafetyProven=false`를 유지. 실제 taint/dataflow·취약점 증명으로 취급하지 않음.
+- **검증:** 첫 커밋 `971060cdeeb6912fc7ff7162a9e538bf8a2e869b`의 합성 테스트에서 SQL `$1` 탐지 정규식 이스케이프 오류로 실패(#39983551803). `87519e20b4ece1f98e10cf94cbc57c9e62ffba77`에서 수정했고, 합성 CI #39983938563의 Python self-test 단계 통과를 확인함. 실제 원본 ZIP 재실행은 하지 않음.
+- **남은 것:** B 함수 `%s` 인자의 입력 출처·안전한 변환·인증/인가 검사 및 전체 함수 실행 경로 확인 전 `SAFE`/취약점 확정 불가. A/C 및 기타 SECURITY DEFINER 135개, hosted/관리형 Auth·Storage 및 migration 불일치는 독립 릴리스 차단. **PR #1341 Draft, D8D v2 OFF, RELEASE HOLD 유지**; 운영 SQL/권한/배포/병합 없음.
