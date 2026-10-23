@@ -52,6 +52,7 @@ run("My skin profile baseline contract", node, ["--experimental-default-type=mod
 run("My account/session UX contract", node, ["--experimental-default-type=module", "scripts/verify-my-account-session-ux.mjs"]);
 run("My adversarial E2E harness contract", node, ["--experimental-default-type=module", "scripts/verify-my-adversarial-e2e-contract.mjs"]);
 run("TRUST Phase 1 intake contract", node, ["scripts/verify-trust-intake-foundation.mjs"]);
+run("R1/C1 physical presentation and offer composition shadow", node, ["scripts/verify-catalog-presentation-offer-shadow-v1.mjs"]);
 run("Cleanser admission evidence preflight and existing-product backfill contract", node, ["scripts/verify-cleanser-initial-admission-preflight-v1.mjs"]);
 run("Existing cleanser official evidence capture boundary", node, ["scripts/verify-existing-cleanser-official-capture-v1.mjs"]);
 run("Existing cleanser TRUST subject authority attestation", node, ["scripts/verify-existing-cleanser-subject-attestation-v1.mjs"]);
