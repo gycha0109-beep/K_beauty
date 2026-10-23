@@ -648,6 +648,8 @@ jobs:
             }
           }
           Write-Host 'D8K13_SYNTHETIC_PUBLIC_TO_PUBLIC_FK_AND_MANAGED_SKIP_PASS'
+          # Negative fixture deliberately exits nonzero; clear pwsh's native exit status.
+          exit 0
 
       - name: Reject unsupported SQL data commands before isolated partial restore
         shell: pwsh
