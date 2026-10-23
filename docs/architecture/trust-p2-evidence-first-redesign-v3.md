@@ -184,27 +184,27 @@ The historical five-row correction artifact and the independent accuracy benchma
 
 | 개념 | 의미 | 현재 책임/후보 | 금지 |
 | --- | --- | --- | --- |
-| 기본 제품/카탈로그 앵커 | 브랜드·제품 계열을 가리키는 기존 상품 행 | 기존 \`products.id\` 유지 | 기존 카탈로그 UUID가 곧 제조사 제품/처방 인증이라는 가정 |
-| 처방·의미상 변형 | Product Fact 진위가 같은 제품 상태 | 기존 \`product_fact_subjects\`, immutable \`formulation_revision_key\` | 용량·판매 가격만으로 Subject 생성/병합 |
-| 실물 규격(presentation) | 단일 용기 용량·단위·포장 형태·리필 여부 | 신규 \`product_presentations\` **후보**와 기존 source binding의 \`presentation_metadata\` | 150ml 두 개를 300ml 단일 용기로 환산 |
-| 판매 상품(offer) | 판매처, 한 시점의 상품 구성·단가·링크·재고 | 기존 \`product_offers\`, \`seller_listing_observations\` 및 \`offer_components\` **후보** | 기획 세트 가격을 본품 단품 가격/피부 분석 근거로 사용 |
+| 기본 제품/카탈로그 앵커 | 브랜드·제품 계열을 가리키는 기존 상품 행 | 기존 `products.id` 유지 | 기존 카탈로그 UUID가 곧 제조사 제품/처방 인증이라는 가정 |
+| 처방·의미상 변형 | Product Fact 진위가 같은 제품 상태 | 기존 `product_fact_subjects`, immutable `formulation_revision_key` | 용량·판매 가격만으로 Subject 생성/병합 |
+| 실물 규격(presentation) | 단일 용기 용량·단위·포장 형태·리필 여부 | 신규 `product_presentations` **후보**와 기존 source binding의 `presentation_metadata` | 150ml 두 개를 300ml 단일 용기로 환산 |
+| 판매 상품(offer) | 판매처, 한 시점의 상품 구성·단가·링크·재고 | 기존 `product_offers`, `seller_listing_observations` 및 `offer_components` **후보** | 기획 세트 가격을 본품 단품 가격/피부 분석 근거로 사용 |
 
-- PF-1의 D1/D5/D9/D11을 우선한다. \`product_fact_subjects\`가 처방의 단일 정본이며 **새 formulation 엔터티를 만들지 않는다**. 120ml와 150ml는 동일 처방이 검증되면 한 Subject에, 리뉴얼·성분 차이가 검증되면 서로 다른 Subject에 연결된다.
-- \`products\`의 \`size_ml\`, \`price_min/max\`, \`buy_link\`를 곧바로 삭제/재정의하지 않는다. 기존 상품/추천/관리자 소비자는 유지하고, 새 표현은 shadow read-model에서 시험한다.
-- 현행 \`products(normalized_brand,normalized_name)\` 유니크 제약과 \`product_offers(seller_key,listing_id/listing_url)\` 유니크 제약은 확인됐다. 판매 구성별로 \`products\`를 새로 INSERT해서 제약을 우회하지 않는다. 같은 외부 listing ID가 구성을 바꾸는 사례도 **시간별 관측**으로 보존한다.
-- 현재 \`product_evidence_source_subject_bindings.presentation_metadata\`와 \`equivalent_presentation_match\`가 있으므로 \`presentation_formulation_links\`라는 제3의 정본 테이블은 **기본 채택하지 않는다**. 먼저 현행 승인·이력·복수 규격 참조 요구를 충족하는지 검토한다. 부족하다고 검증될 때만 별도 매핑 또는 버전드 연관 테이블을 설계 승인받는다.
+- PF-1의 D1/D5/D9/D11을 우선한다. `product_fact_subjects`가 처방의 단일 정본이며 **새 formulation 엔터티를 만들지 않는다**. 120ml와 150ml는 동일 처방이 검증되면 한 Subject에, 리뉴얼·성분 차이가 검증되면 서로 다른 Subject에 연결된다.
+- `products`의 `size_ml`, `price_min/max`, `buy_link`를 곧바로 삭제/재정의하지 않는다. 기존 상품/추천/관리자 소비자는 유지하고, 새 표현은 shadow read-model에서 시험한다.
+- 현행 `products(normalized_brand,normalized_name)` 유니크 제약과 `product_offers(seller_key,listing_id/listing_url)` 유니크 제약은 확인됐다. 판매 구성별로 `products`를 새로 INSERT해서 제약을 우회하지 않는다. 같은 외부 listing ID가 구성을 바꾸는 사례도 **시간별 관측**으로 보존한다.
+- 현재 `product_evidence_source_subject_bindings.presentation_metadata`와 `equivalent_presentation_match`가 있으므로 `presentation_formulation_links`라는 제3의 정본 테이블은 **기본 채택하지 않는다**. 먼저 현행 승인·이력·복수 규격 참조 요구를 충족하는지 검토한다. 부족하다고 검증될 때만 별도 매핑 또는 버전드 연관 테이블을 설계 승인받는다.
 
 ### 14.2 단계별 실행 계획과 선행조건
 
 | 단계 | 상태 | 변경 범위 및 산출물 | 진행/완료 조건 |
 | --- | --- | --- | --- |
-| **R0. 현행 계약/카탈로그 감사** | **읽기 전용 조사 완료** | \`products\`/Subject/Source Binding/\`product_offers\` 현황, P2 v3와 PF-1 규칙 차이, 기존 클렌저 10건의 120↔150ml·170↔220ml 불일치 사례 정리 | 현재 제약과 원본 소유자·데이터 출처 기록, 기존 ID 보존 결정 |
-| **R1. 규격·세트 표준 계약** | **설계 예정** | \`product_presentations\`(단일 실물 용기/단위), \`offer_components\`(본품/증정품/리필/동일제품 추가수량), 기존 offer/Subject 연계 계약 정의. 단위·수량·유효시점·증거·미확인 상태 포함. 필요 시에만 매핑 테이블 추가 검토 | 120/150ml, g/ml, 패드 수/액량, 1+1, 본품+세럼 10ml, 리뉴얼, 리테일 SKU 이동의 정규화·무중복·재현 테스트 통과. **DDL 전 DB/RLS/API 영향·승인 별도** |
-| **R2. 관측·증거 보존과 shadow 판정기** | **미착수** | 기존 읽기 경로를 유지하는 readonly adapter; 판매처별 시점 스냅샷/가격/구성품 원본 추적; family/unit/offer/formulation 구분과 \`SAME_FORMULA_CONFIRMED\` / \`DIFFERENT_FORMULA_CONFIRMED\` / \`FORMULA_UNRESOLVED\` 분류 | 출처 누락·서로 다른 SKU·숫자 단위 충돌·증정품 혼입시 자동 동일 처방 판정 0건. 공식몰 네트워크 접근·원본 보존은 사이트 사용 권리와 별도 승인 필요 |
-| **R3. TRUST Subject/Source 적용** | **미착수·보호 단계** | 기존 PF-1 Source→Subject binding \`exact_subject_match\`·\`equivalent_presentation_match\`와 제형 lineage를 재사용. 공식 근거로 확정된 처방만 승인 경로에 연결 | 원본 증거/검토 이력·시장 범위·동일 처방 확인 없이는 cross-size Current Fact 공유 금지. 미확정 구성은 \`product_family_only\` 또는 \`formulation_ambiguous\`로 유지. 변형 \`variant_key\`의 기존 worker/G2 처리 제한 별도 검증 |
-| **R4. 클렌저 admission 게이트 재배치** | **미착수·설계/테스트 후** | 현행 \`VERIFIED_EXACT_CAPACITY_REQUIRED\`를 **카탈로그 전체 Subject 신원 게이트에서 분리**하고, 용량 검증은 presentation/offer 및 원본 source scope에 적용. 단, source-to-subject 근거는 축소 금지 | 동일 처방의 다른 용량을 불필요하게 HOLD하지 않으면서, 공식 자료가 가리키는 SKU와 실제 구매 규격을 정확히 구별; 검증되지 않은 처방의 피부 분석 재사용 0건 |
-| **R5. 카탈로그·추천 shadow 비교** | **미착수** | 기존/신규 read-model 병행; 가격·판매구성 변화가 Fact/추천 점수에 영향 없는지 검증, 실제 처방 변경 시 재검증·이전 Subject 역사 보존 | frozen 기존 추천 164개 불변 또는 심사된 차이만 허용. \`low_ph\`/\`deep_cleansing\`의 **근거 없음 ≠ false**. 정해진 독립 gold set과 중복/오결합률·abstain 품질 기준 사전 확정 |
-| **R6. 승인된 제한 활성화/롤백** | **미착수·별도 승인 필요** | 미리 검증된 데이터/권한만 기존 판매·G2 경로로 단계적 반영, 제한 canary와 추적 로그, 기존 경로 즉시 복귀 스위치 | R1~R5 근거, 관리자/DB 보안 승인, 공급망/CI·규모별 canary·롤백 검증 후에만 병합·배포/추천 활성화. \`read_recommendation_admission_authority_v1\`의 cleanser 지원 부재를 임의 bypass 금지 |
+| **R0. 현행 계약/카탈로그 감사** | **읽기 전용 조사 완료** | `products`/Subject/Source Binding/`product_offers` 현황, P2 v3와 PF-1 규칙 차이, 기존 클렌저 10건의 120↔150ml·170↔220ml 불일치 사례 정리 | 현재 제약과 원본 소유자·데이터 출처 기록, 기존 ID 보존 결정 |
+| **R1. 규격·세트 표준 계약** | **설계 예정** | `product_presentations`(단일 실물 용기/단위), `offer_components`(본품/증정품/리필/동일제품 추가수량), 기존 offer/Subject 연계 계약 정의. 단위·수량·유효시점·증거·미확인 상태 포함. 필요 시에만 매핑 테이블 추가 검토 | 120/150ml, g/ml, 패드 수/액량, 1+1, 본품+세럼 10ml, 리뉴얼, 리테일 SKU 이동의 정규화·무중복·재현 테스트 통과. **DDL 전 DB/RLS/API 영향·승인 별도** |
+| **R2. 관측·증거 보존과 shadow 판정기** | **미착수** | 기존 읽기 경로를 유지하는 readonly adapter; 판매처별 시점 스냅샷/가격/구성품 원본 추적; family/unit/offer/formulation 구분과 `SAME_FORMULA_CONFIRMED` / `DIFFERENT_FORMULA_CONFIRMED` / `FORMULA_UNRESOLVED` 분류 | 출처 누락·서로 다른 SKU·숫자 단위 충돌·증정품 혼입시 자동 동일 처방 판정 0건. 공식몰 네트워크 접근·원본 보존은 사이트 사용 권리와 별도 승인 필요 |
+| **R3. TRUST Subject/Source 적용** | **미착수·보호 단계** | 기존 PF-1 Source→Subject binding `exact_subject_match`·`equivalent_presentation_match`와 제형 lineage를 재사용. 공식 근거로 확정된 처방만 승인 경로에 연결 | 원본 증거/검토 이력·시장 범위·동일 처방 확인 없이는 cross-size Current Fact 공유 금지. 미확정 구성은 `product_family_only` 또는 `formulation_ambiguous`로 유지. 변형 `variant_key`의 기존 worker/G2 처리 제한 별도 검증 |
+| **R4. 클렌저 admission 게이트 재배치** | **미착수·설계/테스트 후** | 현행 `VERIFIED_EXACT_CAPACITY_REQUIRED`를 **카탈로그 전체 Subject 신원 게이트에서 분리**하고, 용량 검증은 presentation/offer 및 원본 source scope에 적용. 단, source-to-subject 근거는 축소 금지 | 동일 처방의 다른 용량을 불필요하게 HOLD하지 않으면서, 공식 자료가 가리키는 SKU와 실제 구매 규격을 정확히 구별; 검증되지 않은 처방의 피부 분석 재사용 0건 |
+| **R5. 카탈로그·추천 shadow 비교** | **미착수** | 기존/신규 read-model 병행; 가격·판매구성 변화가 Fact/추천 점수에 영향 없는지 검증, 실제 처방 변경 시 재검증·이전 Subject 역사 보존 | frozen 기존 추천 164개 불변 또는 심사된 차이만 허용. `low_ph`/`deep_cleansing`의 **근거 없음 ≠ false**. 정해진 독립 gold set과 중복/오결합률·abstain 품질 기준 사전 확정 |
+| **R6. 승인된 제한 활성화/롤백** | **미착수·별도 승인 필요** | 미리 검증된 데이터/권한만 기존 판매·G2 경로로 단계적 반영, 제한 canary와 추적 로그, 기존 경로 즉시 복귀 스위치 | R1~R5 근거, 관리자/DB 보안 승인, 공급망/CI·규모별 canary·롤백 검증 후에만 병합·배포/추천 활성화. `read_recommendation_admission_authority_v1`의 cleanser 지원 부재를 임의 bypass 금지 |
 
 **우선순위**는 R1 → R2 → R3 → R4 → R5 → R6이며, R0은 설계 조사만 끝났다는 뜻이다. R1~R6를 이미 구현했거나 실제 Subject/Fact가 생성됐다는 뜻이 아니다. R1 설계가 승인되어도 protected DB migration은 별도 변경권한/롤백 검증 전까지 HOLD이다.
 
@@ -214,19 +214,19 @@ The historical five-row correction artifact and the independent accuracy benchma
 | --- | --- | --- | --- |
 | 120ml에서 150ml로 판매 규격 변경 | 유지 | **동일 처방 근거가 있으면 재사용**, 없으면 미확정 | 150ml 규격과 새 offer 추가 |
 | 150ml + 세럼 10ml 사은품 | 본품 유지 | 본품 처방 불변이 확인된 범위에서만 재사용; 세럼 성분은 본품 근거에 병합 금지 | 본품 150ml + 증정품 10ml를 2 component로 기록 |
-| 150ml 1+1 | 유지 | 동일 용기·처방인 경우만 재사용 | \`quantity=2\`로 기록, 단일 용기 300ml로 만들지 않음 |
+| 150ml 1+1 | 유지 | 동일 용기·처방인 경우만 재사용 | `quantity=2`로 기록, 단일 용기 300ml로 만들지 않음 |
 | 할인/판매처/재고 변동 | 유지 | 재검증 불필요 | 가격·시간·채널만 변경, 피부 점수 불변 |
 | 외관·패키지 리뉴얼 | 유지 | **동일 제형 확인시** 재사용 | 새 포장/상품 코드·시점 분리 |
 | 실제 성분/효능 관련 제형 변경 | 유지 | 새로운 immutable Subject + predecessor/supersession; 기존 Fact는 역사로 보존 | 각 판매 규격을 해당 Subject에 다시 연결 |
 | 성분/제형 연속성 미확인 | 유지 | **강제 병합도 새 확정 Subject도 금지**, 관련 Fact 소비 보류 | 상품 자체는 연구 후보로 보존, 잘못된 추천 노출 차단 |
 
-**가격 규칙:** 결제 가격은 \`offer.price_amount\`로, 할인/시점/쿠폰 자격을 구분한다. 본품 단위 가격은 구성품과 수량이 **명시·검증된 경우에만** 계산한다. 증정품 용량을 본품 용량에 더하지 않으며, 미확인 기획 세트의 가격을 단품 가격으로 추정하지 않는다.
+**가격 규칙:** 결제 가격은 `offer.price_amount`로, 할인/시점/쿠폰 자격을 구분한다. 본품 단위 가격은 구성품과 수량이 **명시·검증된 경우에만** 계산한다. 증정품 용량을 본품 용량에 더하지 않으며, 미확인 기획 세트의 가격을 단품 가격으로 추정하지 않는다.
 
-**증거 규칙:** \`products.size_ml\`/상품명/현재 판매 링크는 가설이며, 공식·소매 증거는 해당 family/unit/offer/formulation 범위를 넘지 않는다. 출처 사용권·보존 가능한 원본·검토자 판단·시점이 없으면 권위 있는 Source Binding/Subject/Current Fact로 승격하지 않는다.
+**증거 규칙:** `products.size_ml`/상품명/현재 판매 링크는 가설이며, 공식·소매 증거는 해당 family/unit/offer/formulation 범위를 넘지 않는다. 출처 사용권·보존 가능한 원본·검토자 판단·시점이 없으면 권위 있는 Source Binding/Subject/Current Fact로 승격하지 않는다.
 
 ### 14.4 클렌저 10개 고정 수용 기준
 
-- 기존 \`products.id\` 10개 및 연구 접수 10/태스크 20개를 보존한다. 재수집을 위해 제품을 재등록하지 않는다.
+- 기존 `products.id` 10개 및 연구 접수 10/태스크 20개를 보존한다. 재수집을 위해 제품을 재등록하지 않는다.
 - 라곰 120↔150ml 및 170↔220ml는 **규격 충돌 조사 대상**으로 남기되 그것만으로 제품/처방이 틀렸다고 단정하지 않는다. 과거 판매 규격·리뉴얼·동일 처방 여부를 원본 기반으로 구분한다.
 - 제로이드 240ml와 브랜드 페이지의 용량 미확정, 공식 Source Binding 없는 나머지 상품 역시 분리된 연구 후보로 관리한다. 가짜 digest/거짓 Subject를 만들지 않는다.
 - **상품 기본 정보 확인 / 처방 동일성 심사 / 특정 판매 SKU 매핑 / 화해 원본 결합**을 독립적으로 진단한다. 한 항목의 불일치가 나머지 항목을 근거 없이 무효화하거나 통과시키지 않도록 한다.
