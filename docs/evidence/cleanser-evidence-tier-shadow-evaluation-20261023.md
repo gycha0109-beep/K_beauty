@@ -1,5 +1,7 @@
 # 클렌저 근거 수준별 추천 — Shadow 평가 기록 (2026-10-23)
 
+> **v3 개정 주의:** 이 문서의 `0/10 LIMITED_FIT_SHADOW`는 기존 `review_signals`를 입력하지 않고, 별도 reviewer/timestamp/sample-count schema만 요구한 실험 결과입니다. **기존에 저장된 7개의 화해 신호가 실제 점수식에서 활용 불가능하다는 판정이 아닙니다.** 후속 실행 기준은 [기존 화해 파이프라인 재사용 로드맵 v3](../architecture/cleanser-hwahae-existing-pipeline-roadmap-v3-20261023.md)입니다.
+
 > 오프라인 정책·테스트 결과 보고. **실제 추천 노출/Fact 승인/G2 grant/DB 기록 변경 없음**.
 
 ## 왜 정책을 나눴나
