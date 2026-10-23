@@ -1324,6 +1324,13 @@ SELECT json_build_object(
      'mentionsIdentifierPlaceholder',c.prosrc ~* '%I',
      'mentionsLiteralPlaceholder',c.prosrc ~* '%L',
      'mentionsRawPlaceholder',c.prosrc ~* '%s',
+
+     'executeFormatAdjacentLexical',c.prosrc ~* '\mexecute[[:space:]]+format[[:space:]]*\(',
+     'rawPlaceholderInsideExecuteFormatWindowLexical',c.prosrc ~* '\mexecute[[:space:]]+format[[:space:]]*\([^;]*%s',
+     'identifierPlaceholderInsideExecuteFormatWindowLexical',c.prosrc ~* '\mexecute[[:space:]]+format[[:space:]]*\([^;]*%I',
+     'executeStatementUsingKeywordLexical',c.prosrc ~* '\mexecute[[:space:]]+[^;]*\musing\M',
+     'executeStatementConcatenationLexical',c.prosrc ~* '\mexecute[[:space:]]+[^;]*\|\|',
+
      'mentionsDirectAuthHelper',c.prosrc ~* 'auth[[:space:]]*\.[[:space:]]*(uid|jwt|role)[[:space:]]*\(',
      'ownedByPostgres',c.proowner=(SELECT oid FROM pg_roles WHERE rolname='postgres')
    ) ORDER BY c.case_n)
@@ -1331,6 +1338,8 @@ SELECT json_build_object(
          FROM src WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M') c
  ),'[]'::json),
  'candidateCasesAreEphemeralAndNonIdentifying',true,
+ 'executeFormatWindowMayIncludeQuotedSqlAndComments',true,
+ 'inputTaintOrControlFlowAnalyzed',false,
 
 
  'bodyMentionsRaiseException',(SELECT count(*) FROM signals WHERE exception_lex),
