@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import {spawnSync} from "node:child_process";
 import {readFile} from "node:fs/promises";
 import {
   CLEANSER_EVIDENCE_TIER_SHADOW_VERSION as VERSION,
