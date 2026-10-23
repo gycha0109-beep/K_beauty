@@ -190,19 +190,19 @@
 
 | 진행 순서 | 이번 10개에서 해야 할 일 | 보류/완료 기준 |
 | --- | --- | --- |
-| **C0 — 현재 상태 고정** | 기존 제품 ID 10개, intake 10건, \`low_ph\` / \`deep_cleansing\` 연구 작업 20건과 기존 정보 보존 | **완료**: 대기열 등록만 완료, confirmed Subject/Current Fact/G2 grant 0. 나머지 항목은 미착수 |
-| **C1 — 상품 규격 및 기획 세트 shadow 분류** | 라곰 120/150ml, 170/220ml; 제로이드 240ml; 휩드 130g 단품/기획 세트를 family/physical unit/offer 구분으로 표기. 판매처별 본품 수량·증정품·관측시점 개별 수집 | 완료: 기존 \`products.size_ml\`/원본 URL 임의 수정 0, 일치·불일치 이유 재현, 증정품 및 1+1이 새 \`products\`로 생성되지 않음 |
-| **C2 — 규격 ↔ 처방 동일성 검토** | 공식 제품 원본/허가된 출처로 두 용량의 성분·제형 동일성 판단. PF-1의 \`equivalent_presentation_match\` 등 Source→Subject 관계 우선 사용 | 근거 부족 시 \`product_family_only\` / \`formulation_ambiguous\`, Fact 재사용 금지. 동일 처방 검토 확정 시에만 cross-size 활용 |
-| **C3 — TRUST Subject/Fact 재개** | 승인된 시장/처방 Subject 및 official binding에 한해 기존 20개 연구 작업을 처리하고 별도 Fact review/confirmation 진행 | 실제 Product Fact 생성/확정은 기존 권위 경로와 감사 로그 필요. \`deep_cleansing\`/ \`low_ph\` 근거 누락을 false로 대체 금지 |
-| **C4 — preflight/G2 정합성 수정 및 shadow 회귀** | \`VERIFIED_EXACT_CAPACITY_REQUIRED\`를 제품 신원 전체를 막는 조건으로 쓰지 않고 **판매 presentation 선택·source scope 증명**에서만 검사하도록 v2 설계·테스트. 기존 \`products.source_url\`과 구매 link 분리 | 다른 SKU/불명 제형의 증거 재사용 0. 기존 164개 추천·가격/판매 변화에 따른 피부 점수 불변성 회귀 PASS |
-| **C5 — 단계적 활성화** | cleanser G2 authority reader 및 admission 정책을 별도 승인하고 canary/kill switch/rollback 진행 | 현재 \`INITIAL_ADMISSION_AUTHORITY_INSUFFICIENT\` 유지. 상위 단계 완료 전 production 추천 자동 활성화 0 |
+| **C0 — 현재 상태 고정** | 기존 제품 ID 10개, intake 10건, `low_ph` / `deep_cleansing` 연구 작업 20건과 기존 정보 보존 | **완료**: 대기열 등록만 완료, confirmed Subject/Current Fact/G2 grant 0. 나머지 항목은 미착수 |
+| **C1 — 상품 규격 및 기획 세트 shadow 분류** | 라곰 120/150ml, 170/220ml; 제로이드 240ml; 휩드 130g 단품/기획 세트를 family/physical unit/offer 구분으로 표기. 판매처별 본품 수량·증정품·관측시점 개별 수집 | 완료: 기존 `products.size_ml`/원본 URL 임의 수정 0, 일치·불일치 이유 재현, 증정품 및 1+1이 새 `products`로 생성되지 않음 |
+| **C2 — 규격 ↔ 처방 동일성 검토** | 공식 제품 원본/허가된 출처로 두 용량의 성분·제형 동일성 판단. PF-1의 `equivalent_presentation_match` 등 Source→Subject 관계 우선 사용 | 근거 부족 시 `product_family_only` / `formulation_ambiguous`, Fact 재사용 금지. 동일 처방 검토 확정 시에만 cross-size 활용 |
+| **C3 — TRUST Subject/Fact 재개** | 승인된 시장/처방 Subject 및 official binding에 한해 기존 20개 연구 작업을 처리하고 별도 Fact review/confirmation 진행 | 실제 Product Fact 생성/확정은 기존 권위 경로와 감사 로그 필요. `deep_cleansing`/ `low_ph` 근거 누락을 false로 대체 금지 |
+| **C4 — preflight/G2 정합성 수정 및 shadow 회귀** | `VERIFIED_EXACT_CAPACITY_REQUIRED`를 제품 신원 전체를 막는 조건으로 쓰지 않고 **판매 presentation 선택·source scope 증명**에서만 검사하도록 v2 설계·테스트. 기존 `products.source_url`과 구매 link 분리 | 다른 SKU/불명 제형의 증거 재사용 0. 기존 164개 추천·가격/판매 변화에 따른 피부 점수 불변성 회귀 PASS |
+| **C5 — 단계적 활성화** | cleanser G2 authority reader 및 admission 정책을 별도 승인하고 canary/kill switch/rollback 진행 | 현재 `INITIAL_ADMISSION_AUTHORITY_INSUFFICIENT` 유지. 상위 단계 완료 전 production 추천 자동 활성화 0 |
 
 ### 구체적인 코드/DB 책임 분리
 
-- 기존 \`products\`는 카탈로그 앵커다. 카탈로그 정규화 이름 unique 제약을 건드리지 않고 기존 ID를 유지한다.
-- 기존 \`product_fact_subjects\`는 처방 버전 정본이다. 신규 'formulations' 테이블 금지. 기존 \`product_evidence_source_subject_bindings.presentation_metadata\`와 \`equivalent_presentation_match\`를 먼저 재사용한다.
-- 기존 \`product_offers\`와 \`seller_listing_observations\`는 가격/판매처/시점 정본으로 유지한다. 이 10개에 현재 offer 0건이므로 향후 별도 승인 없는 더미 offer INSERT 금지.
-- \`product_presentations\` 및 \`offer_components\`는 **후속 schema 후보**일 뿐이다. \`presentation_formulation_links\`는 기존 source-to-subject 승인 경로만으로 이력·규격 참조가 부족하다는 검증이 끝난 뒤에만 결정한다. DB/RLS/관리자 화면/API 영향과 롤백 계획을 먼저 승인받는다.
+- 기존 `products`는 카탈로그 앵커다. 카탈로그 정규화 이름 unique 제약을 건드리지 않고 기존 ID를 유지한다.
+- 기존 `product_fact_subjects`는 처방 버전 정본이다. 신규 'formulations' 테이블 금지. 기존 `product_evidence_source_subject_bindings.presentation_metadata`와 `equivalent_presentation_match`를 먼저 재사용한다.
+- 기존 `product_offers`와 `seller_listing_observations`는 가격/판매처/시점 정본으로 유지한다. 이 10개에 현재 offer 0건이므로 향후 별도 승인 없는 더미 offer INSERT 금지.
+- `product_presentations` 및 `offer_components`는 **후속 schema 후보**일 뿐이다. `presentation_formulation_links`는 기존 source-to-subject 승인 경로만으로 이력·규격 참조가 부족하다는 검증이 끝난 뒤에만 결정한다. DB/RLS/관리자 화면/API 영향과 롤백 계획을 먼저 승인받는다.
 - 기획 세트의 세럼 10ml는 본품 제형 Fact에 합치지 않는다. 단가 비교는 명확한 본품 용량·수량과 판매시점이 확인된 경우만 산출하며, 미확인 프로모션 총액으로 본품의 단품가를 역산하지 않는다.
 
-**현재 코드와의 차이:** 앞의 1절과 \`lib/cleanser-initial-admission-preflight-v1.mjs\`에 있는 \`VERIFIED_EXACT_CAPACITY_REQUIRED\`는 실제 현행 동작이다. 이를 R4/C4에서 근거·범위 검증이 있는 새로운 계약으로 대체하기 전까지 그대로 적용한다. 기존 테스트를 삭제하거나, 명목상 범위 완화를 위해 Subject/Fact 확인 절차를 건너뛰지 않는다. 이 절이 제안 상태임을 숨기고 SHADOW 적격성 또는 G2 승인 상태를 PASS로 표시하지 않는다.
+**현재 코드와의 차이:** 앞의 1절과 `lib/cleanser-initial-admission-preflight-v1.mjs`에 있는 `VERIFIED_EXACT_CAPACITY_REQUIRED`는 실제 현행 동작이다. 이를 R4/C4에서 근거·범위 검증이 있는 새로운 계약으로 대체하기 전까지 그대로 적용한다. 기존 테스트를 삭제하거나, 명목상 범위 완화를 위해 Subject/Fact 확인 절차를 건너뛰지 않는다. 이 절이 제안 상태임을 숨기고 SHADOW 적격성 또는 G2 승인 상태를 PASS로 표시하지 않는다.
