@@ -127,6 +127,36 @@ for(const item of scenariosFixture.scenarios){
   }
   scenariosCompleted++;
 }
+// Cross-check the live full-engine review axis against independently pinned
+// original review-scorer replay for the SAME three skin contexts.
+// This detects an altered/doubled/ignored review contribution even when
+// a final-score sum looks arithmetically correct.
+if(expectedScores.contexts?.length!==3||new Set(expectedScores.contexts.map(x=>x.id)).size!==3)
+  throw new Error("R5_FROZEN_SKIN_CONTEXT_DRIFT");
+let reviewAxisExactMatches=0,heldReviewAxisZeroMatches=0;
+for(const context of expectedScores.contexts){
+  const full=await buildSkinMatchDecisionBundle(context.answers,{
+    locale:"ko",includeCandidateSourceDiagnostics:true,products:corpus
+  });
+  const rows=getRows(full);
+  if(rows?.length!==174)throw new Error("R5_REVIEW_AXIS_ENGINE_SCOPE_DRIFT");
+  const ix=new Map(rows.map(x=>[x.id,x]));
+  for(const expected of expectedScores.products){
+    const scored=ix.get(expected.product_id);
+    if(!scored||!Number.isFinite(scored.score_breakdown?.reviewSignalScore))
+      throw new Error("R5_REVIEW_AXIS_MISSING:"+expected.product_id);
+    const recorded=expected.score_profiles.find(x=>x.profile===context.id);
+    // A missing/unmapped capture is held as a review contribution of zero,
+    // not an invented positive or an official efficacy Fact.
+    const expectedComponent=recorded?.review_signal_score??0;
+    if(scored.score_breakdown.reviewSignalScore!==expectedComponent)
+      throw new Error("R5_FULL_ENGINE_REVIEW_AXIS_DRIFT:"+expected.product_id+":"+context.id);
+    if(recorded)reviewAxisExactMatches++;
+    else heldReviewAxisZeroMatches++;
+  }
+}
+assert.equal(reviewAxisExactMatches,18);
+assert.equal(heldReviewAxisZeroMatches,12);
 assert.equal(legacyEqual,164*12);
 assert.equal(shadowScoresEvaluated,10*12);
 assert.equal(scenariosCompleted,12);
@@ -138,6 +168,8 @@ console.log(JSON.stringify({
   with_nonzero_review_component:reviewNonzeroCells,
   with_nonzero_ingredient_component:ingredientNonzeroCells,
   with_nonzero_market_component:marketNonzeroCells,
+  actual_review_axis_exact_matches:reviewAxisExactMatches,
+  held_review_axis_zero_matches:heldReviewAxisZeroMatches,
   actual_new_product_scores_or_ranks_published:false,
   full_product_suitability_approved:false,
   manufacturer_same_formula_granted:false,
