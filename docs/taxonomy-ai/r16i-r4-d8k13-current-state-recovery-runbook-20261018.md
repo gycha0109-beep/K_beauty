@@ -381,3 +381,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **범위 제한:** 시퀀스 수치 검증은 백업 명시적 `setval` 대상에 한정. `nextval` 실제 실행·동시성·운영 트래픽 또는 `RLS/ACL/OWNER` 동등성을 입증하지 않는다. 관리형 Auth/Storage/Vault 원본 데이터 및 부모 FK 34개, 전체 마이그레이션 이력 178개, security issue #1208는 독립 차단이다.
 - **다음 게이트:** 격리 DB의 `public` 권한·소유권·RLS 정책 카탈로그를 비식별·집계 형태로 점검하고 실제 운영 hosted baseline과의 비교 가능 여부를 따로 판정할 것. 원본 SQL/행/역할명·민감한 grant 본문을 GitHub 또는 외부 응답에 노출하지 말 것.
 - **상태:** `PUBLIC_SEQUENCE_2_OF_2_STATE_PASS` / `PUBLIC_FK_199_PASS` / `FULL_RECOVERY_NOT_ATTESTED` / **RELEASE HOLD**, PR #1341 Draft·미병합, D8D v2 OFF. 운영 데이터/권한 변경, SQL, 병합, 배포 미승인.
+
+
+### 6.27. 실제 백업 public 보안 카탈로그 집계; 함수 권한 리뷰 필요 (2026-10-23)
+
+- **실행 출처:** 승인된 운영자 Windows PC에서 원본 ZIP SHA-256 `A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6`의 수정 없는 격리 PG17 검사. 스크립트 HEAD `76810246b39e2792f087ff7aff230a54687312af`, 모드 `RestorePublicDataWithSecurityInventory`, 합성 CI [#39896462011](https://github.com/gycha0109-beep/K_beauty/actions/runs/39896462011) SUCCESS. 원본 SQL/행/민감한 식별자 출력 없음; 운영 연결 0, 네트워크 차단.
+- **재확인:** public 테이블 101개·COPY 행 12,220개, public FK 199개/위반 0개, managed parent FK 34개 제외, public sequence 2개 setval 원본 상태 일치.
+- **RLS 집계:** 101 테이블 모두 RLS ON; FORCE RLS 4개; RLS ON이면서 정책 0개인 테이블 77개; 정책 58개(전부 permissive, restrictive 0개). 정책 0개는 일반적으로 non-bypass 역할에 기본 거부이나 SECURITY DEFINER / BYPASSRLS / OWNER 예외와 실제 서비스 의도를 별도 평가해야 함. hosted 보안 동등성은 입증되지 않음.
+- **함수/OWNER/ACL 집계:** public 함수 187개 중 SECURITY DEFINER 135개; postgres 소유 178개/기타 역할 소유 9개. `has_function_privilege` 기준 격리 DB의 anon/authenticated 실효 EXECUTE = 각 187개; 그중 SECURITY DEFINER 실효 EXECUTE = 각 135개. 이는 explicit GRANT만을 뜻하지 않으며 기본 PUBLIC EXECUTE·상속도 포함한다. 함수별 body/search_path/내부 인증 및 호스티드 비교 없이 취약점으로 확정하지 않음. 하지만 **SECURITY_REVIEW_REQUIRED**로 안전성·권한 출처를 확인할 때까지 RELEASE HOLD.
+- **테이블/뷰:** `publicTablesExplicitSelectForBrowserRoles=101`은 카탈로그 relacl/acldefault에서 grantee 0/PUBLIC 또는 anon/authenticated로 직접 표기된 SELECT 항목이 있는 테이블을 센 값이며, 실제 RLS 적용 후 행 열람 가능을 뜻하지 않는다. public view 6개 모두 `security_invoker=true`; security_barrier=true 뷰 0개.
+- **한계/다음:** 스냅샷 자체 집계 결과이며 hosted ACL/role membership 비교, schema `GRANT/REVOKE` 유래 교차 검증, 135 SECURITY DEFINER의 function-level authorization/SET search_path/호출 그래프 리뷰, 정책별 접근 기능 테스트는 미실시. 관리형 Auth/Storage 미복원, 178 migrations provenance 및 issue #1208 OPEN은 독립 릴리스 차단.
+- **상태:** `PUBLIC_SECURITY_CATALOG_COLLECTED` / `SECURITY_DEFINER_EXECUTE_REVIEW_REQUIRED` / `RLS_ACL_OWNER_PARITY_NOT_ATTESTED` / **RELEASE HOLD**, D8D v2 OFF, PR #1341 Draft·미병합. 운영 SQL·권한 변경·병합·배포 없음.
