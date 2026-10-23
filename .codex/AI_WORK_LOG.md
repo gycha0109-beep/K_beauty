@@ -3275,3 +3275,53 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Deliberately unchanged: DB schema, migrations, auth/RLS, recommendation weights, provider calls, payment, secrets, saved-report replay immutability.
 - Remaining risk: exact rendered mobile/desktop UX and repository build require PR CI review.
 
+
+## 2026-10-21 — Skin Precision evidence-first roadmap and P1 preflight
+
+- Classification: design → bounded documentation + read-only verifier. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production mutation: N.
+- New canonical task-scoped planning reference: `docs/architecture/skin-precision-localization-roadmap-v1.md` (P0–P7; avoids style Face Lab duplication; spatial detection is not existing Vision score).
+- P0 progress: 8 rights candidates recorded in `data/skin-precision/asset-candidate-register-v1.json`: candidate 4, restricted 2, review 1, hold 1; commercial-cleared source images 0. Acne04/Fitzpatrick17k not allowed to enter commercial pipeline, older Roboflow photo selections are not clinical ground truth.
+- P1 progress: `scripts/verify-skin-precision-evidence-manifest.mjs` rejects nonapproved rights, cross-split subject/original/hash leakage, duplicate images, missing real coordinates for positives, poor holdout reviewer coverage and missing unknown/not_assessed distinctions; synthetic self-tests 5/5 passed using in-session V8 execution of the same verifier logic (not actual Node runtime).
+- Current Vision schema and skin projector read; no API, package, recommendation, security policy, database or production changes. PR #1384 stays separate Draft; PR #1358 browser labeler remains a reconciliation candidate, not approved training intake.
+- Not verified: Node execution in actual repo, build/CI, real photos/model inference, professional labels, rights agreements, mobile overlay, commercial launch readiness.
+- Next bounded gate: obtain original-source commercial rights evidence and at least one independently labeled consented real image; validate full manifest and human reviewer protocol before model fine-tuning.
+
+## 2026-10-22 — AI-Hub 71645 access preflight and JSON metadata audit
+- Classification: bounded research, documentation and read-only audit utility; DB/Auth/RLS/Storage/Provider/Payment/Secret/Production mutation N.
+- Official dataset page/FAQ/usage policy verified: domestic download application, phone identity verification, conditional automatic approval; derived commercial model/service generally permitted but source data redistribution, third-party review and international transfer are separately restricted.
+- Dataset counts are 13,936 photos / 84,688 measurements / 125,424 labels; angle table appears inconsistent and no independent subject count is supported. Face bbox != acne lesion bbox or redness mask.
+- Added `data/skin-precision/aihub-71645-acquisition-runbook-v1.md`: applicant instructions, safe usage purpose, source contacts and license/annotation permission inquiry; no message sent.
+- Added `scripts/audit-aihub-71645-metadata.mjs` (JSON-only, metadata aggregated without image bytes and without raw PII output). In-session V8 synthetic test PASS: 3 input rows, 2 unique image candidates, repeated-file and malformed bbox detection, missing/zero measurements distinction, no raw identifiers output.
+- No actual AI-Hub login, approval, sample or raw data obtained; no real file structure or trained detector validated. Node CLI execution and full project build were unavailable in this connector-only environment.
+- Next gate: applicant verification/download terms, then approved JSON sample audit and consented specialist label feasibility. PR #1387 remains Draft.
+
+## 2026-10-22 — Validation source-image tree recon and offline point-overlay checker
+- Classification: bounded nonproduction execution + safety review; DB/Auth/RLS/Storage/Provider/Payment/Secrets/Production impact N.
+- Connected Drive validation source file metadata: DSLR 107×7=749; tablet 107×3=321; smartphone 107×3=321, all three same 107 participant IDs. Tablet duplicate folder 0659 empty; camera/smartphone filename clone suffix ` (1)`.
+- Added `scripts/review-aihub-71645-acne-local.mjs` (local-only offline HTML overlay showing actual source point locations, per-lesion judgment, aggregate export without photographs or filenames), with 10 synthetic self-tests + synthetic JSON/JPEG combined parser test PASS in V8.
+- Added `data/skin-precision/aihub-71645-visual-review-v1.md` and linked README/roadmap.
+- Validation caveats: no actual photo bytes inspected, no actual VS/VL local file run because remote Windows device OFFLINE and runtime unavailable; no expert review or model evaluation. Source label is not clinical gold and `acne:null` cannot be negative. No raw data posted to GitHub.
+- AI-Hub terms restrict third-party review/foreign transfer; off-device image access was intentionally not performed.
+
+
+## 2026-10-23 — Nonblocking scan confidence + targeted skin dataset sourcing
+- Type: bounded documentation execution + source review. DB/Auth/RLS/Storage/Provider/Payment/Secret/Production impact **N**; no protected code or raw images modified or downloaded.
+- Roadmap section 11 added: photo-level and concern-level reliability, best-effort scoring with caution, no forced recapture for isolated low confidence, honest no-data/not-assessed, calibration and test cases. Section 12 links researched sources.
+- New `data/skin-precision/supplementary-dataset-research-2026-10-23.md`: provenance and usage precision for MEMI-DS, Nexdata 7,262, FaceSkin-Q, Rupam 50k+, Nexdata 26,090/21,302 discrepancy, PS-Net embargo, SKINCON NC, FFHQ-Wrinkle NC, Kaggle category data, NIA author checkpoints.
+- Candidate register extended with nine assets; no `commercialUseCleared=true`, paid datasets not purchased, no imported face images or weights. Dataset marketing counts are vendor claims, and paper-level data does not imply redistribution permission.
+- Relevant user-visible deliverables: commit on draft PR #1387 only; no production functionality changed. Verification performed with GitHub readback and JSON no-duplicate/no-approved checks.
+
+## 2026-10-24 — Skin Precision MEMI reviewer QC and palette/lighting probes
+- Type: bounded execution; DB/Auth/RLS/Storage/Provider/Payment/Secret/Production mutation N. No public face data, old source masks, original human reviews or API payload changed.
+- Existing PR #1387 stayed open Draft; source Library review 131 records parsed, pass/fail/unsure 79/51/1, pose group counts consistent with existing MEMI assessment. Exact private source inaccessible on online Windows machine (online device user `hun`, not `M`).
+- Added `scripts/audit-memi-review-qc.mjs`: status+note preserving QC metadata, pose counts, incomplete/contradictory review flags, no commercial training or split claims; self-test PASS 13 synthetic assertions via Node 24.14.0.
+- Added `scripts/audit-memi-palette-and-lighting.py`: P-mode raw index counter (0..5, semantics UNVERIFIED), local brightness/specular/dark capture proxy, human-defined ROI optional; Python 3.14 + NumPy + Pillow synthetic self-test PASS after fixing fixture palette preservation and assertion.
+- Unverified: MEMI publisher exact palette index definition; 131 source image/mask execution; real photo quality and any Dice/IoU/model metrics; original portrait/commercial-use permissions. All remain blocked as training/evaluation authority.
+- Next: run local QC on verified private input machine, independently verify upstream class definition and rights; only then implement guarded class semantic decoder / corrected gold comparison; retain PR draft.
+
+## 2026-10-24 — MEMI original batch audit prepared while academy PC offline
+- Scope: read-only/private dataset integrity and capture-condition diagnostics, no production, DB, API, authorization or source-image changes. Online home PC `sun`; offline academy PC `DESKTOP-6C3L8O4`, originals stay only on academy computer.
+- Added `scripts/audit-memi-dataset-local.py`: exact source image/paletted mask pair matching, 131-QC linkage, source integrity, per-index count, camera/pose and reviewer QC metadata, exact duplicate rejection, opt-in independently human-defined ROI brightness proxies; no mask class inference, no invented anatomical region.
+- Runtime: Windows Python 3.14 synthetic test **PASS** (two unrelated artificial pairs, wrong duplicate detection, reviewer-QC count, optional ROI). Fixed synthetic fixture collisions before successful rerun. No actual academy file processing possible while disconnected.
+- Documented private local execution and gates in `data/skin-precision/README.md`; original face rights and numeric mask index semantics still unverified; no training/performance claims.
+- Next: on academy machine inspect file tree and run read-only 131-pair audit, repair only justified layout mismatches in code, independently establish upstream index mapping/rights before segmentation. PR #1387 remains Draft.
