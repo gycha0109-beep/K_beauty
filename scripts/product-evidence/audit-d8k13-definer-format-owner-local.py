@@ -267,6 +267,10 @@ def possible_parameter_flow(prior_tokens, expr, parameters, max_hops=3):
     if has_unresolved_control_flow(prior_tokens):
         return "BRANCH_OR_LOOP_ASSIGNMENT_UNRESOLVED", False
     seen = set()
+    # Each alias's value must be resolved at the time it was assigned to the
+    # next variable, NOT at EXECUTE time. Later overwrites cannot change a
+    # value that another variable already captured.
+    cutoff = len(prior_tokens)
     for depth in range(max_hops + 1):
         if current in parameters:
             if depth == 0:
@@ -274,21 +278,24 @@ def possible_parameter_flow(prior_tokens, expr, parameters, max_hops=3):
             if depth == 1:
                 return "ONE_ASSIGNMENT_PARAMETER_POSSIBLE", True
             return "MULTI_ASSIGNMENT_PARAMETER_POSSIBLE", True
-        if current in seen:
+        state = (current, cutoff)
+        if state in seen:
             return "ALIAS_CYCLE_UNRESOLVED", False
-        seen.add(current)
+        seen.add(state)
         rhs = None
-        for i in range(len(prior_tokens) - 3, -1, -1):
+        assignment_index = None
+        for i in range(cutoff - 3, -1, -1):
             if (prior_tokens[i][0] == "WORD"
                     and prior_tokens[i][1].lower() == current
                     and prior_tokens[i + 1] == ("SYM", ":")
                     and prior_tokens[i + 2] == ("SYM", "=")):
                 candidate = []
-                for t in prior_tokens[i + 3:]:
+                for t in prior_tokens[i + 3:cutoff]:
                     if t == ("SYM", ";"):
                         break
                     candidate.append(t)
                 rhs = candidate
+                assignment_index = i
                 break
         if rhs is None:
             return "ASSIGNMENT_NOT_FOUND_UNRESOLVED", False
@@ -296,6 +303,7 @@ def possible_parameter_flow(prior_tokens, expr, parameters, max_hops=3):
             return "LATEST_LEXICAL_ASSIGNMENT_CONSTANT", False
         if len(rhs) == 1 and rhs[0][0] == "WORD":
             current = rhs[0][1].lower()
+            cutoff = assignment_index
             continue
         if any(k == "WORD" and v.lower() in parameters for k, v in rhs):
             return "COMPLEX_ASSIGNMENT_MENTIONS_PARAMETER", True
@@ -550,6 +558,30 @@ def self_test():
     assert db["possibleParameterFlowSignal"] == "DIRECT_PARAMETER_POSSIBLE"
     assert db["possibleParameterFlowLexical"] is True
     assert db["controlFlowAssignmentUnresolved"] is False
+
+    # Reassignment after an alias capture cannot retroactively make the
+    # captured input constant. This previously produced false reassurance.
+    captured = body_findings(
+        "DECLARE a text; b text; BEGIN a := p_input; b := a; "
+        "a := 'fixed'; EXECUTE format('SELECT %s', b); END;", {"p_input"})
+    captured_binding = captured[0]["bindings"][0]
+    assert captured_binding["possibleParameterFlowSignal"] == "MULTI_ASSIGNMENT_PARAMETER_POSSIBLE"
+    assert captured_binding["possibleParameterFlowLexical"] is True
+    # Likewise, an assignment made AFTER an alias capture cannot become
+    # its source when looking backwards.
+    forward = body_findings(
+        "DECLARE a text; b text; BEGIN b := a; a := p_input; "
+        "EXECUTE format('SELECT %s', b); END;", {"p_input"})
+    forward_binding = forward[0]["bindings"][0]
+    assert forward_binding["possibleParameterFlowSignal"] == "ASSIGNMENT_NOT_FOUND_UNRESOLVED"
+    assert forward_binding["possibleParameterFlowLexical"] is False
+    # If the alias itself is overwritten later, the latest assignment wins.
+    overwritten_alias = body_findings(
+        "DECLARE a text; b text; BEGIN a := p_input; b := a; "
+        "b := 'fixed'; EXECUTE format('SELECT %s', b); END;", {"p_input"})
+    assert overwritten_alias[0]["bindings"][0]["possibleParameterFlowSignal"] == "LATEST_LEXICAL_ASSIGNMENT_CONSTANT"
+    assert overwritten_alias[0]["bindings"][0]["originOrInputSafetyProven"] is False
+
 
     unknown_flow = body_findings("BEGIN EXECUTE format('SELECT %s', nothing); END;", set())
     assert unknown_flow[0]["bindings"][0]["possibleParameterFlowLexical"] is False
