@@ -480,3 +480,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **CI:** `.github/workflows/taxonomy-ai-d8k13-private-local-zip-restore.yml`에서 합성 파서 self-test와 함께 저장소 소스 집계를 자동 실행하도록 추가(커밋 `3c709d7befa03ea8bc68262e4537e1542d7d5bb4`, Actions [#40010683239](https://github.com/gycha0109-beep/K_beauty/actions/runs/40010683239)). 결과 수치 및 최종 CI 상태는 실행 로그 확인 후 확정한다. 원본 소유자 ZIP은 CI에 올리지 않았다.
 - **경계:** `ownerCandidateBIdentifiedInRepo=false`, `ownerZipSchemaParityVerified=false`는 *정체를 증명하지 못했다*는 의미이지 *해당 코드가 저장소에 없다*는 뜻은 아니다. 이 작업만으로 실제 B를 안전/취약하다고 판정하거나 권한을 수정하지 않는다. 소유자 백업 PC `DESKTOP-6C3L8O4`는 검사 시점 오프라인, 별도 등록 기기의 연결 상태로 개인 ZIP 접근 가능성을 추정하지 않는다.
 - **다음:** CI 집계 확인 → 저장소 버전과 원본 ZIP의 함수 식별자·정의 해시를 비반출/비공개 방식으로 대조하는 안전한 수락 기준 수립 → 오프라인 원본 검토를 재개할 수 있을 때 실제 B의 데이터플로·인가 경로 리뷰. **RELEASE HOLD / PR #1341 Draft·미병합 / D8D v2 OFF**, 운영 SQL·롤·병합·배포 미승인.
+
+
+### 6.38. B 함수 익명 후보 ↔ 저장소 과거 함수 정의 로컬 대조 모드 (2026-10-24)
+
+- **구현:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py`에 `--zip <소유자 ZIP> --compare-repo-migrations <로컬 repo/supabase/migrations>` 모드를 추가(커밋 `e6a01e6e570db1122dea3c54ce7177390f6986b0`). ZIP 크기/SHA 검증 후 `SECURITY DEFINER` PL/pgSQL의 `EXECUTE format('%s', ...)` 익명 후보가 정확히 하나인 경우에만 검사. 같은 이름·인자 *수*가 일치하는 저장소의 과거 정의 횟수와, 해당 범위에서 함수 본문 문자열이 (줄바꿈·앞뒤 공백만 정규화 후) 정확히 같은 횟수를 소유자 PC 메모리 안에서 비교한다.
+- **비공개 경계:** 함수 이름, 서명, 본문 SQL, 개별 해시/메타데이터, 백업 내용 및 소유자 ZIP은 stdout·CI·GitHub·모델 대화로 전송하지 않는다. 출력은 동일 이름·인자 수/본문의 **집계 건수**와 상태만. 원본 ZIP은 read-only, 운영 DB/권한 연결 없음. GitHub 합성 테스트는 가짜 함수 정의의 일치/이름 불일치/본문 변경 사례를 검증하고 원본 ZIP을 요구하거나 업로드하지 않는다.
+- **판정 주의:** 동일 이름·인자 *수*는 전체 PostgreSQL 함수 시그니처/오버로드 일치를 증명하지 않는다. 본문 일치도 과거 migration에 존재했던 한 버전의 문자열 일치일 뿐, 최신 저장소 상태, migration replay 효과, hosted DB 또는 소유자 백업의 실제 함수 안전성의 증거가 아니다. `ownerRepoFunctionIdentityProven=false`, `fullOverloadIdentityOrLatestVersionProven=false`, `ownerZipSchemaParityVerified=false`, `releaseAuthorized=false` 고정. 함수 정의/마이그레이션 문법 누락 가능성은 추가 보안 리뷰 대상.
+- **CI:** 자동 검증 [#40012955488](https://github.com/gycha0109-beep/K_beauty/actions/runs/40012955488)의 합성 테스트 결과 확인 필요. 실제 소유자 백업 PC `DESKTOP-6C3L8O4`는 작업 시점 오프라인이어서 해당 원본 대조 모드 **미실행**. 다른 등록 PC를 소유자 원본 위치로 가정하거나 백업을 옮기지 않음.
+- **다음:** CI 결과 확인 → 원본 PC 연결 시 비식별 집계만 로컬에서 실행 → B 함수의 실제 입력값·함수 내부 인가 및 SQL 조립 문맥을 소스 비반출 방식으로 검토. 관리형 FK 34개, migration provenance, hosted parity 및 issue #1208 차단 유지. **PR #1341 Draft/미병합 · D8D v2 OFF · RELEASE HOLD**, 운영 SQL·권한 변경·병합·배포 없음.
