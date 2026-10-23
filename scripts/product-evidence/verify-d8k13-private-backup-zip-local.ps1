@@ -1264,7 +1264,7 @@ SELECT json_build_object(
     if ($Mode -eq 'RestorePublicDataWithSecurityBodySignals') {
       $bodySql = @'
 WITH src AS (
- SELECT p.oid,p.prosrc,p.proconfig,p.proowner,l.lanname,
+ SELECT p.oid,p.prosrc,p.proconfig,p.proowner,p.pronargs,l.lanname,
         (SELECT split_part(cfg.item,'=',2)
          FROM unnest(p.proconfig) cfg(item)
          WHERE split_part(cfg.item,'=',1)='search_path' LIMIT 1) AS path_text
@@ -1297,6 +1297,22 @@ SELECT json_build_object(
  'plpgsqlBodiesMentionExecuteKeyword',(SELECT count(*) FROM signals WHERE lanname='plpgsql' AND execute_lex),
  'plpgsqlBodiesMentionExecuteAndFormat',(SELECT count(*) FROM signals WHERE lanname='plpgsql' AND execute_lex AND format_lex),
  'plpgsqlExecuteWithoutLexicalAuthSignal',(SELECT count(*) FROM signals WHERE lanname='plpgsql' AND execute_lex AND NOT auth_lex),
+
+ 'executeCandidatesWithUsingKeyword',(SELECT count(*) FROM src
+   WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M' AND prosrc ~* '\musing\M'),
+ 'executeCandidatesWithQuoteIdent',(SELECT count(*) FROM src
+   WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M' AND prosrc ~* '\mquote_ident[[:space:]]*\('),
+ 'executeCandidatesWithQuoteLiteral',(SELECT count(*) FROM src
+   WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M' AND prosrc ~* '\mquote_(literal|nullable)[[:space:]]*\('),
+ 'executeCandidatesWithPercentIdentifier',(SELECT count(*) FROM src
+   WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M' AND prosrc ~* '%I'),
+ 'executeCandidatesWithPercentLiteral',(SELECT count(*) FROM src
+   WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M' AND prosrc ~* '%L'),
+ 'executeCandidatesWithPercentRaw',(SELECT count(*) FROM src
+   WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M' AND prosrc ~* '%s'),
+ 'executeCandidatesWithFunctionArgs',(SELECT count(*) FROM src
+   WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M' AND pronargs>0),
+
  'bodyMentionsRaiseException',(SELECT count(*) FROM signals WHERE exception_lex),
  'searchPathIncludesPublic',(SELECT count(*) FROM signals WHERE path_public),
  'searchPathIncludesPgTemp',(SELECT count(*) FROM signals WHERE path_temp),
