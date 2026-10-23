@@ -93,7 +93,7 @@
 - `lib/trust/cleanser-hwahae-existing-score-shadow-v1.mjs`: **기존 `normalizeReviewSignals` + `computeReviewSignalScore`를 그대로 호출**. 별도 `reviewed_by`, `reviewed_at`, `review_state`, 새 표본수를 요구하지 않음. 실제 저장된 링크 문자열이 불일치하면 보류. 반환 점수는 기존 Review Signal 축 **하나만**이며 Skin Match의 최종 추천 점수 전체가 아님.
 - `scripts/run-cleanser-existing-hwahae-live-review-score-v1.mjs`: 승인된 서버에서 DB 원본 10개를 읽고 세 가지 사용자 상태별 **원래 리뷰 점수식으로 재계산**한 뒤 숫자·상태만 표시하는 프로그램. 단, **현재까지 실제 운영 DB 인증정보를 넣어 이 프로그램 자체를 실행한 것은 아님**. CI에서는 자격증명 없이 합성 예제에서 원래 점수식을 호출하고 차단 장치만 검증.
 - `scripts/verify-cleanser-hwahae-existing-score-shadow-v1.mjs`: 실제 SELECT 축약값 6/1/3과 합성 원래 점수식 테스트, 잘못된 URL/카테고리/저신호 보류·Fact/G2 쓰기 0을 점검. 기존 제품 및 점수식은 수정하지 않는다.
-- **R2 완료 기준 일부 달성**: 데이터 존재·라벨 매핑 현황 및 기존 함수 연결 구현. **미완료**: 운영 DB 원본을 입력한 정확한 제품별 실점수 replay, 모든 소비자/시장 조건에서의 동일성 확인.
+- **R2 완료 기준 일부 달성**: 데이터 존재·라벨 매핑 현황 및 기존 함수 연결 구현. **추가 완료(2026-10-24)**: 운영 DB SELECT 원본 신호를 별도 격리 JS에서 기존 `main` 스코어러 본문 그대로 실행해 6개 상품 × 3개 사용자 맥락의 **정확한 리뷰 신호 점수 replay**를 확보. [원문 제거한 숫자 증거](../../evidence/trust/cleanser-actual-review-score-replay-20261024-v1.json)에 고정. **남은 일**: 전체 Skin Match 최종 스코어/시장·성분 반영 전 과정을 그대로 계산한 것이 아니며, 별도의 외부 호스팅 CLI를 직접 가동한 검사는 아직 안 됨.
 - **R3 일부 달성**: 호환 어댑터 코드로 기존 파이프라인 재사용. 이전 v2의 새 필드 기준은 보호된 진입 요건으로 채택하지 않음.
 - **R4~R6**: 변경/활성화 없음. 기존 164×12 추천 해시 유지 검증 필요.
 
