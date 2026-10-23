@@ -109,3 +109,18 @@
 4. **유료 견적 필요성 비교**: Nexdata 7,262 (위치 박스) ↔ Rupam 50k (등급), 카테고리별 10개 **샘플 라벨**과 계약서/해외처리권한/독립 피험자 수를 받아 비교. 위치가 목적인데 등급만 있는 비싼 데이터를 잘못 구매하지 말 것.
 5. **핵심 데이터 공백 해결**: 모공 **실제 픽셀 마스크**, 볼/코 **미세 각질**, 광택 조명 구별은 공개 데이터만으로 보장되지 않으므로 별도 명시적 동의 및 전문가 annotation pilot이 필요.
 6. **정량 검증**: per-concern sensitivity/precision and masking IoU or MAE, 피부톤/디바이스/조명별 오류, calibration error 측정; 일반 얼굴 사진과 근접 패치 사진 품질 차이 명시. 같은 대상자·세션·파생사진은 서로 다른 split으로 배분하지 않는다.
+
+## 2026-10-23 collection execution status (DO NOT infer download success)
+
+| Source | Current result | Remaining action |
+| --- | --- | --- |
+| MEMI-DS (figshare) | Publisher metadata/download API endpoint identified; **not downloaded** in connected environment (public Figshare returned HTTP 403 through research browser, no working general-purpose download runtime). Local-only fetch/size/SHA256 script added at `scripts/acquire-skin-open-dataset.mjs`. | On permitted local machine: `node scripts/acquire-skin-open-dataset.mjs --inspect` to confirm actual file names, sizes and article terms. Download only after approving image/face data rights using `--download --license-reviewed --out <private-local-directory>`. Then inspect zip images/masks and source rights. |
+| FaceSkin-Q | Official SGA-UNet README verified author **Google Form** application at https://forms.gle/Df8r7Dxf9yanb95j7 ; data are access-requested, **not acquired**. | Authorized applicant submits the form and receives a research/commercial use statement; do not bypass access. A Gmail draft to one proposed investigator address was **not created** because authorization was denied by the provider tool; no email sent. |
+| Nexdata 7,262 | Official vendor README verified proprietary **Commercial License**, 7,262 JPEG+JSON, 2,499,771 boxes. **Not purchased/downloaded**. | Quote/sample request draft created in connected Gmail (not sent). Obtain 10 anonymized annotation examples, label definitions, class counts, consent, cross-border and commercial training rights before paying. |
+| NIA model checkpoints | Author website/candidate access investigated; **no checkpoint downloaded**, vendor/original data rights unknown. | Gmail inquiry draft created (not sent); confirm exact checkpoint artifacts, licensing, subject split and overlap with existing AI-Hub. |
+| Rupam dataset | Published paid-data license reviewed; **not purchased or downloaded**. | Obtain example labels, pricing and commercial rights for images and trained weights. |
+| Original AI-Hub | Prior connected Drive discovery: TL and VL archives and 1,391 validation photos, without a verified TS training-photo location. | Do not describe TS as downloaded. Needs separate source/approved location check. |
+
+**Collection status definitions:** `catalogued` (source and label schema published), `access-request-ready` (contact form/draft), `metadata-inspected` (real download API/file metadata returned), `downloaded` (file bytes + hash recorded), `label-verified` (raw sample image and true annotation pair validated), `cleared-for-commercial-use` (documented original photo/privacy and model-license approval). None of the NEW external dataset candidates has reached the last three states here.
+
+**Contact drafts are not sent emails.** Never record a request as submitted unless the user/provider confirms it. Do not copy full external face-photo datasets into public GitHub commits or PR artifacts.
