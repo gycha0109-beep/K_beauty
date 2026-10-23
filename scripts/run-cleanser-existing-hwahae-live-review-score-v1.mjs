@@ -22,6 +22,14 @@ const snapshot=JSON.parse(await readFile(
 if(snapshot.version!=="cleanser-existing-hwahae-signal-footprint-v1"||
   snapshot.records?.length!==10)
   throw new Error("TEN_REDACTED_FOOTPRINT_REQUIRED");
+const actualScoreBaseline=JSON.parse(await readFile(
+  "evidence/trust/cleanser-actual-review-score-replay-20261024-v1.json","utf8"
+));
+if(actualScoreBaseline.version!=="cleanser-actual-existing-review-score-replay-v1"||
+   actualScoreBaseline.products?.length!==10)
+  throw new Error("PINNED_CANONICAL_SCORE_BASELINE_REQUIRED");
+const scoreById=new Map(actualScoreBaseline.products.map(x=>[x.product_id,x]));
+if(scoreById.size!==10)throw new Error("UNIQUE_BASELINE_PRODUCTS_REQUIRED");
 const ids=snapshot.records.map(x=>x.product_id);
 if(new Set(ids).size!==10)throw new Error("TEN_UNIQUE_PRODUCTS_REQUIRED");
 const sb=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},
@@ -39,6 +47,10 @@ const results=snapshot.records.map(row=>{
  const match=actual.status===row.review_scorer_input_status;
  // Fail closed instead of publishing a silent stale fixture or a false PASS.
  if(!match)throw new Error("REDACTED_SNAPSHOT_SCORE_READINESS_DRIFT:"+row.product_id);
+ const baseline=scoreById.get(row.product_id);
+ if(!baseline||baseline.status!==actual.status||
+   JSON.stringify(baseline.score_profiles)!==JSON.stringify(actual.score_profiles))
+   throw new Error("PINNED_LIVE_CANONICAL_REVIEW_SCORE_DRIFT:"+row.product_id);
  if(actual.review_signal_date!==row.review_signal_date)throw new Error("REVIEW_CAPTURE_DATE_DRIFT:"+row.product_id);
  if(actual.capture_url_string_match!==row.captured_page_matches_link)
    throw new Error("REVIEW_SOURCE_CAPTURE_LINK_DRIFT:"+row.product_id);
