@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','AuditDataCommands')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','RestorePublicDataWithPublicFkAudit','AuditDataCommands')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -819,7 +819,7 @@ SELECT json_build_object(
     } | ConvertTo-Json -Compress -Depth 7 | Write-Output
     return
   }
-  if ($Mode -eq 'RestorePublicData') {
+  if ($Mode -in @('RestorePublicData','RestorePublicDataWithPublicFkAudit')) {
     # LIMITED, EXPLICITLY PARTIAL RESTORE. Never pretend Supabase Auth/Storage
     # tables or data have been recovered. Only public COPY and public sequence
     # setval commands are replayed in this no-network disposable DB.
@@ -962,6 +962,142 @@ $d8k13_public$;
       'psql','-X','-q','-v','ON_ERROR_STOP=1',
       '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
       '-d','postgres','-f','/tmp/d8k13-public-copy-row-validation.sql')
+
+    # In replica-mode COPY foreign-key triggers were bypassed; test the restored
+    # public->public references explicitly. Managed-schema parents stay excluded.
+    # Read-only SELECT on a --network none, disposable, superuser-owned PG17 DB.
+    $publicFkAudit = $null
+    if ($Mode -eq 'RestorePublicDataWithPublicFkAudit') {
+      $fkSql = @'
+SET row_security = off;
+CREATE TEMP TABLE d8k13_fk_result (status text NOT NULL, violating_rows bigint NOT NULL);
+DO $d8k13_fk$
+DECLARE f record; any_null text; all_null text; matches text; predicate text; bad bigint;
+BEGIN
+  FOR f IN
+    SELECT k.oid, k.conrelid, k.confrelid, k.conkey, k.confkey, k.confmatchtype,
+           c.relname child_name, p.relname parent_name, pn.nspname parent_schema
+    FROM pg_constraint k
+    JOIN pg_class c ON c.oid=k.conrelid
+    JOIN pg_namespace cn ON cn.oid=c.relnamespace
+    JOIN pg_class p ON p.oid=k.confrelid
+    JOIN pg_namespace pn ON pn.oid=p.relnamespace
+    WHERE k.contype='f' AND cn.nspname='public' AND k.conparentid=0
+  LOOP
+    IF f.parent_schema <> 'public' THEN
+      INSERT INTO d8k13_fk_result VALUES ('EXTERNAL_PARENT',0); CONTINUE;
+    END IF;
+    IF f.confmatchtype NOT IN ('s','f') THEN
+      INSERT INTO d8k13_fk_result VALUES ('UNSUPPORTED_MATCH',0); CONTINUE;
+    END IF;
+    SELECT string_agg(format('c.%I IS NULL', ca.attname),' OR ' ORDER BY cx.n),
+           string_agg(format('c.%I IS NULL', ca.attname),' AND ' ORDER BY cx.n),
+           string_agg(format('p.%I = c.%I', pa.attname,ca.attname),' AND ' ORDER BY cx.n)
+    INTO any_null,all_null,matches
+    FROM unnest(f.conkey) WITH ORDINALITY AS cx(num,n)
+    JOIN unnest(f.confkey) WITH ORDINALITY AS px(num,n) USING (n)
+    JOIN pg_attribute ca ON ca.attrelid=f.conrelid AND ca.attnum=cx.num
+    JOIN pg_attribute pa ON pa.attrelid=f.confrelid AND pa.attnum=px.num;
+    IF any_null IS NULL OR all_null IS NULL OR matches IS NULL THEN
+      INSERT INTO d8k13_fk_result VALUES ('UNSUPPORTED_SHAPE',0); CONTINUE;
+    END IF;
+    IF f.confmatchtype='s' THEN
+      predicate:=format('NOT (%s) AND NOT EXISTS(SELECT 1 FROM public.%I p WHERE %s)',
+                        any_null,f.parent_name,matches);
+    ELSE
+      predicate:=format('NOT (%s) AND ((%s) OR NOT EXISTS(SELECT 1 FROM public.%I p WHERE %s))',
+                        all_null,any_null,f.parent_name,matches);
+    END IF;
+    EXECUTE format('SELECT count(*) FROM public.%I c WHERE %s',f.child_name,predicate) INTO bad;
+    INSERT INTO d8k13_fk_result VALUES ('CHECKED',bad);
+  END LOOP;
+END
+$d8k13_fk$;
+SELECT json_build_object(
+ 'publicFkConstraintsChecked',count(*) FILTER(WHERE status='CHECKED'),
+ 'publicFkViolatingConstraints',count(*) FILTER(WHERE status='CHECKED' AND violating_rows>0),
+ 'publicFkViolatingRows',coalesce(sum(violating_rows) FILTER(WHERE status='CHECKED'),0),
+ 'nonPublicParentConstraintsSkipped',count(*) FILTER(WHERE status='EXTERNAL_PARENT'),
+ 'unsupportedConstraints',count(*) FILTER(WHERE status LIKE 'UNSUPPORTED_%')
+)::text FROM d8k13_fk_result;
+'@
+      $fkFile = Join-Path $unpacked 'd8k13-public-fk-integrity.sql'
+      [System.IO.File]::WriteAllText($fkFile,$fkSql,[System.Text.UTF8Encoding]::new($false))
+      Run-Docker 'COPY_PUBLIC_FK_AUDIT' @('cp',$fkFile,($container + ':/tmp/d8k13-public-fk-integrity.sql'))
+      Run-Docker 'PUBLIC_FK_AUDIT' @('exec','-u','postgres',$container,'psql',
+        '-X','-q','-A','-t','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate',
+        '-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/d8k13-public-fk-integrity.sql')
+      $fkLog = @(Get-Content -LiteralPath (Join-Path $unpacked 'docker-PUBLIC_FK_AUDIT-stdout.log'))
+      $fkLines = @($fkLog | Where-Object { $_ -match '^\{.*\}
+    [ordered]@{
+      status='D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED'
+      sourceCopyHeaders=$totalCopies
+      publicCopyHeadersExecuted=$publicCopies
+      publicSourceRowsAppliedAndCountVerified=$sourceRows
+      publicCopyTablesVerified=$publicCounts.Count
+      publicSequenceResetsApplied=$publicSequenceResets
+      skippedManagedCopyHeaders=$skippedManagedCopies
+      skippedOtherSchemaCopyHeaders=$skippedOtherCopies
+      skippedNonpublicSequenceResets=$skippedSequenceResets
+      terminalResetAllSkipped=($resetAllTrailerLine -gt 0)
+      strictSchemaRestoreCompleted=$true
+      publicDataRowsVerified=$true
+      foreignKeyReferentialParityVerified=$false
+      publicToPublicForeignKeyRowsVerified=($Mode -eq 'RestorePublicDataWithPublicFkAudit')
+      publicToPublicForeignKeyAudit=$publicFkAudit
+      authDataRestored=$false
+      storageMetadataRestored=$false
+      storageObjectBytesRestored=$false
+      allDataRestored=$false
+      original178MigrationsReplayed=$false
+      originalZipModified=$false
+      networkDisabled=$true
+      productionDatabaseConnections=0
+      rawSqlOrRowContentsReturned=$false
+      releaseAuthorized=$false
+    } | ConvertTo-Json -Compress -Depth 6 | Write-Output
+    return
+  }
+  Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
+  $inventory = Get-PublicInventory $container
+  Assert-Drill ([int]$inventory.pg_major -eq 17) 'D8K13_LOCAL_RESTORE_WRONG_PG_MAJOR'
+  Assert-Drill ([int]$inventory.tables -ge 1) 'D8K13_LOCAL_RESTORE_NO_TABLES'
+  # Successful SQL application is not proof of Supabase Auth/Storage/Vault/ACL parity.
+  Write-Output ([ordered]@{
+    status='D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED'
+    inventory=$inventory
+    postgresNetworkDisabled=$true
+    isolatedRuntime='supabase/postgres:17.6.1.136'
+    rawSQLUploaded=$false
+    realBackupRowContentsReturned=$false
+    original178MigrationsReplayed=$false
+    managedAuthStorageVaultRestored=$false
+    aclParityVerified=$false
+    productionDatabaseConnections=0
+    releaseAuthorized=$false
+  } | ConvertTo-Json -Compress -Depth 5)
+}
+catch {
+  [Console]::Error.WriteLine(('D8K13_LOCAL_BACKUP_DRILL_FAILED: ' + $_.Exception.Message + '. Supabase database image can still lack managed schemas, migrations, or project-specific extensions; restore status is INCOMPLETE, not evidence of backup corruption.'))
+  exit 3
+}
+finally {
+  if ($zipReader) { $zipReader.Dispose() }
+  if ($containerStarted -and $container) {
+    & docker rm --force $container *> $null
+  }
+  if ($unpacked -and (Test-Path -LiteralPath $unpacked)) {
+    Remove-Item -LiteralPath $unpacked -Force -Recurse -ErrorAction SilentlyContinue
+  }
+}
+ })
+      Assert-Drill ($fkLines.Count -eq 1) 'D8K13_PUBLIC_FK_SUMMARY_MISSING'
+      $publicFkAudit = $fkLines[0] | ConvertFrom-Json
+      Assert-Drill ([int]$publicFkAudit.unsupportedConstraints -eq 0) 'D8K13_PUBLIC_FK_UNSUPPORTED_CONSTRAINTS'
+      Assert-Drill ([long]$publicFkAudit.publicFkViolatingRows -eq 0 -and
+                    [int]$publicFkAudit.publicFkViolatingConstraints -eq 0) 'D8K13_PUBLIC_FK_REFERENTIAL_VIOLATIONS'
+    }
+
     $inventory = Get-PublicInventory $container
     Assert-Drill ([int]$inventory.pg_major -eq 17 -and [int]$inventory.tables -ge 1) 'D8K13_PUBLIC_DATA_INVALID_PG17_INVENTORY'
     [ordered]@{
