@@ -1313,6 +1313,26 @@ SELECT json_build_object(
  'executeCandidatesWithFunctionArgs',(SELECT count(*) FROM src
    WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M' AND pronargs>0),
 
+ 'anonymousExecuteCandidates',COALESCE((
+   SELECT json_agg(json_build_object(
+     'caseOrdinal',c.case_n,
+     'argumentCount',c.pronargs,
+     'usesDynamicSqlKeyword',true,
+     'mentionsUsingKeyword',c.prosrc ~* '\musing\M',
+     'mentionsQuoteIdent',c.prosrc ~* '\mquote_ident[[:space:]]*\(',
+     'mentionsQuoteLiteral',c.prosrc ~* '\mquote_(literal|nullable)[[:space:]]*\(',
+     'mentionsIdentifierPlaceholder',c.prosrc ~* '%I',
+     'mentionsLiteralPlaceholder',c.prosrc ~* '%L',
+     'mentionsRawPlaceholder',c.prosrc ~* '%s',
+     'mentionsDirectAuthHelper',c.prosrc ~* 'auth[[:space:]]*\.[[:space:]]*(uid|jwt|role)[[:space:]]*\(',
+     'ownedByPostgres',c.proowner=(SELECT oid FROM pg_roles WHERE rolname='postgres')
+   ) ORDER BY c.case_n)
+   FROM (SELECT row_number() OVER (ORDER BY oid) AS case_n,pronargs,prosrc,proowner
+         FROM src WHERE lanname='plpgsql' AND prosrc ~* '\mexecute\M') c
+ ),'[]'::json),
+ 'candidateCasesAreEphemeralAndNonIdentifying',true,
+
+
  'bodyMentionsRaiseException',(SELECT count(*) FROM signals WHERE exception_lex),
  'searchPathIncludesPublic',(SELECT count(*) FROM signals WHERE path_public),
  'searchPathIncludesPgTemp',(SELECT count(*) FROM signals WHERE path_temp),
