@@ -140,10 +140,16 @@ def format_arguments(tokens, opening):
 def expression_class(tokens):
     if len(tokens) == 1 and tokens[0][0] in ("STRING", "NUMBER"):
         return "CONSTANT"
-    if tokens and tokens[0][0] == "WORD" and tokens[0][1].lower() in (
-        "quote_literal", "quote_nullable", "quote_ident"
-    ):
-        return "QUOTE_HELPER_CALL"
+    # Quoting helpers are context-dependent: quote_ident is for identifiers,
+    # quote_literal / quote_nullable for values. None proves that a %s-built
+    # SQL fragment is correctly placed or authorized.
+    if (len(tokens) >= 3 and tokens[0][0] == "WORD"
+            and tokens[1] == ("SYM", "(") and tokens[-1] == ("SYM", ")")):
+        helper = tokens[0][1].lower()
+        if helper == "quote_ident":
+            return "QUOTE_IDENT_CALL_CONTEXT_UNVERIFIED"
+        if helper in ("quote_literal", "quote_nullable"):
+            return "QUOTE_LITERAL_CALL_CONTEXT_UNVERIFIED"
     if len(tokens) == 1 and tokens[0][0] == "WORD":
         return "BARE_IDENTIFIER_OR_PARAMETER_UNRESOLVED"
     if len(tokens) == 1 and tokens[0][0] == "IDENT":
@@ -407,9 +413,13 @@ def body_findings(body, parameter_names=None):
                                          and expr[0][1].lower() in parameter_names))
                             binding["originOrInputSafetyProven"] = False
                             binding["interpolationMechanism"] = "FORMAT_PERCENT_S_NOT_USING_BOUND"
+                            binding["percentSQuotationContextVerified"] = False
                             binding["sourceReviewRequired"] = True
                         detail["bindings"].append(binding)
-                        if spec == "s" and argclass not in ("CONSTANT", "QUOTE_HELPER_CALL"):
+                        # A quote helper does NOT automatically make %s safe:
+                        # quote_ident() used as a value, or quote_literal()
+                        # used as an identifier can still form unsafe SQL.
+                        if spec == "s" and argclass != "CONSTANT":
                             detail["hasUnresolvedRawSubstitution"] = True
                     if detail["hasUnresolvedRawSubstitution"]:
                         detail["staticReviewPriority"] = "RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST"
@@ -501,6 +511,25 @@ def self_test():
     numbered = body_findings("BEGIN EXECUTE format('SELECT %2$s', ignored, input_expr); END;")
     assert numbered[0]["templateHasPositionalOrUnsupportedFormatDirectives"] is True
 
+    quoted_ident = body_findings(
+        "BEGIN EXECUTE format('SELECT %s', quote_ident(p_col)); END;")
+    qi = quoted_ident[0]["bindings"][0]
+    assert qi["argumentClass"] == "QUOTE_IDENT_CALL_CONTEXT_UNVERIFIED"
+    assert quoted_ident[0]["hasUnresolvedRawSubstitution"] is True
+    assert quoted_ident[0]["staticReviewPriority"] == "RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST"
+    assert qi["percentSQuotationContextVerified"] is False
+    quoted_value = body_findings(
+        "BEGIN EXECUTE format('SELECT %s', quote_literal(p_value)); END;")
+    qv = quoted_value[0]["bindings"][0]
+    assert qv["argumentClass"] == "QUOTE_LITERAL_CALL_CONTEXT_UNVERIFIED"
+    assert quoted_value[0]["hasUnresolvedRawSubstitution"] is True
+    nullable = body_findings(
+        "BEGIN EXECUTE format('SELECT %s', quote_nullable(p_value)); END;")
+    assert nullable[0]["hasUnresolvedRawSubstitution"] is True
+    bare_helper_name = body_findings(
+        "BEGIN EXECUTE format('SELECT %s', quote_ident); END;")
+    assert bare_helper_name[0]["bindings"][0]["argumentClass"] == "BARE_IDENTIFIER_OR_PARAMETER_UNRESOLVED"
+    # Literal SQL remains review-required even if no variable taint is seen.
     safe = body_findings("BEGIN EXECUTE format('select %s', 7); END;")
     assert len(safe) == 1 and not safe[0]["hasUnresolvedRawSubstitution"]
     assert len(body_findings("BEGIN /* EXECUTE fake; */ RETURN 1; END;")) == 0
