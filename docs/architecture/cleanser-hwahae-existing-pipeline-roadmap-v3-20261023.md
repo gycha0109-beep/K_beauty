@@ -77,3 +77,28 @@
 **현실 진척 요약:** R0 완료 / R1 Shadow 완료·실물 불확실성 일부 / R2 기존 기능은 있지만 신규 10개 호환성 감사가 막힌 핵심 / R3 정책 경계 재정의 / R4 제한 진입 미적용 / R5 레거시 회귀 PASS·신규 real-data 평가 대기 / R6 미착수.
 
 `#1403` Draft 대상. PR 머지·운영 배포·DB 쓰기 권한 없음.
+
+## 2026-10-24 R2 진행 결과 — 기존 DB 신호 직접 점검
+
+- 실 데이터: `products`를 **SELECT-only** 조회해 기존 클렌저 10개 신호를 재집계. 7개가 화해 AI 리뷰 요약·시장 리뷰/평점·성분 신호를 저장했고 해당 7개 모두 `hwahae_url`과 `market_signals.hwahae_review_page`의 URL 문자열이 일치. 다만 **일치 문자열만으로 정확한 판매 SKU/처방까지 검증됐다고 단정할 수 없음**.
+- **6개**: 리뷰 요약의 상위 긍정/부정 3개 범위에 이미 매핑된 태그가 존재함 → 기존 `computeReviewSignalScore` 입력 후보. 기계적 후보이며 아직 신규 추천 G2 승인이나 제품 규격 확정 아님.
+- **1개** 휩드 머그트리 130g: 페이지 전체 리뷰 수 **2건**. 저장 리뷰 요약은 부정 1개만 존재하며 점수 매핑 태그 0개 → `NO_TOP_THREE_MAPPED_REVIEW_TAGS`. 리뷰·시장 정보가 있다는 사실과 실제 피부 점수 기여를 분리한다.
+- **3개** 마녀공장 퓨어 소이빈/라곰 젤 투 워터/라곰 마이크로 폼: 화해 캡처 미기록 → `NO_HWAHAE_REVIEW_CAPTURE`. 이 3개의 실제 상품이 화해에 존재하지 않는다는 결론이 아님.
+- DB의 리뷰 신호 `updated_at=2026-10-22`는 7개에 존재. **정규화된 `updated_at`은 단순 저장시점으로, 페이지 수집 원본의 별도 `observed_at` 승인이나 검토자 정보가 아님.**
+- `market_signals.review_count`(페이지 전체 리뷰 수)와 `review_signals.positive/negative[].count`(화해 AI 요약의 표현 언급 횟수)를 서로 대체하지 않음.
+
+### 이번에 구현한 검증 도구
+
+- [읽기 전용 실데이터 10개 축약 스냅샷](../../evidence/trust/cleanser-existing-hwahae-signal-footprint-20261024-v1.json): 상품 ID/이름·건수·상위 매핑 개수·상태만 보존. **리뷰 원문·AI 요약 라벨·URL·성분 원본을 저장하지 않음**.
+- `lib/trust/cleanser-hwahae-existing-score-shadow-v1.mjs`: **기존 `normalizeReviewSignals` + `computeReviewSignalScore`를 그대로 호출**. 별도 `reviewed_by`, `reviewed_at`, `review_state`, 새 표본수를 요구하지 않음. 실제 저장된 링크 문자열이 불일치하면 보류. 반환 점수는 기존 Review Signal 축 **하나만**이며 Skin Match의 최종 추천 점수 전체가 아님.
+- `scripts/run-cleanser-existing-hwahae-live-review-score-v1.mjs`: 승인된 서버에서 DB 원본 10개를 읽고 세 가지 사용자 상태별 **원래 리뷰 점수식으로 재계산**한 뒤 숫자·상태만 표시하는 프로그램. 단, **현재까지 실제 운영 DB 인증정보를 넣어 이 프로그램 자체를 실행한 것은 아님**. CI에서는 자격증명 없이 합성 예제에서 원래 점수식을 호출하고 차단 장치만 검증.
+- `scripts/verify-cleanser-hwahae-existing-score-shadow-v1.mjs`: 실제 SELECT 축약값 6/1/3과 합성 원래 점수식 테스트, 잘못된 URL/카테고리/저신호 보류·Fact/G2 쓰기 0을 점검. 기존 제품 및 점수식은 수정하지 않는다.
+- **R2 완료 기준 일부 달성**: 데이터 존재·라벨 매핑 현황 및 기존 함수 연결 구현. **미완료**: 운영 DB 원본을 입력한 정확한 제품별 실점수 replay, 모든 소비자/시장 조건에서의 동일성 확인.
+- **R3 일부 달성**: 호환 어댑터 코드로 기존 파이프라인 재사용. 이전 v2의 새 필드 기준은 보호된 진입 요건으로 채택하지 않음.
+- **R4~R6**: 변경/활성화 없음. 기존 164×12 추천 해시 유지 검증 필요.
+
+### 다음 구현 순서 갱신
+
+1. 먼저 보호된 실행 환경에서 `run-cleanser-existing-hwahae-live-review-score-v1.mjs`로 정확한 7개 원본 리뷰 점수/3개 누락 사유를 계산하고, 원본 라벨 없는 숫자 결과만 저장한다. **공용 CI에 Supabase 서비스 키를 제공하지 않는다**.
+2. 정확한 화해 상품 식별/리뉴얼/용량 미스매치 후보와 리뷰 요약의 매핑 실패만 재검토한다. 웹사이트를 임의로 다시 크롤링하거나 허위 `reviewed_by`를 넣지 않는다.
+3. R4 제한 추천 권한 정책 설계를 R5 실데이터 점수 검증·164×12 기존 점수 불변과 결합해 검토하고, 보호된 승인 이전에 G2 활성화하지 않는다.
