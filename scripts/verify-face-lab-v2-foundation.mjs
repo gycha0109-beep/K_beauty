@@ -11,6 +11,8 @@ import "./verify-face-lab-style-check-contrasts-sc04.mjs";
 import "./verify-face-lab-style-check-sc05-study-preflight.mjs";
 // SC-06: all 22 observation fields, candidate-shadow and execution sensitivity.
 import "./verify-face-lab-style-check-field-impact-sc06.mjs";
+// SC-06B: candidate-only structural question feasibility, no production activation.
+import "./verify-face-lab-style-check-structural-shadow-sc06b.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
