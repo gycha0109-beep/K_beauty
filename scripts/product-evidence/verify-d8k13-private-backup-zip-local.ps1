@@ -962,7 +962,6 @@ $d8k13_public$;
       'psql','-X','-q','-v','ON_ERROR_STOP=1',
       '-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never',
       '-d','postgres','-f','/tmp/d8k13-public-copy-row-validation.sql')
-
     # In replica-mode COPY foreign-key triggers were bypassed; test the restored
     # public->public references explicitly. Managed-schema parents stay excluded.
     # Read-only SELECT on a --network none, disposable, superuser-owned PG17 DB.
@@ -1028,69 +1027,7 @@ SELECT json_build_object(
         '-X','-q','-A','-t','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate',
         '-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/d8k13-public-fk-integrity.sql')
       $fkLog = @(Get-Content -LiteralPath (Join-Path $unpacked 'docker-PUBLIC_FK_AUDIT-stdout.log'))
-      $fkLines = @($fkLog | Where-Object { $_ -match '^\{.*\}
-    [ordered]@{
-      status='D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED'
-      sourceCopyHeaders=$totalCopies
-      publicCopyHeadersExecuted=$publicCopies
-      publicSourceRowsAppliedAndCountVerified=$sourceRows
-      publicCopyTablesVerified=$publicCounts.Count
-      publicSequenceResetsApplied=$publicSequenceResets
-      skippedManagedCopyHeaders=$skippedManagedCopies
-      skippedOtherSchemaCopyHeaders=$skippedOtherCopies
-      skippedNonpublicSequenceResets=$skippedSequenceResets
-      terminalResetAllSkipped=($resetAllTrailerLine -gt 0)
-      strictSchemaRestoreCompleted=$true
-      publicDataRowsVerified=$true
-      foreignKeyReferentialParityVerified=$false
-      publicToPublicForeignKeyRowsVerified=($Mode -eq 'RestorePublicDataWithPublicFkAudit')
-      publicToPublicForeignKeyAudit=$publicFkAudit
-      authDataRestored=$false
-      storageMetadataRestored=$false
-      storageObjectBytesRestored=$false
-      allDataRestored=$false
-      original178MigrationsReplayed=$false
-      originalZipModified=$false
-      networkDisabled=$true
-      productionDatabaseConnections=0
-      rawSqlOrRowContentsReturned=$false
-      releaseAuthorized=$false
-    } | ConvertTo-Json -Compress -Depth 6 | Write-Output
-    return
-  }
-  Run-Docker 'DATA' @('exec','-u','postgres',$container,'psql','-X','-q','-v','ON_ERROR_STOP=1','--single-transaction','-v','VERBOSITY=sqlstate','-v','SHOW_CONTEXT=never','-d','postgres','-c','SET session_replication_role = replica','-f','/tmp/data.sql','-c','RESET session_replication_role')
-  $inventory = Get-PublicInventory $container
-  Assert-Drill ([int]$inventory.pg_major -eq 17) 'D8K13_LOCAL_RESTORE_WRONG_PG_MAJOR'
-  Assert-Drill ([int]$inventory.tables -ge 1) 'D8K13_LOCAL_RESTORE_NO_TABLES'
-  # Successful SQL application is not proof of Supabase Auth/Storage/Vault/ACL parity.
-  Write-Output ([ordered]@{
-    status='D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED'
-    inventory=$inventory
-    postgresNetworkDisabled=$true
-    isolatedRuntime='supabase/postgres:17.6.1.136'
-    rawSQLUploaded=$false
-    realBackupRowContentsReturned=$false
-    original178MigrationsReplayed=$false
-    managedAuthStorageVaultRestored=$false
-    aclParityVerified=$false
-    productionDatabaseConnections=0
-    releaseAuthorized=$false
-  } | ConvertTo-Json -Compress -Depth 5)
-}
-catch {
-  [Console]::Error.WriteLine(('D8K13_LOCAL_BACKUP_DRILL_FAILED: ' + $_.Exception.Message + '. Supabase database image can still lack managed schemas, migrations, or project-specific extensions; restore status is INCOMPLETE, not evidence of backup corruption.'))
-  exit 3
-}
-finally {
-  if ($zipReader) { $zipReader.Dispose() }
-  if ($containerStarted -and $container) {
-    & docker rm --force $container *> $null
-  }
-  if ($unpacked -and (Test-Path -LiteralPath $unpacked)) {
-    Remove-Item -LiteralPath $unpacked -Force -Recurse -ErrorAction SilentlyContinue
-  }
-}
- })
+      $fkLines = @($fkLog | Where-Object { $_ -match '^\{.*\}$' })
       Assert-Drill ($fkLines.Count -eq 1) 'D8K13_PUBLIC_FK_SUMMARY_MISSING'
       $publicFkAudit = $fkLines[0] | ConvertFrom-Json
       Assert-Drill ([int]$publicFkAudit.unsupportedConstraints -eq 0) 'D8K13_PUBLIC_FK_UNSUPPORTED_CONSTRAINTS'
@@ -1114,6 +1051,8 @@ finally {
       strictSchemaRestoreCompleted=$true
       publicDataRowsVerified=$true
       foreignKeyReferentialParityVerified=$false
+      publicToPublicForeignKeyRowsVerified=($Mode -eq 'RestorePublicDataWithPublicFkAudit')
+      publicToPublicForeignKeyAudit=$publicFkAudit
       authDataRestored=$false
       storageMetadataRestored=$false
       storageObjectBytesRestored=$false
