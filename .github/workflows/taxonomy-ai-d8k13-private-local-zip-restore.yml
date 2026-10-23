@@ -589,6 +589,8 @@ jobs:
           CREATE TABLE public.fk_parent_pair(a integer, b integer, PRIMARY KEY(a,b));
           CREATE TABLE public.fk_child_pair(id integer PRIMARY KEY, a integer, b integer,
             CONSTRAINT fk_pair_full FOREIGN KEY(a,b) REFERENCES public.fk_parent_pair(a,b) MATCH FULL);
+          CREATE SEQUENCE public.d8k13_seq_called;
+          CREATE SEQUENCE public.d8k13_seq_uncalled;
           '@
             [System.IO.File]::WriteAllText((Join-Path $sql 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
             $single = if ($kind -eq 'orphan') { '11' + [char]9 + '999' } else { '11' + [char]9 + '1' }
@@ -610,6 +612,8 @@ jobs:
           21	1	2
           $pair
           \.
+          SELECT pg_catalog.setval('public.d8k13_seq_called', 97, true);
+          SELECT pg_catalog.setval('public.d8k13_seq_uncalled'::regclass, 103, false);
           RESET ALL;
           "@
             [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
@@ -617,7 +621,7 @@ jobs:
             [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
             $size = [long](Get-Item -LiteralPath $zip).Length
             $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
-            $out = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicDataWithPublicFkAudit 2>&1
+            $out = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicDataWithIntegrityAudit 2>&1
             $exit = $LASTEXITCODE
             $safeText = (($out | Out-String) -join '')
             if ($kind -eq 'valid') {
@@ -627,6 +631,10 @@ jobs:
               $r = $line[0] | ConvertFrom-Json
               if ($r.publicToPublicForeignKeyRowsVerified -ne $true -or
                   $r.publicToPublicForeignKeyAudit.publicFkConstraintsChecked -ne 2 -or
+                  $r.publicSequenceSourceStateVerified -ne $true -or
+                  $r.publicSequenceSourceStateAudit.sourceSetvalsChecked -ne 2 -or
+                  $r.publicSequenceSourceStateAudit.nextvalActuallyCalled -ne $false -or
+                  $r.publicSequenceSourceStateAudit.sourceLastValueAndIsCalledMatch -ne $true -or
                   $r.publicToPublicForeignKeyAudit.publicFkViolatingConstraints -ne 0 -or
                   $r.publicToPublicForeignKeyAudit.publicFkViolatingRows -ne 0 -or
                   $r.publicToPublicForeignKeyAudit.nonPublicParentConstraintsSkipped -ne 1 -or
@@ -647,7 +655,7 @@ jobs:
               throw 'D8K13_PUBLIC_FK_SOURCE_ZIP_CHANGED'
             }
           }
-          Write-Host 'D8K13_SYNTHETIC_PUBLIC_TO_PUBLIC_FK_AND_MANAGED_SKIP_PASS'
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_FK_SEQUENCE_STATE_AND_MANAGED_SKIP_PASS'
           # Negative fixture deliberately exits nonzero; clear pwsh's native exit status.
           exit 0
 
