@@ -13,6 +13,8 @@ import "./verify-face-lab-style-check-sc05-study-preflight.mjs";
 import "./verify-face-lab-style-check-field-impact-sc06.mjs";
 // SC-06B: candidate-only structural question feasibility, no production activation.
 import "./verify-face-lab-style-check-structural-shadow-sc06b.mjs";
+// SC-06C: blinded synthetic human review packets and sealed operator role separation.
+import "./verify-face-lab-style-check-structural-human-packets-sc06c.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
