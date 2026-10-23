@@ -178,7 +178,7 @@ def self_test():
                                     ("Punctate", "2_F", "fail")):
             (root / group / "images").mkdir(parents=True)
             (root / group / "masks").mkdir(parents=True)
-            image = Image.new("RGB", (48, 32), color=(145, 116, 110))
+            image = Image.new("RGB", (48, 32), color=(145 if group == "Flaky" else 146, 116, 110))
             image.save(root / group / "images" / (name + ".jpg"))
             mask = Image.new("P", (48, 32), color=0)
             mask.putpalette([0, 0, 0, 255, 0, 0, 0, 255, 0] + [0] * (768 - 9))
