@@ -172,14 +172,18 @@
       },
       "public_retailer_lead_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000145580",
       "quantity_comparison": "MANUFACTURER_QUANTITY_DIFFERS_FROM_CATALOG_HINT",
-      "research_note": "manufacturer page 220ml while retailer listing 170ml; formula sameness not established",
+      "research_note": "KR brand 220ml vs catalog 170ml, but global brand 170ml pages independently support the smaller unit. Two global 170ml ingredient disclosures show differing marker sets; formula sameness NOT established.",
       "seller_sku": null,
       "governed_source_id": null,
       "source_snapshot_digest": null,
       "subject_id": null,
       "formulation_equivalence": "FORMULA_UNRESOLVED",
       "fact_reuse_authorized": false,
-      "admission_authorized": false
+      "admission_authorized": false,
+      "brand_hosted_catalog_size_evidence": true,
+      "quantity_comparison_scope": "KR_DOMESTIC_BRAND_PAGE_VS_CATALOG_HINT",
+      "cross_market_alternate_volume_confirmed": true,
+      "cross_market_research_path": "evidence/trust/lagom-cross-market-formulation-research-20261023-v1.json"
     },
     {
       "product_id": "ed434d86-da13-43db-a4bf-695b1f2bea5e",
@@ -230,14 +234,18 @@
       },
       "public_retailer_lead_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000145581",
       "quantity_comparison": "MANUFACTURER_QUANTITY_DIFFERS_FROM_CATALOG_HINT",
-      "research_note": "manufacturer page 150ml while retailer listing 120ml; formula sameness not established",
+      "research_note": "KR brand 150ml vs catalog 120ml; global brand 120ml listing supports earlier/smaller unit. Full INCI/formulation revision/market equivalence NOT established.",
       "seller_sku": null,
       "governed_source_id": null,
       "source_snapshot_digest": null,
       "subject_id": null,
       "formulation_equivalence": "FORMULA_UNRESOLVED",
       "fact_reuse_authorized": false,
-      "admission_authorized": false
+      "admission_authorized": false,
+      "brand_hosted_catalog_size_evidence": true,
+      "quantity_comparison_scope": "KR_DOMESTIC_BRAND_PAGE_VS_CATALOG_HINT",
+      "cross_market_alternate_volume_confirmed": true,
+      "cross_market_research_path": "evidence/trust/lagom-cross-market-formulation-research-20261023-v1.json"
     },
     {
       "product_id": "fb7ca4ea-9ebb-4a63-bb43-aba6edd0bf95",
