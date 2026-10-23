@@ -46,7 +46,7 @@
         "basis": "product_name_only"
       },
       "public_manufacturer_page": {
-        "url": "https://whipped.co.kr/product/%ED%9C%A9%EB%93%9C-%EB%A8%B8%EA%B7%B8%ED%8A%B8%EB%A6%AC-%EB%B9%84%EA%B1%B4-%ED%8C%A9%ED%81%B4%EB%A0%8C%EC%A0%80-130g/53/%7B",
+        "url": "https://whipped.co.kr/product/%ED%9C%A9%EB%93%9C-%EB%A8%B8%EA%B7%B8%ED%8A%B8%EB%A6%AC-%EB%B9%84%EA%B1%B4-%ED%8C%A9%ED%81%B4%EB%A0%8C%EC%A0%80-130g/53",
         "observed_quantity": {
           "amount": 130,
           "unit": "g"
@@ -56,7 +56,7 @@
       },
       "public_retailer_lead_url": null,
       "quantity_comparison": "MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT",
-      "research_note": "official product notice: 130 g, ingredients shown; never convert to ml",
+      "research_note": "manufacturer 130g official product; renewal and processing change advertised, no frozen old-vs-new formula review",
       "seller_sku": null,
       "governed_source_id": null,
       "source_snapshot_digest": null,
