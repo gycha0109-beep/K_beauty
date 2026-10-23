@@ -284,10 +284,51 @@ def possible_parameter_flow(prior_tokens, expr, parameters, max_hops=3):
     return "ALIAS_CHAIN_LIMIT_REACHED", False
 
 
+def body_authorization_signals(tokens):
+    """Lexical evidence only; a keyword never proves an enforced auth guard."""
+    auth_call = False
+    privilege_call = False
+    jwt_config = False
+    if_branch = False
+    raise_exception = False
+    for i, (kind, value) in enumerate(tokens):
+        if kind != "WORD":
+            continue
+        word = value.lower()
+        if word == "auth" and i + 3 < len(tokens):
+            auth_call |= (tokens[i + 1] == ("SYM", ".")
+                          and tokens[i + 2][0] == "WORD"
+                          and tokens[i + 2][1].lower() in ("uid", "jwt", "role")
+                          and tokens[i + 3] == ("SYM", "("))
+        if word in ("has_function_privilege", "has_table_privilege",
+                    "has_schema_privilege", "has_database_privilege"):
+            privilege_call |= (i + 1 < len(tokens)
+                               and tokens[i + 1] == ("SYM", "("))
+        if word == "current_setting" and i + 2 < len(tokens):
+            jwt_config |= (tokens[i + 1] == ("SYM", "(")
+                           and tokens[i + 2][0] == "STRING"
+                           and tokens[i + 2][1].lower().startswith("request.jwt"))
+        if word == "if":
+            if_branch = True
+        if word == "raise" and i + 1 < len(tokens):
+            raise_exception |= (tokens[i + 1] == ("WORD", "EXCEPTION")
+                                or (tokens[i + 1][0] == "WORD"
+                                    and tokens[i + 1][1].lower() == "exception"))
+    return {
+        "directAuthHelperCallLexical": bool(auth_call),
+        "jwtCurrentSettingLexical": bool(jwt_config),
+        "privilegeHelperCallLexical": bool(privilege_call),
+        "ifKeywordLexical": bool(if_branch),
+        "raiseExceptionLexical": bool(raise_exception),
+        "authorizationGuardProven": False,
+    }
+
+
 def body_findings(body, parameter_names=None):
     tokens = tokenize(body)
     parameter_names = parameter_names or set()
     local_names = declared_local_names(tokens)
+    auth_signals = body_authorization_signals(tokens)
     findings = []
     for i, (kind, value) in enumerate(tokens):
         if kind != "WORD" or value.upper() != "EXECUTE":
@@ -304,7 +345,9 @@ def body_findings(body, parameter_names=None):
                   "hasUnresolvedRawSubstitution": False,
                   "usingDoesNotBindFormatInterpolations": True,
                   "formatArgumentSafetyProven": False,
-                  "staticReviewPriority": "UNRESOLVED"}
+                  "authorizationSignals": dict(auth_signals),
+                  "staticReviewPriority": "UNRESOLVED",
+                  "privilegedExecutionSemanticsVerified": False}
         if len(segment) >= 2 and segment[0][0] == "WORD" and segment[0][1].lower() == "format":
             args = format_arguments(segment, 1)
             if args:
@@ -343,6 +386,14 @@ def body_findings(body, parameter_names=None):
                         detail["staticReviewPriority"] = "UNSUPPORTED_FORMAT_DIRECTIVES_REVIEW"
                     else:
                         detail["staticReviewPriority"] = "NO_RAW_PERCENT_S_FOUND_NOT_A_SAFETY_VERDICT"
+                    # Input from a formal argument remains only a possible
+                    # lexical flow: other branches and sanitizers are not proven.
+                    detail["possibleCallerInputIntoRawFormat"] = any(
+                        b["specifier"] == "%s"
+                        and b.get("possibleParameterFlowLexical", False)
+                        for b in detail["bindings"])
+                    detail["manualAuthorizationReviewRequired"] = any(
+                        b["specifier"] == "%s" for b in detail["bindings"])
         findings.append(detail)
     return findings
 
@@ -383,6 +434,25 @@ def self_test():
     assert bound[0]["staticReviewPriority"] == "RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST"
     no_directive = body_findings("BEGIN EXECUTE format('SELECT %I', column_name); END;")
     assert no_directive[0]["staticReviewPriority"] == "NO_RAW_PERCENT_S_FOUND_NOT_A_SAFETY_VERDICT"
+    # A visible auth.uid() invocation is a signal, not a proven guard.
+    guarded = body_findings(
+        "BEGIN IF auth.uid() IS NULL THEN RAISE EXCEPTION 'denied'; END IF; "
+        "EXECUTE format('SELECT %s', p_input); END;", {"p_input"})
+    g = guarded[0]
+    assert g["authorizationSignals"]["directAuthHelperCallLexical"] is True
+    assert g["authorizationSignals"]["raiseExceptionLexical"] is True
+    assert g["authorizationSignals"]["authorizationGuardProven"] is False
+    assert g["possibleCallerInputIntoRawFormat"] is True
+    assert g["manualAuthorizationReviewRequired"] is True
+    no_guard = body_findings("BEGIN EXECUTE format('SELECT %s', p_input); END;", {"p_input"})
+    assert no_guard[0]["authorizationSignals"]["directAuthHelperCallLexical"] is False
+    assert no_guard[0]["manualAuthorizationReviewRequired"] is True
+    # A quoted string/comment referring to auth.uid is not a function call.
+    decoy = body_findings(
+        "BEGIN PERFORM 'auth.uid()'; -- auth.uid()"
+        "\n EXECUTE format('SELECT %s', 1); END;")
+    assert decoy[0]["authorizationSignals"]["directAuthHelperCallLexical"] is False
+
     numbered = body_findings("BEGIN EXECUTE format('SELECT %2$s', ignored, input_expr); END;")
     assert numbered[0]["templateHasPositionalOrUnsupportedFormatDirectives"] is True
 
