@@ -65,7 +65,7 @@ for(const edit of tamper){
 const privateScript="scripts/run-cleanser-r5-private-full-engine-readonly-v1.mjs";
 const syntax=spawnSync(process.execPath,["--check",privateScript],{encoding:"utf8"});
 assert.equal(syntax.status,0,syntax.stderr);
-const env={...process.env,SUPABASE_URL:"",SUPABASE_SERVICE_ROLE_KEY:""};
+const env={...process.env,GITHUB_ACTIONS:"",CI:"",SUPABASE_URL:"",SUPABASE_SERVICE_ROLE_KEY:""};
 const noCredentials=spawnSync(process.execPath,[privateScript],{
  encoding:"utf8",env,maxBuffer:100000});
 assert.notEqual(noCredentials.status,0);
@@ -75,4 +75,12 @@ const fakeApprove=spawnSync(process.execPath,[privateScript,"--activate"],{
  encoding:"utf8",env,maxBuffer:100000});
 assert.notEqual(fakeApprove.status,0);
 assert.equal(fakeApprove.stdout,"");
+
+const forbiddenCi=spawnSync(process.execPath,[privateScript],{
+ encoding:"utf8",env:{...env,GITHUB_ACTIONS:"true",SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"dummy"},
+ maxBuffer:100000});
+assert.notEqual(forbiddenCi.status,0);
+assert.equal(forbiddenCi.stdout,"");
+assert.match(forbiddenCi.stderr,/R5_PRIVATE_FULL_SOURCE_RUN_FORBIDDEN_IN_CI/);
+
 console.log("R5 existing Hwahae source triage: PASS captured_ingredient=7 mapped_review=6 low_review=1 missing_capture=3 unknown_traits=10 grants=0 writes=0");
