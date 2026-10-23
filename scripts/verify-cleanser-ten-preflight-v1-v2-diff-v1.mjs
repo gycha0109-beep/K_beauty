@@ -90,4 +90,4 @@ if(upstreamPresent){
   assert.notEqual(cmd.status,0);
   assert.match(cmd.stderr,/UPSTREAM_PR_1390_V1_MUST_BE_INTEGRATED_BEFORE_REAL_COMPARISON/);
 }
-console.log("C4 exact-ten actual-v1 integration bridge contract: PASS (synthetic wrapper only; unmerged v1 BLOCKED)");
+console.log("C4 exact-ten v1/v2 integration bridge: PASS ("+(upstreamPresent?"original upstream v1 executed with synthetic scoped fixture; full live snapshot not tested":"upstream v1 absent; runner correctly fail-closed")+")");
