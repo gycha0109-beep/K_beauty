@@ -17,6 +17,17 @@ const plan=buildCleanserReviewWorklistV1({
   rows:snapshot.rows,expected_product_ids:snapshot.expected_product_ids,
   as_of:snapshot.as_of
 });
+const leads=JSON.parse(await readFile(
+  "evidence/trust/cleanser-public-official-research-leads-20261023-v1.json","utf8"
+));
+if(leads.authority!=="RESEARCH_LEAD_ONLY_NOT_OFFICIAL_EVIDENCE"||
+   leads.records?.length!==10||
+   leads.records.some(x=>!snapshot.expected_product_ids.includes(x.product_id)||
+     x.formulation_equivalence!=="FORMULA_UNRESOLVED"||
+     x.fact_reuse_authorized!==false||x.admission_authorized!==false))
+  throw new Error("PUBLIC_LEADS_CANNOT_BECOME_TRUST_AUTHORITY");
+const publicByProduct=new Map(leads.records.map(x=>[x.product_id,x]));
+if(publicByProduct.size!==10)throw new Error("EXACT_TEN_PUBLIC_LEADS_REQUIRED");
 const labels={
   P0_RECONCILE_EXISTING_RESEARCH_TASKS:"기존 연구 작업 확인",
   P1_VERIFY_OFFICIAL_SKU_SUBJECT_SOURCE:"제조사 원본·본품 규격·처방 신원 검토",
@@ -27,6 +38,9 @@ const labels={
 const result={
   as_of:plan.as_of,total:plan.products_count,
   summary:{
+    public_manufacturer_display_matches:leads.records.filter(x=>x.quantity_comparison==="MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT").length,
+    public_manufacturer_display_differs:leads.records.filter(x=>x.quantity_comparison==="MANUFACTURER_QUANTITY_DIFFERS_FROM_CATALOG_HINT").length,
+    public_manufacturer_quantity_unknown:leads.records.filter(x=>x.quantity_comparison==="OFFICIAL_QUANTITY_NOT_EXPLICIT").length,
     official_sku_formulation_review:plan.missing_official_identity_count,
     hwahae_product_capture_review:plan.missing_hwahae_capture_count,
     recommendation_metadata_review:plan.missing_approved_recommendation_metadata_count,
@@ -37,7 +51,14 @@ const result={
     product_id:p.product_id,name:p.product_name,
     next_step:labels[p.next_action]||p.next_action,
     remaining_steps:p.actions.map(x=>labels[x]||x),
-    sizing_warnings:p.special_size_review
+    sizing_warnings:p.special_size_review,
+    manufacturer_public_research:{
+      status:publicByProduct.get(p.product_id).quantity_comparison,
+      db_display:publicByProduct.get(p.product_id).catalog_quantity_hint,
+      manufacturer_display:publicByProduct.get(p.product_id).public_manufacturer_page.observed_quantity,
+      research_only_not_reviewed:true,
+      approved_formulation:false
+    }
   }))
 };
 process.stdout.write(JSON.stringify(result,null,2)+"\n");
