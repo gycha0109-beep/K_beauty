@@ -110,7 +110,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
 | SC-04 | 5 | **반사실적 추천 비교 구현·Foundation/PIE 통과 / PR #1395, 미병합** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | **평가 계획 검증·Human 권한 게이트 구현 / PR #1396, 실제 사진·사람 평가는 미실시** | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
-| SC-06 | 7 | **22개 관찰 필드 실제 영향도 전수 비교 구현 / PR #1397, CI 확인 중** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
+| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
 
 ### 2026-10-22 진행 상태 (SC-03)
 
@@ -152,6 +152,16 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - **중요:** 민감도 0 = 해당 synthetic 구성에서 관찰 변경의 추적 가능한 downstream 영향 0. 반드시 불필요한 관찰이라는 의미는 아니다. 민감도 양성 = 변경 탐지이지 미적 적합성/정확도 통과가 아니다.
 - 연구 파일: `lib/face-lab-v2/evaluation/style-check-field-impact-audit.js`; PR #1397는 #1396 위의 read-only 테스트 PR이다.
 - 기존 `SC-06` 제품 연결·승격 과제는 **SC-07**로 이월한다. 기존 P3 제품 구현 착수는 Human 평가와 별도 release authorization 전까지 보류한다.
+
+### SC-06 CI 최종 계측치 (2026-10-23)
+
+- [Foundation #39815134570](https://github.com/gycha0109-beep/K_beauty/actions/runs/39815134570) + [PIE #39815135269](https://github.com/gycha0109-beep/K_beauty/actions/runs/39815135269): **PASS**.
+- 22개 필드 × 2개 합성 얼굴 × 12 Target(24 baseline)의 **1,332개 필드 대체 검증**: Profile key 8, structural 16, Style Delta 및 Route 각각 4, 최종 실행 `value` 9.
+- 최종 실행 영향 9개 = 네 action modifier `eyeDirection`, `straightCurveBalance`, `contourDefinition`, `featureContrast` + Hair 구조 `faceShape`, `jawWidthVsCheek`, `faceLengthBalance`, `foreheadHeight`, `featureConcentration`. 구조-only 라벨은 잘못된 표현: 이 5개 중 일부는 Key Feature에도 들어간다.
+- Color appearance 3개는 현재 Current Face Profile/Style Delta/Route에서 `value` 변화가 0. 이는 photo-derived 피부색 정확도가 검증됐다는 뜻이 아니다.
+- 작은 SC-06 cohort 후보 `candidateActivations=0`; **기존 96-case positive-control**에서 `candidateActivatedCaseCount=8`, `selectedRouteChangedCaseCount=5`, 완전 action 동일 Target 6개. Foundation [#39881306759](https://github.com/gycha0109-beep/K_beauty/actions/runs/39881306759), PIE [#39881306875](https://github.com/gycha0109-beep/K_beauty/actions/runs/39881306875) **PASS**. 후보 엔진은 여전히 `productionActive=false`.
+- 정확한 필드별 수치 및 사용 목적·한계는 `FACE_LAB_STYLE_CHECK_SC06_FIELD_IMPACT_FINDINGS_20261023.md` (PR #1397). **자동 회귀 통과는 추천의 사람 선호도/실사진 정확도/출시 승인 아님**.
+- 단계 구분: SC-06 *연구용 프로필·실행 민감도* 완료, SC-05 실사진·사람의 독립 평가 미실행, SC-07 UI·운영 반영 보류.
 
 ## 5. 체크리스트/실행 운영
 
