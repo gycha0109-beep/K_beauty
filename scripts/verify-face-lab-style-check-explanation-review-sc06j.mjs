@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import {buildStyleCheckExplanationPreview,renderStyleCheckExplanationPreviewHtml} from "./build-face-lab-style-check-explanation-review-sc06j.mjs";
+import {auditStyleCheckExplanation} from "../lib/face-lab-v2/evaluation/style-check-explanation-audit-sc06j.js";
+const result=buildStyleCheckExplanationPreview({faceCount:3});
+assert.equal(result.stats.cases,36);assert.equal(result.stats.routes,108);
+assert.equal(result.stats.pass,108);assert.equal(result.stats.fail,0);assert.equal(result.stats.missingActions,0);
+assert.equal(result.accuracyValidated,false);assert.equal(result.providerInvoked,false);
+const html=renderStyleCheckExplanationPreviewHtml(result);
+assert.ok(html.includes("connect-src 'none'"));assert.ok(!html.includes("fetch("));
+assert.ok(html.includes("id=\"targets\""));assert.ok(html.includes("id=\"routes\""));
+const item=result.examples.find(x=>x.target==="chic");
+const route=item.routes.find(x=>x.id===item.defaultRoute);
+const changed=structuredClone(route.explanation);changed.cards[0].source.direction="decrease";
+assert.ok(auditStyleCheckExplanation({canonical:null,explanation:changed,targetKey:"chic"}).status==="fail");
+assert.ok(result.examples.every(x=>x.routes.every(r=>r.audit.status==="pass")));
+console.log(JSON.stringify({ok:true,...result.stats,unsafeCopyBlocked:true}));
