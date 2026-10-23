@@ -110,7 +110,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
 | SC-04 | 5 | **반사실적 추천 비교 구현·Foundation/PIE 통과 / PR #1395, 미병합** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | **평가 계획 검증·Human 권한 게이트 구현 / PR #1396, 실제 사진·사람 평가는 미실시** | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
-| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
+| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-06B | 7b | **3개 구조 후보 Shadow 실험 구현 / PR #1398, CI 확인 중** | SC-06 필드 영향 분석 | 실험용 후보 3개와 96-case feasibility / 개인화 가설 평가 | 사람 검증 전 운영 추천으로 전파 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
 
 ### 2026-10-22 진행 상태 (SC-03)
 
@@ -162,6 +162,15 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - 작은 SC-06 cohort 후보 `candidateActivations=0`; **기존 96-case positive-control**에서 `candidateActivatedCaseCount=8`, `selectedRouteChangedCaseCount=5`, 완전 action 동일 Target 6개. Foundation [#39881306759](https://github.com/gycha0109-beep/K_beauty/actions/runs/39881306759), PIE [#39881306875](https://github.com/gycha0109-beep/K_beauty/actions/runs/39881306875) **PASS**. 후보 엔진은 여전히 `productionActive=false`.
 - 정확한 필드별 수치 및 사용 목적·한계는 `FACE_LAB_STYLE_CHECK_SC06_FIELD_IMPACT_FINDINGS_20261023.md` (PR #1397). **자동 회귀 통과는 추천의 사람 선호도/실사진 정확도/출시 승인 아님**.
 - 단계 구분: SC-06 *연구용 프로필·실행 민감도* 완료, SC-05 실사진·사람의 독립 평가 미실행, SC-07 UI·운영 반영 보류.
+
+### 2026-10-23 진행 상태 (SC-06B) — 실행 영향 없는 구조 관찰의 가설 실험
+
+- SC-06 결과에서 **Style Delta 4개 + Hair 실행 주의사항 5개 = 총 9개** 필드가 최종 실행에 영향을 미쳤다. 그 외 **구조/눈/배치 10개**는 당시 synthetic 테스트에서 execution 변화가 없었고 **Color appearance 3개**는 별도 하위 연구.
+- 새 연구 PR #1398은 이 10개 중 *턱선 각도(`jawlineAngularity`), 눈 개방감(`eyeOpenness`), 특징 크기(`featureScale`)* 세 가설을 `evaluation/*` 연구 전용으로 생성한다. 기존 action의 `strength`만 낮추는 대안이며 **'어울린다'는 단정이나 신규 production heuristic이 아니다**.
+- **게이트**: 승인된 Target + `face_harmony` + 현재 관찰값 가용 + 기존 action 정확 일치 + 허용된 scope/constraints. `target_forward`, 미승인 Target, 삭제된 관찰값, hard exclusion에서는 후보 효과가 없어야 한다.
+- 테스트: **8 synthetic face × 12 Target = 96건**, 각 후보별 적용/Route 변화 카운트, 통제 가능한 양성 사례 및 suppression 회귀. 사람 평가·실사진 적합성이 검증되지 않았으므로 `productionActive:false` 보존.
+- 세부 설계: `FACE_LAB_STYLE_CHECK_SC06B_STRUCTURAL_SHADOW_20261023.md` (PR #1398). 나머지 7개 미반응 구조 관찰은 임의 규칙 확장 전 Human 평가 질문과 정책 근거를 요구한다.
+- SC-06B 이후에도 **SC-07 운영 화면/실제 추천 반영은 Human evidence·릴리스 승인 전 보류**.
 
 ## 5. 체크리스트/실행 운영
 
