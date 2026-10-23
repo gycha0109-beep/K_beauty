@@ -51,3 +51,14 @@ No samples have been promoted. This is a blocking intake tool and documentation,
 - `node scripts/acquire-skin-open-dataset.mjs --inspect`: publisher Figshare API **metadata only** (no face-image download). See `supplementary-dataset-research-2026-10-23.md` for current status and licensing gates.
 - After examining source/face photo terms on a permitted local computer, `node scripts/acquire-skin-open-dataset.mjs --download --license-reviewed --out "D:\\private\\skin-datasets\\memi-ds"` stores raw bytes and checksum **locally**. GitHub and connected cloud tools must not be raw-image destinations without explicit rights.
 - The script was added to the draft research PR and read back via repository API; **Node runtime / live Figshare API / downloaded file hashes have NOT been executed or verified here**.
+
+
+## MEMI-DS reviewer QC and capture-condition prototype (2026-10-24)
+
+- `node scripts/audit-memi-review-qc.mjs --self-test`: synthetic regression of reviewer status preservation, pose grouping, conflict handling, suspected omission/false-positive flags and fail-closed schema/count guards.
+- `node scripts/audit-memi-review-qc.mjs --input "C:\\PRIVATE\\MEMI-DS_review_2026-10-23.json" --out "C:\\PRIVATE\\MEMI-QC-v1.json" --expect-131`: generates a **private** additive QC file, preserves all original verdicts/notes, and outputs only aggregate counts to the console. `--out` refuses existing paths. **Never direct `--out` to a GitHub working tree.**
+- `python scripts/audit-memi-palette-and-lighting.py --self-test`: synthetic-only palette-index/lighting-proxy checks (Pillow + NumPy required).
+- `python scripts/audit-memi-palette-and-lighting.py --mask PRIVATE_MASK.png --photo PRIVATE_PHOTO.jpg --roi-json PRIVATE_HUMAN_DEFINED_ROI.json --out PRIVATE_AUDIT.json`: opt-in local exploratory ROI luminance, specular/dark proxies and uninterpreted palette index counts. ROI geometry must be independently human-defined; **no forehead/cheek identity is inferred**. Raw assets remain private and untouched. Without ROI JSON, prints palette counts but no anatomical claims.
+- **Hard gate:** publisher annotation class mapping 0–5 not authenticated, no binary pigment segmentation decoder or model training is enabled. Image-mask overlap is not labelled false positives or missed lesions until independent corrected gold and class meaning exist.
+- Synthetic Node and Python self-tests both passed on a separate Windows machine on 2026-10-24. **The user's `C:\Users\M\Downloads\Figshare` 131 original image/mask pairs were NOT accessible from that online machine.** No real-image lighting estimates, mask decoded semantics, real model training or accuracy metrics have been measured.
+- Source user review was read in a private Library view (131 rows, 79/51/1, directional counts consistent with prior report). Full JSON source was not copied into GitHub or public artifacts. New QC CLI has not been run against its source bytes on the data-holding computer.
