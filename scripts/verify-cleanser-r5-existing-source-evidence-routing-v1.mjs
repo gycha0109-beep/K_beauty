@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import {spawnSync} from "node:child_process";
 import {readFile} from "node:fs/promises";
 import {assessCleanserExistingEvidenceRoutingV1 as assess}
   from "../lib/trust/cleanser-r5-existing-source-evidence-routing-v1.mjs";
@@ -61,4 +62,17 @@ for(const edit of tamper){
  edit(copy);
  assert.throws(()=>assess(copy),TypeError);
 }
+const privateScript="scripts/run-cleanser-r5-private-full-engine-readonly-v1.mjs";
+const syntax=spawnSync(process.execPath,["--check",privateScript],{encoding:"utf8"});
+assert.equal(syntax.status,0,syntax.stderr);
+const env={...process.env,SUPABASE_URL:"",SUPABASE_SERVICE_ROLE_KEY:""};
+const noCredentials=spawnSync(process.execPath,[privateScript],{
+ encoding:"utf8",env,maxBuffer:100000});
+assert.notEqual(noCredentials.status,0);
+assert.equal(noCredentials.stdout,"");
+assert.match(noCredentials.stderr,/AUTHORIZED_PRIVATE_SERVER_CREDENTIALS_REQUIRED/);
+const fakeApprove=spawnSync(process.execPath,[privateScript,"--activate"],{
+ encoding:"utf8",env,maxBuffer:100000});
+assert.notEqual(fakeApprove.status,0);
+assert.equal(fakeApprove.stdout,"");
 console.log("R5 existing Hwahae source triage: PASS captured_ingredient=7 mapped_review=6 low_review=1 missing_capture=3 unknown_traits=10 grants=0 writes=0");
