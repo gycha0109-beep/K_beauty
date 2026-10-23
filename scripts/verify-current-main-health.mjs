@@ -64,6 +64,7 @@ run("R5 existing ten cleanser next-actions ledger", node, ["scripts/verify-clean
 run("C1/C2 public manufacturer leads, no Fact authority", node, ["scripts/verify-cleanser-public-official-research-leads-v1.mjs"]);
 run("C2 Lagom regional 120/150 and 170/220 formula HOLD", node, ["scripts/verify-lagom-cross-market-formulation-hold-v1.mjs"]);
 run("R2-R5 evidence-tiered cleanser limited-fit SHADOW", node, ["scripts/verify-cleanser-evidence-tier-shadow-v1.mjs"]);
+run("R2 real existing Hwahae 6/1/3 and canonical scorer reuse", node, ["scripts/verify-cleanser-hwahae-existing-score-shadow-v1.mjs"]);
 run("R6 cleanser no-activation checklist gate", node, ["scripts/verify-cleanser-r6-release-review-v1.mjs"]);
 run("R6 separate limited-fit cleanser release firewall", node, ["scripts/verify-cleanser-limited-release-review-v1.mjs"]);
 run("R5 164-product live scoring offer-variation shadow", node, ["scripts/verify-catalog-offer-runtime-invariance-v1.mjs"]);
