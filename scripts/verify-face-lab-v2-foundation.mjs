@@ -9,6 +9,8 @@ import "./verify-face-lab-style-check-observation-coverage-sc03.mjs";
 import "./verify-face-lab-style-check-contrasts-sc04.mjs";
 // SC-05: human evaluation is gated on real-person rights and sealed blind review.
 import "./verify-face-lab-style-check-sc05-study-preflight.mjs";
+// SC-06: all 22 observation fields, candidate-shadow and execution sensitivity.
+import "./verify-face-lab-style-check-field-impact-sc06.mjs";
 import {
   FACE_LAB_OBSERVATION_DEFINITIONS,
   buildFaceLabObservationAnalysis
