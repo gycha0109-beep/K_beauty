@@ -133,3 +133,11 @@
 - **R6:** 보호된 G2 정책 승인·feature flag·검토된 상품 데이터까지 확보되기 전 운영 후보 투입 0건 유지.
 
 보고서: [R5 신규 클렌저 전체 엔진/입력 결측 한계](../evidence/cleanser-r5-full-engine-input-gap-20261024.md).
+
+## 2026-10-24 R5 기존 화해 축 재사용 + 비공개 원본 실행기
+
+- **근거가 있는 기존 신호를 버리지 않음:** 화해 리뷰 점수 입력 후보 **6건**, 매핑 부족 **1건**, 캡처 없는 **3건**; 성분의 피부타입/기능/위험 집계가 존재하는 상품 **7건** 확인.
+- **메타데이터 자동 채우기 금지:** `skin_types`, `concerns`, `texture`, `finish`, `irritation_risk`, `sensitivity_safe`는 실제 10개에 전부 결측. 기존 수집 집계를 승인된 정본 필드로 오인하지 않음.
+- [R5 기존 근거 재사용 실측 보고](../evidence/cleanser-r5-existing-source-reuse-20261024.md) 및 `lib/trust/cleanser-r5-existing-source-evidence-routing-v1.mjs` 구현. 별도 reviewer 필드·수집 파이프라인 신설 없음.
+- 원본 화해 AI 요약 문구를 GitHub에 적재하지 않고 전체 엔진을 재실행하는 **GET-only 비공개 실행 도구** `scripts/run-cleanser-r5-private-full-engine-readonly-v1.mjs` 추가. 현재는 아직 운영 인증정보로 실행하지 않았으며 실행 전용 권한과 비공개 환경이 필요함.
+- **R5 잔여:** 실제 원본 기반 164+10 엔진 검증; 정본 메타데이터 출처 확인/품질 판단; 정확한 판매 SKU 교차 확인. **R6:** 별도 G2 정책 승인 및 canary/rollback 전까지 활성화 불가.
