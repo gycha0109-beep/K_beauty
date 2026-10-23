@@ -7,6 +7,7 @@
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import {verifyCleanserEngineComponentSumV1,verifyCleanserReviewAxisParityV1} from "../lib/trust/cleanser-r5-score-reconciliation-v1.mjs";
+import {computeReviewSignalScore} from "../lib/review-signals.js";
 import {register} from "node:module";
 register("./node-next-alias-loader.mjs",import.meta.url);
 globalThis.fetch=async()=>{throw new Error("R5_PUBLIC_CI_NETWORK_FORBIDDEN")};
@@ -127,6 +128,36 @@ assert.deepEqual(diffs,[],"original 164 score breakdowns must remain identical")
 assert.equal(verifiedScenarios,12);
 assert.equal(shadowProductComparisons,120);
 assert.equal(missingScores.length,120);
+// Full-engine integration fixture: unlike the public redacted real-source
+// snapshot, this SYNTHETIC product has an intentional positive nonzero review
+// signal and safe fake ingredient/market aggregates.
+const synthetic=incomplete[0];
+const syntheticFullInput={
+  ...synthetic,
+  review_signals:{
+    source:"hwahae_ai_review",
+    positive:[{label:"보습되는 사용감",count:85,mapped:["dehydration"]}],
+    negative:[]
+  },
+  market_signals:{source:"hwahae_visible_page",rating:4.5,review_count:700},
+  ingredient_signals:{source:"hwahae_visible_page",total_ingredients:20,
+    risk:{high:0,medium:1,low:18,unknown:1},skin_type:{dry:3,oily:1,sensitive:2}}
+};
+const syntheticContext=reviewReplay.contexts.find(x=>x.id==="dry_tight");
+assert.ok(syntheticContext);
+const originalReview=computeReviewSignalScore(
+  syntheticFullInput.review_signals,syntheticContext.answers,syntheticFullInput);
+assert.notEqual(originalReview.total,0,
+  "the synthetic full-input test must exercise a nonzero real review contribution");
+const injected=await buildSkinMatchDecisionBundle(syntheticContext.answers,{
+  locale:"ko",includeCandidateSourceDiagnostics:true,
+  products:[...corpus,syntheticFullInput]
+});
+const scored=getRows(injected).find(x=>x.id===syntheticFullInput.id);
+assert.ok(scored);
+verifyCleanserEngineComponentSumV1(scored);
+verifyCleanserReviewAxisParityV1(scored,originalReview.total);
+
 const nonzeroReviewCells=reviewReplay.products.flatMap(p=>p.score_profiles)
  .filter(p=>p.review_signal_score!==0).length;
 assert.equal(nonzeroReviewCells,13);
