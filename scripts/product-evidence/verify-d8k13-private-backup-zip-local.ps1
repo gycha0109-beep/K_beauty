@@ -1364,6 +1364,8 @@ SELECT json_build_object(
         [int]$securityBodySignals.searchPathIncludesPgTemp + [int]$securityBodySignals.searchPathNoExplicitPgTemp -eq [int]$securityBodySignals.scannedSecurityDefinerFunctions -and
         [int]$securityBodySignals.searchPathEndsWithPgTemp -le [int]$securityBodySignals.searchPathIncludesPgTemp -and
         $securityBodySignals.rawFunctionBodyOrNamesReturned -eq $false -and
+        @($securityBodySignals.anonymousExecuteCandidates).Count -eq [int]$securityBodySignals.plpgsqlBodiesMentionExecuteKeyword -and
+        $securityBodySignals.candidateCasesAreEphemeralAndNonIdentifying -eq $true -and
         $securityBodySignals.perFunctionAuthSemanticsProven -eq $false
       ) 'D8K13_DEFINER_BODY_SIGNAL_AGGREGATE_INCONSISTENT'
     }
