@@ -19,7 +19,7 @@ const binding=(side,subjectId)=>({product_id:product,subject_id:subjectId,
   reviewed_by:"55555555-5555-4555-8555-555555555555",
   reviewed_at:"2026-10-22T15:00:00Z"});
 const a=side("physical-120","sku120"),b=side("physical-150","sku150");
-const normal=()=>({left:a,right:b,left_binding:binding(a,subj),right_binding:binding(b,subj),
+const normal=()=>({left:{...a},right:{...b},left_binding:binding(a,subj),right_binding:binding(b,subj),
   left_subject:subject(subj),right_subject:subject(subj)});
 const frozen=state=>{assert.equal(state.version,FORMULA_EQUIVALENCE_SHADOW_VERSION);
   assert.equal(state.product_id,product);
