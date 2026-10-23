@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_THREE_ANONYMOUS_DYNAMIC_SQL_CANDIDATES_TRIAGED_CANDIDATE_2_PRIORITY_RELEASE_HOLD",
+  "state": "D8K13_OWNER_CASE_B_EXECUTE_FORMAT_PERCENT_S_LEXICAL_CORRELATION_REVIEW_REQUIRED_HOLD",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -1106,6 +1106,42 @@
       "sourceZipSha256Reverified": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
       "securityBugsConfirmed": 0,
       "meaning": "zero confirmed, not proven zero bugs",
+      "releaseAuthorized": false
+    },
+    "ownerCaseBExecuteFormatCorrelation20261023": {
+      "dateKst": "2026-10-23",
+      "status": "LOCAL_STATIC_TRIAGE_ONLY",
+      "syntheticCiRunId": 39910646365,
+      "syntheticCiConclusion": "success",
+      "testedScriptCommit": "fd4e5416c0ebd3f0e5163b19ba888d73be65641f",
+      "sourceZipSha256VerifiedBeforeAndAfter": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "ownerMarker": "D8K13_OWNER_EXECUTE_FORMAT_WINDOW_TRIAGE_PASS",
+      "anonymousCandidates": [
+        {
+          "caseOrdinal": 1,
+          "executeFormatAdjacentLexical": false,
+          "rawPlaceholderInsideExecuteFormatWindowLexical": false,
+          "executeStatementUsingKeywordLexical": false
+        },
+        {
+          "caseOrdinal": 2,
+          "executeFormatAdjacentLexical": true,
+          "rawPlaceholderInsideExecuteFormatWindowLexical": true,
+          "identifierPlaceholderInsideExecuteFormatWindowLexical": false,
+          "executeStatementUsingKeywordLexical": true,
+          "executeStatementConcatenationLexical": false
+        },
+        {
+          "caseOrdinal": 3,
+          "executeFormatAdjacentLexical": false,
+          "rawPlaceholderInsideExecuteFormatWindowLexical": false,
+          "executeStatementUsingKeywordLexical": false
+        }
+      ],
+      "note": "B is a provisional high-priority lexical correlation; source parser may match comments/literals and does not establish tainted parameter to %s or actual SQL injection.",
+      "inputTaintOrControlFlowAnalyzed": false,
+      "exploitabilityProven": false,
+      "productionDatabaseConnections": 0,
       "releaseAuthorized": false
     }
   },
