@@ -1,7 +1,7 @@
 {
   "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
   "observedDateKst": "2026-10-18",
-  "state": "D8K13_OWNER_PUBLIC_COPY_12220_ROWS_AND_PUBLIC_FK_199_PASS_MANAGED_EXTERNAL_DEPENDENCIES_HOLD",
+  "state": "D8K13_OWNER_PUBLIC_ROWS_FK_AND_SEQUENCE_INTEGRITY_PASS_MANAGED_SECURITY_PARITY_HOLD",
   "ownerReported": {
     "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
     "archiveBytes": 7323679,
@@ -914,6 +914,31 @@
         "managed Auth/Storage/service recovery",
         "178 migration history provenance and security #1208"
       ]
+    },
+    "ownerPublicSequenceStateIntegrity20261023": {
+      "observedDateKst": "2026-10-23",
+      "evidenceOrigin": "authorized Windows Desktop Commander owner-private local ZIP test, metadata-only result",
+      "mode": "RestorePublicDataWithIntegrityAudit",
+      "scriptCommit": "51742466feb51005ecb6441ed78bf2cf155f7239",
+      "ciRun": 39891138819,
+      "ciConclusion": "success",
+      "ownerMarker": "D8K13_OWNER_PUBLIC_INTEGRITY_SEQUENCE_VERIFIED_LIMITED",
+      "publicTablesVerified": 101,
+      "publicRowsVerified": 12220,
+      "publicFkConstraintsChecked": 199,
+      "publicFkViolatingRows": 0,
+      "nonPublicParentConstraintsSkipped": 34,
+      "sourceSetvalsChecked": 2,
+      "catalogPublicSequences": 2,
+      "sourceLastValueAndIsCalledMatch": true,
+      "nextvalWouldExhaustCount": 0,
+      "nextvalActuallyCalled": false,
+      "sourceZipSha256VerifiedBeforeAndAfter": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "networkDisabled": true,
+      "productionDatabaseConnections": 0,
+      "authDataRestored": false,
+      "allDataRestored": false,
+      "releaseAuthorized": false
     }
   },
   "syntheticCi": {
