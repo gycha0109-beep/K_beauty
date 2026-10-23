@@ -597,6 +597,18 @@ jobs:
             LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog AS 'SELECT true';
           REVOKE ALL ON FUNCTION public.d8k13_definer_locked() FROM PUBLIC;
           GRANT EXECUTE ON FUNCTION public.d8k13_definer_locked() TO authenticated;
+          CREATE FUNCTION public.d8k13_definer_with_cues() RETURNS boolean
+            LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
+            AS $d8k13_body$
+          DECLARE v integer;
+          BEGIN
+            EXECUTE format('SELECT %s', 1) INTO v;
+            IF auth.uid() IS NULL THEN
+              RAISE EXCEPTION 'synthetic only';
+            END IF;
+            RETURN v = 1;
+          END;
+          $d8k13_body$;
           '@
             [System.IO.File]::WriteAllText((Join-Path $sql 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
             $single = if ($kind -eq 'orphan') { '11' + [char]9 + '999' } else { '11' + [char]9 + '1' }
@@ -627,7 +639,7 @@ jobs:
             [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
             $size = [long](Get-Item -LiteralPath $zip).Length
             $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
-            $out = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicDataWithSecurityInventory 2>&1
+            $out = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicDataWithSecurityBodySignals 2>&1
             $exit = $LASTEXITCODE
             $safeText = (($out | Out-String) -join '')
             if ($kind -eq 'valid') {
@@ -644,17 +656,33 @@ jobs:
                   $r.publicSecurityCatalogInventory.rlsEnabledTables -ne 1 -or
                   $r.publicSecurityCatalogInventory.rlsDisabledTables -ne 4 -or
                   $r.publicSecurityCatalogInventory.publicPolicies -ne 1 -or
-                  $r.publicSecurityCatalogInventory.publicFunctions -ne 3 -or
+                  $r.publicSecurityCatalogInventory.publicFunctions -ne 4 -or
                   $r.publicSecurityCatalogInventory.publicViews -ne 1 -or
-                  $r.publicSecurityCatalogInventory.securityDefinerFunctions -ne 2 -or
-                  $r.publicSecurityCatalogInventory.securityDefinerNullAclDefaults -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerFunctions -ne 3 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerNullAclDefaults -ne 2 -or
                   $r.publicSecurityCatalogInventory.securityDefinerExplicitAcl -ne 1 -or
-                  $r.publicSecurityCatalogInventory.securityDefinerDefaultPublicExecute -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerDefaultPublicExecute -ne 2 -or
                   $r.publicSecurityCatalogInventory.securityDefinerExplicitPublicExecute -ne 0 -or
                   $r.publicSecurityCatalogInventory.securityDefinerExplicitAuthenticatedExecute -ne 1 -or
-                  $r.publicSecurityCatalogInventory.securityDefinerEffectivePublicExecute -ne 1 -or
-                  $r.publicSecurityCatalogInventory.securityDefinerExplicitSearchPath -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerEffectivePublicExecute -ne 2 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitSearchPath -ne 2 -or
                   $r.publicSecurityCatalogInventory.securityDefinerNoExplicitSearchPath -ne 1 -or
+                  $r.publicSecurityDefinerBodySignalsCollected -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.scannedSecurityDefinerFunctions -ne 3 -or
+                  $r.publicSecurityDefinerBodySignals.languagePlpgsql -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.languageSql -ne 2 -or
+                  $r.publicSecurityDefinerBodySignals.otherOrUnsupportedLanguage -ne 0 -or
+                  $r.publicSecurityDefinerBodySignals.bodyMentionsAuthOrJwtSignals -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.bodyNoLexicalAuthOrJwtSignal -ne 2 -or
+                  $r.publicSecurityDefinerBodySignals.plpgsqlBodiesMentionExecuteKeyword -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.plpgsqlBodiesMentionExecuteAndFormat -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.searchPathIncludesPgTemp -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.searchPathEndsWithPgTemp -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.searchPathNoExplicitPgTemp -ne 2 -or
+                  $r.publicSecurityDefinerBodySignals.bodyMentionsRaiseException -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.staticOnlyLexicalSignals -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.perFunctionAuthSemanticsProven -ne $false -or
+                  $r.publicSecurityDefinerBodySignals.rawFunctionBodyOrNamesReturned -ne $false -or
                   $r.publicSecurityCatalogInventory.executePrivilegeProvenanceClassified -ne $true -or
                   $r.publicSecurityCatalogInventory.productionParityVerified -ne $false -or
                   $r.rlsPolicyParityVerified -ne $false -or
@@ -681,7 +709,7 @@ jobs:
               throw 'D8K13_PUBLIC_FK_SOURCE_ZIP_CHANGED'
             }
           }
-          Write-Host 'D8K13_SYNTHETIC_PUBLIC_SECURITY_CATALOG_FK_SEQUENCE_PASS'
+          Write-Host 'D8K13_SYNTHETIC_DEFINER_BODY_TRIAGE_FK_SEQUENCE_PASS'
           # Negative fixture deliberately exits nonzero; clear pwsh's native exit status.
           exit 0
 
