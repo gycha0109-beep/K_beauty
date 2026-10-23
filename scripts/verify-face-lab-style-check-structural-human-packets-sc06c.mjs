@@ -27,9 +27,9 @@ assert.equal(manifest.reviewPacketDigest,packet.packetDigest);
 assert.equal(stats.syntheticInputCount,96);
 assert.equal(stats.candidateActivatedCases,14);
 assert.ok(stats.reviewerVisiblePairs>0);
-assert.equal(stats.reviewerVisiblePairs,9,
+assert.equal(stats.reviewerVisiblePairs,7,
   "only actual selected-route differences from SC-06B belong in blind packet");
-assert.equal(stats.excludedNoVisibleDifference,5);
+assert.equal(stats.excludedNoVisibleDifference,7);
 assert.equal(packet.reviewItems.length,stats.reviewerVisiblePairs);
 assert.equal(manifest.mappings.length,stats.reviewerVisiblePairs);
 assert.deepEqual(packet.dimensions,[...FACE_LAB_V2_HUMAN_PAIRWISE_DIMENSIONS]);
