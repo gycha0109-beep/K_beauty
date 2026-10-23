@@ -621,7 +621,7 @@ jobs:
             [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
             $size = [long](Get-Item -LiteralPath $zip).Length
             $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
-            $out = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicDataWithIntegrityAudit 2>&1
+            $out = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicDataWithSecurityInventory 2>&1
             $exit = $LASTEXITCODE
             $safeText = (($out | Out-String) -join '')
             if ($kind -eq 'valid') {
@@ -633,6 +633,17 @@ jobs:
                   $r.publicToPublicForeignKeyAudit.publicFkConstraintsChecked -ne 2 -or
                   $r.publicSequenceSourceStateVerified -ne $true -or
                   $r.publicSequenceSourceStateAudit.sourceSetvalsChecked -ne 2 -or
+                  $r.publicSecurityCatalogInventoryCollected -ne $true -or
+                  $r.publicSecurityCatalogInventory.publicTables -ne 5 -or
+                  $r.publicSecurityCatalogInventory.rlsEnabledTables -ne 1 -or
+                  $r.publicSecurityCatalogInventory.rlsDisabledTables -ne 4 -or
+                  $r.publicSecurityCatalogInventory.publicPolicies -ne 1 -or
+                  $r.publicSecurityCatalogInventory.publicFunctions -ne 1 -or
+                  $r.publicSecurityCatalogInventory.publicViews -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerFunctions -ne 0 -or
+                  $r.publicSecurityCatalogInventory.productionParityVerified -ne $false -or
+                  $r.rlsPolicyParityVerified -ne $false -or
+                  $r.ownerAndAclParityVerified -ne $false -or
                   $r.publicSequenceSourceStateAudit.nextvalActuallyCalled -ne $false -or
                   $r.publicSequenceSourceStateAudit.sourceLastValueAndIsCalledMatch -ne $true -or
                   $r.publicToPublicForeignKeyAudit.publicFkViolatingConstraints -ne 0 -or
@@ -655,7 +666,7 @@ jobs:
               throw 'D8K13_PUBLIC_FK_SOURCE_ZIP_CHANGED'
             }
           }
-          Write-Host 'D8K13_SYNTHETIC_PUBLIC_FK_SEQUENCE_STATE_AND_MANAGED_SKIP_PASS'
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_SECURITY_CATALOG_FK_SEQUENCE_PASS'
           # Negative fixture deliberately exits nonzero; clear pwsh's native exit status.
           exit 0
 
