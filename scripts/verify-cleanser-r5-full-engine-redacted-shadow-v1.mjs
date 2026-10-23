@@ -6,6 +6,7 @@
  */
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
+import {verifyCleanserEngineComponentSumV1,verifyCleanserReviewAxisParityV1} from "../lib/trust/cleanser-r5-score-reconciliation-v1.mjs";
 import {register} from "node:module";
 register("./node-next-alias-loader.mjs",import.meta.url);
 globalThis.fetch=async()=>{throw new Error("R5_PUBLIC_CI_NETWORK_FORBIDDEN")};
@@ -73,6 +74,7 @@ const canonicalProjection=row=>JSON.stringify({
  score_breakdown:row.score_breakdown,decision_meta:row.decision_meta
 });
 const diffs=[],missingScores=[];
+let sampledCleanserBreakdown=null;
 let verifiedScenarios=0,shadowProductComparisons=0,rankChangedScenarioCount=0;
 for(const scenario of scenariosData.scenarios){
  const opts={locale:"ko",includeCandidateSourceDiagnostics:true};
@@ -95,8 +97,9 @@ for(const scenario of scenariosData.scenarios){
  for(const x of newRows){
   const b=x.score_breakdown;
   assert.ok(b&&Number.isFinite(x.engine_score));
-  assert.equal(b.engine_score,x.engine_score);
-  assert.equal(b.reviewSignalScore,0);
+  verifyCleanserEngineComponentSumV1(x);
+  verifyCleanserReviewAxisParityV1(x,0);
+  sampledCleanserBreakdown??=structuredClone(x);
   // The scorer executed, but missing data made the result ineligible for
   // release: never report x.engine_score as a real cleanser ranking.
   missingScores.push({scenario:scenario.id,id:x.id});
@@ -105,6 +108,21 @@ for(const scenario of scenariosData.scenarios){
  verifiedScenarios++;
  shadowProductComparisons+=newRows.length;
 }
+assert.ok(sampledCleanserBreakdown,"R5 must have an actual engine product");
+const corruptedSum=structuredClone(sampledCleanserBreakdown);
+corruptedSum.score_breakdown.baseScore+=2;
+assert.throws(()=>verifyCleanserEngineComponentSumV1(corruptedSum),
+  /SKIN_MATCH_ENGINE_SCORE_SUM_MISMATCH/);
+// A tampered axis can preserve the total by subtracting from another axis.
+// That still MUST fail against the independently pinned review-only baseline.
+const tamperedReview=structuredClone(sampledCleanserBreakdown);
+tamperedReview.score_breakdown.reviewSignalScore+=1;
+tamperedReview.score_breakdown.review_signal_score+=1;
+tamperedReview.score_breakdown.baseScore-=1;
+tamperedReview.score_breakdown.base_score-=1;
+assert.doesNotThrow(()=>verifyCleanserEngineComponentSumV1(tamperedReview));
+assert.throws(()=>verifyCleanserReviewAxisParityV1(tamperedReview,0),
+  /CANONICAL_REVIEW_AXIS_NOT_REUSED_EXACTLY_ONCE/);
 assert.deepEqual(diffs,[],"original 164 score breakdowns must remain identical");
 assert.equal(verifiedScenarios,12);
 assert.equal(shadowProductComparisons,120);
