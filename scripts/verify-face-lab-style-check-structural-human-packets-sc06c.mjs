@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import {mkdtempSync,mkdirSync,readFileSync,rmSync,existsSync} from "node:fs";
+import {tmpdir} from "node:os";
+import {join,resolve} from "node:path";
+import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
 import {
   buildStyleCheckStructuralHumanReviewPacket,
@@ -80,6 +84,39 @@ corrupted.reviewItems[0].options.A.actions[0].strength="strong";
 assert.equal(verifyFaceLabV2HumanPairwiseDigest(corrupted.reviewItems[0],
   "itemDigest",hex),false);
 assert.equal(verifyFaceLabV2HumanPairwisePacketDigest(corrupted),false);
+
+// The release/export flow must physically separate the reviewer data and
+// the confidential mapping. Never check either generated JSON into Git.
+const work=mkdtempSync(join(tmpdir(),"facelab-sc06c-"));
+try{
+  const reviewerDir=join(work,"reviewer");
+  const operatorDir=join(work,"operator-private");
+  mkdirSync(reviewerDir);mkdirSync(operatorDir);
+  const reviewerFile=join(reviewerDir,"blind.json");
+  const operatorFile=join(operatorDir,"mapping.json");
+  const cli=resolve("scripts/export-face-lab-style-check-structural-human-packets-sc06c.mjs");
+  const run=(reviewPath,operatorPath)=>spawnSync(process.execPath,[
+    cli,"--review-file="+reviewPath,"--operator-file="+operatorPath
+  ],{cwd:process.cwd(),encoding:"utf8"});
+  const good=run(reviewerFile,operatorFile);
+  assert.equal(good.status,0,good.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(reviewerFile,"utf8")),packet);
+  assert.deepEqual(JSON.parse(readFileSync(operatorFile,"utf8")),manifest);
+  assert.equal(run(reviewerFile,operatorFile).status===0,false,
+    "write-once: no overwrite of sealed operator mapping");
+  const sameFolderReview=join(reviewerDir,"another-review.json");
+  const sameFolderOperator=join(reviewerDir,"operator.json");
+  assert.notEqual(run(sameFolderReview,sameFolderOperator).status,0,
+    "operator mapping must never share the reviewer directory");
+  assert.equal(existsSync(sameFolderReview),false);
+  assert.equal(existsSync(sameFolderOperator),false);
+  assert.notEqual(run(join(process.cwd(),"review.json"),
+    join(operatorDir,"new-private.json")).status,0,
+    "never export any packet or manifest into repository");
+  assert.equal(existsSync(join(process.cwd(),"review.json")),false);
+}finally{
+  rmSync(work,{recursive:true,force:true});
+}
 
 console.log(JSON.stringify({
   ok:true,version:STYLE_CHECK_STRUCTURAL_HUMAN_PACKET_VERSION,
