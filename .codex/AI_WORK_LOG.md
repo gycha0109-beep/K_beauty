@@ -2,6 +2,85 @@
 
 ## Entries
 
+### 2026-10-23 / TRUST P2 v3·클렌저 10개: 처방/규격/판매 구성 분리 로드맵 갱신
+
+- 사용자 확정 방향: 빈번한 용량·패키지·1+1·증정품 변화를 제형 신원이나 새 화장품으로 혼동하지 않되, **처방 동일성을 근거 없이 가정하지 않는다**.
+- 운영 READ ONLY 기준: 기존 `products` 186건, `product_fact_subjects` 51건, `product_offers` 73건; 클렌저 10건 offer 0, Subject 0, 연구 intake 10/태스크 20. `product_evidence_source_subject_bindings.presentation_metadata`와 `equivalent_presentation_match`가 이미 존재.
+- 기존 PF-1 D1/D5/D9/D11 frozen 원칙 및 TRUST P2 v3 evidence-first 설계를 우선: 새 formulation 테이블이나 중복 처방 권위 경로 금지. `product_presentations`, `offer_components`는 schema 설계 후보; `presentation_formulation_links`는 기존 binding으로 충족 불가할 때만 별도 판단.
+- `docs/architecture/trust-p2-evidence-first-redesign-v3.md`에 R0~R6 단계·이행 순서·독립 검증/권한/롤백 조건 반영, `docs/architecture/cleanser-initial-admission-preflight-v1.md`에 C0~C5의 클렌저 10개 적용 순서·현행 용량 게이트 대비 차이·cross-size 신원 보류 기준을 기록.
+- 코드/DB schema/RLS/API/Source/Subject/Fact/G2/runtime/추천 164개·배포 작업 0. 문서 상태는 설계만 반영, 구현/운영 승인 아님. Draft PR #1390 유지.
+
+### 2026-10-22 / 클렌저 TRUST 연구 실행기의 실제 누락 보완 (low_ph / deep_cleansing)
+
+- 본 작업은 PR #1390 Draft feature branch에만 코드 반영, Desktop Commander 접근/실서비스 Fact/Subject/G2/상품 수정/DB write/merge/deploy **모두 하지 않음**.
+- 운영 신규 cleanser 10건 TRUST intake 10 + `SUBJECT_CREATION_REQUIRED` / `REVIEW_REQUIRED` 연구 태스크 20건 확인. 원인 진단: 기존 `scripts/trust-research-worker.mjs`에 필수 두 boolean Fact key의 추출 분기가 없어 향후 exact Subject/official binding 확정 후에도 근거 후보를 생성하지 못했음.
+- 신규 `lib/trust/cleanser-official-claim-extractor-v1.mjs`: 신뢰할 수 있는 official binding으로 받은 제품별 제목/연결된 메타에서만 저pH true·알칼리성 false·딥클렌징 true **명시적** claim 추출. body, review, ingredient 단독 추론 금지; 누락된 주장=false 금지. worker 기존 `extractStrictFactCandidate`에 연결.
+- worker가 fetched.finalUrl과 bound source URL을 정확히 비교하도록 강화하여 다른 상품 SKU/검색 query/host redirect는 SOURCE_BLOCKED로 처리. 안전한 injected fetcher로 기존 `processClaimedTask`의 실제 Evidence Candidate boolean payload, digest, binding, insufficient result, redirect block를 DB/네트워크 없는 오프라인 통합 테스트.
+- 이 코드는 **Product Fact 확인/승인/추천 활성화가 아닌** 공식 출처별 연구 근거 후보만 생성한다. 실제 Subject/Binding 0이므로 신규 10개는 runtime 진입하지 않음.
+- 공개 브랜드 자료로 닥터지 200ml 약산성, 마녀공장 160ml 약알칼리성, 라로슈포제 125ml 딥클렌징 명시 발견. 원본 캡처·관리자 권위로 승격하지 않음.
+- 변경된 CI는 `scripts/verify-current-main-health.mjs`에 extractor/worker integration 검증을 추가. 마무리 시 최신 HEAD의 실제 결과를 확인할 것.
+
+### 2026-10-22 / 공식 제조사 후보 리드와 올리브영 기존 URL 분리 검사 (TRUST pending cohort)
+
+- 직전 HEAD `e3e7c96` GitHub Actions 11/11 success (중복 PIE 취소 1 제외). 운영 DB 신규 클렌저 10건 TRUST intake 및 20개 `low_ph/deep_cleansing` 태스크는 `SUBJECT_CREATION_REQUIRED`/`REVIEW_REQUIRED`, Product Fact/Subject/G2 grant 0 상태 유지.
+- 원인: `existing-cleanser-official-capture-v1`는 `products.source_url`과 정확히 일치하는 공식 URL만 수용해 올리브영 주소 3개(제로이드 1/라곰 2)의 제조사 증거 후보 수집을 구조적으로 막았음.
+- 대응: 기본 `CATALOG_SOURCE_ONLY`는 유지, `ALTERNATE_UNVERIFIED_CANDIDATE`를 **명시적으로** 고른 경우에만 별도 공식 페이지 검토 허용. 리테일 도메인·미승인 호스트·서로 다른 최종 path/query SKU 리다이렉트 등 fail closed. 결과는 오직 `RESEARCH_CANDIDATE_ONLY`, alternate 원본 `catalogSourceAgreement=false`와 manual binding required 표시, 공식 권위 결코 부여하지 않음.
+- 라이브 official fetch에는 먼저 같은 origin `robots.txt` 수집/파싱·Disallow/Crawl-delay 차단 후 지정 상품 URL에 제한 요청하는 보수적 안전 경로 추가; robots를 읽을 수 없거나 사이트 사용권 미확인 시 HOLD. 공식 출처 사용 허가를 받은 사례 없이 **실제 사이트 fetch 또는 원본 캡처를 실행하지 않음**.
+- 단일 official capture CLI에 `--alternate-source-research=true` 옵션, 기존 배치 CLI에 `--official-source-leads-file` 기반 명시적 UUID/호스트 허용 URL 입력, 기본 최대 3개/최대 10개 제한, 읽기 전용 결과. `validateExistingCleanserOfficialResearchLeads`를 공통 입력 검증기로 배치 연계 및 반례 테스트 추가.
+- `evidence/trust/cleanser-official-research-leads-20261022-v1.json`에 제로이드 본사 포밍 클렌저 URL, 라곰 150ml 및 220ml 공식 URL을 **비권위 공개 검색 후보**로 수록. DB는 각각 제로이드 240ml(공식 페이지의 실물 용량 미확인), 라곰 120/170ml(공식 최신 150/220ml): 반드시 variant review HOLD, 자동 수정 금지.
+- 기존 cleanser registry의 low_ph/deep_cleansing은 boolean Fact 정의이므로 둘 모두 true라고 추정하지 말 것. 공식 브랜드 자료에 따르면 마녀공장 소이빈 폼 160ml는 약알칼리성 안내. Source/Subject/Fact authority, 원본 digest, G2, user-facing recommendation, schema/Auth/RLS 및 기존 164개 전부 변경 없음. Github Draft PR #1390만 갱신.
+
+### 2026-10-22 / 신규 클렌저 TRUST 연구 대기열 실제 등록 및 진단 연결
+
+- PR #1390 이전 HEAD `ceb86e5`: GitHub Actions 11 success + 중복 PIE cancel 1, merge 전 draft. 본 턴 Desktop Commander 미사용.
+- Supabase 운영 대상 기존 cleanser UUID 10건에 대해 READ-ONLY 원자 preflight: 제품 10/10 존재, canonical 이름 충돌/기존 TRUST Intake/Subject/Task 각 0, registry v1 active, low_ph+deep_cleansing 정의/신규 lineage policy ALLOWED.
+- 명시적 "계속 진행" 지시에 따라 단일 트랜잭션 블록으로 **운영 TRUST Intake 10건 신규 INSERT** 및 기존 `process_catalog_trust_product_v3` 10회 호출. 모든 제품 UUID/market/category/정책 검증과 최종 10 intake/20 research task 상태 확인을 SQL 내부에 포함, 실패 시 전체 rollback. 성공 후 독립 SELECT로 10건 `SUBJECT_CREATION_REQUIRED` + `REVIEW_REQUIRED`, 각 2개 `low_ph/deep_cleansing` 리뷰 태스크 20건 확인.
+- products/기존 category/용량/skin_types/concerns/legacy 164/Fact Subject/Current/G2/Recommender/score 변경 없음. 실상품 신원 인증과 추천 승인 0건. 남은 단계는 공식 제조사 증거 수집·출처/상품 규격 매칭·governed Subject 및 Fact Confirmations, Hwahae 원본 출처, G2 cleanser 특화 reader 및 정책 연동.
+- 기존 진단 CLI에 신규 `trustQueue.researchTasks/identityStates` 및 총 등록/Task 수 READ-ONLY 출력 반영. 공식 외부 리서치로 제로이드 본사 제품 페이지와 라곰 공식몰 용량(150ml/220ml) 대 현재 DB 규격(120ml/170ml) 차이 및 마녀공장 160ml/120ml 약알칼리성 설명 후보 확인: 이 외부 검색 결과는 TRUST 원본/상품별 Fact로 자동 승격하지 않음.
+- 권한이 걸린 `read_recommendation_admission_authority_v1` 직접 호출은 permission denied로 실패: 보호 경계 우회/role elevation 시도 없이 중단; DB Subject 0/Current Fact 0으로 현재 신규 제품 authority 부재가 별도로 확인됨. 변경 커밋 CI 결과 확인 필요.
+- 운영 DB schema/RLS/Auth/배포설정/추천 코드 직접 변경 없음; GitHub work log 및 doc, read-only CLI 수정. 새로운 가입/구매/민감 사용자 데이터 건드리지 않음.
+
+### 2026-10-22 / existing cleanser TRUST intake enrollment proposal (bounded, read-only)
+
+- 기존 PR #1390의 PIE Shadow 포함 GitHub Actions 11/11 PASS를 확인한 뒤, 최초 병목을 운영 DB SELECT로 재검증: 신규 클렌저 10개 canonical 제품 존재, 같은 normalized brand+name 타 제품 충돌 0, catalog_trust_intake/Subject 각각 0.
+- 현행 `catalog_required_product_facts_v1('cleanser')` = low_ph + deep_cleansing, 두 항목 모두 registry v1 신규 lineage write policy ALLOWED라는 **읽기 전용** 결과 확인. `process_catalog_trust_product_v3`는 기존 Intake 레코드를 기반으로 research task를 생성하므로, intake 0이면 해당 경로에 상품이 진입하지 못한다.
+- `lib/existing-cleanser-trust-enrollment-plan-v1.mjs`와 `scripts/verify-existing-cleanser-trust-enrollment-plan-v1.mjs` 추가. 기존 UUID 기준 deterministic PENDING intake 제안을 생성; existing intake/normalized name 충돌/정책 불일치면 HOLD. DB write/Fact confirmation/grant 0.
+- 운영 진단 CLI에 governed policy RPC 2종(읽기 전용) 및 `proposedResearchIntakes` 집계 추가. 정식 `scripts/verify-current-main-health.mjs` 테스트 편입. 운영 DB 등록 및 v3 process 호출, RLS/권한/스키마/추천 점수식, legacy 164 변경 없음.
+- 별도 외부 공개 출처 확인: 올리브영 라곰 제품 120ml/170ml은 판매처 확인 수준. 마녀공장 공식몰은 160ml/120ml 둘 다 있고 약알칼리성 상품이라, 모든 cleanser에 low_ph=true를 추정해서는 안 됨. 웹 자료는 governed official digest/권한이 아님.
+- 최신 CI 결과는 새 커밋 기준 재확인 대상. 실제 등록/처리에는 protected production data 변경 권한·계획·검증이 필요함.
+
+### 2026-10-22 / cleanser governed DB source materialization Stage 2
+
+- 승인 흐름 연결 작업을 PR #1390 Draft 브랜치에서 계속 진행. Desktop Commander 미사용, Github 코드+Supabase 운영 DB **SELECT만** 사용; Auth/RLS/DB schema/production products/legacy 164/ranking runtime 쓰기 0.
+- 신설: `lib/cleanser-existing-subject-attestation-v1.mjs`, `scripts/verify-existing-cleanser-subject-attestation-v1.mjs`; 공식 `catalog_trust_intake` 관리자 신원 확정, `product_source_bindings` resolved 공식 출처, `trust_source_observations` 같은 제품/Subject/KR/원본 SHA-256/정확한 URL을 대조해 현행 attestation을 **읽기 전용 생성**한다. 누락/충돌/오래된 observation이면 NULL.
+- 신설: `lib/cleanser-hwahae-governed-capture-reader-v1.mjs`, `scripts/verify-cleanser-hwahae-governed-capture-reader-v1.mjs`; `product_evidence_sources`에 보관된 Hwahae 원본 capture envelope와 `product_evidence_source_subject_bindings`의 exact/equivalent 연결을 검증해 동일 제품 Subject에 한정된 캡처만 이용한다. 제품 리뷰 요약으로 가짜 SHA/캡처를 만들지 않는다.
+- `scripts/run-cleanser-initial-admission-preflight-v1.mjs`에 기존 운영 테이블의 admin identity/원본 publisher 캡처 read-only join 연동, 이전 하드코딩 NULL을 provenance 확인된 경우에만 대체. `scripts/verify-current-main-health.mjs`에 두 테스트 포함, 기존 G2 synthetic shadow 통합 테스트도 두 진짜 materializer를 통과하도록 변경.
+- 운영 조회 당시 신규 10개 TRUST Subject/공식 Binding/Current Fact 0, `product_evidence_sources`의 Hwahae publisher capture 0. 현재 통과/추천 활성화 0 유지. 다음 작업: 정식 공급자 원본 캡처 보관 권한과 기존 제품 전용 TRUST controlled intake/Fact governance, 신규 cleanser G2 reader+grant activation의 DB/Auth 보안 경계 해결.
+- 마지막 커밋 CI 검증 확인 전에는 overall PASS로 보고하지 않는다.
+
+### 2026-10-22 / cleanser official capture candidate and governed shadow grant readiness
+
+- 신규 기존 상품 공식 페이지 연구 후보 수집기: `lib/existing-cleanser-official-capture-v1.mjs`, CLI, verifier. 별도 허용 호스트/사이트 사용 허가와 안전한 TRUST official fetch helper 필요; 브랜드·상품명·정확한 g/ml 용량 확인 시에도 `RESEARCH_CANDIDATE_ONLY`, 1+1/복수 용량/소매처/브랜드 불일치는 HOLD. GitHub/CI synthetic-only: 실제 사이트 fetch 0.
+- 강화: 기존 cleanser preflight는 TRUST required facts 실조회 `catalog_required_product_facts_v1('cleanser')`와 일치하는 `low_ph` + `deep_cleansing` **둘 다** supported/product_specific_primary confirmed/current 요구.
+- `lib/cleanser-governed-admission-shadow-v1.mjs` 에 별도 G2 카테고리용 shadow 적격성 평가기. 신뢰도 근거가 없는 skin_types/concerns 수치만으로 승인 불가; 독립 메타데이터 검토·화해 Capture Envelope digest·현행 KR Subject attestation 요구. Shadow 출력은 production G2 grant / runtime activated / DB writes 모두 false.
+- `scripts/verify-current-main-health.mjs`에서 official-capture 및 shadow+preflight synthetic 회귀 실행하도록 편입. 현재 PR #1390 draft, 기존 164개/생산 점수식/DB/RLS/Auth 변경 0.
+- 보안 CI 선행 실패 원인 GitHub Actions npm audit 외부 registry ETIMEDOUT 확인. 보안 정책 완화/예외 날짜 변경 없음, 해당 job 재시도 요청함. 재실행 결과와 최신 HEAD CI는 별도 확인 대상.
+- 운영 신규 10개는 official binding/Subject/Fact/structured metadata 0건. 실상품 자동 승인 0 유지. 다음은 라이선스 허용 공식 bytes 확보 및 기존 제품 ID 기반 TRUST Source Binding/Subject/Fact 등록의 관리자/기계 권한 모델 확정.
+
+### 2026-10-22 / cleanser admission continuation — existing product TRUST backfill plan
+
+- Desktop Commander 미사용. Github 작업 브랜치와 Supabase SELECT만 이용. PR #1390 Stage 1에 기존 GPT intake duplicate-block 동작 반영. `ingest_gpt_catalog_product_v1`은 이미 존재하는 `normalized_brand + normalized_name`을 `BLOCKED_DUPLICATE` 처리하므로 신규 10건에 재실행 금지.
+- 독립 계획기 `lib/existing-cleanser-trust-backfill-plan-v1.mjs` 및 READ ONLY `scripts/run-cleanser-initial-admission-preflight-v1.mjs` 연계: 공식 출처 검증 / 현재 KR Subject / 제품별 용량 확인 관측 / Hwahae 리뷰 캡처 / 추천 필드 / governed Confirmed Fact를 누락 원인별 분리. 원본 `source_url`에 공식처럼 보이는 URL이 있어도 확정 Fact로 승격하지 않음.
+- 기존 preflight의 UUID 존재만 보는 Fact 게이트를 실제 `product_fact_current`, `product_fact_instances`, `product_fact_confirmations` JOIN 결과의 `supported`, `product_specific_primary`, registry, proposition, confirmed status, 유효기간 확인으로 강화. 로컬 synthetic 회귀 사례 확대 및 `scripts/verify-current-main-health.mjs`에 연계. 최신 CI Current Main Health / TRUST canonical PASS 확인, 나머지 checks 별도 확인.
+- 운영 DB 읽기 전용 조회로 신규 클렌저 10건 Subject/binding/confirmed current Fact 0건 확인. Production schema/RLS/DB writes 0, G2/live recommendation grants 0, legacy 164/scorer 변경 0. 이 단계는 PASS여도 실제 신규 cleanser 자동 승인이 아니라 향후 governed G2 category extension 필요.
+
+### 2026-10-22 / cleanser initial admission evidence preflight (bounded implementation)
+
+- 유형: 사용자 승인된 자동 추천 후보 승인 기준의 Stage 1 실행형(Medium/High design boundary). 신규 클렌저에 대해 정합 식별, 정확한 ml/g 용량, KR resolved Subject, 공식 Source binding + 최근 digest observation, 화해 리뷰·성분 signal, Current Fact 및 중복 검증을 fail-closed 순수 정책으로 구현.
+- 파일: `lib/cleanser-initial-admission-preflight-v1.mjs`, `scripts/run-cleanser-initial-admission-preflight-v1.mjs`, `scripts/verify-cleanser-initial-admission-preflight-v1.mjs`, `docs/architecture/cleanser-initial-admission-preflight-v1.md`; PR #1390 (draft branch). Read-only SQL live inspection: 2026-10-22 신규 10개 모두 Subject/binding/Fact 0; 신호가 있는 7개도 권위 기반 자동 admission은 불가.
+- 독립 오프라인 Node 테스트 PASS: 유효 샘플, review 0/1개와 130g 처리, 변조/누락/중복 25 사례. Auth/RLS/DB schema/data/Product Fact/admin confirmation, `G2` grant logic, legacy 164, recommendation scorer, production activation 모두 변경 0. Hosted runner의 Supabase 연결 및 PR CI는 별도 확인.
+- 남은 게이트: TRUST Subject/official binding 및 product identity capacity observation 처리, 최신 화해 capture provenance, required governed Fact, G2 cleanser initial-grant 확장/검증, 독립 회귀·canary. 현재 preflight PASS는 grant가 아니며 `admissionGranted=false` 고정.
+
 ### 2026-10-21 / TRUST followup — ATOPALM official 300ml single price + Dr.G EX family
 
 - PR #1381 main CI check TRUST/Main Health/CodeQL/package integrity **PASS**. Confirmed manufacturer `neopharmshop.co.kr` ATOPALM single 300ml ₩34,500 (2184) vs 300ml×2 ₩64,500 (2182), prices as of 2026-10-21.

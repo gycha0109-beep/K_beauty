@@ -2,6 +2,7 @@ import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { fetchOfficialBytes, sha256Hex } from "../lib/trust/official-source-fetch.mjs";
 import { inspectOfficialProductSemanticSurfacesV1, normalizeSemanticTextV1 } from "../lib/trust/official-source-semantic-adapter.mjs";
+import { extractStrictCleanserOfficialClaim } from "../lib/trust/cleanser-official-claim-extractor-v1.mjs";
 export { assertSafeOfficialUrl } from "../lib/trust/official-source-fetch.mjs";
 
 const OBSERVATION_VERSION = "trust-research-observation-v1";
@@ -67,6 +68,9 @@ function extractExpectedContainsActive(currentFactContext, semanticSurfaces) {
 }
 
 export function extractStrictFactCandidate(factKey, text, parentPropositions = [], context = {}) {
+  if (factKey==="low_ph" || factKey==="deep_cleansing") {
+    return extractStrictCleanserOfficialClaim(factKey,context.semanticSurfaces);
+  }
   if (factKey === "contains_active") {
     return extractExpectedContainsActive(context.currentFactContext, context.semanticSurfaces);
   }
@@ -204,7 +208,7 @@ async function rpcOrThrow(client, name, args) {
   return data;
 }
 
-export async function processClaimedTask(client, task, fetchImpl = fetch) {
+export async function processClaimedTask(client, task, fetchImpl = fetch, {fetchOfficialPage=fetchOfficialBytes}={}) {
   const seeds = Array.isArray(task.official_source_seeds) ? task.official_source_seeds : [];
   if (!seeds.length) {
     return rpcOrThrow(client, "record_trust_research_result_v1", {
@@ -220,7 +224,12 @@ export async function processClaimedTask(client, task, fetchImpl = fetch) {
   for (const seed of seeds) {
     let fetched;
     try {
-      fetched = await fetchOfficialBytes(seed.canonical_locator, fetchImpl);
+      fetched = await fetchOfficialPage(seed.canonical_locator, fetchImpl);
+      // A redirect can silently switch to another SKU, market or provider.
+      // Candidate evidence must originate from the exact governed binding.
+      if (!fetched?.finalUrl || new URL(fetched.finalUrl).href !== new URL(seed.canonical_locator).href) {
+        throw new Error("SOURCE_BLOCKED:exact_bound_source_redirect_mismatch");
+      }
       hadReadableOfficialSource = true;
     } catch (error) {
       const classified = classifyWorkerError(error);
