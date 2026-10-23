@@ -28,7 +28,7 @@
 
 1. [축약 실데이터 증거 파일](../../evidence/trust/cleanser-existing-hwahae-signal-footprint-20261024-v1.json): 상품 UUID, 리뷰 수, 상위 매핑 개수, 갱신일·출처 상태만 보존. AI 요약 라벨과 리뷰 원문·URL·전성분 원본은 GitHub에 저장하지 않음.
 2. `lib/trust/cleanser-hwahae-existing-score-shadow-v1.mjs`: **정본** `lib/review-signals.js`의 `normalizeReviewSignals`, `computeReviewSignalScore` 직접 재사용. 날짜와 검토자가 별도 테이블에 없더라도 기존 데이터 스키마로 입력 가능. 세 피부 맥락별 `review_signal_score`만 Shadow 출력. 기존 전체 Skin Match 최종 점수와 구분.
-3. `scripts/run-cleanser-existing-hwahae-live-review-score-v1.mjs`: **승인된 서버에 한하여** 기존 10개 원본 데이터를 HTTPS Supabase 테이블 GET만으로 읽고 위 함수를 그대로 계산해 숫자/보류 사유만 출력하는 프로그램. 서비스 키는 CI/공개 저장소에 입력하거나 출력하지 않음. 실제 운영 DB에 이 프로그램을 실행하지는 않았으므로 아직 실상품 정밀 점수는 미완료.
+3. `scripts/run-cleanser-existing-hwahae-live-review-score-v1.mjs`: **승인된 서버에 한하여** 기존 10개 원본 데이터를 HTTPS Supabase 테이블 GET만으로 읽고 위 함수를 그대로 계산해 숫자/보류 사유만 출력하는 프로그램. 서비스 키는 CI/공개 저장소에 입력하거나 출력하지 않음. 독립 서버용 CLI 자체에 운영 키를 투입한 실행은 아직 하지 않았지만, 동일한 운영 DB SELECT 결과와 GitHub 원본 함수 코드를 별도 격리 JS에서 직접 실행하여 **실상품 6개의 리뷰 보정점수는 계산 완료**했다. 아래 수치가 그 결과다.
 4. `scripts/verify-cleanser-hwahae-existing-score-shadow-v1.mjs`: 원본 제거된 10개 DB 집계와 **합성** 샘플을 통한 정본 점수식 호환성·누락·URL 오매칭·카테고리 오입력·Fact/G2 승인 금지 테스트.
 
 ## 남은 일 및 허가 경계
