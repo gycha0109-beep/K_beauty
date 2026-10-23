@@ -1,0 +1,1219 @@
+{
+  "schema": "D8K13_OWNER_LOCAL_ZIP_BACKUP_INTAKE_V1",
+  "observedDateKst": "2026-10-18",
+  "state": "D8K13_ONE_EXECUTE_FORMAT_NONCONSTANT_PERCENT_S_CONFIRMED_BY_OWNER_TOKENIZER_SECURITY_HOLD",
+  "ownerReported": {
+    "fileName": "BEJEWELY_DB_Backup_20261018_181006.zip",
+    "archiveBytes": 7323679,
+    "zipFileListCheckedByOwner": [
+      "roles.sql",
+      "schema.sql",
+      "data.sql"
+    ],
+    "ownerStatedUploadedToGoogleDrive": true,
+    "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+    "uncompressedSqlBytes": {
+      "roles.sql": 1446,
+      "schema.sql": 1623596,
+      "data.sql": 20857133
+    },
+    "inspectOutputStatus": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+    "restoreFailure": "roles.sql:22 role anon does not exist",
+    "secondRestoreFailure": "Unable to find image 'supabase/postgres:17.6.1.136' locally",
+    "secondRestoreFailureWasPrePullStatusMessage": true,
+    "thirdRestoreAttempt": {
+      "inspection": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "imagePull": "D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_PASS",
+      "failure": "D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_FAILED_EXIT_3",
+      "roleRestored": true,
+      "dataRestoreAttempted": false,
+      "completeRestore": false
+    },
+    "fourthRestoreAttempt": {
+      "archiveSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "sizeBytes": 7323679,
+      "inspection": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "failure": "D8K13_LOCAL_RESTORE_SCHEMA_MISSING_SCHEMA_FAILED_EXIT_3",
+      "exactSchemaNameUnknown": true,
+      "actualDataRestored": false
+    },
+    "fifthRestoreAttempt": {
+      "inspect": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "publicSchemaHandling": "D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP",
+      "failure": "D8K13_LOCAL_RESTORE_SCHEMA_OTHER_FAILED_EXIT_3",
+      "actualBackupDataRestorePassed": false,
+      "exactSqlStateStillUnknown": true
+    },
+    "latestSchemaOwnerFailure": {
+      "archiveSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "zipInspectPass": true,
+      "publicPreserved": true,
+      "stage": "schema",
+      "sqlstate": "42501",
+      "sqlLine": 474,
+      "statementClass": "ALTER FUNCTION OWNER TO",
+      "functionSchema": "private",
+      "newOwnerRole": "product_offer_link_health_recorder_owner",
+      "ownerRoleDefinedInRolesSql": true,
+      "ownerRolePropertiesFromOwnerReport": {
+        "superuser": false,
+        "login": false,
+        "createRole": false
+      },
+      "dataSqlRestored": false,
+      "actualSqlContentsShared": false
+    },
+    "latestRestoreAttempt20261020": {
+      "zipInspect": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "publicNamespace": "D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP",
+      "failure": "D8K13_LOCAL_RESTORE_PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE_SQLSTATE_3F000_FAILED_EXIT_1",
+      "failureStage": "pre_restore_private_function_owner_schema_grant",
+      "schemaSqlRestoreCompleted": false,
+      "dataSqlRestoreCompleted": false,
+      "backupCorruptionInferred": false,
+      "originalSqlOrBackupUploaded": false
+    },
+    "latestSchemaRestoreAttempt": {
+      "zipBytes": 7323679,
+      "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "inspect": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "publicHandling": "D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP",
+      "privateOwnerGrantStaged": "D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_GRANT_STAGED_FOR_IN_DUMP_SCHEMA",
+      "failure": "D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_42501_LINE_22086_FAILED_EXIT_3",
+      "stage": "schema.sql",
+      "sqlstate": "42501",
+      "physicalSqlLine": 22086,
+      "statementType": "NOT_ATTESTED_NO_RAW_SQL_READ",
+      "dataSqlRestoreAttempted": false,
+      "rawSqlOrBackupShared": false,
+      "actualSchemaAndDataRestorePassed": false
+    }
+  },
+  "connectorEvidence": {
+    "driveExactNameSearchReturned": 0,
+    "driveKeywordSearchReturnedExactMatch": 0,
+    "driveFileIdResolved": false,
+    "driveFileContentAccessed": false
+  },
+  "security": {
+    "rawBackupAddedToRepository": false,
+    "rawBackupAddedToCi": false,
+    "originalArchiveSentToAssistant": false,
+    "zipEntriesIndependentlyVerified": false,
+    "productionDatabaseWrites": 0
+  },
+  "localValidation": {
+    "script": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+    "modes": [
+      "Inspect",
+      "Restore"
+    ],
+    "restoreTarget": "isolated_no_network_postgres_17_6_docker",
+    "actualOwnerBackupInspectRunObserved": false,
+    "actualOwnerBackupRestoreRunObserved": false,
+    "ownerSentInspectOutput": true,
+    "ownerSentRestoreFailure": true,
+    "previousRestoreEnvironment": "postgres:17.6_bare_image",
+    "previousRestoreSucceeded": false,
+    "correctedIsolatedRestoreImage": "supabase/postgres:17.6.1.136",
+    "correctedImageRealBackupRestoreSucceeded": false,
+    "secondOwnerAttemptRestoredRows": false,
+    "secondOwnerAttemptImagePulledNotProven": true,
+    "powerShellNativeStderrHandlingFixed": true,
+    "coldImagePullHandledWithStartProcess": true,
+    "realBackupRestoreWithPullFixObserved": false,
+    "coldImageSyntheticCI": {
+      "runId": 39134449424,
+      "conclusion": "success"
+    },
+    "stderrSafeSyntheticCI": {
+      "runId": 39134664951,
+      "conclusion": "success"
+    },
+    "productionMetadataOnlySchemaQueryDateKst": "2026-10-19",
+    "productionSchemasOnlyComparedToIsolatedImage": {
+      "missingInIsolatedImage": [
+        "private",
+        "recommendation_shadow",
+        "supabase_migrations"
+      ],
+      "presentInBoth": [
+        "auth",
+        "storage",
+        "vault",
+        "extensions"
+      ],
+      "knownCustomRoutineCounts": {
+        "private": 2,
+        "recommendation_shadow": 2
+      },
+      "exactFailedSchemaNotEstablished": true
+    },
+    "referencedCustomNamespacePreflightAdded": true,
+    "stablePostmasterReadinessAdded": true,
+    "fixedFixtureRestoreCI": {
+      "runId": 39141611642,
+      "conclusion": "success",
+      "scope": "synthetic_only_missing_private_recommendation_shadow"
+    },
+    "ownerRealZipNewRemediationRetested": false,
+    "publicNamespacePreviousScriptDroppedUnconditionally": true,
+    "publicCreateSchemaPresenceInActualOwnerSqlUnverified": true,
+    "conditionalPublicNamespaceDropFixed": true,
+    "sanitizedExactIdentifierAndSqlLineDiagnosticAdded": true,
+    "actualOwnerBackupWithFourthFixRetested": false,
+    "conditionalPublicDropSyntheticCIFinished": {
+      "runId": 39148634432,
+      "jobId": 117737642121,
+      "result": "success",
+      "tested": [
+        "dump with CREATE SCHEMA public",
+        "dump without CREATE SCHEMA public",
+        "safe exact missing unknown namespace and psql line diagnostic",
+        "wrong-sized backup ZIP rejection"
+      ]
+    },
+    "realZipAfterConditionalPublicDropExecuted": false,
+    "exactMissingOwnerNamespaceStillUnknown": true,
+    "sqlstateOnlyDiagnosticImplemented": true,
+    "sqlstateOnlyDiagnosticCITest": {
+      "runId": 39183076360,
+      "jobId": 117840075100,
+      "result": "success",
+      "expectedMissingSchema": "3F000",
+      "formerlyOther": "22012"
+    },
+    "realOwnerSqlstateRerunObserved": true,
+    "knownPrivateFunctionOwnerFix": {
+      "issue": "private function OWNER TO privilege SQLSTATE 42501",
+      "wrongRegexEscapingInPriorFix": true,
+      "restoreOnlyDockerGrants": true,
+      "targetRole": "product_offer_link_health_recorder_owner",
+      "namespace": "private",
+      "actualOwnerZipAfterFinalPatchRetested": false,
+      "ci": {
+        "runId": 39223627159,
+        "jobId": 117964525037,
+        "conclusion": "success",
+        "fixtureOnly": true,
+        "covered": [
+          "NOLOGIN owner role creation and alteration",
+          "private function CREATE and ALTER OWNER TO",
+          "restore schema/data",
+          "public namespace variants",
+          "SQLSTATE sanitization",
+          "cold Docker image",
+          "wrong-sized ZIP rejection"
+        ]
+      }
+    },
+    "lastOwnerAttemptAfterPriorFixObserved": true,
+    "latestAttemptCodeFix": {
+      "identifiedCause": "GRANT CREATE ON SCHEMA private occurs before namespace exists in isolated image",
+      "sqlstate": "3F000",
+      "originalZipContentsInspectedByAssistant": false,
+      "exactOriginalCreateSchemaPrivateStatementPresenceUnconfirmed": true,
+      "adjustment": "pregrant only for absent-in-dump schema; when schema declared in dump, stage grant adjacent to ALTER FUNCTION OWNER within disposable temp copy; ZIP unchanged",
+      "syntheticFixtureAdded": "dump_includes_CREATE_SCHEMA_private_then_ALTER_FUNCTION_OWNER",
+      "correctedScriptNewCiVerified": true,
+      "actualOwnerZipAfterThisPatchRetested": false,
+      "aclParityVerified": false,
+      "releaseAuthorized": false,
+      "correctedScriptGitSha": "e3b7353f06ece27a52583dc4314894de6e62fcd2",
+      "syntheticCi": {
+        "runId": 39355259890,
+        "jobId": 118408838387,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39355259890",
+        "conclusion": "success",
+        "scope": "synthetic only, no actual ZIP",
+        "tested": [
+          "PowerShell parser",
+          "no-network Supabase/Postgres17 roles/schema/data ZIP",
+          "private schema CREATE before owner ALTER and deferred CREATE GRANT",
+          "public schema dump variants",
+          "SQLSTATE 3F000/22012 sanitized negative",
+          "invalid size ZIP refused"
+        ]
+      }
+    },
+    "latestSchemaPrivilegeClassification20261020": {
+      "scriptedPath": "scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1",
+      "scope": "offline ZIP reading only, metadata line classification, no Docker/network/production DB",
+      "lineNumber": 22086,
+      "classificationObtainedFromOwner": true,
+      "syntheticCiVerified": true,
+      "blindGrantOrBypassProhibited": true,
+      "privateBackupFileUploaded": false,
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "id": 39359659800,
+        "jobId": 118422589377,
+        "conclusion": "success",
+        "testedCodeCommit": "4875873afeacb8b21d80bd323522e8080d2970c2",
+        "contentType": "synthetic_zip_only",
+        "classifierAndPrivacyTests": true,
+        "existingIsolatedPg17RestoreTests": true,
+        "ownerRawZipIncluded": false
+      },
+      "ownerResult": {
+        "status": "D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY",
+        "inspectedPhysicalLine": 22086,
+        "nearestTopLevelCommandLine": 22086,
+        "verb": "ALTER",
+        "objectKind": "FUNCTION",
+        "operation": "OWNER_TO",
+        "mentionsKnownPrivateSchema": false,
+        "mentionsKnownFunctionOwnerRole": false,
+        "classificationConfidence": "LEXICAL_HEURISTIC_NOT_SQL_PARSER",
+        "rawSqlReturned": false,
+        "rawZipUploaded": false,
+        "productionConnections": 0,
+        "restoreCompleted": false,
+        "permissionsAuthorizedToChange": false,
+        "releaseAuthorized": false
+      },
+      "nextGate": {
+        "diagnosticScript": "scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1",
+        "pendingCiPass": false,
+        "roleSourceClassFromOwner": null,
+        "functionSchemaClassFromOwner": null,
+        "ownerTransferStatementShapeFromOwner": null,
+        "restoreMustNotRerunYet": true,
+        "blindRoleOrCreateGrantsProhibited": true,
+        "syntheticCiVerified": true,
+        "syntheticCi": {
+          "runId": 39364883648,
+          "jobId": 118439895100,
+          "conclusion": "success",
+          "sourceCommit": "79fbd1e3754dab2109b8aed77b24791a6c773082",
+          "scope": "synthetic only, no owner ZIP",
+          "testCases": [
+            "qualified private function owner transfer not in roles dump",
+            "public owner declared in roles dump",
+            "other custom schema known Supabase role",
+            "unsupported role identifier fail-closed",
+            "wrong hash rejects",
+            "previous no-network PostgreSQL17 restore regression"
+          ]
+        }
+      },
+      "ownerTransferEvidence20261020": {
+        "statement": "ALTER FUNCTION ... OWNER TO",
+        "objectSchemaClass": "PUBLIC",
+        "ownerRoleClass": "DECLARED_IN_ROLES_SQL",
+        "physicalLine": 22086,
+        "postgresSqlstate": "42501",
+        "source": "owner-PC-allowlisted-metadata-only",
+        "originalSqlUploaded": false
+      }
+    },
+    "publicFunctionOwnerRestoreFix20261020": {
+      "scope": "disposable no-network Supabase/Postgres17 restore container only",
+      "sourceZipUnchanged": true,
+      "stagedTempSchemaOnly": true,
+      "eligibleSchema": "public",
+      "targetRoles": "allowlisted lowercase PostgreSQL identifiers with CREATE ROLE declaration in roles.sql only",
+      "privilegeFix": "GRANT role TO postgres and GRANT CREATE ON SCHEMA public TO role only inside disposable restore, before every matching public ALTER FUNCTION OWNER",
+      "actualOwnerZipRerunAfterFix": false,
+      "syntheticCI": {
+        "runId": 39368088218,
+        "jobId": 118449431599,
+        "commit": "fa6fbbbf62291e33b26c7a84eb03a47bb42830ec",
+        "conclusion": "success",
+        "realZipIncluded": false
+      },
+      "schemaSqlRestoredInRealOwnerZip": false,
+      "dataSqlRestoredInRealOwnerZip": false,
+      "restoredAclParityVerified": false,
+      "releaseAuthorized": false
+    },
+    "latestRealZipAttempt20261020": {
+      "inspect": "D8K13_LOCAL_ZIP_INSPECTION_PASS",
+      "zipBytes": 7323679,
+      "sha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "sqlBytes": {
+        "data.sql": 20857133,
+        "roles.sql": 1446,
+        "schema.sql": 1623596
+      },
+      "publicSchemaPreserved": true,
+      "privateFunctionOwnerGrantStaged": true,
+      "publicFunctionOwnerGrantsStagedCount": 9,
+      "stage": "SCHEMA",
+      "sqlstate": "42883",
+      "physicalLine": 36502,
+      "failedExit": 3,
+      "actualRestoreCompleted": false,
+      "dataSqlRun": false,
+      "sqlstateCondition": "undefined_function; exact function/operator or target command not established",
+      "rawSqlUploaded": false,
+      "productionDatabaseConnections": 0,
+      "repairAuthorized": false,
+      "releaseAuthorized": false
+    },
+    "schemaBatchAudit20261020": {
+      "implementedIn": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "mode": "AuditSchema",
+      "purpose": "one owner-local disposable no-network PG17 dry diagnostic execution; aggregate all source SQLSTATE and line/verb/object-type; do not import data",
+      "sourceZipNeverModified": true,
+      "hostOperatingDbUnaffected": true,
+      "allowlistReturned": [
+        "line",
+        "sqlstate",
+        "verb",
+        "objectKind"
+      ],
+      "ignoresSchemaErrorsOnlyForAuditEnumeration": true,
+      "strictRestoreModeUnchanged": true,
+      "syntheticCiVerified": true,
+      "rawSqlNeverOutput": true,
+      "runOnOwnerPcAfterCiOnly": true,
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "runId": 39375433292,
+        "jobId": 118472411060,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39375433292",
+        "conclusion": "success",
+        "testedCommit": "2104abbdd87c6891aa231373854616882c9911dd",
+        "scope": "synthetic only, no owner ZIP",
+        "covered": [
+          "first-run cold-image",
+          "public and private owner staging",
+          "multiple undefined_function errors collected in one isolated schema audit",
+          "raw SQL/identifiers not emitted",
+          "data.sql not executed",
+          "negative and strict restore regressions",
+          "unparsed SQLSTATE or psql fatal fail-closed"
+        ]
+      },
+      "actualOwnerZipBatchAuditRun": false
+    },
+    "latestOwnerSchemaAudit20261020": {
+      "status": "D8K13_DISPOSABLE_PG17_SCHEMA_AUDIT_ONLY_NOT_RESTORE",
+      "sourceZipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "sourceZipBytes": 7323679,
+      "privateOwnerGrantStaged": true,
+      "publicFunctionOwnerGrantsStagedCount": 9,
+      "schemaErrorCount": 20,
+      "sqlstate42883Count": 20,
+      "eachObjectKind": "CREATE POLICY",
+      "lines": {
+        "first": 36502,
+        "last": 36578,
+        "step": 4
+      },
+      "errorsTruncated": false,
+      "psqlExitCode": 0,
+      "dataSqlExecuted": false,
+      "restoreCompleted": false,
+      "aclParityVerified": false,
+      "productionDatabaseConnections": 0,
+      "rawSqlUploaded": false,
+      "releaseAuthorized": false,
+      "inference": "likely shared missing routine dependency; not proven without function metadata"
+    },
+    "policyRoutineInventory20261020": {
+      "file": "scripts/product-evidence/diagnose-d8k13-policy-dependencies-local.ps1",
+      "purpose": "one offline local ZIP pass for 20 error policies, group function object identifiers and source CREATE FUNCTION declarations",
+      "syntheticCiRun": 39380504583,
+      "syntheticCiVerified": true,
+      "ownerZipAnalyzedWithThisTool": false,
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "id": 39380504583,
+        "jobId": 118488301385,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39380504583",
+        "conclusion": "success",
+        "syntheticOnly": true,
+        "covers": [
+          "20 four-line CREATE POLICY references",
+          "common auth.uid and public helper grouping",
+          "declaration in schema check",
+          "source SQL redaction",
+          "hash mismatch fail closed previously covered",
+          "full no-network Supabase PG17 restore regression"
+        ]
+      },
+      "ownerFirstResult20261020": {
+        "status": "D8K13_POLICY_REFERENCE_INVENTORY_LOCAL_ONLY",
+        "inspectedPolicyCount": 20,
+        "firstErrorLine": 36502,
+        "lastErrorLine": 36578,
+        "uniqueQualifiedReferenceCount": 0,
+        "references": [],
+        "sharedAcrossAllPolicies": [],
+        "unresolvedUnqualifiedOrDynamicReferencesPossible": true,
+        "rawSqlReturned": false,
+        "originalZipModified": false,
+        "productionDatabaseConnections": 0,
+        "releaseAuthorized": false,
+        "interpretation": "The original detector matched only unquoted qualified routines; zero does NOT establish there are no function calls or that one is missing."
+      },
+      "expandedClassifier20261020": {
+        "quotedAndUnqualifiedFunctionCalls": true,
+        "stripsStringLiteralsAndComments": true,
+        "stillLexicalOnly": true,
+        "syntheticCiRunId": 39382818032,
+        "syntheticCiPassed": true,
+        "ownerExpandedRerunPending": true,
+        "authRlsModifications": false,
+        "releaseAuthorized": false,
+        "syntheticCi": {
+          "runId": 39382818032,
+          "jobId": 118495596109,
+          "conclusion": "success",
+          "codeCommit": "dfb65e16d75fe18ec542af8884fe07ea057b5e6f",
+          "scope": "synthetic only, owner ZIP not present in CI",
+          "tested": [
+            "quoted schema and routine identifiers in 20 policies",
+            "unqualified helper call grouped across 20 policies",
+            "function declaration lexical check",
+            "no raw SQL leakage",
+            "old PG17 no-network ZIP restore regression",
+            "strict SQLSTATE refusal"
+          ]
+        }
+      }
+    },
+    "latestOwnerPolicyRoutineInventoryVerified20261020": {
+      "verifiedScriptMarker": "D8K13_V2_SCRIPT_VERIFIED",
+      "status": "D8K13_POLICY_REFERENCE_INVENTORY_LOCAL_ONLY",
+      "inspectedPolicyCount": 20,
+      "firstErrorLine": 36502,
+      "lastErrorLine": 36578,
+      "uniqueQualifiedReferenceCount": 2,
+      "uniqueUnqualifiedReferenceCount": 3,
+      "commonReferences": [
+        "auth.jwt",
+        "auth.uid",
+        "coalesce"
+      ],
+      "detailedReferences": [
+        {
+          "functionIdentifier": "auth.jwt",
+          "policyCount": 20,
+          "declaredInSourceSchemaDump": false,
+          "namespaceFamily": "SUPABASE_AUTH"
+        },
+        {
+          "functionIdentifier": "auth.uid",
+          "policyCount": 20,
+          "declaredInSourceSchemaDump": false,
+          "namespaceFamily": "SUPABASE_AUTH"
+        },
+        {
+          "functionIdentifier": "coalesce",
+          "policyCount": 20,
+          "declaredInSourceSchemaDump": false,
+          "namespaceFamily": "POSTGRESQL_EXPRESSION_NOT_USER_DEFINED_ROUTINE"
+        },
+        {
+          "functionIdentifier": "btrim",
+          "policyCount": 1,
+          "declaredInSourceSchemaDump": false,
+          "namespaceFamily": "POSTGRESQL_BUILTIN"
+        },
+        {
+          "functionIdentifier": "jsonb_typeof",
+          "policyCount": 1,
+          "declaredInSourceSchemaDump": false,
+          "namespaceFamily": "POSTGRESQL_BUILTIN"
+        }
+      ],
+      "actualRestoreCompleted": false,
+      "sourceSQLUploaded": false,
+      "dataSqlExecuted": false,
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false
+    },
+    "disposableAuthBaseline20261020": {
+      "script": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "mode": [
+        "Restore",
+        "AuditSchema"
+      ],
+      "strategy": "create only missing auth.uid() / auth.jwt() from Supabase Auth migrations in no-network disposable PG17; validate uuid/jsonb stable security-invoker signatures and leave preexisting functions unchanged",
+      "doesNotModifySourceZip": true,
+      "doesNotBypassRLSPolicies": true,
+      "syntheticCiRunId": 39391834303,
+      "syntheticCiPass": true,
+      "ownerRealZipRestoreAttemptedAfterPatch": false,
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "runId": 39391834303,
+        "jobId": 118524957615,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39391834303",
+        "conclusion": "success",
+        "codeCommit": "b11d59c0c32234cbe8d83c6f9a38e73b8acc9350",
+        "scope": "synthetic only; owner private ZIP unavailable in CI",
+        "coverage": [
+          "Supabase Auth JWT/UID RLS policy compilation",
+          "isolated missing managed function conditional seed with official function signatures",
+          "isolated managed auth bootstrap runs as supabase_admin after demoted postgres 42501",
+          "public/private function ownership grants",
+          "public schema creation/preservation",
+          "schema-only 42883 aggregate audit",
+          "negative archive tests",
+          "data.sql synthetic restore"
+        ]
+      }
+    },
+    "latestOwnerDataRestoreAttempt20261020": {
+      "zipBytes": 7323679,
+      "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "zipInspected": true,
+      "managedAuthClaimsHelpersPrepared": true,
+      "privateFunctionOwnerGrantStaged": true,
+      "publicFunctionOwnerGrantsStaged": 9,
+      "privateFunctionOwnerReady": true,
+      "strictSchemaRestoreCompleted": true,
+      "dataSqlstate": "42703",
+      "dataSourcePhysicalLine": 28,
+      "restoreExit": 3,
+      "dataRestoreCompleted": false,
+      "allRowsImported": false,
+      "productionDatabaseConnections": 0,
+      "rawSqlUploaded": false,
+      "securityOrReleaseAuthorized": false
+    },
+    "dataCopyHeaderAudit20261020": {
+      "mode": "AuditData",
+      "codePath": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "strategy": "strictly restore schema into disposable no-network PostgreSQL 17; enumerate source data.sql COPY headers without importing row contents; compare against catalog attributes in one query; emit only line, schema classification, mismatch counts",
+      "explicitlyDoesNotImportData": true,
+      "sourceBackupImmutable": true,
+      "syntheticCiRun": 39394837449,
+      "syntheticCiSuccess": true,
+      "ownerRealZipAuditRun": false,
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false,
+      "syntheticCi": {
+        "id": 39394837449,
+        "jobId": 118535862856,
+        "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39394837449",
+        "codeCommit": "07ecba9b22cfecca773d5daf53688d252aaae30d",
+        "conclusion": "success",
+        "scope": "synthetic only; real owner ZIP remains on Windows",
+        "accepted": [
+          "restore synthetic schema strictly before inspecting data COPY headers",
+          "detect exactly one intentionally missing destination column and classify header source line",
+          "do not run data.sql or emit raw rows/SQL/column names",
+          "all prior PG17 owner grant, auth baseline, schema audit and negative restore tests"
+        ]
+      }
+    },
+    "latestOwnerDataHeaderAudit20261020": {
+      "source": "owner-reported local private ZIP AuditData output on 2026-10-20",
+      "zipBytes": 7323679,
+      "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "strictSchemaRestoreCompleted": true,
+      "copyHeaders": 134,
+      "sourceCopyColumns": 1680,
+      "missingDestinationColumns": 18,
+      "missingTableColumnReferences": 280,
+      "affectedCopyHeaders": 32,
+      "allAffectedInClass": "SUPABASE_MANAGED",
+      "unparsedCopyHeaders": 0,
+      "copyRowsImported": false,
+      "originalZipModified": false,
+      "productionDatabaseConnections": 0,
+      "actualFullRestoreCompleted": false
+    },
+    "localNamedDataDriftDetailMode20261020": {
+      "mode": "AuditDataDetail",
+      "codeCommit": "957204c52b38e2e278bf62fd700f31da349967be",
+      "repoPath": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "functionality": "strict isolated no-network schema.sql replay followed by COPY-only metadata diff; JSON file with exact schema, table, missing column names saved exclusively beside original ZIP on owner PC; console emits only aggregate schema classifications and detail file path",
+      "syntheticCiRun": 39432716615,
+      "syntheticCiStatus": "SUCCESS",
+      "ownerExecuted": true,
+      "originalZipModified": false,
+      "copyRowsImported": false,
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false,
+      "ciUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39432716615",
+      "ciCoverage": [
+        "strict schema restore before metadata comparison",
+        "missing managed table and existing table absent column identified together",
+        "named details saved to owner-private file, never console",
+        "ZIP SHA256 unchanged and data.sql row COPY never executed",
+        "all previous isolated PG17 synthetic regression stages PASS"
+      ],
+      "ownerLatestResult": {
+        "status": "D8K13_DISPOSABLE_PG17_DATA_NAMED_DETAIL_LOCAL_FILE_CREATED",
+        "copyHeaders": 134,
+        "affectedCopyHeaders": 32,
+        "missingDestinationColumns": 18,
+        "missingTableColumnReferences": 280,
+        "classCounts": [
+          {
+            "schemaClass": "SUPABASE_MANAGED",
+            "mismatchedCopyHeaders": 32,
+            "missingTables": 29,
+            "tablesWithMissingColumns": 3
+          }
+        ],
+        "privateDetailsOnlyOnOwnerPc": true,
+        "sourceSqlOrRowDataPrinted": false,
+        "copyDataImported": false,
+        "strictSchemaRestoreCompleted": true,
+        "originalZipModified": false,
+        "productionDatabaseConnections": 0,
+        "releaseAuthorized": false,
+        "detailNamesNotYetReviewed": true,
+        "localPrivatePathOmittedIntentionally": true
+      }
+    },
+    "managedNamedDataDriftOwnerReviewed20261020": {
+      "detailNamesProvidedByOwner": true,
+      "auth": {
+        "missingTables": 22,
+        "tablesWithMissingColumns": 3,
+        "missingColumns": 18
+      },
+      "storage": {
+        "missingTables": 7,
+        "tablesWithMissingColumns": 0,
+        "missingColumns": 0
+      },
+      "sourceCopyHeaders": 134,
+      "affectedCopyHeaders": 32,
+      "impactedSchemasOnly": [
+        "auth",
+        "storage"
+      ],
+      "exactOwnerPrivateJsonStoredInRepository": false,
+      "sourceSqlOrRowDataUploaded": false,
+      "restoreCompleted": false,
+      "releaseAuthorized": false
+    },
+    "publicOnlyRestoreProbe20261020": {
+      "mode": "RestorePublicData",
+      "objective": "Restore public COPY data and public sequence setval into disposable --network none PG17 after strict schema replay; verify per-table row counts; do not import managed or other-schema COPY; fail on unknown commands.",
+      "sourceBackupMutated": false,
+      "productionConnections": 0,
+      "authOrStorageDataRestored": false,
+      "foreignKeyAndAuthParityVerified": false,
+      "sourceRealOwnerZipExecuted": true,
+      "syntheticCiRun": 39446671276,
+      "syntheticCiStatus": "SUCCESS",
+      "fullyRestored": false,
+      "releaseAuthorized": false,
+      "ciUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39446671276",
+      "codeCommit": "7599f54ddb5a1de951f599eac6e1443b09231358",
+      "verifiedBehaviors": [
+        "transactionally restore two public COPY blocks and one public sequence reset in no-network PG17",
+        "verify actual public table row counts equal synthetic COPY line counts",
+        "exclude synthetic auth and storage COPY blocks",
+        "reject unsupported SQL before applying public data",
+        "all prior PG17 isolated schema, audit and restore regressions PASS"
+      ],
+      "validatedScope": "public COPY row counts and supported public sequence reset only; not source session settings, row-value parity, Auth/Storage service parity or full restore",
+      "ownerLastObserved": {
+        "dateKst": "2026-10-22",
+        "zipFingerprintVerified": true,
+        "strictSchemaRestoreCompleted": true,
+        "latestErrorCode": "D8K13_PUBLIC_DATA_UNEXPECTED_SOURCE_COMMAND_LINE_18291",
+        "failurePhase": "public-only source data.sql preflight, no COPY data imported",
+        "actualOwnerPublicRestorePass": false,
+        "originalZipModified": false,
+        "productionDatabaseConnections": 0
+      },
+      "pgDumpSequenceSyntaxFix": {
+        "commit": "1ce5532c82fb950d891ab0f583ef305e74d9a972",
+        "syntheticCiRun": 39766727882,
+        "syntheticCiConclusion": "success",
+        "expands": "strictly allow either standard uncast pg_catalog.setval('schema.seq', integer, bool) or optional ::regclass (including pg_catalog.regclass), without allowing unqualified names or arbitrary SQL",
+        "verifiedFixtures": [
+          "public setval with regclass cast",
+          "public setval without regclass cast",
+          "non-public managed setval without regclass skipped",
+          "public COPY row counts unchanged",
+          "unsupported SQL fails closed",
+          "prior synthetic restore/audit regression suite"
+        ],
+        "ownerActualBackupRerun": false,
+        "realBackupSqlOrRowsUploaded": false,
+        "releaseAuthorized": false
+      },
+      "terminalResetAllFix20261022": {
+        "codeCommit": "10595e296294f7a1ed4ec95b045c41072563297b",
+        "finalSyntheticTestCommit": "f6030298f6c2ca73cf825c0f633a679d27399453",
+        "ciRun": 39780628115,
+        "ciStatus": "SUCCESS",
+        "ciUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39780628115",
+        "sourceLastLineKnownOnlyAs": "OTHER_SQL_KEYWORD",
+        "sourceLineMatchesResetAllConfirmed": true,
+        "supportedHypothesis": "The user's one terminal OTHER_SQL_KEYWORD is exactly RESET ALL; as emitted by Supabase CLI data-only backups. Not established without owner rerun.",
+        "acceptance": "Limited RestorePublicData ignores exact terminal RESET ALL; (allow trailing comments/blank lines), rejects nonterminal or arbitrary SQL and retains no-network only public COPY",
+        "syntheticCoverage": [
+          "terminal RESET ALL followed by EOF: public COPY row counts and both setval forms pass",
+          "nonterminal RESET ALL before another public COPY rejected without row import",
+          "all existing PG17 schema restore, managed COPY audit and fail-closed regressions succeed"
+        ],
+        "actualOwnerZipRerun": true,
+        "releaseAuthorized": false
+      }
+    },
+    "dataCommandFamilyAudit20261022": {
+      "mode": "AuditDataCommands",
+      "codeCommit": "dfb9f10482f223359461019843654c67729d2710",
+      "syntheticCiRun": 39775759787,
+      "syntheticCiStatus": "SUCCESS",
+      "intent": "One owner-only scan of all data.sql commands outside COPY payload, returning only enum classifications, line numbers, and counts; no Docker started, SQL output, row data or production connections",
+      "ownerRunStatus": "PASS",
+      "privacy": {
+        "namedObjectMetadataReturned": false,
+        "rawSqlOrRowsReturned": false,
+        "originalZipModified": false,
+        "ciUsesOnlySyntheticData": true
+      },
+      "evidenceNeeded": "All unusual command classes and line samples to repair restrictive grammar in one bounded change rather than sequential new restore attempts",
+      "releaseAuthorized": false,
+      "syntheticCiUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39775759787",
+      "syntheticCoverage": [
+        "synthetic SQL-like row payload is not interpreted as executable command",
+        "three unsupported non-COPY command families reported simultaneously by enum and line only",
+        "both standard pg_dump setval forms recognized",
+        "ZIP SHA unchanged, no Docker, no import or source SQL/rows returned",
+        "full original synthetic PG17 restore/audit security regression PASS"
+      ],
+      "ownerObserved": {
+        "status": "D8K13_LOCAL_DATA_COMMAND_FAMILY_AUDIT_ONLY_NO_RESTORE",
+        "zipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+        "sourceLines": 18291,
+        "copyHeaders": 134,
+        "copyPayloadLinesNotInspected": 17168,
+        "recognizedClasses": {
+          "COMMENT_OR_BLANK": 839,
+          "COPY_VALID": 134,
+          "SET_CONFIG_VALID": 1,
+          "SET_VALID": 11,
+          "SETVAL_VALID": 3
+        },
+        "unexpectedCommandCount": 1,
+        "unexpectedSamples": [
+          {
+            "line": 18291,
+            "commandClass": "OTHER_SQL_KEYWORD"
+          }
+        ],
+        "noDockerStarted": true,
+        "dataRowsImported": false,
+        "originalZipModified": false,
+        "rawSqlOrDataReturned": false,
+        "productionDatabaseConnections": 0,
+        "releaseAuthorized": false
+      },
+      "ownerActualSqlLastLineIdentityConfirmed": false
+    },
+    "ownerActualPublicDataRestore20261023": {
+      "evidenceOrigin": "owner pasted two privacy-safe JSON outputs and verification marker in ChatGPT; not independently executed by connected remote PC",
+      "observedDateKst": "2026-10-23",
+      "inspectedGitHead": "b2d62f19144741f7ddef5c8c0af2558746931d29",
+      "restoreScriptGitBlob": "2af909e93b1b85f99936d34e98b5fd6accdc4529",
+      "syntheticAcceptedCommit": "f6030298f6c2ca73cf825c0f633a679d27399453",
+      "syntheticWorkflowRunId": 39780628115,
+      "syntheticWorkflowConclusion": "success",
+      "ownerPrivateZipBytes": 7323679,
+      "ownerReportedZipSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "commandAudit": {
+        "status": "D8K13_LOCAL_DATA_COMMAND_FAMILY_AUDIT_ONLY_NO_RESTORE",
+        "sourceLines": 18291,
+        "copyHeaders": 134,
+        "copyPayloadLinesNotInspected": 17168,
+        "recognizedClasses": {
+          "COMMENT_OR_BLANK": 839,
+          "COPY_VALID": 134,
+          "RESET_ALL_SYNTAX_RECOGNIZED": 1,
+          "SET_CONFIG_VALID": 1,
+          "SET_VALID": 11,
+          "SETVAL_VALID": 3
+        },
+        "unexpectedCommandCount": 0,
+        "noDockerStarted": true
+      },
+      "isolatedPublicRestore": {
+        "status": "D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED",
+        "finalOwnerMarker": "D8K13_OWNER_PUBLIC_RESTORE_VERIFIED",
+        "strictSchemaRestoreCompleted": true,
+        "sourceCopyHeaders": 134,
+        "publicCopyHeadersExecuted": 101,
+        "publicCopyTablesVerified": 101,
+        "publicSourceRowsAppliedAndCountVerified": 12220,
+        "publicSequenceResetsApplied": 2,
+        "skippedManagedCopyHeaders": 33,
+        "skippedOtherSchemaCopyHeaders": 0,
+        "skippedNonpublicSequenceResets": 1,
+        "terminalResetAllSkipped": true,
+        "publicDataRowsVerified": true,
+        "foreignKeyReferentialParityVerified": false,
+        "authDataRestored": false,
+        "storageMetadataRestored": false,
+        "storageObjectBytesRestored": false,
+        "allDataRestored": false,
+        "original178MigrationsReplayed": false,
+        "originalZipModified": false,
+        "networkDisabled": true,
+        "productionDatabaseConnections": 0,
+        "rawSqlOrRowContentsReturned": false,
+        "releaseAuthorized": false
+      },
+      "originalZipPostRestoreHashVerifiedByOwnerCommand": true,
+      "currentStateRecoveryReadiness": "LIMITED_PUBLIC_COPY_ROWS_VERIFIED_NOT_COMPLETE_SUPABASE_DISASTER_RECOVERY",
+      "outstanding": "FK/reference integrity, sequence value parity/nextval, RLS and ACL owner parity, Auth/Storage/Vault, deployed DB identity, migration provenance, independent owner, security #1208",
+      "privateSqlOrRowsUploaded": false,
+      "releaseAuthorized": false
+    },
+    "ownerPublicFkIntegrity20261023": {
+      "observedDateKst": "2026-10-23",
+      "evidenceOrigin": "connected authorized Windows Desktop Commander executed approved script on owner PC; output metadata-only JSON (no ZIP, SQL or row contents transferred)",
+      "scriptCommit": "ac95fc58dda5952b45b6dffa807590b2e831a3f4",
+      "scriptPath": "scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1",
+      "mode": "RestorePublicDataWithPublicFkAudit",
+      "zipSha256VerifiedBeforeAndAfter": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "syntheticCiRun": 39882815706,
+      "syntheticCiConclusion": "success",
+      "status": "D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED",
+      "finalOwnerMarker": "D8K13_OWNER_PUBLIC_FK_INTEGRITY_VERIFIED_LIMITED",
+      "sourceCopyHeaders": 134,
+      "publicCopyHeadersExecuted": 101,
+      "publicSourceRowsAppliedAndCountVerified": 12220,
+      "publicCopyTablesVerified": 101,
+      "publicSequenceResetsApplied": 2,
+      "skippedManagedCopyHeaders": 33,
+      "skippedNonpublicSequenceResets": 1,
+      "strictSchemaRestoreCompleted": true,
+      "publicDataRowsVerified": true,
+      "publicToPublicForeignKeyRowsVerified": true,
+      "publicToPublicForeignKeyAudit": {
+        "publicFkConstraintsChecked": 199,
+        "publicFkViolatingConstraints": 0,
+        "publicFkViolatingRows": 0,
+        "nonPublicParentConstraintsSkipped": 34,
+        "unsupportedConstraints": 0
+      },
+      "foreignKeyReferentialParityVerified": false,
+      "authDataRestored": false,
+      "storageMetadataRestored": false,
+      "storageObjectBytesRestored": false,
+      "original178MigrationsReplayed": false,
+      "allDataRestored": false,
+      "originalZipModified": false,
+      "networkDisabled": true,
+      "productionDatabaseConnections": 0,
+      "rawSqlOrRowContentsReturned": false,
+      "releaseAuthorized": false,
+      "nextGates": [
+        "34 non-public parent FK references cannot be asserted without managed Auth and other parents",
+        "sequence values vs source and nextval semantics",
+        "RLS/ACL/role owner and security definer semantic parity",
+        "managed Auth/Storage/service recovery",
+        "178 migration history provenance and security #1208"
+      ]
+    },
+    "ownerPublicSequenceStateIntegrity20261023": {
+      "observedDateKst": "2026-10-23",
+      "evidenceOrigin": "authorized Windows Desktop Commander owner-private local ZIP test, metadata-only result",
+      "mode": "RestorePublicDataWithIntegrityAudit",
+      "scriptCommit": "51742466feb51005ecb6441ed78bf2cf155f7239",
+      "ciRun": 39891138819,
+      "ciConclusion": "success",
+      "ownerMarker": "D8K13_OWNER_PUBLIC_INTEGRITY_SEQUENCE_VERIFIED_LIMITED",
+      "publicTablesVerified": 101,
+      "publicRowsVerified": 12220,
+      "publicFkConstraintsChecked": 199,
+      "publicFkViolatingRows": 0,
+      "nonPublicParentConstraintsSkipped": 34,
+      "sourceSetvalsChecked": 2,
+      "catalogPublicSequences": 2,
+      "sourceLastValueAndIsCalledMatch": true,
+      "nextvalWouldExhaustCount": 0,
+      "nextvalActuallyCalled": false,
+      "sourceZipSha256VerifiedBeforeAndAfter": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "networkDisabled": true,
+      "productionDatabaseConnections": 0,
+      "authDataRestored": false,
+      "allDataRestored": false,
+      "releaseAuthorized": false
+    },
+    "ownerPublicSecurityCatalogInventory20261023": {
+      "observedDateKst": "2026-10-23",
+      "evidenceOrigin": "owner authorized Windows device; local ZIP read and no-network disposable PG17 catalog; counts-only stdout",
+      "testedScriptCommit": "76810246b39e2792f087ff7aff230a54687312af",
+      "mode": "RestorePublicDataWithSecurityInventory",
+      "syntheticCiRunId": 39896462011,
+      "syntheticCiConclusion": "success",
+      "marker": "D8K13_OWNER_PUBLIC_SECURITY_INVENTORY_COLLECTED_LIMITED",
+      "publicTables": 101,
+      "rlsEnabledTables": 101,
+      "rlsForcedTables": 4,
+      "rlsDisabledTables": 0,
+      "rlsEnabledTablesWithZeroPolicies": 77,
+      "publicPolicies": 58,
+      "permissivePolicies": 58,
+      "restrictivePolicies": 0,
+      "publicFunctions": 187,
+      "securityDefinerFunctions": 135,
+      "publicFunctionsOwnedByPostgres": 178,
+      "publicFunctionsOwnedByOtherRoles": 9,
+      "publicFunctionsExecutableByAnon": 187,
+      "publicFunctionsExecutableByAuthenticated": 187,
+      "securityDefinerExecutableByAnon": 135,
+      "securityDefinerExecutableByAuthenticated": 135,
+      "publicTablesExplicitSelectForBrowserRoles": 101,
+      "publicViews": 6,
+      "publicViewsWithSecurityInvoker": 6,
+      "publicViewsWithSecurityBarrier": 0,
+      "previousDataValidation": {
+        "publicTableRows": 12220,
+        "publicFkConstraintsChecked": 199,
+        "publicFkViolatingRows": 0,
+        "nonPublicParentConstraintsSkipped": 34,
+        "publicSequenceStateVerified": 2
+      },
+      "interpretation": "effective has_function_privilege counts include implicit PUBLIC and role inheritance; not evidence of unsafe function behavior nor operator-source parity. RLS-enabled policy-free tables are typically default-deny for non-bypass roles. Explicit permission provenance and function body/search_path audits pending.",
+      "riskGate": "REVIEW_REQUIRED: all 135 security definer functions effectively executable by anon/authenticated in isolated restored snapshot; determine explicit vs implicit privileges and authorizations before release",
+      "independentHostedComparisonPerformed": false,
+      "securityDefinerSemanticsAudited": false,
+      "originalZipSha256Unchanged": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "productionDatabaseConnections": 0,
+      "networkDisabled": true,
+      "rawSqlOrRowContentsReturned": false,
+      "releaseAuthorized": false
+    },
+    "ownerSecurityDefinerPrivilegeProvenance20261023": {
+      "observedDateKst": "2026-10-23",
+      "evidenceOrigin": "authorized Windows owner-private ZIP isolated PG17 no network; aggregate metadata only",
+      "mode": "RestorePublicDataWithSecurityInventory",
+      "testedScriptCommit": "8349c169a6fe3a77b0556e43c2ad3a7ea76a833c",
+      "syntheticCiRunId": 39898675361,
+      "syntheticCiConclusion": "success",
+      "ownerMarker": "D8K13_OWNER_SECURITY_PRIVILEGE_PROVENANCE_COLLECTED",
+      "securityDefinerFunctions": 135,
+      "securityDefinerNullAclDefaults": 0,
+      "securityDefinerExplicitAcl": 135,
+      "securityDefinerDefaultPublicExecute": 0,
+      "securityDefinerExplicitPublicExecute": 0,
+      "securityDefinerExplicitAnonExecute": 135,
+      "securityDefinerExplicitAuthenticatedExecute": 135,
+      "securityDefinerEffectivePublicExecute": 0,
+      "securityDefinerExplicitSearchPath": 135,
+      "securityDefinerNoExplicitSearchPath": 0,
+      "securityDefinerSearchPathMentionsPublic": 69,
+      "anonBypassRls": false,
+      "authenticatedBypassRls": false,
+      "securityDefinerFunctionBodyReviewed": false,
+      "securityDefinerSemanticsAudited": false,
+      "productionParityVerified": false,
+      "releaseAuthorized": false,
+      "interpretation": "explicit EXECUTE grants to both browser roles exist on all 135 SECURITY DEFINER functions in disposable schema; potential authorization exposure requires per-function body/role/check/search_path review, but this inventory alone does not confirm an exploitable vulnerability",
+      "priorDataStillVerified": {
+        "publicCopyRows": 12220,
+        "publicFkChecked": 199,
+        "publicFkViolatingRows": 0,
+        "publicSequenceSetvals": 2
+      },
+      "backupSha256Unchanged": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "productionDatabaseConnections": 0,
+      "networkDisabled": true,
+      "rawSqlOrUserRowContentsReturned": false
+    },
+    "ownerSecurityDefinerBodySignals20261023": {
+      "observedDateKst": "2026-10-23",
+      "evidenceOrigin": "connected owner Windows PC isolated PG17 no-network, aggregate-only static lexical inspection of pg_proc.prosrc",
+      "mode": "RestorePublicDataWithSecurityBodySignals",
+      "scriptCommit": "fcc8b9c7699f67c253c3ab221ef03bb492a1228d",
+      "syntheticCiRunId": 39903567164,
+      "syntheticCiConclusion": "success",
+      "ownerMarker": "D8K13_OWNER_DEFINER_BODY_SIGNALS_COLLECTED",
+      "scannedSecurityDefinerFunctions": 135,
+      "languagePlpgsql": 113,
+      "languageSql": 22,
+      "otherOrUnsupportedLanguage": 0,
+      "emptySourceBodies": 0,
+      "bodyMentionsAuthOrJwtSignals": 1,
+      "bodyNoLexicalAuthOrJwtSignal": 134,
+      "plpgsqlBodiesMentionExecuteKeyword": 3,
+      "plpgsqlBodiesMentionExecuteAndFormat": 1,
+      "plpgsqlExecuteWithoutLexicalAuthSignal": 3,
+      "bodyMentionsRaiseException": 94,
+      "searchPathIncludesPublic": 69,
+      "searchPathIncludesPgTemp": 68,
+      "searchPathEndsWithPgTemp": 68,
+      "searchPathNoExplicitPgTemp": 67,
+      "postgresOwnedSecurityDefiner": 126,
+      "postgresOwnedExecuteKeyword": 3,
+      "limitations": "lexical regex matches function source including comments and strings; absence of direct auth keywords does not establish lack of authorization. No call graph, control-flow, dataflow, qualified identifier check, or exploitability proof.",
+      "staticOnlyLexicalSignals": true,
+      "perFunctionAuthSemanticsProven": false,
+      "searchPathExploitabilityProven": false,
+      "productionParityVerified": false,
+      "rawFunctionBodyOrNamesReturned": false,
+      "previousChecksStillPassed": {
+        "publicRowsVerified": 12220,
+        "publicFkChecked": 199,
+        "publicFkViolationRows": 0,
+        "publicSequenceSetvalStateVerified": 2
+      },
+      "originalZipUnchangedSha256": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false
+    },
+    "ownerAnonymousDynamicSqlCandidateTriage20261023": {
+      "observedDateKst": "2026-10-23",
+      "source": "authorized owner PC isolated PG17 no-network local backup; no source body or names returned",
+      "toolScriptCommit": "a2d4c5e05ff64182cdf7cbf1b7962661bf0578d3",
+      "syntheticCiRunId": 39907969193,
+      "syntheticCiConclusion": "success",
+      "marker": "D8K13_OWNER_ANONYMOUS_DYNAMIC_SQL_CANDIDATE_TRIAGE_PASS",
+      "candidateCount": 3,
+      "allPostgresOwned": true,
+      "allUsingKeyword": true,
+      "allNoDirectAuthHelperLexicalSignal": true,
+      "executeCandidatesWithPercentIdentifier": 1,
+      "executeCandidatesWithPercentRaw": 1,
+      "executeCandidatesWithQuoteIdent": 0,
+      "executeCandidatesWithQuoteLiteral": 0,
+      "anonymousCases": [
+        {
+          "ordinal": 1,
+          "argumentCount": 3,
+          "mentionsUsing": true,
+          "percentIdentifier": false,
+          "percentRaw": false
+        },
+        {
+          "ordinal": 2,
+          "argumentCount": 2,
+          "mentionsUsing": true,
+          "percentIdentifier": true,
+          "percentRaw": true,
+          "priority": "REVIEW_FIRST"
+        },
+        {
+          "ordinal": 3,
+          "argumentCount": 3,
+          "mentionsUsing": true,
+          "percentIdentifier": false,
+          "percentRaw": false
+        }
+      ],
+      "limitations": "Case ordinals are ephemeral and not stable function identifiers. Matches occur anywhere in source, including comments or strings. USING presence and %I/%s presence do not prove safety or vulnerability. Requires private on-PC individual code/AST review of dynamic SQL assembly, guards and EXECUTE dataflow.",
+      "sourceZipSha256Reverified": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "securityBugsConfirmed": 0,
+      "meaning": "zero confirmed, not proven zero bugs",
+      "releaseAuthorized": false
+    },
+    "ownerCaseBExecuteFormatCorrelation20261023": {
+      "dateKst": "2026-10-23",
+      "status": "LOCAL_STATIC_TRIAGE_ONLY",
+      "syntheticCiRunId": 39910646365,
+      "syntheticCiConclusion": "success",
+      "testedScriptCommit": "fd4e5416c0ebd3f0e5163b19ba888d73be65641f",
+      "sourceZipSha256VerifiedBeforeAndAfter": "A3E290AE2368D1032786A2202E60B1E328341B8A9C7DFAD1FD9A0F2DABEAD2C6",
+      "ownerMarker": "D8K13_OWNER_EXECUTE_FORMAT_WINDOW_TRIAGE_PASS",
+      "anonymousCandidates": [
+        {
+          "caseOrdinal": 1,
+          "executeFormatAdjacentLexical": false,
+          "rawPlaceholderInsideExecuteFormatWindowLexical": false,
+          "executeStatementUsingKeywordLexical": false
+        },
+        {
+          "caseOrdinal": 2,
+          "executeFormatAdjacentLexical": true,
+          "rawPlaceholderInsideExecuteFormatWindowLexical": true,
+          "identifierPlaceholderInsideExecuteFormatWindowLexical": false,
+          "executeStatementUsingKeywordLexical": true,
+          "executeStatementConcatenationLexical": false
+        },
+        {
+          "caseOrdinal": 3,
+          "executeFormatAdjacentLexical": false,
+          "rawPlaceholderInsideExecuteFormatWindowLexical": false,
+          "executeStatementUsingKeywordLexical": false
+        }
+      ],
+      "note": "B is a provisional high-priority lexical correlation; source parser may match comments/literals and does not establish tainted parameter to %s or actual SQL injection.",
+      "inputTaintOrControlFlowAnalyzed": false,
+      "exploitabilityProven": false,
+      "productionDatabaseConnections": 0,
+      "releaseAuthorized": false
+    },
+    "ownerLexicalSqlFormatParser20261023": {
+      "script": "scripts/product-evidence/audit-d8k13-definer-format-owner-local.py",
+      "scriptCommit": "234b1bd1173e786db7de6494c5e2ecadc8af8725",
+      "syntheticCiFirstSuccess": 39915596958,
+      "latestCiRun": 39918021305,
+      "latestCiStatusAtRecording": "in_progress",
+      "actualOwnerPrivateZipExecuted": true,
+      "localSelfTest": "PASS",
+      "ownerZipUnchanged": true,
+      "plpgsqlDefinerBodiesParsed": 115,
+      "parsedExecuteFormatCandidateFunctions": 1,
+      "formatSpecifiers": [
+        {
+          "specifier": "%s",
+          "argumentClass": "BARE_IDENTIFIER_OR_PARAMETER_UNRESOLVED"
+        }
+      ],
+      "usingInStatement": true,
+      "hasUnresolvedRawSubstitution": true,
+      "sourceOrIdentifiersReturned": false,
+      "securityVulnerabilityConfirmed": false,
+      "limitations": "owner ZIP schema extraction is approximate; catalog separately lists 113 restored PLpgSQL SECURITY DEFINER functions and prior lexical scan 3 EXECUTE matches; this AST-lite tokenizer confirms one executable-format candidate but does not resolve complete dataflow or prove other two safe.",
+      "releaseAuthorized": false
+    }
+  },
+  "syntheticCi": {
+    "runId": 39133409278,
+    "url": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39133409278",
+    "jobId": 117692996073,
+    "conclusion": "success",
+    "provenFor": "synthetic_fixture_only_including_supabase_anon_authenticated_grants_auth_users_fk_rls"
+  },
+  "notIncludedInCurrentDump": [
+    "managed_supabase_schemas_as_excluded_by_CLI",
+    "storage_object_binary",
+    "project_secrets_or_encryption_root_key",
+    "complete_migration_history"
+  ],
+  "releaseAuthorized": false,
+  "repositoryVerification20261020": {
+    "verificationSource": "connected GitHub read-only metadata and source file comparison",
+    "verifiedDateKst": "2026-10-20",
+    "branchHeadBeforeDocumentationReconciliation": "31dbd50b942b26757b5364b3c431bb3c8d2df358",
+    "correctedRestoreScriptCommit": "0d615aa95931c20e8fee9f140a8246fddd421b47",
+    "subsequentTwoCommitsChangedCode": false,
+    "subsequentChangedPaths": [
+      "docs/taxonomy-ai/r16i-r4-d8k13-current-state-recovery-runbook-20261018.md",
+      "scripts/product-evidence/baselines/d8k13-owner-local-backup-intake-20261018.json"
+    ],
+    "privateFunctionOwnerRestoreGrantsGatedByRoleAndFunctionOwnerChange": true,
+    "permissionScope": "disposable_no_network_docker_only",
+    "syntheticCi": {
+      "runId": 39223627159,
+      "jobId": 117964525037,
+      "conclusion": "success",
+      "realOwnerZipUsed": false
+    },
+    "pullRequest": {
+      "number": 1341,
+      "state": "open",
+      "draft": true,
+      "merged": false
+    },
+    "supplyChainBlocker": {
+      "issue": 1208,
+      "state": "open"
+    },
+    "latestOwnerRealBackupRetestAfterFixObserved": true,
+    "actualSchemaAndDataRestoreVerified": false,
+    "managedAreaAndAclParityVerified": false,
+    "releaseAuthorized": false
+  }
+}

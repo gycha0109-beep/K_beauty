@@ -251,3 +251,42 @@
 - **D8K-0→D8K-1/2→D8K-3→D8K-4→D8K-5→D8K-6→D8K-7**: 실사용 추천 slot/NULL-가격 baseline → Product-ID/선택옵션별 Offer 비교 계약과 read authority → 공통 카드 → 무료·프리미엄·루틴·기능성·예산 전체 연결 → 4채널 근거·가격 갱신 운영 → 보안·회귀 → gated rollout.
 - 우선 보수 후보: `PremiumFunctionalDecisionSection.jsx`의 `Number(null)===0` 가격 표시, 페이지별 단일 `buy_link`, Product ID/옵션 식별·shipping 부재, 현 `product_offers` listing 단위 고유키, 기존 Offer read RPC의 64 Product/256 Offer 제한, 쿠팡·임의 공식몰 direct-link trust 미지원. 세부 source 근거는 D8K 문서 참조.
 - **상태:** ROADMAP_READY. 코드·UI/API·migration·운영 데이터 변경 **없음**. D8D v2 특정 Product 교정은 별도 owner 증빙과 gate OFF 유지, #1208 실패 시 병합/배포 중단. 우선 실행 가능한 작업은 D8K-0 정밀 UI slot/source 매핑 및 null-price regression baseline.
+
+### 2026-10-17 D8K-13 보안·이력 우선 P0 진행 (운영 릴리스 HOLD)
+
+- 사용자의 고정 HEAD `303a94af096f6b4b8fa0784e8920bc39843a4edd` Windows 확장 PG17 러너 결과에서 8개 소스 검증과 최종 `D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS`가 보고됨. 이전 `complete/fail NOT_RUN`은 해당 시점 기록이며 **현재 scoped synthetic PASS**로 별도 후속 기록. 독립 statement-by-statement 로그나 운영 함수 보강 적용 근거는 아님.
+- 운영 178 applied migration 재확인, `source_rankings`·`product_candidates`의 현재 공개 역할 차단과 과거 CREATE/ACL 출처 미확인을 구분했다. Taxonomy8 예외 1건은 `promoted/resolved` 후보와 연결된 상태지만 canonical assignment가 없어 원인 조사 HOLD. 자세한 비식별 스냅샷과 증거 한계는 [D8K-13 이력 조사](r16i-r4-d8k13-crawler-tax8-source-ranking-lineage-20261017.md).
+- 가장 높은 미완료 P0는 **역사적 생성/수정 provenance와 전체 migration 실행·복구 가능성 인증**. Crawler 6 종료 구분자 격리 PG17 파서, 실백업/PITR 복원, 독립 권한/보안 검토와 공급망 이슈 #1208 해소 전 운영 migration repair/SQL·Auth·RLS/권한 변경, Product/Offer/CTA 출시, PR 병합·배포를 승인하지 않는다. 계속 `D8K13_HOSTED_RELEASE_HOLD`.
+
+### 2026-10-17 D8K-13 P0 원점·Taxonomy8 후속 조사 결과
+
+- 운영 178건 적용 이력의 가장 이른 `20260410` SQL 자체가 `product_candidates` ALTER 및 `source_rankings` 참조 뷰를 사용한다. 기록 내 두 테이블의 직접 초기 CREATE/GRANT/REVOKE를 입증하지 못했고, **최초 스키마/권한 계보는 기록보다 앞선 별도 bootstrap 증거가 있어야 한다**는 의존성 경계를 확인했다.
+- Product taxonomy 예외 1건은 `crawler-canonical-product-structural-adoption-v1`의 `inserted` promotion으로 축소됐다. 현재 structural writer가 Product category를 보존하면서 assignment를 쓰지 않고, catalog-only writer만 assignment를 동시 기록하는 계약 차이를 확인. **보수 정책 승인 전 자동 assignment DML 금지**, 추천 admission 및 가격/Offer 권한과 분리.
+- 관련 SELECT-only SQL/metadata-only baseline + offline verifier를 Git에 기록. 운영 이력 최초 증거·실제 백업 복원·전체 migration replay·Security #1208·독립 OWNER 검토 미확인 상태. R4-D8D-R1 P0는 **진행, 출시 HOLD**.
+
+### 2026-10-17 D8K-13 초기 스키마 복원 선행조건
+
+현재 운영의 기초 테이블 구조를 SELECT-only로 재확인하고, 초기 2026-04-08 Git history부터 2026-04-10 최초 applied migration까지 확인했으나 원본 CREATE/ACL bootstrap은 확보하지 못했다. 초기 객체가 확인되지 않으면 전체 178건 replay를 시작할 수 없으므로 **필수 검증 11개를 모두 HOLD로 고정**한 metadata-only `d8k13-preledger-reconstruction-readiness-20261017.json` 및 오프라인 검증기를 migration history audit에 연결했다. 실제 Node/전체 PG17 실행·PITR 리허설 미수행. 추후 소스/복원 증거와 독립 OWNER 승인이 확보될 때만 적용 단계를 재검토한다. [상세 경계](r16i-r4-d8k13-full-migration-chain-readonly-audit-20261016.md) §9.
+
+### 2026-10-20 D8K-13 실제 백업 복원 재검증 대기
+
+- 상위 D8K 로드맵 §30 / recovery runbook §6.5 및 owner ZIP 비식별 intake를 현재 코드와 대조. PR #1341 HEAD `31dbd50b942b26757b5364b3c431bb3c8d2df358`는 마지막 복원 코드 `0d615aa95931c20e8fee9f140a8246fddd421b47` 이후 문서 전용 2커밋이 추가된 상태. PR OPEN/DRAFT·미병합, 보안 #1208 OPEN.
+- 실제 ZIP은 `schema.sql:474`에서 `ALTER FUNCTION private ... OWNER TO`의 SQLSTATE 42501 실패. 로컬 컨테이너 전용 schema CREATE·role membership 보완 및 정규식 수정의 합성 PG17 복원 CI [#39223627159](https://github.com/gycha0109-beep/K_beauty/actions/runs/39223627159) 성공. 사용자 실제 ZIP으로 재실행 및 `data.sql` 성공은 여전히 **미확인**.
+- 사용자 PC ZIP 복원 성공·객체/ACL/RLS/Auth/Storage/Vault 동등성 확인이 복구 검증 과제; 178건 최초 이력·bootstrap 출처의 역사성은 독립 HOLD. D8K-12/13 승인, D8D v2, Crawler/Taxonomy8, SEC-05, 구매처 검증 및 #1208은 별도 차단 조건 유지. 무승인 운영 SQL/Product/Offer/CTA/배포/PR 병합 금지.
+
+### 2026-10-20 D8K-13 로컬 복원 GRANT 3F000 후속
+
+- 사용자 실제 ZIP 재실행: Inspect PASS, `public` schema 보존 PASS 후 `PRIVATE_FUNCTION_OWNER_SCHEMA_CREATE` 단계 SQLSTATE 3F000 / exit1. 스키마 적용 전 환경 권한 부여 오류이며 실백업 schema/data 복원 성공은 아님.
+- `private` schema 생성과 함수 owner 권한 부여의 순서를 격리 스크립트에서 수정하고, 덤프가 명시적으로 `CREATE SCHEMA private`를 선언하는 합성 케이스를 추가. 원본 백업·운영 DB 무변경; **새 CI PASS 미확인 상태에서는 실 ZIP 재요청/릴리스 승격 금지**.
+- 관련 runbook §6.7, D8K 상위 로드맵 §31. 최초 178 migration history, 운영 D8D v2, 실제 판매처 증거, RLS/ACL/Auth/Storage/Vault·#1208 모두 별도 HOLD.
+
+### 2026-10-20 D8K-13 합성 3F000 복원 수정 CI 실제 PASS
+
+- [CI #39355259890](https://github.com/gycha0109-beep/K_beauty/actions/runs/39355259890) `e3b7353f` PostgreSQL17 합성 ZIP schema+data 복원 성공. `private` 스키마 선언 선행과 이후 함수 소유권 변경을 포함한 회귀 시나리오 성공. 이전 위 섹션의 CI 미확인 경계는 이후 실제 GitHub 검증으로 갱신되었음.
+- 실사용자 ZIP을 CI에서 사용하지 않았고 최종 스크립트에 대한 실제 owner ZIP 복원도 아직 관측하지 못함. 독립 권한 동등성/관리 스키마/Storage 바이너리/비밀키 보존은 별도 확인. 현재는 Windows 로컬 재시도만 허용, 운영 DDL/DML·D8D v2·Offer/가격·CTA·배포·PR 병합 금지, #1208 OPEN/HOLD.
+
+### 2026-10-20 D8K-13 schema 22086행 비식별 분류 우선
+
+- 실제 로컬 ZIP: 검증된 size/hash, `public` 보존, `private` owner 권한 지연 준비 이후 `schema.sql:22086` SQLSTATE 42501. 원본 schema/data restore NOT COMPLETE. 이전 474행 권한 오류와 같은 SQL 종류라고 단정하지 않는다.
+- 변경: 소유자 PC ZIP 전용 metadata-only SQL 명령 분류기 및 기존 private ZIP restore workflow의 합성 수용 테스트; [CI #39359659800](https://github.com/gycha0109-beep/K_beauty/actions/runs/39359659800) SUCCESS. 소유자 자료 미접근, 추가 DDL/GRANT 변경 없음.
+- 필요한 다음 근거는 고정 분류값만 기록한 local JSON; 복원 재시도·권한 우회는 보류. D8K-13 current-state 복구와 178 migration 역사성 분리, #1341 Draft, #1208 OPEN, 출시 HOLD.

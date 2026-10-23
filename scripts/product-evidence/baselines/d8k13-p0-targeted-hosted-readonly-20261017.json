@@ -1,0 +1,56 @@
+{
+  "schema": "D8K13_P0_TARGETED_HOSTED_SELECT_ONLY_RECHECK_V1",
+  "observedDateKst": "2026-10-17",
+  "method": "Live Supabase PostgreSQL17 metadata SELECT only. Exact-pattern text scan of 178 stored migration statement arrays plus current pg_catalog privilege readback, aggregate-only Taxonomy8 projection/candidate cross-check.",
+  "databaseWrites": 0,
+  "sourceSqlBodiesPublished": false,
+  "productIdentifiersPublished": false,
+  "appliedHistoryCount": 178,
+  "sourceRankings": {
+    "storedStatementTextMentionCount": 6,
+    "explicitDirectCreateTablePatternCount": 0,
+    "explicitDirectGrantRevokePatternCount": 0,
+    "currentRlsEnabled": true,
+    "currentAnonSelect": false,
+    "currentAnonInsert": false,
+    "currentAuthenticatedSelect": false,
+    "currentAuthenticatedInsert": false,
+    "currentServiceRoleInsert": true,
+    "historicalCreationOrAclProvenanceAttested": false
+  },
+  "productCandidates": {
+    "storedStatementTextMentionCount": 40,
+    "explicitDirectCreateTablePatternCount": 0,
+    "explicitDirectGrantRevokePatternCount": 0,
+    "currentRlsEnabled": true,
+    "currentAnonSelect": false,
+    "currentAnonInsert": false,
+    "currentAuthenticatedSelect": false,
+    "currentAuthenticatedInsert": false,
+    "currentServiceRoleInsert": true,
+    "historicalCreationOrAclProvenanceAttested": false
+  },
+  "taxonomy8": {
+    "nonExactProductsWithNonNullCategory": 1,
+    "legacyCategory": "sunscreen",
+    "createdDateKst": "2026-10-01",
+    "productFormPresent": false,
+    "canonicalAssignmentCount": 0,
+    "matchedCandidateReviewStatus": "promoted",
+    "matchedCandidateIdentityResolutionState": "resolved",
+    "matchedPromotedResolvedCandidateCount": 1,
+    "rootCauseEstablished": false
+  },
+  "limitations": [
+    "SQL text regexp is not a full SQL parser: quotes, schema/search_path variation and dynamic statements may be missed.",
+    "History may originate outside the 178 saved migration records.",
+    "Current effective RLS/GRANT says nothing conclusive about initial table creation privilege.",
+    "Candidate promotion and identity resolution are not evidence of taxonomy assignment or recommendation/commerce activation.",
+    "No full-history clean PG17 replay, source backup reconstruction or actual restore was performed."
+  ],
+  "full178HistoryReplayCertified": false,
+  "backendMigrationRepairAuthorized": false,
+  "securityIssue1208Resolved": false,
+  "productionReleaseAuthorized": false,
+  "status": "RELEASE_HOLD"
+}

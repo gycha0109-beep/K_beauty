@@ -1,0 +1,77 @@
+{
+  "schema": "D8K13_SEC05_EXTENDED_HOME_PG17_ACCEPTANCE_V1",
+  "evidenceDateKst": "2026-10-17",
+  "status": "SCOPED_SYNTHETIC_PG17_RUNNER_USER_REPORTED_PASS",
+  "reportType": "USER_PROVIDED_WINDOWS_LOG_SUMMARY_NOT_RAW_TRANSCRIPT_REVERIFICATION",
+  "localRunWindowKst": "2026-10-17 21:16:50–21:17:02 KST",
+  "logFilename": "D8K13_HOME_RESULT_20261017_211649.log",
+  "userReportedLogSha256": "1dadd3a9ba3fcde39e03dbf0c94b3b824a8014ccee445f2334c54db7dce52006",
+  "rawLogBytesAvailableToThisAudit": false,
+  "rawLogHashRecomputedByThisAudit": false,
+  "pinnedGithubCommit": "303a94af096f6b4b8fa0784e8920bc39843a4edd",
+  "pinnedSourceCount": 8,
+  "pinnedSources": [
+    {
+      "path": "supabase/migrations/20260711032649_sec_05_anonymous_write_grants.sql",
+      "gitBlobSha": "bb42c9cade8e310bdba73017ca6d81d211381056"
+    },
+    {
+      "path": "scripts/product-evidence/run-d8k13-sec05-acl-synthetic-pg17.mjs",
+      "gitBlobSha": "153b5becbe5b4132406b806603f7a7e603379b9f"
+    },
+    {
+      "path": "tests/fixtures/r16i-d8k13/30_sec05_acl_synthetic_setup_pg17.sql",
+      "gitBlobSha": "18f1b241541c10be99843865346e959dede08fc7"
+    },
+    {
+      "path": "tests/fixtures/r16i-d8k13/31_sec05_legacy_null_behavior_pg17.sql",
+      "gitBlobSha": "9249ae844f3e7157e0cbe9e1cf0cfdd588321ce0"
+    },
+    {
+      "path": "tests/fixtures/r16i-d8k13/32_sec05_hardened_null_contract_pg17.sql",
+      "gitBlobSha": "cd94f4afaadac5bc8ce1dc353281522d40d9825a"
+    },
+    {
+      "path": "tests/fixtures/r16i-d8k13/33_sec05_ranking_acl_minimal_revoke_pg17.sql",
+      "gitBlobSha": "40f578ae42571dfb1f47d01b44fabd7fcdc8411a"
+    },
+    {
+      "path": "tests/fixtures/r16i-d8k13/34_sec05_legacy_completion_failure_null_pg17.sql",
+      "gitBlobSha": "8687e9ffa28d7da72b0a5ae6522df0538f9902b6"
+    },
+    {
+      "path": "tests/fixtures/r16i-d8k13/35_sec05_hardened_completion_failure_pg17.sql",
+      "gitBlobSha": "81c441915bbe9335152b46a6fb81c5a8a8f57dc8"
+    }
+  ],
+  "reportedTranscriptMarkers": [
+    "D8K13_HOME_SOURCE_EIGHT_GIT_BLOB_CHECKSUMS_PASS",
+    "D8K13_HOME_POSTGRES17_IMAGE_READY",
+    "D8K13_SEC05_ACL_SYNTHETIC_CHECK_FILES_PASS",
+    "D8K13_SEC05_ACL_LOCAL_DOCKER_PG17_PASS",
+    "D8K13_HOME_PG17_TEST_PASS",
+    "D8K13_SEC05_EXTENDED_HOME_PG17_TEST_PASS"
+  ],
+  "innerExtendedMarkersDirectlyVisibleInUserSummary": false,
+  "gatedRunnerChecks": [
+    "legacy complete/fail NULL state transition and rollback",
+    "hardened complete/fail six-input NULL matrix (each)",
+    "wrong-principal rejection",
+    "valid completion/failure",
+    "retry and idempotency",
+    "PUBLIC/anon/authenticated function EXECUTE denial",
+    "existing claim and ranking ACL synthetic checks"
+  ],
+  "evidenceInterpretation": "Final runner PASS is user-reported; pinned runner emits it only after each required assertion. Intermediate checks are control-flow inference, not an independent SQL-statement transcript.",
+  "syntheticPg17CompleteFailAcceptanceAttestedFromUserReport": true,
+  "syntheticPg17ClaimRankingAcceptanceAttestedFromUserReport": true,
+  "full178HistoricalMigrationReplayCertified": false,
+  "hostedSec05FunctionsHardenedByThisTest": false,
+  "productionAclModifiedByThisTest": false,
+  "productionDatabaseWrites": 0,
+  "independentSecurityOwnerApproved": false,
+  "backupPitrRestoreVerified": false,
+  "issue1208Resolved": false,
+  "productionReleaseAuthorized": false,
+  "releaseStatus": "HOLD"
+}

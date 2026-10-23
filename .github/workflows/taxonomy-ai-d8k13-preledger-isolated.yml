@@ -1,0 +1,146 @@
+name: "[WT:taxonomy-ai] D8K13 Pre-Ledger Isolated PG17 Evidence"
+on:
+  push:
+    branches:
+      - feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
+    paths:
+      - .github/workflows/taxonomy-ai-d8k13-preledger-isolated.yml
+      - scripts/product-evidence/verify-d8k13-preledger-reconstruction-v1.mjs
+      - scripts/product-evidence/verify-d8k13-current-recovery-readiness-v1.mjs
+      - scripts/product-evidence/baselines/d8k13-current-public-recovery-inventory-20261018.json
+      - scripts/product-evidence/baselines/d8k13-current-recovery-synthetic-restore-drill-20261018.json
+      - scripts/product-evidence/sql/d8k13-current-public-recovery-inventory-readonly-v1.sql
+      - scripts/product-evidence/run-d8k13-current-recovery-synthetic-restore-pg17.sh
+      - scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs
+      - scripts/product-evidence/test-d8k13-private-bootstrap-intake-v1.mjs
+      - scripts/product-evidence/baselines/d8k13-original-bootstrap-source-discovery-20261018.json
+      - scripts/product-evidence/verify-d8k13-p0-acl-taxonomy-provenance-v1.mjs
+      - scripts/product-evidence/verify-d8k13-migration-chain-readonly-v1.mjs
+      - scripts/product-evidence/run-d8k13-preledger-negative-pg17.mjs
+      - scripts/product-evidence/run-d8k13-preledger-synthetic-positive-pg17.mjs
+      - tests/fixtures/r16i-d8k13/36_preledger_synthetic_base_pg17.sql
+      - scripts/product-evidence/baselines/d8k13-preledger-reconstruction-readiness-20261017.json
+      - scripts/product-evidence/baselines/d8k13-preledger-synthetic-positive-pg17-20261018.json
+      - scripts/product-evidence/baselines/d8k13-p0-acl-taxonomy-provenance-followup-20261017.json
+      - scripts/product-evidence/baselines/d8k13-hosted-migrations-readonly-20261016.json
+      - scripts/product-evidence/sql/d8k13-preledger-schema-profile-readonly-v1.sql
+      - scripts/product-evidence/sql/d8k13-p0-acl-taxonomy-provenance-readonly-v1.sql
+      - supabase/migrations/20260410_safe_review_and_promotion_layer.sql
+      - supabase/migrations/20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql
+      - supabase/migrations/20260914072000_data_taxonomy11_catalog_only_transactional_adoption_v1.sql
+permissions:
+  contents: read
+concurrency:
+  group: d8k13-isolated-preledger-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline-contract:
+    name: "Read-only native Node 22 pre-ledger HOLD contract"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Validate standalone HOLD contract and taxonomy writer source
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-d8k13-preledger-reconstruction-v1.mjs
+          node scripts/product-evidence/verify-d8k13-current-recovery-readiness-v1.mjs
+          node scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs
+          node scripts/product-evidence/test-d8k13-private-bootstrap-intake-v1.mjs
+          node --input-type=module -e 'import {verifyD8k13P0AclTaxonomyProvenance} from "./scripts/product-evidence/verify-d8k13-p0-acl-taxonomy-provenance-v1.mjs"; import {resolve} from "node:path"; const x=verifyD8k13P0AclTaxonomyProvenance(resolve(".")); if(x.releaseAuthorized!==false||x.status!=="HOLD")process.exit(8); console.log("D8K13_P0_ACL_TAXONOMY_CONTRACT_PASS_HOLD");'
+          node scripts/product-evidence/verify-d8k13-migration-chain-readonly-v1.mjs >/tmp/d8k13-chain-hold.json
+          grep -Fq D8K13_FULL_MIGRATION_CHAIN_READONLY_HOLD /tmp/d8k13-chain-hold.json
+      - name: Ensure pre-ledger and full-chain release gates refuse (exit=3)
+        run: |
+          set -euo pipefail
+          set +e
+          node scripts/product-evidence/verify-d8k13-preledger-reconstruction-v1.mjs --enforce-release >/tmp/d8k13-preledger-denied.log 2>&1
+          preledger_status=$?
+          node scripts/product-evidence/verify-d8k13-current-recovery-readiness-v1.mjs --enforce-release >/tmp/d8k13-current-recovery-denied.log 2>&1
+          current_recovery_status=$?
+          node scripts/product-evidence/verify-d8k13-private-bootstrap-intake-v1.mjs --enforce-release >/tmp/d8k13-private-intake-denied.log 2>&1
+          private_intake_status=$?
+          node scripts/product-evidence/verify-d8k13-migration-chain-readonly-v1.mjs --enforce-release >/tmp/d8k13-chain-denied.log 2>&1
+          chain_status=$?
+          set -e
+          test "$preledger_status" -eq 3
+          test "$current_recovery_status" -eq 3
+          test "$private_intake_status" -eq 3
+          test "$chain_status" -eq 3
+          grep -Fq D8K13_PRELEDGER_RECONSTRUCTION_RELEASE_REFUSED /tmp/d8k13-preledger-denied.log
+          grep -Fq D8K13_CURRENT_RECOVERY_RELEASE_REFUSED /tmp/d8k13-current-recovery-denied.log
+          grep -Fq D8K13_PRIVATE_BOOTSTRAP_RELEASE_REFUSED /tmp/d8k13-private-intake-denied.log
+          grep -Fq D8K13_FULL_CHAIN_RELEASE_REFUSED /tmp/d8k13-chain-denied.log
+          echo D8K13_PRELEDGER_NATIVE_NODE_RELEASE_HOLD_PASS
+  isolated-pg17:
+    name: "Disposable PostgreSQL 17 expected failure + rollback"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: d8k13_local_synthetic_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Create only the dedicated ephemeral database
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: d8k13_local_synthetic_only
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE ROLE d8k13_fixture LOGIN PASSWORD 'd8k13_disposable_fixture_only'"
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE d8k13_preledger_disposable OWNER d8k13_fixture"
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE d8k13_preledger_synthetic OWNER d8k13_fixture"
+          psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE d8k13_current_restore_disposable OWNER d8k13_fixture"
+      - name: Reproduce first migration failure on empty PG17 and verify transactional rollback
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGDATABASE: d8k13_preledger_disposable
+          PGUSER: d8k13_fixture
+          PGPASSWORD: d8k13_disposable_fixture_only
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/run-d8k13-preledger-negative-pg17.mjs --isolated-pg17
+      - name: Verify one original migration against explicitly synthetic disposable bootstrap
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGDATABASE: d8k13_preledger_synthetic
+          PGUSER: d8k13_fixture
+          PGPASSWORD: d8k13_disposable_fixture_only
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/run-d8k13-preledger-synthetic-positive-pg17.mjs --isolated-pg17
+      - name: Restore disposable fixture through PostgreSQL 17 schema and data dumps
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGDATABASE: d8k13_current_restore_disposable
+          PGUSER: d8k13_fixture
+          PGPASSWORD: d8k13_disposable_fixture_only
+          D8K13_PG17_SERVICE_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          bash scripts/product-evidence/run-d8k13-current-recovery-synthetic-restore-pg17.sh --isolated-pg17
