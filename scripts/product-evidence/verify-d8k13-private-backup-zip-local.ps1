@@ -1141,7 +1141,7 @@ WITH
    WHERE n.nspname='public'
  ),
  fn AS (
-   SELECT p.oid,p.proowner,p.proacl,p.prosecdef
+   SELECT p.oid,p.proowner,p.proacl,p.prosecdef,p.proconfig
    FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
    WHERE n.nspname='public'
  ),
@@ -1174,6 +1174,45 @@ SELECT json_build_object(
    WHERE prosecdef AND has_function_privilege('anon',oid,'EXECUTE')),
  'securityDefinerExecutableByAuthenticated',(SELECT count(*) FROM fn
    WHERE prosecdef AND has_function_privilege('authenticated',oid,'EXECUTE')),
+ 'securityDefinerNullAclDefaults',(SELECT count(*) FROM fn WHERE prosecdef AND proacl IS NULL),
+ 'securityDefinerExplicitAcl',(SELECT count(*) FROM fn WHERE prosecdef AND proacl IS NOT NULL),
+ 'securityDefinerDefaultPublicExecute',(SELECT count(*) FROM fn
+   WHERE prosecdef AND proacl IS NULL AND EXISTS(
+     SELECT 1 FROM aclexplode(acldefault('f',proowner)) a
+     WHERE a.grantee=0 AND a.privilege_type='EXECUTE')),
+ 'securityDefinerExplicitPublicExecute',(SELECT count(*) FROM fn
+   WHERE prosecdef AND proacl IS NOT NULL AND EXISTS(
+     SELECT 1 FROM aclexplode(proacl) a
+     WHERE a.grantee=0 AND a.privilege_type='EXECUTE')),
+ 'securityDefinerExplicitAnonExecute',(SELECT count(*) FROM fn
+   WHERE prosecdef AND proacl IS NOT NULL AND EXISTS(
+     SELECT 1 FROM aclexplode(proacl) a JOIN pg_roles r ON r.oid=a.grantee
+     WHERE r.rolname='anon' AND a.privilege_type='EXECUTE')),
+ 'securityDefinerExplicitAuthenticatedExecute',(SELECT count(*) FROM fn
+   WHERE prosecdef AND proacl IS NOT NULL AND EXISTS(
+     SELECT 1 FROM aclexplode(proacl) a JOIN pg_roles r ON r.oid=a.grantee
+     WHERE r.rolname='authenticated' AND a.privilege_type='EXECUTE')),
+ 'securityDefinerEffectivePublicExecute',(SELECT count(*) FROM fn
+   WHERE prosecdef AND EXISTS(
+     SELECT 1 FROM aclexplode(COALESCE(proacl,acldefault('f',proowner))) a
+     WHERE a.grantee=0 AND a.privilege_type='EXECUTE')),
+ 'securityDefinerExplicitSearchPath',(SELECT count(*) FROM fn
+   WHERE prosecdef AND EXISTS(
+     SELECT 1 FROM unnest(proconfig) cfg(item)
+     WHERE split_part(cfg.item,'=',1)='search_path')),
+ 'securityDefinerNoExplicitSearchPath',(SELECT count(*) FROM fn
+   WHERE prosecdef AND NOT EXISTS(
+     SELECT 1 FROM unnest(proconfig) cfg(item)
+     WHERE split_part(cfg.item,'=',1)='search_path')),
+ 'securityDefinerSearchPathMentionsPublic',(SELECT count(*) FROM fn
+   WHERE prosecdef AND EXISTS(
+     SELECT 1 FROM unnest(proconfig) cfg(item)
+     WHERE split_part(cfg.item,'=',1)='search_path' AND
+       split_part(cfg.item,'=',2) ~* '(^|,)[[:space:]]*"?public"?[[:space:]]*(,|$)')),
+ 'anonBypassRls',(SELECT rolbypassrls FROM pg_roles WHERE rolname='anon'),
+ 'authenticatedBypassRls',(SELECT rolbypassrls FROM pg_roles WHERE rolname='authenticated'),
+ 'executePrivilegeProvenanceClassified',true,
+ 'securityDefinerFunctionBodyReviewed',false,
  'publicTablesExplicitSelectForBrowserRoles',(SELECT count(*) FROM rel r
    WHERE EXISTS(
      SELECT 1 FROM aclexplode(COALESCE(r.relacl,acldefault('r',r.relowner))) a
@@ -1208,6 +1247,14 @@ SELECT json_build_object(
       Assert-Drill ([int]$securityInventory.publicFunctions -eq [int]$inventory.routines -and
                     [int]$securityInventory.publicPolicies -eq [int]$inventory.policies -and
                     [int]$securityInventory.rlsEnabledTables -eq [int]$inventory.rls_enabled) 'D8K13_PUBLIC_SECURITY_INVENTORY_MISMATCH'
+      Assert-Drill (
+        [int]$securityInventory.securityDefinerNullAclDefaults + [int]$securityInventory.securityDefinerExplicitAcl -eq [int]$securityInventory.securityDefinerFunctions -and
+        [int]$securityInventory.securityDefinerExplicitSearchPath + [int]$securityInventory.securityDefinerNoExplicitSearchPath -eq [int]$securityInventory.securityDefinerFunctions -and
+        [int]$securityInventory.securityDefinerDefaultPublicExecute -le [int]$securityInventory.securityDefinerNullAclDefaults -and
+        [int]$securityInventory.securityDefinerExplicitPublicExecute -le [int]$securityInventory.securityDefinerExplicitAcl -and
+        [int]$securityInventory.securityDefinerEffectivePublicExecute -le [int]$securityInventory.securityDefinerFunctions -and
+        $securityInventory.executePrivilegeProvenanceClassified -eq $true
+      ) 'D8K13_PUBLIC_SECURITY_PRIVILEGE_PROVENANCE_INCONSISTENT'
     }
 
     [ordered]@{
