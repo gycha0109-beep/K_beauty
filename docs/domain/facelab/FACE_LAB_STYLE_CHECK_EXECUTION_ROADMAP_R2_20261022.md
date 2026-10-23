@@ -110,7 +110,7 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 | SC-03 | 4 | **coverage 감사 구현·Foundation CI 통과 / PR #1394, 미병합** | SC-01/02 | observation coverage + 후보 hold audit | missing field 무단 보충 |
 | SC-04 | 5 | **반사실적 추천 비교 구현·Foundation/PIE 통과 / PR #1395, 미병합** | SC-02/03 | face/target/constraint contrast suite | 허위 사용자 선택 |
 | SC-05 | 6 | **평가 계획 검증·Human 권한 게이트 구현 / PR #1396, 실제 사진·사람 평가는 미실시** | SC-04 | human photo/cue/recommendation calibration | 실제 사진 권리 없음 |
-| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-06B | 7b | **3개 구조 후보 Shadow 실험 구현 / PR #1398, CI 확인 중** | SC-06 필드 영향 분석 | 실험용 후보 3개와 96-case feasibility / 개인화 가설 평가 | 사람 검증 전 운영 추천으로 전파 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
+| SC-06 | 7 | **22필드 영향도 실측·회귀·Foundation/PIE 통과 / PR #1397, 미병합** | SC-03/04/05 사전검증 | full-face sensitivity matrix (Profile→Action→Route→Domain) | 미검증 영향도를 스타일 정확도로 과장 |\n| SC-06B | 7b | **3개 구조 후보 Shadow 실험·96건 Foundation PASS / PR #1398, 미병합** | SC-06 필드 영향 분석 | 실험용 후보 3개와 96-case feasibility / 개인화 가설 평가 | 사람 검증 전 운영 추천으로 전파 |\n| SC-07 | 8 | 미착수 | SC-05 실사진·Human 평가 및 SC-06 승인 | Style Check UX/제품 연결 | 검증 전 추천 규칙 활성화 |
 
 ### 2026-10-22 진행 상태 (SC-03)
 
@@ -171,6 +171,14 @@ Independent research lane: Colour/ROI photographic sampling (not W0–W3 gate)
 - 테스트: **8 synthetic face × 12 Target = 96건**, 각 후보별 적용/Route 변화 카운트, 통제 가능한 양성 사례 및 suppression 회귀. 사람 평가·실사진 적합성이 검증되지 않았으므로 `productionActive:false` 보존.
 - 세부 설계: `FACE_LAB_STYLE_CHECK_SC06B_STRUCTURAL_SHADOW_20261023.md` (PR #1398). 나머지 7개 미반응 구조 관찰은 임의 규칙 확장 전 Human 평가 질문과 정책 근거를 요구한다.
 - SC-06B 이후에도 **SC-07 운영 화면/실제 추천 반영은 Human evidence·릴리스 승인 전 보류**.
+
+### SC-06B 첫 실측치 (2026-10-23)
+
+- [Foundation #39882857476](https://github.com/gycha0109-beep/K_beauty/actions/runs/39882857476), 8개 합성 얼굴 × 12 추구미 = 96건: Shadow action 변화 14건, route 구성 변화 9건, `target_forward` 변경 0/96.
+- 세 후보: 턱선 각도→안경 각도 강조 조절 **10건(그중 Route 5)**, 눈 개방감→눈 바깥쪽 강조 조절 **4건(Route 4)**, 이목구비 크기→포인트 대비 **0건(Route 0)**. 세 번째는 isolated positive control에서 작동하지만 해당 코호트에 적용 사례가 없음.
+- 수치는 **전부 synthetic feasibility**. A/B 사람 평가, 실제 인물 동의/표본, styling validity는 0이며 전부 `productionActive:false`.
+- 자료: PR #1398의 `FACE_LAB_STYLE_CHECK_SC06B_STRUCTURAL_SHADOW_20261023.md`. 사람 평가 전 권고 정책의 자동 반영 없음.
+- **로드맵 보고 기준**: PR·CI 기준 기술 단계의 완료와 실제 사람 검증·production 승인/병합은 별도 축으로 시각화한다. 단순 '7/8 완료'로 제품 출시 준비도를 과장하지 않는다.
 
 ## 5. 체크리스트/실행 운영
 
