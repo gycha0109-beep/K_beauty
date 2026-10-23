@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
+import {spawnSync} from "node:child_process";
 import {evaluateExistingCleanserCohortPresentationsV1 as audit} from "../lib/cleanser-cohort-presentation-shadow-v1.mjs";
 
 const id=i=>"11111111-1111-4111-8111-"+i.toString(16).padStart(12,"0");
@@ -76,4 +77,14 @@ for (const change of [
   const x=fixture();change(x);
   assert.throws(()=>audit(x),TypeError);
 }
+const cli=spawnSync(process.execPath,["scripts/run-cleanser-presentation-cohort-shadow-v1.mjs","--stdin"],
+  {input:JSON.stringify(fixture()),encoding:"utf8",maxBuffer:1024*1024});
+assert.equal(cli.status,0,cli.stderr);
+assert.deepEqual(JSON.parse(cli.stdout),result);
+const denied=spawnSync(process.execPath,["scripts/run-cleanser-presentation-cohort-shadow-v1.mjs"],
+  {input:JSON.stringify(fixture()),encoding:"utf8"});
+assert.notEqual(denied.status,0);
+const bad=spawnSync(process.execPath,["scripts/run-cleanser-presentation-cohort-shadow-v1.mjs","--stdin"],
+  {input:"{}",encoding:"utf8"});
+assert.notEqual(bad.status,0);
 console.log("Cleanser 10-row C1 read-only cohort contract: PASS (synthetic replay; zero writes)");
