@@ -74,6 +74,8 @@ for(const p of lagomItems){
   assert.equal(p.lagom_regional_variants.official_formula_equivalence_confirmed,false);
   assert.equal(p.manufacturer_public_research.approved_formulation,false);
 }
+assert.equal(lagomItems.find(x=>x.product_id===gel.product_id).lagom_regional_variants.same_global_volume_has_disclosure_conflict,true);
+assert.equal(lagomItems.find(x=>x.product_id!==gel.product_id).lagom_regional_variants.same_global_volume_has_disclosure_conflict,false);
 assert.equal(result.summary.admission_grants,0);
 assert.equal(result.summary.official_sku_formulation_review,10);
 assert.equal(result.summary.public_manufacturer_display_differs,2);
