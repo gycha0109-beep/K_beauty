@@ -97,6 +97,33 @@ const description={...signal,key:"texture",value:"foam",
 assert.equal(reviewCase({preferenceSignals:[description]}).tier,TIER.LIMITED_FIT_SHADOW);
 assert.equal(reviewCase({preferenceSignals:[{...description,key:"user_reported_skin_type",value:"oily"}]})
   .tier,TIER.IDENTITY_ONLY);
+
+const conflicting=reviewCase({preferenceSignals:[signal,{...signal,value:"foam",
+  source_ref:"synthetic:review-aggregate:002"}]});
+assert.equal(conflicting.tier,TIER.IDENTITY_ONLY);
+assert.ok(conflicting.reasons.includes("CONFLICTING_REVIEWED_PREFERENCE_SIGNALS_HELD"));
+assert.deepEqual(conflicting.controlled_nonfact_signals,[]);
+const differentAxis=reviewCase({preferenceSignals:[signal,
+  {...signal,key:"finish",value:"light",source_ref:"synthetic:review-aggregate:003"}]});
+assert.equal(differentAxis.tier,TIER.LIMITED_FIT_SHADOW);
+assert.equal(differentAxis.controlled_nonfact_signals.length,2);
+const run=spawnSync(process.execPath,["scripts/run-cleanser-tiered-policy-existing-ten-v1.mjs"],
+  {encoding:"utf8",maxBuffer:1024*1024});
+assert.equal(run.status,0,run.stderr);
+const full=JSON.parse(run.stdout);
+assert.equal(full.total,10);
+assert.equal(full.identity_only,10);
+assert.equal(full.review_aggregate_recorded,7);
+assert.equal(full.unmapped_or_missing_review_aggregate,3);
+assert.equal(full.limited_fit_shadow_eligible,0);
+assert.equal(full.production_admissions,0);
+assert.equal(full.manufacturer_direct_reply_is_mandatory_for_limited_fit,false);
+assert.ok(full.products.every(x=>x.low_ph==="UNKNOWN"&&x.deep_cleansing==="UNKNOWN"));
+const injected=spawnSync(process.execPath,
+  ["scripts/run-cleanser-tiered-policy-existing-ten-v1.mjs","--approve-all"],
+  {encoding:"utf8",maxBuffer:1024*1024});
+assert.notEqual(injected.status,0);
+
 for(const invalid of [{now:"today"},{preferenceSignals:{}},{conflictSignals:"bad"}]){
  assert.throws(()=>evaluate({product:p,...invalid}),TypeError);
 }
