@@ -1,0 +1,63 @@
+# 클렌저 근거 수준별 추천 — Shadow 평가 기록 (2026-10-23)
+
+> **v3 개정 주의:** 이 문서의 `0/10 LIMITED_FIT_SHADOW`는 기존 `review_signals`를 입력하지 않고, 별도 reviewer/timestamp/sample-count schema만 요구한 실험 결과입니다. **기존에 저장된 7개의 화해 신호가 실제 점수식에서 활용 불가능하다는 판정이 아닙니다.** 후속 실행 기준은 [기존 화해 파이프라인 재사용 로드맵 v3](../architecture/cleanser-hwahae-existing-pipeline-roadmap-v3-20261023.md)입니다.
+
+> 오프라인 정책·테스트 결과 보고. **실제 추천 노출/Fact 승인/G2 grant/DB 기록 변경 없음**.
+
+## 왜 정책을 나눴나
+
+기존 클렌저 v1의 공식 Subject+Source+2 Fact 선행 조건은 **확정적 기능성 주장**에 대한 보호에는 의미가 있지만, 사용자가 선택을 좁히기 위한 **범위가 제한된 일반 선호 신호**까지 모두 차단하면 신규 카탈로그가 사실상 사용할 수 없는 문제가 생긴다. 정책을 하나만 느슨하게 바꾸는 대신, 두 출력의 권한·표현을 아예 분리한다.
+
+- **A 상품 신원만 확보:** 일반 제품 탐색 후보. 리뷰·성분이 저장됐다는 이유로 적합성 점수를 주지 않음.
+- **B 검토된 비기능성 신호 확보:** 해당 *정확한 한국 판매 제품*을 검토한 `texture`, `finish`, 사용자 경험 집계 등만 `LIMITED_FIT_SHADOW`로 표현. 장래 제한 추천 진입 가능 여부만 추정. 제품 효능/시험값 아님.
+- **C 관리형 Product Fact:** 공식/검증된 해당 Subject·Source·Fact 및 G2 경로를 보호된 기존 계약대로 유지.
+
+## 실제 10개 기존 클렌저의 안전한 기초 상태
+
+| 측정 | 상태 |
+|---|---:|
+| 기존 카탈로그 UUID/연구 접수 | 10/10 |
+| 기존 연구 Task | 20/20 |
+| 화해 리뷰·시장·성분 집계 **기록 존재** | 7/10 |
+| 화해 원본·개별 상품 매핑·정규화 선호 필드 **독립 검토 완료** | 0/10 (확인된 기록 없음) |
+| 기존 `skin_types` / `concerns` 승인 필드 | 0/10 |
+| 공식 Subject·원본 결합·관리형 Current Fact | 0/10 |
+| **신규 B 제한 적합성 Shadow 후보** | **0/10** |
+| G2 Production 신규 클렌저 후보 | **0/10** |
+
+관측 대상과 채널·시장·상품 버전이 맞는지는 실제 저장된 집계만으로는 확인되지 않는다. 결측을 `false`로 치환하거나 `low_ph`/`deep_cleansing`를 리뷰에서 발명하지 않는다.
+
+## 개발용 독립 테스트 설계
+
+| 케이스 | 예상 상태 | 이유 |
+|---|---|---|
+| 기존 10개, 추가 승인 입력 없음 | `IDENTITY_ONLY` 전부 | 원본 검토된 신호 없음 |
+| **합성** KR 제품 매핑 검토 + 20건 집계·비-Fact 텍스처 검토 | `LIMITED_FIT_SHADOW` | 제조사 직접 회신·Subject·Fact 없어도 선호 신호는 독립 평가 가능 |
+| 화해 리뷰 저장 여부만 true | `IDENTITY_ONLY` | 기록 존재와 검토 승인 별개 |
+| 다른 SKU·Product UUID/미국 시장 신호 유입 | 보류 / 해당 신호 무시 | 교차 제품·국가 전용 |
+| `low_ph`, `deep_cleansing`, `irritation_safe` 텍스트 | 금지 | 비-Fact 허용 스키마 외 |
+| 리뷰가 너무 적거나 미검토/365일 초과 | `IDENTITY_ONLY` | 검토·표본·최신성 기준 부족 |
+| 같은 `texture`를 gel과 foam으로 상충 주장 | 해당 축 보류 | 근거 없는 단일 정답 강제 금지 |
+| 실제 제품 신원 충돌 또는 카테고리 다름 | `REVIEW_HOLD` | 독립 상품 식별 선행 |
+| 모든 출시 준비 체크가 true인 합성 입력 | **보호자 별도 심사** | CLI/테스트가 프로덕션 승인 자동 발급 금지 |
+
+리뷰 집계 표본수 최소 10 / 검토 후 365일은 **초기 Shadow 설계값**이다. 실제 배포 전 리뷰 표본 편향과 품질 분석으로 재산정해야 한다.
+
+## 다음 실작업 — 심사 불가능한 공식 증명에 묶이지 않기
+
+1. 저장 신호가 있는 **7개 중 비교적 변형 충돌이 없는 1~2개 제품**을 선정. 제품 ID/한국 상품 매핑을 기존 intake 정보·화해 캡처 경로에서 재확인.
+2. 재사용 권리가 있는 자료로 검토된 리뷰 집계나 검토된 질감·마무리감 필드만 테스트. **출처·수집 일자·검토자·표본** 없으면 보류.
+3. 먼저 R5 오프라인 검증으로 잘못된 제품 매칭·상충 리뷰·기능성 주장 오출력 사례를 측정. 기존 164×12 점수/추천 해시는 그대로 유지.
+4. UI 노출/실제 추천 후보 진입은 별도 승인할 새 B 전용 G2 권한·서버 측 시그널 검증, 신뢰도 표기/안내, canary/rollback 이후에만 가능.
+5. 더 강한 사실 주장(C)은 기존 Subject·Fact 심사로 독립적으로 진행하되, C가 미해결이라 B가 무기한 정지되도록 만들지 않음.
+
+### 구현
+
+- [개정 R0~R6 로드맵](../architecture/cleanser-evidence-tiered-recommendation-roadmap-v2-20261023.md)
+- `lib/trust/cleanser-evidence-tier-shadow-v1.mjs`
+- `scripts/verify-cleanser-evidence-tier-shadow-v1.mjs`
+- `scripts/run-cleanser-tiered-policy-existing-ten-v1.mjs`
+- `lib/trust/cleanser-limited-release-review-v1.mjs`
+- `scripts/verify-cleanser-limited-release-review-v1.mjs`
+
+모든 신규 코드/자료는 #1403 격리 Draft에 포함하며, #1390 및 #1401 오너의 구현 계약은 변경하지 않는다.

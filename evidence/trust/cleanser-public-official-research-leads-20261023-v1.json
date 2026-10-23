@@ -1,0 +1,306 @@
+{
+  "version": "cleanser-public-official-research-leads-20261023-v1",
+  "captured_date": "2026-10-23",
+  "method": "Targeted public search result/page inspection only; not a website crawl, not authorized site extraction or governed evidence snapshot",
+  "authority": "RESEARCH_LEAD_ONLY_NOT_OFFICIAL_EVIDENCE",
+  "reviewed_by": null,
+  "protected_source_binding_written": false,
+  "product_ids_preserved": 10,
+  "records": [
+    {
+      "product_id": "11322a66-0d56-4197-8270-2490500f07f4",
+      "brand": "닥터지",
+      "product_name": "약산성 클렌징 젤 폼",
+      "catalog_quantity_hint": {
+        "amount": 200,
+        "unit": "ml",
+        "basis": "catalog_size_ml"
+      },
+      "public_manufacturer_page": {
+        "url": "https://www.dr-g.co.kr/item/4009",
+        "observed_quantity": {
+          "amount": 200,
+          "unit": "ml"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": "https://www.dr-g.co.kr/item/5184",
+      "quantity_comparison": "MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT",
+      "research_note": "single 200ml official listing; separately 200ml x2 listing",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false
+    },
+    {
+      "product_id": "4d5b22c7-b802-4474-a459-7331c17adef1",
+      "brand": "휩드",
+      "product_name": "머그트리 비건 팩클렌저",
+      "catalog_quantity_hint": {
+        "amount": 130,
+        "unit": "g",
+        "basis": "product_name_only"
+      },
+      "public_manufacturer_page": {
+        "url": "https://whipped.co.kr/product/%ED%9C%A9%EB%93%9C-%EB%A8%B8%EA%B7%B8%ED%8A%B8%EB%A6%AC-%EB%B9%84%EA%B1%B4-%ED%8C%A9%ED%81%B4%EB%A0%8C%EC%A0%80-130g/53",
+        "observed_quantity": {
+          "amount": 130,
+          "unit": "g"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": null,
+      "quantity_comparison": "MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT",
+      "research_note": "manufacturer 130g official product; renewal and processing change advertised, no frozen old-vs-new formula review",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false
+    },
+    {
+      "product_id": "4f918d80-be34-4857-817b-6ad88ddf1bee",
+      "brand": "마녀공장",
+      "product_name": "퓨어 소이빈 클렌징 폼",
+      "catalog_quantity_hint": {
+        "amount": 160,
+        "unit": "ml",
+        "basis": "catalog_size_ml"
+      },
+      "public_manufacturer_page": {
+        "url": "https://m.manyo.co.kr/goods/goods_list.php?cateCd=006094",
+        "observed_quantity": {
+          "amount": 160,
+          "unit": "ml"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": "https://m.oliveyoung.co.kr/m/mtn/brand/A001924",
+      "quantity_comparison": "MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT",
+      "research_note": "manufacturer catalog lists both 160ml and 120ml; current 160ml matches catalog",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false
+    },
+    {
+      "product_id": "63a958c4-647a-47da-8003-71f558b50e5f",
+      "brand": "라로슈포제",
+      "product_name": "에빠끌라 딥 클렌징 포밍 크림",
+      "catalog_quantity_hint": {
+        "amount": 125,
+        "unit": "ml",
+        "basis": "catalog_size_ml"
+      },
+      "public_manufacturer_page": {
+        "url": "https://www.larocheposay.co.kr/product/view/4397.do",
+        "observed_quantity": {
+          "amount": 125,
+          "unit": "ml"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": null,
+      "quantity_comparison": "MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT",
+      "research_note": "manufacturer page product disclosure 125ml and ingredients",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false
+    },
+    {
+      "product_id": "c24a599b-9af1-43cf-9cb9-d1f454edad02",
+      "brand": "블랑네이처",
+      "product_name": "아크네 클렌징 폼",
+      "catalog_quantity_hint": {
+        "amount": 150,
+        "unit": "ml",
+        "basis": "catalog_size_ml"
+      },
+      "public_manufacturer_page": {
+        "url": "https://m.blancnature.co.kr/product/best-%EC%95%84%ED%81%AC%EB%84%A4-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-150ml/13/category/1/display/12/",
+        "observed_quantity": {
+          "amount": 150,
+          "unit": "ml"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": null,
+      "quantity_comparison": "MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT",
+      "research_note": "manufacturer product page explicitly 150ml",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false
+    },
+    {
+      "product_id": "e3ebe3ff-8fe8-4aa7-9d6f-2fb6af5069bf",
+      "brand": "라곰",
+      "product_name": "셀럽 젤 투 워터 클렌저",
+      "catalog_quantity_hint": {
+        "amount": 170,
+        "unit": "ml",
+        "basis": "catalog_size_ml"
+      },
+      "public_manufacturer_page": {
+        "url": "https://lagom.kr/product/detail.html?cate_no=1&display_group=2&product_no=10",
+        "observed_quantity": {
+          "amount": 220,
+          "unit": "ml"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000145580",
+      "quantity_comparison": "MANUFACTURER_QUANTITY_DIFFERS_FROM_CATALOG_HINT",
+      "research_note": "KR brand 220ml vs catalog 170ml, but global brand 170ml pages independently support the smaller unit. Two global 170ml ingredient disclosures show differing marker sets; formula sameness NOT established.",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false,
+      "brand_hosted_catalog_size_evidence": true,
+      "quantity_comparison_scope": "KR_DOMESTIC_BRAND_PAGE_VS_CATALOG_HINT",
+      "cross_market_alternate_volume_confirmed": true,
+      "cross_market_research_path": "evidence/trust/lagom-cross-market-formulation-research-20261023-v1.json"
+    },
+    {
+      "product_id": "ed434d86-da13-43db-a4bf-695b1f2bea5e",
+      "brand": "휩드",
+      "product_name": "유자몽 비건 팩클렌저",
+      "catalog_quantity_hint": {
+        "amount": 130,
+        "unit": "g",
+        "basis": "product_name_only"
+      },
+      "public_manufacturer_page": {
+        "url": "https://www.whipped.co.kr/product/%ED%9C%A9%EB%93%9C-%EC%9C%A0%EC%9E%90%EB%AA%BD-%EB%B9%84%EA%B1%B4-%ED%8C%A9%ED%81%B4%EB%A0%8C%EC%A0%80-130g/298/category/105/display/1/",
+        "observed_quantity": {
+          "amount": 130,
+          "unit": "g"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": null,
+      "quantity_comparison": "MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT",
+      "research_note": "official product notice: 130g and ingredients; no equivalence with other variants",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false
+    },
+    {
+      "product_id": "fa793e6b-9fa6-441d-9b24-9bcc9a111e8c",
+      "brand": "라곰",
+      "product_name": "셀럽 마이크로 폼 클렌저",
+      "catalog_quantity_hint": {
+        "amount": 120,
+        "unit": "ml",
+        "basis": "catalog_size_ml"
+      },
+      "public_manufacturer_page": {
+        "url": "https://lagom.kr/product/%EB%A7%88%EC%9D%B4%ED%81%AC%EB%A1%9C-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml/9/",
+        "observed_quantity": {
+          "amount": 150,
+          "unit": "ml"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000145581",
+      "quantity_comparison": "MANUFACTURER_QUANTITY_DIFFERS_FROM_CATALOG_HINT",
+      "research_note": "KR brand 150ml vs catalog 120ml; global brand 120ml listing supports earlier/smaller unit. Full INCI/formulation revision/market equivalence NOT established.",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false,
+      "brand_hosted_catalog_size_evidence": true,
+      "quantity_comparison_scope": "KR_DOMESTIC_BRAND_PAGE_VS_CATALOG_HINT",
+      "cross_market_alternate_volume_confirmed": true,
+      "cross_market_research_path": "evidence/trust/lagom-cross-market-formulation-research-20261023-v1.json"
+    },
+    {
+      "product_id": "fb7ca4ea-9ebb-4a63-bb43-aba6edd0bf95",
+      "brand": "제로이드",
+      "product_name": "포밍 클렌저",
+      "catalog_quantity_hint": {
+        "amount": 240,
+        "unit": "ml",
+        "basis": "catalog_size_ml"
+      },
+      "public_manufacturer_page": {
+        "url": "https://www.zeroid.co.kr/web/product/product_detail.asp?idx=325",
+        "observed_quantity": null,
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000209910",
+      "quantity_comparison": "OFFICIAL_QUANTITY_NOT_EXPLICIT",
+      "research_note": "manufacturer page provides product ingredients but not explicit textual 240ml; retailer says 240ml",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false
+    },
+    {
+      "product_id": "ff9fe0cf-0945-43a6-bd4b-ce8f1c8021ae",
+      "brand": "휩드",
+      "product_name": "무화버터 비건 팩클렌저",
+      "catalog_quantity_hint": {
+        "amount": 130,
+        "unit": "g",
+        "basis": "product_name_only"
+      },
+      "public_manufacturer_page": {
+        "url": "https://whipped.co.kr/product/detail.html?product_no=222",
+        "observed_quantity": {
+          "amount": 130,
+          "unit": "g"
+        },
+        "observation": "PUBLIC_PRODUCT_PAGE_RESEARCH_LEAD",
+        "source_status": "PUBLIC_NOT_FROZEN_OR_REVIEWED"
+      },
+      "public_retailer_lead_url": null,
+      "quantity_comparison": "MANUFACTURER_QUANTITY_MATCHES_CATALOG_HINT",
+      "research_note": "official product notice: 130g and ingredients; no equivalence with other variants",
+      "seller_sku": null,
+      "governed_source_id": null,
+      "source_snapshot_digest": null,
+      "subject_id": null,
+      "formulation_equivalence": "FORMULA_UNRESOLVED",
+      "fact_reuse_authorized": false,
+      "admission_authorized": false
+    }
+  ]
+}
