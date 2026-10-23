@@ -35,6 +35,23 @@
 - A/B current 역할을 양쪽에 분산, 인위적으로 동일한 두 옵션은 배제, 여러 가설 중 `SC-STRUCT-003`처럼 실제 코호트 활성화 0건은 평가자 패킷에 끼워 넣지 않는다.
 - 패킷 SHA, item SHA, manifest SHA 교차검증, role leakage, 변조 탐지 및 데이터 불변성 회귀 테스트 실행.
 
+## 4.1. 명시적 내보내기 (파일은 Git 저장소 밖에서만)
+
+실제로 수집한 사진·사람 판단이 아니라 **합성 A/B 패킷**을 생성한다. 두 디렉터리는 이미 만들어져 있어야 하며 서로 달라야 한다.
+
+```bash
+node scripts/export-face-lab-style-check-structural-human-packets-sc06c.mjs \
+  --review-file=/tmp/face-reviewer/blind-packet.json \
+  --operator-file=/tmp/face-operator-private/sealed-mapping.json
+```
+
+- 명령행의 **두 절대 경로 필수**. 같은 폴더, 저장소 내부 경로, 상대 경로, 기존 출력 파일은 거부한다.
+- 두 파일은 `wx` write-once / 권한 `0600`으로 저장한다. 생성이 부분 실패하면 reviewer 파일을 삭제한다.
+- operator 매핑 JSON을 stdout으로 출력하지 않는다. 성공 메시지에는 완료 여부와 pair 건수만 표시한다.
+- `--operator-file` 경로는 별도 통제되는 비공개 디렉터리여야 한다. `/tmp`는 **일회성 테스트 예시**이며, 실제 운영 연구 자료 보관 위치나 접근통제 권한을 보장하지 않는다.
+- **같은 코드 프로세스에 builder 함수 두 개가 존재하는 것만으로 접근통제 문제가 해결되는 것은 아니다.** 운영자는 파일 접근권한·분리 배포 절차를 별도로 시행해야 한다.
+- 기존 `human-pairwise-judgment-v1` 판단 수집·seal 및 후속 role reveal은 이 내보내기 명령의 역할이 아니다.
+
 ## 5. 평가 실행 전 남은 필수 단계
 
 - 실사진 사용 권리/연구 동의/철회/삭제 프로토콜의 **실제** 운영 검증.
