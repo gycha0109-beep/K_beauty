@@ -5,6 +5,7 @@ on:
       - feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
     paths:
       - scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1
+      - scripts/product-evidence/audit-d8k13-definer-format-owner-local.py
       - scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1
       - .github/workflows/taxonomy-ai-d8k13-private-local-zip-restore.yml
 permissions:
@@ -21,6 +22,11 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+      - name: Validate redacted local Python EXECUTE-format source scanner
+        shell: bash
+        run: |
+          python3 -m py_compile scripts/product-evidence/audit-d8k13-definer-format-owner-local.py
+          python3 scripts/product-evidence/audit-d8k13-definer-format-owner-local.py --self-test
       - name: Parse local owner PowerShell script before any Docker work
         shell: pwsh
         run: |
