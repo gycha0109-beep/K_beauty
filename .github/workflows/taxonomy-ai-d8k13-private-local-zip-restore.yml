@@ -676,6 +676,14 @@ jobs:
                   $r.publicSecurityDefinerBodySignals.bodyNoLexicalAuthOrJwtSignal -ne 2 -or
                   $r.publicSecurityDefinerBodySignals.plpgsqlBodiesMentionExecuteKeyword -ne 1 -or
                   $r.publicSecurityDefinerBodySignals.plpgsqlBodiesMentionExecuteAndFormat -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.executeCandidatesWithPercentRaw -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.executeCandidatesWithPercentIdentifier -ne 0 -or
+                  $r.publicSecurityDefinerBodySignals.executeCandidatesWithFunctionArgs -ne 0 -or
+                  @($r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates).Count -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].caseOrdinal -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].mentionsRawPlaceholder -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].mentionsDirectAuthHelper -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.candidateCasesAreEphemeralAndNonIdentifying -ne $true -or
                   $r.publicSecurityDefinerBodySignals.searchPathIncludesPgTemp -ne 1 -or
                   $r.publicSecurityDefinerBodySignals.searchPathEndsWithPgTemp -ne 1 -or
                   $r.publicSecurityDefinerBodySignals.searchPathNoExplicitPgTemp -ne 2 -or
