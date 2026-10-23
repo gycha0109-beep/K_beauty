@@ -1,6 +1,6 @@
 {
   "schemaVersion": "skin-precision-asset-register-v1",
-  "reviewedAt": "2026-10-21",
+  "reviewedAt": "2026-10-23",
   "meaning": "Research candidate rights register; NOT an authorization to use any image or weight in a commercial product.",
   "statusVocabulary": {
     "candidate": "source-level license appears permissive; exact artifact provenance and obligations are unverified",
@@ -152,6 +152,123 @@
       "sourceOwnerVerified": true,
       "artifactDigestVerified": false,
       "notes": "3203 selfies scored across acne, redness, pores, pigment, shine etc., but authors prohibit public sharing of raw images. Research paper and code may guide rubric only; no commercial photo acquisition by download."
+    },
+    {
+      "id": "memi-ds-melasma-716",
+      "kind": "dataset",
+      "name": "MEMI-DS: 716 facial melasma images with segmentation annotations",
+      "sourceUrl": "https://figshare.com/articles/figure/MEMI-DS_A_Benchmark_Melasma_Image_Dataset_for_Image_Segmentation/29209229",
+      "licenseUrl": "https://figshare.com/articles/figure/MEMI-DS_A_Benchmark_Melasma_Image_Dataset_for_Image_Segmentation/29209229",
+      "declaredLicense": "CC BY 4.0 shown on figshare; source patient/personality rights require independent verification",
+      "status": "review",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "716 image/mask pairs per associated paper (DFKI ADMA 2025); 165.53 MB on figshare. Melasma masks are not generic freckles/PIH gold. Check exact files/face consent before commercial training."
+    },
+    {
+      "id": "nexdata-7262-facial-skin-boxes",
+      "kind": "dataset",
+      "name": "Nexdata 7,262 facial images / 2,499,771 defect bounding boxes",
+      "sourceUrl": "https://www.nexdata.ai/datasets/computervision/1829",
+      "licenseUrl": "https://github.com/Nexdata-AI/Facial-Skin-Defects-Dataset-7262-Images-with-Acne-Moles-Scars-and-Freckles",
+      "declaredLicense": "Proprietary paid Commercial License, requires signed purchase and scope confirmation",
+      "status": "review",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "Per vendor: freckles, speckles, moles, scars, acne, sores, others as bounding boxes; pixel masks not claimed. Repo is advertisement, not full photo download. Need per-class sample box/identity rights and cross-border processing permission."
+    },
+    {
+      "id": "faceskin-q-sgaunet",
+      "kind": "dataset",
+      "name": "FaceSkin-Q dual-illumination facial glossiness/sebum/moisture/elasticity",
+      "sourceUrl": "https://github.com/CISLAB-web/SGAUnet",
+      "licenseUrl": "https://github.com/CISLAB-web/SGAUnet",
+      "declaredLicense": "Researcher-hosted Google Form, commercial image/data license not established",
+      "status": "review",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "Official paper Scientific Reports 2026 doi:10.1038/s41598-026-65848-z. Four regression targets including glossiness AND sebum. Request form https://forms.gle/Df8r7Dxf9yanb95j7. Author warns malformed/missing annotations; loader substitutes zeros, must prevent zero label contamination. GMDM/GWDM masks are algorithmic pseudo labels, not manual pore gold."
+    },
+    {
+      "id": "rupam-bharatiya-skin-dataset",
+      "kind": "dataset",
+      "name": "Rupam.ai Bharatiya Skin Dataset 50,000+ multi-attribute images",
+      "sourceUrl": "https://rupam.ai/en/legal/dataset-license",
+      "licenseUrl": "https://rupam.ai/en/legal/dataset-license",
+      "declaredLicense": "Paid proprietary research vs separate commercial license; territorial transfer restrictions",
+      "status": "review",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "Vendor claims 14 image-level attributes including pores, texture, oiliness, hydration, pigmentation and 50,000+ photos; per-spot masks not verified. Commercial trained-model use requires separate paid license, raw reuse prohibited, export safeguards."
+    },
+    {
+      "id": "nexdata-26090-facial-defects",
+      "kind": "dataset",
+      "name": "Nexdata facial defects stains/acne-marks/wrinkles image-level data",
+      "sourceUrl": "https://www.nexdata.ai/datasets/computervision/1052",
+      "licenseUrl": "https://github.com/Nexdata-AI/26090-Images-Human-Facial-Skin-Defects-Data",
+      "declaredLicense": "Paid Commercial License; need exact product/version agreement",
+      "status": "review",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "GitHub advertises 26,090 images, current vendor sales page lists 21,302; counts disagree. JPG image-level skin-defect flags, no verified per-spot bbox/mask. Must obtain sample schema before purchase."
+    },
+    {
+      "id": "ps-net-pore-dataset-unreleased",
+      "kind": "dataset",
+      "name": "PS-Net facial pore segmentation 3,750 400x400 cheek patches",
+      "sourceUrl": "https://link.springer.com/article/10.1007/s44267-025-00088-9",
+      "licenseUrl": "https://link.springer.com/article/10.1007/s44267-025-00088-9",
+      "declaredLicense": "Dataset NOT publicly released by cooperating company; author request only",
+      "status": "hold",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "Only 18 participating subjects with longitudinal captures; DoG coarse pseudo mask and manually labeled test patches. No right to download/training established; methodology only until explicit consent and agreement."
+    },
+    {
+      "id": "skincon-scale-concepts",
+      "kind": "dataset",
+      "name": "SKINCON expert-labeled scale/clinical concepts for morphology",
+      "sourceUrl": "https://skincon-dataset.github.io/",
+      "licenseUrl": "https://github.com/mattgroh/fitzpatrick17k",
+      "declaredLicense": "Fitzpatrick17k source NC-SA; composite image rights not commercially cleared",
+      "status": "restricted",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "3,230 Fitzpatrick17k + 656 DDI dermatology images labeled across clinical concepts including scale. NOT localized cosmetic flaking masks and cannot be used as licensed commercial training input."
+    },
+    {
+      "id": "ffhq-wrinkle-texture-masks",
+      "kind": "dataset",
+      "name": "FFHQ-Wrinkle texture/lines manual and weak masks",
+      "sourceUrl": "https://github.com/labhai/ffhq-wrinkle-dataset",
+      "licenseUrl": "https://github.com/labhai/ffhq-wrinkle-dataset/blob/main/License.txt",
+      "declaredLicense": "CC BY-NC-SA 4.0 noncommercial",
+      "status": "restricted",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "1,000 manually masked wrinkle photos plus 50,000 weak maps; wrinkles are not dry flaking/roughness ground truth. Methods reference only unless both underlying photo and mask rights are independently acquired."
+    },
+    {
+      "id": "kaggle-facial-skin-8-classes",
+      "kind": "dataset",
+      "name": "Kaggle Facial Skin (Acne, Pigmentation, Pores, Wrinkles) classes",
+      "sourceUrl": "https://www.kaggle.com/datasets/shijo96john/facial-skin-acne-pigmentation-pores-wrinkles",
+      "licenseUrl": "https://www.kaggle.com/datasets/shijo96john/facial-skin-acne-pigmentation-pores-wrinkles",
+      "declaredLicense": "A third-party index states Apache-2.0; cannot establish upstream facial-photo rights",
+      "status": "hold",
+      "commercialUseCleared": false,
+      "sourceOwnerVerified": false,
+      "artifactDigestVerified": false,
+      "notes": "Class-labeled facial category dataset, not pixel masks. Need review original uploader, source provenance, unique subjects, label integrity and legal rights before any training."
     }
   ]
 }
