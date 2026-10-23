@@ -3310,3 +3310,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - New `data/skin-precision/supplementary-dataset-research-2026-10-23.md`: provenance and usage precision for MEMI-DS, Nexdata 7,262, FaceSkin-Q, Rupam 50k+, Nexdata 26,090/21,302 discrepancy, PS-Net embargo, SKINCON NC, FFHQ-Wrinkle NC, Kaggle category data, NIA author checkpoints.
 - Candidate register extended with nine assets; no `commercialUseCleared=true`, paid datasets not purchased, no imported face images or weights. Dataset marketing counts are vendor claims, and paper-level data does not imply redistribution permission.
 - Relevant user-visible deliverables: commit on draft PR #1387 only; no production functionality changed. Verification performed with GitHub readback and JSON no-duplicate/no-approved checks.
+
+## 2026-10-24 — Skin Precision MEMI reviewer QC and palette/lighting probes
+- Type: bounded execution; DB/Auth/RLS/Storage/Provider/Payment/Secret/Production mutation N. No public face data, old source masks, original human reviews or API payload changed.
+- Existing PR #1387 stayed open Draft; source Library review 131 records parsed, pass/fail/unsure 79/51/1, pose group counts consistent with existing MEMI assessment. Exact private source inaccessible on online Windows machine (online device user `hun`, not `M`).
+- Added `scripts/audit-memi-review-qc.mjs`: status+note preserving QC metadata, pose counts, incomplete/contradictory review flags, no commercial training or split claims; self-test PASS 13 synthetic assertions via Node 24.14.0.
+- Added `scripts/audit-memi-palette-and-lighting.py`: P-mode raw index counter (0..5, semantics UNVERIFIED), local brightness/specular/dark capture proxy, human-defined ROI optional; Python 3.14 + NumPy + Pillow synthetic self-test PASS after fixing fixture palette preservation and assertion.
+- Unverified: MEMI publisher exact palette index definition; 131 source image/mask execution; real photo quality and any Dice/IoU/model metrics; original portrait/commercial-use permissions. All remain blocked as training/evaluation authority.
+- Next: run local QC on verified private input machine, independently verify upstream class definition and rights; only then implement guarded class semantic decoder / corrected gold comparison; retain PR draft.
