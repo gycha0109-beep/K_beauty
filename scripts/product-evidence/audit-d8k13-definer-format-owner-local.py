@@ -33,7 +33,7 @@ def functions_from_dump(sql):
         meta = chunk[:match.start()] + chunk[close + len(match.group(1)):close + len(match.group(1)) + 200]
         if not re.search(r"\bSECURITY\s+DEFINER\b", meta, re.I):
             continue
-        if not re.search(r"\bLANGUAGE\s+plpgsql\b", meta, re.I):
+        if not re.search(r"\bplpgsql\b", meta, re.I):
             continue
         yield chunk[match.end():close]
 
