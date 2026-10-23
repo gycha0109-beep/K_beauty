@@ -91,4 +91,34 @@ const denied=spawnSync(process.execPath,
 assert.notEqual(denied.status,0);
 assert.match(denied.stderr,/AUTHORIZED_SERVER_CREDENTIALS_REQUIRED/);
 assert.equal(denied.stdout,"");
-console.log("Existing Hwahae canonical scoring bridge: PASS actual sanitized 6/1/3 cohort; synthetic canonical scorer, no new reviewer gate, G2 grants=0");
+const trueReplay=JSON.parse(await readFile(
+  "evidence/trust/cleanser-actual-review-score-replay-20261024-v1.json","utf8"));
+assert.equal(trueReplay.version,"cleanser-actual-existing-review-score-replay-v1");
+assert.equal(trueReplay.original_main_commit,"b5687f322bd33d5bdaad61c07eeee4a47544d15d");
+assert.equal(trueReplay.review_scoring_blob_sha,"90f91fc7484d54bf5855d75dcec52fc13685c33b");
+assert.equal(trueReplay.category_normalizer_blob_sha,"be57d8eee09ea2293a0b35c2f00d2fe62410471a");
+assert.deepEqual(trueReplay.summary,{
+ actual_product_rows:10,review_scorer_input_candidates:6,
+ review_capture_unmapped:1,review_capture_missing:3,admission_grants:0,writes:0
+});
+assert.deepEqual(trueReplay.products.map(x=>x.product_id),
+  rows.map(x=>x.product_id));
+assert.ok(trueReplay.products.every(x=>x.official_product_fact_confirmed===false&&
+  x.full_skin_match_score_recomputed===false&&x.g2_grants===0&&x.production_writes===0));
+assert.ok(trueReplay.products.every(x=>x.status===
+  rows.find(r=>r.product_id===x.product_id).review_scorer_input_status));
+for(const x of trueReplay.products){
+ assert.equal(x.score_profiles.length,x.status==="REVIEW_SCORE_INPUT_CANDIDATE"?3:0);
+ assert.ok(x.score_profiles.every(p=>
+   ["dry_tight","oily_pores","sensitive_redness"].includes(p.profile)&&
+   typeof p.review_signal_score==="number"&&
+   Number.isFinite(p.review_signal_score)&&Math.abs(p.review_signal_score)<=10&&
+   Number.isSafeInteger(p.contributing_tag_count)&&p.contributing_tag_count>=0));
+}
+const drg=trueReplay.products.find(x=>x.product_id.startsWith("11322a66"));
+const laro=trueReplay.products.find(x=>x.product_id.startsWith("63a958c4"));
+assert.equal(drg.score_profiles.find(x=>x.profile==="dry_tight").review_signal_score,4.7);
+assert.equal(laro.score_profiles.find(x=>x.profile==="dry_tight").review_signal_score,-5.3);
+assert.equal(trueReplay.raw_review_text_exported,false);
+assert.equal(trueReplay.raw_urls_exported,false);
+console.log("Existing Hwahae canonical scoring bridge: PASS actual sanitized 6/1/3 cohort; exact real numeric replay + synthetic canonical scorer, no new reviewer gate, G2 grants=0");
