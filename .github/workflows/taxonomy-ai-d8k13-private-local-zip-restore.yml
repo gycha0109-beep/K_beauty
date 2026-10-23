@@ -682,6 +682,12 @@ jobs:
                   @($r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates).Count -ne 1 -or
                   $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].caseOrdinal -ne 1 -or
                   $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].mentionsRawPlaceholder -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].executeFormatAdjacentLexical -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].rawPlaceholderInsideExecuteFormatWindowLexical -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].identifierPlaceholderInsideExecuteFormatWindowLexical -ne $false -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].executeStatementConcatenationLexical -ne $false -or
+                  $r.publicSecurityDefinerBodySignals.inputTaintOrControlFlowAnalyzed -ne $false -or
+                  $r.publicSecurityDefinerBodySignals.executeFormatWindowMayIncludeQuotedSqlAndComments -ne $true -or
                   $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].mentionsDirectAuthHelper -ne $true -or
                   $r.publicSecurityDefinerBodySignals.candidateCasesAreEphemeralAndNonIdentifying -ne $true -or
                   $r.publicSecurityDefinerBodySignals.searchPathIncludesPgTemp -ne 1 -or
