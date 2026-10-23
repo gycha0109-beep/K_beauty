@@ -1,6 +1,8 @@
 # 클렌저 10개 — v1 원본 / v2 격리 검증 (2026-10-23)
 
-> **2026-10-23 후속 정책 방향:** 공식 증거를 모든 *일반 적합성 추천*의 필수 조건으로 삼지 않는 [근거 수준별 제한 추천 로드맵 v2](../architecture/cleanser-evidence-tiered-recommendation-roadmap-v2-20261023.md)를 별도로 채택하여 Shadow 검증 중. 이 문서의 strict v1/v2 비교는 보호된 **확정적 Product Fact 경로**의 진단으로 유지되며 제한 선호 추천의 유일한 게이트가 아니다.
+> **2026-10-23 후속 정책 정정:** [화해 기존 파이프라인 재사용 로드맵 v3](../architecture/cleanser-hwahae-existing-pipeline-roadmap-v3-20261023.md)가 정본입니다. v2에 도입했던 별도 reviewed metadata는 기존 `review_signals` 호환성이 없으므로 추천 점수에 대한 신규 필수 게이트가 될 수 없습니다. 원래 엄격한 Subject/Fact 심사만 독립적으로 보존합니다.
+
+> **이전 v2 방향(대체됨):** 공식 증거를 모든 *일반 적합성 추천*의 필수 조건으로 삼지 않는 [근거 수준별 제한 추천 로드맵 v2](../architecture/cleanser-evidence-tiered-recommendation-roadmap-v2-20261023.md)를 별도로 채택하여 Shadow 검증 중. 이 문서의 strict v1/v2 비교는 보호된 **확정적 Product Fact 경로**의 진단으로 유지되며 제한 선호 추천의 유일한 게이트가 아니다.
 
 상태: **격리 코드 검증용 / 운영 비교·승인 완료 아님**
 
