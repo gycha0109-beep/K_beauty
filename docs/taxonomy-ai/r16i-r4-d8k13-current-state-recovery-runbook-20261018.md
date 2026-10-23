@@ -463,3 +463,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **수정:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py`에서 alias를 거슬러 갈 때마다 검색 범위를 **그 alias 대입 이전 시점으로 제한**(`cutoff`). 별도 합성 테스트로 (1) 값 복사 후 원본 변수 덮어쓰기, (2) 복사 이후에 원본 값 할당, (3) 복사된 변수 자체의 덮어쓰기 등을 검사했다. 코드 커밋 `e8d80b85ce002658f159d82e3514eaad31edb720`; GitHub Actions [#40000315238](https://github.com/gycha0109-beep/K_beauty/actions/runs/40000315238)에서 핵심 Python self-test SUCCESS를 확인.
 - **범위:** 이 검사는 정적 lexical alias 단서이며 조건문, 반복문, SELECT INTO, 데이터 유효성, 실제 사용자 입력 오염, function-call graph, 보안성은 **증명하지 않는다**. 해당 경우 fail-closed 미확정 유지. 운영자 원본 ZIP 비공개 검사는 재실행하지 않았고 운영 DB·네트워크 접근·배포·병합 없음.
 - **상태:** `ALIAS_ASSIGNMENT_TIME_FIXED`, `B_INPUT_ORIGIN_STILL_UNVERIFIED`, `RELEASE HOLD`, PR #1341 Draft 미병합, D8D v2 OFF. 관리형 parent FK 34개, hosted parity, 178 migration provenance 및 issue #1208는 릴리스 차단 유지.
+
+
+### 6.36. `format('%s', quote_*())` 가짜 안전 판정 방지 (2026-10-24)
+
+- **문제와 수정:** 비공개 백업 함수 B의 `%s` 치환 검토 도구에서 `quote_ident()`, `quote_literal()`, `quote_nullable()` 호출을 `QUOTE_HELPER_CALL`이라는 하나의 클래스로 처리하며 `hasUnresolvedRawSubstitution=false`가 될 수 있었다. 그러나 식별자 따옴표와 값 리터럴 따옴표는 문맥이 다르며, 둘 중 하나를 호출했다는 사실만으로 조립된 SQL의 안전성을 확정할 수 없다.
+- **구현:** `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py` 커밋 `fc7a820687f728783e9ab2d4c7c5d7a16708aaca`. 함수 호출 형태의 `quote_ident()`와 `quote_literal()/quote_nullable()`를 다른 **미검증 클래스**로 분리. 해당 표현이 `%s`에 연결되면 `RAW_FORMAT_SUBSTITUTION_REVIEW_FIRST` 유지, `percentSQuotationContextVerified=false`로 표기. 함수 이름만 변수로 나온 경우는 quote helper 호출로 분류하지 않는다. 상수 `%s`도 실제 SQL 의미·인가 안전성은 미검증.
+- **합성 테스트:** 안전한 치환으로 오판할 수 있는 `quote_ident(p_col)`, `quote_literal(p_value)`, `quote_nullable(p_value)`, 일반 `quote_ident` 식별자 사례를 추가. GitHub Actions [#40009253752](https://github.com/gycha0109-beep/K_beauty/actions/runs/40009253752) 확인 대상으로 둠.
+- **검증 한계:** 함수 B의 실제 원본 SQL, 값의 출처, 쿼리 실행 경로, 권한 guard를 추가로 검증한 것은 아니다. 기존 실제 백업의 데이터·FK·sequence 검증 상태만 유지하고, 소유자 백업 ZIP 재실행은 시행하지 않았다. PR #1341 Draft, D8D v2 OFF, security issue #1208 및 **RELEASE HOLD** 유지. 운영 DB·권한·병합·배포 없음.
