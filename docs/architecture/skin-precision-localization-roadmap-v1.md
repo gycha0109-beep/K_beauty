@@ -200,3 +200,37 @@ This is a vocabulary and separation sketch, NOT a drop-in modification to the ex
 - Previous actual VL parsing reported 375 acne source points and 58 annotated validation frontal images, not dermatologist independently gold-verified lesion polygons or bounding boxes. The larger `3,226` is train+validation *source point count*, not 3,226 independent photographs. Source `acne:null` means unknown until verified, never a negative.
 - Added `scripts/review-aihub-71645-acne-local.mjs` as a **local/offline, fail-closed annotation overlay + per-point assessment tool** with no face byte uploads. Synthetic JS parser, coordinate validator, JPEG dimension parser tested in isolated V8.
 - End-to-end image display correctness and expert labels **not yet verified**. Connected Windows device is offline, and moving identifiable source face image bytes into an external service could violate AI-Hub's third-party and foreign-transfer terms absent authorization. Complete real-image QA on an approved local machine, then report aggregate red/yellow/green annotation findings.
+
+
+## 11. Confidence-aware, nonblocking scan UX — product decision (2026-10-23)
+
+**Decision:** BEJEWELY must not demand another photo solely because one or more skin concerns are uncertain. Produce the supported best-effort result and **display photo-level and concern-level reliability alongside it**, with plain explanations. This is a UX requirement, not an assertion that every score is trustworthy or even computable.
+
+### 11.1 User-facing states
+
+1. **Photo reliability (overall)**: communicate whether lighting, focus, resolution, pose, occlusion, compression, skin filters and highlight clipping permit adequate observation. Display \`높음 / 보통 / 낮음\` and a brief primary reason, without implying a dermatological certainty percentage.
+2. **Concern-level reliability**: separate \`acne / pores / pigmentation-spots / freckle-like spots / redness / shine / visible-flaking / texture\`; one low-confidence concern must **not** downgrade unrelated concerns or force recapture. Each concern renders its result and \`높음 / 보통 / 낮음\` + grounded reason if usable.
+3. **Best-effort scores**: When a model has a minimally valid input and evaluated mapping, show a result **plus low-reliability explanation** instead of blocking the entire report. A tentative quantitative score must not masquerade as high-confidence truth. For unsupported domain measurements (true hydration, sebum amount, barrier, UV) never manufacture a numerical result from RGB: show only visually observable proxy (surface shine, visible flaking).
+4. **No-evidence/technical failures**: If face detection wholly fails, an area is occluded, pixel detail is physically absent, or no valid model exists, distinguish \`측정 불가\` from \`0점 / 문제 없음\`. Preserve all other obtainable results and offer **optional**, not mandatory, retake guidance. Low confidence does not entitle the system to fabricate a score.
+5. **Global messaging**: If one concern is poor, use a discreet concern-level explanation; if capture quality affects several, add a single nonblocking summary such as \`일부 항목은 촬영 환경 때문에 신뢰도가 낮을 수 있습니다\`. An optional \`다른 사진으로 정확도 개선\` action must not gate reading or exiting the report.
+6. **Cross-photo comparisons**: Suppress or caveat trend conclusions when camera/lighting/measurement reliability is insufficient. Never interpret uncertain score movement as skin deterioration.
+
+### 11.2 Calibration and evidence requirements
+
+- **Separate signals**: \`captureQuality\` is not \`modelConfidence\`; a model softmax, segmentation certainty or detector score is **not** empirically calibrated probability of being correct. Derive concern reliability from out-of-subject, per-device validation (precision/recall or MAE/ordinal agreement as appropriate), predicted uncertainty, image quality and known confusion pairs.
+- **Calibrate** per concern and relevant capture/domain strata, compare reliability bins with observed errors, and report coverage + reliability-conditional performance. If data are insufficient to calibrate percentages, **only show qualitative tiers**; do not invent numeric 90% confidence.
+- Reliability thresholds, score direction, display copy, display conditions, unsupported states and conflict precedence require an independently evaluated policy version. No hand-chosen CIELAB threshold becomes a medically authoritative cutoff; validate on broad illumination and skin-tone ranges.
+- Collect false positives, false negatives, ambiguous classifications, and paired hard negatives: acne-related redness vs diffuse redness, freckles vs PIH, pore vs comedone, specular lighting vs skin shine, image noise vs flaky skin. Distinguish \`not_assessed\` from confirmed \`absent\`.
+- **Design-only boundary:** No current API contract, persistence schema, provider invocation, auth, paywall or production score logic is modified by this roadmap entry. Implement via a subsequent separately reviewed contract proposal to preserve canonical unknown/null semantics.
+
+### 11.3 Nonblocking result acceptance tests (must be validated before launch)
+
+| Input state | Expected report |
+| --- | --- |
+| Acceptable full-face capture, high-quality cheeks but blurred nose | Cheek concerns still reported; pores in nose get low reliability or unmeasurable; never auto-retake |
+| Strong lamp reflection only on T-zone | Shine result qualified as reflection-confounded; no measured sebum claim |
+| Shadows and colored indoor light | Pigment/redness reliability reduced; measured darkness and redness treated as tentative |
+| Defocus preventing pores/flake spatial recognition | Do not fabricate pore/flake dots; show honest unavailable for that detail; overall report proceeds |
+| Low-confidence freckle vs PIH | Show \`색소 반점\` or \`주근깨 유사 반점\`, not confident diagnosis |
+| Multiple low confidence concerns | Single global nonblocking warning, per-concern reasons, optional reshoot; other scores accessible |
+
