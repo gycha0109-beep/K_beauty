@@ -40,6 +40,9 @@ assert.equal(good.source_bindings_approved,0);
 assert.equal(good.review_approval_granted,false);
 assert.equal(good.recommendation_admission_granted,false);
 assert.equal(good.current_fact_confirmation,"NOT_PERFORMED");
+const historical=fixture();
+historical.subjects.push({...historical.subjects[0],subject_id:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",current_state:"historical",formulation_revision_key:"previous-v0"});
+assert.equal(handoff(historical).decision,"REVIEW_PACKET_READY","historical lineage must remain preserved");
 // Legacy 10 cleanser rows (existing intake/tasks, no governed Subject/Offer) stay on hold.
 const liveShape=fixture();
 liveShape.intakes[0].subject_id=null;
