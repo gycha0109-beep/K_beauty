@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
   [string] $BackupZip = (Join-Path (Join-Path $HOME 'BEJEWELY_Private_DB_Backups') 'BEJEWELY_DB_Backup_20261018_181006.zip'),
-  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','AuditDataCommands')][string] $Mode = 'Inspect',
+  [ValidateSet('Inspect','Restore','AuditSchema','AuditData','AuditDataDetail','RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals','AuditDataCommands')][string] $Mode = 'Inspect',
   [long] $ExpectedZipBytes = 7323679
 )
 Set-StrictMode -Version Latest
@@ -819,7 +819,7 @@ SELECT json_build_object(
     } | ConvertTo-Json -Compress -Depth 7 | Write-Output
     return
   }
-  if ($Mode -in @('RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory')) {
+  if ($Mode -in @('RestorePublicData','RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals')) {
     # LIMITED, EXPLICITLY PARTIAL RESTORE. Never pretend Supabase Auth/Storage
     # tables or data have been recovered. Only public COPY and public sequence
     # setval commands are replayed in this no-network disposable DB.
@@ -896,7 +896,7 @@ SELECT json_build_object(
           $m = $setvalRx.Match($line)
           Assert-Drill $m.Success ('D8K13_PUBLIC_DATA_SEQUENCE_FORMAT_UNSUPPORTED_LINE_' + $lineNumber)
           if ($m.Groups['schema'].Value.Trim('"').ToLowerInvariant() -eq 'public') {
-            if ($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory')) {
+            if ($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals')) {
               $seqName = $m.Groups['seq'].Value.Trim('"').ToLowerInvariant()
               Assert-Drill (-not $publicSequenceSeen.ContainsKey($seqName)) 'D8K13_PUBLIC_SEQUENCE_DUPLICATE_SOURCE_SETVAL'
               $publicSequenceSeen[$seqName] = $true
@@ -979,7 +979,7 @@ $d8k13_public$;
     # public->public references explicitly. Managed-schema parents stay excluded.
     # Read-only SELECT on a --network none, disposable, superuser-owned PG17 DB.
     $publicFkAudit = $null
-    if ($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory')) {
+    if ($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals')) {
       $fkSql = @'
 SET row_security = off;
 CREATE TEMP TABLE d8k13_fk_result (status text NOT NULL, violating_rows bigint NOT NULL);
@@ -1052,7 +1052,7 @@ SELECT json_build_object(
     # Strict, opt-in public setval state comparison. Do not call nextval,
     # as it changes sequence values; calculate possible exhaustion only.
     $publicSequenceAudit = $null
-    if ($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory')) {
+    if ($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals')) {
       Assert-Drill ($publicSequenceExpectations.Count -eq $publicSequenceResets -and
                     $publicSequenceResets -gt 0) 'D8K13_PUBLIC_SEQUENCE_SOURCE_COUNT_MISMATCH'
       $seqSql = @'
@@ -1126,7 +1126,7 @@ SELECT json_build_object(
     # the disposable DB, NOT proof of hosted Auth/Storage, effective ACL
     # equivalence, owner parity or secure behavior of individual policies.
     $securityInventory = $null
-    if ($Mode -eq 'RestorePublicDataWithSecurityInventory') {
+    if ($Mode -in @('RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals')) {
       $securitySql = @'
 WITH
  rel AS (
@@ -1257,6 +1257,81 @@ SELECT json_build_object(
       ) 'D8K13_PUBLIC_SECURITY_PRIVILEGE_PROVENANCE_INCONSISTENT'
     }
 
+
+    # Static lexical triage only: inspect pg_proc.prosrc inside disposable DB.
+    # Never print or export function names, source, signatures, or row contents.
+    $securityBodySignals = $null
+    if ($Mode -eq 'RestorePublicDataWithSecurityBodySignals') {
+      $bodySql = @'
+WITH src AS (
+ SELECT p.oid,p.prosrc,p.proconfig,p.proowner,l.lanname,
+        (SELECT split_part(cfg.item,'=',2)
+         FROM unnest(p.proconfig) cfg(item)
+         WHERE split_part(cfg.item,'=',1)='search_path' LIMIT 1) AS path_text
+ FROM pg_proc p
+ JOIN pg_namespace n ON n.oid=p.pronamespace
+ JOIN pg_language l ON l.oid=p.prolang
+ WHERE n.nspname='public' AND p.prosecdef AND p.prokind='f'
+), signals AS (
+ SELECT oid,lanname,proowner,
+        (prosrc ~* 'auth[[:space:]]*\.[[:space:]]*(uid|jwt|role)[[:space:]]*\('
+          OR prosrc ~* 'current_setting[[:space:]]*\([[:space:]]*''request\.(jwt|headers)')
+          AS auth_lex,
+        (prosrc ~* '\mexecute\M') AS execute_lex,
+        (prosrc ~* '\mformat[[:space:]]*\(') AS format_lex,
+        (prosrc ~* '\mraise[[:space:]]+exception\M') AS exception_lex,
+        (prosrc = '') AS empty_source,
+        (path_text ~* '(^|,)[[:space:]]*"?public"?[[:space:]]*(,|$)') AS path_public,
+        (path_text ~* '(^|,)[[:space:]]*"?pg_temp"?[[:space:]]*(,|$)') AS path_temp,
+        (path_text ~* '(^|,)[[:space:]]*"?pg_temp"?[[:space:]]*$') AS path_temp_last
+ FROM src
+)
+SELECT json_build_object(
+ 'scannedSecurityDefinerFunctions',(SELECT count(*) FROM signals),
+ 'languagePlpgsql',(SELECT count(*) FROM signals WHERE lanname='plpgsql'),
+ 'languageSql',(SELECT count(*) FROM signals WHERE lanname='sql'),
+ 'otherOrUnsupportedLanguage',(SELECT count(*) FROM signals WHERE lanname NOT IN ('plpgsql','sql')),
+ 'emptySourceBodies',(SELECT count(*) FROM signals WHERE empty_source),
+ 'bodyMentionsAuthOrJwtSignals',(SELECT count(*) FROM signals WHERE auth_lex),
+ 'bodyNoLexicalAuthOrJwtSignal',(SELECT count(*) FROM signals WHERE NOT auth_lex),
+ 'plpgsqlBodiesMentionExecuteKeyword',(SELECT count(*) FROM signals WHERE lanname='plpgsql' AND execute_lex),
+ 'plpgsqlBodiesMentionExecuteAndFormat',(SELECT count(*) FROM signals WHERE lanname='plpgsql' AND execute_lex AND format_lex),
+ 'plpgsqlExecuteWithoutLexicalAuthSignal',(SELECT count(*) FROM signals WHERE lanname='plpgsql' AND execute_lex AND NOT auth_lex),
+ 'bodyMentionsRaiseException',(SELECT count(*) FROM signals WHERE exception_lex),
+ 'searchPathIncludesPublic',(SELECT count(*) FROM signals WHERE path_public),
+ 'searchPathIncludesPgTemp',(SELECT count(*) FROM signals WHERE path_temp),
+ 'searchPathEndsWithPgTemp',(SELECT count(*) FROM signals WHERE path_temp_last),
+ 'searchPathNoExplicitPgTemp',(SELECT count(*) FROM signals WHERE NOT COALESCE(path_temp,false)),
+ 'postgresOwnedSecurityDefiner',(SELECT count(*) FROM signals WHERE proowner=(SELECT oid FROM pg_roles WHERE rolname='postgres')),
+ 'postgresOwnedExecuteKeyword',(SELECT count(*) FROM signals WHERE proowner=(SELECT oid FROM pg_roles WHERE rolname='postgres') AND lanname='plpgsql' AND execute_lex),
+ 'staticOnlyLexicalSignals',true,
+ 'perFunctionAuthSemanticsProven',false,
+ 'searchPathExploitabilityProven',false,
+ 'productionParityVerified',false,
+ 'rawFunctionBodyOrNamesReturned',false
+)::text;
+'@
+      $bodyFile = Join-Path $unpacked 'd8k13-public-definer-body-signals.sql'
+      [System.IO.File]::WriteAllText($bodyFile,$bodySql,[System.Text.UTF8Encoding]::new($false))
+      Run-Docker 'COPY_DEFINER_BODY_SIGNALS' @('cp',$bodyFile,($container + ':/tmp/d8k13-public-definer-body-signals.sql'))
+      Run-Docker 'DEFINER_BODY_SIGNALS' @('exec','-u','postgres',$container,
+        'psql','-X','-q','-A','-t','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate',
+        '-v','SHOW_CONTEXT=never','-d','postgres','-f','/tmp/d8k13-public-definer-body-signals.sql')
+      $bodyLines = @(Get-Content -LiteralPath (Join-Path $unpacked 'docker-DEFINER_BODY_SIGNALS-stdout.log') |
+        Where-Object { $_ -match '^\{.*\}$' })
+      Assert-Drill ($bodyLines.Count -eq 1) 'D8K13_DEFINER_BODY_SIGNAL_SUMMARY_MISSING'
+      $securityBodySignals = $bodyLines[0] | ConvertFrom-Json
+      Assert-Drill (
+        [int]$securityBodySignals.scannedSecurityDefinerFunctions -eq [int]$securityInventory.securityDefinerFunctions -and
+        [int]$securityBodySignals.languagePlpgsql + [int]$securityBodySignals.languageSql + [int]$securityBodySignals.otherOrUnsupportedLanguage -eq [int]$securityBodySignals.scannedSecurityDefinerFunctions -and
+        [int]$securityBodySignals.bodyMentionsAuthOrJwtSignals + [int]$securityBodySignals.bodyNoLexicalAuthOrJwtSignal -eq [int]$securityBodySignals.scannedSecurityDefinerFunctions -and
+        [int]$securityBodySignals.searchPathIncludesPgTemp + [int]$securityBodySignals.searchPathNoExplicitPgTemp -eq [int]$securityBodySignals.scannedSecurityDefinerFunctions -and
+        [int]$securityBodySignals.searchPathEndsWithPgTemp -le [int]$securityBodySignals.searchPathIncludesPgTemp -and
+        $securityBodySignals.rawFunctionBodyOrNamesReturned -eq $false -and
+        $securityBodySignals.perFunctionAuthSemanticsProven -eq $false
+      ) 'D8K13_DEFINER_BODY_SIGNAL_AGGREGATE_INCONSISTENT'
+    }
+
     [ordered]@{
       status='D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED'
       sourceCopyHeaders=$totalCopies
@@ -1271,12 +1346,14 @@ SELECT json_build_object(
       strictSchemaRestoreCompleted=$true
       publicDataRowsVerified=$true
       foreignKeyReferentialParityVerified=$false
-      publicToPublicForeignKeyRowsVerified=($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory'))
+      publicToPublicForeignKeyRowsVerified=($Mode -in @('RestorePublicDataWithPublicFkAudit','RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals'))
       publicToPublicForeignKeyAudit=$publicFkAudit
-      publicSequenceSourceStateVerified=($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory'))
+      publicSequenceSourceStateVerified=($Mode -in @('RestorePublicDataWithIntegrityAudit','RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals'))
       publicSequenceSourceStateAudit=$publicSequenceAudit
       publicSecurityCatalogInventory=$securityInventory
-      publicSecurityCatalogInventoryCollected=($Mode -eq 'RestorePublicDataWithSecurityInventory')
+      publicSecurityDefinerBodySignals=$securityBodySignals
+      publicSecurityDefinerBodySignalsCollected=($Mode -eq 'RestorePublicDataWithSecurityBodySignals')
+      publicSecurityCatalogInventoryCollected=($Mode -in @('RestorePublicDataWithSecurityInventory','RestorePublicDataWithSecurityBodySignals'))
       rlsPolicyParityVerified=$false
       ownerAndAclParityVerified=$false
       authDataRestored=$false
