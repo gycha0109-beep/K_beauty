@@ -2,6 +2,12 @@
 
 ## Entries
 
+### 2026-10-21 / pipeline-reliability — physical unit catalog corrections and price-sync regression
+
+- Baseline `main@c1e6ee12`; PR #1383 merged. SELECT verified previous seven catalog corrections and the 20-entry frozen evaluation panel. Public `products` count 176.
+- Owner-approved exact-ID conditional UPDATE+RETURNING and separate SELECT: Mediheal cleansing physical bottle 255→120ml and price 33,900→16,400 using official single; ILLIYOON 175ml 10ml unit price 730→754.29 with manufacturer page; UIQ 30ml unit price 1,060→10,666.67 on existing official source. Hwahae provenance retained. Evidence: `evidence/trust/p2-catalog-physical-unit-owner-corrections-20261021.json`.
+- Existing candidate promotion RPCs do not overwrite physical size/price; manual price enrichment omitted derived unit-price synchronization. New focused code/regression tests in PR #1386. Arithmetic mismatches 12→10; remaining require offer/physical source verification before correction. No schema/RLS/Auth/Fact/Subject/recommendation changes; CI and merger outcome track separately.
+
 ### 2026-10-21 / TRUST followup — ATOPALM official 300ml single price + Dr.G EX family
 
 - PR #1381 main CI check TRUST/Main Health/CodeQL/package integrity **PASS**. Confirmed manufacturer `neopharmshop.co.kr` ATOPALM single 300ml ₩34,500 (2184) vs 300ml×2 ₩64,500 (2182), prices as of 2026-10-21.

@@ -1,3 +1,4 @@
+import { calculatePhysicalUnitPricePer10Ml } from "./catalog-unit-price.js";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { assertSafeProductImageForWriter } from "../../lib/security/image-source-policy.js";
 
@@ -226,6 +227,8 @@ export interface ProductDetailRecord {
   image_url: string | null;
   price_min: number | null;
   price_max: number | null;
+  size_ml?: number | string | null;
+  unit_price_per_10ml?: number | string | null;
   updated_at: string | null;
 }
 
@@ -1296,7 +1299,7 @@ export async function promoteApprovedCandidate(
 async function getProductDetailRecord(client: SupabaseClient, productId: string): Promise<ProductDetailRecord> {
   const { data, error } = await client
     .from("products")
-    .select("id, brand, name, category, buy_link, image_url, price_min, price_max, updated_at")
+    .select("id, brand, name, category, buy_link, image_url, price_min, price_max, size_ml, unit_price_per_10ml, updated_at")
     .eq("id", productId)
     .maybeSingle();
 
@@ -1439,6 +1442,21 @@ export async function updateProductDetailsIfMissing(
     }
   }
 
+  // When a previously missing price is filled, keep the per-10ml field
+  // consistent with that price and the existing single-container size.
+  // A set/refill capacity must be resolved in catalog review, not inferred here.
+  if ("price_min" in updatePayload) {
+    const nextUnitPrice = calculatePhysicalUnitPricePer10Ml({
+      priceMin: updatePayload.price_min as number,
+      sizeMl: before.size_ml,
+      category: before.category,
+    });
+    if (nextUnitPrice !== null || before.unit_price_per_10ml != null) {
+      updatePayload.unit_price_per_10ml = nextUnitPrice;
+      appliedFields.push("unit_price_per_10ml");
+    }
+  }
+
   if (appliedFields.length === 0) {
     return {
       before,
@@ -1455,7 +1473,7 @@ export async function updateProductDetailsIfMissing(
       updated_at: new Date().toISOString(),
     })
     .eq("id", productId)
-    .select("id, brand, name, category, buy_link, image_url, price_min, price_max, updated_at")
+    .select("id, brand, name, category, buy_link, image_url, price_min, price_max, size_ml, unit_price_per_10ml, updated_at")
     .single();
 
   if (error) {
