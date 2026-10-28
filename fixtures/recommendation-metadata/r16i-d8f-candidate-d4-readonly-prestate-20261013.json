@@ -1,0 +1,63 @@
+{
+  "schema": "r16i-d8f-candidate-d4-readonly-prestate-20261013-v1",
+  "provenance": "CONNECTED_SUPABASE_CANDIDATE_READONLY_SELECT",
+  "serverDbIdentity": "UNATTESTED",
+  "checkoutEvidence": "NOT_PROVIDED",
+  "ownerApproval": "NOT_GRANTED",
+  "productionMutationAuthority": false,
+  "captured_at": "2026-10-13T12:18:52.675016+09:00",
+  "snapshot": {
+    "observed_at": "2026-10-13T12:18:52.675016+09:00",
+    "product": {
+      "id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "name": "아쿠아 스쿠알란 수분크림",
+      "brand": "에스네이처",
+      "category": "moisturizer_cream",
+      "size_ml": 160,
+      "price_min": 29900,
+      "price_max": 29900,
+      "unit_price_per_10ml": 1868.75,
+      "buy_link": "https://www.hwahae.co.kr/goods/45194",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/45194",
+      "source_url": "https://www.hwahae.co.kr/goods/45194",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "45194",
+      "market_signals": {
+        "rating": 4.58,
+        "source": "hwahae_visible_page",
+        "updated_at": "2026-05-26",
+        "review_count": 41475,
+        "rating_distribution": {}
+      },
+      "updated_at": "2026-09-10T09:32:38.713599+09:00"
+    },
+    "bindings": [
+      {
+        "binding_id": "53155404-5518-4130-825a-8c918588f37a",
+        "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+        "source_name": "hwahae",
+        "external_type": "goods",
+        "external_id": "45194",
+        "source_url": "https://www.hwahae.co.kr/goods/45194",
+        "binding_state": "resolved",
+        "product_scope_state": "product_subject_unresolved",
+        "updated_at": "2026-09-10T10:10:29.03509+09:00"
+      }
+    ],
+    "intakes": [
+      {
+        "id": "ee3b675d-1b92-4144-88e0-2a984b3d7cec",
+        "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+        "subject_id": null,
+        "identity_state": "SUBJECT_CREATION_REQUIRED",
+        "trust_state": "REVIEW_REQUIRED",
+        "updated_at": "2026-09-21T00:53:57.499289+09:00"
+      }
+    ],
+    "offers_by_product": [],
+    "offers_by_listing": [],
+    "offers_by_url": [],
+    "subjects": []
+  }
+}
