@@ -1,0 +1,264 @@
+{
+  "version": "cleanser-actual-existing-review-score-replay-v1",
+  "as_of": "2026-10-24",
+  "calculation": "Executed original committed lib/review-signals.js normalizeReviewSignals + computeReviewSignalScore against SELECT-only live product JSON; module import rewired in isolated JS, unchanged scoring logic",
+  "original_main_commit": "b5687f322bd33d5bdaad61c07eeee4a47544d15d",
+  "review_scoring_blob_sha": "90f91fc7484d54bf5855d75dcec52fc13685c33b",
+  "category_normalizer_blob_sha": "be57d8eee09ea2293a0b35c2f00d2fe62410471a",
+  "score_component": "review_signal_score_ONLY_not_total_recommendation_score",
+  "contexts": [
+    {
+      "id": "dry_tight",
+      "answers": {
+        "skinType": "dry",
+        "mainConcern": "dehydration",
+        "mainConcerns": [
+          "barrier"
+        ],
+        "postWashFeeling": "tight",
+        "sensitivity": "medium"
+      }
+    },
+    {
+      "id": "oily_pores",
+      "answers": {
+        "skinType": "oily",
+        "mainConcern": "oiliness",
+        "mainConcerns": [
+          "pores"
+        ],
+        "sensitivity": "low"
+      }
+    },
+    {
+      "id": "sensitive_redness",
+      "answers": {
+        "skinType": "combination",
+        "mainConcern": "redness",
+        "mainConcerns": [
+          "barrier"
+        ],
+        "sensitivity": "high"
+      }
+    }
+  ],
+  "summary": {
+    "actual_product_rows": 10,
+    "review_scorer_input_candidates": 6,
+    "review_capture_unmapped": 1,
+    "review_capture_missing": 3,
+    "admission_grants": 0,
+    "writes": 0
+  },
+  "raw_review_text_exported": false,
+  "raw_urls_exported": false,
+  "raw_ingredients_exported": false,
+  "products": [
+    {
+      "product_id": "11322a66-0d56-4197-8270-2490500f07f4",
+      "product_name": "닥터지 약산성 클렌징 젤 폼",
+      "status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "top_three_mapped_entries": 2,
+      "score_profiles": [
+        {
+          "profile": "dry_tight",
+          "review_signal_score": 4.7,
+          "contributing_tag_count": 3
+        },
+        {
+          "profile": "oily_pores",
+          "review_signal_score": 0,
+          "contributing_tag_count": 0
+        },
+        {
+          "profile": "sensitive_redness",
+          "review_signal_score": 4.7,
+          "contributing_tag_count": 3
+        }
+      ],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "4d5b22c7-b802-4474-a459-7331c17adef1",
+      "product_name": "휩드 머그트리 비건 팩클렌저 130g",
+      "status": "NO_TOP_THREE_MAPPED_REVIEW_TAGS",
+      "top_three_mapped_entries": 0,
+      "score_profiles": [],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "4f918d80-be34-4857-817b-6ad88ddf1bee",
+      "product_name": "마녀공장 퓨어 소이빈 클렌징 폼",
+      "status": "NO_HWAHAE_REVIEW_CAPTURE",
+      "top_three_mapped_entries": 0,
+      "score_profiles": [],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "63a958c4-647a-47da-8003-71f558b50e5f",
+      "product_name": "라로슈포제 에빠끌라 딥 클렌징 포밍 크림",
+      "status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "top_three_mapped_entries": 2,
+      "score_profiles": [
+        {
+          "profile": "dry_tight",
+          "review_signal_score": -5.3,
+          "contributing_tag_count": 2
+        },
+        {
+          "profile": "oily_pores",
+          "review_signal_score": 0,
+          "contributing_tag_count": 0
+        },
+        {
+          "profile": "sensitive_redness",
+          "review_signal_score": -5.3,
+          "contributing_tag_count": 2
+        }
+      ],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "c24a599b-9af1-43cf-9cb9-d1f454edad02",
+      "product_name": "블랑네이처 아크네 클렌징 폼",
+      "status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "top_three_mapped_entries": 2,
+      "score_profiles": [
+        {
+          "profile": "dry_tight",
+          "review_signal_score": -5.3,
+          "contributing_tag_count": 2
+        },
+        {
+          "profile": "oily_pores",
+          "review_signal_score": 0,
+          "contributing_tag_count": 0
+        },
+        {
+          "profile": "sensitive_redness",
+          "review_signal_score": -5.3,
+          "contributing_tag_count": 2
+        }
+      ],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "e3ebe3ff-8fe8-4aa7-9d6f-2fb6af5069bf",
+      "product_name": "라곰 셀럽 젤 투 워터 클렌저",
+      "status": "NO_HWAHAE_REVIEW_CAPTURE",
+      "top_three_mapped_entries": 0,
+      "score_profiles": [],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "ed434d86-da13-43db-a4bf-695b1f2bea5e",
+      "product_name": "휩드 유자몽 비건 팩클렌저 130g",
+      "status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "top_three_mapped_entries": 3,
+      "score_profiles": [
+        {
+          "profile": "dry_tight",
+          "review_signal_score": -0.8,
+          "contributing_tag_count": 2
+        },
+        {
+          "profile": "oily_pores",
+          "review_signal_score": -2.1,
+          "contributing_tag_count": 1
+        },
+        {
+          "profile": "sensitive_redness",
+          "review_signal_score": -2.9,
+          "contributing_tag_count": 3
+        }
+      ],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "fa793e6b-9fa6-441d-9b24-9bcc9a111e8c",
+      "product_name": "라곰 셀럽 마이크로 폼 클렌저",
+      "status": "NO_HWAHAE_REVIEW_CAPTURE",
+      "top_three_mapped_entries": 0,
+      "score_profiles": [],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "fb7ca4ea-9ebb-4a63-bb43-aba6edd0bf95",
+      "product_name": "제로이드 포밍 클렌저",
+      "status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "top_three_mapped_entries": 3,
+      "score_profiles": [
+        {
+          "profile": "dry_tight",
+          "review_signal_score": 0.9,
+          "contributing_tag_count": 4
+        },
+        {
+          "profile": "oily_pores",
+          "review_signal_score": 0,
+          "contributing_tag_count": 0
+        },
+        {
+          "profile": "sensitive_redness",
+          "review_signal_score": 0.9,
+          "contributing_tag_count": 4
+        }
+      ],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    },
+    {
+      "product_id": "ff9fe0cf-0945-43a6-bd4b-ce8f1c8021ae",
+      "product_name": "휩드 무화버터 비건 팩클렌저 130g",
+      "status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "top_three_mapped_entries": 3,
+      "score_profiles": [
+        {
+          "profile": "dry_tight",
+          "review_signal_score": -0.9,
+          "contributing_tag_count": 3
+        },
+        {
+          "profile": "oily_pores",
+          "review_signal_score": 0,
+          "contributing_tag_count": 0
+        },
+        {
+          "profile": "sensitive_redness",
+          "review_signal_score": -0.9,
+          "contributing_tag_count": 3
+        }
+      ],
+      "full_skin_match_score_recomputed": false,
+      "official_product_fact_confirmed": false,
+      "g2_grants": 0,
+      "production_writes": 0
+    }
+  ]
+}

@@ -1,0 +1,390 @@
+{
+  "version": "cleanser-r5-real-product-input-completeness-v1",
+  "as_of": "2026-10-24",
+  "method": "SELECT-only current products; six relevant structured attributes with zero replacement defaults",
+  "notes": [
+    "Missing suitability metadata is unknown, not negative or zero",
+    "Existing product-source builder auto-fills missing skin_types/concerns etc; fallback values are not verified product traits",
+    "The actual exact review scoring requires full existing AI summary labels which must never be committed to public GitHub",
+    "This metadata summary cannot reproduce entire Skin Match score or authorize ranks"
+  ],
+  "n": 10,
+  "feature_coverage": {
+    "skin_types": {
+      "present": 0,
+      "missing": 10
+    },
+    "concerns": {
+      "present": 0,
+      "missing": 10
+    },
+    "texture": {
+      "present": 0,
+      "missing": 10
+    },
+    "finish": {
+      "present": 0,
+      "missing": 10
+    },
+    "irritation_risk": {
+      "present": 0,
+      "missing": 10
+    },
+    "sensitivity_safe": {
+      "present": 0,
+      "missing": 10
+    }
+  },
+  "records": [
+    {
+      "product_id": "11322a66-0d56-4197-8270-2490500f07f4",
+      "brand": "닥터지",
+      "product_name": "약산성 클렌징 젤 폼",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 12500,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "stored_review_source_present": true,
+      "stored_market_source_present": true,
+      "stored_ingredient_source_present": true,
+      "exact_capture_url_string_match": true,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "4d5b22c7-b802-4474-a459-7331c17adef1",
+      "brand": "휩드",
+      "product_name": "머그트리 비건 팩클렌저 130g",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 23200,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "NO_TOP_THREE_MAPPED_REVIEW_TAGS",
+      "stored_review_source_present": true,
+      "stored_market_source_present": true,
+      "stored_ingredient_source_present": true,
+      "exact_capture_url_string_match": true,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "4f918d80-be34-4857-817b-6ad88ddf1bee",
+      "brand": "마녀공장",
+      "product_name": "퓨어 소이빈 클렌징 폼",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 11500,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "NO_HWAHAE_REVIEW_CAPTURE",
+      "stored_review_source_present": null,
+      "stored_market_source_present": null,
+      "stored_ingredient_source_present": null,
+      "exact_capture_url_string_match": false,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "63a958c4-647a-47da-8003-71f558b50e5f",
+      "brand": "라로슈포제",
+      "product_name": "에빠끌라 딥 클렌징 포밍 크림",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 30000,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "stored_review_source_present": true,
+      "stored_market_source_present": true,
+      "stored_ingredient_source_present": true,
+      "exact_capture_url_string_match": true,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "c24a599b-9af1-43cf-9cb9-d1f454edad02",
+      "brand": "블랑네이처",
+      "product_name": "아크네 클렌징 폼",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 23800,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "stored_review_source_present": true,
+      "stored_market_source_present": true,
+      "stored_ingredient_source_present": true,
+      "exact_capture_url_string_match": true,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "e3ebe3ff-8fe8-4aa7-9d6f-2fb6af5069bf",
+      "brand": "라곰",
+      "product_name": "셀럽 젤 투 워터 클렌저",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 14400,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "NO_HWAHAE_REVIEW_CAPTURE",
+      "stored_review_source_present": null,
+      "stored_market_source_present": null,
+      "stored_ingredient_source_present": null,
+      "exact_capture_url_string_match": false,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "ed434d86-da13-43db-a4bf-695b1f2bea5e",
+      "brand": "휩드",
+      "product_name": "유자몽 비건 팩클렌저 130g",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 23200,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "stored_review_source_present": true,
+      "stored_market_source_present": true,
+      "stored_ingredient_source_present": true,
+      "exact_capture_url_string_match": true,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "fa793e6b-9fa6-441d-9b24-9bcc9a111e8c",
+      "brand": "라곰",
+      "product_name": "셀럽 마이크로 폼 클렌저",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 13500,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "NO_HWAHAE_REVIEW_CAPTURE",
+      "stored_review_source_present": null,
+      "stored_market_source_present": null,
+      "stored_ingredient_source_present": null,
+      "exact_capture_url_string_match": false,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "fb7ca4ea-9ebb-4a63-bb43-aba6edd0bf95",
+      "brand": "제로이드",
+      "product_name": "포밍 클렌저",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 24000,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "stored_review_source_present": true,
+      "stored_market_source_present": true,
+      "stored_ingredient_source_present": true,
+      "exact_capture_url_string_match": true,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    },
+    {
+      "product_id": "ff9fe0cf-0945-43a6-bd4b-ce8f1c8021ae",
+      "brand": "휩드",
+      "product_name": "무화버터 비건 팩클렌저 130g",
+      "category": "cleanser",
+      "product_form": null,
+      "recorded_features": {
+        "skin_types": null,
+        "concerns": null,
+        "texture": null,
+        "finish": null,
+        "irritation_risk": null,
+        "sensitivity_safe": null
+      },
+      "missing_or_empty_features": [
+        "skin_types",
+        "concerns",
+        "texture",
+        "finish",
+        "irritation_risk",
+        "sensitivity_safe"
+      ],
+      "price_min": 23200,
+      "price_max": null,
+      "is_mens": false,
+      "recommendation_tier": null,
+      "recorded_hyphenated_review_status": "REVIEW_SCORE_INPUT_CANDIDATE",
+      "stored_review_source_present": true,
+      "stored_market_source_present": true,
+      "stored_ingredient_source_present": true,
+      "exact_capture_url_string_match": true,
+      "raw_review_or_ingredient_payload_saved": false,
+      "overall_product_suitability_verified": false,
+      "g2_eligible": false
+    }
+  ]
+}
