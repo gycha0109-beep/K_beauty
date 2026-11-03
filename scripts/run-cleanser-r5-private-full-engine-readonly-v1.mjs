@@ -15,6 +15,7 @@ import {readFile} from "node:fs/promises";
 import {register} from "node:module";
 import {createClient} from "@supabase/supabase-js";
 import {createCleanserSelectOnlyFetchV1} from "../lib/trust/cleanser-hosted-select-only-transport-v1.mjs";
+import {verifyCleanserR5PrivateSourceDriftV1} from "../lib/trust/cleanser-r5-private-source-drift-guard-v1.mjs";
 import {verifyCleanserEngineComponentSumV1,verifyCleanserReviewAxisParityV1} from "../lib/trust/cleanser-r5-score-reconciliation-v1.mjs";
 
 if(process.argv.length!==2)throw new Error("R5_NO_FLAGS_OR_AUTHORITY_OVERRIDE_ALLOWED");
@@ -37,11 +38,12 @@ const [
   import("./product-evidence/initial-admission-grant-policy-v1.mjs")
 ]);
 const read=async p=>JSON.parse(await readFile(p,"utf8"));
-const [productsFixture,scenariosFixture,coverage,expectedScores]=await Promise.all([
+const [productsFixture,scenariosFixture,coverage,expectedScores,sourceFootprint]=await Promise.all([
   read("fixtures/recommendation-metadata/products-v1.json"),
   read("fixtures/recommendation-metadata/user-scenarios-v1.json"),
   read("evidence/trust/cleanser-r5-real-input-coverage-20261024-v1.json"),
-  read("evidence/trust/cleanser-actual-review-score-replay-20261024-v1.json")
+  read("evidence/trust/cleanser-actual-review-score-replay-20261024-v1.json"),
+  read("evidence/trust/cleanser-r5-existing-source-axis-footprint-20261024-v1.json")
 ]);
 if(productsFixture.productCount!==164||scenariosFixture.scenarioCount!==12||
   coverage.version!=="cleanser-r5-real-product-input-completeness-v1"||
@@ -55,7 +57,7 @@ if(new Set(ids).size!==10)throw new Error("R5_TEN_UNIQUE_PRODUCT_IDS_REQUIRED");
 const sb=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},
  global:{fetch:createCleanserSelectOnlyFetchV1({baseUrl:url,fetchImpl:networkFetch})}});
 const columns=[
-  "id","brand","name","category","product_form","skin_types","concerns",
+  "id","brand","name","category","product_form","cleansing_profile","skin_types","concerns",
   "texture","finish","irritation_risk","sensitivity_safe","is_mens","price_min",
   "price_max","recommendation_tier","hwahae_url","review_signals",
   "market_signals","ingredient_signals"
@@ -66,6 +68,11 @@ if(data.length!==10||new Set(data.map(p=>p.id)).size!==10||
    data.some(p=>!ids.includes(p.id)))
   throw new Error("R5_EXACT_TEN_READ_ONLY_SCOPE_DRIFT");
 const byId=new Map(data.map(p=>[p.id,p]));
+// A changed source aggregate or product association invalidates the frozen
+// comparison before any whole-engine claim. This is not a content digest.
+const sourceDrift=verifyCleanserR5PrivateSourceDriftV1({products:data,footprint:sourceFootprint});
+assert.equal(sourceDrift.matched_products,10);
+assert.equal(sourceDrift.matched_capture_urls,7);
 const expectedById=new Map(expectedScores.products.map(p=>[p.product_id,p]));
 const required=["skin_types","concerns","texture","finish","irritation_risk","sensitivity_safe"];
 const raw=coverage.records.map(ref=>{
