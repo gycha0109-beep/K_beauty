@@ -69,6 +69,7 @@ run("R3-R4 cleanser review-vs-Fact and protected G2 admission shadow", node, ["s
 run("R5 original Skin Match engine with actual cleanser missing-metadata safety guard", node, ["scripts/verify-cleanser-r5-full-engine-redacted-shadow-v1.mjs"]);
 run("R5 actual Hwahae source axes reused without metadata Fact fabrication", node, ["scripts/verify-cleanser-r5-existing-source-evidence-routing-v1.mjs"]);
 run("R5 private actual-source drift fail-closed guard", node, ["scripts/verify-cleanser-r5-private-source-drift-guard-v1.mjs"]);
+run("R5 cleanser metadata evidence preview, no default-backed Fact writes", node, ["scripts/verify-cleanser-r5-metadata-evidence-preview-v1.mjs"]);
 run("R6 cleanser no-activation checklist gate", node, ["scripts/verify-cleanser-r6-release-review-v1.mjs"]);
 run("R6 separate limited-fit cleanser release firewall", node, ["scripts/verify-cleanser-limited-release-review-v1.mjs"]);
 run("R5 164-product live scoring offer-variation shadow", node, ["scripts/verify-catalog-offer-runtime-invariance-v1.mjs"]);
