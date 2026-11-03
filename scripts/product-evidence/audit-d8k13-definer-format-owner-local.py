@@ -532,6 +532,78 @@ def private_name_and_arity(header):
     return normalized, arity
 
 
+def private_input_type_signature(header):
+    """Conservative textual input-type signature, computed only on owner PC.
+
+    A SQL type alias, quoted identifier, unsupported OUT/TABLE parameter, or
+    complex declaration causes an inconclusive result, not a positive match.
+    This is intentionally NOT PostgreSQL's canonical pg_get_function_identity_arguments.
+    """
+    tokens = tokenize(header)
+    open_index = next(
+        (i for i, tok in enumerate(tokens) if tok == ("SYM", "(")), None)
+    if open_index is None:
+        return None
+    groups = format_arguments(tokens, open_index)
+    if groups is None:
+        return None
+    if len(groups) == 1 and not groups[0]:
+        return ()
+    types = []
+    type_starts = {"double", "timestamp", "time", "character",
+                   "bit", "interval", "national", "smallint",
+                   "integer", "bigint", "numeric", "decimal",
+                   "boolean", "text", "varchar", "uuid", "json",
+                   "jsonb", "real", "date", "bytea", "money",
+                   "xml", "inet", "cidr", "macaddr", "float",
+                   "serial", "int", "int2", "int4", "int8",
+                   "bool", "pg_catalog"}
+    for group in groups:
+        if not group or any(k == "IDENT" for k, _ in group):
+            return None
+        while group and group[0][0] == "WORD" and group[0][1].lower() in ("in", "inout", "variadic"):
+            group = group[1:]
+        if not group:
+            return None
+        if group[0][0] == "WORD" and group[0][1].lower() in ("out", "table"):
+            return None
+        # Defaults are not part of a function's identity.
+        depth = 0
+        boundary = len(group)
+        for index, (kind, value) in enumerate(group):
+            if (depth == 0 and (
+                (kind == "WORD" and value.lower() == "default") or
+                (kind == "SYM" and value in (":", "="))
+            )):
+                boundary = index
+                break
+            if kind == "SYM" and value == "(":
+                depth += 1
+            elif kind == "SYM" and value == ")":
+                depth -= 1
+        decl = group[:boundary]
+        if not decl:
+            return None
+        # With a named parameter, the first token is the name; with an
+        # unnamed built-in type ('double precision', etc.) it is a type.
+        if (len(decl) > 1 and decl[0][0] == "WORD"
+                and decl[1][0] == "WORD"
+                and decl[0][1].lower() not in type_starts):
+            decl = decl[1:]
+        if not decl:
+            return None
+        if any(k not in ("WORD", "NUMBER", "SYM") for k, _ in decl):
+            return None
+        if any(k == "SYM" and v not in (".", "[", "]", "(", ")", ",")
+               for k, v in decl):
+            return None
+        text_type = "".join(v.lower() if k == "WORD" else v for k, v in decl)
+        if not text_type:
+            return None
+        types.append(text_type)
+    return tuple(types)
+
+
 def owner_local_candidate_repo_match(owner_schema, migrations):
     """Compare names/arity and *exact* source bodies in volatile local memory.
 
@@ -558,7 +630,10 @@ def owner_local_candidate_repo_match(owner_schema, migrations):
         }
     candidate_body, candidate_header = candidates[0]
     key = private_name_and_arity(candidate_header)
+    input_types = private_input_type_signature(candidate_header)
     same_name_arity = 0
+    name_arity_body = 0
+    typed_matches = 0
     exact_body = 0
     repo_scanned = 0
     repo_functions = 0
@@ -576,6 +651,11 @@ def owner_local_candidate_repo_match(owner_schema, migrations):
                     body.replace("\r\n", "\n").strip().encode("utf-8")
                 ).digest()
                 if digest == owner_digest:
+                    name_arity_body += 1
+                if input_types is None or private_input_type_signature(header) != input_types:
+                    continue
+                typed_matches += 1
+                if digest == owner_digest:
                     exact_body += 1
     return {
         "status": "D8K13_LOCAL_CANDIDATE_REPO_TEXT_COMPARISON",
@@ -584,9 +664,12 @@ def owner_local_candidate_repo_match(owner_schema, migrations):
         "repoMigrationsScanned": repo_scanned,
         "repoHistoricalDefinerDeclarationsScanned": repo_functions,
         "repoSameNameArityDefinitionOccurrences": same_name_arity,
-        "repoSameNameArityExactBodyOccurrences": exact_body,
+        "repoSameNameArityExactBodyOccurrences": name_arity_body,
+        "candidateInputTypeSignatureParsed": input_types is not None,
+        "repoSameTextualInputTypesDefinitionOccurrences": typed_matches,
+        "repoSameTextualInputTypesExactBodyOccurrences": exact_body,
         "ownerCandidateExactTextSeenInRepoHistory": exact_body > 0,
-        "onlyNameAndArgumentCountCompared": True,
+        "onlyNameAndArgumentCountCompared": input_types is None,
         "sourceBodyComparisonIgnoresOnlyOuterWhitespaceAndLineEndings": True,
         "fullOverloadIdentityOrLatestVersionProven": False,
         "ownerRepoFunctionIdentityProven": False,
@@ -771,6 +854,8 @@ def self_test():
     assert positive["candidateCount"] == 1
     assert positive["candidateNameParsed"] is True
     assert positive["repoSameNameArityExactBodyOccurrences"] == 1
+    assert positive["repoSameTextualInputTypesExactBodyOccurrences"] == 1
+    assert positive["candidateInputTypeSignatureParsed"] is True
     assert positive["ownerCandidateExactTextSeenInRepoHistory"] is True
     assert positive["ownerRepoFunctionIdentityProven"] is False
     assert positive["functionNamesSignaturesBodiesOrHashesReturned"] is False
@@ -783,6 +868,27 @@ def self_test():
         private_fixture, [changed_body])
     assert drift["repoSameNameArityDefinitionOccurrences"] == 1
     assert drift["repoSameNameArityExactBodyOccurrences"] == 0
+    # Same name, same arity, identical body but DIFFERENT input type
+    # must never be treated as a matching PostgreSQL overload.
+    different_type = private_fixture.replace("p_input text", "p_input uuid")
+    wrong_overload = owner_local_candidate_repo_match(
+        private_fixture, [different_type])
+    assert wrong_overload["repoSameNameArityDefinitionOccurrences"] == 1
+    assert wrong_overload["repoSameNameArityExactBodyOccurrences"] == 1
+    assert wrong_overload["repoSameTextualInputTypesExactBodyOccurrences"] == 0
+    assert wrong_overload["ownerCandidateExactTextSeenInRepoHistory"] is False
+    # Defaults and the case of unquoted SQL type names must not change identity.
+    assert private_input_type_signature(
+        "CREATE FUNCTION public.f(p TEXT DEFAULT 'x') RETURNS void"
+    ) == private_input_type_signature(
+        "CREATE FUNCTION public.f(p text) RETURNS void"
+    )
+    assert private_input_type_signature(
+        "CREATE FUNCTION public.f(p numeric(10,2), q double precision) RETURNS void"
+    ) == ("numeric(10,2)", "doubleprecision")
+    assert private_input_type_signature(
+        "CREATE FUNCTION public.f(OUT p text) RETURNS void"
+    ) is None
 
     print(json.dumps({"status": "D8K13_PYTHON_LEXER_SELF_TEST_PASS", "rawSourceReturned": False}))
 
