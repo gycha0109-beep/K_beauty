@@ -489,3 +489,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$folder\restore-local.p
 - **판정 주의:** 동일 이름·인자 *수*는 전체 PostgreSQL 함수 시그니처/오버로드 일치를 증명하지 않는다. 본문 일치도 과거 migration에 존재했던 한 버전의 문자열 일치일 뿐, 최신 저장소 상태, migration replay 효과, hosted DB 또는 소유자 백업의 실제 함수 안전성의 증거가 아니다. `ownerRepoFunctionIdentityProven=false`, `fullOverloadIdentityOrLatestVersionProven=false`, `ownerZipSchemaParityVerified=false`, `releaseAuthorized=false` 고정. 함수 정의/마이그레이션 문법 누락 가능성은 추가 보안 리뷰 대상.
 - **CI:** 자동 검증 [#40012955488](https://github.com/gycha0109-beep/K_beauty/actions/runs/40012955488)의 합성 테스트 결과 확인 필요. 실제 소유자 백업 PC `DESKTOP-6C3L8O4`는 작업 시점 오프라인이어서 해당 원본 대조 모드 **미실행**. 다른 등록 PC를 소유자 원본 위치로 가정하거나 백업을 옮기지 않음.
 - **다음:** CI 결과 확인 → 원본 PC 연결 시 비식별 집계만 로컬에서 실행 → B 함수의 실제 입력값·함수 내부 인가 및 SQL 조립 문맥을 소스 비반출 방식으로 검토. 관리형 FK 34개, migration provenance, hosted parity 및 issue #1208 차단 유지. **PR #1341 Draft/미병합 · D8D v2 OFF · RELEASE HOLD**, 운영 SQL·권한 변경·병합·배포 없음.
+
+
+### 6.39. B 후보 저장소 정의 대조: 인자 종류가 다른 오버로드 오일치 차단 (2026-11-03)
+
+- **구현:** 소유자 PC에서 실행할 `scripts/product-evidence/audit-d8k13-definer-format-owner-local.py`의 익명 후보 B 대조 기능에 **인자 종류의 보수적 문자열 비교**를 추가(커밋 `e1c148e2c0b894ffb4f1522c41b1e60f55ee28ed`). 이름과 인자 개수만 같은 다른 오버로드를 동일 함수로 오인하지 않도록, 일치 판정은 인자 종류 및 본문 텍스트가 모두 일치할 때로 제한. 지원하지 않는 복잡한 선언/인용 식별자 및 `OUT` 인자는 불명확한 결과로 남기고 통과 처리하지 않음.
+- **집계 방식:** `repoSameNameArityDefinitionOccurrences`, `repoSameNameArityExactBodyOccurrences`(기존 약한 후보 수)와 `repoSameTextualInputTypesDefinitionOccurrences`, `repoSameTextualInputTypesExactBodyOccurrences`(더 엄격한 후보 수)를 구분. 사용자에게 함수명, 인자 서명, 개별 해시, 함수 본문, SQL 원문을 출력하지 않음.
+- **테스트:** 이름·인자 수·본문이 같아도 `text` 대 `uuid` 오버로드는 엄격 일치 0건으로 처리하는 합성 반례, 인자 기본값/대소문자/숫자형 인자 처리, `OUT` 등 지원하지 않는 형식의 fail-closed 동작을 추가. GitHub Actions [#41568152914](https://github.com/gycha0109-beep/K_beauty/actions/runs/41568152914)에서 핵심 Python 테스트 통과 확인; 전체 회귀 단계는 별도 확인.
+- **한계:** 이것은 PostgreSQL의 공식 인자 타입 정규화·실제 DB의 최신 함수 식별을 대체하지 않으며, 오래된 마이그레이션 정의와 텍스트가 같더라도 운영 DB와의 동등성 또는 함수 보안성은 확정하지 못함. `ownerRepoFunctionIdentityProven=false`, `fullOverloadIdentityOrLatestVersionProven=false`, `ownerZipSchemaParityVerified=false`, `releaseAuthorized=false` 유지. 원본 ZIP PC에 재접속하지 않았으며 실제 B 대조 실행·복원은 이번에 하지 않음.
+- **상태/다음:** 실제 B 후보의 텍스트 및 함수 인자 타입 일치를 원본 PC 안에서만 확인한 뒤, 일치시 저장소 소스 기준 수동 SQL 조립/인가 리뷰로 전환. 관리형 외래키 34개, hosted parity, migration provenance 및 security #1208 차단 지속. **PR #1341 Draft·미병합 / D8D v2 OFF / RELEASE HOLD**. 운영 SQL·권한 변경·병합·배포 없음.
