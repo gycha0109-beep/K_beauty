@@ -246,3 +246,15 @@ This is a vocabulary and separation sketch, NOT a drop-in modification to the ex
 - **Flaking/roughness still a gap:** SKINCON `scale` dermatology concept and FFHQ-Wrinkle are not face micro-flaking masks; FFHQ source is CC BY-NC-SA 4.0. Need consented cosmetic close-up samples with expert/manual local annotations.
 - **Quantitative distinction:** Available global or zone *severity grades* must not be advertised as individual pore, flake or spot coordinates. Device/illumination and evaluator calibration should be reported per concern.
 - No raw face photos, vendor demos, or third-party weights were copied into this repo. No candidates promoted to approved.
+
+
+## 13. Verified academy-PC P0/P1 evidence checkpoint — 2026-11-03
+
+This is an **executed local dataset-audit checkpoint**, not model evaluation or production activation.
+
+- Full existing Figshare partial source audited in place: 65 Flaky + 66 Punctate = 131 image/mask pairs; all original images/masks match by stem and resolution (3456×5184). No exact duplicate photos; no empty masks detected. Original reviewer JSON 131/131 consumed without modifying its verdicts/notes.
+- Private reviewer quality triage: 77 exploratory clean-pass candidates and 54 error/ambiguous/inconsistent holds. Actual 131 source objects and user notes stay on the academy PC, never in Git.
+- **Mask encoding divergence requires a hard stop before label training:** frontal images (15 Flaky + 47 Punctate) carry palette indices 0–5 (some index subsets may be absent); side images (50 Flaky + 19 Punctate) carry only 0/1. Seven distinct palette RGB profiles were observed, and occupied frontal indices 4/5 can map to RGB black. A simplistic RGB/grayscale conversion is unsafe; maintain P-mode indices and segregate poses until the publisher's exact semantic definition and reference decoder are independently verified.
+- Created/executed local-only `scripts/audit-memi-capture-proxies.py` over 131 original images; summary measures **whole-photo** illumination and specular/low-light proxies without face ROI. Because background and exposure confound those proxies, this does **not** prove that shine caused false positives or measure lesion recall/IoU. No skin condition/physical sebum is inferred.
+- **P0:** local inventory verified; original image portrait/consent and commercial derivative rights not cleared. **P1:** reviewer metadata QC and data-integrity check executed; gold annotation and class mapping blocked. **P2–P7:** no model training, independent gold evaluation, spatial overlay or production activation completed.
+- Next research implementation gate: obtain publisher annotation field definition (especially pose-dependent 0..1 vs 0..5); build semantic decoder only with explicit provenance, then independent expert-corrected masks and verified subject grouping for splits. Evaluate forehead-highlight vs side-shadow subsets using face-grounded regions, not generic full-frame heuristics. Maintain nonblocking per-concern reliability UX once actual calibration exists.
