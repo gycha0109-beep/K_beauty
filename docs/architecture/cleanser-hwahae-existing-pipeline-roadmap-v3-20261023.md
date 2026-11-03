@@ -159,3 +159,11 @@
 - `scripts/verify-cleanser-r5-private-source-drift-guard-v1.mjs`는 **잘못된 상품 ID, 출처 변경, URL 불일치, 리뷰 개수, 성분 집계 개수, 허위 제품 카테고리/제형 변경** 반례를 검사한다.
 - **중요한 한계:** 숫자/축 개수가 변하지 않아도 성분 집계의 **개별 값은 달라질 수 있다**. 검증은 **소스 형태 및 집계 드리프트 방어**이지 전체 원본 무결성 해시나 정확한 한국 SKU 입증이 아니다. 7개 자료의 이용권과 제품별 메타데이터는 여전히 별도 확인 대상.
 - **R5 잔여:** 실제 비공개 서버에서 원본 전체 점수 실행 + 원본의 제품 용량·한국 판매 정보 개별 확인. **R6:** 승인·배포 미진행.
+
+## R5 metadata evidence-only preview — 2026-11-03 (검증 대기)
+
+- 기존 10개 상품의 `skin_types / concerns / texture / finish / irritation_risk / sensitivity_safe` 60칸은 **원본 DB에서 여전히 UNKNOWN**이다.
+- `lib/trust/cleanser-r5-metadata-evidence-preview-v1.mjs`는 보호된 읽기 전용 전체 점수 실행 중 기존 화해 매핑 태그·상품명 단서를 **관측 경향/확인 필요/UNKNOWN**으로만 분류한다. 상품 ID, 상태, 개수만 출력하며 원문·URL·전성분·새 추천 순위를 저장하지 않는다.
+- 현행 원본 변환기가 채우는 **60개 기본값**을 별도 진단하고, 기본값을 공식 상품 특성으로 보거나 `products`에 역기록하지 않는다. 부정적 리뷰의 자극 경고는 소비자 관측이지 검증된 `irritation_risk` 또는 `sensitivity_safe`가 아니다.
+- `scripts/verify-cleanser-r5-metadata-evidence-preview-v1.mjs`를 기존 Main Health 검증에 추가했다. 실제 비공개 원본 전체 엔진 실행과 신규 추천 승인은 여전히 미완료이며, G2 변경·DB 쓰기·배포는 0.
+- **진척도는 R5 75% 유지**: 신규 verifier의 exact-head CI 확인 및 보호된 전체 데이터 실행 전에는 완료/PASS로 간주하지 않는다.
