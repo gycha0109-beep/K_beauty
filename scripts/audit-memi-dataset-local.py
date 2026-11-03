@@ -49,16 +49,26 @@ def find_assets(root):
         if any(part.lower() in SKIP_PARTS or "audit" in part.lower()
                for part in parts[:-1]):
             continue
-        group_parts = [part for part in parts[:-1] if part in GROUPS]
-        if len(set(group_parts)) != 1 or not group_parts:
+        # Actual Figshare layout has double-nested *_Image and *_Annotation
+        # directories (e.g. Flaky_Image/Flaky_Image/10_L.jpg).
+        folders = set(parts[:-1])
+        selected = [(group, kind) for group in GROUPS
+                    for kind, suffix in (("image", "_Image"), ("mask", "_Annotation"))
+                    if group + suffix in folders]
+        if len(selected) != 1:
             continue
-        group = group_parts[0]
-        # The reviewed sample name is e.g. 15_L; never reconstruct filenames by guessing.
+        group, kind = selected[0]
         stem = path.stem
         if not __import__("re").fullmatch(r"[0-9]+_[FLR]", stem):
             continue
-        with Image.open(path) as image:
-            kind = "mask" if path.suffix.lower() == ".png" and image.mode == "P" else "image"
+        if kind == "image" and path.suffix.lower() not in {".jpg", ".jpeg"}:
+            raise ValueError("Unexpected photo extension: " + group + "/" + stem)
+        if kind == "mask":
+            if path.suffix.lower() != ".png":
+                raise ValueError("Expected palette PNG mask: " + group + "/" + stem)
+            with Image.open(path) as image:
+                if image.mode != "P":
+                    raise ValueError("Expected P-mode PNG mask: " + group + "/" + stem) else "image"
         key = group + "/" + stem
         index_key = (key, kind)
         if index_key in seen:
@@ -151,6 +161,8 @@ def scan(root, qc, roi_spec=None):
         else:
             sample["roiStatus"] = "NOT_DEFINED_NO_ANATOMICAL_CONCLUSION"
         private_rows.append(sample)
+        if len(private_rows) % 10 == 0:
+            print("PROGRESS pairs_processed=" + str(len(private_rows)), flush=True)
     if len(palette_profiles) > 1:
         issues.append("Palette RGB profiles vary; numeric indices MUST NOT be assigned meanings without upstream specification")
     return {
@@ -176,15 +188,15 @@ def self_test():
         records = []
         for group, name, status in (("Flaky", "1_L", "pass"),
                                     ("Punctate", "2_F", "fail")):
-            (root / group / "images").mkdir(parents=True)
-            (root / group / "masks").mkdir(parents=True)
+            (root / (group + "_Image") / (group + "_Image")).mkdir(parents=True)
+            (root / (group + "_Annotation") / (group + "_Annotation")).mkdir(parents=True)
             image = Image.new("RGB", (48, 32), color=(145 if group == "Flaky" else 146, 116, 110))
             image.putpixel((0, 0), (10 if group == "Flaky" else 200, 20, 30))
-            image.save(root / group / "images" / (name + ".png"))
+            image.save(root / (group + "_Image") / (group + "_Image") / (name + ".jpg"))
             mask = Image.new("P", (48, 32), color=0)
             mask.putpalette([0, 0, 0, 255, 0, 0, 0, 255, 0] + [0] * (768 - 9))
             mask.putpixel((5, 5), 2)
-            mask.save(root / group / "masks" / (name + ".png"))
+            mask.save(root / (group + "_Annotation") / (group + "_Annotation") / (name + ".png"))
             records.append({
                 "id": group + "/" + name, "group": group, "name": name,
                 "pose": name.split("_")[-1],
@@ -209,8 +221,8 @@ def self_test():
             raise AssertionError("Ungrounded ROI must fail")
         except ValueError:
             pass
-        (root / "Flaky" / "extra").mkdir()
-        Image.new("RGB", (48, 32)).save(root / "Flaky" / "extra" / "1_L.jpg")
+        (root / "Flaky_Image" / "extra").mkdir()
+        Image.new("RGB", (48, 32)).save(root / "Flaky_Image" / "extra" / "1_L.jpg")
         try:
             scan(root, qc)
             raise AssertionError("Duplicate asset must fail")
@@ -238,8 +250,8 @@ def main():
         raise ValueError("Dataset root directory not found")
     if out in {qcfile, root} or out == Path(__file__).resolve():
         raise ValueError("Output cannot replace original/QC files")
-    if out.is_relative_to(THIS_DIR.parent):
-        raise ValueError("Output must not be placed under public Git working tree")
+    if any((parent / ".git").exists() for parent in (out.parent, *out.parents)):
+        raise ValueError("Output must not be placed under any Git working tree")
     qc = load_qc(qcfile, args.expect_131)
     roi = json.loads(Path(args.roi_json).read_text(encoding="utf-8")) if args.roi_json else None
     result = scan(root, qc, roi)
