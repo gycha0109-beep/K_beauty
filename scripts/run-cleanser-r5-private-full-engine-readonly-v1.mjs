@@ -16,6 +16,7 @@ import {register} from "node:module";
 import {createClient} from "@supabase/supabase-js";
 import {createCleanserSelectOnlyFetchV1} from "../lib/trust/cleanser-hosted-select-only-transport-v1.mjs";
 import {verifyCleanserR5PrivateSourceDriftV1} from "../lib/trust/cleanser-r5-private-source-drift-guard-v1.mjs";
+import {assessCleanserR5MetadataEvidencePreviewV1} from "../lib/trust/cleanser-r5-metadata-evidence-preview-v1.mjs";
 import {verifyCleanserEngineComponentSumV1,verifyCleanserReviewAxisParityV1} from "../lib/trust/cleanser-r5-score-reconciliation-v1.mjs";
 
 if(process.argv.length!==2)throw new Error("R5_NO_FLAGS_OR_AUTHORITY_OVERRIDE_ALLOWED");
@@ -92,6 +93,11 @@ const raw=coverage.records.map(ref=>{
 });
 const legacy=productsFixture.products.map(buildRecommendationProductFromSource);
 const newProducts=raw.map(buildRecommendationProductFromSource);
+const metadataPreview=assessCleanserR5MetadataEvidencePreviewV1({
+  rawProducts:raw,normalizedProducts:newProducts
+});
+assert.equal(metadataPreview.canonical_fields_missing,60);
+assert.equal(metadataPreview.canonical_field_values_written,0);
 if(legacy.some(x=>!x)||newProducts.some(x=>!x)||new Set([...legacy,...newProducts].map(x=>x.id)).size!==174)
   throw new Error("R5_PRODUCT_MAPPING_NOT_EXACT_174");
 const corpus=[...legacy,...newProducts];
@@ -163,6 +169,15 @@ console.log(JSON.stringify({
   verification:"PRIVATE_ACTUAL_SOURCE_SHADOW_ONLY",
   scenarios:scenariosCompleted,existing_product_score_breakdowns_unchanged:legacyEqual,
   appended_cleanser_score_breakdowns_checked:shadowScoresEvaluated,
+  metadata_evidence_preview:{
+    captured:metadataPreview.hwahae_captured,
+    mapped_review_top_three_products:metadataPreview.mapped_review_top_three_products,
+    low_review_count_cautions:metadataPreview.low_review_count_cautions,
+    missing_canonical_trait_cells:metadataPreview.canonical_fields_missing,
+    legacy_default_injection_cells:metadataPreview.legacy_fallback_slots,
+    canonical_metadata_writes:metadataPreview.canonical_field_values_written,
+    evidence_only_field_statuses:metadataPreview.field_evidence_status_counts
+  },
   with_nonzero_review_component:reviewNonzeroCells,
   with_nonzero_ingredient_component:ingredientNonzeroCells,
   with_nonzero_market_component:marketNonzeroCells,
