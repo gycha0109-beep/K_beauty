@@ -1,0 +1,57 @@
+{
+  "schema": "D8K13_CURRENT_RECOVERY_SYNTHETIC_RESTORE_DRILL_V1",
+  "observedDateKst": "2026-10-18",
+  "scope": "SYNTHETIC_SCHEMA_AND_DATA_DISPOSABLE_PG17",
+  "status": "SYNTHETIC_RESTORE_PASS_PRODUCTION_BACKUP_NOT_CAPTURED",
+  "workflowRunId": 39109843279,
+  "runUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39109843279",
+  "testedHead": "72abd7589ee08573aea5b0e71f97fff62741d829",
+  "jobs": {
+    "nativeNode": {
+      "id": 117623396627,
+      "result": "success",
+      "marker": "D8K13_CURRENT_RECOVERY_INVENTORY_PASS_HOLD"
+    },
+    "postgres17": {
+      "id": 117623396756,
+      "result": "success",
+      "marker": "D8K13_CURRENT_RECOVERY_SYNTHETIC_SCHEMA_DATA_RESTORE_PASS"
+    }
+  },
+  "script": {
+    "path": "scripts/product-evidence/run-d8k13-current-recovery-synthetic-restore-pg17.sh",
+    "gitBlobSha": "63cf56c946bc60eb9f24105dec7f69d107cc395c"
+  },
+  "sourceDatabase": "d8k13_preledger_synthetic",
+  "destinationDatabase": "d8k13_current_restore_disposable",
+  "sourceSyntheticRows": {
+    "products": 1,
+    "productCandidates": 1,
+    "sourceRankings": 1
+  },
+  "checks": [
+    "separate isolated 17.6 source and destination DBs",
+    "test only schema pg_dump",
+    "test only data pg_dump",
+    "target isolated empty public schema removal",
+    "single-transaction schema restore",
+    "single-transaction data restore",
+    "catalog and synthetic row/view parity check",
+    "temporary filesystem cleanup"
+  ],
+  "doesNotExportHostedDatabase": true,
+  "doesNotExportActualPublicSchemaObjects": true,
+  "productionProjectFullBackupExistsInThisEvidence": false,
+  "productionProjectRestoreTestPassed": false,
+  "historical178AppliedMigrationReplayPassed": false,
+  "aclGrantEquivalenceVerified": false,
+  "authStorageObjectRecoveryVerified": false,
+  "productionWrites": 0,
+  "releaseAuthorized": false,
+  "failedPrecedingTestRunsWereFixed": [
+    39109395174,
+    39109529732,
+    39109624561,
+    39109731506
+  ]
+}

@@ -1,0 +1,872 @@
+name: "[WT:taxonomy-ai] D8K13 Private Local ZIP Restore Contract"
+on:
+  push:
+    branches:
+      - feat/taxonomy-ai/d8k13-legacy-self-review-reconciliation-design-20261016
+    paths:
+      - scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1
+      - scripts/product-evidence/audit-d8k13-definer-format-owner-local.py
+      - scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1
+      - .github/workflows/taxonomy-ai-d8k13-private-local-zip-restore.yml
+permissions:
+  contents: read
+concurrency:
+  group: d8k13-private-local-zip-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  synthetic-only:
+    runs-on: ubuntu-24.04
+    name: "Synthetic ZIP: inspect / isolated PG17 restore / reject bad archive"
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Validate redacted local Python EXECUTE-format source scanner
+        shell: bash
+        run: |
+          python3 -m py_compile scripts/product-evidence/audit-d8k13-definer-format-owner-local.py
+          python3 scripts/product-evidence/audit-d8k13-definer-format-owner-local.py --self-test
+          python3 scripts/product-evidence/audit-d8k13-definer-format-owner-local.py --scan-repo-migrations supabase/migrations
+      - name: Parse local owner PowerShell script before any Docker work
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile('./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1',[ref]$tokens,[ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -ne 0) { throw 'D8K13_LOCAL_RESTORE_SCRIPT_PARSER_FAILED' }
+          Write-Host 'D8K13_LOCAL_RESTORE_SCRIPT_PARSE_PASS'
+      - name: Validate metadata-only schema source-line classifier with synthetic ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile('./scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1',[ref]$tokens,[ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) { throw 'D8K13_LINE_CLASSIFIER_PARSE_FAILED' }
+          $root = Join-Path $env:RUNNER_TEMP 'd8k13-lexical-fixture'
+          $sqlDir = Join-Path $root 'sql'
+          New-Item -ItemType Directory -Path $sqlDir -Force | Out-Null
+          [System.IO.File]::WriteAllText((Join-Path $sqlDir 'roles.sql'),"CREATE ROLE synthetic_role NOLOGIN;`nCREATE ROLE local_fixture_role NOLOGIN;",[System.Text.UTF8Encoding]::new($false))
+          # Satisfy the real-backup archive minimum size using SYNTHETIC entropy only.
+          $entropy = New-Object byte[] 4096
+          $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+          try { $rng.GetBytes($entropy) } finally { $rng.Dispose() }
+          [System.IO.File]::AppendAllText((Join-Path $sqlDir 'roles.sql'),("`n-- " + [Convert]::ToBase64String($entropy) + "`n"))
+          [System.IO.File]::WriteAllText((Join-Path $sqlDir 'data.sql'),"SELECT 1;",[System.Text.UTF8Encoding]::new($false))
+          $fixtureSql = @'
+          -- SECRET_CANARY_NEVER_OUTPUT fake
+          CREATE SCHEMA private;
+          CREATE FUNCTION private.fixture() RETURNS boolean LANGUAGE sql AS 'SELECT true';
+          ALTER FUNCTION private.fixture() OWNER TO product_offer_link_health_recorder_owner;
+          GRANT EXECUTE ON FUNCTION private.fixture() TO authenticated;
+          ALTER TABLE public.fake
+            OWNER TO postgres;
+          ALTER FUNCTION public.more() OWNER TO "local_fixture_role";
+          ALTER FUNCTION recommendation_shadow.more() OWNER TO authenticated;
+          ALTER FUNCTION public.more() OWNER TO "bad-role";
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $sqlDir 'schema.sql'),$fixtureSql,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = Join-Path $root 'synthetic.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sqlDir,$zip)
+          $bytes = [long](Get-Item -LiteralPath $zip).Length
+          $sha = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
+          $script = './scripts/product-evidence/diagnose-d8k13-private-backup-schema-line-local.ps1'
+          $result = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 4
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_LINE_CLASSIFIER_EXEC_FAILED' }
+          $json = $result | ConvertFrom-Json
+          if ($json.status -ne 'D8K13_LOCAL_SCHEMA_LINE_CLASSIFIED_METADATA_ONLY' -or
+              $json.verb -ne 'ALTER' -or $json.objectKind -ne 'FUNCTION' -or
+              $json.operation -ne 'OWNER_TO' -or -not $json.mentionsKnownPrivateSchema -or
+              -not $json.mentionsKnownFunctionOwnerRole) { throw 'D8K13_LINE_CLASSIFIER_FUNCTION_OWNER_RESULT_WRONG' }
+          if (($result -join '') -match 'SECRET_CANARY|fixture|synthetic_role|CREATE FUNCTION|ALTER FUNCTION|product_offer_link_health_recorder_owner') {
+            throw 'D8K13_LINE_CLASSIFIER_SOURCE_CONTENT_LEAKED'
+          }
+          $grantResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 5
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_LINE_CLASSIFIER_GRANT_FAILED' }
+          $grant = $grantResult | ConvertFrom-Json
+          if ($grant.verb -ne 'GRANT' -or $grant.operation -ne 'GRANT' -or $grant.objectKind -ne 'FUNCTION') {
+            throw 'D8K13_LINE_CLASSIFIER_GRANT_WRONG'
+          }
+          $ownerResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 7
+          $owner = $ownerResult | ConvertFrom-Json
+          if ($owner.objectKind -ne 'TABLE' -or $owner.operation -ne 'OWNER_TO') {
+            throw 'D8K13_LINE_CLASSIFIER_MULTILINE_OWNER_WRONG'
+          }
+          if ($json.ownerTransferStatementShape -ne 'QUALIFIED_SINGLE_LINE' -or
+              $json.ownerRoleSourceClass -ne 'NOT_DECLARED_OR_EXTERNALLY_MANAGED' -or
+              $json.functionSchemaClass -ne 'PRIVATE') { throw 'D8K13_OWNER_CLASSIFIER_PRIVATE_PROVENANCE_WRONG' }
+          $declaredResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 8
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_OWNER_CLASSIFIER_DECLARED_ROLE_EXEC_FAILED' }
+          $declared = $declaredResult | ConvertFrom-Json
+          if ($declared.ownerRoleSourceClass -ne 'DECLARED_IN_ROLES_SQL' -or
+              $declared.functionSchemaClass -ne 'PUBLIC' -or
+              $declared.ownerTransferStatementShape -ne 'QUALIFIED_SINGLE_LINE') { throw 'D8K13_OWNER_CLASSIFIER_DECLARED_ROLE_WRONG' }
+          $managedResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 9
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_OWNER_CLASSIFIER_MANAGED_ROLE_EXEC_FAILED' }
+          $managed = $managedResult | ConvertFrom-Json
+          if ($managed.ownerRoleSourceClass -ne 'KNOWN_SUPABASE_BASELINE' -or
+              $managed.functionSchemaClass -ne 'OTHER_CUSTOM') { throw 'D8K13_OWNER_CLASSIFIER_MANAGED_ROLE_WRONG' }
+          $unsupportedResult = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 $sha -LineNumber 10
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_OWNER_CLASSIFIER_UNSUPPORTED_EXEC_FAILED' }
+          $unsupported = $unsupportedResult | ConvertFrom-Json
+          if ($unsupported.ownerTransferStatementShape -ne 'UNPARSEABLE' -or
+              $unsupported.ownerRoleSourceClass -ne 'UNDETERMINED') { throw 'D8K13_OWNER_CLASSIFIER_UNSUPPORTED_DID_NOT_FAIL_CLOSED' }
+          $allClassifications = @($result,$declaredResult,$managedResult,$unsupportedResult) -join ' '
+          if ($allClassifications -match 'SECRET_CANARY|fixture|synthetic_role|local_fixture_role|product_offer_link_health_recorder_owner|CREATE FUNCTION|ALTER FUNCTION|bad-role') {
+            throw 'D8K13_OWNER_CLASSIFIER_ROLE_OR_RAW_SQL_LEAKED'
+          }
+          $bad = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $bytes -ExpectedSha256 ('0'*64) -LineNumber 4 2>&1
+          if ($LASTEXITCODE -ne 3 -or (($bad -join '') -notmatch 'D8K13_LOCAL_SCHEMA_LINE_CLASSIFICATION_FAILED')) {
+            throw 'D8K13_LINE_CLASSIFIER_BAD_HASH_NOT_REJECTED'
+          }
+          Write-Host 'D8K13_LOCAL_SCHEMA_LINE_METADATA_ONLY_SYNTHETIC_PASS'
+          exit 0 # Deliberate negative child exit=3 must not fail the parent step.
+      - name: Test offline policy reference inventory on 20 synthetic policies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = './scripts/product-evidence/diagnose-d8k13-policy-dependencies-local.ps1'
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -ne 0) { throw 'D8K13_POLICY_INVENTORY_PARSE_FAILED' }
+          $root = Join-Path $env:RUNNER_TEMP 'policy-reference-synthetic'
+          $sql = Join-Path $root 'sql'
+          New-Item -ItemType Directory -Path $sql -Force | Out-Null
+          $lines = New-Object 'System.Collections.Generic.List[string]'
+          $lines.Add("CREATE FUNCTION public.my_helper() RETURNS boolean LANGUAGE sql AS 'SELECT true';")
+          $lines.Add('CREATE TABLE public.products(id integer);')
+          for ($i=1; $i -le 20; $i++) {
+            $lines.Add("CREATE POLICY fixture_$i")
+            $lines.Add('  ON public.products')
+            $lines.Add('  FOR SELECT')
+            $lines.Add('  USING ("auth"."uid"() IS NOT NULL AND "public"."my_helper"() AND missing_local_helper());')
+          }
+          [System.IO.File]::WriteAllLines((Join-Path $sql 'schema.sql'),$lines,[System.Text.UTF8Encoding]::new($false))
+          $entropy = New-Object byte[] 4096
+          $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+          try { $rng.GetBytes($entropy) } finally { $rng.Dispose() }
+          [System.IO.File]::WriteAllText((Join-Path $sql 'roles.sql'),[Convert]::ToBase64String($entropy))
+          [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),'SELECT 1;')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = Join-Path $root 'synthetic.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$archive)
+          $bytes = [long](Get-Item -LiteralPath $archive).Length
+          $sha = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
+          $out = & pwsh -NoProfile -File $script -BackupZip $archive -ExpectedZipBytes $bytes -ExpectedSha256 $sha -FirstErrorLine 6 -ErrorCount 20 -ErrorLineStep 4
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_POLICY_INVENTORY_EXEC_FAILED' }
+          $result = $out | ConvertFrom-Json
+          if ($result.inspectedPolicyCount -ne 20 -or $result.rawSqlReturned -ne $false -or
+              $result.dataSqlExecuted -ne $false -or $result.functionExistsInIsolatedRuntimeVerified -ne $false) {
+            throw 'D8K13_POLICY_INVENTORY_SAFETY_FAILED'
+          }
+          if (@($result.references | Where-Object { $_.functionIdentifier -eq 'auth.uid' -and
+            $_.referencedByPolicies -eq 20 -and -not $_.declaredInSourceSchemaDump }).Count -ne 1) {
+            throw 'D8K13_POLICY_INVENTORY_AUTH_REFERENCE_FAILED'
+          }
+          if (@($result.references | Where-Object { $_.functionIdentifier -eq 'public.my_helper' -and
+            $_.referencedByPolicies -eq 20 -and $_.declaredInSourceSchemaDump }).Count -ne 1) {
+            throw 'D8K13_POLICY_INVENTORY_DECLARED_HELPER_FAILED'
+          }
+          if ($result.uniqueQualifiedReferenceCount -ne 2 -or
+              $result.uniqueUnqualifiedReferenceCount -ne 1 -or
+              $result.quotedIdentifiersObserved -ne $true -or
+              $result.lexicalReferencesAreNotProofOfMissingFunctions -ne $true) {
+            throw 'D8K13_POLICY_QUOTED_UNQUALIFIED_REFERENCE_CLASSIFICATION_FAILED'
+          }
+          if (@($result.references | Where-Object {
+            $_.functionIdentifier -eq 'missing_local_helper' -and
+            $_.referencedByPolicies -eq 20 -and -not $_.declaredInSourceSchemaDump -and
+            $_.namespaceFamily -eq 'UNQUALIFIED_OR_SEARCH_PATH'
+          }).Count -ne 1) { throw 'D8K13_POLICY_UNQUALIFIED_HELPER_INVENTORY_FAILED' }
+          if (($out -join '') -match 'CREATE POLICY|USING \(|CREATE TABLE|SELECT true') {
+            throw 'D8K13_POLICY_INVENTORY_SOURCE_SQL_LEAKED'
+          }
+          Write-Host 'D8K13_SYNTHETIC_POLICY_REFERENCE_INVENTORY_PASS'
+      - name: Generate non-sensitive synthetic Supabase-shaped ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/d8k13-local-fixture/sql"
+          cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql" <<'SQL'
+          -- Synthetic, not copied from production.
+          CREATE ROLE d8k13_local_fixture_role NOLOGIN;
+          CREATE ROLE "product_offer_link_health_recorder_owner";
+          CREATE ROLE d8k13_public_fixture_owner NOLOGIN;
+          ALTER ROLE "product_offer_link_health_recorder_owner" WITH NOLOGIN;
+          GRANT anon TO d8k13_local_fixture_role;
+          GRANT authenticated TO d8k13_local_fixture_role;
+          SQL
+          # Synthetic entropy, so compressed ZIP resembles a real nontrivial archive.
+          printf '%s' '-- ' >> "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql"
+          head -c 4096 /dev/urandom | base64 -w0 >> "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql"
+          printf '\n' >> "$RUNNER_TEMP/d8k13-local-fixture/sql/roles.sql"
+          cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/schema.sql" <<'SQL'
+          -- Synthetic, not copied from production.
+          CREATE SCHEMA public;
+          CREATE TABLE public.products(id integer PRIMARY KEY, name text NOT NULL, owner_id uuid REFERENCES auth.users(id));
+          CREATE FUNCTION public.d8k13_public_fixture() RETURNS boolean LANGUAGE sql AS 'SELECT true';
+          ALTER FUNCTION public.d8k13_public_fixture() OWNER TO d8k13_public_fixture_owner;
+          CREATE VIEW public.product_names AS SELECT name FROM public.products;
+          ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+          CREATE POLICY fixture_select ON public.products FOR SELECT TO authenticated USING (owner_id = (select auth.uid()) AND coalesce((auth.jwt() ->> 'role'), 'authenticated') = 'authenticated');
+          -- Both custom namespaces intentionally omitted from CREATE SCHEMA.
+          -- This reproduces references in real dumps to schemas absent in bare image.
+          CREATE FUNCTION private.fixture_probe() RETURNS boolean LANGUAGE sql AS 'SELECT true';
+          ALTER FUNCTION private.fixture_probe() OWNER TO "product_offer_link_health_recorder_owner";
+          CREATE FUNCTION recommendation_shadow.fixture_probe() RETURNS integer LANGUAGE sql AS 'SELECT 42';
+          ALTER DEFAULT PRIVILEGES IN SCHEMA private GRANT SELECT ON TABLES TO authenticated;
+          SQL
+          cat > "$RUNNER_TEMP/d8k13-local-fixture/sql/data.sql" <<'SQL'
+          -- Synthetic, not copied from production.
+          COPY public.products (id, name) FROM stdin;
+          1	synthetic only
+          \.
+          SQL
+          pwsh -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-local-fixture/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-local-fixture/synthetic.zip"))'
+          echo "ZIP_PATH=$RUNNER_TEMP/d8k13-local-fixture/synthetic.zip" >> "$GITHUB_ENV"
+          echo "ZIP_BYTES=$(stat -c%s "$RUNNER_TEMP/d8k13-local-fixture/synthetic.zip")" >> "$GITHUB_ENV"
+      - name: Inspect three-file synthetic archive
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes ([long]$env:ZIP_BYTES) -Mode Inspect
+          if ($LASTEXITCODE -ne 0) { Write-Host ($output -join "`n"); throw 'D8K13_SYNTHETIC_INSPECTION_FAILED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ZIP_INSPECTION_PASS')) { throw 'D8K13_SYNTHETIC_INSPECTION_MARKER_MISSING' }
+          Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_INSPECTION_PASS'
+      - name: Classify all synthetic data commands without Docker or source text output
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $target=Join-Path $env:RUNNER_TEMP 'd8k13-command-families/sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $target 'schema.sql')
+          $data=@'
+          -- No real backup SQL is included.
+          SET client_encoding = 'UTF8';
+          COPY public.products (id, name) FROM stdin;
+          21	SELECT value only inside COPY, never executable
+          \.
+          SELECT pg_catalog.setval('public.local_dummy_sequence', 5, true);
+          SELECT pg_catalog.setval('public.local_dummy_sequence'::regclass, 5, true);
+          SELECT something_synthetic_and_unexpected();
+          ALTER TABLE public.products ENABLE TRIGGER ALL;
+          \unexpected_guard synthetic-only
+          COPY auth.synthetic_service_object (id, value) FROM stdin;
+          22	synthetic managed payload
+          \.
+          RESET ALL;
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $target 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $env:RUNNER_TEMP 'd8k13-command-families/fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $bytes=[long](Get-Item -LiteralPath $zip).Length
+          $original=(Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash
+          $output=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $bytes -Mode AuditDataCommands
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_DATA_COMMAND_FAMILIES_AUDIT_SCRIPT_FAILED' }
+          $match=@($output | Where-Object { $_ -match '"status":"D8K13_LOCAL_DATA_COMMAND_FAMILY_AUDIT_ONLY_NO_RESTORE"' })
+          if ($match.Count -ne 1) { throw 'D8K13_DATA_COMMAND_FAMILIES_AUDIT_MISSING' }
+          $result=$match[0] | ConvertFrom-Json
+          if ($result.copyHeaders -ne 2 -or $result.unexpectedCommandCount -ne 3 -or
+              @($result.unexpectedSamples).Count -ne 3 -or
+              $result.copyPayloadLinesNotInspected -ne 2 -or
+              $result.noDockerStarted -ne $true -or $result.dataRowsImported -ne $false -or
+              $result.originalZipModified -ne $false -or $result.rawSqlOrDataReturned -ne $false -or
+              $result.productionDatabaseConnections -ne 0 -or $result.releaseAuthorized -ne $false) {
+            throw 'D8K13_DATA_COMMAND_FAMILIES_AUDIT_CONTRACT_FAILED'
+          }
+          if (@($result.recognizedClasses | Where-Object { $_.commandClass -eq 'RESET_ALL_SYNTAX_RECOGNIZED' -and $_.count -eq 1 }).Count -ne 1) {
+            throw 'D8K13_COMMAND_AUDIT_RESET_ALL_TRAILER_MISSING'
+          }
+          foreach($klass in @('SELECT_OTHER','ALTER_OTHER','PSQL_META_OTHER')) {
+            if (@($result.unexpectedSamples | Where-Object { $_.commandClass -eq $klass }).Count -ne 1) {
+              throw 'D8K13_DATA_COMMAND_CLASS_UNEXPECTED_OR_MISSING'
+            }
+          }
+          if ($match[0] -match 'SELECT something_synthetic|ALTER TABLE public|synthetic managed payload|unexpected_guard|COPY auth') {
+            throw 'D8K13_DATA_COMMAND_AUDIT_LEAKED_SQL_OR_ROW'
+          }
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash -ne $original) {
+            throw 'D8K13_DATA_COMMAND_AUDIT_MODIFIED_ZIP'
+          }
+          Write-Host 'D8K13_SYNTHETIC_ALL_DATA_COMMAND_CLASSES_NO_DOCKER_PASS'
+      - name: Check clean Supabase/Postgres image schema prerequisites (no owner ZIP)
+        shell: bash
+        run: |
+          set -euo pipefail
+          c="d8k13-schema-doctor-$RANDOM"
+          trap 'docker rm -f "$c" >/dev/null 2>&1 || true' EXIT
+          docker run --detach --rm --name "$c" --network none \
+            -e POSTGRES_PASSWORD=d8k13_ci_fixture_only \
+            -e POSTGRES_DB=postgres \
+            -e POSTGRES_HOST=/var/run/postgresql \
+            -e PGPORT=5432 \
+            -e POSTGRES_PORT=5432 \
+            -e PGPASSWORD=d8k13_ci_fixture_only \
+            -e JWT_SECRET=d8k13_ci_fixture_only_long_test_string \
+            -e JWT_EXP=3600 \
+            supabase/postgres:17.6.1.136 postgres \
+            -c config_file=/etc/postgresql/postgresql.conf >/dev/null
+          # pg_isready succeeds before Supabase's init SQL finishes.
+          # Wait for its managed roles/schemas/extension prerequisites.
+          ready=""
+          previous=""
+          stable=0
+          for n in {1..90}; do
+            probe="$(docker exec -u postgres "$c" psql -X -q -t -A -U postgres -d postgres -v ON_ERROR_STOP=1 -c "SELECT CASE WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role','supabase_admin'))=4 AND to_regclass('auth.users') IS NOT NULL AND EXISTS(SELECT 1 FROM pg_namespace WHERE nspname='storage') AND EXISTS(SELECT 1 FROM pg_extension WHERE extname='supabase_vault') AND EXISTS(SELECT 1 FROM pg_namespace WHERE nspname='extensions') THEN floor(extract(epoch FROM pg_postmaster_start_time()))::bigint::text ELSE '0' END" 2>/dev/null || true)"
+            if [[ "$probe" =~ ^[0-9]{10}$ && "$probe" = "$previous" ]]; then
+              stable=$((stable+1))
+            else
+              stable=0
+            fi
+            previous="$probe"
+            if [ "$stable" -ge 6 ]; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1
+          docker exec -u postgres "$c" psql -X -q -t -A \
+            -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "SELECT 'D8K13_SUPABASE_IMAGE_BASELINE_SCHEMA_' || x.name || '_' || CASE WHEN n.oid IS NULL THEN 'MISSING' ELSE 'PRESENT' END FROM (VALUES('auth'),('storage'),('vault'),('extensions'),('private'),('recommendation_shadow'),('realtime'),('graphql'),('graphql_public'),('pgbouncer'),('supabase_migrations')) AS x(name) LEFT JOIN pg_namespace n ON n.nspname=x.name ORDER BY x.name;" \
+            | tee "$RUNNER_TEMP/d8k13-image-schemas.txt"
+          test -s "$RUNNER_TEMP/d8k13-image-schemas.txt"
+          docker exec -u postgres "$c" psql -X -q -t -A \
+            -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "SELECT 'D8K13_SUPABASE_IMAGE_BASELINE_EXTENSION_' || x.name || '_' || CASE WHEN e.oid IS NULL THEN 'MISSING' ELSE 'PRESENT' END FROM (VALUES('supabase_vault'),('pgcrypto'),('pg_stat_statements'),('uuid-ossp')) AS x(name) LEFT JOIN pg_extension e ON e.extname=x.name ORDER BY x.name;"
+      - name: Simulate first-run host with no cached Supabase PostgreSQL image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image rm --force supabase/postgres:17.6.1.136 >/dev/null 2>&1 || true
+          if docker image inspect supabase/postgres:17.6.1.136 >/dev/null 2>&1; then
+            echo D8K13_SYNTHETIC_COLD_IMAGE_NOT_REMOVED >&2
+            exit 1
+          fi
+          echo D8K13_SYNTHETIC_COLD_IMAGE_PRECONDITION_PASS
+      - name: Restore synthetic backup with built-in Supabase auth roles in no-network PostgreSQL 17
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes ([long]$env:ZIP_BYTES) -Mode Restore
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_RESTORE_FAILED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_SYNTHETIC_RESTORE_MARKER_MISSING' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_DOCKER_IMAGE_DOWNLOAD_PASS')) { throw 'D8K13_COLD_IMAGE_PULL_NOT_TESTED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_PRIVATE')) { throw 'D8K13_CUSTOM_PRIVATE_SCHEMA_NOT_RESTORED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_PRIVATE_FUNCTION_OWNER_PREP_NOT_EXECUTED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_PUBLIC_DECLARED_FUNCTION_OWNER_GRANTS_NOT_STAGED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_DISPOSABLE_AUTH_CLAIMS_HELPERS_VERIFIED')) { throw 'D8K13_MANAGED_AUTH_HELPER_BOOTSTRAP_NOT_TESTED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_ISOLATED_NAMESPACE_READY_RECOMMENDATION_SHADOW')) { throw 'D8K13_CUSTOM_SHADOW_SCHEMA_NOT_RESTORED' }
+          if (-not ($output | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_RECREATED_FROM_DUMP')) { throw 'D8K13_EXPLICIT_PUBLIC_DUMP_RESTORE_NOT_TESTED' }
+          Write-Host 'D8K13_SYNTHETIC_LOCAL_ZIP_PG17_RESTORE_PASS_HOLD'
+      - name: Build variant omitting CREATE SCHEMA public and missing-schema negative ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/d8k13-no-public/sql" "$RUNNER_TEMP/d8k13-missing-schema/sql" "$RUNNER_TEMP/d8k13-unknown-sqlstate/sql"
+          cp "$RUNNER_TEMP/d8k13-local-fixture/sql/"{roles.sql,data.sql} "$RUNNER_TEMP/d8k13-no-public/sql/"
+          sed '/^CREATE SCHEMA public;$/d' "$RUNNER_TEMP/d8k13-local-fixture/sql/schema.sql" > "$RUNNER_TEMP/d8k13-no-public/sql/schema.sql"
+          cp "$RUNNER_TEMP/d8k13-no-public/sql/"*.sql "$RUNNER_TEMP/d8k13-missing-schema/sql/"
+          printf '\nGRANT USAGE ON SCHEMA d8k13_missing_fixture TO authenticated;\n' >> "$RUNNER_TEMP/d8k13-missing-schema/sql/schema.sql"
+          cp "$RUNNER_TEMP/d8k13-no-public/sql/"*.sql "$RUNNER_TEMP/d8k13-unknown-sqlstate/sql/"
+          printf '\nSELECT 1/0;\n' >> "$RUNNER_TEMP/d8k13-unknown-sqlstate/sql/schema.sql"
+          pwsh -NoProfile -Command 'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-no-public/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-no-public/variant.zip")); [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-missing-schema/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-missing-schema/variant.zip")); [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $env:RUNNER_TEMP "d8k13-unknown-sqlstate/sql"),(Join-Path $env:RUNNER_TEMP "d8k13-unknown-sqlstate/variant.zip"))'
+          echo "D8K13_NO_PUBLIC_ZIP=$RUNNER_TEMP/d8k13-no-public/variant.zip" >> "$GITHUB_ENV"
+          echo "D8K13_MISSING_SCHEMA_ZIP=$RUNNER_TEMP/d8k13-missing-schema/variant.zip" >> "$GITHUB_ENV"
+          echo "D8K13_UNEXPECTED_SQLSTATE_ZIP=$RUNNER_TEMP/d8k13-unknown-sqlstate/variant.zip" >> "$GITHUB_ENV"
+      - name: Verify owner-style schema dump lacking CREATE SCHEMA public restores
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bytes = [long](Get-Item -LiteralPath $env:D8K13_NO_PUBLIC_ZIP).Length
+          $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:D8K13_NO_PUBLIC_ZIP -ExpectedZipBytes $bytes -Mode Restore
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_NO_PUBLIC_RESTORE_FAILED' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_SCHEMA_PRESERVED_FOR_DUMP')) { throw 'D8K13_NO_PUBLIC_PRESERVED_MARKER_MISSING' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_NO_PUBLIC_OWNER_GRANTS_NOT_APPLIED' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_NO_PUBLIC_FUNCTION_OWNER_GRANT_MISSING' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_NO_PUBLIC_RESTORE_PASS_MARKER_MISSING' }
+          Write-Host 'D8K13_SYNTHETIC_NO_CREATE_PUBLIC_RESTORE_PASS'
+      - name: Restore synthetic dump that explicitly declares private schema before function owner transfer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $source = Join-Path $env:RUNNER_TEMP 'd8k13-no-public/sql'
+          $target = Join-Path $env:RUNNER_TEMP 'd8k13-explicit-private/sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          Copy-Item (Join-Path $source 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $source 'data.sql') (Join-Path $target 'data.sql')
+          $schema = [System.IO.File]::ReadAllText((Join-Path $source 'schema.sql'))
+          if ($schema -notmatch '(?m)^CREATE FUNCTION private\.') { throw 'D8K13_EXPLICIT_PRIVATE_FIXTURE_MISSING_OWNER_FUNCTION' }
+          $schema = $schema -replace '(?m)^CREATE FUNCTION private\.', ("CREATE SCHEMA private;`nCREATE FUNCTION private.")
+          [System.IO.File]::WriteAllText((Join-Path $target 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
+          $zip = Join-Path $env:RUNNER_TEMP 'd8k13-explicit-private/fixture.zip'
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $bytes = [long](Get-Item -LiteralPath $zip).Length
+          $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $bytes -Mode Restore
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_EXPLICIT_PRIVATE_RESTORE_FAILED' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_GRANT_STAGED_FOR_IN_DUMP_SCHEMA')) { throw 'D8K13_EXPLICIT_PRIVATE_GRANT_NOT_DEFERRED' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PRIVATE_FUNCTION_OWNER_RESTORE_GRANTS_READY')) { throw 'D8K13_EXPLICIT_PRIVATE_OWNER_GRANT_NOT_READY' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_LOCAL_PUBLIC_FUNCTION_OWNER_GRANTS_STAGED_1')) { throw 'D8K13_EXPLICIT_PRIVATE_PUBLIC_OWNER_GRANT_MISSING' }
+          if (-not ($out | Select-String -SimpleMatch 'D8K13_DISPOSABLE_PG17_SQL_RESTORE_PASS_LIMITED')) { throw 'D8K13_EXPLICIT_PRIVATE_SCHEMA_DATA_NOT_RESTORED' }
+          Write-Host 'D8K13_SYNTHETIC_EXPLICIT_PRIVATE_SCHEMA_OWNER_RESTORE_PASS'
+      - name: Audit synthetic data COPY missing-column mismatch after strict schema restore
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $target=Join-Path $env:RUNNER_TEMP 'd8k13-data-copy-invalid/sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $target 'schema.sql')
+          $copyData = @'
+          COPY public.products (id, name, missing_archive_column) FROM stdin;
+          8	synthetic	synthetic
+          \.
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $target 'data.sql'),$copyData,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $env:RUNNER_TEMP 'd8k13-data-copy-invalid/fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode AuditData
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_DATA_COPY_AUDIT_EXEC_FAILED' }
+          $line=@($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_DATA_COPY_HEADER_AUDIT_ONLY_NOT_RESTORE"' })
+          if ($line.Count -ne 1) { throw 'D8K13_DATA_COPY_AUDIT_RESULT_MISSING' }
+          $result=$line[0] | ConvertFrom-Json
+          if ($result.missingDestinationColumns -ne 1 -or $result.affectedCopyHeaders -ne 1 -or
+            $result.copyHeaders -ne 1 -or $result.copyDataImported -ne $false -or
+            $result.strictSchemaRestoreCompleted -ne $true -or
+            $result.originalZipModified -ne $false -or $result.releaseAuthorized -ne $false) {
+            throw 'D8K13_DATA_COPY_AUDIT_CONTRACT_FAILED'
+          }
+          if (@($result.problemSamples | Where-Object { $_.line -eq 1 -and $_.schemaClass -eq 'PUBLIC' -and
+             $_.absentColumns -eq 1 }).Count -ne 1) { throw 'D8K13_DATA_COPY_AUDIT_MISMATCH_CLASS_FAILED' }
+          if ($line[0] -match 'missing_archive_column|COPY public|synthetic') {
+            throw 'D8K13_DATA_COPY_AUDIT_SOURCE_LEAKED'
+          }
+          Write-Host 'D8K13_SYNTHETIC_DATA_COPY_MISSING_COLUMN_AUDIT_PASS'
+      - name: Audit named COPY drift from synthetic ZIP into local-only metadata file
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'd8k13-data-copy-detail'
+          $target=Join-Path $dir 'sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $target 'schema.sql')
+          $copyData = @'
+          COPY public.products (id, name, missing_archive_column) FROM stdin;
+          8	synthetic	synthetic
+          \.
+          COPY auth.__d8k13_synthetic_absent (id, path) FROM stdin;
+          9	synthetic
+          \.
+          COPY public.products (id, name) FROM stdin;
+          10	synthetic
+          \.
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $target 'data.sql'),$copyData,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $dir 'fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $before=(Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash
+          $out=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode AuditDataDetail
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_NAMED_COPY_AUDIT_EXEC_FAILED' }
+          $line=@($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_DATA_NAMED_DETAIL_LOCAL_FILE_CREATED"' })
+          if ($line.Count -ne 1) { throw 'D8K13_NAMED_COPY_AUDIT_RESULT_MISSING' }
+          $result=$line[0] | ConvertFrom-Json
+          if ($result.copyHeaders -ne 3 -or $result.affectedCopyHeaders -ne 2 -or
+              $result.missingDestinationColumns -ne 1 -or $result.missingTableColumnReferences -ne 2 -or
+              $result.copyDataImported -ne $false -or $result.strictSchemaRestoreCompleted -ne $true -or
+              $result.releaseAuthorized -ne $false -or $result.namedMetadataRemainsOnOwnerPC -ne $true) {
+            throw 'D8K13_NAMED_COPY_AUDIT_COUNT_FAILED'
+          }
+          if ($line[0] -match 'missing_archive_column|__d8k13_synthetic_absent|COPY public|synthetic') {
+            throw 'D8K13_NAMED_COPY_AUDIT_PRIVATE_NAMES_LEAKED'
+          }
+          $detailPath=$result.namedMetadataPath
+          if (-not (Test-Path -LiteralPath $detailPath)) { throw 'D8K13_NAMED_COPY_AUDIT_FILE_MISSING' }
+          if ([System.IO.Path]::GetDirectoryName($detailPath) -ne [System.IO.Path]::GetDirectoryName($zip)) {
+            throw 'D8K13_NAMED_COPY_AUDIT_FILE_ESCAPED_PRIVATE_DIR'
+          }
+          $private=Get-Content -LiteralPath $detailPath -Raw | ConvertFrom-Json
+          if (@($private.detailProblems).Count -ne 2 -or $private.copyRowsImported -ne $false) {
+            throw 'D8K13_NAMED_COPY_AUDIT_PRIVATE_SHAPE_FAILED'
+          }
+          if (@($private.detailProblems | Where-Object {
+                $_.schema -eq 'public' -and $_.table -eq 'products' -and
+                $_.issueType -eq 'MISSING_COLUMNS' -and
+                @($_.missingColumns).Count -eq 1 -and
+                $_.missingColumns[0] -eq 'missing_archive_column'
+              }).Count -ne 1) { throw 'D8K13_NAMED_COPY_AUDIT_MISSING_COLUMN_WRONG' }
+          if (@($private.detailProblems | Where-Object {
+                $_.schema -eq 'auth' -and $_.table -eq '__d8k13_synthetic_absent' -and
+                $_.issueType -eq 'MISSING_TABLE' -and
+                $_.missingTableColumnReferences -eq 2
+              }).Count -ne 1) { throw 'D8K13_NAMED_COPY_AUDIT_MISSING_TABLE_WRONG' }
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash -ne $before) {
+            throw 'D8K13_NAMED_COPY_AUDIT_ZIP_MUTATED'
+          }
+          Remove-Item -LiteralPath $detailPath -Force
+          Write-Host 'D8K13_SYNTHETIC_NAMED_COPY_DRIFT_LOCAL_ONLY_PASS'
+      - name: Restore only synthetic public data and validate actual per-table row counts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'd8k13-public-only'
+          $sql=Join-Path $dir 'sql'
+          New-Item -ItemType Directory -Path $sql -Force | Out-Null
+          $source=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $source 'roles.sql') (Join-Path $sql 'roles.sql')
+          $schema=[System.IO.File]::ReadAllText((Join-Path $source 'schema.sql'))
+          $schema += [Environment]::NewLine + 'CREATE SEQUENCE public.d8k13_fixture_sequence;' + [Environment]::NewLine
+          $schema += 'CREATE SEQUENCE public.d8k13_fixture_seq_uncast;' + [Environment]::NewLine
+          [System.IO.File]::WriteAllText((Join-Path $sql 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
+          $data=@'
+          -- Synthetic data: never from an owner ZIP.
+          SET client_encoding = 'UTF8';
+          SELECT pg_catalog.set_config('search_path', '', false);
+          COPY public.products (id, name) FROM stdin;
+          71	owned synthetic public row
+          \.
+          COPY auth.__d8k13_absent_managed (id, metadata) FROM stdin;
+          81	synthetic managed skipped
+          \.
+          COPY storage.__d8k13_absent_storage (id, metadata) FROM stdin;
+          91	synthetic storage skipped
+          \.
+          COPY public.products (id, name) FROM stdin;
+          72	second public row
+          73	third public row
+          \.
+          SELECT pg_catalog.setval('public.d8k13_fixture_sequence'::regclass, 78, true);
+          SELECT pg_catalog.setval('public.d8k13_fixture_seq_uncast', 87, false);
+          SELECT pg_catalog.setval('auth.__d8k13_managed_seq_not_present', 1, false);
+          RESET ALL;
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $dir 'fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $sha=(Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash
+          $out=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicData
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_PUBLIC_RESTORE_FAILED' }
+          $line=@($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED"' })
+          if ($line.Count -ne 1) { throw 'D8K13_PUBLIC_DATA_RESULT_MISSING' }
+          $r=$line[0] | ConvertFrom-Json
+          if ($r.sourceCopyHeaders -ne 4 -or $r.publicCopyHeadersExecuted -ne 2 -or
+            $r.publicSourceRowsAppliedAndCountVerified -ne 3 -or $r.publicCopyTablesVerified -ne 1 -or
+            $r.publicSequenceResetsApplied -ne 2 -or $r.skippedManagedCopyHeaders -ne 2 -or
+            $r.skippedOtherSchemaCopyHeaders -ne 0 -or $r.skippedNonpublicSequenceResets -ne 1 -or
+            $r.publicDataRowsVerified -ne $true -or $r.terminalResetAllSkipped -ne $true -or $r.authDataRestored -ne $false -or
+            $r.storageMetadataRestored -ne $false -or $r.allDataRestored -ne $false -or
+            $r.originalZipModified -ne $false -or $r.networkDisabled -ne $true -or
+            $r.releaseAuthorized -ne $false) { throw 'D8K13_PUBLIC_RESTORE_CONTRACT_FAILED' }
+          if ($line[0] -match 'owned synthetic public row|second public row|synthetic managed skipped|d8k13_fixture_sequence|COPY public') {
+            throw 'D8K13_PUBLIC_RESTORE_SOURCE_SQL_OR_ROWS_LEAKED'
+          }
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash -ne $sha) {
+            throw 'D8K13_PUBLIC_RESTORE_SOURCE_ZIP_CHANGED'
+          }
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_COPY_ROWS_SETVAL_AND_RESET_ALL_TRAILER_PASS'
+      - name: Verify public-to-public FK integrity opt-in and reject orphan/partial-MATCH-FULL rows
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'd8k13-public-fk-audit'
+          $src = Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          $script = './scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1'
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          foreach ($kind in @('valid','orphan','partial-null')) {
+            $dir = Join-Path $root $kind
+            $sql = Join-Path $dir 'sql'
+            New-Item -ItemType Directory -Path $sql -Force | Out-Null
+            Copy-Item (Join-Path $src 'roles.sql') (Join-Path $sql 'roles.sql')
+            $schema = [System.IO.File]::ReadAllText((Join-Path $src 'schema.sql'))
+            $schema += @'
+          CREATE TABLE public.fk_parent(id integer PRIMARY KEY);
+          CREATE TABLE public.fk_child(id integer PRIMARY KEY, parent_id integer REFERENCES public.fk_parent(id));
+          CREATE TABLE public.fk_parent_pair(a integer, b integer, PRIMARY KEY(a,b));
+          CREATE TABLE public.fk_child_pair(id integer PRIMARY KEY, a integer, b integer,
+            CONSTRAINT fk_pair_full FOREIGN KEY(a,b) REFERENCES public.fk_parent_pair(a,b) MATCH FULL);
+          CREATE SEQUENCE public.d8k13_seq_called;
+          CREATE SEQUENCE public.d8k13_seq_uncalled;
+          CREATE FUNCTION public.d8k13_definer_default() RETURNS boolean
+            LANGUAGE sql SECURITY DEFINER AS 'SELECT true';
+          CREATE FUNCTION public.d8k13_definer_locked() RETURNS boolean
+            LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog AS 'SELECT true';
+          REVOKE ALL ON FUNCTION public.d8k13_definer_locked() FROM PUBLIC;
+          GRANT EXECUTE ON FUNCTION public.d8k13_definer_locked() TO authenticated;
+          CREATE FUNCTION public.d8k13_definer_with_cues() RETURNS boolean
+            LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
+            AS $d8k13_body$
+          DECLARE v integer;
+          BEGIN
+            EXECUTE format('SELECT %s', 1) INTO v;
+            IF auth.uid() IS NULL THEN
+              RAISE EXCEPTION 'synthetic only';
+            END IF;
+            RETURN v = 1;
+          END;
+          $d8k13_body$;
+          '@
+            [System.IO.File]::WriteAllText((Join-Path $sql 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
+            $single = if ($kind -eq 'orphan') { '11' + [char]9 + '999' } else { '11' + [char]9 + '1' }
+            $pair = if ($kind -eq 'partial-null') { '22' + [char]9 + '\N' + [char]9 + '2' } else { '22' + [char]9 + '\N' + [char]9 + '\N' }
+            $data = @"
+          COPY public.products (id, name) FROM stdin;
+          73	synthetic only
+          \.
+          COPY public.fk_parent (id) FROM stdin;
+          1
+          \.
+          COPY public.fk_child (id, parent_id) FROM stdin;
+          $single
+          \.
+          COPY public.fk_parent_pair (a, b) FROM stdin;
+          1	2
+          \.
+          COPY public.fk_child_pair (id, a, b) FROM stdin;
+          21	1	2
+          $pair
+          \.
+          SELECT pg_catalog.setval('public.d8k13_seq_called', 97, true);
+          SELECT pg_catalog.setval('public.d8k13_seq_uncalled'::regclass, 103, false);
+          RESET ALL;
+          "@
+            [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+            $zip = Join-Path $dir 'fixture.zip'
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
+            $size = [long](Get-Item -LiteralPath $zip).Length
+            $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
+            $out = & pwsh -NoProfile -File $script -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicDataWithSecurityBodySignals 2>&1
+            $exit = $LASTEXITCODE
+            $safeText = (($out | Out-String) -join '')
+            if ($kind -eq 'valid') {
+              if ($exit -ne 0) { throw 'D8K13_PUBLIC_FK_VALID_FIXTURE_FAILED' }
+              $line = @($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_PUBLIC_DATA_RESTORE_PASS_LIMITED"' })
+              if ($line.Count -ne 1) { throw 'D8K13_PUBLIC_FK_PASS_JSON_MISSING' }
+              $r = $line[0] | ConvertFrom-Json
+              if ($r.publicToPublicForeignKeyRowsVerified -ne $true -or
+                  $r.publicToPublicForeignKeyAudit.publicFkConstraintsChecked -ne 2 -or
+                  $r.publicSequenceSourceStateVerified -ne $true -or
+                  $r.publicSequenceSourceStateAudit.sourceSetvalsChecked -ne 2 -or
+                  $r.publicSecurityCatalogInventoryCollected -ne $true -or
+                  $r.publicSecurityCatalogInventory.publicTables -ne 5 -or
+                  $r.publicSecurityCatalogInventory.rlsEnabledTables -ne 1 -or
+                  $r.publicSecurityCatalogInventory.rlsDisabledTables -ne 4 -or
+                  $r.publicSecurityCatalogInventory.publicPolicies -ne 1 -or
+                  $r.publicSecurityCatalogInventory.publicFunctions -ne 4 -or
+                  $r.publicSecurityCatalogInventory.publicViews -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerFunctions -ne 3 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerNullAclDefaults -ne 2 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitAcl -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerDefaultPublicExecute -ne 2 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitPublicExecute -ne 0 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitAuthenticatedExecute -ne 1 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerEffectivePublicExecute -ne 2 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerExplicitSearchPath -ne 2 -or
+                  $r.publicSecurityCatalogInventory.securityDefinerNoExplicitSearchPath -ne 1 -or
+                  $r.publicSecurityDefinerBodySignalsCollected -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.scannedSecurityDefinerFunctions -ne 3 -or
+                  $r.publicSecurityDefinerBodySignals.languagePlpgsql -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.languageSql -ne 2 -or
+                  $r.publicSecurityDefinerBodySignals.otherOrUnsupportedLanguage -ne 0 -or
+                  $r.publicSecurityDefinerBodySignals.bodyMentionsAuthOrJwtSignals -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.bodyNoLexicalAuthOrJwtSignal -ne 2 -or
+                  $r.publicSecurityDefinerBodySignals.plpgsqlBodiesMentionExecuteKeyword -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.plpgsqlBodiesMentionExecuteAndFormat -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.executeCandidatesWithPercentRaw -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.executeCandidatesWithPercentIdentifier -ne 0 -or
+                  $r.publicSecurityDefinerBodySignals.executeCandidatesWithFunctionArgs -ne 0 -or
+                  @($r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates).Count -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].caseOrdinal -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].mentionsRawPlaceholder -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].executeFormatAdjacentLexical -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].rawPlaceholderInsideExecuteFormatWindowLexical -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].identifierPlaceholderInsideExecuteFormatWindowLexical -ne $false -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].executeStatementConcatenationLexical -ne $false -or
+                  $r.publicSecurityDefinerBodySignals.inputTaintOrControlFlowAnalyzed -ne $false -or
+                  $r.publicSecurityDefinerBodySignals.executeFormatWindowMayIncludeQuotedSqlAndComments -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.anonymousExecuteCandidates[0].mentionsDirectAuthHelper -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.candidateCasesAreEphemeralAndNonIdentifying -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.searchPathIncludesPgTemp -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.searchPathEndsWithPgTemp -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.searchPathNoExplicitPgTemp -ne 2 -or
+                  $r.publicSecurityDefinerBodySignals.bodyMentionsRaiseException -ne 1 -or
+                  $r.publicSecurityDefinerBodySignals.staticOnlyLexicalSignals -ne $true -or
+                  $r.publicSecurityDefinerBodySignals.perFunctionAuthSemanticsProven -ne $false -or
+                  $r.publicSecurityDefinerBodySignals.rawFunctionBodyOrNamesReturned -ne $false -or
+                  $r.publicSecurityCatalogInventory.executePrivilegeProvenanceClassified -ne $true -or
+                  $r.publicSecurityCatalogInventory.productionParityVerified -ne $false -or
+                  $r.rlsPolicyParityVerified -ne $false -or
+                  $r.ownerAndAclParityVerified -ne $false -or
+                  $r.publicSequenceSourceStateAudit.nextvalActuallyCalled -ne $false -or
+                  $r.publicSequenceSourceStateAudit.sourceLastValueAndIsCalledMatch -ne $true -or
+                  $r.publicToPublicForeignKeyAudit.publicFkViolatingConstraints -ne 0 -or
+                  $r.publicToPublicForeignKeyAudit.publicFkViolatingRows -ne 0 -or
+                  $r.publicToPublicForeignKeyAudit.nonPublicParentConstraintsSkipped -ne 1 -or
+                  $r.publicToPublicForeignKeyAudit.unsupportedConstraints -ne 0 -or
+                  $r.foreignKeyReferentialParityVerified -ne $false -or
+                  $r.authDataRestored -ne $false -or $r.releaseAuthorized -ne $false) {
+                throw 'D8K13_PUBLIC_FK_PASS_CONTRACT_MISMATCH'
+              }
+            } else {
+              if ($exit -eq 0 -or -not $safeText.Contains('D8K13_PUBLIC_FK_REFERENTIAL_VIOLATIONS')) {
+                throw 'D8K13_PUBLIC_FK_BAD_REFERENCE_NOT_REJECTED'
+              }
+            }
+            if ($safeText -match 'synthetic only|COPY public|fk_child|fk_parent|MATCH FULL') {
+              throw 'D8K13_PUBLIC_FK_SOURCE_SQL_OR_ROWS_LEAKED'
+            }
+            if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash -ne $hash) {
+              throw 'D8K13_PUBLIC_FK_SOURCE_ZIP_CHANGED'
+            }
+          }
+          Write-Host 'D8K13_SYNTHETIC_DEFINER_BODY_TRIAGE_FK_SEQUENCE_PASS'
+          # Negative fixture deliberately exits nonzero; clear pwsh's native exit status.
+          exit 0
+
+      - name: Reject unsupported SQL data commands before isolated partial restore
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'd8k13-public-reject'
+          $sql=Join-Path $dir 'sql'
+          New-Item -ItemType Directory -Path $sql -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $sql 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $sql 'schema.sql')
+          $data=@'
+          COPY public.products (id, name) FROM stdin;
+          74	synthetic
+          \.
+          INSERT INTO public.products VALUES (75, 'unsupported_command');
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $dir 'fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $out=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicData 2>&1
+          if ($LASTEXITCODE -eq 0) { throw 'D8K13_PUBLIC_UNSUPPORTED_COMMAND_ACCEPTED' }
+          $safeText=$out -join [Environment]::NewLine
+          if (-not $safeText.Contains('D8K13_PUBLIC_DATA_UNEXPECTED_SOURCE_COMMAND_LINE_4')) {
+            throw 'D8K13_PUBLIC_UNSUPPORTED_COMMAND_WRONG_FAILURE'
+          }
+          if ($safeText -match 'unsupported_command|INSERT INTO|synthetic') {
+            throw 'D8K13_PUBLIC_UNSUPPORTED_COMMAND_SOURCE_LEAKED'
+          }
+          Write-Host 'D8K13_SYNTHETIC_PUBLIC_UNSUPPORTED_SQL_FAIL_CLOSED_PASS'
+          # GitHub pwsh wrapper propagates the last native exit code even after an expected rejection.
+          $global:LASTEXITCODE=0
+      - name: Reject nonterminal RESET ALL before any synthetic public import
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'd8k13-public-reset-nonterminal'
+          $sql=Join-Path $dir 'sql'
+          New-Item -ItemType Directory -Path $sql -Force | Out-Null
+          $base=Join-Path $env:RUNNER_TEMP 'd8k13-local-fixture/sql'
+          Copy-Item (Join-Path $base 'roles.sql') (Join-Path $sql 'roles.sql')
+          Copy-Item (Join-Path $base 'schema.sql') (Join-Path $sql 'schema.sql')
+          $data=@'
+          COPY public.products (id, name) FROM stdin;
+          101	synthetic
+          \.
+          RESET ALL;
+          COPY public.products (id, name) FROM stdin;
+          102	synthetic
+          \.
+          '@
+          [System.IO.File]::WriteAllText((Join-Path $sql 'data.sql'),$data,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=Join-Path $dir 'fixture.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($sql,$zip)
+          $size=[long](Get-Item -LiteralPath $zip).Length
+          $out=& pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $size -Mode RestorePublicData 2>&1
+          if ($LASTEXITCODE -eq 0) { throw 'D8K13_NONTERMINAL_RESET_ALL_ACCEPTED' }
+          $safeText=$out -join [Environment]::NewLine
+          if (-not $safeText.Contains('D8K13_PUBLIC_DATA_COMMAND_AFTER_RESET_ALL_LINE_5')) {
+            throw 'D8K13_NONTERMINAL_RESET_ALL_WRONG_FAILURE'
+          }
+          if ($safeText -match 'COPY public|101|102|synthetic') {
+            throw 'D8K13_NONTERMINAL_RESET_ALL_SOURCE_LEAKED'
+          }
+          $global:LASTEXITCODE=0
+          Write-Host 'D8K13_SYNTHETIC_NONTERMINAL_RESET_ALL_REJECTED_PASS'
+      - name: Aggregate multiple undefined functions in one privacy-safe isolated schema audit
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $source = Join-Path $env:RUNNER_TEMP 'd8k13-no-public/sql'
+          $target = Join-Path $env:RUNNER_TEMP 'd8k13-audit-many/sql'
+          New-Item -ItemType Directory -Path $target -Force | Out-Null
+          Copy-Item (Join-Path $source 'roles.sql') (Join-Path $target 'roles.sql')
+          Copy-Item (Join-Path $source 'data.sql') (Join-Path $target 'data.sql')
+          $schema = [System.IO.File]::ReadAllText((Join-Path $source 'schema.sql'))
+          $schema += "`nSELECT d8k13_absent_synthetic_function();`n"
+          $schema += "COMMENT ON FUNCTION public.d8k13_absent_synthetic_function() IS 'synthetic only';`n"
+          [System.IO.File]::WriteAllText((Join-Path $target 'schema.sql'),$schema,[System.Text.UTF8Encoding]::new($false))
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = Join-Path $env:RUNNER_TEMP 'd8k13-audit-many/audit.zip'
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($target,$zip)
+          $bytes = [long](Get-Item -LiteralPath $zip).Length
+          $out = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $zip -ExpectedZipBytes $bytes -Mode AuditSchema
+          if ($LASTEXITCODE -ne 0) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_EXEC_FAILED' }
+          $resultLine = @($out | Where-Object { $_ -match '^\{.*"status":"D8K13_DISPOSABLE_PG17_SCHEMA_AUDIT_ONLY_NOT_RESTORE"' })
+          if ($resultLine.Count -ne 1) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_MISSING_RESULT' }
+          $result = $resultLine[0] | ConvertFrom-Json
+          if ($result.schemaErrorCount -lt 2 -or $result.dataSqlExecuted -ne $false -or
+              $result.releaseAuthorized -ne $false -or $result.rawSqlOrRowsReturned -ne $false -or
+              $result.networkDisabled -ne $true) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_SAFETY_FAILED' }
+          if (@($result.sampledErrors | Where-Object { $_.sqlstate -eq '42883' }).Count -lt 2) { throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_MISSING_42883' }
+          if (@($result.sqlstateCounts | Where-Object { $_.sqlstate -eq '42883' -and $_.count -ge 2 }).Count -ne 1) {
+            throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_AGGREGATION_FAILED'
+          }
+          if (($resultLine -join '') -match 'd8k13_absent_synthetic_function|COMMENT ON FUNCTION|SELECT d8k13_absent') {
+            throw 'D8K13_SYNTHETIC_SCHEMA_AUDIT_SQL_LEAK'
+          }
+          Write-Host 'D8K13_SYNTHETIC_SCHEMA_AUDIT_MULTI_ERROR_PRIVACY_PASS'
+      - name: Refuse missing unknown schema and print name only without SQL content
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bytes = [long](Get-Item -LiteralPath $env:D8K13_MISSING_SCHEMA_ZIP).Length
+          $err = Join-Path $env:RUNNER_TEMP 'd8k13-missing-schema-error.txt'
+          $out = Join-Path $env:RUNNER_TEMP 'd8k13-missing-schema-out.txt'
+          $proc = Start-Process -FilePath 'pwsh' -ArgumentList @('-NoProfile','-File','./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1','-BackupZip',$env:D8K13_MISSING_SCHEMA_ZIP,'-ExpectedZipBytes',"$bytes",'-Mode','Restore') -Wait -PassThru -RedirectStandardOutput $out -RedirectStandardError $err
+          if ($proc.ExitCode -ne 3) { throw 'D8K13_UNKNOWN_MISSING_SCHEMA_EXIT_MUST_BE_3' }
+          $stderr = Get-Content -LiteralPath $err -Raw
+          if ($stderr -notmatch 'D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_3F000_LINE_[0-9]+_FAILED_EXIT_3') { throw 'D8K13_MISSING_SCHEMA_SQLSTATE_LINE_NOT_REPORTED' }
+          if ($stderr -match 'GRANT USAGE ON SCHEMA|COPY public\.products|CREATE TABLE') { throw 'D8K13_SQL_CONTENT_LEAKED' }
+          Write-Host 'D8K13_SYNTHETIC_MISSING_SCHEMA_NAME_ONLY_FAIL_CLOSED_PASS'
+      - name: Convert formerly-OTHER SQL error to safe SQLSTATE and exact line
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bytes = [long](Get-Item -LiteralPath $env:D8K13_UNEXPECTED_SQLSTATE_ZIP).Length
+          $err = Join-Path $env:RUNNER_TEMP 'd8k13-unknown-error.txt'
+          $out = Join-Path $env:RUNNER_TEMP 'd8k13-unknown-out.txt'
+          $proc = Start-Process -FilePath 'pwsh' -ArgumentList @('-NoProfile','-File','./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1','-BackupZip',$env:D8K13_UNEXPECTED_SQLSTATE_ZIP,'-ExpectedZipBytes',"$bytes",'-Mode','Restore') -Wait -PassThru -RedirectStandardOutput $out -RedirectStandardError $err
+          if ($proc.ExitCode -ne 3) { throw 'D8K13_OTHER_SQLSTATE_EXIT_MUST_BE_3' }
+          $stderr = Get-Content -LiteralPath $err -Raw
+          if ($stderr -notmatch 'D8K13_LOCAL_RESTORE_SCHEMA_SQLSTATE_22012_LINE_[0-9]+_FAILED_EXIT_3') { throw 'D8K13_OTHER_SQLSTATE_LINE_NOT_REPORTED' }
+          if ($stderr -match 'SELECT 1/0|COPY public\.products|CREATE TABLE') { throw 'D8K13_SQL_CONTENT_LEAKED' }
+          Write-Host 'D8K13_SYNTHETIC_OTHER_SQLSTATE_SAFE_DIAGNOSTIC_PASS'
+      - name: Reject wrong-size archive, no backups in CI artifacts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $wrong = [long]$env:ZIP_BYTES + 1
+          $output = & pwsh -NoProfile -File ./scripts/product-evidence/verify-d8k13-private-backup-zip-local.ps1 -BackupZip $env:ZIP_PATH -ExpectedZipBytes $wrong -Mode Inspect 2>$null
+          if ($LASTEXITCODE -ne 3) { throw 'D8K13_BAD_SIZE_MUST_EXIT_3' }
+          Write-Host 'D8K13_LOCAL_ZIP_FAIL_CLOSED_WRONG_SIZE_PASS'
+          exit 0 # The deliberate child exit=3 must not fail the test step.

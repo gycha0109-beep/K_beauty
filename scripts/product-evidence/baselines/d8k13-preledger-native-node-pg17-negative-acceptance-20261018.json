@@ -1,0 +1,64 @@
+{
+  "schema": "D8K13_PRELEDGER_NATIVE_NODE_PG17_NEGATIVE_ACCEPTANCE_V1",
+  "observedDateKst": "2026-10-18",
+  "evidenceSource": "GITHUB_ACTIONS_COMPLETED_JOB_AND_SANITIZED_LOG_MARKERS",
+  "workflowCommitSha": "4b0a50d4dea04514757e512f1e54cd2fb7ed0125",
+  "workflowRunId": 39059702566,
+  "workflowUrl": "https://github.com/gycha0109-beep/K_beauty/actions/runs/39059702566",
+  "workflowName": "[WT:taxonomy-ai] D8K13 Pre-Ledger Isolated PG17 Evidence",
+  "workflowConclusion": "success",
+  "offlineJob": {
+    "jobId": 117474947581,
+    "conclusion": "success",
+    "nativeNodeMajor": 22,
+    "markers": [
+      "D8K13_PRELEDGER_RECONSTRUCTION_CONTRACT_PASS_HOLD",
+      "D8K13_P0_ACL_TAXONOMY_CONTRACT_PASS_HOLD",
+      "D8K13_PRELEDGER_NATIVE_NODE_RELEASE_HOLD_PASS"
+    ],
+    "bothReleaseGateExitCodes": 3
+  },
+  "isolatedPg17Job": {
+    "jobId": 117474947437,
+    "conclusion": "success",
+    "pgMajor": 17,
+    "containerImage": "postgres:17.6",
+    "database": "d8k13_preledger_disposable",
+    "syntheticLocalOnly": true,
+    "firstAppliedVersion": "20260410",
+    "pinnedMigrationGitBlob": "f13b9584080209ba9bdfdaff3a66b5984b8748a7",
+    "expectedError": "relation public.products does not exist",
+    "expectedFailureStatus": "EXPECTED_FAILURE_PASS",
+    "transactionRollbackObserved": true,
+    "marker": "D8K13_PRELEDGER_ISOLATED_PG17_EXPECTED_FAILURE_PASS",
+    "firstMigrationSuccessfullyApplied": false,
+    "migrationHistoryMutation": false
+  },
+  "earliestHistoryReadme": {
+    "repoFirstCommit": "934762c805e910a946bb23b09f2c4634e47468f0",
+    "pinnedReadmeGitBlob": "6d9e42b801a5e4d6fe183742f4feab21eb52b030",
+    "mentionsExistingSourceRankings": true,
+    "mentionsExistingProductCandidates": true,
+    "mentionsExistingCrawlJobs": true,
+    "actualBootstrapSqlPresent": false,
+    "alternateOriginalBootstrapRuledOut": false
+  },
+  "interpretation": "FIRST_APPLIED_MIGRATION_REQUIRES_PREEXISTING_SCHEMA__REPLAY_FROM_EMPTY_PG17_NOT_VALID",
+  "full178MigrationReplayPassed": false,
+  "firstPreledgerSchemaRecovered": false,
+  "originalDdlAndAclHistoryVerified": false,
+  "backupsRestored": false,
+  "supplyChainIssue1208Resolved": false,
+  "independentSecurityApproved": false,
+  "productionWrites": 0,
+  "anyHostedSqlApplied": false,
+  "releaseAuthorized": false,
+  "prMustRemainDraft": true,
+  "caveats": [
+    "This is a deliberately scoped negative-path acceptance, not a successful 178-migration replay.",
+    "The rollback assertion checks that the failed first migration left none of its target tables/types in the isolated empty database.",
+    "Historical README is context for intended crawler tables; it does not provide DDL, original ACLs, owner creation events, or historical runtime environment.",
+    "The GitHub workflow runs only on this feature branch. Do not mistake a branch-push acceptance job for production release approval.",
+    "Synthetic credentials were ephemeral GitHub service-container test values, not hosted credentials."
+  ]
+}

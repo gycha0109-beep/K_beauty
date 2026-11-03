@@ -1,0 +1,93 @@
+{
+  "schema": "D8K13_P0_ACL_TAXONOMY_PROVENANCE_FOLLOWUP_V1",
+  "observedDateKst": "2026-10-17",
+  "status": "RELEASE_HOLD",
+  "evidenceType": "HOSTED_SELECT_ONLY_METADATA_PLUS_PINNED_REPOSITORY_SOURCE",
+  "hostedWrites": 0,
+  "rawMigrationSqlPublished": false,
+  "productIdentifiersPublished": false,
+  "productNamesPublished": false,
+  "queryFile": "scripts/product-evidence/sql/d8k13-p0-acl-taxonomy-provenance-readonly-v1.sql",
+  "sourceBlobs": [
+    {
+      "file": "supabase/migrations/20260410_safe_review_and_promotion_layer.sql",
+      "sha": "f13b9584080209ba9bdfdaff3a66b5984b8748a7"
+    },
+    {
+      "file": "supabase/migrations/20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql",
+      "sha": "22af0580f01f0f2fecc1611c9f721e05d606244f"
+    },
+    {
+      "file": "supabase/migrations/20260914072000_data_taxonomy11_catalog_only_transactional_adoption_v1.sql",
+      "sha": "c319050f8e2eadaafb301b7cd3d45403fd30e8ca"
+    }
+  ],
+  "history": {
+    "appliedRows": 178,
+    "earliestAppliedVersion": "20260410",
+    "earliestName": "safe_review_and_promotion_layer",
+    "appliedBeforeEarliest": 0,
+    "earliestStoredSqlAltersProductCandidates": true,
+    "earliestStoredSqlDefinesProductCandidates": false,
+    "earliestStoredSqlDefinesSourceRankings": false,
+    "earliestStoredSqlCreatesViewJoiningSourceRankings": true,
+    "sourceRankingsHistoryTextMentions": 6,
+    "productCandidatesHistoryTextMentions": 40,
+    "sourceRankingsExactDirectCreateCount": 0,
+    "productCandidatesExactDirectCreateCount": 0,
+    "sourceRankingsExactDirectGrantRevokeCount": 0,
+    "productCandidatesExactDirectGrantRevokeCount": 0,
+    "earliestObjectCreationProvenance": "BEFORE_OR_OUTSIDE_EARLIEST_APPLIED_MIGRATION__SOURCE_UNATTESTED",
+    "initialAclGrantRevokeProvenance": "UNATTESTED"
+  },
+  "currentAccess": {
+    "tables": [
+      "source_rankings",
+      "product_candidates"
+    ],
+    "rlsEnabled": true,
+    "anonSelect": false,
+    "anonInsert": false,
+    "authenticatedSelect": false,
+    "authenticatedInsert": false,
+    "serviceRoleInsert": true,
+    "historicalSafetyCertified": false
+  },
+  "taxonomy8": {
+    "targetCount": 1,
+    "legacyCategory": "sunscreen",
+    "createdDate": "2026-10-01",
+    "productForm": null,
+    "candidateMatchedCount": 1,
+    "candidateReviewStatus": "promoted",
+    "candidateIdentityResolutionState": "resolved",
+    "candidateClassificationState": "active_shadow",
+    "candidateClassificationMethod": "manual_legacy_projection_v1",
+    "candidateLegacyProjectionKeyPresent": true,
+    "candidateCategoryTermPresent": true,
+    "promotionVersion": "crawler-canonical-product-structural-adoption-v1",
+    "promotionAction": "inserted",
+    "promotionContract": "crawler-canonical-product-structural-adoption-v1",
+    "productCanonicalTaxonomyAssignments": 0,
+    "deployedStructuralWriterReferencesAssignmentTable": false,
+    "deployedCatalogOnlyWriterInsertsAssignment": true,
+    "productTaxonomyInsertSyncTriggerPresent": false,
+    "candidateTaxonomyShadowSyncTriggerPresent": true,
+    "supportedCause": "STRUCTURAL_PRODUCT_ADOPTION_PATH_OMITS_CANONICAL_ASSIGNMENT",
+    "historicalWriteAttribution": "PROMOTION_LEDGER_MATCHES_CURRENT_STRUCTURAL_WRITER__NO_ORIGINAL_TRANSACTION_LOG",
+    "policyIntentApproved": false,
+    "directLiveDataCorrectionApproved": false
+  },
+  "limitations": [
+    "SQL regex covers explicit common direct DDL/ACL syntax only, not dynamic SQL, alternate quoting or out-of-ledger changes.",
+    "The earliest migration's ALTER and VIEW references establish a dependency boundary, not the exact table creation moment or ACL history.",
+    "Promotion action and current function source explain the missing assignment but do not recover original transaction trace.",
+    "No automatic taxonomy assignment write, legacy category removal or Recommendation admission is authorized.",
+    "Full 178-migration clean replay, backup/PITR recovery, independent OWNER/security approval and supply chain issue #1208 remain blocked."
+  ],
+  "originalWindowsPg17EvidenceRetained": true,
+  "wholeMigrationHistoryReplayed": false,
+  "backupPitrRestored": false,
+  "securityIssue1208Resolved": false,
+  "releaseAuthorized": false
+}
