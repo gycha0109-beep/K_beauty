@@ -68,7 +68,7 @@ def find_assets(root):
                 raise ValueError("Expected palette PNG mask: " + group + "/" + stem)
             with Image.open(path) as image:
                 if image.mode != "P":
-                    raise ValueError("Expected P-mode PNG mask: " + group + "/" + stem) else "image"
+                    raise ValueError("Expected P-mode PNG mask: " + group + "/" + stem)
         key = group + "/" + stem
         index_key = (key, kind)
         if index_key in seen:
