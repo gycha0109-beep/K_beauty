@@ -21,6 +21,8 @@ on:
       - "lib/security/analysis-request-guard-core.js"
       - "lib/security/analysis-request-guard.js"
       - "scripts/verify-face-lab-v2-foundation.mjs"
+      - "scripts/verify-face-lab-style-check-observation-preview-sc06k.mjs"
+      - "scripts/build-face-lab-style-check-observation-preview-sc06k.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "scripts/verify-premium-report-reentry-contract.mjs"
       - "scripts/verify-face-lab-v2-persistence-authority.mjs"
@@ -173,6 +175,8 @@ on:
       - "lib/security/analysis-request-guard-core.js"
       - "lib/security/analysis-request-guard.js"
       - "scripts/verify-face-lab-v2-foundation.mjs"
+      - "scripts/verify-face-lab-style-check-observation-preview-sc06k.mjs"
+      - "scripts/build-face-lab-style-check-observation-preview-sc06k.mjs"
       - "scripts/verify-face-lab-v2-premium-wiring.mjs"
       - "scripts/verify-premium-report-reentry-contract.mjs"
       - "scripts/verify-face-lab-v2-persistence-authority.mjs"
@@ -302,6 +306,8 @@ jobs:
       - uses: actions/checkout@v7
       - name: Verify Face Lab V2 foundation
         run: node scripts/verify-face-lab-v2-foundation.mjs
+      - name: Verify Face Lab SC-06K offline review bridge
+        run: node scripts/verify-face-lab-style-check-observation-preview-sc06k.mjs
       - name: Verify Face Lab V2 premium wiring
         run: node scripts/verify-face-lab-v2-premium-wiring.mjs
       - name: Verify Face Lab V2 persistence authority
