@@ -1,0 +1,21 @@
+{
+  "schema": "bejewely.security.braces.reviewed-quote-compat.v1",
+  "baseNpmVersion": "3.0.3",
+  "baseGitTag": "3.0.3",
+  "baseSourceFileGitBlobSha1": "3a6988e629f52aee6609dc5ec290a5e9ff47cecb",
+  "upstreamCommit": "28d440b5dd449dbf1fe6f3506cf94ecca4d02660",
+  "reviewedUpstreamParseJsGitBlobSha1": "99cfb63528ff0124989d4c280e87888236a02be8",
+  "changePurpose": "Preserve quote behavior expected by the SHA-pinned upstream test suite without substituting the entire unreviewed file",
+  "expectedOriginalOccurrences": 1,
+  "expectedReplacementOccurrences": 1,
+  "before": "    if (value === CHAR_DOUBLE_QUOTE || value === CHAR_SINGLE_QUOTE || value === CHAR_BACKTICK) {\n      const open = value;\n      let next;\n\n      if (options.keepQuotes !== true) {\n        value = '';\n      }\n\n      while (index < length && (next = advance())) {\n        if (next === CHAR_BACKSLASH) {\n          value += next + advance();\n          continue;\n        }\n\n        if (next === open) {\n          if (options.keepQuotes === true) value += next;\n          break;\n        }\n\n        value += next;\n      }\n\n      push({ type: 'text', value });\n      continue;\n    }\n",
+  "after": "    if (value === CHAR_DOUBLE_QUOTE || value === CHAR_SINGLE_QUOTE || value === CHAR_BACKTICK) {\n      const leftQuote = value;\n      // Looking for the nearest unescaped quote of the same type.\n      // @todo Use negative lookbehind after targeting the node@8.10+\n      const hasRightQuote = input.slice(index).search(new RegExp(`[^\\\\\\\\]${leftQuote}|^${leftQuote}`)) !== -1;\n\n      let next;\n\n      // If there is no right quote, consume an unpaired quote as a regular character.\n      if (hasRightQuote) {\n        if (options.keepQuotes !== true) {\n          value = '';\n        }\n\n        while (index <= length && (next = advance())) {\n          // Skip escaped quotes.\n          if (next === CHAR_BACKSLASH) {\n            value += next + advance();\n            continue;\n          }\n\n          if (next === leftQuote) {\n            if (options.keepQuotes === true) value += next;\n            break;\n          }\n\n          value += next;\n        }\n      }\n\n      push({ type: 'text', value });\n      continue;\n    }\n",
+  "additionalReviewedCompatibilityHunks": [
+    {
+      "reason": "Non-PR upstream-head comma-state fix from braces commit ac60bdb/nearby history; pinned by final parse.js Git blob and full upstream suite",
+      "before": "      }\n\n      push({ type: 'comma', value });",
+      "after": "      }\n      block.invalid = false;\n\n      push({ type: 'comma', value });",
+      "expectedOriginalOccurrences": 1
+    }
+  ]
+}
