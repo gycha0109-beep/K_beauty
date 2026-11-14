@@ -1,5 +1,7 @@
 # Premium Condition Response Contract v1
 
+Current canonical projection/UI extension: [Four-sector Full Report](full-report-four-sector-view.md#additive-condition-projection). The rules below describe the legacy adapter. Current scenario authority is `condition-policy.js`; role/action arrays pass losslessly through `premium-condition-projection.js` without rebuilding saved reports.
+
 ## Purpose
 
 The paid full report condition response section explains temporary routine adjustments for days when skin condition feels unstable. It is not a diagnosis, treatment instruction, prescription, medication guide, product recommendation, or purchase flow.
